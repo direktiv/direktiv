@@ -12,6 +12,8 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	"github.com/direktiv/direktiv/pkg/flow/ent/instanceruntime"
 	"github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
+	"github.com/direktiv/direktiv/pkg/flow/ent/mirror"
+	"github.com/direktiv/direktiv/pkg/flow/ent/mirroractivity"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/ref"
 	"github.com/direktiv/direktiv/pkg/flow/ent/revision"
@@ -115,6 +117,28 @@ func init() {
 	logmsgDescID := logmsgFields[0].Descriptor()
 	// logmsg.DefaultID holds the default value on creation for the id field.
 	logmsg.DefaultID = logmsgDescID.Default.(func() uuid.UUID)
+	mirrorFields := schema.Mirror{}.Fields()
+	_ = mirrorFields
+	// mirrorDescID is the schema descriptor for id field.
+	mirrorDescID := mirrorFields[0].Descriptor()
+	// mirror.DefaultID holds the default value on creation for the id field.
+	mirror.DefaultID = mirrorDescID.Default.(func() uuid.UUID)
+	mirroractivityFields := schema.MirrorActivity{}.Fields()
+	_ = mirroractivityFields
+	// mirroractivityDescCreatedAt is the schema descriptor for created_at field.
+	mirroractivityDescCreatedAt := mirroractivityFields[3].Descriptor()
+	// mirroractivity.DefaultCreatedAt holds the default value on creation for the created_at field.
+	mirroractivity.DefaultCreatedAt = mirroractivityDescCreatedAt.Default.(func() time.Time)
+	// mirroractivityDescUpdatedAt is the schema descriptor for updated_at field.
+	mirroractivityDescUpdatedAt := mirroractivityFields[4].Descriptor()
+	// mirroractivity.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	mirroractivity.DefaultUpdatedAt = mirroractivityDescUpdatedAt.Default.(func() time.Time)
+	// mirroractivity.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	mirroractivity.UpdateDefaultUpdatedAt = mirroractivityDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// mirroractivityDescID is the schema descriptor for id field.
+	mirroractivityDescID := mirroractivityFields[0].Descriptor()
+	// mirroractivity.DefaultID holds the default value on creation for the id field.
+	mirroractivity.DefaultID = mirroractivityDescID.Default.(func() uuid.UUID)
 	namespaceFields := schema.Namespace{}.Fields()
 	_ = namespaceFields
 	// namespaceDescCreatedAt is the schema descriptor for created_at field.

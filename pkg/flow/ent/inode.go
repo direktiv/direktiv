@@ -10,6 +10,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/direktiv/direktiv/pkg/flow/ent/inode"
+	"github.com/direktiv/direktiv/pkg/flow/ent/mirror"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 	"github.com/google/uuid"
@@ -30,6 +31,8 @@ type Inode struct {
 	Type string `json:"type,omitempty"`
 	// Attributes holds the value of the "attributes" field.
 	Attributes []string `json:"attributes,omitempty"`
+	// ExtendedType holds the value of the "extended_type" field.
+	ExtendedType string `json:"extended_type,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the InodeQuery when eager-loading is set.
 	Edges            InodeEdges `json:"edges"`
@@ -47,9 +50,11 @@ type InodeEdges struct {
 	Parent *Inode `json:"parent,omitempty"`
 	// Workflow holds the value of the workflow edge.
 	Workflow *Workflow `json:"workflow,omitempty"`
+	// Mirror holds the value of the mirror edge.
+	Mirror *Mirror `json:"mirror,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [5]bool
 }
 
 // NamespaceOrErr returns the Namespace value or an error if the edge
@@ -103,6 +108,20 @@ func (e InodeEdges) WorkflowOrErr() (*Workflow, error) {
 	return nil, &NotLoadedError{edge: "workflow"}
 }
 
+// MirrorOrErr returns the Mirror value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e InodeEdges) MirrorOrErr() (*Mirror, error) {
+	if e.loadedTypes[4] {
+		if e.Mirror == nil {
+			// The edge mirror was loaded in eager-loading,
+			// but was not found.
+			return nil, &NotFoundError{label: mirror.Label}
+		}
+		return e.Mirror, nil
+	}
+	return nil, &NotLoadedError{edge: "mirror"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Inode) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
@@ -110,7 +129,7 @@ func (*Inode) scanValues(columns []string) ([]interface{}, error) {
 		switch columns[i] {
 		case inode.FieldAttributes:
 			values[i] = new([]byte)
-		case inode.FieldName, inode.FieldType:
+		case inode.FieldName, inode.FieldType, inode.FieldExtendedType:
 			values[i] = new(sql.NullString)
 		case inode.FieldCreatedAt, inode.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -173,6 +192,12 @@ func (i *Inode) assignValues(columns []string, values []interface{}) error {
 					return fmt.Errorf("unmarshal field attributes: %w", err)
 				}
 			}
+		case inode.FieldExtendedType:
+			if value, ok := values[j].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field extended_type", values[j])
+			} else if value.Valid {
+				i.ExtendedType = value.String
+			}
 		case inode.ForeignKeys[0]:
 			if value, ok := values[j].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field inode_children", values[j])
@@ -212,6 +237,11 @@ func (i *Inode) QueryWorkflow() *WorkflowQuery {
 	return (&InodeClient{config: i.config}).QueryWorkflow(i)
 }
 
+// QueryMirror queries the "mirror" edge of the Inode entity.
+func (i *Inode) QueryMirror() *MirrorQuery {
+	return (&InodeClient{config: i.config}).QueryMirror(i)
+}
+
 // Update returns a builder for updating this Inode.
 // Note that you need to call Inode.Unwrap() before calling this method if this Inode
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -245,6 +275,8 @@ func (i *Inode) String() string {
 	builder.WriteString(i.Type)
 	builder.WriteString(", attributes=")
 	builder.WriteString(fmt.Sprintf("%v", i.Attributes))
+	builder.WriteString(", extended_type=")
+	builder.WriteString(i.ExtendedType)
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -14,6 +14,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entino "github.com/direktiv/direktiv/pkg/flow/ent/inode"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/util"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -161,6 +162,12 @@ func (flow *flow) Node(ctx context.Context, req *grpc.NodeRequest) (*grpc.NodeRe
 	resp.Node.Path = d.path
 	resp.Node.Parent = d.dir
 
+	if resp.Node.ExpandedType == "" {
+		resp.Node.ExpandedType = resp.Node.Type
+	}
+
+	resp.Node.ReadOnly = d.ro
+
 	return &resp, nil
 
 }
@@ -201,6 +208,12 @@ func (flow *flow) Directory(ctx context.Context, req *grpc.DirectoryRequest) (*g
 		return nil, err
 	}
 
+	if resp.Node.ExpandedType == "" {
+		resp.Node.ExpandedType = resp.Node.Type
+	}
+
+	resp.Node.ReadOnly = d.ro
+
 	resp.Namespace = d.namespace()
 	resp.Node.Path = d.path
 	resp.Node.Parent = d.dir
@@ -214,6 +227,18 @@ func (flow *flow) Directory(ctx context.Context, req *grpc.DirectoryRequest) (*g
 		child := resp.Children.Edges[idx]
 		child.Node.Parent = resp.Node.Path
 		child.Node.Path = filepath.Join(resp.Node.Path, child.Node.Name)
+
+		if child.Node.ExpandedType == "" {
+			child.Node.ExpandedType = child.Node.Type
+		}
+
+		child.Node.ReadOnly = d.ro
+		if child.Node.ExpandedType == util.InodeTypeGit {
+			mir, err := cx.Edges[idx].Node.Mirror(ctx)
+			if err == nil {
+				child.Node.ReadOnly = !mir.Locked
+			}
+		}
 	}
 
 	return &resp, nil
@@ -265,6 +290,12 @@ resend:
 		return err
 	}
 
+	if resp.Node.ExpandedType == "" {
+		resp.Node.ExpandedType = resp.Node.Type
+	}
+
+	resp.Node.ReadOnly = d.ro
+
 	resp.Node.Path = d.path
 	resp.Node.Parent = d.dir
 
@@ -277,6 +308,18 @@ resend:
 		child := resp.Children.Edges[idx]
 		child.Node.Parent = resp.Node.Path
 		child.Node.Path = filepath.Join(resp.Node.Path, child.Node.Name)
+
+		if child.Node.ExpandedType == "" {
+			child.Node.ExpandedType = child.Node.Type
+		}
+
+		child.Node.ReadOnly = d.ro
+		if child.Node.ExpandedType == util.InodeTypeGit {
+			mir, err := cx.Edges[idx].Node.Mirror(ctx)
+			if err == nil {
+				child.Node.ReadOnly = !mir.Locked
+			}
+		}
 	}
 
 	nhash = checksum(resp)
@@ -331,6 +374,10 @@ func (flow *flow) CreateDirectory(ctx context.Context, req *grpc.CreateDirectory
 		return nil, status.Error(codes.AlreadyExists, "parent node is not a directory")
 	}
 
+	if pino.ro {
+		return nil, errors.New("cannot write into read-only directory")
+	}
+
 	ino, err := inoc.Create().SetName(base).SetNamespace(ns).SetParent(pino.ino).SetType("directory").Save(ctx)
 	if err != nil {
 
@@ -381,6 +428,12 @@ respond:
 		return nil, err
 	}
 
+	if resp.Node.ExpandedType == "" {
+		resp.Node.ExpandedType = resp.Node.Type
+	}
+
+	resp.Node.ReadOnly = false
+
 	resp.Namespace = namespace
 	resp.Node.Parent = dir
 	resp.Node.Path = path
@@ -424,6 +477,10 @@ func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (
 
 	if d.path == "/" {
 		return nil, status.Error(codes.InvalidArgument, "cannot delete root node")
+	}
+
+	if d.ro && d.ino.ExtendedType != util.InodeTypeGit {
+		return nil, status.Error(codes.InvalidArgument, "cannot delete contents of read-only directory")
 	}
 
 	if !req.GetRecursive() && d.ino.Type == "directory" {
@@ -518,6 +575,10 @@ func (flow *flow) RenameNode(ctx context.Context, req *grpc.RenameNodeRequest) (
 		return nil, errors.New("cannot move node into itself")
 	}
 
+	if d.ro && d.ino.ExtendedType != util.InodeTypeGit {
+		return nil, errors.New("cannot move contents of read-only directory")
+	}
+
 	oldpd, err := flow.getInode(ctx, nil, d.ns(), d.dir, false)
 	if err != nil {
 		return nil, err
@@ -530,6 +591,10 @@ func (flow *flow) RenameNode(ctx context.Context, req *grpc.RenameNodeRequest) (
 	pd, err := flow.getInode(ctx, nil, d.ns(), dir, false)
 	if err != nil {
 		return nil, err
+	}
+
+	if pd.ro {
+		return nil, errors.New("cannot write into read-only directory")
 	}
 
 	ino, err = ino.Update().SetName(base).SetParent(pd.ino).Save(ctx)
@@ -553,6 +618,12 @@ func (flow *flow) RenameNode(ctx context.Context, req *grpc.RenameNodeRequest) (
 	if err != nil {
 		return nil, err
 	}
+
+	if resp.Node.ExpandedType == "" {
+		resp.Node.ExpandedType = resp.Node.Type
+	}
+
+	resp.Node.ReadOnly = false
 
 	resp.Namespace = d.namespace()
 	resp.Node.Parent = dir

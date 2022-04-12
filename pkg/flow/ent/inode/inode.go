@@ -23,6 +23,8 @@ const (
 	FieldType = "type"
 	// FieldAttributes holds the string denoting the attributes field in the database.
 	FieldAttributes = "attributes"
+	// FieldExtendedType holds the string denoting the extended_type field in the database.
+	FieldExtendedType = "expandedType"
 	// EdgeNamespace holds the string denoting the namespace edge name in mutations.
 	EdgeNamespace = "namespace"
 	// EdgeChildren holds the string denoting the children edge name in mutations.
@@ -31,6 +33,8 @@ const (
 	EdgeParent = "parent"
 	// EdgeWorkflow holds the string denoting the workflow edge name in mutations.
 	EdgeWorkflow = "workflow"
+	// EdgeMirror holds the string denoting the mirror edge name in mutations.
+	EdgeMirror = "mirror"
 	// Table holds the table name of the inode in the database.
 	Table = "inodes"
 	// NamespaceTable is the table that holds the namespace relation/edge.
@@ -55,6 +59,13 @@ const (
 	WorkflowInverseTable = "workflows"
 	// WorkflowColumn is the table column denoting the workflow relation/edge.
 	WorkflowColumn = "inode_workflow"
+	// MirrorTable is the table that holds the mirror relation/edge.
+	MirrorTable = "mirrors"
+	// MirrorInverseTable is the table name for the Mirror entity.
+	// It exists in this package in order to avoid circular dependency with the "mirror" package.
+	MirrorInverseTable = "mirrors"
+	// MirrorColumn is the table column denoting the mirror relation/edge.
+	MirrorColumn = "inode_mirror"
 )
 
 // Columns holds all SQL columns for inode fields.
@@ -65,6 +76,7 @@ var Columns = []string{
 	FieldName,
 	FieldType,
 	FieldAttributes,
+	FieldExtendedType,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "inodes"

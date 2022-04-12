@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/direktiv/direktiv/pkg/flow/ent/inode"
+	"github.com/direktiv/direktiv/pkg/flow/ent/mirror"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/predicate"
 	"github.com/direktiv/direktiv/pkg/flow/ent/workflow"
@@ -66,6 +67,26 @@ func (iu *InodeUpdate) SetAttributes(s []string) *InodeUpdate {
 // ClearAttributes clears the value of the "attributes" field.
 func (iu *InodeUpdate) ClearAttributes() *InodeUpdate {
 	iu.mutation.ClearAttributes()
+	return iu
+}
+
+// SetExtendedType sets the "extended_type" field.
+func (iu *InodeUpdate) SetExtendedType(s string) *InodeUpdate {
+	iu.mutation.SetExtendedType(s)
+	return iu
+}
+
+// SetNillableExtendedType sets the "extended_type" field if the given value is not nil.
+func (iu *InodeUpdate) SetNillableExtendedType(s *string) *InodeUpdate {
+	if s != nil {
+		iu.SetExtendedType(*s)
+	}
+	return iu
+}
+
+// ClearExtendedType clears the value of the "extended_type" field.
+func (iu *InodeUpdate) ClearExtendedType() *InodeUpdate {
+	iu.mutation.ClearExtendedType()
 	return iu
 }
 
@@ -133,6 +154,25 @@ func (iu *InodeUpdate) SetWorkflow(w *Workflow) *InodeUpdate {
 	return iu.SetWorkflowID(w.ID)
 }
 
+// SetMirrorID sets the "mirror" edge to the Mirror entity by ID.
+func (iu *InodeUpdate) SetMirrorID(id uuid.UUID) *InodeUpdate {
+	iu.mutation.SetMirrorID(id)
+	return iu
+}
+
+// SetNillableMirrorID sets the "mirror" edge to the Mirror entity by ID if the given value is not nil.
+func (iu *InodeUpdate) SetNillableMirrorID(id *uuid.UUID) *InodeUpdate {
+	if id != nil {
+		iu = iu.SetMirrorID(*id)
+	}
+	return iu
+}
+
+// SetMirror sets the "mirror" edge to the Mirror entity.
+func (iu *InodeUpdate) SetMirror(m *Mirror) *InodeUpdate {
+	return iu.SetMirrorID(m.ID)
+}
+
 // Mutation returns the InodeMutation object of the builder.
 func (iu *InodeUpdate) Mutation() *InodeMutation {
 	return iu.mutation
@@ -174,6 +214,12 @@ func (iu *InodeUpdate) ClearParent() *InodeUpdate {
 // ClearWorkflow clears the "workflow" edge to the Workflow entity.
 func (iu *InodeUpdate) ClearWorkflow() *InodeUpdate {
 	iu.mutation.ClearWorkflow()
+	return iu
+}
+
+// ClearMirror clears the "mirror" edge to the Mirror entity.
+func (iu *InodeUpdate) ClearMirror() *InodeUpdate {
+	iu.mutation.ClearMirror()
 	return iu
 }
 
@@ -308,6 +354,19 @@ func (iu *InodeUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
 			Type:   field.TypeJSON,
 			Column: inode.FieldAttributes,
+		})
+	}
+	if value, ok := iu.mutation.ExtendedType(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: inode.FieldExtendedType,
+		})
+	}
+	if iu.mutation.ExtendedTypeCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: inode.FieldExtendedType,
 		})
 	}
 	if iu.mutation.NamespaceCleared() {
@@ -469,6 +528,41 @@ func (iu *InodeUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if iu.mutation.MirrorCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   inode.MirrorTable,
+			Columns: []string{inode.MirrorColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: mirror.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := iu.mutation.MirrorIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   inode.MirrorTable,
+			Columns: []string{inode.MirrorColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: mirror.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, iu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{inode.Label}
@@ -523,6 +617,26 @@ func (iuo *InodeUpdateOne) SetAttributes(s []string) *InodeUpdateOne {
 // ClearAttributes clears the value of the "attributes" field.
 func (iuo *InodeUpdateOne) ClearAttributes() *InodeUpdateOne {
 	iuo.mutation.ClearAttributes()
+	return iuo
+}
+
+// SetExtendedType sets the "extended_type" field.
+func (iuo *InodeUpdateOne) SetExtendedType(s string) *InodeUpdateOne {
+	iuo.mutation.SetExtendedType(s)
+	return iuo
+}
+
+// SetNillableExtendedType sets the "extended_type" field if the given value is not nil.
+func (iuo *InodeUpdateOne) SetNillableExtendedType(s *string) *InodeUpdateOne {
+	if s != nil {
+		iuo.SetExtendedType(*s)
+	}
+	return iuo
+}
+
+// ClearExtendedType clears the value of the "extended_type" field.
+func (iuo *InodeUpdateOne) ClearExtendedType() *InodeUpdateOne {
+	iuo.mutation.ClearExtendedType()
 	return iuo
 }
 
@@ -590,6 +704,25 @@ func (iuo *InodeUpdateOne) SetWorkflow(w *Workflow) *InodeUpdateOne {
 	return iuo.SetWorkflowID(w.ID)
 }
 
+// SetMirrorID sets the "mirror" edge to the Mirror entity by ID.
+func (iuo *InodeUpdateOne) SetMirrorID(id uuid.UUID) *InodeUpdateOne {
+	iuo.mutation.SetMirrorID(id)
+	return iuo
+}
+
+// SetNillableMirrorID sets the "mirror" edge to the Mirror entity by ID if the given value is not nil.
+func (iuo *InodeUpdateOne) SetNillableMirrorID(id *uuid.UUID) *InodeUpdateOne {
+	if id != nil {
+		iuo = iuo.SetMirrorID(*id)
+	}
+	return iuo
+}
+
+// SetMirror sets the "mirror" edge to the Mirror entity.
+func (iuo *InodeUpdateOne) SetMirror(m *Mirror) *InodeUpdateOne {
+	return iuo.SetMirrorID(m.ID)
+}
+
 // Mutation returns the InodeMutation object of the builder.
 func (iuo *InodeUpdateOne) Mutation() *InodeMutation {
 	return iuo.mutation
@@ -631,6 +764,12 @@ func (iuo *InodeUpdateOne) ClearParent() *InodeUpdateOne {
 // ClearWorkflow clears the "workflow" edge to the Workflow entity.
 func (iuo *InodeUpdateOne) ClearWorkflow() *InodeUpdateOne {
 	iuo.mutation.ClearWorkflow()
+	return iuo
+}
+
+// ClearMirror clears the "mirror" edge to the Mirror entity.
+func (iuo *InodeUpdateOne) ClearMirror() *InodeUpdateOne {
+	iuo.mutation.ClearMirror()
 	return iuo
 }
 
@@ -791,6 +930,19 @@ func (iuo *InodeUpdateOne) sqlSave(ctx context.Context) (_node *Inode, err error
 			Column: inode.FieldAttributes,
 		})
 	}
+	if value, ok := iuo.mutation.ExtendedType(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: inode.FieldExtendedType,
+		})
+	}
+	if iuo.mutation.ExtendedTypeCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: inode.FieldExtendedType,
+		})
+	}
 	if iuo.mutation.NamespaceCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -942,6 +1094,41 @@ func (iuo *InodeUpdateOne) sqlSave(ctx context.Context) (_node *Inode, err error
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: workflow.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if iuo.mutation.MirrorCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   inode.MirrorTable,
+			Columns: []string{inode.MirrorColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: mirror.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := iuo.mutation.MirrorIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   inode.MirrorTable,
+			Columns: []string{inode.MirrorColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: mirror.FieldID,
 				},
 			},
 		}

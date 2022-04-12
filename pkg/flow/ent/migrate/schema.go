@@ -106,6 +106,7 @@ var (
 		{Name: "name", Type: field.TypeString, Nullable: true},
 		{Name: "type", Type: field.TypeString},
 		{Name: "attributes", Type: field.TypeJSON, Nullable: true},
+		{Name: "expandedType", Type: field.TypeString, Nullable: true},
 		{Name: "inode_children", Type: field.TypeUUID, Nullable: true},
 		{Name: "namespace_inodes", Type: field.TypeUUID},
 	}
@@ -117,13 +118,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "inodes_inodes_children",
-				Columns:    []*schema.Column{InodesColumns[6]},
+				Columns:    []*schema.Column{InodesColumns[7]},
 				RefColumns: []*schema.Column{InodesColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "inodes_namespaces_inodes",
-				Columns:    []*schema.Column{InodesColumns[7]},
+				Columns:    []*schema.Column{InodesColumns[8]},
 				RefColumns: []*schema.Column{NamespacesColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
@@ -132,7 +133,7 @@ var (
 			{
 				Name:    "inode_name_inode_children",
 				Unique:  true,
-				Columns: []*schema.Column{InodesColumns[3], InodesColumns[6]},
+				Columns: []*schema.Column{InodesColumns[3], InodesColumns[7]},
 			},
 		},
 	}
@@ -222,6 +223,7 @@ var (
 		{Name: "t", Type: field.TypeTime},
 		{Name: "msg", Type: field.TypeString},
 		{Name: "instance_logs", Type: field.TypeUUID, Nullable: true},
+		{Name: "mirror_activity_logs", Type: field.TypeUUID, Nullable: true},
 		{Name: "namespace_logs", Type: field.TypeUUID, Nullable: true},
 		{Name: "workflow_logs", Type: field.TypeUUID, Nullable: true},
 	}
@@ -238,15 +240,87 @@ var (
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:     "log_msgs_namespaces_logs",
+				Symbol:     "log_msgs_mirror_activities_logs",
 				Columns:    []*schema.Column{LogMsgsColumns[4]},
+				RefColumns: []*schema.Column{MirrorActivitiesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "log_msgs_namespaces_logs",
+				Columns:    []*schema.Column{LogMsgsColumns[5]},
 				RefColumns: []*schema.Column{NamespacesColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "log_msgs_workflows_logs",
-				Columns:    []*schema.Column{LogMsgsColumns[5]},
+				Columns:    []*schema.Column{LogMsgsColumns[6]},
 				RefColumns: []*schema.Column{WorkflowsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
+	// MirrorsColumns holds the columns for the "mirrors" table.
+	MirrorsColumns = []*schema.Column{
+		{Name: "oid", Type: field.TypeUUID},
+		{Name: "url", Type: field.TypeString},
+		{Name: "ref", Type: field.TypeString},
+		{Name: "cron", Type: field.TypeString},
+		{Name: "public_key", Type: field.TypeString},
+		{Name: "private_key", Type: field.TypeString},
+		{Name: "passphrase", Type: field.TypeString},
+		{Name: "commit", Type: field.TypeString},
+		{Name: "locked", Type: field.TypeBool},
+		{Name: "last_sync", Type: field.TypeTime, Nullable: true},
+		{Name: "inode_mirror", Type: field.TypeUUID, Unique: true, Nullable: true},
+		{Name: "namespace_mirrors", Type: field.TypeUUID},
+	}
+	// MirrorsTable holds the schema information for the "mirrors" table.
+	MirrorsTable = &schema.Table{
+		Name:       "mirrors",
+		Columns:    MirrorsColumns,
+		PrimaryKey: []*schema.Column{MirrorsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "mirrors_inodes_mirror",
+				Columns:    []*schema.Column{MirrorsColumns[10]},
+				RefColumns: []*schema.Column{InodesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "mirrors_namespaces_mirrors",
+				Columns:    []*schema.Column{MirrorsColumns[11]},
+				RefColumns: []*schema.Column{NamespacesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
+	// MirrorActivitiesColumns holds the columns for the "mirror_activities" table.
+	MirrorActivitiesColumns = []*schema.Column{
+		{Name: "oid", Type: field.TypeUUID},
+		{Name: "type", Type: field.TypeString},
+		{Name: "status", Type: field.TypeString},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "end_at", Type: field.TypeTime, Nullable: true},
+		{Name: "mirror_activities", Type: field.TypeUUID, Nullable: true},
+		{Name: "namespace_mirror_activities", Type: field.TypeUUID},
+	}
+	// MirrorActivitiesTable holds the schema information for the "mirror_activities" table.
+	MirrorActivitiesTable = &schema.Table{
+		Name:       "mirror_activities",
+		Columns:    MirrorActivitiesColumns,
+		PrimaryKey: []*schema.Column{MirrorActivitiesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "mirror_activities_mirrors_activities",
+				Columns:    []*schema.Column{MirrorActivitiesColumns[6]},
+				RefColumns: []*schema.Column{MirrorsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "mirror_activities_namespaces_mirror_activities",
+				Columns:    []*schema.Column{MirrorActivitiesColumns[7]},
+				RefColumns: []*schema.Column{NamespacesColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 		},
@@ -446,6 +520,8 @@ var (
 		InstancesTable,
 		InstanceRuntimesTable,
 		LogMsgsTable,
+		MirrorsTable,
+		MirrorActivitiesTable,
 		NamespacesTable,
 		RefsTable,
 		RevisionsTable,
@@ -470,8 +546,13 @@ func init() {
 	InstanceRuntimesTable.ForeignKeys[0].RefTable = InstancesTable
 	InstanceRuntimesTable.ForeignKeys[1].RefTable = InstancesTable
 	LogMsgsTable.ForeignKeys[0].RefTable = InstancesTable
-	LogMsgsTable.ForeignKeys[1].RefTable = NamespacesTable
-	LogMsgsTable.ForeignKeys[2].RefTable = WorkflowsTable
+	LogMsgsTable.ForeignKeys[1].RefTable = MirrorActivitiesTable
+	LogMsgsTable.ForeignKeys[2].RefTable = NamespacesTable
+	LogMsgsTable.ForeignKeys[3].RefTable = WorkflowsTable
+	MirrorsTable.ForeignKeys[0].RefTable = InodesTable
+	MirrorsTable.ForeignKeys[1].RefTable = NamespacesTable
+	MirrorActivitiesTable.ForeignKeys[0].RefTable = MirrorsTable
+	MirrorActivitiesTable.ForeignKeys[1].RefTable = NamespacesTable
 	RefsTable.ForeignKeys[0].RefTable = RevisionsTable
 	RefsTable.ForeignKeys[1].RefTable = WorkflowsTable
 	RevisionsTable.ForeignKeys[0].RefTable = WorkflowsTable

@@ -379,6 +379,34 @@ func HasInstanceWith(preds ...predicate.Instance) predicate.LogMsg {
 	})
 }
 
+// HasActivity applies the HasEdge predicate on the "activity" edge.
+func HasActivity() predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ActivityTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, ActivityTable, ActivityColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasActivityWith applies the HasEdge predicate on the "activity" edge with a given conditions (other predicates).
+func HasActivityWith(preds ...predicate.MirrorActivity) predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ActivityInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, ActivityTable, ActivityColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.LogMsg) predicate.LogMsg {
 	return predicate.LogMsg(func(s *sql.Selector) {

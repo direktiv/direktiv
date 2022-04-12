@@ -17,6 +17,8 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/inode"
 	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	"github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
+	"github.com/direktiv/direktiv/pkg/flow/ent/mirror"
+	"github.com/direktiv/direktiv/pkg/flow/ent/mirroractivity"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/predicate"
 	"github.com/direktiv/direktiv/pkg/flow/ent/varref"
@@ -36,6 +38,8 @@ type NamespaceQuery struct {
 	// eager-loading edges.
 	withInodes             *InodeQuery
 	withWorkflows          *WorkflowQuery
+	withMirrors            *MirrorQuery
+	withMirrorActivities   *MirrorActivityQuery
 	withInstances          *InstanceQuery
 	withLogs               *LogMsgQuery
 	withVars               *VarRefQuery
@@ -114,6 +118,50 @@ func (nq *NamespaceQuery) QueryWorkflows() *WorkflowQuery {
 			sqlgraph.From(namespace.Table, namespace.FieldID, selector),
 			sqlgraph.To(workflow.Table, workflow.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, namespace.WorkflowsTable, namespace.WorkflowsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(nq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryMirrors chains the current query on the "mirrors" edge.
+func (nq *NamespaceQuery) QueryMirrors() *MirrorQuery {
+	query := &MirrorQuery{config: nq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := nq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := nq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(namespace.Table, namespace.FieldID, selector),
+			sqlgraph.To(mirror.Table, mirror.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, namespace.MirrorsTable, namespace.MirrorsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(nq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryMirrorActivities chains the current query on the "mirror_activities" edge.
+func (nq *NamespaceQuery) QueryMirrorActivities() *MirrorActivityQuery {
+	query := &MirrorActivityQuery{config: nq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := nq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := nq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(namespace.Table, namespace.FieldID, selector),
+			sqlgraph.To(mirroractivity.Table, mirroractivity.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, namespace.MirrorActivitiesTable, namespace.MirrorActivitiesColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(nq.driver.Dialect(), step)
 		return fromU, nil
@@ -414,6 +462,8 @@ func (nq *NamespaceQuery) Clone() *NamespaceQuery {
 		predicates:             append([]predicate.Namespace{}, nq.predicates...),
 		withInodes:             nq.withInodes.Clone(),
 		withWorkflows:          nq.withWorkflows.Clone(),
+		withMirrors:            nq.withMirrors.Clone(),
+		withMirrorActivities:   nq.withMirrorActivities.Clone(),
 		withInstances:          nq.withInstances.Clone(),
 		withLogs:               nq.withLogs.Clone(),
 		withVars:               nq.withVars.Clone(),
@@ -445,6 +495,28 @@ func (nq *NamespaceQuery) WithWorkflows(opts ...func(*WorkflowQuery)) *Namespace
 		opt(query)
 	}
 	nq.withWorkflows = query
+	return nq
+}
+
+// WithMirrors tells the query-builder to eager-load the nodes that are connected to
+// the "mirrors" edge. The optional arguments are used to configure the query builder of the edge.
+func (nq *NamespaceQuery) WithMirrors(opts ...func(*MirrorQuery)) *NamespaceQuery {
+	query := &MirrorQuery{config: nq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	nq.withMirrors = query
+	return nq
+}
+
+// WithMirrorActivities tells the query-builder to eager-load the nodes that are connected to
+// the "mirror_activities" edge. The optional arguments are used to configure the query builder of the edge.
+func (nq *NamespaceQuery) WithMirrorActivities(opts ...func(*MirrorActivityQuery)) *NamespaceQuery {
+	query := &MirrorActivityQuery{config: nq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	nq.withMirrorActivities = query
 	return nq
 }
 
@@ -568,9 +640,11 @@ func (nq *NamespaceQuery) sqlAll(ctx context.Context) ([]*Namespace, error) {
 	var (
 		nodes       = []*Namespace{}
 		_spec       = nq.querySpec()
-		loadedTypes = [7]bool{
+		loadedTypes = [9]bool{
 			nq.withInodes != nil,
 			nq.withWorkflows != nil,
+			nq.withMirrors != nil,
+			nq.withMirrorActivities != nil,
 			nq.withInstances != nil,
 			nq.withLogs != nil,
 			nq.withVars != nil,
@@ -653,6 +727,64 @@ func (nq *NamespaceQuery) sqlAll(ctx context.Context) ([]*Namespace, error) {
 				return nil, fmt.Errorf(`unexpected foreign-key "namespace_workflows" returned %v for node %v`, *fk, n.ID)
 			}
 			node.Edges.Workflows = append(node.Edges.Workflows, n)
+		}
+	}
+
+	if query := nq.withMirrors; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[uuid.UUID]*Namespace)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.Mirrors = []*Mirror{}
+		}
+		query.withFKs = true
+		query.Where(predicate.Mirror(func(s *sql.Selector) {
+			s.Where(sql.InValues(namespace.MirrorsColumn, fks...))
+		}))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			fk := n.namespace_mirrors
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "namespace_mirrors" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "namespace_mirrors" returned %v for node %v`, *fk, n.ID)
+			}
+			node.Edges.Mirrors = append(node.Edges.Mirrors, n)
+		}
+	}
+
+	if query := nq.withMirrorActivities; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[uuid.UUID]*Namespace)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.MirrorActivities = []*MirrorActivity{}
+		}
+		query.withFKs = true
+		query.Where(predicate.MirrorActivity(func(s *sql.Selector) {
+			s.Where(sql.InValues(namespace.MirrorActivitiesColumn, fks...))
+		}))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			fk := n.namespace_mirror_activities
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "namespace_mirror_activities" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "namespace_mirror_activities" returned %v for node %v`, *fk, n.ID)
+			}
+			node.Edges.MirrorActivities = append(node.Edges.MirrorActivities, n)
 		}
 	}
 

@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/direktiv/direktiv/pkg/flow/ent/inode"
+	"github.com/direktiv/direktiv/pkg/flow/ent/mirror"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 	"github.com/google/uuid"
@@ -74,6 +75,20 @@ func (ic *InodeCreate) SetType(s string) *InodeCreate {
 // SetAttributes sets the "attributes" field.
 func (ic *InodeCreate) SetAttributes(s []string) *InodeCreate {
 	ic.mutation.SetAttributes(s)
+	return ic
+}
+
+// SetExtendedType sets the "extended_type" field.
+func (ic *InodeCreate) SetExtendedType(s string) *InodeCreate {
+	ic.mutation.SetExtendedType(s)
+	return ic
+}
+
+// SetNillableExtendedType sets the "extended_type" field if the given value is not nil.
+func (ic *InodeCreate) SetNillableExtendedType(s *string) *InodeCreate {
+	if s != nil {
+		ic.SetExtendedType(*s)
+	}
 	return ic
 }
 
@@ -153,6 +168,25 @@ func (ic *InodeCreate) SetNillableWorkflowID(id *uuid.UUID) *InodeCreate {
 // SetWorkflow sets the "workflow" edge to the Workflow entity.
 func (ic *InodeCreate) SetWorkflow(w *Workflow) *InodeCreate {
 	return ic.SetWorkflowID(w.ID)
+}
+
+// SetMirrorID sets the "mirror" edge to the Mirror entity by ID.
+func (ic *InodeCreate) SetMirrorID(id uuid.UUID) *InodeCreate {
+	ic.mutation.SetMirrorID(id)
+	return ic
+}
+
+// SetNillableMirrorID sets the "mirror" edge to the Mirror entity by ID if the given value is not nil.
+func (ic *InodeCreate) SetNillableMirrorID(id *uuid.UUID) *InodeCreate {
+	if id != nil {
+		ic = ic.SetMirrorID(*id)
+	}
+	return ic
+}
+
+// SetMirror sets the "mirror" edge to the Mirror entity.
+func (ic *InodeCreate) SetMirror(m *Mirror) *InodeCreate {
+	return ic.SetMirrorID(m.ID)
 }
 
 // Mutation returns the InodeMutation object of the builder.
@@ -335,6 +369,14 @@ func (ic *InodeCreate) createSpec() (*Inode, *sqlgraph.CreateSpec) {
 		})
 		_node.Attributes = value
 	}
+	if value, ok := ic.mutation.ExtendedType(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: inode.FieldExtendedType,
+		})
+		_node.ExtendedType = value
+	}
 	if nodes := ic.mutation.NamespaceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -405,6 +447,25 @@ func (ic *InodeCreate) createSpec() (*Inode, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: workflow.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := ic.mutation.MirrorIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   inode.MirrorTable,
+			Columns: []string{inode.MirrorColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: mirror.FieldID,
 				},
 			},
 		}

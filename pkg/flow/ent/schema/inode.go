@@ -28,6 +28,7 @@ func (Inode) Fields() []ent.Field {
 		field.String("name").Match(util.NameRegex).Optional().Annotations(entgql.OrderField("NAME")),
 		field.String("type").Immutable().Annotations(entgql.OrderField("TYPE")),
 		field.Strings("attributes").Optional(),
+		field.String("extended_type").Optional().StorageKey("expandedType"),
 	}
 }
 
@@ -39,6 +40,7 @@ func (Inode) Edges() []ent.Edge {
 		edge.From("parent", Inode.Type).Ref("children").Unique(),
 		// edge.From("workflow", Workflow.Type).Ref("inode").Unique().Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
 		edge.To("workflow", Workflow.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}).Unique(),
+		edge.To("mirror", Mirror.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}).Unique(),
 	}
 }
 

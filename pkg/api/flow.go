@@ -1291,6 +1291,15 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	// TODO: SWAGGER_SPEC
 	pathHandler(r, http.MethodPost, RN_RenameNode, "rename-node", h.RenameNode)
 
+	// TODO: SWAGGER_SPEC
+	pathHandler(r, http.MethodPost, RN_UpdateMirror, "update-mirror", h.UpdateMirror)
+	pathHandler(r, http.MethodPost, RN_LockMirror, "lock-mirror", h.LockMirror)
+	pathHandler(r, http.MethodPost, RN_LockMirror, "unlock-mirror", h.UnlockMirror)
+	pathHandler(r, http.MethodPost, RN_SyncMirror, "sync-mirror", h.SyncMirror)
+	pathHandlerPair(r, RN_GetMirrorInfo, "mirror-info", h.MirrorInfo, h.MirrorInfoSSE)
+	handlerPair(r, RN_GetMirrorActivityLogs, "/namespaces/{ns}/activities/{activity}/logs", h.MirrorActivityLogs, h.MirrorActivityLogsSSE)
+	r.HandleFunc("/namespaces/{ns}/activities/{activity}/cancel", h.MirrorActivityCancel).Name(RN_CancelMirrorActivity).Methods(http.MethodPost)
+
 	// swagger:operation GET /api/namespaces/{namespace}/event-listeners Events getEventListeners
 	// ---
 	// description: |
@@ -1830,12 +1839,68 @@ func (h *flowHandler) CreateNamespace(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
 
-	in := &grpc.CreateNamespaceRequest{
-		Name: namespace,
+	data, err := loadRawBody(r)
+	if err != nil {
+		respond(w, nil, err)
+		return
 	}
 
-	resp, err := h.client.CreateNamespace(ctx, in)
+	if len(data) == 0 {
+		in := &grpc.CreateNamespaceRequest{
+			Name: namespace,
+		}
+
+		resp, err := h.client.CreateNamespace(ctx, in)
+		respond(w, resp, err)
+		return
+	} else {
+		settings := new(grpc.MirrorSettings)
+		err = json.Unmarshal(data, settings)
+		if err != nil {
+			respond(w, nil, err)
+			return
+		}
+
+		resp, err := h.client.CreateNamespaceMirror(ctx, &grpc.CreateNamespaceMirrorRequest{
+			Name:     namespace,
+			Settings: settings,
+		})
+		respond(w, resp, err)
+		return
+	}
+
+}
+
+func (h *flowHandler) UpdateMirror(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	path, _ := pathAndRef(r)
+
+	data, err := loadRawBody(r)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
+	settings := new(grpc.MirrorSettings)
+	err = json.Unmarshal(data, settings)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
+	in := &grpc.UpdateMirrorSettingsRequest{
+		Namespace: namespace,
+		Path:      path,
+		Settings:  settings,
+	}
+
+	resp, err := h.client.UpdateMirrorSettings(ctx, in)
 	respond(w, resp, err)
+	return
 
 }
 
@@ -2252,6 +2317,94 @@ func (h *flowHandler) InstanceLogsSSE(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func (h *flowHandler) MirrorActivityLogs(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	activity := mux.Vars(r)["activity"]
+
+	p, err := pagination(r)
+	if err != nil {
+		badRequest(w, err)
+		return
+	}
+
+	in := &grpc.MirrorActivityLogsRequest{
+		Pagination: p,
+		Namespace:  namespace,
+		Activity:   activity,
+	}
+
+	resp, err := h.client.MirrorActivityLogs(ctx, in)
+	respond(w, resp, err)
+
+}
+
+func (h *flowHandler) MirrorActivityLogsSSE(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	activity := mux.Vars(r)["activity"]
+
+	p, err := pagination(r)
+	if err != nil {
+		badRequest(w, err)
+		return
+	}
+
+	in := &grpc.MirrorActivityLogsRequest{
+		Pagination: p,
+		Namespace:  namespace,
+		Activity:   activity,
+	}
+
+	resp, err := h.client.MirrorActivityLogsParcels(ctx, in)
+	if err != nil {
+		respond(w, resp, err)
+		return
+	}
+
+	ch := make(chan interface{}, 1)
+
+	defer func() {
+
+		_ = resp.CloseSend()
+
+		for {
+			_, more := <-ch
+			if !more {
+				return
+			}
+		}
+
+	}()
+
+	go func() {
+
+		defer close(ch)
+
+		for {
+
+			x, err := resp.Recv()
+			if err != nil {
+				ch <- err
+				return
+			}
+
+			ch <- x
+
+		}
+
+	}()
+
+	sse(w, ch)
+
+}
+
 func (h *flowHandler) GetNode(w http.ResponseWriter, r *http.Request) {
 
 	h.logger.Debugf("method: %s\nuri: %s\n", r.Method, r.URL.String())
@@ -2461,14 +2614,37 @@ func (h *flowHandler) CreateDirectory(w http.ResponseWriter, r *http.Request) {
 	namespace := mux.Vars(r)["ns"]
 	path, _ := pathAndRef(r)
 
-	in := &grpc.CreateDirectoryRequest{
-		Namespace: namespace,
-		Path:      path,
+	data, err := loadRawBody(r)
+	if err != nil {
+		respond(w, nil, err)
+		return
 	}
 
-	resp, err := h.client.CreateDirectory(ctx, in)
-	respond(w, resp, err)
-	return
+	if len(data) == 0 {
+		in := &grpc.CreateDirectoryRequest{
+			Namespace: namespace,
+			Path:      path,
+		}
+
+		resp, err := h.client.CreateDirectory(ctx, in)
+		respond(w, resp, err)
+		return
+	} else {
+		settings := new(grpc.MirrorSettings)
+		err = json.Unmarshal(data, settings)
+		if err != nil {
+			respond(w, nil, err)
+			return
+		}
+
+		resp, err := h.client.CreateDirectoryMirror(ctx, &grpc.CreateDirectoryMirrorRequest{
+			Namespace: namespace,
+			Path:      path,
+			Settings:  settings,
+		})
+		respond(w, resp, err)
+		return
+	}
 
 }
 
@@ -2559,6 +2735,69 @@ func (h *flowHandler) DiscardWorkflow(w http.ResponseWriter, r *http.Request) {
 	resp, err := h.client.DiscardHead(ctx, in)
 	respond(w, resp, err)
 	return
+
+}
+
+func (h *flowHandler) LockMirror(w http.ResponseWriter, r *http.Request) {
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	path, _ := pathAndRef(r)
+
+	in := &grpc.LockMirrorRequest{}
+
+	in.Namespace = namespace
+	in.Path = path
+
+	resp, err := h.client.LockMirror(ctx, in)
+	respond(w, resp, err)
+}
+
+func (h *flowHandler) UnlockMirror(w http.ResponseWriter, r *http.Request) {
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	path, _ := pathAndRef(r)
+
+	in := &grpc.UnlockMirrorRequest{}
+
+	in.Namespace = namespace
+	in.Path = path
+
+	resp, err := h.client.UnlockMirror(ctx, in)
+	respond(w, resp, err)
+}
+
+func (h *flowHandler) SyncMirror(w http.ResponseWriter, r *http.Request) {
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	path, _ := pathAndRef(r)
+
+	force := r.URL.Query().Get("force")
+
+	if force == "true" {
+		in := &grpc.HardSyncMirrorRequest{}
+
+		in.Namespace = namespace
+		in.Path = path
+
+		resp, err := h.client.HardSyncMirror(ctx, in)
+		respond(w, resp, err)
+		return
+	} else {
+		in := &grpc.SoftSyncMirrorRequest{}
+
+		in.Namespace = namespace
+		in.Path = path
+
+		resp, err := h.client.SoftSyncMirror(ctx, in)
+		respond(w, resp, err)
+		return
+	}
 
 }
 
@@ -3132,6 +3371,94 @@ func (h *flowHandler) RouterSSE(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func (h *flowHandler) MirrorInfo(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	path, _ := pathAndRef(r)
+
+	p, err := pagination(r)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
+	in := &grpc.MirrorInfoRequest{
+		Namespace:  namespace,
+		Path:       path,
+		Pagination: p,
+	}
+
+	resp, err := h.client.MirrorInfo(ctx, in)
+	respond(w, resp, err)
+
+}
+
+func (h *flowHandler) MirrorInfoSSE(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	path, _ := pathAndRef(r)
+
+	p, err := pagination(r)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
+	in := &grpc.MirrorInfoRequest{
+		Namespace:  namespace,
+		Path:       path,
+		Pagination: p,
+	}
+
+	resp, err := h.client.MirrorInfoStream(ctx, in)
+	if err != nil {
+		respond(w, resp, err)
+		return
+	}
+
+	ch := make(chan interface{}, 1)
+
+	defer func() {
+
+		_ = resp.CloseSend()
+
+		for {
+			_, more := <-ch
+			if !more {
+				return
+			}
+		}
+
+	}()
+
+	go func() {
+
+		defer close(ch)
+
+		for {
+
+			x, err := resp.Recv()
+			if err != nil {
+				ch <- err
+				return
+			}
+
+			ch <- x
+
+		}
+
+	}()
+
+	sse(w, ch)
+
+}
+
 func (h *flowHandler) Secrets(w http.ResponseWriter, r *http.Request) {
 
 	h.logger.Debugf("Handling request: %s", this())
@@ -3484,6 +3811,24 @@ func (h *flowHandler) InstanceCancel(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp, err := h.client.CancelInstance(ctx, in)
+	respond(w, resp, err)
+
+}
+
+func (h *flowHandler) MirrorActivityCancel(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	activity := mux.Vars(r)["activity"]
+
+	in := &grpc.CancelMirrorActivityRequest{
+		Namespace: namespace,
+		Activity:  activity,
+	}
+
+	resp, err := h.client.CancelMirrorActivity(ctx, in)
 	respond(w, resp, err)
 
 }

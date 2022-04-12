@@ -21,6 +21,8 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	"github.com/direktiv/direktiv/pkg/flow/ent/instanceruntime"
 	"github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
+	"github.com/direktiv/direktiv/pkg/flow/ent/mirror"
+	"github.com/direktiv/direktiv/pkg/flow/ent/mirroractivity"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/ref"
 	"github.com/direktiv/direktiv/pkg/flow/ent/revision"
@@ -2217,6 +2219,560 @@ func (lm *LogMsg) ToEdge(order *LogMsgOrder) *LogMsgEdge {
 	return &LogMsgEdge{
 		Node:   lm,
 		Cursor: order.Field.toCursor(lm),
+	}
+}
+
+// MirrorEdge is the edge representation of Mirror.
+type MirrorEdge struct {
+	Node   *Mirror `json:"node"`
+	Cursor Cursor  `json:"cursor"`
+}
+
+// MirrorConnection is the connection containing edges to Mirror.
+type MirrorConnection struct {
+	Edges      []*MirrorEdge `json:"edges"`
+	PageInfo   PageInfo      `json:"pageInfo"`
+	TotalCount int           `json:"totalCount"`
+}
+
+// MirrorPaginateOption enables pagination customization.
+type MirrorPaginateOption func(*mirrorPager) error
+
+// WithMirrorOrder configures pagination ordering.
+func WithMirrorOrder(order *MirrorOrder) MirrorPaginateOption {
+	if order == nil {
+		order = DefaultMirrorOrder
+	}
+	o := *order
+	return func(pager *mirrorPager) error {
+		if err := o.Direction.Validate(); err != nil {
+			return err
+		}
+		if o.Field == nil {
+			o.Field = DefaultMirrorOrder.Field
+		}
+		pager.order = &o
+		return nil
+	}
+}
+
+// WithMirrorFilter configures pagination filter.
+func WithMirrorFilter(filter func(*MirrorQuery) (*MirrorQuery, error)) MirrorPaginateOption {
+	return func(pager *mirrorPager) error {
+		if filter == nil {
+			return errors.New("MirrorQuery filter cannot be nil")
+		}
+		pager.filter = filter
+		return nil
+	}
+}
+
+type mirrorPager struct {
+	order  *MirrorOrder
+	filter func(*MirrorQuery) (*MirrorQuery, error)
+}
+
+func newMirrorPager(opts []MirrorPaginateOption) (*mirrorPager, error) {
+	pager := &mirrorPager{}
+	for _, opt := range opts {
+		if err := opt(pager); err != nil {
+			return nil, err
+		}
+	}
+	if pager.order == nil {
+		pager.order = DefaultMirrorOrder
+	}
+	return pager, nil
+}
+
+func (p *mirrorPager) applyFilter(query *MirrorQuery) (*MirrorQuery, error) {
+	if p.filter != nil {
+		return p.filter(query)
+	}
+	return query, nil
+}
+
+func (p *mirrorPager) toCursor(m *Mirror) Cursor {
+	return p.order.Field.toCursor(m)
+}
+
+func (p *mirrorPager) applyCursors(query *MirrorQuery, after, before *Cursor) *MirrorQuery {
+	for _, predicate := range cursorsToPredicates(
+		p.order.Direction, after, before,
+		p.order.Field.field, DefaultMirrorOrder.Field.field,
+	) {
+		query = query.Where(predicate)
+	}
+	return query
+}
+
+func (p *mirrorPager) applyOrder(query *MirrorQuery, reverse bool) *MirrorQuery {
+	direction := p.order.Direction
+	if reverse {
+		direction = direction.reverse()
+	}
+	query = query.Order(direction.orderFunc(p.order.Field.field))
+	if p.order.Field != DefaultMirrorOrder.Field {
+		query = query.Order(direction.orderFunc(DefaultMirrorOrder.Field.field))
+	}
+	return query
+}
+
+// Paginate executes the query and returns a relay based cursor connection to Mirror.
+func (m *MirrorQuery) Paginate(
+	ctx context.Context, after *Cursor, first *int,
+	before *Cursor, last *int, opts ...MirrorPaginateOption,
+) (*MirrorConnection, error) {
+	if err := validateFirstLast(first, last); err != nil {
+		return nil, err
+	}
+	pager, err := newMirrorPager(opts)
+	if err != nil {
+		return nil, err
+	}
+
+	if m, err = pager.applyFilter(m); err != nil {
+		return nil, err
+	}
+
+	conn := &MirrorConnection{Edges: []*MirrorEdge{}}
+	if !hasCollectedField(ctx, edgesField) || first != nil && *first == 0 || last != nil && *last == 0 {
+		if hasCollectedField(ctx, totalCountField) ||
+			hasCollectedField(ctx, pageInfoField) {
+			count, err := m.Count(ctx)
+			if err != nil {
+				return nil, err
+			}
+			conn.TotalCount = count
+			conn.PageInfo.HasNextPage = first != nil && count > 0
+			conn.PageInfo.HasPreviousPage = last != nil && count > 0
+		}
+		return conn, nil
+	}
+
+	if (after != nil || first != nil || before != nil || last != nil) && hasCollectedField(ctx, totalCountField) {
+		count, err := m.Clone().Count(ctx)
+		if err != nil {
+			return nil, err
+		}
+		conn.TotalCount = count
+	}
+
+	m = pager.applyCursors(m, after, before)
+	m = pager.applyOrder(m, last != nil)
+	var limit int
+	if first != nil {
+		limit = *first + 1
+	} else if last != nil {
+		limit = *last + 1
+	}
+	if limit > 0 {
+		m = m.Limit(limit)
+	}
+
+	if field := getCollectedField(ctx, edgesField, nodeField); field != nil {
+		m = m.collectField(graphql.GetOperationContext(ctx), *field)
+	}
+
+	nodes, err := m.All(ctx)
+	if err != nil || len(nodes) == 0 {
+		return conn, err
+	}
+
+	if len(nodes) == limit {
+		conn.PageInfo.HasNextPage = first != nil
+		conn.PageInfo.HasPreviousPage = last != nil
+		nodes = nodes[:len(nodes)-1]
+	}
+
+	var nodeAt func(int) *Mirror
+	if last != nil {
+		n := len(nodes) - 1
+		nodeAt = func(i int) *Mirror {
+			return nodes[n-i]
+		}
+	} else {
+		nodeAt = func(i int) *Mirror {
+			return nodes[i]
+		}
+	}
+
+	conn.Edges = make([]*MirrorEdge, len(nodes))
+	for i := range nodes {
+		node := nodeAt(i)
+		conn.Edges[i] = &MirrorEdge{
+			Node:   node,
+			Cursor: pager.toCursor(node),
+		}
+	}
+
+	conn.PageInfo.StartCursor = &conn.Edges[0].Cursor
+	conn.PageInfo.EndCursor = &conn.Edges[len(conn.Edges)-1].Cursor
+	if conn.TotalCount == 0 {
+		conn.TotalCount = len(nodes)
+	}
+
+	return conn, nil
+}
+
+var (
+	// MirrorOrderFieldID orders Mirror by id.
+	MirrorOrderFieldID = &MirrorOrderField{
+		field: mirror.FieldID,
+		toCursor: func(m *Mirror) Cursor {
+			return Cursor{
+				ID:    m.ID,
+				Value: m.ID,
+			}
+		},
+	}
+)
+
+// String implement fmt.Stringer interface.
+func (f MirrorOrderField) String() string {
+	var str string
+	switch f.field {
+	case mirror.FieldID:
+		str = "ID"
+	}
+	return str
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (f MirrorOrderField) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(f.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (f *MirrorOrderField) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("MirrorOrderField %T must be a string", v)
+	}
+	switch str {
+	case "ID":
+		*f = *MirrorOrderFieldID
+	default:
+		return fmt.Errorf("%s is not a valid MirrorOrderField", str)
+	}
+	return nil
+}
+
+// MirrorOrderField defines the ordering field of Mirror.
+type MirrorOrderField struct {
+	field    string
+	toCursor func(*Mirror) Cursor
+}
+
+// MirrorOrder defines the ordering of Mirror.
+type MirrorOrder struct {
+	Direction OrderDirection    `json:"direction"`
+	Field     *MirrorOrderField `json:"field"`
+}
+
+// DefaultMirrorOrder is the default ordering of Mirror.
+var DefaultMirrorOrder = &MirrorOrder{
+	Direction: OrderDirectionAsc,
+	Field: &MirrorOrderField{
+		field: mirror.FieldID,
+		toCursor: func(m *Mirror) Cursor {
+			return Cursor{ID: m.ID}
+		},
+	},
+}
+
+// ToEdge converts Mirror into MirrorEdge.
+func (m *Mirror) ToEdge(order *MirrorOrder) *MirrorEdge {
+	if order == nil {
+		order = DefaultMirrorOrder
+	}
+	return &MirrorEdge{
+		Node:   m,
+		Cursor: order.Field.toCursor(m),
+	}
+}
+
+// MirrorActivityEdge is the edge representation of MirrorActivity.
+type MirrorActivityEdge struct {
+	Node   *MirrorActivity `json:"node"`
+	Cursor Cursor          `json:"cursor"`
+}
+
+// MirrorActivityConnection is the connection containing edges to MirrorActivity.
+type MirrorActivityConnection struct {
+	Edges      []*MirrorActivityEdge `json:"edges"`
+	PageInfo   PageInfo              `json:"pageInfo"`
+	TotalCount int                   `json:"totalCount"`
+}
+
+// MirrorActivityPaginateOption enables pagination customization.
+type MirrorActivityPaginateOption func(*mirrorActivityPager) error
+
+// WithMirrorActivityOrder configures pagination ordering.
+func WithMirrorActivityOrder(order *MirrorActivityOrder) MirrorActivityPaginateOption {
+	if order == nil {
+		order = DefaultMirrorActivityOrder
+	}
+	o := *order
+	return func(pager *mirrorActivityPager) error {
+		if err := o.Direction.Validate(); err != nil {
+			return err
+		}
+		if o.Field == nil {
+			o.Field = DefaultMirrorActivityOrder.Field
+		}
+		pager.order = &o
+		return nil
+	}
+}
+
+// WithMirrorActivityFilter configures pagination filter.
+func WithMirrorActivityFilter(filter func(*MirrorActivityQuery) (*MirrorActivityQuery, error)) MirrorActivityPaginateOption {
+	return func(pager *mirrorActivityPager) error {
+		if filter == nil {
+			return errors.New("MirrorActivityQuery filter cannot be nil")
+		}
+		pager.filter = filter
+		return nil
+	}
+}
+
+type mirrorActivityPager struct {
+	order  *MirrorActivityOrder
+	filter func(*MirrorActivityQuery) (*MirrorActivityQuery, error)
+}
+
+func newMirrorActivityPager(opts []MirrorActivityPaginateOption) (*mirrorActivityPager, error) {
+	pager := &mirrorActivityPager{}
+	for _, opt := range opts {
+		if err := opt(pager); err != nil {
+			return nil, err
+		}
+	}
+	if pager.order == nil {
+		pager.order = DefaultMirrorActivityOrder
+	}
+	return pager, nil
+}
+
+func (p *mirrorActivityPager) applyFilter(query *MirrorActivityQuery) (*MirrorActivityQuery, error) {
+	if p.filter != nil {
+		return p.filter(query)
+	}
+	return query, nil
+}
+
+func (p *mirrorActivityPager) toCursor(ma *MirrorActivity) Cursor {
+	return p.order.Field.toCursor(ma)
+}
+
+func (p *mirrorActivityPager) applyCursors(query *MirrorActivityQuery, after, before *Cursor) *MirrorActivityQuery {
+	for _, predicate := range cursorsToPredicates(
+		p.order.Direction, after, before,
+		p.order.Field.field, DefaultMirrorActivityOrder.Field.field,
+	) {
+		query = query.Where(predicate)
+	}
+	return query
+}
+
+func (p *mirrorActivityPager) applyOrder(query *MirrorActivityQuery, reverse bool) *MirrorActivityQuery {
+	direction := p.order.Direction
+	if reverse {
+		direction = direction.reverse()
+	}
+	query = query.Order(direction.orderFunc(p.order.Field.field))
+	if p.order.Field != DefaultMirrorActivityOrder.Field {
+		query = query.Order(direction.orderFunc(DefaultMirrorActivityOrder.Field.field))
+	}
+	return query
+}
+
+// Paginate executes the query and returns a relay based cursor connection to MirrorActivity.
+func (ma *MirrorActivityQuery) Paginate(
+	ctx context.Context, after *Cursor, first *int,
+	before *Cursor, last *int, opts ...MirrorActivityPaginateOption,
+) (*MirrorActivityConnection, error) {
+	if err := validateFirstLast(first, last); err != nil {
+		return nil, err
+	}
+	pager, err := newMirrorActivityPager(opts)
+	if err != nil {
+		return nil, err
+	}
+
+	if ma, err = pager.applyFilter(ma); err != nil {
+		return nil, err
+	}
+
+	conn := &MirrorActivityConnection{Edges: []*MirrorActivityEdge{}}
+	if !hasCollectedField(ctx, edgesField) || first != nil && *first == 0 || last != nil && *last == 0 {
+		if hasCollectedField(ctx, totalCountField) ||
+			hasCollectedField(ctx, pageInfoField) {
+			count, err := ma.Count(ctx)
+			if err != nil {
+				return nil, err
+			}
+			conn.TotalCount = count
+			conn.PageInfo.HasNextPage = first != nil && count > 0
+			conn.PageInfo.HasPreviousPage = last != nil && count > 0
+		}
+		return conn, nil
+	}
+
+	if (after != nil || first != nil || before != nil || last != nil) && hasCollectedField(ctx, totalCountField) {
+		count, err := ma.Clone().Count(ctx)
+		if err != nil {
+			return nil, err
+		}
+		conn.TotalCount = count
+	}
+
+	ma = pager.applyCursors(ma, after, before)
+	ma = pager.applyOrder(ma, last != nil)
+	var limit int
+	if first != nil {
+		limit = *first + 1
+	} else if last != nil {
+		limit = *last + 1
+	}
+	if limit > 0 {
+		ma = ma.Limit(limit)
+	}
+
+	if field := getCollectedField(ctx, edgesField, nodeField); field != nil {
+		ma = ma.collectField(graphql.GetOperationContext(ctx), *field)
+	}
+
+	nodes, err := ma.All(ctx)
+	if err != nil || len(nodes) == 0 {
+		return conn, err
+	}
+
+	if len(nodes) == limit {
+		conn.PageInfo.HasNextPage = first != nil
+		conn.PageInfo.HasPreviousPage = last != nil
+		nodes = nodes[:len(nodes)-1]
+	}
+
+	var nodeAt func(int) *MirrorActivity
+	if last != nil {
+		n := len(nodes) - 1
+		nodeAt = func(i int) *MirrorActivity {
+			return nodes[n-i]
+		}
+	} else {
+		nodeAt = func(i int) *MirrorActivity {
+			return nodes[i]
+		}
+	}
+
+	conn.Edges = make([]*MirrorActivityEdge, len(nodes))
+	for i := range nodes {
+		node := nodeAt(i)
+		conn.Edges[i] = &MirrorActivityEdge{
+			Node:   node,
+			Cursor: pager.toCursor(node),
+		}
+	}
+
+	conn.PageInfo.StartCursor = &conn.Edges[0].Cursor
+	conn.PageInfo.EndCursor = &conn.Edges[len(conn.Edges)-1].Cursor
+	if conn.TotalCount == 0 {
+		conn.TotalCount = len(nodes)
+	}
+
+	return conn, nil
+}
+
+var (
+	// MirrorActivityOrderFieldCreatedAt orders MirrorActivity by created_at.
+	MirrorActivityOrderFieldCreatedAt = &MirrorActivityOrderField{
+		field: mirroractivity.FieldCreatedAt,
+		toCursor: func(ma *MirrorActivity) Cursor {
+			return Cursor{
+				ID:    ma.ID,
+				Value: ma.CreatedAt,
+			}
+		},
+	}
+	// MirrorActivityOrderFieldID orders MirrorActivity by id.
+	MirrorActivityOrderFieldID = &MirrorActivityOrderField{
+		field: mirroractivity.FieldID,
+		toCursor: func(ma *MirrorActivity) Cursor {
+			return Cursor{
+				ID:    ma.ID,
+				Value: ma.ID,
+			}
+		},
+	}
+)
+
+// String implement fmt.Stringer interface.
+func (f MirrorActivityOrderField) String() string {
+	var str string
+	switch f.field {
+	case mirroractivity.FieldCreatedAt:
+		str = "CREATED"
+	case mirroractivity.FieldID:
+		str = "ID"
+	}
+	return str
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (f MirrorActivityOrderField) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(f.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (f *MirrorActivityOrderField) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("MirrorActivityOrderField %T must be a string", v)
+	}
+	switch str {
+	case "CREATED":
+		*f = *MirrorActivityOrderFieldCreatedAt
+	case "ID":
+		*f = *MirrorActivityOrderFieldID
+	default:
+		return fmt.Errorf("%s is not a valid MirrorActivityOrderField", str)
+	}
+	return nil
+}
+
+// MirrorActivityOrderField defines the ordering field of MirrorActivity.
+type MirrorActivityOrderField struct {
+	field    string
+	toCursor func(*MirrorActivity) Cursor
+}
+
+// MirrorActivityOrder defines the ordering of MirrorActivity.
+type MirrorActivityOrder struct {
+	Direction OrderDirection            `json:"direction"`
+	Field     *MirrorActivityOrderField `json:"field"`
+}
+
+// DefaultMirrorActivityOrder is the default ordering of MirrorActivity.
+var DefaultMirrorActivityOrder = &MirrorActivityOrder{
+	Direction: OrderDirectionAsc,
+	Field: &MirrorActivityOrderField{
+		field: mirroractivity.FieldID,
+		toCursor: func(ma *MirrorActivity) Cursor {
+			return Cursor{ID: ma.ID}
+		},
+	},
+}
+
+// ToEdge converts MirrorActivity into MirrorActivityEdge.
+func (ma *MirrorActivity) ToEdge(order *MirrorActivityOrder) *MirrorActivityEdge {
+	if order == nil {
+		order = DefaultMirrorActivityOrder
+	}
+	return &MirrorActivityEdge{
+		Node:   ma,
+		Cursor: order.Field.toCursor(ma),
 	}
 }
 

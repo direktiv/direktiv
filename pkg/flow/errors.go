@@ -26,8 +26,11 @@ var (
 )
 
 var (
-	ErrNotDir      = errors.New("not a directory")
-	ErrNotWorkflow = errors.New("not a workflow")
+	ErrNotDir         = errors.New("not a directory")
+	ErrNotWorkflow    = errors.New("not a workflow")
+	ErrNotMirror      = errors.New("not a git mirror")
+	ErrMirrorLocked   = errors.New("git mirror is locked")
+	ErrMirrorUnlocked = errors.New("git mirror is not locked")
 )
 
 type CatchableError struct {

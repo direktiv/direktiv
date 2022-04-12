@@ -17,6 +17,8 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	"github.com/direktiv/direktiv/pkg/flow/ent/instanceruntime"
 	"github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
+	"github.com/direktiv/direktiv/pkg/flow/ent/mirror"
+	"github.com/direktiv/direktiv/pkg/flow/ent/mirroractivity"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/predicate"
 	"github.com/direktiv/direktiv/pkg/flow/ent/ref"
@@ -46,6 +48,8 @@ const (
 	TypeInstance        = "Instance"
 	TypeInstanceRuntime = "InstanceRuntime"
 	TypeLogMsg          = "LogMsg"
+	TypeMirror          = "Mirror"
+	TypeMirrorActivity  = "MirrorActivity"
 	TypeNamespace       = "Namespace"
 	TypeRef             = "Ref"
 	TypeRevision        = "Revision"
@@ -1969,6 +1973,7 @@ type InodeMutation struct {
 	name             *string
 	_type            *string
 	attributes       *[]string
+	extended_type    *string
 	clearedFields    map[string]struct{}
 	namespace        *uuid.UUID
 	clearednamespace bool
@@ -1979,6 +1984,8 @@ type InodeMutation struct {
 	clearedparent    bool
 	workflow         *uuid.UUID
 	clearedworkflow  bool
+	mirror           *uuid.UUID
+	clearedmirror    bool
 	done             bool
 	oldValue         func(context.Context) (*Inode, error)
 	predicates       []predicate.Inode
@@ -2294,6 +2301,55 @@ func (m *InodeMutation) ResetAttributes() {
 	delete(m.clearedFields, inode.FieldAttributes)
 }
 
+// SetExtendedType sets the "extended_type" field.
+func (m *InodeMutation) SetExtendedType(s string) {
+	m.extended_type = &s
+}
+
+// ExtendedType returns the value of the "extended_type" field in the mutation.
+func (m *InodeMutation) ExtendedType() (r string, exists bool) {
+	v := m.extended_type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldExtendedType returns the old "extended_type" field's value of the Inode entity.
+// If the Inode object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InodeMutation) OldExtendedType(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldExtendedType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldExtendedType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldExtendedType: %w", err)
+	}
+	return oldValue.ExtendedType, nil
+}
+
+// ClearExtendedType clears the value of the "extended_type" field.
+func (m *InodeMutation) ClearExtendedType() {
+	m.extended_type = nil
+	m.clearedFields[inode.FieldExtendedType] = struct{}{}
+}
+
+// ExtendedTypeCleared returns if the "extended_type" field was cleared in this mutation.
+func (m *InodeMutation) ExtendedTypeCleared() bool {
+	_, ok := m.clearedFields[inode.FieldExtendedType]
+	return ok
+}
+
+// ResetExtendedType resets all changes to the "extended_type" field.
+func (m *InodeMutation) ResetExtendedType() {
+	m.extended_type = nil
+	delete(m.clearedFields, inode.FieldExtendedType)
+}
+
 // SetNamespaceID sets the "namespace" edge to the Namespace entity by id.
 func (m *InodeMutation) SetNamespaceID(id uuid.UUID) {
 	m.namespace = &id
@@ -2465,6 +2521,45 @@ func (m *InodeMutation) ResetWorkflow() {
 	m.clearedworkflow = false
 }
 
+// SetMirrorID sets the "mirror" edge to the Mirror entity by id.
+func (m *InodeMutation) SetMirrorID(id uuid.UUID) {
+	m.mirror = &id
+}
+
+// ClearMirror clears the "mirror" edge to the Mirror entity.
+func (m *InodeMutation) ClearMirror() {
+	m.clearedmirror = true
+}
+
+// MirrorCleared reports if the "mirror" edge to the Mirror entity was cleared.
+func (m *InodeMutation) MirrorCleared() bool {
+	return m.clearedmirror
+}
+
+// MirrorID returns the "mirror" edge ID in the mutation.
+func (m *InodeMutation) MirrorID() (id uuid.UUID, exists bool) {
+	if m.mirror != nil {
+		return *m.mirror, true
+	}
+	return
+}
+
+// MirrorIDs returns the "mirror" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// MirrorID instead. It exists only for internal usage by the builders.
+func (m *InodeMutation) MirrorIDs() (ids []uuid.UUID) {
+	if id := m.mirror; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetMirror resets all changes to the "mirror" edge.
+func (m *InodeMutation) ResetMirror() {
+	m.mirror = nil
+	m.clearedmirror = false
+}
+
 // Where appends a list predicates to the InodeMutation builder.
 func (m *InodeMutation) Where(ps ...predicate.Inode) {
 	m.predicates = append(m.predicates, ps...)
@@ -2484,7 +2579,7 @@ func (m *InodeMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *InodeMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 6)
 	if m.created_at != nil {
 		fields = append(fields, inode.FieldCreatedAt)
 	}
@@ -2499,6 +2594,9 @@ func (m *InodeMutation) Fields() []string {
 	}
 	if m.attributes != nil {
 		fields = append(fields, inode.FieldAttributes)
+	}
+	if m.extended_type != nil {
+		fields = append(fields, inode.FieldExtendedType)
 	}
 	return fields
 }
@@ -2518,6 +2616,8 @@ func (m *InodeMutation) Field(name string) (ent.Value, bool) {
 		return m.GetType()
 	case inode.FieldAttributes:
 		return m.Attributes()
+	case inode.FieldExtendedType:
+		return m.ExtendedType()
 	}
 	return nil, false
 }
@@ -2537,6 +2637,8 @@ func (m *InodeMutation) OldField(ctx context.Context, name string) (ent.Value, e
 		return m.OldType(ctx)
 	case inode.FieldAttributes:
 		return m.OldAttributes(ctx)
+	case inode.FieldExtendedType:
+		return m.OldExtendedType(ctx)
 	}
 	return nil, fmt.Errorf("unknown Inode field %s", name)
 }
@@ -2581,6 +2683,13 @@ func (m *InodeMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetAttributes(v)
 		return nil
+	case inode.FieldExtendedType:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetExtendedType(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Inode field %s", name)
 }
@@ -2617,6 +2726,9 @@ func (m *InodeMutation) ClearedFields() []string {
 	if m.FieldCleared(inode.FieldAttributes) {
 		fields = append(fields, inode.FieldAttributes)
 	}
+	if m.FieldCleared(inode.FieldExtendedType) {
+		fields = append(fields, inode.FieldExtendedType)
+	}
 	return fields
 }
 
@@ -2636,6 +2748,9 @@ func (m *InodeMutation) ClearField(name string) error {
 		return nil
 	case inode.FieldAttributes:
 		m.ClearAttributes()
+		return nil
+	case inode.FieldExtendedType:
+		m.ClearExtendedType()
 		return nil
 	}
 	return fmt.Errorf("unknown Inode nullable field %s", name)
@@ -2660,13 +2775,16 @@ func (m *InodeMutation) ResetField(name string) error {
 	case inode.FieldAttributes:
 		m.ResetAttributes()
 		return nil
+	case inode.FieldExtendedType:
+		m.ResetExtendedType()
+		return nil
 	}
 	return fmt.Errorf("unknown Inode field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *InodeMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.namespace != nil {
 		edges = append(edges, inode.EdgeNamespace)
 	}
@@ -2678,6 +2796,9 @@ func (m *InodeMutation) AddedEdges() []string {
 	}
 	if m.workflow != nil {
 		edges = append(edges, inode.EdgeWorkflow)
+	}
+	if m.mirror != nil {
+		edges = append(edges, inode.EdgeMirror)
 	}
 	return edges
 }
@@ -2704,13 +2825,17 @@ func (m *InodeMutation) AddedIDs(name string) []ent.Value {
 		if id := m.workflow; id != nil {
 			return []ent.Value{*id}
 		}
+	case inode.EdgeMirror:
+		if id := m.mirror; id != nil {
+			return []ent.Value{*id}
+		}
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *InodeMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.removedchildren != nil {
 		edges = append(edges, inode.EdgeChildren)
 	}
@@ -2733,7 +2858,7 @@ func (m *InodeMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *InodeMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.clearednamespace {
 		edges = append(edges, inode.EdgeNamespace)
 	}
@@ -2745,6 +2870,9 @@ func (m *InodeMutation) ClearedEdges() []string {
 	}
 	if m.clearedworkflow {
 		edges = append(edges, inode.EdgeWorkflow)
+	}
+	if m.clearedmirror {
+		edges = append(edges, inode.EdgeMirror)
 	}
 	return edges
 }
@@ -2761,6 +2889,8 @@ func (m *InodeMutation) EdgeCleared(name string) bool {
 		return m.clearedparent
 	case inode.EdgeWorkflow:
 		return m.clearedworkflow
+	case inode.EdgeMirror:
+		return m.clearedmirror
 	}
 	return false
 }
@@ -2777,6 +2907,9 @@ func (m *InodeMutation) ClearEdge(name string) error {
 		return nil
 	case inode.EdgeWorkflow:
 		m.ClearWorkflow()
+		return nil
+	case inode.EdgeMirror:
+		m.ClearMirror()
 		return nil
 	}
 	return fmt.Errorf("unknown Inode unique edge %s", name)
@@ -2797,6 +2930,9 @@ func (m *InodeMutation) ResetEdge(name string) error {
 		return nil
 	case inode.EdgeWorkflow:
 		m.ResetWorkflow()
+		return nil
+	case inode.EdgeMirror:
+		m.ResetMirror()
 		return nil
 	}
 	return fmt.Errorf("unknown Inode edge %s", name)
@@ -5511,6 +5647,8 @@ type LogMsgMutation struct {
 	clearedworkflow  bool
 	instance         *uuid.UUID
 	clearedinstance  bool
+	activity         *uuid.UUID
+	clearedactivity  bool
 	done             bool
 	oldValue         func(context.Context) (*LogMsg, error)
 	predicates       []predicate.LogMsg
@@ -5809,6 +5947,45 @@ func (m *LogMsgMutation) ResetInstance() {
 	m.clearedinstance = false
 }
 
+// SetActivityID sets the "activity" edge to the MirrorActivity entity by id.
+func (m *LogMsgMutation) SetActivityID(id uuid.UUID) {
+	m.activity = &id
+}
+
+// ClearActivity clears the "activity" edge to the MirrorActivity entity.
+func (m *LogMsgMutation) ClearActivity() {
+	m.clearedactivity = true
+}
+
+// ActivityCleared reports if the "activity" edge to the MirrorActivity entity was cleared.
+func (m *LogMsgMutation) ActivityCleared() bool {
+	return m.clearedactivity
+}
+
+// ActivityID returns the "activity" edge ID in the mutation.
+func (m *LogMsgMutation) ActivityID() (id uuid.UUID, exists bool) {
+	if m.activity != nil {
+		return *m.activity, true
+	}
+	return
+}
+
+// ActivityIDs returns the "activity" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ActivityID instead. It exists only for internal usage by the builders.
+func (m *LogMsgMutation) ActivityIDs() (ids []uuid.UUID) {
+	if id := m.activity; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetActivity resets all changes to the "activity" edge.
+func (m *LogMsgMutation) ResetActivity() {
+	m.activity = nil
+	m.clearedactivity = false
+}
+
 // Where appends a list predicates to the LogMsgMutation builder.
 func (m *LogMsgMutation) Where(ps ...predicate.LogMsg) {
 	m.predicates = append(m.predicates, ps...)
@@ -5944,7 +6121,7 @@ func (m *LogMsgMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *LogMsgMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.namespace != nil {
 		edges = append(edges, logmsg.EdgeNamespace)
 	}
@@ -5953,6 +6130,9 @@ func (m *LogMsgMutation) AddedEdges() []string {
 	}
 	if m.instance != nil {
 		edges = append(edges, logmsg.EdgeInstance)
+	}
+	if m.activity != nil {
+		edges = append(edges, logmsg.EdgeActivity)
 	}
 	return edges
 }
@@ -5973,13 +6153,17 @@ func (m *LogMsgMutation) AddedIDs(name string) []ent.Value {
 		if id := m.instance; id != nil {
 			return []ent.Value{*id}
 		}
+	case logmsg.EdgeActivity:
+		if id := m.activity; id != nil {
+			return []ent.Value{*id}
+		}
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *LogMsgMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	return edges
 }
 
@@ -5993,7 +6177,7 @@ func (m *LogMsgMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *LogMsgMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.clearednamespace {
 		edges = append(edges, logmsg.EdgeNamespace)
 	}
@@ -6002,6 +6186,9 @@ func (m *LogMsgMutation) ClearedEdges() []string {
 	}
 	if m.clearedinstance {
 		edges = append(edges, logmsg.EdgeInstance)
+	}
+	if m.clearedactivity {
+		edges = append(edges, logmsg.EdgeActivity)
 	}
 	return edges
 }
@@ -6016,6 +6203,8 @@ func (m *LogMsgMutation) EdgeCleared(name string) bool {
 		return m.clearedworkflow
 	case logmsg.EdgeInstance:
 		return m.clearedinstance
+	case logmsg.EdgeActivity:
+		return m.clearedactivity
 	}
 	return false
 }
@@ -6032,6 +6221,9 @@ func (m *LogMsgMutation) ClearEdge(name string) error {
 		return nil
 	case logmsg.EdgeInstance:
 		m.ClearInstance()
+		return nil
+	case logmsg.EdgeActivity:
+		m.ClearActivity()
 		return nil
 	}
 	return fmt.Errorf("unknown LogMsg unique edge %s", name)
@@ -6050,8 +6242,1759 @@ func (m *LogMsgMutation) ResetEdge(name string) error {
 	case logmsg.EdgeInstance:
 		m.ResetInstance()
 		return nil
+	case logmsg.EdgeActivity:
+		m.ResetActivity()
+		return nil
 	}
 	return fmt.Errorf("unknown LogMsg edge %s", name)
+}
+
+// MirrorMutation represents an operation that mutates the Mirror nodes in the graph.
+type MirrorMutation struct {
+	config
+	op                Op
+	typ               string
+	id                *uuid.UUID
+	url               *string
+	ref               *string
+	cron              *string
+	public_key        *string
+	private_key       *string
+	passphrase        *string
+	commit            *string
+	locked            *bool
+	last_sync         *time.Time
+	clearedFields     map[string]struct{}
+	namespace         *uuid.UUID
+	clearednamespace  bool
+	inode             *uuid.UUID
+	clearedinode      bool
+	activities        map[uuid.UUID]struct{}
+	removedactivities map[uuid.UUID]struct{}
+	clearedactivities bool
+	done              bool
+	oldValue          func(context.Context) (*Mirror, error)
+	predicates        []predicate.Mirror
+}
+
+var _ ent.Mutation = (*MirrorMutation)(nil)
+
+// mirrorOption allows management of the mutation configuration using functional options.
+type mirrorOption func(*MirrorMutation)
+
+// newMirrorMutation creates new mutation for the Mirror entity.
+func newMirrorMutation(c config, op Op, opts ...mirrorOption) *MirrorMutation {
+	m := &MirrorMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeMirror,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withMirrorID sets the ID field of the mutation.
+func withMirrorID(id uuid.UUID) mirrorOption {
+	return func(m *MirrorMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Mirror
+		)
+		m.oldValue = func(ctx context.Context) (*Mirror, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Mirror.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withMirror sets the old Mirror of the mutation.
+func withMirror(node *Mirror) mirrorOption {
+	return func(m *MirrorMutation) {
+		m.oldValue = func(context.Context) (*Mirror, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m MirrorMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m MirrorMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Mirror entities.
+func (m *MirrorMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *MirrorMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *MirrorMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().Mirror.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetURL sets the "url" field.
+func (m *MirrorMutation) SetURL(s string) {
+	m.url = &s
+}
+
+// URL returns the value of the "url" field in the mutation.
+func (m *MirrorMutation) URL() (r string, exists bool) {
+	v := m.url
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldURL returns the old "url" field's value of the Mirror entity.
+// If the Mirror object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MirrorMutation) OldURL(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldURL is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldURL requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldURL: %w", err)
+	}
+	return oldValue.URL, nil
+}
+
+// ResetURL resets all changes to the "url" field.
+func (m *MirrorMutation) ResetURL() {
+	m.url = nil
+}
+
+// SetRef sets the "ref" field.
+func (m *MirrorMutation) SetRef(s string) {
+	m.ref = &s
+}
+
+// Ref returns the value of the "ref" field in the mutation.
+func (m *MirrorMutation) Ref() (r string, exists bool) {
+	v := m.ref
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRef returns the old "ref" field's value of the Mirror entity.
+// If the Mirror object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MirrorMutation) OldRef(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRef is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRef requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRef: %w", err)
+	}
+	return oldValue.Ref, nil
+}
+
+// ResetRef resets all changes to the "ref" field.
+func (m *MirrorMutation) ResetRef() {
+	m.ref = nil
+}
+
+// SetCron sets the "cron" field.
+func (m *MirrorMutation) SetCron(s string) {
+	m.cron = &s
+}
+
+// Cron returns the value of the "cron" field in the mutation.
+func (m *MirrorMutation) Cron() (r string, exists bool) {
+	v := m.cron
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCron returns the old "cron" field's value of the Mirror entity.
+// If the Mirror object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MirrorMutation) OldCron(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCron is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCron requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCron: %w", err)
+	}
+	return oldValue.Cron, nil
+}
+
+// ResetCron resets all changes to the "cron" field.
+func (m *MirrorMutation) ResetCron() {
+	m.cron = nil
+}
+
+// SetPublicKey sets the "public_key" field.
+func (m *MirrorMutation) SetPublicKey(s string) {
+	m.public_key = &s
+}
+
+// PublicKey returns the value of the "public_key" field in the mutation.
+func (m *MirrorMutation) PublicKey() (r string, exists bool) {
+	v := m.public_key
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPublicKey returns the old "public_key" field's value of the Mirror entity.
+// If the Mirror object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MirrorMutation) OldPublicKey(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPublicKey is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPublicKey requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPublicKey: %w", err)
+	}
+	return oldValue.PublicKey, nil
+}
+
+// ResetPublicKey resets all changes to the "public_key" field.
+func (m *MirrorMutation) ResetPublicKey() {
+	m.public_key = nil
+}
+
+// SetPrivateKey sets the "private_key" field.
+func (m *MirrorMutation) SetPrivateKey(s string) {
+	m.private_key = &s
+}
+
+// PrivateKey returns the value of the "private_key" field in the mutation.
+func (m *MirrorMutation) PrivateKey() (r string, exists bool) {
+	v := m.private_key
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPrivateKey returns the old "private_key" field's value of the Mirror entity.
+// If the Mirror object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MirrorMutation) OldPrivateKey(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPrivateKey is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPrivateKey requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPrivateKey: %w", err)
+	}
+	return oldValue.PrivateKey, nil
+}
+
+// ResetPrivateKey resets all changes to the "private_key" field.
+func (m *MirrorMutation) ResetPrivateKey() {
+	m.private_key = nil
+}
+
+// SetPassphrase sets the "passphrase" field.
+func (m *MirrorMutation) SetPassphrase(s string) {
+	m.passphrase = &s
+}
+
+// Passphrase returns the value of the "passphrase" field in the mutation.
+func (m *MirrorMutation) Passphrase() (r string, exists bool) {
+	v := m.passphrase
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPassphrase returns the old "passphrase" field's value of the Mirror entity.
+// If the Mirror object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MirrorMutation) OldPassphrase(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPassphrase is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPassphrase requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPassphrase: %w", err)
+	}
+	return oldValue.Passphrase, nil
+}
+
+// ResetPassphrase resets all changes to the "passphrase" field.
+func (m *MirrorMutation) ResetPassphrase() {
+	m.passphrase = nil
+}
+
+// SetCommit sets the "commit" field.
+func (m *MirrorMutation) SetCommit(s string) {
+	m.commit = &s
+}
+
+// Commit returns the value of the "commit" field in the mutation.
+func (m *MirrorMutation) Commit() (r string, exists bool) {
+	v := m.commit
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCommit returns the old "commit" field's value of the Mirror entity.
+// If the Mirror object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MirrorMutation) OldCommit(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCommit is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCommit requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCommit: %w", err)
+	}
+	return oldValue.Commit, nil
+}
+
+// ResetCommit resets all changes to the "commit" field.
+func (m *MirrorMutation) ResetCommit() {
+	m.commit = nil
+}
+
+// SetLocked sets the "locked" field.
+func (m *MirrorMutation) SetLocked(b bool) {
+	m.locked = &b
+}
+
+// Locked returns the value of the "locked" field in the mutation.
+func (m *MirrorMutation) Locked() (r bool, exists bool) {
+	v := m.locked
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLocked returns the old "locked" field's value of the Mirror entity.
+// If the Mirror object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MirrorMutation) OldLocked(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLocked is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLocked requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLocked: %w", err)
+	}
+	return oldValue.Locked, nil
+}
+
+// ResetLocked resets all changes to the "locked" field.
+func (m *MirrorMutation) ResetLocked() {
+	m.locked = nil
+}
+
+// SetLastSync sets the "last_sync" field.
+func (m *MirrorMutation) SetLastSync(t time.Time) {
+	m.last_sync = &t
+}
+
+// LastSync returns the value of the "last_sync" field in the mutation.
+func (m *MirrorMutation) LastSync() (r time.Time, exists bool) {
+	v := m.last_sync
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLastSync returns the old "last_sync" field's value of the Mirror entity.
+// If the Mirror object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MirrorMutation) OldLastSync(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLastSync is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLastSync requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLastSync: %w", err)
+	}
+	return oldValue.LastSync, nil
+}
+
+// ClearLastSync clears the value of the "last_sync" field.
+func (m *MirrorMutation) ClearLastSync() {
+	m.last_sync = nil
+	m.clearedFields[mirror.FieldLastSync] = struct{}{}
+}
+
+// LastSyncCleared returns if the "last_sync" field was cleared in this mutation.
+func (m *MirrorMutation) LastSyncCleared() bool {
+	_, ok := m.clearedFields[mirror.FieldLastSync]
+	return ok
+}
+
+// ResetLastSync resets all changes to the "last_sync" field.
+func (m *MirrorMutation) ResetLastSync() {
+	m.last_sync = nil
+	delete(m.clearedFields, mirror.FieldLastSync)
+}
+
+// SetNamespaceID sets the "namespace" edge to the Namespace entity by id.
+func (m *MirrorMutation) SetNamespaceID(id uuid.UUID) {
+	m.namespace = &id
+}
+
+// ClearNamespace clears the "namespace" edge to the Namespace entity.
+func (m *MirrorMutation) ClearNamespace() {
+	m.clearednamespace = true
+}
+
+// NamespaceCleared reports if the "namespace" edge to the Namespace entity was cleared.
+func (m *MirrorMutation) NamespaceCleared() bool {
+	return m.clearednamespace
+}
+
+// NamespaceID returns the "namespace" edge ID in the mutation.
+func (m *MirrorMutation) NamespaceID() (id uuid.UUID, exists bool) {
+	if m.namespace != nil {
+		return *m.namespace, true
+	}
+	return
+}
+
+// NamespaceIDs returns the "namespace" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// NamespaceID instead. It exists only for internal usage by the builders.
+func (m *MirrorMutation) NamespaceIDs() (ids []uuid.UUID) {
+	if id := m.namespace; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetNamespace resets all changes to the "namespace" edge.
+func (m *MirrorMutation) ResetNamespace() {
+	m.namespace = nil
+	m.clearednamespace = false
+}
+
+// SetInodeID sets the "inode" edge to the Inode entity by id.
+func (m *MirrorMutation) SetInodeID(id uuid.UUID) {
+	m.inode = &id
+}
+
+// ClearInode clears the "inode" edge to the Inode entity.
+func (m *MirrorMutation) ClearInode() {
+	m.clearedinode = true
+}
+
+// InodeCleared reports if the "inode" edge to the Inode entity was cleared.
+func (m *MirrorMutation) InodeCleared() bool {
+	return m.clearedinode
+}
+
+// InodeID returns the "inode" edge ID in the mutation.
+func (m *MirrorMutation) InodeID() (id uuid.UUID, exists bool) {
+	if m.inode != nil {
+		return *m.inode, true
+	}
+	return
+}
+
+// InodeIDs returns the "inode" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// InodeID instead. It exists only for internal usage by the builders.
+func (m *MirrorMutation) InodeIDs() (ids []uuid.UUID) {
+	if id := m.inode; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetInode resets all changes to the "inode" edge.
+func (m *MirrorMutation) ResetInode() {
+	m.inode = nil
+	m.clearedinode = false
+}
+
+// AddActivityIDs adds the "activities" edge to the MirrorActivity entity by ids.
+func (m *MirrorMutation) AddActivityIDs(ids ...uuid.UUID) {
+	if m.activities == nil {
+		m.activities = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.activities[ids[i]] = struct{}{}
+	}
+}
+
+// ClearActivities clears the "activities" edge to the MirrorActivity entity.
+func (m *MirrorMutation) ClearActivities() {
+	m.clearedactivities = true
+}
+
+// ActivitiesCleared reports if the "activities" edge to the MirrorActivity entity was cleared.
+func (m *MirrorMutation) ActivitiesCleared() bool {
+	return m.clearedactivities
+}
+
+// RemoveActivityIDs removes the "activities" edge to the MirrorActivity entity by IDs.
+func (m *MirrorMutation) RemoveActivityIDs(ids ...uuid.UUID) {
+	if m.removedactivities == nil {
+		m.removedactivities = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.activities, ids[i])
+		m.removedactivities[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedActivities returns the removed IDs of the "activities" edge to the MirrorActivity entity.
+func (m *MirrorMutation) RemovedActivitiesIDs() (ids []uuid.UUID) {
+	for id := range m.removedactivities {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ActivitiesIDs returns the "activities" edge IDs in the mutation.
+func (m *MirrorMutation) ActivitiesIDs() (ids []uuid.UUID) {
+	for id := range m.activities {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetActivities resets all changes to the "activities" edge.
+func (m *MirrorMutation) ResetActivities() {
+	m.activities = nil
+	m.clearedactivities = false
+	m.removedactivities = nil
+}
+
+// Where appends a list predicates to the MirrorMutation builder.
+func (m *MirrorMutation) Where(ps ...predicate.Mirror) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// Op returns the operation name.
+func (m *MirrorMutation) Op() Op {
+	return m.op
+}
+
+// Type returns the node type of this mutation (Mirror).
+func (m *MirrorMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *MirrorMutation) Fields() []string {
+	fields := make([]string, 0, 9)
+	if m.url != nil {
+		fields = append(fields, mirror.FieldURL)
+	}
+	if m.ref != nil {
+		fields = append(fields, mirror.FieldRef)
+	}
+	if m.cron != nil {
+		fields = append(fields, mirror.FieldCron)
+	}
+	if m.public_key != nil {
+		fields = append(fields, mirror.FieldPublicKey)
+	}
+	if m.private_key != nil {
+		fields = append(fields, mirror.FieldPrivateKey)
+	}
+	if m.passphrase != nil {
+		fields = append(fields, mirror.FieldPassphrase)
+	}
+	if m.commit != nil {
+		fields = append(fields, mirror.FieldCommit)
+	}
+	if m.locked != nil {
+		fields = append(fields, mirror.FieldLocked)
+	}
+	if m.last_sync != nil {
+		fields = append(fields, mirror.FieldLastSync)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *MirrorMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case mirror.FieldURL:
+		return m.URL()
+	case mirror.FieldRef:
+		return m.Ref()
+	case mirror.FieldCron:
+		return m.Cron()
+	case mirror.FieldPublicKey:
+		return m.PublicKey()
+	case mirror.FieldPrivateKey:
+		return m.PrivateKey()
+	case mirror.FieldPassphrase:
+		return m.Passphrase()
+	case mirror.FieldCommit:
+		return m.Commit()
+	case mirror.FieldLocked:
+		return m.Locked()
+	case mirror.FieldLastSync:
+		return m.LastSync()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *MirrorMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case mirror.FieldURL:
+		return m.OldURL(ctx)
+	case mirror.FieldRef:
+		return m.OldRef(ctx)
+	case mirror.FieldCron:
+		return m.OldCron(ctx)
+	case mirror.FieldPublicKey:
+		return m.OldPublicKey(ctx)
+	case mirror.FieldPrivateKey:
+		return m.OldPrivateKey(ctx)
+	case mirror.FieldPassphrase:
+		return m.OldPassphrase(ctx)
+	case mirror.FieldCommit:
+		return m.OldCommit(ctx)
+	case mirror.FieldLocked:
+		return m.OldLocked(ctx)
+	case mirror.FieldLastSync:
+		return m.OldLastSync(ctx)
+	}
+	return nil, fmt.Errorf("unknown Mirror field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *MirrorMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case mirror.FieldURL:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetURL(v)
+		return nil
+	case mirror.FieldRef:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRef(v)
+		return nil
+	case mirror.FieldCron:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCron(v)
+		return nil
+	case mirror.FieldPublicKey:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPublicKey(v)
+		return nil
+	case mirror.FieldPrivateKey:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPrivateKey(v)
+		return nil
+	case mirror.FieldPassphrase:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPassphrase(v)
+		return nil
+	case mirror.FieldCommit:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCommit(v)
+		return nil
+	case mirror.FieldLocked:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLocked(v)
+		return nil
+	case mirror.FieldLastSync:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLastSync(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Mirror field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *MirrorMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *MirrorMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *MirrorMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Mirror numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *MirrorMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(mirror.FieldLastSync) {
+		fields = append(fields, mirror.FieldLastSync)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *MirrorMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *MirrorMutation) ClearField(name string) error {
+	switch name {
+	case mirror.FieldLastSync:
+		m.ClearLastSync()
+		return nil
+	}
+	return fmt.Errorf("unknown Mirror nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *MirrorMutation) ResetField(name string) error {
+	switch name {
+	case mirror.FieldURL:
+		m.ResetURL()
+		return nil
+	case mirror.FieldRef:
+		m.ResetRef()
+		return nil
+	case mirror.FieldCron:
+		m.ResetCron()
+		return nil
+	case mirror.FieldPublicKey:
+		m.ResetPublicKey()
+		return nil
+	case mirror.FieldPrivateKey:
+		m.ResetPrivateKey()
+		return nil
+	case mirror.FieldPassphrase:
+		m.ResetPassphrase()
+		return nil
+	case mirror.FieldCommit:
+		m.ResetCommit()
+		return nil
+	case mirror.FieldLocked:
+		m.ResetLocked()
+		return nil
+	case mirror.FieldLastSync:
+		m.ResetLastSync()
+		return nil
+	}
+	return fmt.Errorf("unknown Mirror field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *MirrorMutation) AddedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.namespace != nil {
+		edges = append(edges, mirror.EdgeNamespace)
+	}
+	if m.inode != nil {
+		edges = append(edges, mirror.EdgeInode)
+	}
+	if m.activities != nil {
+		edges = append(edges, mirror.EdgeActivities)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *MirrorMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case mirror.EdgeNamespace:
+		if id := m.namespace; id != nil {
+			return []ent.Value{*id}
+		}
+	case mirror.EdgeInode:
+		if id := m.inode; id != nil {
+			return []ent.Value{*id}
+		}
+	case mirror.EdgeActivities:
+		ids := make([]ent.Value, 0, len(m.activities))
+		for id := range m.activities {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *MirrorMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.removedactivities != nil {
+		edges = append(edges, mirror.EdgeActivities)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *MirrorMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case mirror.EdgeActivities:
+		ids := make([]ent.Value, 0, len(m.removedactivities))
+		for id := range m.removedactivities {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *MirrorMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.clearednamespace {
+		edges = append(edges, mirror.EdgeNamespace)
+	}
+	if m.clearedinode {
+		edges = append(edges, mirror.EdgeInode)
+	}
+	if m.clearedactivities {
+		edges = append(edges, mirror.EdgeActivities)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *MirrorMutation) EdgeCleared(name string) bool {
+	switch name {
+	case mirror.EdgeNamespace:
+		return m.clearednamespace
+	case mirror.EdgeInode:
+		return m.clearedinode
+	case mirror.EdgeActivities:
+		return m.clearedactivities
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *MirrorMutation) ClearEdge(name string) error {
+	switch name {
+	case mirror.EdgeNamespace:
+		m.ClearNamespace()
+		return nil
+	case mirror.EdgeInode:
+		m.ClearInode()
+		return nil
+	}
+	return fmt.Errorf("unknown Mirror unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *MirrorMutation) ResetEdge(name string) error {
+	switch name {
+	case mirror.EdgeNamespace:
+		m.ResetNamespace()
+		return nil
+	case mirror.EdgeInode:
+		m.ResetInode()
+		return nil
+	case mirror.EdgeActivities:
+		m.ResetActivities()
+		return nil
+	}
+	return fmt.Errorf("unknown Mirror edge %s", name)
+}
+
+// MirrorActivityMutation represents an operation that mutates the MirrorActivity nodes in the graph.
+type MirrorActivityMutation struct {
+	config
+	op               Op
+	typ              string
+	id               *uuid.UUID
+	_type            *string
+	status           *string
+	created_at       *time.Time
+	updated_at       *time.Time
+	end_at           *time.Time
+	clearedFields    map[string]struct{}
+	namespace        *uuid.UUID
+	clearednamespace bool
+	mirror           *uuid.UUID
+	clearedmirror    bool
+	logs             map[uuid.UUID]struct{}
+	removedlogs      map[uuid.UUID]struct{}
+	clearedlogs      bool
+	done             bool
+	oldValue         func(context.Context) (*MirrorActivity, error)
+	predicates       []predicate.MirrorActivity
+}
+
+var _ ent.Mutation = (*MirrorActivityMutation)(nil)
+
+// mirroractivityOption allows management of the mutation configuration using functional options.
+type mirroractivityOption func(*MirrorActivityMutation)
+
+// newMirrorActivityMutation creates new mutation for the MirrorActivity entity.
+func newMirrorActivityMutation(c config, op Op, opts ...mirroractivityOption) *MirrorActivityMutation {
+	m := &MirrorActivityMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeMirrorActivity,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withMirrorActivityID sets the ID field of the mutation.
+func withMirrorActivityID(id uuid.UUID) mirroractivityOption {
+	return func(m *MirrorActivityMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *MirrorActivity
+		)
+		m.oldValue = func(ctx context.Context) (*MirrorActivity, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().MirrorActivity.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withMirrorActivity sets the old MirrorActivity of the mutation.
+func withMirrorActivity(node *MirrorActivity) mirroractivityOption {
+	return func(m *MirrorActivityMutation) {
+		m.oldValue = func(context.Context) (*MirrorActivity, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m MirrorActivityMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m MirrorActivityMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of MirrorActivity entities.
+func (m *MirrorActivityMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *MirrorActivityMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *MirrorActivityMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().MirrorActivity.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetType sets the "type" field.
+func (m *MirrorActivityMutation) SetType(s string) {
+	m._type = &s
+}
+
+// GetType returns the value of the "type" field in the mutation.
+func (m *MirrorActivityMutation) GetType() (r string, exists bool) {
+	v := m._type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldType returns the old "type" field's value of the MirrorActivity entity.
+// If the MirrorActivity object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MirrorActivityMutation) OldType(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldType: %w", err)
+	}
+	return oldValue.Type, nil
+}
+
+// ResetType resets all changes to the "type" field.
+func (m *MirrorActivityMutation) ResetType() {
+	m._type = nil
+}
+
+// SetStatus sets the "status" field.
+func (m *MirrorActivityMutation) SetStatus(s string) {
+	m.status = &s
+}
+
+// Status returns the value of the "status" field in the mutation.
+func (m *MirrorActivityMutation) Status() (r string, exists bool) {
+	v := m.status
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStatus returns the old "status" field's value of the MirrorActivity entity.
+// If the MirrorActivity object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MirrorActivityMutation) OldStatus(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStatus is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStatus requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStatus: %w", err)
+	}
+	return oldValue.Status, nil
+}
+
+// ResetStatus resets all changes to the "status" field.
+func (m *MirrorActivityMutation) ResetStatus() {
+	m.status = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *MirrorActivityMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *MirrorActivityMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the MirrorActivity entity.
+// If the MirrorActivity object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MirrorActivityMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *MirrorActivityMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *MirrorActivityMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *MirrorActivityMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the MirrorActivity entity.
+// If the MirrorActivity object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MirrorActivityMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *MirrorActivityMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// SetEndAt sets the "end_at" field.
+func (m *MirrorActivityMutation) SetEndAt(t time.Time) {
+	m.end_at = &t
+}
+
+// EndAt returns the value of the "end_at" field in the mutation.
+func (m *MirrorActivityMutation) EndAt() (r time.Time, exists bool) {
+	v := m.end_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEndAt returns the old "end_at" field's value of the MirrorActivity entity.
+// If the MirrorActivity object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MirrorActivityMutation) OldEndAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEndAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEndAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEndAt: %w", err)
+	}
+	return oldValue.EndAt, nil
+}
+
+// ClearEndAt clears the value of the "end_at" field.
+func (m *MirrorActivityMutation) ClearEndAt() {
+	m.end_at = nil
+	m.clearedFields[mirroractivity.FieldEndAt] = struct{}{}
+}
+
+// EndAtCleared returns if the "end_at" field was cleared in this mutation.
+func (m *MirrorActivityMutation) EndAtCleared() bool {
+	_, ok := m.clearedFields[mirroractivity.FieldEndAt]
+	return ok
+}
+
+// ResetEndAt resets all changes to the "end_at" field.
+func (m *MirrorActivityMutation) ResetEndAt() {
+	m.end_at = nil
+	delete(m.clearedFields, mirroractivity.FieldEndAt)
+}
+
+// SetNamespaceID sets the "namespace" edge to the Namespace entity by id.
+func (m *MirrorActivityMutation) SetNamespaceID(id uuid.UUID) {
+	m.namespace = &id
+}
+
+// ClearNamespace clears the "namespace" edge to the Namespace entity.
+func (m *MirrorActivityMutation) ClearNamespace() {
+	m.clearednamespace = true
+}
+
+// NamespaceCleared reports if the "namespace" edge to the Namespace entity was cleared.
+func (m *MirrorActivityMutation) NamespaceCleared() bool {
+	return m.clearednamespace
+}
+
+// NamespaceID returns the "namespace" edge ID in the mutation.
+func (m *MirrorActivityMutation) NamespaceID() (id uuid.UUID, exists bool) {
+	if m.namespace != nil {
+		return *m.namespace, true
+	}
+	return
+}
+
+// NamespaceIDs returns the "namespace" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// NamespaceID instead. It exists only for internal usage by the builders.
+func (m *MirrorActivityMutation) NamespaceIDs() (ids []uuid.UUID) {
+	if id := m.namespace; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetNamespace resets all changes to the "namespace" edge.
+func (m *MirrorActivityMutation) ResetNamespace() {
+	m.namespace = nil
+	m.clearednamespace = false
+}
+
+// SetMirrorID sets the "mirror" edge to the Mirror entity by id.
+func (m *MirrorActivityMutation) SetMirrorID(id uuid.UUID) {
+	m.mirror = &id
+}
+
+// ClearMirror clears the "mirror" edge to the Mirror entity.
+func (m *MirrorActivityMutation) ClearMirror() {
+	m.clearedmirror = true
+}
+
+// MirrorCleared reports if the "mirror" edge to the Mirror entity was cleared.
+func (m *MirrorActivityMutation) MirrorCleared() bool {
+	return m.clearedmirror
+}
+
+// MirrorID returns the "mirror" edge ID in the mutation.
+func (m *MirrorActivityMutation) MirrorID() (id uuid.UUID, exists bool) {
+	if m.mirror != nil {
+		return *m.mirror, true
+	}
+	return
+}
+
+// MirrorIDs returns the "mirror" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// MirrorID instead. It exists only for internal usage by the builders.
+func (m *MirrorActivityMutation) MirrorIDs() (ids []uuid.UUID) {
+	if id := m.mirror; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetMirror resets all changes to the "mirror" edge.
+func (m *MirrorActivityMutation) ResetMirror() {
+	m.mirror = nil
+	m.clearedmirror = false
+}
+
+// AddLogIDs adds the "logs" edge to the LogMsg entity by ids.
+func (m *MirrorActivityMutation) AddLogIDs(ids ...uuid.UUID) {
+	if m.logs == nil {
+		m.logs = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.logs[ids[i]] = struct{}{}
+	}
+}
+
+// ClearLogs clears the "logs" edge to the LogMsg entity.
+func (m *MirrorActivityMutation) ClearLogs() {
+	m.clearedlogs = true
+}
+
+// LogsCleared reports if the "logs" edge to the LogMsg entity was cleared.
+func (m *MirrorActivityMutation) LogsCleared() bool {
+	return m.clearedlogs
+}
+
+// RemoveLogIDs removes the "logs" edge to the LogMsg entity by IDs.
+func (m *MirrorActivityMutation) RemoveLogIDs(ids ...uuid.UUID) {
+	if m.removedlogs == nil {
+		m.removedlogs = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.logs, ids[i])
+		m.removedlogs[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedLogs returns the removed IDs of the "logs" edge to the LogMsg entity.
+func (m *MirrorActivityMutation) RemovedLogsIDs() (ids []uuid.UUID) {
+	for id := range m.removedlogs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// LogsIDs returns the "logs" edge IDs in the mutation.
+func (m *MirrorActivityMutation) LogsIDs() (ids []uuid.UUID) {
+	for id := range m.logs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetLogs resets all changes to the "logs" edge.
+func (m *MirrorActivityMutation) ResetLogs() {
+	m.logs = nil
+	m.clearedlogs = false
+	m.removedlogs = nil
+}
+
+// Where appends a list predicates to the MirrorActivityMutation builder.
+func (m *MirrorActivityMutation) Where(ps ...predicate.MirrorActivity) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// Op returns the operation name.
+func (m *MirrorActivityMutation) Op() Op {
+	return m.op
+}
+
+// Type returns the node type of this mutation (MirrorActivity).
+func (m *MirrorActivityMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *MirrorActivityMutation) Fields() []string {
+	fields := make([]string, 0, 5)
+	if m._type != nil {
+		fields = append(fields, mirroractivity.FieldType)
+	}
+	if m.status != nil {
+		fields = append(fields, mirroractivity.FieldStatus)
+	}
+	if m.created_at != nil {
+		fields = append(fields, mirroractivity.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, mirroractivity.FieldUpdatedAt)
+	}
+	if m.end_at != nil {
+		fields = append(fields, mirroractivity.FieldEndAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *MirrorActivityMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case mirroractivity.FieldType:
+		return m.GetType()
+	case mirroractivity.FieldStatus:
+		return m.Status()
+	case mirroractivity.FieldCreatedAt:
+		return m.CreatedAt()
+	case mirroractivity.FieldUpdatedAt:
+		return m.UpdatedAt()
+	case mirroractivity.FieldEndAt:
+		return m.EndAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *MirrorActivityMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case mirroractivity.FieldType:
+		return m.OldType(ctx)
+	case mirroractivity.FieldStatus:
+		return m.OldStatus(ctx)
+	case mirroractivity.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case mirroractivity.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	case mirroractivity.FieldEndAt:
+		return m.OldEndAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown MirrorActivity field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *MirrorActivityMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case mirroractivity.FieldType:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetType(v)
+		return nil
+	case mirroractivity.FieldStatus:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStatus(v)
+		return nil
+	case mirroractivity.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case mirroractivity.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	case mirroractivity.FieldEndAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEndAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown MirrorActivity field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *MirrorActivityMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *MirrorActivityMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *MirrorActivityMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown MirrorActivity numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *MirrorActivityMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(mirroractivity.FieldEndAt) {
+		fields = append(fields, mirroractivity.FieldEndAt)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *MirrorActivityMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *MirrorActivityMutation) ClearField(name string) error {
+	switch name {
+	case mirroractivity.FieldEndAt:
+		m.ClearEndAt()
+		return nil
+	}
+	return fmt.Errorf("unknown MirrorActivity nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *MirrorActivityMutation) ResetField(name string) error {
+	switch name {
+	case mirroractivity.FieldType:
+		m.ResetType()
+		return nil
+	case mirroractivity.FieldStatus:
+		m.ResetStatus()
+		return nil
+	case mirroractivity.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case mirroractivity.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	case mirroractivity.FieldEndAt:
+		m.ResetEndAt()
+		return nil
+	}
+	return fmt.Errorf("unknown MirrorActivity field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *MirrorActivityMutation) AddedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.namespace != nil {
+		edges = append(edges, mirroractivity.EdgeNamespace)
+	}
+	if m.mirror != nil {
+		edges = append(edges, mirroractivity.EdgeMirror)
+	}
+	if m.logs != nil {
+		edges = append(edges, mirroractivity.EdgeLogs)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *MirrorActivityMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case mirroractivity.EdgeNamespace:
+		if id := m.namespace; id != nil {
+			return []ent.Value{*id}
+		}
+	case mirroractivity.EdgeMirror:
+		if id := m.mirror; id != nil {
+			return []ent.Value{*id}
+		}
+	case mirroractivity.EdgeLogs:
+		ids := make([]ent.Value, 0, len(m.logs))
+		for id := range m.logs {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *MirrorActivityMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.removedlogs != nil {
+		edges = append(edges, mirroractivity.EdgeLogs)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *MirrorActivityMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case mirroractivity.EdgeLogs:
+		ids := make([]ent.Value, 0, len(m.removedlogs))
+		for id := range m.removedlogs {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *MirrorActivityMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.clearednamespace {
+		edges = append(edges, mirroractivity.EdgeNamespace)
+	}
+	if m.clearedmirror {
+		edges = append(edges, mirroractivity.EdgeMirror)
+	}
+	if m.clearedlogs {
+		edges = append(edges, mirroractivity.EdgeLogs)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *MirrorActivityMutation) EdgeCleared(name string) bool {
+	switch name {
+	case mirroractivity.EdgeNamespace:
+		return m.clearednamespace
+	case mirroractivity.EdgeMirror:
+		return m.clearedmirror
+	case mirroractivity.EdgeLogs:
+		return m.clearedlogs
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *MirrorActivityMutation) ClearEdge(name string) error {
+	switch name {
+	case mirroractivity.EdgeNamespace:
+		m.ClearNamespace()
+		return nil
+	case mirroractivity.EdgeMirror:
+		m.ClearMirror()
+		return nil
+	}
+	return fmt.Errorf("unknown MirrorActivity unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *MirrorActivityMutation) ResetEdge(name string) error {
+	switch name {
+	case mirroractivity.EdgeNamespace:
+		m.ResetNamespace()
+		return nil
+	case mirroractivity.EdgeMirror:
+		m.ResetMirror()
+		return nil
+	case mirroractivity.EdgeLogs:
+		m.ResetLogs()
+		return nil
+	}
+	return fmt.Errorf("unknown MirrorActivity edge %s", name)
 }
 
 // NamespaceMutation represents an operation that mutates the Namespace nodes in the graph.
@@ -6071,6 +8014,12 @@ type NamespaceMutation struct {
 	workflows                 map[uuid.UUID]struct{}
 	removedworkflows          map[uuid.UUID]struct{}
 	clearedworkflows          bool
+	mirrors                   map[uuid.UUID]struct{}
+	removedmirrors            map[uuid.UUID]struct{}
+	clearedmirrors            bool
+	mirror_activities         map[uuid.UUID]struct{}
+	removedmirror_activities  map[uuid.UUID]struct{}
+	clearedmirror_activities  bool
 	instances                 map[uuid.UUID]struct{}
 	removedinstances          map[uuid.UUID]struct{}
 	clearedinstances          bool
@@ -6445,6 +8394,114 @@ func (m *NamespaceMutation) ResetWorkflows() {
 	m.workflows = nil
 	m.clearedworkflows = false
 	m.removedworkflows = nil
+}
+
+// AddMirrorIDs adds the "mirrors" edge to the Mirror entity by ids.
+func (m *NamespaceMutation) AddMirrorIDs(ids ...uuid.UUID) {
+	if m.mirrors == nil {
+		m.mirrors = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.mirrors[ids[i]] = struct{}{}
+	}
+}
+
+// ClearMirrors clears the "mirrors" edge to the Mirror entity.
+func (m *NamespaceMutation) ClearMirrors() {
+	m.clearedmirrors = true
+}
+
+// MirrorsCleared reports if the "mirrors" edge to the Mirror entity was cleared.
+func (m *NamespaceMutation) MirrorsCleared() bool {
+	return m.clearedmirrors
+}
+
+// RemoveMirrorIDs removes the "mirrors" edge to the Mirror entity by IDs.
+func (m *NamespaceMutation) RemoveMirrorIDs(ids ...uuid.UUID) {
+	if m.removedmirrors == nil {
+		m.removedmirrors = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.mirrors, ids[i])
+		m.removedmirrors[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedMirrors returns the removed IDs of the "mirrors" edge to the Mirror entity.
+func (m *NamespaceMutation) RemovedMirrorsIDs() (ids []uuid.UUID) {
+	for id := range m.removedmirrors {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// MirrorsIDs returns the "mirrors" edge IDs in the mutation.
+func (m *NamespaceMutation) MirrorsIDs() (ids []uuid.UUID) {
+	for id := range m.mirrors {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetMirrors resets all changes to the "mirrors" edge.
+func (m *NamespaceMutation) ResetMirrors() {
+	m.mirrors = nil
+	m.clearedmirrors = false
+	m.removedmirrors = nil
+}
+
+// AddMirrorActivityIDs adds the "mirror_activities" edge to the MirrorActivity entity by ids.
+func (m *NamespaceMutation) AddMirrorActivityIDs(ids ...uuid.UUID) {
+	if m.mirror_activities == nil {
+		m.mirror_activities = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.mirror_activities[ids[i]] = struct{}{}
+	}
+}
+
+// ClearMirrorActivities clears the "mirror_activities" edge to the MirrorActivity entity.
+func (m *NamespaceMutation) ClearMirrorActivities() {
+	m.clearedmirror_activities = true
+}
+
+// MirrorActivitiesCleared reports if the "mirror_activities" edge to the MirrorActivity entity was cleared.
+func (m *NamespaceMutation) MirrorActivitiesCleared() bool {
+	return m.clearedmirror_activities
+}
+
+// RemoveMirrorActivityIDs removes the "mirror_activities" edge to the MirrorActivity entity by IDs.
+func (m *NamespaceMutation) RemoveMirrorActivityIDs(ids ...uuid.UUID) {
+	if m.removedmirror_activities == nil {
+		m.removedmirror_activities = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.mirror_activities, ids[i])
+		m.removedmirror_activities[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedMirrorActivities returns the removed IDs of the "mirror_activities" edge to the MirrorActivity entity.
+func (m *NamespaceMutation) RemovedMirrorActivitiesIDs() (ids []uuid.UUID) {
+	for id := range m.removedmirror_activities {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// MirrorActivitiesIDs returns the "mirror_activities" edge IDs in the mutation.
+func (m *NamespaceMutation) MirrorActivitiesIDs() (ids []uuid.UUID) {
+	for id := range m.mirror_activities {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetMirrorActivities resets all changes to the "mirror_activities" edge.
+func (m *NamespaceMutation) ResetMirrorActivities() {
+	m.mirror_activities = nil
+	m.clearedmirror_activities = false
+	m.removedmirror_activities = nil
 }
 
 // AddInstanceIDs adds the "instances" edge to the Instance entity by ids.
@@ -6886,12 +8943,18 @@ func (m *NamespaceMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *NamespaceMutation) AddedEdges() []string {
-	edges := make([]string, 0, 7)
+	edges := make([]string, 0, 9)
 	if m.inodes != nil {
 		edges = append(edges, namespace.EdgeInodes)
 	}
 	if m.workflows != nil {
 		edges = append(edges, namespace.EdgeWorkflows)
+	}
+	if m.mirrors != nil {
+		edges = append(edges, namespace.EdgeMirrors)
+	}
+	if m.mirror_activities != nil {
+		edges = append(edges, namespace.EdgeMirrorActivities)
 	}
 	if m.instances != nil {
 		edges = append(edges, namespace.EdgeInstances)
@@ -6924,6 +8987,18 @@ func (m *NamespaceMutation) AddedIDs(name string) []ent.Value {
 	case namespace.EdgeWorkflows:
 		ids := make([]ent.Value, 0, len(m.workflows))
 		for id := range m.workflows {
+			ids = append(ids, id)
+		}
+		return ids
+	case namespace.EdgeMirrors:
+		ids := make([]ent.Value, 0, len(m.mirrors))
+		for id := range m.mirrors {
+			ids = append(ids, id)
+		}
+		return ids
+	case namespace.EdgeMirrorActivities:
+		ids := make([]ent.Value, 0, len(m.mirror_activities))
+		for id := range m.mirror_activities {
 			ids = append(ids, id)
 		}
 		return ids
@@ -6963,12 +9038,18 @@ func (m *NamespaceMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *NamespaceMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 7)
+	edges := make([]string, 0, 9)
 	if m.removedinodes != nil {
 		edges = append(edges, namespace.EdgeInodes)
 	}
 	if m.removedworkflows != nil {
 		edges = append(edges, namespace.EdgeWorkflows)
+	}
+	if m.removedmirrors != nil {
+		edges = append(edges, namespace.EdgeMirrors)
+	}
+	if m.removedmirror_activities != nil {
+		edges = append(edges, namespace.EdgeMirrorActivities)
 	}
 	if m.removedinstances != nil {
 		edges = append(edges, namespace.EdgeInstances)
@@ -7001,6 +9082,18 @@ func (m *NamespaceMutation) RemovedIDs(name string) []ent.Value {
 	case namespace.EdgeWorkflows:
 		ids := make([]ent.Value, 0, len(m.removedworkflows))
 		for id := range m.removedworkflows {
+			ids = append(ids, id)
+		}
+		return ids
+	case namespace.EdgeMirrors:
+		ids := make([]ent.Value, 0, len(m.removedmirrors))
+		for id := range m.removedmirrors {
+			ids = append(ids, id)
+		}
+		return ids
+	case namespace.EdgeMirrorActivities:
+		ids := make([]ent.Value, 0, len(m.removedmirror_activities))
+		for id := range m.removedmirror_activities {
 			ids = append(ids, id)
 		}
 		return ids
@@ -7040,12 +9133,18 @@ func (m *NamespaceMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *NamespaceMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 7)
+	edges := make([]string, 0, 9)
 	if m.clearedinodes {
 		edges = append(edges, namespace.EdgeInodes)
 	}
 	if m.clearedworkflows {
 		edges = append(edges, namespace.EdgeWorkflows)
+	}
+	if m.clearedmirrors {
+		edges = append(edges, namespace.EdgeMirrors)
+	}
+	if m.clearedmirror_activities {
+		edges = append(edges, namespace.EdgeMirrorActivities)
 	}
 	if m.clearedinstances {
 		edges = append(edges, namespace.EdgeInstances)
@@ -7073,6 +9172,10 @@ func (m *NamespaceMutation) EdgeCleared(name string) bool {
 		return m.clearedinodes
 	case namespace.EdgeWorkflows:
 		return m.clearedworkflows
+	case namespace.EdgeMirrors:
+		return m.clearedmirrors
+	case namespace.EdgeMirrorActivities:
+		return m.clearedmirror_activities
 	case namespace.EdgeInstances:
 		return m.clearedinstances
 	case namespace.EdgeLogs:
@@ -7104,6 +9207,12 @@ func (m *NamespaceMutation) ResetEdge(name string) error {
 		return nil
 	case namespace.EdgeWorkflows:
 		m.ResetWorkflows()
+		return nil
+	case namespace.EdgeMirrors:
+		m.ResetMirrors()
+		return nil
+	case namespace.EdgeMirrorActivities:
+		m.ResetMirrorActivities()
 		return nil
 	case namespace.EdgeInstances:
 		m.ResetInstances()

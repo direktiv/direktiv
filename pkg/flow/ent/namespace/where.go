@@ -552,6 +552,62 @@ func HasWorkflowsWith(preds ...predicate.Workflow) predicate.Namespace {
 	})
 }
 
+// HasMirrors applies the HasEdge predicate on the "mirrors" edge.
+func HasMirrors() predicate.Namespace {
+	return predicate.Namespace(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(MirrorsTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, MirrorsTable, MirrorsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasMirrorsWith applies the HasEdge predicate on the "mirrors" edge with a given conditions (other predicates).
+func HasMirrorsWith(preds ...predicate.Mirror) predicate.Namespace {
+	return predicate.Namespace(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(MirrorsInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, MirrorsTable, MirrorsColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasMirrorActivities applies the HasEdge predicate on the "mirror_activities" edge.
+func HasMirrorActivities() predicate.Namespace {
+	return predicate.Namespace(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(MirrorActivitiesTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, MirrorActivitiesTable, MirrorActivitiesColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasMirrorActivitiesWith applies the HasEdge predicate on the "mirror_activities" edge with a given conditions (other predicates).
+func HasMirrorActivitiesWith(preds ...predicate.MirrorActivity) predicate.Namespace {
+	return predicate.Namespace(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(MirrorActivitiesInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, MirrorActivitiesTable, MirrorActivitiesColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasInstances applies the HasEdge predicate on the "instances" edge.
 func HasInstances() predicate.Namespace {
 	return predicate.Namespace(func(s *sql.Selector) {

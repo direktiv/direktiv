@@ -67,3 +67,17 @@ message InstanceLogsResponse {
 	string namespace = 4;
 	string instance = 5;
 }
+
+message MirrorActivityLogsRequest {
+	Pagination pagination = 1;
+	string namespace = 2;
+	string activity = 3;
+}
+
+message MirrorActivityLogsResponse {
+	int32 totalCount = 1;
+	PageInfo pageInfo = 2;
+	repeated LogsEdge edges = 3;
+	string namespace = 4;
+	string activity = 5;
+}

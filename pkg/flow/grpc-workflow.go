@@ -28,6 +28,12 @@ func (flow *flow) ResolveWorkflowUID(ctx context.Context, req *grpc.ResolveWorkf
 		return nil, err
 	}
 
+	if resp.Node.ExpandedType == "" {
+		resp.Node.ExpandedType = resp.Node.Type
+	}
+
+	resp.Node.ReadOnly = d.ro
+
 	resp.Namespace = d.namespace()
 	resp.Node.Parent = d.dir
 	resp.Node.Path = d.path
@@ -60,6 +66,12 @@ func (flow *flow) Workflow(ctx context.Context, req *grpc.WorkflowRequest) (*grp
 	if err != nil {
 		return nil, err
 	}
+
+	if resp.Node.ExpandedType == "" {
+		resp.Node.ExpandedType = resp.Node.Type
+	}
+
+	resp.Node.ReadOnly = d.ro
 
 	resp.Namespace = d.namespace()
 	resp.Node.Parent = d.dir
@@ -103,6 +115,12 @@ resend:
 	if err != nil {
 		return err
 	}
+
+	if resp.Node.ExpandedType == "" {
+		resp.Node.ExpandedType = resp.Node.Type
+	}
+
+	resp.Node.ReadOnly = d.ro
 
 	resp.Namespace = d.namespace()
 	resp.Node.Parent = d.dir
@@ -172,6 +190,10 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 		return nil, errors.New("parent inode is not a directory")
 	}
 
+	if d.ro {
+		return nil, errors.New("cannot write into read-only directory")
+	}
+
 	inoc := tx.Inode
 
 	ino, err := inoc.Create().SetName(base).SetNamespace(d.ns()).SetParent(d.ino).SetType("workflow").Save(ctx)
@@ -225,6 +247,12 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 		return nil, err
 	}
 
+	if resp.Node.ExpandedType == "" {
+		resp.Node.ExpandedType = resp.Node.Type
+	}
+
+	resp.Node.ReadOnly = d.ro
+
 	resp.Namespace = d.namespace()
 	resp.Node.Parent = dir
 	resp.Node.Path = path
@@ -273,6 +301,10 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 	d, err := flow.traverseToRef(ctx, nsc, req.GetNamespace(), req.GetPath(), "")
 	if err != nil {
 		return nil, err
+	}
+
+	if d.ro {
+		return nil, errors.New("cannot write into read-only directory")
 	}
 
 	oldrev := d.rev()
@@ -339,6 +371,12 @@ respond:
 	if err != nil {
 		return nil, err
 	}
+
+	if resp.Node.ExpandedType == "" {
+		resp.Node.ExpandedType = resp.Node.Type
+	}
+
+	resp.Node.ReadOnly = d.ro
 
 	resp.Namespace = d.namespace()
 	resp.Node.Parent = d.dir
@@ -432,6 +470,12 @@ respond:
 	if err != nil {
 		return nil, err
 	}
+
+	if resp.Node.ExpandedType == "" {
+		resp.Node.ExpandedType = resp.Node.Type
+	}
+
+	resp.Node.ReadOnly = d.ro
 
 	resp.Namespace = d.namespace()
 	resp.Node.Parent = d.dir
@@ -533,6 +577,12 @@ respond:
 	if err != nil {
 		return nil, err
 	}
+
+	if resp.Node.ExpandedType == "" {
+		resp.Node.ExpandedType = resp.Node.Type
+	}
+
+	resp.Node.ReadOnly = d.ro
 
 	resp.Namespace = d.namespace()
 	resp.Node.Parent = d.dir

@@ -17,6 +17,8 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	"github.com/direktiv/direktiv/pkg/flow/ent/instanceruntime"
 	"github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
+	"github.com/direktiv/direktiv/pkg/flow/ent/mirror"
+	"github.com/direktiv/direktiv/pkg/flow/ent/mirroractivity"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/ref"
 	"github.com/direktiv/direktiv/pkg/flow/ent/revision"
@@ -49,6 +51,10 @@ type Client struct {
 	InstanceRuntime *InstanceRuntimeClient
 	// LogMsg is the client for interacting with the LogMsg builders.
 	LogMsg *LogMsgClient
+	// Mirror is the client for interacting with the Mirror builders.
+	Mirror *MirrorClient
+	// MirrorActivity is the client for interacting with the MirrorActivity builders.
+	MirrorActivity *MirrorActivityClient
 	// Namespace is the client for interacting with the Namespace builders.
 	Namespace *NamespaceClient
 	// Ref is the client for interacting with the Ref builders.
@@ -83,6 +89,8 @@ func (c *Client) init() {
 	c.Instance = NewInstanceClient(c.config)
 	c.InstanceRuntime = NewInstanceRuntimeClient(c.config)
 	c.LogMsg = NewLogMsgClient(c.config)
+	c.Mirror = NewMirrorClient(c.config)
+	c.MirrorActivity = NewMirrorActivityClient(c.config)
 	c.Namespace = NewNamespaceClient(c.config)
 	c.Ref = NewRefClient(c.config)
 	c.Revision = NewRevisionClient(c.config)
@@ -130,6 +138,8 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Instance:        NewInstanceClient(cfg),
 		InstanceRuntime: NewInstanceRuntimeClient(cfg),
 		LogMsg:          NewLogMsgClient(cfg),
+		Mirror:          NewMirrorClient(cfg),
+		MirrorActivity:  NewMirrorActivityClient(cfg),
 		Namespace:       NewNamespaceClient(cfg),
 		Ref:             NewRefClient(cfg),
 		Revision:        NewRevisionClient(cfg),
@@ -163,6 +173,8 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Instance:        NewInstanceClient(cfg),
 		InstanceRuntime: NewInstanceRuntimeClient(cfg),
 		LogMsg:          NewLogMsgClient(cfg),
+		Mirror:          NewMirrorClient(cfg),
+		MirrorActivity:  NewMirrorActivityClient(cfg),
 		Namespace:       NewNamespaceClient(cfg),
 		Ref:             NewRefClient(cfg),
 		Revision:        NewRevisionClient(cfg),
@@ -206,6 +218,8 @@ func (c *Client) Use(hooks ...Hook) {
 	c.Instance.Use(hooks...)
 	c.InstanceRuntime.Use(hooks...)
 	c.LogMsg.Use(hooks...)
+	c.Mirror.Use(hooks...)
+	c.MirrorActivity.Use(hooks...)
 	c.Namespace.Use(hooks...)
 	c.Ref.Use(hooks...)
 	c.Revision.Use(hooks...)
@@ -730,6 +744,22 @@ func (c *InodeClient) QueryWorkflow(i *Inode) *WorkflowQuery {
 	return query
 }
 
+// QueryMirror queries the mirror edge of a Inode.
+func (c *InodeClient) QueryMirror(i *Inode) *MirrorQuery {
+	query := &MirrorQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := i.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(inode.Table, inode.FieldID, id),
+			sqlgraph.To(mirror.Table, mirror.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, inode.MirrorTable, inode.MirrorColumn),
+		)
+		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *InodeClient) Hooks() []Hook {
 	return c.hooks.Inode
@@ -1208,9 +1238,301 @@ func (c *LogMsgClient) QueryInstance(lm *LogMsg) *InstanceQuery {
 	return query
 }
 
+// QueryActivity queries the activity edge of a LogMsg.
+func (c *LogMsgClient) QueryActivity(lm *LogMsg) *MirrorActivityQuery {
+	query := &MirrorActivityQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := lm.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(logmsg.Table, logmsg.FieldID, id),
+			sqlgraph.To(mirroractivity.Table, mirroractivity.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, logmsg.ActivityTable, logmsg.ActivityColumn),
+		)
+		fromV = sqlgraph.Neighbors(lm.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *LogMsgClient) Hooks() []Hook {
 	return c.hooks.LogMsg
+}
+
+// MirrorClient is a client for the Mirror schema.
+type MirrorClient struct {
+	config
+}
+
+// NewMirrorClient returns a client for the Mirror from the given config.
+func NewMirrorClient(c config) *MirrorClient {
+	return &MirrorClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `mirror.Hooks(f(g(h())))`.
+func (c *MirrorClient) Use(hooks ...Hook) {
+	c.hooks.Mirror = append(c.hooks.Mirror, hooks...)
+}
+
+// Create returns a create builder for Mirror.
+func (c *MirrorClient) Create() *MirrorCreate {
+	mutation := newMirrorMutation(c.config, OpCreate)
+	return &MirrorCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Mirror entities.
+func (c *MirrorClient) CreateBulk(builders ...*MirrorCreate) *MirrorCreateBulk {
+	return &MirrorCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Mirror.
+func (c *MirrorClient) Update() *MirrorUpdate {
+	mutation := newMirrorMutation(c.config, OpUpdate)
+	return &MirrorUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *MirrorClient) UpdateOne(m *Mirror) *MirrorUpdateOne {
+	mutation := newMirrorMutation(c.config, OpUpdateOne, withMirror(m))
+	return &MirrorUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *MirrorClient) UpdateOneID(id uuid.UUID) *MirrorUpdateOne {
+	mutation := newMirrorMutation(c.config, OpUpdateOne, withMirrorID(id))
+	return &MirrorUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Mirror.
+func (c *MirrorClient) Delete() *MirrorDelete {
+	mutation := newMirrorMutation(c.config, OpDelete)
+	return &MirrorDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *MirrorClient) DeleteOne(m *Mirror) *MirrorDeleteOne {
+	return c.DeleteOneID(m.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *MirrorClient) DeleteOneID(id uuid.UUID) *MirrorDeleteOne {
+	builder := c.Delete().Where(mirror.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &MirrorDeleteOne{builder}
+}
+
+// Query returns a query builder for Mirror.
+func (c *MirrorClient) Query() *MirrorQuery {
+	return &MirrorQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a Mirror entity by its id.
+func (c *MirrorClient) Get(ctx context.Context, id uuid.UUID) (*Mirror, error) {
+	return c.Query().Where(mirror.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *MirrorClient) GetX(ctx context.Context, id uuid.UUID) *Mirror {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryNamespace queries the namespace edge of a Mirror.
+func (c *MirrorClient) QueryNamespace(m *Mirror) *NamespaceQuery {
+	query := &NamespaceQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(mirror.Table, mirror.FieldID, id),
+			sqlgraph.To(namespace.Table, namespace.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, mirror.NamespaceTable, mirror.NamespaceColumn),
+		)
+		fromV = sqlgraph.Neighbors(m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryInode queries the inode edge of a Mirror.
+func (c *MirrorClient) QueryInode(m *Mirror) *InodeQuery {
+	query := &InodeQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(mirror.Table, mirror.FieldID, id),
+			sqlgraph.To(inode.Table, inode.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, mirror.InodeTable, mirror.InodeColumn),
+		)
+		fromV = sqlgraph.Neighbors(m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryActivities queries the activities edge of a Mirror.
+func (c *MirrorClient) QueryActivities(m *Mirror) *MirrorActivityQuery {
+	query := &MirrorActivityQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(mirror.Table, mirror.FieldID, id),
+			sqlgraph.To(mirroractivity.Table, mirroractivity.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, mirror.ActivitiesTable, mirror.ActivitiesColumn),
+		)
+		fromV = sqlgraph.Neighbors(m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *MirrorClient) Hooks() []Hook {
+	return c.hooks.Mirror
+}
+
+// MirrorActivityClient is a client for the MirrorActivity schema.
+type MirrorActivityClient struct {
+	config
+}
+
+// NewMirrorActivityClient returns a client for the MirrorActivity from the given config.
+func NewMirrorActivityClient(c config) *MirrorActivityClient {
+	return &MirrorActivityClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `mirroractivity.Hooks(f(g(h())))`.
+func (c *MirrorActivityClient) Use(hooks ...Hook) {
+	c.hooks.MirrorActivity = append(c.hooks.MirrorActivity, hooks...)
+}
+
+// Create returns a create builder for MirrorActivity.
+func (c *MirrorActivityClient) Create() *MirrorActivityCreate {
+	mutation := newMirrorActivityMutation(c.config, OpCreate)
+	return &MirrorActivityCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of MirrorActivity entities.
+func (c *MirrorActivityClient) CreateBulk(builders ...*MirrorActivityCreate) *MirrorActivityCreateBulk {
+	return &MirrorActivityCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for MirrorActivity.
+func (c *MirrorActivityClient) Update() *MirrorActivityUpdate {
+	mutation := newMirrorActivityMutation(c.config, OpUpdate)
+	return &MirrorActivityUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *MirrorActivityClient) UpdateOne(ma *MirrorActivity) *MirrorActivityUpdateOne {
+	mutation := newMirrorActivityMutation(c.config, OpUpdateOne, withMirrorActivity(ma))
+	return &MirrorActivityUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *MirrorActivityClient) UpdateOneID(id uuid.UUID) *MirrorActivityUpdateOne {
+	mutation := newMirrorActivityMutation(c.config, OpUpdateOne, withMirrorActivityID(id))
+	return &MirrorActivityUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for MirrorActivity.
+func (c *MirrorActivityClient) Delete() *MirrorActivityDelete {
+	mutation := newMirrorActivityMutation(c.config, OpDelete)
+	return &MirrorActivityDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *MirrorActivityClient) DeleteOne(ma *MirrorActivity) *MirrorActivityDeleteOne {
+	return c.DeleteOneID(ma.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *MirrorActivityClient) DeleteOneID(id uuid.UUID) *MirrorActivityDeleteOne {
+	builder := c.Delete().Where(mirroractivity.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &MirrorActivityDeleteOne{builder}
+}
+
+// Query returns a query builder for MirrorActivity.
+func (c *MirrorActivityClient) Query() *MirrorActivityQuery {
+	return &MirrorActivityQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a MirrorActivity entity by its id.
+func (c *MirrorActivityClient) Get(ctx context.Context, id uuid.UUID) (*MirrorActivity, error) {
+	return c.Query().Where(mirroractivity.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *MirrorActivityClient) GetX(ctx context.Context, id uuid.UUID) *MirrorActivity {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryNamespace queries the namespace edge of a MirrorActivity.
+func (c *MirrorActivityClient) QueryNamespace(ma *MirrorActivity) *NamespaceQuery {
+	query := &NamespaceQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := ma.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(mirroractivity.Table, mirroractivity.FieldID, id),
+			sqlgraph.To(namespace.Table, namespace.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, mirroractivity.NamespaceTable, mirroractivity.NamespaceColumn),
+		)
+		fromV = sqlgraph.Neighbors(ma.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryMirror queries the mirror edge of a MirrorActivity.
+func (c *MirrorActivityClient) QueryMirror(ma *MirrorActivity) *MirrorQuery {
+	query := &MirrorQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := ma.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(mirroractivity.Table, mirroractivity.FieldID, id),
+			sqlgraph.To(mirror.Table, mirror.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, mirroractivity.MirrorTable, mirroractivity.MirrorColumn),
+		)
+		fromV = sqlgraph.Neighbors(ma.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryLogs queries the logs edge of a MirrorActivity.
+func (c *MirrorActivityClient) QueryLogs(ma *MirrorActivity) *LogMsgQuery {
+	query := &LogMsgQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := ma.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(mirroractivity.Table, mirroractivity.FieldID, id),
+			sqlgraph.To(logmsg.Table, logmsg.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, mirroractivity.LogsTable, mirroractivity.LogsColumn),
+		)
+		fromV = sqlgraph.Neighbors(ma.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *MirrorActivityClient) Hooks() []Hook {
+	return c.hooks.MirrorActivity
 }
 
 // NamespaceClient is a client for the Namespace schema.
@@ -1323,6 +1645,38 @@ func (c *NamespaceClient) QueryWorkflows(n *Namespace) *WorkflowQuery {
 			sqlgraph.From(namespace.Table, namespace.FieldID, id),
 			sqlgraph.To(workflow.Table, workflow.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, namespace.WorkflowsTable, namespace.WorkflowsColumn),
+		)
+		fromV = sqlgraph.Neighbors(n.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryMirrors queries the mirrors edge of a Namespace.
+func (c *NamespaceClient) QueryMirrors(n *Namespace) *MirrorQuery {
+	query := &MirrorQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := n.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(namespace.Table, namespace.FieldID, id),
+			sqlgraph.To(mirror.Table, mirror.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, namespace.MirrorsTable, namespace.MirrorsColumn),
+		)
+		fromV = sqlgraph.Neighbors(n.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryMirrorActivities queries the mirror_activities edge of a Namespace.
+func (c *NamespaceClient) QueryMirrorActivities(n *Namespace) *MirrorActivityQuery {
+	query := &MirrorActivityQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := n.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(namespace.Table, namespace.FieldID, id),
+			sqlgraph.To(mirroractivity.Table, mirroractivity.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, namespace.MirrorActivitiesTable, namespace.MirrorActivitiesColumn),
 		)
 		fromV = sqlgraph.Neighbors(n.driver.Dialect(), step)
 		return fromV, nil
