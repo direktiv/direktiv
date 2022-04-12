@@ -187,6 +187,7 @@ export function InstancesTable(props) {
                             <th className="center-align" style={{maxWidth: "120px", minWidth: "120px", width: "120px"}}>State</th>
                             <th className="center-align">Name</th>
                             {mini ? <></>:<th className="center-align">Revision ID</th>}
+                            {mini ? <></>:<th className="center-align">Invoker</th>}
                             <th className="center-align">Started <span className="hide-on-med">at</span></th>
                             {mini ? <></>:<th className="center-align"><span className="hide-on-med">Last</span> Updated</th>}
                         </tr>
@@ -204,6 +205,7 @@ export function InstancesTable(props) {
                                     state={obj.node.status} 
                                     name={obj.node.as} 
                                     id={obj.node.id}
+                                    invoker={obj.node.invoker}
                                     startedDate={dayjs.utc(obj.node.createdAt).local().format("DD MMM YY")} 
                                     startedTime={dayjs.utc(obj.node.createdAt).local().format("HH:mm a")} 
                                     finishedDate={dayjs.utc(obj.node.updatedAt).local().format("DD MMM YY")}
@@ -234,7 +236,7 @@ const cancelled = "cancelled";
 const running = "pending";
 
 export function InstanceRow(props) {
-    let {state, name, wf, startedDate,  finishedDate, startedTime, finishedTime,  id, namespace,mini} = props;
+    let {state, name, wf, startedDate,  finishedDate, startedTime, finishedTime,  id, namespace, mini, invoker} = props;
     const navigate = useNavigate()
 
     let label;
@@ -281,12 +283,16 @@ export function InstanceRow(props) {
         {mini ? <></>:<td title={revStr} style={{ fontSize: "12px", lineHeight: "20px", textOverflow:"ellipsis", overflow:"hidden", color: revStr !== undefined ? "" : "var(--theme-dark-gray-text)" }} className="center-align">
             {revStr !== undefined ? revStr : "ROUTER"}
         </td>}
+        {mini ? <></>:<td title={invoker} style={{ fontSize: "12px", lineHeight: "20px", textOverflow:"ellipsis", overflow:"hidden" }} className="center-align">
+            {/* Trim instance id from invoker label */}
+            {invoker !== undefined &&  invoker !== "" ? invoker.split(":")[0] : "NA"}
+        </td>}
         <td className="center-align">
-            <span className="hide-on-800">{startedDate}, </span>
+            <span className="hide-on-860">{startedDate}, </span>
             {startedTime}
         </td>
         {mini ? <></>:<td className="center-align">
-            <span className="hide-on-800">{finishedDate}, </span>
+            <span className="hide-on-860">{finishedDate}, </span>
             {finishedTime}
         </td>}
     </tr>
