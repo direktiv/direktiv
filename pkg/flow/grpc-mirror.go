@@ -62,6 +62,7 @@ func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNam
 	mir, err = mirc.Create().
 		SetURL(settings.GetUrl()).
 		SetRef(settings.GetRef()).
+		SetCommit("").
 		SetPublicKey(settings.GetPublicKey()).
 		SetPrivateKey(settings.GetPrivateKey()).
 		SetPassphrase(settings.GetPassphrase()).
@@ -158,6 +159,7 @@ func (flow *flow) CreateDirectoryMirror(ctx context.Context, req *grpc.CreateDir
 	mir, err = mirc.Create().
 		SetURL(settings.GetUrl()).
 		SetRef(settings.GetRef()).
+		SetCommit("").
 		SetPublicKey(settings.GetPublicKey()).
 		SetPrivateKey(settings.GetPrivateKey()).
 		SetPassphrase(settings.GetPassphrase()).
