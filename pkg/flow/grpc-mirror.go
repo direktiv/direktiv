@@ -800,7 +800,7 @@ func (srv *server) getMirrorActivity(ctx context.Context, nsc *ent.NamespaceClie
 		return nil, err
 	}
 
-	act.Edges.Mirror.Edges.Namespace = ns
+	act.Edges.Namespace = ns
 
 	d := new(mirrorActivityData)
 	d.act = act
