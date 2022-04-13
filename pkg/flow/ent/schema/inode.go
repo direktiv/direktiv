@@ -28,7 +28,7 @@ func (Inode) Fields() []ent.Field {
 		field.String("name").Match(util.NameRegex).Optional().Annotations(entgql.OrderField("NAME")),
 		field.String("type").Immutable().Annotations(entgql.OrderField("TYPE")),
 		field.Strings("attributes").Optional(),
-		field.String("extended_type").Optional().StorageKey("expandedType"),
+		field.String("extended_type").Optional().StorageKey("expandedType").StructTag(`json:"expandedType,omitempty"`),
 	}
 }
 

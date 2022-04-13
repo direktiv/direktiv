@@ -32,7 +32,7 @@ type Inode struct {
 	// Attributes holds the value of the "attributes" field.
 	Attributes []string `json:"attributes,omitempty"`
 	// ExtendedType holds the value of the "extended_type" field.
-	ExtendedType string `json:"extended_type,omitempty"`
+	ExtendedType string `json:"expandedType,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the InodeQuery when eager-loading is set.
 	Edges            InodeEdges `json:"edges"`
