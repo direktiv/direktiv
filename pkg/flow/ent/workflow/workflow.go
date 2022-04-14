@@ -3,6 +3,8 @@
 package workflow
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 )
 
@@ -15,6 +17,10 @@ const (
 	FieldLive = "live"
 	// FieldLogToEvents holds the string denoting the logtoevents field in the database.
 	FieldLogToEvents = "log_to_events"
+	// FieldReadOnly holds the string denoting the readonly field in the database.
+	FieldReadOnly = "read_only"
+	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
+	FieldUpdatedAt = "updated_at"
 	// EdgeInode holds the string denoting the inode edge name in mutations.
 	EdgeInode = "inode"
 	// EdgeNamespace holds the string denoting the namespace edge name in mutations.
@@ -105,6 +111,8 @@ var Columns = []string{
 	FieldID,
 	FieldLive,
 	FieldLogToEvents,
+	FieldReadOnly,
+	FieldUpdatedAt,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "workflows"
@@ -132,6 +140,10 @@ func ValidColumn(column string) bool {
 var (
 	// DefaultLive holds the default value on creation for the "live" field.
 	DefaultLive bool
+	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
+	DefaultUpdatedAt func() time.Time
+	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
+	UpdateDefaultUpdatedAt func() time.Time
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )

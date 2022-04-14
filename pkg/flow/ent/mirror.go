@@ -33,10 +33,10 @@ type Mirror struct {
 	Passphrase string `json:"passphrase,omitempty"`
 	// Commit holds the value of the "commit" field.
 	Commit string `json:"commit,omitempty"`
-	// Locked holds the value of the "locked" field.
-	Locked bool `json:"locked,omitempty"`
 	// LastSync holds the value of the "last_sync" field.
 	LastSync *time.Time `json:"last_sync,omitempty"`
+	// UpdatedAt holds the value of the "updated_at" field.
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the MirrorQuery when eager-loading is set.
 	Edges             MirrorEdges `json:"edges"`
@@ -99,11 +99,9 @@ func (*Mirror) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case mirror.FieldLocked:
-			values[i] = new(sql.NullBool)
 		case mirror.FieldURL, mirror.FieldRef, mirror.FieldCron, mirror.FieldPublicKey, mirror.FieldPrivateKey, mirror.FieldPassphrase, mirror.FieldCommit:
 			values[i] = new(sql.NullString)
-		case mirror.FieldLastSync:
+		case mirror.FieldLastSync, mirror.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
 		case mirror.FieldID:
 			values[i] = new(uuid.UUID)
@@ -174,18 +172,18 @@ func (m *Mirror) assignValues(columns []string, values []interface{}) error {
 			} else if value.Valid {
 				m.Commit = value.String
 			}
-		case mirror.FieldLocked:
-			if value, ok := values[i].(*sql.NullBool); !ok {
-				return fmt.Errorf("unexpected type %T for field locked", values[i])
-			} else if value.Valid {
-				m.Locked = value.Bool
-			}
 		case mirror.FieldLastSync:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field last_sync", values[i])
 			} else if value.Valid {
 				m.LastSync = new(time.Time)
 				*m.LastSync = value.Time
+			}
+		case mirror.FieldUpdatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
+			} else if value.Valid {
+				m.UpdatedAt = value.Time
 			}
 		case mirror.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
@@ -258,12 +256,12 @@ func (m *Mirror) String() string {
 	builder.WriteString(m.Passphrase)
 	builder.WriteString(", commit=")
 	builder.WriteString(m.Commit)
-	builder.WriteString(", locked=")
-	builder.WriteString(fmt.Sprintf("%v", m.Locked))
 	if v := m.LastSync; v != nil {
 		builder.WriteString(", last_sync=")
 		builder.WriteString(v.Format(time.ANSIC))
 	}
+	builder.WriteString(", updated_at=")
+	builder.WriteString(m.UpdatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

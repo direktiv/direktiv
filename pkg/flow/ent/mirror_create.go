@@ -66,12 +66,6 @@ func (mc *MirrorCreate) SetCommit(s string) *MirrorCreate {
 	return mc
 }
 
-// SetLocked sets the "locked" field.
-func (mc *MirrorCreate) SetLocked(b bool) *MirrorCreate {
-	mc.mutation.SetLocked(b)
-	return mc
-}
-
 // SetLastSync sets the "last_sync" field.
 func (mc *MirrorCreate) SetLastSync(t time.Time) *MirrorCreate {
 	mc.mutation.SetLastSync(t)
@@ -82,6 +76,20 @@ func (mc *MirrorCreate) SetLastSync(t time.Time) *MirrorCreate {
 func (mc *MirrorCreate) SetNillableLastSync(t *time.Time) *MirrorCreate {
 	if t != nil {
 		mc.SetLastSync(*t)
+	}
+	return mc
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (mc *MirrorCreate) SetUpdatedAt(t time.Time) *MirrorCreate {
+	mc.mutation.SetUpdatedAt(t)
+	return mc
+}
+
+// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
+func (mc *MirrorCreate) SetNillableUpdatedAt(t *time.Time) *MirrorCreate {
+	if t != nil {
+		mc.SetUpdatedAt(*t)
 	}
 	return mc
 }
@@ -216,6 +224,10 @@ func (mc *MirrorCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (mc *MirrorCreate) defaults() {
+	if _, ok := mc.mutation.UpdatedAt(); !ok {
+		v := mirror.DefaultUpdatedAt()
+		mc.mutation.SetUpdatedAt(v)
+	}
 	if _, ok := mc.mutation.ID(); !ok {
 		v := mirror.DefaultID()
 		mc.mutation.SetID(v)
@@ -244,9 +256,6 @@ func (mc *MirrorCreate) check() error {
 	}
 	if _, ok := mc.mutation.Commit(); !ok {
 		return &ValidationError{Name: "commit", err: errors.New(`ent: missing required field "Mirror.commit"`)}
-	}
-	if _, ok := mc.mutation.Locked(); !ok {
-		return &ValidationError{Name: "locked", err: errors.New(`ent: missing required field "Mirror.locked"`)}
 	}
 	if _, ok := mc.mutation.NamespaceID(); !ok {
 		return &ValidationError{Name: "namespace", err: errors.New(`ent: missing required edge "Mirror.namespace"`)}
@@ -343,14 +352,6 @@ func (mc *MirrorCreate) createSpec() (*Mirror, *sqlgraph.CreateSpec) {
 		})
 		_node.Commit = value
 	}
-	if value, ok := mc.mutation.Locked(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeBool,
-			Value:  value,
-			Column: mirror.FieldLocked,
-		})
-		_node.Locked = value
-	}
 	if value, ok := mc.mutation.LastSync(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeTime,
@@ -358,6 +359,14 @@ func (mc *MirrorCreate) createSpec() (*Mirror, *sqlgraph.CreateSpec) {
 			Column: mirror.FieldLastSync,
 		})
 		_node.LastSync = &value
+	}
+	if value, ok := mc.mutation.UpdatedAt(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: mirror.FieldUpdatedAt,
+		})
+		_node.UpdatedAt = value
 	}
 	if nodes := mc.mutation.NamespaceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

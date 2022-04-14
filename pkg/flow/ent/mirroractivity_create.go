@@ -78,6 +78,34 @@ func (mac *MirrorActivityCreate) SetNillableEndAt(t *time.Time) *MirrorActivityC
 	return mac
 }
 
+// SetController sets the "controller" field.
+func (mac *MirrorActivityCreate) SetController(s string) *MirrorActivityCreate {
+	mac.mutation.SetController(s)
+	return mac
+}
+
+// SetNillableController sets the "controller" field if the given value is not nil.
+func (mac *MirrorActivityCreate) SetNillableController(s *string) *MirrorActivityCreate {
+	if s != nil {
+		mac.SetController(*s)
+	}
+	return mac
+}
+
+// SetDeadline sets the "deadline" field.
+func (mac *MirrorActivityCreate) SetDeadline(t time.Time) *MirrorActivityCreate {
+	mac.mutation.SetDeadline(t)
+	return mac
+}
+
+// SetNillableDeadline sets the "deadline" field if the given value is not nil.
+func (mac *MirrorActivityCreate) SetNillableDeadline(t *time.Time) *MirrorActivityCreate {
+	if t != nil {
+		mac.SetDeadline(*t)
+	}
+	return mac
+}
+
 // SetID sets the "id" field.
 func (mac *MirrorActivityCreate) SetID(u uuid.UUID) *MirrorActivityCreate {
 	mac.mutation.SetID(u)
@@ -314,6 +342,22 @@ func (mac *MirrorActivityCreate) createSpec() (*MirrorActivity, *sqlgraph.Create
 			Column: mirroractivity.FieldEndAt,
 		})
 		_node.EndAt = value
+	}
+	if value, ok := mac.mutation.Controller(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: mirroractivity.FieldController,
+		})
+		_node.Controller = value
+	}
+	if value, ok := mac.mutation.Deadline(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: mirroractivity.FieldDeadline,
+		})
+		_node.Deadline = value
 	}
 	if nodes := mac.mutation.NamespaceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

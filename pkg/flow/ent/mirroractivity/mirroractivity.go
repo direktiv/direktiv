@@ -23,6 +23,10 @@ const (
 	FieldUpdatedAt = "updated_at"
 	// FieldEndAt holds the string denoting the end_at field in the database.
 	FieldEndAt = "end_at"
+	// FieldController holds the string denoting the controller field in the database.
+	FieldController = "controller"
+	// FieldDeadline holds the string denoting the deadline field in the database.
+	FieldDeadline = "deadline"
 	// EdgeNamespace holds the string denoting the namespace edge name in mutations.
 	EdgeNamespace = "namespace"
 	// EdgeMirror holds the string denoting the mirror edge name in mutations.
@@ -62,6 +66,8 @@ var Columns = []string{
 	FieldCreatedAt,
 	FieldUpdatedAt,
 	FieldEndAt,
+	FieldController,
+	FieldDeadline,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "mirror_activities"

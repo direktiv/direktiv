@@ -27,8 +27,9 @@ func (Mirror) Fields() []ent.Field {
 		field.String("private_key"),
 		field.String("passphrase"),
 		field.String("commit"),
-		field.Bool("locked"),
+		// field.Bool("locked"),
 		field.Time("last_sync").Optional().Nillable(),
+		field.Time("updated_at").Optional().Default(time.Now).UpdateDefault(time.Now).Annotations(entgql.OrderField("UPDATED")),
 	}
 }
 
@@ -55,6 +56,8 @@ func (MirrorActivity) Fields() []ent.Field {
 		field.Time("created_at").Default(time.Now).Immutable().Annotations(entgql.OrderField("CREATED")),
 		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
 		field.Time("end_at").Optional(),
+		field.String("controller").Optional(),
+		field.Time("deadline").Optional(),
 	}
 }
 

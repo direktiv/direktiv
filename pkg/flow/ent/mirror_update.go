@@ -74,12 +74,6 @@ func (mu *MirrorUpdate) SetCommit(s string) *MirrorUpdate {
 	return mu
 }
 
-// SetLocked sets the "locked" field.
-func (mu *MirrorUpdate) SetLocked(b bool) *MirrorUpdate {
-	mu.mutation.SetLocked(b)
-	return mu
-}
-
 // SetLastSync sets the "last_sync" field.
 func (mu *MirrorUpdate) SetLastSync(t time.Time) *MirrorUpdate {
 	mu.mutation.SetLastSync(t)
@@ -97,6 +91,18 @@ func (mu *MirrorUpdate) SetNillableLastSync(t *time.Time) *MirrorUpdate {
 // ClearLastSync clears the value of the "last_sync" field.
 func (mu *MirrorUpdate) ClearLastSync() *MirrorUpdate {
 	mu.mutation.ClearLastSync()
+	return mu
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (mu *MirrorUpdate) SetUpdatedAt(t time.Time) *MirrorUpdate {
+	mu.mutation.SetUpdatedAt(t)
+	return mu
+}
+
+// ClearUpdatedAt clears the value of the "updated_at" field.
+func (mu *MirrorUpdate) ClearUpdatedAt() *MirrorUpdate {
+	mu.mutation.ClearUpdatedAt()
 	return mu
 }
 
@@ -189,6 +195,7 @@ func (mu *MirrorUpdate) Save(ctx context.Context) (int, error) {
 		err      error
 		affected int
 	)
+	mu.defaults()
 	if len(mu.hooks) == 0 {
 		if err = mu.check(); err != nil {
 			return 0, err
@@ -240,6 +247,14 @@ func (mu *MirrorUpdate) Exec(ctx context.Context) error {
 func (mu *MirrorUpdate) ExecX(ctx context.Context) {
 	if err := mu.Exec(ctx); err != nil {
 		panic(err)
+	}
+}
+
+// defaults sets the default values of the builder before save.
+func (mu *MirrorUpdate) defaults() {
+	if _, ok := mu.mutation.UpdatedAt(); !ok && !mu.mutation.UpdatedAtCleared() {
+		v := mirror.UpdateDefaultUpdatedAt()
+		mu.mutation.SetUpdatedAt(v)
 	}
 }
 
@@ -318,13 +333,6 @@ func (mu *MirrorUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: mirror.FieldCommit,
 		})
 	}
-	if value, ok := mu.mutation.Locked(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeBool,
-			Value:  value,
-			Column: mirror.FieldLocked,
-		})
-	}
 	if value, ok := mu.mutation.LastSync(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeTime,
@@ -336,6 +344,19 @@ func (mu *MirrorUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
 			Type:   field.TypeTime,
 			Column: mirror.FieldLastSync,
+		})
+	}
+	if value, ok := mu.mutation.UpdatedAt(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: mirror.FieldUpdatedAt,
+		})
+	}
+	if mu.mutation.UpdatedAtCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Column: mirror.FieldUpdatedAt,
 		})
 	}
 	if mu.mutation.NamespaceCleared() {
@@ -523,12 +544,6 @@ func (muo *MirrorUpdateOne) SetCommit(s string) *MirrorUpdateOne {
 	return muo
 }
 
-// SetLocked sets the "locked" field.
-func (muo *MirrorUpdateOne) SetLocked(b bool) *MirrorUpdateOne {
-	muo.mutation.SetLocked(b)
-	return muo
-}
-
 // SetLastSync sets the "last_sync" field.
 func (muo *MirrorUpdateOne) SetLastSync(t time.Time) *MirrorUpdateOne {
 	muo.mutation.SetLastSync(t)
@@ -546,6 +561,18 @@ func (muo *MirrorUpdateOne) SetNillableLastSync(t *time.Time) *MirrorUpdateOne {
 // ClearLastSync clears the value of the "last_sync" field.
 func (muo *MirrorUpdateOne) ClearLastSync() *MirrorUpdateOne {
 	muo.mutation.ClearLastSync()
+	return muo
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (muo *MirrorUpdateOne) SetUpdatedAt(t time.Time) *MirrorUpdateOne {
+	muo.mutation.SetUpdatedAt(t)
+	return muo
+}
+
+// ClearUpdatedAt clears the value of the "updated_at" field.
+func (muo *MirrorUpdateOne) ClearUpdatedAt() *MirrorUpdateOne {
+	muo.mutation.ClearUpdatedAt()
 	return muo
 }
 
@@ -645,6 +672,7 @@ func (muo *MirrorUpdateOne) Save(ctx context.Context) (*Mirror, error) {
 		err  error
 		node *Mirror
 	)
+	muo.defaults()
 	if len(muo.hooks) == 0 {
 		if err = muo.check(); err != nil {
 			return nil, err
@@ -696,6 +724,14 @@ func (muo *MirrorUpdateOne) Exec(ctx context.Context) error {
 func (muo *MirrorUpdateOne) ExecX(ctx context.Context) {
 	if err := muo.Exec(ctx); err != nil {
 		panic(err)
+	}
+}
+
+// defaults sets the default values of the builder before save.
+func (muo *MirrorUpdateOne) defaults() {
+	if _, ok := muo.mutation.UpdatedAt(); !ok && !muo.mutation.UpdatedAtCleared() {
+		v := mirror.UpdateDefaultUpdatedAt()
+		muo.mutation.SetUpdatedAt(v)
 	}
 }
 
@@ -791,13 +827,6 @@ func (muo *MirrorUpdateOne) sqlSave(ctx context.Context) (_node *Mirror, err err
 			Column: mirror.FieldCommit,
 		})
 	}
-	if value, ok := muo.mutation.Locked(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeBool,
-			Value:  value,
-			Column: mirror.FieldLocked,
-		})
-	}
 	if value, ok := muo.mutation.LastSync(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeTime,
@@ -809,6 +838,19 @@ func (muo *MirrorUpdateOne) sqlSave(ctx context.Context) (_node *Mirror, err err
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
 			Type:   field.TypeTime,
 			Column: mirror.FieldLastSync,
+		})
+	}
+	if value, ok := muo.mutation.UpdatedAt(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: mirror.FieldUpdatedAt,
+		})
+	}
+	if muo.mutation.UpdatedAtCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Column: mirror.FieldUpdatedAt,
 		})
 	}
 	if muo.mutation.NamespaceCleared() {

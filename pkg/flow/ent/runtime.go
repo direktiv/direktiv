@@ -85,6 +85,10 @@ func init() {
 	inodeDescName := inodeFields[3].Descriptor()
 	// inode.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	inode.NameValidator = inodeDescName.Validators[0].(func(string) error)
+	// inodeDescReadOnly is the schema descriptor for readOnly field.
+	inodeDescReadOnly := inodeFields[7].Descriptor()
+	// inode.DefaultReadOnly holds the default value on creation for the readOnly field.
+	inode.DefaultReadOnly = inodeDescReadOnly.Default.(bool)
 	// inodeDescID is the schema descriptor for id field.
 	inodeDescID := inodeFields[0].Descriptor()
 	// inode.DefaultID holds the default value on creation for the id field.
@@ -119,6 +123,12 @@ func init() {
 	logmsg.DefaultID = logmsgDescID.Default.(func() uuid.UUID)
 	mirrorFields := schema.Mirror{}.Fields()
 	_ = mirrorFields
+	// mirrorDescUpdatedAt is the schema descriptor for updated_at field.
+	mirrorDescUpdatedAt := mirrorFields[9].Descriptor()
+	// mirror.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	mirror.DefaultUpdatedAt = mirrorDescUpdatedAt.Default.(func() time.Time)
+	// mirror.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	mirror.UpdateDefaultUpdatedAt = mirrorDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// mirrorDescID is the schema descriptor for id field.
 	mirrorDescID := mirrorFields[0].Descriptor()
 	// mirror.DefaultID holds the default value on creation for the id field.
@@ -249,6 +259,12 @@ func init() {
 	workflowDescLive := workflowFields[1].Descriptor()
 	// workflow.DefaultLive holds the default value on creation for the live field.
 	workflow.DefaultLive = workflowDescLive.Default.(bool)
+	// workflowDescUpdatedAt is the schema descriptor for updated_at field.
+	workflowDescUpdatedAt := workflowFields[4].Descriptor()
+	// workflow.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	workflow.DefaultUpdatedAt = workflowDescUpdatedAt.Default.(func() time.Time)
+	// workflow.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	workflow.UpdateDefaultUpdatedAt = workflowDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// workflowDescID is the schema descriptor for id field.
 	workflowDescID := workflowFields[0].Descriptor()
 	// workflow.DefaultID holds the default value on creation for the id field.

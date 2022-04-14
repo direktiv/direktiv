@@ -166,8 +166,6 @@ func (flow *flow) Node(ctx context.Context, req *grpc.NodeRequest) (*grpc.NodeRe
 		resp.Node.ExpandedType = resp.Node.Type
 	}
 
-	resp.Node.ReadOnly = d.ro
-
 	return &resp, nil
 
 }
@@ -212,8 +210,6 @@ func (flow *flow) Directory(ctx context.Context, req *grpc.DirectoryRequest) (*g
 		resp.Node.ExpandedType = resp.Node.Type
 	}
 
-	resp.Node.ReadOnly = d.ro
-
 	resp.Namespace = d.namespace()
 	resp.Node.Path = d.path
 	resp.Node.Parent = d.dir
@@ -232,13 +228,6 @@ func (flow *flow) Directory(ctx context.Context, req *grpc.DirectoryRequest) (*g
 			child.Node.ExpandedType = child.Node.Type
 		}
 
-		child.Node.ReadOnly = d.ro
-		if child.Node.ExpandedType == util.InodeTypeGit {
-			mir, err := cx.Edges[idx].Node.Mirror(ctx)
-			if err == nil {
-				child.Node.ReadOnly = !mir.Locked
-			}
-		}
 	}
 
 	return &resp, nil
@@ -294,8 +283,6 @@ resend:
 		resp.Node.ExpandedType = resp.Node.Type
 	}
 
-	resp.Node.ReadOnly = d.ro
-
 	resp.Node.Path = d.path
 	resp.Node.Parent = d.dir
 
@@ -311,14 +298,6 @@ resend:
 
 		if child.Node.ExpandedType == "" {
 			child.Node.ExpandedType = child.Node.Type
-		}
-
-		child.Node.ReadOnly = d.ro
-		if child.Node.ExpandedType == util.InodeTypeGit {
-			mir, err := cx.Edges[idx].Node.Mirror(ctx)
-			if err == nil {
-				child.Node.ReadOnly = !mir.Locked
-			}
 		}
 	}
 
@@ -374,7 +353,7 @@ func (flow *flow) CreateDirectory(ctx context.Context, req *grpc.CreateDirectory
 		return nil, status.Error(codes.AlreadyExists, "parent node is not a directory")
 	}
 
-	if pino.ro {
+	if pino.ino.ReadOnly {
 		return nil, errors.New("cannot write into read-only directory")
 	}
 
@@ -408,6 +387,11 @@ func (flow *flow) CreateDirectory(ctx context.Context, req *grpc.CreateDirectory
 
 		}
 
+		return nil, err
+	}
+
+	pino.ino, err = pino.ino.Update().SetUpdatedAt(time.Now()).Save(ctx)
+	if err != nil {
 		return nil, err
 	}
 
@@ -479,7 +463,7 @@ func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (
 		return nil, status.Error(codes.InvalidArgument, "cannot delete root node")
 	}
 
-	if d.ro && d.ino.ExtendedType != util.InodeTypeGit {
+	if d.ino.ReadOnly && d.ino.ExtendedType != util.InodeTypeGit {
 		return nil, status.Error(codes.InvalidArgument, "cannot delete contents of read-only directory")
 	}
 
@@ -497,6 +481,13 @@ func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (
 	err = inoc.DeleteOne(d.ino).Exec(ctx)
 	if err != nil {
 		return nil, err
+	}
+
+	if d.ino.Edges.Parent != nil {
+		_, err = d.ino.Edges.Parent.Update().SetUpdatedAt(time.Now()).Save(ctx)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	err = tx.Commit()
@@ -575,7 +566,7 @@ func (flow *flow) RenameNode(ctx context.Context, req *grpc.RenameNodeRequest) (
 		return nil, errors.New("cannot move node into itself")
 	}
 
-	if d.ro && d.ino.ExtendedType != util.InodeTypeGit {
+	if d.ino.ReadOnly && d.ino.ExtendedType != util.InodeTypeGit {
 		return nil, errors.New("cannot move contents of read-only directory")
 	}
 
@@ -593,11 +584,21 @@ func (flow *flow) RenameNode(ctx context.Context, req *grpc.RenameNodeRequest) (
 		return nil, err
 	}
 
-	if pd.ro {
+	if pd.ino.ReadOnly {
 		return nil, errors.New("cannot write into read-only directory")
 	}
 
+	_, err = d.ino.Edges.Parent.Update().SetUpdatedAt(time.Now()).Save(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	ino, err = ino.Update().SetName(base).SetParent(pd.ino).Save(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = pd.ino.Update().SetUpdatedAt(time.Now()).Save(ctx)
 	if err != nil {
 		return nil, err
 	}

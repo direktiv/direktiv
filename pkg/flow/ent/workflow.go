@@ -5,6 +5,7 @@ package ent
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/direktiv/direktiv/pkg/flow/ent/inode"
@@ -22,6 +23,10 @@ type Workflow struct {
 	Live bool `json:"live,omitempty"`
 	// LogToEvents holds the value of the "logToEvents" field.
 	LogToEvents string `json:"logToEvents,omitempty"`
+	// ReadOnly holds the value of the "readOnly" field.
+	ReadOnly bool `json:"readOnly,omitempty"`
+	// UpdatedAt holds the value of the "updated_at" field.
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the WorkflowQuery when eager-loading is set.
 	Edges               WorkflowEdges `json:"edges"`
@@ -150,10 +155,12 @@ func (*Workflow) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case workflow.FieldLive:
+		case workflow.FieldLive, workflow.FieldReadOnly:
 			values[i] = new(sql.NullBool)
 		case workflow.FieldLogToEvents:
 			values[i] = new(sql.NullString)
+		case workflow.FieldUpdatedAt:
+			values[i] = new(sql.NullTime)
 		case workflow.FieldID:
 			values[i] = new(uuid.UUID)
 		case workflow.ForeignKeys[0]: // inode_workflow
@@ -192,6 +199,18 @@ func (w *Workflow) assignValues(columns []string, values []interface{}) error {
 				return fmt.Errorf("unexpected type %T for field logToEvents", values[i])
 			} else if value.Valid {
 				w.LogToEvents = value.String
+			}
+		case workflow.FieldReadOnly:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field readOnly", values[i])
+			} else if value.Valid {
+				w.ReadOnly = value.Bool
+			}
+		case workflow.FieldUpdatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
+			} else if value.Valid {
+				w.UpdatedAt = value.Time
 			}
 		case workflow.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
@@ -284,6 +303,10 @@ func (w *Workflow) String() string {
 	builder.WriteString(fmt.Sprintf("%v", w.Live))
 	builder.WriteString(", logToEvents=")
 	builder.WriteString(w.LogToEvents)
+	builder.WriteString(", readOnly=")
+	builder.WriteString(fmt.Sprintf("%v", w.ReadOnly))
+	builder.WriteString(", updated_at=")
+	builder.WriteString(w.UpdatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

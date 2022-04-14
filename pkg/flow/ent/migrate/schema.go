@@ -107,6 +107,7 @@ var (
 		{Name: "type", Type: field.TypeString},
 		{Name: "attributes", Type: field.TypeJSON, Nullable: true},
 		{Name: "expandedType", Type: field.TypeString, Nullable: true},
+		{Name: "read_only", Type: field.TypeBool, Nullable: true, Default: false},
 		{Name: "inode_children", Type: field.TypeUUID, Nullable: true},
 		{Name: "namespace_inodes", Type: field.TypeUUID},
 	}
@@ -118,13 +119,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "inodes_inodes_children",
-				Columns:    []*schema.Column{InodesColumns[7]},
+				Columns:    []*schema.Column{InodesColumns[8]},
 				RefColumns: []*schema.Column{InodesColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "inodes_namespaces_inodes",
-				Columns:    []*schema.Column{InodesColumns[8]},
+				Columns:    []*schema.Column{InodesColumns[9]},
 				RefColumns: []*schema.Column{NamespacesColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
@@ -133,7 +134,7 @@ var (
 			{
 				Name:    "inode_name_inode_children",
 				Unique:  true,
-				Columns: []*schema.Column{InodesColumns[3], InodesColumns[7]},
+				Columns: []*schema.Column{InodesColumns[3], InodesColumns[8]},
 			},
 		},
 	}
@@ -269,8 +270,8 @@ var (
 		{Name: "private_key", Type: field.TypeString},
 		{Name: "passphrase", Type: field.TypeString},
 		{Name: "commit", Type: field.TypeString},
-		{Name: "locked", Type: field.TypeBool},
 		{Name: "last_sync", Type: field.TypeTime, Nullable: true},
+		{Name: "updated_at", Type: field.TypeTime, Nullable: true},
 		{Name: "inode_mirror", Type: field.TypeUUID, Unique: true, Nullable: true},
 		{Name: "namespace_mirrors", Type: field.TypeUUID},
 	}
@@ -302,6 +303,8 @@ var (
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "end_at", Type: field.TypeTime, Nullable: true},
+		{Name: "controller", Type: field.TypeString, Nullable: true},
+		{Name: "deadline", Type: field.TypeTime, Nullable: true},
 		{Name: "mirror_activities", Type: field.TypeUUID, Nullable: true},
 		{Name: "namespace_mirror_activities", Type: field.TypeUUID},
 	}
@@ -313,13 +316,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "mirror_activities_mirrors_activities",
-				Columns:    []*schema.Column{MirrorActivitiesColumns[6]},
+				Columns:    []*schema.Column{MirrorActivitiesColumns[8]},
 				RefColumns: []*schema.Column{MirrorsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "mirror_activities_namespaces_mirror_activities",
-				Columns:    []*schema.Column{MirrorActivitiesColumns[7]},
+				Columns:    []*schema.Column{MirrorActivitiesColumns[9]},
 				RefColumns: []*schema.Column{NamespacesColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
@@ -488,6 +491,8 @@ var (
 		{Name: "oid", Type: field.TypeUUID},
 		{Name: "live", Type: field.TypeBool, Default: true},
 		{Name: "log_to_events", Type: field.TypeString, Nullable: true},
+		{Name: "read_only", Type: field.TypeBool, Nullable: true},
+		{Name: "updated_at", Type: field.TypeTime, Nullable: true},
 		{Name: "inode_workflow", Type: field.TypeUUID, Unique: true, Nullable: true},
 		{Name: "namespace_workflows", Type: field.TypeUUID},
 	}
@@ -499,13 +504,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "workflows_inodes_workflow",
-				Columns:    []*schema.Column{WorkflowsColumns[3]},
+				Columns:    []*schema.Column{WorkflowsColumns[5]},
 				RefColumns: []*schema.Column{InodesColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "workflows_namespaces_workflows",
-				Columns:    []*schema.Column{WorkflowsColumns[4]},
+				Columns:    []*schema.Column{WorkflowsColumns[6]},
 				RefColumns: []*schema.Column{NamespacesColumns[0]},
 				OnDelete:   schema.Cascade,
 			},

@@ -2416,6 +2416,16 @@ func (m *MirrorQuery) Paginate(
 }
 
 var (
+	// MirrorOrderFieldUpdatedAt orders Mirror by updated_at.
+	MirrorOrderFieldUpdatedAt = &MirrorOrderField{
+		field: mirror.FieldUpdatedAt,
+		toCursor: func(m *Mirror) Cursor {
+			return Cursor{
+				ID:    m.ID,
+				Value: m.UpdatedAt,
+			}
+		},
+	}
 	// MirrorOrderFieldID orders Mirror by id.
 	MirrorOrderFieldID = &MirrorOrderField{
 		field: mirror.FieldID,
@@ -2432,6 +2442,8 @@ var (
 func (f MirrorOrderField) String() string {
 	var str string
 	switch f.field {
+	case mirror.FieldUpdatedAt:
+		str = "UPDATED"
 	case mirror.FieldID:
 		str = "ID"
 	}
@@ -2450,6 +2462,8 @@ func (f *MirrorOrderField) UnmarshalGQL(v interface{}) error {
 		return fmt.Errorf("MirrorOrderField %T must be a string", v)
 	}
 	switch str {
+	case "UPDATED":
+		*f = *MirrorOrderFieldUpdatedAt
 	case "ID":
 		*f = *MirrorOrderFieldID
 	default:
@@ -4515,6 +4529,49 @@ func (w *WorkflowQuery) Paginate(
 	}
 
 	return conn, nil
+}
+
+var (
+	// WorkflowOrderFieldUpdatedAt orders Workflow by updated_at.
+	WorkflowOrderFieldUpdatedAt = &WorkflowOrderField{
+		field: workflow.FieldUpdatedAt,
+		toCursor: func(w *Workflow) Cursor {
+			return Cursor{
+				ID:    w.ID,
+				Value: w.UpdatedAt,
+			}
+		},
+	}
+)
+
+// String implement fmt.Stringer interface.
+func (f WorkflowOrderField) String() string {
+	var str string
+	switch f.field {
+	case workflow.FieldUpdatedAt:
+		str = "UPDATED"
+	}
+	return str
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (f WorkflowOrderField) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(f.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (f *WorkflowOrderField) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("WorkflowOrderField %T must be a string", v)
+	}
+	switch str {
+	case "UPDATED":
+		*f = *WorkflowOrderFieldUpdatedAt
+	default:
+		return fmt.Errorf("%s is not a valid WorkflowOrderField", str)
+	}
+	return nil
 }
 
 // WorkflowOrderField defines the ordering field of Workflow.

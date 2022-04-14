@@ -1,5 +1,7 @@
 package util
 
 const (
-	InodeTypeGit = "git"
+	InodeTypeGit       = "git"
+	InodeTypeDirectory = "directory"
+	InodeTypeWorkflow  = "workflow"
 )

@@ -19,6 +19,7 @@ const (
 	pubsubDisconnectFunction           = "disconnect"
 	pubsubDeleteTimerFunction          = "deleteTimer"
 	pubsubDeleteInstanceTimersFunction = "deleteInstanceTimers"
+	pubsubDeleteActivityTimersFunction = "deleteActivityTimers"
 	pubsubCancelWorkflowFunction       = "cancelWorkflow"
 	pubsubConfigureRouterFunction      = "configureRouter"
 )
@@ -781,6 +782,15 @@ func (pubsub *pubsub) ClusterDeleteInstanceTimers(name string) {
 
 	pubsub.publish(&PubsubUpdate{
 		Handler: pubsubDeleteInstanceTimersFunction,
+		Key:     name,
+	})
+
+}
+
+func (pubsub *pubsub) ClusterDeleteActivityTimers(name string) {
+
+	pubsub.publish(&PubsubUpdate{
+		Handler: pubsubDeleteActivityTimersFunction,
 		Key:     name,
 	})
 

@@ -33,6 +33,8 @@ type Inode struct {
 	Attributes []string `json:"attributes,omitempty"`
 	// ExtendedType holds the value of the "extended_type" field.
 	ExtendedType string `json:"expandedType,omitempty"`
+	// ReadOnly holds the value of the "readOnly" field.
+	ReadOnly bool `json:"readOnly,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the InodeQuery when eager-loading is set.
 	Edges            InodeEdges `json:"edges"`
@@ -129,6 +131,8 @@ func (*Inode) scanValues(columns []string) ([]interface{}, error) {
 		switch columns[i] {
 		case inode.FieldAttributes:
 			values[i] = new([]byte)
+		case inode.FieldReadOnly:
+			values[i] = new(sql.NullBool)
 		case inode.FieldName, inode.FieldType, inode.FieldExtendedType:
 			values[i] = new(sql.NullString)
 		case inode.FieldCreatedAt, inode.FieldUpdatedAt:
@@ -197,6 +201,12 @@ func (i *Inode) assignValues(columns []string, values []interface{}) error {
 				return fmt.Errorf("unexpected type %T for field extended_type", values[j])
 			} else if value.Valid {
 				i.ExtendedType = value.String
+			}
+		case inode.FieldReadOnly:
+			if value, ok := values[j].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field readOnly", values[j])
+			} else if value.Valid {
+				i.ReadOnly = value.Bool
 			}
 		case inode.ForeignKeys[0]:
 			if value, ok := values[j].(*sql.NullScanner); !ok {
@@ -277,6 +287,8 @@ func (i *Inode) String() string {
 	builder.WriteString(fmt.Sprintf("%v", i.Attributes))
 	builder.WriteString(", extended_type=")
 	builder.WriteString(i.ExtendedType)
+	builder.WriteString(", readOnly=")
+	builder.WriteString(fmt.Sprintf("%v", i.ReadOnly))
 	builder.WriteByte(')')
 	return builder.String()
 }

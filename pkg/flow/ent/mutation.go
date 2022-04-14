@@ -1974,6 +1974,7 @@ type InodeMutation struct {
 	_type            *string
 	attributes       *[]string
 	extended_type    *string
+	readOnly         *bool
 	clearedFields    map[string]struct{}
 	namespace        *uuid.UUID
 	clearednamespace bool
@@ -2350,6 +2351,55 @@ func (m *InodeMutation) ResetExtendedType() {
 	delete(m.clearedFields, inode.FieldExtendedType)
 }
 
+// SetReadOnly sets the "readOnly" field.
+func (m *InodeMutation) SetReadOnly(b bool) {
+	m.readOnly = &b
+}
+
+// ReadOnly returns the value of the "readOnly" field in the mutation.
+func (m *InodeMutation) ReadOnly() (r bool, exists bool) {
+	v := m.readOnly
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldReadOnly returns the old "readOnly" field's value of the Inode entity.
+// If the Inode object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InodeMutation) OldReadOnly(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldReadOnly is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldReadOnly requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldReadOnly: %w", err)
+	}
+	return oldValue.ReadOnly, nil
+}
+
+// ClearReadOnly clears the value of the "readOnly" field.
+func (m *InodeMutation) ClearReadOnly() {
+	m.readOnly = nil
+	m.clearedFields[inode.FieldReadOnly] = struct{}{}
+}
+
+// ReadOnlyCleared returns if the "readOnly" field was cleared in this mutation.
+func (m *InodeMutation) ReadOnlyCleared() bool {
+	_, ok := m.clearedFields[inode.FieldReadOnly]
+	return ok
+}
+
+// ResetReadOnly resets all changes to the "readOnly" field.
+func (m *InodeMutation) ResetReadOnly() {
+	m.readOnly = nil
+	delete(m.clearedFields, inode.FieldReadOnly)
+}
+
 // SetNamespaceID sets the "namespace" edge to the Namespace entity by id.
 func (m *InodeMutation) SetNamespaceID(id uuid.UUID) {
 	m.namespace = &id
@@ -2579,7 +2629,7 @@ func (m *InodeMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *InodeMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 7)
 	if m.created_at != nil {
 		fields = append(fields, inode.FieldCreatedAt)
 	}
@@ -2597,6 +2647,9 @@ func (m *InodeMutation) Fields() []string {
 	}
 	if m.extended_type != nil {
 		fields = append(fields, inode.FieldExtendedType)
+	}
+	if m.readOnly != nil {
+		fields = append(fields, inode.FieldReadOnly)
 	}
 	return fields
 }
@@ -2618,6 +2671,8 @@ func (m *InodeMutation) Field(name string) (ent.Value, bool) {
 		return m.Attributes()
 	case inode.FieldExtendedType:
 		return m.ExtendedType()
+	case inode.FieldReadOnly:
+		return m.ReadOnly()
 	}
 	return nil, false
 }
@@ -2639,6 +2694,8 @@ func (m *InodeMutation) OldField(ctx context.Context, name string) (ent.Value, e
 		return m.OldAttributes(ctx)
 	case inode.FieldExtendedType:
 		return m.OldExtendedType(ctx)
+	case inode.FieldReadOnly:
+		return m.OldReadOnly(ctx)
 	}
 	return nil, fmt.Errorf("unknown Inode field %s", name)
 }
@@ -2690,6 +2747,13 @@ func (m *InodeMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetExtendedType(v)
 		return nil
+	case inode.FieldReadOnly:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetReadOnly(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Inode field %s", name)
 }
@@ -2729,6 +2793,9 @@ func (m *InodeMutation) ClearedFields() []string {
 	if m.FieldCleared(inode.FieldExtendedType) {
 		fields = append(fields, inode.FieldExtendedType)
 	}
+	if m.FieldCleared(inode.FieldReadOnly) {
+		fields = append(fields, inode.FieldReadOnly)
+	}
 	return fields
 }
 
@@ -2751,6 +2818,9 @@ func (m *InodeMutation) ClearField(name string) error {
 		return nil
 	case inode.FieldExtendedType:
 		m.ClearExtendedType()
+		return nil
+	case inode.FieldReadOnly:
+		m.ClearReadOnly()
 		return nil
 	}
 	return fmt.Errorf("unknown Inode nullable field %s", name)
@@ -2777,6 +2847,9 @@ func (m *InodeMutation) ResetField(name string) error {
 		return nil
 	case inode.FieldExtendedType:
 		m.ResetExtendedType()
+		return nil
+	case inode.FieldReadOnly:
+		m.ResetReadOnly()
 		return nil
 	}
 	return fmt.Errorf("unknown Inode field %s", name)
@@ -6262,8 +6335,8 @@ type MirrorMutation struct {
 	private_key       *string
 	passphrase        *string
 	commit            *string
-	locked            *bool
 	last_sync         *time.Time
+	updated_at        *time.Time
 	clearedFields     map[string]struct{}
 	namespace         *uuid.UUID
 	clearednamespace  bool
@@ -6633,42 +6706,6 @@ func (m *MirrorMutation) ResetCommit() {
 	m.commit = nil
 }
 
-// SetLocked sets the "locked" field.
-func (m *MirrorMutation) SetLocked(b bool) {
-	m.locked = &b
-}
-
-// Locked returns the value of the "locked" field in the mutation.
-func (m *MirrorMutation) Locked() (r bool, exists bool) {
-	v := m.locked
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldLocked returns the old "locked" field's value of the Mirror entity.
-// If the Mirror object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *MirrorMutation) OldLocked(ctx context.Context) (v bool, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldLocked is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldLocked requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldLocked: %w", err)
-	}
-	return oldValue.Locked, nil
-}
-
-// ResetLocked resets all changes to the "locked" field.
-func (m *MirrorMutation) ResetLocked() {
-	m.locked = nil
-}
-
 // SetLastSync sets the "last_sync" field.
 func (m *MirrorMutation) SetLastSync(t time.Time) {
 	m.last_sync = &t
@@ -6716,6 +6753,55 @@ func (m *MirrorMutation) LastSyncCleared() bool {
 func (m *MirrorMutation) ResetLastSync() {
 	m.last_sync = nil
 	delete(m.clearedFields, mirror.FieldLastSync)
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *MirrorMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *MirrorMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the Mirror entity.
+// If the Mirror object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MirrorMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ClearUpdatedAt clears the value of the "updated_at" field.
+func (m *MirrorMutation) ClearUpdatedAt() {
+	m.updated_at = nil
+	m.clearedFields[mirror.FieldUpdatedAt] = struct{}{}
+}
+
+// UpdatedAtCleared returns if the "updated_at" field was cleared in this mutation.
+func (m *MirrorMutation) UpdatedAtCleared() bool {
+	_, ok := m.clearedFields[mirror.FieldUpdatedAt]
+	return ok
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *MirrorMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+	delete(m.clearedFields, mirror.FieldUpdatedAt)
 }
 
 // SetNamespaceID sets the "namespace" edge to the Namespace entity by id.
@@ -6891,11 +6977,11 @@ func (m *MirrorMutation) Fields() []string {
 	if m.commit != nil {
 		fields = append(fields, mirror.FieldCommit)
 	}
-	if m.locked != nil {
-		fields = append(fields, mirror.FieldLocked)
-	}
 	if m.last_sync != nil {
 		fields = append(fields, mirror.FieldLastSync)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, mirror.FieldUpdatedAt)
 	}
 	return fields
 }
@@ -6919,10 +7005,10 @@ func (m *MirrorMutation) Field(name string) (ent.Value, bool) {
 		return m.Passphrase()
 	case mirror.FieldCommit:
 		return m.Commit()
-	case mirror.FieldLocked:
-		return m.Locked()
 	case mirror.FieldLastSync:
 		return m.LastSync()
+	case mirror.FieldUpdatedAt:
+		return m.UpdatedAt()
 	}
 	return nil, false
 }
@@ -6946,10 +7032,10 @@ func (m *MirrorMutation) OldField(ctx context.Context, name string) (ent.Value, 
 		return m.OldPassphrase(ctx)
 	case mirror.FieldCommit:
 		return m.OldCommit(ctx)
-	case mirror.FieldLocked:
-		return m.OldLocked(ctx)
 	case mirror.FieldLastSync:
 		return m.OldLastSync(ctx)
+	case mirror.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown Mirror field %s", name)
 }
@@ -7008,19 +7094,19 @@ func (m *MirrorMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetCommit(v)
 		return nil
-	case mirror.FieldLocked:
-		v, ok := value.(bool)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetLocked(v)
-		return nil
 	case mirror.FieldLastSync:
 		v, ok := value.(time.Time)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetLastSync(v)
+		return nil
+	case mirror.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Mirror field %s", name)
@@ -7055,6 +7141,9 @@ func (m *MirrorMutation) ClearedFields() []string {
 	if m.FieldCleared(mirror.FieldLastSync) {
 		fields = append(fields, mirror.FieldLastSync)
 	}
+	if m.FieldCleared(mirror.FieldUpdatedAt) {
+		fields = append(fields, mirror.FieldUpdatedAt)
+	}
 	return fields
 }
 
@@ -7071,6 +7160,9 @@ func (m *MirrorMutation) ClearField(name string) error {
 	switch name {
 	case mirror.FieldLastSync:
 		m.ClearLastSync()
+		return nil
+	case mirror.FieldUpdatedAt:
+		m.ClearUpdatedAt()
 		return nil
 	}
 	return fmt.Errorf("unknown Mirror nullable field %s", name)
@@ -7101,11 +7193,11 @@ func (m *MirrorMutation) ResetField(name string) error {
 	case mirror.FieldCommit:
 		m.ResetCommit()
 		return nil
-	case mirror.FieldLocked:
-		m.ResetLocked()
-		return nil
 	case mirror.FieldLastSync:
 		m.ResetLastSync()
+		return nil
+	case mirror.FieldUpdatedAt:
+		m.ResetUpdatedAt()
 		return nil
 	}
 	return fmt.Errorf("unknown Mirror field %s", name)
@@ -7242,6 +7334,8 @@ type MirrorActivityMutation struct {
 	created_at       *time.Time
 	updated_at       *time.Time
 	end_at           *time.Time
+	controller       *string
+	deadline         *time.Time
 	clearedFields    map[string]struct{}
 	namespace        *uuid.UUID
 	clearednamespace bool
@@ -7552,6 +7646,104 @@ func (m *MirrorActivityMutation) ResetEndAt() {
 	delete(m.clearedFields, mirroractivity.FieldEndAt)
 }
 
+// SetController sets the "controller" field.
+func (m *MirrorActivityMutation) SetController(s string) {
+	m.controller = &s
+}
+
+// Controller returns the value of the "controller" field in the mutation.
+func (m *MirrorActivityMutation) Controller() (r string, exists bool) {
+	v := m.controller
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldController returns the old "controller" field's value of the MirrorActivity entity.
+// If the MirrorActivity object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MirrorActivityMutation) OldController(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldController is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldController requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldController: %w", err)
+	}
+	return oldValue.Controller, nil
+}
+
+// ClearController clears the value of the "controller" field.
+func (m *MirrorActivityMutation) ClearController() {
+	m.controller = nil
+	m.clearedFields[mirroractivity.FieldController] = struct{}{}
+}
+
+// ControllerCleared returns if the "controller" field was cleared in this mutation.
+func (m *MirrorActivityMutation) ControllerCleared() bool {
+	_, ok := m.clearedFields[mirroractivity.FieldController]
+	return ok
+}
+
+// ResetController resets all changes to the "controller" field.
+func (m *MirrorActivityMutation) ResetController() {
+	m.controller = nil
+	delete(m.clearedFields, mirroractivity.FieldController)
+}
+
+// SetDeadline sets the "deadline" field.
+func (m *MirrorActivityMutation) SetDeadline(t time.Time) {
+	m.deadline = &t
+}
+
+// Deadline returns the value of the "deadline" field in the mutation.
+func (m *MirrorActivityMutation) Deadline() (r time.Time, exists bool) {
+	v := m.deadline
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeadline returns the old "deadline" field's value of the MirrorActivity entity.
+// If the MirrorActivity object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MirrorActivityMutation) OldDeadline(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeadline is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeadline requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeadline: %w", err)
+	}
+	return oldValue.Deadline, nil
+}
+
+// ClearDeadline clears the value of the "deadline" field.
+func (m *MirrorActivityMutation) ClearDeadline() {
+	m.deadline = nil
+	m.clearedFields[mirroractivity.FieldDeadline] = struct{}{}
+}
+
+// DeadlineCleared returns if the "deadline" field was cleared in this mutation.
+func (m *MirrorActivityMutation) DeadlineCleared() bool {
+	_, ok := m.clearedFields[mirroractivity.FieldDeadline]
+	return ok
+}
+
+// ResetDeadline resets all changes to the "deadline" field.
+func (m *MirrorActivityMutation) ResetDeadline() {
+	m.deadline = nil
+	delete(m.clearedFields, mirroractivity.FieldDeadline)
+}
+
 // SetNamespaceID sets the "namespace" edge to the Namespace entity by id.
 func (m *MirrorActivityMutation) SetNamespaceID(id uuid.UUID) {
 	m.namespace = &id
@@ -7703,7 +7895,7 @@ func (m *MirrorActivityMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *MirrorActivityMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 7)
 	if m._type != nil {
 		fields = append(fields, mirroractivity.FieldType)
 	}
@@ -7718,6 +7910,12 @@ func (m *MirrorActivityMutation) Fields() []string {
 	}
 	if m.end_at != nil {
 		fields = append(fields, mirroractivity.FieldEndAt)
+	}
+	if m.controller != nil {
+		fields = append(fields, mirroractivity.FieldController)
+	}
+	if m.deadline != nil {
+		fields = append(fields, mirroractivity.FieldDeadline)
 	}
 	return fields
 }
@@ -7737,6 +7935,10 @@ func (m *MirrorActivityMutation) Field(name string) (ent.Value, bool) {
 		return m.UpdatedAt()
 	case mirroractivity.FieldEndAt:
 		return m.EndAt()
+	case mirroractivity.FieldController:
+		return m.Controller()
+	case mirroractivity.FieldDeadline:
+		return m.Deadline()
 	}
 	return nil, false
 }
@@ -7756,6 +7958,10 @@ func (m *MirrorActivityMutation) OldField(ctx context.Context, name string) (ent
 		return m.OldUpdatedAt(ctx)
 	case mirroractivity.FieldEndAt:
 		return m.OldEndAt(ctx)
+	case mirroractivity.FieldController:
+		return m.OldController(ctx)
+	case mirroractivity.FieldDeadline:
+		return m.OldDeadline(ctx)
 	}
 	return nil, fmt.Errorf("unknown MirrorActivity field %s", name)
 }
@@ -7800,6 +8006,20 @@ func (m *MirrorActivityMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetEndAt(v)
 		return nil
+	case mirroractivity.FieldController:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetController(v)
+		return nil
+	case mirroractivity.FieldDeadline:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeadline(v)
+		return nil
 	}
 	return fmt.Errorf("unknown MirrorActivity field %s", name)
 }
@@ -7833,6 +8053,12 @@ func (m *MirrorActivityMutation) ClearedFields() []string {
 	if m.FieldCleared(mirroractivity.FieldEndAt) {
 		fields = append(fields, mirroractivity.FieldEndAt)
 	}
+	if m.FieldCleared(mirroractivity.FieldController) {
+		fields = append(fields, mirroractivity.FieldController)
+	}
+	if m.FieldCleared(mirroractivity.FieldDeadline) {
+		fields = append(fields, mirroractivity.FieldDeadline)
+	}
 	return fields
 }
 
@@ -7849,6 +8075,12 @@ func (m *MirrorActivityMutation) ClearField(name string) error {
 	switch name {
 	case mirroractivity.FieldEndAt:
 		m.ClearEndAt()
+		return nil
+	case mirroractivity.FieldController:
+		m.ClearController()
+		return nil
+	case mirroractivity.FieldDeadline:
+		m.ClearDeadline()
 		return nil
 	}
 	return fmt.Errorf("unknown MirrorActivity nullable field %s", name)
@@ -7872,6 +8104,12 @@ func (m *MirrorActivityMutation) ResetField(name string) error {
 		return nil
 	case mirroractivity.FieldEndAt:
 		m.ResetEndAt()
+		return nil
+	case mirroractivity.FieldController:
+		m.ResetController()
+		return nil
+	case mirroractivity.FieldDeadline:
+		m.ResetDeadline()
 		return nil
 	}
 	return fmt.Errorf("unknown MirrorActivity field %s", name)
@@ -12446,6 +12684,8 @@ type WorkflowMutation struct {
 	id               *uuid.UUID
 	live             *bool
 	logToEvents      *string
+	readOnly         *bool
+	updated_at       *time.Time
 	clearedFields    map[string]struct{}
 	inode            *uuid.UUID
 	clearedinode     bool
@@ -12664,6 +12904,104 @@ func (m *WorkflowMutation) LogToEventsCleared() bool {
 func (m *WorkflowMutation) ResetLogToEvents() {
 	m.logToEvents = nil
 	delete(m.clearedFields, workflow.FieldLogToEvents)
+}
+
+// SetReadOnly sets the "readOnly" field.
+func (m *WorkflowMutation) SetReadOnly(b bool) {
+	m.readOnly = &b
+}
+
+// ReadOnly returns the value of the "readOnly" field in the mutation.
+func (m *WorkflowMutation) ReadOnly() (r bool, exists bool) {
+	v := m.readOnly
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldReadOnly returns the old "readOnly" field's value of the Workflow entity.
+// If the Workflow object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WorkflowMutation) OldReadOnly(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldReadOnly is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldReadOnly requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldReadOnly: %w", err)
+	}
+	return oldValue.ReadOnly, nil
+}
+
+// ClearReadOnly clears the value of the "readOnly" field.
+func (m *WorkflowMutation) ClearReadOnly() {
+	m.readOnly = nil
+	m.clearedFields[workflow.FieldReadOnly] = struct{}{}
+}
+
+// ReadOnlyCleared returns if the "readOnly" field was cleared in this mutation.
+func (m *WorkflowMutation) ReadOnlyCleared() bool {
+	_, ok := m.clearedFields[workflow.FieldReadOnly]
+	return ok
+}
+
+// ResetReadOnly resets all changes to the "readOnly" field.
+func (m *WorkflowMutation) ResetReadOnly() {
+	m.readOnly = nil
+	delete(m.clearedFields, workflow.FieldReadOnly)
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *WorkflowMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *WorkflowMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the Workflow entity.
+// If the Workflow object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WorkflowMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ClearUpdatedAt clears the value of the "updated_at" field.
+func (m *WorkflowMutation) ClearUpdatedAt() {
+	m.updated_at = nil
+	m.clearedFields[workflow.FieldUpdatedAt] = struct{}{}
+}
+
+// UpdatedAtCleared returns if the "updated_at" field was cleared in this mutation.
+func (m *WorkflowMutation) UpdatedAtCleared() bool {
+	_, ok := m.clearedFields[workflow.FieldUpdatedAt]
+	return ok
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *WorkflowMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+	delete(m.clearedFields, workflow.FieldUpdatedAt)
 }
 
 // SetInodeID sets the "inode" edge to the Inode entity by id.
@@ -13141,12 +13479,18 @@ func (m *WorkflowMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *WorkflowMutation) Fields() []string {
-	fields := make([]string, 0, 2)
+	fields := make([]string, 0, 4)
 	if m.live != nil {
 		fields = append(fields, workflow.FieldLive)
 	}
 	if m.logToEvents != nil {
 		fields = append(fields, workflow.FieldLogToEvents)
+	}
+	if m.readOnly != nil {
+		fields = append(fields, workflow.FieldReadOnly)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, workflow.FieldUpdatedAt)
 	}
 	return fields
 }
@@ -13160,6 +13504,10 @@ func (m *WorkflowMutation) Field(name string) (ent.Value, bool) {
 		return m.Live()
 	case workflow.FieldLogToEvents:
 		return m.LogToEvents()
+	case workflow.FieldReadOnly:
+		return m.ReadOnly()
+	case workflow.FieldUpdatedAt:
+		return m.UpdatedAt()
 	}
 	return nil, false
 }
@@ -13173,6 +13521,10 @@ func (m *WorkflowMutation) OldField(ctx context.Context, name string) (ent.Value
 		return m.OldLive(ctx)
 	case workflow.FieldLogToEvents:
 		return m.OldLogToEvents(ctx)
+	case workflow.FieldReadOnly:
+		return m.OldReadOnly(ctx)
+	case workflow.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown Workflow field %s", name)
 }
@@ -13195,6 +13547,20 @@ func (m *WorkflowMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetLogToEvents(v)
+		return nil
+	case workflow.FieldReadOnly:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetReadOnly(v)
+		return nil
+	case workflow.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Workflow field %s", name)
@@ -13229,6 +13595,12 @@ func (m *WorkflowMutation) ClearedFields() []string {
 	if m.FieldCleared(workflow.FieldLogToEvents) {
 		fields = append(fields, workflow.FieldLogToEvents)
 	}
+	if m.FieldCleared(workflow.FieldReadOnly) {
+		fields = append(fields, workflow.FieldReadOnly)
+	}
+	if m.FieldCleared(workflow.FieldUpdatedAt) {
+		fields = append(fields, workflow.FieldUpdatedAt)
+	}
 	return fields
 }
 
@@ -13246,6 +13618,12 @@ func (m *WorkflowMutation) ClearField(name string) error {
 	case workflow.FieldLogToEvents:
 		m.ClearLogToEvents()
 		return nil
+	case workflow.FieldReadOnly:
+		m.ClearReadOnly()
+		return nil
+	case workflow.FieldUpdatedAt:
+		m.ClearUpdatedAt()
+		return nil
 	}
 	return fmt.Errorf("unknown Workflow nullable field %s", name)
 }
@@ -13259,6 +13637,12 @@ func (m *WorkflowMutation) ResetField(name string) error {
 		return nil
 	case workflow.FieldLogToEvents:
 		m.ResetLogToEvents()
+		return nil
+	case workflow.FieldReadOnly:
+		m.ResetReadOnly()
+		return nil
+	case workflow.FieldUpdatedAt:
+		m.ResetUpdatedAt()
 		return nil
 	}
 	return fmt.Errorf("unknown Workflow field %s", name)

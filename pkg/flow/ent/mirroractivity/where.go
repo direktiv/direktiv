@@ -129,6 +129,20 @@ func EndAt(v time.Time) predicate.MirrorActivity {
 	})
 }
 
+// Controller applies equality check predicate on the "controller" field. It's identical to ControllerEQ.
+func Controller(v string) predicate.MirrorActivity {
+	return predicate.MirrorActivity(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldController), v))
+	})
+}
+
+// Deadline applies equality check predicate on the "deadline" field. It's identical to DeadlineEQ.
+func Deadline(v time.Time) predicate.MirrorActivity {
+	return predicate.MirrorActivity(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldDeadline), v))
+	})
+}
+
 // TypeEQ applies the EQ predicate on the "type" field.
 func TypeEQ(v string) predicate.MirrorActivity {
 	return predicate.MirrorActivity(func(s *sql.Selector) {
@@ -590,6 +604,221 @@ func EndAtIsNil() predicate.MirrorActivity {
 func EndAtNotNil() predicate.MirrorActivity {
 	return predicate.MirrorActivity(func(s *sql.Selector) {
 		s.Where(sql.NotNull(s.C(FieldEndAt)))
+	})
+}
+
+// ControllerEQ applies the EQ predicate on the "controller" field.
+func ControllerEQ(v string) predicate.MirrorActivity {
+	return predicate.MirrorActivity(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldController), v))
+	})
+}
+
+// ControllerNEQ applies the NEQ predicate on the "controller" field.
+func ControllerNEQ(v string) predicate.MirrorActivity {
+	return predicate.MirrorActivity(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldController), v))
+	})
+}
+
+// ControllerIn applies the In predicate on the "controller" field.
+func ControllerIn(vs ...string) predicate.MirrorActivity {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.MirrorActivity(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldController), v...))
+	})
+}
+
+// ControllerNotIn applies the NotIn predicate on the "controller" field.
+func ControllerNotIn(vs ...string) predicate.MirrorActivity {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.MirrorActivity(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldController), v...))
+	})
+}
+
+// ControllerGT applies the GT predicate on the "controller" field.
+func ControllerGT(v string) predicate.MirrorActivity {
+	return predicate.MirrorActivity(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldController), v))
+	})
+}
+
+// ControllerGTE applies the GTE predicate on the "controller" field.
+func ControllerGTE(v string) predicate.MirrorActivity {
+	return predicate.MirrorActivity(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldController), v))
+	})
+}
+
+// ControllerLT applies the LT predicate on the "controller" field.
+func ControllerLT(v string) predicate.MirrorActivity {
+	return predicate.MirrorActivity(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldController), v))
+	})
+}
+
+// ControllerLTE applies the LTE predicate on the "controller" field.
+func ControllerLTE(v string) predicate.MirrorActivity {
+	return predicate.MirrorActivity(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldController), v))
+	})
+}
+
+// ControllerContains applies the Contains predicate on the "controller" field.
+func ControllerContains(v string) predicate.MirrorActivity {
+	return predicate.MirrorActivity(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldController), v))
+	})
+}
+
+// ControllerHasPrefix applies the HasPrefix predicate on the "controller" field.
+func ControllerHasPrefix(v string) predicate.MirrorActivity {
+	return predicate.MirrorActivity(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldController), v))
+	})
+}
+
+// ControllerHasSuffix applies the HasSuffix predicate on the "controller" field.
+func ControllerHasSuffix(v string) predicate.MirrorActivity {
+	return predicate.MirrorActivity(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldController), v))
+	})
+}
+
+// ControllerIsNil applies the IsNil predicate on the "controller" field.
+func ControllerIsNil() predicate.MirrorActivity {
+	return predicate.MirrorActivity(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldController)))
+	})
+}
+
+// ControllerNotNil applies the NotNil predicate on the "controller" field.
+func ControllerNotNil() predicate.MirrorActivity {
+	return predicate.MirrorActivity(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldController)))
+	})
+}
+
+// ControllerEqualFold applies the EqualFold predicate on the "controller" field.
+func ControllerEqualFold(v string) predicate.MirrorActivity {
+	return predicate.MirrorActivity(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldController), v))
+	})
+}
+
+// ControllerContainsFold applies the ContainsFold predicate on the "controller" field.
+func ControllerContainsFold(v string) predicate.MirrorActivity {
+	return predicate.MirrorActivity(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldController), v))
+	})
+}
+
+// DeadlineEQ applies the EQ predicate on the "deadline" field.
+func DeadlineEQ(v time.Time) predicate.MirrorActivity {
+	return predicate.MirrorActivity(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldDeadline), v))
+	})
+}
+
+// DeadlineNEQ applies the NEQ predicate on the "deadline" field.
+func DeadlineNEQ(v time.Time) predicate.MirrorActivity {
+	return predicate.MirrorActivity(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldDeadline), v))
+	})
+}
+
+// DeadlineIn applies the In predicate on the "deadline" field.
+func DeadlineIn(vs ...time.Time) predicate.MirrorActivity {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.MirrorActivity(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldDeadline), v...))
+	})
+}
+
+// DeadlineNotIn applies the NotIn predicate on the "deadline" field.
+func DeadlineNotIn(vs ...time.Time) predicate.MirrorActivity {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.MirrorActivity(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldDeadline), v...))
+	})
+}
+
+// DeadlineGT applies the GT predicate on the "deadline" field.
+func DeadlineGT(v time.Time) predicate.MirrorActivity {
+	return predicate.MirrorActivity(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldDeadline), v))
+	})
+}
+
+// DeadlineGTE applies the GTE predicate on the "deadline" field.
+func DeadlineGTE(v time.Time) predicate.MirrorActivity {
+	return predicate.MirrorActivity(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldDeadline), v))
+	})
+}
+
+// DeadlineLT applies the LT predicate on the "deadline" field.
+func DeadlineLT(v time.Time) predicate.MirrorActivity {
+	return predicate.MirrorActivity(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldDeadline), v))
+	})
+}
+
+// DeadlineLTE applies the LTE predicate on the "deadline" field.
+func DeadlineLTE(v time.Time) predicate.MirrorActivity {
+	return predicate.MirrorActivity(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldDeadline), v))
+	})
+}
+
+// DeadlineIsNil applies the IsNil predicate on the "deadline" field.
+func DeadlineIsNil() predicate.MirrorActivity {
+	return predicate.MirrorActivity(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldDeadline)))
+	})
+}
+
+// DeadlineNotNil applies the NotNil predicate on the "deadline" field.
+func DeadlineNotNil() predicate.MirrorActivity {
+	return predicate.MirrorActivity(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldDeadline)))
 	})
 }
 

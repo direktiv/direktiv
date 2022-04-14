@@ -92,6 +92,20 @@ func (ic *InodeCreate) SetNillableExtendedType(s *string) *InodeCreate {
 	return ic
 }
 
+// SetReadOnly sets the "readOnly" field.
+func (ic *InodeCreate) SetReadOnly(b bool) *InodeCreate {
+	ic.mutation.SetReadOnly(b)
+	return ic
+}
+
+// SetNillableReadOnly sets the "readOnly" field if the given value is not nil.
+func (ic *InodeCreate) SetNillableReadOnly(b *bool) *InodeCreate {
+	if b != nil {
+		ic.SetReadOnly(*b)
+	}
+	return ic
+}
+
 // SetID sets the "id" field.
 func (ic *InodeCreate) SetID(u uuid.UUID) *InodeCreate {
 	ic.mutation.SetID(u)
@@ -268,6 +282,10 @@ func (ic *InodeCreate) defaults() {
 		v := inode.DefaultUpdatedAt()
 		ic.mutation.SetUpdatedAt(v)
 	}
+	if _, ok := ic.mutation.ReadOnly(); !ok {
+		v := inode.DefaultReadOnly
+		ic.mutation.SetReadOnly(v)
+	}
 	if _, ok := ic.mutation.ID(); !ok {
 		v := inode.DefaultID()
 		ic.mutation.SetID(v)
@@ -376,6 +394,14 @@ func (ic *InodeCreate) createSpec() (*Inode, *sqlgraph.CreateSpec) {
 			Column: inode.FieldExtendedType,
 		})
 		_node.ExtendedType = value
+	}
+	if value, ok := ic.mutation.ReadOnly(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeBool,
+			Value:  value,
+			Column: inode.FieldReadOnly,
+		})
+		_node.ReadOnly = value
 	}
 	if nodes := ic.mutation.NamespaceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

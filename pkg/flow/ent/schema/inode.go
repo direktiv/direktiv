@@ -29,6 +29,7 @@ func (Inode) Fields() []ent.Field {
 		field.String("type").Immutable().Annotations(entgql.OrderField("TYPE")),
 		field.Strings("attributes").Optional(),
 		field.String("extended_type").Optional().StorageKey("expandedType").StructTag(`json:"expandedType,omitempty"`),
+		field.Bool("readOnly").Optional().Default(false),
 	}
 }
 

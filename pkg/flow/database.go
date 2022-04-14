@@ -17,7 +17,6 @@ import (
 	entref "github.com/direktiv/direktiv/pkg/flow/ent/ref"
 	entvardata "github.com/direktiv/direktiv/pkg/flow/ent/vardata"
 	entvar "github.com/direktiv/direktiv/pkg/flow/ent/varref"
-	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
 )
 
@@ -119,7 +118,6 @@ func GetInodePath(path string) string {
 type nodeData struct {
 	ino             *ent.Inode
 	path, dir, base string
-	ro              bool
 }
 
 func (d *nodeData) ns() *ent.Namespace {
@@ -177,21 +175,9 @@ func (srv *server) reverseTraverseToInode(ctx context.Context, id string) (*node
 	d.dir = ""
 	d.base = ino.Name
 
-	var ro bool
-	var mfound bool
-
 	var recurser func(ino *ent.Inode) error
 
 	recurser = func(ino *ent.Inode) error {
-
-		if !mfound && ino.ExtendedType == util.InodeTypeGit {
-			mfound = true
-			mir, err := ino.Mirror(ctx)
-			if err != nil {
-				return err
-			}
-			ro = !mir.Locked
-		}
 
 		pino, err := ino.Parent(ctx)
 		if IsNotFound(err) || pino == nil {
@@ -220,8 +206,6 @@ func (srv *server) reverseTraverseToInode(ctx context.Context, id string) (*node
 		return nil, err
 	}
 
-	d.ro = ro
-
 	return d, nil
 
 }
@@ -246,20 +230,10 @@ func (srv *server) getInode(ctx context.Context, inoc *ent.InodeClient, ns *ent.
 	}
 	path = "/"
 
-	var ro bool
-
 	var descend func(*ent.Inode, []string, string) (*ent.Inode, error)
 	descend = func(ino *ent.Inode, elems []string, path string) (*ent.Inode, error) {
 
 		ino.Edges.Namespace = ns
-
-		if ino.ExtendedType == util.InodeTypeGit {
-			mir, err := ino.Mirror(ctx)
-			if err != nil {
-				return nil, err
-			}
-			ro = !mir.Locked
-		}
 
 		if len(elems) == 0 || elems[0] == "" {
 			return ino, nil
@@ -310,7 +284,6 @@ func (srv *server) getInode(ctx context.Context, inoc *ent.InodeClient, ns *ent.
 
 	d.ino = ino
 	d.ino.Edges.Namespace = ns
-	d.ro = ro
 
 	return d, nil
 

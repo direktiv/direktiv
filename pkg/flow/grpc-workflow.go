@@ -32,8 +32,6 @@ func (flow *flow) ResolveWorkflowUID(ctx context.Context, req *grpc.ResolveWorkf
 		resp.Node.ExpandedType = resp.Node.Type
 	}
 
-	resp.Node.ReadOnly = d.ro
-
 	resp.Namespace = d.namespace()
 	resp.Node.Parent = d.dir
 	resp.Node.Path = d.path
@@ -70,8 +68,6 @@ func (flow *flow) Workflow(ctx context.Context, req *grpc.WorkflowRequest) (*grp
 	if resp.Node.ExpandedType == "" {
 		resp.Node.ExpandedType = resp.Node.Type
 	}
-
-	resp.Node.ReadOnly = d.ro
 
 	resp.Namespace = d.namespace()
 	resp.Node.Parent = d.dir
@@ -119,8 +115,6 @@ resend:
 	if resp.Node.ExpandedType == "" {
 		resp.Node.ExpandedType = resp.Node.Type
 	}
-
-	resp.Node.ReadOnly = d.ro
 
 	resp.Namespace = d.namespace()
 	resp.Node.Parent = d.dir
@@ -190,7 +184,7 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 		return nil, errors.New("parent inode is not a directory")
 	}
 
-	if d.ro {
+	if d.ino.ReadOnly {
 		return nil, errors.New("cannot write into read-only directory")
 	}
 
@@ -218,6 +212,11 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 	refc := tx.Ref
 
 	_, err = refc.Create().SetImmutable(false).SetName(latest).SetWorkflow(wf).SetRevision(rev).Save(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = d.ino.Update().SetUpdatedAt(time.Now()).Save(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -250,8 +249,6 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 	if resp.Node.ExpandedType == "" {
 		resp.Node.ExpandedType = resp.Node.Type
 	}
-
-	resp.Node.ReadOnly = d.ro
 
 	resp.Namespace = d.namespace()
 	resp.Node.Parent = dir
@@ -303,7 +300,7 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 		return nil, err
 	}
 
-	if d.ro {
+	if d.ino.ReadOnly {
 		return nil, errors.New("cannot write into read-only directory")
 	}
 
@@ -375,8 +372,6 @@ respond:
 	if resp.Node.ExpandedType == "" {
 		resp.Node.ExpandedType = resp.Node.Type
 	}
-
-	resp.Node.ReadOnly = d.ro
 
 	resp.Namespace = d.namespace()
 	resp.Node.Parent = d.dir
@@ -474,8 +469,6 @@ respond:
 	if resp.Node.ExpandedType == "" {
 		resp.Node.ExpandedType = resp.Node.Type
 	}
-
-	resp.Node.ReadOnly = d.ro
 
 	resp.Namespace = d.namespace()
 	resp.Node.Parent = d.dir
@@ -581,8 +574,6 @@ respond:
 	if resp.Node.ExpandedType == "" {
 		resp.Node.ExpandedType = resp.Node.Type
 	}
-
-	resp.Node.ReadOnly = d.ro
 
 	resp.Namespace = d.namespace()
 	resp.Node.Parent = d.dir

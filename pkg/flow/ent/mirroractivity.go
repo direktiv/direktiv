@@ -29,6 +29,10 @@ type MirrorActivity struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// EndAt holds the value of the "end_at" field.
 	EndAt time.Time `json:"end_at,omitempty"`
+	// Controller holds the value of the "controller" field.
+	Controller string `json:"controller,omitempty"`
+	// Deadline holds the value of the "deadline" field.
+	Deadline time.Time `json:"deadline,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the MirrorActivityQuery when eager-loading is set.
 	Edges                       MirrorActivityEdges `json:"edges"`
@@ -91,9 +95,9 @@ func (*MirrorActivity) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case mirroractivity.FieldType, mirroractivity.FieldStatus:
+		case mirroractivity.FieldType, mirroractivity.FieldStatus, mirroractivity.FieldController:
 			values[i] = new(sql.NullString)
-		case mirroractivity.FieldCreatedAt, mirroractivity.FieldUpdatedAt, mirroractivity.FieldEndAt:
+		case mirroractivity.FieldCreatedAt, mirroractivity.FieldUpdatedAt, mirroractivity.FieldEndAt, mirroractivity.FieldDeadline:
 			values[i] = new(sql.NullTime)
 		case mirroractivity.FieldID:
 			values[i] = new(uuid.UUID)
@@ -151,6 +155,18 @@ func (ma *MirrorActivity) assignValues(columns []string, values []interface{}) e
 				return fmt.Errorf("unexpected type %T for field end_at", values[i])
 			} else if value.Valid {
 				ma.EndAt = value.Time
+			}
+		case mirroractivity.FieldController:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field controller", values[i])
+			} else if value.Valid {
+				ma.Controller = value.String
+			}
+		case mirroractivity.FieldDeadline:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field deadline", values[i])
+			} else if value.Valid {
+				ma.Deadline = value.Time
 			}
 		case mirroractivity.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
@@ -219,6 +235,10 @@ func (ma *MirrorActivity) String() string {
 	builder.WriteString(ma.UpdatedAt.Format(time.ANSIC))
 	builder.WriteString(", end_at=")
 	builder.WriteString(ma.EndAt.Format(time.ANSIC))
+	builder.WriteString(", controller=")
+	builder.WriteString(ma.Controller)
+	builder.WriteString(", deadline=")
+	builder.WriteString(ma.Deadline.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

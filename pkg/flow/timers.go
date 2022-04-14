@@ -17,6 +17,7 @@ const (
 	timerCleanNamespaceRecords = "cleanNamespaceRecords"
 	timerCleanExpiredEvents    = "timerCleanExpiredEvents"
 	wfCron                     = "wfcron"
+	syncerCron                 = "syncercron"
 )
 
 const (
@@ -275,7 +276,44 @@ func (timers *timers) deleteTimersForInstance(name string) {
 
 }
 
+func (timers *timers) deleteTimersForActivity(name string) {
+
+	timers.pubsub.ClusterDeleteActivityTimers(name)
+
+}
+
 func (timers *timers) deleteTimersForInstanceNoBroadcast(name string) {
+
+	var keys []string
+
+	timers.mtx.Lock()
+	defer timers.mtx.Unlock()
+
+	delT := func(pattern, name string) {
+		for _, n := range timers.timers {
+			if strings.HasPrefix(n.name, fmt.Sprintf(pattern, name)) {
+				key := timers.prepDisableTimer(n)
+				keys = append(keys, key)
+			}
+		}
+	}
+
+	patterns := []string{
+		"timeout:%s",
+		"%s",
+	}
+
+	for _, p := range patterns {
+		delT(p, name)
+	}
+
+	for _, key := range keys {
+		delete(timers.timers, key)
+	}
+
+}
+
+func (timers *timers) deleteTimersForActivityNoBroadcast(name string) {
 
 	var keys []string
 
@@ -309,6 +347,12 @@ func (timers *timers) deleteTimersForInstanceNoBroadcast(name string) {
 func (timers *timers) deleteInstanceTimersHandler(req *PubsubUpdate) {
 
 	timers.deleteTimersForInstanceNoBroadcast(req.Key)
+
+}
+
+func (timers *timers) deleteActivityTimersHandler(req *PubsubUpdate) {
+
+	timers.deleteTimersForActivityNoBroadcast(req.Key)
 
 }
 
@@ -349,6 +393,10 @@ func (timers *timers) deleteTimerByName(oldController, newController, name strin
 }
 
 func (timers *timers) deleteCronForWorkflow(id string) {
+	timers.deleteTimerByName("", timers.hostname, fmt.Sprintf("cron:%s", id))
+}
+
+func (timers *timers) deleteCronForSyncer(id string) {
 	timers.deleteTimerByName("", timers.hostname, fmt.Sprintf("cron:%s", id))
 }
 

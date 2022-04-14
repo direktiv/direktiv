@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -68,6 +69,38 @@ func (wu *WorkflowUpdate) SetNillableLogToEvents(s *string) *WorkflowUpdate {
 // ClearLogToEvents clears the value of the "logToEvents" field.
 func (wu *WorkflowUpdate) ClearLogToEvents() *WorkflowUpdate {
 	wu.mutation.ClearLogToEvents()
+	return wu
+}
+
+// SetReadOnly sets the "readOnly" field.
+func (wu *WorkflowUpdate) SetReadOnly(b bool) *WorkflowUpdate {
+	wu.mutation.SetReadOnly(b)
+	return wu
+}
+
+// SetNillableReadOnly sets the "readOnly" field if the given value is not nil.
+func (wu *WorkflowUpdate) SetNillableReadOnly(b *bool) *WorkflowUpdate {
+	if b != nil {
+		wu.SetReadOnly(*b)
+	}
+	return wu
+}
+
+// ClearReadOnly clears the value of the "readOnly" field.
+func (wu *WorkflowUpdate) ClearReadOnly() *WorkflowUpdate {
+	wu.mutation.ClearReadOnly()
+	return wu
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (wu *WorkflowUpdate) SetUpdatedAt(t time.Time) *WorkflowUpdate {
+	wu.mutation.SetUpdatedAt(t)
+	return wu
+}
+
+// ClearUpdatedAt clears the value of the "updated_at" field.
+func (wu *WorkflowUpdate) ClearUpdatedAt() *WorkflowUpdate {
+	wu.mutation.ClearUpdatedAt()
 	return wu
 }
 
@@ -376,6 +409,7 @@ func (wu *WorkflowUpdate) Save(ctx context.Context) (int, error) {
 		err      error
 		affected int
 	)
+	wu.defaults()
 	if len(wu.hooks) == 0 {
 		if err = wu.check(); err != nil {
 			return 0, err
@@ -430,6 +464,14 @@ func (wu *WorkflowUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (wu *WorkflowUpdate) defaults() {
+	if _, ok := wu.mutation.UpdatedAt(); !ok && !wu.mutation.UpdatedAtCleared() {
+		v := workflow.UpdateDefaultUpdatedAt()
+		wu.mutation.SetUpdatedAt(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (wu *WorkflowUpdate) check() error {
 	if _, ok := wu.mutation.NamespaceID(); wu.mutation.NamespaceCleared() && !ok {
@@ -474,6 +516,32 @@ func (wu *WorkflowUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Column: workflow.FieldLogToEvents,
+		})
+	}
+	if value, ok := wu.mutation.ReadOnly(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeBool,
+			Value:  value,
+			Column: workflow.FieldReadOnly,
+		})
+	}
+	if wu.mutation.ReadOnlyCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeBool,
+			Column: workflow.FieldReadOnly,
+		})
+	}
+	if value, ok := wu.mutation.UpdatedAt(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: workflow.FieldUpdatedAt,
+		})
+	}
+	if wu.mutation.UpdatedAtCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Column: workflow.FieldUpdatedAt,
 		})
 	}
 	if wu.mutation.InodeCleared() {
@@ -977,6 +1045,38 @@ func (wuo *WorkflowUpdateOne) ClearLogToEvents() *WorkflowUpdateOne {
 	return wuo
 }
 
+// SetReadOnly sets the "readOnly" field.
+func (wuo *WorkflowUpdateOne) SetReadOnly(b bool) *WorkflowUpdateOne {
+	wuo.mutation.SetReadOnly(b)
+	return wuo
+}
+
+// SetNillableReadOnly sets the "readOnly" field if the given value is not nil.
+func (wuo *WorkflowUpdateOne) SetNillableReadOnly(b *bool) *WorkflowUpdateOne {
+	if b != nil {
+		wuo.SetReadOnly(*b)
+	}
+	return wuo
+}
+
+// ClearReadOnly clears the value of the "readOnly" field.
+func (wuo *WorkflowUpdateOne) ClearReadOnly() *WorkflowUpdateOne {
+	wuo.mutation.ClearReadOnly()
+	return wuo
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (wuo *WorkflowUpdateOne) SetUpdatedAt(t time.Time) *WorkflowUpdateOne {
+	wuo.mutation.SetUpdatedAt(t)
+	return wuo
+}
+
+// ClearUpdatedAt clears the value of the "updated_at" field.
+func (wuo *WorkflowUpdateOne) ClearUpdatedAt() *WorkflowUpdateOne {
+	wuo.mutation.ClearUpdatedAt()
+	return wuo
+}
+
 // SetInodeID sets the "inode" edge to the Inode entity by ID.
 func (wuo *WorkflowUpdateOne) SetInodeID(id uuid.UUID) *WorkflowUpdateOne {
 	wuo.mutation.SetInodeID(id)
@@ -1289,6 +1389,7 @@ func (wuo *WorkflowUpdateOne) Save(ctx context.Context) (*Workflow, error) {
 		err  error
 		node *Workflow
 	)
+	wuo.defaults()
 	if len(wuo.hooks) == 0 {
 		if err = wuo.check(); err != nil {
 			return nil, err
@@ -1340,6 +1441,14 @@ func (wuo *WorkflowUpdateOne) Exec(ctx context.Context) error {
 func (wuo *WorkflowUpdateOne) ExecX(ctx context.Context) {
 	if err := wuo.Exec(ctx); err != nil {
 		panic(err)
+	}
+}
+
+// defaults sets the default values of the builder before save.
+func (wuo *WorkflowUpdateOne) defaults() {
+	if _, ok := wuo.mutation.UpdatedAt(); !ok && !wuo.mutation.UpdatedAtCleared() {
+		v := workflow.UpdateDefaultUpdatedAt()
+		wuo.mutation.SetUpdatedAt(v)
 	}
 }
 
@@ -1404,6 +1513,32 @@ func (wuo *WorkflowUpdateOne) sqlSave(ctx context.Context) (_node *Workflow, err
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Column: workflow.FieldLogToEvents,
+		})
+	}
+	if value, ok := wuo.mutation.ReadOnly(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeBool,
+			Value:  value,
+			Column: workflow.FieldReadOnly,
+		})
+	}
+	if wuo.mutation.ReadOnlyCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeBool,
+			Column: workflow.FieldReadOnly,
+		})
+	}
+	if value, ok := wuo.mutation.UpdatedAt(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: workflow.FieldUpdatedAt,
+		})
+	}
+	if wuo.mutation.UpdatedAtCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Column: workflow.FieldUpdatedAt,
 		})
 	}
 	if wuo.mutation.InodeCleared() {

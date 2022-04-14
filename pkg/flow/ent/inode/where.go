@@ -129,6 +129,13 @@ func ExtendedType(v string) predicate.Inode {
 	})
 }
 
+// ReadOnly applies equality check predicate on the "readOnly" field. It's identical to ReadOnlyEQ.
+func ReadOnly(v bool) predicate.Inode {
+	return predicate.Inode(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldReadOnly), v))
+	})
+}
+
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
 func CreatedAtEQ(v time.Time) predicate.Inode {
 	return predicate.Inode(func(s *sql.Selector) {
@@ -653,6 +660,34 @@ func ExtendedTypeEqualFold(v string) predicate.Inode {
 func ExtendedTypeContainsFold(v string) predicate.Inode {
 	return predicate.Inode(func(s *sql.Selector) {
 		s.Where(sql.ContainsFold(s.C(FieldExtendedType), v))
+	})
+}
+
+// ReadOnlyEQ applies the EQ predicate on the "readOnly" field.
+func ReadOnlyEQ(v bool) predicate.Inode {
+	return predicate.Inode(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldReadOnly), v))
+	})
+}
+
+// ReadOnlyNEQ applies the NEQ predicate on the "readOnly" field.
+func ReadOnlyNEQ(v bool) predicate.Inode {
+	return predicate.Inode(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldReadOnly), v))
+	})
+}
+
+// ReadOnlyIsNil applies the IsNil predicate on the "readOnly" field.
+func ReadOnlyIsNil() predicate.Inode {
+	return predicate.Inode(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldReadOnly)))
+	})
+}
+
+// ReadOnlyNotNil applies the NotNil predicate on the "readOnly" field.
+func ReadOnlyNotNil() predicate.Inode {
+	return predicate.Inode(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldReadOnly)))
 	})
 }
 

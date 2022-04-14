@@ -90,6 +90,26 @@ func (iu *InodeUpdate) ClearExtendedType() *InodeUpdate {
 	return iu
 }
 
+// SetReadOnly sets the "readOnly" field.
+func (iu *InodeUpdate) SetReadOnly(b bool) *InodeUpdate {
+	iu.mutation.SetReadOnly(b)
+	return iu
+}
+
+// SetNillableReadOnly sets the "readOnly" field if the given value is not nil.
+func (iu *InodeUpdate) SetNillableReadOnly(b *bool) *InodeUpdate {
+	if b != nil {
+		iu.SetReadOnly(*b)
+	}
+	return iu
+}
+
+// ClearReadOnly clears the value of the "readOnly" field.
+func (iu *InodeUpdate) ClearReadOnly() *InodeUpdate {
+	iu.mutation.ClearReadOnly()
+	return iu
+}
+
 // SetNamespaceID sets the "namespace" edge to the Namespace entity by ID.
 func (iu *InodeUpdate) SetNamespaceID(id uuid.UUID) *InodeUpdate {
 	iu.mutation.SetNamespaceID(id)
@@ -369,6 +389,19 @@ func (iu *InodeUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: inode.FieldExtendedType,
 		})
 	}
+	if value, ok := iu.mutation.ReadOnly(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeBool,
+			Value:  value,
+			Column: inode.FieldReadOnly,
+		})
+	}
+	if iu.mutation.ReadOnlyCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeBool,
+			Column: inode.FieldReadOnly,
+		})
+	}
 	if iu.mutation.NamespaceCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -637,6 +670,26 @@ func (iuo *InodeUpdateOne) SetNillableExtendedType(s *string) *InodeUpdateOne {
 // ClearExtendedType clears the value of the "extended_type" field.
 func (iuo *InodeUpdateOne) ClearExtendedType() *InodeUpdateOne {
 	iuo.mutation.ClearExtendedType()
+	return iuo
+}
+
+// SetReadOnly sets the "readOnly" field.
+func (iuo *InodeUpdateOne) SetReadOnly(b bool) *InodeUpdateOne {
+	iuo.mutation.SetReadOnly(b)
+	return iuo
+}
+
+// SetNillableReadOnly sets the "readOnly" field if the given value is not nil.
+func (iuo *InodeUpdateOne) SetNillableReadOnly(b *bool) *InodeUpdateOne {
+	if b != nil {
+		iuo.SetReadOnly(*b)
+	}
+	return iuo
+}
+
+// ClearReadOnly clears the value of the "readOnly" field.
+func (iuo *InodeUpdateOne) ClearReadOnly() *InodeUpdateOne {
+	iuo.mutation.ClearReadOnly()
 	return iuo
 }
 
@@ -941,6 +994,19 @@ func (iuo *InodeUpdateOne) sqlSave(ctx context.Context) (_node *Inode, err error
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Column: inode.FieldExtendedType,
+		})
+	}
+	if value, ok := iuo.mutation.ReadOnly(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeBool,
+			Value:  value,
+			Column: inode.FieldReadOnly,
+		})
+	}
+	if iuo.mutation.ReadOnlyCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeBool,
+			Column: inode.FieldReadOnly,
 		})
 	}
 	if iuo.mutation.NamespaceCleared() {

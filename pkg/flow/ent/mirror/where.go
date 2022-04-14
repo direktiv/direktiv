@@ -143,17 +143,17 @@ func Commit(v string) predicate.Mirror {
 	})
 }
 
-// Locked applies equality check predicate on the "locked" field. It's identical to LockedEQ.
-func Locked(v bool) predicate.Mirror {
-	return predicate.Mirror(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldLocked), v))
-	})
-}
-
 // LastSync applies equality check predicate on the "last_sync" field. It's identical to LastSyncEQ.
 func LastSync(v time.Time) predicate.Mirror {
 	return predicate.Mirror(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldLastSync), v))
+	})
+}
+
+// UpdatedAt applies equality check predicate on the "updated_at" field. It's identical to UpdatedAtEQ.
+func UpdatedAt(v time.Time) predicate.Mirror {
+	return predicate.Mirror(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldUpdatedAt), v))
 	})
 }
 
@@ -934,20 +934,6 @@ func CommitContainsFold(v string) predicate.Mirror {
 	})
 }
 
-// LockedEQ applies the EQ predicate on the "locked" field.
-func LockedEQ(v bool) predicate.Mirror {
-	return predicate.Mirror(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldLocked), v))
-	})
-}
-
-// LockedNEQ applies the NEQ predicate on the "locked" field.
-func LockedNEQ(v bool) predicate.Mirror {
-	return predicate.Mirror(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldLocked), v))
-	})
-}
-
 // LastSyncEQ applies the EQ predicate on the "last_sync" field.
 func LastSyncEQ(v time.Time) predicate.Mirror {
 	return predicate.Mirror(func(s *sql.Selector) {
@@ -1035,6 +1021,96 @@ func LastSyncIsNil() predicate.Mirror {
 func LastSyncNotNil() predicate.Mirror {
 	return predicate.Mirror(func(s *sql.Selector) {
 		s.Where(sql.NotNull(s.C(FieldLastSync)))
+	})
+}
+
+// UpdatedAtEQ applies the EQ predicate on the "updated_at" field.
+func UpdatedAtEQ(v time.Time) predicate.Mirror {
+	return predicate.Mirror(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldUpdatedAt), v))
+	})
+}
+
+// UpdatedAtNEQ applies the NEQ predicate on the "updated_at" field.
+func UpdatedAtNEQ(v time.Time) predicate.Mirror {
+	return predicate.Mirror(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldUpdatedAt), v))
+	})
+}
+
+// UpdatedAtIn applies the In predicate on the "updated_at" field.
+func UpdatedAtIn(vs ...time.Time) predicate.Mirror {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Mirror(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldUpdatedAt), v...))
+	})
+}
+
+// UpdatedAtNotIn applies the NotIn predicate on the "updated_at" field.
+func UpdatedAtNotIn(vs ...time.Time) predicate.Mirror {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Mirror(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldUpdatedAt), v...))
+	})
+}
+
+// UpdatedAtGT applies the GT predicate on the "updated_at" field.
+func UpdatedAtGT(v time.Time) predicate.Mirror {
+	return predicate.Mirror(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldUpdatedAt), v))
+	})
+}
+
+// UpdatedAtGTE applies the GTE predicate on the "updated_at" field.
+func UpdatedAtGTE(v time.Time) predicate.Mirror {
+	return predicate.Mirror(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldUpdatedAt), v))
+	})
+}
+
+// UpdatedAtLT applies the LT predicate on the "updated_at" field.
+func UpdatedAtLT(v time.Time) predicate.Mirror {
+	return predicate.Mirror(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldUpdatedAt), v))
+	})
+}
+
+// UpdatedAtLTE applies the LTE predicate on the "updated_at" field.
+func UpdatedAtLTE(v time.Time) predicate.Mirror {
+	return predicate.Mirror(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldUpdatedAt), v))
+	})
+}
+
+// UpdatedAtIsNil applies the IsNil predicate on the "updated_at" field.
+func UpdatedAtIsNil() predicate.Mirror {
+	return predicate.Mirror(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldUpdatedAt)))
+	})
+}
+
+// UpdatedAtNotNil applies the NotNil predicate on the "updated_at" field.
+func UpdatedAtNotNil() predicate.Mirror {
+	return predicate.Mirror(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldUpdatedAt)))
 	})
 }
 

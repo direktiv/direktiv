@@ -70,6 +70,46 @@ func (mau *MirrorActivityUpdate) ClearEndAt() *MirrorActivityUpdate {
 	return mau
 }
 
+// SetController sets the "controller" field.
+func (mau *MirrorActivityUpdate) SetController(s string) *MirrorActivityUpdate {
+	mau.mutation.SetController(s)
+	return mau
+}
+
+// SetNillableController sets the "controller" field if the given value is not nil.
+func (mau *MirrorActivityUpdate) SetNillableController(s *string) *MirrorActivityUpdate {
+	if s != nil {
+		mau.SetController(*s)
+	}
+	return mau
+}
+
+// ClearController clears the value of the "controller" field.
+func (mau *MirrorActivityUpdate) ClearController() *MirrorActivityUpdate {
+	mau.mutation.ClearController()
+	return mau
+}
+
+// SetDeadline sets the "deadline" field.
+func (mau *MirrorActivityUpdate) SetDeadline(t time.Time) *MirrorActivityUpdate {
+	mau.mutation.SetDeadline(t)
+	return mau
+}
+
+// SetNillableDeadline sets the "deadline" field if the given value is not nil.
+func (mau *MirrorActivityUpdate) SetNillableDeadline(t *time.Time) *MirrorActivityUpdate {
+	if t != nil {
+		mau.SetDeadline(*t)
+	}
+	return mau
+}
+
+// ClearDeadline clears the value of the "deadline" field.
+func (mau *MirrorActivityUpdate) ClearDeadline() *MirrorActivityUpdate {
+	mau.mutation.ClearDeadline()
+	return mau
+}
+
 // SetNamespaceID sets the "namespace" edge to the Namespace entity by ID.
 func (mau *MirrorActivityUpdate) SetNamespaceID(id uuid.UUID) *MirrorActivityUpdate {
 	mau.mutation.SetNamespaceID(id)
@@ -282,6 +322,32 @@ func (mau *MirrorActivityUpdate) sqlSave(ctx context.Context) (n int, err error)
 			Column: mirroractivity.FieldEndAt,
 		})
 	}
+	if value, ok := mau.mutation.Controller(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: mirroractivity.FieldController,
+		})
+	}
+	if mau.mutation.ControllerCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: mirroractivity.FieldController,
+		})
+	}
+	if value, ok := mau.mutation.Deadline(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: mirroractivity.FieldDeadline,
+		})
+	}
+	if mau.mutation.DeadlineCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Column: mirroractivity.FieldDeadline,
+		})
+	}
 	if mau.mutation.NamespaceCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -460,6 +526,46 @@ func (mauo *MirrorActivityUpdateOne) SetNillableEndAt(t *time.Time) *MirrorActiv
 // ClearEndAt clears the value of the "end_at" field.
 func (mauo *MirrorActivityUpdateOne) ClearEndAt() *MirrorActivityUpdateOne {
 	mauo.mutation.ClearEndAt()
+	return mauo
+}
+
+// SetController sets the "controller" field.
+func (mauo *MirrorActivityUpdateOne) SetController(s string) *MirrorActivityUpdateOne {
+	mauo.mutation.SetController(s)
+	return mauo
+}
+
+// SetNillableController sets the "controller" field if the given value is not nil.
+func (mauo *MirrorActivityUpdateOne) SetNillableController(s *string) *MirrorActivityUpdateOne {
+	if s != nil {
+		mauo.SetController(*s)
+	}
+	return mauo
+}
+
+// ClearController clears the value of the "controller" field.
+func (mauo *MirrorActivityUpdateOne) ClearController() *MirrorActivityUpdateOne {
+	mauo.mutation.ClearController()
+	return mauo
+}
+
+// SetDeadline sets the "deadline" field.
+func (mauo *MirrorActivityUpdateOne) SetDeadline(t time.Time) *MirrorActivityUpdateOne {
+	mauo.mutation.SetDeadline(t)
+	return mauo
+}
+
+// SetNillableDeadline sets the "deadline" field if the given value is not nil.
+func (mauo *MirrorActivityUpdateOne) SetNillableDeadline(t *time.Time) *MirrorActivityUpdateOne {
+	if t != nil {
+		mauo.SetDeadline(*t)
+	}
+	return mauo
+}
+
+// ClearDeadline clears the value of the "deadline" field.
+func (mauo *MirrorActivityUpdateOne) ClearDeadline() *MirrorActivityUpdateOne {
+	mauo.mutation.ClearDeadline()
 	return mauo
 }
 
@@ -697,6 +803,32 @@ func (mauo *MirrorActivityUpdateOne) sqlSave(ctx context.Context) (_node *Mirror
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
 			Type:   field.TypeTime,
 			Column: mirroractivity.FieldEndAt,
+		})
+	}
+	if value, ok := mauo.mutation.Controller(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: mirroractivity.FieldController,
+		})
+	}
+	if mauo.mutation.ControllerCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: mirroractivity.FieldController,
+		})
+	}
+	if value, ok := mauo.mutation.Deadline(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: mirroractivity.FieldDeadline,
+		})
+	}
+	if mauo.mutation.DeadlineCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Column: mirroractivity.FieldDeadline,
 		})
 	}
 	if mauo.mutation.NamespaceCleared() {

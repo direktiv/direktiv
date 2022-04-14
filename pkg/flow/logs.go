@@ -249,3 +249,27 @@ func parent() string {
 	elems := strings.Split(fn.Name(), ".")
 	return elems[len(elems)-1]
 }
+
+func (srv *server) logToMirrorActivity(ctx context.Context, t time.Time, act *ent.MirrorActivity, msg string, a ...interface{}) {
+
+	logc := srv.db.LogMsg
+
+	msg = fmt.Sprintf(msg, a...)
+
+	util.Trace(ctx, msg)
+
+	_, err := logc.Create().SetMsg(msg).SetActivity(act).SetT(t).Save(ctx)
+	if err != nil {
+		srv.sugar.Error(err)
+		return
+	}
+
+	span := trace.SpanFromContext(ctx)
+	tid := span.SpanContext().TraceID()
+
+	ns := act.Edges.Namespace
+	srv.sugar.Infow(msg, "trace", tid, "namespace", ns.Name, "namespace-id", ns.ID.String(), "mirror-id", act.Edges.Mirror.ID.String())
+
+	srv.pubsub.NotifyMirrorActivityLogs(act)
+
+}

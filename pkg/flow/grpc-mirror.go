@@ -31,7 +31,6 @@ func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNam
 	nsc := tx.Namespace
 	inoc := tx.Inode
 	mirc := tx.Mirror
-	actc := tx.MirrorActivity
 	var ns *ent.Namespace
 	var ino *ent.Inode
 	var mir *ent.Mirror
@@ -54,7 +53,7 @@ func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNam
 		return nil, err
 	}
 
-	ino, err = inoc.Create().SetNillableName(nil).SetType("directory").SetExtendedType(util.InodeTypeGit).SetNamespace(ns).Save(ctx)
+	ino, err = inoc.Create().SetNillableName(nil).SetType("directory").SetExtendedType(util.InodeTypeGit).SetReadOnly(true).SetNamespace(ns).Save(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +66,6 @@ func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNam
 		SetPrivateKey(settings.GetPrivateKey()).
 		SetPassphrase(settings.GetPassphrase()).
 		SetCron(settings.GetCron()).
-		SetLocked(false).
 		SetNillableLastSync(nil).
 		SetInode(ino).
 		SetNamespace(ns).
@@ -76,13 +74,10 @@ func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNam
 		return nil, err
 	}
 
-	_, err = actc.Create().
-		SetType(util.MirrorActivityTypeInit).
-		SetStatus(util.MirrorActivityStatusComplete).
-		SetEndAt(time.Now()).
-		SetMirror(mir).
-		SetNamespace(ns).
-		Save(ctx)
+	err = flow.syncer.NewActivity(&newMirrorActivityArgs{
+		MirrorID: mir.ID.String(),
+		Type:     util.MirrorActivityTypeInit,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -142,16 +137,15 @@ func (flow *flow) CreateDirectoryMirror(ctx context.Context, req *grpc.CreateDir
 		return nil, status.Error(codes.AlreadyExists, "parent node is not a directory")
 	}
 
-	if pino.ro {
+	if pino.ino.ReadOnly {
 		return nil, errors.New("cannot write into read-only directory")
 	}
 
 	settings := req.GetSettings()
 	mirc := tx.Mirror
-	actc := tx.MirrorActivity
 	var mir *ent.Mirror
 
-	ino, err := inoc.Create().SetName(base).SetNamespace(ns).SetParent(pino.ino).SetType("directory").SetExtendedType(util.InodeTypeGit).Save(ctx)
+	ino, err := inoc.Create().SetName(base).SetNamespace(ns).SetParent(pino.ino).SetType("directory").SetExtendedType(util.InodeTypeGit).SetReadOnly(true).Save(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -164,7 +158,6 @@ func (flow *flow) CreateDirectoryMirror(ctx context.Context, req *grpc.CreateDir
 		SetPrivateKey(settings.GetPrivateKey()).
 		SetPassphrase(settings.GetPassphrase()).
 		SetCron(settings.GetCron()).
-		SetLocked(false).
 		SetNillableLastSync(nil).
 		SetInode(ino).
 		SetNamespace(ns).
@@ -173,13 +166,10 @@ func (flow *flow) CreateDirectoryMirror(ctx context.Context, req *grpc.CreateDir
 		return nil, err
 	}
 
-	_, err = actc.Create().
-		SetType(util.MirrorActivityTypeInit).
-		SetStatus(util.MirrorActivityStatusComplete).
-		SetEndAt(time.Now()).
-		SetMirror(mir).
-		SetNamespace(ns).
-		Save(ctx)
+	err = flow.syncer.NewActivity(&newMirrorActivityArgs{
+		MirrorID: mir.ID.String(),
+		Type:     util.MirrorActivityTypeInit,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -324,19 +314,12 @@ func (flow *flow) UpdateMirrorSettings(ctx context.Context, req *grpc.UpdateMirr
 
 	d.mir.Edges = edges
 
-	actc := tx.MirrorActivity
-
-	if !d.mir.Locked {
-		_, err = actc.Create().
-			SetType(util.MirrorActivityTypeReconfigure).
-			SetStatus(util.MirrorActivityStatusComplete).
-			SetEndAt(time.Now()).
-			SetMirror(d.mir).
-			SetNamespace(d.ns()).
-			Save(ctx)
-		if err != nil {
-			return nil, err
-		}
+	err = flow.syncer.NewActivity(&newMirrorActivityArgs{
+		MirrorID: d.mir.ID.String(),
+		Type:     util.MirrorActivityTypeReconfigure,
+	})
+	if err != nil {
+		return nil, err
 	}
 
 	err = tx.Commit()
@@ -370,39 +353,77 @@ func (flow *flow) LockMirror(ctx context.Context, req *grpc.LockMirrorRequest) (
 		return nil, err
 	}
 
-	if d.mir.Locked {
+	if !d.ino.ReadOnly {
 		return nil, ErrMirrorLocked
 	}
 
-	edges := d.mir.Edges
+	ino := d.ino
 
-	d.mir, err = d.mir.Update().SetLocked(true).Save(ctx)
+	var recurser func(ino *ent.Inode) error
+	recurser = func(ino *ent.Inode) error {
+
+		inos, err := ino.QueryChildren().All(ctx)
+		if err != nil {
+			return err
+		}
+
+		for _, ino := range inos {
+			if ino.ExtendedType == util.InodeTypeGit {
+				continue
+			}
+
+			ino, err := ino.Update().SetReadOnly(false).Save(ctx)
+			if err != nil {
+				return err
+			}
+
+			if ino.Type == util.InodeTypeDirectory {
+				err = recurser(ino)
+				if err != nil {
+					return err
+				}
+			} else if ino.Type == util.InodeTypeWorkflow {
+				wf, err := ino.QueryWorkflow().Only(ctx)
+				if err != nil {
+					return err
+				}
+				wf, err = wf.Update().SetReadOnly(false).Save(ctx)
+				if err != nil {
+					return err
+				}
+			} else {
+				return errors.New("inode type unaccounted for")
+			}
+		}
+
+		return nil
+
+	}
+
+	ino, err = ino.Update().SetReadOnly(false).Save(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	d.mir.Edges = edges
-
-	actc := tx.MirrorActivity
-	_, err = actc.Create().
-		SetType(util.MirrorActivityTypeLocked).
-		SetStatus(util.MirrorActivityStatusComplete).
-		SetEndAt(time.Now()).
-		SetMirror(d.mir).
-		SetNamespace(d.ns()).
-		Save(ctx)
+	err = recurser(ino)
 	if err != nil {
 		return nil, err
 	}
+
+	err = flow.syncer.NewActivity(&newMirrorActivityArgs{
+		MirrorID: d.mir.ID.String(),
+		Type:     util.MirrorActivityTypeLocked,
+	})
+	if err != nil {
+		return nil, err
+	}
+
 	err = tx.Commit()
 	if err != nil {
 		return nil, err
 	}
 
-	// flow.logToNamespace(ctx, time.Now(), ns, "Created directory as git mirror '%s'.", path)
 	flow.pubsub.NotifyMirror(d.ino)
-
-	// respond:
 
 	var resp emptypb.Empty
 
@@ -425,39 +446,77 @@ func (flow *flow) UnlockMirror(ctx context.Context, req *grpc.UnlockMirrorReques
 		return nil, err
 	}
 
-	if !d.mir.Locked {
+	if d.ino.ReadOnly {
 		return nil, ErrMirrorUnlocked
 	}
 
-	edges := d.mir.Edges
+	ino := d.ino
 
-	d.mir, err = d.mir.Update().SetLocked(false).Save(ctx)
+	var recurser func(ino *ent.Inode) error
+	recurser = func(ino *ent.Inode) error {
+
+		inos, err := ino.QueryChildren().All(ctx)
+		if err != nil {
+			return err
+		}
+
+		for _, ino := range inos {
+			if ino.ExtendedType == util.InodeTypeGit {
+				continue
+			}
+
+			ino, err := ino.Update().SetReadOnly(true).Save(ctx)
+			if err != nil {
+				return err
+			}
+
+			if ino.Type == util.InodeTypeDirectory {
+				err = recurser(ino)
+				if err != nil {
+					return err
+				}
+			} else if ino.Type == util.InodeTypeWorkflow {
+				wf, err := ino.QueryWorkflow().Only(ctx)
+				if err != nil {
+					return err
+				}
+				wf, err = wf.Update().SetReadOnly(true).Save(ctx)
+				if err != nil {
+					return err
+				}
+			} else {
+				return errors.New("inode type unaccounted for")
+			}
+		}
+
+		return nil
+
+	}
+
+	ino, err = ino.Update().SetReadOnly(true).Save(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	d.mir.Edges = edges
-
-	actc := tx.MirrorActivity
-	_, err = actc.Create().
-		SetType(util.MirrorActivityTypeUnlocked).
-		SetStatus(util.MirrorActivityStatusComplete).
-		SetEndAt(time.Now()).
-		SetMirror(d.mir).
-		SetNamespace(d.ns()).
-		Save(ctx)
+	err = recurser(ino)
 	if err != nil {
 		return nil, err
 	}
+
+	err = flow.syncer.NewActivity(&newMirrorActivityArgs{
+		MirrorID: d.mir.ID.String(),
+		Type:     util.MirrorActivityTypeUnlocked,
+	})
+	if err != nil {
+		return nil, err
+	}
+
 	err = tx.Commit()
 	if err != nil {
 		return nil, err
 	}
 
-	// flow.logToNamespace(ctx, time.Now(), ns, "Created directory as git mirror '%s'.", path)
 	flow.pubsub.NotifyMirror(d.ino)
-
-	// respond:
 
 	var resp emptypb.Empty
 

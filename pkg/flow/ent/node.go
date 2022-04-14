@@ -249,7 +249,7 @@ func (i *Inode) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     i.ID,
 		Type:   "Inode",
-		Fields: make([]*Field, 6),
+		Fields: make([]*Field, 7),
 		Edges:  make([]*Edge, 5),
 	}
 	var buf []byte
@@ -299,6 +299,14 @@ func (i *Inode) Node(ctx context.Context) (node *Node, err error) {
 	node.Fields[5] = &Field{
 		Type:  "string",
 		Name:  "extended_type",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(i.ReadOnly); err != nil {
+		return nil, err
+	}
+	node.Fields[6] = &Field{
+		Type:  "bool",
+		Name:  "readOnly",
 		Value: string(buf),
 	}
 	node.Edges[0] = &Edge{
@@ -775,20 +783,20 @@ func (m *Mirror) Node(ctx context.Context) (node *Node, err error) {
 		Name:  "commit",
 		Value: string(buf),
 	}
-	if buf, err = json.Marshal(m.Locked); err != nil {
+	if buf, err = json.Marshal(m.LastSync); err != nil {
 		return nil, err
 	}
 	node.Fields[7] = &Field{
-		Type:  "bool",
-		Name:  "locked",
+		Type:  "time.Time",
+		Name:  "last_sync",
 		Value: string(buf),
 	}
-	if buf, err = json.Marshal(m.LastSync); err != nil {
+	if buf, err = json.Marshal(m.UpdatedAt); err != nil {
 		return nil, err
 	}
 	node.Fields[8] = &Field{
 		Type:  "time.Time",
-		Name:  "last_sync",
+		Name:  "updated_at",
 		Value: string(buf),
 	}
 	node.Edges[0] = &Edge{
@@ -828,7 +836,7 @@ func (ma *MirrorActivity) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     ma.ID,
 		Type:   "MirrorActivity",
-		Fields: make([]*Field, 5),
+		Fields: make([]*Field, 7),
 		Edges:  make([]*Edge, 3),
 	}
 	var buf []byte
@@ -870,6 +878,22 @@ func (ma *MirrorActivity) Node(ctx context.Context) (node *Node, err error) {
 	node.Fields[4] = &Field{
 		Type:  "time.Time",
 		Name:  "end_at",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(ma.Controller); err != nil {
+		return nil, err
+	}
+	node.Fields[5] = &Field{
+		Type:  "string",
+		Name:  "controller",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(ma.Deadline); err != nil {
+		return nil, err
+	}
+	node.Fields[6] = &Field{
+		Type:  "time.Time",
+		Name:  "deadline",
 		Value: string(buf),
 	}
 	node.Edges[0] = &Edge{
@@ -1355,7 +1379,7 @@ func (w *Workflow) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     w.ID,
 		Type:   "Workflow",
-		Fields: make([]*Field, 2),
+		Fields: make([]*Field, 4),
 		Edges:  make([]*Edge, 9),
 	}
 	var buf []byte
@@ -1373,6 +1397,22 @@ func (w *Workflow) Node(ctx context.Context) (node *Node, err error) {
 	node.Fields[1] = &Field{
 		Type:  "string",
 		Name:  "logToEvents",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(w.ReadOnly); err != nil {
+		return nil, err
+	}
+	node.Fields[2] = &Field{
+		Type:  "bool",
+		Name:  "readOnly",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(w.UpdatedAt); err != nil {
+		return nil, err
+	}
+	node.Fields[3] = &Field{
+		Type:  "time.Time",
+		Name:  "updated_at",
 		Value: string(buf),
 	}
 	node.Edges[0] = &Edge{

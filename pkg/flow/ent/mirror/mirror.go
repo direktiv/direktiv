@@ -3,6 +3,8 @@
 package mirror
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 )
 
@@ -25,10 +27,10 @@ const (
 	FieldPassphrase = "passphrase"
 	// FieldCommit holds the string denoting the commit field in the database.
 	FieldCommit = "commit"
-	// FieldLocked holds the string denoting the locked field in the database.
-	FieldLocked = "locked"
 	// FieldLastSync holds the string denoting the last_sync field in the database.
 	FieldLastSync = "last_sync"
+	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
+	FieldUpdatedAt = "updated_at"
 	// EdgeNamespace holds the string denoting the namespace edge name in mutations.
 	EdgeNamespace = "namespace"
 	// EdgeInode holds the string denoting the inode edge name in mutations.
@@ -70,8 +72,8 @@ var Columns = []string{
 	FieldPrivateKey,
 	FieldPassphrase,
 	FieldCommit,
-	FieldLocked,
 	FieldLastSync,
+	FieldUpdatedAt,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "mirrors"
@@ -97,6 +99,10 @@ func ValidColumn(column string) bool {
 }
 
 var (
+	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
+	DefaultUpdatedAt func() time.Time
+	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
+	UpdateDefaultUpdatedAt func() time.Time
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )

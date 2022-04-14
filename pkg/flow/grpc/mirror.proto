@@ -41,7 +41,7 @@ message MirrorInfo {
     string ref = 2;
     string cron = 3;
     string publicKey = 4;
-    bool locked = 5;
+    // bool locked = 5;
     string commitId = 6;
     google.protobuf.Timestamp lastSync = 7;
 }

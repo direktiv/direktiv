@@ -25,6 +25,8 @@ const (
 	FieldAttributes = "attributes"
 	// FieldExtendedType holds the string denoting the extended_type field in the database.
 	FieldExtendedType = "expandedType"
+	// FieldReadOnly holds the string denoting the readonly field in the database.
+	FieldReadOnly = "read_only"
 	// EdgeNamespace holds the string denoting the namespace edge name in mutations.
 	EdgeNamespace = "namespace"
 	// EdgeChildren holds the string denoting the children edge name in mutations.
@@ -77,6 +79,7 @@ var Columns = []string{
 	FieldType,
 	FieldAttributes,
 	FieldExtendedType,
+	FieldReadOnly,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "inodes"
@@ -110,6 +113,8 @@ var (
 	UpdateDefaultUpdatedAt func() time.Time
 	// NameValidator is a validator for the "name" field. It is called by the builders before save.
 	NameValidator func(string) error
+	// DefaultReadOnly holds the default value on creation for the "readOnly" field.
+	DefaultReadOnly bool
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
