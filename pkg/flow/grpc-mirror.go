@@ -3,6 +3,7 @@ package flow
 import (
 	"context"
 	"errors"
+	"fmt"
 	"path/filepath"
 	"time"
 
@@ -74,15 +75,10 @@ func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNam
 		return nil, err
 	}
 
-	err = flow.syncer.NewActivity(&newMirrorActivityArgs{
+	err = flow.syncer.NewActivity(tx, &newMirrorActivityArgs{
 		MirrorID: mir.ID.String(),
 		Type:     util.MirrorActivityTypeInit,
 	})
-	if err != nil {
-		return nil, err
-	}
-
-	err = tx.Commit()
 	if err != nil {
 		return nil, err
 	}
@@ -107,6 +103,8 @@ func (flow *flow) CreateDirectoryMirror(ctx context.Context, req *grpc.CreateDir
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
+	fmt.Println("A")
+
 	tx, err := flow.db.Tx(ctx)
 	if err != nil {
 		return nil, err
@@ -119,6 +117,8 @@ func (flow *flow) CreateDirectoryMirror(ctx context.Context, req *grpc.CreateDir
 		return nil, err
 	}
 
+	fmt.Println("B")
+
 	path := GetInodePath(req.GetPath())
 	dir, base := filepath.Split(path)
 
@@ -126,12 +126,16 @@ func (flow *flow) CreateDirectoryMirror(ctx context.Context, req *grpc.CreateDir
 		return nil, status.Error(codes.AlreadyExists, "root directory already exists")
 	}
 
+	fmt.Println("C")
+
 	inoc := tx.Inode
 
 	pino, err := flow.getInode(ctx, inoc, ns, dir, req.GetParents())
 	if err != nil {
 		return nil, err
 	}
+
+	fmt.Println("D")
 
 	if pino.ino.Type != "directory" {
 		return nil, status.Error(codes.AlreadyExists, "parent node is not a directory")
@@ -141,6 +145,8 @@ func (flow *flow) CreateDirectoryMirror(ctx context.Context, req *grpc.CreateDir
 		return nil, errors.New("cannot write into read-only directory")
 	}
 
+	fmt.Println("E")
+
 	settings := req.GetSettings()
 	mirc := tx.Mirror
 	var mir *ent.Mirror
@@ -149,6 +155,8 @@ func (flow *flow) CreateDirectoryMirror(ctx context.Context, req *grpc.CreateDir
 	if err != nil {
 		return nil, err
 	}
+
+	fmt.Println("F")
 
 	mir, err = mirc.Create().
 		SetURL(settings.GetUrl()).
@@ -166,7 +174,9 @@ func (flow *flow) CreateDirectoryMirror(ctx context.Context, req *grpc.CreateDir
 		return nil, err
 	}
 
-	err = flow.syncer.NewActivity(&newMirrorActivityArgs{
+	fmt.Println("G")
+
+	err = flow.syncer.NewActivity(tx, &newMirrorActivityArgs{
 		MirrorID: mir.ID.String(),
 		Type:     util.MirrorActivityTypeInit,
 	})
@@ -174,10 +184,7 @@ func (flow *flow) CreateDirectoryMirror(ctx context.Context, req *grpc.CreateDir
 		return nil, err
 	}
 
-	err = tx.Commit()
-	if err != nil {
-		return nil, err
-	}
+	fmt.Println("H")
 
 	flow.logToNamespace(ctx, time.Now(), ns, "Created directory as git mirror '%s'.", path)
 	flow.pubsub.NotifyInode(pino.ino)
@@ -314,15 +321,10 @@ func (flow *flow) UpdateMirrorSettings(ctx context.Context, req *grpc.UpdateMirr
 
 	d.mir.Edges = edges
 
-	err = flow.syncer.NewActivity(&newMirrorActivityArgs{
+	err = flow.syncer.NewActivity(tx, &newMirrorActivityArgs{
 		MirrorID: d.mir.ID.String(),
 		Type:     util.MirrorActivityTypeReconfigure,
 	})
-	if err != nil {
-		return nil, err
-	}
-
-	err = tx.Commit()
 	if err != nil {
 		return nil, err
 	}
@@ -410,15 +412,10 @@ func (flow *flow) LockMirror(ctx context.Context, req *grpc.LockMirrorRequest) (
 		return nil, err
 	}
 
-	err = flow.syncer.NewActivity(&newMirrorActivityArgs{
+	err = flow.syncer.NewActivity(tx, &newMirrorActivityArgs{
 		MirrorID: d.mir.ID.String(),
 		Type:     util.MirrorActivityTypeLocked,
 	})
-	if err != nil {
-		return nil, err
-	}
-
-	err = tx.Commit()
 	if err != nil {
 		return nil, err
 	}
@@ -503,15 +500,10 @@ func (flow *flow) UnlockMirror(ctx context.Context, req *grpc.UnlockMirrorReques
 		return nil, err
 	}
 
-	err = flow.syncer.NewActivity(&newMirrorActivityArgs{
+	err = flow.syncer.NewActivity(tx, &newMirrorActivityArgs{
 		MirrorID: d.mir.ID.String(),
 		Type:     util.MirrorActivityTypeUnlocked,
 	})
-	if err != nil {
-		return nil, err
-	}
-
-	err = tx.Commit()
 	if err != nil {
 		return nil, err
 	}

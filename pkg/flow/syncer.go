@@ -40,7 +40,7 @@ func (syncer *syncer) Close() error {
 
 }
 
-func (srv *server) reverseTraverseToMirror(ctx context.Context, id string) (*mirData, error) {
+func (srv *server) reverseTraverseToMirror(ctx context.Context, inoc *ent.InodeClient, mirc *ent.MirrorClient, id string) (*mirData, error) {
 
 	uid, err := uuid.Parse(id)
 	if err != nil {
@@ -48,7 +48,7 @@ func (srv *server) reverseTraverseToMirror(ctx context.Context, id string) (*mir
 		return nil, err
 	}
 
-	mir, err := srv.db.Mirror.Get(ctx, uid)
+	mir, err := mirc.Get(ctx, uid)
 	if err != nil {
 		srv.sugar.Debugf("%s failed to query mirror: %v", parent(), err)
 		return nil, err
@@ -60,7 +60,7 @@ func (srv *server) reverseTraverseToMirror(ctx context.Context, id string) (*mir
 		return nil, err
 	}
 
-	nd, err := srv.reverseTraverseToInode(ctx, ino.ID.String())
+	nd, err := srv.reverseTraverseToInode(ctx, inoc, ino.ID.String())
 	if err != nil {
 		srv.sugar.Debugf("%s failed to resolve inode's parent(s): %v", parent(), err)
 		return nil, err
@@ -199,7 +199,7 @@ func (syncer *syncer) cronHandler(data []byte) {
 	}
 	defer syncer.unlock(id, conn)
 
-	d, err := syncer.reverseTraverseToMirror(ctx, id)
+	d, err := syncer.reverseTraverseToMirror(ctx, syncer.db.Inode, syncer.db.Mirror, id)
 	if err != nil {
 
 		if IsNotFound(err) {
@@ -232,7 +232,7 @@ func (syncer *syncer) cronHandler(data []byte) {
 	args.Caller = "cron"
 	args.CallerData = "cron"
 
-	err = syncer.NewActivity(&newMirrorActivityArgs{
+	err = syncer.NewActivity(nil, &newMirrorActivityArgs{
 		MirrorID: d.mir.ID.String(),
 		Type:     util.MirrorActivityTypeCronSync,
 	})
@@ -268,21 +268,6 @@ func (syncer *syncer) lock(key string, timeout time.Duration) (context.Context, 
 
 }
 
-// func (syncer *syncer) ActivityLock(am *activityMemory, timeout time.Duration) (context.Context, error) {
-
-// 	key := am.ID().String()
-
-// 	ctx, conn, err := syncer.lock(key, timeout)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	am.lock = conn
-
-// 	return ctx, nil
-
-// }
-
 func (syncer *syncer) unlock(key string, conn *sql.Conn) {
 
 	hash, err := hashstructure.Hash(key, hashstructure.FormatV2, nil)
@@ -304,17 +289,6 @@ func (syncer *syncer) unlock(key string, conn *sql.Conn) {
 	}
 
 }
-
-// func (syncer *syncer) ActivityUnlock(am *activityMemory) {
-
-// 	if am.lock == nil {
-// 		return
-// 	}
-
-// 	syncer.unlock(am.ID().String(), am.lock)
-// 	am.lock = nil
-
-// }
 
 func (syncer *syncer) kickExpiredActivities() {
 
@@ -344,6 +318,7 @@ type activityMemory struct {
 	act *ent.MirrorActivity
 	mir *ent.Mirror
 	ino *ent.Inode
+	ns  *ent.Namespace
 }
 
 func (syncer *syncer) loadActivityMemory(id string) (*activityMemory, error) {
@@ -360,7 +335,7 @@ func (syncer *syncer) loadActivityMemory(id string) (*activityMemory, error) {
 		return nil, err
 	}
 
-	mir, err := act.QueryMirror().Only(ctx)
+	mir, err := act.QueryMirror().WithNamespace().WithInode().Only(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -374,6 +349,10 @@ func (syncer *syncer) loadActivityMemory(id string) (*activityMemory, error) {
 	am.act = act
 	am.mir = mir
 	am.ino = ino
+	ino.Edges.Namespace = mir.Edges.Namespace
+	act.Edges.Namespace = mir.Edges.Namespace
+	act.Edges.Mirror = am.mir
+	am.ns = act.Edges.Namespace
 
 	return am, nil
 
@@ -392,7 +371,7 @@ type newMirrorActivityArgs struct {
 	Type     string
 }
 
-func (syncer *syncer) beginActivity(args *newMirrorActivityArgs) (*activityMemory, error) {
+func (syncer *syncer) beginActivity(tx *ent.Tx, args *newMirrorActivityArgs) (*activityMemory, error) {
 
 	ctx, conn, err := syncer.lock(args.MirrorID, defaultLockWait)
 	if err != nil {
@@ -400,13 +379,15 @@ func (syncer *syncer) beginActivity(args *newMirrorActivityArgs) (*activityMemor
 	}
 	defer syncer.unlock(args.MirrorID, conn)
 
-	tx, err := syncer.db.Tx(ctx)
-	if err != nil {
-		return nil, err
+	if tx == nil {
+		tx, err := syncer.db.Tx(ctx)
+		if err != nil {
+			return nil, err
+		}
+		defer rollback(tx)
 	}
-	defer rollback(tx)
 
-	d, err := syncer.reverseTraverseToMirror(ctx, args.MirrorID)
+	d, err := syncer.reverseTraverseToMirror(ctx, tx.Inode, tx.Mirror, args.MirrorID)
 	if err != nil {
 		return nil, err
 	}
@@ -447,6 +428,9 @@ func (syncer *syncer) beginActivity(args *newMirrorActivityArgs) (*activityMemor
 	am.act = act
 	am.mir = d.mir
 	am.ino = d.ino
+	act.Edges.Mirror = am.mir
+	act.Edges.Namespace = d.ns()
+	am.ns = d.ns()
 
 	syncer.logToNamespace(ctx, time.Now(), d.ns(), "Commenced new mirror activity '%s' on mirror: %s", args.Type, d.path)
 
@@ -461,11 +445,11 @@ func (syncer *syncer) beginActivity(args *newMirrorActivityArgs) (*activityMemor
 
 }
 
-func (syncer *syncer) NewActivity(args *newMirrorActivityArgs) error {
+func (syncer *syncer) NewActivity(tx *ent.Tx, args *newMirrorActivityArgs) error {
 
 	syncer.sugar.Debugf("Handling mirror activity: %s", this())
 
-	am, err := syncer.beginActivity(args)
+	am, err := syncer.beginActivity(tx, args)
 	if err != nil {
 		return err
 	}
@@ -488,8 +472,8 @@ func (syncer *syncer) execute(am *activityMemory) {
 
 	switch am.act.Type {
 	case util.MirrorActivityTypeInit:
-	case util.MirrorActivityTypeLocked:
-	case util.MirrorActivityTypeUnlocked:
+	case util.MirrorActivityTypeLocked: // NOTE: intentionally left empty
+	case util.MirrorActivityTypeUnlocked: // NOTE: intentionally left empty
 	case util.MirrorActivityTypeReconfigure:
 	case util.MirrorActivityTypeCronSync:
 	case util.MirrorActivityTypeSync:
@@ -524,6 +508,8 @@ func (syncer *syncer) fail(am *activityMemory, err error) {
 	}
 	defer rollback(tx)
 
+	edges := am.act.Edges
+
 	act, err := tx.MirrorActivity.Get(ctx, am.act.ID)
 	if err != nil {
 		syncer.sugar.Error(err)
@@ -541,6 +527,8 @@ func (syncer *syncer) fail(am *activityMemory, err error) {
 		syncer.sugar.Error(err)
 		return
 	}
+
+	act.Edges = edges
 
 	err = tx.Commit()
 	if err != nil {
@@ -570,6 +558,8 @@ func (syncer *syncer) success(am *activityMemory) error {
 	}
 	defer rollback(tx)
 
+	edges := am.act.Edges
+
 	act, err := tx.MirrorActivity.Get(ctx, am.act.ID)
 	if err != nil {
 		return err
@@ -583,6 +573,8 @@ func (syncer *syncer) success(am *activityMemory) error {
 	if err != nil {
 		return err
 	}
+
+	act.Edges = edges
 
 	err = tx.Commit()
 	if err != nil {

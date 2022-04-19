@@ -146,7 +146,7 @@ func (srv *server) traverseToInode(ctx context.Context, nsc *ent.NamespaceClient
 
 }
 
-func (srv *server) reverseTraverseToInode(ctx context.Context, id string) (*nodeData, error) {
+func (srv *server) reverseTraverseToInode(ctx context.Context, inoc *ent.InodeClient, id string) (*nodeData, error) {
 
 	uid, err := uuid.Parse(id)
 	if err != nil {
@@ -156,7 +156,7 @@ func (srv *server) reverseTraverseToInode(ctx context.Context, id string) (*node
 
 	d := new(nodeData)
 
-	ino, err := srv.db.Inode.Get(ctx, uid)
+	ino, err := inoc.Get(ctx, uid)
 	if err != nil {
 		srv.sugar.Debugf("%s failed to resolve inode: %v", parent(), err)
 		return nil, err
@@ -385,7 +385,7 @@ func (srv *server) reverseTraverseToWorkflow(ctx context.Context, id string) (*w
 		return nil, err
 	}
 
-	nd, err := srv.reverseTraverseToInode(ctx, ino.ID.String())
+	nd, err := srv.reverseTraverseToInode(ctx, srv.db.Inode, ino.ID.String())
 	if err != nil {
 		srv.sugar.Debugf("%s failed to resolve inode's parent(s): %v", parent(), err)
 		return nil, err
