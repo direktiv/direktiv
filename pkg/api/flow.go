@@ -2836,9 +2836,16 @@ func (h *flowHandler) DeleteNode(w http.ResponseWriter, r *http.Request) {
 	namespace := mux.Vars(r)["ns"]
 	path, _ := pathAndRef(r)
 
+	recursiveDelete := false
+	recursiveDeleteStr := r.URL.Query().Get("recursive")
+	if recursiveDeleteStr == "true" {
+		recursiveDelete = true
+	}
+
 	in := &grpc.DeleteNodeRequest{
 		Namespace: namespace,
 		Path:      path,
+		Recursive: recursiveDelete,
 	}
 
 	resp, err := h.client.DeleteNode(ctx, in)
