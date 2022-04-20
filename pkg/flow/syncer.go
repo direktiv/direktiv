@@ -398,7 +398,7 @@ func (syncer *syncer) beginActivity(tx *ent.Tx, args *newMirrorActivityArgs) (*a
 		return nil, err
 	}
 
-	unfinishedActivities, err := d.mir.QueryActivities().Where().Count(ctx)
+	unfinishedActivities, err := d.mir.QueryActivities().Where(entact.StatusIn(util.MirrorActivityStatusPending, util.MirrorActivityStatusExecuting)).Count(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -657,8 +657,6 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 	trueroot := filepath.Join(md.path, ".")
 	cache[trueroot+"/"] = md.ino
 
-	fmt.Println("md.path", md.path, trueroot)
-
 	var recurser func(parent *ent.Inode, path string) error
 	recurser = func(parent *ent.Inode, path string) error {
 
@@ -702,14 +700,11 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 				}
 
 				mn, err := model.lookup(cpath)
-				if err == os.ErrNotExist {
-					return nil
-				}
-				if err != nil {
+				if err != nil && err != os.ErrNotExist {
 					return err
 				}
 
-				if mn.ntype != mntDir {
+				if err == os.ErrNotExist || mn.ntype != mntDir {
 					err = syncer.flow.deleteNode(ctx, &deleteNodeArgs{
 						inoc:      tx.Inode,
 						ns:        md.ns(),
@@ -727,14 +722,11 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 			} else {
 
 				mn, err := model.lookup(cpath)
-				if err == os.ErrNotExist {
-					return nil
-				}
-				if err != nil {
+				if err != nil && err != os.ErrNotExist {
 					return err
 				}
 
-				if mn.ntype != mntWorkflow {
+				if err == os.ErrNotExist || mn.ntype != mntWorkflow {
 					err = syncer.flow.deleteNode(ctx, &deleteNodeArgs{
 						inoc:      tx.Inode,
 						ns:        md.ns(),

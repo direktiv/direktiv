@@ -8,6 +8,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entns "github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
@@ -337,7 +338,7 @@ func (flow *flow) CreateNamespace(ctx context.Context, req *grpc.CreateNamespace
 		return nil, err
 	}
 
-	_, err = inoc.Create().SetNillableName(nil).SetType("directory").SetNamespace(ns).Save(ctx)
+	_, err = inoc.Create().SetNillableName(nil).SetType(util.InodeTypeDirectory).SetNamespace(ns).Save(ctx)
 	if err != nil {
 		return nil, err
 	}

@@ -53,7 +53,7 @@ func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNam
 		return nil, err
 	}
 
-	ino, err = inoc.Create().SetNillableName(nil).SetType("directory").SetExtendedType(util.InodeTypeGit).SetReadOnly(true).SetNamespace(ns).Save(ctx)
+	ino, err = inoc.Create().SetNillableName(nil).SetType(util.InodeTypeDirectory).SetExtendedType(util.InodeTypeGit).SetReadOnly(true).SetNamespace(ns).Save(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -128,7 +128,7 @@ func (flow *flow) CreateDirectoryMirror(ctx context.Context, req *grpc.CreateDir
 		return nil, err
 	}
 
-	if pino.ino.Type != "directory" {
+	if pino.ino.Type != util.InodeTypeDirectory {
 		return nil, status.Error(codes.AlreadyExists, "parent node is not a directory")
 	}
 
@@ -140,7 +140,7 @@ func (flow *flow) CreateDirectoryMirror(ctx context.Context, req *grpc.CreateDir
 	mirc := tx.Mirror
 	var mir *ent.Mirror
 
-	ino, err := inoc.Create().SetName(base).SetNamespace(ns).SetParent(pino.ino).SetType("directory").SetExtendedType(util.InodeTypeGit).SetReadOnly(true).Save(ctx)
+	ino, err := inoc.Create().SetName(base).SetNamespace(ns).SetParent(pino.ino).SetType(util.InodeTypeDirectory).SetExtendedType(util.InodeTypeGit).SetReadOnly(true).Save(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -509,20 +509,20 @@ func (flow *flow) SoftSyncMirror(ctx context.Context, req *grpc.SoftSyncMirrorRe
 	}
 	defer rollback(tx)
 
-	_, err = flow.traverseToMirror(ctx, tx.Namespace, req.GetNamespace(), req.GetPath())
+	d, err := flow.traverseToMirror(ctx, tx.Namespace, req.GetNamespace(), req.GetPath())
 	if err != nil {
 		return nil, err
 	}
 
-	err = tx.Commit()
+	err = flow.syncer.NewActivity(tx, &newMirrorActivityArgs{
+		MirrorID: d.mir.ID.String(),
+		Type:     util.MirrorActivityTypeSync,
+	})
 	if err != nil {
 		return nil, err
 	}
 
-	// flow.logToNamespace(ctx, time.Now(), ns, "Created directory as git mirror '%s'.", path)
-	// flow.pubsub.NotifyInode(pino.ino)
-
-	// respond:
+	flow.pubsub.NotifyMirror(d.ino)
 
 	var resp emptypb.Empty
 
@@ -540,20 +540,20 @@ func (flow *flow) HardSyncMirror(ctx context.Context, req *grpc.HardSyncMirrorRe
 	}
 	defer rollback(tx)
 
-	_, err = flow.traverseToMirror(ctx, tx.Namespace, req.GetNamespace(), req.GetPath())
+	d, err := flow.traverseToMirror(ctx, tx.Namespace, req.GetNamespace(), req.GetPath())
 	if err != nil {
 		return nil, err
 	}
 
-	err = tx.Commit()
+	err = flow.syncer.NewActivity(tx, &newMirrorActivityArgs{
+		MirrorID: d.mir.ID.String(),
+		Type:     util.MirrorActivityTypeSync,
+	})
 	if err != nil {
 		return nil, err
 	}
 
-	// flow.logToNamespace(ctx, time.Now(), ns, "Created directory as git mirror '%s'.", path)
-	// flow.pubsub.NotifyInode(pino.ino)
-
-	// respond:
+	flow.pubsub.NotifyMirror(d.ino)
 
 	var resp emptypb.Empty
 

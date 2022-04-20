@@ -189,7 +189,7 @@ func (flow *flow) Directory(ctx context.Context, req *grpc.DirectoryRequest) (*g
 		return nil, err
 	}
 
-	if d.ino.Type != "directory" {
+	if d.ino.Type != util.InodeTypeDirectory {
 		return nil, ErrNotDir
 	}
 
@@ -257,7 +257,7 @@ func (flow *flow) DirectoryStream(req *grpc.DirectoryRequest, srv grpc.Flow_Dire
 		return err
 	}
 
-	if d.ino.Type != "directory" {
+	if d.ino.Type != util.InodeTypeDirectory {
 		return ErrNotDir
 	}
 
@@ -352,7 +352,7 @@ func (flow *flow) createDirectory(ctx context.Context, args *createDirectoryArgs
 	path := args.path
 	dir, base := filepath.Split(args.path)
 
-	if pino.Type != "directory" {
+	if pino.Type != util.InodeTypeDirectory {
 		return nil, status.Error(codes.AlreadyExists, "parent node is not a directory")
 	}
 
@@ -360,7 +360,7 @@ func (flow *flow) createDirectory(ctx context.Context, args *createDirectoryArgs
 		return nil, errors.New("cannot write into read-only directory")
 	}
 
-	ino, err := inoc.Create().SetName(base).SetNamespace(ns).SetParent(pino).SetType(util.InodeTypeDirectory).Save(ctx)
+	ino, err := inoc.Create().SetName(base).SetNamespace(ns).SetParent(pino).SetReadOnly(pino.ReadOnly).SetType(util.InodeTypeDirectory).Save(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -504,7 +504,7 @@ func (flow *flow) deleteNode(ctx context.Context, args *deleteNodeArgs) error {
 		return err
 	}
 
-	if ino.Type == "workflow" {
+	if ino.Type == util.InodeTypeWorkflow {
 		metricsWf.WithLabelValues(ns.Name, ns.Name).Dec()
 		metricsWfUpdated.WithLabelValues(ns.Name, path, ns.Name).Inc()
 
@@ -563,7 +563,7 @@ func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (
 		return nil, err
 	}
 
-	flow.deleteNode(ctx, &deleteNodeArgs{
+	err = flow.deleteNode(ctx, &deleteNodeArgs{
 		inoc: tx.Inode,
 		ns:   d.ns(),
 		pino: d.ino.Edges.Parent,
@@ -573,6 +573,9 @@ func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (
 
 		recursive: req.GetRecursive(),
 	})
+	if err != nil {
+		return nil, err
+	}
 
 	err = tx.Commit()
 	if err != nil {

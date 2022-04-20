@@ -212,7 +212,7 @@ func (flow *flow) createWorkflow(ctx context.Context, args *createWorkflowArgs) 
 		return nil, err
 	}
 
-	if pino.Type != "directory" {
+	if pino.Type != util.InodeTypeDirectory {
 		return nil, errors.New("parent inode is not a directory")
 	}
 
@@ -220,7 +220,7 @@ func (flow *flow) createWorkflow(ctx context.Context, args *createWorkflowArgs) 
 		return nil, errors.New("cannot write into read-only directory")
 	}
 
-	ino, err := inoc.Create().SetName(base).SetNamespace(ns).SetParent(pino).SetType(util.InodeTypeWorkflow).Save(ctx)
+	ino, err := inoc.Create().SetName(base).SetNamespace(ns).SetParent(pino).SetReadOnly(pino.ReadOnly).SetType(util.InodeTypeWorkflow).Save(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -306,7 +306,7 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 		return nil, err
 	}
 
-	if d.ino.Type != "directory" {
+	if d.ino.Type != util.InodeTypeDirectory {
 		return nil, errors.New("parent inode is not a directory")
 	}
 
@@ -316,7 +316,7 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 
 	inoc := tx.Inode
 
-	ino, err := inoc.Create().SetName(base).SetNamespace(d.ns()).SetParent(d.ino).SetType("workflow").Save(ctx)
+	ino, err := inoc.Create().SetName(base).SetNamespace(d.ns()).SetParent(d.ino).SetType(util.InodeTypeWorkflow).Save(ctx)
 	if err != nil {
 		return nil, err
 	}

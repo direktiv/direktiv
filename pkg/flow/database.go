@@ -17,6 +17,7 @@ import (
 	entref "github.com/direktiv/direktiv/pkg/flow/ent/ref"
 	entvardata "github.com/direktiv/direktiv/pkg/flow/ent/vardata"
 	entvar "github.com/direktiv/direktiv/pkg/flow/ent/varref"
+	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
 )
 
@@ -251,7 +252,7 @@ func (srv *server) getInode(ctx context.Context, inoc *ent.InodeClient, ns *ent.
 			if IsNotFound(err) {
 
 				if createParents && inoc != nil && len(elems) > 1 {
-					child, err = inoc.Create().SetName(elems[0]).SetNamespace(ns).SetParent(ino).SetType("directory").Save(ctx)
+					child, err = inoc.Create().SetName(elems[0]).SetNamespace(ns).SetParent(ino).SetType(util.InodeTypeDirectory).Save(ctx)
 				} else {
 					err = &NotFoundError{
 						Label: fmt.Sprintf("inode not found at '%s'", path),
@@ -291,7 +292,7 @@ func (srv *server) getInode(ctx context.Context, inoc *ent.InodeClient, ns *ent.
 
 func (srv *server) getWorkflow(ctx context.Context, ino *ent.Inode) (*ent.Workflow, error) {
 
-	if ino.Type != "workflow" {
+	if ino.Type != util.InodeTypeWorkflow {
 		srv.sugar.Debugf("%s inode isn't a workflow", parent())
 		return nil, ErrNotWorkflow
 	}
