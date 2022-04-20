@@ -216,7 +216,7 @@ func (flow *flow) createWorkflow(ctx context.Context, args *createWorkflowArgs) 
 		return nil, errors.New("parent inode is not a directory")
 	}
 
-	if pino.ReadOnly {
+	if !args.super && pino.ReadOnly {
 		return nil, errors.New("cannot write into read-only directory")
 	}
 
