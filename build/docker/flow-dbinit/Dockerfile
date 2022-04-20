@@ -1,6 +1,6 @@
 FROM alpine:3.15.0
 
-COPY flow-dbinit /bin/flow-dbinit
+COPY build/flow-dbinit /bin/flow-dbinit
 RUN chmod 755 /bin/flow-dbinit
 
 RUN apk add shadow

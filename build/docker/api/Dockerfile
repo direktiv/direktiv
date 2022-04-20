@@ -2,7 +2,7 @@ FROM gcr.io/distroless/static
 
 USER nonroot:nonroot
 
-COPY api /bin/server
+COPY build/api /bin/server
 
 EXPOSE 8080
 

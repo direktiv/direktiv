@@ -1,6 +1,6 @@
 FROM gcr.io/distroless/static
 
-COPY sidecar /sidecar
+COPY build/sidecar /sidecar
 
 EXPOSE 8890
 

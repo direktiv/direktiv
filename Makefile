@@ -2,8 +2,9 @@
 # # Makefile to build direktiv
 # #
 
+# LD_LIBRARY_PATH := "/usr/local/lib"
 DOCKER_REPO := "localhost:5000"
-CGO_LDFLAGS := "CGO_LDFLAGS=\"-static -w -s\""
+CGO_LDFLAGS := "CGO_LDFLAGS=-static -w -s"
 GO_BUILD_TAGS := "osusergo,netgo"
 GIT_HASH := $(shell git rev-parse --short HEAD)
 GIT_DIRTY := $(shell git diff --quiet || echo '-dirty')
@@ -149,7 +150,7 @@ protoc:
 build/%-binary: Makefile ${GO_SOURCE_FILES}
 	@set -e ; if [ -d "cmd/$*" ]; then \
 		echo "Building $* binary..."; \
-		export ${CGO_LDFLAGS} && go build -ldflags "-X github.com/direktiv/direktiv/pkg/version.Version=${FULL_VERSION}" -tags ${GO_BUILD_TAGS} -o $@ cmd/$*/*.go; \
+		go build -ldflags "-X github.com/direktiv/direktiv/pkg/version.Version=${FULL_VERSION}" -tags ${GO_BUILD_TAGS} -o $@ cmd/$*/*.go; \
 		cp build/$*-binary build/$*; \
 	else \
    	touch $@; \
@@ -161,7 +162,7 @@ scan-%: push-%
 
 .PHONY: image-%
 image-%: build/%-binary
-	cd build && DOCKER_BUILDKIT=1 docker build -t direktiv-$* -f docker/$*/Dockerfile .
+	DOCKER_BUILDKIT=1 docker build -t direktiv-$* -f build/docker/$*/Dockerfile .
 	@echo "Make $@: SUCCESS"
 
 .PHONY: push-%
@@ -231,7 +232,7 @@ tail-flow: ## Tail logs for currently active 'flow' container.
 fwd-flow: ## Tail logs for currently active 'flow' container.
 	$(eval FLOW_RS := $(shell kubectl get rs -o json | jq '.items[] | select(.metadata.labels."app.kubernetes.io/name" == "direktiv") | .metadata.name'))
 	$(eval FLOW_POD := $(shell kubectl get pods -o json | jq '.items[] | select(.metadata.ownerReferences[0].name == ${FLOW_RS}) | .metadata.name'))
-	kubectl port-forward ${FLOW_POD} 8080:6666 --address 0.0.0.0
+	kubectl port-forward ${FLOW_POD} 6666:6666 --address 0.0.0.0
 
 .PHONY: tail-secrets
 tail-secrets: ## Tail logs for currently active 'secrets' container.

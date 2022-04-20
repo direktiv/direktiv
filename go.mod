@@ -35,6 +35,7 @@ require (
 	github.com/itchyny/gojq v0.12.1
 	github.com/jinzhu/copier v0.2.4
 	github.com/lib/pq v1.10.4
+	github.com/libgit2/git2go/v33 v33.0.9 // indirect
 	github.com/mattn/go-shellwords v1.0.12
 	github.com/mitchellh/go-wordwrap v1.0.1 // indirect
 	github.com/mitchellh/hashstructure/v2 v2.0.1

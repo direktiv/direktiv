@@ -6,6 +6,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/fs"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 
@@ -13,6 +18,7 @@ import (
 	entact "github.com/direktiv/direktiv/pkg/flow/ent/mirroractivity"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
+	git "github.com/libgit2/git2go/v33"
 	"github.com/mitchellh/hashstructure/v2"
 )
 
@@ -472,11 +478,27 @@ func (syncer *syncer) execute(am *activityMemory) {
 
 	switch am.act.Type {
 	case util.MirrorActivityTypeInit:
+		err = syncer.initMirror(ctx, am)
+		if err != nil {
+			return
+		}
 	case util.MirrorActivityTypeLocked: // NOTE: intentionally left empty
 	case util.MirrorActivityTypeUnlocked: // NOTE: intentionally left empty
 	case util.MirrorActivityTypeReconfigure:
+		err = syncer.hardSync(ctx, am)
+		if err != nil {
+			return
+		}
 	case util.MirrorActivityTypeCronSync:
+		err = syncer.hardSync(ctx, am)
+		if err != nil {
+			return
+		}
 	case util.MirrorActivityTypeSync:
+		err = syncer.hardSync(ctx, am)
+		if err != nil {
+			return
+		}
 	default:
 		syncer.logToMirrorActivity(ctx, time.Now(), am.act, "Unrecognized syncer activity type.")
 	}
@@ -488,9 +510,9 @@ func (syncer *syncer) execute(am *activityMemory) {
 
 }
 
-func (syncer *syncer) fail(am *activityMemory, err error) {
+func (syncer *syncer) fail(am *activityMemory, e error) {
 
-	if err == nil {
+	if e == nil {
 		return
 	}
 
@@ -538,7 +560,7 @@ func (syncer *syncer) fail(am *activityMemory, err error) {
 
 	syncer.pubsub.NotifyMirror(am.ino)
 
-	syncer.logToMirrorActivity(ctx, time.Now(), act, "Mirror activity '%s' failed.", act.Type)
+	syncer.logToMirrorActivity(ctx, time.Now(), act, "Mirror activity '%s' failed: %v", act.Type, e)
 
 	syncer.timers.deleteTimersForActivity(am.ID().String())
 
@@ -588,5 +610,807 @@ func (syncer *syncer) success(am *activityMemory) error {
 	syncer.timers.deleteTimersForActivity(am.ID().String())
 
 	return nil
+
+}
+
+func (syncer *syncer) initMirror(ctx context.Context, am *activityMemory) error {
+
+	return syncer.hardSync(ctx, am)
+
+}
+
+func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
+
+	lr, err := loadRepository(ctx, &repositorySettings{
+		UUID:       am.mir.ID,
+		URL:        am.mir.URL,
+		Branch:     am.mir.Ref,
+		Passphrase: am.mir.Passphrase,
+		PrivateKey: am.mir.PrivateKey,
+		PublicKey:  am.mir.PublicKey,
+	})
+	if err != nil {
+		return err
+	}
+	defer lr.Cleanup()
+
+	// lr.lastCommit = opts.LastCommit
+
+	model, err := buildModel(ctx, lr)
+	if err != nil {
+		return err
+	}
+	fmt.Println(model)
+
+	tx, err := syncer.db.Tx(ctx)
+	if err != nil {
+		return nil
+	}
+	defer rollback(tx)
+
+	md, err := syncer.reverseTraverseToMirror(ctx, tx.Inode, tx.Mirror, am.mir.ID.String())
+	if err != nil {
+		return nil
+	}
+
+	cache := make(map[string]*ent.Inode)
+	trueroot := filepath.Join(md.path, ".")
+	cache[trueroot+"/"] = md.ino
+
+	fmt.Println("md.path", md.path, trueroot)
+
+	var recurser func(parent *ent.Inode, path string) error
+	recurser = func(parent *ent.Inode, path string) error {
+
+		children, err := parent.Children(ctx)
+		if err != nil {
+			return err
+		}
+
+		for _, child := range children {
+
+			cpath := filepath.Join(path, child.Name)
+
+			if child.Type == util.InodeTypeDirectory && child.ExtendedType == util.InodeTypeGit {
+
+				_, err = model.lookup(cpath)
+				if err == os.ErrNotExist {
+					return nil
+				}
+				if err != nil {
+					return err
+				}
+
+				err = syncer.flow.deleteNode(ctx, &deleteNodeArgs{
+					inoc:      tx.Inode,
+					ns:        md.ns(),
+					pino:      parent,
+					ino:       child,
+					path:      path,
+					super:     true,
+					recursive: true,
+				})
+				if err != nil {
+					return err
+				}
+
+			} else if child.Type == util.InodeTypeDirectory {
+
+				err = recurser(child, cpath)
+				if err != nil {
+					return err
+				}
+
+				mn, err := model.lookup(cpath)
+				if err == os.ErrNotExist {
+					return nil
+				}
+				if err != nil {
+					return err
+				}
+
+				if mn.ntype != mntDir {
+					err = syncer.flow.deleteNode(ctx, &deleteNodeArgs{
+						inoc:      tx.Inode,
+						ns:        md.ns(),
+						pino:      parent,
+						ino:       child,
+						path:      path,
+						super:     true,
+						recursive: true,
+					})
+					if err != nil {
+						return err
+					}
+				}
+
+			} else {
+
+				mn, err := model.lookup(cpath)
+				if err == os.ErrNotExist {
+					return nil
+				}
+				if err != nil {
+					return err
+				}
+
+				if mn.ntype != mntWorkflow {
+					err = syncer.flow.deleteNode(ctx, &deleteNodeArgs{
+						inoc:      tx.Inode,
+						ns:        md.ns(),
+						pino:      parent,
+						ino:       child,
+						path:      path,
+						super:     true,
+						recursive: true,
+					})
+					if err != nil {
+						return err
+					}
+				}
+
+			}
+		}
+
+		return nil
+
+	}
+
+	err = recurser(md.ino, ".")
+	if err != nil {
+		return err
+	}
+
+	err = modelWalk(model.root, ".", func(path string, n *mirrorNode, err error) error {
+
+		if path == "." {
+			return nil
+		}
+
+		truepath := filepath.Join(md.path, path)
+		dir, base := filepath.Split(truepath)
+
+		switch n.ntype {
+		case mntDir:
+
+			ino, err := syncer.flow.createDirectory(ctx, &createDirectoryArgs{
+				inoc:  tx.Inode,
+				ns:    md.ns(),
+				pino:  cache[dir],
+				path:  truepath,
+				super: true,
+			})
+			if err == os.ErrExist {
+				pino := cache[dir]
+				ino, err = syncer.flow.lookupInodeFromParent(ctx, &lookupInodeFromParentArgs{
+					pino: pino,
+					name: base,
+				})
+				if err != nil {
+					return err
+				}
+			}
+			if err != nil {
+				return err
+			}
+
+			cache[truepath+"/"] = ino
+
+		case mntWorkflow:
+
+			data, err := ioutil.ReadFile(filepath.Join(lr.path, path))
+			if err != nil {
+				return err
+			}
+
+			trimmedpath := strings.TrimSuffix(strings.TrimSuffix(truepath, ".yml"), ".yaml")
+
+			wf, err := syncer.flow.createWorkflow(ctx, &createWorkflowArgs{
+				inoc: tx.Inode,
+				wfc:  tx.Workflow,
+				revc: tx.Revision,
+				refc: tx.Ref,
+
+				ns:    md.ns(),
+				pino:  cache[dir],
+				path:  trimmedpath,
+				super: true,
+				data:  data,
+			})
+			if err == os.ErrExist {
+				pino := cache[dir]
+				wf, err = syncer.flow.lookupWorkflowFromParent(ctx, &lookupWorkflowFromParentArgs{
+					pino: pino,
+					name: base,
+				})
+				if err != nil {
+					return err
+				}
+				_, err = syncer.flow.updateWorkflow(ctx, &updateWorkflowArgs{
+					revc:   tx.Revision,
+					eventc: tx.Events,
+					ns:     md.ns(),
+					ino:    wf.Edges.Inode,
+					wf:     wf,
+					path:   trimmedpath,
+					data:   data,
+				})
+				if err != nil {
+					return err
+				}
+			}
+			if err != nil {
+				return err
+			}
+
+			cache[truepath+"/"] = wf.Edges.Inode
+
+		case mntNamespaceVar:
+
+			data, err := ioutil.ReadFile(filepath.Join(lr.path, path))
+			if err != nil {
+				return err
+			}
+
+			_, base := filepath.Split(path)
+			trimmed := strings.TrimPrefix(base, "var.")
+
+			_, _, err = syncer.flow.SetVariable(ctx, tx.VarRef, tx.VarData, md.ns(), trimmed, data, "", false)
+			if err != nil {
+				return err
+			}
+
+		case mntWorkflowVar:
+
+			data, err := ioutil.ReadFile(filepath.Join(lr.path, path))
+			if err != nil {
+				return err
+			}
+
+			x := strings.SplitN(truepath, ".yaml.", 2)
+			if len(x) == 1 {
+				x = strings.SplitN(truepath, ".yml", 2)
+				if len(x) == 1 {
+					return errors.New("how did this happen?")
+				}
+			}
+			trimmed := x[1]
+
+			pino := cache[dir]
+			wf, err := syncer.flow.lookupWorkflowFromParent(ctx, &lookupWorkflowFromParentArgs{
+				pino: pino,
+				name: base,
+			})
+			if err != nil {
+				return err
+			}
+
+			_, _, err = syncer.flow.SetVariable(ctx, tx.VarRef, tx.VarData, wf, trimmed, data, "", false)
+			if err != nil {
+				return err
+			}
+
+		default:
+			return errors.New("unexpected mnt")
+		}
+
+		return nil
+
+	})
+	if err != nil {
+		return err
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return nil
+	}
+
+	return nil
+
+}
+
+type repositorySettings struct {
+	UUID   uuid.UUID
+	URL    string
+	Branch string
+	// Username   string
+	Passphrase string
+	PrivateKey string
+	PublicKey  string
+}
+
+type localRepository struct {
+	path          string
+	repo          *repositorySettings
+	gitRepository *git.Repository
+	lastCommit    string
+}
+
+func loadRepository(ctx context.Context, repo *repositorySettings) (*localRepository, error) {
+
+	repository := new(localRepository)
+	repository.repo = repo
+	repository.path = filepath.Join(os.TempDir(), repo.UUID.String())
+
+	err := repository.clone(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return repository, nil
+
+}
+
+func (repository *localRepository) Cleanup() {
+	repository.gitRepository.Free()
+	_ = os.RemoveAll(repository.path)
+}
+
+func (repository *localRepository) clone(ctx context.Context) error {
+
+	checkoutOpts := git.CheckoutOptions{
+		Strategy: git.CheckoutForce,
+	}
+
+	fetchOpts := git.FetchOptions{
+		RemoteCallbacks: git.RemoteCallbacks{
+			CertificateCheckCallback: func(cert *git.Certificate, valid bool, hostname string) error { return nil }, // TODO
+			CredentialsCallback: func(url string, username_from_url string, allowed_types git.CredentialType) (*git.Credential, error) {
+				cred, err := git.NewCredentialSSHKeyFromMemory(username_from_url, repository.repo.PublicKey, repository.repo.PrivateKey, repository.repo.Passphrase)
+				if err != nil {
+					fmt.Println(err)
+					return nil, err
+				}
+				return cred, err
+			},
+		},
+	}
+
+	r, err := git.Clone(repository.repo.URL, repository.path, &git.CloneOptions{
+		CheckoutOptions: checkoutOpts,
+		FetchOptions:    fetchOpts,
+		CheckoutBranch:  repository.repo.Branch,
+	})
+
+	if err != nil {
+		return err
+	}
+
+	repository.gitRepository = r
+
+	return nil
+
+}
+
+const (
+	mntDir          = "directory"
+	mntWorkflow     = "workflow"
+	mntWorkflowVar  = "wfvar"
+	mntNamespaceVar = "nsvar"
+)
+
+var (
+	ntypeShort map[string]string
+)
+
+func init() {
+	ntypeShort = map[string]string{
+		mntDir:      "d",
+		mntWorkflow: "w",
+	}
+}
+
+type mirrorNode struct {
+	parent   *mirrorNode
+	children []*mirrorNode
+	ntype    string
+	name     string
+	change   string
+}
+
+type mirrorModel struct {
+	root *mirrorNode
+}
+
+func (model *mirrorModel) lookup(path string) (*mirrorNode, error) {
+
+	path = strings.Trim(path, "/")
+
+	if path == "." || path == "" {
+		return model.root, nil
+	}
+
+	dir, base := filepath.Split(path)
+
+	if base == "" {
+		base = dir
+		dir = "."
+	}
+
+	pnode, err := model.lookup(dir)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, c := range pnode.children {
+		if c.name == base {
+			return c, nil
+		}
+	}
+
+	return nil, os.ErrNotExist
+
+}
+
+func (model *mirrorModel) addDirectoryNode(path string) error {
+
+	dir, base := filepath.Split(path)
+
+	node, err := model.lookup(dir)
+	if err != nil {
+		return err
+	}
+
+	if node.ntype != mntDir {
+		return errors.New("parent not a directory")
+	}
+
+	node.children = append(node.children, &mirrorNode{
+		parent:   node,
+		children: make([]*mirrorNode, 0),
+		ntype:    mntDir,
+		name:     base,
+	})
+
+	return nil
+
+}
+
+func (model *mirrorModel) addWorkflowNode(path string) error {
+
+	dir, base := filepath.Split(path)
+
+	node, err := model.lookup(dir)
+	if err != nil {
+		return err
+	}
+
+	if node.ntype != mntDir {
+		return errors.New("parent not a directory")
+	}
+
+	node.children = append(node.children, &mirrorNode{
+		parent:   node,
+		children: make([]*mirrorNode, 0),
+		ntype:    mntWorkflow,
+		name:     base,
+	})
+
+	return nil
+
+}
+
+func (model *mirrorModel) addWorkflowVariableNode(path string) error {
+
+	dir, base := filepath.Split(path)
+
+	node, err := model.lookup(dir)
+	if err != nil {
+		return err
+	}
+
+	if node.ntype != mntDir {
+		return errors.New("parent not a directory")
+	}
+
+	node.children = append(node.children, &mirrorNode{
+		parent:   node,
+		children: make([]*mirrorNode, 0),
+		ntype:    mntWorkflowVar,
+		name:     base,
+	})
+
+	return nil
+
+}
+
+func (model *mirrorModel) addNamespaceVariableNode(path string) error {
+
+	dir, base := filepath.Split(path)
+
+	node, err := model.lookup(dir)
+	if err != nil {
+		return err
+	}
+
+	if node.ntype != mntDir {
+		return errors.New("parent not a directory")
+	}
+
+	node.children = append(node.children, &mirrorNode{
+		parent:   node,
+		children: make([]*mirrorNode, 0),
+		ntype:    mntNamespaceVar,
+		name:     base,
+	})
+
+	return nil
+
+}
+
+func (model *mirrorModel) finalize() error {
+
+	var recurse func(node *mirrorNode) bool
+
+	recurse = func(node *mirrorNode) bool {
+
+		if node.ntype != mntDir {
+			return true
+		}
+
+		children := make([]*mirrorNode, 0)
+
+		for _, c := range node.children {
+			hasData := recurse(c)
+			if hasData {
+				children = append(children, c)
+			}
+		}
+
+		node.children = children
+		return len(node.children) > 0
+
+	}
+
+	recurse(model.root)
+
+	return nil
+
+}
+
+func (model *mirrorModel) dump() {
+
+	err := modelWalk(model.root, ".", func(path string, n *mirrorNode, err error) error {
+		fmt.Println(ntypeShort[n.ntype], path, n.change)
+		return nil
+	})
+	if err != nil {
+		fmt.Println(err)
+	}
+
+}
+
+func modelWalk(node *mirrorNode, path string, fn func(path string, n *mirrorNode, err error) error) error {
+
+	err := fn(path, node, nil)
+	if err == filepath.SkipDir {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+
+	for _, c := range node.children {
+		cpath := filepath.Join(path, c.name)
+		err := modelWalk(c, cpath, fn)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+
+}
+
+func (model *mirrorModel) diff(repo *localRepository) error {
+
+	var oldid *git.Oid
+
+	oldref, err := repo.gitRepository.References.Lookup(repo.lastCommit)
+	if err != nil {
+
+		oldid, err = git.NewOid(repo.lastCommit)
+		if err != nil {
+			return err
+		}
+
+	} else {
+
+		defer oldref.Free()
+		oldid = oldref.Target()
+
+		if oldid == nil {
+			href, err := repo.gitRepository.Head()
+			if err != nil {
+				return err
+			}
+			defer href.Free()
+			oldid = href.Target()
+		}
+
+	}
+
+	oldcommit, err := repo.gitRepository.LookupCommit(oldid)
+	if err != nil {
+		return err
+	}
+	defer oldcommit.Free()
+
+	oldtree, err := oldcommit.Tree()
+	if err != nil {
+		return err
+	}
+	defer oldtree.Free()
+
+	href, err := repo.gitRepository.Head()
+	if err != nil {
+		return err
+	}
+	defer href.Free()
+	newid := href.Target()
+
+	newcommit, err := repo.gitRepository.LookupCommit(newid)
+	if err != nil {
+		return err
+	}
+	defer newcommit.Free()
+
+	newtree, err := newcommit.Tree()
+	if err != nil {
+		return err
+	}
+	defer newtree.Free()
+
+	opts, err := git.DefaultDiffOptions()
+	if err != nil {
+		return err
+	}
+
+	diff, err := repo.gitRepository.DiffTreeToTree(oldtree, newtree, &opts)
+	if err != nil {
+		return err
+	}
+	defer diff.Free()
+
+	dopts, err := git.DefaultDiffFindOptions()
+	if err != nil {
+		return err
+	}
+
+	err = diff.FindSimilar(&dopts)
+	if err != nil {
+		return err
+	}
+
+	err = diff.ForEach(func(delta git.DiffDelta, progress float64) (git.DiffForEachHunkCallback, error) {
+
+		node, err := model.lookup(delta.NewFile.Path)
+		if err == os.ErrNotExist {
+			return func(x git.DiffHunk) (git.DiffForEachLineCallback, error) {
+				return func(x git.DiffLine) error {
+					return nil
+				}, nil
+			}, nil
+		}
+		if err != nil {
+			return nil, err
+		}
+
+		switch delta.Status {
+		case git.DeltaAdded:
+			node.change = "added"
+		case git.DeltaModified:
+			node.change = "changed"
+		case git.DeltaRenamed:
+			node.change = fmt.Sprintf("renamed from '%s'", delta.OldFile.Path)
+		default:
+			node.change = delta.Status.String()
+		}
+
+		return func(x git.DiffHunk) (git.DiffForEachLineCallback, error) {
+			return func(x git.DiffLine) error {
+				return nil
+			}, nil
+		}, nil
+	}, git.DiffDetailFiles)
+	if err != nil {
+		return err
+	}
+
+	return nil
+
+}
+
+func buildModel(ctx context.Context, repo *localRepository) (*mirrorModel, error) {
+
+	model := new(mirrorModel)
+	model.root = &mirrorNode{
+		parent:   model.root,
+		children: make([]*mirrorNode, 0),
+		ntype:    mntDir,
+		name:     ".", // TODO
+	}
+
+	err := filepath.WalkDir(repo.path, func(path string, d fs.DirEntry, err error) error {
+
+		rel, err := filepath.Rel(repo.path, path)
+		if err != nil {
+			return err
+		}
+
+		if rel == "." {
+			return nil
+		}
+
+		if rel == ".git" {
+			return filepath.SkipDir
+		}
+
+		_, base := filepath.Split(path)
+
+		if d.IsDir() {
+			if !util.NameRegex.MatchString(base) {
+				return filepath.SkipDir
+			}
+
+			err = model.addDirectoryNode(rel)
+			if err != nil {
+				return err
+			}
+
+			return nil
+		}
+
+		if !util.NameRegex.MatchString(base) {
+			return nil
+		}
+
+		if strings.HasSuffix(base, ".yaml") || strings.HasSuffix(base, ".yml") {
+			err = model.addWorkflowNode(rel)
+			if err != nil {
+				return err
+			}
+			return nil
+		}
+
+		if strings.Contains(base, ".yaml.") || strings.Contains(base, ".yml.") {
+			err = model.addWorkflowVariableNode(rel)
+			if err != nil {
+				return err
+			}
+			return nil
+		}
+
+		if strings.HasPrefix(base, "var.") {
+			err = model.addNamespaceVariableNode(rel)
+			if err != nil {
+				return err
+			}
+			return nil
+		}
+
+		return nil
+
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	err = model.finalize()
+	if err != nil {
+		return nil, err
+	}
+
+	if repo.lastCommit != "" {
+		err = model.diff(repo)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	model.dump()
+
+	return model, nil
 
 }

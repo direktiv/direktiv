@@ -415,6 +415,33 @@ func (d *refData) reference() string {
 	return d.ref.Name
 }
 
+type lookupRefAndRevArgs struct {
+	wf        *ent.Workflow
+	reference string
+}
+
+func (srv *server) lookupRefAndRev(ctx context.Context, args *lookupRefAndRevArgs) (*ent.Ref, error) {
+
+	if args.reference == "" {
+		args.reference = latest
+	}
+
+	ref, err := srv.getRef(ctx, args.wf, args.reference)
+	if err != nil {
+		return nil, err
+	}
+
+	rev, err := srv.getRevision(ctx, ref)
+	if err != nil {
+		return nil, err
+	}
+
+	ref.Edges.Revision = rev
+
+	return ref, nil
+
+}
+
 func (srv *server) traverseToRef(ctx context.Context, nsc *ent.NamespaceClient, namespace, path, reference string) (*refData, error) {
 
 	wd, err := srv.traverseToWorkflow(ctx, nsc, namespace, path)
@@ -425,11 +452,10 @@ func (srv *server) traverseToRef(ctx context.Context, nsc *ent.NamespaceClient, 
 
 	rd := new(refData)
 
-	if reference == "" {
-		reference = latest
-	}
-
-	ref, err := srv.getRef(ctx, wd.wf, reference)
+	ref, err := srv.lookupRefAndRev(ctx, &lookupRefAndRevArgs{
+		wf:        wd.wf,
+		reference: reference,
+	})
 	if err != nil {
 		srv.sugar.Debugf("%s failed to resolve workflow ref: %v", parent(), err)
 		return nil, err
@@ -438,13 +464,6 @@ func (srv *server) traverseToRef(ctx context.Context, nsc *ent.NamespaceClient, 
 	rd.wfData = wd
 	rd.ref = ref
 
-	rev, err := srv.getRevision(ctx, ref)
-	if err != nil {
-		srv.sugar.Debugf("%s failed to resolve ref revision: %v", parent(), err)
-		return nil, err
-	}
-
-	ref.Edges.Revision = rev
 	ref.Edges.Workflow = wd.wf
 	// NOTE: can't do this due to cycle: rev.Edges.Workflow = wd.wf
 
