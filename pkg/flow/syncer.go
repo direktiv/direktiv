@@ -640,17 +640,16 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(model)
 
 	tx, err := syncer.db.Tx(ctx)
 	if err != nil {
-		return nil
+		return err
 	}
 	defer rollback(tx)
 
 	md, err := syncer.reverseTraverseToMirror(ctx, tx.Inode, tx.Mirror, am.mir.ID.String())
 	if err != nil {
-		return nil
+		return err
 	}
 
 	cache := make(map[string]*ent.Inode)
@@ -668,6 +667,7 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 		for _, child := range children {
 
 			cpath := filepath.Join(path, child.Name)
+			actualpath := filepath.Join(trueroot, cpath)
 
 			if child.Type == util.InodeTypeDirectory && child.ExtendedType == util.InodeTypeGit {
 
@@ -679,16 +679,18 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 					return err
 				}
 
+				fmt.Println("AAA", err)
 				err = syncer.flow.deleteNode(ctx, &deleteNodeArgs{
 					inoc:      tx.Inode,
 					ns:        md.ns(),
 					pino:      parent,
 					ino:       child,
-					path:      path,
+					path:      actualpath,
 					super:     true,
 					recursive: true,
 				})
 				if err != nil {
+					fmt.Println("AAA err", err)
 					return err
 				}
 
@@ -705,21 +707,23 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 				}
 
 				if err == os.ErrNotExist || mn.ntype != mntDir {
+					fmt.Println("BBB", err)
 					err = syncer.flow.deleteNode(ctx, &deleteNodeArgs{
 						inoc:      tx.Inode,
 						ns:        md.ns(),
 						pino:      parent,
 						ino:       child,
-						path:      path,
+						path:      actualpath,
 						super:     true,
 						recursive: true,
 					})
 					if err != nil {
+						fmt.Println("BBB err", err)
 						return err
 					}
 				}
 
-			} else {
+			} else if child.Type == util.InodeTypeWorkflow {
 
 				mn, err := model.lookup(cpath)
 				if err != nil && err != os.ErrNotExist {
@@ -727,20 +731,25 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 				}
 
 				if err == os.ErrNotExist || mn.ntype != mntWorkflow {
+					fmt.Println("CCC", err)
+					fmt.Println("CCC :", cpath, ":", path, ":", actualpath)
 					err = syncer.flow.deleteNode(ctx, &deleteNodeArgs{
 						inoc:      tx.Inode,
 						ns:        md.ns(),
 						pino:      parent,
 						ino:       child,
-						path:      path,
+						path:      actualpath,
 						super:     true,
 						recursive: true,
 					})
 					if err != nil {
+						fmt.Println("CCC err", err)
 						return err
 					}
 				}
 
+			} else {
+				return errors.New("how?")
 			}
 		}
 
@@ -772,17 +781,7 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 				path:  truepath,
 				super: true,
 			})
-			if err == os.ErrExist {
-				pino := cache[dir]
-				ino, err = syncer.flow.lookupInodeFromParent(ctx, &lookupInodeFromParentArgs{
-					pino: pino,
-					name: base,
-				})
-				if err != nil {
-					return err
-				}
-			}
-			if err != nil {
+			if ino == nil {
 				return err
 			}
 
@@ -790,12 +789,10 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 
 		case mntWorkflow:
 
-			data, err := ioutil.ReadFile(filepath.Join(lr.path, path))
+			data, err := ioutil.ReadFile(filepath.Join(lr.path, path+n.extension))
 			if err != nil {
 				return err
 			}
-
-			trimmedpath := strings.TrimSuffix(strings.TrimSuffix(truepath, ".yml"), ".yaml")
 
 			wf, err := syncer.flow.createWorkflow(ctx, &createWorkflowArgs{
 				inoc: tx.Inode,
@@ -805,34 +802,27 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 
 				ns:    md.ns(),
 				pino:  cache[dir],
-				path:  trimmedpath,
+				path:  truepath,
 				super: true,
 				data:  data,
 			})
+			if wf == nil {
+				return err
+			}
 			if err == os.ErrExist {
-				pino := cache[dir]
-				wf, err = syncer.flow.lookupWorkflowFromParent(ctx, &lookupWorkflowFromParentArgs{
-					pino: pino,
-					name: base,
-				})
-				if err != nil {
-					return err
-				}
 				_, err = syncer.flow.updateWorkflow(ctx, &updateWorkflowArgs{
 					revc:   tx.Revision,
 					eventc: tx.Events,
 					ns:     md.ns(),
 					ino:    wf.Edges.Inode,
 					wf:     wf,
-					path:   trimmedpath,
+					path:   truepath,
+					super:  true,
 					data:   data,
 				})
 				if err != nil {
 					return err
 				}
-			}
-			if err != nil {
-				return err
 			}
 
 			cache[truepath+"/"] = wf.Edges.Inode
@@ -861,12 +851,13 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 
 			x := strings.SplitN(truepath, ".yaml.", 2)
 			if len(x) == 1 {
-				x = strings.SplitN(truepath, ".yml", 2)
+				x = strings.SplitN(truepath, ".yml.", 2)
 				if len(x) == 1 {
 					return errors.New("how did this happen?")
 				}
 			}
 			trimmed := x[1]
+			_, base = filepath.Split(x[0])
 
 			pino := cache[dir]
 			wf, err := syncer.flow.lookupWorkflowFromParent(ctx, &lookupWorkflowFromParentArgs{
@@ -994,11 +985,12 @@ func init() {
 }
 
 type mirrorNode struct {
-	parent   *mirrorNode
-	children []*mirrorNode
-	ntype    string
-	name     string
-	change   string
+	parent    *mirrorNode
+	children  []*mirrorNode
+	ntype     string
+	name      string
+	change    string
+	extension string
 }
 
 type mirrorModel struct {
@@ -1072,11 +1064,22 @@ func (model *mirrorModel) addWorkflowNode(path string) error {
 		return errors.New("parent not a directory")
 	}
 
+	var name, extension string
+
+	if strings.HasSuffix(base, ".yml") {
+		name = base[:len(base)-4]
+		extension = ".yml"
+	} else if strings.HasSuffix(base, ".yaml") {
+		name = base[:len(base)-5]
+		extension = ".yaml"
+	}
+
 	node.children = append(node.children, &mirrorNode{
-		parent:   node,
-		children: make([]*mirrorNode, 0),
-		ntype:    mntWorkflow,
-		name:     base,
+		parent:    node,
+		children:  make([]*mirrorNode, 0),
+		ntype:     mntWorkflow,
+		name:      name,
+		extension: extension,
 	})
 
 	return nil

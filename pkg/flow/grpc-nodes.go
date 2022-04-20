@@ -3,6 +3,7 @@ package flow
 import (
 	"context"
 	"errors"
+	"os"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -360,8 +361,21 @@ func (flow *flow) createDirectory(ctx context.Context, args *createDirectoryArgs
 		return nil, errors.New("cannot write into read-only directory")
 	}
 
-	ino, err := inoc.Create().SetName(base).SetNamespace(ns).SetParent(pino).SetReadOnly(pino.ReadOnly).SetType(util.InodeTypeDirectory).Save(ctx)
+	ino, err := pino.QueryChildren().Where(entino.NameEQ(base)).Only(ctx)
+	if err != nil && !ent.IsNotFound(err) {
+		return nil, err
+	} else if err == nil {
+		if ino.Type != util.InodeTypeDirectory {
+			return nil, os.ErrExist
+		}
+		return ino, os.ErrExist
+	}
+
+	ino, err = inoc.Create().SetName(base).SetNamespace(ns).SetParent(pino).SetReadOnly(pino.ReadOnly).SetType(util.InodeTypeDirectory).Save(ctx)
 	if err != nil {
+		if strings.Contains(err.Error(), "duplicate key value violates unique constraint") {
+			return nil, os.ErrExist
+		}
 		return nil, err
 	}
 
@@ -379,7 +393,6 @@ func (flow *flow) createDirectory(ctx context.Context, args *createDirectoryArgs
 			Path:   path,
 			Parent: dir,
 		}, ns)
-
 	if err != nil {
 		return nil, err
 	}

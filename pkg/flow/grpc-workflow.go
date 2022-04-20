@@ -3,10 +3,13 @@ package flow
 import (
 	"context"
 	"errors"
+	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/ent"
+	entino "github.com/direktiv/direktiv/pkg/flow/ent/inode"
 	entrev "github.com/direktiv/direktiv/pkg/flow/ent/revision"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/util"
@@ -220,8 +223,26 @@ func (flow *flow) createWorkflow(ctx context.Context, args *createWorkflowArgs) 
 		return nil, errors.New("cannot write into read-only directory")
 	}
 
-	ino, err := inoc.Create().SetName(base).SetNamespace(ns).SetParent(pino).SetReadOnly(pino.ReadOnly).SetType(util.InodeTypeWorkflow).Save(ctx)
+	ino, err := pino.QueryChildren().Where(entino.NameEQ(base)).Only(ctx)
+	if err != nil && !ent.IsNotFound(err) {
+		return nil, err
+	} else if err == nil {
+		if ino.Type != util.InodeTypeWorkflow {
+			return nil, os.ErrExist
+		}
+		wf, err := ino.QueryWorkflow().Only(ctx)
+		if err != nil {
+			return nil, err
+		}
+		wf.Edges.Inode = ino
+		return wf, os.ErrExist
+	}
+
+	ino, err = inoc.Create().SetName(base).SetNamespace(ns).SetParent(pino).SetReadOnly(pino.ReadOnly).SetType(util.InodeTypeWorkflow).Save(ctx)
 	if err != nil {
+		if strings.Contains(err.Error(), "duplicate key value violates unique constraint") {
+			return nil, os.ErrExist
+		}
 		return nil, err
 	}
 
