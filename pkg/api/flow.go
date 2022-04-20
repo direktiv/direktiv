@@ -1248,6 +1248,11 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//   type: string
 	//   required: true
 	//   description: 'path to target node'
+	// - in: query
+	//   name: recursive
+	//   type: boolean
+	//   required: false
+	//   description: 'whether to recursively delete child nodes'
 	// responses:
 	//   200:
 	//     produces: application/json
