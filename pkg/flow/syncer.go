@@ -654,7 +654,11 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 
 	cache := make(map[string]*ent.Inode)
 	trueroot := filepath.Join(md.path, ".")
-	cache[trueroot+"/"] = md.ino
+	if trueroot == "/" {
+		cache[trueroot] = md.ino
+	} else {
+		cache[trueroot+"/"] = md.ino
+	}
 
 	var recurser func(parent *ent.Inode, path string) error
 	recurser = func(parent *ent.Inode, path string) error {
@@ -679,7 +683,6 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 					return err
 				}
 
-				fmt.Println("AAA", err)
 				err = syncer.flow.deleteNode(ctx, &deleteNodeArgs{
 					inoc:      tx.Inode,
 					ns:        md.ns(),
@@ -690,7 +693,6 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 					recursive: true,
 				})
 				if err != nil {
-					fmt.Println("AAA err", err)
 					return err
 				}
 
@@ -707,7 +709,6 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 				}
 
 				if err == os.ErrNotExist || mn.ntype != mntDir {
-					fmt.Println("BBB", err)
 					err = syncer.flow.deleteNode(ctx, &deleteNodeArgs{
 						inoc:      tx.Inode,
 						ns:        md.ns(),
@@ -718,7 +719,6 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 						recursive: true,
 					})
 					if err != nil {
-						fmt.Println("BBB err", err)
 						return err
 					}
 				}
@@ -731,8 +731,6 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 				}
 
 				if err == os.ErrNotExist || mn.ntype != mntWorkflow {
-					fmt.Println("CCC", err)
-					fmt.Println("CCC :", cpath, ":", path, ":", actualpath)
 					err = syncer.flow.deleteNode(ctx, &deleteNodeArgs{
 						inoc:      tx.Inode,
 						ns:        md.ns(),
@@ -743,7 +741,6 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 						recursive: true,
 					})
 					if err != nil {
-						fmt.Println("CCC err", err)
 						return err
 					}
 				}
