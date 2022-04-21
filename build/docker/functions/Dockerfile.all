@@ -11,7 +11,7 @@ COPY .git .git
 ARG RELEASE_VERSION
 ENV RELEASE=$RELEASE_VERSION
 
-RUN cd src && \
+RUN --mount=type=cache,target=/root/.cache/go-build cd src && \
     export GIT_HASH=`git rev-parse --short HEAD` && \
     export GIT_DIRTY=`git diff --quiet || echo '-dirty'` && \
     export CGO_LDFLAGS="-static -w -s" && \
