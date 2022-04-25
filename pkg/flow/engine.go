@@ -833,7 +833,7 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 	engine.sugar.Debugf("function request: %v", addr)
 
 	deadline := time.Now().Add(time.Duration(ar.Workflow.Timeout) * time.Second)
-	rctx, cancel := context.WithDeadline(context.Background(), deadline)
+	rctx, cancel := context.WithDeadline( /*context.Background()*/ ctx, deadline)
 	defer cancel()
 
 	engine.sugar.Debugf("deadline for request: %v", deadline.Sub(time.Now()))
