@@ -206,10 +206,10 @@ function ExplorerList(props) {
         }
     },[data, err])
 
-    // Reset pagination queries when searching
+    // Reset pagination queries when searching or namespace change
     useEffect(()=>{
         setQueryParams([`first=${PAGE_SIZE}`])
-    },[search])
+    },[search, namespace])
 
     useEffect(()=>{
         if(path !== currPath) {
