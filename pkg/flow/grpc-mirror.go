@@ -950,3 +950,21 @@ resend:
 	goto resend
 
 }
+
+func (flow *flow) CancelMirrorActivity(ctx context.Context, req *grpc.CancelMirrorActivityRequest) (*emptypb.Empty, error) {
+
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
+
+	tx, err := flow.db.Tx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer rollback(tx)
+
+	flow.syncer.cancelActivity(req.GetActivity(), "cancel.api", "cancelled by api request")
+
+	var resp emptypb.Empty
+
+	return &resp, nil
+
+}

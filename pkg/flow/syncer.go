@@ -913,6 +913,8 @@ func loadRepository(ctx context.Context, repo *repositorySettings) (*localReposi
 	repository.repo = repo
 	repository.path = filepath.Join(os.TempDir(), repo.UUID.String())
 
+	_ = os.RemoveAll(repository.path)
+
 	err := repository.clone(ctx)
 	if err != nil {
 		return nil, err
@@ -1355,6 +1357,7 @@ func buildModel(ctx context.Context, repo *localRepository) (*mirrorModel, error
 		}
 
 		if !util.NameRegex.MatchString(base) {
+			// TODO: log something
 			return nil
 		}
 

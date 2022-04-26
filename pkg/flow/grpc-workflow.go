@@ -522,6 +522,7 @@ func (flow *flow) updateWorkflow(ctx context.Context, args *updateWorkflowArgs) 
 	d.dir = dir
 	d.ino = ino
 	d.wf = wf
+	wf.Edges.Namespace = args.ns
 
 	flow.logToWorkflow(ctx, time.Now(), d, "Updated workflow.")
 	flow.pubsub.NotifyWorkflow(wf)
