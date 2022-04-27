@@ -11,7 +11,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/bradfitz/slice"
@@ -38,8 +37,8 @@ import (
 
 	"knative.dev/pkg/apis"
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
-
 	v1 "knative.dev/serving/pkg/apis/serving/v1"
+
 	"knative.dev/serving/pkg/client/clientset/versioned"
 )
 
@@ -93,10 +92,6 @@ const (
 
 const (
 	watcherTimeout = 60 * time.Minute
-)
-
-var (
-	mtx sync.Mutex
 )
 
 type serviceExportInfo struct {
@@ -2380,4 +2375,47 @@ func prepareServiceForExport(latestSvc *servingv1.Service, earliestRevision *v1.
 	exportedSvc.Spec.Template.Spec = earliestRevision.Spec
 
 	return &exportedSvc
+}
+
+func (is *functionsServer) CancelWorfklow(ctx context.Context, in *igrpc.CancelWorkflowRequest) (*emptypb.Empty, error) {
+
+	name := in.GetName()
+	scope := in.GetScope()
+	aid := in.GetActionID()
+
+	if name == "" || scope == "" || aid == "" {
+		return &empty, fmt.Errorf("name, scope and action id have to be set")
+	}
+
+	logger.Infof("cancelling action %s for %s/%s", aid, name, scope)
+
+	labelSelector := metav1.LabelSelector{MatchLabels: map[string]string{
+		"direktiv.io/name":  name,
+		"direktiv.io/scope": scope,
+	}}
+
+	listOptions := metav1.ListOptions{
+		LabelSelector: labels.Set(labelSelector.MatchLabels).String(),
+	}
+
+	cs, err := getClientSet()
+	if err != nil {
+		logger.Errorf("error getting client set: %v", err)
+		return &empty, err
+	}
+
+	podList, err := cs.CoreV1().Pods(functionsConfig.Namespace).List(context.Background(),
+		listOptions)
+
+	if err != nil {
+		logger.Errorf("could not get cancel list: %v", err)
+		return &empty, err
+	}
+
+	for i := range podList.Items {
+		fmt.Printf("CANCELLING #################################### %v\n", podList.Items[i].Name)
+	}
+
+	return &empty, nil
+
 }
