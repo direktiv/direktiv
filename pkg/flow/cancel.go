@@ -16,8 +16,12 @@ func (engine *engine) CancelInstanceChildren(ctx context.Context, im *instanceMe
 	for _, child := range children {
 		switch child.Type {
 		case "isolate":
-			// TODO
 			// engine.pubsub.CancelFunction(child.Id)
+			if child.ServiceName != "" {
+				// TODO: engine.actions.CancelWorkflowInstance()
+			} else {
+				engine.sugar.Warn("missing child service name")
+			}
 		case "subflow":
 			engine.pubsub.CancelWorkflow(child.Id, ErrCodeCancelledByParent, "cancelled by parent workflow", false)
 		default:
