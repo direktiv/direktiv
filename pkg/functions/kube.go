@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"math"
+	"net/http"
 	"os"
 	"regexp"
 	"sort"
@@ -2379,19 +2380,19 @@ func prepareServiceForExport(latestSvc *servingv1.Service, earliestRevision *v1.
 
 func (is *functionsServer) CancelWorfklow(ctx context.Context, in *igrpc.CancelWorkflowRequest) (*emptypb.Empty, error) {
 
-	name := in.GetName()
-	scope := in.GetScope()
+	label := "serving.knative.dev/service"
+
+	svn := in.GetServiceName()
 	aid := in.GetActionID()
 
-	if name == "" || scope == "" || aid == "" {
-		return &empty, fmt.Errorf("name, scope and action id have to be set")
+	if svn == "" || aid == "" {
+		return &empty, fmt.Errorf("service name or action id can not be empty")
 	}
 
-	logger.Infof("cancelling action %s for %s/%s", aid, name, scope)
+	logger.Infof("cancelling action %s on %s", aid, svn)
 
 	labelSelector := metav1.LabelSelector{MatchLabels: map[string]string{
-		"direktiv.io/name":  name,
-		"direktiv.io/scope": scope,
+		label: svn,
 	}}
 
 	listOptions := metav1.ListOptions{
@@ -2413,7 +2414,20 @@ func (is *functionsServer) CancelWorfklow(ctx context.Context, in *igrpc.CancelW
 	}
 
 	for i := range podList.Items {
-		fmt.Printf("CANCELLING #################################### %v\n", podList.Items[i].Name)
+
+		fmt.Printf("@@@@@@@@@@@@@@@@@@@@@@@@ %v\n", podList.Items[i].Name)
+		svc := podList.Items[i].ObjectMeta.Labels[label]
+		addr := fmt.Sprintf("http://%s.%s", svc, functionsConfig.Namespace)
+
+		req, err := http.NewRequest(http.MethodDelete, addr, nil)
+		if err != nil {
+			return &empty, err
+		}
+		req.Header.Add("Direktiv-ActionID", aid)
+
+		// serving.knative.dev/service=workflow-2790318621118388870-get1
+
+		fmt.Printf("CANCELLING #################################### %v at %v\n", podList.Items[i].Name, addr)
 	}
 
 	return &empty, nil

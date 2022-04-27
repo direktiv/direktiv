@@ -7,7 +7,6 @@ option go_package = "github.com/direktiv/direktiv/pkg/functions/grpc";
 import "pkg/functions/grpc/functions-common.proto";
 
 message CancelWorkflowRequest {
-	optional string Name = 1;
-	optional string Scope = 2;
-	optional string ActionID = 3;
+	optional string ServiceName = 1;
+	optional string ActionID = 2;
 }

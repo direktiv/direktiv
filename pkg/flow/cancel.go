@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/direktiv/direktiv/pkg/functions"
 	"github.com/direktiv/direktiv/pkg/util"
 )
 
@@ -42,8 +41,7 @@ func (engine *engine) cancelInstance(id, code, message string, soft bool) {
 		return
 	}
 
-	err = engine.actions.CancelWorkflowInstance(
-		"nsglobal", functions.PrefixGlobal, "123")
+	err = engine.actions.CancelWorkflowInstance("global-nsglobal", "123")
 	if err != nil {
 		engine.sugar.Errorf("error calling cancel on instance %s: %v", id, err)
 	}

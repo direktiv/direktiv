@@ -334,14 +334,13 @@ resend:
 
 }
 
-func (actions *actions) CancelWorkflowInstance(name, scope, actionID string) error {
+func (actions *actions) CancelWorkflowInstance(svn, actionID string) error {
 
 	actions.sugar.Debugf("Handling gRPC request: %s", this())
 
 	req := &igrpc.CancelWorkflowRequest{
-		Name:     &name,
-		Scope:    &scope,
-		ActionID: &actionID,
+		ServiceName: &svn,
+		ActionID:    &actionID,
 	}
 	_, err := actions.client.CancelWorfklow(context.Background(), req)
 
