@@ -2417,13 +2417,19 @@ func (is *functionsServer) CancelWorfklow(ctx context.Context, in *igrpc.CancelW
 
 		fmt.Printf("@@@@@@@@@@@@@@@@@@@@@@@@ %v\n", podList.Items[i].Name)
 		svc := podList.Items[i].ObjectMeta.Labels[label]
-		addr := fmt.Sprintf("http://%s.%s", svc, functionsConfig.Namespace)
+		addr := fmt.Sprintf("http://%s.%s/cancel", svc, functionsConfig.Namespace)
 
-		req, err := http.NewRequest(http.MethodDelete, addr, nil)
+		req, err := http.NewRequest(http.MethodPost, addr, nil)
 		if err != nil {
 			return &empty, err
 		}
 		req.Header.Add("Direktiv-ActionID", aid)
+
+		client := http.DefaultClient
+		_, err = client.Do(req)
+		if err != nil {
+			logger.Errorf("error sending delete request: %v", err)
+		}
 
 		// serving.knative.dev/service=workflow-2790318621118388870-get1
 

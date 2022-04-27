@@ -53,6 +53,8 @@ func (srv *NetworkServer) Start() {
 
 	srv.router.HandleFunc("/", srv.functions)
 
+	srv.router.HandleFunc("/cancel", srv.cancel)
+
 	srv.server.Addr = "0.0.0.0:8890"
 	srv.server.Handler = srv.router
 
@@ -64,6 +66,14 @@ func (srv *NetworkServer) Start() {
 
 	go srv.run()
 	go srv.wait()
+
+}
+
+func (srv *NetworkServer) cancel(w http.ResponseWriter, r *http.Request) {
+
+	// TODO: opentelemetry?
+	srv.local.cancelActiveRequest(context.Background(),
+		r.Header.Get(actionIDHeader))
 
 }
 
