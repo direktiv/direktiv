@@ -49,11 +49,6 @@ func (engine *engine) cancelInstance(id, code, message string, soft bool) {
 		return
 	}
 
-	err = engine.actions.CancelWorkflowInstance("global-nsglobal", "123")
-	if err != nil {
-		engine.sugar.Errorf("error calling cancel on instance %s: %v", id, err)
-	}
-
 	if soft {
 		err = NewCatchableError(code, message)
 	} else {
