@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useCallback} from 'react';
+import React, {useEffect, useState} from 'react';
 import './style.css';
 
 import ContentPanel, { ContentPanelBody, ContentPanelHeaderButton, ContentPanelHeaderButtonIcon, ContentPanelTitle, ContentPanelTitleIcon } from '../../components/content-panel';
@@ -157,11 +157,12 @@ export default Explorer;
 
 function SearchBar(props) {
     const {search, setSearch} = props
+
     return(
         <div className="explorer-searchbar">
             <FlexBox className="" style={{height: "29px"}}>
                 <VscSearch className="auto-margin" />
-                <input search={search} onChange={(e)=>{setSearch(e.target.value)}} placeholder={"Search items"} style={{ boxSizing: "border-box" }}></input>
+                <input value={search} onChange={(e)=>{setSearch(e.target.value)}} placeholder={"Search items"} style={{ boxSizing: "border-box" }}></input>
             </FlexBox>
         </div>
     );
@@ -206,10 +207,15 @@ function ExplorerList(props) {
         }
     },[data, err])
 
-    // Reset pagination queries when searching or namespace change
+    // Reset pagination queries when searching
     useEffect(()=>{
         setQueryParams([`first=${PAGE_SIZE}`])
-    },[search, namespace])
+    },[search])
+
+    // Reset pagination and search when namespace changes
+    useEffect(()=>{
+        resetQueryParams()
+    },[namespace])
 
     useEffect(()=>{
         if(path !== currPath) {
@@ -217,11 +223,6 @@ function ExplorerList(props) {
             setLoad(true)
         }
     },[path, currPath])
-
-    //pagination
-    const updatePage = useCallback((newParam)=>{
-        setQueryParams(newParam)
-    }, [])
 
     if (err === "Not Found") {
         return <NotFound/>
@@ -458,7 +459,7 @@ function ExplorerList(props) {
                     </FlexBox>
             </ContentPanelBody>
             <FlexBox>
-                { !!totalCount && <Pagination pageSize={PAGE_SIZE} pageInfo={pageInfo} updatePage={updatePage} total={totalCount}/>}
+                { !!totalCount && <Pagination pageSize={PAGE_SIZE} pageInfo={pageInfo} updatePage={setQueryParams} total={totalCount}/>}
             </FlexBox>
         </ContentPanel>
     </Loader>
