@@ -180,7 +180,12 @@ func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory,
 
 	switch fnt {
 	case model.ReusableContainerFunctionType:
+
 		con := fn.(*model.ReusableFunctionDefinition)
+
+		scale := int32(con.Scale)
+		size := int32(con.Size)
+
 		ar.Container.Image = con.Image
 		ar.Container.Cmd = con.Cmd
 		ar.Container.Size = con.Size
@@ -193,6 +198,10 @@ func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory,
 			Revision:      &revID,
 			Namespace:     &nsID,
 			NamespaceName: &ar.Workflow.NamespaceName,
+			Image:         &con.Image,
+			Cmd:           &con.Cmd,
+			MinScale:      &scale,
+			Size:          &size,
 		})
 		if err != nil {
 			panic(err)
