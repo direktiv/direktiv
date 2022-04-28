@@ -111,6 +111,7 @@ func (sl *foreachStateLogic) do(ctx context.Context, engine *engine, im *instanc
 		caller.InstanceID = im.ID().String()
 		caller.State = sl.state.GetID()
 		caller.Step = im.Step()
+		caller.As = im.in.As
 
 		var subflowID string
 
