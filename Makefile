@@ -252,7 +252,7 @@ reboot-api: ## delete currently active api pod
 
 .PHONY: reboot-flow
 reboot-flow: ## delete currently active flow pod
-	kubectl delete pod -l app.kubernetes.io/instance=direktiv
+	kubectl delete pod -l app.kubernetes.io/name=direktiv,app.kubernetes.io/instance=direktiv 
 
 .PHONY: reboot-functions
 reboot-functions: ## delete currently active functions pod
@@ -282,3 +282,10 @@ upgrade-%: push-% # Pushes new image deletes, reboots and tail new pod
 	@$(MAKE) reboot-$*
 	@$(MAKE) wait-$*
 	@$(MAKE) tail-$*
+
+
+.PHONY: upgrade
+upgrade: push # Pushes all images and reboots flow, function, and api pods
+	@$(MAKE) reboot-flow
+	@$(MAKE) reboot-api
+	@$(MAKE) reboot-functions
