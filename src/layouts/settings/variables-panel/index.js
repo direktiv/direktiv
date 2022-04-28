@@ -50,6 +50,7 @@ function VariablesPanel(props){
                 </FlexBox>
                 <div>
                     <Modal title="New variable" 
+                        modalStyle={{width: "600px"}}
                         escapeToCancel
                         titleIcon={<VscVariableGroup/>}
                         button={(
@@ -251,7 +252,7 @@ function Variable(props) {
                         flexDirection: "row-reverse",
                         marginRight: "8px"
                     }}
-                    modalStyle={{height: "90vh"}}
+                    modalStyle={{height: "90vh", width:"600px"}}
                     title="View Variable" 
                     onClose={()=>{
                         setType("")
@@ -282,7 +283,7 @@ function Variable(props) {
                         ]
                     } 
                 >
-                    <FlexBox className="col gap" style={{fontSize: "12px", width: "580px", minHeight: "500px"}}>
+                    <FlexBox className="col gap" style={{fontSize: "12px", minHeight: "500px"}}>
                         <FlexBox className="gap" style={{flexGrow: 1}}>
                             <FlexBox style={{overflow:"hidden"}}>
                                 {CanPreviewMimeType(mimeType) ?                                
@@ -334,6 +335,7 @@ function Variable(props) {
                     }}/>:<VariablesDownloadingButton />}
                 </FlexBox>
                 <Modal
+                    modalStyle={{width: "600px"}}
                     escapeToCancel
                     style={{
                         flexDirection: "row-reverse",
@@ -366,6 +368,7 @@ function Variable(props) {
                     </FlexBox>
                 </Modal>
                 <Modal
+                    modalStyle={{width: "360px"}}
                     escapeToCancel
                     style={{
                         flexDirection: "row-reverse",

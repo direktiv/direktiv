@@ -21,6 +21,8 @@ import { ApiFragment } from '..';
 
 import Form from "@rjsf/core";
 import  Tabs  from '../../../components/tabs';
+import Tippy from '@tippyjs/react';
+import { windowBlocker } from '../../../components/diagram-editor/usePrompt';
 
 function RevisionTab(props) {
 
@@ -91,15 +93,15 @@ function RevisionTab(props) {
                                 <FlexBox >
                                     <DirektivEditor style={{borderRadius: "0px"}} value={workflow} readonly={true} disableBottomRadius={true} dlang="yaml" />
                                 </FlexBox>
-                                <FlexBox className="gap" style={{backgroundColor:"#223848", color:"white", height:"44px", maxHeight:"44px", paddingLeft:"10px", minHeight:"44px", borderTop:"1px solid white", alignItems:'center', borderRadius:"0px 0px 8px 8px", overflow: "hidden"}}>
+                                <FlexBox className="gap editor-footer" style={{borderTop:"1px solid white", overflow: "hidden"}}>
                                     <div style={{display:"flex", flex:1 }}>
                                     </div>
                                     <div style={{display:"flex", flex:1, justifyContent:"center"}}>
                                         <Modal 
                                             style={{ justifyContent: "center" }}
                                             className="run-workflow-modal"
-                                            modalStyle={{color: "black"}}
-                                            title="Run Workflow"
+                                            modalStyle={{color: "black", width: "600px", minWidth:"30vw"}}
+                                            title="Run Workflow?"
                                             onClose={()=>{
                                                 setInput("{\n\t\n}")
                                                 setTabIndex(0)
@@ -136,7 +138,7 @@ function RevisionTab(props) {
                                                 </div>
                                             )}
                                         >
-                                        <FlexBox style={{ height: "45vh", width: "35vw", minWidth: "250px", minHeight: "200px" }}>
+                                        <FlexBox style={{ height: "45vh", minWidth: "250px", minHeight: "160px", overflow:"hidden" }}>
                                             <Tabs
                                                 id={"wf-execute-input"}
                                                 key={"inputForm"}
@@ -190,13 +192,15 @@ function RevisionTab(props) {
 }
 
 export default RevisionTab;
-
 export function TabbedButtons(props) {
 
-    let {tabBtn, setTabBtn, searchParams, setSearchParams, revision} = props;
+    let {tabBtn, setTabBtn, searchParams, setSearchParams, revision, enableDiagramEditor, setBlock, block, blockMsg} = props;
 
     let tabBtns = [];
     let tabBtnLabels = ["YAML", "Diagram", "Sankey"];
+    if (enableDiagramEditor !== undefined) {
+        tabBtnLabels = ["YAML", "Editor", "Diagram", "Sankey"];
+    }
 
     for (let i = 0; i < tabBtnLabels.length; i++) {
         let key = GenerateRandomKey();
@@ -205,8 +209,32 @@ export function TabbedButtons(props) {
             classes += " active-tab-btn"
         }
 
-        tabBtns.push(<FlexBox key={key} className={classes}>
-            <div onClick={() => {
+        if (tabBtnLabels[i] === "Editor" && !enableDiagramEditor) {
+            classes += " disable"
+            tabBtns.push(
+                <FlexBox key={key} className={classes}>
+                    <Tippy content={"Unsaved changes in Workflow"} trigger={'mouseenter focus click'} zIndex={10}>
+                        <div>
+                            {tabBtnLabels[i]}
+                        </div>
+                    </Tippy>
+                </FlexBox>
+            )
+            continue
+
+        }
+
+        tabBtns.push(
+            <FlexBox key={key} className={classes} onClick={(e) => {
+                if (block) {
+                    e.stopPropagation();
+                    if (!windowBlocker(blockMsg)) {
+                        return
+                    }
+
+                    setBlock(false)
+                }
+
                 setTabBtn(i)
                 setSearchParams({
                     tab: searchParams.get('tab'),
@@ -214,9 +242,11 @@ export function TabbedButtons(props) {
                     revtab: i
                 })
             }}>
-                {tabBtnLabels[i]}
-            </div>
-        </FlexBox>)
+                <div>
+                    {tabBtnLabels[i]}
+                </div>
+            </FlexBox>
+        )
     }
 
     return(
@@ -345,6 +375,7 @@ export function RevisionSelectorTab(props) {
                     {
                         apiHelps(namespace, workflowName).map((help)=>(
                             <ApiFragment
+                                key={`key-${help.type}`}
                                 description={help.description}
                                 url={help.url}
                                 method={help.method}
@@ -504,6 +535,7 @@ export function RevisionSelectorTab(props) {
                                         <FlexBox className="gap">
                                             {tags !== null && tags[obj.node.name] ? 
                                                 <Modal
+                                                    modalStyle={{width: "400px"}}
                                                     escapeToCancel
                                                     style={{
                                                         flexDirection: "row-reverse",
@@ -540,6 +572,7 @@ export function RevisionSelectorTab(props) {
                                                     style={{
                                                         flexDirection: "row-reverse",
                                                     }}
+                                                    modalStyle={{width: "400px"}}
                                                     title="Delete a revision"
                                                     button={(
                                                         <Button className="small light bold" title="Delete Revision">
@@ -575,6 +608,7 @@ export function RevisionSelectorTab(props) {
                                                     style={{
                                                         flexDirection: "row-reverse",
                                                     }}
+                                                    modalStyle={{width: "400px"}}
                                                     title={`Revert to ${obj.node.name}`}
                                                     button={(
                                                         <Button className="small light bold" >
@@ -642,6 +676,7 @@ function TagRevisionBtn(props) {
                 flexDirection: "row-reverse",
                 marginRight: "8px"
             }}
+            modalStyle={{width: "400px"}}
             title="Tag" 
             onClose={()=>{
                 setTag("")

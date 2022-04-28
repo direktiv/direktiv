@@ -229,9 +229,11 @@ export function Service(props) {
                     :
                 <div style={{paddingRight:"25px", maxWidth:"20px", margin: "auto"}}>
                     <Modal  title="Delete namespace service" 
+
                         escapeToCancel
                         modalStyle={{
-                            maxWidth: "300px"
+                            maxWidth: "400px",
+                            width: "400px"
                         }}
                         onOpen={() => {
                         }}
@@ -276,6 +278,7 @@ export function Service(props) {
                     <FlexBox style={{ alignItems: "center", justifyContent: "center", height: "100%", paddingRight: "6px" }}>
                         <Modal
                             title="Redeploy service"
+                            modalStyle={{width: "400px"}}
                             titleIcon={(
                                 <VscRefresh />
                             )}

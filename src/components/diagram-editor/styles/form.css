@@ -1,0 +1,377 @@
+
+
+/* Generic */
+
+.rjsf button.btn-danger {
+	color: #fff;
+	background-color: #d9534f;
+	border-color: #d43f3a;
+}
+
+.rjsf button {
+	display: inline-block;
+	padding: 4px 12px;
+	margin-bottom: 0;
+	font-size: 14px;
+	font-weight: 400;
+	line-height: 1.42857143;
+	text-align: center;
+	white-space: nowrap;
+	vertical-align: middle;
+	-ms-touch-action: manipulation;
+	touch-action: manipulation;
+	cursor: pointer;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+	background-image: none;
+	border: 1px solid transparent;
+	border-top-color: transparent;
+	border-right-color: transparent;
+	border-bottom-color: transparent;
+	border-left-color: transparent;
+	border-radius: 4px;
+	display: flex;
+	justify-content: center;
+	align-content: center;
+	align-items: center;
+}
+
+.rjsf .field-description {
+	font-size: 9px;
+	line-height: 12px;
+	margin-bottom: 4px;
+	padding-top: 0px;
+	margin-top: 0px;
+}
+
+.rjsf .control-label {
+	font-size: 11px;
+	line-height: 13px;
+	color: var(--theme-dark-text);
+	font-family: var(--font-family) !important;
+	font-style: normal;
+	font-weight: 700;
+	letter-spacing: 0em;
+	text-align: left;
+}
+
+.rjsf .glyphicon-remove::before {
+	content: "Remove";
+}
+
+.rjsf .glyphicon {
+	color: white;
+	line-height: 0px;
+	font-style: normal;
+	font-weight: normal;
+}
+
+.rjsf .text-danger {
+	color: #a94442;
+}
+
+.rjsf .panel-danger {
+	color: #a94442;
+}
+
+.rjsf .has-error label {
+	color: #a94442;
+}
+
+.rjsf .checkbox label {
+	font-size: 11px;
+	line-height: 13px;
+	display: flex;
+	color: var(--theme-dark-text);
+	font-family: var(--font-family) !important;
+	font-style: normal;
+	font-weight: 700;
+	letter-spacing: 0em;
+	text-align: left;
+	flex-direction: row-reverse;
+	justify-content: flex-end;
+}
+
+.rjsf #root__title {
+	margin-bottom: 9px;
+	font-size: 21px;
+}
+
+.rjsf legend {
+	display: block;
+	width: 100%;
+	padding: 0;
+	margin-top: 10px;
+	margin-bottom: 6px;
+	line-height: inherit;
+	color: #333;
+	border: 0;
+	border-bottom-color: currentcolor;
+	border-bottom-style: none;
+	border-bottom-width: 0px;
+	border-bottom: 1px solid #e5e5e5;
+}
+
+.rjsf input {
+	width: calc(100% - 15px);
+	line-height: 20px;
+}
+
+.rjsf input[type="checkbox"] {
+	width: auto;
+}
+
+.rjsf button.btn[disabled] {
+	cursor: not-allowed;
+	filter: alpha(opacity=65);
+	-webkit-box-shadow: none;
+	box-shadow: none;
+	opacity: .65;
+}
+
+.rjsf fieldset {
+	outline: none;
+	border: none;
+	padding: 0;
+}
+
+.form-group.field {
+	padding-bottom: 3pt;
+	display: flex;
+	flex-direction: column;
+}
+
+.rjsf fieldset .form-group.field.field-string>.row {
+	display: flex;
+}
+
+
+/* Key Value: multi-row style */
+
+.rjsf fieldset .form-group.field.field-string>.row>.form-additional {
+	flex: 1;
+	align-self: end;
+	width: 10%;
+	min-width: 100px;
+}
+
+
+/* Key Value: Value Column */
+
+.rjsf fieldset .form-group.field.field-string>.row>.form-group.form-additional {
+	flex: 4;
+	align-self: end;
+}
+
+
+/* Key Value: Hide Labels */
+
+.rjsf fieldset .form-group.field.field-string>.row label {
+	display: none;
+}
+
+
+/* Key Value: UnHide First Label Set*/
+
+.rjsf fieldset>.form-group.field.field-string:first-of-type>.row label {
+	display: unset;
+	visibility: hidden;
+	position: relative;
+	white-space: nowrap;
+	overflow: hidden;
+}
+
+
+/* Key Value: Change First Label Set Label to 'Key' */
+
+.rjsf fieldset>.form-group.field.field-string:first-of-type>.row .form-additional label:after {
+	visibility: visible;
+	position: absolute;
+	top: 0;
+	left: 0;
+	content: 'Key';
+}
+
+
+/* Key Value: Change First Label Set Label to 'Value' */
+
+.rjsf fieldset>.form-group.field.field-string:first-of-type>.row .form-group.form-additional label:after {
+	visibility: visible;
+	position: absolute;
+	top: 0;
+	left: 0;
+	content: 'Value';
+}
+
+
+/* Key Value: Align Remove Button to bottom of row*/
+
+.rjsf fieldset>.form-group.field.field-string:first-of-type>.row>div:last-of-type {
+	display: flex;
+	justify-content: flex-end;
+	align-items: flex-end;
+}
+
+
+/* Key Value: Remove Button content*/
+
+.rjsf fieldset .form-group.field.field-string>div .glyphicon-remove::before {
+	content: "X";
+}
+
+
+/* Key Value: Remove Button Wrapper height*/
+
+.rjsf fieldset .form-group.field.field-string>div .btn.btn-danger {
+	height: 33px;
+}
+
+
+/* Form Input Field: Add Button Content*/
+
+.rjsf fieldset .glyphicon-plus::before {
+	content: "+ Add Items";
+	color: #3E94C5;
+	font-size: 14px;
+}
+
+
+/* Form Input Field: Add Button Wrapper*/
+
+.rjsf fieldset .btn-add {
+	width: 100%;
+	border: 1px solid #D4E6F0;
+	background: rgba(62, 148, 197, 0.03);
+	box-shadow: 2px 2px 6px rgba(44, 57, 75, 0.04);
+	border-radius: 4px;
+	padding: 12px 3px 12px 3px;
+	height: 33px;
+	line-height: 17px;
+}
+
+
+/* Form Input Field: Set gap between buttons in a single row*/
+
+.rjsf fieldset .btn-group {
+	gap: 16px;
+}
+
+
+/* Form Input Field: Set gap between array elements*/
+
+.rjsf fieldset .row.array-item-list {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.rjsf fieldset div.field {
+	padding-bottom: 12px;
+}
+
+.rjsf fieldset div.field.field-object {
+	padding-bottom: 0px;
+}
+
+.rjsf fieldset div.row>p {
+	margin: 0px;
+}
+
+.rjsf fieldset div.row>p {
+	margin: 0px;
+}
+
+
+/* Form Input Field: text input styling. This style is also used on the edit nodeid-input*/
+
+.rjsf fieldset input[type="text"],
+.nodeid-input {
+	height: calc(33px - (0.65*2px));
+	line-height: 17px;
+	padding-top: 0px;
+	padding-bottom: 0px;
+}
+
+
+/* Form Input Field: dropdown style*/
+
+.rjsf fieldset select {
+	height: 33px;
+	line-height: 17px;
+}
+
+
+/* Form Input Field: Remove Button Wrapper*/
+
+.rjsf fieldset .btn-group .btn-danger {
+	width: 100%;
+	background: rgba(236, 79, 121, 0.02);
+	border: 1px solid #FFDFE7;
+	box-shadow: 2px 2px 6px rgba(44, 57, 75, 0.04);
+	box-shadow: 2px 2px 6px rgba(44, 57, 75, 0.04);
+	border-radius: 4px;
+	padding: 12px 3px 12px 3px;
+	height: 33px;
+	line-height: 17px;
+}
+
+.rjsf fieldset .glyphicon-arrow-up::before {
+	color: #566875;
+	content: "Move Up";
+}
+
+.rjsf fieldset .glyphicon-arrow-down::before {
+	color: #566875;
+	content: "Move Down";
+}
+
+
+/* Form Input Field: Default Button Wrapper*/
+
+.rjsf fieldset .btn-default {
+	width: 100%;
+	background: #FFFFFF;
+	border: 1px solid #DBE2EA;
+	box-sizing: border-box;
+	box-shadow: 2px 2px 6px rgba(44, 57, 75, 0.04);
+	border-radius: 4px;
+	padding: 12px 3px 12px 3px;
+	height: 33px;
+	line-height: 17px;
+}
+
+
+/* Form Input Field: Remove Button Style*/
+
+.rjsf fieldset .btn-group .btn-danger .glyphicon-remove::before {
+	color: #EC4F79;
+	font-size: 14px;
+}
+
+
+/* Form Input Field: Add padding to the bottom of array elements to create a gap between buttons and array*/
+
+.rjsf fieldset div.row.array-item-list>.array-item:last-of-type {
+	padding-bottom: 12px;
+}
+
+
+/* Form Input Field: Text area style*/
+
+.rjsf textarea {
+	resize: vertical;
+	height: 80px;
+}
+
+
+/* Extra padding on objects inside array. Can be seen in switch case */
+
+
+/* TODO:  Make sure this doesnt break anything*/
+
+.rjsf .array-item div div.field-object {
+	padding-bottom: 6px !important;
+}
+

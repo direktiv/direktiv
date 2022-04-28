@@ -52,6 +52,7 @@ function AddWorkflowVariablePanel(props) {
                     <HelpIcon msg={"List of variables for that workflow."} />
                 </FlexBox>
                     <Modal title="New variable" 
+                        modalStyle={{width: "600px"}}
                         escapeToCancel
                         button={(
                             <AddValueButton label=" " />
@@ -204,6 +205,7 @@ function Variable(props) {
         <td className="muted-text show-variable">
             {obj.node.size <= 2500000 ? 
                 <Modal
+                    modalStyle={{height: "90vh",width: "600px"}}
                     escapeToCancel
                     style={{
                         flexDirection: "row-reverse",
@@ -239,7 +241,7 @@ function Variable(props) {
                         ]
                     } 
                 >
-                    <FlexBox className="col gap" style={{fontSize: "12px", width: "580px", minHeight: "500px"}}>
+                    <FlexBox className="col gap" style={{fontSize: "12px",minHeight: "500px"}}>
                         <FlexBox className="gap" style={{flexGrow: 1}}>
                             <FlexBox style={{overflow:"hidden"}}>
                             {CanPreviewMimeType(mimeType) ?   
@@ -290,6 +292,7 @@ function Variable(props) {
                     }}/>:<VariablesDownloadingButton />}
                 </FlexBox>
                 <Modal
+                    modalStyle={{width: "500px"}}
                     escapeToCancel
                     style={{
                         flexDirection: "row-reverse",
@@ -325,6 +328,7 @@ function Variable(props) {
                     style={{
                         flexDirection: "row-reverse",
                     }}
+                    modalStyle={{width: "400px"}}
                     title="Delete a variable" 
                     button={(
                         <VariablesDeleteButton/>

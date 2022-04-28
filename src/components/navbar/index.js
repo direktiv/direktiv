@@ -72,6 +72,7 @@ function NewNamespaceBtn(props) {
     return (
         <Modal title="New namespace"
                escapeToCancel
+               modalStyle={{width: "240px"}}
                button={(
                    <FlexBox className="new-namespace-btn">
                        <div className="auto-margin">

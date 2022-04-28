@@ -1,0 +1,149 @@
+/* builder */
+
+
+#builder-form {
+    min-width: 190px;
+}
+
+#builder-page .toolbar {
+    width: 100%;
+    padding: 3px;
+    align-items: center;
+    height: 48px;
+    display: flex;
+    gap: 6px;
+
+    border-bottom: 0.6px solid #E9ECEF;
+    border-top: 0.6px solid #E9ECEF;
+}
+
+#builder-page .toolbar-btn {
+    user-select: none;
+    color: var(--theme-dark);
+    cursor: pointer;
+    /* border-radius: var(--theme-border-radius); */
+    /* background-color: var(--theme-brand-blue); */
+    height: 48px;
+    font-size: 12px;
+    transition: filter 0.1s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    padding: 3px;
+}
+
+#builder-page .toolbar-btn:hover {
+    background-color: var(--theme-background);
+}
+
+#builder-page .toolbar .btn {
+    height: 50%;
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    text-align: center;
+    line-height: unset;
+}
+
+#builder-page .panel {
+    width: 100%;
+    height: 100%;
+    /* overflow: auto; */
+    box-shadow: 0px 4px 12px rgba(8, 32, 50, 0.12);
+    background: #FFFFFF;
+    border-top: 0.6px solid #E9ECEF;
+}
+
+#builder-page .panel.left {
+    border-right: 1px solid #E7EAED;
+}
+
+#builder-page .panel.right {
+    border-left: 1px solid #E7EAED;
+}
+
+
+/* Scrollbar in panels */
+
+#builder-page .panel .ReactVirtualized__Grid.ReactVirtualized__List {
+    scrollbar-width: thin;
+    scrollbar-color: #E6E9EC #FFFFFF;
+    border-right: 1.5px solid #FFFFFF;
+}
+
+#builder-page .panel .ReactVirtualized__Grid.ReactVirtualized__List {
+    padding: 0px 0px 3px 0px;
+}
+
+#builder-page .panel .ReactVirtualized__Grid.ReactVirtualized__List::-webkit-scrollbar {
+    width: 12px;
+}
+
+#builder-page .panel .ReactVirtualized__Grid.ReactVirtualized__List::-webkit-scrollbar-track {
+    background: #FFFFFF;
+}
+
+#builder-page .panel .ReactVirtualized__Grid.ReactVirtualized__List::-webkit-scrollbar-thumb {
+    background-color: #E6E9EC;
+    border-radius: 20px;
+    border: 3px solid #FFFFFF;
+}
+
+#builder-page .function-btn {
+    padding-top: 0px;
+    padding-bottom: 0px;
+    width: 100%;
+    text-align: center;
+    margin: 5px;
+}
+
+
+/* CONTEXT MENU */
+
+.context-menu {
+    font-size: 13px;
+    background-color: #fff;
+    border-radius: 2px;
+    padding: 0px 4px 5px 4px;
+    width: 160px;
+    height: auto;
+    margin: 0px;
+    
+    background: #FFFFFF;
+    border: 1px solid #E9ECEF;
+    box-sizing: border-box;
+    box-shadow: 4px 4px 56px rgba(44, 57, 75, 0.12);
+    border-radius: 4px;
+
+
+    /* use absolute positioning  */
+    position: absolute;
+    list-style: none;
+    box-shadow: 0 0 20px 0 #ccc;
+    z-index: 90;
+}
+
+#context-menu ul {
+    list-style: none;
+    margin: 0px;
+    padding-left: 0px;
+}
+
+#context-menu li {
+    cursor: pointer;
+    padding-left: 5px;
+}
+
+#context-menu li:hover {
+    background-color: #e5e5e5;
+    padding-left: 6px;
+}
+
+#context-menu input {
+    height: 24px;
+}
+
+#builder-page .alert {
+    min-height: unset;
+}

@@ -1,0 +1,242 @@
+/* VARIABLES */
+.connection {
+    --connection-path-width: 2px;
+    --connection-path-colour: #3E94C5;
+}
+
+/* Default/Fallback Node Variables */
+.node, .action, .function {
+    --background: #F7FBFD;
+    --box-shadow: 1px 2px 5px rgba(86, 104, 117, 0.11);
+    --border: 1px solid #CFDAE1;
+
+    --font-size: 12px;
+    --line-height: 15px;
+
+    --width: 135px;
+    --height: 45px;
+
+    --connector-size: 6px;
+    --connector-background: #FFFFFF;
+    --connector-border: 1.5px solid #3E94C5;
+    --connector-error-border: 1.5px solid #EC4F79;
+    --connector-box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.07);
+
+}
+
+/* Primitive Node Type Variables */
+.node.primitive, .action.primitive {
+    --background: #F7FBFD;
+    --box-shadow: 1px 2px 5px rgba(86, 104, 117, 0.11);
+    --border: 1px solid #CFDAE1;
+}
+
+/* Special Node Type Variables */
+.node.special, .action.special {
+    --background: #caf5e1;
+    --box-shadow: 1px 2px 5px rgba(86, 104, 117, 0.11);
+    --border: 1px solid #CFDAE1;
+}
+
+/* Special Node Type[CATCH] Variables */
+.node.special.type-catch, .action.special.action-catch {
+    --background: #FFFDD0;
+    --box-shadow: 1px 2px 5px rgba(86, 104, 117, 0.11);
+    --border: 1px solid #e1e1cf;
+}
+
+/* NODE */
+#builder-page .node {
+    background: var(--background);
+    box-shadow: var(--box-shadow);
+    border: var(--border);
+
+    border-radius: 4px;
+    font-size: var(--font-size);
+    line-height: var(--line-height);
+
+    width: var(--width);
+    min-height: var(--height);
+    padding: 10px
+}
+
+#builder-page .drawflow_content_node {
+    display: flex;
+    justify-content: space-between;
+}
+
+#builder-page .drawflow_content_node .node-labels {
+    color: #566875;
+    font-weight: 500;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+}
+
+#builder-page .node-labels>div {
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    gap: 4px;
+}
+
+#builder-page .node-labels .label-id {
+    color: #3E94C5;
+    font-weight: 700;
+
+    border: none;
+    display: inline;
+    font-family: inherit;
+    font-size: inherit;
+    padding: 0;
+    line-height: inherit;
+    background: none;
+    pointer-events: none;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+#builder-page .node-labels .label-type {
+    color: #082032;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+
+#builder-page .drawflow_content_node .node-actions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#builder-page .node-actions .node-btn {
+    color: #566875;
+    font-weight: bolder;
+    writing-mode: vertical-rl;
+    font-size: large;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    height: 15px;
+    width: 6px;
+    padding: 4px;
+    cursor: pointer;
+}
+
+#builder-page .node-actions .node-btn:hover {
+    color: #7a94a7;
+}
+
+#builder-page .parent-drawflow {
+    background-size: 25px 25px;
+    background-image: linear-gradient(to right, #E7EAED 1px, transparent 1px), linear-gradient(to bottom, #E7EAED 1px, transparent 1px);
+}
+
+
+/* NODE CONNECTIONS */
+
+#builder-page .connection .main-path {
+    stroke: var(--connection-path-colour);
+    stroke-width: var(--connection-path-width);
+}
+
+#builder-page .connection .main-path:hover {
+    stroke: #a3a3a3;
+}
+
+/* NODE CONNECTORS: INPUT/OUTPUT */
+
+#builder-page .node .inputs div {
+    background: var(--connector-background);
+    border: var(--connector-border);
+    box-shadow: var(--connector-box-shadow);
+    width: var(--connector-size);
+    height: var(--connector-size);
+    left: -15px;
+    top: 0px;
+    margin-bottom: 0px;
+}
+
+#builder-page .node .outputs div {
+    background: var(--connector-background);
+    border: var(--connector-border);
+    box-shadow: var(--connector-box-shadow);
+    width: var(--connector-size);
+    height: var(--connector-size);
+    left: 6px;
+    top: 0px;
+    margin-bottom: 4px;
+    margin-top: 4px;
+}
+
+/* Node output: set second output to error style */
+#builder-page .node.primitive .outputs div:nth-of-type(2) {
+    border: var(--connector-error-border);
+}
+
+/* Node output: set first output to error style when node is eventExor*/
+#builder-page .node.primitive.type-eventXor .outputs div:nth-of-type(1) {
+    border: var(--connector-error-border);
+}
+
+/* Node output: set second output to back to normal border style when node is eventExor*/
+#builder-page .node.primitive.type-eventXor .outputs div:nth-of-type(2) {
+    border: var(--connector-border) !important;
+}
+
+
+/* Node output: set input to error style when node is catch block*/
+#builder-page .node.type-catch .inputs div:nth-of-type(1) {
+    border: var(--connector-error-border);
+}
+
+
+/* Actions Drawer */
+
+#builder-page .action {
+    width: 100%;
+    margin: 5px;
+    border-radius: 4px;
+    background: var(--background);
+    box-shadow: var(--box-shadow);
+    border: var(--border);
+}
+
+#builder-page .action span {
+    color: #082032;
+}
+
+/* Function Drawer */
+
+#builder-page .function {
+    margin: 5px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    border-radius: 4px;
+    width: 100%;
+
+    background: var(--background);
+    box-shadow: var(--box-shadow);
+    border: var(--border);
+    font-size: var(--font-size);
+    line-height: var(--line-height);
+}
+
+
+/* Node Buttons */
+
+#builder-page .node-btn-edit {
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+#builder-page .node-btn-edit:hover {
+    font-weight: bold;
+}
+
+#builder-page .node .drawflow-delete {
+    pointer-events: none;
+    visibility: hidden;
+}

@@ -56,6 +56,7 @@ function Scary(props) {
             <FlexBox>
                 <Modal title="Delete namespace" 
                         escapeToCancel
+                        modalStyle={{width: "360px"}}
                         titleIcon={<VscTrash/>}
                         button={(
                             <Button className="auto-margin small red" style={{

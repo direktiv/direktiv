@@ -105,7 +105,7 @@ function EventsPage(props) {
                                                 <Modal 
                                                     style={{ justifyContent: "center" }}
                                                     className="run-workflow-modal"
-                                                    modalStyle={{color: "black"}}
+                                                    modalStyle={{color: "black", width: "360px"}}
                                                     title="Retrigger Event"
                                                     onClose={()=>{
                                                     }}

@@ -106,8 +106,8 @@
 }
 
 .tabbed-btns {
-    max-width: 160px;
-    min-width: 160px;
+    max-width: 220px;
+    min-width: 220px;
     font-size: 10px;
     border: solid 1px var(--theme-subtle-border);
     border-radius: 4px;
@@ -119,6 +119,7 @@
     align-items: center;
     cursor: pointer;
     user-select: none;
+    line-height: 28px;
 }
 
 .tabbed-btns > div:hover {
@@ -132,6 +133,18 @@
 .active-tab-btn {
     color: var(--theme-brand-blue);
     background-color: rgba(62, 148, 197, 0.04);
+}
+
+.tab-btn.disable {
+    /* pointer-events: none; */
+    cursor: unset;
+    color: var(--theme-grey-light-blue);
+}
+
+.tab-btn.disable:hover {
+    background-color: unset;
+    cursor: unset;
+    color: var(--theme-grey-light-blue);
 }
 
 .tabbed-btns > div:not(:last-of-type) {
@@ -364,30 +377,18 @@
 
 /* INPUT FORM */
 
-.rjsf fieldset{
+/* .rjsf fieldset{
     outline: none;
     border: none;
     padding: 0;
-}
+} */
 
-.form-group.field{
+/* .form-group.field{
     padding-bottom: 3pt;
     display: flex;
     flex-direction: column;
 
-}
-
-.rjsf .control-label{
-    color: var(--theme-dark-text);
-    font-family: var(--font-family) !important;
-    font-size: 15px;
-    font-style: normal;
-    line-height: 30px;
-    font-weight: 700;
-    letter-spacing: 0em;
-    text-align: left;
-}
-
+} */
 .formContainer{
     width: calc(100% - 6px);
 }
@@ -400,63 +401,23 @@
     min-height: 32px;
 }
 
-.rjsf button {
-    display: inline-block;
-    padding: 6px 12px;
-    margin-bottom: 0;
-    font-size: 14px;
-    font-weight: 400;
-    line-height: 1.42857143;
-    text-align: center;
-    white-space: nowrap;
-    vertical-align: middle;
-    -ms-touch-action: manipulation;
-    touch-action: manipulation;
-    cursor: pointer;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-    background-image: none;
-    border: 1px solid transparent;
-    border-top-color: transparent;
-    border-right-color: transparent;
-    border-bottom-color: transparent;
-    border-left-color: transparent;
-    border-radius: 4px;
 
-    padding-top: 0px;
-    display: flex;
-    justify-content: center;
-    align-content: center;
-    align-items: center;
-}
 
-.rjsf button.btn-danger{
-    color: #fff;
-    background-color: #d9534f;
-    border-color: #d43f3a;
-}
 
-.rjsf button.btn-default{
-    color: #333;
-    background-color: #fff;
-    border-color: #ccc;
-}
 
-.rjsf button.btn[disabled]{
+/* .rjsf button.btn[disabled]{
     cursor: not-allowed;
     filter: alpha(opacity=65);
     -webkit-box-shadow: none;
     box-shadow: none;
     opacity: .65;
-}
+} */
 
-.rjsf input[type="checkbox"] {
+/* .rjsf input[type="checkbox"] {
     width: auto;
-}
+} */
 
-.rjsf .checkbox label {
+/* .rjsf .checkbox label {
     color: var(--theme-dark-text);
     font-family: var(--font-family) !important;
     font-size: 15px;
@@ -469,9 +430,9 @@
     display: flex;
     flex-direction: row-reverse;
     justify-content: flex-end;
-}
+} */
 
-.rjsf legend{
+/* .rjsf legend{
     display: block;
     width: 100%;
     padding: 0;
@@ -485,9 +446,9 @@
     border-bottom-style: none;
     border-bottom-width: 0px;
     border-bottom: 1px solid #e5e5e5;
-}
+} */
 
-.rjsf .text-danger{
+/* .rjsf .text-danger{
     color: #a94442;
 }
 
@@ -497,38 +458,35 @@
 
 .rjsf .has-error label{
     color: #a94442;
-}
+} */
 
-.rjsf .glyphicon {
+/* .rjsf .glyphicon {
     color: white;
     line-height: 0px;
     font-style: normal;
     font-weight: normal;
-}
+} */
 
-.rjsf .glyphicon-remove::before{
+/* .rjsf .glyphicon-remove::before{
     content: "Remove";
-}
+} */
 
-.rjsf .glyphicon-arrow-up::before{
+/* .rjsf .glyphicon-arrow-up::before{
     color: var(--theme-dark-text);
     content: "Move Up";
-}
+} */
 
-.rjsf .glyphicon-arrow-down::before{
+/* .rjsf .glyphicon-arrow-down::before{
     color: var(--theme-dark-text);
     content: "Move Down";
-}
+} */
 
-.rjsf .glyphicon-plus::before{
-    content: "Add Item";
-}
 
-.rjsf .field-description {
+/* .rjsf .field-description {
     padding-top: 0px;
     margin-top: 0px;
-}
+} */
 
-.rjsf input {
+/* .rjsf input {
     width: unset;
-}
+} */

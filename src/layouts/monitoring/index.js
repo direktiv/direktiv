@@ -123,7 +123,7 @@ function MonitoringPage(props) {
                             <>
                                 {data !== null ?
                                     <FlexBox className="col" style={{ ...paddingStyle }}>
-                                        <FlexBox style={{ backgroundColor: "#002240", color: "white", borderRadius: "8px 8px 0px 0px", overflow: "hidden", padding: "8px" }}>
+                                        <FlexBox className={"logs"}>
                                             <div style={{ flex: "1 1 auto", lineHeight: "20px" }}>
                                                 <AutoSizer>
                                                     {({ height, width }) => (
@@ -142,7 +142,7 @@ function MonitoringPage(props) {
                                                 </AutoSizer>
                                             </div>
                                         </FlexBox>
-                                        <div style={{ height: "40px", backgroundColor: "#223848", color: "white", maxHeight: "40px", minHeight: "40px", padding: "0px 10px 0px 10px", boxShadow: "0px 0px 3px 0px #fcfdfe", alignItems: 'center', borderRadius: " 0px 0px 8px 8px", overflow: "hidden" }}>
+                                        <div className={"logs-footer"} style={{  alignItems: 'center', borderRadius: " 0px 0px 8px 8px", overflow: "hidden" }}>
                                             <FlexBox className="gap" style={{ width: "100%", flexDirection: "row-reverse", height: "100%", alignItems: "center" }}>
                                                 <TerminalButton onClick={() => {
                                                     copyTextToClipboard(clipData)
@@ -207,7 +207,7 @@ function MonitoringPage(props) {
 
 function FailedExecutions(props) {
     const {namespace} = props
-    const [qParams] = useState(["first=5", "filter.field=STATUS", "filter-type=MATCH", "filter.val=failed"])
+    const [qParams] = useState(["first=5", "filter.field=STATUS", "filter.type=MATCH", "filter.val=failed"])
 
     const {data} = useInstances(Config.url, true, namespace, localStorage.getItem("apikey"), ...qParams)
     

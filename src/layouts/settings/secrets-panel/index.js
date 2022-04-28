@@ -40,6 +40,7 @@ function SecretsPanel(props){
                     <Modal title="New secret" 
                         escapeToCancel
                         titleIcon={<VscLock/>}
+                        modalStyle={{width: "600px"}}
 
                         onOpen={() => {
                         }}
@@ -167,6 +168,7 @@ function Secrets(props) {
                                 <FlexBox className="val"><span>******</span></FlexBox>
                                 <FlexBox className="actions">
                                     <Modal 
+                                        modalStyle={{width: "360px"}}
                                         escapeToCancel
                                         style={{
                                             flexDirection: "row-reverse",

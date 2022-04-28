@@ -333,6 +333,7 @@ export function Registries(props) {
                             <FlexBox className="actions">
                                 <Modal 
                                     escapeToCancel
+                                    modalStyle={{width: "400px"}}
                                     style={{
                                         flexDirection: "row-reverse",
                                         marginRight: "8px"

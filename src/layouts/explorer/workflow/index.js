@@ -18,10 +18,12 @@ import {VscTag, VscNote, VscError, VscPass, VscChevronDown, VscChevronUp, VscTyp
 
 import { Service } from '../../namespace-services';
 import DirektivEditor from '../../../components/editor';
+import DiagramEditor from '../../../components/diagram-editor'
 import AddWorkflowVariablePanel from './variables';
 import { RevisionSelectorTab, TabbedButtons } from './revisionTab';
 import DependencyDiagram from '../../../components/dependency-diagram';
 import YAML from 'js-yaml'
+
 import WorkflowDiagram from '../../../components/diagram';
 
 import Slider from 'rc-slider';
@@ -40,6 +42,7 @@ import Tippy from '@tippyjs/react';
 
 import  Tabs  from '../../../components/tabs';
 import Form from "@rjsf/core";
+import { windowBlocker } from '../../../components/diagram-editor/usePrompt';
 
 dayjs.extend(utc)
 dayjs.extend(relativeTime);
@@ -82,6 +85,7 @@ function InitialWorkflowHook(props){
     const {namespace, filepath, searchParams, setSearchParams} = props
 
     const [activeTab, setActiveTab] = useState(searchParams.get("tab") !== null ? parseInt(searchParams.get('tab')): 0)
+    const [tabBlocker, setTabBlocker] = useState(false)
 
     useEffect(()=>{
         setActiveTab(searchParams.get("tab") !== null ? parseInt(searchParams.get('tab')): 0)
@@ -123,10 +127,14 @@ function InitialWorkflowHook(props){
     if(data === null || router === null) {
         return <></>
     }
+    
     return(
         <>
             <FlexBox id="workflow-page" className="gap col" style={{paddingRight: "8px"}}>
-                <TabBar setRouter={setRouter} router={router} getWorkflowRouter={getWorkflowRouter} toggleWorkflow={toggleWorkflow}  setSearchParams={setSearchParams} activeTab={activeTab} setActiveTab={setActiveTab} />
+                <TabBar setRouter={setRouter} router={router} getWorkflowRouter={getWorkflowRouter} toggleWorkflow={toggleWorkflow}  setSearchParams={setSearchParams} activeTab={activeTab} setActiveTab={setActiveTab} 
+                block={tabBlocker}
+                setBlock={setTabBlocker}
+                blockMsg={"Warning Unsaved Changes. Are you sure you want to leave?"}/>
                 <FlexBox className="col gap">
                     { activeTab === 0 ? 
                         <OverviewTab getSuccessFailedMetrics={getSuccessFailedMetrics} router={router} namespace={namespace} getInstancesForWorkflow={getInstancesForWorkflow} filepath={filepath}/>
@@ -137,7 +145,8 @@ function InitialWorkflowHook(props){
                         workflowName={filepath.substring(1)}
                         tagWorkflow={tagWorkflow}
                          namespace={namespace}
-                          filepath={filepath} updateWorkflow={updateWorkflow} setRouter={setRouter} editWorkflowRouter={editWorkflowRouter} getWorkflowRouter={getWorkflowRouter} setRevisions={setRevisions} revisions={revisions} router={router} getWorkflowSankeyMetrics={getWorkflowSankeyMetrics} executeWorkflow={executeWorkflow} getWorkflowRevisionData={getWorkflowRevisionData} searchParams={searchParams} setSearchParams={setSearchParams} deleteRevision={deleteRevision}  getRevisions={getRevisions} getTags={getTags} removeTag={removeTag}  />
+                          filepath={filepath} updateWorkflow={updateWorkflow} setRouter={setRouter} editWorkflowRouter={editWorkflowRouter} getWorkflowRouter={getWorkflowRouter} setRevisions={setRevisions} revisions={revisions} router={router} getWorkflowSankeyMetrics={getWorkflowSankeyMetrics} executeWorkflow={executeWorkflow} getWorkflowRevisionData={getWorkflowRevisionData} searchParams={searchParams} setSearchParams={setSearchParams} deleteRevision={deleteRevision}  getRevisions={getRevisions} getTags={getTags} removeTag={removeTag}
+                          />
                         </>
                     :<></>}
                     { activeTab === 2 ?
@@ -154,6 +163,8 @@ function InitialWorkflowHook(props){
                                 setRevisions(null)
                             }}
                             wf={atob(data.revision.source)} 
+                            tabBlocker={tabBlocker} 
+                            setTabBlocker={setTabBlocker}
                         />
                     :<></>}
                     { activeTab === 3 ?
@@ -262,7 +273,7 @@ function WorkingRevisionErrorBar(props) {
 }
 
 function WorkingRevision(props) {
-    const {updateRevisions, searchParams, setSearchParams, getWorkflowSankeyMetrics, wf, updateWorkflow, discardWorkflow, saveWorkflow, executeWorkflow,namespace} = props
+    const {updateRevisions, searchParams, setSearchParams, getWorkflowSankeyMetrics, wf, updateWorkflow, discardWorkflow, saveWorkflow, executeWorkflow,namespace, tabBlocker, setTabBlocker} = props
 
     const navigate = useNavigate()
     const [load, setLoad] = useState(true)
@@ -273,6 +284,8 @@ function WorkingRevision(props) {
     const [tabIndex, setTabIndex] = useState(0)
     const [workflowJSONSchema, setWorkflowJSONSchema] = useState(null)
     const [inputFormSubmitRef, setInputFormSubmitRef] = useState(null)
+
+    const [canSave, setCanSave] = useState(false)
 
     const [tabBtn, setTabBtn] = useState(searchParams.get('revtab') !== null ? parseInt(searchParams.get('revtab')): 0);
 
@@ -309,7 +322,16 @@ function WorkingRevision(props) {
             setWorkflow(wf)
         }
     },[wf, workflow, load])
-   
+
+    useEffect(()=>{
+        if (load) {return}
+        if(workflow !== oldWf) {
+            setCanSave(true)
+        } else {
+            setCanSave(false)
+        }
+    },[load, workflow, oldWf])
+
     useEffect(()=>{
         if (oldWf !== wf) {
             setWorkflow(wf)
@@ -319,7 +341,7 @@ function WorkingRevision(props) {
     },[oldWf, wf, pushOpLoadingState])
 
     const saveFn = useCallback(()=>{
-        if (workflow === oldWf) {
+        if (!canSave) {
             setErrors(["Can't save - no changes have been made."])
             setShowErrors(true)
             pushOpLoadingState("Save", false)
@@ -329,12 +351,13 @@ function WorkingRevision(props) {
         pushOpLoadingState("Save", true)
         updateWorkflow(workflow).then(()=>{
             setShowErrors(false)
+            setTabBlocker(false)
         }).catch((opError) => {
             setErrors([opError.message])
             setShowErrors(true)
             pushOpLoadingState("Save", false)
         })
-    }, [oldWf, workflow, pushOpLoadingState, updateWorkflow])
+    }, [workflow, pushOpLoadingState, updateWorkflow, canSave, setTabBlocker])
 
     return(
         <FlexBox style={{width:"100%"}}>
@@ -348,16 +371,16 @@ function WorkingRevision(props) {
                             Active Revision
                         </div>
                         <HelpIcon msg={"Latest revision where you can edit and create new revisions."} />
-                        <TabbedButtons revision={"latest"} setSearchParams={setSearchParams} searchParams={searchParams} tabBtn={tabBtn} setTabBtn={setTabBtn} />
+                        <TabbedButtons revision={"latest"} setSearchParams={setSearchParams} searchParams={searchParams} tabBtn={tabBtn} setTabBtn={setTabBtn} enableDiagramEditor={!canSave} block={tabBlocker} blockMsg={"Warning Unsaved Changes. Are you sure you want to leave?"} setBlock={setTabBlocker}/>
                     </FlexBox>
                 </ContentPanelTitle>
                 <ContentPanelBody style={{padding: "0px"}}>
                 {tabBtn === 0 ?
                     <FlexBox className="col" style={{ overflow: "hidden" }}>
                         <FlexBox>
-                            <DirektivEditor saveFn={saveFn} style={{borderRadius: "0px"}} dlang="yaml" value={workflow} dvalue={oldWf} setDValue={setWorkflow} disableBottomRadius={true} />
+                            <DirektivEditor saveFn={saveFn} style={{borderRadius: "0px"}} dlang="yaml" value={workflow} dvalue={oldWf} setDValue={setWorkflow} disableBottomRadius={true}/>
                         </FlexBox>
-                        <FlexBox className="gap" style={{ backgroundColor: "#223848", color: "white", height: "44px", maxHeight: "44px", paddingLeft: "10px", minHeight: "44px", alignItems: 'center', position: "relative", borderRadius: "0px 0px 8px 8px" }}>
+                        <FlexBox className="gap editor-footer">
                             <WorkingRevisionErrorBar errors={errors} showErrors={showErrors}/>
                             <div style={{ display: "flex", flex: 1 }}>
                                 <div onClick={async () => {
@@ -378,7 +401,7 @@ function WorkingRevision(props) {
                                 : <Modal 
                                     style={{ justifyContent: "center" }}
                                     className="run-workflow-modal"
-                                    modalStyle={{color: "black"}}
+                                    modalStyle={{color: "black", width: "600px", minWidth:"30vw"}}
                                     title={`Run Workflow`}
                                     buttonDisabled={opLoadingStates["IsLoading"]}
                                     onClose={()=>{
@@ -417,7 +440,7 @@ function WorkingRevision(props) {
                                             </div>
                                     )}
                                 >
-                                    <FlexBox style={{ height: "45vh", width: "35vw", minWidth: "250px", minHeight: "200px" }}>
+                                    <FlexBox style={{ height: "45vh", minWidth: "250px", minHeight: "160px", overflow:"hidden" }}>
                                         <Tabs
                                             id={"wf-execute-input"}
                                             key={"inputForm"}
@@ -453,11 +476,12 @@ function WorkingRevision(props) {
                                 </Modal>}
                             </div>
                             <div style={{ display: "flex", flex: 1, gap: "3px", justifyContent: "flex-end", paddingRight: "10px"}}>
-                                <div className={`btn-terminal ${opLoadingStates["Save"] ? "terminal-loading" : ""} ${workflow === oldWf ? "terminal-disabled" : ""}`} title={"Save workflow to latest"} onClick={async () => {
+                                <div className={`btn-terminal ${opLoadingStates["Save"] ? "terminal-loading" : ""} ${canSave ? "" : "terminal-disabled"}`} title={"Save workflow to latest"} onClick={async () => {
                                     setErrors([])
                                     pushOpLoadingState("Save", true)
                                     updateWorkflow(workflow).then(()=>{
                                         setShowErrors(false)
+                                        setTabBlocker(false)
                                     }).catch((opError) => {
                                         setErrors([opError.message])
                                         setShowErrors(true)
@@ -466,7 +490,7 @@ function WorkingRevision(props) {
                                 }}>
                                     Save
                                 </div>
-                                { workflow === oldWf ?
+                                { !canSave ?
                                 <div className={`btn-terminal ${opLoadingStates["IsLoading"] ? "terminal-disabled" : ""}`} title={"Save latest workflow as new revision"} onClick={async () => {
                                     setErrors([])
                                     try{
@@ -509,8 +533,13 @@ function WorkingRevision(props) {
                             </div>
                         </FlexBox>
                     </FlexBox>:""}
-                    {tabBtn === 1 ? <WorkflowDiagram disabled={true} workflow={YAML.load(workflow)}/>:""}
-                    {tabBtn === 2 ? <SankeyDiagram revision={"latest"} getWorkflowSankeyMetrics={getWorkflowSankeyMetrics} />:""}
+                    {tabBtn === 1 ? <DiagramEditor block={tabBlocker} setBlock={setTabBlocker} workflow={oldWf} namespace={namespace} updateWorkflow={(data)=>{
+                        setWorkflow(data)
+
+                        setTabBtn(0)
+                    }}/>:""}
+                    {tabBtn === 2 ? <WorkflowDiagram disabled={true} workflow={YAML.load(workflow)}/>:""}
+                    {tabBtn === 3 ? <SankeyDiagram revision={"latest"} getWorkflowSankeyMetrics={getWorkflowSankeyMetrics} />:""}
                 </ContentPanelBody>
             </ContentPanel>
         </FlexBox>
@@ -519,7 +548,7 @@ function WorkingRevision(props) {
 
 function TabBar(props) {
 
-    let {activeTab, setActiveTab, setSearchParams, toggleWorkflow, getWorkflowRouter, router, setRouter} = props;
+    let {activeTab, setActiveTab, setSearchParams, toggleWorkflow, getWorkflowRouter, router, setRouter, block, setBlock, blockMsg} = props;
     let tabLabels = [
         "Overview",
         "Revisions",
@@ -539,7 +568,16 @@ function TabBar(props) {
 
         let key = GenerateRandomKey("tab-item-")
         tabDOMs.push(
-            <FlexBox key={key} className={className} onClick={() => {
+            <FlexBox key={key} className={className} onClick={(e) => {
+                if (block) {
+                    e.stopPropagation();
+                    if (!windowBlocker(blockMsg)) {
+                        return
+                    }
+
+                    setBlock(false)
+                }
+
                 setActiveTab(i)
                 setSearchParams({tab: i}, {replace:true})
             }}>
@@ -956,6 +994,7 @@ function WorkflowServices(props) {
                 {data.map((obj)=>{
                     return(
                         <Service
+                            key={`key-${obj.info.revision}`}
                             allowRedeploy={true}
                             dontDelete={true}
                             url={`/n/${namespace}/explorer/${filepath.substring(1)}?function=${obj.info.name}&version=${obj.info.revision}`}
