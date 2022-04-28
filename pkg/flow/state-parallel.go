@@ -99,6 +99,7 @@ func (sl *parallelStateLogic) dispatchAction(ctx context.Context, engine *engine
 		caller.InstanceID = im.ID().String()
 		caller.State = sl.state.GetID()
 		caller.Step = im.Step()
+		caller.As = im.in.As
 
 		var subflowID string
 

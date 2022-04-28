@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"sync"
@@ -88,6 +89,7 @@ type subflowCaller struct {
 	State      string
 	Step       int
 	Depth      int
+	As         string
 }
 
 func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*instanceMemory, error) {
@@ -659,6 +661,14 @@ func (engine *engine) subflowInvoke(ctx context.Context, caller *subflowCaller, 
 		threadVars, err = parent.in.QueryVars().Where(entvar.BehaviourEQ("thread")).All(ctx)
 		if err != nil {
 			return "", NewInternalError(err)
+		}
+
+		if !filepath.IsAbs(args.Path) {
+			dir, _ := filepath.Split(caller.As)
+			if dir == "" {
+				dir = "/"
+			}
+			args.Path = filepath.Join(dir, args.Path)
 		}
 
 	}
