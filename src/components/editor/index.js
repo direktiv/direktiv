@@ -274,12 +274,12 @@ export default function DirektivEditor(props) {
         if(monaco !== null) {           
             monaco.editor.defineTheme('cobalt', cobalt)
             monaco.editor.setTheme('cobalt')
-            if (monaco.languages[dlang]) {
+            if (monaco?.languages?.[dlang]?.[`${dlang}Defaults`]?.setDiagnosticsOptions) {
               monaco.languages[dlang][`${dlang}Defaults`].setDiagnosticsOptions({
                 validate: validate === undefined ? true : validate,
               })
             } else {
-              console.warn(`editor warning: ${dlang} is not a supported language`)
+              console.warn(`editor warning: ${dlang} does not support Diagnostics`)
             }
 
             // let messageContribution = monaco.getContribution('editor.contrib.messageController');
