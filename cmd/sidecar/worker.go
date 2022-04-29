@@ -105,6 +105,7 @@ func (worker *inboundWorker) doFunctionRequest(ctx context.Context, ir *function
 
 	req.Header.Set(actionIDHeader, ir.actionId)
 	req.Header.Set("Direktiv-TempDir", worker.functionDir(ir))
+	req.Header.Set("Content-Type", "application/json")
 
 	cleanup := util.TraceHTTPRequest(ctx, req)
 	defer cleanup()
@@ -124,7 +125,7 @@ func (worker *inboundWorker) doFunctionRequest(ctx context.Context, ir *function
 		return out, nil
 	}
 
-	cap := int64(33554432) // 4 MiB (changed to same value as API)
+	cap := int64(33554432) // 32 MiB (changed to same value as API)
 	if resp.ContentLength > cap {
 		return nil, errors.New("service response is too large")
 	}

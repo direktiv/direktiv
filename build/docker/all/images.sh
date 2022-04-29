@@ -75,7 +75,7 @@ docker save --output=nginx-webhook.tar k8s.gcr.io/ingress-nginx/kube-webhook-cer
 # direktiv
 
 PREFIX="localhost:5000"
-VERSION="v0.6.0"
+VERSION="v0.6.2"
 
 docker pull $PREFIX/flow
 docker tag $PREFIX/flow direktiv/flow:$VERSION

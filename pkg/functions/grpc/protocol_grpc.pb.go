@@ -43,6 +43,7 @@ type FunctionsServiceClient interface {
 	WatchLogs(ctx context.Context, in *WatchLogsRequest, opts ...grpc.CallOption) (FunctionsService_WatchLogsClient, error)
 	ListPods(ctx context.Context, in *ListPodsRequest, opts ...grpc.CallOption) (*ListPodsResponse, error)
 	Build(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*BuildResponse, error)
+	CancelWorfklow(ctx context.Context, in *CancelWorkflowRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 }
 
 type functionsServiceClient struct {
@@ -361,6 +362,15 @@ func (c *functionsServiceClient) Build(ctx context.Context, in *empty.Empty, opt
 	return out, nil
 }
 
+func (c *functionsServiceClient) CancelWorfklow(ctx context.Context, in *CancelWorkflowRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
+	err := c.cc.Invoke(ctx, "/direktiv_functions.FunctionsService/CancelWorfklow", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // FunctionsServiceServer is the server API for FunctionsService service.
 // All implementations must embed UnimplementedFunctionsServiceServer
 // for forward compatibility
@@ -389,6 +399,7 @@ type FunctionsServiceServer interface {
 	WatchLogs(*WatchLogsRequest, FunctionsService_WatchLogsServer) error
 	ListPods(context.Context, *ListPodsRequest) (*ListPodsResponse, error)
 	Build(context.Context, *empty.Empty) (*BuildResponse, error)
+	CancelWorfklow(context.Context, *CancelWorkflowRequest) (*empty.Empty, error)
 	mustEmbedUnimplementedFunctionsServiceServer()
 }
 
@@ -467,6 +478,9 @@ func (UnimplementedFunctionsServiceServer) ListPods(context.Context, *ListPodsRe
 }
 func (UnimplementedFunctionsServiceServer) Build(context.Context, *empty.Empty) (*BuildResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Build not implemented")
+}
+func (UnimplementedFunctionsServiceServer) CancelWorfklow(context.Context, *CancelWorkflowRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CancelWorfklow not implemented")
 }
 func (UnimplementedFunctionsServiceServer) mustEmbedUnimplementedFunctionsServiceServer() {}
 
@@ -925,6 +939,24 @@ func _FunctionsService_Build_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _FunctionsService_CancelWorfklow_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CancelWorkflowRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FunctionsServiceServer).CancelWorfklow(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/direktiv_functions.FunctionsService/CancelWorfklow",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FunctionsServiceServer).CancelWorfklow(ctx, req.(*CancelWorkflowRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // FunctionsService_ServiceDesc is the grpc.ServiceDesc for FunctionsService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1011,6 +1043,10 @@ var FunctionsService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Build",
 			Handler:    _FunctionsService_Build_Handler,
+		},
+		{
+			MethodName: "CancelWorfklow",
+			Handler:    _FunctionsService_CancelWorfklow_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
