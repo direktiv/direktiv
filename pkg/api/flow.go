@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"strconv"
 	"strings"
@@ -3675,6 +3676,7 @@ func ToGRPCCloudEvents(r *http.Request) ([]cloudevents.Event, error) {
 
 	var events []cloudevents.Event
 	ct := r.Header.Get("Content-type")
+	oct := ct
 
 	// if batch mode we need to parse the body to multiple events
 	if strings.HasPrefix(ct, "application/cloudevents-batch+json") {
@@ -3706,10 +3708,28 @@ func ToGRPCCloudEvents(r *http.Request) ([]cloudevents.Event, error) {
 
 	}
 
-	m := protocol.NewMessageFromHttpRequest(r)
-	ev, err := binding.ToEvent(context.Background(), m)
+	if strings.HasPrefix(ct, "application/json") {
+		x, _ := json.Marshal(r.Header)
+		fmt.Println(string(x))
+		s := r.Header.Get("Ce-Type")
+		if s == "" {
+			ct = "application/cloudevents+json; charset=UTF-8"
+			r.Header.Set("Content-Type", ct)
+			fmt.Println(r.Header.Get("Content-Type"))
+		}
+	}
+
+	bodyData, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		return events, err
+		return nil, err
+	}
+
+	r.Body = io.NopCloser(bytes.NewReader(bodyData))
+
+	msg := protocol.NewMessageFromHttpRequest(r)
+	ev, err := binding.ToEvent(context.Background(), msg)
+	if err != nil {
+		goto generic
 	}
 
 	// validate:
@@ -3722,10 +3742,58 @@ func ToGRPCCloudEvents(r *http.Request) ([]cloudevents.Event, error) {
 	if err != nil && strings.HasPrefix(err.Error(), "dataschema: if present") {
 		ev.Context.SetDataSchema("")
 	} else if err != nil {
-		return nil, err
+		goto generic
 	}
 
 	events = append(events, *ev)
+
+	return events, nil
+
+generic:
+
+	xerr := err
+	unmarshalable := false
+
+	m := make(map[string]interface{})
+
+	if strings.HasPrefix(oct, "application/json") {
+		err = json.Unmarshal(bodyData, &m)
+		if err == nil {
+			unmarshalable = true
+		}
+	}
+
+	event := cloudevents.NewEvent(cloudevents.VersionV1)
+	ev = &event
+
+	uid := uuid.New()
+	ev.SetID(uid.String())
+	ev.SetType("noncompliant")
+	ev.SetSource("unknown")
+	ev.SetDataContentType(ct)
+	if unmarshalable {
+		err = ev.SetData(oct, m)
+		if err != nil {
+			return events, xerr
+		}
+	} else {
+		err = ev.SetData(oct, bodyData)
+		if err != nil {
+			return events, xerr
+		}
+	}
+
+	err = ev.Context.SetExtension("error", xerr.Error())
+	if err != nil {
+		return events, xerr
+	}
+
+	err = ev.Validate()
+	if err != nil {
+		return events, xerr
+	}
+
+	events = append(events, event)
 
 	return events, nil
 
@@ -3741,6 +3809,7 @@ func (h *flowHandler) BroadcastCloudevent(w http.ResponseWriter, r *http.Request
 	ces, err := ToGRPCCloudEvents(r)
 	if err != nil {
 		respond(w, nil, err)
+		fmt.Println(err)
 		return
 	}
 
@@ -3749,6 +3818,7 @@ func (h *flowHandler) BroadcastCloudevent(w http.ResponseWriter, r *http.Request
 		d, err := json.Marshal(ces[i])
 		if err != nil {
 			respond(w, nil, err)
+			fmt.Println(err)
 			return
 		}
 
