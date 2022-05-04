@@ -343,6 +343,7 @@ func (flow *flow) LockMirror(ctx context.Context, req *grpc.LockMirrorRequest) (
 	}
 
 	ino := d.ino
+	updatedInodes := make([]*ent.Inode, 0)
 
 	var recurser func(ino *ent.Inode) error
 	recurser = func(ino *ent.Inode) error {
@@ -361,6 +362,8 @@ func (flow *flow) LockMirror(ctx context.Context, req *grpc.LockMirrorRequest) (
 			if err != nil {
 				return err
 			}
+
+			updatedInodes = append(updatedInodes, ino)
 
 			if ino.Type == util.InodeTypeDirectory {
 				err = recurser(ino)
@@ -390,6 +393,8 @@ func (flow *flow) LockMirror(ctx context.Context, req *grpc.LockMirrorRequest) (
 		return nil, err
 	}
 
+	updatedInodes = append(updatedInodes, ino)
+
 	err = recurser(ino)
 	if err != nil {
 		return nil, err
@@ -404,6 +409,9 @@ func (flow *flow) LockMirror(ctx context.Context, req *grpc.LockMirrorRequest) (
 	}
 
 	flow.pubsub.NotifyMirror(d.ino)
+	for _, uino := range updatedInodes {
+		flow.pubsub.NotifyInode(uino)
+	}
 
 	var resp emptypb.Empty
 
@@ -431,6 +439,7 @@ func (flow *flow) UnlockMirror(ctx context.Context, req *grpc.UnlockMirrorReques
 	}
 
 	ino := d.ino
+	updatedInodes := make([]*ent.Inode, 0)
 
 	var recurser func(ino *ent.Inode) error
 	recurser = func(ino *ent.Inode) error {
@@ -449,6 +458,8 @@ func (flow *flow) UnlockMirror(ctx context.Context, req *grpc.UnlockMirrorReques
 			if err != nil {
 				return err
 			}
+
+			updatedInodes = append(updatedInodes, ino)
 
 			if ino.Type == util.InodeTypeDirectory {
 				err = recurser(ino)
@@ -478,6 +489,8 @@ func (flow *flow) UnlockMirror(ctx context.Context, req *grpc.UnlockMirrorReques
 		return nil, err
 	}
 
+	updatedInodes = append(updatedInodes, ino)
+
 	err = recurser(ino)
 	if err != nil {
 		return nil, err
@@ -492,6 +505,9 @@ func (flow *flow) UnlockMirror(ctx context.Context, req *grpc.UnlockMirrorReques
 	}
 
 	flow.pubsub.NotifyMirror(d.ino)
+	for _, uino := range updatedInodes {
+		flow.pubsub.NotifyInode(uino)
+	}
 
 	var resp emptypb.Empty
 
