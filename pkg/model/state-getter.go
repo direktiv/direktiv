@@ -37,14 +37,6 @@ func (o *GetterDefinition) Validate() error {
 		return errors.New(`key required`)
 	}
 
-	// if !util.VarNameRegex.MatchString(o.Key) {
-	// 	return fmt.Errorf("key is invalid: must start with a letter and only contain letters, numbers and '_'")
-	// }
-
-	// if ok := util.MatchesVarRegex(o.Key); !ok {
-	// 	return fmt.Errorf("variable key must match regex: %s", util.RegexPattern)
-	// }
-
 	return nil
 
 }

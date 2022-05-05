@@ -72,15 +72,6 @@ func (a *SetterDefinition) UnmarshalYAML(unmarshal func(interface{}) error) erro
 
 func (o *SetterDefinition) Validate() error {
 
-	// match, err := regexp.MatchString(RegexVarMimeType, o.MimeType)
-	// if err != nil {
-	// 	return errors.New(`regex validation of mime type failed`)
-	// }
-
-	// if !match {
-	// 	return errors.New(`mimeType is not a valid MIME type string`)
-	// }
-
 	switch o.Scope {
 	case "instance":
 	case "workflow":
@@ -93,14 +84,6 @@ func (o *SetterDefinition) Validate() error {
 	if o.Key == nil || o.Key == "" {
 		return errors.New(`key required`)
 	}
-
-	// if !util.VarNameRegex.MatchString(o.Key) {
-	// 	return fmt.Errorf("key is invalid: must start with a letter and only contain letters, numbers and '_'")
-	// }
-
-	// if ok := util.MatchesVarRegex(o.Key); !ok {
-	// 	return fmt.Errorf("variable key must match regex: %s", util.RegexPattern)
-	// }
 
 	if o.Value == "" {
 		return errors.New(`value required`)
