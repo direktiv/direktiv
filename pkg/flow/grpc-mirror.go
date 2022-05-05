@@ -714,6 +714,12 @@ func (flow *flow) MirrorInfo(ctx context.Context, req *grpc.MirrorInfoRequest) (
 		return nil, err
 	}
 
+	if d.mir.Passphrase != "" {
+		resp.Info.Passphrase = "-"
+	}
+	if d.mir.PrivateKey != "" {
+		resp.Info.PrivateKey = "-"
+	}
 	resp.Namespace = d.ns().Name
 
 	err = atob(cx, &resp.Activities)

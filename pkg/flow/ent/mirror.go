@@ -26,7 +26,7 @@ type Mirror struct {
 	// Cron holds the value of the "cron" field.
 	Cron string `json:"cron,omitempty"`
 	// PublicKey holds the value of the "public_key" field.
-	PublicKey string `json:"public_key,omitempty"`
+	PublicKey string `json:"publicKey,omitempty"`
 	// PrivateKey holds the value of the "private_key" field.
 	PrivateKey string `json:"private_key,omitempty"`
 	// Passphrase holds the value of the "passphrase" field.

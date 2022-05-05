@@ -23,7 +23,7 @@ func (Mirror) Fields() []ent.Field {
 		field.String("url"),
 		field.String("ref"),
 		field.String("cron"),
-		field.String("public_key"),
+		field.String("public_key").StructTag(`json:"publicKey,omitempty"`),
 		field.String("private_key"),
 		field.String("passphrase"),
 		field.String("commit"),

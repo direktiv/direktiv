@@ -44,6 +44,8 @@ message MirrorInfo {
     // bool locked = 5;
     string commitId = 6;
     google.protobuf.Timestamp lastSync = 7;
+    string privateKey = 8;
+    string passphrase = 9;
 }
 
 message CreateNamespaceMirrorRequest {
