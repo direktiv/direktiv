@@ -10,6 +10,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entvar "github.com/direktiv/direktiv/pkg/flow/ent/varref"
 	"github.com/direktiv/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
 )
 
@@ -75,13 +76,36 @@ func (sl *getterStateLogic) Run(ctx context.Context, engine *engine, im *instanc
 
 	m := make(map[string]interface{})
 
-	for _, v := range sl.state.Variables {
+	for idx, v := range sl.state.Variables {
 
 		var ref *ent.VarRef
+		var key = ""
+		var storeKey = ""
+		var x interface{}
 
-		storeKey := v.Key
+		x, err = jqOne(im.data, v.Key)
+		if err != nil {
+			return nil, err
+		}
+
+		if x != nil {
+			if str, ok := x.(string); ok {
+				key = str
+			}
+		}
+
+		if key == "" {
+			return nil, NewCatchableError(ErrCodeJQNotString, "failed to evaluate key as a string for variable at index [%v]", idx)
+		}
+
+		if ok := util.MatchesVarRegex(key); !ok {
+			return nil, NewCatchableError(ErrCodeInvalidVariableKey, "variable key must match regex: %s (got: %s)", util.RegexPattern, key)
+		}
+
 		if v.As != "" {
 			storeKey = v.As
+		} else {
+			storeKey = key
 		}
 
 		switch v.Scope {
@@ -92,11 +116,11 @@ func (sl *getterStateLogic) Run(ctx context.Context, engine *engine, im *instanc
 
 		case "instance":
 
-			ref, err = im.in.QueryVars().Where(entvar.NameEQ(v.Key), entvar.BehaviourIsNil()).WithVardata().Only(ctx)
+			ref, err = im.in.QueryVars().Where(entvar.NameEQ(key), entvar.BehaviourIsNil()).WithVardata().Only(ctx)
 
 		case "thread":
 
-			ref, err = im.in.QueryVars().Where(entvar.NameEQ(v.Key), entvar.BehaviourEQ("thread")).WithVardata().Only(ctx)
+			ref, err = im.in.QueryVars().Where(entvar.NameEQ(key), entvar.BehaviourEQ("thread")).WithVardata().Only(ctx)
 
 		case "workflow":
 
@@ -111,7 +135,7 @@ func (sl *getterStateLogic) Run(ctx context.Context, engine *engine, im *instanc
 				return nil, NewInternalError(err)
 			}
 
-			ref, err = wf.QueryVars().Where(entvar.NameEQ(v.Key)).WithVardata().Only(ctx)
+			ref, err = wf.QueryVars().Where(entvar.NameEQ(key)).WithVardata().Only(ctx)
 
 		case "namespace":
 
@@ -126,11 +150,11 @@ func (sl *getterStateLogic) Run(ctx context.Context, engine *engine, im *instanc
 				return nil, NewInternalError(err)
 			}
 
-			ref, err = ns.QueryVars().Where(entvar.NameEQ(v.Key)).WithVardata().Only(ctx)
+			ref, err = ns.QueryVars().Where(entvar.NameEQ(key)).WithVardata().Only(ctx)
 
 		case "system":
 
-			value, err := valueForSystem(v.Key, im)
+			value, err := valueForSystem(key, im)
 			if err != nil {
 				return nil, NewInternalError(err)
 			}
@@ -164,7 +188,7 @@ func (sl *getterStateLogic) Run(ctx context.Context, engine *engine, im *instanc
 			data = ref.Edges.Vardata.Data
 		}
 
-		var x interface{}
+		x = nil
 		if len(data) == 0 {
 			x = nil
 		} else {

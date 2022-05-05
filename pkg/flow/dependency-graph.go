@@ -158,19 +158,19 @@ func (srv *server) scrapeWorkflows() (*dependencyGraph, error) {
 					switch state.(type) {
 					case *model.SetterState:
 					case *model.GetterState:
-						gs := state.(*model.GetterState)
-						for _, gsv := range gs.Variables {
-							switch gsv.Scope {
-							case "namespace":
-								wdg.NSVars[gsv.Key] = false
-							case "workflow":
-							case "":
-								fallthrough
-							case "instance":
-							default:
-								srv.sugar.Error("Dependency graph update error: wrong scope %v", gsv.Scope)
-							}
-						}
+						// gs := state.(*model.GetterState)
+						// for _, gsv := range gs.Variables {
+						// 	switch gsv.Scope {
+						// 	case "namespace":
+						// 		wdg.NSVars[gsv.Key] = false
+						// 	case "workflow":
+						// 	case "":
+						// 		fallthrough
+						// 	case "instance":
+						// 	default:
+						// 		srv.sugar.Error("Dependency graph update error: wrong scope %v", gsv.Scope)
+						// 	}
+						// }
 					case *model.ActionState:
 						as := state.(*model.ActionState)
 						for _, secret := range as.Action.Secrets {

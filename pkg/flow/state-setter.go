@@ -10,6 +10,7 @@ import (
 	b64 "encoding/base64"
 
 	"github.com/direktiv/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/util"
 )
 
 type setterStateLogic struct {
@@ -71,9 +72,45 @@ func (sl *setterStateLogic) Run(ctx context.Context, engine *engine, im *instanc
 
 	// set
 
-	for _, v := range sl.state.Variables {
+	for idx, v := range sl.state.Variables {
 
 		var x interface{}
+		var key = ""
+		var mimeType = ""
+
+		x, err = jqOne(im.data, v.Key)
+		if err != nil {
+			return nil, err
+		}
+
+		if x != nil {
+			if str, ok := x.(string); ok {
+				key = str
+			}
+		}
+
+		if key == "" {
+			return nil, NewCatchableError(ErrCodeJQNotString, "failed to evaluate key as a string for variable at index [%v]", idx)
+		}
+
+		if ok := util.MatchesVarRegex(key); !ok {
+			return nil, NewCatchableError(ErrCodeInvalidVariableKey, "variable key must match regex: %s (got: %s)", util.RegexPattern, key)
+		}
+
+		if v.MimeType != nil {
+			x, err = jqOne(im.data, v.MimeType)
+			if err != nil {
+				return nil, err
+			}
+
+			if x != nil {
+				if str, ok := x.(string); ok {
+					mimeType = str
+				}
+			}
+
+			// TODO: check that it matches a known mimetype?
+		}
 
 		x, err = jqOne(im.data, v.Value)
 		if err != nil {
@@ -154,7 +191,7 @@ func (sl *setterStateLogic) Run(ctx context.Context, engine *engine, im *instanc
 			return nil, NewInternalError(errors.New("invalid scope"))
 		}
 
-		_, _, err = engine.flow.SetVariable(ctx, vrefc, vdatac, q, v.Key, data, v.MimeType, thread)
+		_, _, err = engine.flow.SetVariable(ctx, vrefc, vdatac, q, key, data, mimeType, thread)
 		if err != nil {
 			return nil, err
 		}
