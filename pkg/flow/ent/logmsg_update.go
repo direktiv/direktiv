@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	"github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
+	"github.com/direktiv/direktiv/pkg/flow/ent/mirroractivity"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/predicate"
 	"github.com/direktiv/direktiv/pkg/flow/ent/workflow"
@@ -101,6 +102,25 @@ func (lmu *LogMsgUpdate) SetInstance(i *Instance) *LogMsgUpdate {
 	return lmu.SetInstanceID(i.ID)
 }
 
+// SetActivityID sets the "activity" edge to the MirrorActivity entity by ID.
+func (lmu *LogMsgUpdate) SetActivityID(id uuid.UUID) *LogMsgUpdate {
+	lmu.mutation.SetActivityID(id)
+	return lmu
+}
+
+// SetNillableActivityID sets the "activity" edge to the MirrorActivity entity by ID if the given value is not nil.
+func (lmu *LogMsgUpdate) SetNillableActivityID(id *uuid.UUID) *LogMsgUpdate {
+	if id != nil {
+		lmu = lmu.SetActivityID(*id)
+	}
+	return lmu
+}
+
+// SetActivity sets the "activity" edge to the MirrorActivity entity.
+func (lmu *LogMsgUpdate) SetActivity(m *MirrorActivity) *LogMsgUpdate {
+	return lmu.SetActivityID(m.ID)
+}
+
 // Mutation returns the LogMsgMutation object of the builder.
 func (lmu *LogMsgUpdate) Mutation() *LogMsgMutation {
 	return lmu.mutation
@@ -121,6 +141,12 @@ func (lmu *LogMsgUpdate) ClearWorkflow() *LogMsgUpdate {
 // ClearInstance clears the "instance" edge to the Instance entity.
 func (lmu *LogMsgUpdate) ClearInstance() *LogMsgUpdate {
 	lmu.mutation.ClearInstance()
+	return lmu
+}
+
+// ClearActivity clears the "activity" edge to the MirrorActivity entity.
+func (lmu *LogMsgUpdate) ClearActivity() *LogMsgUpdate {
+	lmu.mutation.ClearActivity()
 	return lmu
 }
 
@@ -315,6 +341,41 @@ func (lmu *LogMsgUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if lmu.mutation.ActivityCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   logmsg.ActivityTable,
+			Columns: []string{logmsg.ActivityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: mirroractivity.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := lmu.mutation.ActivityIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   logmsg.ActivityTable,
+			Columns: []string{logmsg.ActivityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: mirroractivity.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, lmu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{logmsg.Label}
@@ -403,6 +464,25 @@ func (lmuo *LogMsgUpdateOne) SetInstance(i *Instance) *LogMsgUpdateOne {
 	return lmuo.SetInstanceID(i.ID)
 }
 
+// SetActivityID sets the "activity" edge to the MirrorActivity entity by ID.
+func (lmuo *LogMsgUpdateOne) SetActivityID(id uuid.UUID) *LogMsgUpdateOne {
+	lmuo.mutation.SetActivityID(id)
+	return lmuo
+}
+
+// SetNillableActivityID sets the "activity" edge to the MirrorActivity entity by ID if the given value is not nil.
+func (lmuo *LogMsgUpdateOne) SetNillableActivityID(id *uuid.UUID) *LogMsgUpdateOne {
+	if id != nil {
+		lmuo = lmuo.SetActivityID(*id)
+	}
+	return lmuo
+}
+
+// SetActivity sets the "activity" edge to the MirrorActivity entity.
+func (lmuo *LogMsgUpdateOne) SetActivity(m *MirrorActivity) *LogMsgUpdateOne {
+	return lmuo.SetActivityID(m.ID)
+}
+
 // Mutation returns the LogMsgMutation object of the builder.
 func (lmuo *LogMsgUpdateOne) Mutation() *LogMsgMutation {
 	return lmuo.mutation
@@ -423,6 +503,12 @@ func (lmuo *LogMsgUpdateOne) ClearWorkflow() *LogMsgUpdateOne {
 // ClearInstance clears the "instance" edge to the Instance entity.
 func (lmuo *LogMsgUpdateOne) ClearInstance() *LogMsgUpdateOne {
 	lmuo.mutation.ClearInstance()
+	return lmuo
+}
+
+// ClearActivity clears the "activity" edge to the MirrorActivity entity.
+func (lmuo *LogMsgUpdateOne) ClearActivity() *LogMsgUpdateOne {
+	lmuo.mutation.ClearActivity()
 	return lmuo
 }
 
@@ -633,6 +719,41 @@ func (lmuo *LogMsgUpdateOne) sqlSave(ctx context.Context) (_node *LogMsg, err er
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: instance.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if lmuo.mutation.ActivityCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   logmsg.ActivityTable,
+			Columns: []string{logmsg.ActivityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: mirroractivity.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := lmuo.mutation.ActivityIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   logmsg.ActivityTable,
+			Columns: []string{logmsg.ActivityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: mirroractivity.FieldID,
 				},
 			},
 		}

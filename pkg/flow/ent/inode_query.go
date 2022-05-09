@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/direktiv/direktiv/pkg/flow/ent/inode"
+	"github.com/direktiv/direktiv/pkg/flow/ent/mirror"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/predicate"
 	"github.com/direktiv/direktiv/pkg/flow/ent/workflow"
@@ -33,6 +34,7 @@ type InodeQuery struct {
 	withChildren  *InodeQuery
 	withParent    *InodeQuery
 	withWorkflow  *WorkflowQuery
+	withMirror    *MirrorQuery
 	withFKs       bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -151,6 +153,28 @@ func (iq *InodeQuery) QueryWorkflow() *WorkflowQuery {
 			sqlgraph.From(inode.Table, inode.FieldID, selector),
 			sqlgraph.To(workflow.Table, workflow.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, false, inode.WorkflowTable, inode.WorkflowColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryMirror chains the current query on the "mirror" edge.
+func (iq *InodeQuery) QueryMirror() *MirrorQuery {
+	query := &MirrorQuery{config: iq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := iq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := iq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(inode.Table, inode.FieldID, selector),
+			sqlgraph.To(mirror.Table, mirror.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, inode.MirrorTable, inode.MirrorColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
 		return fromU, nil
@@ -343,6 +367,7 @@ func (iq *InodeQuery) Clone() *InodeQuery {
 		withChildren:  iq.withChildren.Clone(),
 		withParent:    iq.withParent.Clone(),
 		withWorkflow:  iq.withWorkflow.Clone(),
+		withMirror:    iq.withMirror.Clone(),
 		// clone intermediate query.
 		sql:    iq.sql.Clone(),
 		path:   iq.path,
@@ -391,6 +416,17 @@ func (iq *InodeQuery) WithWorkflow(opts ...func(*WorkflowQuery)) *InodeQuery {
 		opt(query)
 	}
 	iq.withWorkflow = query
+	return iq
+}
+
+// WithMirror tells the query-builder to eager-load the nodes that are connected to
+// the "mirror" edge. The optional arguments are used to configure the query builder of the edge.
+func (iq *InodeQuery) WithMirror(opts ...func(*MirrorQuery)) *InodeQuery {
+	query := &MirrorQuery{config: iq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	iq.withMirror = query
 	return iq
 }
 
@@ -460,11 +496,12 @@ func (iq *InodeQuery) sqlAll(ctx context.Context) ([]*Inode, error) {
 		nodes       = []*Inode{}
 		withFKs     = iq.withFKs
 		_spec       = iq.querySpec()
-		loadedTypes = [4]bool{
+		loadedTypes = [5]bool{
 			iq.withNamespace != nil,
 			iq.withChildren != nil,
 			iq.withParent != nil,
 			iq.withWorkflow != nil,
+			iq.withMirror != nil,
 		}
 	)
 	if iq.withNamespace != nil || iq.withParent != nil {
@@ -605,6 +642,34 @@ func (iq *InodeQuery) sqlAll(ctx context.Context) ([]*Inode, error) {
 				return nil, fmt.Errorf(`unexpected foreign-key "inode_workflow" returned %v for node %v`, *fk, n.ID)
 			}
 			node.Edges.Workflow = n
+		}
+	}
+
+	if query := iq.withMirror; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[uuid.UUID]*Inode)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+		}
+		query.withFKs = true
+		query.Where(predicate.Mirror(func(s *sql.Selector) {
+			s.Where(sql.InValues(inode.MirrorColumn, fks...))
+		}))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			fk := n.inode_mirror
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "inode_mirror" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "inode_mirror" returned %v for node %v`, *fk, n.ID)
+			}
+			node.Edges.Mirror = n
 		}
 	}
 

@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	"github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
+	"github.com/direktiv/direktiv/pkg/flow/ent/mirroractivity"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 	"github.com/google/uuid"
@@ -105,6 +106,25 @@ func (lmc *LogMsgCreate) SetNillableInstanceID(id *uuid.UUID) *LogMsgCreate {
 // SetInstance sets the "instance" edge to the Instance entity.
 func (lmc *LogMsgCreate) SetInstance(i *Instance) *LogMsgCreate {
 	return lmc.SetInstanceID(i.ID)
+}
+
+// SetActivityID sets the "activity" edge to the MirrorActivity entity by ID.
+func (lmc *LogMsgCreate) SetActivityID(id uuid.UUID) *LogMsgCreate {
+	lmc.mutation.SetActivityID(id)
+	return lmc
+}
+
+// SetNillableActivityID sets the "activity" edge to the MirrorActivity entity by ID if the given value is not nil.
+func (lmc *LogMsgCreate) SetNillableActivityID(id *uuid.UUID) *LogMsgCreate {
+	if id != nil {
+		lmc = lmc.SetActivityID(*id)
+	}
+	return lmc
+}
+
+// SetActivity sets the "activity" edge to the MirrorActivity entity.
+func (lmc *LogMsgCreate) SetActivity(m *MirrorActivity) *LogMsgCreate {
+	return lmc.SetActivityID(m.ID)
 }
 
 // Mutation returns the LogMsgMutation object of the builder.
@@ -302,6 +322,26 @@ func (lmc *LogMsgCreate) createSpec() (*LogMsg, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.instance_logs = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := lmc.mutation.ActivityIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   logmsg.ActivityTable,
+			Columns: []string{logmsg.ActivityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: mirroractivity.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.mirror_activity_logs = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

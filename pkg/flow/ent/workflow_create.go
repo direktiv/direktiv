@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -53,6 +54,34 @@ func (wc *WorkflowCreate) SetLogToEvents(s string) *WorkflowCreate {
 func (wc *WorkflowCreate) SetNillableLogToEvents(s *string) *WorkflowCreate {
 	if s != nil {
 		wc.SetLogToEvents(*s)
+	}
+	return wc
+}
+
+// SetReadOnly sets the "readOnly" field.
+func (wc *WorkflowCreate) SetReadOnly(b bool) *WorkflowCreate {
+	wc.mutation.SetReadOnly(b)
+	return wc
+}
+
+// SetNillableReadOnly sets the "readOnly" field if the given value is not nil.
+func (wc *WorkflowCreate) SetNillableReadOnly(b *bool) *WorkflowCreate {
+	if b != nil {
+		wc.SetReadOnly(*b)
+	}
+	return wc
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (wc *WorkflowCreate) SetUpdatedAt(t time.Time) *WorkflowCreate {
+	wc.mutation.SetUpdatedAt(t)
+	return wc
+}
+
+// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
+func (wc *WorkflowCreate) SetNillableUpdatedAt(t *time.Time) *WorkflowCreate {
+	if t != nil {
+		wc.SetUpdatedAt(*t)
 	}
 	return wc
 }
@@ -281,6 +310,10 @@ func (wc *WorkflowCreate) defaults() {
 		v := workflow.DefaultLive
 		wc.mutation.SetLive(v)
 	}
+	if _, ok := wc.mutation.UpdatedAt(); !ok {
+		v := workflow.DefaultUpdatedAt()
+		wc.mutation.SetUpdatedAt(v)
+	}
 	if _, ok := wc.mutation.ID(); !ok {
 		v := workflow.DefaultID()
 		wc.mutation.SetID(v)
@@ -346,6 +379,22 @@ func (wc *WorkflowCreate) createSpec() (*Workflow, *sqlgraph.CreateSpec) {
 			Column: workflow.FieldLogToEvents,
 		})
 		_node.LogToEvents = value
+	}
+	if value, ok := wc.mutation.ReadOnly(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeBool,
+			Value:  value,
+			Column: workflow.FieldReadOnly,
+		})
+		_node.ReadOnly = value
+	}
+	if value, ok := wc.mutation.UpdatedAt(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: workflow.FieldUpdatedAt,
+		})
+		_node.UpdatedAt = value
 	}
 	if nodes := wc.mutation.InodeIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

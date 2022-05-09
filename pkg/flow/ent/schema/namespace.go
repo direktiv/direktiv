@@ -58,6 +58,8 @@ func (Namespace) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("inodes", Inode.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
 		edge.To("workflows", Workflow.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
+		edge.To("mirrors", Mirror.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
+		edge.To("mirror_activities", MirrorActivity.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
 		edge.To("instances", Instance.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
 		edge.To("logs", LogMsg.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
 		edge.To("vars", VarRef.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),

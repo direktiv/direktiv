@@ -22,6 +22,8 @@ import "pkg/flow/grpc/registries.proto";
 
 import "pkg/flow/grpc/build.proto";
 
+import "pkg/flow/grpc/mirror.proto";
+
 service Flow {
 	rpc Namespace (NamespaceRequest) returns (NamespaceResponse) {}
 	rpc Namespaces (NamespacesRequest) returns (NamespacesResponse) {}
@@ -168,6 +170,18 @@ service Flow {
 
 	rpc InstanceMetadata (InstanceMetadataRequest) returns (InstanceMetadataResponse) {}
 
+	rpc CreateNamespaceMirror (CreateNamespaceMirrorRequest) returns (CreateNamespaceResponse) {}
+	rpc CreateDirectoryMirror (CreateDirectoryMirrorRequest) returns (CreateDirectoryResponse) {}
+	rpc UpdateMirrorSettings (UpdateMirrorSettingsRequest) returns (google.protobuf.Empty) {}
+	rpc LockMirror(LockMirrorRequest) returns (google.protobuf.Empty) {}
+	rpc UnlockMirror(UnlockMirrorRequest) returns (google.protobuf.Empty) {}
+	rpc SoftSyncMirror(SoftSyncMirrorRequest) returns (google.protobuf.Empty) {}
+	rpc HardSyncMirror(HardSyncMirrorRequest) returns (google.protobuf.Empty) {}
+	rpc MirrorInfo(MirrorInfoRequest) returns (MirrorInfoResponse) {}
+	rpc MirrorInfoStream(MirrorInfoRequest) returns (stream MirrorInfoResponse) {}
+	rpc MirrorActivityLogs (MirrorActivityLogsRequest) returns (MirrorActivityLogsResponse) {}
+	rpc MirrorActivityLogsParcels (MirrorActivityLogsRequest) returns (stream MirrorActivityLogsResponse) {}
+	rpc CancelMirrorActivity (CancelMirrorActivityRequest) returns (google.protobuf.Empty) {}
 }
 
 service Internal {

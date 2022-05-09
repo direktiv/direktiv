@@ -122,6 +122,20 @@ func Type(v string) predicate.Inode {
 	})
 }
 
+// ExtendedType applies equality check predicate on the "extended_type" field. It's identical to ExtendedTypeEQ.
+func ExtendedType(v string) predicate.Inode {
+	return predicate.Inode(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldExtendedType), v))
+	})
+}
+
+// ReadOnly applies equality check predicate on the "readOnly" field. It's identical to ReadOnlyEQ.
+func ReadOnly(v bool) predicate.Inode {
+	return predicate.Inode(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldReadOnly), v))
+	})
+}
+
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
 func CreatedAtEQ(v time.Time) predicate.Inode {
 	return predicate.Inode(func(s *sql.Selector) {
@@ -524,6 +538,159 @@ func AttributesNotNil() predicate.Inode {
 	})
 }
 
+// ExtendedTypeEQ applies the EQ predicate on the "extended_type" field.
+func ExtendedTypeEQ(v string) predicate.Inode {
+	return predicate.Inode(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldExtendedType), v))
+	})
+}
+
+// ExtendedTypeNEQ applies the NEQ predicate on the "extended_type" field.
+func ExtendedTypeNEQ(v string) predicate.Inode {
+	return predicate.Inode(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldExtendedType), v))
+	})
+}
+
+// ExtendedTypeIn applies the In predicate on the "extended_type" field.
+func ExtendedTypeIn(vs ...string) predicate.Inode {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Inode(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldExtendedType), v...))
+	})
+}
+
+// ExtendedTypeNotIn applies the NotIn predicate on the "extended_type" field.
+func ExtendedTypeNotIn(vs ...string) predicate.Inode {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Inode(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldExtendedType), v...))
+	})
+}
+
+// ExtendedTypeGT applies the GT predicate on the "extended_type" field.
+func ExtendedTypeGT(v string) predicate.Inode {
+	return predicate.Inode(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldExtendedType), v))
+	})
+}
+
+// ExtendedTypeGTE applies the GTE predicate on the "extended_type" field.
+func ExtendedTypeGTE(v string) predicate.Inode {
+	return predicate.Inode(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldExtendedType), v))
+	})
+}
+
+// ExtendedTypeLT applies the LT predicate on the "extended_type" field.
+func ExtendedTypeLT(v string) predicate.Inode {
+	return predicate.Inode(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldExtendedType), v))
+	})
+}
+
+// ExtendedTypeLTE applies the LTE predicate on the "extended_type" field.
+func ExtendedTypeLTE(v string) predicate.Inode {
+	return predicate.Inode(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldExtendedType), v))
+	})
+}
+
+// ExtendedTypeContains applies the Contains predicate on the "extended_type" field.
+func ExtendedTypeContains(v string) predicate.Inode {
+	return predicate.Inode(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldExtendedType), v))
+	})
+}
+
+// ExtendedTypeHasPrefix applies the HasPrefix predicate on the "extended_type" field.
+func ExtendedTypeHasPrefix(v string) predicate.Inode {
+	return predicate.Inode(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldExtendedType), v))
+	})
+}
+
+// ExtendedTypeHasSuffix applies the HasSuffix predicate on the "extended_type" field.
+func ExtendedTypeHasSuffix(v string) predicate.Inode {
+	return predicate.Inode(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldExtendedType), v))
+	})
+}
+
+// ExtendedTypeIsNil applies the IsNil predicate on the "extended_type" field.
+func ExtendedTypeIsNil() predicate.Inode {
+	return predicate.Inode(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldExtendedType)))
+	})
+}
+
+// ExtendedTypeNotNil applies the NotNil predicate on the "extended_type" field.
+func ExtendedTypeNotNil() predicate.Inode {
+	return predicate.Inode(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldExtendedType)))
+	})
+}
+
+// ExtendedTypeEqualFold applies the EqualFold predicate on the "extended_type" field.
+func ExtendedTypeEqualFold(v string) predicate.Inode {
+	return predicate.Inode(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldExtendedType), v))
+	})
+}
+
+// ExtendedTypeContainsFold applies the ContainsFold predicate on the "extended_type" field.
+func ExtendedTypeContainsFold(v string) predicate.Inode {
+	return predicate.Inode(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldExtendedType), v))
+	})
+}
+
+// ReadOnlyEQ applies the EQ predicate on the "readOnly" field.
+func ReadOnlyEQ(v bool) predicate.Inode {
+	return predicate.Inode(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldReadOnly), v))
+	})
+}
+
+// ReadOnlyNEQ applies the NEQ predicate on the "readOnly" field.
+func ReadOnlyNEQ(v bool) predicate.Inode {
+	return predicate.Inode(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldReadOnly), v))
+	})
+}
+
+// ReadOnlyIsNil applies the IsNil predicate on the "readOnly" field.
+func ReadOnlyIsNil() predicate.Inode {
+	return predicate.Inode(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldReadOnly)))
+	})
+}
+
+// ReadOnlyNotNil applies the NotNil predicate on the "readOnly" field.
+func ReadOnlyNotNil() predicate.Inode {
+	return predicate.Inode(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldReadOnly)))
+	})
+}
+
 // HasNamespace applies the HasEdge predicate on the "namespace" edge.
 func HasNamespace() predicate.Inode {
 	return predicate.Inode(func(s *sql.Selector) {
@@ -627,6 +794,34 @@ func HasWorkflowWith(preds ...predicate.Workflow) predicate.Inode {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(WorkflowInverseTable, FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, false, WorkflowTable, WorkflowColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasMirror applies the HasEdge predicate on the "mirror" edge.
+func HasMirror() predicate.Inode {
+	return predicate.Inode(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(MirrorTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, MirrorTable, MirrorColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasMirrorWith applies the HasEdge predicate on the "mirror" edge with a given conditions (other predicates).
+func HasMirrorWith(preds ...predicate.Mirror) predicate.Inode {
+	return predicate.Inode(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(MirrorInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, MirrorTable, MirrorColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

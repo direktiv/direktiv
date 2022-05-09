@@ -289,6 +289,7 @@ func (sl *actionStateLogic) do(ctx context.Context, engine *engine, im *instance
 		caller.InstanceID = im.ID().String()
 		caller.State = sl.state.GetID()
 		caller.Step = im.Step()
+		caller.As = im.in.As
 
 		var subflowID string
 

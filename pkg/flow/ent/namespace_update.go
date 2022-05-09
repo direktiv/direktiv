@@ -16,6 +16,8 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/inode"
 	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	"github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
+	"github.com/direktiv/direktiv/pkg/flow/ent/mirror"
+	"github.com/direktiv/direktiv/pkg/flow/ent/mirroractivity"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/predicate"
 	"github.com/direktiv/direktiv/pkg/flow/ent/varref"
@@ -90,6 +92,36 @@ func (nu *NamespaceUpdate) AddWorkflows(w ...*Workflow) *NamespaceUpdate {
 		ids[i] = w[i].ID
 	}
 	return nu.AddWorkflowIDs(ids...)
+}
+
+// AddMirrorIDs adds the "mirrors" edge to the Mirror entity by IDs.
+func (nu *NamespaceUpdate) AddMirrorIDs(ids ...uuid.UUID) *NamespaceUpdate {
+	nu.mutation.AddMirrorIDs(ids...)
+	return nu
+}
+
+// AddMirrors adds the "mirrors" edges to the Mirror entity.
+func (nu *NamespaceUpdate) AddMirrors(m ...*Mirror) *NamespaceUpdate {
+	ids := make([]uuid.UUID, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
+	}
+	return nu.AddMirrorIDs(ids...)
+}
+
+// AddMirrorActivityIDs adds the "mirror_activities" edge to the MirrorActivity entity by IDs.
+func (nu *NamespaceUpdate) AddMirrorActivityIDs(ids ...uuid.UUID) *NamespaceUpdate {
+	nu.mutation.AddMirrorActivityIDs(ids...)
+	return nu
+}
+
+// AddMirrorActivities adds the "mirror_activities" edges to the MirrorActivity entity.
+func (nu *NamespaceUpdate) AddMirrorActivities(m ...*MirrorActivity) *NamespaceUpdate {
+	ids := make([]uuid.UUID, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
+	}
+	return nu.AddMirrorActivityIDs(ids...)
 }
 
 // AddInstanceIDs adds the "instances" edge to the Instance entity by IDs.
@@ -212,6 +244,48 @@ func (nu *NamespaceUpdate) RemoveWorkflows(w ...*Workflow) *NamespaceUpdate {
 		ids[i] = w[i].ID
 	}
 	return nu.RemoveWorkflowIDs(ids...)
+}
+
+// ClearMirrors clears all "mirrors" edges to the Mirror entity.
+func (nu *NamespaceUpdate) ClearMirrors() *NamespaceUpdate {
+	nu.mutation.ClearMirrors()
+	return nu
+}
+
+// RemoveMirrorIDs removes the "mirrors" edge to Mirror entities by IDs.
+func (nu *NamespaceUpdate) RemoveMirrorIDs(ids ...uuid.UUID) *NamespaceUpdate {
+	nu.mutation.RemoveMirrorIDs(ids...)
+	return nu
+}
+
+// RemoveMirrors removes "mirrors" edges to Mirror entities.
+func (nu *NamespaceUpdate) RemoveMirrors(m ...*Mirror) *NamespaceUpdate {
+	ids := make([]uuid.UUID, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
+	}
+	return nu.RemoveMirrorIDs(ids...)
+}
+
+// ClearMirrorActivities clears all "mirror_activities" edges to the MirrorActivity entity.
+func (nu *NamespaceUpdate) ClearMirrorActivities() *NamespaceUpdate {
+	nu.mutation.ClearMirrorActivities()
+	return nu
+}
+
+// RemoveMirrorActivityIDs removes the "mirror_activities" edge to MirrorActivity entities by IDs.
+func (nu *NamespaceUpdate) RemoveMirrorActivityIDs(ids ...uuid.UUID) *NamespaceUpdate {
+	nu.mutation.RemoveMirrorActivityIDs(ids...)
+	return nu
+}
+
+// RemoveMirrorActivities removes "mirror_activities" edges to MirrorActivity entities.
+func (nu *NamespaceUpdate) RemoveMirrorActivities(m ...*MirrorActivity) *NamespaceUpdate {
+	ids := make([]uuid.UUID, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
+	}
+	return nu.RemoveMirrorActivityIDs(ids...)
 }
 
 // ClearInstances clears all "instances" edges to the Instance entity.
@@ -537,6 +611,114 @@ func (nu *NamespaceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: workflow.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if nu.mutation.MirrorsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   namespace.MirrorsTable,
+			Columns: []string{namespace.MirrorsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: mirror.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := nu.mutation.RemovedMirrorsIDs(); len(nodes) > 0 && !nu.mutation.MirrorsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   namespace.MirrorsTable,
+			Columns: []string{namespace.MirrorsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: mirror.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := nu.mutation.MirrorsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   namespace.MirrorsTable,
+			Columns: []string{namespace.MirrorsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: mirror.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if nu.mutation.MirrorActivitiesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   namespace.MirrorActivitiesTable,
+			Columns: []string{namespace.MirrorActivitiesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: mirroractivity.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := nu.mutation.RemovedMirrorActivitiesIDs(); len(nodes) > 0 && !nu.mutation.MirrorActivitiesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   namespace.MirrorActivitiesTable,
+			Columns: []string{namespace.MirrorActivitiesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: mirroractivity.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := nu.mutation.MirrorActivitiesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   namespace.MirrorActivitiesTable,
+			Columns: []string{namespace.MirrorActivitiesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: mirroractivity.FieldID,
 				},
 			},
 		}
@@ -890,6 +1072,36 @@ func (nuo *NamespaceUpdateOne) AddWorkflows(w ...*Workflow) *NamespaceUpdateOne 
 	return nuo.AddWorkflowIDs(ids...)
 }
 
+// AddMirrorIDs adds the "mirrors" edge to the Mirror entity by IDs.
+func (nuo *NamespaceUpdateOne) AddMirrorIDs(ids ...uuid.UUID) *NamespaceUpdateOne {
+	nuo.mutation.AddMirrorIDs(ids...)
+	return nuo
+}
+
+// AddMirrors adds the "mirrors" edges to the Mirror entity.
+func (nuo *NamespaceUpdateOne) AddMirrors(m ...*Mirror) *NamespaceUpdateOne {
+	ids := make([]uuid.UUID, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
+	}
+	return nuo.AddMirrorIDs(ids...)
+}
+
+// AddMirrorActivityIDs adds the "mirror_activities" edge to the MirrorActivity entity by IDs.
+func (nuo *NamespaceUpdateOne) AddMirrorActivityIDs(ids ...uuid.UUID) *NamespaceUpdateOne {
+	nuo.mutation.AddMirrorActivityIDs(ids...)
+	return nuo
+}
+
+// AddMirrorActivities adds the "mirror_activities" edges to the MirrorActivity entity.
+func (nuo *NamespaceUpdateOne) AddMirrorActivities(m ...*MirrorActivity) *NamespaceUpdateOne {
+	ids := make([]uuid.UUID, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
+	}
+	return nuo.AddMirrorActivityIDs(ids...)
+}
+
 // AddInstanceIDs adds the "instances" edge to the Instance entity by IDs.
 func (nuo *NamespaceUpdateOne) AddInstanceIDs(ids ...uuid.UUID) *NamespaceUpdateOne {
 	nuo.mutation.AddInstanceIDs(ids...)
@@ -1010,6 +1222,48 @@ func (nuo *NamespaceUpdateOne) RemoveWorkflows(w ...*Workflow) *NamespaceUpdateO
 		ids[i] = w[i].ID
 	}
 	return nuo.RemoveWorkflowIDs(ids...)
+}
+
+// ClearMirrors clears all "mirrors" edges to the Mirror entity.
+func (nuo *NamespaceUpdateOne) ClearMirrors() *NamespaceUpdateOne {
+	nuo.mutation.ClearMirrors()
+	return nuo
+}
+
+// RemoveMirrorIDs removes the "mirrors" edge to Mirror entities by IDs.
+func (nuo *NamespaceUpdateOne) RemoveMirrorIDs(ids ...uuid.UUID) *NamespaceUpdateOne {
+	nuo.mutation.RemoveMirrorIDs(ids...)
+	return nuo
+}
+
+// RemoveMirrors removes "mirrors" edges to Mirror entities.
+func (nuo *NamespaceUpdateOne) RemoveMirrors(m ...*Mirror) *NamespaceUpdateOne {
+	ids := make([]uuid.UUID, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
+	}
+	return nuo.RemoveMirrorIDs(ids...)
+}
+
+// ClearMirrorActivities clears all "mirror_activities" edges to the MirrorActivity entity.
+func (nuo *NamespaceUpdateOne) ClearMirrorActivities() *NamespaceUpdateOne {
+	nuo.mutation.ClearMirrorActivities()
+	return nuo
+}
+
+// RemoveMirrorActivityIDs removes the "mirror_activities" edge to MirrorActivity entities by IDs.
+func (nuo *NamespaceUpdateOne) RemoveMirrorActivityIDs(ids ...uuid.UUID) *NamespaceUpdateOne {
+	nuo.mutation.RemoveMirrorActivityIDs(ids...)
+	return nuo
+}
+
+// RemoveMirrorActivities removes "mirror_activities" edges to MirrorActivity entities.
+func (nuo *NamespaceUpdateOne) RemoveMirrorActivities(m ...*MirrorActivity) *NamespaceUpdateOne {
+	ids := make([]uuid.UUID, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
+	}
+	return nuo.RemoveMirrorActivityIDs(ids...)
 }
 
 // ClearInstances clears all "instances" edges to the Instance entity.
@@ -1359,6 +1613,114 @@ func (nuo *NamespaceUpdateOne) sqlSave(ctx context.Context) (_node *Namespace, e
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: workflow.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if nuo.mutation.MirrorsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   namespace.MirrorsTable,
+			Columns: []string{namespace.MirrorsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: mirror.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := nuo.mutation.RemovedMirrorsIDs(); len(nodes) > 0 && !nuo.mutation.MirrorsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   namespace.MirrorsTable,
+			Columns: []string{namespace.MirrorsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: mirror.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := nuo.mutation.MirrorsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   namespace.MirrorsTable,
+			Columns: []string{namespace.MirrorsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: mirror.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if nuo.mutation.MirrorActivitiesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   namespace.MirrorActivitiesTable,
+			Columns: []string{namespace.MirrorActivitiesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: mirroractivity.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := nuo.mutation.RemovedMirrorActivitiesIDs(); len(nodes) > 0 && !nuo.mutation.MirrorActivitiesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   namespace.MirrorActivitiesTable,
+			Columns: []string{namespace.MirrorActivitiesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: mirroractivity.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := nuo.mutation.MirrorActivitiesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   namespace.MirrorActivitiesTable,
+			Columns: []string{namespace.MirrorActivitiesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: mirroractivity.FieldID,
 				},
 			},
 		}

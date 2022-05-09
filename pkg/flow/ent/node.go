@@ -16,6 +16,8 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	"github.com/direktiv/direktiv/pkg/flow/ent/instanceruntime"
 	"github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
+	"github.com/direktiv/direktiv/pkg/flow/ent/mirror"
+	"github.com/direktiv/direktiv/pkg/flow/ent/mirroractivity"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/ref"
 	"github.com/direktiv/direktiv/pkg/flow/ent/revision"
@@ -247,8 +249,8 @@ func (i *Inode) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     i.ID,
 		Type:   "Inode",
-		Fields: make([]*Field, 5),
-		Edges:  make([]*Edge, 4),
+		Fields: make([]*Field, 7),
+		Edges:  make([]*Edge, 5),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(i.CreatedAt); err != nil {
@@ -291,6 +293,22 @@ func (i *Inode) Node(ctx context.Context) (node *Node, err error) {
 		Name:  "attributes",
 		Value: string(buf),
 	}
+	if buf, err = json.Marshal(i.ExtendedType); err != nil {
+		return nil, err
+	}
+	node.Fields[5] = &Field{
+		Type:  "string",
+		Name:  "extended_type",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(i.ReadOnly); err != nil {
+		return nil, err
+	}
+	node.Fields[6] = &Field{
+		Type:  "bool",
+		Name:  "readOnly",
+		Value: string(buf),
+	}
 	node.Edges[0] = &Edge{
 		Type: "Namespace",
 		Name: "namespace",
@@ -328,6 +346,16 @@ func (i *Inode) Node(ctx context.Context) (node *Node, err error) {
 	err = i.QueryWorkflow().
 		Select(workflow.FieldID).
 		Scan(ctx, &node.Edges[3].IDs)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[4] = &Edge{
+		Type: "Mirror",
+		Name: "mirror",
+	}
+	err = i.QueryMirror().
+		Select(mirror.FieldID).
+		Scan(ctx, &node.Edges[4].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -629,7 +657,7 @@ func (lm *LogMsg) Node(ctx context.Context) (node *Node, err error) {
 		ID:     lm.ID,
 		Type:   "LogMsg",
 		Fields: make([]*Field, 2),
-		Edges:  make([]*Edge, 3),
+		Edges:  make([]*Edge, 4),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(lm.T); err != nil {
@@ -678,6 +706,226 @@ func (lm *LogMsg) Node(ctx context.Context) (node *Node, err error) {
 	if err != nil {
 		return nil, err
 	}
+	node.Edges[3] = &Edge{
+		Type: "MirrorActivity",
+		Name: "activity",
+	}
+	err = lm.QueryActivity().
+		Select(mirroractivity.FieldID).
+		Scan(ctx, &node.Edges[3].IDs)
+	if err != nil {
+		return nil, err
+	}
+	return node, nil
+}
+
+func (m *Mirror) Node(ctx context.Context) (node *Node, err error) {
+	node = &Node{
+		ID:     m.ID,
+		Type:   "Mirror",
+		Fields: make([]*Field, 9),
+		Edges:  make([]*Edge, 3),
+	}
+	var buf []byte
+	if buf, err = json.Marshal(m.URL); err != nil {
+		return nil, err
+	}
+	node.Fields[0] = &Field{
+		Type:  "string",
+		Name:  "url",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(m.Ref); err != nil {
+		return nil, err
+	}
+	node.Fields[1] = &Field{
+		Type:  "string",
+		Name:  "ref",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(m.Cron); err != nil {
+		return nil, err
+	}
+	node.Fields[2] = &Field{
+		Type:  "string",
+		Name:  "cron",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(m.PublicKey); err != nil {
+		return nil, err
+	}
+	node.Fields[3] = &Field{
+		Type:  "string",
+		Name:  "public_key",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(m.PrivateKey); err != nil {
+		return nil, err
+	}
+	node.Fields[4] = &Field{
+		Type:  "string",
+		Name:  "private_key",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(m.Passphrase); err != nil {
+		return nil, err
+	}
+	node.Fields[5] = &Field{
+		Type:  "string",
+		Name:  "passphrase",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(m.Commit); err != nil {
+		return nil, err
+	}
+	node.Fields[6] = &Field{
+		Type:  "string",
+		Name:  "commit",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(m.LastSync); err != nil {
+		return nil, err
+	}
+	node.Fields[7] = &Field{
+		Type:  "time.Time",
+		Name:  "last_sync",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(m.UpdatedAt); err != nil {
+		return nil, err
+	}
+	node.Fields[8] = &Field{
+		Type:  "time.Time",
+		Name:  "updated_at",
+		Value: string(buf),
+	}
+	node.Edges[0] = &Edge{
+		Type: "Namespace",
+		Name: "namespace",
+	}
+	err = m.QueryNamespace().
+		Select(namespace.FieldID).
+		Scan(ctx, &node.Edges[0].IDs)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[1] = &Edge{
+		Type: "Inode",
+		Name: "inode",
+	}
+	err = m.QueryInode().
+		Select(inode.FieldID).
+		Scan(ctx, &node.Edges[1].IDs)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[2] = &Edge{
+		Type: "MirrorActivity",
+		Name: "activities",
+	}
+	err = m.QueryActivities().
+		Select(mirroractivity.FieldID).
+		Scan(ctx, &node.Edges[2].IDs)
+	if err != nil {
+		return nil, err
+	}
+	return node, nil
+}
+
+func (ma *MirrorActivity) Node(ctx context.Context) (node *Node, err error) {
+	node = &Node{
+		ID:     ma.ID,
+		Type:   "MirrorActivity",
+		Fields: make([]*Field, 7),
+		Edges:  make([]*Edge, 3),
+	}
+	var buf []byte
+	if buf, err = json.Marshal(ma.Type); err != nil {
+		return nil, err
+	}
+	node.Fields[0] = &Field{
+		Type:  "string",
+		Name:  "type",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(ma.Status); err != nil {
+		return nil, err
+	}
+	node.Fields[1] = &Field{
+		Type:  "string",
+		Name:  "status",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(ma.CreatedAt); err != nil {
+		return nil, err
+	}
+	node.Fields[2] = &Field{
+		Type:  "time.Time",
+		Name:  "created_at",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(ma.UpdatedAt); err != nil {
+		return nil, err
+	}
+	node.Fields[3] = &Field{
+		Type:  "time.Time",
+		Name:  "updated_at",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(ma.EndAt); err != nil {
+		return nil, err
+	}
+	node.Fields[4] = &Field{
+		Type:  "time.Time",
+		Name:  "end_at",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(ma.Controller); err != nil {
+		return nil, err
+	}
+	node.Fields[5] = &Field{
+		Type:  "string",
+		Name:  "controller",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(ma.Deadline); err != nil {
+		return nil, err
+	}
+	node.Fields[6] = &Field{
+		Type:  "time.Time",
+		Name:  "deadline",
+		Value: string(buf),
+	}
+	node.Edges[0] = &Edge{
+		Type: "Namespace",
+		Name: "namespace",
+	}
+	err = ma.QueryNamespace().
+		Select(namespace.FieldID).
+		Scan(ctx, &node.Edges[0].IDs)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[1] = &Edge{
+		Type: "Mirror",
+		Name: "mirror",
+	}
+	err = ma.QueryMirror().
+		Select(mirror.FieldID).
+		Scan(ctx, &node.Edges[1].IDs)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[2] = &Edge{
+		Type: "LogMsg",
+		Name: "logs",
+	}
+	err = ma.QueryLogs().
+		Select(logmsg.FieldID).
+		Scan(ctx, &node.Edges[2].IDs)
+	if err != nil {
+		return nil, err
+	}
 	return node, nil
 }
 
@@ -686,7 +934,7 @@ func (n *Namespace) Node(ctx context.Context) (node *Node, err error) {
 		ID:     n.ID,
 		Type:   "Namespace",
 		Fields: make([]*Field, 4),
-		Edges:  make([]*Edge, 7),
+		Edges:  make([]*Edge, 9),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(n.CreatedAt); err != nil {
@@ -742,52 +990,72 @@ func (n *Namespace) Node(ctx context.Context) (node *Node, err error) {
 		return nil, err
 	}
 	node.Edges[2] = &Edge{
-		Type: "Instance",
-		Name: "instances",
+		Type: "Mirror",
+		Name: "mirrors",
 	}
-	err = n.QueryInstances().
-		Select(instance.FieldID).
+	err = n.QueryMirrors().
+		Select(mirror.FieldID).
 		Scan(ctx, &node.Edges[2].IDs)
 	if err != nil {
 		return nil, err
 	}
 	node.Edges[3] = &Edge{
-		Type: "LogMsg",
-		Name: "logs",
+		Type: "MirrorActivity",
+		Name: "mirror_activities",
 	}
-	err = n.QueryLogs().
-		Select(logmsg.FieldID).
+	err = n.QueryMirrorActivities().
+		Select(mirroractivity.FieldID).
 		Scan(ctx, &node.Edges[3].IDs)
 	if err != nil {
 		return nil, err
 	}
 	node.Edges[4] = &Edge{
-		Type: "VarRef",
-		Name: "vars",
+		Type: "Instance",
+		Name: "instances",
 	}
-	err = n.QueryVars().
-		Select(varref.FieldID).
+	err = n.QueryInstances().
+		Select(instance.FieldID).
 		Scan(ctx, &node.Edges[4].IDs)
 	if err != nil {
 		return nil, err
 	}
 	node.Edges[5] = &Edge{
-		Type: "CloudEvents",
-		Name: "cloudevents",
+		Type: "LogMsg",
+		Name: "logs",
 	}
-	err = n.QueryCloudevents().
-		Select(cloudevents.FieldID).
+	err = n.QueryLogs().
+		Select(logmsg.FieldID).
 		Scan(ctx, &node.Edges[5].IDs)
 	if err != nil {
 		return nil, err
 	}
 	node.Edges[6] = &Edge{
+		Type: "VarRef",
+		Name: "vars",
+	}
+	err = n.QueryVars().
+		Select(varref.FieldID).
+		Scan(ctx, &node.Edges[6].IDs)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[7] = &Edge{
+		Type: "CloudEvents",
+		Name: "cloudevents",
+	}
+	err = n.QueryCloudevents().
+		Select(cloudevents.FieldID).
+		Scan(ctx, &node.Edges[7].IDs)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[8] = &Edge{
 		Type: "Events",
 		Name: "namespacelisteners",
 	}
 	err = n.QueryNamespacelisteners().
 		Select(events.FieldID).
-		Scan(ctx, &node.Edges[6].IDs)
+		Scan(ctx, &node.Edges[8].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -1111,7 +1379,7 @@ func (w *Workflow) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     w.ID,
 		Type:   "Workflow",
-		Fields: make([]*Field, 2),
+		Fields: make([]*Field, 4),
 		Edges:  make([]*Edge, 9),
 	}
 	var buf []byte
@@ -1129,6 +1397,22 @@ func (w *Workflow) Node(ctx context.Context) (node *Node, err error) {
 	node.Fields[1] = &Field{
 		Type:  "string",
 		Name:  "logToEvents",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(w.ReadOnly); err != nil {
+		return nil, err
+	}
+	node.Fields[2] = &Field{
+		Type:  "bool",
+		Name:  "readOnly",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(w.UpdatedAt); err != nil {
+		return nil, err
+	}
+	node.Fields[3] = &Field{
+		Type:  "time.Time",
+		Name:  "updated_at",
 		Value: string(buf),
 	}
 	node.Edges[0] = &Edge{
@@ -1354,6 +1638,24 @@ func (c *Client) noder(ctx context.Context, table string, id uuid.UUID) (Noder, 
 			return nil, err
 		}
 		return n, nil
+	case mirror.Table:
+		n, err := c.Mirror.Query().
+			Where(mirror.ID(id)).
+			CollectFields(ctx, "Mirror").
+			Only(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return n, nil
+	case mirroractivity.Table:
+		n, err := c.MirrorActivity.Query().
+			Where(mirroractivity.ID(id)).
+			CollectFields(ctx, "MirrorActivity").
+			Only(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return n, nil
 	case namespace.Table:
 		n, err := c.Namespace.Query().
 			Where(namespace.ID(id)).
@@ -1572,6 +1874,32 @@ func (c *Client) noders(ctx context.Context, table string, ids []uuid.UUID) ([]N
 		nodes, err := c.LogMsg.Query().
 			Where(logmsg.IDIn(ids...)).
 			CollectFields(ctx, "LogMsg").
+			All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
+	case mirror.Table:
+		nodes, err := c.Mirror.Query().
+			Where(mirror.IDIn(ids...)).
+			CollectFields(ctx, "Mirror").
+			All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
+	case mirroractivity.Table:
+		nodes, err := c.MirrorActivity.Query().
+			Where(mirroractivity.IDIn(ids...)).
+			CollectFields(ctx, "MirrorActivity").
 			All(ctx)
 		if err != nil {
 			return nil, err

@@ -93,6 +93,30 @@ func (lm *LogMsgQuery) collectField(ctx *graphql.OperationContext, field graphql
 }
 
 // CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (m *MirrorQuery) CollectFields(ctx context.Context, satisfies ...string) *MirrorQuery {
+	if fc := graphql.GetFieldContext(ctx); fc != nil {
+		m = m.collectField(graphql.GetOperationContext(ctx), fc.Field, satisfies...)
+	}
+	return m
+}
+
+func (m *MirrorQuery) collectField(ctx *graphql.OperationContext, field graphql.CollectedField, satisfies ...string) *MirrorQuery {
+	return m
+}
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (ma *MirrorActivityQuery) CollectFields(ctx context.Context, satisfies ...string) *MirrorActivityQuery {
+	if fc := graphql.GetFieldContext(ctx); fc != nil {
+		ma = ma.collectField(graphql.GetOperationContext(ctx), fc.Field, satisfies...)
+	}
+	return ma
+}
+
+func (ma *MirrorActivityQuery) collectField(ctx *graphql.OperationContext, field graphql.CollectedField, satisfies ...string) *MirrorActivityQuery {
+	return ma
+}
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
 func (n *NamespaceQuery) CollectFields(ctx context.Context, satisfies ...string) *NamespaceQuery {
 	if fc := graphql.GetFieldContext(ctx); fc != nil {
 		n = n.collectField(graphql.GetOperationContext(ctx), fc.Field, satisfies...)

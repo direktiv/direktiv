@@ -3,6 +3,7 @@ package flow
 import (
 	"context"
 	"errors"
+	"os"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -14,6 +15,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entino "github.com/direktiv/direktiv/pkg/flow/ent/inode"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/util"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -161,6 +163,10 @@ func (flow *flow) Node(ctx context.Context, req *grpc.NodeRequest) (*grpc.NodeRe
 	resp.Node.Path = d.path
 	resp.Node.Parent = d.dir
 
+	if resp.Node.ExpandedType == "" {
+		resp.Node.ExpandedType = resp.Node.Type
+	}
+
 	return &resp, nil
 
 }
@@ -184,7 +190,7 @@ func (flow *flow) Directory(ctx context.Context, req *grpc.DirectoryRequest) (*g
 		return nil, err
 	}
 
-	if d.ino.Type != "directory" {
+	if d.ino.Type != util.InodeTypeDirectory {
 		return nil, ErrNotDir
 	}
 
@@ -201,6 +207,10 @@ func (flow *flow) Directory(ctx context.Context, req *grpc.DirectoryRequest) (*g
 		return nil, err
 	}
 
+	if resp.Node.ExpandedType == "" {
+		resp.Node.ExpandedType = resp.Node.Type
+	}
+
 	resp.Namespace = d.namespace()
 	resp.Node.Path = d.path
 	resp.Node.Parent = d.dir
@@ -214,6 +224,11 @@ func (flow *flow) Directory(ctx context.Context, req *grpc.DirectoryRequest) (*g
 		child := resp.Children.Edges[idx]
 		child.Node.Parent = resp.Node.Path
 		child.Node.Path = filepath.Join(resp.Node.Path, child.Node.Name)
+
+		if child.Node.ExpandedType == "" {
+			child.Node.ExpandedType = child.Node.Type
+		}
+
 	}
 
 	return &resp, nil
@@ -243,7 +258,7 @@ func (flow *flow) DirectoryStream(req *grpc.DirectoryRequest, srv grpc.Flow_Dire
 		return err
 	}
 
-	if d.ino.Type != "directory" {
+	if d.ino.Type != util.InodeTypeDirectory {
 		return ErrNotDir
 	}
 
@@ -265,6 +280,10 @@ resend:
 		return err
 	}
 
+	if resp.Node.ExpandedType == "" {
+		resp.Node.ExpandedType = resp.Node.Type
+	}
+
 	resp.Node.Path = d.path
 	resp.Node.Parent = d.dir
 
@@ -277,6 +296,10 @@ resend:
 		child := resp.Children.Edges[idx]
 		child.Node.Parent = resp.Node.Path
 		child.Node.Path = filepath.Join(resp.Node.Path, child.Node.Name)
+
+		if child.Node.ExpandedType == "" {
+			child.Node.ExpandedType = child.Node.Type
+		}
 	}
 
 	nhash = checksum(resp)
@@ -294,6 +317,87 @@ resend:
 	}
 
 	goto resend
+
+}
+
+type lookupInodeFromParentArgs struct {
+	pino *ent.Inode
+	name string
+}
+
+func (flow *flow) lookupInodeFromParent(ctx context.Context, args *lookupInodeFromParentArgs) (*ent.Inode, error) {
+
+	ino, err := args.pino.QueryChildren().Where(entino.NameEQ(args.name)).Only(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return ino, nil
+
+}
+
+type createDirectoryArgs struct {
+	inoc *ent.InodeClient
+
+	ns    *ent.Namespace
+	pino  *ent.Inode
+	path  string
+	super bool
+}
+
+func (flow *flow) createDirectory(ctx context.Context, args *createDirectoryArgs) (*ent.Inode, error) {
+
+	inoc := args.inoc
+	ns := args.ns
+	pino := args.pino
+	path := args.path
+	dir, base := filepath.Split(args.path)
+
+	if pino.Type != util.InodeTypeDirectory {
+		return nil, status.Error(codes.AlreadyExists, "parent node is not a directory")
+	}
+
+	if pino.ReadOnly && !args.super {
+		return nil, errors.New("cannot write into read-only directory")
+	}
+
+	ino, err := pino.QueryChildren().Where(entino.NameEQ(base)).Only(ctx)
+	if err != nil && !ent.IsNotFound(err) {
+		return nil, err
+	} else if err == nil {
+		if ino.Type != util.InodeTypeDirectory {
+			return nil, os.ErrExist
+		}
+		return ino, os.ErrExist
+	}
+
+	ino, err = inoc.Create().SetName(base).SetNamespace(ns).SetParent(pino).SetReadOnly(pino.ReadOnly).SetType(util.InodeTypeDirectory).Save(ctx)
+	if err != nil {
+		if strings.Contains(err.Error(), "duplicate key value violates unique constraint") {
+			return nil, os.ErrExist
+		}
+		return nil, err
+	}
+
+	pino, err = pino.Update().SetUpdatedAt(time.Now()).Save(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	flow.logToNamespace(ctx, time.Now(), ns, "Created directory '%s'.", path)
+	flow.pubsub.NotifyInode(pino)
+
+	// Broadcast
+	err = flow.BroadcastDirectory(ctx, BroadcastEventTypeCreate,
+		broadcastDirectoryInput{
+			Path:   path,
+			Parent: dir,
+		}, ns)
+	if err != nil {
+		return nil, err
+	}
+
+	return ino, nil
 
 }
 
@@ -327,52 +431,17 @@ func (flow *flow) CreateDirectory(ctx context.Context, req *grpc.CreateDirectory
 		return nil, err
 	}
 
-	if pino.ino.Type != "directory" {
-		return nil, status.Error(codes.AlreadyExists, "parent node is not a directory")
-	}
-
-	ino, err := inoc.Create().SetName(base).SetNamespace(ns).SetParent(pino.ino).SetType("directory").Save(ctx)
-	if err != nil {
-
-		if ent.IsConstraintError(err) && req.GetIdempotent() {
-			var d *nodeData
-			var e error
-
-			ns, err = flow.getNamespace(ctx, flow.db.Namespace, namespace)
-			if err != nil {
-				return nil, err
-			}
-
-			inoc = flow.db.Inode
-
-			d, e = flow.getInode(ctx, inoc, ns, req.GetPath(), false)
-			if e != nil {
-				return nil, err
-			}
-
-			if d.ino.Type != "directory" {
-				return nil, err
-			}
-
-			ino = d.ino
-
-			rollback(tx)
-			goto respond
-
-		}
-
-		return nil, err
-	}
+	ino, err := flow.createDirectory(ctx, &createDirectoryArgs{
+		inoc: tx.Inode,
+		ns:   ns,
+		pino: pino.ino,
+		path: path,
+	})
 
 	err = tx.Commit()
 	if err != nil {
 		return nil, err
 	}
-
-	flow.logToNamespace(ctx, time.Now(), ns, "Created directory '%s'.", path)
-	flow.pubsub.NotifyInode(pino.ino)
-
-respond:
 
 	var resp grpc.CreateDirectoryResponse
 
@@ -381,22 +450,108 @@ respond:
 		return nil, err
 	}
 
+	if resp.Node.ExpandedType == "" {
+		resp.Node.ExpandedType = resp.Node.Type
+	}
+
+	resp.Node.ReadOnly = false
+
 	resp.Namespace = namespace
 	resp.Node.Parent = dir
 	resp.Node.Path = path
 
-	// Broadcast
-	err = flow.BroadcastDirectory(ctx, BroadcastEventTypeCreate,
-		broadcastDirectoryInput{
-			Path:   resp.Node.Path,
-			Parent: resp.Node.Parent,
-		}, ns)
+	return &resp, nil
 
-	if err != nil {
-		return nil, err
+}
+
+type deleteNodeArgs struct {
+	inoc *ent.InodeClient
+
+	ns   *ent.Namespace
+	pino *ent.Inode
+	ino  *ent.Inode
+
+	path string
+
+	super     bool
+	recursive bool
+}
+
+func (flow *flow) deleteNode(ctx context.Context, args *deleteNodeArgs) error {
+
+	inoc := args.inoc
+
+	ns := args.ns
+	pino := args.pino
+	ino := args.ino
+
+	path := args.path
+	dir, base := filepath.Split(path)
+
+	if ino.Name == "" {
+		return status.Error(codes.InvalidArgument, "cannot delete root node")
 	}
 
-	return &resp, nil
+	if !args.super && pino.ReadOnly {
+		return status.Error(codes.InvalidArgument, "cannot delete contents of read-only directory")
+	}
+
+	if !args.recursive && ino.Type == util.InodeTypeDirectory {
+		k, err := ino.QueryChildren().Count(ctx)
+		if err != nil {
+			return err
+		}
+		if k != 0 {
+			return status.Error(codes.InvalidArgument, "refusing to delete non-empty directory without explicit recursive argument")
+		}
+		// TODO: don't delete if directory has stuff unless 'recursive' explicitly requested
+	}
+
+	err := inoc.DeleteOne(ino).Exec(ctx)
+	if err != nil {
+		return err
+	}
+
+	_, err = pino.Update().SetUpdatedAt(time.Now()).Save(ctx)
+	if err != nil {
+		return err
+	}
+
+	if ino.Type == util.InodeTypeWorkflow {
+		metricsWf.WithLabelValues(ns.Name, ns.Name).Dec()
+		metricsWfUpdated.WithLabelValues(ns.Name, path, ns.Name).Inc()
+
+		// Broadcast Event
+		err = flow.BroadcastWorkflow(ctx, BroadcastEventTypeDelete,
+			broadcastWorkflowInput{
+				Name:   base,
+				Path:   path,
+				Parent: dir,
+				Live:   false,
+			}, ns)
+
+		if err != nil {
+			return err
+		}
+	} else {
+		// Broadcast Event
+		err = flow.BroadcastDirectory(ctx, BroadcastEventTypeDelete,
+			broadcastDirectoryInput{
+				Path:   path,
+				Parent: dir,
+			}, ns)
+
+		if err != nil {
+			return err
+		}
+
+	}
+
+	flow.logToNamespace(ctx, time.Now(), ns, "Deleted %s '%s'.", ino.Type, path)
+	flow.pubsub.NotifyInode(pino)
+	flow.pubsub.CloseInode(ino)
+
+	return nil
 
 }
 
@@ -411,7 +566,6 @@ func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (
 	defer rollback(tx)
 
 	nsc := tx.Namespace
-	inoc := tx.Inode
 
 	d, err := flow.traverseToInode(ctx, nsc, req.GetNamespace(), req.GetPath())
 	if err != nil {
@@ -422,22 +576,16 @@ func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (
 		return nil, err
 	}
 
-	if d.path == "/" {
-		return nil, status.Error(codes.InvalidArgument, "cannot delete root node")
-	}
+	err = flow.deleteNode(ctx, &deleteNodeArgs{
+		inoc: tx.Inode,
+		ns:   d.ns(),
+		pino: d.ino.Edges.Parent,
+		ino:  d.ino,
 
-	if !req.GetRecursive() && d.ino.Type == "directory" {
-		k, err := d.ino.QueryChildren().Count(ctx)
-		if err != nil {
-			return nil, err
-		}
-		if k != 0 {
-			return nil, status.Error(codes.InvalidArgument, "refusing to delete non-empty directory without explicit recursive argument")
-		}
-		// TODO: don't delete if directory has stuff unless 'recursive' explicitly requested
-	}
+		path: d.path,
 
-	err = inoc.DeleteOne(d.ino).Exec(ctx)
+		recursive: req.GetRecursive(),
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -446,40 +594,6 @@ func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (
 	if err != nil {
 		return nil, err
 	}
-
-	if d.ino.Type == "workflow" {
-		metricsWf.WithLabelValues(d.ns().Name, d.ns().Name).Dec()
-		metricsWfUpdated.WithLabelValues(d.ns().Name, d.path, d.ns().Name).Inc()
-
-		// Broadcast Event
-		err = flow.BroadcastWorkflow(ctx, BroadcastEventTypeDelete,
-			broadcastWorkflowInput{
-				Name:   d.base,
-				Path:   d.path,
-				Parent: d.dir,
-				Live:   false,
-			}, d.ns())
-
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		// Broadcast Event
-		err = flow.BroadcastDirectory(ctx, BroadcastEventTypeDelete,
-			broadcastDirectoryInput{
-				Path:   d.path,
-				Parent: d.dir,
-			}, d.ns())
-
-		if err != nil {
-			return nil, err
-		}
-
-	}
-
-	flow.logToNamespace(ctx, time.Now(), d.ns(), "Deleted %s '%s'.", d.ino.Type, d.path)
-	flow.pubsub.NotifyInode(d.ino.Edges.Parent)
-	flow.pubsub.CloseInode(d.ino)
 
 respond:
 
@@ -518,6 +632,10 @@ func (flow *flow) RenameNode(ctx context.Context, req *grpc.RenameNodeRequest) (
 		return nil, errors.New("cannot move node into itself")
 	}
 
+	if d.ino.ReadOnly && d.ino.ExtendedType != util.InodeTypeGit {
+		return nil, errors.New("cannot move contents of read-only directory")
+	}
+
 	oldpd, err := flow.getInode(ctx, nil, d.ns(), d.dir, false)
 	if err != nil {
 		return nil, err
@@ -532,7 +650,21 @@ func (flow *flow) RenameNode(ctx context.Context, req *grpc.RenameNodeRequest) (
 		return nil, err
 	}
 
+	if pd.ino.ReadOnly {
+		return nil, errors.New("cannot write into read-only directory")
+	}
+
+	_, err = d.ino.Edges.Parent.Update().SetUpdatedAt(time.Now()).Save(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	ino, err = ino.Update().SetName(base).SetParent(pd.ino).Save(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = pd.ino.Update().SetUpdatedAt(time.Now()).Save(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -553,6 +685,12 @@ func (flow *flow) RenameNode(ctx context.Context, req *grpc.RenameNodeRequest) (
 	if err != nil {
 		return nil, err
 	}
+
+	if resp.Node.ExpandedType == "" {
+		resp.Node.ExpandedType = resp.Node.Type
+	}
+
+	resp.Node.ReadOnly = false
 
 	resp.Namespace = d.namespace()
 	resp.Node.Parent = dir

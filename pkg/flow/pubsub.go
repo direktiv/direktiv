@@ -19,6 +19,7 @@ const (
 	pubsubDisconnectFunction           = "disconnect"
 	pubsubDeleteTimerFunction          = "deleteTimer"
 	pubsubDeleteInstanceTimersFunction = "deleteInstanceTimers"
+	pubsubDeleteActivityTimersFunction = "deleteActivityTimers"
 	pubsubCancelWorkflowFunction       = "cancelWorkflow"
 	pubsubConfigureRouterFunction      = "configureRouter"
 )
@@ -525,6 +526,33 @@ func (pubsub *pubsub) CloseInode(ino *ent.Inode) {
 
 }
 
+func (pubsub *pubsub) mirror(ino *ent.Inode) string {
+
+	return fmt.Sprintf("mirror:%s", ino.ID.String())
+
+}
+
+func (pubsub *pubsub) SubscribeMirror(ino *ent.Inode) *subscription {
+
+	keys := pubsub.walkInodeKeys(ino)
+	keys = append(keys, pubsub.mirror(ino))
+
+	return pubsub.Subscribe(keys...)
+
+}
+
+func (pubsub *pubsub) NotifyMirror(ino *ent.Inode) {
+
+	pubsub.publish(pubsubNotify(pubsub.mirror(ino)))
+
+}
+
+func (pubsub *pubsub) CloseMirror(ino *ent.Inode) {
+
+	pubsub.publish(pubsubDisconnect(pubsub.mirror(ino)))
+
+}
+
 func (pubsub *pubsub) workflowVars(wf *ent.Workflow) string {
 
 	return fmt.Sprintf("wfvars:%s", wf.ID.String())
@@ -667,6 +695,26 @@ func (pubsub *pubsub) NotifyInstanceLogs(in *ent.Instance) {
 
 }
 
+func (pubsub *pubsub) activityLogs(act *ent.MirrorActivity) string {
+	return fmt.Sprintf("mactlogs:%s", act.ID.String())
+}
+
+func (pubsub *pubsub) SubscribeMirrorActivityLogs(act *ent.MirrorActivity) *subscription {
+
+	keys := []string{}
+
+	keys = append(keys, act.Edges.Namespace.ID.String(), pubsub.activityLogs(act))
+
+	return pubsub.Subscribe(keys...)
+
+}
+
+func (pubsub *pubsub) NotifyMirrorActivityLogs(act *ent.MirrorActivity) {
+
+	pubsub.publish(pubsubNotify(pubsub.activityLogs(act)))
+
+}
+
 func (pubsub *pubsub) instanceVars(in *ent.Instance) string {
 
 	return fmt.Sprintf("instvar:%s", in.ID.String())
@@ -734,6 +782,15 @@ func (pubsub *pubsub) ClusterDeleteInstanceTimers(name string) {
 
 	pubsub.publish(&PubsubUpdate{
 		Handler: pubsubDeleteInstanceTimersFunction,
+		Key:     name,
+	})
+
+}
+
+func (pubsub *pubsub) ClusterDeleteActivityTimers(name string) {
+
+	pubsub.publish(&PubsubUpdate{
+		Handler: pubsubDeleteActivityTimersFunction,
 		Key:     name,
 	})
 

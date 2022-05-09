@@ -31,6 +31,8 @@ type hooks struct {
 	Instance        []ent.Hook
 	InstanceRuntime []ent.Hook
 	LogMsg          []ent.Hook
+	Mirror          []ent.Hook
+	MirrorActivity  []ent.Hook
 	Namespace       []ent.Hook
 	Ref             []ent.Hook
 	Revision        []ent.Hook

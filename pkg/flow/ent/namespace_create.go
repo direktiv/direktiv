@@ -15,6 +15,8 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/inode"
 	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	"github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
+	"github.com/direktiv/direktiv/pkg/flow/ent/mirror"
+	"github.com/direktiv/direktiv/pkg/flow/ent/mirroractivity"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/varref"
 	"github.com/direktiv/direktiv/pkg/flow/ent/workflow"
@@ -118,6 +120,36 @@ func (nc *NamespaceCreate) AddWorkflows(w ...*Workflow) *NamespaceCreate {
 		ids[i] = w[i].ID
 	}
 	return nc.AddWorkflowIDs(ids...)
+}
+
+// AddMirrorIDs adds the "mirrors" edge to the Mirror entity by IDs.
+func (nc *NamespaceCreate) AddMirrorIDs(ids ...uuid.UUID) *NamespaceCreate {
+	nc.mutation.AddMirrorIDs(ids...)
+	return nc
+}
+
+// AddMirrors adds the "mirrors" edges to the Mirror entity.
+func (nc *NamespaceCreate) AddMirrors(m ...*Mirror) *NamespaceCreate {
+	ids := make([]uuid.UUID, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
+	}
+	return nc.AddMirrorIDs(ids...)
+}
+
+// AddMirrorActivityIDs adds the "mirror_activities" edge to the MirrorActivity entity by IDs.
+func (nc *NamespaceCreate) AddMirrorActivityIDs(ids ...uuid.UUID) *NamespaceCreate {
+	nc.mutation.AddMirrorActivityIDs(ids...)
+	return nc
+}
+
+// AddMirrorActivities adds the "mirror_activities" edges to the MirrorActivity entity.
+func (nc *NamespaceCreate) AddMirrorActivities(m ...*MirrorActivity) *NamespaceCreate {
+	ids := make([]uuid.UUID, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
+	}
+	return nc.AddMirrorActivityIDs(ids...)
 }
 
 // AddInstanceIDs adds the "instances" edge to the Instance entity by IDs.
@@ -401,6 +433,44 @@ func (nc *NamespaceCreate) createSpec() (*Namespace, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: workflow.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := nc.mutation.MirrorsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   namespace.MirrorsTable,
+			Columns: []string{namespace.MirrorsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: mirror.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := nc.mutation.MirrorActivitiesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   namespace.MirrorActivitiesTable,
+			Columns: []string{namespace.MirrorActivitiesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: mirroractivity.FieldID,
 				},
 			},
 		}

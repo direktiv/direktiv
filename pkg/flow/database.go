@@ -17,6 +17,7 @@ import (
 	entref "github.com/direktiv/direktiv/pkg/flow/ent/ref"
 	entvardata "github.com/direktiv/direktiv/pkg/flow/ent/vardata"
 	entvar "github.com/direktiv/direktiv/pkg/flow/ent/varref"
+	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
 )
 
@@ -146,7 +147,7 @@ func (srv *server) traverseToInode(ctx context.Context, nsc *ent.NamespaceClient
 
 }
 
-func (srv *server) reverseTraverseToInode(ctx context.Context, id string) (*nodeData, error) {
+func (srv *server) reverseTraverseToInode(ctx context.Context, inoc *ent.InodeClient, id string) (*nodeData, error) {
 
 	uid, err := uuid.Parse(id)
 	if err != nil {
@@ -156,7 +157,7 @@ func (srv *server) reverseTraverseToInode(ctx context.Context, id string) (*node
 
 	d := new(nodeData)
 
-	ino, err := srv.db.Inode.Get(ctx, uid)
+	ino, err := inoc.Get(ctx, uid)
 	if err != nil {
 		srv.sugar.Debugf("%s failed to resolve inode: %v", parent(), err)
 		return nil, err
@@ -251,7 +252,7 @@ func (srv *server) getInode(ctx context.Context, inoc *ent.InodeClient, ns *ent.
 			if IsNotFound(err) {
 
 				if createParents && inoc != nil && len(elems) > 1 {
-					child, err = inoc.Create().SetName(elems[0]).SetNamespace(ns).SetParent(ino).SetType("directory").Save(ctx)
+					child, err = inoc.Create().SetName(elems[0]).SetNamespace(ns).SetParent(ino).SetType(util.InodeTypeDirectory).Save(ctx)
 				} else {
 					err = &NotFoundError{
 						Label: fmt.Sprintf("inode not found at '%s'", path),
@@ -291,7 +292,7 @@ func (srv *server) getInode(ctx context.Context, inoc *ent.InodeClient, ns *ent.
 
 func (srv *server) getWorkflow(ctx context.Context, ino *ent.Inode) (*ent.Workflow, error) {
 
-	if ino.Type != "workflow" {
+	if ino.Type != util.InodeTypeWorkflow {
 		srv.sugar.Debugf("%s inode isn't a workflow", parent())
 		return nil, ErrNotWorkflow
 	}
@@ -385,7 +386,7 @@ func (srv *server) reverseTraverseToWorkflow(ctx context.Context, id string) (*w
 		return nil, err
 	}
 
-	nd, err := srv.reverseTraverseToInode(ctx, ino.ID.String())
+	nd, err := srv.reverseTraverseToInode(ctx, srv.db.Inode, ino.ID.String())
 	if err != nil {
 		srv.sugar.Debugf("%s failed to resolve inode's parent(s): %v", parent(), err)
 		return nil, err
@@ -415,6 +416,33 @@ func (d *refData) reference() string {
 	return d.ref.Name
 }
 
+type lookupRefAndRevArgs struct {
+	wf        *ent.Workflow
+	reference string
+}
+
+func (srv *server) lookupRefAndRev(ctx context.Context, args *lookupRefAndRevArgs) (*ent.Ref, error) {
+
+	if args.reference == "" {
+		args.reference = latest
+	}
+
+	ref, err := srv.getRef(ctx, args.wf, args.reference)
+	if err != nil {
+		return nil, err
+	}
+
+	rev, err := srv.getRevision(ctx, ref)
+	if err != nil {
+		return nil, err
+	}
+
+	ref.Edges.Revision = rev
+
+	return ref, nil
+
+}
+
 func (srv *server) traverseToRef(ctx context.Context, nsc *ent.NamespaceClient, namespace, path, reference string) (*refData, error) {
 
 	wd, err := srv.traverseToWorkflow(ctx, nsc, namespace, path)
@@ -425,11 +453,10 @@ func (srv *server) traverseToRef(ctx context.Context, nsc *ent.NamespaceClient, 
 
 	rd := new(refData)
 
-	if reference == "" {
-		reference = latest
-	}
-
-	ref, err := srv.getRef(ctx, wd.wf, reference)
+	ref, err := srv.lookupRefAndRev(ctx, &lookupRefAndRevArgs{
+		wf:        wd.wf,
+		reference: reference,
+	})
 	if err != nil {
 		srv.sugar.Debugf("%s failed to resolve workflow ref: %v", parent(), err)
 		return nil, err
@@ -438,13 +465,6 @@ func (srv *server) traverseToRef(ctx context.Context, nsc *ent.NamespaceClient, 
 	rd.wfData = wd
 	rd.ref = ref
 
-	rev, err := srv.getRevision(ctx, ref)
-	if err != nil {
-		srv.sugar.Debugf("%s failed to resolve ref revision: %v", parent(), err)
-		return nil, err
-	}
-
-	ref.Edges.Revision = rev
 	ref.Edges.Workflow = wd.wf
 	// NOTE: can't do this due to cycle: rev.Edges.Workflow = wd.wf
 
