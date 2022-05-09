@@ -34,8 +34,9 @@ type stateTransition struct {
 }
 
 type stateChild struct {
-	Id   string
-	Type string
+	Id          string
+	Type        string
+	ServiceName string
 }
 
 type stateLogic interface {
@@ -127,9 +128,10 @@ func getSecretsForInstance(ctx context.Context, engine *engine, im *instanceMemo
 }
 
 type multiactionTuple struct {
-	ID       string
-	Complete bool
-	Type     string
-	Attempts int
-	Results  interface{}
+	ID          string
+	Complete    bool
+	Type        string
+	Attempts    int
+	Results     interface{}
+	ServiceName string
 }

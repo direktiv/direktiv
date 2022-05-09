@@ -27,7 +27,7 @@ To load variables, use the `getter` state. See [Variables](../variables/variable
 
 | Parameter | Description | Type | Required |
 | --- | --- | --- | --- |
-| `key` | Variable name. | string | yes |
+| `key` | Variable name. | [Structured JQ](../instance-data/structured-jx.md) | yes |
 | `scope` | Selects the scope to which the variable belongs. If undefined, defaults to `instance`. See [Variables](../variables/variables.md). | yes | no |
 | `as` | Names the resulting data. If left unspecified, the `key` will be used instead. | string | no |
 

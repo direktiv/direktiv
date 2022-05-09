@@ -3,8 +3,6 @@ package model
 import (
 	"errors"
 	"fmt"
-
-	"github.com/direktiv/direktiv/pkg/util"
 )
 
 // GetterState defines the state for a getter
@@ -17,9 +15,9 @@ type GetterState struct {
 
 // GetterDefinition takes a scope and key to work out where the variable goes
 type GetterDefinition struct {
-	Scope string `yaml:"scope,omitempty"`
-	Key   string `yaml:"key"`
-	As    string `yaml:"as"`
+	Scope string      `yaml:"scope,omitempty"`
+	Key   interface{} `yaml:"key"`
+	As    string      `yaml:"as"`
 }
 
 // Validate validates against the getter definition
@@ -35,16 +33,8 @@ func (o *GetterDefinition) Validate() error {
 		return ErrVarScope
 	}
 
-	if o.Key == "" {
+	if o.Key == nil || o.Key == "" {
 		return errors.New(`key required`)
-	}
-
-	if !util.VarNameRegex.MatchString(o.Key) {
-		return fmt.Errorf("key is invalid: must start with a letter and only contain letters, numbers and '_'")
-	}
-
-	if ok := util.MatchesVarRegex(o.Key); !ok {
-		return fmt.Errorf("variable key must match regex: %s", util.RegexPattern)
 	}
 
 	return nil

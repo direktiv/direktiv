@@ -6,8 +6,8 @@
   timeout: PT15M
   event:
     type: com.github.pull.create
-  context:
-    subject: '123'
+    context:
+      subject: '123'
 ```
 
 ## ConsumeEventStateDefinition

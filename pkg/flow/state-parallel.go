@@ -66,8 +66,9 @@ func (sl *parallelStateLogic) LivingChildren(ctx context.Context, engine *engine
 			continue
 		}
 		children = append(children, stateChild{
-			Id:   logic.ID,
-			Type: logic.Type,
+			Id:          logic.ID,
+			Type:        logic.Type,
+			ServiceName: logic.ServiceName,
 		})
 	}
 
@@ -121,16 +122,18 @@ func (sl *parallelStateLogic) dispatchAction(ctx context.Context, engine *engine
 	case model.ReusableContainerFunctionType:
 
 		uid := uuid.New()
-		logic = multiactionTuple{
-			ID:       uid.String(),
-			Type:     "isolate",
-			Attempts: attempt,
-		}
 
 		var ar *functionRequest
 		ar, err = engine.newIsolateRequest(ctx, im, sl.state.GetID(), 0, fn, inputData, uid, false, action.Files)
 		if err != nil {
 			return
+		}
+
+		logic = multiactionTuple{
+			ID:          uid.String(),
+			Type:        "isolate",
+			Attempts:    attempt,
+			ServiceName: ar.Container.Service,
 		}
 
 		err = engine.doActionRequest(ctx, ar)

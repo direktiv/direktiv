@@ -101,8 +101,9 @@ func (sl *actionStateLogic) LivingChildren(ctx context.Context, engine *engine, 
 		}
 
 		children = append(children, stateChild{
-			Id:   uid.String(),
-			Type: "isolate",
+			Id:          uid.String(),
+			Type:        "isolate",
+			ServiceName: sd.ServiceName,
 		})
 
 	} else {
@@ -129,9 +130,10 @@ func (sl *actionStateLogic) MetadataJQ() interface{} {
 }
 
 type actionStateSavedata struct {
-	Op       string
-	Id       string
-	Attempts int
+	Op          string
+	Id          string
+	Attempts    int
+	ServiceName string
 }
 
 func (sd *actionStateSavedata) Marshal() []byte {
@@ -178,7 +180,12 @@ func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory,
 
 	switch fnt {
 	case model.ReusableContainerFunctionType:
+
 		con := fn.(*model.ReusableFunctionDefinition)
+
+		scale := int32(con.Scale)
+		size := int32(con.Size)
+
 		ar.Container.Image = con.Image
 		ar.Container.Cmd = con.Cmd
 		ar.Container.Size = con.Size
@@ -191,6 +198,10 @@ func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory,
 			Revision:      &revID,
 			Namespace:     &nsID,
 			NamespaceName: &ar.Workflow.NamespaceName,
+			Image:         &con.Image,
+			Cmd:           &con.Cmd,
+			MinScale:      &scale,
+			Size:          &size,
 		})
 		if err != nil {
 			panic(err)
@@ -313,19 +324,20 @@ func (sl *actionStateLogic) do(ctx context.Context, engine *engine, im *instance
 
 		uid := uuid.New()
 
-		sd := &actionStateSavedata{
-			Op:       "do",
-			Id:       uid.String(),
-			Attempts: attempt,
-		}
-
-		err = engine.SetMemory(ctx, im, sd)
+		var ar *functionRequest
+		ar, err = engine.newIsolateRequest(ctx, im, sl.state.GetID(), wfto, fn, inputData, uid, sl.state.Async, files)
 		if err != nil {
 			return
 		}
 
-		var ar *functionRequest
-		ar, err = engine.newIsolateRequest(ctx, im, sl.state.GetID(), wfto, fn, inputData, uid, sl.state.Async, files)
+		sd := &actionStateSavedata{
+			Op:          "do",
+			Id:          uid.String(),
+			Attempts:    attempt,
+			ServiceName: ar.Container.Service,
+		}
+
+		err = engine.SetMemory(ctx, im, sd)
 		if err != nil {
 			return
 		}

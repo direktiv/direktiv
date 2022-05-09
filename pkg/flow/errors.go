@@ -23,6 +23,8 @@ var (
 	ErrCodeAllBranchesFailed      = "direktiv.parallel.allFailed"
 	ErrCodeNotArray               = "direktiv.foreach.badArray"
 	ErrCodeFailedSchemaValidation = "direktiv.schema.failed"
+	ErrCodeJQNotString            = "direktiv.jq.notString"
+	ErrCodeInvalidVariableKey     = "direktiv.var.invalidKey"
 )
 
 var (

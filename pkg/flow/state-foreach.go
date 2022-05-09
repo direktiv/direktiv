@@ -66,8 +66,9 @@ func (sl *foreachStateLogic) LivingChildren(ctx context.Context, engine *engine,
 			continue
 		}
 		children = append(children, stateChild{
-			Id:   logic.ID,
-			Type: logic.Type,
+			Id:          logic.ID,
+			Type:        logic.Type,
+			ServiceName: logic.ServiceName,
 		})
 	}
 
@@ -134,11 +135,6 @@ func (sl *foreachStateLogic) do(ctx context.Context, engine *engine, im *instanc
 	case model.ReusableContainerFunctionType:
 
 		uid := uuid.New()
-		logic = multiactionTuple{
-			ID:       uid.String(),
-			Type:     "isolate",
-			Attempts: attempt,
-		}
 
 		// set the timeout to the max of the state
 		var wfto int
@@ -151,6 +147,13 @@ func (sl *foreachStateLogic) do(ctx context.Context, engine *engine, im *instanc
 		ar, err = engine.newIsolateRequest(ctx, im, sl.state.GetID(), wfto, fn, inputData, uid, false, sl.state.Action.Files)
 		if err != nil {
 			return
+		}
+
+		logic = multiactionTuple{
+			ID:          uid.String(),
+			Type:        "isolate",
+			Attempts:    attempt,
+			ServiceName: ar.Container.Service,
 		}
 
 		err = engine.doActionRequest(ctx, ar)

@@ -6,12 +6,12 @@ import (
 	"fmt"
 	"io"
 	"math"
+	"net/http"
 	"os"
 	"regexp"
 	"sort"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/bradfitz/slice"
@@ -38,8 +38,8 @@ import (
 
 	"knative.dev/pkg/apis"
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
-
 	v1 "knative.dev/serving/pkg/apis/serving/v1"
+
 	"knative.dev/serving/pkg/client/clientset/versioned"
 )
 
@@ -93,10 +93,6 @@ const (
 
 const (
 	watcherTimeout = 60 * time.Minute
-)
-
-var (
-	mtx sync.Mutex
 )
 
 type serviceExportInfo struct {
@@ -2380,4 +2376,66 @@ func prepareServiceForExport(latestSvc *servingv1.Service, earliestRevision *v1.
 	exportedSvc.Spec.Template.Spec = earliestRevision.Spec
 
 	return &exportedSvc
+}
+
+func (is *functionsServer) CancelWorfklow(ctx context.Context, in *igrpc.CancelWorkflowRequest) (*emptypb.Empty, error) {
+
+	label := "serving.knative.dev/service"
+
+	svn := in.GetServiceName()
+	aid := in.GetActionID()
+
+	if svn == "" || aid == "" {
+		return &empty, fmt.Errorf("service name or action id can not be empty")
+	}
+
+	logger.Infof("cancelling action %s on %s", aid, svn)
+
+	labelSelector := metav1.LabelSelector{MatchLabels: map[string]string{
+		label: svn,
+	}}
+
+	listOptions := metav1.ListOptions{
+		LabelSelector: labels.Set(labelSelector.MatchLabels).String(),
+	}
+
+	cs, err := getClientSet()
+	if err != nil {
+		logger.Errorf("error getting client set: %v", err)
+		return &empty, err
+	}
+
+	podList, err := cs.CoreV1().Pods(functionsConfig.Namespace).List(context.Background(),
+		listOptions)
+
+	if err != nil {
+		logger.Errorf("could not get cancel list: %v", err)
+		return &empty, err
+	}
+
+	for i := range podList.Items {
+
+		fmt.Printf("@@@@@@@@@@@@@@@@@@@@@@@@ %v\n", podList.Items[i].Name)
+		svc := podList.Items[i].ObjectMeta.Labels[label]
+		addr := fmt.Sprintf("http://%s.%s/cancel", svc, functionsConfig.Namespace)
+
+		req, err := http.NewRequest(http.MethodPost, addr, nil)
+		if err != nil {
+			return &empty, err
+		}
+		req.Header.Add("Direktiv-ActionID", aid)
+
+		client := http.DefaultClient
+		_, err = client.Do(req)
+		if err != nil {
+			logger.Errorf("error sending delete request: %v", err)
+		}
+
+		// serving.knative.dev/service=workflow-2790318621118388870-get1
+
+		fmt.Printf("CANCELLING #################################### %v at %v\n", podList.Items[i].Name, addr)
+	}
+
+	return &empty, nil
+
 }

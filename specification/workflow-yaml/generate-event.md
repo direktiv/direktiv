@@ -5,9 +5,9 @@
   type: generateEvent
   event:
     type: myeventtype
-  source: myeventsource
-  data: 'jq(.data)'
-  datacontenttype: application/json
+    source: myeventsource
+    data: 'jq(.data)'
+    datacontenttype: application/json
 ```
 
 ## GenerateEventStateDefinition 
