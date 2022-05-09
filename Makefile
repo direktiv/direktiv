@@ -12,6 +12,9 @@ RELEASE := ""
 RELEASE_TAG = $(shell v='$${RELEASE:+:}$${RELEASE}'; echo "$${v%.*}")
 FULL_VERSION := $(shell v='$${RELEASE}$${RELEASE:+-}${GIT_HASH}${GIT_DIRTY}'; echo "$${v%.*}")
 
+# set to .all to build from .all docker images
+DOCKER_BASE := ""
+
 .SECONDARY:
 
 .PHONY: help
@@ -162,7 +165,7 @@ scan-%: push-%
 
 .PHONY: image-%
 image-%: build/%-binary
-	DOCKER_BUILDKIT=1 docker build -t direktiv-$* -f build/docker/$*/Dockerfile .
+	DOCKER_BUILDKIT=1 docker build -t direktiv-$* -f build/docker/$*/Dockerfile${DOCKER_BASE} .
 	@echo "Make $@: SUCCESS"
 
 .PHONY: push-%
