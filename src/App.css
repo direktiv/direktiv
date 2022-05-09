@@ -125,6 +125,17 @@ body {
   font-weight: bold;
 }
 
+.btn.light.loading {
+  opacity: 90% !important;
+  pointer-events: none !important;
+  cursor: unset !important;
+
+  animation : shimmer 4s infinite;
+  animation-timing-function: linear;
+  background: linear-gradient(45deg, rgb(222, 222, 222) 0%, rgb(255, 255, 255) 50%, rgb(200, 200, 200) 100%); 
+  background-size: 500px 100%;
+}
+
 .btn.small {
   height: 18px;
   line-height: 18px;
@@ -177,7 +188,18 @@ input {
   border-radius: var(--theme-border-radius);
 }
 
-input:focus-visible {
+textarea {
+  font-family: var(--font-family);
+  min-width: 0px;
+  width: 100%;
+  padding-left: 8px;
+  font-size: 14px;
+
+  border: var(--border);
+  border-radius: var(--theme-border-radius);
+}
+
+input:focus-visible,textarea:focus-visible {
   outline: solid 1px var(--theme-brand-blue);
 }
 

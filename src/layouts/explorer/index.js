@@ -3,7 +3,7 @@ import './style.css';
 
 import ContentPanel, { ContentPanelBody, ContentPanelHeaderButton, ContentPanelHeaderButtonIcon, ContentPanelTitle, ContentPanelTitleIcon } from '../../components/content-panel';
 import FlexBox from '../../components/flexbox';
-import { VscAdd, VscClose,  VscSearch, VscEdit, VscTrash, VscFolderOpened, VscCode } from 'react-icons/vsc';
+import { VscAdd, VscClose,  VscSearch, VscEdit, VscTrash, VscFolderOpened, VscCode, VscRepo } from 'react-icons/vsc';
 import { Config, GenerateRandomKey } from '../../util';
 import { FiFolder } from 'react-icons/fi';
 import { FcWorkflow } from 'react-icons/fc';
@@ -16,13 +16,20 @@ import Button from '../../components/button';
 import HelpIcon from "../../components/help"
 import Loader from '../../components/loader';
 import WorkflowPage from './workflow';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import WorkflowRevisions from './workflow/revision';
 import WorkflowPod from './workflow/pod'
 import { AutoSizer } from 'react-virtualized';
 import Pagination from '../../components/pagination';
 import Alert from '../../components/alert';
 import NotFound from '../notfound';
+
+import * as dayjs from "dayjs"
+import relativeTime from "dayjs/plugin/relativeTime";
+import utc from "dayjs/plugin/utc"
+import Tabs from '../../components/tabs';
+import { useRef } from 'react';
+import { MirrorReadOnlyBadge } from '../mirror';
 
 const PAGE_SIZE = 10
 const apiHelps = (namespace) => {
@@ -124,7 +131,7 @@ function Explorer(props) {
     const params = useParams()
     const [searchParams] = useSearchParams() // removed 'setSearchParams' from square brackets (this should not affect anything: search 'destructuring assignment')
 
-    const {namespace}  = props
+    const {namespace, setBreadcrumbChildren}  = props
     let filepath = `/`
     if(!namespace){
         return <></>
@@ -148,7 +155,7 @@ function Explorer(props) {
 
     return(
         <>
-            <ExplorerList  namespace={namespace} path={filepath}/>
+            <ExplorerList  namespace={namespace} path={filepath} setBreadcrumbChildren={setBreadcrumbChildren}/>
         </>
     )
 }
@@ -168,6 +175,9 @@ function SearchBar(props) {
     );
 }
 
+dayjs.extend(utc)
+dayjs.extend(relativeTime);
+
 const orderFieldDictionary = {
     "Name": "NAME", // Default
     "Created": "CREATED"
@@ -176,7 +186,9 @@ const orderFieldDictionary = {
 const orderFieldKeys = Object.keys(orderFieldDictionary)
 
 function ExplorerList(props) {
-    const {namespace, path} = props
+    const {namespace, path, setBreadcrumbChildren} = props
+    const setBreadcrumbChildrenRef = useRef(setBreadcrumbChildren)
+
     const navigate= useNavigate()
     
     //api helper modal
@@ -186,14 +198,33 @@ function ExplorerList(props) {
     
     const [name, setName] = useState("")
     const [load, setLoad] = useState(true)
+    const [tabIndex, setTabIndex] = useState(0)
+    const [isReadOnly, setIsReadOnly] = useState(false)
 
     const [orderFieldKey, setOrderFieldKey] = useState(orderFieldKeys[0])
      
     const [queryParams, setQueryParams] = useState([`first=${PAGE_SIZE}`])
-    const {data, err, templates, pageInfo, createNode, deleteNode, renameNode, totalCount } = useNodes(Config.url, true, namespace, path, localStorage.getItem("apikey"), ...queryParams, `order.field=${orderFieldDictionary[orderFieldKey]}`, `filter.field=NAME`, `filter.val=${search}`, `filter.type=CONTAINS`)
+    const {data, err, templates, pageInfo, createNode, createMirrorNode, deleteNode, renameNode, totalCount } = useNodes(Config.url, true, namespace, path, localStorage.getItem("apikey"), ...queryParams, `order.field=${orderFieldDictionary[orderFieldKey]}`, `filter.field=NAME`, `filter.val=${search}`, `filter.type=CONTAINS`)
+    // Setup Hook if expanded node type is git
 
     const [wfData, setWfData] = useState(templates["noop"].data)
     const [wfTemplate, setWfTemplate] = useState("noop")
+
+    useEffect(() => {
+        console.log("data = ", data)
+    }, [data])
+
+
+    // Mirror
+    const [mirrorSettings, setMirrorSettings] = useState({
+        "url": "",
+        "ref": "",
+        "cron": "",
+        "passphrase": "",
+        "publicKey": "",
+        "privateKey": "",
+    })
+
 
     function resetQueryParams() {
         setQueryParams([`first=${PAGE_SIZE}`])
@@ -204,8 +235,39 @@ function ExplorerList(props) {
     useEffect(()=>{
         if(data !== null || err !== null) {
             setLoad(false)
+            setIsReadOnly(data?.node?.readOnly)
         }
     },[data, err])
+
+    useEffect(() => {
+        if (!setBreadcrumbChildrenRef.current) {
+            return
+        }
+
+        setBreadcrumbChildrenRef.current((
+            isReadOnly ? (
+                <FlexBox className="center row gap" style={{ justifyContent: "flex-end", paddingRight: "6px" }}>
+                     <MirrorReadOnlyBadge/>
+                </FlexBox>) : (<></>)
+        ))
+
+    }, [isReadOnly])
+
+    // Keep Refs up to date
+    useEffect(() => {
+        setBreadcrumbChildrenRef.current = setBreadcrumbChildren
+    }, [setBreadcrumbChildren])
+
+    // Unmount cleanup breadcrumb children
+    useEffect(() => {
+        return (() => {
+            if (setBreadcrumbChildrenRef.current) {
+                setBreadcrumbChildrenRef.current(<></>)
+            }
+        })
+    }, [])
+
+
 
     // Reset pagination queries when searching
     useEffect(()=>{
@@ -363,50 +425,107 @@ function ExplorerList(props) {
                     </ContentPanelHeaderButton>
                     <ContentPanelHeaderButton className="explorer-action-btn">
                         <div>
-                            <Modal title="New Directory" 
-                                modalStyle={{width: "240px"}}
+                            <Modal title="New Directory"
+                                modalStyle={{ width: "240px" }}
                                 escapeToCancel
                                 button={(
-                                    <div style={{display:"flex"}}>
+                                    <div style={{ display: "flex" }}>
                                         <ContentPanelHeaderButtonIcon>
-                                            <VscAdd/>
+                                            <VscAdd />
                                         </ContentPanelHeaderButtonIcon>
                                         <span className="hide-on-small">Directory</span>
                                         <span className="hide-on-medium-and-up">Dir</span>
                                     </div>
-                                )}  
-                                onClose={()=>{
+                                )}
+                                onClose={() => {
                                     setName("")
-                                
+
                                 }}
                                 actionButtons={[
                                     ButtonDefinition("Add", async () => {
-                                        await createNode(name, "directory")
-                                    }, `small blue ${name.trim() ? "" : "disabled"}`, ()=>{}, true, false, true),
+                                        if (tabIndex === 0) {
+                                            await createNode(name, "directory")
+                                        } else {
+                                            await createMirrorNode(name, mirrorSettings)
+                                        }
+                                    }, `small blue ${name.trim() ? "" : "disabled"}`, () => { }, true, false, true),
                                     ButtonDefinition("Cancel", () => {
-                                    }, "small light", ()=>{}, true, false)
+                                    }, "small light", () => { }, true, false)
                                 ]}
 
                                 keyDownActions={[
                                     KeyDownDefinition("Enter", async () => {
-                                        await createNode(name, "directory")
-                                        setName("")
-                                    }, ()=>{}, true)
+                                        if (tabIndex === 0) {
+                                            await createNode(name, "directory")
+                                        } else {
+                                            await createMirrorNode(name, mirrorSettings)
+                                        }
+                                    }, () => { }, true)
                                 ]}
 
                                 requiredFields={[
-                                    {tip: "directory name is required", value: name}
+                                    { tip: "directory name is required", value: name }
                                 ]}
 
                             >
-                                <FlexBox  className="col gap" style={{fontSize: "12px"}}>
-                                    <div style={{width: "100%", paddingRight: "12px", display: "flex"}}>
-                                        <input value={name} onChange={(e)=>setName(e.target.value)} autoFocus placeholder="Enter a directory name" />
-                                    </div>
-                                </FlexBox>
+                                <Tabs
+                                    // TODO: change wf-execute-input => tabbed-form
+                                    id={"wf-execute-input"}
+                                    key={"inputForm"}
+                                    callback={setTabIndex}
+                                    tabIndex={tabIndex}
+                                    style={{ minWidth: "280px" }}
+                                    headers={["Standard", "Mirror"]}
+                                    tabs={[(
+                                        <FlexBox className="col gap" style={{ fontSize: "12px" }}>
+                                            <div style={{ width: "100%", paddingRight: "12px", display: "flex" }}>
+                                                <input value={name} onChange={(e) => setName(e.target.value)} autoFocus placeholder="Enter a directory name" />
+                                            </div>
+                                        </FlexBox>), (
+                                        <FlexBox className="col gap" style={{ fontSize: "12px" }}>
+                                            <div style={{ width: "100%", paddingRight: "12px", display: "flex" }}>
+                                                <input autoFocus value={name} onChange={(e) => setName(e.target.value)} placeholder="Enter a directory name" />
+                                            </div>
+                                            {Object.entries(mirrorSettings).map(([key, value]) => {
+                                                return (
+                                                    <div style={{ width: "100%", paddingRight: "12px", display: "flex" }}>
+                                                        {key === "passphrase" || key === "publicKey" || key === "privateKey" ?
+                                                            <textarea style={{ width: "100%", resize: "none" }} value={value} onChange={(e) => {
+                                                                let newSettings = mirrorSettings
+                                                                newSettings[key] = e.target.value
+                                                                setMirrorSettings({ ...newSettings })
+                                                            }} autoFocus placeholder={`Enter Mirror ${key.charAt(0).toUpperCase() + key.slice(1)}`} />
+                                                            :
+                                                            <input style={{ width: "100%" }} value={value} onChange={(e) => {
+                                                                let newSettings = mirrorSettings
+                                                                newSettings[key] = e.target.value
+                                                                setMirrorSettings({ ...newSettings })
+                                                            }} autoFocus placeholder={`Enter Mirror ${key.charAt(0).toUpperCase() + key.slice(1)}`} />
+                                                        }
+
+                                                    </div>
+                                                )
+                                            })}
+                                        </FlexBox>
+                                    )]} />
                             </Modal>
                         </div>
                     </ContentPanelHeaderButton>
+                    {
+                        data && data.node.expandedType === "git" ?
+                            <>
+                                <ContentPanelHeaderButton className="explorer-action-btn">
+                                    <ContentPanelHeaderButtonIcon>
+                                        <VscRepo />
+                                    </ContentPanelHeaderButtonIcon>
+                                    <Link to={`/n/${namespace}/mirror${path}`}>
+                                        Mirror Info
+                                    </Link>
+                                </ContentPanelHeaderButton>
+                            </>
+                            :
+                            <></>
+                    }
                     <div className="explorer-sort-by explorer-action-btn hide-on-small">
                     <FlexBox className="gap" style={{marginRight: "8px"}}>
                         <FlexBox className="center">
@@ -453,7 +572,7 @@ function ExplorerList(props) {
                         <>
                         {data.children.edges.map((obj) => {
                             if (obj.node.type === "directory") {
-                                return (<DirListItem namespace={namespace} renameNode={renameNode} deleteNode={deleteNode} path={obj.node.path} key={GenerateRandomKey("explorer-item-")} name={obj.node.name} resetQueryParams={resetQueryParams}/>)
+                                return (<DirListItem isGit={data && obj.node.expandedType === "git"} namespace={namespace} renameNode={renameNode} deleteNode={deleteNode} path={obj.node.path} key={GenerateRandomKey("explorer-item-")} name={obj.node.name} resetQueryParams={resetQueryParams}/>)
                             } else if (obj.node.type === "workflow") {
                                 return (<WorkflowListItem namespace={namespace} renameNode={renameNode} deleteNode={deleteNode} path={obj.node.path} key={GenerateRandomKey("explorer-item-")} name={obj.node.name} />)
                             }
@@ -473,23 +592,28 @@ function ExplorerList(props) {
 
 function DirListItem(props) {
 
-    let {name, path, deleteNode, renameNode, namespace, resetQueryParams} = props;
+    let {name, path, deleteNode, renameNode, namespace, resetQueryParams, className, isGit} = props;
 
     const navigate = useNavigate()
     const [renameValue, setRenameValue] = useState(path)
     const [rename, setRename] = useState(false)
     const [err, setErr] = useState("")
+    const [recursiveDelete, setRecursiveDelete] = useState(false)
 
 
     return(
         <div style={{cursor:"pointer"}} onClick={(e)=>{
             resetQueryParams()
             navigate(`/n/${namespace}/explorer/${path.substring(1)}`)
-        }} className="explorer-item">
+        }} className={`explorer-item`}>
             <FlexBox className="col">
                 <FlexBox className="explorer-item-container gap wrap">
                     <FlexBox className="explorer-item-icon">
-                        <FiFolder className="auto-margin" />
+                        { isGit ?
+                            <VscRepo className="auto-margin"/>
+                            :
+                            <FiFolder className="auto-margin" />
+                        }
                     </FlexBox>
                 {
                     rename ? 
@@ -506,7 +630,7 @@ function DirListItem(props) {
                         }} onChange={(e)=>setRenameValue(e.target.value)} autoFocus/>
                      </FlexBox>
                     :
-                    <FlexBox className="explorer-item-name">
+                    <FlexBox className={`explorer-item-name ${className ? className : ""}`}>
                         {name}
                     </FlexBox>
                 }
@@ -553,7 +677,7 @@ function DirListItem(props) {
                                         ButtonDefinition("Delete", async () => {
                                             let p = path.split('/', -1);
                                             let pLast = p[p.length-1];
-                                            await deleteNode(pLast)
+                                            await deleteNode(pLast, recursiveDelete)
                                         }, "small red", ()=>{}, true, false),
                                         ButtonDefinition("Cancel", () => {
                                         }, "small light", ()=>{}, true, false)
@@ -561,6 +685,15 @@ function DirListItem(props) {
                                 } 
                             >
                                     <FlexBox className="col gap">
+                                <FlexBox className="center-y gap" style={{fontWeight:"bold"}}>
+                                    Recursive Delete:
+                                    <label className="switch">
+                                        <input onChange={()=>{
+                                            setRecursiveDelete(!recursiveDelete)
+                                        }} type="checkbox" checked={recursiveDelete}/>
+                                        <span className="slider-broadcast"></span>
+                                    </label>
+                                </FlexBox>
                                 <FlexBox >
                                     Are you sure you want to delete '{name}'?
                                     <br/>
@@ -658,7 +791,7 @@ function WorkflowListItem(props) {
                                                 ButtonDefinition("Delete", async () => {
                                                     let p = path.split('/', -1);
                                                     let pLast = p[p.length-1];
-                                                    await deleteNode(pLast)
+                                                    await deleteNode(pLast, false)
                                                 }, "small red", ()=>{}, true, false),
                                                 ButtonDefinition("Cancel", () => {
                                                 }, "small light", ()=>{}, true, false)

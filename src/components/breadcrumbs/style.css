@@ -29,3 +29,17 @@
     margin-left: 10px;
     margin-right: 10px;
 }
+
+.breadcrumbs-corner {
+    height: 72px;
+    position: absolute;
+    right: 0px;
+    top: 0px;
+    padding-right: 6px;
+}
+
+@media screen and (max-width: 1001px) {
+    .breadcrumbs-corner {
+        top: 42px;
+    }
+}

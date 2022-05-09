@@ -26,12 +26,14 @@ import InstancePageWrapper from '../instance';
 // import PermissionsPageWrapper from '../permissions';
 import EventsPageWrapper from '../events';
 import Monitoring from '../monitoring';
+import MirrorPage from '../mirror';
 
 
 function NamespaceNavigation(props){
     const {namespaces, namespace, setNamespace, deleteNamespace, deleteErr, extraRoutes} = props
 
     const [load, setLoad] = useState(true)
+    const [breadcrumbChildren, setBreadcrumbChildren] = useState(null)
     const navigate = useNavigate()
 
     // on mount check if namespace is stored in local storage and exists in the response given back
@@ -91,7 +93,7 @@ function NamespaceNavigation(props){
     return(
         <FlexBox className="content-col col">
             <FlexBox className="breadcrumbs-row">
-                <Breadcrumbs namespace={namespace}/>
+                <Breadcrumbs namespace={namespace} additionalChildren={breadcrumbChildren}/>
             </FlexBox>
             <FlexBox className="col" style={{paddingBottom: "8px"}}>
                 {namespaces !== null ? 
@@ -104,11 +106,11 @@ function NamespaceNavigation(props){
                         </div>
                     }/>
                     {/* Explorer routing */}
-                    <Route path="/n/:namespace" element={<Explorer namespace={namespace} />} >
-                        <Route path="explorer/*" element={<Explorer namespace={namespace} />} />
+                    <Route path="/n/:namespace" element={<Explorer namespace={namespace} setBreadcrumbChildren={setBreadcrumbChildren} />} >
+                        <Route path="explorer/*" element={<Explorer namespace={namespace} setBreadcrumbChildren={setBreadcrumbChildren} />} />
                     </Route>
-                   
-                
+
+                    <Route path="/n/:namespace/mirror/*" element={<MirrorPage namespace={namespace} setBreadcrumbChildren={setBreadcrumbChildren}/>} />
 
                     <Route path="/n/:namespace/monitoring" element={<Monitoring namespace={namespace}/>}/>
                     {/* <Route path="/n/:namespace/builder" element={<WorkflowBuilder namespace={namespace}/>}/> */}
@@ -156,7 +158,7 @@ function MainLayout(props) {
  
     const [namespace, setNamespace] = useState(null)
     const [toggleResponsive, setToggleResponsive] = useState(false);
-    const {data, err, createNamespace, deleteNamespace} = useNamespaces(Config.url, true, akey)
+    const {data, err, createNamespace, createMirrorNamespace, deleteNamespace} = useNamespaces(Config.url, true, akey)
 
     // const [versions, setVersions] = useState(false)
     
@@ -191,7 +193,7 @@ function MainLayout(props) {
                 <Loader load={load} timer={1000} >
                     <BrowserRouter>
                         <FlexBox className="navigation-col">
-                        <NavBar akeyReq={akeyReq} footer={footer} extraNavigation={extraNavigation}  toggleResponsive={toggleResponsive} setToggleResponsive={setToggleResponsive} setNamespace={setNamespace} namespace={namespace} createNamespace={createNamespace} deleteNamespace={deleteNamespace} namespaces={data} />
+                        <NavBar akeyReq={akeyReq} footer={footer} extraNavigation={extraNavigation}  toggleResponsive={toggleResponsive} setToggleResponsive={setToggleResponsive} setNamespace={setNamespace} namespace={namespace} createNamespace={createNamespace} createMirrorNamespace={createMirrorNamespace} deleteNamespace={deleteNamespace} namespaces={data} />
                         </FlexBox>
                         <NamespaceNavigation  akey={akey} extraRoutes={extraRoutes} deleteNamespace={deleteNamespace} namespace={namespace} setNamespace={setNamespace} namespaces={data}/>
                     </BrowserRouter>

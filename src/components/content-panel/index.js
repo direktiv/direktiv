@@ -4,7 +4,7 @@ import './style.css';
 
 function ContentPanel(props) {
 
-    let {style, children, className} = props;
+    let {style, children, className, id} = props;
     if (!className) {
         className = ""
     }
@@ -12,7 +12,7 @@ function ContentPanel(props) {
     className = "content-panel-parent opaque " + className
 
     return(
-        <div style={{...style, display: "flex", flexDirection: "column"}} className={className} >
+        <div id={id} style={{...style, display: "flex", flexDirection: "column"}} className={className} >
             {children}
         </div>
     );

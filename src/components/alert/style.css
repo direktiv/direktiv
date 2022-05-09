@@ -50,3 +50,12 @@
     margin-bottom: 8px;;
     padding-right: 8px;
 }
+
+.alert-close {
+    max-width: 20px;
+    cursor: pointer;
+}
+
+.alert-close:hover {
+    color: #fc636d
+}
