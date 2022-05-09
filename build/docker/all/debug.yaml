@@ -1,8 +1,28 @@
+registry: localhost:31212
 pullPolicy: IfNotPresent
 debug: "true"
 
 eventing:
   enabled: true
+
+functions:
+  image: "functions"
+  sidecar: "sidecar"
+  initPodImage: "init-pod"
+  tag: "v1-all-in-one"
+flow: 
+  image: "flow"
+  dbimage: "flow-dbinit"
+  tag: "v1-all-in-one"
+api: 
+  image: "api"
+  tag: "v1-all-in-one"
+ui:
+  image: "ui"
+  tag: "v1-all-in-one"
+secrets:
+  image: "secrets"
+  tag: "v1-all-in-one"
 
 database:
   # -- database host
@@ -17,3 +37,6 @@ database:
   name: "direktiv"
   # -- sslmode for database
   sslmode: disable
+
+
+docker.io/direktiv/flow-dbinit:v1-all-in-one

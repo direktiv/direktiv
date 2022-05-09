@@ -11,32 +11,32 @@ rm *.tar.gz
 # knative
 VERSION=1.1.1
 
-docker pull gcr.io/knative-releases/knative.dev/serving/cmd/queue@sha256:2fd485778a47e9f6c38e6198715c08ce77b49ffd70363d99ca18a00fac7bf1d8
-docker tag gcr.io/knative-releases/knative.dev/serving/cmd/queue@sha256:2fd485778a47e9f6c38e6198715c08ce77b49ffd70363d99ca18a00fac7bf1d8 gcr.io/knative-releases/knative.dev/serving/cmd/queue:$VERSION
+docker pull gcr.io/knative-releases/knative.dev/serving/cmd/queue@sha256:48a1753de35ecbe060611aea9e95751e3e4851183c4373e65aa1b9410ea6e263
+docker tag gcr.io/knative-releases/knative.dev/serving/cmd/queue@sha256:48a1753de35ecbe060611aea9e95751e3e4851183c4373e65aa1b9410ea6e263 gcr.io/knative-releases/knative.dev/serving/cmd/queue:$VERSION
 docker save --output=queue.tar gcr.io/knative-releases/knative.dev/serving/cmd/queue:$VERSION
 
-docker pull gcr.io/knative-releases/knative.dev/serving/cmd/activator@sha256:ebc3a26353b38a0c1af1fd5fc3715acfadbdbdef13752738e55611cf9574e386
-docker tag gcr.io/knative-releases/knative.dev/serving/cmd/activator@sha256:ebc3a26353b38a0c1af1fd5fc3715acfadbdbdef13752738e55611cf9574e386 gcr.io/knative-releases/knative.dev/serving/cmd/activator:$VERSION
+docker pull gcr.io/knative-releases/knative.dev/serving/cmd/activator@sha256:ba1485ded12049525afb9856c2fa10d613dbc2b2da90556116bf257f2128eaae
+docker tag gcr.io/knative-releases/knative.dev/serving/cmd/activator@sha256:ba1485ded12049525afb9856c2fa10d613dbc2b2da90556116bf257f2128eaae gcr.io/knative-releases/knative.dev/serving/cmd/activator:$VERSION
 docker save --output=activator.tar gcr.io/knative-releases/knative.dev/serving/cmd/activator:$VERSION
 
-docker pull gcr.io/knative-releases/knative.dev/serving/cmd/autoscaler@sha256:9d1811291955d213dc9d362c5a8e80463eb40e15c3a631f1538b762d4cd331ec
-docker tag gcr.io/knative-releases/knative.dev/serving/cmd/autoscaler@sha256:9d1811291955d213dc9d362c5a8e80463eb40e15c3a631f1538b762d4cd331ec gcr.io/knative-releases/knative.dev/serving/cmd/autoscaler:$VERSION
+docker pull gcr.io/knative-releases/knative.dev/serving/cmd/autoscaler@sha256:dca8258a46dd225b8a72dfe63e8971b23876458f6f64b4ad82792c4d6e470bdc
+docker tag gcr.io/knative-releases/knative.dev/serving/cmd/autoscaler@sha256:dca8258a46dd225b8a72dfe63e8971b23876458f6f64b4ad82792c4d6e470bdc gcr.io/knative-releases/knative.dev/serving/cmd/autoscaler:$VERSION
 docker save --output=autoscaler.tar gcr.io/knative-releases/knative.dev/serving/cmd/autoscaler:$VERSION
 
-docker pull gcr.io/knative-releases/knative.dev/serving/cmd/controller@sha256:13408b713d2c4ed3a2aea440f1da691626946081223ef74f3079a8c040d1c022
-docker tag gcr.io/knative-releases/knative.dev/serving/cmd/controller@sha256:13408b713d2c4ed3a2aea440f1da691626946081223ef74f3079a8c040d1c022 gcr.io/knative-releases/knative.dev/serving/cmd/controller:$VERSION
+docker pull gcr.io/knative-releases/knative.dev/serving/cmd/controller@sha256:2765feeaa3958827388e6f5119010ee08c0eec9ad7518bb38ac4b9a4355d87fb
+docker tag gcr.io/knative-releases/knative.dev/serving/cmd/controller@sha256:2765feeaa3958827388e6f5119010ee08c0eec9ad7518bb38ac4b9a4355d87fb gcr.io/knative-releases/knative.dev/serving/cmd/controller:$VERSION
 docker save --output=controller.tar gcr.io/knative-releases/knative.dev/serving/cmd/controller:$VERSION
 
-docker pull gcr.io/knative-releases/knative.dev/serving/cmd/domain-mapping@sha256:3c23df2ad0634057a8311393ba61a9ceec4f3e0898a2aa3dcd7e2ed6caf17548
-docker tag gcr.io/knative-releases/knative.dev/serving/cmd/domain-mapping@sha256:3c23df2ad0634057a8311393ba61a9ceec4f3e0898a2aa3dcd7e2ed6caf17548 gcr.io/knative-releases/knative.dev/serving/cmd/domain-mapping:$VERSION
+docker pull gcr.io/knative-releases/knative.dev/serving/cmd/domain-mapping@sha256:25df5b854d28dac69c6293db4db50d8fa819c96ad2f2a30bdde6aad467de1b17
+docker tag gcr.io/knative-releases/knative.dev/serving/cmd/domain-mapping@sha256:25df5b854d28dac69c6293db4db50d8fa819c96ad2f2a30bdde6aad467de1b17 gcr.io/knative-releases/knative.dev/serving/cmd/domain-mapping:$VERSION
 docker save --output=domain-mapping.tar gcr.io/knative-releases/knative.dev/serving/cmd/domain-mapping:$VERSION
 
-docker pull gcr.io/knative-releases/knative.dev/serving/cmd/domain-mapping-webhook@sha256:9822a9b1c55568886eb0895c0d3c963c7dd5e30aaaf9679bc17add22e00363e0
-docker tag gcr.io/knative-releases/knative.dev/serving/cmd/domain-mapping-webhook@sha256:9822a9b1c55568886eb0895c0d3c963c7dd5e30aaaf9679bc17add22e00363e0 gcr.io/knative-releases/knative.dev/serving/cmd/domain-mapping-webhook:$VERSION
+docker pull gcr.io/knative-releases/knative.dev/serving/cmd/domain-mapping-webhook@sha256:6ccc1f6ac07d27e97d96c502b4c6e928d5fb3abd165ae7670e94a57788416c75
+docker tag gcr.io/knative-releases/knative.dev/serving/cmd/domain-mapping-webhook@sha256:6ccc1f6ac07d27e97d96c502b4c6e928d5fb3abd165ae7670e94a57788416c75 gcr.io/knative-releases/knative.dev/serving/cmd/domain-mapping-webhook:$VERSION
 docker save --output=domain-mapping-webhook.tar gcr.io/knative-releases/knative.dev/serving/cmd/domain-mapping-webhook:$VERSION
 
-docker pull gcr.io/knative-releases/knative.dev/serving/cmd/webhook@sha256:3d46c616305acba3993cc1de9c2e35f3d680a49e2043996fa38f5ad03d5ef805
-docker tag gcr.io/knative-releases/knative.dev/serving/cmd/webhook@sha256:3d46c616305acba3993cc1de9c2e35f3d680a49e2043996fa38f5ad03d5ef805 gcr.io/knative-releases/knative.dev/serving/cmd/webhook:$VERSION
+docker pull gcr.io/knative-releases/knative.dev/serving/cmd/webhook@sha256:9f3c83def9d0d5de0e8e1d1f4c10f262e283fe12d21dcbb91de06b65d3bd08ad
+docker tag gcr.io/knative-releases/knative.dev/serving/cmd/webhook@sha256:9f3c83def9d0d5de0e8e1d1f4c10f262e283fe12d21dcbb91de06b65d3bd08ad gcr.io/knative-releases/knative.dev/serving/cmd/webhook:$VERSION
 docker save --output=webhook.tar gcr.io/knative-releases/knative.dev/serving/cmd/webhook:$VERSION
 
 # contour
@@ -75,41 +75,93 @@ docker save --output=nginx-webhook.tar k8s.gcr.io/ingress-nginx/kube-webhook-cer
 # direktiv
 
 PREFIX="localhost:5000"
-VERSION="v0.6.2"
+VERSION="v1-all-in-one"
 
 docker pull $PREFIX/flow
-docker tag $PREFIX/flow direktiv/flow:$VERSION
+docker tag $PREFIX/flow localhost:31212/flow:$VERSION
 rm -Rf flow.tar
-docker save --output=flow.tar direktiv/flow:$VERSION
+docker save --output=flow.tar localhost:31212/flow:$VERSION
+
+docker pull $PREFIX/flow-dbinit
+docker tag $PREFIX/flow-dbinit localhost:31212/flow-dbinit:$VERSION
+rm -Rf flow-dbinit.tar
+docker save --output=flow-dbinit.tar localhost:31212/flow-dbinit:$VERSION
 
 docker pull $PREFIX/init-pod
-docker tag $PREFIX/init-pod direktiv/init-pod:$VERSION
+docker tag $PREFIX/init-pod localhost:31212/init-pod:$VERSION
 rm -Rf init-pod.tar
-docker save --output=init-pod.tar direktiv/init-pod:$VERSION
+docker save --output=init-pod.tar localhost:31212/init-pod:$VERSION
 
 docker pull $PREFIX/secrets
-docker tag $PREFIX/secrets direktiv/secrets:$VERSION
+docker tag $PREFIX/secrets localhost:31212/secrets:$VERSION
 rm -Rf secrets.tar
-docker save --output=secrets.tar direktiv/secrets:$VERSION
+docker save --output=secrets.tar localhost:31212/secrets:$VERSION
 
 docker pull $PREFIX/sidecar
-docker tag $PREFIX/sidecar direktiv/sidecar:$VERSION
+docker tag $PREFIX/sidecar localhost:31212/sidecar:$VERSION
 rm -Rf sidecar.tar
-docker save --output=sidecar.tar direktiv/sidecar:$VERSION
+docker save --output=sidecar.tar localhost:31212/sidecar:$VERSION
 
 docker pull $PREFIX/functions
-docker tag $PREFIX/functions direktiv/functions:$VERSION
+docker tag $PREFIX/functions localhost:31212/functions:$VERSION
 rm -Rf functions.tar
-docker save --output=functions.tar direktiv/functions:$VERSION
+docker save --output=functions.tar localhost:31212/functions:$VERSION
 
 docker pull $PREFIX/api
-docker tag $PREFIX/api direktiv/api:$VERSION
+docker tag $PREFIX/api localhost:31212/api:$VERSION
 rm -Rf api.tar
-docker save --output=api.tar direktiv/api:$VERSION
+docker save --output=api.tar localhost:31212/api:$VERSION
 
 docker pull $PREFIX/ui
-docker tag $PREFIX/ui direktiv/ui:$VERSION
+docker tag $PREFIX/ui localhost:31212/ui:$VERSION
 rm -Rf ui.tar
-docker save --output=ui.tar direktiv/ui:$VERSION
+docker save --output=ui.tar localhost:31212/ui:$VERSION
 
 tar -cvzf images.tar.gz *.tar
+
+
+
+
+# docker pull $PREFIX/flow
+# docker tag $PREFIX/flow direktiv/flow:$VERSION
+# rm -Rf flow.tar
+# docker save --output=flow.tar direktiv/flow:$VERSION
+
+# docker pull $PREFIX/flow-dbinit
+# docker tag $PREFIX/flow-dbinit direktiv/flow-dbinit:$VERSION
+# rm -Rf flow-dbinit.tar
+# docker save --output=flow-dbinit.tar direktiv/flow-dbinit:$VERSION
+
+# docker pull $PREFIX/init-pod
+# docker tag $PREFIX/init-pod direktiv/init-pod:$VERSION
+# rm -Rf init-pod.tar
+# docker save --output=init-pod.tar direktiv/init-pod:$VERSION
+
+# docker pull $PREFIX/secrets
+# docker tag $PREFIX/secrets direktiv/secrets:$VERSION
+# rm -Rf secrets.tar
+# docker save --output=secrets.tar direktiv/secrets:$VERSION
+
+# docker pull $PREFIX/sidecar
+# docker tag $PREFIX/sidecar direktiv/sidecar:$VERSION
+# rm -Rf sidecar.tar
+# docker save --output=sidecar.tar direktiv/sidecar:$VERSION
+
+# docker pull $PREFIX/functions
+# docker tag $PREFIX/functions direktiv/functions:$VERSION
+# rm -Rf functions.tar
+# docker save --output=functions.tar direktiv/functions:$VERSION
+
+# docker pull $PREFIX/api
+# docker tag $PREFIX/api direktiv/api:$VERSION
+# rm -Rf api.tar
+# docker save --output=api.tar direktiv/api:$VERSION
+
+# docker pull $PREFIX/ui
+# docker tag $PREFIX/ui direktiv/ui:$VERSION
+# rm -Rf ui.tar
+# docker save --output=ui.tar direktiv/ui:$VERSION
+
+# tar -cvzf images.tar.gz *.tar
+
+

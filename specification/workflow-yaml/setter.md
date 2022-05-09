@@ -6,8 +6,8 @@
   variables:
   - key: x 
     scope: workflow
-  mimeType: text/plain
-  value: 'jq(.x)'
+    mimeType: text/plain
+    value: 'jq(.x)'
 ```
 
 ## SetterStateDefinition 
