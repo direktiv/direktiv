@@ -1,11 +1,14 @@
 package flow
 
 import (
+	"archive/tar"
+	"compress/gzip"
 	"context"
 	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"io/fs"
 	"io/ioutil"
 	"os"
@@ -619,6 +622,74 @@ func (syncer *syncer) initMirror(ctx context.Context, am *activityMemory) error 
 
 }
 
+func (syncer *syncer) tarGzDir(path string) ([]byte, error) {
+
+	tf, err := ioutil.TempFile("", "outtar")
+	if err != nil {
+		return nil, err
+	}
+	defer os.Remove(tf.Name())
+
+	err = tarGzDir(path, tf)
+	if err != nil {
+		return nil, err
+	}
+
+	return ioutil.ReadFile(tf.Name())
+
+}
+
+func tarGzDir(src string, buf io.Writer) error {
+
+	zr := gzip.NewWriter(buf)
+	tw := tar.NewWriter(zr)
+
+	err := filepath.Walk(src, func(file string, fi os.FileInfo, err error) error {
+
+		if !fi.Mode().IsDir() && !fi.Mode().IsRegular() {
+			return nil
+		}
+
+		header, err := tar.FileInfoHeader(fi, file)
+		if err != nil {
+			return err
+		}
+
+		// use "subpath"
+		header.Name = filepath.ToSlash(file[len(src):])
+
+		if err := tw.WriteHeader(header); err != nil {
+			return err
+		}
+
+		if !fi.IsDir() {
+			/* #nosec */
+			data, err := os.Open(file)
+			if err != nil {
+				return err
+			}
+			if _, err := io.Copy(tw, data); err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+
+	if err != nil {
+		return err
+	}
+
+	if err := tw.Close(); err != nil {
+		return err
+	}
+
+	if err := zr.Close(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 
 	lr, err := loadRepository(ctx, &repositorySettings{
@@ -826,7 +897,16 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 
 		case mntNamespaceVar:
 
-			data, err := ioutil.ReadFile(filepath.Join(lr.path, path))
+			var data []byte
+			var err error
+
+			fpath := filepath.Join(lr.path, path)
+
+			if n.isDir {
+				data, err = syncer.tarGzDir(fpath)
+			} else {
+				data, err = ioutil.ReadFile(fpath)
+			}
 			if err != nil {
 				return err
 			}
@@ -841,7 +921,16 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 
 		case mntWorkflowVar:
 
-			data, err := ioutil.ReadFile(filepath.Join(lr.path, path))
+			var data []byte
+			var err error
+
+			fpath := filepath.Join(lr.path, path)
+
+			if n.isDir {
+				data, err = syncer.tarGzDir(fpath)
+			} else {
+				data, err = ioutil.ReadFile(fpath)
+			}
 			if err != nil {
 				return err
 			}
@@ -862,6 +951,10 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 				name: base,
 			})
 			if err != nil {
+				if IsNotFound(err) {
+					syncer.logToMirrorActivity(ctx, time.Now(), am.act, "Found something that looks like a workflow variable with no matching workflow: "+path)
+					return nil
+				}
 				return err
 			}
 
@@ -990,6 +1083,7 @@ type mirrorNode struct {
 	name      string
 	change    string
 	extension string
+	isDir     bool
 }
 
 type mirrorModel struct {
@@ -1085,7 +1179,7 @@ func (model *mirrorModel) addWorkflowNode(path string) error {
 
 }
 
-func (model *mirrorModel) addWorkflowVariableNode(path string) error {
+func (model *mirrorModel) addWorkflowVariableNode(path string, isDir bool) error {
 
 	dir, base := filepath.Split(path)
 
@@ -1103,13 +1197,14 @@ func (model *mirrorModel) addWorkflowVariableNode(path string) error {
 		children: make([]*mirrorNode, 0),
 		ntype:    mntWorkflowVar,
 		name:     base,
+		isDir:    isDir,
 	})
 
 	return nil
 
 }
 
-func (model *mirrorModel) addNamespaceVariableNode(path string) error {
+func (model *mirrorModel) addNamespaceVariableNode(path string, isDir bool) error {
 
 	dir, base := filepath.Split(path)
 
@@ -1127,6 +1222,7 @@ func (model *mirrorModel) addNamespaceVariableNode(path string) error {
 		children: make([]*mirrorNode, 0),
 		ntype:    mntNamespaceVar,
 		name:     base,
+		isDir:    isDir,
 	})
 
 	return nil
@@ -1343,6 +1439,44 @@ func buildModel(ctx context.Context, repo *localRepository) (*mirrorModel, error
 
 		_, base := filepath.Split(path)
 
+		if !util.NameRegex.MatchString(base) {
+			// TODO: log something
+			if d.IsDir() {
+				return filepath.SkipDir
+			}
+			return nil
+		}
+
+		if !d.IsDir() && (strings.HasSuffix(base, ".yaml") || strings.HasSuffix(base, ".yml")) {
+			err = model.addWorkflowNode(rel)
+			if err != nil {
+				return err
+			}
+			return nil
+		}
+
+		if strings.Contains(base, ".yaml.") || strings.Contains(base, ".yml.") {
+			err = model.addWorkflowVariableNode(rel, d.IsDir())
+			if err != nil {
+				return err
+			}
+			if d.IsDir() {
+				return filepath.SkipDir
+			}
+			return nil
+		}
+
+		if strings.HasPrefix(base, "var.") {
+			err = model.addNamespaceVariableNode(rel, d.IsDir())
+			if err != nil {
+				return err
+			}
+			if d.IsDir() {
+				return filepath.SkipDir
+			}
+			return nil
+		}
+
 		if d.IsDir() {
 			if !util.NameRegex.MatchString(base) {
 				return filepath.SkipDir
@@ -1353,35 +1487,6 @@ func buildModel(ctx context.Context, repo *localRepository) (*mirrorModel, error
 				return err
 			}
 
-			return nil
-		}
-
-		if !util.NameRegex.MatchString(base) {
-			// TODO: log something
-			return nil
-		}
-
-		if strings.HasSuffix(base, ".yaml") || strings.HasSuffix(base, ".yml") {
-			err = model.addWorkflowNode(rel)
-			if err != nil {
-				return err
-			}
-			return nil
-		}
-
-		if strings.Contains(base, ".yaml.") || strings.Contains(base, ".yml.") {
-			err = model.addWorkflowVariableNode(rel)
-			if err != nil {
-				return err
-			}
-			return nil
-		}
-
-		if strings.HasPrefix(base, "var.") {
-			err = model.addNamespaceVariableNode(rel)
-			if err != nil {
-				return err
-			}
 			return nil
 		}
 
