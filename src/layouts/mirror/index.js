@@ -133,10 +133,7 @@ export default function MirrorPage(props) {
                         </Button>
                     )}
                     actionButtons={[
-                        ButtonDefinition("Soft Sync", async () => {
-                            await syncRef.current()
-                        }, "small blue", () => { }, true, false),
-                        ButtonDefinition("Hard Sync", async () => {
+                        ButtonDefinition("Sync", async () => {
                             await syncRef.current(true)
                         }, "small blue", () => { }, true, false),
                         ButtonDefinition("Cancel", () => { }, "small light", () => { }, true, false)
@@ -144,7 +141,7 @@ export default function MirrorPage(props) {
                 >
                     <FlexBox className="col gap" style={{ paddingTop: "8px" }}>
                         <FlexBox className="col center info-update-label">
-                            Would you like to do a normal sync or force a hard sync?
+                          Fetch and sync mirror with latest content from remote repository?
                         </FlexBox>
                     </FlexBox>
                 </Modal>
