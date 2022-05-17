@@ -124,7 +124,7 @@ function AddVariablePanel(props) {
             style={{minHeight: "500px", minWidth: "90%"}}
             headers={["Manual", "Upload"]}
             tabs={[(
-                <FlexBox id="written" className="col gap" style={{fontSize: "12px", width: "35vw"}}>
+                <FlexBox id="written" className="col gap" style={{fontSize: "12px", minWidth: "300px"}}>
                     <div style={{width: "100%", display: "flex"}}>
                         <input value={keyValue} onChange={(e)=>setKeyValue(e.target.value)} autoFocus placeholder="Enter variable key name" />
                     </div>
