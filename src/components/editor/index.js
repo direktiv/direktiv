@@ -270,7 +270,6 @@ export default function DirektivEditor(props) {
     const [ed, setEditor] = useState(null);
 
     useEffect(()=>{
-        // console.log(monaco)
         if(monaco !== null) {           
             monaco.editor.defineTheme('cobalt', cobalt)
             monaco.editor.setTheme('cobalt')

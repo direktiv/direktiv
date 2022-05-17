@@ -210,10 +210,6 @@ function ExplorerList(props) {
     const [wfData, setWfData] = useState(templates["noop"].data)
     const [wfTemplate, setWfTemplate] = useState("noop")
 
-    useEffect(() => {
-        console.log("data = ", data)
-    }, [data])
-
 
     // Mirror
     const [mirrorSettings, setMirrorSettings] = useState({

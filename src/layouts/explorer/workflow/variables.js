@@ -15,6 +15,7 @@ import { VariableFilePicker } from '../../settings/variables-panel';
 import { AutoSizer } from 'react-virtualized';
 import HelpIcon from "../../../components/help";
 import { saveAs } from 'file-saver'
+import Tippy from '@tippyjs/react';
 
 
 function AddWorkflowVariablePanel(props) {
@@ -200,8 +201,14 @@ function Variable(props) {
     let lang = MimeTypeFileExtension(mimeType)
 
     return(
-        <tr className="body-row" key={`${obj.node.name}${obj.node.size}`}>
-        <td className="wrap-word variable-name" style={{ width: "180px", maxWidth: "180px", textOverflow:"ellipsis",  overflow:"hidden" }}>{obj.node.name}</td>
+        <tr className="body-row" key={`var-${obj.node.name}${obj.node.size}`}>
+        <td className="wrap-word variable-name" style={{ width: "180px", maxWidth: "180px", textOverflow:"ellipsis",  overflow:"hidden" }}>
+            <Tippy content={obj.node.name} trigger={'mouseenter focus'} zIndex={10}>
+                <div className={"variable-name"} style={{width: "fit-content", maxWidth: "180px", textOverflow:"ellipsis",  overflow:"hidden"}}>
+                    {obj.node.name}
+                </div>
+            </Tippy>
+        </td>
         <td className="muted-text show-variable">
             {obj.node.size <= 2500000 ? 
                 <Modal

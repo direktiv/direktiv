@@ -59,7 +59,6 @@ export function InstancesTable(props) {
         if(data !== null || err !== null) {
             setLoad(false)
         }
-        console.log("data = ", data)
     },[data, err])
 
     // Update filters array

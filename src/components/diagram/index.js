@@ -170,7 +170,6 @@ function End() {
 }
 
 function generateElements(getLayoutedElements, value, flow, status) {
-    console.log(flow, "FLOW CHECK")
     let newElements = []
 
     if(value.states) {
@@ -327,7 +326,6 @@ function generateElements(getLayoutedElements, value, flow, status) {
 
             // Check flow array change edges to green if it passed 
             if(flow){
-                console.log('check flow', status)
                 // check flow for transitions
                 for(let i=0; i < flow.length; i++) {
                     let noTransition = false

@@ -512,7 +512,6 @@ function Logs(props){
     const [logLength, setLogLength] = useState(0)
     let {data, err} = useInstanceLogs(Config.url, true, namespace, instanceID, localStorage.getItem("apikey"))
     useEffect(()=>{
-        console.log("logDataChange = ", data)
         if (!setClipData) {
             // Skip ClipData if unset
             return 
