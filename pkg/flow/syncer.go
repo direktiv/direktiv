@@ -244,6 +244,8 @@ func (syncer *syncer) cronHandler(data []byte) {
 	err = syncer.NewActivity(nil, &newMirrorActivityArgs{
 		MirrorID: d.mir.ID.String(),
 		Type:     util.MirrorActivityTypeCronSync,
+		LockCtx:  ctx,
+		LockConn: conn,
 	})
 	if err != nil {
 		syncer.sugar.Error(err)
@@ -378,18 +380,29 @@ func (am *activityMemory) ID() uuid.UUID {
 type newMirrorActivityArgs struct {
 	MirrorID string
 	Type     string
+	LockCtx  context.Context
+	LockConn *sql.Conn
 }
 
 func (syncer *syncer) beginActivity(tx *ent.Tx, args *newMirrorActivityArgs) (*activityMemory, error) {
 
-	ctx, conn, err := syncer.lock(args.MirrorID, defaultLockWait)
-	if err != nil {
-		return nil, err
+	var err error
+	var ctx context.Context
+	var conn *sql.Conn
+
+	if args.LockConn != nil {
+		ctx = args.LockCtx
+		conn = args.LockConn
+	} else {
+		ctx, conn, err = syncer.lock(args.MirrorID, defaultLockWait)
+		if err != nil {
+			return nil, err
+		}
+		defer syncer.unlock(args.MirrorID, conn)
 	}
-	defer syncer.unlock(args.MirrorID, conn)
 
 	if tx == nil {
-		tx, err := syncer.db.Tx(ctx)
+		tx, err = syncer.db.Tx(ctx)
 		if err != nil {
 			return nil, err
 		}
