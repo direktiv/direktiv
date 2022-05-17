@@ -99,7 +99,18 @@ function NewNamespaceBtn(props) {
 
                titleIcon={<VscAdd/>}
 
-               onClose={ () => {setNs("")}}
+                onClose={() => {
+                    setNs("")
+                    setMirrorSettings({
+                        "url": "",
+                        "ref": "",
+                        "cron": "",
+                        "passphrase": "",
+                        "publicKey": "",
+                        "privateKey": "",
+                    })
+                    setTabIndex(0)
+                }}
 
                keyDownActions={[
                    KeyDownDefinition("Enter", async () => {
