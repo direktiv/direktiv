@@ -72,6 +72,15 @@ func (sl *setterStateLogic) Run(ctx context.Context, engine *engine, im *instanc
 
 	// set
 
+	tx, err := engine.db.Tx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer rollback(tx)
+
+	vdatac := tx.VarData
+	vrefc := tx.VarRef
+
 	for idx, v := range sl.state.Variables {
 
 		var x interface{}
@@ -134,17 +143,8 @@ func (sl *setterStateLogic) Run(ctx context.Context, engine *engine, im *instanc
 			}
 		}
 
-		// tx, err := engine.db.Tx(ctx)
-		// if err != nil {
-		// 	return nil, err
-		// }
-		// defer rollback(tx)
-		//
-		// vdatac := tx.VarData
-		// vrefc := tx.VarRef
-
-		vdatac := engine.db.VarData
-		vrefc := engine.db.VarRef
+		// vdatac := engine.db.VarData
+		// vrefc := engine.db.VarRef
 
 		var q varQuerier
 
@@ -157,10 +157,18 @@ func (sl *setterStateLogic) Run(ctx context.Context, engine *engine, im *instanc
 			fallthrough
 
 		case "instance":
-			q = im.in
+			q, err = tx.Instance.Get(ctx, im.in.ID)
+			if err != nil {
+				return nil, err
+			}
+			// q = im.in
 
 		case "thread":
-			q = im.in
+			q, err = tx.Instance.Get(ctx, im.in.ID)
+			if err != nil {
+				return nil, err
+			}
+			// q = im.in
 			thread = true
 
 		case "workflow":
@@ -169,24 +177,22 @@ func (sl *setterStateLogic) Run(ctx context.Context, engine *engine, im *instanc
 				return nil, err
 			}
 
-			wf, err = engine.db.Workflow.Get(ctx, wf.ID)
+			q, err = tx.Workflow.Get(ctx, wf.ID)
 			if err != nil {
 				return nil, err
 			}
 
-			q = wf
 		case "namespace":
 			ns, err := engine.InstanceNamespace(ctx, im)
 			if err != nil {
 				return nil, err
 			}
 
-			ns, err = engine.db.Namespace.Get(ctx, ns.ID)
+			q, err = tx.Namespace.Get(ctx, ns.ID)
 			if err != nil {
 				return nil, err
 			}
 
-			q = ns
 		default:
 			return nil, NewInternalError(errors.New("invalid scope"))
 		}
@@ -200,12 +206,11 @@ func (sl *setterStateLogic) Run(ctx context.Context, engine *engine, im *instanc
 			return nil, err
 		}
 
-		// TODO: make this a transaction?
-		// err = tx.Commit()
-		// if err != nil {
-		// 	return nil, err
-		// }
+	}
 
+	err = tx.Commit()
+	if err != nil {
+		return nil, err
 	}
 
 	transition = &stateTransition{
