@@ -505,6 +505,10 @@ func (syncer *syncer) execute(am *activityMemory) {
 		if err != nil {
 			return
 		}
+
+		// in case of cron
+		syncer.server.syncerCronPollerMirror(am.mir)
+
 	case util.MirrorActivityTypeCronSync:
 		err = syncer.hardSync(ctx, am)
 		if err != nil {
