@@ -6,6 +6,15 @@ import FlexBox from '../../components/flexbox';
 import { VscAdd, VscTerminal } from 'react-icons/vsc';
 import Modal, { ButtonDefinition } from '../../components/modal';
 
+export const mirrorSettingInfoMetaInfo = {
+    "url": {plainName: "URL", placeholder: "", info: null},
+    "ref": {plainName: "Ref", placeholder: "", info: null},
+    "cron": {plainName: "Cron", placeholder: "", info: null},
+    "passphrase": {plainName: "Passphrase", placeholder: "", info: null},
+    "publicKey": {plainName: "Public Key", placeholder: "", info: null},
+    "privateKey": {plainName: "Private Key", placeholder: "", info: null},
+}
+
 
 export default function MirrorInfoPanel(props) {
     const { info, style, updateSettings } = props
@@ -143,32 +152,32 @@ export default function MirrorInfoPanel(props) {
                                     </FlexBox>
                                     {infoChangesTracker.url ?
                                         <FlexBox className="col gap" style={{ paddingRight: "10px" }}>
-                                            <span className={`info-input-title readonly`}>URL</span>
+                                            <span className={`input-title readonly`}>URL</span>
                                             <input className={`info-input-value readonly`} value={infoURL} />
                                         </FlexBox> : <></>}
                                     {infoChangesTracker.ref ?
                                         <FlexBox className="col gap" style={{ paddingRight: "10px" }}>
-                                            <span className={`info-input-title readonly`}>Ref</span>
+                                            <span className={`input-title readonly`}>Ref</span>
                                             <input className={`info-input-value readonly`} value={infoRef} />
                                         </FlexBox> : <></>}
                                     {infoChangesTracker.cron ?
                                         <FlexBox className="col gap" style={{ paddingRight: "10px" }}>
-                                            <span className={`info-input-title readonly`}>Cron</span>
+                                            <span className={`input-title readonly`}>Cron</span>
                                             <input className={`info-input-value readonly`} readonly={true} value={infoCron} />
                                         </FlexBox> : <></>}
                                     {infoChangesTracker.passphrase ?
                                         <FlexBox className="col gap" style={{ paddingRight: "10px" }}>
-                                            <span className={`info-input-title readonly`}>Passphrase</span>
+                                            <span className={`input-title readonly`}>Passphrase</span>
                                             <input className={`info-input-value readonly`} readonly={true} type="password" value={infoPassphrase} />
                                         </FlexBox> : <></>}
                                     {infoChangesTracker.publicKey ?
                                         <FlexBox className="col gap" style={{ paddingRight: "10px" }}>
-                                            <span className={`info-input-title readonly`}>Public Key</span>
+                                            <span className={`input-title readonly`}>Public Key</span>
                                             <textarea className={`info-textarea-value readonly`} readonly={true} style={{ width: "100%", resize: "none" }} value={infoPublicKey} />
                                         </FlexBox> : <></>}
                                     {infoChangesTracker.privateKey ?
                                         <FlexBox className="col gap" style={{ paddingRight: "10px" }}>
-                                            <span className={`info-input-title readonly`} >Private Key</span>
+                                            <span className={`input-title readonly`} >Private Key</span>
                                             <textarea className={`info-textarea-value readonly`} readonly={true} style={{ width: "100%", resize: "none" }} value={infoPrivateKey} />
                                         </FlexBox> : <></>}
                                 </FlexBox>
@@ -179,9 +188,9 @@ export default function MirrorInfoPanel(props) {
             </ContentPanelTitle>
             <ContentPanelBody style={{ overflow: "auto" }}>
                 <FlexBox className="col gap" style={{ height: "fit-content" }}>
-                    <FlexBox className="col gap" style={{ paddingRight: "10px" }}>
+                    <FlexBox className="col gap-md" style={{ paddingRight: "10px" }}>
                         <FlexBox className="row" style={{ justifyContent: "space-between" }}>
-                            <span className={`info-input-title ${infoChangesTracker.url ? "edited" : ""}`}>URL</span>
+                            <span className={`input-title ${infoChangesTracker.url ? "edited" : ""}`}>URL</span>
                             <span className={`info-input-undo ${infoChangesTracker.url ? "" : "hide"}`} onClick={(e) => {
                                 setInfoURL(infoURLOld)
                                 setInfoChangesTracker((old) => {
@@ -198,9 +207,9 @@ export default function MirrorInfoPanel(props) {
                             })
                         }} placeholder="Enter URL" />
                     </FlexBox>
-                    <FlexBox className="col gap" style={{ paddingRight: "10px" }}>
+                    <FlexBox className="col gap-md" style={{ paddingRight: "10px" }}>
                         <FlexBox className="row" style={{ justifyContent: "space-between" }}>
-                            <span className={`info-input-title ${infoChangesTracker.ref ? "edited" : ""}`}>Ref</span>
+                            <span className={`input-title ${infoChangesTracker.ref ? "edited" : ""}`}>Ref</span>
                             <span className={`info-input-undo ${infoChangesTracker.ref ? "" : "hide"}`} onClick={(e) => {
                                 setInfoRef(infoRefOld)
                                 setInfoChangesTracker((old) => {
@@ -217,9 +226,9 @@ export default function MirrorInfoPanel(props) {
                             })
                         }} placeholder="Enter Ref" />
                     </FlexBox>
-                    <FlexBox className="col gap" style={{ paddingRight: "10px" }}>
+                    <FlexBox className="col gap-md" style={{ paddingRight: "10px" }}>
                         <FlexBox className="row" style={{ justifyContent: "space-between" }}>
-                            <span className={`info-input-title ${infoChangesTracker.cron ? "edited" : ""}`}>Cron</span>
+                            <span className={`input-title ${infoChangesTracker.cron ? "edited" : ""}`}>Cron</span>
                             <span className={`info-input-undo ${infoChangesTracker.cron ? "" : "hide"}`} onClick={(e) => {
                                 setInfoCron(infoCronOld)
                                 setInfoChangesTracker((old) => {
@@ -236,9 +245,9 @@ export default function MirrorInfoPanel(props) {
                             })
                         }} placeholder="Enter cron" />
                     </FlexBox>
-                    <FlexBox className="col gap" style={{ paddingRight: "10px" }}>
+                    <FlexBox className="col gap-md" style={{ paddingRight: "10px" }}>
                         <FlexBox className="row" style={{ justifyContent: "space-between" }}>
-                            <span className={`info-input-title ${infoChangesTracker.passphrase ? "edited" : ""}`}>Passphrase</span>
+                            <span className={`input-title ${infoChangesTracker.passphrase ? "edited" : ""}`}>Passphrase</span>
                             <span className={`info-input-undo ${infoChangesTracker.passphrase ? "" : "hide"}`} onClick={(e) => {
                                 setInfoPassphrase(infoPassphraseOld)
                                 setInfoChangesTracker((old) => {
@@ -255,9 +264,9 @@ export default function MirrorInfoPanel(props) {
                             })
                         }} placeholder="Enter Passphrase" />
                     </FlexBox>
-                    <FlexBox className="col gap" style={{ paddingRight: "10px" }}>
+                    <FlexBox className="col gap-md" style={{ paddingRight: "10px" }}>
                         <FlexBox className="row" style={{ justifyContent: "space-between" }}>
-                            <span className={`info-input-title ${infoChangesTracker.publicKey ? "edited" : ""}`}>Public Key</span>
+                            <span className={`input-title ${infoChangesTracker.publicKey ? "edited" : ""}`}>Public Key</span>
                             <span className={`info-input-undo ${infoChangesTracker.publicKey ? "" : "hide"}`} onClick={(e) => {
                                 setInfoPublicKey(infoPublicKeyOld)
                                 setInfoChangesTracker((old) => {
@@ -266,7 +275,7 @@ export default function MirrorInfoPanel(props) {
                                 })
                             }}>Undo Changes</span>
                         </FlexBox>
-                        <textarea style={{ width: "100%", resize: "none" }} value={infoPublicKey} onChange={(e) => {
+                        <textarea style={{ width: "100%", resize: "none" }} rows={5} value={infoPublicKey} onChange={(e) => {
                             setInfoPublicKey(e.target.value)
                             setInfoChangesTracker((old) => {
                                 old.publicKey = true
@@ -274,9 +283,9 @@ export default function MirrorInfoPanel(props) {
                             })
                         }} placeholder="Enter Public Key" />
                     </FlexBox>
-                    <FlexBox className="col gap" style={{ paddingRight: "10px" }}>
+                    <FlexBox className="col gap-md" style={{ paddingRight: "10px" }}>
                         <FlexBox className="row" style={{ justifyContent: "space-between" }}>
-                            <span className={`info-input-title ${infoChangesTracker.privateKey ? "edited" : ""}`} >Private Key</span>
+                            <span className={`input-title ${infoChangesTracker.privateKey ? "edited" : ""}`} >Private Key</span>
                             <span className={`info-input-undo ${infoChangesTracker.privateKey ? "" : "hide"}`} onClick={(e) => {
                                 setInfoPrivateKey(infoPrivateKeyOld)
                                 setInfoChangesTracker((old) => {
@@ -285,7 +294,7 @@ export default function MirrorInfoPanel(props) {
                                 })
                             }}>Undo Changes</span>
                         </FlexBox>
-                        <textarea type="password" style={{ width: "100%", resize: "none" }} value={infoPrivateKey} onChange={(e) => {
+                        <textarea type="password" style={{ width: "100%", resize: "none" }} rows={5} value={infoPrivateKey} onChange={(e) => {
                             setInfoPrivateKey(e.target.value)
                             setInfoChangesTracker((old) => {
                                 old.privateKey = true

@@ -27,6 +27,10 @@
     gap: 8px;
 }
 
+.flex-box.gap-md {
+    gap: 4px;
+}
+
 .flex-box.gap-sm {
     gap: 4px;
 }

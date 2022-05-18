@@ -10,6 +10,7 @@ import {VscAdd,  VscFolderOpened, VscGraph, VscLayers, VscServer,  VscSettingsGe
 
 import { Link, matchPath, useLocation, useNavigate } from 'react-router-dom';
 import Tabs from '../tabs';
+import { mirrorSettingInfoMetaInfo } from '../../layouts/mirror/info';
 
 function NavBar(props) {
 
@@ -77,6 +78,8 @@ function NewNamespaceBtn(props) {
 
     const [ns, setNs] = useState("")
     const navigate = useNavigate()
+
+    
 
     return (
         <Modal title="New namespace"
@@ -152,35 +155,48 @@ function NewNamespaceBtn(props) {
                 style={{minWidth: "280px"}}
                 headers={["Standard", "Mirror"]}
                 tabs={[(
-            <FlexBox>
-                <input autoFocus value={ns} onChange={(e)=>setNs(e.target.value)} placeholder="Enter namespace name" />
-            </FlexBox>),(
-                <FlexBox  className="col gap" style={{fontSize: "12px"}}>
-                <div style={{width: "100%", paddingRight: "12px", display: "flex"}}>
-                    <input autoFocus value={ns} onChange={(e)=>setNs(e.target.value)} placeholder="Enter namespace name" />
-                </div>
-                {Object.entries(mirrorSettings).map(([key, value]) => {
-                    return(
-                    <div key={`input-new-ns-${key}`} style={{width: "100%", paddingRight: "12px", display: "flex"}}>
-                        {key === "passphrase" || key === "publicKey" || key === "privateKey" ?
-                        <textarea style={{width:"100%", resize: "none" }} value={value} onChange={(e)=>{
-                            let newSettings = mirrorSettings
-                            newSettings[key] = e.target.value
-                            setMirrorSettings({...newSettings})
-                        }} autoFocus placeholder={`Enter Mirror ${key.charAt(0).toUpperCase() + key.slice(1)}`}/>
-                        :
-                        <input style={{width:"100%"}} value={value} onChange={(e)=>{
-                            let newSettings = mirrorSettings
-                            newSettings[key] = e.target.value
-                            setMirrorSettings({...newSettings})
-                        }} autoFocus placeholder={`Enter Mirror ${key.charAt(0).toUpperCase() + key.slice(1)}`}/>
-                        }
-                        
-                    </div>
-                    )
-                })}
-            </FlexBox>
-            )]}
+                    <FlexBox className="col gap-md" style={{ paddingRight: "12px" }}>
+                        <FlexBox className="row gap-sm" style={{ justifyContent: "flex-start" }}>
+                            <span className={`input-title`}>Namespace</span>
+                        </FlexBox>
+                        <input autoFocus value={ns} onChange={(e) => setNs(e.target.value)} placeholder="Enter namespace name" />
+                    </FlexBox>), (
+                    <FlexBox className="col gap">
+                        <FlexBox className="col gap-md" style={{ paddingRight: "12px" }}>
+                            <FlexBox className="row gap-sm" style={{ justifyContent: "flex-start" }}>
+                                <span className={`input-title`}>Namespace</span>
+                            </FlexBox>
+                            <input autoFocus value={ns} onChange={(e) => setNs(e.target.value)} placeholder="Enter namespace name" />
+                        </FlexBox>
+                        {Object.entries(mirrorSettings).map(([key, value]) => {
+                            return (
+                                <FlexBox key={`input-new-ns-${key}`} className="col gap-md" style={{ paddingRight: "12px" }}>
+                                    <FlexBox className="row gap-sm" style={{ justifyContent: "flex-start" }}>
+                                        <span className={`input-title`}>{mirrorSettingInfoMetaInfo[key].plainName}</span>
+                                        {
+                                            mirrorSettingInfoMetaInfo[key].info ?
+                                                <span className={``}>(i)</span> : <></>
+                                        }
+                                    </FlexBox>
+                                    {key === "publicKey" || key === "privateKey" ?
+                                        <textarea style={{ width: "100%", resize: "none" }} rows={5} value={value} onChange={(e) => {
+                                            let newSettings = mirrorSettings
+                                            newSettings[key] = e.target.value
+                                            setMirrorSettings({ ...newSettings })
+                                        }} autoFocus placeholder={`Enter Mirror ${key.charAt(0).toUpperCase() + key.slice(1)}`} />
+                                        :
+                                        <input style={{ width: "100%" }} value={value} onChange={(e) => {
+                                            let newSettings = mirrorSettings
+                                            newSettings[key] = e.target.value
+                                            setMirrorSettings({ ...newSettings })
+                                        }} autoFocus placeholder={`Enter Mirror ${key.charAt(0).toUpperCase() + key.slice(1)}`} />
+                                    }
+
+                                </FlexBox>
+                            )
+                        })}
+                    </FlexBox>
+                )]}
             />
         </Modal>
     );

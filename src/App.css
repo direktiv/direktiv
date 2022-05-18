@@ -495,3 +495,21 @@ html .editor-footer {
 /* .dropdown-select:hover{
   filter: brightness(var(--active-brightness));
 } */
+
+.input-title{
+  font-weight: bold;
+  color: var(--theme-dark-text);
+  font-size: 14px;
+}
+
+.input-title.readonly{
+  color: var(--theme-dark-gray-text);
+}
+
+.input-title.edited{
+  color: var(--theme-brand-blue);
+}
+
+.input-title.edited::after{
+  content: "*";
+}

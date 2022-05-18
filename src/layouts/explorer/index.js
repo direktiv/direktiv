@@ -30,6 +30,7 @@ import utc from "dayjs/plugin/utc"
 import Tabs from '../../components/tabs';
 import { useRef } from 'react';
 import { MirrorReadOnlyBadge } from '../mirror';
+import { mirrorSettingInfoMetaInfo } from '../mirror/info';
 
 const PAGE_SIZE = 10
 const apiHelps = (namespace) => {
@@ -435,7 +436,15 @@ function ExplorerList(props) {
                                 )}
                                 onClose={() => {
                                     setName("")
-
+                                    setMirrorSettings({
+                                        "url": "",
+                                        "ref": "",
+                                        "cron": "",
+                                        "passphrase": "",
+                                        "publicKey": "",
+                                        "privateKey": "",
+                                    })
+                                    setTabIndex(0)
                                 }}
                                 actionButtons={[
                                     ButtonDefinition("Add", async () => {
@@ -473,20 +482,32 @@ function ExplorerList(props) {
                                     style={{ minWidth: "280px" }}
                                     headers={["Standard", "Mirror"]}
                                     tabs={[(
-                                        <FlexBox className="col gap" style={{ fontSize: "12px" }}>
-                                            <div style={{ width: "100%", paddingRight: "12px", display: "flex" }}>
-                                                <input value={name} onChange={(e) => setName(e.target.value)} autoFocus placeholder="Enter a directory name" />
-                                            </div>
-                                        </FlexBox>), (
-                                        <FlexBox className="col gap" style={{ fontSize: "12px" }}>
-                                            <div style={{ width: "100%", paddingRight: "12px", display: "flex" }}>
+                                        <FlexBox className="col gap-md" style={{ paddingRight: "12px" }}>
+                                            <FlexBox className="row gap-sm" style={{ justifyContent: "flex-start" }}>
+                                                <span className={`input-title`}>Directory</span>
+                                            </FlexBox>
+                                            <input value={name} onChange={(e) => setName(e.target.value)} autoFocus placeholder="Enter a directory name" />
+                                        </FlexBox>
+                                    ), (
+                                        <FlexBox className="col gap">
+                                            <FlexBox className="col gap-md" style={{ paddingRight: "12px" }}>
+                                                <FlexBox className="row gap-sm" style={{ justifyContent: "flex-start" }}>
+                                                    <span className={`input-title`}>Directory</span>
+                                                </FlexBox>
                                                 <input autoFocus value={name} onChange={(e) => setName(e.target.value)} placeholder="Enter a directory name" />
-                                            </div>
+                                            </FlexBox>
                                             {Object.entries(mirrorSettings).map(([key, value]) => {
                                                 return (
-                                                    <div style={{ width: "100%", paddingRight: "12px", display: "flex" }}>
-                                                        {key === "passphrase" || key === "publicKey" || key === "privateKey" ?
-                                                            <textarea style={{ width: "100%", resize: "none" }} value={value} onChange={(e) => {
+                                                    <FlexBox key={`input-new-ns-${key}`} className="col gap-md" style={{ paddingRight: "12px" }}>
+                                                        <FlexBox className="row gap-sm" style={{ justifyContent: "flex-start" }}>
+                                                            <span className={`input-title`}>{mirrorSettingInfoMetaInfo[key].plainName}</span>
+                                                            {
+                                                                mirrorSettingInfoMetaInfo[key].info ?
+                                                                    <span className={``}>(i)</span> : <></>
+                                                            }
+                                                        </FlexBox>
+                                                        {key === "publicKey" || key === "privateKey" ?
+                                                            <textarea style={{ width: "100%", resize: "none" }} rows={5} value={value} onChange={(e) => {
                                                                 let newSettings = mirrorSettings
                                                                 newSettings[key] = e.target.value
                                                                 setMirrorSettings({ ...newSettings })
@@ -499,7 +520,7 @@ function ExplorerList(props) {
                                                             }} autoFocus placeholder={`Enter Mirror ${key.charAt(0).toUpperCase() + key.slice(1)}`} />
                                                         }
 
-                                                    </div>
+                                                    </FlexBox>
                                                 )
                                             })}
                                         </FlexBox>

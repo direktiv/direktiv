@@ -220,8 +220,8 @@ export default function MirrorPage(props) {
                 <FlexBox className="col gap" style={{ paddingRight: "8px" }}>
                     {/* <BreadcrumbCorner>
                     </BreadcrumbCorner> */}
-                    <FlexBox className="row gap wrap" style={{ flex: 1, maxHeight: "60vh" }}>
-                        <ContentPanel id={`panel-activity-list`} style={{ width: "100%", minHeight: "60vh", maxHeight: "60vh", flex: 2 }}>
+                    <FlexBox className="row gap wrap" style={{ flex: 1, maxHeight: "65vh" }}>
+                        <ContentPanel id={`panel-activity-list`} style={{ width: "100%", minHeight: "60vh", maxHeight: "65vh", flex: 2 }}>
                             <ContentPanelTitle>
                                 <ContentPanelTitleIcon>
                                     <VscAdd />
@@ -237,7 +237,7 @@ export default function MirrorPage(props) {
                         </ContentPanel>
                         <MirrorInfoPanel info={info} updateSettings={updateSettings} namespace={namespace} style={{ width: "100%", height: "100%", flex: 1 }} />
                     </FlexBox>
-                    <ContentPanel style={{ width: "100%", minHeight: "20vh", flex: 1 }}>
+                    <ContentPanel style={{ width: "100%", minHeight: "15vh", flex: 1 }}>
                         <ContentPanelTitle>
                             <ContentPanelTitleIcon>
                                 <VscAdd />

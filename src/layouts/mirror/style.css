@@ -2,25 +2,10 @@
 
 }
 
-.info-input-title{
-    font-weight: bold;
-}
-
-.info-input-title.readonly{
-    color: var(--theme-dark-gray-text);
-}
-
-.info-input-title.edited{
-    color: var(--theme-brand-blue);
-}
-
 .info-update-label{
     color: var(--theme-dark-gray-text);
 }
 
-.info-input-title.edited::after{
-    content: "*";
-}
 
 .info-input-value.readonly{
     color: var(--theme-dark-gray-text);
