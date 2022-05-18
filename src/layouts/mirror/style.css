@@ -21,7 +21,7 @@
     cursor: pointer;
     color: var(--theme-brand-blue);
     text-decoration: underline;
-    font-size: 14px;
+    font-size: 12px;
 }
 
 .info-input-undo:hover{
@@ -31,6 +31,13 @@
 .info-input-undo.hide{
     pointer-events: none;
     visibility: hidden;
+    height: 0px !important;
+    max-height: 0px !important;
+    overflow: hidden !important;
+    width: 0px !important;
+    max-width: 0px !important;
+    padding: 0px;
+    margin: 0px;
 }
 
 .activity-row {

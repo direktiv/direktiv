@@ -513,3 +513,22 @@ html .editor-footer {
 .input-title.edited::after{
   content: "*";
 }
+
+.input-title-button {
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.input-title-button:hover {
+  color: var(--theme-brand-blue);
+}
+
+.hide-important{
+  pointer-events: none !important;
+  visibility: hidden !important;
+  height: 0px !important;
+  max-height: 0px !important;
+  overflow: hidden !important;
+  width: 0px !important;
+  max-width: 0px !important;
+}

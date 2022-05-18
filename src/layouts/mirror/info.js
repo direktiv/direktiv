@@ -3,16 +3,19 @@ import './style.css';
 
 import ContentPanel, { ContentPanelBody, ContentPanelHeaderButton, ContentPanelTitle, ContentPanelTitleIcon } from '../../components/content-panel';
 import FlexBox from '../../components/flexbox';
-import { VscAdd, VscTerminal } from 'react-icons/vsc';
+import { VscAdd, VscCloudUpload, VscTerminal } from 'react-icons/vsc';
 import Modal, { ButtonDefinition } from '../../components/modal';
+import HelpIcon from '../../components/help';
+import Tippy from '@tippyjs/react';
+import { ClientFileUpload } from '../../components/navbar';
 
 export const mirrorSettingInfoMetaInfo = {
-    "url": {plainName: "URL", placeholder: "", info: null},
-    "ref": {plainName: "Ref", placeholder: "", info: null},
-    "cron": {plainName: "Cron", placeholder: "", info: null},
-    "passphrase": {plainName: "Passphrase", placeholder: "", info: null},
-    "publicKey": {plainName: "Public Key", placeholder: "", info: null},
-    "privateKey": {plainName: "Private Key", placeholder: "", info: null},
+    "url": {plainName: "URL", required: true, placeholder: "Enter repository URL", info: `SSH URL to repository. Example: "git@github.com:direktiv/apps-svc.git"`},
+    "ref": {plainName: "Ref", required: true, placeholder: `Enter repository ref e.g. "main"`, info: `Repository reference to sync from. For example this could be a commit hash ("b139f0e") or branch ("main").`},
+    "cron": {plainName: "Cron", required: false, placeholder: `Enter cron e.g. "0 * * * *"`, info: `Cron schedule expression for auto-syncing with remote repository. Example auto-sync every hour "0 * * * *". (Optional)`},
+    "passphrase": {plainName: "Passphrase", required: false, placeholder: `Enter passphrase`, info: `Passphrase to decrypt keys. (Optional)`},
+    "publicKey": {plainName: "Public Key", required: true, placeholder: `Enter Public Key`, info: `Public SSH Key used for authenticating with repository.`},
+    "privateKey": {plainName: "Private Key", required: true, placeholder: `Enter Private Key`, info: `Private SSH Key used for authenticating with repository.`},
 }
 
 
@@ -42,6 +45,11 @@ export default function MirrorInfoPanel(props) {
         "passphrase": false,
         "publicKey": false,
         "privateKey": false,
+    })
+
+    const [mirrorErrors, setMirrorErrors] = useState({
+        "publicKey": null,
+        "privateKey": null,
     })
 
     const infoChangesTrackerRef = useRef(infoChangesTracker)
@@ -173,12 +181,12 @@ export default function MirrorInfoPanel(props) {
                                     {infoChangesTracker.publicKey ?
                                         <FlexBox className="col gap" style={{ paddingRight: "10px" }}>
                                             <span className={`input-title readonly`}>Public Key</span>
-                                            <textarea className={`info-textarea-value readonly`} readonly={true} style={{ width: "100%", resize: "none" }} value={infoPublicKey} />
+                                            <textarea className={`info-textarea-value readonly`} readonly={true} rows={5} style={{ width: "100%", resize: "none" }} value={infoPublicKey} />
                                         </FlexBox> : <></>}
                                     {infoChangesTracker.privateKey ?
                                         <FlexBox className="col gap" style={{ paddingRight: "10px" }}>
                                             <span className={`input-title readonly`} >Private Key</span>
-                                            <textarea className={`info-textarea-value readonly`} readonly={true} style={{ width: "100%", resize: "none" }} value={infoPrivateKey} />
+                                            <textarea className={`info-textarea-value readonly`} readonly={true} rows={5} style={{ width: "100%", resize: "none" }} value={infoPrivateKey} />
                                         </FlexBox> : <></>}
                                 </FlexBox>
                             </Modal>
@@ -190,7 +198,10 @@ export default function MirrorInfoPanel(props) {
                 <FlexBox className="col gap" style={{ height: "fit-content" }}>
                     <FlexBox className="col gap-md" style={{ paddingRight: "10px" }}>
                         <FlexBox className="row" style={{ justifyContent: "space-between" }}>
-                            <span className={`input-title ${infoChangesTracker.url ? "edited" : ""}`}>URL</span>
+                            <FlexBox className="row gap-sm" style={{ justifyContent: "flex-start" }}>
+                                <span className={`input-title ${infoChangesTracker.url ? "edited" : ""}`}>URL</span>
+                                <HelpIcon msg={mirrorSettingInfoMetaInfo["url"].info} />
+                            </FlexBox>
                             <span className={`info-input-undo ${infoChangesTracker.url ? "" : "hide"}`} onClick={(e) => {
                                 setInfoURL(infoURLOld)
                                 setInfoChangesTracker((old) => {
@@ -205,11 +216,14 @@ export default function MirrorInfoPanel(props) {
                                 old.url = true
                                 return { ...old }
                             })
-                        }} placeholder="Enter URL" />
+                        }} placeholder={mirrorSettingInfoMetaInfo["url"].placeholder} />
                     </FlexBox>
                     <FlexBox className="col gap-md" style={{ paddingRight: "10px" }}>
                         <FlexBox className="row" style={{ justifyContent: "space-between" }}>
-                            <span className={`input-title ${infoChangesTracker.ref ? "edited" : ""}`}>Ref</span>
+                            <FlexBox className="row gap-sm" style={{ justifyContent: "flex-start" }}>
+                                <span className={`input-title ${infoChangesTracker.ref ? "edited" : ""}`}>Ref</span>
+                                <HelpIcon msg={mirrorSettingInfoMetaInfo["ref"].info} />
+                            </FlexBox>
                             <span className={`info-input-undo ${infoChangesTracker.ref ? "" : "hide"}`} onClick={(e) => {
                                 setInfoRef(infoRefOld)
                                 setInfoChangesTracker((old) => {
@@ -224,11 +238,14 @@ export default function MirrorInfoPanel(props) {
                                 old.ref = true
                                 return { ...old }
                             })
-                        }} placeholder="Enter Ref" />
+                        }} placeholder={mirrorSettingInfoMetaInfo["ref"].placeholder} />
                     </FlexBox>
                     <FlexBox className="col gap-md" style={{ paddingRight: "10px" }}>
                         <FlexBox className="row" style={{ justifyContent: "space-between" }}>
-                            <span className={`input-title ${infoChangesTracker.cron ? "edited" : ""}`}>Cron</span>
+                            <FlexBox className="row gap-sm" style={{ justifyContent: "flex-start" }}>
+                                <span className={`input-title ${infoChangesTracker.cron ? "edited" : ""}`}>Cron</span>
+                                <HelpIcon msg={mirrorSettingInfoMetaInfo["cron"].info} />
+                            </FlexBox>
                             <span className={`info-input-undo ${infoChangesTracker.cron ? "" : "hide"}`} onClick={(e) => {
                                 setInfoCron(infoCronOld)
                                 setInfoChangesTracker((old) => {
@@ -243,11 +260,14 @@ export default function MirrorInfoPanel(props) {
                                 old.cron = true
                                 return { ...old }
                             })
-                        }} placeholder="Enter cron" />
+                        }} placeholder={mirrorSettingInfoMetaInfo["cron"].placeholder} />
                     </FlexBox>
                     <FlexBox className="col gap-md" style={{ paddingRight: "10px" }}>
                         <FlexBox className="row" style={{ justifyContent: "space-between" }}>
-                            <span className={`input-title ${infoChangesTracker.passphrase ? "edited" : ""}`}>Passphrase</span>
+                            <FlexBox className="row gap-sm" style={{ justifyContent: "flex-start" }}>
+                                <span className={`input-title ${infoChangesTracker.passphrase ? "edited" : ""}`}>Passphrase</span>
+                                <HelpIcon msg={mirrorSettingInfoMetaInfo["passphrase"].info} />
+                            </FlexBox>
                             <span className={`info-input-undo ${infoChangesTracker.passphrase ? "" : "hide"}`} onClick={(e) => {
                                 setInfoPassphrase(infoPassphraseOld)
                                 setInfoChangesTracker((old) => {
@@ -262,18 +282,53 @@ export default function MirrorInfoPanel(props) {
                                 old.passphrase = true
                                 return { ...old }
                             })
-                        }} placeholder="Enter Passphrase" />
+                        }} placeholder={mirrorSettingInfoMetaInfo["passphrase"].placeholder} />
                     </FlexBox>
                     <FlexBox className="col gap-md" style={{ paddingRight: "10px" }}>
                         <FlexBox className="row" style={{ justifyContent: "space-between" }}>
-                            <span className={`input-title ${infoChangesTracker.publicKey ? "edited" : ""}`}>Public Key</span>
-                            <span className={`info-input-undo ${infoChangesTracker.publicKey ? "" : "hide"}`} onClick={(e) => {
-                                setInfoPublicKey(infoPublicKeyOld)
-                                setInfoChangesTracker((old) => {
-                                    old.publicKey = false
-                                    return { ...old }
-                                })
-                            }}>Undo Changes</span>
+                            <FlexBox className="row gap-sm" style={{ justifyContent: "flex-start" }}>
+                                <span className={`input-title ${infoChangesTracker.publicKey ? "edited" : ""}`}>Public Key</span>
+                                <HelpIcon msg={mirrorSettingInfoMetaInfo["publicKey"].info} />
+                            </FlexBox>
+                            <FlexBox className="row gap" style={{ justifyContent: "flex-end", gap: "12px" }}>
+                                <ClientFileUpload
+                                    setFile={(fileData) => {
+                                        setInfoPublicKey(fileData)
+                                        setInfoChangesTracker((old) => {
+                                            old.publicKey = true
+                                            return { ...old }
+                                        })
+                                    }}
+                                    setError={(errorMsg) => {
+                                        let newErrors = mirrorErrors
+                                        newErrors["publicKey"] = errorMsg
+                                        setMirrorErrors({ ...newErrors })
+                                    }}
+                                    maxSize={40960}
+                                >
+                                    <Tippy content={mirrorErrors["publicKey"] ? mirrorErrors["publicKey"] : `Upload key plaintext file content to ${mirrorSettingInfoMetaInfo["publicKey"].plainName} input. Warning: this will replace current ${mirrorSettingInfoMetaInfo["publicKey"].plainName} content`} trigger={'click mouseenter focus'} onHide={() => {
+                                        let newErrors = mirrorErrors
+                                        newErrors["publicKey"] = null
+                                        setMirrorErrors({ ...newErrors })
+                                    }}
+                                        zIndex={10}>
+                                        <div className='input-title-button'>
+                                            <FlexBox className="row gap-sm center" style={{ justifyContent: "flex-end", marginRight: "-6px" }}>
+                                                <span onClick={(e) => {
+                                                }}>Upload</span>
+                                                <VscCloudUpload />
+                                            </FlexBox>
+                                        </div>
+                                    </Tippy>
+                                </ClientFileUpload>
+                                <span className={`info-input-undo ${infoChangesTracker.publicKey ? "" : "hide"}`} onClick={(e) => {
+                                    setInfoPublicKey(infoPublicKeyOld)
+                                    setInfoChangesTracker((old) => {
+                                        old.publicKey = false
+                                        return { ...old }
+                                    })
+                                }}>Undo Changes</span>
+                            </FlexBox>
                         </FlexBox>
                         <textarea style={{ width: "100%", resize: "none" }} rows={5} value={infoPublicKey} onChange={(e) => {
                             setInfoPublicKey(e.target.value)
@@ -281,18 +336,53 @@ export default function MirrorInfoPanel(props) {
                                 old.publicKey = true
                                 return { ...old }
                             })
-                        }} placeholder="Enter Public Key" />
+                        }} placeholder={mirrorSettingInfoMetaInfo["publicKey"].placeholder} />
                     </FlexBox>
                     <FlexBox className="col gap-md" style={{ paddingRight: "10px" }}>
                         <FlexBox className="row" style={{ justifyContent: "space-between" }}>
-                            <span className={`input-title ${infoChangesTracker.privateKey ? "edited" : ""}`} >Private Key</span>
-                            <span className={`info-input-undo ${infoChangesTracker.privateKey ? "" : "hide"}`} onClick={(e) => {
-                                setInfoPrivateKey(infoPrivateKeyOld)
-                                setInfoChangesTracker((old) => {
-                                    old.privateKey = false
-                                    return { ...old }
-                                })
-                            }}>Undo Changes</span>
+                            <FlexBox className="row gap-sm" style={{ justifyContent: "flex-start" }}>
+                                <span className={`input-title ${infoChangesTracker.privateKey ? "edited" : ""}`} >Private Key</span>
+                                <HelpIcon msg={mirrorSettingInfoMetaInfo["privateKey"].info} />
+                            </FlexBox>
+                            <FlexBox className="row gap" style={{ justifyContent: "flex-end", gap: "12px" }}>
+                                <ClientFileUpload
+                                    setFile={(fileData) => {
+                                        setInfoPrivateKey(fileData)
+                                        setInfoChangesTracker((old) => {
+                                            old.privateKey = true
+                                            return { ...old }
+                                        })
+                                    }}
+                                    setError={(errorMsg) => {
+                                        let newErrors = mirrorErrors
+                                        newErrors["privateKey"] = errorMsg
+                                        setMirrorErrors({ ...newErrors })
+                                    }}
+                                    maxSize={40960}
+                                >
+                                    <Tippy content={mirrorErrors["privateKey"] ? mirrorErrors["privateKey"] : `Upload key plaintext file content to ${mirrorSettingInfoMetaInfo["privateKey"].plainName} input. Warning: this will replace current ${mirrorSettingInfoMetaInfo["privateKey"].plainName} content`} trigger={'click mouseenter focus'} onHide={() => {
+                                        let newErrors = mirrorErrors
+                                        newErrors["privateKey"] = null
+                                        setMirrorErrors({ ...newErrors })
+                                    }}
+                                        zIndex={10}>
+                                        <div className='input-title-button'>
+                                            <FlexBox className="row gap-sm center" style={{ justifyContent: "flex-end", marginRight: "-6px" }}>
+                                                <span onClick={(e) => {
+                                                }}>Upload</span>
+                                                <VscCloudUpload />
+                                            </FlexBox>
+                                        </div>
+                                    </Tippy>
+                                </ClientFileUpload>
+                                <span className={`info-input-undo ${infoChangesTracker.privateKey ? "" : "hide"}`} onClick={(e) => {
+                                    setInfoPrivateKey(infoPrivateKeyOld)
+                                    setInfoChangesTracker((old) => {
+                                        old.privateKey = false
+                                        return { ...old }
+                                    })
+                                }}>Undo Changes</span>
+                            </FlexBox>
                         </FlexBox>
                         <textarea type="password" style={{ width: "100%", resize: "none" }} rows={5} value={infoPrivateKey} onChange={(e) => {
                             setInfoPrivateKey(e.target.value)
@@ -300,7 +390,7 @@ export default function MirrorInfoPanel(props) {
                                 old.privateKey = true
                                 return { ...old }
                             })
-                        }} placeholder="Enter Private Key" />
+                        }} placeholder={mirrorSettingInfoMetaInfo["privateKey"].placeholder} />
                     </FlexBox>
                 </FlexBox>
 
