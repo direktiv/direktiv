@@ -1,5 +1,5 @@
 import { useWorkflowVariables } from 'direktiv-react-hooks';
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 
 import { VscVariableGroup, VscCloudDownload, VscCloudUpload,  VscEye, VscTrash, VscLoading } from 'react-icons/vsc';
 
@@ -16,7 +16,9 @@ import { AutoSizer } from 'react-virtualized';
 import HelpIcon from "../../../components/help";
 import { saveAs } from 'file-saver'
 import Tippy from '@tippyjs/react';
+import Pagination from '../../../components/pagination';
 
+const PAGE_SIZE = 10 ;
 
 function AddWorkflowVariablePanel(props) {
 
@@ -26,10 +28,14 @@ function AddWorkflowVariablePanel(props) {
     const [file, setFile] = useState(null)
     const [uploading, setUploading] = useState(false)
     const [mimeType, setMimeType] = useState("application/json")
+    const [varParam, setVarParam] = useState([`first=${PAGE_SIZE}`])
+    const updateVarPage = useCallback((newParam)=>{
+        setVarParam([...newParam])
+    }, [])
 
     let wfVar = workflow.substring(1)
 
-    const {data, setWorkflowVariable, getWorkflowVariable, getWorkflowVariableBlob, deleteWorkflowVariable} = useWorkflowVariables(Config.url, true, namespace, wfVar, localStorage.getItem("apikey"))
+    const {data, pageInfo, totalCount, setWorkflowVariable, getWorkflowVariable, getWorkflowVariableBlob, deleteWorkflowVariable} = useWorkflowVariables(Config.url, true, namespace, wfVar, localStorage.getItem("apikey"), ...varParam)
 
     if (data === null) {
         return <></>
@@ -86,7 +92,18 @@ function AddWorkflowVariablePanel(props) {
                     </Modal>
             </ContentPanelTitle>
             <ContentPanelBody>
-            <Variables namespace={namespace} deleteWorkflowVariable={deleteWorkflowVariable} setWorkflowVariable={setWorkflowVariable} getWorkflowVariable={getWorkflowVariable} getWorkflowVariableBlob={getWorkflowVariableBlob} variables={data}/>
+                {data !== null ?
+                <FlexBox className="col">
+                    <div>
+                    <Variables namespace={namespace} deleteWorkflowVariable={deleteWorkflowVariable} setWorkflowVariable={setWorkflowVariable} getWorkflowVariable={getWorkflowVariable} getWorkflowVariableBlob={getWorkflowVariableBlob} variables={data}/>
+                    </div>
+                    <Pagination
+                    pageSize={PAGE_SIZE}
+                    total={totalCount}
+                    pageInfo={pageInfo}
+                    updatePage={updateVarPage}
+                    />
+                </FlexBox>:<></>}
             </ContentPanelBody>
         </ContentPanel>
     )

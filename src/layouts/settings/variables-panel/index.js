@@ -15,6 +15,9 @@ import { VscCloudDownload, VscCloudUpload, VscEye, VscLoading, VscTrash, VscVari
 import { AutoSizer } from 'react-virtualized';
 import { saveAs } from 'file-saver'
 import Tippy from '@tippyjs/react';
+import Pagination from '../../../components/pagination';
+
+const PAGE_SIZE = 10 ;
 
 function VariablesPanel(props){
 
@@ -24,8 +27,12 @@ function VariablesPanel(props){
     const [file, setFile] = useState(null)
     const [uploading, setUploading] = useState(false)
     const [mimeType, setMimeType] = useState("application/json")
+    const [varParam, setVarParam] = useState([`first=${PAGE_SIZE}`])
+    const updateVarPage = useCallback((newParam)=>{
+        setVarParam([...newParam])
+    }, [])
 
-    const {data, err, setNamespaceVariable, getNamespaceVariable, deleteNamespaceVariable, getNamespaceVariableBlob} = useNamespaceVariables(Config.url, true, namespace, localStorage.getItem("apikey"))
+    const {data, err, pageInfo, totalCount, setNamespaceVariable, getNamespaceVariable, deleteNamespaceVariable, getNamespaceVariableBlob} = useNamespaceVariables(Config.url, true, namespace, localStorage.getItem("apikey"), ...varParam)
 
     // something went wrong with error listing for variables
     if(err !== null){
@@ -98,9 +105,17 @@ function VariablesPanel(props){
             </ContentPanelTitle>
             <ContentPanelBody style={{minHeight:"180px"}}>
                 {data !== null ?
-                <div>
+                <FlexBox className="col">
+                    <div>
                     <Variables namespace={namespace} deleteNamespaceVariable={deleteNamespaceVariable} setNamespaceVariable={setNamespaceVariable} getNamespaceVariable={getNamespaceVariable} variables={data} getNamespaceVariableBlob={getNamespaceVariableBlob}/>
-                </div>:""}
+                    </div>
+                    <Pagination
+                    pageSize={PAGE_SIZE}
+                    total={totalCount}
+                    pageInfo={pageInfo}
+                    updatePage={updateVarPage}
+                    />
+                </FlexBox>:<></>}
             </ContentPanelBody>
         </ContentPanel>
     )
