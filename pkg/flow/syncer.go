@@ -248,6 +248,9 @@ func (syncer *syncer) cronHandler(data []byte) {
 		LockConn: conn,
 	})
 	if err != nil {
+		if err == ErrMirrorLocked {
+			return
+		}
 		syncer.sugar.Error(err)
 		return
 	}
@@ -421,6 +424,14 @@ func (syncer *syncer) beginActivity(tx *ent.Tx, args *newMirrorActivityArgs) (*a
 
 	if unfinishedActivities > 0 {
 		return nil, errors.New("mirror operations are already underway")
+	}
+
+	if !d.ino.ReadOnly {
+		switch args.Type {
+		case util.MirrorActivityTypeLocked:
+		default:
+			return nil, ErrMirrorLocked
+		}
 	}
 
 	deadline := time.Now().Add(time.Minute * 20)
@@ -1526,7 +1537,7 @@ func buildModel(ctx context.Context, repo *localRepository) (*mirrorModel, error
 		}
 	}
 
-	model.dump()
+	// model.dump()
 
 	return model, nil
 
