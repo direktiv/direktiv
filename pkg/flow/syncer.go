@@ -11,6 +11,7 @@ import (
 	"io"
 	"io/fs"
 	"io/ioutil"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -1059,7 +1060,16 @@ func (repository *localRepository) clone(ctx context.Context) error {
 		},
 	}
 
-	r, err := git.Clone(repository.repo.URL, repository.path, &git.CloneOptions{
+	uri := repository.repo.URL
+	prefix := "https://"
+
+	if strings.HasPrefix(uri, prefix) && len(repository.repo.Passphrase) > 0 {
+		if !strings.Contains(uri, "@") {
+			uri = fmt.Sprintf("%s%s@", prefix, url.QueryEscape(repository.repo.Passphrase)) + strings.TrimPrefix(uri, prefix)
+		}
+	}
+
+	r, err := git.Clone(uri, repository.path, &git.CloneOptions{
 		CheckoutOptions: checkoutOpts,
 		FetchOptions:    fetchOpts,
 		CheckoutBranch:  repository.repo.Branch,
