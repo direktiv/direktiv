@@ -279,6 +279,27 @@ func (sl *actionStateLogic) do(ctx context.Context, engine *engine, im *instance
 		return
 	}
 
+	// jq files if inline
+	var x interface{}
+	for i := range files {
+		fi := &files[i]
+
+		if fi.Scope == "inline" {
+			x, err = jqOne(im.data, fi.Inline.Data)
+			if err != nil {
+				return
+			}
+
+			s, ok := x.(string)
+			if !ok {
+				err = fmt.Errorf("can not parse inline data for %s", fi.Key)
+				return
+			}
+			fi.Inline.Data = s
+		}
+
+	}
+
 	fnt := fn.GetType()
 	switch fnt {
 	case model.SubflowFunctionType:

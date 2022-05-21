@@ -172,6 +172,7 @@ func (srv *server) scrapeWorkflows() (*dependencyGraph, error) {
 							case "":
 								fallthrough
 							case "instance":
+							case "inline":
 							default:
 								srv.sugar.Error("Dependency graph update error: wrong scope %v", file.Scope)
 							}
@@ -192,6 +193,7 @@ func (srv *server) scrapeWorkflows() (*dependencyGraph, error) {
 								case "":
 									fallthrough
 								case "instance":
+								case "inline":
 								default:
 									srv.sugar.Error("Dependency graph update error: wrong scope %v", file.Scope)
 								}
@@ -212,6 +214,7 @@ func (srv *server) scrapeWorkflows() (*dependencyGraph, error) {
 							case "":
 								fallthrough
 							case "instance":
+							case "inline":
 							default:
 								srv.sugar.Error("Dependency graph update error: wrong scope %v", file.Scope)
 							}
