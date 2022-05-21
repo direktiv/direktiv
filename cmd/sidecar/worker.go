@@ -10,6 +10,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -77,12 +78,14 @@ func (worker *inboundWorker) run() {
 
 func (worker *inboundWorker) fileReader(ctx context.Context, ir *functionRequest, f *functionFiles, pw *io.PipeWriter) error {
 
-	err := worker.srv.getVar(ctx, ir, pw, nil, f.Scope, f.Key)
-	if err != nil {
-		return err
+	// inline are not requesting the variable
+	var err error
+	if f.Scope == "inline" {
+		_, err = pw.Write([]byte(f.Inline.Data))
+	} else {
+		err = worker.srv.getVar(ctx, ir, pw, nil, f.Scope, f.Key)
 	}
-
-	return nil
+	return err
 
 }
 
@@ -153,13 +156,28 @@ func (worker *inboundWorker) prepOneFunctionFiles(ctx context.Context, ir *funct
 		}
 	}()
 
-	err := worker.fileWriter(ctx, ir, f, pr)
+	dst, err := worker.fileWriter(ctx, ir, f, pr)
 	if err != nil {
 		_ = pr.CloseWithError(err)
 		return err
 	}
 
 	_ = pr.Close()
+
+	// if inline we set the mode if provided
+	if f.Scope == "inline" {
+		mode := os.FileMode(0644)
+		if f.Inline.Mode != "" {
+			m, err := strconv.ParseUint(f.Inline.Mode, 8, 32)
+			if err == nil {
+				mode = fs.FileMode(m)
+			}
+		}
+		err = os.Chmod(dst, mode)
+		if err != nil {
+			return err
+		}
+	}
 
 	return nil
 
@@ -318,7 +336,7 @@ func (worker *inboundWorker) writeFile(ftype, dst string, pr io.Reader) error {
 
 }
 
-func (worker *inboundWorker) fileWriter(ctx context.Context, ir *functionRequest, f *functionFiles, pr *io.PipeReader) error {
+func (worker *inboundWorker) fileWriter(ctx context.Context, ir *functionRequest, f *functionFiles, pr *io.PipeReader) (string, error) {
 
 	// TODO: validate f.Type earlier so that the switch cannot get unexpected data here
 
@@ -332,15 +350,15 @@ func (worker *inboundWorker) fileWriter(ctx context.Context, ir *functionRequest
 
 	err := os.MkdirAll(dir, 0750)
 	if err != nil {
-		return err
+		return dst, err
 	}
 
 	err = worker.writeFile(f.Type, dst, pr)
 	if err != nil {
-		return err
+		return dst, err
 	}
 
-	return nil
+	return dst, nil
 
 }
 

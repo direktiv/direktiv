@@ -61,6 +61,31 @@ Some function types support loading variable directly from storage onto their fi
 | `key` | Identifies which variable to load into a file. | string | yes | 
 | `scope` | Specifies the scope from which to load the variable. | [VariableScopeDefinition](#VariableScopeDefinition) | no |
 | `as` | Names the resulting file. If left unspecified, the `key` will be used instead. | string | no |
+| `type` | Type can convert the file variable data. The value `base64` decodes base64 encoded data and `tar` and `tar.gz` unpacks the data. | string | no |
+| `inline` | Inline can create files directly without Direktiv variables. | [Inline Data](#inline-data) | no |
+
+## Inline Data
+
+Inline data can create files based on plain or base64 encoded text. It is in particular in cases where small data needs to be provided to the function e.g. scripts. An additional `mode` parameter defines the Linux permissions applied to that file. 
+
+| Parameter | Description | Type | Required |
+| --- | --- | --- | --- |
+| `data` | Data to write to file. | string | no | 
+| `mode` | Linux permission of the file. | string | no |
+
+```yaml
+  action:
+    function: get
+    files:
+    - key: myscript.sh
+      scope: inline
+      inline:
+        mode: "0755"
+        data: |-
+          #!/bin/bash
+          echo HELLO WORLD
+```
+
 
 ## VariableScopeDefinition
 
