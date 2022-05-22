@@ -63,12 +63,10 @@ function NamespaceSelector(props) {
                         </FlexBox>
                     </FlexBox>
                     <FlexBox className={selectorBorderClass}>
-                     <Tippy content="fasf" trigger={'mouseenter focus click'} zIndex={0}>
-                        <FlexBox className={selectorClass}>
-                            {namespaces !== null ?
-                            <NamespaceList toggleResponsive={toggleResponsive} setShowSelector={setShowSelector} namespaces={namespaces}/>:""}
-                        </FlexBox>
-                     </Tippy>
+                    <FlexBox className={selectorClass}>
+                        {namespaces !== null ?
+                        <NamespaceList toggleResponsive={toggleResponsive} setShowSelector={setShowSelector} namespaces={namespaces}/>:""}
+                    </FlexBox>
                     </FlexBox>
                 </FlexBox>
             }
@@ -111,7 +109,7 @@ function NamespaceListItem(props) {
                     
                     <FlexBox className="col">
                      {namespace.length > 15 ? 
-                     <Tippy content={namespace} followCursor={true}>
+                     <Tippy content={namespace}>
                      <div className="auto-margin" style={{marginLeft: "8px"}}>
                          <FlexBox className="namespace-selector-label-header">
                              {label}

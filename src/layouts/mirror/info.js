@@ -10,10 +10,11 @@ import Tippy from '@tippyjs/react';
 import { ClientFileUpload } from '../../components/navbar';
 
 export const mirrorSettingInfoMetaInfo = {
-    "url": {plainName: "URL", required: true, placeholder: "Enter repository URL", info: `SSH URL to repository. Example: "git@github.com:direktiv/apps-svc.git"`},
+    "url": {plainName: "URL", required: true, placeholder: "Enter repository URL", info: `URL to repository. If authentication method is SSH Key a git url must be used e.g. "git@github.com:direktiv/apps-svc.git". All other authentication methods must use HTTP/S urls`},
     "ref": {plainName: "Ref", required: true, placeholder: `Enter repository ref e.g. "main"`, info: `Repository reference to sync from. For example this could be a commit hash ("b139f0e") or branch ("main").`},
     "cron": {plainName: "Cron", required: false, placeholder: `Enter cron e.g. "0 * * * *"`, info: `Cron schedule expression for auto-syncing with remote repository. Example auto-sync every hour "0 * * * *". (Optional)`},
     "passphrase": {plainName: "Passphrase", required: false, placeholder: `Enter passphrase`, info: `Passphrase to decrypt keys. (Optional)`},
+    "token": {plainName: "Token", required: true, placeholder: `Enter personal access token`, info: `Personal access token to used for authentication`},
     "publicKey": {plainName: "Public Key", required: true, placeholder: `Enter Public Key`, info: `Public SSH Key used for authenticating with repository.`},
     "privateKey": {plainName: "Private Key", required: true, placeholder: `Enter Private Key`, info: `Private SSH Key used for authenticating with repository.`},
 }
@@ -21,6 +22,11 @@ export const mirrorSettingInfoMetaInfo = {
 
 export default function MirrorInfoPanel(props) {
     const { info, style, updateSettings } = props
+
+    const [mirrorAuthMethod, setMirrorAuthMethod] = useState("none")
+    const [mirrorAuthMethodOld, setMirrorAuthMethodOld] = useState("none")
+    const [mirrorSettingsValid, setMirrorSettingsValid] = useState(false)
+    const [mirrorSettingsValidateMsg, setMirrorSettingsValidateMsg] = useState("")
 
     // Mirror Info States
     const [infoURL, setInfoURL] = useState("")
@@ -45,6 +51,7 @@ export default function MirrorInfoPanel(props) {
         "passphrase": false,
         "publicKey": false,
         "privateKey": false,
+        "authMethod": false
     })
 
     const [mirrorErrors, setMirrorErrors] = useState({
@@ -85,29 +92,105 @@ export default function MirrorInfoPanel(props) {
 
         if (info?.url !== null) {
             setInfoURLOld(info.url)
-            if (!infoChangesTrackerRef.url) {
+            if (!infoChangesTrackerRef?.current?.url) {
                 setInfoURL(info.url)
             }
         }
 
         if (info?.ref !== null) {
             setInfoRefOld(info.ref)
-            if (!infoChangesTrackerRef.ref) {
+            if (!infoChangesTrackerRef?.current?.ref) {
                 setInfoRef(info.ref)
             }
         }
 
         if (info?.cron !== null) {
             setInfoCronOld(info.cron)
-            if (!infoChangesTrackerRef.cron) {
+            if (!infoChangesTrackerRef?.current?.cron) {
                 setInfoCron(info.cron)
             }
         }
 
-    }, [info])
+        if (!infoChangesTrackerRef?.current || !typeof infoChangesTrackerRef?.current === 'object'){
+            return
+        }
+
+        let authMethod = "none"
+        if (info.privateKey === "-" || (info.publicKey && info.publicKey !== "")) {
+            // Auth method is SSH
+            authMethod = "ssh"
+        } else if (info.passphrase && info.privateKey === "" && info.publicKey === "") {
+            // Auth method is token
+            authMethod = "token"
+        }
+
+        if (!infoPendingChanges){
+            setMirrorAuthMethod(authMethod)
+        }
+
+        setMirrorAuthMethodOld(authMethod)
+
+    }, [info, infoPendingChanges])
+
+    // Validate if form values is valid
+    useEffect(() => {
+        if (!infoPendingChanges){
+            return
+        }
+
+        let authMethodChanged = mirrorAuthMethod !== mirrorAuthMethodOld
+        let validateMsg = ""
+
+        switch (mirrorAuthMethod) {
+            case "ssh":
+                // validate ssh
+                if (authMethodChanged && infoPrivateKey === ""){
+                    // Rule: Check if privateKey is set in form when switching to token auth method
+                    validateMsg += "Private Key must be set. "
+                } else if (infoPrivateKey === "" && info.privateKey !== "-"){
+                    // Rule:  Check if privateKey is set in form or remotely
+                    validateMsg += "Private Key must be set. "
+                }
+
+                if (authMethodChanged && infoPublicKey === ""){
+                    // Rule: Check if publicKey is set in form when switching to token auth method
+                    validateMsg += "Public Key must be set. "
+                } else if (infoPublicKey === "" && info.publicKey.length === 0){
+                    // Rule:  Check if publicKey is set in form or remotely
+                    validateMsg += "Public Key must be set. "
+                }
+
+                break;
+            case "token":
+                //valid token
+                if (!infoURL.startsWith("http")) {
+                    validateMsg += "URL must use the http/s protocol. "
+                }
+
+                if (authMethodChanged && infoPassphrase === ""){
+                    // Rule: Check if token is set in form when switching to token auth method
+                    validateMsg += "Token must be set. "
+                } else if (infoPassphrase === "" && info.passphrase !== "-"){
+                    // Rule:  Check if token is set in form or remotely
+                    validateMsg += "Token must be set. "
+                }
+                break;
+            default:
+                break;
+        }
+
+        if (validateMsg === "") {
+            setMirrorSettingsValid(true)
+        } else {
+            setMirrorSettingsValid(false)
+        }
+        setMirrorSettingsValidateMsg(validateMsg)
+
+        
+    }, [info, infoPublicKey, infoPassphrase, infoURL, infoPrivateKey, infoPendingChanges, mirrorAuthMethod, mirrorAuthMethodOld])
 
     useEffect(() => {
-        setInfoPendingChanges(infoChangesTracker.url || infoChangesTracker.ref || infoChangesTracker.cron || infoChangesTracker.passphrase || infoChangesTracker.publicKey || infoChangesTracker.privateKey)
+        setInfoPendingChanges(infoChangesTracker.url || infoChangesTracker.ref || infoChangesTracker.cron || infoChangesTracker.passphrase || infoChangesTracker.publicKey || infoChangesTracker.privateKey || infoChangesTracker.authMethod)
     }, [infoChangesTracker])
 
     return (
@@ -118,84 +201,136 @@ export default function MirrorInfoPanel(props) {
                 </ContentPanelTitleIcon>
                 <FlexBox className="gap" style={{ alignItems: "center" }}>Mirror Info
                     <FlexBox style={{ flex: "auto", justifyContent: "right", paddingRight: "6px", alignItems: "unset" }}>
-                        <ContentPanelHeaderButton className={`${infoPendingChanges ? "" : "disabled"}`} style={infoPendingChanges ? {} : { color: "grey" }}>
-                            <Modal
-                                escapeToCancel
-                                activeOverlay
-                                title="Update Mirror Settings"
-                                titleIcon={
-                                    <VscTerminal />
-                                }
-                                style={{
-                                    maxWidth: "260px"
-                                }}
-                                modalStyle={{
-                                    width: "300px"
-                                }}
-                                button={(
-                                    <div>
-                                        Update Settings
-                                    </div>
-                                )}
-                                actionButtons={[
-                                    ButtonDefinition("Update Settings", async () => {
-                                        await updateSettings({
-                                            "url": infoChangesTracker.url ? infoURL : "-",
-                                            "ref": infoChangesTracker.ref ? infoRef : "-",
-                                            "cron": infoChangesTracker.cron ? infoCron : "-",
-                                            "passphrase": infoChangesTracker.passphrase ? infoPassphrase : "-",
-                                            "publicKey": infoChangesTracker.publicKey ? infoPublicKey : "-",
-                                            "privateKey": infoChangesTracker.privateKey ? infoPrivateKey : "-",
+                        <Tippy content={mirrorSettingsValidateMsg} disabled={mirrorSettingsValidateMsg === ""} trigger={'mouseenter focus'} zIndex={10}>
+                            <div>                            
+                                <ContentPanelHeaderButton className={`${infoPendingChanges && mirrorSettingsValid ? "" : "disabled"}`} style={infoPendingChanges&& mirrorSettingsValid ? {} : { color: "grey" }}>
+                                    <Modal
+                                        escapeToCancel
+                                        activeOverlay
+                                        title="Update Mirror Settings"
+                                        titleIcon={
+                                            <VscTerminal />
+                                        }
+                                        style={{
+                                            maxWidth: "260px"
+                                        }}
+                                        modalStyle={{
+                                            width: "300px"
+                                        }}
+                                        button={(
+                                            <div>
+                                                Update Settings
+                                            </div>
+                                        )}
+                                        actionButtons={[
+                                            ButtonDefinition("Update Settings", async () => {
+                                                let newSettings = {
+                                                    "url": infoChangesTracker.url ? infoURL : "-",
+                                                    "ref": infoChangesTracker.ref ? infoRef : "-",
+                                                    "cron": infoChangesTracker.cron ? infoCron : "-",
+                                                    "passphrase": infoChangesTracker.passphrase ? infoPassphrase : "-",
+                                                    "publicKey": infoChangesTracker.publicKey ? infoPublicKey : "-",
+                                                    "privateKey": infoChangesTracker.privateKey ? infoPrivateKey : "-",
+                                                }
 
-                                        })
+                                                if (mirrorAuthMethod === "token") {
+                                                    newSettings["privateKey"] = ""
+                                                    newSettings["publicKey"] = ""
+                                                } else if (mirrorAuthMethod === "none") {
+                                                    newSettings["passphrase"] = ""
+                                                    newSettings["privateKey"] = ""
+                                                    newSettings["publicKey"] = ""
+                                                } else if (mirrorAuthMethod === "ssh" && !infoChangesTracker.passphrase) {
+                                                    newSettings["passphrase"] = ""
+                                                }
 
-                                        resetStates()
-                                    }, "small blue", () => { }, true, false),
-                                    ButtonDefinition("Cancel", () => { }, "small light", () => { }, true, false)
-                                ]}
-                            >
-                                <FlexBox className="col gap" style={{ height: "fit-content" }}>
-                                    <FlexBox className="col center info-update-label">
-                                        The following changes will been made
-                                    </FlexBox>
-                                    {infoChangesTracker.url ?
-                                        <FlexBox className="col gap" style={{ paddingRight: "10px" }}>
-                                            <span className={`input-title readonly`}>URL</span>
-                                            <input className={`info-input-value readonly`} value={infoURL} />
-                                        </FlexBox> : <></>}
-                                    {infoChangesTracker.ref ?
-                                        <FlexBox className="col gap" style={{ paddingRight: "10px" }}>
-                                            <span className={`input-title readonly`}>Ref</span>
-                                            <input className={`info-input-value readonly`} value={infoRef} />
-                                        </FlexBox> : <></>}
-                                    {infoChangesTracker.cron ?
-                                        <FlexBox className="col gap" style={{ paddingRight: "10px" }}>
-                                            <span className={`input-title readonly`}>Cron</span>
-                                            <input className={`info-input-value readonly`} readonly={true} value={infoCron} />
-                                        </FlexBox> : <></>}
-                                    {infoChangesTracker.passphrase ?
-                                        <FlexBox className="col gap" style={{ paddingRight: "10px" }}>
-                                            <span className={`input-title readonly`}>Passphrase</span>
-                                            <input className={`info-input-value readonly`} readonly={true} type="password" value={infoPassphrase} />
-                                        </FlexBox> : <></>}
-                                    {infoChangesTracker.publicKey ?
-                                        <FlexBox className="col gap" style={{ paddingRight: "10px" }}>
-                                            <span className={`input-title readonly`}>Public Key</span>
-                                            <textarea className={`info-textarea-value readonly`} readonly={true} rows={5} style={{ width: "100%", resize: "none" }} value={infoPublicKey} />
-                                        </FlexBox> : <></>}
-                                    {infoChangesTracker.privateKey ?
-                                        <FlexBox className="col gap" style={{ paddingRight: "10px" }}>
-                                            <span className={`input-title readonly`} >Private Key</span>
-                                            <textarea className={`info-textarea-value readonly`} readonly={true} rows={5} style={{ width: "100%", resize: "none" }} value={infoPrivateKey} />
-                                        </FlexBox> : <></>}
-                                </FlexBox>
-                            </Modal>
-                        </ContentPanelHeaderButton>
+                                                await updateSettings(newSettings)
+
+                                                resetStates()
+                                            }, "small blue", () => { }, true, false),
+                                            ButtonDefinition("Cancel", () => { }, "small light", () => { }, true, false)
+                                        ]}
+                                    >
+                                        <FlexBox className="col gap" style={{ height: "fit-content" }}>
+                                            <FlexBox className="col center info-update-label">
+                                                The following changes will been made
+                                            </FlexBox>
+                                            {
+                                                infoChangesTracker.authMethod ?
+                                                <FlexBox className="col center info-update-label" style={{textAlign: "center"}}>
+                                                    Warning: 
+                                                    { mirrorAuthMethod === "none" ? ` Changing authentication method to "None" will remove Passphrase, Public Key and Private Key from settings.`: ""}
+                                                    { mirrorAuthMethod === "token" ? ` Changing authentication method to "Access Token" will remove Public Key and Private Key from settings.`: ""}
+                                                    { mirrorAuthMethod === "ssh" ? ` Changing authentication method to "SSH Keys" will remove Access Token from settings.`: ""}
+                                                </FlexBox>
+                                                :
+                                                <></>
+                                            }
+                                            {infoChangesTracker.url ?
+                                                <FlexBox className="col gap" style={{ paddingRight: "10px" }}>
+                                                    <span className={`input-title readonly`}>URL</span>
+                                                    <input className={`info-input-value readonly`} value={infoURL} />
+                                                </FlexBox> : <></>}
+                                            {infoChangesTracker.ref ?
+                                                <FlexBox className="col gap" style={{ paddingRight: "10px" }}>
+                                                    <span className={`input-title readonly`}>Ref</span>
+                                                    <input className={`info-input-value readonly`} value={infoRef} />
+                                                </FlexBox> : <></>}
+                                            {infoChangesTracker.cron ?
+                                                <FlexBox className="col gap" style={{ paddingRight: "10px" }}>
+                                                    <span className={`input-title readonly`}>Cron</span>
+                                                    <input className={`info-input-value readonly`} readonly={true} value={infoCron} />
+                                                </FlexBox> : <></>}
+                                            {infoChangesTracker.passphrase && mirrorAuthMethod === "token" ?
+                                                <FlexBox className="col gap" style={{ paddingRight: "10px" }}>
+                                                    <span className={`input-title readonly`} >Token</span>
+                                                    <textarea className={`info-textarea-value readonly`} readonly={true} rows={5} style={{ width: "100%", resize: "none" }} value={infoPassphrase} />
+                                                </FlexBox> : <></>}
+                                            {infoChangesTracker.passphrase && mirrorAuthMethod === "ssh" ?
+                                                <FlexBox className="col gap" style={{ paddingRight: "10px" }}>
+                                                    <span className={`input-title readonly`}>Passphrase</span>
+                                                    <input className={`info-input-value readonly`} readonly={true} type="password" value={infoPassphrase} />
+                                                </FlexBox> : <></>}
+                                            {infoChangesTracker.publicKey && mirrorAuthMethod === "ssh" ?
+                                                <FlexBox className="col gap" style={{ paddingRight: "10px" }}>
+                                                    <span className={`input-title readonly`}>Public Key</span>
+                                                    <textarea className={`info-textarea-value readonly`} readonly={true} rows={5} style={{ width: "100%", resize: "none" }} value={infoPublicKey} />
+                                                </FlexBox> : <></>}
+                                            {infoChangesTracker.privateKey && mirrorAuthMethod === "ssh" ?
+                                                <FlexBox className="col gap" style={{ paddingRight: "10px" }}>
+                                                    <span className={`input-title readonly`} >Private Key</span>
+                                                    <textarea className={`info-textarea-value readonly`} readonly={true} rows={5} style={{ width: "100%", resize: "none" }} value={infoPrivateKey} />
+                                                </FlexBox> : <></>}
+                                        </FlexBox>
+                                    </Modal>
+                                </ContentPanelHeaderButton>
+                            </div>
+                        </Tippy>
                     </FlexBox>
                 </FlexBox>
             </ContentPanelTitle>
             <ContentPanelBody style={{ overflow: "auto" }}>
                 <FlexBox className="col gap" style={{ height: "fit-content" }}>
+                    <FlexBox className="col gap-md" style={{ paddingRight: "12px" }}>
+                        <FlexBox className="row gap-sm" style={{ justifyContent: "flex-start" }}>
+                            <span className={`input-title`}>Authentication Method</span>
+                        </FlexBox>
+                        <div style={{ width: "100%", paddingRight: "12px", display: "flex" }}>
+                            <select style={{ width: "100%" }} defaultValue={mirrorAuthMethod} value={mirrorAuthMethod} onChange={(e) => {
+                                    // Track authmethod is changed 
+                                    const newAuthMethod = e.target.value
+                                    setMirrorAuthMethod(newAuthMethod)
+                                    setInfoChangesTracker((old) => {
+                                        old.authMethod = newAuthMethod !== mirrorAuthMethodOld
+                                        return { ...old }
+                                    })
+                                }}>
+                                <option value="none">None</option>
+                                <option value="ssh">SSH Keys</option>
+                                <option value="token">Access Token</option>
+                            </select>
+                        </div>
+                    </FlexBox>
                     <FlexBox className="col gap-md" style={{ paddingRight: "10px" }}>
                         <FlexBox className="row" style={{ justifyContent: "space-between" }}>
                             <FlexBox className="row gap-sm" style={{ justifyContent: "flex-start" }}>
@@ -262,136 +397,170 @@ export default function MirrorInfoPanel(props) {
                             })
                         }} placeholder={mirrorSettingInfoMetaInfo["cron"].placeholder} />
                     </FlexBox>
-                    <FlexBox className="col gap-md" style={{ paddingRight: "10px" }}>
-                        <FlexBox className="row" style={{ justifyContent: "space-between" }}>
-                            <FlexBox className="row gap-sm" style={{ justifyContent: "flex-start" }}>
-                                <span className={`input-title ${infoChangesTracker.passphrase ? "edited" : ""}`}>Passphrase</span>
-                                <HelpIcon msg={mirrorSettingInfoMetaInfo["passphrase"].info} />
-                            </FlexBox>
-                            <span className={`info-input-undo ${infoChangesTracker.passphrase ? "" : "hide"}`} onClick={(e) => {
-                                setInfoPassphrase(infoPassphraseOld)
-                                setInfoChangesTracker((old) => {
-                                    old.passphrase = false
-                                    return { ...old }
-                                })
-                            }}>Undo Changes</span>
-                        </FlexBox>
-                        <input type="password" value={infoPassphrase} onChange={(e) => {
-                            setInfoPassphrase(e.target.value)
-                            setInfoChangesTracker((old) => {
-                                old.passphrase = true
-                                return { ...old }
-                            })
-                        }} placeholder={mirrorSettingInfoMetaInfo["passphrase"].placeholder} />
-                    </FlexBox>
-                    <FlexBox className="col gap-md" style={{ paddingRight: "10px" }}>
-                        <FlexBox className="row" style={{ justifyContent: "space-between" }}>
-                            <FlexBox className="row gap-sm" style={{ justifyContent: "flex-start" }}>
-                                <span className={`input-title ${infoChangesTracker.publicKey ? "edited" : ""}`}>Public Key</span>
-                                <HelpIcon msg={mirrorSettingInfoMetaInfo["publicKey"].info} />
-                            </FlexBox>
-                            <FlexBox className="row gap" style={{ justifyContent: "flex-end", gap: "12px" }}>
-                                <ClientFileUpload
-                                    setFile={(fileData) => {
-                                        setInfoPublicKey(fileData)
+
+                    {/* PERSONAL ACCESS TOKEN Auth Inputs */}
+                    {
+                        mirrorAuthMethod === "token" ?
+                            <FlexBox className="col gap-md" style={{ paddingRight: "10px" }}>
+                                <FlexBox className="row" style={{ justifyContent: "space-between" }}>
+                                    <FlexBox className="row gap-sm" style={{ justifyContent: "flex-start" }}>
+                                        <span className={`input-title ${infoChangesTracker.passphrase ? "edited" : ""}`}>Token</span>
+                                        <HelpIcon msg={mirrorSettingInfoMetaInfo["token"].info} />
+                                    </FlexBox>
+                                    <span className={`info-input-undo ${infoChangesTracker.passphrase ? "" : "hide"}`} onClick={(e) => {
+                                        setInfoPassphrase(infoPassphraseOld)
+                                        setInfoChangesTracker((old) => {
+                                            old.passphrase = false
+                                            return { ...old }
+                                        })
+                                    }}>Undo Changes</span>
+                                </FlexBox>
+                                <textarea type="password" style={{ width: "100%", resize: "none" }} rows={5} value={infoPassphrase} onChange={(e) => {
+                                    setInfoPassphrase(e.target.value)
+                                    setInfoChangesTracker((old) => {
+                                        old.passphrase = true
+                                        return { ...old }
+                                    })
+                                }} placeholder={mirrorSettingInfoMetaInfo["token"].placeholder} />
+                            </FlexBox> : <></>
+                    }
+
+                    {/* SSH Auth Inputs */}
+                    {
+                        mirrorAuthMethod === "ssh" ?
+                            <>
+                                <FlexBox className="col gap-md" style={{ paddingRight: "10px" }}>
+                                    <FlexBox className="row" style={{ justifyContent: "space-between" }}>
+                                        <FlexBox className="row gap-sm" style={{ justifyContent: "flex-start" }}>
+                                            <span className={`input-title ${infoChangesTracker.passphrase ? "edited" : ""}`}>Passphrase</span>
+                                            <HelpIcon msg={mirrorSettingInfoMetaInfo["passphrase"].info} />
+                                        </FlexBox>
+                                        <span className={`info-input-undo ${infoChangesTracker.passphrase ? "" : "hide"}`} onClick={(e) => {
+                                            setInfoPassphrase(infoPassphraseOld)
+                                            setInfoChangesTracker((old) => {
+                                                old.passphrase = false
+                                                return { ...old }
+                                            })
+                                        }}>Undo Changes</span>
+                                    </FlexBox>
+                                    <input type="password" value={infoPassphrase} onChange={(e) => {
+                                        setInfoPassphrase(e.target.value)
+                                        setInfoChangesTracker((old) => {
+                                            old.passphrase = true
+                                            return { ...old }
+                                        })
+                                    }} placeholder={mirrorSettingInfoMetaInfo["passphrase"].placeholder} />
+                                </FlexBox>
+                                <FlexBox className="col gap-md" style={{ paddingRight: "10px" }}>
+                                    <FlexBox className="row" style={{ justifyContent: "space-between" }}>
+                                        <FlexBox className="row gap-sm" style={{ justifyContent: "flex-start" }}>
+                                            <span className={`input-title ${infoChangesTracker.publicKey ? "edited" : ""}`}>Public Key</span>
+                                            <HelpIcon msg={mirrorSettingInfoMetaInfo["publicKey"].info} />
+                                        </FlexBox>
+                                        <FlexBox className="row gap" style={{ justifyContent: "flex-end", gap: "12px" }}>
+                                            <ClientFileUpload
+                                                setFile={(fileData) => {
+                                                    setInfoPublicKey(fileData)
+                                                    setInfoChangesTracker((old) => {
+                                                        old.publicKey = true
+                                                        return { ...old }
+                                                    })
+                                                }}
+                                                setError={(errorMsg) => {
+                                                    let newErrors = mirrorErrors
+                                                    newErrors["publicKey"] = errorMsg
+                                                    setMirrorErrors({ ...newErrors })
+                                                }}
+                                                maxSize={40960}
+                                            >
+                                                <Tippy content={mirrorErrors["publicKey"] ? mirrorErrors["publicKey"] : `Upload key plaintext file content to ${mirrorSettingInfoMetaInfo["publicKey"].plainName} input. Warning: this will replace current ${mirrorSettingInfoMetaInfo["publicKey"].plainName} content`} trigger={'click mouseenter focus'} onHide={() => {
+                                                    let newErrors = mirrorErrors
+                                                    newErrors["publicKey"] = null
+                                                    setMirrorErrors({ ...newErrors })
+                                                }}
+                                                    zIndex={10}>
+                                                    <div className='input-title-button'>
+                                                        <FlexBox className="row gap-sm center" style={{ justifyContent: "flex-end", marginRight: "-6px" }}>
+                                                            <span onClick={(e) => {
+                                                            }}>Upload</span>
+                                                            <VscCloudUpload />
+                                                        </FlexBox>
+                                                    </div>
+                                                </Tippy>
+                                            </ClientFileUpload>
+                                            <span className={`info-input-undo ${infoChangesTracker.publicKey ? "" : "hide"}`} onClick={(e) => {
+                                                setInfoPublicKey(infoPublicKeyOld)
+                                                setInfoChangesTracker((old) => {
+                                                    old.publicKey = false
+                                                    return { ...old }
+                                                })
+                                            }}>Undo Changes</span>
+                                        </FlexBox>
+                                    </FlexBox>
+                                    <textarea style={{ width: "100%", resize: "none" }} rows={5} value={infoPublicKey} onChange={(e) => {
+                                        setInfoPublicKey(e.target.value)
                                         setInfoChangesTracker((old) => {
                                             old.publicKey = true
                                             return { ...old }
                                         })
-                                    }}
-                                    setError={(errorMsg) => {
-                                        let newErrors = mirrorErrors
-                                        newErrors["publicKey"] = errorMsg
-                                        setMirrorErrors({ ...newErrors })
-                                    }}
-                                    maxSize={40960}
-                                >
-                                    <Tippy content={mirrorErrors["publicKey"] ? mirrorErrors["publicKey"] : `Upload key plaintext file content to ${mirrorSettingInfoMetaInfo["publicKey"].plainName} input. Warning: this will replace current ${mirrorSettingInfoMetaInfo["publicKey"].plainName} content`} trigger={'click mouseenter focus'} onHide={() => {
-                                        let newErrors = mirrorErrors
-                                        newErrors["publicKey"] = null
-                                        setMirrorErrors({ ...newErrors })
-                                    }}
-                                        zIndex={10}>
-                                        <div className='input-title-button'>
-                                            <FlexBox className="row gap-sm center" style={{ justifyContent: "flex-end", marginRight: "-6px" }}>
-                                                <span onClick={(e) => {
-                                                }}>Upload</span>
-                                                <VscCloudUpload />
-                                            </FlexBox>
-                                        </div>
-                                    </Tippy>
-                                </ClientFileUpload>
-                                <span className={`info-input-undo ${infoChangesTracker.publicKey ? "" : "hide"}`} onClick={(e) => {
-                                    setInfoPublicKey(infoPublicKeyOld)
-                                    setInfoChangesTracker((old) => {
-                                        old.publicKey = false
-                                        return { ...old }
-                                    })
-                                }}>Undo Changes</span>
-                            </FlexBox>
-                        </FlexBox>
-                        <textarea style={{ width: "100%", resize: "none" }} rows={5} value={infoPublicKey} onChange={(e) => {
-                            setInfoPublicKey(e.target.value)
-                            setInfoChangesTracker((old) => {
-                                old.publicKey = true
-                                return { ...old }
-                            })
-                        }} placeholder={mirrorSettingInfoMetaInfo["publicKey"].placeholder} />
-                    </FlexBox>
-                    <FlexBox className="col gap-md" style={{ paddingRight: "10px" }}>
-                        <FlexBox className="row" style={{ justifyContent: "space-between" }}>
-                            <FlexBox className="row gap-sm" style={{ justifyContent: "flex-start" }}>
-                                <span className={`input-title ${infoChangesTracker.privateKey ? "edited" : ""}`} >Private Key</span>
-                                <HelpIcon msg={mirrorSettingInfoMetaInfo["privateKey"].info} />
-                            </FlexBox>
-                            <FlexBox className="row gap" style={{ justifyContent: "flex-end", gap: "12px" }}>
-                                <ClientFileUpload
-                                    setFile={(fileData) => {
-                                        setInfoPrivateKey(fileData)
+                                    }} placeholder={mirrorSettingInfoMetaInfo["publicKey"].placeholder} />
+                                </FlexBox>
+                                <FlexBox className="col gap-md" style={{ paddingRight: "10px" }}>
+                                    <FlexBox className="row" style={{ justifyContent: "space-between" }}>
+                                        <FlexBox className="row gap-sm" style={{ justifyContent: "flex-start" }}>
+                                            <span className={`input-title ${infoChangesTracker.privateKey ? "edited" : ""}`} >Private Key</span>
+                                            <HelpIcon msg={mirrorSettingInfoMetaInfo["privateKey"].info} />
+                                        </FlexBox>
+                                        <FlexBox className="row gap" style={{ justifyContent: "flex-end", gap: "12px" }}>
+                                            <ClientFileUpload
+                                                setFile={(fileData) => {
+                                                    setInfoPrivateKey(fileData)
+                                                    setInfoChangesTracker((old) => {
+                                                        old.privateKey = true
+                                                        return { ...old }
+                                                    })
+                                                }}
+                                                setError={(errorMsg) => {
+                                                    let newErrors = mirrorErrors
+                                                    newErrors["privateKey"] = errorMsg
+                                                    setMirrorErrors({ ...newErrors })
+                                                }}
+                                                maxSize={40960}
+                                            >
+                                                <Tippy content={mirrorErrors["privateKey"] ? mirrorErrors["privateKey"] : `Upload key plaintext file content to ${mirrorSettingInfoMetaInfo["privateKey"].plainName} input. Warning: this will replace current ${mirrorSettingInfoMetaInfo["privateKey"].plainName} content`} trigger={'click mouseenter focus'} onHide={() => {
+                                                    let newErrors = mirrorErrors
+                                                    newErrors["privateKey"] = null
+                                                    setMirrorErrors({ ...newErrors })
+                                                }}
+                                                    zIndex={10}>
+                                                    <div className='input-title-button'>
+                                                        <FlexBox className="row gap-sm center" style={{ justifyContent: "flex-end", marginRight: "-6px" }}>
+                                                            <span onClick={(e) => {
+                                                            }}>Upload</span>
+                                                            <VscCloudUpload />
+                                                        </FlexBox>
+                                                    </div>
+                                                </Tippy>
+                                            </ClientFileUpload>
+                                            <span className={`info-input-undo ${infoChangesTracker.privateKey ? "" : "hide"}`} onClick={(e) => {
+                                                setInfoPrivateKey(infoPrivateKeyOld)
+                                                setInfoChangesTracker((old) => {
+                                                    old.privateKey = false
+                                                    return { ...old }
+                                                })
+                                            }}>Undo Changes</span>
+                                        </FlexBox>
+                                    </FlexBox>
+                                    <textarea type="password" style={{ width: "100%", resize: "none" }} rows={5} value={infoPrivateKey} onChange={(e) => {
+                                        setInfoPrivateKey(e.target.value)
                                         setInfoChangesTracker((old) => {
                                             old.privateKey = true
                                             return { ...old }
                                         })
-                                    }}
-                                    setError={(errorMsg) => {
-                                        let newErrors = mirrorErrors
-                                        newErrors["privateKey"] = errorMsg
-                                        setMirrorErrors({ ...newErrors })
-                                    }}
-                                    maxSize={40960}
-                                >
-                                    <Tippy content={mirrorErrors["privateKey"] ? mirrorErrors["privateKey"] : `Upload key plaintext file content to ${mirrorSettingInfoMetaInfo["privateKey"].plainName} input. Warning: this will replace current ${mirrorSettingInfoMetaInfo["privateKey"].plainName} content`} trigger={'click mouseenter focus'} onHide={() => {
-                                        let newErrors = mirrorErrors
-                                        newErrors["privateKey"] = null
-                                        setMirrorErrors({ ...newErrors })
-                                    }}
-                                        zIndex={10}>
-                                        <div className='input-title-button'>
-                                            <FlexBox className="row gap-sm center" style={{ justifyContent: "flex-end", marginRight: "-6px" }}>
-                                                <span onClick={(e) => {
-                                                }}>Upload</span>
-                                                <VscCloudUpload />
-                                            </FlexBox>
-                                        </div>
-                                    </Tippy>
-                                </ClientFileUpload>
-                                <span className={`info-input-undo ${infoChangesTracker.privateKey ? "" : "hide"}`} onClick={(e) => {
-                                    setInfoPrivateKey(infoPrivateKeyOld)
-                                    setInfoChangesTracker((old) => {
-                                        old.privateKey = false
-                                        return { ...old }
-                                    })
-                                }}>Undo Changes</span>
-                            </FlexBox>
-                        </FlexBox>
-                        <textarea type="password" style={{ width: "100%", resize: "none" }} rows={5} value={infoPrivateKey} onChange={(e) => {
-                            setInfoPrivateKey(e.target.value)
-                            setInfoChangesTracker((old) => {
-                                old.privateKey = true
-                                return { ...old }
-                            })
-                        }} placeholder={mirrorSettingInfoMetaInfo["privateKey"].placeholder} />
-                    </FlexBox>
+                                    }} placeholder={mirrorSettingInfoMetaInfo["privateKey"].placeholder} />
+                                </FlexBox>
+                            </> : <></>
+                    }
                 </FlexBox>
 
             </ContentPanelBody>

@@ -215,11 +215,13 @@ function ExplorerList(props) {
 
 
     // Mirror
+    const [mirrorAuthMethod, setMirrorAuthMethod] = useState("none")
     const [mirrorSettings, setMirrorSettings] = useState({
         "url": "",
         "ref": "",
         "cron": "",
         "passphrase": "",
+        "token": "",
         "publicKey": "",
         "privateKey": "",
     })
@@ -458,6 +460,18 @@ function ExplorerList(props) {
                                         if (tabIndex === 0) {
                                             await createNode(name, "directory")
                                         } else {
+                                            let processesMirrorSettings = JSON.parse(JSON.stringify(mirrorSettings))
+                                            if (mirrorAuthMethod === "token") {
+                                                processesMirrorSettings["passphrase"] = processesMirrorSettings["token"]
+                                                processesMirrorSettings["privateKey"] = ""
+                                                processesMirrorSettings["publicKey"] = ""
+                                            } else if (mirrorAuthMethod === "none") {
+                                                processesMirrorSettings["passphrase"] = ""
+                                                processesMirrorSettings["privateKey"] = ""
+                                                processesMirrorSettings["publicKey"] = ""
+                                            }
+
+                                            delete processesMirrorSettings["token"]
                                             await createMirrorNode(name, mirrorSettings)
                                         }
                                     }, `small blue ${name.trim() ? "" : "disabled"}`, () => { }, true, false, true),
@@ -477,10 +491,11 @@ function ExplorerList(props) {
 
                                 requiredFields={[
                                     { tip: "directory name is required", value: name },
-                                    {tip: "mirror url is required", value: tabIndex === 0 ? true : mirrorSettings.url},
-                                    {tip: "mirror ref is required", value: tabIndex === 0 ? true : mirrorSettings.ref},
-                                    {tip: "public key is required", value: tabIndex === 0 ? true : mirrorSettings.publicKey},
-                                    {tip: "private key is required", value: tabIndex === 0 ? true : mirrorSettings.privateKey}
+                                    { tip: "mirror url is required", value: tabIndex === 0 ? true : mirrorSettings.url },
+                                    { tip: "mirror ref is required", value: tabIndex === 0 ? true : mirrorSettings.ref },
+                                    { tip: "public key is required", value: tabIndex === 0 || mirrorAuthMethod === "none" || mirrorAuthMethod === "token" ? true : mirrorSettings.publicKey },
+                                    { tip: "private key is required", value: tabIndex === 0 || mirrorAuthMethod === "none" || mirrorAuthMethod === "token" ? true : mirrorSettings.privateKey },
+                                    { tip: "token is required", value: tabIndex === 0 || mirrorAuthMethod === "none" || mirrorAuthMethod === "ssh" ? true : mirrorSettings.token }
                                 ]}
 
                             >
@@ -507,49 +522,69 @@ function ExplorerList(props) {
                                                 </FlexBox>
                                                 <input autoFocus value={name} onChange={(e) => setName(e.target.value)} placeholder="Enter a directory name" />
                                             </FlexBox>
+                                            <FlexBox className="col gap-md" style={{ paddingRight: "12px" }}>
+                                                <FlexBox className="row gap-sm" style={{ justifyContent: "flex-start" }}>
+                                                    <span className={`input-title`}>Authentication Method</span>
+                                                </FlexBox>
+                                                <div style={{ width: "100%", paddingRight: "12px", display: "flex" }}>
+                                                    <select style={{ width: "100%" }} defaultValue={mirrorAuthMethod} value={mirrorAuthMethod} onChange={(e) => { setMirrorAuthMethod(e.target.value) }}>
+                                                        <option value="none">None</option>
+                                                        <option value="ssh">SSH Keys</option>
+                                                        <option value="token">Access Token</option>
+                                                    </select>
+                                                </div>
+                                            </FlexBox>
                                             {Object.entries(mirrorSettings).map(([key, value]) => {
+                                                if ((mirrorAuthMethod === "token" || mirrorAuthMethod === "none") && (key === "publicKey" || key === "privateKey" || key === "passphrase")) {
+                                                    return (<></>)
+                                                }
+
+                                                if ((mirrorAuthMethod === "ssh" || mirrorAuthMethod === "none") && (key === "token")) {
+                                                    return (<></>)
+                                                }
+
                                                 return (
-                                                    <FlexBox key={`input-new-ns-${key}`} className="col gap-md" style={{ paddingRight: "12px" }}>
+                                                    <FlexBox key={`input-new-ns-${key}`} className="col gap-sm" style={{ paddingRight: "12px" }}>
                                                         <FlexBox className="row" style={{ justifyContent: "space-between" }}>
                                                             <FlexBox className="row gap-sm" style={{ justifyContent: "flex-start" }}>
                                                                 <span className={`input-title`}>{mirrorSettingInfoMetaInfo[key].plainName}{mirrorSettingInfoMetaInfo[key].required ? "*" : ""}</span>
                                                                 {
                                                                     mirrorSettingInfoMetaInfo[key].info ?
-                                                                        <HelpIcon msg={mirrorSettingInfoMetaInfo[key].info}/> : <></>
+                                                                        <HelpIcon msg={mirrorSettingInfoMetaInfo[key].info} /> : <></>
                                                                 }
                                                             </FlexBox>
                                                             {key === "publicKey" || key === "privateKey" ?
-                                                                <ClientFileUpload 
-                                                                setFile={(fileData)=>{
-                                                                    let newSettings = mirrorSettings
-                                                                    newSettings[key] = fileData
-                                                                    setMirrorSettings({ ...newSettings })
-                                                                }}
-                                                                setError={(errorMsg)=>{
-                                                                    let newErrors = mirrorErrors
-                                                                    newErrors[key] = errorMsg
-                                                                    setMirrorErrors({ ...newErrors })
-                                                                }}
-                                                                maxSize={40960}
+                                                                <ClientFileUpload
+                                                                    setFile={(fileData) => {
+                                                                        let newSettings = mirrorSettings
+                                                                        newSettings[key] = fileData
+                                                                        setMirrorSettings({ ...newSettings })
+                                                                    }}
+                                                                    setError={(errorMsg) => {
+                                                                        let newErrors = mirrorErrors
+                                                                        newErrors[key] = errorMsg
+                                                                        setMirrorErrors({ ...newErrors })
+                                                                    }}
+                                                                    maxSize={40960}
                                                                 >
-                                                                    <Tippy content={mirrorErrors[key] ? mirrorErrors[key] : `Upload key plaintext file content to ${mirrorSettingInfoMetaInfo[key].plainName} input. Warning: this will replace current ${mirrorSettingInfoMetaInfo[key].plainName} content`} trigger={'click mouseenter focus'} onHide={()=>{
+                                                                    <Tippy content={mirrorErrors[key] ? mirrorErrors[key] : `Upload key plaintext file content to ${mirrorSettingInfoMetaInfo[key].plainName} input. Warning: this will replace current ${mirrorSettingInfoMetaInfo[key].plainName} content`} trigger={'click mouseenter focus'} onHide={() => {
                                                                         let newErrors = mirrorErrors
                                                                         newErrors[key] = null
                                                                         setMirrorErrors({ ...newErrors })
                                                                     }}
-                                                                    zIndex={10}>
+                                                                        zIndex={10}>
                                                                         <div className='input-title-button'>
-                                                                            <FlexBox className="row gap-sm center" style={{ justifyContent: "flex-end", marginRight: "-6px", fontWeight:"normal" }}>
-                                                                                <span  onClick={(e) => {
+                                                                            <FlexBox className="row gap-sm center" style={{ justifyContent: "flex-end", marginRight: "-6px", fontWeight: "normal" }}>
+                                                                                <span onClick={(e) => {
                                                                                 }}>Upload</span>
-                                                                                <VscCloudUpload/>
+                                                                                <VscCloudUpload />
                                                                             </FlexBox>
                                                                         </div>
                                                                     </Tippy>
                                                                 </ClientFileUpload>
-                                                            :<></>}
+                                                                : <></>}
                                                         </FlexBox>
-                                                        {key === "publicKey" || key === "privateKey" ?
+                                                        {key === "publicKey" || key === "privateKey" || key === "token" ?
                                                             <textarea style={{ width: "100%", resize: "none" }} rows={5} value={value} onChange={(e) => {
                                                                 let newSettings = mirrorSettings
                                                                 newSettings[key] = e.target.value

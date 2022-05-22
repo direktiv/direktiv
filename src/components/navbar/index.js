@@ -113,11 +113,13 @@ function NewNamespaceBtn(props) {
     
     const [tabIndex, setTabIndex] = useState(0)
 
+    const [mirrorAuthMethod, setMirrorAuthMethod] = useState("none")
     const [mirrorSettings, setMirrorSettings] = useState({
         "url": "",
         "ref": "",
         "cron": "",
         "passphrase": "",
+        "token": "",
         "publicKey": "",
         "privateKey": "",
     })
@@ -135,138 +137,171 @@ function NewNamespaceBtn(props) {
 
     return (
         <Modal title="New namespace"
-               escapeToCancel
-               modalStyle={{width: "240px"}}
-               button={(
-                   <FlexBox className="new-namespace-btn">
-                       <div className="auto-margin">
-                           <FlexBox className="row" style={{ gap: "8px", alignItems:"center" }}>
-                               <FlexBox>
-                                   <VscAdd />
-                               </FlexBox>
-                               <FlexBox>
-                                   New namespace
-                               </FlexBox>
-                           </FlexBox>
-                       </div>
-                   </FlexBox>
-               )}
+            escapeToCancel
+            modalStyle={{ width: "240px" }}
+            button={(
+                <FlexBox className="new-namespace-btn">
+                    <div className="auto-margin">
+                        <FlexBox className="row" style={{ gap: "8px", alignItems: "center" }}>
+                            <FlexBox>
+                                <VscAdd />
+                            </FlexBox>
+                            <FlexBox>
+                                New namespace
+                            </FlexBox>
+                        </FlexBox>
+                    </div>
+                </FlexBox>
+            )}
 
-               titleIcon={<VscAdd/>}
+            titleIcon={<VscAdd />}
 
-                onClose={() => {
+            onClose={() => {
+                setNs("")
+                setMirrorSettings({
+                    "url": "",
+                    "ref": "",
+                    "cron": "",
+                    "passphrase": "",
+                    "publicKey": "",
+                    "privateKey": "",
+                })
+                setTabIndex(0)
+            }}
+
+            keyDownActions={[
+                KeyDownDefinition("Enter", async () => {
+                    await createNamespace(ns)
+                    setTimeout(() => {
+                        navigate(`/n/${ns}`)
+                    }, 200)
                     setNs("")
-                    setMirrorSettings({
-                        "url": "",
-                        "ref": "",
-                        "cron": "",
-                        "passphrase": "",
-                        "publicKey": "",
-                        "privateKey": "",
-                    })
-                    setTabIndex(0)
-                }}
+                }, () => { }, true)
+            ]}
 
-               keyDownActions={[
-                   KeyDownDefinition("Enter", async () => {
+            actionButtons={[
+                ButtonDefinition("Add", async () => {
+                    if (tabIndex === 0) {
                         await createNamespace(ns)
-                        setTimeout(()=>{
-                            navigate(`/n/${ns}`)
-                        },200)
-                        setNs("")
-                   }, ()=>{}, true)
-               ]}
+                    } else {
+                        let processesMirrorSettings = JSON.parse(JSON.stringify(mirrorSettings))
+                        if (mirrorAuthMethod === "token") {
+                            processesMirrorSettings["passphrase"] = processesMirrorSettings["token"]
+                            processesMirrorSettings["privateKey"] = ""
+                            processesMirrorSettings["publicKey"] = ""
+                        } else if (mirrorAuthMethod === "none") {
+                            processesMirrorSettings["passphrase"] = ""
+                            processesMirrorSettings["privateKey"] = ""
+                            processesMirrorSettings["publicKey"] = ""
+                        }
 
-               actionButtons={[
-                   ButtonDefinition("Add", async () => {
-                          if (tabIndex === 0) {
-                            await createNamespace(ns)
-                          } else {
-                            await createMirrorNamespace(ns, mirrorSettings)
-                          }
-                          setTimeout(()=>{
-                            navigate(`/n/${ns}`)
-                          },200)
-                          setNs("")
-                   }, "small blue", ()=>{}, true, false, true),
-                   ButtonDefinition("Cancel", () => {
-                       setNs("")
-                   }, "small light", ()=>{}, true, false)
-               ]}
+                        delete processesMirrorSettings["token"]
+                        await createMirrorNamespace(ns, mirrorSettings)
+                    }
+                    setTimeout(() => {
+                        navigate(`/n/${ns}`)
+                    }, 200)
+                    setNs("")
+                }, "small blue", () => { }, true, false, true),
+                ButtonDefinition("Cancel", () => {
+                    setNs("")
+                }, "small light", () => { }, true, false)
+            ]}
 
-               requiredFields={[
-                   {tip: "namespace is required", value: ns},
-                   {tip: "mirror url is required", value: tabIndex === 0 ? true : mirrorSettings.url},
-                   {tip: "mirror ref is required", value: tabIndex === 0 ? true : mirrorSettings.ref},
-                   {tip: "public key is required", value: tabIndex === 0 ? true : mirrorSettings.publicKey},
-                   {tip: "private key is required", value: tabIndex === 0 ? true : mirrorSettings.privateKey}
-               ]}
+            requiredFields={[
+                { tip: "namespace is required", value: ns },
+                { tip: "mirror url is required", value: tabIndex === 0 ? true : mirrorSettings.url },
+                { tip: "mirror ref is required", value: tabIndex === 0 ? true : mirrorSettings.ref },
+                { tip: "public key is required", value: tabIndex === 0 || mirrorAuthMethod === "none" || mirrorAuthMethod === "token" ? true : mirrorSettings.publicKey },
+                { tip: "private key is required", value: tabIndex === 0 || mirrorAuthMethod === "none" || mirrorAuthMethod === "token" ? true : mirrorSettings.privateKey },
+                { tip: "token is required", value: tabIndex === 0 || mirrorAuthMethod === "none" || mirrorAuthMethod === "ssh" ? true : mirrorSettings.token }
+            ]}
         >
             <Tabs
                 // TODO: change wf-execute-input => tabbed-form
                 id={"wf-execute-input"}
-                key={"inputForm"}
+                key={"inputForm-ns"}
                 callback={setTabIndex}
                 tabIndex={tabIndex}
-                style={{minWidth: "280px"}}
+                style={{ minWidth: "280px" }}
                 headers={["Standard", "Mirror"]}
                 tabs={[(
-                    <FlexBox className="col gap-md" style={{ paddingRight: "12px" }}>
-                        <FlexBox className="row gap-sm" style={{ justifyContent: "flex-start" }}>
+                    <FlexBox key={`form-new-ns`} className="col gap-md" style={{ paddingRight: "12px" }}>
+                        <FlexBox key={`label-new-ns-name`} className="row gap-sm" style={{ justifyContent: "flex-start" }}>
                             <span className={`input-title`}>Namespace*</span>
                         </FlexBox>
-                        <input autoFocus value={ns} onChange={(e) => setNs(e.target.value)} placeholder="Enter namespace name" />
+                        <input key={`input-new-ns-name-input`} autoFocus value={ns} onChange={(e) => setNs(e.target.value)} placeholder="Enter namespace name" />
                     </FlexBox>), (
-                    <FlexBox className="col gap">
-                        <FlexBox className="col gap-md" style={{ paddingRight: "12px" }}>
+                    <FlexBox key={`form-new-ns-mirror`} className="col gap">
+                        <FlexBox key={`input-new-ns-name`} className="col gap-md" style={{ paddingRight: "12px" }}>
                             <FlexBox className="row gap-sm" style={{ justifyContent: "flex-start" }}>
                                 <span className={`input-title`}>Namespace*</span>
                             </FlexBox>
                             <input autoFocus value={ns} onChange={(e) => setNs(e.target.value)} placeholder="Enter namespace name" />
                         </FlexBox>
+                        <FlexBox key={`input-new-ns-auth`} className="col gap-md" style={{ paddingRight: "12px" }}>
+                            <FlexBox className="row gap-sm" style={{ justifyContent: "flex-start" }}>
+                                <span className={`input-title`}>Authentication Method</span>
+                            </FlexBox>
+                            <div style={{ width: "100%", paddingRight: "12px", display: "flex" }}>
+                                <select style={{ width: "100%" }} defaultValue={mirrorAuthMethod} value={mirrorAuthMethod} onChange={(e) => { setMirrorAuthMethod(e.target.value) }}>
+                                    <option value="none">None</option>
+                                    <option value="ssh">SSH Keys</option>
+                                    <option value="token">Access Token</option>
+                                </select>
+                            </div>
+                        </FlexBox>
                         {Object.entries(mirrorSettings).map(([key, value]) => {
+                            if ((mirrorAuthMethod === "token" || mirrorAuthMethod === "none") && (key === "publicKey" || key === "privateKey" || key === "passphrase")) {
+                                return (<></>)
+                            }
+
+                            if ((mirrorAuthMethod === "ssh" || mirrorAuthMethod === "none") && (key === "token")) {
+                                return (<></>)
+                            }
+
                             return (
-                                <FlexBox key={`input-new-ns-${key}`} className="col gap-md" style={{ paddingRight: "12px" }}>
+                                <FlexBox key={`input-new-ns-${key}`} className="col gap-sm" style={{ paddingRight: "12px" }}>
                                     <FlexBox className="row" style={{ justifyContent: "space-between" }}>
                                         <FlexBox className="row gap-sm" style={{ justifyContent: "flex-start" }}>
                                             <span className={`input-title`}>{mirrorSettingInfoMetaInfo[key].plainName}{mirrorSettingInfoMetaInfo[key].required ? "*" : ""}</span>
                                             {
                                                 mirrorSettingInfoMetaInfo[key].info ?
-                                                    <HelpIcon msg={mirrorSettingInfoMetaInfo[key].info}/> : <></>
+                                                    <HelpIcon msg={mirrorSettingInfoMetaInfo[key].info} /> : <></>
                                             }
                                         </FlexBox>
                                         {key === "publicKey" || key === "privateKey" ?
-                                            <ClientFileUpload 
-                                            setFile={(fileData)=>{
-                                                let newSettings = mirrorSettings
-                                                newSettings[key] = fileData
-                                                setMirrorSettings({ ...newSettings })
-                                            }}
-                                            setError={(errorMsg)=>{
-                                                let newErrors = mirrorErrors
-                                                newErrors[key] = errorMsg
-                                                setMirrorErrors({ ...newErrors })
-                                            }}
-                                            maxSize={40960}
+                                            <ClientFileUpload
+                                                setFile={(fileData) => {
+                                                    let newSettings = mirrorSettings
+                                                    newSettings[key] = fileData
+                                                    setMirrorSettings({ ...newSettings })
+                                                }}
+                                                setError={(errorMsg) => {
+                                                    let newErrors = mirrorErrors
+                                                    newErrors[key] = errorMsg
+                                                    setMirrorErrors({ ...newErrors })
+                                                }}
+                                                maxSize={40960}
                                             >
-                                                <Tippy content={mirrorErrors[key] ? mirrorErrors[key] : `Upload key plaintext file content to ${mirrorSettingInfoMetaInfo[key].plainName} input. Warning: this will replace current ${mirrorSettingInfoMetaInfo[key].plainName} content`} trigger={'click mouseenter focus'} onHide={()=>{
+                                                <Tippy content={mirrorErrors[key] ? mirrorErrors[key] : `Upload key plaintext file content to ${mirrorSettingInfoMetaInfo[key].plainName} input. Warning: this will replace current ${mirrorSettingInfoMetaInfo[key].plainName} content`} trigger={'click mouseenter focus'} onHide={() => {
                                                     let newErrors = mirrorErrors
                                                     newErrors[key] = null
                                                     setMirrorErrors({ ...newErrors })
                                                 }}
-                                                zIndex={10}>
+                                                    zIndex={10}>
                                                     <div className='input-title-button'>
                                                         <FlexBox className="row gap-sm center" style={{ justifyContent: "flex-end", marginRight: "-6px" }}>
-                                                            <span  onClick={(e) => {
+                                                            <span onClick={(e) => {
                                                             }}>Upload</span>
-                                                            <VscCloudUpload/>
+                                                            <VscCloudUpload />
                                                         </FlexBox>
                                                     </div>
                                                 </Tippy>
                                             </ClientFileUpload>
-                                        :<></>}
+                                            : <></>}
                                     </FlexBox>
-                                    {key === "publicKey" || key === "privateKey" ?
+                                    {key === "publicKey" || key === "privateKey" || key === "token" ?
                                         <textarea style={{ width: "100%", resize: "none" }} rows={5} value={value} spellcheck="false" onChange={(e) => {
                                             let newSettings = mirrorSettings
                                             newSettings[key] = e.target.value
