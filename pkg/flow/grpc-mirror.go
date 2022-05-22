@@ -797,6 +797,12 @@ resend:
 		return err
 	}
 
+	if d.mir.Passphrase != "" {
+		resp.Info.Passphrase = "-"
+	}
+	if d.mir.PrivateKey != "" {
+		resp.Info.PrivateKey = "-"
+	}
 	resp.Namespace = d.ns().Name
 
 	err = atob(cx, &resp.Activities)
