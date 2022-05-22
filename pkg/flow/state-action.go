@@ -285,7 +285,7 @@ func (sl *actionStateLogic) do(ctx context.Context, engine *engine, im *instance
 		fi := &files[i]
 
 		if fi.Scope == "inline" {
-			x, err = jqOne(im.data, fi.Inline.Data)
+			x, err = jqOne(im.data, fi.Value)
 			if err != nil {
 				return
 			}
@@ -295,7 +295,7 @@ func (sl *actionStateLogic) do(ctx context.Context, engine *engine, im *instance
 				err = fmt.Errorf("can not parse inline data for %s", fi.Key)
 				return
 			}
-			fi.Inline.Data = s
+			fi.Value = s
 		}
 
 	}

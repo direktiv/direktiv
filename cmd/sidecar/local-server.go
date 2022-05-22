@@ -383,14 +383,12 @@ type functionRequest struct {
 }
 
 type functionFiles struct {
-	Key    string `json:"key"`
-	As     string `json:"as"`
-	Scope  string `json:"scope"`
-	Type   string `json:"type"`
-	Inline struct {
-		Mode string `json:"mode"`
-		Data string `json:"data"`
-	} `json:"inline"`
+	Key   string `json:"key"`
+	As    string `json:"as"`
+	Scope string `json:"scope"`
+	Type  string `json:"type"`
+	Mode  string `json:"mode"`
+	Value string `json:"value"`
 }
 
 const sharedDir = "/mnt/shared"

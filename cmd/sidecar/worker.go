@@ -81,7 +81,7 @@ func (worker *inboundWorker) fileReader(ctx context.Context, ir *functionRequest
 	// inline are not requesting the variable
 	var err error
 	if f.Scope == "inline" {
-		_, err = pw.Write([]byte(f.Inline.Data))
+		_, err = pw.Write([]byte(f.Value))
 	} else {
 		err = worker.srv.getVar(ctx, ir, pw, nil, f.Scope, f.Key)
 	}
@@ -164,19 +164,17 @@ func (worker *inboundWorker) prepOneFunctionFiles(ctx context.Context, ir *funct
 
 	_ = pr.Close()
 
-	// if inline we set the mode if provided
-	if f.Scope == "inline" {
-		mode := os.FileMode(0644)
-		if f.Inline.Mode != "" {
-			m, err := strconv.ParseUint(f.Inline.Mode, 8, 32)
-			if err == nil {
-				mode = fs.FileMode(m)
-			}
+	// we set the mode if provided
+	mode := os.FileMode(0755)
+	if f.Mode != "" {
+		m, err := strconv.ParseUint(f.Mode, 8, 32)
+		if err == nil {
+			mode = fs.FileMode(m)
 		}
-		err = os.Chmod(dst, mode)
-		if err != nil {
-			return err
-		}
+	}
+	err = os.Chmod(dst, mode)
+	if err != nil {
+		return err
 	}
 
 	return nil

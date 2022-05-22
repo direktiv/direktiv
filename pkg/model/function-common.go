@@ -104,14 +104,12 @@ type FunctionDefinition interface {
 }
 
 type FunctionFileDefinition struct {
-	Key    string `yaml:"key" json:"key"`
-	As     string `yaml:"as,omitempty" json:"as,omitempty"`
-	Scope  string `yaml:"scope,omitempty" json:"scope,omitempty"`
-	Type   string `yaml:"type,omitempty" json:"type,omitempty"`
-	Inline struct {
-		Mode string `yaml:"mode,omitempty" json:"mode,omitempty"`
-		Data string `yaml:"data,omitempty" json:"data,omitempty"`
-	} `yaml:"inline,omitempty" json:"inline,omitempty"`
+	Key   string `yaml:"key" json:"key"`
+	As    string `yaml:"as,omitempty" json:"as,omitempty"`
+	Scope string `yaml:"scope,omitempty" json:"scope,omitempty"`
+	Type  string `yaml:"type,omitempty" json:"type,omitempty"`
+	Mode  string `yaml:"mode,omitempty" json:"mode,omitempty"`
+	Value string `yaml:"value,omitempty" json:"value,omitempty"`
 }
 
 var ErrVarScope = errors.New(`bad scope (choose 'namespace', 'workflow', 'thread' or 'instance')`)
