@@ -8,6 +8,8 @@ import Modal, { ButtonDefinition } from '../../components/modal';
 import HelpIcon from '../../components/help';
 import Tippy from '@tippyjs/react';
 import { ClientFileUpload } from '../../components/navbar';
+import TextareaAutosize from 'react-textarea-autosize';
+import HideShowButton from '../../components/hide-show';
 
 export const mirrorSettingInfoMetaInfo = {
     "url": {plainName: "URL", required: true, placeholder: "Enter repository URL", info: `URL to repository. If authentication method is SSH Key a git url must be used e.g. "git@github.com:direktiv/apps-svc.git". All other authentication methods must use HTTP/S urls`},
@@ -27,6 +29,8 @@ export default function MirrorInfoPanel(props) {
     const [mirrorAuthMethodOld, setMirrorAuthMethodOld] = useState("none")
     const [mirrorSettingsValid, setMirrorSettingsValid] = useState(false)
     const [mirrorSettingsValidateMsg, setMirrorSettingsValidateMsg] = useState("")
+
+    const [showPassphrase, setShowPassphrase] = useState(false)
 
     // Mirror Info States
     const [infoURL, setInfoURL] = useState("")
@@ -193,13 +197,65 @@ export default function MirrorInfoPanel(props) {
         setInfoPendingChanges(infoChangesTracker.url || infoChangesTracker.ref || infoChangesTracker.cron || infoChangesTracker.passphrase || infoChangesTracker.publicKey || infoChangesTracker.privateKey || infoChangesTracker.authMethod)
     }, [infoChangesTracker])
 
+    const passphrasePlaceholder = useCallback(() => {
+        let placeholder = mirrorSettingInfoMetaInfo["passphrase"].placeholder
+        if (!infoChangesTracker.passphrase && info?.passphrase  === "-" && mirrorAuthMethodOld === "ssh") {
+            placeholder  = `●●●●●●●●●`
+        }
+
+        if (infoChangesTracker.passphrase && infoPassphrase === "") {
+            placeholder = `DELETE PASSPHRASE`
+        }
+
+        return placeholder
+    }, [info, mirrorAuthMethodOld, infoChangesTracker, infoPassphrase]);
+
+    const publicKeyPlaceholder = useCallback(() => {
+        let placeholder = mirrorSettingInfoMetaInfo["publicKey"].placeholder
+        if (!infoChangesTracker.publicKey && info?.publicKey  !== "" && mirrorAuthMethodOld === "ssh") {
+            placeholder  = `●●●●●●●●●`
+        }
+
+        if (infoChangesTracker.publicKey && infoPublicKey === "") {
+            placeholder = `DELETE PUBLIC KEY`
+        }
+
+        return placeholder
+    }, [info, mirrorAuthMethodOld, infoChangesTracker, infoPublicKey]);
+
+    const privateKeyPlaceholder = useCallback(() => {
+        let placeholder = mirrorSettingInfoMetaInfo["privateKey"].placeholder
+        if (!infoChangesTracker.privateKey && info?.privateKey  !== "" && mirrorAuthMethodOld === "ssh") {
+            placeholder  = `●●●●●●●●●`
+        }
+
+        if (infoChangesTracker.privateKey && infoPrivateKey === "") {
+            placeholder = `DELETE PRIVATE KEY`
+        }
+
+        return placeholder
+    }, [info, mirrorAuthMethodOld, infoChangesTracker, infoPrivateKey]);
+
+    const accessTokenPlaceholder = useCallback(() => {
+        let placeholder = mirrorSettingInfoMetaInfo["token"].placeholder
+        if (!infoChangesTracker.passphrase && info?.token  !== "" && mirrorAuthMethodOld === "token") {
+            placeholder  = `●●●●●●●●●`
+        }
+
+        if (infoChangesTracker.passphrase && infoPassphrase === "") {
+            placeholder = `DELETE TOKEN`
+        }
+
+        return placeholder
+    }, [info, mirrorAuthMethodOld, infoChangesTracker, infoPassphrase]);
+
     return (
         <ContentPanel id={`panel-mirror-info`} style={{ ...style }}>
             <ContentPanelTitle>
                 <ContentPanelTitleIcon>
                     <VscAdd />
                 </ContentPanelTitleIcon>
-                <FlexBox className="gap" style={{ alignItems: "center" }}>Mirror Info
+                <FlexBox className="gap" style={{ alignItems: "center" }}><span className="hide-on-small">Mirror</span> Info
                     <FlexBox style={{ flex: "auto", justifyContent: "right", paddingRight: "6px", alignItems: "unset" }}>
                         <Tippy content={mirrorSettingsValidateMsg} disabled={mirrorSettingsValidateMsg === ""} trigger={'mouseenter focus'} zIndex={10}>
                             <div>                            
@@ -219,7 +275,7 @@ export default function MirrorInfoPanel(props) {
                                         }}
                                         button={(
                                             <div>
-                                                Update Settings
+                                                Update <span className="hide-on-small">Settings</span>
                                             </div>
                                         )}
                                         actionButtons={[
@@ -268,37 +324,58 @@ export default function MirrorInfoPanel(props) {
                                             }
                                             {infoChangesTracker.url ?
                                                 <FlexBox className="col gap" style={{ paddingRight: "10px" }}>
-                                                    <span className={`input-title readonly`}>URL</span>
+                                                    <FlexBox className="col gap-sm center-x" style={{}}>
+                                                        <span className={`input-title readonly`} >URL</span>
+                                                        { infoURL === "" ? <span className={`input-description readonly`}> Warning: URL will be deleted</span> : <></>}
+                                                    </FlexBox>
                                                     <input className={`info-input-value readonly`} value={infoURL} />
                                                 </FlexBox> : <></>}
                                             {infoChangesTracker.ref ?
                                                 <FlexBox className="col gap" style={{ paddingRight: "10px" }}>
-                                                    <span className={`input-title readonly`}>Ref</span>
+                                                    <FlexBox className="col gap-sm center-x" style={{}}>
+                                                        <span className={`input-title readonly`} >Ref</span>
+                                                        { infoRef === "" ? <span className={`input-description readonly`}> Warning: Ref will be deleted</span> : <></>}
+                                                    </FlexBox>
                                                     <input className={`info-input-value readonly`} value={infoRef} />
                                                 </FlexBox> : <></>}
                                             {infoChangesTracker.cron ?
                                                 <FlexBox className="col gap" style={{ paddingRight: "10px" }}>
-                                                    <span className={`input-title readonly`}>Cron</span>
+                                                    <FlexBox className="col gap-sm center-x" style={{}}>
+                                                        <span className={`input-title readonly`} >Cron</span>
+                                                        { infoCron === "" ? <span className={`input-description readonly`}> Warning: Cron will be deleted</span> : <></>}
+                                                    </FlexBox>
                                                     <input className={`info-input-value readonly`} readonly={true} value={infoCron} />
                                                 </FlexBox> : <></>}
                                             {infoChangesTracker.passphrase && mirrorAuthMethod === "token" ?
                                                 <FlexBox className="col gap" style={{ paddingRight: "10px" }}>
-                                                    <span className={`input-title readonly`} >Token</span>
+                                                    <FlexBox className="col gap-sm center-x" style={{}}>
+                                                        <span className={`input-title readonly`} >Token</span>
+                                                        { infoPassphrase === "" ? <span className={`input-description readonly`}> Warning: Token will be deleted</span> : <></>}
+                                                    </FlexBox>
                                                     <textarea className={`info-textarea-value readonly`} readonly={true} rows={5} style={{ width: "100%", resize: "none" }} value={infoPassphrase} />
                                                 </FlexBox> : <></>}
                                             {infoChangesTracker.passphrase && mirrorAuthMethod === "ssh" ?
                                                 <FlexBox className="col gap" style={{ paddingRight: "10px" }}>
-                                                    <span className={`input-title readonly`}>Passphrase</span>
+                                                    <FlexBox className="col gap-sm center-x" style={{}}>
+                                                        <span className={`input-title readonly`} >Passphrase</span>
+                                                        { infoPassphrase === "" ? <span className={`input-description readonly`}> Warning: Passphrase will be deleted</span> : <></>}
+                                                    </FlexBox>
                                                     <input className={`info-input-value readonly`} readonly={true} type="password" value={infoPassphrase} />
                                                 </FlexBox> : <></>}
                                             {infoChangesTracker.publicKey && mirrorAuthMethod === "ssh" ?
                                                 <FlexBox className="col gap" style={{ paddingRight: "10px" }}>
-                                                    <span className={`input-title readonly`}>Public Key</span>
+                                                    <FlexBox className="col gap-sm center-x" style={{}}>
+                                                        <span className={`input-title readonly`} >Public Key</span>
+                                                        { infoPublicKey === "" ? <span className={`input-description readonly`}> Warning: Public Key will be deleted</span> : <></>}
+                                                    </FlexBox>
                                                     <textarea className={`info-textarea-value readonly`} readonly={true} rows={5} style={{ width: "100%", resize: "none" }} value={infoPublicKey} />
                                                 </FlexBox> : <></>}
                                             {infoChangesTracker.privateKey && mirrorAuthMethod === "ssh" ?
                                                 <FlexBox className="col gap" style={{ paddingRight: "10px" }}>
-                                                    <span className={`input-title readonly`} >Private Key</span>
+                                                    <FlexBox className="col gap-sm center-x" style={{}}>
+                                                        <span className={`input-title readonly`} >Private Key</span>
+                                                        { infoPrivateKey === "" ? <span className={`input-description readonly`}> Warning: Private Key will be deleted</span> : <></>}
+                                                    </FlexBox>
                                                     <textarea className={`info-textarea-value readonly`} readonly={true} rows={5} style={{ width: "100%", resize: "none" }} value={infoPrivateKey} />
                                                 </FlexBox> : <></>}
                                         </FlexBox>
@@ -311,7 +388,7 @@ export default function MirrorInfoPanel(props) {
             </ContentPanelTitle>
             <ContentPanelBody style={{ overflow: "auto" }}>
                 <FlexBox className="col gap" style={{ height: "fit-content" }}>
-                    <FlexBox className="col gap-md" style={{ paddingRight: "12px" }}>
+                    <FlexBox className="col gap-md" style={{ }}>
                         <FlexBox className="row gap-sm" style={{ justifyContent: "flex-start" }}>
                             <span className={`input-title`}>Authentication Method</span>
                         </FlexBox>
@@ -415,13 +492,13 @@ export default function MirrorInfoPanel(props) {
                                         })
                                     }}>Undo Changes</span>
                                 </FlexBox>
-                                <textarea type="password" style={{ width: "100%", resize: "none" }} rows={5} value={infoPassphrase} onChange={(e) => {
+                                <TextareaAutosize style={{ width: "100%", resize: "none", padding: "11px 1px 11px 8px" }} minRows={infoChangesTracker.passphrase || info?.passphrase === "" ? 2 : 1} maxRows={5} value={infoPassphrase} onChange={(e) => {
                                     setInfoPassphrase(e.target.value)
                                     setInfoChangesTracker((old) => {
                                         old.passphrase = true
                                         return { ...old }
                                     })
-                                }} placeholder={mirrorSettingInfoMetaInfo["token"].placeholder} />
+                                }} placeholder={accessTokenPlaceholder()} />
                             </FlexBox> : <></>
                     }
 
@@ -434,6 +511,7 @@ export default function MirrorInfoPanel(props) {
                                         <FlexBox className="row gap-sm" style={{ justifyContent: "flex-start" }}>
                                             <span className={`input-title ${infoChangesTracker.passphrase ? "edited" : ""}`}>Passphrase</span>
                                             <HelpIcon msg={mirrorSettingInfoMetaInfo["passphrase"].info} />
+                                            <HideShowButton show={showPassphrase} setShow={setShowPassphrase} field={"Passphrase"}/>
                                         </FlexBox>
                                         <span className={`info-input-undo ${infoChangesTracker.passphrase ? "" : "hide"}`} onClick={(e) => {
                                             setInfoPassphrase(infoPassphraseOld)
@@ -443,13 +521,13 @@ export default function MirrorInfoPanel(props) {
                                             })
                                         }}>Undo Changes</span>
                                     </FlexBox>
-                                    <input type="password" value={infoPassphrase} onChange={(e) => {
+                                    <input type={`${showPassphrase ? "text" : "password"}`} value={infoPassphrase} onChange={(e) => {
                                         setInfoPassphrase(e.target.value)
                                         setInfoChangesTracker((old) => {
                                             old.passphrase = true
                                             return { ...old }
                                         })
-                                    }} placeholder={mirrorSettingInfoMetaInfo["passphrase"].placeholder} />
+                                    }} placeholder={passphrasePlaceholder()} />
                                 </FlexBox>
                                 <FlexBox className="col gap-md" style={{ paddingRight: "10px" }}>
                                     <FlexBox className="row" style={{ justifyContent: "space-between" }}>
@@ -497,13 +575,13 @@ export default function MirrorInfoPanel(props) {
                                             }}>Undo Changes</span>
                                         </FlexBox>
                                     </FlexBox>
-                                    <textarea style={{ width: "100%", resize: "none" }} rows={5} value={infoPublicKey} onChange={(e) => {
+                                    <TextareaAutosize style={{ width: "100%", resize: "none", padding: "11px 1px 11px 8px" }} minRows={infoChangesTracker.publicKey || info?.publicKey === "" ? 2 : 1} maxRows={5} value={infoPublicKey} onChange={(e) => {
                                         setInfoPublicKey(e.target.value)
                                         setInfoChangesTracker((old) => {
                                             old.publicKey = true
                                             return { ...old }
                                         })
-                                    }} placeholder={mirrorSettingInfoMetaInfo["publicKey"].placeholder} />
+                                    }} placeholder={publicKeyPlaceholder()} />
                                 </FlexBox>
                                 <FlexBox className="col gap-md" style={{ paddingRight: "10px" }}>
                                     <FlexBox className="row" style={{ justifyContent: "space-between" }}>
@@ -551,13 +629,13 @@ export default function MirrorInfoPanel(props) {
                                             }}>Undo Changes</span>
                                         </FlexBox>
                                     </FlexBox>
-                                    <textarea type="password" style={{ width: "100%", resize: "none" }} rows={5} value={infoPrivateKey} onChange={(e) => {
+                                    <TextareaAutosize style={{ width: "100%", resize: "none", padding: "11px 1px 11px 8px" }} minRows={infoChangesTracker.privateKey || info?.privateKey === "" ? 2 : 1} maxRows={5} value={infoPrivateKey} onChange={(e) => {
                                         setInfoPrivateKey(e.target.value)
                                         setInfoChangesTracker((old) => {
                                             old.privateKey = true
                                             return { ...old }
                                         })
-                                    }} placeholder={mirrorSettingInfoMetaInfo["privateKey"].placeholder} />
+                                    }} placeholder={privateKeyPlaceholder()} />
                                 </FlexBox>
                             </> : <></>
                     }

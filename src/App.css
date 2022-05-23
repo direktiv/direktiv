@@ -505,9 +505,18 @@ html .editor-footer {
   font-weight: bold;
   color: var(--theme-dark-text);
   font-size: 14px;
+  line-height: 26px;
 }
 
-.input-title.readonly{
+.input-description{
+  font-weight: bold;
+  color: var(--theme-dark-text);
+  font-size: 10px;
+  line-height: 10px;
+  margin-top: -4px;
+}
+
+.input-title.readonly,.input-description.readonly{
   color: var(--theme-dark-gray-text);
 }
 

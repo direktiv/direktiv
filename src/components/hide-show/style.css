@@ -1,0 +1,15 @@
+.show-hide-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+
+.show-hide-icon:hover {
+    filter: brightness(150%);
+}
+
+.show-hide-icon:active {
+    filter: brightness(80%);
+}

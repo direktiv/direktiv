@@ -33,6 +33,7 @@ import { MirrorReadOnlyBadge } from '../mirror';
 import { mirrorSettingInfoMetaInfo } from '../mirror/info';
 import Tippy from '@tippyjs/react';
 import { ClientFileUpload } from '../../components/navbar';
+import HideShowButton from '../../components/hide-show';
 
 const PAGE_SIZE = 10
 const apiHelps = (namespace) => {
@@ -215,6 +216,7 @@ function ExplorerList(props) {
 
 
     // Mirror
+    const [showPassphrase, setShowPassphrase] = useState(false)
     const [mirrorAuthMethod, setMirrorAuthMethod] = useState("none")
     const [mirrorSettings, setMirrorSettings] = useState({
         "url": "",
@@ -432,7 +434,7 @@ function ExplorerList(props) {
                     <ContentPanelHeaderButton className="explorer-action-btn">
                         <div>
                             <Modal title="New Directory"
-                                modalStyle={{ width: "240px" }}
+                                modalStyle={{ width: "340px" }}
                                 escapeToCancel
                                 button={(
                                     <div style={{ display: "flex" }}>
@@ -450,9 +452,12 @@ function ExplorerList(props) {
                                         "ref": "",
                                         "cron": "",
                                         "passphrase": "",
+                                        "token": "",
                                         "publicKey": "",
                                         "privateKey": "",
                                     })
+                                    setShowPassphrase(false)
+                                    setMirrorAuthMethod("none")
                                     setTabIndex(0)
                                 }}
                                 actionButtons={[
@@ -472,7 +477,7 @@ function ExplorerList(props) {
                                             }
 
                                             delete processesMirrorSettings["token"]
-                                            await createMirrorNode(name, mirrorSettings)
+                                            await createMirrorNode(name, processesMirrorSettings)
                                         }
                                     }, `small blue ${name.trim() ? "" : "disabled"}`, () => { }, true, false, true),
                                     ButtonDefinition("Cancel", () => {
@@ -505,7 +510,7 @@ function ExplorerList(props) {
                                     key={"inputForm"}
                                     callback={setTabIndex}
                                     tabIndex={tabIndex}
-                                    style={{ minWidth: "280px" }}
+                                    style={{ minWidth: "300px" }}
                                     headers={["Standard", "Mirror"]}
                                     tabs={[(
                                         <FlexBox className="col gap-md" style={{ paddingRight: "12px" }}>
@@ -522,7 +527,7 @@ function ExplorerList(props) {
                                                 </FlexBox>
                                                 <input autoFocus value={name} onChange={(e) => setName(e.target.value)} placeholder="Enter a directory name" />
                                             </FlexBox>
-                                            <FlexBox className="col gap-md" style={{ paddingRight: "12px" }}>
+                                            <FlexBox className="col gap-md">
                                                 <FlexBox className="row gap-sm" style={{ justifyContent: "flex-start" }}>
                                                     <span className={`input-title`}>Authentication Method</span>
                                                 </FlexBox>
@@ -550,7 +555,11 @@ function ExplorerList(props) {
                                                                 <span className={`input-title`}>{mirrorSettingInfoMetaInfo[key].plainName}{mirrorSettingInfoMetaInfo[key].required ? "*" : ""}</span>
                                                                 {
                                                                     mirrorSettingInfoMetaInfo[key].info ?
-                                                                        <HelpIcon msg={mirrorSettingInfoMetaInfo[key].info} /> : <></>
+                                                                    <>
+                                                                    <HelpIcon msg={mirrorSettingInfoMetaInfo[key].info} zIndex={9999} />
+                                                                    {key === "passphrase" ? <HideShowButton  show={showPassphrase} setShow={setShowPassphrase} field={"Passphrase"}/> : <></>}
+                                                                    </>
+                                                                    : <></>
                                                                 }
                                                             </FlexBox>
                                                             {key === "publicKey" || key === "privateKey" ?
@@ -591,7 +600,7 @@ function ExplorerList(props) {
                                                                 setMirrorSettings({ ...newSettings })
                                                             }} autoFocus placeholder={mirrorSettingInfoMetaInfo[key].placeholder} />
                                                             :
-                                                            <input type={key === "passphrase" ? "password" : "text"} style={{ width: "100%" }} value={value} onChange={(e) => {
+                                                            <input type={key === "passphrase" && !showPassphrase ? "password" : "text"} style={{ width: "100%" }} value={value} onChange={(e) => {
                                                                 let newSettings = mirrorSettings
                                                                 newSettings[key] = e.target.value
                                                                 setMirrorSettings({ ...newSettings })
