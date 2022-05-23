@@ -259,7 +259,7 @@ export function MirrorReadOnlyBadge(props) {
     return (
         <Tippy content={`This mirrors contents are currently read-only. This can be unlocked in mirror setttings`} trigger={'mouseenter focus'} zIndex={10}>
             <div>
-                <Button className={`small light disabled`} style={{ fontWeight: "bold", width: "fit-content", whiteSpace: "nowrap" }}>
+                <Button className={`cancel-label small disabled-no-filter shadow`} style={{ fontWeight: "bold", width: "fit-content", whiteSpace: "nowrap"}}>
                     <FlexBox className="row center gap-sm">
                         <VscLock />ReadOnly
                     </FlexBox>
@@ -273,7 +273,7 @@ export function MirrorWritableBadge(props) {
     return (
         <Tippy content={`This mirrors contents are currently writable. This can be unlocked in mirror setttings`} trigger={'mouseenter focus'} zIndex={10}>
             <div>
-                <Button className={`small light disabled`} style={{ fontWeight: "bold", width: "fit-content", whiteSpace: "nowrap" }}>
+                <Button className={`running-label small disabled-no-filter shadow`} style={{ fontWeight: "bold", width: "fit-content", whiteSpace: "nowrap"}}>
                     <FlexBox className="row center gap-sm">
                         <VscUnlock />Writable
                     </FlexBox>

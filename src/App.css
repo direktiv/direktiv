@@ -87,6 +87,11 @@ body {
   filter: grayscale(100%) !important;
 }
 
+.disabled-no-filter {
+  pointer-events: none !important;
+  cursor: unset !important;
+}
+
 .btn {
   user-select: none;
   color: var(--theme-white);
