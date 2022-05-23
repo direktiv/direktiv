@@ -228,9 +228,10 @@ func (engine *engine) mux(ctx context.Context, nsc *ent.NamespaceClient, namespa
 }
 
 const (
-	rcfNone     = 0
-	rcfNoPriors = 1 << iota
-	rcfBreaking // don't throw a router validation error if the router was already invalid before the change
+	rcfNone       = 0
+	rcfNoPriors   = 1 << iota
+	rcfBreaking   // don't throw a router validation error if the router was already invalid before the change
+	rcfNoValidate // skip validation of new workflow if old router has one or fewer routes
 )
 
 func hasFlag(flags, flag int) bool {
@@ -242,11 +243,17 @@ func (flow *flow) configureRouter(ctx context.Context, evc *ent.EventsClient, wf
 	var err error
 	var muxErr1 error
 	var ms1 *muxStart
+	var existingRoutes int
 
 	if !hasFlag(flags, rcfNoPriors) {
 		// NOTE: we check router valid before deleting because there's no sense failing the
 		// operation for resulting in an invalid router if the router was already invalid.
 		ms1, muxErr1, err = validateRouter(ctx, *wf)
+		if err != nil {
+			return err
+		}
+
+		existingRoutes, err = (*wf).QueryRoutes().Count(ctx)
 		if err != nil {
 			return err
 		}
@@ -264,7 +271,9 @@ func (flow *flow) configureRouter(ctx context.Context, evc *ent.EventsClient, wf
 
 	if muxErr2 != nil {
 
-		if muxErr1 == nil || !hasFlag(flags, rcfBreaking) {
+		if hasFlag(flags, rcfNoValidate) && existingRoutes <= 1 {
+			// TODO: log error
+		} else if muxErr1 == nil || !hasFlag(flags, rcfBreaking) {
 			return muxErr2
 		}
 

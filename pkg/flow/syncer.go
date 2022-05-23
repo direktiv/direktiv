@@ -896,26 +896,29 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 				wfc:  tx.Workflow,
 				revc: tx.Revision,
 				refc: tx.Ref,
+				evc:  tx.Events,
 
-				ns:    md.ns(),
-				pino:  cache[dir],
-				path:  truepath,
-				super: true,
-				data:  data,
+				ns:         md.ns(),
+				pino:       cache[dir],
+				path:       truepath,
+				super:      true,
+				data:       data,
+				noValidate: true,
 			})
 			if wf == nil {
 				return err
 			}
 			if err == os.ErrExist {
 				_, err = syncer.flow.updateWorkflow(ctx, &updateWorkflowArgs{
-					revc:   tx.Revision,
-					eventc: tx.Events,
-					ns:     md.ns(),
-					ino:    wf.Edges.Inode,
-					wf:     wf,
-					path:   truepath,
-					super:  true,
-					data:   data,
+					revc:       tx.Revision,
+					eventc:     tx.Events,
+					ns:         md.ns(),
+					ino:        wf.Edges.Inode,
+					wf:         wf,
+					path:       truepath,
+					super:      true,
+					data:       data,
+					noValidate: true,
 				})
 				if err != nil {
 					return err
