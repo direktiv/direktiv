@@ -1,10 +1,10 @@
-import React, {useState} from 'react';
+import React, {useRef, useState} from 'react';
 import './style.css';
 import '../../components/help/style.css'
 import FlexBox from '../flexbox';
 import {VscChevronDown} from 'react-icons/vsc';
 
-import { GenerateRandomKey } from '../../util';
+import { GenerateRandomKey, useOutsideCallback } from '../../util';
 import { Link } from 'react-router-dom';
 import Identicon from 'react-identicons';
 
@@ -13,12 +13,17 @@ import 'tippy.js/dist/tippy.css';
 
 function NamespaceSelector(props) {
     let {style, className, namespaces, namespace, toggleResponsive} = props;
+    const [showSelector, setShowSelector] = useState(false);
+    const wrapperRef = useRef(null);
+    useOutsideCallback(wrapperRef, showSelector ? ()=>{
+        setShowSelector(false)
+    } : null, 250);
+
     if (!className) {
         className = ""
     }
     className += " border"
     
-    const [showSelector, setShowSelector] = useState(false);
     let selectorClass = "selector-section hidden";
     let selectorBorderClass = "selector-border hidden"
     let chevronClass = "chevron-icon"
@@ -46,7 +51,7 @@ function NamespaceSelector(props) {
     }
 
     return (
-        <>
+        <div ref={wrapperRef} style={{width: "100%"}}>
             {(!!namespace) &&
                 <FlexBox className="col gap">
                     <FlexBox onClick={() => {
@@ -70,7 +75,7 @@ function NamespaceSelector(props) {
                     </FlexBox>
                 </FlexBox>
             }
-        </>
+        </div>
     );
 }
 

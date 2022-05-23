@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+
 export const Config = {
     url: process.env.REACT_APP_API ? process.env.REACT_APP_API : "/api/" 
 }
@@ -83,4 +85,24 @@ export function MimeTypeFileExtension(mime) {
   return null
 }
 
-
+// Fires callback when click event occurs outside of div with passed ref
+export function useOutsideCallback(ref, callback, callbackDelay) {
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (ref.current && !ref.current.contains(event.target)) {
+        if(callback) {
+          setTimeout(() => {
+            callback()
+        }, callbackDelay ? callbackDelay : 0)
+        }
+      }
+    }
+    
+    // Bind the event listener
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      // Unbind the event listener on clean up
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [ref, callback, callbackDelay]);
+}

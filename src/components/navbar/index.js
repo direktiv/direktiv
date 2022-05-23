@@ -267,7 +267,7 @@ function NewNamespaceBtn(props) {
                                             <span className={`input-title`}>{mirrorSettingInfoMetaInfo[key].plainName}{mirrorSettingInfoMetaInfo[key].required ? "*" : ""}</span>
                                             {
                                                 mirrorSettingInfoMetaInfo[key].info ?
-                                                    <HelpIcon msg={mirrorSettingInfoMetaInfo[key].info} /> : <></>
+                                                    <HelpIcon msg={mirrorSettingInfoMetaInfo[key].info} zIndex={9999} /> : <></>
                                             }
                                         </FlexBox>
                                         {key === "publicKey" || key === "privateKey" ?
@@ -289,7 +289,7 @@ function NewNamespaceBtn(props) {
                                                     newErrors[key] = null
                                                     setMirrorErrors({ ...newErrors })
                                                 }}
-                                                    zIndex={10}>
+                                                    zIndex={9999}>
                                                     <div className='input-title-button'>
                                                         <FlexBox className="row gap-sm center" style={{ justifyContent: "flex-end", marginRight: "-6px" }}>
                                                             <span onClick={(e) => {

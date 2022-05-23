@@ -6,14 +6,14 @@ import './style.css';
 
 function HelpIcon(props) {
 
-    let {msg} = props;
+    let {msg, zIndex} = props;
     if (!msg) {
         msg = "No help text provided."
     }
 
     return (
         <>
-            <Tippy content={msg} trigger={'mouseenter focus click'} zIndex={10}>
+            <Tippy content={msg} trigger={'mouseenter focus click'} zIndex={zIndex ? zIndex : 10}>
                 <div className={"iconWrapper"}>
                     <VscInfo className="grey-text"/>
                 </div>
