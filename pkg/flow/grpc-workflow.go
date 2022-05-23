@@ -189,12 +189,14 @@ type createWorkflowArgs struct {
 	wfc  *ent.WorkflowClient
 	revc *ent.RevisionClient
 	refc *ent.RefClient
+	evc  *ent.EventsClient
 
-	ns    *ent.Namespace
-	pino  *ent.Inode
-	path  string
-	super bool
-	data  []byte
+	ns         *ent.Namespace
+	pino       *ent.Inode
+	path       string
+	super      bool
+	data       []byte
+	noValidate bool
 }
 
 func (flow *flow) createWorkflow(ctx context.Context, args *createWorkflowArgs) (*ent.Workflow, error) {
@@ -266,16 +268,23 @@ func (flow *flow) createWorkflow(ctx context.Context, args *createWorkflowArgs) 
 		return nil, err
 	}
 
-	// TODO?
-	// err = flow.configureRouter(ctx, tx.Events, &wf, rcfNoPriors,
-	// 	func() error {
-	// 		return nil
-	// 	},
-	// 	tx.Commit,
-	// )
-	// if err != nil {
-	// 	return nil, err
-	// }
+	flags := rcfNoPriors
+	if args.noValidate {
+		flags |= rcfNoValidate
+	}
+
+	err = flow.configureRouter(ctx, args.evc, &wf, flags,
+		func() error {
+			return nil
+		},
+		func() error {
+			return nil
+		},
+		//tx.Commit,
+	)
+	if err != nil {
+		return nil, err
+	}
 
 	metricsWf.WithLabelValues(ns.Name, ns.Name).Inc()
 	metricsWfUpdated.WithLabelValues(ns.Name, path, ns.Name).Inc()
@@ -428,12 +437,13 @@ type updateWorkflowArgs struct {
 	revc   *ent.RevisionClient
 	eventc *ent.EventsClient
 
-	ns    *ent.Namespace
-	ino   *ent.Inode
-	wf    *ent.Workflow
-	path  string
-	super bool
-	data  []byte
+	ns         *ent.Namespace
+	ino        *ent.Inode
+	wf         *ent.Workflow
+	path       string
+	super      bool
+	data       []byte
+	noValidate bool
 }
 
 func (flow *flow) updateWorkflow(ctx context.Context, args *updateWorkflowArgs) (*ent.Revision, error) {
@@ -475,7 +485,13 @@ func (flow *flow) updateWorkflow(ctx context.Context, args *updateWorkflowArgs) 
 		return oldrev, nil
 	}
 
-	err = flow.configureRouter(ctx, args.eventc, &wf, rcfBreaking,
+	// flags := rcfNoPriors
+	flags := rcfBreaking
+	if args.noValidate {
+		flags |= rcfNoValidate
+	}
+
+	err = flow.configureRouter(ctx, args.eventc, &wf, flags,
 		func() error {
 
 			rev, err = revc.Create().SetHash(hash).SetSource(data).SetWorkflow(wf).SetMetadata(make(map[string]interface{})).Save(ctx)
