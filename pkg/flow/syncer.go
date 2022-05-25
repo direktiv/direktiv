@@ -777,7 +777,7 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 
 				_, err = model.lookup(cpath)
 				if err == os.ErrNotExist {
-					return nil
+					continue
 				}
 				if err != nil {
 					return err
@@ -809,6 +809,7 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 				}
 
 				if err == os.ErrNotExist || mn.ntype != mntDir {
+
 					err = syncer.flow.deleteNode(ctx, &deleteNodeArgs{
 						inoc:      tx.Inode,
 						ns:        md.ns(),
@@ -831,6 +832,7 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 				}
 
 				if err == os.ErrNotExist || mn.ntype != mntWorkflow {
+
 					err = syncer.flow.deleteNode(ctx, &deleteNodeArgs{
 						inoc:      tx.Inode,
 						ns:        md.ns(),
@@ -1488,14 +1490,6 @@ func buildModel(ctx context.Context, repo *localRepository) (*mirrorModel, error
 			return nil
 		}
 
-		if !d.IsDir() && (strings.HasSuffix(base, ".yaml") || strings.HasSuffix(base, ".yml")) {
-			err = model.addWorkflowNode(rel)
-			if err != nil {
-				return err
-			}
-			return nil
-		}
-
 		if strings.Contains(base, ".yaml.") || strings.Contains(base, ".yml.") {
 			err = model.addWorkflowVariableNode(rel, d.IsDir())
 			if err != nil {
@@ -1503,6 +1497,14 @@ func buildModel(ctx context.Context, repo *localRepository) (*mirrorModel, error
 			}
 			if d.IsDir() {
 				return filepath.SkipDir
+			}
+			return nil
+		}
+
+		if !d.IsDir() && (strings.HasSuffix(base, ".yaml") || strings.HasSuffix(base, ".yml")) {
+			err = model.addWorkflowNode(rel)
+			if err != nil {
+				return err
 			}
 			return nil
 		}
