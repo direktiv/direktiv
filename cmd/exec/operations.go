@@ -73,15 +73,28 @@ func getLocalWorkflowVariables(absPath string) ([]string, error) {
 }
 
 func updateRemoteWorkflow(url string, localPath string) error {
-	wfData, err := safeLoadFile(localPath)
+
+	urlUpdate := fmt.Sprintf("%s?op=update-workflow", url)
+	urlCreate := fmt.Sprintf("%s?op=create-workflow", url)
+
+	buf, err := safeLoadFile(localPath)
+	if err != nil {
+		log.Fatalf("Failed to load workflow file: %v", err)
+	}
+	data, err := ioutil.ReadAll(buf)
 	if err != nil {
 		log.Fatalf("Failed to load workflow file: %v", err)
 	}
 
+	updateFailed := false
+	url = urlUpdate
+
+retry:
+
 	req, err := http.NewRequest(
 		http.MethodPost,
-		url,
-		wfData,
+		urlUpdate,
+		bytes.NewReader(data),
 	)
 	if err != nil {
 		return fmt.Errorf("failed to create request file: %v", err)
@@ -95,6 +108,11 @@ func updateRemoteWorkflow(url string, localPath string) error {
 	}
 
 	if resp.StatusCode != 200 {
+		if resp.StatusCode == http.StatusNotFound && !updateFailed {
+			updateFailed = true
+			url = urlCreate
+			goto retry
+		}
 		errBody, err := ioutil.ReadAll(resp.Body)
 		if err == nil {
 			return fmt.Errorf("failed to update workflow, server responsed with %s\n------DUMPING ERROR BODY ------\n%s", resp.Status, string(errBody))
