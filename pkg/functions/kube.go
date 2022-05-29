@@ -2415,25 +2415,30 @@ func (is *functionsServer) CancelWorfklow(ctx context.Context, in *igrpc.CancelW
 
 	for i := range podList.Items {
 
-		fmt.Printf("@@@@@@@@@@@@@@@@@@@@@@@@ %v\n", podList.Items[i].Name)
-		svc := podList.Items[i].ObjectMeta.Labels[label]
-		addr := fmt.Sprintf("http://%s.%s/cancel", svc, functionsConfig.Namespace)
+		service := podList.Items[i].ObjectMeta.Labels[label]
 
-		req, err := http.NewRequest(http.MethodPost, addr, nil)
-		if err != nil {
-			return &empty, err
-		}
-		req.Header.Add("Direktiv-ActionID", aid)
+		// cancel request to pod
+		go func(name, ns, svc string) {
+			logger.Infof("cancelling %v", name)
+			addr := fmt.Sprintf("http://%s.%s/cancel", svc, ns)
 
-		client := http.DefaultClient
-		_, err = client.Do(req)
-		if err != nil {
-			logger.Errorf("error sending delete request: %v", err)
-		}
+			req, err := http.NewRequest(http.MethodPost, addr, nil)
+			if err != nil {
+				logger.Errorf("error creating delete request: %v", err)
+				return
+			}
+			req.Header.Add("Direktiv-ActionID", aid)
 
-		// serving.knative.dev/service=workflow-2790318621118388870-get1
+			client := http.Client{
+				Timeout: 60 * time.Second,
+			}
+			_, err = client.Do(req)
+			if err != nil {
+				logger.Errorf("error sending delete request: %v", err)
+			}
 
-		fmt.Printf("CANCELLING #################################### %v at %v\n", podList.Items[i].Name, addr)
+		}(podList.Items[i].Name, functionsConfig.Namespace, service)
+
 	}
 
 	return &empty, nil
