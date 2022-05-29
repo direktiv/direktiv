@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"runtime/debug"
 	"time"
 
 	"github.com/lib/pq"
@@ -126,9 +127,30 @@ func (engine *engine) lock(key string, timeout time.Duration) (context.Context, 
 		return nil, nil, NewInternalError(err)
 	}
 
+	st := debug.Stack()
+	ch := make(chan bool, 1)
+
 	ctx, cancel := context.WithCancel(context.Background())
 	engine.cancellersLock.Lock()
-	engine.cancellers[key] = cancel
+
+	go func() {
+		select {
+		case <-time.After(time.Second * 30):
+			fmt.Println("---- POTENTIAL LOCK LEAK ")
+			fmt.Println(string(st))
+			fmt.Println("----")
+		case <-ch:
+		}
+	}()
+
+	engine.cancellers[key] = func() {
+		defer func() {
+			recover()
+		}()
+		cancel()
+		close(ch)
+	}
+
 	engine.cancellersLock.Unlock()
 
 	return ctx, conn, nil

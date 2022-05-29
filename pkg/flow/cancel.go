@@ -13,6 +13,7 @@ func (engine *engine) CancelInstanceChildren(ctx context.Context, im *instanceMe
 	logic := im.logic
 
 	children := logic.LivingChildren(ctx, engine, im)
+
 	for _, child := range children {
 		switch child.Type {
 		case "isolate":

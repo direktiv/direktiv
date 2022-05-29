@@ -6,6 +6,7 @@ import (
 	"net"
 	"sort"
 	"strings"
+	"time"
 
 	libgrpc "google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -342,7 +343,11 @@ func (actions *actions) CancelWorkflowInstance(svn, actionID string) error {
 		ServiceName: &svn,
 		ActionID:    &actionID,
 	}
-	_, err := actions.client.CancelWorfklow(context.Background(), req)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
+	defer cancel()
+
+	_, err := actions.client.CancelWorfklow(ctx, req)
 
 	return err
 }
