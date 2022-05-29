@@ -57,30 +57,6 @@ func (locks *locks) Close() error {
 
 }
 
-func (locks *locks) tryLockDB(id uint64) (bool, *sql.Conn, error) {
-
-	var gotLock bool
-
-	conn, err := locks.db.Conn(context.Background())
-	if err != nil {
-		return false, nil, err
-	}
-
-	err = conn.QueryRowContext(context.Background(), "SELECT pg_try_advisory_lock($1)", int64(id)).Scan(&gotLock)
-	if err != nil {
-		return false, nil, err
-	}
-	if !gotLock {
-		err = conn.Close()
-		if err != nil {
-			fmt.Println("CLOSE LOCK CONN ERROR", err)
-		}
-	}
-
-	return gotLock, conn, nil
-
-}
-
 func (locks *locks) lockDB(id uint64, wait int) (*sql.Conn, error) {
 
 	var err error
