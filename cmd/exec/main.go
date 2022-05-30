@@ -18,7 +18,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-const DefaultConfigName = ".direktiv.conf"
+const DefaultConfigName = ".direktiv.yaml"
 
 // Flags
 var (
@@ -44,7 +44,7 @@ var (
 	localAbsPath       string
 	urlPrefix          string
 	urlWorkflow        string
-	urlUpdateWorkflow  string
+	// urlUpdateWorkflow  string
 )
 
 func main() {
@@ -161,7 +161,6 @@ func cmdPrepareWorkflow(wfPath string) {
 
 	urlPrefix = fmt.Sprintf("%s/api/namespaces/%s", addr, namespace)
 	urlWorkflow = fmt.Sprintf("%s/tree/%s", urlPrefix, strings.TrimPrefix(path, "/"))
-	urlUpdateWorkflow = fmt.Sprintf("%s?op=update-workflow", urlWorkflow)
 }
 
 var rootCmd = &cobra.Command{
@@ -207,7 +206,7 @@ Will update the helloworld workflow and set the remote workflow variable 'data.j
 					if err != nil {
 						return err
 					}
-					if strings.HasSuffix(localPath, ".yaml") {
+					if (strings.HasSuffix(localPath, ".yaml") || strings.HasSuffix(localPath, ".yml")) && !(strings.Contains(localPath, ".yaml.") || strings.Contains(localPath, ".yml.")) {
 						pathsToUpdate = append(pathsToUpdate, localPath)
 					}
 					return nil
@@ -222,12 +221,10 @@ Will update the helloworld workflow and set the remote workflow variable 'data.j
 
 		cmd.PrintErrf("Found %v Local Workflow/s to update\n", len(pathsToUpdate))
 		for i, localPath := range pathsToUpdate {
-			path = filepath.ToSlash(strings.TrimSuffix(strings.TrimPrefix(localPath, filepath.Dir(configPath)), ".yaml"))
-			urlWorkflow = fmt.Sprintf("%s/tree/%s", urlPrefix, strings.TrimPrefix(path, "/"))
-			urlUpdateWorkflow = fmt.Sprintf("%s?op=update-workflow", urlWorkflow)
+			path = filepath.ToSlash(strings.TrimSuffix(strings.TrimSuffix(strings.TrimPrefix(localPath, filepath.Dir(configPath)), ".yaml"), ".yml"))
 
 			cmd.PrintErrf("[%v/%v] Updating Namespace: '%s' Workflow: '%s'\n", i+1, len(pathsToUpdate), namespace, path)
-			err = updateRemoteWorkflow(urlUpdateWorkflow, localPath)
+			err = updateRemoteWorkflow(path, localPath)
 			if err != nil {
 				log.Fatalf("Failed to update remote workflow: %v\n", err)
 			}
@@ -278,7 +275,7 @@ Will update the helloworld workflow and set the remote workflow variable 'data.j
 		instanceStatus := "pending"
 
 		cmd.PrintErrf("Updating Namespace: '%s' Workflow: '%s'\n", namespace, path)
-		err := updateRemoteWorkflow(urlUpdateWorkflow, localAbsPath)
+		err := updateRemoteWorkflow(path, localAbsPath)
 		if err != nil {
 			log.Fatalf("Failed to update remote workflow: %v\n", err)
 		}

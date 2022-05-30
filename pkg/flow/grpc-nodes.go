@@ -437,6 +437,9 @@ func (flow *flow) CreateDirectory(ctx context.Context, req *grpc.CreateDirectory
 		pino: pino.ino,
 		path: path,
 	})
+	if err != nil {
+		return nil, err
+	}
 
 	err = tx.Commit()
 	if err != nil {
