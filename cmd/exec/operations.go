@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"path/filepath"
 	"strings"
+
+	"github.com/direktiv/direktiv/pkg/util"
 )
 
 func addAuthHeaders(req *http.Request) {
@@ -72,10 +74,197 @@ func getLocalWorkflowVariables(absPath string) ([]string, error) {
 	return varFiles, nil
 }
 
-func updateRemoteWorkflow(url string, localPath string) error {
+func recurseMkdirParent(path string) error {
 
-	urlUpdate := fmt.Sprintf("%s?op=update-workflow", url)
-	urlCreate := fmt.Sprintf("%s?op=create-workflow", url)
+	dir, _ := filepath.Split(path)
+	if dir == "" || dir == "/" {
+		return nil
+	}
+
+	dir = strings.TrimSuffix(dir, "/")
+
+	err := recurseMkdirParent(dir)
+	if err != nil {
+		return err
+	}
+
+	urlDir := fmt.Sprintf("%s/tree/%s", urlPrefix, strings.Trim(dir, "/"))
+	urlMkdir := fmt.Sprintf("%s?op=create-directory", urlDir)
+
+	req, err := http.NewRequest(
+		http.MethodPut,
+		urlMkdir,
+		nil,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to create request file: %v", err)
+	}
+
+	addAuthHeaders(req)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to send request: %v", err)
+	}
+
+	if resp.StatusCode != 200 {
+		errBody, err := ioutil.ReadAll(resp.Body)
+		if err == nil {
+			return fmt.Errorf("failed to create parent, server responsed with %s\n------DUMPING ERROR BODY ------\n%s", resp.Status, string(errBody))
+		}
+
+		return fmt.Errorf("failed to create parent, server responsed with %s\n------DUMPING ERROR BODY ------\nCould read response body", resp.Status)
+	}
+
+	return err
+
+}
+
+func setWritable(path string) error {
+
+	dir, _ := filepath.Split(path)
+	dir = strings.TrimSuffix(dir, "/")
+
+	urlWorkflow = fmt.Sprintf("%s/tree/%s", urlPrefix, strings.TrimPrefix(path, "/"))
+	urlGetNode := fmt.Sprintf("%s", urlWorkflow)
+
+	req, err := http.NewRequest(
+		http.MethodGet,
+		urlGetNode,
+		nil,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to create request file: %v", err)
+	}
+
+	addAuthHeaders(req)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to send request: %v", err)
+	}
+
+	if resp.StatusCode != 200 {
+		if resp.StatusCode == http.StatusNotFound {
+			err = setWritable(dir)
+			if err != nil {
+				return err
+			}
+			return nil
+		}
+
+		errBody, err := ioutil.ReadAll(resp.Body)
+		if err == nil {
+			return fmt.Errorf("failed to get node information, server responsed with %s\n------DUMPING ERROR BODY ------\n%s", resp.Status, string(errBody))
+		}
+
+		return fmt.Errorf("failed to get node information, server responsed with %s\n------DUMPING ERROR BODY ------\nCould read response body", resp.Status)
+	}
+
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("failed to read response: %v", err)
+	}
+
+	m := make(map[string]interface{})
+	err = json.Unmarshal(data, &m)
+	if err != nil {
+		return fmt.Errorf("failed to unmarshal response: %v", err)
+	}
+
+	x, exists := m["node"]
+	if !exists {
+		return fmt.Errorf("unexpected response: %v", string(data))
+	}
+
+	m2, ok := x.(map[string]interface{})
+	if !ok {
+		return fmt.Errorf("unexpected response: %v", string(data))
+	}
+
+	x, exists = m2["readOnly"]
+	if !exists {
+		return fmt.Errorf("unexpected response: %v", string(data))
+	}
+
+	ro, ok := x.(bool)
+	if !ok {
+		return fmt.Errorf("unexpected response: %v", string(data))
+	}
+
+	if ro == false {
+		return nil
+	}
+
+	x, exists = m2["expandedType"]
+	if !exists {
+		return fmt.Errorf("unexpected response: %v", string(data))
+	}
+
+	et, ok := x.(string)
+	if !ok {
+		return fmt.Errorf("unexpected response: %v", string(data))
+	}
+
+	switch et {
+	case util.InodeTypeGit:
+
+		urlLockMirror := fmt.Sprintf("%s?op=lock-mirror", urlWorkflow)
+
+		req, err := http.NewRequest(
+			http.MethodPost,
+			urlLockMirror,
+			nil,
+		)
+		if err != nil {
+			return fmt.Errorf("failed to create request file: %v", err)
+		}
+
+		addAuthHeaders(req)
+
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			return fmt.Errorf("failed to send request: %v", err)
+		}
+
+		if resp.StatusCode != 200 {
+			errBody, err := ioutil.ReadAll(resp.Body)
+			if err == nil {
+				return fmt.Errorf("failed to get node information, server responsed with %s\n------DUMPING ERROR BODY ------\n%s", resp.Status, string(errBody))
+			}
+
+			return fmt.Errorf("failed to get node information, server responsed with %s\n------DUMPING ERROR BODY ------\nCould read response body", resp.Status)
+		}
+
+	default:
+
+		err = setWritable(dir)
+		if err != nil {
+			return err
+		}
+
+	}
+
+	return nil
+
+}
+
+func updateRemoteWorkflow(path string, localPath string) error {
+
+	err := setWritable(path)
+	if err != nil {
+		log.Fatalf("Failed to make writable: %v", err)
+	}
+
+	err = recurseMkdirParent(path)
+	if err != nil {
+		log.Fatalf("Failed to create parent directory: %v", err)
+	}
+
+	urlWorkflow = fmt.Sprintf("%s/tree/%s", urlPrefix, strings.TrimPrefix(path, "/"))
+
+	urlUpdate := fmt.Sprintf("%s?op=update-workflow", urlWorkflow)
+	urlCreate := fmt.Sprintf("%s?op=create-workflow", urlWorkflow)
 
 	buf, err := safeLoadFile(localPath)
 	if err != nil {
@@ -87,13 +276,14 @@ func updateRemoteWorkflow(url string, localPath string) error {
 	}
 
 	updateFailed := false
-	url = urlUpdate
+	url := urlUpdate
+	method := http.MethodPost
 
 retry:
 
 	req, err := http.NewRequest(
-		http.MethodPost,
-		urlUpdate,
+		method,
+		url,
 		bytes.NewReader(data),
 	)
 	if err != nil {
@@ -111,6 +301,7 @@ retry:
 		if resp.StatusCode == http.StatusNotFound && !updateFailed {
 			updateFailed = true
 			url = urlCreate
+			method = http.MethodPut
 			goto retry
 		}
 		errBody, err := ioutil.ReadAll(resp.Body)
