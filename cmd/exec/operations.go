@@ -107,7 +107,7 @@ func recurseMkdirParent(path string) error {
 		return fmt.Errorf("failed to send request: %v", err)
 	}
 
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != 200 && resp.StatusCode != http.StatusConflict {
 		errBody, err := ioutil.ReadAll(resp.Body)
 		if err == nil {
 			return fmt.Errorf("failed to create parent, server responsed with %s\n------DUMPING ERROR BODY ------\n%s", resp.Status, string(errBody))
