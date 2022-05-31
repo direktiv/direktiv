@@ -59,6 +59,7 @@ func main() {
 	}
 
 	viper.SetEnvPrefix("direktiv")
+	viper.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
 	viper.AutomaticEnv()
 
 	err = rootCmd.Execute()
