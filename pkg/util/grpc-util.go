@@ -9,7 +9,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-const maxSize = 33554432
+const maxSize = 134217728
 
 // GetEndpointTLS creates a grpc client
 func GetEndpointTLS(service string) (*grpc.ClientConn, error) {

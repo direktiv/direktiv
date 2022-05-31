@@ -125,7 +125,7 @@ func (worker *inboundWorker) doFunctionRequest(ctx context.Context, ir *function
 		return out, nil
 	}
 
-	cap := int64(33554432) // 32 MiB (changed to same value as API)
+	cap := int64(134217728) // 128 MiB (changed to same value as API)
 	if resp.ContentLength > cap {
 		return nil, errors.New("service response is too large")
 	}
@@ -264,11 +264,25 @@ func writeFile(dst string, r io.Reader) error {
 
 }
 
+type WrapperReader struct {
+	rd     io.Reader
+	offset int
+}
+
+func (wr *WrapperReader) Read(p []byte) (n int, err error) {
+	o, err := wr.rd.Read(p)
+	wr.offset += o
+	return o, err
+}
+
 func (worker *inboundWorker) writeFile(ftype, dst string, pr io.Reader) error {
 
 	// TODO: const the types
 
 	var err error
+
+	// wrap reader to detect empty tar/gz and DON'T error if the variable
+	// does not exist. It counts offset
 
 	switch ftype {
 
@@ -289,19 +303,33 @@ func (worker *inboundWorker) writeFile(ftype, dst string, pr io.Reader) error {
 		}
 
 	case "tar":
-		err = untar(dst, pr)
-		if err != nil {
+
+		wr := &WrapperReader{
+			rd: pr,
+		}
+
+		err = untar(dst, wr)
+		if err != nil && wr.offset > 0 {
 			return err
 		}
 
 	case "tar.gz":
+
+		wr := &WrapperReader{
+			rd: pr,
+		}
+
 		gr, err := gzip.NewReader(pr)
 		if err != nil {
+			if wr.offset == 0 {
+				os.MkdirAll(dst, 0750)
+				return nil
+			}
 			return err
 		}
 
 		err = untar(dst, gr)
-		if err != nil {
+		if err != nil && wr.offset > 0 {
 			return err
 		}
 
@@ -672,7 +700,7 @@ func (worker *inboundWorker) validateTimeHeader(req *inboundRequest, x *time.Tim
 
 func (worker *inboundWorker) loadBody(req *inboundRequest, data *[]byte) bool {
 
-	cap := int64(33554432) // 4 MiB (cahnged to API value)
+	cap := int64(134217728) // 4 MiB (cahnged to API value)
 	if req.r.ContentLength == 0 {
 		code := http.StatusLengthRequired
 		worker.reportValidationError(req, code, errors.New(http.StatusText(code)))
