@@ -1,104 +1,255 @@
 package main
 
 import (
-	"fmt"
-	"log"
+	"bytes"
+	"crypto/tls"
+	"io/ioutil"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 
+	"github.com/r3labs/sse"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"gopkg.in/yaml.v3"
 )
 
-// autoConfigPathFinder : Walk through parent directories of local workflow yaml until config file is found.
-func autoConfigPathFinder() {
-	var pathArg string
-	var currentDir string
+const DefaultConfigName = ".direktiv.yaml"
 
-	// Find path is cmd args
-	for i := 2; i < len(os.Args); i++ {
-		if !strings.HasPrefix(os.Args[i-1], "-") && !strings.HasPrefix(os.Args[i], "-") {
-			pathArg = os.Args[i]
-			break
-		}
-	}
+type ProfileConfig struct {
+	ID        string `yaml:"id" mapstructure:"profile"`
+	Addr      string `yaml:"addr" mapstructure:"addr"`
+	Path      string `yaml:"path" mapstructure:"path"`
+	Namespace string `yaml:"namespace" mapstructure:"namespace"`
+	Key       string `yaml:"api-key" mapstructure:"api-key"`
+	Token     string `yaml:"auth-token" mapstructure:"auth-token"`
+	MaxSize   int64  `yaml:"max-size" mapstructure:"max-size"`
+}
 
-	wfWD, err := filepath.Abs(pathArg)
+type ConfigFile struct {
+	ProfileConfig `yaml:",inline" mapstructure:",squash"`
+	Profiles      []ProfileConfig `yaml:"profiles,flow" mapstructure:"profiles"`
+	profile       string
+	path          string
+}
+
+var config ConfigFile
+
+func loadConfig(cmd *cobra.Command) {
+
+	chdir, err := cmd.Flags().GetString("directory")
 	if err != nil {
-		log.Fatalf("Failed to locate workflow file in filesystem: %v\n", err)
+		fail("error loading 'directory' flag: %v", err)
 	}
 
-	if fStat, err := os.Stat(wfWD); err == nil && fStat.IsDir() {
-		currentDir = wfWD
-	} else {
-		// Get parent dir if target local path is a file
-		currentDir = filepath.Dir(wfWD)
-	}
-
-	for previousDir := ""; currentDir != previousDir; currentDir = filepath.Dir(currentDir) {
-		cfgPath := filepath.Join(currentDir, DefaultConfigName)
-		if _, err := os.Stat(cfgPath); err == nil {
-			configPath = cfgPath
-			configPathFromFlag = false
-			break
+	if chdir != "" && chdir != "." {
+		err = os.Chdir(chdir)
+		if err != nil {
+			fail("error chanding directory: %v", err)
 		}
-		previousDir = currentDir
+		printlog("changed to directory: %s", chdir)
 	}
+
+	path := findConfig()
+
+	profile, err := cmd.Flags().GetString("profile")
+	if err != nil {
+		fail("error loading 'profile' flag: %v", err)
+	}
+
+	config.profile = profile
+	var cp *ProfileConfig
+
+	if config.profile != "" {
+
+		for idx := range config.Profiles {
+			if config.Profiles[idx].ID == config.profile {
+				cp = &(config.Profiles[idx])
+				break
+			}
+		}
+
+		if cp == nil {
+			fail("error loading profile '%s': undefined", config.profile)
+		}
+
+	}
+
+	if path != "" {
+
+		config.path = path
+
+		if cp == nil {
+			cp = &config.ProfileConfig
+		}
+
+		data, err := yaml.Marshal(cp)
+		if err != nil {
+			panic(err)
+		}
+
+		viper.SetConfigType("yml")
+
+		err = viper.ReadConfig(bytes.NewReader(data))
+		if err != nil {
+			fail("error reading config: %v", err)
+		}
+
+	}
+
 }
 
-// Manually load config flag
-func loadCfgFlag() {
-	// flag.Parse()
-	var foundFlag bool
-	for _, arg := range os.Args {
-		if foundFlag {
-			configPath = arg
-			break
-		}
+func findConfig() string {
 
-		if arg == "--config" || arg == "-c" {
-			foundFlag = true
-			continue
-		}
-
-		if strings.HasPrefix(arg, "-c=") {
-			configPath = strings.TrimPrefix(arg, "-c=")
-			break
-		}
-
-		if strings.HasPrefix(arg, "--config=") {
-			configPath = strings.TrimPrefix(arg, "--config=")
-			break
-		}
+	dir, err := filepath.Abs(".")
+	if err != nil {
+		fail("failed to locate place in filesystem: %v\n", err)
 	}
+
+	for prev := ""; dir != prev; dir = filepath.Dir(dir) {
+
+		path := filepath.Join(dir, DefaultConfigName)
+
+		if _, err := os.Stat(path); err == nil {
+
+			data, err := ioutil.ReadFile(path)
+			if err != nil {
+				fail("failed to read config file: %v", err)
+			}
+
+			err = yaml.Unmarshal(data, &config)
+			if err != nil {
+				fail("failed to parse config file: %v", err)
+			}
+
+			return path
+
+		}
+
+		prev = dir
+
+	}
+
+	return ""
+
 }
 
-// configFlagHelpTextLoader : Generate suffix for flag help text to show set config value.
-func configFlagHelpTextLoader(configKey string, sensitive bool) (flagHelpText string) {
-	configValue := viper.GetString(configKey)
+func getAddr() string {
 
-	if configValue != "" {
-		if sensitive {
-			flagHelpText = "(config \"***************\")"
-		} else {
-			flagHelpText = fmt.Sprintf("(config \"%s\")", configValue)
+	addr := viper.GetString("addr")
+	if addr == "" {
+		fail("addr undefined")
+	}
+
+	return addr
+
+}
+
+func getNamespace() string {
+
+	namespace := viper.GetString("namespace")
+	if namespace == "" {
+		fail("namespace undefined")
+	}
+
+	return namespace
+
+}
+
+func getInsecure() bool {
+
+	return viper.GetBool("insecure")
+
+}
+
+func getTLSConfig() *tls.Config {
+
+	return &tls.Config{InsecureSkipVerify: getInsecure()}
+
+}
+
+func getAPIKey() string {
+
+	return viper.GetString("api-key")
+
+}
+
+func getAuthToken() string {
+
+	return viper.GetString("auth-token")
+
+}
+
+func addAuthHeaders(req *http.Request) {
+
+	req.Header.Add("apikey", getAPIKey())
+	req.Header.Add("Direktiv-Token", getAuthToken())
+
+}
+
+func addSSEAuthHeaders(client *sse.Client) {
+
+	client.Headers["apikey"] = getAPIKey()
+	client.Headers["Direktiv-Token"] = getAuthToken()
+
+}
+
+func getPath(targpath string) string {
+
+	path := viper.GetString("path")
+
+	if path != "" {
+		path = strings.Trim(path, "/")
+		return path
+	}
+
+	// if config file was found automatically, generate path relative to config dir
+
+	configPath := getConfigPath()
+
+	var err error
+
+	if !filepath.IsAbs(configPath) {
+		configPath, err = filepath.Abs(configPath)
+		if err != nil {
+			fail("failed to determine absolute path: %v", err)
 		}
 	}
 
-	return
+	if !filepath.IsAbs(targpath) {
+		targpath, err = filepath.Abs(targpath)
+		if err != nil {
+			fail("failed to determine absolute path: %v", err)
+		}
+	}
+
+	s, err := filepath.Rel(configPath, targpath)
+	if err != nil {
+		fail("failed to generate relative path: %v", err)
+	}
+
+	path = filepath.ToSlash(s)
+	path = strings.TrimSuffix(path, ".yaml")
+	path = strings.TrimSuffix(path, ".yml")
+
+	path = strings.Trim(path, "/")
+
+	return path
+
 }
 
-//	configBindFlag : Binds cli flag for config value. If flag value is set, will be used instead of config value.
-//	If config value is not set, mark flag as required.
-func configBindFlag(cmd *cobra.Command, configKey string, required bool, persistent bool) {
+func getConfigPath() string {
 
-	if persistent {
-		viper.BindPFlag(configKey, cmd.PersistentFlags().Lookup(configKey))
-	} else {
-		viper.BindPFlag(configKey, cmd.Flags().Lookup(configKey))
+	if config.path != "" {
+
+		path := config.path
+		path = filepath.Dir(path)
+		path = strings.TrimSuffix(path, "/")
+		return path
+
 	}
-	if required && viper.GetString(configKey) == "" {
-		cmd.MarkFlagRequired(configKey)
-	}
+
+	return "."
+
 }
