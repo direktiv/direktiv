@@ -74,6 +74,10 @@ func loadConfig(cmd *cobra.Command) {
 			fail("error loading profile '%s': undefined", config.profile)
 		}
 
+	} else if len(config.Profiles) > 0 {
+
+		cp = &(config.Profiles[0])
+
 	}
 
 	if path != "" {
@@ -121,6 +125,13 @@ func findConfig() string {
 			err = yaml.Unmarshal(data, &config)
 			if err != nil {
 				fail("failed to parse config file: %v", err)
+			}
+
+			if len(config.Profiles) > 0 {
+				if config.Addr != "" || config.ID != "" || config.Key != "" || config.MaxSize != 0 ||
+					config.Namespace != "" || config.Path != "" || config.Token != "" {
+					fail("config file cannot have top-level values alongside profiles")
+				}
 			}
 
 			return path
