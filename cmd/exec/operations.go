@@ -13,11 +13,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/util"
 )
 
-func addAuthHeaders(req *http.Request) {
-	req.Header.Add("apikey", apiKey)
-	req.Header.Add("Direktiv-Token", authToken)
-}
-
 func setRemoteWorkflowVariable(wfURL string, varName string, varPath string) error {
 	varData, err := safeLoadFile(varPath)
 	if err != nil {
@@ -250,6 +245,8 @@ func setWritable(path string) error {
 }
 
 func updateRemoteWorkflow(path string, localPath string) error {
+
+	printlog("updating namespace: '%s' workflow: '%s'\n", getNamespace(), path)
 
 	err := setWritable(path)
 	if err != nil {
