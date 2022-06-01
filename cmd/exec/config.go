@@ -71,7 +71,7 @@ func loadConfig(cmd *cobra.Command) {
 		}
 
 		if cp == nil {
-			fail("error loading profile '%s': undefined", config.profile)
+			fail("error loading profile '%s': no profile exists by this name in the config file", config.profile)
 		}
 
 	} else if len(config.Profiles) > 0 {
@@ -150,7 +150,7 @@ func getAddr() string {
 
 	addr := viper.GetString("addr")
 	if addr == "" {
-		fail("addr undefined")
+		fail("addr undefined: ensure it is set as a flag, environment variable, or in the config file")
 	}
 
 	return addr
@@ -161,7 +161,7 @@ func getNamespace() string {
 
 	namespace := viper.GetString("namespace")
 	if namespace == "" {
-		fail("namespace undefined")
+		fail("namespace undefined: ensure it is set as a flag, environment variable, or in the config file")
 	}
 
 	return namespace
