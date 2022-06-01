@@ -206,18 +206,7 @@ func addSSEAuthHeaders(client *sse.Client) {
 
 }
 
-func getPath(targpath string) string {
-
-	path := viper.GetString("path")
-
-	if path != "" {
-		path = strings.Trim(path, "/")
-		return path
-	}
-
-	// if config file was found automatically, generate path relative to config dir
-
-	configPath := getConfigPath()
+func getRelativePath(configPath, targpath string) string {
 
 	var err error
 
@@ -240,13 +229,30 @@ func getPath(targpath string) string {
 		fail("failed to generate relative path: %v", err)
 	}
 
-	path = filepath.ToSlash(s)
+	path := filepath.ToSlash(s)
 	path = strings.TrimSuffix(path, ".yaml")
 	path = strings.TrimSuffix(path, ".yml")
 
 	path = strings.Trim(path, "/")
 
 	return path
+
+}
+
+func getPath(targpath string) string {
+
+	path := viper.GetString("path")
+
+	if path != "" {
+		path = strings.Trim(path, "/")
+		return path
+	}
+
+	// if config file was found automatically, generate path relative to config dir
+
+	configPath := getConfigPath()
+
+	return getRelativePath(configPath, targpath)
 
 }
 

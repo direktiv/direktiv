@@ -170,7 +170,9 @@ Will update the helloworld workflow and set the remote workflow variable 'data.j
 						return err
 					}
 					if (strings.HasSuffix(localPath, ".yaml") || strings.HasSuffix(localPath, ".yml")) && !(strings.Contains(localPath, ".yaml.") || strings.Contains(localPath, ".yml.")) {
-						pathsToUpdate = append(pathsToUpdate, localPath)
+						if !strings.HasSuffix(localPath, DefaultConfigName) {
+							pathsToUpdate = append(pathsToUpdate, localPath)
+						}
 					}
 					return nil
 				})
@@ -182,9 +184,12 @@ Will update the helloworld workflow and set the remote workflow variable 'data.j
 			pathsToUpdate = append(pathsToUpdate, localAbsPath)
 		}
 
+		relativeDir := getPath(".")
+
 		cmd.PrintErrf("Found %v Local Workflow/s to update\n", len(pathsToUpdate))
 		for i, localPath := range pathsToUpdate {
-			path := getPath(localPath)
+
+			path := getRelativePath(relativeDir, localPath)
 
 			cmd.PrintErrf("[%v/%v] Updating Namespace: '%s' Workflow: '%s'\n", i+1, len(pathsToUpdate), getNamespace(), path)
 			err = updateRemoteWorkflow(path, localPath)
