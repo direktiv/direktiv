@@ -189,7 +189,7 @@ Will update the helloworld workflow and set the remote workflow variable 'data.j
 		cmd.PrintErrf("Found %v Local Workflow/s to update\n", len(pathsToUpdate))
 		for i, localPath := range pathsToUpdate {
 
-			path := getRelativePath(relativeDir, localPath)
+			path := filepath.Join(relativeDir, getRelativePath(localAbsPath, localPath))
 
 			cmd.PrintErrf("[%v/%v] Updating Namespace: '%s' Workflow: '%s'\n", i+1, len(pathsToUpdate), getNamespace(), path)
 			err = updateRemoteWorkflow(path, localPath)
