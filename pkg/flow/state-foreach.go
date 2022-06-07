@@ -37,33 +37,6 @@ func (sl *foreachStateLogic) Deadline(ctx context.Context, engine *engine, im *i
 	return deadlineFromString(ctx, engine, im, sl.Timeout)
 }
 
-func (sl *foreachStateLogic) LivingChildren(ctx context.Context, engine *engine, im *instanceMemory) []stateChild {
-
-	var err error
-	var children = make([]stateChild, 0)
-
-	var logics []multiactionTuple
-	err = im.UnmarshalMemory(&logics)
-	if err != nil {
-		engine.sugar.Error(err)
-		return children
-	}
-
-	for _, logic := range logics {
-		if logic.Complete {
-			continue
-		}
-		children = append(children, stateChild{
-			Id:          logic.ID,
-			Type:        logic.Type,
-			ServiceName: logic.ServiceName,
-		})
-	}
-
-	return children
-
-}
-
 func (sl *foreachStateLogic) do(ctx context.Context, engine *engine, im *instanceMemory, inputSource interface{}, attempt int) (logic multiactionTuple, err error) {
 
 	action := sl.Action

@@ -67,63 +67,6 @@ func (sl *actionStateLogic) Deadline(ctx context.Context, engine *engine, im *in
 
 }
 
-func (sl *actionStateLogic) LivingChildren(ctx context.Context, engine *engine, im *instanceMemory) []stateChild {
-
-	var err error
-	var children = make([]stateChild, 0)
-
-	sd := new(actionStateSavedata)
-	err = im.UnmarshalMemory(sd)
-	if err != nil {
-		engine.sugar.Error(err)
-		return children
-	}
-
-	if sl.Action.Function != "" && sd.Id != "" {
-
-		var uid uuid.UUID
-		err = uid.UnmarshalText([]byte(sd.Id))
-		if err != nil {
-			engine.sugar.Error(err)
-			return children
-		}
-
-		children = append(children, stateChild{
-			Id:          uid.String(),
-			Type:        "isolate",
-			ServiceName: sd.ServiceName,
-		})
-
-	} else {
-
-		id := string(sd.Id)
-
-		children = append(children, stateChild{
-			Id:   id,
-			Type: "subflow",
-		})
-
-	}
-
-	return children
-
-}
-
-type actionStateSavedata struct {
-	Op          string
-	Id          string
-	Attempts    int
-	ServiceName string
-}
-
-func (sd *actionStateSavedata) Marshal() []byte {
-	data, err := json.Marshal(sd)
-	if err != nil {
-		panic(err)
-	}
-	return data
-}
-
 func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory, stateId string, timeout int,
 	fn model.FunctionDefinition, inputData []byte,
 	uid uuid.UUID, async bool, files []model.FunctionFileDefinition) (*functionRequest, error) {
@@ -259,6 +202,8 @@ func (sl *actionStateLogic) do(ctx context.Context, engine *engine, im *instance
 		return
 	}
 
+	logics := make([]multiactionTuple, 0)
+
 	fnt := fn.GetType()
 	switch fnt {
 	case model.SubflowFunctionType:
@@ -287,12 +232,12 @@ func (sl *actionStateLogic) do(ctx context.Context, engine *engine, im *instance
 			return
 		}
 		engine.logToInstance(ctx, time.Now(), im.in, "Sleeping until subflow '%s' returns (%s).", subflowID, sl.Action.Function)
-		sd := &actionStateSavedata{
-			Op:       "do",
-			Id:       subflowID,
+		logics = append(logics, multiactionTuple{
+			ID:       subflowID,
+			Type:     "subflow",
 			Attempts: attempt,
-		}
-		err = engine.SetMemory(ctx, im, sd)
+		})
+		err = engine.SetMemory(ctx, im, logics)
 		if err != nil {
 			return
 		}
@@ -310,14 +255,14 @@ func (sl *actionStateLogic) do(ctx context.Context, engine *engine, im *instance
 			return
 		}
 
-		sd := &actionStateSavedata{
-			Op:          "do",
-			Id:          uid.String(),
+		logics = append(logics, multiactionTuple{
+			ID:          uid.String(),
+			Type:        "isolate",
 			Attempts:    attempt,
 			ServiceName: ar.Container.Service,
-		}
+		})
 
-		err = engine.SetMemory(ctx, im, sd)
+		err = engine.SetMemory(ctx, im, logics)
 		if err != nil {
 			return
 		}
@@ -365,18 +310,24 @@ func (sl *actionStateLogic) Run(ctx context.Context, engine *engine, im *instanc
 
 	}
 
+	var logics []multiactionTuple
+	err = im.UnmarshalMemory(&logics)
+	if err != nil {
+		err = NewInternalError(err)
+		return
+	}
+
 	// check for scheduled retry
-	retryData := new(actionStateSavedata)
+	retryData := new(foreachStateLogicRetry)
 	dec := json.NewDecoder(bytes.NewReader(wakedata))
 	dec.DisallowUnknownFields()
 	err = dec.Decode(retryData)
-	if err == nil && retryData.Op == "retry" {
+	if err == nil {
 		engine.logToInstance(ctx, time.Now(), im.in, "Retrying...")
-		return sl.do(ctx, engine, im, retryData.Attempts, sl.Action.Files)
+		return sl.do(ctx, engine, im, logics[0].Attempts, sl.Action.Files)
 	}
 
 	// second part
-
 	results := new(actionResultPayload)
 	dec = json.NewDecoder(bytes.NewReader(wakedata))
 	dec.DisallowUnknownFields()
@@ -386,12 +337,7 @@ func (sl *actionStateLogic) Run(ctx context.Context, engine *engine, im *instanc
 		return
 	}
 
-	sd := new(actionStateSavedata)
-	err = im.UnmarshalMemory(sd)
-	if err != nil {
-		err = NewInternalError(err)
-		return
-	}
+	sd := logics[0]
 
 	fn, err := sl.workflow.GetFunction(sl.Action.Function)
 	if err != nil {
@@ -402,7 +348,7 @@ func (sl *actionStateLogic) Run(ctx context.Context, engine *engine, im *instanc
 	fnt := fn.GetType()
 	switch fnt {
 	case model.SubflowFunctionType:
-		id := sd.Id
+		id := sd.ID
 		if results.ActionID != id {
 			err = NewInternalError(errors.New("incorrect subflow action ID"))
 			return
@@ -414,7 +360,7 @@ func (sl *actionStateLogic) Run(ctx context.Context, engine *engine, im *instanc
 		fallthrough
 	case model.GlobalKnativeFunctionType:
 		var uid uuid.UUID
-		err = uid.UnmarshalText([]byte(sd.Id))
+		err = uid.UnmarshalText([]byte(sd.ID))
 		if err != nil {
 			err = NewInternalError(err)
 			return
@@ -443,7 +389,7 @@ func (sl *actionStateLogic) Run(ctx context.Context, engine *engine, im *instanc
 		}
 
 		engine.logToInstance(ctx, time.Now(), im.in, "Scheduling retry attempt in: %v.", d)
-		err = sl.scheduleRetry(ctx, engine, im, sd, d)
+		err = sl.scheduleRetry(ctx, engine, im, logics, d)
 		return
 
 	}
@@ -477,20 +423,25 @@ func (sl *actionStateLogic) Run(ctx context.Context, engine *engine, im *instanc
 
 }
 
-func (sl *actionStateLogic) scheduleRetry(ctx context.Context, engine *engine, im *instanceMemory, sd *actionStateSavedata, d time.Duration) error {
+func (sl *actionStateLogic) scheduleRetry(ctx context.Context, engine *engine, im *instanceMemory, logics []multiactionTuple, d time.Duration) error {
 
 	var err error
 
-	sd.Attempts++
-	sd.Op = "retry"
-	sd.Id = ""
+	idx := 0
 
-	err = engine.SetMemory(ctx, im, sd)
+	logics[idx].Attempts++
+	logics[idx].ID = ""
+
+	err = engine.SetMemory(ctx, im, logics)
 	if err != nil {
 		return err
 	}
 
-	data := sd.Marshal()
+	r := &foreachStateLogicRetry{
+		Idx:    idx,
+		Logics: logics,
+	}
+	data := r.Marshal()
 
 	t := time.Now().Add(d)
 

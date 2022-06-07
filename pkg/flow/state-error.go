@@ -31,10 +31,6 @@ func (sl *errorStateLogic) Deadline(ctx context.Context, engine *engine, im *ins
 	return time.Now().Add(defaultDeadline)
 }
 
-func (sl *errorStateLogic) LivingChildren(ctx context.Context, engine *engine, im *instanceMemory) []stateChild {
-	return nil
-}
-
 func (sl *errorStateLogic) Run(ctx context.Context, engine *engine, im *instanceMemory, wakedata []byte) (transition *stateTransition, err error) {
 
 	if im.GetMemory() != nil {

@@ -34,10 +34,6 @@ func (sl *eventsXorStateLogic) Deadline(ctx context.Context, engine *engine, im 
 	return deadlineFromString(ctx, engine, im, sl.Timeout)
 }
 
-func (sl *eventsXorStateLogic) LivingChildren(ctx context.Context, engine *engine, im *instanceMemory) []stateChild {
-	return nil
-}
-
 func (sl *eventsXorStateLogic) listenForEvents(ctx context.Context, engine *engine, im *instanceMemory) error {
 
 	if im.GetMemory() != nil {

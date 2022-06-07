@@ -30,10 +30,6 @@ func (sl *noopStateLogic) Deadline(ctx context.Context, engine *engine, im *inst
 	return time.Now().Add(defaultDeadline)
 }
 
-func (sl *noopStateLogic) LivingChildren(ctx context.Context, engine *engine, im *instanceMemory) []stateChild {
-	return nil
-}
-
 func (sl *noopStateLogic) Run(ctx context.Context, engine *engine, im *instanceMemory, wakedata []byte) (transition *stateTransition, err error) {
 
 	if im.GetMemory() != nil {
