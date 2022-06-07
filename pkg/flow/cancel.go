@@ -8,11 +8,48 @@ import (
 	"github.com/direktiv/direktiv/pkg/util"
 )
 
+func (engine *engine) Children(ctx context.Context, im *instanceMemory) ([]multiactionTuple, error) {
+
+	var err error
+
+	var children []multiactionTuple
+	err = im.UnmarshalMemory(&children)
+	if err != nil {
+		return nil, err
+	}
+
+	return children, nil
+
+}
+
+func (engine *engine) LivingChildren(ctx context.Context, im *instanceMemory) []stateChild {
+
+	var living = make([]stateChild, 0)
+
+	children, err := engine.Children(ctx, im)
+	if err != nil {
+		engine.sugar.Error(err)
+		return living
+	}
+
+	for _, logic := range children {
+		if logic.Complete {
+			continue
+		}
+		living = append(living, stateChild{
+			Id:          logic.ID,
+			Type:        logic.Type,
+			ServiceName: logic.ServiceName,
+		})
+	}
+
+	return living
+
+}
+
 func (engine *engine) CancelInstanceChildren(ctx context.Context, im *instanceMemory) {
 
-	logic := im.logic
-
-	children := logic.LivingChildren(ctx, engine, im)
+	children := engine.LivingChildren(ctx, im)
 
 	for _, child := range children {
 		switch child.Type {

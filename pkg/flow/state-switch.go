@@ -30,10 +30,6 @@ func (sl *switchStateLogic) Deadline(ctx context.Context, engine *engine, im *in
 	return time.Now().Add(defaultDeadline)
 }
 
-func (sl *switchStateLogic) LivingChildren(ctx context.Context, engine *engine, im *instanceMemory) []stateChild {
-	return nil
-}
-
 func (sl *switchStateLogic) Run(ctx context.Context, engine *engine, im *instanceMemory, wakedata []byte) (transition *stateTransition, err error) {
 
 	if im.GetMemory() != nil {

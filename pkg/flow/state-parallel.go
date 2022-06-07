@@ -37,33 +37,6 @@ func (sl *parallelStateLogic) Deadline(ctx context.Context, engine *engine, im *
 	return deadlineFromString(ctx, engine, im, sl.Timeout)
 }
 
-func (sl *parallelStateLogic) LivingChildren(ctx context.Context, engine *engine, im *instanceMemory) []stateChild {
-
-	var err error
-	var children = make([]stateChild, 0)
-
-	var logics []multiactionTuple
-	err = im.UnmarshalMemory(&logics)
-	if err != nil {
-		engine.sugar.Error(err)
-		return children
-	}
-
-	for _, logic := range logics {
-		if logic.Complete {
-			continue
-		}
-		children = append(children, stateChild{
-			Id:          logic.ID,
-			Type:        logic.Type,
-			ServiceName: logic.ServiceName,
-		})
-	}
-
-	return children
-
-}
-
 func (sl *parallelStateLogic) dispatchAction(ctx context.Context, engine *engine, im *instanceMemory, action *model.ActionDefinition, attempt int) (logic multiactionTuple, err error) {
 
 	var inputData []byte

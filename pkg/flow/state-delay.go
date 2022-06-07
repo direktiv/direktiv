@@ -42,10 +42,6 @@ func (sl *delayStateLogic) Deadline(ctx context.Context, engine *engine, im *ins
 
 }
 
-func (sl *delayStateLogic) LivingChildren(ctx context.Context, engine *engine, im *instanceMemory) []stateChild {
-	return nil
-}
-
 func (sl *delayStateLogic) Run(ctx context.Context, engine *engine, im *instanceMemory, wakedata []byte) (transition *stateTransition, err error) {
 
 	if im.GetMemory() != nil {

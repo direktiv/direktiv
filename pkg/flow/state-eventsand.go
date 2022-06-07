@@ -34,10 +34,6 @@ func (sl *eventsAndStateLogic) Deadline(ctx context.Context, engine *engine, im 
 	return deadlineFromString(ctx, engine, im, sl.Timeout)
 }
 
-func (sl *eventsAndStateLogic) LivingChildren(ctx context.Context, engine *engine, im *instanceMemory) []stateChild {
-	return nil
-}
-
 func (sl *eventsAndStateLogic) listenForEvents(ctx context.Context, engine *engine, im *instanceMemory) error {
 
 	if im.GetMemory() != nil {

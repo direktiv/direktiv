@@ -42,12 +42,12 @@ type stateChild struct {
 type stateLogic interface {
 	GetID() string
 	GetType() model.StateType
-	Deadline(ctx context.Context, engine *engine, im *instanceMemory) time.Time
-	ErrorDefinitions() []model.ErrorDefinition
-	Run(ctx context.Context, engine *engine, im *instanceMemory, wakedata []byte) (transition *stateTransition, err error)
-	LivingChildren(ctx context.Context, engine *engine, im *instanceMemory) []stateChild
 	GetLog() interface{}
 	GetMetadata() interface{}
+	ErrorDefinitions() []model.ErrorDefinition
+
+	Deadline(ctx context.Context, engine *engine, im *instanceMemory) time.Time
+	Run(ctx context.Context, engine *engine, im *instanceMemory, wakedata []byte) (transition *stateTransition, err error)
 }
 
 //

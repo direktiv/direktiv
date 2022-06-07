@@ -34,10 +34,6 @@ func (sl *consumeEventStateLogic) Deadline(ctx context.Context, engine *engine, 
 	return deadlineFromString(ctx, engine, im, sl.Timeout)
 }
 
-func (sl *consumeEventStateLogic) LivingChildren(ctx context.Context, engine *engine, im *instanceMemory) []stateChild {
-	return nil
-}
-
 func (sl *consumeEventStateLogic) Run(ctx context.Context, engine *engine, im *instanceMemory, wakedata []byte) (transition *stateTransition, err error) {
 
 	if len(wakedata) == 0 {
