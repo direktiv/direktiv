@@ -12,7 +12,7 @@ import (
 )
 
 type eventsAndStateLogic struct {
-	state    *model.EventsAndState
+	*model.EventsAndState
 	workflow *model.Workflow
 }
 
@@ -23,27 +23,15 @@ func initEventsAndStateLogic(wf *model.Workflow, state model.State) (stateLogic,
 		return nil, NewInternalError(errors.New("bad state object"))
 	}
 	sl := new(eventsAndStateLogic)
-	sl.state = eventsAnd
+	sl.EventsAndState = eventsAnd
 	sl.workflow = wf
 
 	return sl, nil
 
 }
 
-func (sl *eventsAndStateLogic) Type() string {
-	return model.StateTypeEventsAnd.String()
-}
-
 func (sl *eventsAndStateLogic) Deadline(ctx context.Context, engine *engine, im *instanceMemory) time.Time {
-	return deadlineFromString(ctx, engine, im, sl.state.Timeout)
-}
-
-func (sl *eventsAndStateLogic) ErrorCatchers() []model.ErrorDefinition {
-	return sl.state.ErrorDefinitions()
-}
-
-func (sl *eventsAndStateLogic) ID() string {
-	return sl.state.ID
+	return deadlineFromString(ctx, engine, im, sl.Timeout)
 }
 
 func (sl *eventsAndStateLogic) LivingChildren(ctx context.Context, engine *engine, im *instanceMemory) []stateChild {
@@ -57,13 +45,13 @@ func (sl *eventsAndStateLogic) listenForEvents(ctx context.Context, engine *engi
 	}
 
 	var events []*model.ConsumeEventDefinition
-	for i := range sl.state.Events {
+	for i := range sl.Events {
 
 		var err error
 		event := new(model.ConsumeEventDefinition)
-		event.Type = sl.state.Events[i].Type
+		event.Type = sl.Events[i].Type
 		event.Context = make(map[string]interface{})
-		for k, v := range sl.state.Events[i].Context {
+		for k, v := range sl.Events[i].Context {
 			var x interface{}
 			x, err = jqOne(im.data, v)
 			if err != nil {
@@ -91,14 +79,6 @@ func (sl *eventsAndStateLogic) listenForEvents(ctx context.Context, engine *engi
 
 }
 
-func (sl *eventsAndStateLogic) LogJQ() interface{} {
-	return sl.state.Log
-}
-
-func (sl *eventsAndStateLogic) MetadataJQ() interface{} {
-	return sl.state.Metadata
-}
-
 func (sl *eventsAndStateLogic) Run(ctx context.Context, engine *engine, im *instanceMemory, wakedata []byte) (transition *stateTransition, err error) {
 
 	if len(wakedata) == 0 {
@@ -113,7 +93,7 @@ func (sl *eventsAndStateLogic) Run(ctx context.Context, engine *engine, im *inst
 		return
 	}
 
-	if len(events) != len(sl.state.Events) {
+	if len(events) != len(sl.Events) {
 		err = NewInternalError(errors.New("incorrect number of events returned"))
 		return
 	}
@@ -142,8 +122,8 @@ func (sl *eventsAndStateLogic) Run(ctx context.Context, engine *engine, im *inst
 	}
 
 	transition = &stateTransition{
-		Transform: sl.state.Transform,
-		NextState: sl.state.Transition,
+		Transform: sl.Transform,
+		NextState: sl.Transition,
 	}
 
 	return

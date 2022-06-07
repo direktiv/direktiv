@@ -14,7 +14,7 @@ import (
 )
 
 type setterStateLogic struct {
-	state *model.SetterState
+	*model.SetterState
 }
 
 func initSetterStateLogic(wf *model.Workflow, state model.State) (stateLogic, error) {
@@ -25,37 +25,17 @@ func initSetterStateLogic(wf *model.Workflow, state model.State) (stateLogic, er
 	}
 
 	sl := new(setterStateLogic)
-	sl.state = setter
+	sl.SetterState = setter
 
 	return sl, nil
-}
-
-func (sl *setterStateLogic) Type() string {
-	return model.StateTypeSetter.String()
 }
 
 func (sl *setterStateLogic) Deadline(ctx context.Context, engine *engine, im *instanceMemory) time.Time {
 	return time.Now().Add(defaultDeadline)
 }
 
-func (sl *setterStateLogic) ErrorCatchers() []model.ErrorDefinition {
-	return sl.state.ErrorDefinitions()
-}
-
-func (sl *setterStateLogic) ID() string {
-	return sl.state.GetID()
-}
-
 func (sl *setterStateLogic) LivingChildren(ctx context.Context, engine *engine, im *instanceMemory) []stateChild {
 	return nil
-}
-
-func (sl *setterStateLogic) LogJQ() interface{} {
-	return sl.state.Log
-}
-
-func (sl *setterStateLogic) MetadataJQ() interface{} {
-	return sl.state.Metadata
 }
 
 func (sl *setterStateLogic) Run(ctx context.Context, engine *engine, im *instanceMemory, wakedata []byte) (transition *stateTransition, err error) {
@@ -81,7 +61,7 @@ func (sl *setterStateLogic) Run(ctx context.Context, engine *engine, im *instanc
 	vdatac := tx.VarData
 	vrefc := tx.VarRef
 
-	for idx, v := range sl.state.Variables {
+	for idx, v := range sl.Variables {
 
 		var x interface{}
 		var key = ""
@@ -214,8 +194,8 @@ func (sl *setterStateLogic) Run(ctx context.Context, engine *engine, im *instanc
 	}
 
 	transition = &stateTransition{
-		Transform: sl.state.Transform,
-		NextState: sl.state.Transition,
+		Transform: sl.Transform,
+		NextState: sl.Transition,
 	}
 
 	return

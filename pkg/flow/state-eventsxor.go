@@ -11,7 +11,7 @@ import (
 )
 
 type eventsXorStateLogic struct {
-	state    *model.EventsXorState
+	*model.EventsXorState
 	workflow *model.Workflow
 }
 
@@ -23,27 +23,15 @@ func initEventsXorStateLogic(wf *model.Workflow, state model.State) (stateLogic,
 	}
 
 	sl := new(eventsXorStateLogic)
-	sl.state = eventsXor
+	sl.EventsXorState = eventsXor
 	sl.workflow = wf
 
 	return sl, nil
 
 }
 
-func (sl *eventsXorStateLogic) Type() string {
-	return model.StateTypeEventsXor.String()
-}
-
 func (sl *eventsXorStateLogic) Deadline(ctx context.Context, engine *engine, im *instanceMemory) time.Time {
-	return deadlineFromString(ctx, engine, im, sl.state.Timeout)
-}
-
-func (sl *eventsXorStateLogic) ErrorCatchers() []model.ErrorDefinition {
-	return sl.state.ErrorDefinitions()
-}
-
-func (sl *eventsXorStateLogic) ID() string {
-	return sl.state.ID
+	return deadlineFromString(ctx, engine, im, sl.Timeout)
 }
 
 func (sl *eventsXorStateLogic) LivingChildren(ctx context.Context, engine *engine, im *instanceMemory) []stateChild {
@@ -57,13 +45,13 @@ func (sl *eventsXorStateLogic) listenForEvents(ctx context.Context, engine *engi
 	}
 
 	var events []*model.ConsumeEventDefinition
-	for i := range sl.state.Events {
+	for i := range sl.Events {
 
 		var err error
 		event := new(model.ConsumeEventDefinition)
-		event.Type = sl.state.Events[i].Event.Type
+		event.Type = sl.Events[i].Event.Type
 		event.Context = make(map[string]interface{})
-		for k, v := range sl.state.Events[i].Event.Context {
+		for k, v := range sl.Events[i].Event.Context {
 			var x interface{}
 			x, err = jqOne(im.data, v)
 			if err != nil {
@@ -91,14 +79,6 @@ func (sl *eventsXorStateLogic) listenForEvents(ctx context.Context, engine *engi
 
 }
 
-func (sl *eventsXorStateLogic) LogJQ() interface{} {
-	return sl.state.Log
-}
-
-func (sl *eventsXorStateLogic) MetadataJQ() interface{} {
-	return sl.state.Metadata
-}
-
 func (sl *eventsXorStateLogic) Run(ctx context.Context, engine *engine, im *instanceMemory, wakedata []byte) (transition *stateTransition, err error) {
 
 	if len(wakedata) == 0 {
@@ -124,11 +104,11 @@ func (sl *eventsXorStateLogic) Run(ctx context.Context, engine *engine, im *inst
 			return
 		}
 
-		for i := 0; i < len(sl.state.Events); i++ {
-			if sl.state.Events[i].Event.Type == event.Type() {
+		for i := 0; i < len(sl.Events); i++ {
+			if sl.Events[i].Event.Type == event.Type() {
 				transition = &stateTransition{
-					Transform: sl.state.Events[i].Transform,
-					NextState: sl.state.Events[i].Transition,
+					Transform: sl.Events[i].Transform,
+					NextState: sl.Events[i].Transition,
 				}
 				break
 			}

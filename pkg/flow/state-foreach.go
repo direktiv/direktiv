@@ -14,7 +14,7 @@ import (
 )
 
 type foreachStateLogic struct {
-	state    *model.ForEachState
+	*model.ForEachState
 	workflow *model.Workflow
 }
 
@@ -26,27 +26,15 @@ func initForEachStateLogic(wf *model.Workflow, state model.State) (stateLogic, e
 	}
 
 	sl := new(foreachStateLogic)
-	sl.state = foreach
+	sl.ForEachState = foreach
 	sl.workflow = wf
 
 	return sl, nil
 
 }
 
-func (sl *foreachStateLogic) Type() string {
-	return model.StateTypeForEach.String()
-}
-
 func (sl *foreachStateLogic) Deadline(ctx context.Context, engine *engine, im *instanceMemory) time.Time {
-	return deadlineFromString(ctx, engine, im, sl.state.Timeout)
-}
-
-func (sl *foreachStateLogic) ErrorCatchers() []model.ErrorDefinition {
-	return sl.state.ErrorDefinitions()
-}
-
-func (sl *foreachStateLogic) ID() string {
-	return sl.state.ID
+	return deadlineFromString(ctx, engine, im, sl.Timeout)
 }
 
 func (sl *foreachStateLogic) LivingChildren(ctx context.Context, engine *engine, im *instanceMemory) []stateChild {
@@ -76,17 +64,9 @@ func (sl *foreachStateLogic) LivingChildren(ctx context.Context, engine *engine,
 
 }
 
-func (sl *foreachStateLogic) LogJQ() interface{} {
-	return sl.state.Log
-}
-
-func (sl *foreachStateLogic) MetadataJQ() interface{} {
-	return sl.state.Metadata
-}
-
 func (sl *foreachStateLogic) do(ctx context.Context, engine *engine, im *instanceMemory, inputSource interface{}, attempt int) (logic multiactionTuple, err error) {
 
-	action := sl.state.Action
+	action := sl.Action
 
 	var inputData []byte
 	inputData, err = generateActionInput(ctx, engine, im, inputSource, action)
@@ -94,7 +74,7 @@ func (sl *foreachStateLogic) do(ctx context.Context, engine *engine, im *instanc
 		return
 	}
 
-	fn, err := sl.workflow.GetFunction(sl.state.Action.Function)
+	fn, err := sl.workflow.GetFunction(sl.Action.Function)
 	if err != nil {
 		err = NewInternalError(err)
 		return
@@ -110,7 +90,7 @@ func (sl *foreachStateLogic) do(ctx context.Context, engine *engine, im *instanc
 
 		caller := new(subflowCaller)
 		caller.InstanceID = im.ID().String()
-		caller.State = sl.state.GetID()
+		caller.State = sl.GetID()
 		caller.Step = im.Step()
 		caller.As = im.in.As
 
@@ -138,13 +118,13 @@ func (sl *foreachStateLogic) do(ctx context.Context, engine *engine, im *instanc
 
 		// set the timeout to the max of the state
 		var wfto int
-		wfto, err = ISO8601StringtoSecs(sl.state.Timeout)
+		wfto, err = ISO8601StringtoSecs(sl.Timeout)
 		if err != nil {
 			return
 		}
 
 		var ar *functionRequest
-		ar, err = engine.newIsolateRequest(ctx, im, sl.state.GetID(), wfto, fn, inputData, uid, false, sl.state.Action.Files)
+		ar, err = engine.newIsolateRequest(ctx, im, sl.GetID(), wfto, fn, inputData, uid, false, sl.Action.Files)
 		if err != nil {
 			return
 		}
@@ -172,7 +152,7 @@ func (sl *foreachStateLogic) do(ctx context.Context, engine *engine, im *instanc
 
 func (sl *foreachStateLogic) doAll(ctx context.Context, engine *engine, im *instanceMemory) (err error) {
 
-	x, err := jqOne(im.data, sl.state.Array)
+	x, err := jqOne(im.data, sl.Array)
 	if err != nil {
 		return
 	}
@@ -208,7 +188,7 @@ func (sl *foreachStateLogic) doAll(ctx context.Context, engine *engine, im *inst
 func (sl *foreachStateLogic) doSpecific(ctx context.Context, engine *engine, im *instanceMemory, logics []multiactionTuple, idx int) (err error) {
 
 	var array []interface{}
-	array, err = jq(im.data, sl.state.Array)
+	array, err = jq(im.data, sl.Array)
 	if err != nil {
 		return
 	}
@@ -308,7 +288,7 @@ func (sl *foreachStateLogic) Run(ctx context.Context, engine *engine, im *instan
 		err = NewCatchableError(results.ErrorCode, results.ErrorMessage)
 		engine.logToInstance(ctx, time.Now(), im.in, "[%v] Action raised catchable error '%s': %s.", idx, results.ErrorCode, results.ErrorMessage)
 		var d time.Duration
-		d, err = preprocessRetry(sl.state.Action.Retries, logics[idx].Attempts, err)
+		d, err = preprocessRetry(sl.Action.Retries, logics[idx].Attempts, err)
 		if err != nil {
 			return
 		}
@@ -356,8 +336,8 @@ func (sl *foreachStateLogic) Run(ctx context.Context, engine *engine, im *instan
 		}
 
 		transition = &stateTransition{
-			Transform: sl.state.Transform,
-			NextState: sl.state.Transition,
+			Transform: sl.Transform,
+			NextState: sl.Transition,
 		}
 
 		return
@@ -406,7 +386,7 @@ func (sl *foreachStateLogic) scheduleRetry(ctx context.Context, engine *engine, 
 
 	t := time.Now().Add(d)
 
-	err = engine.scheduleRetry(im.ID().String(), sl.ID(), im.Step(), t, data)
+	err = engine.scheduleRetry(im.ID().String(), sl.GetID(), im.Step(), t, data)
 	if err != nil {
 		return err
 	}

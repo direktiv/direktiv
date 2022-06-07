@@ -40,14 +40,14 @@ type stateChild struct {
 }
 
 type stateLogic interface {
-	ID() string
-	Type() string
+	GetID() string
+	GetType() model.StateType
 	Deadline(ctx context.Context, engine *engine, im *instanceMemory) time.Time
-	ErrorCatchers() []model.ErrorDefinition
+	ErrorDefinitions() []model.ErrorDefinition
 	Run(ctx context.Context, engine *engine, im *instanceMemory, wakedata []byte) (transition *stateTransition, err error)
 	LivingChildren(ctx context.Context, engine *engine, im *instanceMemory) []stateChild
-	LogJQ() interface{}
-	MetadataJQ() interface{}
+	GetLog() interface{}
+	GetMetadata() interface{}
 }
 
 //

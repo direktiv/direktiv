@@ -11,7 +11,7 @@ import (
 )
 
 type consumeEventStateLogic struct {
-	state    *model.ConsumeEventState
+	*model.ConsumeEventState
 	workflow *model.Workflow
 }
 
@@ -23,39 +23,19 @@ func initConsumeEventStateLogic(wf *model.Workflow, state model.State) (stateLog
 	}
 
 	sl := new(consumeEventStateLogic)
-	sl.state = cevent
+	sl.ConsumeEventState = cevent
 	sl.workflow = wf
 
 	return sl, nil
 
 }
 
-func (sl *consumeEventStateLogic) Type() string {
-	return model.StateTypeConsumeEvent.String()
-}
-
 func (sl *consumeEventStateLogic) Deadline(ctx context.Context, engine *engine, im *instanceMemory) time.Time {
-	return deadlineFromString(ctx, engine, im, sl.state.Timeout)
-}
-
-func (sl *consumeEventStateLogic) ErrorCatchers() []model.ErrorDefinition {
-	return sl.state.ErrorDefinitions()
-}
-
-func (sl *consumeEventStateLogic) ID() string {
-	return sl.state.ID
+	return deadlineFromString(ctx, engine, im, sl.Timeout)
 }
 
 func (sl *consumeEventStateLogic) LivingChildren(ctx context.Context, engine *engine, im *instanceMemory) []stateChild {
 	return nil
-}
-
-func (sl *consumeEventStateLogic) LogJQ() interface{} {
-	return sl.state.Log
-}
-
-func (sl *consumeEventStateLogic) MetadataJQ() interface{} {
-	return sl.state.Metadata
 }
 
 func (sl *consumeEventStateLogic) Run(ctx context.Context, engine *engine, im *instanceMemory, wakedata []byte) (transition *stateTransition, err error) {
@@ -72,9 +52,9 @@ func (sl *consumeEventStateLogic) Run(ctx context.Context, engine *engine, im *i
 		var events []*model.ConsumeEventDefinition
 
 		event := new(model.ConsumeEventDefinition)
-		event.Type = sl.state.Event.Type
+		event.Type = sl.Event.Type
 		event.Context = make(map[string]interface{})
-		for k, v := range sl.state.Event.Context {
+		for k, v := range sl.Event.Context {
 			var x interface{}
 			x, err = jqOne(im.data, v)
 			if err != nil {
@@ -128,8 +108,8 @@ func (sl *consumeEventStateLogic) Run(ctx context.Context, engine *engine, im *i
 	}
 
 	transition = &stateTransition{
-		Transform: sl.state.Transform,
-		NextState: sl.state.Transition,
+		Transform: sl.Transform,
+		NextState: sl.Transition,
 	}
 
 	return

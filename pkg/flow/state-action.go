@@ -18,7 +18,7 @@ import (
 )
 
 type actionStateLogic struct {
-	state    *model.ActionState
+	*model.ActionState
 	workflow *model.Workflow
 }
 
@@ -30,20 +30,16 @@ func initActionStateLogic(wf *model.Workflow, state model.State) (stateLogic, er
 	}
 
 	sl := new(actionStateLogic)
-	sl.state = action
+	sl.ActionState = action
 	sl.workflow = wf
 
 	return sl, nil
 
 }
 
-func (sl *actionStateLogic) Type() string {
-	return model.StateTypeAction.String()
-}
-
 func (sl *actionStateLogic) Deadline(ctx context.Context, engine *engine, im *instanceMemory) time.Time {
 
-	if sl.state.Async {
+	if sl.Async {
 		return time.Now().Add(time.Second * 5)
 	}
 
@@ -52,8 +48,8 @@ func (sl *actionStateLogic) Deadline(ctx context.Context, engine *engine, im *in
 
 	d = time.Minute * 15
 
-	if sl.state.Timeout != "" {
-		dur, err := duration.ParseISO8601(sl.state.Timeout)
+	if sl.Timeout != "" {
+		dur, err := duration.ParseISO8601(sl.Timeout)
 		if err != nil {
 			engine.logToInstance(ctx, time.Now(), im.in, "Got an invalid ISO8601 timeout: %v", err)
 		} else {
@@ -71,14 +67,6 @@ func (sl *actionStateLogic) Deadline(ctx context.Context, engine *engine, im *in
 
 }
 
-func (sl *actionStateLogic) ErrorCatchers() []model.ErrorDefinition {
-	return sl.state.ErrorDefinitions()
-}
-
-func (sl *actionStateLogic) ID() string {
-	return sl.state.ID
-}
-
 func (sl *actionStateLogic) LivingChildren(ctx context.Context, engine *engine, im *instanceMemory) []stateChild {
 
 	var err error
@@ -91,7 +79,7 @@ func (sl *actionStateLogic) LivingChildren(ctx context.Context, engine *engine, 
 		return children
 	}
 
-	if sl.state.Action.Function != "" && sd.Id != "" {
+	if sl.Action.Function != "" && sd.Id != "" {
 
 		var uid uuid.UUID
 		err = uid.UnmarshalText([]byte(sd.Id))
@@ -119,14 +107,6 @@ func (sl *actionStateLogic) LivingChildren(ctx context.Context, engine *engine, 
 
 	return children
 
-}
-
-func (sl *actionStateLogic) LogJQ() interface{} {
-	return sl.state.Log
-}
-
-func (sl *actionStateLogic) MetadataJQ() interface{} {
-	return sl.state.Metadata
 }
 
 type actionStateSavedata struct {
@@ -262,18 +242,18 @@ func ISO8601StringtoSecs(timeout string) (int, error) {
 func (sl *actionStateLogic) do(ctx context.Context, engine *engine, im *instanceMemory, attempt int, files []model.FunctionFileDefinition) (transition *stateTransition, err error) {
 
 	var inputData []byte
-	inputData, err = generateActionInput(ctx, engine, im, im.data, sl.state.Action)
+	inputData, err = generateActionInput(ctx, engine, im, im.data, sl.Action)
 	if err != nil {
 		return
 	}
 
 	var wfto int
-	wfto, err = ISO8601StringtoSecs(sl.state.Timeout)
+	wfto, err = ISO8601StringtoSecs(sl.Timeout)
 	if err != nil {
 		return
 	}
 
-	fn, err := sl.workflow.GetFunction(sl.state.Action.Function)
+	fn, err := sl.workflow.GetFunction(sl.Action.Function)
 	if err != nil {
 		err = NewInternalError(err)
 		return
@@ -287,7 +267,7 @@ func (sl *actionStateLogic) do(ctx context.Context, engine *engine, im *instance
 
 		caller := new(subflowCaller)
 		caller.InstanceID = im.ID().String()
-		caller.State = sl.state.GetID()
+		caller.State = sl.GetID()
 		caller.Step = im.Step()
 		caller.As = im.in.As
 
@@ -298,15 +278,15 @@ func (sl *actionStateLogic) do(ctx context.Context, engine *engine, im *instance
 			return
 		}
 
-		if sl.state.Async {
+		if sl.Async {
 			engine.logToInstance(ctx, time.Now(), im.in, "Running subflow '%s' in fire-and-forget mode (async).", subflowID)
 			transition = &stateTransition{
-				Transform: sl.state.Transform,
-				NextState: sl.state.Transition,
+				Transform: sl.Transform,
+				NextState: sl.Transition,
 			}
 			return
 		}
-		engine.logToInstance(ctx, time.Now(), im.in, "Sleeping until subflow '%s' returns (%s).", subflowID, sl.state.Action.Function)
+		engine.logToInstance(ctx, time.Now(), im.in, "Sleeping until subflow '%s' returns (%s).", subflowID, sl.Action.Function)
 		sd := &actionStateSavedata{
 			Op:       "do",
 			Id:       subflowID,
@@ -325,7 +305,7 @@ func (sl *actionStateLogic) do(ctx context.Context, engine *engine, im *instance
 		uid := uuid.New()
 
 		var ar *functionRequest
-		ar, err = engine.newIsolateRequest(ctx, im, sl.state.GetID(), wfto, fn, inputData, uid, sl.state.Async, files)
+		ar, err = engine.newIsolateRequest(ctx, im, sl.GetID(), wfto, fn, inputData, uid, sl.Async, files)
 		if err != nil {
 			return
 		}
@@ -342,7 +322,7 @@ func (sl *actionStateLogic) do(ctx context.Context, engine *engine, im *instance
 			return
 		}
 
-		if sl.state.Async {
+		if sl.Async {
 			engine.logToInstance(ctx, time.Now(), im.in, "Running function '%s' in fire-and-forget mode (async).", fn.GetID())
 			go func(ctx context.Context, im *instanceMemory, ar *functionRequest) {
 				err = engine.doActionRequest(ctx, ar)
@@ -351,12 +331,12 @@ func (sl *actionStateLogic) do(ctx context.Context, engine *engine, im *instance
 				}
 			}(ctx, im, ar)
 			transition = &stateTransition{
-				Transform: sl.state.Transform,
-				NextState: sl.state.Transition,
+				Transform: sl.Transform,
+				NextState: sl.Transition,
 			}
 			return
 		}
-		engine.logToInstance(ctx, time.Now(), im.in, "Sleeping until function '%s' returns (%s).", fn.GetID(), sl.state.Action.Function)
+		engine.logToInstance(ctx, time.Now(), im.in, "Sleeping until function '%s' returns (%s).", fn.GetID(), sl.Action.Function)
 		err = engine.doActionRequest(ctx, ar)
 		if err != nil {
 			return
@@ -381,7 +361,7 @@ func (sl *actionStateLogic) Run(ctx context.Context, engine *engine, im *instanc
 			return
 		}
 
-		return sl.do(ctx, engine, im, 0, sl.state.Action.Files)
+		return sl.do(ctx, engine, im, 0, sl.Action.Files)
 
 	}
 
@@ -392,7 +372,7 @@ func (sl *actionStateLogic) Run(ctx context.Context, engine *engine, im *instanc
 	err = dec.Decode(retryData)
 	if err == nil && retryData.Op == "retry" {
 		engine.logToInstance(ctx, time.Now(), im.in, "Retrying...")
-		return sl.do(ctx, engine, im, retryData.Attempts, sl.state.Action.Files)
+		return sl.do(ctx, engine, im, retryData.Attempts, sl.Action.Files)
 	}
 
 	// second part
@@ -413,7 +393,7 @@ func (sl *actionStateLogic) Run(ctx context.Context, engine *engine, im *instanc
 		return
 	}
 
-	fn, err := sl.workflow.GetFunction(sl.state.Action.Function)
+	fn, err := sl.workflow.GetFunction(sl.Action.Function)
 	if err != nil {
 		err = NewInternalError(err)
 		return
@@ -445,7 +425,7 @@ func (sl *actionStateLogic) Run(ctx context.Context, engine *engine, im *instanc
 			return
 		}
 
-		engine.logToInstance(ctx, time.Now(), im.in, "Function '%s' returned.", sl.state.Action.Function)
+		engine.logToInstance(ctx, time.Now(), im.in, "Function '%s' returned.", sl.Action.Function)
 	default:
 		err = NewInternalError(fmt.Errorf("unexpected function type: %v", fn))
 		return
@@ -457,7 +437,7 @@ func (sl *actionStateLogic) Run(ctx context.Context, engine *engine, im *instanc
 		engine.logToInstance(ctx, time.Now(), im.in, "Action raised catchable error '%s': %s.", results.ErrorCode, results.ErrorMessage)
 		var d time.Duration
 
-		d, err = preprocessRetry(sl.state.Action.Retries, sd.Attempts, err)
+		d, err = preprocessRetry(sl.Action.Retries, sd.Attempts, err)
 		if err != nil {
 			return
 		}
@@ -489,8 +469,8 @@ func (sl *actionStateLogic) Run(ctx context.Context, engine *engine, im *instanc
 	}
 
 	transition = &stateTransition{
-		Transform: sl.state.Transform,
-		NextState: sl.state.Transition,
+		Transform: sl.Transform,
+		NextState: sl.Transition,
 	}
 
 	return
@@ -514,7 +494,7 @@ func (sl *actionStateLogic) scheduleRetry(ctx context.Context, engine *engine, i
 
 	t := time.Now().Add(d)
 
-	err = engine.scheduleRetry(im.ID().String(), sl.ID(), im.Step(), t, data)
+	err = engine.scheduleRetry(im.ID().String(), sl.GetID(), im.Step(), t, data)
 	if err != nil {
 		return err
 	}
