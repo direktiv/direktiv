@@ -15,7 +15,7 @@ import (
 )
 
 type getterStateLogic struct {
-	state *model.GetterState
+	*model.GetterState
 }
 
 func initGetterStateLogic(wf *model.Workflow, state model.State) (stateLogic, error) {
@@ -26,38 +26,18 @@ func initGetterStateLogic(wf *model.Workflow, state model.State) (stateLogic, er
 	}
 
 	sl := new(getterStateLogic)
-	sl.state = getter
+	sl.GetterState = getter
 
 	return sl, nil
 
-}
-
-func (sl *getterStateLogic) Type() string {
-	return model.StateTypeGetter.String()
 }
 
 func (sl *getterStateLogic) Deadline(ctx context.Context, engine *engine, im *instanceMemory) time.Time {
 	return time.Now().Add(defaultDeadline)
 }
 
-func (sl *getterStateLogic) ErrorCatchers() []model.ErrorDefinition {
-	return sl.state.ErrorDefinitions()
-}
-
-func (sl *getterStateLogic) ID() string {
-	return sl.state.GetID()
-}
-
 func (sl *getterStateLogic) LivingChildren(ctx context.Context, engine *engine, im *instanceMemory) []stateChild {
 	return nil
-}
-
-func (sl *getterStateLogic) LogJQ() interface{} {
-	return sl.state.Log
-}
-
-func (sl *getterStateLogic) MetadataJQ() interface{} {
-	return sl.state.Metadata
 }
 
 func (sl *getterStateLogic) Run(ctx context.Context, engine *engine, im *instanceMemory, wakedata []byte) (transition *stateTransition, err error) {
@@ -76,7 +56,7 @@ func (sl *getterStateLogic) Run(ctx context.Context, engine *engine, im *instanc
 
 	m := make(map[string]interface{})
 
-	for idx, v := range sl.state.Variables {
+	for idx, v := range sl.Variables {
 
 		var ref *ent.VarRef
 		var key = ""
@@ -210,8 +190,8 @@ func (sl *getterStateLogic) Run(ctx context.Context, engine *engine, im *instanc
 	}
 
 	transition = &stateTransition{
-		Transform: sl.state.Transform,
-		NextState: sl.state.Transition,
+		Transform: sl.Transform,
+		NextState: sl.Transition,
 	}
 
 	return

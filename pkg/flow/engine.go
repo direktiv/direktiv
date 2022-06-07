@@ -429,7 +429,7 @@ func (engine *engine) runState(ctx context.Context, im *instanceMemory, wakedata
 		goto failure
 	}
 
-	if lq := im.logic.LogJQ(); im.GetMemory() == nil && len(wakedata) == 0 && lq != nil {
+	if lq := im.logic.GetLog(); im.GetMemory() == nil && len(wakedata) == 0 && lq != nil {
 		var object interface{}
 		object, err = jqOne(im.data, lq)
 		if err != nil {
@@ -446,7 +446,7 @@ func (engine *engine) runState(ctx context.Context, im *instanceMemory, wakedata
 		engine.UserLog(ctx, im, string(data))
 	}
 
-	if md := im.logic.MetadataJQ(); im.GetMemory() == nil && len(wakedata) == 0 && md != nil {
+	if md := im.logic.GetMetadata(); im.GetMemory() == nil && len(wakedata) == 0 && md != nil {
 
 		var object interface{}
 		object, err = jqOne(im.data, md)
@@ -495,7 +495,7 @@ failure:
 
 		_ = im.StoreData("error", cerr)
 
-		for i, catch := range im.logic.ErrorCatchers() {
+		for i, catch := range im.logic.ErrorDefinitions() {
 
 			errRegex := catch.Error
 			if errRegex == "*" {

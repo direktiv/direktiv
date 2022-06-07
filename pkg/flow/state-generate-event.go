@@ -15,7 +15,7 @@ import (
 // -------------- GenerateEvent State --------------
 
 type generateEventStateLogic struct {
-	state *model.GenerateEventState
+	*model.GenerateEventState
 }
 
 func initGenerateEventStateLogic(wf *model.Workflow, state model.State) (stateLogic, error) {
@@ -26,38 +26,18 @@ func initGenerateEventStateLogic(wf *model.Workflow, state model.State) (stateLo
 	}
 
 	sl := new(generateEventStateLogic)
-	sl.state = gevent
+	sl.GenerateEventState = gevent
 
 	return sl, nil
 
-}
-
-func (sl *generateEventStateLogic) Type() string {
-	return model.StateTypeGenerateEvent.String()
 }
 
 func (sl *generateEventStateLogic) Deadline(ctx context.Context, engine *engine, im *instanceMemory) time.Time {
 	return time.Now().Add(time.Second * 5)
 }
 
-func (sl *generateEventStateLogic) ErrorCatchers() []model.ErrorDefinition {
-	return sl.state.ErrorDefinitions()
-}
-
-func (sl *generateEventStateLogic) ID() string {
-	return sl.state.ID
-}
-
 func (sl *generateEventStateLogic) LivingChildren(ctx context.Context, engine *engine, im *instanceMemory) []stateChild {
 	return nil
-}
-
-func (sl *generateEventStateLogic) LogJQ() interface{} {
-	return sl.state.Log
-}
-
-func (sl *generateEventStateLogic) MetadataJQ() interface{} {
-	return sl.state.Metadata
 }
 
 func (sl *generateEventStateLogic) Run(ctx context.Context, engine *engine, im *instanceMemory, wakedata []byte) (transition *stateTransition, err error) {
@@ -76,18 +56,18 @@ func (sl *generateEventStateLogic) Run(ctx context.Context, engine *engine, im *
 
 	uid := uuid.New()
 	event.SetID(uid.String())
-	event.SetType(sl.state.Event.Type)
-	event.SetSource(sl.state.Event.Source)
+	event.SetType(sl.Event.Type)
+	event.SetSource(sl.Event.Source)
 
 	var x interface{}
-	x, err = jqOne(im.data, sl.state.Event.Data)
+	x, err = jqOne(im.data, sl.Event.Data)
 	if err != nil {
 		return
 	}
 
 	var data []byte
 
-	ctype := sl.state.Event.DataContentType
+	ctype := sl.Event.DataContentType
 	if s, ok := x.(string); ok && ctype != "" && ctype != "application/json" {
 		data, err = base64.StdEncoding.DecodeString(s)
 
@@ -110,7 +90,7 @@ func (sl *generateEventStateLogic) Run(ctx context.Context, engine *engine, im *
 		}
 	}
 
-	for k, v := range sl.state.Event.Context {
+	for k, v := range sl.Event.Context {
 		var x interface{}
 		x, err = jqOne(im.data, v)
 		if err != nil {
@@ -129,11 +109,11 @@ func (sl *generateEventStateLogic) Run(ctx context.Context, engine *engine, im *
 
 	var dd int64
 
-	if len(sl.state.Delay) == 0 {
+	if len(sl.Delay) == 0 {
 		dd = 60
 		im.eventQueue = append(im.eventQueue, event.ID())
-	} else if sl.state.Delay != "immediate" {
-		d, _ := duration.ParseISO8601(sl.state.Delay)
+	} else if sl.Delay != "immediate" {
+		d, _ := duration.ParseISO8601(sl.Delay)
 		t := d.Shift(time.Unix(0, 0).UTC())
 		dd = t.Unix()
 	}
@@ -146,8 +126,8 @@ func (sl *generateEventStateLogic) Run(ctx context.Context, engine *engine, im *
 	}
 
 	transition = &stateTransition{
-		Transform: sl.state.Transform,
-		NextState: sl.state.Transition,
+		Transform: sl.Transform,
+		NextState: sl.Transition,
 	}
 
 	return

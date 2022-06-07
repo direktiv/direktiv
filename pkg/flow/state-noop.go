@@ -9,7 +9,7 @@ import (
 )
 
 type noopStateLogic struct {
-	state *model.NoopState
+	*model.NoopState
 }
 
 func initNoopStateLogic(wf *model.Workflow, state model.State) (stateLogic, error) {
@@ -20,38 +20,18 @@ func initNoopStateLogic(wf *model.Workflow, state model.State) (stateLogic, erro
 	}
 
 	sl := new(noopStateLogic)
-	sl.state = noop
+	sl.NoopState = noop
 
 	return sl, nil
 
-}
-
-func (sl *noopStateLogic) Type() string {
-	return model.StateTypeNoop.String()
 }
 
 func (sl *noopStateLogic) Deadline(ctx context.Context, engine *engine, im *instanceMemory) time.Time {
 	return time.Now().Add(defaultDeadline)
 }
 
-func (sl *noopStateLogic) ErrorCatchers() []model.ErrorDefinition {
-	return sl.state.ErrorDefinitions()
-}
-
-func (sl *noopStateLogic) ID() string {
-	return sl.state.ID
-}
-
 func (sl *noopStateLogic) LivingChildren(ctx context.Context, engine *engine, im *instanceMemory) []stateChild {
 	return nil
-}
-
-func (sl *noopStateLogic) LogJQ() interface{} {
-	return sl.state.Log
-}
-
-func (sl *noopStateLogic) MetadataJQ() interface{} {
-	return sl.state.Metadata
 }
 
 func (sl *noopStateLogic) Run(ctx context.Context, engine *engine, im *instanceMemory, wakedata []byte) (transition *stateTransition, err error) {
@@ -67,8 +47,8 @@ func (sl *noopStateLogic) Run(ctx context.Context, engine *engine, im *instanceM
 	}
 
 	transition = &stateTransition{
-		Transform: sl.state.Transform,
-		NextState: sl.state.Transition,
+		Transform: sl.Transform,
+		NextState: sl.Transition,
 	}
 
 	return

@@ -12,7 +12,7 @@ import (
 )
 
 type validateStateLogic struct {
-	state *model.ValidateState
+	*model.ValidateState
 }
 
 func initValidateStateLogic(wf *model.Workflow, state model.State) (stateLogic, error) {
@@ -23,37 +23,17 @@ func initValidateStateLogic(wf *model.Workflow, state model.State) (stateLogic, 
 	}
 
 	sl := new(validateStateLogic)
-	sl.state = validate
+	sl.ValidateState = validate
 
 	return sl, nil
-}
-
-func (sl *validateStateLogic) Type() string {
-	return model.StateTypeValidate.String()
 }
 
 func (sl *validateStateLogic) Deadline(ctx context.Context, engine *engine, im *instanceMemory) time.Time {
 	return time.Now().Add(defaultDeadline)
 }
 
-func (sl *validateStateLogic) ErrorCatchers() []model.ErrorDefinition {
-	return sl.state.ErrorDefinitions()
-}
-
-func (sl *validateStateLogic) ID() string {
-	return sl.state.GetID()
-}
-
 func (sl *validateStateLogic) LivingChildren(ctx context.Context, engine *engine, im *instanceMemory) []stateChild {
 	return nil
-}
-
-func (sl *validateStateLogic) LogJQ() interface{} {
-	return sl.state.Log
-}
-
-func (sl *validateStateLogic) MetadataJQ() interface{} {
-	return sl.state.Metadata
 }
 
 func (sl *validateStateLogic) Run(ctx context.Context, engine *engine, im *instanceMemory, wakedata []byte) (transition *stateTransition, err error) {
@@ -69,15 +49,15 @@ func (sl *validateStateLogic) Run(ctx context.Context, engine *engine, im *insta
 	}
 
 	var schemaData []byte
-	schemaData, err = json.Marshal(sl.state.Schema)
+	schemaData, err = json.Marshal(sl.Schema)
 	if err != nil {
 		err = NewInternalError(err)
 		return
 	}
 
 	subjectQuery := "jq(.)"
-	if sl.state.Subject != "" {
-		subjectQuery = sl.state.Subject
+	if sl.Subject != "" {
+		subjectQuery = sl.Subject
 	}
 
 	var subject interface{}
@@ -109,8 +89,8 @@ func (sl *validateStateLogic) Run(ctx context.Context, engine *engine, im *insta
 	}
 
 	transition = &stateTransition{
-		Transform: sl.state.Transform,
-		NextState: sl.state.Transition,
+		Transform: sl.Transform,
+		NextState: sl.Transition,
 	}
 
 	return

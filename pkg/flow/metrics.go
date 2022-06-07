@@ -263,7 +263,7 @@ func (engine *engine) metricsCompleteState(ctx context.Context, im *instanceMemo
 
 	workflow := GetInodePath(im.in.As)
 
-	reportStateEnd(ns.Name, workflow, im.logic.ID(), im.in.Edges.Runtime.StateBeginTime)
+	reportStateEnd(ns.Name, workflow, im.logic.GetID(), im.in.Edges.Runtime.StateBeginTime)
 
 	if im.Step() == 0 {
 		return

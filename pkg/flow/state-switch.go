@@ -10,7 +10,7 @@ import (
 )
 
 type switchStateLogic struct {
-	state *model.SwitchState
+	*model.SwitchState
 }
 
 func initSwitchStateLogic(wf *model.Workflow, state model.State) (stateLogic, error) {
@@ -21,37 +21,17 @@ func initSwitchStateLogic(wf *model.Workflow, state model.State) (stateLogic, er
 	}
 
 	sl := new(switchStateLogic)
-	sl.state = switchState
+	sl.SwitchState = switchState
 
 	return sl, nil
-}
-
-func (sl *switchStateLogic) Type() string {
-	return model.StateTypeSwitch.String()
 }
 
 func (sl *switchStateLogic) Deadline(ctx context.Context, engine *engine, im *instanceMemory) time.Time {
 	return time.Now().Add(defaultDeadline)
 }
 
-func (sl *switchStateLogic) ErrorCatchers() []model.ErrorDefinition {
-	return sl.state.ErrorDefinitions()
-}
-
-func (sl *switchStateLogic) ID() string {
-	return sl.state.GetID()
-}
-
 func (sl *switchStateLogic) LivingChildren(ctx context.Context, engine *engine, im *instanceMemory) []stateChild {
 	return nil
-}
-
-func (sl *switchStateLogic) LogJQ() interface{} {
-	return sl.state.Log
-}
-
-func (sl *switchStateLogic) MetadataJQ() interface{} {
-	return sl.state.Metadata
 }
 
 func (sl *switchStateLogic) Run(ctx context.Context, engine *engine, im *instanceMemory, wakedata []byte) (transition *stateTransition, err error) {
@@ -66,7 +46,7 @@ func (sl *switchStateLogic) Run(ctx context.Context, engine *engine, im *instanc
 		return
 	}
 
-	for i, condition := range sl.state.Conditions {
+	for i, condition := range sl.Conditions {
 
 		var x interface{}
 		x, err = jqOne(im.data, condition.Condition)
@@ -88,8 +68,8 @@ func (sl *switchStateLogic) Run(ctx context.Context, engine *engine, im *instanc
 
 	engine.logToInstance(ctx, time.Now(), im.in, "No switch conditions succeeded")
 	transition = &stateTransition{
-		Transform: sl.state.DefaultTransform,
-		NextState: sl.state.DefaultTransition,
+		Transform: sl.DefaultTransform,
+		NextState: sl.DefaultTransition,
 	}
 
 	return

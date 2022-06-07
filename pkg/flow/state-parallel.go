@@ -14,7 +14,7 @@ import (
 )
 
 type parallelStateLogic struct {
-	state    *model.ParallelState
+	*model.ParallelState
 	workflow *model.Workflow
 }
 
@@ -26,27 +26,15 @@ func initParallelStateLogic(wf *model.Workflow, state model.State) (stateLogic, 
 	}
 
 	sl := new(parallelStateLogic)
-	sl.state = parallel
+	sl.ParallelState = parallel
 	sl.workflow = wf
 
 	return sl, nil
 
 }
 
-func (sl *parallelStateLogic) Type() string {
-	return model.StateTypeParallel.String()
-}
-
 func (sl *parallelStateLogic) Deadline(ctx context.Context, engine *engine, im *instanceMemory) time.Time {
-	return deadlineFromString(ctx, engine, im, sl.state.Timeout)
-}
-
-func (sl *parallelStateLogic) ErrorCatchers() []model.ErrorDefinition {
-	return sl.state.ErrorDefinitions()
-}
-
-func (sl *parallelStateLogic) ID() string {
-	return sl.state.ID
+	return deadlineFromString(ctx, engine, im, sl.Timeout)
 }
 
 func (sl *parallelStateLogic) LivingChildren(ctx context.Context, engine *engine, im *instanceMemory) []stateChild {
@@ -98,7 +86,7 @@ func (sl *parallelStateLogic) dispatchAction(ctx context.Context, engine *engine
 
 		caller := new(subflowCaller)
 		caller.InstanceID = im.ID().String()
-		caller.State = sl.state.GetID()
+		caller.State = sl.GetID()
 		caller.Step = im.Step()
 		caller.As = im.in.As
 
@@ -124,7 +112,7 @@ func (sl *parallelStateLogic) dispatchAction(ctx context.Context, engine *engine
 		uid := uuid.New()
 
 		var ar *functionRequest
-		ar, err = engine.newIsolateRequest(ctx, im, sl.state.GetID(), 0, fn, inputData, uid, false, action.Files)
+		ar, err = engine.newIsolateRequest(ctx, im, sl.GetID(), 0, fn, inputData, uid, false, action.Files)
 		if err != nil {
 			return
 		}
@@ -160,9 +148,9 @@ func (sl *parallelStateLogic) dispatchActions(ctx context.Context, engine *engin
 		return NewInternalError(errors.New("got unexpected savedata"))
 	}
 
-	for i := range sl.state.Actions {
+	for i := range sl.Actions {
 
-		action := &sl.state.Actions[i]
+		action := &sl.Actions[i]
 
 		var logic multiactionTuple
 		logic, err = sl.dispatchAction(ctx, engine, im, action, 0)
@@ -185,7 +173,7 @@ func (sl *parallelStateLogic) dispatchActions(ctx context.Context, engine *engin
 
 func (sl *parallelStateLogic) doSpecific(ctx context.Context, engine *engine, im *instanceMemory, logics []multiactionTuple, idx int) (err error) {
 
-	action := sl.state.Actions[idx]
+	action := sl.Actions[idx]
 
 	var logic multiactionTuple
 	logic, err = sl.dispatchAction(ctx, engine, im, &action, logics[idx].Attempts)
@@ -202,14 +190,6 @@ func (sl *parallelStateLogic) doSpecific(ctx context.Context, engine *engine, im
 
 	return
 
-}
-
-func (sl *parallelStateLogic) LogJQ() interface{} {
-	return sl.state.Log
-}
-
-func (sl *parallelStateLogic) MetadataJQ() interface{} {
-	return sl.state.Metadata
 }
 
 func (sl *parallelStateLogic) Run(ctx context.Context, engine *engine, im *instanceMemory, wakedata []byte) (transition *stateTransition, err error) {
@@ -279,7 +259,7 @@ func (sl *parallelStateLogic) Run(ctx context.Context, engine *engine, im *insta
 	logics[idx].Results = x
 
 	var ready bool
-	switch sl.state.Mode {
+	switch sl.Mode {
 	case model.BranchModeAnd:
 
 		if results.ErrorCode != "" {
@@ -288,7 +268,7 @@ func (sl *parallelStateLogic) Run(ctx context.Context, engine *engine, im *insta
 			engine.logToInstance(ctx, time.Now(), im.in, "Action raised catchable error '%s': %s.", results.ErrorCode, results.ErrorMessage)
 
 			var d time.Duration
-			d, err = preprocessRetry(sl.state.Actions[idx].Retries, logics[idx].Attempts, err)
+			d, err = preprocessRetry(sl.Actions[idx].Retries, logics[idx].Attempts, err)
 			if err != nil {
 				return
 			}
@@ -321,7 +301,7 @@ func (sl *parallelStateLogic) Run(ctx context.Context, engine *engine, im *insta
 			// instance.Log("Branch %d failed with error '%s': %s", idx, results.ErrorCode, results.ErrorMessage)
 			engine.logToInstance(ctx, time.Now(), im.in, "Action raised catchable error '%s': %s.", results.ErrorCode, results.ErrorMessage)
 			var d time.Duration
-			d, err = preprocessRetry(sl.state.Actions[idx].Retries, logics[idx].Attempts, err)
+			d, err = preprocessRetry(sl.Actions[idx].Retries, logics[idx].Attempts, err)
 			if err == nil {
 				err = sl.scheduleRetry(ctx, engine, im, logics, idx, d)
 				return
@@ -365,8 +345,8 @@ func (sl *parallelStateLogic) Run(ctx context.Context, engine *engine, im *insta
 	}
 
 	transition = &stateTransition{
-		Transform: sl.state.Transform,
-		NextState: sl.state.Transition,
+		Transform: sl.Transform,
+		NextState: sl.Transition,
 	}
 
 	return
@@ -406,7 +386,7 @@ func (sl *parallelStateLogic) scheduleRetry(ctx context.Context, engine *engine,
 
 	t := time.Now().Add(d)
 
-	err = engine.scheduleRetry(im.ID().String(), sl.ID(), im.Step(), t, data)
+	err = engine.scheduleRetry(im.ID().String(), sl.GetID(), im.Step(), t, data)
 	if err != nil {
 		return err
 	}
