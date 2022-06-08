@@ -11,11 +11,24 @@ GIT_DIRTY := $(shell git diff --quiet || echo '-dirty')
 RELEASE := ""
 RELEASE_TAG = $(shell v='$${RELEASE:+:}$${RELEASE}'; echo "$${v%.*}")
 FULL_VERSION := $(shell v='$${RELEASE}$${RELEASE:+-}${GIT_HASH}${GIT_DIRTY}'; echo "$${v%.*}")
+GIT_TAG = $(shell git describe --tags --abbrev=0)
+DOCKER_CLONE_REPO = "docker.io/direktiv"
 
 # set to .all to build from .all docker images
 DOCKER_BASE := ""
 
 .SECONDARY:
+
+# Clones all images from DOCKER_CLONE_REPO and pushes them to DOCKER_REPO
+.PHONY: clone-images
+clone-images: clone-api clone-flow clone-secrets clone-sidecar clone-functions clone-flow-dbinit clone-ui
+
+.PHONY: clone-%
+clone-%:
+	@docker pull ${DOCKER_CLONE_REPO}/$*:${GIT_TAG}
+	@docker tag ${DOCKER_CLONE_REPO}/$*:${GIT_TAG} ${DOCKER_REPO}/$*${RELEASE_TAG}
+	@docker push ${DOCKER_REPO}/$*${RELEASE_TAG}
+	@echo "Clone $@${RELEASE_TAG}: SUCCESS"
 
 .PHONY: help
 help: ## Prints usage information.
