@@ -130,3 +130,6 @@ yarn-debug.log*
 yarn-error.log*
 
 reactjs-embed
+
+.yalc
+yalc.lock
