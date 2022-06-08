@@ -17,7 +17,7 @@
     "d3-sankey-circular": "^0.34.0",
     "dagre": "^0.8.5",
     "dayjs": "^1.10.7",
-    "direktiv-react-hooks": "^0.0.419",
+    "direktiv-react-hooks": "^0.0.420",
     "drawflow": "^0.0.55",
     "file-saver": "^2.0.5",
     "fuse.js": "^6.5.3",
@@ -46,6 +46,8 @@
     "web-vitals": "^1.0.1"
   },
   "scripts": {
+    "link-hooks": "yalc link direktiv-react-hooks",
+    "unlink-hooks": "yalc remove direktiv-react-hooks",
     "start": "REACT_APP_API=$DIREKTIV_API react-scripts start",
     "start-win": "react-scripts start",
     "build": "react-scripts build",
@@ -72,6 +74,7 @@
   },
   "devDependencies": {
     "@types/drawflow": "^0.0.4",
-    "encoding": "^0.1.13"
+    "encoding": "^0.1.13",
+    "yalc": "^1.0.0-pre.53"
   }
 }
