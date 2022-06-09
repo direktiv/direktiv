@@ -17,6 +17,10 @@ DOCKER_CLONE_REPO = "docker.io/direktiv"
 # set to .all to build from .all docker images
 DOCKER_BASE := ""
 
+# Set HELM_CONFIG value if environment variable is not set.
+HELM_CONFIG ?= "scripts/dev.yaml"
+
+
 .SECONDARY:
 
 # Clones all images from DOCKER_CLONE_REPO and pushes them to DOCKER_REPO
@@ -80,8 +84,6 @@ scan: scan-api scan-flow scan-secrets scan-sidecar scan-functions
 push: ## Builds all Docker images and pushes them to $DOCKER_REPO.
 push: push-api push-flow push-secrets push-sidecar push-functions push-flow-dbinit
 
-HELM_CONFIG := "scripts/dev.yaml"
-
 .PHONY: helm-reinstall
 helm-reinstall: ## Re-installes direktiv without pushing images
 	if helm status direktiv; then helm uninstall direktiv; fi
@@ -92,6 +94,10 @@ cluster: ## Updates images at $DOCKER_REPO, then uses $HELM_CONFIG to build the 
 cluster: push
 	$(eval X := $(shell kubectl get namespaces | grep -c direktiv-services-direktiv))
 	if [ ${X} -eq 0 ]; then kubectl create namespace direktiv-services-direktiv; fi
+	if [ ! -d scripts/direktiv-charts ]; then \
+		git clone https://github.com/direktiv/direktiv-charts.git scripts/direktiv-charts; \
+		helm dependency update scripts/direktiv-charts/charts/direktiv; \
+	fi
 	if helm status direktiv; then helm uninstall direktiv; fi
 	kubectl delete -l direktiv.io/scope=w  ksvc -n direktiv-services-direktiv
 	kubectl delete --all jobs -n direktiv-services-direktiv
