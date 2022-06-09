@@ -1,4 +1,4 @@
-FROM ubuntu:21.04 as clibs
+FROM ubuntu:22.04 as clibs
 
 ENV DEBIAN_FRONTEND=noninteractive
 
