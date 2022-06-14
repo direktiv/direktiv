@@ -68,7 +68,12 @@ const CommonSchemaDefinitionFiles = {
 const CommonSchemaDefinitionTimeout = {
     "type": "string",
     "title": "Timeout",
-    "description": "Duration to wait for action to complete (ISO8601)."
+    "description": "Duration to wait for action to complete (ISO8601).",
+    "examples": [
+        "PT5S",
+        "PT5M",
+        "PT5H",
+    ]
 }
 
 export const CommonSchemaDefinitionStateFields = {
@@ -190,7 +195,12 @@ const CommonSchemaDefinitionRetry = {
             "delay": {
                 "type": "string",
                 "title": "Delay",
-                "description": "Time delay between retry attempts (ISO8601)."
+                "description": "Time delay between retry attempts (ISO8601).",
+                "examples": [
+                    "PT5S",
+                    "PT5M",
+                    "PT5H",
+                ]
             },
             "multiplier": {
                 "type": "number",
@@ -273,7 +283,8 @@ export const StateSchemaDelay = {
         "duration": {
             "type": "string",
             "title": "Duration",
-            "description": CommonSchemaDefinitionTimeout.description
+            "description": CommonSchemaDefinitionTimeout.description,
+            "examples": CommonSchemaDefinitionTimeout.examples
         },
         ...CommonSchemaDefinitionStateFields,
     }
@@ -738,6 +749,11 @@ export const SpecialSchemaEventsAndStart = {
             "type": "string",
             "title": "Lifespan",
             "description": "Maximum duration an event can be stored before being discarded while waiting for other events (ISO8601).",
+            "examples": [
+                "PT5S",
+                "PT5M",
+                "PT5H",
+            ]
         },
         "correlate": {
             "type": "array",
