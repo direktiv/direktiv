@@ -654,3 +654,65 @@ func (s *Server) logMiddleware(h http.Handler) http.Handler {
 	}
 
 }
+
+//	readFromQueryOrBody : Reads keys passed in params from query and body
+//	and returns a map of those keys to corresponding read values.
+func readFromQueryOrBody(r *http.Request, keys []string) (map[string]string, error){
+	data := make(map[string]string)
+	in := make(map[string]string)
+	readOnce := false
+
+	for _, key := range keys{
+		value := r.URL.Query().Get(key)
+		if value == ""{
+
+			if !readOnce {
+				readOnce = true
+				err := unmarshalBody(r, &in)
+				if err == io.EOF {
+					return data, fmt.Errorf("%s is missing from query and body", key)
+				} else if err != nil {
+					return data, err
+				}
+			}
+
+			if val, ok := in[key]; ok {
+				data[key] = val
+			} else {
+				return data, fmt.Errorf("%s is missing from query and body", key)
+			}
+		} else {
+			data[key] = value
+		}
+	}
+
+	return data, nil
+}
+
+//	readSingularFromQueryOrBody : Reads a single key passed in params from 
+//	query and body and returns value of that key to corresponding read values.
+//
+//	Note: For reading multiple keys readFromQueryOrBody should be
+//  used to reduce body reads.
+func readSingularFromQueryOrBody(r *http.Request, key string) (string, error){
+	in := make(map[string]string)
+
+	value := r.URL.Query().Get(key)
+	if value == "" {
+		err := unmarshalBody(r, &in)
+		if err == io.EOF {
+			return "", fmt.Errorf("%s is missing from query and body", key)
+		} else if err != nil {
+			return "", err
+		}
+
+		if val, ok := in[key]; ok {
+			return val, nil
+		} else {
+			return "", fmt.Errorf("%s is missing from query and body", key)
+		}
+	}
+
+	return value, nil
+}
+
