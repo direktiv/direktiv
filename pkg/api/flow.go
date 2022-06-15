@@ -3194,7 +3194,11 @@ func (h *flowHandler) Tag(w http.ResponseWriter, r *http.Request) {
 	namespace := mux.Vars(r)["ns"]
 	path, ref := pathAndRef(r)
 
-	tag := r.URL.Query().Get("tag")
+	tag, err := readSingularFromQueryOrBody(r, "tag")
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
 
 	in := &grpc.TagRequest{
 		Namespace: namespace,
@@ -3235,7 +3239,11 @@ func (h *flowHandler) Retag(w http.ResponseWriter, r *http.Request) {
 	namespace := mux.Vars(r)["ns"]
 	path, ref := pathAndRef(r)
 
-	tag := r.URL.Query().Get("tag")
+	tag, err := readSingularFromQueryOrBody(r, "tag")
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
 
 	in := &grpc.RetagRequest{
 		Namespace: namespace,
