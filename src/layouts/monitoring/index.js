@@ -133,7 +133,7 @@ function MonitoringPage(props) {
                                                                 height={height}
                                                                 rowRenderer={rowRenderer}
                                                                 deferredMeasurementCache={cache}
-                                                                scrollToIndex={follow ? data.length - 1 : 0}
+                                                                scrollToIndex={follow ? data.length - 1 : undefined}
                                                                 rowCount={data.length}
                                                                 rowHeight={cache.rowHeight}
                                                             />

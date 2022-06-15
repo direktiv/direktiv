@@ -87,7 +87,6 @@ function Actions(props) {
                         height={height}
                         rowRenderer={rowRenderer}
                         deferredMeasurementCache={cache}
-                        scrollToIndex={0}
                         rowCount={ActionsNodes.length}
                         rowHeight={90}
                         scrollToAlignment={"start"}
@@ -240,7 +239,6 @@ function FunctionsList(props) {
                             height={height}
                             rowRenderer={rowRenderer}
                             deferredMeasurementCache={cache}
-                            scrollToIndex={0}
                             rowCount={functionList.length}
                             rowHeight={84}
                             scrollToAlignment={"start"}

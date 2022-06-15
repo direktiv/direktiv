@@ -261,7 +261,7 @@ function Logs(props) {
                         width={width}
                         height={height}
                         rowRenderer={renderRow}
-                        scrollToIndex={follow ? data.data.split("\n").length - 1: 0}
+                        scrollToIndex={follow ? data.data.split("\n").length - 1: undefined}
                         rowCount={data.data.split("\n").length}
                         rowHeight={20}
                     />
