@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import Button from '../../../components/button';
 import {HiOutlineTrash} from 'react-icons/hi';
 import ContentPanel, { ContentPanelBody, ContentPanelHeaderButtonIcon, ContentPanelTitle, ContentPanelTitleIcon } from '../../../components/content-panel';
@@ -16,7 +16,7 @@ import 'rc-slider/assets/index.css';
 import { useNavigate } from 'react-router';
 import HelpIcon from "../../../components/help";
 import { AutoSizer } from 'react-virtualized';
-import { VscCode } from 'react-icons/vsc';
+import { VscCode, VscDebugStepBack } from 'react-icons/vsc';
 import { ApiFragment } from '..';
 
 import Form from "@rjsf/core";
@@ -439,98 +439,7 @@ export function RevisionSelectorTab(props) {
                                             </FlexBox>
                                         </div>
                                     </FlexBox>
-                                    {(obj.node.name !== "latest") ? 
-                                        <FlexBox style={{
-                                            flex: "1",
-                                            maxWidth: "150px"
-                                        }}>
-                                            <FlexBox className="col revision-label-tuple">
-                                                <TagRevisionBtn tagWorkflow={tagWorkflow} obj={obj} setRevisions={setRevisions} getRevisions={getRevisions} isTag={(tags !== null && tags[obj.node.name])} updateTags={updateTags} getTags={getTags} />
-                                            </FlexBox>
-                                        </FlexBox>
-                                    :<FlexBox style={{
-                                        flex: "1",
-                                        maxWidth: "150px"
-                                    }}></FlexBox>}
-                                    {router.routes.length > 0 ? 
-                                    <>
-                                        {router.routes[0] && router.routes[0].ref === obj.node.name  ? 
-                                            <FlexBox style={{
-                                                flex: "1",
-                                                maxWidth: "150px"
-                                            }}>
-                                            <FlexBox className="col revision-label-tuple">
-                                                    <div>
-                                                        Traffic amount
-                                                    </div>
-                                                    <div style={{width:'100%'}}>
-                                                        <Slider defaultValue={router.routes.length === 2 ? router.routes[0].weight: 100} className="traffic-mini-distribution" disabled={true}/>
-                                                        <div>
-                                                            {router.routes.length === 2 ? `${router.routes[0].weight}%`: "100%" }
-                                                        </div>
-                                                    </div>
-                                                </FlexBox>
-                                            </FlexBox>
-                                        :""}
-                                        {router.routes[1]  && router.routes[1].ref === obj.node.name  ? 
-                                            <FlexBox style={{
-                                                flex: "1",
-                                                maxWidth: "150px"
-                                            }}>
-                                                <FlexBox className="col revision-label-tuple">
-                                                    { router.routes[1].weight !== 0 ?
-                                                    <>
-                                                        <div>
-                                                            Traffic amount
-                                                        </div>
-                                                        <div style={{width:'100%'}}>
-                                                            <Slider defaultValue={router.routes[1].weight} className="traffic-mini2-distribution" disabled={true}/>
-                                                            <div>
-                                                                {router.routes[1].weight}%
-                                                            </div>
-                                                        </div>
-                                                    </>
-                                                    :<></>}
-                                                </FlexBox>
-                                            </FlexBox>
-                                        :""}
-                                        {!ref1 && !ref2 ? 
-                                          <FlexBox style={{
-                                            flex: "1",
-                                            maxWidth: "150px"
-                                        }}></FlexBox>
-                                        :""
-                                        }
-                                    </>
-                                    : <>
-                                        {obj.node.name === "latest" ? 
-                                        <FlexBox style={{
-                                            flex: "1",
-                                            maxWidth: "150px"
-                                        }}>
-                                            <FlexBox className="col revision-label-tuple">
-                                                <div>
-                                                    Traffic amount
-                                                </div>
-                                                <div style={{width:'100%'}}>
-                                                    <Slider defaultValue={100} className="traffic-mini-distribution" disabled={true}/>
-                                                    <div>
-                                                        100%
-                                                    </div>
-                                                </div>
-                                            </FlexBox>
-                                        </FlexBox>
-                                        :    <FlexBox style={{
-                                            flex: "1",
-                                            maxWidth: "150px"
-                                        }}></FlexBox>}
-                                    </>}
-                                    {/* <FlexBox style={{
-                                        flex: "1",
-                                        minWidth: "300px"
-                                    }}>
-                                        
-                                    </FlexBox> */}
+                                    <RevertTrafficAmount revisionName={obj.node.name} routes={router.routes}/>
                                     <div style={obj.node.name === "latest" ? {visibility: "hidden"} : null}>
                                         <FlexBox className="gap">
                                             {tags !== null && tags[obj.node.name] ? 
@@ -542,7 +451,7 @@ export function RevisionSelectorTab(props) {
                                                     }}
                                                     title="Remove a Tag"
                                                     button={(
-                                                        <Button className="small light bold" title="Remove Tag">
+                                                        <Button className="small light bold" title="Remove Tag" >
                                                             <HiOutlineTrash className="red-text" style={{ fontSize: "16px" }} />
                                                         </Button>
                                                     )}
@@ -575,7 +484,7 @@ export function RevisionSelectorTab(props) {
                                                     modalStyle={{width: "400px"}}
                                                     title="Delete a revision"
                                                     button={(
-                                                        <Button className="small light bold" title="Delete Revision">
+                                                        <Button className="small light bold" tip="Remove Tag">
                                                             <HiOutlineTrash className="red-text" style={{ fontSize: "16px" }} />
                                                         </Button>
                                                     )}
@@ -603,6 +512,7 @@ export function RevisionSelectorTab(props) {
                                             }
                                             {obj.node.name !== "latest" ? 
                                             <>
+                                            <TagRevisionBtn tagWorkflow={tagWorkflow} obj={obj} setRevisions={setRevisions} getRevisions={getRevisions} isTag={(tags !== null && tags[obj.node.name])} updateTags={updateTags} getTags={getTags} />
                                             <Modal
                                                     escapeToCancel
                                                     style={{
@@ -611,8 +521,10 @@ export function RevisionSelectorTab(props) {
                                                     modalStyle={{width: "400px"}}
                                                     title={`Revert to ${obj.node.name}`}
                                                     button={(
-                                                        <Button className="small light bold" >
-                                                            Revert To
+                                                        <Button className="small light bold" tip="Revert revision to latest">
+                                                            <VscDebugStepBack className='show-700'/>
+                                                            <span className="hide-700">Revert{" "}</span>
+                                                            <span className="hide-900">To</span>
                                                         </Button>
                                                     )}
                                                     actionButtons={
@@ -636,21 +548,30 @@ export function RevisionSelectorTab(props) {
                                             <Button className="small light bold" onClick={()=>{
                                                 setSearchParams({tab: 1, revision: obj.node.name})
                                             }}>
-                                                Open Revision
-                                            </Button></>: <>
-                                            <div style={{visibility:"hidden"}}>
-                                            <Button className="small light bold" onClick={async()=>{
-                                            }}>
-                                                Revert To
-                                            </Button>
-                                            </div>
-                                            <div>
-                                            <Button className="small light bold" onClick={()=>{
-                                                setSearchParams({tab: 1, revision: obj.node.name})
-                                            }}>
-                                                Open Revision
-                                            </Button></div>
-                                            </>}
+                                                Open{" "}<span className="hide-900">Revision</span>
+                                            </Button></>
+                                            : 
+                                            <>
+                                                {/* Hidden buttons to retain same spacing on latest */}
+                                                <div style={{visibility:"hidden"}}>
+                                                <Button className="small light bold" onClick={async()=>{
+                                                }}>
+                                                    Tag
+                                                </Button>
+                                                </div>
+                                                <div style={{visibility:"hidden"}}>
+                                                <Button className="small light bold" onClick={async()=>{
+                                                }}>
+                                                    Revert{" "}<span className="hide-900">To</span>
+                                                </Button>
+                                                </div>
+                                                <div>
+                                                <Button className="small light bold" onClick={()=>{
+                                                }}>
+                                                    Open{" "}<span className="hide-900">Revision</span>
+                                                </Button></div>
+                                            </>
+                                            }
                                         </FlexBox>
                                     </div>
                                 </FlexBox>
@@ -664,6 +585,49 @@ export function RevisionSelectorTab(props) {
     )
 }
 
+function RevertTrafficAmount(props) {
+    const { routes, revisionName } = props
+    const TrafficAmount = useCallback(() => {
+        const routeIndex = routes.findIndex(function (r) {
+            return r.ref === revisionName
+        })
+
+        // Return empty element if revisionName does not exist in routes
+        if (routeIndex === -1) {
+            return (
+                <></>
+            )
+        }
+
+        const sliderClass = routeIndex === 0  ? "traffic-mini-distribution" : "traffic-mini2-distribution"
+
+        return (
+            <FlexBox className="col revision-label-tuple">
+                <div>
+                    Traffic amount
+                </div>
+                <div style={{ width: '100%' }}>
+                    <Slider defaultValue={routes[routeIndex].weight} className={sliderClass} disabled={true} />
+                    <div>
+                        {`${routes[routeIndex].weight}%`}
+                    </div>
+                </div>
+            </FlexBox>
+        )
+    }, [routes, revisionName])
+
+    return (
+        <FlexBox style={{
+            flex: "1",
+            maxWidth: "150px",
+            minWidth: "80px"
+        }}>
+            <TrafficAmount/>
+        </FlexBox>
+        
+    )
+}
+
 function TagRevisionBtn(props) {
 
     let {tagWorkflow, obj, getRevisions, setRevisions, updateTags, getTags} = props;
@@ -674,7 +638,6 @@ function TagRevisionBtn(props) {
             escapeToCancel
             style={{
                 flexDirection: "row-reverse",
-                marginRight: "8px"
             }}
             modalStyle={{width: "400px"}}
             title="Tag" 
@@ -682,7 +645,7 @@ function TagRevisionBtn(props) {
                 setTag("")
             }}
             button={(
-                <Button className="light small">
+                <Button className="light small bold" tip="Tag Revision">
                     <FlexBox className="gap">
                         <div>
                             Tag
