@@ -8,7 +8,7 @@ import {BiChevronLeft} from 'react-icons/bi';
 import DirektivEditor from '../../../components/editor';
 import WorkflowDiagram from '../../../components/diagram';
 import YAML from 'js-yaml'
-import Modal, { ButtonDefinition } from '../../../components/modal';
+import Modal, { ButtonDefinition, ModalHeadless } from '../../../components/modal';
 import SankeyDiagram from '../../../components/sankey';
 import { VscVersions, VscTypeHierarchySub } from 'react-icons/vsc'
 import Slider from 'rc-slider';
@@ -101,7 +101,7 @@ function RevisionTab(props) {
                                             style={{ justifyContent: "center" }}
                                             className="run-workflow-modal"
                                             modalStyle={{color: "black", width: "600px", minWidth:"30vw"}}
-                                            title="Run Workflow?"
+                                            title="Run Workflow"
                                             onClose={()=>{
                                                 setInput("{\n\t\n}")
                                                 setTabIndex(0)
@@ -298,7 +298,7 @@ transform:
 }
 
 export function RevisionSelectorTab(props) {
-    const {workflowName, setRouter, namespace, tagWorkflow, filepath, updateWorkflow, editWorkflowRouter, getWorkflowRouter, getRevisions, setRevisions, err, revisions, router, deleteRevision, getWorkflowSankeyMetrics, executeWorkflow, searchParams, setSearchParams, getWorkflowRevisionData, getTags, removeTag} = props
+    const {workflowName, setRouter, namespace, tagWorkflow, filepath, updateWorkflow, editWorkflowRouter, getWorkflowRouter, getRevisions, setRevisions, err, revisions, router, deleteRevision, getWorkflowSankeyMetrics, executeWorkflow, executeWorkflowRouter, searchParams, setSearchParams, getWorkflowRevisionData, getTags, removeTag} = props
     
     const navigate = useNavigate()
     // const [load, setLoad] = useState(true)
@@ -387,10 +387,10 @@ export function RevisionSelectorTab(props) {
                 </Modal>
             </div>
             <div>
-                <RevisionTrafficShaper rev1={rev1} rev2={rev2} setRev1={setRev1} setRev2={setRev2} setRouter={setRouter} revisions={revisions}  router={router} editWorkflowRouter={editWorkflowRouter} getWorkflowRouter={getWorkflowRouter} />
+                <RevisionTrafficShaper rev1={rev1} rev2={rev2} setRev1={setRev1} setRev2={setRev2} setRouter={setRouter} revisions={revisions}  router={router} editWorkflowRouter={editWorkflowRouter} getWorkflowRouter={getWorkflowRouter} namespace={namespace} executeWorkflowRouter={executeWorkflowRouter}/>
             </div>
             <div>   
-                <ContentPanel style={{width: "100%", minWidth: "300px"}}>
+                <ContentPanel style={{width: "100%", minWidth: "330px"}}>
                     <ContentPanelTitle>
                         <ContentPanelTitleIcon>
                             <VscVersions/>
@@ -404,19 +404,6 @@ export function RevisionSelectorTab(props) {
                     </ContentPanelTitle>
                     <ContentPanelBody style={{flexDirection: "column"}}>
                         {revisions.map((obj) => {
-                            let ref1 = false
-                            let ref2 = false
-                            if(router.routes[0]){
-                                if(router.routes[0].ref === obj.node.name){
-                                    ref1= true
-                                }
-                            }
-                            if(router.routes[1]){
-                                if(router.routes[1].ref === obj.node.name){
-                                    ref2 = true
-                                }
-                            }
-
                             for(var i=0; i < router.routes.length; i++) {
                                 if(obj.node.name === router.routes[i].ref){}
                             }
@@ -620,7 +607,7 @@ function RevertTrafficAmount(props) {
         <FlexBox style={{
             flex: "1",
             maxWidth: "150px",
-            minWidth: "80px"
+            minWidth: "90px"
         }}>
             <TrafficAmount/>
         </FlexBox>
@@ -679,9 +666,12 @@ function TagRevisionBtn(props) {
 }
 
 export function RevisionTrafficShaper(props) {
-    const {editWorkflowRouter, rev1, rev2, setRev1, setRev2, setRouter, getWorkflowRouter, router, revisions} = props
+    const {editWorkflowRouter, rev1, rev2, setRev1, setRev2, setRouter, getWorkflowRouter, router, revisions, namespace, executeWorkflowRouter} = props
+    const navigate = useNavigate()
 
     const [load, setLoad] = useState(true)
+    const [input, setInput] = useState("{\n\t\n}")
+    const [showRunModal, setShowRunModal] = useState(false)
 
     const [traffic, setTraffic] = useState(router.routes.length === 0 ? 100 : 0)
 
@@ -808,24 +798,24 @@ export function RevisionTrafficShaper(props) {
                     </FlexBox>
                     <div style={{width:"99.5%", margin:"auto", background: "#E9ECEF", height:"1px"}}/>
                 </FlexBox>
-                <FlexBox style={{marginTop:"10px", justifyContent:"flex-end"}}>
-                    <Button onClick={async()=>{
+                <FlexBox className={"row gap"} style={{ marginTop: "10px", justifyContent: "flex-end" }}>
+                    <Button onClick={async () => {
                         let arr = []
-                        if(rev1 !== "" && rev2 !== "") {
+                        if (rev1 !== "" && rev2 !== "") {
                             arr.push({
                                 ref: rev1,
                                 weight: parseInt(traffic)
                             })
                             arr.push({
                                 ref: rev2,
-                                weight: parseInt(100-traffic)
+                                weight: parseInt(100 - traffic)
                             })
-                        } else if(rev1 !== "") {
+                        } else if (rev1 !== "") {
                             arr.push({
                                 ref: rev1,
                                 weight: 100
                             })
-                        } else if(rev2 !== "") {
+                        } else if (rev2 !== "") {
                             arr.push({
                                 ref: rev2,
                                 weight: 100
@@ -835,6 +825,44 @@ export function RevisionTrafficShaper(props) {
                         setRouter(await getWorkflowRouter())
                     }} className={`small ${rev2 && rev1 ? "" : "disabled"}`}>
                         Save
+                    </Button>
+                    <ModalHeadless
+                        setVisible={setShowRunModal}
+                        visible={showRunModal}
+                        style={{ justifyContent: "center" }}
+                        className="run-workflow-modal"
+                        modalStyle={{ color: "black", width: "600px", minWidth: "30vw" }}
+                        title="Run Workflow Router"
+                        onClose={() => {
+                            setInput("{\n\t\n}")
+                        }}
+                        actionButtons={[
+                            ButtonDefinition(`Run`, async () => {
+                                let r = ""
+                                r = await executeWorkflowRouter(input)
+                                if (r.includes("execute workflow")) {
+                                    // is an error
+                                    throw new Error(r)
+                                } else {
+                                    navigate(`/n/${namespace}/instances/${r}`)
+                                }
+                            }, `small blue`, () => { }, true, false),
+                            ButtonDefinition("Cancel", async () => {
+                            }, "small light", () => { }, true, false)
+                        ]}
+                    >
+                        <FlexBox style={{ height: "45vh", minWidth: "250px", minHeight: "160px", overflow: "hidden" }}>
+                            <FlexBox>
+                                <AutoSizer>
+                                    {({ height, width }) => (
+                                        <DirektivEditor height={height} width={width} dlang="json" dvalue={input} setDValue={setInput} />
+                                    )}
+                                </AutoSizer>
+                            </FlexBox>
+                        </FlexBox>
+                    </ModalHeadless>
+                    <Button className="small" onClick={() =>{setShowRunModal(true)}} tip="Run workflow with router traffic">
+                        Run
                     </Button>
                 </FlexBox>
             </ContentPanelBody>
