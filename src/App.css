@@ -131,7 +131,7 @@ body {
 }
 
 .btn.light.loading {
-  opacity: 90% !important;
+  opacity: .9 !important;
   pointer-events: none !important;
   cursor: unset !important;
 
@@ -355,7 +355,7 @@ select {
 }
 
 .btn-terminal.terminal-disabled {
-  opacity: 30% !important;
+  opacity: 0.3 !important;
   pointer-events: none !important;
   cursor: unset !important;
 }
@@ -370,7 +370,7 @@ select {
 
 
 .btn-terminal.terminal-loading {
-  opacity: 90% !important;
+  opacity: 0.9 !important;
   pointer-events: none !important;
   cursor: unset !important;
 

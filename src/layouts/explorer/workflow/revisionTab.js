@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import Button from '../../../components/button';
 import {HiOutlineTrash} from 'react-icons/hi';
 import ContentPanel, { ContentPanelBody, ContentPanelHeaderButtonIcon, ContentPanelTitle, ContentPanelTitleIcon } from '../../../components/content-panel';
@@ -8,7 +8,7 @@ import {BiChevronLeft} from 'react-icons/bi';
 import DirektivEditor from '../../../components/editor';
 import WorkflowDiagram from '../../../components/diagram';
 import YAML from 'js-yaml'
-import Modal, { ButtonDefinition } from '../../../components/modal';
+import Modal, { ButtonDefinition, ModalHeadless } from '../../../components/modal';
 import SankeyDiagram from '../../../components/sankey';
 import { VscVersions, VscTypeHierarchySub } from 'react-icons/vsc'
 import Slider from 'rc-slider';
@@ -16,7 +16,7 @@ import 'rc-slider/assets/index.css';
 import { useNavigate } from 'react-router';
 import HelpIcon from "../../../components/help";
 import { AutoSizer } from 'react-virtualized';
-import { VscCode } from 'react-icons/vsc';
+import { VscCode, VscDebugStepBack } from 'react-icons/vsc';
 import { ApiFragment } from '..';
 
 import Form from "@rjsf/core";
@@ -101,7 +101,7 @@ function RevisionTab(props) {
                                             style={{ justifyContent: "center" }}
                                             className="run-workflow-modal"
                                             modalStyle={{color: "black", width: "600px", minWidth:"30vw"}}
-                                            title="Run Workflow?"
+                                            title="Run Workflow"
                                             onClose={()=>{
                                                 setInput("{\n\t\n}")
                                                 setTabIndex(0)
@@ -180,7 +180,7 @@ function RevisionTab(props) {
                             :
                             ""
                         }
-                        {tabBtn === 1 ? <WorkflowDiagram disabled={true} workflow={YAML.load(workflow)}/>:""}
+                        {tabBtn === 1 ? <WorkflowDiagram disabled={true} workflow={workflow}/>:""}
                         {tabBtn === 2 ? <SankeyDiagram revision={revision} getWorkflowSankeyMetrics={getWorkflowSankeyMetrics} />:""}
                     </ContentPanelBody>
                 </ContentPanel>
@@ -298,7 +298,7 @@ transform:
 }
 
 export function RevisionSelectorTab(props) {
-    const {workflowName, setRouter, namespace, tagWorkflow, filepath, updateWorkflow, editWorkflowRouter, getWorkflowRouter, getRevisions, setRevisions, err, revisions, router, deleteRevision, getWorkflowSankeyMetrics, executeWorkflow, searchParams, setSearchParams, getWorkflowRevisionData, getTags, removeTag} = props
+    const {workflowName, setRouter, namespace, tagWorkflow, filepath, updateWorkflow, editWorkflowRouter, getWorkflowRouter, getRevisions, setRevisions, err, revisions, router, deleteRevision, getWorkflowSankeyMetrics, executeWorkflow, executeWorkflowRouter, searchParams, setSearchParams, getWorkflowRevisionData, getTags, removeTag} = props
     
     const navigate = useNavigate()
     // const [load, setLoad] = useState(true)
@@ -387,10 +387,10 @@ export function RevisionSelectorTab(props) {
                 </Modal>
             </div>
             <div>
-                <RevisionTrafficShaper rev1={rev1} rev2={rev2} setRev1={setRev1} setRev2={setRev2} setRouter={setRouter} revisions={revisions}  router={router} editWorkflowRouter={editWorkflowRouter} getWorkflowRouter={getWorkflowRouter} />
+                <RevisionTrafficShaper rev1={rev1} rev2={rev2} setRev1={setRev1} setRev2={setRev2} setRouter={setRouter} revisions={revisions}  router={router} editWorkflowRouter={editWorkflowRouter} getWorkflowRouter={getWorkflowRouter} namespace={namespace} executeWorkflowRouter={executeWorkflowRouter}/>
             </div>
             <div>   
-                <ContentPanel style={{width: "100%", minWidth: "300px"}}>
+                <ContentPanel style={{width: "100%", minWidth: "330px"}}>
                     <ContentPanelTitle>
                         <ContentPanelTitleIcon>
                             <VscVersions/>
@@ -404,19 +404,6 @@ export function RevisionSelectorTab(props) {
                     </ContentPanelTitle>
                     <ContentPanelBody style={{flexDirection: "column"}}>
                         {revisions.map((obj) => {
-                            let ref1 = false
-                            let ref2 = false
-                            if(router.routes[0]){
-                                if(router.routes[0].ref === obj.node.name){
-                                    ref1= true
-                                }
-                            }
-                            if(router.routes[1]){
-                                if(router.routes[1].ref === obj.node.name){
-                                    ref2 = true
-                                }
-                            }
-
                             for(var i=0; i < router.routes.length; i++) {
                                 if(obj.node.name === router.routes[i].ref){}
                             }
@@ -439,98 +426,7 @@ export function RevisionSelectorTab(props) {
                                             </FlexBox>
                                         </div>
                                     </FlexBox>
-                                    {(obj.node.name !== "latest") ? 
-                                        <FlexBox style={{
-                                            flex: "1",
-                                            maxWidth: "150px"
-                                        }}>
-                                            <FlexBox className="col revision-label-tuple">
-                                                <TagRevisionBtn tagWorkflow={tagWorkflow} obj={obj} setRevisions={setRevisions} getRevisions={getRevisions} isTag={(tags !== null && tags[obj.node.name])} updateTags={updateTags} getTags={getTags} />
-                                            </FlexBox>
-                                        </FlexBox>
-                                    :<FlexBox style={{
-                                        flex: "1",
-                                        maxWidth: "150px"
-                                    }}></FlexBox>}
-                                    {router.routes.length > 0 ? 
-                                    <>
-                                        {router.routes[0] && router.routes[0].ref === obj.node.name  ? 
-                                            <FlexBox style={{
-                                                flex: "1",
-                                                maxWidth: "150px"
-                                            }}>
-                                            <FlexBox className="col revision-label-tuple">
-                                                    <div>
-                                                        Traffic amount
-                                                    </div>
-                                                    <div style={{width:'100%'}}>
-                                                        <Slider defaultValue={router.routes.length === 2 ? router.routes[0].weight: 100} className="traffic-mini-distribution" disabled={true}/>
-                                                        <div>
-                                                            {router.routes.length === 2 ? `${router.routes[0].weight}%`: "100%" }
-                                                        </div>
-                                                    </div>
-                                                </FlexBox>
-                                            </FlexBox>
-                                        :""}
-                                        {router.routes[1]  && router.routes[1].ref === obj.node.name  ? 
-                                            <FlexBox style={{
-                                                flex: "1",
-                                                maxWidth: "150px"
-                                            }}>
-                                                <FlexBox className="col revision-label-tuple">
-                                                    { router.routes[1].weight !== 0 ?
-                                                    <>
-                                                        <div>
-                                                            Traffic amount
-                                                        </div>
-                                                        <div style={{width:'100%'}}>
-                                                            <Slider defaultValue={router.routes[1].weight} className="traffic-mini2-distribution" disabled={true}/>
-                                                            <div>
-                                                                {router.routes[1].weight}%
-                                                            </div>
-                                                        </div>
-                                                    </>
-                                                    :<></>}
-                                                </FlexBox>
-                                            </FlexBox>
-                                        :""}
-                                        {!ref1 && !ref2 ? 
-                                          <FlexBox style={{
-                                            flex: "1",
-                                            maxWidth: "150px"
-                                        }}></FlexBox>
-                                        :""
-                                        }
-                                    </>
-                                    : <>
-                                        {obj.node.name === "latest" ? 
-                                        <FlexBox style={{
-                                            flex: "1",
-                                            maxWidth: "150px"
-                                        }}>
-                                            <FlexBox className="col revision-label-tuple">
-                                                <div>
-                                                    Traffic amount
-                                                </div>
-                                                <div style={{width:'100%'}}>
-                                                    <Slider defaultValue={100} className="traffic-mini-distribution" disabled={true}/>
-                                                    <div>
-                                                        100%
-                                                    </div>
-                                                </div>
-                                            </FlexBox>
-                                        </FlexBox>
-                                        :    <FlexBox style={{
-                                            flex: "1",
-                                            maxWidth: "150px"
-                                        }}></FlexBox>}
-                                    </>}
-                                    {/* <FlexBox style={{
-                                        flex: "1",
-                                        minWidth: "300px"
-                                    }}>
-                                        
-                                    </FlexBox> */}
+                                    <RevertTrafficAmount revisionName={obj.node.name} routes={router.routes}/>
                                     <div style={obj.node.name === "latest" ? {visibility: "hidden"} : null}>
                                         <FlexBox className="gap">
                                             {tags !== null && tags[obj.node.name] ? 
@@ -542,7 +438,7 @@ export function RevisionSelectorTab(props) {
                                                     }}
                                                     title="Remove a Tag"
                                                     button={(
-                                                        <Button className="small light bold" title="Remove Tag">
+                                                        <Button className="small light bold" title="Remove Tag" >
                                                             <HiOutlineTrash className="red-text" style={{ fontSize: "16px" }} />
                                                         </Button>
                                                     )}
@@ -575,7 +471,7 @@ export function RevisionSelectorTab(props) {
                                                     modalStyle={{width: "400px"}}
                                                     title="Delete a revision"
                                                     button={(
-                                                        <Button className="small light bold" title="Delete Revision">
+                                                        <Button className="small light bold" tip="Remove Tag">
                                                             <HiOutlineTrash className="red-text" style={{ fontSize: "16px" }} />
                                                         </Button>
                                                     )}
@@ -603,6 +499,7 @@ export function RevisionSelectorTab(props) {
                                             }
                                             {obj.node.name !== "latest" ? 
                                             <>
+                                            <TagRevisionBtn tagWorkflow={tagWorkflow} obj={obj} setRevisions={setRevisions} getRevisions={getRevisions} isTag={(tags !== null && tags[obj.node.name])} updateTags={updateTags} getTags={getTags} />
                                             <Modal
                                                     escapeToCancel
                                                     style={{
@@ -611,8 +508,10 @@ export function RevisionSelectorTab(props) {
                                                     modalStyle={{width: "400px"}}
                                                     title={`Revert to ${obj.node.name}`}
                                                     button={(
-                                                        <Button className="small light bold" >
-                                                            Revert To
+                                                        <Button className="small light bold" tip="Revert revision to latest">
+                                                            <VscDebugStepBack className='show-700'/>
+                                                            <span className="hide-700">Revert{" "}</span>
+                                                            <span className="hide-900">To</span>
                                                         </Button>
                                                     )}
                                                     actionButtons={
@@ -636,21 +535,30 @@ export function RevisionSelectorTab(props) {
                                             <Button className="small light bold" onClick={()=>{
                                                 setSearchParams({tab: 1, revision: obj.node.name})
                                             }}>
-                                                Open Revision
-                                            </Button></>: <>
-                                            <div style={{visibility:"hidden"}}>
-                                            <Button className="small light bold" onClick={async()=>{
-                                            }}>
-                                                Revert To
-                                            </Button>
-                                            </div>
-                                            <div>
-                                            <Button className="small light bold" onClick={()=>{
-                                                setSearchParams({tab: 1, revision: obj.node.name})
-                                            }}>
-                                                Open Revision
-                                            </Button></div>
-                                            </>}
+                                                Open{" "}<span className="hide-900">Revision</span>
+                                            </Button></>
+                                            : 
+                                            <>
+                                                {/* Hidden buttons to retain same spacing on latest */}
+                                                <div style={{visibility:"hidden"}}>
+                                                <Button className="small light bold" onClick={async()=>{
+                                                }}>
+                                                    Tag
+                                                </Button>
+                                                </div>
+                                                <div style={{visibility:"hidden"}}>
+                                                <Button className="small light bold" onClick={async()=>{
+                                                }}>
+                                                    Revert{" "}<span className="hide-900">To</span>
+                                                </Button>
+                                                </div>
+                                                <div>
+                                                <Button className="small light bold" onClick={()=>{
+                                                }}>
+                                                    Open{" "}<span className="hide-900">Revision</span>
+                                                </Button></div>
+                                            </>
+                                            }
                                         </FlexBox>
                                     </div>
                                 </FlexBox>
@@ -664,6 +572,49 @@ export function RevisionSelectorTab(props) {
     )
 }
 
+function RevertTrafficAmount(props) {
+    const { routes, revisionName } = props
+    const TrafficAmount = useCallback(() => {
+        const routeIndex = routes.findIndex(function (r) {
+            return r.ref === revisionName
+        })
+
+        // Return empty element if revisionName does not exist in routes
+        if (routeIndex === -1) {
+            return (
+                <></>
+            )
+        }
+
+        const sliderClass = routeIndex === 0  ? "traffic-mini-distribution" : "traffic-mini2-distribution"
+
+        return (
+            <FlexBox className="col revision-label-tuple">
+                <div>
+                    Traffic amount
+                </div>
+                <div style={{ width: '100%' }}>
+                    <Slider defaultValue={routes[routeIndex].weight} className={sliderClass} disabled={true} />
+                    <div>
+                        {`${routes[routeIndex].weight}%`}
+                    </div>
+                </div>
+            </FlexBox>
+        )
+    }, [routes, revisionName])
+
+    return (
+        <FlexBox style={{
+            flex: "1",
+            maxWidth: "150px",
+            minWidth: "90px"
+        }}>
+            <TrafficAmount/>
+        </FlexBox>
+        
+    )
+}
+
 function TagRevisionBtn(props) {
 
     let {tagWorkflow, obj, getRevisions, setRevisions, updateTags, getTags} = props;
@@ -674,7 +625,6 @@ function TagRevisionBtn(props) {
             escapeToCancel
             style={{
                 flexDirection: "row-reverse",
-                marginRight: "8px"
             }}
             modalStyle={{width: "400px"}}
             title="Tag" 
@@ -682,7 +632,7 @@ function TagRevisionBtn(props) {
                 setTag("")
             }}
             button={(
-                <Button className="light small">
+                <Button className="light small bold" tip="Tag Revision">
                     <FlexBox className="gap">
                         <div>
                             Tag
@@ -716,9 +666,12 @@ function TagRevisionBtn(props) {
 }
 
 export function RevisionTrafficShaper(props) {
-    const {editWorkflowRouter, rev1, rev2, setRev1, setRev2, setRouter, getWorkflowRouter, router, revisions} = props
+    const {editWorkflowRouter, rev1, rev2, setRev1, setRev2, setRouter, getWorkflowRouter, router, revisions, namespace, executeWorkflowRouter} = props
+    const navigate = useNavigate()
 
     const [load, setLoad] = useState(true)
+    const [input, setInput] = useState("{\n\t\n}")
+    const [showRunModal, setShowRunModal] = useState(false)
 
     const [traffic, setTraffic] = useState(router.routes.length === 0 ? 100 : 0)
 
@@ -845,24 +798,24 @@ export function RevisionTrafficShaper(props) {
                     </FlexBox>
                     <div style={{width:"99.5%", margin:"auto", background: "#E9ECEF", height:"1px"}}/>
                 </FlexBox>
-                <FlexBox style={{marginTop:"10px", justifyContent:"flex-end"}}>
-                    <Button onClick={async()=>{
+                <FlexBox className={"row gap"} style={{ marginTop: "10px", justifyContent: "flex-end" }}>
+                    <Button onClick={async () => {
                         let arr = []
-                        if(rev1 !== "" && rev2 !== "") {
+                        if (rev1 !== "" && rev2 !== "") {
                             arr.push({
                                 ref: rev1,
                                 weight: parseInt(traffic)
                             })
                             arr.push({
                                 ref: rev2,
-                                weight: parseInt(100-traffic)
+                                weight: parseInt(100 - traffic)
                             })
-                        } else if(rev1 !== "") {
+                        } else if (rev1 !== "") {
                             arr.push({
                                 ref: rev1,
                                 weight: 100
                             })
-                        } else if(rev2 !== "") {
+                        } else if (rev2 !== "") {
                             arr.push({
                                 ref: rev2,
                                 weight: 100
@@ -872,6 +825,44 @@ export function RevisionTrafficShaper(props) {
                         setRouter(await getWorkflowRouter())
                     }} className={`small ${rev2 && rev1 ? "" : "disabled"}`}>
                         Save
+                    </Button>
+                    <ModalHeadless
+                        setVisible={setShowRunModal}
+                        visible={showRunModal}
+                        style={{ justifyContent: "center" }}
+                        className="run-workflow-modal"
+                        modalStyle={{ color: "black", width: "600px", minWidth: "30vw" }}
+                        title="Run Workflow Router"
+                        onClose={() => {
+                            setInput("{\n\t\n}")
+                        }}
+                        actionButtons={[
+                            ButtonDefinition(`Run`, async () => {
+                                let r = ""
+                                r = await executeWorkflowRouter(input)
+                                if (r.includes("execute workflow")) {
+                                    // is an error
+                                    throw new Error(r)
+                                } else {
+                                    navigate(`/n/${namespace}/instances/${r}`)
+                                }
+                            }, `small blue`, () => { }, true, false),
+                            ButtonDefinition("Cancel", async () => {
+                            }, "small light", () => { }, true, false)
+                        ]}
+                    >
+                        <FlexBox style={{ height: "45vh", minWidth: "250px", minHeight: "160px", overflow: "hidden" }}>
+                            <FlexBox>
+                                <AutoSizer>
+                                    {({ height, width }) => (
+                                        <DirektivEditor height={height} width={width} dlang="json" dvalue={input} setDValue={setInput} />
+                                    )}
+                                </AutoSizer>
+                            </FlexBox>
+                        </FlexBox>
+                    </ModalHeadless>
+                    <Button className="small" onClick={() =>{setShowRunModal(true)}} tip="Run workflow with router traffic">
+                        Run
                     </Button>
                 </FlexBox>
             </ContentPanelBody>

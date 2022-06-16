@@ -91,7 +91,7 @@ function InitialWorkflowHook(props){
         setActiveTab(searchParams.get("tab") !== null ? parseInt(searchParams.get('tab')): 0)
     }, [searchParams])
     // todo handle err from hook below
-    const {data,  getSuccessFailedMetrics, tagWorkflow, addAttributes, deleteAttributes, setWorkflowLogToEvent, editWorkflowRouter, getWorkflowSankeyMetrics, getWorkflowRevisionData, getWorkflowRouter, toggleWorkflow, executeWorkflow, getInstancesForWorkflow, getRevisions, getTags, deleteRevision, saveWorkflow, updateWorkflow, discardWorkflow, removeTag} = useWorkflow(Config.url, true, namespace, filepath.substring(1), localStorage.getItem("apikey"))
+    const {data,  getSuccessFailedMetrics, tagWorkflow, addAttributes, deleteAttributes, setWorkflowLogToEvent, editWorkflowRouter, getWorkflowSankeyMetrics, getWorkflowRevisionData, getWorkflowRouter, toggleWorkflow, executeWorkflow, getInstancesForWorkflow, getRevisions, getTags, deleteRevision, saveWorkflow, updateWorkflow, discardWorkflow, removeTag, executeWorkflowRouter} = useWorkflow(Config.url, true, namespace, filepath.substring(1), localStorage.getItem("apikey"))
     const [router, setRouter] = useState(null)
 
 
@@ -145,7 +145,7 @@ function InitialWorkflowHook(props){
                         workflowName={filepath.substring(1)}
                         tagWorkflow={tagWorkflow}
                          namespace={namespace}
-                          filepath={filepath} updateWorkflow={updateWorkflow} setRouter={setRouter} editWorkflowRouter={editWorkflowRouter} getWorkflowRouter={getWorkflowRouter} setRevisions={setRevisions} revisions={revisions} router={router} getWorkflowSankeyMetrics={getWorkflowSankeyMetrics} executeWorkflow={executeWorkflow} getWorkflowRevisionData={getWorkflowRevisionData} searchParams={searchParams} setSearchParams={setSearchParams} deleteRevision={deleteRevision}  getRevisions={getRevisions} getTags={getTags} removeTag={removeTag}
+                          filepath={filepath} updateWorkflow={updateWorkflow} setRouter={setRouter} editWorkflowRouter={editWorkflowRouter} getWorkflowRouter={getWorkflowRouter} setRevisions={setRevisions} revisions={revisions} router={router} getWorkflowSankeyMetrics={getWorkflowSankeyMetrics} executeWorkflow={executeWorkflow} getWorkflowRevisionData={getWorkflowRevisionData} searchParams={searchParams} setSearchParams={setSearchParams} deleteRevision={deleteRevision}  getRevisions={getRevisions} getTags={getTags} removeTag={removeTag} executeWorkflowRouter={executeWorkflowRouter}
                           />
                         </>
                     :<></>}
@@ -428,11 +428,13 @@ function WorkingRevision(props) {
                                         }, "small light", ()=>{}, true, false)
                                     ]}
                                     onOpen={()=>{
-                                        let wfObj =  YAML.load(oldWf)
-                                        if (wfObj && wfObj.states && wfObj.states.length > 0 && wfObj.states[0].type === "validate") {
-                                            setWorkflowJSONSchema(  wfObj.states[0].schema)
-                                            setTabIndex(1)
-                                        }
+                                        try{
+                                            let wfObj =  YAML.load(oldWf)
+                                            if (wfObj && wfObj.states && wfObj.states.length > 0 && wfObj.states[0].type === "validate") {
+                                                setWorkflowJSONSchema(  wfObj.states[0].schema)
+                                                setTabIndex(1)
+                                            }
+                                        } catch (e){}
                                     }}
                                     button={(
                                             <div className={`btn-terminal ${opLoadingStates["IsLoading"] ? "terminal-disabled" : ""}`}>
@@ -538,7 +540,7 @@ function WorkingRevision(props) {
 
                         setTabBtn(0)
                     }}/>:""}
-                    {tabBtn === 2 ? <WorkflowDiagram disabled={true} workflow={YAML.load(workflow)}/>:""}
+                    {tabBtn === 2 ? <WorkflowDiagram disabled={true} workflow={oldWf}/>:""}
                     {tabBtn === 3 ? <SankeyDiagram revision={"latest"} getWorkflowSankeyMetrics={getWorkflowSankeyMetrics} />:""}
                 </ContentPanelBody>
             </ContentPanel>
@@ -597,7 +599,7 @@ function TabBar(props) {
                 }} type="checkbox" checked={router ? router.live : false}/>
                 <span className="slider-broadcast"></span>
             </label>
-            <div className="rev-toggle-label hide-on-small">
+            <div className="rev-toggle-label hide-600">
                 {!router.live ? 
                     "Disabled":
                     "Enabled"}
@@ -628,10 +630,10 @@ function WorkflowInstances(props) {
                         Revision
                     </th>
                     <th className="center-align">
-                        Started <span className="hide-on-small">at</span>
+                        Started <span className="hide-600">at</span>
                     </th>
                     <th className="center-align">
-                        <span className="hide-on-small">Last</span> Updated
+                        <span className="hide-600">Last</span> Updated
                     </th>
                 </tr>
             </thead>

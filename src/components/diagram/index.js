@@ -1,20 +1,40 @@
 import dagre from 'dagre'
 import ReactFlow, {ReactFlowProvider, MiniMap, isNode, Handle, useZoomPanHelper} from 'react-flow-renderer'
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useMemo, useState } from "react"
+import YAML from 'js-yaml'
+
 
 import './style.css'
+import InvalidWorkflow from '../invalid-workflow'
 export const position = { x: 0, y: 0}
 
 
-    // initialize the dagre graph
-    const dagreGraph = new dagre.graphlib.Graph()
-    dagreGraph.setDefaultEdgeLabel(() => ({}))
+// initialize the dagre graph
+const dagreGraph = new dagre.graphlib.Graph()
+dagreGraph.setDefaultEdgeLabel(() => ({}))
+
 export default function WorkflowDiagram(props) {
     const {workflow, flow, instanceStatus, disabled} = props
 
     const [load, setLoad] = useState(true)
     const [elements, setElements] = useState([])
     const [ostatus, setOStatus] = useState(instanceStatus)
+    const [invalidWorkflow, setInvalidWorkflow] = useState(null)
+    const wf = useMemo(()=>{
+        if (!workflow){
+            setInvalidWorkflow(null)
+            return null
+        }
+
+        try {
+            const workflowObj = YAML.load(workflow)
+            setInvalidWorkflow(null)
+            return workflowObj
+        } catch (error) {
+            setInvalidWorkflow(error.message)
+            return null
+        }
+    }, [workflow])
 
 
     useEffect(()=>{
@@ -60,8 +80,8 @@ export default function WorkflowDiagram(props) {
             })
         }
 
-        if(load && (workflow !== null || instanceStatus !== ostatus)) {
-            let saveElements = generateElements(getLayoutedElements, workflow, flow, instanceStatus)
+        if(load && (wf !== null || instanceStatus !== ostatus)) {
+            let saveElements = generateElements(getLayoutedElements, wf, flow, instanceStatus)
             if(saveElements !== null) {
                 setElements(saveElements)
             }
@@ -71,23 +91,24 @@ export default function WorkflowDiagram(props) {
 
         // if status changes make sure to redraw
         if(instanceStatus !== ostatus) {
-            let saveElements = generateElements(getLayoutedElements, workflow, flow, instanceStatus)
+            let saveElements = generateElements(getLayoutedElements, wf, flow, instanceStatus)
             if(saveElements !== null) {
                 setElements(saveElements)
             }
             setOStatus(instanceStatus)
         }
         
-    },[load, workflow,flow, instanceStatus, ostatus])
+    },[load, wf,flow, instanceStatus, ostatus])
 
-    if(load) {
-        return <></>
-    }
-
-    return(
-       <ReactFlowProvider>
-           <ZoomPanDiagram disabled={disabled} elements={elements}/>
-       </ReactFlowProvider>
+    return (
+        <>
+            <InvalidWorkflow invalidWorkflow={invalidWorkflow}/>
+            {!load ?
+                <ReactFlowProvider>
+                    <ZoomPanDiagram disabled={disabled} elements={elements} />
+                </ReactFlowProvider>
+                : <></>}
+        </>
     )
 }
 
