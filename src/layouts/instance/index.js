@@ -13,7 +13,6 @@ import { AutoSizer, List, CellMeasurer, CellMeasurerCache } from 'react-virtuali
 import { VscCopy, VscEye, VscEyeClosed, VscSourceControl, VscScreenFull, VscTerminal } from 'react-icons/vsc';
 
 import * as dayjs from "dayjs"
-import YAML from 'js-yaml'
 
 import DirektivEditor from '../../components/editor';
 import WorkflowDiagram from '../../components/diagram';
@@ -420,7 +419,7 @@ function InstanceDiagram(props) {
     }
     
     return(
-        <WorkflowDiagram instanceStatus={status} disabled={true} flow={flow} workflow={YAML.load(wfdata)}/>
+        <WorkflowDiagram instanceStatus={status} disabled={true} flow={flow} workflow={wfdata}/>
     )
 }
 

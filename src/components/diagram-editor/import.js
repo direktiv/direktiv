@@ -5,6 +5,10 @@ import { CreateNode, sortNodes, unescapeJSStrings } from "./util";
 
 export function importFromYAML(diagramEditor, setFunctions, wfYAML) {
     const wfData = YAML.load(wfYAML)
+    return importFromWorkflowData(diagramEditor, setFunctions,wfData)
+}
+export function importFromWorkflowData(diagramEditor, setFunctions, wfData) {
+    
     let nodeIDToStateIDMap = {}
     let catchNodes = []
     let pos = { x: 20, y: 200 }

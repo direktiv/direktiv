@@ -141,22 +141,6 @@ function SankeyDiagram(props) {
 
         var defs = svg.append("defs")
 
-        // var lg = defs.append("linearGradient")
-        // .attr("id", "gradient")
-        // .attr("x1", "0%")
-        // .attr("y1", "0%")
-
-        // var stop1 = lg.append("stop")
-        // .attr("offset", "0%")
-        // .style("stop-color", "#00bc9b")
-        // .style("stop-opacity", "0.5")
-
-        // var stop2 = lg.append("stop")
-        // .attr("offset", "100%")
-        // .style("stop-color", "#5eaefd")
-        // .style("stop-opacity", "0.5")
-
-
         var g = svg.append("g")
                     .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
         var linkG = g.append("g")
@@ -173,8 +157,6 @@ function SankeyDiagram(props) {
         let sankeyData = sankey({nodes: nodes, links: links});
         let sankeyNodes = sankeyData.nodes;
         let sankeyLinks = sankeyData.links;
-
-        // let depthExtent = d3.extent(sankeyNodes, function (d) { return d.depth; });
 
         var nodeColour = d3.scaleSequential(d3.interpolateCool)
         .domain([0,width]);

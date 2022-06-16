@@ -180,7 +180,7 @@ function RevisionTab(props) {
                             :
                             ""
                         }
-                        {tabBtn === 1 ? <WorkflowDiagram disabled={true} workflow={YAML.load(workflow)}/>:""}
+                        {tabBtn === 1 ? <WorkflowDiagram disabled={true} workflow={workflow}/>:""}
                         {tabBtn === 2 ? <SankeyDiagram revision={revision} getWorkflowSankeyMetrics={getWorkflowSankeyMetrics} />:""}
                     </ContentPanelBody>
                 </ContentPanel>

@@ -428,11 +428,13 @@ function WorkingRevision(props) {
                                         }, "small light", ()=>{}, true, false)
                                     ]}
                                     onOpen={()=>{
-                                        let wfObj =  YAML.load(oldWf)
-                                        if (wfObj && wfObj.states && wfObj.states.length > 0 && wfObj.states[0].type === "validate") {
-                                            setWorkflowJSONSchema(  wfObj.states[0].schema)
-                                            setTabIndex(1)
-                                        }
+                                        try{
+                                            let wfObj =  YAML.load(oldWf)
+                                            if (wfObj && wfObj.states && wfObj.states.length > 0 && wfObj.states[0].type === "validate") {
+                                                setWorkflowJSONSchema(  wfObj.states[0].schema)
+                                                setTabIndex(1)
+                                            }
+                                        } catch (e){}
                                     }}
                                     button={(
                                             <div className={`btn-terminal ${opLoadingStates["IsLoading"] ? "terminal-disabled" : ""}`}>
@@ -538,7 +540,7 @@ function WorkingRevision(props) {
 
                         setTabBtn(0)
                     }}/>:""}
-                    {tabBtn === 2 ? <WorkflowDiagram disabled={true} workflow={YAML.load(workflow)}/>:""}
+                    {tabBtn === 2 ? <WorkflowDiagram disabled={true} workflow={oldWf}/>:""}
                     {tabBtn === 3 ? <SankeyDiagram revision={"latest"} getWorkflowSankeyMetrics={getWorkflowSankeyMetrics} />:""}
                 </ContentPanelBody>
             </ContentPanel>

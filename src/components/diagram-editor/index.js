@@ -1,5 +1,5 @@
 import { useGlobalServices, useNamespaceServices, useNodes } from 'direktiv-react-hooks';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { VscGear, VscListUnordered, VscSymbolEvent, VscInfo, VscFileCode } from 'react-icons/vsc';
 import Alert from '../../components/alert';
 import FlexBox from '../../components/flexbox';
@@ -13,6 +13,8 @@ import { AutoSizer, CellMeasurer, CellMeasurerCache, List } from 'react-virtuali
 import Fuse from 'fuse.js';
 import { ActionsNodes, NodeStateAction } from "../../components/diagram-editor/nodes";
 import PrettyYAML from "json-to-pretty-yaml"
+import YAML from 'js-yaml'
+
 
 // Import Styles
 import './styles/form.css';
@@ -20,11 +22,12 @@ import './styles/node.css';
 import './styles/style.css';
 import 'drawflow/dist/drawflow.min.css'
 
-import { importFromYAML } from '../../components/diagram-editor/import';
+import { importFromWorkflowData } from '../../components/diagram-editor/import';
 import Modal, { ButtonDefinition, ModalHeadless } from '../modal';
 
 import Ajv from "ajv"
 import { CustomWidgets } from './widgets';
+import InvalidWorkflow from '../invalid-workflow';
 
 const actionsNodesFuse = new Fuse(ActionsNodes, {
     keys: ['name']
@@ -260,6 +263,23 @@ const MaxDrawerSize = 180
 export default function DiagramEditor(props) {
     const { workflow, namespace, updateWorkflow, setBlock } = props
 
+    const [invalidWorkflow, setInvalidWorkflow] = useState(null)
+    const wf = useMemo(()=>{
+        if (!workflow){
+            setInvalidWorkflow(null)
+            return null
+        }
+
+        try {
+            const workflowObj = YAML.load(workflow)
+            setInvalidWorkflow(null)
+            return workflowObj
+        } catch (error) {
+            setInvalidWorkflow(error.message)
+            return null
+        }
+    }, [workflow])
+
     const [diagramEditor, setDiagramEditor] = useState(null);
     const [load, setLoad] = useState(true);
 
@@ -411,13 +431,13 @@ export default function DiagramEditor(props) {
 
     // Import if diagram editor is mounted and workflow was passed in props
     useEffect(() => {
-        if (diagramEditor && workflow) {
+        if (diagramEditor && wf) {
             if (load) {
-                setUnhandledData(importFromYAML(diagramEditor, setFunctionList, workflow))
+                setUnhandledData(importFromWorkflowData(diagramEditor, setFunctionList, wf))
             }
             setLoad(false)
         }
-    }, [diagramEditor, workflow, load])
+    }, [diagramEditor, wf, load])
 
     const resizeStyle = {
         display: "flex",
@@ -470,6 +490,7 @@ export default function DiagramEditor(props) {
 
     return (
         <>
+            <InvalidWorkflow invalidWorkflow={invalidWorkflow}/>
             {showContextMenu ? (
                 <div
                     id='context-menu'
@@ -566,7 +587,7 @@ export default function DiagramEditor(props) {
             ) : (
                 <> </>
             )}
-            <FlexBox id="builder-page" className="col" style={{ paddingRight: "8px" }}>
+            <FlexBox id="builder-page" className="col" style={{ paddingRight: "8px", visibility: load ? "hidden" : "visible", maxWidth: load ? "0px" : undefined }}>
                 {error ?
                     <Alert className="critical" style={{ flex: "0", margin: "3px" }}>{error} </Alert>
                     :
