@@ -173,7 +173,7 @@ function MonitoringPage(props) {
                                 <FlexBox className="gap" style={{alignItems:"center"}}>
                                     <VscCheck fill={"var(--theme-green)"}/>
                                     <div>
-                                        Successful <span className="hide-on-med">Executions</span>
+                                        Successful <span className="hide-1000">Executions</span>
                                     </div>
                                     <HelpIcon msg={"A list of the latest successful executions"} />
                                 </FlexBox>
@@ -189,7 +189,7 @@ function MonitoringPage(props) {
                                 <FlexBox className="gap" style={{alignItems:"center"}}>
                                     <VscChromeClose fill={"var(--theme-red)"}/>
                                     <div>
-                                        Failed <span className="hide-on-med">Executions</span>
+                                        Failed <span className="hide-1000">Executions</span>
                                     </div>
                                     <HelpIcon msg={"A list of the latest failed executions"} />
                                 </FlexBox>

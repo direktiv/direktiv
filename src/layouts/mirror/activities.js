@@ -31,7 +31,7 @@ export default function ActivityTable(props) {
                             <tr>
                                 <th className="center-align" style={{ maxWidth: "120px", minWidth: "120px", width: "120px" }}>State</th>
                                 <th className="center-align">Type</th>
-                                <th className="center-align">Started <span className="hide-on-med">at</span></th>
+                                <th className="center-align">Started <span className="hide-1000">at</span></th>
                                 <th className="center-align" style={{ maxWidth: "120px", minWidth: "120px", width: "120px" }}></th>
                             </tr>
                         </thead>
@@ -96,7 +96,7 @@ export function ActivityRow(props) {
                 {type}
             </td>
             <td className="center-align">
-                <span className="hide-on-860">{startedDate}, </span>
+                <span className="hide-864">{startedDate}, </span>
                 {startedTime}
             </td>
             <td className="center-align">

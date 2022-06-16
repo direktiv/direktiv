@@ -187,8 +187,8 @@ export function InstancesTable(props) {
                             <th className="center-align">Name</th>
                             {mini ? <></>:<th className="center-align">Revision ID</th>}
                             {mini ? <></>:<th className="center-align">Invoker</th>}
-                            <th className="center-align">Started <span className="hide-on-med">at</span></th>
-                            {mini ? <></>:<th className="center-align"><span className="hide-on-med">Last</span> Updated</th>}
+                            <th className="center-align">Started <span className="hide-1000">at</span></th>
+                            {mini ? <></>:<th className="center-align"><span className="hide-1000">Last</span> Updated</th>}
                         </tr>
                     </thead>
                     <tbody>
@@ -287,11 +287,11 @@ export function InstanceRow(props) {
             {invoker !== undefined &&  invoker !== "" ? invoker.split(":")[0] : "NA"}
         </td>}
         <td className="center-align">
-            <span className="hide-on-860">{startedDate}, </span>
+            <span className="hide-864">{startedDate}, </span>
             {startedTime}
         </td>
         {mini ? <></>:<td className="center-align">
-            <span className="hide-on-860">{finishedDate}, </span>
+            <span className="hide-864">{finishedDate}, </span>
             {finishedTime}
         </td>}
     </tr>
@@ -307,7 +307,7 @@ function StateLabel(props) {
         <div>
             <FlexBox className={className} style={{ alignItems: "center", padding: "0px", width: "fit-content" }} >
                 <BsDot style={{ height: "32px", width: "32px" }} />
-                <div className="hide-on-med" style={{marginLeft: "-8px", marginRight: "16px"}}>{label}</div>
+                <div className="hide-1000" style={{marginLeft: "-8px", marginRight: "16px"}}>{label}</div>
             </FlexBox>
         </div>
     )

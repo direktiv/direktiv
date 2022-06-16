@@ -597,7 +597,7 @@ function TabBar(props) {
                 }} type="checkbox" checked={router ? router.live : false}/>
                 <span className="slider-broadcast"></span>
             </label>
-            <div className="rev-toggle-label hide-on-small">
+            <div className="rev-toggle-label hide-600">
                 {!router.live ? 
                     "Disabled":
                     "Enabled"}
@@ -628,10 +628,10 @@ function WorkflowInstances(props) {
                         Revision
                     </th>
                     <th className="center-align">
-                        Started <span className="hide-on-small">at</span>
+                        Started <span className="hide-600">at</span>
                     </th>
                     <th className="center-align">
-                        <span className="hide-on-small">Last</span> Updated
+                        <span className="hide-600">Last</span> Updated
                     </th>
                 </tr>
             </thead>

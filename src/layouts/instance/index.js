@@ -172,7 +172,7 @@ function InstancePage(props) {
                                     :
                                     <Link to={`/n/${namespace}/explorer/${wfName}?${ref==="latest" ? `tab=2` : `tab=1&revision=${rev}&revtab=0` }`}>
                                         <Button className="small light">
-                                            <span className="hide-on-small">View</span> Workflow
+                                            <span className="hide-600">View</span> Workflow
                                         </Button>
                                     </Link>
                                     }
@@ -271,7 +271,7 @@ function InstancePage(props) {
                                 {tabBtn === 1 && data.invoker.startsWith("instance:") ?
                                     <Link to={`/n/${namespace}/instances/${data.invoker.replace("instance:", "")}`} reloadDocument>
                                     <Button className="small light">
-                                        <span className="hide-on-small">View</span> Parent
+                                        <span className="hide-600">View</span> Parent
                                     </Button>
                                     </Link>
                                     :

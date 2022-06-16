@@ -290,7 +290,7 @@ function Variable(props) {
                             <FlexBox className="gap">
                                 <VscEye className="auto-margin" />
                                 <div>
-                                    Show <span className="hide-on-small">value</span>
+                                    Show <span className="hide-600">value</span>
                                 </div>
                             </FlexBox>
                         </Button>

@@ -255,7 +255,7 @@ export default function MirrorInfoPanel(props) {
                 <ContentPanelTitleIcon>
                     <VscAdd />
                 </ContentPanelTitleIcon>
-                <FlexBox className="gap" style={{ alignItems: "center" }}><span className="hide-on-small">Mirror</span> Info
+                <FlexBox className="gap" style={{ alignItems: "center" }}><span className="hide-600">Mirror</span> Info
                     <FlexBox style={{ flex: "auto", justifyContent: "right", paddingRight: "6px", alignItems: "unset" }}>
                         <Tippy content={mirrorSettingsValidateMsg} disabled={mirrorSettingsValidateMsg === ""} trigger={'mouseenter focus'} zIndex={10}>
                             <div>                            
@@ -275,7 +275,7 @@ export default function MirrorInfoPanel(props) {
                                         }}
                                         button={(
                                             <div>
-                                                Update <span className="hide-on-small">Settings</span>
+                                                Update <span className="hide-600">Settings</span>
                                             </div>
                                         )}
                                         actionButtons={[

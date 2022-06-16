@@ -368,8 +368,8 @@ function ExplorerList(props) {
                                     <ContentPanelHeaderButtonIcon>
                                         <VscAdd/>
                                     </ContentPanelHeaderButtonIcon>
-                                    <span className="hide-on-small">Workflow</span>
-                                    <span className="hide-on-medium-and-up">WF</span>
+                                    <span className="hide-600">Workflow</span>
+                                    <span className="show-600">WF</span>
                                 </div>
                             )}  
                             onClose={()=>{
@@ -441,8 +441,8 @@ function ExplorerList(props) {
                                         <ContentPanelHeaderButtonIcon>
                                             <VscAdd />
                                         </ContentPanelHeaderButtonIcon>
-                                        <span className="hide-on-small">Directory</span>
-                                        <span className="hide-on-medium-and-up">Dir</span>
+                                        <span className="hide-600">Directory</span>
+                                        <span className="show-600">Dir</span>
                                     </div>
                                 )}
                                 onClose={() => {
@@ -630,7 +630,7 @@ function ExplorerList(props) {
                             :
                             <></>
                     }
-                    <div className="explorer-sort-by explorer-action-btn hide-on-small">
+                    <div className="explorer-sort-by explorer-action-btn hide-600">
                     <FlexBox className="gap" style={{marginRight: "8px"}}>
                         <FlexBox className="center">
                             Sort by:
