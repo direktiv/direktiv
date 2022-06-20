@@ -118,7 +118,7 @@ function EventsPage(props) {
                                                     actionButtons={[
                                                         ButtonDefinition("Retrigger", async () => {
                                                             await replayEvent(obj.node.id)  
-                                                        }, "small blue", ()=>{}, true, true),
+                                                        }, "small", ()=>{}, true, true),
                                                         ButtonDefinition("Cancel", async () => {
                                                         }, "small light", ()=>{}, true, false)
                                                     ]}

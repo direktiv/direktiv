@@ -8,11 +8,11 @@ import Loader from "../../components/loader"
 import { Config, copyTextToClipboard } from "../../util"
 import { AutoSizer, List, CellMeasurer, CellMeasurerCache } from 'react-virtualized';
 import { VscCopy, VscEye, VscEyeClosed } from 'react-icons/vsc';
-import {TerminalButton} from '../instance'
 import * as dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime";
 import utc from "dayjs/plugin/utc"
 import { Link } from "react-router-dom"
+import Button from "../../components/button"
 
 dayjs.extend(utc)
 dayjs.extend(relativeTime);
@@ -40,7 +40,6 @@ function MonitoringPage(props) {
     const {namespace, noPadding} = props
     const [follow, setFollow] = useState(true)
     const [load, setLoad] = useState(true)
-    const [width,] = useState(window.innerWidth);
 
     const [clipData, setClipData] = useState(null)
     const {data, err} = useNamespaceLogs(Config.url, true, namespace, localStorage.getItem('apikey'))
@@ -144,19 +143,20 @@ function MonitoringPage(props) {
                                         </FlexBox>
                                         <div className={"logs-footer"} style={{  alignItems: 'center', borderRadius: " 0px 0px 8px 8px", overflow: "hidden" }}>
                                             <FlexBox className="gap" style={{ width: "100%", flexDirection: "row-reverse", height: "100%", alignItems: "center" }}>
-                                                <TerminalButton onClick={() => {
+                                                <Button className="small terminal" onClick={()=>{
                                                     copyTextToClipboard(clipData)
                                                 }}>
-                                                    <VscCopy /> Copy {width > 999 ? <span>to Clipboard</span> : ""}
-                                                </TerminalButton>
+                                                    <VscCopy/> Copy <span className='hide-1000'>to Clipboard</span>
+                                                </Button>
+
                                                 {follow ?
-                                                    <TerminalButton onClick={(e) => setFollow(!follow)} className={"btn-terminal"}>
-                                                        <VscEyeClosed /> Stop {width > 999 ? <span>watching</span> : ""}
-                                                    </TerminalButton>
+                                                    <Button className="small terminal" onClick={(e)=>setFollow(!follow)}>
+                                                        <VscEyeClosed/> Stop <span className='hide-1000'>watching</span>
+                                                    </Button>
                                                     :
-                                                    <TerminalButton onClick={(e) => setFollow(!follow)} className={"btn-terminal"} >
-                                                        <VscEye /> <div>Follow {width > 999 ? <span>logs</span> : ""}</div>
-                                                    </TerminalButton>
+                                                    <Button className="small terminal" onClick={(e)=>setFollow(!follow)}>
+                                                        <VscEye/> Follow <span className='hide-1000'>logs</span>
+                                                    </Button>
                                                 }
                                             </FlexBox>
                                         </div>

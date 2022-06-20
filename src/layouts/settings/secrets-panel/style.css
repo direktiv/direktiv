@@ -1,21 +1,3 @@
-.add-secret-btn > div {
-    cursor: pointer;
-    margin: auto;
-    width: fit-content;
-    padding-top: 5px;
-}
-
-.add-secret-btn > div:hover {
-    filter: brightness(0.8);
-}
-
-
-.add-secret-btn > div > svg {
-    height: 22px;
-    width: 22px;
-    color: var(--theme-green);
-}
-
 .secret-tuple {
     font-size: 12px;
     max-height: 24px;

@@ -38,7 +38,6 @@ import Loader from '../../../components/loader';
 import Alert from '../../../components/alert';
 import Pagination from '../../../components/pagination';
 import {AutoSizer} from "react-virtualized";
-import Tippy from '@tippyjs/react';
 
 import  Tabs  from '../../../components/tabs';
 import Form from "@rjsf/core";
@@ -383,21 +382,19 @@ function WorkingRevision(props) {
                         <FlexBox className="gap editor-footer">
                             <WorkingRevisionErrorBar errors={errors} showErrors={showErrors}/>
                             <div style={{ display: "flex", flex: 1 }}>
-                                <div onClick={async () => {
+                                <Button className="terminal small" loading={opLoadingStates["IsLoading"]} onClick={async () => {
                                     setErrors([])
                                     await discardWorkflow()
                                     setShowErrors(false)
-                                }} className={`btn-terminal ${opLoadingStates["IsLoading"] ? "terminal-disabled" : ""}`}>
+                                }}>
                                     Undo
-                                </div>
+                                </Button>
                             </div>
                             <div style={{display:"flex", flex:1, justifyContent:"center"}}>
                                 { workflow !== oldWf ?
-                                <Tippy content={"Requires save"} trigger={'mouseenter focus click'} zIndex={10}>
-                                <div>
-                                    <div className='btn-terminal disabled' style={{ userSelect: "none" }}> Run </div>
-                                </div>
-                                </Tippy>
+                                <Button tip={"Requires save"} className="terminal small" disabled={true}>
+                                    Run
+                                </Button>
                                 : <Modal 
                                     style={{ justifyContent: "center" }}
                                     className="run-workflow-modal"
@@ -423,7 +420,7 @@ function WorkingRevision(props) {
                                             } else {
                                                 navigate(`/n/${namespace}/instances/${r}`)
                                             }
-                                        }, `small blue ${tabIndex === 1 && workflowJSONSchema === null ? "disabled" : ""}`, ()=>{}, tabIndex === 0, false),
+                                        }, `small ${tabIndex === 1 && workflowJSONSchema === null ? "disabled" : ""}`, ()=>{}, tabIndex === 0, false),
                                         ButtonDefinition("Cancel", async () => {
                                         }, "small light", ()=>{}, true, false)
                                     ]}
@@ -437,9 +434,9 @@ function WorkingRevision(props) {
                                         } catch (e){}
                                     }}
                                     button={(
-                                            <div className={`btn-terminal ${opLoadingStates["IsLoading"] ? "terminal-disabled" : ""}`}>
-                                                Run
-                                            </div>
+                                        <Button className="terminal small" disabled={opLoadingStates["IsLoading"]}>
+                                            Run
+                                        </Button>
                                     )}
                                 >
                                     <FlexBox style={{ height: "45vh", minWidth: "250px", minHeight: "160px", overflow:"hidden" }}>
@@ -478,66 +475,75 @@ function WorkingRevision(props) {
                                 </Modal>}
                             </div>
                             <div style={{ display: "flex", flex: 1, gap: "3px", justifyContent: "flex-end", paddingRight: "10px"}}>
-                                <div className={`btn-terminal ${opLoadingStates["Save"] ? "terminal-loading" : ""} ${canSave ? "" : "terminal-disabled"}`} title={"Save workflow to latest"} onClick={async () => {
-                                    setErrors([])
-                                    pushOpLoadingState("Save", true)
-                                    updateWorkflow(workflow).then(()=>{
-                                        setShowErrors(false)
-                                        setTabBlocker(false)
-                                    }).catch((opError) => {
-                                        setErrors([opError.message])
-                                        setShowErrors(true)
-                                        pushOpLoadingState("Save", false)
-                                    })
+
+                                <Button 
+                                    tip={"Save workflow to latest"} 
+                                    disabledTip={"No changes to workflow"}
+                                    className="terminal small"
+                                    loading={opLoadingStates["Save"]} 
+                                    disabled={!canSave}
+                                    onClick={async () => {
+                                        setErrors([])
+                                        pushOpLoadingState("Save", true)
+                                        updateWorkflow(workflow).then(()=>{
+                                            setShowErrors(false)
+                                            setTabBlocker(false)
+                                        }).catch((opError) => {
+                                            setErrors([opError.message])
+                                            setShowErrors(true)
+                                            pushOpLoadingState("Save", false)
+                                        })
                                 }}>
                                     Save
-                                </div>
-                                { !canSave ?
-                                <div className={`btn-terminal ${opLoadingStates["IsLoading"] ? "terminal-disabled" : ""}`} title={"Save latest workflow as new revision"} onClick={async () => {
-                                    setErrors([])
-                                    try{
-                                        const result = await saveWorkflow()
-                                        if(result?.node?.name)
-                                        {
-                                            updateRevisions()
-                                            setShowErrors(false)
-                                            navigate(`/n/${namespace}/explorer${result.node.path}?tab=1&revision=${result.revision.name}&revtab=0`)
-                                        }else{
-                                            setErrors("Something went wrong")
+                                </Button>
+
+                                <Button 
+                                    tip={"Save latest workflow as new revision"} 
+                                    disabledTip={"Requires save"}
+                                    className="terminal small"
+                                    loading={opLoadingStates["IsLoading"]} 
+                                    disabled={canSave}
+                                    onClick={async () => {
+                                        setErrors([])
+                                        try{
+                                            const result = await saveWorkflow()
+                                            if(result?.node?.name)
+                                            {
+                                                updateRevisions()
+                                                setShowErrors(false)
+                                                navigate(`/n/${namespace}/explorer${result.node.path}?tab=1&revision=${result.revision.name}&revtab=0`)
+                                            }else{
+                                                setErrors("Something went wrong")
+                                                setShowErrors(true)
+                                            }
+                                        }catch(e){
+                                            setErrors(e.toString())
                                             setShowErrors(true)
                                         }
-                                    }catch(e){
-                                        setErrors(e.toString())
-                                        setShowErrors(true)
-                                    }
-                                    
                                 }}>
                                     Make Revision
-                                </div>
-                                :
-                                <Tippy content={"Requires save"} trigger={'mouseenter focus click'} zIndex={10}>
-                                    <div>
-                                        <div className="btn-terminal disabled" title={"Save latest workflow as new revision"}>
-                                            Make Revision
-                                        </div>
-                                    </div>
-                                </Tippy>
-                                }
-                                <div className={"btn-terminal editor-info"} title={`${showErrors ? "Hide Problems": "Show Problems"}`} onClick={async () => {
-                                    setShowErrors(!showErrors)
+                                </Button>
+
+                                <Button 
+                                    tip={`${showErrors ? "Hide Problems": "Show Problems"}`} 
+                                    className="terminal small"
+                                    style={{width:"24px", paddingLeft: "0px", paddingRight: "0px"}}
+                                    onClick={async () => {
+                                        setShowErrors(!showErrors)
                                 }}>
-                                    {showErrors?
-                                    <VscChevronDown style={{ width: "80%", height: "80%" }} />
-                                    :
-                                    <VscChevronUp style={{ width: "80%", height: "80%" }} />
-                                    }
-                                </div>
+                                    <FlexBox className="center">
+                                        {showErrors?
+                                        <VscChevronDown style={{ width: "80%", height: "80%" }} />
+                                        :
+                                        <VscChevronUp style={{ width: "80%", height: "80%" }} />
+                                        }
+                                    </FlexBox>
+                                </Button>
                             </div>
                         </FlexBox>
                     </FlexBox>:""}
                     {tabBtn === 1 ? <DiagramEditor block={tabBlocker} setBlock={setTabBlocker} workflow={oldWf} namespace={namespace} updateWorkflow={(data)=>{
                         setWorkflow(data)
-
                         setTabBtn(0)
                     }}/>:""}
                     {tabBtn === 2 ? <WorkflowDiagram disabled={true} workflow={oldWf}/>:""}

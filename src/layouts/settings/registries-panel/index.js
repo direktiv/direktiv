@@ -28,11 +28,6 @@ function RegistriesPanel(props){
     const [userErr, setUserErr] = useState("")
     const [tokenErr, setTokenErr] = useState("")
 
-    let testConnBtnClasses = "small green"
-    if (testConnLoading) {
-        testConnBtnClasses += " btn-loading"
-    }
-
     return (
         <ContentPanel style={{ height: "100%", minHeight: "180px", width: "100%" }}>
             <ContentPanelTitle>
@@ -117,7 +112,7 @@ function RegistriesPanel(props){
                                 if(!filledOut) throw new Error("all fields must be filled out")
                                 await createRegistry(url, `${username}:${token}`)
                                 await  getRegistries()
-                            }, "small blue", ()=>{}, true, false, true),
+                            }, "small", ()=>{}, true, false, true),
                             ButtonDefinition("Test Connection", async () => {
                                 setURLErr("")
                                 setTokenErr("")
@@ -148,7 +143,7 @@ function RegistriesPanel(props){
                                     setErr(resp.message)                                
                                 }
                            
-                            }, testConnBtnClasses, ()=>{   setTestConnLoading(false)
+                            }, `small ${testConnLoading ? "loading" : ""}`, ()=>{   setTestConnLoading(false)
                                 setSuccessFeedback(false)}, false, false, true),
                             ButtonDefinition("Cancel", () => {
                             }, "small light", ()=>{}, true, false)

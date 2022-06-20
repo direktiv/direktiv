@@ -207,7 +207,7 @@ function NewNamespaceBtn(props) {
                         navigate(`/n/${ns}`)
                     }, 200)
                     setNs("")
-                }, "small blue", () => { }, true, false, true),
+                }, "small", () => { }, true, false, true),
                 ButtonDefinition("Cancel", () => {
                     setNs("")
                 }, "small light", () => { }, true, false)

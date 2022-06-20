@@ -8,18 +8,13 @@ import { Config, copyTextToClipboard, } from '../../util';
 import { useMirrorLogs, } from 'direktiv-react-hooks';
 
 import * as dayjs from "dayjs"
-
-import { TerminalButton } from '../instance';
+import Button from '../../components/button';
 
 export default function ActivityLogs(props) {
     const { activity, namespace, setErrorMsg } = props
 
     const [clipData, setClipData] = useState(null)
     const [follow, setFollow] = useState(true)
-    const [width,] = useState(window.innerWidth);
-
-
-
 
     return (
         <>
@@ -29,19 +24,20 @@ export default function ActivityLogs(props) {
                 </FlexBox>
                 <div style={{ height: "40px", backgroundColor: "#223848", color: "white", maxHeight: "40px", minHeight: "40px", padding: "0px 10px 0px 10px", boxShadow: "0px 0px 3px 0px #fcfdfe", alignItems: 'center', borderRadius: " 0px 0px 8px 8px", overflow: "hidden" }}>
                     <FlexBox className="gap" style={{ width: "100%", flexDirection: "row-reverse", height: "100%", alignItems: "center" }}>
-                        <TerminalButton className={`${activity ? "" : "terminal-disabled"}`} onClick={() => {
+                        <Button className="small terminal" onClick={()=>{
                             copyTextToClipboard(clipData)
                         }}>
-                            <VscCopy /> Copy {width > 999 ? <span>to Clipboard</span> : ""}
-                        </TerminalButton>
+                            <VscCopy/> Copy <span className='hide-1000'>to Clipboard</span>
+                        </Button>
+
                         {follow ?
-                            <TerminalButton className={`${activity ? "" : "terminal-disabled"}`} onClick={(e) => setFollow(!follow)}>
-                                <VscEyeClosed /> Stop {width > 999 ? <span>watching</span> : ""}
-                            </TerminalButton>
+                            <Button className="small terminal" onClick={(e)=>setFollow(!follow)}>
+                                <VscEyeClosed/> Stop <span className='hide-1000'>watching</span>
+                            </Button>
                             :
-                            <TerminalButton className={`${activity ? "" : "terminal-disabled"}`} onClick={(e) => setFollow(!follow)} >
-                                <VscEye /> <div>Follow {width > 999 ? <span>logs</span> : ""}</div>
-                            </TerminalButton>
+                            <Button className="small terminal" onClick={(e)=>setFollow(!follow)}>
+                                <VscEye/> Follow <span className='hide-1000'>logs</span>
+                            </Button>
                         }
                     </FlexBox>
                 </div>
