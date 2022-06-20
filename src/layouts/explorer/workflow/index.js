@@ -382,12 +382,18 @@ function WorkingRevision(props) {
                         <FlexBox className="gap editor-footer">
                             <WorkingRevisionErrorBar errors={errors} showErrors={showErrors}/>
                             <div style={{ display: "flex", flex: 1 }}>
-                                <Button className="terminal small" loading={opLoadingStates["IsLoading"]} onClick={async () => {
-                                    setErrors([])
-                                    await discardWorkflow()
-                                    setShowErrors(false)
+                                <Button 
+                                    className="terminal small" 
+                                    loading={opLoadingStates["IsLoading"]} 
+                                    tip={"Revert workflow to previous revision"}
+                                    disabledTip={"Cannot revert while theres changes"}
+                                    disabled={canSave}
+                                    onClick={async () => {
+                                        setErrors([])
+                                        await discardWorkflow()
+                                        setShowErrors(false)
                                 }}>
-                                    Undo
+                                    Revert
                                 </Button>
                             </div>
                             <div style={{display:"flex", flex:1, justifyContent:"center"}}>
@@ -434,7 +440,7 @@ function WorkingRevision(props) {
                                         } catch (e){}
                                     }}
                                     button={(
-                                        <Button className="terminal small" disabled={opLoadingStates["IsLoading"]}>
+                                        <Button tip={"Run Workflow"}className="terminal small" disabled={opLoadingStates["IsLoading"]}>
                                             Run
                                         </Button>
                                     )}
