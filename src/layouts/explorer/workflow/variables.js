@@ -182,17 +182,15 @@ function Variables(props) {
     return(
         <FlexBox>
             {variables.length === 0  ? <div style={{paddingLeft:"10px", fontSize:"10pt"}}>No variables are stored...</div>:
-            <div>
-                <table className="variables-table">
-                    <tbody>
-                        {variables.map((obj)=>{
-                            return(
-                                <Variable namespace={namespace} obj={obj} getWorkflowVariableBlob={getWorkflowVariableBlob} getWorkflowVariable={getWorkflowVariable} deleteWorkflowVariable={deleteWorkflowVariable} setWorkflowVariable={setWorkflowVariable}/>
-                            )
-                        })}
-                    </tbody>
-                </table>
-            </div>
+            <table className="variables-table">
+                <tbody>
+                    {variables.map((obj)=>{
+                        return(
+                            <Variable namespace={namespace} obj={obj} getWorkflowVariableBlob={getWorkflowVariableBlob} getWorkflowVariable={getWorkflowVariable} deleteWorkflowVariable={deleteWorkflowVariable} setWorkflowVariable={setWorkflowVariable}/>
+                        )
+                    })}
+                </tbody>
+            </table>
             }
         </FlexBox>
     );

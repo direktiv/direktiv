@@ -4,6 +4,10 @@
     padding-top: 8px;
 }
 
+.instance-row:hover {
+    background-color: rgba(0,0,0,0.04);
+}
+
 .instance-row {
     border-top: solid 1px var(--theme-dark-gray-faded);
     line-height: 42px;

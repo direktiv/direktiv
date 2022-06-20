@@ -70,8 +70,8 @@ function EventsPage(props) {
                             <SendEventModal sendEvent={sendEvent}/>
                         </ContentPanelTitle>
                         <ContentPanelBody>
-                            <div style={{maxHeight: "40vh", overflowY: "auto", fontSize: "12px"}}>
-                                <table className="cloudevents-table" style={{width: "100%"}}>
+                            <div style={{maxHeight: "40vh", overflowY: "auto", fontSize: "12px", minWidth: "100%"}}>
+                                <table className="cloudevents-table" style={{minWidth: "440px", width: "100%"}}>
                                     <thead>
                                         <tr>
                                             <th>
