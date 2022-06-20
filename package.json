@@ -17,7 +17,7 @@
     "d3-sankey-circular": "^0.34.0",
     "dagre": "^0.8.5",
     "dayjs": "^1.10.7",
-    "direktiv-react-hooks": "^0.0.423",
+    "direktiv-react-hooks": "^0.0.424",
     "drawflow": "^0.0.55",
     "file-saver": "^2.0.5",
     "fuse.js": "^6.5.3",
