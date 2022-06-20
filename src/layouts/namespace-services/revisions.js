@@ -150,7 +150,7 @@ function NamespaceRevisions(props) {
                                 actionButtons={[
                                     ButtonDefinition("Add", async () => {
                                         await createNamespaceServiceRevision(image, parseInt(scale), parseInt(size), cmd, parseInt(trafficPercent))
-                                    }, "small blue", ()=>{}, true, false, true),
+                                    }, "small", ()=>{}, true, false, true),
                                     ButtonDefinition("Cancel", () => {
                                     }, "small light", ()=>{}, true, false)
                                 ]}

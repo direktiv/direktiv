@@ -11,6 +11,7 @@ import { ServiceStatus } from "."
 import { copyTextToClipboard} from '../../util'
 import * as dayjs from 'dayjs'
 import { useSearchParams } from "react-router-dom"
+import Button from "../../components/button";
 
 export default function PodPanel(props) {
     const {namespace} = props
@@ -145,18 +146,10 @@ export function PodLogs(props){
     const {namespace, service, revision, pods} = props
 
     const [follow, setFollow] = useState(true)
-    const [width, setWidth] = useState(window.innerWidth);
     const [tab, setTab] = useState(pods[0] ? pods[0].name: "")
     const [clipData, setClipData] = useState(null)
     const [searchParams] = useSearchParams() // removed 'setSearchParams' from square brackets (this should not affect anything: search 'destructuring assignment')
 
-    useEffect(()=>{
-        const handleWindowResize = () => setWidth(window.innerWidth)
-        window.addEventListener("resize", handleWindowResize);
-
-        // Return a function from the effect that removes the event listener
-        return () => window.removeEventListener("resize", handleWindowResize);
-    },[])
     let version = searchParams.get('version')
 
     return (
@@ -205,20 +198,21 @@ export function PodLogs(props){
                                 }
                             </div>
                             <FlexBox className="gap" style={{justifyContent:"flex-end"}}>
-                                {follow ? 
-                                    <div onClick={(e)=>setFollow(!follow)} className={"btn-terminal"} style={{display:"flex", alignItems:'center'}}>
-                                        <VscEyeClosed /> Stop {width > 999 ? <span>watching</span>: ""}
-                                    </div>
-                                    :
-                                    <div onClick={(e)=>setFollow(!follow)} className={"btn-terminal"} style={{display:"flex", alignItems:'center'}}>
-                                        <VscEye /> Follow {width > 999 ? <span>logs</span>: ""}
-                                    </div>
-                                }
-                                <div onClick={()=>{
+                                <Button className="small terminal" onClick={()=>{
                                     copyTextToClipboard(clipData)
-                                }} style={{display:"flex", alignItems:"center", gap:"3px", backgroundColor:"#355166",paddingTop:"3px", paddingBottom:"3px",  paddingLeft:"6px", paddingRight:"6px", cursor:"pointer", borderRadius:"3px"}}>
-                                    <VscCopy/> Copy {width > 999 ? <span>to Clipboard</span>:""}
-                                </div>
+                                }}>
+                                    <VscCopy/> Copy <span className='hide-1000'>to Clipboard</span>
+                                </Button>
+
+                                {follow ?
+                                    <Button className="small terminal" onClick={(e)=>setFollow(!follow)}>
+                                        <VscEyeClosed/> Stop <span className='hide-1000'>watching</span>
+                                    </Button>
+                                    :
+                                    <Button className="small terminal" onClick={(e)=>setFollow(!follow)}>
+                                        <VscEye/> Follow <span className='hide-1000'>logs</span>
+                                    </Button>
+                                }
                             </FlexBox>
                         </FlexBox>
                     </FlexBox>

@@ -92,76 +92,6 @@ body {
   cursor: unset !important;
 }
 
-.btn {
-  user-select: none;
-  color: var(--theme-white);
-  cursor: pointer;
-  border-radius: var(--theme-border-radius);
-  background-color: var(--theme-brand-blue);
-  padding: 7px 10px 6px;
-  height: 32px;
-  line-height: 32px;
-  width: fit-content;
-  font-size: 12px;
-  transition: filter 0.1s;
-}
-.btn:hover {
-  filter: brightness(var(--hover-brightness));
-}
-.btn:active {
-  filter: brightness(var(--active-brightness));
-}
-
-.btn.light {
-  /* box-sizing: border-box; */
-  border: var(--border);
-  background-color: white;
-  color: black;
-}
-
-.btn.light:hover {
-  filter: brightness(90%);
-}
-.btn.light:active {
-  filter: brightness(80%);
-}
-
-.btn.bold {
-  font-weight: bold;
-}
-
-.btn.light.loading {
-  opacity: .9 !important;
-  pointer-events: none !important;
-  cursor: unset !important;
-
-  animation : shimmer 4s infinite;
-  animation-timing-function: linear;
-  background: linear-gradient(45deg, rgb(222, 222, 222) 0%, rgb(255, 255, 255) 50%, rgb(200, 200, 200) 100%); 
-  background-size: 500px 100%;
-}
-
-.btn.small {
-  height: 18px;
-  line-height: 18px;
-}
-.btn.light.small {
-  /* offset the border height */
-  height: 16px; 
-  line-height: 16px;
-}
-
-.reveal-btn {
-  background: white;
-  color: var(--theme-dark-gray-text);
-  font-weight: 700;
-  border: solid 1px var(--theme-subtle-border);
-}
-
-.reveal-btn:hover {
-  filter: brightness(0.9);
-}
-
 .red {
   background-color: var(--theme-red);
 }
@@ -206,20 +136,6 @@ textarea {
 
 input:focus-visible,textarea:focus-visible {
   outline: solid 1px var(--theme-brand-blue);
-}
-
-.add-secret-btn {
-  
-  min-height: 44px;
-  max-height: 44px;
-  height: 44px;
-  max-width: 44px;
-  min-width: 44px;
-  width: 44px;
-  line-height: 44px;
-  
-  border: solid 1px var(--theme-green);
-  border-radius: var(--theme-border-radius);
 }
 
 /* Switch CSS */
@@ -340,55 +256,6 @@ select {
 .hidden {
   visibility: hidden;
 }
-
-.btn-terminal {
-  line-height: 22px;
-  gap: 3px;
-  background-color: rgb(53, 81, 102);
-  padding: 3px 6px;
-  cursor: pointer;
-  border-radius: 3px;
-}
-
-.btn-terminal:hover {
-  background-color: rgb(59, 90, 114);
-}
-
-.btn-terminal.terminal-disabled {
-  opacity: 0.3 !important;
-  pointer-events: none !important;
-  cursor: unset !important;
-}
-
-.btn-terminal.editor-info {
-  padding: 0px;
-  width: 24px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-
-.btn-terminal.terminal-loading {
-  opacity: 0.9 !important;
-  pointer-events: none !important;
-  cursor: unset !important;
-
-  animation : shimmer 2s infinite;
-  animation-timing-function: linear;
-  background: linear-gradient(45deg, rgba(53,81,102,1) 0%, rgb(66, 114, 151) 50%, rgba(53,81,102,1) 100%); 
-  background-size: 500px 100%;
-}
-
-@keyframes shimmer {
-  0% {
-    background-position: -500px 0;
-  }
-  100% {
-    background-position: 500px 0;
-  }
-}
-
 
 .editor-drawer {
   position: absolute;

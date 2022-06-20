@@ -121,7 +121,7 @@ function RevisionTab(props) {
                                                     } else {
                                                         navigate(`/n/${namespace}/instances/${r}`)
                                                     }
-                                                }, `small blue ${tabIndex === 1 && workflowJSONSchema === null ? "disabled" : ""}`, ()=>{}, tabIndex === 0, false),
+                                                }, `small ${tabIndex === 1 && workflowJSONSchema === null ? "disabled" : ""}`, ()=>{}, tabIndex === 0, false),
                                                 ButtonDefinition("Cancel", async () => {
                                                 }, "small light", ()=>{}, true, false)
                                             ]}
@@ -648,7 +648,7 @@ function TagRevisionBtn(props) {
                             let revResp = await getRevisions()
                             setRevisions(revResp.edges)
                             updateTags(tagsResp.edges)
-                    }, "small blue", ()=>{}, true, false, true),
+                    }, "small", ()=>{}, true, false, true),
                     ButtonDefinition("Cancel", () => {
                     }, "small light", ()=>{}, true, false)
                 ]
@@ -846,7 +846,7 @@ export function RevisionTrafficShaper(props) {
                                 } else {
                                     navigate(`/n/${namespace}/instances/${r}`)
                                 }
-                            }, `small blue`, () => { }, true, false),
+                            }, `small`, () => { }, true, false),
                             ButtonDefinition("Cancel", async () => {
                             }, "small light", () => { }, true, false)
                         ]}

@@ -74,7 +74,7 @@ function SecretsPanel(props){
                                     await createSecret(keyValue, vValue)
                                 }
                                 await  getSecrets()
-                            }, "small blue",()=>{}, true, false, true),
+                            }, "small",()=>{}, true, false, true),
                             ButtonDefinition("Cancel", () => {
                             }, "small light",()=>{}, true, false)
                         ]}

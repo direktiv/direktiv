@@ -303,7 +303,7 @@ export default function MirrorInfoPanel(props) {
                                                 await updateSettings(newSettings)
 
                                                 resetStates()
-                                            }, "small blue", () => { }, true, false),
+                                            }, "small", () => { }, true, false),
                                             ButtonDefinition("Cancel", () => { }, "small light", () => { }, true, false)
                                         ]}
                                     >

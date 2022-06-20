@@ -10,7 +10,7 @@ import { CancelledState, FailState, InstancesTable, RunningState, SuccessState }
 
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { AutoSizer, List, CellMeasurer, CellMeasurerCache } from 'react-virtualized';
-import { VscCopy, VscEye, VscEyeClosed, VscSourceControl, VscScreenFull, VscTerminal } from 'react-icons/vsc';
+import { VscCopy, VscEyeClosed, VscEye, VscSourceControl, VscScreenFull, VscTerminal } from 'react-icons/vsc';
 
 import * as dayjs from "dayjs"
 
@@ -170,7 +170,7 @@ function InstancePage(props) {
                                     </>
                                     :
                                     <Link to={`/n/${namespace}/explorer/${wfName}?${ref==="latest" ? `tab=2` : `tab=1&revision=${rev}&revtab=0` }`}>
-                                        <Button className="small light">
+                                        <Button className="small light black">
                                             <span className="hide-600">View</span> Workflow
                                         </Button>
                                     </Link>
@@ -333,7 +333,7 @@ function InstancePage(props) {
 
 function InstanceLogs(props) {
 
-    let {noPadding, namespace, setClipData, instanceID, follow, setFollow, width, clipData} = props;
+    let {noPadding, namespace, setClipData, instanceID, follow, setFollow, clipData} = props;
     let paddingStyle = { padding: "12px" }
     if (noPadding) {
         paddingStyle = { padding: "0px" }
@@ -347,40 +347,26 @@ function InstanceLogs(props) {
                 </FlexBox>
                 <div className={"logs-footer"} style={{  alignItems:'center', borderRadius: " 0px 0px 8px 8px", overflow: "hidden" }}>
                     <FlexBox className="gap" style={{width: "100%", flexDirection: "row-reverse", height: "100%", alignItems: "center"}}>
-                        <TerminalButton onClick={()=>{
+                        <Button className="small terminal" onClick={()=>{
                             copyTextToClipboard(clipData)
                         }}>
-                                <VscCopy/> Copy {width > 999 ? <span>to Clipboard</span>:""}
-                        </TerminalButton>
+                            <VscCopy/> Copy <span className='hide-1000'>to Clipboard</span>
+                        </Button>
+
                         {follow ?
-                            <TerminalButton onClick={(e)=>setFollow(!follow)} className={"btn-terminal"}>
-                                <VscEyeClosed/> Stop {width > 999 ? <span>watching</span>: ""}
-                            </TerminalButton>
+                            <Button className="small terminal" onClick={(e)=>setFollow(!follow)}>
+                                <VscEyeClosed/> Stop <span className='hide-1000'>watching</span>
+                            </Button>
                             :
-                            <TerminalButton onClick={(e)=>setFollow(!follow)} className={"btn-terminal"} >
-                                <VscEye/> <div>Follow {width > 999 ? <span>logs</span>: ""}</div>
-                            </TerminalButton>
+                            <Button className="small terminal" onClick={(e)=>setFollow(!follow)}>
+                                <VscEye/> Follow <span className='hide-1000'>logs</span>
+                            </Button>
                         }
                     </FlexBox>
                 </div>
             </FlexBox>
         </>
     )
-}
-
-export function TerminalButton(props) {
-
-    let {children, onClick, className} = props;
-    return (
-        <div onClick={onClick} className={`btn-terminal ${className}`} style={{
-            maxHeight: "22px"
-        }}>
-            <FlexBox className="gap" style={{ alignItems: "center", userSelect: "none" }}>
-                {children}
-            </FlexBox>
-        </div>
-    )
-
 }
 
 function InstanceDiagram(props) {

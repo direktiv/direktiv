@@ -39,11 +39,6 @@ function VariablesPanel(props){
         console.log(err, 'handle variable list error')
     }
 
-    let uploadingBtn = "small green"
-    if (uploading) {
-        uploadingBtn += " btn-loading"
-    }
-
     return (
         <ContentPanel style={{width: "100%"}}>
             <ContentPanelTitle>
@@ -94,7 +89,7 @@ function VariablesPanel(props){
                                     }
                                     await setNamespaceVariable(encodeURIComponent(keyValue), dValue, mimeType)
                                 }
-                            }, uploadingBtn, ()=>{setUploading(false)}, true, false, true),
+                            }, `small ${uploading ? "loading" : ""}`, ()=>{setUploading(false)}, true, false, true),
                             ButtonDefinition("Cancel", () => {
                             }, "small light", ()=>{}, true, false)
                         ]}
@@ -252,8 +247,6 @@ function Variable(props) {
     const [file, setFile] = useState(null)
     const [downloading, setDownloading] = useState(false)
     const [uploading, setUploading] = useState(false)
-    let uploadingBtn = "small green"
-    if (uploading) { uploadingBtn += " btn-loading" }
 
     let lang = MimeTypeFileExtension(mimeType)
 
@@ -286,7 +279,7 @@ function Variable(props) {
                         setValue(data.data)
                     }}
                     button={(
-                        <Button className="reveal-btn small shadow">
+                        <Button className="small light bold shadow">
                             <FlexBox className="gap">
                                 <VscEye className="auto-margin" />
                                 <div>
@@ -299,7 +292,7 @@ function Variable(props) {
                         [
                             ButtonDefinition("Save", async () => {
                                     await setNamespaceVariable(obj.node.name, val , mimeType)
-                            }, "small blue",()=>{}, true, false),
+                            }, "small",()=>{}, true, false),
                             ButtonDefinition("Cancel", () => {
                             }, "small light",()=>{}, true, false)
                         ]
@@ -375,7 +368,7 @@ function Variable(props) {
                             ButtonDefinition("Upload", async () => {
                                 setUploading(true)
                                 await setNamespaceVariable(obj.node.name, file, mimeType)
-                            }, uploadingBtn,()=>{setUploading(false)}, true, false, true),
+                            }, `small ${uploading ? "loading" : ""}`,()=>{setUploading(false)}, true, false, true),
                             ButtonDefinition("Cancel", () => {
                             }, "small light", ()=>{}, true, false)
                         ]

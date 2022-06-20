@@ -41,11 +41,6 @@ function AddWorkflowVariablePanel(props) {
         return <></>
     }
 
-    let uploadingBtn = "small green"
-    if (uploading) {
-        uploadingBtn += " btn-loading"
-    }
-
     return(
         <ContentPanel style={{width: "100%", height: "100%"}}>
             <ContentPanelTitle>
@@ -79,7 +74,7 @@ function AddWorkflowVariablePanel(props) {
                                 } else {
                                     await setWorkflowVariable(encodeURIComponent(keyValue), dValue, mimeType)
                                 }
-                            }, uploadingBtn, ()=>{setUploading(false)}, true, false, true),
+                            }, `small ${uploading ? "loading" : ""}`, ()=>{setUploading(false)}, true, false, true),
                             ButtonDefinition("Cancel", () => {
                             }, "small light",()=>{}, true, false)
                         ]}
@@ -210,10 +205,6 @@ function Variable(props) {
     const [file, setFile] = useState(null)
     const [downloading, setDownloading] = useState(false)
     const [uploading, setUploading] = useState(false)
-    let uploadingBtn = "small green"
-    if (uploading) {
-        uploadingBtn += " btn-loading"
-    }
 
     let lang = MimeTypeFileExtension(mimeType)
 
@@ -246,7 +237,7 @@ function Variable(props) {
                         setValue(data.data)
                     }}
                     button={(
-                        <Button className="reveal-btn small shadow">
+                        <Button className="light small bold">
                             <FlexBox className="gap">
                                 <VscEye className="auto-margin" />
                                 <div>
@@ -259,7 +250,7 @@ function Variable(props) {
                         [
                             ButtonDefinition("Save", async () => {
                                 await setWorkflowVariable(obj.node.name, val , mimeType)
-                            }, "small blue", ()=>{}, true, false),
+                            }, "small", ()=>{}, true, false),
                             ButtonDefinition("Cancel", () => {
                             }, "small light", ()=>{}, true, false)
                         ]
@@ -333,7 +324,7 @@ function Variable(props) {
                             ButtonDefinition("Upload", async () => {
                                 setUploading(true)
                                 await setWorkflowVariable(obj.node.name, file, mimeType)
-                            }, uploadingBtn, ()=>{setUploading(false)}, true, false, true),
+                            }, `small ${uploading ? "loading" : ""}`, ()=>{setUploading(false)}, true, false, true),
                             ButtonDefinition("Cancel", () => {
                             }, "small light",()=>{}, true, false)
                         ]

@@ -125,7 +125,7 @@ export default function MirrorPage(props) {
                         width: "300px"
                     }}
                     button={(
-                        <Button id="btn-sync-mirror" className="small light shadow" style={{ fontWeight: "bold", width: "fit-content" }}>
+                        <Button id="btn-sync-mirror" className="small light bold shadow" style={{ fontWeight: "bold", width: "fit-content" }}>
                             <FlexBox className="row center gap-sm">
                                 <VscSync />
                                 Sync
@@ -135,7 +135,7 @@ export default function MirrorPage(props) {
                     actionButtons={[
                         ButtonDefinition("Sync", async () => {
                             await syncRef.current(true)
-                        }, "small blue", () => { }, true, false),
+                        }, "small", () => { }, true, false),
                         ButtonDefinition("Cancel", () => { }, "small light", () => { }, true, false)
                     ]}
                 >
@@ -145,7 +145,7 @@ export default function MirrorPage(props) {
                         </FlexBox>
                     </FlexBox>
                 </Modal>
-                <Button className={`small light shadow ${currentlyLocking ? "loading disabled" : ""}`} style={{ fontWeight: "bold", width: "fit-content", whiteSpace: "nowrap" }} onClick={async () => {
+                <Button className={`small light bold shadow ${currentlyLocking ? "loading disabled" : ""}`} style={{ fontWeight: "bold", width: "fit-content", whiteSpace: "nowrap" }} onClick={async () => {
                     if (isReadOnly) {
                         setCurrentlyLocking(true)
 

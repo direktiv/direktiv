@@ -383,7 +383,7 @@ function ExplorerList(props) {
                                     if(result.node && result.namespace){
                                         navigate(`/n/${result.namespace}/explorer/${result.node.path.substring(1)}`)
                                     }
-                                }, `small blue`, ()=>{}, true, false, true),
+                                }, `small`, ()=>{}, true, false, true),
                                 ButtonDefinition("Cancel", () => {
                                 }, "small light", ()=>{}, true, false)
                             ]}
@@ -479,7 +479,7 @@ function ExplorerList(props) {
                                             delete processesMirrorSettings["token"]
                                             await createMirrorNode(name, processesMirrorSettings)
                                         }
-                                    }, `small blue ${name.trim() ? "" : "disabled"}`, () => { }, true, false, true),
+                                    }, `small ${name.trim() ? "" : "disabled"}`, () => { }, true, false, true),
                                     ButtonDefinition("Cancel", () => {
                                     }, "small light", () => { }, true, false)
                                 ]}

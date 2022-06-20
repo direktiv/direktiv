@@ -204,7 +204,7 @@ function FunctionsList(props) {
                             oldfList.push(formData)
                             return [...oldfList]
                         })
-                    }, "small blue", () => { }, true, false, true),
+                    }, "small", () => { }, true, false, true),
                     ButtonDefinition("Cancel", async () => {
                     }, "small light", () => { }, true, false)
                 ]}
@@ -897,7 +897,7 @@ export default function DiagramEditor(props) {
                                     })
 
                                     setOldSelectedNodeFormData(selectedNodeFormData)
-                                }, "small blue", () => { }, true, false),
+                                }, "small", () => { }, true, false),
                                 ButtonDefinition("Cancel", async () => {
                                     setSelectedNodeFormData(oldSelectedNodeFormData)
                                 }, "small light", () => { }, true, false)
@@ -950,7 +950,7 @@ export default function DiagramEditor(props) {
                                     })
 
                                     setNewNodeID("")
-                                }, "small blue", () => { }, true, false),
+                                }, "small", () => { }, true, false),
                                 ButtonDefinition("Cancel", async () => {
                                     setNewNodeID("")
                                 }, "small light", () => { }, true, false)

@@ -100,7 +100,7 @@ function HowToJQ(){
                             <div>
                                 For information on the JQ syntax, please refer to the offical JQ manual online.
                             </div>
-                            <Button className="reveal-btn small shadow">
+                            <Button className="small light bold shadow">
                                 <FlexBox className="gap">
                                     <VscArrowRight className="auto-margin" />
                                     <a href="https://stedolan.github.io/jq/manual/">
@@ -158,7 +158,7 @@ function ExamplesJQ(props){
                                                 {obj.tip}
                                             </td>
                                             <td style={{ width: "20%"}} onClick={()=>loadJQ(obj.filter, obj.json)}>
-                                                <Button className="reveal-btn small shadow">
+                                                <Button className="small light bold shadow">
                                                     <FlexBox className="gap">
                                                         <VscFileCode className="auto-margin" />
                                                         <div>
@@ -185,7 +185,7 @@ function ExamplesJQ(props){
                                                 {obj.tip}
                                             </td>
                                             <td style={{ width: "20%"}} onClick={()=>loadJQ(obj.filter, obj.json)}>
-                                                <Button className="reveal-btn small shadow">
+                                                <Button className="small light bold shadow">
                                                     <FlexBox className="gap">
                                                         <VscFileCode className="auto-margin" />
                                                         <div>

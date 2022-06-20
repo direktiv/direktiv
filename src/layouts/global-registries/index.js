@@ -40,11 +40,6 @@ export function GlobalRegistries(){
 
     const [testConnLoading, setTestConnLoading] = useState(false)
     const [successFeedback, setSuccessFeedback] = useState("")
-    
-    let testConnBtnClasses = "small green"
-    if (testConnLoading) {
-        testConnBtnClasses += " btn-loading"
-    }
 
     return (
         <ContentPanel style={{width: "100%", minHeight: "180px"}}>
@@ -97,7 +92,7 @@ export function GlobalRegistries(){
                             ButtonDefinition("Add", async() => {
                                     await createRegistry(url, `${username}:${token}`)
                                     await  getRegistries()
-                            }, "small blue", ()=>{}, true, false, true),
+                            }, "small", ()=>{}, true, false, true),
                             ButtonDefinition("Test Connection", async () => {
                                 setURLErr("")
                                 setTokenErr("")
@@ -128,7 +123,7 @@ export function GlobalRegistries(){
                                     setErr(resp.message)                                
                                 }
                            
-                            }, testConnBtnClasses, ()=>{   setTestConnLoading(false)
+                            }, `small ${testConnLoading ? "loading" : ""}`, ()=>{   setTestConnLoading(false)
                                 setSuccessFeedback(false)}, false, false, true),
                             ButtonDefinition("Cancel", () => {
                             }, "small light", ()=>{},true, false)
@@ -175,11 +170,6 @@ export function GlobalPrivateRegistries(){
         console.log(successFeedback);
     }
 
-    let testConnBtnClasses = "small green"
-    if (testConnLoading) {
-        testConnBtnClasses += " btn-loading"
-    }
-
     return (
         <ContentPanel style={{width: "100%", minHeight: "180px"}}>
             <ContentPanelTitle>
@@ -224,7 +214,7 @@ export function GlobalPrivateRegistries(){
                             ButtonDefinition("Add", async() => {
                                     await createRegistry(url, `${username}:${token}`)
                                     await  getRegistries()
-                            }, "small blue", ()=>{}, true, false, true),
+                            }, "small", ()=>{}, true, false, true),
                             ButtonDefinition("Test Connection", async () => {
                                 setURLErr("")
                                 setTokenErr("")
@@ -255,7 +245,7 @@ export function GlobalPrivateRegistries(){
                                     setErr(resp.message)                                
                                 }
                            
-                            }, testConnBtnClasses, ()=>{   setTestConnLoading(false)
+                            }, `small ${testConnLoading ? "loading" : ""}`, ()=>{   setTestConnLoading(false)
                                 setSuccessFeedback(false)}, false, false, true),
                             ButtonDefinition("Cancel", () => {
                             }, "small light", ()=>{}, true, false)

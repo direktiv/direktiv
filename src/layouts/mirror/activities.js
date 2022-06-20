@@ -111,7 +111,7 @@ export function ActivityRow(props) {
                     }}>
                         Cancel
                     </Button>
-                    <Button className="small blue" onClick={async () => {
+                    <Button className="small" onClick={async () => {
                         setActivity(id)
                     }}>
                         Logs
