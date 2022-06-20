@@ -133,3 +133,5 @@ reactjs-embed
 
 .yalc
 yalc.lock
+
+.vscode/
