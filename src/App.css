@@ -322,7 +322,7 @@ select:focus-visible{
   color: white;
   border-radius: 8px 8px 0px 0px;
   overflow: hidden;
-  padding: 8px;
+  padding: 8px 0px 0px 8px;
 }
 
 .logs-footer {
