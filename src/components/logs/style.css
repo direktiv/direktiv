@@ -1,0 +1,43 @@
+.log-window {
+    font-family: monospace;
+    font-size: 14px;
+    /* color: white; */
+    /* background-color: rgb(0, 34, 64); */
+    /* background-color: rgb(50, 10, 96); */
+    /* padding: 8px; */
+    height: 100%;
+}
+
+
+.log-window p{
+    margin: 0px;
+}
+
+.log-window .word-wrap{
+    word-break: break-all;
+    overflow-x: hidden;
+}
+
+.log-window .timestamp {
+    /* display: flex;
+    flex: 1 1 auto;
+    justify-content: center; */
+    color: rgb(181, 181, 181);
+
+    /* -webkit-user-select: none; */
+    /* Chrome all / Safari all */
+    /* -moz-user-select: none; */
+    /* Firefox all */
+    /* -ms-user-select: none; */
+    /* IE 10+ */
+    /* user-select: none; */
+    /* Likely future */
+}
+
+/* .timestamp::after {
+    content: "]";
+}
+
+.timestamp::before {
+    content: "[";
+} */
