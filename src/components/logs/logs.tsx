@@ -1,5 +1,6 @@
 import dayjs from "dayjs";
-import { createContext, CSSProperties, useCallback, useContext, useEffect, useRef } from "react";
+import { createContext, CSSProperties, forwardRef, useCallback, useContext, useEffect, useRef, useState } from "react";
+import { VscInbox, VscLayers } from "react-icons/vsc";
 import AutoSizer from "react-virtualized-auto-sizer";
 import { VariableSizeList } from "react-window";
 import FlexBox from "../flexbox";
@@ -26,26 +27,41 @@ export const DynamicListContext = createContext<
 >({});
 
 
-export default function NewLogs({ logItems, wordWrap, autoScroll, setAutoScroll }: LogsProps) {
+export default function Logs({ logItems, wordWrap, autoScroll, setAutoScroll }: LogsProps) {
     const listRef = useRef<VariableSizeList | null>(null);
 
     const sizeMap = useRef<{ [key: string]: number }>({});
 
-    useEffect(()=>{
-        if (autoScroll && listRef.current && sizeMap.current){
-            listRef.current.scrollToItem(Object.keys(sizeMap.current).length-1);
+    const [scrollInit, setScrollInit] = useState(false)
+
+    // AutoScroll to bottom when autoScroll is changed to true.
+    // If listRef is not ready, scroll will be added to a que (This only happens the first time)
+    useEffect(() => {
+        if (autoScroll && listRef.current && sizeMap.current) {
+            listRef.current.scrollToItem(Object.keys(sizeMap.current).length, "start");
+            return
+        } else if (scrollInit) {
+            return
         }
-    }, [autoScroll])
+
+        const interval = setInterval(() => {
+            if (autoScroll && listRef.current && sizeMap.current) {
+                listRef.current.scrollToItem(Object.keys(sizeMap.current).length - 1);
+                setScrollInit(true)
+            }
+        }, 100);
+
+        return () => clearInterval(interval);
+    }, [autoScroll, scrollInit])
 
     // AutoScroll to bottom when logItems update
-    const scrollToEnd = useCallback((props: {visibleStopIndex: number} ) =>{
-        if (!autoScroll){
+    const scrollToEnd = useCallback((props: { visibleStopIndex: number }) => {
+        if (!autoScroll) {
             return
         }
 
         const finalIndex = logItems ? logItems.length - 1 : 0;
         if (props.visibleStopIndex < finalIndex && listRef.current) {
-            console.log(finalIndex)
             listRef.current.scrollToItem(finalIndex);
         }
     }, [autoScroll, logItems])
@@ -69,43 +85,55 @@ export default function NewLogs({ logItems, wordWrap, autoScroll, setAutoScroll 
             return
         }
 
-        if(setAutoScroll && autoScroll){
+        if (setAutoScroll && autoScroll) {
             setAutoScroll(false)
         }
     }, [setAutoScroll, autoScroll])
 
     return (
-        <FlexBox className="log-window" onWheel={(e: any)=>{disableAutoScroll(e.deltaY < 0)}} onMouseDown={(e: any)=>{disableAutoScroll(true)}}>
+        <FlexBox className="log-window" onWheel={(e: any) => { disableAutoScroll(true) }} onMouseDown={(e: any) => {
+            disableAutoScroll(true)
+        }}>
             {
-                logItems ?
-                    <DynamicListContext.Provider value={{ setSize }}>
-                        <AutoSizer>
-                            {({ height, width }) => (
-                                <VariableSizeList
-                                    onItemsRendered={scrollToEnd}
-                                    ref={listRef}
-                                    width={width}
-                                    height={height}
-                                    itemData={logItems}
-                                    itemCount={logItems.length}
-                                    itemSize={getSize}
-                                    overscanCount={4}
-                                >
-                                    {({ ...props }) => <ListRow {...props} width={width} wordWrap={wordWrap} />}
-                                </VariableSizeList>
-                            )}
-                        </AutoSizer>
-                    </DynamicListContext.Provider>
+                logItems === null || logItems === undefined?
+                    <FlexBox className="row center gap" style={{ fontSize: "18px" }}>
+                        <VscLayers /> Loading Data
+                    </FlexBox>
                     :
-                    <div>
-                        No Data
-                    </div>
+                    <>
+                        {
+                            logItems.length > 0 ?
+                                <DynamicListContext.Provider value={{ setSize }}>
+                                    <AutoSizer>
+                                        {({ height, width }) => (
+                                            <VariableSizeList
+                                                onItemsRendered={scrollToEnd}
+                                                ref={listRef}
+                                                width={width}
+                                                height={height}
+                                                itemData={logItems}
+                                                innerElementType={innerElementType}
+                                                itemCount={logItems.length}
+                                                itemSize={getSize}
+                                                overscanCount={4}
+                                            >
+                                                {({ ...props }) => <ListRow {...props} width={width} wordWrap={wordWrap} />}
+                                            </VariableSizeList>
+                                        )}
+                                    </AutoSizer>
+                                </DynamicListContext.Provider>
+                                :
+                                <FlexBox className="row center gap" style={{ fontSize: "18px" }}>
+                                    <VscInbox /> No Data
+                                </FlexBox>
+                        }
+                    </>
             }
         </FlexBox>
     )
 }
 
-interface Props {
+interface ListRowProps {
     index: number;
     width: number;
     data: LogItem[];
@@ -113,7 +141,18 @@ interface Props {
     wordWrap: boolean
 }
 
-const ListRow = ({ index, width, data, style, wordWrap }: Props) => {
+const innerElementType = forwardRef(({ style, ...rest }: any, ref) => (
+    <div
+        ref={ref}
+        style={{
+            ...style,
+            height: `${parseFloat(style.height) + 3 * 2}px`
+        }}
+        {...rest}
+    />
+));
+
+const ListRow = ({ index, width, data, style, wordWrap }: ListRowProps) => {
     const { setSize } = useContext(DynamicListContext);
     const rowRoot = useRef<null | HTMLDivElement>(null);
 
@@ -124,15 +163,33 @@ const ListRow = ({ index, width, data, style, wordWrap }: Props) => {
     }, [index, setSize, width]);
 
     return (
-        <div style={style}>
+        <div style={{
+            ...style,
+            top: `${parseFloat(style.top as string)}px`
+        }}>
             <div className="log-row"
                 ref={rowRoot}
             >
-                <p className={wordWrap ? "word-wrap" : ""}>
+                <span className={wordWrap ? "word-wrap" : "whole-word"}>
                     <span className="timestamp">[{dayjs.utc(data[index].node.t).local().format("HH:mm:ss.SSS")}{`] `}</span>
-                    {data[index].node.msg}
-                </p>
+                    <span className="msg">{data[index].node.msg}</span>
+                </span>
             </div>
         </div>
     );
 };
+
+
+export function createClipboardData(data: Array<LogItem> | null) {
+    if (!data) {
+        return "";
+    }
+
+    let clipboardData = ""
+
+    data.forEach(item => {
+        clipboardData += `[${dayjs.utc(item.node.t).local().format("HH:mm:ss.SSS")}] ${item.node.msg}\n`
+    });
+
+    return clipboardData
+}
