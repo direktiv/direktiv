@@ -1,16 +1,20 @@
 import dayjs from "dayjs";
 import { createContext, CSSProperties, forwardRef, useCallback, useContext, useEffect, useRef, useState } from "react";
-import { VscInbox, VscLayers } from "react-icons/vsc";
+import { VscCopy, VscEye, VscEyeClosed, VscInbox, VscLayers, VscWholeWord, VscWordWrap } from "react-icons/vsc";
 import AutoSizer from "react-virtualized-auto-sizer";
 import { VariableSizeList } from "react-window";
+import { copyTextToClipboard } from "../../util";
+import Button from "../button";
 import FlexBox from "../flexbox";
-import "./style.css"
+import "./style.css";
 
 export interface LogsProps {
     logItems?: LogItem[]
     wordWrap: boolean
     autoScroll: boolean
     setAutoScroll: React.Dispatch<React.SetStateAction<boolean>> | null
+    overrideNoDataMsg: string
+    overrideLoadingMsg: string
 }
 
 export interface LogItem {
@@ -27,7 +31,7 @@ export const DynamicListContext = createContext<
 >({});
 
 
-export default function Logs({ logItems, wordWrap, autoScroll, setAutoScroll }: LogsProps) {
+export default function Logs({ logItems, wordWrap, autoScroll, setAutoScroll, overrideLoadingMsg, overrideNoDataMsg }: LogsProps) {
     const listRef = useRef<VariableSizeList | null>(null);
 
     const sizeMap = useRef<{ [key: string]: number }>({});
@@ -95,9 +99,9 @@ export default function Logs({ logItems, wordWrap, autoScroll, setAutoScroll }: 
             disableAutoScroll(true)
         }}>
             {
-                logItems === null || logItems === undefined?
+                logItems === null || logItems === undefined ?
                     <FlexBox className="row center gap" style={{ fontSize: "18px" }}>
-                        <VscLayers /> Loading Data
+                        <VscLayers /> {overrideLoadingMsg ? overrideLoadingMsg : "Loading Data"}
                     </FlexBox>
                     :
                     <>
@@ -124,7 +128,7 @@ export default function Logs({ logItems, wordWrap, autoScroll, setAutoScroll }: 
                                 </DynamicListContext.Provider>
                                 :
                                 <FlexBox className="row center gap" style={{ fontSize: "18px" }}>
-                                    <VscInbox /> No Data
+                                    <VscInbox />  {overrideNoDataMsg ? overrideNoDataMsg : "No Data"}
                                 </FlexBox>
                         }
                     </>
@@ -192,4 +196,55 @@ export function createClipboardData(data: Array<LogItem> | null) {
     });
 
     return clipboardData
+}
+
+interface LogFooterButtonsProps {
+    follow: boolean;
+    setFollow: React.Dispatch<React.SetStateAction<boolean>>;
+    wordWrap: boolean
+    setWordWrap: React.Dispatch<React.SetStateAction<boolean>>;
+    data: Array<LogItem> | null
+    clipData: string
+}
+
+export function LogFooterButtons({ follow, setFollow, wordWrap, setWordWrap, data, clipData }: LogFooterButtonsProps) {
+    return (
+        <>
+
+            <Button className="small terminal" onClick={() => {
+                if (clipData) {
+                    copyTextToClipboard(clipData)
+                } else {
+                    copyTextToClipboard(createClipboardData(data))
+                }
+            }}>
+                <FlexBox className="row center gap-sm">
+                    <VscCopy /> Copy <span className='hide-1000'>to Clipboard</span>
+                </FlexBox>
+            </Button>
+            {
+                follow !== undefined && setFollow !== undefined ?
+                    <Button className="small terminal" onClick={() => setFollow(!follow)}>
+                        <FlexBox className="row center gap-sm">
+                            {follow ? <><VscEyeClosed /> Stop <span className='hide-1000'>watching</span></> :
+                                <><VscEye /> Follow <span className='hide-1000'>logs</span></>}
+                        </FlexBox>
+                    </Button>
+                    :
+                    <></>
+            }
+            {
+                wordWrap !== undefined && setWordWrap !== undefined ?
+                    <Button className="small terminal" tip={wordWrap ? "Disable word wrapping" : "Enable word wrapping"} onClick={() => {
+                        setWordWrap(!wordWrap)
+                    }}>
+                        <FlexBox className="row center gap-sm">
+                            {wordWrap ? <><VscWholeWord /> Whole<span className='hide-1000'>{` Word`}</span></> :
+                                <><VscWordWrap /> Wrap<span className='hide-1000'>{` Word`}</span></>}
+                        </FlexBox>
+                    </Button> :
+                    <></>
+            }
+        </>
+    )
 }
