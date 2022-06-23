@@ -1,19 +1,16 @@
+import * as dayjs from "dayjs"
+import relativeTime from "dayjs/plugin/relativeTime"
+import utc from "dayjs/plugin/utc"
 import { useInstances, useNamespaceLogs } from "direktiv-react-hooks"
 import { useEffect, useState } from "react"
 import { VscCheck, VscChromeClose, VscTerminal } from "react-icons/vsc"
+import { Link } from "react-router-dom"
 import ContentPanel, { ContentPanelBody, ContentPanelTitle } from "../../components/content-panel"
 import FlexBox from "../../components/flexbox"
 import HelpIcon from "../../components/help"
 import Loader from "../../components/loader"
-import { Config, copyTextToClipboard } from "../../util"
-import { AutoSizer, List, CellMeasurer, CellMeasurerCache } from 'react-virtualized';
-import { VscCopy, VscEye, VscEyeClosed } from 'react-icons/vsc';
-import * as dayjs from "dayjs"
-import relativeTime from "dayjs/plugin/relativeTime";
-import utc from "dayjs/plugin/utc"
-import { Link } from "react-router-dom"
-import Button from "../../components/button"
 import Logs, { LogFooterButtons } from "../../components/logs/logs"
+import { Config } from "../../util"
 
 dayjs.extend(utc)
 dayjs.extend(relativeTime);
@@ -33,10 +30,6 @@ export default function Monitoring(props) {
 }
 
 function MonitoringPage(props) {
-    const cache = new CellMeasurerCache({
-        fixedWidth: true,
-        fixedHeight: false
-    })
 
     const {namespace, noPadding} = props
     const [follow, setFollow] = useState(true)
@@ -74,36 +67,6 @@ function MonitoringPage(props) {
             setLoad(false)
         }
     },[data, err])
-
-    function rowRenderer({index, parent, key, style}) {
-        if(!data[index]){
-            return ""
-        }
-
-        return (
-        <CellMeasurer
-            key={key}
-            cache={cache}
-            parent={parent}
-            columnIndex={0}
-            rowIndex={index}
-        >
-          <div style={{...style, minWidth:"880px", width:"880px"}}>
-            <div style={{display:"inline-block",minWidth:"112px", color:"#b5b5b5"}}>
-                <div className="log-timestamp">
-                    <div>[</div>
-                        <div style={{display: "flex", flex: "auto", justifyContent: "center"}}>{dayjs.utc(data[index].node.t).local().format("HH:mm:ss.SSS")}</div>
-                    <div>]</div>
-                </div>
-            </div> 
-            <span style={{marginLeft:"5px", whiteSpace:"pre-wrap"}}>
-                {data[index].node.msg}
-            </span>
-            <div style={{height: `fit-content`}}></div>
-          </div>
-          </CellMeasurer>
-        );
-    }
 
     return (
         <Loader load={load} timer={3000}>

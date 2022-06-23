@@ -1,20 +1,16 @@
-import React, { useEffect, useState } from 'react';
-import './style.css';
-import { AutoSizer, List, CellMeasurer, CellMeasurerCache } from 'react-virtualized';
-
+import { useMirrorLogs } from 'direktiv-react-hooks';
+import React, { useState } from 'react';
 import FlexBox from '../../components/flexbox';
-import { VscCopy, VscEye, VscEyeClosed, } from 'react-icons/vsc';
-import { Config, copyTextToClipboard, } from '../../util';
-import { useMirrorLogs, } from 'direktiv-react-hooks';
+import Logs, { LogFooterButtons } from '../../components/logs/logs';
+import { Config } from '../../util';
+import './style.css';
 
-import * as dayjs from "dayjs"
-import Button from '../../components/button';
-import Logs, { createClipboardData, LogFooterButtons } from '../../components/logs/logs';
+
 
 export default function ActivityLogs(props) {
-    const { activity, namespace, setErrorMsg } = props
+    const { activity, namespace } = props
 
-    const { data, err } = useMirrorLogs(Config.url, true, namespace, activity, localStorage.getItem("apikey"))
+    const { data } = useMirrorLogs(Config.url, true, namespace, activity, localStorage.getItem("apikey"))
     const [follow, setFollow] = useState(true)
 
     return (

@@ -1,26 +1,24 @@
-import React, { useCallback, useEffect, useState } from 'react'
-import './style.css'
-import { Config, copyTextToClipboard, GenerateRandomKey } from '../../util';
-import Button from '../../components/button';
+import { useInstance, useInstanceLogs, useWorkflow } from 'direktiv-react-hooks';
+import React, { useCallback, useEffect, useState } from 'react';
+import { VscScreenFull, VscScreenNormal, VscSourceControl, VscTerminal } from 'react-icons/vsc';
 import { useParams } from 'react-router';
-import ContentPanel, { ContentPanelBody, ContentPanelHeaderButton, ContentPanelHeaderButtonIcon, ContentPanelTitle, ContentPanelTitleIcon } from '../../components/content-panel';
-import FlexBox from '../../components/flexbox';
-import {useInstance, useInstanceLogs, useWorkflow} from 'direktiv-react-hooks';
-import { CancelledState, FailState, InstancesTable, RunningState, SuccessState } from '../instances';
-import Logs, { createClipboardData, LogFooterButtons } from '../../components/logs/logs';
-
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { AutoSizer, List, CellMeasurer, CellMeasurerCache } from 'react-virtualized';
-import { VscCopy, VscEyeClosed, VscEye, VscSourceControl, VscScreenFull, VscTerminal, VscWordWrap, VscWholeWord, VscScreenNormal } from 'react-icons/vsc';
-
-import * as dayjs from "dayjs"
-
-import DirektivEditor from '../../components/editor';
-import WorkflowDiagram from '../../components/diagram';
-
-import Modal, { ButtonDefinition } from '../../components/modal';
+import { AutoSizer } from 'react-virtualized';
 import Alert from '../../components/alert';
+import Button from '../../components/button';
+import ContentPanel, { ContentPanelBody, ContentPanelTitle, ContentPanelTitleIcon } from '../../components/content-panel';
+import WorkflowDiagram from '../../components/diagram';
+import DirektivEditor from '../../components/editor';
+import FlexBox from '../../components/flexbox';
 import Loader from '../../components/loader';
+import Logs, { LogFooterButtons } from '../../components/logs/logs';
+import { Config, GenerateRandomKey } from '../../util';
+import { CancelledState, FailState, InstancesTable, RunningState, SuccessState } from '../instances';
+import './style.css';
+
+
+
+
 
 function InstancePageWrapper(props) {
 
@@ -106,7 +104,7 @@ function InstancePage(props) {
     },[onlyShow])
 
     const hideClassIf = useCallback((targetWindow)=>{
-        if (onlyShow.length > 0 && onlyShow == targetWindow) {
+        if (onlyShow.length > 0 && onlyShow === targetWindow) {
             return "hide"
         }
 
@@ -298,13 +296,13 @@ function InstancePage(props) {
 
 function InstanceLogs(props) {
 
-    let {noPadding, namespace, setClipData, instanceID, clipData} = props;
+    let {noPadding, namespace, instanceID } = props;
     let paddingStyle = { padding: "12px" }
     if (noPadding) {
         paddingStyle = { padding: "0px" }
     }
 
-    let {data, err} = useInstanceLogs(Config.url, true, namespace, instanceID, localStorage.getItem("apikey"))
+    let {data} = useInstanceLogs(Config.url, true, namespace, instanceID, localStorage.getItem("apikey"))
     const [wordWrap, setWordWrap] = useState(false)
     const [follow, setFollow] = useState(true)
 

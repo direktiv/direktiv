@@ -1,18 +1,16 @@
-import { useParams } from "react-router"
-import FlexBox from "../../components/flexbox"
-import ContentPanel, { ContentPanelBody, ContentPanelTitle, ContentPanelTitleIcon } from "../../components/content-panel"
-import { VscLayers, VscCopy, VscEye, VscEyeClosed, VscTerminal, VscServerEnvironment } from 'react-icons/vsc';
-import { useNamespaceServiceRevision, usePodLogs } from "direktiv-react-hooks"
-import { Config } from "../../util"
-import { useEffect, useState } from "react"
-import { AutoSizer, List } from 'react-virtualized'
+import * as dayjs from 'dayjs';
+import { useNamespaceServiceRevision, usePodLogs } from "direktiv-react-hooks";
+import { useEffect, useState } from "react";
+import { VscLayers, VscServerEnvironment, VscTerminal } from 'react-icons/vsc';
+import { useParams } from "react-router";
+import { useSearchParams } from "react-router-dom";
+import { AutoSizer, List } from 'react-virtualized';
 import 'react-virtualized/styles.css'; // only needs to be imported once
-import { ServiceStatus } from "."
-import { copyTextToClipboard} from '../../util'
-import * as dayjs from 'dayjs'
-import { useSearchParams } from "react-router-dom"
-import Button from "../../components/button";
+import { ServiceStatus } from ".";
+import ContentPanel, { ContentPanelBody, ContentPanelTitle, ContentPanelTitleIcon } from "../../components/content-panel";
+import FlexBox from "../../components/flexbox";
 import { LogFooterButtons } from "../../components/logs/logs";
+import { Config } from "../../util";
 
 export default function PodPanel(props) {
     const {namespace} = props
