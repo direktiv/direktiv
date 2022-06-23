@@ -13,6 +13,7 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import utc from "dayjs/plugin/utc"
 import { Link } from "react-router-dom"
 import Button from "../../components/button"
+import Logs, { LogFooterButtons } from "../../components/logs/logs"
 
 dayjs.extend(utc)
 dayjs.extend(relativeTime);
@@ -123,41 +124,11 @@ function MonitoringPage(props) {
                                 {data !== null ?
                                     <FlexBox className="col" style={{ ...paddingStyle }}>
                                         <FlexBox className={"logs"}>
-                                            <div style={{ flex: "1 1 auto", lineHeight: "20px" }}>
-                                                <AutoSizer>
-                                                    {({ height, width }) => (
-                                                        <div style={{ height: "100%", minHeight: "100%" }}>
-                                                            <List
-                                                                width={width}
-                                                                height={height}
-                                                                rowRenderer={rowRenderer}
-                                                                deferredMeasurementCache={cache}
-                                                                scrollToIndex={follow ? data.length - 1 : undefined}
-                                                                rowCount={data.length}
-                                                                rowHeight={cache.rowHeight}
-                                                            />
-                                                        </div>
-                                                    )}
-                                                </AutoSizer>
-                                            </div>
+                                            <Logs setFollow={setFollow} follow={follow} logItems={data} wordWrap={true}/>
                                         </FlexBox>
-                                        <div className={"logs-footer"} style={{  alignItems: 'center', borderRadius: " 0px 0px 8px 8px", overflow: "hidden" }}>
+                                        <div style={{ height: "40px", backgroundColor: "#223848", color: "white", maxHeight: "40px", minHeight: "40px", padding: "0px 10px 0px 10px", boxShadow: "0px 0px 3px 0px #fcfdfe", alignItems: 'center', borderRadius: " 0px 0px 8px 8px", overflow: "hidden" }}>
                                             <FlexBox className="gap" style={{ width: "100%", flexDirection: "row-reverse", height: "100%", alignItems: "center" }}>
-                                                <Button className="small terminal" onClick={()=>{
-                                                    copyTextToClipboard(clipData)
-                                                }}>
-                                                    <VscCopy/> Copy <span className='hide-1000'>to Clipboard</span>
-                                                </Button>
-
-                                                {follow ?
-                                                    <Button className="small terminal" onClick={(e)=>setFollow(!follow)}>
-                                                        <VscEyeClosed/> Stop <span className='hide-1000'>watching</span>
-                                                    </Button>
-                                                    :
-                                                    <Button className="small terminal" onClick={(e)=>setFollow(!follow)}>
-                                                        <VscEye/> Follow <span className='hide-1000'>logs</span>
-                                                    </Button>
-                                                }
+                                                <LogFooterButtons setFollow={setFollow} follow={follow} data={data}/>
                                             </FlexBox>
                                         </div>
                                     </FlexBox>

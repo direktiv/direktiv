@@ -12,6 +12,7 @@ import { copyTextToClipboard} from '../../util'
 import * as dayjs from 'dayjs'
 import { useSearchParams } from "react-router-dom"
 import Button from "../../components/button";
+import { LogFooterButtons } from "../../components/logs/logs";
 
 export default function PodPanel(props) {
     const {namespace} = props
@@ -198,21 +199,7 @@ export function PodLogs(props){
                                 }
                             </div>
                             <FlexBox className="gap" style={{justifyContent:"flex-end"}}>
-                                <Button className="small terminal" onClick={()=>{
-                                    copyTextToClipboard(clipData)
-                                }}>
-                                    <VscCopy/> Copy <span className='hide-1000'>to Clipboard</span>
-                                </Button>
-
-                                {follow ?
-                                    <Button className="small terminal" onClick={(e)=>setFollow(!follow)}>
-                                        <VscEyeClosed/> Stop <span className='hide-1000'>watching</span>
-                                    </Button>
-                                    :
-                                    <Button className="small terminal" onClick={(e)=>setFollow(!follow)}>
-                                        <VscEye/> Follow <span className='hide-1000'>logs</span>
-                                    </Button>
-                                }
+                                <LogFooterButtons follow={follow} setFollow={setFollow} clipData={clipData}/>
                             </FlexBox>
                         </FlexBox>
                     </FlexBox>
