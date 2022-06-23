@@ -1,25 +1,24 @@
-import React, { useEffect, useState } from 'react'
-import './style.css'
-import { Config, copyTextToClipboard, GenerateRandomKey } from '../../util';
-import Button from '../../components/button';
+import { useInstance, useInstanceLogs, useWorkflow } from 'direktiv-react-hooks';
+import React, { useCallback, useEffect, useState } from 'react';
+import { VscScreenFull, VscScreenNormal, VscSourceControl, VscTerminal } from 'react-icons/vsc';
 import { useParams } from 'react-router';
-import ContentPanel, { ContentPanelBody, ContentPanelHeaderButton, ContentPanelHeaderButtonIcon, ContentPanelTitle, ContentPanelTitleIcon } from '../../components/content-panel';
-import FlexBox from '../../components/flexbox';
-import {useInstance, useInstanceLogs, useWorkflow} from 'direktiv-react-hooks';
-import { CancelledState, FailState, InstancesTable, RunningState, SuccessState } from '../instances';
-
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { AutoSizer, List, CellMeasurer, CellMeasurerCache } from 'react-virtualized';
-import { VscCopy, VscEyeClosed, VscEye, VscSourceControl, VscScreenFull, VscTerminal } from 'react-icons/vsc';
-
-import * as dayjs from "dayjs"
-
-import DirektivEditor from '../../components/editor';
-import WorkflowDiagram from '../../components/diagram';
-
-import Modal, { ButtonDefinition } from '../../components/modal';
+import { AutoSizer } from 'react-virtualized';
 import Alert from '../../components/alert';
+import Button from '../../components/button';
+import ContentPanel, { ContentPanelBody, ContentPanelTitle, ContentPanelTitleIcon } from '../../components/content-panel';
+import WorkflowDiagram from '../../components/diagram';
+import DirektivEditor from '../../components/editor';
+import FlexBox from '../../components/flexbox';
 import Loader from '../../components/loader';
+import Logs, { LogFooterButtons } from '../../components/logs/logs';
+import { Config, GenerateRandomKey } from '../../util';
+import { CancelledState, FailState, InstancesTable, RunningState, SuccessState } from '../instances';
+import './style.css';
+
+
+
+
 
 function InstancePageWrapper(props) {
 
@@ -85,6 +84,32 @@ function InstancePage(props) {
     const [clipData, setClipData] = useState(null)
     const [instanceID, setInstanceID] = useState(id)
     const [tabBtn, setTabBtn] = useState(searchParams.get('tab') !== null ? parseInt(searchParams.get('tab')): 0);
+    const [onlyShow, setOnlyShow] = useState("")
+
+    const toggleFullscreen = useCallback((targetWindow)=>{
+        if (onlyShow.length > 0) {
+            setOnlyShow("")
+            return
+        }
+
+        setOnlyShow(targetWindow)
+    },[onlyShow])
+
+    const getHideClass = useCallback((targetWindow)=>{
+        if (onlyShow.length > 0 && onlyShow !== targetWindow) {
+            return "hide"
+        }
+
+        return ""
+    },[onlyShow])
+
+    const hideClassIf = useCallback((targetWindow)=>{
+        if (onlyShow.length > 0 && onlyShow === targetWindow) {
+            return "hide"
+        }
+
+        return ""
+    },[onlyShow])
 
 
     // let instanceID = params["id"];
@@ -141,8 +166,8 @@ function InstancePage(props) {
     return (
     <Loader load={load} timer={3000}>
         <FlexBox className="col gap" style={{paddingRight: "8px"}}>
-            <FlexBox className="gap wrap" style={{minHeight: "50%", flex: "1"}}>
-                <FlexBox style={{minWidth: "340px", flex: "5", }}>
+            <FlexBox className={`gap wrap ${hideClassIf("output")}`} style={{minHeight: "50%", flex: "1"}}>
+                <FlexBox className={`${getHideClass("logs")}`} style={{minWidth: "340px", flex: "5", }}>
                     <ContentPanel style={{width: "100%", minHeight: "40vh"}}>
                         <ContentPanelTitle>
                             <ContentPanelTitleIcon>
@@ -153,7 +178,7 @@ function InstancePage(props) {
                                     Instance Details
                                 </div>
                                 {label} 
-                                <FlexBox style={{flex: "auto", justifyContent: "right", paddingRight: "6px", alignItems: "center"}}>
+                                <FlexBox className="row center-y gap" style={{justifyContent: "flex-end", marginRight:"8px"}}>
                                     { data.status === "running" || data.status === "pending" ? 
                                     <Button className="small light" style={{marginRight: "8px"}} onClick={() => {
                                         cancelInstance()
@@ -175,42 +200,18 @@ function InstancePage(props) {
                                         </Button>
                                     </Link>
                                     }
-                                    <Modal
-                                    escapeToCancel
-                                    activeOverlay
-                                    maximised
-                                    noPadding
-                                    title="Instance Details"
-                                    titleIcon={
-                                        <VscTerminal />
-                                    }
-                                    style={{
-                                        maxWidth: "50px"
-                                    }}
-                                    modalStyle={{
-                                        overflow: "hidden",
-                                        padding: "0px"
-                                    }}
-                                    button={(
-                                        <ContentPanelHeaderButton hackyStyle={{ marginBottom: "8px", height: "29px" }}>
-                                            <ContentPanelHeaderButtonIcon>
-                                                <VscScreenFull />
-                                            </ContentPanelHeaderButtonIcon>
-                                        </ContentPanelHeaderButton>
-                                    )}
-                                    actionButtons={[
-                                        ButtonDefinition("Close", () => {}, "small light", ()=>{}, true, false)
-                                    ]}
-                                >
-                                    <InstanceLogs clipData={clipData} noPadding namespace={namespace} instanceID={instanceID} follow={follow} setFollow={setFollow} width={width}/>
-                                </Modal>
+                                    <Button tip={onlyShow ? "Collapse Window" : "Expand Window"} className="small light black" onClick={()=>toggleFullscreen("logs")}>
+                                        <FlexBox className="col center" style={{fontSize: "15px"}} >
+                                            {onlyShow ? <VscScreenNormal/> :<VscScreenFull />}
+                                        </FlexBox>
+                                    </Button>
                                 </FlexBox>
                             </FlexBox>
                         </ContentPanelTitle>
                         <InstanceLogs setClipData={setClipData} clipData={clipData} namespace={namespace} instanceID={instanceID} follow={follow} setFollow={setFollow} width={width} />
                     </ContentPanel>
                 </FlexBox>
-                <FlexBox className="gap wrap" style={{minIoCopyHeight: "40%", minWidth: "300px", flex: "2", flexWrap: "wrap-reverse"}}>
+                <FlexBox className={`gap wrap ${getHideClass("input")}`} style={{minIoCopyHeight: "40%", minWidth: "300px", flex: "2", flexWrap: "wrap-reverse"}}>
                     <FlexBox style={{minWidth: "300px"}}>
                         <ContentPanel style={{width: "100%", minHeight: "40vh"}}>
                         <ContentPanelTitle>
@@ -221,33 +222,14 @@ function InstancePage(props) {
                                 <div>
                                 Input
                                 </div>
+                                <FlexBox className="row center-y gap" style={{ justifyContent: "flex-end", marginRight: "8px" }}>
+                                    <Button tip={onlyShow ? "Collapse Window" : "Expand Window"} className="small light black" onClick={() => toggleFullscreen("input")}>
+                                        <FlexBox className="col center" style={{ fontSize: "15px" }} >
+                                            {onlyShow ? <VscScreenNormal /> : <VscScreenFull />}
+                                        </FlexBox>
+                                    </Button>
+                                </FlexBox>
                             </FlexBox>
-                            <Modal
-                                escapeToCancel
-                                activeOverlay                                
-                                maximised
-                                noPadding
-                                title="Input"
-                                titleIcon={
-                                    <VscTerminal />
-                                }
-                                modalStyle={{
-                                    overflow: "hidden",
-                                    padding: "0px"
-                                }}
-                                button={(
-                                    <ContentPanelHeaderButton>
-                                        <ContentPanelHeaderButtonIcon>
-                                            <VscScreenFull />
-                                        </ContentPanelHeaderButtonIcon>
-                                    </ContentPanelHeaderButton>
-                                )}
-                                actionButtons={[
-                                    ButtonDefinition("Close", () => {}, "small light", ()=>{}, true, false)
-                                ]}
-                            >
-                                <Input getInput={getInput}/>
-                            </Modal>
                         </ContentPanelTitle>
                         <ContentPanelBody>
                             <Input getInput={getInput}/>
@@ -256,8 +238,8 @@ function InstancePage(props) {
                     </FlexBox>
                 </FlexBox>
             </FlexBox>
-            <FlexBox className="gap wrap" style={{minHeight: "40%", flex: "1"}}>
-                <FlexBox style={{minWidth: "300px", flex: "5"}}>
+            <FlexBox className={`gap wrap ${getHideClass("output")}`} style={{minHeight: "40%", flex: "1"}}>
+                <FlexBox className={hideClassIf("output")} style={{minWidth: "300px", flex: "5"}}>
                     <ContentPanel style={{width: "100%", minHeight: "40vh"}}>
                         <ContentPanelTitle>
                             <ContentPanelTitleIcon>
@@ -293,33 +275,14 @@ function InstancePage(props) {
                                 <div>
                                 Output
                                 </div>
+                                <FlexBox className="row center-y gap" style={{ justifyContent: "flex-end", marginRight: "8px" }}>
+                                    <Button tip={onlyShow ? "Collapse Window" : "Expand Window"} className="small light black" onClick={() => toggleFullscreen("output")}>
+                                        <FlexBox className="col center" style={{ fontSize: "15px" }} >
+                                            {onlyShow ? <VscScreenNormal /> : <VscScreenFull />}
+                                        </FlexBox>
+                                    </Button>
+                                </FlexBox>
                             </FlexBox>
-                            <Modal
-                                escapeToCancel
-                                activeOverlay
-                                maximised
-                                noPadding
-                                title="Output"
-                                titleIcon={
-                                    <VscTerminal />
-                                }
-                                modalStyle={{
-                                    overflow: "hidden",
-                                    padding: "0px"
-                                }}
-                                button={(
-                                    <ContentPanelHeaderButton>
-                                        <ContentPanelHeaderButtonIcon>
-                                            <VscScreenFull />
-                                        </ContentPanelHeaderButtonIcon>
-                                    </ContentPanelHeaderButton>
-                                )}
-                                actionButtons={[
-                                    ButtonDefinition("Close", () => {}, "small light", ()=>{}, true, false)
-                                ]}
-                            >
-                                <Output getOutput={getOutput} status={data.status}/>
-                            </Modal>
                         </ContentPanelTitle>
                         <ContentPanelBody>
                             <Output getOutput={getOutput} status={data.status}/>
@@ -333,35 +296,25 @@ function InstancePage(props) {
 
 function InstanceLogs(props) {
 
-    let {noPadding, namespace, setClipData, instanceID, follow, setFollow, clipData} = props;
+    let {noPadding, namespace, instanceID } = props;
     let paddingStyle = { padding: "12px" }
     if (noPadding) {
         paddingStyle = { padding: "0px" }
     }
 
+    let {data} = useInstanceLogs(Config.url, true, namespace, instanceID, localStorage.getItem("apikey"))
+    const [wordWrap, setWordWrap] = useState(false)
+    const [follow, setFollow] = useState(true)
+
     return (
         <>
             <FlexBox className="col" style={{...paddingStyle}}>
                 <FlexBox className={"logs"}>
-                    <Logs clipData={clipData} setClipData={setClipData} namespace={namespace} instanceID={instanceID} follow={follow} setFollow={setFollow} />
+                    <Logs logItems={data} wordWrap={wordWrap} autoScroll={follow} setAutoScroll={setFollow}/>
                 </FlexBox>
                 <div className={"logs-footer"} style={{  alignItems:'center', borderRadius: " 0px 0px 8px 8px", overflow: "hidden" }}>
                     <FlexBox className="gap" style={{width: "100%", flexDirection: "row-reverse", height: "100%", alignItems: "center"}}>
-                        <Button className="small terminal" onClick={()=>{
-                            copyTextToClipboard(clipData)
-                        }}>
-                            <VscCopy/> Copy <span className='hide-1000'>to Clipboard</span>
-                        </Button>
-
-                        {follow ?
-                            <Button className="small terminal" onClick={(e)=>setFollow(!follow)}>
-                                <VscEyeClosed/> Stop <span className='hide-1000'>watching</span>
-                            </Button>
-                            :
-                            <Button className="small terminal" onClick={(e)=>setFollow(!follow)}>
-                                <VscEye/> Follow <span className='hide-1000'>logs</span>
-                            </Button>
-                        }
+                        <LogFooterButtons setFollow={setFollow} follow={follow} wordWrap={wordWrap} setWordWrap={setWordWrap} data={data}/>
                     </FlexBox>
                 </div>
             </FlexBox>
@@ -483,104 +436,5 @@ function Output(props){
             </AutoSizer>
         </FlexBox>
         </FlexBox>
-    )
-}
-
-
-function Logs(props){ 
-    const cache = new CellMeasurerCache({
-        fixedWidth: true,
-        fixedHeight: false
-    })
-
-    let {namespace, instanceID, follow, setClipData, clipData} = props;
-    const [logLength, setLogLength] = useState(0)
-    let {data, err} = useInstanceLogs(Config.url, true, namespace, instanceID, localStorage.getItem("apikey"))
-    useEffect(()=>{
-        if (!setClipData) {
-            // Skip ClipData if unset
-            return 
-        }
-
-        if(data !== null) {
-            if(clipData === null || logLength === 0) {
-
-                let cd = ""
-                for(let i=0; i < data.length; i++) {
-                    cd += `[${dayjs.utc(data[i].node.t).local().format("HH:mm:ss.SSS")}] ${data[i].node.msg}\n`
-                }
-                setClipData(cd)
-                setLogLength(data.length)
-            } else if (data.length !== logLength) {
-                let cd = clipData
-                for(let i=logLength-1; i < data.length; i++) {
-                    cd += `[${dayjs.utc(data[i].node.t).local().format("HH:mm:ss.SSS")}] ${data[i].node.msg}\n`
-
-                }
-                setClipData(cd)
-                setLogLength(data.length)
-            }
-        }
-    },[data, clipData, setClipData, logLength])
-
-
-    if (!data) {
-        return <></>
-    }
-
-    if (err) {
-        return <></> // TODO 
-    }
-
-    function rowRenderer({index, parent, key, style}) {
-        if(!data[index]){
-            return ""
-        }
-
-        return (
-        <CellMeasurer
-            key={key}
-            cache={cache}
-            parent={parent}
-            columnIndex={0}
-            rowIndex={index}
-        >
-          <div style={{...style, minWidth:"800px", width:"800px"}}>
-            <div style={{display:"inline-block",minWidth:"112px", color:"#b5b5b5"}}>
-                <div className="log-timestamp">
-                    <div>[</div>
-                        <div style={{display: "flex", flex: "auto", justifyContent: "center"}}>{dayjs.utc(data[index].node.t).local().format("HH:mm:ss.SSS")}</div>
-                    <div>]</div>
-                </div>
-            </div> 
-            <span style={{marginLeft:"5px", whiteSpace:"pre-wrap"}}>
-                {data[index].node.msg}
-            </span>
-            <div style={{height: `fit-content`}}></div>
-          </div>
-          </CellMeasurer>
-        );
-    }
-      
-
-    return (
-        <div style={{ flex: "1 1 auto", lineHeight: "20px" }}>
-            <AutoSizer>
-                {({ height, width }) => (
-                    <div style={{ height: "100%", minHeight: "100%" }}>
-                        <List
-                            width={width}
-                            height={height}
-                            rowRenderer={rowRenderer}
-                            deferredMeasurementCache={cache}
-                            scrollToIndex={follow ? data.length - 1 : undefined}
-                            rowCount={data.length}
-                            rowHeight={cache.rowHeight}
-                            scrollToAlignment={"start"}
-                        />
-                    </div>
-                )}
-            </AutoSizer>
-        </div>
     )
 }

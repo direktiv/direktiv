@@ -335,6 +335,8 @@ export default function DirektivEditor(props) {
                 minimap: {
                   enabled: minimap === undefined ? false : minimap,
                 },
+                wordWrap: "wordWrapColumn",
+                wordWrapColumn: 10000
               }}
             height={height ? height-18 : height}
             width={width}

@@ -1,18 +1,16 @@
+import * as dayjs from "dayjs"
+import relativeTime from "dayjs/plugin/relativeTime"
+import utc from "dayjs/plugin/utc"
 import { useInstances, useNamespaceLogs } from "direktiv-react-hooks"
 import { useEffect, useState } from "react"
 import { VscCheck, VscChromeClose, VscTerminal } from "react-icons/vsc"
+import { Link } from "react-router-dom"
 import ContentPanel, { ContentPanelBody, ContentPanelTitle } from "../../components/content-panel"
 import FlexBox from "../../components/flexbox"
 import HelpIcon from "../../components/help"
 import Loader from "../../components/loader"
-import { Config, copyTextToClipboard } from "../../util"
-import { AutoSizer, List, CellMeasurer, CellMeasurerCache } from 'react-virtualized';
-import { VscCopy, VscEye, VscEyeClosed } from 'react-icons/vsc';
-import * as dayjs from "dayjs"
-import relativeTime from "dayjs/plugin/relativeTime";
-import utc from "dayjs/plugin/utc"
-import { Link } from "react-router-dom"
-import Button from "../../components/button"
+import Logs, { LogFooterButtons } from "../../components/logs/logs"
+import { Config } from "../../util"
 
 dayjs.extend(utc)
 dayjs.extend(relativeTime);
@@ -32,10 +30,6 @@ export default function Monitoring(props) {
 }
 
 function MonitoringPage(props) {
-    const cache = new CellMeasurerCache({
-        fixedWidth: true,
-        fixedHeight: false
-    })
 
     const {namespace, noPadding} = props
     const [follow, setFollow] = useState(true)
@@ -74,36 +68,6 @@ function MonitoringPage(props) {
         }
     },[data, err])
 
-    function rowRenderer({index, parent, key, style}) {
-        if(!data[index]){
-            return ""
-        }
-
-        return (
-        <CellMeasurer
-            key={key}
-            cache={cache}
-            parent={parent}
-            columnIndex={0}
-            rowIndex={index}
-        >
-          <div style={{...style, minWidth:"880px", width:"880px"}}>
-            <div style={{display:"inline-block",minWidth:"112px", color:"#b5b5b5"}}>
-                <div className="log-timestamp">
-                    <div>[</div>
-                        <div style={{display: "flex", flex: "auto", justifyContent: "center"}}>{dayjs.utc(data[index].node.t).local().format("HH:mm:ss.SSS")}</div>
-                    <div>]</div>
-                </div>
-            </div> 
-            <span style={{marginLeft:"5px", whiteSpace:"pre-wrap"}}>
-                {data[index].node.msg}
-            </span>
-            <div style={{height: `fit-content`}}></div>
-          </div>
-          </CellMeasurer>
-        );
-    }
-
     return (
         <Loader load={load} timer={3000}>
             <FlexBox className="wrap gap" style={{paddingRight:"8px", height:"100%"}}>
@@ -123,41 +87,11 @@ function MonitoringPage(props) {
                                 {data !== null ?
                                     <FlexBox className="col" style={{ ...paddingStyle }}>
                                         <FlexBox className={"logs"}>
-                                            <div style={{ flex: "1 1 auto", lineHeight: "20px" }}>
-                                                <AutoSizer>
-                                                    {({ height, width }) => (
-                                                        <div style={{ height: "100%", minHeight: "100%" }}>
-                                                            <List
-                                                                width={width}
-                                                                height={height}
-                                                                rowRenderer={rowRenderer}
-                                                                deferredMeasurementCache={cache}
-                                                                scrollToIndex={follow ? data.length - 1 : undefined}
-                                                                rowCount={data.length}
-                                                                rowHeight={cache.rowHeight}
-                                                            />
-                                                        </div>
-                                                    )}
-                                                </AutoSizer>
-                                            </div>
+                                            <Logs setFollow={setFollow} follow={follow} logItems={data} wordWrap={true}/>
                                         </FlexBox>
-                                        <div className={"logs-footer"} style={{  alignItems: 'center', borderRadius: " 0px 0px 8px 8px", overflow: "hidden" }}>
+                                        <div style={{ height: "40px", backgroundColor: "#223848", color: "white", maxHeight: "40px", minHeight: "40px", padding: "0px 10px 0px 10px", boxShadow: "0px 0px 3px 0px #fcfdfe", alignItems: 'center', borderRadius: " 0px 0px 8px 8px", overflow: "hidden" }}>
                                             <FlexBox className="gap" style={{ width: "100%", flexDirection: "row-reverse", height: "100%", alignItems: "center" }}>
-                                                <Button className="small terminal" onClick={()=>{
-                                                    copyTextToClipboard(clipData)
-                                                }}>
-                                                    <VscCopy/> Copy <span className='hide-1000'>to Clipboard</span>
-                                                </Button>
-
-                                                {follow ?
-                                                    <Button className="small terminal" onClick={(e)=>setFollow(!follow)}>
-                                                        <VscEyeClosed/> Stop <span className='hide-1000'>watching</span>
-                                                    </Button>
-                                                    :
-                                                    <Button className="small terminal" onClick={(e)=>setFollow(!follow)}>
-                                                        <VscEye/> Follow <span className='hide-1000'>logs</span>
-                                                    </Button>
-                                                }
+                                                <LogFooterButtons setFollow={setFollow} follow={follow} data={data}/>
                                             </FlexBox>
                                         </div>
                                     </FlexBox>

@@ -52,3 +52,12 @@
 .flex-box.large-gap {
     gap: 12px;
 }
+
+.flex-box.hide {
+    visibility: hidden !important;
+    max-height: 0px !important;
+    max-width: 0px !important;
+    min-height: 0px !important;
+    min-width: 0px !important;
+    overflow: hidden !important;
+}
