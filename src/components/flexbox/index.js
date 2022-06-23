@@ -3,13 +3,13 @@ import './style.css';
 
 function FlexBox(props){
 
-    let {id, children, onClick, style, className, ref, key, onWheel, onMouseDown} = props;
+    let {id, children, onClick, style, className, ref, key, onWheel, onMouseDown, hide} = props;
     if (!className) {
         className = ""
     }
 
     return(
-        <div ref={ref} key={key} id={id} onClick={onClick} style={style} className={"flex-box " + className} onWheel={onWheel} onMouseDown={onMouseDown}>
+        <div ref={ref} key={key} id={id} onClick={onClick} style={style} className={`flex-box ${hide ? "hide" : ""} ${className}`} onWheel={onWheel} onMouseDown={onMouseDown}>
             {children}
         </div>
     );
