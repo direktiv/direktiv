@@ -10,7 +10,7 @@ import { useNavigate, useParams } from 'react-router';
 import Button from '../../components/button';
 import Loader from '../../components/loader';
 
-import Modal, { ButtonDefinition } from '../../components/modal';
+import Modal, { ButtonDefinition, ModalHeadless } from '../../components/modal';
 import Alert from '../../components/alert';
 import Tippy from '@tippyjs/react';
 import MirrorInfoPanel from './info';
@@ -28,6 +28,7 @@ export default function MirrorPage(props) {
 
     const [errorMsg, setErrorMsg] = useState(null)
     const [load, setLoad] = useState(true)
+    const [syncVisible, setSyncVisible] = useState(false)
 
     let path = `/`
     if (params["*"] !== undefined) {
@@ -111,7 +112,17 @@ export default function MirrorPage(props) {
 
         setBreadcrumbChildrenRef.current((
             <FlexBox className="center row gap" style={{ justifyContent: "flex-end", paddingRight: "6px" }}>
-                <Modal
+                <Button id="btn-sync-mirror" tip={"Sync mirror with remote"} disabledTip={"Cannot sync mirror while Writable"} disabled={!isReadOnly} className="small light bold shadow" style={{ fontWeight: "bold", width: "fit-content" }} onClick={()=>{
+                    setSyncVisible(!syncVisible)
+                }}>
+                    <FlexBox className="row center gap-sm">
+                        <VscSync />
+                        Sync?
+                    </FlexBox>
+                </Button>
+                <ModalHeadless
+                    visible={syncVisible}
+                    setVisible={setSyncVisible}
                     escapeToCancel
                     activeOverlay
                     title="Sync Mirror"
@@ -124,14 +135,6 @@ export default function MirrorPage(props) {
                     modalStyle={{
                         width: "300px"
                     }}
-                    button={(
-                        <Button id="btn-sync-mirror" className="small light bold shadow" style={{ fontWeight: "bold", width: "fit-content" }}>
-                            <FlexBox className="row center gap-sm">
-                                <VscSync />
-                                Sync
-                            </FlexBox>
-                        </Button>
-                    )}
                     actionButtons={[
                         ButtonDefinition("Sync", async () => {
                             await syncRef.current(true)
@@ -144,7 +147,7 @@ export default function MirrorPage(props) {
                           Fetch and sync mirror with latest content from remote repository?
                         </FlexBox>
                     </FlexBox>
-                </Modal>
+                </ModalHeadless>
                 <Button className={`small light bold shadow ${currentlyLocking ? "loading disabled" : ""}`} style={{ fontWeight: "bold", width: "fit-content", whiteSpace: "nowrap" }} onClick={async () => {
                     if (isReadOnly) {
                         setCurrentlyLocking(true)
@@ -183,7 +186,7 @@ export default function MirrorPage(props) {
                 {isReadOnly ? <MirrorReadOnlyBadge /> : <MirrorWritableBadge />}
             </ FlexBox>
         ))
-    }, [currentlyLocking, isReadOnly])
+    }, [currentlyLocking, isReadOnly, syncVisible])
 
     // Keep Refs up to date
     useEffect(() => {

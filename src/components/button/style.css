@@ -40,6 +40,11 @@
 .btn-wrapper.loading {
     cursor: progress;
 }
+.btn.disabled {
+    pointer-events: none !important;
+    cursor: not-allowed !important;
+    opacity: 0.5 !important;
+}
 
 /* BUTTON SIZES */
 .btn.small {

@@ -281,12 +281,7 @@ export default function DirektivEditor(props) {
               console.warn(`editor warning: ${dlang} does not support Diagnostics`)
             }
 
-            // let messageContribution = monaco.getContribution('editor.contrib.messageController');
-            // monaco.editor.onDidAttemptReadOnlyEdit(() => {
-            //   monaco.editor.messageContribution.closeMessage();
-            // })
         }
-        // monaco.editor.layout() 
     },[monaco, dlang, validate])
 
     function handleEditorChange(value, event) {
