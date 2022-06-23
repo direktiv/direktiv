@@ -165,6 +165,7 @@ const ListRow = ({ index, width, data, style, wordWrap }: ListRowProps) => {
             setSize && setSize(index, rowRoot.current.getBoundingClientRect().height);
         }
     }, [index, setSize, width]);
+    
 
     return (
         <div style={{
@@ -175,8 +176,12 @@ const ListRow = ({ index, width, data, style, wordWrap }: ListRowProps) => {
                 ref={rowRoot}
             >
                 <span className={wordWrap ? "word-wrap" : "whole-word"}>
-                    <span className="timestamp">[{dayjs.utc(data[index].node.t).local().format("HH:mm:ss.SSS")}{`] `}</span>
-                    <span className="msg">{data[index].node.msg}</span>
+                    <span key={`log-timestamp-${index}`} className="timestamp">[{dayjs.utc(data[index].node.t).local().format("HH:mm:ss.SSS")}{`] `}</span>
+                    {data[index].node.msg.match(/.{1,50}/g)?.map((mtkMsg, mtkIdx)=>{
+                        return (
+                            <span key={`log-msg-${mtkIdx}`} className="msg">{mtkMsg}</span>
+                        )
+                    })}
                 </span>
             </div>
         </div>
