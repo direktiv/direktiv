@@ -206,9 +206,11 @@ function ExplorerList(props) {
     const [isReadOnly, setIsReadOnly] = useState(false)
 
     const [orderFieldKey, setOrderFieldKey] = useState(orderFieldKeys[0])
+
+    const [streamNodes, setStreamNodes] = useState(true)
      
     const [queryParams, setQueryParams] = useState([`first=${PAGE_SIZE}`])
-    const {data, err, templates, pageInfo, createNode, createMirrorNode, deleteNode, renameNode, totalCount } = useNodes(Config.url, true, namespace, path, localStorage.getItem("apikey"), ...queryParams, `order.field=${orderFieldDictionary[orderFieldKey]}`, `filter.field=NAME`, `filter.val=${search}`, `filter.type=CONTAINS`)
+    const {data, err, templates, pageInfo, createNode, createMirrorNode, deleteNode, renameNode, totalCount } = useNodes(Config.url, streamNodes, namespace, path, localStorage.getItem("apikey"), ...queryParams, `order.field=${orderFieldDictionary[orderFieldKey]}`, `filter.field=NAME`, `filter.val=${search}`, `filter.type=CONTAINS`)
     // Setup Hook if expanded node type is git
 
     const [wfData, setWfData] = useState(templates["noop"].data)
@@ -232,6 +234,20 @@ function ExplorerList(props) {
         "publicKey": null,
         "privateKey": null,
     })
+
+    useEffect(()=>{
+        setStreamNodes(true)
+    },[path])
+
+    useEffect(()=>{
+        if (data === null || !streamNodes) {
+            return
+        }
+
+        if (data?.node?.type === "workflow") {
+            setStreamNodes(false)
+        }
+    },[data, streamNodes])
 
 
     function resetQueryParams() {
@@ -298,15 +314,12 @@ function ExplorerList(props) {
         return <NotFound/>
     }
 
-    if(data !== null) {
-        if(data.node.type === "workflow") {
-            return <WorkflowPage namespace={namespace}/>
-        }
-    }
-    
     
 
     return(
+        <>
+        { data !== null && data?.node?.type === "workflow" ? 
+        <WorkflowPage namespace={namespace}/> : 
         <FlexBox className="col gap"  style={{paddingRight: "8px"}}>
         <Loader load={load} timer={1000}>
         <FlexBox className="gap" style={{maxHeight: "32px"}}>
@@ -678,7 +691,7 @@ function ExplorerList(props) {
                             if (obj.node.type === "directory") {
                                 return (<DirListItem isGit={data && obj.node.expandedType === "git"} namespace={namespace} renameNode={renameNode} deleteNode={deleteNode} path={obj.node.path} key={GenerateRandomKey("explorer-item-")} name={obj.node.name} resetQueryParams={resetQueryParams}/>)
                             } else if (obj.node.type === "workflow") {
-                                return (<WorkflowListItem namespace={namespace} renameNode={renameNode} deleteNode={deleteNode} path={obj.node.path} key={GenerateRandomKey("explorer-item-")} name={obj.node.name} />)
+                                return (<WorkflowListItem namespace={namespace} renameNode={renameNode} deleteNode={deleteNode} path={obj.node.path} key={GenerateRandomKey("explorer-item-")} name={obj.node.name}/>)
                             }
                             return <></>
                         })}</>}</>: <></>}
@@ -690,7 +703,8 @@ function ExplorerList(props) {
         </ContentPanel>
     </Loader>
   
-    </FlexBox>
+        </FlexBox>
+        }</>
     )
 }
 
@@ -817,7 +831,7 @@ function DirListItem(props) {
 
 function WorkflowListItem(props) {
 
-    let {name, path, deleteNode, renameNode, namespace} = props;
+    let {name, path, deleteNode, renameNode, namespace, } = props;
 
     const navigate= useNavigate()
     const [renameValue, setRenameValue] = useState(path)
