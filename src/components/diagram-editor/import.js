@@ -125,7 +125,10 @@ export function importFromWorkflowData(diagramEditor, setFunctions, wfData) {
         }
     }
 
-    sortNodes(diagramEditor)
+    // Sort nodes after a delay. Otherwise the diagram connections will not be loaded in time
+    setTimeout(() => {
+        sortNodes(diagramEditor)
+    }, 50)
 
     // Preserve and return any other unhandled data
     delete wfData["functions"]
