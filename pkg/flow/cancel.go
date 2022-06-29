@@ -5,14 +5,16 @@ import (
 	"encoding/json"
 	"errors"
 
+	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
+	"github.com/direktiv/direktiv/pkg/flow/states"
 	"github.com/direktiv/direktiv/pkg/util"
 )
 
-func (engine *engine) Children(ctx context.Context, im *instanceMemory) ([]multiactionTuple, error) {
+func (engine *engine) Children(ctx context.Context, im *instanceMemory) ([]states.ChildInfo, error) {
 
 	var err error
 
-	var children []multiactionTuple
+	var children []states.ChildInfo
 	err = im.UnmarshalMemory(&children)
 	if err != nil {
 		return nil, err
@@ -88,9 +90,9 @@ func (engine *engine) cancelInstance(id, code, message string, soft bool) {
 	}
 
 	if soft {
-		err = NewCatchableError(code, message)
+		err = derrors.NewCatchableError(code, message)
 	} else {
-		err = NewUncatchableError(code, message)
+		err = derrors.NewUncatchableError(code, message)
 	}
 
 	engine.sugar.Debugf("Handling cancel instance: %s", this())

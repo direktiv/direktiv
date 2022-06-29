@@ -10,11 +10,14 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
+	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/google/uuid"
 )
 
 type instanceMemory struct {
+	engine *engine
+
 	lock   *sql.Conn
 	in     *ent.Instance
 	data   interface{}
@@ -97,7 +100,7 @@ func (im *instanceMemory) MarshalOutput() string {
 
 }
 
-func (im *instanceMemory) SetMemory(x interface{}) {
+func (im *instanceMemory) setMemory(x interface{}) {
 	im.memory = x
 }
 
@@ -152,7 +155,7 @@ func (im *instanceMemory) StoreData(key string, val interface{}) error {
 
 	m, ok := im.data.(map[string]interface{})
 	if !ok {
-		return NewInternalError(errors.New("unable to store data because state data isn't a valid JSON object"))
+		return derrors.NewInternalError(errors.New("unable to store data because state data isn't a valid JSON object"))
 	}
 
 	m[key] = val
@@ -174,61 +177,51 @@ func (engine *engine) getInstanceMemory(ctx context.Context, inc *ent.InstanceCl
 	}
 
 	im := new(instanceMemory)
+	im.engine = engine
 	im.in = in
 
 	if in.Edges.Namespace == nil {
-		err = &NotFoundError{
+		err = &derrors.NotFoundError{
 			Label: fmt.Sprintf("namespace not found"),
 		}
-		engine.CrashInstance(ctx, im, &UncatchableError{
-			Message: err.Error(),
-		})
+
+		engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", err.Error()))
 		return nil, err
 	}
 
 	if in.Edges.Workflow == nil {
-		err = &NotFoundError{
+		err = &derrors.NotFoundError{
 			Label: fmt.Sprintf("workflow not found"),
 		}
-		engine.CrashInstance(ctx, im, &UncatchableError{
-			Message: err.Error(),
-		})
+		engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", err.Error()))
 		return nil, err
 	}
 
 	if in.Edges.Revision == nil {
-		err = &NotFoundError{
+		err = &derrors.NotFoundError{
 			Label: fmt.Sprintf("revision not found"),
 		}
-		engine.CrashInstance(ctx, im, &UncatchableError{
-			Message: err.Error(),
-		})
+		engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", err.Error()))
 		return nil, err
 	}
 
 	if in.Edges.Runtime == nil {
-		err = &NotFoundError{
+		err = &derrors.NotFoundError{
 			Label: fmt.Sprintf("instance runtime data not found"),
 		}
-		engine.CrashInstance(ctx, im, &UncatchableError{
-			Message: err.Error(),
-		})
+		engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", err.Error()))
 		return nil, err
 	}
 
 	err = json.Unmarshal([]byte(im.in.Edges.Runtime.Data), &im.data)
 	if err != nil {
-		engine.CrashInstance(ctx, im, &UncatchableError{
-			Message: err.Error(),
-		})
+		engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", err.Error()))
 		return nil, err
 	}
 
 	err = json.Unmarshal([]byte(im.in.Edges.Runtime.Memory), &im.memory)
 	if err != nil {
-		engine.CrashInstance(ctx, im, &UncatchableError{
-			Message: err.Error(),
-		})
+		engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", err.Error()))
 		return nil, err
 	}
 
@@ -262,12 +255,12 @@ func (engine *engine) loadInstanceMemory(id string, step int) (context.Context, 
 
 	if !im.in.EndAt.IsZero() {
 		engine.InstanceUnlock(im)
-		return nil, nil, NewInternalError(fmt.Errorf("aborting workflow logic: database records instance terminated"))
+		return nil, nil, derrors.NewInternalError(fmt.Errorf("aborting workflow logic: database records instance terminated"))
 	}
 
 	if step >= 0 && step != im.Step() {
 		engine.InstanceUnlock(im)
-		return nil, nil, NewInternalError(fmt.Errorf("aborting workflow logic: steps out of sync (expect/actual - %d/%d)", step, im.Step()))
+		return nil, nil, derrors.NewInternalError(fmt.Errorf("aborting workflow logic: steps out of sync (expect/actual - %d/%d)", step, im.Step()))
 	}
 
 	return ctx, im, nil

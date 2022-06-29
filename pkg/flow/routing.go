@@ -13,6 +13,7 @@ import (
 	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	entirt "github.com/direktiv/direktiv/pkg/flow/ent/instanceruntime"
 	entref "github.com/direktiv/direktiv/pkg/flow/ent/ref"
+	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/model"
 )
 
@@ -81,7 +82,7 @@ func validateRouter(ctx context.Context, wf *ent.Workflow) (*muxStart, error, er
 		}
 
 		if ref.Edges.Revision == nil {
-			err = &NotFoundError{
+			err = &derrors.NotFoundError{
 				Label: fmt.Sprintf("revision not found"),
 			}
 			return nil, nil, err
@@ -103,14 +104,14 @@ func validateRouter(ctx context.Context, wf *ent.Workflow) (*muxStart, error, er
 
 			route := routes[i]
 			if route.Edges.Ref == nil {
-				err = &NotFoundError{
+				err = &derrors.NotFoundError{
 					Label: fmt.Sprintf("ref not found"),
 				}
 				return nil, nil, err
 			}
 
 			if route.Edges.Ref.Edges.Revision == nil {
-				err = &NotFoundError{
+				err = &derrors.NotFoundError{
 					Label: fmt.Sprintf("revision not found"),
 				}
 				return nil, nil, err
@@ -214,7 +215,7 @@ func (engine *engine) mux(ctx context.Context, nsc *ent.NamespaceClient, namespa
 	}
 
 	if d.ref.Edges.Revision == nil {
-		err = &NotFoundError{
+		err = &derrors.NotFoundError{
 			Label: fmt.Sprintf("revision not found"),
 		}
 		return nil, err
@@ -361,7 +362,7 @@ func (flow *flow) cronHandler(data []byte) {
 	d, err := flow.reverseTraverseToWorkflow(ctx, id)
 	if err != nil {
 
-		if IsNotFound(err) {
+		if derrors.IsNotFound(err) {
 			flow.sugar.Infof("Cron failed to find workflow. Deleting cron.")
 			flow.timers.deleteCronForWorkflow(id)
 			return

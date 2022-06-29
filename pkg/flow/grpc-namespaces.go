@@ -7,6 +7,7 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entns "github.com/direktiv/direktiv/pkg/flow/ent/namespace"
+	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
@@ -328,7 +329,7 @@ func (flow *flow) CreateNamespace(ctx context.Context, req *grpc.CreateNamespace
 			rollback(tx)
 			goto respond
 		}
-		if !IsNotFound(err) {
+		if !derrors.IsNotFound(err) {
 			return nil, err
 		}
 	}
@@ -377,7 +378,7 @@ func (flow *flow) DeleteNamespace(ctx context.Context, req *grpc.DeleteNamespace
 	nsc := tx.Namespace
 	ns, err := nsc.Query().Where(entns.NameEQ(req.GetName())).Only(ctx)
 	if err != nil {
-		if IsNotFound(err) && req.GetIdempotent() {
+		if derrors.IsNotFound(err) && req.GetIdempotent() {
 			rollback(tx)
 			goto respond
 		}

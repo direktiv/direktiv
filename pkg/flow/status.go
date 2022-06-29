@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/util"
 )
 
@@ -13,13 +14,13 @@ func (engine *engine) SetInstanceFailed(ctx context.Context, im *instanceMemory,
 	status = util.InstanceStatusFailed
 	code = ErrCodeInternal
 
-	if uerr, ok := err.(*UncatchableError); ok {
+	if uerr, ok := err.(*derrors.UncatchableError); ok {
 		code = uerr.Code
 		message = uerr.Message
-	} else if cerr, ok := err.(*CatchableError); ok {
+	} else if cerr, ok := err.(*derrors.CatchableError); ok {
 		code = cerr.Code
 		message = cerr.Message
-	} else if _, ok := err.(*InternalError); ok {
+	} else if _, ok := err.(*derrors.InternalError); ok {
 		engine.sugar.Error(fmt.Errorf("internal error: %v", err))
 		status = util.InstanceStatusCrashed
 		message = "an internal error occurred"
@@ -31,7 +32,7 @@ func (engine *engine) SetInstanceFailed(ctx context.Context, im *instanceMemory,
 	//.SetEndTime
 	in, err := im.in.Update().SetStatus(status).SetErrorCode(code).SetErrorMessage(message).Save(ctx)
 	if err != nil {
-		return NewInternalError(err)
+		return derrors.NewInternalError(err)
 	}
 	in.Edges = im.in.Edges
 	im.in = in
@@ -45,20 +46,20 @@ func (engine *engine) SetInstanceFailed(ctx context.Context, im *instanceMemory,
 
 }
 
-func (engine *engine) InstanceRaise(ctx context.Context, im *instanceMemory, cerr *CatchableError) error {
+func (engine *engine) InstanceRaise(ctx context.Context, im *instanceMemory, cerr *derrors.CatchableError) error {
 
 	if im.ErrorCode() == "" {
 
 		in, err := im.in.Update().SetStatus(util.InstanceStatusFailed).SetErrorCode(cerr.Code).SetErrorMessage(cerr.Message).Save(ctx)
 		if err != nil {
-			return NewInternalError(err)
+			return derrors.NewInternalError(err)
 		}
 
 		in.Edges = im.in.Edges
 		im.in = in
 
 	} else {
-		return NewCatchableError(ErrCodeMultipleErrors, "the workflow instance tried to throw multiple errors")
+		return derrors.NewCatchableError(ErrCodeMultipleErrors, "the workflow instance tried to throw multiple errors")
 	}
 
 	return nil

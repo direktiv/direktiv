@@ -16,6 +16,7 @@ import (
 
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
+	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 
 	cevents "github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
@@ -141,7 +142,7 @@ func (events *events) syncEventDelays() {
 	for {
 		e, err := events.getEarliestEvent(ctx, events.db.CloudEvents)
 		if err != nil {
-			if IsNotFound(err) {
+			if derrors.IsNotFound(err) {
 				return
 			}
 
