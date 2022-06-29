@@ -20,6 +20,7 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entact "github.com/direktiv/direktiv/pkg/flow/ent/mirroractivity"
+	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
 	git "github.com/libgit2/git2go/v33"
@@ -212,7 +213,7 @@ func (syncer *syncer) cronHandler(data []byte) {
 	d, err := syncer.reverseTraverseToMirror(ctx, syncer.db.Inode, syncer.db.Mirror, id)
 	if err != nil {
 
-		if IsNotFound(err) {
+		if derrors.IsNotFound(err) {
 			syncer.sugar.Infof("Cron failed to find mirror. Deleting cron.")
 			syncer.timers.deleteCronForSyncer(id)
 			return
@@ -264,14 +265,14 @@ func (syncer *syncer) lock(key string, timeout time.Duration) (context.Context, 
 
 	hash, err := hashstructure.Hash(key, hashstructure.FormatV2, nil)
 	if err != nil {
-		return nil, nil, NewInternalError(err)
+		return nil, nil, derrors.NewInternalError(err)
 	}
 
 	wait := int(timeout.Seconds())
 
 	conn, err := syncer.locks.lockDB(hash, wait)
 	if err != nil {
-		return nil, nil, NewInternalError(err)
+		return nil, nil, derrors.NewInternalError(err)
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -985,7 +986,7 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 				name: base,
 			})
 			if err != nil {
-				if IsNotFound(err) {
+				if derrors.IsNotFound(err) {
 					syncer.logToMirrorActivity(ctx, time.Now(), am.act, "Found something that looks like a workflow variable with no matching workflow: "+path)
 					return nil
 				}
