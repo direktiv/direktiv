@@ -40,10 +40,11 @@ help: ## Prints usage information.
 	@echo ""
 	@echo "Everything should work out-of-the-box. Just use 'make cluster'."
 	@echo ""
-	@echo 'If you need to tweak things, make a copy of scripts/dev.yaml and set your $$HELM_CONFIG environment variable to point to it. Ensure that $$DOCKER_REPO matches the registry in your $$HELM_CONFIG file, and that each 'image' in the config file references that same registry.'
+	@echo 'If you need to tweak things, make a copy of scripts/dev.yaml and set your $$HELM_CONFIG environment variable to point to it. Ensure that $$DOCKER_REPO matches the registry in your $$HELM_CONFIG file, and that each 'image' in the config file references that same registry. $$DOCKER_BASE can be used to change the dockerfile base target.'
 	@echo ""
 	@echo "\033[36mVariables\033[0m"
 	@printf "  %-16s %s\n" '$$DOCKER_REPO' "${DOCKER_REPO}"
+	@printf "  %-16s %s\n" '$$DOCKER_BASE' "${DOCKER_BASE}"
 	@printf "  %-16s %s\n" '$$HELM_CONFIG' "${HELM_CONFIG}"
 	@printf "  %-16s %s\n" '$$REGEX' "${REGEX}"
 	@printf "  %-16s %s\n" '$$RELEASE' "${RELEASE}"
