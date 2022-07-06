@@ -412,3 +412,35 @@ func executeWorkflow(url string) (executeResponse, error) {
 	return instanceDetails, err
 
 }
+
+func pingNamespace() error {
+	urlGetNode := fmt.Sprintf("%s/tree/", urlPrefix)
+
+	req, err := http.NewRequest(
+		http.MethodGet,
+		urlGetNode,
+		nil,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to create request file: %v", err)
+	}
+
+	addAuthHeaders(req)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to ping namespace: %v", err)
+	}
+
+	if resp.StatusCode != 200 {
+		errBody, err := ioutil.ReadAll(resp.Body)
+		if err == nil {
+			return fmt.Errorf("failed to ping namespace, server responsed with %s\n------DUMPING ERROR BODY ------\n%s", resp.Status, string(errBody))
+		}
+
+		return fmt.Errorf("failed to ping namespace, server responsed with %s\n------DUMPING ERROR BODY ------\nCould read response body", resp.Status)
+
+	}
+
+	return nil
+}

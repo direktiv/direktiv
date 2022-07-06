@@ -107,9 +107,7 @@ func getOutput(url string) ([]byte, error) {
 
 }
 
-func cmdPrepareWorkflow(wfPath string) {
-	var err error
-
+func cmdPrepareSharedValues() {
 	// Load Config From flags / config
 	addr := getAddr()
 	namespace := getNamespace()
@@ -117,6 +115,14 @@ func cmdPrepareWorkflow(wfPath string) {
 	if cfgMaxSize := viper.GetInt64("max-size"); cfgMaxSize > 0 {
 		maxSize = cfgMaxSize
 	}
+
+	http.DefaultTransport.(*http.Transport).TLSClientConfig = getTLSConfig()
+
+	urlPrefix = fmt.Sprintf("%s/api/namespaces/%s", addr, namespace)
+}
+
+func cmdPrepareWorkflow(wfPath string) {
+	var err error
 
 	cmdArgPath = wfPath
 
@@ -128,9 +134,6 @@ func cmdPrepareWorkflow(wfPath string) {
 
 	path := getPath(wfPath)
 
-	http.DefaultTransport.(*http.Transport).TLSClientConfig = getTLSConfig()
-
-	urlPrefix = fmt.Sprintf("%s/api/namespaces/%s", addr, namespace)
 	urlWorkflow = fmt.Sprintf("%s/tree/%s", urlPrefix, strings.TrimPrefix(path, "/"))
 }
 
@@ -139,7 +142,10 @@ var rootCmd = &cobra.Command{
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 
 		loadConfig(cmd)
-
+		cmdPrepareSharedValues()
+		if err := pingNamespace(); err != nil {
+			log.Fatalf("%v", err)
+		}
 	},
 }
 
