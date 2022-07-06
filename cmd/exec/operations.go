@@ -14,7 +14,8 @@ import (
 	"github.com/direktiv/direktiv/pkg/util"
 )
 
-var ErrNotFound = errors.New("Resource was not found")
+var ErrNotFound = errors.New("resource was not found")
+var ErrNodeIsReadOnly = errors.New("resource is read-only")
 
 func setRemoteWorkflowVariable(wfURL string, varName string, varPath string) error {
 	varData, err := safeLoadFile(varPath)
@@ -294,15 +295,7 @@ func updateRemoteWorkflow(path string, localPath string) error {
 	}
 
 	if isReadOnly {
-		var flagSuffix string
-		if config.profile != "" {
-			flagSuffix = " -P=\"" + config.profile + "\""
-		}
-		log.Fatalf(
-			"Cannot update node that is read only.\n"+
-				"To set node to writable use the set command\n"+
-				"Use the example below to set this path to writable:\n\n"+
-				"  direktiv-push set writable %s%s\n\n", cmdArgPath, flagSuffix)
+		return ErrNodeIsReadOnly
 	}
 
 	err = recurseMkdirParent(path)

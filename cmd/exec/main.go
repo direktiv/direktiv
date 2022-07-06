@@ -19,9 +19,10 @@ import (
 
 // Flags
 var (
-	input      string
-	inputType  string
-	outputFlag string
+	input          string
+	inputType      string
+	outputFlag     string
+	execNoPushFlag bool
 
 	maxSize int64 = 1073741824
 )
@@ -55,6 +56,8 @@ func main() {
 
 	execCmd.Flags().StringVarP(&outputFlag, "output", "o", "", "Path where to write instance output. If unset output will be written to screen")
 	execCmd.Flags().StringVarP(&input, "input", "i", "", "Path to file to be used as input data for executed workflow. If unset, stdin will be used as input data if available.")
+	execCmd.Flags().BoolVar(&execNoPushFlag, "no-push", false, "If set will skip updating and just execute the workflow.")
+
 	execCmd.Flags().StringVar(&inputType, "input-type", "application/json", "Content Type of input data")
 
 	err := viper.BindPFlags(rootCmd.PersistentFlags())
@@ -324,6 +327,18 @@ Will update the helloworld workflow and set the remote workflow variable 'data.j
 			cmd.PrintErrf("[%v/%v] Updating Namespace: '%s' Workflow: '%s'\n", i+1, len(pathsToUpdate), getNamespace(), path)
 			err = updateRemoteWorkflow(path, localPath)
 			if err != nil {
+				if err == ErrNodeIsReadOnly {
+					var flagSuffix string
+					if config.profile != "" {
+						flagSuffix = " -P=\"" + config.profile + "\""
+					}
+					log.Fatalf(
+						"Cannot update node that is read only.\n"+
+							"To set node to writable use the set command\n"+
+							"Use the example below to set this path to writable:\n\n"+
+							"  direktiv-push set writable %s%s\n\n", cmdArgPath, flagSuffix)
+				}
+
 				log.Fatalf("Failed to update remote workflow: %v\n", err)
 			}
 
@@ -374,9 +389,25 @@ Will update the helloworld workflow and set the remote workflow variable 'data.j
 
 		path := getPath(args[0])
 
-		err := updateRemoteWorkflow(path, localAbsPath)
-		if err != nil {
-			log.Fatalf("Failed to update remote workflow: %v\n", err)
+		if !execNoPushFlag {
+			err := updateRemoteWorkflow(path, localAbsPath)
+			if err != nil {
+				if err == ErrNodeIsReadOnly {
+					var flagSuffix string
+					if config.profile != "" {
+						flagSuffix = " -P=\"" + config.profile + "\""
+					}
+					log.Fatalf(
+						"Cannot update node that is read only.\n"+
+							"Use the --no-push flag to skip updating remote workflow or set workflow to writable.\n"+
+							"To set node to writable use the set command\n"+
+							"Use the example below to set this path to writable:\n\n"+
+							"  direktiv-push set writable %s%s\n\n", cmdArgPath, flagSuffix)
+				}
+				log.Fatalf("Failed to update remote workflow: %v\n", err)
+			}
+		} else {
+			printlog("skipping updating namespace: '%s' workflow: '%s'\n", getNamespace(), path)
 		}
 
 		localVars, err := getLocalWorkflowVariables(localAbsPath)
