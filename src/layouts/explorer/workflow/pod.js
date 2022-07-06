@@ -10,7 +10,7 @@ import { PodLogs } from "../../namespace-services/pod"
 export default function WorkflowPod(props) {
     const {namespace, service, version, filepath, revision} = props
 
-    const {revisionDetails, pods, err} = useWorkflowServiceRevision(Config.url, namespace, filepath, service, version, revision)
+    const {revisionDetails, pods, err} = useWorkflowServiceRevision(Config.url, namespace, filepath, service, version, revision, localStorage.getItem("apikey"))
 
     if(err) {
         console.log(err, "listing pods")
