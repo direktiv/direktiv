@@ -118,7 +118,23 @@ func recurseMkdirParent(path string) error {
 
 }
 
-func getReadOnly(path string) (bool, string, error) {
+//	getClosestNodeReadOnly : Recursively searches upwards to find closest
+//	existing node and returns whether it is read only.
+func getClosestNodeReadOnly(path string) (bool, string, error) {
+	isReadOnly, nodeType, err := getNodeReadOnly(path)
+
+	if err == ErrNotFound {
+		dir, _ := filepath.Split(path)
+		dir = strings.TrimSuffix(dir, "/")
+
+		return getClosestNodeReadOnly(dir)
+	}
+
+	return isReadOnly, nodeType, err
+}
+
+// getNodeReadOnly : Returns if node at path is read only
+func getNodeReadOnly(path string) (bool, string, error) {
 	urlGetNode := fmt.Sprintf("%s/tree/%s", urlPrefix, strings.TrimPrefix(path, "/"))
 
 	req, err := http.NewRequest(
@@ -201,7 +217,7 @@ func setWritable(path string, value bool) error {
 
 	urlWorkflow = fmt.Sprintf("%s/tree/%s", urlPrefix, strings.TrimPrefix(path, "/"))
 
-	isReadOnly, nodeType, err := getReadOnly(path)
+	isReadOnly, nodeType, err := getNodeReadOnly(path)
 	if err != nil {
 		if err == ErrNotFound {
 			err = setWritable(dir, value)
@@ -272,8 +288,8 @@ func updateRemoteWorkflow(path string, localPath string) error {
 
 	printlog("updating namespace: '%s' workflow: '%s'\n", getNamespace(), path)
 
-	isReadOnly, _, err := getReadOnly(path)
-	if err != nil {
+	isReadOnly, _, err := getClosestNodeReadOnly(path)
+	if err != nil && err != ErrNotFound {
 		log.Fatalf("Failed to get node : %v", err)
 	}
 

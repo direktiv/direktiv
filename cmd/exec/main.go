@@ -144,13 +144,19 @@ var rootCmd = &cobra.Command{
 }
 
 var setCmd = &cobra.Command{
-	Use: "set ",
+	Use:   "set ",
+	Short: "Change remote node permissions to writable or readonly",
 }
 
 var setWritableCmd = &cobra.Command{
 	Use:   "writable WORKFLOW_PATH|DIR_PATH",
 	Short: "Sets local workflow or dir to writable in remote direktiv server.",
-	Args:  cobra.ExactArgs(1),
+	Long: `"Sets local workflow or dir to writable in remote direktiv server.
+
+EXAMPLE: 
+  set writable helloworld.yaml --addr http://192.168.1.1 --namespace admin
+`,
+	Args: cobra.ExactArgs(1),
 	PreRun: func(cmd *cobra.Command, args []string) {
 		cmdPrepareWorkflow(args[0])
 	},
@@ -202,7 +208,11 @@ var setWritableCmd = &cobra.Command{
 var setReadonlyCmd = &cobra.Command{
 	Use:   "readonly WORKFLOW_PATH|DIR_PATH",
 	Short: "Sets local workflow or dir to readonly in remote direktiv server.",
-	Args:  cobra.ExactArgs(1),
+	Long: `Sets local workflow or dir to readonly in remote direktiv server.
+
+EXAMPLE: 
+  set readonly helloworld.yaml --addr http://192.168.1.1 --namespace admin`,
+	Args: cobra.ExactArgs(1),
 	PreRun: func(cmd *cobra.Command, args []string) {
 		cmdPrepareWorkflow(args[0])
 	},
