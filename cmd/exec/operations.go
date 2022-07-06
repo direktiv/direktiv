@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -12,6 +13,9 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/util"
 )
+
+var ErrNotFound = errors.New("resource was not found")
+var ErrNodeIsReadOnly = errors.New("resource is read-only")
 
 func setRemoteWorkflowVariable(wfURL string, varName string, varPath string) error {
 	varData, err := safeLoadFile(varPath)
@@ -115,13 +119,24 @@ func recurseMkdirParent(path string) error {
 
 }
 
-func setWritable(path string) error {
+//	getClosestNodeReadOnly : Recursively searches upwards to find closest
+//	existing node and returns whether it is read only.
+func getClosestNodeReadOnly(path string) (bool, string, error) {
+	isReadOnly, nodeType, err := getNodeReadOnly(path)
 
-	dir, _ := filepath.Split(path)
-	dir = strings.TrimSuffix(dir, "/")
+	if err == ErrNotFound {
+		dir, _ := filepath.Split(path)
+		dir = strings.TrimSuffix(dir, "/")
 
-	urlWorkflow = fmt.Sprintf("%s/tree/%s", urlPrefix, strings.TrimPrefix(path, "/"))
-	urlGetNode := fmt.Sprintf("%s", urlWorkflow)
+		return getClosestNodeReadOnly(dir)
+	}
+
+	return isReadOnly, nodeType, err
+}
+
+// getNodeReadOnly : Returns if node at path is read only
+func getNodeReadOnly(path string) (bool, string, error) {
+	urlGetNode := fmt.Sprintf("%s/tree/%s", urlPrefix, strings.TrimPrefix(path, "/"))
 
 	req, err := http.NewRequest(
 		http.MethodGet,
@@ -129,82 +144,108 @@ func setWritable(path string) error {
 		nil,
 	)
 	if err != nil {
-		return fmt.Errorf("failed to create request file: %v", err)
+		return false, "", fmt.Errorf("failed to create request file: %v", err)
 	}
 
 	addAuthHeaders(req)
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return fmt.Errorf("failed to send request: %v", err)
+		return false, "", fmt.Errorf("failed to send request: %v", err)
 	}
 
 	if resp.StatusCode != 200 {
 		if resp.StatusCode == http.StatusNotFound {
-			err = setWritable(dir)
+			return false, "", ErrNotFound
+		}
+
+		errBody, err := ioutil.ReadAll(resp.Body)
+		if err == nil {
+			return false, "", fmt.Errorf("failed to get node information, server responsed with %s\n------DUMPING ERROR BODY ------\n%s", resp.Status, string(errBody))
+		}
+
+		return false, "", fmt.Errorf("failed to get node information, server responsed with %s\n------DUMPING ERROR BODY ------\nCould read response body", resp.Status)
+	}
+
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return false, "", fmt.Errorf("failed to read response: %v", err)
+	}
+
+	m := make(map[string]interface{})
+	err = json.Unmarshal(data, &m)
+	if err != nil {
+		return false, "", fmt.Errorf("failed to unmarshal response: %v", err)
+	}
+
+	x, exists := m["node"]
+	if !exists {
+		return false, "", fmt.Errorf("unexpected response: %v", string(data))
+	}
+
+	m2, ok := x.(map[string]interface{})
+	if !ok {
+		return false, "", fmt.Errorf("unexpected response: %v", string(data))
+	}
+
+	x, exists = m2["readOnly"]
+	if !exists {
+		return false, "", fmt.Errorf("unexpected response: %v", string(data))
+	}
+
+	ro, ok := x.(bool)
+	if !ok {
+		return false, "", fmt.Errorf("unexpected response: %v", string(data))
+	}
+
+	x, exists = m2["expandedType"]
+	if !exists {
+		return ro, "", fmt.Errorf("unexpected response: %v", string(data))
+	}
+
+	et, ok := x.(string)
+	if !ok {
+		return ro, "", fmt.Errorf("unexpected response: %v", string(data))
+	}
+
+	return ro, et, nil
+}
+
+func setWritable(path string, value bool) error {
+
+	dir, _ := filepath.Split(path)
+	dir = strings.TrimSuffix(dir, "/")
+
+	urlWorkflow = fmt.Sprintf("%s/tree/%s", urlPrefix, strings.TrimPrefix(path, "/"))
+
+	isReadOnly, nodeType, err := getNodeReadOnly(path)
+	if err != nil {
+		if err == ErrNotFound {
+			err = setWritable(dir, value)
 			if err != nil {
 				return err
 			}
 			return nil
 		}
 
-		errBody, err := ioutil.ReadAll(resp.Body)
-		if err == nil {
-			return fmt.Errorf("failed to get node information, server responsed with %s\n------DUMPING ERROR BODY ------\n%s", resp.Status, string(errBody))
-		}
-
-		return fmt.Errorf("failed to get node information, server responsed with %s\n------DUMPING ERROR BODY ------\nCould read response body", resp.Status)
+		return err
 	}
 
-	data, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return fmt.Errorf("failed to read response: %v", err)
-	}
-
-	m := make(map[string]interface{})
-	err = json.Unmarshal(data, &m)
-	if err != nil {
-		return fmt.Errorf("failed to unmarshal response: %v", err)
-	}
-
-	x, exists := m["node"]
-	if !exists {
-		return fmt.Errorf("unexpected response: %v", string(data))
-	}
-
-	m2, ok := x.(map[string]interface{})
-	if !ok {
-		return fmt.Errorf("unexpected response: %v", string(data))
-	}
-
-	x, exists = m2["readOnly"]
-	if !exists {
-		return fmt.Errorf("unexpected response: %v", string(data))
-	}
-
-	ro, ok := x.(bool)
-	if !ok {
-		return fmt.Errorf("unexpected response: %v", string(data))
-	}
-
-	if ro == false {
+	if isReadOnly != value {
 		return nil
 	}
 
-	x, exists = m2["expandedType"]
-	if !exists {
-		return fmt.Errorf("unexpected response: %v", string(data))
-	}
-
-	et, ok := x.(string)
-	if !ok {
-		return fmt.Errorf("unexpected response: %v", string(data))
-	}
-
-	switch et {
+	switch nodeType {
 	case util.InodeTypeGit:
 
-		urlLockMirror := fmt.Sprintf("%s?op=lock-mirror", urlWorkflow)
+		var operation string
+		if value {
+			operation = "lock-mirror"
+		} else {
+			operation = "unlock-mirror"
+		}
+
+		urlLockMirror := fmt.Sprintf("%s?op=%s", urlWorkflow, operation)
 
 		req, err := http.NewRequest(
 			http.MethodPost,
@@ -233,7 +274,7 @@ func setWritable(path string) error {
 
 	default:
 
-		err = setWritable(dir)
+		err = setWritable(dir, value)
 		if err != nil {
 			return err
 		}
@@ -248,9 +289,13 @@ func updateRemoteWorkflow(path string, localPath string) error {
 
 	printlog("updating namespace: '%s' workflow: '%s'\n", getNamespace(), path)
 
-	err := setWritable(path)
-	if err != nil {
-		log.Fatalf("Failed to make writable: %v", err)
+	isReadOnly, _, err := getClosestNodeReadOnly(path)
+	if err != nil && err != ErrNotFound {
+		log.Fatalf("Failed to get node : %v", err)
+	}
+
+	if isReadOnly {
+		return ErrNodeIsReadOnly
 	}
 
 	err = recurseMkdirParent(path)
@@ -359,4 +404,36 @@ func executeWorkflow(url string) (executeResponse, error) {
 	err = json.Unmarshal(body, &instanceDetails)
 	return instanceDetails, err
 
+}
+
+func pingNamespace() error {
+	urlGetNode := fmt.Sprintf("%s/tree/", urlPrefix)
+
+	req, err := http.NewRequest(
+		http.MethodGet,
+		urlGetNode,
+		nil,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to create request file: %v", err)
+	}
+
+	addAuthHeaders(req)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to ping namespace: %v", err)
+	}
+
+	if resp.StatusCode != 200 {
+		errBody, err := ioutil.ReadAll(resp.Body)
+		if err == nil {
+			return fmt.Errorf("failed to ping namespace, server responsed with %s\n------DUMPING ERROR BODY ------\n%s", resp.Status, string(errBody))
+		}
+
+		return fmt.Errorf("failed to ping namespace, server responsed with %s\n------DUMPING ERROR BODY ------\nCould read response body", resp.Status)
+
+	}
+
+	return nil
 }

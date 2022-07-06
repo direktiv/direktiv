@@ -19,15 +19,17 @@ import (
 
 // Flags
 var (
-	input      string
-	inputType  string
-	outputFlag string
+	input          string
+	inputType      string
+	outputFlag     string
+	execNoPushFlag bool
 
 	maxSize int64 = 1073741824
 )
 
 // Shared Vars
 var (
+	cmdArgPath   string
 	localAbsPath string
 	urlPrefix    string
 	urlWorkflow  string
@@ -36,8 +38,11 @@ var (
 func main() {
 
 	// Read Config
+	setCmd.AddCommand(setWritableCmd)
+	setCmd.AddCommand(setReadonlyCmd)
 	rootCmd.AddCommand(execCmd)
 	rootCmd.AddCommand(pushCmd)
+	rootCmd.AddCommand(setCmd)
 
 	rootCmd.PersistentFlags().StringP("profile", "P", "", "Select the named profile from the loaded multi-profile configuration file.")
 	rootCmd.PersistentFlags().StringP("directory", "C", "", "Change to this directory before evaluating any paths or searching for a configuration file.")
@@ -51,6 +56,8 @@ func main() {
 
 	execCmd.Flags().StringVarP(&outputFlag, "output", "o", "", "Path where to write instance output. If unset output will be written to screen")
 	execCmd.Flags().StringVarP(&input, "input", "i", "", "Path to file to be used as input data for executed workflow. If unset, stdin will be used as input data if available.")
+	execCmd.Flags().BoolVar(&execNoPushFlag, "no-push", false, "If set will skip updating and just execute the workflow.")
+
 	execCmd.Flags().StringVar(&inputType, "input-type", "application/json", "Content Type of input data")
 
 	err := viper.BindPFlags(rootCmd.PersistentFlags())
@@ -103,9 +110,7 @@ func getOutput(url string) ([]byte, error) {
 
 }
 
-func cmdPrepareWorkflow(wfPath string) {
-	var err error
-
+func cmdPrepareSharedValues() {
 	// Load Config From flags / config
 	addr := getAddr()
 	namespace := getNamespace()
@@ -113,6 +118,16 @@ func cmdPrepareWorkflow(wfPath string) {
 	if cfgMaxSize := viper.GetInt64("max-size"); cfgMaxSize > 0 {
 		maxSize = cfgMaxSize
 	}
+
+	http.DefaultTransport.(*http.Transport).TLSClientConfig = getTLSConfig()
+
+	urlPrefix = fmt.Sprintf("%s/api/namespaces/%s", addr, namespace)
+}
+
+func cmdPrepareWorkflow(wfPath string) {
+	var err error
+
+	cmdArgPath = wfPath
 
 	// Get ABS Path
 	localAbsPath, err = filepath.Abs(wfPath)
@@ -122,9 +137,6 @@ func cmdPrepareWorkflow(wfPath string) {
 
 	path := getPath(wfPath)
 
-	http.DefaultTransport.(*http.Transport).TLSClientConfig = getTLSConfig()
-
-	urlPrefix = fmt.Sprintf("%s/api/namespaces/%s", addr, namespace)
 	urlWorkflow = fmt.Sprintf("%s/tree/%s", urlPrefix, strings.TrimPrefix(path, "/"))
 }
 
@@ -133,7 +145,128 @@ var rootCmd = &cobra.Command{
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 
 		loadConfig(cmd)
+		cmdPrepareSharedValues()
+		if err := pingNamespace(); err != nil {
+			log.Fatalf("%v", err)
+		}
+	},
+}
 
+var setCmd = &cobra.Command{
+	Use:   "set ",
+	Short: "Change remote node permissions to writable or readonly",
+}
+
+var setWritableCmd = &cobra.Command{
+	Use:   "writable WORKFLOW_PATH|DIR_PATH",
+	Short: "Sets local workflow or dir to writable in remote direktiv server.",
+	Long: `"Sets local workflow or dir to writable in remote direktiv server.
+
+EXAMPLE: 
+  set writable helloworld.yaml --addr http://192.168.1.1 --namespace admin
+`,
+	Args: cobra.ExactArgs(1),
+	PreRun: func(cmd *cobra.Command, args []string) {
+		cmdPrepareWorkflow(args[0])
+	},
+	Run: func(cmd *cobra.Command, args []string) {
+		pathsToUpdate := make([]string, 0)
+		pathStat, err := os.Stat(localAbsPath)
+		if err != nil {
+			log.Fatalf("Could not access path: %v", err)
+		}
+		if pathStat.IsDir() {
+			err = filepath.Walk(localAbsPath,
+				func(localPath string, info os.FileInfo, err error) error {
+					if err != nil {
+						return err
+					}
+					if (strings.HasSuffix(localPath, ".yaml") || strings.HasSuffix(localPath, ".yml")) && !(strings.Contains(localPath, ".yaml.") || strings.Contains(localPath, ".yml.")) {
+						if !strings.HasSuffix(localPath, DefaultConfigName) {
+							pathsToUpdate = append(pathsToUpdate, localPath)
+						}
+					}
+					return nil
+				})
+
+			if err != nil {
+				log.Fatalf("Recursive search could not access path: %v", err)
+			}
+		} else {
+			pathsToUpdate = append(pathsToUpdate, localAbsPath)
+		}
+
+		relativeDir := getConfigPath()
+
+		cmd.PrintErrf("Found %v Local Workflow/s to update\n", len(pathsToUpdate))
+		for i, localPath := range pathsToUpdate {
+
+			path := getRelativePath(relativeDir, localPath)
+
+			cmd.PrintErrf("[%v/%v] Updating Namespace: '%s' Workflow: '%s'\n", i+1, len(pathsToUpdate), getNamespace(), path)
+			err = setWritable(path, true)
+			if err != nil {
+				log.Fatalf("Failed to update remote workflow: %v\n", err)
+			}
+
+			cmd.PrintErrf("      Successfully set workflow to writable\n")
+		}
+	},
+}
+
+var setReadonlyCmd = &cobra.Command{
+	Use:   "readonly WORKFLOW_PATH|DIR_PATH",
+	Short: "Sets local workflow or dir to readonly in remote direktiv server.",
+	Long: `Sets local workflow or dir to readonly in remote direktiv server.
+
+EXAMPLE: 
+  set readonly helloworld.yaml --addr http://192.168.1.1 --namespace admin`,
+	Args: cobra.ExactArgs(1),
+	PreRun: func(cmd *cobra.Command, args []string) {
+		cmdPrepareWorkflow(args[0])
+	},
+	Run: func(cmd *cobra.Command, args []string) {
+		pathsToUpdate := make([]string, 0)
+		pathStat, err := os.Stat(localAbsPath)
+		if err != nil {
+			log.Fatalf("Could not access path: %v", err)
+		}
+		if pathStat.IsDir() {
+			err = filepath.Walk(localAbsPath,
+				func(localPath string, info os.FileInfo, err error) error {
+					if err != nil {
+						return err
+					}
+					if (strings.HasSuffix(localPath, ".yaml") || strings.HasSuffix(localPath, ".yml")) && !(strings.Contains(localPath, ".yaml.") || strings.Contains(localPath, ".yml.")) {
+						if !strings.HasSuffix(localPath, DefaultConfigName) {
+							pathsToUpdate = append(pathsToUpdate, localPath)
+						}
+					}
+					return nil
+				})
+
+			if err != nil {
+				log.Fatalf("Recursive search could not access path: %v", err)
+			}
+		} else {
+			pathsToUpdate = append(pathsToUpdate, localAbsPath)
+		}
+
+		relativeDir := getConfigPath()
+
+		cmd.PrintErrf("Found %v Local Workflow/s to update\n", len(pathsToUpdate))
+		for i, localPath := range pathsToUpdate {
+
+			path := getRelativePath(relativeDir, localPath)
+
+			cmd.PrintErrf("[%v/%v] Updating Namespace: '%s' Workflow: '%s'\n", i+1, len(pathsToUpdate), getNamespace(), path)
+			err = setWritable(path, false)
+			if err != nil {
+				log.Fatalf("Failed to update remote workflow: %v\n", err)
+			}
+
+			cmd.PrintErrf("      Successfully set workflow to readonly\n")
+		}
 	},
 }
 
@@ -194,6 +327,18 @@ Will update the helloworld workflow and set the remote workflow variable 'data.j
 			cmd.PrintErrf("[%v/%v] Updating Namespace: '%s' Workflow: '%s'\n", i+1, len(pathsToUpdate), getNamespace(), path)
 			err = updateRemoteWorkflow(path, localPath)
 			if err != nil {
+				if err == ErrNodeIsReadOnly {
+					var flagSuffix string
+					if config.profile != "" {
+						flagSuffix = " -P=\"" + config.profile + "\""
+					}
+					log.Fatalf(
+						"Cannot update node that is read only.\n"+
+							"To set node to writable use the set command\n"+
+							"Use the example below to set this path to writable:\n\n"+
+							"  direktiv-push set writable %s%s\n\n", cmdArgPath, flagSuffix)
+				}
+
 				log.Fatalf("Failed to update remote workflow: %v\n", err)
 			}
 
@@ -244,9 +389,25 @@ Will update the helloworld workflow and set the remote workflow variable 'data.j
 
 		path := getPath(args[0])
 
-		err := updateRemoteWorkflow(path, localAbsPath)
-		if err != nil {
-			log.Fatalf("Failed to update remote workflow: %v\n", err)
+		if !execNoPushFlag {
+			err := updateRemoteWorkflow(path, localAbsPath)
+			if err != nil {
+				if err == ErrNodeIsReadOnly {
+					var flagSuffix string
+					if config.profile != "" {
+						flagSuffix = " -P=\"" + config.profile + "\""
+					}
+					log.Fatalf(
+						"Cannot update node that is read only.\n"+
+							"Use the --no-push flag to skip updating remote workflow or set workflow to writable.\n"+
+							"To set node to writable use the set command\n"+
+							"Use the example below to set this path to writable:\n\n"+
+							"  direktiv-push set writable %s%s\n\n", cmdArgPath, flagSuffix)
+				}
+				log.Fatalf("Failed to update remote workflow: %v\n", err)
+			}
+		} else {
+			printlog("skipping updating namespace: '%s' workflow: '%s'\n", getNamespace(), path)
 		}
 
 		localVars, err := getLocalWorkflowVariables(localAbsPath)
