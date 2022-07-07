@@ -65,7 +65,7 @@ export function ModalHeadless(props) {
 function Modal(props) {
 
     let {maximised, noPadding, titleIcon, title, children, button, withCloseButton, activeOverlay, label, buttonDisabled} = props;
-    let {modalStyle, style, actionButtons, keyDownActions, escapeToCancel, onClose, onOpen, requiredFields } = props;
+    let {modalStyle, style, btnStyle, actionButtons, keyDownActions, escapeToCancel, onClose, onOpen, requiredFields } = props;
     const [visible, setVisible] = useState(false);
     if (!button) {
         return(
@@ -126,7 +126,7 @@ function Modal(props) {
         onOpen={onOpen}
         requiredFields={requiredFields}/>
         <FlexBox style={{...style}}>
-            <div style={{width: "100%", display:'flex', justifyContent: "center", pointerEvents: buttonDisabled ? "none" : ""}} onClick={async(ev) => {
+            <div style={{width: "100%", display:'flex', justifyContent: "center", pointerEvents: buttonDisabled ? "none" : "", ...btnStyle}} onClick={async(ev) => {
                 if(onOpen){
                     await onOpen()
                 }

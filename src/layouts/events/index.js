@@ -84,54 +84,85 @@ function EventsPage(props) {
                                                 Time
                                             </th>
                                             <th style={{textAlign:'center'}}>
-                                                    Retrigger  
+                                                  Actions
                                             </th>
                                         </tr>
                                     </thead>
-                                    {eventHistory !== null && typeof eventHistory === typeof [] && eventHistory.length > 0?
+                                    {eventHistory !== null && typeof eventHistory === typeof [] && eventHistory.length > 0 ?
                                     <tbody>
-                                        {eventHistory.map((obj)=>{
-                                            return <tr style={{borderBottom:"1px solid #f4f4f4"}}>
-                                                <td title={obj.node.type} style={{textOverflow:"ellipsis", overflow:"hidden"}}>
+                                        {eventHistory.map((obj) => {
+                                            return <tr style={{ borderBottom: "1px solid #f4f4f4" }}>
+                                                <td title={obj.node.type} style={{ textOverflow: "ellipsis", overflow: "hidden" }}>
                                                     {obj.node.type}
                                                 </td>
-                                                <td title={obj.node.source} style={{textOverflow:"ellipsis", overflow:"hidden"}}>
+                                                <td title={obj.node.source} style={{ textOverflow: "ellipsis", overflow: "hidden" }}>
                                                     {obj.node.source}
                                                 </td>
                                                 <td>
                                                     {dayjs.utc(obj.node.receivedAt).local().format("HH:mm:ss a")}
                                                 </td>
-                                                <td style={{textAlign:'center', justifyContent:"center"}}>
-                                                <Modal 
-                                                    style={{ justifyContent: "center" }}
-                                                    className="run-workflow-modal"
-                                                    modalStyle={{color: "black", width: "360px"}}
-                                                    title="Retrigger Event"
-                                                    onClose={()=>{
-                                                    }}
-                                                    button={     <div onClick={async ()=>{
-                                                    }} style={{display: "flex", alignItems: "flex-end", justifyContent: "center", paddingRight: "10px"}}>
-                                                        <Button className="small light">
-                                                            <VscPlay/>
-                                                        </Button>
-                                                    </div>}
-                                                    actionButtons={[
-                                                        ButtonDefinition("Retrigger", async () => {
-                                                            await replayEvent(obj.node.id)  
-                                                        }, "small", ()=>{}, true, true),
-                                                        ButtonDefinition("Cancel", async () => {
-                                                        }, "small light", ()=>{}, true, false)
-                                                    ]}
-                                                >
-                                                    <FlexBox style={{overflow:"hidden"}}>
-                                                        Are you sure you want to retrigger {obj.node.id}?
+                                                <td style={{ textAlign: 'center', justifyContent: "center", }}>
+                                                    <FlexBox className={"gap center"}>
+                                                        <Modal
+                                                            className="run-workflow-modal"
+                                                            style={{ justifyContent: "flex-end" }}
+                                                            modalStyle={{ color: "black", width: "360px" }}
+                                                            title="Retrigger Event"
+                                                            onClose={() => {
+                                                            }}
+                                                            btnStyle={{ width: "unset" }}
+                                                            button={
+                                                                <Button className="small light bold" tip="Retrigger Event">
+                                                                    <VscPlay /> <span className='hide-800'>Retrigger</span>
+                                                                </Button>
+                                                            }
+                                                            actionButtons={[
+                                                                ButtonDefinition("Retrigger", async () => {
+                                                                    await replayEvent(obj.node.id)
+                                                                }, "small", () => { }, true, true),
+                                                                ButtonDefinition("Cancel", async () => {
+                                                                }, "small light", () => { }, true, false)
+                                                            ]}
+                                                        >
+                                                            <FlexBox style={{ overflow: "hidden" }}>
+                                                                Are you sure you want to retrigger {obj.node.id}?
+                                                            </FlexBox>
+                                                        </Modal>
+                                                        <Modal
+                                                            className="run-workflow-modal"
+                                                            modalStyle={{ color: "black", minWidth: "360px", width: "50vw", height: "40vh", minHeight: "680px" }}
+                                                            title="View Event"
+                                                            onClose={() => {
+                                                            }}
+                                                            btnStyle={{ width: "unset" }}
+                                                            button={
+                                                                <Button className="small light bold">
+                                                                    View
+                                                                </Button>}
+                                                            actionButtons={[
+                                                                ButtonDefinition("Close", async () => {
+                                                                }, "small light", () => { }, true, false)
+                                                            ]}
+                                                        >
+                                                            <FlexBox className="col" style={{ overflow: "hidden" }}>
+                                                                <AutoSizer>
+                                                                    {({ height, width }) => (
+                                                                        <DirektivEditor noBorderRadius value={atob(obj.node.cloudevent)} readonly={true} dlang="plaintext"
+                                                                            options={{
+                                                                                autoLayout: true
+                                                                            }}
+                                                                            width={width}
+                                                                            height={height}
+                                                                        />
+                                                                    )}
+                                                                </AutoSizer>
+                                                            </FlexBox>
+                                                        </Modal>
                                                     </FlexBox>
-                                                </Modal>
-                                               
                                                 </td>
                                             </tr>
                                         })}
-                                    </tbody>: 
+                                    </tbody> : 
                                     <FlexBox className='table-no-content'>
                                         No cloud events history
                                     </FlexBox>
