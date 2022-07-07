@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import './style.css';
 import ContentPanel, {ContentPanelTitle, ContentPanelTitleIcon, ContentPanelBody } from '../../../components/content-panel';
 import FlexBox from '../../../components/flexbox';
@@ -16,6 +16,7 @@ import { AutoSizer } from 'react-virtualized';
 import { saveAs } from 'file-saver'
 import Tippy from '@tippyjs/react';
 import Pagination from '../../../components/pagination';
+import { SearchBar } from '../../explorer';
 
 const PAGE_SIZE = 10 ;
 
@@ -28,11 +29,17 @@ function VariablesPanel(props){
     const [uploading, setUploading] = useState(false)
     const [mimeType, setMimeType] = useState("application/json")
     const [varParam, setVarParam] = useState([`first=${PAGE_SIZE}`])
+    const [search, setSearch] = useState("")
     const updateVarPage = useCallback((newParam)=>{
         setVarParam([...newParam])
     }, [])
 
-    const {data, err, pageInfo, totalCount, setNamespaceVariable, getNamespaceVariable, deleteNamespaceVariable, getNamespaceVariableBlob} = useNamespaceVariables(Config.url, true, namespace, localStorage.getItem("apikey"), ...varParam)
+    const {data, err, pageInfo, totalCount, setNamespaceVariable, getNamespaceVariable, deleteNamespaceVariable, getNamespaceVariableBlob} = useNamespaceVariables(Config.url, true, namespace, localStorage.getItem("apikey"), ...varParam,  `filter.field=NAME`, `filter.val=${search}`, `filter.type=CONTAINS`)
+
+    // Reset pagination queries when searching
+    useEffect(()=>{
+        setVarParam([`first=${PAGE_SIZE}`])
+    },[search])
 
     // something went wrong with error listing for variables
     if(err !== null){
@@ -51,9 +58,13 @@ function VariablesPanel(props){
                     </div>
                     <HelpIcon msg={"Unencrypted key/value pairs that can be referenced within workflows."} />
                 </FlexBox>
-                <div>
+                <FlexBox className="row gap" >
+                    <FlexBox className="row center" style={{justifyContent: "flex-end"}}>
+                        <SearchBar setSearch={setSearch} style={{height: "26px"}}/>
+                    </FlexBox>
                     <Modal title="New variable" 
                         modalStyle={{width: "600px"}}
+                        style={{maxWidth:"42px"}}
                         escapeToCancel
                         titleIcon={<VscVariableGroup/>}
                         button={(
@@ -96,7 +107,7 @@ function VariablesPanel(props){
                     >
                         <AddVariablePanel mimeType={mimeType} setMimeType={setMimeType} file={file} setFile={setFile} setKeyValue={setKeyValue} keyValue={keyValue} dValue={dValue} setDValue={setDValue}/>
                     </Modal>
-                </div>
+                </FlexBox>
             </ContentPanelTitle>
             <ContentPanelBody style={{minHeight:"180px"}}>
                 {data !== null ?

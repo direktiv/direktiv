@@ -1,22 +1,23 @@
 import { useWorkflowVariables } from 'direktiv-react-hooks';
-import React, { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
-import { VscVariableGroup, VscCloudDownload, VscCloudUpload,  VscEye, VscTrash, VscLoading } from 'react-icons/vsc';
+import { VscCloudDownload, VscCloudUpload, VscEye, VscLoading, VscTrash, VscVariableGroup } from 'react-icons/vsc';
 
+import Tippy from '@tippyjs/react';
+import { saveAs } from 'file-saver';
+import { AutoSizer } from 'react-virtualized';
+import { SearchBar } from '..';
 import AddValueButton from '../../../components/add-button';
 import Button from '../../../components/button';
 import ContentPanel, { ContentPanelBody, ContentPanelTitle, ContentPanelTitleIcon } from '../../../components/content-panel';
 import DirektivEditor from '../../../components/editor';
 import FlexBox from '../../../components/flexbox';
-import Modal, { ButtonDefinition } from '../../../components/modal';
-import Tabs from '../../../components/tabs';
-import { Config, CanPreviewMimeType, MimeTypeFileExtension } from '../../../util';
-import { VariableFilePicker } from '../../settings/variables-panel';
-import { AutoSizer } from 'react-virtualized';
 import HelpIcon from "../../../components/help";
-import { saveAs } from 'file-saver'
-import Tippy from '@tippyjs/react';
+import Modal, { ButtonDefinition } from '../../../components/modal';
 import Pagination from '../../../components/pagination';
+import Tabs from '../../../components/tabs';
+import { CanPreviewMimeType, Config, MimeTypeFileExtension } from '../../../util';
+import { VariableFilePicker } from '../../settings/variables-panel';
 
 const PAGE_SIZE = 10 ;
 
@@ -29,13 +30,19 @@ function AddWorkflowVariablePanel(props) {
     const [uploading, setUploading] = useState(false)
     const [mimeType, setMimeType] = useState("application/json")
     const [varParam, setVarParam] = useState([`first=${PAGE_SIZE}`])
+    const [search, setSearch] = useState("")
     const updateVarPage = useCallback((newParam)=>{
         setVarParam([...newParam])
     }, [])
 
     let wfVar = workflow.substring(1)
 
-    const {data, pageInfo, totalCount, setWorkflowVariable, getWorkflowVariable, getWorkflowVariableBlob, deleteWorkflowVariable} = useWorkflowVariables(Config.url, true, namespace, wfVar, localStorage.getItem("apikey"), ...varParam)
+    const {data, pageInfo, totalCount, setWorkflowVariable, getWorkflowVariable, getWorkflowVariableBlob, deleteWorkflowVariable} = useWorkflowVariables(Config.url, true, namespace, wfVar, localStorage.getItem("apikey"), ...varParam, `filter.field=NAME`, `filter.val=${search}`, `filter.type=CONTAINS`)
+
+    // Reset pagination queries when searching
+    useEffect(()=>{
+        setVarParam([`first=${PAGE_SIZE}`])
+    },[search])
 
     if (data === null) {
         return <></>
@@ -53,8 +60,13 @@ function AddWorkflowVariablePanel(props) {
                     </div>
                     <HelpIcon msg={"List of variables for that workflow."} />
                 </FlexBox>
+                <FlexBox className="row gap" >
+                    <FlexBox className="row center" style={{justifyContent: "flex-end"}}>
+                        <SearchBar setSearch={setSearch} style={{height: "26px"}}/>
+                    </FlexBox>
                     <Modal title="New variable" 
                         modalStyle={{width: "600px"}}
+                        style={{maxWidth:"42px"}}
                         escapeToCancel
                         button={(
                             <AddValueButton label=" " />
@@ -85,6 +97,7 @@ function AddWorkflowVariablePanel(props) {
                     >
                         <AddVariablePanel mimeType={mimeType} setMimeType={setMimeType} file={file} setFile={setFile} setKeyValue={setKeyValue} keyValue={keyValue} dValue={dValue} setDValue={setDValue}/>
                     </Modal>
+                    </FlexBox>
             </ContentPanelTitle>
             <ContentPanelBody>
                 {data !== null ?

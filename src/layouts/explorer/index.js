@@ -166,14 +166,27 @@ function Explorer(props) {
 
 export default Explorer;
 
-function SearchBar(props) {
-    const {search, setSearch} = props
+export function SearchBar(props) {
+    const {setSearch, style} = props
+
+    const [inputVal, setInputVal] = useState("")
+
+    useEffect(() => {
+
+        const handler = setTimeout(() => {
+            setSearch(inputVal)
+        }, 200)
+
+        return () =>{
+            clearTimeout(handler)
+        }
+    },[inputVal, setSearch])
 
     return(
-        <div className="explorer-searchbar">
-            <FlexBox className="" style={{height: "29px"}}>
+        <div className="explorer-searchbar" style={{height: "29px", ...style}}>
+            <FlexBox className="" style={{height: "100%"}}>
                 <VscSearch className="auto-margin" />
-                <input value={search} onChange={(e)=>{setSearch(e.target.value)}} placeholder={"Search items"} style={{ boxSizing: "border-box" }}></input>
+                <input value={inputVal} onChange={(e)=>{setInputVal(e.target.value)}} placeholder={"Search items"} style={{ boxSizing: "border-box" }}></input>
             </FlexBox>
         </div>
     );
@@ -357,7 +370,7 @@ function ExplorerList(props) {
                 
             </FlexBox>
             <FlexBox style={{flexDirection: "row-reverse"}}>
-                <SearchBar search={search} setSearch={setSearch}/>
+                <SearchBar setSearch={setSearch}/>
             </FlexBox>
         </FlexBox>
         <ContentPanel>
