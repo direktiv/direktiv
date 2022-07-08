@@ -3,7 +3,7 @@
 # k3s download
 
 rm k3s
-wget https://github.com/k3s-io/k3s/releases/download/v1.23.1-rc1%2Bk3s1/k3s
+wget https://github.com/k3s-io/k3s/releases/download/v1.24.2%2Bk3s1/k3s
 
 rm *.tar
 rm *.tar.gz

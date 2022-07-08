@@ -1,35 +1,29 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"io/ioutil"
 	"log"
-	"net/http"
 	"os"
 	"os/exec"
-	"sort"
 	"strings"
 	"time"
 
 	"github.com/antelman107/net-wait-go/wait"
-	"github.com/apoorvam/goterminal"
-	"github.com/olekukonko/tablewriter"
 	"github.com/rootless-containers/rootlesskit/pkg/parent/cgrouputil"
+
+	// "github.com/rootless-containers/rootlesskit/pkg/parent/cgrouputil"
 	v1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/tools/clientcmd"
 )
 
 func main() {
 
 	log.Println("all-in-one version of direktiv")
 
-	kc, err := exec.LookPath("kubectl")
-	if err != nil {
-		panic(err.Error())
-	}
+	// kc, err := exec.LookPath("kubectl")
+	// if err != nil {
+	// 	panic(err.Error())
+	// }
 
 	go func() {
 		err := startingK3s()
@@ -46,6 +40,7 @@ func main() {
 		time.Sleep(1 * time.Second)
 	}
 
+	fmt.Println("FILE IS THERE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 	if !wait.New(
 		wait.WithProto("tcp"),
 		wait.WithWait(200*time.Millisecond),
@@ -56,115 +51,116 @@ func main() {
 		log.Fatalf("k3s is not available")
 		return
 	}
+	fmt.Println("PORT IS THERE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
-	log.Println("unzip images")
-	cmd := exec.Command("/bin/gunzip", "-v", "/images.tar.gz")
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	cmd.Run()
+	// log.Println("unzip images")
+	// cmd := exec.Command("/bin/gunzip", "-v", "/images.tar.gz")
+	// cmd.Stdout = os.Stdout
+	// cmd.Stderr = os.Stderr
+	// cmd.Run()
 
-	log.Println("untar images")
-	cmd = exec.Command("/bin/tar", "-xvf", "/images.tar")
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	cmd.Run()
+	// log.Println("untar images")
+	// cmd = exec.Command("/bin/tar", "-xvf", "/images.tar")
+	// cmd.Stdout = os.Stdout
+	// cmd.Stderr = os.Stderr
+	// cmd.Run()
 
-	// delete because we import all tars as images
-	os.Remove("/images.tar")
+	// // delete because we import all tars as images
+	// os.Remove("/images.tar")
 
-	ff, err := os.ReadDir("/")
-	if err != nil {
-		log.Fatalf("error reading dir")
-	}
+	// ff, err := os.ReadDir("/")
+	// if err != nil {
+	// 	log.Fatalf("error reading dir")
+	// }
 
-	log.Println("importing images")
-	for i := range ff {
-		f := ff[i]
-		if strings.HasSuffix(f.Name(), ".tar") {
-			log.Printf("importing %v", f.Name())
-			importImage(f.Name())
-		}
-	}
+	// log.Println("importing images")
+	// for i := range ff {
+	// 	f := ff[i]
+	// 	if strings.HasSuffix(f.Name(), ".tar") {
+	// 		log.Printf("importing %v", f.Name())
+	// 		importImage(f.Name())
+	// 	}
+	// }
 
-	installKnative(kc)
+	installKnative()
 
-	runRegistry(kc)
+	// runRegistry(kc)
 
-	runDB(kc)
+	// runDB(kc)
 
-	runHelm(kc)
+	// runHelm(kc)
 
-	config, err := clientcmd.BuildConfigFromFlags("", "/etc/rancher/k3s/k3s.yaml")
-	if err != nil {
-		panic(err.Error())
-	}
+	// config, err := clientcmd.BuildConfigFromFlags("", "/etc/rancher/k3s/k3s.yaml")
+	// if err != nil {
+	// 	panic(err.Error())
+	// }
 
-	clientset, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		panic(err.Error())
-	}
+	// clientset, err := kubernetes.NewForConfig(config)
+	// if err != nil {
+	// 	panic(err.Error())
+	// }
 
-	writer := goterminal.New(os.Stdout)
-	n := time.Now()
+	// writer := goterminal.New(os.Stdout)
+	// n := time.Now()
 
-	log.Println("waiting for pods (can take several minutes)")
+	// log.Println("waiting for pods (can take several minutes)")
 
-	var lo metav1.ListOptions
-	for {
+	// var lo metav1.ListOptions
+	// for {
 
-		table := tablewriter.NewWriter(writer)
-		table.SetHeader([]string{"Pod", "Status", "Time"})
+	// 	table := tablewriter.NewWriter(writer)
+	// 	table.SetHeader([]string{"Pod", "Status", "Time"})
 
-		pods, err := clientset.CoreV1().Pods("").List(context.Background(), lo)
-		if err != nil {
-			panic(err.Error())
-		}
+	// 	pods, err := clientset.CoreV1().Pods("").List(context.Background(), lo)
+	// 	if err != nil {
+	// 		panic(err.Error())
+	// 	}
 
-		if len(pods.Items) == 0 {
-			time.Sleep(2 * time.Second)
-			continue
-		}
+	// 	if len(pods.Items) == 0 {
+	// 		time.Sleep(2 * time.Second)
+	// 		continue
+	// 	}
 
-		allRun := true
+	// 	allRun := true
 
-		sort.Sort(byName(pods.Items))
-		for _, pod := range pods.Items {
+	// 	sort.Sort(byName(pods.Items))
+	// 	for _, pod := range pods.Items {
 
-			t := "ready"
-			if pod.Status.Phase != v1.PodRunning && pod.Status.Phase != v1.PodSucceeded {
-				allRun = false
-				t = fmt.Sprintf("%vs", int(time.Since(n).Seconds()))
-			}
-			table.Append([]string{pod.GetName(), string(pod.Status.Phase), t})
-		}
+	// 		t := "ready"
+	// 		if pod.Status.Phase != v1.PodRunning && pod.Status.Phase != v1.PodSucceeded {
+	// 			allRun = false
+	// 			t = fmt.Sprintf("%vs", int(time.Since(n).Seconds()))
+	// 		}
+	// 		table.Append([]string{pod.GetName(), string(pod.Status.Phase), t})
+	// 	}
 
-		table.Render()
-		writer.Print()
-		if allRun && len(pods.Items) > 0 {
-			break
-		}
-		time.Sleep(1 * time.Second)
-		writer.Clear()
-	}
+	// 	table.Render()
+	// 	writer.Print()
+	// 	if allRun && len(pods.Items) > 0 {
+	// 		break
+	// 	}
+	// 	time.Sleep(1 * time.Second)
+	// 	writer.Clear()
+	// }
 
-	writer.Reset()
+	// writer.Reset()
 
-	fmt.Println("direktiv connecting services, please wait")
-	for {
-		res, err := http.Get("http://localhost/api/namespaces")
-		if err != nil {
-			time.Sleep(1 * time.Second)
-			continue
-		}
+	// fmt.Println("direktiv connecting services, please wait")
+	// for {
+	// 	res, err := http.Get("http://localhost/api/namespaces")
+	// 	if err != nil {
+	// 		time.Sleep(1 * time.Second)
+	// 		continue
+	// 	}
 
-		// if api key set it is unauthorized but that is fine too
-		if res.StatusCode == 200 || res.StatusCode == 401 {
-			break
-		}
-		time.Sleep(1 * time.Second)
-	}
+	// 	// if api key set it is unauthorized but that is fine too
+	// 	if res.StatusCode == 200 || res.StatusCode == 401 {
+	// 		break
+	// 	}
+	// 	time.Sleep(1 * time.Second)
+	// }
 
-	fmt.Println("direktiv ready at http://localhost:8080 or http://<HOST-IP>:8080")
+	// fmt.Println("direktiv ready at http://localhost:8080 or http://<HOST-IP>:8080")
 
 	select {}
 
@@ -261,7 +257,7 @@ func addProxy(f *os.File) {
 	}
 }
 
-func installKnative(kc string) {
+func installKnative() {
 
 	log.Printf("running knative helm\n")
 
@@ -289,7 +285,7 @@ func installKnative(kc string) {
 	log.Printf("running on GCP: %v\n", isgcp)
 	if isgcp {
 		/* #nosec */
-		cmd := exec.Command(kc, "apply", "-f", "/google-dns.yaml")
+		cmd := exec.Command("k3s", "kubectl", "apply", "-f", "/google-dns.yaml")
 		cmd.Dir = "/"
 		cmd.Run()
 		cmd.Stdout = os.Stdout
@@ -299,30 +295,30 @@ func installKnative(kc string) {
 	if os.Getenv("EVENTING") != "" {
 		log.Printf("installing knative eventing")
 
-		yamls := []string{
-			"https://github.com/knative/eventing/releases/download/v0.26.1/eventing-crds.yaml",
-			"https://github.com/knative/eventing/releases/download/v0.26.1/eventing-core.yaml",
-			"https://github.com/knative/eventing/releases/download/v0.26.1/mt-channel-broker.yaml",
-			"https://github.com/knative/eventing/releases/download/v0.26.1/in-memory-channel.yaml",
-		}
+		// yamls := []string{
+		// 	"https://github.com/knative/eventing/releases/download/v0.26.1/eventing-crds.yaml",
+		// 	"https://github.com/knative/eventing/releases/download/v0.26.1/eventing-core.yaml",
+		// 	"https://github.com/knative/eventing/releases/download/v0.26.1/mt-channel-broker.yaml",
+		// 	"https://github.com/knative/eventing/releases/download/v0.26.1/in-memory-channel.yaml",
+		// }
 
-		for i := range yamls {
-			cmd = exec.Command(kc, "apply", "-f", yamls[i])
-			cmd.Stdout = os.Stdout
-			cmd.Stderr = os.Stderr
-			cmd.Run()
-		}
+		// for i := range yamls {
+		// 	cmd = exec.Command(kc, "apply", "-f", yamls[i])
+		// 	cmd.Stdout = os.Stdout
+		// 	cmd.Stderr = os.Stderr
+		// 	cmd.Run()
+		// }
 
-		// waiting for controller to be Ready
-		cmd = exec.Command(kc, "wait", "--for=condition=ready", "pod", "-l", "app=mt-broker-controller", "-n", "knative-eventing")
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-		cmd.Run()
+		// // waiting for controller to be Ready
+		// cmd = exec.Command(kc, "wait", "--for=condition=ready", "pod", "-l", "app=mt-broker-controller", "-n", "knative-eventing")
+		// cmd.Stdout = os.Stdout
+		// cmd.Stderr = os.Stderr
+		// cmd.Run()
 
-		cmd = exec.Command(kc, "apply", "-f", "/broker.yaml")
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-		cmd.Run()
+		// cmd = exec.Command(kc, "apply", "-f", "/broker.yaml")
+		// cmd.Stdout = os.Stdout
+		// cmd.Stderr = os.Stderr
+		// cmd.Run()
 
 	}
 
@@ -331,7 +327,7 @@ func installKnative(kc string) {
 func startingK3s() error {
 
 	log.Println("starting k3s now")
-	cmd := exec.Command("/k3s", "server", "--kube-proxy-arg=conntrack-max-per-core=0",
+	cmd := exec.Command("/usr/local/bin/k3s", "server", "--kube-proxy-arg=conntrack-max-per-core=0",
 		"--disable", "traefik", "--write-kubeconfig-mode=644", "--kube-apiserver-arg",
 		"feature-gates=TTLAfterFinished=true")
 
@@ -344,10 +340,10 @@ func startingK3s() error {
 	// passing env in for http_prox values
 	cmd.Env = os.Environ()
 
-	if len(os.Getenv("DEBUG")) > 0 {
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-	}
+	// if len(os.Getenv("DEBUG")) > 0 {
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	// }
 
 	return cmd.Run()
 

@@ -1,4 +1,4 @@
-alias kc="kubectl"
+alias kc="k3s kubectl"
 source <(kubectl completion bash)
 complete -F __start_kubectl kc
 
