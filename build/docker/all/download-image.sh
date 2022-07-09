@@ -1,7 +1,7 @@
-#!/bin/bash
+#!/bin/sh
 
 for arg; do
-    MD5=`echo $arg | /usr/bin/md5sum | /bin/cut -f1 -d" "`
+    MD5=`echo $arg | /usr/bin/md5sum | cut -f1 -d" "`
     echo "creating tar for $arg at $MD5"
     rm -Rf $MD5 && mkdir $MD5
     

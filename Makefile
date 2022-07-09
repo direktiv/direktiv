@@ -170,7 +170,8 @@ protoc:
 # Patterns
 
 build/%-binary: Makefile ${GO_SOURCE_FILES}
-	@set -e ; if [ -d "cmd/$*" ]; then \
+	@set -e; 
+	if [ -d "cmd/$*" ] && [ ".all" != "${DOCKER_BASE}" ]; then \
 		echo "Building $* binary..."; \
 		go build -ldflags "-X github.com/direktiv/direktiv/pkg/version.Version=${FULL_VERSION}" -tags ${GO_BUILD_TAGS} -o $@ cmd/$*/*.go; \
 		cp build/$*-binary build/$*; \

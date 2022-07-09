@@ -8,7 +8,7 @@ secrets:
 
 flow:
   image: "flow"
-  dbimage: "flow-dbinit111"
+  dbimage: "flow-dbinit"
   tag: "latest"
 
 ui:
@@ -76,9 +76,10 @@ database:
   host: "direktiv-primary.postgres.svc"
   port: 5432
   user: "direktiv"
-  password: "hkS4AP?uWBq762mlm-)C}.NH"
+  password: "Lh,gWlZOcXPljfuPWVUTHxri"
   name: "direktiv"
   sslmode: require
+
 
 ingress-nginx:
   tcp:
