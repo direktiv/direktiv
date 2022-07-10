@@ -1,22 +1,31 @@
 package main
 
 import (
+	"bytes"
+	"context"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 	"os/exec"
+	"sort"
 	"strings"
 	"time"
 
+	"github.com/apoorvam/goterminal"
+	"github.com/olekukonko/tablewriter"
 	"github.com/rootless-containers/rootlesskit/pkg/parent/cgrouputil"
-
-	// "github.com/rootless-containers/rootlesskit/pkg/parent/cgrouputil"
 	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/clientcmd"
 )
 
 func waitForUp() {
 
+	// first wait for the kubeconfig file
 	log.Println("waiting for k3s kubeconfig")
 	for {
 		if _, err := os.Stat("/etc/rancher/k3s/k3s.yaml"); !os.IsNotExist(err) {
@@ -25,15 +34,43 @@ func waitForUp() {
 		time.Sleep(1 * time.Second)
 	}
 
-	// run kubectl command tiull it is successful
+	// run kubectl command till it is successful, api seems to work
+	log.Println("waiting for kubernetes API")
 	for {
-		cmd := exec.Command("k3s", "kubectl", "get", "pods")
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
+		cmd := exec.Command("k3s", "kubectl", "get", "nodes")
 		err := cmd.Run()
 		if err == nil {
 			break
 		}
+	}
+
+	// wait for kube-system pods to be up
+	config, err := clientcmd.BuildConfigFromFlags("", "/etc/rancher/k3s/k3s.yaml")
+	if err != nil {
+		panic(err.Error())
+	}
+
+	clientset, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	log.Println("waiting for systems pods")
+	for {
+		var lo metav1.ListOptions
+		pods, err := clientset.CoreV1().Pods("kube-system").List(context.Background(), lo)
+		if err != nil {
+			time.Sleep(2 * time.Second)
+			continue
+		}
+
+		if len(pods.Items) == 0 {
+			time.Sleep(2 * time.Second)
+			continue
+		}
+
+		break
+
 	}
 
 	log.Println("k3s up")
@@ -53,87 +90,154 @@ func main() {
 
 	waitForUp()
 
-	installKnative()
+	// if that file exists, the installation has already happened
+	_, err := os.Stat("/.service")
 
-	runRegistry()
+	if err != nil {
 
-	runDB()
+		installKnative()
 
-	// runHelm(kc)
+		runRegistry()
 
-	// config, err := clientcmd.BuildConfigFromFlags("", "/etc/rancher/k3s/k3s.yaml")
-	// if err != nil {
-	// 	panic(err.Error())
-	// }
+		runDB()
 
-	// clientset, err := kubernetes.NewForConfig(config)
-	// if err != nil {
-	// 	panic(err.Error())
-	// }
+		runHelm()
 
-	// writer := goterminal.New(os.Stdout)
-	// n := time.Now()
+		f, _ := os.Create("/.service")
+		f.Close()
 
-	// log.Println("waiting for pods (can take several minutes)")
+	}
 
-	// var lo metav1.ListOptions
-	// for {
+	config, err := clientcmd.BuildConfigFromFlags("", "/etc/rancher/k3s/k3s.yaml")
+	if err != nil {
+		panic(err.Error())
+	}
 
-	// 	table := tablewriter.NewWriter(writer)
-	// 	table.SetHeader([]string{"Pod", "Status", "Time"})
+	clientset, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		panic(err.Error())
+	}
 
-	// 	pods, err := clientset.CoreV1().Pods("").List(context.Background(), lo)
-	// 	if err != nil {
-	// 		panic(err.Error())
-	// 	}
+	writer := goterminal.New(os.Stdout)
+	n := time.Now()
 
-	// 	if len(pods.Items) == 0 {
-	// 		time.Sleep(2 * time.Second)
-	// 		continue
-	// 	}
+	log.Println("waiting for pods (can take several minutes)")
 
-	// 	allRun := true
+	var lo metav1.ListOptions
+	for {
 
-	// 	sort.Sort(byName(pods.Items))
-	// 	for _, pod := range pods.Items {
+		table := tablewriter.NewWriter(writer)
+		table.SetHeader([]string{"Pod", "Status", "Time"})
 
-	// 		t := "ready"
-	// 		if pod.Status.Phase != v1.PodRunning && pod.Status.Phase != v1.PodSucceeded {
-	// 			allRun = false
-	// 			t = fmt.Sprintf("%vs", int(time.Since(n).Seconds()))
-	// 		}
-	// 		table.Append([]string{pod.GetName(), string(pod.Status.Phase), t})
-	// 	}
+		pods, err := clientset.CoreV1().Pods("").List(context.Background(), lo)
+		if err != nil {
+			panic(err.Error())
+		}
 
-	// 	table.Render()
-	// 	writer.Print()
-	// 	if allRun && len(pods.Items) > 0 {
-	// 		break
-	// 	}
-	// 	time.Sleep(1 * time.Second)
-	// 	writer.Clear()
-	// }
+		if len(pods.Items) == 0 {
+			time.Sleep(2 * time.Second)
+			continue
+		}
 
-	// writer.Reset()
+		allRun := true
 
-	// fmt.Println("direktiv connecting services, please wait")
-	// for {
-	// 	res, err := http.Get("http://localhost/api/namespaces")
-	// 	if err != nil {
-	// 		time.Sleep(1 * time.Second)
-	// 		continue
-	// 	}
+		sort.Sort(byName(pods.Items))
+		for _, pod := range pods.Items {
 
-	// 	// if api key set it is unauthorized but that is fine too
-	// 	if res.StatusCode == 200 || res.StatusCode == 401 {
-	// 		break
-	// 	}
-	// 	time.Sleep(1 * time.Second)
-	// }
+			t := "ready"
+			if pod.Status.Phase != v1.PodRunning && pod.Status.Phase != v1.PodSucceeded {
+				allRun = false
+				t = fmt.Sprintf("%vs", int(time.Since(n).Seconds()))
+			}
+			table.Append([]string{pod.GetName(), string(pod.Status.Phase), t})
+		}
 
-	// fmt.Println("direktiv ready at http://localhost:8080 or http://<HOST-IP>:8080")
+		table.Render()
+		writer.Print()
+		if allRun && len(pods.Items) > 0 {
+			break
+		}
+		time.Sleep(1 * time.Second)
+		writer.Clear()
+	}
+
+	writer.Reset()
+
+	fmt.Println("direktiv connecting services, please wait")
+	for {
+		res, err := http.Get("http://localhost/api/namespaces")
+		if err != nil {
+			time.Sleep(1 * time.Second)
+			continue
+		}
+
+		// if api key set it is unauthorized but that is fine too
+		if res.StatusCode == 200 || res.StatusCode == 401 {
+			break
+		}
+		time.Sleep(1 * time.Second)
+	}
+
+	err = addNamespace()
+	if err != nil {
+		fmt.Printf("could not add namespace from git: %v\n", err)
+	}
+
+	fmt.Println("direktiv ready at http://localhost:8080 or http://<HOST-IP>:8080")
 
 	select {}
+
+}
+
+func addNamespace() error {
+
+	fmt.Println("adding namespace from git")
+
+	ns := make(map[string]string)
+	// ns["url"] = "https://github.com/jensg-st/knative-demo"
+	ns["url"] = "https://github.com/direktiv/aio-examples.git"
+	ns["ref"] = "main"
+
+	client := &http.Client{}
+	json, err := json.Marshal(ns)
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequest(http.MethodPut, "http://localhost/api/namespaces/examples", bytes.NewBuffer(json))
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("Content-Type", "application/json; charset=utf-8")
+
+	if os.Getenv("APIKEY") != "" {
+		req.Header.Set("apikey", os.Getenv("APIKEY"))
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	time.Sleep(2 * time.Second)
+	req, err = http.NewRequest(http.MethodPost, "http://localhost/api/namespaces/examples/tree?op=sync-mirror&force=true", nil)
+	if err != nil {
+		return err
+	}
+
+	if os.Getenv("APIKEY") != "" {
+		req.Header.Set("apikey", os.Getenv("APIKEY"))
+	}
+
+	respSync, err := client.Do(req)
+	if err != nil {
+		fmt.Printf("could not sync git repo: %v\n", err)
+	}
+	defer respSync.Body.Close()
+
+	return nil
 
 }
 
@@ -153,7 +257,9 @@ func (a byName) Len() int           { return len(a) }
 func (a byName) Less(i, j int) bool { return a[i].GetName() < a[j].GetName() }
 func (a byName) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 
-func runHelm(kc string) {
+func runHelm() {
+
+	fmt.Println("deploying direktiv")
 
 	f, err := os.OpenFile("/debug.yaml", os.O_APPEND|os.O_WRONLY, 0600)
 	if err != nil {
@@ -172,19 +278,18 @@ func runHelm(kc string) {
 
 	log.Printf("creating service namespace\n")
 
-	cmd := exec.Command(kc, "create", "namespace", "direktiv-services-direktiv")
+	cmd := exec.Command("k3s", "kubectl", "create", "namespace", "direktiv-services-direktiv")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Run()
 
 	log.Printf("running direktiv helm\n")
 	cmd = exec.Command("/helm", "install", "-f", "/debug.yaml", "direktiv", ".")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
 	cmd.Dir = "/direktiv-charts/charts/direktiv"
 	cmd.Env = []string{"KUBECONFIG=/etc/rancher/k3s/k3s.yaml"}
 	cmd.Run()
-
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
 
 }
 
@@ -205,11 +310,13 @@ func addProxy(f *os.File) {
 	log.Printf("adding proxy settings to file: %v\n", f.Name())
 	if os.Getenv("HTTPS_PROXY") != "" || os.Getenv("HTTP_PROXY") != "" {
 		log.Println("http proxy set")
+		f.Write([]byte("\n"))
 		f.Write([]byte(fmt.Sprintf("https_proxy: \"%v\"\n", os.Getenv("HTTPS_PROXY"))))
 		f.Write([]byte(fmt.Sprintf("http_proxy: \"%v\"\n", os.Getenv("HTTP_PROXY"))))
 		f.Write([]byte(fmt.Sprintf("no_proxy: \"%v\"\n", os.Getenv("NO_PROXY"))))
 	} else {
 		log.Println("http proxy not set")
+		f.Write([]byte("\n"))
 		f.Write([]byte("http_proxy: \"\"\n"))
 		f.Write([]byte("https_proxy: \"\"\n"))
 		f.Write([]byte("no_proxy: \"\"\n"))
@@ -218,11 +325,7 @@ func addProxy(f *os.File) {
 
 func installKnative() {
 
-	log.Printf("1!!!!!!!!!!!!!!!!!!!!running knative helm\n")
-
-	time.Sleep(60 * time.Second)
-
-	log.Printf("2!!!!!!!!!!!!!!!!!!!!running knative helm\n")
+	log.Printf("running knative helm\n")
 
 	f, err := os.Create("/tmp/knative.yaml")
 	defer f.Close()
@@ -254,30 +357,21 @@ func installKnative() {
 	if os.Getenv("EVENTING") != "" {
 		log.Printf("installing knative eventing")
 
-		// yamls := []string{
-		// 	"https://github.com/knative/eventing/releases/download/v0.26.1/eventing-crds.yaml",
-		// 	"https://github.com/knative/eventing/releases/download/v0.26.1/eventing-core.yaml",
-		// 	"https://github.com/knative/eventing/releases/download/v0.26.1/mt-channel-broker.yaml",
-		// 	"https://github.com/knative/eventing/releases/download/v0.26.1/in-memory-channel.yaml",
-		// }
+		cmd = exec.Command("k3s", "kubectl", "apply", "-f", "/eventing")
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		cmd.Run()
 
-		// for i := range yamls {
-		// 	cmd = exec.Command(kc, "apply", "-f", yamls[i])
-		// 	cmd.Stdout = os.Stdout
-		// 	cmd.Stderr = os.Stderr
-		// 	cmd.Run()
-		// }
+		// waiting for controller to be Ready
+		cmd = exec.Command("k3s", "kubectl", "wait", "--for=condition=ready", "pod", "-l", "app=mt-broker-controller", "-n", "knative-eventing")
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		cmd.Run()
 
-		// // waiting for controller to be Ready
-		// cmd = exec.Command(kc, "wait", "--for=condition=ready", "pod", "-l", "app=mt-broker-controller", "-n", "knative-eventing")
-		// cmd.Stdout = os.Stdout
-		// cmd.Stderr = os.Stderr
-		// cmd.Run()
-
-		// cmd = exec.Command(kc, "apply", "-f", "/broker.yaml")
-		// cmd.Stdout = os.Stdout
-		// cmd.Stderr = os.Stderr
-		// cmd.Run()
+		cmd = exec.Command("k3s", "kubectl", "apply", "-f", "/broker.yaml")
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		cmd.Run()
 
 	}
 
@@ -287,8 +381,7 @@ func startingK3s() error {
 
 	log.Println("starting k3s now")
 	cmd := exec.Command("/usr/local/bin/k3s", "server", "--kube-proxy-arg=conntrack-max-per-core=0",
-		"--disable", "traefik", "--write-kubeconfig-mode=644", "--kube-apiserver-arg",
-		"feature-gates=TTLAfterFinished=true")
+		"--disable", "traefik", "--write-kubeconfig-mode=644", "--snapshotter", "native")
 
 	log.Println("evacuate cgroup2")
 	if err := cgrouputil.EvacuateCgroup2("init"); err != nil {
@@ -299,10 +392,10 @@ func startingK3s() error {
 	// passing env in for http_prox values
 	cmd.Env = os.Environ()
 
-	// if len(os.Getenv("DEBUG")) > 0 {
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	// }
+	if len(os.Getenv("DEBUG")) > 0 {
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+	}
 
 	return cmd.Run()
 

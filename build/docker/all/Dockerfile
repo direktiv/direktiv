@@ -33,7 +33,7 @@ RUN ./download-image.sh \
 	registry:2.7.1
 
 # download knative slayerrving and contour yaml. Extract the images to preload them for k3s.
-RUN echo 2 && wget https://github.com/knative/serving/releases/download/knative-${KNATIVE_VERSION}/serving-core.yaml
+RUN wget https://github.com/knative/serving/releases/download/knative-${KNATIVE_VERSION}/serving-core.yaml
 RUN wget https://github.com/knative/net-contour/releases/download/knative-${KNATIVE_VERSION}/net-contour.yaml
 
 RUN cat serving-core.yaml | sed -n -e '/gcr.io\/knative-releases/p' | cut -d : -f 2-3 | xargs ./download-image.sh
@@ -43,6 +43,14 @@ RUN cat net-contour.yaml | sed -n -e '/gcr.io\/knative-releases/p' | cut -d : -f
 RUN cd images && tar -czf /images.tar.gz *
 
 RUN ls -la /images
+
+# just in case prepare eventing
+RUN mkdir /eventing
+RUN wget -P /eventing https://github.com/knative/eventing/releases/download/knative-${KNATIVE_VERSION}/eventing-crds.yaml
+RUN wget -P /eventing https://github.com/knative/eventing/releases/download/knative-${KNATIVE_VERSION}/eventing-core.yaml
+RUN wget -P /eventing https://github.com/knative/eventing/releases/download/knative-${KNATIVE_VERSION}/in-memory-channel.yaml
+RUN wget -P /eventing https://github.com/knative/eventing/releases/download/knative-${KNATIVE_VERSION}/mt-channel-broker.yaml
+
 
 # This stage builds the installation app
 FROM ubuntu:21.10 as build-env
@@ -80,11 +88,15 @@ RUN cp /linux-amd64/helm /helm && rm -Rf /linux-amd64
 RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
 RUN install -o 0 -g 0 -m 0755 kubectl /usr/local/bin/kubectl
 
-RUN echo 1 && git clone https://github.com/direktiv/direktiv-charts.git
+RUN git clone https://github.com/direktiv/direktiv-charts.git
+RUN /helm repo add nginx https://kubernetes.github.io/ingress-nginx
+RUN /helm repo add prometheus https://prometheus-community.github.io/helm-charts
+RUN /helm dependency build /direktiv-charts/charts/direktiv
 
-# This
+# This/
 FROM base
 
+COPY --from=images /eventing /eventing
 COPY --from=images images.tar.gz /
 RUN tar -C  /var/lib/rancher/k3s/agent/images/ -xvzf images.tar.gz
 
@@ -94,11 +106,6 @@ VOLUME /var/lib/rancher/k3s
 VOLUME /var/lib/cni
 VOLUME /var/log
 
-
-# COPY --from=build-env /linux-amd64/helm /helm
-# RUN git clone https://github.com/direktiv/direktiv-charts.git 
-# RUN cd direktiv-charts/charts/direktiv && /helm dependencies update
-
 # COPY broker.yaml /
 COPY profile /
 RUN cat profile >> /root/.bashrc
@@ -106,31 +113,9 @@ RUN cat profile >> /root/.bashrc
 COPY debug.yaml /
 COPY registry.yaml /
 COPY pg /pg
-# # COPY config-deployment.yaml /config-deployment.yaml
 
-# # k3s stuff
-# VOLUME /var/lib/kubelet
-# VOLUME /var/lib/rancher/k3s
-# VOLUME /var/lib/cni
-# VOLUME /var/log
-
-# ENV PATH="$PATH:/bin/aux"
-# ENV CRI_CONFIG_FILE="/var/lib/rancher/k3s/agent/etc/crictl.yaml"
 ENV KUBECONFIG=/etc/rancher/k3s/k3s.yaml
 
-# # get containerd stuff
-# RUN wget https://github.com/containerd/containerd/releases/download/v1.5.7/containerd-1.5.7-linux-amd64.tar.gz
-# RUN tar xvf containerd-1.5.7-linux-amd64.tar.gz bin/ctr
-
-# COPY images.tar.gz /
 COPY --from=build-env /dlapp /dlapp
 RUN chmod 755 /dlapp
 CMD ["/dlapp"]
-
-# CMD ["/usr/local/bin/k3s", "server", "--kube-proxy-arg=conntrack-max-per-core=0", "--disable", "traefik", "--write-kubeconfig-mode=644"]
-
-# ENTRYPOINT ["/usr/local/bin/k3s", "server", "--kube-proxy-arg=conntrack-max-per-core=0", "--disable", "traefik", "--write-kubeconfig-mode=644"]
-
- 	# cmd := exec.Command("/k3s", "server", "--kube-proxy-arg=conntrack-max-per-core=0",
-	# 	"--disable", "traefik", "--write-kubeconfig-mode=644", "--kube-apiserver-arg",
-	# 	"feature-gates=TTLAfterFinished=true")
