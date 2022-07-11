@@ -202,7 +202,7 @@ func (events *events) flushEvent(ctx context.Context, eventID string, ns *ent.Na
 
 }
 
-func (events *events) handleEvent(ns *ent.Namespace, ce *cloudevents.Event) error {
+func (events *events) handleEventLoopLogic(ctx context.Context, rows *sql.Rows, ce *cloudevents.Event) {
 
 	var (
 		id                                uuid.UUID
@@ -211,7 +211,170 @@ func (events *events) handleEvent(ns *ent.Namespace, ce *cloudevents.Event) erro
 		wf                                string
 	)
 
+	err := rows.Scan(&id, &signature, &count, &allEvents, &wf, &singleEvent)
+	if err != nil {
+		events.sugar.Errorf("process row error: %v", err)
+		return
+	}
+
+	hash, err := hash.Hash(fmt.Sprintf("%d%v%v", id, allEvents, wf), hash.FormatV2, nil)
+	if err != nil {
+		events.sugar.Errorf("failed to generate hash: %v", err)
+		return
+	}
+
+	conn, err := events.locks.lockDB(hash, int(defaultLockWait.Seconds()))
+	if err != nil {
+		events.sugar.Errorf("can not lock event row: %d, %v", id, err)
+		return
+	}
+
+	unlock := func(conn *sql.Conn, hash uint64) {
+		err = events.locks.unlockDB(hash, conn)
+		if err != nil {
+			events.sugar.Errorf("events mutex unlock error: %v", err)
+		}
+	}
+	defer unlock(conn, hash)
+
+	events.sugar.Debugf("event listener %s is candidate", id.String())
+
+	var eventMap map[string]interface{}
+	err = json.Unmarshal(singleEvent, &eventMap)
+	if err != nil {
+		events.sugar.Errorf("can not marshall event map: %v", err)
+		return
+	}
+
+	// adding source for comparison
+	m := ce.Context.GetExtensions()
+
+	// if there is none, we need to create one for source
+	if m == nil {
+		m = make(map[string]interface{})
+	}
+
+	m["source"] = ce.Context.GetSource()
+
+	// check filters
+	if !matchesExtensions(eventMap, m) {
+		events.sugar.Debugf("event listener %s does not match", id.String())
+		return
+	}
+
+	// deleteEventListener = append(deleteEventListener, id)
+
+	var ae []map[string]interface{}
+	err = json.Unmarshal(allEvents, &ae)
+	if err != nil {
+		events.sugar.Errorf("failed to unmarshal events: %v", err)
+		return
+	}
+
+	var retEvents []*cloudevents.Event
+
+	if count == 1 {
+
+		retEvents = append(retEvents, ce)
+
+	} else {
+
+		var eventMapAll []map[string]interface{}
+		err = json.Unmarshal(allEvents, &eventMapAll) // why are we doing this again?
+		if err != nil {
+			events.sugar.Errorf("failed to unmarshal events: %v", err)
+			return
+		}
+
+		// set value
+		updateItem := eventMapAll[int(eventMap["idx"].(float64))]
+
+		data, err := eventToBytes(*ce)
+		if err != nil {
+			events.sugar.Errorf("can not update convert event: %v", err)
+			return
+		}
+
+		updateItem["time"] = time.Now().Unix()
+		updateItem["value"] = base64.StdEncoding.EncodeToString(data)
+
+		needsUpdate := false
+		for _, v := range eventMapAll {
+			// if there is one entry without value we can skip this instance
+			// won't fire anyways
+			if v["value"] == "" {
+				needsUpdate = true
+				break
+			} else {
+
+				d, err := base64.StdEncoding.DecodeString(v["value"].(string))
+				if err != nil {
+					events.sugar.Errorf("cannot decode eventmap base64: %v", err)
+					// continue // suspicious
+					return
+				}
+
+				ce, err := bytesToEvent(d)
+				if err != nil {
+					events.sugar.Errorf("cannot unmarshal bytes to event: %v", err)
+					// continue // suspicious
+					return
+				}
+
+				retEvents = append(retEvents, ce)
+
+			}
+
+		}
+
+		if needsUpdate {
+			err = events.updateInstanceEventListener(ctx, events.db.Events, id,
+				eventMapAll)
+			if err != nil {
+				events.sugar.Errorf("can not update multi event: %v", err)
+			}
+			return
+		}
+
+	}
+
+	// if single or multiple added events we fire
+	if len(retEvents) > 0 {
+
+		if len(signature) == 0 {
+
+			go events.engine.EventsInvoke(wf, retEvents...)
+
+		} else {
+
+			d, err := events.reverseTraverseToWorkflow(ctx, wf)
+			if err != nil {
+				events.engine.sugar.Error(err)
+				// return nil // suspicious
+				return
+			}
+
+			err = events.deleteEventListeners(ctx, events.db.Events, d.wf, id)
+			if err != nil {
+				events.engine.sugar.Error(err)
+				// return nil // suspicious
+				return
+			}
+
+			go events.engine.wakeEventsWaiter(signature, retEvents)
+
+		}
+
+	}
+
+	return
+
+}
+
+func (events *events) handleEvent(ns *ent.Namespace, ce *cloudevents.Event) error {
+
 	db := events.db.DB()
+	//
 
 	// we have to select first because of the glob feature
 	// this gives a basic list of eligible workflow instances waiting
@@ -233,157 +396,8 @@ func (events *events) handleEvent(ns *ent.Namespace, ce *cloudevents.Event) erro
 
 	ctx := context.Background()
 
-	// collecting the matching events to delete them when
-	// deleteEventListener := []uuid.UUID{}
-
-	var conn *sql.Conn
 	for rows.Next() {
-
-		err := rows.Scan(&id, &signature, &count, &allEvents, &wf, &singleEvent)
-		if err != nil {
-			events.sugar.Errorf("process row error: %v", err)
-			continue
-		}
-
-		hash, _ := hash.Hash(fmt.Sprintf("%d%v%v", id, allEvents, wf), hash.FormatV2, nil)
-
-		unlock := func() {
-			if conn != nil {
-				events.locks.unlockDB(hash, conn)
-			}
-		}
-		unlock()
-
-		conn, err = events.locks.lockDB(hash, int(defaultLockWait.Seconds()))
-		if err != nil {
-			events.sugar.Errorf("can not lock event row: %d, %v", id, err)
-			continue
-		}
-
-		events.sugar.Debugf("event listener %s is candidate", id.String())
-
-		var eventMap map[string]interface{}
-		err = json.Unmarshal(singleEvent, &eventMap)
-		if err != nil {
-			unlock()
-			events.sugar.Errorf("can not marshall event map: %v", err)
-			continue
-		}
-
-		// adding source for comparison
-		m := ce.Context.GetExtensions()
-
-		// if there is none, we need to create one for source
-		if m == nil {
-			m = make(map[string]interface{})
-		}
-
-		m["source"] = ce.Context.GetSource()
-
-		// check filters
-		if !matchesExtensions(eventMap, m) {
-			events.sugar.Debugf("event listener %s does not match", id.String())
-			unlock()
-			continue
-		}
-
-		// deleteEventListener = append(deleteEventListener, id)
-
-		var ae []map[string]interface{}
-		json.Unmarshal(allEvents, &ae)
-
-		var retEvents []*cloudevents.Event
-
-		if count == 1 {
-
-			retEvents = append(retEvents, ce)
-
-		} else {
-
-			var eventMapAll []map[string]interface{}
-			json.Unmarshal(allEvents, &eventMapAll)
-
-			// set value
-			updateItem := eventMapAll[int(eventMap["idx"].(float64))]
-
-			data, err := eventToBytes(*ce)
-			if err != nil {
-				events.sugar.Errorf("can not update convert event: %v", err)
-				unlock()
-				continue
-			}
-
-			updateItem["time"] = time.Now().Unix()
-			updateItem["value"] = base64.StdEncoding.EncodeToString(data)
-
-			needsUpdate := false
-			for _, v := range eventMapAll {
-				// if there is one entry without value we can skip this instance
-				// won't fire anyways
-				if v["value"] == "" {
-					needsUpdate = true
-					break
-				} else {
-
-					d, err := base64.StdEncoding.DecodeString(v["value"].(string))
-					if err != nil {
-						unlock()
-						continue
-					}
-
-					ce, err := bytesToEvent(d)
-					if err != nil {
-						unlock()
-						continue
-					}
-
-					retEvents = append(retEvents, ce)
-
-				}
-
-			}
-
-			if needsUpdate {
-				err = events.updateInstanceEventListener(ctx, events.db.Events, id,
-					eventMapAll)
-				if err != nil {
-					events.sugar.Errorf("can not update multi event: %v", err)
-				}
-				unlock()
-				continue
-			}
-
-		}
-
-		unlock()
-
-		// if single or multiple added events we fire
-		if len(retEvents) > 0 {
-
-			if len(signature) == 0 {
-
-				go events.engine.EventsInvoke(wf, retEvents...)
-
-			} else {
-
-				d, err := events.reverseTraverseToWorkflow(ctx, wf)
-				if err != nil {
-					events.engine.sugar.Error(err)
-					return nil
-				}
-
-				err = events.deleteEventListeners(ctx, events.db.Events, d.wf, id)
-				if err != nil {
-					events.engine.sugar.Error(err)
-					return nil
-				}
-
-				go events.engine.wakeEventsWaiter(signature, retEvents)
-
-			}
-
-		}
-
+		events.handleEventLoopLogic(ctx, rows, ce)
 	}
 
 	metricsCloudEventsCaptured.WithLabelValues(ns.Name, ce.Type(), ce.Source(), ns.Name).Inc()
