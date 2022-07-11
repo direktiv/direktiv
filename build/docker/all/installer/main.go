@@ -194,8 +194,7 @@ func addNamespace() error {
 	fmt.Println("adding namespace from git")
 
 	ns := make(map[string]string)
-	// ns["url"] = "https://github.com/jensg-st/knative-demo"
-	ns["url"] = "https://github.com/direktiv/aio-examples.git"
+	ns["url"] = "https://github.com/direktiv/direktiv-examples.git"
 	ns["ref"] = "main"
 
 	client := &http.Client{}

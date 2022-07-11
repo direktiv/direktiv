@@ -58,11 +58,11 @@ FROM ubuntu:21.10 as build-env
 RUN apt-get update && apt-get install -y ca-certificates curl golang
 
 RUN mkdir /app
-COPY app/go.mod /app 
-COPY app/go.sum /app
+COPY installer/go.mod /app 
+COPY installer/go.sum /app
 RUN cd /app && go mod download
 
-COPY app/main.go /app
+COPY installer/main.go /app
 
 RUN cd /app && CGO_LDFLAGS="-static -w -s"  go build  -tags osusergo,netgo  -o /dlapp /app/main.go
 
