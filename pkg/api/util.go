@@ -416,7 +416,7 @@ func sse(w http.ResponseWriter, ch <-chan interface{}) {
 				return
 			}
 
-		case <-time.After(time.Second * 10):
+		case <-time.After(time.Second * 5):
 			err = sseHeartbeat(w, flusher)
 			if err != nil {
 				return
@@ -655,17 +655,17 @@ func (s *Server) logMiddleware(h http.Handler) http.Handler {
 
 }
 
-//	readSingularFromQueryOrBody : Reads a single key passed in params from 
+//	readSingularFromQueryOrBody : Reads a single key passed in params from
 //	query and body and returns value of that key to corresponding read values.
-func readSingularFromQueryOrBody(r *http.Request, key string) (string, error){
+func readSingularFromQueryOrBody(r *http.Request, key string) (string, error) {
 	in := make(map[string]string)
 
 	value := r.URL.Query().Get(key)
 
 	err := unmarshalBody(r, &in)
-	if err == io.EOF && value == ""{
+	if err == io.EOF && value == "" {
 		return "", fmt.Errorf("%s is missing from query and body", key)
-	} else if err != nil && err != io.EOF{
+	} else if err != nil && err != io.EOF {
 		return "", err
 	}
 
@@ -681,4 +681,3 @@ func readSingularFromQueryOrBody(r *http.Request, key string) (string, error){
 
 	return value, nil
 }
-
