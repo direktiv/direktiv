@@ -46,8 +46,6 @@ type server struct {
 	metricServer *metricsServer
 
 	metrics *metrics.Client
-
-	dependencies *dependencyGraph
 }
 
 func Run(ctx context.Context, logger *zap.SugaredLogger, conf *util.Config) error {
@@ -223,8 +221,6 @@ func (srv *server) start(ctx context.Context) error {
 
 	go srv.cronPoller()
 	go srv.syncerCronPoller()
-
-	go srv.dependencyGraphPoller()
 
 	go func() {
 		defer wg.Done()
