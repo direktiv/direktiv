@@ -171,7 +171,8 @@ protoc:
 # Patterns
 
 build/%-binary: Makefile ${GO_SOURCE_FILES}
-	@set -e ; if [ -d "cmd/$*" ]; then \
+	@set -e; 
+	if [ -d "cmd/$*" ] && [ ".all" != "${DOCKER_BASE}" ]; then \
 		echo "Building $* binary..."; \
 		go build -ldflags "-X github.com/direktiv/direktiv/pkg/version.Version=${FULL_VERSION}" -tags ${GO_BUILD_TAGS} -o $@ cmd/$*/*.go; \
 		cp build/$*-binary build/$*; \
@@ -213,8 +214,7 @@ docker-ui: ## Manually clone and build the latest UI.
 docker-all: ## Build the all-in-one image.
 docker-all:
 	cp -Rf kubernetes build/docker/all
-	cd build/docker/all && ./images.sh
-	docker build --no-cache -t direktiv-kube build/docker/all
+	docker build -t direktiv-kube build/docker/all
 
 .PHONY: template-configmaps
 template-configmaps:
