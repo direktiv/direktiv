@@ -1,28 +1,26 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import './style.css';
-import FlexBox from '../../../components/flexbox';
-import {useSearchParams} from 'react-router-dom'
-import ContentPanel, { ContentPanelBody, ContentPanelTitle, ContentPanelTitleIcon } from '../../../components/content-panel';
-import { VscFileCode, VscExtensions } from 'react-icons/vsc'
-import { useNamespaceDependencies, useWorkflow, useWorkflowServices } from 'direktiv-react-hooks';
-import { Config } from '../../../util';
+import { useWorkflow, useWorkflowServices } from 'direktiv-react-hooks';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { VscFileCode } from 'react-icons/vsc';
 import { useNavigate, useParams } from 'react-router';
-import {  GenerateRandomKey } from '../../../util';
+import { useSearchParams } from 'react-router-dom';
+import ContentPanel, { ContentPanelBody, ContentPanelTitle, ContentPanelTitleIcon } from '../../../components/content-panel';
+import FlexBox from '../../../components/flexbox';
+import { Config, GenerateRandomKey } from '../../../util';
+import './style.css';
 
-import * as dayjs from "dayjs"
+import * as dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
-import utc from "dayjs/plugin/utc"
+import utc from "dayjs/plugin/utc";
 import { InstanceRow } from '../../instances';
 
-import {VscTag, VscNote, VscError, VscPass, VscChevronDown, VscChevronUp, VscTypeHierarchySub, VscVmRunning, VscLayers, VscPieChart} from 'react-icons/vsc'
+import { VscChevronDown, VscChevronUp, VscError, VscLayers, VscNote, VscPass, VscPieChart, VscTag, VscTypeHierarchySub, VscVmRunning } from 'react-icons/vsc';
 
-import { Service } from '../../namespace-services';
+import YAML from 'js-yaml';
+import DiagramEditor from '../../../components/diagram-editor';
 import DirektivEditor from '../../../components/editor';
-import DiagramEditor from '../../../components/diagram-editor'
-import AddWorkflowVariablePanel from './variables';
+import { Service } from '../../namespace-services';
 import { RevisionSelectorTab, TabbedButtons } from './revisionTab';
-import DependencyDiagram from '../../../components/dependency-diagram';
-import YAML from 'js-yaml'
+import AddWorkflowVariablePanel from './variables';
 
 import WorkflowDiagram from '../../../components/diagram';
 
@@ -31,17 +29,17 @@ import 'rc-slider/assets/index.css';
 import Button from '../../../components/button';
 import Modal, { ButtonDefinition } from '../../../components/modal';
 
-import SankeyDiagram from '../../../components/sankey';
-import {PieChart} from 'react-minimal-pie-chart'
+import { PieChart } from 'react-minimal-pie-chart';
+import { AutoSizer } from "react-virtualized";
+import Alert from '../../../components/alert';
 import HelpIcon from "../../../components/help";
 import Loader from '../../../components/loader';
-import Alert from '../../../components/alert';
 import Pagination from '../../../components/pagination';
-import {AutoSizer} from "react-virtualized";
+import SankeyDiagram from '../../../components/sankey';
 
-import  Tabs  from '../../../components/tabs';
 import Form from "@rjsf/core";
 import { windowBlocker } from '../../../components/diagram-editor/usePrompt';
+import Tabs from '../../../components/tabs';
 
 dayjs.extend(utc)
 dayjs.extend(relativeTime);
@@ -167,11 +165,6 @@ function InitialWorkflowHook(props){
                         />
                     :<></>}
                     { activeTab === 3 ?
-                        <WorkflowDependencies namespace={namespace} workflow={filepath} />
-                    :
-                    <></>
-                    }
-                    { activeTab === 4 ?
                         <SettingsTab addAttributes={addAttributes} deleteAttributes={deleteAttributes} workflowData={data} setWorkflowLogToEvent={setWorkflowLogToEvent} namespace={namespace} workflow={filepath} />
                     :<></>}
                 </FlexBox>
@@ -181,52 +174,6 @@ function InitialWorkflowHook(props){
 }
 
 export default WorkflowPage;
-
-
-function WorkflowDependencies(props) {
-    const {workflow, namespace} = props
-    const [load, setLoad] = useState(true)
-    const [dependencies, setDependencies] = useState(null)
-    const {data, getWorkflows} = useNamespaceDependencies(Config.url, namespace, localStorage.getItem('apikey'))
-
-    useEffect(()=>{
-        async function getDependencies() {
-            if(load && data !== null){
-                let wfo = await getWorkflows()
-                let arr = Object.keys(wfo)
-                for(let i=0 ; i < arr.length; i++) {
-                    if(arr[i] === workflow) {
-                        setDependencies(wfo[workflow])
-                        break
-                    }
-                }
-                setLoad(false)
-            }
-        }
-        getDependencies()
-    },[load, data, getWorkflows, workflow])
-
-    return(
-        <FlexBox style={{width:"100%"}}>
-            <ContentPanel style={{width:"100%"}}>
-                <ContentPanelTitle>
-                    <ContentPanelTitleIcon>
-                        <VscExtensions />
-                    </ContentPanelTitleIcon>
-                    <FlexBox style={{display:"flex", alignItems:"center"}} className="gap">
-                        <div>
-                            Dependency Graph
-                        </div>
-                        <HelpIcon msg={"Shows the dependencies the workflow requires in a graph format."} />
-                    </FlexBox>
-                </ContentPanelTitle>
-                <ContentPanelBody>
-                    <DependencyDiagram dependencies={dependencies} workflow={workflow} type={"workflow"}/>
-                </ContentPanelBody>
-            </ContentPanel>
-        </FlexBox>
-    )
-}
 
 function WorkingRevisionErrorBar(props) {
     const { errors, showErrors } = props
@@ -563,17 +510,16 @@ function WorkingRevision(props) {
 function TabBar(props) {
 
     let {activeTab, setActiveTab, setSearchParams, toggleWorkflow, getWorkflowRouter, router, setRouter, block, setBlock, blockMsg} = props;
-    let tabLabels = [
+    const tabLabels = [
         "Overview",
         "Revisions",
         "Active Revision",
-        "Dependency Graph", 
         "Settings"
     ]
 
 
     let tabDOMs = [];
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 4; i++) {
 
         let className = "tab-bar-item"
         if (i === activeTab) {
