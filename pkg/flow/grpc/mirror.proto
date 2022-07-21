@@ -25,15 +25,9 @@ message MirrorActivityInfo {
 	google.protobuf.Timestamp updated_at = 5;
 }
 
-message MirrorActivitiesEdge {
-	MirrorActivityInfo node = 1;
-	string cursor = 2;
-}
-
 message MirrorActivities {
-    int32 totalCount = 1;
 	PageInfo pageInfo = 2;
-	repeated MirrorActivitiesEdge edges = 3;
+	repeated MirrorActivityInfo results = 4;
 }
 
 message MirrorInfo {
@@ -41,7 +35,6 @@ message MirrorInfo {
     string ref = 2;
     string cron = 3;
     string publicKey = 4;
-    // bool locked = 5;
     string commitId = 6;
     google.protobuf.Timestamp lastSync = 7;
     string privateKey = 8;
@@ -57,7 +50,6 @@ message CreateNamespaceMirrorRequest {
 message CreateDirectoryMirrorRequest {
 	string namespace = 1;
 	string path = 2;
-	// bool idempotent = 3;
 	bool parents = 4;
     MirrorSettings settings = 5;
 }

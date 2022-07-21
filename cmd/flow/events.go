@@ -24,10 +24,8 @@ var eventHistoryCmd = &cobra.Command{
 
 		req := &grpc.EventHistoryRequest{
 			Pagination: &grpc.Pagination{
-				After:  after,
-				First:  first,
-				Before: before,
-				Last:   last,
+				Limit:  limit,
+				Offset: offset,
 				Order: []*grpc.PageOrder{{
 					Field:     orderField,
 					Direction: orderDirection,

@@ -664,13 +664,13 @@ func testDirectory(ctx context.Context, c grpc.FlowClient, namespace string) err
 		return err
 	}
 
-	if len(resp.Children.Edges) != 3 {
+	if len(resp.Children.Results) != 3 {
 		return errors.New("incorrect number of directory children")
 	}
 
-	if resp.Children.Edges[0].Node.Name != "a" ||
-		resp.Children.Edges[1].Node.Name != "b" ||
-		resp.Children.Edges[2].Node.Name != "c" {
+	if resp.Children.Results[0].Name != "a" ||
+		resp.Children.Results[1].Name != "b" ||
+		resp.Children.Results[2].Name != "c" {
 		return errors.New("incorrect directory children")
 	}
 
@@ -701,7 +701,7 @@ func testDirectoryStream(ctx context.Context, c grpc.FlowClient, namespace strin
 		return err
 	}
 
-	if len(resp.Children.Edges) != 0 {
+	if len(resp.Children.Results) != 0 {
 		return errors.New("unexpected nodes in test directory")
 	}
 
@@ -718,7 +718,7 @@ func testDirectoryStream(ctx context.Context, c grpc.FlowClient, namespace strin
 		return err
 	}
 
-	if len(resp.Children.Edges) != 1 {
+	if len(resp.Children.Results) != 1 {
 		return errors.New("incorrect data in test directory")
 	}
 
@@ -732,7 +732,7 @@ func testDirectoryStream(ctx context.Context, c grpc.FlowClient, namespace strin
 	}
 
 	resp, err = client.Recv()
-	if len(resp.Children.Edges) != 0 {
+	if len(resp.Children.Results) != 0 {
 		return errors.New("unexpected nodes in test directory")
 	}
 

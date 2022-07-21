@@ -19,126 +19,38 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-func directoryOrder(p *pagination) []ent.InodePaginateOption {
-
-	var opts []ent.InodePaginateOption
-
-	for _, o := range p.order {
-
-		if o == nil {
-			continue
-		}
-
-		order := ent.InodeOrder{
-			Direction: ent.OrderDirectionAsc,
-			Field:     ent.InodeOrderFieldName,
-		}
-
-		switch o.GetField() {
-		case "UPDATED":
-			order.Field = ent.InodeOrderFieldUpdatedAt
-		case "CREATED":
-			order.Field = ent.InodeOrderFieldCreatedAt
-		case "NAME":
-			order.Field = ent.InodeOrderFieldName
-		case "TYPE":
-			order.Field = ent.InodeOrderFieldType
-		default:
-			break
-		}
-
-		switch o.GetDirection() {
-		case "DESC":
-			order.Direction = ent.OrderDirectionDesc
-		case "ASC":
-			order.Direction = ent.OrderDirectionAsc
-		default:
-			break
-		}
-
-		opts = append(opts, ent.WithInodeOrder(&order))
-
-	}
-
-	if len(opts) == 0 {
-		opts = append(opts, ent.WithInodeOrder(&ent.InodeOrder{
-			Direction: ent.OrderDirectionDesc,
-			Field:     ent.InodeOrderFieldType,
-		}), ent.WithInodeOrder(&ent.InodeOrder{
-			Direction: ent.OrderDirectionAsc,
-			Field:     ent.InodeOrderFieldName,
-		}))
-	}
-
-	return opts
-
+var inodesOrderings = []*orderingInfo{
+	{
+		db:           entino.FieldType,
+		req:          "TYPE",
+		defaultOrder: ent.Desc,
+		isDefault:    true,
+	},
+	{
+		db:           entino.FieldName,
+		req:          "NAME",
+		defaultOrder: ent.Asc,
+		isDefault:    true,
+	},
+	{
+		db:           entino.FieldCreatedAt,
+		req:          "CREATED",
+		defaultOrder: ent.Asc,
+	},
+	{
+		db:           entino.FieldUpdatedAt,
+		req:          "UPDATED",
+		defaultOrder: ent.Asc,
+	},
 }
 
-func directoryFilter(p *pagination) []ent.InodePaginateOption {
-
-	var filters []func(query *ent.InodeQuery) (*ent.InodeQuery, error)
-	var opts []ent.InodePaginateOption
-
-	if p.filter == nil {
-		return nil
-	}
-
-	for i := range p.filter {
-
-		f := p.filter[i]
-
-		if f == nil {
-			continue
-		}
-
-		filter := f.Val
-
-		filters = append(filters, func(query *ent.InodeQuery) (*ent.InodeQuery, error) {
-
-			if filter == "" {
-				return query, nil
-			}
-
-			field := f.Field
-			if field == "" {
-				return query, nil
-			}
-
-			switch field {
-			case "NAME":
-
-				ftype := f.Type
-				if ftype == "" {
-					return query, nil
-				}
-
-				switch ftype {
-				case "CONTAINS":
-					return query.Where(entino.NameContains(filter)), nil
-				}
-			}
-
-			return query, nil
-
-		})
-
-	}
-
-	if len(filters) > 0 {
-		opts = append(opts, ent.WithInodeFilter(func(query *ent.InodeQuery) (*ent.InodeQuery, error) {
-			var err error
-			for _, filter := range filters {
-				query, err = filter(query)
-				if err != nil {
-					return nil, err
-				}
-			}
-			return query, nil
-		}))
-	}
-
-	return opts
-
+var inodesFilters = map[*filteringInfo]func(query *ent.InodeQuery, v string) (*ent.InodeQuery, error){
+	{
+		field: "NAME",
+		ftype: "CONTAINS",
+	}: func(query *ent.InodeQuery, v string) (*ent.InodeQuery, error) {
+		return query.Where(entino.NameContains(v)), nil
+	},
 }
 
 func (flow *flow) Node(ctx context.Context, req *grpc.NodeRequest) (*grpc.NodeResponse, error) {
@@ -175,17 +87,7 @@ func (flow *flow) Directory(ctx context.Context, req *grpc.DirectoryRequest) (*g
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	p, err := getPagination(req.Pagination)
-	if err != nil {
-		return nil, err
-	}
-
-	opts := []ent.InodePaginateOption{}
-	opts = append(opts, directoryOrder(p)...)
-	opts = append(opts, directoryFilter(p)...)
-
-	nsc := flow.db.Namespace
-	d, err := flow.traverseToInode(ctx, nsc, req.GetNamespace(), req.GetPath())
+	d, err := flow.traverseToInode(ctx, flow.db.Namespace, req.GetNamespace(), req.GetPath())
 	if err != nil {
 		return nil, err
 	}
@@ -195,12 +97,21 @@ func (flow *flow) Directory(ctx context.Context, req *grpc.DirectoryRequest) (*g
 	}
 
 	query := d.ino.QueryChildren()
-	cx, err := query.Paginate(ctx, p.After(), p.First(), p.Before(), p.Last(), opts...)
+
+	results, pi, err := paginate[*ent.InodeQuery, *ent.Inode](ctx, req.Pagination, query, inodesOrderings, inodesFilters)
 	if err != nil {
 		return nil, err
 	}
 
-	var resp grpc.DirectoryResponse
+	resp := new(grpc.DirectoryResponse)
+	resp.Namespace = d.namespace()
+	resp.Children = new(grpc.DirectoryChildren)
+	resp.Children.PageInfo = pi
+
+	err = atob(results, &resp.Children.Results)
+	if err != nil {
+		return nil, err
+	}
 
 	err = atob(d.ino, &resp.Node)
 	if err != nil {
@@ -211,27 +122,21 @@ func (flow *flow) Directory(ctx context.Context, req *grpc.DirectoryRequest) (*g
 		resp.Node.ExpandedType = resp.Node.Type
 	}
 
-	resp.Namespace = d.namespace()
 	resp.Node.Path = d.path
 	resp.Node.Parent = d.dir
 
-	err = atob(cx, &resp.Children)
-	if err != nil {
-		return nil, err
-	}
+	for idx := range resp.Children.Results {
+		child := resp.Children.Results[idx]
+		child.Parent = resp.Node.Path
+		child.Path = filepath.Join(resp.Node.Path, child.Name)
 
-	for idx := range resp.Children.Edges {
-		child := resp.Children.Edges[idx]
-		child.Node.Parent = resp.Node.Path
-		child.Node.Path = filepath.Join(resp.Node.Path, child.Node.Name)
-
-		if child.Node.ExpandedType == "" {
-			child.Node.ExpandedType = child.Node.Type
+		if child.ExpandedType == "" {
+			child.ExpandedType = child.Type
 		}
 
 	}
 
-	return &resp, nil
+	return resp, nil
 
 }
 
@@ -243,17 +148,7 @@ func (flow *flow) DirectoryStream(req *grpc.DirectoryRequest, srv grpc.Flow_Dire
 	phash := ""
 	nhash := ""
 
-	p, err := getPagination(req.Pagination)
-	if err != nil {
-		return err
-	}
-
-	opts := []ent.InodePaginateOption{}
-	opts = append(opts, directoryOrder(p)...)
-	opts = append(opts, directoryFilter(p)...)
-
-	nsc := flow.db.Namespace
-	d, err := flow.traverseToInode(ctx, nsc, req.GetNamespace(), req.GetPath())
+	d, err := flow.traverseToInode(ctx, flow.db.Namespace, req.GetNamespace(), req.GetPath())
 	if err != nil {
 		return err
 	}
@@ -268,12 +163,21 @@ func (flow *flow) DirectoryStream(req *grpc.DirectoryRequest, srv grpc.Flow_Dire
 resend:
 
 	query := d.ino.QueryChildren()
-	cx, err := query.Paginate(ctx, p.After(), p.First(), p.Before(), p.Last(), opts...)
+
+	results, pi, err := paginate[*ent.InodeQuery, *ent.Inode](ctx, req.Pagination, query, inodesOrderings, inodesFilters)
 	if err != nil {
 		return err
 	}
 
 	resp := new(grpc.DirectoryResponse)
+	resp.Namespace = d.namespace()
+	resp.Children = new(grpc.DirectoryChildren)
+	resp.Children.PageInfo = pi
+
+	err = atob(results, &resp.Children.Results)
+	if err != nil {
+		return err
+	}
 
 	err = atob(d.ino, &resp.Node)
 	if err != nil {
@@ -287,19 +191,15 @@ resend:
 	resp.Node.Path = d.path
 	resp.Node.Parent = d.dir
 
-	err = atob(cx, &resp.Children)
-	if err != nil {
-		return err
-	}
+	for idx := range resp.Children.Results {
+		child := resp.Children.Results[idx]
+		child.Parent = resp.Node.Path
+		child.Path = filepath.Join(resp.Node.Path, child.Name)
 
-	for idx := range resp.Children.Edges {
-		child := resp.Children.Edges[idx]
-		child.Node.Parent = resp.Node.Path
-		child.Node.Path = filepath.Join(resp.Node.Path, child.Node.Name)
-
-		if child.Node.ExpandedType == "" {
-			child.Node.ExpandedType = child.Node.Type
+		if child.ExpandedType == "" {
+			child.ExpandedType = child.Type
 		}
+
 	}
 
 	nhash = checksum(resp)

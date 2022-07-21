@@ -109,16 +109,12 @@ func getInt32(r *http.Request, key string) (int32, error) {
 
 func pagination(r *http.Request) (*grpc.Pagination, error) {
 
-	after := r.URL.Query().Get("after")
-
-	first, err := getInt32(r, "first")
+	limit, err := getInt32(r, "limit")
 	if err != nil {
 		return nil, err
 	}
 
-	before := r.URL.Query().Get("before")
-
-	last, err := getInt32(r, "last")
+	offset, err := getInt32(r, "offset")
 	if err != nil {
 		return nil, err
 	}
@@ -187,10 +183,8 @@ func pagination(r *http.Request) (*grpc.Pagination, error) {
 	}
 
 	p := &grpc.Pagination{
-		After:  after,
-		First:  first,
-		Before: before,
-		Last:   last,
+		Limit:  limit,
+		Offset: offset,
 		Order:  orderings,
 		Filter: filters,
 	}
@@ -528,16 +522,10 @@ func sseHeartbeat(w http.ResponseWriter, flusher http.Flusher) error {
 type PaginationQuery struct {
 
 	// TODO: swagger-spec. Export Field when spec is done
-	after string `json:"after"`
+	offset int32 `json:"offset"`
 
 	// TODO: swagger-spec. Export Field when spec is done
-	first int32 `json:"first"`
-
-	// TODO: swagger-spec. Export Field when spec is done
-	before string `json:"before"`
-
-	// TODO: swagger-spec. Export Field when spec is done
-	last int32 `json:"last"`
+	limit int32 `json:"limit"`
 
 	// field to order by
 	//

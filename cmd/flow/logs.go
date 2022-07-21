@@ -22,10 +22,8 @@ var serverLogsCmd = &cobra.Command{
 
 		req := &grpc.ServerLogsRequest{
 			Pagination: &grpc.Pagination{
-				After:  after,
-				First:  first,
-				Before: before,
-				Last:   last,
+				Limit:  limit,
+				Offset: offset,
 				Order: []*grpc.PageOrder{{
 					Field:     orderField,
 					Direction: orderDirection,
@@ -85,10 +83,8 @@ var namespaceLogsCmd = &cobra.Command{
 
 		req := &grpc.NamespaceLogsRequest{
 			Pagination: &grpc.Pagination{
-				After:  after,
-				First:  first,
-				Before: before,
-				Last:   last,
+				Limit:  limit,
+				Offset: offset,
 				Order: []*grpc.PageOrder{{
 					Field:     orderField,
 					Direction: orderDirection,
@@ -150,10 +146,8 @@ var workflowLogsCmd = &cobra.Command{
 
 		req := &grpc.WorkflowLogsRequest{
 			Pagination: &grpc.Pagination{
-				After:  after,
-				First:  first,
-				Before: before,
-				Last:   last,
+				Limit:  limit,
+				Offset: offset,
 				Order: []*grpc.PageOrder{{
 					Field:     orderField,
 					Direction: orderDirection,
@@ -216,10 +210,8 @@ var instanceLogsCmd = &cobra.Command{
 
 		req := &grpc.InstanceLogsRequest{
 			Pagination: &grpc.Pagination{
-				After:  after,
-				First:  first,
-				Before: before,
-				Last:   last,
+				Limit: limit,
+				Offset: offset,
 				Order: []*grpc.PageOrder{{
 					Field:     orderField,
 					Direction: orderDirection,

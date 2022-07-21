@@ -3,7 +3,6 @@ package schema
 import (
 	"time"
 
-	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/edge"
@@ -23,7 +22,7 @@ func (Workflow) Fields() []ent.Field {
 		field.Bool("live").Default(true),
 		field.String("logToEvents").Optional(),
 		field.Bool("readOnly").Optional(),
-		field.Time("updated_at").Optional().Default(time.Now).UpdateDefault(time.Now).Annotations(entgql.OrderField("UPDATED")),
+		field.Time("updated_at").Optional().Default(time.Now).UpdateDefault(time.Now),
 	}
 }
 

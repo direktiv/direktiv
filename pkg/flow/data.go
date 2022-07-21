@@ -11,9 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/flow/ent"
 	"github.com/direktiv/direktiv/pkg/jqer"
-	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -195,46 +193,6 @@ func atobSliceBuilder(t reflect.Type, v reflect.Value) interface{} {
 
 }
 
-func encodeCursor(c ent.Cursor) string {
-	m := make(map[string]interface{})
-	m["id"] = c.ID.String()
-	m["v"] = c.Value
-	data, _ := json.Marshal(m)
-	s := base64.StdEncoding.EncodeToString(data)
-	return s
-}
-
-func decodeCursor(s string) *ent.Cursor {
-	var c ent.Cursor
-	data, err := base64.StdEncoding.DecodeString(s)
-	if err != nil {
-		return &c
-	}
-	m := make(map[string]interface{})
-	err = json.Unmarshal(data, &m)
-	if err != nil {
-		return &c
-	}
-	x, exists := m["id"]
-	if !exists {
-		return &c
-	}
-	id, ok := x.(string)
-	if !ok {
-		return &c
-	}
-	v, exists := m["v"]
-	if !exists {
-		return &c
-	}
-	c.ID, err = uuid.Parse(id)
-	if err != nil {
-		return &c
-	}
-	c.Value = ent.Value(v)
-	return &c
-}
-
 func atobBuilder(a interface{}) interface{} {
 
 	v := reflect.ValueOf(a)
@@ -257,8 +215,6 @@ deref:
 	case reflect.Map:
 		x := v.Interface()
 		switch x.(type) {
-		case ent.Cursor:
-			return encodeCursor(x.(ent.Cursor))
 		case time.Time:
 			return timestamppb.New(x.(time.Time))
 		case map[string]interface{}:

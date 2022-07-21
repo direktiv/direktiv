@@ -18,6 +18,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 
 	cevents "github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
+	entevents "github.com/direktiv/direktiv/pkg/flow/ent/events"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/google/uuid"
@@ -433,156 +434,51 @@ func bytesToEvent(b []byte) (*cloudevents.Event, error) {
 	return ev, nil
 }
 
-func eventListenersOrder(p *pagination) []ent.EventsPaginateOption {
-
-	var opts []ent.EventsPaginateOption
-
-	for _, o := range p.order {
-		field := ent.EventsOrderFieldUpdatedAt
-		direction := ent.OrderDirectionAsc
-
-		if o == nil {
-			continue
-		}
-
-		if x := o.Field; x != "" && x == "UPDATED" {
-			field = ent.EventsOrderFieldUpdatedAt
-		}
-
-		opts = append(opts, ent.WithEventsOrder(&ent.EventsOrder{
-			Direction: direction,
-			Field:     field,
-		}))
-
-	}
-
-	if len(opts) == 0 {
-		opts = append(opts, ent.WithEventsOrder(&ent.EventsOrder{
-			Direction: ent.OrderDirectionAsc,
-			Field:     ent.EventsOrderFieldUpdatedAt,
-		}))
-	}
-
-	return opts
-
+var eventListenersOrderings = []*orderingInfo{
+	{
+		db:           entevents.FieldUpdatedAt,
+		req:          "UPDATED",
+		defaultOrder: ent.Asc,
+	},
 }
 
-func eventListenersFilter(p *pagination) []ent.EventsPaginateOption {
-
-	var filters []func(query *ent.EventsQuery) (*ent.EventsQuery, error)
-	var opts []ent.EventsPaginateOption
-
-	if p.filter == nil {
-		return opts
-	}
-
-	for i := range p.filter {
-
-		f := p.filter[i]
-
-		if f == nil {
-			continue
-		}
-
-		filter := f.Val
-
-		filters = append(filters, func(query *ent.EventsQuery) (*ent.EventsQuery, error) {
-
-			if filter == "" {
-				return query, nil
-			}
-
-			field := f.Field
-			if field == "" {
-				return query, nil
-			}
-
-			// switch field {
-			// case "NAME":
-
-			// 	ftype := p.filter.Type
-			// 	if ftype == "" {
-			// 		return query, nil
-			// 	}
-
-			// 	switch ftype {
-			// 	case "CONTAINS":
-			// 		return query.Where(entns.NameContains(filter)), nil
-			// 	}
-			// }
-
-			return query, nil
-
-		})
-
-	}
-
-	if len(filters) > 0 {
-		opts = append(opts, ent.WithEventsFilter(func(query *ent.EventsQuery) (*ent.EventsQuery, error) {
-			var err error
-			for _, filter := range filters {
-				query, err = filter(query)
-				if err != nil {
-					return nil, err
-				}
-			}
-			return query, nil
-		}))
-	}
-
-	return opts
-
-}
+var eventListenersFilters = map[*filteringInfo]func(query *ent.EventsQuery, v string) (*ent.EventsQuery, error){}
 
 func (flow *flow) EventListeners(ctx context.Context, req *grpc.EventListenersRequest) (*grpc.EventListenersResponse, error) {
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	namespace := req.GetNamespace()
-
-	p, err := getPagination(req.Pagination)
-	if err != nil {
-		return nil, err
-	}
-
-	opts := []ent.EventsPaginateOption{}
-	opts = append(opts, eventListenersOrder(p)...)
-	opts = append(opts, eventListenersFilter(p)...)
-
-	nsc := flow.db.Namespace
-
-	ns, err := flow.getNamespace(ctx, nsc, namespace)
+	ns, err := flow.getNamespace(ctx, flow.db.Namespace, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
 
 	query := ns.QueryNamespacelisteners()
-	cx, err := query.Paginate(ctx, p.After(), p.First(), p.Before(), p.Last(), opts...)
+
+	results, pi, err := paginate[*ent.EventsQuery, *ent.Events](ctx, req.Pagination, query, eventListenersOrderings, eventListenersFilters)
 	if err != nil {
 		return nil, err
 	}
 
-	var resp grpc.EventListenersResponse
+	resp := new(grpc.EventListenersResponse)
+	resp.Namespace = ns.Name
+	resp.PageInfo = pi
 
-	err = atob(cx, &resp)
+	err = atob(results, &resp.Results)
 	if err != nil {
 		return nil, err
 	}
-
-	resp.Namespace = namespace
 
 	m := make(map[string]string)
 
-	for idx, edge := range cx.Edges {
+	for idx, result := range results {
 
-		// resp.Edges[idx].Node.UpdatedAt = edge.Node.UpdatedAt
-
-		in, _ := edge.Node.Instance(ctx)
+		in, _ := result.Instance(ctx)
 		if in != nil {
-			resp.Edges[idx].Node.Instance = in.ID.String()
+			resp.Results[idx].Instance = in.ID.String()
 		}
 
-		wf, err := edge.Node.Workflow(ctx)
+		wf, err := result.Workflow(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -597,15 +493,15 @@ func (flow *flow) EventListeners(ctx context.Context, req *grpc.EventListenersRe
 			m[wf.ID.String()] = path
 		}
 
-		resp.Edges[idx].Node.Workflow = path
+		resp.Results[idx].Workflow = path
 
-		resp.Edges[idx].Node.Mode = "or"
-		if edge.Node.Count > 1 {
-			resp.Edges[idx].Node.Mode = "and"
+		resp.Results[idx].Mode = "or"
+		if result.Count > 1 {
+			resp.Results[idx].Mode = "and"
 		}
 
 		edefs := make([]*grpc.EventDef, 0)
-		for _, ev := range edge.Node.Events {
+		for _, ev := range result.Events {
 
 			var et string
 			if v, ok := ev["type"]; ok {
@@ -633,11 +529,11 @@ func (flow *flow) EventListeners(ctx context.Context, req *grpc.EventListenersRe
 
 		}
 
-		resp.Edges[idx].Node.Events = edefs
+		resp.Results[idx].Events = edefs
 
 	}
 
-	return &resp, nil
+	return resp, nil
 
 }
 
@@ -649,20 +545,7 @@ func (flow *flow) EventListenersStream(req *grpc.EventListenersRequest, srv grpc
 	phash := ""
 	nhash := ""
 
-	namespace := req.GetNamespace()
-
-	p, err := getPagination(req.Pagination)
-	if err != nil {
-		return err
-	}
-
-	opts := []ent.EventsPaginateOption{}
-	opts = append(opts, eventListenersOrder(p)...)
-	opts = append(opts, eventListenersFilter(p)...)
-
-	nsc := flow.db.Namespace
-
-	ns, err := flow.getNamespace(ctx, nsc, namespace)
+	ns, err := flow.getNamespace(ctx, flow.db.Namespace, req.GetNamespace())
 	if err != nil {
 		return err
 	}
@@ -673,32 +556,33 @@ func (flow *flow) EventListenersStream(req *grpc.EventListenersRequest, srv grpc
 resend:
 
 	query := ns.QueryNamespacelisteners()
-	cx, err := query.Paginate(ctx, p.After(), p.First(), p.Before(), p.Last(), opts...)
+
+	results, pi, err := paginate[*ent.EventsQuery, *ent.Events](ctx, req.Pagination, query, eventListenersOrderings, eventListenersFilters)
 	if err != nil {
 		return err
 	}
 
-	var resp = &grpc.EventListenersResponse{}
+	resp := new(grpc.EventListenersResponse)
+	resp.Namespace = ns.Name
+	resp.PageInfo = pi
 
-	err = atob(cx, &resp)
+	err = atob(results, &resp.Results)
 	if err != nil {
 		return err
 	}
-
-	resp.Namespace = namespace
 
 	m := make(map[string]string)
 
-	for idx, edge := range cx.Edges {
+	for idx, result := range results {
 
-		// resp.Edges[idx].Node.UpdatedAt = edge.Node.UpdatedAt
+		// resp.Results[idx].UpdatedAt = result.UpdatedAt
 
-		in, _ := edge.Node.Instance(ctx)
+		in, _ := result.Instance(ctx)
 		if in != nil {
-			resp.Edges[idx].Node.Instance = in.ID.String()
+			resp.Results[idx].Instance = in.ID.String()
 		}
 
-		wf, err := edge.Node.Workflow(ctx)
+		wf, err := result.Workflow(ctx)
 		if err != nil {
 			return err
 		}
@@ -713,15 +597,15 @@ resend:
 			m[wf.ID.String()] = path
 		}
 
-		resp.Edges[idx].Node.Workflow = path
+		resp.Results[idx].Workflow = path
 
-		resp.Edges[idx].Node.Mode = "or"
-		if edge.Node.Count > 1 {
-			resp.Edges[idx].Node.Mode = "and"
+		resp.Results[idx].Mode = "or"
+		if result.Count > 1 {
+			resp.Results[idx].Mode = "and"
 		}
 
 		edefs := make([]*grpc.EventDef, 0)
-		for _, ev := range edge.Node.Events {
+		for _, ev := range result.Events {
 
 			var et string
 			if v, ok := ev["type"]; ok {
@@ -749,7 +633,7 @@ resend:
 
 		}
 
-		resp.Edges[idx].Node.Events = edefs
+		resp.Results[idx].Events = edefs
 
 	}
 
@@ -855,177 +739,48 @@ func (flow *flow) HistoricalEvent(ctx context.Context, in *grpc.HistoricalEventR
 
 }
 
-func cloudeventsOrder(p *pagination) []ent.CloudEventsPaginateOption {
-
-	var opts []ent.CloudEventsPaginateOption
-
-	for _, o := range p.order {
-
-		if o == nil {
-			continue
-		}
-
-		field := ent.CloudEventsOrderFieldCreated
-		direction := ent.OrderDirectionDesc
-
-		if x := o.Field; x != "" && x == "ID" {
-			field = ent.CloudEventsOrderFieldID
-		}
-
-		if x := o.Field; x != "" && x == "RECEIVED" {
-			field = ent.CloudEventsOrderFieldCreated
-		}
-
-		if x := o.Direction; x != "" && x == "DESC" {
-			direction = ent.OrderDirectionDesc
-		}
-
-		if x := o.Direction; x != "" && x == "ASC" {
-			direction = ent.OrderDirectionAsc
-		}
-
-		opts = append(opts, ent.WithCloudEventsOrder(&ent.CloudEventsOrder{
-			Direction: direction,
-			Field:     field,
-		}))
-
-	}
-
-	if len(opts) == 0 {
-		opts = append(opts, ent.WithCloudEventsOrder(&ent.CloudEventsOrder{
-			Direction: ent.OrderDirectionDesc,
-			Field:     ent.CloudEventsOrderFieldCreated,
-		}))
-	}
-
-	return opts
-
+var cloudeventsOrderings = []*orderingInfo{
+	{
+		db:           cevents.FieldCreated,
+		req:          "RECEIVED",
+		defaultOrder: ent.Desc,
+	},
+	{
+		db:           cevents.FieldEventId,
+		req:          "ID",
+		defaultOrder: ent.Asc,
+	},
 }
 
-func cloudeventsFilter(p *pagination) []ent.CloudEventsPaginateOption {
-
-	var filters []func(query *ent.CloudEventsQuery) (*ent.CloudEventsQuery, error)
-	var opts []ent.CloudEventsPaginateOption
-
-	if p.filter == nil {
-		return nil
-	}
-
-	for i := range p.filter {
-
-		f := p.filter[i]
-
-		if f == nil {
-			continue
-		}
-
-		filter := f.Val
-
-		filters = append(filters, func(query *ent.CloudEventsQuery) (*ent.CloudEventsQuery, error) {
-
-			if filter == "" {
-				return query, nil
-			}
-
-			field := f.Field
-			if field == "" {
-				return query, nil
-			}
-
-			// switch field {
-			// case "AS":
-
-			// 	ftype := p.filter.Type
-			// 	if ftype == "" {
-			// 		return query, nil
-			// 	}
-
-			// 	switch ftype {
-			// 	case "CONTAINS":
-			// 		return query.Where(entcevents.AsContains(filter)), nil
-			// 	}
-			// }
-
-			return query, nil
-
-		})
-
-	}
-
-	if len(filters) > 0 {
-		opts = append(opts, ent.WithCloudEventsFilter(func(query *ent.CloudEventsQuery) (*ent.CloudEventsQuery, error) {
-			var err error
-			for _, filter := range filters {
-				query, err = filter(query)
-				if err != nil {
-					return nil, err
-				}
-			}
-			return query, nil
-		}))
-	}
-
-	return opts
-
-}
+var cloudeventsFilters = map[*filteringInfo]func(query *ent.CloudEventsQuery, v string) (*ent.CloudEventsQuery, error){}
 
 func (flow *flow) EventHistory(ctx context.Context, req *grpc.EventHistoryRequest) (*grpc.EventHistoryResponse, error) {
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	p, err := getPagination(req.Pagination)
-	if err != nil {
-		return nil, err
-	}
-
-	opts := []ent.CloudEventsPaginateOption{}
-	opts = append(opts, cloudeventsOrder(p)...)
-	opts = append(opts, cloudeventsFilter(p)...)
-
-	nsc := flow.db.Namespace
-	ns, err := flow.getNamespace(ctx, nsc, req.GetNamespace())
+	ns, err := flow.getNamespace(ctx, flow.db.Namespace, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
 
 	query := ns.QueryCloudevents()
-	cx, err := query.Paginate(ctx, p.After(), p.First(), p.Before(), p.Last(), opts...)
+
+	results, pi, err := paginate[*ent.CloudEventsQuery, *ent.CloudEvents](ctx, req.Pagination, query, cloudeventsOrderings, cloudeventsFilters)
 	if err != nil {
 		return nil, err
 	}
 
-	var resp grpc.EventHistoryResponse
-	resp.Events = new(grpc.Events)
-	resp.Events.PageInfo = new(grpc.PageInfo)
+	resp := new(grpc.EventHistoryResponse)
 	resp.Namespace = ns.Name
+	resp.Events = new(grpc.Events)
+	resp.Events.PageInfo = pi
 
-	err = atob(cx.PageInfo, resp.Events.PageInfo)
+	err = atob(results, &resp.Events.Results)
 	if err != nil {
 		return nil, err
 	}
 
-	resp.Events.TotalCount = int32(cx.TotalCount)
-
-	for _, x := range cx.Edges {
-
-		edge := new(grpc.EventsEdge)
-		resp.Events.Edges = append(resp.Events.Edges, edge)
-
-		err = atob(x.Cursor, &edge.Cursor)
-		if err != nil {
-			return nil, err
-		}
-
-		edge.Node = new(grpc.Event)
-		edge.Node.Id = x.Node.EventId
-		edge.Node.ReceivedAt = timestamppb.New(x.Node.Created)
-		edge.Node.Source = x.Node.Event.Source()
-		edge.Node.Type = x.Node.Event.Type()
-		edge.Node.Cloudevent = []byte(x.Node.Event.String())
-
-	}
-
-	return &resp, nil
+	return resp, nil
 
 }
 
@@ -1037,17 +792,7 @@ func (flow *flow) EventHistoryStream(req *grpc.EventHistoryRequest, srv grpc.Flo
 	phash := ""
 	nhash := ""
 
-	p, err := getPagination(req.Pagination)
-	if err != nil {
-		return err
-	}
-
-	opts := []ent.CloudEventsPaginateOption{}
-	opts = append(opts, cloudeventsOrder(p)...)
-	opts = append(opts, cloudeventsFilter(p)...)
-
-	nsc := flow.db.Namespace
-	ns, err := flow.getNamespace(ctx, nsc, req.GetNamespace())
+	ns, err := flow.getNamespace(ctx, flow.db.Namespace, req.GetNamespace())
 	if err != nil {
 		return err
 	}
@@ -1058,40 +803,20 @@ func (flow *flow) EventHistoryStream(req *grpc.EventHistoryRequest, srv grpc.Flo
 resend:
 
 	query := ns.QueryCloudevents()
-	cx, err := query.Paginate(ctx, p.After(), p.First(), p.Before(), p.Last(), opts...)
+
+	results, pi, err := paginate[*ent.CloudEventsQuery, *ent.CloudEvents](ctx, req.Pagination, query, cloudeventsOrderings, cloudeventsFilters)
 	if err != nil {
 		return err
 	}
 
 	resp := new(grpc.EventHistoryResponse)
-	resp.Events = new(grpc.Events)
-	resp.Events.PageInfo = new(grpc.PageInfo)
 	resp.Namespace = ns.Name
+	resp.Events = new(grpc.Events)
+	resp.Events.PageInfo = pi
 
-	err = atob(cx.PageInfo, resp.Events.PageInfo)
+	err = atob(results, &resp.Events.Results)
 	if err != nil {
 		return err
-	}
-
-	resp.Events.TotalCount = int32(cx.TotalCount)
-
-	for _, x := range cx.Edges {
-
-		edge := new(grpc.EventsEdge)
-		resp.Events.Edges = append(resp.Events.Edges, edge)
-
-		err = atob(x.Cursor, &edge.Cursor)
-		if err != nil {
-			return err
-		}
-
-		edge.Node = new(grpc.Event)
-		edge.Node.Id = x.Node.EventId
-		edge.Node.ReceivedAt = timestamppb.New(x.Node.Created)
-		edge.Node.Source = x.Node.Event.Source()
-		edge.Node.Type = x.Node.Event.Type()
-		edge.Node.Cloudevent = []byte(x.Node.Event.String())
-
 	}
 
 	nhash = checksum(resp)

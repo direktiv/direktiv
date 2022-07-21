@@ -309,10 +309,8 @@ var tagsCmd = &cobra.Command{
 
 		req := &grpc.TagsRequest{
 			Pagination: &grpc.Pagination{
-				After:  after,
-				First:  first,
-				Before: before,
-				Last:   last,
+				Limit:  limit,
+				Offset: offset,
 				Order: []*grpc.PageOrder{{
 					Field:     orderField,
 					Direction: orderDirection,
@@ -375,10 +373,8 @@ var refsCmd = &cobra.Command{
 
 		req := &grpc.RefsRequest{
 			Pagination: &grpc.Pagination{
-				After:  after,
-				First:  first,
-				Before: before,
-				Last:   last,
+				Limit:  limit,
+				Offset: offset,
 				Order: []*grpc.PageOrder{{
 					Field:     orderField,
 					Direction: orderDirection,
@@ -441,10 +437,8 @@ var revisionsCmd = &cobra.Command{
 
 		req := &grpc.RevisionsRequest{
 			Pagination: &grpc.Pagination{
-				After:  after,
-				First:  first,
-				Before: before,
-				Last:   last,
+				Limit:  limit,
+				Offset: offset,
 				Order: []*grpc.PageOrder{{
 					Field:     orderField,
 					Direction: orderDirection,

@@ -189,156 +189,59 @@ func (flow *flow) NamespaceVariableParcels(req *grpc.NamespaceVariableRequest, s
 
 }
 
-func variablesOrder(p *pagination) []ent.VarRefPaginateOption {
-
-	var opts []ent.VarRefPaginateOption
-
-	for _, o := range p.order {
-
-		if o == nil {
-			continue
-		}
-
-		field := ent.VarRefOrderFieldName
-		direction := ent.OrderDirectionAsc
-
-		if x := o.Field; x != "" && x == "NAME" {
-			field = ent.VarRefOrderFieldName
-		}
-
-		if x := o.Direction; x != "" && x == "DESC" {
-			direction = ent.OrderDirectionDesc
-		}
-
-		opts = append(opts, ent.WithVarRefOrder(&ent.VarRefOrder{
-			Direction: direction,
-			Field:     field,
-		}))
-	}
-
-	if len(opts) == 0 {
-		opts = append(opts, ent.WithVarRefOrder(&ent.VarRefOrder{
-			Direction: ent.OrderDirectionAsc,
-			Field:     ent.VarRefOrderFieldName,
-		}))
-	}
-
-	return opts
-
+var variablesOrderings = []*orderingInfo{
+	{
+		db:           entvar.FieldName,
+		req:          "UPDATED",
+		defaultOrder: ent.Asc,
+	},
 }
 
-func variablesFilter(p *pagination) []ent.VarRefPaginateOption {
-
-	var filters []func(query *ent.VarRefQuery) (*ent.VarRefQuery, error)
-	var opts []ent.VarRefPaginateOption
-
-	if p.filter == nil {
-		return nil
-	}
-
-	for i := range p.filter {
-
-		f := p.filter[i]
-
-		if f == nil {
-			continue
-		}
-
-		filter := f.Val
-
-		filters = append(filters, func(query *ent.VarRefQuery) (*ent.VarRefQuery, error) {
-
-			if filter == "" {
-				return query, nil
-			}
-
-			field := f.Field
-			if field == "" {
-				return query, nil
-			}
-
-			switch field {
-			case "NAME":
-
-				ftype := f.Type
-				if ftype == "" {
-					return query, nil
-				}
-
-				switch ftype {
-				case "CONTAINS":
-					return query.Where(entvar.NameContains(filter)), nil
-				}
-			}
-
-			return query, nil
-
-		})
-
-	}
-
-	if len(filters) > 0 {
-		opts = append(opts, ent.WithVarRefFilter(func(query *ent.VarRefQuery) (*ent.VarRefQuery, error) {
-			var err error
-			for _, filter := range filters {
-				query, err = filter(query)
-				if err != nil {
-					return nil, err
-				}
-			}
-			return query, nil
-		}))
-	}
-
-	return opts
-
+var variablesFilters = map[*filteringInfo]func(query *ent.VarRefQuery, v string) (*ent.VarRefQuery, error){
+	{
+		field: "NAME",
+		ftype: "CONTAINS",
+	}: func(query *ent.VarRefQuery, v string) (*ent.VarRefQuery, error) {
+		return query.Where(entvar.NameContains(v)), nil
+	},
 }
 
 func (flow *flow) NamespaceVariables(ctx context.Context, req *grpc.NamespaceVariablesRequest) (*grpc.NamespaceVariablesResponse, error) {
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	p, err := getPagination(req.Pagination)
-	if err != nil {
-		return nil, err
-	}
-
-	opts := []ent.VarRefPaginateOption{}
-	opts = append(opts, variablesOrder(p)...)
-	opts = append(opts, variablesFilter(p)...)
-
-	nsc := flow.db.Namespace
-	ns, err := flow.getNamespace(ctx, nsc, req.GetNamespace())
+	ns, err := flow.getNamespace(ctx, flow.db.Namespace, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
 
 	query := ns.QueryVars()
-	cx, err := query.Paginate(ctx, p.After(), p.First(), p.Before(), p.Last(), opts...)
+
+	results, pi, err := paginate[*ent.VarRefQuery, *ent.VarRef](ctx, req.Pagination, query, variablesOrderings, variablesFilters)
 	if err != nil {
 		return nil, err
 	}
 
-	var resp grpc.NamespaceVariablesResponse
-
+	resp := new(grpc.NamespaceVariablesResponse)
 	resp.Namespace = ns.Name
+	resp.Variables = new(grpc.Variables)
+	resp.Variables.PageInfo = pi
 
-	err = atob(cx, &resp.Variables)
+	err = atob(results, &resp.Variables.Results)
 	if err != nil {
 		return nil, err
 	}
 
-	for i := range cx.Edges {
+	for i := range results {
 
-		edge := cx.Edges[i]
-		vref := edge.Node
+		vref := results[i]
 
 		vdata, err := vref.QueryVardata().Select(entvardata.FieldCreatedAt, entvardata.FieldHash, entvardata.FieldSize, entvardata.FieldUpdatedAt).Only(ctx)
 		if err != nil {
 			return nil, err
 		}
 
-		v := resp.Variables.Edges[i].Node
+		v := resp.Variables.Results[i]
 		v.Checksum = vdata.Hash
 		v.CreatedAt = timestamppb.New(vdata.CreatedAt)
 		v.Size = int64(vdata.Size)
@@ -347,7 +250,7 @@ func (flow *flow) NamespaceVariables(ctx context.Context, req *grpc.NamespaceVar
 
 	}
 
-	return &resp, nil
+	return resp, nil
 
 }
 
@@ -359,17 +262,7 @@ func (flow *flow) NamespaceVariablesStream(req *grpc.NamespaceVariablesRequest, 
 	phash := ""
 	nhash := ""
 
-	p, err := getPagination(req.Pagination)
-	if err != nil {
-		return err
-	}
-
-	opts := []ent.VarRefPaginateOption{}
-	opts = append(opts, variablesOrder(p)...)
-	opts = append(opts, variablesFilter(p)...)
-
-	nsc := flow.db.Namespace
-	ns, err := flow.getNamespace(ctx, nsc, req.GetNamespace())
+	ns, err := flow.getNamespace(ctx, flow.db.Namespace, req.GetNamespace())
 	if err != nil {
 		return err
 	}
@@ -380,35 +273,37 @@ func (flow *flow) NamespaceVariablesStream(req *grpc.NamespaceVariablesRequest, 
 resend:
 
 	query := ns.QueryVars()
-	cx, err := query.Paginate(ctx, p.After(), p.First(), p.Before(), p.Last(), opts...)
+
+	results, pi, err := paginate[*ent.VarRefQuery, *ent.VarRef](ctx, req.Pagination, query, variablesOrderings, variablesFilters)
 	if err != nil {
 		return err
 	}
 
 	resp := new(grpc.NamespaceVariablesResponse)
-
 	resp.Namespace = ns.Name
+	resp.Variables = new(grpc.Variables)
+	resp.Variables.PageInfo = pi
 
-	err = atob(cx, &resp.Variables)
+	err = atob(results, &resp.Variables.Results)
 	if err != nil {
 		return err
 	}
 
-	for i := range cx.Edges {
+	for i := range results {
 
-		edge := cx.Edges[i]
-		vref := edge.Node
+		vref := results[i]
 
 		vdata, err := vref.QueryVardata().Select(entvardata.FieldCreatedAt, entvardata.FieldHash, entvardata.FieldSize, entvardata.FieldUpdatedAt).Only(ctx)
 		if err != nil {
 			return err
 		}
 
-		v := resp.Variables.Edges[i].Node
+		v := resp.Variables.Results[i]
 		v.Checksum = vdata.Hash
 		v.CreatedAt = timestamppb.New(vdata.CreatedAt)
 		v.Size = int64(vdata.Size)
 		v.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
+		v.MimeType = vdata.MimeType
 
 	}
 

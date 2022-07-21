@@ -28,7 +28,7 @@ func testSecretsAPI(ctx context.Context, c grpc.FlowClient, namespace string) er
 		return err
 	}
 
-	if len(secrets.Secrets.Edges) != 0 {
+	if len(secrets.Secrets.Results) != 0 {
 		return errors.New("unexpected secrets already exist in the namespace")
 	}
 
@@ -44,7 +44,7 @@ func testSecretsAPI(ctx context.Context, c grpc.FlowClient, namespace string) er
 	if err != nil {
 		return err
 	}
-	if len(secrets.Secrets.Edges) != 0 {
+	if len(secrets.Secrets.Results) != 0 {
 		return errors.New("unexpected secrets already exist in the namespace")
 	}
 
@@ -62,7 +62,7 @@ func testSecretsAPI(ctx context.Context, c grpc.FlowClient, namespace string) er
 	if err != nil {
 		return err
 	}
-	if len(secrets.Secrets.Edges) != 1 {
+	if len(secrets.Secrets.Results) != 1 {
 		return errors.New("incorrect number of secrets returned by server")
 	}
 
@@ -90,7 +90,7 @@ func testSecretsAPI(ctx context.Context, c grpc.FlowClient, namespace string) er
 	if err != nil {
 		return err
 	}
-	if len(secrets.Secrets.Edges) != 0 {
+	if len(secrets.Secrets.Results) != 0 {
 		return errors.New("unexpected secrets still exist in the namespace")
 	}
 

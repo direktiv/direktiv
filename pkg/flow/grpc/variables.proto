@@ -17,15 +17,9 @@ message Variable {
 	string mimeType = 6;
 }
 
-message VariableEdge {
-	Variable node = 1;
-	string cursor = 2;
-}
-
 message Variables {
-	int32 totalCount = 1;
 	PageInfo pageInfo = 2;
-	repeated VariableEdge edges = 3;
+	repeated Variable results = 4;
 }
 
 message NamespaceVariableRequest {
