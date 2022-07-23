@@ -6,7 +6,6 @@ New Contributors should add their name to the bottom of this list on their first
 
 ### Contributors:
 * Arnab Maity [@itisaby](https://github.com/itisaby)
-* Swapnanil Ray [@redhatpanda](https://github.com/redhatpanda)
 
 ## Thanks to all the contributors ❤️
 <a href = "https://github.com/direktiv/direktiv/graphs/contributors">
