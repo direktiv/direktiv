@@ -71,7 +71,7 @@ func (o *EventsAndState) Validate() error {
 	}
 
 	if len(o.GetEvents()) == 0 {
-		return errors.New("atleast one event is required")
+		return errors.New("at least one event is required")
 	}
 
 	for i, event := range o.GetEvents() {

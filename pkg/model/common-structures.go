@@ -45,7 +45,7 @@ func (o *ActionDefinition) Validate() error {
 	}
 
 	if o.Function == "" {
-		return errors.New("must define atleast one function or workflow")
+		return errors.New("must define at least one function or workflow")
 	}
 
 	if o.Retries != nil {
