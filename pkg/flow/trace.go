@@ -141,7 +141,7 @@ func traceStateGenericBegin(ctx context.Context, im *instanceMemory) (context.Co
 
 	ctx = prop.Extract(ctx, carrier)
 
-	ctx, span = tr.Start(ctx, im.logic.Type(), trace.WithSpanKind(trace.SpanKindInternal))
+	ctx, span = tr.Start(ctx, im.logic.GetType().String(), trace.WithSpanKind(trace.SpanKindInternal))
 
 	x := dbTrace(ctx)
 	s := marshal(x)
@@ -177,7 +177,7 @@ func traceStateGenericLogicThread(ctx context.Context, im *instanceMemory) (cont
 
 	ctx = prop.Extract(ctx, carrier)
 
-	ctx, span = tr.Start(ctx, fmt.Sprintf("%s-logic", im.logic.Type()), trace.WithSpanKind(trace.SpanKindInternal))
+	ctx, span = tr.Start(ctx, fmt.Sprintf("%s-logic", im.logic.GetType().String()), trace.WithSpanKind(trace.SpanKindInternal))
 
 	finish := func() {
 		span.End()

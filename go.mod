@@ -24,7 +24,6 @@ require (
 	github.com/go-openapi/validate v0.20.2
 	github.com/go-stack/stack v1.8.1 // indirect
 	github.com/golang/protobuf v1.5.2
-	github.com/gomodule/redigo v1.8.5
 	github.com/google/go-cmp v0.5.8 // indirect
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/mux v1.8.0
@@ -34,9 +33,8 @@ require (
 	github.com/heroku/docker-registry-client v0.0.0-20211012143308-9463674c8930
 	github.com/itchyny/gojq v0.12.1
 	github.com/jinzhu/copier v0.2.4
-	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/lib/pq v1.10.4
-	github.com/libgit2/git2go/v33 v33.0.9 // indirect
+	github.com/libgit2/git2go/v33 v33.0.9
 	github.com/mattn/go-shellwords v1.0.12
 	github.com/mitchellh/go-wordwrap v1.0.1 // indirect
 	github.com/mitchellh/hashstructure/v2 v2.0.1

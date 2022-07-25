@@ -12,6 +12,7 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entvardata "github.com/direktiv/direktiv/pkg/flow/ent/vardata"
+	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -64,11 +65,11 @@ func (internal *internal) InstanceVariableParcels(req *grpc.VariableInternalRequ
 	}
 
 	d, err := internal.traverseToInstanceVariable(ctx, nsc, id.namespace(), req.GetInstance(), req.GetKey(), true)
-	if err != nil && !IsNotFound(err) {
+	if err != nil && !derrors.IsNotFound(err) {
 		return err
 	}
 
-	if IsNotFound(err) {
+	if derrors.IsNotFound(err) {
 		d = new(instvarData)
 		d.vref = new(ent.VarRef)
 		d.vref.Name = req.GetKey()
@@ -149,11 +150,11 @@ func (internal *internal) ThreadVariableParcels(req *grpc.VariableInternalReques
 	}
 
 	d, err := internal.traverseToThreadVariable(ctx, nsc, id.namespace(), req.GetInstance(), req.GetKey(), true)
-	if err != nil && !IsNotFound(err) {
+	if err != nil && !derrors.IsNotFound(err) {
 		return err
 	}
 
-	if IsNotFound(err) {
+	if derrors.IsNotFound(err) {
 		d = new(instvarData)
 		d.vref = new(ent.VarRef)
 		d.vref.Name = req.GetKey()

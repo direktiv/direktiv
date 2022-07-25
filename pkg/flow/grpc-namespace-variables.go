@@ -10,6 +10,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entvardata "github.com/direktiv/direktiv/pkg/flow/ent/vardata"
 	entvar "github.com/direktiv/direktiv/pkg/flow/ent/varref"
+	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -63,11 +64,11 @@ func (internal *internal) NamespaceVariableParcels(req *grpc.VariableInternalReq
 	}
 
 	d, err := internal.traverseToNamespaceVariable(ctx, nsc, id.namespace(), req.GetKey(), true)
-	if err != nil && !IsNotFound(err) {
+	if err != nil && !derrors.IsNotFound(err) {
 		return err
 	}
 
-	if IsNotFound(err) {
+	if derrors.IsNotFound(err) {
 		d = new(nsvarData)
 		d.vref = new(ent.VarRef)
 		d.vref.Name = req.GetKey()
