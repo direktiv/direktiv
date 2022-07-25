@@ -155,7 +155,7 @@ export const ActionsNodes = [
     {
         name: 'StateEventsAnd',
         family: "primitive",
-        type: "eventAnd",
+        type: "eventsAnd",
         info: {
             requiresInit: true,
             actions: true,
@@ -176,7 +176,7 @@ export const ActionsNodes = [
     {
         name: 'StateEventXor',
         family: "primitive",
-        type: "eventXor",
+        type: "eventsXor",
         info: {
             requiresInit: true,
             actions: true,

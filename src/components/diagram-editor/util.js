@@ -569,3 +569,14 @@ export function unescapeJSStrings(str) {
 
     return newWorkflowStr
 }
+
+const stateTypeUpgradeMap = {
+    // "old": "new"
+    "eventAnd": "eventsAnd",
+    "eventXor": "eventsXor",
+}
+export function stateTypeUpgrade(state) {
+    if (state?.type && stateTypeUpgradeMap[state.type]) {
+        state.type = stateTypeUpgradeMap[state.type]
+    }  
+}

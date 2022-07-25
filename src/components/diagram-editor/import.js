@@ -1,7 +1,7 @@
 import { ActionsNodes, NodeErrorBlock, NodeStartBlock } from "./nodes";
 import YAML from 'js-yaml'
 import prettyYAML from "json-to-pretty-yaml"
-import { CreateNode, sortNodes, unescapeJSStrings } from "./util";
+import { CreateNode, sortNodes, unescapeJSStrings, stateTypeUpgrade } from "./util";
 
 export function importFromYAML(diagramEditor, setFunctions, wfYAML) {
     const wfData = YAML.load(wfYAML)
@@ -30,6 +30,8 @@ export function importFromWorkflowData(diagramEditor, setFunctions, wfData) {
     // Iterate over states
     for (let i = 0; i < wfData.states.length; i++) {
         const state = wfData.states[i];
+        stateTypeUpgrade(state)
+
         const result = ActionsNodes.filter(ActionsNode => ActionsNode.family === "primitive" && ActionsNode.type === state.type)
 
         if (result.length === 0) {
