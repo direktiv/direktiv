@@ -75,12 +75,12 @@ func (logic *forEachLogic) Run(ctx context.Context, wakedata []byte) (*Transitio
 			return nil, err
 		}
 
-		err = logic.scheduleFirstActions(ctx)
+		transition, err := logic.scheduleFirstActions(ctx)
 		if err != nil {
 			return nil, err
 		}
 
-		return nil, nil
+		return transition, nil
 
 	}
 
@@ -112,17 +112,24 @@ func (logic *forEachLogic) Run(ctx context.Context, wakedata []byte) (*Transitio
 
 }
 
-func (logic *forEachLogic) scheduleFirstActions(ctx context.Context) error {
+func (logic *forEachLogic) scheduleFirstActions(ctx context.Context) (*Transition, error) {
 
 	x, err := jqOne(logic.GetInstanceData(), logic.Array)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	var array []interface{}
 	array, ok := x.([]interface{})
 	if !ok {
-		return derrors.NewCatchableError(ErrCodeNotArray, "jq produced non-array output")
+		return nil, derrors.NewCatchableError(ErrCodeNotArray, "jq produced non-array output")
+	}
+
+	if len(array) == 0 {
+		return &Transition{
+			Transform: logic.Transform,
+			NextState: logic.Transition,
+		}, nil
 	}
 
 	logic.Log(ctx, "Generated %d objects to loop over.", len(array))
@@ -132,17 +139,17 @@ func (logic *forEachLogic) scheduleFirstActions(ctx context.Context) error {
 	for _, inputSource := range array {
 		child, err := logic.scheduleAction(ctx, inputSource, 0)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		children = append(children, child)
 	}
 
 	err = logic.SetMemory(ctx, children)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return nil, nil
 
 }
 
