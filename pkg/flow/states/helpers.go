@@ -1,6 +1,8 @@
 package states
 
 import (
+	"fmt"
+
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/jqer"
 )
@@ -13,9 +15,14 @@ const (
 	ErrCodeFailedSchemaValidation = "direktiv.schema.failed"
 	ErrCodeJQNotString            = "direktiv.jq.notString"
 	ErrCodeInvalidVariableKey     = "direktiv.var.invalidKey"
+	ErrCodeInvalidVariableScope   = "direktiv.var.invalidScope"
 	ErrCodeAllBranchesFailed      = "direktiv.parallel.allFailed"
 	ErrCodeNotArray               = "direktiv.foreach.badArray"
 )
+
+func wrap(err error, s string) error {
+	return fmt.Errorf(s, err)
+}
 
 func jq(input interface{}, command interface{}) ([]interface{}, error) {
 
@@ -60,6 +67,22 @@ func jqObject(input interface{}, command interface{}) (map[string]interface{}, e
 	}
 
 	return m, nil
+
+}
+
+func jqString(input interface{}, command interface{}) (string, error) {
+
+	x, err := jqOne(input, command)
+	if err != nil {
+		return "", err
+	}
+
+	s, ok := x.(string)
+	if !ok {
+		s = fmt.Sprintf("%v", x)
+	}
+
+	return s, nil
 
 }
 

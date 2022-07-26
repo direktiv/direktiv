@@ -130,11 +130,15 @@ func (logic *actionLogic) scheduleFirstAction(ctx context.Context) error {
 
 func (logic *actionLogic) scheduleAction(ctx context.Context, attempt int) error {
 
-	input, err := generateActionInput(ctx, &generateActionInputArgs{
+	input, files, err := generateActionInput(ctx, &generateActionInputArgs{
 		Instance: logic.Instance,
 		Source:   logic.GetInstanceData(),
 		Action:   logic.Action,
+		Files:    logic.Action.Files,
 	})
+	if err != nil {
+		return err
+	}
 
 	wfto, err := ISO8601StringtoSecs(logic.Timeout)
 	if err != nil {
@@ -157,7 +161,7 @@ func (logic *actionLogic) scheduleAction(ctx context.Context, attempt int) error
 		fn:       fn,
 		input:    input,
 		timeout:  wfto,
-		files:    logic.Action.Files,
+		files:    files,
 		attempt:  attempt,
 	})
 	if err != nil {

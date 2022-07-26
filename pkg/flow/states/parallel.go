@@ -143,11 +143,15 @@ func (logic *parallelLogic) scheduleFirstActions(ctx context.Context) error {
 
 func (logic *parallelLogic) scheduleAction(ctx context.Context, action *model.ActionDefinition, attempt int) (*ChildInfo, error) {
 
-	input, err := generateActionInput(ctx, &generateActionInputArgs{
+	input, files, err := generateActionInput(ctx, &generateActionInputArgs{
 		Instance: logic.Instance,
 		Source:   logic.GetInstanceData(),
 		Action:   action,
+		Files:    action.Files,
 	})
+	if err != nil {
+		return nil, err
+	}
 
 	wfto, err := ISO8601StringtoSecs(logic.Timeout)
 	if err != nil {
@@ -170,7 +174,7 @@ func (logic *parallelLogic) scheduleAction(ctx context.Context, action *model.Ac
 		fn:       fn,
 		input:    input,
 		timeout:  wfto,
-		files:    action.Files,
+		files:    files,
 		attempt:  attempt,
 	})
 	if err != nil {
