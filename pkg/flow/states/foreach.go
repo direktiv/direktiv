@@ -157,11 +157,15 @@ func (logic *forEachLogic) scheduleAction(ctx context.Context, inputSource inter
 
 	action := logic.Action
 
-	input, err := generateActionInput(ctx, &generateActionInputArgs{
+	input, files, err := generateActionInput(ctx, &generateActionInputArgs{
 		Instance: logic.Instance,
 		Source:   inputSource,
 		Action:   action,
+		Files:    action.Files,
 	})
+	if err != nil {
+		return nil, err
+	}
 
 	wfto, err := ISO8601StringtoSecs(logic.Timeout)
 	if err != nil {
@@ -184,7 +188,7 @@ func (logic *forEachLogic) scheduleAction(ctx context.Context, inputSource inter
 		fn:       fn,
 		input:    input,
 		timeout:  wfto,
-		files:    action.Files,
+		files:    files,
 		attempt:  attempt,
 	})
 	if err != nil {

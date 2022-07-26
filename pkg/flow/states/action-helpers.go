@@ -4,11 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"regexp"
 	"time"
 
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/senseyeio/duration"
 )
 
@@ -121,38 +123,39 @@ type generateActionInputArgs struct {
 	Instance Instance
 	Source   interface{}
 	Action   *model.ActionDefinition
+	Files    []model.FunctionFileDefinition
 }
 
-func generateActionInput(ctx context.Context, args *generateActionInputArgs) ([]byte, error) {
+func generateActionInput(ctx context.Context, args *generateActionInputArgs) ([]byte, []model.FunctionFileDefinition, error) {
 
 	var err error
 	var input interface{}
 
 	input, err = jqObject(args.Source, "jq(.)")
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	m, ok := input.(map[string]interface{})
 	if !ok {
 		err = derrors.NewInternalError(errors.New("invalid state data"))
-		return nil, err
+		return nil, nil, err
 	}
 
 	m, err = addSecrets(ctx, args.Instance, m, args.Action.Secrets...)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	if args.Action.Input == nil {
 		input, err = jqOne(m, "jq(.)")
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 	} else {
 		input, err = jqOne(m, args.Action.Input)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 	}
 
@@ -161,10 +164,62 @@ func generateActionInput(ctx context.Context, args *generateActionInputArgs) ([]
 	inputData, err = json.Marshal(input)
 	if err != nil {
 		err = derrors.NewInternalError(err)
-		return nil, err
+		return nil, nil, err
 	}
 
-	return inputData, nil
+	files := make([]model.FunctionFileDefinition, 0)
+
+	for idx := range args.Files {
+
+		file := args.Files[idx]
+
+		s, err := jqString(m, file.As)
+		if err != nil {
+			return nil, nil, wrap(err, fmt.Sprintf("error evaluating jq in 'as' for function file %d: %%w", idx))
+		}
+		file.As = s
+
+		s, err = jqString(m, file.Key)
+		if err != nil {
+			return nil, nil, wrap(err, fmt.Sprintf("error evaluating jq in 'key' for function file %d: %%w", idx))
+		}
+		file.Key = s
+
+		if file.Key == "" {
+			return nil, nil, derrors.NewCatchableError(ErrCodeInvalidVariableKey, "invalid 'key' for function file %d: got zero-length string", idx)
+		}
+
+		if !util.VarNameRegex.MatchString(file.Key) {
+			return nil, nil, derrors.NewCatchableError(ErrCodeInvalidVariableKey, "invalid 'key' for function file %d: must start with a letter and only contain letters, numbers and '_'", idx)
+		}
+
+		s, err = jqString(m, file.Scope)
+		if err != nil {
+			return nil, nil, wrap(err, fmt.Sprintf("error evaluating jq in 'scope' for function file %d: %%w", idx))
+		}
+		file.Scope = s
+
+		switch file.Scope {
+		case "":
+		case "namespace":
+		case "workflow":
+		case "instance":
+		case "thread":
+		default:
+			return nil, nil, derrors.NewCatchableError(ErrCodeInvalidVariableScope, "invalid 'scope' for function file %d: %s", idx, file.Scope)
+		}
+
+		s, err = jqString(m, file.Type)
+		if err != nil {
+			return nil, nil, wrap(err, fmt.Sprintf("error evaluating jq in 'type' for function file %d: %%w", idx))
+		}
+		file.Type = s
+
+		files = append(files, file)
+
+	}
+
+	return inputData, files, nil
 
 }
 
