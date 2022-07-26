@@ -1211,6 +1211,11 @@ func (model *mirrorModel) addWorkflowNode(path string) error {
 		extension = ".yaml"
 	}
 
+	if !util.NameRegex.MatchString(name) {
+		// TODO: log something
+		return nil
+	}
+
 	node.children = append(node.children, &mirrorNode{
 		parent:    node,
 		children:  make([]*mirrorNode, 0),
@@ -1482,14 +1487,6 @@ func buildModel(ctx context.Context, repo *localRepository) (*mirrorModel, error
 		}
 
 		_, base := filepath.Split(path)
-
-		if !util.NameRegex.MatchString(base) {
-			// TODO: log something
-			if d.IsDir() {
-				return filepath.SkipDir
-			}
-			return nil
-		}
 
 		if strings.Contains(base, ".yaml.") || strings.Contains(base, ".yml.") {
 			err = model.addWorkflowVariableNode(rel, d.IsDir())
