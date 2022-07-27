@@ -406,13 +406,13 @@ func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory,
 
 		con := fn.(*model.ReusableFunctionDefinition)
 
-		scale := int32(con.Scale)
+		scale := int32(0)
 		size := int32(con.Size)
 
 		ar.Container.Image = con.Image
 		ar.Container.Cmd = con.Cmd
 		ar.Container.Size = con.Size
-		ar.Container.Scale = con.Scale
+		ar.Container.Scale = int(scale)
 		ar.Container.Files = files
 		ar.Container.ID = con.ID
 		ar.Container.Service, _, _ = functions.GenerateServiceName(&igrpc.BaseInfo{
