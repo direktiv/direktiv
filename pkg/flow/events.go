@@ -775,9 +775,17 @@ func (flow *flow) EventHistory(ctx context.Context, req *grpc.EventHistoryReques
 	resp.Events = new(grpc.Events)
 	resp.Events.PageInfo = pi
 
-	err = atob(results, &resp.Events.Results)
-	if err != nil {
-		return nil, err
+	for _, x := range results {
+
+		e := new(grpc.Event)
+		resp.Events.Results = append(resp.Events.Results, e)
+
+		e.Id = x.EventId
+		e.ReceivedAt = timestamppb.New(x.Created)
+		e.Source = x.Event.Source()
+		e.Type = x.Event.Type()
+		e.Cloudevent = []byte(x.Event.String())
+
 	}
 
 	return resp, nil
@@ -814,9 +822,17 @@ resend:
 	resp.Events = new(grpc.Events)
 	resp.Events.PageInfo = pi
 
-	err = atob(results, &resp.Events.Results)
-	if err != nil {
-		return err
+	for _, x := range results {
+
+		e := new(grpc.Event)
+		resp.Events.Results = append(resp.Events.Results, e)
+
+		e.Id = x.EventId
+		e.ReceivedAt = timestamppb.New(x.Created)
+		e.Source = x.Event.Source()
+		e.Type = x.Event.Type()
+		e.Cloudevent = []byte(x.Event.String())
+
 	}
 
 	nhash = checksum(resp)
