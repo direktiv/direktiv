@@ -196,7 +196,7 @@ func (fServer *functionsServer) heartbeat(tuples []*HeartbeatTuple) {
 	for _, tuple := range tuples {
 
 		size := int32(tuple.FunctionDefinition.Size)
-		minscale := int32(tuple.FunctionDefinition.Scale)
+		minscale := int32(0)
 
 		in := &igrpc.CreateFunctionRequest{
 			Info: &igrpc.BaseInfo{

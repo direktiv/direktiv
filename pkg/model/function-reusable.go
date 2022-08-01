@@ -14,8 +14,6 @@ type ReusableFunctionDefinition struct {
 	Image string       `yaml:"image" json:"image"`
 	Size  Size         `yaml:"size,omitempty" json:"size,omitempty"`
 	Cmd   string       `yaml:"cmd,omitempty" json:"cmd,omitempty"`
-	Scale int          `yaml:"scale,omitempty" json:"scale,omitempty"`
-	// Files []FunctionFileDefinition `yaml:"files,omitempty" json:"files,omitempty"`
 }
 
 // GetID returns the ID of a reusable function

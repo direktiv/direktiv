@@ -1,7 +1,6 @@
 package schema
 
 import (
-	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/edge"
@@ -17,7 +16,7 @@ type InstanceRuntime struct {
 // Fields of the InstanceRuntime.
 func (InstanceRuntime) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New).Immutable().StorageKey("oid").StructTag(`json:"-"`).Annotations(entgql.OrderField("ID")),
+		field.UUID("id", uuid.UUID{}).Default(uuid.New).Immutable().StorageKey("oid").StructTag(`json:"-"`),
 		field.Bytes("input").Immutable(),
 		field.String("data"),
 		field.String("controller").Optional(),

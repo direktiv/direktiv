@@ -31,7 +31,7 @@ func testNamespaceVariablesEmpty(ctx context.Context, c grpc.FlowClient, namespa
 		return err
 	}
 
-	if len(vars.Variables.Edges) != 0 {
+	if len(vars.Variables.Results) != 0 {
 		return errors.New("unexpected variables already exist in the namespace")
 	}
 
@@ -47,7 +47,7 @@ func testNamespaceVariablesEmpty(ctx context.Context, c grpc.FlowClient, namespa
 	if err != nil {
 		return err
 	}
-	if len(vars.Variables.Edges) != 0 {
+	if len(vars.Variables.Results) != 0 {
 		return errors.New("unexpected variables already exist in the namespace")
 	}
 
@@ -64,7 +64,7 @@ func testNamespaceVariablesEmpty(ctx context.Context, c grpc.FlowClient, namespa
 	if err != nil {
 		return err
 	}
-	if len(vars.Variables.Edges) != 1 {
+	if len(vars.Variables.Results) != 1 {
 		return errors.New("incorrect number of variables returned by server")
 	}
 
@@ -92,7 +92,7 @@ func testNamespaceVariablesEmpty(ctx context.Context, c grpc.FlowClient, namespa
 	if err != nil {
 		return err
 	}
-	if len(vars.Variables.Edges) != 0 {
+	if len(vars.Variables.Results) != 0 {
 		return errors.New("unexpected variables still exist in the namespace")
 	}
 
@@ -132,7 +132,7 @@ func testNamespaceVariablesSmall(ctx context.Context, c grpc.FlowClient, namespa
 		return err
 	}
 
-	if len(vars.Variables.Edges) != 0 {
+	if len(vars.Variables.Results) != 0 {
 		return errors.New("unexpected variables already exist in the namespace")
 	}
 
@@ -148,7 +148,7 @@ func testNamespaceVariablesSmall(ctx context.Context, c grpc.FlowClient, namespa
 	if err != nil {
 		return err
 	}
-	if len(vars.Variables.Edges) != 0 {
+	if len(vars.Variables.Results) != 0 {
 		return errors.New("unexpected variables already exist in the namespace")
 	}
 
@@ -165,7 +165,7 @@ func testNamespaceVariablesSmall(ctx context.Context, c grpc.FlowClient, namespa
 	if err != nil {
 		return err
 	}
-	if len(vars.Variables.Edges) != 1 {
+	if len(vars.Variables.Results) != 1 {
 		return errors.New("incorrect number of variables returned by server")
 	}
 
@@ -194,7 +194,7 @@ func testNamespaceVariablesSmall(ctx context.Context, c grpc.FlowClient, namespa
 	if err != nil {
 		return err
 	}
-	if len(vars.Variables.Edges) != 1 {
+	if len(vars.Variables.Results) != 1 {
 		return errors.New("incorrect number of variables returned by server")
 	}
 
@@ -222,7 +222,7 @@ func testNamespaceVariablesSmall(ctx context.Context, c grpc.FlowClient, namespa
 	if err != nil {
 		return err
 	}
-	if len(vars.Variables.Edges) != 0 {
+	if len(vars.Variables.Results) != 0 {
 		return errors.New("unexpected variables still exist in the namespace")
 	}
 
@@ -374,7 +374,7 @@ func testWorkflowVariablesEmpty(ctx context.Context, c grpc.FlowClient, namespac
 		return err
 	}
 
-	if len(vars.Variables.Edges) != 0 {
+	if len(vars.Variables.Results) != 0 {
 		return errors.New("unexpected variables already exist in the workflow")
 	}
 
@@ -391,7 +391,7 @@ func testWorkflowVariablesEmpty(ctx context.Context, c grpc.FlowClient, namespac
 	if err != nil {
 		return err
 	}
-	if len(vars.Variables.Edges) != 0 {
+	if len(vars.Variables.Results) != 0 {
 		return errors.New("unexpected variables already exist in the workflow")
 	}
 
@@ -409,7 +409,7 @@ func testWorkflowVariablesEmpty(ctx context.Context, c grpc.FlowClient, namespac
 	if err != nil {
 		return err
 	}
-	if len(vars.Variables.Edges) != 1 {
+	if len(vars.Variables.Results) != 1 {
 		return errors.New("incorrect number of variables returned by server")
 	}
 
@@ -439,7 +439,7 @@ func testWorkflowVariablesEmpty(ctx context.Context, c grpc.FlowClient, namespac
 	if err != nil {
 		return err
 	}
-	if len(vars.Variables.Edges) != 0 {
+	if len(vars.Variables.Results) != 0 {
 		return errors.New("unexpected variables still exist in the workflow")
 	}
 
@@ -490,7 +490,7 @@ func testWorkflowVariablesSmall(ctx context.Context, c grpc.FlowClient, namespac
 		return err
 	}
 
-	if len(vars.Variables.Edges) != 0 {
+	if len(vars.Variables.Results) != 0 {
 		return errors.New("unexpected variables already exist in the workflow")
 	}
 
@@ -507,7 +507,7 @@ func testWorkflowVariablesSmall(ctx context.Context, c grpc.FlowClient, namespac
 	if err != nil {
 		return err
 	}
-	if len(vars.Variables.Edges) != 0 {
+	if len(vars.Variables.Results) != 0 {
 		return errors.New("unexpected variables already exist in the workflow")
 	}
 
@@ -525,7 +525,7 @@ func testWorkflowVariablesSmall(ctx context.Context, c grpc.FlowClient, namespac
 	if err != nil {
 		return err
 	}
-	if len(vars.Variables.Edges) != 1 {
+	if len(vars.Variables.Results) != 1 {
 		return errors.New("incorrect number of variables returned by server")
 	}
 
@@ -556,7 +556,7 @@ func testWorkflowVariablesSmall(ctx context.Context, c grpc.FlowClient, namespac
 	if err != nil {
 		return err
 	}
-	if len(vars.Variables.Edges) != 1 {
+	if len(vars.Variables.Results) != 1 {
 		return errors.New("incorrect number of variables returned by server")
 	}
 
@@ -586,7 +586,7 @@ func testWorkflowVariablesSmall(ctx context.Context, c grpc.FlowClient, namespac
 	if err != nil {
 		return err
 	}
-	if len(vars.Variables.Edges) != 0 {
+	if len(vars.Variables.Results) != 0 {
 		return errors.New("unexpected variables still exist in the workflow")
 	}
 

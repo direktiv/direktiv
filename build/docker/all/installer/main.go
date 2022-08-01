@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -12,7 +14,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/antelman107/net-wait-go/wait"
 	"github.com/apoorvam/goterminal"
 	"github.com/olekukonko/tablewriter"
 	"github.com/rootless-containers/rootlesskit/pkg/parent/cgrouputil"
@@ -22,22 +23,9 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
-func main() {
+func waitForUp() {
 
-	log.Println("all-in-one version of direktiv")
-
-	kc, err := exec.LookPath("kubectl")
-	if err != nil {
-		panic(err.Error())
-	}
-
-	go func() {
-		err := startingK3s()
-		if err != nil {
-			panic(err.Error())
-		}
-	}()
-
+	// first wait for the kubeconfig file
 	log.Println("waiting for k3s kubeconfig")
 	for {
 		if _, err := os.Stat("/etc/rancher/k3s/k3s.yaml"); !os.IsNotExist(err) {
@@ -46,53 +34,79 @@ func main() {
 		time.Sleep(1 * time.Second)
 	}
 
-	if !wait.New(
-		wait.WithProto("tcp"),
-		wait.WithWait(200*time.Millisecond),
-		wait.WithBreak(50*time.Millisecond),
-		wait.WithDeadline(30*time.Second),
-		wait.WithDebug(true),
-	).Do([]string{"127.0.0.1:6443"}) {
-		log.Fatalf("k3s is not available")
-		return
-	}
-
-	log.Println("unzip images")
-	cmd := exec.Command("/bin/gunzip", "-v", "/images.tar.gz")
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	cmd.Run()
-
-	log.Println("untar images")
-	cmd = exec.Command("/bin/tar", "-xvf", "/images.tar")
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	cmd.Run()
-
-	// delete because we import all tars as images
-	os.Remove("/images.tar")
-
-	ff, err := os.ReadDir("/")
-	if err != nil {
-		log.Fatalf("error reading dir")
-	}
-
-	log.Println("importing images")
-	for i := range ff {
-		f := ff[i]
-		if strings.HasSuffix(f.Name(), ".tar") {
-			log.Printf("importing %v", f.Name())
-			importImage(f.Name())
+	// run kubectl command till it is successful, api seems to work
+	log.Println("waiting for kubernetes API")
+	for {
+		cmd := exec.Command("k3s", "kubectl", "get", "nodes")
+		err := cmd.Run()
+		if err == nil {
+			break
 		}
 	}
 
-	installKnative(kc)
+	// wait for kube-system pods to be up
+	config, err := clientcmd.BuildConfigFromFlags("", "/etc/rancher/k3s/k3s.yaml")
+	if err != nil {
+		panic(err.Error())
+	}
 
-	runRegistry(kc)
+	clientset, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		panic(err.Error())
+	}
 
-	runDB(kc)
+	log.Println("waiting for systems pods")
+	for {
+		var lo metav1.ListOptions
+		pods, err := clientset.CoreV1().Pods("kube-system").List(context.Background(), lo)
+		if err != nil {
+			time.Sleep(2 * time.Second)
+			continue
+		}
 
-	runHelm(kc)
+		if len(pods.Items) == 0 {
+			time.Sleep(2 * time.Second)
+			continue
+		}
+
+		break
+
+	}
+
+	log.Println("k3s up")
+
+}
+
+func main() {
+
+	log.Println("all-in-one version of direktiv")
+
+	go func() {
+		err := startingK3s()
+		if err != nil {
+			panic(err.Error())
+		}
+	}()
+
+	waitForUp()
+
+	// if that file exists, the installation has already happened
+	_, err := os.Stat("/.service")
+
+	if err != nil {
+
+		installKnative()
+
+		runRegistry()
+
+		runDB()
+
+		runHelm()
+
+		f, _ := os.Create("/.service")
+		f.Close()
+
+	}
 
 	config, err := clientcmd.BuildConfigFromFlags("", "/etc/rancher/k3s/k3s.yaml")
 	if err != nil {
@@ -164,27 +178,72 @@ func main() {
 		time.Sleep(1 * time.Second)
 	}
 
+	err = addNamespace()
+	if err != nil {
+		fmt.Printf("could not add namespace from git: %v\n", err)
+	}
+
 	fmt.Println("direktiv ready at http://localhost:8080 or http://<HOST-IP>:8080")
 
 	select {}
 
 }
 
-func importImage(img string) {
+func addNamespace() error {
 
-	cmd := exec.Command("/k3s", "ctr", "images", "import", img)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	cmd.Run()
+	fmt.Println("adding namespace from git")
 
-	os.Remove(img)
+	ns := make(map[string]string)
+	ns["url"] = "https://github.com/direktiv/direktiv-examples.git"
+	ns["ref"] = "main"
+
+	client := &http.Client{}
+	json, err := json.Marshal(ns)
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequest(http.MethodPut, "http://localhost/api/namespaces/examples", bytes.NewBuffer(json))
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("Content-Type", "application/json; charset=utf-8")
+
+	if os.Getenv("APIKEY") != "" {
+		req.Header.Set("apikey", os.Getenv("APIKEY"))
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	time.Sleep(2 * time.Second)
+	req, err = http.NewRequest(http.MethodPost, "http://localhost/api/namespaces/examples/tree?op=sync-mirror&force=true", nil)
+	if err != nil {
+		return err
+	}
+
+	if os.Getenv("APIKEY") != "" {
+		req.Header.Set("apikey", os.Getenv("APIKEY"))
+	}
+
+	respSync, err := client.Do(req)
+	if err != nil {
+		fmt.Printf("could not sync git repo: %v\n", err)
+	}
+	defer respSync.Body.Close()
+
+	return nil
 
 }
 
-func runDB(kc string) {
+func runDB() {
 	log.Println("deploying db")
 
-	cmd := exec.Command(kc, "apply", "-f", "/pg")
+	cmd := exec.Command("k3s", "kubectl", "apply", "-f", "/pg")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Run()
@@ -197,13 +256,14 @@ func (a byName) Len() int           { return len(a) }
 func (a byName) Less(i, j int) bool { return a[i].GetName() < a[j].GetName() }
 func (a byName) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 
-func runHelm(kc string) {
+func runHelm() {
+
+	fmt.Println("deploying direktiv")
 
 	f, err := os.OpenFile("/debug.yaml", os.O_APPEND|os.O_WRONLY, 0600)
 	if err != nil {
 		panic(err)
 	}
-	/* #nosec */
 	defer f.Close()
 
 	log.Printf("adding apikey if configured\n")
@@ -216,29 +276,28 @@ func runHelm(kc string) {
 	addProxy(f)
 
 	log.Printf("creating service namespace\n")
-	/* #nosec */
-	cmd := exec.Command(kc, "create", "namespace", "direktiv-services-direktiv")
+
+	cmd := exec.Command("k3s", "kubectl", "create", "namespace", "direktiv-services-direktiv")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Run()
 
 	log.Printf("running direktiv helm\n")
 	cmd = exec.Command("/helm", "install", "-f", "/debug.yaml", "direktiv", ".")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
 	cmd.Dir = "/direktiv-charts/charts/direktiv"
 	cmd.Env = []string{"KUBECONFIG=/etc/rancher/k3s/k3s.yaml"}
 	cmd.Run()
 
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
 }
 
-func runRegistry(kc string) {
+func runRegistry() {
 
 	log.Println("installing docker repository")
 	log.Printf("applying registry.yaml\n")
-	/* #nosec */
-	cmd := exec.Command(kc, "apply", "-f", "/registry.yaml")
+
+	cmd := exec.Command("k3s", "kubectl", "apply", "-f", "/registry.yaml")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Run()
@@ -250,25 +309,24 @@ func addProxy(f *os.File) {
 	log.Printf("adding proxy settings to file: %v\n", f.Name())
 	if os.Getenv("HTTPS_PROXY") != "" || os.Getenv("HTTP_PROXY") != "" {
 		log.Println("http proxy set")
+		f.Write([]byte("\n"))
 		f.Write([]byte(fmt.Sprintf("https_proxy: \"%v\"\n", os.Getenv("HTTPS_PROXY"))))
 		f.Write([]byte(fmt.Sprintf("http_proxy: \"%v\"\n", os.Getenv("HTTP_PROXY"))))
 		f.Write([]byte(fmt.Sprintf("no_proxy: \"%v\"\n", os.Getenv("NO_PROXY"))))
 	} else {
 		log.Println("http proxy not set")
+		f.Write([]byte("\n"))
 		f.Write([]byte("http_proxy: \"\"\n"))
 		f.Write([]byte("https_proxy: \"\"\n"))
 		f.Write([]byte("no_proxy: \"\"\n"))
 	}
 }
 
-func installKnative(kc string) {
+func installKnative() {
 
 	log.Printf("running knative helm\n")
 
-	/* #nosec */
 	f, err := os.Create("/tmp/knative.yaml")
-
-	/* #nosec */
 	defer f.Close()
 
 	if err != nil {
@@ -277,7 +335,7 @@ func installKnative(kc string) {
 
 	addProxy(f)
 
-	cmd := exec.Command("/helm", "install", "-n", "knative-serving", "--create-namespace", "-f", "/tmp/knative.yaml", "knative", ".")
+	cmd := exec.Command("/helm", "install", "-n", "knative-serving", "--create-namespace", "-f", "/tmp/knative.yaml", "knative", "/direktiv-charts/charts/knative")
 	cmd.Dir = "/direktiv-charts/charts/knative"
 	cmd.Env = []string{"KUBECONFIG=/etc/rancher/k3s/k3s.yaml"}
 	cmd.Stdout = os.Stdout
@@ -288,8 +346,7 @@ func installKnative(kc string) {
 	isgcp := isGCP()
 	log.Printf("running on GCP: %v\n", isgcp)
 	if isgcp {
-		/* #nosec */
-		cmd := exec.Command(kc, "apply", "-f", "/google-dns.yaml")
+		cmd := exec.Command("k3s", "kubectl", "apply", "-f", "/google-dns.yaml")
 		cmd.Dir = "/"
 		cmd.Run()
 		cmd.Stdout = os.Stdout
@@ -299,27 +356,18 @@ func installKnative(kc string) {
 	if os.Getenv("EVENTING") != "" {
 		log.Printf("installing knative eventing")
 
-		yamls := []string{
-			"https://github.com/knative/eventing/releases/download/v0.26.1/eventing-crds.yaml",
-			"https://github.com/knative/eventing/releases/download/v0.26.1/eventing-core.yaml",
-			"https://github.com/knative/eventing/releases/download/v0.26.1/mt-channel-broker.yaml",
-			"https://github.com/knative/eventing/releases/download/v0.26.1/in-memory-channel.yaml",
-		}
-
-		for i := range yamls {
-			cmd = exec.Command(kc, "apply", "-f", yamls[i])
-			cmd.Stdout = os.Stdout
-			cmd.Stderr = os.Stderr
-			cmd.Run()
-		}
-
-		// waiting for controller to be Ready
-		cmd = exec.Command(kc, "wait", "--for=condition=ready", "pod", "-l", "app=mt-broker-controller", "-n", "knative-eventing")
+		cmd = exec.Command("k3s", "kubectl", "apply", "-f", "/eventing")
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		cmd.Run()
 
-		cmd = exec.Command(kc, "apply", "-f", "/broker.yaml")
+		// waiting for controller to be Ready
+		cmd = exec.Command("k3s", "kubectl", "wait", "--for=condition=ready", "pod", "-l", "app=mt-broker-controller", "-n", "knative-eventing")
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		cmd.Run()
+
+		cmd = exec.Command("k3s", "kubectl", "apply", "-f", "/broker.yaml")
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		cmd.Run()
@@ -331,9 +379,8 @@ func installKnative(kc string) {
 func startingK3s() error {
 
 	log.Println("starting k3s now")
-	cmd := exec.Command("/k3s", "server", "--kube-proxy-arg=conntrack-max-per-core=0",
-		"--disable", "traefik", "--write-kubeconfig-mode=644", "--kube-apiserver-arg",
-		"feature-gates=TTLAfterFinished=true")
+	cmd := exec.Command("/usr/local/bin/k3s", "server", "--kube-proxy-arg=conntrack-max-per-core=0",
+		"--disable", "traefik", "--write-kubeconfig-mode=644", "--snapshotter", "native")
 
 	log.Println("evacuate cgroup2")
 	if err := cgrouputil.EvacuateCgroup2("init"); err != nil {

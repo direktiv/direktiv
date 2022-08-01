@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/ent"
+	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
@@ -43,7 +44,7 @@ func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNam
 			rollback(tx)
 			goto respond
 		}
-		if !IsNotFound(err) {
+		if !derrors.IsNotFound(err) {
 			return nil, err
 		}
 	}
@@ -577,108 +578,19 @@ func (flow *flow) HardSyncMirror(ctx context.Context, req *grpc.HardSyncMirrorRe
 
 }
 
-func mirrorActivityOrder(p *pagination) []ent.MirrorActivityPaginateOption {
-
-	var opts []ent.MirrorActivityPaginateOption
-
-	for _, o := range p.order {
-
-		if o == nil {
-			continue
-		}
-
-		order := ent.MirrorActivityOrder{
-			Direction: ent.OrderDirectionAsc,
-			Field:     ent.MirrorActivityOrderFieldCreatedAt,
-		}
-
-		switch o.GetField() {
-		case "CREATED":
-			order.Field = ent.MirrorActivityOrderFieldCreatedAt
-		default:
-			break
-		}
-
-		switch o.GetDirection() {
-		case "DESC":
-			order.Direction = ent.OrderDirectionDesc
-		case "ASC":
-			order.Direction = ent.OrderDirectionAsc
-		default:
-			break
-		}
-
-		opts = append(opts, ent.WithMirrorActivityOrder(&order))
-
-	}
-
-	if len(opts) == 0 {
-		opts = append(opts, ent.WithMirrorActivityOrder(&ent.MirrorActivityOrder{
-			Direction: ent.OrderDirectionAsc,
-			Field:     ent.MirrorActivityOrderFieldCreatedAt,
-		}))
-	}
-
-	return opts
-
+var mirrorActivitiesOrderings = []*orderingInfo{
+	{
+		db:           entmiract.FieldCreatedAt,
+		req:          "CREATED",
+		defaultOrder: ent.Asc,
+	},
 }
 
-func mirrorActivityFilter(p *pagination) []ent.MirrorActivityPaginateOption {
-
-	var filters []func(query *ent.MirrorActivityQuery) (*ent.MirrorActivityQuery, error)
-	var opts []ent.MirrorActivityPaginateOption
-
-	if p.filter == nil {
-		return nil
-	}
-
-	for i := range p.filter {
-
-		f := p.filter[i]
-
-		if f == nil {
-			continue
-		}
-
-		// filter := f.Val
-
-		filters = append(filters, func(query *ent.MirrorActivityQuery) (*ent.MirrorActivityQuery, error) {
-
-			return query, nil
-
-		})
-
-	}
-
-	if len(filters) > 0 {
-		opts = append(opts, ent.WithMirrorActivityFilter(func(query *ent.MirrorActivityQuery) (*ent.MirrorActivityQuery, error) {
-			var err error
-			for _, filter := range filters {
-				query, err = filter(query)
-				if err != nil {
-					return nil, err
-				}
-			}
-			return query, nil
-		}))
-	}
-
-	return opts
-
-}
+var mirrorActivitiesFilters = map[*filteringInfo]func(query *ent.MirrorActivityQuery, v string) (*ent.MirrorActivityQuery, error){}
 
 func (flow *flow) MirrorInfo(ctx context.Context, req *grpc.MirrorInfoRequest) (*grpc.MirrorInfoResponse, error) {
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
-
-	p, err := getPagination(req.Pagination)
-	if err != nil {
-		return nil, err
-	}
-
-	opts := []ent.MirrorActivityPaginateOption{}
-	opts = append(opts, mirrorActivityOrder(p)...)
-	opts = append(opts, mirrorActivityFilter(p)...)
 
 	tx, err := flow.db.Tx(ctx)
 	if err != nil {
@@ -692,7 +604,8 @@ func (flow *flow) MirrorInfo(ctx context.Context, req *grpc.MirrorInfoRequest) (
 	}
 
 	query := d.mir.QueryActivities()
-	cx, err := query.Paginate(ctx, p.After(), p.First(), p.Before(), p.Last(), opts...)
+
+	results, pi, err := paginate[*ent.MirrorActivityQuery, *ent.MirrorActivity](ctx, req.Pagination, query, mirrorActivitiesOrderings, mirrorActivitiesFilters)
 	if err != nil {
 		return nil, err
 	}
@@ -702,12 +615,15 @@ func (flow *flow) MirrorInfo(ctx context.Context, req *grpc.MirrorInfoRequest) (
 		return nil, err
 	}
 
-	// flow.logToNamespace(ctx, time.Now(), ns, "Created directory as git mirror '%s'.", path)
-	// flow.pubsub.NotifyInode(pino.ino)
+	resp := new(grpc.MirrorInfoResponse)
+	resp.Namespace = d.namespace()
+	resp.Activities = new(grpc.MirrorActivities)
+	resp.Activities.PageInfo = pi
 
-	// respond:
-
-	var resp grpc.MirrorInfoResponse
+	err = atob(results, &resp.Activities.Results)
+	if err != nil {
+		return nil, err
+	}
 
 	err = atob(d.mir, &resp.Info)
 	if err != nil {
@@ -720,14 +636,8 @@ func (flow *flow) MirrorInfo(ctx context.Context, req *grpc.MirrorInfoRequest) (
 	if d.mir.PrivateKey != "" {
 		resp.Info.PrivateKey = "-"
 	}
-	resp.Namespace = d.ns().Name
 
-	err = atob(cx, &resp.Activities)
-	if err != nil {
-		return nil, err
-	}
-
-	return &resp, nil
+	return resp, nil
 
 }
 
@@ -739,17 +649,7 @@ func (flow *flow) MirrorInfoStream(req *grpc.MirrorInfoRequest, srv grpc.Flow_Mi
 	phash := ""
 	nhash := ""
 
-	p, err := getPagination(req.Pagination)
-	if err != nil {
-		return err
-	}
-
-	opts := []ent.MirrorActivityPaginateOption{}
-	opts = append(opts, mirrorActivityOrder(p)...)
-	opts = append(opts, mirrorActivityFilter(p)...)
-
-	nsc := flow.db.Namespace
-	d, err := flow.traverseToMirror(ctx, nsc, req.GetNamespace(), req.GetPath())
+	d, err := flow.traverseToMirror(ctx, flow.db.Namespace, req.GetNamespace(), req.GetPath())
 	if err != nil {
 		return err
 	}
@@ -769,13 +669,14 @@ resend:
 	}
 	defer rollback(tx)
 
-	d, err = flow.traverseToMirror(ctx, tx.Namespace, req.GetNamespace(), req.GetPath())
+	d, err = flow.traverseToMirror(ctx, tx.Namespace, d.namespace(), d.path)
 	if err != nil {
 		return err
 	}
 
 	query := d.mir.QueryActivities()
-	cx, err := query.Paginate(ctx, p.After(), p.First(), p.Before(), p.Last(), opts...)
+
+	results, pi, err := paginate[*ent.MirrorActivityQuery, *ent.MirrorActivity](ctx, req.Pagination, query, mirrorActivitiesOrderings, mirrorActivitiesFilters)
 	if err != nil {
 		return err
 	}
@@ -785,12 +686,15 @@ resend:
 		return err
 	}
 
-	// flow.logToNamespace(ctx, time.Now(), ns, "Created directory as git mirror '%s'.", path)
-	// flow.pubsub.NotifyInode(pino.ino)
-
-	// respond:
-
 	resp := new(grpc.MirrorInfoResponse)
+	resp.Namespace = d.namespace()
+	resp.Activities = new(grpc.MirrorActivities)
+	resp.Activities.PageInfo = pi
+
+	err = atob(results, &resp.Activities.Results)
+	if err != nil {
+		return err
+	}
 
 	err = atob(d.mir, &resp.Info)
 	if err != nil {
@@ -802,12 +706,6 @@ resend:
 	}
 	if d.mir.PrivateKey != "" {
 		resp.Info.PrivateKey = "-"
-	}
-	resp.Namespace = d.ns().Name
-
-	err = atob(cx, &resp.Activities)
-	if err != nil {
-		return err
 	}
 
 	nhash = checksum(resp)
@@ -875,37 +773,29 @@ func (flow *flow) MirrorActivityLogs(ctx context.Context, req *grpc.MirrorActivi
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	p, err := getPagination(req.Pagination)
+	d, err := flow.getMirrorActivity(ctx, flow.db.Namespace, req.GetNamespace(), req.GetActivity())
 	if err != nil {
 		return nil, err
 	}
 
-	opts := []ent.LogMsgPaginateOption{}
-	opts = append(opts, logsOrder(p)...)
-	opts = append(opts, logsFilter(p)...)
+	query := d.act.QueryLogs()
 
-	nsc := flow.db.Namespace
-	d, err := flow.getMirrorActivity(ctx, nsc, req.GetNamespace(), req.GetActivity())
+	results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
 	if err != nil {
 		return nil, err
 	}
 
-	cx, err := d.act.QueryLogs().Paginate(ctx, p.After(), p.First(), p.Before(), p.Last(), opts...)
-	if err != nil {
-		return nil, err
-	}
-
-	var resp grpc.MirrorActivityLogsResponse
-
-	err = atob(cx, &resp)
-	if err != nil {
-		return nil, err
-	}
-
+	resp := new(grpc.MirrorActivityLogsResponse)
 	resp.Namespace = d.namespace()
 	resp.Activity = d.act.ID.String()
+	resp.PageInfo = pi
 
-	return &resp, nil
+	err = atob(results, &resp.Results)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
 
 }
 
@@ -914,22 +804,10 @@ func (flow *flow) MirrorActivityLogsParcels(req *grpc.MirrorActivityLogsRequest,
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
+
 	var tailing bool
 
-	p, err := getPagination(req.Pagination)
-	if err != nil {
-		return err
-	}
-
-	porder := p.order
-	pfilter := p.filter
-
-	opts := []ent.LogMsgPaginateOption{}
-	opts = append(opts, logsOrder(p)...)
-	opts = append(opts, logsFilter(p)...)
-
-	nsc := flow.db.Namespace
-	d, err := flow.getMirrorActivity(ctx, nsc, req.GetNamespace(), req.GetActivity())
+	d, err := flow.getMirrorActivity(ctx, flow.db.Namespace, req.GetNamespace(), req.GetActivity())
 	if err != nil {
 		return err
 	}
@@ -939,22 +817,24 @@ func (flow *flow) MirrorActivityLogsParcels(req *grpc.MirrorActivityLogsRequest,
 
 resend:
 
-	cx, err := d.act.QueryLogs().Paginate(ctx, p.After(), p.First(), p.Before(), p.Last(), opts...)
+	query := d.act.QueryLogs()
+
+	results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
 	if err != nil {
 		return err
 	}
 
-	var resp = new(grpc.MirrorActivityLogsResponse)
-
-	err = atob(cx, resp)
-	if err != nil {
-		return err
-	}
-
+	resp := new(grpc.MirrorActivityLogsResponse)
 	resp.Namespace = d.namespace()
 	resp.Activity = d.act.ID.String()
+	resp.PageInfo = pi
 
-	if len(resp.Edges) != 0 || !tailing {
+	err = atob(results, &resp.Results)
+	if err != nil {
+		return err
+	}
+
+	if len(resp.Results) != 0 || !tailing {
 
 		tailing = true
 
@@ -963,10 +843,7 @@ resend:
 			return err
 		}
 
-		p = new(pagination)
-		p.after = resp.PageInfo.EndCursor
-		p.order = porder
-		p.filter = pfilter
+		req.Pagination.Offset += int32(len(resp.Results))
 
 	}
 

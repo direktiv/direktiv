@@ -127,9 +127,6 @@ service Flow {
 
 	rpc JQ (JQRequest) returns (JQResponse) {}
 
-	rpc GlobalDependencyGraph (google.protobuf.Empty) returns (DependencyGraphResponse) {} // This is WIP
-	rpc NamespacedDependencyGraph (NamespacedDependencyGraphRequest) returns (DependencyGraphResponse) {} // This is WIP
-
 	rpc CreateNodeAttributes (CreateNodeAttributesRequest) returns (google.protobuf.Empty) {}
 	rpc DeleteNodeAttributes (DeleteNodeAttributesRequest) returns (google.protobuf.Empty) {}
 

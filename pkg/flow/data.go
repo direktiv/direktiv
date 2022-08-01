@@ -12,8 +12,8 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/ent"
+	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/jqer"
-	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -195,46 +195,6 @@ func atobSliceBuilder(t reflect.Type, v reflect.Value) interface{} {
 
 }
 
-func encodeCursor(c ent.Cursor) string {
-	m := make(map[string]interface{})
-	m["id"] = c.ID.String()
-	m["v"] = c.Value
-	data, _ := json.Marshal(m)
-	s := base64.StdEncoding.EncodeToString(data)
-	return s
-}
-
-func decodeCursor(s string) *ent.Cursor {
-	var c ent.Cursor
-	data, err := base64.StdEncoding.DecodeString(s)
-	if err != nil {
-		return &c
-	}
-	m := make(map[string]interface{})
-	err = json.Unmarshal(data, &m)
-	if err != nil {
-		return &c
-	}
-	x, exists := m["id"]
-	if !exists {
-		return &c
-	}
-	id, ok := x.(string)
-	if !ok {
-		return &c
-	}
-	v, exists := m["v"]
-	if !exists {
-		return &c
-	}
-	c.ID, err = uuid.Parse(id)
-	if err != nil {
-		return &c
-	}
-	c.Value = ent.Value(v)
-	return &c
-}
-
 func atobBuilder(a interface{}) interface{} {
 
 	v := reflect.ValueOf(a)
@@ -257,8 +217,6 @@ deref:
 	case reflect.Map:
 		x := v.Interface()
 		switch x.(type) {
-		case ent.Cursor:
-			return encodeCursor(x.(ent.Cursor))
 		case time.Time:
 			return timestamppb.New(x.(time.Time))
 		case map[string]interface{}:
@@ -309,7 +267,7 @@ func (srv *server) initJQ() {
 func jq(input interface{}, command interface{}) ([]interface{}, error) {
 	out, err := jqer.Evaluate(input, command)
 	if err != nil {
-		return nil, NewCatchableError(ErrCodeJQBadQuery, "failed to evaluate jq/js: %v", err)
+		return nil, derrors.NewCatchableError(ErrCodeJQBadQuery, "failed to evaluate jq/js: %v", err)
 	}
 	return out, nil
 }
@@ -322,7 +280,7 @@ func jqOne(input interface{}, command interface{}) (interface{}, error) {
 	}
 
 	if len(output) != 1 {
-		return nil, NewCatchableError(ErrCodeJQNotObject, "the `jq` or `js` command produced multiple outputs")
+		return nil, derrors.NewCatchableError(ErrCodeJQNotObject, "the `jq` or `js` command produced multiple outputs")
 	}
 
 	return output[0], nil
@@ -338,7 +296,7 @@ func jqObject(input interface{}, command interface{}) (map[string]interface{}, e
 
 	m, ok := x.(map[string]interface{})
 	if !ok {
-		return nil, NewCatchableError(ErrCodeJQNotObject, "the `jq` or `js` command produced a non-object output")
+		return nil, derrors.NewCatchableError(ErrCodeJQNotObject, "the `jq` or `js` command produced a non-object output")
 	}
 
 	return m, nil

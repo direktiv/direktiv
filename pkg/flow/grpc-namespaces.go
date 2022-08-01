@@ -7,115 +7,28 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entns "github.com/direktiv/direktiv/pkg/flow/ent/namespace"
+	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-func namespaceOrder(p *pagination) []ent.NamespacePaginateOption {
-
-	var opts []ent.NamespacePaginateOption
-
-	for _, o := range p.order {
-
-		if o == nil {
-			continue
-		}
-
-		field := ent.NamespaceOrderFieldName
-		direction := ent.OrderDirectionAsc
-
-		if x := o.Field; x != "" && x == "NAME" {
-			field = ent.NamespaceOrderFieldName
-		}
-
-		if x := o.Direction; x != "" && x == "DESC" {
-			direction = ent.OrderDirectionDesc
-		}
-
-		opts = append(opts, ent.WithNamespaceOrder(&ent.NamespaceOrder{
-			Direction: direction,
-			Field:     field,
-		}))
-	}
-
-	if len(opts) == 0 {
-		opts = append(opts, ent.WithNamespaceOrder(&ent.NamespaceOrder{
-			Direction: ent.OrderDirectionAsc,
-			Field:     ent.NamespaceOrderFieldName,
-		}))
-	}
-
-	return opts
-
+var namespacesOrderings = []*orderingInfo{
+	{
+		db:           entns.FieldName,
+		req:          "NAME",
+		defaultOrder: ent.Asc,
+	},
 }
 
-func namespaceFilter(p *pagination) []ent.NamespacePaginateOption {
-
-	var filters []func(query *ent.NamespaceQuery) (*ent.NamespaceQuery, error)
-	var opts []ent.NamespacePaginateOption
-
-	if p.filter == nil {
-		return nil
-	}
-
-	for i := range p.filter {
-
-		f := p.filter[i]
-
-		if f == nil {
-			continue
-		}
-
-		filter := f.Val
-
-		filters = append(filters, func(query *ent.NamespaceQuery) (*ent.NamespaceQuery, error) {
-
-			if filter == "" {
-				return query, nil
-			}
-
-			field := f.Field
-			if field == "" {
-				return query, nil
-			}
-
-			switch field {
-			case "NAME":
-
-				ftype := f.Type
-				if ftype == "" {
-					return query, nil
-				}
-
-				switch ftype {
-				case "CONTAINS":
-					return query.Where(entns.NameContains(filter)), nil
-				}
-			}
-
-			return query, nil
-
-		})
-
-	}
-
-	if len(filters) > 0 {
-		opts = append(opts, ent.WithNamespaceFilter(func(query *ent.NamespaceQuery) (*ent.NamespaceQuery, error) {
-			var err error
-			for _, filter := range filters {
-				query, err = filter(query)
-				if err != nil {
-					return nil, err
-				}
-			}
-			return query, nil
-		}))
-	}
-
-	return opts
-
+var namespacesFilters = map[*filteringInfo]func(query *ent.NamespaceQuery, v string) (*ent.NamespaceQuery, error){
+	{
+		field: "NAME",
+		ftype: "CONTAINS",
+	}: func(query *ent.NamespaceQuery, v string) (*ent.NamespaceQuery, error) {
+		return query.Where(entns.NameContains(v)), nil
+	},
 }
 
 func (flow *flow) ResolveNamespaceUID(ctx context.Context, req *grpc.ResolveNamespaceUIDRequest) (*grpc.NamespaceResponse, error) {
@@ -226,30 +139,22 @@ func (flow *flow) Namespaces(ctx context.Context, req *grpc.NamespacesRequest) (
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	p, err := getPagination(req.Pagination)
+	query := flow.db.Namespace.Query()
+
+	results, pi, err := paginate[*ent.NamespaceQuery, *ent.Namespace](ctx, req.Pagination, query, namespacesOrderings, namespacesFilters)
 	if err != nil {
 		return nil, err
 	}
 
-	opts := []ent.NamespacePaginateOption{}
-	opts = append(opts, namespaceOrder(p)...)
-	opts = append(opts, namespaceFilter(p)...)
+	resp := new(grpc.NamespacesResponse)
+	resp.PageInfo = pi
 
-	nsc := flow.db.Namespace
-	query := nsc.Query()
-	cx, err := query.Paginate(ctx, p.After(), p.First(), p.Before(), p.Last(), opts...)
+	err = atob(results, &resp.Results)
 	if err != nil {
 		return nil, err
 	}
 
-	var resp grpc.NamespacesResponse
-
-	err = atob(cx, &resp)
-	if err != nil {
-		return nil, err
-	}
-
-	return &resp, nil
+	return resp, nil
 
 }
 
@@ -261,31 +166,22 @@ func (flow *flow) NamespacesStream(req *grpc.NamespacesRequest, srv grpc.Flow_Na
 	phash := ""
 	nhash := ""
 
-	p, err := getPagination(req.Pagination)
-	if err != nil {
-		return err
-	}
-
-	opts := []ent.NamespacePaginateOption{}
-	opts = append(opts, namespaceOrder(p)...)
-	opts = append(opts, namespaceFilter(p)...)
-
 	sub := flow.pubsub.SubscribeNamespaces()
 	defer flow.cleanup(sub.Close)
 
-	nsc := flow.db.Namespace
-
 resend:
 
-	query := nsc.Query()
-	cx, err := query.Paginate(ctx, p.After(), p.First(), p.Before(), p.Last(), opts...)
+	query := flow.db.Namespace.Query()
+
+	results, pi, err := paginate[*ent.NamespaceQuery, *ent.Namespace](ctx, req.Pagination, query, namespacesOrderings, namespacesFilters)
 	if err != nil {
 		return err
 	}
 
 	resp := new(grpc.NamespacesResponse)
+	resp.PageInfo = pi
 
-	err = atob(cx, &resp)
+	err = atob(results, &resp.Results)
 	if err != nil {
 		return err
 	}
@@ -328,7 +224,7 @@ func (flow *flow) CreateNamespace(ctx context.Context, req *grpc.CreateNamespace
 			rollback(tx)
 			goto respond
 		}
-		if !IsNotFound(err) {
+		if !derrors.IsNotFound(err) {
 			return nil, err
 		}
 	}
@@ -377,7 +273,7 @@ func (flow *flow) DeleteNamespace(ctx context.Context, req *grpc.DeleteNamespace
 	nsc := tx.Namespace
 	ns, err := nsc.Query().Where(entns.NameEQ(req.GetName())).Only(ctx)
 	if err != nil {
-		if IsNotFound(err) && req.GetIdempotent() {
+		if derrors.IsNotFound(err) && req.GetIdempotent() {
 			rollback(tx)
 			goto respond
 		}
