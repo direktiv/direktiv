@@ -3,7 +3,6 @@ package schema
 import (
 	"time"
 
-	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/edge"
@@ -19,7 +18,7 @@ type Mirror struct {
 // Fields of the Mirror.
 func (Mirror) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New).Immutable().StorageKey("oid").Annotations(entgql.OrderField("ID")),
+		field.UUID("id", uuid.UUID{}).Default(uuid.New).Immutable().StorageKey("oid"),
 		field.String("url"),
 		field.String("ref"),
 		field.String("cron"),
@@ -27,9 +26,8 @@ func (Mirror) Fields() []ent.Field {
 		field.String("private_key"),
 		field.String("passphrase"),
 		field.String("commit"),
-		// field.Bool("locked"),
 		field.Time("last_sync").Optional().Nillable(),
-		field.Time("updated_at").Optional().Default(time.Now).UpdateDefault(time.Now).Annotations(entgql.OrderField("UPDATED")),
+		field.Time("updated_at").Optional().Default(time.Now).UpdateDefault(time.Now),
 	}
 }
 
@@ -50,10 +48,10 @@ type MirrorActivity struct {
 // Fields of the MirrorActivity.
 func (MirrorActivity) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New).Immutable().StorageKey("oid").Annotations(entgql.OrderField("ID")),
+		field.UUID("id", uuid.UUID{}).Default(uuid.New).Immutable().StorageKey("oid"),
 		field.String("type"),
 		field.String("status"),
-		field.Time("created_at").Default(time.Now).Immutable().Annotations(entgql.OrderField("CREATED")),
+		field.Time("created_at").Default(time.Now).Immutable(),
 		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
 		field.Time("end_at").Optional(),
 		field.String("controller").Optional(),

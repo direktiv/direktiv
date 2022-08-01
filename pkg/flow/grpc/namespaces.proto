@@ -31,15 +31,9 @@ message NamespacesRequest {
 	Pagination pagination = 1;
 }
 
-message NamespacesResponseEdge {
-	Namespace node = 1;
-	string cursor = 2;
-}
-
 message NamespacesResponse {
-	int32 totalCount = 1;
 	PageInfo pageInfo = 2;
-	repeated NamespacesResponseEdge edges = 3;
+	repeated Namespace results = 4;
 }
 
 message CreateNamespaceRequest {

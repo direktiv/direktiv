@@ -203,49 +203,39 @@ func (flow *flow) WorkflowVariables(ctx context.Context, req *grpc.WorkflowVaria
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	p, err := getPagination(req.Pagination)
-	if err != nil {
-		return nil, err
-	}
-
-	opts := []ent.VarRefPaginateOption{}
-	opts = append(opts, variablesOrder(p)...)
-	opts = append(opts, variablesFilter(p)...)
-
-	nsc := flow.db.Namespace
-
-	d, err := flow.traverseToWorkflow(ctx, nsc, req.GetNamespace(), req.GetPath())
+	d, err := flow.traverseToWorkflow(ctx, flow.db.Namespace, req.GetNamespace(), req.GetPath())
 	if err != nil {
 		return nil, err
 	}
 
 	query := d.wf.QueryVars()
-	cx, err := query.Paginate(ctx, p.After(), p.First(), p.Before(), p.Last(), opts...)
+
+	results, pi, err := paginate[*ent.VarRefQuery, *ent.VarRef](ctx, req.Pagination, query, variablesOrderings, variablesFilters)
 	if err != nil {
 		return nil, err
 	}
 
-	var resp grpc.WorkflowVariablesResponse
-
-	resp.Namespace = d.ns().Name
+	resp := new(grpc.WorkflowVariablesResponse)
+	resp.Namespace = d.namespace()
 	resp.Path = d.path
+	resp.Variables = new(grpc.Variables)
+	resp.Variables.PageInfo = pi
 
-	err = atob(cx, &resp.Variables)
+	err = atob(results, &resp.Variables.Results)
 	if err != nil {
 		return nil, err
 	}
 
-	for i := range cx.Edges {
+	for i := range results {
 
-		edge := cx.Edges[i]
-		vref := edge.Node
+		vref := results[i]
 
 		vdata, err := vref.QueryVardata().Select(entvardata.FieldCreatedAt, entvardata.FieldHash, entvardata.FieldSize, entvardata.FieldUpdatedAt).Only(ctx)
 		if err != nil {
 			return nil, err
 		}
 
-		v := resp.Variables.Edges[i].Node
+		v := resp.Variables.Results[i]
 		v.Checksum = vdata.Hash
 		v.CreatedAt = timestamppb.New(vdata.CreatedAt)
 		v.Size = int64(vdata.Size)
@@ -254,7 +244,7 @@ func (flow *flow) WorkflowVariables(ctx context.Context, req *grpc.WorkflowVaria
 
 	}
 
-	return &resp, nil
+	return resp, nil
 
 }
 
@@ -266,17 +256,7 @@ func (flow *flow) WorkflowVariablesStream(req *grpc.WorkflowVariablesRequest, sr
 	phash := ""
 	nhash := ""
 
-	p, err := getPagination(req.Pagination)
-	if err != nil {
-		return err
-	}
-
-	opts := []ent.VarRefPaginateOption{}
-	opts = append(opts, variablesOrder(p)...)
-	opts = append(opts, variablesFilter(p)...)
-
-	nsc := flow.db.Namespace
-	d, err := flow.traverseToWorkflow(ctx, nsc, req.GetNamespace(), req.GetPath())
+	d, err := flow.traverseToWorkflow(ctx, flow.db.Namespace, req.GetNamespace(), req.GetPath())
 	if err != nil {
 		return err
 	}
@@ -287,36 +267,38 @@ func (flow *flow) WorkflowVariablesStream(req *grpc.WorkflowVariablesRequest, sr
 resend:
 
 	query := d.wf.QueryVars()
-	cx, err := query.Paginate(ctx, p.After(), p.First(), p.Before(), p.Last(), opts...)
+
+	results, pi, err := paginate[*ent.VarRefQuery, *ent.VarRef](ctx, req.Pagination, query, variablesOrderings, variablesFilters)
 	if err != nil {
 		return err
 	}
 
 	resp := new(grpc.WorkflowVariablesResponse)
-
-	resp.Namespace = d.ns().Name
+	resp.Namespace = d.namespace()
 	resp.Path = d.path
+	resp.Variables = new(grpc.Variables)
+	resp.Variables.PageInfo = pi
 
-	err = atob(cx, &resp.Variables)
+	err = atob(results, &resp.Variables.Results)
 	if err != nil {
 		return err
 	}
 
-	for i := range cx.Edges {
+	for i := range results {
 
-		edge := cx.Edges[i]
-		vref := edge.Node
+		vref := results[i]
 
 		vdata, err := vref.QueryVardata().Select(entvardata.FieldCreatedAt, entvardata.FieldHash, entvardata.FieldSize, entvardata.FieldUpdatedAt).Only(ctx)
 		if err != nil {
 			return err
 		}
 
-		v := resp.Variables.Edges[i].Node
+		v := resp.Variables.Results[i]
 		v.Checksum = vdata.Hash
 		v.CreatedAt = timestamppb.New(vdata.CreatedAt)
 		v.Size = int64(vdata.Size)
 		v.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
+		v.MimeType = vdata.MimeType
 
 	}
 

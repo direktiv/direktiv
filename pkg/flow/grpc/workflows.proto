@@ -102,17 +102,11 @@ message Ref {
 	string name = 1;
 }
 
-message RefsEdge {
-	Ref node = 1;
-	string cursor = 2;
-}
-
 message TagsResponse {
 	string namespace = 1;
 	Node node = 2;
-	int32 totalCount = 3;
 	PageInfo pageInfo = 4;
-	repeated RefsEdge edges = 5;
+	repeated Ref results = 6;
 }
 
 message RefsRequest {
@@ -124,9 +118,8 @@ message RefsRequest {
 message RefsResponse {
 	string namespace = 1;
 	Node node = 2;
-	int32 totalCount = 3;
 	PageInfo pageInfo = 4;
-	repeated RefsEdge edges = 5;
+	repeated Ref results = 6;
 }
 
 message RevisionsRequest {
@@ -138,9 +131,8 @@ message RevisionsRequest {
 message RevisionsResponse {
 	string namespace = 1;
 	Node node = 2;
-	int32 totalCount = 3;
 	PageInfo pageInfo = 4;
-	repeated RefsEdge edges = 5;
+	repeated Ref results = 6;
 }
 
 message TagRequest {

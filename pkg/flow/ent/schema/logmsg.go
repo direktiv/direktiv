@@ -1,7 +1,6 @@
 package schema
 
 import (
-	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/edge"
@@ -18,7 +17,7 @@ type LogMsg struct {
 func (LogMsg) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New).Immutable().StorageKey("oid").StructTag(`json:"-"`),
-		field.Time("t").Annotations(entgql.OrderField("TIMESTAMP")),
+		field.Time("t"),
 		field.String("msg"),
 	}
 }

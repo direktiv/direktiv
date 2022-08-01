@@ -29,8 +29,7 @@ var (
 	addr string
 
 	stream                             bool
-	after, before                      string
-	first, last                        int32
+	limit, offset                      int32
 	orderField, orderDirection         string
 	filterField, filterType, filterVal string
 
@@ -121,10 +120,8 @@ func main() {
 
 func addPaginationFlags(cmd *cobra.Command) {
 	cmd.Flags().BoolVar(&stream, "stream", false, "")
-	cmd.Flags().StringVar(&after, "after", "", "")
-	cmd.Flags().Int32Var(&first, "first", 0, "")
-	cmd.Flags().StringVar(&before, "before", "", "")
-	cmd.Flags().Int32Var(&last, "last", 0, "")
+	cmd.Flags().Int32Var(&limit, "limit", -1, "")
+	cmd.Flags().Int32Var(&offset, "offset", 0, "")
 	cmd.Flags().StringVar(&orderField, "order.field", "", "")
 	cmd.Flags().StringVar(&orderDirection, "order.direction", "", "")
 	cmd.Flags().StringVar(&filterField, "filter.field", "", "")

@@ -75,8 +75,8 @@ func testCreateNamespaceDuplicate(ctx context.Context, c grpc.FlowClient, namesp
 
 	var total int
 
-	for _, edge := range resp.Edges {
-		if edge.Node.Name == namespace {
+	for _, result := range resp.Results {
+		if result.Name == namespace {
 			total++
 		}
 	}
@@ -256,7 +256,7 @@ func testNamespacesStream(ctx context.Context, c grpc.FlowClient, namespace stri
 	if err != nil {
 		return err
 	}
-	if len(resp.Edges) > 0 {
+	if len(resp.Results) > 0 {
 		return fmt.Errorf("unexpected namespaces stream results returned by server")
 	}
 
@@ -271,7 +271,7 @@ func testNamespacesStream(ctx context.Context, c grpc.FlowClient, namespace stri
 	if err != nil {
 		return err
 	}
-	if len(resp.Edges) != 1 {
+	if len(resp.Results) != 1 {
 		return fmt.Errorf("unexpected namespaces stream results returned by server")
 	}
 
@@ -286,7 +286,7 @@ func testNamespacesStream(ctx context.Context, c grpc.FlowClient, namespace stri
 	if err != nil {
 		return err
 	}
-	if len(resp.Edges) > 0 {
+	if len(resp.Results) > 0 {
 		return fmt.Errorf("unexpected namespaces stream results returned by server")
 	}
 
@@ -312,7 +312,7 @@ func testServerLogs(ctx context.Context, c grpc.FlowClient, namespace string) er
 
 	resp, err := c.ServerLogs(ctx, &grpc.ServerLogsRequest{
 		Pagination: &grpc.Pagination{
-			Last: 10,
+			// Last: 10,
 		},
 	})
 	if err != nil {
@@ -321,8 +321,8 @@ func testServerLogs(ctx context.Context, c grpc.FlowClient, namespace string) er
 
 	var k int
 
-	for _, edge := range resp.Edges {
-		if strings.Contains(edge.Node.Msg, name) {
+	for _, result := range resp.Results {
+		if strings.Contains(result.Msg, name) {
 			k++
 		}
 	}
@@ -346,7 +346,7 @@ func testServerLogsStream(ctx context.Context, c grpc.FlowClient, namespace stri
 
 	client, err := c.ServerLogsParcels(ctx, &grpc.ServerLogsRequest{
 		Pagination: &grpc.Pagination{
-			Last: 10,
+			// Last: 10,
 		},
 	})
 	if err != nil {
@@ -379,8 +379,8 @@ func testServerLogsStream(ctx context.Context, c grpc.FlowClient, namespace stri
 
 		var k int
 
-		for _, edge := range resp.Edges {
-			if strings.Contains(edge.Node.Msg, name) {
+		for _, result := range resp.Results {
+			if strings.Contains(result.Msg, name) {
 				k++
 			}
 		}
@@ -412,8 +412,8 @@ func testServerLogsStream(ctx context.Context, c grpc.FlowClient, namespace stri
 
 		k := 0
 
-		for _, edge := range resp.Edges {
-			if strings.Contains(edge.Node.Msg, name) {
+		for _, result := range resp.Results {
+			if strings.Contains(result.Msg, name) {
 				k++
 			}
 		}
@@ -447,9 +447,9 @@ func testNamespaceLogsStreamDisconnect(ctx context.Context, c grpc.FlowClient, n
 	}
 
 	client, err := c.NamespaceLogsParcels(ctx, &grpc.NamespaceLogsRequest{
-		Namespace: namespace,
+		Namespace:  namespace,
 		Pagination: &grpc.Pagination{
-			Last: 10,
+			// Last: 10,
 		},
 	})
 	if err != nil {

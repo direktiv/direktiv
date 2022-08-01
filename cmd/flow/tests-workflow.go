@@ -109,9 +109,9 @@ func testStartTypeEvent(ctx context.Context, c grpc.FlowClient, namespace string
 		return err
 	}
 
-	instances := resp.GetInstances().GetEdges()
+	instances := resp.GetInstances().GetResults()
 	for _, instance := range instances {
-		instanceNode := instance.GetNode().GetAs()
+		instanceNode := instance.GetAs()
 		if instanceNode == "/testwf" || instanceNode == "testwf" {
 			return nil
 		}
@@ -164,9 +164,9 @@ func testStartTypeEventAnd(ctx context.Context, c grpc.FlowClient, namespace str
 		return err
 	}
 
-	instances := resp.GetInstances().GetEdges()
+	instances := resp.GetInstances().GetResults()
 	for _, instance := range instances {
-		instanceNode := instance.GetNode().GetAs()
+		instanceNode := instance.GetAs()
 		if instanceNode == "/testwf" || instanceNode == "testwf" {
 			return nil
 		}
@@ -219,17 +219,17 @@ func testStartTypeEventXor(ctx context.Context, c grpc.FlowClient, namespace str
 		return err
 	}
 
-	instances := resp.GetInstances().GetEdges()
+	instances := resp.GetInstances().GetResults()
 
 	a := false
 	b := false
 
 	for _, instance := range instances {
-		instanceNode := instance.GetNode().GetAs()
+		instanceNode := instance.GetAs()
 		if instanceNode == "/testwf" || instanceNode == "testwf" {
 			// check for output
 			output, err := c.InstanceOutput(ctx, &grpc.InstanceOutputRequest{
-				Instance:  instance.GetNode().GetId(),
+				Instance:  instance.GetId(),
 				Namespace: namespace,
 			})
 			if err != nil {
@@ -284,7 +284,7 @@ func testStartTypeCron(ctx context.Context, c grpc.FlowClient, namespace string)
 		return err
 	}
 
-	instances := resp.GetInstances().GetEdges()
+	instances := resp.GetInstances().GetResults()
 
 	if len(instances) == 3 || len(instances) == 4 {
 		return nil
