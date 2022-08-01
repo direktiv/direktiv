@@ -1486,19 +1486,19 @@ func buildModel(ctx context.Context, repo *localRepository) (*mirrorModel, error
 	if os.IsNotExist(err) {
 		cfg.Ignore = make([]string, 0)
 	} else if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to read direktiv config file: %w", err)
 	} else {
 		err := yaml.Unmarshal(scfgbytes, cfg)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to unmarshal direktiv config file: %w", err)
 		}
 	}
 
 	globbers := make([]glob.Glob, 0)
-	for _, pattern := range cfg.Ignore {
+	for idx, pattern := range cfg.Ignore {
 		g, err := glob.Compile(pattern)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to parse %dth ignore pattern: %w", idx, err)
 		}
 		globbers = append(globbers, g)
 	}
