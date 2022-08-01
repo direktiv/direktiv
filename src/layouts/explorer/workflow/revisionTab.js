@@ -311,8 +311,8 @@ export function RevisionSelectorTab(props) {
     function updateTags(newTags){
         let processedTags = {}
         newTags.forEach(edge => {
-            if (edge.node.name !== "latest") {
-                processedTags[edge.node.name] = true
+            if (edge.name !== "latest") {
+                processedTags[edge.name] = true
             }
         });
         setTags(processedTags)
@@ -323,8 +323,8 @@ export function RevisionSelectorTab(props) {
             if(tags === null){
                 // get workflow tags
                 let resp = await getTags()
-                if(Array.isArray(resp.edges)){
-                    updateTags(resp.edges)
+                if(Array.isArray(resp.results)){
+                    updateTags(resp.results)
                 } else {
                     // FIXME: find location for this error
                     console.error("could not retrive tags", resp)
@@ -405,7 +405,7 @@ export function RevisionSelectorTab(props) {
                     <ContentPanelBody style={{flexDirection: "column"}}>
                         {revisions.map((obj) => {
                             for(var i=0; i < router.routes.length; i++) {
-                                if(obj.node.name === router.routes[i].ref){}
+                                if(obj.name === router.routes[i].ref){}
                             }
                             return (
                                 <FlexBox key={GenerateRandomKey()} className="gap wrap" style={{
@@ -421,15 +421,15 @@ export function RevisionSelectorTab(props) {
                                                     ID
                                                 </div>
                                                 <div>
-                                                    {obj.node.name}
+                                                    {obj.name}
                                                 </div>
                                             </FlexBox>
                                         </div>
                                     </FlexBox>
-                                    <RevertTrafficAmount revisionName={obj.node.name} routes={router.routes}/>
-                                    <div style={obj.node.name === "latest" ? {visibility: "hidden"} : null}>
+                                    <RevertTrafficAmount revisionName={obj.name} routes={router.routes}/>
+                                    <div style={obj.name === "latest" ? {visibility: "hidden"} : null}>
                                         <FlexBox className="gap">
-                                            {tags !== null && tags[obj.node.name] ? 
+                                            {tags !== null && tags[obj.name] ? 
                                                 <Modal
                                                     modalStyle={{width: "400px"}}
                                                     escapeToCancel
@@ -445,11 +445,11 @@ export function RevisionSelectorTab(props) {
                                                     actionButtons={
                                                         [
                                                             ButtonDefinition("Remove", async () => {
-                                                                await removeTag(obj.node.name)
+                                                                await removeTag(obj.name)
                                                                 let tagsResp = await getTags()
                                                                 let revResp = await getRevisions()
-                                                                setRevisions(revResp.edges)
-                                                                updateTags(tagsResp.edges)
+                                                                setRevisions(revResp.results)
+                                                                updateTags(tagsResp.results)
                                                             }, "small red", ()=>{}, true, false),
                                                             ButtonDefinition("Cancel", () => {
                                                             }, "small light", ()=>{}, true, false)
@@ -458,7 +458,7 @@ export function RevisionSelectorTab(props) {
                                                 >
                                                     <FlexBox className="col gap">
                                                         <FlexBox >
-                                                            Are you sure you want to remove the tag '{obj.node.name}'?
+                                                            Are you sure you want to remove the tag '{obj.name}'?
                                                         </FlexBox>
                                                     </FlexBox>
                                                 </Modal>
@@ -478,9 +478,9 @@ export function RevisionSelectorTab(props) {
                                                     actionButtons={
                                                         [
                                                             ButtonDefinition("Delete", async () => {
-                                                                    await deleteRevision(obj.node.name)
+                                                                    await deleteRevision(obj.name)
                                                                     let x = await getRevisions()
-                                                                    setRevisions(x.edges)
+                                                                    setRevisions(x.results)
                                                                     setRouter(await getWorkflowRouter())
                                                             }, "small red", ()=>{}, true, false),
                                                             ButtonDefinition("Cancel", () => {
@@ -490,23 +490,23 @@ export function RevisionSelectorTab(props) {
                                                 >
                                                     <FlexBox className="col gap">
                                                         <FlexBox >
-                                                            Are you sure you want to delete '{obj.node.name}'?
+                                                            Are you sure you want to delete '{obj.name}'?
                                                             <br />
                                                             This action cannot be undone.
                                                         </FlexBox>
                                                     </FlexBox>
                                                 </Modal>
                                             }
-                                            {obj.node.name !== "latest" ? 
+                                            {obj.name !== "latest" ? 
                                             <>
-                                            <TagRevisionBtn tagWorkflow={tagWorkflow} obj={obj} setRevisions={setRevisions} getRevisions={getRevisions} isTag={(tags !== null && tags[obj.node.name])} updateTags={updateTags} getTags={getTags} />
+                                            <TagRevisionBtn tagWorkflow={tagWorkflow} obj={obj} setRevisions={setRevisions} getRevisions={getRevisions} isTag={(tags !== null && tags[obj.name])} updateTags={updateTags} getTags={getTags} />
                                             <Modal
                                                     escapeToCancel
                                                     style={{
                                                         flexDirection: "row-reverse",
                                                     }}
                                                     modalStyle={{width: "400px"}}
-                                                    title={`Revert to ${obj.node.name}`}
+                                                    title={`Revert to ${obj.name}`}
                                                     button={(
                                                         <Button className="small light bold" tip="Revert revision to latest">
                                                             <VscDebugStepBack className='show-700'/>
@@ -517,7 +517,7 @@ export function RevisionSelectorTab(props) {
                                                     actionButtons={
                                                         [
                                                             ButtonDefinition("Revert", async () => {
-                                                                let data = await getWorkflowRevisionData(obj.node.name)
+                                                                let data = await getWorkflowRevisionData(obj.name)
                                                                 await updateWorkflow(atob(data.revision.source))
                                                                 navigate(`/n/${namespace}/explorer/${filepath.substring(1)}?tab=2`)
                                                             }, "small red", ()=>{}, true, false),
@@ -528,12 +528,12 @@ export function RevisionSelectorTab(props) {
                                                 >
                                                     <FlexBox className="col gap">
                                                         <FlexBox >
-                                                            Are you sure you want to revert to '{obj.node.name}'?
+                                                            Are you sure you want to revert to '{obj.name}'?
                                                         </FlexBox>
                                                     </FlexBox>
                                             </Modal>
                                             <Button className="small light bold" onClick={()=>{
-                                                setSearchParams({tab: 1, revision: obj.node.name})
+                                                setSearchParams({tab: 1, revision: obj.name})
                                             }}>
                                                 Open{" "}<span className="hide-900">Revision</span>
                                             </Button></>
@@ -643,11 +643,11 @@ function TagRevisionBtn(props) {
             actionButtons={
                 [
                     ButtonDefinition("Tag", async () => {
-                            await tagWorkflow(obj.node.name, tag)
+                            await tagWorkflow(obj.name, tag)
                             let tagsResp = await getTags()
                             let revResp = await getRevisions()
-                            setRevisions(revResp.edges)
-                            updateTags(tagsResp.edges)
+                            setRevisions(revResp.results)
+                            updateTags(tagsResp.results)
                     }, "small", ()=>{}, true, false, true),
                     ButtonDefinition("Cancel", () => {
                     }, "small light", ()=>{}, true, false)
@@ -737,11 +737,11 @@ export function RevisionTrafficShaper(props) {
                                 <select onChange={(e)=>setRev1(e.target.value)} value={rev1} className="dropdown-select">
                                     <option value="">Select a revision</option>
                                     {revisions.map((obj)=>{
-                                        if(rev2 === obj.node.name){
+                                        if(rev2 === obj.name){
                                             return ""
                                         }
                                         return(
-                                            <option key={GenerateRandomKey()} value={obj.node.name}>{obj.node.name}</option>
+                                            <option key={GenerateRandomKey()} value={obj.name}>{obj.name}</option>
                                         )
                                     })}
                                 </select>
@@ -757,11 +757,11 @@ export function RevisionTrafficShaper(props) {
                                 <select onChange={(e)=>setRev2(e.target.value)} value={rev2} className="dropdown-select">
                                     <option value="">Select a revision</option>
                                     {revisions.map((obj)=>{
-                                        if(rev1 === obj.node.name){
+                                        if(rev1 === obj.name){
                                             return ""
                                         }
                                         return(
-                                            <option key={GenerateRandomKey()} value={obj.node.name}>{obj.node.name}</option>
+                                            <option key={GenerateRandomKey()} value={obj.name}>{obj.name}</option>
                                         )
                                     })}
                                 </select>

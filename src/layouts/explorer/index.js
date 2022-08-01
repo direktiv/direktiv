@@ -1,39 +1,40 @@
-import React, {useEffect, useState} from 'react';
+import { useEffect, useState } from 'react';
 import './style.css';
 
-import ContentPanel, { ContentPanelBody, ContentPanelHeaderButton, ContentPanelHeaderButtonIcon, ContentPanelTitle, ContentPanelTitleIcon } from '../../components/content-panel';
-import FlexBox from '../../components/flexbox';
-import { VscAdd, VscClose,  VscSearch, VscEdit, VscTrash, VscFolderOpened, VscCode, VscRepo, VscCloudUpload } from 'react-icons/vsc';
-import { Config, GenerateRandomKey } from '../../util';
-import { FiFolder } from 'react-icons/fi';
-import { FcWorkflow } from 'react-icons/fc';
-import { HiOutlineTrash } from 'react-icons/hi';
 import { useNodes } from 'direktiv-react-hooks';
+import { FcWorkflow } from 'react-icons/fc';
+import { FiFolder } from 'react-icons/fi';
+import { HiOutlineTrash } from 'react-icons/hi';
+import { VscAdd, VscClose, VscCloudUpload, VscCode, VscEdit, VscFolderOpened, VscRepo, VscSearch, VscTrash } from 'react-icons/vsc';
 import { useNavigate, useParams } from 'react-router';
-import Modal, {ButtonDefinition, KeyDownDefinition} from '../../components/modal'
-import DirektivEditor from '../../components/editor';
-import Button from '../../components/button';
-import HelpIcon from "../../components/help"
-import Loader from '../../components/loader';
-import WorkflowPage from './workflow';
 import { Link, useSearchParams } from 'react-router-dom';
-import WorkflowRevisions from './workflow/revision';
-import WorkflowPod from './workflow/pod'
 import { AutoSizer } from 'react-virtualized';
-import Pagination from '../../components/pagination';
+import Button from '../../components/button';
+import ContentPanel, { ContentPanelBody, ContentPanelHeaderButton, ContentPanelHeaderButtonIcon, ContentPanelTitle, ContentPanelTitleIcon } from '../../components/content-panel';
+import DirektivEditor from '../../components/editor';
+import FlexBox from '../../components/flexbox';
+import HelpIcon from "../../components/help";
+import Loader from '../../components/loader';
+import Modal, { ButtonDefinition, KeyDownDefinition } from '../../components/modal';
+import Pagination, { usePageHandler } from '../../components/pagination';
+import { Config, GenerateRandomKey } from '../../util';
+import WorkflowPage from './workflow';
+import WorkflowPod from './workflow/pod';
+import WorkflowRevisions from './workflow/revision';
+
 import Alert from '../../components/alert';
 import NotFound from '../notfound';
 
-import * as dayjs from "dayjs"
+import Tippy from '@tippyjs/react';
+import * as dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
-import utc from "dayjs/plugin/utc"
-import Tabs from '../../components/tabs';
+import utc from "dayjs/plugin/utc";
 import { useRef } from 'react';
+import HideShowButton from '../../components/hide-show';
+import { ClientFileUpload } from '../../components/navbar';
+import Tabs from '../../components/tabs';
 import { MirrorReadOnlyBadge } from '../mirror';
 import { mirrorSettingInfoMetaInfo } from '../mirror/info';
-import Tippy from '@tippyjs/react';
-import { ClientFileUpload } from '../../components/navbar';
-import HideShowButton from '../../components/hide-show';
 
 const PAGE_SIZE = 10
 const apiHelps = (namespace) => {
@@ -83,53 +84,6 @@ transform:
         ]
     )
 }
-
-// const apiHelps = [
-//     {
-//         method: "get",
-//         url: "https:awsdev.direktiv.io/api/anmespaces/direktiv/tree/",
-//         description: "List Nodes at: /directive",
-//         body: `function toCelsiu (fahrenheit) { 
-//             return (5/9)* (fahrenheit-32); 
-// } 
-// document.getElementByID(“demo”).innerHTML = toCelsus(77);
-//         `,
-//         type: "javascript"
-//     },
-//     {
-//         method: "put",
-//         url: "https:awsdev.direktiv.io/api/anmespaces/direktiv/tree/",
-//         description: "List Nodes at: /directive",
-//         body: `function toCelsiu (fahrenheit) { 
-//             return (5/9)* (fahrenheit-32); 
-// } 
-// document.getElementByID(“demo”).innerHTML = toCelsus(77);
-//         `,
-//         type: "javascript"
-//     },
-//     {
-//         method: "post",
-//         url: "https:awsdev.direktiv.io/api/anmespaces/direktiv/tree/",
-//         description: "List Nodes at: /directive",
-//         body: `function toCelsiu (fahrenheit) { 
-//             return (5/9)* (fahrenheit-32); 
-// } 
-// document.getElementByID(“demo”).innerHTML = toCelsus(77);
-//         `,
-//         type: "javascript"
-//     },
-//     {
-//         method: "delete",
-//         url: "https:awsdev.direktiv.io/api/anmespaces/direktiv/tree/",
-//         description: "List Nodes at: /directive",
-//         body: `function toCelsiu (fahrenheit) { 
-//             return (5/9)* (fahrenheit-32); 
-// } 
-// document.getElementByID(“demo”).innerHTML = toCelsus(77);
-//         `,
-//         type: "javascript"
-//     },
-// ]
 
 function Explorer(props) {
     const params = useParams()
@@ -221,13 +175,21 @@ function ExplorerList(props) {
     const [orderFieldKey, setOrderFieldKey] = useState(orderFieldKeys[0])
 
     const [streamNodes, setStreamNodes] = useState(true)
-     
-    const [queryParams, setQueryParams] = useState([`first=${PAGE_SIZE}`])
-    const {data, err, templates, pageInfo, createNode, createMirrorNode, deleteNode, renameNode, totalCount } = useNodes(Config.url, streamNodes, namespace, path, localStorage.getItem("apikey"), ...queryParams, `order.field=${orderFieldDictionary[orderFieldKey]}`, `filter.field=NAME`, `filter.val=${search}`, `filter.type=CONTAINS`)
-    // Setup Hook if expanded node type is git
+    const [queryParams, setQueryParams] = useState([])
+
+    const pageHandler = usePageHandler(PAGE_SIZE)
+    const goToFirstPage = pageHandler.goToFirstPage
+
+    const {data, err, templates, pageInfo, createNode, createMirrorNode, deleteNode, renameNode } = useNodes(Config.url, streamNodes, namespace, path, localStorage.getItem("apikey"), pageHandler.pageParams, ...queryParams, `order.field=${orderFieldDictionary[orderFieldKey]}`, `filter.field=NAME`, `filter.val=${search}`, `filter.type=CONTAINS`)
 
     const [wfData, setWfData] = useState(templates["noop"].data)
     const [wfTemplate, setWfTemplate] = useState("noop")
+
+    // Reset Page to start when filters changes
+    useEffect(() => {
+        // TODO: This will interfere with page position if initPage > 1
+        goToFirstPage()
+    }, [search, goToFirstPage])
 
 
     // Mirror
@@ -264,7 +226,7 @@ function ExplorerList(props) {
 
 
     function resetQueryParams() {
-        setQueryParams([`first=${PAGE_SIZE}`])
+        setQueryParams([])
         setSearch("")
     }
 
@@ -308,7 +270,7 @@ function ExplorerList(props) {
 
     // Reset pagination queries when searching
     useEffect(()=>{
-        setQueryParams([`first=${PAGE_SIZE}`])
+        setQueryParams([])
     },[search])
 
     // Reset pagination and search when namespace changes
@@ -642,7 +604,7 @@ function ExplorerList(props) {
                         </div>
                     </ContentPanelHeaderButton>
                     {
-                        data && data.node.expandedType === "git" ?
+                        data && data?.node?.expandedType === "git" ?
                             <>
                                 <ContentPanelHeaderButton className="explorer-action-btn">
                                     <ContentPanelHeaderButtonIcon>
@@ -664,7 +626,7 @@ function ExplorerList(props) {
                         <FlexBox className="center">
                             <select onChange={(e)=>{
                                 setOrderFieldKey(e.target.value)
-                                setQueryParams([`first=${PAGE_SIZE}`])
+                                setQueryParams([])
                                 }} value={orderFieldKey} className="dropdown-select" style={{paddingBottom: "0px", paddingTop: "0px", height:"27px"}}>
                                 <option value="">{orderFieldKey}</option>
                                 {orderFieldKeys.map((key)=>{
@@ -684,7 +646,7 @@ function ExplorerList(props) {
             <ContentPanelBody style={{height:"100%"}}>
                     <FlexBox className="col">
                         {data !== null ? <>
-                        {data.children.edges.length === 0 ? 
+                        {data.children.results.length === 0 ? 
                                 <div className="explorer-item">
                                     <FlexBox className="explorer-item-container">
                                         <FlexBox style={{display:"flex", alignItems:"center"}} className="explorer-item-icon">
@@ -700,20 +662,20 @@ function ExplorerList(props) {
                                 </div>
                         :
                         <>
-                        {data.children.edges.map((obj) => {
-                            if (obj.node.type === "directory") {
-                                return (<DirListItem isGit={data && obj.node.expandedType === "git"} namespace={namespace} renameNode={renameNode} deleteNode={deleteNode} path={obj.node.path} key={GenerateRandomKey("explorer-item-")} name={obj.node.name} resetQueryParams={resetQueryParams}/>)
-                            } else if (obj.node.type === "workflow") {
-                                return (<WorkflowListItem namespace={namespace} renameNode={renameNode} deleteNode={deleteNode} path={obj.node.path} key={GenerateRandomKey("explorer-item-")} name={obj.node.name}/>)
+                        {data.children.results.map((obj) => {
+                            if (obj.type === "directory") {
+                                return (<DirListItem isGit={data && obj.expandedType === "git"} namespace={namespace} renameNode={renameNode} deleteNode={deleteNode} path={obj.path} key={GenerateRandomKey("explorer-item-")} name={obj.name} resetQueryParams={resetQueryParams}/>)
+                            } else if (obj.type === "workflow") {
+                                return (<WorkflowListItem namespace={namespace} renameNode={renameNode} deleteNode={deleteNode} path={obj.path} key={GenerateRandomKey("explorer-item-")} name={obj.name}/>)
                             }
                             return <></>
                         })}</>}</>: <></>}
                     </FlexBox>
             </ContentPanelBody>
-            <FlexBox>
-                { !!totalCount && <Pagination pageSize={PAGE_SIZE} pageInfo={pageInfo} updatePage={setQueryParams} total={totalCount}/>}
-            </FlexBox>
         </ContentPanel>
+        <FlexBox className="row" style={{justifyContent:"flex-end", paddingBottom:"1em", flexGrow: 0}}>
+                <Pagination pageHandler={pageHandler} pageInfo={pageInfo}/>
+        </FlexBox>
     </Loader>
   
         </FlexBox>

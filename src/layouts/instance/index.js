@@ -331,19 +331,25 @@ function InstanceDiagram(props) {
 
     const {getWorkflowRevisionData} = useWorkflow(Config.url, false, namespace, wfpath, localStorage.getItem("apikey"))
 
-    useEffect(()=>{
-        async function getwf() {
-            if(wfpath !== "" && instRef !== "" && rev !== null && rev !== "" && load){
-                let refWF = await getWorkflowRevisionData(instRef === "latest" ? instRef : rev)
-                setWFData(atob(refWF.revision.source))
-                setLoad(false)
-            } else if(rev === ""){
-                setWorkflowMissing(true)
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            async function getwf() {
+                if (wfpath !== "" && instRef !== "" && rev !== null && rev !== "" && load) {
+                    let refWF = await getWorkflowRevisionData(instRef === "latest" ? instRef : rev)
+                    setWFData(atob(refWF.revision.source))
+                    setLoad(false)
+                } else if (rev === "") {
+                    setWorkflowMissing(true)
+                }
             }
-        }
-        
-        getwf()
-    },[wfpath, rev, load, instRef, getWorkflowRevisionData])
+
+            getwf()
+        }, 200)
+
+        return () => {
+            clearTimeout(handler);
+        };
+    }, [wfpath, rev, load, instRef, getWorkflowRevisionData])
 
     if (workflowMissing) {
         return  (

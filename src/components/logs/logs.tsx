@@ -18,10 +18,6 @@ export interface LogsProps {
 }
 
 export interface LogItem {
-    node: Node
-}
-
-export interface Node {
     t: string
     msg: string
 }
@@ -176,8 +172,8 @@ const ListRow = ({ index, width, data, style, wordWrap }: ListRowProps) => {
                 ref={rowRoot}
             >
                 <span className={wordWrap ? "word-wrap" : "whole-word"}>
-                    <span key={`log-timestamp-${index}`} className="timestamp">[{dayjs.utc(data[index].node.t).local().format("HH:mm:ss.SSS")}{`] `}</span>
-                    {data[index].node.msg.match(/.{1,50}/g)?.map((mtkMsg, mtkIdx)=>{
+                    <span key={`log-timestamp-${index}`} className="timestamp">[{dayjs.utc(data[index].t).local().format("HH:mm:ss.SSS")}{`] `}</span>
+                    {data[index].msg.match(/.{1,50}/g)?.map((mtkMsg, mtkIdx)=>{
                         return (
                             <span key={`log-msg-${mtkIdx}`} className="msg">{mtkMsg}</span>
                         )
@@ -197,7 +193,7 @@ export function createClipboardData(data: Array<LogItem> | null) {
     let clipboardData = ""
 
     data.forEach(item => {
-        clipboardData += `[${dayjs.utc(item.node.t).local().format("HH:mm:ss.SSS")}] ${item.node.msg}\n`
+        clipboardData += `[${dayjs.utc(item.t).local().format("HH:mm:ss.SSS")}] ${item.msg}\n`
     });
 
     return clipboardData

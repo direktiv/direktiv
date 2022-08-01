@@ -44,13 +44,13 @@ export default function ActivityTable(props) {
                                                 <ActivityRow
                                                     key={GenerateRandomKey()}
                                                     namespace={namespace}
-                                                    state={obj.node.status}
-                                                    id={obj.node.id}
-                                                    type={obj.node.type}
-                                                    startedDate={dayjs.utc(obj.node.createdAt).local().format("DD MMM YY")}
-                                                    startedTime={dayjs.utc(obj.node.createdAt).local().format("HH:mm a")}
-                                                    finishedDate={dayjs.utc(obj.node.updatedAt).local().format("DD MMM YY")}
-                                                    finishedTime={dayjs.utc(obj.node.updatedAt).local().format("HH:mm a")}
+                                                    state={obj.status}
+                                                    id={obj.id}
+                                                    type={obj.type}
+                                                    startedDate={dayjs.utc(obj.createdAt).local().format("DD MMM YY")}
+                                                    startedTime={dayjs.utc(obj.createdAt).local().format("HH:mm a")}
+                                                    finishedDate={dayjs.utc(obj.updatedAt).local().format("DD MMM YY")}
+                                                    finishedTime={dayjs.utc(obj.updatedAt).local().format("HH:mm a")}
                                                     setActivity={setActivity}
                                                     cancelActivity={cancelActivity}
                                                     setErrorMsg={setErrorMsg}

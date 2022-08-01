@@ -7,6 +7,8 @@ import {NavItem} from './components/navbar'
 import { useEffect, useState } from 'react';
 import { Config } from './util';
 import Login from './layouts/login';
+import { ThemeProvider } from "@mui/material/styles";
+import theme from "./theme/style"
 
 function App() {
 
@@ -83,14 +85,16 @@ function App() {
         </div>
     </>
     return (
-      <div className="App">
-             {login ? 
-                <Login setLogin={setLogin} setAKey={setAKey} />
-                            :
-                <MainLayout akey={akey} akeyReq={akeyReq} footer={f} extraRoutes={[]} extraNavigation={[]}/>
-            }
-      </div>
-  );
+        <ThemeProvider theme={theme}>
+            <div className="App">
+                {login ?
+                    <Login setLogin={setLogin} setAKey={setAKey} />
+                    :
+                    <MainLayout akey={akey} akeyReq={akeyReq} footer={f} extraRoutes={[]} extraNavigation={[]} />
+                }
+            </div>
+        </ThemeProvider>
+    );
 }
 
 export default App;

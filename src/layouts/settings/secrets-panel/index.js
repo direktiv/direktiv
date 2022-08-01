@@ -164,7 +164,7 @@ function Secrets(props) {
 
                         return (
                             <FlexBox className="secret-tuple" key={key} id={key}>
-                                <FlexBox className="key">{obj.node.name}</FlexBox>
+                                <FlexBox className="key">{obj.name}</FlexBox>
                                 <FlexBox className="val"><span>******</span></FlexBox>
                                 <FlexBox className="actions">
                                     <Modal 
@@ -183,7 +183,7 @@ function Secrets(props) {
                                             [
                                                 // label, onClick, classList, closesModal, async
                                                 ButtonDefinition("Delete", async () => {
-                                                    await deleteSecret(obj.node.name)
+                                                    await deleteSecret(obj.name)
                                                     await getSecrets()
                                                 }, "small red",()=>{}, true, false),
                                                 ButtonDefinition("Cancel", () => {
@@ -193,7 +193,7 @@ function Secrets(props) {
                                     >
                                         <FlexBox className="col gap">
                                             <FlexBox >
-                                                Are you sure you want to delete '{obj.node.name}'?
+                                                Are you sure you want to delete '{obj.name}'?
                                                 <br/>
                                                 This action cannot be undone.
                                             </FlexBox>

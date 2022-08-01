@@ -162,7 +162,7 @@ function NamespaceList(props){
         <FlexBox className="namespaces-list gap col">
             {namespaces.map((obj)=>{
                 return(
-                    <NamespaceListItem setShowSelector={setShowSelector} key={GenerateRandomKey("namespace-")} namespace={obj.node.name} loading={false}/>
+                    <NamespaceListItem setShowSelector={setShowSelector} key={GenerateRandomKey("namespace-")} namespace={obj.name} loading={false}/>
                 )
             })}
         </FlexBox>

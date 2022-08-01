@@ -1,22 +1,22 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import './style.css';
-import ContentPanel, {ContentPanelTitle, ContentPanelTitleIcon, ContentPanelBody } from '../../../components/content-panel';
-import FlexBox from '../../../components/flexbox';
-import Modal, { ButtonDefinition } from '../../../components/modal';
-import AddValueButton from '../../../components/add-button';
+import Tippy from '@tippyjs/react';
 import { useNamespaceVariables } from 'direktiv-react-hooks';
-import { Config, CanPreviewMimeType, MimeTypeFileExtension } from '../../../util';
-import DirektivEditor from '../../../components/editor';
-import Button from '../../../components/button';
-import {useDropzone} from 'react-dropzone'
-import Tabs from '../../../components/tabs';
-import HelpIcon from '../../../components/help';
+import { saveAs } from 'file-saver';
+import { useCallback, useEffect, useState } from 'react';
+import { useDropzone } from 'react-dropzone';
 import { VscCloudDownload, VscCloudUpload, VscEye, VscLoading, VscTrash, VscVariableGroup } from 'react-icons/vsc';
 import { AutoSizer } from 'react-virtualized';
-import { saveAs } from 'file-saver'
-import Tippy from '@tippyjs/react';
-import Pagination from '../../../components/pagination';
+import AddValueButton from '../../../components/add-button';
+import Button from '../../../components/button';
+import ContentPanel, { ContentPanelBody, ContentPanelTitle, ContentPanelTitleIcon } from '../../../components/content-panel';
+import DirektivEditor from '../../../components/editor';
+import FlexBox from '../../../components/flexbox';
+import HelpIcon from '../../../components/help';
+import Modal, { ButtonDefinition } from '../../../components/modal';
+import Pagination, { usePageHandler } from '../../../components/pagination';
+import Tabs from '../../../components/tabs';
+import { CanPreviewMimeType, Config, MimeTypeFileExtension } from '../../../util';
 import { SearchBar } from '../../explorer';
+import './style.css';
 
 const PAGE_SIZE = 10 ;
 
@@ -28,18 +28,17 @@ function VariablesPanel(props){
     const [file, setFile] = useState(null)
     const [uploading, setUploading] = useState(false)
     const [mimeType, setMimeType] = useState("application/json")
-    const [varParam, setVarParam] = useState([`first=${PAGE_SIZE}`])
     const [search, setSearch] = useState("")
-    const updateVarPage = useCallback((newParam)=>{
-        setVarParam([...newParam])
-    }, [])
 
-    const {data, err, pageInfo, totalCount, setNamespaceVariable, getNamespaceVariable, deleteNamespaceVariable, getNamespaceVariableBlob} = useNamespaceVariables(Config.url, true, namespace, localStorage.getItem("apikey"), ...varParam,  `filter.field=NAME`, `filter.val=${search}`, `filter.type=CONTAINS`)
+    const pageHandler = usePageHandler(PAGE_SIZE)
+    const goToFirstPage = pageHandler.goToFirstPage
+    const {data, err, pageInfo, setNamespaceVariable, getNamespaceVariable, deleteNamespaceVariable, getNamespaceVariableBlob} = useNamespaceVariables(Config.url, true, namespace, localStorage.getItem("apikey"), pageHandler.pageParams,  `filter.field=NAME`, `filter.val=${search}`, `filter.type=CONTAINS`)
 
-    // Reset pagination queries when searching
-    useEffect(()=>{
-        setVarParam([`first=${PAGE_SIZE}`])
-    },[search])
+    // Reset Page to start when filters changes
+    useEffect(() => {
+        // TODO: This will interfere with page position if initPage > 1
+        goToFirstPage()
+    }, [search, goToFirstPage])
 
     // something went wrong with error listing for variables
     if(err !== null){
@@ -111,16 +110,13 @@ function VariablesPanel(props){
             </ContentPanelTitle>
             <ContentPanelBody style={{minHeight:"180px"}}>
                 {data !== null ?
-                <FlexBox className="col">
+                <FlexBox className="col" style={{justifyContent:"space-between"}}>
                     <div>
                     <Variables namespace={namespace} deleteNamespaceVariable={deleteNamespaceVariable} setNamespaceVariable={setNamespaceVariable} getNamespaceVariable={getNamespaceVariable} variables={data} getNamespaceVariableBlob={getNamespaceVariableBlob}/>
                     </div>
-                    <Pagination
-                    pageSize={PAGE_SIZE}
-                    total={totalCount}
-                    pageInfo={pageInfo}
-                    updatePage={updateVarPage}
-                    />
+                    <FlexBox className="row" style={{justifyContent:"flex-end", paddingBottom:"1em", flexGrow: 0}}>
+                        <Pagination pageHandler={pageHandler} pageInfo={pageInfo}/>
+                    </FlexBox>
                 </FlexBox>:<></>}
             </ContentPanelBody>
         </ContentPanel>
@@ -262,16 +258,16 @@ function Variable(props) {
     let lang = MimeTypeFileExtension(mimeType)
 
     return(
-        <tr className="body-row" key={`var-${obj.node.name}${obj.node.size}`}>
+        <tr className="body-row" key={`var-${obj.name}${obj.size}`}>
         <td className="wrap-word" style={{ width: "180px", maxWidth: "180px", textOverflow:"ellipsis",  overflow:"hidden" }}>
-            <Tippy content={obj.node.name} trigger={'mouseenter focus'} zIndex={10}>
+            <Tippy content={obj.name} trigger={'mouseenter focus'} zIndex={10}>
                 <div className={"variable-name"} style={{width: "fit-content", maxWidth: "180px", textOverflow:"ellipsis",  overflow:"hidden"}}>
-                    {obj.node.name}
+                    {obj.name}
                 </div>
             </Tippy>
         </td>
         <td className="muted-text show-variable">
-            {obj.node.size <= 2500000 ? 
+            {obj.size <= 2500000 ? 
                 <Modal
                     escapeToCancel
                     style={{
@@ -285,7 +281,7 @@ function Variable(props) {
                         setValue("")
                     }}
                     onOpen={async ()=>{
-                        let data = await getNamespaceVariable(obj.node.name)
+                        let data = await getNamespaceVariable(obj.name)
                         setType(data.contentType)
                         setValue(data.data)
                     }}
@@ -302,7 +298,7 @@ function Variable(props) {
                     actionButtons={
                         [
                             ButtonDefinition("Save", async () => {
-                                    await setNamespaceVariable(obj.node.name, val , mimeType)
+                                    await setNamespaceVariable(obj.name, val , mimeType)
                             }, "small",()=>{}, true, false),
                             ButtonDefinition("Cancel", () => {
                             }, "small light",()=>{}, true, false)
@@ -345,17 +341,17 @@ function Variable(props) {
                 <div style={{textAlign:"center"}}>Cannot show filesize greater than 2.5MiB</div>
                 }
         </td>
-        <td style={{ width: "80px", maxWidth: "80px", textAlign: "center" }}>{fileSize(obj.node.size)}</td>
+        <td style={{ width: "80px", maxWidth: "80px", textAlign: "center" }}>{fileSize(obj.size)}</td>
         <td style={{ width: "120px", maxWidth: "120px", paddingLeft: "12px" }}> 
             <FlexBox style={{gap: "2px"}}>
                 <FlexBox>
                     {!downloading?
-                    <VariablesDownloadButton varURL={`${Config.url}namespaces/${namespace}/vars/${obj.node.name}`} varName={`${obj.node.name}}`} onClick={async()=>{
+                    <VariablesDownloadButton varURL={`${Config.url}namespaces/${namespace}/vars/${obj.name}`} varName={`${obj.name}}`} onClick={async()=>{
                         setDownloading(true)
 
-                        const variableData = await getNamespaceVariableBlob(obj.node.name)
+                        const variableData = await getNamespaceVariableBlob(obj.name)
                         const extension = MimeTypeFileExtension(variableData.contentType)
-                        saveAs(variableData.data, obj.node.name + `${extension ? `.${extension}`: ""}`)
+                        saveAs(variableData.data, obj.name + `${extension ? `.${extension}`: ""}`)
                         
                         setDownloading(false)
                     }}/>:<VariablesDownloadingButton />}
@@ -378,7 +374,7 @@ function Variable(props) {
                         [
                             ButtonDefinition("Upload", async () => {
                                 setUploading(true)
-                                await setNamespaceVariable(obj.node.name, file, mimeType)
+                                await setNamespaceVariable(obj.name, file, mimeType)
                             }, `small ${uploading ? "loading" : ""}`,()=>{setUploading(false)}, true, false, true),
                             ButtonDefinition("Cancel", () => {
                             }, "small light", ()=>{}, true, false)
@@ -406,7 +402,7 @@ function Variable(props) {
                     actionButtons={
                         [
                             ButtonDefinition("Delete", async () => {
-                                await deleteNamespaceVariable(obj.node.name)
+                                await deleteNamespaceVariable(obj.name)
                             }, "small red", ()=>{}, true, false),
                             ButtonDefinition("Cancel", () => {
                             }, "small light", ()=>{}, true, false)
@@ -415,7 +411,7 @@ function Variable(props) {
                 >
                         <FlexBox className="col gap">
                     <FlexBox >
-                        Are you sure you want to delete '{obj.node.name}'?
+                        Are you sure you want to delete '{obj.name}'?
                         <br/>
                         This action cannot be undone.
                     </FlexBox>

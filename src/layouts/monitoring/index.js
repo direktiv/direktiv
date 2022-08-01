@@ -47,14 +47,14 @@ function MonitoringPage(props) {
             if(clipData === null) {
                 let cd = ""
                 for(let i=0; i < data.length; i++) {
-                    cd += `[${dayjs.utc(data[i].node.t).local().format("HH:mm:ss.SSS")}] ${data[i].node.msg}\n`
+                    cd += `[${dayjs.utc(data[i].t).local().format("HH:mm:ss.SSS")}] ${data[i].msg}\n`
                 }
                 setClipData(cd)
             }
             if(clipData !== data){
                 let cd = ""
                 for(let i=0; i < data.length; i++) {
-                    cd += `[${dayjs.utc(data[i].node.t).local().format("HH:mm:ss.SSS")}] ${data[i].node.msg}\n`
+                    cd += `[${dayjs.utc(data[i].t).local().format("HH:mm:ss.SSS")}] ${data[i].msg}\n`
 
                 }
                 setClipData(cd)
@@ -141,7 +141,7 @@ function MonitoringPage(props) {
 
 function FailedExecutions(props) {
     const {namespace} = props
-    const [qParams] = useState(["first=5", "filter.field=STATUS", "filter.type=MATCH", "filter.val=failed"])
+    const [qParams] = useState(["limit=5", "filter.field=STATUS", "filter.type=MATCH", "filter.val=failed"])
 
     const {data} = useInstances(Config.url, true, namespace, localStorage.getItem("apikey"), ...qParams)
     
@@ -163,7 +163,7 @@ function FailedExecutions(props) {
                 <tbody>
                     {
                         data.map((obj)=>{
-                            let split = obj.node.as.split(":")
+                            let split = obj.as.split(":")
                             let wf = split[0]
                             let revision = split[1]
                             if(!revision){
@@ -171,14 +171,14 @@ function FailedExecutions(props) {
                             }
                             return(
                                 <tr className="instance-row">
-                                    <td title={obj.node.as} style={{overflow:"hidden", textOverflow:"ellipsis"}}>
-                                        <Link style={{color:"#2396d8"}} to={`/n/${namespace}/explorer/${wf}?tab=1&revision=${revision}&revtab=0`}>{obj.node.as}</Link></td>
-                                    <td title={obj.node.id} style={{overflow:"hidden", textOverflow:"ellipsis"}}>
-                                        <Link style={{color:"#2396d8"}} to={`/n/${namespace}/instances/${obj.node.id}`}>
-                                            {obj.node.id.split("-")[0]}
+                                    <td title={obj.as} style={{overflow:"hidden", textOverflow:"ellipsis"}}>
+                                        <Link style={{color:"#2396d8"}} to={`/n/${namespace}/explorer/${wf}?tab=1&revision=${revision}&revtab=0`}>{obj.as}</Link></td>
+                                    <td title={obj.id} style={{overflow:"hidden", textOverflow:"ellipsis"}}>
+                                        <Link style={{color:"#2396d8"}} to={`/n/${namespace}/instances/${obj.id}`}>
+                                            {obj.id.split("-")[0]}
                                         </Link>
                                     </td>
-                                    {/* <td>{dayjs.utc(obj.node.updatedAt).local().format("HH:mm a")}</td> */}
+                                    {/* <td>{dayjs.utc(obj.updatedAt).local().format("HH:mm a")}</td> */}
                                 </tr>
                             )
                         })
@@ -191,7 +191,7 @@ function FailedExecutions(props) {
 
 function SuccessfulExecutions(props) {
     const {namespace} = props
-    const [qParams] = useState(["first=5", "filter.field=STATUS", "filter.type=MATCH", "filter.val=complete"])
+    const [qParams] = useState(["limit=5", "filter.field=STATUS", "filter.type=MATCH", "filter.val=complete"])
 
     const {data} = useInstances(Config.url, true, namespace, localStorage.getItem("apikey"), ...qParams)
     // todo implement loading
@@ -212,7 +212,7 @@ function SuccessfulExecutions(props) {
                 <tbody>
                     {
                         data.map((obj)=>{
-                            let split = obj.node.as.split(":")
+                            let split = obj.as.split(":")
                             let wf = split[0]
                             let revision = split[1]
                             if(!revision){
@@ -220,14 +220,14 @@ function SuccessfulExecutions(props) {
                             }
                             return(
                                 <tr className="instance-row">
-                                    <td title={obj.node.as} style={{overflow:"hidden", textOverflow:"ellipsis"}}>
-                                        <Link style={{color:"#2396d8"}} to={`/n/${namespace}/explorer/${wf}?tab=1&revision=${revision}&revtab=0`}>{obj.node.as}</Link></td>
-                                    <td title={obj.node.id} style={{overflow:"hidden", textOverflow:"ellipsis"}}>
-                                        <Link style={{color:"#2396d8"}} to={`/n/${namespace}/instances/${obj.node.id}`}>
-                                            {obj.node.id.split("-")[0]}
+                                    <td title={obj.as} style={{overflow:"hidden", textOverflow:"ellipsis"}}>
+                                        <Link style={{color:"#2396d8"}} to={`/n/${namespace}/explorer/${wf}?tab=1&revision=${revision}&revtab=0`}>{obj.as}</Link></td>
+                                    <td title={obj.id} style={{overflow:"hidden", textOverflow:"ellipsis"}}>
+                                        <Link style={{color:"#2396d8"}} to={`/n/${namespace}/instances/${obj.id}`}>
+                                            {obj.id.split("-")[0]}
                                         </Link>
                                     </td>
-                                    {/* <td>{dayjs.utc(obj.node.updatedAt).local().format("HH:mm a")}</td> */}
+                                    {/* <td>{dayjs.utc(obj.updatedAt).local().format("HH:mm a")}</td> */}
                                 </tr>
                             )
                         })

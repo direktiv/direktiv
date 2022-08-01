@@ -1,5 +1,5 @@
 import { useWorkflowVariables } from 'direktiv-react-hooks';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { VscCloudDownload, VscCloudUpload, VscEye, VscLoading, VscTrash, VscVariableGroup } from 'react-icons/vsc';
 
@@ -14,7 +14,7 @@ import DirektivEditor from '../../../components/editor';
 import FlexBox from '../../../components/flexbox';
 import HelpIcon from "../../../components/help";
 import Modal, { ButtonDefinition } from '../../../components/modal';
-import Pagination from '../../../components/pagination';
+import Pagination, { usePageHandler } from '../../../components/pagination';
 import Tabs from '../../../components/tabs';
 import { CanPreviewMimeType, Config, MimeTypeFileExtension } from '../../../util';
 import { VariableFilePicker } from '../../settings/variables-panel';
@@ -29,20 +29,19 @@ function AddWorkflowVariablePanel(props) {
     const [file, setFile] = useState(null)
     const [uploading, setUploading] = useState(false)
     const [mimeType, setMimeType] = useState("application/json")
-    const [varParam, setVarParam] = useState([`first=${PAGE_SIZE}`])
     const [search, setSearch] = useState("")
-    const updateVarPage = useCallback((newParam)=>{
-        setVarParam([...newParam])
-    }, [])
 
     let wfVar = workflow.substring(1)
 
-    const {data, pageInfo, totalCount, setWorkflowVariable, getWorkflowVariable, getWorkflowVariableBlob, deleteWorkflowVariable} = useWorkflowVariables(Config.url, true, namespace, wfVar, localStorage.getItem("apikey"), ...varParam, `filter.field=NAME`, `filter.val=${search}`, `filter.type=CONTAINS`)
+    const pageHandler = usePageHandler(PAGE_SIZE)
+    const goToFirstPage = pageHandler.goToFirstPage
+    const {data, pageInfo, setWorkflowVariable, getWorkflowVariable, getWorkflowVariableBlob, deleteWorkflowVariable} = useWorkflowVariables(Config.url, true, namespace, wfVar, localStorage.getItem("apikey"), pageHandler.pageParams, `filter.field=NAME`, `filter.val=${search}`, `filter.type=CONTAINS`)
 
-    // Reset pagination queries when searching
-    useEffect(()=>{
-        setVarParam([`first=${PAGE_SIZE}`])
-    },[search])
+    // Reset Page to start when filters changes
+    useEffect(() => {
+        // TODO: This will interfere with page position if initPage > 1
+        goToFirstPage()
+    }, [search, goToFirstPage])
 
     if (data === null) {
         return <></>
@@ -105,12 +104,9 @@ function AddWorkflowVariablePanel(props) {
                     <div>
                     <Variables namespace={namespace} deleteWorkflowVariable={deleteWorkflowVariable} setWorkflowVariable={setWorkflowVariable} getWorkflowVariable={getWorkflowVariable} getWorkflowVariableBlob={getWorkflowVariableBlob} variables={data}/>
                     </div>
-                    <Pagination
-                    pageSize={PAGE_SIZE}
-                    total={totalCount}
-                    pageInfo={pageInfo}
-                    updatePage={updateVarPage}
-                    />
+                    <FlexBox className="row" style={{justifyContent:"flex-end", paddingBottom:"1em", flexGrow: 0}}>
+                        <Pagination pageHandler={pageHandler} pageInfo={pageInfo}/>
+                    </FlexBox>
                 </FlexBox>:<></>}
             </ContentPanelBody>
         </ContentPanel>
@@ -220,16 +216,16 @@ function Variable(props) {
     let lang = MimeTypeFileExtension(mimeType)
 
     return(
-        <tr className="body-row" key={`var-${obj.node.name}${obj.node.size}`}>
+        <tr className="body-row" key={`var-${obj.name}${obj.size}`}>
         <td className="wrap-word variable-name" style={{ width: "180px", maxWidth: "180px", textOverflow:"ellipsis",  overflow:"hidden" }}>
-            <Tippy content={obj.node.name} trigger={'mouseenter focus'} zIndex={10}>
+            <Tippy content={obj.name} trigger={'mouseenter focus'} zIndex={10}>
                 <div className={"variable-name"} style={{width: "fit-content", maxWidth: "180px", textOverflow:"ellipsis",  overflow:"hidden"}}>
-                    {obj.node.name}
+                    {obj.name}
                 </div>
             </Tippy>
         </td>
         <td className="muted-text show-variable">
-            {obj.node.size <= 2500000 ? 
+            {obj.size <= 2500000 ? 
                 <Modal
                     modalStyle={{height: "90vh",width: "600px"}}
                     escapeToCancel
@@ -243,7 +239,7 @@ function Variable(props) {
                         setValue("")
                     }}
                     onOpen={async ()=>{
-                        let data = await getWorkflowVariable(obj.node.name)
+                        let data = await getWorkflowVariable(obj.name)
                         setType(data.contentType)
                         setValue(data.data)
                     }}
@@ -260,7 +256,7 @@ function Variable(props) {
                     actionButtons={
                         [
                             ButtonDefinition("Save", async () => {
-                                await setWorkflowVariable(obj.node.name, val , mimeType)
+                                await setWorkflowVariable(obj.name, val , mimeType)
                             }, "small", ()=>{}, true, false),
                             ButtonDefinition("Cancel", () => {
                             }, "small light", ()=>{}, true, false)
@@ -301,7 +297,7 @@ function Variable(props) {
                     </FlexBox>
                 </Modal>:<div style={{textAlign:"center"}}>Cannot show filesize greater than 2.5MiB</div>}
         </td>
-        <td style={{ width: "80px", maxWidth: "80px", textAlign: "center" }}>{fileSize(obj.node.size)}</td>
+        <td style={{ width: "80px", maxWidth: "80px", textAlign: "center" }}>{fileSize(obj.size)}</td>
         <td style={{ width: "120px", maxWidth: "120px", paddingLeft: "12px" }}> 
             <FlexBox style={{gap: "2px"}}>
                 <FlexBox>
@@ -310,9 +306,9 @@ function Variable(props) {
                     <VariablesDownloadButton onClick={async()=>{
                         setDownloading(true)
 
-                        const variableData = await getWorkflowVariableBlob(obj.node.name)
+                        const variableData = await getWorkflowVariableBlob(obj.name)
                         const extension = MimeTypeFileExtension(variableData.contentType)
-                        saveAs(variableData.data, obj.node.name + `${extension ? `.${extension}`: ""}`)
+                        saveAs(variableData.data, obj.name + `${extension ? `.${extension}`: ""}`)
 
                         setDownloading(false)
                     }}/>:<VariablesDownloadingButton />}
@@ -334,7 +330,7 @@ function Variable(props) {
                         [
                             ButtonDefinition("Upload", async () => {
                                 setUploading(true)
-                                await setWorkflowVariable(obj.node.name, file, mimeType)
+                                await setWorkflowVariable(obj.name, file, mimeType)
                             }, `small ${uploading ? "loading" : ""}`, ()=>{setUploading(false)}, true, false, true),
                             ButtonDefinition("Cancel", () => {
                             }, "small light",()=>{}, true, false)
@@ -362,7 +358,7 @@ function Variable(props) {
                     actionButtons={
                         [
                             ButtonDefinition("Delete", async () => {
-                                    await deleteWorkflowVariable(obj.node.name)
+                                    await deleteWorkflowVariable(obj.name)
                             }, "small red", ()=>{}, true, false),
                             ButtonDefinition("Cancel", () => {
                             }, "small light", ()=>{}, true, false)
@@ -371,7 +367,7 @@ function Variable(props) {
                 >
                         <FlexBox className="col gap">
                     <FlexBox >
-                        Are you sure you want to delete '{obj.node.name}'?
+                        Are you sure you want to delete '{obj.name}'?
                         <br/>
                         This action cannot be undone.
                     </FlexBox>

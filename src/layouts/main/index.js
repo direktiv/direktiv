@@ -49,7 +49,7 @@ function NamespaceNavigation(props){
             if (ns) {
                 let found = false
                 for(let i=0; i < namespaces.length; i++) {
-                    if(namespaces[i].node.name === ns){
+                    if(namespaces[i].name === ns){
                         found = true
                         break
                     }
@@ -64,7 +64,7 @@ function NamespaceNavigation(props){
                 } 
             } else {
                 // locally stored namespace didn't exist in array so choose the 1st element
-                ns = namespaces[0].node.name   
+                ns = namespaces[0].name   
             }
             // namespace is good and found go to this one
             localStorage.setItem('namespace', ns)

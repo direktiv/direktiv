@@ -5,6 +5,7 @@ import { useNavigate, useParams } from 'react-router';
 import { useSearchParams } from 'react-router-dom';
 import ContentPanel, { ContentPanelBody, ContentPanelTitle, ContentPanelTitleIcon } from '../../../components/content-panel';
 import FlexBox from '../../../components/flexbox';
+import Pagination, { usePageHandler } from '../../../components/pagination';
 import { Config, GenerateRandomKey } from '../../../util';
 import './style.css';
 
@@ -34,7 +35,6 @@ import { AutoSizer } from "react-virtualized";
 import Alert from '../../../components/alert';
 import HelpIcon from "../../../components/help";
 import Loader from '../../../components/loader';
-import Pagination from '../../../components/pagination';
 import SankeyDiagram from '../../../components/sankey';
 
 import Form from "@rjsf/core";
@@ -102,8 +102,8 @@ function InitialWorkflowHook(props){
             if(revisions === null){
                 // get workflow revisions
                 let resp = await getRevisions()
-                if(Array.isArray(resp.edges)){
-                    setRevisions(resp.edges)
+                if(Array.isArray(resp.results)){
+                    setRevisions(resp.results)
                 } else {
                     setRevsErr(resp)
                 }
@@ -601,8 +601,8 @@ function WorkflowInstances(props) {
                     <>
                     {instances.map((obj)=>{
 
-                    let state = obj.node.status;
-                    if (obj.node.errorCode === "direktiv.cancels.api") {
+                    let state = obj.status;
+                    if (obj.errorCode === "direktiv.cancels.api") {
                         state = "cancelled"
                     }
 
@@ -613,12 +613,12 @@ function WorkflowInstances(props) {
                             key={key}
                             namespace={namespace}
                             state={state} 
-                            name={obj.node.as} 
-                            id={obj.node.id}
-                            startedDate={dayjs.utc(obj.node.createdAt).local().format("DD MMM YY")} 
-                            startedTime={dayjs.utc(obj.node.createdAt).local().format("HH:mm a")} 
-                            finishedDate={dayjs.utc(obj.node.updatedAt).local().format("DD MMM YY")}
-                            finishedTime={dayjs.utc(obj.node.updatedAt).local().format("HH:mm a")} 
+                            name={obj.as} 
+                            id={obj.id}
+                            startedDate={dayjs.utc(obj.createdAt).local().format("DD MMM YY")} 
+                            startedTime={dayjs.utc(obj.createdAt).local().format("HH:mm a")} 
+                            finishedDate={dayjs.utc(obj.updatedAt).local().format("DD MMM YY")}
+                            finishedTime={dayjs.utc(obj.updatedAt).local().format("HH:mm a")} 
                         />
                     )
                     })}</>
@@ -634,41 +634,32 @@ function WorkflowInstances(props) {
 
 function OverviewTab(props) {
     const {getInstancesForWorkflow,  namespace, filepath, router, getSuccessFailedMetrics} = props
-    const [load, setLoad] = useState(true)
     const [instances, setInstances] = useState([])
     const [err, setErr] = useState(null)
-    const [pageInfo, setPageInfo] = useState()
-    const [total, setTotal] = useState(PAGE_SIZE)
-    const [queryParams, setQueryParams] = useState([`first=${PAGE_SIZE}`])
+    const [pageInfo, setPageInfo] = useState(null)
+    
+    const pageHandler = usePageHandler(PAGE_SIZE)
 
     // fetch instances using the workflow hook from above
-    useEffect(()=>{
+    useEffect(() => {
         async function listData() {
-            if(load){
-                setLoad(false)
-                // get the instances
-                try {
-                    let resp = await getInstancesForWorkflow(...queryParams)
-                    setTotal(resp.instances.totalCount)
-                    setPageInfo(resp?.instances?.pageInfo)
-                    if(Array.isArray(resp?.instances?.edges)){
-                        setInstances(resp?.instances?.edges)
-                    } else {
-                        setErr(resp)
-                    }
-                }catch (e) {
-                    setErr(e)
+            // get the instances
+            try {
+                let resp = await getInstancesForWorkflow(pageHandler.pageParams)
+                setPageInfo(resp?.instances?.pageInfo)
+                if (Array.isArray(resp?.instances?.results)) {
+                    setInstances(resp?.instances?.results)
+                } else {
+                    setErr(resp)
                 }
+            } catch (e) {
+                setErr(e)
             }
         }
 
         listData()
-    },[queryParams, load, getInstancesForWorkflow])
+    }, [pageHandler.pageParams, getInstancesForWorkflow])
 
-    const updatePage = useCallback((newParam)=>{
-        setLoad(true)
-        setQueryParams([...newParam])
-    }, [])
     if (err) {
         // TODO report error
     }
@@ -691,9 +682,9 @@ function OverviewTab(props) {
                                 </FlexBox>
                             </ContentPanelTitle>
                             <WorkflowInstances instances={instances} namespace={namespace} />
-                            {
-                               !!total && <Pagination pageInfo={pageInfo} total={total} updatePage={updatePage} pageSize={PAGE_SIZE}/>
-                            }
+                            <FlexBox className="row" style={{justifyContent:"flex-end", paddingBottom:"1em", flexGrow: 0}}>
+                                <Pagination pageHandler={pageHandler} pageInfo={pageInfo}/>
+                            </FlexBox>
                         </ContentPanel>
                     </FlexBox>
                     <FlexBox style={{ minWidth: "370px", maxHeight: "342px" }}>

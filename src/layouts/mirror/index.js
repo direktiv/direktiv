@@ -33,8 +33,8 @@ export default function MirrorPage(props) {
         path = `/${params["*"]}`
     }
 
-    const { info, activities, err, setLock, updateSettings, cancelActivity, sync } = useMirror(Config.url, true, namespace, path, localStorage.getItem("apikey"), "first=50", "order.field=CREATED", "order.direction=DESC")
-    const { data, getNode, err: nodeErr } = useNodes(Config.url, false, namespace, path, localStorage.getItem("apikey"), `first=1`)
+    const { info, activities, err, setLock, updateSettings, cancelActivity, sync } = useMirror(Config.url, true, namespace, path, localStorage.getItem("apikey"), "limit=50", "order.field=CREATED", "order.direction=DESC")
+    const { data, getNode, err: nodeErr } = useNodes(Config.url, false, namespace, path, localStorage.getItem("apikey"), `limit=1`)
 
     const setLockRef = useRef(setLock)
     const syncRef = useRef(sync)
@@ -45,8 +45,9 @@ export default function MirrorPage(props) {
     // Error Handling Non existent node and bad mirror
     useEffect(() => {
         if (err) {
-            setErrorMsg("Error getting mirror info: " + nodeErr)
+            setErrorMsg("Error getting mirror info: " + err)
         } else if (nodeErr) {
+            console.error("Error getting node: ", nodeErr)
             navigate(`/n/${namespace}/explorer${path}`)
         }
     }, [nodeErr, err, data, navigate, namespace, path])
@@ -115,7 +116,7 @@ export default function MirrorPage(props) {
                 }}>
                     <FlexBox className="row center gap-sm">
                         <VscSync />
-                        Sync?
+                        Sync
                     </FlexBox>
                 </Button>
                 <ModalHeadless
@@ -221,8 +222,8 @@ export default function MirrorPage(props) {
                 <FlexBox className="col gap" style={{ paddingRight: "8px" }}>
                     {/* <BreadcrumbCorner>
                     </BreadcrumbCorner> */}
-                    <FlexBox className="row gap wrap" style={{ flex: 1, maxHeight: "65vh" }}>
-                        <ContentPanel id={`panel-activity-list`} style={{ width: "100%", minHeight: "60vh", maxHeight: "65vh", flex: 2 }}>
+                    <FlexBox className="row gap wrap" style={{ flex: "1 1 0%", maxHeight: "65vh" }}>
+                        <ContentPanel id={`panel-activity-list`} style={{ flex: 2, width: "100%", minHeight: "60vh", maxHeight: "55vh" }}>
                             <ContentPanelTitle>
                                 <ContentPanelTitleIcon>
                                     <VscAdd />
