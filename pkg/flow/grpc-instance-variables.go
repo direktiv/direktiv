@@ -274,49 +274,39 @@ func (flow *flow) InstanceVariables(ctx context.Context, req *grpc.InstanceVaria
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	p, err := getPagination(req.Pagination)
-	if err != nil {
-		return nil, err
-	}
-
-	opts := []ent.VarRefPaginateOption{}
-	opts = append(opts, variablesOrder(p)...)
-	opts = append(opts, variablesFilter(p)...)
-
-	nsc := flow.db.Namespace
-
-	d, err := flow.getInstance(ctx, nsc, req.GetNamespace(), req.GetInstance(), false)
+	d, err := flow.getInstance(ctx, flow.db.Namespace, req.GetNamespace(), req.GetInstance(), false)
 	if err != nil {
 		return nil, err
 	}
 
 	query := d.in.QueryVars()
-	cx, err := query.Paginate(ctx, p.After(), p.First(), p.Before(), p.Last(), opts...)
+
+	results, pi, err := paginate[*ent.VarRefQuery, *ent.VarRef](ctx, req.Pagination, query, variablesOrderings, variablesFilters)
 	if err != nil {
 		return nil, err
 	}
 
-	var resp grpc.InstanceVariablesResponse
-
-	resp.Namespace = d.ns().Name
+	resp := new(grpc.InstanceVariablesResponse)
+	resp.Namespace = d.namespace()
 	resp.Instance = d.in.ID.String()
+	resp.Variables = new(grpc.Variables)
+	resp.Variables.PageInfo = pi
 
-	err = atob(cx, &resp.Variables)
+	err = atob(results, &resp.Variables.Results)
 	if err != nil {
 		return nil, err
 	}
 
-	for i := range cx.Edges {
+	for i := range results {
 
-		edge := cx.Edges[i]
-		vref := edge.Node
+		vref := results[i]
 
 		vdata, err := vref.QueryVardata().Select(entvardata.FieldCreatedAt, entvardata.FieldHash, entvardata.FieldSize, entvardata.FieldUpdatedAt).Only(ctx)
 		if err != nil {
 			return nil, err
 		}
 
-		v := resp.Variables.Edges[i].Node
+		v := resp.Variables.Results[i]
 		v.Checksum = vdata.Hash
 		v.CreatedAt = timestamppb.New(vdata.CreatedAt)
 		v.Size = int64(vdata.Size)
@@ -325,7 +315,7 @@ func (flow *flow) InstanceVariables(ctx context.Context, req *grpc.InstanceVaria
 
 	}
 
-	return &resp, nil
+	return resp, nil
 
 }
 
@@ -337,17 +327,7 @@ func (flow *flow) InstanceVariablesStream(req *grpc.InstanceVariablesRequest, sr
 	phash := ""
 	nhash := ""
 
-	p, err := getPagination(req.Pagination)
-	if err != nil {
-		return err
-	}
-
-	opts := []ent.VarRefPaginateOption{}
-	opts = append(opts, variablesOrder(p)...)
-	opts = append(opts, variablesFilter(p)...)
-
-	nsc := flow.db.Namespace
-	d, err := flow.getInstance(ctx, nsc, req.GetNamespace(), req.GetInstance(), false)
+	d, err := flow.getInstance(ctx, flow.db.Namespace, req.GetNamespace(), req.GetInstance(), false)
 	if err != nil {
 		return err
 	}
@@ -358,36 +338,38 @@ func (flow *flow) InstanceVariablesStream(req *grpc.InstanceVariablesRequest, sr
 resend:
 
 	query := d.in.QueryVars()
-	cx, err := query.Paginate(ctx, p.After(), p.First(), p.Before(), p.Last(), opts...)
+
+	results, pi, err := paginate[*ent.VarRefQuery, *ent.VarRef](ctx, req.Pagination, query, variablesOrderings, variablesFilters)
 	if err != nil {
 		return err
 	}
 
 	resp := new(grpc.InstanceVariablesResponse)
-
-	resp.Namespace = d.ns().Name
+	resp.Namespace = d.namespace()
 	resp.Instance = d.in.ID.String()
+	resp.Variables = new(grpc.Variables)
+	resp.Variables.PageInfo = pi
 
-	err = atob(cx, &resp.Variables)
+	err = atob(results, &resp.Variables.Results)
 	if err != nil {
 		return err
 	}
 
-	for i := range cx.Edges {
+	for i := range results {
 
-		edge := cx.Edges[i]
-		vref := edge.Node
+		vref := results[i]
 
 		vdata, err := vref.QueryVardata().Select(entvardata.FieldCreatedAt, entvardata.FieldHash, entvardata.FieldSize, entvardata.FieldUpdatedAt).Only(ctx)
 		if err != nil {
 			return err
 		}
 
-		v := resp.Variables.Edges[i].Node
+		v := resp.Variables.Results[i]
 		v.Checksum = vdata.Hash
 		v.CreatedAt = timestamppb.New(vdata.CreatedAt)
 		v.Size = int64(vdata.Size)
 		v.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
+		v.MimeType = vdata.MimeType
 
 	}
 

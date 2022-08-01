@@ -8,35 +8,37 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 )
 
+var logsOrderings = []*orderingInfo{
+	{
+		db:           entlog.FieldT,
+		req:          "TIMESTAMP",
+		defaultOrder: ent.Asc,
+	},
+}
+
+var logsFilters = map[*filteringInfo]func(query *ent.LogMsgQuery, v string) (*ent.LogMsgQuery, error){}
+
 func (flow *flow) ServerLogs(ctx context.Context, req *grpc.ServerLogsRequest) (*grpc.ServerLogsResponse, error) {
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	p, err := getPagination(req.Pagination)
-	if err != nil {
-		return nil, err
-	}
-
-	opts := []ent.LogMsgPaginateOption{}
-	opts = append(opts, logsOrder(p)...)
-	opts = append(opts, logsFilter(p)...)
-
-	logc := flow.db.LogMsg
-	query := logc.Query()
+	query := flow.db.LogMsg.Query()
 	query = query.Where(entlog.Not(entlog.HasNamespace()), entlog.Not(entlog.HasWorkflow()))
-	cx, err := query.Paginate(ctx, p.After(), p.First(), p.Before(), p.Last(), opts...)
+
+	results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
 	if err != nil {
 		return nil, err
 	}
 
-	var resp grpc.ServerLogsResponse
+	resp := new(grpc.ServerLogsResponse)
+	resp.PageInfo = pi
 
-	err = atob(cx, &resp)
+	err = atob(results, &resp.Results)
 	if err != nil {
 		return nil, err
 	}
 
-	return &resp, nil
+	return resp, nil
 
 }
 
@@ -45,41 +47,31 @@ func (flow *flow) ServerLogsParcels(req *grpc.ServerLogsRequest, srv grpc.Flow_S
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
+
 	var tailing bool
-
-	p, err := getPagination(req.Pagination)
-	if err != nil {
-		return err
-	}
-
-	porder := p.order
-	pfilter := p.filter
-
-	opts := []ent.LogMsgPaginateOption{}
-	opts = append(opts, logsOrder(p)...)
-	opts = append(opts, logsFilter(p)...)
 
 	sub := flow.pubsub.SubscribeServerLogs()
 	defer flow.cleanup(sub.Close)
 
 resend:
 
-	logc := flow.db.LogMsg
-	query := logc.Query()
+	query := flow.db.LogMsg.Query()
 	query = query.Where(entlog.Not(entlog.HasNamespace()), entlog.Not(entlog.HasWorkflow()))
-	cx, err := query.Paginate(ctx, p.After(), p.First(), p.Before(), p.Last(), opts...)
+
+	results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
 	if err != nil {
 		return err
 	}
 
-	var resp = new(grpc.ServerLogsResponse)
+	resp := new(grpc.ServerLogsResponse)
+	resp.PageInfo = pi
 
-	err = atob(cx, resp)
+	err = atob(results, &resp.Results)
 	if err != nil {
 		return err
 	}
 
-	if len(resp.Edges) != 0 || !tailing {
+	if len(resp.Results) != 0 || !tailing {
 
 		tailing = true
 
@@ -88,10 +80,7 @@ resend:
 			return err
 		}
 
-		p = new(pagination)
-		p.after = resp.PageInfo.EndCursor
-		p.order = porder
-		p.filter = pfilter
+		req.Pagination.Offset += int32(len(resp.Results))
 
 	}
 
@@ -108,39 +97,28 @@ func (flow *flow) NamespaceLogs(ctx context.Context, req *grpc.NamespaceLogsRequ
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	p, err := getPagination(req.Pagination)
+	ns, err := flow.getNamespace(ctx, flow.db.Namespace, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
 
-	opts := []ent.LogMsgPaginateOption{}
-	opts = append(opts, logsOrder(p)...)
-	opts = append(opts, logsFilter(p)...)
+	query := ns.QueryLogs()
 
-	nsc := flow.db.Namespace
-
-	namespace := req.GetNamespace()
-
-	ns, err := flow.getNamespace(ctx, nsc, namespace)
+	results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
 	if err != nil {
 		return nil, err
 	}
 
-	cx, err := ns.QueryLogs().Paginate(ctx, p.After(), p.First(), p.Before(), p.Last(), opts...)
+	resp := new(grpc.NamespaceLogsResponse)
+	resp.Namespace = ns.Name
+	resp.PageInfo = pi
+
+	err = atob(results, &resp.Results)
 	if err != nil {
 		return nil, err
 	}
 
-	var resp grpc.NamespaceLogsResponse
-
-	err = atob(cx, &resp)
-	if err != nil {
-		return nil, err
-	}
-
-	resp.Namespace = namespace
-
-	return &resp, nil
+	return resp, nil
 
 }
 
@@ -149,25 +127,10 @@ func (flow *flow) NamespaceLogsParcels(req *grpc.NamespaceLogsRequest, srv grpc.
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
+
 	var tailing bool
 
-	p, err := getPagination(req.Pagination)
-	if err != nil {
-		return err
-	}
-
-	porder := p.order
-	pfilter := p.filter
-
-	opts := []ent.LogMsgPaginateOption{}
-	opts = append(opts, logsOrder(p)...)
-	opts = append(opts, logsFilter(p)...)
-
-	nsc := flow.db.Namespace
-
-	namespace := req.GetNamespace()
-
-	ns, err := flow.getNamespace(ctx, nsc, namespace)
+	ns, err := flow.getNamespace(ctx, flow.db.Namespace, req.GetNamespace())
 	if err != nil {
 		return err
 	}
@@ -177,21 +140,23 @@ func (flow *flow) NamespaceLogsParcels(req *grpc.NamespaceLogsRequest, srv grpc.
 
 resend:
 
-	cx, err := ns.QueryLogs().Paginate(ctx, p.After(), p.First(), p.Before(), p.Last(), opts...)
+	query := ns.QueryLogs()
+
+	results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
 	if err != nil {
 		return err
 	}
 
-	var resp = new(grpc.NamespaceLogsResponse)
+	resp := new(grpc.NamespaceLogsResponse)
+	resp.Namespace = ns.Name
+	resp.PageInfo = pi
 
-	err = atob(cx, resp)
+	err = atob(results, &resp.Results)
 	if err != nil {
 		return err
 	}
 
-	resp.Namespace = namespace
-
-	if len(resp.Edges) != 0 || !tailing {
+	if len(resp.Results) != 0 || !tailing {
 
 		tailing = true
 
@@ -200,10 +165,7 @@ resend:
 			return err
 		}
 
-		p = new(pagination)
-		p.after = resp.PageInfo.EndCursor
-		p.order = porder
-		p.filter = pfilter
+		req.Pagination.Offset += int32(len(resp.Results))
 
 	}
 
@@ -220,37 +182,29 @@ func (flow *flow) WorkflowLogs(ctx context.Context, req *grpc.WorkflowLogsReques
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	p, err := getPagination(req.Pagination)
+	d, err := flow.traverseToWorkflow(ctx, flow.db.Namespace, req.GetNamespace(), req.GetPath())
 	if err != nil {
 		return nil, err
 	}
 
-	opts := []ent.LogMsgPaginateOption{}
-	opts = append(opts, logsOrder(p)...)
-	opts = append(opts, logsFilter(p)...)
+	query := d.wf.QueryLogs()
 
-	nsc := flow.db.Namespace
-	d, err := flow.traverseToWorkflow(ctx, nsc, req.GetNamespace(), req.GetPath())
+	results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
 	if err != nil {
 		return nil, err
 	}
 
-	cx, err := d.wf.QueryLogs().Paginate(ctx, p.After(), p.First(), p.Before(), p.Last(), opts...)
-	if err != nil {
-		return nil, err
-	}
-
-	var resp grpc.WorkflowLogsResponse
-
-	err = atob(cx, &resp)
-	if err != nil {
-		return nil, err
-	}
-
+	resp := new(grpc.WorkflowLogsResponse)
 	resp.Namespace = d.namespace()
 	resp.Path = d.path
+	resp.PageInfo = pi
 
-	return &resp, nil
+	err = atob(results, &resp.Results)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
 
 }
 
@@ -259,22 +213,10 @@ func (flow *flow) WorkflowLogsParcels(req *grpc.WorkflowLogsRequest, srv grpc.Fl
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
+
 	var tailing bool
 
-	p, err := getPagination(req.Pagination)
-	if err != nil {
-		return err
-	}
-
-	porder := p.order
-	pfilter := p.filter
-
-	opts := []ent.LogMsgPaginateOption{}
-	opts = append(opts, logsOrder(p)...)
-	opts = append(opts, logsFilter(p)...)
-
-	nsc := flow.db.Namespace
-	d, err := flow.traverseToWorkflow(ctx, nsc, req.GetNamespace(), req.GetPath())
+	d, err := flow.traverseToWorkflow(ctx, flow.db.Namespace, req.GetNamespace(), req.GetPath())
 	if err != nil {
 		return err
 	}
@@ -284,22 +226,24 @@ func (flow *flow) WorkflowLogsParcels(req *grpc.WorkflowLogsRequest, srv grpc.Fl
 
 resend:
 
-	cx, err := d.wf.QueryLogs().Paginate(ctx, p.After(), p.First(), p.Before(), p.Last(), opts...)
+	query := d.wf.QueryLogs()
+
+	results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
 	if err != nil {
 		return err
 	}
 
-	var resp = new(grpc.WorkflowLogsResponse)
-
-	err = atob(cx, resp)
-	if err != nil {
-		return err
-	}
-
+	resp := new(grpc.WorkflowLogsResponse)
 	resp.Namespace = d.namespace()
 	resp.Path = d.path
+	resp.PageInfo = pi
 
-	if len(resp.Edges) != 0 || !tailing {
+	err = atob(results, &resp.Results)
+	if err != nil {
+		return err
+	}
+
+	if len(resp.Results) != 0 || !tailing {
 
 		tailing = true
 
@@ -308,10 +252,7 @@ resend:
 			return err
 		}
 
-		p = new(pagination)
-		p.after = resp.PageInfo.EndCursor
-		p.order = porder
-		p.filter = pfilter
+		req.Pagination.Offset += int32(len(resp.Results))
 
 	}
 
@@ -328,37 +269,29 @@ func (flow *flow) InstanceLogs(ctx context.Context, req *grpc.InstanceLogsReques
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	p, err := getPagination(req.Pagination)
+	d, err := flow.getInstance(ctx, flow.db.Namespace, req.GetNamespace(), req.GetInstance(), false)
 	if err != nil {
 		return nil, err
 	}
 
-	opts := []ent.LogMsgPaginateOption{}
-	opts = append(opts, logsOrder(p)...)
-	opts = append(opts, logsFilter(p)...)
+	query := d.in.QueryLogs()
 
-	nsc := flow.db.Namespace
-	d, err := flow.getInstance(ctx, nsc, req.GetNamespace(), req.GetInstance(), false)
+	results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
 	if err != nil {
 		return nil, err
 	}
 
-	cx, err := d.in.QueryLogs().Paginate(ctx, p.After(), p.First(), p.Before(), p.Last(), opts...)
-	if err != nil {
-		return nil, err
-	}
-
-	var resp grpc.InstanceLogsResponse
-
-	err = atob(cx, &resp)
-	if err != nil {
-		return nil, err
-	}
-
+	resp := new(grpc.InstanceLogsResponse)
 	resp.Namespace = d.namespace()
 	resp.Instance = d.in.ID.String()
+	resp.PageInfo = pi
 
-	return &resp, nil
+	err = atob(results, &resp.Results)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
 
 }
 
@@ -367,22 +300,10 @@ func (flow *flow) InstanceLogsParcels(req *grpc.InstanceLogsRequest, srv grpc.Fl
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
+
 	var tailing bool
 
-	p, err := getPagination(req.Pagination)
-	if err != nil {
-		return err
-	}
-
-	porder := p.order
-	pfilter := p.filter
-
-	opts := []ent.LogMsgPaginateOption{}
-	opts = append(opts, logsOrder(p)...)
-	opts = append(opts, logsFilter(p)...)
-
-	nsc := flow.db.Namespace
-	d, err := flow.getInstance(ctx, nsc, req.GetNamespace(), req.GetInstance(), false)
+	d, err := flow.getInstance(ctx, flow.db.Namespace, req.GetNamespace(), req.GetInstance(), false)
 	if err != nil {
 		return err
 	}
@@ -392,22 +313,24 @@ func (flow *flow) InstanceLogsParcels(req *grpc.InstanceLogsRequest, srv grpc.Fl
 
 resend:
 
-	cx, err := d.in.QueryLogs().Paginate(ctx, p.After(), p.First(), p.Before(), p.Last(), opts...)
+	query := d.in.QueryLogs()
+
+	results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
 	if err != nil {
 		return err
 	}
 
-	var resp = new(grpc.InstanceLogsResponse)
-
-	err = atob(cx, resp)
-	if err != nil {
-		return err
-	}
-
+	resp := new(grpc.InstanceLogsResponse)
 	resp.Namespace = d.namespace()
 	resp.Instance = d.in.ID.String()
+	resp.PageInfo = pi
 
-	if len(resp.Edges) != 0 || !tailing {
+	err = atob(results, &resp.Results)
+	if err != nil {
+		return err
+	}
+
+	if len(resp.Results) != 0 || !tailing {
 
 		tailing = true
 
@@ -416,10 +339,7 @@ resend:
 			return err
 		}
 
-		p = new(pagination)
-		p.after = resp.PageInfo.EndCursor
-		p.order = porder
-		p.filter = pfilter
+		req.Pagination.Offset += int32(len(resp.Results))
 
 	}
 

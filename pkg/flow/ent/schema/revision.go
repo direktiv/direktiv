@@ -3,7 +3,6 @@ package schema
 import (
 	"time"
 
-	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/edge"
@@ -20,7 +19,7 @@ type Revision struct {
 func (Revision) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New).Immutable().StorageKey("oid").StructTag(`json:"-"`),
-		field.Time("created_at").Default(time.Now).Immutable().Annotations(entgql.OrderField("CREATED")),
+		field.Time("created_at").Default(time.Now).Immutable(),
 		field.String("hash").Immutable(),
 		field.Bytes("source").Immutable(),
 		field.JSON("metadata", map[string]interface{}{}),

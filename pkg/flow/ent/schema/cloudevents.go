@@ -3,7 +3,6 @@ package schema
 import (
 	"time"
 
-	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
@@ -20,11 +19,11 @@ type CloudEvents struct {
 // Fields of the CloudEvent.
 func (CloudEvents) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New).Immutable().StorageKey("oid").StructTag(`json:"id"`).Annotations(entgql.OrderField("ID")),
+		field.UUID("id", uuid.UUID{}).Default(uuid.New).Immutable().StorageKey("oid").StructTag(`json:"id"`),
 		field.String("eventId").Immutable().NotEmpty(),
 		field.JSON("event", cloudevents.Event{}),
 		field.Time("fire").Immutable().Default(time.Now),
-		field.Time("created").Immutable().Default(time.Now).Annotations(entgql.OrderField("RECEIVED")),
+		field.Time("created").Immutable().Default(time.Now),
 		field.Bool("processed"),
 	}
 }

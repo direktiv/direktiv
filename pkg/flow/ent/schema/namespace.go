@@ -3,8 +3,6 @@ package schema
 import (
 	"time"
 
-	"entgo.io/contrib/entgql"
-
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/edge"
@@ -49,7 +47,7 @@ func (Namespace) Fields() []ent.Field {
 		field.Time("created_at").Default(time.Now).Immutable(),
 		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
 		field.String("config").Default(DefaultNamespaceConfig),
-		field.String("name").Match(util.NameRegex).Annotations(entgql.OrderField("NAME")).Unique().NotEmpty().MaxLen(64).MinLen(1),
+		field.String("name").Match(util.NameRegex).Unique().NotEmpty().MaxLen(64).MinLen(1),
 	}
 }
 
