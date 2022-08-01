@@ -10,15 +10,9 @@ message Registry {
 	string name = 1;
 }
 
-message RegistryEdge {
-	Registry node = 1;
-	string cursor = 2;
-}
-
 message Registries {
-	int32 totalCount = 1;
 	PageInfo pageInfo = 2;
-	repeated RegistryEdge edges = 3;
+	repeated Registry results = 4;
 }
 
 message NamespaceRegistriesRequest {

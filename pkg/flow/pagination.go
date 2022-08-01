@@ -1,7 +1,7 @@
 package flow
 
 import (
-	"encoding/base64"
+	"context"
 	"errors"
 	"fmt"
 	"sort"
@@ -12,72 +12,32 @@ import (
 )
 
 type pagination struct {
-	after  string
-	first  int32
-	before string
-	last   int32
+	limit  int
+	offset int
 	order  []*grpc.PageOrder
 	filter []*grpc.PageFilter
-}
-
-func (p *pagination) Before() *ent.Cursor {
-
-	if p.before == "" {
-		return nil
-	}
-
-	x := decodeCursor(p.before)
-	return x
-
-}
-
-func (p *pagination) First() *int {
-
-	if p.first <= 0 {
-		return nil
-	}
-
-	var x int
-	x = int(p.first)
-	return &x
-
-}
-
-func (p *pagination) After() *ent.Cursor {
-
-	if p.after == "" {
-		return nil
-	}
-
-	x := decodeCursor(p.after)
-	return x
-
-}
-
-func (p *pagination) Last() *int {
-
-	if p.last <= 0 {
-		return nil
-	}
-
-	var x int
-	x = int(p.last)
-	return &x
-
 }
 
 func getPagination(args *grpc.Pagination) (*pagination, error) {
 
 	p := new(pagination)
-	p.after = args.GetAfter()
-	p.first = args.GetFirst()
-	p.before = args.GetBefore()
-	p.last = args.GetLast()
+	p.limit = int(args.GetLimit())
+	p.offset = int(args.GetOffset())
 	p.order = args.GetOrder()
 	p.filter = args.GetFilter()
 
 	return p, nil
 
+}
+
+func pageInfo(p *pagination, total int) *grpc.PageInfo {
+	pi := new(grpc.PageInfo)
+	pi.Limit = int32(p.limit)
+	pi.Offset = int32(p.offset)
+	pi.Total = int32(total)
+	pi.Order = p.order
+	pi.Filter = p.filter
+	return pi
 }
 
 type customPagination struct {
@@ -105,23 +65,6 @@ type customPaginationData interface {
 	Total() int
 	Value(int) map[string]interface{}
 	ID(int) string
-}
-
-func encodeCustomCursor(id string) string {
-
-	return base64.StdEncoding.EncodeToString([]byte(id))
-
-}
-
-func decodeCustomCursor(cursor string) (string, error) {
-
-	x, err := base64.StdEncoding.DecodeString(cursor)
-	if err != nil {
-		return "", errors.New("bad cursor")
-	}
-
-	return string(x), nil
-
 }
 
 func (cp *customPagination) Paginate(req *pagination) (*cpdOutput, error) {
@@ -164,85 +107,23 @@ func (cp *customPagination) Paginate(req *pagination) (*cpdOutput, error) {
 		return o, nil
 	}
 
-	ids := make([]string, 0)
 	list := make([]map[string]interface{}, 0)
 	for i := 0; i < cp.data.Total(); i++ {
-		ids = append(ids, encodeCustomCursor(cp.data.ID(i)))
 		list = append(list, cp.data.Value(i))
 	}
 
-	beforeIdx := cp.data.Total() - 1
-	before := req.before
-	if before != "" {
-		x, err := decodeCustomCursor(before)
-		if err == nil {
-			for i := beforeIdx; i >= 0; i-- {
-				id := cp.data.ID(i)
-				if id == x {
-					beforeIdx = i - 1
-					break
-				}
-			}
+	if req.offset > 0 {
+		if req.offset > len(list) {
+			list = list[len(list):]
+		} else {
+			list = list[req.offset:]
 		}
 	}
-	list = list[:beforeIdx+1]
-	ids = ids[:beforeIdx+1]
 
-	afterIdx := 0
-	after := req.after
-	if after != "" {
-		x, err := decodeCustomCursor(after)
-		if err == nil {
-			for i := afterIdx; i < cp.data.Total(); i++ {
-				id := cp.data.ID(i)
-				if id == x {
-					afterIdx = i + 1
-					break
-				}
-			}
+	if req.limit > 0 {
+		if req.limit <= len(list) {
+			list = list[:req.limit]
 		}
-	}
-	list = list[afterIdx:]
-	ids = ids[afterIdx:]
-
-	firstIdx := len(list)
-	if req.First() != nil && *req.First() < firstIdx {
-		firstIdx = *req.First()
-	}
-
-	lastIdx := 0
-	if req.Last() != nil && len(list)-*req.Last() > lastIdx {
-		lastIdx = len(list) - *req.Last()
-	}
-
-	if firstIdx <= lastIdx {
-		list = list[:0]
-		ids = ids[:0]
-	} else {
-		list = list[lastIdx:firstIdx]
-		ids = ids[lastIdx:firstIdx]
-	}
-
-	if len(list) > 0 {
-
-		if lastIdx > 0 || afterIdx > 0 {
-			o.PageInfo.HasPreviousPage = true
-		}
-
-		if firstIdx < cp.data.Total() || beforeIdx < cp.data.Total()-1 {
-			o.PageInfo.HasNextPage = true
-		}
-
-		o.PageInfo.StartCursor = ids[0]
-		o.PageInfo.EndCursor = ids[len(ids)-1]
-
-		for idx := range ids {
-			o.Edges = append(o.Edges, cpdEdge{
-				Cursor: ids[idx],
-				Node:   list[idx],
-			})
-		}
-
 	}
 
 	return o, nil
@@ -250,14 +131,9 @@ func (cp *customPagination) Paginate(req *pagination) (*cpdOutput, error) {
 }
 
 type cpdOutput struct {
-	TotalCount int           `json:"totalCount"`
-	PageInfo   grpc.PageInfo `json:"pageInfo"`
-	Edges      []cpdEdge     `json:"edges"`
-}
-
-type cpdEdge struct {
-	Cursor string                 `json:"cursor"`
-	Node   map[string]interface{} `json:"node"`
+	TotalCount int                    `json:"totalCount"`
+	PageInfo   grpc.PageInfo          `json:"pageInfo"`
+	Node       map[string]interface{} `json:"node"`
 }
 
 type cpdSecrets struct {
@@ -345,4 +221,154 @@ func (cpds *cpdSecrets) Order(order *grpc.PageOrder) error {
 
 func (cpds *cpdSecrets) Add(name string) {
 	cpds.list = append(cpds.list, name)
+}
+
+type orderingInfo struct {
+	db           string
+	req          string
+	defaultOrder func(fields ...string) ent.OrderFunc
+	isDefault    bool
+}
+
+func (p *pagination) orderings(orderings []*orderingInfo) []ent.OrderFunc {
+
+	var fns []ent.OrderFunc
+
+	for _, o := range p.order {
+
+		var ordering *orderingInfo
+
+		for _, x := range orderings {
+			if x.req == o.Field {
+				ordering = x
+				break
+			}
+		}
+
+		if ordering == nil {
+			continue
+		}
+
+		direction := ordering.defaultOrder
+
+		if o.Direction == "ASC" {
+			direction = ent.Asc
+		} else if o.Direction == "DESC" {
+			direction = ent.Desc
+		}
+
+		field := ordering.db
+
+		fns = append(fns, direction(field))
+
+	}
+
+	if len(fns) == 0 {
+
+		for _, x := range orderings {
+			if x.isDefault {
+				fns = append(fns, x.defaultOrder(x.db))
+			}
+		}
+
+		if len(fns) == 0 {
+			fns = append(fns, orderings[0].defaultOrder(orderings[0].db))
+		}
+
+	}
+
+	return fns
+
+}
+
+type filteringInfo struct {
+	field string
+	ftype string
+}
+
+type entQuery[T, X any] interface {
+	Count(ctx context.Context) (int, error)
+	Order(o ...ent.OrderFunc) T
+	Limit(limit int) T
+	Offset(offset int) T
+	All(ctx context.Context) ([]X, error)
+}
+
+func entFilters[T, X any, Q entQuery[T, X]](p *pagination, filtersInfo map[*filteringInfo]func(query Q, v string) (Q, error)) []func(query Q) (Q, error) {
+
+	var filters []func(query Q) (Q, error)
+
+	for _, f := range p.filter {
+
+		var fn func(query Q, v string) (Q, error)
+
+		for k, x := range filtersInfo {
+			if k.field == f.Field && k.ftype == f.Type {
+				fn = x
+				break
+			}
+		}
+
+		if fn == nil {
+			continue
+		}
+
+		filters = append(filters, func(query Q) (Q, error) {
+			return fn(query, f.Val)
+		})
+
+	}
+
+	return filters
+
+}
+
+func paginate[T, X any, Q entQuery[T, X]](
+	ctx context.Context,
+	params *grpc.Pagination,
+	q Q,
+	o []*orderingInfo,
+	f map[*filteringInfo]func(Q, string) (Q, error)) ([]X, *grpc.PageInfo, error) {
+
+	var err error
+
+	p, err := getPagination(params)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	orderings := p.orderings(o)
+	filters := entFilters[T, X](p, f)
+
+	for _, filter := range filters {
+		q, err = filter(q)
+		if err != nil {
+			return nil, nil, err
+		}
+	}
+
+	total, err := q.Count(ctx)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if len(orderings) > 0 {
+		q = any(q.Order(orderings...)).(Q)
+	}
+
+	if p.limit > 0 {
+		q = any(q.Limit(p.limit)).(Q)
+	}
+
+	if p.offset > 0 {
+		q = any(q.Offset(p.offset)).(Q)
+	}
+
+	results, err := q.All(ctx)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return results, pageInfo(p, total), nil
+
 }

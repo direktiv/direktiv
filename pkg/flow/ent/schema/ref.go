@@ -3,7 +3,6 @@ package schema
 import (
 	"time"
 
-	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/edge"
@@ -23,8 +22,8 @@ func (Ref) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New).Immutable().StorageKey("oid").StructTag(`json:"-"`),
 		field.Bool("immutable").Default(true).Immutable(),
-		field.String("name").Match(util.RefRegex).Immutable().Annotations(entgql.OrderField("NAME")),
-		field.Time("created_at").Default(time.Now).Immutable().Annotations(entgql.OrderField("CREATED")),
+		field.String("name").Match(util.RefRegex).Immutable(),
+		field.Time("created_at").Default(time.Now).Immutable(),
 	}
 }
 

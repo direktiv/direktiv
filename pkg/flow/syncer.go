@@ -1471,6 +1471,8 @@ type syncConfig struct {
 
 func buildModel(ctx context.Context, repo *localRepository) (*mirrorModel, error) {
 
+	fmt.Println("PROOF")
+
 	model := new(mirrorModel)
 	model.root = &mirrorNode{
 		parent:   model.root,
@@ -1522,12 +1524,18 @@ func buildModel(ctx context.Context, repo *localRepository) (*mirrorModel, error
 			return nil
 		}
 
-		for _, g := range globbers {
+		fmt.Println("GLOB CHECK:", rel)
+
+		for idx, g := range globbers {
+			fmt.Println(cfg.Ignore[idx])
 			if g.Match(rel) {
+				fmt.Println("MATCH")
 				if d.IsDir() {
 					return filepath.SkipDir
 				}
 				return nil
+			} else {
+				fmt.Println("NO MATCH")
 			}
 		}
 

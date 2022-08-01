@@ -16,45 +16,37 @@ func (flow *flow) Revisions(ctx context.Context, req *grpc.RevisionsRequest) (*g
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	p, err := getPagination(req.Pagination)
-	if err != nil {
-		return nil, err
-	}
-
-	opts := []ent.RefPaginateOption{}
-	opts = append(opts, refOrder(p)...)
-	opts = append(opts, refFilter(p)...)
-
-	nsc := flow.db.Namespace
-	d, err := flow.traverseToWorkflow(ctx, nsc, req.GetNamespace(), req.GetPath())
+	d, err := flow.traverseToWorkflow(ctx, flow.db.Namespace, req.GetNamespace(), req.GetPath())
 	if err != nil {
 		return nil, err
 	}
 
 	query := d.wf.QueryRefs()
 	query = query.Where(entref.Immutable(true))
-	cx, err := query.Paginate(ctx, p.After(), p.First(), p.Before(), p.Last(), opts...)
+
+	results, pi, err := paginate[*ent.RefQuery, *ent.Ref](ctx, req.Pagination, query, refsOrderings, refsFilters)
 	if err != nil {
 		return nil, err
 	}
 
-	var resp grpc.RevisionsResponse
+	resp := new(grpc.RevisionsResponse)
+	resp.Namespace = d.namespace()
+	resp.PageInfo = pi
+
+	err = atob(results, &resp.Results)
+	if err != nil {
+		return nil, err
+	}
 
 	err = atob(d.ino, &resp.Node)
 	if err != nil {
 		return nil, err
 	}
 
-	resp.Namespace = d.namespace()
 	resp.Node.Path = d.path
 	resp.Node.Parent = d.dir
 
-	err = atob(cx, &resp)
-	if err != nil {
-		return nil, err
-	}
-
-	return &resp, nil
+	return resp, nil
 
 }
 
@@ -66,17 +58,7 @@ func (flow *flow) RevisionsStream(req *grpc.RevisionsRequest, srv grpc.Flow_Revi
 	phash := ""
 	nhash := ""
 
-	p, err := getPagination(req.Pagination)
-	if err != nil {
-		return err
-	}
-
-	opts := []ent.RefPaginateOption{}
-	opts = append(opts, refOrder(p)...)
-	opts = append(opts, refFilter(p)...)
-
-	nsc := flow.db.Namespace
-	d, err := flow.traverseToWorkflow(ctx, nsc, req.GetNamespace(), req.GetPath())
+	d, err := flow.traverseToWorkflow(ctx, flow.db.Namespace, req.GetNamespace(), req.GetPath())
 	if err != nil {
 		return err
 	}
@@ -88,26 +70,28 @@ resend:
 
 	query := d.wf.QueryRefs()
 	query = query.Where(entref.Immutable(true))
-	cx, err := query.Paginate(ctx, p.After(), p.First(), p.Before(), p.Last(), opts...)
+
+	results, pi, err := paginate[*ent.RefQuery, *ent.Ref](ctx, req.Pagination, query, refsOrderings, refsFilters)
 	if err != nil {
 		return err
 	}
 
 	resp := new(grpc.RevisionsResponse)
+	resp.Namespace = d.namespace()
+	resp.PageInfo = pi
+
+	err = atob(results, &resp.Results)
+	if err != nil {
+		return err
+	}
 
 	err = atob(d.ino, &resp.Node)
 	if err != nil {
 		return err
 	}
 
-	resp.Namespace = d.namespace()
 	resp.Node.Path = d.path
 	resp.Node.Parent = d.dir
-
-	err = atob(cx, resp)
-	if err != nil {
-		return err
-	}
 
 	nhash = checksum(resp)
 	if nhash != phash {

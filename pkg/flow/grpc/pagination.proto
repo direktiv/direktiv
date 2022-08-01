@@ -5,10 +5,11 @@ package direktiv_flow;
 option go_package = "github.com/direktiv/direktiv/pkg/flow/grpc";
 
 message PageInfo {
-	bool hasNextPage = 1;
-	bool hasPreviousPage = 2;
-	string startCursor = 3;
-	string endCursor = 4;
+	repeated PageOrder order = 5;
+	repeated PageFilter filter = 6;
+	int32 limit = 7;
+	int32 offset = 8;
+	int32 total = 9;
 }
 
 message PageOrder {
@@ -23,10 +24,8 @@ message PageFilter {
 }
 
 message Pagination {
-	string after = 1;
-	int32 first = 2;
-	string before = 3;
-	int32 last = 4;
 	repeated PageOrder order = 5;
 	repeated PageFilter filter = 6;
+	int32 limit = 7;
+	int32 offset = 8;
 }

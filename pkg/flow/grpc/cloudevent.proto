@@ -34,16 +34,10 @@ message EventListener {
 	google.protobuf.Timestamp created_at = 6;
 }
 
-message EventListenersEdge {
-	EventListener node = 1;
-	string cursor = 2;
-}
-
 message EventListenersResponse {
 	string namespace = 1;
-	int32 totalCount = 2;
 	PageInfo pageInfo = 3;
-	repeated EventListenersEdge edges = 4;
+	repeated EventListener results = 5;
 }
 
 message HistoricalEventRequest {
@@ -73,15 +67,9 @@ message Event {
 	bytes cloudevent = 5;
 }
 
-message EventsEdge {
-	Event node = 1;
-	string cursor = 2;
-}
-
 message Events {
-	int32 totalCount = 1;
 	PageInfo pageInfo = 2;
-	repeated EventsEdge edges = 3;
+	repeated Event results = 4;
 }
 
 

@@ -1,7 +1,6 @@
 package schema
 
 import (
-	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/edge"
@@ -19,7 +18,7 @@ type VarRef struct {
 func (VarRef) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New).Immutable().StorageKey("oid").StructTag(`json:"-"`),
-		field.String("name").Match(util.VarNameRegex).Optional().Annotations(entgql.OrderField("NAME")),
+		field.String("name").Match(util.VarNameRegex).Optional(),
 		field.String("behaviour").Optional(),
 	}
 }
