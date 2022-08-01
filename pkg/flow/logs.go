@@ -157,9 +157,9 @@ func (engine *engine) UserLog(ctx context.Context, im *instanceMemory, msg strin
 
 func (engine *engine) logRunState(ctx context.Context, im *instanceMemory, wakedata []byte, err error) {
 
-	engine.sugar.Debugf("Running state logic -- %s:%v (%s)", im.ID().String(), im.Step(), im.logic.ID())
+	engine.sugar.Debugf("Running state logic -- %s:%v (%s)", im.ID().String(), im.Step(), im.logic.GetID())
 	if im.GetMemory() == nil && len(wakedata) == 0 && err == nil {
-		engine.logToInstance(ctx, time.Now(), im.in, "Running state logic (step:%v) -- %s", im.Step(), im.logic.ID())
+		engine.logToInstance(ctx, time.Now(), im.in, "Running state logic (step:%v) -- %s", im.Step(), im.logic.GetID())
 	}
 
 }

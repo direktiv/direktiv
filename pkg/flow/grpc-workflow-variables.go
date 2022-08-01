@@ -11,6 +11,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/vardata"
 	entvardata "github.com/direktiv/direktiv/pkg/flow/ent/vardata"
 	"github.com/direktiv/direktiv/pkg/flow/ent/varref"
+	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/gabriel-vasile/mimetype"
 	"google.golang.org/grpc/codes"
@@ -71,11 +72,11 @@ func (internal *internal) WorkflowVariableParcels(req *grpc.VariableInternalRequ
 	}
 
 	d, err := internal.traverseToWorkflowVariable(ctx, nsc, id.namespace(), id.path, req.GetKey(), true)
-	if err != nil && !IsNotFound(err) {
+	if err != nil && !derrors.IsNotFound(err) {
 		return err
 	}
 
-	if IsNotFound(err) {
+	if derrors.IsNotFound(err) {
 		d = new(wfvarData)
 		d.vref = new(ent.VarRef)
 		d.vref.Name = req.GetKey()
@@ -343,7 +344,7 @@ func (flow *flow) SetVariable(ctx context.Context, vrefc *ent.VarRefClient, vdat
 
 	if err != nil {
 
-		if !IsNotFound(err) {
+		if !derrors.IsNotFound(err) {
 			return nil, false, err
 		}
 

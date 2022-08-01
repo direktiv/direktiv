@@ -11,6 +11,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/flow/ent"
+	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/jqer"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -265,7 +267,7 @@ func (srv *server) initJQ() {
 func jq(input interface{}, command interface{}) ([]interface{}, error) {
 	out, err := jqer.Evaluate(input, command)
 	if err != nil {
-		return nil, NewCatchableError(ErrCodeJQBadQuery, "failed to evaluate jq/js: %v", err)
+		return nil, derrors.NewCatchableError(ErrCodeJQBadQuery, "failed to evaluate jq/js: %v", err)
 	}
 	return out, nil
 }
@@ -278,7 +280,7 @@ func jqOne(input interface{}, command interface{}) (interface{}, error) {
 	}
 
 	if len(output) != 1 {
-		return nil, NewCatchableError(ErrCodeJQNotObject, "the `jq` or `js` command produced multiple outputs")
+		return nil, derrors.NewCatchableError(ErrCodeJQNotObject, "the `jq` or `js` command produced multiple outputs")
 	}
 
 	return output[0], nil
@@ -294,7 +296,7 @@ func jqObject(input interface{}, command interface{}) (map[string]interface{}, e
 
 	m, ok := x.(map[string]interface{})
 	if !ok {
-		return nil, NewCatchableError(ErrCodeJQNotObject, "the `jq` or `js` command produced a non-object output")
+		return nil, derrors.NewCatchableError(ErrCodeJQNotObject, "the `jq` or `js` command produced a non-object output")
 	}
 
 	return m, nil

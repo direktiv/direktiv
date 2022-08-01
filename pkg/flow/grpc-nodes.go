@@ -14,6 +14,7 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entino "github.com/direktiv/direktiv/pkg/flow/ent/inode"
+	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/util"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -472,7 +473,7 @@ func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (
 
 	d, err := flow.traverseToInode(ctx, nsc, req.GetNamespace(), req.GetPath())
 	if err != nil {
-		if IsNotFound(err) && req.GetIdempotent() {
+		if derrors.IsNotFound(err) && req.GetIdempotent() {
 			rollback(tx)
 			goto respond
 		}

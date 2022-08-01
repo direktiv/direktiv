@@ -9,6 +9,8 @@ import (
 
 	"github.com/lib/pq"
 	"github.com/mitchellh/hashstructure/v2"
+
+	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 )
 
 const defaultLockWait = time.Second * 10
@@ -117,14 +119,14 @@ func (engine *engine) lock(key string, timeout time.Duration) (context.Context, 
 
 	hash, err := hashstructure.Hash(key, hashstructure.FormatV2, nil)
 	if err != nil {
-		return nil, nil, NewInternalError(err)
+		return nil, nil, derrors.NewInternalError(err)
 	}
 
 	wait := int(timeout.Seconds())
 
 	conn, err := engine.locks.lockDB(hash, wait)
 	if err != nil {
-		return nil, nil, NewInternalError(err)
+		return nil, nil, derrors.NewInternalError(err)
 	}
 
 	st := debug.Stack()

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/ent"
+	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
@@ -43,7 +44,7 @@ func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNam
 			rollback(tx)
 			goto respond
 		}
-		if !IsNotFound(err) {
+		if !derrors.IsNotFound(err) {
 			return nil, err
 		}
 	}

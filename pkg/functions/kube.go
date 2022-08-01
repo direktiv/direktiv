@@ -1299,7 +1299,7 @@ func GenerateWorkflowServiceName(info *igrpc.BaseInfo) (string, string) {
 	// NOTE: fndef.Files can be safely excluded
 
 	var strs []string
-	strs = []string{fndef.Cmd, fndef.ID, fndef.Image, fmt.Sprintf("%v", fndef.Scale), fmt.Sprintf("%v", fndef.Size), fmt.Sprintf("%v", fndef.Type)}
+	strs = []string{fndef.Cmd, fndef.ID, fndef.Image, fmt.Sprintf("%v", fndef.Size), fmt.Sprintf("%v", fndef.Type)}
 
 	def, err := json.Marshal(strs)
 	if err != nil {
@@ -1321,11 +1321,8 @@ func GenerateWorkflowServiceName(info *igrpc.BaseInfo) (string, string) {
 func fndefFromBaseInfo(info *igrpc.BaseInfo) *model.ReusableFunctionDefinition {
 	fndef := new(model.ReusableFunctionDefinition)
 	fndef.Cmd = info.GetCmd()
-	// fndef.Files
 	fndef.ID = info.GetName()
 	fndef.Image = info.GetImage()
-	scale := int(info.GetMinScale())
-	fndef.Scale = scale
 	size := int(info.GetSize())
 	fndef.Size = model.Size(size)
 	fndef.Type = model.ReusableContainerFunctionType

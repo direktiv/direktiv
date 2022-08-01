@@ -17,6 +17,7 @@ import (
 	entref "github.com/direktiv/direktiv/pkg/flow/ent/ref"
 	entvardata "github.com/direktiv/direktiv/pkg/flow/ent/vardata"
 	entvar "github.com/direktiv/direktiv/pkg/flow/ent/varref"
+	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
 )
@@ -181,7 +182,7 @@ func (srv *server) reverseTraverseToInode(ctx context.Context, inoc *ent.InodeCl
 	recurser = func(ino *ent.Inode) error {
 
 		pino, err := ino.Parent(ctx)
-		if IsNotFound(err) || pino == nil {
+		if derrors.IsNotFound(err) || pino == nil {
 			d.dir = "/" + d.dir
 			d.path = "/" + d.path
 			return nil
@@ -249,12 +250,12 @@ func (srv *server) getInode(ctx context.Context, inoc *ent.InodeClient, ns *ent.
 		query = query.Where(entino.NameEQ(elems[0]))
 		child, err := query.Only(ctx)
 		if err != nil {
-			if IsNotFound(err) {
+			if derrors.IsNotFound(err) {
 
 				if createParents && inoc != nil && len(elems) > 1 {
 					child, err = inoc.Create().SetName(elems[0]).SetNamespace(ns).SetParent(ino).SetType(util.InodeTypeDirectory).Save(ctx)
 				} else {
-					err = &NotFoundError{
+					err = &derrors.NotFoundError{
 						Label: fmt.Sprintf("inode not found at '%s'", path),
 					}
 				}
@@ -510,7 +511,7 @@ func (srv *server) getInstance(ctx context.Context, nsc *ent.NamespaceClient, na
 	}
 
 	if load && in.Edges.Runtime == nil {
-		err = &NotFoundError{
+		err = &derrors.NotFoundError{
 			Label: fmt.Sprintf("instance runtime not found"),
 		}
 		srv.sugar.Debugf("%s failed to query instance runtime: %v", parent(), err)
@@ -574,7 +575,7 @@ func (srv *server) traverseToInstance(ctx context.Context, nsc *ent.NamespaceCli
 
 			if err != nil {
 
-				if IsNotFound(err) {
+				if derrors.IsNotFound(err) {
 					return nil
 				}
 
@@ -633,7 +634,7 @@ func (internal *internal) getInstance(ctx context.Context, inc *ent.InstanceClie
 	}
 
 	if in.Edges.Namespace == nil {
-		err = &NotFoundError{
+		err = &derrors.NotFoundError{
 			Label: fmt.Sprintf("instance namespace not found"),
 		}
 		internal.sugar.Debugf("%s failed to query instance namespace: %v", parent(), err)
@@ -641,7 +642,7 @@ func (internal *internal) getInstance(ctx context.Context, inc *ent.InstanceClie
 	}
 
 	if in.Edges.Workflow == nil {
-		err = &NotFoundError{
+		err = &derrors.NotFoundError{
 			Label: fmt.Sprintf("instance workflow not found"),
 		}
 		internal.sugar.Debugf("%s failed to query instance workflow: %v", parent(), err)
@@ -649,7 +650,7 @@ func (internal *internal) getInstance(ctx context.Context, inc *ent.InstanceClie
 	}
 
 	if in.Edges.Workflow.Edges.Inode == nil {
-		err = &NotFoundError{
+		err = &derrors.NotFoundError{
 			Label: fmt.Sprintf("instance workflow's inode not found"),
 		}
 		internal.sugar.Debugf("%s failed to query workflow inode: %v", parent(), err)
@@ -657,7 +658,7 @@ func (internal *internal) getInstance(ctx context.Context, inc *ent.InstanceClie
 	}
 
 	if load && in.Edges.Runtime == nil {
-		err = &NotFoundError{
+		err = &derrors.NotFoundError{
 			Label: fmt.Sprintf("instance runtime not found"),
 		}
 		internal.sugar.Debugf("%s failed to query instance runtime: %v", parent(), err)
@@ -706,7 +707,7 @@ func (srv *server) traverseToNamespaceVariable(ctx context.Context, nsc *ent.Nam
 	}
 
 	if load && vref.Edges.Vardata == nil {
-		err = &NotFoundError{
+		err = &derrors.NotFoundError{
 			Label: fmt.Sprintf("variable data not found"),
 		}
 		srv.sugar.Debugf("%s failed to query variable data: %v", parent(), err)
@@ -758,7 +759,7 @@ func (srv *server) traverseToWorkflowVariable(ctx context.Context, nsc *ent.Name
 	}
 
 	if load && vref.Edges.Vardata == nil {
-		err = &NotFoundError{
+		err = &derrors.NotFoundError{
 			Label: fmt.Sprintf("variable data not found"),
 		}
 		srv.sugar.Debugf("%s failed to query variable data: %v", parent(), err)
@@ -811,7 +812,7 @@ func (srv *server) traverseToInstanceVariable(ctx context.Context, nsc *ent.Name
 	}
 
 	if load && vref.Edges.Vardata == nil {
-		err = &NotFoundError{
+		err = &derrors.NotFoundError{
 			Label: fmt.Sprintf("variable data not found"),
 		}
 		srv.sugar.Debugf("%s failed to query variable data: %v", parent(), err)
@@ -858,7 +859,7 @@ func (srv *server) traverseToThreadVariable(ctx context.Context, nsc *ent.Namesp
 	}
 
 	if load && vref.Edges.Vardata == nil {
-		err = &NotFoundError{
+		err = &derrors.NotFoundError{
 			Label: fmt.Sprintf("variable data not found"),
 		}
 		srv.sugar.Debugf("%s failed to query variable data: %v", parent(), err)
@@ -887,7 +888,7 @@ func (srv *server) traverseToThreadVariable(ctx context.Context, nsc *ent.Namesp
 
 func (engine *engine) SetMemory(ctx context.Context, im *instanceMemory, x interface{}) error {
 
-	im.SetMemory(x)
+	im.setMemory(x)
 
 	data, err := json.Marshal(x)
 	if err != nil {
@@ -897,7 +898,7 @@ func (engine *engine) SetMemory(ctx context.Context, im *instanceMemory, x inter
 
 	ir, err := im.in.Edges.Runtime.Update().SetMemory(s).Save(ctx)
 	if err != nil {
-		return NewInternalError(err)
+		return derrors.NewInternalError(err)
 	}
 
 	ir.Edges = im.in.Edges.Runtime.Edges

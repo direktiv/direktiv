@@ -18,6 +18,7 @@ require (
 	github.com/go-openapi/swag v0.19.15
 	github.com/go-openapi/validate v0.20.2
 	github.com/golang/protobuf v1.5.2
+	github.com/google/go-cmp v0.5.8 // indirect
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/mux v1.8.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
@@ -80,7 +81,6 @@ require (
 	github.com/go-sourcemap/sourcemap v2.1.3+incompatible // indirect
 	github.com/go-stack/stack v1.8.1 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
-	github.com/google/go-cmp v0.5.8 // indirect
 	github.com/google/go-containerregistry v0.5.2-0.20210709161016-b448abac9a70 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/googleapis/gnostic v0.5.3 // indirect
