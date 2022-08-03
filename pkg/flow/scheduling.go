@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"time"
 
+	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 )
 
@@ -78,12 +79,12 @@ func (engine *engine) InstanceSleep(ctx context.Context, im *instanceMemory, sta
 		Step:       im.Step(),
 	})
 	if err != nil {
-		return NewInternalError(err)
+		return derrors.NewInternalError(err)
 	}
 
 	err = engine.timers.addOneShot(im.ID().String(), sleepWakeupFunction, t, data)
 	if err != nil {
-		return NewInternalError(err)
+		return derrors.NewInternalError(err)
 	}
 
 	return nil

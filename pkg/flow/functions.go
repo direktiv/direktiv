@@ -93,13 +93,32 @@ func (flow *flow) functionsHeartbeat() {
 
 }
 
+const heartbeatMessageLimit = 4096 // some evidence that we could get away with a limit of 8000, so I've set it here to be safe
+
 func (flow *flow) flushHeartbeatTuples(tuples []*functions.HeartbeatTuple) {
 
-	if len(tuples) == 0 {
+	l := len(tuples)
+
+	if l == 0 {
 		return
 	}
 
 	msg := marshal(tuples)
+
+	if len(msg) > heartbeatMessageLimit {
+
+		if l == 1 {
+			flow.sugar.Errorf("Single heartbeat entry exceeds maximum heartbeat size.")
+			return
+		}
+
+		x := l / 2
+
+		flow.flushHeartbeatTuples(tuples[:x])
+		flow.flushHeartbeatTuples(tuples[x:])
+		return
+
+	}
 
 	ctx := context.Background()
 

@@ -36,6 +36,7 @@ type server struct {
 	locks        *locks
 	timers       *timers
 	engine       *engine
+	syncer       *syncer
 	secrets      *secrets
 	flow         *flow
 	internal     *internal
@@ -45,8 +46,6 @@ type server struct {
 	metricServer *metricsServer
 
 	metrics *metrics.Client
-
-	dependencies *dependencyGraph
 }
 
 func Run(ctx context.Context, logger *zap.SugaredLogger, conf *util.Config) error {
@@ -161,10 +160,18 @@ func (srv *server) start(ctx context.Context) error {
 	}
 	defer srv.cleanup(srv.engine.Close)
 
+	srv.sugar.Debug("Initializing syncer.")
+
+	srv.syncer, err = initSyncer(srv)
+	if err != nil {
+		return err
+	}
+	defer srv.cleanup(srv.syncer.Close)
+
 	var lock sync.Mutex
 	var wg sync.WaitGroup
 
-	wg.Add(4)
+	wg.Add(5)
 
 	cctx, cancel := context.WithCancel(ctx)
 	defer cancel()
@@ -213,8 +220,7 @@ func (srv *server) start(ctx context.Context) error {
 	srv.registerFunctions()
 
 	go srv.cronPoller()
-
-	go srv.dependencyGraphPoller()
+	go srv.syncerCronPoller()
 
 	go func() {
 		defer wg.Done()
@@ -362,6 +368,10 @@ func (srv *server) registerFunctions() {
 	srv.timers.registerFunction(wfCron, srv.flow.cronHandler)
 	srv.timers.registerFunction(sendEventFunction, srv.events.sendEvent)
 	srv.timers.registerFunction(retryWakeupFunction, srv.flow.engine.retryWakeup)
+
+	srv.pubsub.registerFunction(pubsubDeleteActivityTimersFunction, srv.timers.deleteActivityTimersHandler)
+	srv.timers.registerFunction(syncerTimeoutFunction, srv.syncer.timeoutHandler)
+	srv.timers.registerFunction(syncerCron, srv.syncer.cronHandler)
 
 }
 

@@ -12,162 +12,63 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 )
 
-func refOrder(p *pagination) []ent.RefPaginateOption {
-
-	var opts []ent.RefPaginateOption
-
-	for _, o := range p.order {
-
-		if o == nil {
-			continue
-		}
-
-		field := ent.RefOrderFieldCreatedAt
-		direction := ent.OrderDirectionDesc
-
-		if x := o.Field; x != "" && x == "NAME" {
-			field = ent.RefOrderFieldName
-		}
-
-		if x := o.Field; x != "" && x == "CREATED" {
-			field = ent.RefOrderFieldCreatedAt
-		}
-
-		if x := o.Direction; x != "" && x == "ASC" {
-			direction = ent.OrderDirectionAsc
-		}
-
-		if x := o.Direction; x != "" && x == "DESC" {
-			direction = ent.OrderDirectionDesc
-		}
-
-		opts = append(opts, ent.WithRefOrder(&ent.RefOrder{
-			Direction: direction,
-			Field:     field,
-		}))
-	}
-
-	if len(opts) == 0 {
-		opts = append(opts, ent.WithRefOrder(&ent.RefOrder{
-			Direction: ent.OrderDirectionDesc,
-			Field:     ent.RefOrderFieldCreatedAt,
-		}))
-	}
-
-	return opts
-
+var refsOrderings = []*orderingInfo{
+	{
+		db:           entref.FieldCreatedAt,
+		req:          "CREATED",
+		defaultOrder: ent.Desc,
+	},
+	{
+		db:           entref.FieldName,
+		req:          "NAME",
+		defaultOrder: ent.Asc,
+	},
 }
 
-func refFilter(p *pagination) []ent.RefPaginateOption {
-
-	var filters []func(query *ent.RefQuery) (*ent.RefQuery, error)
-	var opts []ent.RefPaginateOption
-
-	if p.filter == nil {
-		return nil
-	}
-
-	for i := range p.filter {
-
-		f := p.filter[i]
-
-		if f == nil {
-			continue
-		}
-
-		filter := f.Val
-
-		filters = append(filters, func(query *ent.RefQuery) (*ent.RefQuery, error) {
-
-			if filter == "" {
-				return query, nil
-			}
-
-			field := f.Field
-			if field == "" {
-				return query, nil
-			}
-
-			switch field {
-			case "NAME":
-
-				ftype := f.Type
-				if ftype == "" {
-					return query, nil
-				}
-
-				switch ftype {
-				case "CONTAINS":
-					return query.Where(entref.NameContains(filter)), nil
-				}
-			}
-
-			return query, nil
-
-		})
-
-	}
-
-	if len(filters) > 0 {
-		opts = append(opts, ent.WithRefFilter(func(query *ent.RefQuery) (*ent.RefQuery, error) {
-			var err error
-			for _, filter := range filters {
-				query, err = filter(query)
-				if err != nil {
-					return nil, err
-				}
-			}
-			return query, nil
-		}))
-	}
-
-	return opts
-
+var refsFilters = map[*filteringInfo]func(query *ent.RefQuery, v string) (*ent.RefQuery, error){
+	{
+		field: "NAME",
+		ftype: "CONTAINS",
+	}: func(query *ent.RefQuery, v string) (*ent.RefQuery, error) {
+		return query.Where(entref.NameContains(v)), nil
+	},
 }
 
 func (flow *flow) Tags(ctx context.Context, req *grpc.TagsRequest) (*grpc.TagsResponse, error) {
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	p, err := getPagination(req.Pagination)
-	if err != nil {
-		return nil, err
-	}
-
-	opts := []ent.RefPaginateOption{}
-	opts = append(opts, refOrder(p)...)
-	opts = append(opts, refFilter(p)...)
-
-	nsc := flow.db.Namespace
-	d, err := flow.traverseToWorkflow(ctx, nsc, req.GetNamespace(), req.GetPath())
+	d, err := flow.traverseToWorkflow(ctx, flow.db.Namespace, req.GetNamespace(), req.GetPath())
 	if err != nil {
 		return nil, err
 	}
 
 	query := d.wf.QueryRefs()
 	query = query.Where(entref.Immutable(false))
-	cx, err := query.Paginate(ctx, p.After(), p.First(), p.Before(), p.Last(), opts...)
+
+	results, pi, err := paginate[*ent.RefQuery, *ent.Ref](ctx, req.Pagination, query, refsOrderings, refsFilters)
 	if err != nil {
 		return nil, err
 	}
 
-	var resp grpc.TagsResponse
+	resp := new(grpc.TagsResponse)
+	resp.Namespace = d.namespace()
+	resp.PageInfo = pi
+
+	err = atob(results, &resp.Results)
+	if err != nil {
+		return nil, err
+	}
 
 	err = atob(d.ino, &resp.Node)
 	if err != nil {
 		return nil, err
 	}
 
-	resp.Namespace = d.namespace()
 	resp.Node.Path = d.path
 	resp.Node.Parent = d.dir
 
-	err = atob(cx, &resp)
-	if err != nil {
-		return nil, err
-	}
-
-	return &resp, nil
+	return resp, nil
 
 }
 
@@ -179,17 +80,7 @@ func (flow *flow) TagsStream(req *grpc.TagsRequest, srv grpc.Flow_TagsStreamServ
 	phash := ""
 	nhash := ""
 
-	p, err := getPagination(req.Pagination)
-	if err != nil {
-		return err
-	}
-
-	opts := []ent.RefPaginateOption{}
-	opts = append(opts, refOrder(p)...)
-	opts = append(opts, refFilter(p)...)
-
-	nsc := flow.db.Namespace
-	d, err := flow.traverseToWorkflow(ctx, nsc, req.GetNamespace(), req.GetPath())
+	d, err := flow.traverseToWorkflow(ctx, flow.db.Namespace, req.GetNamespace(), req.GetPath())
 	if err != nil {
 		return err
 	}
@@ -201,26 +92,28 @@ resend:
 
 	query := d.wf.QueryRefs()
 	query = query.Where(entref.Immutable(false))
-	cx, err := query.Paginate(ctx, p.After(), p.First(), p.Before(), p.Last(), opts...)
+
+	results, pi, err := paginate[*ent.RefQuery, *ent.Ref](ctx, req.Pagination, query, refsOrderings, refsFilters)
 	if err != nil {
 		return err
 	}
 
 	resp := new(grpc.TagsResponse)
+	resp.Namespace = d.namespace()
+	resp.PageInfo = pi
+
+	err = atob(results, &resp.Results)
+	if err != nil {
+		return err
+	}
 
 	err = atob(d.ino, &resp.Node)
 	if err != nil {
 		return err
 	}
 
-	resp.Namespace = d.namespace()
 	resp.Node.Path = d.path
 	resp.Node.Parent = d.dir
-
-	err = atob(cx, resp)
-	if err != nil {
-		return err
-	}
 
 	nhash = checksum(resp)
 	if nhash != phash {
@@ -244,44 +137,36 @@ func (flow *flow) Refs(ctx context.Context, req *grpc.RefsRequest) (*grpc.RefsRe
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	p, err := getPagination(req.Pagination)
-	if err != nil {
-		return nil, err
-	}
-
-	opts := []ent.RefPaginateOption{}
-	opts = append(opts, refOrder(p)...)
-	opts = append(opts, refFilter(p)...)
-
-	nsc := flow.db.Namespace
-	d, err := flow.traverseToWorkflow(ctx, nsc, req.GetNamespace(), req.GetPath())
+	d, err := flow.traverseToWorkflow(ctx, flow.db.Namespace, req.GetNamespace(), req.GetPath())
 	if err != nil {
 		return nil, err
 	}
 
 	query := d.wf.QueryRefs()
-	cx, err := query.Paginate(ctx, p.After(), p.First(), p.Before(), p.Last(), opts...)
+
+	results, pi, err := paginate[*ent.RefQuery, *ent.Ref](ctx, req.Pagination, query, refsOrderings, refsFilters)
 	if err != nil {
 		return nil, err
 	}
 
-	var resp grpc.RefsResponse
+	resp := new(grpc.RefsResponse)
+	resp.Namespace = d.namespace()
+	resp.PageInfo = pi
+
+	err = atob(results, &resp.Results)
+	if err != nil {
+		return nil, err
+	}
 
 	err = atob(d.ino, &resp.Node)
 	if err != nil {
 		return nil, err
 	}
 
-	resp.Namespace = d.namespace()
 	resp.Node.Path = d.path
 	resp.Node.Parent = d.dir
 
-	err = atob(cx, &resp)
-	if err != nil {
-		return nil, err
-	}
-
-	return &resp, nil
+	return resp, nil
 
 }
 
@@ -293,17 +178,7 @@ func (flow *flow) RefsStream(req *grpc.RefsRequest, srv grpc.Flow_RefsStreamServ
 	phash := ""
 	nhash := ""
 
-	p, err := getPagination(req.Pagination)
-	if err != nil {
-		return err
-	}
-
-	opts := []ent.RefPaginateOption{}
-	opts = append(opts, refOrder(p)...)
-	opts = append(opts, refFilter(p)...)
-
-	nsc := flow.db.Namespace
-	d, err := flow.traverseToWorkflow(ctx, nsc, req.GetNamespace(), req.GetPath())
+	d, err := flow.traverseToWorkflow(ctx, flow.db.Namespace, req.GetNamespace(), req.GetPath())
 	if err != nil {
 		return err
 	}
@@ -314,26 +189,28 @@ func (flow *flow) RefsStream(req *grpc.RefsRequest, srv grpc.Flow_RefsStreamServ
 resend:
 
 	query := d.wf.QueryRefs()
-	cx, err := query.Paginate(ctx, p.After(), p.First(), p.Before(), p.Last(), opts...)
+
+	results, pi, err := paginate[*ent.RefQuery, *ent.Ref](ctx, req.Pagination, query, refsOrderings, refsFilters)
 	if err != nil {
 		return err
 	}
 
 	resp := new(grpc.RefsResponse)
+	resp.Namespace = d.namespace()
+	resp.PageInfo = pi
+
+	err = atob(results, &resp.Results)
+	if err != nil {
+		return err
+	}
 
 	err = atob(d.ino, &resp.Node)
 	if err != nil {
 		return err
 	}
 
-	resp.Namespace = d.namespace()
 	resp.Node.Path = d.path
 	resp.Node.Parent = d.dir
-
-	err = atob(cx, resp)
-	if err != nil {
-		return err
-	}
 
 	nhash = checksum(resp)
 	if nhash != phash {

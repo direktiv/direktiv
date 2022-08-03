@@ -5,19 +5,67 @@ import (
 	"encoding/json"
 	"errors"
 
+	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
+	"github.com/direktiv/direktiv/pkg/flow/states"
 	"github.com/direktiv/direktiv/pkg/util"
 )
 
+func (engine *engine) Children(ctx context.Context, im *instanceMemory) ([]states.ChildInfo, error) {
+
+	var err error
+
+	var children []states.ChildInfo
+	err = im.UnmarshalMemory(&children)
+	if err != nil {
+		return nil, err
+	}
+
+	return children, nil
+
+}
+
+func (engine *engine) LivingChildren(ctx context.Context, im *instanceMemory) []stateChild {
+
+	var living = make([]stateChild, 0)
+
+	children, err := engine.Children(ctx, im)
+	if err != nil {
+		engine.sugar.Error(err)
+		return living
+	}
+
+	for _, logic := range children {
+		if logic.Complete {
+			continue
+		}
+		living = append(living, stateChild{
+			Id:          logic.ID,
+			Type:        logic.Type,
+			ServiceName: logic.ServiceName,
+		})
+	}
+
+	return living
+
+}
+
 func (engine *engine) CancelInstanceChildren(ctx context.Context, im *instanceMemory) {
 
-	logic := im.logic
+	children := engine.LivingChildren(ctx, im)
 
-	children := logic.LivingChildren(ctx, engine, im)
 	for _, child := range children {
 		switch child.Type {
 		case "isolate":
 			// TODO
 			// engine.pubsub.CancelFunction(child.Id)
+			if child.ServiceName != "" {
+				err := engine.actions.CancelWorkflowInstance(child.ServiceName, child.Id)
+				if err != nil {
+					engine.sugar.Errorf("error cancelling action: %v", err)
+				}
+			} else {
+				engine.sugar.Warn("missing child service name")
+			}
 		case "subflow":
 			engine.pubsub.CancelWorkflow(child.Id, ErrCodeCancelledByParent, "cancelled by parent workflow", false)
 		default:
@@ -42,9 +90,9 @@ func (engine *engine) cancelInstance(id, code, message string, soft bool) {
 	}
 
 	if soft {
-		err = NewCatchableError(code, message)
+		err = derrors.NewCatchableError(code, message)
 	} else {
-		err = NewUncatchableError(code, message)
+		err = derrors.NewUncatchableError(code, message)
 	}
 
 	engine.sugar.Debugf("Handling cancel instance: %s", this())

@@ -3,11 +3,11 @@ package schema
 import (
 	"time"
 
-	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
 )
 
@@ -20,7 +20,7 @@ type Annotation struct {
 func (Annotation) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New).Immutable().StorageKey("oid").StructTag(`json:"-"`),
-		field.String("name").Match(VarNameRegex).Annotations(entgql.OrderField("NAME")),
+		field.String("name").Match(util.VarNameRegex),
 		field.Time("created_at").Default(time.Now).Immutable(),
 		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
 		field.Int("size"),

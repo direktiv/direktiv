@@ -3,12 +3,11 @@ package schema
 import (
 	"time"
 
-	"entgo.io/contrib/entgql"
-
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
 )
 
@@ -48,7 +47,7 @@ func (Namespace) Fields() []ent.Field {
 		field.Time("created_at").Default(time.Now).Immutable(),
 		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
 		field.String("config").Default(DefaultNamespaceConfig),
-		field.String("name").Match(NameRegex).Annotations(entgql.OrderField("NAME")).Unique().NotEmpty().MaxLen(64).MinLen(1),
+		field.String("name").Match(util.NameRegex).Unique().NotEmpty().MaxLen(64).MinLen(1),
 	}
 }
 
@@ -57,6 +56,8 @@ func (Namespace) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("inodes", Inode.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
 		edge.To("workflows", Workflow.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
+		edge.To("mirrors", Mirror.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
+		edge.To("mirror_activities", MirrorActivity.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
 		edge.To("instances", Instance.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
 		edge.To("logs", LogMsg.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
 		edge.To("vars", VarRef.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),

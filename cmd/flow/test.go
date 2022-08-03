@@ -345,10 +345,10 @@ func testsFullReset() error {
 		return err
 	}
 
-	for _, edge := range namespaces.Edges {
-		if strings.HasPrefix(edge.Node.Name, prefix) {
+	for _, result := range namespaces.Results {
+		if strings.HasPrefix(result.Name, prefix) {
 			_, err = c.DeleteNamespace(ctx, &grpc.DeleteNamespaceRequest{
-				Name:       edge.Node.Name,
+				Name:       result.Name,
 				Idempotent: true,
 				Recursive:  true,
 			})

@@ -4,10 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"regexp"
-
-	"github.com/direktiv/direktiv/pkg/flow/ent/schema"
-	"github.com/direktiv/direktiv/pkg/util"
 )
 
 const DefaultVarMimeType = "application/json"
@@ -22,9 +18,9 @@ type SetterState struct {
 
 type SetterDefinition struct {
 	Scope    string      `yaml:"scope,omitempty"`
-	Key      string      `yaml:"key"`
+	Key      interface{} `yaml:"key"`
 	Value    interface{} `yaml:"value,omitempty"`
-	MimeType string      `yaml:"mimeType,omitempty"`
+	MimeType interface{} `yaml:"mimeType,omitempty"`
 }
 
 func (a *SetterDefinition) UnmarshalJSON(data []byte) error {
@@ -76,15 +72,6 @@ func (a *SetterDefinition) UnmarshalYAML(unmarshal func(interface{}) error) erro
 
 func (o *SetterDefinition) Validate() error {
 
-	match, err := regexp.MatchString(RegexVarMimeType, o.MimeType)
-	if err != nil {
-		return errors.New(`regex validation of mime type failed`)
-	}
-
-	if !match {
-		return errors.New(`mimeType is not a valid MIME type string`)
-	}
-
 	switch o.Scope {
 	case "instance":
 	case "workflow":
@@ -94,16 +81,8 @@ func (o *SetterDefinition) Validate() error {
 		return ErrVarScope
 	}
 
-	if o.Key == "" {
+	if o.Key == nil || o.Key == "" {
 		return errors.New(`key required`)
-	}
-
-	if !schema.VarNameRegex.MatchString(o.Key) {
-		return fmt.Errorf("key is invalid: must start with a letter and only contain letters, numbers and '_'")
-	}
-
-	if ok := util.MatchesVarRegex(o.Key); !ok {
-		return fmt.Errorf("variable key must match regex: %s", util.RegexPattern)
 	}
 
 	if o.Value == "" {

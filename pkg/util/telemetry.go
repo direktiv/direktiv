@@ -9,12 +9,12 @@ import (
 	"github.com/gorilla/mux"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/codes"
-	"go.opentelemetry.io/otel/exporters/otlp"
-	"go.opentelemetry.io/otel/exporters/otlp/otlpgrpc"
+	otlp "go.opentelemetry.io/otel/exporters/otlp/otlptrace"
+	otlpgrpc "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
-	"go.opentelemetry.io/otel/semconv"
+	semconv "go.opentelemetry.io/otel/semconv/v1.10.0"
 	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
@@ -84,7 +84,7 @@ func InitTelemetry(conf *Config, svcName, imName string) (func(), error) {
 		return func() {}, nil
 	}
 
-	driver := otlpgrpc.NewDriver(
+	driver := otlpgrpc.NewClient(
 		otlpgrpc.WithInsecure(),
 		otlpgrpc.WithEndpoint(addr),
 		otlpgrpc.WithDialOption(grpc.WithBlock()),
@@ -92,7 +92,7 @@ func InitTelemetry(conf *Config, svcName, imName string) (func(), error) {
 
 	ctx := context.Background()
 
-	exp, err := otlp.NewExporter(ctx, driver)
+	exp, err := otlp.New(ctx, driver)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create exporter: %v", err)
 	}

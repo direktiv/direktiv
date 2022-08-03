@@ -28,6 +28,8 @@ import "pkg/functions/grpc/watch-logs.proto";
 
 import "pkg/functions/grpc/build.proto";
 
+import "pkg/functions/grpc/cancel-workflow.proto";
+
 service FunctionsService {
 
 	rpc StoreRegistry (StoreRegistryRequest) returns (google.protobuf.Empty) {}
@@ -58,4 +60,7 @@ service FunctionsService {
   rpc WatchLogs(WatchLogsRequest) returns (stream WatchLogsResponse)  {}
   rpc ListPods(ListPodsRequest) returns (ListPodsResponse)  {}
   rpc Build(google.protobuf.Empty) returns (BuildResponse) {}
+
+
+  rpc CancelWorfklow(CancelWorkflowRequest) returns (google.protobuf.Empty) {}
 }

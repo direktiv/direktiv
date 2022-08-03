@@ -113,52 +113,29 @@ func (flow *flow) WorkflowAnnotations(ctx context.Context, req *grpc.WorkflowAnn
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	p, err := getPagination(req.Pagination)
-	if err != nil {
-		return nil, err
-	}
-
-	opts := []ent.AnnotationPaginateOption{}
-	opts = append(opts, annotationsOrder(p)...)
-	opts = append(opts, annotationsFilter(p)...)
-
-	nsc := flow.db.Namespace
-
-	d, err := flow.traverseToWorkflow(ctx, nsc, req.GetNamespace(), req.GetPath())
+	d, err := flow.traverseToWorkflow(ctx, flow.db.Namespace, req.GetNamespace(), req.GetPath())
 	if err != nil {
 		return nil, err
 	}
 
 	query := d.wf.QueryAnnotations()
-	cx, err := query.Paginate(ctx, p.After(), p.First(), p.Before(), p.Last(), opts...)
+
+	results, pi, err := paginate[*ent.AnnotationQuery, *ent.Annotation](ctx, req.Pagination, query, annotationsOrderings, annotationsFilters)
 	if err != nil {
 		return nil, err
 	}
 
-	var resp grpc.WorkflowAnnotationsResponse
+	resp := new(grpc.WorkflowAnnotationsResponse)
+	resp.Namespace = d.namespace()
+	resp.Annotations = new(grpc.Annotations)
+	resp.Annotations.PageInfo = pi
 
-	resp.Namespace = d.ns().Name
-	resp.Path = d.path
-
-	err = atob(cx, &resp.Annotations)
+	err = atob(results, &resp.Annotations.Results)
 	if err != nil {
 		return nil, err
 	}
 
-	for i := range cx.Edges {
-
-		edge := cx.Edges[i]
-		annotation := edge.Node
-
-		v := resp.Annotations.Edges[i].Node
-		v.Checksum = annotation.Hash
-		v.CreatedAt = timestamppb.New(annotation.CreatedAt)
-		v.Size = int64(annotation.Size)
-		v.UpdatedAt = timestamppb.New(annotation.UpdatedAt)
-
-	}
-
-	return &resp, nil
+	return resp, nil
 
 }
 
@@ -170,17 +147,7 @@ func (flow *flow) WorkflowAnnotationsStream(req *grpc.WorkflowAnnotationsRequest
 	phash := ""
 	nhash := ""
 
-	p, err := getPagination(req.Pagination)
-	if err != nil {
-		return err
-	}
-
-	opts := []ent.AnnotationPaginateOption{}
-	opts = append(opts, annotationsOrder(p)...)
-	opts = append(opts, annotationsFilter(p)...)
-
-	nsc := flow.db.Namespace
-	d, err := flow.traverseToWorkflow(ctx, nsc, req.GetNamespace(), req.GetPath())
+	d, err := flow.traverseToWorkflow(ctx, flow.db.Namespace, req.GetNamespace(), req.GetPath())
 	if err != nil {
 		return err
 	}
@@ -191,32 +158,20 @@ func (flow *flow) WorkflowAnnotationsStream(req *grpc.WorkflowAnnotationsRequest
 resend:
 
 	query := d.wf.QueryAnnotations()
-	cx, err := query.Paginate(ctx, p.After(), p.First(), p.Before(), p.Last(), opts...)
+
+	results, pi, err := paginate[*ent.AnnotationQuery, *ent.Annotation](ctx, req.Pagination, query, annotationsOrderings, annotationsFilters)
 	if err != nil {
 		return err
 	}
 
 	resp := new(grpc.WorkflowAnnotationsResponse)
+	resp.Namespace = d.namespace()
+	resp.Annotations = new(grpc.Annotations)
+	resp.Annotations.PageInfo = pi
 
-	resp.Namespace = d.ns().Name
-	resp.Path = d.path
-
-	err = atob(cx, &resp.Annotations)
+	err = atob(results, &resp.Annotations.Results)
 	if err != nil {
 		return err
-	}
-
-	for i := range cx.Edges {
-
-		edge := cx.Edges[i]
-		annotation := edge.Node
-
-		v := resp.Annotations.Edges[i].Node
-		v.Checksum = annotation.Hash
-		v.CreatedAt = timestamppb.New(annotation.CreatedAt)
-		v.Size = int64(annotation.Size)
-		v.UpdatedAt = timestamppb.New(annotation.UpdatedAt)
-
 	}
 
 	nhash = checksum(resp)

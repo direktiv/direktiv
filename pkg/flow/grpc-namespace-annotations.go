@@ -9,12 +9,30 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entnote "github.com/direktiv/direktiv/pkg/flow/ent/annotation"
+	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
+
+var annotationsOrderings = []*orderingInfo{
+	{
+		db:           entnote.FieldName,
+		req:          "NAME",
+		defaultOrder: ent.Asc,
+	},
+}
+
+var annotationsFilters = map[*filteringInfo]func(query *ent.AnnotationQuery, v string) (*ent.AnnotationQuery, error){
+	{
+		field: "NAME",
+		ftype: "CONTAINS",
+	}: func(query *ent.AnnotationQuery, v string) (*ent.AnnotationQuery, error) {
+		return query.Where(entnote.NameContains(v)), nil
+	},
+}
 
 func (flow *flow) NamespaceAnnotation(ctx context.Context, req *grpc.NamespaceAnnotationRequest) (*grpc.NamespaceAnnotationResponse, error) {
 
@@ -108,160 +126,33 @@ func (flow *flow) NamespaceAnnotationParcels(req *grpc.NamespaceAnnotationReques
 
 }
 
-func annotationsOrder(p *pagination) []ent.AnnotationPaginateOption {
-
-	var opts []ent.AnnotationPaginateOption
-
-	for _, o := range p.order {
-
-		if o == nil {
-			continue
-		}
-
-		field := ent.AnnotationOrderFieldName
-		direction := ent.OrderDirectionAsc
-
-		if x := o.Field; x != "" && x == "NAME" {
-			field = ent.AnnotationOrderFieldName
-		}
-
-		if x := o.Direction; x != "" && x == "DESC" {
-			direction = ent.OrderDirectionDesc
-		}
-
-		opts = append(opts, ent.WithAnnotationOrder(&ent.AnnotationOrder{
-			Direction: direction,
-			Field:     field,
-		}))
-
-	}
-
-	if len(opts) == 0 {
-		opts = append(opts, ent.WithAnnotationOrder(&ent.AnnotationOrder{
-			Direction: ent.OrderDirectionAsc,
-			Field:     ent.AnnotationOrderFieldName,
-		}))
-	}
-
-	return opts
-
-}
-
-func annotationsFilter(p *pagination) []ent.AnnotationPaginateOption {
-
-	var filters []func(query *ent.AnnotationQuery) (*ent.AnnotationQuery, error)
-	var opts []ent.AnnotationPaginateOption
-
-	if p.filter == nil {
-		return nil
-	}
-
-	for i := range p.filter {
-
-		f := p.filter[i]
-
-		if f == nil {
-			continue
-		}
-
-		filter := f.Val
-
-		filters = append(filters, func(query *ent.AnnotationQuery) (*ent.AnnotationQuery, error) {
-
-			if filter == "" {
-				return query, nil
-			}
-
-			field := f.Field
-			if field == "" {
-				return query, nil
-			}
-
-			switch field {
-			case "NAME":
-
-				ftype := f.Type
-				if ftype == "" {
-					return query, nil
-				}
-
-				switch ftype {
-				case "CONTAINS":
-					return query.Where(entnote.NameContains(filter)), nil
-				}
-			}
-
-			return query, nil
-
-		})
-
-	}
-
-	if len(filters) > 0 {
-		opts = append(opts, ent.WithAnnotationFilter(func(query *ent.AnnotationQuery) (*ent.AnnotationQuery, error) {
-			var err error
-			for _, filter := range filters {
-				query, err = filter(query)
-				if err != nil {
-					return nil, err
-				}
-			}
-			return query, nil
-		}))
-	}
-
-	return opts
-
-}
-
 func (flow *flow) NamespaceAnnotations(ctx context.Context, req *grpc.NamespaceAnnotationsRequest) (*grpc.NamespaceAnnotationsResponse, error) {
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	p, err := getPagination(req.Pagination)
-	if err != nil {
-		return nil, err
-	}
-
-	opts := []ent.AnnotationPaginateOption{}
-	opts = append(opts, annotationsOrder(p)...)
-	opts = append(opts, annotationsFilter(p)...)
-
-	nsc := flow.db.Namespace
-	ns, err := flow.getNamespace(ctx, nsc, req.GetNamespace())
+	ns, err := flow.getNamespace(ctx, flow.db.Namespace, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
 
 	query := ns.QueryAnnotations()
-	cx, err := query.Paginate(ctx, p.After(), p.First(), p.Before(), p.Last(), opts...)
+
+	results, pi, err := paginate[*ent.AnnotationQuery, *ent.Annotation](ctx, req.Pagination, query, annotationsOrderings, annotationsFilters)
 	if err != nil {
 		return nil, err
 	}
 
-	var resp grpc.NamespaceAnnotationsResponse
-
+	resp := new(grpc.NamespaceAnnotationsResponse)
 	resp.Namespace = ns.Name
+	resp.Annotations = new(grpc.Annotations)
+	resp.Annotations.PageInfo = pi
 
-	err = atob(cx, &resp.Annotations)
+	err = atob(results, &resp.Annotations.Results)
 	if err != nil {
 		return nil, err
 	}
 
-	for i := range cx.Edges {
-
-		edge := cx.Edges[i]
-		annotation := edge.Node
-
-		v := resp.Annotations.Edges[i].Node
-		v.Checksum = annotation.Hash
-		v.CreatedAt = timestamppb.New(annotation.CreatedAt)
-		v.Size = int64(annotation.Size)
-		v.UpdatedAt = timestamppb.New(annotation.UpdatedAt)
-
-	}
-
-	return &resp, nil
+	return resp, nil
 
 }
 
@@ -273,17 +164,7 @@ func (flow *flow) NamespaceAnnotationsStream(req *grpc.NamespaceAnnotationsReque
 	phash := ""
 	nhash := ""
 
-	p, err := getPagination(req.Pagination)
-	if err != nil {
-		return err
-	}
-
-	opts := []ent.AnnotationPaginateOption{}
-	opts = append(opts, annotationsOrder(p)...)
-	opts = append(opts, annotationsFilter(p)...)
-
-	nsc := flow.db.Namespace
-	ns, err := flow.getNamespace(ctx, nsc, req.GetNamespace())
+	ns, err := flow.getNamespace(ctx, flow.db.Namespace, req.GetNamespace())
 	if err != nil {
 		return err
 	}
@@ -294,31 +175,20 @@ func (flow *flow) NamespaceAnnotationsStream(req *grpc.NamespaceAnnotationsReque
 resend:
 
 	query := ns.QueryAnnotations()
-	cx, err := query.Paginate(ctx, p.After(), p.First(), p.Before(), p.Last(), opts...)
+
+	results, pi, err := paginate[*ent.AnnotationQuery, *ent.Annotation](ctx, req.Pagination, query, annotationsOrderings, annotationsFilters)
 	if err != nil {
 		return err
 	}
 
 	resp := new(grpc.NamespaceAnnotationsResponse)
-
 	resp.Namespace = ns.Name
+	resp.Annotations = new(grpc.Annotations)
+	resp.Annotations.PageInfo = pi
 
-	err = atob(cx, &resp.Annotations)
+	err = atob(results, &resp.Annotations.Results)
 	if err != nil {
 		return err
-	}
-
-	for i := range cx.Edges {
-
-		edge := cx.Edges[i]
-		annotation := edge.Node
-
-		v := resp.Annotations.Edges[i].Node
-		v.Checksum = annotation.Hash
-		v.CreatedAt = timestamppb.New(annotation.CreatedAt)
-		v.Size = int64(annotation.Size)
-		v.UpdatedAt = timestamppb.New(annotation.UpdatedAt)
-
 	}
 
 	nhash = checksum(resp)
@@ -411,7 +281,7 @@ func (flow *flow) SetAnnotation(ctx context.Context, annotationc *ent.Annotation
 
 	if err != nil {
 
-		if !IsNotFound(err) {
+		if !derrors.IsNotFound(err) {
 			return nil, false, err
 		}
 

@@ -6,12 +6,12 @@ import (
 	"fmt"
 	"io"
 	"math"
+	"net/http"
 	"os"
 	"regexp"
 	"sort"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/bradfitz/slice"
@@ -38,8 +38,8 @@ import (
 
 	"knative.dev/pkg/apis"
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
-
 	v1 "knative.dev/serving/pkg/apis/serving/v1"
+
 	"knative.dev/serving/pkg/client/clientset/versioned"
 )
 
@@ -93,10 +93,6 @@ const (
 
 const (
 	watcherTimeout = 60 * time.Minute
-)
-
-var (
-	mtx sync.Mutex
 )
 
 type serviceExportInfo struct {
@@ -1303,7 +1299,7 @@ func GenerateWorkflowServiceName(info *igrpc.BaseInfo) (string, string) {
 	// NOTE: fndef.Files can be safely excluded
 
 	var strs []string
-	strs = []string{fndef.Cmd, fndef.ID, fndef.Image, fmt.Sprintf("%v", fndef.Scale), fmt.Sprintf("%v", fndef.Size), fmt.Sprintf("%v", fndef.Type)}
+	strs = []string{fndef.Cmd, fndef.ID, fndef.Image, fmt.Sprintf("%v", fndef.Size), fmt.Sprintf("%v", fndef.Type)}
 
 	def, err := json.Marshal(strs)
 	if err != nil {
@@ -1325,11 +1321,8 @@ func GenerateWorkflowServiceName(info *igrpc.BaseInfo) (string, string) {
 func fndefFromBaseInfo(info *igrpc.BaseInfo) *model.ReusableFunctionDefinition {
 	fndef := new(model.ReusableFunctionDefinition)
 	fndef.Cmd = info.GetCmd()
-	// fndef.Files
 	fndef.ID = info.GetName()
 	fndef.Image = info.GetImage()
-	scale := int(info.GetMinScale())
-	fndef.Scale = scale
 	size := int(info.GetSize())
 	fndef.Size = model.Size(size)
 	fndef.Type = model.ReusableContainerFunctionType
@@ -2380,4 +2373,71 @@ func prepareServiceForExport(latestSvc *servingv1.Service, earliestRevision *v1.
 	exportedSvc.Spec.Template.Spec = earliestRevision.Spec
 
 	return &exportedSvc
+}
+
+func (is *functionsServer) CancelWorfklow(ctx context.Context, in *igrpc.CancelWorkflowRequest) (*emptypb.Empty, error) {
+
+	label := "serving.knative.dev/service"
+
+	svn := in.GetServiceName()
+	aid := in.GetActionID()
+
+	if svn == "" || aid == "" {
+		return &empty, fmt.Errorf("service name or action id can not be empty")
+	}
+
+	logger.Infof("cancelling action %s on %s", aid, svn)
+
+	labelSelector := metav1.LabelSelector{MatchLabels: map[string]string{
+		label: svn,
+	}}
+
+	listOptions := metav1.ListOptions{
+		LabelSelector: labels.Set(labelSelector.MatchLabels).String(),
+	}
+
+	cs, err := getClientSet()
+	if err != nil {
+		logger.Errorf("error getting client set: %v", err)
+		return &empty, err
+	}
+
+	podList, err := cs.CoreV1().Pods(functionsConfig.Namespace).List(context.Background(),
+		listOptions)
+
+	if err != nil {
+		logger.Errorf("could not get cancel list: %v", err)
+		return &empty, err
+	}
+
+	for i := range podList.Items {
+
+		service := podList.Items[i].ObjectMeta.Labels[label]
+
+		// cancel request to pod
+		go func(name, ns, svc string) {
+			logger.Infof("cancelling %v", name)
+			addr := fmt.Sprintf("http://%s.%s/cancel", svc, ns)
+
+			req, err := http.NewRequest(http.MethodPost, addr, nil)
+			if err != nil {
+				logger.Errorf("error creating delete request: %v", err)
+				return
+			}
+			req.Header.Add("Direktiv-ActionID", aid)
+
+			client := http.Client{
+				Timeout: 60 * time.Second,
+			}
+			_, err = client.Do(req)
+			if err != nil {
+				logger.Errorf("error sending delete request: %v", err)
+			}
+
+		}(podList.Items[i].Name, functionsConfig.Namespace, service)
+
+	}
+
+	return &empty, nil
+
 }

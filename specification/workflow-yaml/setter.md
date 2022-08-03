@@ -6,8 +6,8 @@
   variables:
   - key: x 
     scope: workflow
-  mimeType: text/plain
-  value: 'jq(.x)'
+    mimeType: text/plain
+    value: 'jq(.x)'
 ```
 
 ## SetterStateDefinition 
@@ -29,7 +29,7 @@ To create or change variables, use the `setter` state. See [Variables](../variab
 
 | Parameter | Description | Type | Required |
 | --- | --- | --- | --- |
-| `key` | Variable name. | string | yes |
+| `key` | Variable name. | [Structured JQ](../instance-data/structured-jx.md) | yes |
 | `scope` | Selects the scope to which the variable belongs. If undefined, defaults to `instance`. See [Variables](../variables/variables.md). | yes | no |
-| `mimeType` | Store a MIME type with the variable. If left undefined, it will default to `application/json`. Two specific MIME types cause this state to behave differently: `text/plain` and `application/octet-stream`. If the `value` evaluates to a JSON string the MIME type is `text/plain`, that string will be stored in plaintext (without JSON quotes and escapes). If if the `value` is a JSON string containing base64 encoded data and the MIME type is `application/octet-stream`, the base64 data will be decoded and stored as binary data. | string | no |
+| `mimeType` | Store a MIME type with the variable. If left undefined, it will default to `application/json`. Two specific MIME types cause this state to behave differently: `text/plain` and `application/octet-stream`. If the `value` evaluates to a JSON string the MIME type is `text/plain`, that string will be stored in plaintext (without JSON quotes and escapes). If if the `value` is a JSON string containing base64 encoded data and the MIME type is `application/octet-stream`, the base64 data will be decoded and stored as binary data. | [Structured JQ](../instance-data/structured-jx.md) | no |
 | `value` | Select or generate the data to store.  | [Structured JQ](../instance-data/structured-jx.md) | yes |

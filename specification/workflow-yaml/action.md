@@ -22,5 +22,5 @@ The `action` state is the simplest and most common way to call a function or inv
 | `transition` | Identifies which state to transition to next, referring to the next state's unique `id`. If undefined, this state terminates the workflow. | string | no |
 | `catch` | Defines behaviour for handling of catchable errors.  | [[]ErrorCatchDefinition](./errors.md) | no |
 | `timeout` | ISO8601 duration string to set a non-default timeout. | string | no | 
-| `aync` | If set to `true`, the workflow execution will continue without waiting for the action to return.  | boolean | no | 
+| `async` | If set to `true`, the workflow execution will continue without waiting for the action to return.  | boolean | no | 
 | `action` | Defines the action to perform. | [ActionDefinition](./actions.md) | yes |

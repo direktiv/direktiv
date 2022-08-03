@@ -13,19 +13,13 @@ message Log {
 	string msg = 3;
 }
 
-message LogsEdge {
-	Log node = 1;
-	string cursor = 2;
-}
-
 message ServerLogsRequest {
 	Pagination pagination = 1;
 }
 
 message ServerLogsResponse {
-	int32 totalCount = 1;
 	PageInfo pageInfo = 2;
-	repeated LogsEdge edges = 3;
+	repeated Log results = 4;
 }
 
 message NamespaceLogsRequest {
@@ -34,10 +28,9 @@ message NamespaceLogsRequest {
 }
 
 message NamespaceLogsResponse {
-	int32 totalCount = 1;
 	PageInfo pageInfo = 2;
-	repeated LogsEdge edges = 3;
 	string namespace = 4;
+	repeated Log results = 5;
 }
 
 message WorkflowLogsRequest {
@@ -47,11 +40,10 @@ message WorkflowLogsRequest {
 }
 
 message WorkflowLogsResponse {
-	int32 totalCount = 1;
 	PageInfo pageInfo = 2;
-	repeated LogsEdge edges = 3;
 	string namespace = 4;
 	string path = 5;
+	repeated Log results = 6;
 }
 
 message InstanceLogsRequest {
@@ -61,9 +53,21 @@ message InstanceLogsRequest {
 }
 
 message InstanceLogsResponse {
-	int32 totalCount = 1;
 	PageInfo pageInfo = 2;
-	repeated LogsEdge edges = 3;
 	string namespace = 4;
 	string instance = 5;
+	repeated Log results = 6;
+}
+
+message MirrorActivityLogsRequest {
+	Pagination pagination = 1;
+	string namespace = 2;
+	string activity = 3;
+}
+
+message MirrorActivityLogsResponse {
+	PageInfo pageInfo = 2;
+	string namespace = 4;
+	string activity = 5;
+	repeated Log results = 6;
 }

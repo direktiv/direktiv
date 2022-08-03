@@ -1,7 +1,6 @@
 package main
 
 import (
-	"crypto/tls"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -18,76 +17,57 @@ import (
 	"github.com/spf13/viper"
 )
 
-const DefaultConfigName = ".direktiv.conf"
-
 // Flags
 var (
-	addr       string
-	path       string
-	input      string
-	inputType  string
-	outputFlag string
-	namespace  string
-
-	apiKey    string
-	authToken string
-	insecure  bool
+	input          string
+	inputType      string
+	outputFlag     string
+	execNoPushFlag bool
 
 	maxSize int64 = 1073741824
-
-	configPath string
 )
 
 // Shared Vars
 var (
-	configPathFromFlag bool = true
-	localAbsPath       string
-	urlPrefix          string
-	urlWorkflow        string
-	urlUpdateWorkflow  string
+	cmdArgPath   string
+	localAbsPath string
+	urlPrefix    string
+	urlWorkflow  string
 )
 
 func main() {
 
-	var err error
-
 	// Read Config
+	setCmd.AddCommand(setWritableCmd)
+	setCmd.AddCommand(setReadonlyCmd)
 	rootCmd.AddCommand(execCmd)
 	rootCmd.AddCommand(pushCmd)
-	rootCmd.PersistentFlags().StringVarP(&configPath, "config", "c", "", "Loads flag values from YAML config if file is found. If unset will automtically look for config file in workflow yaml and parent directories. Config file name should be '.direktiv.conf'")
+	rootCmd.AddCommand(setCmd)
 
-	// Load config flag early
-	loadCfgFlag()
+	rootCmd.PersistentFlags().StringP("profile", "P", "", "Select the named profile from the loaded multi-profile configuration file.")
+	rootCmd.PersistentFlags().StringP("directory", "C", "", "Change to this directory before evaluating any paths or searching for a configuration file.")
 
-	// Walk Up to search for config
-	if configPath == "" {
-		autoConfigPathFinder()
-	}
+	rootCmd.PersistentFlags().StringP("addr", "a", "", "Target direktiv api address.")
+	rootCmd.PersistentFlags().StringP("path", "p", "", "Target remote workflow path .e.g. '/dir/workflow'. Automatically set if config file was auto-set.")
+	rootCmd.PersistentFlags().StringP("namespace", "n", "", "Target namespace to execute workflow on.")
+	rootCmd.PersistentFlags().StringP("api-key", "k", "", "Authenticate request with apikey.")
+	rootCmd.PersistentFlags().StringP("auth-token", "t", "", "Authenticate request with token.")
+	rootCmd.PersistentFlags().Bool("insecure", true, "Accept insecure https connections")
 
-	viper.SetConfigType("yml")
-	viper.SetConfigFile(configPath)
-	viper.ReadInConfig()
-
-	// Set Flags
-	rootCmd.PersistentFlags().StringP("addr", "a", "", "Target direktiv api address. "+configFlagHelpTextLoader("addr", false))
-
-	rootCmd.PersistentFlags().StringP("path", "p", "", "Target remote workflow path .e.g. '/dir/workflow'. Automatically set if config file was auto-set. "+configFlagHelpTextLoader("path", false))
 	execCmd.Flags().StringVarP(&outputFlag, "output", "o", "", "Path where to write instance output. If unset output will be written to screen")
 	execCmd.Flags().StringVarP(&input, "input", "i", "", "Path to file to be used as input data for executed workflow. If unset, stdin will be used as input data if available.")
+	execCmd.Flags().BoolVar(&execNoPushFlag, "no-push", false, "If set will skip updating and just execute the workflow.")
+
 	execCmd.Flags().StringVar(&inputType, "input-type", "application/json", "Content Type of input data")
-	rootCmd.PersistentFlags().StringP("namespace", "n", "", "Target namespace to execute workflow on. "+configFlagHelpTextLoader("namespace", false))
-	rootCmd.PersistentFlags().StringP("api-key", "k", "", "Authenticate request with apikey. "+configFlagHelpTextLoader("api-key", true))
-	rootCmd.PersistentFlags().StringP("auth-token", "t", "", "Authenticate request with token. "+configFlagHelpTextLoader("auth-token", true))
-	rootCmd.PersistentFlags().BoolVar(&insecure, "insecure", true, "Accept insecure https connections")
 
-	// Bing CLI flags to viper
-	configBindFlag(rootCmd, "addr", true, true)
+	err := viper.BindPFlags(rootCmd.PersistentFlags())
+	if err != nil {
+		fail("error binding configuration flags: %v", err)
+	}
 
-	// If config was automatically found, path is no longer required
-	configBindFlag(rootCmd, "path", configPathFromFlag, true)
-	configBindFlag(rootCmd, "namespace", true, true)
-	configBindFlag(rootCmd, "api-key", false, true)
-	configBindFlag(rootCmd, "auth-token", false, true)
+	viper.SetEnvPrefix("direktiv")
+	viper.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
+	viper.AutomaticEnv()
 
 	err = rootCmd.Execute()
 	if err != nil {
@@ -130,18 +110,24 @@ func getOutput(url string) ([]byte, error) {
 
 }
 
-func cmdPrepareWorkflow(wfPath string) {
-	var err error
-
+func cmdPrepareSharedValues() {
 	// Load Config From flags / config
-	addr = viper.GetString("addr")
-	path = viper.GetString("path")
-	namespace = viper.GetString("namespace")
-	apiKey = viper.GetString("api-key")
-	authToken = viper.GetString("auth-token")
+	addr := getAddr()
+	namespace := getNamespace()
+
 	if cfgMaxSize := viper.GetInt64("max-size"); cfgMaxSize > 0 {
 		maxSize = cfgMaxSize
 	}
+
+	http.DefaultTransport.(*http.Transport).TLSClientConfig = getTLSConfig()
+
+	urlPrefix = fmt.Sprintf("%s/api/namespaces/%s", addr, namespace)
+}
+
+func cmdPrepareWorkflow(wfPath string) {
+	var err error
+
+	cmdArgPath = wfPath
 
 	// Get ABS Path
 	localAbsPath, err = filepath.Abs(wfPath)
@@ -149,25 +135,138 @@ func cmdPrepareWorkflow(wfPath string) {
 		log.Fatalf("Failed to locate workflow file in filesystem: %v\n", err)
 	}
 
-	// If config file was found automatically, generate path relative to config dir
-	if !configPathFromFlag {
-		os.Stderr.WriteString(fmt.Sprintf("Using config file: '%s'\n", configPath))
-		path = filepath.ToSlash(strings.TrimSuffix(strings.TrimPrefix(localAbsPath, filepath.Dir(configPath)), ".yaml"))
-	} else {
-		os.Stderr.WriteString(fmt.Sprintf("Using flag config file: '%s'\n", configPath))
-	}
+	path := getPath(wfPath)
 
-	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: insecure}
-
-	urlPrefix = fmt.Sprintf("%s/api/namespaces/%s", addr, namespace)
 	urlWorkflow = fmt.Sprintf("%s/tree/%s", urlPrefix, strings.TrimPrefix(path, "/"))
-	urlUpdateWorkflow = fmt.Sprintf("%s?op=update-workflow", urlWorkflow)
 }
 
 var rootCmd = &cobra.Command{
 	Use: "exec",
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 
+		loadConfig(cmd)
+		cmdPrepareSharedValues()
+		if err := pingNamespace(); err != nil {
+			log.Fatalf("%v", err)
+		}
+	},
+}
+
+var setCmd = &cobra.Command{
+	Use:   "set ",
+	Short: "Change remote node permissions to writable or readonly",
+}
+
+var setWritableCmd = &cobra.Command{
+	Use:   "writable WORKFLOW_PATH|DIR_PATH",
+	Short: "Sets local workflow or dir to writable in remote direktiv server.",
+	Long: `"Sets local workflow or dir to writable in remote direktiv server.
+
+EXAMPLE: 
+  set writable helloworld.yaml --addr http://192.168.1.1 --namespace admin
+`,
+	Args: cobra.ExactArgs(1),
+	PreRun: func(cmd *cobra.Command, args []string) {
+		cmdPrepareWorkflow(args[0])
+	},
+	Run: func(cmd *cobra.Command, args []string) {
+		pathsToUpdate := make([]string, 0)
+		pathStat, err := os.Stat(localAbsPath)
+		if err != nil {
+			log.Fatalf("Could not access path: %v", err)
+		}
+		if pathStat.IsDir() {
+			err = filepath.Walk(localAbsPath,
+				func(localPath string, info os.FileInfo, err error) error {
+					if err != nil {
+						return err
+					}
+					if (strings.HasSuffix(localPath, ".yaml") || strings.HasSuffix(localPath, ".yml")) && !(strings.Contains(localPath, ".yaml.") || strings.Contains(localPath, ".yml.")) {
+						if !strings.HasSuffix(localPath, DefaultConfigName) {
+							pathsToUpdate = append(pathsToUpdate, localPath)
+						}
+					}
+					return nil
+				})
+
+			if err != nil {
+				log.Fatalf("Recursive search could not access path: %v", err)
+			}
+		} else {
+			pathsToUpdate = append(pathsToUpdate, localAbsPath)
+		}
+
+		relativeDir := getConfigPath()
+
+		cmd.PrintErrf("Found %v Local Workflow/s to update\n", len(pathsToUpdate))
+		for i, localPath := range pathsToUpdate {
+
+			path := getRelativePath(relativeDir, localPath)
+
+			cmd.PrintErrf("[%v/%v] Updating Namespace: '%s' Workflow: '%s'\n", i+1, len(pathsToUpdate), getNamespace(), path)
+			err = setWritable(path, true)
+			if err != nil {
+				log.Fatalf("Failed to update remote workflow: %v\n", err)
+			}
+
+			cmd.PrintErrf("      Successfully set workflow to writable\n")
+		}
+	},
+}
+
+var setReadonlyCmd = &cobra.Command{
+	Use:   "readonly WORKFLOW_PATH|DIR_PATH",
+	Short: "Sets local workflow or dir to readonly in remote direktiv server.",
+	Long: `Sets local workflow or dir to readonly in remote direktiv server.
+
+EXAMPLE: 
+  set readonly helloworld.yaml --addr http://192.168.1.1 --namespace admin`,
+	Args: cobra.ExactArgs(1),
+	PreRun: func(cmd *cobra.Command, args []string) {
+		cmdPrepareWorkflow(args[0])
+	},
+	Run: func(cmd *cobra.Command, args []string) {
+		pathsToUpdate := make([]string, 0)
+		pathStat, err := os.Stat(localAbsPath)
+		if err != nil {
+			log.Fatalf("Could not access path: %v", err)
+		}
+		if pathStat.IsDir() {
+			err = filepath.Walk(localAbsPath,
+				func(localPath string, info os.FileInfo, err error) error {
+					if err != nil {
+						return err
+					}
+					if (strings.HasSuffix(localPath, ".yaml") || strings.HasSuffix(localPath, ".yml")) && !(strings.Contains(localPath, ".yaml.") || strings.Contains(localPath, ".yml.")) {
+						if !strings.HasSuffix(localPath, DefaultConfigName) {
+							pathsToUpdate = append(pathsToUpdate, localPath)
+						}
+					}
+					return nil
+				})
+
+			if err != nil {
+				log.Fatalf("Recursive search could not access path: %v", err)
+			}
+		} else {
+			pathsToUpdate = append(pathsToUpdate, localAbsPath)
+		}
+
+		relativeDir := getConfigPath()
+
+		cmd.PrintErrf("Found %v Local Workflow/s to update\n", len(pathsToUpdate))
+		for i, localPath := range pathsToUpdate {
+
+			path := getRelativePath(relativeDir, localPath)
+
+			cmd.PrintErrf("[%v/%v] Updating Namespace: '%s' Workflow: '%s'\n", i+1, len(pathsToUpdate), getNamespace(), path)
+			err = setWritable(path, false)
+			if err != nil {
+				log.Fatalf("Failed to update remote workflow: %v\n", err)
+			}
+
+			cmd.PrintErrf("      Successfully set workflow to readonly\n")
+		}
 	},
 }
 
@@ -188,7 +287,7 @@ Executing: push helloworld.yaml --addr http://192.168.1.1 --namespace admin --pa
 Will update the helloworld workflow and set the remote workflow variable 'data.json' to the contents of '/helloworld.yaml.data.json'
 `,
 	Args: cobra.ExactArgs(1),
-	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+	PreRun: func(cmd *cobra.Command, args []string) {
 		cmdPrepareWorkflow(args[0])
 	},
 	Run: func(cmd *cobra.Command, args []string) {
@@ -198,17 +297,15 @@ Will update the helloworld workflow and set the remote workflow variable 'data.j
 			log.Fatalf("Could not access path: %v", err)
 		}
 		if pathStat.IsDir() {
-			if configPathFromFlag {
-				log.Fatal("Config file must be automatically found when push directory")
-			}
-
 			err = filepath.Walk(localAbsPath,
 				func(localPath string, info os.FileInfo, err error) error {
 					if err != nil {
 						return err
 					}
-					if strings.HasSuffix(localPath, ".yaml") {
-						pathsToUpdate = append(pathsToUpdate, localPath)
+					if (strings.HasSuffix(localPath, ".yaml") || strings.HasSuffix(localPath, ".yml")) && !(strings.Contains(localPath, ".yaml.") || strings.Contains(localPath, ".yml.")) {
+						if !strings.HasSuffix(localPath, DefaultConfigName) {
+							pathsToUpdate = append(pathsToUpdate, localPath)
+						}
 					}
 					return nil
 				})
@@ -220,15 +317,28 @@ Will update the helloworld workflow and set the remote workflow variable 'data.j
 			pathsToUpdate = append(pathsToUpdate, localAbsPath)
 		}
 
+		relativeDir := getConfigPath()
+
 		cmd.PrintErrf("Found %v Local Workflow/s to update\n", len(pathsToUpdate))
 		for i, localPath := range pathsToUpdate {
-			path = filepath.ToSlash(strings.TrimSuffix(strings.TrimPrefix(localPath, filepath.Dir(configPath)), ".yaml"))
-			urlWorkflow = fmt.Sprintf("%s/tree/%s", urlPrefix, strings.TrimPrefix(path, "/"))
-			urlUpdateWorkflow = fmt.Sprintf("%s?op=update-workflow", urlWorkflow)
 
-			cmd.PrintErrf("[%v/%v] Updating Namespace: '%s' Workflow: '%s'\n", i+1, len(pathsToUpdate), namespace, path)
-			err = updateRemoteWorkflow(urlUpdateWorkflow, localPath)
+			path := getRelativePath(relativeDir, localPath)
+
+			cmd.PrintErrf("[%v/%v] Updating Namespace: '%s' Workflow: '%s'\n", i+1, len(pathsToUpdate), getNamespace(), path)
+			err = updateRemoteWorkflow(path, localPath)
 			if err != nil {
+				if err == ErrNodeIsReadOnly {
+					var flagSuffix string
+					if config.profile != "" {
+						flagSuffix = " -P=\"" + config.profile + "\""
+					}
+					log.Fatalf(
+						"Cannot update node that is read only.\n"+
+							"To set node to writable use the set command\n"+
+							"Use the example below to set this path to writable:\n\n"+
+							"  direktiv-push set writable %s%s\n\n", cmdArgPath, flagSuffix)
+				}
+
 				log.Fatalf("Failed to update remote workflow: %v\n", err)
 			}
 
@@ -271,16 +381,33 @@ Executing: exec helloworld.yaml --addr http://192.168.1.1 --namespace admin --pa
 Will update the helloworld workflow and set the remote workflow variable 'data.json' to the contents of '/helloworld.yaml.data.json'
 `,
 	Args: cobra.ExactArgs(1),
-	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+	PreRun: func(cmd *cobra.Command, args []string) {
 		cmdPrepareWorkflow(args[0])
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		instanceStatus := "pending"
 
-		cmd.PrintErrf("Updating Namespace: '%s' Workflow: '%s'\n", namespace, path)
-		err := updateRemoteWorkflow(urlUpdateWorkflow, localAbsPath)
-		if err != nil {
-			log.Fatalf("Failed to update remote workflow: %v\n", err)
+		path := getPath(args[0])
+
+		if !execNoPushFlag {
+			err := updateRemoteWorkflow(path, localAbsPath)
+			if err != nil {
+				if err == ErrNodeIsReadOnly {
+					var flagSuffix string
+					if config.profile != "" {
+						flagSuffix = " -P=\"" + config.profile + "\""
+					}
+					log.Fatalf(
+						"Cannot update node that is read only.\n"+
+							"Use the --no-push flag to skip updating remote workflow or set workflow to writable.\n"+
+							"To set node to writable use the set command\n"+
+							"Use the example below to set this path to writable:\n\n"+
+							"  direktiv-push set writable %s%s\n\n", cmdArgPath, flagSuffix)
+				}
+				log.Fatalf("Failed to update remote workflow: %v\n", err)
+			}
+		} else {
+			printlog("skipping updating namespace: '%s' workflow: '%s'\n", getNamespace(), path)
 		}
 
 		localVars, err := getLocalWorkflowVariables(localAbsPath)
@@ -312,11 +439,10 @@ Will update the helloworld workflow and set the remote workflow variable 'data.j
 		urlLogs := fmt.Sprintf("%s/instances/%s/logs", urlPrefix, instanceDetails.Instance)
 		clientLogs := sse.NewClient(urlLogs)
 		clientLogs.Connection.Transport = &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: insecure},
+			TLSClientConfig: getTLSConfig(),
 		}
 
-		clientLogs.Headers["apikey"] = apiKey
-		clientLogs.Headers["Direktiv-Token"] = authToken
+		addSSEAuthHeaders(clientLogs)
 
 		logsChannel := make(chan *sse.Event)
 		clientLogs.SubscribeChan("messages", logsChannel)
@@ -351,11 +477,10 @@ Will update the helloworld workflow and set the remote workflow variable 'data.j
 		urlInstance := fmt.Sprintf("%s/instances/%s", urlPrefix, instanceDetails.Instance)
 		clientInstance := sse.NewClient(urlInstance)
 		clientInstance.Connection.Transport = &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: insecure},
+			TLSClientConfig: getTLSConfig(),
 		}
 
-		clientInstance.Headers["apikey"] = apiKey
-		clientInstance.Headers["Direktiv-Token"] = authToken
+		addSSEAuthHeaders(clientInstance)
 
 		channelInstance := make(chan *sse.Event)
 		clientInstance.SubscribeChan("messages", channelInstance)
@@ -400,4 +525,15 @@ Will update the helloworld workflow and set the remote workflow variable 'data.j
 			fmt.Println(string(output))
 		}
 	},
+}
+
+func fail(s string, x ...interface{}) {
+
+	fmt.Fprintf(os.Stderr, strings.TrimSuffix(s, "\n")+"\n", x...)
+	os.Exit(1)
+
+}
+
+func printlog(s string, x ...interface{}) {
+	fmt.Fprintf(os.Stderr, strings.TrimSuffix(s, "\n")+"\n", x...)
 }

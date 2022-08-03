@@ -1,6 +1,8 @@
 package schema
 
 import (
+	"time"
+
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/edge"
@@ -19,6 +21,8 @@ func (Workflow) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).Default(uuid.New).Immutable().StorageKey("oid"),
 		field.Bool("live").Default(true),
 		field.String("logToEvents").Optional(),
+		field.Bool("readOnly").Optional(),
+		field.Time("updated_at").Optional().Default(time.Now).UpdateDefault(time.Now),
 	}
 }
 

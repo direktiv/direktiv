@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/ent"
@@ -109,38 +108,29 @@ func (flow *flow) Instances(ctx context.Context, req *grpc.InstancesRequest) (*g
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	p, err := getPagination(req.Pagination)
-	if err != nil {
-		return nil, err
-	}
-
-	opts := []ent.InstancePaginateOption{}
-	opts = append(opts, instancesOrder(p)...)
-	opts = append(opts, instancesFilter(p)...)
-
-	nsc := flow.db.Namespace
-	ns, err := flow.getNamespace(ctx, nsc, req.GetNamespace())
+	ns, err := flow.getNamespace(ctx, flow.db.Namespace, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
 
 	query := ns.QueryInstances()
-	cx, err := query.Paginate(ctx, p.After(), p.First(), p.Before(), p.Last(), opts...)
+
+	results, pi, err := paginate[*ent.InstanceQuery, *ent.Instance](ctx, req.Pagination, query, instancesOrderings, instancesFilters)
 	if err != nil {
 		return nil, err
 	}
 
-	var resp grpc.InstancesResponse
-	resp.Instances = new(grpc.Instances)
-	resp.Instances.PageInfo = new(grpc.PageInfo)
+	resp := new(grpc.InstancesResponse)
 	resp.Namespace = ns.Name
+	resp.Instances = new(grpc.Instances)
+	resp.Instances.PageInfo = pi
 
-	err = atob(cx, &resp.Instances)
+	err = atob(results, &resp.Instances.Results)
 	if err != nil {
 		return nil, err
 	}
 
-	return &resp, nil
+	return resp, nil
 
 }
 
@@ -152,17 +142,7 @@ func (flow *flow) InstancesStream(req *grpc.InstancesRequest, srv grpc.Flow_Inst
 	phash := ""
 	nhash := ""
 
-	p, err := getPagination(req.Pagination)
-	if err != nil {
-		return err
-	}
-
-	opts := []ent.InstancePaginateOption{}
-	opts = append(opts, instancesOrder(p)...)
-	opts = append(opts, instancesFilter(p)...)
-
-	nsc := flow.db.Namespace
-	ns, err := flow.getNamespace(ctx, nsc, req.GetNamespace())
+	ns, err := flow.getNamespace(ctx, flow.db.Namespace, req.GetNamespace())
 	if err != nil {
 		return err
 	}
@@ -173,16 +153,18 @@ func (flow *flow) InstancesStream(req *grpc.InstancesRequest, srv grpc.Flow_Inst
 resend:
 
 	query := ns.QueryInstances()
-	cx, err := query.Paginate(ctx, p.After(), p.First(), p.Before(), p.Last(), opts...)
+
+	results, pi, err := paginate[*ent.InstanceQuery, *ent.Instance](ctx, req.Pagination, query, instancesOrderings, instancesFilters)
 	if err != nil {
 		return err
 	}
 
 	resp := new(grpc.InstancesResponse)
-
 	resp.Namespace = ns.Name
+	resp.Instances = new(grpc.Instances)
+	resp.Instances.PageInfo = pi
 
-	err = atob(cx, &resp.Instances)
+	err = atob(results, &resp.Instances.Results)
 	if err != nil {
 		return err
 	}
@@ -390,173 +372,76 @@ func (flow *flow) ReleaseInstance(ctx context.Context, req *grpc.ReleaseInstance
 
 }
 
-func instancesOrder(p *pagination) []ent.InstancePaginateOption {
-
-	var opts []ent.InstancePaginateOption
-
-	for _, o := range p.order {
-
-		if o == nil {
-			continue
-		}
-
-		field := ent.InstanceOrderFieldCreatedAt
-		direction := ent.OrderDirectionDesc
-
-		if x := o.Field; x != "" && x == "ID" {
-			field = ent.InstanceOrderFieldID
-		}
-
-		if x := o.Field; x != "" && x == "CREATED" {
-			field = ent.InstanceOrderFieldCreatedAt
-		}
-
-		if x := o.Direction; x != "" && x == "DESC" {
-			direction = ent.OrderDirectionDesc
-		}
-
-		if x := o.Direction; x != "" && x == "ASC" {
-			direction = ent.OrderDirectionAsc
-		}
-
-		opts = append(opts, ent.WithInstanceOrder(&ent.InstanceOrder{
-			Direction: direction,
-			Field:     field,
-		}))
-
-	}
-
-	if len(opts) == 0 {
-		opts = append(opts, ent.WithInstanceOrder(&ent.InstanceOrder{
-			Direction: ent.OrderDirectionDesc,
-			Field:     ent.InstanceOrderFieldCreatedAt,
-		}))
-	}
-
-	return opts
-
+var instancesOrderings = []*orderingInfo{
+	{
+		db:           entinst.FieldCreatedAt,
+		req:          "CREATED",
+		defaultOrder: ent.Desc,
+	},
+	{
+		db:           entinst.FieldID,
+		req:          "ID",
+		defaultOrder: ent.Desc,
+	},
 }
 
-func instancesFilter(p *pagination) []ent.InstancePaginateOption {
-
-	var filters []func(query *ent.InstanceQuery) (*ent.InstanceQuery, error)
-	var opts []ent.InstancePaginateOption
-
-	if p.filter == nil {
-		return nil
-	}
-
-	for i := range p.filter {
-
-		f := p.filter[i]
-
-		if f == nil {
-			continue
+var instancesFilters = map[*filteringInfo]func(query *ent.InstanceQuery, v string) (*ent.InstanceQuery, error){
+	{
+		field: "AS",
+		ftype: "WORKFLOW",
+	}: func(query *ent.InstanceQuery, v string) (*ent.InstanceQuery, error) {
+		return query.Where(entinst.AsHasPrefix(v)), nil
+	},
+	{
+		field: "AS",
+		ftype: "CONTAINS",
+	}: func(query *ent.InstanceQuery, v string) (*ent.InstanceQuery, error) {
+		return query.Where(entinst.AsContains(v)), nil
+	},
+	{
+		field: "CREATED",
+		ftype: "BEFORE",
+	}: func(query *ent.InstanceQuery, v string) (*ent.InstanceQuery, error) {
+		t, err := time.Parse(time.RFC3339, v)
+		if err != nil {
+			return nil, err
 		}
-
-		filter := f.Val
-
-		filters = append(filters, func(query *ent.InstanceQuery) (*ent.InstanceQuery, error) {
-
-			if filter == "" {
-				return query, nil
-			}
-
-			field := f.Field
-			if field == "" {
-				return query, nil
-			}
-
-			switch field {
-			case "AS":
-
-				ftype := f.Type
-
-				switch ftype {
-				case "WORKFLOW":
-					return query.Where(entinst.AsHasPrefix(filter)), nil
-				case "":
-					fallthrough
-				case "CONTAINS":
-					return query.Where(entinst.AsContains(filter)), nil
-				default:
-					return nil, fmt.Errorf("unexpected filter type")
-				}
-
-			case "CREATED":
-
-				ftype := f.Type
-				t, err := time.Parse(time.RFC3339, filter)
-				if err != nil {
-					return nil, err
-				}
-
-				switch ftype {
-
-				case "AFTER":
-					return query.Where(entinst.CreatedAtGTE(t)), nil
-				case "BEFORE":
-					return query.Where(entinst.CreatedAtLTE(t)), nil
-				case "":
-					fallthrough
-				default:
-					return nil, fmt.Errorf("unexpected filter type")
-				}
-
-			case "STATUS":
-
-				ftype := f.Type
-
-				switch ftype {
-				case "MATCH":
-					return query.Where(entinst.StatusEQ(filter)), nil
-				case "":
-					fallthrough
-				case "CONTAINS":
-					return query.Where(entinst.StatusContains(filter)), nil
-				default:
-					return nil, fmt.Errorf("unexpected filter type")
-				}
-
-			case "TRIGGER":
-
-				ftype := f.Type
-
-				switch ftype {
-				case "MATCH":
-					return query.Where(entinst.InvokerEQ(filter)), nil
-				case "CONTAINS":
-					return query.Where(entinst.InvokerContains(filter)), nil
-				case "":
-					fallthrough
-				default:
-					return nil, fmt.Errorf("unexpected filter type")
-				}
-
-			default:
-				return nil, fmt.Errorf("bad filter field")
-
-			}
-
-		})
-
-	}
-
-	if len(filters) > 0 {
-		opts = append(opts, ent.WithInstanceFilter(func(query *ent.InstanceQuery) (*ent.InstanceQuery, error) {
-			var err error
-			for _, filter := range filters {
-				query, err = filter(query)
-				if err != nil {
-					return nil, err
-				}
-			}
-			return query, nil
-		}))
-	}
-
-	return opts
-
+		return query.Where(entinst.CreatedAtGTE(t)), nil
+	},
+	{
+		field: "CREATED",
+		ftype: "AFTER",
+	}: func(query *ent.InstanceQuery, v string) (*ent.InstanceQuery, error) {
+		t, err := time.Parse(time.RFC3339, v)
+		if err != nil {
+			return nil, err
+		}
+		return query.Where(entinst.CreatedAtLTE(t)), nil
+	},
+	{
+		field: "STATUS",
+		ftype: "MATCH",
+	}: func(query *ent.InstanceQuery, v string) (*ent.InstanceQuery, error) {
+		return query.Where(entinst.StatusEQ(v)), nil
+	},
+	{
+		field: "STATUS",
+		ftype: "CONTAINS",
+	}: func(query *ent.InstanceQuery, v string) (*ent.InstanceQuery, error) {
+		return query.Where(entinst.StatusContains(v)), nil
+	},
+	{
+		field: "TRIGGER",
+		ftype: "MATCH",
+	}: func(query *ent.InstanceQuery, v string) (*ent.InstanceQuery, error) {
+		return query.Where(entinst.InvokerEQ(v)), nil
+	},
+	{
+		field: "TRIGGER",
+		ftype: "CONTAINS",
+	}: func(query *ent.InstanceQuery, v string) (*ent.InstanceQuery, error) {
+		return query.Where(entinst.InvokerContains(v)), nil
+	},
 }
 
 func (flow *flow) CancelInstance(ctx context.Context, req *grpc.CancelInstanceRequest) (*emptypb.Empty, error) {

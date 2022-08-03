@@ -4,6 +4,8 @@ import (
 	"context"
 	"time"
 
+	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
+	"github.com/direktiv/direktiv/pkg/flow/states"
 	"github.com/direktiv/direktiv/pkg/model"
 	secretsgrpc "github.com/direktiv/direktiv/pkg/secrets/grpc"
 	"github.com/senseyeio/duration"
@@ -28,32 +30,28 @@ import (
 //	time and ensure that the logic can break out promptly if the context
 // 	expires.
 
-type stateTransition struct {
-	NextState string
-	Transform interface{}
-}
-
 type stateChild struct {
-	Id   string
-	Type string
+	Id          string
+	Type        string
+	ServiceName string
 }
 
 type stateLogic interface {
-	ID() string
-	Type() string
-	Deadline(ctx context.Context, engine *engine, im *instanceMemory) time.Time
-	ErrorCatchers() []model.ErrorDefinition
-	Run(ctx context.Context, engine *engine, im *instanceMemory, wakedata []byte) (transition *stateTransition, err error)
-	LivingChildren(ctx context.Context, engine *engine, im *instanceMemory) []stateChild
-	LogJQ() interface{}
-	MetadataJQ() interface{}
+	GetID() string
+	GetType() model.StateType
+	GetLog() interface{}
+	GetMetadata() interface{}
+	ErrorDefinitions() []model.ErrorDefinition
+
+	Deadline(ctx context.Context) time.Time
+	Run(ctx context.Context, wakedata []byte) (transition *states.Transition, err error)
 }
 
 //
 // Helper functions
 //
 
-func deadlineFromString(ctx context.Context, engine *engine, im *instanceMemory, s string) time.Time {
+func deadlineFromString(ctx context.Context, s string) time.Time {
 
 	var t time.Time
 	var d time.Duration
@@ -63,7 +61,7 @@ func deadlineFromString(ctx context.Context, engine *engine, im *instanceMemory,
 	if s != "" {
 		dur, err := duration.ParseISO8601(s)
 		if err != nil {
-			engine.logToInstance(ctx, time.Now(), im.in, "Got an invalid ISO8601 timeout: %v", err)
+			// TODO: engine.logToInstance(ctx, time.Now(), im.in, "Got an invalid ISO8601 timeout: %v", err)
 		} else {
 			now := time.Now()
 			later := dur.Shift(now)
@@ -117,19 +115,11 @@ func getSecretsForInstance(ctx context.Context, engine *engine, im *instanceMemo
 	if err != nil {
 		s := status.Convert(err)
 		if s.Code() == codes.NotFound {
-			return nil, NewUncatchableError("direktiv.secrets.notFound", "secret '%s' not found", name)
+			return nil, derrors.NewUncatchableError("direktiv.secrets.notFound", "secret '%s' not found", name)
 		}
-		return nil, NewInternalError(err)
+		return nil, derrors.NewInternalError(err)
 	}
 
 	return resp.GetData(), nil
 
-}
-
-type multiactionTuple struct {
-	ID       string
-	Complete bool
-	Type     string
-	Attempts int
-	Results  interface{}
 }

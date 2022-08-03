@@ -16,8 +16,10 @@ import (
 
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
+	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 
 	cevents "github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
+	entevents "github.com/direktiv/direktiv/pkg/flow/ent/events"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/google/uuid"
@@ -141,7 +143,7 @@ func (events *events) syncEventDelays() {
 	for {
 		e, err := events.getEarliestEvent(ctx, events.db.CloudEvents)
 		if err != nil {
-			if IsNotFound(err) {
+			if derrors.IsNotFound(err) {
 				return
 			}
 
@@ -202,7 +204,7 @@ func (events *events) flushEvent(ctx context.Context, eventID string, ns *ent.Na
 
 }
 
-func (events *events) handleEvent(ns *ent.Namespace, ce *cloudevents.Event) error {
+func (events *events) handleEventLoopLogic(ctx context.Context, rows *sql.Rows, ce *cloudevents.Event) {
 
 	var (
 		id                                uuid.UUID
@@ -211,7 +213,170 @@ func (events *events) handleEvent(ns *ent.Namespace, ce *cloudevents.Event) erro
 		wf                                string
 	)
 
+	err := rows.Scan(&id, &signature, &count, &allEvents, &wf, &singleEvent)
+	if err != nil {
+		events.sugar.Errorf("process row error: %v", err)
+		return
+	}
+
+	hash, err := hash.Hash(fmt.Sprintf("%d%v%v", id, allEvents, wf), hash.FormatV2, nil)
+	if err != nil {
+		events.sugar.Errorf("failed to generate hash: %v", err)
+		return
+	}
+
+	conn, err := events.locks.lockDB(hash, int(defaultLockWait.Seconds()))
+	if err != nil {
+		events.sugar.Errorf("can not lock event row: %d, %v", id, err)
+		return
+	}
+
+	unlock := func(conn *sql.Conn, hash uint64) {
+		err = events.locks.unlockDB(hash, conn)
+		if err != nil {
+			events.sugar.Errorf("events mutex unlock error: %v", err)
+		}
+	}
+	defer unlock(conn, hash)
+
+	events.sugar.Debugf("event listener %s is candidate", id.String())
+
+	var eventMap map[string]interface{}
+	err = json.Unmarshal(singleEvent, &eventMap)
+	if err != nil {
+		events.sugar.Errorf("can not marshall event map: %v", err)
+		return
+	}
+
+	// adding source for comparison
+	m := ce.Context.GetExtensions()
+
+	// if there is none, we need to create one for source
+	if m == nil {
+		m = make(map[string]interface{})
+	}
+
+	m["source"] = ce.Context.GetSource()
+
+	// check filters
+	if !matchesExtensions(eventMap, m) {
+		events.sugar.Debugf("event listener %s does not match", id.String())
+		return
+	}
+
+	// deleteEventListener = append(deleteEventListener, id)
+
+	var ae []map[string]interface{}
+	err = json.Unmarshal(allEvents, &ae)
+	if err != nil {
+		events.sugar.Errorf("failed to unmarshal events: %v", err)
+		return
+	}
+
+	var retEvents []*cloudevents.Event
+
+	if count == 1 {
+
+		retEvents = append(retEvents, ce)
+
+	} else {
+
+		var eventMapAll []map[string]interface{}
+		err = json.Unmarshal(allEvents, &eventMapAll) // why are we doing this again?
+		if err != nil {
+			events.sugar.Errorf("failed to unmarshal events: %v", err)
+			return
+		}
+
+		// set value
+		updateItem := eventMapAll[int(eventMap["idx"].(float64))]
+
+		data, err := eventToBytes(*ce)
+		if err != nil {
+			events.sugar.Errorf("can not update convert event: %v", err)
+			return
+		}
+
+		updateItem["time"] = time.Now().Unix()
+		updateItem["value"] = base64.StdEncoding.EncodeToString(data)
+
+		needsUpdate := false
+		for _, v := range eventMapAll {
+			// if there is one entry without value we can skip this instance
+			// won't fire anyways
+			if v["value"] == "" {
+				needsUpdate = true
+				break
+			} else {
+
+				d, err := base64.StdEncoding.DecodeString(v["value"].(string))
+				if err != nil {
+					events.sugar.Errorf("cannot decode eventmap base64: %v", err)
+					// continue // suspicious
+					return
+				}
+
+				ce, err := bytesToEvent(d)
+				if err != nil {
+					events.sugar.Errorf("cannot unmarshal bytes to event: %v", err)
+					// continue // suspicious
+					return
+				}
+
+				retEvents = append(retEvents, ce)
+
+			}
+
+		}
+
+		if needsUpdate {
+			err = events.updateInstanceEventListener(ctx, events.db.Events, id,
+				eventMapAll)
+			if err != nil {
+				events.sugar.Errorf("can not update multi event: %v", err)
+			}
+			return
+		}
+
+	}
+
+	// if single or multiple added events we fire
+	if len(retEvents) > 0 {
+
+		if len(signature) == 0 {
+
+			go events.engine.EventsInvoke(wf, retEvents...)
+
+		} else {
+
+			d, err := events.reverseTraverseToWorkflow(ctx, wf)
+			if err != nil {
+				events.engine.sugar.Error(err)
+				// return nil // suspicious
+				return
+			}
+
+			err = events.deleteEventListeners(ctx, events.db.Events, d.wf, id)
+			if err != nil {
+				events.engine.sugar.Error(err)
+				// return nil // suspicious
+				return
+			}
+
+			go events.engine.wakeEventsWaiter(signature, retEvents)
+
+		}
+
+	}
+
+	return
+
+}
+
+func (events *events) handleEvent(ns *ent.Namespace, ce *cloudevents.Event) error {
+
 	db := events.db.DB()
+	//
 
 	// we have to select first because of the glob feature
 	// this gives a basic list of eligible workflow instances waiting
@@ -233,157 +398,8 @@ func (events *events) handleEvent(ns *ent.Namespace, ce *cloudevents.Event) erro
 
 	ctx := context.Background()
 
-	// collecting the matching events to delete them when
-	// deleteEventListener := []uuid.UUID{}
-
-	var conn *sql.Conn
 	for rows.Next() {
-
-		err := rows.Scan(&id, &signature, &count, &allEvents, &wf, &singleEvent)
-		if err != nil {
-			events.sugar.Errorf("process row error: %v", err)
-			continue
-		}
-
-		hash, _ := hash.Hash(fmt.Sprintf("%d%v%v", id, allEvents, wf), hash.FormatV2, nil)
-
-		unlock := func() {
-			if conn != nil {
-				events.locks.unlockDB(hash, conn)
-			}
-		}
-		unlock()
-
-		conn, err = events.locks.lockDB(hash, int(defaultLockWait.Seconds()))
-		if err != nil {
-			events.sugar.Errorf("can not lock event row: %d, %v", id, err)
-			continue
-		}
-
-		events.sugar.Debugf("event listener %s is candidate", id.String())
-
-		var eventMap map[string]interface{}
-		err = json.Unmarshal(singleEvent, &eventMap)
-		if err != nil {
-			unlock()
-			events.sugar.Errorf("can not marshall event map: %v", err)
-			continue
-		}
-
-		// adding source for comparison
-		m := ce.Context.GetExtensions()
-
-		// if there is none, we need to create one for source
-		if m == nil {
-			m = make(map[string]interface{})
-		}
-
-		m["source"] = ce.Context.GetSource()
-
-		// check filters
-		if !matchesExtensions(eventMap, m) {
-			events.sugar.Debugf("event listener %s does not match", id.String())
-			unlock()
-			continue
-		}
-
-		// deleteEventListener = append(deleteEventListener, id)
-
-		var ae []map[string]interface{}
-		json.Unmarshal(allEvents, &ae)
-
-		var retEvents []*cloudevents.Event
-
-		if count == 1 {
-
-			retEvents = append(retEvents, ce)
-
-		} else {
-
-			var eventMapAll []map[string]interface{}
-			json.Unmarshal(allEvents, &eventMapAll)
-
-			// set value
-			updateItem := eventMapAll[int(eventMap["idx"].(float64))]
-
-			data, err := eventToBytes(*ce)
-			if err != nil {
-				events.sugar.Errorf("can not update convert event: %v", err)
-				unlock()
-				continue
-			}
-
-			updateItem["time"] = time.Now().Unix()
-			updateItem["value"] = base64.StdEncoding.EncodeToString(data)
-
-			needsUpdate := false
-			for _, v := range eventMapAll {
-				// if there is one entry without value we can skip this instance
-				// won't fire anyways
-				if v["value"] == "" {
-					needsUpdate = true
-					break
-				} else {
-
-					d, err := base64.StdEncoding.DecodeString(v["value"].(string))
-					if err != nil {
-						unlock()
-						continue
-					}
-
-					ce, err := bytesToEvent(d)
-					if err != nil {
-						unlock()
-						continue
-					}
-
-					retEvents = append(retEvents, ce)
-
-				}
-
-			}
-
-			if needsUpdate {
-				err = events.updateInstanceEventListener(ctx, events.db.Events, id,
-					eventMapAll)
-				if err != nil {
-					events.sugar.Errorf("can not update multi event: %v", err)
-				}
-				unlock()
-				continue
-			}
-
-		}
-
-		unlock()
-
-		// if single or multiple added events we fire
-		if len(retEvents) > 0 {
-
-			if len(signature) == 0 {
-
-				go events.engine.EventsInvoke(wf, retEvents...)
-
-			} else {
-
-				d, err := events.reverseTraverseToWorkflow(ctx, wf)
-				if err != nil {
-					events.engine.sugar.Error(err)
-					return nil
-				}
-
-				err = events.deleteEventListeners(ctx, events.db.Events, d.wf, id)
-				if err != nil {
-					events.engine.sugar.Error(err)
-					return nil
-				}
-
-				go events.engine.wakeEventsWaiter(signature, retEvents)
-
-			}
-
-		}
-
+		events.handleEventLoopLogic(ctx, rows, ce)
 	}
 
 	metricsCloudEventsCaptured.WithLabelValues(ns.Name, ce.Type(), ce.Source(), ns.Name).Inc()
@@ -419,156 +435,51 @@ func bytesToEvent(b []byte) (*cloudevents.Event, error) {
 	return ev, nil
 }
 
-func eventListenersOrder(p *pagination) []ent.EventsPaginateOption {
-
-	var opts []ent.EventsPaginateOption
-
-	for _, o := range p.order {
-		field := ent.EventsOrderFieldUpdatedAt
-		direction := ent.OrderDirectionAsc
-
-		if o == nil {
-			continue
-		}
-
-		if x := o.Field; x != "" && x == "UPDATED" {
-			field = ent.EventsOrderFieldUpdatedAt
-		}
-
-		opts = append(opts, ent.WithEventsOrder(&ent.EventsOrder{
-			Direction: direction,
-			Field:     field,
-		}))
-
-	}
-
-	if len(opts) == 0 {
-		opts = append(opts, ent.WithEventsOrder(&ent.EventsOrder{
-			Direction: ent.OrderDirectionAsc,
-			Field:     ent.EventsOrderFieldUpdatedAt,
-		}))
-	}
-
-	return opts
-
+var eventListenersOrderings = []*orderingInfo{
+	{
+		db:           entevents.FieldUpdatedAt,
+		req:          "UPDATED",
+		defaultOrder: ent.Asc,
+	},
 }
 
-func eventListenersFilter(p *pagination) []ent.EventsPaginateOption {
-
-	var filters []func(query *ent.EventsQuery) (*ent.EventsQuery, error)
-	var opts []ent.EventsPaginateOption
-
-	if p.filter == nil {
-		return opts
-	}
-
-	for i := range p.filter {
-
-		f := p.filter[i]
-
-		if f == nil {
-			continue
-		}
-
-		filter := f.Val
-
-		filters = append(filters, func(query *ent.EventsQuery) (*ent.EventsQuery, error) {
-
-			if filter == "" {
-				return query, nil
-			}
-
-			field := f.Field
-			if field == "" {
-				return query, nil
-			}
-
-			// switch field {
-			// case "NAME":
-
-			// 	ftype := p.filter.Type
-			// 	if ftype == "" {
-			// 		return query, nil
-			// 	}
-
-			// 	switch ftype {
-			// 	case "CONTAINS":
-			// 		return query.Where(entns.NameContains(filter)), nil
-			// 	}
-			// }
-
-			return query, nil
-
-		})
-
-	}
-
-	if len(filters) > 0 {
-		opts = append(opts, ent.WithEventsFilter(func(query *ent.EventsQuery) (*ent.EventsQuery, error) {
-			var err error
-			for _, filter := range filters {
-				query, err = filter(query)
-				if err != nil {
-					return nil, err
-				}
-			}
-			return query, nil
-		}))
-	}
-
-	return opts
-
-}
+var eventListenersFilters = map[*filteringInfo]func(query *ent.EventsQuery, v string) (*ent.EventsQuery, error){}
 
 func (flow *flow) EventListeners(ctx context.Context, req *grpc.EventListenersRequest) (*grpc.EventListenersResponse, error) {
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	namespace := req.GetNamespace()
-
-	p, err := getPagination(req.Pagination)
-	if err != nil {
-		return nil, err
-	}
-
-	opts := []ent.EventsPaginateOption{}
-	opts = append(opts, eventListenersOrder(p)...)
-	opts = append(opts, eventListenersFilter(p)...)
-
-	nsc := flow.db.Namespace
-
-	ns, err := flow.getNamespace(ctx, nsc, namespace)
+	ns, err := flow.getNamespace(ctx, flow.db.Namespace, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
 
 	query := ns.QueryNamespacelisteners()
-	cx, err := query.Paginate(ctx, p.After(), p.First(), p.Before(), p.Last(), opts...)
+
+	results, pi, err := paginate[*ent.EventsQuery, *ent.Events](ctx, req.Pagination, query, eventListenersOrderings, eventListenersFilters)
 	if err != nil {
 		return nil, err
 	}
 
-	var resp grpc.EventListenersResponse
+	resp := new(grpc.EventListenersResponse)
+	resp.Namespace = ns.Name
+	resp.PageInfo = pi
 
-	err = atob(cx, &resp)
+	err = atob(results, &resp.Results)
 	if err != nil {
 		return nil, err
 	}
-
-	resp.Namespace = namespace
 
 	m := make(map[string]string)
 
-	for idx, edge := range cx.Edges {
+	for idx, result := range results {
 
-		// resp.Edges[idx].Node.UpdatedAt = edge.Node.UpdatedAt
-
-		in, _ := edge.Node.Instance(ctx)
+		in, _ := result.Instance(ctx)
 		if in != nil {
-			resp.Edges[idx].Node.Instance = in.ID.String()
+			resp.Results[idx].Instance = in.ID.String()
 		}
 
-		wf, err := edge.Node.Workflow(ctx)
+		wf, err := result.Workflow(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -583,15 +494,15 @@ func (flow *flow) EventListeners(ctx context.Context, req *grpc.EventListenersRe
 			m[wf.ID.String()] = path
 		}
 
-		resp.Edges[idx].Node.Workflow = path
+		resp.Results[idx].Workflow = path
 
-		resp.Edges[idx].Node.Mode = "or"
-		if edge.Node.Count > 1 {
-			resp.Edges[idx].Node.Mode = "and"
+		resp.Results[idx].Mode = "or"
+		if result.Count > 1 {
+			resp.Results[idx].Mode = "and"
 		}
 
 		edefs := make([]*grpc.EventDef, 0)
-		for _, ev := range edge.Node.Events {
+		for _, ev := range result.Events {
 
 			var et string
 			if v, ok := ev["type"]; ok {
@@ -619,11 +530,11 @@ func (flow *flow) EventListeners(ctx context.Context, req *grpc.EventListenersRe
 
 		}
 
-		resp.Edges[idx].Node.Events = edefs
+		resp.Results[idx].Events = edefs
 
 	}
 
-	return &resp, nil
+	return resp, nil
 
 }
 
@@ -635,20 +546,7 @@ func (flow *flow) EventListenersStream(req *grpc.EventListenersRequest, srv grpc
 	phash := ""
 	nhash := ""
 
-	namespace := req.GetNamespace()
-
-	p, err := getPagination(req.Pagination)
-	if err != nil {
-		return err
-	}
-
-	opts := []ent.EventsPaginateOption{}
-	opts = append(opts, eventListenersOrder(p)...)
-	opts = append(opts, eventListenersFilter(p)...)
-
-	nsc := flow.db.Namespace
-
-	ns, err := flow.getNamespace(ctx, nsc, namespace)
+	ns, err := flow.getNamespace(ctx, flow.db.Namespace, req.GetNamespace())
 	if err != nil {
 		return err
 	}
@@ -659,32 +557,33 @@ func (flow *flow) EventListenersStream(req *grpc.EventListenersRequest, srv grpc
 resend:
 
 	query := ns.QueryNamespacelisteners()
-	cx, err := query.Paginate(ctx, p.After(), p.First(), p.Before(), p.Last(), opts...)
+
+	results, pi, err := paginate[*ent.EventsQuery, *ent.Events](ctx, req.Pagination, query, eventListenersOrderings, eventListenersFilters)
 	if err != nil {
 		return err
 	}
 
-	var resp = &grpc.EventListenersResponse{}
+	resp := new(grpc.EventListenersResponse)
+	resp.Namespace = ns.Name
+	resp.PageInfo = pi
 
-	err = atob(cx, &resp)
+	err = atob(results, &resp.Results)
 	if err != nil {
 		return err
 	}
-
-	resp.Namespace = namespace
 
 	m := make(map[string]string)
 
-	for idx, edge := range cx.Edges {
+	for idx, result := range results {
 
-		// resp.Edges[idx].Node.UpdatedAt = edge.Node.UpdatedAt
+		// resp.Results[idx].UpdatedAt = result.UpdatedAt
 
-		in, _ := edge.Node.Instance(ctx)
+		in, _ := result.Instance(ctx)
 		if in != nil {
-			resp.Edges[idx].Node.Instance = in.ID.String()
+			resp.Results[idx].Instance = in.ID.String()
 		}
 
-		wf, err := edge.Node.Workflow(ctx)
+		wf, err := result.Workflow(ctx)
 		if err != nil {
 			return err
 		}
@@ -699,15 +598,15 @@ resend:
 			m[wf.ID.String()] = path
 		}
 
-		resp.Edges[idx].Node.Workflow = path
+		resp.Results[idx].Workflow = path
 
-		resp.Edges[idx].Node.Mode = "or"
-		if edge.Node.Count > 1 {
-			resp.Edges[idx].Node.Mode = "and"
+		resp.Results[idx].Mode = "or"
+		if result.Count > 1 {
+			resp.Results[idx].Mode = "and"
 		}
 
 		edefs := make([]*grpc.EventDef, 0)
-		for _, ev := range edge.Node.Events {
+		for _, ev := range result.Events {
 
 			var et string
 			if v, ok := ev["type"]; ok {
@@ -735,7 +634,7 @@ resend:
 
 		}
 
-		resp.Edges[idx].Node.Events = edefs
+		resp.Results[idx].Events = edefs
 
 	}
 
@@ -841,177 +740,56 @@ func (flow *flow) HistoricalEvent(ctx context.Context, in *grpc.HistoricalEventR
 
 }
 
-func cloudeventsOrder(p *pagination) []ent.CloudEventsPaginateOption {
-
-	var opts []ent.CloudEventsPaginateOption
-
-	for _, o := range p.order {
-
-		if o == nil {
-			continue
-		}
-
-		field := ent.CloudEventsOrderFieldCreated
-		direction := ent.OrderDirectionDesc
-
-		if x := o.Field; x != "" && x == "ID" {
-			field = ent.CloudEventsOrderFieldID
-		}
-
-		if x := o.Field; x != "" && x == "RECEIVED" {
-			field = ent.CloudEventsOrderFieldCreated
-		}
-
-		if x := o.Direction; x != "" && x == "DESC" {
-			direction = ent.OrderDirectionDesc
-		}
-
-		if x := o.Direction; x != "" && x == "ASC" {
-			direction = ent.OrderDirectionAsc
-		}
-
-		opts = append(opts, ent.WithCloudEventsOrder(&ent.CloudEventsOrder{
-			Direction: direction,
-			Field:     field,
-		}))
-
-	}
-
-	if len(opts) == 0 {
-		opts = append(opts, ent.WithCloudEventsOrder(&ent.CloudEventsOrder{
-			Direction: ent.OrderDirectionDesc,
-			Field:     ent.CloudEventsOrderFieldCreated,
-		}))
-	}
-
-	return opts
-
+var cloudeventsOrderings = []*orderingInfo{
+	{
+		db:           cevents.FieldCreated,
+		req:          "RECEIVED",
+		defaultOrder: ent.Desc,
+	},
+	{
+		db:           cevents.FieldEventId,
+		req:          "ID",
+		defaultOrder: ent.Asc,
+	},
 }
 
-func cloudeventsFilter(p *pagination) []ent.CloudEventsPaginateOption {
-
-	var filters []func(query *ent.CloudEventsQuery) (*ent.CloudEventsQuery, error)
-	var opts []ent.CloudEventsPaginateOption
-
-	if p.filter == nil {
-		return nil
-	}
-
-	for i := range p.filter {
-
-		f := p.filter[i]
-
-		if f == nil {
-			continue
-		}
-
-		filter := f.Val
-
-		filters = append(filters, func(query *ent.CloudEventsQuery) (*ent.CloudEventsQuery, error) {
-
-			if filter == "" {
-				return query, nil
-			}
-
-			field := f.Field
-			if field == "" {
-				return query, nil
-			}
-
-			// switch field {
-			// case "AS":
-
-			// 	ftype := p.filter.Type
-			// 	if ftype == "" {
-			// 		return query, nil
-			// 	}
-
-			// 	switch ftype {
-			// 	case "CONTAINS":
-			// 		return query.Where(entcevents.AsContains(filter)), nil
-			// 	}
-			// }
-
-			return query, nil
-
-		})
-
-	}
-
-	if len(filters) > 0 {
-		opts = append(opts, ent.WithCloudEventsFilter(func(query *ent.CloudEventsQuery) (*ent.CloudEventsQuery, error) {
-			var err error
-			for _, filter := range filters {
-				query, err = filter(query)
-				if err != nil {
-					return nil, err
-				}
-			}
-			return query, nil
-		}))
-	}
-
-	return opts
-
-}
+var cloudeventsFilters = map[*filteringInfo]func(query *ent.CloudEventsQuery, v string) (*ent.CloudEventsQuery, error){}
 
 func (flow *flow) EventHistory(ctx context.Context, req *grpc.EventHistoryRequest) (*grpc.EventHistoryResponse, error) {
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	p, err := getPagination(req.Pagination)
-	if err != nil {
-		return nil, err
-	}
-
-	opts := []ent.CloudEventsPaginateOption{}
-	opts = append(opts, cloudeventsOrder(p)...)
-	opts = append(opts, cloudeventsFilter(p)...)
-
-	nsc := flow.db.Namespace
-	ns, err := flow.getNamespace(ctx, nsc, req.GetNamespace())
+	ns, err := flow.getNamespace(ctx, flow.db.Namespace, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
 
 	query := ns.QueryCloudevents()
-	cx, err := query.Paginate(ctx, p.After(), p.First(), p.Before(), p.Last(), opts...)
+
+	results, pi, err := paginate[*ent.CloudEventsQuery, *ent.CloudEvents](ctx, req.Pagination, query, cloudeventsOrderings, cloudeventsFilters)
 	if err != nil {
 		return nil, err
 	}
 
-	var resp grpc.EventHistoryResponse
-	resp.Events = new(grpc.Events)
-	resp.Events.PageInfo = new(grpc.PageInfo)
+	resp := new(grpc.EventHistoryResponse)
 	resp.Namespace = ns.Name
+	resp.Events = new(grpc.Events)
+	resp.Events.PageInfo = pi
 
-	err = atob(cx.PageInfo, resp.Events.PageInfo)
-	if err != nil {
-		return nil, err
-	}
+	for _, x := range results {
 
-	resp.Events.TotalCount = int32(cx.TotalCount)
+		e := new(grpc.Event)
+		resp.Events.Results = append(resp.Events.Results, e)
 
-	for _, x := range cx.Edges {
-
-		edge := new(grpc.EventsEdge)
-		resp.Events.Edges = append(resp.Events.Edges, edge)
-
-		err = atob(x.Cursor, &edge.Cursor)
-		if err != nil {
-			return nil, err
-		}
-
-		edge.Node = new(grpc.Event)
-		edge.Node.Id = x.Node.EventId
-		edge.Node.ReceivedAt = timestamppb.New(x.Node.Created)
-		edge.Node.Source = x.Node.Event.Source()
-		edge.Node.Type = x.Node.Event.Type()
-		edge.Node.Cloudevent = []byte(x.Node.Event.String())
+		e.Id = x.EventId
+		e.ReceivedAt = timestamppb.New(x.Created)
+		e.Source = x.Event.Source()
+		e.Type = x.Event.Type()
+		e.Cloudevent = []byte(x.Event.String())
 
 	}
 
-	return &resp, nil
+	return resp, nil
 
 }
 
@@ -1023,17 +801,7 @@ func (flow *flow) EventHistoryStream(req *grpc.EventHistoryRequest, srv grpc.Flo
 	phash := ""
 	nhash := ""
 
-	p, err := getPagination(req.Pagination)
-	if err != nil {
-		return err
-	}
-
-	opts := []ent.CloudEventsPaginateOption{}
-	opts = append(opts, cloudeventsOrder(p)...)
-	opts = append(opts, cloudeventsFilter(p)...)
-
-	nsc := flow.db.Namespace
-	ns, err := flow.getNamespace(ctx, nsc, req.GetNamespace())
+	ns, err := flow.getNamespace(ctx, flow.db.Namespace, req.GetNamespace())
 	if err != nil {
 		return err
 	}
@@ -1044,39 +812,27 @@ func (flow *flow) EventHistoryStream(req *grpc.EventHistoryRequest, srv grpc.Flo
 resend:
 
 	query := ns.QueryCloudevents()
-	cx, err := query.Paginate(ctx, p.After(), p.First(), p.Before(), p.Last(), opts...)
+
+	results, pi, err := paginate[*ent.CloudEventsQuery, *ent.CloudEvents](ctx, req.Pagination, query, cloudeventsOrderings, cloudeventsFilters)
 	if err != nil {
 		return err
 	}
 
 	resp := new(grpc.EventHistoryResponse)
-	resp.Events = new(grpc.Events)
-	resp.Events.PageInfo = new(grpc.PageInfo)
 	resp.Namespace = ns.Name
+	resp.Events = new(grpc.Events)
+	resp.Events.PageInfo = pi
 
-	err = atob(cx.PageInfo, resp.Events.PageInfo)
-	if err != nil {
-		return err
-	}
+	for _, x := range results {
 
-	resp.Events.TotalCount = int32(cx.TotalCount)
+		e := new(grpc.Event)
+		resp.Events.Results = append(resp.Events.Results, e)
 
-	for _, x := range cx.Edges {
-
-		edge := new(grpc.EventsEdge)
-		resp.Events.Edges = append(resp.Events.Edges, edge)
-
-		err = atob(x.Cursor, &edge.Cursor)
-		if err != nil {
-			return err
-		}
-
-		edge.Node = new(grpc.Event)
-		edge.Node.Id = x.Node.EventId
-		edge.Node.ReceivedAt = timestamppb.New(x.Node.Created)
-		edge.Node.Source = x.Node.Event.Source()
-		edge.Node.Type = x.Node.Event.Type()
-		edge.Node.Cloudevent = []byte(x.Node.Event.String())
+		e.Id = x.EventId
+		e.ReceivedAt = timestamppb.New(x.Created)
+		e.Source = x.Event.Source()
+		e.Type = x.Event.Type()
+		e.Cloudevent = []byte(x.Event.String())
 
 	}
 

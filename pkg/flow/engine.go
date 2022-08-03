@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"sync"
@@ -22,7 +23,9 @@ import (
 	"google.golang.org/grpc/status"
 
 	"github.com/direktiv/direktiv/pkg/flow/ent"
+	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/flow/states"
 	"github.com/direktiv/direktiv/pkg/functions"
 	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
 	"github.com/direktiv/direktiv/pkg/model"
@@ -36,7 +39,6 @@ type engine struct {
 	*server
 	cancellers     map[string]func()
 	cancellersLock sync.Mutex
-	stateLogics    map[model.StateType]func(*model.Workflow, model.State) (stateLogic, error)
 }
 
 func initEngine(srv *server) (*engine, error) {
@@ -46,23 +48,6 @@ func initEngine(srv *server) (*engine, error) {
 	engine.server = srv
 
 	engine.cancellers = make(map[string]func())
-
-	engine.stateLogics = map[model.StateType]func(*model.Workflow, model.State) (stateLogic, error){
-		model.StateTypeNoop:          initNoopStateLogic,
-		model.StateTypeAction:        initActionStateLogic,
-		model.StateTypeConsumeEvent:  initConsumeEventStateLogic,
-		model.StateTypeDelay:         initDelayStateLogic,
-		model.StateTypeError:         initErrorStateLogic,
-		model.StateTypeEventsAnd:     initEventsAndStateLogic,
-		model.StateTypeEventsXor:     initEventsXorStateLogic,
-		model.StateTypeForEach:       initForEachStateLogic,
-		model.StateTypeGenerateEvent: initGenerateEventStateLogic,
-		model.StateTypeParallel:      initParallelStateLogic,
-		model.StateTypeSwitch:        initSwitchStateLogic,
-		model.StateTypeValidate:      initValidateStateLogic,
-		model.StateTypeGetter:        initGetterStateLogic,
-		model.StateTypeSetter:        initSetterStateLogic,
-	}
 
 	return engine, nil
 
@@ -88,6 +73,7 @@ type subflowCaller struct {
 	State      string
 	Step       int
 	Depth      int
+	As         string
 }
 
 func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*instanceMemory, error) {
@@ -102,21 +88,24 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 
 	d, err := engine.mux(ctx, nsc, args.Namespace, args.Path, args.Ref)
 	if err != nil {
+		if derrors.IsNotFound(err) {
+			return nil, derrors.NewUncatchableError("direktiv.workflow.notfound", "workflow not found: %v", err.Error())
+		}
 		return nil, err
 	}
 
 	var wf model.Workflow
 	err = wf.Load(d.rev().Source)
 	if err != nil {
-		return nil, err
+		return nil, derrors.NewUncatchableError("direktiv.workflow.invalid", "cannot parse workflow '%s': %v", args.Path, err)
 	}
 
 	if len(wf.GetStartDefinition().GetEvents()) > 0 {
 		if strings.ToLower(args.Caller) == "api" {
-			return nil, errors.New("cannot manually invoke event-based workflow")
+			return nil, derrors.NewUncatchableError("direktiv.workflow.invoke", "cannot manually invoke event-based workflow")
 		}
 		if strings.HasPrefix(args.Caller, "instance") {
-			return nil, errors.New("cannot invoke event-based workflow as a subflow")
+			return nil, derrors.NewUncatchableError("direktiv.workflow.invoke", "cannot invoke event-based workflow as a subflow")
 		}
 	}
 
@@ -154,6 +143,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 	rt.Edges.Instance = in
 
 	im := new(instanceMemory)
+	im.engine = engine
 	im.in = in
 
 	err = json.Unmarshal([]byte(im.in.Edges.Runtime.Data), &im.data)
@@ -206,7 +196,7 @@ func (engine *engine) start(im *instanceMemory) {
 
 	workflow, err := im.Model()
 	if err != nil {
-		engine.CrashInstance(ctx, im, NewUncatchableError(ErrCodeWorkflowUnparsable, "failed to parse workflow YAML: %v", err))
+		engine.CrashInstance(ctx, im, derrors.NewUncatchableError(ErrCodeWorkflowUnparsable, "failed to parse workflow YAML: %v", err))
 		return
 	}
 
@@ -223,22 +213,13 @@ func (engine *engine) loadStateLogic(im *instanceMemory, stateID string) error {
 		return err
 	}
 
-	states := workflow.GetStatesMap()
-	state, exists := states[stateID]
+	wfstates := workflow.GetStatesMap()
+	state, exists := wfstates[stateID]
 	if !exists {
 		return fmt.Errorf("workflow cannot resolve state: %s", stateID)
 	}
 
-	init, exists := engine.stateLogics[state.GetType()]
-	if !exists {
-		return fmt.Errorf("engine cannot resolve state type: %s", state.GetType().String())
-	}
-
-	stateLogic, err := init(workflow, state)
-	if err != nil {
-		return fmt.Errorf("cannot initialize state logic: %v", err)
-	}
-	im.logic = stateLogic
+	im.logic, err = states.StateLogic(im, state)
 
 	return nil
 
@@ -311,7 +292,7 @@ func (engine *engine) Transition(ctx context.Context, im *instanceMemory, nextSt
 	}
 
 	flow := append(im.Flow(), nextState)
-	deadline := im.logic.Deadline(ctx, engine, im)
+	deadline := im.logic.Deadline(ctx)
 
 	rt := im.in.Edges.Runtime
 	edges := rt.Edges
@@ -414,7 +395,7 @@ func (engine *engine) runState(ctx context.Context, im *instanceMemory, wakedata
 	engine.logRunState(ctx, im, wakedata, err)
 
 	var code string
-	var transition *stateTransition
+	var transition *states.Transition
 
 	ctx, cleanup, e2 := traceStateGenericLogicThread(ctx, im)
 	if e2 != nil {
@@ -427,7 +408,7 @@ func (engine *engine) runState(ctx context.Context, im *instanceMemory, wakedata
 		goto failure
 	}
 
-	if lq := im.logic.LogJQ(); im.GetMemory() == nil && len(wakedata) == 0 && lq != nil {
+	if lq := im.logic.GetLog(); im.GetMemory() == nil && len(wakedata) == 0 && lq != nil {
 		var object interface{}
 		object, err = jqOne(im.data, lq)
 		if err != nil {
@@ -437,14 +418,14 @@ func (engine *engine) runState(ctx context.Context, im *instanceMemory, wakedata
 		var data []byte
 		data, err = json.MarshalIndent(object, "", "  ")
 		if err != nil {
-			err = NewInternalError(fmt.Errorf("failed to marshal state data: %w", err))
+			err = derrors.NewInternalError(fmt.Errorf("failed to marshal state data: %w", err))
 			goto failure
 		}
 
 		engine.UserLog(ctx, im, string(data))
 	}
 
-	if md := im.logic.MetadataJQ(); im.GetMemory() == nil && len(wakedata) == 0 && md != nil {
+	if md := im.logic.GetMetadata(); im.GetMemory() == nil && len(wakedata) == 0 && md != nil {
 
 		var object interface{}
 		object, err = jqOne(im.data, md)
@@ -455,7 +436,7 @@ func (engine *engine) runState(ctx context.Context, im *instanceMemory, wakedata
 		var data []byte
 		data, err = json.MarshalIndent(object, "", "  ")
 		if err != nil {
-			err = NewInternalError(fmt.Errorf("failed to marshal state data: %w", err))
+			err = derrors.NewInternalError(fmt.Errorf("failed to marshal state data: %w", err))
 			goto failure
 		}
 
@@ -463,7 +444,7 @@ func (engine *engine) runState(ctx context.Context, im *instanceMemory, wakedata
 
 	}
 
-	transition, err = im.logic.Run(ctx, engine, im, wakedata)
+	transition, err = im.logic.Run(ctx, wakedata)
 	if err != nil {
 		goto failure
 	}
@@ -484,16 +465,16 @@ failure:
 	var breaker int
 
 	if breaker > 10 {
-		err = NewInternalError(errors.New("somehow ended up in a catchable error loop"))
+		err = derrors.NewInternalError(errors.New("somehow ended up in a catchable error loop"))
 	}
 
 	engine.CancelInstanceChildren(ctx, im)
 
-	if cerr, ok := err.(*CatchableError); ok {
+	if cerr, ok := err.(*derrors.CatchableError); ok {
 
 		_ = im.StoreData("error", cerr)
 
-		for i, catch := range im.logic.ErrorCatchers() {
+		for i, catch := range im.logic.ErrorDefinitions() {
 
 			errRegex := catch.Error
 			if errRegex == "*" {
@@ -512,7 +493,7 @@ failure:
 				engine.logToInstance(ctx, t, im.in, "State failed with error '%s': %s", cerr.Code, cerr.Message)
 				engine.logToInstance(ctx, t, im.in, "Error caught by error definition %d: %s", i, catch.Error)
 
-				transition = &stateTransition{
+				transition = &states.Transition{
 					Transform: "",
 					NextState: catch.Transition,
 				}
@@ -533,7 +514,7 @@ failure:
 
 }
 
-func (engine *engine) transformState(ctx context.Context, im *instanceMemory, transition *stateTransition) error {
+func (engine *engine) transformState(ctx context.Context, im *instanceMemory, transition *states.Transition) error {
 
 	if transition == nil || transition.Transform == nil {
 		return nil
@@ -547,7 +528,7 @@ func (engine *engine) transformState(ctx context.Context, im *instanceMemory, tr
 
 	x, err := jqObject(im.data, transition.Transform)
 	if err != nil {
-		return WrapCatchableError("unable to apply transform: %v", err)
+		return derrors.WrapCatchableError("unable to apply transform: %v", err)
 	}
 
 	im.data = x
@@ -556,7 +537,7 @@ func (engine *engine) transformState(ctx context.Context, im *instanceMemory, tr
 
 }
 
-func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, transition *stateTransition, errCode string) {
+func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, transition *states.Transition, errCode string) {
 
 	if transition == nil {
 		engine.InstanceYield(im)
@@ -625,7 +606,7 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 
 const maxSubflowDepth = 5
 
-func (engine *engine) subflowInvoke(ctx context.Context, caller *subflowCaller, ns *ent.Namespace, name string, input []byte) (string, error) {
+func (engine *engine) subflowInvoke(ctx context.Context, caller *subflowCaller, ns *ent.Namespace, name string, input []byte) (*instanceMemory, error) {
 
 	var err error
 
@@ -647,46 +628,51 @@ func (engine *engine) subflowInvoke(ctx context.Context, caller *subflowCaller, 
 
 		callerData, err := json.Marshal(caller)
 		if err != nil {
-			return "", NewInternalError(err)
+			return nil, derrors.NewInternalError(err)
 		}
 		args.CallerData = string(callerData)
 
 		parent, err := engine.getInstance(ctx, engine.db.Namespace, ns.Name, caller.InstanceID, false)
 		if err != nil {
-			return "", NewInternalError(err)
+			return nil, derrors.NewInternalError(err)
 		}
 
 		threadVars, err = parent.in.QueryVars().Where(entvar.BehaviourEQ("thread")).All(ctx)
 		if err != nil {
-			return "", NewInternalError(err)
+			return nil, derrors.NewInternalError(err)
+		}
+
+		if !filepath.IsAbs(args.Path) {
+			dir, _ := filepath.Split(caller.As)
+			if dir == "" {
+				dir = "/"
+			}
+			args.Path = filepath.Join(dir, args.Path)
 		}
 
 	}
 
 	im, err := engine.NewInstance(ctx, args)
 	if err != nil {
-		if IsNotFound(err) {
-			return "", NewUncatchableError("direktiv.workflow.notfound", "workflow not found: %v", err.Error())
-		}
-		return "", err
+		return nil, err
 	}
 
 	for _, tv := range threadVars {
 		vd, err := tv.QueryVardata().Select(entvardata.FieldID).Only(ctx)
 		if err != nil {
-			return "", NewInternalError(err)
+			return nil, derrors.NewInternalError(err)
 		}
 		err = engine.db.VarRef.Create().SetBehaviour("thread").SetInstance(im.in).SetName(tv.Name).SetVardataID(vd.ID).Exec(ctx)
 		if err != nil {
-			return "", NewInternalError(err)
+			return nil, derrors.NewInternalError(err)
 		}
 	}
 
 	traceSubflowInvoke(ctx, args.Path, im.ID().String())
 
-	engine.queue(im)
+	// engine.queue(im)
 
-	return im.ID().String(), nil
+	return im, nil
 
 }
 
@@ -719,7 +705,7 @@ func (engine *engine) scheduleRetry(id, state string, step int, t time.Time, dat
 
 	err := engine.timers.addOneShot(id, retryWakeupFunction, t, data)
 	if err != nil {
-		return NewInternalError(err)
+		return derrors.NewInternalError(err)
 	}
 
 	return nil
@@ -990,7 +976,7 @@ func (engine *engine) wakeEventsWaiter(signature []byte, events []*cloudevents.E
 	sig := new(eventsWaiterSignature)
 	err := json.Unmarshal(signature, sig)
 	if err != nil {
-		err = NewInternalError(err)
+		err = derrors.NewInternalError(err)
 		engine.sugar.Error(err)
 		return
 	}

@@ -4,10 +4,13 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"runtime/debug"
 	"time"
 
 	"github.com/lib/pq"
 	"github.com/mitchellh/hashstructure/v2"
+
+	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 )
 
 const defaultLockWait = time.Second * 10
@@ -55,39 +58,24 @@ func (locks *locks) Close() error {
 
 }
 
-func (locks *locks) tryLockDB(id uint64) (bool, *sql.Conn, error) {
-
-	var gotLock bool
-
-	conn, err := locks.db.Conn(context.Background())
-	if err != nil {
-		return false, nil, err
-	}
-
-	err = conn.QueryRowContext(context.Background(), "SELECT pg_try_advisory_lock($1)", int64(id)).Scan(&gotLock)
-	if err != nil {
-		return false, nil, err
-	}
-	if !gotLock {
-		err = conn.Close()
-		if err != nil {
-			fmt.Println("CLOSE LOCK CONN ERROR", err)
-		}
-	}
-
-	return gotLock, conn, nil
-
-}
-
 func (locks *locks) lockDB(id uint64, wait int) (*sql.Conn, error) {
 
-	var err error
+	var (
+		err  error
+		conn *sql.Conn
+	)
+
+	defer func() {
+		if err != nil && conn != nil {
+			conn.Close()
+		}
+	}()
 
 	ctx, cancel := context.WithTimeout(context.Background(),
 		time.Duration(wait)*time.Second)
 	defer cancel()
 
-	conn, err := locks.db.Conn(ctx)
+	conn, err = locks.db.Conn(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -107,22 +95,23 @@ func (locks *locks) lockDB(id uint64, wait int) (*sql.Conn, error) {
 
 }
 
-func (locks *locks) unlockDB(id uint64, conn *sql.Conn) error {
+func (locks *locks) unlockDB(id uint64, conn *sql.Conn) (err error) {
 
-	_, err := conn.ExecContext(context.Background(),
+	defer func() {
+		err = conn.Close()
+		if err != nil {
+			err = fmt.Errorf("can not close database connection %d: %v", id, err)
+		}
+	}()
+
+	_, err = conn.ExecContext(context.Background(),
 		"SELECT pg_advisory_unlock($1)", int64(id))
 
 	if err != nil {
-		return fmt.Errorf("can not unlock lock %d: %v", id, err)
+		err = fmt.Errorf("can not unlock lock %d: %v", id, err)
 	}
 
-	err = conn.Close()
-
-	if err != nil {
-		return fmt.Errorf("can not close database connection %d: %v", id, err)
-	}
-
-	return nil
+	return err
 
 }
 
@@ -130,19 +119,40 @@ func (engine *engine) lock(key string, timeout time.Duration) (context.Context, 
 
 	hash, err := hashstructure.Hash(key, hashstructure.FormatV2, nil)
 	if err != nil {
-		return nil, nil, NewInternalError(err)
+		return nil, nil, derrors.NewInternalError(err)
 	}
 
 	wait := int(timeout.Seconds())
 
 	conn, err := engine.locks.lockDB(hash, wait)
 	if err != nil {
-		return nil, nil, NewInternalError(err)
+		return nil, nil, derrors.NewInternalError(err)
 	}
+
+	st := debug.Stack()
+	ch := make(chan bool, 1)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	engine.cancellersLock.Lock()
-	engine.cancellers[key] = cancel
+
+	go func() {
+		select {
+		case <-time.After(time.Second * 30):
+			fmt.Println("---- POTENTIAL LOCK LEAK ")
+			fmt.Println(string(st))
+			fmt.Println("----")
+		case <-ch:
+		}
+	}()
+
+	engine.cancellers[key] = func() {
+		defer func() {
+			recover()
+		}()
+		cancel()
+		close(ch)
+	}
+
 	engine.cancellersLock.Unlock()
 
 	return ctx, conn, nil

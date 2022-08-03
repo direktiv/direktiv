@@ -2,16 +2,37 @@
 # # Makefile to build direktiv
 # #
 
+# LD_LIBRARY_PATH := "/usr/local/lib"
 DOCKER_REPO := "localhost:5000"
-CGO_LDFLAGS := "CGO_LDFLAGS=\"-static -w -s\""
+CGO_LDFLAGS := "CGO_LDFLAGS=-static -w -s"
 GO_BUILD_TAGS := "osusergo,netgo"
 GIT_HASH := $(shell git rev-parse --short HEAD)
 GIT_DIRTY := $(shell git diff --quiet || echo '-dirty')
 RELEASE := ""
 RELEASE_TAG = $(shell v='$${RELEASE:+:}$${RELEASE}'; echo "$${v%.*}")
 FULL_VERSION := $(shell v='$${RELEASE}$${RELEASE:+-}${GIT_HASH}${GIT_DIRTY}'; echo "$${v%.*}")
+GIT_TAG = $(shell git describe --tags --abbrev=0)
+DOCKER_CLONE_REPO = "docker.io/direktiv"
+
+# set to .all to build from .all docker images
+DOCKER_BASE := ""
+
+# Set HELM_CONFIG value if environment variable is not set.
+HELM_CONFIG ?= "scripts/dev.yaml"
+
 
 .SECONDARY:
+
+# Clones all images from DOCKER_CLONE_REPO and pushes them to DOCKER_REPO
+.PHONY: clone-images
+clone-images: clone-api clone-flow clone-secrets clone-sidecar clone-functions clone-flow-dbinit clone-ui
+
+.PHONY: clone-%
+clone-%:
+	@docker pull ${DOCKER_CLONE_REPO}/$*:${GIT_TAG}
+	@docker tag ${DOCKER_CLONE_REPO}/$*:${GIT_TAG} ${DOCKER_REPO}/$*${RELEASE_TAG}
+	@docker push ${DOCKER_REPO}/$*${RELEASE_TAG}
+	@echo "Clone $@${RELEASE_TAG}: SUCCESS"
 
 .PHONY: help
 help: ## Prints usage information.
@@ -19,10 +40,11 @@ help: ## Prints usage information.
 	@echo ""
 	@echo "Everything should work out-of-the-box. Just use 'make cluster'."
 	@echo ""
-	@echo 'If you need to tweak things, make a copy of scripts/dev.yaml and set your $$HELM_CONFIG environment variable to point to it. Ensure that $$DOCKER_REPO matches the registry in your $$HELM_CONFIG file, and that each 'image' in the config file references that same registry.'
+	@echo 'If you need to tweak things, make a copy of scripts/dev.yaml and set your $$HELM_CONFIG environment variable to point to it. Ensure that $$DOCKER_REPO matches the registry in your $$HELM_CONFIG file, and that each 'image' in the config file references that same registry. $$DOCKER_BASE can be used to change the dockerfile base target.'
 	@echo ""
 	@echo "\033[36mVariables\033[0m"
 	@printf "  %-16s %s\n" '$$DOCKER_REPO' "${DOCKER_REPO}"
+	@printf "  %-16s %s\n" '$$DOCKER_BASE' "${DOCKER_BASE}"
 	@printf "  %-16s %s\n" '$$HELM_CONFIG' "${HELM_CONFIG}"
 	@printf "  %-16s %s\n" '$$REGEX' "${REGEX}"
 	@printf "  %-16s %s\n" '$$RELEASE' "${RELEASE}"
@@ -63,8 +85,6 @@ scan: scan-api scan-flow scan-secrets scan-sidecar scan-functions
 push: ## Builds all Docker images and pushes them to $DOCKER_REPO.
 push: push-api push-flow push-secrets push-sidecar push-functions push-flow-dbinit
 
-HELM_CONFIG := "scripts/dev.yaml"
-
 .PHONY: helm-reinstall
 helm-reinstall: ## Re-installes direktiv without pushing images
 	if helm status direktiv; then helm uninstall direktiv; fi
@@ -75,6 +95,10 @@ cluster: ## Updates images at $DOCKER_REPO, then uses $HELM_CONFIG to build the 
 cluster: push
 	$(eval X := $(shell kubectl get namespaces | grep -c direktiv-services-direktiv))
 	if [ ${X} -eq 0 ]; then kubectl create namespace direktiv-services-direktiv; fi
+	if [ ! -d scripts/direktiv-charts ]; then \
+		git clone https://github.com/direktiv/direktiv-charts.git scripts/direktiv-charts; \
+		helm dependency update scripts/direktiv-charts/charts/direktiv; \
+	fi
 	if helm status direktiv; then helm uninstall direktiv; fi
 	kubectl delete -l direktiv.io/scope=w  ksvc -n direktiv-services-direktiv
 	kubectl delete --all jobs -n direktiv-services-direktiv
@@ -147,9 +171,10 @@ protoc:
 # Patterns
 
 build/%-binary: Makefile ${GO_SOURCE_FILES}
-	@set -e ; if [ -d "cmd/$*" ]; then \
+	@set -e; 
+	if [ -d "cmd/$*" ] && [ ".all" != "${DOCKER_BASE}" ]; then \
 		echo "Building $* binary..."; \
-		export ${CGO_LDFLAGS} && go build -ldflags "-X github.com/direktiv/direktiv/pkg/version.Version=${FULL_VERSION}" -tags ${GO_BUILD_TAGS} -o $@ cmd/$*/*.go; \
+		go build -ldflags "-X github.com/direktiv/direktiv/pkg/version.Version=${FULL_VERSION}" -tags ${GO_BUILD_TAGS} -o $@ cmd/$*/*.go; \
 		cp build/$*-binary build/$*; \
 	else \
    	touch $@; \
@@ -161,7 +186,7 @@ scan-%: push-%
 
 .PHONY: image-%
 image-%: build/%-binary
-	cd build && DOCKER_BUILDKIT=1 docker build -t direktiv-$* -f docker/$*/Dockerfile .
+	DOCKER_BUILDKIT=1 docker build -t direktiv-$* -f build/docker/$*/Dockerfile${DOCKER_BASE} .
 	@echo "Make $@: SUCCESS"
 
 .PHONY: push-%
@@ -189,8 +214,7 @@ docker-ui: ## Manually clone and build the latest UI.
 docker-all: ## Build the all-in-one image.
 docker-all:
 	cp -Rf kubernetes build/docker/all
-	cd build/docker/all && ./images.sh
-	docker build --no-cache -t direktiv-kube build/docker/all
+	docker build -t direktiv-kube build/docker/all
 
 .PHONY: template-configmaps
 template-configmaps:
@@ -231,7 +255,7 @@ tail-flow: ## Tail logs for currently active 'flow' container.
 fwd-flow: ## Tail logs for currently active 'flow' container.
 	$(eval FLOW_RS := $(shell kubectl get rs -o json | jq '.items[] | select(.metadata.labels."app.kubernetes.io/name" == "direktiv") | .metadata.name'))
 	$(eval FLOW_POD := $(shell kubectl get pods -o json | jq '.items[] | select(.metadata.ownerReferences[0].name == ${FLOW_RS}) | .metadata.name'))
-	kubectl port-forward ${FLOW_POD} 8080:6666 --address 0.0.0.0
+	kubectl port-forward ${FLOW_POD} 6666:6666 --address 0.0.0.0
 
 .PHONY: tail-secrets
 tail-secrets: ## Tail logs for currently active 'secrets' container.
@@ -251,7 +275,7 @@ reboot-api: ## delete currently active api pod
 
 .PHONY: reboot-flow
 reboot-flow: ## delete currently active flow pod
-	kubectl delete pod -l app.kubernetes.io/instance=direktiv
+	kubectl delete pod -l app.kubernetes.io/name=direktiv,app.kubernetes.io/instance=direktiv 
 
 .PHONY: reboot-functions
 reboot-functions: ## delete currently active functions pod
@@ -281,3 +305,10 @@ upgrade-%: push-% # Pushes new image deletes, reboots and tail new pod
 	@$(MAKE) reboot-$*
 	@$(MAKE) wait-$*
 	@$(MAKE) tail-$*
+
+
+.PHONY: upgrade
+upgrade: push # Pushes all images and reboots flow, function, and api pods
+	@$(MAKE) reboot-flow
+	@$(MAKE) reboot-api
+	@$(MAKE) reboot-functions

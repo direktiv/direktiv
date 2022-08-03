@@ -15,7 +15,6 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/util"
-	"github.com/gomodule/redigo/redis"
 	"github.com/gorilla/mux"
 )
 
@@ -34,8 +33,6 @@ type LocalServer struct {
 
 	requestsLock sync.Mutex
 	requests     map[string]*activeRequest
-
-	redis *redis.Pool
 }
 
 func (srv *LocalServer) initFlow() error {
@@ -52,82 +49,11 @@ func (srv *LocalServer) initFlow() error {
 
 }
 
-func (srv *LocalServer) initPubSub() error {
-
-	log.Infof("Connecting to pub/sub service.")
-
-	// srv.redis = &redis.Pool{
-	// 	Dial: func() (redis.Conn, error) {
-	// 		return redis.Dial("tcp", os.Getenv(util.DirektivRedisEndpoint))
-	// 	},
-	// }
-	//
-	// conn := srv.redis.Get()
-	//
-	// _, err := conn.Do("PING")
-	// if err != nil {
-	// 	return fmt.Errorf("can't connect to redis, got error:\n%v", err)
-	// }
-
-	// go func() {
-	//
-	// 	rc := srv.redis.Get()
-	//
-	// 	psc := redis.PubSubConn{Conn: rc}
-	// 	if err := psc.PSubscribe(flow.CancelActionMessage); err != nil {
-	// 		log.Error(err.Error())
-	// 	}
-	//
-	// 	for {
-	// 		switch v := psc.Receive().(type) {
-	// 		default:
-	// 			data, _ := json.Marshal(v)
-	// 			log.Debug(string(data))
-	// 		case redis.Message:
-	// 			srv.handlePubSubCancel(string(v.Data))
-	// 		}
-	// 	}
-	//
-	// }()
-
-	// err := flow.SyncSubscribeTo(logger, addr,
-	// 	flow.CancelActionMessage, srv.handlePubSubCancel)
-	// if err != nil {
-	// 	return err
-	// }
-
-	return nil
-
-}
-
-func (srv *LocalServer) handlePubSubCancel(in interface{}) {
-
-	actionId, ok := in.(string)
-	if !ok {
-		log.Errorf("cancel data %v not valid", in)
-		return
-	}
-
-	log.Infof("cancelling function %v", actionId)
-
-	// TODO: do we need to find a better way to cancel requests that come late off the queue?
-
-	srv.cancelActiveRequest(context.Background(), actionId)
-
-}
-
 func (srv *LocalServer) Start() {
 
 	err := srv.initFlow()
 	if err != nil {
 		log.Errorf("Localhost server unable to connect to flow: %v", err)
-		Shutdown(ERROR)
-		return
-	}
-
-	err = srv.initPubSub()
-	if err != nil {
-		log.Errorf("Localhost server unable to set up pub/sub: %v", err)
 		Shutdown(ERROR)
 		return
 	}

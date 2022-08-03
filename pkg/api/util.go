@@ -109,16 +109,12 @@ func getInt32(r *http.Request, key string) (int32, error) {
 
 func pagination(r *http.Request) (*grpc.Pagination, error) {
 
-	after := r.URL.Query().Get("after")
-
-	first, err := getInt32(r, "first")
+	limit, err := getInt32(r, "limit")
 	if err != nil {
 		return nil, err
 	}
 
-	before := r.URL.Query().Get("before")
-
-	last, err := getInt32(r, "last")
+	offset, err := getInt32(r, "offset")
 	if err != nil {
 		return nil, err
 	}
@@ -187,10 +183,8 @@ func pagination(r *http.Request) (*grpc.Pagination, error) {
 	}
 
 	p := &grpc.Pagination{
-		After:  after,
-		First:  first,
-		Before: before,
-		Last:   last,
+		Limit:  limit,
+		Offset: offset,
 		Order:  orderings,
 		Filter: filters,
 	}
@@ -416,7 +410,7 @@ func sse(w http.ResponseWriter, ch <-chan interface{}) {
 				return
 			}
 
-		case <-time.After(time.Second * 10):
+		case <-time.After(time.Second * 5):
 			err = sseHeartbeat(w, flusher)
 			if err != nil {
 				return
@@ -528,16 +522,10 @@ func sseHeartbeat(w http.ResponseWriter, flusher http.Flusher) error {
 type PaginationQuery struct {
 
 	// TODO: swagger-spec. Export Field when spec is done
-	after string `json:"after"`
+	offset int32 `json:"offset"`
 
 	// TODO: swagger-spec. Export Field when spec is done
-	first int32 `json:"first"`
-
-	// TODO: swagger-spec. Export Field when spec is done
-	before string `json:"before"`
-
-	// TODO: swagger-spec. Export Field when spec is done
-	last int32 `json:"last"`
+	limit int32 `json:"limit"`
 
 	// field to order by
 	//
@@ -653,4 +641,31 @@ func (s *Server) logMiddleware(h http.Handler) http.Handler {
 		next: h,
 	}
 
+}
+
+//	readSingularFromQueryOrBody : Reads a single key passed in params from
+//	query and body and returns value of that key to corresponding read values.
+func readSingularFromQueryOrBody(r *http.Request, key string) (string, error) {
+	in := make(map[string]string)
+
+	value := r.URL.Query().Get(key)
+
+	err := unmarshalBody(r, &in)
+	if err == io.EOF && value == "" {
+		return "", fmt.Errorf("%s is missing from query and body", key)
+	} else if err != nil && err != io.EOF {
+		return "", err
+	}
+
+	if val, ok := in[key]; ok {
+		if value != "" {
+			return "", fmt.Errorf("%s exists in both query and body", key)
+		}
+
+		return val, nil
+	} else if value == "" {
+		return "", fmt.Errorf("%s is missing from query and body", key)
+	}
+
+	return value, nil
 }

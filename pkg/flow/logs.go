@@ -14,75 +14,6 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-func logsOrder(p *pagination) []ent.LogMsgPaginateOption {
-
-	var opts []ent.LogMsgPaginateOption
-
-	for _, o := range p.order {
-
-		if o == nil {
-			continue
-		}
-
-		field := ent.LogMsgOrderFieldT
-		direction := ent.OrderDirectionAsc
-
-		if o != nil {
-
-			if x := o.Field; x != "" && x == "TIMESTAMP" {
-				field = ent.LogMsgOrderFieldT
-			}
-
-			if x := o.Direction; x != "" && x == "DESC" {
-				direction = ent.OrderDirectionDesc
-			}
-
-		}
-
-		opts = append(opts, ent.WithLogMsgOrder(&ent.LogMsgOrder{
-			Direction: direction,
-			Field:     field,
-		}))
-
-	}
-
-	if len(opts) == 0 {
-		opts = append(opts, ent.WithLogMsgOrder(&ent.LogMsgOrder{
-			Direction: ent.OrderDirectionAsc,
-			Field:     ent.LogMsgOrderFieldT,
-		}))
-	}
-
-	return opts
-
-}
-
-func logsFilter(p *pagination) []ent.LogMsgPaginateOption {
-
-	var opts []ent.LogMsgPaginateOption
-
-	if p.filter == nil {
-		return nil
-	}
-
-	for range /*i :=*/ p.filter {
-
-		// f := p.filter[i]
-
-		// TODO
-
-		opts = append(opts, ent.WithLogMsgFilter(func(query *ent.LogMsgQuery) (*ent.LogMsgQuery, error) {
-
-			return query, nil
-
-		}))
-
-	}
-
-	return opts
-
-}
-
 func (srv *server) logToServer(ctx context.Context, t time.Time, msg string, a ...interface{}) {
 
 	logc := srv.db.LogMsg
@@ -226,9 +157,9 @@ func (engine *engine) UserLog(ctx context.Context, im *instanceMemory, msg strin
 
 func (engine *engine) logRunState(ctx context.Context, im *instanceMemory, wakedata []byte, err error) {
 
-	engine.sugar.Debugf("Running state logic -- %s:%v (%s)", im.ID().String(), im.Step(), im.logic.ID())
+	engine.sugar.Debugf("Running state logic -- %s:%v (%s)", im.ID().String(), im.Step(), im.logic.GetID())
 	if im.GetMemory() == nil && len(wakedata) == 0 && err == nil {
-		engine.logToInstance(ctx, time.Now(), im.in, "Running state logic (step:%v) -- %s", im.Step(), im.logic.ID())
+		engine.logToInstance(ctx, time.Now(), im.in, "Running state logic (step:%v) -- %s", im.Step(), im.logic.GetID())
 	}
 
 }
@@ -248,4 +179,28 @@ func parent() string {
 	fn := runtime.FuncForPC(pc)
 	elems := strings.Split(fn.Name(), ".")
 	return elems[len(elems)-1]
+}
+
+func (srv *server) logToMirrorActivity(ctx context.Context, t time.Time, act *ent.MirrorActivity, msg string, a ...interface{}) {
+
+	logc := srv.db.LogMsg
+
+	msg = fmt.Sprintf(msg, a...)
+
+	util.Trace(ctx, msg)
+
+	_, err := logc.Create().SetMsg(msg).SetActivity(act).SetT(t).Save(ctx)
+	if err != nil {
+		srv.sugar.Error(err)
+		return
+	}
+
+	span := trace.SpanFromContext(ctx)
+	tid := span.SpanContext().TraceID()
+
+	ns := act.Edges.Namespace
+	srv.sugar.Infow(msg, "trace", tid, "namespace", ns.Name, "namespace-id", ns.ID.String(), "mirror-id", act.Edges.Mirror.ID.String())
+
+	srv.pubsub.NotifyMirrorActivityLogs(act)
+
 }

@@ -188,8 +188,7 @@ The UI displays the log output and state of the workflow from start to completio
 
 # Talk to us!
 
-- [Open Source Support Channel on Slack](https://direktivio.slack.com/archives/C02JQUH1A01)
-- [Open Source Support Channel on Discord](https://discord.gg/VjF6wn4)
+- [Open Source Support Channel on Slack](https://join.slack.com/t/direktiv-io/shared_invite/zt-zf7gmfaa-rYxxBiB9RpuRGMuIasNO~g)
 
 
 # Code of Conduct

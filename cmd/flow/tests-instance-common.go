@@ -116,7 +116,7 @@ func testStartWorkflow(ctx context.Context, c grpc.FlowClient, namespace string)
 		return err
 	}
 
-	if len(logs.Edges) == 0 {
+	if len(logs.Results) == 0 {
 		return errors.New("missing instance logs")
 	}
 
@@ -199,8 +199,8 @@ states:
 	}
 
 	var found bool
-	for _, edge := range logs.Edges {
-		msg := edge.Node.Msg
+	for _, result := range logs.Results {
+		msg := result.Msg
 		if msg == `"Hello, world!"` {
 			found = true
 			break
@@ -292,8 +292,8 @@ states:
 	}
 
 	var found bool
-	for _, edge := range logs.Edges {
-		msg := edge.Node.Msg
+	for _, result := range logs.Results {
+		msg := result.Msg
 		if msg == `"Direktiv!"` {
 			found = true
 			break
@@ -385,8 +385,8 @@ states:
 	}
 
 	var found bool
-	for _, edge := range logs.Edges {
-		msg := edge.Node.Msg
+	for _, result := range logs.Results {
+		msg := result.Msg
 		if msg == `"Hello, Direktiv!"` {
 			found = true
 			break
@@ -480,8 +480,8 @@ states:
 	}
 
 	var found bool
-	for _, edge := range logs.Edges {
-		msg := edge.Node.Msg
+	for _, result := range logs.Results {
+		msg := result.Msg
 		if msg == `{
   "Constant": 5,
   "Name": "Direktiv"
@@ -1712,9 +1712,9 @@ states:
 	}
 
 	inst := new(grpc.Instance)
-	for _, edge := range instances.GetInstances().GetEdges() {
-		if strings.TrimPrefix(edge.GetNode().GetAs(), "/") == "testwf-timeout-subflow" {
-			inst = edge.GetNode()
+	for _, result := range instances.GetInstances().GetResults() {
+		if strings.TrimPrefix(result.GetAs(), "/") == "testwf-timeout-subflow" {
+			inst = result
 		}
 	}
 
@@ -1838,9 +1838,9 @@ states:
 	}
 
 	inst := new(grpc.Instance)
-	for _, edge := range instances.GetInstances().GetEdges() {
-		if strings.TrimPrefix(edge.GetNode().GetAs(), "/") == "testwf-timeout-subflow" {
-			inst = edge.GetNode()
+	for _, result := range instances.GetInstances().GetResults() {
+		if strings.TrimPrefix(result.GetAs(), "/") == "testwf-timeout-subflow" {
+			inst = result
 		}
 	}
 
@@ -1964,9 +1964,9 @@ states:
 	}
 
 	inst := new(grpc.Instance)
-	for _, edge := range instances.GetInstances().GetEdges() {
-		if strings.TrimPrefix(edge.GetNode().GetAs(), "/") == "testwf-timeout-subflow" {
-			inst = edge.GetNode()
+	for _, result := range instances.GetInstances().GetResults() {
+		if strings.TrimPrefix(result.GetAs(), "/") == "testwf-timeout-subflow" {
+			inst = result
 		}
 	}
 
@@ -2090,9 +2090,9 @@ states:
 	}
 
 	inst := new(grpc.Instance)
-	for _, edge := range instances.GetInstances().GetEdges() {
-		if strings.TrimPrefix(edge.GetNode().GetAs(), "/") == "testwf-timeout-subflow" {
-			inst = edge.GetNode()
+	for _, result := range instances.GetInstances().GetResults() {
+		if strings.TrimPrefix(result.GetAs(), "/") == "testwf-timeout-subflow" {
+			inst = result
 		}
 	}
 

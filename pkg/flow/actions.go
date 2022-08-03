@@ -6,6 +6,7 @@ import (
 	"net"
 	"sort"
 	"strings"
+	"time"
 
 	libgrpc "google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -332,4 +333,21 @@ resend:
 
 	goto resend
 
+}
+
+func (actions *actions) CancelWorkflowInstance(svn, actionID string) error {
+
+	actions.sugar.Debugf("Handling gRPC request: %s", this())
+
+	req := &igrpc.CancelWorkflowRequest{
+		ServiceName: &svn,
+		ActionID:    &actionID,
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
+	defer cancel()
+
+	_, err := actions.client.CancelWorfklow(ctx, req)
+
+	return err
 }

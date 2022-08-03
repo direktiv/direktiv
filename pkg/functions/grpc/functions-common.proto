@@ -55,7 +55,7 @@ message Revision {
 	optional int64 created = 7;
 
 	optional string status = 8;
-  repeated Condition conditions = 9;
+	repeated Condition conditions = 9;
 
 	optional int64 traffic = 10;
 

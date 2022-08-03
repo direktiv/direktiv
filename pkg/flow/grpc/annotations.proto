@@ -22,9 +22,8 @@ message AnnotationEdge {
 }
 
 message Annotations {
-	int32 totalCount = 1;
-	PageInfo pageInfo = 2;
-	repeated AnnotationEdge edges = 3;
+	PageInfo pageInfo = 1;
+	repeated Annotation results = 2;
 }
 
 message NamespaceAnnotationRequest {

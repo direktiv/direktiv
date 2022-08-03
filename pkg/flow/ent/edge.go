@@ -4,38 +4,6 @@ package ent
 
 import "context"
 
-func (a *Annotation) Namespace(ctx context.Context) (*Namespace, error) {
-	result, err := a.Edges.NamespaceOrErr()
-	if IsNotLoaded(err) {
-		result, err = a.QueryNamespace().Only(ctx)
-	}
-	return result, MaskNotFound(err)
-}
-
-func (a *Annotation) Workflow(ctx context.Context) (*Workflow, error) {
-	result, err := a.Edges.WorkflowOrErr()
-	if IsNotLoaded(err) {
-		result, err = a.QueryWorkflow().Only(ctx)
-	}
-	return result, MaskNotFound(err)
-}
-
-func (a *Annotation) Instance(ctx context.Context) (*Instance, error) {
-	result, err := a.Edges.InstanceOrErr()
-	if IsNotLoaded(err) {
-		result, err = a.QueryInstance().Only(ctx)
-	}
-	return result, MaskNotFound(err)
-}
-
-func (a *Annotation) Inode(ctx context.Context) (*Inode, error) {
-	result, err := a.Edges.InodeOrErr()
-	if IsNotLoaded(err) {
-		result, err = a.QueryInode().Only(ctx)
-	}
-	return result, MaskNotFound(err)
-}
-
 func (ce *CloudEvents) Namespace(ctx context.Context) (*Namespace, error) {
 	result, err := ce.Edges.NamespaceOrErr()
 	if IsNotLoaded(err) {
@@ -116,12 +84,12 @@ func (i *Inode) Workflow(ctx context.Context) (*Workflow, error) {
 	return result, MaskNotFound(err)
 }
 
-func (i *Inode) Annotations(ctx context.Context) ([]*Annotation, error) {
-	result, err := i.Edges.AnnotationsOrErr()
+func (i *Inode) Mirror(ctx context.Context) (*Mirror, error) {
+	result, err := i.Edges.MirrorOrErr()
 	if IsNotLoaded(err) {
-		result, err = i.QueryAnnotations().All(ctx)
+		result, err = i.QueryMirror().Only(ctx)
 	}
-	return result, err
+	return result, MaskNotFound(err)
 }
 
 func (i *Instance) Namespace(ctx context.Context) (*Namespace, error) {
@@ -188,14 +156,6 @@ func (i *Instance) Eventlisteners(ctx context.Context) ([]*Events, error) {
 	return result, err
 }
 
-func (i *Instance) Annotations(ctx context.Context) ([]*Annotation, error) {
-	result, err := i.Edges.AnnotationsOrErr()
-	if IsNotLoaded(err) {
-		result, err = i.QueryAnnotations().All(ctx)
-	}
-	return result, err
-}
-
 func (ir *InstanceRuntime) Instance(ctx context.Context) (*Instance, error) {
 	result, err := ir.Edges.InstanceOrErr()
 	if IsNotLoaded(err) {
@@ -236,6 +196,62 @@ func (lm *LogMsg) Instance(ctx context.Context) (*Instance, error) {
 	return result, MaskNotFound(err)
 }
 
+func (lm *LogMsg) Activity(ctx context.Context) (*MirrorActivity, error) {
+	result, err := lm.Edges.ActivityOrErr()
+	if IsNotLoaded(err) {
+		result, err = lm.QueryActivity().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
+func (m *Mirror) Namespace(ctx context.Context) (*Namespace, error) {
+	result, err := m.Edges.NamespaceOrErr()
+	if IsNotLoaded(err) {
+		result, err = m.QueryNamespace().Only(ctx)
+	}
+	return result, err
+}
+
+func (m *Mirror) Inode(ctx context.Context) (*Inode, error) {
+	result, err := m.Edges.InodeOrErr()
+	if IsNotLoaded(err) {
+		result, err = m.QueryInode().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
+func (m *Mirror) Activities(ctx context.Context) ([]*MirrorActivity, error) {
+	result, err := m.Edges.ActivitiesOrErr()
+	if IsNotLoaded(err) {
+		result, err = m.QueryActivities().All(ctx)
+	}
+	return result, err
+}
+
+func (ma *MirrorActivity) Namespace(ctx context.Context) (*Namespace, error) {
+	result, err := ma.Edges.NamespaceOrErr()
+	if IsNotLoaded(err) {
+		result, err = ma.QueryNamespace().Only(ctx)
+	}
+	return result, err
+}
+
+func (ma *MirrorActivity) Mirror(ctx context.Context) (*Mirror, error) {
+	result, err := ma.Edges.MirrorOrErr()
+	if IsNotLoaded(err) {
+		result, err = ma.QueryMirror().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
+func (ma *MirrorActivity) Logs(ctx context.Context) ([]*LogMsg, error) {
+	result, err := ma.Edges.LogsOrErr()
+	if IsNotLoaded(err) {
+		result, err = ma.QueryLogs().All(ctx)
+	}
+	return result, err
+}
+
 func (n *Namespace) Inodes(ctx context.Context) ([]*Inode, error) {
 	result, err := n.Edges.InodesOrErr()
 	if IsNotLoaded(err) {
@@ -248,6 +264,22 @@ func (n *Namespace) Workflows(ctx context.Context) ([]*Workflow, error) {
 	result, err := n.Edges.WorkflowsOrErr()
 	if IsNotLoaded(err) {
 		result, err = n.QueryWorkflows().All(ctx)
+	}
+	return result, err
+}
+
+func (n *Namespace) Mirrors(ctx context.Context) ([]*Mirror, error) {
+	result, err := n.Edges.MirrorsOrErr()
+	if IsNotLoaded(err) {
+		result, err = n.QueryMirrors().All(ctx)
+	}
+	return result, err
+}
+
+func (n *Namespace) MirrorActivities(ctx context.Context) ([]*MirrorActivity, error) {
+	result, err := n.Edges.MirrorActivitiesOrErr()
+	if IsNotLoaded(err) {
+		result, err = n.QueryMirrorActivities().All(ctx)
 	}
 	return result, err
 }
@@ -288,14 +320,6 @@ func (n *Namespace) Namespacelisteners(ctx context.Context) ([]*Events, error) {
 	result, err := n.Edges.NamespacelistenersOrErr()
 	if IsNotLoaded(err) {
 		result, err = n.QueryNamespacelisteners().All(ctx)
-	}
-	return result, err
-}
-
-func (n *Namespace) Annotations(ctx context.Context) ([]*Annotation, error) {
-	result, err := n.Edges.AnnotationsOrErr()
-	if IsNotLoaded(err) {
-		result, err = n.QueryAnnotations().All(ctx)
 	}
 	return result, err
 }
@@ -472,14 +496,6 @@ func (w *Workflow) Wfevents(ctx context.Context) ([]*Events, error) {
 	result, err := w.Edges.WfeventsOrErr()
 	if IsNotLoaded(err) {
 		result, err = w.QueryWfevents().All(ctx)
-	}
-	return result, err
-}
-
-func (w *Workflow) Annotations(ctx context.Context) ([]*Annotation, error) {
-	result, err := w.Edges.AnnotationsOrErr()
-	if IsNotLoaded(err) {
-		result, err = w.QueryAnnotations().All(ctx)
 	}
 	return result, err
 }

@@ -17,6 +17,8 @@ message Node {
 	string type = 6;
 	repeated string attributes = 7;
 	string oid = 8;
+	bool readOnly = 9;
+	string expandedType = 10;
 }
 
 message DirectoryRequest {
@@ -25,15 +27,9 @@ message DirectoryRequest {
 	string path = 3;
 }
 
-message DirectoryResponseEdge {
-	Node node = 1;
-	string cursor = 2;
-}
-
 message DirectoryChildren {
-	int32 totalCount = 1;
 	PageInfo pageInfo = 2;
-	repeated DirectoryResponseEdge edges = 3;
+	repeated Node results = 4;
 }
 
 message DirectoryResponse {

@@ -26,15 +26,9 @@ message Instance {
 	string invoker = 8;
 }
 
-message InstancesEdge {
-	Instance node = 1;
-	string cursor = 2;
-}
-
 message Instances {
-	int32 totalCount = 1;
 	PageInfo pageInfo = 2;
-	repeated InstancesEdge edges = 3;
+	repeated Instance results = 4;
 }
 
 message InstanceRequest {

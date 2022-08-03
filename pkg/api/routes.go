@@ -120,6 +120,13 @@ const (
 	// RN_metricsWorkflowFailed        = "metricsWorkflowFailed"
 	// RN_metricsWorkflowMS            = "metricsWorkflowMS"
 	// RN_metricsStateMS               = "metricsStateMS"
+
+	RN_UpdateMirror          = "updateMirror"
+	RN_LockMirror            = "lockMirror"
+	RN_SyncMirror            = "syncMirror"
+	RN_GetMirrorInfo         = "getMirrorInfo"
+	RN_CancelMirrorActivity  = "cancelMirrorActivity"
+	RN_GetMirrorActivityLogs = "getMirrorActivityLogs"
 )
 
 // var RouteNames = []string{

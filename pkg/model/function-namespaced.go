@@ -12,7 +12,6 @@ type NamespacedFunctionDefinition struct {
 	Type           FunctionType `yaml:"type" json:"type"`
 	ID             string       `yaml:"id" json:"id"`
 	KnativeService string       `yaml:"service" json:"service"`
-	// Files          []FunctionFileDefinition `yaml:"files,omitempty" json:"files,omitempty"`
 }
 
 // GetID returns the id of a namespace function

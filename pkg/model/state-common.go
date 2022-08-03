@@ -113,6 +113,16 @@ func (o *StateCommon) GetType() StateType {
 	return o.Type
 }
 
+// GetLog returns the log query
+func (o *StateCommon) GetLog() interface{} {
+	return o.Log
+}
+
+// GetMetadata returns the metadata query
+func (o *StateCommon) GetMetadata() interface{} {
+	return o.Metadata
+}
+
 // ErrorDefinitions returns an array of error definitions
 func (o *StateCommon) ErrorDefinitions() []ErrorDefinition {
 	if o.Catch == nil {
