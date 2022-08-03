@@ -24,7 +24,7 @@ func (Annotation) Fields() []ent.Field {
 		field.Time("created_at").Default(time.Now).Immutable(),
 		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
 		field.Int("size"),
-		field.String("hash"),
+		field.String("hash").StructTag(`json:"checksum"`),
 		field.Bytes("data"),
 	}
 }

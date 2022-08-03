@@ -30,7 +30,7 @@ type Annotation struct {
 	// Size holds the value of the "size" field.
 	Size int `json:"size,omitempty"`
 	// Hash holds the value of the "hash" field.
-	Hash string `json:"hash,omitempty"`
+	Hash string `json:"checksum"`
 	// Data holds the value of the "data" field.
 	Data []byte `json:"data,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
