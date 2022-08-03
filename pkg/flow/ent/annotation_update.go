@@ -70,6 +70,12 @@ func (au *AnnotationUpdate) SetData(b []byte) *AnnotationUpdate {
 	return au
 }
 
+// SetMimeType sets the "mime_type" field.
+func (au *AnnotationUpdate) SetMimeType(s string) *AnnotationUpdate {
+	au.mutation.SetMimeType(s)
+	return au
+}
+
 // SetNamespaceID sets the "namespace" edge to the Namespace entity by ID.
 func (au *AnnotationUpdate) SetNamespaceID(id uuid.UUID) *AnnotationUpdate {
 	au.mutation.SetNamespaceID(id)
@@ -314,6 +320,13 @@ func (au *AnnotationUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: annotation.FieldData,
 		})
 	}
+	if value, ok := au.mutation.MimeType(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: annotation.FieldMimeType,
+		})
+	}
 	if au.mutation.NamespaceCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -507,6 +520,12 @@ func (auo *AnnotationUpdateOne) SetHash(s string) *AnnotationUpdateOne {
 // SetData sets the "data" field.
 func (auo *AnnotationUpdateOne) SetData(b []byte) *AnnotationUpdateOne {
 	auo.mutation.SetData(b)
+	return auo
+}
+
+// SetMimeType sets the "mime_type" field.
+func (auo *AnnotationUpdateOne) SetMimeType(s string) *AnnotationUpdateOne {
+	auo.mutation.SetMimeType(s)
 	return auo
 }
 
@@ -782,6 +801,13 @@ func (auo *AnnotationUpdateOne) sqlSave(ctx context.Context) (_node *Annotation,
 			Type:   field.TypeBytes,
 			Value:  value,
 			Column: annotation.FieldData,
+		})
+	}
+	if value, ok := auo.mutation.MimeType(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: annotation.FieldMimeType,
 		})
 	}
 	if auo.mutation.NamespaceCleared() {

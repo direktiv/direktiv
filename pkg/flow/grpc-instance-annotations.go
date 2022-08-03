@@ -35,9 +35,10 @@ func (flow *flow) InstanceAnnotation(ctx context.Context, req *grpc.InstanceAnno
 	resp.CreatedAt = timestamppb.New(d.annotation.CreatedAt)
 	resp.UpdatedAt = timestamppb.New(d.annotation.UpdatedAt)
 	resp.Checksum = d.annotation.Hash
-	resp.TotalSize = int64(d.annotation.Size)
+	resp.Size = int64(d.annotation.Size)
+	resp.MimeType = d.annotation.MimeType
 
-	if resp.TotalSize > parcelSize {
+	if resp.Size > parcelSize {
 		return nil, status.Error(codes.ResourceExhausted, "annotation too large to return without using the parcelling API")
 	}
 
@@ -72,7 +73,8 @@ func (flow *flow) InstanceAnnotationParcels(req *grpc.InstanceAnnotationRequest,
 		resp.CreatedAt = timestamppb.New(d.annotation.CreatedAt)
 		resp.UpdatedAt = timestamppb.New(d.annotation.UpdatedAt)
 		resp.Checksum = d.annotation.Hash
-		resp.TotalSize = int64(d.annotation.Size)
+		resp.Size = int64(d.annotation.Size)
+		resp.MimeType = d.annotation.MimeType
 
 		buf := new(bytes.Buffer)
 		k, err := io.CopyN(buf, rdr, parcelSize)
@@ -209,7 +211,7 @@ func (flow *flow) SetInstanceAnnotation(ctx context.Context, req *grpc.SetInstan
 	var annotation *ent.Annotation
 	var newVar bool
 
-	annotation, newVar, err = flow.SetAnnotation(ctx, annotationc, d.in, key, req.GetData())
+	annotation, newVar, err = flow.SetAnnotation(ctx, annotationc, d.in, key, req.GetMimeType(), req.GetData())
 	if err != nil {
 		return nil, err
 	}
@@ -235,7 +237,8 @@ func (flow *flow) SetInstanceAnnotation(ctx context.Context, req *grpc.SetInstan
 	resp.CreatedAt = timestamppb.New(annotation.CreatedAt)
 	resp.UpdatedAt = timestamppb.New(annotation.UpdatedAt)
 	resp.Checksum = annotation.Hash
-	resp.TotalSize = int64(annotation.Size)
+	resp.Size = int64(annotation.Size)
+	resp.MimeType = annotation.MimeType
 
 	return &resp, nil
 
@@ -256,7 +259,7 @@ func (flow *flow) SetInstanceAnnotationParcels(srv grpc.Flow_SetInstanceAnnotati
 	instance := req.GetInstance()
 	key := req.GetKey()
 
-	totalSize := int(req.GetTotalSize())
+	totalSize := int(req.GetSize())
 
 	buf := new(bytes.Buffer)
 
@@ -267,7 +270,7 @@ func (flow *flow) SetInstanceAnnotationParcels(srv grpc.Flow_SetInstanceAnnotati
 			return err
 		}
 
-		if req.TotalSize <= 0 {
+		if req.Size <= 0 {
 			if buf.Len() >= totalSize {
 				break
 			}
@@ -281,7 +284,7 @@ func (flow *flow) SetInstanceAnnotationParcels(srv grpc.Flow_SetInstanceAnnotati
 			return err
 		}
 
-		if req.TotalSize <= 0 {
+		if req.Size <= 0 {
 			if buf.Len() >= totalSize {
 				break
 			}
@@ -291,7 +294,7 @@ func (flow *flow) SetInstanceAnnotationParcels(srv grpc.Flow_SetInstanceAnnotati
 			}
 		}
 
-		if int(req.GetTotalSize()) != totalSize {
+		if int(req.GetSize()) != totalSize {
 			return errors.New("totalSize changed mid stream")
 		}
 
@@ -318,7 +321,7 @@ func (flow *flow) SetInstanceAnnotationParcels(srv grpc.Flow_SetInstanceAnnotati
 	var annotation *ent.Annotation
 	var newVar bool
 
-	annotation, newVar, err = flow.SetAnnotation(ctx, annotationc, d.in, key, req.GetData())
+	annotation, newVar, err = flow.SetAnnotation(ctx, annotationc, d.in, key, req.GetMimeType(), req.GetData())
 	if err != nil {
 		return err
 	}
@@ -344,7 +347,8 @@ func (flow *flow) SetInstanceAnnotationParcels(srv grpc.Flow_SetInstanceAnnotati
 	resp.CreatedAt = timestamppb.New(annotation.CreatedAt)
 	resp.UpdatedAt = timestamppb.New(annotation.UpdatedAt)
 	resp.Checksum = annotation.Hash
-	resp.TotalSize = int64(annotation.Size)
+	resp.Size = int64(annotation.Size)
+	resp.MimeType = annotation.MimeType
 
 	err = srv.SendAndClose(&resp)
 	if err != nil {
@@ -428,8 +432,9 @@ func (flow *flow) RenameInstanceAnnotation(ctx context.Context, req *grpc.Rename
 	resp.CreatedAt = timestamppb.New(d.annotation.CreatedAt)
 	resp.Key = annotation.Name
 	resp.Namespace = d.ns().Name
-	resp.TotalSize = int64(d.annotation.Size)
+	resp.Size = int64(d.annotation.Size)
 	resp.UpdatedAt = timestamppb.New(d.annotation.UpdatedAt)
+	resp.MimeType = d.annotation.MimeType
 
 	return &resp, nil
 

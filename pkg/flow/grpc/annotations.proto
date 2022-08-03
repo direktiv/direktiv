@@ -14,6 +14,7 @@ message Annotation {
 	google.protobuf.Timestamp updated_at = 3;
 	string checksum = 4;
 	int64 size = 5;
+	string mime_type = 6;
 }
 
 message AnnotationEdge {
@@ -37,8 +38,9 @@ message NamespaceAnnotationResponse {
 	google.protobuf.Timestamp created_at = 3;
 	google.protobuf.Timestamp updated_at = 4;
 	string checksum = 5;
-	int64 totalSize = 6;
+	int64 size = 6;
 	bytes data = 7;
+	string mime_type = 8;
 }
 
 message NamespaceAnnotationsRequest {
@@ -54,8 +56,9 @@ message NamespaceAnnotationsResponse {
 message SetNamespaceAnnotationRequest {
 	string namespace = 1;
 	string key = 2;
-	int64 totalSize = 3;
+	int64 size = 3;
 	bytes data = 4;
+	string mime_type = 6;
 }
 
 message SetNamespaceAnnotationResponse {
@@ -64,7 +67,8 @@ message SetNamespaceAnnotationResponse {
 	google.protobuf.Timestamp created_at = 3;
 	google.protobuf.Timestamp updated_at = 4;
 	string checksum = 5;
-	int64 totalSize = 6;
+	int64 size = 6;
+	string mime_type = 7;
 }
 
 message DeleteNamespaceAnnotationRequest {
@@ -84,8 +88,8 @@ message RenameNamespaceAnnotationResponse {
 	google.protobuf.Timestamp created_at = 3;
 	google.protobuf.Timestamp updated_at = 4;
 	string checksum = 5;
-	int64 totalSize = 6;
-	string mimeType = 7;
+	int64 size = 6;
+	string mime_type = 7;
 }
 
 message WorkflowAnnotationRequest {
@@ -101,9 +105,9 @@ message WorkflowAnnotationResponse {
 	google.protobuf.Timestamp created_at = 4;
 	google.protobuf.Timestamp updated_at = 5;
 	string checksum = 6;
-	int64 totalSize = 7;
+	int64 size = 7;
 	bytes data = 8;
-	string mimeType = 9;
+	string mime_type = 9;
 }
 
 message WorkflowAnnotationsRequest {
@@ -122,9 +126,9 @@ message SetWorkflowAnnotationRequest {
 	string namespace = 1;
 	string path = 2;
 	string key = 3;
-	int64 totalSize = 4;
+	int64 size = 4;
 	bytes data = 5;
-	string mimeType = 6;
+	string mime_type = 6;
 }
 
 message SetWorkflowAnnotationResponse {
@@ -134,8 +138,8 @@ message SetWorkflowAnnotationResponse {
 	google.protobuf.Timestamp created_at = 4;
 	google.protobuf.Timestamp updated_at = 5;
 	string checksum = 6;
-	int64 totalSize = 7;
-	string mimeType = 8;
+	int64 size = 7;
+	string mime_type = 8;
 }
 
 message DeleteWorkflowAnnotationRequest {
@@ -158,8 +162,8 @@ message RenameWorkflowAnnotationResponse {
 	google.protobuf.Timestamp created_at = 4;
 	google.protobuf.Timestamp updated_at = 5;
 	string checksum = 6;
-	int64 totalSize = 7;
-	string mimeType = 8;
+	int64 size = 7;
+	string mime_type = 8;
 }
 
 message InstanceAnnotationRequest {
@@ -175,9 +179,9 @@ message InstanceAnnotationResponse {
 	google.protobuf.Timestamp created_at = 4;
 	google.protobuf.Timestamp updated_at = 5;
 	string checksum = 6;
-	int64 totalSize = 7;
+	int64 size = 7;
 	bytes data = 8;
-	string mimeType = 9;
+	string mime_type = 9;
 }
 
 message InstanceAnnotationsRequest {
@@ -196,9 +200,9 @@ message SetInstanceAnnotationRequest {
 	string namespace = 1;
 	string instance = 2;
 	string key = 3;
-	int64 totalSize = 4;
+	int64 size = 4;
 	bytes data = 5;
-	string mimeType = 6;
+	string mime_type = 6;
 }
 
 message SetInstanceAnnotationResponse {
@@ -208,8 +212,8 @@ message SetInstanceAnnotationResponse {
 	google.protobuf.Timestamp created_at = 4;
 	google.protobuf.Timestamp updated_at = 5;
 	string checksum = 6;
-	int64 totalSize = 7;
-	string mimeType = 8;
+	int64 size = 7;
+	string mime_type = 8;
 }
 
 message DeleteInstanceAnnotationRequest {
@@ -232,18 +236,9 @@ message RenameInstanceAnnotationResponse {
 	google.protobuf.Timestamp created_at = 4;
 	google.protobuf.Timestamp updated_at = 5;
 	string checksum = 6;
-	int64 totalSize = 7;
-	string mimeType = 8;
+	int64 size = 7;
+	string mime_type = 8;
 }
-
-
-
-
-
-
-
-
-
 
 message NodeAnnotationRequest {
 	string namespace = 1;
@@ -258,8 +253,9 @@ message NodeAnnotationResponse {
 	google.protobuf.Timestamp created_at = 4;
 	google.protobuf.Timestamp updated_at = 5;
 	string checksum = 6;
-	int64 totalSize = 7;
+	int64 size = 7;
 	bytes data = 8;
+	string mime_type = 9;
 }
 
 message NodeAnnotationsRequest {
@@ -278,8 +274,9 @@ message SetNodeAnnotationRequest {
 	string namespace = 1;
 	string path = 2;
 	string key = 3;
-	int64 totalSize = 4;
+	int64 size = 4;
 	bytes data = 5;
+	string mime_type = 6;
 }
 
 message SetNodeAnnotationResponse {
@@ -289,7 +286,8 @@ message SetNodeAnnotationResponse {
 	google.protobuf.Timestamp created_at = 4;
 	google.protobuf.Timestamp updated_at = 5;
 	string checksum = 6;
-	int64 totalSize = 7;
+	int64 size = 7;
+	string mime_type = 8;
 }
 
 message DeleteNodeAnnotationRequest {
@@ -312,6 +310,6 @@ message RenameNodeAnnotationResponse {
 	google.protobuf.Timestamp created_at = 4;
 	google.protobuf.Timestamp updated_at = 5;
 	string checksum = 6;
-	int64 totalSize = 7;
-	string mimeType = 8;
+	int64 size = 7;
+	string mime_type = 8;
 }

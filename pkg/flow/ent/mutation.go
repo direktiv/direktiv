@@ -74,6 +74,7 @@ type AnnotationMutation struct {
 	addsize          *int
 	hash             *string
 	data             *[]byte
+	mime_type        *string
 	clearedFields    map[string]struct{}
 	namespace        *uuid.UUID
 	clearednamespace bool
@@ -428,6 +429,42 @@ func (m *AnnotationMutation) ResetData() {
 	m.data = nil
 }
 
+// SetMimeType sets the "mime_type" field.
+func (m *AnnotationMutation) SetMimeType(s string) {
+	m.mime_type = &s
+}
+
+// MimeType returns the value of the "mime_type" field in the mutation.
+func (m *AnnotationMutation) MimeType() (r string, exists bool) {
+	v := m.mime_type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMimeType returns the old "mime_type" field's value of the Annotation entity.
+// If the Annotation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AnnotationMutation) OldMimeType(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMimeType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMimeType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMimeType: %w", err)
+	}
+	return oldValue.MimeType, nil
+}
+
+// ResetMimeType resets all changes to the "mime_type" field.
+func (m *AnnotationMutation) ResetMimeType() {
+	m.mime_type = nil
+}
+
 // SetNamespaceID sets the "namespace" edge to the Namespace entity by id.
 func (m *AnnotationMutation) SetNamespaceID(id uuid.UUID) {
 	m.namespace = &id
@@ -603,7 +640,7 @@ func (m *AnnotationMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AnnotationMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 7)
 	if m.name != nil {
 		fields = append(fields, annotation.FieldName)
 	}
@@ -621,6 +658,9 @@ func (m *AnnotationMutation) Fields() []string {
 	}
 	if m.data != nil {
 		fields = append(fields, annotation.FieldData)
+	}
+	if m.mime_type != nil {
+		fields = append(fields, annotation.FieldMimeType)
 	}
 	return fields
 }
@@ -642,6 +682,8 @@ func (m *AnnotationMutation) Field(name string) (ent.Value, bool) {
 		return m.Hash()
 	case annotation.FieldData:
 		return m.Data()
+	case annotation.FieldMimeType:
+		return m.MimeType()
 	}
 	return nil, false
 }
@@ -663,6 +705,8 @@ func (m *AnnotationMutation) OldField(ctx context.Context, name string) (ent.Val
 		return m.OldHash(ctx)
 	case annotation.FieldData:
 		return m.OldData(ctx)
+	case annotation.FieldMimeType:
+		return m.OldMimeType(ctx)
 	}
 	return nil, fmt.Errorf("unknown Annotation field %s", name)
 }
@@ -713,6 +757,13 @@ func (m *AnnotationMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetData(v)
+		return nil
+	case annotation.FieldMimeType:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMimeType(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Annotation field %s", name)
@@ -795,6 +846,9 @@ func (m *AnnotationMutation) ResetField(name string) error {
 		return nil
 	case annotation.FieldData:
 		m.ResetData()
+		return nil
+	case annotation.FieldMimeType:
+		m.ResetMimeType()
 		return nil
 	}
 	return fmt.Errorf("unknown Annotation field %s", name)

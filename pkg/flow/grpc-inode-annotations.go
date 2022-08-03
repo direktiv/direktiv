@@ -33,9 +33,10 @@ func (flow *flow) NodeAnnotation(ctx context.Context, req *grpc.NodeAnnotationRe
 	resp.CreatedAt = timestamppb.New(d.annotation.CreatedAt)
 	resp.UpdatedAt = timestamppb.New(d.annotation.UpdatedAt)
 	resp.Checksum = d.annotation.Hash
-	resp.TotalSize = int64(d.annotation.Size)
+	resp.Size = int64(d.annotation.Size)
+	resp.MimeType = d.annotation.MimeType
 
-	if resp.TotalSize > parcelSize {
+	if resp.Size > parcelSize {
 		return nil, status.Error(codes.ResourceExhausted, "annotation too large to return without using the parcelling API")
 	}
 
@@ -70,7 +71,8 @@ func (flow *flow) NodeAnnotationParcels(req *grpc.NodeAnnotationRequest, srv grp
 		resp.CreatedAt = timestamppb.New(d.annotation.CreatedAt)
 		resp.UpdatedAt = timestamppb.New(d.annotation.UpdatedAt)
 		resp.Checksum = d.annotation.Hash
-		resp.TotalSize = int64(d.annotation.Size)
+		resp.Size = int64(d.annotation.Size)
+		resp.MimeType = d.annotation.MimeType
 
 		buf := new(bytes.Buffer)
 		k, err := io.CopyN(buf, rdr, parcelSize)
@@ -81,7 +83,7 @@ func (flow *flow) NodeAnnotationParcels(req *grpc.NodeAnnotationRequest, srv grp
 			}
 
 			if err == nil && k == 0 {
-				if resp.TotalSize == 0 {
+				if resp.Size == 0 {
 					resp.Data = buf.Bytes()
 					err = srv.Send(resp)
 					if err != nil {
@@ -214,7 +216,7 @@ func (flow *flow) SetNodeAnnotation(ctx context.Context, req *grpc.SetNodeAnnota
 	key := req.GetKey()
 
 	// var newVar bool
-	annotation /*newVar*/, _, err = flow.SetAnnotation(ctx, annotationc, d.ino, key, req.GetData())
+	annotation /*newVar*/, _, err = flow.SetAnnotation(ctx, annotationc, d.ino, key, req.GetMimeType(), req.GetData())
 	if err != nil {
 		return nil, err
 	}
@@ -240,7 +242,8 @@ func (flow *flow) SetNodeAnnotation(ctx context.Context, req *grpc.SetNodeAnnota
 	resp.CreatedAt = timestamppb.New(annotation.CreatedAt)
 	resp.UpdatedAt = timestamppb.New(annotation.UpdatedAt)
 	resp.Checksum = annotation.Hash
-	resp.TotalSize = int64(annotation.Size)
+	resp.Size = int64(annotation.Size)
+	resp.MimeType = annotation.MimeType
 
 	return &resp, nil
 
@@ -261,7 +264,7 @@ func (flow *flow) SetNodeAnnotationParcels(srv grpc.Flow_SetNodeAnnotationParcel
 	path := req.GetPath()
 	key := req.GetKey()
 
-	totalSize := int(req.GetTotalSize())
+	totalSize := int(req.GetSize())
 
 	buf := new(bytes.Buffer)
 
@@ -272,7 +275,7 @@ func (flow *flow) SetNodeAnnotationParcels(srv grpc.Flow_SetNodeAnnotationParcel
 			return err
 		}
 
-		if req.TotalSize <= 0 {
+		if req.Size <= 0 {
 			if buf.Len() >= totalSize {
 				break
 			}
@@ -286,7 +289,7 @@ func (flow *flow) SetNodeAnnotationParcels(srv grpc.Flow_SetNodeAnnotationParcel
 			return err
 		}
 
-		if req.TotalSize <= 0 {
+		if req.Size <= 0 {
 			if buf.Len() >= totalSize {
 				break
 			}
@@ -296,7 +299,7 @@ func (flow *flow) SetNodeAnnotationParcels(srv grpc.Flow_SetNodeAnnotationParcel
 			}
 		}
 
-		if int(req.GetTotalSize()) != totalSize {
+		if int(req.GetSize()) != totalSize {
 			return errors.New("totalSize changed mid stream")
 		}
 
@@ -323,7 +326,7 @@ func (flow *flow) SetNodeAnnotationParcels(srv grpc.Flow_SetNodeAnnotationParcel
 	var annotation *ent.Annotation
 
 	// var newVar bool
-	annotation /*newVar*/, _, err = flow.SetAnnotation(ctx, annotationc, d.ino, key, buf.Bytes())
+	annotation /*newVar*/, _, err = flow.SetAnnotation(ctx, annotationc, d.ino, key, req.GetMimeType(), buf.Bytes())
 	if err != nil {
 		return err
 	}
@@ -349,7 +352,8 @@ func (flow *flow) SetNodeAnnotationParcels(srv grpc.Flow_SetNodeAnnotationParcel
 	resp.CreatedAt = timestamppb.New(annotation.CreatedAt)
 	resp.UpdatedAt = timestamppb.New(annotation.UpdatedAt)
 	resp.Checksum = annotation.Hash
-	resp.TotalSize = int64(annotation.Size)
+	resp.Size = int64(annotation.Size)
+	resp.MimeType = annotation.MimeType
 
 	err = srv.SendAndClose(&resp)
 	if err != nil {
@@ -433,8 +437,9 @@ func (flow *flow) RenameNodeAnnotation(ctx context.Context, req *grpc.RenameNode
 	resp.CreatedAt = timestamppb.New(d.annotation.CreatedAt)
 	resp.Key = annotation.Name
 	resp.Namespace = d.ns().Name
-	resp.TotalSize = int64(d.annotation.Size)
+	resp.Size = int64(d.annotation.Size)
 	resp.UpdatedAt = timestamppb.New(d.annotation.UpdatedAt)
+	resp.MimeType = d.annotation.MimeType
 
 	return &resp, nil
 

@@ -17,6 +17,7 @@ var (
 		{Name: "size", Type: field.TypeInt},
 		{Name: "hash", Type: field.TypeString},
 		{Name: "data", Type: field.TypeBytes},
+		{Name: "mime_type", Type: field.TypeString},
 		{Name: "inode_annotations", Type: field.TypeUUID, Nullable: true},
 		{Name: "instance_annotations", Type: field.TypeUUID, Nullable: true},
 		{Name: "namespace_annotations", Type: field.TypeUUID, Nullable: true},
@@ -30,25 +31,25 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "annotations_inodes_annotations",
-				Columns:    []*schema.Column{AnnotationsColumns[7]},
+				Columns:    []*schema.Column{AnnotationsColumns[8]},
 				RefColumns: []*schema.Column{InodesColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "annotations_instances_annotations",
-				Columns:    []*schema.Column{AnnotationsColumns[8]},
+				Columns:    []*schema.Column{AnnotationsColumns[9]},
 				RefColumns: []*schema.Column{InstancesColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "annotations_namespaces_annotations",
-				Columns:    []*schema.Column{AnnotationsColumns[9]},
+				Columns:    []*schema.Column{AnnotationsColumns[10]},
 				RefColumns: []*schema.Column{NamespacesColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "annotations_workflows_annotations",
-				Columns:    []*schema.Column{AnnotationsColumns[10]},
+				Columns:    []*schema.Column{AnnotationsColumns[11]},
 				RefColumns: []*schema.Column{WorkflowsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},

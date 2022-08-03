@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"io"
+	"net/http"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/ent"
@@ -52,9 +53,10 @@ func (flow *flow) NamespaceAnnotation(ctx context.Context, req *grpc.NamespaceAn
 	resp.CreatedAt = timestamppb.New(d.annotation.CreatedAt)
 	resp.UpdatedAt = timestamppb.New(d.annotation.UpdatedAt)
 	resp.Checksum = d.annotation.Hash
-	resp.TotalSize = int64(d.annotation.Size)
+	resp.Size = int64(d.annotation.Size)
+	resp.MimeType = d.annotation.MimeType
 
-	if resp.TotalSize > parcelSize {
+	if resp.Size > parcelSize {
 		return nil, status.Error(codes.ResourceExhausted, "annotation too large to return without using the parcelling API")
 	}
 
@@ -88,7 +90,8 @@ func (flow *flow) NamespaceAnnotationParcels(req *grpc.NamespaceAnnotationReques
 		resp.CreatedAt = timestamppb.New(d.annotation.CreatedAt)
 		resp.UpdatedAt = timestamppb.New(d.annotation.UpdatedAt)
 		resp.Checksum = d.annotation.Hash
-		resp.TotalSize = int64(d.annotation.Size)
+		resp.Size = int64(d.annotation.Size)
+		resp.MimeType = d.annotation.MimeType
 
 		buf := new(bytes.Buffer)
 		k, err := io.CopyN(buf, rdr, parcelSize)
@@ -99,7 +102,7 @@ func (flow *flow) NamespaceAnnotationParcels(req *grpc.NamespaceAnnotationReques
 			}
 
 			if err == nil && k == 0 {
-				if resp.TotalSize == 0 {
+				if resp.Size == 0 {
 					resp.Data = buf.Bytes()
 					err = srv.Send(resp)
 					if err != nil {
@@ -232,7 +235,7 @@ func (flow *flow) SetNamespaceAnnotation(ctx context.Context, req *grpc.SetNames
 	key := req.GetKey()
 
 	var newAnnotation bool
-	annotation, newAnnotation, err = flow.SetAnnotation(ctx, annotationc, ns, key, req.GetData())
+	annotation, newAnnotation, err = flow.SetAnnotation(ctx, annotationc, ns, key, req.GetMimeType(), req.GetData())
 	if err != nil {
 		return nil, err
 	}
@@ -257,7 +260,8 @@ func (flow *flow) SetNamespaceAnnotation(ctx context.Context, req *grpc.SetNames
 	resp.CreatedAt = timestamppb.New(annotation.CreatedAt)
 	resp.UpdatedAt = timestamppb.New(annotation.UpdatedAt)
 	resp.Checksum = annotation.Hash
-	resp.TotalSize = int64(annotation.Size)
+	resp.Size = int64(annotation.Size)
+	resp.MimeType = annotation.MimeType
 
 	return &resp, nil
 
@@ -267,11 +271,15 @@ type annotationQuerier interface {
 	QueryAnnotations() *ent.AnnotationQuery
 }
 
-func (flow *flow) SetAnnotation(ctx context.Context, annotationc *ent.AnnotationClient, q annotationQuerier, key string, data []byte) (*ent.Annotation, bool, error) {
+func (flow *flow) SetAnnotation(ctx context.Context, annotationc *ent.AnnotationClient, q annotationQuerier, key string, mimetype string, data []byte) (*ent.Annotation, bool, error) {
 
 	hash, err := computeHash(data)
 	if err != nil {
 		flow.sugar.Error(err)
+	}
+
+	if mimetype == "" {
+		mimetype = http.DetectContentType(data)
 	}
 
 	var annotation *ent.Annotation
@@ -285,7 +293,7 @@ func (flow *flow) SetAnnotation(ctx context.Context, annotationc *ent.Annotation
 			return nil, false, err
 		}
 
-		query := annotationc.Create().SetSize(len(data)).SetHash(hash).SetData(data).SetName(key)
+		query := annotationc.Create().SetSize(len(data)).SetHash(hash).SetData(data).SetName(key).SetMimeType(mimetype)
 
 		switch q.(type) {
 		case *ent.Namespace:
@@ -307,7 +315,7 @@ func (flow *flow) SetAnnotation(ctx context.Context, annotationc *ent.Annotation
 
 	} else {
 
-		query := annotation.Update().SetSize(len(data)).SetHash(hash).SetData(data)
+		query := annotation.Update().SetSize(len(data)).SetHash(hash).SetData(data).SetMimeType(mimetype)
 
 		annotation, err = query.Save(ctx)
 		if err != nil {
@@ -334,7 +342,7 @@ func (flow *flow) SetNamespaceAnnotationParcels(srv grpc.Flow_SetNamespaceAnnota
 	namespace := req.GetNamespace()
 	key := req.GetKey()
 
-	totalSize := int(req.GetTotalSize())
+	totalSize := int(req.GetSize())
 
 	buf := new(bytes.Buffer)
 
@@ -345,7 +353,7 @@ func (flow *flow) SetNamespaceAnnotationParcels(srv grpc.Flow_SetNamespaceAnnota
 			return err
 		}
 
-		if req.TotalSize <= 0 {
+		if req.Size <= 0 {
 			if buf.Len() >= totalSize {
 				break
 			}
@@ -359,7 +367,7 @@ func (flow *flow) SetNamespaceAnnotationParcels(srv grpc.Flow_SetNamespaceAnnota
 			return err
 		}
 
-		if req.TotalSize <= 0 {
+		if req.Size <= 0 {
 			if buf.Len() >= totalSize {
 				break
 			}
@@ -369,7 +377,7 @@ func (flow *flow) SetNamespaceAnnotationParcels(srv grpc.Flow_SetNamespaceAnnota
 			}
 		}
 
-		if int(req.GetTotalSize()) != totalSize {
+		if int(req.GetSize()) != totalSize {
 			return errors.New("totalSize changed mid stream")
 		}
 
@@ -396,7 +404,7 @@ func (flow *flow) SetNamespaceAnnotationParcels(srv grpc.Flow_SetNamespaceAnnota
 	var annotation *ent.Annotation
 
 	var newAnnotation bool
-	annotation, newAnnotation, err = flow.SetAnnotation(ctx, annotationc, ns, key, buf.Bytes())
+	annotation, newAnnotation, err = flow.SetAnnotation(ctx, annotationc, ns, key, req.GetMimeType(), buf.Bytes())
 	if err != nil {
 		return err
 	}
@@ -421,7 +429,8 @@ func (flow *flow) SetNamespaceAnnotationParcels(srv grpc.Flow_SetNamespaceAnnota
 	resp.CreatedAt = timestamppb.New(annotation.CreatedAt)
 	resp.UpdatedAt = timestamppb.New(annotation.UpdatedAt)
 	resp.Checksum = annotation.Hash
-	resp.TotalSize = int64(annotation.Size)
+	resp.Size = int64(annotation.Size)
+	resp.MimeType = annotation.MimeType
 
 	err = srv.SendAndClose(&resp)
 	if err != nil {
@@ -505,8 +514,9 @@ func (flow *flow) RenameNamespaceAnnotation(ctx context.Context, req *grpc.Renam
 	resp.CreatedAt = timestamppb.New(d.annotation.CreatedAt)
 	resp.Key = annotation.Name
 	resp.Namespace = d.ns().Name
-	resp.TotalSize = int64(d.annotation.Size)
+	resp.Size = int64(d.annotation.Size)
 	resp.UpdatedAt = timestamppb.New(d.annotation.UpdatedAt)
+	resp.MimeType = d.annotation.MimeType
 
 	return &resp, nil
 

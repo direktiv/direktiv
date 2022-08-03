@@ -33,6 +33,8 @@ type Annotation struct {
 	Hash string `json:"checksum"`
 	// Data holds the value of the "data" field.
 	Data []byte `json:"data,omitempty"`
+	// MimeType holds the value of the "mime_type" field.
+	MimeType string `json:"mime_type,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the AnnotationQuery when eager-loading is set.
 	Edges                 AnnotationEdges `json:"edges"`
@@ -122,7 +124,7 @@ func (*Annotation) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = new([]byte)
 		case annotation.FieldSize:
 			values[i] = new(sql.NullInt64)
-		case annotation.FieldName, annotation.FieldHash:
+		case annotation.FieldName, annotation.FieldHash, annotation.FieldMimeType:
 			values[i] = new(sql.NullString)
 		case annotation.FieldCreatedAt, annotation.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -192,6 +194,12 @@ func (a *Annotation) assignValues(columns []string, values []interface{}) error 
 				return fmt.Errorf("unexpected type %T for field data", values[i])
 			} else if value != nil {
 				a.Data = *value
+			}
+		case annotation.FieldMimeType:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field mime_type", values[i])
+			} else if value.Valid {
+				a.MimeType = value.String
 			}
 		case annotation.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
@@ -286,6 +294,9 @@ func (a *Annotation) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("data=")
 	builder.WriteString(fmt.Sprintf("%v", a.Data))
+	builder.WriteString(", ")
+	builder.WriteString("mime_type=")
+	builder.WriteString(a.MimeType)
 	builder.WriteByte(')')
 	return builder.String()
 }

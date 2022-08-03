@@ -26,6 +26,7 @@ func (Annotation) Fields() []ent.Field {
 		field.Int("size"),
 		field.String("hash").StructTag(`json:"checksum"`),
 		field.Bytes("data"),
+		field.String("mime_type"),
 	}
 }
 

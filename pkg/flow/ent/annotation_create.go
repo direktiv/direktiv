@@ -77,6 +77,12 @@ func (ac *AnnotationCreate) SetData(b []byte) *AnnotationCreate {
 	return ac
 }
 
+// SetMimeType sets the "mime_type" field.
+func (ac *AnnotationCreate) SetMimeType(s string) *AnnotationCreate {
+	ac.mutation.SetMimeType(s)
+	return ac
+}
+
 // SetID sets the "id" field.
 func (ac *AnnotationCreate) SetID(u uuid.UUID) *AnnotationCreate {
 	ac.mutation.SetID(u)
@@ -283,6 +289,9 @@ func (ac *AnnotationCreate) check() error {
 	if _, ok := ac.mutation.Data(); !ok {
 		return &ValidationError{Name: "data", err: errors.New(`ent: missing required field "Annotation.data"`)}
 	}
+	if _, ok := ac.mutation.MimeType(); !ok {
+		return &ValidationError{Name: "mime_type", err: errors.New(`ent: missing required field "Annotation.mime_type"`)}
+	}
 	return nil
 }
 
@@ -366,6 +375,14 @@ func (ac *AnnotationCreate) createSpec() (*Annotation, *sqlgraph.CreateSpec) {
 			Column: annotation.FieldData,
 		})
 		_node.Data = value
+	}
+	if value, ok := ac.mutation.MimeType(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: annotation.FieldMimeType,
+		})
+		_node.MimeType = value
 	}
 	if nodes := ac.mutation.NamespaceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

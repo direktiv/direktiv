@@ -25,6 +25,8 @@ const (
 	FieldHash = "hash"
 	// FieldData holds the string denoting the data field in the database.
 	FieldData = "data"
+	// FieldMimeType holds the string denoting the mime_type field in the database.
+	FieldMimeType = "mime_type"
 	// EdgeNamespace holds the string denoting the namespace edge name in mutations.
 	EdgeNamespace = "namespace"
 	// EdgeWorkflow holds the string denoting the workflow edge name in mutations.
@@ -74,6 +76,7 @@ var Columns = []string{
 	FieldSize,
 	FieldHash,
 	FieldData,
+	FieldMimeType,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "annotations"
