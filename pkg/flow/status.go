@@ -26,7 +26,8 @@ func (engine *engine) SetInstanceFailed(ctx context.Context, im *instanceMemory,
 		message = "an internal error occurred"
 	} else {
 		engine.sugar.Error(fmt.Errorf("Unhandled error: %v", err))
-		return nil
+		code = ErrCodeInternal
+		message = err.Error()
 	}
 
 	//.SetEndTime

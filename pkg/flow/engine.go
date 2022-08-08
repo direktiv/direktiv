@@ -88,21 +88,24 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 
 	d, err := engine.mux(ctx, nsc, args.Namespace, args.Path, args.Ref)
 	if err != nil {
+		if derrors.IsNotFound(err) {
+			return nil, derrors.NewUncatchableError("direktiv.workflow.notfound", "workflow not found: %v", err.Error())
+		}
 		return nil, err
 	}
 
 	var wf model.Workflow
 	err = wf.Load(d.rev().Source)
 	if err != nil {
-		return nil, err
+		return nil, derrors.NewUncatchableError("direktiv.workflow.invalid", "cannot parse workflow '%s': %v", args.Path, err)
 	}
 
 	if len(wf.GetStartDefinition().GetEvents()) > 0 {
 		if strings.ToLower(args.Caller) == "api" {
-			return nil, errors.New("cannot manually invoke event-based workflow")
+			return nil, derrors.NewUncatchableError("direktiv.workflow.invoke", "cannot manually invoke event-based workflow")
 		}
 		if strings.HasPrefix(args.Caller, "instance") {
-			return nil, errors.New("cannot invoke event-based workflow as a subflow")
+			return nil, derrors.NewUncatchableError("direktiv.workflow.invoke", "cannot invoke event-based workflow as a subflow")
 		}
 	}
 
@@ -651,9 +654,6 @@ func (engine *engine) subflowInvoke(ctx context.Context, caller *subflowCaller, 
 
 	im, err := engine.NewInstance(ctx, args)
 	if err != nil {
-		if derrors.IsNotFound(err) {
-			return nil, derrors.NewUncatchableError("direktiv.workflow.notfound", "workflow not found: %v", err.Error())
-		}
 		return nil, err
 	}
 
