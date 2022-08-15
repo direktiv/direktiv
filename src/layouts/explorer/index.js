@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
 import './style.css';
 
+import CircularProgress from '@mui/material/CircularProgress';
+
+import Fade from '@mui/material/Fade';
 import { useNodes } from 'direktiv-react-hooks';
 import { FcWorkflow } from 'react-icons/fc';
 import { FiFolder } from 'react-icons/fi';
@@ -644,8 +647,28 @@ function ExplorerList(props) {
                 </FlexBox>
             </ContentPanelTitle>
             <ContentPanelBody style={{height:"100%"}}>
-                    <FlexBox className="col">
-                        {data !== null ? <>
+                <FlexBox className="col">
+                    {data === null || pageInfo === null ?
+                        <div className="explorer-item">
+                            <FlexBox className="explorer-item-container">
+                                <FlexBox style={{ display: "flex", alignItems: "center" }} className="explorer-item-icon">
+                                    <Fade
+                                        in={data === null || pageInfo === null}
+                                        style={{
+                                            transitionDelay: data === null || pageInfo === null ? '200ms' : '0ms',
+                                        }}
+                                        unmountOnExit
+                                    >
+                                        <CircularProgress size="1rem" color="primary"/>
+                                    </Fade>
+                                </FlexBox>
+                                <FlexBox style={{ fontSize: "10pt" }} className="explorer-item-name">
+                                    Loading results for '{path}'.
+                                </FlexBox>
+                            </FlexBox>
+                        </div>
+                        :
+                        <>
                         {data.children.results.length === 0 ? 
                                 <div className="explorer-item">
                                     <FlexBox className="explorer-item-container">
@@ -654,9 +677,6 @@ function ExplorerList(props) {
                                         </FlexBox>
                                         <FlexBox style={{fontSize:"10pt"}} className="explorer-item-name">
                                             No results found under '{path}'.
-                                        </FlexBox>
-                                        <FlexBox className="explorer-item-actions gap">
-                        
                                         </FlexBox>
                                     </FlexBox>
                                 </div>
@@ -669,7 +689,7 @@ function ExplorerList(props) {
                                 return (<WorkflowListItem namespace={namespace} renameNode={renameNode} deleteNode={deleteNode} path={obj.path} key={GenerateRandomKey("explorer-item-")} name={obj.name}/>)
                             }
                             return <></>
-                        })}</>}</>: <></>}
+                        })}</>}</>}
                     </FlexBox>
             </ContentPanelBody>
         </ContentPanel>
