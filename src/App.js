@@ -27,7 +27,7 @@ function App() {
                 let resp = await fetch(`${Config.url}version`,{
                     method: "GET",
                     headers: {
-                        apikey: akey
+                        "direktiv-token": akey
                     }
                 })
                 let respNoKey = await fetch(`${Config.url}version`,{
