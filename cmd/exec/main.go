@@ -94,6 +94,16 @@ func getOutput(url string) ([]byte, error) {
 		return nil, err
 	}
 
+	if resp.StatusCode != http.StatusOK {
+		errBody, err := ioutil.ReadAll(resp.Body)
+		if err == nil {
+			return nil, fmt.Errorf("failed to get instance output, server responded with %s\n------DUMPING ERROR BODY ------\n%s", resp.Status, string(errBody))
+		}
+
+		return nil, fmt.Errorf("failed to get instance output, server responded with %s\n------DUMPING ERROR BODY ------\nCould read response body", resp.Status)
+
+	}
+
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
