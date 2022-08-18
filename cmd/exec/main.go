@@ -95,6 +95,10 @@ func getOutput(url string) ([]byte, error) {
 	}
 
 	if resp.StatusCode != http.StatusOK {
+		if resp.StatusCode == http.StatusUnauthorized {
+			return nil, fmt.Errorf("failed to get instance output, request was unauthorized")
+		}
+
 		errBody, err := ioutil.ReadAll(resp.Body)
 		if err == nil {
 			return nil, fmt.Errorf("failed to get instance output, server responded with %s\n------DUMPING ERROR BODY ------\n%s", resp.Status, string(errBody))
