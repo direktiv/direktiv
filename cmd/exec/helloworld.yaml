@@ -1,0 +1,4 @@
+states:
+- id: hello
+  type: noop
+  transform: 'jq({ msg: "Hello, world!" })'

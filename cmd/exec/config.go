@@ -22,8 +22,7 @@ type ProfileConfig struct {
 	Addr      string `yaml:"addr" mapstructure:"addr"`
 	Path      string `yaml:"path" mapstructure:"path"`
 	Namespace string `yaml:"namespace" mapstructure:"namespace"`
-	Key       string `yaml:"api-key" mapstructure:"api-key"`
-	Token     string `yaml:"auth-token" mapstructure:"auth-token"`
+	Auth      string `yaml:"auth" mapstructure:"auth"`
 	MaxSize   int64  `yaml:"max-size" mapstructure:"max-size"`
 }
 
@@ -128,8 +127,8 @@ func findConfig() string {
 			}
 
 			if len(config.Profiles) > 0 {
-				if config.Addr != "" || config.ID != "" || config.Key != "" || config.MaxSize != 0 ||
-					config.Namespace != "" || config.Path != "" || config.Token != "" {
+				if config.Addr != "" || config.ID != "" || config.Auth != "" || config.MaxSize != 0 ||
+					config.Namespace != "" || config.Path != "" {
 					fail("config file cannot have top-level values alongside profiles")
 				}
 			}
@@ -180,30 +179,17 @@ func getTLSConfig() *tls.Config {
 
 }
 
-func getAPIKey() string {
+func getAuth() string {
 
-	return viper.GetString("api-key")
-
-}
-
-func getAuthToken() string {
-
-	return viper.GetString("auth-token")
-
+	return viper.GetString("auth")
 }
 
 func addAuthHeaders(req *http.Request) {
-
-	req.Header.Add("apikey", getAPIKey())
-	req.Header.Add("Direktiv-Token", getAuthToken())
-
+	req.Header.Add("Direktiv-Token", getAuth())
 }
 
 func addSSEAuthHeaders(client *sse.Client) {
-
-	client.Headers["apikey"] = getAPIKey()
-	client.Headers["Direktiv-Token"] = getAuthToken()
-
+	client.Headers["Direktiv-Token"] = getAuth()
 }
 
 func getRelativePath(configPath, targpath string) string {
