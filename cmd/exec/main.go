@@ -50,8 +50,7 @@ func main() {
 	rootCmd.PersistentFlags().StringP("addr", "a", "", "Target direktiv api address.")
 	rootCmd.PersistentFlags().StringP("path", "p", "", "Target remote workflow path .e.g. '/dir/workflow'. Automatically set if config file was auto-set.")
 	rootCmd.PersistentFlags().StringP("namespace", "n", "", "Target namespace to execute workflow on.")
-	rootCmd.PersistentFlags().StringP("api-key", "k", "", "Authenticate request with apikey.")
-	rootCmd.PersistentFlags().StringP("auth-token", "t", "", "Authenticate request with token.")
+	rootCmd.PersistentFlags().StringP("auth", "t", "", "Authenticate request with token or apikey.")
 	rootCmd.PersistentFlags().Bool("insecure", true, "Accept insecure https connections")
 
 	execCmd.Flags().StringVarP(&outputFlag, "output", "o", "", "Path where to write instance output. If unset output will be written to screen")
