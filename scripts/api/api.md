@@ -34,14 +34,14 @@ Direktiv Documentation can be found at https://docs.direktiv.io/
 
 ### Security Schemes
 
-#### api_key (header: KEY)
+#### direktiv-token (header: KEY)
 
 
 
 > **Type**: apikey
 
 ### Security Requirements
-  * api_key
+  * direktiv-token
 
 ## All endpoints
 

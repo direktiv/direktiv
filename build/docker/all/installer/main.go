@@ -211,7 +211,7 @@ func addNamespace() error {
 	req.Header.Set("Content-Type", "application/json; charset=utf-8")
 
 	if os.Getenv("APIKEY") != "" {
-		req.Header.Set("apikey", os.Getenv("APIKEY"))
+		req.Header.Set("direktiv-token", os.Getenv("APIKEY"))
 	}
 
 	resp, err := client.Do(req)
@@ -227,7 +227,7 @@ func addNamespace() error {
 	}
 
 	if os.Getenv("APIKEY") != "" {
-		req.Header.Set("apikey", os.Getenv("APIKEY"))
+		req.Header.Set("direktiv-token", os.Getenv("APIKEY"))
 	}
 
 	respSync, err := client.Do(req)
