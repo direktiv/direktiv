@@ -26,4 +26,6 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
+    - name: Install npm
+      run: npm install
     - run: npm outdated direktiv-react-hooks
