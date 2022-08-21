@@ -27,5 +27,6 @@ jobs:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
     - name: Install npm
-      run: npm install
-    - run: npm outdated direktiv-react-hooks
+      run: npm install --global yarn
+    - run: yarn install
+    - run: yarn outdated direktiv-react-hooks
