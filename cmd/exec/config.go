@@ -9,13 +9,15 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/direktiv/direktiv/pkg/project"
+	"github.com/gobwas/glob"
 	"github.com/r3labs/sse"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"gopkg.in/yaml.v3"
 )
 
-const DefaultConfigName = ".direktiv.yaml"
+const DefaultConfigName = project.ConfigFile
 
 type ProfileConfig struct {
 	ID        string `yaml:"id" mapstructure:"profile"`
@@ -27,13 +29,15 @@ type ProfileConfig struct {
 }
 
 type ConfigFile struct {
-	ProfileConfig `yaml:",inline" mapstructure:",squash"`
-	Profiles      []ProfileConfig `yaml:"profiles,flow" mapstructure:"profiles"`
-	profile       string
-	path          string
+	ProfileConfig  `yaml:",inline" mapstructure:",squash"`
+	project.Config `yaml:",inline" mapstructure:",squash"`
+	Profiles       []ProfileConfig `yaml:"profiles,flow" mapstructure:"profiles"`
+	profile        string
+	path           string
 }
 
 var config ConfigFile
+var globbers []glob.Glob
 
 func loadConfig(cmd *cobra.Command) {
 
@@ -51,6 +55,15 @@ func loadConfig(cmd *cobra.Command) {
 	}
 
 	path := findConfig()
+
+	globbers = make([]glob.Glob, 0)
+	for idx, pattern := range config.Ignore {
+		g, err := glob.Compile(pattern)
+		if err != nil {
+			fail("failed to parse %dth ignore pattern: %w", idx, err)
+		}
+		globbers = append(globbers, g)
+	}
 
 	profile, err := cmd.Flags().GetString("profile")
 	if err != nil {

@@ -21,6 +21,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entact "github.com/direktiv/direktiv/pkg/flow/ent/mirroractivity"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
+	"github.com/direktiv/direktiv/pkg/project"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/gobwas/glob"
 	"github.com/google/uuid"
@@ -1463,12 +1464,6 @@ func (model *mirrorModel) diff(repo *localRepository) error {
 
 }
 
-const syncConfigFile = ".direktiv.yaml"
-
-type syncConfig struct {
-	Ignore []string `yaml:"ignore"`
-}
-
 func buildModel(ctx context.Context, repo *localRepository) (*mirrorModel, error) {
 
 	model := new(mirrorModel)
@@ -1479,9 +1474,9 @@ func buildModel(ctx context.Context, repo *localRepository) (*mirrorModel, error
 		name:     ".", // TODO
 	}
 
-	cfg := new(syncConfig)
+	cfg := new(project.Config)
 
-	scfpath := filepath.Join(repo.path, syncConfigFile)
+	scfpath := filepath.Join(repo.path, project.ConfigFile)
 	scfgbytes, err := ioutil.ReadFile(scfpath)
 	if os.IsNotExist(err) {
 		cfg.Ignore = make([]string, 0)
