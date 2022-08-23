@@ -332,10 +332,44 @@ Will update the helloworld workflow and set the remote workflow variable 'data.j
 
 		relativeDir := getConfigPath()
 
+		// cull using ignores
+		x := make([]string, 0)
+		for _, localPath := range pathsToUpdate {
+
+			path := getRelativePath(relativeDir, localPath)
+
+			matched := false
+			for _, g := range globbers {
+				if g.Match(path) {
+					matched = true
+					break
+				}
+			}
+			if matched {
+				continue
+			}
+
+			x = append(x, localPath)
+
+		}
+
+		pathsToUpdate = x
+
 		cmd.PrintErrf("Found %v Local Workflow/s to update\n", len(pathsToUpdate))
 		for i, localPath := range pathsToUpdate {
 
 			path := getRelativePath(relativeDir, localPath)
+
+			matched := false
+			for _, g := range globbers {
+				if g.Match(path) {
+					matched = true
+					break
+				}
+			}
+			if matched {
+				continue
+			}
 
 			cmd.PrintErrf("[%v/%v] Updating Namespace: '%s' Workflow: '%s'\n", i+1, len(pathsToUpdate), getNamespace(), path)
 			err = updateRemoteWorkflow(path, localPath)

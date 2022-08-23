@@ -21,10 +21,13 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entact "github.com/direktiv/direktiv/pkg/flow/ent/mirroractivity"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
+	"github.com/direktiv/direktiv/pkg/project"
 	"github.com/direktiv/direktiv/pkg/util"
+	"github.com/gobwas/glob"
 	"github.com/google/uuid"
 	git "github.com/libgit2/git2go/v33"
 	"github.com/mitchellh/hashstructure/v2"
+	"gopkg.in/yaml.v3"
 )
 
 type syncer struct {
@@ -1471,7 +1474,31 @@ func buildModel(ctx context.Context, repo *localRepository) (*mirrorModel, error
 		name:     ".", // TODO
 	}
 
-	err := filepath.WalkDir(repo.path, func(path string, d fs.DirEntry, err error) error {
+	cfg := new(project.Config)
+
+	scfpath := filepath.Join(repo.path, project.ConfigFile)
+	scfgbytes, err := ioutil.ReadFile(scfpath)
+	if os.IsNotExist(err) {
+		cfg.Ignore = make([]string, 0)
+	} else if err != nil {
+		return nil, fmt.Errorf("failed to read direktiv config file: %w", err)
+	} else {
+		err := yaml.Unmarshal(scfgbytes, cfg)
+		if err != nil {
+			return nil, fmt.Errorf("failed to unmarshal direktiv config file: %w", err)
+		}
+	}
+
+	globbers := make([]glob.Glob, 0)
+	for idx, pattern := range cfg.Ignore {
+		g, err := glob.Compile(pattern)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse %dth ignore pattern: %w", idx, err)
+		}
+		globbers = append(globbers, g)
+	}
+
+	err = filepath.WalkDir(repo.path, func(path string, d fs.DirEntry, err error) error {
 
 		rel, err := filepath.Rel(repo.path, path)
 		if err != nil {
@@ -1484,6 +1511,19 @@ func buildModel(ctx context.Context, repo *localRepository) (*mirrorModel, error
 
 		if rel == ".git" {
 			return filepath.SkipDir
+		}
+
+		if rel == ".direktiv.yaml" {
+			return nil
+		}
+
+		for _, g := range globbers {
+			if g.Match(rel) {
+				if d.IsDir() {
+					return filepath.SkipDir
+				}
+				return nil
+			}
 		}
 
 		_, base := filepath.Split(path)
@@ -1499,14 +1539,6 @@ func buildModel(ctx context.Context, repo *localRepository) (*mirrorModel, error
 			return nil
 		}
 
-		if !d.IsDir() && (strings.HasSuffix(base, ".yaml") || strings.HasSuffix(base, ".yml")) {
-			err = model.addWorkflowNode(rel)
-			if err != nil {
-				return err
-			}
-			return nil
-		}
-
 		if strings.HasPrefix(base, "var.") {
 			err = model.addNamespaceVariableNode(rel, d.IsDir())
 			if err != nil {
@@ -1514,6 +1546,14 @@ func buildModel(ctx context.Context, repo *localRepository) (*mirrorModel, error
 			}
 			if d.IsDir() {
 				return filepath.SkipDir
+			}
+			return nil
+		}
+
+		if !d.IsDir() && (strings.HasSuffix(base, ".yaml") || strings.HasSuffix(base, ".yml")) {
+			err = model.addWorkflowNode(rel)
+			if err != nil {
+				return err
 			}
 			return nil
 		}
