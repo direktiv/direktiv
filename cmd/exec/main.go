@@ -513,9 +513,9 @@ Will update the helloworld workflow and set the remote workflow variable 'data.j
 					log.Fatalln(err)
 				}
 
-				if len(logResp.Edges) > 0 {
-					for _, edge := range logResp.Edges {
-						cmd.PrintErrf("%v: %s\n", edge.Node.T.In(time.Local).Format("02 Jan 06 15:04 MST"), edge.Node.Msg)
+				if len(logResp.Results) > 0 {
+					for _, edge := range logResp.Results {
+						cmd.PrintErrf("%v: %s\n", edge.T.In(time.Local).Format("02 Jan 06 15:04 MST"), edge.Msg)
 					}
 				}
 			}
