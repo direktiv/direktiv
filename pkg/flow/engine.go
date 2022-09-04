@@ -337,9 +337,16 @@ func (engine *engine) Transition(ctx context.Context, im *instanceMemory, nextSt
 
 func (engine *engine) CrashInstance(ctx context.Context, im *instanceMemory, err error) {
 
-	engine.sugar.Errorf("Instance failed with uncatchable error: %v", err)
-
-	engine.logToInstance(ctx, time.Now(), im.in, "Instance failed with uncatchable error: %s", err.Error())
+	if cerr, catchable := err.(*derrors.CatchableError); catchable {
+		engine.sugar.Errorf("Instance failed with error '%s': %v", cerr.Code, err)
+		engine.logToInstance(ctx, time.Now(), im.in, "Instance failed with error '%s': %s", cerr.Code, err.Error())
+	} else if uerr, uncatchable := err.(*derrors.UncatchableError); uncatchable && uerr.Code != "" {
+		engine.sugar.Errorf("Instance failed with uncatchable error '%s': %v", uerr.Code, err)
+		engine.logToInstance(ctx, time.Now(), im.in, "Instance failed with uncatchable error '%s': %s", uerr.Code, err.Error())
+	} else {
+		engine.sugar.Errorf("Instance failed with uncatchable error: %v", err)
+		engine.logToInstance(ctx, time.Now(), im.in, "Instance failed with uncatchable error: %s", err.Error())
+	}
 
 	err = engine.SetInstanceFailed(ctx, im, err)
 	if err != nil {
