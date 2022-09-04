@@ -134,7 +134,7 @@ func cmdPrepareSharedValues() {
 
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = getTLSConfig()
 
-	urlPrefix = fmt.Sprintf("%s/api/namespaces/%s", addr, namespace)
+	urlPrefix = fmt.Sprintf("%s/api/namespaces/%s", strings.Trim(addr, "/"), strings.Trim(namespace, "/"))
 }
 
 func cmdPrepareWorkflow(wfPath string) {
