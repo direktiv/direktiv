@@ -39,7 +39,7 @@ function NamespaceNavigation(props){
     // on mount check if namespace is stored in local storage and exists in the response given back
     useEffect(()=>{
         // only do this check if its not provided in the params
-        if (namespaces !== null && namespaces.length > 0) {
+        if (namespaces !== null && namespaces !== undefined && namespaces.length > 0) {
             let urlpath = window.location.pathname.split("/")
             let ns = localStorage.getItem('namespace')
             if(urlpath[1] && urlpath[1] === "n"){
@@ -81,7 +81,7 @@ function NamespaceNavigation(props){
             setLoad(false)
         }
 
-        if(namespaces !== null && namespaces.length === 0 && window.location.pathname !== "/") {
+        if(namespaces !== null  && namespaces !== undefined && namespaces.length === 0 && window.location.pathname !== "/") {
             navigate("/", {replace: true})
         }
     },[namespaces, navigate, setNamespace, namespace, load])
