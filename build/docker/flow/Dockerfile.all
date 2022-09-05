@@ -1,4 +1,4 @@
-FROM ubuntu:21.04 as libgit
+FROM ubuntu:22.04 as libgit
 
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get clean && apt-get update
