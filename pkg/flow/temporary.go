@@ -131,7 +131,7 @@ func (im *instanceMemory) ListenForEvents(ctx context.Context, events []*model.C
 		return err
 	}
 
-	err = im.engine.events.listenForEvents(ctx, im, events, false)
+	err = im.engine.events.listenForEvents(ctx, im, events, all)
 	if err != nil {
 		return err
 	}
