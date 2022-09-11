@@ -192,7 +192,7 @@ function ExplorerList(props) {
     useEffect(() => {
         // TODO: This will interfere with page position if initPage > 1
         goToFirstPage()
-    }, [search, goToFirstPage])
+    }, [search, goToFirstPage, path])
 
 
     // Mirror
