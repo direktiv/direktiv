@@ -1,7 +1,6 @@
 import { useJQPlayground } from 'direktiv-react-hooks';
 import { useCallback, useEffect, useState } from 'react';
 import { VscFileCode, VscArrowRight } from 'react-icons/vsc';
-import Button from '../../components/button';
 import ContentPanel, { ContentPanelBody, ContentPanelTitle, ContentPanelTitleIcon } from '../../components/content-panel';
 import DirektivEditor from '../../components/editor';
 import Alert from '../../components/alert';
@@ -9,6 +8,7 @@ import FlexBox from '../../components/flexbox';
 import HelpIcon from '../../components/help';
 import { Config } from '../../util';
 import './style.css';
+import Button from '../../components/button';
 
 
 export default function JQPlayground() {
@@ -51,8 +51,8 @@ export default function JQPlayground() {
     return(
         <FlexBox id="jq-page" className="col gap" style={{paddingRight:"8px"}}>
             <JQFilter data={input} query={filter} error={error} setFilter={setFilter} executeJQ={executeAndSave} setError={setError}/>
-            <FlexBox className="gap col" >
-                <FlexBox className="gap wrap">
+            <FlexBox col gap >
+                <FlexBox gap wrap>
                     <FlexBox style={{minWidth:"380px"}}>
                         <JQInput input={input} setInput={setInput}/>
                     </FlexBox>
@@ -61,7 +61,7 @@ export default function JQPlayground() {
                     </FlexBox>
                 </FlexBox>
             </FlexBox>
-            <FlexBox className="gap col" >
+            <FlexBox col gap >
                 <FlexBox className="gap box-wrap">
                     <HowToJQ />
                     <ExamplesJQ cheatSheet={cheatSheet} setFilter={setFilter} setInput={setInput} executeJQ={executeAndSave} setError={setError}/>
@@ -79,7 +79,7 @@ function HowToJQ(){
                         <ContentPanelTitleIcon>
                             <VscFileCode/>
                         </ContentPanelTitleIcon>
-                        <FlexBox className="gap" style={{ alignItems: "center"}}>
+                        <FlexBox gap style={{ alignItems: "center"}}>
                             <div>
                                 How it works
                             </div>
@@ -87,7 +87,7 @@ function HowToJQ(){
                         </FlexBox>
                     </ContentPanelTitle>
                     <ContentPanelBody>
-                        <FlexBox className="col gap" style={{fontSize:"10pt"}}>
+                        <FlexBox col gap style={{fontSize:"10pt"}}>
                             <span style={{fontWeight:"bold"}}>JQ Playground is an envrioment where you can quickly test your jq commands against JSON.</span>
                             <span>There are two inputs in the playground:</span>
                             <ul>
@@ -100,14 +100,16 @@ function HowToJQ(){
                             <div>
                                 For information on the JQ syntax, please refer to the offical JQ manual online.
                             </div>
-                            <Button className="small light bold shadow">
-                                <FlexBox className="gap">
-                                    <VscArrowRight className="auto-margin" />
-                                    <a href="https://stedolan.github.io/jq/manual/">
-                                        View JQ Manual
-                                    </a>
-                                </FlexBox>
-                            </Button>
+                            <div>
+                                <Button variant='outlined' color="info">
+                                    <FlexBox gap>
+                                        <VscArrowRight className="auto-margin" />
+                                        <a href="https://stedolan.github.io/jq/manual/">
+                                            View JQ Manual
+                                        </a>
+                                    </FlexBox>
+                                </Button>
+                            </div>
                         </FlexBox>
                     </ContentPanelBody>
             </ContentPanel>
@@ -137,7 +139,7 @@ function ExamplesJQ(props){
                         <ContentPanelTitleIcon>
                             <VscFileCode/>
                         </ContentPanelTitleIcon>
-                        <FlexBox className="gap" style={{ alignItems: "center" }}>
+                        <FlexBox gap style={{ alignItems: "center" }}>
                             <div>
                                 Cheatsheet
                             </div>
@@ -158,8 +160,8 @@ function ExamplesJQ(props){
                                                 {obj.tip}
                                             </td>
                                             <td style={{ width: "20%"}} onClick={()=>loadJQ(obj.filter, obj.json)}>
-                                                <Button className="small light bold shadow">
-                                                    <FlexBox className="gap">
+                                                <Button variant='outlined' color="info">
+                                                    <FlexBox gap>
                                                         <VscFileCode className="auto-margin" />
                                                         <div>
                                                             Load
@@ -185,8 +187,8 @@ function ExamplesJQ(props){
                                                 {obj.tip}
                                             </td>
                                             <td style={{ width: "20%"}} onClick={()=>loadJQ(obj.filter, obj.json)}>
-                                                <Button className="small light bold shadow">
-                                                    <FlexBox className="gap">
+                                                <Button variant='outlined' color="info">
+                                                    <FlexBox gap>
                                                         <VscFileCode className="auto-margin" />
                                                         <div>
                                                             Load
@@ -224,7 +226,7 @@ function JQOutput(props) {
                     <ContentPanelTitleIcon>
                         <VscFileCode/>
                     </ContentPanelTitleIcon>
-                    <FlexBox className="gap" style={{ alignItems: "center" }}>
+                    <FlexBox gap style={{ alignItems: "center" }}>
                         <div>
                             Output
                         </div>
@@ -248,7 +250,7 @@ function JQInput(props) {
                     <ContentPanelTitleIcon>
                         <VscFileCode/>
                     </ContentPanelTitleIcon>
-                    <FlexBox className="gap" style={{ alignItems: "center" }}>
+                    <FlexBox gap style={{ alignItems: "center" }}>
                         <div>
                             Input
                         </div>
@@ -294,7 +296,7 @@ function JQFilter(props) {
                     <ContentPanelTitleIcon>
                         <VscFileCode/>
                     </ContentPanelTitleIcon>
-                    <FlexBox className="gap" style={{ alignItems: "center" }}>
+                    <FlexBox gap style={{ alignItems: "center" }}>
                         <div>
                             JQ Filter
                         </div>
@@ -302,20 +304,19 @@ function JQFilter(props) {
                     </FlexBox>
                 </ContentPanelTitle>
                 <ContentPanelBody >
-                    <FlexBox className="gap wrap" style={{height:"40px"}}>
+                    <FlexBox className="gap wrap center-y" style={{height:"40px"}}>
                         <FlexBox style={{fontSize: "12pt"}} >
                             <input style={{height:"28px", width:"100%"}} onChange={(e)=>setFilter(e.target.value)} value={query} placeholder={"Enter a Filter to JQ on"} type="text" />
                         </FlexBox>
                         <FlexBox style={{maxWidth:"65px"}}>
-                             
-                            <Button className="small" onClick={()=>execute()}>
+                            <Button onClick={()=>execute()}>
                                 Execute
                             </Button>
                         </FlexBox>
                     </FlexBox>
                 </ContentPanelBody>
                 <FlexBox>
-                {error ? <Alert className="error-message"><div><span>error executing JQ command:</span>{error.replace("execute jq: error executing JQ command:", "")}</div></Alert> : null}
+                {error ? <Alert severity="error" variant="filled" grow onClose={()=>{setError(null)}}><div><span>error executing JQ command:</span>{error.replace("execute jq: error executing JQ command:", "")}</div></Alert> : null}
                 </FlexBox>
             </ContentPanel>
         </FlexBox>

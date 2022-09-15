@@ -3,12 +3,14 @@ import { VscLayers } from 'react-icons/vsc';
 import { useNavigate, useParams } from "react-router"
 import { Service } from "../namespace-services"
 import { RevisionCreatePanel, UpdateTraffic } from "../namespace-services/revisions"
-import AddValueButton from "../../components/add-button"
 import ContentPanel, { ContentPanelBody, ContentPanelTitle, ContentPanelTitleIcon } from "../../components/content-panel"
 import FlexBox from "../../components/flexbox"
-import Modal, { ButtonDefinition, KeyDownDefinition } from "../../components/modal"
+import Modal  from "../../components/modal"
 import { Config } from "../../util"
 import { useGlobalService } from "direktiv-react-hooks"
+
+import { VscAdd } from 'react-icons/vsc';
+
 
 export default function GlobalRevisionsPanel(props){
     const {service} = useParams()
@@ -52,9 +54,9 @@ export default function GlobalRevisionsPanel(props){
         return <></>
     }
 
-    return(
-        <FlexBox className="gap wrap" style={{paddingRight:"8px"}}>
-            <FlexBox  className="gap">
+    return (
+        <FlexBox gap wrap style={{paddingRight:"8px"}}>
+            <FlexBox  gap>
                     <FlexBox>
                         <ContentPanel style={{width:"100%"}}>
                         <ContentPanelTitle>
@@ -75,21 +77,48 @@ export default function GlobalRevisionsPanel(props){
                                 onClose={()=>{
                                 }}
                                 button={(
-                                    <AddValueButton  label=" " />
-                                )}  
+                                    <VscAdd/>
+                                )}
+                                buttonProps={{
+                                    auto: true,
+                                }}
                                 keyDownActions={[
-                                    KeyDownDefinition("Enter", async () => {
-                                    },()=>{}, true)
+                                    {
+                                        code: "Enter",
+
+                                        fn: async () => {
+                                        },
+
+                                        errFunc: ()=>{},
+                                        closeModal: true
+                                    }
                                 ]}
                                 requiredFields={[
                                     {tip: "image is required", value: image}
                                 ]}
                                 actionButtons={[
-                                    ButtonDefinition("Add", async () => {
-                                        await createGlobalServiceRevision(image, parseInt(scale), parseInt(size), cmd, parseInt(trafficPercent))
-                                    }, "small", ()=>{}, true, false, true),
-                                    ButtonDefinition("Cancel", () => {
-                                    }, "small light", ()=>{}, true, false)
+                                    {
+                                        label: "Add",
+
+                                        onClick: async () => {
+                                            await createGlobalServiceRevision(image, parseInt(scale), parseInt(size), cmd, parseInt(trafficPercent))
+                                        },
+
+                                        buttonProps: {variant: "contained", color: "primary"},
+                                        errFunc: ()=>{},
+                                        closesModal: true,
+                                        validate: true
+                                    },
+                                    {
+                                        label: "Cancel",
+
+                                        onClick: () => {
+                                        },
+
+                                        buttonProps: {},
+                                        errFunc: ()=>{},
+                                        closesModal: true
+                                    }
                                 ]}
                             >
                                 {config !== null ? 
@@ -105,8 +134,8 @@ export default function GlobalRevisionsPanel(props){
                         </div>
                         </ContentPanelTitle>
                             <ContentPanelBody className="secrets-panel">
-                                <FlexBox className="gap col">
-                                    <FlexBox className="col gap">
+                                <FlexBox col gap>
+                                    <FlexBox col gap>
                                         {
                                             revisions.sort((a, b)=> (a.created > b.created) ? -1 : 1).map((obj, key)=>{
                                             let dontDelete = false
@@ -148,5 +177,5 @@ export default function GlobalRevisionsPanel(props){
                     }
                     </FlexBox>
         </FlexBox>
-    )
+    );
 }

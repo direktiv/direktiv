@@ -21,7 +21,7 @@ export default function PodPanel(props) {
     }
 
     return(
-        <FlexBox className="gap wrap" style={{paddingRight:"8px"}}>
+        <FlexBox gap wrap style={{paddingRight:"8px"}}>
             <NamespaceRevisionDetails service={service} namespace={namespace} revision={revision}/>
         </FlexBox>
     )
@@ -49,7 +49,7 @@ function NamespaceRevisionDetails(props){
     
 
     return(
-        <FlexBox className="col gap">
+        <FlexBox col gap>
             <div >
                 <ContentPanel style={{width:"100%"}}>
                     <ContentPanelTitle>
@@ -62,7 +62,7 @@ function NamespaceRevisionDetails(props){
                     </ContentPanelTitle>
                         <ContentPanelBody className="secrets-panel" style={{fontSize:"11pt"}}>
                             <FlexBox className="wrap gap" style={{padding:"10px"}}>
-                                <FlexBox className="col gap" style={{minWidth: "200px"}}>
+                                <FlexBox col gap style={{minWidth: "200px"}}>
                                     <div>
                                         <span style={{fontWeight:"bold"}}>Created:</span> 
                                         <span style={{marginLeft:"5px"}}>{dayjs.unix(revisionDetails.created).format("HH:mmA, DD/MM/YYYY")}</span>
@@ -90,7 +90,7 @@ function NamespaceRevisionDetails(props){
                                         </ul>
                                     </div>:""}
                                 </FlexBox>
-                                <FlexBox className="col gap" style={{minWidth: "200px"}}>
+                                <FlexBox col gap style={{minWidth: "200px"}}>
                                     <div>
                                         <span style={{fontWeight:"bold"}}>Image:</span>
                                         <span style={{marginLeft:"5px"}}>{revisionDetails.image}</span>
@@ -108,7 +108,7 @@ function NamespaceRevisionDetails(props){
                                         <span style={{marginLeft:"5px"}}>{revisionDetails.desiredReplicas}</span>
                                     </div>
                                 </FlexBox>
-                                <FlexBox className="col gap" style={{minWidth: "200px"}}>
+                                <FlexBox col gap style={{minWidth: "200px"}}>
                                     <span style={{fontWeight:"bold"}}>Conditions:</span>
                                     <ul style={{marginTop:"0px", listStyle:"none", paddingLeft:'10px'}}>
                                             {revisionDetails.conditions.map((obj)=>{
@@ -162,7 +162,7 @@ export function PodLogs(props){
                 </FlexBox>
             </ContentPanelTitle>
                 <ContentPanelBody className="secrets-panel" style={{color:"white"}}>
-                    <FlexBox className="col" style={{backgroundColor:"#223848"}}>
+                    <FlexBox col style={{backgroundColor:"#223848"}}>
                         <FlexBox style={{maxHeight:"30px"}}>
                             {pods.map((obj)=>{
                                 let name = `global-${service}-${revision}-deployment-`
@@ -196,7 +196,7 @@ export function PodLogs(props){
                                  tab.split(`global-${service}-${revision}-deployment-`)
                                 }
                             </div>
-                            <FlexBox className="gap" style={{justifyContent:"flex-end"}}>
+                            <FlexBox gap style={{justifyContent:"flex-end"}}>
                                 <LogFooterButtons follow={follow} setFollow={setFollow} clipData={clipData}/>
                             </FlexBox>
                         </FlexBox>

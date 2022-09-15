@@ -21,7 +21,7 @@ export default function WorkflowRevisions(props) {
     }
 
     return (
-        <FlexBox className="gap wrap" style={{paddingRight: "8px"}}>
+        <FlexBox gap wrap style={{paddingRight: "8px"}}>
         <FlexBox style={{flex: 6}}>
             <ContentPanel style={{width: "100%"}}>
                 <ContentPanelTitle>
@@ -34,8 +34,8 @@ export default function WorkflowRevisions(props) {
                 </ContentPanelTitle>
                 <ContentPanelBody>
 
-                    <FlexBox className="gap col">
-                        <FlexBox className="gap col">
+                    <FlexBox col gap>
+                        <FlexBox col gap>
                             {revisions.map((obj) => {
                                 let dontDelete = true
 

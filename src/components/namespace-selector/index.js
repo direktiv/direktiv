@@ -11,8 +11,15 @@ import Identicon from 'react-identicons';
 import Tippy from '@tippyjs/react';
 import 'tippy.js/dist/tippy.css';
 
+/**
+* Interactable expandable list of available namespaces to select current namespace. List namespaces are links
+* and the parent should handle the state of namespace be extracting it from the route. 
+* * Props
+*   * namespace: Currently selected namespace. This value is handled by the parent and based on the current route.
+*   * namespaces: Array of available namespaces.
+*/
 function NamespaceSelector(props) {
-    let {style, className, namespaces, namespace, toggleResponsive} = props;
+    let {style, className, namespaces, namespace} = props;
     const [showSelector, setShowSelector] = useState(false);
     const wrapperRef = useRef(null);
     useOutsideCallback(wrapperRef, showSelector ? ()=>{
@@ -53,14 +60,14 @@ function NamespaceSelector(props) {
     return (
         <div ref={wrapperRef} style={{width: "100%"}}>
             {(!!namespace) &&
-                <FlexBox className="col gap">
+                <FlexBox col gap>
                     <FlexBox onClick={() => {
                         setShowSelector(!showSelector)
                     }} style={{...style, maxHeight: "64px"}} className={className + " ns-hover"}>
 
                         <FlexBox className={namespaceSelectorClass}>
                             <NamespaceListItem disabled namespace={namespace} label="ACTIVE NAMESPACE" loading={loading} />
-                            <FlexBox className="tall">
+                            <FlexBox tall>
                                 <div className="auto-margin grey-text">
                                     <VscChevronDown className={chevronClass} style={{ marginTop: "8px" }} />
                                 </div>
@@ -70,7 +77,7 @@ function NamespaceSelector(props) {
                     <FlexBox className={selectorBorderClass}>
                     <FlexBox className={selectorClass}>
                         {namespaces !== null ?
-                        <NamespaceList toggleResponsive={toggleResponsive} setShowSelector={setShowSelector} namespaces={namespaces}/>:""}
+                        <NamespaceList setShowSelector={setShowSelector} namespaces={namespaces}/>:""}
                     </FlexBox>
                     </FlexBox>
                 </FlexBox>
@@ -105,14 +112,14 @@ function NamespaceListItem(props) {
     return (
         <NamespaceListItemLink disabled={disabled} namespace={namespace} setShowSelector={setShowSelector}>
             <FlexBox className={className} style={{height: "45px", minHeight: "44px", maxHeight: "45px"}}>
-                <FlexBox className="">
+                <FlexBox >
                     <FlexBox className="namespace-selector-logo">
                         <div className="auto-margin" style={{paddingTop: "3px", marginLeft: "3px", filter: "opacity(60%)"}}>
                             <Identicon string={namespace} size={39} />
                         </div>
                     </FlexBox>
                     
-                    <FlexBox className="col">
+                    <FlexBox col>
                      {namespace.length > 15 ? 
                      <Tippy content={namespace}>
                      <div className="auto-margin" style={{marginLeft: "8px"}}>

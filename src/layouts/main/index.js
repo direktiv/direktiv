@@ -93,9 +93,9 @@ function NamespaceNavigation(props){
     return(
         <FlexBox className="content-col col">
             <FlexBox className="breadcrumbs-row">
-                <Breadcrumbs namespace={namespace} additionalChildren={breadcrumbChildren}/>
+                { namespace? <Breadcrumbs namespace={namespace} additionalChildren={breadcrumbChildren}/> :<></>}
             </FlexBox>
-            <FlexBox className="col" style={{paddingBottom: "8px"}}>
+            <FlexBox col style={{paddingBottom: "8px"}}>
                 {namespaces !== null ? 
                 <Routes>
                     <Route path="/" element={
@@ -227,14 +227,13 @@ function ResponsiveHeaderBar(props) {
                     <Button onClick={(e) => {
                             setToggleResponsive(!toggleResponsive)
                             e.stopPropagation()
-                        }} className="light small" style={{
+                        }} variant="outlined" color="info" style={{
                             marginTop: "5px",
                             marginLeft: "5px",
-                            maxWidth: "32px",
-                            paddingBottom: "8px"
+                            maxWidth: "32px"
                         }}>
-                            <IoMenu className="auto-margin" style={{
-                                fontSize: "18px"
+                            <IoMenu style={{
+                                fontSize: "20px"
                             }} />
                     </Button>
                 </div>

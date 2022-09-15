@@ -17,7 +17,7 @@ function BroadcastConfigurationsPanel(props){
                 <ContentPanelTitleIcon>
                     <VscSettings />
                 </ContentPanelTitleIcon>
-                <FlexBox style={{display:"flex", alignItems:"center"}} className="gap">
+                <FlexBox style={{display:"flex", alignItems:"center"}} gap>
                     <div>
                         Broadcast Configurations   
                     </div>
@@ -41,7 +41,7 @@ function BroadcastOptions(props) {
     const {config, setBroadcastConfiguration, getBroadcastConfiguration} = props
     return(
         <FlexBox>
-            <FlexBox className="col gap">
+            <FlexBox col gap>
                 <FlexBox className="options-row">
                 <BroadcastOptionsRow 
                     title="Directory" 

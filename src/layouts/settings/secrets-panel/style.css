@@ -9,7 +9,6 @@
 
 .secret-tuple .actions {
     max-width: 20px;
-    margin-top: 2px;
     flex: 1;
     flex-basis: 0;
 }

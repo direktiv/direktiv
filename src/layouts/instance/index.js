@@ -165,7 +165,7 @@ function InstancePage(props) {
 
     return (
     <Loader load={load} timer={3000}>
-        <FlexBox className="col gap" style={{paddingRight: "8px"}}>
+        <FlexBox col gap style={{paddingRight: "8px"}}>
             <FlexBox className={`gap wrap ${hideClassIf("output")}`} style={{minHeight: "50%", flex: "1"}}>
                 <FlexBox className={`${getHideClass("logs")}`} style={{minWidth: "340px", flex: "5", }}>
                     <ContentPanel style={{width: "100%", minHeight: "40vh"}}>
@@ -173,14 +173,14 @@ function InstancePage(props) {
                             <ContentPanelTitleIcon>
                                 <VscTerminal />
                             </ContentPanelTitleIcon>
-                            <FlexBox className="gap" style={{alignItems:"center"}}>
+                            <FlexBox gap style={{alignItems:"center"}}>
                                 <div>
                                     Instance Details
                                 </div>
                                 {label} 
-                                <FlexBox className="row center-y gap" style={{justifyContent: "flex-end", marginRight:"8px"}}>
+                                <FlexBox row gap center="y"  style={{justifyContent: "flex-end"}}>
                                     { data.status === "running" || data.status === "pending" ? 
-                                    <Button className="small light" style={{marginRight: "8px"}} onClick={() => {
+                                    <Button color="info" variant="outlined" onClick={() => {
                                         cancelInstance()
                                         setLoad(true)
                                     }}>
@@ -195,15 +195,13 @@ function InstancePage(props) {
                                     </>
                                     :
                                     <Link to={`/n/${namespace}/explorer/${wfName}?${ref==="latest" ? `tab=2` : `tab=1&revision=${rev}&revtab=0` }`}>
-                                        <Button className="small light black">
+                                        <Button color="info" variant="outlined">
                                             <span className="hide-600">View</span> Workflow
                                         </Button>
                                     </Link>
                                     }
-                                    <Button tip={onlyShow ? "Collapse Window" : "Expand Window"} className="small light black" onClick={()=>toggleFullscreen("logs")}>
-                                        <FlexBox className="col center" style={{fontSize: "15px"}} >
-                                            {onlyShow ? <VscScreenNormal/> :<VscScreenFull />}
-                                        </FlexBox>
+                                    <Button tooltip={onlyShow ? "Collapse Window" : "Expand Window"} color="info" variant="outlined" onClick={()=>toggleFullscreen("logs")} style={{marginTop:"2px"}}>
+                                        {onlyShow ? <VscScreenNormal/> :<VscScreenFull />}
                                     </Button>
                                 </FlexBox>
                             </FlexBox>
@@ -218,13 +216,13 @@ function InstancePage(props) {
                             <ContentPanelTitleIcon>
                                 <VscTerminal />
                             </ContentPanelTitleIcon>
-                            <FlexBox className="gap">
+                            <FlexBox gap>
                                 <div>
                                 Input
                                 </div>
-                                <FlexBox className="row center-y gap" style={{ justifyContent: "flex-end", marginRight: "8px" }}>
-                                    <Button tip={onlyShow ? "Collapse Window" : "Expand Window"} className="small light black" onClick={() => toggleFullscreen("input")}>
-                                        <FlexBox className="col center" style={{ fontSize: "15px" }} >
+                                <FlexBox row gap center="y"  style={{ justifyContent: "flex-end"}}>
+                                    <Button tooltip={onlyShow ? "Collapse Window" : "Expand Window"} color="info" variant="outlined" onClick={() => toggleFullscreen("input")}>
+                                        <FlexBox col center style={{ fontSize: "15px" }} >
                                             {onlyShow ? <VscScreenNormal /> : <VscScreenFull />}
                                         </FlexBox>
                                     </Button>
@@ -245,13 +243,13 @@ function InstancePage(props) {
                             <ContentPanelTitleIcon>
                                 <VscSourceControl />
                             </ContentPanelTitleIcon>
-                            <FlexBox className="gap" style={{alignItems:"center"}}>
+                            <FlexBox gap style={{alignItems:"center"}}>
                                 <div style={{flex: "1", whiteSpace: "nowrap"}}>
                                     {`${tabBtn === 0 ? "Flow Graph" : "Child Instances"}`}
                                 </div>
                                 {tabBtn === 1 && data.invoker.startsWith("instance:") ?
                                     <Link to={`/n/${namespace}/instances/${data.invoker.replace("instance:", "")}`} reloadDocument>
-                                    <Button className="small light">
+                                    <Button color="info" variant="outlined">
                                         <span className="hide-600">View</span> Parent
                                     </Button>
                                     </Link>
@@ -271,13 +269,13 @@ function InstancePage(props) {
                             <ContentPanelTitleIcon>
                                 <VscTerminal />
                             </ContentPanelTitleIcon>
-                            <FlexBox className="gap">
+                            <FlexBox gap>
                                 <div>
                                 Output
                                 </div>
-                                <FlexBox className="row center-y gap" style={{ justifyContent: "flex-end", marginRight: "8px" }}>
-                                    <Button tip={onlyShow ? "Collapse Window" : "Expand Window"} className="small light black" onClick={() => toggleFullscreen("output")}>
-                                        <FlexBox className="col center" style={{ fontSize: "15px" }} >
+                                <FlexBox row gap center="y"  style={{ justifyContent: "flex-end"}}>
+                                    <Button tooltip={onlyShow ? "Collapse Window" : "Expand Window"} color="info" variant="outlined" onClick={() => toggleFullscreen("output")}>
+                                        <FlexBox col center style={{ fontSize: "15px" }} >
                                             {onlyShow ? <VscScreenNormal /> : <VscScreenFull />}
                                         </FlexBox>
                                     </Button>
@@ -308,12 +306,12 @@ function InstanceLogs(props) {
 
     return (
         <>
-            <FlexBox className="col" style={{...paddingStyle}}>
+            <FlexBox col style={{...paddingStyle}}>
                 <FlexBox className={"logs"}>
                     <Logs logItems={data} wordWrap={wordWrap} autoScroll={follow} setAutoScroll={setFollow}/>
                 </FlexBox>
                 <div className={"logs-footer"} style={{  alignItems:'center', borderRadius: " 0px 0px 8px 8px", overflow: "hidden" }}>
-                    <FlexBox className="gap" style={{width: "100%", flexDirection: "row-reverse", height: "100%", alignItems: "center"}}>
+                    <FlexBox gap style={{width: "100%", flexDirection: "row-reverse", height: "100%", alignItems: "center"}}>
                         <LogFooterButtons setFollow={setFollow} follow={follow} wordWrap={wordWrap} setWordWrap={setWordWrap} data={data}/>
                     </FlexBox>
                 </div>
@@ -394,7 +392,7 @@ function Input(props) {
     return(
         <FlexBox style={{flexDirection:"column"}}>
             {!input ? 
-            <Alert className="instance-input-banner">No input data was provided</Alert> : null}
+            <Alert severity="info">No input data was provided</Alert> : null}
             <FlexBox style={{overflow: "hidden"}}>
                 {/* <div style={{width: "100%", height: "100%"}}> */}
                     <AutoSizer>
@@ -430,17 +428,17 @@ function Output(props){
         get()
     },[output, load, getOutput, status])
 
-    return(
-        <FlexBox style={{flexDirection:"column"}}>
-        {!output ? 
-            <Alert className="instance-input-banner">No output data was resolved</Alert> : null}
-        <FlexBox style={{padding: "0px", overflow: "hidden"}}>
-            <AutoSizer>
-                {({height, width})=>(
-                    <DirektivEditor disableCursor height={height} width={width} dlang="json" value={output} readonly={true}/>
-                )}
-            </AutoSizer>
-        </FlexBox>
+    return (
+        <FlexBox col gap>
+            {!output ?
+                <Alert severity="info">No output data was resolved</Alert> : null}
+            <FlexBox style={{ padding: "0px", overflow: "hidden" }}>
+                <AutoSizer>
+                    {({ height, width }) => (
+                        <DirektivEditor height={height} width={width} dlang="json" value={output} readonly={true} />
+                    )}
+                </AutoSizer>
+            </FlexBox>
         </FlexBox>
     )
 }

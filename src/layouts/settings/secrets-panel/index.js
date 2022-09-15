@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import './style.css';
-import AddValueButton from '../../../components/add-button';
 import ContentPanel, {ContentPanelTitle, ContentPanelTitleIcon, ContentPanelBody } from '../../../components/content-panel';
 import {VscLock, VscTrash} from 'react-icons/vsc'
-import Modal, {ButtonDefinition} from '../../../components/modal';
+import Modal  from '../../../components/modal';
 import {useDropzone} from 'react-dropzone'
 import FlexBox from '../../../components/flexbox';
 import Alert from '../../../components/alert';
@@ -13,6 +12,8 @@ import HelpIcon from '../../../components/help';
 import Tabs from '../../../components/tabs'
 import DirektivEditor from '../../../components/editor';
 import { AutoSizer } from 'react-virtualized';
+
+import { VscAdd } from 'react-icons/vsc';
 
 
 
@@ -30,7 +31,7 @@ function SecretsPanel(props){
                 <ContentPanelTitleIcon>
                     <VscLock />
                 </ContentPanelTitleIcon>
-                <FlexBox style={{display:"flex", alignItems:"center"}} className="gap">
+                <FlexBox style={{display:"flex", alignItems:"center"}} gap>
                     <div>
                         Secrets
                     </div>
@@ -52,31 +53,51 @@ function SecretsPanel(props){
                         }}
                         
                         button={(
-                            <AddValueButton label=" " />
-                        )}                         
+                            <VscAdd/>
+                        )}
+                        buttonProps={{
+                            auto: true,
+                        }}
                         actionButtons={[
-                            ButtonDefinition("Add", async () => {
-                                if(document.getElementById("file-picker")){
-                                    if(keyValue.trim() === "") {
-                                        throw new Error("Secret key name needs to be provided.")
+                            {
+                                label: "Add",
+
+                                onClick: async () => {
+                                    if(document.getElementById("file-picker")){
+                                        if(keyValue.trim() === "") {
+                                            throw new Error("Secret key name needs to be provided.")
+                                        }
+                                        if(!file) {
+                                            throw new Error("Please add or select file")
+                                        }
+                                        await createSecret(keyValue, file)
+                                    } else {
+                                        if(keyValue.trim() === "") {
+                                            throw new Error("Secret key name needs to be provided.")
+                                        }
+                                        if(vValue.trim() === "") {
+                                            throw new Error("Secret value needs to be provided.")
+                                        }
+                                        await createSecret(keyValue, vValue)
                                     }
-                                    if(!file) {
-                                        throw new Error("Please add or select file")
-                                    }
-                                    await createSecret(keyValue, file)
-                                } else {
-                                    if(keyValue.trim() === "") {
-                                        throw new Error("Secret key name needs to be provided.")
-                                    }
-                                    if(vValue.trim() === "") {
-                                        throw new Error("Secret value needs to be provided.")
-                                    }
-                                    await createSecret(keyValue, vValue)
-                                }
-                                await  getSecrets()
-                            }, "small",()=>{}, true, false, true),
-                            ButtonDefinition("Cancel", () => {
-                            }, "small light",()=>{}, true, false)
+                                    await  getSecrets()
+                                },
+
+                                buttonProps: {variant: "contained", color: "primary"},
+                                errFunc: ()=>{},
+                                closesModal: true,
+                                validate: true
+                            },
+                            {
+                                label: "Cancel",
+
+                                onClick: () => {
+                                },
+
+                                buttonProps: {},
+                                errFunc: ()=>{},
+                                closesModal: true
+                            }
                         ]}
                         requiredFields={[
                             { tip: "secret key is required", value: keyValue }
@@ -92,7 +113,7 @@ function SecretsPanel(props){
                     <div style={{width: "100%", paddingRight: "12px", display: "flex"}}>
                     <input value={keyValue} onChange={(e)=>setKeyValue(e.target.value)} autoFocus placeholder="Enter key" />
                     </div>
-                    <FlexBox id="file-picker" className="gap">
+                    <FlexBox id="file-picker" gap>
                         <SecretFilePicker file={file} setFile={setFile} id="add-secret-panel"/>
                     </FlexBox>
                 </FlexBox>
@@ -102,18 +123,18 @@ function SecretsPanel(props){
                 </div>
             </ContentPanelTitle>
             <ContentPanelBody className="secrets-panel">
-                <FlexBox className="gap col">
+                <FlexBox col gap>
                     <FlexBox className="secrets-list"> 
                     {data !== null ? 
                         <Secrets deleteSecret={deleteSecret} getSecrets={getSecrets} secrets={data}  />: ""}
                     </FlexBox>
                     <div>
-                        <Alert>Once a secret is removed, it can never be restored.</Alert>
+                        <Alert severity="info">Once a secret is removed, it can never be restored.</Alert>
                     </div>
                 </FlexBox>
             </ContentPanelBody>
         </ContentPanel>
-    )
+    );
 }
 
 export default SecretsPanel;
@@ -146,71 +167,88 @@ export function SecretFilePicker(props) {
 function Secrets(props) {
     const {secrets, deleteSecret, getSecrets} = props
 
-    return(
-        <>
-            <FlexBox className="col gap" style={{ maxHeight: "236px", overflowY: "auto" }}>
-                    {secrets.length === 0 ?
-                             <FlexBox className="secret-tuple empty-content" >
-                             <FlexBox className="key">No secrets are stored...</FlexBox>
-                             <FlexBox className="val"></FlexBox>
-                             <FlexBox className="actions">
-                             </FlexBox>
+    return <>
+        <FlexBox col gap style={{ maxHeight: "236px", overflowY: "auto" }}>
+                {secrets.length === 0 ?
+                         <FlexBox className="secret-tuple empty-content" >
+                         <FlexBox className="key">No secrets are stored...</FlexBox>
+                         <FlexBox className="val"></FlexBox>
+                         <FlexBox className="actions">
                          </FlexBox>
-                    :
-                    <>
-                    {secrets.map((obj)=>{
+                     </FlexBox>
+                :
+                <>
+                {secrets.map((obj)=>{
 
-                        let key = GenerateRandomKey("secret-")
+                    let key = GenerateRandomKey("secret-")
 
-                        return (
-                            <FlexBox className="secret-tuple" key={key} id={key}>
-                                <FlexBox className="key">{obj.name}</FlexBox>
-                                <FlexBox className="val"><span>******</span></FlexBox>
-                                <FlexBox className="actions">
-                                    <Modal 
-                                        modalStyle={{width: "360px"}}
-                                        escapeToCancel
-                                        style={{
-                                            flexDirection: "row-reverse",
-                                            marginRight: "8px"
-                                        }}
-                                        titleIcon={<VscLock/>}
-                                        title="Remove secret" 
-                                        button={(
-                                            <SecretsDeleteButton/>
-                                        )} 
-                                        actionButtons={
-                                            [
-                                                // label, onClick, classList, closesModal, async
-                                                ButtonDefinition("Delete", async () => {
+                    return (
+                        <FlexBox className="secret-tuple" key={key} id={key}>
+                            <FlexBox className="key">{obj.name}</FlexBox>
+                            <FlexBox className="val"><span>******</span></FlexBox>
+                            <FlexBox className="actions">
+                                <Modal 
+                                    modalStyle={{width: "360px"}}
+                                    escapeToCancel
+                                    style={{
+                                        flexDirection: "row-reverse",
+                                        marginRight: "8px"
+                                    }}
+                                    titleIcon={<VscLock/>}
+                                    title="Remove secret" 
+                                    button={(
+                                        <SecretsDeleteButton/>
+                                    )}
+                                    buttonProps={{
+                                        variant: "text",
+                                        color: "info"
+                                    }} 
+                                    actionButtons={
+                                        [
+                                            {
+                                                label: "Delete",
+
+                                                onClick: async () => {
                                                     await deleteSecret(obj.name)
                                                     await getSecrets()
-                                                }, "small red",()=>{}, true, false),
-                                                ButtonDefinition("Cancel", () => {
-                                                }, "small light",()=>{}, true, false)
-                                            ]
-                                        }   
-                                    >
-                                        <FlexBox className="col gap">
-                                            <FlexBox >
-                                                Are you sure you want to delete '{obj.name}'?
-                                                <br/>
-                                                This action cannot be undone.
-                                            </FlexBox>
+                                                },
+
+                                                buttonProps: {variant: "contained", color: "error"},
+                                                errFunc: ()=>{},
+                                                closesModal: true
+                                            },
+                                            {
+                                                label: "Cancel",
+
+                                                onClick: () => {
+                                                },
+
+                                                buttonProps: {},
+                                                errFunc: ()=>{},
+                                                closesModal: true
+                                            }
+                                        ]
+                                    }   
+                                >
+                                    <FlexBox col gap>
+                                        <FlexBox >
+                                            Are you sure you want to delete '{obj.name}'?
+                                            <br/>
+                                            This action cannot be undone.
                                         </FlexBox>
-                                    </Modal>
-                                </FlexBox>
+                                    </FlexBox>
+                                </Modal>
                             </FlexBox>
-                        )
-                    })}</>}
-            </FlexBox>
-        </>
-    );
+                        </FlexBox>
+                    );
+                })}</>}
+        </FlexBox>
+    </>;
 }
 
 export function SecretsDeleteButton(props) {
     return (
-        <div className="secrets-delete-btn red-text">
+        <div className="red-text" style={{display: "flex", alignItems: "center", height: "100%"}}>
             <VscTrash />
         </div>
     )
@@ -220,17 +258,17 @@ function AddSecretPanel(props) {
     const {keyValue, vValue, setKeyValue, setVValue} = props
 
     return (
-        <FlexBox className="col gap" style={{fontSize: "12px", width: "400px"}}>
-            <FlexBox className="gap">
+        <FlexBox col gap style={{fontSize: "12px", width: "400px"}}>
+            <FlexBox gap>
                 <FlexBox>
                     <input value={keyValue} onChange={(e)=>setKeyValue(e.target.value)} autoFocus placeholder="Enter key" />
                 </FlexBox>
             </FlexBox>
-            <FlexBox className="gap" style={{minHeight:"250px"}}>
+            <FlexBox gap style={{minHeight:"250px"}}>
                 <FlexBox style={{overflow:"hidden"}}>
                     <AutoSizer>
                         {({height, width})=>(
-                            <DirektivEditor width={width} dValue={vValue} setDValue={setVValue} height={height}/>
+                            <DirektivEditor width={width} dvalue={vValue} setDValue={setVValue} height={height}/>
                         )}
                         </AutoSizer>
                     </FlexBox>

@@ -1,4 +1,4 @@
-FROM node:17 as build
+FROM node:18 as build
 
 ARG FULL_VERSION
 
@@ -10,6 +10,7 @@ ENV PATH /app/node_modules/.bin:$PATH
 COPY public ./public
 COPY src ./src
 COPY package.json ./
+COPY tsconfig.json ./
 COPY yarn.lock ./
 
 RUN yarn install

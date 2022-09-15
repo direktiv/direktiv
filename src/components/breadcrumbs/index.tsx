@@ -12,8 +12,22 @@ const routes = [
     { path: '/n/:namespace/services', breadcrumb: "Namespace Services"}
 ];
 
-function Breadcrumbs(props) {
-    const {namespace, additionalChildren} = props
+export interface BreadcrumbsProps {
+    /**
+    * Current selected namespace. If unset, breadcrumb will not render.
+    */
+    namespace: string
+    /**
+    * Any Additional React Nodes to append to end of breadcrumb container
+    */
+    additionalChildren?: React.ReactNode
+}
+
+/**
+*   A component that will generate a breadcrumb list of links depending on the current route and namespace.
+*   This component requires to be a descendant of a react-router Router.
+*/
+function Breadcrumbs({namespace, additionalChildren}: BreadcrumbsProps) {
     const breadcrumbs = useBreadcrumbs(routes)
     const [searchParams] = useSearchParams() // removed 'setSearchParams' from square brackets (this should not affect anything: search 'destructuring assignment')
     
@@ -89,7 +103,7 @@ function Breadcrumbs(props) {
                    </li>
                 :""}
             </ul>
-            {additionalChildren ? additionalChildren : <></>}
+            {additionalChildren}
         </FlexBox>
     );
 }

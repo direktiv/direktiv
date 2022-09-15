@@ -1,3 +1,4 @@
+import { useTheme } from '@mui/material/styles';
 import Tippy from '@tippyjs/react';
 import { useMirror, useNodes } from 'direktiv-react-hooks';
 import React, { useEffect, useRef, useState } from 'react';
@@ -8,7 +9,7 @@ import Button from '../../components/button';
 import ContentPanel, { ContentPanelBody, ContentPanelTitle, ContentPanelTitleIcon } from '../../components/content-panel';
 import FlexBox from '../../components/flexbox';
 import Loader from '../../components/loader';
-import { ButtonDefinition, ModalHeadless } from '../../components/modal';
+import { ModalHeadless } from '../../components/modal';
 import { Config } from '../../util';
 import ActivityTable from './activities';
 import MirrorInfoPanel from './info';
@@ -110,11 +111,11 @@ export default function MirrorPage(props) {
         }
 
         setBreadcrumbChildrenRef.current((
-            <FlexBox className="center row gap" style={{ justifyContent: "flex-end", paddingRight: "6px" }}>
-                <Button id="btn-sync-mirror" tip={"Sync mirror with remote"} disabledTip={"Cannot sync mirror while Writable"} disabled={!isReadOnly} className="small light bold shadow" style={{ fontWeight: "bold", width: "fit-content" }} onClick={()=>{
+            <FlexBox center row gap style={{ justifyContent: "flex-end", paddingRight: "6px" }}>
+                <Button tooltip={"Sync mirror with remote"} disabledTooltip={"Cannot sync mirror while Writable"} disabled={!isReadOnly} variant="outlined" color="info" onClick={()=>{
                     setSyncVisible(!syncVisible)
                 }}>
-                    <FlexBox className="row center gap-sm">
+                    <FlexBox center row gap="sm">
                         <VscSync />
                         Sync
                     </FlexBox>
@@ -135,19 +136,33 @@ export default function MirrorPage(props) {
                         width: "300px"
                     }}
                     actionButtons={[
-                        ButtonDefinition("Sync", async () => {
-                            await syncRef.current(true)
-                        }, "small", () => { }, true, false),
-                        ButtonDefinition("Cancel", () => { }, "small light", () => { }, true, false)
+                        {
+                            label: "Sync",
+
+                            onClick: async () => {
+                                await syncRef.current(true)
+                            },
+
+                            buttonProps: {variant: "contained", color: "primary"},
+                            errFunc: () => { },
+                            closesModal: true
+                        },
+                        {
+                            label: "Cancel",
+                            onClick: () => { },
+                            buttonProps: {},
+                            errFunc: () => { },
+                            closesModal: true
+                        }
                     ]}
                 >
-                    <FlexBox className="col gap" style={{ paddingTop: "8px" }}>
+                    <FlexBox col gap style={{ paddingTop: "8px" }}>
                         <FlexBox className="col center info-update-label">
                           Fetch and sync mirror with latest content from remote repository?
                         </FlexBox>
                     </FlexBox>
                 </ModalHeadless>
-                <Button className={`small light bold shadow ${currentlyLocking ? "loading disabled" : ""}`} style={{ fontWeight: "bold", width: "fit-content", whiteSpace: "nowrap" }} onClick={async () => {
+                <Button variant="outlined" color="info" onClick={async () => {
                     if (isReadOnly) {
                         setCurrentlyLocking(true)
 
@@ -167,7 +182,7 @@ export default function MirrorPage(props) {
                         }
                     }
                 }}>
-                    <FlexBox className="row center gap-sm">
+                    <FlexBox center row gap="sm">
                         {isReadOnly ?
                             <>
 
@@ -215,20 +230,20 @@ export default function MirrorPage(props) {
                 {
                     errorMsg ?
                         <FlexBox style={{ maxHeight: "50px", paddingRight: "6px", paddingBottom: "8px" }}>
-                            <Alert setErrorMsg={setErrorMsg} className="critical" style={{ height: "100%" }}>{`Error: ${errorMsg}`}</Alert>
+                            <Alert severity="error" variant="filled" onClose={()=>{setErrorMsg(null)}} grow>{`Error: ${errorMsg}`}</Alert>
                         </FlexBox>
                         : <></>
                 }
-                <FlexBox className="col gap" style={{ paddingRight: "8px" }}>
+                <FlexBox col gap style={{ paddingRight: "8px" }}>
                     {/* <BreadcrumbCorner>
                     </BreadcrumbCorner> */}
-                    <FlexBox className="row gap wrap" style={{ flex: "1 1 0%", maxHeight: "65vh" }}>
+                    <FlexBox row gap wrap style={{ flex: "1 1 0%", maxHeight: "65vh" }}>
                         <ContentPanel id={`panel-activity-list`} style={{ flex: 2, width: "100%", minHeight: "60vh", maxHeight: "55vh" }}>
                             <ContentPanelTitle>
                                 <ContentPanelTitleIcon>
                                     <VscAdd />
                                 </ContentPanelTitleIcon>
-                                <FlexBox className="gap" style={{ alignItems: "center" }}>Activity List</FlexBox>
+                                <FlexBox gap style={{ alignItems: "center" }}>Activity List</FlexBox>
                             </ContentPanelTitle>
                             <ContentPanelBody style={{ overflow: "auto" }}>
                                 <FlexBox style={{ flexShrink: "1", height: "fit-content" }}>
@@ -244,7 +259,7 @@ export default function MirrorPage(props) {
                             <ContentPanelTitleIcon>
                                 <VscAdd />
                             </ContentPanelTitleIcon>
-                            <FlexBox className="gap" style={{ alignItems: "center" }}>Activity Logs</FlexBox>
+                            <FlexBox gap style={{ alignItems: "center" }}>Activity Logs</FlexBox>
                         </ContentPanelTitle>
                         <ContentPanelBody>
                             <ActivityLogs activity={activity} namespace={namespace} setErrorMsg={setErrorMsg} />
@@ -261,8 +276,8 @@ export function MirrorReadOnlyBadge(props) {
     return (
         <Tippy content={`This mirrors contents are currently read-only. This can be unlocked in mirror setttings`} trigger={'mouseenter focus'} zIndex={10}>
             <div>
-                <Button className={`cancel-label small disabled-no-filter shadow`} style={{ fontWeight: "bold", width: "fit-content", whiteSpace: "nowrap"}}>
-                    <FlexBox className="row center gap-sm">
+                <Button variant="contained" color="info" disabled style={{ borderRadius:"20px" }}>
+                    <FlexBox center row gap="sm">
                         <VscLock />ReadOnly
                     </FlexBox>
                 </Button>
@@ -272,11 +287,19 @@ export function MirrorReadOnlyBadge(props) {
 }
 
 export function MirrorWritableBadge(props) {
+    const theme = useTheme()
     return (
         <Tippy content={`This mirrors contents are currently writable. This can be unlocked in mirror setttings`} trigger={'mouseenter focus'} zIndex={10}>
             <div>
-                <Button className={`running-label small disabled-no-filter shadow`} style={{ fontWeight: "bold", width: "fit-content", whiteSpace: "nowrap"}}>
-                    <FlexBox className="row center gap-sm">
+                <Button disabled variant="contained" color="secondary" sx={{
+                    "&:disabled":{
+                        backgroundColor: theme.palette.secondary.main,
+                        color: theme.palette.primary.main,
+                        fontWeight:"bold",
+                        borderRadius:"20px"
+                    }
+                }}>
+                    <FlexBox center row gap="sm">
                         <VscUnlock />Writable
                     </FlexBox>
                 </Button>

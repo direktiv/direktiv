@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import ContentPanel, {ContentPanelTitle, ContentPanelTitleIcon, ContentPanelBody } from '../../components/content-panel';
-import Modal, { ButtonDefinition, KeyDownDefinition } from '../../components/modal';
-import AddValueButton from '../../components/add-button';
+import Modal  from '../../components/modal';
 import FlexBox from '../../components/flexbox';
 import Alert from '../../components/alert';
 import { useGlobalRegistries, useGlobalPrivateRegistries } from 'direktiv-react-hooks';
@@ -11,9 +10,10 @@ import HelpIcon from '../../components/help';
 import { VscAdd, VscServer } from 'react-icons/vsc';
 
 
+
 export default function GlobalRegistriesPanel(){
     return(
-        <FlexBox className="gap wrap" style={{ paddingRight: "8px" }}>
+        <FlexBox gap wrap style={{ paddingRight: "8px" }}>
             <FlexBox  style={{ minWidth: "380px" }}>
                 <GlobalRegistries />
             </FlexBox>
@@ -47,7 +47,7 @@ export function GlobalRegistries(){
                 <ContentPanelTitleIcon>
                     <VscServer />
                 </ContentPanelTitleIcon>
-                <FlexBox style={{display:"flex", alignItems:"center"}} className="gap">
+                <FlexBox style={{display:"flex", alignItems:"center"}} gap>
                     <div>
                         Container Registries  
                     </div>
@@ -62,8 +62,11 @@ export function GlobalRegistries(){
                             minWidth: "450px"
                         }}
                         button={(
-                            <AddValueButton label=" " />
-                        )} 
+                            <VscAdd/>
+                        )}
+                        buttonProps={{
+                            auto: true,
+                        }}
                         onClose={()=>{
                             setURL("")
                             setToken("")
@@ -76,10 +79,17 @@ export function GlobalRegistries(){
                             setTestConnLoading(false)
                         }}
                         keyDownActions={[
-                            KeyDownDefinition("Enter", async () => {
-                                    await createRegistry(url, `${username}:${token}`)
-                                    await  getRegistries()
-                            }, ()=>{}, true)
+                            {
+                                code: "Enter",
+
+                                fn: async () => {
+                                        await createRegistry(url, `${username}:${token}`)
+                                        await  getRegistries()
+                                },
+
+                                errFunc: ()=>{},
+                                closeModal: true
+                            }
                         ]}
 
                         requiredFields={[
@@ -89,44 +99,71 @@ export function GlobalRegistries(){
                         ]}
 
                         actionButtons={[
-                            ButtonDefinition("Add", async() => {
-                                    await createRegistry(url, `${username}:${token}`)
-                                    await  getRegistries()
-                            }, "small", ()=>{}, true, false, true),
-                            ButtonDefinition("Test Connection", async () => {
-                                setURLErr("")
-                                setTokenErr("")
-                                setUserErr("")
-                                setErr("")
-                                let filledOut = true
-                                if(url === ""){
-                                    setURLErr("Please enter a URL...")
-                                    filledOut = false
-                                }
-                                if(username === "") {
-                                    setUserErr("Please enter a username...")
-                                    filledOut = false
-                                }
-                                if(token === "") {
-                                    setTokenErr("Please enter a token...")
-                                    filledOut = false
-                                }
-                                if(!filledOut) throw new Error("all fields must be filled out")
-                                setTestConnLoading(true)
-                                let resp = await TestRegistry(url, username, token)
-                                if (resp.success) {
-                                    setTestConnLoading(false)
-                                    setSuccessFeedback(true)
-                                } else {
-                                    setTestConnLoading(false)
-                                    setSuccessFeedback(false)
-                                    setErr(resp.message)                                
-                                }
-                           
-                            }, `small ${testConnLoading ? "loading" : ""}`, ()=>{   setTestConnLoading(false)
-                                setSuccessFeedback(false)}, false, false, true),
-                            ButtonDefinition("Cancel", () => {
-                            }, "small light", ()=>{},true, false)
+                            {
+                                label: "Add",
+
+                                onClick: async() => {
+                                        await createRegistry(url, `${username}:${token}`)
+                                        await  getRegistries()
+                                },
+
+                                buttonProps: {variant: "contained", color: "primary"},
+                                errFunc: ()=>{},
+                                closesModal: true,
+                                validate: true
+                            },
+                            {
+                                label: "Test Connection",
+                                onClick: async () => {
+                                    setURLErr("")
+                                    setTokenErr("")
+                                    setUserErr("")
+                                    setErr("")
+                                    let filledOut = true
+                                    if(url === ""){
+                                        setURLErr("Please enter a URL...")
+                                        filledOut = false
+                                    }
+                                    if(username === "") {
+                                        setUserErr("Please enter a username...")
+                                        filledOut = false
+                                    }
+                                    if(token === "") {
+                                        setTokenErr("Please enter a token...")
+                                        filledOut = false
+                                    }
+                                    if(!filledOut) throw new Error("all fields must be filled out")
+                                    setTestConnLoading(true)
+                                    let resp = await TestRegistry(url, username, token)
+                                    if (resp.success) {
+                                        setTestConnLoading(false)
+                                        setSuccessFeedback(true)
+                                    } else {
+                                        setTestConnLoading(false)
+                                        setSuccessFeedback(false)
+                                        setErr(resp.message)                                
+                                    }
+                               
+                                },
+
+                                buttonProps:  {variant: "contained", color: "primary", loading: testConnLoading},
+
+                                errFunc: ()=>{   setTestConnLoading(false)
+                                    setSuccessFeedback(false)},
+
+                                closesModal: false,
+                                validate: true
+                            },
+                            {
+                                label: "Cancel",
+
+                                onClick: () => {
+                                },
+
+                                buttonProps: {},
+                                errFunc: ()=>{},
+                                closesModal: true
+                            }
                         ]}
                     >
                         <AddRegistryPanel err={err} token={token} setToken={setToken} username={username} setUsername={setUsername} url={url} setURL={setURL} successMsg={successFeedback} urlErr={urlErr} userErr={userErr} tokenErr={tokenErr} />    
@@ -134,19 +171,19 @@ export function GlobalRegistries(){
                 </div>
             </ContentPanelTitle>
             <ContentPanelBody className="secrets-panel">
-                <FlexBox className="gap col">
+                <FlexBox col gap>
                     <FlexBox>
                         {data !== null ? 
                         <Registries deleteRegistry={deleteRegistry} getRegistries={getRegistries} registries={data}/>
                             :""}
                     </FlexBox>
                     <FlexBox style={{maxHeight: "44px"}}>
-                        <Alert>Once a registry is removed, it can never be restored.</Alert>
+                        <Alert severity="info" grow>Once a registry is removed, it can never be restored.</Alert>
                     </FlexBox>
                 </FlexBox>
             </ContentPanelBody>
         </ContentPanel>
-    )
+    );
 }
 
 export function GlobalPrivateRegistries(){
@@ -176,7 +213,7 @@ export function GlobalPrivateRegistries(){
                 <ContentPanelTitleIcon>
                     <VscServer />
                 </ContentPanelTitleIcon>
-                <FlexBox style={{display:"flex", alignItems:"center"}} className="gap">
+                <FlexBox style={{display:"flex", alignItems:"center"}} gap>
                     <div>
                         Private Container Registries  
                     </div>
@@ -190,18 +227,28 @@ export function GlobalPrivateRegistries(){
                             minWidth: "450px"
                         }}
                         button={(
-                            <AddValueButton label=" " />
-                        )} 
+                            <VscAdd/>
+                        )}
+                        buttonProps={{
+                            auto: true,
+                        }}
                         onClose={()=>{
                             setURL("")
                             setToken("")
                             setUsername("")
                         }}
                         keyDownActions={[
-                            KeyDownDefinition("Enter", async () => {
-                                    await createRegistry(url, `${username}:${token}`)
-                                    await getRegistries()
-                            }, ()=>{}, true)
+                            {
+                                code: "Enter",
+
+                                fn: async () => {
+                                        await createRegistry(url, `${username}:${token}`)
+                                        await getRegistries()
+                                },
+
+                                errFunc: ()=>{},
+                                closeModal: true
+                            }
                         ]}
 
                         requiredFields={[
@@ -211,44 +258,72 @@ export function GlobalPrivateRegistries(){
                         ]}
 
                         actionButtons={[
-                            ButtonDefinition("Add", async() => {
-                                    await createRegistry(url, `${username}:${token}`)
-                                    await  getRegistries()
-                            }, "small", ()=>{}, true, false, true),
-                            ButtonDefinition("Test Connection", async () => {
-                                setURLErr("")
-                                setTokenErr("")
-                                setUserErr("")
-                                setErr("")
-                                let filledOut = true
-                                if(url === ""){
-                                    setURLErr("Please enter a URL...")
-                                    filledOut = false
-                                }
-                                if(username === "") {
-                                    setUserErr("Please enter a username...")
-                                    filledOut = false
-                                }
-                                if(token === "") {
-                                    setTokenErr("Please enter a token...")
-                                    filledOut = false
-                                }
-                                if(!filledOut) throw new Error("all fields must be filled out")
-                                setTestConnLoading(true)
-                                let resp = await TestRegistry(url, username, token)
-                                if (resp.success) {
-                                    setTestConnLoading(false)
-                                    setSuccessFeedback(true)
-                                } else {
-                                    setTestConnLoading(false)
-                                    setSuccessFeedback(false)
-                                    setErr(resp.message)                                
-                                }
-                           
-                            }, `small ${testConnLoading ? "loading" : ""}`, ()=>{   setTestConnLoading(false)
-                                setSuccessFeedback(false)}, false, false, true),
-                            ButtonDefinition("Cancel", () => {
-                            }, "small light", ()=>{}, true, false)
+                            {
+                                label: "Add",
+
+                                onClick: async() => {
+                                        await createRegistry(url, `${username}:${token}`)
+                                        await  getRegistries()
+                                },
+
+                                buttonProps: {variant: "contained", color: "primary"},
+                                errFunc: ()=>{},
+                                closesModal: true,
+                                validate: true
+                            },
+                            {
+                                label: "Test Connection",
+
+                                onClick: async () => {
+                                    setURLErr("")
+                                    setTokenErr("")
+                                    setUserErr("")
+                                    setErr("")
+                                    let filledOut = true
+                                    if(url === ""){
+                                        setURLErr("Please enter a URL...")
+                                        filledOut = false
+                                    }
+                                    if(username === "") {
+                                        setUserErr("Please enter a username...")
+                                        filledOut = false
+                                    }
+                                    if(token === "") {
+                                        setTokenErr("Please enter a token...")
+                                        filledOut = false
+                                    }
+                                    if(!filledOut) throw new Error("all fields must be filled out")
+                                    setTestConnLoading(true)
+                                    let resp = await TestRegistry(url, username, token)
+                                    if (resp.success) {
+                                        setTestConnLoading(false)
+                                        setSuccessFeedback(true)
+                                    } else {
+                                        setTestConnLoading(false)
+                                        setSuccessFeedback(false)
+                                        setErr(resp.message)                                
+                                    }
+                               
+                                },
+
+                                buttonProps: {variant: "contained", color: "primary", loading: testConnLoading},
+
+                                errFunc: ()=>{   setTestConnLoading(false)
+                                    setSuccessFeedback(false)},
+
+                                closesModal: false,
+                                validate: true
+                            },
+                            {
+                                label: "Cancel",
+
+                                onClick: () => {
+                                },
+
+                                buttonProps: {},
+                                errFunc: ()=>{},
+                                closesModal: true
+                            }
                         ]}
                     >
                         <AddRegistryPanel err={err} token={token} setToken={setToken} username={username} setUsername={setUsername} url={url} setURL={setURL} successMsg={successFeedback} urlErr={urlErr} userErr={userErr} tokenErr={tokenErr} />    
@@ -256,17 +331,17 @@ export function GlobalPrivateRegistries(){
                 </div>
             </ContentPanelTitle>
             <ContentPanelBody className="secrets-panel">
-                <FlexBox className="gap col">
+                <FlexBox col gap>
                     <FlexBox>
                         {data !== null ? 
                         <Registries deleteRegistry={deleteRegistry} getRegistries={getRegistries} registries={data}/>
                             :""}
                     </FlexBox>
                     <FlexBox style={{maxHeight: "44px"}}>
-                        <Alert>Once a registry is removed, it can never be restored.</Alert>
+                        <Alert severity="info" grow>Once a registry is removed, it can never be restored.</Alert>
                     </FlexBox>
                 </FlexBox>
             </ContentPanelBody>
         </ContentPanel>
-    )
+    );
 }

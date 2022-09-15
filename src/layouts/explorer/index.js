@@ -10,20 +10,20 @@ import { FiFolder } from 'react-icons/fi';
 import { HiOutlineTrash } from 'react-icons/hi';
 import { VscAdd, VscClose, VscCloudUpload, VscCode, VscEdit, VscFolderOpened, VscRepo, VscSearch, VscTrash } from 'react-icons/vsc';
 import { useNavigate, useParams } from 'react-router';
-import { Link, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { AutoSizer } from 'react-virtualized';
-import Button from '../../components/button';
-import ContentPanel, { ContentPanelBody, ContentPanelHeaderButton, ContentPanelHeaderButtonIcon, ContentPanelTitle, ContentPanelTitleIcon } from '../../components/content-panel';
+import ContentPanel, { ContentPanelBody, ContentPanelTitle, ContentPanelTitleIcon } from '../../components/content-panel';
 import DirektivEditor from '../../components/editor';
 import FlexBox from '../../components/flexbox';
 import HelpIcon from "../../components/help";
 import Loader from '../../components/loader';
-import Modal, { ButtonDefinition, KeyDownDefinition } from '../../components/modal';
+import Modal  from '../../components/modal';
 import Pagination, { usePageHandler } from '../../components/pagination';
 import { Config, GenerateRandomKey } from '../../util';
 import WorkflowPage from './workflow';
 import WorkflowPod from './workflow/pod';
 import WorkflowRevisions from './workflow/revision';
+import Button from '../../components/button';
 
 import Alert from '../../components/alert';
 import NotFound from '../notfound';
@@ -141,7 +141,7 @@ export function SearchBar(props) {
 
     return(
         <div className="explorer-searchbar" style={{height: "29px", ...style}}>
-            <FlexBox className="" style={{height: "100%"}}>
+            <FlexBox  style={{height: "100%"}}>
                 <VscSearch className="auto-margin" />
                 <input value={inputVal} onChange={(e)=>{setInputVal(e.target.value)}} placeholder={"Search items"} style={{ boxSizing: "border-box" }}></input>
             </FlexBox>
@@ -248,7 +248,7 @@ function ExplorerList(props) {
 
         setBreadcrumbChildrenRef.current((
             isReadOnly ? (
-                <FlexBox className="center row gap" style={{ justifyContent: "flex-end", paddingRight: "6px" }}>
+                <FlexBox center row gap style={{ justifyContent: "flex-end", paddingRight: "6px" }}>
                      <MirrorReadOnlyBadge/>
                 </FlexBox>) : (<></>)
         ))
@@ -298,20 +298,18 @@ function ExplorerList(props) {
         <>
         { data !== null && data?.node?.type === "workflow" ? 
         <WorkflowPage namespace={namespace}/> : 
-        <FlexBox className="col gap"  style={{paddingRight: "8px"}}>
+        <FlexBox col gap  style={{paddingRight: "8px"}}>
         <Loader load={load} timer={1000}>
-        <FlexBox className="gap" style={{maxHeight: "32px"}}>
+        <FlexBox gap style={{maxHeight: "32px"}}>
             <FlexBox>
                 <div>
                     <Modal
                         titleIcon={<VscCode/>}
                         button={
-                            <Button className="small light" style={{ display: "flex", minWidth: "120px" }}>
-                                <ContentPanelHeaderButtonIcon>
-                                    <VscCode style={{ maxHeight: "12px", marginRight: "4px" }} />
-                                </ContentPanelHeaderButtonIcon>
+                            <>
+                                <VscCode style={{ maxHeight: "12px", marginRight: "4px" }} />
                                 API Commands
-                            </Button>
+                            </>
                         }
                         escapeToCancel
                         withCloseButton
@@ -343,25 +341,22 @@ function ExplorerList(props) {
                 <ContentPanelTitleIcon>
                     <VscFolderOpened/>
                 </ContentPanelTitleIcon>
-                <FlexBox style={{display:"flex", alignItems:"center"}} className="gap">
+                <FlexBox style={{display:"flex", alignItems:"center"}} gap>
                     <div>
                         Explorer
                     </div>
                     <HelpIcon msg={"Directory/workflow browser."} />
                 </FlexBox>
-                <FlexBox className="gap" style={{flexDirection: "row-reverse"}}>
-                    <ContentPanelHeaderButton className="explorer-action-btn">
+                <FlexBox className="gap center-y" style={{flexDirection: "row-reverse"}}>
                         <Modal title="New Workflow" 
                             modalStyle={{width: "600px"}}
                             escapeToCancel
                             button={(
-                                <div style={{display:"flex"}}>
-                                    <ContentPanelHeaderButtonIcon>
-                                        <VscAdd/>
-                                    </ContentPanelHeaderButtonIcon>
+                                <>
+                                    <VscAdd/>
                                     <span className="hide-600">Workflow</span>
                                     <span className="show-600">WF</span>
-                                </div>
+                                </>
                             )}  
                             onClose={()=>{
                                 setWfData(templates["noop"].data)
@@ -369,24 +364,49 @@ function ExplorerList(props) {
                                 setName("")
                             }}
                             actionButtons={[
-                                ButtonDefinition("Add", async () => {
-                                    const result = await createNode(name, "workflow", wfData)
-                                    if(result.node && result.namespace){
-                                        navigate(`/n/${result.namespace}/explorer/${result.node.path.substring(1)}`)
-                                    }
-                                }, `small`, ()=>{}, true, false, true),
-                                ButtonDefinition("Cancel", () => {
-                                }, "small light", ()=>{}, true, false)
+                                {
+                                    label: "Add",
+
+                                    onClick: async () => {
+                                        const result = await createNode(name, "workflow", wfData)
+                                        if(result.node && result.namespace){
+                                            navigate(`/n/${result.namespace}/explorer/${result.node.path.substring(1)}`)
+                                        }
+                                    },
+
+                                    buttonProps: {variant: "contained", color: "primary"},
+                                    errFunc: ()=>{},
+                                    closesModal: true,
+                                    validate: true
+                                },
+                                {
+                                    label: "Cancel",
+
+                                    onClick: () => {
+                                    },
+
+                                    buttonProps: {},
+                                    errFunc: ()=>{},
+                                    closesModal: true
+                                }
                             ]}
 
                             keyDownActions={[
-                                KeyDownDefinition("Enter", async () => {
-                                    if(name.trim()) {
-                                        await createNode(name, "workflow", wfData)
-                                    } else {
-                                        throw new Error("Please fill in name")
-                                    }
-                                }, ()=>{}, true, "workflow-name")
+                                {
+                                    code: "Enter",
+
+                                    fn: async () => {
+                                        if(name.trim()) {
+                                            await createNode(name, "workflow", wfData)
+                                        } else {
+                                            throw new Error("Please fill in name")
+                                        }
+                                    },
+
+                                    errFunc: ()=>{},
+                                    closeModal: true,
+                                    id: "workflow-name"
+                                }
                             ]}
 
                             requiredFields={[
@@ -394,7 +414,7 @@ function ExplorerList(props) {
                                 {tip: "workflow cannot be empty", value: wfData}
                             ]}
                         >
-                            <FlexBox className="col gap" style={{fontSize: "12px", minHeight: "500px", minWidth: "550px"}}>
+                            <FlexBox col gap style={{fontSize: "12px", minHeight: "500px", minWidth: "550px"}}>
                                 <div style={{width: "100%", paddingRight: "12px", display: "flex"}}>
                                     <input id={"workflow-name"} value={name} onChange={(e)=>setName(e.target.value)} autoFocus placeholder="Enter workflow name"/>
                                 </div>
@@ -410,7 +430,7 @@ function ExplorerList(props) {
                                         )
                                     })}
                                 </select>
-                                <FlexBox className="gap">
+                                <FlexBox gap>
                                     <FlexBox style={{overflow:"hidden"}}>
                                     <AutoSizer>
                                         {({height, width})=>(
@@ -421,38 +441,36 @@ function ExplorerList(props) {
                                 </FlexBox>
                             </FlexBox>
                         </Modal>
-                    </ContentPanelHeaderButton>
-                    <ContentPanelHeaderButton className="explorer-action-btn">
-                        <div>
-                            <Modal title="New Directory"
-                                modalStyle={{ width: "340px" }}
-                                escapeToCancel
-                                button={(
-                                    <div style={{ display: "flex" }}>
-                                        <ContentPanelHeaderButtonIcon>
-                                            <VscAdd />
-                                        </ContentPanelHeaderButtonIcon>
-                                        <span className="hide-600">Directory</span>
-                                        <span className="show-600">Dir</span>
-                                    </div>
-                                )}
-                                onClose={() => {
-                                    setName("")
-                                    setMirrorSettings({
-                                        "url": "",
-                                        "ref": "",
-                                        "cron": "",
-                                        "passphrase": "",
-                                        "token": "",
-                                        "publicKey": "",
-                                        "privateKey": "",
-                                    })
-                                    setShowPassphrase(false)
-                                    setMirrorAuthMethod("none")
-                                    setTabIndex(0)
-                                }}
-                                actionButtons={[
-                                    ButtonDefinition("Add", async () => {
+                        <Modal title="New Directory"
+                            modalStyle={{ width: "340px" }}
+                            escapeToCancel
+                            button={(
+                                <>
+                                    <VscAdd />
+                                    <span className="hide-600">Directory</span>
+                                    <span className="show-600">Dir</span>
+                                </>
+                            )}
+                            onClose={() => {
+                                setName("")
+                                setMirrorSettings({
+                                    "url": "",
+                                    "ref": "",
+                                    "cron": "",
+                                    "passphrase": "",
+                                    "token": "",
+                                    "publicKey": "",
+                                    "privateKey": "",
+                                })
+                                setShowPassphrase(false)
+                                setMirrorAuthMethod("none")
+                                setTabIndex(0)
+                            }}
+                            actionButtons={[
+                                {
+                                    label: "Add",
+
+                                    onClick: async () => {
                                         if (tabIndex === 0) {
                                             await createNode(name, "directory")
                                         } else {
@@ -470,163 +488,176 @@ function ExplorerList(props) {
                                             delete processesMirrorSettings["token"]
                                             await createMirrorNode(name, processesMirrorSettings)
                                         }
-                                    }, `small ${name.trim() ? "" : "disabled"}`, () => { }, true, false, true),
-                                    ButtonDefinition("Cancel", () => {
-                                    }, "small light", () => { }, true, false)
-                                ]}
+                                    },
 
-                                keyDownActions={[
-                                    KeyDownDefinition("Enter", async () => {
+                                    buttonProps: {variant: "contained", color: "primary", disabled: name.trim().length === 0},
+                                    errFunc: () => { },
+                                    closesModal: true,
+                                    validate: true
+                                },
+                                {
+                                    label: "Cancel",
+
+                                    onClick: () => {
+                                    },
+
+                                    buttonProps: {},
+                                    errFunc: () => { },
+                                    closesModal: true
+                                }
+                            ]}
+
+                            keyDownActions={[
+                                {
+                                    code: "Enter",
+
+                                    fn: async () => {
                                         if (tabIndex === 0) {
                                             await createNode(name, "directory")
                                         } else {
                                             await createMirrorNode(name, mirrorSettings)
                                         }
-                                    }, () => { }, true)
-                                ]}
+                                    },
 
-                                requiredFields={[
-                                    { tip: "directory name is required", value: name },
-                                    { tip: "mirror url is required", value: tabIndex === 0 ? true : mirrorSettings.url },
-                                    { tip: "mirror ref is required", value: tabIndex === 0 ? true : mirrorSettings.ref },
-                                    { tip: "public key is required", value: tabIndex === 0 || mirrorAuthMethod === "none" || mirrorAuthMethod === "token" ? true : mirrorSettings.publicKey },
-                                    { tip: "private key is required", value: tabIndex === 0 || mirrorAuthMethod === "none" || mirrorAuthMethod === "token" ? true : mirrorSettings.privateKey },
-                                    { tip: "token is required", value: tabIndex === 0 || mirrorAuthMethod === "none" || mirrorAuthMethod === "ssh" ? true : mirrorSettings.token }
-                                ]}
+                                    errFunc: () => { },
+                                    closeModal: true
+                                }
+                            ]}
 
-                            >
-                                <Tabs
-                                    // TODO: change wf-execute-input => tabbed-form
-                                    id={"wf-execute-input"}
-                                    key={"inputForm"}
-                                    callback={setTabIndex}
-                                    tabIndex={tabIndex}
-                                    style={{ minWidth: "300px" }}
-                                    headers={["Standard", "Mirror"]}
-                                    tabs={[(
-                                        <FlexBox className="col gap-md" style={{ paddingRight: "12px" }}>
-                                            <FlexBox className="row gap-sm" style={{ justifyContent: "flex-start" }}>
+                            requiredFields={[
+                                { tip: "directory name is required", value: name },
+                                { tip: "mirror url is required", value: tabIndex === 0 ? true : mirrorSettings.url },
+                                { tip: "mirror ref is required", value: tabIndex === 0 ? true : mirrorSettings.ref },
+                                { tip: "public key is required", value: tabIndex === 0 || mirrorAuthMethod === "none" || mirrorAuthMethod === "token" ? true : mirrorSettings.publicKey },
+                                { tip: "private key is required", value: tabIndex === 0 || mirrorAuthMethod === "none" || mirrorAuthMethod === "token" ? true : mirrorSettings.privateKey },
+                                { tip: "token is required", value: tabIndex === 0 || mirrorAuthMethod === "none" || mirrorAuthMethod === "ssh" ? true : mirrorSettings.token }
+                            ]}
+
+                        >
+                            <Tabs
+                                // TODO: change wf-execute-input => tabbed-form
+                                id={"wf-execute-input"}
+                                key={"inputForm"}
+                                callback={setTabIndex}
+                                tabIndex={tabIndex}
+                                style={{ minWidth: "300px" }}
+                                headers={["Standard", "Mirror"]}
+                                tabs={[(
+                                    <FlexBox col gap="sm" style={{ paddingRight: "12px" }}>
+                                        <FlexBox row gap="sm" style={{ justifyContent: "flex-start" }}>
+                                            <span className={`input-title`}>Directory*</span>
+                                        </FlexBox>
+                                        <input value={name} onChange={(e) => setName(e.target.value)} autoFocus placeholder="Enter a directory name" />
+                                    </FlexBox>
+                                ), (
+                                    <FlexBox col gap>
+                                        <FlexBox col gap="sm" style={{ paddingRight: "12px" }}>
+                                            <FlexBox row gap="sm" style={{ justifyContent: "flex-start" }}>
                                                 <span className={`input-title`}>Directory*</span>
                                             </FlexBox>
-                                            <input value={name} onChange={(e) => setName(e.target.value)} autoFocus placeholder="Enter a directory name" />
+                                            <input autoFocus value={name} onChange={(e) => setName(e.target.value)} placeholder="Enter a directory name" />
                                         </FlexBox>
-                                    ), (
-                                        <FlexBox className="col gap">
-                                            <FlexBox className="col gap-md" style={{ paddingRight: "12px" }}>
-                                                <FlexBox className="row gap-sm" style={{ justifyContent: "flex-start" }}>
-                                                    <span className={`input-title`}>Directory*</span>
-                                                </FlexBox>
-                                                <input autoFocus value={name} onChange={(e) => setName(e.target.value)} placeholder="Enter a directory name" />
+                                        <FlexBox col gap="sm">
+                                            <FlexBox row gap="sm" style={{ justifyContent: "flex-start" }}>
+                                                <span className={`input-title`}>Authentication Method</span>
                                             </FlexBox>
-                                            <FlexBox className="col gap-md">
-                                                <FlexBox className="row gap-sm" style={{ justifyContent: "flex-start" }}>
-                                                    <span className={`input-title`}>Authentication Method</span>
-                                                </FlexBox>
-                                                <div style={{ width: "100%", paddingRight: "12px", display: "flex" }}>
-                                                    <select style={{ width: "100%" }} defaultValue={mirrorAuthMethod} value={mirrorAuthMethod} onChange={(e) => { setMirrorAuthMethod(e.target.value) }}>
-                                                        <option value="none">None</option>
-                                                        <option value="ssh">SSH Keys</option>
-                                                        <option value="token">Access Token</option>
-                                                    </select>
-                                                </div>
-                                            </FlexBox>
-                                            {Object.entries(mirrorSettings).map(([key, value]) => {
-                                                if ((mirrorAuthMethod === "token" || mirrorAuthMethod === "none") && (key === "publicKey" || key === "privateKey" || key === "passphrase")) {
-                                                    return (<></>)
-                                                }
+                                            <div style={{ width: "100%", paddingRight: "12px", display: "flex" }}>
+                                                <select style={{ width: "100%" }} defaultValue={mirrorAuthMethod} value={mirrorAuthMethod} onChange={(e) => { setMirrorAuthMethod(e.target.value) }}>
+                                                    <option value="none">None</option>
+                                                    <option value="ssh">SSH Keys</option>
+                                                    <option value="token">Access Token</option>
+                                                </select>
+                                            </div>
+                                        </FlexBox>
+                                        {Object.entries(mirrorSettings).map(([key, value]) => {
+                                            if ((mirrorAuthMethod === "token" || mirrorAuthMethod === "none") && (key === "publicKey" || key === "privateKey" || key === "passphrase")) {
+                                                return (<></>)
+                                            }
 
-                                                if ((mirrorAuthMethod === "ssh" || mirrorAuthMethod === "none") && (key === "token")) {
-                                                    return (<></>)
-                                                }
+                                            if ((mirrorAuthMethod === "ssh" || mirrorAuthMethod === "none") && (key === "token")) {
+                                                return (<></>)
+                                            }
 
-                                                return (
-                                                    <FlexBox key={`input-new-ns-${key}`} className="col gap-sm" style={{ paddingRight: "12px" }}>
-                                                        <FlexBox className="row" style={{ justifyContent: "space-between" }}>
-                                                            <FlexBox className="row gap-sm" style={{ justifyContent: "flex-start" }}>
-                                                                <span className={`input-title`}>{mirrorSettingInfoMetaInfo[key].plainName}{mirrorSettingInfoMetaInfo[key].required ? "*" : ""}</span>
-                                                                {
-                                                                    mirrorSettingInfoMetaInfo[key].info ?
-                                                                    <>
-                                                                    <HelpIcon msg={mirrorSettingInfoMetaInfo[key].info} zIndex={9999} />
-                                                                    {key === "passphrase" ? <HideShowButton  show={showPassphrase} setShow={setShowPassphrase} field={"Passphrase"}/> : <></>}
-                                                                    </>
-                                                                    : <></>
-                                                                }
-                                                            </FlexBox>
-                                                            {key === "publicKey" || key === "privateKey" ?
-                                                                <ClientFileUpload
-                                                                    setFile={(fileData) => {
-                                                                        let newSettings = mirrorSettings
-                                                                        newSettings[key] = fileData
-                                                                        setMirrorSettings({ ...newSettings })
-                                                                    }}
-                                                                    setError={(errorMsg) => {
-                                                                        let newErrors = mirrorErrors
-                                                                        newErrors[key] = errorMsg
-                                                                        setMirrorErrors({ ...newErrors })
-                                                                    }}
-                                                                    maxSize={40960}
-                                                                >
-                                                                    <Tippy content={mirrorErrors[key] ? mirrorErrors[key] : `Upload key plaintext file content to ${mirrorSettingInfoMetaInfo[key].plainName} input. Warning: this will replace current ${mirrorSettingInfoMetaInfo[key].plainName} content`} trigger={'click mouseenter focus'} onHide={() => {
-                                                                        let newErrors = mirrorErrors
-                                                                        newErrors[key] = null
-                                                                        setMirrorErrors({ ...newErrors })
-                                                                    }}
-                                                                        zIndex={10}>
-                                                                        <div className='input-title-button'>
-                                                                            <FlexBox className="row gap-sm center" style={{ justifyContent: "flex-end", marginRight: "-6px", fontWeight: "normal" }}>
-                                                                                <span onClick={(e) => {
-                                                                                }}>Upload</span>
-                                                                                <VscCloudUpload />
-                                                                            </FlexBox>
-                                                                        </div>
-                                                                    </Tippy>
-                                                                </ClientFileUpload>
-                                                                : <></>}
+                                            return (
+                                                <FlexBox key={`input-new-ns-${key}`} className="col gap-sm" style={{ paddingRight: "12px" }}>
+                                                    <FlexBox row style={{ justifyContent: "space-between" }}>
+                                                        <FlexBox row gap="sm" style={{ justifyContent: "flex-start" }}>
+                                                            <span className={`input-title`}>{mirrorSettingInfoMetaInfo[key].plainName}{mirrorSettingInfoMetaInfo[key].required ? "*" : ""}</span>
+                                                            {
+                                                                mirrorSettingInfoMetaInfo[key].info ?
+                                                                <>
+                                                                <HelpIcon msg={mirrorSettingInfoMetaInfo[key].info} zIndex={9999} />
+                                                                {key === "passphrase" ? <HideShowButton  show={showPassphrase} setShow={setShowPassphrase} field={"Passphrase"}/> : <></>}
+                                                                </>
+                                                                : <></>
+                                                            }
                                                         </FlexBox>
-                                                        {key === "publicKey" || key === "privateKey" || key === "token" ?
-                                                            <textarea style={{ width: "100%", resize: "none" }} rows={5} value={value} onChange={(e) => {
-                                                                let newSettings = mirrorSettings
-                                                                newSettings[key] = e.target.value
-                                                                setMirrorSettings({ ...newSettings })
-                                                            }} autoFocus placeholder={mirrorSettingInfoMetaInfo[key].placeholder} />
-                                                            :
-                                                            <input type={key === "passphrase" && !showPassphrase ? "password" : "text"} style={{ width: "100%" }} value={value} onChange={(e) => {
-                                                                let newSettings = mirrorSettings
-                                                                newSettings[key] = e.target.value
-                                                                setMirrorSettings({ ...newSettings })
-                                                            }} autoFocus placeholder={mirrorSettingInfoMetaInfo[key].placeholder} />
-                                                        }
-
+                                                        {key === "publicKey" || key === "privateKey" ?
+                                                            <ClientFileUpload
+                                                                setFile={(fileData) => {
+                                                                    let newSettings = mirrorSettings
+                                                                    newSettings[key] = fileData
+                                                                    setMirrorSettings({ ...newSettings })
+                                                                }}
+                                                                setError={(errorMsg) => {
+                                                                    let newErrors = mirrorErrors
+                                                                    newErrors[key] = errorMsg
+                                                                    setMirrorErrors({ ...newErrors })
+                                                                }}
+                                                                maxSize={40960}
+                                                            >
+                                                                <Tippy content={mirrorErrors[key] ? mirrorErrors[key] : `Upload key plaintext file content to ${mirrorSettingInfoMetaInfo[key].plainName} input. Warning: this will replace current ${mirrorSettingInfoMetaInfo[key].plainName} content`} trigger={'click mouseenter focus'} onHide={() => {
+                                                                    let newErrors = mirrorErrors
+                                                                    newErrors[key] = null
+                                                                    setMirrorErrors({ ...newErrors })
+                                                                }}
+                                                                    zIndex={10}>
+                                                                    <div className='input-title-button'>
+                                                                        <FlexBox center row gap="sm" style={{ justifyContent: "flex-end", marginRight: "-6px", fontWeight: "normal" }}>
+                                                                            <span onClick={(e) => {
+                                                                            }}>Upload</span>
+                                                                            <VscCloudUpload />
+                                                                        </FlexBox>
+                                                                    </div>
+                                                                </Tippy>
+                                                            </ClientFileUpload>
+                                                            : <></>}
                                                     </FlexBox>
-                                                )
-                                            })}
-                                        </FlexBox>
-                                    )]} />
-                            </Modal>
-                        </div>
-                    </ContentPanelHeaderButton>
+                                                    {key === "publicKey" || key === "privateKey" || key === "token" ?
+                                                        <textarea style={{ width: "100%", resize: "none" }} rows={5} value={value} onChange={(e) => {
+                                                            let newSettings = mirrorSettings
+                                                            newSettings[key] = e.target.value
+                                                            setMirrorSettings({ ...newSettings })
+                                                        }} autoFocus placeholder={mirrorSettingInfoMetaInfo[key].placeholder} />
+                                                        :
+                                                        <input type={key === "passphrase" && !showPassphrase ? "password" : "text"} style={{ width: "100%" }} value={value} onChange={(e) => {
+                                                            let newSettings = mirrorSettings
+                                                            newSettings[key] = e.target.value
+                                                            setMirrorSettings({ ...newSettings })
+                                                        }} autoFocus placeholder={mirrorSettingInfoMetaInfo[key].placeholder} />
+                                                    }
+
+                                                </FlexBox>
+                                            )
+                                        })}
+                                    </FlexBox>
+                                )]} />
+                        </Modal>
                     {
                         data && data?.node?.expandedType === "git" ?
-                            <>
-                                <ContentPanelHeaderButton className="explorer-action-btn">
-                                    <ContentPanelHeaderButtonIcon>
-                                        <VscRepo />
-                                    </ContentPanelHeaderButtonIcon>
-                                    <Link to={`/n/${namespace}/mirror${path}`}>
-                                        Mirror Info
-                                    </Link>
-                                </ContentPanelHeaderButton>
-                            </>
+                                <Button variant='outlined' color='info' href={`/n/${namespace}/mirror${path}`}>
+                                    <VscRepo />
+                                    <span>Mirror Info</span>
+                                </Button>
                             :
                             <></>
                     }
                     <div className="explorer-sort-by explorer-action-btn hide-600">
-                    <FlexBox className="gap" style={{marginRight: "8px"}}>
-                        <FlexBox className="center">
+                    <FlexBox gap style={{marginRight: "8px"}}>
+                        <FlexBox center >
                             Sort by:
                         </FlexBox>
-                        <FlexBox className="center">
+                        <FlexBox center >
                             <select onChange={(e)=>{
                                 setOrderFieldKey(e.target.value)
                                 setQueryParams([])
@@ -647,7 +678,7 @@ function ExplorerList(props) {
                 </FlexBox>
             </ContentPanelTitle>
             <ContentPanelBody style={{height:"100%"}}>
-                <FlexBox className="col">
+                <FlexBox col>
                     {data === null || pageInfo === null ?
                         <div className="explorer-item">
                             <FlexBox className="explorer-item-container">
@@ -693,7 +724,7 @@ function ExplorerList(props) {
                     </FlexBox>
             </ContentPanelBody>
         </ContentPanel>
-        <FlexBox className="row" style={{justifyContent:"flex-end", paddingBottom:"1em", flexGrow: 0}}>
+        <FlexBox row style={{justifyContent:"flex-end", paddingBottom:"1em", flexGrow: 0}}>
                 <Pagination pageHandler={pageHandler} pageInfo={pageInfo}/>
         </FlexBox>
     </Loader>
@@ -714,12 +745,12 @@ function DirListItem(props) {
     const [recursiveDelete, setRecursiveDelete] = useState(false)
 
 
-    return(
+    return (
         <div style={{cursor:"pointer"}} onClick={(e)=>{
             resetQueryParams()
             navigate(`/n/${namespace}/explorer/${path.substring(1)}`)
         }} className={`explorer-item`}>
-            <FlexBox className="col">
+            <FlexBox col>
                 <FlexBox className="explorer-item-container gap wrap">
                     <FlexBox className="explorer-item-icon">
                         { isGit ?
@@ -750,7 +781,7 @@ function DirListItem(props) {
                 <FlexBox >
                     {err !== "" ? 
                     <FlexBox>
-                        <Alert className="rename-error critical">{err}</Alert>
+                        <Alert severity="error" variant="filled">{err}</Alert>
                     </FlexBox>
                     :<FlexBox />
                     }
@@ -781,24 +812,44 @@ function DirListItem(props) {
                                 }}
                                 title="Delete a directory" 
                                 button={(
-                                    <FlexBox>
+                                    <>
                                         <VscTrash className="auto-margin red-text" />
-                                    </FlexBox>
+                                    </>
                                 )}
+                                buttonProps={{
+                                    auto: true,
+                                    variant: "text"
+                                }}
                                 actionButtons={
                                     [
-                                        ButtonDefinition("Delete", async () => {
-                                            let p = path.split('/', -1);
-                                            let pLast = p[p.length-1];
-                                            await deleteNode(pLast, recursiveDelete)
-                                        }, "small red", ()=>{}, true, false),
-                                        ButtonDefinition("Cancel", () => {
-                                        }, "small light", ()=>{}, true, false)
+                                        {
+                                            label: "Delete",
+
+                                            onClick: async () => {
+                                                let p = path.split('/', -1);
+                                                let pLast = p[p.length-1];
+                                                await deleteNode(pLast, recursiveDelete)
+                                            },
+
+                                            buttonProps: {variant: "contained", color: "error"},
+                                            errFunc: ()=>{},
+                                            closesModal: true
+                                        },
+                                        {
+                                            label: "Cancel",
+
+                                            onClick: () => {
+                                            },
+
+                                            buttonProps: {},
+                                            errFunc: ()=>{},
+                                            closesModal: true
+                                        }
                                     ]
                                 } 
                             >
-                                    <FlexBox className="col gap">
-                                <FlexBox className="center-y gap" style={{fontWeight:"bold"}}>
+                                    <FlexBox col gap>
+                                <FlexBox gap center="y" style={{fontWeight:"bold"}}>
                                     Recursive Delete:
                                     <label className="switch">
                                         <input onChange={()=>{
@@ -821,7 +872,7 @@ function DirListItem(props) {
                 </FlexBox>
             </FlexBox>
         </div>
-    )
+    );
 }
 
 function WorkflowListItem(props) {
@@ -833,11 +884,11 @@ function WorkflowListItem(props) {
     const [rename, setRename] = useState(false)
     const [err, setErr] = useState("")
 
-    return(
+    return (
         <div style={{cursor:"pointer"}} onClick={()=>{
             navigate(`/n/${namespace}/explorer/${path.substring(1)}`)
         }} className="explorer-item">
-            <FlexBox className="col">
+            <FlexBox col>
                 <FlexBox className="explorer-item-container gap wrap">
                     <FlexBox className="explorer-item-icon">
                         <FcWorkflow className="auto-margin" />
@@ -864,7 +915,7 @@ function WorkflowListItem(props) {
                     <FlexBox>
                         {err !== "" ? 
                         <FlexBox>
-                            <Alert className="rename-error critical">{err}</Alert>
+                            <Alert severity="error" variant="filled">{err}</Alert>
                         </FlexBox>
                         :<FlexBox />
                         }
@@ -895,23 +946,43 @@ function WorkflowListItem(props) {
                                         }}
                                         title="Delete a workflow" 
                                         button={(
-                                            <FlexBox style={{alignItems:'center'}}>
+                                            // <FlexBox style={{alignItems:'center'}}>
                                                 <HiOutlineTrash className="auto-margin red-text" />
-                                            </FlexBox>
+                                            // </FlexBox>
                                         )}
+                                        buttonProps={{
+                                            auto: true,
+                                            variant: "text"
+                                        }}
                                         actionButtons={
                                             [
-                                                ButtonDefinition("Delete", async () => {
-                                                    let p = path.split('/', -1);
-                                                    let pLast = p[p.length-1];
-                                                    await deleteNode(pLast, false)
-                                                }, "small red", ()=>{}, true, false),
-                                                ButtonDefinition("Cancel", () => {
-                                                }, "small light", ()=>{}, true, false)
+                                                {
+                                                    label: "Delete",
+
+                                                    onClick: async () => {
+                                                        let p = path.split('/', -1);
+                                                        let pLast = p[p.length-1];
+                                                        await deleteNode(pLast, false)
+                                                    },
+
+                                                    buttonProps: {variant: "contained", color: "error"},
+                                                    errFunc: ()=>{},
+                                                    closesModal: true
+                                                },
+                                                {
+                                                    label: "Cancel",
+
+                                                    onClick: () => {
+                                                    },
+
+                                                    buttonProps: {},
+                                                    errFunc: ()=>{},
+                                                    closesModal: true
+                                                }
                                             ]
                                         } 
                                     >
-                                            <FlexBox className="col gap">
+                                            <FlexBox col gap>
                                         <FlexBox >
                                             Are you sure you want to delete '{name}'?
                                             <br/>
@@ -925,7 +996,7 @@ function WorkflowListItem(props) {
                 </FlexBox>
             </FlexBox>
         </div>
-    )
+    );
 }
 
 export function ApiFragment(props) {

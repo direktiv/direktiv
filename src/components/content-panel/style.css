@@ -8,7 +8,9 @@
     line-height: 42px;
     max-height: 42px;
     padding-left: 16px;
-    /* padding-right: 16px; */
+    padding-right: 8px;
+    align-items: center;
+    justify-content: space-around;
     font-weight: 700;
     gap: 12px;
 }

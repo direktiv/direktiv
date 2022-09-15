@@ -28,7 +28,7 @@ export default function WorkflowPod(props) {
     }
     
     return (
-        <FlexBox className="col gap">
+        <FlexBox col gap>
         <div >
             <ContentPanel style={{width:"100%"}}>
                 <ContentPanelTitle>
@@ -41,7 +41,7 @@ export default function WorkflowPod(props) {
                 </ContentPanelTitle>
                     <ContentPanelBody className="secrets-panel" style={{fontSize:"11pt"}}>
                         <FlexBox className="wrap gap" style={{padding:"10px"}}>
-                            <FlexBox className="col gap" style={{minWidth: "200px"}}>
+                            <FlexBox col gap style={{minWidth: "200px"}}>
                                 <div>
                                     <span style={{fontWeight:"bold"}}>Created:</span> 
                                     <span style={{marginLeft:"5px"}}>{dayjs.unix(revisionDetails.created).format("HH:mmA, DD/MM/YYYY")}</span>
@@ -69,7 +69,7 @@ export default function WorkflowPod(props) {
                                     </ul>
                                 </div>:<></>}
                             </FlexBox>
-                            <FlexBox className="col gap" style={{minWidth: "200px"}}>
+                            <FlexBox col gap style={{minWidth: "200px"}}>
                                 <div>
                                     <span style={{fontWeight:"bold"}}>Image:</span>
                                     <span style={{marginLeft:"5px"}}>{revisionDetails.image}</span>
@@ -87,7 +87,7 @@ export default function WorkflowPod(props) {
                                     <span style={{marginLeft:"5px"}}>{revisionDetails.desiredReplicas}</span>
                                 </div>
                             </FlexBox>
-                            <FlexBox className="col gap" style={{minWidth: "200px"}}>
+                            <FlexBox col gap style={{minWidth: "200px"}}>
                                 <span style={{fontWeight:"bold"}}>Conditions:</span>
                                 <ul style={{marginTop:"0px", listStyle:"none", paddingLeft:'10px'}}>
                                         {revisionDetails.conditions.map((obj)=>{

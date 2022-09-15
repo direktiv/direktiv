@@ -1,4 +1,4 @@
-import Editor, {useMonaco, loader } from "@monaco-editor/react";
+import Editor, {useMonaco, loader, EditorProps } from "@monaco-editor/react";
 import { useEffect, useState } from "react";
 import './style.css'
 // import * as cobalt from './cobalt.json'
@@ -257,20 +257,85 @@ const cobalt = {
       "editorCursor.foreground": "#FFFFFF",
       "editorWhitespace.foreground": "#FFFFFF26"
     }
-  }
+}
 
+export interface DirektivEditorProps extends React.HTMLAttributes<HTMLDivElement> {
+  /**
+  * Callback function for CRTL+S shortcut is pressed when editor is in focus. 
+  */
+  saveFn?: () => void
+  /**
+  * Removes border radius of editor component.
+  */
+  noBorderRadius?: boolean
+  /**
+  * Additional Monaco Editor options
+  */
+  options?: EditorProps
+  /**
+  * Default value for editor to display.
+  */
+  dvalue: EditorProps["defaultValue"]
+  /**
+  * Monaco supported Language for editor to use. Example: 'json', 'yaml'
+  */
+  dlang: string
+  /**
+  * Value of editor's content.
+  */
+  value: EditorProps["value"]
+  /**
+  * Editor Height. Editor height is calculated by subtracting 18 to this value.
+  */
+  height?: number
+  /**
+  * Editor Width.
+  */
+  width?: number
+  setDValue?: React.Dispatch<React.SetStateAction<string>>
+  /**
+  * Sets editor to Read Only mode.
+  */
+  readonly?: boolean
+  /**
+  * Toggle editor validation on value.
+  */
+  validate?: boolean
+  /**
+  * Toggles minimap in editor.
+  */
+  minimap?: boolean
+}
 
 // DirektivEditor - Eidtor Component
 // Note: width and height must not have unit suffix. e.g. 400=acceptable, 400% will not work
 // TODO: Support multiple width/height unit
-export default function DirektivEditor(props) {
-    const {saveFn, style, noBorderRadius, options, dvalue, dlang, value, height, width, setDValue, readonly, validate, minimap} = props
+
+/**
+* Logs component that only renders the visible log items of a list. 
+* Supports auto scrolling to bottom as logs change, and word wrapping.
+*/
+function DirektivEditor({
+    saveFn,
+    noBorderRadius,
+    options,
+    dvalue,
+    dlang = "json",
+    value,
+    height,
+    width,
+    setDValue,
+    readonly,
+    validate,
+    minimap,
+ ...props 
+}: DirektivEditorProps) {
     const monaco = useMonaco()
 
-    const [ed, setEditor] = useState(null);
+    const [ed, setEditor] = useState(null as any);
 
     useEffect(()=>{
-        if(monaco !== null && monaco !== undefined) {           
+        if(monaco) {           
             monaco.editor.defineTheme('cobalt', cobalt)
             monaco.editor.setTheme('cobalt')
             if (monaco?.languages?.[dlang]?.[`${dlang}Defaults`]?.setDiagnosticsOptions) {
@@ -284,11 +349,13 @@ export default function DirektivEditor(props) {
         }
     },[monaco, dlang, validate])
 
-    function handleEditorChange(value, event) {
-      setDValue(value)
+    function handleEditorChange (value: string | undefined) {
+        if (value && setDValue) {
+            setDValue(value)
+        }
     }
 
-    function setCommonEditorTriggers(editor, monaco) {
+    function setCommonEditorTriggers(editor: any, monaco: any) {
       editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_J, ()=>{
         editor.trigger('fold', 'editor.foldAll')
       })
@@ -302,7 +369,7 @@ export default function DirektivEditor(props) {
       ed.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_S, saveFn)
     }
 
-    let handleEditorDidMount = function(editor, monaco) {
+    let handleEditorDidMount = function(editor: any, monaco: any) {
       setCommonEditorTriggers(editor, monaco)
       setEditor(editor)
     }
@@ -318,9 +385,8 @@ export default function DirektivEditor(props) {
     }
 
     return (
-      <div className={"monaco-editor monaco-wrapper"} style={{ borderRadius: !noBorderRadius ? "8px" : "0px", width: width, height: height ? height-18 : height, ...style}}>
+      <div {...props} className={`monaco-editor monaco-wrapper ${props.className ? props.className : ""}`} style={{ borderRadius: !noBorderRadius ? "8px" : "0px", width: width, height: height ? height-18 : height, ...props.style}}>
         <Editor
-        
             options={{
                 ...options,
                 readOnly: readonly,
@@ -346,3 +412,5 @@ export default function DirektivEditor(props) {
       </div>
     )
 }
+
+export default DirektivEditor

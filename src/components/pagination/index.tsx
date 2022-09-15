@@ -30,6 +30,9 @@ export interface PageHandler {
   goToFirstPage: () => void
 }
 
+/**
+* Hook to track and update the current state of a pagination component. Additionally a goToFirstPage util function is returned. 
+*/
 export function usePageHandler(limit: number, initPage: number = 1): PageHandler {
   const [page, setPage] = React.useState(initPage)
   const offset = React.useMemo(() => {
@@ -65,11 +68,20 @@ export function usePageHandler(limit: number, initPage: number = 1): PageHandler
 
 
 export interface PaginationProps {
+  /**
+  * Page Handler returned from the usePageHandler. 
+  */
   pageHandler: PageHandler
+  /**
+  * Current page info of list edges.
+  */
   pageInfo: PageInfo | null
 }
 
-export default function Pagination({ pageHandler, pageInfo }: PaginationProps) {
+/**
+* A Pagaintion component that renders the lenght of items based on the passed pageInfo prop and its current state based on the pageHandler hook.
+*/
+function Pagination({ pageHandler, pageInfo }: PaginationProps) {
   const pageCount = React.useMemo(() => {
     if (!pageInfo || pageInfo.limit === 0) {
       return 0
@@ -111,3 +123,5 @@ export default function Pagination({ pageHandler, pageInfo }: PaginationProps) {
       }} />
   );
 }
+
+export default Pagination
