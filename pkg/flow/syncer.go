@@ -1066,6 +1066,16 @@ func (repository *localRepository) clone(ctx context.Context) error {
 		Strategy: git.CheckoutForce,
 	}
 
+	proxyOpts := git.ProxyOptions{}
+	proxy := os.Getenv("HTTP_PROXY")
+	if proxy == "" {
+		proxy = os.Getenv("HTTPS_PROXY")
+	}
+	if proxy != "" {
+		proxyOpts.Type = git.ProxyTypeSpecified
+		proxyOpts.Url = proxy
+	}
+
 	fetchOpts := git.FetchOptions{
 		RemoteCallbacks: git.RemoteCallbacks{
 			CertificateCheckCallback: func(cert *git.Certificate, valid bool, hostname string) error { return nil }, // TODO
@@ -1078,6 +1088,7 @@ func (repository *localRepository) clone(ctx context.Context) error {
 				return cred, err
 			},
 		},
+		ProxyOptions: proxyOpts,
 	}
 
 	uri := repository.repo.URL
