@@ -2,8 +2,8 @@ package secrets
 
 import (
 	"context"
-	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/direktiv/direktiv/pkg/dlog"
 	secretsgrpc "github.com/direktiv/direktiv/pkg/secrets/grpc"
@@ -97,6 +97,10 @@ func (s *Server) StoreSecret(ctx context.Context, in *secretsgrpc.SecretsStoreRe
 
 	var resp emptypb.Empty
 
+	if len(in.GetName()) > 0 && in.GetName()[len(in.GetName())-1:] == "/" && len(in.GetData()) == 0 {
+		return &resp, fmt.Errorf("secret required, but got folder")
+	}
+
 	if in.GetName() == "" || in.GetNamespace() == "" || len(in.GetData()) == 0 {
 		return &resp, fmt.Errorf("name, namespace and secret values are required")
 	}
@@ -105,10 +109,7 @@ func (s *Server) StoreSecret(ctx context.Context, in *secretsgrpc.SecretsStoreRe
 	if ok := util.MatchesVarRegex(n); !ok {
 		return &resp, fmt.Errorf("secret name must match the regex pattern `%s`", util.RegexPattern)
 	}
-
-	if len(n) > 32 {
-		return &resp, errors.New("secret name must not exceed 32 characters")
-	}
+	n = strings.TrimPrefix(n, "/")
 
 	err := s.handler.AddSecret(in.GetNamespace(), n, in.GetData())
 
@@ -121,11 +122,17 @@ func (s *Server) RetrieveSecret(ctx context.Context, in *secretsgrpc.SecretsRetr
 
 	var resp secretsgrpc.SecretsRetrieveResponse
 
+	if len(in.GetName()) > 0 && in.GetName()[len(in.GetName())-1:] == "/" {
+		return &resp, fmt.Errorf("secret name required, but got folder name")
+	}
+
 	if in.GetName() == "" || in.GetNamespace() == "" {
 		return &resp, fmt.Errorf("name and namespace values are required")
 	}
 
-	data, err := s.handler.GetSecret(in.GetNamespace(), in.GetName())
+	n := in.GetName()
+	n = strings.TrimPrefix(n, "/")
+	data, err := s.handler.GetSecret(in.GetNamespace(), n)
 	resp.Data = data
 
 	return &resp, err
@@ -166,6 +173,10 @@ func (s *Server) DeleteSecret(ctx context.Context, in *secretsgrpc.SecretsDelete
 
 	var resp emptypb.Empty
 
+	if len(in.GetName()) > 0 && in.GetName()[len(in.GetName())-1:] == "/" {
+		return &resp, fmt.Errorf("secret name required, but got folder name")
+	}
+
 	if in.GetName() == "" || in.GetNamespace() == "" {
 		return &resp, fmt.Errorf("name and namespace values are required")
 	}
@@ -173,10 +184,62 @@ func (s *Server) DeleteSecret(ctx context.Context, in *secretsgrpc.SecretsDelete
 	return &resp, s.handler.RemoveSecret(in.GetNamespace(), in.GetName())
 }
 
-// DeleteSecrets deletes secrets for a namespace
+// DeleteSecrets deletes secrets for a namespace //TODO Rename toi DeleteNamespaceSecrets
 func (s *Server) DeleteSecrets(ctx context.Context, in *secretsgrpc.DeleteSecretsRequest) (*empty.Empty, error) {
 
 	var resp emptypb.Empty
 	return &resp, s.handler.RemoveSecrets(in.GetNamespace())
 
+}
+
+// AddFolder stores folders and create all missing folders in the path
+func (s *Server) AddFolder(ctx context.Context, in *secretsgrpc.SecretsStoreRequest) (*empty.Empty, error) {
+
+	var resp emptypb.Empty
+
+	if len(in.GetName()) > 0 && in.GetName()[len(in.GetName())-1:] != "/" {
+		return &resp, fmt.Errorf("folder name must ends with / ")
+	}
+
+	if len(in.GetData()) != 0 {
+		return &resp, fmt.Errorf("folder must have empty data ")
+	}
+
+	n := in.GetName()
+	if ok := util.MatchesVarRegex(n); !ok {
+		return &resp, fmt.Errorf("folder name must match the regex pattern `%s`", util.RegexPattern)
+	}
+
+	err := s.handler.AddSecret(in.GetNamespace(), n, in.GetData())
+
+	if err != nil {
+		return &resp, fmt.Errorf("folder already exists")
+	}
+
+	splittedPath := strings.SplitAfter(n, "/")
+	splittedPath = splittedPath[:len(splittedPath)-2] // delete last elem cause is empty and last path name cause already checked
+	concPath := ""
+	for _, name := range splittedPath {
+		concPath += name
+		err = s.handler.AddSecret(in.GetNamespace(), concPath, in.GetData())
+	}
+
+	return &resp, err
+
+}
+
+// DeleteFolder deletes folder from backend
+func (s *Server) DeleteFolder(ctx context.Context, in *secretsgrpc.SecretsDeleteRequest) (*empty.Empty, error) {
+
+	var resp emptypb.Empty
+
+	if len(in.GetName()) > 0 && in.GetName()[len(in.GetName())-1:] == "/" {
+		return &resp, fmt.Errorf("secret name required, but got folder name")
+	}
+
+	if in.GetName() == "" || in.GetNamespace() == "" {
+		return &resp, fmt.Errorf("name and namespace values are required")
+	}
+
+	return &resp, s.handler.RemoveSecret(in.GetNamespace(), in.GetName())
 }

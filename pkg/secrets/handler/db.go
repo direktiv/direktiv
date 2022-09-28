@@ -8,7 +8,9 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 
+	"github.com/direktiv/direktiv/ent/predicate"
 	"github.com/direktiv/direktiv/pkg/dlog"
 	"github.com/direktiv/direktiv/pkg/secrets/ent"
 	entc "github.com/direktiv/direktiv/pkg/secrets/ent"
@@ -127,42 +129,99 @@ func (db *dbHandler) GetSecret(namespace, name string) ([]byte, error) {
 func (db *dbHandler) GetSecrets(namespace string) ([]string, error) {
 
 	var names []string
+	dbs := db
+	var err error
+	prefix := ""
+	prefix = strings.TrimPrefix(prefix, "/")
 
-	dbs, err := db.db.NamespaceSecret.
-		Query().
-		Where(
-			namespacesecret.And(
-				namespacesecret.NsEQ(namespace),
-			)).
-		All(context.Background())
+	test := []predicate.NamespaceSecret{
+		namespacesecret.NameHasPrefix(prefix),
+	}
+
+	if prefix[len(prefix)-1:] != "/" { //FILE  BETTER PROVE IF PREFIX == ""
+		dbs, err = db.db.NamespaceSecret.
+			Query().
+			Where(
+				namespacesecret.And(
+					namespacesecret.NsEQ(namespace),
+				)).
+			All(context.Background())
+	} else { // FOLDER
+		dbs, err := db.db.NamespaceSecret.
+			Query().
+			Where(
+				namespacesecret.And(
+					namespacesecret.NsEQ(namespace),
+				)).
+			All(context.Background())
+	}
 
 	if err != nil {
 		return nil, err
 	}
 
 	for _, s := range dbs {
-		names = append(names, s.Name)
+		if prefix[len(prefix)-1:] != "/" {
+			names = append(names, s.Name) //IGNORE FOLDERS, ONLY GET THE SECRETS
+		}
+
 	}
 
 	return names, nil
 
 }
 
+//var := []whatevr{
+//	namespacesecret.NsEQ(namespace)
+//}
+
+//if true {
+//	var 0 append(var, namespacesecret.NameHasPrefix(prefix),)
+//}
+
+//dbs, err := db.db.NamespaceSecret.
+//	Query().
+//	Where(
+//		namespacesecret.And(
+//			var...
+//					namespacesecret.NsEQ(namespace),
+//					namespacesecret.NameHasPrefix(prefix),
+//		)).
+//	All(context.Background())
+
+//}
+
 func (db *dbHandler) RemoveSecret(namespace, name string) error {
 
-	_, err := db.db.NamespaceSecret.
-		Delete().
-		Where(
-			namespacesecret.And(
-				namespacesecret.NsEQ(namespace),
-				namespacesecret.NameEQ(name),
-			)).
-		Exec(context.Background())
+	if name[len(name)-1:] != "/" { //FILE
 
-	return err
+		_, err := db.db.NamespaceSecret.
+			Delete().
+			Where(
+				namespacesecret.And(
+					namespacesecret.NsEQ(namespace),
+					namespacesecret.NameEQ(name),
+				)).
+			Exec(context.Background())
+
+		return err
+
+	} else { //FOLDER
+		_, err := db.db.NamespaceSecret.
+			Delete().
+			Where(
+				namespacesecret.And(
+					namespacesecret.NsEQ(namespace),
+					namespacesecret.NameHasPrefix(name),
+				)).
+			Exec(context.Background())
+		return err
+
+	}
 
 }
 
+//TODO rename to RemoveNamespaceSecrets
 func (db *dbHandler) RemoveSecrets(namespace string) error {
 
 	_, err := db.db.NamespaceSecret.
