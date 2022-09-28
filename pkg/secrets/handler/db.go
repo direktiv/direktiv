@@ -10,7 +10,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/direktiv/direktiv/ent/predicate"
 	"github.com/direktiv/direktiv/pkg/dlog"
 	"github.com/direktiv/direktiv/pkg/secrets/ent"
 	entc "github.com/direktiv/direktiv/pkg/secrets/ent"
@@ -129,67 +128,37 @@ func (db *dbHandler) GetSecret(namespace, name string) ([]byte, error) {
 func (db *dbHandler) GetSecrets(namespace string) ([]string, error) {
 
 	var names []string
-	dbs := db
-	var err error
-	prefix := ""
-	prefix = strings.TrimPrefix(prefix, "/")
+	name := ""
+	name = strings.TrimPrefix(name, "/")
 
-	test := []predicate.NamespaceSecret{
-		namespacesecret.NameHasPrefix(prefix),
-	}
-
-	if prefix[len(prefix)-1:] != "/" { //FILE  BETTER PROVE IF PREFIX == ""
-		dbs, err = db.db.NamespaceSecret.
-			Query().
-			Where(
-				namespacesecret.And(
-					namespacesecret.NsEQ(namespace),
-				)).
-			All(context.Background())
-	} else { // FOLDER
-		dbs, err := db.db.NamespaceSecret.
-			Query().
-			Where(
-				namespacesecret.And(
-					namespacesecret.NsEQ(namespace),
-				)).
-			All(context.Background())
-	}
+	dbs, err := db.db.NamespaceSecret.
+		Query().
+		Where(
+			namespacesecret.And(
+				namespacesecret.NsEQ(namespace),
+			)).
+		All(context.Background())
 
 	if err != nil {
 		return nil, err
 	}
 
+	isFolder := (name == "" || name[len(name)-1:] != "/")
 	for _, s := range dbs {
-		if prefix[len(prefix)-1:] != "/" {
-			names = append(names, s.Name) //IGNORE FOLDERS, ONLY GET THE SECRETS
+		if s.Name[len(s.Name)-1:] != "/" { //Ignore folders
+			if isFolder { //When name is folder then take all names with same prefix
+				if strings.HasPrefix(s.Name, name) {
+					names = append(names, s.Name)
+				}
+			} else {
+				names = append(names, s.Name) //When name is file just add in names
+			}
 		}
-
 	}
 
 	return names, nil
 
 }
-
-//var := []whatevr{
-//	namespacesecret.NsEQ(namespace)
-//}
-
-//if true {
-//	var 0 append(var, namespacesecret.NameHasPrefix(prefix),)
-//}
-
-//dbs, err := db.db.NamespaceSecret.
-//	Query().
-//	Where(
-//		namespacesecret.And(
-//			var...
-//					namespacesecret.NsEQ(namespace),
-//					namespacesecret.NameHasPrefix(prefix),
-//		)).
-//	All(context.Background())
-
-//}
 
 func (db *dbHandler) RemoveSecret(namespace, name string) error {
 

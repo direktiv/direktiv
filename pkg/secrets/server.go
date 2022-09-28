@@ -97,7 +97,7 @@ func (s *Server) StoreSecret(ctx context.Context, in *secretsgrpc.SecretsStoreRe
 
 	var resp emptypb.Empty
 
-	if len(in.GetName()) > 0 && in.GetName()[len(in.GetName())-1:] == "/" && len(in.GetData()) == 0 {
+	if len(in.GetName()) > 0 && in.GetName()[len(in.GetName())-1:] == "/" || in.GetName() == "" {
 		return &resp, fmt.Errorf("secret required, but got folder")
 	}
 
