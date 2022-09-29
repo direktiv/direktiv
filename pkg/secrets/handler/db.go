@@ -128,7 +128,7 @@ func (db *dbHandler) GetSecret(namespace, name string) ([]byte, error) {
 func (db *dbHandler) GetSecrets(namespace string) ([]string, error) {
 
 	var names []string
-	name := ""
+	name := "" // input param not implemented // main directory should always name = ""
 	name = strings.TrimPrefix(name, "/")
 
 	dbs, err := db.db.NamespaceSecret.
@@ -136,6 +136,7 @@ func (db *dbHandler) GetSecrets(namespace string) ([]string, error) {
 		Where(
 			namespacesecret.And(
 				namespacesecret.NsEQ(namespace),
+				namespacesecret.NameHasPrefix(name),
 			)).
 		All(context.Background())
 
@@ -143,16 +144,10 @@ func (db *dbHandler) GetSecrets(namespace string) ([]string, error) {
 		return nil, err
 	}
 
-	isFolder := (name == "" || name[len(name)-1:] != "/")
 	for _, s := range dbs {
-		if s.Name[len(s.Name)-1:] != "/" { //Ignore folders
-			if isFolder { //When name is folder then take all names with same prefix
-				if strings.HasPrefix(s.Name, name) {
-					names = append(names, s.Name)
-				}
-			} else {
-				names = append(names, s.Name) //When name is file just add in names
-			}
+
+		if ((strings.Count(name, "/")+1) == strings.Count(s.Name, "/") && strings.HasSuffix(s.Name, "/")) || strings.Count(name, "/") == strings.Count(s.Name, "/") {
+			names = append(names, s.Name)
 		}
 	}
 
