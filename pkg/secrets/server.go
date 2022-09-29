@@ -97,7 +97,7 @@ func (s *Server) StoreSecret(ctx context.Context, in *secretsgrpc.SecretsStoreRe
 
 	var resp emptypb.Empty
 
-	if len(in.GetName()) > 0 && in.GetName()[len(in.GetName())-1:] == "/" || in.GetName() == "" {
+	if strings.HasSuffix(in.GetName(), "/") || in.GetName() == "" {
 		return &resp, fmt.Errorf("secret required, but got folder")
 	}
 
@@ -122,7 +122,7 @@ func (s *Server) RetrieveSecret(ctx context.Context, in *secretsgrpc.SecretsRetr
 
 	var resp secretsgrpc.SecretsRetrieveResponse
 
-	if len(in.GetName()) > 0 && in.GetName()[len(in.GetName())-1:] == "/" {
+	if strings.HasSuffix(in.GetName(), "/") {
 		return &resp, fmt.Errorf("secret name required, but got folder name")
 	}
 
@@ -173,7 +173,7 @@ func (s *Server) DeleteSecret(ctx context.Context, in *secretsgrpc.SecretsDelete
 
 	var resp emptypb.Empty
 
-	if len(in.GetName()) > 0 && in.GetName()[len(in.GetName())-1:] == "/" {
+	if strings.HasSuffix(in.GetName(), "/") {
 		return &resp, fmt.Errorf("secret name required, but got folder name")
 	}
 
@@ -197,7 +197,7 @@ func (s *Server) AddFolder(ctx context.Context, in *secretsgrpc.SecretsStoreRequ
 
 	var resp emptypb.Empty
 
-	if len(in.GetName()) > 0 && in.GetName()[len(in.GetName())-1:] != "/" {
+	if !strings.HasSuffix(in.GetName(), "/") {
 		return &resp, fmt.Errorf("folder name must ends with / ")
 	}
 
@@ -233,8 +233,8 @@ func (s *Server) DeleteFolder(ctx context.Context, in *secretsgrpc.SecretsDelete
 
 	var resp emptypb.Empty
 
-	if len(in.GetName()) > 0 && in.GetName()[len(in.GetName())-1:] == "/" {
-		return &resp, fmt.Errorf("secret name required, but got folder name")
+	if !strings.HasSuffix(in.GetName(), "/") {
+		return &resp, fmt.Errorf("folder name must ends with /")
 	}
 
 	if in.GetName() == "" || in.GetNamespace() == "" {
