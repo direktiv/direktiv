@@ -184,8 +184,8 @@ func (s *Server) DeleteSecret(ctx context.Context, in *secretsgrpc.SecretsDelete
 	return &resp, s.handler.RemoveSecret(in.GetNamespace(), in.GetName())
 }
 
-// DeleteSecrets deletes secrets for a namespace //TODO Rename toi DeleteNamespaceSecrets
-func (s *Server) DeleteSecrets(ctx context.Context, in *secretsgrpc.DeleteSecretsRequest) (*empty.Empty, error) {
+// DeleteNamespaceSecrets deletes secrets for a namespace
+func (s *Server) DeleteNamespaceSecrets(ctx context.Context, in *secretsgrpc.DeleteNamespaceSecretsRequest) (*empty.Empty, error) {
 
 	var resp emptypb.Empty
 	return &resp, s.handler.RemoveSecrets(in.GetNamespace())
@@ -193,7 +193,7 @@ func (s *Server) DeleteSecrets(ctx context.Context, in *secretsgrpc.DeleteSecret
 }
 
 // AddFolder stores folders and create all missing folders in the path
-func (s *Server) AddFolder(ctx context.Context, in *secretsgrpc.SecretsStoreRequest) (*empty.Empty, error) {
+func (s *Server) AddFolder(ctx context.Context, in *secretsgrpc.AddFolderRequest) (*empty.Empty, error) {
 
 	var resp emptypb.Empty
 
@@ -229,7 +229,7 @@ func (s *Server) AddFolder(ctx context.Context, in *secretsgrpc.SecretsStoreRequ
 }
 
 // DeleteFolder deletes folder from backend
-func (s *Server) DeleteFolder(ctx context.Context, in *secretsgrpc.SecretsDeleteRequest) (*empty.Empty, error) {
+func (s *Server) DeleteFolder(ctx context.Context, in *secretsgrpc.DeleteFolderRequest) (*empty.Empty, error) {
 
 	var resp emptypb.Empty
 
