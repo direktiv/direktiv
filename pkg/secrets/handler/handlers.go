@@ -22,9 +22,9 @@ type SecretsHandlerInstantiator func() (SecretsHandler, error)
 type SecretsHandler interface {
 	AddSecret(namespace, name string, secret []byte) error
 	RemoveSecret(namespace, name string) error
-	RemoveSecrets(namespace string) error
+	RemoveNamespaceSecrets(namespace string) error
 	GetSecret(namespace, name string) ([]byte, error)
-	GetSecrets(namespace string) ([]string, error)
+	GetSecrets(namespace string, name string) ([]string, error)
 }
 
 func (x *SecretType) Setup() (SecretsHandler, error) {

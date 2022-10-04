@@ -150,7 +150,7 @@ func (s *Server) GetSecrets(ctx context.Context, in *secretsgrpc.GetSecretsReque
 		return &resp, fmt.Errorf("namespace is required")
 	}
 
-	names, err := s.handler.GetSecrets(in.GetNamespace())
+	names, err := s.handler.GetSecrets(in.GetNamespace(), in.GetName())
 	if err != nil {
 		return &resp, err
 	}
@@ -188,7 +188,7 @@ func (s *Server) DeleteSecret(ctx context.Context, in *secretsgrpc.SecretsDelete
 func (s *Server) DeleteNamespaceSecrets(ctx context.Context, in *secretsgrpc.DeleteNamespaceSecretsRequest) (*empty.Empty, error) {
 
 	var resp emptypb.Empty
-	return &resp, s.handler.RemoveSecrets(in.GetNamespace())
+	return &resp, s.handler.RemoveNamespaceSecrets(in.GetNamespace())
 
 }
 

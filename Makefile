@@ -300,7 +300,7 @@ wait-api: ## Wait for 'api' pod to be ready.
 	kubectl wait --for=condition=ready pod ${FLOW_POD}
 
 .PHONY: upgrade-%
-upgrade-%: push-% # Pushes new image deletes, reboots and tail new podPROTOC
+upgrade-%: push-% # Pushes new image deletes, reboots and tail new pod
 	@echo "Upgrading $* pod"
 	@$(MAKE) reboot-$*
 	@$(MAKE) wait-$*

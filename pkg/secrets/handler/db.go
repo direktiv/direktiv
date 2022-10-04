@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/direktiv/direktiv/pkg/dlog"
@@ -125,10 +126,9 @@ func (db *dbHandler) GetSecret(namespace, name string) ([]byte, error) {
 
 }
 
-func (db *dbHandler) GetSecrets(namespace string) ([]string, error) {
+func (db *dbHandler) GetSecrets(namespace string, name string) ([]string, error) {
 
 	var names []string
-	name := "" // input param not implemented // main directory should always name = ""
 	name = strings.TrimPrefix(name, "/")
 
 	dbs, err := db.db.NamespaceSecret.
@@ -144,11 +144,26 @@ func (db *dbHandler) GetSecrets(namespace string) ([]string, error) {
 		return nil, err
 	}
 
+	rootDirectory := (name == "/" || name == "")
+	pathPatternFolders := ""
+	pathPatternFiles := ""
+	if rootDirectory {
+		pathPatternFolders = "*/"
+		pathPatternFiles = "*"
+	} else {
+		pathPatternFolders = name + "*/"
+		pathPatternFiles = name + "*"
+	}
+
 	for _, s := range dbs {
 
-		if ((strings.Count(name, "/")+1) == strings.Count(s.Name, "/") && strings.HasSuffix(s.Name, "/")) || strings.Count(name, "/") == strings.Count(s.Name, "/") {
+		matchesPathPatternFolders, _ := filepath.Match(pathPatternFolders, s.Name)
+		matchesPathPatternFiles, _ := filepath.Match(pathPatternFiles, s.Name)
+
+		if matchesPathPatternFiles || matchesPathPatternFolders {
 			names = append(names, s.Name)
 		}
+
 	}
 
 	return names, nil
@@ -157,7 +172,7 @@ func (db *dbHandler) GetSecrets(namespace string) ([]string, error) {
 
 func (db *dbHandler) RemoveSecret(namespace, name string) error {
 
-	if name[len(name)-1:] != "/" { //FILE
+	if strings.HasSuffix(name, "/") { //FILE
 
 		_, err := db.db.NamespaceSecret.
 			Delete().
@@ -186,7 +201,7 @@ func (db *dbHandler) RemoveSecret(namespace, name string) error {
 }
 
 //TODO rename to RemoveNamespaceSecrets
-func (db *dbHandler) RemoveSecrets(namespace string) error {
+func (db *dbHandler) RemoveNamespaceSecrets(namespace string) error {
 
 	_, err := db.db.NamespaceSecret.
 		Delete().
