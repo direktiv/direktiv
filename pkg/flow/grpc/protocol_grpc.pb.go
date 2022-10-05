@@ -65,7 +65,9 @@ type FlowClient interface {
 	Secrets(ctx context.Context, in *SecretsRequest, opts ...grpc.CallOption) (*SecretsResponse, error)
 	SecretsStream(ctx context.Context, in *SecretsRequest, opts ...grpc.CallOption) (Flow_SecretsStreamClient, error)
 	SetSecret(ctx context.Context, in *SetSecretRequest, opts ...grpc.CallOption) (*SetSecretResponse, error)
+	CreateFolder(ctx context.Context, in *CreateFolderRequest, opts ...grpc.CallOption) (*CreateFolderResponse, error)
 	DeleteSecret(ctx context.Context, in *DeleteSecretRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	DeleteFolder(ctx context.Context, in *DeleteFolderRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	Instance(ctx context.Context, in *InstanceRequest, opts ...grpc.CallOption) (*InstanceResponse, error)
 	InstanceStream(ctx context.Context, in *InstanceRequest, opts ...grpc.CallOption) (Flow_InstanceStreamClient, error)
 	Instances(ctx context.Context, in *InstancesRequest, opts ...grpc.CallOption) (*InstancesResponse, error)
@@ -779,9 +781,27 @@ func (c *flowClient) SetSecret(ctx context.Context, in *SetSecretRequest, opts .
 	return out, nil
 }
 
+func (c *flowClient) CreateFolder(ctx context.Context, in *CreateFolderRequest, opts ...grpc.CallOption) (*CreateFolderResponse, error) {
+	out := new(CreateFolderResponse)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/CreateFolder", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *flowClient) DeleteSecret(ctx context.Context, in *DeleteSecretRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
 	out := new(empty.Empty)
 	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/DeleteSecret", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *flowClient) DeleteFolder(ctx context.Context, in *DeleteFolderRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/DeleteFolder", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1825,7 +1845,9 @@ type FlowServer interface {
 	Secrets(context.Context, *SecretsRequest) (*SecretsResponse, error)
 	SecretsStream(*SecretsRequest, Flow_SecretsStreamServer) error
 	SetSecret(context.Context, *SetSecretRequest) (*SetSecretResponse, error)
+	CreateFolder(context.Context, *CreateFolderRequest) (*CreateFolderResponse, error)
 	DeleteSecret(context.Context, *DeleteSecretRequest) (*empty.Empty, error)
+	DeleteFolder(context.Context, *DeleteFolderRequest) (*empty.Empty, error)
 	Instance(context.Context, *InstanceRequest) (*InstanceResponse, error)
 	InstanceStream(*InstanceRequest, Flow_InstanceStreamServer) error
 	Instances(context.Context, *InstancesRequest) (*InstancesResponse, error)
@@ -2031,8 +2053,14 @@ func (UnimplementedFlowServer) SecretsStream(*SecretsRequest, Flow_SecretsStream
 func (UnimplementedFlowServer) SetSecret(context.Context, *SetSecretRequest) (*SetSecretResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SetSecret not implemented")
 }
+func (UnimplementedFlowServer) CreateFolder(context.Context, *CreateFolderRequest) (*CreateFolderResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateFolder not implemented")
+}
 func (UnimplementedFlowServer) DeleteSecret(context.Context, *DeleteSecretRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteSecret not implemented")
+}
+func (UnimplementedFlowServer) DeleteFolder(context.Context, *DeleteFolderRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteFolder not implemented")
 }
 func (UnimplementedFlowServer) Instance(context.Context, *InstanceRequest) (*InstanceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Instance not implemented")
@@ -3034,6 +3062,24 @@ func _Flow_SetSecret_Handler(srv interface{}, ctx context.Context, dec func(inte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Flow_CreateFolder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateFolderRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FlowServer).CreateFolder(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/direktiv_flow.Flow/CreateFolder",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FlowServer).CreateFolder(ctx, req.(*CreateFolderRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Flow_DeleteSecret_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(DeleteSecretRequest)
 	if err := dec(in); err != nil {
@@ -3048,6 +3094,24 @@ func _Flow_DeleteSecret_Handler(srv interface{}, ctx context.Context, dec func(i
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FlowServer).DeleteSecret(ctx, req.(*DeleteSecretRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Flow_DeleteFolder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteFolderRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FlowServer).DeleteFolder(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/direktiv_flow.Flow/DeleteFolder",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FlowServer).DeleteFolder(ctx, req.(*DeleteFolderRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -4438,8 +4502,16 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Flow_SetSecret_Handler,
 		},
 		{
+			MethodName: "CreateFolder",
+			Handler:    _Flow_CreateFolder_Handler,
+		},
+		{
 			MethodName: "DeleteSecret",
 			Handler:    _Flow_DeleteSecret_Handler,
+		},
+		{
+			MethodName: "DeleteFolder",
+			Handler:    _Flow_DeleteFolder_Handler,
 		},
 		{
 			MethodName: "Instance",

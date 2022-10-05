@@ -97,7 +97,7 @@ func (s *Server) StoreSecret(ctx context.Context, in *secretsgrpc.SecretsStoreRe
 
 	var resp emptypb.Empty
 
-	if strings.HasSuffix(in.GetName(), "/") || in.GetName() == "" {
+	if IsFolder(in.GetName()) || in.GetName() == "" {
 		return &resp, fmt.Errorf("secret required, but got folder")
 	}
 
@@ -122,7 +122,7 @@ func (s *Server) RetrieveSecret(ctx context.Context, in *secretsgrpc.SecretsRetr
 
 	var resp secretsgrpc.SecretsRetrieveResponse
 
-	if strings.HasSuffix(in.GetName(), "/") {
+	if IsFolder(in.GetName()) {
 		return &resp, fmt.Errorf("secret name required, but got folder name")
 	}
 
@@ -138,7 +138,7 @@ func (s *Server) RetrieveSecret(ctx context.Context, in *secretsgrpc.SecretsRetr
 	return &resp, err
 }
 
-// GetSecrets returns secrets for one namespace
+// GetSecrets returns secrets for one namespace in specific fodler
 func (s *Server) GetSecrets(ctx context.Context, in *secretsgrpc.GetSecretsRequest) (*secretsgrpc.GetSecretsResponse, error) {
 
 	var (
@@ -173,7 +173,7 @@ func (s *Server) DeleteSecret(ctx context.Context, in *secretsgrpc.SecretsDelete
 
 	var resp emptypb.Empty
 
-	if strings.HasSuffix(in.GetName(), "/") {
+	if IsFolder(in.GetName()) {
 		return &resp, fmt.Errorf("secret name required, but got folder name")
 	}
 
@@ -192,12 +192,12 @@ func (s *Server) DeleteNamespaceSecrets(ctx context.Context, in *secretsgrpc.Del
 
 }
 
-// AddFolder stores folders and create all missing folders in the path
-func (s *Server) AddFolder(ctx context.Context, in *secretsgrpc.AddFolderRequest) (*empty.Empty, error) {
+// CreateFolder stores folders and create all missing folders in the path
+func (s *Server) CreateFolder(ctx context.Context, in *secretsgrpc.CreateFolderRequest) (*empty.Empty, error) {
 
 	var resp emptypb.Empty
 
-	if !strings.HasSuffix(in.GetName(), "/") {
+	if !IsFolder(in.GetName()) {
 		return &resp, fmt.Errorf("folder name must ends with / ")
 	}
 
@@ -233,7 +233,7 @@ func (s *Server) DeleteFolder(ctx context.Context, in *secretsgrpc.DeleteFolderR
 
 	var resp emptypb.Empty
 
-	if !strings.HasSuffix(in.GetName(), "/") {
+	if !IsFolder(in.GetName()) {
 		return &resp, fmt.Errorf("folder name must ends with /")
 	}
 
@@ -242,4 +242,9 @@ func (s *Server) DeleteFolder(ctx context.Context, in *secretsgrpc.DeleteFolderR
 	}
 
 	return &resp, s.handler.RemoveSecret(in.GetNamespace(), in.GetName())
+}
+
+// IsDolder Checks if name is folder
+func IsFolder(name string) bool {
+	return strings.HasSuffix(name, "/")
 }

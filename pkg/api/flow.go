@@ -838,7 +838,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     description: an error has occurred
 	//     schema:
 	//       "$ref": '#/definitions/ErrorResponse'
-	handlerPair(r, RN_ListSecrets, "/namespaces/{ns}/secrets", h.Secrets, h.SecretsSSE)
+	handlerPair(r, RN_ListSecrets, "/namespaces/{ns}/secrets({folder}", h.Secrets, h.SecretsSSE)
 
 	// swagger:operation PUT /api/namespaces/{namespace}/secrets/{secret} Secrets createSecret
 	// ---
@@ -906,6 +906,10 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     schema:
 	//       "$ref": '#/definitions/ErrorResponse'
 	r.HandleFunc("/namespaces/{ns}/secrets/{secret}", h.DeleteSecret).Name(RN_DeleteSecret).Methods(http.MethodDelete)
+
+	r.HandleFunc("/namespaces/{ns}/secrets/{folder}", h.DeleteFolder).Name(RN_DeleteFolder).Methods(http.MethodDelete)
+
+	r.HandleFunc("/namespaces/{ns}/secrets/{folder}", h.CreateFolder).Name(RN_CreateFolder).Methods(http.MethodPut)
 
 	// swagger:operation GET /api/namespaces/{namespace}/instances/{instance} Instances getInstance
 	// ---
@@ -3477,6 +3481,7 @@ func (h *flowHandler) Secrets(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
+	folder := mux.Vars(r)["folder"]
 
 	p, err := pagination(r)
 	if err != nil {
@@ -3487,6 +3492,7 @@ func (h *flowHandler) Secrets(w http.ResponseWriter, r *http.Request) {
 	in := &grpc.SecretsRequest{
 		Namespace:  namespace,
 		Pagination: p,
+		Key:        folder,
 	}
 
 	resp, err := h.client.Secrets(ctx, in)
@@ -3500,6 +3506,7 @@ func (h *flowHandler) SecretsSSE(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
+	folder := mux.Vars(r)["folder"]
 
 	p, err := pagination(r)
 	if err != nil {
@@ -3510,6 +3517,7 @@ func (h *flowHandler) SecretsSSE(w http.ResponseWriter, r *http.Request) {
 	in := &grpc.SecretsRequest{
 		Namespace:  namespace,
 		Pagination: p,
+		Key:        folder,
 	}
 
 	resp, err := h.client.SecretsStream(ctx, in)
@@ -3593,6 +3601,48 @@ func (h *flowHandler) DeleteSecret(w http.ResponseWriter, r *http.Request) {
 	in.Key = secret
 
 	resp, err := h.client.DeleteSecret(ctx, in)
+	respond(w, resp, err)
+
+}
+
+func (h *flowHandler) DeleteFolder(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	folder := mux.Vars(r)["folder"]
+
+	in := new(grpc.DeleteFolderRequest)
+	in.Namespace = namespace
+	in.Key = folder
+
+	resp, err := h.client.DeleteFolder(ctx, in)
+	respond(w, resp, err)
+
+}
+
+func (h *flowHandler) CreateFolder(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	folder := mux.Vars(r)["folder"]
+
+	in := new(grpc.CreateFolderRequest)
+
+	data, err := loadRawBody(r)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
+	in.Namespace = namespace
+	in.Key = folder
+	in.Data = data
+
+	resp, err := h.client.CreateFolder(ctx, in)
 	respond(w, resp, err)
 
 }

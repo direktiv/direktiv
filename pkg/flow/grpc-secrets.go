@@ -20,6 +20,7 @@ func (flow *flow) Secrets(ctx context.Context, req *grpc.SecretsRequest) (*grpc.
 	}
 
 	namespace := ns.ID.String()
+	name := req.GetKey()
 
 	p, err := getPagination(req.Pagination)
 	if err != nil {
@@ -28,6 +29,7 @@ func (flow *flow) Secrets(ctx context.Context, req *grpc.SecretsRequest) (*grpc.
 
 	request := &secretsgrpc.GetSecretsRequest{
 		Namespace: &namespace,
+		Name:      &name,
 	}
 
 	response, err := flow.secrets.client.GetSecrets(ctx, request)
@@ -75,6 +77,7 @@ func (flow *flow) SecretsStream(req *grpc.SecretsRequest, srv grpc.Flow_SecretsS
 	}
 
 	namespace := ns.ID.String()
+	name := req.GetKey()
 
 	p, err := getPagination(req.Pagination)
 	if err != nil {
@@ -88,6 +91,7 @@ resend:
 
 	request := &secretsgrpc.GetSecretsRequest{
 		Namespace: &namespace,
+		Name:      &name,
 	}
 
 	response, err := flow.secrets.client.GetSecrets(ctx, request)
@@ -171,6 +175,42 @@ func (flow *flow) SetSecret(ctx context.Context, req *grpc.SetSecretRequest) (*g
 
 }
 
+func (flow *flow) CreateFolder(ctx context.Context, req *grpc.CreateFolderRequest) (*grpc.CreateFolderResponse, error) {
+
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
+
+	ns, err := flow.getNamespace(ctx, flow.db.Namespace, req.GetNamespace())
+	if err != nil {
+		return nil, err
+	}
+
+	namespace := ns.ID.String()
+	name := req.GetKey()
+
+	request := &secretsgrpc.CreateFolderRequest{
+		Namespace: &namespace,
+		Name:      &name,
+		Data:      req.GetData(),
+	}
+
+	_, err = flow.secrets.client.CreateFolder(ctx, request)
+	if err != nil {
+		fmt.Println("==== FAILED TO STORE FOLDER", namespace)
+		return nil, err
+	}
+
+	flow.logToNamespace(ctx, time.Now(), ns, "Created namespace folder '%s'.", req.GetKey())
+	flow.pubsub.NotifyNamespaceSecrets(ns)
+
+	var resp grpc.CreateFolderResponse
+
+	resp.Namespace = ns.Name
+	resp.Key = req.GetKey()
+
+	return &resp, nil
+
+}
+
 func (flow *flow) DeleteSecret(ctx context.Context, req *grpc.DeleteSecretRequest) (*emptypb.Empty, error) {
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
@@ -194,6 +234,37 @@ func (flow *flow) DeleteSecret(ctx context.Context, req *grpc.DeleteSecretReques
 	}
 
 	flow.logToNamespace(ctx, time.Now(), ns, "Deleted namespace secret '%s'.", req.GetKey())
+	flow.pubsub.NotifyNamespaceSecrets(ns)
+
+	var resp emptypb.Empty
+
+	return &resp, nil
+
+}
+
+func (flow *flow) DeleteFolder(ctx context.Context, req *grpc.DeleteFolderRequest) (*emptypb.Empty, error) {
+
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
+
+	ns, err := flow.getNamespace(ctx, flow.db.Namespace, req.GetNamespace())
+	if err != nil {
+		return nil, err
+	}
+
+	namespace := ns.ID.String()
+	name := req.GetKey()
+
+	request := &secretsgrpc.DeleteFolderRequest{
+		Namespace: &namespace,
+		Name:      &name,
+	}
+
+	_, err = flow.secrets.client.DeleteFolder(ctx, request)
+	if err != nil {
+		return nil, err
+	}
+
+	flow.logToNamespace(ctx, time.Now(), ns, "Deleted namespace folder '%s'.", req.GetKey())
 	flow.pubsub.NotifyNamespaceSecrets(ns)
 
 	var resp emptypb.Empty

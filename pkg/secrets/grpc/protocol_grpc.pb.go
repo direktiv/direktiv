@@ -29,7 +29,7 @@ type SecretsServiceClient interface {
 	DeleteNamespaceSecrets(ctx context.Context, in *DeleteNamespaceSecretsRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	GetSecrets(ctx context.Context, in *GetSecretsRequest, opts ...grpc.CallOption) (*GetSecretsResponse, error)
 	DeleteFolder(ctx context.Context, in *DeleteFolderRequest, opts ...grpc.CallOption) (*empty.Empty, error)
-	AddFolder(ctx context.Context, in *AddFolderRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	CreateFolder(ctx context.Context, in *CreateFolderRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 }
 
 type secretsServiceClient struct {
@@ -94,9 +94,9 @@ func (c *secretsServiceClient) DeleteFolder(ctx context.Context, in *DeleteFolde
 	return out, nil
 }
 
-func (c *secretsServiceClient) AddFolder(ctx context.Context, in *AddFolderRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+func (c *secretsServiceClient) CreateFolder(ctx context.Context, in *CreateFolderRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
 	out := new(empty.Empty)
-	err := c.cc.Invoke(ctx, "/grpc.SecretsService/AddFolder", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/grpc.SecretsService/CreateFolder", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -113,7 +113,7 @@ type SecretsServiceServer interface {
 	DeleteNamespaceSecrets(context.Context, *DeleteNamespaceSecretsRequest) (*empty.Empty, error)
 	GetSecrets(context.Context, *GetSecretsRequest) (*GetSecretsResponse, error)
 	DeleteFolder(context.Context, *DeleteFolderRequest) (*empty.Empty, error)
-	AddFolder(context.Context, *AddFolderRequest) (*empty.Empty, error)
+	CreateFolder(context.Context, *CreateFolderRequest) (*empty.Empty, error)
 	mustEmbedUnimplementedSecretsServiceServer()
 }
 
@@ -139,8 +139,8 @@ func (UnimplementedSecretsServiceServer) GetSecrets(context.Context, *GetSecrets
 func (UnimplementedSecretsServiceServer) DeleteFolder(context.Context, *DeleteFolderRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteFolder not implemented")
 }
-func (UnimplementedSecretsServiceServer) AddFolder(context.Context, *AddFolderRequest) (*empty.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AddFolder not implemented")
+func (UnimplementedSecretsServiceServer) CreateFolder(context.Context, *CreateFolderRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateFolder not implemented")
 }
 func (UnimplementedSecretsServiceServer) mustEmbedUnimplementedSecretsServiceServer() {}
 
@@ -263,20 +263,20 @@ func _SecretsService_DeleteFolder_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
-func _SecretsService_AddFolder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AddFolderRequest)
+func _SecretsService_CreateFolder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateFolderRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(SecretsServiceServer).AddFolder(ctx, in)
+		return srv.(SecretsServiceServer).CreateFolder(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.SecretsService/AddFolder",
+		FullMethod: "/grpc.SecretsService/CreateFolder",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SecretsServiceServer).AddFolder(ctx, req.(*AddFolderRequest))
+		return srv.(SecretsServiceServer).CreateFolder(ctx, req.(*CreateFolderRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -313,8 +313,8 @@ var SecretsService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _SecretsService_DeleteFolder_Handler,
 		},
 		{
-			MethodName: "AddFolder",
-			Handler:    _SecretsService_AddFolder_Handler,
+			MethodName: "CreateFolder",
+			Handler:    _SecretsService_CreateFolder_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -69,7 +69,9 @@ service Flow {
 	rpc Secrets (SecretsRequest) returns (SecretsResponse) {}
 	rpc SecretsStream (SecretsRequest) returns (stream SecretsResponse) {}
 	rpc SetSecret (SetSecretRequest) returns (SetSecretResponse) {}
+	rpc CreateFolder (CreateFolderRequest) returns (CreateFolderResponse) {}
 	rpc DeleteSecret (DeleteSecretRequest) returns (google.protobuf.Empty) {}
+	rpc DeleteFolder(DeleteFolderRequest) returns  (google.protobuf.Empty)  {}
 	rpc Instance (InstanceRequest) returns (InstanceResponse) {}
 	rpc InstanceStream (InstanceRequest) returns (stream InstanceResponse) {}
 	rpc Instances (InstancesRequest) returns (InstancesResponse) {}
