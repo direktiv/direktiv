@@ -33,7 +33,7 @@ const (
 	RN_ListSecrets                 = "listSecrets"
 	RN_CreateSecret                = "createSecret"
 	RN_DeleteSecret                = "deleteSecret"
-	RN_DeleteFolder                = "deleteFolder"
+	RN_DeleteSecretsFolder         = "deleteSecretsFolder"
 	RN_CreateFolder                = "createFolder"
 	RN_ListRegistries              = "listRegistries"
 	RN_CreateRegistry              = "createRegistry"

@@ -175,7 +175,7 @@ func (flow *flow) SetSecret(ctx context.Context, req *grpc.SetSecretRequest) (*g
 
 }
 
-func (flow *flow) CreateFolder(ctx context.Context, req *grpc.CreateFolderRequest) (*grpc.CreateFolderResponse, error) {
+func (flow *flow) CreateFolder(ctx context.Context, req *grpc.CreateSecretsFolderRequest) (*grpc.CreateSecretsFolderResponse, error) {
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
@@ -190,19 +190,14 @@ func (flow *flow) CreateFolder(ctx context.Context, req *grpc.CreateFolderReques
 	request := &secretsgrpc.CreateFolderRequest{
 		Namespace: &namespace,
 		Name:      &name,
-		Data:      req.GetData(),
 	}
 
 	_, err = flow.secrets.client.CreateFolder(ctx, request)
-	if err != nil {
-		fmt.Println("==== FAILED TO STORE FOLDER", namespace)
-		return nil, err
-	}
 
-	flow.logToNamespace(ctx, time.Now(), ns, "Created namespace folder '%s'.", req.GetKey())
+	flow.logToNamespace(ctx, time.Now(), ns, "Created secrets folder '%s'.", req.GetKey())
 	flow.pubsub.NotifyNamespaceSecrets(ns)
 
-	var resp grpc.CreateFolderResponse
+	var resp grpc.CreateSecretsFolderResponse
 
 	resp.Namespace = ns.Name
 	resp.Key = req.GetKey()

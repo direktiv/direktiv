@@ -65,7 +65,7 @@ type FlowClient interface {
 	Secrets(ctx context.Context, in *SecretsRequest, opts ...grpc.CallOption) (*SecretsResponse, error)
 	SecretsStream(ctx context.Context, in *SecretsRequest, opts ...grpc.CallOption) (Flow_SecretsStreamClient, error)
 	SetSecret(ctx context.Context, in *SetSecretRequest, opts ...grpc.CallOption) (*SetSecretResponse, error)
-	CreateFolder(ctx context.Context, in *CreateFolderRequest, opts ...grpc.CallOption) (*CreateFolderResponse, error)
+	CreateSecretsFolder(ctx context.Context, in *CreateSecretsFolderRequest, opts ...grpc.CallOption) (*CreateSecretsFolderResponse, error)
 	DeleteSecret(ctx context.Context, in *DeleteSecretRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	DeleteFolder(ctx context.Context, in *DeleteFolderRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	Instance(ctx context.Context, in *InstanceRequest, opts ...grpc.CallOption) (*InstanceResponse, error)
@@ -781,9 +781,9 @@ func (c *flowClient) SetSecret(ctx context.Context, in *SetSecretRequest, opts .
 	return out, nil
 }
 
-func (c *flowClient) CreateFolder(ctx context.Context, in *CreateFolderRequest, opts ...grpc.CallOption) (*CreateFolderResponse, error) {
-	out := new(CreateFolderResponse)
-	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/CreateFolder", in, out, opts...)
+func (c *flowClient) CreateSecretsFolder(ctx context.Context, in *CreateSecretsFolderRequest, opts ...grpc.CallOption) (*CreateSecretsFolderResponse, error) {
+	out := new(CreateSecretsFolderResponse)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/CreateSecretsFolder", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1845,7 +1845,7 @@ type FlowServer interface {
 	Secrets(context.Context, *SecretsRequest) (*SecretsResponse, error)
 	SecretsStream(*SecretsRequest, Flow_SecretsStreamServer) error
 	SetSecret(context.Context, *SetSecretRequest) (*SetSecretResponse, error)
-	CreateFolder(context.Context, *CreateFolderRequest) (*CreateFolderResponse, error)
+	CreateSecretsFolder(context.Context, *CreateSecretsFolderRequest) (*CreateSecretsFolderResponse, error)
 	DeleteSecret(context.Context, *DeleteSecretRequest) (*empty.Empty, error)
 	DeleteFolder(context.Context, *DeleteFolderRequest) (*empty.Empty, error)
 	Instance(context.Context, *InstanceRequest) (*InstanceResponse, error)
@@ -2053,8 +2053,8 @@ func (UnimplementedFlowServer) SecretsStream(*SecretsRequest, Flow_SecretsStream
 func (UnimplementedFlowServer) SetSecret(context.Context, *SetSecretRequest) (*SetSecretResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SetSecret not implemented")
 }
-func (UnimplementedFlowServer) CreateFolder(context.Context, *CreateFolderRequest) (*CreateFolderResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateFolder not implemented")
+func (UnimplementedFlowServer) CreateSecretsFolder(context.Context, *CreateSecretsFolderRequest) (*CreateSecretsFolderResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateSecretsFolder not implemented")
 }
 func (UnimplementedFlowServer) DeleteSecret(context.Context, *DeleteSecretRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteSecret not implemented")
@@ -3062,20 +3062,20 @@ func _Flow_SetSecret_Handler(srv interface{}, ctx context.Context, dec func(inte
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Flow_CreateFolder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateFolderRequest)
+func _Flow_CreateSecretsFolder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateSecretsFolderRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(FlowServer).CreateFolder(ctx, in)
+		return srv.(FlowServer).CreateSecretsFolder(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/direktiv_flow.Flow/CreateFolder",
+		FullMethod: "/direktiv_flow.Flow/CreateSecretsFolder",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).CreateFolder(ctx, req.(*CreateFolderRequest))
+		return srv.(FlowServer).CreateSecretsFolder(ctx, req.(*CreateSecretsFolderRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -4502,8 +4502,8 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Flow_SetSecret_Handler,
 		},
 		{
-			MethodName: "CreateFolder",
-			Handler:    _Flow_CreateFolder_Handler,
+			MethodName: "CreateSecretsFolder",
+			Handler:    _Flow_CreateSecretsFolder_Handler,
 		},
 		{
 			MethodName: "DeleteSecret",

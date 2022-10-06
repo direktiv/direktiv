@@ -468,18 +468,17 @@ func (x *DeleteFolderRequest) GetKey() string {
 	return ""
 }
 
-type CreateFolderRequest struct {
+type CreateSecretsFolderRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
 	Namespace string `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
 	Key       string `protobuf:"bytes,2,opt,name=key,proto3" json:"key,omitempty"`
-	Data      []byte `protobuf:"bytes,3,opt,name=data,proto3" json:"data,omitempty"`
 }
 
-func (x *CreateFolderRequest) Reset() {
-	*x = CreateFolderRequest{}
+func (x *CreateSecretsFolderRequest) Reset() {
+	*x = CreateSecretsFolderRequest{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_pkg_flow_grpc_secrets_proto_msgTypes[8]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -487,13 +486,13 @@ func (x *CreateFolderRequest) Reset() {
 	}
 }
 
-func (x *CreateFolderRequest) String() string {
+func (x *CreateSecretsFolderRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*CreateFolderRequest) ProtoMessage() {}
+func (*CreateSecretsFolderRequest) ProtoMessage() {}
 
-func (x *CreateFolderRequest) ProtoReflect() protoreflect.Message {
+func (x *CreateSecretsFolderRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_pkg_flow_grpc_secrets_proto_msgTypes[8]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -505,33 +504,26 @@ func (x *CreateFolderRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use CreateFolderRequest.ProtoReflect.Descriptor instead.
-func (*CreateFolderRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use CreateSecretsFolderRequest.ProtoReflect.Descriptor instead.
+func (*CreateSecretsFolderRequest) Descriptor() ([]byte, []int) {
 	return file_pkg_flow_grpc_secrets_proto_rawDescGZIP(), []int{8}
 }
 
-func (x *CreateFolderRequest) GetNamespace() string {
+func (x *CreateSecretsFolderRequest) GetNamespace() string {
 	if x != nil {
 		return x.Namespace
 	}
 	return ""
 }
 
-func (x *CreateFolderRequest) GetKey() string {
+func (x *CreateSecretsFolderRequest) GetKey() string {
 	if x != nil {
 		return x.Key
 	}
 	return ""
 }
 
-func (x *CreateFolderRequest) GetData() []byte {
-	if x != nil {
-		return x.Data
-	}
-	return nil
-}
-
-type CreateFolderResponse struct {
+type CreateSecretsFolderResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
@@ -540,8 +532,8 @@ type CreateFolderResponse struct {
 	Key       string `protobuf:"bytes,2,opt,name=key,proto3" json:"key,omitempty"`
 }
 
-func (x *CreateFolderResponse) Reset() {
-	*x = CreateFolderResponse{}
+func (x *CreateSecretsFolderResponse) Reset() {
+	*x = CreateSecretsFolderResponse{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_pkg_flow_grpc_secrets_proto_msgTypes[9]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -549,13 +541,13 @@ func (x *CreateFolderResponse) Reset() {
 	}
 }
 
-func (x *CreateFolderResponse) String() string {
+func (x *CreateSecretsFolderResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*CreateFolderResponse) ProtoMessage() {}
+func (*CreateSecretsFolderResponse) ProtoMessage() {}
 
-func (x *CreateFolderResponse) ProtoReflect() protoreflect.Message {
+func (x *CreateSecretsFolderResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_pkg_flow_grpc_secrets_proto_msgTypes[9]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -567,19 +559,19 @@ func (x *CreateFolderResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use CreateFolderResponse.ProtoReflect.Descriptor instead.
-func (*CreateFolderResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use CreateSecretsFolderResponse.ProtoReflect.Descriptor instead.
+func (*CreateSecretsFolderResponse) Descriptor() ([]byte, []int) {
 	return file_pkg_flow_grpc_secrets_proto_rawDescGZIP(), []int{9}
 }
 
-func (x *CreateFolderResponse) GetNamespace() string {
+func (x *CreateSecretsFolderResponse) GetNamespace() string {
 	if x != nil {
 		return x.Namespace
 	}
 	return ""
 }
 
-func (x *CreateFolderResponse) GetKey() string {
+func (x *CreateSecretsFolderResponse) GetKey() string {
 	if x != nil {
 		return x.Key
 	}
@@ -635,20 +627,20 @@ var file_pkg_flow_grpc_secrets_proto_rawDesc = []byte{
 	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1c, 0x0a, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70,
 	0x61, 0x63, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73,
 	0x70, 0x61, 0x63, 0x65, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18, 0x02, 0x20, 0x01, 0x28,
-	0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x22, 0x59, 0x0a, 0x13, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65,
-	0x46, 0x6f, 0x6c, 0x64, 0x65, 0x72, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1c, 0x0a,
-	0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09,
-	0x52, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x12, 0x10, 0x0a, 0x03, 0x6b,
-	0x65, 0x79, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x12, 0x12, 0x0a,
-	0x04, 0x64, 0x61, 0x74, 0x61, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x04, 0x64, 0x61, 0x74,
-	0x61, 0x22, 0x46, 0x0a, 0x14, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x46, 0x6f, 0x6c, 0x64, 0x65,
-	0x72, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x1c, 0x0a, 0x09, 0x6e, 0x61, 0x6d,
-	0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6e, 0x61,
-	0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18, 0x02,
-	0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x42, 0x2c, 0x5a, 0x2a, 0x67, 0x69, 0x74,
-	0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76,
-	0x2f, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x66, 0x6c,
-	0x6f, 0x77, 0x2f, 0x67, 0x72, 0x70, 0x63, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x22, 0x4c, 0x0a, 0x1a, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65,
+	0x53, 0x65, 0x63, 0x72, 0x65, 0x74, 0x73, 0x46, 0x6f, 0x6c, 0x64, 0x65, 0x72, 0x52, 0x65, 0x71,
+	0x75, 0x65, 0x73, 0x74, 0x12, 0x1c, 0x0a, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63,
+	0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61,
+	0x63, 0x65, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52,
+	0x03, 0x6b, 0x65, 0x79, 0x22, 0x4d, 0x0a, 0x1b, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x53, 0x65,
+	0x63, 0x72, 0x65, 0x74, 0x73, 0x46, 0x6f, 0x6c, 0x64, 0x65, 0x72, 0x52, 0x65, 0x73, 0x70, 0x6f,
+	0x6e, 0x73, 0x65, 0x12, 0x1c, 0x0a, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65,
+	0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63,
+	0x65, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03,
+	0x6b, 0x65, 0x79, 0x42, 0x2c, 0x5a, 0x2a, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f,
+	0x6d, 0x2f, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x2f, 0x64, 0x69, 0x72, 0x65, 0x6b,
+	0x74, 0x69, 0x76, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x66, 0x6c, 0x6f, 0x77, 0x2f, 0x67, 0x72, 0x70,
+	0x63, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -665,18 +657,18 @@ func file_pkg_flow_grpc_secrets_proto_rawDescGZIP() []byte {
 
 var file_pkg_flow_grpc_secrets_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
 var file_pkg_flow_grpc_secrets_proto_goTypes = []interface{}{
-	(*Secret)(nil),               // 0: direktiv_flow.Secret
-	(*Secrets)(nil),              // 1: direktiv_flow.Secrets
-	(*SecretsRequest)(nil),       // 2: direktiv_flow.SecretsRequest
-	(*SecretsResponse)(nil),      // 3: direktiv_flow.SecretsResponse
-	(*SetSecretRequest)(nil),     // 4: direktiv_flow.SetSecretRequest
-	(*SetSecretResponse)(nil),    // 5: direktiv_flow.SetSecretResponse
-	(*DeleteSecretRequest)(nil),  // 6: direktiv_flow.DeleteSecretRequest
-	(*DeleteFolderRequest)(nil),  // 7: direktiv_flow.DeleteFolderRequest
-	(*CreateFolderRequest)(nil),  // 8: direktiv_flow.CreateFolderRequest
-	(*CreateFolderResponse)(nil), // 9: direktiv_flow.CreateFolderResponse
-	(*PageInfo)(nil),             // 10: direktiv_flow.PageInfo
-	(*Pagination)(nil),           // 11: direktiv_flow.Pagination
+	(*Secret)(nil),                      // 0: direktiv_flow.Secret
+	(*Secrets)(nil),                     // 1: direktiv_flow.Secrets
+	(*SecretsRequest)(nil),              // 2: direktiv_flow.SecretsRequest
+	(*SecretsResponse)(nil),             // 3: direktiv_flow.SecretsResponse
+	(*SetSecretRequest)(nil),            // 4: direktiv_flow.SetSecretRequest
+	(*SetSecretResponse)(nil),           // 5: direktiv_flow.SetSecretResponse
+	(*DeleteSecretRequest)(nil),         // 6: direktiv_flow.DeleteSecretRequest
+	(*DeleteFolderRequest)(nil),         // 7: direktiv_flow.DeleteFolderRequest
+	(*CreateSecretsFolderRequest)(nil),  // 8: direktiv_flow.CreateSecretsFolderRequest
+	(*CreateSecretsFolderResponse)(nil), // 9: direktiv_flow.CreateSecretsFolderResponse
+	(*PageInfo)(nil),                    // 10: direktiv_flow.PageInfo
+	(*Pagination)(nil),                  // 11: direktiv_flow.Pagination
 }
 var file_pkg_flow_grpc_secrets_proto_depIdxs = []int32{
 	10, // 0: direktiv_flow.Secrets.pageInfo:type_name -> direktiv_flow.PageInfo
@@ -794,7 +786,7 @@ func file_pkg_flow_grpc_secrets_proto_init() {
 			}
 		}
 		file_pkg_flow_grpc_secrets_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*CreateFolderRequest); i {
+			switch v := v.(*CreateSecretsFolderRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -806,7 +798,7 @@ func file_pkg_flow_grpc_secrets_proto_init() {
 			}
 		}
 		file_pkg_flow_grpc_secrets_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*CreateFolderResponse); i {
+			switch v := v.(*CreateSecretsFolderResponse); i {
 			case 0:
 				return &v.state
 			case 1:
