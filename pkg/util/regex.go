@@ -17,6 +17,8 @@ var URIRegex = regexp.MustCompile(URIRegexPattern)
 
 const VarNameRegexPattern = `^(([a-zA-Z][a-zA-Z0-9_\-\.]*[a-zA-Z0-9])|([a-zA-Z]))$`
 
+const VarSecretNameAndSecretsFolderNamePattern = `^(([a-zA-Z][a-zA-Z0-9_\-\./]*[a-zA-Z0-9/])|([a-zA-Z/]))$`
+
 var VarNameRegex = regexp.MustCompile(VarNameRegexPattern)
 
 const RefRegexFragment = `(([a-zA-Z0-9][a-zA-Z0-9_\-\.]*[a-zA-Z0-9])|([a-zA-Z0-9]))`
@@ -30,6 +32,7 @@ const VarRegexPattern = VarNameRegexPattern
 
 var reg *regexp.Regexp
 var varreg *regexp.Regexp
+var varSNameAndSFName *regexp.Regexp
 
 func init() {
 
@@ -44,6 +47,11 @@ func init() {
 		log.Fatal(err.Error())
 	}
 
+	varSNameAndSFName, err = regexp.Compile(VarSecretNameAndSecretsFolderNamePattern)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
 }
 
 // MatchesRegex responds true if the provided string matches the
@@ -54,4 +62,8 @@ func MatchesRegex(s string) bool {
 
 func MatchesVarRegex(s string) bool {
 	return varreg.MatchString(s)
+}
+
+func MatchesVarSNameAndSFName(s string) bool {
+	return varSNameAndSFName.MatchString(s)
 }

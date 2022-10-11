@@ -106,12 +106,28 @@ func (s *Server) StoreSecret(ctx context.Context, in *secretsgrpc.SecretsStoreRe
 	}
 
 	n := in.GetName()
-	if ok := util.MatchesVarRegex(n); !ok {
-		return &resp, fmt.Errorf("secret name must match the regex pattern `%s`", util.RegexPattern)
+	if ok := util.MatchesVarSNameAndSFName(n); !ok {
+		return &resp, fmt.Errorf("secret name must match the regex pattern `%s`", util.VarSecretNameAndSecretsFolderNamePattern)
 	}
 	n = strings.TrimPrefix(n, "/")
 
-	err := s.handler.AddSecret(in.GetNamespace(), n, in.GetData())
+	err := s.handler.AddSecret(in.GetNamespace(), n, in.GetData(), false)
+	if err != nil {
+		return &resp, err
+	}
+
+	if strings.Contains(n, "/") { //if is not a folder but contains / means is a secret inside a folder
+		highestFolderPath := n[:len(n)-1] // trim to highest folder path
+		splittedPath := strings.SplitAfter(highestFolderPath, "/")
+		splittedPath = splittedPath[:len(splittedPath)-1] // delete last elem cause is empty
+		concPath := ""
+		emptyData := []byte{}
+		for _, name := range splittedPath {
+			concPath += name
+			err = s.handler.AddSecret(in.GetNamespace(), concPath, emptyData, true) // ignore error if is already inside
+		}
+
+	}
 
 	return &resp, err
 
@@ -202,12 +218,12 @@ func (s *Server) CreateFolder(ctx context.Context, in *secretsgrpc.CreateFolderR
 	}
 
 	n := in.GetName()
-	if ok := util.MatchesVarRegex(n); !ok {
-		return &resp, fmt.Errorf("folder name must match the regex pattern `%s`", util.RegexPattern)
+	if ok := util.MatchesVarSNameAndSFName(n); !ok {
+		return &resp, fmt.Errorf("folder name must match the regex pattern `%s`", util.VarSecretNameAndSecretsFolderNamePattern)
 	}
 
 	emptyData := []byte{}
-	err := s.handler.AddSecret(in.GetNamespace(), n, emptyData)
+	err := s.handler.AddSecret(in.GetNamespace(), n, emptyData, false)
 
 	if err != nil {
 		return &resp, fmt.Errorf("folder already exists")
@@ -218,7 +234,7 @@ func (s *Server) CreateFolder(ctx context.Context, in *secretsgrpc.CreateFolderR
 	concPath := ""
 	for _, name := range splittedPath {
 		concPath += name
-		err = s.handler.AddSecret(in.GetNamespace(), concPath, emptyData)
+		err = s.handler.AddSecret(in.GetNamespace(), concPath, emptyData, false)
 	}
 
 	return &resp, err

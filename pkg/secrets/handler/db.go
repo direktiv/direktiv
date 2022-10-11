@@ -71,7 +71,7 @@ func setupDB() (SecretsHandler, error) {
 	}, err
 }
 
-func (db *dbHandler) AddSecret(namespace, name string, secret []byte) error {
+func (db *dbHandler) AddSecret(namespace, name string, secret []byte, ignoreError bool) error {
 
 	logger.Infof("adding secret %s", name)
 
@@ -85,7 +85,12 @@ func (db *dbHandler) AddSecret(namespace, name string, secret []byte) error {
 		Only(context.Background())
 
 	if bs != nil {
-		return fmt.Errorf("secret already exists")
+		if ignoreError {
+			return nil
+		} else {
+			return fmt.Errorf("secret already exists")
+		}
+
 	}
 
 	d, err := encryptData([]byte(db.key), secret)
@@ -172,7 +177,7 @@ func (db *dbHandler) GetSecrets(namespace string, name string) ([]string, error)
 
 func (db *dbHandler) RemoveSecret(namespace, name string) error {
 
-	if strings.HasSuffix(name, "/") { //FILE
+	if !strings.HasSuffix(name, "/") { //FILE
 
 		_, err := db.db.NamespaceSecret.
 			Delete().

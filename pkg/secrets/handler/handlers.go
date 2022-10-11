@@ -20,7 +20,7 @@ var (
 type SecretsHandlerInstantiator func() (SecretsHandler, error)
 
 type SecretsHandler interface {
-	AddSecret(namespace, name string, secret []byte) error
+	AddSecret(namespace, name string, secret []byte, ignoreError bool) error
 	RemoveSecret(namespace, name string) error
 	RemoveNamespaceSecrets(namespace string) error
 	GetSecret(namespace, name string) ([]byte, error)
