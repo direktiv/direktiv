@@ -93,9 +93,13 @@ func (db *dbHandler) AddSecret(namespace, name string, secret []byte, ignoreErro
 
 	}
 
-	d, err := encryptData([]byte(db.key), secret)
-	if bs != nil {
-		return fmt.Errorf("error encrypting data: %v", err)
+	var d []byte
+	var err error
+	if !strings.HasSuffix(name, "/") {
+		d, err = encryptData([]byte(db.key), secret)
+		if bs != nil {
+			return fmt.Errorf("error encrypting data: %v", err)
+		}
 	}
 
 	_, err = db.db.NamespaceSecret.

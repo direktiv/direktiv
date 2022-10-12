@@ -878,7 +878,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     description: an error has occurred
 	//     schema:
 	//       "$ref": '#/definitions/ErrorResponse'
-	r.HandleFunc("/namespaces/{ns}/secrets/{secret}", h.SetSecret).Name(RN_CreateSecret).Methods(http.MethodPut)
+	r.HandleFunc("/namespaces/{ns}/secrets/{secret:.*[^/]$}", h.SetSecret).Name(RN_CreateSecret).Methods(http.MethodPut)
 
 	// swagger:operation DELETE /api/namespaces/{namespace}/secrets/{secret} Secrets deleteSecret
 	// ---
@@ -907,13 +907,13 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     description: an error has occurred
 	//     schema:
 	//       "$ref": '#/definitions/ErrorResponse'
-	r.HandleFunc("/namespaces/{ns}/secrets/{secret}", h.DeleteSecret).Name(RN_DeleteSecret).Methods(http.MethodDelete)
+	r.HandleFunc("/namespaces/{ns}/secrets/{secret:.*[^/]$}", h.DeleteSecret).Name(RN_DeleteSecret).Methods(http.MethodDelete)
 
 	r.HandleFunc("/namespaces/{ns}/secrets/{folder:.*}", h.DeleteFolder).Name(RN_DeleteSecretsFolder).Methods(http.MethodDelete)
 
 	r.HandleFunc("/namespaces/{ns}/secrets/{folder:.*}", h.CreateFolder).Name(RN_CreateSecretsFolder).Methods(http.MethodPut)
 
-	r.HandleFunc("/namespaces/{ns}/overwrite/secrets/{secret:.*}", h.OverwriteSecret).Name(RN_OverwriteSecret).Methods(http.MethodPut)
+	r.HandleFunc("/namespaces/{ns}/overwrite/secrets/{secret:.*[^/]$}", h.OverwriteSecret).Name(RN_OverwriteSecret).Methods(http.MethodPut)
 
 	// swagger:operation GET /api/namespaces/{namespace}/instances/{instance} Instances getInstance
 	// ---
@@ -3651,23 +3651,12 @@ func (h *flowHandler) DeleteFolder(w http.ResponseWriter, r *http.Request) {
 	namespace := mux.Vars(r)["ns"]
 	folder, _ := mux.Vars(r)["folder"]
 
-	if !strings.HasSuffix(folder, "/") {
-		in := new(grpc.DeleteSecretRequest)
-		in.Namespace = namespace
-		in.Key = folder
+	in := new(grpc.DeleteFolderRequest)
+	in.Namespace = namespace
+	in.Key = folder
 
-		resp, err := h.client.DeleteSecret(ctx, in)
-		respond(w, resp, err)
-
-	} else {
-
-		in := new(grpc.DeleteFolderRequest)
-		in.Namespace = namespace
-		in.Key = folder
-
-		resp, err := h.client.DeleteFolder(ctx, in)
-		respond(w, resp, err)
-	}
+	resp, err := h.client.DeleteFolder(ctx, in)
+	respond(w, resp, err)
 
 }
 
@@ -3679,30 +3668,14 @@ func (h *flowHandler) CreateFolder(w http.ResponseWriter, r *http.Request) {
 	namespace := mux.Vars(r)["ns"]
 	folder, _ := mux.Vars(r)["folder"]
 
-	if !strings.HasSuffix(folder, "/") {
-		in := new(grpc.SetSecretRequest)
+	in := new(grpc.CreateSecretsFolderRequest)
 
-		data, err := loadRawBody(r)
-		if err != nil {
-			respond(w, nil, err)
-			return
-		}
-		in.Data = data
-		in.Namespace = namespace
-		in.Key = folder
+	in.Namespace = namespace
+	in.Key = folder
 
-		resp, err := h.client.SetSecret(ctx, in)
-		respond(w, resp, err)
-	} else {
+	resp, err := h.client.CreateSecretsFolder(ctx, in)
+	respond(w, resp, err)
 
-		in := new(grpc.CreateSecretsFolderRequest)
-
-		in.Namespace = namespace
-		in.Key = folder
-
-		resp, err := h.client.CreateSecretsFolder(ctx, in)
-		respond(w, resp, err)
-	}
 }
 
 func (h *flowHandler) Instance(w http.ResponseWriter, r *http.Request) {
