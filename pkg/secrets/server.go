@@ -254,7 +254,7 @@ func (s *Server) DeleteFolder(ctx context.Context, in *secretsgrpc.DeleteFolderR
 		return &resp, fmt.Errorf("namespace value are required")
 	}
 
-	return &resp, s.handler.RemoveSecret(in.GetNamespace(), in.GetName())
+	return &resp, s.handler.RemoveFolder(in.GetNamespace(), in.GetName())
 }
 
 // IsFolder Checks if name is folder

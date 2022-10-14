@@ -181,35 +181,36 @@ func (db *dbHandler) GetSecrets(namespace string, name string) ([]string, error)
 
 func (db *dbHandler) RemoveSecret(namespace, name string) error {
 
-	if !strings.HasSuffix(name, "/") { //FILE
-
-		_, err := db.db.NamespaceSecret.
-			Delete().
-			Where(
-				namespacesecret.And(
-					namespacesecret.NsEQ(namespace),
-					namespacesecret.NameEQ(name),
-				)).
-			Exec(context.Background())
-
+	//check if secret is already existing
+	_, err := db.GetSecret(namespace, name)
+	if err != nil {
 		return err
-
-	} else { //FOLDER
-		_, err := db.db.NamespaceSecret.
-			Delete().
-			Where(
-				namespacesecret.And(
-					namespacesecret.NsEQ(namespace),
-					namespacesecret.NameHasPrefix(name),
-				)).
-			Exec(context.Background())
-		return err
-
 	}
 
+	_, err = db.db.NamespaceSecret.
+		Delete().
+		Where(
+			namespacesecret.And(
+				namespacesecret.NsEQ(namespace),
+				namespacesecret.NameEQ(name),
+			)).
+		Exec(context.Background())
+
+	return err
 }
 
-//TODO rename to RemoveNamespaceSecrets
+func (db *dbHandler) RemoveFolder(namespace, name string) error {
+	_, err := db.db.NamespaceSecret.
+		Delete().
+		Where(
+			namespacesecret.And(
+				namespacesecret.NsEQ(namespace),
+				namespacesecret.NameHasPrefix(name),
+			)).
+		Exec(context.Background())
+	return err
+}
+
 func (db *dbHandler) RemoveNamespaceSecrets(namespace string) error {
 
 	_, err := db.db.NamespaceSecret.

@@ -3611,7 +3611,7 @@ func (h *flowHandler) OverwriteSecret(w http.ResponseWriter, r *http.Request) {
 	inDelete.Namespace = namespace
 	inDelete.Key = secret
 	respDelete, errDelete := h.client.DeleteSecret(ctx, inDelete)
-	if err != nil {
+	if errDelete != nil {
 		respond(w, respDelete, errDelete)
 		return
 	}
