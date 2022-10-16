@@ -139,6 +139,59 @@ resend:
 
 }
 
+func (flow *flow) SearchSecret(ctx context.Context, req *grpc.SearchSecretRequest) (*grpc.SearchSecretResponse, error) {
+
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
+
+	ns, err := flow.getNamespace(ctx, flow.db.Namespace, req.GetNamespace())
+	if err != nil {
+		return nil, err
+	}
+
+	namespace := ns.ID.String()
+	name := req.GetKey()
+
+	p, err := getPagination(req.Pagination)
+	if err != nil {
+		return nil, err
+	}
+
+	request := &secretsgrpc.SearchSecretRequest{
+		Namespace: &namespace,
+		Name:      &name,
+	}
+
+	response, err := flow.secrets.client.SearchSecret(ctx, request)
+	if err != nil {
+		return nil, err
+	}
+
+	cpds := newCustomPaginationDataSecrets()
+	pagination := newCustomPagination(cpds)
+	for i := range response.Secrets {
+		cpds.Add(response.Secrets[i].GetName())
+	}
+
+	cx, err := pagination.Paginate(p)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp grpc.SearchSecretResponse
+
+	resp.Namespace = ns.Name
+	resp.Secrets = new(grpc.Secrets)
+	resp.Secrets.PageInfo = new(grpc.PageInfo)
+
+	err = atob(cx, &resp.Secrets)
+	if err != nil {
+		return nil, err
+	}
+
+	return &resp, nil
+
+}
+
 func (flow *flow) SetSecret(ctx context.Context, req *grpc.SetSecretRequest) (*grpc.SetSecretResponse, error) {
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())

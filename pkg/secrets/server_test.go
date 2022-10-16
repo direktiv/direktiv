@@ -166,6 +166,22 @@ func TestOverwriteSecret(t *testing.T) {
 
 }
 
+// SearchSecret search for secrets anf folder per name
+func TestSearchSecret(t *testing.T) {
+	CreateNamespace(ip, namespace)
+	secretsList := []string{"test1", "test2", "test3", "test4", "a/b/c/test", "a/test/c/e", "a/b/test/", "a/b/c/z", "test/b/c/d/e", "secret", "a/b/secret", "secret/"}
+	FillDatabase(ip, namespace, secretsList)
+
+	body := SearchSecret(ip, namespace, "test")
+	bodyNames := BodyToList(body)
+	expected := []string{"a/b/c/test", "a/b/test/", "a/test/", "a/test/c/", "a/test/c/e", "test/", "test/b/", "test/b/c/", "test/b/c/d/", "test/b/c/d/e", "test1", "test2", "test3", "test4"}
+	assert.Equal(t, bodyNames, expected)
+
+	//clean database
+	DeleteNamespace(ip, namespace)
+
+}
+
 //////////////////HELPER FUNCTIONS//////////////////////////////////
 func FillDatabase(ip string, namespace string, list []string) {
 	for _, secretName := range list {
@@ -251,4 +267,14 @@ func BodyToList(body GetSecretsBody) []string {
 		bodySecrets = append(bodySecrets, name.Name)
 	}
 	return bodySecrets
+}
+
+func SearchSecret(ip string, namespace string, name string) GetSecretsBody {
+	url := "http://" + ip + "/api/namespaces/" + namespace + "/search/secrets/" + name
+	req, _ := http.NewRequest("GET", url, nil)
+	resp, _ := http.DefaultClient.Do(req)
+	b, _ := ioutil.ReadAll(resp.Body)
+	var body GetSecretsBody
+	_ = json.Unmarshal(b, &body)
+	return body
 }

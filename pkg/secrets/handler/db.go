@@ -179,6 +179,33 @@ func (db *dbHandler) GetSecrets(namespace string, name string) ([]string, error)
 
 }
 
+func (db *dbHandler) SearchForName(namespace string, name string) ([]string, error) {
+
+	var names []string
+	name = strings.TrimPrefix(name, "/")
+
+	dbs, err := db.db.NamespaceSecret.
+		Query().
+		Where(
+			namespacesecret.And(
+				namespacesecret.NsEQ(namespace),
+				namespacesecret.NameContains(name),
+			)).
+		All(context.Background())
+
+	if err != nil {
+		return nil, err
+	}
+
+	for _, s := range dbs {
+		names = append(names, s.Name)
+
+	}
+
+	return names, nil
+
+}
+
 func (db *dbHandler) RemoveSecret(namespace, name string) error {
 
 	//check if secret is already existing

@@ -31,6 +31,7 @@ const (
 	RN_ValidateRouter              = "validateRouter"
 	RN_NamespaceEvent              = "namespaceEvent"
 	RN_ListSecrets                 = "listSecrets"
+	RN_SearchSecret                = "searchSecret"
 	RN_OverwriteSecret             = "overwriteSecret"
 	RN_CreateSecret                = "createSecret"
 	RN_DeleteSecret                = "deleteSecret"

@@ -546,6 +546,108 @@ func (x *DeleteFolderRequest) GetName() string {
 	return ""
 }
 
+type SearchSecretRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Namespace *string `protobuf:"bytes,1,opt,name=namespace,proto3,oneof" json:"namespace,omitempty"`
+	Name      *string `protobuf:"bytes,2,opt,name=name,proto3,oneof" json:"name,omitempty"`
+}
+
+func (x *SearchSecretRequest) Reset() {
+	*x = SearchSecretRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_pkg_secrets_grpc_secrets_proto_msgTypes[10]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *SearchSecretRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SearchSecretRequest) ProtoMessage() {}
+
+func (x *SearchSecretRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_pkg_secrets_grpc_secrets_proto_msgTypes[10]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SearchSecretRequest.ProtoReflect.Descriptor instead.
+func (*SearchSecretRequest) Descriptor() ([]byte, []int) {
+	return file_pkg_secrets_grpc_secrets_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *SearchSecretRequest) GetNamespace() string {
+	if x != nil && x.Namespace != nil {
+		return *x.Namespace
+	}
+	return ""
+}
+
+func (x *SearchSecretRequest) GetName() string {
+	if x != nil && x.Name != nil {
+		return *x.Name
+	}
+	return ""
+}
+
+type SearchSecretResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Secrets []*SearchSecretResponse_Secret `protobuf:"bytes,1,rep,name=secrets,proto3" json:"secrets,omitempty"`
+}
+
+func (x *SearchSecretResponse) Reset() {
+	*x = SearchSecretResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_pkg_secrets_grpc_secrets_proto_msgTypes[11]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *SearchSecretResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SearchSecretResponse) ProtoMessage() {}
+
+func (x *SearchSecretResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_pkg_secrets_grpc_secrets_proto_msgTypes[11]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SearchSecretResponse.ProtoReflect.Descriptor instead.
+func (*SearchSecretResponse) Descriptor() ([]byte, []int) {
+	return file_pkg_secrets_grpc_secrets_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *SearchSecretResponse) GetSecrets() []*SearchSecretResponse_Secret {
+	if x != nil {
+		return x.Secrets
+	}
+	return nil
+}
+
 type GetSecretsResponse_Secret struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -557,7 +659,7 @@ type GetSecretsResponse_Secret struct {
 func (x *GetSecretsResponse_Secret) Reset() {
 	*x = GetSecretsResponse_Secret{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_secrets_grpc_secrets_proto_msgTypes[10]
+		mi := &file_pkg_secrets_grpc_secrets_proto_msgTypes[12]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -570,7 +672,7 @@ func (x *GetSecretsResponse_Secret) String() string {
 func (*GetSecretsResponse_Secret) ProtoMessage() {}
 
 func (x *GetSecretsResponse_Secret) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_secrets_grpc_secrets_proto_msgTypes[10]
+	mi := &file_pkg_secrets_grpc_secrets_proto_msgTypes[12]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -587,6 +689,53 @@ func (*GetSecretsResponse_Secret) Descriptor() ([]byte, []int) {
 }
 
 func (x *GetSecretsResponse_Secret) GetName() string {
+	if x != nil && x.Name != nil {
+		return *x.Name
+	}
+	return ""
+}
+
+type SearchSecretResponse_Secret struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Name *string `protobuf:"bytes,1,opt,name=name,proto3,oneof" json:"name,omitempty"`
+}
+
+func (x *SearchSecretResponse_Secret) Reset() {
+	*x = SearchSecretResponse_Secret{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_pkg_secrets_grpc_secrets_proto_msgTypes[13]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *SearchSecretResponse_Secret) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SearchSecretResponse_Secret) ProtoMessage() {}
+
+func (x *SearchSecretResponse_Secret) ProtoReflect() protoreflect.Message {
+	mi := &file_pkg_secrets_grpc_secrets_proto_msgTypes[13]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SearchSecretResponse_Secret.ProtoReflect.Descriptor instead.
+func (*SearchSecretResponse_Secret) Descriptor() ([]byte, []int) {
+	return file_pkg_secrets_grpc_secrets_proto_rawDescGZIP(), []int{11, 0}
+}
+
+func (x *SearchSecretResponse_Secret) GetName() string {
 	if x != nil && x.Name != nil {
 		return *x.Name
 	}
@@ -661,10 +810,25 @@ var file_pkg_secrets_grpc_secrets_proto_rawDesc = []byte{
 	0x01, 0x12, 0x17, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x48,
 	0x01, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x88, 0x01, 0x01, 0x42, 0x0c, 0x0a, 0x0a, 0x5f, 0x6e,
 	0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x42, 0x07, 0x0a, 0x05, 0x5f, 0x6e, 0x61, 0x6d,
-	0x65, 0x42, 0x2f, 0x5a, 0x2d, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f,
-	0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x2f, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69,
-	0x76, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x73, 0x65, 0x63, 0x72, 0x65, 0x74, 0x73, 0x2f, 0x67, 0x72,
-	0x70, 0x63, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x65, 0x22, 0x68, 0x0a, 0x13, 0x53, 0x65, 0x61, 0x72, 0x63, 0x68, 0x53, 0x65, 0x63, 0x72, 0x65,
+	0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x21, 0x0a, 0x09, 0x6e, 0x61, 0x6d, 0x65,
+	0x73, 0x70, 0x61, 0x63, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x48, 0x00, 0x52, 0x09, 0x6e,
+	0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x88, 0x01, 0x01, 0x12, 0x17, 0x0a, 0x04, 0x6e,
+	0x61, 0x6d, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x48, 0x01, 0x52, 0x04, 0x6e, 0x61, 0x6d,
+	0x65, 0x88, 0x01, 0x01, 0x42, 0x0c, 0x0a, 0x0a, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61,
+	0x63, 0x65, 0x42, 0x07, 0x0a, 0x05, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x22, 0x7f, 0x0a, 0x14, 0x53,
+	0x65, 0x61, 0x72, 0x63, 0x68, 0x53, 0x65, 0x63, 0x72, 0x65, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f,
+	0x6e, 0x73, 0x65, 0x12, 0x3b, 0x0a, 0x07, 0x73, 0x65, 0x63, 0x72, 0x65, 0x74, 0x73, 0x18, 0x01,
+	0x20, 0x03, 0x28, 0x0b, 0x32, 0x21, 0x2e, 0x67, 0x72, 0x70, 0x63, 0x2e, 0x53, 0x65, 0x61, 0x72,
+	0x63, 0x68, 0x53, 0x65, 0x63, 0x72, 0x65, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65,
+	0x2e, 0x53, 0x65, 0x63, 0x72, 0x65, 0x74, 0x52, 0x07, 0x73, 0x65, 0x63, 0x72, 0x65, 0x74, 0x73,
+	0x1a, 0x2a, 0x0a, 0x06, 0x53, 0x65, 0x63, 0x72, 0x65, 0x74, 0x12, 0x17, 0x0a, 0x04, 0x6e, 0x61,
+	0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x48, 0x00, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65,
+	0x88, 0x01, 0x01, 0x42, 0x07, 0x0a, 0x05, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x42, 0x2f, 0x5a, 0x2d,
+	0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x64, 0x69, 0x72, 0x65, 0x6b,
+	0x74, 0x69, 0x76, 0x2f, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x2f, 0x70, 0x6b, 0x67,
+	0x2f, 0x73, 0x65, 0x63, 0x72, 0x65, 0x74, 0x73, 0x2f, 0x67, 0x72, 0x70, 0x63, 0x62, 0x06, 0x70,
+	0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -679,7 +843,7 @@ func file_pkg_secrets_grpc_secrets_proto_rawDescGZIP() []byte {
 	return file_pkg_secrets_grpc_secrets_proto_rawDescData
 }
 
-var file_pkg_secrets_grpc_secrets_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
+var file_pkg_secrets_grpc_secrets_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
 var file_pkg_secrets_grpc_secrets_proto_goTypes = []interface{}{
 	(*SecretsStoreRequest)(nil),           // 0: grpc.SecretsStoreRequest
 	(*SecretsRetrieveRequest)(nil),        // 1: grpc.SecretsRetrieveRequest
@@ -691,15 +855,19 @@ var file_pkg_secrets_grpc_secrets_proto_goTypes = []interface{}{
 	(*DeleteNamespaceSecretsRequest)(nil), // 7: grpc.DeleteNamespaceSecretsRequest
 	(*CreateFolderRequest)(nil),           // 8: grpc.CreateFolderRequest
 	(*DeleteFolderRequest)(nil),           // 9: grpc.DeleteFolderRequest
-	(*GetSecretsResponse_Secret)(nil),     // 10: grpc.GetSecretsResponse.Secret
+	(*SearchSecretRequest)(nil),           // 10: grpc.SearchSecretRequest
+	(*SearchSecretResponse)(nil),          // 11: grpc.SearchSecretResponse
+	(*GetSecretsResponse_Secret)(nil),     // 12: grpc.GetSecretsResponse.Secret
+	(*SearchSecretResponse_Secret)(nil),   // 13: grpc.SearchSecretResponse.Secret
 }
 var file_pkg_secrets_grpc_secrets_proto_depIdxs = []int32{
-	10, // 0: grpc.GetSecretsResponse.secrets:type_name -> grpc.GetSecretsResponse.Secret
-	1,  // [1:1] is the sub-list for method output_type
-	1,  // [1:1] is the sub-list for method input_type
-	1,  // [1:1] is the sub-list for extension type_name
-	1,  // [1:1] is the sub-list for extension extendee
-	0,  // [0:1] is the sub-list for field type_name
+	12, // 0: grpc.GetSecretsResponse.secrets:type_name -> grpc.GetSecretsResponse.Secret
+	13, // 1: grpc.SearchSecretResponse.secrets:type_name -> grpc.SearchSecretResponse.Secret
+	2,  // [2:2] is the sub-list for method output_type
+	2,  // [2:2] is the sub-list for method input_type
+	2,  // [2:2] is the sub-list for extension type_name
+	2,  // [2:2] is the sub-list for extension extendee
+	0,  // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_pkg_secrets_grpc_secrets_proto_init() }
@@ -829,7 +997,43 @@ func file_pkg_secrets_grpc_secrets_proto_init() {
 			}
 		}
 		file_pkg_secrets_grpc_secrets_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*SearchSecretRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_pkg_secrets_grpc_secrets_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*SearchSecretResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_pkg_secrets_grpc_secrets_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetSecretsResponse_Secret); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_pkg_secrets_grpc_secrets_proto_msgTypes[13].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*SearchSecretResponse_Secret); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -851,13 +1055,15 @@ func file_pkg_secrets_grpc_secrets_proto_init() {
 	file_pkg_secrets_grpc_secrets_proto_msgTypes[8].OneofWrappers = []interface{}{}
 	file_pkg_secrets_grpc_secrets_proto_msgTypes[9].OneofWrappers = []interface{}{}
 	file_pkg_secrets_grpc_secrets_proto_msgTypes[10].OneofWrappers = []interface{}{}
+	file_pkg_secrets_grpc_secrets_proto_msgTypes[12].OneofWrappers = []interface{}{}
+	file_pkg_secrets_grpc_secrets_proto_msgTypes[13].OneofWrappers = []interface{}{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_pkg_secrets_grpc_secrets_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   11,
+			NumMessages:   14,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

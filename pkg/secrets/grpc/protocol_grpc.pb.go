@@ -30,6 +30,7 @@ type SecretsServiceClient interface {
 	GetSecrets(ctx context.Context, in *GetSecretsRequest, opts ...grpc.CallOption) (*GetSecretsResponse, error)
 	DeleteFolder(ctx context.Context, in *DeleteFolderRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	CreateFolder(ctx context.Context, in *CreateFolderRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	SearchSecret(ctx context.Context, in *SearchSecretRequest, opts ...grpc.CallOption) (*SearchSecretResponse, error)
 }
 
 type secretsServiceClient struct {
@@ -103,6 +104,15 @@ func (c *secretsServiceClient) CreateFolder(ctx context.Context, in *CreateFolde
 	return out, nil
 }
 
+func (c *secretsServiceClient) SearchSecret(ctx context.Context, in *SearchSecretRequest, opts ...grpc.CallOption) (*SearchSecretResponse, error) {
+	out := new(SearchSecretResponse)
+	err := c.cc.Invoke(ctx, "/grpc.SecretsService/SearchSecret", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // SecretsServiceServer is the server API for SecretsService service.
 // All implementations must embed UnimplementedSecretsServiceServer
 // for forward compatibility
@@ -114,6 +124,7 @@ type SecretsServiceServer interface {
 	GetSecrets(context.Context, *GetSecretsRequest) (*GetSecretsResponse, error)
 	DeleteFolder(context.Context, *DeleteFolderRequest) (*empty.Empty, error)
 	CreateFolder(context.Context, *CreateFolderRequest) (*empty.Empty, error)
+	SearchSecret(context.Context, *SearchSecretRequest) (*SearchSecretResponse, error)
 	mustEmbedUnimplementedSecretsServiceServer()
 }
 
@@ -141,6 +152,9 @@ func (UnimplementedSecretsServiceServer) DeleteFolder(context.Context, *DeleteFo
 }
 func (UnimplementedSecretsServiceServer) CreateFolder(context.Context, *CreateFolderRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateFolder not implemented")
+}
+func (UnimplementedSecretsServiceServer) SearchSecret(context.Context, *SearchSecretRequest) (*SearchSecretResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SearchSecret not implemented")
 }
 func (UnimplementedSecretsServiceServer) mustEmbedUnimplementedSecretsServiceServer() {}
 
@@ -281,6 +295,24 @@ func _SecretsService_CreateFolder_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _SecretsService_SearchSecret_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SearchSecretRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SecretsServiceServer).SearchSecret(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.SecretsService/SearchSecret",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SecretsServiceServer).SearchSecret(ctx, req.(*SearchSecretRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // SecretsService_ServiceDesc is the grpc.ServiceDesc for SecretsService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -315,6 +347,10 @@ var SecretsService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreateFolder",
 			Handler:    _SecretsService_CreateFolder_Handler,
+		},
+		{
+			MethodName: "SearchSecret",
+			Handler:    _SecretsService_SearchSecret_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -915,6 +915,8 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 
 	r.HandleFunc("/namespaces/{ns}/overwrite/secrets/{secret:.*[^/]$}", h.OverwriteSecret).Name(RN_OverwriteSecret).Methods(http.MethodPut)
 
+	r.HandleFunc("/namespaces/{ns}/search/secrets/{name:.*}", h.SearchSecret).Name(RN_SearchSecret).Methods(http.MethodGet)
+
 	// swagger:operation GET /api/namespaces/{namespace}/instances/{instance} Instances getInstance
 	// ---
 	// description: |
@@ -3564,6 +3566,31 @@ func (h *flowHandler) SecretsSSE(w http.ResponseWriter, r *http.Request) {
 	}()
 
 	sse(w, ch)
+
+}
+
+func (h *flowHandler) SearchSecret(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	name, _ := mux.Vars(r)["name"]
+
+	p, err := pagination(r)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
+	in := &grpc.SearchSecretRequest{
+		Namespace:  namespace,
+		Pagination: p,
+		Key:        name,
+	}
+
+	resp, err := h.client.SearchSecret(ctx, in)
+	respond(w, resp, err)
 
 }
 

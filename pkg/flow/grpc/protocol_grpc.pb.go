@@ -68,6 +68,7 @@ type FlowClient interface {
 	CreateSecretsFolder(ctx context.Context, in *CreateSecretsFolderRequest, opts ...grpc.CallOption) (*CreateSecretsFolderResponse, error)
 	DeleteSecret(ctx context.Context, in *DeleteSecretRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	DeleteFolder(ctx context.Context, in *DeleteFolderRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	SearchSecret(ctx context.Context, in *SearchSecretRequest, opts ...grpc.CallOption) (*SearchSecretResponse, error)
 	Instance(ctx context.Context, in *InstanceRequest, opts ...grpc.CallOption) (*InstanceResponse, error)
 	InstanceStream(ctx context.Context, in *InstanceRequest, opts ...grpc.CallOption) (Flow_InstanceStreamClient, error)
 	Instances(ctx context.Context, in *InstancesRequest, opts ...grpc.CallOption) (*InstancesResponse, error)
@@ -802,6 +803,15 @@ func (c *flowClient) DeleteSecret(ctx context.Context, in *DeleteSecretRequest, 
 func (c *flowClient) DeleteFolder(ctx context.Context, in *DeleteFolderRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
 	out := new(empty.Empty)
 	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/DeleteFolder", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *flowClient) SearchSecret(ctx context.Context, in *SearchSecretRequest, opts ...grpc.CallOption) (*SearchSecretResponse, error) {
+	out := new(SearchSecretResponse)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/SearchSecret", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1848,6 +1858,7 @@ type FlowServer interface {
 	CreateSecretsFolder(context.Context, *CreateSecretsFolderRequest) (*CreateSecretsFolderResponse, error)
 	DeleteSecret(context.Context, *DeleteSecretRequest) (*empty.Empty, error)
 	DeleteFolder(context.Context, *DeleteFolderRequest) (*empty.Empty, error)
+	SearchSecret(context.Context, *SearchSecretRequest) (*SearchSecretResponse, error)
 	Instance(context.Context, *InstanceRequest) (*InstanceResponse, error)
 	InstanceStream(*InstanceRequest, Flow_InstanceStreamServer) error
 	Instances(context.Context, *InstancesRequest) (*InstancesResponse, error)
@@ -2061,6 +2072,9 @@ func (UnimplementedFlowServer) DeleteSecret(context.Context, *DeleteSecretReques
 }
 func (UnimplementedFlowServer) DeleteFolder(context.Context, *DeleteFolderRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteFolder not implemented")
+}
+func (UnimplementedFlowServer) SearchSecret(context.Context, *SearchSecretRequest) (*SearchSecretResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SearchSecret not implemented")
 }
 func (UnimplementedFlowServer) Instance(context.Context, *InstanceRequest) (*InstanceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Instance not implemented")
@@ -3112,6 +3126,24 @@ func _Flow_DeleteFolder_Handler(srv interface{}, ctx context.Context, dec func(i
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FlowServer).DeleteFolder(ctx, req.(*DeleteFolderRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Flow_SearchSecret_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SearchSecretRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FlowServer).SearchSecret(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/direktiv_flow.Flow/SearchSecret",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FlowServer).SearchSecret(ctx, req.(*SearchSecretRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -4512,6 +4544,10 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteFolder",
 			Handler:    _Flow_DeleteFolder_Handler,
+		},
+		{
+			MethodName: "SearchSecret",
+			Handler:    _Flow_SearchSecret_Handler,
 		},
 		{
 			MethodName: "Instance",

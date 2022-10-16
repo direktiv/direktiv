@@ -257,6 +257,39 @@ func (s *Server) DeleteFolder(ctx context.Context, in *secretsgrpc.DeleteFolderR
 	return &resp, s.handler.RemoveFolder(in.GetNamespace(), in.GetName())
 }
 
+func (s *Server) SearchSecret(ctx context.Context, in *secretsgrpc.SearchSecretRequest) (*secretsgrpc.SearchSecretResponse, error) {
+
+	var (
+		resp secretsgrpc.SearchSecretResponse
+		ls   []*secretsgrpc.SearchSecretResponse_Secret
+	)
+
+	if in.GetNamespace() == "" {
+		return &resp, fmt.Errorf("namespace value is required")
+	}
+
+	if in.GetName() == "" {
+		return &resp, fmt.Errorf("name value is required")
+	}
+
+	names, err := s.handler.SearchForName(in.GetNamespace(), in.GetName())
+	if err != nil {
+		return &resp, err
+	}
+
+	for _, n := range names {
+		var name = n
+		ls = append(ls, &secretsgrpc.SearchSecretResponse_Secret{
+			Name: &name,
+		})
+	}
+
+	resp.Secrets = ls
+
+	return &resp, nil
+
+}
+
 // IsFolder Checks if name is folder
 func isFolder(name string) bool {
 	return (strings.HasSuffix(name, "/") || name == "")
