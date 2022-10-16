@@ -1078,6 +1078,9 @@ func (repository *localRepository) clone(ctx context.Context) error {
 				return cred, err
 			},
 		},
+		ProxyOptions: git.ProxyOptions{
+			Type: git.ProxyTypeAuto,
+		},
 	}
 
 	uri := repository.repo.URL
