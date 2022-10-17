@@ -84,13 +84,12 @@ func (db *dbHandler) AddSecret(namespace, name string, secret []byte, ignoreErro
 			)).
 		Only(context.Background())
 
+	if bs != nil && ignoreError {
+		return nil
+	}
 	if bs != nil {
-		if ignoreError {
-			return nil
-		} else {
-			return fmt.Errorf("secret already exists")
-		}
 
+		return fmt.Errorf("secret already exists")
 	}
 
 	var d []byte
@@ -111,6 +110,37 @@ func (db *dbHandler) AddSecret(namespace, name string, secret []byte, ignoreErro
 
 	return err
 
+}
+
+func (db *dbHandler) UpdateSecret(namespace, name string, secret []byte) error {
+
+	logger.Infof("adding secret %s", name)
+
+	bs, err := db.db.NamespaceSecret.
+		Query().
+		Where(
+			namespacesecret.And(
+				namespacesecret.NsEQ(namespace),
+				namespacesecret.NameEQ(name),
+			)).
+		Only(context.Background())
+
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return status.Errorf(codes.NotFound, "secret '%s' not found", name)
+		}
+		return err
+	}
+
+	var d []byte
+	d, err = encryptData([]byte(db.key), secret)
+
+	_, err = db.db.NamespaceSecret.
+		UpdateOne(bs).
+		SetSecret(d).
+		Save(context.Background())
+
+	return err
 }
 
 func (db *dbHandler) GetSecret(namespace, name string) ([]byte, error) {
@@ -153,16 +183,16 @@ func (db *dbHandler) GetSecrets(namespace string, name string) ([]string, error)
 		return nil, err
 	}
 
-	rootDirectory := (name == "/" || name == "")
-	pathPatternFolders := ""
-	pathPatternFiles := ""
-	if rootDirectory {
-		pathPatternFolders = "*/"
-		pathPatternFiles = "*"
-	} else {
-		pathPatternFolders = name + "*/"
-		pathPatternFiles = name + "*"
-	}
+	//rootDirectory := (name == "/" || name == "")
+	//pathPatternFolders := ""
+	//pathPatternFiles := ""
+	//if rootDirectory {
+	//pathPatternFolders = "*/"
+	//pathPatternFiles = "*"
+	//} else {
+	pathPatternFolders := name + "*/"
+	pathPatternFiles := name + "*"
+	//}
 
 	for _, s := range dbs {
 
@@ -172,7 +202,6 @@ func (db *dbHandler) GetSecrets(namespace string, name string) ([]string, error)
 		if matchesPathPatternFiles || matchesPathPatternFolders {
 			names = append(names, s.Name)
 		}
-
 	}
 
 	return names, nil

@@ -3634,22 +3634,33 @@ func (h *flowHandler) OverwriteSecret(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//DELETE SECRET
-	inDelete := new(grpc.DeleteSecretRequest)
-	inDelete.Namespace = namespace
-	inDelete.Key = secret
-	respDelete, errDelete := h.client.DeleteSecret(ctx, inDelete)
-	if errDelete != nil {
-		respond(w, respDelete, errDelete)
-		return
-	}
+	in := new(grpc.UpdateSecretRequest)
+	in.Namespace = namespace
+	in.Key = secret
+	in.Data = data
+	resp, err := h.client.UpdateSecret(ctx, in)
+	//if err != nil {
+	respond(w, resp, err)
+	//	return
+	//}
 
-	//ADD SECRET
-	inAdd := new(grpc.SetSecretRequest)
-	inAdd.Namespace = namespace
-	inAdd.Key = secret
-	inAdd.Data = data
-	respAdd, errAdd := h.client.SetSecret(ctx, inAdd)
-	respond(w, respAdd, errAdd)
+	// //DELETE SECRET
+	// inDelete := new(grpc.DeleteSecretRequest)
+	// inDelete.Namespace = namespace
+	// inDelete.Key = secret
+	// respDelete, errDelete := h.client.DeleteSecret(ctx, inDelete)
+	// if errDelete != nil {
+	// 	respond(w, respDelete, errDelete)
+	// 	return
+	// }
+
+	// //ADD SECRET
+	// inAdd := new(grpc.SetSecretRequest)
+	// inAdd.Namespace = namespace
+	// inAdd.Key = secret
+	// inAdd.Data = data
+	// respAdd, errAdd := h.client.SetSecret(ctx, inAdd)
+	// respond(w, respAdd, errAdd)
 
 }
 

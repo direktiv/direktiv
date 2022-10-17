@@ -320,3 +320,39 @@ func (flow *flow) DeleteFolder(ctx context.Context, req *grpc.DeleteFolderReques
 	return &resp, nil
 
 }
+
+func (flow *flow) UpdateSecret(ctx context.Context, req *grpc.UpdateSecretRequest) (*grpc.UpdateSecretResponse, error) {
+
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
+
+	ns, err := flow.getNamespace(ctx, flow.db.Namespace, req.GetNamespace())
+	if err != nil {
+		return nil, err
+	}
+
+	namespace := ns.ID.String()
+	name := req.GetKey()
+
+	request := &secretsgrpc.UpdateSecretRequest{
+		Namespace: &namespace,
+		Name:      &name,
+		Data:      req.GetData(),
+	}
+
+	_, err = flow.secrets.client.UpdateSecret(ctx, request)
+	if err != nil {
+		fmt.Println("==== FAILED TO STORE SECRET", namespace)
+		return nil, err
+	}
+
+	flow.logToNamespace(ctx, time.Now(), ns, "Created namespace secret '%s'.", req.GetKey())
+	flow.pubsub.NotifyNamespaceSecrets(ns)
+
+	var resp grpc.UpdateSecretResponse
+
+	resp.Namespace = ns.Name
+	resp.Key = req.GetKey()
+
+	return &resp, nil
+
+}

@@ -27,6 +27,7 @@ type SecretsHandler interface {
 	GetSecret(namespace, name string) ([]byte, error)
 	GetSecrets(namespace string, name string) ([]string, error)
 	SearchForName(namespace string, name string) ([]string, error)
+	UpdateSecret(namespace, name string, secret []byte) error
 }
 
 func (x *SecretType) Setup() (SecretsHandler, error) {

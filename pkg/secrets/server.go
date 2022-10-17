@@ -3,6 +3,7 @@ package secrets
 import (
 	"context"
 	"fmt"
+	"path/filepath"
 	"strings"
 
 	"github.com/direktiv/direktiv/pkg/dlog"
@@ -117,7 +118,7 @@ func (s *Server) StoreSecret(ctx context.Context, in *secretsgrpc.SecretsStoreRe
 	}
 
 	if strings.Contains(n, "/") { //if is not a folder but contains / means is a secret inside a folder
-		highestFolderPath := n[:len(n)-1] // trim to highest folder path
+		highestFolderPath := filepath.Dir(n) + "/"
 		splittedPath := strings.SplitAfter(highestFolderPath, "/")
 		splittedPath = splittedPath[:len(splittedPath)-1] // delete last elem cause is empty
 		concPath := ""
@@ -287,6 +288,34 @@ func (s *Server) SearchSecret(ctx context.Context, in *secretsgrpc.SearchSecretR
 	resp.Secrets = ls
 
 	return &resp, nil
+
+}
+
+// StoreSecret stores secrets in backends
+func (s *Server) UpdateSecret(ctx context.Context, in *secretsgrpc.UpdateSecretRequest) (*empty.Empty, error) {
+
+	var resp emptypb.Empty
+
+	if isFolder(in.GetName()) {
+		return &resp, fmt.Errorf("secret required, but got folder")
+	}
+
+	if in.GetName() == "" || in.GetNamespace() == "" || len(in.GetData()) == 0 {
+		return &resp, fmt.Errorf("name, namespace and secret values are required")
+	}
+
+	n := in.GetName()
+	if ok := util.MatchesVarSNameAndSFName(n); !ok {
+		return &resp, fmt.Errorf("secret name must match the regex pattern `%s`", util.VarSecretNameAndSecretsFolderNamePattern)
+	}
+	n = strings.TrimPrefix(n, "/")
+
+	err := s.handler.UpdateSecret(in.GetNamespace(), n, in.GetData())
+	if err != nil {
+		return &resp, err
+	}
+
+	return &resp, err
 
 }
 

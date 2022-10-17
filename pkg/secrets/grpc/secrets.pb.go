@@ -648,6 +648,69 @@ func (x *SearchSecretResponse) GetSecrets() []*SearchSecretResponse_Secret {
 	return nil
 }
 
+type UpdateSecretRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Namespace *string `protobuf:"bytes,1,opt,name=namespace,proto3,oneof" json:"namespace,omitempty"`
+	Name      *string `protobuf:"bytes,2,opt,name=name,proto3,oneof" json:"name,omitempty"`
+	Data      []byte  `protobuf:"bytes,3,opt,name=data,proto3,oneof" json:"data,omitempty"`
+}
+
+func (x *UpdateSecretRequest) Reset() {
+	*x = UpdateSecretRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_pkg_secrets_grpc_secrets_proto_msgTypes[12]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *UpdateSecretRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateSecretRequest) ProtoMessage() {}
+
+func (x *UpdateSecretRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_pkg_secrets_grpc_secrets_proto_msgTypes[12]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateSecretRequest.ProtoReflect.Descriptor instead.
+func (*UpdateSecretRequest) Descriptor() ([]byte, []int) {
+	return file_pkg_secrets_grpc_secrets_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *UpdateSecretRequest) GetNamespace() string {
+	if x != nil && x.Namespace != nil {
+		return *x.Namespace
+	}
+	return ""
+}
+
+func (x *UpdateSecretRequest) GetName() string {
+	if x != nil && x.Name != nil {
+		return *x.Name
+	}
+	return ""
+}
+
+func (x *UpdateSecretRequest) GetData() []byte {
+	if x != nil {
+		return x.Data
+	}
+	return nil
+}
+
 type GetSecretsResponse_Secret struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -659,7 +722,7 @@ type GetSecretsResponse_Secret struct {
 func (x *GetSecretsResponse_Secret) Reset() {
 	*x = GetSecretsResponse_Secret{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_secrets_grpc_secrets_proto_msgTypes[12]
+		mi := &file_pkg_secrets_grpc_secrets_proto_msgTypes[13]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -672,7 +735,7 @@ func (x *GetSecretsResponse_Secret) String() string {
 func (*GetSecretsResponse_Secret) ProtoMessage() {}
 
 func (x *GetSecretsResponse_Secret) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_secrets_grpc_secrets_proto_msgTypes[12]
+	mi := &file_pkg_secrets_grpc_secrets_proto_msgTypes[13]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -706,7 +769,7 @@ type SearchSecretResponse_Secret struct {
 func (x *SearchSecretResponse_Secret) Reset() {
 	*x = SearchSecretResponse_Secret{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_secrets_grpc_secrets_proto_msgTypes[13]
+		mi := &file_pkg_secrets_grpc_secrets_proto_msgTypes[14]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -719,7 +782,7 @@ func (x *SearchSecretResponse_Secret) String() string {
 func (*SearchSecretResponse_Secret) ProtoMessage() {}
 
 func (x *SearchSecretResponse_Secret) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_secrets_grpc_secrets_proto_msgTypes[13]
+	mi := &file_pkg_secrets_grpc_secrets_proto_msgTypes[14]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -824,11 +887,20 @@ var file_pkg_secrets_grpc_secrets_proto_rawDesc = []byte{
 	0x2e, 0x53, 0x65, 0x63, 0x72, 0x65, 0x74, 0x52, 0x07, 0x73, 0x65, 0x63, 0x72, 0x65, 0x74, 0x73,
 	0x1a, 0x2a, 0x0a, 0x06, 0x53, 0x65, 0x63, 0x72, 0x65, 0x74, 0x12, 0x17, 0x0a, 0x04, 0x6e, 0x61,
 	0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x48, 0x00, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65,
-	0x88, 0x01, 0x01, 0x42, 0x07, 0x0a, 0x05, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x42, 0x2f, 0x5a, 0x2d,
-	0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x64, 0x69, 0x72, 0x65, 0x6b,
-	0x74, 0x69, 0x76, 0x2f, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x2f, 0x70, 0x6b, 0x67,
-	0x2f, 0x73, 0x65, 0x63, 0x72, 0x65, 0x74, 0x73, 0x2f, 0x67, 0x72, 0x70, 0x63, 0x62, 0x06, 0x70,
-	0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x88, 0x01, 0x01, 0x42, 0x07, 0x0a, 0x05, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x22, 0x8a, 0x01, 0x0a,
+	0x13, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x53, 0x65, 0x63, 0x72, 0x65, 0x74, 0x52, 0x65, 0x71,
+	0x75, 0x65, 0x73, 0x74, 0x12, 0x21, 0x0a, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63,
+	0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x48, 0x00, 0x52, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73,
+	0x70, 0x61, 0x63, 0x65, 0x88, 0x01, 0x01, 0x12, 0x17, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18,
+	0x02, 0x20, 0x01, 0x28, 0x09, 0x48, 0x01, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x88, 0x01, 0x01,
+	0x12, 0x17, 0x0a, 0x04, 0x64, 0x61, 0x74, 0x61, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0c, 0x48, 0x02,
+	0x52, 0x04, 0x64, 0x61, 0x74, 0x61, 0x88, 0x01, 0x01, 0x42, 0x0c, 0x0a, 0x0a, 0x5f, 0x6e, 0x61,
+	0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x42, 0x07, 0x0a, 0x05, 0x5f, 0x6e, 0x61, 0x6d, 0x65,
+	0x42, 0x07, 0x0a, 0x05, 0x5f, 0x64, 0x61, 0x74, 0x61, 0x42, 0x2f, 0x5a, 0x2d, 0x67, 0x69, 0x74,
+	0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76,
+	0x2f, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x73, 0x65,
+	0x63, 0x72, 0x65, 0x74, 0x73, 0x2f, 0x67, 0x72, 0x70, 0x63, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74,
+	0x6f, 0x33,
 }
 
 var (
@@ -843,7 +915,7 @@ func file_pkg_secrets_grpc_secrets_proto_rawDescGZIP() []byte {
 	return file_pkg_secrets_grpc_secrets_proto_rawDescData
 }
 
-var file_pkg_secrets_grpc_secrets_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
+var file_pkg_secrets_grpc_secrets_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
 var file_pkg_secrets_grpc_secrets_proto_goTypes = []interface{}{
 	(*SecretsStoreRequest)(nil),           // 0: grpc.SecretsStoreRequest
 	(*SecretsRetrieveRequest)(nil),        // 1: grpc.SecretsRetrieveRequest
@@ -857,12 +929,13 @@ var file_pkg_secrets_grpc_secrets_proto_goTypes = []interface{}{
 	(*DeleteFolderRequest)(nil),           // 9: grpc.DeleteFolderRequest
 	(*SearchSecretRequest)(nil),           // 10: grpc.SearchSecretRequest
 	(*SearchSecretResponse)(nil),          // 11: grpc.SearchSecretResponse
-	(*GetSecretsResponse_Secret)(nil),     // 12: grpc.GetSecretsResponse.Secret
-	(*SearchSecretResponse_Secret)(nil),   // 13: grpc.SearchSecretResponse.Secret
+	(*UpdateSecretRequest)(nil),           // 12: grpc.UpdateSecretRequest
+	(*GetSecretsResponse_Secret)(nil),     // 13: grpc.GetSecretsResponse.Secret
+	(*SearchSecretResponse_Secret)(nil),   // 14: grpc.SearchSecretResponse.Secret
 }
 var file_pkg_secrets_grpc_secrets_proto_depIdxs = []int32{
-	12, // 0: grpc.GetSecretsResponse.secrets:type_name -> grpc.GetSecretsResponse.Secret
-	13, // 1: grpc.SearchSecretResponse.secrets:type_name -> grpc.SearchSecretResponse.Secret
+	13, // 0: grpc.GetSecretsResponse.secrets:type_name -> grpc.GetSecretsResponse.Secret
+	14, // 1: grpc.SearchSecretResponse.secrets:type_name -> grpc.SearchSecretResponse.Secret
 	2,  // [2:2] is the sub-list for method output_type
 	2,  // [2:2] is the sub-list for method input_type
 	2,  // [2:2] is the sub-list for extension type_name
@@ -1021,7 +1094,7 @@ func file_pkg_secrets_grpc_secrets_proto_init() {
 			}
 		}
 		file_pkg_secrets_grpc_secrets_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetSecretsResponse_Secret); i {
+			switch v := v.(*UpdateSecretRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1033,6 +1106,18 @@ func file_pkg_secrets_grpc_secrets_proto_init() {
 			}
 		}
 		file_pkg_secrets_grpc_secrets_proto_msgTypes[13].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*GetSecretsResponse_Secret); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_pkg_secrets_grpc_secrets_proto_msgTypes[14].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*SearchSecretResponse_Secret); i {
 			case 0:
 				return &v.state
@@ -1057,13 +1142,14 @@ func file_pkg_secrets_grpc_secrets_proto_init() {
 	file_pkg_secrets_grpc_secrets_proto_msgTypes[10].OneofWrappers = []interface{}{}
 	file_pkg_secrets_grpc_secrets_proto_msgTypes[12].OneofWrappers = []interface{}{}
 	file_pkg_secrets_grpc_secrets_proto_msgTypes[13].OneofWrappers = []interface{}{}
+	file_pkg_secrets_grpc_secrets_proto_msgTypes[14].OneofWrappers = []interface{}{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_pkg_secrets_grpc_secrets_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   14,
+			NumMessages:   15,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

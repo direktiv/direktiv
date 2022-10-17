@@ -30,7 +30,7 @@ type GetSecretsBody struct {
 }
 
 func init() {
-	ip = "192.168.0.197"
+	ip = "192.168.2.81"
 	namespace = "test999"
 	//DELETE NAMESPACE
 	DeleteNamespace(ip, namespace)
@@ -161,7 +161,7 @@ func TestDeleteSecret(t *testing.T) {
 func TestOverwriteSecret(t *testing.T) {
 
 	//check overwrite not existing secret
-	respStatusCode, _ := OverwriteSecret(ip, namespace, "notExistingSecret")
+	respStatusCode, _ := OverwriteSecret(ip, namespace, "hallo")
 	assert.Equal(t, 404, respStatusCode)
 
 }
@@ -253,7 +253,7 @@ func DeleteNamespace(ip string, namespace string) error {
 
 func OverwriteSecret(ip string, namespace string, secret string) (int, error) {
 	url := "http://" + ip + "/api/namespaces/overwrite" + namespace + "/secrets/" + secret
-	req, _ := http.NewRequest("GET", url, nil)
+	req, _ := http.NewRequest("PUT", url, nil)
 	resp, err := http.DefaultClient.Do(req)
 	b, _ := ioutil.ReadAll(resp.Body)
 	var body GetSecretsBody
