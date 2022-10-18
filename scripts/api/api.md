@@ -196,8 +196,9 @@ Direktiv Documentation can be found at https://docs.direktiv.io/
 
 | Method  | URI     | Name   | Summary |
 |---------|---------|--------|---------|
-| PUT | /api/namespaces/{namespace}/secrets/{folder} | [create folder](#create-folder) | Delete a Namespace Secret |
+| PUT | /api/namespaces/{namespace}/secrets/{folder} | [create folder](#create-folder) | Create a Namespace Folder |
 | PUT | /api/namespaces/{namespace}/secrets/{secret} | [create secret](#create-secret) | Create a Namespace Secret |
+| DELETE | /api/namespaces/{namespace}/secrets/{folder} | [delete folder](#delete-folder) | Delete a Namespace Folder |
 | DELETE | /api/namespaces/{namespace}/secrets/{secret} | [delete secret](#delete-secret) | Delete a Namespace Secret |
 | GET | /api/namespaces/{namespace}/secrets | [get secrets](#get-secrets) | Get List of Namespace Secrets |
 | GET | /api/namespaces/{namespace}/secrets/{folder} | [get secrets inside folder](#get-secrets-inside-folder) | Get List of Namespace nodes inside Folder |
@@ -434,13 +435,13 @@ an error has occurred
 
 [ErrorResponse](#error-response)
 
-### <span id="create-folder"></span> Delete a Namespace Secret (*createFolder*)
+### <span id="create-folder"></span> Create a Namespace Folder (*createFolder*)
 
 ```
 PUT /api/namespaces/{namespace}/secrets/{folder}
 ```
 
-Delete a namespace secret.
+Create a namespace folder.
 
 
 #### Parameters
@@ -454,13 +455,13 @@ Delete a namespace secret.
 
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
-| [200](#create-folder-200) | OK | namespace has been successfully created |  | [schema](#create-folder-200-schema) |
+| [200](#create-folder-200) | OK | namespace folder has been successfully created |  | [schema](#create-folder-200-schema) |
 | [default](#create-folder-default) | | an error has occurred |  | [schema](#create-folder-default-schema) |
 
 #### Responses
 
 
-##### <span id="create-folder-200"></span> 200 - namespace has been successfully created
+##### <span id="create-folder-200"></span> 200 - namespace folder has been successfully created
 Status: OK
 
 ###### <span id="create-folder-200-schema"></span> Schema
@@ -805,13 +806,13 @@ Create a namespace secret.
 
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
-| [200](#create-secret-200) | OK | namespace has been successfully created |  | [schema](#create-secret-200-schema) |
+| [200](#create-secret-200) | OK | namespace secret has been successfully created |  | [schema](#create-secret-200-schema) |
 | [default](#create-secret-default) | | an error has occurred |  | [schema](#create-secret-default-schema) |
 
 #### Responses
 
 
-##### <span id="create-secret-200"></span> 200 - namespace has been successfully created
+##### <span id="create-secret-200"></span> 200 - namespace secret has been successfully created
 Status: OK
 
 ###### <span id="create-secret-200-schema"></span> Schema
@@ -874,6 +875,50 @@ Status: OK
 an error has occurred
 
 ###### <span id="create-workflow-default-schema"></span> Schema
+
+  
+
+[ErrorResponse](#error-response)
+
+### <span id="delete-folder"></span> Delete a Namespace Folder (*deleteFolder*)
+
+```
+DELETE /api/namespaces/{namespace}/secrets/{folder}
+```
+
+Delete a namespace folder.
+
+
+#### Parameters
+
+| Name | Source | Type | Go type | Separator | Required | Default | Description |
+|------|--------|------|---------|-----------| :------: |---------|-------------|
+| folder | `path` | string | `string` |  | ✓ |  | target folder |
+| namespace | `path` | string | `string` |  | ✓ |  | target namespace |
+
+#### All responses
+
+| Code | Status | Description | Has headers | Schema |
+|------|--------|-------------|:-----------:|--------|
+| [200](#delete-folder-200) | OK | namespace folder has been successfully deleted |  | [schema](#delete-folder-200-schema) |
+| [default](#delete-folder-default) | | folder not found |  | [schema](#delete-folder-default-schema) |
+
+#### Responses
+
+
+##### <span id="delete-folder-200"></span> 200 - namespace folder has been successfully deleted
+Status: OK
+
+###### <span id="delete-folder-200-schema"></span> Schema
+   
+  
+
+[OkBody](#ok-body)
+
+##### <span id="delete-folder-default"></span> Default Response
+folder not found
+
+###### <span id="delete-folder-default-schema"></span> Schema
 
   
 
@@ -1319,13 +1364,13 @@ Delete a namespace secret.
 
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
-| [200](#delete-secret-200) | OK | namespace has been successfully created |  | [schema](#delete-secret-200-schema) |
-| [default](#delete-secret-default) | | an error has occurred |  | [schema](#delete-secret-default-schema) |
+| [200](#delete-secret-200) | OK | namespace secret has been successfully deleted |  | [schema](#delete-secret-200-schema) |
+| [default](#delete-secret-default) | | secret not found |  | [schema](#delete-secret-default-schema) |
 
 #### Responses
 
 
-##### <span id="delete-secret-200"></span> 200 - namespace has been successfully created
+##### <span id="delete-secret-200"></span> 200 - namespace secret has been successfully deleted
 Status: OK
 
 ###### <span id="delete-secret-200-schema"></span> Schema
@@ -1335,7 +1380,7 @@ Status: OK
 [OkBody](#ok-body)
 
 ##### <span id="delete-secret-default"></span> Default Response
-an error has occurred
+secret not found
 
 ###### <span id="delete-secret-default-schema"></span> Schema
 
@@ -2782,7 +2827,7 @@ Overwrite a namespace secret.
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#overwrite-secret-200) | OK | namespace has been successfully overwritten |  | [schema](#overwrite-secret-200-schema) |
-| [default](#overwrite-secret-default) | | an error has occurred |  | [schema](#overwrite-secret-default-schema) |
+| [default](#overwrite-secret-default) | | secret not found |  | [schema](#overwrite-secret-default-schema) |
 
 #### Responses
 
@@ -2797,7 +2842,7 @@ Status: OK
 [OkBody](#ok-body)
 
 ##### <span id="overwrite-secret-default"></span> Default Response
-an error has occurred
+secret not found
 
 ###### <span id="overwrite-secret-default-schema"></span> Schema
 
@@ -3975,7 +4020,7 @@ Status: OK
 ### <span id="ok-body"></span> OkBody
 
 
-> OkBody OkBody is an arbitrary placeholder response that represents an ok response body
+> OkBody is an arbitrary placeholder response that represents an ok response body
   
 
 

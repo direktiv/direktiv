@@ -1669,7 +1669,7 @@
             }
           },
           "default": {
-            "description": "an error has occurred",
+            "description": "secret not found",
             "schema": {
               "$ref": "#/definitions/ErrorResponse"
             }
@@ -2653,11 +2653,11 @@
         }
       },
       "put": {
-        "description": "Delete a namespace secret.\n",
+        "description": "Create a namespace folder.\n",
         "tags": [
           "Secrets"
         ],
-        "summary": "Delete a Namespace Secret",
+        "summary": "Create a Namespace Folder",
         "operationId": "createFolder",
         "parameters": [
           {
@@ -2677,13 +2677,51 @@
         ],
         "responses": {
           "200": {
-            "description": "namespace has been successfully created",
+            "description": "namespace folder has been successfully created",
             "schema": {
               "$ref": "#/definitions/OkBody"
             }
           },
           "default": {
             "description": "an error has occurred",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      },
+      "delete": {
+        "description": "Delete a namespace folder.\n",
+        "tags": [
+          "Secrets"
+        ],
+        "summary": "Delete a Namespace Folder",
+        "operationId": "deleteFolder",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "target folder",
+            "name": "folder",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "namespace folder has been successfully deleted",
+            "schema": {
+              "$ref": "#/definitions/OkBody"
+            }
+          },
+          "default": {
+            "description": "folder not found",
             "schema": {
               "$ref": "#/definitions/ErrorResponse"
             }
@@ -2730,7 +2768,7 @@
         ],
         "responses": {
           "200": {
-            "description": "namespace has been successfully created",
+            "description": "namespace secret has been successfully created",
             "schema": {
               "$ref": "#/definitions/OkBody"
             }
@@ -2768,13 +2806,13 @@
         ],
         "responses": {
           "200": {
-            "description": "namespace has been successfully created",
+            "description": "namespace secret has been successfully deleted",
             "schema": {
               "$ref": "#/definitions/OkBody"
             }
           },
           "default": {
-            "description": "an error has occurred",
+            "description": "secret not found",
             "schema": {
               "$ref": "#/definitions/ErrorResponse"
             }
@@ -3880,8 +3918,8 @@
       "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/other"
     },
     "OkBody": {
-      "description": "OkBody OkBody is an arbitrary placeholder response that represents an ok response body",
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/models"
+      "description": "OkBody is an arbitrary placeholder response that represents an ok response body",
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api"
     },
     "SetNamespaceConfigBody": {
       "description": "SetNamespaceConfigBody set namespace config body\nExample: {\"broadcast\":{\"directory.create\":false,\"directory.delete\":false,\"instance.failed\":false,\"instance.started\":false,\"instance.success\":false,\"instance.variable.create\":false,\"instance.variable.delete\":false,\"instance.variable.update\":false,\"namespace.variable.create\":false,\"namespace.variable.delete\":false,\"namespace.variable.update\":false,\"workflow.create\":false,\"workflow.delete\":false,\"workflow.update\":false,\"workflow.variable.create\":false,\"workflow.variable.delete\":false,\"workflow.variable.update\":false}}",

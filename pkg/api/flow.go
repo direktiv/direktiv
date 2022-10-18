@@ -897,7 +897,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	// responses:
 	//   200:
 	//     produces: application/json
-	//     description: "namespace has been successfully created"
+	//     description: "namespace secret has been successfully created"
 	//     schema:
 	//       "$ref": '#/definitions/OkBody'
 	//   default:
@@ -926,23 +926,21 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	// responses:
 	//   200:
 	//     produces: application/json
-	//     description: "namespace has been successfully created"
+	//     description: "namespace secret has been successfully deleted"
 	//     schema:
 	//       "$ref": '#/definitions/OkBody'
 	//   default:
 	//     produces: application/json
-	//     description: an error has occurred
+	//     description: secret not found
 	//     schema:
 	//       "$ref": '#/definitions/ErrorResponse'
 	r.HandleFunc("/namespaces/{ns}/secrets/{secret:.*[^/]$}", h.DeleteSecret).Name(RN_DeleteSecret).Methods(http.MethodDelete)
 
-	// swagger:operation PUT /api/namespaces/{namespace}/secrets/{folder}/ Secrets deleteFolder
+	// swagger:operation DELETE /api/namespaces/{namespace}/secrets/{folder}/ Secrets deleteFolder
 	// ---
 	// description: |
-	//   Create a namespace secret.
-	// summary: Create a Namespace Secret
-	// consumes:
-	// - text/plain
+	//   Delete a namespace folder.
+	// summary: Delete a Namespace Folder
 	// parameters:
 	// - in: path
 	//   name: namespace
@@ -950,26 +948,19 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//   required: true
 	//   description: 'target namespace'
 	// - in: path
-	//   name: folder:.*
+	//   name: folder
 	//   type: string
 	//   required: true
-	//   description: 'target secret'
-	// - in: body
-	//   name: Secret Payload
-	//   required: true
-	//   description: "Payload that contains secret data."
-	//   schema:
-	//     example: 7F8E7B0124ACB2BD20B383DE0756C7C0
-	//     type: string
+	//   description: 'target folder'
 	// responses:
 	//   200:
 	//     produces: application/json
-	//     description: "namespace has been successfully created"
+	//     description: "namespace folder has been successfully deleted"
 	//     schema:
 	//       "$ref": '#/definitions/OkBody'
 	//   default:
 	//     produces: application/json
-	//     description: an error has occurred
+	//     description: folder not found
 	//     schema:
 	//       "$ref": '#/definitions/ErrorResponse'
 	r.HandleFunc("/namespaces/{ns}/secrets/{folder:.*}", h.DeleteFolder).Name(RN_DeleteSecretsFolder).Methods(http.MethodDelete)
@@ -977,8 +968,8 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	// swagger:operation PUT /api/namespaces/{namespace}/secrets/{folder}/ Secrets createFolder
 	// ---
 	// description: |
-	//   Delete a namespace secret.
-	// summary: Delete a Namespace Secret
+	//   Create a namespace folder.
+	// summary: Create a Namespace Folder
 	// parameters:
 	// - in: path
 	//   name: namespace
@@ -993,7 +984,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	// responses:
 	//   200:
 	//     produces: application/json
-	//     description: "namespace has been successfully created"
+	//     description: "namespace folder has been successfully created"
 	//     schema:
 	//       "$ref": '#/definitions/OkBody'
 	//   default:
@@ -1001,7 +992,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     description: an error has occurred
 	//     schema:
 	//       "$ref": '#/definitions/ErrorResponse'
-	r.HandleFunc("/namespaces/{ns}/overwrite/secrets/{folder:.*}", h.CreateFolder).Name(RN_CreateSecretsFolder).Methods(http.MethodPut)
+	r.HandleFunc("/namespaces/{ns}/secrets/{folder:.*}", h.CreateFolder).Name(RN_CreateSecretsFolder).Methods(http.MethodPut)
 
 	// swagger:operation PUT /api/namespaces/overwrite/{namespace}/secrets/{secret} Secrets overwriteSecret
 	// ---
@@ -1036,7 +1027,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//       "$ref": '#/definitions/OkBody'
 	//   default:
 	//     produces: application/json
-	//     description: an error has occurred
+	//     description: secret not found
 	//     schema:
 	//       "$ref": '#/definitions/ErrorResponse'
 	r.HandleFunc("/namespaces/{ns}/overwrite/secrets/{secret:.*[^/]$}", h.OverwriteSecret).Name(RN_OverwriteSecret).Methods(http.MethodPut)
