@@ -3998,7 +3998,10 @@ Status: OK
 ### <span id="error-response"></span> ErrorResponse
 
 
+> ErrorResponse error response
   
+
+
 
 [interface{}](#interface)
 
@@ -4020,7 +4023,7 @@ Status: OK
 ### <span id="ok-body"></span> OkBody
 
 
-> OkBody is an arbitrary placeholder response that represents an ok response body
+> OkBody OkBody is an arbitrary placeholder response that represents an ok response body
   
 
 
