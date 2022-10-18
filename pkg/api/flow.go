@@ -840,6 +840,33 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//       "$ref": '#/definitions/ErrorResponse'
 	handlerPair(r, RN_ListSecrets, "/namespaces/{ns}/secrets", h.Secrets, h.SecretsSSE)
 
+	// swagger:operation GET /api/namespaces/{namespace}/secrets/{folder}/ Secrets getSecretsInsideFolder
+	// ---
+	// description: |
+	//   Gets the list of namespace secrets and folders inside specific folder.
+	// summary: Get List of Namespace nodes inside Folder
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: folder
+	//   type: string
+	//   required: true
+	//   description: 'target folder path'
+	// responses:
+	//   200:
+	//     produces: application/json
+	//     description: "successfully got namespace nodes inside sepcific folder"
+	//     schema:
+	//       "$ref": '#/definitions/OkBody'
+	//   default:
+	//     produces: application/json
+	//     description: an error has occurred
+	//     schema:
+	//       "$ref": '#/definitions/ErrorResponse'
 	handlerPair(r, RN_ListSecrets, "/namespaces/{ns}/secrets/{folder:.*}", h.Secrets, h.SecretsSSE)
 
 	// swagger:operation PUT /api/namespaces/{namespace}/secrets/{secret} Secrets createSecret
@@ -909,12 +936,138 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//       "$ref": '#/definitions/ErrorResponse'
 	r.HandleFunc("/namespaces/{ns}/secrets/{secret:.*[^/]$}", h.DeleteSecret).Name(RN_DeleteSecret).Methods(http.MethodDelete)
 
+	// swagger:operation PUT /api/namespaces/{namespace}/secrets/{folder}/ Secrets deleteFolder
+	// ---
+	// description: |
+	//   Create a namespace secret.
+	// summary: Create a Namespace Secret
+	// consumes:
+	// - text/plain
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: folder:.*
+	//   type: string
+	//   required: true
+	//   description: 'target secret'
+	// - in: body
+	//   name: Secret Payload
+	//   required: true
+	//   description: "Payload that contains secret data."
+	//   schema:
+	//     example: 7F8E7B0124ACB2BD20B383DE0756C7C0
+	//     type: string
+	// responses:
+	//   200:
+	//     produces: application/json
+	//     description: "namespace has been successfully created"
+	//     schema:
+	//       "$ref": '#/definitions/OkBody'
+	//   default:
+	//     produces: application/json
+	//     description: an error has occurred
+	//     schema:
+	//       "$ref": '#/definitions/ErrorResponse'
 	r.HandleFunc("/namespaces/{ns}/secrets/{folder:.*}", h.DeleteFolder).Name(RN_DeleteSecretsFolder).Methods(http.MethodDelete)
 
-	r.HandleFunc("/namespaces/{ns}/secrets/{folder:.*}", h.CreateFolder).Name(RN_CreateSecretsFolder).Methods(http.MethodPut)
+	// swagger:operation PUT /api/namespaces/{namespace}/secrets/{folder}/ Secrets createFolder
+	// ---
+	// description: |
+	//   Delete a namespace secret.
+	// summary: Delete a Namespace Secret
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: folder
+	//   type: string
+	//   required: true
+	//   description: 'target secret'
+	// responses:
+	//   200:
+	//     produces: application/json
+	//     description: "namespace has been successfully created"
+	//     schema:
+	//       "$ref": '#/definitions/OkBody'
+	//   default:
+	//     produces: application/json
+	//     description: an error has occurred
+	//     schema:
+	//       "$ref": '#/definitions/ErrorResponse'
+	r.HandleFunc("/namespaces/{ns}/overwrite/secrets/{folder:.*}", h.CreateFolder).Name(RN_CreateSecretsFolder).Methods(http.MethodPut)
 
+	// swagger:operation PUT /api/namespaces/overwrite/{namespace}/secrets/{secret} Secrets overwriteSecret
+	// ---
+	// description: |
+	//   Overwrite a namespace secret.
+	// summary: Overwrite a Namespace Secret
+	// consumes:
+	// - text/plain
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: secret
+	//   type: string
+	//   required: true
+	//   description: 'target secret'
+	// - in: body
+	//   name: Secret Payload
+	//   required: true
+	//   description: "Payload that contains secret data."
+	//   schema:
+	//     example: 7F8E7B0124ACB2BD20B383DE0756C7C0
+	//     type: string
+	// responses:
+	//   200:
+	//     produces: application/json
+	//     description: "namespace has been successfully overwritten"
+	//     schema:
+	//       "$ref": '#/definitions/OkBody'
+	//   default:
+	//     produces: application/json
+	//     description: an error has occurred
+	//     schema:
+	//       "$ref": '#/definitions/ErrorResponse'
 	r.HandleFunc("/namespaces/{ns}/overwrite/secrets/{secret:.*[^/]$}", h.OverwriteSecret).Name(RN_OverwriteSecret).Methods(http.MethodPut)
 
+	// swagger:operation GET /api/namespaces/search/{namespace}/secrets/{name} Secrets searchSecret
+	// ---
+	// description: |
+	//   Gets the list of namespace secrets and folders which including given name.
+	// summary: Get List of Namespace nodes contains name
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: name
+	//   type: string
+	//   required: true
+	//   description: 'target name'
+	// responses:
+	//   200:
+	//     produces: application/json
+	//     description: "successfully got namespace nodes"
+	//     schema:
+	//       "$ref": '#/definitions/OkBody'
+	//   default:
+	//     produces: application/json
+	//     description: an error has occurred
+	//     schema:
+	//       "$ref": '#/definitions/ErrorResponse'
 	r.HandleFunc("/namespaces/{ns}/search/secrets/{name:.*}", h.SearchSecret).Name(RN_SearchSecret).Methods(http.MethodGet)
 
 	// swagger:operation GET /api/namespaces/{namespace}/instances/{instance} Instances getInstance

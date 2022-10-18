@@ -34,14 +34,14 @@ Direktiv Documentation can be found at https://docs.direktiv.io/
 
 ### Security Schemes
 
-#### direktiv-token (header: KEY)
+#### api_key (header: KEY)
 
 
 
 > **Type**: apikey
 
 ### Security Requirements
-  * direktiv-token
+  * api_key
 
 ## All endpoints
 
@@ -87,6 +87,7 @@ Direktiv Documentation can be found at https://docs.direktiv.io/
 | GET | /api/namespaces/{namespace}/instances/{instance} | [get instance](#get-instance) | Get a Instance |
 | GET | /api/namespaces/{namespace}/instances/{instance}/input | [get instance input](#get-instance-input) | Get a Instance Input |
 | GET | /api/namespaces/{namespace}/instances | [get instance list](#get-instance-list) | Get List Instances |
+| GET | /api/namespaces/{namespace}/instances/{instance}/metadata | [get instance metadata](#get-instance-metadata) | Get a Instance Metadata |
 | GET | /api/namespaces/{namespace}/instances/{instance}/output | [get instance output](#get-instance-output) | Get a Instance Output |
   
 
@@ -195,9 +196,13 @@ Direktiv Documentation can be found at https://docs.direktiv.io/
 
 | Method  | URI     | Name   | Summary |
 |---------|---------|--------|---------|
+| PUT | /api/namespaces/{namespace}/secrets/{folder} | [create folder](#create-folder) | Delete a Namespace Secret |
 | PUT | /api/namespaces/{namespace}/secrets/{secret} | [create secret](#create-secret) | Create a Namespace Secret |
 | DELETE | /api/namespaces/{namespace}/secrets/{secret} | [delete secret](#delete-secret) | Delete a Namespace Secret |
 | GET | /api/namespaces/{namespace}/secrets | [get secrets](#get-secrets) | Get List of Namespace Secrets |
+| GET | /api/namespaces/{namespace}/secrets/{folder} | [get secrets inside folder](#get-secrets-inside-folder) | Get List of Namespace nodes inside Folder |
+| PUT | /api/namespaces/overwrite/{namespace}/secrets/{secret} | [overwrite secret](#overwrite-secret) | Overwrite a Namespace Secret |
+| GET | /api/namespaces/search/{namespace}/secrets/{name} | [search secret](#search-secret) | Get List of Namespace nodes contains name |
   
 
 
@@ -224,6 +229,7 @@ Direktiv Documentation can be found at https://docs.direktiv.io/
 
 | Method  | URI     | Name   | Summary |
 |---------|---------|--------|---------|
+| DELETE | /api/functions/namespaces/{namespace}/tree/{workflow}?op=delete-service | [delete workflow service](#delete-workflow-service) | Delete Namespace Service |
 | GET | /api/functions/namespaces/{namespace}/tree/{workflow}?op=function | [get workflow service](#get-workflow-service) | Get Workflow Service Details |
 | GET | /api/functions/namespaces/{namespace}/tree/{workflow}?op=function-revision | [get workflow service revision](#get-workflow-service-revision) | Get Workflow Service Revision |
 | GET | /api/functions/namespaces/{namespace}/tree/{workflow}?op=function-revisions | [get workflow service revision list](#get-workflow-service-revision-list) | Get Workflow Service Revision List |
@@ -423,6 +429,50 @@ Status: OK
 an error has occurred
 
 ###### <span id="create-directory-default-schema"></span> Schema
+
+  
+
+[ErrorResponse](#error-response)
+
+### <span id="create-folder"></span> Delete a Namespace Secret (*createFolder*)
+
+```
+PUT /api/namespaces/{namespace}/secrets/{folder}
+```
+
+Delete a namespace secret.
+
+
+#### Parameters
+
+| Name | Source | Type | Go type | Separator | Required | Default | Description |
+|------|--------|------|---------|-----------| :------: |---------|-------------|
+| folder | `path` | string | `string` |  | ✓ |  | target secret |
+| namespace | `path` | string | `string` |  | ✓ |  | target namespace |
+
+#### All responses
+
+| Code | Status | Description | Has headers | Schema |
+|------|--------|-------------|:-----------:|--------|
+| [200](#create-folder-200) | OK | namespace has been successfully created |  | [schema](#create-folder-200-schema) |
+| [default](#create-folder-default) | | an error has occurred |  | [schema](#create-folder-default-schema) |
+
+#### Responses
+
+
+##### <span id="create-folder-200"></span> 200 - namespace has been successfully created
+Status: OK
+
+###### <span id="create-folder-200-schema"></span> Schema
+   
+  
+
+[OkBody](#ok-body)
+
+##### <span id="create-folder-default"></span> Default Response
+an error has occurred
+
+###### <span id="create-folder-default-schema"></span> Schema
 
   
 
@@ -1172,6 +1222,7 @@ Creates a directory at the target path.
 | namespace | `path` | string | `string` |  | ✓ |  | target namespace |
 | node | `path` | string | `string` |  | ✓ |  | path to target node |
 | op | `query` | string | `string` |  | ✓ | `"delete-node"` | the operation for the api |
+| recursive | `query` | boolean | `bool` |  |  |  | whether to recursively delete child nodes |
 
 #### All responses
 
@@ -1291,6 +1342,38 @@ an error has occurred
   
 
 [ErrorResponse](#error-response)
+
+### <span id="delete-workflow-service"></span> Delete Namespace Service (*deleteWorkflowService*)
+
+```
+DELETE /api/functions/namespaces/{namespace}/tree/{workflow}?op=delete-service
+```
+
+Deletes workflow scoped knative service.
+
+
+#### Parameters
+
+| Name | Source | Type | Go type | Separator | Required | Default | Description |
+|------|--------|------|---------|-----------| :------: |---------|-------------|
+| namespace | `path` | string | `string` |  | ✓ |  | target namespace |
+| workflow | `path` | string | `string` |  | ✓ |  | path to target workflow |
+| svn | `query` | string | `string` |  | ✓ |  | target service name |
+| version | `query` | string | `string` |  | ✓ |  | target service version |
+
+#### All responses
+
+| Code | Status | Description | Has headers | Schema |
+|------|--------|-------------|:-----------:|--------|
+| [200](#delete-workflow-service-200) | OK | successfully deleted service |  | [schema](#delete-workflow-service-200-schema) |
+
+#### Responses
+
+
+##### <span id="delete-workflow-service-200"></span> 200 - successfully deleted service
+Status: OK
+
+###### <span id="delete-workflow-service-200-schema"></span> Schema
 
 ### <span id="delete-workflow-variable"></span> Delete a Workflow Variable (*deleteWorkflowVariable*)
 
@@ -1633,6 +1716,36 @@ Gets a list of instances in a namespace.
 Status: OK
 
 ###### <span id="get-instance-list-200-schema"></span> Schema
+
+### <span id="get-instance-metadata"></span> Get a Instance Metadata (*getInstanceMetadata*)
+
+```
+GET /api/namespaces/{namespace}/instances/{instance}/metadata
+```
+
+Gets the metadata of an instance.
+
+
+#### Parameters
+
+| Name | Source | Type | Go type | Separator | Required | Default | Description |
+|------|--------|------|---------|-----------| :------: |---------|-------------|
+| instance | `path` | string | `string` |  | ✓ |  | target instance |
+| namespace | `path` | string | `string` |  | ✓ |  | target namespace |
+
+#### All responses
+
+| Code | Status | Description | Has headers | Schema |
+|------|--------|-------------|:-----------:|--------|
+| [200](#get-instance-metadata-200) | OK | successfully got instance metadata |  | [schema](#get-instance-metadata-200-schema) |
+
+#### Responses
+
+
+##### <span id="get-instance-metadata-200"></span> 200 - successfully got instance metadata
+Status: OK
+
+###### <span id="get-instance-metadata-200-schema"></span> Schema
 
 ### <span id="get-instance-output"></span> Get a Instance Output (*getInstanceOutput*)
 
@@ -2015,6 +2128,50 @@ Status: OK
 an error has occurred
 
 ###### <span id="get-secrets-default-schema"></span> Schema
+
+  
+
+[ErrorResponse](#error-response)
+
+### <span id="get-secrets-inside-folder"></span> Get List of Namespace nodes inside Folder (*getSecretsInsideFolder*)
+
+```
+GET /api/namespaces/{namespace}/secrets/{folder}
+```
+
+Gets the list of namespace secrets and folders inside specific folder.
+
+
+#### Parameters
+
+| Name | Source | Type | Go type | Separator | Required | Default | Description |
+|------|--------|------|---------|-----------| :------: |---------|-------------|
+| folder | `path` | string | `string` |  | ✓ |  | target folder path |
+| namespace | `path` | string | `string` |  | ✓ |  | target namespace |
+
+#### All responses
+
+| Code | Status | Description | Has headers | Schema |
+|------|--------|-------------|:-----------:|--------|
+| [200](#get-secrets-inside-folder-200) | OK | successfully got namespace nodes inside sepcific folder |  | [schema](#get-secrets-inside-folder-200-schema) |
+| [default](#get-secrets-inside-folder-default) | | an error has occurred |  | [schema](#get-secrets-inside-folder-default-schema) |
+
+#### Responses
+
+
+##### <span id="get-secrets-inside-folder-200"></span> 200 - successfully got namespace nodes inside sepcific folder
+Status: OK
+
+###### <span id="get-secrets-inside-folder-200-schema"></span> Schema
+   
+  
+
+[OkBody](#ok-body)
+
+##### <span id="get-secrets-inside-folder-default"></span> Default Response
+an error has occurred
+
+###### <span id="get-secrets-inside-folder-default-schema"></span> Schema
 
   
 
@@ -2600,6 +2757,54 @@ Status: OK
 
 ###### <span id="namespace-metrics-successful-200-schema"></span> Schema
 
+### <span id="overwrite-secret"></span> Overwrite a Namespace Secret (*overwriteSecret*)
+
+```
+PUT /api/namespaces/overwrite/{namespace}/secrets/{secret}
+```
+
+Overwrite a namespace secret.
+
+
+#### Consumes
+  * text/plain
+
+#### Parameters
+
+| Name | Source | Type | Go type | Separator | Required | Default | Description |
+|------|--------|------|---------|-----------| :------: |---------|-------------|
+| namespace | `path` | string | `string` |  | ✓ |  | target namespace |
+| secret | `path` | string | `string` |  | ✓ |  | target secret |
+| Secret Payload | `body` | string | `string` | | ✓ | | Payload that contains secret data. |
+
+#### All responses
+
+| Code | Status | Description | Has headers | Schema |
+|------|--------|-------------|:-----------:|--------|
+| [200](#overwrite-secret-200) | OK | namespace has been successfully overwritten |  | [schema](#overwrite-secret-200-schema) |
+| [default](#overwrite-secret-default) | | an error has occurred |  | [schema](#overwrite-secret-default-schema) |
+
+#### Responses
+
+
+##### <span id="overwrite-secret-200"></span> 200 - namespace has been successfully overwritten
+Status: OK
+
+###### <span id="overwrite-secret-200-schema"></span> Schema
+   
+  
+
+[OkBody](#ok-body)
+
+##### <span id="overwrite-secret-default"></span> Default Response
+an error has occurred
+
+###### <span id="overwrite-secret-default-schema"></span> Schema
+
+  
+
+[ErrorResponse](#error-response)
+
 ### <span id="replay-cloudevent"></span> Replay Cloud Event (*replayCloudevent*)
 
 ```
@@ -2629,6 +2834,50 @@ Replay a cloud event to a namespace.
 Status: OK
 
 ###### <span id="replay-cloudevent-200-schema"></span> Schema
+
+### <span id="search-secret"></span> Get List of Namespace nodes contains name (*searchSecret*)
+
+```
+GET /api/namespaces/search/{namespace}/secrets/{name}
+```
+
+Gets the list of namespace secrets and folders which including given name.
+
+
+#### Parameters
+
+| Name | Source | Type | Go type | Separator | Required | Default | Description |
+|------|--------|------|---------|-----------| :------: |---------|-------------|
+| name | `path` | string | `string` |  | ✓ |  | target name |
+| namespace | `path` | string | `string` |  | ✓ |  | target namespace |
+
+#### All responses
+
+| Code | Status | Description | Has headers | Schema |
+|------|--------|-------------|:-----------:|--------|
+| [200](#search-secret-200) | OK | successfully got namespace nodes |  | [schema](#search-secret-200-schema) |
+| [default](#search-secret-default) | | an error has occurred |  | [schema](#search-secret-default-schema) |
+
+#### Responses
+
+
+##### <span id="search-secret-200"></span> 200 - successfully got namespace nodes
+Status: OK
+
+###### <span id="search-secret-200-schema"></span> Schema
+   
+  
+
+[OkBody](#ok-body)
+
+##### <span id="search-secret-default"></span> Default Response
+an error has occurred
+
+###### <span id="search-secret-default-schema"></span> Schema
+
+  
+
+[ErrorResponse](#error-response)
 
 ### <span id="server-logs"></span> Get Direktiv Server Logs (*serverLogs*)
 
@@ -3085,7 +3334,7 @@ Status: OK
 
 | Name | Type | Go type | Required | Default | Description | Example |
 |------|------|---------|:--------:| ------- |-------------|---------|
-| values | [][UpdateGlobalServiceTrafficParamsBodyValuesItems0](#update-global-service-traffic-params-body-values-items0)| `[]*UpdateGlobalServiceTrafficParamsBodyValuesItems0` | ✓ | | List of revision traffic targets |  |
+| values | [][UpdateGlobalServiceTrafficParamsBodyValuesItems0](#update-global-service-traffic-params-body-values-items0)| `[]*models.UpdateGlobalServiceTrafficParamsBodyValuesItems0` | ✓ | | List of revision traffic targets |  |
 
 
 
@@ -3206,7 +3455,7 @@ Status: OK
 
 | Name | Type | Go type | Required | Default | Description | Example |
 |------|------|---------|:--------:| ------- |-------------|---------|
-| values | [][UpdateNamespaceServiceTrafficParamsBodyValuesItems0](#update-namespace-service-traffic-params-body-values-items0)| `[]*UpdateNamespaceServiceTrafficParamsBodyValuesItems0` | ✓ | | List of revision traffic targets |  |
+| values | [][UpdateNamespaceServiceTrafficParamsBodyValuesItems0](#update-namespace-service-traffic-params-body-values-items0)| `[]*models.UpdateNamespaceServiceTrafficParamsBodyValuesItems0` | ✓ | | List of revision traffic targets |  |
 
 
 
@@ -3581,31 +3830,307 @@ Status: OK
 
 ## Models
 
+### <span id="create-global-private-registry-body"></span> CreateGlobalPrivateRegistryBody
+
+
+> CreateGlobalPrivateRegistryBody create global private registry body
+
+**Example**
+```
+{"data":"admin:8QwFLg%D$qg*","reg":"https://prod.customreg.io"}
+```
+  
+
+
+
+[interface{}](#interface)
+
+### <span id="create-global-registry-body"></span> CreateGlobalRegistryBody
+
+
+> CreateGlobalRegistryBody create global registry body
+
+**Example**
+```
+{"data":"admin:8QwFLg%D$qg*","reg":"https://prod.customreg.io"}
+```
+  
+
+
+
+[interface{}](#interface)
+
+### <span id="create-global-service-body"></span> CreateGlobalServiceBody
+
+
+> CreateGlobalServiceBody create global service body
+
+**Example**
+```
+{"cmd":"","image":"direktiv/request:v12","minScale":"1","name":"fast-request","size":"small"}
+```
+  
+
+
+
+[interface{}](#interface)
+
+### <span id="create-namespace-service-body"></span> CreateNamespaceServiceBody
+
+
+> CreateNamespaceServiceBody create namespace service body
+
+**Example**
+```
+{"cmd":"","image":"direktiv/request:v12","minScale":"1","name":"fast-request","size":"small"}
+```
+  
+
+
+
+[interface{}](#interface)
+
+### <span id="create-registry-body"></span> CreateRegistryBody
+
+
+> CreateRegistryBody create registry body
+
+**Example**
+```
+{"data":"admin:8QwFLg%D$qg*","reg":"https://prod.customreg.io"}
+```
+  
+
+
+
+[interface{}](#interface)
+
+### <span id="delete-global-private-registry-body"></span> DeleteGlobalPrivateRegistryBody
+
+
+> DeleteGlobalPrivateRegistryBody delete global private registry body
+
+**Example**
+```
+{"data":"admin:8QwFLg%D$qg*","reg":"https://prod.customreg.io"}
+```
+  
+
+
+
+[interface{}](#interface)
+
+### <span id="delete-global-registry-body"></span> DeleteGlobalRegistryBody
+
+
+> DeleteGlobalRegistryBody delete global registry body
+
+**Example**
+```
+{"data":"admin:8QwFLg%D$qg*","reg":"https://prod.customreg.io"}
+```
+  
+
+
+
+[interface{}](#interface)
+
+### <span id="delete-registry-body"></span> DeleteRegistryBody
+
+
+> DeleteRegistryBody delete registry body
+
+**Example**
+```
+{"data":"admin:8QwFLg%D$qg*","reg":"https://prod.customreg.io"}
+```
+  
+
+
+
+[interface{}](#interface)
+
 ### <span id="error-response"></span> ErrorResponse
 
 
   
 
+[interface{}](#interface)
+
+### <span id="jq-playground-body"></span> JqPlaygroundBody
 
 
-**Properties**
+> JqPlaygroundBody jq playground body
 
-| Name | Type | Go type | Required | Default | Description | Example |
-|------|------|---------|:--------:| ------- |-------------|---------|
-| Error | string| `string` |  | |  |  |
-| StatusCode | int64 (formatted integer)| `int64` |  | |  |  |
-
-
-
-### <span id="ok-body"></span> OkBody
-
-
-> OkBody is an arbitrary placeholder response that represents an ok response body
+**Example**
+```
+{"data":"eyJhIjogMSwgImIiOiAyLCAiYyI6IDQsICJkIjogN30=","query":"map(select(. \u003e= 2))"}
+```
   
 
 
 
-[OkBody](#ok-body)
+[interface{}](#interface)
+
+### <span id="ok-body"></span> OkBody
+
+
+> OkBody OkBody is an arbitrary placeholder response that represents an ok response body
+  
+
+
+
+[interface{}](#interface)
+
+### <span id="set-namespace-config-body"></span> SetNamespaceConfigBody
+
+
+> SetNamespaceConfigBody set namespace config body
+
+**Example**
+```
+{"broadcast":{"directory.create":false,"directory.delete":false,"instance.failed":false,"instance.started":false,"instance.success":false,"instance.variable.create":false,"instance.variable.delete":false,"instance.variable.update":false,"namespace.variable.create":false,"namespace.variable.delete":false,"namespace.variable.update":false,"workflow.create":false,"workflow.delete":false,"workflow.update":false,"workflow.variable.create":false,"workflow.variable.delete":false,"workflow.variable.update":false}}
+```
+  
+
+
+
+[interface{}](#interface)
+
+### <span id="set-workflow-cloud-event-logs-body"></span> SetWorkflowCloudEventLogsBody
+
+
+> SetWorkflowCloudEventLogsBody set workflow cloud event logs body
+
+**Example**
+```
+{"logger":"mylog"}
+```
+  
+
+
+
+[interface{}](#interface)
+
+### <span id="test-registry-body"></span> TestRegistryBody
+
+
+> TestRegistryBody test registry body
+
+**Example**
+```
+{"token":"8QwFLg%D$qg*","url":"https://prod.customreg.io","username":"admin"}
+```
+  
+
+
+
+[interface{}](#interface)
+
+### <span id="toggle-workflow-body"></span> ToggleWorkflowBody
+
+
+> ToggleWorkflowBody toggle workflow body
+
+**Example**
+```
+{"live":false}
+```
+  
+
+
+
+[interface{}](#interface)
+
+### <span id="update-global-service-body"></span> UpdateGlobalServiceBody
+
+
+> UpdateGlobalServiceBody update global service body
+
+**Example**
+```
+{"cmd":"","image":"direktiv/request:v10","minScale":"1","size":"small","trafficPercent":50}
+```
+  
+
+
+
+[interface{}](#interface)
+
+### <span id="update-global-service-traffic-body"></span> UpdateGlobalServiceTrafficBody
+
+
+> UpdateGlobalServiceTrafficBody update global service traffic body
+
+**Example**
+```
+{"values":[{"percent":60,"revision":"global-fast-request-00002"},{"percent":40,"revision":"global-fast-request-00001"}]}
+```
+  
+
+
+
+[interface{}](#interface)
+
+### <span id="update-global-service-traffic-params-body-values-items0"></span> UpdateGlobalServiceTrafficParamsBodyValuesItems0
+
+
+> UpdateGlobalServiceTrafficParamsBodyValuesItems0 update global service traffic params body values items0
+  
+
+
+
+[interface{}](#interface)
+
+### <span id="update-namespace-service-body"></span> UpdateNamespaceServiceBody
+
+
+> UpdateNamespaceServiceBody update namespace service body
+
+**Example**
+```
+{"cmd":"","image":"direktiv/request:v10","minScale":"1","size":"small","trafficPercent":50}
+```
+  
+
+
+
+[interface{}](#interface)
+
+### <span id="update-namespace-service-traffic-body"></span> UpdateNamespaceServiceTrafficBody
+
+
+> UpdateNamespaceServiceTrafficBody update namespace service traffic body
+
+**Example**
+```
+{"values":[{"percent":60,"revision":"namespace-direktiv-fast-request-00002"},{"percent":40,"revision":"namespace-direktiv-fast-request-00001"}]}
+```
+  
+
+
+
+[interface{}](#interface)
+
+### <span id="update-namespace-service-traffic-params-body-values-items0"></span> UpdateNamespaceServiceTrafficParamsBodyValuesItems0
+
+
+> UpdateNamespaceServiceTrafficParamsBodyValuesItems0 update namespace service traffic params body values items0
+  
+
+
+
+[interface{}](#interface)
+
+### <span id="update-service-request"></span> UpdateServiceRequest
+
+
+> UpdateServiceRequest UpdateServiceRequest UpdateServiceRequest update service request
+  
+
+
+
+[interface{}](#interface)
 
 ### <span id="update-service-request"></span> updateServiceRequest
 
@@ -3615,16 +4140,4 @@ Status: OK
 
 
 
-
-
-**Properties**
-
-| Name | Type | Go type | Required | Default | Description | Example |
-|------|------|---------|:--------:| ------- |-------------|---------|
-| Cmd | string| `string` | ✓ | | cmd |  |
-| Image | string| `string` | ✓ | | image |  |
-| MinScale | int32 (formatted integer)| `int32` | ✓ | | minScale |  |
-| Size | int32 (formatted integer)| `int32` | ✓ | | size |  |
-| TrafficPercent | int64 (formatted integer)| `int64` | ✓ | | trafficPercent |  |
-
-
+[interface{}](#interface)
