@@ -1679,7 +1679,7 @@
     },
     "/api/namespaces/search/{namespace}/secrets/{name}": {
       "get": {
-        "description": "Gets the list of namespace secrets and folders which including given name.\n",
+        "description": "secrets and folders which including given name.\n",
         "tags": [
           "Secrets"
         ],
@@ -3911,16 +3911,15 @@
       "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/registries"
     },
     "ErrorResponse": {
-      "description": "ErrorResponse error response",
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/models"
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api"
     },
     "JqPlaygroundBody": {
       "description": "JqPlaygroundBody jq playground body\nExample: {\"data\":\"eyJhIjogMSwgImIiOiAyLCAiYyI6IDQsICJkIjogN30=\",\"query\":\"map(select(. \\u003e= 2))\"}",
       "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/other"
     },
     "OkBody": {
-      "description": "OkBody OkBody is an arbitrary placeholder response that represents an ok response body",
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/models"
+      "description": "OkBody is an arbitrary placeholder response that represents an ok response body",
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api"
     },
     "SetNamespaceConfigBody": {
       "description": "SetNamespaceConfigBody set namespace config body\nExample: {\"broadcast\":{\"directory.create\":false,\"directory.delete\":false,\"instance.failed\":false,\"instance.started\":false,\"instance.success\":false,\"instance.variable.create\":false,\"instance.variable.delete\":false,\"instance.variable.update\":false,\"namespace.variable.create\":false,\"namespace.variable.delete\":false,\"namespace.variable.update\":false,\"workflow.create\":false,\"workflow.delete\":false,\"workflow.update\":false,\"workflow.variable.create\":false,\"workflow.variable.delete\":false,\"workflow.variable.update\":false}}",

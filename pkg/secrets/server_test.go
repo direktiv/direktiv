@@ -234,7 +234,11 @@ func DeleteSecretOrFolder(ip string, namespace string, name string) (int, error)
 }
 
 func GetSecrets(ip string, namespace string, folder string) GetSecretsBody {
-	url := "http://" + ip + "/api/namespaces/" + namespace + "/secrets/" + folder
+	path := folder
+	if path != "" {
+		path = "/" + path
+	}
+	url := "http://" + ip + "/api/namespaces/" + namespace + "/secrets" + path
 	req, _ := http.NewRequest("GET", url, nil)
 	resp, _ := http.DefaultClient.Do(req)
 	b, _ := ioutil.ReadAll(resp.Body)

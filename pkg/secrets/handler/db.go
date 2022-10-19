@@ -94,9 +94,9 @@ func (db *dbHandler) AddSecret(namespace, name string, secret []byte, ignoreErro
 
 	var d []byte
 	var err error
-	if !strings.HasSuffix(name, "/") {
+	if !strings.HasSuffix(name, "/") { // dont excrypt when folder cause  folder have empty data
 		d, err = encryptData([]byte(db.key), secret)
-		if bs != nil {
+		if err != nil {
 			return fmt.Errorf("error encrypting data: %v", err)
 		}
 	}
@@ -108,6 +108,9 @@ func (db *dbHandler) AddSecret(namespace, name string, secret []byte, ignoreErro
 		SetNs(namespace).
 		Save(context.Background())
 
+	if err != nil {
+		return err
+	}
 	return err
 
 }
@@ -139,6 +142,9 @@ func (db *dbHandler) UpdateSecret(namespace, name string, secret []byte) error {
 		UpdateOne(bs).
 		SetSecret(d).
 		Save(context.Background())
+	if err != nil {
+		return nil
+	}
 
 	return err
 }
@@ -183,16 +189,8 @@ func (db *dbHandler) GetSecrets(namespace string, name string) ([]string, error)
 		return nil, err
 	}
 
-	//rootDirectory := (name == "/" || name == "")
-	//pathPatternFolders := ""
-	//pathPatternFiles := ""
-	//if rootDirectory {
-	//pathPatternFolders = "*/"
-	//pathPatternFiles = "*"
-	//} else {
 	pathPatternFolders := name + "*/"
 	pathPatternFiles := name + "*"
-	//}
 
 	for _, s := range dbs {
 
@@ -256,6 +254,9 @@ func (db *dbHandler) RemoveSecret(namespace, name string) error {
 }
 
 func (db *dbHandler) RemoveFolder(namespace, name string) error {
+	if !strings.HasSuffix(name, "/") {
+		return status.Errorf(codes.InvalidArgument, "secrets requested, expected folder")
+	}
 	_, err := db.db.NamespaceSecret.
 		Delete().
 		Where(

@@ -126,6 +126,9 @@ func (s *Server) StoreSecret(ctx context.Context, in *secretsgrpc.SecretsStoreRe
 		for _, name := range splittedPath {
 			concPath += name
 			err = s.handler.AddSecret(in.GetNamespace(), concPath, emptyData, true) // ignore error if is already inside
+			if err != nil {
+				return &resp, err
+			}
 		}
 
 	}
@@ -210,7 +213,7 @@ func (s *Server) DeleteNamespaceSecrets(ctx context.Context, in *secretsgrpc.Del
 }
 
 // CreateFolder stores folders and create all missing folders in the path
-func (s *Server) CreateFolder(ctx context.Context, in *secretsgrpc.CreateFolderRequest) (*empty.Empty, error) {
+func (s *Server) CreateSecretsFolder(ctx context.Context, in *secretsgrpc.CreateSecretsFolderRequest) (*empty.Empty, error) {
 
 	var resp emptypb.Empty
 
@@ -236,6 +239,9 @@ func (s *Server) CreateFolder(ctx context.Context, in *secretsgrpc.CreateFolderR
 	for _, name := range splittedPath {
 		concPath += name
 		err = s.handler.AddSecret(in.GetNamespace(), concPath, emptyData, false)
+		if err != nil {
+			return &resp, err
+		}
 	}
 
 	return &resp, err
@@ -243,7 +249,7 @@ func (s *Server) CreateFolder(ctx context.Context, in *secretsgrpc.CreateFolderR
 }
 
 // DeleteFolder deletes folder from backend
-func (s *Server) DeleteFolder(ctx context.Context, in *secretsgrpc.DeleteFolderRequest) (*empty.Empty, error) {
+func (s *Server) DeleteSecretsFolder(ctx context.Context, in *secretsgrpc.DeleteSecretsFolderRequest) (*empty.Empty, error) {
 
 	var resp emptypb.Empty
 

@@ -28,8 +28,8 @@ type SecretsServiceClient interface {
 	DeleteSecret(ctx context.Context, in *SecretsDeleteRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	DeleteNamespaceSecrets(ctx context.Context, in *DeleteNamespaceSecretsRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	GetSecrets(ctx context.Context, in *GetSecretsRequest, opts ...grpc.CallOption) (*GetSecretsResponse, error)
-	DeleteFolder(ctx context.Context, in *DeleteFolderRequest, opts ...grpc.CallOption) (*empty.Empty, error)
-	CreateFolder(ctx context.Context, in *CreateFolderRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	DeleteSecretsFolder(ctx context.Context, in *DeleteSecretsFolderRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	CreateSecretsFolder(ctx context.Context, in *CreateSecretsFolderRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	SearchSecret(ctx context.Context, in *SearchSecretRequest, opts ...grpc.CallOption) (*SearchSecretResponse, error)
 	UpdateSecret(ctx context.Context, in *UpdateSecretRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 }
@@ -87,18 +87,18 @@ func (c *secretsServiceClient) GetSecrets(ctx context.Context, in *GetSecretsReq
 	return out, nil
 }
 
-func (c *secretsServiceClient) DeleteFolder(ctx context.Context, in *DeleteFolderRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+func (c *secretsServiceClient) DeleteSecretsFolder(ctx context.Context, in *DeleteSecretsFolderRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
 	out := new(empty.Empty)
-	err := c.cc.Invoke(ctx, "/grpc.SecretsService/DeleteFolder", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/grpc.SecretsService/DeleteSecretsFolder", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *secretsServiceClient) CreateFolder(ctx context.Context, in *CreateFolderRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+func (c *secretsServiceClient) CreateSecretsFolder(ctx context.Context, in *CreateSecretsFolderRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
 	out := new(empty.Empty)
-	err := c.cc.Invoke(ctx, "/grpc.SecretsService/CreateFolder", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/grpc.SecretsService/CreateSecretsFolder", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -132,8 +132,8 @@ type SecretsServiceServer interface {
 	DeleteSecret(context.Context, *SecretsDeleteRequest) (*empty.Empty, error)
 	DeleteNamespaceSecrets(context.Context, *DeleteNamespaceSecretsRequest) (*empty.Empty, error)
 	GetSecrets(context.Context, *GetSecretsRequest) (*GetSecretsResponse, error)
-	DeleteFolder(context.Context, *DeleteFolderRequest) (*empty.Empty, error)
-	CreateFolder(context.Context, *CreateFolderRequest) (*empty.Empty, error)
+	DeleteSecretsFolder(context.Context, *DeleteSecretsFolderRequest) (*empty.Empty, error)
+	CreateSecretsFolder(context.Context, *CreateSecretsFolderRequest) (*empty.Empty, error)
 	SearchSecret(context.Context, *SearchSecretRequest) (*SearchSecretResponse, error)
 	UpdateSecret(context.Context, *UpdateSecretRequest) (*empty.Empty, error)
 	mustEmbedUnimplementedSecretsServiceServer()
@@ -158,11 +158,11 @@ func (UnimplementedSecretsServiceServer) DeleteNamespaceSecrets(context.Context,
 func (UnimplementedSecretsServiceServer) GetSecrets(context.Context, *GetSecretsRequest) (*GetSecretsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetSecrets not implemented")
 }
-func (UnimplementedSecretsServiceServer) DeleteFolder(context.Context, *DeleteFolderRequest) (*empty.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteFolder not implemented")
+func (UnimplementedSecretsServiceServer) DeleteSecretsFolder(context.Context, *DeleteSecretsFolderRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteSecretsFolder not implemented")
 }
-func (UnimplementedSecretsServiceServer) CreateFolder(context.Context, *CreateFolderRequest) (*empty.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateFolder not implemented")
+func (UnimplementedSecretsServiceServer) CreateSecretsFolder(context.Context, *CreateSecretsFolderRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateSecretsFolder not implemented")
 }
 func (UnimplementedSecretsServiceServer) SearchSecret(context.Context, *SearchSecretRequest) (*SearchSecretResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SearchSecret not implemented")
@@ -273,38 +273,38 @@ func _SecretsService_GetSecrets_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
-func _SecretsService_DeleteFolder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeleteFolderRequest)
+func _SecretsService_DeleteSecretsFolder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteSecretsFolderRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(SecretsServiceServer).DeleteFolder(ctx, in)
+		return srv.(SecretsServiceServer).DeleteSecretsFolder(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.SecretsService/DeleteFolder",
+		FullMethod: "/grpc.SecretsService/DeleteSecretsFolder",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SecretsServiceServer).DeleteFolder(ctx, req.(*DeleteFolderRequest))
+		return srv.(SecretsServiceServer).DeleteSecretsFolder(ctx, req.(*DeleteSecretsFolderRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _SecretsService_CreateFolder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateFolderRequest)
+func _SecretsService_CreateSecretsFolder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateSecretsFolderRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(SecretsServiceServer).CreateFolder(ctx, in)
+		return srv.(SecretsServiceServer).CreateSecretsFolder(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.SecretsService/CreateFolder",
+		FullMethod: "/grpc.SecretsService/CreateSecretsFolder",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SecretsServiceServer).CreateFolder(ctx, req.(*CreateFolderRequest))
+		return srv.(SecretsServiceServer).CreateSecretsFolder(ctx, req.(*CreateSecretsFolderRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -373,12 +373,12 @@ var SecretsService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _SecretsService_GetSecrets_Handler,
 		},
 		{
-			MethodName: "DeleteFolder",
-			Handler:    _SecretsService_DeleteFolder_Handler,
+			MethodName: "DeleteSecretsFolder",
+			Handler:    _SecretsService_DeleteSecretsFolder_Handler,
 		},
 		{
-			MethodName: "CreateFolder",
-			Handler:    _SecretsService_CreateFolder_Handler,
+			MethodName: "CreateSecretsFolder",
+			Handler:    _SecretsService_CreateSecretsFolder_Handler,
 		},
 		{
 			MethodName: "SearchSecret",

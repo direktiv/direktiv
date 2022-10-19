@@ -67,7 +67,7 @@ type FlowClient interface {
 	SetSecret(ctx context.Context, in *SetSecretRequest, opts ...grpc.CallOption) (*SetSecretResponse, error)
 	CreateSecretsFolder(ctx context.Context, in *CreateSecretsFolderRequest, opts ...grpc.CallOption) (*CreateSecretsFolderResponse, error)
 	DeleteSecret(ctx context.Context, in *DeleteSecretRequest, opts ...grpc.CallOption) (*empty.Empty, error)
-	DeleteFolder(ctx context.Context, in *DeleteFolderRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	DeleteSecretsFolder(ctx context.Context, in *DeleteSecretsFolderRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	SearchSecret(ctx context.Context, in *SearchSecretRequest, opts ...grpc.CallOption) (*SearchSecretResponse, error)
 	UpdateSecret(ctx context.Context, in *UpdateSecretRequest, opts ...grpc.CallOption) (*UpdateSecretResponse, error)
 	Instance(ctx context.Context, in *InstanceRequest, opts ...grpc.CallOption) (*InstanceResponse, error)
@@ -801,9 +801,9 @@ func (c *flowClient) DeleteSecret(ctx context.Context, in *DeleteSecretRequest, 
 	return out, nil
 }
 
-func (c *flowClient) DeleteFolder(ctx context.Context, in *DeleteFolderRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+func (c *flowClient) DeleteSecretsFolder(ctx context.Context, in *DeleteSecretsFolderRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
 	out := new(empty.Empty)
-	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/DeleteFolder", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/DeleteSecretsFolder", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1867,7 +1867,7 @@ type FlowServer interface {
 	SetSecret(context.Context, *SetSecretRequest) (*SetSecretResponse, error)
 	CreateSecretsFolder(context.Context, *CreateSecretsFolderRequest) (*CreateSecretsFolderResponse, error)
 	DeleteSecret(context.Context, *DeleteSecretRequest) (*empty.Empty, error)
-	DeleteFolder(context.Context, *DeleteFolderRequest) (*empty.Empty, error)
+	DeleteSecretsFolder(context.Context, *DeleteSecretsFolderRequest) (*empty.Empty, error)
 	SearchSecret(context.Context, *SearchSecretRequest) (*SearchSecretResponse, error)
 	UpdateSecret(context.Context, *UpdateSecretRequest) (*UpdateSecretResponse, error)
 	Instance(context.Context, *InstanceRequest) (*InstanceResponse, error)
@@ -2081,8 +2081,8 @@ func (UnimplementedFlowServer) CreateSecretsFolder(context.Context, *CreateSecre
 func (UnimplementedFlowServer) DeleteSecret(context.Context, *DeleteSecretRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteSecret not implemented")
 }
-func (UnimplementedFlowServer) DeleteFolder(context.Context, *DeleteFolderRequest) (*empty.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteFolder not implemented")
+func (UnimplementedFlowServer) DeleteSecretsFolder(context.Context, *DeleteSecretsFolderRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteSecretsFolder not implemented")
 }
 func (UnimplementedFlowServer) SearchSecret(context.Context, *SearchSecretRequest) (*SearchSecretResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SearchSecret not implemented")
@@ -3126,20 +3126,20 @@ func _Flow_DeleteSecret_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Flow_DeleteFolder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeleteFolderRequest)
+func _Flow_DeleteSecretsFolder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteSecretsFolderRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(FlowServer).DeleteFolder(ctx, in)
+		return srv.(FlowServer).DeleteSecretsFolder(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/direktiv_flow.Flow/DeleteFolder",
+		FullMethod: "/direktiv_flow.Flow/DeleteSecretsFolder",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).DeleteFolder(ctx, req.(*DeleteFolderRequest))
+		return srv.(FlowServer).DeleteSecretsFolder(ctx, req.(*DeleteSecretsFolderRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -4574,8 +4574,8 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Flow_DeleteSecret_Handler,
 		},
 		{
-			MethodName: "DeleteFolder",
-			Handler:    _Flow_DeleteFolder_Handler,
+			MethodName: "DeleteSecretsFolder",
+			Handler:    _Flow_DeleteSecretsFolder_Handler,
 		},
 		{
 			MethodName: "SearchSecret",

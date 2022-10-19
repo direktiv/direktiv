@@ -2886,7 +2886,7 @@ Status: OK
 GET /api/namespaces/search/{namespace}/secrets/{name}
 ```
 
-Gets the list of namespace secrets and folders which including given name.
+secrets and folders which including given name.
 
 
 #### Parameters
@@ -3998,10 +3998,7 @@ Status: OK
 ### <span id="error-response"></span> ErrorResponse
 
 
-> ErrorResponse error response
   
-
-
 
 [interface{}](#interface)
 
@@ -4023,7 +4020,7 @@ Status: OK
 ### <span id="ok-body"></span> OkBody
 
 
-> OkBody OkBody is an arbitrary placeholder response that represents an ok response body
+> OkBody is an arbitrary placeholder response that represents an ok response body
   
 
 
