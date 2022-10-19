@@ -18,6 +18,7 @@
 # Dependency directories (remove the comment below to include it)
 # vendor/
 
+/deps
 /build/*-binary
 /build/*.md5
 /build/*.checksum
