@@ -9,6 +9,10 @@
 *.dylib
 .vscode
 
+# certs for linkerd 
+ca.*
+issuer.*
+
 # Test binary, built with `go test -c`
 *.test
 
