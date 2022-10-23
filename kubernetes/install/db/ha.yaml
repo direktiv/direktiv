@@ -13,7 +13,7 @@ spec:
           requiredDuringSchedulingIgnoredDuringExecution:
           - labelSelector:
               matchExpressions:
-                - key: "app.kubernetes.io/name"
+                - key: "postgres-operator.crunchydata.com/cluster"
                   operator: In
                   values:
                   - direktiv
