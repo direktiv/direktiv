@@ -33,6 +33,7 @@ var (
 	localAbsPath string
 	urlPrefix    string
 	urlWorkflow  string
+	urlEvent     string
 )
 
 func main() {
@@ -43,6 +44,7 @@ func main() {
 	rootCmd.AddCommand(execCmd)
 	rootCmd.AddCommand(pushCmd)
 	rootCmd.AddCommand(setCmd)
+	rootCmd.AddCommand(eventCmd)
 
 	rootCmd.PersistentFlags().StringP("profile", "P", "", "Select the named profile from the loaded multi-profile configuration file.")
 	rootCmd.PersistentFlags().StringP("directory", "C", "", "Change to this directory before evaluating any paths or searching for a configuration file.")
@@ -151,6 +153,20 @@ func cmdPrepareWorkflow(wfPath string) {
 	path := getPath(wfPath)
 
 	urlWorkflow = fmt.Sprintf("%s/tree/%s", urlPrefix, strings.TrimPrefix(path, "/"))
+}
+
+func cmdPrepareEvent(wfPath string) {
+	var err error
+
+	cmdArgPath = wfPath
+
+	// Get ABS Path
+	localAbsPath, err = filepath.Abs(wfPath)
+	if err != nil {
+		log.Fatalf("Failed to locate event file in filesystem: %v\n", err)
+	}
+
+	urlEvent = fmt.Sprintf("%s/broadcast", urlPrefix)
 }
 
 var rootCmd = &cobra.Command{
@@ -571,6 +587,48 @@ Will update the helloworld workflow and set the remote workflow variable 'data.j
 			cmd.PrintErrln("------INSTANCE OUTPUT------")
 			fmt.Println(string(output))
 		}
+	},
+}
+
+var eventCmd = &cobra.Command{
+	Use:   "event Event_PATH",
+	Short: "Remotely trigger direktiv event with local files",
+	Long: `Remotely trigger direktiv event with local files. This process will trigger and create the given Event when its not already existing.
+
+EXAMPLE: event greeting.yaml --addr http://192.168.1.1 --namespace admin --path greeting
+`,
+	Args: cobra.ExactArgs(1),
+	PreRun: func(cmd *cobra.Command, args []string) {
+		cmdPrepareEvent(args[0])
+	},
+	Run: func(cmd *cobra.Command, args []string) {
+
+		localVars, err := getLocalWorkflowVariables(localAbsPath)
+		if err != nil {
+			log.Fatalf("Failed to get local variable files: %v\n", err)
+		}
+		if len(localVars) > 0 {
+			cmd.PrintErrf("Found %v Local Variables to push to remote\n", len(localVars))
+		}
+
+		// Set Remote Vars
+		for _, v := range localVars {
+			varName := filepath.ToSlash(strings.TrimPrefix(v, localAbsPath+"."))
+			cmd.PrintErrf("Updating Remote Workflow Variable: '%s'\n", varName)
+			err = setRemoteWorkflowVariable(urlWorkflow, varName, v)
+			if err != nil {
+				log.Fatalf("Failed to set remote variable file: %v\n", err)
+			}
+		}
+
+		urlExecuteEvent := fmt.Sprintf("%s/broadcast", urlPrefix)
+		event, err := executeEvent(urlExecuteEvent)
+		if err != nil {
+			log.Fatalf("Failed to trigger event: %s %v\n", event, err)
+		}
+
+		cmd.PrintErrln("Successfully Triggered Event: " + event)
+
 	},
 }
 

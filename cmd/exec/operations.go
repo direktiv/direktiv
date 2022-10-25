@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -436,6 +437,82 @@ func executeWorkflow(url string) (executeResponse, error) {
 
 	err = json.Unmarshal(body, &instanceDetails)
 	return instanceDetails, err
+
+}
+
+func executeEvent(url string) (string, error) {
+
+	// Read input data from flag file
+	inputDataOsFile, err := os.Open(localAbsPath)
+
+	if err != nil {
+		return "", err
+	}
+
+	defer inputDataOsFile.Close()
+	byteResult, _ := ioutil.ReadAll(inputDataOsFile)
+	var event map[string]interface{}
+	json.Unmarshal([]byte(byteResult), &event)
+
+	// Read input data as bytes.buffer
+	inputData, err := safeLoadFile(localAbsPath)
+
+	if err != nil {
+		log.Fatalf("Failed to load input file: %v", err)
+	}
+
+	if inputData.Len() == 0 {
+		return event["id"].(string), errors.New("empty file ")
+	}
+	if inputType != "application/json" {
+		return event["id"].(string), errors.New("filtetype not json")
+	}
+
+	body := strings.NewReader(inputData.String())
+	req, err := http.NewRequest(
+		http.MethodPost,
+		url,
+		body,
+	)
+	if err != nil {
+		return event["id"].(string), errors.New("filtetype not json")
+	}
+
+	req.Header.Add("Content-Type", inputType)
+	addAuthHeaders(req)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return event["id"].(string), err
+	}
+	//if event already exist just replay the event
+	if resp.StatusCode != http.StatusOK {
+		eventId := event["id"]
+		url := fmt.Sprintf("%s/events/%s/replay", urlPrefix, eventId)
+
+		req, err := http.NewRequest(
+			http.MethodPost,
+			url,
+			nil,
+		)
+
+		if err != nil {
+			return event["id"].(string), errors.New("filtetype not json")
+		}
+
+		addAuthHeaders(req)
+
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			return event["id"].(string), err
+		}
+
+		if resp.StatusCode != http.StatusOK {
+			return event["id"].(string), errors.New("Bad request")
+		}
+	}
+
+	return event["id"].(string), err
 
 }
 
