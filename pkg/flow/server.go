@@ -46,6 +46,9 @@ type server struct {
 	metricServer *metricsServer
 
 	metrics *metrics.Client
+
+	logQueue     chan *logMessage
+	logWorkersWG sync.WaitGroup
 }
 
 func Run(ctx context.Context, logger *zap.SugaredLogger, conf *util.Config) error {
@@ -78,6 +81,8 @@ func newServer(logger *zap.SugaredLogger, conf *util.Config) (*server, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	srv.logQueue = make(chan *logMessage, 1000)
 
 	srv.initJQ()
 
@@ -122,6 +127,8 @@ func (srv *server) start(ctx context.Context) error {
 		return err
 	}
 	defer srv.cleanup(srv.db.Close)
+
+	srv.startLogWorkers(1)
 
 	srv.sugar.Debug("Initializing pub-sub.")
 
@@ -281,6 +288,8 @@ func (srv *server) start(ctx context.Context) error {
 	srv.sugar.Info("Flow server started.")
 
 	wg.Wait()
+
+	srv.closeLogWorkers()
 
 	if err != nil {
 		return err
