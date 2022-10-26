@@ -1072,7 +1072,6 @@ func (repository *localRepository) clone(ctx context.Context) error {
 			CredentialsCallback: func(url string, username_from_url string, allowed_types git.CredentialType) (*git.Credential, error) {
 				cred, err := git.NewCredentialSSHKeyFromMemory(username_from_url, repository.repo.PublicKey, repository.repo.PrivateKey, repository.repo.Passphrase)
 				if err != nil {
-					fmt.Println(err)
 					return nil, err
 				}
 				return cred, err

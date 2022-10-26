@@ -93,13 +93,10 @@ func traceFullAddWorkflowInstance(ctx context.Context, d *refData, im *instanceM
 	x := dbTrace(ctx)
 	s := marshal(x)
 
-	rt, err := im.in.Edges.Runtime.Update().SetInstanceContext(s).Save(ctx)
-	if err != nil {
-
-		return nil, err
-	}
-	rt.Edges = im.in.Edges.Runtime.Edges
-	im.in.Edges.Runtime = rt
+	updater := im.getRuntimeUpdater()
+	updater = updater.SetInstanceContext(s)
+	im.in.Edges.Runtime.InstanceContext = s
+	im.runtimeUpdater = updater
 
 	return ctx, nil
 
@@ -146,13 +143,10 @@ func traceStateGenericBegin(ctx context.Context, im *instanceMemory) (context.Co
 	x := dbTrace(ctx)
 	s := marshal(x)
 
-	rt, err := im.in.Edges.Runtime.Update().SetStateContext(s).Save(ctx)
-	if err != nil {
-		span.End()
-		return ctx, nil, err
-	}
-	rt.Edges = im.in.Edges.Runtime.Edges
-	im.in.Edges.Runtime = rt
+	updater := im.getRuntimeUpdater()
+	updater = updater.SetStateContext(s)
+	im.in.Edges.Runtime.StateContext = s
+	im.runtimeUpdater = updater
 
 	finish := func() {
 		span.End()

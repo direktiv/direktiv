@@ -26,6 +26,81 @@ type instanceMemory struct {
 
 	// stores the events to be fired on schedule
 	eventQueue []string
+
+	// stores row updates to fire all at once
+	instanceUpdater *ent.InstanceUpdateOne
+	runtimeUpdater  *ent.InstanceRuntimeUpdateOne
+}
+
+func (im *instanceMemory) getInstanceUpdater() *ent.InstanceUpdateOne {
+
+	if im.instanceUpdater == nil {
+		im.instanceUpdater = im.in.Update()
+	}
+
+	return im.instanceUpdater
+
+}
+
+func (im *instanceMemory) getRuntimeUpdater() *ent.InstanceRuntimeUpdateOne {
+
+	if im.runtimeUpdater == nil {
+		im.runtimeUpdater = im.in.Edges.Runtime.Update()
+	}
+
+	return im.runtimeUpdater
+
+}
+
+func (im *instanceMemory) flushUpdates(ctx context.Context) error {
+
+	var changes bool
+
+	if im.runtimeUpdater != nil {
+
+		changes = true
+
+		updater := im.runtimeUpdater
+		im.runtimeUpdater = nil
+
+		rt, err := updater.Save(ctx)
+		if err != nil {
+			return err
+		}
+
+		rt.Edges = im.in.Edges.Runtime.Edges
+		im.in.Edges.Runtime = rt
+
+	}
+
+	if im.instanceUpdater != nil {
+
+		changes = true
+
+		updater := im.instanceUpdater
+		im.instanceUpdater = nil
+
+		in, err := updater.Save(ctx)
+		if err != nil {
+			return err
+		}
+
+		in.Edges = im.in.Edges
+		im.in = in
+
+	}
+
+	if changes {
+
+		im.engine.pubsub.NotifyInstance(im.in)
+		if ns, err := im.in.Namespace(ctx); err == nil {
+			im.engine.pubsub.NotifyInstances(ns)
+		}
+
+	}
+
+	return nil
+
 }
 
 func (im *instanceMemory) ID() uuid.UUID {
@@ -179,6 +254,13 @@ func (engine *engine) getInstanceMemory(ctx context.Context, inc *ent.InstanceCl
 	im := new(instanceMemory)
 	im.engine = engine
 	im.in = in
+
+	defer func() {
+		e := im.flushUpdates(ctx)
+		if e != nil {
+			err = e
+		}
+	}()
 
 	if in.Edges.Namespace == nil {
 		err = &derrors.NotFoundError{
@@ -339,20 +421,10 @@ out:
 
 func (engine *engine) StoreMetadata(ctx context.Context, im *instanceMemory, data string) {
 
-	var err error
-
-	rt := im.in.Edges.Runtime
-	rte := rt.Edges
-	rt, err = rt.Update().SetMetadata(data).Save(ctx)
-	if err != nil {
-		engine.sugar.Error(err)
-		return
-	}
-	rt.Edges = rte
-	im.in.Edges.Runtime = rt
-
-	rt.Edges = im.in.Edges.Runtime.Edges
-	im.in.Edges.Runtime = rt
+	updater := im.getRuntimeUpdater()
+	updater = updater.SetMetadata(data)
+	im.in.Edges.Runtime.Metadata = data
+	im.runtimeUpdater = updater
 
 }
 
