@@ -450,22 +450,35 @@ func executeEvent(url string) (string, error) {
 	}
 
 	defer inputDataOsFile.Close()
-	byteResult, _ := ioutil.ReadAll(inputDataOsFile)
+	byteResult, err := ioutil.ReadAll(inputDataOsFile)
+
+	if err != nil {
+		return "", err
+	}
+
 	var event map[string]interface{}
-	json.Unmarshal([]byte(byteResult), &event)
+	err = json.Unmarshal([]byte(byteResult), &event)
+
+	if err != nil {
+		return "", err
+	}
+
+	if event["id"] == nil {
+		return "", errors.New("event id required")
+	}
 
 	// Read input data as bytes.buffer
 	inputData, err := safeLoadFile(localAbsPath)
 
 	if err != nil {
-		log.Fatalf("Failed to load input file: %v", err)
+		return "", fmt.Errorf("failed to load input file: %w", err)
 	}
 
 	if inputData.Len() == 0 {
-		return event["id"].(string), errors.New("empty file ")
+		return "", errors.New("empty file ")
 	}
 	if inputType != "application/json" {
-		return event["id"].(string), errors.New("filtetype not json")
+		return "", errors.New("filtetype not json")
 	}
 
 	body := strings.NewReader(inputData.String())
@@ -475,7 +488,7 @@ func executeEvent(url string) (string, error) {
 		body,
 	)
 	if err != nil {
-		return event["id"].(string), errors.New("filtetype not json")
+		return "", errors.New("filtetype not json")
 	}
 
 	req.Header.Add("Content-Type", inputType)
@@ -483,7 +496,7 @@ func executeEvent(url string) (string, error) {
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return event["id"].(string), err
+		return "", err
 	}
 	//if event already exist just replay the event
 	if resp.StatusCode != http.StatusOK {
@@ -497,22 +510,22 @@ func executeEvent(url string) (string, error) {
 		)
 
 		if err != nil {
-			return event["id"].(string), errors.New("filtetype not json")
+			return "", errors.New("filtetype not json")
 		}
 
 		addAuthHeaders(req)
 
 		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
-			return event["id"].(string), err
+			return "", err
 		}
 
 		if resp.StatusCode != http.StatusOK {
-			return event["id"].(string), errors.New("Bad request")
+			return "", errors.New("Bad request")
 		}
 	}
 
-	return event["id"].(string), err
+	return event["id"].(string), nil
 
 }
 

@@ -591,7 +591,7 @@ Will update the helloworld workflow and set the remote workflow variable 'data.j
 }
 
 var eventCmd = &cobra.Command{
-	Use:   "event Event_PATH",
+	Use:   "event EVENT_PATH",
 	Short: "Remotely trigger direktiv event with local files",
 	Long: `Remotely trigger direktiv event with local files. This process will trigger and create the given Event when its not already existing.
 
