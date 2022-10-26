@@ -463,25 +463,31 @@ func executeEvent(url string) (string, error) {
 		return "", err
 	}
 
-	if event["id"] == nil {
-		return "", errors.New("event id required")
+	//fill or overwrite inputData if necessary
+	if Id != "" {
+		event["id"] = Id
+	}
+	if Source != "" {
+		event["source"] = Source
+	}
+	if Type != "" {
+		event["type"] = Type
+	}
+	if Specversion != "" {
+		event["specversion"] = Specversion
 	}
 
-	// Read input data as bytes.buffer
-	inputData, err := safeLoadFile(localAbsPath)
-
-	if err != nil {
-		return "", fmt.Errorf("failed to load input file: %w", err)
-	}
-
-	if inputData.Len() == 0 {
+	if len(event) == 0 {
 		return "", errors.New("empty file ")
 	}
-	if inputType != "application/json" {
-		return "", errors.New("filtetype not json")
+
+	eventBody, err := json.Marshal(event)
+
+	if err != nil {
+		return "", err
 	}
 
-	body := strings.NewReader(inputData.String())
+	body := strings.NewReader(string(eventBody))
 	req, err := http.NewRequest(
 		http.MethodPost,
 		url,
@@ -510,7 +516,7 @@ func executeEvent(url string) (string, error) {
 		)
 
 		if err != nil {
-			return "", errors.New("filtetype not json")
+			return "", errors.New("direktiv server not reachable")
 		}
 
 		addAuthHeaders(req)
@@ -525,7 +531,11 @@ func executeEvent(url string) (string, error) {
 		}
 	}
 
-	return event["id"].(string), nil
+	if event["id"] != nil {
+		return event["id"].(string), nil
+	}
+
+	return "", nil
 
 }
 

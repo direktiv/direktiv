@@ -23,6 +23,10 @@ var (
 	inputType      string
 	outputFlag     string
 	execNoPushFlag bool
+	Source         string
+	Type           string
+	Id             string
+	Specversion    string
 
 	maxSize int64 = 1073741824
 )
@@ -60,6 +64,11 @@ func main() {
 	execCmd.Flags().BoolVar(&execNoPushFlag, "no-push", false, "If set will skip updating and just execute the workflow.")
 
 	execCmd.Flags().StringVar(&inputType, "input-type", "application/json", "Content Type of input data")
+
+	eventCmd.PersistentFlags().StringVar(&Source, "source", "", "Context in which event happen")
+	eventCmd.PersistentFlags().StringVar(&Type, "type", "", "Type of event")
+	eventCmd.PersistentFlags().StringVar(&Id, "id", "", "Event id ")
+	eventCmd.PersistentFlags().StringVar(&Specversion, "specversion", "", "The version of the CloudEvents specification which the event uses")
 
 	err := viper.BindPFlags(rootCmd.PersistentFlags())
 	if err != nil {
@@ -595,7 +604,9 @@ var eventCmd = &cobra.Command{
 	Short: "Remotely trigger direktiv event with local files",
 	Long: `Remotely trigger direktiv event with local files. This process will trigger and create the given Event when its not already existing.
 
-EXAMPLE: direktiv-sync event greeting.yaml --addr http://192.168.1.1 --namespace admin --path greeting
+EXAMPLE: direktiv-sync event greeting.yaml 
+
+event command have also optional flags like --source, --type, --specversion, --id to create or overwrite keys in given JSON file
 `,
 	Args: cobra.ExactArgs(1),
 	PreRun: func(cmd *cobra.Command, args []string) {
