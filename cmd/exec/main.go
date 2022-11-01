@@ -605,8 +605,6 @@ var eventCmd = &cobra.Command{
 	Long: `Remotely trigger direktiv event with local files. This process will trigger and create the given Event when its not already existing.
 
 EXAMPLE: direktiv-sync event greeting.yaml 
-
-event command have also optional flags like --source, --type, --specversion, --id to create or overwrite keys in given JSON file
 `,
 	Args: cobra.ExactArgs(1),
 	PreRun: func(cmd *cobra.Command, args []string) {

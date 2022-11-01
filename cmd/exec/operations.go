@@ -446,7 +446,7 @@ func executeEvent(url string) (string, error) {
 	inputDataOsFile, err := os.Open(localAbsPath)
 
 	if err != nil {
-		return "", err
+		log.Fatalf("Failed to load input file: %v", err)
 	}
 
 	defer inputDataOsFile.Close()
@@ -487,14 +487,14 @@ func executeEvent(url string) (string, error) {
 		return "", err
 	}
 
-	body := strings.NewReader(string(eventBody))
+	body := bytes.NewReader(eventBody)
 	req, err := http.NewRequest(
 		http.MethodPost,
 		url,
 		body,
 	)
 	if err != nil {
-		return "", errors.New("filtetype not json")
+		return "", err
 	}
 
 	req.Header.Add("Content-Type", inputType)
@@ -516,7 +516,7 @@ func executeEvent(url string) (string, error) {
 		)
 
 		if err != nil {
-			return "", errors.New("direktiv server not reachable")
+			return "", err
 		}
 
 		addAuthHeaders(req)
@@ -527,11 +527,12 @@ func executeEvent(url string) (string, error) {
 		}
 
 		if resp.StatusCode != http.StatusOK {
-			return "", errors.New("Bad request")
+			log.Fatalf("Failed to send event: %v", err)
 		}
 	}
 
-	if event["id"] != nil {
+	_, ok := event["id"].(string)
+	if ok {
 		return event["id"].(string), nil
 	}
 
