@@ -238,21 +238,13 @@ func (im *instanceMemory) SetVariables(ctx context.Context, vars []states.Variab
 			return derrors.NewInternalError(errors.New("invalid scope"))
 		}
 
-		d := string(v.Data)
-		if len(d) < 3 { // checking for lower then 3 cause empty data looks like {}
-			_, _, err = im.engine.flow.DeleteVarialbe(ctx, vrefc, vdatac, q, v.Key, v.Data, v.MIMEType, thread)
-			if err != nil {
-				return err
-			}
-		} else {
-			_, _, err = im.engine.flow.SetVariable(ctx, vrefc, vdatac, q, v.Key, v.Data, v.MIMEType, thread)
-			if err != nil {
-				return err
-			}
+		_, _, err = im.engine.flow.SetVariable(ctx, vrefc, vdatac, q, v.Key, v.Data, v.MIMEType, thread)
+		if err != nil {
+			return err
+		}
 
-			if err != nil {
-				return err
-			}
+		if err != nil {
+			return err
 		}
 
 	}
