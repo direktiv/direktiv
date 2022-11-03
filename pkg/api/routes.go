@@ -30,6 +30,7 @@ const (
 	RN_ValidateRef                 = "validateRef"
 	RN_ValidateRouter              = "validateRouter"
 	RN_NamespaceEvent              = "namespaceEvent"
+	RN_NamespaceEventFilter        = "namespaceEventFilter"
 	RN_ListSecrets                 = "listSecrets"
 	RN_CreateSecret                = "createSecret"
 	RN_DeleteSecret                = "deleteSecret"

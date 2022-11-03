@@ -1064,6 +1064,8 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully sent cloud event"
 	r.HandleFunc("/namespaces/{ns}/broadcast", h.BroadcastCloudevent).Name(RN_NamespaceEvent).Methods(http.MethodPost)
 
+	r.HandleFunc("/namespaces/{ns}/broadcast/{filter}", h.BroadcastCloudeventFilter).Name(RN_NamespaceEventFilter).Methods(http.MethodPost)
+
 	// swagger:operation GET /api/namespaces/{namespace}/tree/{workflow}?op=logs Logs getWorkflowLogs
 	// ---
 	// description: |
@@ -4161,6 +4163,50 @@ func (h *flowHandler) BroadcastCloudevent(w http.ResponseWriter, r *http.Request
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
+
+	ces, err := ToGRPCCloudEvents(r)
+	if err != nil {
+		respond(w, nil, err)
+		fmt.Println(err)
+		return
+	}
+
+	for i := range ces {
+
+		d, err := json.Marshal(ces[i])
+		if err != nil {
+			respond(w, nil, err)
+			fmt.Println(err)
+			return
+		}
+
+		in := &grpc.BroadcastCloudeventRequest{
+			Namespace:  namespace,
+			Cloudevent: d,
+		}
+
+		resp, err := h.client.BroadcastCloudevent(ctx, in)
+		respond(w, resp, err)
+
+	}
+
+}
+
+func (h *flowHandler) BroadcastCloudeventFilter(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	filter := mux.Vars(r)["filter"]
+
+	databaseFilters := map[string]string{
+		"rename": "x",
+	}
+
+	if databaseFilters[filter] != "" {
+		//Filter not in database drop event
+	}
 
 	ces, err := ToGRPCCloudEvents(r)
 	if err != nil {
