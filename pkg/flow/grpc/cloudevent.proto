@@ -82,3 +82,34 @@ message ReplayEventRequest {
 	string namespace = 1;
 	string id = 2;
 }
+
+message ApplyCloudEventFilterRequest {
+	string namespace = 1;
+	bytes cloudevent = 2;
+	string filterName = 3;
+}
+
+message ApplyCloudEventFilterResponse{
+		bytes event = 1;
+	}
+
+message DeleteCloudEventFilterRequest{
+		string namespace = 1;
+		string filterName = 2;
+	}
+
+message CreateCloudEventFilterRequest{
+	string namespace = 1;
+	string filtername = 2; 
+	string jsCode = 3;  
+}	
+
+message UpdateCloudEventFilterRequest{
+	string namespace = 1;
+	string filtername = 2; 
+	string jsCode = 3;  
+}	
+
+
+	
+

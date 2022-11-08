@@ -13,6 +13,7 @@ import (
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/dop251/goja"
 
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
@@ -1003,5 +1004,75 @@ func (events *events) listenForEvents(ctx context.Context, im *instanceMemory, c
 	events.logToInstance(ctx, time.Now(), im.in, "Registered to receive events.")
 
 	return nil
+
+}
+
+func (flow *flow) ApplyCloudEventFilter(ctx context.Context, im *grpc.ApplyCloudEventFilterRequest) (*grpc.ApplyCloudEventFilterResponse, error) {
+
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
+
+	databaseFilterType := map[string]string{
+		"renameSource": `
+		function renameSource(){
+			event["source"] = "newSource";
+		return (event);
+		}
+		`,
+	}
+
+	SCRIPT := databaseFilterType[im.FilterName] // extract js script from database with get request to databse
+
+	var mapEvent map[string]interface{}
+	err := json.Unmarshal(im.Cloudevent, &mapEvent)
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid cloudevent: %v", err)
+	}
+
+	//create js runtime
+	vm := goja.New()
+
+	vm.Set("event", mapEvent)
+
+	_, err = vm.RunString(SCRIPT)
+	if err != nil {
+		panic(err)
+	}
+
+	var fn func() map[string]interface{}
+	err = vm.ExportTo(vm.Get(im.FilterName), &fn)
+	if err != nil {
+		panic(err)
+	}
+
+	newEventMap := fn()
+	newBytesEvent, err := json.Marshal(newEventMap)
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid cloudevent: %v", err)
+	}
+
+	out := &grpc.ApplyCloudEventFilterResponse{
+		Event: newBytesEvent,
+	}
+
+	return out, nil
+}
+
+func (flow *flow) DeleteCloudEventFilter(ctx context.Context, im *grpc.DeleteCloudEventFilterRequest) (*emptypb.Empty, error) {
+	//delete filtername from database
+	return nil, nil
+
+}
+
+func (flow *flow) CreateCloudEventFilter(ctx context.Context, im *grpc.CreateCloudEventFilterRequest) (*emptypb.Empty, error) {
+	//TODO
+	//get per filtername to check if its already existing
+	//create filter in databse with im.filtername & im.jsCode
+	return nil, nil
+
+}
+
+func (flow *flow) UpdateCloudEventFilter(ctx context.Context, im *grpc.UpdateCloudEventFilterRequest) (*emptypb.Empty, error) {
+	//TODO Might be not needed
+	return nil, nil
 
 }

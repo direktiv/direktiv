@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -1065,6 +1066,12 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	r.HandleFunc("/namespaces/{ns}/broadcast", h.BroadcastCloudevent).Name(RN_NamespaceEvent).Methods(http.MethodPost)
 
 	r.HandleFunc("/namespaces/{ns}/broadcast/{filter}", h.BroadcastCloudeventFilter).Name(RN_NamespaceEventFilter).Methods(http.MethodPost)
+
+	r.HandleFunc("/namespaces/{ns}/broadcast/{filter}", h.CreateBroadcastCloudeventFilter).Name(RN_CreateNamespaceEventFilter).Methods(http.MethodPut)
+
+	r.HandleFunc("/namespaces/{ns}/broadcast/{filter}", h.DeleteBroadcastCloudeventFilter).Name(RN_DeleteNamespaceEventFilter).Methods(http.MethodDelete)
+
+	r.HandleFunc("/namespaces/{ns}/broadcast/{filter}", h.UpdateBroadcastCloudeventFilter).Name(RN_UpdateNamespaceEventFilter).Methods(http.MethodPost)
 
 	// swagger:operation GET /api/namespaces/{namespace}/tree/{workflow}?op=logs Logs getWorkflowLogs
 	// ---
@@ -4200,14 +4207,6 @@ func (h *flowHandler) BroadcastCloudeventFilter(w http.ResponseWriter, r *http.R
 	namespace := mux.Vars(r)["ns"]
 	filter := mux.Vars(r)["filter"]
 
-	databaseFilters := map[string]string{
-		"rename": "x",
-	}
-
-	if databaseFilters[filter] != "" {
-		//Filter not in database drop event
-	}
-
 	ces, err := ToGRPCCloudEvents(r)
 	if err != nil {
 		respond(w, nil, err)
@@ -4224,15 +4223,106 @@ func (h *flowHandler) BroadcastCloudeventFilter(w http.ResponseWriter, r *http.R
 			return
 		}
 
-		in := &grpc.BroadcastCloudeventRequest{
+		inFilter := &grpc.ApplyCloudEventFilterRequest{
 			Namespace:  namespace,
 			Cloudevent: d,
+			FilterName: filter,
+		}
+
+		rsp, err := h.client.ApplyCloudEventFilter(ctx, inFilter)
+		if err != nil {
+			respond(w, nil, err)
+			fmt.Println(err)
+			return
+		}
+
+		respond(w, nil, errors.New(string(rsp.Event)))
+		return
+
+		in := &grpc.BroadcastCloudeventRequest{
+			Namespace:  namespace,
+			Cloudevent: rsp.GetEvent(),
 		}
 
 		resp, err := h.client.BroadcastCloudevent(ctx, in)
 		respond(w, resp, err)
 
 	}
+
+}
+
+func (h *flowHandler) CreateBroadcastCloudeventFilter(w http.ResponseWriter, r *http.Request) {
+	//TODO
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	filtername := mux.Vars(r)["filter"]
+
+	jsCode, err := loadRawBody(r)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
+	//CREATE FILTER
+	in := new(grpc.CreateCloudEventFilterRequest)
+	in.Namespace = namespace
+	in.Filtername = filtername
+	in.JsCode = string(jsCode)
+	resp, err := h.client.CreateCloudEventFilter(ctx, in)
+	respond(w, resp, err)
+
+}
+
+func (h *flowHandler) DeleteBroadcastCloudeventFilter(w http.ResponseWriter, r *http.Request) {
+	//TODO
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	filtername := mux.Vars(r)["filter"]
+
+	in := new(grpc.DeleteCloudEventFilterRequest)
+	in.Namespace = namespace
+	in.FilterName = filtername
+
+	resp, err := h.client.DeleteCloudEventFilter(ctx, in)
+	respond(w, resp, err)
+
+}
+
+func (h *flowHandler) UpdateBroadcastCloudeventFilter(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	filtername := mux.Vars(r)["filter"]
+
+	jsCode, err := loadRawBody(r)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
+	//DELETE Filter
+	inDelete := new(grpc.DeleteCloudEventFilterRequest)
+	inDelete.Namespace = namespace
+	inDelete.FilterName = filtername
+	respDelete, errDelete := h.client.DeleteCloudEventFilter(ctx, inDelete)
+	if errDelete != nil {
+		respond(w, respDelete, errDelete)
+		return
+	}
+
+	//CREATE FILTER
+	inAdd := new(grpc.CreateCloudEventFilterRequest)
+	inAdd.Namespace = namespace
+	inAdd.Filtername = filtername
+	inAdd.JsCode = string(jsCode)
+	respCreate, errCreate := h.client.CreateCloudEventFilter(ctx, inAdd)
+	respond(w, respCreate, errCreate)
 
 }
 
