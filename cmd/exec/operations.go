@@ -446,7 +446,7 @@ func executeEvent(url string) (string, error) {
 	inputDataOsFile, err := os.Open(localAbsPath)
 
 	if err != nil {
-		log.Fatalf("Failed to load input file: %v", err)
+		return "", err
 	}
 
 	defer inputDataOsFile.Close()
@@ -478,7 +478,8 @@ func executeEvent(url string) (string, error) {
 	}
 
 	if len(event) == 0 {
-		return "", errors.New("empty file ")
+		err = errors.New("empty file ")
+		return "", err
 	}
 
 	eventBody, err := json.Marshal(event)
@@ -527,16 +528,24 @@ func executeEvent(url string) (string, error) {
 		}
 
 		if resp.StatusCode != http.StatusOK {
-			log.Fatalf("Failed to send event: %v", err)
+			err = errors.New("Failed to send Event")
+			return "", err
 		}
 	}
 
-	_, ok := event["id"].(string)
-	if ok {
-		return event["id"].(string), nil
+	x, exist := event["id"]
+	if !exist {
+		err = errors.New("Event id not existing")
+		return "", err
 	}
 
-	return "", nil
+	id, ok := x.(string)
+	if !ok {
+		err = errors.New("Event id not existing")
+		return "", err
+	}
+
+	return id, err
 
 }
 
