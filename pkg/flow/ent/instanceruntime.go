@@ -68,8 +68,7 @@ type InstanceRuntimeEdges struct {
 func (e InstanceRuntimeEdges) InstanceOrErr() (*Instance, error) {
 	if e.loadedTypes[0] {
 		if e.Instance == nil {
-			// The edge instance was loaded in eager-loading,
-			// but was not found.
+			// Edge was loaded but was not found.
 			return nil, &NotFoundError{label: instance.Label}
 		}
 		return e.Instance, nil
@@ -82,8 +81,7 @@ func (e InstanceRuntimeEdges) InstanceOrErr() (*Instance, error) {
 func (e InstanceRuntimeEdges) CallerOrErr() (*Instance, error) {
 	if e.loadedTypes[1] {
 		if e.Caller == nil {
-			// The edge caller was loaded in eager-loading,
-			// but was not found.
+			// Edge was loaded but was not found.
 			return nil, &NotFoundError{label: instance.Label}
 		}
 		return e.Caller, nil
@@ -92,8 +90,8 @@ func (e InstanceRuntimeEdges) CallerOrErr() (*Instance, error) {
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
-func (*InstanceRuntime) scanValues(columns []string) ([]interface{}, error) {
-	values := make([]interface{}, len(columns))
+func (*InstanceRuntime) scanValues(columns []string) ([]any, error) {
+	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
 		case instanceruntime.FieldInput, instanceruntime.FieldFlow:
@@ -119,7 +117,7 @@ func (*InstanceRuntime) scanValues(columns []string) ([]interface{}, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the InstanceRuntime fields.
-func (ir *InstanceRuntime) assignValues(columns []string, values []interface{}) error {
+func (ir *InstanceRuntime) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}

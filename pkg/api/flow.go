@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -4235,9 +4234,6 @@ func (h *flowHandler) BroadcastCloudeventFilter(w http.ResponseWriter, r *http.R
 			fmt.Println(err)
 			return
 		}
-
-		respond(w, nil, errors.New(string(rsp.Event)))
-		return
 
 		in := &grpc.BroadcastCloudeventRequest{
 			Namespace:  namespace,

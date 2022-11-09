@@ -406,67 +406,35 @@ func (ic *InstanceCreate) createSpec() (*Instance, *sqlgraph.CreateSpec) {
 		_spec.ID.Value = &id
 	}
 	if value, ok := ic.mutation.CreatedAt(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: instance.FieldCreatedAt,
-		})
+		_spec.SetField(instance.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
 	if value, ok := ic.mutation.UpdatedAt(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: instance.FieldUpdatedAt,
-		})
+		_spec.SetField(instance.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
 	if value, ok := ic.mutation.EndAt(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: instance.FieldEndAt,
-		})
+		_spec.SetField(instance.FieldEndAt, field.TypeTime, value)
 		_node.EndAt = value
 	}
 	if value, ok := ic.mutation.Status(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: instance.FieldStatus,
-		})
+		_spec.SetField(instance.FieldStatus, field.TypeString, value)
 		_node.Status = value
 	}
 	if value, ok := ic.mutation.As(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: instance.FieldAs,
-		})
+		_spec.SetField(instance.FieldAs, field.TypeString, value)
 		_node.As = value
 	}
 	if value, ok := ic.mutation.ErrorCode(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: instance.FieldErrorCode,
-		})
+		_spec.SetField(instance.FieldErrorCode, field.TypeString, value)
 		_node.ErrorCode = value
 	}
 	if value, ok := ic.mutation.ErrorMessage(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: instance.FieldErrorMessage,
-		})
+		_spec.SetField(instance.FieldErrorMessage, field.TypeString, value)
 		_node.ErrorMessage = value
 	}
 	if value, ok := ic.mutation.Invoker(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: instance.FieldInvoker,
-		})
+		_spec.SetField(instance.FieldInvoker, field.TypeString, value)
 		_node.Invoker = value
 	}
 	if nodes := ic.mutation.NamespaceIDs(); len(nodes) > 0 {

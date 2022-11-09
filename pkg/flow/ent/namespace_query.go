@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/direktiv/direktiv/pkg/flow/ent/cloudeventfilters"
 	"github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
 	"github.com/direktiv/direktiv/pkg/flow/ent/events"
 	"github.com/direktiv/direktiv/pkg/flow/ent/inode"
@@ -28,13 +29,12 @@ import (
 // NamespaceQuery is the builder for querying Namespace entities.
 type NamespaceQuery struct {
 	config
-	limit      *int
-	offset     *int
-	unique     *bool
-	order      []OrderFunc
-	fields     []string
-	predicates []predicate.Namespace
-	// eager-loading edges.
+	limit                  *int
+	offset                 *int
+	unique                 *bool
+	order                  []OrderFunc
+	fields                 []string
+	predicates             []predicate.Namespace
 	withInodes             *InodeQuery
 	withWorkflows          *WorkflowQuery
 	withMirrors            *MirrorQuery
@@ -44,6 +44,7 @@ type NamespaceQuery struct {
 	withVars               *VarRefQuery
 	withCloudevents        *CloudEventsQuery
 	withNamespacelisteners *EventsQuery
+	withCloudeventfilters  *CloudEventFiltersQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -278,6 +279,28 @@ func (nq *NamespaceQuery) QueryNamespacelisteners() *EventsQuery {
 	return query
 }
 
+// QueryCloudeventfilters chains the current query on the "cloudeventfilters" edge.
+func (nq *NamespaceQuery) QueryCloudeventfilters() *CloudEventFiltersQuery {
+	query := &CloudEventFiltersQuery{config: nq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := nq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := nq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(namespace.Table, namespace.FieldID, selector),
+			sqlgraph.To(cloudeventfilters.Table, cloudeventfilters.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, namespace.CloudeventfiltersTable, namespace.CloudeventfiltersColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(nq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // First returns the first Namespace entity from the query.
 // Returns a *NotFoundError when no Namespace was found.
 func (nq *NamespaceQuery) First(ctx context.Context) (*Namespace, error) {
@@ -468,6 +491,7 @@ func (nq *NamespaceQuery) Clone() *NamespaceQuery {
 		withVars:               nq.withVars.Clone(),
 		withCloudevents:        nq.withCloudevents.Clone(),
 		withNamespacelisteners: nq.withNamespacelisteners.Clone(),
+		withCloudeventfilters:  nq.withCloudeventfilters.Clone(),
 		// clone intermediate query.
 		sql:    nq.sql.Clone(),
 		path:   nq.path,
@@ -574,6 +598,17 @@ func (nq *NamespaceQuery) WithNamespacelisteners(opts ...func(*EventsQuery)) *Na
 	return nq
 }
 
+// WithCloudeventfilters tells the query-builder to eager-load the nodes that are connected to
+// the "cloudeventfilters" edge. The optional arguments are used to configure the query builder of the edge.
+func (nq *NamespaceQuery) WithCloudeventfilters(opts ...func(*CloudEventFiltersQuery)) *NamespaceQuery {
+	query := &CloudEventFiltersQuery{config: nq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	nq.withCloudeventfilters = query
+	return nq
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
@@ -588,7 +623,6 @@ func (nq *NamespaceQuery) WithNamespacelisteners(opts ...func(*EventsQuery)) *Na
 //		GroupBy(namespace.FieldCreatedAt).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-//
 func (nq *NamespaceQuery) GroupBy(field string, fields ...string) *NamespaceGroupBy {
 	grbuild := &NamespaceGroupBy{config: nq.config}
 	grbuild.fields = append([]string{field}, fields...)
@@ -615,13 +649,17 @@ func (nq *NamespaceQuery) GroupBy(field string, fields ...string) *NamespaceGrou
 //	client.Namespace.Query().
 //		Select(namespace.FieldCreatedAt).
 //		Scan(ctx, &v)
-//
 func (nq *NamespaceQuery) Select(fields ...string) *NamespaceSelect {
 	nq.fields = append(nq.fields, fields...)
 	selbuild := &NamespaceSelect{NamespaceQuery: nq}
 	selbuild.label = namespace.Label
 	selbuild.flds, selbuild.scan = &nq.fields, selbuild.Scan
 	return selbuild
+}
+
+// Aggregate returns a NamespaceSelect configured with the given aggregations.
+func (nq *NamespaceQuery) Aggregate(fns ...AggregateFunc) *NamespaceSelect {
+	return nq.Select().Aggregate(fns...)
 }
 
 func (nq *NamespaceQuery) prepareQuery(ctx context.Context) error {
@@ -644,7 +682,7 @@ func (nq *NamespaceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Na
 	var (
 		nodes       = []*Namespace{}
 		_spec       = nq.querySpec()
-		loadedTypes = [9]bool{
+		loadedTypes = [10]bool{
 			nq.withInodes != nil,
 			nq.withWorkflows != nil,
 			nq.withMirrors != nil,
@@ -654,12 +692,13 @@ func (nq *NamespaceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Na
 			nq.withVars != nil,
 			nq.withCloudevents != nil,
 			nq.withNamespacelisteners != nil,
+			nq.withCloudeventfilters != nil,
 		}
 	)
-	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
+	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Namespace).scanValues(nil, columns)
 	}
-	_spec.Assign = func(columns []string, values []interface{}) error {
+	_spec.Assign = func(columns []string, values []any) error {
 		node := &Namespace{config: nq.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
@@ -674,269 +713,390 @@ func (nq *NamespaceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Na
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-
 	if query := nq.withInodes; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[uuid.UUID]*Namespace)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Inodes = []*Inode{}
-		}
-		query.withFKs = true
-		query.Where(predicate.Inode(func(s *sql.Selector) {
-			s.Where(sql.InValues(namespace.InodesColumn, fks...))
-		}))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := nq.loadInodes(ctx, query, nodes,
+			func(n *Namespace) { n.Edges.Inodes = []*Inode{} },
+			func(n *Namespace, e *Inode) { n.Edges.Inodes = append(n.Edges.Inodes, e) }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			fk := n.namespace_inodes
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "namespace_inodes" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "namespace_inodes" returned %v for node %v`, *fk, n.ID)
-			}
-			node.Edges.Inodes = append(node.Edges.Inodes, n)
-		}
 	}
-
 	if query := nq.withWorkflows; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[uuid.UUID]*Namespace)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Workflows = []*Workflow{}
-		}
-		query.withFKs = true
-		query.Where(predicate.Workflow(func(s *sql.Selector) {
-			s.Where(sql.InValues(namespace.WorkflowsColumn, fks...))
-		}))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := nq.loadWorkflows(ctx, query, nodes,
+			func(n *Namespace) { n.Edges.Workflows = []*Workflow{} },
+			func(n *Namespace, e *Workflow) { n.Edges.Workflows = append(n.Edges.Workflows, e) }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			fk := n.namespace_workflows
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "namespace_workflows" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "namespace_workflows" returned %v for node %v`, *fk, n.ID)
-			}
-			node.Edges.Workflows = append(node.Edges.Workflows, n)
-		}
 	}
-
 	if query := nq.withMirrors; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[uuid.UUID]*Namespace)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Mirrors = []*Mirror{}
-		}
-		query.withFKs = true
-		query.Where(predicate.Mirror(func(s *sql.Selector) {
-			s.Where(sql.InValues(namespace.MirrorsColumn, fks...))
-		}))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := nq.loadMirrors(ctx, query, nodes,
+			func(n *Namespace) { n.Edges.Mirrors = []*Mirror{} },
+			func(n *Namespace, e *Mirror) { n.Edges.Mirrors = append(n.Edges.Mirrors, e) }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			fk := n.namespace_mirrors
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "namespace_mirrors" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "namespace_mirrors" returned %v for node %v`, *fk, n.ID)
-			}
-			node.Edges.Mirrors = append(node.Edges.Mirrors, n)
-		}
 	}
-
 	if query := nq.withMirrorActivities; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[uuid.UUID]*Namespace)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.MirrorActivities = []*MirrorActivity{}
-		}
-		query.withFKs = true
-		query.Where(predicate.MirrorActivity(func(s *sql.Selector) {
-			s.Where(sql.InValues(namespace.MirrorActivitiesColumn, fks...))
-		}))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := nq.loadMirrorActivities(ctx, query, nodes,
+			func(n *Namespace) { n.Edges.MirrorActivities = []*MirrorActivity{} },
+			func(n *Namespace, e *MirrorActivity) { n.Edges.MirrorActivities = append(n.Edges.MirrorActivities, e) }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			fk := n.namespace_mirror_activities
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "namespace_mirror_activities" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "namespace_mirror_activities" returned %v for node %v`, *fk, n.ID)
-			}
-			node.Edges.MirrorActivities = append(node.Edges.MirrorActivities, n)
-		}
 	}
-
 	if query := nq.withInstances; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[uuid.UUID]*Namespace)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Instances = []*Instance{}
-		}
-		query.withFKs = true
-		query.Where(predicate.Instance(func(s *sql.Selector) {
-			s.Where(sql.InValues(namespace.InstancesColumn, fks...))
-		}))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := nq.loadInstances(ctx, query, nodes,
+			func(n *Namespace) { n.Edges.Instances = []*Instance{} },
+			func(n *Namespace, e *Instance) { n.Edges.Instances = append(n.Edges.Instances, e) }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			fk := n.namespace_instances
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "namespace_instances" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "namespace_instances" returned %v for node %v`, *fk, n.ID)
-			}
-			node.Edges.Instances = append(node.Edges.Instances, n)
-		}
 	}
-
 	if query := nq.withLogs; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[uuid.UUID]*Namespace)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Logs = []*LogMsg{}
-		}
-		query.withFKs = true
-		query.Where(predicate.LogMsg(func(s *sql.Selector) {
-			s.Where(sql.InValues(namespace.LogsColumn, fks...))
-		}))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := nq.loadLogs(ctx, query, nodes,
+			func(n *Namespace) { n.Edges.Logs = []*LogMsg{} },
+			func(n *Namespace, e *LogMsg) { n.Edges.Logs = append(n.Edges.Logs, e) }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			fk := n.namespace_logs
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "namespace_logs" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "namespace_logs" returned %v for node %v`, *fk, n.ID)
-			}
-			node.Edges.Logs = append(node.Edges.Logs, n)
-		}
 	}
-
 	if query := nq.withVars; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[uuid.UUID]*Namespace)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Vars = []*VarRef{}
-		}
-		query.withFKs = true
-		query.Where(predicate.VarRef(func(s *sql.Selector) {
-			s.Where(sql.InValues(namespace.VarsColumn, fks...))
-		}))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := nq.loadVars(ctx, query, nodes,
+			func(n *Namespace) { n.Edges.Vars = []*VarRef{} },
+			func(n *Namespace, e *VarRef) { n.Edges.Vars = append(n.Edges.Vars, e) }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			fk := n.namespace_vars
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "namespace_vars" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "namespace_vars" returned %v for node %v`, *fk, n.ID)
-			}
-			node.Edges.Vars = append(node.Edges.Vars, n)
-		}
 	}
-
 	if query := nq.withCloudevents; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[uuid.UUID]*Namespace)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Cloudevents = []*CloudEvents{}
-		}
-		query.withFKs = true
-		query.Where(predicate.CloudEvents(func(s *sql.Selector) {
-			s.Where(sql.InValues(namespace.CloudeventsColumn, fks...))
-		}))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := nq.loadCloudevents(ctx, query, nodes,
+			func(n *Namespace) { n.Edges.Cloudevents = []*CloudEvents{} },
+			func(n *Namespace, e *CloudEvents) { n.Edges.Cloudevents = append(n.Edges.Cloudevents, e) }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			fk := n.namespace_cloudevents
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "namespace_cloudevents" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "namespace_cloudevents" returned %v for node %v`, *fk, n.ID)
-			}
-			node.Edges.Cloudevents = append(node.Edges.Cloudevents, n)
-		}
 	}
-
 	if query := nq.withNamespacelisteners; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[uuid.UUID]*Namespace)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Namespacelisteners = []*Events{}
-		}
-		query.withFKs = true
-		query.Where(predicate.Events(func(s *sql.Selector) {
-			s.Where(sql.InValues(namespace.NamespacelistenersColumn, fks...))
-		}))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := nq.loadNamespacelisteners(ctx, query, nodes,
+			func(n *Namespace) { n.Edges.Namespacelisteners = []*Events{} },
+			func(n *Namespace, e *Events) { n.Edges.Namespacelisteners = append(n.Edges.Namespacelisteners, e) }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			fk := n.namespace_namespacelisteners
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "namespace_namespacelisteners" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "namespace_namespacelisteners" returned %v for node %v`, *fk, n.ID)
-			}
-			node.Edges.Namespacelisteners = append(node.Edges.Namespacelisteners, n)
+	}
+	if query := nq.withCloudeventfilters; query != nil {
+		if err := nq.loadCloudeventfilters(ctx, query, nodes,
+			func(n *Namespace) { n.Edges.Cloudeventfilters = []*CloudEventFilters{} },
+			func(n *Namespace, e *CloudEventFilters) {
+				n.Edges.Cloudeventfilters = append(n.Edges.Cloudeventfilters, e)
+			}); err != nil {
+			return nil, err
 		}
 	}
-
 	return nodes, nil
+}
+
+func (nq *NamespaceQuery) loadInodes(ctx context.Context, query *InodeQuery, nodes []*Namespace, init func(*Namespace), assign func(*Namespace, *Inode)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Namespace)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Inode(func(s *sql.Selector) {
+		s.Where(sql.InValues(namespace.InodesColumn, fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.namespace_inodes
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "namespace_inodes" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "namespace_inodes" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (nq *NamespaceQuery) loadWorkflows(ctx context.Context, query *WorkflowQuery, nodes []*Namespace, init func(*Namespace), assign func(*Namespace, *Workflow)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Namespace)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Workflow(func(s *sql.Selector) {
+		s.Where(sql.InValues(namespace.WorkflowsColumn, fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.namespace_workflows
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "namespace_workflows" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "namespace_workflows" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (nq *NamespaceQuery) loadMirrors(ctx context.Context, query *MirrorQuery, nodes []*Namespace, init func(*Namespace), assign func(*Namespace, *Mirror)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Namespace)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Mirror(func(s *sql.Selector) {
+		s.Where(sql.InValues(namespace.MirrorsColumn, fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.namespace_mirrors
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "namespace_mirrors" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "namespace_mirrors" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (nq *NamespaceQuery) loadMirrorActivities(ctx context.Context, query *MirrorActivityQuery, nodes []*Namespace, init func(*Namespace), assign func(*Namespace, *MirrorActivity)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Namespace)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.MirrorActivity(func(s *sql.Selector) {
+		s.Where(sql.InValues(namespace.MirrorActivitiesColumn, fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.namespace_mirror_activities
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "namespace_mirror_activities" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "namespace_mirror_activities" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (nq *NamespaceQuery) loadInstances(ctx context.Context, query *InstanceQuery, nodes []*Namespace, init func(*Namespace), assign func(*Namespace, *Instance)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Namespace)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.InValues(namespace.InstancesColumn, fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.namespace_instances
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "namespace_instances" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "namespace_instances" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (nq *NamespaceQuery) loadLogs(ctx context.Context, query *LogMsgQuery, nodes []*Namespace, init func(*Namespace), assign func(*Namespace, *LogMsg)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Namespace)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.InValues(namespace.LogsColumn, fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.namespace_logs
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "namespace_logs" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "namespace_logs" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (nq *NamespaceQuery) loadVars(ctx context.Context, query *VarRefQuery, nodes []*Namespace, init func(*Namespace), assign func(*Namespace, *VarRef)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Namespace)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.VarRef(func(s *sql.Selector) {
+		s.Where(sql.InValues(namespace.VarsColumn, fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.namespace_vars
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "namespace_vars" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "namespace_vars" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (nq *NamespaceQuery) loadCloudevents(ctx context.Context, query *CloudEventsQuery, nodes []*Namespace, init func(*Namespace), assign func(*Namespace, *CloudEvents)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Namespace)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.CloudEvents(func(s *sql.Selector) {
+		s.Where(sql.InValues(namespace.CloudeventsColumn, fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.namespace_cloudevents
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "namespace_cloudevents" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "namespace_cloudevents" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (nq *NamespaceQuery) loadNamespacelisteners(ctx context.Context, query *EventsQuery, nodes []*Namespace, init func(*Namespace), assign func(*Namespace, *Events)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Namespace)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Events(func(s *sql.Selector) {
+		s.Where(sql.InValues(namespace.NamespacelistenersColumn, fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.namespace_namespacelisteners
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "namespace_namespacelisteners" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "namespace_namespacelisteners" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (nq *NamespaceQuery) loadCloudeventfilters(ctx context.Context, query *CloudEventFiltersQuery, nodes []*Namespace, init func(*Namespace), assign func(*Namespace, *CloudEventFilters)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Namespace)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.CloudEventFilters(func(s *sql.Selector) {
+		s.Where(sql.InValues(namespace.CloudeventfiltersColumn, fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.namespace_cloudeventfilters
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "namespace_cloudeventfilters" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "namespace_cloudeventfilters" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
 }
 
 func (nq *NamespaceQuery) sqlCount(ctx context.Context) (int, error) {
@@ -949,11 +1109,14 @@ func (nq *NamespaceQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (nq *NamespaceQuery) sqlExist(ctx context.Context) (bool, error) {
-	n, err := nq.sqlCount(ctx)
-	if err != nil {
+	switch _, err := nq.FirstID(ctx); {
+	case IsNotFound(err):
+		return false, nil
+	case err != nil:
 		return false, fmt.Errorf("ent: check existence: %w", err)
+	default:
+		return true, nil
 	}
-	return n > 0, nil
 }
 
 func (nq *NamespaceQuery) querySpec() *sqlgraph.QuerySpec {
@@ -1054,7 +1217,7 @@ func (ngb *NamespaceGroupBy) Aggregate(fns ...AggregateFunc) *NamespaceGroupBy {
 }
 
 // Scan applies the group-by query and scans the result into the given value.
-func (ngb *NamespaceGroupBy) Scan(ctx context.Context, v interface{}) error {
+func (ngb *NamespaceGroupBy) Scan(ctx context.Context, v any) error {
 	query, err := ngb.path(ctx)
 	if err != nil {
 		return err
@@ -1063,7 +1226,7 @@ func (ngb *NamespaceGroupBy) Scan(ctx context.Context, v interface{}) error {
 	return ngb.sqlScan(ctx, v)
 }
 
-func (ngb *NamespaceGroupBy) sqlScan(ctx context.Context, v interface{}) error {
+func (ngb *NamespaceGroupBy) sqlScan(ctx context.Context, v any) error {
 	for _, f := range ngb.fields {
 		if !namespace.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for group-by", f)}
@@ -1088,8 +1251,6 @@ func (ngb *NamespaceGroupBy) sqlQuery() *sql.Selector {
 	for _, fn := range ngb.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	// If no columns were selected in a custom aggregation function, the default
-	// selection is the fields used for "group-by", and the aggregation functions.
 	if len(selector.SelectedColumns()) == 0 {
 		columns := make([]string, 0, len(ngb.fields)+len(ngb.fns))
 		for _, f := range ngb.fields {
@@ -1109,8 +1270,14 @@ type NamespaceSelect struct {
 	sql *sql.Selector
 }
 
+// Aggregate adds the given aggregation functions to the selector query.
+func (ns *NamespaceSelect) Aggregate(fns ...AggregateFunc) *NamespaceSelect {
+	ns.fns = append(ns.fns, fns...)
+	return ns
+}
+
 // Scan applies the selector query and scans the result into the given value.
-func (ns *NamespaceSelect) Scan(ctx context.Context, v interface{}) error {
+func (ns *NamespaceSelect) Scan(ctx context.Context, v any) error {
 	if err := ns.prepareQuery(ctx); err != nil {
 		return err
 	}
@@ -1118,7 +1285,17 @@ func (ns *NamespaceSelect) Scan(ctx context.Context, v interface{}) error {
 	return ns.sqlScan(ctx, v)
 }
 
-func (ns *NamespaceSelect) sqlScan(ctx context.Context, v interface{}) error {
+func (ns *NamespaceSelect) sqlScan(ctx context.Context, v any) error {
+	aggregation := make([]string, 0, len(ns.fns))
+	for _, fn := range ns.fns {
+		aggregation = append(aggregation, fn(ns.sql))
+	}
+	switch n := len(*ns.selector.flds); {
+	case n == 0 && len(aggregation) > 0:
+		ns.sql.Select(aggregation...)
+	case n != 0 && len(aggregation) > 0:
+		ns.sql.AppendSelect(aggregation...)
+	}
 	rows := &sql.Rows{}
 	query, args := ns.sql.Query()
 	if err := ns.driver.Query(ctx, query, args, rows); err != nil {

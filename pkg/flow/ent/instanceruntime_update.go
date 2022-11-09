@@ -10,6 +10,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/dialect/sql/sqljson"
 	"entgo.io/ent/schema/field"
 	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	"github.com/direktiv/direktiv/pkg/flow/ent/instanceruntime"
@@ -79,6 +80,12 @@ func (iru *InstanceRuntimeUpdate) ClearMemory() *InstanceRuntimeUpdate {
 // SetFlow sets the "flow" field.
 func (iru *InstanceRuntimeUpdate) SetFlow(s []string) *InstanceRuntimeUpdate {
 	iru.mutation.SetFlow(s)
+	return iru
+}
+
+// AppendFlow appends s to the "flow" field.
+func (iru *InstanceRuntimeUpdate) AppendFlow(s []string) *InstanceRuntimeUpdate {
+	iru.mutation.AppendFlow(s)
 	return iru
 }
 
@@ -383,161 +390,81 @@ func (iru *InstanceRuntimeUpdate) sqlSave(ctx context.Context) (n int, err error
 		}
 	}
 	if value, ok := iru.mutation.Data(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: instanceruntime.FieldData,
-		})
+		_spec.SetField(instanceruntime.FieldData, field.TypeString, value)
 	}
 	if value, ok := iru.mutation.Controller(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: instanceruntime.FieldController,
-		})
+		_spec.SetField(instanceruntime.FieldController, field.TypeString, value)
 	}
 	if iru.mutation.ControllerCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Column: instanceruntime.FieldController,
-		})
+		_spec.ClearField(instanceruntime.FieldController, field.TypeString)
 	}
 	if value, ok := iru.mutation.Memory(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: instanceruntime.FieldMemory,
-		})
+		_spec.SetField(instanceruntime.FieldMemory, field.TypeString, value)
 	}
 	if iru.mutation.MemoryCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Column: instanceruntime.FieldMemory,
-		})
+		_spec.ClearField(instanceruntime.FieldMemory, field.TypeString)
 	}
 	if value, ok := iru.mutation.Flow(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Value:  value,
-			Column: instanceruntime.FieldFlow,
+		_spec.SetField(instanceruntime.FieldFlow, field.TypeJSON, value)
+	}
+	if value, ok := iru.mutation.AppendedFlow(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, instanceruntime.FieldFlow, value)
 		})
 	}
 	if iru.mutation.FlowCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Column: instanceruntime.FieldFlow,
-		})
+		_spec.ClearField(instanceruntime.FieldFlow, field.TypeJSON)
 	}
 	if value, ok := iru.mutation.Output(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: instanceruntime.FieldOutput,
-		})
+		_spec.SetField(instanceruntime.FieldOutput, field.TypeString, value)
 	}
 	if iru.mutation.OutputCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Column: instanceruntime.FieldOutput,
-		})
+		_spec.ClearField(instanceruntime.FieldOutput, field.TypeString)
 	}
 	if value, ok := iru.mutation.StateBeginTime(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: instanceruntime.FieldStateBeginTime,
-		})
+		_spec.SetField(instanceruntime.FieldStateBeginTime, field.TypeTime, value)
 	}
 	if iru.mutation.StateBeginTimeCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Column: instanceruntime.FieldStateBeginTime,
-		})
+		_spec.ClearField(instanceruntime.FieldStateBeginTime, field.TypeTime)
 	}
 	if value, ok := iru.mutation.Deadline(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: instanceruntime.FieldDeadline,
-		})
+		_spec.SetField(instanceruntime.FieldDeadline, field.TypeTime, value)
 	}
 	if iru.mutation.DeadlineCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Column: instanceruntime.FieldDeadline,
-		})
+		_spec.ClearField(instanceruntime.FieldDeadline, field.TypeTime)
 	}
 	if value, ok := iru.mutation.Attempts(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
-			Value:  value,
-			Column: instanceruntime.FieldAttempts,
-		})
+		_spec.SetField(instanceruntime.FieldAttempts, field.TypeInt, value)
 	}
 	if value, ok := iru.mutation.AddedAttempts(); ok {
-		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
-			Value:  value,
-			Column: instanceruntime.FieldAttempts,
-		})
+		_spec.AddField(instanceruntime.FieldAttempts, field.TypeInt, value)
 	}
 	if iru.mutation.AttemptsCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
-			Column: instanceruntime.FieldAttempts,
-		})
+		_spec.ClearField(instanceruntime.FieldAttempts, field.TypeInt)
 	}
 	if value, ok := iru.mutation.CallerData(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: instanceruntime.FieldCallerData,
-		})
+		_spec.SetField(instanceruntime.FieldCallerData, field.TypeString, value)
 	}
 	if iru.mutation.CallerDataCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Column: instanceruntime.FieldCallerData,
-		})
+		_spec.ClearField(instanceruntime.FieldCallerData, field.TypeString)
 	}
 	if value, ok := iru.mutation.InstanceContext(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: instanceruntime.FieldInstanceContext,
-		})
+		_spec.SetField(instanceruntime.FieldInstanceContext, field.TypeString, value)
 	}
 	if iru.mutation.InstanceContextCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Column: instanceruntime.FieldInstanceContext,
-		})
+		_spec.ClearField(instanceruntime.FieldInstanceContext, field.TypeString)
 	}
 	if value, ok := iru.mutation.StateContext(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: instanceruntime.FieldStateContext,
-		})
+		_spec.SetField(instanceruntime.FieldStateContext, field.TypeString, value)
 	}
 	if iru.mutation.StateContextCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Column: instanceruntime.FieldStateContext,
-		})
+		_spec.ClearField(instanceruntime.FieldStateContext, field.TypeString)
 	}
 	if value, ok := iru.mutation.Metadata(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: instanceruntime.FieldMetadata,
-		})
+		_spec.SetField(instanceruntime.FieldMetadata, field.TypeString, value)
 	}
 	if iru.mutation.MetadataCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Column: instanceruntime.FieldMetadata,
-		})
+		_spec.ClearField(instanceruntime.FieldMetadata, field.TypeString)
 	}
 	if iru.mutation.InstanceCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -677,6 +604,12 @@ func (iruo *InstanceRuntimeUpdateOne) ClearMemory() *InstanceRuntimeUpdateOne {
 // SetFlow sets the "flow" field.
 func (iruo *InstanceRuntimeUpdateOne) SetFlow(s []string) *InstanceRuntimeUpdateOne {
 	iruo.mutation.SetFlow(s)
+	return iruo
+}
+
+// AppendFlow appends s to the "flow" field.
+func (iruo *InstanceRuntimeUpdateOne) AppendFlow(s []string) *InstanceRuntimeUpdateOne {
+	iruo.mutation.AppendFlow(s)
 	return iruo
 }
 
@@ -1011,161 +944,81 @@ func (iruo *InstanceRuntimeUpdateOne) sqlSave(ctx context.Context) (_node *Insta
 		}
 	}
 	if value, ok := iruo.mutation.Data(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: instanceruntime.FieldData,
-		})
+		_spec.SetField(instanceruntime.FieldData, field.TypeString, value)
 	}
 	if value, ok := iruo.mutation.Controller(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: instanceruntime.FieldController,
-		})
+		_spec.SetField(instanceruntime.FieldController, field.TypeString, value)
 	}
 	if iruo.mutation.ControllerCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Column: instanceruntime.FieldController,
-		})
+		_spec.ClearField(instanceruntime.FieldController, field.TypeString)
 	}
 	if value, ok := iruo.mutation.Memory(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: instanceruntime.FieldMemory,
-		})
+		_spec.SetField(instanceruntime.FieldMemory, field.TypeString, value)
 	}
 	if iruo.mutation.MemoryCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Column: instanceruntime.FieldMemory,
-		})
+		_spec.ClearField(instanceruntime.FieldMemory, field.TypeString)
 	}
 	if value, ok := iruo.mutation.Flow(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Value:  value,
-			Column: instanceruntime.FieldFlow,
+		_spec.SetField(instanceruntime.FieldFlow, field.TypeJSON, value)
+	}
+	if value, ok := iruo.mutation.AppendedFlow(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, instanceruntime.FieldFlow, value)
 		})
 	}
 	if iruo.mutation.FlowCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Column: instanceruntime.FieldFlow,
-		})
+		_spec.ClearField(instanceruntime.FieldFlow, field.TypeJSON)
 	}
 	if value, ok := iruo.mutation.Output(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: instanceruntime.FieldOutput,
-		})
+		_spec.SetField(instanceruntime.FieldOutput, field.TypeString, value)
 	}
 	if iruo.mutation.OutputCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Column: instanceruntime.FieldOutput,
-		})
+		_spec.ClearField(instanceruntime.FieldOutput, field.TypeString)
 	}
 	if value, ok := iruo.mutation.StateBeginTime(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: instanceruntime.FieldStateBeginTime,
-		})
+		_spec.SetField(instanceruntime.FieldStateBeginTime, field.TypeTime, value)
 	}
 	if iruo.mutation.StateBeginTimeCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Column: instanceruntime.FieldStateBeginTime,
-		})
+		_spec.ClearField(instanceruntime.FieldStateBeginTime, field.TypeTime)
 	}
 	if value, ok := iruo.mutation.Deadline(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: instanceruntime.FieldDeadline,
-		})
+		_spec.SetField(instanceruntime.FieldDeadline, field.TypeTime, value)
 	}
 	if iruo.mutation.DeadlineCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Column: instanceruntime.FieldDeadline,
-		})
+		_spec.ClearField(instanceruntime.FieldDeadline, field.TypeTime)
 	}
 	if value, ok := iruo.mutation.Attempts(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
-			Value:  value,
-			Column: instanceruntime.FieldAttempts,
-		})
+		_spec.SetField(instanceruntime.FieldAttempts, field.TypeInt, value)
 	}
 	if value, ok := iruo.mutation.AddedAttempts(); ok {
-		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
-			Value:  value,
-			Column: instanceruntime.FieldAttempts,
-		})
+		_spec.AddField(instanceruntime.FieldAttempts, field.TypeInt, value)
 	}
 	if iruo.mutation.AttemptsCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
-			Column: instanceruntime.FieldAttempts,
-		})
+		_spec.ClearField(instanceruntime.FieldAttempts, field.TypeInt)
 	}
 	if value, ok := iruo.mutation.CallerData(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: instanceruntime.FieldCallerData,
-		})
+		_spec.SetField(instanceruntime.FieldCallerData, field.TypeString, value)
 	}
 	if iruo.mutation.CallerDataCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Column: instanceruntime.FieldCallerData,
-		})
+		_spec.ClearField(instanceruntime.FieldCallerData, field.TypeString)
 	}
 	if value, ok := iruo.mutation.InstanceContext(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: instanceruntime.FieldInstanceContext,
-		})
+		_spec.SetField(instanceruntime.FieldInstanceContext, field.TypeString, value)
 	}
 	if iruo.mutation.InstanceContextCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Column: instanceruntime.FieldInstanceContext,
-		})
+		_spec.ClearField(instanceruntime.FieldInstanceContext, field.TypeString)
 	}
 	if value, ok := iruo.mutation.StateContext(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: instanceruntime.FieldStateContext,
-		})
+		_spec.SetField(instanceruntime.FieldStateContext, field.TypeString, value)
 	}
 	if iruo.mutation.StateContextCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Column: instanceruntime.FieldStateContext,
-		})
+		_spec.ClearField(instanceruntime.FieldStateContext, field.TypeString)
 	}
 	if value, ok := iruo.mutation.Metadata(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: instanceruntime.FieldMetadata,
-		})
+		_spec.SetField(instanceruntime.FieldMetadata, field.TypeString, value)
 	}
 	if iruo.mutation.MetadataCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Column: instanceruntime.FieldMetadata,
-		})
+		_spec.ClearField(instanceruntime.FieldMetadata, field.TypeString)
 	}
 	if iruo.mutation.InstanceCleared() {
 		edge := &sqlgraph.EdgeSpec{

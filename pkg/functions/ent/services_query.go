@@ -261,7 +261,6 @@ func (sq *ServicesQuery) Clone() *ServicesQuery {
 //		GroupBy(services.FieldName).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-//
 func (sq *ServicesQuery) GroupBy(field string, fields ...string) *ServicesGroupBy {
 	grbuild := &ServicesGroupBy{config: sq.config}
 	grbuild.fields = append([]string{field}, fields...)
@@ -288,13 +287,17 @@ func (sq *ServicesQuery) GroupBy(field string, fields ...string) *ServicesGroupB
 //	client.Services.Query().
 //		Select(services.FieldName).
 //		Scan(ctx, &v)
-//
 func (sq *ServicesQuery) Select(fields ...string) *ServicesSelect {
 	sq.fields = append(sq.fields, fields...)
 	selbuild := &ServicesSelect{ServicesQuery: sq}
 	selbuild.label = services.Label
 	selbuild.flds, selbuild.scan = &sq.fields, selbuild.Scan
 	return selbuild
+}
+
+// Aggregate returns a ServicesSelect configured with the given aggregations.
+func (sq *ServicesQuery) Aggregate(fns ...AggregateFunc) *ServicesSelect {
+	return sq.Select().Aggregate(fns...)
 }
 
 func (sq *ServicesQuery) prepareQuery(ctx context.Context) error {
@@ -318,10 +321,10 @@ func (sq *ServicesQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Ser
 		nodes = []*Services{}
 		_spec = sq.querySpec()
 	)
-	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
+	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Services).scanValues(nil, columns)
 	}
-	_spec.Assign = func(columns []string, values []interface{}) error {
+	_spec.Assign = func(columns []string, values []any) error {
 		node := &Services{config: sq.config}
 		nodes = append(nodes, node)
 		return node.assignValues(columns, values)
@@ -348,11 +351,14 @@ func (sq *ServicesQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (sq *ServicesQuery) sqlExist(ctx context.Context) (bool, error) {
-	n, err := sq.sqlCount(ctx)
-	if err != nil {
+	switch _, err := sq.FirstID(ctx); {
+	case IsNotFound(err):
+		return false, nil
+	case err != nil:
 		return false, fmt.Errorf("ent: check existence: %w", err)
+	default:
+		return true, nil
 	}
-	return n > 0, nil
 }
 
 func (sq *ServicesQuery) querySpec() *sqlgraph.QuerySpec {
@@ -453,7 +459,7 @@ func (sgb *ServicesGroupBy) Aggregate(fns ...AggregateFunc) *ServicesGroupBy {
 }
 
 // Scan applies the group-by query and scans the result into the given value.
-func (sgb *ServicesGroupBy) Scan(ctx context.Context, v interface{}) error {
+func (sgb *ServicesGroupBy) Scan(ctx context.Context, v any) error {
 	query, err := sgb.path(ctx)
 	if err != nil {
 		return err
@@ -462,7 +468,7 @@ func (sgb *ServicesGroupBy) Scan(ctx context.Context, v interface{}) error {
 	return sgb.sqlScan(ctx, v)
 }
 
-func (sgb *ServicesGroupBy) sqlScan(ctx context.Context, v interface{}) error {
+func (sgb *ServicesGroupBy) sqlScan(ctx context.Context, v any) error {
 	for _, f := range sgb.fields {
 		if !services.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for group-by", f)}
@@ -487,8 +493,6 @@ func (sgb *ServicesGroupBy) sqlQuery() *sql.Selector {
 	for _, fn := range sgb.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	// If no columns were selected in a custom aggregation function, the default
-	// selection is the fields used for "group-by", and the aggregation functions.
 	if len(selector.SelectedColumns()) == 0 {
 		columns := make([]string, 0, len(sgb.fields)+len(sgb.fns))
 		for _, f := range sgb.fields {
@@ -508,8 +512,14 @@ type ServicesSelect struct {
 	sql *sql.Selector
 }
 
+// Aggregate adds the given aggregation functions to the selector query.
+func (ss *ServicesSelect) Aggregate(fns ...AggregateFunc) *ServicesSelect {
+	ss.fns = append(ss.fns, fns...)
+	return ss
+}
+
 // Scan applies the selector query and scans the result into the given value.
-func (ss *ServicesSelect) Scan(ctx context.Context, v interface{}) error {
+func (ss *ServicesSelect) Scan(ctx context.Context, v any) error {
 	if err := ss.prepareQuery(ctx); err != nil {
 		return err
 	}
@@ -517,7 +527,17 @@ func (ss *ServicesSelect) Scan(ctx context.Context, v interface{}) error {
 	return ss.sqlScan(ctx, v)
 }
 
-func (ss *ServicesSelect) sqlScan(ctx context.Context, v interface{}) error {
+func (ss *ServicesSelect) sqlScan(ctx context.Context, v any) error {
+	aggregation := make([]string, 0, len(ss.fns))
+	for _, fn := range ss.fns {
+		aggregation = append(aggregation, fn(ss.sql))
+	}
+	switch n := len(*ss.selector.flds); {
+	case n == 0 && len(aggregation) > 0:
+		ss.sql.Select(aggregation...)
+	case n != 0 && len(aggregation) > 0:
+		ss.sql.AppendSelect(aggregation...)
+	}
 	rows := &sql.Rows{}
 	query, args := ss.sql.Query()
 	if err := ss.driver.Query(ctx, query, args, rows); err != nil {

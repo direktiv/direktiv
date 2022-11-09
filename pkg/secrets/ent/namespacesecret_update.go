@@ -139,25 +139,13 @@ func (nsu *NamespaceSecretUpdate) sqlSave(ctx context.Context) (n int, err error
 		}
 	}
 	if value, ok := nsu.mutation.Ns(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: namespacesecret.FieldNs,
-		})
+		_spec.SetField(namespacesecret.FieldNs, field.TypeString, value)
 	}
 	if value, ok := nsu.mutation.Name(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: namespacesecret.FieldName,
-		})
+		_spec.SetField(namespacesecret.FieldName, field.TypeString, value)
 	}
 	if value, ok := nsu.mutation.Secret(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeBytes,
-			Value:  value,
-			Column: namespacesecret.FieldSecret,
-		})
+		_spec.SetField(namespacesecret.FieldSecret, field.TypeBytes, value)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, nsu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -320,25 +308,13 @@ func (nsuo *NamespaceSecretUpdateOne) sqlSave(ctx context.Context) (_node *Names
 		}
 	}
 	if value, ok := nsuo.mutation.Ns(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: namespacesecret.FieldNs,
-		})
+		_spec.SetField(namespacesecret.FieldNs, field.TypeString, value)
 	}
 	if value, ok := nsuo.mutation.Name(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: namespacesecret.FieldName,
-		})
+		_spec.SetField(namespacesecret.FieldName, field.TypeString, value)
 	}
 	if value, ok := nsuo.mutation.Secret(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeBytes,
-			Value:  value,
-			Column: namespacesecret.FieldSecret,
-		})
+		_spec.SetField(namespacesecret.FieldSecret, field.TypeBytes, value)
 	}
 	_node = &NamespaceSecret{config: nsuo.config}
 	_spec.Assign = _node.assignValues

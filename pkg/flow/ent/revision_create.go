@@ -252,35 +252,19 @@ func (rc *RevisionCreate) createSpec() (*Revision, *sqlgraph.CreateSpec) {
 		_spec.ID.Value = &id
 	}
 	if value, ok := rc.mutation.CreatedAt(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: revision.FieldCreatedAt,
-		})
+		_spec.SetField(revision.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
 	if value, ok := rc.mutation.Hash(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: revision.FieldHash,
-		})
+		_spec.SetField(revision.FieldHash, field.TypeString, value)
 		_node.Hash = value
 	}
 	if value, ok := rc.mutation.Source(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeBytes,
-			Value:  value,
-			Column: revision.FieldSource,
-		})
+		_spec.SetField(revision.FieldSource, field.TypeBytes, value)
 		_node.Source = value
 	}
 	if value, ok := rc.mutation.Metadata(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Value:  value,
-			Column: revision.FieldMetadata,
-		})
+		_spec.SetField(revision.FieldMetadata, field.TypeJSON, value)
 		_node.Metadata = value
 	}
 	if nodes := rc.mutation.WorkflowIDs(); len(nodes) > 0 {

@@ -22,13 +22,12 @@ import (
 // MirrorQuery is the builder for querying Mirror entities.
 type MirrorQuery struct {
 	config
-	limit      *int
-	offset     *int
-	unique     *bool
-	order      []OrderFunc
-	fields     []string
-	predicates []predicate.Mirror
-	// eager-loading edges.
+	limit          *int
+	offset         *int
+	unique         *bool
+	order          []OrderFunc
+	fields         []string
+	predicates     []predicate.Mirror
 	withNamespace  *NamespaceQuery
 	withInode      *InodeQuery
 	withActivities *MirrorActivityQuery
@@ -373,7 +372,6 @@ func (mq *MirrorQuery) WithActivities(opts ...func(*MirrorActivityQuery)) *Mirro
 //		GroupBy(mirror.FieldURL).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-//
 func (mq *MirrorQuery) GroupBy(field string, fields ...string) *MirrorGroupBy {
 	grbuild := &MirrorGroupBy{config: mq.config}
 	grbuild.fields = append([]string{field}, fields...)
@@ -400,13 +398,17 @@ func (mq *MirrorQuery) GroupBy(field string, fields ...string) *MirrorGroupBy {
 //	client.Mirror.Query().
 //		Select(mirror.FieldURL).
 //		Scan(ctx, &v)
-//
 func (mq *MirrorQuery) Select(fields ...string) *MirrorSelect {
 	mq.fields = append(mq.fields, fields...)
 	selbuild := &MirrorSelect{MirrorQuery: mq}
 	selbuild.label = mirror.Label
 	selbuild.flds, selbuild.scan = &mq.fields, selbuild.Scan
 	return selbuild
+}
+
+// Aggregate returns a MirrorSelect configured with the given aggregations.
+func (mq *MirrorQuery) Aggregate(fns ...AggregateFunc) *MirrorSelect {
+	return mq.Select().Aggregate(fns...)
 }
 
 func (mq *MirrorQuery) prepareQuery(ctx context.Context) error {
@@ -442,10 +444,10 @@ func (mq *MirrorQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Mirro
 	if withFKs {
 		_spec.Node.Columns = append(_spec.Node.Columns, mirror.ForeignKeys...)
 	}
-	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
+	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Mirror).scanValues(nil, columns)
 	}
-	_spec.Assign = func(columns []string, values []interface{}) error {
+	_spec.Assign = func(columns []string, values []any) error {
 		node := &Mirror{config: mq.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
@@ -460,95 +462,116 @@ func (mq *MirrorQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Mirro
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-
 	if query := mq.withNamespace; query != nil {
-		ids := make([]uuid.UUID, 0, len(nodes))
-		nodeids := make(map[uuid.UUID][]*Mirror)
-		for i := range nodes {
-			if nodes[i].namespace_mirrors == nil {
-				continue
-			}
-			fk := *nodes[i].namespace_mirrors
-			if _, ok := nodeids[fk]; !ok {
-				ids = append(ids, fk)
-			}
-			nodeids[fk] = append(nodeids[fk], nodes[i])
-		}
-		query.Where(namespace.IDIn(ids...))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := mq.loadNamespace(ctx, query, nodes, nil,
+			func(n *Mirror, e *Namespace) { n.Edges.Namespace = e }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			nodes, ok := nodeids[n.ID]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "namespace_mirrors" returned %v`, n.ID)
-			}
-			for i := range nodes {
-				nodes[i].Edges.Namespace = n
-			}
-		}
 	}
-
 	if query := mq.withInode; query != nil {
-		ids := make([]uuid.UUID, 0, len(nodes))
-		nodeids := make(map[uuid.UUID][]*Mirror)
-		for i := range nodes {
-			if nodes[i].inode_mirror == nil {
-				continue
-			}
-			fk := *nodes[i].inode_mirror
-			if _, ok := nodeids[fk]; !ok {
-				ids = append(ids, fk)
-			}
-			nodeids[fk] = append(nodeids[fk], nodes[i])
-		}
-		query.Where(inode.IDIn(ids...))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := mq.loadInode(ctx, query, nodes, nil,
+			func(n *Mirror, e *Inode) { n.Edges.Inode = e }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			nodes, ok := nodeids[n.ID]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "inode_mirror" returned %v`, n.ID)
-			}
-			for i := range nodes {
-				nodes[i].Edges.Inode = n
-			}
-		}
 	}
-
 	if query := mq.withActivities; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[uuid.UUID]*Mirror)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Activities = []*MirrorActivity{}
-		}
-		query.withFKs = true
-		query.Where(predicate.MirrorActivity(func(s *sql.Selector) {
-			s.Where(sql.InValues(mirror.ActivitiesColumn, fks...))
-		}))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := mq.loadActivities(ctx, query, nodes,
+			func(n *Mirror) { n.Edges.Activities = []*MirrorActivity{} },
+			func(n *Mirror, e *MirrorActivity) { n.Edges.Activities = append(n.Edges.Activities, e) }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			fk := n.mirror_activities
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "mirror_activities" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "mirror_activities" returned %v for node %v`, *fk, n.ID)
-			}
-			node.Edges.Activities = append(node.Edges.Activities, n)
+	}
+	return nodes, nil
+}
+
+func (mq *MirrorQuery) loadNamespace(ctx context.Context, query *NamespaceQuery, nodes []*Mirror, init func(*Mirror), assign func(*Mirror, *Namespace)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Mirror)
+	for i := range nodes {
+		if nodes[i].namespace_mirrors == nil {
+			continue
+		}
+		fk := *nodes[i].namespace_mirrors
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	query.Where(namespace.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "namespace_mirrors" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
 		}
 	}
-
-	return nodes, nil
+	return nil
+}
+func (mq *MirrorQuery) loadInode(ctx context.Context, query *InodeQuery, nodes []*Mirror, init func(*Mirror), assign func(*Mirror, *Inode)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Mirror)
+	for i := range nodes {
+		if nodes[i].inode_mirror == nil {
+			continue
+		}
+		fk := *nodes[i].inode_mirror
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	query.Where(inode.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "inode_mirror" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (mq *MirrorQuery) loadActivities(ctx context.Context, query *MirrorActivityQuery, nodes []*Mirror, init func(*Mirror), assign func(*Mirror, *MirrorActivity)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Mirror)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.MirrorActivity(func(s *sql.Selector) {
+		s.Where(sql.InValues(mirror.ActivitiesColumn, fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.mirror_activities
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "mirror_activities" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "mirror_activities" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
 }
 
 func (mq *MirrorQuery) sqlCount(ctx context.Context) (int, error) {
@@ -561,11 +584,14 @@ func (mq *MirrorQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (mq *MirrorQuery) sqlExist(ctx context.Context) (bool, error) {
-	n, err := mq.sqlCount(ctx)
-	if err != nil {
+	switch _, err := mq.FirstID(ctx); {
+	case IsNotFound(err):
+		return false, nil
+	case err != nil:
 		return false, fmt.Errorf("ent: check existence: %w", err)
+	default:
+		return true, nil
 	}
-	return n > 0, nil
 }
 
 func (mq *MirrorQuery) querySpec() *sqlgraph.QuerySpec {
@@ -666,7 +692,7 @@ func (mgb *MirrorGroupBy) Aggregate(fns ...AggregateFunc) *MirrorGroupBy {
 }
 
 // Scan applies the group-by query and scans the result into the given value.
-func (mgb *MirrorGroupBy) Scan(ctx context.Context, v interface{}) error {
+func (mgb *MirrorGroupBy) Scan(ctx context.Context, v any) error {
 	query, err := mgb.path(ctx)
 	if err != nil {
 		return err
@@ -675,7 +701,7 @@ func (mgb *MirrorGroupBy) Scan(ctx context.Context, v interface{}) error {
 	return mgb.sqlScan(ctx, v)
 }
 
-func (mgb *MirrorGroupBy) sqlScan(ctx context.Context, v interface{}) error {
+func (mgb *MirrorGroupBy) sqlScan(ctx context.Context, v any) error {
 	for _, f := range mgb.fields {
 		if !mirror.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for group-by", f)}
@@ -700,8 +726,6 @@ func (mgb *MirrorGroupBy) sqlQuery() *sql.Selector {
 	for _, fn := range mgb.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	// If no columns were selected in a custom aggregation function, the default
-	// selection is the fields used for "group-by", and the aggregation functions.
 	if len(selector.SelectedColumns()) == 0 {
 		columns := make([]string, 0, len(mgb.fields)+len(mgb.fns))
 		for _, f := range mgb.fields {
@@ -721,8 +745,14 @@ type MirrorSelect struct {
 	sql *sql.Selector
 }
 
+// Aggregate adds the given aggregation functions to the selector query.
+func (ms *MirrorSelect) Aggregate(fns ...AggregateFunc) *MirrorSelect {
+	ms.fns = append(ms.fns, fns...)
+	return ms
+}
+
 // Scan applies the selector query and scans the result into the given value.
-func (ms *MirrorSelect) Scan(ctx context.Context, v interface{}) error {
+func (ms *MirrorSelect) Scan(ctx context.Context, v any) error {
 	if err := ms.prepareQuery(ctx); err != nil {
 		return err
 	}
@@ -730,7 +760,17 @@ func (ms *MirrorSelect) Scan(ctx context.Context, v interface{}) error {
 	return ms.sqlScan(ctx, v)
 }
 
-func (ms *MirrorSelect) sqlScan(ctx context.Context, v interface{}) error {
+func (ms *MirrorSelect) sqlScan(ctx context.Context, v any) error {
+	aggregation := make([]string, 0, len(ms.fns))
+	for _, fn := range ms.fns {
+		aggregation = append(aggregation, fn(ms.sql))
+	}
+	switch n := len(*ms.selector.flds); {
+	case n == 0 && len(aggregation) > 0:
+		ms.sql.Select(aggregation...)
+	case n != 0 && len(aggregation) > 0:
+		ms.sql.AppendSelect(aggregation...)
+	}
 	rows := &sql.Rows{}
 	query, args := ms.sql.Query()
 	if err := ms.driver.Query(ctx, query, args, rows); err != nil {

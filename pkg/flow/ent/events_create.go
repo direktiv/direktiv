@@ -298,51 +298,27 @@ func (ec *EventsCreate) createSpec() (*Events, *sqlgraph.CreateSpec) {
 		_spec.ID.Value = &id
 	}
 	if value, ok := ec.mutation.Events(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Value:  value,
-			Column: events.FieldEvents,
-		})
+		_spec.SetField(events.FieldEvents, field.TypeJSON, value)
 		_node.Events = value
 	}
 	if value, ok := ec.mutation.Correlations(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Value:  value,
-			Column: events.FieldCorrelations,
-		})
+		_spec.SetField(events.FieldCorrelations, field.TypeJSON, value)
 		_node.Correlations = value
 	}
 	if value, ok := ec.mutation.Signature(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeBytes,
-			Value:  value,
-			Column: events.FieldSignature,
-		})
+		_spec.SetField(events.FieldSignature, field.TypeBytes, value)
 		_node.Signature = value
 	}
 	if value, ok := ec.mutation.Count(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
-			Value:  value,
-			Column: events.FieldCount,
-		})
+		_spec.SetField(events.FieldCount, field.TypeInt, value)
 		_node.Count = value
 	}
 	if value, ok := ec.mutation.CreatedAt(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: events.FieldCreatedAt,
-		})
+		_spec.SetField(events.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
 	if value, ok := ec.mutation.UpdatedAt(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: events.FieldUpdatedAt,
-		})
+		_spec.SetField(events.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
 	if nodes := ec.mutation.WorkflowIDs(); len(nodes) > 0 {

@@ -198,46 +198,22 @@ func (vdu *VarDataUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 	}
 	if value, ok := vdu.mutation.UpdatedAt(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: vardata.FieldUpdatedAt,
-		})
+		_spec.SetField(vardata.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if value, ok := vdu.mutation.Size(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
-			Value:  value,
-			Column: vardata.FieldSize,
-		})
+		_spec.SetField(vardata.FieldSize, field.TypeInt, value)
 	}
 	if value, ok := vdu.mutation.AddedSize(); ok {
-		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
-			Value:  value,
-			Column: vardata.FieldSize,
-		})
+		_spec.AddField(vardata.FieldSize, field.TypeInt, value)
 	}
 	if value, ok := vdu.mutation.Hash(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: vardata.FieldHash,
-		})
+		_spec.SetField(vardata.FieldHash, field.TypeString, value)
 	}
 	if value, ok := vdu.mutation.Data(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeBytes,
-			Value:  value,
-			Column: vardata.FieldData,
-		})
+		_spec.SetField(vardata.FieldData, field.TypeBytes, value)
 	}
 	if value, ok := vdu.mutation.MimeType(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: vardata.FieldMimeType,
-		})
+		_spec.SetField(vardata.FieldMimeType, field.TypeString, value)
 	}
 	if vdu.mutation.VarrefsCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -510,46 +486,22 @@ func (vduo *VarDataUpdateOne) sqlSave(ctx context.Context) (_node *VarData, err 
 		}
 	}
 	if value, ok := vduo.mutation.UpdatedAt(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: vardata.FieldUpdatedAt,
-		})
+		_spec.SetField(vardata.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if value, ok := vduo.mutation.Size(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
-			Value:  value,
-			Column: vardata.FieldSize,
-		})
+		_spec.SetField(vardata.FieldSize, field.TypeInt, value)
 	}
 	if value, ok := vduo.mutation.AddedSize(); ok {
-		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
-			Value:  value,
-			Column: vardata.FieldSize,
-		})
+		_spec.AddField(vardata.FieldSize, field.TypeInt, value)
 	}
 	if value, ok := vduo.mutation.Hash(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: vardata.FieldHash,
-		})
+		_spec.SetField(vardata.FieldHash, field.TypeString, value)
 	}
 	if value, ok := vduo.mutation.Data(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeBytes,
-			Value:  value,
-			Column: vardata.FieldData,
-		})
+		_spec.SetField(vardata.FieldData, field.TypeBytes, value)
 	}
 	if value, ok := vduo.mutation.MimeType(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: vardata.FieldMimeType,
-		})
+		_spec.SetField(vardata.FieldMimeType, field.TypeString, value)
 	}
 	if vduo.mutation.VarrefsCleared() {
 		edge := &sqlgraph.EdgeSpec{

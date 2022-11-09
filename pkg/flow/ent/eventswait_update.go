@@ -144,11 +144,7 @@ func (ewu *EventsWaitUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 	}
 	if value, ok := ewu.mutation.Events(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Value:  value,
-			Column: eventswait.FieldEvents,
-		})
+		_spec.SetField(eventswait.FieldEvents, field.TypeJSON, value)
 	}
 	if ewu.mutation.WorkfloweventCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -349,11 +345,7 @@ func (ewuo *EventsWaitUpdateOne) sqlSave(ctx context.Context) (_node *EventsWait
 		}
 	}
 	if value, ok := ewuo.mutation.Events(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Value:  value,
-			Column: eventswait.FieldEvents,
-		})
+		_spec.SetField(eventswait.FieldEvents, field.TypeJSON, value)
 	}
 	if ewuo.mutation.WorkfloweventCleared() {
 		edge := &sqlgraph.EdgeSpec{

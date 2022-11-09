@@ -10,6 +10,7 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/direktiv/direktiv/pkg/flow/ent/cloudeventfilters"
 	"github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
 	"github.com/direktiv/direktiv/pkg/flow/ent/events"
 	"github.com/direktiv/direktiv/pkg/flow/ent/inode"
@@ -227,6 +228,21 @@ func (nc *NamespaceCreate) AddNamespacelisteners(e ...*Events) *NamespaceCreate 
 	return nc.AddNamespacelistenerIDs(ids...)
 }
 
+// AddCloudeventfilterIDs adds the "cloudeventfilters" edge to the CloudEventFilters entity by IDs.
+func (nc *NamespaceCreate) AddCloudeventfilterIDs(ids ...int) *NamespaceCreate {
+	nc.mutation.AddCloudeventfilterIDs(ids...)
+	return nc
+}
+
+// AddCloudeventfilters adds the "cloudeventfilters" edges to the CloudEventFilters entity.
+func (nc *NamespaceCreate) AddCloudeventfilters(c ...*CloudEventFilters) *NamespaceCreate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return nc.AddCloudeventfilterIDs(ids...)
+}
+
 // Mutation returns the NamespaceMutation object of the builder.
 func (nc *NamespaceCreate) Mutation() *NamespaceMutation {
 	return nc.mutation
@@ -378,35 +394,19 @@ func (nc *NamespaceCreate) createSpec() (*Namespace, *sqlgraph.CreateSpec) {
 		_spec.ID.Value = &id
 	}
 	if value, ok := nc.mutation.CreatedAt(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: namespace.FieldCreatedAt,
-		})
+		_spec.SetField(namespace.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
 	if value, ok := nc.mutation.UpdatedAt(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: namespace.FieldUpdatedAt,
-		})
+		_spec.SetField(namespace.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
 	if value, ok := nc.mutation.Config(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: namespace.FieldConfig,
-		})
+		_spec.SetField(namespace.FieldConfig, field.TypeString, value)
 		_node.Config = value
 	}
 	if value, ok := nc.mutation.Name(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: namespace.FieldName,
-		})
+		_spec.SetField(namespace.FieldName, field.TypeString, value)
 		_node.Name = value
 	}
 	if nodes := nc.mutation.InodesIDs(); len(nodes) > 0 {
@@ -572,6 +572,25 @@ func (nc *NamespaceCreate) createSpec() (*Namespace, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: events.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := nc.mutation.CloudeventfiltersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   namespace.CloudeventfiltersTable,
+			Columns: []string{namespace.CloudeventfiltersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: cloudeventfilters.FieldID,
 				},
 			},
 		}

@@ -277,99 +277,51 @@ func (mc *MetricsCreate) createSpec() (*Metrics, *sqlgraph.CreateSpec) {
 		}
 	)
 	if value, ok := mc.mutation.Namespace(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: metrics.FieldNamespace,
-		})
+		_spec.SetField(metrics.FieldNamespace, field.TypeString, value)
 		_node.Namespace = value
 	}
 	if value, ok := mc.mutation.Workflow(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: metrics.FieldWorkflow,
-		})
+		_spec.SetField(metrics.FieldWorkflow, field.TypeString, value)
 		_node.Workflow = value
 	}
 	if value, ok := mc.mutation.Revision(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: metrics.FieldRevision,
-		})
+		_spec.SetField(metrics.FieldRevision, field.TypeString, value)
 		_node.Revision = value
 	}
 	if value, ok := mc.mutation.Instance(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: metrics.FieldInstance,
-		})
+		_spec.SetField(metrics.FieldInstance, field.TypeString, value)
 		_node.Instance = value
 	}
 	if value, ok := mc.mutation.State(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: metrics.FieldState,
-		})
+		_spec.SetField(metrics.FieldState, field.TypeString, value)
 		_node.State = value
 	}
 	if value, ok := mc.mutation.Timestamp(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: metrics.FieldTimestamp,
-		})
+		_spec.SetField(metrics.FieldTimestamp, field.TypeTime, value)
 		_node.Timestamp = value
 	}
 	if value, ok := mc.mutation.WorkflowMs(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt64,
-			Value:  value,
-			Column: metrics.FieldWorkflowMs,
-		})
+		_spec.SetField(metrics.FieldWorkflowMs, field.TypeInt64, value)
 		_node.WorkflowMs = value
 	}
 	if value, ok := mc.mutation.IsolateMs(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt64,
-			Value:  value,
-			Column: metrics.FieldIsolateMs,
-		})
+		_spec.SetField(metrics.FieldIsolateMs, field.TypeInt64, value)
 		_node.IsolateMs = value
 	}
 	if value, ok := mc.mutation.ErrorCode(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: metrics.FieldErrorCode,
-		})
+		_spec.SetField(metrics.FieldErrorCode, field.TypeString, value)
 		_node.ErrorCode = value
 	}
 	if value, ok := mc.mutation.Invoker(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: metrics.FieldInvoker,
-		})
+		_spec.SetField(metrics.FieldInvoker, field.TypeString, value)
 		_node.Invoker = value
 	}
 	if value, ok := mc.mutation.Next(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt8,
-			Value:  value,
-			Column: metrics.FieldNext,
-		})
+		_spec.SetField(metrics.FieldNext, field.TypeInt8, value)
 		_node.Next = value
 	}
 	if value, ok := mc.mutation.Transition(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: metrics.FieldTransition,
-		})
+		_spec.SetField(metrics.FieldTransition, field.TypeString, value)
 		_node.Transition = value
 	}
 	return _node, _spec

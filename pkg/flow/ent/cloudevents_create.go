@@ -247,43 +247,23 @@ func (cec *CloudEventsCreate) createSpec() (*CloudEvents, *sqlgraph.CreateSpec) 
 		_spec.ID.Value = &id
 	}
 	if value, ok := cec.mutation.EventId(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: cloudevents.FieldEventId,
-		})
+		_spec.SetField(cloudevents.FieldEventId, field.TypeString, value)
 		_node.EventId = value
 	}
 	if value, ok := cec.mutation.Event(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Value:  value,
-			Column: cloudevents.FieldEvent,
-		})
+		_spec.SetField(cloudevents.FieldEvent, field.TypeJSON, value)
 		_node.Event = value
 	}
 	if value, ok := cec.mutation.Fire(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: cloudevents.FieldFire,
-		})
+		_spec.SetField(cloudevents.FieldFire, field.TypeTime, value)
 		_node.Fire = value
 	}
 	if value, ok := cec.mutation.Created(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: cloudevents.FieldCreated,
-		})
+		_spec.SetField(cloudevents.FieldCreated, field.TypeTime, value)
 		_node.Created = value
 	}
 	if value, ok := cec.mutation.Processed(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeBool,
-			Value:  value,
-			Column: cloudevents.FieldProcessed,
-		})
+		_spec.SetField(cloudevents.FieldProcessed, field.TypeBool, value)
 		_node.Processed = value
 	}
 	if nodes := cec.mutation.NamespaceIDs(); len(nodes) > 0 {

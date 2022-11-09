@@ -10,6 +10,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/dialect/sql/sqljson"
 	"entgo.io/ent/schema/field"
 	"github.com/direktiv/direktiv/pkg/flow/ent/events"
 	"github.com/direktiv/direktiv/pkg/flow/ent/eventswait"
@@ -39,9 +40,21 @@ func (eu *EventsUpdate) SetEvents(m []map[string]interface{}) *EventsUpdate {
 	return eu
 }
 
+// AppendEvents appends m to the "events" field.
+func (eu *EventsUpdate) AppendEvents(m []map[string]interface{}) *EventsUpdate {
+	eu.mutation.AppendEvents(m)
+	return eu
+}
+
 // SetCorrelations sets the "correlations" field.
 func (eu *EventsUpdate) SetCorrelations(s []string) *EventsUpdate {
 	eu.mutation.SetCorrelations(s)
+	return eu
+}
+
+// AppendCorrelations appends s to the "correlations" field.
+func (eu *EventsUpdate) AppendCorrelations(s []string) *EventsUpdate {
+	eu.mutation.AppendCorrelations(s)
 	return eu
 }
 
@@ -275,52 +288,35 @@ func (eu *EventsUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 	}
 	if value, ok := eu.mutation.Events(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Value:  value,
-			Column: events.FieldEvents,
+		_spec.SetField(events.FieldEvents, field.TypeJSON, value)
+	}
+	if value, ok := eu.mutation.AppendedEvents(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, events.FieldEvents, value)
 		})
 	}
 	if value, ok := eu.mutation.Correlations(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Value:  value,
-			Column: events.FieldCorrelations,
+		_spec.SetField(events.FieldCorrelations, field.TypeJSON, value)
+	}
+	if value, ok := eu.mutation.AppendedCorrelations(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, events.FieldCorrelations, value)
 		})
 	}
 	if value, ok := eu.mutation.Signature(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeBytes,
-			Value:  value,
-			Column: events.FieldSignature,
-		})
+		_spec.SetField(events.FieldSignature, field.TypeBytes, value)
 	}
 	if eu.mutation.SignatureCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeBytes,
-			Column: events.FieldSignature,
-		})
+		_spec.ClearField(events.FieldSignature, field.TypeBytes)
 	}
 	if value, ok := eu.mutation.Count(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
-			Value:  value,
-			Column: events.FieldCount,
-		})
+		_spec.SetField(events.FieldCount, field.TypeInt, value)
 	}
 	if value, ok := eu.mutation.AddedCount(); ok {
-		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
-			Value:  value,
-			Column: events.FieldCount,
-		})
+		_spec.AddField(events.FieldCount, field.TypeInt, value)
 	}
 	if value, ok := eu.mutation.UpdatedAt(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: events.FieldUpdatedAt,
-		})
+		_spec.SetField(events.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if eu.mutation.WorkflowCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -506,9 +502,21 @@ func (euo *EventsUpdateOne) SetEvents(m []map[string]interface{}) *EventsUpdateO
 	return euo
 }
 
+// AppendEvents appends m to the "events" field.
+func (euo *EventsUpdateOne) AppendEvents(m []map[string]interface{}) *EventsUpdateOne {
+	euo.mutation.AppendEvents(m)
+	return euo
+}
+
 // SetCorrelations sets the "correlations" field.
 func (euo *EventsUpdateOne) SetCorrelations(s []string) *EventsUpdateOne {
 	euo.mutation.SetCorrelations(s)
+	return euo
+}
+
+// AppendCorrelations appends s to the "correlations" field.
+func (euo *EventsUpdateOne) AppendCorrelations(s []string) *EventsUpdateOne {
+	euo.mutation.AppendCorrelations(s)
 	return euo
 }
 
@@ -772,52 +780,35 @@ func (euo *EventsUpdateOne) sqlSave(ctx context.Context) (_node *Events, err err
 		}
 	}
 	if value, ok := euo.mutation.Events(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Value:  value,
-			Column: events.FieldEvents,
+		_spec.SetField(events.FieldEvents, field.TypeJSON, value)
+	}
+	if value, ok := euo.mutation.AppendedEvents(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, events.FieldEvents, value)
 		})
 	}
 	if value, ok := euo.mutation.Correlations(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Value:  value,
-			Column: events.FieldCorrelations,
+		_spec.SetField(events.FieldCorrelations, field.TypeJSON, value)
+	}
+	if value, ok := euo.mutation.AppendedCorrelations(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, events.FieldCorrelations, value)
 		})
 	}
 	if value, ok := euo.mutation.Signature(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeBytes,
-			Value:  value,
-			Column: events.FieldSignature,
-		})
+		_spec.SetField(events.FieldSignature, field.TypeBytes, value)
 	}
 	if euo.mutation.SignatureCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeBytes,
-			Column: events.FieldSignature,
-		})
+		_spec.ClearField(events.FieldSignature, field.TypeBytes)
 	}
 	if value, ok := euo.mutation.Count(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
-			Value:  value,
-			Column: events.FieldCount,
-		})
+		_spec.SetField(events.FieldCount, field.TypeInt, value)
 	}
 	if value, ok := euo.mutation.AddedCount(); ok {
-		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
-			Value:  value,
-			Column: events.FieldCount,
-		})
+		_spec.AddField(events.FieldCount, field.TypeInt, value)
 	}
 	if value, ok := euo.mutation.UpdatedAt(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: events.FieldUpdatedAt,
-		})
+		_spec.SetField(events.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if euo.mutation.WorkflowCleared() {
 		edge := &sqlgraph.EdgeSpec{

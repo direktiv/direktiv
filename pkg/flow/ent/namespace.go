@@ -50,9 +50,11 @@ type NamespaceEdges struct {
 	Cloudevents []*CloudEvents `json:"cloudevents,omitempty"`
 	// Namespacelisteners holds the value of the namespacelisteners edge.
 	Namespacelisteners []*Events `json:"namespacelisteners,omitempty"`
+	// Cloudeventfilters holds the value of the cloudeventfilters edge.
+	Cloudeventfilters []*CloudEventFilters `json:"cloudeventfilters,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [9]bool
+	loadedTypes [10]bool
 }
 
 // InodesOrErr returns the Inodes value or an error if the edge
@@ -136,9 +138,18 @@ func (e NamespaceEdges) NamespacelistenersOrErr() ([]*Events, error) {
 	return nil, &NotLoadedError{edge: "namespacelisteners"}
 }
 
+// CloudeventfiltersOrErr returns the Cloudeventfilters value or an error if the edge
+// was not loaded in eager-loading.
+func (e NamespaceEdges) CloudeventfiltersOrErr() ([]*CloudEventFilters, error) {
+	if e.loadedTypes[9] {
+		return e.Cloudeventfilters, nil
+	}
+	return nil, &NotLoadedError{edge: "cloudeventfilters"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
-func (*Namespace) scanValues(columns []string) ([]interface{}, error) {
-	values := make([]interface{}, len(columns))
+func (*Namespace) scanValues(columns []string) ([]any, error) {
+	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
 		case namespace.FieldConfig, namespace.FieldName:
@@ -156,7 +167,7 @@ func (*Namespace) scanValues(columns []string) ([]interface{}, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the Namespace fields.
-func (n *Namespace) assignValues(columns []string, values []interface{}) error {
+func (n *Namespace) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -240,6 +251,11 @@ func (n *Namespace) QueryCloudevents() *CloudEventsQuery {
 // QueryNamespacelisteners queries the "namespacelisteners" edge of the Namespace entity.
 func (n *Namespace) QueryNamespacelisteners() *EventsQuery {
 	return (&NamespaceClient{config: n.config}).QueryNamespacelisteners(n)
+}
+
+// QueryCloudeventfilters queries the "cloudeventfilters" edge of the Namespace entity.
+func (n *Namespace) QueryCloudeventfilters() *CloudEventFiltersQuery {
+	return (&NamespaceClient{config: n.config}).QueryCloudeventfilters(n)
 }
 
 // Update returns a builder for updating this Namespace.

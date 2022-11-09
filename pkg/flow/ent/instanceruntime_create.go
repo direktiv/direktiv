@@ -360,107 +360,55 @@ func (irc *InstanceRuntimeCreate) createSpec() (*InstanceRuntime, *sqlgraph.Crea
 		_spec.ID.Value = &id
 	}
 	if value, ok := irc.mutation.Input(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeBytes,
-			Value:  value,
-			Column: instanceruntime.FieldInput,
-		})
+		_spec.SetField(instanceruntime.FieldInput, field.TypeBytes, value)
 		_node.Input = value
 	}
 	if value, ok := irc.mutation.Data(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: instanceruntime.FieldData,
-		})
+		_spec.SetField(instanceruntime.FieldData, field.TypeString, value)
 		_node.Data = value
 	}
 	if value, ok := irc.mutation.Controller(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: instanceruntime.FieldController,
-		})
+		_spec.SetField(instanceruntime.FieldController, field.TypeString, value)
 		_node.Controller = value
 	}
 	if value, ok := irc.mutation.Memory(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: instanceruntime.FieldMemory,
-		})
+		_spec.SetField(instanceruntime.FieldMemory, field.TypeString, value)
 		_node.Memory = value
 	}
 	if value, ok := irc.mutation.Flow(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Value:  value,
-			Column: instanceruntime.FieldFlow,
-		})
+		_spec.SetField(instanceruntime.FieldFlow, field.TypeJSON, value)
 		_node.Flow = value
 	}
 	if value, ok := irc.mutation.Output(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: instanceruntime.FieldOutput,
-		})
+		_spec.SetField(instanceruntime.FieldOutput, field.TypeString, value)
 		_node.Output = value
 	}
 	if value, ok := irc.mutation.StateBeginTime(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: instanceruntime.FieldStateBeginTime,
-		})
+		_spec.SetField(instanceruntime.FieldStateBeginTime, field.TypeTime, value)
 		_node.StateBeginTime = value
 	}
 	if value, ok := irc.mutation.Deadline(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: instanceruntime.FieldDeadline,
-		})
+		_spec.SetField(instanceruntime.FieldDeadline, field.TypeTime, value)
 		_node.Deadline = value
 	}
 	if value, ok := irc.mutation.Attempts(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
-			Value:  value,
-			Column: instanceruntime.FieldAttempts,
-		})
+		_spec.SetField(instanceruntime.FieldAttempts, field.TypeInt, value)
 		_node.Attempts = value
 	}
 	if value, ok := irc.mutation.CallerData(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: instanceruntime.FieldCallerData,
-		})
+		_spec.SetField(instanceruntime.FieldCallerData, field.TypeString, value)
 		_node.CallerData = value
 	}
 	if value, ok := irc.mutation.InstanceContext(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: instanceruntime.FieldInstanceContext,
-		})
+		_spec.SetField(instanceruntime.FieldInstanceContext, field.TypeString, value)
 		_node.InstanceContext = value
 	}
 	if value, ok := irc.mutation.StateContext(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: instanceruntime.FieldStateContext,
-		})
+		_spec.SetField(instanceruntime.FieldStateContext, field.TypeString, value)
 		_node.StateContext = value
 	}
 	if value, ok := irc.mutation.Metadata(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: instanceruntime.FieldMetadata,
-		})
+		_spec.SetField(instanceruntime.FieldMetadata, field.TypeString, value)
 		_node.Metadata = value
 	}
 	if nodes := irc.mutation.InstanceIDs(); len(nodes) > 0 {

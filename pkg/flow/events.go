@@ -19,6 +19,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 
+	enteventsfilter "github.com/direktiv/direktiv/pkg/flow/ent/cloudeventfilters"
 	cevents "github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
 	entevents "github.com/direktiv/direktiv/pkg/flow/ent/events"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
@@ -1007,25 +1008,30 @@ func (events *events) listenForEvents(ctx context.Context, im *instanceMemory, c
 
 }
 
-func (flow *flow) ApplyCloudEventFilter(ctx context.Context, im *grpc.ApplyCloudEventFilterRequest) (*grpc.ApplyCloudEventFilterResponse, error) {
+func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloudEventFilterRequest) (*grpc.ApplyCloudEventFilterResponse, error) {
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	databaseFilterType := map[string]string{
-		"renameSource": `
-		function renameSource(){
-			event["source"] = "newSource";
-		return (event);
-		}
-		`,
+	namespace := in.GetNamespace()
+	filtername := in.GetFilterName()
+	cloudevent := in.GetCloudevent()
+
+	ns, err := flow.getNamespace(ctx, flow.db.Namespace, namespace)
+	if err != nil {
+		return nil, err
 	}
 
-	SCRIPT := databaseFilterType[im.FilterName] // extract js script from database with get request to databse
+	ceventfilter, err := ns.QueryCloudeventfilters().Where(enteventsfilter.NameEQ(filtername)).Only(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	SCRIPT := ceventfilter.Jscode
 
 	var mapEvent map[string]interface{}
-	err := json.Unmarshal(im.Cloudevent, &mapEvent)
+	err = json.Unmarshal(cloudevent, &mapEvent)
 	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid cloudevent: %v", err)
+		return nil, err
 	}
 
 	//create js runtime
@@ -1039,7 +1045,7 @@ func (flow *flow) ApplyCloudEventFilter(ctx context.Context, im *grpc.ApplyCloud
 	}
 
 	var fn func() map[string]interface{}
-	err = vm.ExportTo(vm.Get(im.FilterName), &fn)
+	err = vm.ExportTo(vm.Get(filtername), &fn)
 	if err != nil {
 		panic(err)
 	}
@@ -1047,7 +1053,7 @@ func (flow *flow) ApplyCloudEventFilter(ctx context.Context, im *grpc.ApplyCloud
 	newEventMap := fn()
 	newBytesEvent, err := json.Marshal(newEventMap)
 	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid cloudevent: %v", err)
+		return nil, err
 	}
 
 	out := &grpc.ApplyCloudEventFilterResponse{
@@ -1057,17 +1063,63 @@ func (flow *flow) ApplyCloudEventFilter(ctx context.Context, im *grpc.ApplyCloud
 	return out, nil
 }
 
-func (flow *flow) DeleteCloudEventFilter(ctx context.Context, im *grpc.DeleteCloudEventFilterRequest) (*emptypb.Empty, error) {
+func (flow *flow) DeleteCloudEventFilter(ctx context.Context, in *grpc.DeleteCloudEventFilterRequest) (*emptypb.Empty, error) {
 	//delete filtername from database
-	return nil, nil
+
+	namespace := in.GetNamespace()
+	filtername := in.GetFilterName()
+
+	ns, err := flow.getNamespace(ctx, flow.db.Namespace, namespace)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = ns.QueryCloudeventfilters().Where(enteventsfilter.NameEQ(filtername)).Only(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("event filter not existing")
+	}
+
+	_, err = flow.db.CloudEventFilters.
+		Delete().
+		Where(
+			enteventsfilter.And(
+				enteventsfilter.NameEQ(filtername),
+			)).
+		Exec(context.Background())
+
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, err
 
 }
 
-func (flow *flow) CreateCloudEventFilter(ctx context.Context, im *grpc.CreateCloudEventFilterRequest) (*emptypb.Empty, error) {
+func (flow *flow) CreateCloudEventFilter(ctx context.Context, in *grpc.CreateCloudEventFilterRequest) (*emptypb.Empty, error) {
 	//TODO
 	//get per filtername to check if its already existing
 	//create filter in databse with im.filtername & im.jsCode
-	return nil, nil
+
+	namespace := in.GetNamespace()
+	filtername := in.GetFiltername()
+	SCRIPT := in.GetJsCode()
+
+	ns, err := flow.getNamespace(ctx, flow.db.Namespace, namespace)
+	if err != nil {
+		return nil, err
+	}
+
+	ceventfilter, _ := ns.QueryCloudeventfilters().Where(enteventsfilter.NameEQ(filtername)).Only(ctx)
+	if ceventfilter != nil {
+		return nil, fmt.Errorf("event filter already exists")
+	}
+
+	_, err = flow.db.CloudEventFilters.Create().SetName(filtername).SetNamespace(ns).SetJscode(SCRIPT).Save(context.Background())
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, err
 
 }
 

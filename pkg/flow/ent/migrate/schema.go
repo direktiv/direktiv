@@ -8,6 +8,34 @@ import (
 )
 
 var (
+	// CloudEventFiltersColumns holds the columns for the "cloud_event_filters" table.
+	CloudEventFiltersColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "name", Type: field.TypeString},
+		{Name: "jscode", Type: field.TypeString},
+		{Name: "namespace_cloudeventfilters", Type: field.TypeUUID},
+	}
+	// CloudEventFiltersTable holds the schema information for the "cloud_event_filters" table.
+	CloudEventFiltersTable = &schema.Table{
+		Name:       "cloud_event_filters",
+		Columns:    CloudEventFiltersColumns,
+		PrimaryKey: []*schema.Column{CloudEventFiltersColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "cloud_event_filters_namespaces_cloudeventfilters",
+				Columns:    []*schema.Column{CloudEventFiltersColumns[3]},
+				RefColumns: []*schema.Column{NamespacesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "cloudeventfilters_name_namespace_cloudeventfilters",
+				Unique:  true,
+				Columns: []*schema.Column{CloudEventFiltersColumns[1], CloudEventFiltersColumns[3]},
+			},
+		},
+	}
 	// CloudEventsColumns holds the columns for the "cloud_events" table.
 	CloudEventsColumns = []*schema.Column{
 		{Name: "oid", Type: field.TypeUUID},
@@ -518,6 +546,7 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		CloudEventFiltersTable,
 		CloudEventsTable,
 		EventsTable,
 		EventsWaitsTable,
@@ -538,6 +567,7 @@ var (
 )
 
 func init() {
+	CloudEventFiltersTable.ForeignKeys[0].RefTable = NamespacesTable
 	CloudEventsTable.ForeignKeys[0].RefTable = NamespacesTable
 	EventsTable.ForeignKeys[0].RefTable = InstancesTable
 	EventsTable.ForeignKeys[1].RefTable = NamespacesTable

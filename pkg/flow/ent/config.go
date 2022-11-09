@@ -17,29 +17,30 @@ type config struct {
 	// debug enable a debug logging.
 	debug bool
 	// log used for logging on debug mode.
-	log func(...interface{})
+	log func(...any)
 	// hooks to execute on mutations.
 	hooks *hooks
 }
 
 // hooks per client, for fast access.
 type hooks struct {
-	CloudEvents     []ent.Hook
-	Events          []ent.Hook
-	EventsWait      []ent.Hook
-	Inode           []ent.Hook
-	Instance        []ent.Hook
-	InstanceRuntime []ent.Hook
-	LogMsg          []ent.Hook
-	Mirror          []ent.Hook
-	MirrorActivity  []ent.Hook
-	Namespace       []ent.Hook
-	Ref             []ent.Hook
-	Revision        []ent.Hook
-	Route           []ent.Hook
-	VarData         []ent.Hook
-	VarRef          []ent.Hook
-	Workflow        []ent.Hook
+	CloudEventFilters []ent.Hook
+	CloudEvents       []ent.Hook
+	Events            []ent.Hook
+	EventsWait        []ent.Hook
+	Inode             []ent.Hook
+	Instance          []ent.Hook
+	InstanceRuntime   []ent.Hook
+	LogMsg            []ent.Hook
+	Mirror            []ent.Hook
+	MirrorActivity    []ent.Hook
+	Namespace         []ent.Hook
+	Ref               []ent.Hook
+	Revision          []ent.Hook
+	Route             []ent.Hook
+	VarData           []ent.Hook
+	VarRef            []ent.Hook
+	Workflow          []ent.Hook
 }
 
 // Options applies the options on the config object.
@@ -60,7 +61,7 @@ func Debug() Option {
 }
 
 // Log sets the logging function for debug mode.
-func Log(fn func(...interface{})) Option {
+func Log(fn func(...any)) Option {
 	return func(c *config) {
 		c.log = fn
 	}

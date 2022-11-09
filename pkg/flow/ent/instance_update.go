@@ -460,70 +460,34 @@ func (iu *InstanceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 	}
 	if value, ok := iu.mutation.UpdatedAt(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: instance.FieldUpdatedAt,
-		})
+		_spec.SetField(instance.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if value, ok := iu.mutation.EndAt(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: instance.FieldEndAt,
-		})
+		_spec.SetField(instance.FieldEndAt, field.TypeTime, value)
 	}
 	if iu.mutation.EndAtCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Column: instance.FieldEndAt,
-		})
+		_spec.ClearField(instance.FieldEndAt, field.TypeTime)
 	}
 	if value, ok := iu.mutation.Status(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: instance.FieldStatus,
-		})
+		_spec.SetField(instance.FieldStatus, field.TypeString, value)
 	}
 	if value, ok := iu.mutation.ErrorCode(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: instance.FieldErrorCode,
-		})
+		_spec.SetField(instance.FieldErrorCode, field.TypeString, value)
 	}
 	if iu.mutation.ErrorCodeCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Column: instance.FieldErrorCode,
-		})
+		_spec.ClearField(instance.FieldErrorCode, field.TypeString)
 	}
 	if value, ok := iu.mutation.ErrorMessage(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: instance.FieldErrorMessage,
-		})
+		_spec.SetField(instance.FieldErrorMessage, field.TypeString, value)
 	}
 	if iu.mutation.ErrorMessageCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Column: instance.FieldErrorMessage,
-		})
+		_spec.ClearField(instance.FieldErrorMessage, field.TypeString)
 	}
 	if value, ok := iu.mutation.Invoker(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: instance.FieldInvoker,
-		})
+		_spec.SetField(instance.FieldInvoker, field.TypeString, value)
 	}
 	if iu.mutation.InvokerCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Column: instance.FieldInvoker,
-		})
+		_spec.ClearField(instance.FieldInvoker, field.TypeString)
 	}
 	if iu.mutation.NamespaceCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -1354,70 +1318,34 @@ func (iuo *InstanceUpdateOne) sqlSave(ctx context.Context) (_node *Instance, err
 		}
 	}
 	if value, ok := iuo.mutation.UpdatedAt(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: instance.FieldUpdatedAt,
-		})
+		_spec.SetField(instance.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if value, ok := iuo.mutation.EndAt(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: instance.FieldEndAt,
-		})
+		_spec.SetField(instance.FieldEndAt, field.TypeTime, value)
 	}
 	if iuo.mutation.EndAtCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Column: instance.FieldEndAt,
-		})
+		_spec.ClearField(instance.FieldEndAt, field.TypeTime)
 	}
 	if value, ok := iuo.mutation.Status(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: instance.FieldStatus,
-		})
+		_spec.SetField(instance.FieldStatus, field.TypeString, value)
 	}
 	if value, ok := iuo.mutation.ErrorCode(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: instance.FieldErrorCode,
-		})
+		_spec.SetField(instance.FieldErrorCode, field.TypeString, value)
 	}
 	if iuo.mutation.ErrorCodeCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Column: instance.FieldErrorCode,
-		})
+		_spec.ClearField(instance.FieldErrorCode, field.TypeString)
 	}
 	if value, ok := iuo.mutation.ErrorMessage(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: instance.FieldErrorMessage,
-		})
+		_spec.SetField(instance.FieldErrorMessage, field.TypeString, value)
 	}
 	if iuo.mutation.ErrorMessageCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Column: instance.FieldErrorMessage,
-		})
+		_spec.ClearField(instance.FieldErrorMessage, field.TypeString)
 	}
 	if value, ok := iuo.mutation.Invoker(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: instance.FieldInvoker,
-		})
+		_spec.SetField(instance.FieldInvoker, field.TypeString, value)
 	}
 	if iuo.mutation.InvokerCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Column: instance.FieldInvoker,
-		})
+		_spec.ClearField(instance.FieldInvoker, field.TypeString)
 	}
 	if iuo.mutation.NamespaceCleared() {
 		edge := &sqlgraph.EdgeSpec{
