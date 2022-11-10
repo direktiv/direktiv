@@ -7,7 +7,9 @@ import (
 	"encoding/base64"
 	"encoding/gob"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"log"
 	"strings"
 	"sync"
 	"time"
@@ -1045,7 +1047,7 @@ func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloud
 	}
 
 	var fn func() map[string]interface{}
-	err = vm.ExportTo(vm.Get(filtername), &fn)
+	err = vm.ExportTo(vm.Get("filter"), &fn) // filtername and methode name have to be always the same
 	if err != nil {
 		panic(err)
 	}
@@ -1056,11 +1058,11 @@ func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloud
 		return nil, err
 	}
 
-	out := &grpc.ApplyCloudEventFilterResponse{
-		Event: newBytesEvent,
-	}
+	resp := new(grpc.ApplyCloudEventFilterResponse)
 
-	return out, nil
+	resp.Event = newBytesEvent
+
+	return resp, nil
 }
 
 func (flow *flow) DeleteCloudEventFilter(ctx context.Context, in *grpc.DeleteCloudEventFilterRequest) (*emptypb.Empty, error) {
@@ -1091,7 +1093,9 @@ func (flow *flow) DeleteCloudEventFilter(ctx context.Context, in *grpc.DeleteClo
 		return nil, err
 	}
 
-	return nil, err
+	var resp emptypb.Empty
+
+	return &resp, err
 
 }
 
@@ -1103,6 +1107,15 @@ func (flow *flow) CreateCloudEventFilter(ctx context.Context, in *grpc.CreateClo
 	namespace := in.GetNamespace()
 	filtername := in.GetFiltername()
 	SCRIPT := in.GetJsCode()
+
+	SCRIPT = fmt.Sprintf("function filter() {\n %s \n}", SCRIPT)
+
+	//compiling js code is needed
+	_, err := goja.Compile("filter", SCRIPT, false)
+	if err != nil {
+		err := errors.New("js code does not compile")
+		return nil, err
+	}
 
 	ns, err := flow.getNamespace(ctx, flow.db.Namespace, namespace)
 	if err != nil {
@@ -1119,7 +1132,9 @@ func (flow *flow) CreateCloudEventFilter(ctx context.Context, in *grpc.CreateClo
 		return nil, err
 	}
 
-	return nil, err
+	var resp emptypb.Empty
+
+	return &resp, err
 
 }
 
@@ -1128,3 +1143,60 @@ func (flow *flow) UpdateCloudEventFilter(ctx context.Context, im *grpc.UpdateClo
 	return nil, nil
 
 }
+
+// Cache is a struct for caching.
+type Cache struct {
+	value   sync.Map
+	expires int64
+}
+
+// Expired determines if it has expired.
+func (c *Cache) Expired(time int64) bool {
+	if c.expires == 0 {
+		return false
+	}
+	return time > c.expires
+}
+
+// Get gets a value from a cache. Returns an empty string if the value does not exist or has expired.
+func (c *Cache) Get(key string) string {
+	if c.Expired(time.Now().UnixNano()) {
+		log.Printf("%s has expired", key)
+		return ""
+	}
+	v, ok := c.value.Load(key)
+	var s string
+	if ok {
+		s, ok = v.(string)
+		if !ok {
+			log.Printf("%s does not exists", key)
+			return ""
+		}
+	}
+	return s
+}
+
+// Put puts a value to a cache. If a key and value exists, overwrite it.
+func (c *Cache) Put(key string, value string, expired int64) {
+	c.value.Store(key, value)
+	c.expires = expired
+}
+
+///////////////example///////////////https://dev.to/bmf_san/implement-an-in-memory-cache-in-golang-lig
+// func main() {
+//     fk := "first-key"
+//     sk := "second-key"
+
+//     cache.Put(fk, "first-value", time.Now().Add(2*time.Second).UnixNano())
+//     s := cache.Get(fk)
+//     fmt.Println(cache.Get(fk))
+
+//     time.Sleep(5 * time.Second)
+
+//     // fk should have expired
+//     s = cache.Get(fk)
+//     if len(s) == 0 {
+//         cache.Put(sk, "second-value", time.Now().Add(100*time.Second).UnixNano())
+//     }
+//     fmt.Println(cache.Get(sk))
+// }

@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -17,6 +18,7 @@ import (
 	protocol "github.com/cloudevents/sdk-go/v2/protocol/http"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/util"
+	"github.com/dop251/goja"
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
@@ -1066,11 +1068,11 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 
 	r.HandleFunc("/namespaces/{ns}/broadcast/{filter}", h.BroadcastCloudeventFilter).Name(RN_NamespaceEventFilter).Methods(http.MethodPost)
 
-	r.HandleFunc("/namespaces/{ns}/broadcast/{filter}", h.CreateBroadcastCloudeventFilter).Name(RN_CreateNamespaceEventFilter).Methods(http.MethodPut)
+	r.HandleFunc("/namespaces/{ns}/eventfilter/{filter}", h.CreateBroadcastCloudeventFilter).Name(RN_CreateNamespaceEventFilter).Methods(http.MethodPut)
 
-	r.HandleFunc("/namespaces/{ns}/broadcast/{filter}", h.DeleteBroadcastCloudeventFilter).Name(RN_DeleteNamespaceEventFilter).Methods(http.MethodDelete)
+	r.HandleFunc("/namespaces/{ns}/eventfilter/{filter}", h.DeleteBroadcastCloudeventFilter).Name(RN_DeleteNamespaceEventFilter).Methods(http.MethodDelete)
 
-	r.HandleFunc("/namespaces/{ns}/broadcast/{filter}", h.UpdateBroadcastCloudeventFilter).Name(RN_UpdateNamespaceEventFilter).Methods(http.MethodPost)
+	r.HandleFunc("/namespaces/{ns}/eventfilter/update/{filter}", h.UpdateBroadcastCloudeventFilter).Name(RN_UpdateNamespaceEventFilter).Methods(http.MethodPut)
 
 	// swagger:operation GET /api/namespaces/{namespace}/tree/{workflow}?op=logs Logs getWorkflowLogs
 	// ---
@@ -4235,6 +4237,15 @@ func (h *flowHandler) BroadcastCloudeventFilter(w http.ResponseWriter, r *http.R
 			return
 		}
 
+		if string(rsp.GetEvent()) == "null" {
+			err = errors.New("dropped event")
+			respond(w, nil, err) // drop event if not passed filter
+			fmt.Println(err)
+			return
+		}
+		//respond(w, nil, errors.New(rsp.GetEvent()))
+		//fmt.Fprint(w, string(rsp.GetEvent()))
+
 		in := &grpc.BroadcastCloudeventRequest{
 			Namespace:  namespace,
 			Cloudevent: rsp.GetEvent(),
@@ -4267,6 +4278,11 @@ func (h *flowHandler) CreateBroadcastCloudeventFilter(w http.ResponseWriter, r *
 	in.Filtername = filtername
 	in.JsCode = string(jsCode)
 	resp, err := h.client.CreateCloudEventFilter(ctx, in)
+	if err != nil {
+		respond(w, resp, err)
+		fmt.Println(err)
+		return
+	}
 	respond(w, resp, err)
 
 }
@@ -4284,6 +4300,11 @@ func (h *flowHandler) DeleteBroadcastCloudeventFilter(w http.ResponseWriter, r *
 	in.FilterName = filtername
 
 	resp, err := h.client.DeleteCloudEventFilter(ctx, in)
+	if err != nil {
+		respond(w, resp, err)
+		fmt.Println(err)
+		return
+	}
 	respond(w, resp, err)
 
 }
@@ -4298,6 +4319,13 @@ func (h *flowHandler) UpdateBroadcastCloudeventFilter(w http.ResponseWriter, r *
 
 	jsCode, err := loadRawBody(r)
 	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
+	_, err = goja.Compile("filter", fmt.Sprintf("function filter() {\n %s \n}", string(jsCode)), false)
+	if err != nil {
+		err := errors.New("js code does not compile")
 		respond(w, nil, err)
 		return
 	}
@@ -4318,6 +4346,11 @@ func (h *flowHandler) UpdateBroadcastCloudeventFilter(w http.ResponseWriter, r *
 	inAdd.Filtername = filtername
 	inAdd.JsCode = string(jsCode)
 	respCreate, errCreate := h.client.CreateCloudEventFilter(ctx, inAdd)
+	if respCreate != nil {
+		respond(w, respCreate, errCreate)
+		return
+	}
+
 	respond(w, respCreate, errCreate)
 
 }
