@@ -528,20 +528,20 @@ func executeEvent(url string) (string, error) {
 		}
 
 		if resp.StatusCode != http.StatusOK {
-			err = errors.New("Failed to send Event")
+			err = fmt.Errorf("failed to send event (rejected by server)")
 			return "", err
 		}
 	}
 
 	x, exist := event["id"]
 	if !exist {
-		err = errors.New("Event id not existing")
+		err = errors.New("event id undefined")
 		return "", err
 	}
 
 	id, ok := x.(string)
 	if !ok {
-		err = errors.New("Event id not existing")
+		err = errors.New("event id is not a string")
 		return "", err
 	}
 
