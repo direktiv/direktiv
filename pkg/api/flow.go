@@ -4253,6 +4253,7 @@ func (h *flowHandler) BroadcastCloudeventFilter(w http.ResponseWriter, r *http.R
 
 		resp, err := h.client.BroadcastCloudevent(ctx, in)
 		respond(w, resp, err)
+		return
 
 	}
 

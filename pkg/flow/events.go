@@ -9,7 +9,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"strings"
 	"sync"
 	"time"
@@ -50,6 +49,13 @@ func init() {
 type events struct {
 	*server
 }
+
+type keyPair struct {
+	namespace  string
+	filtername string
+}
+
+var cache = make(map[keyPair]string)
 
 func initEvents(srv *server) (*events, error) {
 
@@ -1018,17 +1024,29 @@ func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloud
 	filtername := in.GetFilterName()
 	cloudevent := in.GetCloudevent()
 
+	var SCRIPT string
+
+	var key keyPair
+	key.filtername = filtername
+	key.namespace = namespace
+
 	ns, err := flow.getNamespace(ctx, flow.db.Namespace, namespace)
 	if err != nil {
 		return nil, err
 	}
 
-	ceventfilter, err := ns.QueryCloudeventfilters().Where(enteventsfilter.NameEQ(filtername)).Only(ctx)
-	if err != nil {
-		return nil, err
-	}
+	if script, ok := cache[key]; ok {
+		SCRIPT = script
 
-	SCRIPT := ceventfilter.Jscode
+	} else {
+		ceventfilter, err := ns.QueryCloudeventfilters().Where(enteventsfilter.NameEQ(filtername)).Only(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		SCRIPT = ceventfilter.Jscode
+
+	}
 
 	var mapEvent map[string]interface{}
 	err = json.Unmarshal(cloudevent, &mapEvent)
@@ -1047,7 +1065,7 @@ func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloud
 	}
 
 	var fn func() map[string]interface{}
-	err = vm.ExportTo(vm.Get("filter"), &fn) // filtername and methode name have to be always the same
+	err = vm.ExportTo(vm.Get("filter"), &fn)
 	if err != nil {
 		panic(err)
 	}
@@ -1078,7 +1096,8 @@ func (flow *flow) DeleteCloudEventFilter(ctx context.Context, in *grpc.DeleteClo
 
 	_, err = ns.QueryCloudeventfilters().Where(enteventsfilter.NameEQ(filtername)).Only(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("event filter not existing")
+		err = errors.New("event filter not existing")
+		return nil, err
 	}
 
 	_, err = flow.db.CloudEventFilters.
@@ -1092,6 +1111,11 @@ func (flow *flow) DeleteCloudEventFilter(ctx context.Context, in *grpc.DeleteClo
 	if err != nil {
 		return nil, err
 	}
+
+	var key keyPair
+	key.filtername = filtername
+	key.namespace = namespace
+	delete(cache, key)
 
 	var resp emptypb.Empty
 
@@ -1124,13 +1148,19 @@ func (flow *flow) CreateCloudEventFilter(ctx context.Context, in *grpc.CreateClo
 
 	ceventfilter, _ := ns.QueryCloudeventfilters().Where(enteventsfilter.NameEQ(filtername)).Only(ctx)
 	if ceventfilter != nil {
-		return nil, fmt.Errorf("event filter already exists")
+		err = errors.New("event filter already exists")
+		return nil, err
 	}
 
 	_, err = flow.db.CloudEventFilters.Create().SetName(filtername).SetNamespace(ns).SetJscode(SCRIPT).Save(context.Background())
 	if err != nil {
 		return nil, err
 	}
+
+	var key keyPair
+	key.filtername = filtername
+	key.namespace = namespace
+	cache[key] = SCRIPT
 
 	var resp emptypb.Empty
 
@@ -1143,60 +1173,3 @@ func (flow *flow) UpdateCloudEventFilter(ctx context.Context, im *grpc.UpdateClo
 	return nil, nil
 
 }
-
-// Cache is a struct for caching.
-type Cache struct {
-	value   sync.Map
-	expires int64
-}
-
-// Expired determines if it has expired.
-func (c *Cache) Expired(time int64) bool {
-	if c.expires == 0 {
-		return false
-	}
-	return time > c.expires
-}
-
-// Get gets a value from a cache. Returns an empty string if the value does not exist or has expired.
-func (c *Cache) Get(key string) string {
-	if c.Expired(time.Now().UnixNano()) {
-		log.Printf("%s has expired", key)
-		return ""
-	}
-	v, ok := c.value.Load(key)
-	var s string
-	if ok {
-		s, ok = v.(string)
-		if !ok {
-			log.Printf("%s does not exists", key)
-			return ""
-		}
-	}
-	return s
-}
-
-// Put puts a value to a cache. If a key and value exists, overwrite it.
-func (c *Cache) Put(key string, value string, expired int64) {
-	c.value.Store(key, value)
-	c.expires = expired
-}
-
-///////////////example///////////////https://dev.to/bmf_san/implement-an-in-memory-cache-in-golang-lig
-// func main() {
-//     fk := "first-key"
-//     sk := "second-key"
-
-//     cache.Put(fk, "first-value", time.Now().Add(2*time.Second).UnixNano())
-//     s := cache.Get(fk)
-//     fmt.Println(cache.Get(fk))
-
-//     time.Sleep(5 * time.Second)
-
-//     // fk should have expired
-//     s = cache.Get(fk)
-//     if len(s) == 0 {
-//         cache.Put(sk, "second-value", time.Now().Add(100*time.Second).UnixNano())
-//     }
-//     fmt.Println(cache.Get(sk))
-// }
