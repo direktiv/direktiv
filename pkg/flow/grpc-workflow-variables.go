@@ -443,7 +443,7 @@ func (flow *flow) SetVariable(ctx context.Context, vrefc *ent.VarRefClient, vdat
 	return vdata, newVar, err
 }
 
-func (flow *flow) DeleteVarialbe(ctx context.Context, vrefc *ent.VarRefClient, vdatac *ent.VarDataClient, q varQuerier, key string, data []byte, vMimeType string, thread bool) (*ent.VarData, bool, error) {
+func (flow *flow) DeleteVariable(ctx context.Context, vrefc *ent.VarRefClient, vdatac *ent.VarDataClient, q varQuerier, key string, data []byte, vMimeType string, thread bool) (*ent.VarData, bool, error) {
 
 	var err error
 	var vdata *ent.VarData
@@ -470,9 +470,16 @@ func (flow *flow) DeleteVarialbe(ctx context.Context, vrefc *ent.VarRefClient, v
 		return nil, false, err
 	}
 
-	err = vdatac.DeleteOne(vdata).Exec(ctx)
+	k, err := vdata.QueryVarrefs().Count(ctx)
 	if err != nil {
 		return nil, false, err
+	}
+
+	if k == 0 {
+		err = vdatac.DeleteOne(vdata).Exec(ctx)
+		if err != nil {
+			return nil, false, err
+		}
 	}
 
 	// Broadcast Event
