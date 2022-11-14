@@ -4238,13 +4238,10 @@ func (h *flowHandler) BroadcastCloudeventFilter(w http.ResponseWriter, r *http.R
 		}
 
 		if string(rsp.GetEvent()) == "null" {
-			err = errors.New("dropped event")
-			respond(w, nil, err) // drop event if not passed filter
-			fmt.Println(err)
+			respond(w, nil, nil) // drop event if not passed filter
+			fmt.Println("dropped event")
 			return
 		}
-		//respond(w, nil, errors.New(rsp.GetEvent()))
-		//fmt.Fprint(w, string(rsp.GetEvent()))
 
 		in := &grpc.BroadcastCloudeventRequest{
 			Namespace:  namespace,
