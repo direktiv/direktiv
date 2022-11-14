@@ -614,16 +614,16 @@ EXAMPLE: direktiv-sync event greeting.yaml
 
 		localVars, err := getLocalWorkflowVariables(localAbsPath)
 		if err != nil {
-			log.Fatalf("Failed to get local variable files: %v\n", err)
+			log.Fatalf("failed to get local variable files: %v\n", err)
 		}
 		if len(localVars) > 0 {
-			cmd.PrintErrf("Found %v Local Variables to push to remote\n", len(localVars))
+			cmd.PrintErrf("found %v local variables to push to remote\n", len(localVars))
 		}
 
 		// Set Remote Vars
 		for _, v := range localVars {
 			varName := filepath.ToSlash(strings.TrimPrefix(v, localAbsPath+"."))
-			cmd.PrintErrf("Updating Remote Workflow Variable: '%s'\n", varName)
+			cmd.PrintErrf("updating remote workflow variable: '%s'\n", varName)
 			err = setRemoteWorkflowVariable(urlWorkflow, varName, v)
 			if err != nil {
 				log.Fatalf("Failed to set remote variable file: %v\n", err)
@@ -633,10 +633,10 @@ EXAMPLE: direktiv-sync event greeting.yaml
 		urlExecuteEvent := fmt.Sprintf("%s/broadcast", urlPrefix)
 		event, err := executeEvent(urlExecuteEvent)
 		if err != nil {
-			log.Fatalf("Failed to trigger event: %s %v\n", event, err)
+			log.Fatalf("failed to trigger event: %s %v\n", event, err)
 		}
 
-		cmd.PrintErrln("Successfully Triggered Event: " + event)
+		cmd.PrintErrln("successfully triggered event: " + event)
 
 	},
 }
