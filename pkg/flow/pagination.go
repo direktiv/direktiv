@@ -101,9 +101,13 @@ func (cp *customPagination) Paginate(req *pagination) (*cpdOutput, error) {
 		return nil, err
 	}
 
-	o.TotalCount = cp.data.Total()
+	o.PageInfo.Total = int32(cp.data.Total())
+	o.PageInfo.Filter = req.filter
+	o.PageInfo.Limit = int32(req.limit)
+	o.PageInfo.Offset = int32(req.offset)
+	o.PageInfo.Order = req.order
 
-	if o.TotalCount == 0 {
+	if o.PageInfo.Total == 0 {
 		return o, nil
 	}
 
@@ -126,14 +130,15 @@ func (cp *customPagination) Paginate(req *pagination) (*cpdOutput, error) {
 		}
 	}
 
+	o.Results = list
+
 	return o, nil
 
 }
 
 type cpdOutput struct {
-	TotalCount int                    `json:"totalCount"`
-	PageInfo   grpc.PageInfo          `json:"pageInfo"`
-	Node       map[string]interface{} `json:"node"`
+	PageInfo grpc.PageInfo            `json:"pageInfo"`
+	Results  []map[string]interface{} `json:"results"`
 }
 
 type cpdSecrets struct {

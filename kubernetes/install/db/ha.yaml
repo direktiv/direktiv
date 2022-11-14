@@ -1,0 +1,43 @@
+apiVersion: postgres-operator.crunchydata.com/v1beta1
+kind: PostgresCluster
+metadata:
+  name: direktiv
+  namespace: postgres
+spec:
+  postgresVersion: 14
+  instances:
+    - name: "instance1"
+      replicas: 3
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+                - key: "postgres-operator.crunchydata.com/cluster"
+                  operator: In
+                  values:
+                  - direktiv
+            topologyKey: "kubernetes.io/hostname"
+      dataVolumeClaimSpec:
+        accessModes:
+        - "ReadWriteOnce"
+        resources:
+          requests:
+            storage: "1Gi"
+  backups:
+    pgbackrest:
+      global:
+        repo1-retention-full: "4"
+        repo1-retention-full-type: count
+      repos:
+      - name: repo1
+        schedules:
+          full: "0 1 * * 0"
+          differential: "0 1 * * 1-6"
+        volume:
+          volumeClaimSpec:
+            accessModes:
+            - "ReadWriteOnce"
+            resources:
+              requests:
+                storage: "4Gi"

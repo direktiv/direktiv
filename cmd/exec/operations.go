@@ -41,13 +41,17 @@ func setRemoteWorkflowVariable(wfURL string, varName string, varPath string) err
 		return fmt.Errorf("failed to send request: %v", err)
 	}
 
-	if resp.StatusCode != 200 {
-		errBody, err := ioutil.ReadAll(resp.Body)
-		if err == nil {
-			return fmt.Errorf("failed to set workflow var, server responsed with %s\n------DUMPING ERROR BODY ------\n%s", resp.Status, string(errBody))
+	if resp.StatusCode != http.StatusOK {
+		if resp.StatusCode == http.StatusUnauthorized {
+			return fmt.Errorf("failed to set workflow var, request was unauthorized")
 		}
 
-		return fmt.Errorf("failed to set workflow var, server responsed with %s\n------DUMPING ERROR BODY ------\nCould read response body", resp.Status)
+		errBody, err := ioutil.ReadAll(resp.Body)
+		if err == nil {
+			return fmt.Errorf("failed to set workflow var, server responded with %s\n------DUMPING ERROR BODY ------\n%s", resp.Status, string(errBody))
+		}
+
+		return fmt.Errorf("failed to set workflow var, server responded with %s\n------DUMPING ERROR BODY ------\nCould read response body", resp.Status)
 	}
 
 	return err
@@ -106,13 +110,17 @@ func recurseMkdirParent(path string) error {
 		return fmt.Errorf("failed to send request: %v", err)
 	}
 
-	if resp.StatusCode != 200 && resp.StatusCode != http.StatusConflict {
-		errBody, err := ioutil.ReadAll(resp.Body)
-		if err == nil {
-			return fmt.Errorf("failed to create parent, server responsed with %s\n------DUMPING ERROR BODY ------\n%s", resp.Status, string(errBody))
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusConflict {
+		if resp.StatusCode == http.StatusUnauthorized {
+			return fmt.Errorf("failed to create parent, request was unauthorized")
 		}
 
-		return fmt.Errorf("failed to create parent, server responsed with %s\n------DUMPING ERROR BODY ------\nCould read response body", resp.Status)
+		errBody, err := ioutil.ReadAll(resp.Body)
+		if err == nil {
+			return fmt.Errorf("failed to create parent, server responded with %s\n------DUMPING ERROR BODY ------\n%s", resp.Status, string(errBody))
+		}
+
+		return fmt.Errorf("failed to create parent, server responded with %s\n------DUMPING ERROR BODY ------\nCould read response body", resp.Status)
 	}
 
 	return err
@@ -154,17 +162,21 @@ func getNodeReadOnly(path string) (bool, string, error) {
 		return false, "", fmt.Errorf("failed to send request: %v", err)
 	}
 
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
+		if resp.StatusCode == http.StatusUnauthorized {
+			return false, "", fmt.Errorf("failed to get node information, request was unauthorized")
+		}
+
 		if resp.StatusCode == http.StatusNotFound {
 			return false, "", ErrNotFound
 		}
 
 		errBody, err := ioutil.ReadAll(resp.Body)
 		if err == nil {
-			return false, "", fmt.Errorf("failed to get node information, server responsed with %s\n------DUMPING ERROR BODY ------\n%s", resp.Status, string(errBody))
+			return false, "", fmt.Errorf("failed to get node information, server responded with %s\n------DUMPING ERROR BODY ------\n%s", resp.Status, string(errBody))
 		}
 
-		return false, "", fmt.Errorf("failed to get node information, server responsed with %s\n------DUMPING ERROR BODY ------\nCould read response body", resp.Status)
+		return false, "", fmt.Errorf("failed to get node information, server responded with %s\n------DUMPING ERROR BODY ------\nCould read response body", resp.Status)
 	}
 
 	data, err := ioutil.ReadAll(resp.Body)
@@ -263,13 +275,17 @@ func setWritable(path string, value bool) error {
 			return fmt.Errorf("failed to send request: %v", err)
 		}
 
-		if resp.StatusCode != 200 {
-			errBody, err := ioutil.ReadAll(resp.Body)
-			if err == nil {
-				return fmt.Errorf("failed to get node information, server responsed with %s\n------DUMPING ERROR BODY ------\n%s", resp.Status, string(errBody))
+		if resp.StatusCode != http.StatusOK {
+			if resp.StatusCode == http.StatusUnauthorized {
+				return fmt.Errorf("failed to modify node, request was unauthorized")
 			}
 
-			return fmt.Errorf("failed to get node information, server responsed with %s\n------DUMPING ERROR BODY ------\nCould read response body", resp.Status)
+			errBody, err := ioutil.ReadAll(resp.Body)
+			if err == nil {
+				return fmt.Errorf("failed to modify node, server responded with %s\n------DUMPING ERROR BODY ------\n%s", resp.Status, string(errBody))
+			}
+
+			return fmt.Errorf("failed to modify node, server responded with %s\n------DUMPING ERROR BODY ------\nCould read response body", resp.Status)
 		}
 
 	default:
@@ -339,7 +355,11 @@ retry:
 		return fmt.Errorf("failed to send request: %v", err)
 	}
 
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
+		if resp.StatusCode == http.StatusUnauthorized {
+			return fmt.Errorf("failed to update workflow, request was unauthorized")
+		}
+
 		if resp.StatusCode == http.StatusNotFound && !updateFailed {
 			updateFailed = true
 			url = urlCreate
@@ -348,10 +368,10 @@ retry:
 		}
 		errBody, err := ioutil.ReadAll(resp.Body)
 		if err == nil {
-			return fmt.Errorf("failed to update workflow, server responsed with %s\n------DUMPING ERROR BODY ------\n%s", resp.Status, string(errBody))
+			return fmt.Errorf("failed to update workflow, server responded with %s\n------DUMPING ERROR BODY ------\n%s", resp.Status, string(errBody))
 		}
 
-		return fmt.Errorf("failed to update workflow, server responsed with %s\n------DUMPING ERROR BODY ------\nCould read response body", resp.Status)
+		return fmt.Errorf("failed to update workflow, server responded with %s\n------DUMPING ERROR BODY ------\nCould read response body", resp.Status)
 	}
 
 	return err
@@ -396,6 +416,19 @@ func executeWorkflow(url string) (executeResponse, error) {
 		return instanceDetails, err
 	}
 
+	if resp.StatusCode != http.StatusOK {
+		if resp.StatusCode == http.StatusUnauthorized {
+			return instanceDetails, fmt.Errorf("failed to execute workflow, request was unauthorized")
+		}
+
+		errBody, err := ioutil.ReadAll(resp.Body)
+		if err == nil {
+			return instanceDetails, fmt.Errorf("failed to execute workflow, server responded with %s\n------DUMPING ERROR BODY ------\n%s", resp.Status, string(errBody))
+		}
+
+		return instanceDetails, fmt.Errorf("failed to execute workflow, server responded with %s\n------DUMPING ERROR BODY ------\nCould read response body", resp.Status)
+	}
+
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return instanceDetails, err
@@ -425,13 +458,17 @@ func pingNamespace() error {
 		return fmt.Errorf("failed to ping namespace: %v", err)
 	}
 
-	if resp.StatusCode != 200 {
-		errBody, err := ioutil.ReadAll(resp.Body)
-		if err == nil {
-			return fmt.Errorf("failed to ping namespace, server responsed with %s\n------DUMPING ERROR BODY ------\n%s", resp.Status, string(errBody))
+	if resp.StatusCode != http.StatusOK {
+		if resp.StatusCode == http.StatusUnauthorized {
+			return fmt.Errorf("failed to ping namespace, request was unauthorized")
 		}
 
-		return fmt.Errorf("failed to ping namespace, server responsed with %s\n------DUMPING ERROR BODY ------\nCould read response body", resp.Status)
+		errBody, err := ioutil.ReadAll(resp.Body)
+		if err == nil {
+			return fmt.Errorf("failed to ping namespace, server responded with %s\n------DUMPING ERROR BODY ------\n%s", resp.Status, string(errBody))
+		}
+
+		return fmt.Errorf("failed to ping namespace, server responded with %s\n------DUMPING ERROR BODY ------\nCould read response body", resp.Status)
 
 	}
 

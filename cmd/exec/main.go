@@ -50,8 +50,7 @@ func main() {
 	rootCmd.PersistentFlags().StringP("addr", "a", "", "Target direktiv api address.")
 	rootCmd.PersistentFlags().StringP("path", "p", "", "Target remote workflow path .e.g. '/dir/workflow'. Automatically set if config file was auto-set.")
 	rootCmd.PersistentFlags().StringP("namespace", "n", "", "Target namespace to execute workflow on.")
-	rootCmd.PersistentFlags().StringP("api-key", "k", "", "Authenticate request with apikey.")
-	rootCmd.PersistentFlags().StringP("auth-token", "t", "", "Authenticate request with token.")
+	rootCmd.PersistentFlags().StringP("auth", "t", "", "Authenticate request with token or apikey.")
 	rootCmd.PersistentFlags().Bool("insecure", true, "Accept insecure https connections")
 
 	execCmd.Flags().StringVarP(&outputFlag, "output", "o", "", "Path where to write instance output. If unset output will be written to screen")
@@ -95,6 +94,20 @@ func getOutput(url string) ([]byte, error) {
 		return nil, err
 	}
 
+	if resp.StatusCode != http.StatusOK {
+		if resp.StatusCode == http.StatusUnauthorized {
+			return nil, fmt.Errorf("failed to get instance output, request was unauthorized")
+		}
+
+		errBody, err := ioutil.ReadAll(resp.Body)
+		if err == nil {
+			return nil, fmt.Errorf("failed to get instance output, server responded with %s\n------DUMPING ERROR BODY ------\n%s", resp.Status, string(errBody))
+		}
+
+		return nil, fmt.Errorf("failed to get instance output, server responded with %s\n------DUMPING ERROR BODY ------\nCould read response body", resp.Status)
+
+	}
+
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
@@ -121,7 +134,7 @@ func cmdPrepareSharedValues() {
 
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = getTLSConfig()
 
-	urlPrefix = fmt.Sprintf("%s/api/namespaces/%s", addr, namespace)
+	urlPrefix = fmt.Sprintf("%s/api/namespaces/%s", strings.Trim(addr, "/"), strings.Trim(namespace, "/"))
 }
 
 func cmdPrepareWorkflow(wfPath string) {
@@ -319,10 +332,44 @@ Will update the helloworld workflow and set the remote workflow variable 'data.j
 
 		relativeDir := getConfigPath()
 
+		// cull using ignores
+		x := make([]string, 0)
+		for _, localPath := range pathsToUpdate {
+
+			path := getRelativePath(relativeDir, localPath)
+
+			matched := false
+			for _, g := range globbers {
+				if g.Match(path) {
+					matched = true
+					break
+				}
+			}
+			if matched {
+				continue
+			}
+
+			x = append(x, localPath)
+
+		}
+
+		pathsToUpdate = x
+
 		cmd.PrintErrf("Found %v Local Workflow/s to update\n", len(pathsToUpdate))
 		for i, localPath := range pathsToUpdate {
 
 			path := getRelativePath(relativeDir, localPath)
+
+			matched := false
+			for _, g := range globbers {
+				if g.Match(path) {
+					matched = true
+					break
+				}
+			}
+			if matched {
+				continue
+			}
 
 			cmd.PrintErrf("[%v/%v] Updating Namespace: '%s' Workflow: '%s'\n", i+1, len(pathsToUpdate), getNamespace(), path)
 			err = updateRemoteWorkflow(path, localPath)
@@ -336,7 +383,7 @@ Will update the helloworld workflow and set the remote workflow variable 'data.j
 						"Cannot update node that is read only.\n"+
 							"To set node to writable use the set command\n"+
 							"Use the example below to set this path to writable:\n\n"+
-							"  direktiv-push set writable %s%s\n\n", cmdArgPath, flagSuffix)
+							"  direktiv-sync push set writable %s%s\n\n", cmdArgPath, flagSuffix)
 				}
 
 				log.Fatalf("Failed to update remote workflow: %v\n", err)
@@ -402,7 +449,7 @@ Will update the helloworld workflow and set the remote workflow variable 'data.j
 							"Use the --no-push flag to skip updating remote workflow or set workflow to writable.\n"+
 							"To set node to writable use the set command\n"+
 							"Use the example below to set this path to writable:\n\n"+
-							"  direktiv-push set writable %s%s\n\n", cmdArgPath, flagSuffix)
+							"  direktiv-sync push set writable %s%s\n\n", cmdArgPath, flagSuffix)
 				}
 				log.Fatalf("Failed to update remote workflow: %v\n", err)
 			}
@@ -466,9 +513,9 @@ Will update the helloworld workflow and set the remote workflow variable 'data.j
 					log.Fatalln(err)
 				}
 
-				if len(logResp.Edges) > 0 {
-					for _, edge := range logResp.Edges {
-						cmd.PrintErrf("%v: %s\n", edge.Node.T.In(time.Local).Format("02 Jan 06 15:04 MST"), edge.Node.Msg)
+				if len(logResp.Results) > 0 {
+					for _, edge := range logResp.Results {
+						cmd.PrintErrf("%v: %s\n", edge.T.In(time.Local).Format("02 Jan 06 15:04 MST"), edge.Msg)
 					}
 				}
 			}

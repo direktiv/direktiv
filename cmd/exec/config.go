@@ -9,32 +9,35 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/direktiv/direktiv/pkg/project"
+	"github.com/gobwas/glob"
 	"github.com/r3labs/sse"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"gopkg.in/yaml.v3"
 )
 
-const DefaultConfigName = ".direktiv.yaml"
+const DefaultConfigName = project.ConfigFile
 
 type ProfileConfig struct {
 	ID        string `yaml:"id" mapstructure:"profile"`
 	Addr      string `yaml:"addr" mapstructure:"addr"`
 	Path      string `yaml:"path" mapstructure:"path"`
 	Namespace string `yaml:"namespace" mapstructure:"namespace"`
-	Key       string `yaml:"api-key" mapstructure:"api-key"`
-	Token     string `yaml:"auth-token" mapstructure:"auth-token"`
+	Auth      string `yaml:"auth" mapstructure:"auth"`
 	MaxSize   int64  `yaml:"max-size" mapstructure:"max-size"`
 }
 
 type ConfigFile struct {
-	ProfileConfig `yaml:",inline" mapstructure:",squash"`
-	Profiles      []ProfileConfig `yaml:"profiles,flow" mapstructure:"profiles"`
-	profile       string
-	path          string
+	ProfileConfig  `yaml:",inline" mapstructure:",squash"`
+	project.Config `yaml:",inline" mapstructure:",squash"`
+	Profiles       []ProfileConfig `yaml:"profiles,flow" mapstructure:"profiles"`
+	profile        string
+	path           string
 }
 
 var config ConfigFile
+var globbers []glob.Glob
 
 func loadConfig(cmd *cobra.Command) {
 
@@ -52,6 +55,15 @@ func loadConfig(cmd *cobra.Command) {
 	}
 
 	path := findConfig()
+
+	globbers = make([]glob.Glob, 0)
+	for idx, pattern := range config.Ignore {
+		g, err := glob.Compile(pattern)
+		if err != nil {
+			fail("failed to parse %dth ignore pattern: %w", idx, err)
+		}
+		globbers = append(globbers, g)
+	}
 
 	profile, err := cmd.Flags().GetString("profile")
 	if err != nil {
@@ -128,8 +140,8 @@ func findConfig() string {
 			}
 
 			if len(config.Profiles) > 0 {
-				if config.Addr != "" || config.ID != "" || config.Key != "" || config.MaxSize != 0 ||
-					config.Namespace != "" || config.Path != "" || config.Token != "" {
+				if config.Addr != "" || config.ID != "" || config.Auth != "" || config.MaxSize != 0 ||
+					config.Namespace != "" || config.Path != "" {
 					fail("config file cannot have top-level values alongside profiles")
 				}
 			}
@@ -180,30 +192,17 @@ func getTLSConfig() *tls.Config {
 
 }
 
-func getAPIKey() string {
+func getAuth() string {
 
-	return viper.GetString("api-key")
-
-}
-
-func getAuthToken() string {
-
-	return viper.GetString("auth-token")
-
+	return viper.GetString("auth")
 }
 
 func addAuthHeaders(req *http.Request) {
-
-	req.Header.Add("apikey", getAPIKey())
-	req.Header.Add("Direktiv-Token", getAuthToken())
-
+	req.Header.Add("Direktiv-Token", getAuth())
 }
 
 func addSSEAuthHeaders(client *sse.Client) {
-
-	client.Headers["apikey"] = getAPIKey()
-	client.Headers["Direktiv-Token"] = getAuthToken()
-
+	client.Headers["Direktiv-Token"] = getAuth()
 }
 
 func getRelativePath(configPath, targpath string) string {

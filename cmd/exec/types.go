@@ -7,20 +7,15 @@ type executeResponse struct {
 }
 
 type logResponse struct {
-	TotalCount int `json:"totalCount"`
-	PageInfo   struct {
-		HasNextPage     bool   `json:"hasNextPage"`
-		HasPreviousPage bool   `json:"hasPreviousPage"`
-		StartCursor     string `json:"startCursor"`
-		EndCursor       string `json:"endCursor"`
+	PageInfo struct {
+		TotalCount int `json:"total"`
+		Limit      int `json:"limit"`
+		Offset     int `json:"offset"`
 	} `json:"pageInfo"`
-	Edges []struct {
-		Node struct {
-			T   time.Time `json:"t"`
-			Msg string    `json:"msg"`
-		} `json:"node"`
-		Cursor string `json:"cursor"`
-	} `json:"edges"`
+	Results []struct {
+		T   time.Time `json:"t"`
+		Msg string    `json:"msg"`
+	} `json:"results"`
 	Namespace string `json:"namespace"`
 	Instance  string `json:"instance"`
 }
