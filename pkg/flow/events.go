@@ -1083,6 +1083,20 @@ func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloud
 
 	resp.Event = newBytesEvent
 
+	if string(resp.GetEvent()) == "null" {
+		event, _ := EventByteToCloudevent(cloudevent)
+		if err != nil {
+			return resp, err
+		}
+		flow.logToNamespace(ctx, time.Now(), ns, "Dropped Event: %s", event.ID())
+	} else {
+		event, _ := EventByteToCloudevent(newBytesEvent)
+		if err != nil {
+			return resp, err
+		}
+		flow.logToNamespace(ctx, time.Now(), ns, "Eventfilter applied, new Event : %s (%s / %s)", event.ID(), event.Type(), event.Source())
+	}
+
 	return resp, err
 }
 
@@ -1164,5 +1178,12 @@ func (flow *flow) CreateCloudEventFilter(ctx context.Context, in *grpc.CreateClo
 	cache[key] = script
 
 	return &resp, err
+
+}
+
+func EventByteToCloudevent(byteEvent []byte) (event.Event, error) {
+	ev := &event.Event{}
+	err := json.Unmarshal(byteEvent, ev)
+	return *ev, err
 
 }
