@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -436,6 +437,115 @@ func executeWorkflow(url string) (executeResponse, error) {
 
 	err = json.Unmarshal(body, &instanceDetails)
 	return instanceDetails, err
+
+}
+
+func executeEvent(url string) (string, error) {
+
+	// Read input data from flag file
+	inputDataOsFile, err := os.Open(localAbsPath)
+
+	if err != nil {
+		return "", err
+	}
+
+	defer inputDataOsFile.Close()
+	byteResult, err := ioutil.ReadAll(inputDataOsFile)
+
+	if err != nil {
+		return "", err
+	}
+
+	var event map[string]interface{}
+	err = json.Unmarshal([]byte(byteResult), &event)
+
+	if err != nil {
+		return "", err
+	}
+
+	//fill or overwrite inputData if necessary
+	if Id != "" {
+		event["id"] = Id
+	}
+	if Source != "" {
+		event["source"] = Source
+	}
+	if Type != "" {
+		event["type"] = Type
+	}
+	if Specversion != "" {
+		event["specversion"] = Specversion
+	}
+
+	if len(event) == 0 {
+		err = errors.New("empty file ")
+		return "", err
+	}
+
+	eventBody, err := json.Marshal(event)
+
+	if err != nil {
+		return "", err
+	}
+
+	body := bytes.NewReader(eventBody)
+	req, err := http.NewRequest(
+		http.MethodPost,
+		url,
+		body,
+	)
+	if err != nil {
+		return "", err
+	}
+
+	req.Header.Add("Content-Type", inputType)
+	addAuthHeaders(req)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return "", err
+	}
+	//if event already exist just replay the event
+	if resp.StatusCode != http.StatusOK {
+		eventId := event["id"]
+		url := fmt.Sprintf("%s/events/%s/replay", urlPrefix, eventId)
+
+		req, err := http.NewRequest(
+			http.MethodPost,
+			url,
+			nil,
+		)
+
+		if err != nil {
+			return "", err
+		}
+
+		addAuthHeaders(req)
+
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			return "", err
+		}
+
+		if resp.StatusCode != http.StatusOK {
+			err = fmt.Errorf("failed to send event (rejected by server)")
+			return "", err
+		}
+	}
+
+	x, exist := event["id"]
+	if !exist {
+		err = errors.New("event id undefined")
+		return "", err
+	}
+
+	id, ok := x.(string)
+	if !ok {
+		err = errors.New("event id is not a string")
+		return "", err
+	}
+
+	return id, err
 
 }
 
