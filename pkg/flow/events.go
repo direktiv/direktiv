@@ -1021,7 +1021,6 @@ func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloud
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	resp := new(grpc.ApplyCloudEventFilterResponse)
-	resp.Event = nil
 
 	namespace := in.GetNamespace()
 	filtername := in.GetFilterName()
