@@ -117,11 +117,11 @@ DOCKER_FILES = $(shell find build/docker/ -type f)
 
 .PHONY: ent
 ent: ## Manually regenerates ent database packages.
-	go get entgo.io/ent
-	go generate ./pkg/flow/ent
-	go generate ./pkg/secrets/ent
-	go generate ./pkg/functions/ent
-	go generate ./pkg/metrics/ent
+	cd build/ent && docker build -t ent .
+	docker run -v `pwd`:/ent ent ./pkg/flow/ent
+	docker run -v `pwd`:/ent ent ./pkg/secrets/ent
+	docker run -v `pwd`:/ent ent ./pkg/functions/ent
+	docker run -v `pwd`:/ent ent ./pkg/metrics/ent
 
 # Cleans API client inside of pkg api
 .PHONY: api-clean-client
@@ -164,8 +164,9 @@ PROTOBUF_SOURCE_FILES := $(shell find . -type f -name '*.proto' -exec sh -c 'ech
 .PHONY: protoc
 protoc: ## Manually regenerates Go packages built from protobuf.
 protoc:
+	cd build/protoc && docker build -t protoc .
 	for val in ${PROTOBUF_SOURCE_FILES}; do \
-		echo "Generating protobuf file $$val..."; protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative --experimental_allow_proto3_optional $$val; \
+		echo "Generating protobuf file $$val..."; docker run -v `pwd`/pkg:/pkg protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative --experimental_allow_proto3_optional $$val; \
 	done
 
 # Patterns
