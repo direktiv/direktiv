@@ -7,6 +7,8 @@ import (
 	"errors"
 	"fmt"
 
+	"entgo.io/ent/dialect"
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
@@ -19,6 +21,7 @@ type ServicesCreate struct {
 	config
 	mutation *ServicesMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetName sets the "name" field.
@@ -172,6 +175,7 @@ func (sc *ServicesCreate) createSpec() (*Services, *sqlgraph.CreateSpec) {
 			},
 		}
 	)
+	_spec.OnConflict = sc.conflict
 	if id, ok := sc.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = id
@@ -207,10 +211,198 @@ func (sc *ServicesCreate) createSpec() (*Services, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Services.Create().
+//		SetName(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.ServicesUpsert) {
+//			SetName(v+v).
+//		}).
+//		Exec(ctx)
+func (sc *ServicesCreate) OnConflict(opts ...sql.ConflictOption) *ServicesUpsertOne {
+	sc.conflict = opts
+	return &ServicesUpsertOne{
+		create: sc,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Services.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (sc *ServicesCreate) OnConflictColumns(columns ...string) *ServicesUpsertOne {
+	sc.conflict = append(sc.conflict, sql.ConflictColumns(columns...))
+	return &ServicesUpsertOne{
+		create: sc,
+	}
+}
+
+type (
+	// ServicesUpsertOne is the builder for "upsert"-ing
+	//  one Services node.
+	ServicesUpsertOne struct {
+		create *ServicesCreate
+	}
+
+	// ServicesUpsert is the "OnConflict" setter.
+	ServicesUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetName sets the "name" field.
+func (u *ServicesUpsert) SetName(v string) *ServicesUpsert {
+	u.Set(services.FieldName, v)
+	return u
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *ServicesUpsert) UpdateName() *ServicesUpsert {
+	u.SetExcluded(services.FieldName)
+	return u
+}
+
+// SetData sets the "data" field.
+func (u *ServicesUpsert) SetData(v string) *ServicesUpsert {
+	u.Set(services.FieldData, v)
+	return u
+}
+
+// UpdateData sets the "data" field to the value that was provided on create.
+func (u *ServicesUpsert) UpdateData() *ServicesUpsert {
+	u.SetExcluded(services.FieldData)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// Using this option is equivalent to using:
+//
+//	client.Services.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(services.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *ServicesUpsertOne) UpdateNewValues() *ServicesUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(services.FieldID)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Services.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *ServicesUpsertOne) Ignore() *ServicesUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *ServicesUpsertOne) DoNothing() *ServicesUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the ServicesCreate.OnConflict
+// documentation for more info.
+func (u *ServicesUpsertOne) Update(set func(*ServicesUpsert)) *ServicesUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&ServicesUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetName sets the "name" field.
+func (u *ServicesUpsertOne) SetName(v string) *ServicesUpsertOne {
+	return u.Update(func(s *ServicesUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *ServicesUpsertOne) UpdateName() *ServicesUpsertOne {
+	return u.Update(func(s *ServicesUpsert) {
+		s.UpdateName()
+	})
+}
+
+// SetData sets the "data" field.
+func (u *ServicesUpsertOne) SetData(v string) *ServicesUpsertOne {
+	return u.Update(func(s *ServicesUpsert) {
+		s.SetData(v)
+	})
+}
+
+// UpdateData sets the "data" field to the value that was provided on create.
+func (u *ServicesUpsertOne) UpdateData() *ServicesUpsertOne {
+	return u.Update(func(s *ServicesUpsert) {
+		s.UpdateData()
+	})
+}
+
+// Exec executes the query.
+func (u *ServicesUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for ServicesCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *ServicesUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *ServicesUpsertOne) ID(ctx context.Context) (id string, err error) {
+	if u.create.driver.Dialect() == dialect.MySQL {
+		// In case of "ON CONFLICT", there is no way to get back non-numeric ID
+		// fields from the database since MySQL does not support the RETURNING clause.
+		return id, errors.New("ent: ServicesUpsertOne.ID is not supported by MySQL driver. Use ServicesUpsertOne.Exec instead")
+	}
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *ServicesUpsertOne) IDX(ctx context.Context) string {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // ServicesCreateBulk is the builder for creating many Services entities in bulk.
 type ServicesCreateBulk struct {
 	config
 	builders []*ServicesCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the Services entities in the database.
@@ -236,6 +428,7 @@ func (scb *ServicesCreateBulk) Save(ctx context.Context) ([]*Services, error) {
 					_, err = mutators[i+1].Mutate(root, scb.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = scb.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, scb.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -282,6 +475,145 @@ func (scb *ServicesCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (scb *ServicesCreateBulk) ExecX(ctx context.Context) {
 	if err := scb.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Services.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.ServicesUpsert) {
+//			SetName(v+v).
+//		}).
+//		Exec(ctx)
+func (scb *ServicesCreateBulk) OnConflict(opts ...sql.ConflictOption) *ServicesUpsertBulk {
+	scb.conflict = opts
+	return &ServicesUpsertBulk{
+		create: scb,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Services.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (scb *ServicesCreateBulk) OnConflictColumns(columns ...string) *ServicesUpsertBulk {
+	scb.conflict = append(scb.conflict, sql.ConflictColumns(columns...))
+	return &ServicesUpsertBulk{
+		create: scb,
+	}
+}
+
+// ServicesUpsertBulk is the builder for "upsert"-ing
+// a bulk of Services nodes.
+type ServicesUpsertBulk struct {
+	create *ServicesCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.Services.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(services.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *ServicesUpsertBulk) UpdateNewValues() *ServicesUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(services.FieldID)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Services.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *ServicesUpsertBulk) Ignore() *ServicesUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *ServicesUpsertBulk) DoNothing() *ServicesUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the ServicesCreateBulk.OnConflict
+// documentation for more info.
+func (u *ServicesUpsertBulk) Update(set func(*ServicesUpsert)) *ServicesUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&ServicesUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetName sets the "name" field.
+func (u *ServicesUpsertBulk) SetName(v string) *ServicesUpsertBulk {
+	return u.Update(func(s *ServicesUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *ServicesUpsertBulk) UpdateName() *ServicesUpsertBulk {
+	return u.Update(func(s *ServicesUpsert) {
+		s.UpdateName()
+	})
+}
+
+// SetData sets the "data" field.
+func (u *ServicesUpsertBulk) SetData(v string) *ServicesUpsertBulk {
+	return u.Update(func(s *ServicesUpsert) {
+		s.SetData(v)
+	})
+}
+
+// UpdateData sets the "data" field to the value that was provided on create.
+func (u *ServicesUpsertBulk) UpdateData() *ServicesUpsertBulk {
+	return u.Update(func(s *ServicesUpsert) {
+		s.UpdateData()
+	})
+}
+
+// Exec executes the query.
+func (u *ServicesUpsertBulk) Exec(ctx context.Context) error {
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the ServicesCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for ServicesCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *ServicesUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

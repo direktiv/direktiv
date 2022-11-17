@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math"
 
+	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -27,6 +28,7 @@ type ServicesQuery struct {
 	predicates    []predicate.Services
 	withNamespace *NamespaceQuery
 	withFKs       bool
+	modifiers     []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -378,6 +380,9 @@ func (sq *ServicesQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Ser
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
+	if len(sq.modifiers) > 0 {
+		_spec.Modifiers = sq.modifiers
+	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
@@ -428,6 +433,9 @@ func (sq *ServicesQuery) loadNamespace(ctx context.Context, query *NamespaceQuer
 
 func (sq *ServicesQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := sq.querySpec()
+	if len(sq.modifiers) > 0 {
+		_spec.Modifiers = sq.modifiers
+	}
 	_spec.Node.Columns = sq.fields
 	if len(sq.fields) > 0 {
 		_spec.Unique = sq.unique != nil && *sq.unique
@@ -509,6 +517,9 @@ func (sq *ServicesQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if sq.unique != nil && *sq.unique {
 		selector.Distinct()
 	}
+	for _, m := range sq.modifiers {
+		m(selector)
+	}
 	for _, p := range sq.predicates {
 		p(selector)
 	}
@@ -524,6 +535,38 @@ func (sq *ServicesQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector.Limit(*limit)
 	}
 	return selector
+}
+
+// ForUpdate locks the selected rows against concurrent updates, and prevent them from being
+// updated, deleted or "selected ... for update" by other sessions, until the transaction is
+// either committed or rolled-back.
+func (sq *ServicesQuery) ForUpdate(opts ...sql.LockOption) *ServicesQuery {
+	if sq.driver.Dialect() == dialect.Postgres {
+		sq.Unique(false)
+	}
+	sq.modifiers = append(sq.modifiers, func(s *sql.Selector) {
+		s.ForUpdate(opts...)
+	})
+	return sq
+}
+
+// ForShare behaves similarly to ForUpdate, except that it acquires a shared mode lock
+// on any rows that are read. Other sessions can read the rows, but cannot modify them
+// until your transaction commits.
+func (sq *ServicesQuery) ForShare(opts ...sql.LockOption) *ServicesQuery {
+	if sq.driver.Dialect() == dialect.Postgres {
+		sq.Unique(false)
+	}
+	sq.modifiers = append(sq.modifiers, func(s *sql.Selector) {
+		s.ForShare(opts...)
+	})
+	return sq
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (sq *ServicesQuery) Modify(modifiers ...func(s *sql.Selector)) *ServicesSelect {
+	sq.modifiers = append(sq.modifiers, modifiers...)
+	return sq.Select()
 }
 
 // ServicesGroupBy is the group-by builder for Services entities.
@@ -630,4 +673,10 @@ func (ss *ServicesSelect) sqlScan(ctx context.Context, v any) error {
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (ss *ServicesSelect) Modify(modifiers ...func(s *sql.Selector)) *ServicesSelect {
+	ss.modifiers = append(ss.modifiers, modifiers...)
+	return ss
 }

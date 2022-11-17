@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"math"
 
+	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -34,6 +35,7 @@ type InodeQuery struct {
 	withWorkflow  *WorkflowQuery
 	withMirror    *MirrorQuery
 	withFKs       bool
+	modifiers     []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -525,6 +527,9 @@ func (iq *InodeQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Inode,
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
+	if len(iq.modifiers) > 0 {
+		_spec.Modifiers = iq.modifiers
+	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
@@ -716,6 +721,9 @@ func (iq *InodeQuery) loadMirror(ctx context.Context, query *MirrorQuery, nodes 
 
 func (iq *InodeQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := iq.querySpec()
+	if len(iq.modifiers) > 0 {
+		_spec.Modifiers = iq.modifiers
+	}
 	_spec.Node.Columns = iq.fields
 	if len(iq.fields) > 0 {
 		_spec.Unique = iq.unique != nil && *iq.unique
@@ -797,6 +805,9 @@ func (iq *InodeQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if iq.unique != nil && *iq.unique {
 		selector.Distinct()
 	}
+	for _, m := range iq.modifiers {
+		m(selector)
+	}
 	for _, p := range iq.predicates {
 		p(selector)
 	}
@@ -812,6 +823,38 @@ func (iq *InodeQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector.Limit(*limit)
 	}
 	return selector
+}
+
+// ForUpdate locks the selected rows against concurrent updates, and prevent them from being
+// updated, deleted or "selected ... for update" by other sessions, until the transaction is
+// either committed or rolled-back.
+func (iq *InodeQuery) ForUpdate(opts ...sql.LockOption) *InodeQuery {
+	if iq.driver.Dialect() == dialect.Postgres {
+		iq.Unique(false)
+	}
+	iq.modifiers = append(iq.modifiers, func(s *sql.Selector) {
+		s.ForUpdate(opts...)
+	})
+	return iq
+}
+
+// ForShare behaves similarly to ForUpdate, except that it acquires a shared mode lock
+// on any rows that are read. Other sessions can read the rows, but cannot modify them
+// until your transaction commits.
+func (iq *InodeQuery) ForShare(opts ...sql.LockOption) *InodeQuery {
+	if iq.driver.Dialect() == dialect.Postgres {
+		iq.Unique(false)
+	}
+	iq.modifiers = append(iq.modifiers, func(s *sql.Selector) {
+		s.ForShare(opts...)
+	})
+	return iq
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (iq *InodeQuery) Modify(modifiers ...func(s *sql.Selector)) *InodeSelect {
+	iq.modifiers = append(iq.modifiers, modifiers...)
+	return iq.Select()
 }
 
 // InodeGroupBy is the group-by builder for Inode entities.
@@ -918,4 +961,10 @@ func (is *InodeSelect) sqlScan(ctx context.Context, v any) error {
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (is *InodeSelect) Modify(modifiers ...func(s *sql.Selector)) *InodeSelect {
+	is.modifiers = append(is.modifiers, modifiers...)
+	return is
 }

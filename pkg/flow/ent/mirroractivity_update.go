@@ -22,8 +22,9 @@ import (
 // MirrorActivityUpdate is the builder for updating MirrorActivity entities.
 type MirrorActivityUpdate struct {
 	config
-	hooks    []Hook
-	mutation *MirrorActivityMutation
+	hooks     []Hook
+	mutation  *MirrorActivityMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // Where appends a list predicates to the MirrorActivityUpdate builder.
@@ -270,6 +271,12 @@ func (mau *MirrorActivityUpdate) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (mau *MirrorActivityUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *MirrorActivityUpdate {
+	mau.modifiers = append(mau.modifiers, modifiers...)
+	return mau
+}
+
 func (mau *MirrorActivityUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -439,6 +446,7 @@ func (mau *MirrorActivityUpdate) sqlSave(ctx context.Context) (n int, err error)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	_spec.AddModifiers(mau.modifiers...)
 	if n, err = sqlgraph.UpdateNodes(ctx, mau.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{mirroractivity.Label}
@@ -453,9 +461,10 @@ func (mau *MirrorActivityUpdate) sqlSave(ctx context.Context) (n int, err error)
 // MirrorActivityUpdateOne is the builder for updating a single MirrorActivity entity.
 type MirrorActivityUpdateOne struct {
 	config
-	fields   []string
-	hooks    []Hook
-	mutation *MirrorActivityMutation
+	fields    []string
+	hooks     []Hook
+	mutation  *MirrorActivityMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // SetType sets the "type" field.
@@ -709,6 +718,12 @@ func (mauo *MirrorActivityUpdateOne) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (mauo *MirrorActivityUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *MirrorActivityUpdateOne {
+	mauo.modifiers = append(mauo.modifiers, modifiers...)
+	return mauo
+}
+
 func (mauo *MirrorActivityUpdateOne) sqlSave(ctx context.Context) (_node *MirrorActivity, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -895,6 +910,7 @@ func (mauo *MirrorActivityUpdateOne) sqlSave(ctx context.Context) (_node *Mirror
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	_spec.AddModifiers(mauo.modifiers...)
 	_node = &MirrorActivity{config: mauo.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
