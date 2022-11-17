@@ -113,13 +113,29 @@ DOCKER_FILES = $(shell find build/docker/ -type f)
 
 # ENT
 
+.PHONY: ent-flow
+ent-flow: ## Manually regenerates ent database package for flow. 
+	cd build/ent && docker build -t ent .
+	docker run -v `pwd`:/ent ent ./pkg/flow/ent
+
+.PHONY: ent-secrets
+ent-secrets: ## Manually regenerates ent database package for secrets. 
+	cd build/ent && docker build -t ent .
+	docker run -v `pwd`:/ent ent ./pkg/secrets/ent
+
+.PHONY: ent-functions
+ent-functions: ## Manually regenerates ent database package for functions. 
+	cd build/ent && docker build -t ent .
+	docker run -v `pwd`:/ent ent ./pkg/functions/ent
+
+.PHONY: ent-metrics
+ent-metrics: ## Manually regenerates ent database package for metrics. 
+	cd build/ent && docker build -t ent .
+	docker run -v `pwd`:/ent ent ./pkg/metrics/ent
+
 .PHONY: ent
 ent: ## Manually regenerates ent database packages.
-	go get entgo.io/ent
-	go generate ./pkg/flow/ent
-	go generate ./pkg/secrets/ent
-	go generate ./pkg/functions/ent
-	go generate ./pkg/metrics/ent
+ent: ent-flow ent-secrets ent-functions ent-metrics
 
 # Cleans API client inside of pkg api
 .PHONY: api-clean-client
@@ -157,14 +173,46 @@ api-swagger:
 
 # PROTOC
 
-PROTOBUF_SOURCE_FILES := $(shell find . -type f -name '*.proto' -exec sh -c 'echo "{}"' \;)
+PROTOBUF_FLOW_SOURCE_FILES := $(shell find ./pkg/flow -type f -name '*.proto' -exec sh -c 'echo "{}"' \;)
+PROTOBUF_HEALTH_SOURCE_FILES := $(shell find ./pkg/health -type f -name '*.proto' -exec sh -c 'echo "{}"' \;)
+PROTOBUF_SECRETS_SOURCE_FILES := $(shell find ./pkg/secrets -type f -name '*.proto' -exec sh -c 'echo "{}"' \;)
+PROTOBUF_FUNCTIONS_SOURCE_FILES := $(shell find ./pkg/functions -type f -name '*.proto' -exec sh -c 'echo "{}"' \;)
 
-.PHONY: protoc
-protoc: ## Manually regenerates Go packages built from protobuf.
-protoc:
-	for val in ${PROTOBUF_SOURCE_FILES}; do \
-		echo "Generating protobuf file $$val..."; protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative --experimental_allow_proto3_optional $$val; \
+.PHONY: protoc-flow 
+protoc-flow: ## Manually regenerates flow gRPC API.
+protoc-flow: ${PROTOBUF_FLOW_SOURCE_FILES}
+	cd build/protoc && docker build -t protoc .
+	for val in ${PROTOBUF_FLOW_SOURCE_FILES}; do \
+		echo "Generating protobuf file $$val..."; docker run -v `pwd`/pkg:/pkg protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative --experimental_allow_proto3_optional $$val; \
 	done
+
+.PHONY: protoc-health
+protoc-health: ## Manually regenerates health gRPC API.
+protoc-health: ${PROTOBUF_HEALTH_SOURCE_FILES}
+	cd build/protoc && docker build -t protoc .
+	for val in ${PROTOBUF_HEALTH_SOURCE_FILES}; do \
+		echo "Generating protobuf file $$val..."; docker run -v `pwd`/pkg:/pkg protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative --experimental_allow_proto3_optional $$val; \
+	done
+
+.PHONY: protoc-secrets
+protoc-secrets: ## Manually regenerates secrets gRPC API.
+protoc-secrets: ${PROTOBUF_SECRETS_SOURCE_FILES}
+	cd build/protoc && docker build -t protoc .
+	for val in ${PROTOBUF_SECRETS_SOURCE_FILES}; do \
+		echo "Generating protobuf file $$val..."; docker run -v `pwd`/pkg:/pkg protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative --experimental_allow_proto3_optional $$val; \
+	done
+
+.PHONY: protoc-functions
+protoc-functions: ## Manually regenerates functions gRPC API.
+protoc-functions: ${PROTOBUF_FUNCTIONS_SOURCE_FILES}
+	cd build/protoc && docker build -t protoc .
+	for val in ${PROTOBUF_FUNCTIONS_SOURCE_FILES}; do \
+		echo "Generating protobuf file $$val..."; docker run -v `pwd`/pkg:/pkg protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative --experimental_allow_proto3_optional $$val; \
+	done
+
+.PHONY: protoc 
+protoc: ## Manually regenerates Go packages built from protobuf.
+protoc: protoc-flow protoc-health protoc-secrets protoc-functions 
 
 # Patterns
 
