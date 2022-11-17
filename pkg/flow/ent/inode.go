@@ -56,7 +56,8 @@ type InodeEdges struct {
 	Mirror *Mirror `json:"mirror,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [5]bool
+	loadedTypes   [5]bool
+	namedChildren map[string][]*Inode
 }
 
 // NamespaceOrErr returns the Namespace value or an error if the edge
@@ -293,6 +294,30 @@ func (i *Inode) String() string {
 	builder.WriteString(fmt.Sprintf("%v", i.ReadOnly))
 	builder.WriteByte(')')
 	return builder.String()
+}
+
+// NamedChildren returns the Children named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (i *Inode) NamedChildren(name string) ([]*Inode, error) {
+	if i.Edges.namedChildren == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := i.Edges.namedChildren[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (i *Inode) appendNamedChildren(name string, edges ...*Inode) {
+	if i.Edges.namedChildren == nil {
+		i.Edges.namedChildren = make(map[string][]*Inode)
+	}
+	if len(edges) == 0 {
+		i.Edges.namedChildren[name] = []*Inode{}
+	} else {
+		i.Edges.namedChildren[name] = append(i.Edges.namedChildren[name], edges...)
+	}
 }
 
 // Inodes is a parsable slice of Inode.

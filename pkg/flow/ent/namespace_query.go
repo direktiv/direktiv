@@ -28,21 +28,30 @@ import (
 // NamespaceQuery is the builder for querying Namespace entities.
 type NamespaceQuery struct {
 	config
-	limit                  *int
-	offset                 *int
-	unique                 *bool
-	order                  []OrderFunc
-	fields                 []string
-	predicates             []predicate.Namespace
-	withInodes             *InodeQuery
-	withWorkflows          *WorkflowQuery
-	withMirrors            *MirrorQuery
-	withMirrorActivities   *MirrorActivityQuery
-	withInstances          *InstanceQuery
-	withLogs               *LogMsgQuery
-	withVars               *VarRefQuery
-	withCloudevents        *CloudEventsQuery
-	withNamespacelisteners *EventsQuery
+	limit                       *int
+	offset                      *int
+	unique                      *bool
+	order                       []OrderFunc
+	fields                      []string
+	predicates                  []predicate.Namespace
+	withInodes                  *InodeQuery
+	withWorkflows               *WorkflowQuery
+	withMirrors                 *MirrorQuery
+	withMirrorActivities        *MirrorActivityQuery
+	withInstances               *InstanceQuery
+	withLogs                    *LogMsgQuery
+	withVars                    *VarRefQuery
+	withCloudevents             *CloudEventsQuery
+	withNamespacelisteners      *EventsQuery
+	withNamedInodes             map[string]*InodeQuery
+	withNamedWorkflows          map[string]*WorkflowQuery
+	withNamedMirrors            map[string]*MirrorQuery
+	withNamedMirrorActivities   map[string]*MirrorActivityQuery
+	withNamedInstances          map[string]*InstanceQuery
+	withNamedLogs               map[string]*LogMsgQuery
+	withNamedVars               map[string]*VarRefQuery
+	withNamedCloudevents        map[string]*CloudEventsQuery
+	withNamedNamespacelisteners map[string]*EventsQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -739,6 +748,69 @@ func (nq *NamespaceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Na
 			return nil, err
 		}
 	}
+	for name, query := range nq.withNamedInodes {
+		if err := nq.loadInodes(ctx, query, nodes,
+			func(n *Namespace) { n.appendNamedInodes(name) },
+			func(n *Namespace, e *Inode) { n.appendNamedInodes(name, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range nq.withNamedWorkflows {
+		if err := nq.loadWorkflows(ctx, query, nodes,
+			func(n *Namespace) { n.appendNamedWorkflows(name) },
+			func(n *Namespace, e *Workflow) { n.appendNamedWorkflows(name, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range nq.withNamedMirrors {
+		if err := nq.loadMirrors(ctx, query, nodes,
+			func(n *Namespace) { n.appendNamedMirrors(name) },
+			func(n *Namespace, e *Mirror) { n.appendNamedMirrors(name, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range nq.withNamedMirrorActivities {
+		if err := nq.loadMirrorActivities(ctx, query, nodes,
+			func(n *Namespace) { n.appendNamedMirrorActivities(name) },
+			func(n *Namespace, e *MirrorActivity) { n.appendNamedMirrorActivities(name, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range nq.withNamedInstances {
+		if err := nq.loadInstances(ctx, query, nodes,
+			func(n *Namespace) { n.appendNamedInstances(name) },
+			func(n *Namespace, e *Instance) { n.appendNamedInstances(name, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range nq.withNamedLogs {
+		if err := nq.loadLogs(ctx, query, nodes,
+			func(n *Namespace) { n.appendNamedLogs(name) },
+			func(n *Namespace, e *LogMsg) { n.appendNamedLogs(name, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range nq.withNamedVars {
+		if err := nq.loadVars(ctx, query, nodes,
+			func(n *Namespace) { n.appendNamedVars(name) },
+			func(n *Namespace, e *VarRef) { n.appendNamedVars(name, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range nq.withNamedCloudevents {
+		if err := nq.loadCloudevents(ctx, query, nodes,
+			func(n *Namespace) { n.appendNamedCloudevents(name) },
+			func(n *Namespace, e *CloudEvents) { n.appendNamedCloudevents(name, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range nq.withNamedNamespacelisteners {
+		if err := nq.loadNamespacelisteners(ctx, query, nodes,
+			func(n *Namespace) { n.appendNamedNamespacelisteners(name) },
+			func(n *Namespace, e *Events) { n.appendNamedNamespacelisteners(name, e) }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
 }
 
@@ -1120,6 +1192,132 @@ func (nq *NamespaceQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector.Limit(*limit)
 	}
 	return selector
+}
+
+// WithNamedInodes tells the query-builder to eager-load the nodes that are connected to the "inodes"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (nq *NamespaceQuery) WithNamedInodes(name string, opts ...func(*InodeQuery)) *NamespaceQuery {
+	query := &InodeQuery{config: nq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	if nq.withNamedInodes == nil {
+		nq.withNamedInodes = make(map[string]*InodeQuery)
+	}
+	nq.withNamedInodes[name] = query
+	return nq
+}
+
+// WithNamedWorkflows tells the query-builder to eager-load the nodes that are connected to the "workflows"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (nq *NamespaceQuery) WithNamedWorkflows(name string, opts ...func(*WorkflowQuery)) *NamespaceQuery {
+	query := &WorkflowQuery{config: nq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	if nq.withNamedWorkflows == nil {
+		nq.withNamedWorkflows = make(map[string]*WorkflowQuery)
+	}
+	nq.withNamedWorkflows[name] = query
+	return nq
+}
+
+// WithNamedMirrors tells the query-builder to eager-load the nodes that are connected to the "mirrors"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (nq *NamespaceQuery) WithNamedMirrors(name string, opts ...func(*MirrorQuery)) *NamespaceQuery {
+	query := &MirrorQuery{config: nq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	if nq.withNamedMirrors == nil {
+		nq.withNamedMirrors = make(map[string]*MirrorQuery)
+	}
+	nq.withNamedMirrors[name] = query
+	return nq
+}
+
+// WithNamedMirrorActivities tells the query-builder to eager-load the nodes that are connected to the "mirror_activities"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (nq *NamespaceQuery) WithNamedMirrorActivities(name string, opts ...func(*MirrorActivityQuery)) *NamespaceQuery {
+	query := &MirrorActivityQuery{config: nq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	if nq.withNamedMirrorActivities == nil {
+		nq.withNamedMirrorActivities = make(map[string]*MirrorActivityQuery)
+	}
+	nq.withNamedMirrorActivities[name] = query
+	return nq
+}
+
+// WithNamedInstances tells the query-builder to eager-load the nodes that are connected to the "instances"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (nq *NamespaceQuery) WithNamedInstances(name string, opts ...func(*InstanceQuery)) *NamespaceQuery {
+	query := &InstanceQuery{config: nq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	if nq.withNamedInstances == nil {
+		nq.withNamedInstances = make(map[string]*InstanceQuery)
+	}
+	nq.withNamedInstances[name] = query
+	return nq
+}
+
+// WithNamedLogs tells the query-builder to eager-load the nodes that are connected to the "logs"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (nq *NamespaceQuery) WithNamedLogs(name string, opts ...func(*LogMsgQuery)) *NamespaceQuery {
+	query := &LogMsgQuery{config: nq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	if nq.withNamedLogs == nil {
+		nq.withNamedLogs = make(map[string]*LogMsgQuery)
+	}
+	nq.withNamedLogs[name] = query
+	return nq
+}
+
+// WithNamedVars tells the query-builder to eager-load the nodes that are connected to the "vars"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (nq *NamespaceQuery) WithNamedVars(name string, opts ...func(*VarRefQuery)) *NamespaceQuery {
+	query := &VarRefQuery{config: nq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	if nq.withNamedVars == nil {
+		nq.withNamedVars = make(map[string]*VarRefQuery)
+	}
+	nq.withNamedVars[name] = query
+	return nq
+}
+
+// WithNamedCloudevents tells the query-builder to eager-load the nodes that are connected to the "cloudevents"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (nq *NamespaceQuery) WithNamedCloudevents(name string, opts ...func(*CloudEventsQuery)) *NamespaceQuery {
+	query := &CloudEventsQuery{config: nq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	if nq.withNamedCloudevents == nil {
+		nq.withNamedCloudevents = make(map[string]*CloudEventsQuery)
+	}
+	nq.withNamedCloudevents[name] = query
+	return nq
+}
+
+// WithNamedNamespacelisteners tells the query-builder to eager-load the nodes that are connected to the "namespacelisteners"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (nq *NamespaceQuery) WithNamedNamespacelisteners(name string, opts ...func(*EventsQuery)) *NamespaceQuery {
+	query := &EventsQuery{config: nq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	if nq.withNamedNamespacelisteners == nil {
+		nq.withNamedNamespacelisteners = make(map[string]*EventsQuery)
+	}
+	nq.withNamedNamespacelisteners[name] = query
+	return nq
 }
 
 // NamespaceGroupBy is the group-by builder for Namespace entities.

@@ -22,16 +22,17 @@ import (
 // MirrorQuery is the builder for querying Mirror entities.
 type MirrorQuery struct {
 	config
-	limit          *int
-	offset         *int
-	unique         *bool
-	order          []OrderFunc
-	fields         []string
-	predicates     []predicate.Mirror
-	withNamespace  *NamespaceQuery
-	withInode      *InodeQuery
-	withActivities *MirrorActivityQuery
-	withFKs        bool
+	limit               *int
+	offset              *int
+	unique              *bool
+	order               []OrderFunc
+	fields              []string
+	predicates          []predicate.Mirror
+	withNamespace       *NamespaceQuery
+	withInode           *InodeQuery
+	withActivities      *MirrorActivityQuery
+	withFKs             bool
+	withNamedActivities map[string]*MirrorActivityQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -481,6 +482,13 @@ func (mq *MirrorQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Mirro
 			return nil, err
 		}
 	}
+	for name, query := range mq.withNamedActivities {
+		if err := mq.loadActivities(ctx, query, nodes,
+			func(n *Mirror) { n.appendNamedActivities(name) },
+			func(n *Mirror, e *MirrorActivity) { n.appendNamedActivities(name, e) }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
 }
 
@@ -672,6 +680,20 @@ func (mq *MirrorQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector.Limit(*limit)
 	}
 	return selector
+}
+
+// WithNamedActivities tells the query-builder to eager-load the nodes that are connected to the "activities"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (mq *MirrorQuery) WithNamedActivities(name string, opts ...func(*MirrorActivityQuery)) *MirrorQuery {
+	query := &MirrorActivityQuery{config: mq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	if mq.withNamedActivities == nil {
+		mq.withNamedActivities = make(map[string]*MirrorActivityQuery)
+	}
+	mq.withNamedActivities[name] = query
+	return mq
 }
 
 // MirrorGroupBy is the group-by builder for Mirror entities.

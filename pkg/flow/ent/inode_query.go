@@ -22,18 +22,19 @@ import (
 // InodeQuery is the builder for querying Inode entities.
 type InodeQuery struct {
 	config
-	limit         *int
-	offset        *int
-	unique        *bool
-	order         []OrderFunc
-	fields        []string
-	predicates    []predicate.Inode
-	withNamespace *NamespaceQuery
-	withChildren  *InodeQuery
-	withParent    *InodeQuery
-	withWorkflow  *WorkflowQuery
-	withMirror    *MirrorQuery
-	withFKs       bool
+	limit             *int
+	offset            *int
+	unique            *bool
+	order             []OrderFunc
+	fields            []string
+	predicates        []predicate.Inode
+	withNamespace     *NamespaceQuery
+	withChildren      *InodeQuery
+	withParent        *InodeQuery
+	withWorkflow      *WorkflowQuery
+	withMirror        *MirrorQuery
+	withFKs           bool
+	withNamedChildren map[string]*InodeQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -565,6 +566,13 @@ func (iq *InodeQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Inode,
 			return nil, err
 		}
 	}
+	for name, query := range iq.withNamedChildren {
+		if err := iq.loadChildren(ctx, query, nodes,
+			func(n *Inode) { n.appendNamedChildren(name) },
+			func(n *Inode, e *Inode) { n.appendNamedChildren(name, e) }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
 }
 
@@ -812,6 +820,20 @@ func (iq *InodeQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector.Limit(*limit)
 	}
 	return selector
+}
+
+// WithNamedChildren tells the query-builder to eager-load the nodes that are connected to the "children"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (iq *InodeQuery) WithNamedChildren(name string, opts ...func(*InodeQuery)) *InodeQuery {
+	query := &InodeQuery{config: iq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	if iq.withNamedChildren == nil {
+		iq.withNamedChildren = make(map[string]*InodeQuery)
+	}
+	iq.withNamedChildren[name] = query
+	return iq
 }
 
 // InodeGroupBy is the group-by builder for Inode entities.

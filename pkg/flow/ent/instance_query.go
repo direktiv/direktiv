@@ -26,21 +26,25 @@ import (
 // InstanceQuery is the builder for querying Instance entities.
 type InstanceQuery struct {
 	config
-	limit              *int
-	offset             *int
-	unique             *bool
-	order              []OrderFunc
-	fields             []string
-	predicates         []predicate.Instance
-	withNamespace      *NamespaceQuery
-	withWorkflow       *WorkflowQuery
-	withRevision       *RevisionQuery
-	withLogs           *LogMsgQuery
-	withVars           *VarRefQuery
-	withRuntime        *InstanceRuntimeQuery
-	withChildren       *InstanceRuntimeQuery
-	withEventlisteners *EventsQuery
-	withFKs            bool
+	limit                   *int
+	offset                  *int
+	unique                  *bool
+	order                   []OrderFunc
+	fields                  []string
+	predicates              []predicate.Instance
+	withNamespace           *NamespaceQuery
+	withWorkflow            *WorkflowQuery
+	withRevision            *RevisionQuery
+	withLogs                *LogMsgQuery
+	withVars                *VarRefQuery
+	withRuntime             *InstanceRuntimeQuery
+	withChildren            *InstanceRuntimeQuery
+	withEventlisteners      *EventsQuery
+	withFKs                 bool
+	withNamedLogs           map[string]*LogMsgQuery
+	withNamedVars           map[string]*VarRefQuery
+	withNamedChildren       map[string]*InstanceRuntimeQuery
+	withNamedEventlisteners map[string]*EventsQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -698,6 +702,34 @@ func (iq *InstanceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Ins
 			return nil, err
 		}
 	}
+	for name, query := range iq.withNamedLogs {
+		if err := iq.loadLogs(ctx, query, nodes,
+			func(n *Instance) { n.appendNamedLogs(name) },
+			func(n *Instance, e *LogMsg) { n.appendNamedLogs(name, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range iq.withNamedVars {
+		if err := iq.loadVars(ctx, query, nodes,
+			func(n *Instance) { n.appendNamedVars(name) },
+			func(n *Instance, e *VarRef) { n.appendNamedVars(name, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range iq.withNamedChildren {
+		if err := iq.loadChildren(ctx, query, nodes,
+			func(n *Instance) { n.appendNamedChildren(name) },
+			func(n *Instance, e *InstanceRuntime) { n.appendNamedChildren(name, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range iq.withNamedEventlisteners {
+		if err := iq.loadEventlisteners(ctx, query, nodes,
+			func(n *Instance) { n.appendNamedEventlisteners(name) },
+			func(n *Instance, e *Events) { n.appendNamedEventlisteners(name, e) }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
 }
 
@@ -1039,6 +1071,62 @@ func (iq *InstanceQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector.Limit(*limit)
 	}
 	return selector
+}
+
+// WithNamedLogs tells the query-builder to eager-load the nodes that are connected to the "logs"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (iq *InstanceQuery) WithNamedLogs(name string, opts ...func(*LogMsgQuery)) *InstanceQuery {
+	query := &LogMsgQuery{config: iq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	if iq.withNamedLogs == nil {
+		iq.withNamedLogs = make(map[string]*LogMsgQuery)
+	}
+	iq.withNamedLogs[name] = query
+	return iq
+}
+
+// WithNamedVars tells the query-builder to eager-load the nodes that are connected to the "vars"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (iq *InstanceQuery) WithNamedVars(name string, opts ...func(*VarRefQuery)) *InstanceQuery {
+	query := &VarRefQuery{config: iq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	if iq.withNamedVars == nil {
+		iq.withNamedVars = make(map[string]*VarRefQuery)
+	}
+	iq.withNamedVars[name] = query
+	return iq
+}
+
+// WithNamedChildren tells the query-builder to eager-load the nodes that are connected to the "children"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (iq *InstanceQuery) WithNamedChildren(name string, opts ...func(*InstanceRuntimeQuery)) *InstanceQuery {
+	query := &InstanceRuntimeQuery{config: iq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	if iq.withNamedChildren == nil {
+		iq.withNamedChildren = make(map[string]*InstanceRuntimeQuery)
+	}
+	iq.withNamedChildren[name] = query
+	return iq
+}
+
+// WithNamedEventlisteners tells the query-builder to eager-load the nodes that are connected to the "eventlisteners"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (iq *InstanceQuery) WithNamedEventlisteners(name string, opts ...func(*EventsQuery)) *InstanceQuery {
+	query := &EventsQuery{config: iq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	if iq.withNamedEventlisteners == nil {
+		iq.withNamedEventlisteners = make(map[string]*EventsQuery)
+	}
+	iq.withNamedEventlisteners[name] = query
+	return iq
 }
 
 // InstanceGroupBy is the group-by builder for Instance entities.

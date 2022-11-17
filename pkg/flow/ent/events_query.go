@@ -23,17 +23,18 @@ import (
 // EventsQuery is the builder for querying Events entities.
 type EventsQuery struct {
 	config
-	limit            *int
-	offset           *int
-	unique           *bool
-	order            []OrderFunc
-	fields           []string
-	predicates       []predicate.Events
-	withWorkflow     *WorkflowQuery
-	withWfeventswait *EventsWaitQuery
-	withInstance     *InstanceQuery
-	withNamespace    *NamespaceQuery
-	withFKs          bool
+	limit                 *int
+	offset                *int
+	unique                *bool
+	order                 []OrderFunc
+	fields                []string
+	predicates            []predicate.Events
+	withWorkflow          *WorkflowQuery
+	withWfeventswait      *EventsWaitQuery
+	withInstance          *InstanceQuery
+	withNamespace         *NamespaceQuery
+	withFKs               bool
+	withNamedWfeventswait map[string]*EventsWaitQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -524,6 +525,13 @@ func (eq *EventsQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Event
 			return nil, err
 		}
 	}
+	for name, query := range eq.withNamedWfeventswait {
+		if err := eq.loadWfeventswait(ctx, query, nodes,
+			func(n *Events) { n.appendNamedWfeventswait(name) },
+			func(n *Events, e *EventsWait) { n.appendNamedWfeventswait(name, e) }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
 }
 
@@ -744,6 +752,20 @@ func (eq *EventsQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector.Limit(*limit)
 	}
 	return selector
+}
+
+// WithNamedWfeventswait tells the query-builder to eager-load the nodes that are connected to the "wfeventswait"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (eq *EventsQuery) WithNamedWfeventswait(name string, opts ...func(*EventsWaitQuery)) *EventsQuery {
+	query := &EventsWaitQuery{config: eq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	if eq.withNamedWfeventswait == nil {
+		eq.withNamedWfeventswait = make(map[string]*EventsWaitQuery)
+	}
+	eq.withNamedWfeventswait[name] = query
+	return eq
 }
 
 // EventsGroupBy is the group-by builder for Events entities.

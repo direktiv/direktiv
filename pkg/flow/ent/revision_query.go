@@ -22,16 +22,18 @@ import (
 // RevisionQuery is the builder for querying Revision entities.
 type RevisionQuery struct {
 	config
-	limit         *int
-	offset        *int
-	unique        *bool
-	order         []OrderFunc
-	fields        []string
-	predicates    []predicate.Revision
-	withWorkflow  *WorkflowQuery
-	withRefs      *RefQuery
-	withInstances *InstanceQuery
-	withFKs       bool
+	limit              *int
+	offset             *int
+	unique             *bool
+	order              []OrderFunc
+	fields             []string
+	predicates         []predicate.Revision
+	withWorkflow       *WorkflowQuery
+	withRefs           *RefQuery
+	withInstances      *InstanceQuery
+	withFKs            bool
+	withNamedRefs      map[string]*RefQuery
+	withNamedInstances map[string]*InstanceQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -482,6 +484,20 @@ func (rq *RevisionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Rev
 			return nil, err
 		}
 	}
+	for name, query := range rq.withNamedRefs {
+		if err := rq.loadRefs(ctx, query, nodes,
+			func(n *Revision) { n.appendNamedRefs(name) },
+			func(n *Revision, e *Ref) { n.appendNamedRefs(name, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range rq.withNamedInstances {
+		if err := rq.loadInstances(ctx, query, nodes,
+			func(n *Revision) { n.appendNamedInstances(name) },
+			func(n *Revision, e *Instance) { n.appendNamedInstances(name, e) }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
 }
 
@@ -675,6 +691,34 @@ func (rq *RevisionQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector.Limit(*limit)
 	}
 	return selector
+}
+
+// WithNamedRefs tells the query-builder to eager-load the nodes that are connected to the "refs"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (rq *RevisionQuery) WithNamedRefs(name string, opts ...func(*RefQuery)) *RevisionQuery {
+	query := &RefQuery{config: rq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	if rq.withNamedRefs == nil {
+		rq.withNamedRefs = make(map[string]*RefQuery)
+	}
+	rq.withNamedRefs[name] = query
+	return rq
+}
+
+// WithNamedInstances tells the query-builder to eager-load the nodes that are connected to the "instances"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (rq *RevisionQuery) WithNamedInstances(name string, opts ...func(*InstanceQuery)) *RevisionQuery {
+	query := &InstanceQuery{config: rq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	if rq.withNamedInstances == nil {
+		rq.withNamedInstances = make(map[string]*InstanceQuery)
+	}
+	rq.withNamedInstances[name] = query
+	return rq
 }
 
 // RevisionGroupBy is the group-by builder for Revision entities.
