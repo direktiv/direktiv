@@ -93,15 +93,13 @@ helm-reinstall: ## Re-installes direktiv without pushing images
 .PHONY: cluster
 cluster: ## Updates images at $DOCKER_REPO, then uses $HELM_CONFIG to build the cluster.
 cluster: push
-	$(eval X := $(shell kubectl get namespaces | grep -c direktiv-services-direktiv))
-	if [ ${X} -eq 0 ]; then kubectl create namespace direktiv-services-direktiv; fi
 	if [ ! -d scripts/direktiv-charts ]; then \
 		git clone https://github.com/direktiv/direktiv-charts.git scripts/direktiv-charts; \
 		helm dependency update scripts/direktiv-charts/charts/direktiv; \
 	fi
 	if helm status direktiv; then helm uninstall direktiv; fi
-	kubectl delete -l direktiv.io/scope=w  ksvc -n direktiv-services-direktiv
-	kubectl delete --all jobs -n direktiv-services-direktiv
+	kubectl delete -l direktiv.io/scope=w  ksvc -n direktiv-services-direktiv || true
+	kubectl delete --all jobs -n direktiv-services-direktiv || true
 	helm install -f ${HELM_CONFIG} direktiv scripts/direktiv-charts/charts/direktiv/
 
 .PHONY: teardown

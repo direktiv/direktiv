@@ -18,7 +18,7 @@ ui:
 api:
   image: "api"
   tag: "latest"
-
+  
 functions:
   namespace: direktiv-services-direktiv
   image: "functions"
@@ -30,8 +30,46 @@ database:
   host: "direktiv-primary.postgres.svc"
   port: 5432
   user: "direktiv"
-  password: "2+4YJe(TNxSnNfSA)T*9tWGy"
+  password: "DJ6WGdS713eaFsij^xmwjPI}"
   name: "direktiv"
   sslmode: require
 
+database:
+  host: "direktiv-primary.postgres.svc"
+  port: 5432
+  user: "direktiv"
+  password: "-WbvkBu>}..[Ak_9BQfM+-X3"
+  name: "direktiv"
+  sslmode: require
 
+database:
+  host: "direktiv-primary.postgres.svc"
+  port: 5432
+  user: "direktiv"
+  password: "h/Hfsfq9<|TAsiyhY0B5.^We"
+  name: "direktiv"
+  sslmode: require
+
+database:
+  host: "direktiv-primary.postgres.svc"
+  port: 5432
+  user: "direktiv"
+  password: ")L=*bz^IVSgyj1l?c;5g])JO"
+  name: "direktiv"
+  sslmode: require
+
+database:
+  host: "direktiv-primary.postgres.svc"
+  port: 5432
+  user: "direktiv"
+  password: ".-s6gz7=:)/gf;)7S=D.MDK1"
+  name: "direktiv"
+  sslmode: require
+
+database:
+  host: "direktiv-primary.postgres.svc"
+  port: 5432
+  user: "direktiv"
+  password: "2izl}7|9mMqfemb8-ooZJC2k"
+  name: "direktiv"
+  sslmode: require
