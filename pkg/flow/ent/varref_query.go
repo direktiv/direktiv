@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math"
 
+	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -33,6 +34,7 @@ type VarRefQuery struct {
 	withWorkflow  *WorkflowQuery
 	withInstance  *InstanceQuery
 	withFKs       bool
+	modifiers     []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -489,6 +491,9 @@ func (vrq *VarRefQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*VarR
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
+	if len(vrq.modifiers) > 0 {
+		_spec.Modifiers = vrq.modifiers
+	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
@@ -644,6 +649,9 @@ func (vrq *VarRefQuery) loadInstance(ctx context.Context, query *InstanceQuery, 
 
 func (vrq *VarRefQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := vrq.querySpec()
+	if len(vrq.modifiers) > 0 {
+		_spec.Modifiers = vrq.modifiers
+	}
 	_spec.Node.Columns = vrq.fields
 	if len(vrq.fields) > 0 {
 		_spec.Unique = vrq.unique != nil && *vrq.unique
@@ -725,6 +733,9 @@ func (vrq *VarRefQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if vrq.unique != nil && *vrq.unique {
 		selector.Distinct()
 	}
+	for _, m := range vrq.modifiers {
+		m(selector)
+	}
 	for _, p := range vrq.predicates {
 		p(selector)
 	}
@@ -740,6 +751,38 @@ func (vrq *VarRefQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector.Limit(*limit)
 	}
 	return selector
+}
+
+// ForUpdate locks the selected rows against concurrent updates, and prevent them from being
+// updated, deleted or "selected ... for update" by other sessions, until the transaction is
+// either committed or rolled-back.
+func (vrq *VarRefQuery) ForUpdate(opts ...sql.LockOption) *VarRefQuery {
+	if vrq.driver.Dialect() == dialect.Postgres {
+		vrq.Unique(false)
+	}
+	vrq.modifiers = append(vrq.modifiers, func(s *sql.Selector) {
+		s.ForUpdate(opts...)
+	})
+	return vrq
+}
+
+// ForShare behaves similarly to ForUpdate, except that it acquires a shared mode lock
+// on any rows that are read. Other sessions can read the rows, but cannot modify them
+// until your transaction commits.
+func (vrq *VarRefQuery) ForShare(opts ...sql.LockOption) *VarRefQuery {
+	if vrq.driver.Dialect() == dialect.Postgres {
+		vrq.Unique(false)
+	}
+	vrq.modifiers = append(vrq.modifiers, func(s *sql.Selector) {
+		s.ForShare(opts...)
+	})
+	return vrq
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (vrq *VarRefQuery) Modify(modifiers ...func(s *sql.Selector)) *VarRefSelect {
+	vrq.modifiers = append(vrq.modifiers, modifiers...)
+	return vrq.Select()
 }
 
 // VarRefGroupBy is the group-by builder for VarRef entities.
@@ -846,4 +889,10 @@ func (vrs *VarRefSelect) sqlScan(ctx context.Context, v any) error {
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (vrs *VarRefSelect) Modify(modifiers ...func(s *sql.Selector)) *VarRefSelect {
+	vrs.modifiers = append(vrs.modifiers, modifiers...)
+	return vrs
 }

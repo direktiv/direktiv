@@ -24,8 +24,9 @@ import (
 // EventsUpdate is the builder for updating Events entities.
 type EventsUpdate struct {
 	config
-	hooks    []Hook
-	mutation *EventsMutation
+	hooks     []Hook
+	mutation  *EventsMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // Where appends a list predicates to the EventsUpdate builder.
@@ -269,6 +270,12 @@ func (eu *EventsUpdate) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (eu *EventsUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *EventsUpdate {
+	eu.modifiers = append(eu.modifiers, modifiers...)
+	return eu
+}
+
 func (eu *EventsUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -477,6 +484,7 @@ func (eu *EventsUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	_spec.AddModifiers(eu.modifiers...)
 	if n, err = sqlgraph.UpdateNodes(ctx, eu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{events.Label}
@@ -491,9 +499,10 @@ func (eu *EventsUpdate) sqlSave(ctx context.Context) (n int, err error) {
 // EventsUpdateOne is the builder for updating a single Events entity.
 type EventsUpdateOne struct {
 	config
-	fields   []string
-	hooks    []Hook
-	mutation *EventsMutation
+	fields    []string
+	hooks     []Hook
+	mutation  *EventsMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // SetEvents sets the "events" field.
@@ -744,6 +753,12 @@ func (euo *EventsUpdateOne) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (euo *EventsUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *EventsUpdateOne {
+	euo.modifiers = append(euo.modifiers, modifiers...)
+	return euo
+}
+
 func (euo *EventsUpdateOne) sqlSave(ctx context.Context) (_node *Events, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -969,6 +984,7 @@ func (euo *EventsUpdateOne) sqlSave(ctx context.Context) (_node *Events, err err
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	_spec.AddModifiers(euo.modifiers...)
 	_node = &Events{config: euo.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

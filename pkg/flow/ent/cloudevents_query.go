@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math"
 
+	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -27,6 +28,7 @@ type CloudEventsQuery struct {
 	predicates    []predicate.CloudEvents
 	withNamespace *NamespaceQuery
 	withFKs       bool
+	modifiers     []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -378,6 +380,9 @@ func (ceq *CloudEventsQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
+	if len(ceq.modifiers) > 0 {
+		_spec.Modifiers = ceq.modifiers
+	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
@@ -428,6 +433,9 @@ func (ceq *CloudEventsQuery) loadNamespace(ctx context.Context, query *Namespace
 
 func (ceq *CloudEventsQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := ceq.querySpec()
+	if len(ceq.modifiers) > 0 {
+		_spec.Modifiers = ceq.modifiers
+	}
 	_spec.Node.Columns = ceq.fields
 	if len(ceq.fields) > 0 {
 		_spec.Unique = ceq.unique != nil && *ceq.unique
@@ -509,6 +517,9 @@ func (ceq *CloudEventsQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if ceq.unique != nil && *ceq.unique {
 		selector.Distinct()
 	}
+	for _, m := range ceq.modifiers {
+		m(selector)
+	}
 	for _, p := range ceq.predicates {
 		p(selector)
 	}
@@ -524,6 +535,38 @@ func (ceq *CloudEventsQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector.Limit(*limit)
 	}
 	return selector
+}
+
+// ForUpdate locks the selected rows against concurrent updates, and prevent them from being
+// updated, deleted or "selected ... for update" by other sessions, until the transaction is
+// either committed or rolled-back.
+func (ceq *CloudEventsQuery) ForUpdate(opts ...sql.LockOption) *CloudEventsQuery {
+	if ceq.driver.Dialect() == dialect.Postgres {
+		ceq.Unique(false)
+	}
+	ceq.modifiers = append(ceq.modifiers, func(s *sql.Selector) {
+		s.ForUpdate(opts...)
+	})
+	return ceq
+}
+
+// ForShare behaves similarly to ForUpdate, except that it acquires a shared mode lock
+// on any rows that are read. Other sessions can read the rows, but cannot modify them
+// until your transaction commits.
+func (ceq *CloudEventsQuery) ForShare(opts ...sql.LockOption) *CloudEventsQuery {
+	if ceq.driver.Dialect() == dialect.Postgres {
+		ceq.Unique(false)
+	}
+	ceq.modifiers = append(ceq.modifiers, func(s *sql.Selector) {
+		s.ForShare(opts...)
+	})
+	return ceq
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (ceq *CloudEventsQuery) Modify(modifiers ...func(s *sql.Selector)) *CloudEventsSelect {
+	ceq.modifiers = append(ceq.modifiers, modifiers...)
+	return ceq.Select()
 }
 
 // CloudEventsGroupBy is the group-by builder for CloudEvents entities.
@@ -630,4 +673,10 @@ func (ces *CloudEventsSelect) sqlScan(ctx context.Context, v any) error {
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (ces *CloudEventsSelect) Modify(modifiers ...func(s *sql.Selector)) *CloudEventsSelect {
+	ces.modifiers = append(ces.modifiers, modifiers...)
+	return ces
 }

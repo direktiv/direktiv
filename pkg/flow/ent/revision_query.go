@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"math"
 
+	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -22,18 +23,17 @@ import (
 // RevisionQuery is the builder for querying Revision entities.
 type RevisionQuery struct {
 	config
-	limit              *int
-	offset             *int
-	unique             *bool
-	order              []OrderFunc
-	fields             []string
-	predicates         []predicate.Revision
-	withWorkflow       *WorkflowQuery
-	withRefs           *RefQuery
-	withInstances      *InstanceQuery
-	withFKs            bool
-	withNamedRefs      map[string]*RefQuery
-	withNamedInstances map[string]*InstanceQuery
+	limit         *int
+	offset        *int
+	unique        *bool
+	order         []OrderFunc
+	fields        []string
+	predicates    []predicate.Revision
+	withWorkflow  *WorkflowQuery
+	withRefs      *RefQuery
+	withInstances *InstanceQuery
+	withFKs       bool
+	modifiers     []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -455,6 +455,9 @@ func (rq *RevisionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Rev
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
+	if len(rq.modifiers) > 0 {
+		_spec.Modifiers = rq.modifiers
+	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
@@ -481,20 +484,6 @@ func (rq *RevisionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Rev
 		if err := rq.loadInstances(ctx, query, nodes,
 			func(n *Revision) { n.Edges.Instances = []*Instance{} },
 			func(n *Revision, e *Instance) { n.Edges.Instances = append(n.Edges.Instances, e) }); err != nil {
-			return nil, err
-		}
-	}
-	for name, query := range rq.withNamedRefs {
-		if err := rq.loadRefs(ctx, query, nodes,
-			func(n *Revision) { n.appendNamedRefs(name) },
-			func(n *Revision, e *Ref) { n.appendNamedRefs(name, e) }); err != nil {
-			return nil, err
-		}
-	}
-	for name, query := range rq.withNamedInstances {
-		if err := rq.loadInstances(ctx, query, nodes,
-			func(n *Revision) { n.appendNamedInstances(name) },
-			func(n *Revision, e *Instance) { n.appendNamedInstances(name, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -595,6 +584,9 @@ func (rq *RevisionQuery) loadInstances(ctx context.Context, query *InstanceQuery
 
 func (rq *RevisionQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := rq.querySpec()
+	if len(rq.modifiers) > 0 {
+		_spec.Modifiers = rq.modifiers
+	}
 	_spec.Node.Columns = rq.fields
 	if len(rq.fields) > 0 {
 		_spec.Unique = rq.unique != nil && *rq.unique
@@ -676,6 +668,9 @@ func (rq *RevisionQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if rq.unique != nil && *rq.unique {
 		selector.Distinct()
 	}
+	for _, m := range rq.modifiers {
+		m(selector)
+	}
 	for _, p := range rq.predicates {
 		p(selector)
 	}
@@ -693,32 +688,36 @@ func (rq *RevisionQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	return selector
 }
 
-// WithNamedRefs tells the query-builder to eager-load the nodes that are connected to the "refs"
-// edge with the given name. The optional arguments are used to configure the query builder of the edge.
-func (rq *RevisionQuery) WithNamedRefs(name string, opts ...func(*RefQuery)) *RevisionQuery {
-	query := &RefQuery{config: rq.config}
-	for _, opt := range opts {
-		opt(query)
+// ForUpdate locks the selected rows against concurrent updates, and prevent them from being
+// updated, deleted or "selected ... for update" by other sessions, until the transaction is
+// either committed or rolled-back.
+func (rq *RevisionQuery) ForUpdate(opts ...sql.LockOption) *RevisionQuery {
+	if rq.driver.Dialect() == dialect.Postgres {
+		rq.Unique(false)
 	}
-	if rq.withNamedRefs == nil {
-		rq.withNamedRefs = make(map[string]*RefQuery)
-	}
-	rq.withNamedRefs[name] = query
+	rq.modifiers = append(rq.modifiers, func(s *sql.Selector) {
+		s.ForUpdate(opts...)
+	})
 	return rq
 }
 
-// WithNamedInstances tells the query-builder to eager-load the nodes that are connected to the "instances"
-// edge with the given name. The optional arguments are used to configure the query builder of the edge.
-func (rq *RevisionQuery) WithNamedInstances(name string, opts ...func(*InstanceQuery)) *RevisionQuery {
-	query := &InstanceQuery{config: rq.config}
-	for _, opt := range opts {
-		opt(query)
+// ForShare behaves similarly to ForUpdate, except that it acquires a shared mode lock
+// on any rows that are read. Other sessions can read the rows, but cannot modify them
+// until your transaction commits.
+func (rq *RevisionQuery) ForShare(opts ...sql.LockOption) *RevisionQuery {
+	if rq.driver.Dialect() == dialect.Postgres {
+		rq.Unique(false)
 	}
-	if rq.withNamedInstances == nil {
-		rq.withNamedInstances = make(map[string]*InstanceQuery)
-	}
-	rq.withNamedInstances[name] = query
+	rq.modifiers = append(rq.modifiers, func(s *sql.Selector) {
+		s.ForShare(opts...)
+	})
 	return rq
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (rq *RevisionQuery) Modify(modifiers ...func(s *sql.Selector)) *RevisionSelect {
+	rq.modifiers = append(rq.modifiers, modifiers...)
+	return rq.Select()
 }
 
 // RevisionGroupBy is the group-by builder for Revision entities.
@@ -825,4 +824,10 @@ func (rs *RevisionSelect) sqlScan(ctx context.Context, v any) error {
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (rs *RevisionSelect) Modify(modifiers ...func(s *sql.Selector)) *RevisionSelect {
+	rs.modifiers = append(rs.modifiers, modifiers...)
+	return rs
 }

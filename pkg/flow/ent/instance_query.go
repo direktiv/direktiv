@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"math"
 
+	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -26,25 +27,22 @@ import (
 // InstanceQuery is the builder for querying Instance entities.
 type InstanceQuery struct {
 	config
-	limit                   *int
-	offset                  *int
-	unique                  *bool
-	order                   []OrderFunc
-	fields                  []string
-	predicates              []predicate.Instance
-	withNamespace           *NamespaceQuery
-	withWorkflow            *WorkflowQuery
-	withRevision            *RevisionQuery
-	withLogs                *LogMsgQuery
-	withVars                *VarRefQuery
-	withRuntime             *InstanceRuntimeQuery
-	withChildren            *InstanceRuntimeQuery
-	withEventlisteners      *EventsQuery
-	withFKs                 bool
-	withNamedLogs           map[string]*LogMsgQuery
-	withNamedVars           map[string]*VarRefQuery
-	withNamedChildren       map[string]*InstanceRuntimeQuery
-	withNamedEventlisteners map[string]*EventsQuery
+	limit              *int
+	offset             *int
+	unique             *bool
+	order              []OrderFunc
+	fields             []string
+	predicates         []predicate.Instance
+	withNamespace      *NamespaceQuery
+	withWorkflow       *WorkflowQuery
+	withRevision       *RevisionQuery
+	withLogs           *LogMsgQuery
+	withVars           *VarRefQuery
+	withRuntime        *InstanceRuntimeQuery
+	withChildren       *InstanceRuntimeQuery
+	withEventlisteners *EventsQuery
+	withFKs            bool
+	modifiers          []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -641,6 +639,9 @@ func (iq *InstanceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Ins
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
+	if len(iq.modifiers) > 0 {
+		_spec.Modifiers = iq.modifiers
+	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
@@ -699,34 +700,6 @@ func (iq *InstanceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Ins
 		if err := iq.loadEventlisteners(ctx, query, nodes,
 			func(n *Instance) { n.Edges.Eventlisteners = []*Events{} },
 			func(n *Instance, e *Events) { n.Edges.Eventlisteners = append(n.Edges.Eventlisteners, e) }); err != nil {
-			return nil, err
-		}
-	}
-	for name, query := range iq.withNamedLogs {
-		if err := iq.loadLogs(ctx, query, nodes,
-			func(n *Instance) { n.appendNamedLogs(name) },
-			func(n *Instance, e *LogMsg) { n.appendNamedLogs(name, e) }); err != nil {
-			return nil, err
-		}
-	}
-	for name, query := range iq.withNamedVars {
-		if err := iq.loadVars(ctx, query, nodes,
-			func(n *Instance) { n.appendNamedVars(name) },
-			func(n *Instance, e *VarRef) { n.appendNamedVars(name, e) }); err != nil {
-			return nil, err
-		}
-	}
-	for name, query := range iq.withNamedChildren {
-		if err := iq.loadChildren(ctx, query, nodes,
-			func(n *Instance) { n.appendNamedChildren(name) },
-			func(n *Instance, e *InstanceRuntime) { n.appendNamedChildren(name, e) }); err != nil {
-			return nil, err
-		}
-	}
-	for name, query := range iq.withNamedEventlisteners {
-		if err := iq.loadEventlisteners(ctx, query, nodes,
-			func(n *Instance) { n.appendNamedEventlisteners(name) },
-			func(n *Instance, e *Events) { n.appendNamedEventlisteners(name, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -975,6 +948,9 @@ func (iq *InstanceQuery) loadEventlisteners(ctx context.Context, query *EventsQu
 
 func (iq *InstanceQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := iq.querySpec()
+	if len(iq.modifiers) > 0 {
+		_spec.Modifiers = iq.modifiers
+	}
 	_spec.Node.Columns = iq.fields
 	if len(iq.fields) > 0 {
 		_spec.Unique = iq.unique != nil && *iq.unique
@@ -1056,6 +1032,9 @@ func (iq *InstanceQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if iq.unique != nil && *iq.unique {
 		selector.Distinct()
 	}
+	for _, m := range iq.modifiers {
+		m(selector)
+	}
 	for _, p := range iq.predicates {
 		p(selector)
 	}
@@ -1073,60 +1052,36 @@ func (iq *InstanceQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	return selector
 }
 
-// WithNamedLogs tells the query-builder to eager-load the nodes that are connected to the "logs"
-// edge with the given name. The optional arguments are used to configure the query builder of the edge.
-func (iq *InstanceQuery) WithNamedLogs(name string, opts ...func(*LogMsgQuery)) *InstanceQuery {
-	query := &LogMsgQuery{config: iq.config}
-	for _, opt := range opts {
-		opt(query)
+// ForUpdate locks the selected rows against concurrent updates, and prevent them from being
+// updated, deleted or "selected ... for update" by other sessions, until the transaction is
+// either committed or rolled-back.
+func (iq *InstanceQuery) ForUpdate(opts ...sql.LockOption) *InstanceQuery {
+	if iq.driver.Dialect() == dialect.Postgres {
+		iq.Unique(false)
 	}
-	if iq.withNamedLogs == nil {
-		iq.withNamedLogs = make(map[string]*LogMsgQuery)
-	}
-	iq.withNamedLogs[name] = query
+	iq.modifiers = append(iq.modifiers, func(s *sql.Selector) {
+		s.ForUpdate(opts...)
+	})
 	return iq
 }
 
-// WithNamedVars tells the query-builder to eager-load the nodes that are connected to the "vars"
-// edge with the given name. The optional arguments are used to configure the query builder of the edge.
-func (iq *InstanceQuery) WithNamedVars(name string, opts ...func(*VarRefQuery)) *InstanceQuery {
-	query := &VarRefQuery{config: iq.config}
-	for _, opt := range opts {
-		opt(query)
+// ForShare behaves similarly to ForUpdate, except that it acquires a shared mode lock
+// on any rows that are read. Other sessions can read the rows, but cannot modify them
+// until your transaction commits.
+func (iq *InstanceQuery) ForShare(opts ...sql.LockOption) *InstanceQuery {
+	if iq.driver.Dialect() == dialect.Postgres {
+		iq.Unique(false)
 	}
-	if iq.withNamedVars == nil {
-		iq.withNamedVars = make(map[string]*VarRefQuery)
-	}
-	iq.withNamedVars[name] = query
+	iq.modifiers = append(iq.modifiers, func(s *sql.Selector) {
+		s.ForShare(opts...)
+	})
 	return iq
 }
 
-// WithNamedChildren tells the query-builder to eager-load the nodes that are connected to the "children"
-// edge with the given name. The optional arguments are used to configure the query builder of the edge.
-func (iq *InstanceQuery) WithNamedChildren(name string, opts ...func(*InstanceRuntimeQuery)) *InstanceQuery {
-	query := &InstanceRuntimeQuery{config: iq.config}
-	for _, opt := range opts {
-		opt(query)
-	}
-	if iq.withNamedChildren == nil {
-		iq.withNamedChildren = make(map[string]*InstanceRuntimeQuery)
-	}
-	iq.withNamedChildren[name] = query
-	return iq
-}
-
-// WithNamedEventlisteners tells the query-builder to eager-load the nodes that are connected to the "eventlisteners"
-// edge with the given name. The optional arguments are used to configure the query builder of the edge.
-func (iq *InstanceQuery) WithNamedEventlisteners(name string, opts ...func(*EventsQuery)) *InstanceQuery {
-	query := &EventsQuery{config: iq.config}
-	for _, opt := range opts {
-		opt(query)
-	}
-	if iq.withNamedEventlisteners == nil {
-		iq.withNamedEventlisteners = make(map[string]*EventsQuery)
-	}
-	iq.withNamedEventlisteners[name] = query
-	return iq
+// Modify adds a query modifier for attaching custom logic to queries.
+func (iq *InstanceQuery) Modify(modifiers ...func(s *sql.Selector)) *InstanceSelect {
+	iq.modifiers = append(iq.modifiers, modifiers...)
+	return iq.Select()
 }
 
 // InstanceGroupBy is the group-by builder for Instance entities.
@@ -1233,4 +1188,10 @@ func (is *InstanceSelect) sqlScan(ctx context.Context, v any) error {
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (is *InstanceSelect) Modify(modifiers ...func(s *sql.Selector)) *InstanceSelect {
+	is.modifiers = append(is.modifiers, modifiers...)
+	return is
 }

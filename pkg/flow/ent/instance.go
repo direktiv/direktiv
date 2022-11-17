@@ -65,11 +65,7 @@ type InstanceEdges struct {
 	Eventlisteners []*Events `json:"eventlisteners,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes         [8]bool
-	namedLogs           map[string][]*LogMsg
-	namedVars           map[string][]*VarRef
-	namedChildren       map[string][]*InstanceRuntime
-	namedEventlisteners map[string][]*Events
+	loadedTypes [8]bool
 }
 
 // NamespaceOrErr returns the Namespace value or an error if the edge
@@ -360,102 +356,6 @@ func (i *Instance) String() string {
 	builder.WriteString(i.Invoker)
 	builder.WriteByte(')')
 	return builder.String()
-}
-
-// NamedLogs returns the Logs named value or an error if the edge was not
-// loaded in eager-loading with this name.
-func (i *Instance) NamedLogs(name string) ([]*LogMsg, error) {
-	if i.Edges.namedLogs == nil {
-		return nil, &NotLoadedError{edge: name}
-	}
-	nodes, ok := i.Edges.namedLogs[name]
-	if !ok {
-		return nil, &NotLoadedError{edge: name}
-	}
-	return nodes, nil
-}
-
-func (i *Instance) appendNamedLogs(name string, edges ...*LogMsg) {
-	if i.Edges.namedLogs == nil {
-		i.Edges.namedLogs = make(map[string][]*LogMsg)
-	}
-	if len(edges) == 0 {
-		i.Edges.namedLogs[name] = []*LogMsg{}
-	} else {
-		i.Edges.namedLogs[name] = append(i.Edges.namedLogs[name], edges...)
-	}
-}
-
-// NamedVars returns the Vars named value or an error if the edge was not
-// loaded in eager-loading with this name.
-func (i *Instance) NamedVars(name string) ([]*VarRef, error) {
-	if i.Edges.namedVars == nil {
-		return nil, &NotLoadedError{edge: name}
-	}
-	nodes, ok := i.Edges.namedVars[name]
-	if !ok {
-		return nil, &NotLoadedError{edge: name}
-	}
-	return nodes, nil
-}
-
-func (i *Instance) appendNamedVars(name string, edges ...*VarRef) {
-	if i.Edges.namedVars == nil {
-		i.Edges.namedVars = make(map[string][]*VarRef)
-	}
-	if len(edges) == 0 {
-		i.Edges.namedVars[name] = []*VarRef{}
-	} else {
-		i.Edges.namedVars[name] = append(i.Edges.namedVars[name], edges...)
-	}
-}
-
-// NamedChildren returns the Children named value or an error if the edge was not
-// loaded in eager-loading with this name.
-func (i *Instance) NamedChildren(name string) ([]*InstanceRuntime, error) {
-	if i.Edges.namedChildren == nil {
-		return nil, &NotLoadedError{edge: name}
-	}
-	nodes, ok := i.Edges.namedChildren[name]
-	if !ok {
-		return nil, &NotLoadedError{edge: name}
-	}
-	return nodes, nil
-}
-
-func (i *Instance) appendNamedChildren(name string, edges ...*InstanceRuntime) {
-	if i.Edges.namedChildren == nil {
-		i.Edges.namedChildren = make(map[string][]*InstanceRuntime)
-	}
-	if len(edges) == 0 {
-		i.Edges.namedChildren[name] = []*InstanceRuntime{}
-	} else {
-		i.Edges.namedChildren[name] = append(i.Edges.namedChildren[name], edges...)
-	}
-}
-
-// NamedEventlisteners returns the Eventlisteners named value or an error if the edge was not
-// loaded in eager-loading with this name.
-func (i *Instance) NamedEventlisteners(name string) ([]*Events, error) {
-	if i.Edges.namedEventlisteners == nil {
-		return nil, &NotLoadedError{edge: name}
-	}
-	nodes, ok := i.Edges.namedEventlisteners[name]
-	if !ok {
-		return nil, &NotLoadedError{edge: name}
-	}
-	return nodes, nil
-}
-
-func (i *Instance) appendNamedEventlisteners(name string, edges ...*Events) {
-	if i.Edges.namedEventlisteners == nil {
-		i.Edges.namedEventlisteners = make(map[string][]*Events)
-	}
-	if len(edges) == 0 {
-		i.Edges.namedEventlisteners[name] = []*Events{}
-	} else {
-		i.Edges.namedEventlisteners[name] = append(i.Edges.namedEventlisteners[name], edges...)
-	}
 }
 
 // Instances is a parsable slice of Instance.

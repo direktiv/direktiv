@@ -43,9 +43,7 @@ type RevisionEdges struct {
 	Instances []*Instance `json:"instances,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes    [3]bool
-	namedRefs      map[string][]*Ref
-	namedInstances map[string][]*Instance
+	loadedTypes [3]bool
 }
 
 // WorkflowOrErr returns the Workflow value or an error if the edge
@@ -204,54 +202,6 @@ func (r *Revision) String() string {
 	builder.WriteString(fmt.Sprintf("%v", r.Metadata))
 	builder.WriteByte(')')
 	return builder.String()
-}
-
-// NamedRefs returns the Refs named value or an error if the edge was not
-// loaded in eager-loading with this name.
-func (r *Revision) NamedRefs(name string) ([]*Ref, error) {
-	if r.Edges.namedRefs == nil {
-		return nil, &NotLoadedError{edge: name}
-	}
-	nodes, ok := r.Edges.namedRefs[name]
-	if !ok {
-		return nil, &NotLoadedError{edge: name}
-	}
-	return nodes, nil
-}
-
-func (r *Revision) appendNamedRefs(name string, edges ...*Ref) {
-	if r.Edges.namedRefs == nil {
-		r.Edges.namedRefs = make(map[string][]*Ref)
-	}
-	if len(edges) == 0 {
-		r.Edges.namedRefs[name] = []*Ref{}
-	} else {
-		r.Edges.namedRefs[name] = append(r.Edges.namedRefs[name], edges...)
-	}
-}
-
-// NamedInstances returns the Instances named value or an error if the edge was not
-// loaded in eager-loading with this name.
-func (r *Revision) NamedInstances(name string) ([]*Instance, error) {
-	if r.Edges.namedInstances == nil {
-		return nil, &NotLoadedError{edge: name}
-	}
-	nodes, ok := r.Edges.namedInstances[name]
-	if !ok {
-		return nil, &NotLoadedError{edge: name}
-	}
-	return nodes, nil
-}
-
-func (r *Revision) appendNamedInstances(name string, edges ...*Instance) {
-	if r.Edges.namedInstances == nil {
-		r.Edges.namedInstances = make(map[string][]*Instance)
-	}
-	if len(edges) == 0 {
-		r.Edges.namedInstances[name] = []*Instance{}
-	} else {
-		r.Edges.namedInstances[name] = append(r.Edges.namedInstances[name], edges...)
-	}
 }
 
 // Revisions is a parsable slice of Revision.

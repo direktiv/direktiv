@@ -21,8 +21,9 @@ import (
 // InstanceRuntimeUpdate is the builder for updating InstanceRuntime entities.
 type InstanceRuntimeUpdate struct {
 	config
-	hooks    []Hook
-	mutation *InstanceRuntimeMutation
+	hooks     []Hook
+	mutation  *InstanceRuntimeMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // Where appends a list predicates to the InstanceRuntimeUpdate builder.
@@ -371,6 +372,12 @@ func (iru *InstanceRuntimeUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (iru *InstanceRuntimeUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *InstanceRuntimeUpdate {
+	iru.modifiers = append(iru.modifiers, modifiers...)
+	return iru
+}
+
 func (iru *InstanceRuntimeUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -536,6 +543,7 @@ func (iru *InstanceRuntimeUpdate) sqlSave(ctx context.Context) (n int, err error
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	_spec.AddModifiers(iru.modifiers...)
 	if n, err = sqlgraph.UpdateNodes(ctx, iru.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{instanceruntime.Label}
@@ -550,9 +558,10 @@ func (iru *InstanceRuntimeUpdate) sqlSave(ctx context.Context) (n int, err error
 // InstanceRuntimeUpdateOne is the builder for updating a single InstanceRuntime entity.
 type InstanceRuntimeUpdateOne struct {
 	config
-	fields   []string
-	hooks    []Hook
-	mutation *InstanceRuntimeMutation
+	fields    []string
+	hooks     []Hook
+	mutation  *InstanceRuntimeMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // SetData sets the "data" field.
@@ -908,6 +917,12 @@ func (iruo *InstanceRuntimeUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (iruo *InstanceRuntimeUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *InstanceRuntimeUpdateOne {
+	iruo.modifiers = append(iruo.modifiers, modifiers...)
+	return iruo
+}
+
 func (iruo *InstanceRuntimeUpdateOne) sqlSave(ctx context.Context) (_node *InstanceRuntime, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -1090,6 +1105,7 @@ func (iruo *InstanceRuntimeUpdateOne) sqlSave(ctx context.Context) (_node *Insta
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	_spec.AddModifiers(iruo.modifiers...)
 	_node = &InstanceRuntime{config: iruo.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

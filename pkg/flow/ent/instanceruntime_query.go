@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math"
 
+	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -28,6 +29,7 @@ type InstanceRuntimeQuery struct {
 	withInstance *InstanceQuery
 	withCaller   *InstanceQuery
 	withFKs      bool
+	modifiers    []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -414,6 +416,9 @@ func (irq *InstanceRuntimeQuery) sqlAll(ctx context.Context, hooks ...queryHook)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
+	if len(irq.modifiers) > 0 {
+		_spec.Modifiers = irq.modifiers
+	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
@@ -499,6 +504,9 @@ func (irq *InstanceRuntimeQuery) loadCaller(ctx context.Context, query *Instance
 
 func (irq *InstanceRuntimeQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := irq.querySpec()
+	if len(irq.modifiers) > 0 {
+		_spec.Modifiers = irq.modifiers
+	}
 	_spec.Node.Columns = irq.fields
 	if len(irq.fields) > 0 {
 		_spec.Unique = irq.unique != nil && *irq.unique
@@ -580,6 +588,9 @@ func (irq *InstanceRuntimeQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if irq.unique != nil && *irq.unique {
 		selector.Distinct()
 	}
+	for _, m := range irq.modifiers {
+		m(selector)
+	}
 	for _, p := range irq.predicates {
 		p(selector)
 	}
@@ -595,6 +606,38 @@ func (irq *InstanceRuntimeQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector.Limit(*limit)
 	}
 	return selector
+}
+
+// ForUpdate locks the selected rows against concurrent updates, and prevent them from being
+// updated, deleted or "selected ... for update" by other sessions, until the transaction is
+// either committed or rolled-back.
+func (irq *InstanceRuntimeQuery) ForUpdate(opts ...sql.LockOption) *InstanceRuntimeQuery {
+	if irq.driver.Dialect() == dialect.Postgres {
+		irq.Unique(false)
+	}
+	irq.modifiers = append(irq.modifiers, func(s *sql.Selector) {
+		s.ForUpdate(opts...)
+	})
+	return irq
+}
+
+// ForShare behaves similarly to ForUpdate, except that it acquires a shared mode lock
+// on any rows that are read. Other sessions can read the rows, but cannot modify them
+// until your transaction commits.
+func (irq *InstanceRuntimeQuery) ForShare(opts ...sql.LockOption) *InstanceRuntimeQuery {
+	if irq.driver.Dialect() == dialect.Postgres {
+		irq.Unique(false)
+	}
+	irq.modifiers = append(irq.modifiers, func(s *sql.Selector) {
+		s.ForShare(opts...)
+	})
+	return irq
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (irq *InstanceRuntimeQuery) Modify(modifiers ...func(s *sql.Selector)) *InstanceRuntimeSelect {
+	irq.modifiers = append(irq.modifiers, modifiers...)
+	return irq.Select()
 }
 
 // InstanceRuntimeGroupBy is the group-by builder for InstanceRuntime entities.
@@ -701,4 +744,10 @@ func (irs *InstanceRuntimeSelect) sqlScan(ctx context.Context, v any) error {
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (irs *InstanceRuntimeSelect) Modify(modifiers ...func(s *sql.Selector)) *InstanceRuntimeSelect {
+	irs.modifiers = append(irs.modifiers, modifiers...)
+	return irs
 }

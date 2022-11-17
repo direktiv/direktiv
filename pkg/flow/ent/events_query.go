@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"math"
 
+	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -23,18 +24,18 @@ import (
 // EventsQuery is the builder for querying Events entities.
 type EventsQuery struct {
 	config
-	limit                 *int
-	offset                *int
-	unique                *bool
-	order                 []OrderFunc
-	fields                []string
-	predicates            []predicate.Events
-	withWorkflow          *WorkflowQuery
-	withWfeventswait      *EventsWaitQuery
-	withInstance          *InstanceQuery
-	withNamespace         *NamespaceQuery
-	withFKs               bool
-	withNamedWfeventswait map[string]*EventsWaitQuery
+	limit            *int
+	offset           *int
+	unique           *bool
+	order            []OrderFunc
+	fields           []string
+	predicates       []predicate.Events
+	withWorkflow     *WorkflowQuery
+	withWfeventswait *EventsWaitQuery
+	withInstance     *InstanceQuery
+	withNamespace    *NamespaceQuery
+	withFKs          bool
+	modifiers        []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -491,6 +492,9 @@ func (eq *EventsQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Event
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
+	if len(eq.modifiers) > 0 {
+		_spec.Modifiers = eq.modifiers
+	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
@@ -522,13 +526,6 @@ func (eq *EventsQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Event
 	if query := eq.withNamespace; query != nil {
 		if err := eq.loadNamespace(ctx, query, nodes, nil,
 			func(n *Events, e *Namespace) { n.Edges.Namespace = e }); err != nil {
-			return nil, err
-		}
-	}
-	for name, query := range eq.withNamedWfeventswait {
-		if err := eq.loadWfeventswait(ctx, query, nodes,
-			func(n *Events) { n.appendNamedWfeventswait(name) },
-			func(n *Events, e *EventsWait) { n.appendNamedWfeventswait(name, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -656,6 +653,9 @@ func (eq *EventsQuery) loadNamespace(ctx context.Context, query *NamespaceQuery,
 
 func (eq *EventsQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := eq.querySpec()
+	if len(eq.modifiers) > 0 {
+		_spec.Modifiers = eq.modifiers
+	}
 	_spec.Node.Columns = eq.fields
 	if len(eq.fields) > 0 {
 		_spec.Unique = eq.unique != nil && *eq.unique
@@ -737,6 +737,9 @@ func (eq *EventsQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if eq.unique != nil && *eq.unique {
 		selector.Distinct()
 	}
+	for _, m := range eq.modifiers {
+		m(selector)
+	}
 	for _, p := range eq.predicates {
 		p(selector)
 	}
@@ -754,18 +757,36 @@ func (eq *EventsQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	return selector
 }
 
-// WithNamedWfeventswait tells the query-builder to eager-load the nodes that are connected to the "wfeventswait"
-// edge with the given name. The optional arguments are used to configure the query builder of the edge.
-func (eq *EventsQuery) WithNamedWfeventswait(name string, opts ...func(*EventsWaitQuery)) *EventsQuery {
-	query := &EventsWaitQuery{config: eq.config}
-	for _, opt := range opts {
-		opt(query)
+// ForUpdate locks the selected rows against concurrent updates, and prevent them from being
+// updated, deleted or "selected ... for update" by other sessions, until the transaction is
+// either committed or rolled-back.
+func (eq *EventsQuery) ForUpdate(opts ...sql.LockOption) *EventsQuery {
+	if eq.driver.Dialect() == dialect.Postgres {
+		eq.Unique(false)
 	}
-	if eq.withNamedWfeventswait == nil {
-		eq.withNamedWfeventswait = make(map[string]*EventsWaitQuery)
-	}
-	eq.withNamedWfeventswait[name] = query
+	eq.modifiers = append(eq.modifiers, func(s *sql.Selector) {
+		s.ForUpdate(opts...)
+	})
 	return eq
+}
+
+// ForShare behaves similarly to ForUpdate, except that it acquires a shared mode lock
+// on any rows that are read. Other sessions can read the rows, but cannot modify them
+// until your transaction commits.
+func (eq *EventsQuery) ForShare(opts ...sql.LockOption) *EventsQuery {
+	if eq.driver.Dialect() == dialect.Postgres {
+		eq.Unique(false)
+	}
+	eq.modifiers = append(eq.modifiers, func(s *sql.Selector) {
+		s.ForShare(opts...)
+	})
+	return eq
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (eq *EventsQuery) Modify(modifiers ...func(s *sql.Selector)) *EventsSelect {
+	eq.modifiers = append(eq.modifiers, modifiers...)
+	return eq.Select()
 }
 
 // EventsGroupBy is the group-by builder for Events entities.
@@ -872,4 +893,10 @@ func (es *EventsSelect) sqlScan(ctx context.Context, v any) error {
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (es *EventsSelect) Modify(modifiers ...func(s *sql.Selector)) *EventsSelect {
+	es.modifiers = append(es.modifiers, modifiers...)
+	return es
 }
