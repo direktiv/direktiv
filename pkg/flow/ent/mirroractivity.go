@@ -51,6 +51,7 @@ type MirrorActivityEdges struct {
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [3]bool
+	namedLogs   map[string][]*LogMsg
 }
 
 // NamespaceOrErr returns the Namespace value or an error if the edge
@@ -245,6 +246,30 @@ func (ma *MirrorActivity) String() string {
 	builder.WriteString(ma.Deadline.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
+}
+
+// NamedLogs returns the Logs named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (ma *MirrorActivity) NamedLogs(name string) ([]*LogMsg, error) {
+	if ma.Edges.namedLogs == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := ma.Edges.namedLogs[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (ma *MirrorActivity) appendNamedLogs(name string, edges ...*LogMsg) {
+	if ma.Edges.namedLogs == nil {
+		ma.Edges.namedLogs = make(map[string][]*LogMsg)
+	}
+	if len(edges) == 0 {
+		ma.Edges.namedLogs[name] = []*LogMsg{}
+	} else {
+		ma.Edges.namedLogs[name] = append(ma.Edges.namedLogs[name], edges...)
+	}
 }
 
 // MirrorActivities is a parsable slice of MirrorActivity.

@@ -32,6 +32,7 @@ type MirrorActivityQuery struct {
 	withMirror    *MirrorQuery
 	withLogs      *LogMsgQuery
 	withFKs       bool
+	withNamedLogs map[string]*LogMsgQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -481,6 +482,13 @@ func (maq *MirrorActivityQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 			return nil, err
 		}
 	}
+	for name, query := range maq.withNamedLogs {
+		if err := maq.loadLogs(ctx, query, nodes,
+			func(n *MirrorActivity) { n.appendNamedLogs(name) },
+			func(n *MirrorActivity, e *LogMsg) { n.appendNamedLogs(name, e) }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
 }
 
@@ -672,6 +680,20 @@ func (maq *MirrorActivityQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector.Limit(*limit)
 	}
 	return selector
+}
+
+// WithNamedLogs tells the query-builder to eager-load the nodes that are connected to the "logs"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (maq *MirrorActivityQuery) WithNamedLogs(name string, opts ...func(*LogMsgQuery)) *MirrorActivityQuery {
+	query := &LogMsgQuery{config: maq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	if maq.withNamedLogs == nil {
+		maq.withNamedLogs = make(map[string]*LogMsgQuery)
+	}
+	maq.withNamedLogs[name] = query
+	return maq
 }
 
 // MirrorActivityGroupBy is the group-by builder for MirrorActivity entities.

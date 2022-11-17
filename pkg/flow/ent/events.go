@@ -53,7 +53,8 @@ type EventsEdges struct {
 	Namespace *Namespace `json:"namespace,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes       [4]bool
+	namedWfeventswait map[string][]*EventsWait
 }
 
 // WorkflowOrErr returns the Workflow value or an error if the edge
@@ -272,6 +273,30 @@ func (e *Events) String() string {
 	builder.WriteString(e.UpdatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
+}
+
+// NamedWfeventswait returns the Wfeventswait named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (e *Events) NamedWfeventswait(name string) ([]*EventsWait, error) {
+	if e.Edges.namedWfeventswait == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := e.Edges.namedWfeventswait[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (e *Events) appendNamedWfeventswait(name string, edges ...*EventsWait) {
+	if e.Edges.namedWfeventswait == nil {
+		e.Edges.namedWfeventswait = make(map[string][]*EventsWait)
+	}
+	if len(edges) == 0 {
+		e.Edges.namedWfeventswait[name] = []*EventsWait{}
+	} else {
+		e.Edges.namedWfeventswait[name] = append(e.Edges.namedWfeventswait[name], edges...)
+	}
 }
 
 // EventsSlice is a parsable slice of Events.

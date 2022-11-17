@@ -28,22 +28,29 @@ import (
 // WorkflowQuery is the builder for querying Workflow entities.
 type WorkflowQuery struct {
 	config
-	limit         *int
-	offset        *int
-	unique        *bool
-	order         []OrderFunc
-	fields        []string
-	predicates    []predicate.Workflow
-	withInode     *InodeQuery
-	withNamespace *NamespaceQuery
-	withRevisions *RevisionQuery
-	withRefs      *RefQuery
-	withInstances *InstanceQuery
-	withRoutes    *RouteQuery
-	withLogs      *LogMsgQuery
-	withVars      *VarRefQuery
-	withWfevents  *EventsQuery
-	withFKs       bool
+	limit              *int
+	offset             *int
+	unique             *bool
+	order              []OrderFunc
+	fields             []string
+	predicates         []predicate.Workflow
+	withInode          *InodeQuery
+	withNamespace      *NamespaceQuery
+	withRevisions      *RevisionQuery
+	withRefs           *RefQuery
+	withInstances      *InstanceQuery
+	withRoutes         *RouteQuery
+	withLogs           *LogMsgQuery
+	withVars           *VarRefQuery
+	withWfevents       *EventsQuery
+	withFKs            bool
+	withNamedRevisions map[string]*RevisionQuery
+	withNamedRefs      map[string]*RefQuery
+	withNamedInstances map[string]*InstanceQuery
+	withNamedRoutes    map[string]*RouteQuery
+	withNamedLogs      map[string]*LogMsgQuery
+	withNamedVars      map[string]*VarRefQuery
+	withNamedWfevents  map[string]*EventsQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -745,6 +752,55 @@ func (wq *WorkflowQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Wor
 			return nil, err
 		}
 	}
+	for name, query := range wq.withNamedRevisions {
+		if err := wq.loadRevisions(ctx, query, nodes,
+			func(n *Workflow) { n.appendNamedRevisions(name) },
+			func(n *Workflow, e *Revision) { n.appendNamedRevisions(name, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range wq.withNamedRefs {
+		if err := wq.loadRefs(ctx, query, nodes,
+			func(n *Workflow) { n.appendNamedRefs(name) },
+			func(n *Workflow, e *Ref) { n.appendNamedRefs(name, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range wq.withNamedInstances {
+		if err := wq.loadInstances(ctx, query, nodes,
+			func(n *Workflow) { n.appendNamedInstances(name) },
+			func(n *Workflow, e *Instance) { n.appendNamedInstances(name, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range wq.withNamedRoutes {
+		if err := wq.loadRoutes(ctx, query, nodes,
+			func(n *Workflow) { n.appendNamedRoutes(name) },
+			func(n *Workflow, e *Route) { n.appendNamedRoutes(name, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range wq.withNamedLogs {
+		if err := wq.loadLogs(ctx, query, nodes,
+			func(n *Workflow) { n.appendNamedLogs(name) },
+			func(n *Workflow, e *LogMsg) { n.appendNamedLogs(name, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range wq.withNamedVars {
+		if err := wq.loadVars(ctx, query, nodes,
+			func(n *Workflow) { n.appendNamedVars(name) },
+			func(n *Workflow, e *VarRef) { n.appendNamedVars(name, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range wq.withNamedWfevents {
+		if err := wq.loadWfevents(ctx, query, nodes,
+			func(n *Workflow) { n.appendNamedWfevents(name) },
+			func(n *Workflow, e *Events) { n.appendNamedWfevents(name, e) }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
 }
 
@@ -1122,6 +1178,104 @@ func (wq *WorkflowQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector.Limit(*limit)
 	}
 	return selector
+}
+
+// WithNamedRevisions tells the query-builder to eager-load the nodes that are connected to the "revisions"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (wq *WorkflowQuery) WithNamedRevisions(name string, opts ...func(*RevisionQuery)) *WorkflowQuery {
+	query := &RevisionQuery{config: wq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	if wq.withNamedRevisions == nil {
+		wq.withNamedRevisions = make(map[string]*RevisionQuery)
+	}
+	wq.withNamedRevisions[name] = query
+	return wq
+}
+
+// WithNamedRefs tells the query-builder to eager-load the nodes that are connected to the "refs"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (wq *WorkflowQuery) WithNamedRefs(name string, opts ...func(*RefQuery)) *WorkflowQuery {
+	query := &RefQuery{config: wq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	if wq.withNamedRefs == nil {
+		wq.withNamedRefs = make(map[string]*RefQuery)
+	}
+	wq.withNamedRefs[name] = query
+	return wq
+}
+
+// WithNamedInstances tells the query-builder to eager-load the nodes that are connected to the "instances"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (wq *WorkflowQuery) WithNamedInstances(name string, opts ...func(*InstanceQuery)) *WorkflowQuery {
+	query := &InstanceQuery{config: wq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	if wq.withNamedInstances == nil {
+		wq.withNamedInstances = make(map[string]*InstanceQuery)
+	}
+	wq.withNamedInstances[name] = query
+	return wq
+}
+
+// WithNamedRoutes tells the query-builder to eager-load the nodes that are connected to the "routes"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (wq *WorkflowQuery) WithNamedRoutes(name string, opts ...func(*RouteQuery)) *WorkflowQuery {
+	query := &RouteQuery{config: wq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	if wq.withNamedRoutes == nil {
+		wq.withNamedRoutes = make(map[string]*RouteQuery)
+	}
+	wq.withNamedRoutes[name] = query
+	return wq
+}
+
+// WithNamedLogs tells the query-builder to eager-load the nodes that are connected to the "logs"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (wq *WorkflowQuery) WithNamedLogs(name string, opts ...func(*LogMsgQuery)) *WorkflowQuery {
+	query := &LogMsgQuery{config: wq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	if wq.withNamedLogs == nil {
+		wq.withNamedLogs = make(map[string]*LogMsgQuery)
+	}
+	wq.withNamedLogs[name] = query
+	return wq
+}
+
+// WithNamedVars tells the query-builder to eager-load the nodes that are connected to the "vars"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (wq *WorkflowQuery) WithNamedVars(name string, opts ...func(*VarRefQuery)) *WorkflowQuery {
+	query := &VarRefQuery{config: wq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	if wq.withNamedVars == nil {
+		wq.withNamedVars = make(map[string]*VarRefQuery)
+	}
+	wq.withNamedVars[name] = query
+	return wq
+}
+
+// WithNamedWfevents tells the query-builder to eager-load the nodes that are connected to the "wfevents"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (wq *WorkflowQuery) WithNamedWfevents(name string, opts ...func(*EventsQuery)) *WorkflowQuery {
+	query := &EventsQuery{config: wq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	if wq.withNamedWfevents == nil {
+		wq.withNamedWfevents = make(map[string]*EventsQuery)
+	}
+	wq.withNamedWfevents[name] = query
+	return wq
 }
 
 // WorkflowGroupBy is the group-by builder for Workflow entities.

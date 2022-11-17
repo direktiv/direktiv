@@ -54,7 +54,8 @@ type MirrorEdges struct {
 	Activities []*MirrorActivity `json:"activities,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes     [3]bool
+	namedActivities map[string][]*MirrorActivity
 }
 
 // NamespaceOrErr returns the Namespace value or an error if the edge
@@ -270,6 +271,30 @@ func (m *Mirror) String() string {
 	builder.WriteString(m.UpdatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
+}
+
+// NamedActivities returns the Activities named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (m *Mirror) NamedActivities(name string) ([]*MirrorActivity, error) {
+	if m.Edges.namedActivities == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := m.Edges.namedActivities[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (m *Mirror) appendNamedActivities(name string, edges ...*MirrorActivity) {
+	if m.Edges.namedActivities == nil {
+		m.Edges.namedActivities = make(map[string][]*MirrorActivity)
+	}
+	if len(edges) == 0 {
+		m.Edges.namedActivities[name] = []*MirrorActivity{}
+	} else {
+		m.Edges.namedActivities[name] = append(m.Edges.namedActivities[name], edges...)
+	}
 }
 
 // Mirrors is a parsable slice of Mirror.

@@ -43,6 +43,7 @@ type RefEdges struct {
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [3]bool
+	namedRoutes map[string][]*Route
 }
 
 // WorkflowOrErr returns the Workflow value or an error if the edge
@@ -203,6 +204,30 @@ func (r *Ref) String() string {
 	builder.WriteString(r.CreatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
+}
+
+// NamedRoutes returns the Routes named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (r *Ref) NamedRoutes(name string) ([]*Route, error) {
+	if r.Edges.namedRoutes == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := r.Edges.namedRoutes[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (r *Ref) appendNamedRoutes(name string, edges ...*Route) {
+	if r.Edges.namedRoutes == nil {
+		r.Edges.namedRoutes = make(map[string][]*Route)
+	}
+	if len(edges) == 0 {
+		r.Edges.namedRoutes[name] = []*Route{}
+	} else {
+		r.Edges.namedRoutes[name] = append(r.Edges.namedRoutes[name], edges...)
+	}
 }
 
 // Refs is a parsable slice of Ref.

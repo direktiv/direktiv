@@ -40,7 +40,8 @@ type VarDataEdges struct {
 	Varrefs []*VarRef `json:"varrefs,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes  [1]bool
+	namedVarrefs map[string][]*VarRef
 }
 
 // VarrefsOrErr returns the Varrefs value or an error if the edge
@@ -176,6 +177,30 @@ func (vd *VarData) String() string {
 	builder.WriteString(vd.MimeType)
 	builder.WriteByte(')')
 	return builder.String()
+}
+
+// NamedVarrefs returns the Varrefs named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (vd *VarData) NamedVarrefs(name string) ([]*VarRef, error) {
+	if vd.Edges.namedVarrefs == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := vd.Edges.namedVarrefs[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (vd *VarData) appendNamedVarrefs(name string, edges ...*VarRef) {
+	if vd.Edges.namedVarrefs == nil {
+		vd.Edges.namedVarrefs = make(map[string][]*VarRef)
+	}
+	if len(edges) == 0 {
+		vd.Edges.namedVarrefs[name] = []*VarRef{}
+	} else {
+		vd.Edges.namedVarrefs[name] = append(vd.Edges.namedVarrefs[name], edges...)
+	}
 }
 
 // VarDataSlice is a parsable slice of VarData.

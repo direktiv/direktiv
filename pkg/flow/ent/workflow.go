@@ -56,7 +56,14 @@ type WorkflowEdges struct {
 	Wfevents []*Events `json:"wfevents,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [9]bool
+	loadedTypes    [9]bool
+	namedRevisions map[string][]*Revision
+	namedRefs      map[string][]*Ref
+	namedInstances map[string][]*Instance
+	namedRoutes    map[string][]*Route
+	namedLogs      map[string][]*LogMsg
+	namedVars      map[string][]*VarRef
+	namedWfevents  map[string][]*Events
 }
 
 // InodeOrErr returns the Inode value or an error if the edge
@@ -310,6 +317,174 @@ func (w *Workflow) String() string {
 	builder.WriteString(w.UpdatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
+}
+
+// NamedRevisions returns the Revisions named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (w *Workflow) NamedRevisions(name string) ([]*Revision, error) {
+	if w.Edges.namedRevisions == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := w.Edges.namedRevisions[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (w *Workflow) appendNamedRevisions(name string, edges ...*Revision) {
+	if w.Edges.namedRevisions == nil {
+		w.Edges.namedRevisions = make(map[string][]*Revision)
+	}
+	if len(edges) == 0 {
+		w.Edges.namedRevisions[name] = []*Revision{}
+	} else {
+		w.Edges.namedRevisions[name] = append(w.Edges.namedRevisions[name], edges...)
+	}
+}
+
+// NamedRefs returns the Refs named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (w *Workflow) NamedRefs(name string) ([]*Ref, error) {
+	if w.Edges.namedRefs == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := w.Edges.namedRefs[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (w *Workflow) appendNamedRefs(name string, edges ...*Ref) {
+	if w.Edges.namedRefs == nil {
+		w.Edges.namedRefs = make(map[string][]*Ref)
+	}
+	if len(edges) == 0 {
+		w.Edges.namedRefs[name] = []*Ref{}
+	} else {
+		w.Edges.namedRefs[name] = append(w.Edges.namedRefs[name], edges...)
+	}
+}
+
+// NamedInstances returns the Instances named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (w *Workflow) NamedInstances(name string) ([]*Instance, error) {
+	if w.Edges.namedInstances == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := w.Edges.namedInstances[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (w *Workflow) appendNamedInstances(name string, edges ...*Instance) {
+	if w.Edges.namedInstances == nil {
+		w.Edges.namedInstances = make(map[string][]*Instance)
+	}
+	if len(edges) == 0 {
+		w.Edges.namedInstances[name] = []*Instance{}
+	} else {
+		w.Edges.namedInstances[name] = append(w.Edges.namedInstances[name], edges...)
+	}
+}
+
+// NamedRoutes returns the Routes named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (w *Workflow) NamedRoutes(name string) ([]*Route, error) {
+	if w.Edges.namedRoutes == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := w.Edges.namedRoutes[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (w *Workflow) appendNamedRoutes(name string, edges ...*Route) {
+	if w.Edges.namedRoutes == nil {
+		w.Edges.namedRoutes = make(map[string][]*Route)
+	}
+	if len(edges) == 0 {
+		w.Edges.namedRoutes[name] = []*Route{}
+	} else {
+		w.Edges.namedRoutes[name] = append(w.Edges.namedRoutes[name], edges...)
+	}
+}
+
+// NamedLogs returns the Logs named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (w *Workflow) NamedLogs(name string) ([]*LogMsg, error) {
+	if w.Edges.namedLogs == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := w.Edges.namedLogs[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (w *Workflow) appendNamedLogs(name string, edges ...*LogMsg) {
+	if w.Edges.namedLogs == nil {
+		w.Edges.namedLogs = make(map[string][]*LogMsg)
+	}
+	if len(edges) == 0 {
+		w.Edges.namedLogs[name] = []*LogMsg{}
+	} else {
+		w.Edges.namedLogs[name] = append(w.Edges.namedLogs[name], edges...)
+	}
+}
+
+// NamedVars returns the Vars named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (w *Workflow) NamedVars(name string) ([]*VarRef, error) {
+	if w.Edges.namedVars == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := w.Edges.namedVars[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (w *Workflow) appendNamedVars(name string, edges ...*VarRef) {
+	if w.Edges.namedVars == nil {
+		w.Edges.namedVars = make(map[string][]*VarRef)
+	}
+	if len(edges) == 0 {
+		w.Edges.namedVars[name] = []*VarRef{}
+	} else {
+		w.Edges.namedVars[name] = append(w.Edges.namedVars[name], edges...)
+	}
+}
+
+// NamedWfevents returns the Wfevents named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (w *Workflow) NamedWfevents(name string) ([]*Events, error) {
+	if w.Edges.namedWfevents == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := w.Edges.namedWfevents[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (w *Workflow) appendNamedWfevents(name string, edges ...*Events) {
+	if w.Edges.namedWfevents == nil {
+		w.Edges.namedWfevents = make(map[string][]*Events)
+	}
+	if len(edges) == 0 {
+		w.Edges.namedWfevents[name] = []*Events{}
+	} else {
+		w.Edges.namedWfevents[name] = append(w.Edges.namedWfevents[name], edges...)
+	}
 }
 
 // Workflows is a parsable slice of Workflow.

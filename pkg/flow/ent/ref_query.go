@@ -22,16 +22,17 @@ import (
 // RefQuery is the builder for querying Ref entities.
 type RefQuery struct {
 	config
-	limit        *int
-	offset       *int
-	unique       *bool
-	order        []OrderFunc
-	fields       []string
-	predicates   []predicate.Ref
-	withWorkflow *WorkflowQuery
-	withRevision *RevisionQuery
-	withRoutes   *RouteQuery
-	withFKs      bool
+	limit           *int
+	offset          *int
+	unique          *bool
+	order           []OrderFunc
+	fields          []string
+	predicates      []predicate.Ref
+	withWorkflow    *WorkflowQuery
+	withRevision    *RevisionQuery
+	withRoutes      *RouteQuery
+	withFKs         bool
+	withNamedRoutes map[string]*RouteQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -481,6 +482,13 @@ func (rq *RefQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Ref, err
 			return nil, err
 		}
 	}
+	for name, query := range rq.withNamedRoutes {
+		if err := rq.loadRoutes(ctx, query, nodes,
+			func(n *Ref) { n.appendNamedRoutes(name) },
+			func(n *Ref, e *Route) { n.appendNamedRoutes(name, e) }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
 }
 
@@ -672,6 +680,20 @@ func (rq *RefQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector.Limit(*limit)
 	}
 	return selector
+}
+
+// WithNamedRoutes tells the query-builder to eager-load the nodes that are connected to the "routes"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (rq *RefQuery) WithNamedRoutes(name string, opts ...func(*RouteQuery)) *RefQuery {
+	query := &RouteQuery{config: rq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	if rq.withNamedRoutes == nil {
+		rq.withNamedRoutes = make(map[string]*RouteQuery)
+	}
+	rq.withNamedRoutes[name] = query
+	return rq
 }
 
 // RefGroupBy is the group-by builder for Ref entities.

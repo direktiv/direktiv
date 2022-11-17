@@ -20,13 +20,14 @@ import (
 // VarDataQuery is the builder for querying VarData entities.
 type VarDataQuery struct {
 	config
-	limit       *int
-	offset      *int
-	unique      *bool
-	order       []OrderFunc
-	fields      []string
-	predicates  []predicate.VarData
-	withVarrefs *VarRefQuery
+	limit            *int
+	offset           *int
+	unique           *bool
+	order            []OrderFunc
+	fields           []string
+	predicates       []predicate.VarData
+	withVarrefs      *VarRefQuery
+	withNamedVarrefs map[string]*VarRefQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -387,6 +388,13 @@ func (vdq *VarDataQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Var
 			return nil, err
 		}
 	}
+	for name, query := range vdq.withNamedVarrefs {
+		if err := vdq.loadVarrefs(ctx, query, nodes,
+			func(n *VarData) { n.appendNamedVarrefs(name) },
+			func(n *VarData, e *VarRef) { n.appendNamedVarrefs(name, e) }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
 }
 
@@ -520,6 +528,20 @@ func (vdq *VarDataQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector.Limit(*limit)
 	}
 	return selector
+}
+
+// WithNamedVarrefs tells the query-builder to eager-load the nodes that are connected to the "varrefs"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (vdq *VarDataQuery) WithNamedVarrefs(name string, opts ...func(*VarRefQuery)) *VarDataQuery {
+	query := &VarRefQuery{config: vdq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	if vdq.withNamedVarrefs == nil {
+		vdq.withNamedVarrefs = make(map[string]*VarRefQuery)
+	}
+	vdq.withNamedVarrefs[name] = query
+	return vdq
 }
 
 // VarDataGroupBy is the group-by builder for VarData entities.
