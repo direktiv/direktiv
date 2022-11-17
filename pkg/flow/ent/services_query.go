@@ -10,19 +10,23 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/direktiv/direktiv/pkg/functions/ent/predicate"
-	"github.com/direktiv/direktiv/pkg/functions/ent/services"
+	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
+	"github.com/direktiv/direktiv/pkg/flow/ent/predicate"
+	"github.com/direktiv/direktiv/pkg/flow/ent/services"
+	"github.com/google/uuid"
 )
 
 // ServicesQuery is the builder for querying Services entities.
 type ServicesQuery struct {
 	config
-	limit      *int
-	offset     *int
-	unique     *bool
-	order      []OrderFunc
-	fields     []string
-	predicates []predicate.Services
+	limit         *int
+	offset        *int
+	unique        *bool
+	order         []OrderFunc
+	fields        []string
+	predicates    []predicate.Services
+	withNamespace *NamespaceQuery
+	withFKs       bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -59,6 +63,28 @@ func (sq *ServicesQuery) Order(o ...OrderFunc) *ServicesQuery {
 	return sq
 }
 
+// QueryNamespace chains the current query on the "namespace" edge.
+func (sq *ServicesQuery) QueryNamespace() *NamespaceQuery {
+	query := &NamespaceQuery{config: sq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := sq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := sq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(services.Table, services.FieldID, selector),
+			sqlgraph.To(namespace.Table, namespace.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, services.NamespaceTable, services.NamespaceColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(sq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // First returns the first Services entity from the query.
 // Returns a *NotFoundError when no Services was found.
 func (sq *ServicesQuery) First(ctx context.Context) (*Services, error) {
@@ -83,8 +109,8 @@ func (sq *ServicesQuery) FirstX(ctx context.Context) *Services {
 
 // FirstID returns the first Services ID from the query.
 // Returns a *NotFoundError when no Services ID was found.
-func (sq *ServicesQuery) FirstID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (sq *ServicesQuery) FirstID(ctx context.Context) (id string, err error) {
+	var ids []string
 	if ids, err = sq.Limit(1).IDs(ctx); err != nil {
 		return
 	}
@@ -96,7 +122,7 @@ func (sq *ServicesQuery) FirstID(ctx context.Context) (id int, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (sq *ServicesQuery) FirstIDX(ctx context.Context) int {
+func (sq *ServicesQuery) FirstIDX(ctx context.Context) string {
 	id, err := sq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -134,8 +160,8 @@ func (sq *ServicesQuery) OnlyX(ctx context.Context) *Services {
 // OnlyID is like Only, but returns the only Services ID in the query.
 // Returns a *NotSingularError when more than one Services ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (sq *ServicesQuery) OnlyID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (sq *ServicesQuery) OnlyID(ctx context.Context) (id string, err error) {
+	var ids []string
 	if ids, err = sq.Limit(2).IDs(ctx); err != nil {
 		return
 	}
@@ -151,7 +177,7 @@ func (sq *ServicesQuery) OnlyID(ctx context.Context) (id int, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (sq *ServicesQuery) OnlyIDX(ctx context.Context) int {
+func (sq *ServicesQuery) OnlyIDX(ctx context.Context) string {
 	id, err := sq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -177,8 +203,8 @@ func (sq *ServicesQuery) AllX(ctx context.Context) []*Services {
 }
 
 // IDs executes the query and returns a list of Services IDs.
-func (sq *ServicesQuery) IDs(ctx context.Context) ([]int, error) {
-	var ids []int
+func (sq *ServicesQuery) IDs(ctx context.Context) ([]string, error) {
+	var ids []string
 	if err := sq.Select(services.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
@@ -186,7 +212,7 @@ func (sq *ServicesQuery) IDs(ctx context.Context) ([]int, error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (sq *ServicesQuery) IDsX(ctx context.Context) []int {
+func (sq *ServicesQuery) IDsX(ctx context.Context) []string {
 	ids, err := sq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -235,16 +261,28 @@ func (sq *ServicesQuery) Clone() *ServicesQuery {
 		return nil
 	}
 	return &ServicesQuery{
-		config:     sq.config,
-		limit:      sq.limit,
-		offset:     sq.offset,
-		order:      append([]OrderFunc{}, sq.order...),
-		predicates: append([]predicate.Services{}, sq.predicates...),
+		config:        sq.config,
+		limit:         sq.limit,
+		offset:        sq.offset,
+		order:         append([]OrderFunc{}, sq.order...),
+		predicates:    append([]predicate.Services{}, sq.predicates...),
+		withNamespace: sq.withNamespace.Clone(),
 		// clone intermediate query.
 		sql:    sq.sql.Clone(),
 		path:   sq.path,
 		unique: sq.unique,
 	}
+}
+
+// WithNamespace tells the query-builder to eager-load the nodes that are connected to
+// the "namespace" edge. The optional arguments are used to configure the query builder of the edge.
+func (sq *ServicesQuery) WithNamespace(opts ...func(*NamespaceQuery)) *ServicesQuery {
+	query := &NamespaceQuery{config: sq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	sq.withNamespace = query
+	return sq
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -318,15 +356,26 @@ func (sq *ServicesQuery) prepareQuery(ctx context.Context) error {
 
 func (sq *ServicesQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Services, error) {
 	var (
-		nodes = []*Services{}
-		_spec = sq.querySpec()
+		nodes       = []*Services{}
+		withFKs     = sq.withFKs
+		_spec       = sq.querySpec()
+		loadedTypes = [1]bool{
+			sq.withNamespace != nil,
+		}
 	)
+	if sq.withNamespace != nil {
+		withFKs = true
+	}
+	if withFKs {
+		_spec.Node.Columns = append(_spec.Node.Columns, services.ForeignKeys...)
+	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Services).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
 		node := &Services{config: sq.config}
 		nodes = append(nodes, node)
+		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
 	for i := range hooks {
@@ -338,7 +387,43 @@ func (sq *ServicesQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Ser
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := sq.withNamespace; query != nil {
+		if err := sq.loadNamespace(ctx, query, nodes, nil,
+			func(n *Services, e *Namespace) { n.Edges.Namespace = e }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
+}
+
+func (sq *ServicesQuery) loadNamespace(ctx context.Context, query *NamespaceQuery, nodes []*Services, init func(*Services), assign func(*Services, *Namespace)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Services)
+	for i := range nodes {
+		if nodes[i].namespace_services == nil {
+			continue
+		}
+		fk := *nodes[i].namespace_services
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	query.Where(namespace.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "namespace_services" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
 }
 
 func (sq *ServicesQuery) sqlCount(ctx context.Context) (int, error) {
@@ -367,7 +452,7 @@ func (sq *ServicesQuery) querySpec() *sqlgraph.QuerySpec {
 			Table:   services.Table,
 			Columns: services.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeString,
 				Column: services.FieldID,
 			},
 		},

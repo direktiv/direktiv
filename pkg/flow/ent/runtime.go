@@ -19,6 +19,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/revision"
 	"github.com/direktiv/direktiv/pkg/flow/ent/route"
 	"github.com/direktiv/direktiv/pkg/flow/ent/schema"
+	"github.com/direktiv/direktiv/pkg/flow/ent/services"
 	"github.com/direktiv/direktiv/pkg/flow/ent/vardata"
 	"github.com/direktiv/direktiv/pkg/flow/ent/varref"
 	"github.com/direktiv/direktiv/pkg/flow/ent/workflow"
@@ -223,6 +224,12 @@ func init() {
 	routeDescID := routeFields[0].Descriptor()
 	// route.DefaultID holds the default value on creation for the id field.
 	route.DefaultID = routeDescID.Default.(func() uuid.UUID)
+	servicesFields := schema.Services{}.Fields()
+	_ = servicesFields
+	// servicesDescName is the schema descriptor for name field.
+	servicesDescName := servicesFields[1].Descriptor()
+	// services.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	services.NameValidator = servicesDescName.Validators[0].(func(string) error)
 	vardataFields := schema.VarData{}.Fields()
 	_ = vardataFields
 	// vardataDescCreatedAt is the schema descriptor for created_at field.

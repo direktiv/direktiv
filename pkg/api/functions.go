@@ -5,25 +5,25 @@
 //
 // Terms Of Service:
 //
-//     Schemes: http, https
-//     Host: localhost
-//     Version: 1.0.0
-//     Contact: info@direktiv.io
+//	Schemes: http, https
+//	Host: localhost
+//	Version: 1.0.0
+//	Contact: info@direktiv.io
 //
-//     Consumes:
-//     - application/json
+//	Consumes:
+//	- application/json
 //
-//     Produces:
-//     - application/json
+//	Produces:
+//	- application/json
 //
-//     Security:
-//     - api_key:
+//	Security:
+//	- api_key:
 //
-//     SecurityDefinitions:
-//     api_key:
-//          type: apiKey
-//          name: KEY
-//          in: header
+//	SecurityDefinitions:
+//	api_key:
+//	     type: apiKey
+//	     name: KEY
+//	     in: header
 //
 // swagger:meta
 package api
@@ -590,12 +590,12 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	//         type: integer
 	//         description: Minimum amount of service pods to be live
 	//       size:
+	//         type: integer
+	//         description: Size of created service pods, 0 = small, 1 = medium, 2 = large
+	//       envs:
+	//         type: object
+	//   	   additionalProperties:
 	//         type: string
-	//         description: Size of created service pods
-	//         enum:
-	//           - small
-	//           - medium
-	//           - large
 	// responses:
 	//   '200':
 	//     "description": "successfully created service"
@@ -2115,19 +2115,25 @@ func (h *functionHandler) getService(svn string, w http.ResponseWriter, r *http.
 
 }
 
-type createFunctionRequest struct {
-	Name     *string `json:"name,omitempty"`
-	Image    *string `json:"image,omitempty"`
-	Cmd      *string `json:"cmd,omitempty"`
-	Size     *int32  `json:"size,omitempty"`
-	MinScale *int32  `json:"minScale,omitempty"`
-}
-
 func (h *functionHandler) createGlobalService(w http.ResponseWriter, r *http.Request) {
 
 	h.logger.Debugf("Handling request: %s", this())
 
-	h.createService("", "", "", "", "", w, r)
+	// h.createService("", "", "", "", make(map[string]string), w, r)
+}
+
+type createRequest struct {
+	Cmd      string            `json:"cmd,omitempty"`
+	Image    string            `json:"image,omitempty"`
+	Name     string            `json:"name,omitempty"`
+	Size     int32             `json:"size,omitempty"`
+	MinScale int32             `json:"minScale,omitempty"`
+	Envs     map[string]string `json:"envs"`
+
+	Namespace    string
+	NamespaceOID string
+	WorkflowPath string
+	Workflow     string
 }
 
 func (h *functionHandler) createNamespaceService(w http.ResponseWriter, r *http.Request) {
@@ -2138,6 +2144,7 @@ func (h *functionHandler) createNamespaceService(w http.ResponseWriter, r *http.
 
 	nsName := mux.Vars(r)["ns"]
 
+	// fetch namespace uuid
 	resp, err := h.srv.flowClient.Namespace(ctx, &igrpc.NamespaceRequest{
 		Name: nsName,
 	})
@@ -2146,32 +2153,34 @@ func (h *functionHandler) createNamespaceService(w http.ResponseWriter, r *http.
 		return
 	}
 
-	h.createService(resp.Namespace.GetOid(), nsName, "", "", "", w, r)
-
-}
-
-func (h *functionHandler) createService(ns, nsName, wf, path, rev string,
-	w http.ResponseWriter, r *http.Request) {
-
-	obj := new(createFunctionRequest)
-	err := json.NewDecoder(r.Body).Decode(obj)
+	var cr createRequest
+	err = json.NewDecoder(r.Body).Decode(&cr)
 	if err != nil {
 		respond(w, nil, err)
 		return
 	}
 
+	cr.Namespace = nsName
+	cr.NamespaceOID = resp.Namespace.GetOid()
+
+	h.createService(cr, r, w)
+
+}
+
+func (h *functionHandler) createService(cr createRequest, r *http.Request, w http.ResponseWriter) {
+
 	grpcReq := new(grpcfunc.CreateFunctionRequest)
 	grpcReq.Info = &grpc.BaseInfo{
-		Name:          obj.Name,
-		Namespace:     &ns,
-		Workflow:      &wf,
-		Image:         obj.Image,
-		Cmd:           obj.Cmd,
-		Size:          obj.Size,
-		MinScale:      obj.MinScale,
-		NamespaceName: &nsName,
-		Path:          &path,
-		Revision:      &rev,
+		Name:          &cr.Name,
+		Namespace:     &cr.NamespaceOID,
+		Workflow:      &cr.Workflow,
+		Image:         &cr.Image,
+		Cmd:           &cr.Cmd,
+		Size:          &cr.Size,
+		MinScale:      &cr.MinScale,
+		NamespaceName: &cr.Namespace,
+		Path:          &cr.WorkflowPath,
+		Envs:          cr.Envs,
 	}
 
 	// returns an empty body
@@ -2745,71 +2754,70 @@ func (h *functionHandler) watchRevisions(svc, rev /*, scope*/ string,
 
 }
 
-// 	sn := mux.Vars(r)["serviceName"]
-// 	rn := mux.Vars(r)["revisionName"]
+//		sn := mux.Vars(r)["serviceName"]
+//		rn := mux.Vars(r)["revisionName"]
 //
-// 	// Append prefixNamespace if in namespace route and not
-// 	ns := mux.Vars(r)["namespace"]
-// 	if ns != "" && !strings.HasPrefix(sn, functions.PrefixNamespace+"-") {
-// 		sn = fmt.Sprintf("%s-%s-%s", functions.PrefixNamespace, ns, sn)
-// 	}
+//		// Append prefixNamespace if in namespace route and not
+//		ns := mux.Vars(r)["namespace"]
+//		if ns != "" && !strings.HasPrefix(sn, functions.PrefixNamespace+"-") {
+//			sn = fmt.Sprintf("%s-%s-%s", functions.PrefixNamespace, ns, sn)
+//		}
 //
-// 	grpcReq := new(grpc.WatchRevisionsRequest)
-// 	grpcReq.ServiceName = &sn
-// 	grpcReq.RevisionName = &rn
+//		grpcReq := new(grpc.WatchRevisionsRequest)
+//		grpcReq.ServiceName = &sn
+//		grpcReq.RevisionName = &rn
 //
-// 	client, err := h.s.functions.WatchRevisions(r.Context(), grpcReq)
-// 	if err != nil {
-// 		ErrResponse(w, err)
-// 		return
-// 	}
+//		client, err := h.s.functions.WatchRevisions(r.Context(), grpcReq)
+//		if err != nil {
+//			ErrResponse(w, err)
+//			return
+//		}
 //
-// 	defer client.CloseSend()
-// 	flusher, err := SetupSEEWriter(w)
-// 	if err != nil {
-// 		ErrResponse(w, err)
-// 		return
-// 	}
+//		defer client.CloseSend()
+//		flusher, err := SetupSEEWriter(w)
+//		if err != nil {
+//			ErrResponse(w, err)
+//			return
+//		}
 //
-// 	// Create Heartbeat Ticker
-// 	heartbeat := time.NewTicker(10 * time.Second)
-// 	defer heartbeat.Stop()
+//		// Create Heartbeat Ticker
+//		heartbeat := time.NewTicker(10 * time.Second)
+//		defer heartbeat.Stop()
 //
-// 	// Start watcher client stream channels
-// 	dataCh := make(chan interface{})
-// 	errorCh := make(chan error)
-// 	go func() {
-// 		for {
-// 			data, err := client.Recv()
-// 			if err != nil {
-// 				errorCh <- err
-// 				break
-// 			} else {
-// 				dataCh <- data
-// 			}
-// 		}
-// 	}()
+//		// Start watcher client stream channels
+//		dataCh := make(chan interface{})
+//		errorCh := make(chan error)
+//		go func() {
+//			for {
+//				data, err := client.Recv()
+//				if err != nil {
+//					errorCh <- err
+//					break
+//				} else {
+//					dataCh <- data
+//				}
+//			}
+//		}()
 //
-// 	for {
-// 		select {
-// 		case data := <-dataCh:
-// 			err = WriteSSEJSONData(w, flusher, data)
-// 		case err = <-errorCh:
-// 		case <-client.Context().Done():
-// 			err = fmt.Errorf("requested stream has timed out")
-// 		case <-heartbeat.C:
-// 			SendSSEHeartbeat(w, flusher)
-// 		}
+//		for {
+//			select {
+//			case data := <-dataCh:
+//				err = WriteSSEJSONData(w, flusher, data)
+//			case err = <-errorCh:
+//			case <-client.Context().Done():
+//				err = fmt.Errorf("requested stream has timed out")
+//			case <-heartbeat.C:
+//				SendSSEHeartbeat(w, flusher)
+//			}
 //
-// 		// Check for errors
-// 		if err != nil {
-// 			ErrSSEResponse(w, flusher, err)
-// 			heartbeat.Stop()
-// 			return
-// 		}
-// 	}
-// }
-//
+//			// Check for errors
+//			if err != nil {
+//				ErrSSEResponse(w, flusher, err)
+//				heartbeat.Stop()
+//				return
+//			}
+//		}
+//	}
 func (h *functionHandler) watchLogs(w http.ResponseWriter, r *http.Request) {
 
 	h.logger.Debugf("Handling request: %s", this())
@@ -2861,65 +2869,63 @@ func (h *functionHandler) watchLogs(w http.ResponseWriter, r *http.Request) {
 
 }
 
+//	sn := mux.Vars(r)["podName"]
+//	grpcReq := new(grpc.WatchLogsRequest)
+//	grpcReq.PodName = &sn
 //
-// 	sn := mux.Vars(r)["podName"]
-// 	grpcReq := new(grpc.WatchLogsRequest)
-// 	grpcReq.PodName = &sn
+//	client, err := h.s.functions.WatchLogs(r.Context(), grpcReq)
+//	if err != nil {
+//		ErrResponse(w, err)
+//		return
+//	}
 //
-// 	client, err := h.s.functions.WatchLogs(r.Context(), grpcReq)
-// 	if err != nil {
-// 		ErrResponse(w, err)
-// 		return
-// 	}
+//	defer client.CloseSend()
+//	flusher, err := SetupSEEWriter(w)
+//	if err != nil {
+//		ErrResponse(w, err)
+//		return
+//	}
 //
-// 	defer client.CloseSend()
-// 	flusher, err := SetupSEEWriter(w)
-// 	if err != nil {
-// 		ErrResponse(w, err)
-// 		return
-// 	}
+//	// Create Heartbeat Ticker
+//	heartbeat := time.NewTicker(10 * time.Second)
+//	defer heartbeat.Stop()
 //
-// 	// Create Heartbeat Ticker
-// 	heartbeat := time.NewTicker(10 * time.Second)
-// 	defer heartbeat.Stop()
+//	// Start watcher client stream channels
+//	dataCh := make(chan string)
+//	errorCh := make(chan error)
+//	go func() {
+//		for {
+//			data, err := client.Recv()
+//			if err != nil {
+//				errorCh <- err
+//				break
+//			} else {
 //
-// 	// Start watcher client stream channels
-// 	dataCh := make(chan string)
-// 	errorCh := make(chan error)
-// 	go func() {
-// 		for {
-// 			data, err := client.Recv()
-// 			if err != nil {
-// 				errorCh <- err
-// 				break
-// 			} else {
+//				dataCh <- *data.Data
+//			}
+//		}
+//	}()
 //
-// 				dataCh <- *data.Data
-// 			}
-// 		}
-// 	}()
+//	for {
+//		select {
+//		case data := <-dataCh:
+//			err = WriteSSEData(w, flusher, []byte(data))
+//		case err = <-errorCh:
+//		case <-client.Context().Done():
+//			err = fmt.Errorf("requested stream has timed out")
+//		case <-heartbeat.C:
+//			SendSSEHeartbeat(w, flusher)
+//		}
 //
-// 	for {
-// 		select {
-// 		case data := <-dataCh:
-// 			err = WriteSSEData(w, flusher, []byte(data))
-// 		case err = <-errorCh:
-// 		case <-client.Context().Done():
-// 			err = fmt.Errorf("requested stream has timed out")
-// 		case <-heartbeat.C:
-// 			SendSSEHeartbeat(w, flusher)
-// 		}
-//
-// 		// Check for errors
-// 		if err != nil {
-// 			ErrSSEResponse(w, flusher, err)
-// 			heartbeat.Stop()
-// 			return
-// 		}
-// 	}
+//		// Check for errors
+//		if err != nil {
+//			ErrSSEResponse(w, flusher, err)
+//			heartbeat.Stop()
+//			return
+//		}
+//	}
 //
 // }
-//
 func (h *functionHandler) listGlobalPods(w http.ResponseWriter, r *http.Request) {
 
 	h.logger.Debugf("Handling request: %s", this())

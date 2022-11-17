@@ -9,7 +9,9 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/direktiv/direktiv/pkg/functions/ent/services"
+	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
+	"github.com/direktiv/direktiv/pkg/flow/ent/services"
+	"github.com/google/uuid"
 )
 
 // ServicesCreate is the builder for creating a Services entity.
@@ -29,6 +31,23 @@ func (sc *ServicesCreate) SetName(s string) *ServicesCreate {
 func (sc *ServicesCreate) SetData(s string) *ServicesCreate {
 	sc.mutation.SetData(s)
 	return sc
+}
+
+// SetID sets the "id" field.
+func (sc *ServicesCreate) SetID(s string) *ServicesCreate {
+	sc.mutation.SetID(s)
+	return sc
+}
+
+// SetNamespaceID sets the "namespace" edge to the Namespace entity by ID.
+func (sc *ServicesCreate) SetNamespaceID(id uuid.UUID) *ServicesCreate {
+	sc.mutation.SetNamespaceID(id)
+	return sc
+}
+
+// SetNamespace sets the "namespace" edge to the Namespace entity.
+func (sc *ServicesCreate) SetNamespace(n *Namespace) *ServicesCreate {
+	return sc.SetNamespaceID(n.ID)
 }
 
 // Mutation returns the ServicesMutation object of the builder.
@@ -118,6 +137,9 @@ func (sc *ServicesCreate) check() error {
 	if _, ok := sc.mutation.Data(); !ok {
 		return &ValidationError{Name: "data", err: errors.New(`ent: missing required field "Services.data"`)}
 	}
+	if _, ok := sc.mutation.NamespaceID(); !ok {
+		return &ValidationError{Name: "namespace", err: errors.New(`ent: missing required edge "Services.namespace"`)}
+	}
 	return nil
 }
 
@@ -129,8 +151,13 @@ func (sc *ServicesCreate) sqlSave(ctx context.Context) (*Services, error) {
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
+	if _spec.ID.Value != nil {
+		if id, ok := _spec.ID.Value.(string); ok {
+			_node.ID = id
+		} else {
+			return nil, fmt.Errorf("unexpected Services.ID type: %T", _spec.ID.Value)
+		}
+	}
 	return _node, nil
 }
 
@@ -140,11 +167,15 @@ func (sc *ServicesCreate) createSpec() (*Services, *sqlgraph.CreateSpec) {
 		_spec = &sqlgraph.CreateSpec{
 			Table: services.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeString,
 				Column: services.FieldID,
 			},
 		}
 	)
+	if id, ok := sc.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = id
+	}
 	if value, ok := sc.mutation.Name(); ok {
 		_spec.SetField(services.FieldName, field.TypeString, value)
 		_node.Name = value
@@ -152,6 +183,26 @@ func (sc *ServicesCreate) createSpec() (*Services, *sqlgraph.CreateSpec) {
 	if value, ok := sc.mutation.Data(); ok {
 		_spec.SetField(services.FieldData, field.TypeString, value)
 		_node.Data = value
+	}
+	if nodes := sc.mutation.NamespaceIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   services.NamespaceTable,
+			Columns: []string{services.NamespaceColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: namespace.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.namespace_services = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }
@@ -196,10 +247,6 @@ func (scb *ServicesCreateBulk) Save(ctx context.Context) ([]*Services, error) {
 					return nil, err
 				}
 				mutation.id = &nodes[i].ID
-				if specs[i].ID.Value != nil {
-					id := specs[i].ID.Value.(int64)
-					nodes[i].ID = int(id)
-				}
 				mutation.done = true
 				return nodes[i], nil
 			})

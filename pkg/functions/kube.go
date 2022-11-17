@@ -15,13 +15,14 @@ import (
 	"time"
 
 	"github.com/bradfitz/slice"
-	"github.com/direktiv/direktiv/pkg/functions/ent"
-	"github.com/direktiv/direktiv/pkg/functions/ent/predicate"
-	entservices "github.com/direktiv/direktiv/pkg/functions/ent/services"
+	"github.com/direktiv/direktiv/pkg/flow/ent/predicate"
+	entservices "github.com/direktiv/direktiv/pkg/flow/ent/services"
 	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/util"
+	"github.com/google/uuid"
 	shellwords "github.com/mattn/go-shellwords"
+	"github.com/mitchellh/hashstructure/v2"
 	hash "github.com/mitchellh/hashstructure/v2"
 
 	"google.golang.org/grpc/codes"
@@ -74,6 +75,173 @@ const (
 	ServiceKnativeHeaderRevision        = "serving.knative.dev/revision"
 	ServiceKnativeHeaderRolloutDuration = "serving.knative.dev/rolloutDuration"
 )
+
+// ---------------------------------------------------------------------------------------
+
+const (
+	regex = "^[a-z]([-a-z0-9]{0,62}[a-z0-9])?$"
+)
+
+type fnType struct {
+	prefix string
+	full   string
+}
+
+var (
+	wfType = fnType{
+		prefix: "wf",
+		full:   "workflow",
+	}
+	nsType = fnType{
+		prefix: "ns",
+		full:   "namespace",
+	}
+)
+
+type functionInformation struct {
+	Cmd      string            `json:"cmd,omitempty"`
+	Image    string            `json:"image,omitempty"`
+	Name     string            `json:"name,omitempty"`
+	Size     int32             `json:"size,omitempty"`
+	MinScale int32             `json:"minScale,omitempty"`
+	Envs     map[string]string `json:"envs"`
+
+	NamespaceOID string
+	WorkflowPath string
+}
+
+func generateServiceName(fn *functionInformation) (string, error) {
+
+	hash, err := hashstructure.Hash(fn, hashstructure.FormatV2, nil)
+	if err != nil {
+		return "", err
+	}
+
+	scope := wfType
+	if fn.NamespaceOID != "" {
+		scope = nsType
+	}
+
+	return fmt.Sprintf("%s-%d", scope.prefix, hash), nil
+
+}
+
+func (is *functionsServer) storeService(ctx context.Context, fn *functionInformation) error {
+
+	svn, err := generateServiceName(fn)
+	if err != nil {
+		return err
+	}
+
+	uid, err := uuid.Parse(fn.NamespaceOID)
+	if err != nil {
+		return err
+	}
+
+	logger.Infof("appending service %s to workflow %s", svn, uid)
+
+	// err := client.User.
+	// Create().
+	// SetAge(30).
+	// SetName("Ariel").
+	// OnConflict().
+	// UpdateNewValues().
+	// // Override some of the fields with a custom update.
+	// Update(func(u *ent.UserUpsert) {
+	//     u.SetAddress("localhost")
+	//     u.AddCount(1)
+	//     u.ClearPhone()
+	// }).
+	// Exec(ctx)
+
+	nf := is.db.Services.Create().
+		SetNamespaceID(uid).
+		SetName(fn.Name).
+		SetID(svn).
+		OnConflict().
+		UpdateNewValues().
+		Exec(ctx)
+
+	b, err := json.Marshal(fn)
+	if err != nil {
+		return err
+	}
+	nf.SetData(string(b))
+	_, err = nf.Save(context.Background())
+
+	return err
+}
+
+// StoreFunctions saves or updates functions which means creating knative services
+// based on the provided configuration
+func (is *functionsServer) CreateFunction(ctx context.Context, in *igrpc.CreateFunctionRequest) (*emptypb.Empty, error) {
+
+	logger.Infof("storing function %s", in.GetInfo().GetName())
+
+	err := validateLabel(in.GetInfo().GetName())
+	if err != nil {
+		logger.Errorf("can not create knative service: %v", err)
+		return &empty, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	// save if namespace scoped
+	if in.Info.GetNamespaceName() != "" {
+		fn := functionInformation{
+			Cmd:      in.Info.GetCmd(),
+			Image:    in.Info.GetImage(),
+			Name:     in.Info.GetName(),
+			Size:     in.Info.GetSize(),
+			MinScale: in.Info.GetMinScale(),
+			Envs:     in.Info.GetEnvs(),
+
+			WorkflowPath: in.Info.GetPath(),
+			NamespaceOID: in.Info.GetNamespace(),
+		}
+		err = is.storeService(ctx, &fn)
+
+		if err != nil {
+			logger.Errorf("can not store knative service: %v", err)
+			return &empty, status.Error(codes.InvalidArgument, err.Error())
+		}
+	}
+
+	// _, err = newRecord.Save(context.Background())
+
+	// // create ksvc service
+	// svc, err := createKnativeFunction(in.GetInfo())
+	// if err != nil {
+	// 	logger.Errorf("can not create knative service: %v", err)
+	// 	return &empty, k8sToGRPCError(err)
+	// }
+
+	// // backup service if not a workflow service
+	// if svc.ObjectMeta.Labels[ServiceHeaderWorkflowID] == "" {
+	// 	if err := is.backupService(svc.Name, backupServiceOptions{}); err != nil {
+	// 		logger.Errorf("can not backup knative service: %v", err)
+	// 		return &empty, err
+	// 	}
+	// }
+
+	return &empty, nil
+
+}
+
+func validateLabel(name string) error {
+
+	matched, err := regexp.MatchString(regex, name)
+	if err != nil {
+		return err
+	}
+
+	if !matched {
+		return fmt.Errorf("invalid service name (must conform to regex: '%s')", regex)
+	}
+
+	return nil
+
+}
+
+// ------------------------------------------------------------------------------------------------------
 
 // Available prefixes for different scopes
 const (
@@ -249,52 +417,54 @@ func (is *functionsServer) WatchPods(in *igrpc.WatchPodsRequest, out igrpc.Funct
 }
 
 func (is *functionsServer) watcherPods(cs *kubernetes.Clientset, labels string, out igrpc.FunctionsService_WatchPodsServer) (bool, error) {
-	timeout := int64(watcherTimeout.Seconds())
+	// timeout := int64(watcherTimeout.Seconds())
 
-	watch, err := cs.CoreV1().Pods(functionsConfig.Namespace).Watch(context.Background(), metav1.ListOptions{
-		LabelSelector:  labels,
-		TimeoutSeconds: &timeout,
-	})
-	if err != nil {
-		return false, fmt.Errorf("could start watcher: %v", err)
-	}
+	// watch, err := cs.CoreV1().Pods(functionsConfig.Namespace).Watch(context.Background(), metav1.ListOptions{
+	// 	LabelSelector:  labels,
+	// 	TimeoutSeconds: &timeout,
+	// })
+	// if err != nil {
+	// 	return false, fmt.Errorf("could start watcher: %v", err)
+	// }
 
-	for {
-		select {
-		case event := <-watch.ResultChan():
-			p, ok := event.Object.(*corev1.Pod)
-			if !ok {
-				return false, nil
-			}
+	// for {
+	// 	select {
+	// 	case event := <-watch.ResultChan():
+	// 		p, ok := event.Object.(*corev1.Pod)
+	// 		if !ok {
+	// 			return false, nil
+	// 		}
 
-			svc := p.Labels[ServiceKnativeHeaderName]
-			srev := p.Labels[ServiceKnativeHeaderRevision]
+	// 		svc := p.Labels[ServiceKnativeHeaderName]
+	// 		srev := p.Labels[ServiceKnativeHeaderRevision]
 
-			pod := igrpc.PodsInfo{
-				Name:            &p.Name,
-				Status:          (*string)(&p.Status.Phase),
-				ServiceName:     &svc,
-				ServiceRevision: &srev,
-			}
+	// 		pod := igrpc.PodsInfo{
+	// 			Name:            &p.Name,
+	// 			Status:          (*string)(&p.Status.Phase),
+	// 			ServiceName:     &svc,
+	// 			ServiceRevision: &srev,
+	// 		}
 
-			resp := igrpc.WatchPodsResponse{
-				Event: (*string)(&event.Type),
-				Pod:   &pod,
-			}
+	// 		resp := igrpc.WatchPodsResponse{
+	// 			Event: (*string)(&event.Type),
+	// 			Pod:   &pod,
+	// 		}
 
-			err = out.Send(&resp)
-			if err != nil {
-				return false, fmt.Errorf("failed to send event: %v", err)
-			}
+	// 		err = out.Send(&resp)
+	// 		if err != nil {
+	// 			return false, fmt.Errorf("failed to send event: %v", err)
+	// 		}
 
-		case <-time.After(watcherTimeout):
-			return false, nil
-		case <-out.Context().Done():
-			logger.Debug("pod watcher server event connection closed")
-			watch.Stop()
-			return true, nil
-		}
-	}
+	// 	case <-time.After(watcherTimeout):
+	// 		return false, nil
+	// 	case <-out.Context().Done():
+	// 		logger.Debug("pod watcher server event connection closed")
+	// 		watch.Stop()
+	// 		return true, nil
+	// 	}
+	// }
+
+	return true, nil
 }
 
 // ListFunctions returns isoaltes based on label filter
@@ -324,78 +494,25 @@ func (is *functionsServer) ListFunctions(ctx context.Context,
 func (is *functionsServer) ReconstructFunction(ctx context.Context,
 	in *igrpc.ReconstructFunctionRequest) (*emptypb.Empty, error) {
 
-	logger.Infof("reconstructing functions %s", in.GetName())
+	// logger.Infof("reconstructing functions %s", in.GetName())
 
-	if in.GetName() == "" {
-		return &empty, fmt.Errorf("name can not be nil")
-	}
+	// if in.GetName() == "" {
+	// 	return &empty, fmt.Errorf("name can not be nil")
+	// }
 
-	name := in.GetName()
+	// name := in.GetName()
 
-	err := is.reconstructService(name, ctx)
-	if err != nil {
-		logger.Errorf("could not recreate service: %v", err)
+	// err := is.reconstructService(name, ctx)
+	// if err != nil {
+	// 	logger.Errorf("could not recreate service: %v", err)
 
-		// Service backup record not found in database
-		if ent.IsNotFound(err) {
-			return &empty, status.Error(codes.NotFound, "could not recreate service")
-		}
+	// 	// Service backup record not found in database
+	// 	if ent.IsNotFound(err) {
+	// 		return &empty, status.Error(codes.NotFound, "could not recreate service")
+	// 	}
 
-		return &empty, fmt.Errorf("could not recreate service")
-	}
-
-	return &empty, nil
-
-}
-
-func (is *functionsServer) validateCreateFunction(info *igrpc.BaseInfo) error {
-
-	if info == nil {
-		return fmt.Errorf("info can not be nil")
-	}
-
-	regex := "^[a-z]([-a-z0-9]{0,62}[a-z0-9])?$"
-
-	matched, err := regexp.MatchString(regex, info.GetName())
-	if err != nil {
-		return err
-	}
-
-	if !matched {
-		return fmt.Errorf("invalid service name (must conform to regex: '%s')", regex)
-	}
-
-	return nil
-
-}
-
-// StoreFunctions saves or updates functions which means creating knative services
-// based on the provided configuration
-func (is *functionsServer) CreateFunction(ctx context.Context,
-	in *igrpc.CreateFunctionRequest) (*emptypb.Empty, error) {
-
-	logger.Infof("storing functions %s", in.GetInfo().GetName())
-
-	err := is.validateCreateFunction(in.GetInfo())
-	if err != nil {
-		logger.Errorf("can not create knative service: %v", err)
-		return &empty, status.Error(codes.InvalidArgument, err.Error())
-	}
-
-	// create ksvc service
-	svc, err := createKnativeFunction(in.GetInfo())
-	if err != nil {
-		logger.Errorf("can not create knative service: %v", err)
-		return &empty, k8sToGRPCError(err)
-	}
-
-	// backup service if not a workflow service
-	if svc.ObjectMeta.Labels[ServiceHeaderWorkflowID] == "" {
-		if err := is.backupService(svc.Name, backupServiceOptions{}); err != nil {
-			logger.Errorf("can not backup knative service: %v", err)
-			return &empty, err
-		}
-	}
+	// 	return &empty, fmt.Errorf("could not recreate service")
+	// }
 
 	return &empty, nil
 
@@ -432,84 +549,86 @@ func (is *functionsServer) WatchFunctions(in *igrpc.WatchFunctionsRequest, out i
 }
 
 func (is *functionsServer) watcherFunctions(cs *versioned.Clientset, labels string, out igrpc.FunctionsService_WatchFunctionsServer) (bool, error) {
-	timeout := int64(watcherTimeout.Seconds())
-	watch, err := cs.ServingV1().Services(functionsConfig.Namespace).Watch(context.Background(), metav1.ListOptions{
-		LabelSelector:  labels,
-		TimeoutSeconds: &timeout,
-	})
-	if err != nil {
-		return false, fmt.Errorf("could start watcher: %v", err)
-	}
+	// timeout := int64(watcherTimeout.Seconds())
+	// watch, err := cs.ServingV1().Services(functionsConfig.Namespace).Watch(context.Background(), metav1.ListOptions{
+	// 	LabelSelector:  labels,
+	// 	TimeoutSeconds: &timeout,
+	// })
+	// if err != nil {
+	// 	return false, fmt.Errorf("could start watcher: %v", err)
+	// }
 
-	for {
-		select {
-		case event := <-watch.ResultChan():
-			s, ok := event.Object.(*v1.Service)
-			if !ok {
-				return false, nil
-			}
+	// for {
+	// 	select {
+	// 	case event := <-watch.ResultChan():
+	// 		s, ok := event.Object.(*v1.Service)
+	// 		if !ok {
+	// 			return false, nil
+	// 		}
 
-			status, conds := statusFromCondition(s.Status.Conditions)
-			resp := igrpc.WatchFunctionsResponse{
-				Event: (*string)(&event.Type),
-				Function: &igrpc.FunctionsInfo{
-					Info:        serviceBaseInfo(s),
-					Status:      &status,
-					Conditions:  conds,
-					ServiceName: &s.Name,
-				},
-			}
+	// 		status, conds := statusFromCondition(s.Status.Conditions)
+	// 		resp := igrpc.WatchFunctionsResponse{
+	// 			Event: (*string)(&event.Type),
+	// 			Function: &igrpc.FunctionsInfo{
+	// 				Info:        serviceBaseInfo(s),
+	// 				Status:      &status,
+	// 				Conditions:  conds,
+	// 				ServiceName: &s.Name,
+	// 			},
+	// 		}
 
-			// traffic map
-			tm := make(map[string]*int64)
-			for i := range s.Status.Traffic {
-				tt := s.Status.Traffic[i]
-				// sometimes knative routes between the same revisions
-				// in this case we just add the percents
-				if p, ok := tm[tt.RevisionName]; ok {
-					newp := *p + *tt.Percent
-					tm[tt.RevisionName] = &newp
-				} else {
-					tm[tt.RevisionName] = tt.Percent
+	// 		// traffic map
+	// 		tm := make(map[string]*int64)
+	// 		for i := range s.Status.Traffic {
+	// 			tt := s.Status.Traffic[i]
+	// 			// sometimes knative routes between the same revisions
+	// 			// in this case we just add the percents
+	// 			if p, ok := tm[tt.RevisionName]; ok {
+	// 				newp := *p + *tt.Percent
+	// 				tm[tt.RevisionName] = &newp
+	// 			} else {
+	// 				tm[tt.RevisionName] = tt.Percent
 
-				}
-			}
+	// 			}
+	// 		}
 
-			resp.Traffic = make([]*igrpc.Traffic, 0)
-			for r, p := range tm {
-				name := r
-				t := new(igrpc.Traffic)
-				t.RevisionName = &name
-				t.Traffic = p
+	// 		resp.Traffic = make([]*igrpc.Traffic, 0)
+	// 		for r, p := range tm {
+	// 			name := r
+	// 			t := new(igrpc.Traffic)
+	// 			t.RevisionName = &name
+	// 			t.Traffic = p
 
-				// Get Generation
-				i, e := strconv.ParseInt(name[strings.LastIndex(name, "-")+1:], 10, 64)
-				if e != nil {
-					logger.Errorf("could get generation from revision name %v", e)
-				}
-				t.Generation = &i
+	// 			// Get Generation
+	// 			i, e := strconv.ParseInt(name[strings.LastIndex(name, "-")+1:], 10, 64)
+	// 			if e != nil {
+	// 				logger.Errorf("could get generation from revision name %v", e)
+	// 			}
+	// 			t.Generation = &i
 
-				resp.Traffic = append(resp.Traffic, t)
-			}
+	// 			resp.Traffic = append(resp.Traffic, t)
+	// 		}
 
-			// Sort by Generation
-			sort.Slice(resp.Traffic[:], func(i, j int) bool {
-				return *resp.Traffic[i].Generation > *resp.Traffic[j].Generation
-			})
+	// 		// Sort by Generation
+	// 		sort.Slice(resp.Traffic[:], func(i, j int) bool {
+	// 			return *resp.Traffic[i].Generation > *resp.Traffic[j].Generation
+	// 		})
 
-			err = out.Send(&resp)
-			if err != nil {
-				return false, fmt.Errorf("failed to send event: %v", err)
-			}
+	// 		err = out.Send(&resp)
+	// 		if err != nil {
+	// 			return false, fmt.Errorf("failed to send event: %v", err)
+	// 		}
 
-		case <-time.After(watcherTimeout):
-			return false, nil
-		case <-out.Context().Done():
-			logger.Debug("function watcher server event connection closed")
-			watch.Stop()
-			return true, nil
-		}
-	}
+	// 	case <-time.After(watcherTimeout):
+	// 		return false, nil
+	// 	case <-out.Context().Done():
+	// 		logger.Debug("function watcher server event connection closed")
+	// 		watch.Stop()
+	// 		return true, nil
+	// 	}
+	// }
+
+	return true, nil
 }
 
 func (is *functionsServer) WatchRevisions(in *igrpc.WatchRevisionsRequest, out igrpc.FunctionsService_WatchRevisionsServer) error {
@@ -551,86 +670,88 @@ func (is *functionsServer) WatchRevisions(in *igrpc.WatchRevisionsRequest, out i
 }
 
 func (is *functionsServer) watcherRevisions(cs *versioned.Clientset, labels string, revisionFilter string, out igrpc.FunctionsService_WatchRevisionsServer) (bool, error) {
-	timeout := int64(watcherTimeout.Seconds())
+	// timeout := int64(watcherTimeout.Seconds())
 
-	watch, err := cs.ServingV1().Revisions(functionsConfig.Namespace).Watch(context.Background(), metav1.ListOptions{
-		LabelSelector:  labels,
-		TimeoutSeconds: &timeout,
-	})
-	if err != nil {
-		return false, fmt.Errorf("could start watcher: %v", err)
-	}
+	// watch, err := cs.ServingV1().Revisions(functionsConfig.Namespace).Watch(context.Background(), metav1.ListOptions{
+	// 	LabelSelector:  labels,
+	// 	TimeoutSeconds: &timeout,
+	// })
+	// if err != nil {
+	// 	return false, fmt.Errorf("could start watcher: %v", err)
+	// }
 
-	for {
-		select {
-		case event := <-watch.ResultChan():
-			rev, ok := event.Object.(*v1.Revision)
-			if !ok {
-				return false, nil
-			} else if revisionFilter != "" && rev.Name != revisionFilter {
-				continue // skip
-			}
+	// for {
+	// 	select {
+	// 	case event := <-watch.ResultChan():
+	// 		rev, ok := event.Object.(*v1.Revision)
+	// 		if !ok {
+	// 			return false, nil
+	// 		} else if revisionFilter != "" && rev.Name != revisionFilter {
+	// 			continue // skip
+	// 		}
 
-			info := &igrpc.Revision{}
+	// 		info := &igrpc.Revision{}
 
-			// size and scale
-			var sz, scale int32
-			var gen int64
-			fmt.Sscan(rev.Annotations[ServiceHeaderSize], &sz)
-			fmt.Sscan(rev.Annotations["autoscaling.knative.dev/minScale"], &scale)
-			fmt.Sscan(rev.Labels[ServiceTemplateGeneration], &gen)
+	// 		// size and scale
+	// 		var sz, scale int32
+	// 		var gen int64
+	// 		fmt.Sscan(rev.Annotations[ServiceHeaderSize], &sz)
+	// 		fmt.Sscan(rev.Annotations["autoscaling.knative.dev/minScale"], &scale)
+	// 		fmt.Sscan(rev.Labels[ServiceTemplateGeneration], &gen)
 
-			info.Size = &sz
-			info.MinScale = &scale
-			info.Generation = &gen
+	// 		info.Size = &sz
+	// 		info.MinScale = &scale
+	// 		info.Generation = &gen
 
-			// set status
-			status, conds := statusFromCondition(rev.Status.Conditions)
-			info.Status = &status
-			info.Conditions = conds
+	// 		// set status
+	// 		status, conds := statusFromCondition(rev.Status.Conditions)
+	// 		info.Status = &status
+	// 		info.Conditions = conds
 
-			img, cmd := containerFromList(rev.Spec.Containers)
-			info.Image = &img
-			info.Cmd = &cmd
+	// 		img, cmd := containerFromList(rev.Spec.Containers)
+	// 		info.Image = &img
+	// 		info.Cmd = &cmd
 
-			// name
-			svn := rev.Name
-			info.Name = &svn
+	// 		// name
+	// 		svn := rev.Name
+	// 		info.Name = &svn
 
-			ss := strings.Split(rev.Name, "-")
-			info.Rev = &ss[len(ss)-1]
+	// 		ss := strings.Split(rev.Name, "-")
+	// 		info.Rev = &ss[len(ss)-1]
 
-			// replicas
-			if rev.Status.ActualReplicas != nil {
-				info.ActualReplicas = int64(*rev.Status.ActualReplicas)
-			}
+	// 		// replicas
+	// 		if rev.Status.ActualReplicas != nil {
+	// 			info.ActualReplicas = int64(*rev.Status.ActualReplicas)
+	// 		}
 
-			if rev.Status.DesiredReplicas != nil {
-				info.DesiredReplicas = int64(*rev.Status.DesiredReplicas)
-			}
+	// 		if rev.Status.DesiredReplicas != nil {
+	// 			info.DesiredReplicas = int64(*rev.Status.DesiredReplicas)
+	// 		}
 
-			// creation date
-			var t int64 = rev.CreationTimestamp.Unix()
-			info.Created = &t
+	// 		// creation date
+	// 		var t int64 = rev.CreationTimestamp.Unix()
+	// 		info.Created = &t
 
-			resp := igrpc.WatchRevisionsResponse{
-				Event:    (*string)(&event.Type),
-				Revision: info,
-			}
+	// 		resp := igrpc.WatchRevisionsResponse{
+	// 			Event:    (*string)(&event.Type),
+	// 			Revision: info,
+	// 		}
 
-			err = out.Send(&resp)
-			if err != nil {
-				return false, fmt.Errorf("failed to send event: %v", err)
-			}
+	// 		err = out.Send(&resp)
+	// 		if err != nil {
+	// 			return false, fmt.Errorf("failed to send event: %v", err)
+	// 		}
 
-		case <-time.After(watcherTimeout):
-			return false, nil
-		case <-out.Context().Done():
-			logger.Debug("revision watcher server event connection closed")
-			watch.Stop()
-			return true, nil
-		}
-	}
+	// 	case <-time.After(watcherTimeout):
+	// 		return false, nil
+	// 	case <-out.Context().Done():
+	// 		logger.Debug("revision watcher server event connection closed")
+	// 		watch.Stop()
+	// 		return true, nil
+	// 	}
+	// }
+
+	return true, nil
 }
 
 func (is *functionsServer) WatchLogs(in *igrpc.WatchLogsRequest, out igrpc.FunctionsService_WatchLogsServer) error {
@@ -1761,10 +1882,10 @@ func createGlobalPrivatePullSecrets() []corev1.LocalObjectReference {
 
 func createKnativeFunction(info *igrpc.BaseInfo) (*v1.Service, error) {
 
-	var (
-		concurrency int64 = 100
-		timeoutSec        = int64(functionsConfig.RequestTimeout)
-	)
+	// var (
+	// 	concurrency int64 = 100
+	// 	timeoutSec        = int64(functionsConfig.RequestTimeout)
+	// )
 
 	logger.Debugf("info.GetNamespace(), info.GetWorkflow(), info.GetName() = %s, %s, %s", info.GetNamespace(),
 		info.GetWorkflow(), info.GetName())
@@ -1787,9 +1908,9 @@ func createKnativeFunction(info *igrpc.BaseInfo) (*v1.Service, error) {
 		min = functionsConfig.MaxScale
 	}
 
-	if functionsConfig.Concurrency > 0 {
-		concurrency = int64(functionsConfig.Concurrency)
-	}
+	// if functionsConfig.Concurrency > 0 {
+	// 	concurrency = int64(functionsConfig.Concurrency)
+	// }
 
 	containers, err := makeContainers(info.GetImage(), info.GetCmd(),
 		int(info.GetSize()))
@@ -1837,8 +1958,6 @@ func createKnativeFunction(info *igrpc.BaseInfo) (*v1.Service, error) {
 								NodeAffinity: n,
 							},
 						},
-						ContainerConcurrency: &concurrency,
-						TimeoutSeconds:       &timeoutSec,
 					},
 				},
 			},
@@ -1848,44 +1967,44 @@ func createKnativeFunction(info *igrpc.BaseInfo) (*v1.Service, error) {
 	// Set Registry Secrets
 	var secrets []corev1.LocalObjectReference
 
-	if scope == PrefixGlobal {
-		secrets = createGlobalPrivatePullSecrets()
-	} else {
-		secrets = createPullSecrets(info.GetNamespaceName())
-	}
+	// if scope == PrefixGlobal {
+	// 	secrets = createGlobalPrivatePullSecrets()
+	// } else {
+	secrets = createPullSecrets(info.GetNamespaceName())
+	// }
 
 	svc.Spec.ConfigurationSpec.Template.Spec.ImagePullSecrets = secrets
 	svc.Spec.ConfigurationSpec.Template.Spec.PodSpec.ImagePullSecrets = secrets
 
 	// Manually Keep track of revision on our side to more easily generate names in the future.
-	svc.Spec.ConfigurationSpec.Template.ObjectMeta.Labels[ServiceTemplateGeneration] = "1"
+	// svc.Spec.ConfigurationSpec.Template.ObjectMeta.Labels[ServiceTemplateGeneration] = "1"
 
-	if len(info.GetWorkflow()) == 0 {
-		// Explicitly set first revision name if service is not workflow
-		svc.Spec.ConfigurationSpec.Template.ObjectMeta.Name = fmt.Sprintf("%s-00001", name)
-	}
+	// if len(info.GetWorkflow()) == 0 {
+	// 	// Explicitly set first revision name if service is not workflow
+	// 	svc.Spec.ConfigurationSpec.Template.ObjectMeta.Name = fmt.Sprintf("%s-00001", name)
+	// }
 
 	if len(functionsConfig.Runtime) > 0 && functionsConfig.Runtime != "default" {
 		logger.Debugf("setting runtime class %v", functionsConfig.Runtime)
 		svc.Spec.ConfigurationSpec.Template.Spec.PodSpec.RuntimeClassName = &functionsConfig.Runtime
 	}
 
-	cs, err := fetchServiceAPI()
-	if err != nil {
-		logger.Errorf("error getting clientset for knative: %v", err)
-		return nil, err
-	}
+	// cs, err := fetchServiceAPI()
+	// if err != nil {
+	// 	logger.Errorf("error getting clientset for knative: %v", err)
+	// 	return nil, err
+	// }
 
-	newSvc, err := cs.ServingV1().Services(functionsConfig.Namespace).Create(context.Background(), &svc, metav1.CreateOptions{})
-	if err != nil {
-		logger.Errorf("error creating knative service: %v", err)
-		return nil, err
-	}
+	// newSvc, err := cs.ServingV1().Services(functionsConfig.Namespace).Create(context.Background(), &svc, metav1.CreateOptions{})
+	// if err != nil {
+	// 	logger.Errorf("error creating knative service: %v", err)
+	// 	return nil, err
+	// }
 
-	// b, _ := json.MarshalIndent(svc, "", "  ")
-	// fmt.Printf("%v\n", string(b))
+	b, _ := json.MarshalIndent(svc, "", "  ")
+	fmt.Printf("%v\n", string(b))
 
-	return newSvc, nil
+	return nil, nil
 }
 
 func deleteKnativeFunction(name string) error {
@@ -1986,16 +2105,16 @@ func trafficKnativeFunctions(name string, tv []*igrpc.TrafficValue) (*v1.Service
 
 }
 
-//	backupService : Given service name, record a service and its revisions to a database record.
-//	Service Templates are backed up with their latest revision switched with the earliest revision. This
-//	is to ease the process of reconstructing all revisions in the correct order.
-//	Parameters:
-//	 - opts
-//		- previousRevisionName:	This is the previously know revision name. The backup service process will not begin until
-//								the service Latest Created Revision Name does not match this value. This is to confirm that
-//								a service has changed before we start updating its backup record.
-//		- patch: 				Whether or not this is a new service, and we need to create a new record for it (true), or
-//								patch the old record (false).
+// backupService : Given service name, record a service and its revisions to a database record.
+// Service Templates are backed up with their latest revision switched with the earliest revision. This
+// is to ease the process of reconstructing all revisions in the correct order.
+// Parameters:
+//   - opts
+//   - previousRevisionName:	This is the previously know revision name. The backup service process will not begin until
+//     the service Latest Created Revision Name does not match this value. This is to confirm that
+//     a service has changed before we start updating its backup record.
+//   - patch: 				Whether or not this is a new service, and we need to create a new record for it (true), or
+//     patch the old record (false).
 func (is *functionsServer) backupService(serviceName string, opts backupServiceOptions) error {
 	// Load options
 	blog := logger.With("service", serviceName)
@@ -2140,10 +2259,10 @@ func getTemplateMetaGenerationFromName(meta *metav1.ObjectMeta) (int, error) {
 	return i, nil
 }
 
-//	reconstructService : Reconstructs a service and its revisions from a backed up service database record
-//	This is done in two steps:
-//	1) Create service with earliest recorded revision
-//	2) For each other revision create them in asceneding order by patching the exisiting service.
+// reconstructService : Reconstructs a service and its revisions from a backed up service database record
+// This is done in two steps:
+// 1) Create service with earliest recorded revision
+// 2) For each other revision create them in asceneding order by patching the exisiting service.
 func (is *functionsServer) reconstructService(name string, ctx context.Context) error {
 
 	cs, err := fetchServiceAPI()
@@ -2249,9 +2368,9 @@ func (is *functionsServer) reconstructService(name string, ctx context.Context) 
 	return nil
 }
 
-//	reconstructServices : Checks to see if there are any records in the database of
-//	backed up services that are missing. If any missing services are found, they
-//	are reconstructed
+// reconstructServices : Checks to see if there are any records in the database of
+// backed up services that are missing. If any missing services are found, they
+// are reconstructed
 func (is *functionsServer) reconstructServices(ctx context.Context) error {
 
 	cs, err := fetchServiceAPI()
@@ -2305,7 +2424,7 @@ func (is *functionsServer) reconstructServices(ctx context.Context) error {
 	return nil
 }
 
-// 	prepareRevisionForExport : Strips any annotations we no longer need.
+// prepareRevisionForExport : Strips any annotations we no longer need.
 func prepareRevisionForExport(revision *servingv1.Revision) servingv1.Revision {
 	exportedRevision := servingv1.Revision{
 		ObjectMeta: metav1.ObjectMeta{
@@ -2327,9 +2446,9 @@ func prepareRevisionForExport(revision *servingv1.Revision) servingv1.Revision {
 	return exportedRevision
 }
 
-//	prepareRevisionForExport : Strips any annotations we no longer need, and switches
-//	latest service template with earliest revision to ease the
-//	process of reconstructing all revisions in the correct order.
+// prepareRevisionForExport : Strips any annotations we no longer need, and switches
+// latest service template with earliest revision to ease the
+// process of reconstructing all revisions in the correct order.
 func prepareServiceForExport(latestSvc *servingv1.Service, earliestRevision *v1.Revision) *servingv1.Service {
 	exportedSvc := servingv1.Service{
 		ObjectMeta: metav1.ObjectMeta{

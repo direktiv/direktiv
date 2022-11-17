@@ -123,11 +123,6 @@ ent-secrets: ## Manually regenerates ent database package for secrets.
 	cd build/ent && docker build -t ent .
 	docker run -v `pwd`:/ent ent ./pkg/secrets/ent
 
-.PHONY: ent-functions
-ent-functions: ## Manually regenerates ent database package for functions. 
-	cd build/ent && docker build -t ent .
-	docker run -v `pwd`:/ent ent ./pkg/functions/ent
-
 .PHONY: ent-metrics
 ent-metrics: ## Manually regenerates ent database package for metrics. 
 	cd build/ent && docker build -t ent .
@@ -135,7 +130,7 @@ ent-metrics: ## Manually regenerates ent database package for metrics.
 
 .PHONY: ent
 ent: ## Manually regenerates ent database packages.
-ent: ent-flow ent-secrets ent-functions ent-metrics
+ent: ent-flow ent-secrets ent-metrics
 
 # Cleans API client inside of pkg api
 .PHONY: api-clean-client

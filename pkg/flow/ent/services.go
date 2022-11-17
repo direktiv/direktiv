@@ -7,18 +7,46 @@ import (
 	"strings"
 
 	"entgo.io/ent/dialect/sql"
-	"github.com/direktiv/direktiv/pkg/functions/ent/services"
+	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
+	"github.com/direktiv/direktiv/pkg/flow/ent/services"
+	"github.com/google/uuid"
 )
 
 // Services is the model entity for the Services schema.
 type Services struct {
 	config `json:"-"`
 	// ID of the ent.
-	ID int `json:"id,omitempty"`
+	ID string `json:"id,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
 	// Data holds the value of the "data" field.
 	Data string `json:"data,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the ServicesQuery when eager-loading is set.
+	Edges              ServicesEdges `json:"edges"`
+	namespace_services *uuid.UUID
+}
+
+// ServicesEdges holds the relations/edges for other nodes in the graph.
+type ServicesEdges struct {
+	// Namespace holds the value of the namespace edge.
+	Namespace *Namespace `json:"namespace,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [1]bool
+}
+
+// NamespaceOrErr returns the Namespace value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e ServicesEdges) NamespaceOrErr() (*Namespace, error) {
+	if e.loadedTypes[0] {
+		if e.Namespace == nil {
+			// Edge was loaded but was not found.
+			return nil, &NotFoundError{label: namespace.Label}
+		}
+		return e.Namespace, nil
+	}
+	return nil, &NotLoadedError{edge: "namespace"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -26,10 +54,10 @@ func (*Services) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case services.FieldID:
-			values[i] = new(sql.NullInt64)
-		case services.FieldName, services.FieldData:
+		case services.FieldID, services.FieldName, services.FieldData:
 			values[i] = new(sql.NullString)
+		case services.ForeignKeys[0]: // namespace_services
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Services", columns[i])
 		}
@@ -46,11 +74,11 @@ func (s *Services) assignValues(columns []string, values []any) error {
 	for i := range columns {
 		switch columns[i] {
 		case services.FieldID:
-			value, ok := values[i].(*sql.NullInt64)
-			if !ok {
-				return fmt.Errorf("unexpected type %T for field id", value)
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field id", values[i])
+			} else if value.Valid {
+				s.ID = value.String
 			}
-			s.ID = int(value.Int64)
 		case services.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
@@ -63,9 +91,21 @@ func (s *Services) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				s.Data = value.String
 			}
+		case services.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field namespace_services", values[i])
+			} else if value.Valid {
+				s.namespace_services = new(uuid.UUID)
+				*s.namespace_services = *value.S.(*uuid.UUID)
+			}
 		}
 	}
 	return nil
+}
+
+// QueryNamespace queries the "namespace" edge of the Services entity.
+func (s *Services) QueryNamespace() *NamespaceQuery {
+	return (&ServicesClient{config: s.config}).QueryNamespace(s)
 }
 
 // Update returns a builder for updating this Services.

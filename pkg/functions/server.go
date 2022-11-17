@@ -14,7 +14,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 
-	"github.com/direktiv/direktiv/pkg/functions/ent"
+	"github.com/direktiv/direktiv/pkg/flow/ent"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/version"
 	"github.com/lib/pq"
@@ -86,12 +86,6 @@ func StartServer(echan chan error) {
 	if err != nil {
 		logger.Errorf("failed to connect database client: %w", err)
 		echan <- fmt.Errorf("failed to connect database client: %w", err)
-	}
-
-	// Run the auto migration tool.
-	if err := db.Schema.Create(context.Background()); err != nil {
-		logger.Errorf("failed to auto migrate database: %v", err)
-		echan <- fmt.Errorf("failed to auto migrate database: %v", err)
 	}
 
 	fServer := functionsServer{

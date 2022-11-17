@@ -86,6 +86,9 @@ func main() {
 	upgraders = append(upgraders, generationUpgrader{
 		version: "0.6.0",
 		logic:   updateGeneration_0_6_0,
+	}, generationUpgrader{
+		version: "0.7.1",
+		logic:   updateGeneration_0_7_1,
 	})
 
 	for _, upgrader := range upgraders {
@@ -143,6 +146,28 @@ func main() {
 type generationUpgrader struct {
 	version string
 	logic   func(tx *sql.Tx) error
+}
+
+func updateGeneration_0_7_1(db *sql.Tx) error {
+
+	row := db.QueryRow(`SELECT count(column_name) FROM information_schema.columns WHERE table_name = 'services'`)
+
+	if row.Err() != nil {
+		return row.Err()
+	}
+
+	var count int
+	row.Scan(&count)
+
+	// old is id, name, data, new one has namespace
+	if count == 3 {
+		_, err := db.Exec("drop table services")
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func updateGeneration_0_6_0(db *sql.Tx) error {

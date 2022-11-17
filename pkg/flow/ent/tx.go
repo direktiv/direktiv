@@ -38,6 +38,8 @@ type Tx struct {
 	Revision *RevisionClient
 	// Route is the client for interacting with the Route builders.
 	Route *RouteClient
+	// Services is the client for interacting with the Services builders.
+	Services *ServicesClient
 	// VarData is the client for interacting with the VarData builders.
 	VarData *VarDataClient
 	// VarRef is the client for interacting with the VarRef builders.
@@ -188,6 +190,7 @@ func (tx *Tx) init() {
 	tx.Ref = NewRefClient(tx.config)
 	tx.Revision = NewRevisionClient(tx.config)
 	tx.Route = NewRouteClient(tx.config)
+	tx.Services = NewServicesClient(tx.config)
 	tx.VarData = NewVarDataClient(tx.config)
 	tx.VarRef = NewVarRefClient(tx.config)
 	tx.Workflow = NewWorkflowClient(tx.config)
