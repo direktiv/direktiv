@@ -259,27 +259,15 @@ func (rc *RefCreate) createSpec() (*Ref, *sqlgraph.CreateSpec) {
 		_spec.ID.Value = &id
 	}
 	if value, ok := rc.mutation.Immutable(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeBool,
-			Value:  value,
-			Column: ref.FieldImmutable,
-		})
+		_spec.SetField(ref.FieldImmutable, field.TypeBool, value)
 		_node.Immutable = value
 	}
 	if value, ok := rc.mutation.Name(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: ref.FieldName,
-		})
+		_spec.SetField(ref.FieldName, field.TypeString, value)
 		_node.Name = value
 	}
 	if value, ok := rc.mutation.CreatedAt(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: ref.FieldCreatedAt,
-		})
+		_spec.SetField(ref.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
 	if nodes := rc.mutation.WorkflowIDs(); len(nodes) > 0 {

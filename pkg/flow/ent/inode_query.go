@@ -22,13 +22,12 @@ import (
 // InodeQuery is the builder for querying Inode entities.
 type InodeQuery struct {
 	config
-	limit      *int
-	offset     *int
-	unique     *bool
-	order      []OrderFunc
-	fields     []string
-	predicates []predicate.Inode
-	// eager-loading edges.
+	limit         *int
+	offset        *int
+	unique        *bool
+	order         []OrderFunc
+	fields        []string
+	predicates    []predicate.Inode
 	withNamespace *NamespaceQuery
 	withChildren  *InodeQuery
 	withParent    *InodeQuery
@@ -443,7 +442,6 @@ func (iq *InodeQuery) WithMirror(opts ...func(*MirrorQuery)) *InodeQuery {
 //		GroupBy(inode.FieldCreatedAt).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-//
 func (iq *InodeQuery) GroupBy(field string, fields ...string) *InodeGroupBy {
 	grbuild := &InodeGroupBy{config: iq.config}
 	grbuild.fields = append([]string{field}, fields...)
@@ -470,13 +468,17 @@ func (iq *InodeQuery) GroupBy(field string, fields ...string) *InodeGroupBy {
 //	client.Inode.Query().
 //		Select(inode.FieldCreatedAt).
 //		Scan(ctx, &v)
-//
 func (iq *InodeQuery) Select(fields ...string) *InodeSelect {
 	iq.fields = append(iq.fields, fields...)
 	selbuild := &InodeSelect{InodeQuery: iq}
 	selbuild.label = inode.Label
 	selbuild.flds, selbuild.scan = &iq.fields, selbuild.Scan
 	return selbuild
+}
+
+// Aggregate returns a InodeSelect configured with the given aggregations.
+func (iq *InodeQuery) Aggregate(fns ...AggregateFunc) *InodeSelect {
+	return iq.Select().Aggregate(fns...)
 }
 
 func (iq *InodeQuery) prepareQuery(ctx context.Context) error {
@@ -514,10 +516,10 @@ func (iq *InodeQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Inode,
 	if withFKs {
 		_spec.Node.Columns = append(_spec.Node.Columns, inode.ForeignKeys...)
 	}
-	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
+	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Inode).scanValues(nil, columns)
 	}
-	_spec.Assign = func(columns []string, values []interface{}) error {
+	_spec.Assign = func(columns []string, values []any) error {
 		node := &Inode{config: iq.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
@@ -532,151 +534,184 @@ func (iq *InodeQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Inode,
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-
 	if query := iq.withNamespace; query != nil {
-		ids := make([]uuid.UUID, 0, len(nodes))
-		nodeids := make(map[uuid.UUID][]*Inode)
-		for i := range nodes {
-			if nodes[i].namespace_inodes == nil {
-				continue
-			}
-			fk := *nodes[i].namespace_inodes
-			if _, ok := nodeids[fk]; !ok {
-				ids = append(ids, fk)
-			}
-			nodeids[fk] = append(nodeids[fk], nodes[i])
-		}
-		query.Where(namespace.IDIn(ids...))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := iq.loadNamespace(ctx, query, nodes, nil,
+			func(n *Inode, e *Namespace) { n.Edges.Namespace = e }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			nodes, ok := nodeids[n.ID]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "namespace_inodes" returned %v`, n.ID)
-			}
-			for i := range nodes {
-				nodes[i].Edges.Namespace = n
-			}
-		}
 	}
-
 	if query := iq.withChildren; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[uuid.UUID]*Inode)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Children = []*Inode{}
-		}
-		query.withFKs = true
-		query.Where(predicate.Inode(func(s *sql.Selector) {
-			s.Where(sql.InValues(inode.ChildrenColumn, fks...))
-		}))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := iq.loadChildren(ctx, query, nodes,
+			func(n *Inode) { n.Edges.Children = []*Inode{} },
+			func(n *Inode, e *Inode) { n.Edges.Children = append(n.Edges.Children, e) }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			fk := n.inode_children
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "inode_children" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "inode_children" returned %v for node %v`, *fk, n.ID)
-			}
-			node.Edges.Children = append(node.Edges.Children, n)
-		}
 	}
-
 	if query := iq.withParent; query != nil {
-		ids := make([]uuid.UUID, 0, len(nodes))
-		nodeids := make(map[uuid.UUID][]*Inode)
-		for i := range nodes {
-			if nodes[i].inode_children == nil {
-				continue
-			}
-			fk := *nodes[i].inode_children
-			if _, ok := nodeids[fk]; !ok {
-				ids = append(ids, fk)
-			}
-			nodeids[fk] = append(nodeids[fk], nodes[i])
-		}
-		query.Where(inode.IDIn(ids...))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := iq.loadParent(ctx, query, nodes, nil,
+			func(n *Inode, e *Inode) { n.Edges.Parent = e }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			nodes, ok := nodeids[n.ID]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "inode_children" returned %v`, n.ID)
-			}
-			for i := range nodes {
-				nodes[i].Edges.Parent = n
-			}
-		}
 	}
-
 	if query := iq.withWorkflow; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[uuid.UUID]*Inode)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-		}
-		query.withFKs = true
-		query.Where(predicate.Workflow(func(s *sql.Selector) {
-			s.Where(sql.InValues(inode.WorkflowColumn, fks...))
-		}))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := iq.loadWorkflow(ctx, query, nodes, nil,
+			func(n *Inode, e *Workflow) { n.Edges.Workflow = e }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			fk := n.inode_workflow
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "inode_workflow" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "inode_workflow" returned %v for node %v`, *fk, n.ID)
-			}
-			node.Edges.Workflow = n
-		}
 	}
-
 	if query := iq.withMirror; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[uuid.UUID]*Inode)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-		}
-		query.withFKs = true
-		query.Where(predicate.Mirror(func(s *sql.Selector) {
-			s.Where(sql.InValues(inode.MirrorColumn, fks...))
-		}))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := iq.loadMirror(ctx, query, nodes, nil,
+			func(n *Inode, e *Mirror) { n.Edges.Mirror = e }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			fk := n.inode_mirror
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "inode_mirror" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "inode_mirror" returned %v for node %v`, *fk, n.ID)
-			}
-			node.Edges.Mirror = n
+	}
+	return nodes, nil
+}
+
+func (iq *InodeQuery) loadNamespace(ctx context.Context, query *NamespaceQuery, nodes []*Inode, init func(*Inode), assign func(*Inode, *Namespace)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Inode)
+	for i := range nodes {
+		if nodes[i].namespace_inodes == nil {
+			continue
+		}
+		fk := *nodes[i].namespace_inodes
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	query.Where(namespace.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "namespace_inodes" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
 		}
 	}
-
-	return nodes, nil
+	return nil
+}
+func (iq *InodeQuery) loadChildren(ctx context.Context, query *InodeQuery, nodes []*Inode, init func(*Inode), assign func(*Inode, *Inode)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Inode)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Inode(func(s *sql.Selector) {
+		s.Where(sql.InValues(inode.ChildrenColumn, fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.inode_children
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "inode_children" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "inode_children" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (iq *InodeQuery) loadParent(ctx context.Context, query *InodeQuery, nodes []*Inode, init func(*Inode), assign func(*Inode, *Inode)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Inode)
+	for i := range nodes {
+		if nodes[i].inode_children == nil {
+			continue
+		}
+		fk := *nodes[i].inode_children
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	query.Where(inode.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "inode_children" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (iq *InodeQuery) loadWorkflow(ctx context.Context, query *WorkflowQuery, nodes []*Inode, init func(*Inode), assign func(*Inode, *Workflow)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Inode)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+	}
+	query.withFKs = true
+	query.Where(predicate.Workflow(func(s *sql.Selector) {
+		s.Where(sql.InValues(inode.WorkflowColumn, fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.inode_workflow
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "inode_workflow" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "inode_workflow" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (iq *InodeQuery) loadMirror(ctx context.Context, query *MirrorQuery, nodes []*Inode, init func(*Inode), assign func(*Inode, *Mirror)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Inode)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+	}
+	query.withFKs = true
+	query.Where(predicate.Mirror(func(s *sql.Selector) {
+		s.Where(sql.InValues(inode.MirrorColumn, fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.inode_mirror
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "inode_mirror" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "inode_mirror" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
 }
 
 func (iq *InodeQuery) sqlCount(ctx context.Context) (int, error) {
@@ -689,11 +724,14 @@ func (iq *InodeQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (iq *InodeQuery) sqlExist(ctx context.Context) (bool, error) {
-	n, err := iq.sqlCount(ctx)
-	if err != nil {
+	switch _, err := iq.FirstID(ctx); {
+	case IsNotFound(err):
+		return false, nil
+	case err != nil:
 		return false, fmt.Errorf("ent: check existence: %w", err)
+	default:
+		return true, nil
 	}
-	return n > 0, nil
 }
 
 func (iq *InodeQuery) querySpec() *sqlgraph.QuerySpec {
@@ -794,7 +832,7 @@ func (igb *InodeGroupBy) Aggregate(fns ...AggregateFunc) *InodeGroupBy {
 }
 
 // Scan applies the group-by query and scans the result into the given value.
-func (igb *InodeGroupBy) Scan(ctx context.Context, v interface{}) error {
+func (igb *InodeGroupBy) Scan(ctx context.Context, v any) error {
 	query, err := igb.path(ctx)
 	if err != nil {
 		return err
@@ -803,7 +841,7 @@ func (igb *InodeGroupBy) Scan(ctx context.Context, v interface{}) error {
 	return igb.sqlScan(ctx, v)
 }
 
-func (igb *InodeGroupBy) sqlScan(ctx context.Context, v interface{}) error {
+func (igb *InodeGroupBy) sqlScan(ctx context.Context, v any) error {
 	for _, f := range igb.fields {
 		if !inode.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for group-by", f)}
@@ -828,8 +866,6 @@ func (igb *InodeGroupBy) sqlQuery() *sql.Selector {
 	for _, fn := range igb.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	// If no columns were selected in a custom aggregation function, the default
-	// selection is the fields used for "group-by", and the aggregation functions.
 	if len(selector.SelectedColumns()) == 0 {
 		columns := make([]string, 0, len(igb.fields)+len(igb.fns))
 		for _, f := range igb.fields {
@@ -849,8 +885,14 @@ type InodeSelect struct {
 	sql *sql.Selector
 }
 
+// Aggregate adds the given aggregation functions to the selector query.
+func (is *InodeSelect) Aggregate(fns ...AggregateFunc) *InodeSelect {
+	is.fns = append(is.fns, fns...)
+	return is
+}
+
 // Scan applies the selector query and scans the result into the given value.
-func (is *InodeSelect) Scan(ctx context.Context, v interface{}) error {
+func (is *InodeSelect) Scan(ctx context.Context, v any) error {
 	if err := is.prepareQuery(ctx); err != nil {
 		return err
 	}
@@ -858,7 +900,17 @@ func (is *InodeSelect) Scan(ctx context.Context, v interface{}) error {
 	return is.sqlScan(ctx, v)
 }
 
-func (is *InodeSelect) sqlScan(ctx context.Context, v interface{}) error {
+func (is *InodeSelect) sqlScan(ctx context.Context, v any) error {
+	aggregation := make([]string, 0, len(is.fns))
+	for _, fn := range is.fns {
+		aggregation = append(aggregation, fn(is.sql))
+	}
+	switch n := len(*is.selector.flds); {
+	case n == 0 && len(aggregation) > 0:
+		is.sql.Select(aggregation...)
+	case n != 0 && len(aggregation) > 0:
+		is.sql.AppendSelect(aggregation...)
+	}
 	rows := &sql.Rows{}
 	query, args := is.sql.Query()
 	if err := is.driver.Query(ctx, query, args, rows); err != nil {

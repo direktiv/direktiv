@@ -195,11 +195,7 @@ func (rc *RouteCreate) createSpec() (*Route, *sqlgraph.CreateSpec) {
 		_spec.ID.Value = &id
 	}
 	if value, ok := rc.mutation.Weight(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
-			Value:  value,
-			Column: route.FieldWeight,
-		})
+		_spec.SetField(route.FieldWeight, field.TypeInt, value)
 		_node.Weight = value
 	}
 	if nodes := rc.mutation.WorkflowIDs(); len(nodes) > 0 {

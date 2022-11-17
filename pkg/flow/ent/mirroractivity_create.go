@@ -310,59 +310,31 @@ func (mac *MirrorActivityCreate) createSpec() (*MirrorActivity, *sqlgraph.Create
 		_spec.ID.Value = &id
 	}
 	if value, ok := mac.mutation.GetType(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: mirroractivity.FieldType,
-		})
+		_spec.SetField(mirroractivity.FieldType, field.TypeString, value)
 		_node.Type = value
 	}
 	if value, ok := mac.mutation.Status(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: mirroractivity.FieldStatus,
-		})
+		_spec.SetField(mirroractivity.FieldStatus, field.TypeString, value)
 		_node.Status = value
 	}
 	if value, ok := mac.mutation.CreatedAt(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: mirroractivity.FieldCreatedAt,
-		})
+		_spec.SetField(mirroractivity.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
 	if value, ok := mac.mutation.UpdatedAt(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: mirroractivity.FieldUpdatedAt,
-		})
+		_spec.SetField(mirroractivity.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
 	if value, ok := mac.mutation.EndAt(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: mirroractivity.FieldEndAt,
-		})
+		_spec.SetField(mirroractivity.FieldEndAt, field.TypeTime, value)
 		_node.EndAt = value
 	}
 	if value, ok := mac.mutation.Controller(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: mirroractivity.FieldController,
-		})
+		_spec.SetField(mirroractivity.FieldController, field.TypeString, value)
 		_node.Controller = value
 	}
 	if value, ok := mac.mutation.Deadline(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: mirroractivity.FieldDeadline,
-		})
+		_spec.SetField(mirroractivity.FieldDeadline, field.TypeTime, value)
 		_node.Deadline = value
 	}
 	if nodes := mac.mutation.NamespaceIDs(); len(nodes) > 0 {

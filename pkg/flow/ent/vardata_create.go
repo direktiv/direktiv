@@ -263,51 +263,27 @@ func (vdc *VarDataCreate) createSpec() (*VarData, *sqlgraph.CreateSpec) {
 		_spec.ID.Value = &id
 	}
 	if value, ok := vdc.mutation.CreatedAt(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: vardata.FieldCreatedAt,
-		})
+		_spec.SetField(vardata.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
 	if value, ok := vdc.mutation.UpdatedAt(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: vardata.FieldUpdatedAt,
-		})
+		_spec.SetField(vardata.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
 	if value, ok := vdc.mutation.Size(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
-			Value:  value,
-			Column: vardata.FieldSize,
-		})
+		_spec.SetField(vardata.FieldSize, field.TypeInt, value)
 		_node.Size = value
 	}
 	if value, ok := vdc.mutation.Hash(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: vardata.FieldHash,
-		})
+		_spec.SetField(vardata.FieldHash, field.TypeString, value)
 		_node.Hash = value
 	}
 	if value, ok := vdc.mutation.Data(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeBytes,
-			Value:  value,
-			Column: vardata.FieldData,
-		})
+		_spec.SetField(vardata.FieldData, field.TypeBytes, value)
 		_node.Data = value
 	}
 	if value, ok := vdc.mutation.MimeType(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: vardata.FieldMimeType,
-		})
+		_spec.SetField(vardata.FieldMimeType, field.TypeString, value)
 		_node.MimeType = value
 	}
 	if nodes := vdc.mutation.VarrefsIDs(); len(nodes) > 0 {

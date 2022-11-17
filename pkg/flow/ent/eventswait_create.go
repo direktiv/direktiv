@@ -180,11 +180,7 @@ func (ewc *EventsWaitCreate) createSpec() (*EventsWait, *sqlgraph.CreateSpec) {
 		_spec.ID.Value = &id
 	}
 	if value, ok := ewc.mutation.Events(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Value:  value,
-			Column: eventswait.FieldEvents,
-		})
+		_spec.SetField(eventswait.FieldEvents, field.TypeJSON, value)
 		_node.Events = value
 	}
 	if nodes := ewc.mutation.WorkfloweventIDs(); len(nodes) > 0 {

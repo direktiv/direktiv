@@ -491,25 +491,13 @@ func (nu *NamespaceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 	}
 	if value, ok := nu.mutation.UpdatedAt(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: namespace.FieldUpdatedAt,
-		})
+		_spec.SetField(namespace.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if value, ok := nu.mutation.Config(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: namespace.FieldConfig,
-		})
+		_spec.SetField(namespace.FieldConfig, field.TypeString, value)
 	}
 	if value, ok := nu.mutation.Name(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: namespace.FieldName,
-		})
+		_spec.SetField(namespace.FieldName, field.TypeString, value)
 	}
 	if nu.mutation.InodesCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -1499,25 +1487,13 @@ func (nuo *NamespaceUpdateOne) sqlSave(ctx context.Context) (_node *Namespace, e
 		}
 	}
 	if value, ok := nuo.mutation.UpdatedAt(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: namespace.FieldUpdatedAt,
-		})
+		_spec.SetField(namespace.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if value, ok := nuo.mutation.Config(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: namespace.FieldConfig,
-		})
+		_spec.SetField(namespace.FieldConfig, field.TypeString, value)
 	}
 	if value, ok := nuo.mutation.Name(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: namespace.FieldName,
-		})
+		_spec.SetField(namespace.FieldName, field.TypeString, value)
 	}
 	if nuo.mutation.InodesCleared() {
 		edge := &sqlgraph.EdgeSpec{

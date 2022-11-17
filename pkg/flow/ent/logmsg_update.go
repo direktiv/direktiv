@@ -223,18 +223,10 @@ func (lmu *LogMsgUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 	}
 	if value, ok := lmu.mutation.T(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: logmsg.FieldT,
-		})
+		_spec.SetField(logmsg.FieldT, field.TypeTime, value)
 	}
 	if value, ok := lmu.mutation.Msg(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: logmsg.FieldMsg,
-		})
+		_spec.SetField(logmsg.FieldMsg, field.TypeString, value)
 	}
 	if lmu.mutation.NamespaceCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -615,18 +607,10 @@ func (lmuo *LogMsgUpdateOne) sqlSave(ctx context.Context) (_node *LogMsg, err er
 		}
 	}
 	if value, ok := lmuo.mutation.T(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: logmsg.FieldT,
-		})
+		_spec.SetField(logmsg.FieldT, field.TypeTime, value)
 	}
 	if value, ok := lmuo.mutation.Msg(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: logmsg.FieldMsg,
-		})
+		_spec.SetField(logmsg.FieldMsg, field.TypeString, value)
 	}
 	if lmuo.mutation.NamespaceCleared() {
 		edge := &sqlgraph.EdgeSpec{

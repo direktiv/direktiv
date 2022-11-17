@@ -264,19 +264,11 @@ func (vrc *VarRefCreate) createSpec() (*VarRef, *sqlgraph.CreateSpec) {
 		_spec.ID.Value = &id
 	}
 	if value, ok := vrc.mutation.Name(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: varref.FieldName,
-		})
+		_spec.SetField(varref.FieldName, field.TypeString, value)
 		_node.Name = value
 	}
 	if value, ok := vrc.mutation.Behaviour(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: varref.FieldBehaviour,
-		})
+		_spec.SetField(varref.FieldBehaviour, field.TypeString, value)
 		_node.Behaviour = value
 	}
 	if nodes := vrc.mutation.VardataIDs(); len(nodes) > 0 {

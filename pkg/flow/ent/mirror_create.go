@@ -303,75 +303,39 @@ func (mc *MirrorCreate) createSpec() (*Mirror, *sqlgraph.CreateSpec) {
 		_spec.ID.Value = &id
 	}
 	if value, ok := mc.mutation.URL(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: mirror.FieldURL,
-		})
+		_spec.SetField(mirror.FieldURL, field.TypeString, value)
 		_node.URL = value
 	}
 	if value, ok := mc.mutation.Ref(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: mirror.FieldRef,
-		})
+		_spec.SetField(mirror.FieldRef, field.TypeString, value)
 		_node.Ref = value
 	}
 	if value, ok := mc.mutation.Cron(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: mirror.FieldCron,
-		})
+		_spec.SetField(mirror.FieldCron, field.TypeString, value)
 		_node.Cron = value
 	}
 	if value, ok := mc.mutation.PublicKey(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: mirror.FieldPublicKey,
-		})
+		_spec.SetField(mirror.FieldPublicKey, field.TypeString, value)
 		_node.PublicKey = value
 	}
 	if value, ok := mc.mutation.PrivateKey(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: mirror.FieldPrivateKey,
-		})
+		_spec.SetField(mirror.FieldPrivateKey, field.TypeString, value)
 		_node.PrivateKey = value
 	}
 	if value, ok := mc.mutation.Passphrase(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: mirror.FieldPassphrase,
-		})
+		_spec.SetField(mirror.FieldPassphrase, field.TypeString, value)
 		_node.Passphrase = value
 	}
 	if value, ok := mc.mutation.Commit(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: mirror.FieldCommit,
-		})
+		_spec.SetField(mirror.FieldCommit, field.TypeString, value)
 		_node.Commit = value
 	}
 	if value, ok := mc.mutation.LastSync(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: mirror.FieldLastSync,
-		})
+		_spec.SetField(mirror.FieldLastSync, field.TypeTime, value)
 		_node.LastSync = &value
 	}
 	if value, ok := mc.mutation.UpdatedAt(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: mirror.FieldUpdatedAt,
-		})
+		_spec.SetField(mirror.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
 	if nodes := mc.mutation.NamespaceIDs(); len(nodes) > 0 {

@@ -354,59 +354,31 @@ func (ic *InodeCreate) createSpec() (*Inode, *sqlgraph.CreateSpec) {
 		_spec.ID.Value = &id
 	}
 	if value, ok := ic.mutation.CreatedAt(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: inode.FieldCreatedAt,
-		})
+		_spec.SetField(inode.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
 	if value, ok := ic.mutation.UpdatedAt(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: inode.FieldUpdatedAt,
-		})
+		_spec.SetField(inode.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
 	if value, ok := ic.mutation.Name(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: inode.FieldName,
-		})
+		_spec.SetField(inode.FieldName, field.TypeString, value)
 		_node.Name = value
 	}
 	if value, ok := ic.mutation.GetType(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: inode.FieldType,
-		})
+		_spec.SetField(inode.FieldType, field.TypeString, value)
 		_node.Type = value
 	}
 	if value, ok := ic.mutation.Attributes(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Value:  value,
-			Column: inode.FieldAttributes,
-		})
+		_spec.SetField(inode.FieldAttributes, field.TypeJSON, value)
 		_node.Attributes = value
 	}
 	if value, ok := ic.mutation.ExtendedType(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: inode.FieldExtendedType,
-		})
+		_spec.SetField(inode.FieldExtendedType, field.TypeString, value)
 		_node.ExtendedType = value
 	}
 	if value, ok := ic.mutation.ReadOnly(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeBool,
-			Value:  value,
-			Column: inode.FieldReadOnly,
-		})
+		_spec.SetField(inode.FieldReadOnly, field.TypeBool, value)
 		_node.ReadOnly = value
 	}
 	if nodes := ic.mutation.NamespaceIDs(); len(nodes) > 0 {

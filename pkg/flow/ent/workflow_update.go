@@ -499,50 +499,25 @@ func (wu *WorkflowUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 	}
 	if value, ok := wu.mutation.Live(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeBool,
-			Value:  value,
-			Column: workflow.FieldLive,
-		})
+		_spec.SetField(workflow.FieldLive, field.TypeBool, value)
 	}
 	if value, ok := wu.mutation.LogToEvents(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: workflow.FieldLogToEvents,
-		})
+		_spec.SetField(workflow.FieldLogToEvents, field.TypeString, value)
 	}
 	if wu.mutation.LogToEventsCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Column: workflow.FieldLogToEvents,
-		})
+		_spec.ClearField(workflow.FieldLogToEvents, field.TypeString)
 	}
 	if value, ok := wu.mutation.ReadOnly(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeBool,
-			Value:  value,
-			Column: workflow.FieldReadOnly,
-		})
+		_spec.SetField(workflow.FieldReadOnly, field.TypeBool, value)
 	}
 	if wu.mutation.ReadOnlyCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeBool,
-			Column: workflow.FieldReadOnly,
-		})
+		_spec.ClearField(workflow.FieldReadOnly, field.TypeBool)
 	}
 	if value, ok := wu.mutation.UpdatedAt(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: workflow.FieldUpdatedAt,
-		})
+		_spec.SetField(workflow.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if wu.mutation.UpdatedAtCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Column: workflow.FieldUpdatedAt,
-		})
+		_spec.ClearField(workflow.FieldUpdatedAt, field.TypeTime)
 	}
 	if wu.mutation.InodeCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -1502,50 +1477,25 @@ func (wuo *WorkflowUpdateOne) sqlSave(ctx context.Context) (_node *Workflow, err
 		}
 	}
 	if value, ok := wuo.mutation.Live(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeBool,
-			Value:  value,
-			Column: workflow.FieldLive,
-		})
+		_spec.SetField(workflow.FieldLive, field.TypeBool, value)
 	}
 	if value, ok := wuo.mutation.LogToEvents(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: workflow.FieldLogToEvents,
-		})
+		_spec.SetField(workflow.FieldLogToEvents, field.TypeString, value)
 	}
 	if wuo.mutation.LogToEventsCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Column: workflow.FieldLogToEvents,
-		})
+		_spec.ClearField(workflow.FieldLogToEvents, field.TypeString)
 	}
 	if value, ok := wuo.mutation.ReadOnly(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeBool,
-			Value:  value,
-			Column: workflow.FieldReadOnly,
-		})
+		_spec.SetField(workflow.FieldReadOnly, field.TypeBool, value)
 	}
 	if wuo.mutation.ReadOnlyCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeBool,
-			Column: workflow.FieldReadOnly,
-		})
+		_spec.ClearField(workflow.FieldReadOnly, field.TypeBool)
 	}
 	if value, ok := wuo.mutation.UpdatedAt(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: workflow.FieldUpdatedAt,
-		})
+		_spec.SetField(workflow.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if wuo.mutation.UpdatedAtCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Column: workflow.FieldUpdatedAt,
-		})
+		_spec.ClearField(workflow.FieldUpdatedAt, field.TypeTime)
 	}
 	if wuo.mutation.InodeCleared() {
 		edge := &sqlgraph.EdgeSpec{

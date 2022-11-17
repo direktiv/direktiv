@@ -35,7 +35,7 @@ func IDNEQ(id uuid.UUID) predicate.Mirror {
 // IDIn applies the In predicate on the ID field.
 func IDIn(ids ...uuid.UUID) predicate.Mirror {
 	return predicate.Mirror(func(s *sql.Selector) {
-		v := make([]interface{}, len(ids))
+		v := make([]any, len(ids))
 		for i := range v {
 			v[i] = ids[i]
 		}
@@ -46,7 +46,7 @@ func IDIn(ids ...uuid.UUID) predicate.Mirror {
 // IDNotIn applies the NotIn predicate on the ID field.
 func IDNotIn(ids ...uuid.UUID) predicate.Mirror {
 	return predicate.Mirror(func(s *sql.Selector) {
-		v := make([]interface{}, len(ids))
+		v := make([]any, len(ids))
 		for i := range v {
 			v[i] = ids[i]
 		}
@@ -161,34 +161,22 @@ func URLNEQ(v string) predicate.Mirror {
 
 // URLIn applies the In predicate on the "url" field.
 func URLIn(vs ...string) predicate.Mirror {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.Mirror(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.In(s.C(FieldURL), v...))
 	})
 }
 
 // URLNotIn applies the NotIn predicate on the "url" field.
 func URLNotIn(vs ...string) predicate.Mirror {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.Mirror(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.NotIn(s.C(FieldURL), v...))
 	})
 }
@@ -272,34 +260,22 @@ func RefNEQ(v string) predicate.Mirror {
 
 // RefIn applies the In predicate on the "ref" field.
 func RefIn(vs ...string) predicate.Mirror {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.Mirror(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.In(s.C(FieldRef), v...))
 	})
 }
 
 // RefNotIn applies the NotIn predicate on the "ref" field.
 func RefNotIn(vs ...string) predicate.Mirror {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.Mirror(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.NotIn(s.C(FieldRef), v...))
 	})
 }
@@ -383,34 +359,22 @@ func CronNEQ(v string) predicate.Mirror {
 
 // CronIn applies the In predicate on the "cron" field.
 func CronIn(vs ...string) predicate.Mirror {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.Mirror(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.In(s.C(FieldCron), v...))
 	})
 }
 
 // CronNotIn applies the NotIn predicate on the "cron" field.
 func CronNotIn(vs ...string) predicate.Mirror {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.Mirror(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.NotIn(s.C(FieldCron), v...))
 	})
 }
@@ -494,34 +458,22 @@ func PublicKeyNEQ(v string) predicate.Mirror {
 
 // PublicKeyIn applies the In predicate on the "public_key" field.
 func PublicKeyIn(vs ...string) predicate.Mirror {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.Mirror(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.In(s.C(FieldPublicKey), v...))
 	})
 }
 
 // PublicKeyNotIn applies the NotIn predicate on the "public_key" field.
 func PublicKeyNotIn(vs ...string) predicate.Mirror {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.Mirror(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.NotIn(s.C(FieldPublicKey), v...))
 	})
 }
@@ -605,34 +557,22 @@ func PrivateKeyNEQ(v string) predicate.Mirror {
 
 // PrivateKeyIn applies the In predicate on the "private_key" field.
 func PrivateKeyIn(vs ...string) predicate.Mirror {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.Mirror(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.In(s.C(FieldPrivateKey), v...))
 	})
 }
 
 // PrivateKeyNotIn applies the NotIn predicate on the "private_key" field.
 func PrivateKeyNotIn(vs ...string) predicate.Mirror {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.Mirror(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.NotIn(s.C(FieldPrivateKey), v...))
 	})
 }
@@ -716,34 +656,22 @@ func PassphraseNEQ(v string) predicate.Mirror {
 
 // PassphraseIn applies the In predicate on the "passphrase" field.
 func PassphraseIn(vs ...string) predicate.Mirror {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.Mirror(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.In(s.C(FieldPassphrase), v...))
 	})
 }
 
 // PassphraseNotIn applies the NotIn predicate on the "passphrase" field.
 func PassphraseNotIn(vs ...string) predicate.Mirror {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.Mirror(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.NotIn(s.C(FieldPassphrase), v...))
 	})
 }
@@ -827,34 +755,22 @@ func CommitNEQ(v string) predicate.Mirror {
 
 // CommitIn applies the In predicate on the "commit" field.
 func CommitIn(vs ...string) predicate.Mirror {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.Mirror(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.In(s.C(FieldCommit), v...))
 	})
 }
 
 // CommitNotIn applies the NotIn predicate on the "commit" field.
 func CommitNotIn(vs ...string) predicate.Mirror {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.Mirror(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.NotIn(s.C(FieldCommit), v...))
 	})
 }
@@ -938,34 +854,22 @@ func LastSyncNEQ(v time.Time) predicate.Mirror {
 
 // LastSyncIn applies the In predicate on the "last_sync" field.
 func LastSyncIn(vs ...time.Time) predicate.Mirror {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.Mirror(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.In(s.C(FieldLastSync), v...))
 	})
 }
 
 // LastSyncNotIn applies the NotIn predicate on the "last_sync" field.
 func LastSyncNotIn(vs ...time.Time) predicate.Mirror {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.Mirror(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.NotIn(s.C(FieldLastSync), v...))
 	})
 }
@@ -1028,34 +932,22 @@ func UpdatedAtNEQ(v time.Time) predicate.Mirror {
 
 // UpdatedAtIn applies the In predicate on the "updated_at" field.
 func UpdatedAtIn(vs ...time.Time) predicate.Mirror {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.Mirror(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.In(s.C(FieldUpdatedAt), v...))
 	})
 }
 
 // UpdatedAtNotIn applies the NotIn predicate on the "updated_at" field.
 func UpdatedAtNotIn(vs ...time.Time) predicate.Mirror {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.Mirror(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.NotIn(s.C(FieldUpdatedAt), v...))
 	})
 }

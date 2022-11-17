@@ -146,19 +146,11 @@ func (sc *ServicesCreate) createSpec() (*Services, *sqlgraph.CreateSpec) {
 		}
 	)
 	if value, ok := sc.mutation.Name(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: services.FieldName,
-		})
+		_spec.SetField(services.FieldName, field.TypeString, value)
 		_node.Name = value
 	}
 	if value, ok := sc.mutation.Data(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: services.FieldData,
-		})
+		_spec.SetField(services.FieldData, field.TypeString, value)
 		_node.Data = value
 	}
 	return _node, _spec

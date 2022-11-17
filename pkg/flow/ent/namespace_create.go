@@ -378,35 +378,19 @@ func (nc *NamespaceCreate) createSpec() (*Namespace, *sqlgraph.CreateSpec) {
 		_spec.ID.Value = &id
 	}
 	if value, ok := nc.mutation.CreatedAt(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: namespace.FieldCreatedAt,
-		})
+		_spec.SetField(namespace.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
 	if value, ok := nc.mutation.UpdatedAt(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: namespace.FieldUpdatedAt,
-		})
+		_spec.SetField(namespace.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
 	if value, ok := nc.mutation.Config(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: namespace.FieldConfig,
-		})
+		_spec.SetField(namespace.FieldConfig, field.TypeString, value)
 		_node.Config = value
 	}
 	if value, ok := nc.mutation.Name(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: namespace.FieldName,
-		})
+		_spec.SetField(namespace.FieldName, field.TypeString, value)
 		_node.Name = value
 	}
 	if nodes := nc.mutation.InodesIDs(); len(nodes) > 0 {
