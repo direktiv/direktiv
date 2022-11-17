@@ -1220,13 +1220,40 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully sent cloud event"
 	r.HandleFunc("/namespaces/{ns}/broadcast", h.BroadcastCloudevent).Name(RN_NamespaceEvent).Methods(http.MethodPost)
 
+	// swagger:operation POST /api/namespaces/{namespace}/broadcast/{filtername} Other broadcastCloudeventFilter
+	// ---
+	// description: |
+	//   Filter cloud event by given filtername and broadcast to a namespace.
+	//   Cloud events posted to this api will filter cloud event by given filtername and be picked up by any workflows listening to the same event type on the namescape.
+	//   The body of this request should follow the cloud event core specification defined at https://github.com/cloudevents/spec .
+	// summary: Filter given cloud event and broadcast it
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: filtername
+	//   type: string
+	//   required: true
+	//   description: 'filtername which the cloud event should be filtered'
+	// - in: body
+	//   name: cloudevent
+	//   required: true
+	//   description: Cloud Event request to be sent.
+	//   schema:
+	//     type: object
+	// responses:
+	//   '200':
+	//     "description": "successfully sent cloud event"
 	r.HandleFunc("/namespaces/{ns}/broadcast/{filter}", h.BroadcastCloudeventFilter).Name(RN_NamespaceEventFilter).Methods(http.MethodPost)
 
 	r.HandleFunc("/namespaces/{ns}/eventfilter/{filter}", h.CreateBroadcastCloudeventFilter).Name(RN_CreateNamespaceEventFilter).Methods(http.MethodPut)
 
 	r.HandleFunc("/namespaces/{ns}/eventfilter/{filter}", h.DeleteBroadcastCloudeventFilter).Name(RN_DeleteNamespaceEventFilter).Methods(http.MethodDelete)
 
-	r.HandleFunc("/namespaces/{ns}/eventfilter/update/{filter}", h.UpdateBroadcastCloudeventFilter).Name(RN_UpdateNamespaceEventFilter).Methods(http.MethodPut)
+	r.HandleFunc("/namespaces/{ns}/eventfilter/update/{filter}", h.UpdateBroadcastCloudeventFilter).Name(RN_UpdateNamespaceEventFilter).Methods(http.MethodPatch)
 
 	// swagger:operation GET /api/namespaces/{namespace}/tree/{workflow}?op=logs Logs getWorkflowLogs
 	// ---
@@ -4453,7 +4480,6 @@ func (h *flowHandler) BroadcastCloudeventFilter(w http.ResponseWriter, r *http.R
 	ces, err := ToGRPCCloudEvents(r)
 	if err != nil {
 		respond(w, nil, err)
-		fmt.Println(err)
 		return
 	}
 
@@ -4462,7 +4488,6 @@ func (h *flowHandler) BroadcastCloudeventFilter(w http.ResponseWriter, r *http.R
 		d, err := json.Marshal(ces[i])
 		if err != nil {
 			respond(w, nil, err)
-			fmt.Println(err)
 			return
 		}
 
@@ -4475,13 +4500,11 @@ func (h *flowHandler) BroadcastCloudeventFilter(w http.ResponseWriter, r *http.R
 		rsp, err := h.client.ApplyCloudEventFilter(ctx, inFilter)
 		if err != nil {
 			respond(w, nil, err)
-			fmt.Println(err)
 			return
 		}
 
 		if string(rsp.GetEvent()) == "null" {
 			respond(w, nil, nil) // drop event if not passed filter
-			fmt.Println("dropped event")
 			return
 		}
 
@@ -4499,12 +4522,12 @@ func (h *flowHandler) BroadcastCloudeventFilter(w http.ResponseWriter, r *http.R
 }
 
 func (h *flowHandler) CreateBroadcastCloudeventFilter(w http.ResponseWriter, r *http.Request) {
-	//TODO
+
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
-	filtername := mux.Vars(r)["filter"]
+	filterName := mux.Vars(r)["filter"]
 
 	jsCode, err := loadRawBody(r)
 	if err != nil {
@@ -4515,12 +4538,11 @@ func (h *flowHandler) CreateBroadcastCloudeventFilter(w http.ResponseWriter, r *
 	//CREATE FILTER
 	in := new(grpc.CreateCloudEventFilterRequest)
 	in.Namespace = namespace
-	in.Filtername = filtername
+	in.Filtername = filterName
 	in.JsCode = string(jsCode)
 	resp, err := h.client.CreateCloudEventFilter(ctx, in)
 	if err != nil {
 		respond(w, resp, err)
-		fmt.Println(err)
 		return
 	}
 	respond(w, resp, err)
@@ -4528,21 +4550,20 @@ func (h *flowHandler) CreateBroadcastCloudeventFilter(w http.ResponseWriter, r *
 }
 
 func (h *flowHandler) DeleteBroadcastCloudeventFilter(w http.ResponseWriter, r *http.Request) {
-	//TODO
+
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
-	filtername := mux.Vars(r)["filter"]
+	filterName := mux.Vars(r)["filter"]
 
 	in := new(grpc.DeleteCloudEventFilterRequest)
 	in.Namespace = namespace
-	in.FilterName = filtername
+	in.FilterName = filterName
 
 	resp, err := h.client.DeleteCloudEventFilter(ctx, in)
 	if err != nil {
 		respond(w, resp, err)
-		fmt.Println(err)
 		return
 	}
 	respond(w, resp, err)
@@ -4555,7 +4576,7 @@ func (h *flowHandler) UpdateBroadcastCloudeventFilter(w http.ResponseWriter, r *
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
-	filtername := mux.Vars(r)["filter"]
+	filterName := mux.Vars(r)["filter"]
 
 	jsCode, err := loadRawBody(r)
 	if err != nil {
@@ -4573,7 +4594,7 @@ func (h *flowHandler) UpdateBroadcastCloudeventFilter(w http.ResponseWriter, r *
 	//DELETE Filter
 	inDelete := new(grpc.DeleteCloudEventFilterRequest)
 	inDelete.Namespace = namespace
-	inDelete.FilterName = filtername
+	inDelete.FilterName = filterName
 	respDelete, errDelete := h.client.DeleteCloudEventFilter(ctx, inDelete)
 	if errDelete != nil {
 		respond(w, respDelete, errDelete)
@@ -4583,7 +4604,7 @@ func (h *flowHandler) UpdateBroadcastCloudeventFilter(w http.ResponseWriter, r *
 	//CREATE FILTER
 	inAdd := new(grpc.CreateCloudEventFilterRequest)
 	inAdd.Namespace = namespace
-	inAdd.Filtername = filtername
+	inAdd.Filtername = filterName
 	inAdd.JsCode = string(jsCode)
 	respCreate, errCreate := h.client.CreateCloudEventFilter(ctx, inAdd)
 	if respCreate != nil {

@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"strings"
 	"sync"
 	"time"
@@ -55,7 +56,11 @@ type keyPair struct {
 	filtername string
 }
 
-var cache = make(map[keyPair]string)
+//var cache = make(map[keyPair]string)
+type Cache struct {
+	value sync.Map
+	//expires int64
+}
 
 func initEvents(srv *server) (*events, error) {
 
@@ -1027,6 +1032,7 @@ func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloud
 	cloudevent := in.GetCloudevent()
 
 	var script string
+	var ceventfilter *ent.CloudEventFilters
 
 	var key keyPair
 	key.filtername = filtername
@@ -1037,18 +1043,22 @@ func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloud
 		return resp, err
 	}
 
-	if jsCode, ok := cache[key]; ok {
-		script = jsCode
+	v, ok := cache.Load(key)
+	if ok {
+		s, ok := v.(string)
+		if ok {
+			script = s
+		}
+	}
 
-	} else {
-		ceventfilter, err := ns.QueryCloudeventfilters().Where(enteventsfilter.NameEQ(filtername)).Only(ctx)
+	if !ok {
+		ceventfilter, err = ns.QueryCloudeventfilters().Where(enteventsfilter.NameEQ(filtername)).Only(ctx)
 		if err != nil {
 			return resp, err
 		}
-
-		script = ceventfilter.Jscode
-
 	}
+
+	script = ceventfilter.Jscode
 
 	var mapEvent map[string]interface{}
 	err = json.Unmarshal(cloudevent, &mapEvent)
@@ -1064,14 +1074,12 @@ func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloud
 
 	_, err = vm.RunString(script)
 	if err != nil {
-		//panic(err)
 		return resp, err
 	}
 
 	var fn func() map[string]interface{}
 	err = vm.ExportTo(vm.Get("filter"), &fn)
 	if err != nil {
-		//panic(err)
 		return resp, err
 	}
 
@@ -1084,13 +1092,13 @@ func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloud
 	resp.Event = newBytesEvent
 
 	if string(resp.GetEvent()) == "null" {
-		event, _ := EventByteToCloudevent(cloudevent)
+		event, err := EventByteToCloudevent(cloudevent)
 		if err != nil {
 			return resp, err
 		}
 		flow.logToNamespace(ctx, time.Now(), ns, "Dropped Event: %s", event.ID())
 	} else {
-		event, _ := EventByteToCloudevent(newBytesEvent)
+		event, err := EventByteToCloudevent(newBytesEvent)
 		if err != nil {
 			return resp, err
 		}
@@ -1114,7 +1122,6 @@ func (flow *flow) DeleteCloudEventFilter(ctx context.Context, in *grpc.DeleteClo
 
 	_, err = ns.QueryCloudeventfilters().Where(enteventsfilter.NameEQ(filtername)).Only(ctx)
 	if err != nil {
-		err = errors.New("event filter not existing")
 		return &resp, err
 	}
 
@@ -1152,7 +1159,6 @@ func (flow *flow) CreateCloudEventFilter(ctx context.Context, in *grpc.CreateClo
 	//compiling js code is needed
 	_, err := goja.Compile("filter", script, false)
 	if err != nil {
-		err := errors.New("js code does not compile")
 		return &resp, err
 	}
 
@@ -1161,13 +1167,17 @@ func (flow *flow) CreateCloudEventFilter(ctx context.Context, in *grpc.CreateClo
 		return &resp, err
 	}
 
-	ceventfilter, _ := ns.QueryCloudeventfilters().Where(enteventsfilter.NameEQ(filtername)).Only(ctx)
+	ceventfilter, err := ns.QueryCloudeventfilters().Where(enteventsfilter.NameEQ(filtername)).Only(ctx)
+	if err != nil {
+		return &resp, err
+	}
+
 	if ceventfilter != nil {
 		err = errors.New("event filter already exists")
 		return &resp, err
 	}
 
-	_, err = flow.db.CloudEventFilters.Create().SetName(filtername).SetNamespace(ns).SetJscode(script).Save(context.Background())
+	_, err = flow.db.CloudEventFilters.Create().SetName(filtername).SetNamespace(ns).SetJscode(script).Save(ctx) // have to be tested
 	if err != nil {
 		return &resp, err
 	}
@@ -1186,4 +1196,46 @@ func EventByteToCloudevent(byteEvent []byte) (event.Event, error) {
 	err := json.Unmarshal(byteEvent, ev)
 	return *ev, err
 
+}
+
+// Get gets a value from a cache. Returns an empty string if the value does not exist or has expired.
+func (c *Cache) Get(key string) string {
+	if c.Expired(time.Now().UnixNano()) {
+		log.Printf("%s has expired", key)
+		return ""
+	}
+	v, ok := c.value.Load(key)
+	var s string
+	if ok {
+		s, ok = v.(string)
+		if !ok {
+			log.Printf("%s does not exists", key)
+			return ""
+		}
+	}
+	return s
+}
+
+// Put puts a value to a cache. If a key and value exists, overwrite it.
+func (c *cache) Put(key string, value string, expired int64) {
+	c.value.Store(key, value)
+	c.expires = expired
+}
+
+func main() {
+	fk := "first-key"
+	sk := "second-key"
+
+	cache.Put(fk, "first-value", time.Now().Add(2*time.Second).UnixNano())
+	s := cache.Get(fk)
+	fmt.Println(cache.Get(fk))
+
+	time.Sleep(5 * time.Second)
+
+	// fk should have expired
+	s = cache.Get(fk)
+	if len(s) == 0 {
+		cache.Put(sk, "second-value", time.Now().Add(100*time.Second).UnixNano())
+	}
+	fmt.Println(cache.Get(sk))
 }
