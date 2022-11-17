@@ -151,18 +151,10 @@ func (ceu *CloudEventsUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 	}
 	if value, ok := ceu.mutation.Event(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Value:  value,
-			Column: cloudevents.FieldEvent,
-		})
+		_spec.SetField(cloudevents.FieldEvent, field.TypeJSON, value)
 	}
 	if value, ok := ceu.mutation.Processed(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeBool,
-			Value:  value,
-			Column: cloudevents.FieldProcessed,
-		})
+		_spec.SetField(cloudevents.FieldProcessed, field.TypeBool, value)
 	}
 	if ceu.mutation.NamespaceCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -369,18 +361,10 @@ func (ceuo *CloudEventsUpdateOne) sqlSave(ctx context.Context) (_node *CloudEven
 		}
 	}
 	if value, ok := ceuo.mutation.Event(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Value:  value,
-			Column: cloudevents.FieldEvent,
-		})
+		_spec.SetField(cloudevents.FieldEvent, field.TypeJSON, value)
 	}
 	if value, ok := ceuo.mutation.Processed(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeBool,
-			Value:  value,
-			Column: cloudevents.FieldProcessed,
-		})
+		_spec.SetField(cloudevents.FieldProcessed, field.TypeBool, value)
 	}
 	if ceuo.mutation.NamespaceCleared() {
 		edge := &sqlgraph.EdgeSpec{

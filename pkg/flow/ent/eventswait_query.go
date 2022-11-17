@@ -19,13 +19,12 @@ import (
 // EventsWaitQuery is the builder for querying EventsWait entities.
 type EventsWaitQuery struct {
 	config
-	limit      *int
-	offset     *int
-	unique     *bool
-	order      []OrderFunc
-	fields     []string
-	predicates []predicate.EventsWait
-	// eager-loading edges.
+	limit             *int
+	offset            *int
+	unique            *bool
+	order             []OrderFunc
+	fields            []string
+	predicates        []predicate.EventsWait
 	withWorkflowevent *EventsQuery
 	withFKs           bool
 	// intermediate query (i.e. traversal path).
@@ -300,7 +299,6 @@ func (ewq *EventsWaitQuery) WithWorkflowevent(opts ...func(*EventsQuery)) *Event
 //		GroupBy(eventswait.FieldEvents).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-//
 func (ewq *EventsWaitQuery) GroupBy(field string, fields ...string) *EventsWaitGroupBy {
 	grbuild := &EventsWaitGroupBy{config: ewq.config}
 	grbuild.fields = append([]string{field}, fields...)
@@ -327,13 +325,17 @@ func (ewq *EventsWaitQuery) GroupBy(field string, fields ...string) *EventsWaitG
 //	client.EventsWait.Query().
 //		Select(eventswait.FieldEvents).
 //		Scan(ctx, &v)
-//
 func (ewq *EventsWaitQuery) Select(fields ...string) *EventsWaitSelect {
 	ewq.fields = append(ewq.fields, fields...)
 	selbuild := &EventsWaitSelect{EventsWaitQuery: ewq}
 	selbuild.label = eventswait.Label
 	selbuild.flds, selbuild.scan = &ewq.fields, selbuild.Scan
 	return selbuild
+}
+
+// Aggregate returns a EventsWaitSelect configured with the given aggregations.
+func (ewq *EventsWaitQuery) Aggregate(fns ...AggregateFunc) *EventsWaitSelect {
+	return ewq.Select().Aggregate(fns...)
 }
 
 func (ewq *EventsWaitQuery) prepareQuery(ctx context.Context) error {
@@ -367,10 +369,10 @@ func (ewq *EventsWaitQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*
 	if withFKs {
 		_spec.Node.Columns = append(_spec.Node.Columns, eventswait.ForeignKeys...)
 	}
-	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
+	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*EventsWait).scanValues(nil, columns)
 	}
-	_spec.Assign = func(columns []string, values []interface{}) error {
+	_spec.Assign = func(columns []string, values []any) error {
 		node := &EventsWait{config: ewq.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
@@ -385,37 +387,43 @@ func (ewq *EventsWaitQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-
 	if query := ewq.withWorkflowevent; query != nil {
-		ids := make([]uuid.UUID, 0, len(nodes))
-		nodeids := make(map[uuid.UUID][]*EventsWait)
-		for i := range nodes {
-			if nodes[i].events_wfeventswait == nil {
-				continue
-			}
-			fk := *nodes[i].events_wfeventswait
-			if _, ok := nodeids[fk]; !ok {
-				ids = append(ids, fk)
-			}
-			nodeids[fk] = append(nodeids[fk], nodes[i])
-		}
-		query.Where(events.IDIn(ids...))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := ewq.loadWorkflowevent(ctx, query, nodes, nil,
+			func(n *EventsWait, e *Events) { n.Edges.Workflowevent = e }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			nodes, ok := nodeids[n.ID]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "events_wfeventswait" returned %v`, n.ID)
-			}
-			for i := range nodes {
-				nodes[i].Edges.Workflowevent = n
-			}
+	}
+	return nodes, nil
+}
+
+func (ewq *EventsWaitQuery) loadWorkflowevent(ctx context.Context, query *EventsQuery, nodes []*EventsWait, init func(*EventsWait), assign func(*EventsWait, *Events)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*EventsWait)
+	for i := range nodes {
+		if nodes[i].events_wfeventswait == nil {
+			continue
+		}
+		fk := *nodes[i].events_wfeventswait
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	query.Where(events.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "events_wfeventswait" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
 		}
 	}
-
-	return nodes, nil
+	return nil
 }
 
 func (ewq *EventsWaitQuery) sqlCount(ctx context.Context) (int, error) {
@@ -428,11 +436,14 @@ func (ewq *EventsWaitQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (ewq *EventsWaitQuery) sqlExist(ctx context.Context) (bool, error) {
-	n, err := ewq.sqlCount(ctx)
-	if err != nil {
+	switch _, err := ewq.FirstID(ctx); {
+	case IsNotFound(err):
+		return false, nil
+	case err != nil:
 		return false, fmt.Errorf("ent: check existence: %w", err)
+	default:
+		return true, nil
 	}
-	return n > 0, nil
 }
 
 func (ewq *EventsWaitQuery) querySpec() *sqlgraph.QuerySpec {
@@ -533,7 +544,7 @@ func (ewgb *EventsWaitGroupBy) Aggregate(fns ...AggregateFunc) *EventsWaitGroupB
 }
 
 // Scan applies the group-by query and scans the result into the given value.
-func (ewgb *EventsWaitGroupBy) Scan(ctx context.Context, v interface{}) error {
+func (ewgb *EventsWaitGroupBy) Scan(ctx context.Context, v any) error {
 	query, err := ewgb.path(ctx)
 	if err != nil {
 		return err
@@ -542,7 +553,7 @@ func (ewgb *EventsWaitGroupBy) Scan(ctx context.Context, v interface{}) error {
 	return ewgb.sqlScan(ctx, v)
 }
 
-func (ewgb *EventsWaitGroupBy) sqlScan(ctx context.Context, v interface{}) error {
+func (ewgb *EventsWaitGroupBy) sqlScan(ctx context.Context, v any) error {
 	for _, f := range ewgb.fields {
 		if !eventswait.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for group-by", f)}
@@ -567,8 +578,6 @@ func (ewgb *EventsWaitGroupBy) sqlQuery() *sql.Selector {
 	for _, fn := range ewgb.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	// If no columns were selected in a custom aggregation function, the default
-	// selection is the fields used for "group-by", and the aggregation functions.
 	if len(selector.SelectedColumns()) == 0 {
 		columns := make([]string, 0, len(ewgb.fields)+len(ewgb.fns))
 		for _, f := range ewgb.fields {
@@ -588,8 +597,14 @@ type EventsWaitSelect struct {
 	sql *sql.Selector
 }
 
+// Aggregate adds the given aggregation functions to the selector query.
+func (ews *EventsWaitSelect) Aggregate(fns ...AggregateFunc) *EventsWaitSelect {
+	ews.fns = append(ews.fns, fns...)
+	return ews
+}
+
 // Scan applies the selector query and scans the result into the given value.
-func (ews *EventsWaitSelect) Scan(ctx context.Context, v interface{}) error {
+func (ews *EventsWaitSelect) Scan(ctx context.Context, v any) error {
 	if err := ews.prepareQuery(ctx); err != nil {
 		return err
 	}
@@ -597,7 +612,17 @@ func (ews *EventsWaitSelect) Scan(ctx context.Context, v interface{}) error {
 	return ews.sqlScan(ctx, v)
 }
 
-func (ews *EventsWaitSelect) sqlScan(ctx context.Context, v interface{}) error {
+func (ews *EventsWaitSelect) sqlScan(ctx context.Context, v any) error {
+	aggregation := make([]string, 0, len(ews.fns))
+	for _, fn := range ews.fns {
+		aggregation = append(aggregation, fn(ews.sql))
+	}
+	switch n := len(*ews.selector.flds); {
+	case n == 0 && len(aggregation) > 0:
+		ews.sql.Select(aggregation...)
+	case n != 0 && len(aggregation) > 0:
+		ews.sql.AppendSelect(aggregation...)
+	}
 	rows := &sql.Rows{}
 	query, args := ews.sql.Query()
 	if err := ews.driver.Query(ctx, query, args, rows); err != nil {

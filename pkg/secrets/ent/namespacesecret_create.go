@@ -155,27 +155,15 @@ func (nsc *NamespaceSecretCreate) createSpec() (*NamespaceSecret, *sqlgraph.Crea
 		}
 	)
 	if value, ok := nsc.mutation.Ns(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: namespacesecret.FieldNs,
-		})
+		_spec.SetField(namespacesecret.FieldNs, field.TypeString, value)
 		_node.Ns = value
 	}
 	if value, ok := nsc.mutation.Name(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: namespacesecret.FieldName,
-		})
+		_spec.SetField(namespacesecret.FieldName, field.TypeString, value)
 		_node.Name = value
 	}
 	if value, ok := nsc.mutation.Secret(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeBytes,
-			Value:  value,
-			Column: namespacesecret.FieldSecret,
-		})
+		_spec.SetField(namespacesecret.FieldSecret, field.TypeBytes, value)
 		_node.Secret = value
 	}
 	return _node, _spec

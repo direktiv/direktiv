@@ -255,19 +255,11 @@ func (lmc *LogMsgCreate) createSpec() (*LogMsg, *sqlgraph.CreateSpec) {
 		_spec.ID.Value = &id
 	}
 	if value, ok := lmc.mutation.T(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: logmsg.FieldT,
-		})
+		_spec.SetField(logmsg.FieldT, field.TypeTime, value)
 		_node.T = value
 	}
 	if value, ok := lmc.mutation.Msg(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: logmsg.FieldMsg,
-		})
+		_spec.SetField(logmsg.FieldMsg, field.TypeString, value)
 		_node.Msg = value
 	}
 	if nodes := lmc.mutation.NamespaceIDs(); len(nodes) > 0 {

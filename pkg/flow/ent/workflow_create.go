@@ -371,35 +371,19 @@ func (wc *WorkflowCreate) createSpec() (*Workflow, *sqlgraph.CreateSpec) {
 		_spec.ID.Value = &id
 	}
 	if value, ok := wc.mutation.Live(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeBool,
-			Value:  value,
-			Column: workflow.FieldLive,
-		})
+		_spec.SetField(workflow.FieldLive, field.TypeBool, value)
 		_node.Live = value
 	}
 	if value, ok := wc.mutation.LogToEvents(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: workflow.FieldLogToEvents,
-		})
+		_spec.SetField(workflow.FieldLogToEvents, field.TypeString, value)
 		_node.LogToEvents = value
 	}
 	if value, ok := wc.mutation.ReadOnly(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeBool,
-			Value:  value,
-			Column: workflow.FieldReadOnly,
-		})
+		_spec.SetField(workflow.FieldReadOnly, field.TypeBool, value)
 		_node.ReadOnly = value
 	}
 	if value, ok := wc.mutation.UpdatedAt(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: workflow.FieldUpdatedAt,
-		})
+		_spec.SetField(workflow.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
 	if nodes := wc.mutation.InodeIDs(); len(nodes) > 0 {

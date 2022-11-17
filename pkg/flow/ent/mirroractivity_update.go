@@ -289,64 +289,31 @@ func (mau *MirrorActivityUpdate) sqlSave(ctx context.Context) (n int, err error)
 		}
 	}
 	if value, ok := mau.mutation.GetType(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: mirroractivity.FieldType,
-		})
+		_spec.SetField(mirroractivity.FieldType, field.TypeString, value)
 	}
 	if value, ok := mau.mutation.Status(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: mirroractivity.FieldStatus,
-		})
+		_spec.SetField(mirroractivity.FieldStatus, field.TypeString, value)
 	}
 	if value, ok := mau.mutation.UpdatedAt(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: mirroractivity.FieldUpdatedAt,
-		})
+		_spec.SetField(mirroractivity.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if value, ok := mau.mutation.EndAt(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: mirroractivity.FieldEndAt,
-		})
+		_spec.SetField(mirroractivity.FieldEndAt, field.TypeTime, value)
 	}
 	if mau.mutation.EndAtCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Column: mirroractivity.FieldEndAt,
-		})
+		_spec.ClearField(mirroractivity.FieldEndAt, field.TypeTime)
 	}
 	if value, ok := mau.mutation.Controller(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: mirroractivity.FieldController,
-		})
+		_spec.SetField(mirroractivity.FieldController, field.TypeString, value)
 	}
 	if mau.mutation.ControllerCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Column: mirroractivity.FieldController,
-		})
+		_spec.ClearField(mirroractivity.FieldController, field.TypeString)
 	}
 	if value, ok := mau.mutation.Deadline(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: mirroractivity.FieldDeadline,
-		})
+		_spec.SetField(mirroractivity.FieldDeadline, field.TypeTime, value)
 	}
 	if mau.mutation.DeadlineCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Column: mirroractivity.FieldDeadline,
-		})
+		_spec.ClearField(mirroractivity.FieldDeadline, field.TypeTime)
 	}
 	if mau.mutation.NamespaceCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -778,64 +745,31 @@ func (mauo *MirrorActivityUpdateOne) sqlSave(ctx context.Context) (_node *Mirror
 		}
 	}
 	if value, ok := mauo.mutation.GetType(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: mirroractivity.FieldType,
-		})
+		_spec.SetField(mirroractivity.FieldType, field.TypeString, value)
 	}
 	if value, ok := mauo.mutation.Status(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: mirroractivity.FieldStatus,
-		})
+		_spec.SetField(mirroractivity.FieldStatus, field.TypeString, value)
 	}
 	if value, ok := mauo.mutation.UpdatedAt(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: mirroractivity.FieldUpdatedAt,
-		})
+		_spec.SetField(mirroractivity.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if value, ok := mauo.mutation.EndAt(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: mirroractivity.FieldEndAt,
-		})
+		_spec.SetField(mirroractivity.FieldEndAt, field.TypeTime, value)
 	}
 	if mauo.mutation.EndAtCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Column: mirroractivity.FieldEndAt,
-		})
+		_spec.ClearField(mirroractivity.FieldEndAt, field.TypeTime)
 	}
 	if value, ok := mauo.mutation.Controller(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: mirroractivity.FieldController,
-		})
+		_spec.SetField(mirroractivity.FieldController, field.TypeString, value)
 	}
 	if mauo.mutation.ControllerCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Column: mirroractivity.FieldController,
-		})
+		_spec.ClearField(mirroractivity.FieldController, field.TypeString)
 	}
 	if value, ok := mauo.mutation.Deadline(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: mirroractivity.FieldDeadline,
-		})
+		_spec.SetField(mirroractivity.FieldDeadline, field.TypeTime, value)
 	}
 	if mauo.mutation.DeadlineCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Column: mirroractivity.FieldDeadline,
-		})
+		_spec.ClearField(mirroractivity.FieldDeadline, field.TypeTime)
 	}
 	if mauo.mutation.NamespaceCleared() {
 		edge := &sqlgraph.EdgeSpec{

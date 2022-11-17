@@ -261,7 +261,6 @@ func (nsq *NamespaceSecretQuery) Clone() *NamespaceSecretQuery {
 //		GroupBy(namespacesecret.FieldNs).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-//
 func (nsq *NamespaceSecretQuery) GroupBy(field string, fields ...string) *NamespaceSecretGroupBy {
 	grbuild := &NamespaceSecretGroupBy{config: nsq.config}
 	grbuild.fields = append([]string{field}, fields...)
@@ -288,13 +287,17 @@ func (nsq *NamespaceSecretQuery) GroupBy(field string, fields ...string) *Namesp
 //	client.NamespaceSecret.Query().
 //		Select(namespacesecret.FieldNs).
 //		Scan(ctx, &v)
-//
 func (nsq *NamespaceSecretQuery) Select(fields ...string) *NamespaceSecretSelect {
 	nsq.fields = append(nsq.fields, fields...)
 	selbuild := &NamespaceSecretSelect{NamespaceSecretQuery: nsq}
 	selbuild.label = namespacesecret.Label
 	selbuild.flds, selbuild.scan = &nsq.fields, selbuild.Scan
 	return selbuild
+}
+
+// Aggregate returns a NamespaceSecretSelect configured with the given aggregations.
+func (nsq *NamespaceSecretQuery) Aggregate(fns ...AggregateFunc) *NamespaceSecretSelect {
+	return nsq.Select().Aggregate(fns...)
 }
 
 func (nsq *NamespaceSecretQuery) prepareQuery(ctx context.Context) error {
@@ -318,10 +321,10 @@ func (nsq *NamespaceSecretQuery) sqlAll(ctx context.Context, hooks ...queryHook)
 		nodes = []*NamespaceSecret{}
 		_spec = nsq.querySpec()
 	)
-	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
+	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*NamespaceSecret).scanValues(nil, columns)
 	}
-	_spec.Assign = func(columns []string, values []interface{}) error {
+	_spec.Assign = func(columns []string, values []any) error {
 		node := &NamespaceSecret{config: nsq.config}
 		nodes = append(nodes, node)
 		return node.assignValues(columns, values)
@@ -348,11 +351,14 @@ func (nsq *NamespaceSecretQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (nsq *NamespaceSecretQuery) sqlExist(ctx context.Context) (bool, error) {
-	n, err := nsq.sqlCount(ctx)
-	if err != nil {
+	switch _, err := nsq.FirstID(ctx); {
+	case IsNotFound(err):
+		return false, nil
+	case err != nil:
 		return false, fmt.Errorf("ent: check existence: %w", err)
+	default:
+		return true, nil
 	}
-	return n > 0, nil
 }
 
 func (nsq *NamespaceSecretQuery) querySpec() *sqlgraph.QuerySpec {
@@ -453,7 +459,7 @@ func (nsgb *NamespaceSecretGroupBy) Aggregate(fns ...AggregateFunc) *NamespaceSe
 }
 
 // Scan applies the group-by query and scans the result into the given value.
-func (nsgb *NamespaceSecretGroupBy) Scan(ctx context.Context, v interface{}) error {
+func (nsgb *NamespaceSecretGroupBy) Scan(ctx context.Context, v any) error {
 	query, err := nsgb.path(ctx)
 	if err != nil {
 		return err
@@ -462,7 +468,7 @@ func (nsgb *NamespaceSecretGroupBy) Scan(ctx context.Context, v interface{}) err
 	return nsgb.sqlScan(ctx, v)
 }
 
-func (nsgb *NamespaceSecretGroupBy) sqlScan(ctx context.Context, v interface{}) error {
+func (nsgb *NamespaceSecretGroupBy) sqlScan(ctx context.Context, v any) error {
 	for _, f := range nsgb.fields {
 		if !namespacesecret.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for group-by", f)}
@@ -487,8 +493,6 @@ func (nsgb *NamespaceSecretGroupBy) sqlQuery() *sql.Selector {
 	for _, fn := range nsgb.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	// If no columns were selected in a custom aggregation function, the default
-	// selection is the fields used for "group-by", and the aggregation functions.
 	if len(selector.SelectedColumns()) == 0 {
 		columns := make([]string, 0, len(nsgb.fields)+len(nsgb.fns))
 		for _, f := range nsgb.fields {
@@ -508,8 +512,14 @@ type NamespaceSecretSelect struct {
 	sql *sql.Selector
 }
 
+// Aggregate adds the given aggregation functions to the selector query.
+func (nss *NamespaceSecretSelect) Aggregate(fns ...AggregateFunc) *NamespaceSecretSelect {
+	nss.fns = append(nss.fns, fns...)
+	return nss
+}
+
 // Scan applies the selector query and scans the result into the given value.
-func (nss *NamespaceSecretSelect) Scan(ctx context.Context, v interface{}) error {
+func (nss *NamespaceSecretSelect) Scan(ctx context.Context, v any) error {
 	if err := nss.prepareQuery(ctx); err != nil {
 		return err
 	}
@@ -517,7 +527,17 @@ func (nss *NamespaceSecretSelect) Scan(ctx context.Context, v interface{}) error
 	return nss.sqlScan(ctx, v)
 }
 
-func (nss *NamespaceSecretSelect) sqlScan(ctx context.Context, v interface{}) error {
+func (nss *NamespaceSecretSelect) sqlScan(ctx context.Context, v any) error {
+	aggregation := make([]string, 0, len(nss.fns))
+	for _, fn := range nss.fns {
+		aggregation = append(aggregation, fn(nss.sql))
+	}
+	switch n := len(*nss.selector.flds); {
+	case n == 0 && len(aggregation) > 0:
+		nss.sql.Select(aggregation...)
+	case n != 0 && len(aggregation) > 0:
+		nss.sql.AppendSelect(aggregation...)
+	}
 	rows := &sql.Rows{}
 	query, args := nss.sql.Query()
 	if err := nss.driver.Query(ctx, query, args, rows); err != nil {

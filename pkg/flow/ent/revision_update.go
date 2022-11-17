@@ -218,11 +218,7 @@ func (ru *RevisionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 	}
 	if value, ok := ru.mutation.Metadata(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Value:  value,
-			Column: revision.FieldMetadata,
-		})
+		_spec.SetField(revision.FieldMetadata, field.TypeJSON, value)
 	}
 	if ru.mutation.WorkflowCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -603,11 +599,7 @@ func (ruo *RevisionUpdateOne) sqlSave(ctx context.Context) (_node *Revision, err
 		}
 	}
 	if value, ok := ruo.mutation.Metadata(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Value:  value,
-			Column: revision.FieldMetadata,
-		})
+		_spec.SetField(revision.FieldMetadata, field.TypeJSON, value)
 	}
 	if ruo.mutation.WorkflowCleared() {
 		edge := &sqlgraph.EdgeSpec{

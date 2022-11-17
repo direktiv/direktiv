@@ -261,7 +261,6 @@ func (mq *MetricsQuery) Clone() *MetricsQuery {
 //		GroupBy(metrics.FieldNamespace).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-//
 func (mq *MetricsQuery) GroupBy(field string, fields ...string) *MetricsGroupBy {
 	grbuild := &MetricsGroupBy{config: mq.config}
 	grbuild.fields = append([]string{field}, fields...)
@@ -288,13 +287,17 @@ func (mq *MetricsQuery) GroupBy(field string, fields ...string) *MetricsGroupBy 
 //	client.Metrics.Query().
 //		Select(metrics.FieldNamespace).
 //		Scan(ctx, &v)
-//
 func (mq *MetricsQuery) Select(fields ...string) *MetricsSelect {
 	mq.fields = append(mq.fields, fields...)
 	selbuild := &MetricsSelect{MetricsQuery: mq}
 	selbuild.label = metrics.Label
 	selbuild.flds, selbuild.scan = &mq.fields, selbuild.Scan
 	return selbuild
+}
+
+// Aggregate returns a MetricsSelect configured with the given aggregations.
+func (mq *MetricsQuery) Aggregate(fns ...AggregateFunc) *MetricsSelect {
+	return mq.Select().Aggregate(fns...)
 }
 
 func (mq *MetricsQuery) prepareQuery(ctx context.Context) error {
@@ -318,10 +321,10 @@ func (mq *MetricsQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Metr
 		nodes = []*Metrics{}
 		_spec = mq.querySpec()
 	)
-	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
+	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Metrics).scanValues(nil, columns)
 	}
-	_spec.Assign = func(columns []string, values []interface{}) error {
+	_spec.Assign = func(columns []string, values []any) error {
 		node := &Metrics{config: mq.config}
 		nodes = append(nodes, node)
 		return node.assignValues(columns, values)
@@ -348,11 +351,14 @@ func (mq *MetricsQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (mq *MetricsQuery) sqlExist(ctx context.Context) (bool, error) {
-	n, err := mq.sqlCount(ctx)
-	if err != nil {
+	switch _, err := mq.FirstID(ctx); {
+	case IsNotFound(err):
+		return false, nil
+	case err != nil:
 		return false, fmt.Errorf("ent: check existence: %w", err)
+	default:
+		return true, nil
 	}
-	return n > 0, nil
 }
 
 func (mq *MetricsQuery) querySpec() *sqlgraph.QuerySpec {
@@ -453,7 +459,7 @@ func (mgb *MetricsGroupBy) Aggregate(fns ...AggregateFunc) *MetricsGroupBy {
 }
 
 // Scan applies the group-by query and scans the result into the given value.
-func (mgb *MetricsGroupBy) Scan(ctx context.Context, v interface{}) error {
+func (mgb *MetricsGroupBy) Scan(ctx context.Context, v any) error {
 	query, err := mgb.path(ctx)
 	if err != nil {
 		return err
@@ -462,7 +468,7 @@ func (mgb *MetricsGroupBy) Scan(ctx context.Context, v interface{}) error {
 	return mgb.sqlScan(ctx, v)
 }
 
-func (mgb *MetricsGroupBy) sqlScan(ctx context.Context, v interface{}) error {
+func (mgb *MetricsGroupBy) sqlScan(ctx context.Context, v any) error {
 	for _, f := range mgb.fields {
 		if !metrics.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for group-by", f)}
@@ -487,8 +493,6 @@ func (mgb *MetricsGroupBy) sqlQuery() *sql.Selector {
 	for _, fn := range mgb.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	// If no columns were selected in a custom aggregation function, the default
-	// selection is the fields used for "group-by", and the aggregation functions.
 	if len(selector.SelectedColumns()) == 0 {
 		columns := make([]string, 0, len(mgb.fields)+len(mgb.fns))
 		for _, f := range mgb.fields {
@@ -508,8 +512,14 @@ type MetricsSelect struct {
 	sql *sql.Selector
 }
 
+// Aggregate adds the given aggregation functions to the selector query.
+func (ms *MetricsSelect) Aggregate(fns ...AggregateFunc) *MetricsSelect {
+	ms.fns = append(ms.fns, fns...)
+	return ms
+}
+
 // Scan applies the selector query and scans the result into the given value.
-func (ms *MetricsSelect) Scan(ctx context.Context, v interface{}) error {
+func (ms *MetricsSelect) Scan(ctx context.Context, v any) error {
 	if err := ms.prepareQuery(ctx); err != nil {
 		return err
 	}
@@ -517,7 +527,17 @@ func (ms *MetricsSelect) Scan(ctx context.Context, v interface{}) error {
 	return ms.sqlScan(ctx, v)
 }
 
-func (ms *MetricsSelect) sqlScan(ctx context.Context, v interface{}) error {
+func (ms *MetricsSelect) sqlScan(ctx context.Context, v any) error {
+	aggregation := make([]string, 0, len(ms.fns))
+	for _, fn := range ms.fns {
+		aggregation = append(aggregation, fn(ms.sql))
+	}
+	switch n := len(*ms.selector.flds); {
+	case n == 0 && len(aggregation) > 0:
+		ms.sql.Select(aggregation...)
+	case n != 0 && len(aggregation) > 0:
+		ms.sql.AppendSelect(aggregation...)
+	}
 	rows := &sql.Rows{}
 	query, args := ms.sql.Query()
 	if err := ms.driver.Query(ctx, query, args, rows); err != nil {

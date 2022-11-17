@@ -43,8 +43,7 @@ type RouteEdges struct {
 func (e RouteEdges) WorkflowOrErr() (*Workflow, error) {
 	if e.loadedTypes[0] {
 		if e.Workflow == nil {
-			// The edge workflow was loaded in eager-loading,
-			// but was not found.
+			// Edge was loaded but was not found.
 			return nil, &NotFoundError{label: workflow.Label}
 		}
 		return e.Workflow, nil
@@ -57,8 +56,7 @@ func (e RouteEdges) WorkflowOrErr() (*Workflow, error) {
 func (e RouteEdges) RefOrErr() (*Ref, error) {
 	if e.loadedTypes[1] {
 		if e.Ref == nil {
-			// The edge ref was loaded in eager-loading,
-			// but was not found.
+			// Edge was loaded but was not found.
 			return nil, &NotFoundError{label: ref.Label}
 		}
 		return e.Ref, nil
@@ -67,8 +65,8 @@ func (e RouteEdges) RefOrErr() (*Ref, error) {
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
-func (*Route) scanValues(columns []string) ([]interface{}, error) {
-	values := make([]interface{}, len(columns))
+func (*Route) scanValues(columns []string) ([]any, error) {
+	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
 		case route.FieldWeight:
@@ -88,7 +86,7 @@ func (*Route) scanValues(columns []string) ([]interface{}, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the Route fields.
-func (r *Route) assignValues(columns []string, values []interface{}) error {
+func (r *Route) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}

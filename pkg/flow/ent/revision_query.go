@@ -22,13 +22,12 @@ import (
 // RevisionQuery is the builder for querying Revision entities.
 type RevisionQuery struct {
 	config
-	limit      *int
-	offset     *int
-	unique     *bool
-	order      []OrderFunc
-	fields     []string
-	predicates []predicate.Revision
-	// eager-loading edges.
+	limit         *int
+	offset        *int
+	unique        *bool
+	order         []OrderFunc
+	fields        []string
+	predicates    []predicate.Revision
 	withWorkflow  *WorkflowQuery
 	withRefs      *RefQuery
 	withInstances *InstanceQuery
@@ -373,7 +372,6 @@ func (rq *RevisionQuery) WithInstances(opts ...func(*InstanceQuery)) *RevisionQu
 //		GroupBy(revision.FieldCreatedAt).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-//
 func (rq *RevisionQuery) GroupBy(field string, fields ...string) *RevisionGroupBy {
 	grbuild := &RevisionGroupBy{config: rq.config}
 	grbuild.fields = append([]string{field}, fields...)
@@ -400,13 +398,17 @@ func (rq *RevisionQuery) GroupBy(field string, fields ...string) *RevisionGroupB
 //	client.Revision.Query().
 //		Select(revision.FieldCreatedAt).
 //		Scan(ctx, &v)
-//
 func (rq *RevisionQuery) Select(fields ...string) *RevisionSelect {
 	rq.fields = append(rq.fields, fields...)
 	selbuild := &RevisionSelect{RevisionQuery: rq}
 	selbuild.label = revision.Label
 	selbuild.flds, selbuild.scan = &rq.fields, selbuild.Scan
 	return selbuild
+}
+
+// Aggregate returns a RevisionSelect configured with the given aggregations.
+func (rq *RevisionQuery) Aggregate(fns ...AggregateFunc) *RevisionSelect {
+	return rq.Select().Aggregate(fns...)
 }
 
 func (rq *RevisionQuery) prepareQuery(ctx context.Context) error {
@@ -442,10 +444,10 @@ func (rq *RevisionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Rev
 	if withFKs {
 		_spec.Node.Columns = append(_spec.Node.Columns, revision.ForeignKeys...)
 	}
-	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
+	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Revision).scanValues(nil, columns)
 	}
-	_spec.Assign = func(columns []string, values []interface{}) error {
+	_spec.Assign = func(columns []string, values []any) error {
 		node := &Revision{config: rq.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
@@ -460,95 +462,119 @@ func (rq *RevisionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Rev
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-
 	if query := rq.withWorkflow; query != nil {
-		ids := make([]uuid.UUID, 0, len(nodes))
-		nodeids := make(map[uuid.UUID][]*Revision)
-		for i := range nodes {
-			if nodes[i].workflow_revisions == nil {
-				continue
-			}
-			fk := *nodes[i].workflow_revisions
-			if _, ok := nodeids[fk]; !ok {
-				ids = append(ids, fk)
-			}
-			nodeids[fk] = append(nodeids[fk], nodes[i])
-		}
-		query.Where(workflow.IDIn(ids...))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := rq.loadWorkflow(ctx, query, nodes, nil,
+			func(n *Revision, e *Workflow) { n.Edges.Workflow = e }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			nodes, ok := nodeids[n.ID]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "workflow_revisions" returned %v`, n.ID)
-			}
-			for i := range nodes {
-				nodes[i].Edges.Workflow = n
-			}
-		}
 	}
-
 	if query := rq.withRefs; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[uuid.UUID]*Revision)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Refs = []*Ref{}
-		}
-		query.withFKs = true
-		query.Where(predicate.Ref(func(s *sql.Selector) {
-			s.Where(sql.InValues(revision.RefsColumn, fks...))
-		}))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := rq.loadRefs(ctx, query, nodes,
+			func(n *Revision) { n.Edges.Refs = []*Ref{} },
+			func(n *Revision, e *Ref) { n.Edges.Refs = append(n.Edges.Refs, e) }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			fk := n.revision_refs
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "revision_refs" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "revision_refs" returned %v for node %v`, *fk, n.ID)
-			}
-			node.Edges.Refs = append(node.Edges.Refs, n)
-		}
 	}
-
 	if query := rq.withInstances; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[uuid.UUID]*Revision)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Instances = []*Instance{}
-		}
-		query.withFKs = true
-		query.Where(predicate.Instance(func(s *sql.Selector) {
-			s.Where(sql.InValues(revision.InstancesColumn, fks...))
-		}))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := rq.loadInstances(ctx, query, nodes,
+			func(n *Revision) { n.Edges.Instances = []*Instance{} },
+			func(n *Revision, e *Instance) { n.Edges.Instances = append(n.Edges.Instances, e) }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			fk := n.revision_instances
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "revision_instances" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "revision_instances" returned %v for node %v`, *fk, n.ID)
-			}
-			node.Edges.Instances = append(node.Edges.Instances, n)
+	}
+	return nodes, nil
+}
+
+func (rq *RevisionQuery) loadWorkflow(ctx context.Context, query *WorkflowQuery, nodes []*Revision, init func(*Revision), assign func(*Revision, *Workflow)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Revision)
+	for i := range nodes {
+		if nodes[i].workflow_revisions == nil {
+			continue
+		}
+		fk := *nodes[i].workflow_revisions
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	query.Where(workflow.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "workflow_revisions" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
 		}
 	}
-
-	return nodes, nil
+	return nil
+}
+func (rq *RevisionQuery) loadRefs(ctx context.Context, query *RefQuery, nodes []*Revision, init func(*Revision), assign func(*Revision, *Ref)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Revision)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Ref(func(s *sql.Selector) {
+		s.Where(sql.InValues(revision.RefsColumn, fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.revision_refs
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "revision_refs" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "revision_refs" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (rq *RevisionQuery) loadInstances(ctx context.Context, query *InstanceQuery, nodes []*Revision, init func(*Revision), assign func(*Revision, *Instance)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Revision)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.InValues(revision.InstancesColumn, fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.revision_instances
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "revision_instances" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "revision_instances" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
 }
 
 func (rq *RevisionQuery) sqlCount(ctx context.Context) (int, error) {
@@ -561,11 +587,14 @@ func (rq *RevisionQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (rq *RevisionQuery) sqlExist(ctx context.Context) (bool, error) {
-	n, err := rq.sqlCount(ctx)
-	if err != nil {
+	switch _, err := rq.FirstID(ctx); {
+	case IsNotFound(err):
+		return false, nil
+	case err != nil:
 		return false, fmt.Errorf("ent: check existence: %w", err)
+	default:
+		return true, nil
 	}
-	return n > 0, nil
 }
 
 func (rq *RevisionQuery) querySpec() *sqlgraph.QuerySpec {
@@ -666,7 +695,7 @@ func (rgb *RevisionGroupBy) Aggregate(fns ...AggregateFunc) *RevisionGroupBy {
 }
 
 // Scan applies the group-by query and scans the result into the given value.
-func (rgb *RevisionGroupBy) Scan(ctx context.Context, v interface{}) error {
+func (rgb *RevisionGroupBy) Scan(ctx context.Context, v any) error {
 	query, err := rgb.path(ctx)
 	if err != nil {
 		return err
@@ -675,7 +704,7 @@ func (rgb *RevisionGroupBy) Scan(ctx context.Context, v interface{}) error {
 	return rgb.sqlScan(ctx, v)
 }
 
-func (rgb *RevisionGroupBy) sqlScan(ctx context.Context, v interface{}) error {
+func (rgb *RevisionGroupBy) sqlScan(ctx context.Context, v any) error {
 	for _, f := range rgb.fields {
 		if !revision.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for group-by", f)}
@@ -700,8 +729,6 @@ func (rgb *RevisionGroupBy) sqlQuery() *sql.Selector {
 	for _, fn := range rgb.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	// If no columns were selected in a custom aggregation function, the default
-	// selection is the fields used for "group-by", and the aggregation functions.
 	if len(selector.SelectedColumns()) == 0 {
 		columns := make([]string, 0, len(rgb.fields)+len(rgb.fns))
 		for _, f := range rgb.fields {
@@ -721,8 +748,14 @@ type RevisionSelect struct {
 	sql *sql.Selector
 }
 
+// Aggregate adds the given aggregation functions to the selector query.
+func (rs *RevisionSelect) Aggregate(fns ...AggregateFunc) *RevisionSelect {
+	rs.fns = append(rs.fns, fns...)
+	return rs
+}
+
 // Scan applies the selector query and scans the result into the given value.
-func (rs *RevisionSelect) Scan(ctx context.Context, v interface{}) error {
+func (rs *RevisionSelect) Scan(ctx context.Context, v any) error {
 	if err := rs.prepareQuery(ctx); err != nil {
 		return err
 	}
@@ -730,7 +763,17 @@ func (rs *RevisionSelect) Scan(ctx context.Context, v interface{}) error {
 	return rs.sqlScan(ctx, v)
 }
 
-func (rs *RevisionSelect) sqlScan(ctx context.Context, v interface{}) error {
+func (rs *RevisionSelect) sqlScan(ctx context.Context, v any) error {
+	aggregation := make([]string, 0, len(rs.fns))
+	for _, fn := range rs.fns {
+		aggregation = append(aggregation, fn(rs.sql))
+	}
+	switch n := len(*rs.selector.flds); {
+	case n == 0 && len(aggregation) > 0:
+		rs.sql.Select(aggregation...)
+	case n != 0 && len(aggregation) > 0:
+		rs.sql.AppendSelect(aggregation...)
+	}
 	rows := &sql.Rows{}
 	query, args := rs.sql.Query()
 	if err := rs.driver.Query(ctx, query, args, rows); err != nil {

@@ -261,30 +261,16 @@ func (vru *VarRefUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 	}
 	if value, ok := vru.mutation.Name(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: varref.FieldName,
-		})
+		_spec.SetField(varref.FieldName, field.TypeString, value)
 	}
 	if vru.mutation.NameCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Column: varref.FieldName,
-		})
+		_spec.ClearField(varref.FieldName, field.TypeString)
 	}
 	if value, ok := vru.mutation.Behaviour(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: varref.FieldBehaviour,
-		})
+		_spec.SetField(varref.FieldBehaviour, field.TypeString, value)
 	}
 	if vru.mutation.BehaviourCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Column: varref.FieldBehaviour,
-		})
+		_spec.ClearField(varref.FieldBehaviour, field.TypeString)
 	}
 	if vru.mutation.VardataCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -704,30 +690,16 @@ func (vruo *VarRefUpdateOne) sqlSave(ctx context.Context) (_node *VarRef, err er
 		}
 	}
 	if value, ok := vruo.mutation.Name(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: varref.FieldName,
-		})
+		_spec.SetField(varref.FieldName, field.TypeString, value)
 	}
 	if vruo.mutation.NameCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Column: varref.FieldName,
-		})
+		_spec.ClearField(varref.FieldName, field.TypeString)
 	}
 	if value, ok := vruo.mutation.Behaviour(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: varref.FieldBehaviour,
-		})
+		_spec.SetField(varref.FieldBehaviour, field.TypeString, value)
 	}
 	if vruo.mutation.BehaviourCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Column: varref.FieldBehaviour,
-		})
+		_spec.ClearField(varref.FieldBehaviour, field.TypeString)
 	}
 	if vruo.mutation.VardataCleared() {
 		edge := &sqlgraph.EdgeSpec{
