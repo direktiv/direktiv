@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math"
 
+	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -33,6 +34,7 @@ type LogMsgQuery struct {
 	withInstance  *InstanceQuery
 	withActivity  *MirrorActivityQuery
 	withFKs       bool
+	modifiers     []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -489,6 +491,9 @@ func (lmq *LogMsgQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*LogM
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
+	if len(lmq.modifiers) > 0 {
+		_spec.Modifiers = lmq.modifiers
+	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
@@ -644,6 +649,9 @@ func (lmq *LogMsgQuery) loadActivity(ctx context.Context, query *MirrorActivityQ
 
 func (lmq *LogMsgQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := lmq.querySpec()
+	if len(lmq.modifiers) > 0 {
+		_spec.Modifiers = lmq.modifiers
+	}
 	_spec.Node.Columns = lmq.fields
 	if len(lmq.fields) > 0 {
 		_spec.Unique = lmq.unique != nil && *lmq.unique
@@ -725,6 +733,9 @@ func (lmq *LogMsgQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if lmq.unique != nil && *lmq.unique {
 		selector.Distinct()
 	}
+	for _, m := range lmq.modifiers {
+		m(selector)
+	}
 	for _, p := range lmq.predicates {
 		p(selector)
 	}
@@ -740,6 +751,38 @@ func (lmq *LogMsgQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector.Limit(*limit)
 	}
 	return selector
+}
+
+// ForUpdate locks the selected rows against concurrent updates, and prevent them from being
+// updated, deleted or "selected ... for update" by other sessions, until the transaction is
+// either committed or rolled-back.
+func (lmq *LogMsgQuery) ForUpdate(opts ...sql.LockOption) *LogMsgQuery {
+	if lmq.driver.Dialect() == dialect.Postgres {
+		lmq.Unique(false)
+	}
+	lmq.modifiers = append(lmq.modifiers, func(s *sql.Selector) {
+		s.ForUpdate(opts...)
+	})
+	return lmq
+}
+
+// ForShare behaves similarly to ForUpdate, except that it acquires a shared mode lock
+// on any rows that are read. Other sessions can read the rows, but cannot modify them
+// until your transaction commits.
+func (lmq *LogMsgQuery) ForShare(opts ...sql.LockOption) *LogMsgQuery {
+	if lmq.driver.Dialect() == dialect.Postgres {
+		lmq.Unique(false)
+	}
+	lmq.modifiers = append(lmq.modifiers, func(s *sql.Selector) {
+		s.ForShare(opts...)
+	})
+	return lmq
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (lmq *LogMsgQuery) Modify(modifiers ...func(s *sql.Selector)) *LogMsgSelect {
+	lmq.modifiers = append(lmq.modifiers, modifiers...)
+	return lmq.Select()
 }
 
 // LogMsgGroupBy is the group-by builder for LogMsg entities.
@@ -846,4 +889,10 @@ func (lms *LogMsgSelect) sqlScan(ctx context.Context, v any) error {
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (lms *LogMsgSelect) Modify(modifiers ...func(s *sql.Selector)) *LogMsgSelect {
+	lms.modifiers = append(lms.modifiers, modifiers...)
+	return lms
 }

@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"time"
 
+	"entgo.io/ent/dialect"
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
@@ -22,6 +24,7 @@ type MirrorActivityCreate struct {
 	config
 	mutation *MirrorActivityMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetType sets the "type" field.
@@ -305,6 +308,7 @@ func (mac *MirrorActivityCreate) createSpec() (*MirrorActivity, *sqlgraph.Create
 			},
 		}
 	)
+	_spec.OnConflict = mac.conflict
 	if id, ok := mac.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
@@ -399,10 +403,344 @@ func (mac *MirrorActivityCreate) createSpec() (*MirrorActivity, *sqlgraph.Create
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.MirrorActivity.Create().
+//		SetType(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.MirrorActivityUpsert) {
+//			SetType(v+v).
+//		}).
+//		Exec(ctx)
+func (mac *MirrorActivityCreate) OnConflict(opts ...sql.ConflictOption) *MirrorActivityUpsertOne {
+	mac.conflict = opts
+	return &MirrorActivityUpsertOne{
+		create: mac,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.MirrorActivity.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (mac *MirrorActivityCreate) OnConflictColumns(columns ...string) *MirrorActivityUpsertOne {
+	mac.conflict = append(mac.conflict, sql.ConflictColumns(columns...))
+	return &MirrorActivityUpsertOne{
+		create: mac,
+	}
+}
+
+type (
+	// MirrorActivityUpsertOne is the builder for "upsert"-ing
+	//  one MirrorActivity node.
+	MirrorActivityUpsertOne struct {
+		create *MirrorActivityCreate
+	}
+
+	// MirrorActivityUpsert is the "OnConflict" setter.
+	MirrorActivityUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetType sets the "type" field.
+func (u *MirrorActivityUpsert) SetType(v string) *MirrorActivityUpsert {
+	u.Set(mirroractivity.FieldType, v)
+	return u
+}
+
+// UpdateType sets the "type" field to the value that was provided on create.
+func (u *MirrorActivityUpsert) UpdateType() *MirrorActivityUpsert {
+	u.SetExcluded(mirroractivity.FieldType)
+	return u
+}
+
+// SetStatus sets the "status" field.
+func (u *MirrorActivityUpsert) SetStatus(v string) *MirrorActivityUpsert {
+	u.Set(mirroractivity.FieldStatus, v)
+	return u
+}
+
+// UpdateStatus sets the "status" field to the value that was provided on create.
+func (u *MirrorActivityUpsert) UpdateStatus() *MirrorActivityUpsert {
+	u.SetExcluded(mirroractivity.FieldStatus)
+	return u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *MirrorActivityUpsert) SetUpdatedAt(v time.Time) *MirrorActivityUpsert {
+	u.Set(mirroractivity.FieldUpdatedAt, v)
+	return u
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *MirrorActivityUpsert) UpdateUpdatedAt() *MirrorActivityUpsert {
+	u.SetExcluded(mirroractivity.FieldUpdatedAt)
+	return u
+}
+
+// SetEndAt sets the "end_at" field.
+func (u *MirrorActivityUpsert) SetEndAt(v time.Time) *MirrorActivityUpsert {
+	u.Set(mirroractivity.FieldEndAt, v)
+	return u
+}
+
+// UpdateEndAt sets the "end_at" field to the value that was provided on create.
+func (u *MirrorActivityUpsert) UpdateEndAt() *MirrorActivityUpsert {
+	u.SetExcluded(mirroractivity.FieldEndAt)
+	return u
+}
+
+// ClearEndAt clears the value of the "end_at" field.
+func (u *MirrorActivityUpsert) ClearEndAt() *MirrorActivityUpsert {
+	u.SetNull(mirroractivity.FieldEndAt)
+	return u
+}
+
+// SetController sets the "controller" field.
+func (u *MirrorActivityUpsert) SetController(v string) *MirrorActivityUpsert {
+	u.Set(mirroractivity.FieldController, v)
+	return u
+}
+
+// UpdateController sets the "controller" field to the value that was provided on create.
+func (u *MirrorActivityUpsert) UpdateController() *MirrorActivityUpsert {
+	u.SetExcluded(mirroractivity.FieldController)
+	return u
+}
+
+// ClearController clears the value of the "controller" field.
+func (u *MirrorActivityUpsert) ClearController() *MirrorActivityUpsert {
+	u.SetNull(mirroractivity.FieldController)
+	return u
+}
+
+// SetDeadline sets the "deadline" field.
+func (u *MirrorActivityUpsert) SetDeadline(v time.Time) *MirrorActivityUpsert {
+	u.Set(mirroractivity.FieldDeadline, v)
+	return u
+}
+
+// UpdateDeadline sets the "deadline" field to the value that was provided on create.
+func (u *MirrorActivityUpsert) UpdateDeadline() *MirrorActivityUpsert {
+	u.SetExcluded(mirroractivity.FieldDeadline)
+	return u
+}
+
+// ClearDeadline clears the value of the "deadline" field.
+func (u *MirrorActivityUpsert) ClearDeadline() *MirrorActivityUpsert {
+	u.SetNull(mirroractivity.FieldDeadline)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// Using this option is equivalent to using:
+//
+//	client.MirrorActivity.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(mirroractivity.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *MirrorActivityUpsertOne) UpdateNewValues() *MirrorActivityUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(mirroractivity.FieldID)
+		}
+		if _, exists := u.create.mutation.CreatedAt(); exists {
+			s.SetIgnore(mirroractivity.FieldCreatedAt)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.MirrorActivity.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *MirrorActivityUpsertOne) Ignore() *MirrorActivityUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *MirrorActivityUpsertOne) DoNothing() *MirrorActivityUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the MirrorActivityCreate.OnConflict
+// documentation for more info.
+func (u *MirrorActivityUpsertOne) Update(set func(*MirrorActivityUpsert)) *MirrorActivityUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&MirrorActivityUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetType sets the "type" field.
+func (u *MirrorActivityUpsertOne) SetType(v string) *MirrorActivityUpsertOne {
+	return u.Update(func(s *MirrorActivityUpsert) {
+		s.SetType(v)
+	})
+}
+
+// UpdateType sets the "type" field to the value that was provided on create.
+func (u *MirrorActivityUpsertOne) UpdateType() *MirrorActivityUpsertOne {
+	return u.Update(func(s *MirrorActivityUpsert) {
+		s.UpdateType()
+	})
+}
+
+// SetStatus sets the "status" field.
+func (u *MirrorActivityUpsertOne) SetStatus(v string) *MirrorActivityUpsertOne {
+	return u.Update(func(s *MirrorActivityUpsert) {
+		s.SetStatus(v)
+	})
+}
+
+// UpdateStatus sets the "status" field to the value that was provided on create.
+func (u *MirrorActivityUpsertOne) UpdateStatus() *MirrorActivityUpsertOne {
+	return u.Update(func(s *MirrorActivityUpsert) {
+		s.UpdateStatus()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *MirrorActivityUpsertOne) SetUpdatedAt(v time.Time) *MirrorActivityUpsertOne {
+	return u.Update(func(s *MirrorActivityUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *MirrorActivityUpsertOne) UpdateUpdatedAt() *MirrorActivityUpsertOne {
+	return u.Update(func(s *MirrorActivityUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
+// SetEndAt sets the "end_at" field.
+func (u *MirrorActivityUpsertOne) SetEndAt(v time.Time) *MirrorActivityUpsertOne {
+	return u.Update(func(s *MirrorActivityUpsert) {
+		s.SetEndAt(v)
+	})
+}
+
+// UpdateEndAt sets the "end_at" field to the value that was provided on create.
+func (u *MirrorActivityUpsertOne) UpdateEndAt() *MirrorActivityUpsertOne {
+	return u.Update(func(s *MirrorActivityUpsert) {
+		s.UpdateEndAt()
+	})
+}
+
+// ClearEndAt clears the value of the "end_at" field.
+func (u *MirrorActivityUpsertOne) ClearEndAt() *MirrorActivityUpsertOne {
+	return u.Update(func(s *MirrorActivityUpsert) {
+		s.ClearEndAt()
+	})
+}
+
+// SetController sets the "controller" field.
+func (u *MirrorActivityUpsertOne) SetController(v string) *MirrorActivityUpsertOne {
+	return u.Update(func(s *MirrorActivityUpsert) {
+		s.SetController(v)
+	})
+}
+
+// UpdateController sets the "controller" field to the value that was provided on create.
+func (u *MirrorActivityUpsertOne) UpdateController() *MirrorActivityUpsertOne {
+	return u.Update(func(s *MirrorActivityUpsert) {
+		s.UpdateController()
+	})
+}
+
+// ClearController clears the value of the "controller" field.
+func (u *MirrorActivityUpsertOne) ClearController() *MirrorActivityUpsertOne {
+	return u.Update(func(s *MirrorActivityUpsert) {
+		s.ClearController()
+	})
+}
+
+// SetDeadline sets the "deadline" field.
+func (u *MirrorActivityUpsertOne) SetDeadline(v time.Time) *MirrorActivityUpsertOne {
+	return u.Update(func(s *MirrorActivityUpsert) {
+		s.SetDeadline(v)
+	})
+}
+
+// UpdateDeadline sets the "deadline" field to the value that was provided on create.
+func (u *MirrorActivityUpsertOne) UpdateDeadline() *MirrorActivityUpsertOne {
+	return u.Update(func(s *MirrorActivityUpsert) {
+		s.UpdateDeadline()
+	})
+}
+
+// ClearDeadline clears the value of the "deadline" field.
+func (u *MirrorActivityUpsertOne) ClearDeadline() *MirrorActivityUpsertOne {
+	return u.Update(func(s *MirrorActivityUpsert) {
+		s.ClearDeadline()
+	})
+}
+
+// Exec executes the query.
+func (u *MirrorActivityUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for MirrorActivityCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *MirrorActivityUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *MirrorActivityUpsertOne) ID(ctx context.Context) (id uuid.UUID, err error) {
+	if u.create.driver.Dialect() == dialect.MySQL {
+		// In case of "ON CONFLICT", there is no way to get back non-numeric ID
+		// fields from the database since MySQL does not support the RETURNING clause.
+		return id, errors.New("ent: MirrorActivityUpsertOne.ID is not supported by MySQL driver. Use MirrorActivityUpsertOne.Exec instead")
+	}
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *MirrorActivityUpsertOne) IDX(ctx context.Context) uuid.UUID {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // MirrorActivityCreateBulk is the builder for creating many MirrorActivity entities in bulk.
 type MirrorActivityCreateBulk struct {
 	config
 	builders []*MirrorActivityCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the MirrorActivity entities in the database.
@@ -429,6 +767,7 @@ func (macb *MirrorActivityCreateBulk) Save(ctx context.Context) ([]*MirrorActivi
 					_, err = mutators[i+1].Mutate(root, macb.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = macb.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, macb.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -475,6 +814,225 @@ func (macb *MirrorActivityCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (macb *MirrorActivityCreateBulk) ExecX(ctx context.Context) {
 	if err := macb.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.MirrorActivity.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.MirrorActivityUpsert) {
+//			SetType(v+v).
+//		}).
+//		Exec(ctx)
+func (macb *MirrorActivityCreateBulk) OnConflict(opts ...sql.ConflictOption) *MirrorActivityUpsertBulk {
+	macb.conflict = opts
+	return &MirrorActivityUpsertBulk{
+		create: macb,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.MirrorActivity.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (macb *MirrorActivityCreateBulk) OnConflictColumns(columns ...string) *MirrorActivityUpsertBulk {
+	macb.conflict = append(macb.conflict, sql.ConflictColumns(columns...))
+	return &MirrorActivityUpsertBulk{
+		create: macb,
+	}
+}
+
+// MirrorActivityUpsertBulk is the builder for "upsert"-ing
+// a bulk of MirrorActivity nodes.
+type MirrorActivityUpsertBulk struct {
+	create *MirrorActivityCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.MirrorActivity.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(mirroractivity.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *MirrorActivityUpsertBulk) UpdateNewValues() *MirrorActivityUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(mirroractivity.FieldID)
+			}
+			if _, exists := b.mutation.CreatedAt(); exists {
+				s.SetIgnore(mirroractivity.FieldCreatedAt)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.MirrorActivity.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *MirrorActivityUpsertBulk) Ignore() *MirrorActivityUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *MirrorActivityUpsertBulk) DoNothing() *MirrorActivityUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the MirrorActivityCreateBulk.OnConflict
+// documentation for more info.
+func (u *MirrorActivityUpsertBulk) Update(set func(*MirrorActivityUpsert)) *MirrorActivityUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&MirrorActivityUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetType sets the "type" field.
+func (u *MirrorActivityUpsertBulk) SetType(v string) *MirrorActivityUpsertBulk {
+	return u.Update(func(s *MirrorActivityUpsert) {
+		s.SetType(v)
+	})
+}
+
+// UpdateType sets the "type" field to the value that was provided on create.
+func (u *MirrorActivityUpsertBulk) UpdateType() *MirrorActivityUpsertBulk {
+	return u.Update(func(s *MirrorActivityUpsert) {
+		s.UpdateType()
+	})
+}
+
+// SetStatus sets the "status" field.
+func (u *MirrorActivityUpsertBulk) SetStatus(v string) *MirrorActivityUpsertBulk {
+	return u.Update(func(s *MirrorActivityUpsert) {
+		s.SetStatus(v)
+	})
+}
+
+// UpdateStatus sets the "status" field to the value that was provided on create.
+func (u *MirrorActivityUpsertBulk) UpdateStatus() *MirrorActivityUpsertBulk {
+	return u.Update(func(s *MirrorActivityUpsert) {
+		s.UpdateStatus()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *MirrorActivityUpsertBulk) SetUpdatedAt(v time.Time) *MirrorActivityUpsertBulk {
+	return u.Update(func(s *MirrorActivityUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *MirrorActivityUpsertBulk) UpdateUpdatedAt() *MirrorActivityUpsertBulk {
+	return u.Update(func(s *MirrorActivityUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
+// SetEndAt sets the "end_at" field.
+func (u *MirrorActivityUpsertBulk) SetEndAt(v time.Time) *MirrorActivityUpsertBulk {
+	return u.Update(func(s *MirrorActivityUpsert) {
+		s.SetEndAt(v)
+	})
+}
+
+// UpdateEndAt sets the "end_at" field to the value that was provided on create.
+func (u *MirrorActivityUpsertBulk) UpdateEndAt() *MirrorActivityUpsertBulk {
+	return u.Update(func(s *MirrorActivityUpsert) {
+		s.UpdateEndAt()
+	})
+}
+
+// ClearEndAt clears the value of the "end_at" field.
+func (u *MirrorActivityUpsertBulk) ClearEndAt() *MirrorActivityUpsertBulk {
+	return u.Update(func(s *MirrorActivityUpsert) {
+		s.ClearEndAt()
+	})
+}
+
+// SetController sets the "controller" field.
+func (u *MirrorActivityUpsertBulk) SetController(v string) *MirrorActivityUpsertBulk {
+	return u.Update(func(s *MirrorActivityUpsert) {
+		s.SetController(v)
+	})
+}
+
+// UpdateController sets the "controller" field to the value that was provided on create.
+func (u *MirrorActivityUpsertBulk) UpdateController() *MirrorActivityUpsertBulk {
+	return u.Update(func(s *MirrorActivityUpsert) {
+		s.UpdateController()
+	})
+}
+
+// ClearController clears the value of the "controller" field.
+func (u *MirrorActivityUpsertBulk) ClearController() *MirrorActivityUpsertBulk {
+	return u.Update(func(s *MirrorActivityUpsert) {
+		s.ClearController()
+	})
+}
+
+// SetDeadline sets the "deadline" field.
+func (u *MirrorActivityUpsertBulk) SetDeadline(v time.Time) *MirrorActivityUpsertBulk {
+	return u.Update(func(s *MirrorActivityUpsert) {
+		s.SetDeadline(v)
+	})
+}
+
+// UpdateDeadline sets the "deadline" field to the value that was provided on create.
+func (u *MirrorActivityUpsertBulk) UpdateDeadline() *MirrorActivityUpsertBulk {
+	return u.Update(func(s *MirrorActivityUpsert) {
+		s.UpdateDeadline()
+	})
+}
+
+// ClearDeadline clears the value of the "deadline" field.
+func (u *MirrorActivityUpsertBulk) ClearDeadline() *MirrorActivityUpsertBulk {
+	return u.Update(func(s *MirrorActivityUpsert) {
+		s.ClearDeadline()
+	})
+}
+
+// Exec executes the query.
+func (u *MirrorActivityUpsertBulk) Exec(ctx context.Context) error {
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the MirrorActivityCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for MirrorActivityCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *MirrorActivityUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

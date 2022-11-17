@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"math"
 
+	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -20,14 +21,14 @@ import (
 // VarDataQuery is the builder for querying VarData entities.
 type VarDataQuery struct {
 	config
-	limit            *int
-	offset           *int
-	unique           *bool
-	order            []OrderFunc
-	fields           []string
-	predicates       []predicate.VarData
-	withVarrefs      *VarRefQuery
-	withNamedVarrefs map[string]*VarRefQuery
+	limit       *int
+	offset      *int
+	unique      *bool
+	order       []OrderFunc
+	fields      []string
+	predicates  []predicate.VarData
+	withVarrefs *VarRefQuery
+	modifiers   []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -372,6 +373,9 @@ func (vdq *VarDataQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Var
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
+	if len(vdq.modifiers) > 0 {
+		_spec.Modifiers = vdq.modifiers
+	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
@@ -385,13 +389,6 @@ func (vdq *VarDataQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Var
 		if err := vdq.loadVarrefs(ctx, query, nodes,
 			func(n *VarData) { n.Edges.Varrefs = []*VarRef{} },
 			func(n *VarData, e *VarRef) { n.Edges.Varrefs = append(n.Edges.Varrefs, e) }); err != nil {
-			return nil, err
-		}
-	}
-	for name, query := range vdq.withNamedVarrefs {
-		if err := vdq.loadVarrefs(ctx, query, nodes,
-			func(n *VarData) { n.appendNamedVarrefs(name) },
-			func(n *VarData, e *VarRef) { n.appendNamedVarrefs(name, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -432,6 +429,9 @@ func (vdq *VarDataQuery) loadVarrefs(ctx context.Context, query *VarRefQuery, no
 
 func (vdq *VarDataQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := vdq.querySpec()
+	if len(vdq.modifiers) > 0 {
+		_spec.Modifiers = vdq.modifiers
+	}
 	_spec.Node.Columns = vdq.fields
 	if len(vdq.fields) > 0 {
 		_spec.Unique = vdq.unique != nil && *vdq.unique
@@ -513,6 +513,9 @@ func (vdq *VarDataQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if vdq.unique != nil && *vdq.unique {
 		selector.Distinct()
 	}
+	for _, m := range vdq.modifiers {
+		m(selector)
+	}
 	for _, p := range vdq.predicates {
 		p(selector)
 	}
@@ -530,18 +533,36 @@ func (vdq *VarDataQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	return selector
 }
 
-// WithNamedVarrefs tells the query-builder to eager-load the nodes that are connected to the "varrefs"
-// edge with the given name. The optional arguments are used to configure the query builder of the edge.
-func (vdq *VarDataQuery) WithNamedVarrefs(name string, opts ...func(*VarRefQuery)) *VarDataQuery {
-	query := &VarRefQuery{config: vdq.config}
-	for _, opt := range opts {
-		opt(query)
+// ForUpdate locks the selected rows against concurrent updates, and prevent them from being
+// updated, deleted or "selected ... for update" by other sessions, until the transaction is
+// either committed or rolled-back.
+func (vdq *VarDataQuery) ForUpdate(opts ...sql.LockOption) *VarDataQuery {
+	if vdq.driver.Dialect() == dialect.Postgres {
+		vdq.Unique(false)
 	}
-	if vdq.withNamedVarrefs == nil {
-		vdq.withNamedVarrefs = make(map[string]*VarRefQuery)
-	}
-	vdq.withNamedVarrefs[name] = query
+	vdq.modifiers = append(vdq.modifiers, func(s *sql.Selector) {
+		s.ForUpdate(opts...)
+	})
 	return vdq
+}
+
+// ForShare behaves similarly to ForUpdate, except that it acquires a shared mode lock
+// on any rows that are read. Other sessions can read the rows, but cannot modify them
+// until your transaction commits.
+func (vdq *VarDataQuery) ForShare(opts ...sql.LockOption) *VarDataQuery {
+	if vdq.driver.Dialect() == dialect.Postgres {
+		vdq.Unique(false)
+	}
+	vdq.modifiers = append(vdq.modifiers, func(s *sql.Selector) {
+		s.ForShare(opts...)
+	})
+	return vdq
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (vdq *VarDataQuery) Modify(modifiers ...func(s *sql.Selector)) *VarDataSelect {
+	vdq.modifiers = append(vdq.modifiers, modifiers...)
+	return vdq.Select()
 }
 
 // VarDataGroupBy is the group-by builder for VarData entities.
@@ -648,4 +669,10 @@ func (vds *VarDataSelect) sqlScan(ctx context.Context, v any) error {
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (vds *VarDataSelect) Modify(modifiers ...func(s *sql.Selector)) *VarDataSelect {
+	vds.modifiers = append(vds.modifiers, modifiers...)
+	return vds
 }

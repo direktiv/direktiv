@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"math"
 
+	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -22,17 +23,17 @@ import (
 // MirrorQuery is the builder for querying Mirror entities.
 type MirrorQuery struct {
 	config
-	limit               *int
-	offset              *int
-	unique              *bool
-	order               []OrderFunc
-	fields              []string
-	predicates          []predicate.Mirror
-	withNamespace       *NamespaceQuery
-	withInode           *InodeQuery
-	withActivities      *MirrorActivityQuery
-	withFKs             bool
-	withNamedActivities map[string]*MirrorActivityQuery
+	limit          *int
+	offset         *int
+	unique         *bool
+	order          []OrderFunc
+	fields         []string
+	predicates     []predicate.Mirror
+	withNamespace  *NamespaceQuery
+	withInode      *InodeQuery
+	withActivities *MirrorActivityQuery
+	withFKs        bool
+	modifiers      []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -454,6 +455,9 @@ func (mq *MirrorQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Mirro
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
+	if len(mq.modifiers) > 0 {
+		_spec.Modifiers = mq.modifiers
+	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
@@ -479,13 +483,6 @@ func (mq *MirrorQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Mirro
 		if err := mq.loadActivities(ctx, query, nodes,
 			func(n *Mirror) { n.Edges.Activities = []*MirrorActivity{} },
 			func(n *Mirror, e *MirrorActivity) { n.Edges.Activities = append(n.Edges.Activities, e) }); err != nil {
-			return nil, err
-		}
-	}
-	for name, query := range mq.withNamedActivities {
-		if err := mq.loadActivities(ctx, query, nodes,
-			func(n *Mirror) { n.appendNamedActivities(name) },
-			func(n *Mirror, e *MirrorActivity) { n.appendNamedActivities(name, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -584,6 +581,9 @@ func (mq *MirrorQuery) loadActivities(ctx context.Context, query *MirrorActivity
 
 func (mq *MirrorQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := mq.querySpec()
+	if len(mq.modifiers) > 0 {
+		_spec.Modifiers = mq.modifiers
+	}
 	_spec.Node.Columns = mq.fields
 	if len(mq.fields) > 0 {
 		_spec.Unique = mq.unique != nil && *mq.unique
@@ -665,6 +665,9 @@ func (mq *MirrorQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if mq.unique != nil && *mq.unique {
 		selector.Distinct()
 	}
+	for _, m := range mq.modifiers {
+		m(selector)
+	}
 	for _, p := range mq.predicates {
 		p(selector)
 	}
@@ -682,18 +685,36 @@ func (mq *MirrorQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	return selector
 }
 
-// WithNamedActivities tells the query-builder to eager-load the nodes that are connected to the "activities"
-// edge with the given name. The optional arguments are used to configure the query builder of the edge.
-func (mq *MirrorQuery) WithNamedActivities(name string, opts ...func(*MirrorActivityQuery)) *MirrorQuery {
-	query := &MirrorActivityQuery{config: mq.config}
-	for _, opt := range opts {
-		opt(query)
+// ForUpdate locks the selected rows against concurrent updates, and prevent them from being
+// updated, deleted or "selected ... for update" by other sessions, until the transaction is
+// either committed or rolled-back.
+func (mq *MirrorQuery) ForUpdate(opts ...sql.LockOption) *MirrorQuery {
+	if mq.driver.Dialect() == dialect.Postgres {
+		mq.Unique(false)
 	}
-	if mq.withNamedActivities == nil {
-		mq.withNamedActivities = make(map[string]*MirrorActivityQuery)
-	}
-	mq.withNamedActivities[name] = query
+	mq.modifiers = append(mq.modifiers, func(s *sql.Selector) {
+		s.ForUpdate(opts...)
+	})
 	return mq
+}
+
+// ForShare behaves similarly to ForUpdate, except that it acquires a shared mode lock
+// on any rows that are read. Other sessions can read the rows, but cannot modify them
+// until your transaction commits.
+func (mq *MirrorQuery) ForShare(opts ...sql.LockOption) *MirrorQuery {
+	if mq.driver.Dialect() == dialect.Postgres {
+		mq.Unique(false)
+	}
+	mq.modifiers = append(mq.modifiers, func(s *sql.Selector) {
+		s.ForShare(opts...)
+	})
+	return mq
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (mq *MirrorQuery) Modify(modifiers ...func(s *sql.Selector)) *MirrorSelect {
+	mq.modifiers = append(mq.modifiers, modifiers...)
+	return mq.Select()
 }
 
 // MirrorGroupBy is the group-by builder for Mirror entities.
@@ -800,4 +821,10 @@ func (ms *MirrorSelect) sqlScan(ctx context.Context, v any) error {
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (ms *MirrorSelect) Modify(modifiers ...func(s *sql.Selector)) *MirrorSelect {
+	ms.modifiers = append(ms.modifiers, modifiers...)
+	return ms
 }

@@ -20,8 +20,9 @@ import (
 // VarDataUpdate is the builder for updating VarData entities.
 type VarDataUpdate struct {
 	config
-	hooks    []Hook
-	mutation *VarDataMutation
+	hooks     []Hook
+	mutation  *VarDataMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // Where appends a list predicates to the VarDataUpdate builder.
@@ -179,6 +180,12 @@ func (vdu *VarDataUpdate) defaults() {
 	}
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (vdu *VarDataUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *VarDataUpdate {
+	vdu.modifiers = append(vdu.modifiers, modifiers...)
+	return vdu
+}
+
 func (vdu *VarDataUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -269,6 +276,7 @@ func (vdu *VarDataUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	_spec.AddModifiers(vdu.modifiers...)
 	if n, err = sqlgraph.UpdateNodes(ctx, vdu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{vardata.Label}
@@ -283,9 +291,10 @@ func (vdu *VarDataUpdate) sqlSave(ctx context.Context) (n int, err error) {
 // VarDataUpdateOne is the builder for updating a single VarData entity.
 type VarDataUpdateOne struct {
 	config
-	fields   []string
-	hooks    []Hook
-	mutation *VarDataMutation
+	fields    []string
+	hooks     []Hook
+	mutation  *VarDataMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // SetUpdatedAt sets the "updated_at" field.
@@ -450,6 +459,12 @@ func (vduo *VarDataUpdateOne) defaults() {
 	}
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (vduo *VarDataUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *VarDataUpdateOne {
+	vduo.modifiers = append(vduo.modifiers, modifiers...)
+	return vduo
+}
+
 func (vduo *VarDataUpdateOne) sqlSave(ctx context.Context) (_node *VarData, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -557,6 +572,7 @@ func (vduo *VarDataUpdateOne) sqlSave(ctx context.Context) (_node *VarData, err 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	_spec.AddModifiers(vduo.modifiers...)
 	_node = &VarData{config: vduo.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

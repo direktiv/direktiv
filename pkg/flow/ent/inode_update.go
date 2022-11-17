@@ -23,8 +23,9 @@ import (
 // InodeUpdate is the builder for updating Inode entities.
 type InodeUpdate struct {
 	config
-	hooks    []Hook
-	mutation *InodeMutation
+	hooks     []Hook
+	mutation  *InodeMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // Where appends a list predicates to the InodeUpdate builder.
@@ -332,6 +333,12 @@ func (iu *InodeUpdate) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (iu *InodeUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *InodeUpdate {
+	iu.modifiers = append(iu.modifiers, modifiers...)
+	return iu
+}
+
 func (iu *InodeUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -576,6 +583,7 @@ func (iu *InodeUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	_spec.AddModifiers(iu.modifiers...)
 	if n, err = sqlgraph.UpdateNodes(ctx, iu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{inode.Label}
@@ -590,9 +598,10 @@ func (iu *InodeUpdate) sqlSave(ctx context.Context) (n int, err error) {
 // InodeUpdateOne is the builder for updating a single Inode entity.
 type InodeUpdateOne struct {
 	config
-	fields   []string
-	hooks    []Hook
-	mutation *InodeMutation
+	fields    []string
+	hooks     []Hook
+	mutation  *InodeMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // SetUpdatedAt sets the "updated_at" field.
@@ -907,6 +916,12 @@ func (iuo *InodeUpdateOne) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (iuo *InodeUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *InodeUpdateOne {
+	iuo.modifiers = append(iuo.modifiers, modifiers...)
+	return iuo
+}
+
 func (iuo *InodeUpdateOne) sqlSave(ctx context.Context) (_node *Inode, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -1168,6 +1183,7 @@ func (iuo *InodeUpdateOne) sqlSave(ctx context.Context) (_node *Inode, err error
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	_spec.AddModifiers(iuo.modifiers...)
 	_node = &Inode{config: iuo.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
