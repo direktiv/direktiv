@@ -9,6 +9,10 @@
 *.dylib
 .vscode
 
+# certs for linkerd 
+ca.*
+issuer.*
+
 # Test binary, built with `go test -c`
 *.test
 
@@ -18,6 +22,7 @@
 # Dependency directories (remove the comment below to include it)
 # vendor/
 
+/deps
 /build/*-binary
 /build/*.md5
 /build/*.checksum

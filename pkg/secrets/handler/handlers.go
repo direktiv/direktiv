@@ -20,11 +20,14 @@ var (
 type SecretsHandlerInstantiator func() (SecretsHandler, error)
 
 type SecretsHandler interface {
-	AddSecret(namespace, name string, secret []byte) error
+	AddSecret(namespace, name string, secret []byte, ignoreError bool) error
 	RemoveSecret(namespace, name string) error
-	RemoveSecrets(namespace string) error
+	RemoveFolder(namespace, name string) error
+	RemoveNamespaceSecrets(namespace string) error
 	GetSecret(namespace, name string) ([]byte, error)
-	GetSecrets(namespace string) ([]string, error)
+	GetSecrets(namespace string, name string) ([]string, error)
+	SearchForName(namespace string, name string) ([]string, error)
+	UpdateSecret(namespace, name string, secret []byte) error
 }
 
 func (x *SecretType) Setup() (SecretsHandler, error) {

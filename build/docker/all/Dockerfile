@@ -16,7 +16,7 @@ COPY download-image.sh /
 
 
 RUN ls -la /bin
-ARG DIREKTIV_VERSION=v0.6.6
+ARG DIREKTIV_VERSION=v0.7.0
 ARG KNATIVE_VERSION=v1.5.0
 
 RUN ./download-image.sh \   
@@ -53,7 +53,7 @@ RUN wget -P /eventing https://github.com/knative/eventing/releases/download/knat
 
 
 # This stage builds the installation app
-FROM ubuntu:21.10 as build-env
+FROM ubuntu:22.04 as build-env
 
 RUN apt-get update && apt-get install -y ca-certificates curl golang
 
@@ -67,7 +67,7 @@ COPY installer/main.go /app
 RUN cd /app && CGO_LDFLAGS="-static -w -s"  go build  -tags osusergo,netgo  -o /dlapp /app/main.go
 
 # This stage is just a base image for the actual final stage
-FROM ubuntu:21.10 as base
+FROM ubuntu:22.04 as base
 
 ARG K3S_VERSION=v1.24.2%2Bk3s2
 

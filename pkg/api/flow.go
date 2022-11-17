@@ -842,6 +842,35 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//       "$ref": '#/definitions/ErrorResponse'
 	handlerPair(r, RN_ListSecrets, "/namespaces/{ns}/secrets", h.Secrets, h.SecretsSSE)
 
+	// swagger:operation GET /api/namespaces/{namespace}/secrets/{folder}/ Secrets getSecretsInsideFolder
+	// ---
+	// description: |
+	//   Gets the list of namespace secrets and folders inside specific folder.
+	// summary: Get List of Namespace nodes inside Folder
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: folder
+	//   type: string
+	//   required: true
+	//   description: 'target folder path'
+	// responses:
+	//   200:
+	//     produces: application/json
+	//     description: "successfully got namespace nodes inside sepcific folder"
+	//     schema:
+	//       "$ref": '#/definitions/OkBody'
+	//   default:
+	//     produces: application/json
+	//     description: an error has occurred
+	//     schema:
+	//       "$ref": '#/definitions/ErrorResponse'
+	handlerPair(r, RN_ListSecrets, "/namespaces/{ns}/secrets/{folder:.*[/]$}", h.Secrets, h.SecretsSSE)
+
 	// swagger:operation PUT /api/namespaces/{namespace}/secrets/{secret} Secrets createSecret
 	// ---
 	// description: |
@@ -870,7 +899,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	// responses:
 	//   200:
 	//     produces: application/json
-	//     description: "namespace has been successfully created"
+	//     description: "namespace secret has been successfully created"
 	//     schema:
 	//       "$ref": '#/definitions/OkBody'
 	//   default:
@@ -878,7 +907,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     description: an error has occurred
 	//     schema:
 	//       "$ref": '#/definitions/ErrorResponse'
-	r.HandleFunc("/namespaces/{ns}/secrets/{secret}", h.SetSecret).Name(RN_CreateSecret).Methods(http.MethodPut)
+	r.HandleFunc("/namespaces/{ns}/secrets/{secret:.*[^/]$}", h.SetSecret).Name(RN_CreateSecret).Methods(http.MethodPut)
 
 	// swagger:operation DELETE /api/namespaces/{namespace}/secrets/{secret} Secrets deleteSecret
 	// ---
@@ -899,7 +928,65 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	// responses:
 	//   200:
 	//     produces: application/json
-	//     description: "namespace has been successfully created"
+	//     description: "namespace secret has been successfully deleted"
+	//     schema:
+	//       "$ref": '#/definitions/OkBody'
+	//   default:
+	//     produces: application/json
+	//     description: secret not found
+	//     schema:
+	//       "$ref": '#/definitions/ErrorResponse'
+	r.HandleFunc("/namespaces/{ns}/secrets/{secret:.*[^/]$}", h.DeleteSecret).Name(RN_DeleteSecret).Methods(http.MethodDelete)
+
+	// swagger:operation DELETE /api/namespaces/{namespace}/secrets/{folder}/ Secrets deleteFolder
+	// ---
+	// description: |
+	//   Delete a namespace folder.
+	// summary: Delete a Namespace Folder
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: folder
+	//   type: string
+	//   required: true
+	//   description: 'target folder'
+	// responses:
+	//   200:
+	//     produces: application/json
+	//     description: "namespace folder has been successfully deleted"
+	//     schema:
+	//       "$ref": '#/definitions/OkBody'
+	//   default:
+	//     produces: application/json
+	//     description: folder not found
+	//     schema:
+	//       "$ref": '#/definitions/ErrorResponse'
+	r.HandleFunc("/namespaces/{ns}/secrets/{folder:.*[/]$}", h.DeleteSecretsFolder).Name(RN_DeleteSecretsFolder).Methods(http.MethodDelete)
+
+	// swagger:operation PUT /api/namespaces/{namespace}/secrets/{folder}/ Secrets createFolder
+	// ---
+	// description: |
+	//   Create a namespace folder.
+	// summary: Create a Namespace Folder
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: folder
+	//   type: string
+	//   required: true
+	//   description: 'target secret'
+	// responses:
+	//   200:
+	//     produces: application/json
+	//     description: "namespace folder has been successfully created"
 	//     schema:
 	//       "$ref": '#/definitions/OkBody'
 	//   default:
@@ -907,7 +994,74 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     description: an error has occurred
 	//     schema:
 	//       "$ref": '#/definitions/ErrorResponse'
-	r.HandleFunc("/namespaces/{ns}/secrets/{secret}", h.DeleteSecret).Name(RN_DeleteSecret).Methods(http.MethodDelete)
+	r.HandleFunc("/namespaces/{ns}/secrets/{folder:.*[/]$}", h.CreateSecretsFolder).Name(RN_CreateSecretsFolder).Methods(http.MethodPut)
+
+	// swagger:operation PUT /api/namespaces/overwrite/{namespace}/secrets/{secret} Secrets overwriteSecret
+	// ---
+	// description: |
+	//   Overwrite a namespace secret.
+	// summary: Overwrite a Namespace Secret
+	// consumes:
+	// - text/plain
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: secret
+	//   type: string
+	//   required: true
+	//   description: 'target secret'
+	// - in: body
+	//   name: Secret Payload
+	//   required: true
+	//   description: "Payload that contains secret data."
+	//   schema:
+	//     example: 7F8E7B0124ACB2BD20B383DE0756C7C0
+	//     type: string
+	// responses:
+	//   200:
+	//     produces: application/json
+	//     description: "namespace has been successfully overwritten"
+	//     schema:
+	//       "$ref": '#/definitions/OkBody'
+	//   default:
+	//     produces: application/json
+	//     description: secret not found
+	//     schema:
+	//       "$ref": '#/definitions/ErrorResponse'
+	r.HandleFunc("/namespaces/{ns}/overwrite/secrets/{secret:.*[^/]$}", h.OverwriteSecret).Name(RN_OverwriteSecret).Methods(http.MethodPut)
+
+	// swagger:operation GET /api/namespaces/search/{namespace}/secrets/{name} Secrets searchSecret
+	// ---
+	// description: |
+	//    secrets and folders which including given name.
+	// summary: Get List of Namespace nodes contains name
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: name
+	//   type: string
+	//   required: true
+	//   description: 'target name'
+	// responses:
+	//   200:
+	//     produces: application/json
+	//     description: "successfully got namespace nodes"
+	//     schema:
+	//       "$ref": '#/definitions/OkBody'
+	//   default:
+	//     produces: application/json
+	//     description: an error has occurred
+	//     schema:
+	//       "$ref": '#/definitions/ErrorResponse'
+	r.HandleFunc("/namespaces/{ns}/search/secrets/{name:.*}", h.SearchSecret).Name(RN_SearchSecret).Methods(http.MethodGet)
 
 	// swagger:operation GET /api/namespaces/{namespace}/instances/{instance} Instances getInstance
 	// ---
@@ -3487,6 +3641,7 @@ func (h *flowHandler) Secrets(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
+	folder, _ := mux.Vars(r)["folder"]
 
 	p, err := pagination(r)
 	if err != nil {
@@ -3497,6 +3652,7 @@ func (h *flowHandler) Secrets(w http.ResponseWriter, r *http.Request) {
 	in := &grpc.SecretsRequest{
 		Namespace:  namespace,
 		Pagination: p,
+		Key:        folder,
 	}
 
 	resp, err := h.client.Secrets(ctx, in)
@@ -3510,6 +3666,7 @@ func (h *flowHandler) SecretsSSE(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
+	folder, _ := mux.Vars(r)["folder"]
 
 	p, err := pagination(r)
 	if err != nil {
@@ -3520,6 +3677,7 @@ func (h *flowHandler) SecretsSSE(w http.ResponseWriter, r *http.Request) {
 	in := &grpc.SecretsRequest{
 		Namespace:  namespace,
 		Pagination: p,
+		Key:        folder,
 	}
 
 	resp, err := h.client.SecretsStream(ctx, in)
@@ -3565,6 +3723,31 @@ func (h *flowHandler) SecretsSSE(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func (h *flowHandler) SearchSecret(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	name, _ := mux.Vars(r)["name"]
+
+	p, err := pagination(r)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
+	in := &grpc.SearchSecretRequest{
+		Namespace:  namespace,
+		Pagination: p,
+		Key:        name,
+	}
+
+	resp, err := h.client.SearchSecret(ctx, in)
+	respond(w, resp, err)
+
+}
+
 func (h *flowHandler) SetSecret(w http.ResponseWriter, r *http.Request) {
 
 	h.logger.Debugf("Handling request: %s", this())
@@ -3590,6 +3773,30 @@ func (h *flowHandler) SetSecret(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func (h *flowHandler) OverwriteSecret(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	secret := mux.Vars(r)["secret"]
+
+	data, err := loadRawBody(r)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
+	in := new(grpc.UpdateSecretRequest)
+	in.Namespace = namespace
+	in.Key = secret
+	in.Data = data
+
+	resp, err := h.client.UpdateSecret(ctx, in)
+	respond(w, resp, err)
+
+}
+
 func (h *flowHandler) DeleteSecret(w http.ResponseWriter, r *http.Request) {
 
 	h.logger.Debugf("Handling request: %s", this())
@@ -3603,6 +3810,41 @@ func (h *flowHandler) DeleteSecret(w http.ResponseWriter, r *http.Request) {
 	in.Key = secret
 
 	resp, err := h.client.DeleteSecret(ctx, in)
+	respond(w, resp, err)
+
+}
+
+func (h *flowHandler) DeleteSecretsFolder(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	folder, _ := mux.Vars(r)["folder"]
+
+	in := new(grpc.DeleteSecretsFolderRequest)
+	in.Namespace = namespace
+	in.Key = folder
+
+	resp, err := h.client.DeleteSecretsFolder(ctx, in)
+	respond(w, resp, err)
+
+}
+
+func (h *flowHandler) CreateSecretsFolder(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	folder, _ := mux.Vars(r)["folder"]
+
+	in := new(grpc.CreateSecretsFolderRequest)
+
+	in.Namespace = namespace
+	in.Key = folder
+
+	resp, err := h.client.CreateSecretsFolder(ctx, in)
 	respond(w, resp, err)
 
 }

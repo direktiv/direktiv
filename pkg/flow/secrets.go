@@ -62,11 +62,11 @@ func (secrets *secrets) deleteNamespaceSecrets(ns *ent.Namespace) error {
 
 	namespace := ns.ID.String()
 
-	request := &secretsgrpc.DeleteSecretsRequest{
+	request := &secretsgrpc.DeleteNamespaceSecretsRequest{
 		Namespace: &namespace,
 	}
 
-	_, err := secrets.client.DeleteSecrets(context.Background(), request)
+	_, err := secrets.client.DeleteNamespaceSecrets(context.Background(), request)
 	if err != nil {
 		return err
 	}
