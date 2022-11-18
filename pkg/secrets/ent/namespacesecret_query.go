@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math"
 
+	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -23,6 +24,7 @@ type NamespaceSecretQuery struct {
 	order      []OrderFunc
 	fields     []string
 	predicates []predicate.NamespaceSecret
+	modifiers  []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -329,6 +331,9 @@ func (nsq *NamespaceSecretQuery) sqlAll(ctx context.Context, hooks ...queryHook)
 		nodes = append(nodes, node)
 		return node.assignValues(columns, values)
 	}
+	if len(nsq.modifiers) > 0 {
+		_spec.Modifiers = nsq.modifiers
+	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
@@ -343,6 +348,9 @@ func (nsq *NamespaceSecretQuery) sqlAll(ctx context.Context, hooks ...queryHook)
 
 func (nsq *NamespaceSecretQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := nsq.querySpec()
+	if len(nsq.modifiers) > 0 {
+		_spec.Modifiers = nsq.modifiers
+	}
 	_spec.Node.Columns = nsq.fields
 	if len(nsq.fields) > 0 {
 		_spec.Unique = nsq.unique != nil && *nsq.unique
@@ -424,6 +432,9 @@ func (nsq *NamespaceSecretQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if nsq.unique != nil && *nsq.unique {
 		selector.Distinct()
 	}
+	for _, m := range nsq.modifiers {
+		m(selector)
+	}
 	for _, p := range nsq.predicates {
 		p(selector)
 	}
@@ -439,6 +450,38 @@ func (nsq *NamespaceSecretQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector.Limit(*limit)
 	}
 	return selector
+}
+
+// ForUpdate locks the selected rows against concurrent updates, and prevent them from being
+// updated, deleted or "selected ... for update" by other sessions, until the transaction is
+// either committed or rolled-back.
+func (nsq *NamespaceSecretQuery) ForUpdate(opts ...sql.LockOption) *NamespaceSecretQuery {
+	if nsq.driver.Dialect() == dialect.Postgres {
+		nsq.Unique(false)
+	}
+	nsq.modifiers = append(nsq.modifiers, func(s *sql.Selector) {
+		s.ForUpdate(opts...)
+	})
+	return nsq
+}
+
+// ForShare behaves similarly to ForUpdate, except that it acquires a shared mode lock
+// on any rows that are read. Other sessions can read the rows, but cannot modify them
+// until your transaction commits.
+func (nsq *NamespaceSecretQuery) ForShare(opts ...sql.LockOption) *NamespaceSecretQuery {
+	if nsq.driver.Dialect() == dialect.Postgres {
+		nsq.Unique(false)
+	}
+	nsq.modifiers = append(nsq.modifiers, func(s *sql.Selector) {
+		s.ForShare(opts...)
+	})
+	return nsq
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (nsq *NamespaceSecretQuery) Modify(modifiers ...func(s *sql.Selector)) *NamespaceSecretSelect {
+	nsq.modifiers = append(nsq.modifiers, modifiers...)
+	return nsq.Select()
 }
 
 // NamespaceSecretGroupBy is the group-by builder for NamespaceSecret entities.
@@ -545,4 +588,10 @@ func (nss *NamespaceSecretSelect) sqlScan(ctx context.Context, v any) error {
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (nss *NamespaceSecretSelect) Modify(modifiers ...func(s *sql.Selector)) *NamespaceSecretSelect {
+	nss.modifiers = append(nss.modifiers, modifiers...)
+	return nss
 }

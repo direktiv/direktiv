@@ -17,8 +17,9 @@ import (
 // NamespaceSecretUpdate is the builder for updating NamespaceSecret entities.
 type NamespaceSecretUpdate struct {
 	config
-	hooks    []Hook
-	mutation *NamespaceSecretMutation
+	hooks     []Hook
+	mutation  *NamespaceSecretMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // Where appends a list predicates to the NamespaceSecretUpdate builder.
@@ -120,6 +121,12 @@ func (nsu *NamespaceSecretUpdate) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (nsu *NamespaceSecretUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *NamespaceSecretUpdate {
+	nsu.modifiers = append(nsu.modifiers, modifiers...)
+	return nsu
+}
+
 func (nsu *NamespaceSecretUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -147,6 +154,7 @@ func (nsu *NamespaceSecretUpdate) sqlSave(ctx context.Context) (n int, err error
 	if value, ok := nsu.mutation.Secret(); ok {
 		_spec.SetField(namespacesecret.FieldSecret, field.TypeBytes, value)
 	}
+	_spec.AddModifiers(nsu.modifiers...)
 	if n, err = sqlgraph.UpdateNodes(ctx, nsu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{namespacesecret.Label}
@@ -161,9 +169,10 @@ func (nsu *NamespaceSecretUpdate) sqlSave(ctx context.Context) (n int, err error
 // NamespaceSecretUpdateOne is the builder for updating a single NamespaceSecret entity.
 type NamespaceSecretUpdateOne struct {
 	config
-	fields   []string
-	hooks    []Hook
-	mutation *NamespaceSecretMutation
+	fields    []string
+	hooks     []Hook
+	mutation  *NamespaceSecretMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // SetNs sets the "ns" field.
@@ -272,6 +281,12 @@ func (nsuo *NamespaceSecretUpdateOne) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (nsuo *NamespaceSecretUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *NamespaceSecretUpdateOne {
+	nsuo.modifiers = append(nsuo.modifiers, modifiers...)
+	return nsuo
+}
+
 func (nsuo *NamespaceSecretUpdateOne) sqlSave(ctx context.Context) (_node *NamespaceSecret, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -316,6 +331,7 @@ func (nsuo *NamespaceSecretUpdateOne) sqlSave(ctx context.Context) (_node *Names
 	if value, ok := nsuo.mutation.Secret(); ok {
 		_spec.SetField(namespacesecret.FieldSecret, field.TypeBytes, value)
 	}
+	_spec.AddModifiers(nsuo.modifiers...)
 	_node = &NamespaceSecret{config: nsuo.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

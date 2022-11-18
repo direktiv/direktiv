@@ -17,8 +17,9 @@ import (
 // ServicesUpdate is the builder for updating Services entities.
 type ServicesUpdate struct {
 	config
-	hooks    []Hook
-	mutation *ServicesMutation
+	hooks     []Hook
+	mutation  *ServicesMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // Where appends a list predicates to the ServicesUpdate builder.
@@ -92,6 +93,12 @@ func (su *ServicesUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (su *ServicesUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *ServicesUpdate {
+	su.modifiers = append(su.modifiers, modifiers...)
+	return su
+}
+
 func (su *ServicesUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -113,6 +120,7 @@ func (su *ServicesUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := su.mutation.Data(); ok {
 		_spec.SetField(services.FieldData, field.TypeString, value)
 	}
+	_spec.AddModifiers(su.modifiers...)
 	if n, err = sqlgraph.UpdateNodes(ctx, su.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{services.Label}
@@ -127,9 +135,10 @@ func (su *ServicesUpdate) sqlSave(ctx context.Context) (n int, err error) {
 // ServicesUpdateOne is the builder for updating a single Services entity.
 type ServicesUpdateOne struct {
 	config
-	fields   []string
-	hooks    []Hook
-	mutation *ServicesMutation
+	fields    []string
+	hooks     []Hook
+	mutation  *ServicesMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // SetData sets the "data" field.
@@ -210,6 +219,12 @@ func (suo *ServicesUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (suo *ServicesUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *ServicesUpdateOne {
+	suo.modifiers = append(suo.modifiers, modifiers...)
+	return suo
+}
+
 func (suo *ServicesUpdateOne) sqlSave(ctx context.Context) (_node *Services, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -248,6 +263,7 @@ func (suo *ServicesUpdateOne) sqlSave(ctx context.Context) (_node *Services, err
 	if value, ok := suo.mutation.Data(); ok {
 		_spec.SetField(services.FieldData, field.TypeString, value)
 	}
+	_spec.AddModifiers(suo.modifiers...)
 	_node = &Services{config: suo.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"time"
 
+	"entgo.io/ent/dialect"
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/direktiv/direktiv/pkg/flow/ent/events"
@@ -23,6 +25,7 @@ type EventsCreate struct {
 	config
 	mutation *EventsMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetEvents sets the "events" field.
@@ -293,6 +296,7 @@ func (ec *EventsCreate) createSpec() (*Events, *sqlgraph.CreateSpec) {
 			},
 		}
 	)
+	_spec.OnConflict = ec.conflict
 	if id, ok := ec.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
@@ -403,10 +407,305 @@ func (ec *EventsCreate) createSpec() (*Events, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Events.Create().
+//		SetEvents(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.EventsUpsert) {
+//			SetEvents(v+v).
+//		}).
+//		Exec(ctx)
+func (ec *EventsCreate) OnConflict(opts ...sql.ConflictOption) *EventsUpsertOne {
+	ec.conflict = opts
+	return &EventsUpsertOne{
+		create: ec,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Events.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (ec *EventsCreate) OnConflictColumns(columns ...string) *EventsUpsertOne {
+	ec.conflict = append(ec.conflict, sql.ConflictColumns(columns...))
+	return &EventsUpsertOne{
+		create: ec,
+	}
+}
+
+type (
+	// EventsUpsertOne is the builder for "upsert"-ing
+	//  one Events node.
+	EventsUpsertOne struct {
+		create *EventsCreate
+	}
+
+	// EventsUpsert is the "OnConflict" setter.
+	EventsUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetEvents sets the "events" field.
+func (u *EventsUpsert) SetEvents(v []map[string]interface{}) *EventsUpsert {
+	u.Set(events.FieldEvents, v)
+	return u
+}
+
+// UpdateEvents sets the "events" field to the value that was provided on create.
+func (u *EventsUpsert) UpdateEvents() *EventsUpsert {
+	u.SetExcluded(events.FieldEvents)
+	return u
+}
+
+// SetCorrelations sets the "correlations" field.
+func (u *EventsUpsert) SetCorrelations(v []string) *EventsUpsert {
+	u.Set(events.FieldCorrelations, v)
+	return u
+}
+
+// UpdateCorrelations sets the "correlations" field to the value that was provided on create.
+func (u *EventsUpsert) UpdateCorrelations() *EventsUpsert {
+	u.SetExcluded(events.FieldCorrelations)
+	return u
+}
+
+// SetSignature sets the "signature" field.
+func (u *EventsUpsert) SetSignature(v []byte) *EventsUpsert {
+	u.Set(events.FieldSignature, v)
+	return u
+}
+
+// UpdateSignature sets the "signature" field to the value that was provided on create.
+func (u *EventsUpsert) UpdateSignature() *EventsUpsert {
+	u.SetExcluded(events.FieldSignature)
+	return u
+}
+
+// ClearSignature clears the value of the "signature" field.
+func (u *EventsUpsert) ClearSignature() *EventsUpsert {
+	u.SetNull(events.FieldSignature)
+	return u
+}
+
+// SetCount sets the "count" field.
+func (u *EventsUpsert) SetCount(v int) *EventsUpsert {
+	u.Set(events.FieldCount, v)
+	return u
+}
+
+// UpdateCount sets the "count" field to the value that was provided on create.
+func (u *EventsUpsert) UpdateCount() *EventsUpsert {
+	u.SetExcluded(events.FieldCount)
+	return u
+}
+
+// AddCount adds v to the "count" field.
+func (u *EventsUpsert) AddCount(v int) *EventsUpsert {
+	u.Add(events.FieldCount, v)
+	return u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *EventsUpsert) SetUpdatedAt(v time.Time) *EventsUpsert {
+	u.Set(events.FieldUpdatedAt, v)
+	return u
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *EventsUpsert) UpdateUpdatedAt() *EventsUpsert {
+	u.SetExcluded(events.FieldUpdatedAt)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// Using this option is equivalent to using:
+//
+//	client.Events.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(events.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *EventsUpsertOne) UpdateNewValues() *EventsUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(events.FieldID)
+		}
+		if _, exists := u.create.mutation.CreatedAt(); exists {
+			s.SetIgnore(events.FieldCreatedAt)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Events.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *EventsUpsertOne) Ignore() *EventsUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *EventsUpsertOne) DoNothing() *EventsUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the EventsCreate.OnConflict
+// documentation for more info.
+func (u *EventsUpsertOne) Update(set func(*EventsUpsert)) *EventsUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&EventsUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetEvents sets the "events" field.
+func (u *EventsUpsertOne) SetEvents(v []map[string]interface{}) *EventsUpsertOne {
+	return u.Update(func(s *EventsUpsert) {
+		s.SetEvents(v)
+	})
+}
+
+// UpdateEvents sets the "events" field to the value that was provided on create.
+func (u *EventsUpsertOne) UpdateEvents() *EventsUpsertOne {
+	return u.Update(func(s *EventsUpsert) {
+		s.UpdateEvents()
+	})
+}
+
+// SetCorrelations sets the "correlations" field.
+func (u *EventsUpsertOne) SetCorrelations(v []string) *EventsUpsertOne {
+	return u.Update(func(s *EventsUpsert) {
+		s.SetCorrelations(v)
+	})
+}
+
+// UpdateCorrelations sets the "correlations" field to the value that was provided on create.
+func (u *EventsUpsertOne) UpdateCorrelations() *EventsUpsertOne {
+	return u.Update(func(s *EventsUpsert) {
+		s.UpdateCorrelations()
+	})
+}
+
+// SetSignature sets the "signature" field.
+func (u *EventsUpsertOne) SetSignature(v []byte) *EventsUpsertOne {
+	return u.Update(func(s *EventsUpsert) {
+		s.SetSignature(v)
+	})
+}
+
+// UpdateSignature sets the "signature" field to the value that was provided on create.
+func (u *EventsUpsertOne) UpdateSignature() *EventsUpsertOne {
+	return u.Update(func(s *EventsUpsert) {
+		s.UpdateSignature()
+	})
+}
+
+// ClearSignature clears the value of the "signature" field.
+func (u *EventsUpsertOne) ClearSignature() *EventsUpsertOne {
+	return u.Update(func(s *EventsUpsert) {
+		s.ClearSignature()
+	})
+}
+
+// SetCount sets the "count" field.
+func (u *EventsUpsertOne) SetCount(v int) *EventsUpsertOne {
+	return u.Update(func(s *EventsUpsert) {
+		s.SetCount(v)
+	})
+}
+
+// AddCount adds v to the "count" field.
+func (u *EventsUpsertOne) AddCount(v int) *EventsUpsertOne {
+	return u.Update(func(s *EventsUpsert) {
+		s.AddCount(v)
+	})
+}
+
+// UpdateCount sets the "count" field to the value that was provided on create.
+func (u *EventsUpsertOne) UpdateCount() *EventsUpsertOne {
+	return u.Update(func(s *EventsUpsert) {
+		s.UpdateCount()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *EventsUpsertOne) SetUpdatedAt(v time.Time) *EventsUpsertOne {
+	return u.Update(func(s *EventsUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *EventsUpsertOne) UpdateUpdatedAt() *EventsUpsertOne {
+	return u.Update(func(s *EventsUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
+// Exec executes the query.
+func (u *EventsUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for EventsCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *EventsUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *EventsUpsertOne) ID(ctx context.Context) (id uuid.UUID, err error) {
+	if u.create.driver.Dialect() == dialect.MySQL {
+		// In case of "ON CONFLICT", there is no way to get back non-numeric ID
+		// fields from the database since MySQL does not support the RETURNING clause.
+		return id, errors.New("ent: EventsUpsertOne.ID is not supported by MySQL driver. Use EventsUpsertOne.Exec instead")
+	}
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *EventsUpsertOne) IDX(ctx context.Context) uuid.UUID {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // EventsCreateBulk is the builder for creating many Events entities in bulk.
 type EventsCreateBulk struct {
 	config
 	builders []*EventsCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the Events entities in the database.
@@ -433,6 +732,7 @@ func (ecb *EventsCreateBulk) Save(ctx context.Context) ([]*Events, error) {
 					_, err = mutators[i+1].Mutate(root, ecb.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = ecb.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, ecb.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -479,6 +779,204 @@ func (ecb *EventsCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (ecb *EventsCreateBulk) ExecX(ctx context.Context) {
 	if err := ecb.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Events.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.EventsUpsert) {
+//			SetEvents(v+v).
+//		}).
+//		Exec(ctx)
+func (ecb *EventsCreateBulk) OnConflict(opts ...sql.ConflictOption) *EventsUpsertBulk {
+	ecb.conflict = opts
+	return &EventsUpsertBulk{
+		create: ecb,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Events.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (ecb *EventsCreateBulk) OnConflictColumns(columns ...string) *EventsUpsertBulk {
+	ecb.conflict = append(ecb.conflict, sql.ConflictColumns(columns...))
+	return &EventsUpsertBulk{
+		create: ecb,
+	}
+}
+
+// EventsUpsertBulk is the builder for "upsert"-ing
+// a bulk of Events nodes.
+type EventsUpsertBulk struct {
+	create *EventsCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.Events.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(events.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *EventsUpsertBulk) UpdateNewValues() *EventsUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(events.FieldID)
+			}
+			if _, exists := b.mutation.CreatedAt(); exists {
+				s.SetIgnore(events.FieldCreatedAt)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Events.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *EventsUpsertBulk) Ignore() *EventsUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *EventsUpsertBulk) DoNothing() *EventsUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the EventsCreateBulk.OnConflict
+// documentation for more info.
+func (u *EventsUpsertBulk) Update(set func(*EventsUpsert)) *EventsUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&EventsUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetEvents sets the "events" field.
+func (u *EventsUpsertBulk) SetEvents(v []map[string]interface{}) *EventsUpsertBulk {
+	return u.Update(func(s *EventsUpsert) {
+		s.SetEvents(v)
+	})
+}
+
+// UpdateEvents sets the "events" field to the value that was provided on create.
+func (u *EventsUpsertBulk) UpdateEvents() *EventsUpsertBulk {
+	return u.Update(func(s *EventsUpsert) {
+		s.UpdateEvents()
+	})
+}
+
+// SetCorrelations sets the "correlations" field.
+func (u *EventsUpsertBulk) SetCorrelations(v []string) *EventsUpsertBulk {
+	return u.Update(func(s *EventsUpsert) {
+		s.SetCorrelations(v)
+	})
+}
+
+// UpdateCorrelations sets the "correlations" field to the value that was provided on create.
+func (u *EventsUpsertBulk) UpdateCorrelations() *EventsUpsertBulk {
+	return u.Update(func(s *EventsUpsert) {
+		s.UpdateCorrelations()
+	})
+}
+
+// SetSignature sets the "signature" field.
+func (u *EventsUpsertBulk) SetSignature(v []byte) *EventsUpsertBulk {
+	return u.Update(func(s *EventsUpsert) {
+		s.SetSignature(v)
+	})
+}
+
+// UpdateSignature sets the "signature" field to the value that was provided on create.
+func (u *EventsUpsertBulk) UpdateSignature() *EventsUpsertBulk {
+	return u.Update(func(s *EventsUpsert) {
+		s.UpdateSignature()
+	})
+}
+
+// ClearSignature clears the value of the "signature" field.
+func (u *EventsUpsertBulk) ClearSignature() *EventsUpsertBulk {
+	return u.Update(func(s *EventsUpsert) {
+		s.ClearSignature()
+	})
+}
+
+// SetCount sets the "count" field.
+func (u *EventsUpsertBulk) SetCount(v int) *EventsUpsertBulk {
+	return u.Update(func(s *EventsUpsert) {
+		s.SetCount(v)
+	})
+}
+
+// AddCount adds v to the "count" field.
+func (u *EventsUpsertBulk) AddCount(v int) *EventsUpsertBulk {
+	return u.Update(func(s *EventsUpsert) {
+		s.AddCount(v)
+	})
+}
+
+// UpdateCount sets the "count" field to the value that was provided on create.
+func (u *EventsUpsertBulk) UpdateCount() *EventsUpsertBulk {
+	return u.Update(func(s *EventsUpsert) {
+		s.UpdateCount()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *EventsUpsertBulk) SetUpdatedAt(v time.Time) *EventsUpsertBulk {
+	return u.Update(func(s *EventsUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *EventsUpsertBulk) UpdateUpdatedAt() *EventsUpsertBulk {
+	return u.Update(func(s *EventsUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
+// Exec executes the query.
+func (u *EventsUpsertBulk) Exec(ctx context.Context) error {
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the EventsCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for EventsCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *EventsUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

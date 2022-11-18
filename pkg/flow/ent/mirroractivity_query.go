@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"math"
 
+	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -32,6 +33,7 @@ type MirrorActivityQuery struct {
 	withMirror    *MirrorQuery
 	withLogs      *LogMsgQuery
 	withFKs       bool
+	modifiers     []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -453,6 +455,9 @@ func (maq *MirrorActivityQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
+	if len(maq.modifiers) > 0 {
+		_spec.Modifiers = maq.modifiers
+	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
@@ -576,6 +581,9 @@ func (maq *MirrorActivityQuery) loadLogs(ctx context.Context, query *LogMsgQuery
 
 func (maq *MirrorActivityQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := maq.querySpec()
+	if len(maq.modifiers) > 0 {
+		_spec.Modifiers = maq.modifiers
+	}
 	_spec.Node.Columns = maq.fields
 	if len(maq.fields) > 0 {
 		_spec.Unique = maq.unique != nil && *maq.unique
@@ -657,6 +665,9 @@ func (maq *MirrorActivityQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if maq.unique != nil && *maq.unique {
 		selector.Distinct()
 	}
+	for _, m := range maq.modifiers {
+		m(selector)
+	}
 	for _, p := range maq.predicates {
 		p(selector)
 	}
@@ -672,6 +683,38 @@ func (maq *MirrorActivityQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector.Limit(*limit)
 	}
 	return selector
+}
+
+// ForUpdate locks the selected rows against concurrent updates, and prevent them from being
+// updated, deleted or "selected ... for update" by other sessions, until the transaction is
+// either committed or rolled-back.
+func (maq *MirrorActivityQuery) ForUpdate(opts ...sql.LockOption) *MirrorActivityQuery {
+	if maq.driver.Dialect() == dialect.Postgres {
+		maq.Unique(false)
+	}
+	maq.modifiers = append(maq.modifiers, func(s *sql.Selector) {
+		s.ForUpdate(opts...)
+	})
+	return maq
+}
+
+// ForShare behaves similarly to ForUpdate, except that it acquires a shared mode lock
+// on any rows that are read. Other sessions can read the rows, but cannot modify them
+// until your transaction commits.
+func (maq *MirrorActivityQuery) ForShare(opts ...sql.LockOption) *MirrorActivityQuery {
+	if maq.driver.Dialect() == dialect.Postgres {
+		maq.Unique(false)
+	}
+	maq.modifiers = append(maq.modifiers, func(s *sql.Selector) {
+		s.ForShare(opts...)
+	})
+	return maq
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (maq *MirrorActivityQuery) Modify(modifiers ...func(s *sql.Selector)) *MirrorActivitySelect {
+	maq.modifiers = append(maq.modifiers, modifiers...)
+	return maq.Select()
 }
 
 // MirrorActivityGroupBy is the group-by builder for MirrorActivity entities.
@@ -778,4 +821,10 @@ func (mas *MirrorActivitySelect) sqlScan(ctx context.Context, v any) error {
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (mas *MirrorActivitySelect) Modify(modifiers ...func(s *sql.Selector)) *MirrorActivitySelect {
+	mas.modifiers = append(mas.modifiers, modifiers...)
+	return mas
 }

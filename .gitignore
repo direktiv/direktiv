@@ -96,3 +96,7 @@ greeting.json
 issuer.crt
 issuer.key
 scripts/dev.yaml
+
+scripts/api/api.md
+scripts/api/swagger.json
+scripts/dev.yaml

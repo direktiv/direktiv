@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"math"
 
+	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -27,6 +28,7 @@ type VarDataQuery struct {
 	fields      []string
 	predicates  []predicate.VarData
 	withVarrefs *VarRefQuery
+	modifiers   []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -371,6 +373,9 @@ func (vdq *VarDataQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Var
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
+	if len(vdq.modifiers) > 0 {
+		_spec.Modifiers = vdq.modifiers
+	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
@@ -424,6 +429,9 @@ func (vdq *VarDataQuery) loadVarrefs(ctx context.Context, query *VarRefQuery, no
 
 func (vdq *VarDataQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := vdq.querySpec()
+	if len(vdq.modifiers) > 0 {
+		_spec.Modifiers = vdq.modifiers
+	}
 	_spec.Node.Columns = vdq.fields
 	if len(vdq.fields) > 0 {
 		_spec.Unique = vdq.unique != nil && *vdq.unique
@@ -505,6 +513,9 @@ func (vdq *VarDataQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if vdq.unique != nil && *vdq.unique {
 		selector.Distinct()
 	}
+	for _, m := range vdq.modifiers {
+		m(selector)
+	}
 	for _, p := range vdq.predicates {
 		p(selector)
 	}
@@ -520,6 +531,38 @@ func (vdq *VarDataQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector.Limit(*limit)
 	}
 	return selector
+}
+
+// ForUpdate locks the selected rows against concurrent updates, and prevent them from being
+// updated, deleted or "selected ... for update" by other sessions, until the transaction is
+// either committed or rolled-back.
+func (vdq *VarDataQuery) ForUpdate(opts ...sql.LockOption) *VarDataQuery {
+	if vdq.driver.Dialect() == dialect.Postgres {
+		vdq.Unique(false)
+	}
+	vdq.modifiers = append(vdq.modifiers, func(s *sql.Selector) {
+		s.ForUpdate(opts...)
+	})
+	return vdq
+}
+
+// ForShare behaves similarly to ForUpdate, except that it acquires a shared mode lock
+// on any rows that are read. Other sessions can read the rows, but cannot modify them
+// until your transaction commits.
+func (vdq *VarDataQuery) ForShare(opts ...sql.LockOption) *VarDataQuery {
+	if vdq.driver.Dialect() == dialect.Postgres {
+		vdq.Unique(false)
+	}
+	vdq.modifiers = append(vdq.modifiers, func(s *sql.Selector) {
+		s.ForShare(opts...)
+	})
+	return vdq
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (vdq *VarDataQuery) Modify(modifiers ...func(s *sql.Selector)) *VarDataSelect {
+	vdq.modifiers = append(vdq.modifiers, modifiers...)
+	return vdq.Select()
 }
 
 // VarDataGroupBy is the group-by builder for VarData entities.
@@ -626,4 +669,10 @@ func (vds *VarDataSelect) sqlScan(ctx context.Context, v any) error {
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (vds *VarDataSelect) Modify(modifiers ...func(s *sql.Selector)) *VarDataSelect {
+	vds.modifiers = append(vds.modifiers, modifiers...)
+	return vds
 }

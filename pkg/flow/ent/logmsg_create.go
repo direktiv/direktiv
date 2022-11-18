@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"time"
 
+	"entgo.io/ent/dialect"
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
@@ -23,6 +25,7 @@ type LogMsgCreate struct {
 	config
 	mutation *LogMsgMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetT sets the "t" field.
@@ -250,6 +253,7 @@ func (lmc *LogMsgCreate) createSpec() (*LogMsg, *sqlgraph.CreateSpec) {
 			},
 		}
 	)
+	_spec.OnConflict = lmc.conflict
 	if id, ok := lmc.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
@@ -345,10 +349,198 @@ func (lmc *LogMsgCreate) createSpec() (*LogMsg, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.LogMsg.Create().
+//		SetT(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.LogMsgUpsert) {
+//			SetT(v+v).
+//		}).
+//		Exec(ctx)
+func (lmc *LogMsgCreate) OnConflict(opts ...sql.ConflictOption) *LogMsgUpsertOne {
+	lmc.conflict = opts
+	return &LogMsgUpsertOne{
+		create: lmc,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.LogMsg.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (lmc *LogMsgCreate) OnConflictColumns(columns ...string) *LogMsgUpsertOne {
+	lmc.conflict = append(lmc.conflict, sql.ConflictColumns(columns...))
+	return &LogMsgUpsertOne{
+		create: lmc,
+	}
+}
+
+type (
+	// LogMsgUpsertOne is the builder for "upsert"-ing
+	//  one LogMsg node.
+	LogMsgUpsertOne struct {
+		create *LogMsgCreate
+	}
+
+	// LogMsgUpsert is the "OnConflict" setter.
+	LogMsgUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetT sets the "t" field.
+func (u *LogMsgUpsert) SetT(v time.Time) *LogMsgUpsert {
+	u.Set(logmsg.FieldT, v)
+	return u
+}
+
+// UpdateT sets the "t" field to the value that was provided on create.
+func (u *LogMsgUpsert) UpdateT() *LogMsgUpsert {
+	u.SetExcluded(logmsg.FieldT)
+	return u
+}
+
+// SetMsg sets the "msg" field.
+func (u *LogMsgUpsert) SetMsg(v string) *LogMsgUpsert {
+	u.Set(logmsg.FieldMsg, v)
+	return u
+}
+
+// UpdateMsg sets the "msg" field to the value that was provided on create.
+func (u *LogMsgUpsert) UpdateMsg() *LogMsgUpsert {
+	u.SetExcluded(logmsg.FieldMsg)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// Using this option is equivalent to using:
+//
+//	client.LogMsg.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(logmsg.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *LogMsgUpsertOne) UpdateNewValues() *LogMsgUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(logmsg.FieldID)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.LogMsg.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *LogMsgUpsertOne) Ignore() *LogMsgUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *LogMsgUpsertOne) DoNothing() *LogMsgUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the LogMsgCreate.OnConflict
+// documentation for more info.
+func (u *LogMsgUpsertOne) Update(set func(*LogMsgUpsert)) *LogMsgUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&LogMsgUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetT sets the "t" field.
+func (u *LogMsgUpsertOne) SetT(v time.Time) *LogMsgUpsertOne {
+	return u.Update(func(s *LogMsgUpsert) {
+		s.SetT(v)
+	})
+}
+
+// UpdateT sets the "t" field to the value that was provided on create.
+func (u *LogMsgUpsertOne) UpdateT() *LogMsgUpsertOne {
+	return u.Update(func(s *LogMsgUpsert) {
+		s.UpdateT()
+	})
+}
+
+// SetMsg sets the "msg" field.
+func (u *LogMsgUpsertOne) SetMsg(v string) *LogMsgUpsertOne {
+	return u.Update(func(s *LogMsgUpsert) {
+		s.SetMsg(v)
+	})
+}
+
+// UpdateMsg sets the "msg" field to the value that was provided on create.
+func (u *LogMsgUpsertOne) UpdateMsg() *LogMsgUpsertOne {
+	return u.Update(func(s *LogMsgUpsert) {
+		s.UpdateMsg()
+	})
+}
+
+// Exec executes the query.
+func (u *LogMsgUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for LogMsgCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *LogMsgUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *LogMsgUpsertOne) ID(ctx context.Context) (id uuid.UUID, err error) {
+	if u.create.driver.Dialect() == dialect.MySQL {
+		// In case of "ON CONFLICT", there is no way to get back non-numeric ID
+		// fields from the database since MySQL does not support the RETURNING clause.
+		return id, errors.New("ent: LogMsgUpsertOne.ID is not supported by MySQL driver. Use LogMsgUpsertOne.Exec instead")
+	}
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *LogMsgUpsertOne) IDX(ctx context.Context) uuid.UUID {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // LogMsgCreateBulk is the builder for creating many LogMsg entities in bulk.
 type LogMsgCreateBulk struct {
 	config
 	builders []*LogMsgCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the LogMsg entities in the database.
@@ -375,6 +567,7 @@ func (lmcb *LogMsgCreateBulk) Save(ctx context.Context) ([]*LogMsg, error) {
 					_, err = mutators[i+1].Mutate(root, lmcb.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = lmcb.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, lmcb.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -421,6 +614,145 @@ func (lmcb *LogMsgCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (lmcb *LogMsgCreateBulk) ExecX(ctx context.Context) {
 	if err := lmcb.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.LogMsg.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.LogMsgUpsert) {
+//			SetT(v+v).
+//		}).
+//		Exec(ctx)
+func (lmcb *LogMsgCreateBulk) OnConflict(opts ...sql.ConflictOption) *LogMsgUpsertBulk {
+	lmcb.conflict = opts
+	return &LogMsgUpsertBulk{
+		create: lmcb,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.LogMsg.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (lmcb *LogMsgCreateBulk) OnConflictColumns(columns ...string) *LogMsgUpsertBulk {
+	lmcb.conflict = append(lmcb.conflict, sql.ConflictColumns(columns...))
+	return &LogMsgUpsertBulk{
+		create: lmcb,
+	}
+}
+
+// LogMsgUpsertBulk is the builder for "upsert"-ing
+// a bulk of LogMsg nodes.
+type LogMsgUpsertBulk struct {
+	create *LogMsgCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.LogMsg.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(logmsg.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *LogMsgUpsertBulk) UpdateNewValues() *LogMsgUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(logmsg.FieldID)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.LogMsg.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *LogMsgUpsertBulk) Ignore() *LogMsgUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *LogMsgUpsertBulk) DoNothing() *LogMsgUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the LogMsgCreateBulk.OnConflict
+// documentation for more info.
+func (u *LogMsgUpsertBulk) Update(set func(*LogMsgUpsert)) *LogMsgUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&LogMsgUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetT sets the "t" field.
+func (u *LogMsgUpsertBulk) SetT(v time.Time) *LogMsgUpsertBulk {
+	return u.Update(func(s *LogMsgUpsert) {
+		s.SetT(v)
+	})
+}
+
+// UpdateT sets the "t" field to the value that was provided on create.
+func (u *LogMsgUpsertBulk) UpdateT() *LogMsgUpsertBulk {
+	return u.Update(func(s *LogMsgUpsert) {
+		s.UpdateT()
+	})
+}
+
+// SetMsg sets the "msg" field.
+func (u *LogMsgUpsertBulk) SetMsg(v string) *LogMsgUpsertBulk {
+	return u.Update(func(s *LogMsgUpsert) {
+		s.SetMsg(v)
+	})
+}
+
+// UpdateMsg sets the "msg" field to the value that was provided on create.
+func (u *LogMsgUpsertBulk) UpdateMsg() *LogMsgUpsertBulk {
+	return u.Update(func(s *LogMsgUpsert) {
+		s.UpdateMsg()
+	})
+}
+
+// Exec executes the query.
+func (u *LogMsgUpsertBulk) Exec(ctx context.Context) error {
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the LogMsgCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for LogMsgCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *LogMsgUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

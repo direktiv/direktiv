@@ -19,8 +19,9 @@ import (
 // CloudEventFiltersUpdate is the builder for updating CloudEventFilters entities.
 type CloudEventFiltersUpdate struct {
 	config
-	hooks    []Hook
-	mutation *CloudEventFiltersMutation
+	hooks     []Hook
+	mutation  *CloudEventFiltersMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // Where appends a list predicates to the CloudEventFiltersUpdate builder.
@@ -141,6 +142,12 @@ func (cefu *CloudEventFiltersUpdate) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (cefu *CloudEventFiltersUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *CloudEventFiltersUpdate {
+	cefu.modifiers = append(cefu.modifiers, modifiers...)
+	return cefu
+}
+
 func (cefu *CloudEventFiltersUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -200,6 +207,7 @@ func (cefu *CloudEventFiltersUpdate) sqlSave(ctx context.Context) (n int, err er
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	_spec.AddModifiers(cefu.modifiers...)
 	if n, err = sqlgraph.UpdateNodes(ctx, cefu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{cloudeventfilters.Label}
@@ -214,9 +222,10 @@ func (cefu *CloudEventFiltersUpdate) sqlSave(ctx context.Context) (n int, err er
 // CloudEventFiltersUpdateOne is the builder for updating a single CloudEventFilters entity.
 type CloudEventFiltersUpdateOne struct {
 	config
-	fields   []string
-	hooks    []Hook
-	mutation *CloudEventFiltersMutation
+	fields    []string
+	hooks     []Hook
+	mutation  *CloudEventFiltersMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // SetName sets the "name" field.
@@ -344,6 +353,12 @@ func (cefuo *CloudEventFiltersUpdateOne) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (cefuo *CloudEventFiltersUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *CloudEventFiltersUpdateOne {
+	cefuo.modifiers = append(cefuo.modifiers, modifiers...)
+	return cefuo
+}
+
 func (cefuo *CloudEventFiltersUpdateOne) sqlSave(ctx context.Context) (_node *CloudEventFilters, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -420,6 +435,7 @@ func (cefuo *CloudEventFiltersUpdateOne) sqlSave(ctx context.Context) (_node *Cl
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	_spec.AddModifiers(cefuo.modifiers...)
 	_node = &CloudEventFilters{config: cefuo.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

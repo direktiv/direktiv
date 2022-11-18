@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"math"
 
+	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -32,6 +33,7 @@ type RefQuery struct {
 	withRevision *RevisionQuery
 	withRoutes   *RouteQuery
 	withFKs      bool
+	modifiers    []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -453,6 +455,9 @@ func (rq *RefQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Ref, err
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
+	if len(rq.modifiers) > 0 {
+		_spec.Modifiers = rq.modifiers
+	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
@@ -576,6 +581,9 @@ func (rq *RefQuery) loadRoutes(ctx context.Context, query *RouteQuery, nodes []*
 
 func (rq *RefQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := rq.querySpec()
+	if len(rq.modifiers) > 0 {
+		_spec.Modifiers = rq.modifiers
+	}
 	_spec.Node.Columns = rq.fields
 	if len(rq.fields) > 0 {
 		_spec.Unique = rq.unique != nil && *rq.unique
@@ -657,6 +665,9 @@ func (rq *RefQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if rq.unique != nil && *rq.unique {
 		selector.Distinct()
 	}
+	for _, m := range rq.modifiers {
+		m(selector)
+	}
 	for _, p := range rq.predicates {
 		p(selector)
 	}
@@ -672,6 +683,38 @@ func (rq *RefQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector.Limit(*limit)
 	}
 	return selector
+}
+
+// ForUpdate locks the selected rows against concurrent updates, and prevent them from being
+// updated, deleted or "selected ... for update" by other sessions, until the transaction is
+// either committed or rolled-back.
+func (rq *RefQuery) ForUpdate(opts ...sql.LockOption) *RefQuery {
+	if rq.driver.Dialect() == dialect.Postgres {
+		rq.Unique(false)
+	}
+	rq.modifiers = append(rq.modifiers, func(s *sql.Selector) {
+		s.ForUpdate(opts...)
+	})
+	return rq
+}
+
+// ForShare behaves similarly to ForUpdate, except that it acquires a shared mode lock
+// on any rows that are read. Other sessions can read the rows, but cannot modify them
+// until your transaction commits.
+func (rq *RefQuery) ForShare(opts ...sql.LockOption) *RefQuery {
+	if rq.driver.Dialect() == dialect.Postgres {
+		rq.Unique(false)
+	}
+	rq.modifiers = append(rq.modifiers, func(s *sql.Selector) {
+		s.ForShare(opts...)
+	})
+	return rq
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (rq *RefQuery) Modify(modifiers ...func(s *sql.Selector)) *RefSelect {
+	rq.modifiers = append(rq.modifiers, modifiers...)
+	return rq.Select()
 }
 
 // RefGroupBy is the group-by builder for Ref entities.
@@ -778,4 +821,10 @@ func (rs *RefSelect) sqlScan(ctx context.Context, v any) error {
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (rs *RefSelect) Modify(modifiers ...func(s *sql.Selector)) *RefSelect {
+	rs.modifiers = append(rs.modifiers, modifiers...)
+	return rs
 }

@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"time"
 
+	"entgo.io/ent/dialect"
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/direktiv/direktiv/pkg/flow/ent/inode"
@@ -22,6 +24,7 @@ type InodeCreate struct {
 	config
 	mutation *InodeMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -349,6 +352,7 @@ func (ic *InodeCreate) createSpec() (*Inode, *sqlgraph.CreateSpec) {
 			},
 		}
 	)
+	_spec.OnConflict = ic.conflict
 	if id, ok := ic.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
@@ -481,10 +485,334 @@ func (ic *InodeCreate) createSpec() (*Inode, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Inode.Create().
+//		SetCreatedAt(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.InodeUpsert) {
+//			SetCreatedAt(v+v).
+//		}).
+//		Exec(ctx)
+func (ic *InodeCreate) OnConflict(opts ...sql.ConflictOption) *InodeUpsertOne {
+	ic.conflict = opts
+	return &InodeUpsertOne{
+		create: ic,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Inode.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (ic *InodeCreate) OnConflictColumns(columns ...string) *InodeUpsertOne {
+	ic.conflict = append(ic.conflict, sql.ConflictColumns(columns...))
+	return &InodeUpsertOne{
+		create: ic,
+	}
+}
+
+type (
+	// InodeUpsertOne is the builder for "upsert"-ing
+	//  one Inode node.
+	InodeUpsertOne struct {
+		create *InodeCreate
+	}
+
+	// InodeUpsert is the "OnConflict" setter.
+	InodeUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *InodeUpsert) SetUpdatedAt(v time.Time) *InodeUpsert {
+	u.Set(inode.FieldUpdatedAt, v)
+	return u
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *InodeUpsert) UpdateUpdatedAt() *InodeUpsert {
+	u.SetExcluded(inode.FieldUpdatedAt)
+	return u
+}
+
+// SetName sets the "name" field.
+func (u *InodeUpsert) SetName(v string) *InodeUpsert {
+	u.Set(inode.FieldName, v)
+	return u
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *InodeUpsert) UpdateName() *InodeUpsert {
+	u.SetExcluded(inode.FieldName)
+	return u
+}
+
+// ClearName clears the value of the "name" field.
+func (u *InodeUpsert) ClearName() *InodeUpsert {
+	u.SetNull(inode.FieldName)
+	return u
+}
+
+// SetAttributes sets the "attributes" field.
+func (u *InodeUpsert) SetAttributes(v []string) *InodeUpsert {
+	u.Set(inode.FieldAttributes, v)
+	return u
+}
+
+// UpdateAttributes sets the "attributes" field to the value that was provided on create.
+func (u *InodeUpsert) UpdateAttributes() *InodeUpsert {
+	u.SetExcluded(inode.FieldAttributes)
+	return u
+}
+
+// ClearAttributes clears the value of the "attributes" field.
+func (u *InodeUpsert) ClearAttributes() *InodeUpsert {
+	u.SetNull(inode.FieldAttributes)
+	return u
+}
+
+// SetExtendedType sets the "extended_type" field.
+func (u *InodeUpsert) SetExtendedType(v string) *InodeUpsert {
+	u.Set(inode.FieldExtendedType, v)
+	return u
+}
+
+// UpdateExtendedType sets the "extended_type" field to the value that was provided on create.
+func (u *InodeUpsert) UpdateExtendedType() *InodeUpsert {
+	u.SetExcluded(inode.FieldExtendedType)
+	return u
+}
+
+// ClearExtendedType clears the value of the "extended_type" field.
+func (u *InodeUpsert) ClearExtendedType() *InodeUpsert {
+	u.SetNull(inode.FieldExtendedType)
+	return u
+}
+
+// SetReadOnly sets the "readOnly" field.
+func (u *InodeUpsert) SetReadOnly(v bool) *InodeUpsert {
+	u.Set(inode.FieldReadOnly, v)
+	return u
+}
+
+// UpdateReadOnly sets the "readOnly" field to the value that was provided on create.
+func (u *InodeUpsert) UpdateReadOnly() *InodeUpsert {
+	u.SetExcluded(inode.FieldReadOnly)
+	return u
+}
+
+// ClearReadOnly clears the value of the "readOnly" field.
+func (u *InodeUpsert) ClearReadOnly() *InodeUpsert {
+	u.SetNull(inode.FieldReadOnly)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// Using this option is equivalent to using:
+//
+//	client.Inode.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(inode.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *InodeUpsertOne) UpdateNewValues() *InodeUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(inode.FieldID)
+		}
+		if _, exists := u.create.mutation.CreatedAt(); exists {
+			s.SetIgnore(inode.FieldCreatedAt)
+		}
+		if _, exists := u.create.mutation.GetType(); exists {
+			s.SetIgnore(inode.FieldType)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Inode.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *InodeUpsertOne) Ignore() *InodeUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *InodeUpsertOne) DoNothing() *InodeUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the InodeCreate.OnConflict
+// documentation for more info.
+func (u *InodeUpsertOne) Update(set func(*InodeUpsert)) *InodeUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&InodeUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *InodeUpsertOne) SetUpdatedAt(v time.Time) *InodeUpsertOne {
+	return u.Update(func(s *InodeUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *InodeUpsertOne) UpdateUpdatedAt() *InodeUpsertOne {
+	return u.Update(func(s *InodeUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
+// SetName sets the "name" field.
+func (u *InodeUpsertOne) SetName(v string) *InodeUpsertOne {
+	return u.Update(func(s *InodeUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *InodeUpsertOne) UpdateName() *InodeUpsertOne {
+	return u.Update(func(s *InodeUpsert) {
+		s.UpdateName()
+	})
+}
+
+// ClearName clears the value of the "name" field.
+func (u *InodeUpsertOne) ClearName() *InodeUpsertOne {
+	return u.Update(func(s *InodeUpsert) {
+		s.ClearName()
+	})
+}
+
+// SetAttributes sets the "attributes" field.
+func (u *InodeUpsertOne) SetAttributes(v []string) *InodeUpsertOne {
+	return u.Update(func(s *InodeUpsert) {
+		s.SetAttributes(v)
+	})
+}
+
+// UpdateAttributes sets the "attributes" field to the value that was provided on create.
+func (u *InodeUpsertOne) UpdateAttributes() *InodeUpsertOne {
+	return u.Update(func(s *InodeUpsert) {
+		s.UpdateAttributes()
+	})
+}
+
+// ClearAttributes clears the value of the "attributes" field.
+func (u *InodeUpsertOne) ClearAttributes() *InodeUpsertOne {
+	return u.Update(func(s *InodeUpsert) {
+		s.ClearAttributes()
+	})
+}
+
+// SetExtendedType sets the "extended_type" field.
+func (u *InodeUpsertOne) SetExtendedType(v string) *InodeUpsertOne {
+	return u.Update(func(s *InodeUpsert) {
+		s.SetExtendedType(v)
+	})
+}
+
+// UpdateExtendedType sets the "extended_type" field to the value that was provided on create.
+func (u *InodeUpsertOne) UpdateExtendedType() *InodeUpsertOne {
+	return u.Update(func(s *InodeUpsert) {
+		s.UpdateExtendedType()
+	})
+}
+
+// ClearExtendedType clears the value of the "extended_type" field.
+func (u *InodeUpsertOne) ClearExtendedType() *InodeUpsertOne {
+	return u.Update(func(s *InodeUpsert) {
+		s.ClearExtendedType()
+	})
+}
+
+// SetReadOnly sets the "readOnly" field.
+func (u *InodeUpsertOne) SetReadOnly(v bool) *InodeUpsertOne {
+	return u.Update(func(s *InodeUpsert) {
+		s.SetReadOnly(v)
+	})
+}
+
+// UpdateReadOnly sets the "readOnly" field to the value that was provided on create.
+func (u *InodeUpsertOne) UpdateReadOnly() *InodeUpsertOne {
+	return u.Update(func(s *InodeUpsert) {
+		s.UpdateReadOnly()
+	})
+}
+
+// ClearReadOnly clears the value of the "readOnly" field.
+func (u *InodeUpsertOne) ClearReadOnly() *InodeUpsertOne {
+	return u.Update(func(s *InodeUpsert) {
+		s.ClearReadOnly()
+	})
+}
+
+// Exec executes the query.
+func (u *InodeUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for InodeCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *InodeUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *InodeUpsertOne) ID(ctx context.Context) (id uuid.UUID, err error) {
+	if u.create.driver.Dialect() == dialect.MySQL {
+		// In case of "ON CONFLICT", there is no way to get back non-numeric ID
+		// fields from the database since MySQL does not support the RETURNING clause.
+		return id, errors.New("ent: InodeUpsertOne.ID is not supported by MySQL driver. Use InodeUpsertOne.Exec instead")
+	}
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *InodeUpsertOne) IDX(ctx context.Context) uuid.UUID {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // InodeCreateBulk is the builder for creating many Inode entities in bulk.
 type InodeCreateBulk struct {
 	config
 	builders []*InodeCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the Inode entities in the database.
@@ -511,6 +839,7 @@ func (icb *InodeCreateBulk) Save(ctx context.Context) ([]*Inode, error) {
 					_, err = mutators[i+1].Mutate(root, icb.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = icb.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, icb.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -557,6 +886,221 @@ func (icb *InodeCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (icb *InodeCreateBulk) ExecX(ctx context.Context) {
 	if err := icb.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Inode.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.InodeUpsert) {
+//			SetCreatedAt(v+v).
+//		}).
+//		Exec(ctx)
+func (icb *InodeCreateBulk) OnConflict(opts ...sql.ConflictOption) *InodeUpsertBulk {
+	icb.conflict = opts
+	return &InodeUpsertBulk{
+		create: icb,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Inode.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (icb *InodeCreateBulk) OnConflictColumns(columns ...string) *InodeUpsertBulk {
+	icb.conflict = append(icb.conflict, sql.ConflictColumns(columns...))
+	return &InodeUpsertBulk{
+		create: icb,
+	}
+}
+
+// InodeUpsertBulk is the builder for "upsert"-ing
+// a bulk of Inode nodes.
+type InodeUpsertBulk struct {
+	create *InodeCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.Inode.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(inode.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *InodeUpsertBulk) UpdateNewValues() *InodeUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(inode.FieldID)
+			}
+			if _, exists := b.mutation.CreatedAt(); exists {
+				s.SetIgnore(inode.FieldCreatedAt)
+			}
+			if _, exists := b.mutation.GetType(); exists {
+				s.SetIgnore(inode.FieldType)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Inode.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *InodeUpsertBulk) Ignore() *InodeUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *InodeUpsertBulk) DoNothing() *InodeUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the InodeCreateBulk.OnConflict
+// documentation for more info.
+func (u *InodeUpsertBulk) Update(set func(*InodeUpsert)) *InodeUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&InodeUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *InodeUpsertBulk) SetUpdatedAt(v time.Time) *InodeUpsertBulk {
+	return u.Update(func(s *InodeUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *InodeUpsertBulk) UpdateUpdatedAt() *InodeUpsertBulk {
+	return u.Update(func(s *InodeUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
+// SetName sets the "name" field.
+func (u *InodeUpsertBulk) SetName(v string) *InodeUpsertBulk {
+	return u.Update(func(s *InodeUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *InodeUpsertBulk) UpdateName() *InodeUpsertBulk {
+	return u.Update(func(s *InodeUpsert) {
+		s.UpdateName()
+	})
+}
+
+// ClearName clears the value of the "name" field.
+func (u *InodeUpsertBulk) ClearName() *InodeUpsertBulk {
+	return u.Update(func(s *InodeUpsert) {
+		s.ClearName()
+	})
+}
+
+// SetAttributes sets the "attributes" field.
+func (u *InodeUpsertBulk) SetAttributes(v []string) *InodeUpsertBulk {
+	return u.Update(func(s *InodeUpsert) {
+		s.SetAttributes(v)
+	})
+}
+
+// UpdateAttributes sets the "attributes" field to the value that was provided on create.
+func (u *InodeUpsertBulk) UpdateAttributes() *InodeUpsertBulk {
+	return u.Update(func(s *InodeUpsert) {
+		s.UpdateAttributes()
+	})
+}
+
+// ClearAttributes clears the value of the "attributes" field.
+func (u *InodeUpsertBulk) ClearAttributes() *InodeUpsertBulk {
+	return u.Update(func(s *InodeUpsert) {
+		s.ClearAttributes()
+	})
+}
+
+// SetExtendedType sets the "extended_type" field.
+func (u *InodeUpsertBulk) SetExtendedType(v string) *InodeUpsertBulk {
+	return u.Update(func(s *InodeUpsert) {
+		s.SetExtendedType(v)
+	})
+}
+
+// UpdateExtendedType sets the "extended_type" field to the value that was provided on create.
+func (u *InodeUpsertBulk) UpdateExtendedType() *InodeUpsertBulk {
+	return u.Update(func(s *InodeUpsert) {
+		s.UpdateExtendedType()
+	})
+}
+
+// ClearExtendedType clears the value of the "extended_type" field.
+func (u *InodeUpsertBulk) ClearExtendedType() *InodeUpsertBulk {
+	return u.Update(func(s *InodeUpsert) {
+		s.ClearExtendedType()
+	})
+}
+
+// SetReadOnly sets the "readOnly" field.
+func (u *InodeUpsertBulk) SetReadOnly(v bool) *InodeUpsertBulk {
+	return u.Update(func(s *InodeUpsert) {
+		s.SetReadOnly(v)
+	})
+}
+
+// UpdateReadOnly sets the "readOnly" field to the value that was provided on create.
+func (u *InodeUpsertBulk) UpdateReadOnly() *InodeUpsertBulk {
+	return u.Update(func(s *InodeUpsert) {
+		s.UpdateReadOnly()
+	})
+}
+
+// ClearReadOnly clears the value of the "readOnly" field.
+func (u *InodeUpsertBulk) ClearReadOnly() *InodeUpsertBulk {
+	return u.Update(func(s *InodeUpsert) {
+		s.ClearReadOnly()
+	})
+}
+
+// Exec executes the query.
+func (u *InodeUpsertBulk) Exec(ctx context.Context) error {
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the InodeCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for InodeCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *InodeUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/direktiv/direktiv/pkg/flow/ent/cloudeventfilters"
@@ -19,6 +20,7 @@ type CloudEventFiltersCreate struct {
 	config
 	mutation *CloudEventFiltersMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetName sets the "name" field.
@@ -166,6 +168,7 @@ func (cefc *CloudEventFiltersCreate) createSpec() (*CloudEventFilters, *sqlgraph
 			},
 		}
 	)
+	_spec.OnConflict = cefc.conflict
 	if value, ok := cefc.mutation.Name(); ok {
 		_spec.SetField(cloudeventfilters.FieldName, field.TypeString, value)
 		_node.Name = value
@@ -197,10 +200,185 @@ func (cefc *CloudEventFiltersCreate) createSpec() (*CloudEventFilters, *sqlgraph
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.CloudEventFilters.Create().
+//		SetName(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.CloudEventFiltersUpsert) {
+//			SetName(v+v).
+//		}).
+//		Exec(ctx)
+func (cefc *CloudEventFiltersCreate) OnConflict(opts ...sql.ConflictOption) *CloudEventFiltersUpsertOne {
+	cefc.conflict = opts
+	return &CloudEventFiltersUpsertOne{
+		create: cefc,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.CloudEventFilters.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (cefc *CloudEventFiltersCreate) OnConflictColumns(columns ...string) *CloudEventFiltersUpsertOne {
+	cefc.conflict = append(cefc.conflict, sql.ConflictColumns(columns...))
+	return &CloudEventFiltersUpsertOne{
+		create: cefc,
+	}
+}
+
+type (
+	// CloudEventFiltersUpsertOne is the builder for "upsert"-ing
+	//  one CloudEventFilters node.
+	CloudEventFiltersUpsertOne struct {
+		create *CloudEventFiltersCreate
+	}
+
+	// CloudEventFiltersUpsert is the "OnConflict" setter.
+	CloudEventFiltersUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetName sets the "name" field.
+func (u *CloudEventFiltersUpsert) SetName(v string) *CloudEventFiltersUpsert {
+	u.Set(cloudeventfilters.FieldName, v)
+	return u
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *CloudEventFiltersUpsert) UpdateName() *CloudEventFiltersUpsert {
+	u.SetExcluded(cloudeventfilters.FieldName)
+	return u
+}
+
+// SetJscode sets the "jscode" field.
+func (u *CloudEventFiltersUpsert) SetJscode(v string) *CloudEventFiltersUpsert {
+	u.Set(cloudeventfilters.FieldJscode, v)
+	return u
+}
+
+// UpdateJscode sets the "jscode" field to the value that was provided on create.
+func (u *CloudEventFiltersUpsert) UpdateJscode() *CloudEventFiltersUpsert {
+	u.SetExcluded(cloudeventfilters.FieldJscode)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create.
+// Using this option is equivalent to using:
+//
+//	client.CloudEventFilters.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//		).
+//		Exec(ctx)
+func (u *CloudEventFiltersUpsertOne) UpdateNewValues() *CloudEventFiltersUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.CloudEventFilters.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *CloudEventFiltersUpsertOne) Ignore() *CloudEventFiltersUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *CloudEventFiltersUpsertOne) DoNothing() *CloudEventFiltersUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the CloudEventFiltersCreate.OnConflict
+// documentation for more info.
+func (u *CloudEventFiltersUpsertOne) Update(set func(*CloudEventFiltersUpsert)) *CloudEventFiltersUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&CloudEventFiltersUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetName sets the "name" field.
+func (u *CloudEventFiltersUpsertOne) SetName(v string) *CloudEventFiltersUpsertOne {
+	return u.Update(func(s *CloudEventFiltersUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *CloudEventFiltersUpsertOne) UpdateName() *CloudEventFiltersUpsertOne {
+	return u.Update(func(s *CloudEventFiltersUpsert) {
+		s.UpdateName()
+	})
+}
+
+// SetJscode sets the "jscode" field.
+func (u *CloudEventFiltersUpsertOne) SetJscode(v string) *CloudEventFiltersUpsertOne {
+	return u.Update(func(s *CloudEventFiltersUpsert) {
+		s.SetJscode(v)
+	})
+}
+
+// UpdateJscode sets the "jscode" field to the value that was provided on create.
+func (u *CloudEventFiltersUpsertOne) UpdateJscode() *CloudEventFiltersUpsertOne {
+	return u.Update(func(s *CloudEventFiltersUpsert) {
+		s.UpdateJscode()
+	})
+}
+
+// Exec executes the query.
+func (u *CloudEventFiltersUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for CloudEventFiltersCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *CloudEventFiltersUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *CloudEventFiltersUpsertOne) ID(ctx context.Context) (id int, err error) {
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *CloudEventFiltersUpsertOne) IDX(ctx context.Context) int {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // CloudEventFiltersCreateBulk is the builder for creating many CloudEventFilters entities in bulk.
 type CloudEventFiltersCreateBulk struct {
 	config
 	builders []*CloudEventFiltersCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the CloudEventFilters entities in the database.
@@ -226,6 +404,7 @@ func (cefcb *CloudEventFiltersCreateBulk) Save(ctx context.Context) ([]*CloudEve
 					_, err = mutators[i+1].Mutate(root, cefcb.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = cefcb.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, cefcb.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -276,6 +455,135 @@ func (cefcb *CloudEventFiltersCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (cefcb *CloudEventFiltersCreateBulk) ExecX(ctx context.Context) {
 	if err := cefcb.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.CloudEventFilters.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.CloudEventFiltersUpsert) {
+//			SetName(v+v).
+//		}).
+//		Exec(ctx)
+func (cefcb *CloudEventFiltersCreateBulk) OnConflict(opts ...sql.ConflictOption) *CloudEventFiltersUpsertBulk {
+	cefcb.conflict = opts
+	return &CloudEventFiltersUpsertBulk{
+		create: cefcb,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.CloudEventFilters.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (cefcb *CloudEventFiltersCreateBulk) OnConflictColumns(columns ...string) *CloudEventFiltersUpsertBulk {
+	cefcb.conflict = append(cefcb.conflict, sql.ConflictColumns(columns...))
+	return &CloudEventFiltersUpsertBulk{
+		create: cefcb,
+	}
+}
+
+// CloudEventFiltersUpsertBulk is the builder for "upsert"-ing
+// a bulk of CloudEventFilters nodes.
+type CloudEventFiltersUpsertBulk struct {
+	create *CloudEventFiltersCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.CloudEventFilters.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//		).
+//		Exec(ctx)
+func (u *CloudEventFiltersUpsertBulk) UpdateNewValues() *CloudEventFiltersUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.CloudEventFilters.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *CloudEventFiltersUpsertBulk) Ignore() *CloudEventFiltersUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *CloudEventFiltersUpsertBulk) DoNothing() *CloudEventFiltersUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the CloudEventFiltersCreateBulk.OnConflict
+// documentation for more info.
+func (u *CloudEventFiltersUpsertBulk) Update(set func(*CloudEventFiltersUpsert)) *CloudEventFiltersUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&CloudEventFiltersUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetName sets the "name" field.
+func (u *CloudEventFiltersUpsertBulk) SetName(v string) *CloudEventFiltersUpsertBulk {
+	return u.Update(func(s *CloudEventFiltersUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *CloudEventFiltersUpsertBulk) UpdateName() *CloudEventFiltersUpsertBulk {
+	return u.Update(func(s *CloudEventFiltersUpsert) {
+		s.UpdateName()
+	})
+}
+
+// SetJscode sets the "jscode" field.
+func (u *CloudEventFiltersUpsertBulk) SetJscode(v string) *CloudEventFiltersUpsertBulk {
+	return u.Update(func(s *CloudEventFiltersUpsert) {
+		s.SetJscode(v)
+	})
+}
+
+// UpdateJscode sets the "jscode" field to the value that was provided on create.
+func (u *CloudEventFiltersUpsertBulk) UpdateJscode() *CloudEventFiltersUpsertBulk {
+	return u.Update(func(s *CloudEventFiltersUpsert) {
+		s.UpdateJscode()
+	})
+}
+
+// Exec executes the query.
+func (u *CloudEventFiltersUpsertBulk) Exec(ctx context.Context) error {
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the CloudEventFiltersCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for CloudEventFiltersCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *CloudEventFiltersUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

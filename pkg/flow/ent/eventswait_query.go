@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math"
 
+	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -27,6 +28,7 @@ type EventsWaitQuery struct {
 	predicates        []predicate.EventsWait
 	withWorkflowevent *EventsQuery
 	withFKs           bool
+	modifiers         []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -378,6 +380,9 @@ func (ewq *EventsWaitQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
+	if len(ewq.modifiers) > 0 {
+		_spec.Modifiers = ewq.modifiers
+	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
@@ -428,6 +433,9 @@ func (ewq *EventsWaitQuery) loadWorkflowevent(ctx context.Context, query *Events
 
 func (ewq *EventsWaitQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := ewq.querySpec()
+	if len(ewq.modifiers) > 0 {
+		_spec.Modifiers = ewq.modifiers
+	}
 	_spec.Node.Columns = ewq.fields
 	if len(ewq.fields) > 0 {
 		_spec.Unique = ewq.unique != nil && *ewq.unique
@@ -509,6 +517,9 @@ func (ewq *EventsWaitQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if ewq.unique != nil && *ewq.unique {
 		selector.Distinct()
 	}
+	for _, m := range ewq.modifiers {
+		m(selector)
+	}
 	for _, p := range ewq.predicates {
 		p(selector)
 	}
@@ -524,6 +535,38 @@ func (ewq *EventsWaitQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector.Limit(*limit)
 	}
 	return selector
+}
+
+// ForUpdate locks the selected rows against concurrent updates, and prevent them from being
+// updated, deleted or "selected ... for update" by other sessions, until the transaction is
+// either committed or rolled-back.
+func (ewq *EventsWaitQuery) ForUpdate(opts ...sql.LockOption) *EventsWaitQuery {
+	if ewq.driver.Dialect() == dialect.Postgres {
+		ewq.Unique(false)
+	}
+	ewq.modifiers = append(ewq.modifiers, func(s *sql.Selector) {
+		s.ForUpdate(opts...)
+	})
+	return ewq
+}
+
+// ForShare behaves similarly to ForUpdate, except that it acquires a shared mode lock
+// on any rows that are read. Other sessions can read the rows, but cannot modify them
+// until your transaction commits.
+func (ewq *EventsWaitQuery) ForShare(opts ...sql.LockOption) *EventsWaitQuery {
+	if ewq.driver.Dialect() == dialect.Postgres {
+		ewq.Unique(false)
+	}
+	ewq.modifiers = append(ewq.modifiers, func(s *sql.Selector) {
+		s.ForShare(opts...)
+	})
+	return ewq
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (ewq *EventsWaitQuery) Modify(modifiers ...func(s *sql.Selector)) *EventsWaitSelect {
+	ewq.modifiers = append(ewq.modifiers, modifiers...)
+	return ewq.Select()
 }
 
 // EventsWaitGroupBy is the group-by builder for EventsWait entities.
@@ -630,4 +673,10 @@ func (ews *EventsWaitSelect) sqlScan(ctx context.Context, v any) error {
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (ews *EventsWaitSelect) Modify(modifiers ...func(s *sql.Selector)) *EventsWaitSelect {
+	ews.modifiers = append(ews.modifiers, modifiers...)
+	return ews
 }
