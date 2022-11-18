@@ -4,6 +4,11 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+
+	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
+	corev1 "k8s.io/api/core/v1"
+	"knative.dev/pkg/apis"
+	v1 "knative.dev/serving/pkg/apis/serving/v1"
 )
 
 const (
@@ -13,7 +18,7 @@ const (
 func SanitizeLabel(s string) string {
 	s = strings.TrimPrefix(s, "/")
 	s = strings.TrimSuffix(s, "/")
-	s = strings.ReplaceAll(s, "_", "-")
+	s = strings.ReplaceAll(s, "_", "--")
 	s = strings.ReplaceAll(s, "/", "-")
 
 	if len(s) > 63 {
@@ -35,5 +40,100 @@ func validateLabel(name string) error {
 	}
 
 	return nil
+
+}
+
+func serviceBaseInfo(s *v1.Service) *igrpc.BaseInfo {
+
+	var sz, scale int32
+	fmt.Sscan(s.Annotations[ServiceHeaderSize], &sz)
+	fmt.Sscan(s.Annotations[ServiceHeaderScale], &scale)
+
+	n := s.Labels[ServiceHeaderName]
+	ns := s.Labels[ServiceHeaderNamespaceID]
+	nsName := s.Labels[ServiceHeaderNamespaceName]
+	wf := s.Labels[ServiceHeaderWorkflowID]
+	path := s.Labels[ServiceHeaderPath]
+	rev := s.Labels[ServiceHeaderRevision]
+	img, cmd := containerFromList(s.Spec.ConfigurationSpec.Template.Spec.PodSpec.Containers)
+
+	info := &igrpc.BaseInfo{
+		Name:          &n,
+		Namespace:     &ns,
+		Workflow:      &wf,
+		Size:          &sz,
+		MinScale:      &scale,
+		Image:         &img,
+		Cmd:           &cmd,
+		NamespaceName: &nsName,
+		Path:          &path,
+		Revision:      &rev,
+	}
+
+	return info
+}
+
+func statusFromCondition(conditions []apis.Condition) (string, []*igrpc.Condition) {
+	// status and status messages
+	status := fmt.Sprintf("%s", corev1.ConditionUnknown)
+
+	var condList []*igrpc.Condition
+
+	for m := range conditions {
+		cond := conditions[m]
+
+		if cond.Type == v1.RevisionConditionReady {
+			status = fmt.Sprintf("%s", cond.Status)
+		}
+
+		ct := string(cond.Type)
+		st := string(cond.Status)
+		c := &igrpc.Condition{
+			Name:    &ct,
+			Status:  &st,
+			Reason:  &cond.Reason,
+			Message: &cond.Message,
+		}
+		condList = append(condList, c)
+	}
+
+	return status, condList
+
+}
+
+func containerFromList(containers []corev1.Container) (string, string) {
+
+	var img, cmd string
+
+	for a := range containers {
+		c := containers[a]
+
+		if c.Name == containerUser {
+			img = c.Image
+			cmd = strings.Join(c.Command, ", ")
+		}
+
+	}
+
+	return img, cmd
+}
+
+func createVolumes() []corev1.Volume {
+
+	volumes := []corev1.Volume{
+		{
+			Name: "workdir",
+			VolumeSource: corev1.VolumeSource{
+				EmptyDir: &corev1.EmptyDirVolumeSource{},
+			},
+		},
+	}
+
+	for i := range functionsConfig.extraVolumes {
+		vols := functionsConfig.extraVolumes[i]
+		volumes = append(volumes, vols)
+	}
+
+	return volumes
 
 }

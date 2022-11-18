@@ -2,6 +2,7 @@ package functions
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
 
@@ -42,15 +43,13 @@ func createKnativeFunction(info *igrpc.BaseInfo) (*v1.Service, error) {
 
 	name, scope, hash := GenerateServiceName(info)
 
-	fmt.Printf("DDD %v %v", scope, hash)
-
 	l, err := locksmgr.lock(name, false)
 	if err != nil {
 		return nil, err
 	}
 	defer locksmgr.unlock(name, l)
 
-	logger.Debugf("creating knative service %s in ", name, functionsConfig.Namespace)
+	logger.Debugf("creating knative service %s in %s", name, functionsConfig.Namespace)
 
 	// check if min scale is not beyond max
 	min := int(info.GetMinScale())
@@ -90,9 +89,7 @@ func createKnativeFunction(info *igrpc.BaseInfo) (*v1.Service, error) {
 		Spec: v1.ServiceSpec{
 			ConfigurationSpec: v1.ConfigurationSpec{
 				Template: v1.RevisionTemplateSpec{
-					ObjectMeta: metaSpec(functionsConfig.NetShape, min, functionsConfig.MaxScale,
-						info.GetNamespace(), info.GetNamespaceName(), info.GetWorkflow(), info.GetPath(),
-						info.GetName(), scope, int(info.GetSize()), hash),
+					ObjectMeta: generatePodMeta(name, scope, hash, min, info),
 					Spec: v1.RevisionSpec{
 						PodSpec: corev1.PodSpec{
 							ServiceAccountName: functionsConfig.ServiceAccount,
@@ -109,24 +106,9 @@ func createKnativeFunction(info *igrpc.BaseInfo) (*v1.Service, error) {
 	}
 
 	// Set Registry Secrets
-	var secrets []corev1.LocalObjectReference
-
-	// 	// if scope == PrefixGlobal {
-	// 	// 	secrets = createGlobalPrivatePullSecrets()
-	// 	// } else {
-	secrets = createPullSecrets(info.GetNamespaceName())
-	// 	// }
-
+	secrets := createPullSecrets(info.GetNamespaceName())
 	svc.Spec.ConfigurationSpec.Template.Spec.ImagePullSecrets = secrets
 	svc.Spec.ConfigurationSpec.Template.Spec.PodSpec.ImagePullSecrets = secrets
-
-	// 	// Manually Keep track of revision on our side to more easily generate names in the future.
-	// 	// svc.Spec.ConfigurationSpec.Template.ObjectMeta.Labels[ServiceTemplateGeneration] = "1"
-
-	// 	// if len(info.GetWorkflow()) == 0 {
-	// 	// 	// Explicitly set first revision name if service is not workflow
-	// 	// 	svc.Spec.ConfigurationSpec.Template.ObjectMeta.Name = fmt.Sprintf("%s-00001", name)
-	// 	// }
 
 	if len(functionsConfig.Runtime) > 0 && functionsConfig.Runtime != "default" {
 		logger.Debugf("setting runtime class %v", functionsConfig.Runtime)
@@ -139,15 +121,14 @@ func createKnativeFunction(info *igrpc.BaseInfo) (*v1.Service, error) {
 		return nil, err
 	}
 
-	logger.Infof("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 	newSvc, err := cs.ServingV1().Services(functionsConfig.Namespace).Create(context.Background(), &svc, metav1.CreateOptions{})
 	if err != nil {
 		logger.Errorf("error creating knative service: %v", err)
 		return nil, err
 	}
 
-	// 	b, _ := json.MarshalIndent(svc, "", "  ")
-	// 	fmt.Printf("%v\n", string(b))
+	b, _ := json.MarshalIndent(svc, "", "  ")
+	fmt.Printf("%v\n", string(b))
 
 	// 	return nil, nil
 	// }
@@ -188,12 +169,48 @@ func generateServiceMeta(svn, scope, hash string, size int, info *igrpc.BaseInfo
 	meta.Labels[ServiceHeaderNamespaceName] = SanitizeLabel(info.GetNamespaceName())
 	meta.Labels[ServiceHeaderScope] = scope
 
-	meta.Annotations[ServiceHeaderScale] = fmt.Sprintf("%d", int(info.GetSize()))
+	meta.Annotations[ServiceHeaderScale] = fmt.Sprintf("%d", int(info.GetMinScale()))
 	meta.Annotations[ServiceHeaderSize] = fmt.Sprintf("%d", size)
 
 	meta.Annotations["networking.knative.dev/ingress.class"] = functionsConfig.IngressClass
 
 	return meta
+}
+
+// func generatePodMeta(net string, min, max int, nsID, nsName, wfID, path, name, scope string, size int, hash string) metav1.ObjectMeta {
+func generatePodMeta(svn, scope, hash string, size int, info *igrpc.BaseInfo) metav1.ObjectMeta {
+
+	metaSpec := metav1.ObjectMeta{
+		Namespace:   functionsConfig.Namespace,
+		Labels:      make(map[string]string),
+		Annotations: make(map[string]string),
+	}
+	metaSpec.Labels["direktiv-app"] = "direktiv"
+
+	if len(functionsConfig.NetShape) > 0 {
+		metaSpec.Annotations["kubernetes.io/ingress-bandwidth"] = functionsConfig.NetShape
+		metaSpec.Annotations["kubernetes.io/egress-bandwidth"] = functionsConfig.NetShape
+	}
+
+	metaSpec.Annotations["autoscaling.knative.dev/minScale"] = fmt.Sprintf("%d", info.GetMinScale())
+	metaSpec.Annotations["autoscaling.knative.dev/maxScale"] = fmt.Sprintf("%d", functionsConfig.MaxScale)
+
+	metaSpec.Labels[ServiceHeaderName] = SanitizeLabel(info.GetName())
+	if len(info.GetWorkflow()) > 0 {
+		// metaSpec.Labels[ServiceHeaderWorkflowID] = SanitizeLabel(wfID)
+		// metaSpec.Labels[ServiceHeaderPath] = trimRevisionSuffix(SanitizeLabel(path))
+		// metaSpec.Labels[ServiceHeaderRevision] = SanitizeLabel(hash)
+	}
+
+	metaSpec.Labels[ServiceHeaderNamespaceID] = SanitizeLabel(info.GetNamespace())
+	metaSpec.Labels[ServiceHeaderNamespaceName] = SanitizeLabel(info.GetNamespaceName())
+	metaSpec.Labels[ServiceHeaderScope] = scope
+
+	metaSpec.Annotations[ServiceHeaderScale] = fmt.Sprintf("%d", int(info.GetSize()))
+	metaSpec.Annotations[ServiceHeaderSize] = fmt.Sprintf("%d", size)
+
+	return metaSpec
+
 }
 
 func makeContainers(img, cmd string, size int) ([]corev1.Container, error) {
@@ -340,6 +357,11 @@ func generateResourceLimits(size int) (corev1.ResourceRequirements, error) {
 		d = functionsConfig.Disk.Small
 	}
 
+	// just in case for old helm charts
+	if d == 0 {
+		d = 4096
+	}
+
 	ephemeralHigh, err := resource.ParseQuantity(fmt.Sprintf("%dM", d))
 	if err != nil {
 		return corev1.ResourceRequirements{}, err
@@ -364,6 +386,14 @@ func generateResourceLimits(size int) (corev1.ResourceRequirements, error) {
 		}
 		rl["cpu"] = qcpu
 	}
+
+	// if m != 0 {
+	// 	qdisk, err := resource.ParseQuantity(fmt.Sprintf("%dM", d))
+	// 	if err != nil {
+	// 		return corev1.ResourceRequirements{}, err
+	// 	}
+	// 	rl["ephemeral-storage"] = qdisk
+	// }
 
 	return corev1.ResourceRequirements{
 		Requests: corev1.ResourceList{

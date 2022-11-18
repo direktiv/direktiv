@@ -1793,9 +1793,6 @@ func (h *functionHandler) singleNamespaceServiceSSE(w http.ResponseWriter, r *ht
 	annotations[functions.ServiceHeaderScope] = functions.PrefixNamespace
 	annotations[functions.ServiceHeaderName] = mux.Vars(r)["svn"]
 
-	fmt.Printf("!!!!!!!!!!!!!!!!!!!!!!!!1 %v\n", functions.PrefixNamespace)
-	fmt.Printf("!!!!!!!!!!!!!!!!!!!!!!!!2 %v\n", mux.Vars(r)["svn"])
-
 	h.listServicesSSE(annotations, w, r)
 
 }
@@ -1967,6 +1964,8 @@ func (h *functionHandler) deleteNamespaceService(w http.ResponseWriter, r *http.
 	annotations := make(map[string]string)
 	annotations[functions.ServiceHeaderScope] = functions.PrefixNamespace
 	annotations[functions.ServiceHeaderName] = mux.Vars(r)["svn"]
+	annotations[functions.ServiceHeaderNamespaceName] = mux.Vars(r)["ns"]
+
 	h.deleteService(annotations, w, r)
 }
 
@@ -2663,6 +2662,7 @@ func (h *functionHandler) watchNamespaceRevisions(w http.ResponseWriter, r *http
 	h.logger.Debugf("Handling request: %s", this())
 
 	svn := fmt.Sprintf("%s-%s-%s", functions.PrefixNamespace, mux.Vars(r)["ns"], mux.Vars(r)["svn"])
+
 	h.watchRevisions(svn, "" /*functions.PrefixNamespace,*/, w, r)
 }
 
@@ -2966,6 +2966,7 @@ func (h *functionHandler) listNamespacePods(w http.ResponseWriter, r *http.Reque
 	})
 
 	annotations[functions.ServiceKnativeHeaderRevision] = fmt.Sprintf("%s-%s", svn, mux.Vars(r)["rev"])
+	annotations[functions.ServiceHeaderNamespaceName] = mux.Vars(r)["ns"]
 
 	h.listPods(annotations, w, r)
 
