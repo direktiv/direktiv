@@ -8333,8 +8333,8 @@ type NamespaceMutation struct {
 	namespacelisteners        map[uuid.UUID]struct{}
 	removednamespacelisteners map[uuid.UUID]struct{}
 	clearednamespacelisteners bool
-	services                  map[string]struct{}
-	removedservices           map[string]struct{}
+	services                  map[int]struct{}
+	removedservices           map[int]struct{}
 	clearedservices           bool
 	done                      bool
 	oldValue                  func(context.Context) (*Namespace, error)
@@ -9076,9 +9076,9 @@ func (m *NamespaceMutation) ResetNamespacelisteners() {
 }
 
 // AddServiceIDs adds the "services" edge to the Services entity by ids.
-func (m *NamespaceMutation) AddServiceIDs(ids ...string) {
+func (m *NamespaceMutation) AddServiceIDs(ids ...int) {
 	if m.services == nil {
-		m.services = make(map[string]struct{})
+		m.services = make(map[int]struct{})
 	}
 	for i := range ids {
 		m.services[ids[i]] = struct{}{}
@@ -9096,9 +9096,9 @@ func (m *NamespaceMutation) ServicesCleared() bool {
 }
 
 // RemoveServiceIDs removes the "services" edge to the Services entity by IDs.
-func (m *NamespaceMutation) RemoveServiceIDs(ids ...string) {
+func (m *NamespaceMutation) RemoveServiceIDs(ids ...int) {
 	if m.removedservices == nil {
-		m.removedservices = make(map[string]struct{})
+		m.removedservices = make(map[int]struct{})
 	}
 	for i := range ids {
 		delete(m.services, ids[i])
@@ -9107,7 +9107,7 @@ func (m *NamespaceMutation) RemoveServiceIDs(ids ...string) {
 }
 
 // RemovedServices returns the removed IDs of the "services" edge to the Services entity.
-func (m *NamespaceMutation) RemovedServicesIDs() (ids []string) {
+func (m *NamespaceMutation) RemovedServicesIDs() (ids []int) {
 	for id := range m.removedservices {
 		ids = append(ids, id)
 	}
@@ -9115,7 +9115,7 @@ func (m *NamespaceMutation) RemovedServicesIDs() (ids []string) {
 }
 
 // ServicesIDs returns the "services" edge IDs in the mutation.
-func (m *NamespaceMutation) ServicesIDs() (ids []string) {
+func (m *NamespaceMutation) ServicesIDs() (ids []int) {
 	for id := range m.services {
 		ids = append(ids, id)
 	}
@@ -11448,7 +11448,8 @@ type ServicesMutation struct {
 	config
 	op               Op
 	typ              string
-	id               *string
+	id               *int
+	url              *string
 	name             *string
 	data             *string
 	clearedFields    map[string]struct{}
@@ -11479,7 +11480,7 @@ func newServicesMutation(c config, op Op, opts ...servicesOption) *ServicesMutat
 }
 
 // withServicesID sets the ID field of the mutation.
-func withServicesID(id string) servicesOption {
+func withServicesID(id int) servicesOption {
 	return func(m *ServicesMutation) {
 		var (
 			err   error
@@ -11529,15 +11530,9 @@ func (m ServicesMutation) Tx() (*Tx, error) {
 	return tx, nil
 }
 
-// SetID sets the value of the id field. Note that this
-// operation is only accepted on creation of Services entities.
-func (m *ServicesMutation) SetID(id string) {
-	m.id = &id
-}
-
 // ID returns the ID value in the mutation. Note that the ID is only available
 // if it was provided to the builder or after it was returned from the database.
-func (m *ServicesMutation) ID() (id string, exists bool) {
+func (m *ServicesMutation) ID() (id int, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -11548,12 +11543,12 @@ func (m *ServicesMutation) ID() (id string, exists bool) {
 // That means, if the mutation is applied within a transaction with an isolation level such
 // as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
 // or updated by the mutation.
-func (m *ServicesMutation) IDs(ctx context.Context) ([]string, error) {
+func (m *ServicesMutation) IDs(ctx context.Context) ([]int, error) {
 	switch {
 	case m.op.Is(OpUpdateOne | OpDeleteOne):
 		id, exists := m.ID()
 		if exists {
-			return []string{id}, nil
+			return []int{id}, nil
 		}
 		fallthrough
 	case m.op.Is(OpUpdate | OpDelete):
@@ -11561,6 +11556,42 @@ func (m *ServicesMutation) IDs(ctx context.Context) ([]string, error) {
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
+}
+
+// SetURL sets the "url" field.
+func (m *ServicesMutation) SetURL(s string) {
+	m.url = &s
+}
+
+// URL returns the value of the "url" field in the mutation.
+func (m *ServicesMutation) URL() (r string, exists bool) {
+	v := m.url
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldURL returns the old "url" field's value of the Services entity.
+// If the Services object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ServicesMutation) OldURL(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldURL is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldURL requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldURL: %w", err)
+	}
+	return oldValue.URL, nil
+}
+
+// ResetURL resets all changes to the "url" field.
+func (m *ServicesMutation) ResetURL() {
+	m.url = nil
 }
 
 // SetName sets the "name" field.
@@ -11693,7 +11724,10 @@ func (m *ServicesMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ServicesMutation) Fields() []string {
-	fields := make([]string, 0, 2)
+	fields := make([]string, 0, 3)
+	if m.url != nil {
+		fields = append(fields, services.FieldURL)
+	}
 	if m.name != nil {
 		fields = append(fields, services.FieldName)
 	}
@@ -11708,6 +11742,8 @@ func (m *ServicesMutation) Fields() []string {
 // schema.
 func (m *ServicesMutation) Field(name string) (ent.Value, bool) {
 	switch name {
+	case services.FieldURL:
+		return m.URL()
 	case services.FieldName:
 		return m.Name()
 	case services.FieldData:
@@ -11721,6 +11757,8 @@ func (m *ServicesMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *ServicesMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
+	case services.FieldURL:
+		return m.OldURL(ctx)
 	case services.FieldName:
 		return m.OldName(ctx)
 	case services.FieldData:
@@ -11734,6 +11772,13 @@ func (m *ServicesMutation) OldField(ctx context.Context, name string) (ent.Value
 // type.
 func (m *ServicesMutation) SetField(name string, value ent.Value) error {
 	switch name {
+	case services.FieldURL:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetURL(v)
+		return nil
 	case services.FieldName:
 		v, ok := value.(string)
 		if !ok {
@@ -11797,6 +11842,9 @@ func (m *ServicesMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *ServicesMutation) ResetField(name string) error {
 	switch name {
+	case services.FieldURL:
+		m.ResetURL()
+		return nil
 	case services.FieldName:
 		m.ResetName()
 		return nil

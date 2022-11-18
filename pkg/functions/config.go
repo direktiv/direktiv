@@ -10,23 +10,22 @@ import (
 )
 
 type config struct {
-	Logging              string `yaml:"logging"`
-	IngressClass         string `yaml:"ingress-class"`
-	FlowService          string `yaml:"flow-service"`
-	RequestTimeout       int    `yaml:"request-timeout"`
-	ServiceAccount       string `yaml:"service-account"`
-	Namespace            string `yaml:"namespace"`
-	Sidecar              string `yaml:"sidecar"`
-	PodCleaner           bool   `yaml:"pod-cleaner"`
-	InitPod              string `yaml:"init-pod"`
-	KeepRevisions        int    `yaml:"keep-revisions"`
-	MaxJobs              int    `yaml:"max-jobs"`
-	MaxScale             int    `yaml:"max-scale"`
-	NetShape             string `yaml:"net-shape"`
-	Database             string `yaml:"db"`
-	RolloutDuration      int    `yaml:"rollout-duration"`
-	Concurrency          int    `yaml:"concurrency"`
-	Storage              int    `yaml:"storage"`
+	Logging      string `yaml:"logging"`
+	IngressClass string `yaml:"ingress-class"`
+	FlowService  string `yaml:"flow-service"`
+
+	ServiceAccount  string `yaml:"service-account"`
+	Namespace       string `yaml:"namespace"`
+	Sidecar         string `yaml:"sidecar"`
+	PodCleaner      bool   `yaml:"pod-cleaner"`
+	InitPod         string `yaml:"init-pod"`
+	KeepRevisions   int    `yaml:"keep-revisions"`
+	MaxJobs         int    `yaml:"max-jobs"`
+	MaxScale        int    `yaml:"max-scale"`
+	NetShape        string `yaml:"net-shape"`
+	Database        string `yaml:"db"`
+	RolloutDuration int    `yaml:"rollout-duration"`
+
 	Runtime              string `yaml:"runtime"`
 	OpenTelemetryBackend string `yaml:"opentelemetry-backend"`
 
@@ -40,6 +39,11 @@ type config struct {
 		Medium float64 `yaml:"medium"`
 		Large  float64 `yaml:"large"`
 	} `yaml:"cpu"`
+	Disk struct {
+		Small  int `yaml:"small"`
+		Medium int `yaml:"medium"`
+		Large  int `yaml:"large"`
+	} `yaml:"disk"`
 	Proxy struct {
 		No    string `yaml:"no"`
 		HTTPS string `yaml:"https"`
@@ -49,6 +53,11 @@ type config struct {
 	knativeAffinity v1.NodeAffinity `yaml:"-"`
 	extraContainers []v1.Container  `yaml:"-"`
 	extraVolumes    []v1.Volume     `yaml:"-"`
+
+	// Deprecated
+	RequestTimeout int `yaml:"request-timeout"`
+	Concurrency    int `yaml:"concurrency"`
+	Storage        int `yaml:"storage"`
 }
 
 type subConfig struct {

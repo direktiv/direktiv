@@ -202,14 +202,14 @@ func (nu *NamespaceUpdate) AddNamespacelisteners(e ...*Events) *NamespaceUpdate 
 }
 
 // AddServiceIDs adds the "services" edge to the Services entity by IDs.
-func (nu *NamespaceUpdate) AddServiceIDs(ids ...string) *NamespaceUpdate {
+func (nu *NamespaceUpdate) AddServiceIDs(ids ...int) *NamespaceUpdate {
 	nu.mutation.AddServiceIDs(ids...)
 	return nu
 }
 
 // AddServices adds the "services" edges to the Services entity.
 func (nu *NamespaceUpdate) AddServices(s ...*Services) *NamespaceUpdate {
-	ids := make([]string, len(s))
+	ids := make([]int, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
 	}
@@ -417,14 +417,14 @@ func (nu *NamespaceUpdate) ClearServices() *NamespaceUpdate {
 }
 
 // RemoveServiceIDs removes the "services" edge to Services entities by IDs.
-func (nu *NamespaceUpdate) RemoveServiceIDs(ids ...string) *NamespaceUpdate {
+func (nu *NamespaceUpdate) RemoveServiceIDs(ids ...int) *NamespaceUpdate {
 	nu.mutation.RemoveServiceIDs(ids...)
 	return nu
 }
 
 // RemoveServices removes "services" edges to Services entities.
 func (nu *NamespaceUpdate) RemoveServices(s ...*Services) *NamespaceUpdate {
-	ids := make([]string, len(s))
+	ids := make([]int, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
 	}
@@ -1038,7 +1038,7 @@ func (nu *NamespaceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeString,
+					Type:   field.TypeInt,
 					Column: services.FieldID,
 				},
 			},
@@ -1054,7 +1054,7 @@ func (nu *NamespaceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeString,
+					Type:   field.TypeInt,
 					Column: services.FieldID,
 				},
 			},
@@ -1073,7 +1073,7 @@ func (nu *NamespaceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeString,
+					Type:   field.TypeInt,
 					Column: services.FieldID,
 				},
 			},
@@ -1266,14 +1266,14 @@ func (nuo *NamespaceUpdateOne) AddNamespacelisteners(e ...*Events) *NamespaceUpd
 }
 
 // AddServiceIDs adds the "services" edge to the Services entity by IDs.
-func (nuo *NamespaceUpdateOne) AddServiceIDs(ids ...string) *NamespaceUpdateOne {
+func (nuo *NamespaceUpdateOne) AddServiceIDs(ids ...int) *NamespaceUpdateOne {
 	nuo.mutation.AddServiceIDs(ids...)
 	return nuo
 }
 
 // AddServices adds the "services" edges to the Services entity.
 func (nuo *NamespaceUpdateOne) AddServices(s ...*Services) *NamespaceUpdateOne {
-	ids := make([]string, len(s))
+	ids := make([]int, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
 	}
@@ -1481,14 +1481,14 @@ func (nuo *NamespaceUpdateOne) ClearServices() *NamespaceUpdateOne {
 }
 
 // RemoveServiceIDs removes the "services" edge to Services entities by IDs.
-func (nuo *NamespaceUpdateOne) RemoveServiceIDs(ids ...string) *NamespaceUpdateOne {
+func (nuo *NamespaceUpdateOne) RemoveServiceIDs(ids ...int) *NamespaceUpdateOne {
 	nuo.mutation.RemoveServiceIDs(ids...)
 	return nuo
 }
 
 // RemoveServices removes "services" edges to Services entities.
 func (nuo *NamespaceUpdateOne) RemoveServices(s ...*Services) *NamespaceUpdateOne {
-	ids := make([]string, len(s))
+	ids := make([]int, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
 	}
@@ -2132,7 +2132,7 @@ func (nuo *NamespaceUpdateOne) sqlSave(ctx context.Context) (_node *Namespace, e
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeString,
+					Type:   field.TypeInt,
 					Column: services.FieldID,
 				},
 			},
@@ -2148,7 +2148,7 @@ func (nuo *NamespaceUpdateOne) sqlSave(ctx context.Context) (_node *Namespace, e
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeString,
+					Type:   field.TypeInt,
 					Column: services.FieldID,
 				},
 			},
@@ -2167,7 +2167,7 @@ func (nuo *NamespaceUpdateOne) sqlSave(ctx context.Context) (_node *Namespace, e
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeString,
+					Type:   field.TypeInt,
 					Column: services.FieldID,
 				},
 			},

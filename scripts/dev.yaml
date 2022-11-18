@@ -30,6 +30,6 @@ database:
   host: "direktiv-primary.postgres.svc"
   port: 5432
   user: "direktiv"
-  password: "@LZ<Rmw[QT_?6<Hn,hH:jJCy"
+  password: "Y3Tn.IN<x/gxkn}jmB{9b4M:"
   name: "direktiv"
   sslmode: require

@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 
-	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -24,6 +23,12 @@ type ServicesCreate struct {
 	conflict []sql.ConflictOption
 }
 
+// SetURL sets the "url" field.
+func (sc *ServicesCreate) SetURL(s string) *ServicesCreate {
+	sc.mutation.SetURL(s)
+	return sc
+}
+
 // SetName sets the "name" field.
 func (sc *ServicesCreate) SetName(s string) *ServicesCreate {
 	sc.mutation.SetName(s)
@@ -33,12 +38,6 @@ func (sc *ServicesCreate) SetName(s string) *ServicesCreate {
 // SetData sets the "data" field.
 func (sc *ServicesCreate) SetData(s string) *ServicesCreate {
 	sc.mutation.SetData(s)
-	return sc
-}
-
-// SetID sets the "id" field.
-func (sc *ServicesCreate) SetID(s string) *ServicesCreate {
-	sc.mutation.SetID(s)
 	return sc
 }
 
@@ -129,6 +128,14 @@ func (sc *ServicesCreate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (sc *ServicesCreate) check() error {
+	if _, ok := sc.mutation.URL(); !ok {
+		return &ValidationError{Name: "url", err: errors.New(`ent: missing required field "Services.url"`)}
+	}
+	if v, ok := sc.mutation.URL(); ok {
+		if err := services.URLValidator(v); err != nil {
+			return &ValidationError{Name: "url", err: fmt.Errorf(`ent: validator failed for field "Services.url": %w`, err)}
+		}
+	}
 	if _, ok := sc.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Services.name"`)}
 	}
@@ -139,6 +146,11 @@ func (sc *ServicesCreate) check() error {
 	}
 	if _, ok := sc.mutation.Data(); !ok {
 		return &ValidationError{Name: "data", err: errors.New(`ent: missing required field "Services.data"`)}
+	}
+	if v, ok := sc.mutation.Data(); ok {
+		if err := services.DataValidator(v); err != nil {
+			return &ValidationError{Name: "data", err: fmt.Errorf(`ent: validator failed for field "Services.data": %w`, err)}
+		}
 	}
 	if _, ok := sc.mutation.NamespaceID(); !ok {
 		return &ValidationError{Name: "namespace", err: errors.New(`ent: missing required edge "Services.namespace"`)}
@@ -154,13 +166,8 @@ func (sc *ServicesCreate) sqlSave(ctx context.Context) (*Services, error) {
 		}
 		return nil, err
 	}
-	if _spec.ID.Value != nil {
-		if id, ok := _spec.ID.Value.(string); ok {
-			_node.ID = id
-		} else {
-			return nil, fmt.Errorf("unexpected Services.ID type: %T", _spec.ID.Value)
-		}
-	}
+	id := _spec.ID.Value.(int64)
+	_node.ID = int(id)
 	return _node, nil
 }
 
@@ -170,15 +177,15 @@ func (sc *ServicesCreate) createSpec() (*Services, *sqlgraph.CreateSpec) {
 		_spec = &sqlgraph.CreateSpec{
 			Table: services.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeString,
+				Type:   field.TypeInt,
 				Column: services.FieldID,
 			},
 		}
 	)
 	_spec.OnConflict = sc.conflict
-	if id, ok := sc.mutation.ID(); ok {
-		_node.ID = id
-		_spec.ID.Value = id
+	if value, ok := sc.mutation.URL(); ok {
+		_spec.SetField(services.FieldURL, field.TypeString, value)
+		_node.URL = value
 	}
 	if value, ok := sc.mutation.Name(); ok {
 		_spec.SetField(services.FieldName, field.TypeString, value)
@@ -215,7 +222,7 @@ func (sc *ServicesCreate) createSpec() (*Services, *sqlgraph.CreateSpec) {
 // of the `INSERT` statement. For example:
 //
 //	client.Services.Create().
-//		SetName(v).
+//		SetURL(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -224,7 +231,7 @@ func (sc *ServicesCreate) createSpec() (*Services, *sqlgraph.CreateSpec) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.ServicesUpsert) {
-//			SetName(v+v).
+//			SetURL(v+v).
 //		}).
 //		Exec(ctx)
 func (sc *ServicesCreate) OnConflict(opts ...sql.ConflictOption) *ServicesUpsertOne {
@@ -260,6 +267,18 @@ type (
 	}
 )
 
+// SetURL sets the "url" field.
+func (u *ServicesUpsert) SetURL(v string) *ServicesUpsert {
+	u.Set(services.FieldURL, v)
+	return u
+}
+
+// UpdateURL sets the "url" field to the value that was provided on create.
+func (u *ServicesUpsert) UpdateURL() *ServicesUpsert {
+	u.SetExcluded(services.FieldURL)
+	return u
+}
+
 // SetName sets the "name" field.
 func (u *ServicesUpsert) SetName(v string) *ServicesUpsert {
 	u.Set(services.FieldName, v)
@@ -284,24 +303,16 @@ func (u *ServicesUpsert) UpdateData() *ServicesUpsert {
 	return u
 }
 
-// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// UpdateNewValues updates the mutable fields using the new values that were set on create.
 // Using this option is equivalent to using:
 //
 //	client.Services.Create().
 //		OnConflict(
 //			sql.ResolveWithNewValues(),
-//			sql.ResolveWith(func(u *sql.UpdateSet) {
-//				u.SetIgnore(services.FieldID)
-//			}),
 //		).
 //		Exec(ctx)
 func (u *ServicesUpsertOne) UpdateNewValues() *ServicesUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
-	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
-		if _, exists := u.create.mutation.ID(); exists {
-			s.SetIgnore(services.FieldID)
-		}
-	}))
 	return u
 }
 
@@ -330,6 +341,20 @@ func (u *ServicesUpsertOne) Update(set func(*ServicesUpsert)) *ServicesUpsertOne
 		set(&ServicesUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetURL sets the "url" field.
+func (u *ServicesUpsertOne) SetURL(v string) *ServicesUpsertOne {
+	return u.Update(func(s *ServicesUpsert) {
+		s.SetURL(v)
+	})
+}
+
+// UpdateURL sets the "url" field to the value that was provided on create.
+func (u *ServicesUpsertOne) UpdateURL() *ServicesUpsertOne {
+	return u.Update(func(s *ServicesUpsert) {
+		s.UpdateURL()
+	})
 }
 
 // SetName sets the "name" field.
@@ -376,12 +401,7 @@ func (u *ServicesUpsertOne) ExecX(ctx context.Context) {
 }
 
 // Exec executes the UPSERT query and returns the inserted/updated ID.
-func (u *ServicesUpsertOne) ID(ctx context.Context) (id string, err error) {
-	if u.create.driver.Dialect() == dialect.MySQL {
-		// In case of "ON CONFLICT", there is no way to get back non-numeric ID
-		// fields from the database since MySQL does not support the RETURNING clause.
-		return id, errors.New("ent: ServicesUpsertOne.ID is not supported by MySQL driver. Use ServicesUpsertOne.Exec instead")
-	}
+func (u *ServicesUpsertOne) ID(ctx context.Context) (id int, err error) {
 	node, err := u.create.Save(ctx)
 	if err != nil {
 		return id, err
@@ -390,7 +410,7 @@ func (u *ServicesUpsertOne) ID(ctx context.Context) (id string, err error) {
 }
 
 // IDX is like ID, but panics if an error occurs.
-func (u *ServicesUpsertOne) IDX(ctx context.Context) string {
+func (u *ServicesUpsertOne) IDX(ctx context.Context) int {
 	id, err := u.ID(ctx)
 	if err != nil {
 		panic(err)
@@ -440,6 +460,10 @@ func (scb *ServicesCreateBulk) Save(ctx context.Context) ([]*Services, error) {
 					return nil, err
 				}
 				mutation.id = &nodes[i].ID
+				if specs[i].ID.Value != nil {
+					id := specs[i].ID.Value.(int64)
+					nodes[i].ID = int(id)
+				}
 				mutation.done = true
 				return nodes[i], nil
 			})
@@ -491,7 +515,7 @@ func (scb *ServicesCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.ServicesUpsert) {
-//			SetName(v+v).
+//			SetURL(v+v).
 //		}).
 //		Exec(ctx)
 func (scb *ServicesCreateBulk) OnConflict(opts ...sql.ConflictOption) *ServicesUpsertBulk {
@@ -526,20 +550,10 @@ type ServicesUpsertBulk struct {
 //	client.Services.Create().
 //		OnConflict(
 //			sql.ResolveWithNewValues(),
-//			sql.ResolveWith(func(u *sql.UpdateSet) {
-//				u.SetIgnore(services.FieldID)
-//			}),
 //		).
 //		Exec(ctx)
 func (u *ServicesUpsertBulk) UpdateNewValues() *ServicesUpsertBulk {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
-	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
-		for _, b := range u.create.builders {
-			if _, exists := b.mutation.ID(); exists {
-				s.SetIgnore(services.FieldID)
-			}
-		}
-	}))
 	return u
 }
 
@@ -568,6 +582,20 @@ func (u *ServicesUpsertBulk) Update(set func(*ServicesUpsert)) *ServicesUpsertBu
 		set(&ServicesUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetURL sets the "url" field.
+func (u *ServicesUpsertBulk) SetURL(v string) *ServicesUpsertBulk {
+	return u.Update(func(s *ServicesUpsert) {
+		s.SetURL(v)
+	})
+}
+
+// UpdateURL sets the "url" field to the value that was provided on create.
+func (u *ServicesUpsertBulk) UpdateURL() *ServicesUpsertBulk {
+	return u.Update(func(s *ServicesUpsert) {
+		s.UpdateURL()
+	})
 }
 
 // SetName sets the "name" field.

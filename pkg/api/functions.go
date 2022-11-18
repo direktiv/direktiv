@@ -1792,6 +1792,10 @@ func (h *functionHandler) singleNamespaceServiceSSE(w http.ResponseWriter, r *ht
 	annotations := make(map[string]string)
 	annotations[functions.ServiceHeaderScope] = functions.PrefixNamespace
 	annotations[functions.ServiceHeaderName] = mux.Vars(r)["svn"]
+
+	fmt.Printf("!!!!!!!!!!!!!!!!!!!!!!!!1 %v\n", functions.PrefixNamespace)
+	fmt.Printf("!!!!!!!!!!!!!!!!!!!!!!!!2 %v\n", mux.Vars(r)["svn"])
+
 	h.listServicesSSE(annotations, w, r)
 
 }

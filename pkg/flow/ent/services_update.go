@@ -30,6 +30,12 @@ func (su *ServicesUpdate) Where(ps ...predicate.Services) *ServicesUpdate {
 	return su
 }
 
+// SetURL sets the "url" field.
+func (su *ServicesUpdate) SetURL(s string) *ServicesUpdate {
+	su.mutation.SetURL(s)
+	return su
+}
+
 // SetName sets the "name" field.
 func (su *ServicesUpdate) SetName(s string) *ServicesUpdate {
 	su.mutation.SetName(s)
@@ -126,9 +132,19 @@ func (su *ServicesUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (su *ServicesUpdate) check() error {
+	if v, ok := su.mutation.URL(); ok {
+		if err := services.URLValidator(v); err != nil {
+			return &ValidationError{Name: "url", err: fmt.Errorf(`ent: validator failed for field "Services.url": %w`, err)}
+		}
+	}
 	if v, ok := su.mutation.Name(); ok {
 		if err := services.NameValidator(v); err != nil {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Services.name": %w`, err)}
+		}
+	}
+	if v, ok := su.mutation.Data(); ok {
+		if err := services.DataValidator(v); err != nil {
+			return &ValidationError{Name: "data", err: fmt.Errorf(`ent: validator failed for field "Services.data": %w`, err)}
 		}
 	}
 	if _, ok := su.mutation.NamespaceID(); su.mutation.NamespaceCleared() && !ok {
@@ -149,7 +165,7 @@ func (su *ServicesUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Table:   services.Table,
 			Columns: services.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeString,
+				Type:   field.TypeInt,
 				Column: services.FieldID,
 			},
 		},
@@ -160,6 +176,9 @@ func (su *ServicesUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := su.mutation.URL(); ok {
+		_spec.SetField(services.FieldURL, field.TypeString, value)
 	}
 	if value, ok := su.mutation.Name(); ok {
 		_spec.SetField(services.FieldName, field.TypeString, value)
@@ -221,6 +240,12 @@ type ServicesUpdateOne struct {
 	hooks     []Hook
 	mutation  *ServicesMutation
 	modifiers []func(*sql.UpdateBuilder)
+}
+
+// SetURL sets the "url" field.
+func (suo *ServicesUpdateOne) SetURL(s string) *ServicesUpdateOne {
+	suo.mutation.SetURL(s)
+	return suo
 }
 
 // SetName sets the "name" field.
@@ -332,9 +357,19 @@ func (suo *ServicesUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (suo *ServicesUpdateOne) check() error {
+	if v, ok := suo.mutation.URL(); ok {
+		if err := services.URLValidator(v); err != nil {
+			return &ValidationError{Name: "url", err: fmt.Errorf(`ent: validator failed for field "Services.url": %w`, err)}
+		}
+	}
 	if v, ok := suo.mutation.Name(); ok {
 		if err := services.NameValidator(v); err != nil {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Services.name": %w`, err)}
+		}
+	}
+	if v, ok := suo.mutation.Data(); ok {
+		if err := services.DataValidator(v); err != nil {
+			return &ValidationError{Name: "data", err: fmt.Errorf(`ent: validator failed for field "Services.data": %w`, err)}
 		}
 	}
 	if _, ok := suo.mutation.NamespaceID(); suo.mutation.NamespaceCleared() && !ok {
@@ -355,7 +390,7 @@ func (suo *ServicesUpdateOne) sqlSave(ctx context.Context) (_node *Services, err
 			Table:   services.Table,
 			Columns: services.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeString,
+				Type:   field.TypeInt,
 				Column: services.FieldID,
 			},
 		},
@@ -383,6 +418,9 @@ func (suo *ServicesUpdateOne) sqlSave(ctx context.Context) (_node *Services, err
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := suo.mutation.URL(); ok {
+		_spec.SetField(services.FieldURL, field.TypeString, value)
 	}
 	if value, ok := suo.mutation.Name(); ok {
 		_spec.SetField(services.FieldName, field.TypeString, value)

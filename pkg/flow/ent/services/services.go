@@ -7,6 +7,8 @@ const (
 	Label = "services"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldURL holds the string denoting the url field in the database.
+	FieldURL = "url"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
 	// FieldData holds the string denoting the data field in the database.
@@ -29,6 +31,7 @@ const (
 // Columns holds all SQL columns for services fields.
 var Columns = []string{
 	FieldID,
+	FieldURL,
 	FieldName,
 	FieldData,
 }
@@ -55,6 +58,10 @@ func ValidColumn(column string) bool {
 }
 
 var (
+	// URLValidator is a validator for the "url" field. It is called by the builders before save.
+	URLValidator func(string) error
 	// NameValidator is a validator for the "name" field. It is called by the builders before save.
 	NameValidator func(string) error
+	// DataValidator is a validator for the "data" field. It is called by the builders before save.
+	DataValidator func(string) error
 )

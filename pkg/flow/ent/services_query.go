@@ -111,8 +111,8 @@ func (sq *ServicesQuery) FirstX(ctx context.Context) *Services {
 
 // FirstID returns the first Services ID from the query.
 // Returns a *NotFoundError when no Services ID was found.
-func (sq *ServicesQuery) FirstID(ctx context.Context) (id string, err error) {
-	var ids []string
+func (sq *ServicesQuery) FirstID(ctx context.Context) (id int, err error) {
+	var ids []int
 	if ids, err = sq.Limit(1).IDs(ctx); err != nil {
 		return
 	}
@@ -124,7 +124,7 @@ func (sq *ServicesQuery) FirstID(ctx context.Context) (id string, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (sq *ServicesQuery) FirstIDX(ctx context.Context) string {
+func (sq *ServicesQuery) FirstIDX(ctx context.Context) int {
 	id, err := sq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -162,8 +162,8 @@ func (sq *ServicesQuery) OnlyX(ctx context.Context) *Services {
 // OnlyID is like Only, but returns the only Services ID in the query.
 // Returns a *NotSingularError when more than one Services ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (sq *ServicesQuery) OnlyID(ctx context.Context) (id string, err error) {
-	var ids []string
+func (sq *ServicesQuery) OnlyID(ctx context.Context) (id int, err error) {
+	var ids []int
 	if ids, err = sq.Limit(2).IDs(ctx); err != nil {
 		return
 	}
@@ -179,7 +179,7 @@ func (sq *ServicesQuery) OnlyID(ctx context.Context) (id string, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (sq *ServicesQuery) OnlyIDX(ctx context.Context) string {
+func (sq *ServicesQuery) OnlyIDX(ctx context.Context) int {
 	id, err := sq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -205,8 +205,8 @@ func (sq *ServicesQuery) AllX(ctx context.Context) []*Services {
 }
 
 // IDs executes the query and returns a list of Services IDs.
-func (sq *ServicesQuery) IDs(ctx context.Context) ([]string, error) {
-	var ids []string
+func (sq *ServicesQuery) IDs(ctx context.Context) ([]int, error) {
+	var ids []int
 	if err := sq.Select(services.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
@@ -214,7 +214,7 @@ func (sq *ServicesQuery) IDs(ctx context.Context) ([]string, error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (sq *ServicesQuery) IDsX(ctx context.Context) []string {
+func (sq *ServicesQuery) IDsX(ctx context.Context) []int {
 	ids, err := sq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -293,12 +293,12 @@ func (sq *ServicesQuery) WithNamespace(opts ...func(*NamespaceQuery)) *ServicesQ
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty"`
+//		URL string `json:"url,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.Services.Query().
-//		GroupBy(services.FieldName).
+//		GroupBy(services.FieldURL).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (sq *ServicesQuery) GroupBy(field string, fields ...string) *ServicesGroupBy {
@@ -321,11 +321,11 @@ func (sq *ServicesQuery) GroupBy(field string, fields ...string) *ServicesGroupB
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty"`
+//		URL string `json:"url,omitempty"`
 //	}
 //
 //	client.Services.Query().
-//		Select(services.FieldName).
+//		Select(services.FieldURL).
 //		Scan(ctx, &v)
 func (sq *ServicesQuery) Select(fields ...string) *ServicesSelect {
 	sq.fields = append(sq.fields, fields...)
@@ -460,7 +460,7 @@ func (sq *ServicesQuery) querySpec() *sqlgraph.QuerySpec {
 			Table:   services.Table,
 			Columns: services.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeString,
+				Type:   field.TypeInt,
 				Column: services.FieldID,
 			},
 		},

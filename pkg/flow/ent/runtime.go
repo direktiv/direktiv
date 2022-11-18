@@ -226,10 +226,18 @@ func init() {
 	route.DefaultID = routeDescID.Default.(func() uuid.UUID)
 	servicesFields := schema.Services{}.Fields()
 	_ = servicesFields
+	// servicesDescURL is the schema descriptor for url field.
+	servicesDescURL := servicesFields[0].Descriptor()
+	// services.URLValidator is a validator for the "url" field. It is called by the builders before save.
+	services.URLValidator = servicesDescURL.Validators[0].(func(string) error)
 	// servicesDescName is the schema descriptor for name field.
 	servicesDescName := servicesFields[1].Descriptor()
 	// services.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	services.NameValidator = servicesDescName.Validators[0].(func(string) error)
+	// servicesDescData is the schema descriptor for data field.
+	servicesDescData := servicesFields[2].Descriptor()
+	// services.DataValidator is a validator for the "data" field. It is called by the builders before save.
+	services.DataValidator = servicesDescData.Validators[0].(func(string) error)
 	vardataFields := schema.VarData{}.Fields()
 	_ = vardataFields
 	// vardataDescCreatedAt is the schema descriptor for created_at field.

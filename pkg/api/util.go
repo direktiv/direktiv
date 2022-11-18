@@ -405,8 +405,11 @@ func sse(w http.ResponseWriter, ch <-chan interface{}) {
 				return
 			}
 
+			fmt.Printf("!!!!!!!!!!!!!!!!!!!!!!!!SEDNG %v\n", x)
+
 			err = sseWriteJSON(w, flusher, x)
 			if err != nil {
+				fmt.Printf("ERRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR %v", err)
 				return
 			}
 

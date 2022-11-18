@@ -232,14 +232,14 @@ func (nc *NamespaceCreate) AddNamespacelisteners(e ...*Events) *NamespaceCreate 
 }
 
 // AddServiceIDs adds the "services" edge to the Services entity by IDs.
-func (nc *NamespaceCreate) AddServiceIDs(ids ...string) *NamespaceCreate {
+func (nc *NamespaceCreate) AddServiceIDs(ids ...int) *NamespaceCreate {
 	nc.mutation.AddServiceIDs(ids...)
 	return nc
 }
 
 // AddServices adds the "services" edges to the Services entity.
 func (nc *NamespaceCreate) AddServices(s ...*Services) *NamespaceCreate {
-	ids := make([]string, len(s))
+	ids := make([]int, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
 	}
@@ -593,7 +593,7 @@ func (nc *NamespaceCreate) createSpec() (*Namespace, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeString,
+					Type:   field.TypeInt,
 					Column: services.FieldID,
 				},
 			},

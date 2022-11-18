@@ -16,7 +16,9 @@ import (
 type Services struct {
 	config `json:"-"`
 	// ID of the ent.
-	ID string `json:"id,omitempty"`
+	ID int `json:"id,omitempty"`
+	// URL holds the value of the "url" field.
+	URL string `json:"url,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
 	// Data holds the value of the "data" field.
@@ -54,7 +56,9 @@ func (*Services) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case services.FieldID, services.FieldName, services.FieldData:
+		case services.FieldID:
+			values[i] = new(sql.NullInt64)
+		case services.FieldURL, services.FieldName, services.FieldData:
 			values[i] = new(sql.NullString)
 		case services.ForeignKeys[0]: // namespace_services
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
@@ -74,10 +78,16 @@ func (s *Services) assignValues(columns []string, values []any) error {
 	for i := range columns {
 		switch columns[i] {
 		case services.FieldID:
+			value, ok := values[i].(*sql.NullInt64)
+			if !ok {
+				return fmt.Errorf("unexpected type %T for field id", value)
+			}
+			s.ID = int(value.Int64)
+		case services.FieldURL:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field id", values[i])
+				return fmt.Errorf("unexpected type %T for field url", values[i])
 			} else if value.Valid {
-				s.ID = value.String
+				s.URL = value.String
 			}
 		case services.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -131,6 +141,9 @@ func (s *Services) String() string {
 	var builder strings.Builder
 	builder.WriteString("Services(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", s.ID))
+	builder.WriteString("url=")
+	builder.WriteString(s.URL)
+	builder.WriteString(", ")
 	builder.WriteString("name=")
 	builder.WriteString(s.Name)
 	builder.WriteString(", ")
