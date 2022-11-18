@@ -241,23 +241,23 @@ func (im *instanceMemory) SetVariables(ctx context.Context, vars []states.Variab
 		// if statements have to be same order
 
 		d := string(v.Data)
-		if (v.MIMEType == "text/plain; charset=utf-8" || v.MIMEType == "text/plain" || v.MIMEType == "application/octet-stream") && len(d) == 0 {
+
+		if len(d) == 0 {
 			_, _, err = im.engine.flow.DeleteVariable(ctx, vrefc, vdatac, q, v.Key, v.Data, v.MIMEType, thread)
 			if err != nil {
 				return err
 			}
 			continue
-		}
 
-		if d == "{}" || d == "[]" || d == "0" || d == "" {
+		}
+		if !(v.MIMEType == "text/plain; charset=utf-8" || v.MIMEType == "text/plain" || v.MIMEType == "application/octet-stream") && (d == "{}" || d == "[]" || d == "0" || d == "" || d == "null") {
 			_, _, err = im.engine.flow.DeleteVariable(ctx, vrefc, vdatac, q, v.Key, v.Data, v.MIMEType, thread)
 			if err != nil {
 				return err
 			}
 			continue
-		}
 
-		if len(d) > 0 {
+		} else {
 			_, _, err = im.engine.flow.SetVariable(ctx, vrefc, vdatac, q, v.Key, v.Data, v.MIMEType, thread)
 			if err != nil {
 				return err
