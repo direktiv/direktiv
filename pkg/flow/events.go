@@ -9,7 +9,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"strings"
 	"sync"
 	"time"
@@ -56,11 +55,11 @@ type keyPair struct {
 	filtername string
 }
 
-//var cache = make(map[keyPair]string)
-type Cache struct {
+type CacheObject struct {
 	value sync.Map
-	//expires int64
 }
+
+var cache = &CacheObject{}
 
 func initEvents(srv *server) (*events, error) {
 
@@ -1028,14 +1027,13 @@ func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloud
 	resp := new(grpc.ApplyCloudEventFilterResponse)
 
 	namespace := in.GetNamespace()
-	filtername := in.GetFilterName()
+	filterName := in.GetFilterName()
 	cloudevent := in.GetCloudevent()
 
 	var script string
-	var ceventfilter *ent.CloudEventFilters
 
 	var key keyPair
-	key.filtername = filtername
+	key.filtername = filterName
 	key.namespace = namespace
 
 	ns, err := flow.getNamespace(ctx, flow.db.Namespace, namespace)
@@ -1043,22 +1041,18 @@ func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloud
 		return resp, err
 	}
 
-	v, ok := cache.Load(key)
-	if ok {
-		s, ok := v.(string)
-		if ok {
-			script = s
-		}
-	}
+	if jsCode, ok := cache.get(key); ok {
+		script = jsCode
 
-	if !ok {
-		ceventfilter, err = ns.QueryCloudeventfilters().Where(enteventsfilter.NameEQ(filtername)).Only(ctx)
+	} else {
+		ceventfilter, err := ns.QueryCloudeventfilters().Where(enteventsfilter.NameEQ(filterName)).Only(ctx)
 		if err != nil {
 			return resp, err
 		}
-	}
 
-	script = ceventfilter.Jscode
+		script = ceventfilter.Jscode
+
+	}
 
 	var mapEvent map[string]interface{}
 	err = json.Unmarshal(cloudevent, &mapEvent)
@@ -1113,14 +1107,14 @@ func (flow *flow) DeleteCloudEventFilter(ctx context.Context, in *grpc.DeleteClo
 	var resp emptypb.Empty
 
 	namespace := in.GetNamespace()
-	filtername := in.GetFilterName()
+	filterName := in.GetFilterName()
 
 	ns, err := flow.getNamespace(ctx, flow.db.Namespace, namespace)
 	if err != nil {
 		return &resp, err
 	}
 
-	_, err = ns.QueryCloudeventfilters().Where(enteventsfilter.NameEQ(filtername)).Only(ctx)
+	_, err = ns.QueryCloudeventfilters().Where(enteventsfilter.NameEQ(filterName)).Only(ctx)
 	if err != nil {
 		return &resp, err
 	}
@@ -1129,18 +1123,18 @@ func (flow *flow) DeleteCloudEventFilter(ctx context.Context, in *grpc.DeleteClo
 		Delete().
 		Where(
 			enteventsfilter.And(
-				enteventsfilter.NameEQ(filtername),
+				enteventsfilter.NameEQ(filterName),
 			)).
-		Exec(context.Background())
+		Exec(ctx)
 
 	if err != nil {
 		return &resp, err
 	}
 
 	var key keyPair
-	key.filtername = filtername
+	key.filtername = filterName
 	key.namespace = namespace
-	delete(cache, key)
+	cache.delete(key)
 
 	return &resp, err
 
@@ -1151,7 +1145,7 @@ func (flow *flow) CreateCloudEventFilter(ctx context.Context, in *grpc.CreateClo
 	var resp emptypb.Empty
 
 	namespace := in.GetNamespace()
-	filtername := in.GetFiltername()
+	filterName := in.GetFiltername()
 	script := in.GetJsCode()
 
 	script = fmt.Sprintf("function filter() {\n %s \n}", script)
@@ -1167,25 +1161,22 @@ func (flow *flow) CreateCloudEventFilter(ctx context.Context, in *grpc.CreateClo
 		return &resp, err
 	}
 
-	ceventfilter, err := ns.QueryCloudeventfilters().Where(enteventsfilter.NameEQ(filtername)).Only(ctx)
-	if err != nil {
-		return &resp, err
-	}
+	ceventfilter, _ := ns.QueryCloudeventfilters().Where(enteventsfilter.NameEQ(filterName)).Only(ctx)
 
 	if ceventfilter != nil {
-		err = errors.New("event filter already exists")
+		err = errors.New("cloud event filter already exist")
 		return &resp, err
 	}
 
-	_, err = flow.db.CloudEventFilters.Create().SetName(filtername).SetNamespace(ns).SetJscode(script).Save(ctx) // have to be tested
+	_, err = flow.db.CloudEventFilters.Create().SetName(filterName).SetNamespace(ns).SetJscode(script).Save(ctx)
 	if err != nil {
 		return &resp, err
 	}
 
 	var key keyPair
-	key.filtername = filtername
+	key.filtername = filterName
 	key.namespace = namespace
-	cache[key] = script
+	cache.put(key, script)
 
 	return &resp, err
 
@@ -1198,44 +1189,22 @@ func EventByteToCloudevent(byteEvent []byte) (event.Event, error) {
 
 }
 
-// Get gets a value from a cache. Returns an empty string if the value does not exist or has expired.
-func (c *Cache) Get(key string) string {
-	if c.Expired(time.Now().UnixNano()) {
-		log.Printf("%s has expired", key)
-		return ""
-	}
+func (c *CacheObject) get(key keyPair) (string, bool) {
 	v, ok := c.value.Load(key)
 	var s string
 	if ok {
 		s, ok = v.(string)
-		if !ok {
-			log.Printf("%s does not exists", key)
-			return ""
+		if ok {
+			return s, true
 		}
 	}
-	return s
+	return "", false
 }
 
-// Put puts a value to a cache. If a key and value exists, overwrite it.
-func (c *cache) Put(key string, value string, expired int64) {
+func (c *CacheObject) put(key keyPair, value string) {
 	c.value.Store(key, value)
-	c.expires = expired
 }
 
-func main() {
-	fk := "first-key"
-	sk := "second-key"
-
-	cache.Put(fk, "first-value", time.Now().Add(2*time.Second).UnixNano())
-	s := cache.Get(fk)
-	fmt.Println(cache.Get(fk))
-
-	time.Sleep(5 * time.Second)
-
-	// fk should have expired
-	s = cache.Get(fk)
-	if len(s) == 0 {
-		cache.Put(sk, "second-value", time.Now().Add(100*time.Second).UnixNano())
-	}
-	fmt.Println(cache.Get(sk))
+func (c *CacheObject) delete(key keyPair) {
+	c.value.Delete(key)
 }

@@ -1237,7 +1237,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//   name: filtername
 	//   type: string
 	//   required: true
-	//   description: 'filtername which the cloud event should be filtered'
+	//   description: 'target filtername'
 	// - in: body
 	//   name: cloudevent
 	//   required: true
@@ -1246,14 +1246,80 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     type: object
 	// responses:
 	//   '200':
-	//     "description": "successfully sent cloud event"
 	r.HandleFunc("/namespaces/{ns}/broadcast/{filter}", h.BroadcastCloudeventFilter).Name(RN_NamespaceEventFilter).Methods(http.MethodPost)
 
+	// swagger:operation PUT /api/namespaces/{namespace}/eventfilter/{filtername} CloudEventFilter createCloudeventFilter
+	// ---
+	// description: |
+	//   Creates new cloud event filter in target namespace
+	//   The body of this request should be a compilable javascript code without function header.
+	// summary: Creates new cloudEventFilter
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: filtername
+	//   type: string
+	//   required: true
+	//   description: 'new filtername'
+	// - in: body
+	//   name: script
+	//   required: true
+	//   description: compilable javascript code.
+	//   schema:
+	//     type: object
+	// responses:
+	//   '200':
 	r.HandleFunc("/namespaces/{ns}/eventfilter/{filter}", h.CreateBroadcastCloudeventFilter).Name(RN_CreateNamespaceEventFilter).Methods(http.MethodPut)
 
+	// swagger:operation DELETE /api/namespaces/{namespace}/broadcast/{filtername} CloudEventFilter deleteCloudeventFilter
+	// ---
+	// description: |
+	//   Delete existing cloud event filter in target namespace
+	// summary: Delete existing cloudEventFilter
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: filtername
+	//   type: string
+	//   required: true
+	//   description: 'target filtername'
+	// responses:
+	//   '200':
 	r.HandleFunc("/namespaces/{ns}/eventfilter/{filter}", h.DeleteBroadcastCloudeventFilter).Name(RN_DeleteNamespaceEventFilter).Methods(http.MethodDelete)
 
-	r.HandleFunc("/namespaces/{ns}/eventfilter/update/{filter}", h.UpdateBroadcastCloudeventFilter).Name(RN_UpdateNamespaceEventFilter).Methods(http.MethodPatch)
+	// swagger:operation PATCH /api/namespaces/{namespace}/eventfilter/{filtername} CloudEventFilter updateCloudeventFilter
+	// ---
+	// description: |
+	//   Update existing cloud event filter in target namespace
+	// summary: Update existing cloudEventFilter
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: filtername
+	//   type: string
+	//   required: true
+	//   description: 'target filtername'
+	// - in: body
+	//   name: script
+	//   required: true
+	//   description: compilable javascript code.
+	//   schema:
+	//     type: object
+	// responses:
+	//   '200':
+	r.HandleFunc("/namespaces/{ns}/eventfilter/{filter}", h.UpdateBroadcastCloudeventFilter).Name(RN_UpdateNamespaceEventFilter).Methods(http.MethodPatch)
 
 	// swagger:operation GET /api/namespaces/{namespace}/tree/{workflow}?op=logs Logs getWorkflowLogs
 	// ---
