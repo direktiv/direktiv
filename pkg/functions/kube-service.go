@@ -2,9 +2,10 @@ package functions
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
+	"strings"
 
 	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
 	"github.com/direktiv/direktiv/pkg/util"
@@ -16,6 +17,15 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+const (
+	httpsProxy = "HTTPS_PROXY"
+	httpProxy  = "HTTP_PROXY"
+	noProxy    = "NO_PROXY"
+
+	containerUser    = "direktiv-container"
+	containerSidecar = "direktiv-sidecar"
+)
+
 // Headers for knative services
 const (
 	// Direktiv Headers
@@ -23,13 +33,12 @@ const (
 	ServiceHeaderNamespaceID   = "direktiv.io/namespace-id"
 	ServiceHeaderNamespaceName = "direktiv.io/namespace-name"
 	ServiceHeaderWorkflowID    = "direktiv.io/workflow-id"
-	ServiceHeaderPath          = "direktiv.io/path"
+	ServiceHeaderPath          = "direktiv.io/workflow-name"
 	ServiceHeaderRevision      = "direktiv.io/revision"
 	ServiceHeaderSize          = "direktiv.io/size"
 	ServiceHeaderScale         = "direktiv.io/scale"
 	ServiceTemplateGeneration  = "direktiv.io/templateGeneration"
 	ServiceHeaderScope         = "direktiv.io/scope"
-	// ServiceHeaderScale = "autoscaling.knative.dev/minScale"
 
 	// Serving Headers
 	ServiceKnativeHeaderName            = "serving.knative.dev/service"
@@ -58,7 +67,7 @@ func createKnativeFunction(info *igrpc.BaseInfo) (*v1.Service, error) {
 	}
 
 	containers, err := makeContainers(info.GetImage(), info.GetCmd(),
-		int(info.GetSize()))
+		int(info.GetSize()), info.GetEnvs())
 	if err != nil {
 		logger.Errorf("can not make containers: %v", err)
 		return nil, err
@@ -127,24 +136,18 @@ func createKnativeFunction(info *igrpc.BaseInfo) (*v1.Service, error) {
 		return nil, err
 	}
 
-	b, _ := json.MarshalIndent(svc, "", "  ")
-	fmt.Printf("%v\n", string(b))
-
-	// 	return nil, nil
-	// }
-
-	// func deleteKnativeFunction(name string) error {
-
-	// 	cs, err := fetchServiceAPI()
-	// 	if err != nil {
-	// 		logger.Errorf("error getting clientset for knative: %v", err)
-	// 		return err
-	// 	}
-
-	// 	return cs.ServingV1().Services(functionsConfig.Namespace).Delete(context.Background(),
-	// 		name, metav1.DeleteOptions{})
+	// b, _ := json.MarshalIndent(svc, "", "  ")
+	// fmt.Printf("%v\n", string(b))
 
 	return newSvc, nil
+}
+
+func trimRevisionSuffix(s string) string {
+	if i := strings.LastIndex(s, ":"); i > 0 {
+		s = s[:i]
+	}
+
+	return s
 }
 
 func generateServiceMeta(svn, scope, hash string, size int, info *igrpc.BaseInfo) metav1.ObjectMeta {
@@ -160,9 +163,9 @@ func generateServiceMeta(svn, scope, hash string, size int, info *igrpc.BaseInfo
 
 	meta.Labels[ServiceHeaderName] = SanitizeLabel(info.GetName())
 	if len(info.GetWorkflow()) > 0 {
-		// meta.Labels[ServiceHeaderWorkflowID] = SanitizeLabel(wfID)
-		// meta.Labels[ServiceHeaderPath] = trimRevisionSuffix(SanitizeLabel(path))
-		// meta.Labels[ServiceHeaderRevision] = SanitizeLabel(hash)
+		meta.Labels[ServiceHeaderWorkflowID] = SanitizeLabel(info.GetWorkflow())
+		meta.Labels[ServiceHeaderPath] = trimRevisionSuffix(SanitizeLabel(filepath.Base(info.GetPath())))
+		meta.Labels[ServiceHeaderRevision] = SanitizeLabel(hash)
 	}
 
 	meta.Labels[ServiceHeaderNamespaceID] = SanitizeLabel(info.GetNamespace())
@@ -197,9 +200,9 @@ func generatePodMeta(svn, scope, hash string, size int, info *igrpc.BaseInfo) me
 
 	metaSpec.Labels[ServiceHeaderName] = SanitizeLabel(info.GetName())
 	if len(info.GetWorkflow()) > 0 {
-		// metaSpec.Labels[ServiceHeaderWorkflowID] = SanitizeLabel(wfID)
-		// metaSpec.Labels[ServiceHeaderPath] = trimRevisionSuffix(SanitizeLabel(path))
-		// metaSpec.Labels[ServiceHeaderRevision] = SanitizeLabel(hash)
+		metaSpec.Labels[ServiceHeaderWorkflowID] = SanitizeLabel(info.GetWorkflow())
+		metaSpec.Labels[ServiceHeaderPath] = trimRevisionSuffix(SanitizeLabel(filepath.Base(info.GetPath())))
+		metaSpec.Labels[ServiceHeaderRevision] = SanitizeLabel(hash)
 	}
 
 	metaSpec.Labels[ServiceHeaderNamespaceID] = SanitizeLabel(info.GetNamespace())
@@ -213,7 +216,8 @@ func generatePodMeta(svn, scope, hash string, size int, info *igrpc.BaseInfo) me
 
 }
 
-func makeContainers(img, cmd string, size int) ([]corev1.Container, error) {
+func makeContainers(img, cmd string, size int,
+	envs map[string]string) ([]corev1.Container, error) {
 
 	res, err := generateResourceLimits(size)
 	if err != nil {
@@ -227,7 +231,7 @@ func makeContainers(img, cmd string, size int) ([]corev1.Container, error) {
 	uc := corev1.Container{
 		Name:      containerUser,
 		Image:     img,
-		Env:       proxyEnvs(false),
+		Env:       proxyEnvs(false, envs),
 		Resources: res,
 		VolumeMounts: []corev1.VolumeMount{
 			{
@@ -245,7 +249,7 @@ func makeContainers(img, cmd string, size int) ([]corev1.Container, error) {
 		uc.Command = args
 	}
 
-	proxy := proxyEnvs(true)
+	proxy := proxyEnvs(true, make(map[string]string))
 
 	vmounts := []corev1.VolumeMount{
 		{
@@ -278,7 +282,7 @@ func makeContainers(img, cmd string, size int) ([]corev1.Container, error) {
 
 }
 
-func proxyEnvs(withGrpc bool) []corev1.EnvVar {
+func proxyEnvs(withGrpc bool, envs map[string]string) []corev1.EnvVar {
 
 	proxyEnvs := []corev1.EnvVar{}
 	if len(functionsConfig.Proxy.HTTP) > 0 {
@@ -319,12 +323,17 @@ func proxyEnvs(withGrpc bool) []corev1.EnvVar {
 	})
 
 	if withGrpc {
-
 		proxyEnvs = append(proxyEnvs, corev1.EnvVar{
 			Name:  util.DirektivFlowEndpoint,
 			Value: functionsConfig.FlowService,
 		})
+	}
 
+	for k, v := range envs {
+		proxyEnvs = append(proxyEnvs, corev1.EnvVar{
+			Name:  k,
+			Value: v,
+		})
 	}
 
 	return proxyEnvs

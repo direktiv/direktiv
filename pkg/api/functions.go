@@ -1682,9 +1682,9 @@ func (h *functionHandler) listGlobalServices(w http.ResponseWriter, r *http.Requ
 
 	h.logger.Debugf("Handling request: %s", this())
 
-	annotations := make(map[string]string)
-	annotations[functions.ServiceHeaderScope] = functions.PrefixGlobal
-	h.listServices(annotations, w, r)
+	// annotations := make(map[string]string)
+	// annotations[functions.ServiceHeaderScope] = functions.PrefixGlobal
+	// h.listServices(annotations, w, r)
 
 }
 
@@ -1778,10 +1778,10 @@ func (h *functionHandler) singleGlobalServiceSSE(w http.ResponseWriter, r *http.
 
 	h.logger.Debugf("Handling request: %s", this())
 
-	annotations := make(map[string]string)
-	annotations[functions.ServiceHeaderScope] = functions.PrefixGlobal
-	annotations[functions.ServiceHeaderName] = mux.Vars(r)["svn"]
-	h.listServicesSSE(annotations, w, r)
+	// annotations := make(map[string]string)
+	// annotations[functions.ServiceHeaderScope] = functions.PrefixGlobal
+	// annotations[functions.ServiceHeaderName] = mux.Vars(r)["svn"]
+	// h.listServicesSSE(annotations, w, r)
 
 }
 
@@ -1828,8 +1828,8 @@ func (h *functionHandler) singleWorkflowServiceSSE(w http.ResponseWriter, r *htt
 		return
 	}
 
-	svn := r.URL.Query().Get("svn")
-	svc := functions.AssembleWorkflowServiceName(resp.Oid, svn, hash)
+	// svn := r.URL.Query().Get("svn")
+	svc := functions.AssembleWorkflowServiceName(resp.Oid, hash)
 
 	annotations := make(map[string]string)
 
@@ -1843,9 +1843,9 @@ func (h *functionHandler) listGlobalServicesSSE(w http.ResponseWriter, r *http.R
 
 	h.logger.Debugf("Handling request: %s", this())
 
-	annotations := make(map[string]string)
-	annotations[functions.ServiceHeaderScope] = functions.PrefixGlobal
-	h.listServicesSSE(annotations, w, r)
+	// annotations := make(map[string]string)
+	// annotations[functions.ServiceHeaderScope] = functions.PrefixGlobal
+	// h.listServicesSSE(annotations, w, r)
 
 }
 
@@ -1951,10 +1951,11 @@ func (h *functionHandler) deleteGlobalService(w http.ResponseWriter, r *http.Req
 
 	h.logger.Debugf("Handling request: %s", this())
 
-	annotations := make(map[string]string)
-	annotations[functions.ServiceHeaderScope] = functions.PrefixGlobal
-	annotations[functions.ServiceHeaderName] = mux.Vars(r)["svn"]
-	h.deleteService(annotations, w, r)
+	// annotations := make(map[string]string)
+	// annotations[functions.ServiceHeaderScope] = functions.PrefixGlobal
+	// annotations[functions.ServiceHeaderName] = mux.Vars(r)["svn"]
+
+	// h.deleteService(annotations, w, r)
 }
 
 func (h *functionHandler) deleteNamespaceService(w http.ResponseWriter, r *http.Request) {
@@ -2008,26 +2009,34 @@ func (h *functionHandler) getGlobalService(w http.ResponseWriter, r *http.Reques
 
 	h.logger.Debugf("Handling request: %s", this())
 
-	h.getService(fmt.Sprintf("%s-%s", functions.PrefixGlobal,
-		mux.Vars(r)["svn"]), w, r)
+	// h.getService(fmt.Sprintf("%s-%s", functions.PrefixGlobal,
+	// 	mux.Vars(r)["svn"]), w, r)
 }
 
 func (h *functionHandler) getGlobalServiceSSE(w http.ResponseWriter, r *http.Request) {
 
-	h.logger.Debugf("Handling request: %s", this())
+	// h.logger.Debugf("Handling request: %s", this())
 
-	annotations := make(map[string]string)
-	annotations[functions.ServiceHeaderScope] = functions.PrefixGlobal
-	annotations[functions.ServiceHeaderName] = fmt.Sprintf("%s-%s", functions.PrefixGlobal, mux.Vars(r)["svn"])
-	h.getServiceSSE(annotations, w, r)
+	// annotations := make(map[string]string)
+	// annotations[functions.ServiceHeaderScope] = functions.PrefixGlobal
+	// annotations[functions.ServiceHeaderName] = fmt.Sprintf("%s-%s", functions.PrefixGlobal, mux.Vars(r)["svn"])
+	// h.getServiceSSE(annotations, w, r)
 }
 
 func (h *functionHandler) getNamespaceService(w http.ResponseWriter, r *http.Request) {
 
 	h.logger.Debugf("Handling request: %s", this())
 
-	h.getService(fmt.Sprintf("%s-%s-%s", functions.PrefixNamespace, mux.Vars(r)["ns"],
-		mux.Vars(r)["svn"]), w, r)
+	svcName := mux.Vars(r)["svn"]
+	nsName := mux.Vars(r)["ns"]
+
+	svn, _, _ := functions.GenerateServiceName(&grpcfunc.BaseInfo{
+		NamespaceName: &nsName,
+		Name:          &svcName,
+	})
+
+	h.getService(svn, w, r)
+
 }
 
 func (h *functionHandler) getServiceSSE(annotations map[string]string,
@@ -2215,21 +2224,36 @@ type updateServiceRequest struct {
 
 func (h *functionHandler) updateGlobalService(w http.ResponseWriter, r *http.Request) {
 
-	h.logger.Debugf("Handling request: %s", this())
+	// h.logger.Debugf("Handling request: %s", this())
 
-	h.updateService(fmt.Sprintf("%s-%s",
-		functions.PrefixGlobal, mux.Vars(r)["svn"]), w, r)
+	// h.updateService(fmt.Sprintf("%s-%s",
+	// 	functions.PrefixGlobal, mux.Vars(r)["svn"]), w, r)
 }
 
 func (h *functionHandler) updateNamespaceService(w http.ResponseWriter, r *http.Request) {
 
 	h.logger.Debugf("Handling request: %s", this())
 
-	h.updateService(fmt.Sprintf("%s-%s-%s",
-		functions.PrefixNamespace, mux.Vars(r)["ns"], mux.Vars(r)["svn"]), w, r)
+	svcName := mux.Vars(r)["svn"]
+	nsName := mux.Vars(r)["ns"]
+
+	resp, err := h.srv.flowClient.Namespace(r.Context(), &igrpc.NamespaceRequest{
+		Name: nsName,
+	})
+
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
+	svn, _, _ := functions.GenerateServiceName(&grpcfunc.BaseInfo{
+		NamespaceName: &nsName,
+		Name:          &svcName,
+	})
+	h.updateService(svn, svcName, resp.GetNamespace(), w, r)
 }
 
-func (h *functionHandler) updateService(svc string, w http.ResponseWriter, r *http.Request) {
+func (h *functionHandler) updateService(svc, name string, ns *igrpc.Namespace, w http.ResponseWriter, r *http.Request) {
 
 	obj := new(updateServiceRequest)
 	err := json.NewDecoder(r.Body).Decode(obj)
@@ -2240,11 +2264,18 @@ func (h *functionHandler) updateService(svc string, w http.ResponseWriter, r *ht
 
 	grpcReq := new(grpcfunc.UpdateFunctionRequest)
 	grpcReq.ServiceName = &svc
+
+	nsOID := ns.GetOid()
+	nsName := ns.GetName()
+
 	grpcReq.Info = &grpc.BaseInfo{
-		Image:    obj.Image,
-		Cmd:      obj.Cmd,
-		Size:     obj.Size,
-		MinScale: obj.MinScale,
+		Image:         obj.Image,
+		Cmd:           obj.Cmd,
+		Size:          obj.Size,
+		MinScale:      obj.MinScale,
+		Namespace:     &nsOID,
+		NamespaceName: &nsName,
+		Name:          &name,
 	}
 
 	grpcReq.TrafficPercent = &obj.TrafficPercent
@@ -2265,10 +2296,10 @@ type updateServiceTrafficRequest struct {
 func (h *functionHandler) updateGlobalServiceTraffic(w http.ResponseWriter,
 	r *http.Request) {
 
-	h.logger.Debugf("Handling request: %s", this())
+	// h.logger.Debugf("Handling request: %s", this())
 
-	h.updateServiceTraffic(fmt.Sprintf("%s-%s",
-		functions.PrefixGlobal, mux.Vars(r)["svn"]), w, r)
+	// h.updateServiceTraffic(fmt.Sprintf("%s-%s",
+	// 	functions.PrefixGlobal, mux.Vars(r)["svn"]), w, r)
 
 }
 
@@ -2316,19 +2347,26 @@ func (h *functionHandler) updateServiceTraffic(svc string,
 
 func (h *functionHandler) deleteGlobalRevision(w http.ResponseWriter, r *http.Request) {
 
-	h.logger.Debugf("Handling request: %s", this())
+	// h.logger.Debugf("Handling request: %s", this())
 
-	h.deleteRevision(fmt.Sprintf("%s-%s-%s",
-		functions.PrefixGlobal, mux.Vars(r)["svn"], mux.Vars(r)["rev"]), w, r)
+	// h.deleteRevision(fmt.Sprintf("%s-%s-%s",
+	// 	functions.PrefixGlobal, mux.Vars(r)["svn"], mux.Vars(r)["rev"]), w, r)
 }
 
 func (h *functionHandler) deleteNamespaceRevision(w http.ResponseWriter, r *http.Request) {
 
 	h.logger.Debugf("Handling request: %s", this())
 
-	h.deleteRevision(fmt.Sprintf("%s-%s-%s-%s",
-		functions.PrefixNamespace, mux.Vars(r)["ns"],
-		mux.Vars(r)["svn"], mux.Vars(r)["rev"]), w, r)
+	svcName := mux.Vars(r)["svn"]
+	nsName := mux.Vars(r)["ns"]
+
+	svn, _, _ := functions.GenerateServiceName(&grpcfunc.BaseInfo{
+		NamespaceName: &nsName,
+		Name:          &svcName,
+	})
+
+	h.deleteRevision(fmt.Sprintf("%s-%s",
+		svn, mux.Vars(r)["rev"]), w, r)
 }
 
 func (h *functionHandler) deleteRevision(rev string,
@@ -2595,14 +2633,22 @@ func (h *functionHandler) deleteRevision(rev string,
 // }
 
 func (h *functionHandler) watchGlobalRevision(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
-	svn := fmt.Sprintf("%s-%s", functions.PrefixGlobal, mux.Vars(r)["svn"])
-	h.watchRevisions(svn, mux.Vars(r)["rev"] /*functions.PrefixGlobal,*/, w, r)
+	// h.logger.Debugf("Handling request: %s", this())
+	// svn := fmt.Sprintf("%s-%s", functions.PrefixGlobal, mux.Vars(r)["svn"])
+	// h.watchRevisions(svn, mux.Vars(r)["rev"] /*functions.PrefixGlobal,*/, w, r)
 }
 
 func (h *functionHandler) watchNamespaceRevision(w http.ResponseWriter, r *http.Request) {
 	h.logger.Debugf("Handling request: %s", this())
-	svn := fmt.Sprintf("%s-%s-%s", functions.PrefixNamespace, mux.Vars(r)["ns"], mux.Vars(r)["svn"])
+
+	svcName := mux.Vars(r)["svn"]
+	nsName := mux.Vars(r)["ns"]
+
+	svn, _, _ := functions.GenerateServiceName(&grpcfunc.BaseInfo{
+		NamespaceName: &nsName,
+		Name:          &svcName,
+	})
+
 	h.watchRevisions(svn, mux.Vars(r)["rev"] /*functions.PrefixNamespace,*/, w, r)
 }
 
@@ -2631,7 +2677,6 @@ func (h *functionHandler) singleWorkflowServiceRevisionSSE(w http.ResponseWriter
 		return
 	}
 
-	svn := r.URL.Query().Get("svn")
 	rev := r.URL.Query().Get("rev")
 	if rev == "" {
 		rev = "00001"
@@ -2643,7 +2688,7 @@ func (h *functionHandler) singleWorkflowServiceRevisionSSE(w http.ResponseWriter
 		return
 	}
 
-	svc := functions.AssembleWorkflowServiceName(resp.Oid, svn, hash)
+	svc := functions.AssembleWorkflowServiceName(resp.Oid, hash)
 
 	h.watchRevisions(svc, rev /*functions.PrefixWorkflow,*/, w, r)
 
@@ -2651,17 +2696,22 @@ func (h *functionHandler) singleWorkflowServiceRevisionSSE(w http.ResponseWriter
 
 func (h *functionHandler) watchGlobalRevisions(w http.ResponseWriter, r *http.Request) {
 
-	h.logger.Debugf("Handling request: %s", this())
+	// h.logger.Debugf("Handling request: %s", this())
 
-	svn := fmt.Sprintf("%s-%s", functions.PrefixGlobal, mux.Vars(r)["svn"])
-	h.watchRevisions(svn, "" /*functions.PrefixGlobal,*/, w, r)
+	// svn := fmt.Sprintf("%s-%s", functions.PrefixGlobal, mux.Vars(r)["svn"])
+	// h.watchRevisions(svn, "" /*functions.PrefixGlobal,*/, w, r)
 }
 
 func (h *functionHandler) watchNamespaceRevisions(w http.ResponseWriter, r *http.Request) {
 
 	h.logger.Debugf("Handling request: %s", this())
+	svcName := mux.Vars(r)["svn"]
+	nsName := mux.Vars(r)["ns"]
 
-	svn := fmt.Sprintf("%s-%s-%s", functions.PrefixNamespace, mux.Vars(r)["ns"], mux.Vars(r)["svn"])
+	svn, _, _ := functions.GenerateServiceName(&grpcfunc.BaseInfo{
+		NamespaceName: &nsName,
+		Name:          &svcName,
+	})
 
 	h.watchRevisions(svn, "" /*functions.PrefixNamespace,*/, w, r)
 }
@@ -2696,8 +2746,7 @@ func (h *functionHandler) singleWorkflowServiceRevisionsSSE(w http.ResponseWrite
 		return
 	}
 
-	svn := r.URL.Query().Get("svn")
-	svc := functions.AssembleWorkflowServiceName(resp.Oid, svn, hash)
+	svc := functions.AssembleWorkflowServiceName(resp.Oid, hash)
 
 	h.watchRevisions(svc, "" /*functions.PrefixWorkflow,*/, w, r)
 
@@ -2932,13 +2981,13 @@ func (h *functionHandler) watchLogs(w http.ResponseWriter, r *http.Request) {
 // }
 func (h *functionHandler) listGlobalPods(w http.ResponseWriter, r *http.Request) {
 
-	h.logger.Debugf("Handling request: %s", this())
+	// h.logger.Debugf("Handling request: %s", this())
 
-	annotations := make(map[string]string)
-	annotations[functions.ServiceKnativeHeaderRevision] = fmt.Sprintf("%s-%s-%s",
-		functions.PrefixGlobal, mux.Vars(r)["svn"], mux.Vars(r)["rev"])
-	annotations[functions.ServiceHeaderScope] = functions.PrefixGlobal
-	h.listPods(annotations, w, r)
+	// annotations := make(map[string]string)
+	// annotations[functions.ServiceKnativeHeaderRevision] = fmt.Sprintf("%s-%s-%s",
+	// 	functions.PrefixGlobal, mux.Vars(r)["svn"], mux.Vars(r)["rev"])
+	// annotations[functions.ServiceHeaderScope] = functions.PrefixGlobal
+	// h.listPods(annotations, w, r)
 }
 
 func (h *functionHandler) listNamespacePods(w http.ResponseWriter, r *http.Request) {
@@ -2987,7 +3036,6 @@ func (h *functionHandler) listWorkflowPods(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	svn := r.URL.Query().Get("svn")
 	rev := r.URL.Query().Get("rev")
 	if rev == "" {
 		rev = "00001"
@@ -3001,7 +3049,7 @@ func (h *functionHandler) listWorkflowPods(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	svc := functions.AssembleWorkflowServiceName(resp.Oid, svn, hash)
+	svc := functions.AssembleWorkflowServiceName(resp.Oid, hash)
 
 	knrev := fmt.Sprintf("%s-%s", svc, rev)
 
@@ -3016,20 +3064,27 @@ func (h *functionHandler) listWorkflowPods(w http.ResponseWriter, r *http.Reques
 
 func (h *functionHandler) listGlobalPodsSSE(w http.ResponseWriter, r *http.Request) {
 
-	h.logger.Debugf("Handling request: %s", this())
+	// h.logger.Debugf("Handling request: %s", this())
 
-	svc := fmt.Sprintf("%s-%s", functions.PrefixGlobal, mux.Vars(r)["svn"])
-	rev := fmt.Sprintf("%s-%s", svc, mux.Vars(r)["rev"])
-	h.listPodsSSE(svc, rev, w, r)
+	// svc := fmt.Sprintf("%s-%s", functions.PrefixGlobal, mux.Vars(r)["svn"])
+	// rev := fmt.Sprintf("%s-%s", svc, mux.Vars(r)["rev"])
+	// h.listPodsSSE(svc, rev, w, r)
 }
 
 func (h *functionHandler) listNamespacePodsSSE(w http.ResponseWriter, r *http.Request) {
 
 	h.logger.Debugf("Handling request: %s", this())
 
-	svc := fmt.Sprintf("%s-%s-%s", functions.PrefixNamespace, mux.Vars(r)["ns"], mux.Vars(r)["svn"])
-	rev := fmt.Sprintf("%s-%s", svc, mux.Vars(r)["rev"])
-	h.listPodsSSE(svc, rev, w, r)
+	svcName := mux.Vars(r)["svn"]
+	nsName := mux.Vars(r)["ns"]
+
+	svn, _, _ := functions.GenerateServiceName(&grpcfunc.BaseInfo{
+		NamespaceName: &nsName,
+		Name:          &svcName,
+	})
+
+	rev := fmt.Sprintf("%s-%s", svn, mux.Vars(r)["rev"])
+	h.listPodsSSE(svn, rev, w, r)
 }
 
 func (h *functionHandler) listWorkflowPodsSSE(w http.ResponseWriter, r *http.Request) {
@@ -3047,7 +3102,6 @@ func (h *functionHandler) listWorkflowPodsSSE(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	svn := r.URL.Query().Get("svn")
 	rev := r.URL.Query().Get("rev")
 	if rev == "" {
 		rev = "00001"
@@ -3061,7 +3115,7 @@ func (h *functionHandler) listWorkflowPodsSSE(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	svc := functions.AssembleWorkflowServiceName(resp.Oid, svn, hash)
+	svc := functions.AssembleWorkflowServiceName(resp.Oid, hash)
 
 	knrev := fmt.Sprintf("%s-%s", svc, rev)
 

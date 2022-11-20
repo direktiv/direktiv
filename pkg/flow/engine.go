@@ -815,6 +815,7 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 			Image:         &ar.Container.Image,
 			MinScale:      &scale,
 			Size:          &size,
+			Envs:          make(map[string]string),
 		})
 		if err != nil {
 			engine.sugar.Errorf("can not create service name: %v", err)
@@ -897,6 +898,7 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 						if (ar.Container.Type == model.GlobalKnativeFunctionType ||
 							ar.Container.Type == model.NamespacedKnativeFunctionType) &&
 							!engine.isScopedKnativeFunction(engine.actions.client, ar.Container.Service) {
+
 							err := reconstructScopedKnativeFunction(engine.actions.client, ar.Container.Service)
 							if err != nil {
 								if stErr, ok := status.FromError(err); ok && stErr.Code() == codes.NotFound {

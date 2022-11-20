@@ -71,13 +71,13 @@ func readConfig(path string, c *config) {
 	logger.Debugf("reading config %s", path)
 	file, err := os.Open(path)
 	if err != nil {
-		logger.Errorf("can not open config file: %v", err)
+		logger.Fatalf("can not open config file: %v", err)
 		return
 	}
 
 	fi, err := file.Stat()
 	if err != nil {
-		logger.Errorf("can not stat file: %v", err)
+		logger.Fatalf("can not stat file: %v", err)
 		return
 	}
 
@@ -85,20 +85,20 @@ func readConfig(path string, c *config) {
 	_, err = io.ReadFull(file, buf)
 
 	if err != nil {
-		logger.Errorf("can not read config file: %v", err)
+		logger.Fatalf("can not read config file: %v", err)
 		return
 	}
 
 	err = yaml.Unmarshal(buf, c)
 	if err != nil {
-		logger.Errorf("can not unmarshal config file: %v", err)
+		logger.Fatalf("can not unmarshal config file: %v", err)
 		return
 	}
 
 	var sc subConfig
 	err = kyaml.Unmarshal(buf, &sc)
 	if err != nil {
-		logger.Errorf("can not unmarshal config file (k8s): %v", err)
+		logger.Fatalf("can not unmarshal config file (k8s): %v", err)
 		return
 	}
 

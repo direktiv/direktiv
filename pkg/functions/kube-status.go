@@ -3,6 +3,7 @@ package functions
 import (
 	"context"
 	"fmt"
+	"io"
 	"strings"
 	"time"
 
@@ -102,8 +103,6 @@ func (is *functionsServer) WatchRevisions(in *igrpc.WatchRevisionsRequest, out i
 		return fmt.Errorf("could not create fetch client: %v", err)
 	}
 
-	logger.Infof("COMING IN %v\n", in.GetServiceName())
-
 	l := map[string]string{
 		ServiceKnativeHeaderName: SanitizeLabel(in.GetServiceName()),
 		// ServiceHeaderScope:       in.GetScope(),
@@ -114,8 +113,6 @@ func (is *functionsServer) WatchRevisions(in *igrpc.WatchRevisionsRequest, out i
 	}
 
 	labels := labels.Set(l).String()
-
-	fmt.Printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>> %v %v", labels, revisionFilter)
 
 	for {
 		if done, err := is.watcherRevisions(cs, labels, revisionFilter, out); err != nil {
@@ -135,8 +132,6 @@ func (is *functionsServer) watcherRevisions(cs *versioned.Clientset, labels stri
 
 	timeout := int64(watcherTimeout.Seconds())
 
-	logger.Infof("LABELSREV!!!!!!!!!!!!!!!!!!!!!!!! %v", labels)
-
 	watch, err := cs.ServingV1().Revisions(functionsConfig.Namespace).Watch(context.Background(), metav1.ListOptions{
 		LabelSelector:  labels,
 		TimeoutSeconds: &timeout,
@@ -149,14 +144,12 @@ func (is *functionsServer) watcherRevisions(cs *versioned.Clientset, labels stri
 		select {
 		case event := <-watch.ResultChan():
 
-			logger.Infof("111111111111111111111111111111111111111111111111111111111111")
 			rev, ok := event.Object.(*v1.Revision)
 			if !ok {
 				return false, nil
 			} else if revisionFilter != "" && rev.Name != revisionFilter {
 				continue // skip
 			}
-			logger.Infof("2222222222222222222222222222222222222222222222222222222222222")
 			info := &igrpc.Revision{}
 
 			// size and scale
@@ -206,7 +199,7 @@ func (is *functionsServer) watcherRevisions(cs *versioned.Clientset, labels stri
 				Event:    (*string)(&event.Type),
 				Revision: info,
 			}
-			logger.Infof("WATCHREV SEND!!!!!!!!!!!!!!!!!!!!! %v", info)
+
 			err = out.Send(&resp)
 			if err != nil {
 				return false, fmt.Errorf("failed to send event: %v", err)
@@ -244,8 +237,6 @@ func (is *functionsServer) WatchPods(in *igrpc.WatchPodsRequest, out igrpc.Funct
 
 	labels := labels.Set(l).String()
 
-	logger.Infof("LABELS!!!!!!!!!!!!!!!!!!!!!!!! %v", labels)
-
 	for {
 		if done, err := is.watcherPods(cs, labels, out); err != nil {
 			logger.Errorf("pod watcher channel failed to restart: %s", err.Error())
@@ -261,8 +252,6 @@ func (is *functionsServer) WatchPods(in *igrpc.WatchPodsRequest, out igrpc.Funct
 
 func (is *functionsServer) watcherPods(cs *kubernetes.Clientset, labels string, out igrpc.FunctionsService_WatchPodsServer) (bool, error) {
 	timeout := int64(watcherTimeout.Seconds())
-
-	logger.Infof("LABELSPOD!!!!!!!!!!!!!!!!!!!!!!!! %v", labels)
 
 	watch, err := cs.CoreV1().Pods(functionsConfig.Namespace).Watch(context.Background(), metav1.ListOptions{
 		LabelSelector:  labels,
@@ -295,8 +284,6 @@ func (is *functionsServer) watcherPods(cs *kubernetes.Clientset, labels string, 
 				Pod:   &pod,
 			}
 
-			logger.Infof("WATCHPODS SEND!!!!!!!!!!!!!!!!!!!!! %v", p.Name)
-
 			err = out.Send(&resp)
 			if err != nil {
 				return false, fmt.Errorf("failed to send event: %v", err)
@@ -311,4 +298,64 @@ func (is *functionsServer) watcherPods(cs *kubernetes.Clientset, labels string, 
 		}
 	}
 
+}
+
+func (is *functionsServer) WatchLogs(in *igrpc.WatchLogsRequest, out igrpc.FunctionsService_WatchLogsServer) error {
+
+	if in.GetPodName() == "" {
+		return fmt.Errorf("pod name can not be nil")
+	}
+
+	cs, err := getClientSet()
+	if err != nil {
+		return fmt.Errorf("could not create fetch client: %v", err)
+	}
+
+	req := cs.CoreV1().Pods(functionsConfig.Namespace).GetLogs(*in.PodName, &corev1.PodLogOptions{
+		Container: "direktiv-container",
+		Follow:    true,
+	})
+
+	plogs, err := req.Stream(context.Background())
+	if err != nil {
+		return fmt.Errorf("could not get logs: %v", err)
+	}
+	defer plogs.Close()
+
+	var done bool
+
+	// Make sure stream is closed if client disconnects
+	go func() {
+		<-out.Context().Done()
+		plogs.Close()
+		done = true
+	}()
+
+	for {
+		if done {
+			break
+		}
+		buf := make([]byte, 2000)
+		numBytes, err := plogs.Read(buf)
+		if numBytes == 0 {
+			continue
+		}
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return err
+		}
+		message := string(buf[:numBytes])
+		resp := igrpc.WatchLogsResponse{
+			Data: &message,
+		}
+
+		err = out.Send(&resp)
+		if err != nil {
+			return fmt.Errorf("log watcher failed to send event: %v", err)
+		}
+	}
+
+	return nil
 }
