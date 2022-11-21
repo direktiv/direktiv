@@ -59,7 +59,7 @@ type CacheObject struct {
 	value sync.Map
 }
 
-var cache = &CacheObject{}
+var eventFilterCache = &CacheObject{}
 
 func initEvents(srv *server) (*events, error) {
 
@@ -1041,7 +1041,7 @@ func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloud
 		return resp, err
 	}
 
-	if jsCode, ok := cache.get(key); ok {
+	if jsCode, ok := eventFilterCache.get(key); ok {
 		script = jsCode
 
 	} else {
@@ -1134,7 +1134,7 @@ func (flow *flow) DeleteCloudEventFilter(ctx context.Context, in *grpc.DeleteClo
 	var key keyPair
 	key.filtername = filterName
 	key.namespace = namespace
-	cache.delete(key)
+	eventFilterCache.delete(key)
 
 	return &resp, err
 
@@ -1179,7 +1179,7 @@ func (flow *flow) CreateCloudEventFilter(ctx context.Context, in *grpc.CreateClo
 	var key keyPair
 	key.filtername = filterName
 	key.namespace = namespace
-	cache.put(key, script)
+	eventFilterCache.put(key, script)
 
 	return &resp, err
 
