@@ -42,7 +42,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/gorilla/mux"
 	"go.uber.org/zap"
-	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/heroku/docker-registry-client/registry"
 )
@@ -79,334 +78,8 @@ func newFunctionHandler(srv *Server, logger *zap.SugaredLogger,
 
 func (h *functionHandler) initRoutes(r *mux.Router) {
 
-	// swagger:operation GET /api/functions getGlobalServiceList
-	// ---
-	// description: |
-	//   Gets a list of global knative services.
-	// summary: Get Global Services List
-	// tags:
-	// - "Global Services"
-	// responses:
-	//   '200':
-	//     "description": "successfully got services list"
-	handlerPair(r, RN_ListServices, "", h.listGlobalServices, h.listGlobalServicesSSE)
-
-	// swagger:operation GET /api/functions/{serviceName}/revisions/{revisionGeneration}/pods listGlobalServiceRevisionPods
-	// ---
-	// description: |
-	//   List a revisions pods of a global scoped knative service.
-	//   The target revision generation is the number suffix on a revision.
-	//   Example: A revision named 'global-fast-request-00003' would have the revisionGeneration '00003' .
-	// summary: Get Global Service Revision Pods List
-	// tags:
-	// - "Global Services"
-	// parameters:
-	// - in: path
-	//   name: serviceName
-	//   type: string
-	//   required: true
-	//   description: 'target service name'
-	// - in: path
-	//   name: revisionGeneration
-	//   type: string
-	//   required: true
-	//   description: 'target revision generation'
-	// responses:
-	//   '200':
-	//     "description": "successfully got list of a service revision pods"
-	handlerPair(r, RN_ListPods, "/{svn}/revisions/{rev}/pods", h.listGlobalPods, h.listGlobalPodsSSE)
-
-	// swagger:operation GET /api/functions/{serviceName} watchGlobalServiceRevisionList
-	// ---
-	// description: |
-	//   Watch the revision list of a global scoped knative service.
-	//   Note: This is a Server-Sent-Event endpoint, and will not work with the default swagger client.
-	// summary: Watch Global Service Revision
-	// tags:
-	// - "Global Services"
-	// parameters:
-	// - in: path
-	//   name: serviceName
-	//   type: string
-	//   required: true
-	//   description: 'target service name'
-	// produces:
-	//    - "text/event-stream"
-	// responses:
-	//   '200':
-	//     "description": "successfully watching service"
-	r.HandleFunc("/{svn}", h.singleGlobalServiceSSE).Name(RN_WatchServices).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
-
-	// swagger:operation GET /api/functions/{serviceName}/revisions watchGlobalServiceRevisionList
-	// ---
-	// description: |
-	//   Watch the revision list of a global scoped knative service.
-	//   Note: This is a Server-Sent-Event endpoint, and will not work with the default swagger client.
-	// summary: Watch Global Service Revision List
-	// tags:
-	// - "Global Services"
-	// parameters:
-	// - in: path
-	//   name: serviceName
-	//   type: string
-	//   required: true
-	//   description: 'target service name'
-	// produces:
-	//    - "text/event-stream"
-	// responses:
-	//   '200':
-	//     "description": "successfully watching service revisions"
-	r.HandleFunc("/{svn}/revisions", h.watchGlobalRevisions).Name(RN_WatchRevisions).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
-
-	// swagger:operation GET /api/functions/{serviceName}/revisions/{revisionGeneration} watchGlobalServiceRevision
-	// ---
-	// description: |
-	//   Watch a global scoped knative service revision.
-	//   The target revision generation is the number suffix on a revision.
-	//   Example: A revision named 'global-fast-request-00003' would have the revisionGeneration '00003'.
-	//   Note: This is a Server-Sent-Event endpoint, and will not work with the default swagger client.
-	// summary: Watch Global Service Revision
-	// tags:
-	// - "Global Services"
-	// parameters:
-	// - in: path
-	//   name: serviceName
-	//   type: string
-	//   required: true
-	//   description: 'target service name'
-	// - in: path
-	//   name: revisionGeneration
-	//   type: string
-	//   required: true
-	//   description: 'target revision generation'
-	// produces:
-	//    - "text/event-stream"
-	// responses:
-	//   '200':
-	//     "description": "successfully watching service revision"
-	r.HandleFunc("/{svn}/revisions/{rev}", h.watchGlobalRevision).Name(RN_WatchRevisions).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
-
 	// TODO: SWAGGER-SPEC
 	r.HandleFunc("/logs/pod/{pod}", h.watchLogs).Methods(http.MethodGet).Name(RN_WatchLogs)
-
-	// swagger:operation POST /api/functions createGlobalService
-	// ---
-	// description: |
-	//   Creates global scoped knative service.
-	//   Service Names are unique on a scope level.
-	//   These services can be used as functions in workflows, more about this can be read here:
-	//   https://docs.direktiv.io/docs/walkthrough/using-functions.html
-	// summary: Create Global Service
-	// tags:
-	// - "Global Services"
-	// parameters:
-	// - in: body
-	//   name: Service
-	//   description: Payload that contains information on new service
-	//   required: true
-	//   schema:
-	//     type: object
-	//     example:
-	//       name: "fast-request"
-	//       image: "direktiv/request:v12"
-	//       cmd: ""
-	//       minScale: "1"
-	//       size: "small"
-	//     required:
-	//       - name
-	//       - image
-	//       - cmd
-	//       - minScale
-	//       - size
-	//     properties:
-	//       name:
-	//         type: string
-	//         description: Name of new service
-	//       image:
-	//         type: string
-	//         description: Target image a service will use
-	//       cmd:
-	//         type: string
-	//       minScale:
-	//         type: integer
-	//         description: Minimum amount of service pods to be live
-	//       size:
-	//         type: string
-	//         description: Size of created service pods
-	//         enum:
-	//           - small
-	//           - medium
-	//           - large
-	// responses:
-	//   '200':
-	//     "description": "successfully created service"
-	r.HandleFunc("", h.createGlobalService).Methods(http.MethodPost).Name(RN_CreateService)
-
-	// swagger:operation DELETE /api/functions/{serviceName} deleteGlobalService
-	// ---
-	// description: |
-	//   Deletes global scoped knative service and all its revisions.
-	// summary: Delete Global Service
-	// tags:
-	// - "Global Services"
-	// parameters:
-	// - in: path
-	//   name: serviceName
-	//   type: string
-	//   required: true
-	//   description: 'target service name'
-	// responses:
-	//   '200':
-	//     "description": "successfully deleted service"
-	r.HandleFunc("/{svn}", h.deleteGlobalService).Methods(http.MethodDelete).Name(RN_DeleteServices)
-
-	// swagger:operation GET /api/functions/{serviceName} getGlobalService
-	// ---
-	// description: |
-	//   Get details of a global scoped knative service.
-	// summary: Get Global Service Details
-	// tags:
-	// - "Global Services"
-	// parameters:
-	// - in: path
-	//   name: serviceName
-	//   type: string
-	//   required: true
-	//   description: 'target service name'
-	// responses:
-	//   '200':
-	//     "description": "successfully got service details"
-	r.HandleFunc("/{svn}", h.getGlobalService).Methods(http.MethodGet).Name(RN_GetService)
-
-	// swagger:operation POST /api/functions/{serviceName} updateGlobalService
-	// ---
-	// description: |
-	//   Creates a new global scoped knative service revision
-	//   Revisions are created with a traffic percentage. This percentage controls how much traffic will be directed to this revision.
-	//   Traffic can be set to 100 to direct all traffic.
-	// summary: Create Global Service Revision
-	// tags:
-	// - "Global Services"
-	// parameters:
-	// - in: path
-	//   name: serviceName
-	//   type: string
-	//   required: true
-	//   description: 'target service name'
-	// - in: body
-	//   name: Service
-	//   description: Payload that contains information on service revision
-	//   required: true
-	//   schema:
-	//     type: object
-	//     example:
-	//       trafficPercent: 50
-	//       image: "direktiv/request:v10"
-	//       cmd: ""
-	//       minScale: "1"
-	//       size: "small"
-	//     required:
-	//       - image
-	//       - cmd
-	//       - minScale
-	//       - size
-	//       - trafficPercent
-	//     properties:
-	//       trafficPercent:
-	//         type: integer
-	//         description: Traffic percentage new revision will use
-	//       image:
-	//         type: string
-	//         description: Target image a service will use
-	//       cmd:
-	//         type: string
-	//       minScale:
-	//         type: integer
-	//         description: Minimum amount of service pods to be live
-	//       size:
-	//         type: string
-	//         description: Size of created service pods
-	//         enum:
-	//           - small
-	//           - medium
-	//           - large
-	// responses:
-	//   '200':
-	//     "description": "successfully created service revision"
-	r.HandleFunc("/{svn}", h.updateGlobalService).Methods(http.MethodPost).Name(RN_UpdateService)
-
-	// swagger:operation PATCH /api/functions/{serviceName} updateGlobalServiceTraffic
-	// ---
-	// description: |
-	//   Update Global Service traffic directed to each revision, traffic can only be configured between two revisions.
-	//   All other revisions will bet set to 0 traffic.
-	// summary: Update Global Service Traffic
-	// tags:
-	// - "Global Services"
-	// parameters:
-	// - in: path
-	//   name: serviceName
-	//   type: string
-	//   required: true
-	//   description: 'target service name'
-	// - in: body
-	//   name: Service Traffic
-	//   description: Payload that contains information on service traffic
-	//   required: true
-	//   schema:
-	//     type: object
-	//     example:
-	//       values:
-	//         - percent: 60
-	//           revision: global-fast-request-00002
-	//         - percent: 40
-	//           revision: global-fast-request-00001
-	//     required:
-	//       - values
-	//     properties:
-	//       values:
-	//         description: List of revision traffic targets
-	//         type: array
-	//         items:
-	//           type: object
-	//           properties:
-	//             percent:
-	//               description: Target traffice percentage
-	//               type: integer
-	//             revision:
-	//               description: Target service revision
-	//               type: string
-	//
-	// responses:
-	//   '200':
-	//     "description": "successfully updated service traffic"
-	r.HandleFunc("/{svn}", h.updateGlobalServiceTraffic).Methods(http.MethodPatch).Name(RN_UpdateServiceTraffic)
-
-	// swagger:operation DELETE /api/functions/{serviceName}/revisions/{revisionGeneration} deleteGlobalRevision
-	// ---
-	// description: |
-	//   Delete a global scoped knative service revision.
-	//   The target revision generation is the number suffix on a revision.
-	//   Example: A revision named 'global-fast-request-00003' would have the revisionGeneration '00003'.
-	//   Note: Revisions with traffic cannot be deleted.
-	// summary: Delete Global Service Revision
-	// tags:
-	// - "Global Services"
-	// parameters:
-	// - in: path
-	//   name: serviceName
-	//   type: string
-	//   required: true
-	//   description: 'target service name'
-	// - in: path
-	//   name: revisionGeneration
-	//   type: string
-	//   required: true
-	//   description: 'target revision generation'
-	// responses:
-	//   '200':
-	//     "description": "successfully deleted service revision"
-	r.HandleFunc("/{svn}/revisions/{rev}", h.deleteGlobalRevision).Methods(http.MethodDelete).Name(RN_DeleteRevision)
 
 	// namespace
 
@@ -651,9 +324,6 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	// ---
 	// description: |
 	//   Creates a new namespace scoped knative service revision.
-	//   Revisions are created with a traffic percentage. This percentage controls
-	//   how much traffic will be directed to this revision. Traffic can be set to 100
-	//   to direct all traffic.
 	// summary: Create Namespace Service Revision
 	// tags:
 	// - "Namespace Services"
@@ -675,7 +345,6 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	//   schema:
 	//     type: object
 	//     example:
-	//       trafficPercent: 50
 	//       image: "direktiv/request:v10"
 	//       cmd: ""
 	//       minScale: "1"
@@ -685,11 +354,7 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	//       - cmd
 	//       - minScale
 	//       - size
-	//       - trafficPercent
 	//     properties:
-	//       trafficPercent:
-	//         type: integer
-	//         description: Traffic percentage new revision will use
 	//       image:
 	//         type: string
 	//         description: Target image a service will use
@@ -710,66 +375,12 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully created service revision"
 	r.HandleFunc("/namespaces/{ns}/function/{svn}", h.updateNamespaceService).Methods(http.MethodPost).Name(RN_UpdateNamespaceService)
 
-	// swagger:operation PATCH /api/functions/namespaces/{namespace}/function/{serviceName} updateNamespaceServiceTraffic
-	// ---
-	// description: |
-	//   Update Namespace Service traffic directed to each revision,
-	//   traffic can only be configured between two revisions. All other revisions
-	//   will bet set to 0 traffic.
-	// summary: Update Namespace Service Traffic
-	// tags:
-	// - "Namespace Services"
-	// parameters:
-	// - in: path
-	//   name: namespace
-	//   type: string
-	//   required: true
-	//   description: 'target namespace'
-	// - in: path
-	//   name: serviceName
-	//   type: string
-	//   required: true
-	//   description: 'target service name'
-	// - in: body
-	//   name: Service Traffic
-	//   description: Payload that contains information on service traffic
-	//   required: true
-	//   schema:
-	//     type: object
-	//     example:
-	//       values:
-	//         - percent: 60
-	//           revision: namespace-direktiv-fast-request-00002
-	//         - percent: 40
-	//           revision: namespace-direktiv-fast-request-00001
-	//     required:
-	//       - values
-	//     properties:
-	//       values:
-	//         description: List of revision traffic targets
-	//         type: array
-	//         items:
-	//           type: object
-	//           properties:
-	//             percent:
-	//               description: Target traffice percentage
-	//               type: integer
-	//             revision:
-	//               description: Target service revision
-	//               type: string
-	//
-	// responses:
-	//   '200':
-	//     "description": "successfully updated service traffic"
-	r.HandleFunc("/namespaces/{ns}/function/{svn}", h.updateNamespaceServiceTraffic).Methods(http.MethodPatch).Name(RN_UpdateNamespaceServiceTraffic)
-
 	// swagger:operation DELETE /api/functions/namespaces/{namespace}/function/{serviceName}/revisions/{revisionGeneration} deleteNamespaceRevision
 	// ---
 	// description: |
 	//   Delete a namespace scoped knative service revision.
 	//   The target revision generation is the number suffix on a revision.
 	//   Example: A revision named 'namespace-direktiv-fast-request-00003' would have the revisionGeneration '00003'.
-	//   Note: Revisions with traffic cannot be deleted.
 	// summary: Delete Namespace Service Revision
 	// tags:
 	// - "Namespace Services"
@@ -1122,150 +733,6 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully delete namespace registry"
 	r.HandleFunc("/registries/namespaces/{ns}", h.deleteRegistry).Methods(http.MethodDelete).Name(RN_DeleteRegistry)
 
-	// swagger:operation GET /api/functions/registries/global Registries getGlobalRegistries
-	// ---
-	// description: |
-	//   Gets the list of global registries.
-	//   Global registries are available to all services.
-	// summary: Get List of Global Registries
-	// responses:
-	//   '200':
-	//     "description": "successfully got global registries"
-	r.HandleFunc("/registries/global", h.getGlobalRegistries).Methods(http.MethodGet).Name(RN_ListGlobalPrivateRegistries)
-
-	// swagger:operation POST /api/functions/registries/global Registries createGlobalRegistry
-	// ---
-	// description: |
-	//   Create a global container registry.
-	//   Global registries are available to all services.
-	//   This can be used to connect your workflows to private container registries that require tokens.
-	//   The data property in the body is made up from the registry user and token. It follows the pattern :
-	//   data=USER:TOKEN
-	// summary: Create a Global Container Registry
-	// parameters:
-	// - in: body
-	//   name: Registry Payload
-	//   required: true
-	//   description: Payload that contains registry data
-	//   schema:
-	//     type: object
-	//     example:
-	//       data: "admin:8QwFLg%D$qg*"
-	//       reg: "https://prod.customreg.io"
-	//     required:
-	//       - data
-	//       - reg
-	//     properties:
-	//       data:
-	//         type: string
-	//         description: "Target registry connection data containing the user and token."
-	//       reg:
-	//         type: string
-	//         description: Target registry URL
-	// responses:
-	//   '200':
-	//     "description": "successfully created global registry"
-	r.HandleFunc("/registries/global", h.createGlobalRegistry).Methods(http.MethodPost).Name(RN_CreateGlobalPrivateRegistry)
-
-	// swagger:operation DELETE /api/functions/registries/global Registries deleteGlobalRegistry
-	// ---
-	// description: |
-	//   Delete a Global container registry
-	//   Global registries are available to all services.
-	// summary: Delete a global Container Registry
-	// parameters:
-	// - in: body
-	//   name: Registry Payload
-	//   required: true
-	//   description: Payload that contains registry data
-	//   schema:
-	//     example:
-	//       data: "admin:8QwFLg%D$qg*"
-	//       reg: "https://prod.customreg.io"
-	//     type: object
-	//     required:
-	//       - reg
-	//     properties:
-	//       reg:
-	//         type: string
-	//         description: Target registry URL
-	// responses:
-	//   '200':
-	//     "description": "successfully delete global registry"
-	r.HandleFunc("/registries/global", h.deleteGlobalRegistry).Methods(http.MethodDelete).Name(RN_DeleteGlobalPrivateRegistry)
-
-	// swagger:operation GET /api/functions/registries/private Registries getGlobalPrivateRegistries
-	// ---
-	// description: |
-	//   Gets the list of global private registries.
-	//    Global Private registries are only available to global services.
-	// summary: Get List of Global Private Registries
-	// responses:
-	//   '200':
-	//     "description": "successfully got global private registries"
-	r.HandleFunc("/registries/private", h.getGlobalPrivateRegistries).Methods(http.MethodGet).Name(RN_ListGlobalPrivateRegistries)
-
-	// swagger:operation POST /api/functions/registries/private Registries createGlobalPrivateRegistry
-	// ---
-	// description: |
-	//   Create a global container registry.
-	//    Global Private registries are only available to global services.
-	//   This can be used to connect your workflows to private container registries that require tokens.
-	//   The data property in the body is made up from the registry user and token. It follows the pattern :
-	//   data=USER:TOKEN
-	// summary: Create a Global Container Registry
-	// parameters:
-	// - in: body
-	//   name: Registry Payload
-	//   required: true
-	//   description: Payload that contains registry data
-	//   schema:
-	//     type: object
-	//     example:
-	//       data: "admin:8QwFLg%D$qg*"
-	//       reg: "https://prod.customreg.io"
-	//     required:
-	//       - data
-	//       - reg
-	//     properties:
-	//       data:
-	//         type: string
-	//         description: "Target registry connection data containing the user and token."
-	//       reg:
-	//         type: string
-	//         description: Target registry URL
-	// responses:
-	//   '200':
-	//     "description": "successfully created global private registry"
-	r.HandleFunc("/registries/private", h.createGlobalPrivateRegistry).Methods(http.MethodPost).Name(RN_CreateGlobalPrivateRegistry)
-
-	// swagger:operation DELETE /api/functions/registries/private Registries deleteGlobalPrivateRegistry
-	// ---
-	// description: |
-	//   Delete a global container registry.
-	//    Global Private registries are only available to global services.
-	// summary: Delete a Global Container Registry
-	// parameters:
-	// - in: body
-	//   name: Registry Payload
-	//   required: true
-	//   description: Payload that contains registry data
-	//   schema:
-	//     example:
-	//       data: "admin:8QwFLg%D$qg*"
-	//       reg: "https://prod.customreg.io"
-	//     type: object
-	//     required:
-	//       - reg
-	//     properties:
-	//       reg:
-	//         type: string
-	//         description: Target registry URL
-	// responses:
-	//   '200':
-	//     "description": "successfully delete global private registry"
-	r.HandleFunc("/registries/private", h.deleteGlobalPrivateRegistry).Methods(http.MethodDelete).Name(RN_DeleteGlobalPrivateRegistry)
-
 }
 
 func (h *functionHandler) deleteRegistry(w http.ResponseWriter, r *http.Request) {
@@ -1377,316 +844,7 @@ func (h *functionHandler) getRegistries(w http.ResponseWriter, r *http.Request) 
 	respond(w, resp, err)
 }
 
-// global
-func (h *functionHandler) deleteGlobalRegistry(w http.ResponseWriter, r *http.Request) {
-
-	h.logger.Debugf("Handling request: %s", this())
-
-	d := make(map[string]string)
-
-	err := json.NewDecoder(r.Body).Decode(&d)
-	if err != nil {
-		respond(w, nil, err)
-	}
-	reg := d["reg"]
-
-	resp, err := h.client.DeleteGlobalRegistry(r.Context(), &grpc.DeleteGlobalRegistryRequest{
-		Name: &reg,
-	})
-
-	respond(w, resp, err)
-}
-
-func (h *functionHandler) createGlobalRegistry(w http.ResponseWriter, r *http.Request) {
-
-	h.logger.Debugf("Handling request: %s", this())
-
-	d := make(map[string]string)
-
-	err := json.NewDecoder(r.Body).Decode(&d)
-	if err != nil {
-		respond(w, nil, err)
-	}
-	reg := d["reg"]
-
-	resp, err := h.client.StoreGlobalRegistry(r.Context(), &grpc.StoreGlobalRegistryRequest{
-		Name: &reg,
-		Data: []byte(d["data"]),
-	})
-
-	respond(w, resp, err)
-
-}
-
-func (h *functionHandler) getGlobalRegistries(w http.ResponseWriter, r *http.Request) {
-
-	h.logger.Debugf("Handling request: %s", this())
-
-	var resp *grpc.GetRegistriesResponse
-	resp, err := h.client.GetGlobalRegistries(r.Context(), &emptypb.Empty{})
-
-	respond(w, resp, err)
-}
-
 // global private
-
-func (h *functionHandler) deleteGlobalPrivateRegistry(w http.ResponseWriter, r *http.Request) {
-
-	h.logger.Debugf("Handling request: %s", this())
-
-	d := make(map[string]string)
-
-	err := json.NewDecoder(r.Body).Decode(&d)
-	if err != nil {
-		respond(w, nil, err)
-	}
-	reg := d["reg"]
-
-	resp, err := h.client.DeleteGlobalPrivateRegistry(r.Context(), &grpc.DeleteGlobalRegistryRequest{
-		Name: &reg,
-	})
-
-	respond(w, resp, err)
-}
-
-func (h *functionHandler) createGlobalPrivateRegistry(w http.ResponseWriter, r *http.Request) {
-
-	h.logger.Debugf("Handling request: %s", this())
-
-	d := make(map[string]string)
-
-	err := json.NewDecoder(r.Body).Decode(&d)
-	if err != nil {
-		respond(w, nil, err)
-	}
-	reg := d["reg"]
-
-	resp, err := h.client.StoreGlobalPrivateRegistry(r.Context(), &grpc.StoreGlobalRegistryRequest{
-		Name: &reg,
-		Data: []byte(d["data"]),
-	})
-
-	respond(w, resp, err)
-
-}
-
-func (h *functionHandler) getGlobalPrivateRegistries(w http.ResponseWriter, r *http.Request) {
-
-	h.logger.Debugf("Handling request: %s", this())
-
-	var resp *grpc.GetRegistriesResponse
-	resp, err := h.client.GetGlobalPrivateRegistries(r.Context(), &emptypb.Empty{})
-
-	respond(w, resp, err)
-}
-
-// import (
-// 	"context"
-// 	"encoding/json"
-// 	"fmt"
-// 	"io"
-// 	"net/http"
-// 	"strings"
-// 	"time"
-//
-// 	"github.com/direktiv/direktiv/pkg/functions"
-// 	"github.com/direktiv/direktiv/pkg/model"
-//
-// 	"github.com/gorilla/mux"
-// 	"github.com/direktiv/direktiv/pkg/functions/grpc"
-// 	"github.com/direktiv/direktiv/pkg/ingress"
-// )
-//
-// type functionAnnotationsRequest struct {
-// 	Scope     string `json:"scope"`
-// 	Name      string `json:"name"`
-// 	Namespace string `json:"namespace"`
-// 	Workflow  string `json:"workflow"`
-// }
-//
-// type functionResponseList struct {
-// 	Config   *grpc.FunctionsConfig     `json:"config,omitempty"`
-// 	Services []*functionResponseObject `json:"services"`
-// }
-//
-// type functionResponseObject struct {
-// 	Info struct {
-// 		Workflow  string `json:"workflow"`
-// 		Name      string `json:"name"`
-// 		Namespace string `json:"namespace"`
-// 		Image     string `json:"image"`
-// 		Cmd       string `json:"cmd"`
-// 	} `json:"info"`
-// 	ServiceName string         funcClient   `json:"serviceName"`
-// 	Status      string            `json:"status"`
-// 	Conditions  []*grpc.Condition `json:"conditions"`
-// }
-//
-// var functionsQueryLabelMapping = map[string]string{
-// 	"scope":     functions.ServiceHeaderScope,
-// 	"name":      functions.ServiceHeaderName,
-// 	"namespace": functions.ServiceHeaderNamespace,
-// 	"workflow":  functions.ServiceHeaderWorkflow,
-// }
-//
-// func accepted(w http.ResponseWriter) {
-// 	w.WriteHeader(http.StatusAccepted)
-// }
-//
-// func getFunctionAnnotations(r *http.Request) (map[string]string, error) {
-//
-// 	annotations := make(map[string]string)
-//
-// 	// Get function labels from url queries
-// 	for k, v := range r.URL.Query() {
-// 		if aLabel, ok := functionsQueryLabelMapping[k]; ok && len(v) > 0 {
-// 			annotations[aLabel] = v[0]
-// 		}
-// 	}
-//
-// 	// Get functions from body
-// 	rb := new(functionAnnotationsRequest)
-// 	err := json.NewDecoder(r.Body).Decode(rb)
-// 	if err != nil && err != io.EOF {
-// 		return nil, err
-// 	} else if err == nil {
-// 		annotations[functions.ServiceHeaderName] = rb.Name
-// 		annotations[functions.ServiceHeaderNamespace] = rb.Namespace
-// 		annotations[functions.ServiceHeaderWorkflow] = rb.Workflow
-// 		annotations[functions.ServiceHeaderScope] = rb.Scope
-// 	}
-//
-// 	// Split serviceName
-// 	svc := mux.Vars(r)["serviceName"]
-// 	if svc != "" {
-// 		// Split namespaced service name
-// 		if strings.HasPrefix(svc, functions.PrefixNamespace) {
-// 			if strings.Count(svc,
-// 	resp, err = h.s.functions.StoreRegistry(ctx, &grpc.StoreRegistryRequest{
-// 		Namespace: &n,
-// 		Name:      &st.Name,
-// 		Data:      []byte(st.Data),
-// 	})
-// "-") < 2 {
-// 				return nil, fmt.Errorf("service name is incorrect format, does not include scope and name")
-// 			}
-//
-// 			annotations[functions.ServiceHeaderName] = rb.Name
-// 			annotations[functions.ServiceHeaderNamespace] = rb.Namespace
-// 			annotations[functions.ServiceHeaderWorkflow] = rb.Workflow
-// 			annotations[functions.ServiceHeaderScope] = rb.Scope
-//
-// 			firstInd := strings.Index(svc, "-")
-// 			lastInd := strings.LastIndex(svc, "-")
-// 			annotations[functions.ServiceHeaderNamespace] = svc[firstInd+1 : lastInd]
-// 			annotations[functions.ServiceHeaderName] = svc[lastInd+1:]
-// 			annotations[functions.ServiceHeaderScope] = svc[:firstInd]
-// 		} else {
-// 			if strings.Count(svc, "-") < 1 {
-// 				return nil, fmt.Errorf("service name is incorrect format, does not include scope")
-// 			}
-//
-// 			firstInd := strings.Index(svc, "-")
-// 			annotations[functions.ServiceHeaderName] = svc[firstInd+1:]
-// 			annotations[functions.ServiceHeaderScope] = svc[:firstInd]
-// 		}
-// 	}
-//
-// 	// Handle if this was reached via the workflow route
-// 	wf := mux.Vars(r)["workflowTarget"]
-// 	if wf != "" {
-// 		if annotations[functions.ServiceHeaderScope] != "" && annotations[functions.ServiceHeaderScope] != functions.PrefixWorkflow {
-// 			return nil, fmt.Errorf("this route is for workflow-scoped requests")
-// 		}
-//
-// 		annotations[functions.ServiceHeaderWorkflow] = wf
-// 		annotations[functions.ServiceHeaderScope] = functions.PrefixWorkflow
-// 	}
-//
-// 	// Handle if this was reached via the namespaced route
-// 	ns := mux.Vars(r)["namespace"]
-// 	if ns != "" {
-// 		if annotations[functions.ServiceHeaderScope] == functions.PrefixGlobal {
-// 			return nil, fmt.Errorf("this route is for namespace-scoped requests or lower, not global")
-// 		}
-//
-// 		annotations[functions.ServiceHeaderNamespace] = ns
-//
-// 		if annotations[functions.ServiceHeaderScope] == "" {
-// 			annotations[functions.ServiceHeaderScope] = functions.PrefixNamespace
-// 		}
-// 	}
-//
-// 	del := make([]string, 0)
-// 	for k, v := range annotations {
-// 		if v == "" {
-// 			del = append(del, k)
-// 		}
-// 	}
-//
-// 	for _, v := range del {
-// 		delete(annotations, v)
-// 	}
-//
-// 	return annotations, nil
-// }
-//
-// func prepareFunctionsForResponse(functions []*grpc.FunctionsInfo) []*functionResponseObject {
-// 	out := make([]*functionResponseObject, 0)
-//
-// 	for _, function := range functions {
-//
-// 		obj := new(functionResponseObject)
-// 		iinf := function.GetInfo()
-// 		if iinf != nil {
-// 			if iinf.Workflow != nil {
-// 				obj.Info.Workflow = *iinf.Workflow
-// 			}
-// 			if iinf.Name != nil {
-// 				obj.Info.Name = *iinf.Name
-// 			}
-// 			if iinf.Namespace != nil {
-// 				obj.Info.Namespace = *iinf.Namespace
-// 			}
-// 			if iinf.Image != nil {
-// 				obj.Info.Image = *iinf.Image
-// 			}
-// 			if iinf.Cmd != nil {
-// 				obj.Info.Cmd = *iinf.Cmd
-// 			}
-// 		}
-//
-// 		obj.ServiceName = function.GetServiceName()
-// 		obj.Status = function.GetStatus()
-// 		obj.Conditions = function.GetConditions()
-//
-// 		out = append(out, obj)
-// 	}
-//
-// 	return out
-// }
-//
-// func (h *functionHandler) listFunctions(w http.ResponseWriter, r *http.Request) {
-// 	h.logger.Infof("LIST FUNCTIONS")
-// 	w.Write([]byte("LIST FUNCTIONS"))
-// }
-
-// var functionsQueryLabelMapping = map[string]string{
-// 	"scope":     functions.ServiceHeaderScope,
-// 	"name":      functions.ServiceHeaderName,
-// 	"namespace": functions.ServiceHeaderNamespace,
-// 	"workflow":  functions.ServiceHeaderWorkflow,
-// }
-
-func (h *functionHandler) listGlobalServices(w http.ResponseWriter, r *http.Request) {
-
-	h.logger.Debugf("Handling request: %s", this())
-
-	// annotations := make(map[string]string)
-	// annotations[functions.ServiceHeaderScope] = functions.PrefixGlobal
-	// h.listServices(annotations, w, r)
-
-}
 
 func (h *functionHandler) listNamespaceServices(w http.ResponseWriter, r *http.Request) {
 
@@ -1771,17 +929,6 @@ func (h *functionHandler) listWorkflowServicesSSE(w http.ResponseWriter, r *http
 	annotations[functions.ServiceHeaderWorkflowID] = resp.GetOid()
 
 	h.listServicesSSE(annotations, w, r)
-
-}
-
-func (h *functionHandler) singleGlobalServiceSSE(w http.ResponseWriter, r *http.Request) {
-
-	h.logger.Debugf("Handling request: %s", this())
-
-	// annotations := make(map[string]string)
-	// annotations[functions.ServiceHeaderScope] = functions.PrefixGlobal
-	// annotations[functions.ServiceHeaderName] = mux.Vars(r)["svn"]
-	// h.listServicesSSE(annotations, w, r)
 
 }
 
@@ -1947,17 +1094,6 @@ func (h *functionHandler) deleteWorkflowServices(w http.ResponseWriter, r *http.
 	h.deleteService(annotations, w, r)
 }
 
-func (h *functionHandler) deleteGlobalService(w http.ResponseWriter, r *http.Request) {
-
-	h.logger.Debugf("Handling request: %s", this())
-
-	// annotations := make(map[string]string)
-	// annotations[functions.ServiceHeaderScope] = functions.PrefixGlobal
-	// annotations[functions.ServiceHeaderName] = mux.Vars(r)["svn"]
-
-	// h.deleteService(annotations, w, r)
-}
-
 func (h *functionHandler) deleteNamespaceService(w http.ResponseWriter, r *http.Request) {
 
 	h.logger.Debugf("Handling request: %s", this())
@@ -2001,16 +1137,7 @@ type getFunctionResponseRevision struct {
 	Created    int64             `json:"created,omitempty"`
 	Status     string            `json:"status,omitempty"`
 	Conditions []*grpc.Condition `json:"conditions,omitempty"`
-	Traffic    int64             `json:"traffic,omitempty"`
 	Revision   string            `json:"revision,omitempty"`
-}
-
-func (h *functionHandler) getGlobalService(w http.ResponseWriter, r *http.Request) {
-
-	h.logger.Debugf("Handling request: %s", this())
-
-	// h.getService(fmt.Sprintf("%s-%s", functions.PrefixGlobal,
-	// 	mux.Vars(r)["svn"]), w, r)
 }
 
 func (h *functionHandler) getGlobalServiceSSE(w http.ResponseWriter, r *http.Request) {
@@ -2118,20 +1245,12 @@ func (h *functionHandler) getService(svn string, w http.ResponseWriter, r *http.
 			Created:    rev.GetCreated(),
 			Status:     rev.GetStatus(),
 			Conditions: rev.GetConditions(),
-			Traffic:    rev.GetTraffic(),
 			Revision:   rev.GetRev(),
 		})
 	}
 
 	respondStruct(w, out, http.StatusOK, nil)
 
-}
-
-func (h *functionHandler) createGlobalService(w http.ResponseWriter, r *http.Request) {
-
-	h.logger.Debugf("Handling request: %s", this())
-
-	// h.createService("", "", "", "", make(map[string]string), w, r)
 }
 
 type createRequest struct {
@@ -2217,17 +1336,6 @@ type updateServiceRequest struct {
 	// minScale
 	// Required: true
 	MinScale *int32 `json:"minScale,omitempty"`
-	// trafficPercent
-	// Required: true
-	TrafficPercent int64 `json:"trafficPercent"`
-}
-
-func (h *functionHandler) updateGlobalService(w http.ResponseWriter, r *http.Request) {
-
-	// h.logger.Debugf("Handling request: %s", this())
-
-	// h.updateService(fmt.Sprintf("%s-%s",
-	// 	functions.PrefixGlobal, mux.Vars(r)["svn"]), w, r)
 }
 
 func (h *functionHandler) updateNamespaceService(w http.ResponseWriter, r *http.Request) {
@@ -2278,79 +1386,10 @@ func (h *functionHandler) updateService(svc, name string, ns *igrpc.Namespace, w
 		Name:          &name,
 	}
 
-	grpcReq.TrafficPercent = &obj.TrafficPercent
-
 	// returns an empty body
 	resp, err := h.client.UpdateFunction(r.Context(), grpcReq)
 	respond(w, resp, err)
 
-}
-
-type updateServiceTrafficRequest struct {
-	Values []struct {
-		Revision string `json:"revision"`
-		Percent  int64  `json:"percent"`
-	} `json:"values"`
-}
-
-func (h *functionHandler) updateGlobalServiceTraffic(w http.ResponseWriter,
-	r *http.Request) {
-
-	// h.logger.Debugf("Handling request: %s", this())
-
-	// h.updateServiceTraffic(fmt.Sprintf("%s-%s",
-	// 	functions.PrefixGlobal, mux.Vars(r)["svn"]), w, r)
-
-}
-
-func (h *functionHandler) updateNamespaceServiceTraffic(w http.ResponseWriter,
-	r *http.Request) {
-
-	h.logger.Debugf("Handling request: %s", this())
-
-	h.updateServiceTraffic(fmt.Sprintf("%s-%s-%s", functions.PrefixNamespace, mux.Vars(r)["ns"],
-		mux.Vars(r)["svn"]), w, r)
-}
-
-func (h *functionHandler) updateServiceTraffic(svc string,
-	w http.ResponseWriter, r *http.Request) {
-
-	obj := new(updateServiceTrafficRequest)
-	err := json.NewDecoder(r.Body).Decode(obj)
-	if err != nil {
-		respond(w, nil, err)
-		return
-	}
-
-	if obj.Values == nil {
-		respond(w, nil, fmt.Errorf("no traffic values"))
-		return
-	}
-
-	grpcReq := &grpc.SetTrafficRequest{
-		Name:    &svc,
-		Traffic: make([]*grpc.TrafficValue, 0),
-	}
-
-	for _, v := range obj.Values {
-		x := v
-		grpcReq.Traffic = append(grpcReq.Traffic, &grpc.TrafficValue{
-			Revision: &x.Revision,
-			Percent:  &x.Percent,
-		})
-	}
-
-	resp, err := h.client.SetFunctionsTraffic(r.Context(), grpcReq)
-	respond(w, resp, err)
-
-}
-
-func (h *functionHandler) deleteGlobalRevision(w http.ResponseWriter, r *http.Request) {
-
-	// h.logger.Debugf("Handling request: %s", this())
-
-	// h.deleteRevision(fmt.Sprintf("%s-%s-%s",
-	// 	functions.PrefixGlobal, mux.Vars(r)["svn"], mux.Vars(r)["rev"]), w, r)
 }
 
 func (h *functionHandler) deleteNamespaceRevision(w http.ResponseWriter, r *http.Request) {
@@ -2632,12 +1671,6 @@ func (h *functionHandler) deleteRevision(rev string,
 // 	}
 // }
 
-func (h *functionHandler) watchGlobalRevision(w http.ResponseWriter, r *http.Request) {
-	// h.logger.Debugf("Handling request: %s", this())
-	// svn := fmt.Sprintf("%s-%s", functions.PrefixGlobal, mux.Vars(r)["svn"])
-	// h.watchRevisions(svn, mux.Vars(r)["rev"] /*functions.PrefixGlobal,*/, w, r)
-}
-
 func (h *functionHandler) watchNamespaceRevision(w http.ResponseWriter, r *http.Request) {
 	h.logger.Debugf("Handling request: %s", this())
 
@@ -2692,14 +1725,6 @@ func (h *functionHandler) singleWorkflowServiceRevisionSSE(w http.ResponseWriter
 
 	h.watchRevisions(svc, rev /*functions.PrefixWorkflow,*/, w, r)
 
-}
-
-func (h *functionHandler) watchGlobalRevisions(w http.ResponseWriter, r *http.Request) {
-
-	// h.logger.Debugf("Handling request: %s", this())
-
-	// svn := fmt.Sprintf("%s-%s", functions.PrefixGlobal, mux.Vars(r)["svn"])
-	// h.watchRevisions(svn, "" /*functions.PrefixGlobal,*/, w, r)
 }
 
 func (h *functionHandler) watchNamespaceRevisions(w http.ResponseWriter, r *http.Request) {
@@ -2807,70 +1832,6 @@ func (h *functionHandler) watchRevisions(svc, rev /*, scope*/ string,
 
 }
 
-//		sn := mux.Vars(r)["serviceName"]
-//		rn := mux.Vars(r)["revisionName"]
-//
-//		// Append prefixNamespace if in namespace route and not
-//		ns := mux.Vars(r)["namespace"]
-//		if ns != "" && !strings.HasPrefix(sn, functions.PrefixNamespace+"-") {
-//			sn = fmt.Sprintf("%s-%s-%s", functions.PrefixNamespace, ns, sn)
-//		}
-//
-//		grpcReq := new(grpc.WatchRevisionsRequest)
-//		grpcReq.ServiceName = &sn
-//		grpcReq.RevisionName = &rn
-//
-//		client, err := h.s.functions.WatchRevisions(r.Context(), grpcReq)
-//		if err != nil {
-//			ErrResponse(w, err)
-//			return
-//		}
-//
-//		defer client.CloseSend()
-//		flusher, err := SetupSEEWriter(w)
-//		if err != nil {
-//			ErrResponse(w, err)
-//			return
-//		}
-//
-//		// Create Heartbeat Ticker
-//		heartbeat := time.NewTicker(10 * time.Second)
-//		defer heartbeat.Stop()
-//
-//		// Start watcher client stream channels
-//		dataCh := make(chan interface{})
-//		errorCh := make(chan error)
-//		go func() {
-//			for {
-//				data, err := client.Recv()
-//				if err != nil {
-//					errorCh <- err
-//					break
-//				} else {
-//					dataCh <- data
-//				}
-//			}
-//		}()
-//
-//		for {
-//			select {
-//			case data := <-dataCh:
-//				err = WriteSSEJSONData(w, flusher, data)
-//			case err = <-errorCh:
-//			case <-client.Context().Done():
-//				err = fmt.Errorf("requested stream has timed out")
-//			case <-heartbeat.C:
-//				SendSSEHeartbeat(w, flusher)
-//			}
-//
-//			// Check for errors
-//			if err != nil {
-//				ErrSSEResponse(w, flusher, err)
-//				heartbeat.Stop()
-//				return
-//			}
-//		}
-//	}
 func (h *functionHandler) watchLogs(w http.ResponseWriter, r *http.Request) {
 
 	h.logger.Debugf("Handling request: %s", this())
@@ -2920,74 +1881,6 @@ func (h *functionHandler) watchLogs(w http.ResponseWriter, r *http.Request) {
 
 	sse(w, ch)
 
-}
-
-//	sn := mux.Vars(r)["podName"]
-//	grpcReq := new(grpc.WatchLogsRequest)
-//	grpcReq.PodName = &sn
-//
-//	client, err := h.s.functions.WatchLogs(r.Context(), grpcReq)
-//	if err != nil {
-//		ErrResponse(w, err)
-//		return
-//	}
-//
-//	defer client.CloseSend()
-//	flusher, err := SetupSEEWriter(w)
-//	if err != nil {
-//		ErrResponse(w, err)
-//		return
-//	}
-//
-//	// Create Heartbeat Ticker
-//	heartbeat := time.NewTicker(10 * time.Second)
-//	defer heartbeat.Stop()
-//
-//	// Start watcher client stream channels
-//	dataCh := make(chan string)
-//	errorCh := make(chan error)
-//	go func() {
-//		for {
-//			data, err := client.Recv()
-//			if err != nil {
-//				errorCh <- err
-//				break
-//			} else {
-//
-//				dataCh <- *data.Data
-//			}
-//		}
-//	}()
-//
-//	for {
-//		select {
-//		case data := <-dataCh:
-//			err = WriteSSEData(w, flusher, []byte(data))
-//		case err = <-errorCh:
-//		case <-client.Context().Done():
-//			err = fmt.Errorf("requested stream has timed out")
-//		case <-heartbeat.C:
-//			SendSSEHeartbeat(w, flusher)
-//		}
-//
-//		// Check for errors
-//		if err != nil {
-//			ErrSSEResponse(w, flusher, err)
-//			heartbeat.Stop()
-//			return
-//		}
-//	}
-//
-// }
-func (h *functionHandler) listGlobalPods(w http.ResponseWriter, r *http.Request) {
-
-	// h.logger.Debugf("Handling request: %s", this())
-
-	// annotations := make(map[string]string)
-	// annotations[functions.ServiceKnativeHeaderRevision] = fmt.Sprintf("%s-%s-%s",
-	// 	functions.PrefixGlobal, mux.Vars(r)["svn"], mux.Vars(r)["rev"])
-	// annotations[functions.ServiceHeaderScope] = functions.PrefixGlobal
-	// h.listPods(annotations, w, r)
 }
 
 func (h *functionHandler) listNamespacePods(w http.ResponseWriter, r *http.Request) {
