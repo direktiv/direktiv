@@ -20,8 +20,9 @@ import (
 // CloudEventsUpdate is the builder for updating CloudEvents entities.
 type CloudEventsUpdate struct {
 	config
-	hooks    []Hook
-	mutation *CloudEventsMutation
+	hooks     []Hook
+	mutation  *CloudEventsMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // Where appends a list predicates to the CloudEventsUpdate builder.
@@ -132,6 +133,12 @@ func (ceu *CloudEventsUpdate) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (ceu *CloudEventsUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *CloudEventsUpdate {
+	ceu.modifiers = append(ceu.modifiers, modifiers...)
+	return ceu
+}
+
 func (ceu *CloudEventsUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -151,18 +158,10 @@ func (ceu *CloudEventsUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 	}
 	if value, ok := ceu.mutation.Event(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Value:  value,
-			Column: cloudevents.FieldEvent,
-		})
+		_spec.SetField(cloudevents.FieldEvent, field.TypeJSON, value)
 	}
 	if value, ok := ceu.mutation.Processed(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeBool,
-			Value:  value,
-			Column: cloudevents.FieldProcessed,
-		})
+		_spec.SetField(cloudevents.FieldProcessed, field.TypeBool, value)
 	}
 	if ceu.mutation.NamespaceCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -199,6 +198,7 @@ func (ceu *CloudEventsUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	_spec.AddModifiers(ceu.modifiers...)
 	if n, err = sqlgraph.UpdateNodes(ctx, ceu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{cloudevents.Label}
@@ -213,9 +213,10 @@ func (ceu *CloudEventsUpdate) sqlSave(ctx context.Context) (n int, err error) {
 // CloudEventsUpdateOne is the builder for updating a single CloudEvents entity.
 type CloudEventsUpdateOne struct {
 	config
-	fields   []string
-	hooks    []Hook
-	mutation *CloudEventsMutation
+	fields    []string
+	hooks     []Hook
+	mutation  *CloudEventsMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // SetEvent sets the "event" field.
@@ -333,6 +334,12 @@ func (ceuo *CloudEventsUpdateOne) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (ceuo *CloudEventsUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *CloudEventsUpdateOne {
+	ceuo.modifiers = append(ceuo.modifiers, modifiers...)
+	return ceuo
+}
+
 func (ceuo *CloudEventsUpdateOne) sqlSave(ctx context.Context) (_node *CloudEvents, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -369,18 +376,10 @@ func (ceuo *CloudEventsUpdateOne) sqlSave(ctx context.Context) (_node *CloudEven
 		}
 	}
 	if value, ok := ceuo.mutation.Event(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Value:  value,
-			Column: cloudevents.FieldEvent,
-		})
+		_spec.SetField(cloudevents.FieldEvent, field.TypeJSON, value)
 	}
 	if value, ok := ceuo.mutation.Processed(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeBool,
-			Value:  value,
-			Column: cloudevents.FieldProcessed,
-		})
+		_spec.SetField(cloudevents.FieldProcessed, field.TypeBool, value)
 	}
 	if ceuo.mutation.NamespaceCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -417,6 +416,7 @@ func (ceuo *CloudEventsUpdateOne) sqlSave(ctx context.Context) (_node *CloudEven
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	_spec.AddModifiers(ceuo.modifiers...)
 	_node = &CloudEvents{config: ceuo.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

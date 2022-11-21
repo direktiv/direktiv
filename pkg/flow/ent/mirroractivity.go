@@ -58,8 +58,7 @@ type MirrorActivityEdges struct {
 func (e MirrorActivityEdges) NamespaceOrErr() (*Namespace, error) {
 	if e.loadedTypes[0] {
 		if e.Namespace == nil {
-			// The edge namespace was loaded in eager-loading,
-			// but was not found.
+			// Edge was loaded but was not found.
 			return nil, &NotFoundError{label: namespace.Label}
 		}
 		return e.Namespace, nil
@@ -72,8 +71,7 @@ func (e MirrorActivityEdges) NamespaceOrErr() (*Namespace, error) {
 func (e MirrorActivityEdges) MirrorOrErr() (*Mirror, error) {
 	if e.loadedTypes[1] {
 		if e.Mirror == nil {
-			// The edge mirror was loaded in eager-loading,
-			// but was not found.
+			// Edge was loaded but was not found.
 			return nil, &NotFoundError{label: mirror.Label}
 		}
 		return e.Mirror, nil
@@ -91,8 +89,8 @@ func (e MirrorActivityEdges) LogsOrErr() ([]*LogMsg, error) {
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
-func (*MirrorActivity) scanValues(columns []string) ([]interface{}, error) {
-	values := make([]interface{}, len(columns))
+func (*MirrorActivity) scanValues(columns []string) ([]any, error) {
+	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
 		case mirroractivity.FieldType, mirroractivity.FieldStatus, mirroractivity.FieldController:
@@ -114,7 +112,7 @@ func (*MirrorActivity) scanValues(columns []string) ([]interface{}, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the MirrorActivity fields.
-func (ma *MirrorActivity) assignValues(columns []string, values []interface{}) error {
+func (ma *MirrorActivity) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}

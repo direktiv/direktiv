@@ -73,8 +73,7 @@ type InstanceEdges struct {
 func (e InstanceEdges) NamespaceOrErr() (*Namespace, error) {
 	if e.loadedTypes[0] {
 		if e.Namespace == nil {
-			// The edge namespace was loaded in eager-loading,
-			// but was not found.
+			// Edge was loaded but was not found.
 			return nil, &NotFoundError{label: namespace.Label}
 		}
 		return e.Namespace, nil
@@ -87,8 +86,7 @@ func (e InstanceEdges) NamespaceOrErr() (*Namespace, error) {
 func (e InstanceEdges) WorkflowOrErr() (*Workflow, error) {
 	if e.loadedTypes[1] {
 		if e.Workflow == nil {
-			// The edge workflow was loaded in eager-loading,
-			// but was not found.
+			// Edge was loaded but was not found.
 			return nil, &NotFoundError{label: workflow.Label}
 		}
 		return e.Workflow, nil
@@ -101,8 +99,7 @@ func (e InstanceEdges) WorkflowOrErr() (*Workflow, error) {
 func (e InstanceEdges) RevisionOrErr() (*Revision, error) {
 	if e.loadedTypes[2] {
 		if e.Revision == nil {
-			// The edge revision was loaded in eager-loading,
-			// but was not found.
+			// Edge was loaded but was not found.
 			return nil, &NotFoundError{label: revision.Label}
 		}
 		return e.Revision, nil
@@ -133,8 +130,7 @@ func (e InstanceEdges) VarsOrErr() ([]*VarRef, error) {
 func (e InstanceEdges) RuntimeOrErr() (*InstanceRuntime, error) {
 	if e.loadedTypes[5] {
 		if e.Runtime == nil {
-			// The edge runtime was loaded in eager-loading,
-			// but was not found.
+			// Edge was loaded but was not found.
 			return nil, &NotFoundError{label: instanceruntime.Label}
 		}
 		return e.Runtime, nil
@@ -161,8 +157,8 @@ func (e InstanceEdges) EventlistenersOrErr() ([]*Events, error) {
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
-func (*Instance) scanValues(columns []string) ([]interface{}, error) {
-	values := make([]interface{}, len(columns))
+func (*Instance) scanValues(columns []string) ([]any, error) {
+	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
 		case instance.FieldStatus, instance.FieldAs, instance.FieldErrorCode, instance.FieldErrorMessage, instance.FieldInvoker:
@@ -186,7 +182,7 @@ func (*Instance) scanValues(columns []string) ([]interface{}, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the Instance fields.
-func (i *Instance) assignValues(columns []string, values []interface{}) error {
+func (i *Instance) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}

@@ -10,6 +10,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/dialect/sql/sqljson"
 	"entgo.io/ent/schema/field"
 	"github.com/direktiv/direktiv/pkg/flow/ent/inode"
 	"github.com/direktiv/direktiv/pkg/flow/ent/mirror"
@@ -22,8 +23,9 @@ import (
 // InodeUpdate is the builder for updating Inode entities.
 type InodeUpdate struct {
 	config
-	hooks    []Hook
-	mutation *InodeMutation
+	hooks     []Hook
+	mutation  *InodeMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // Where appends a list predicates to the InodeUpdate builder.
@@ -61,6 +63,12 @@ func (iu *InodeUpdate) ClearName() *InodeUpdate {
 // SetAttributes sets the "attributes" field.
 func (iu *InodeUpdate) SetAttributes(s []string) *InodeUpdate {
 	iu.mutation.SetAttributes(s)
+	return iu
+}
+
+// AppendAttributes appends s to the "attributes" field.
+func (iu *InodeUpdate) AppendAttributes(s []string) *InodeUpdate {
+	iu.mutation.AppendAttributes(s)
 	return iu
 }
 
@@ -325,6 +333,12 @@ func (iu *InodeUpdate) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (iu *InodeUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *InodeUpdate {
+	iu.modifiers = append(iu.modifiers, modifiers...)
+	return iu
+}
+
 func (iu *InodeUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -344,63 +358,36 @@ func (iu *InodeUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 	}
 	if value, ok := iu.mutation.UpdatedAt(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: inode.FieldUpdatedAt,
-		})
+		_spec.SetField(inode.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if value, ok := iu.mutation.Name(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: inode.FieldName,
-		})
+		_spec.SetField(inode.FieldName, field.TypeString, value)
 	}
 	if iu.mutation.NameCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Column: inode.FieldName,
-		})
+		_spec.ClearField(inode.FieldName, field.TypeString)
 	}
 	if value, ok := iu.mutation.Attributes(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Value:  value,
-			Column: inode.FieldAttributes,
+		_spec.SetField(inode.FieldAttributes, field.TypeJSON, value)
+	}
+	if value, ok := iu.mutation.AppendedAttributes(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, inode.FieldAttributes, value)
 		})
 	}
 	if iu.mutation.AttributesCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Column: inode.FieldAttributes,
-		})
+		_spec.ClearField(inode.FieldAttributes, field.TypeJSON)
 	}
 	if value, ok := iu.mutation.ExtendedType(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: inode.FieldExtendedType,
-		})
+		_spec.SetField(inode.FieldExtendedType, field.TypeString, value)
 	}
 	if iu.mutation.ExtendedTypeCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Column: inode.FieldExtendedType,
-		})
+		_spec.ClearField(inode.FieldExtendedType, field.TypeString)
 	}
 	if value, ok := iu.mutation.ReadOnly(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeBool,
-			Value:  value,
-			Column: inode.FieldReadOnly,
-		})
+		_spec.SetField(inode.FieldReadOnly, field.TypeBool, value)
 	}
 	if iu.mutation.ReadOnlyCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeBool,
-			Column: inode.FieldReadOnly,
-		})
+		_spec.ClearField(inode.FieldReadOnly, field.TypeBool)
 	}
 	if iu.mutation.NamespaceCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -596,6 +583,7 @@ func (iu *InodeUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	_spec.AddModifiers(iu.modifiers...)
 	if n, err = sqlgraph.UpdateNodes(ctx, iu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{inode.Label}
@@ -610,9 +598,10 @@ func (iu *InodeUpdate) sqlSave(ctx context.Context) (n int, err error) {
 // InodeUpdateOne is the builder for updating a single Inode entity.
 type InodeUpdateOne struct {
 	config
-	fields   []string
-	hooks    []Hook
-	mutation *InodeMutation
+	fields    []string
+	hooks     []Hook
+	mutation  *InodeMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // SetUpdatedAt sets the "updated_at" field.
@@ -644,6 +633,12 @@ func (iuo *InodeUpdateOne) ClearName() *InodeUpdateOne {
 // SetAttributes sets the "attributes" field.
 func (iuo *InodeUpdateOne) SetAttributes(s []string) *InodeUpdateOne {
 	iuo.mutation.SetAttributes(s)
+	return iuo
+}
+
+// AppendAttributes appends s to the "attributes" field.
+func (iuo *InodeUpdateOne) AppendAttributes(s []string) *InodeUpdateOne {
+	iuo.mutation.AppendAttributes(s)
 	return iuo
 }
 
@@ -921,6 +916,12 @@ func (iuo *InodeUpdateOne) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (iuo *InodeUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *InodeUpdateOne {
+	iuo.modifiers = append(iuo.modifiers, modifiers...)
+	return iuo
+}
+
 func (iuo *InodeUpdateOne) sqlSave(ctx context.Context) (_node *Inode, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -957,63 +958,36 @@ func (iuo *InodeUpdateOne) sqlSave(ctx context.Context) (_node *Inode, err error
 		}
 	}
 	if value, ok := iuo.mutation.UpdatedAt(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: inode.FieldUpdatedAt,
-		})
+		_spec.SetField(inode.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if value, ok := iuo.mutation.Name(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: inode.FieldName,
-		})
+		_spec.SetField(inode.FieldName, field.TypeString, value)
 	}
 	if iuo.mutation.NameCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Column: inode.FieldName,
-		})
+		_spec.ClearField(inode.FieldName, field.TypeString)
 	}
 	if value, ok := iuo.mutation.Attributes(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Value:  value,
-			Column: inode.FieldAttributes,
+		_spec.SetField(inode.FieldAttributes, field.TypeJSON, value)
+	}
+	if value, ok := iuo.mutation.AppendedAttributes(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, inode.FieldAttributes, value)
 		})
 	}
 	if iuo.mutation.AttributesCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Column: inode.FieldAttributes,
-		})
+		_spec.ClearField(inode.FieldAttributes, field.TypeJSON)
 	}
 	if value, ok := iuo.mutation.ExtendedType(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: inode.FieldExtendedType,
-		})
+		_spec.SetField(inode.FieldExtendedType, field.TypeString, value)
 	}
 	if iuo.mutation.ExtendedTypeCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Column: inode.FieldExtendedType,
-		})
+		_spec.ClearField(inode.FieldExtendedType, field.TypeString)
 	}
 	if value, ok := iuo.mutation.ReadOnly(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeBool,
-			Value:  value,
-			Column: inode.FieldReadOnly,
-		})
+		_spec.SetField(inode.FieldReadOnly, field.TypeBool, value)
 	}
 	if iuo.mutation.ReadOnlyCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeBool,
-			Column: inode.FieldReadOnly,
-		})
+		_spec.ClearField(inode.FieldReadOnly, field.TypeBool)
 	}
 	if iuo.mutation.NamespaceCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -1209,6 +1183,7 @@ func (iuo *InodeUpdateOne) sqlSave(ctx context.Context) (_node *Inode, err error
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	_spec.AddModifiers(iuo.modifiers...)
 	_node = &Inode{config: iuo.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/direktiv/direktiv/pkg/dlog"
 	"github.com/direktiv/direktiv/pkg/secrets/ent"
@@ -69,7 +71,7 @@ func setupDB() (SecretsHandler, error) {
 	}, err
 }
 
-func (db *dbHandler) AddSecret(namespace, name string, secret []byte) error {
+func (db *dbHandler) AddSecret(namespace, name string, secret []byte, ignoreError bool) error {
 
 	logger.Infof("adding secret %s", name)
 
@@ -82,13 +84,21 @@ func (db *dbHandler) AddSecret(namespace, name string, secret []byte) error {
 			)).
 		Only(context.Background())
 
+	if bs != nil && ignoreError {
+		return nil
+	}
 	if bs != nil {
+
 		return fmt.Errorf("secret already exists")
 	}
 
-	d, err := encryptData([]byte(db.key), secret)
-	if bs != nil {
-		return fmt.Errorf("error encrypting data: %v", err)
+	var d []byte
+	var err error
+	if !strings.HasSuffix(name, "/") { // dont excrypt when folder cause  folder have empty data
+		d, err = encryptData([]byte(db.key), secret)
+		if err != nil {
+			return fmt.Errorf("error encrypting data: %v", err)
+		}
 	}
 
 	_, err = db.db.NamespaceSecret.
@@ -98,8 +108,45 @@ func (db *dbHandler) AddSecret(namespace, name string, secret []byte) error {
 		SetNs(namespace).
 		Save(context.Background())
 
+	if err != nil {
+		return err
+	}
 	return err
 
+}
+
+func (db *dbHandler) UpdateSecret(namespace, name string, secret []byte) error {
+
+	logger.Infof("adding secret %s", name)
+
+	bs, err := db.db.NamespaceSecret.
+		Query().
+		Where(
+			namespacesecret.And(
+				namespacesecret.NsEQ(namespace),
+				namespacesecret.NameEQ(name),
+			)).
+		Only(context.Background())
+
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return status.Errorf(codes.NotFound, "secret '%s' not found", name)
+		}
+		return err
+	}
+
+	var d []byte
+	d, err = encryptData([]byte(db.key), secret)
+
+	_, err = db.db.NamespaceSecret.
+		UpdateOne(bs).
+		SetSecret(d).
+		Save(context.Background())
+	if err != nil {
+		return nil
+	}
+
+	return err
 }
 
 func (db *dbHandler) GetSecret(namespace, name string) ([]byte, error) {
@@ -124,15 +171,52 @@ func (db *dbHandler) GetSecret(namespace, name string) ([]byte, error) {
 
 }
 
-func (db *dbHandler) GetSecrets(namespace string) ([]string, error) {
+func (db *dbHandler) GetSecrets(namespace string, name string) ([]string, error) {
 
 	var names []string
+	name = strings.TrimPrefix(name, "/")
 
 	dbs, err := db.db.NamespaceSecret.
 		Query().
 		Where(
 			namespacesecret.And(
 				namespacesecret.NsEQ(namespace),
+				namespacesecret.NameHasPrefix(name),
+			)).
+		All(context.Background())
+
+	if err != nil {
+		return nil, err
+	}
+
+	pathPatternFolders := name + "*/"
+	pathPatternFiles := name + "*"
+
+	for _, s := range dbs {
+
+		matchesPathPatternFolders, _ := filepath.Match(pathPatternFolders, s.Name)
+		matchesPathPatternFiles, _ := filepath.Match(pathPatternFiles, s.Name)
+
+		if matchesPathPatternFiles || matchesPathPatternFolders {
+			names = append(names, s.Name)
+		}
+	}
+
+	return names, nil
+
+}
+
+func (db *dbHandler) SearchForName(namespace string, name string) ([]string, error) {
+
+	var names []string
+	name = strings.TrimPrefix(name, "/")
+
+	dbs, err := db.db.NamespaceSecret.
+		Query().
+		Where(
+			namespacesecret.And(
+				namespacesecret.NsEQ(namespace),
+				namespacesecret.NameContains(name),
 			)).
 		All(context.Background())
 
@@ -142,6 +226,7 @@ func (db *dbHandler) GetSecrets(namespace string) ([]string, error) {
 
 	for _, s := range dbs {
 		names = append(names, s.Name)
+
 	}
 
 	return names, nil
@@ -150,7 +235,13 @@ func (db *dbHandler) GetSecrets(namespace string) ([]string, error) {
 
 func (db *dbHandler) RemoveSecret(namespace, name string) error {
 
-	_, err := db.db.NamespaceSecret.
+	//check if secret is already existing
+	_, err := db.GetSecret(namespace, name)
+	if err != nil {
+		return err
+	}
+
+	_, err = db.db.NamespaceSecret.
 		Delete().
 		Where(
 			namespacesecret.And(
@@ -160,10 +251,24 @@ func (db *dbHandler) RemoveSecret(namespace, name string) error {
 		Exec(context.Background())
 
 	return err
-
 }
 
-func (db *dbHandler) RemoveSecrets(namespace string) error {
+func (db *dbHandler) RemoveFolder(namespace, name string) error {
+	if !strings.HasSuffix(name, "/") {
+		return status.Errorf(codes.InvalidArgument, "secrets requested, expected folder")
+	}
+	_, err := db.db.NamespaceSecret.
+		Delete().
+		Where(
+			namespacesecret.And(
+				namespacesecret.NsEQ(namespace),
+				namespacesecret.NameHasPrefix(name),
+			)).
+		Exec(context.Background())
+	return err
+}
+
+func (db *dbHandler) RemoveNamespaceSecrets(namespace string) error {
 
 	_, err := db.db.NamespaceSecret.
 		Delete().

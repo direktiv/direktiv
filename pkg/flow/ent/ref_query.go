@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"math"
 
+	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -22,17 +23,17 @@ import (
 // RefQuery is the builder for querying Ref entities.
 type RefQuery struct {
 	config
-	limit      *int
-	offset     *int
-	unique     *bool
-	order      []OrderFunc
-	fields     []string
-	predicates []predicate.Ref
-	// eager-loading edges.
+	limit        *int
+	offset       *int
+	unique       *bool
+	order        []OrderFunc
+	fields       []string
+	predicates   []predicate.Ref
 	withWorkflow *WorkflowQuery
 	withRevision *RevisionQuery
 	withRoutes   *RouteQuery
 	withFKs      bool
+	modifiers    []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -373,7 +374,6 @@ func (rq *RefQuery) WithRoutes(opts ...func(*RouteQuery)) *RefQuery {
 //		GroupBy(ref.FieldImmutable).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-//
 func (rq *RefQuery) GroupBy(field string, fields ...string) *RefGroupBy {
 	grbuild := &RefGroupBy{config: rq.config}
 	grbuild.fields = append([]string{field}, fields...)
@@ -400,13 +400,17 @@ func (rq *RefQuery) GroupBy(field string, fields ...string) *RefGroupBy {
 //	client.Ref.Query().
 //		Select(ref.FieldImmutable).
 //		Scan(ctx, &v)
-//
 func (rq *RefQuery) Select(fields ...string) *RefSelect {
 	rq.fields = append(rq.fields, fields...)
 	selbuild := &RefSelect{RefQuery: rq}
 	selbuild.label = ref.Label
 	selbuild.flds, selbuild.scan = &rq.fields, selbuild.Scan
 	return selbuild
+}
+
+// Aggregate returns a RefSelect configured with the given aggregations.
+func (rq *RefQuery) Aggregate(fns ...AggregateFunc) *RefSelect {
+	return rq.Select().Aggregate(fns...)
 }
 
 func (rq *RefQuery) prepareQuery(ctx context.Context) error {
@@ -442,14 +446,17 @@ func (rq *RefQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Ref, err
 	if withFKs {
 		_spec.Node.Columns = append(_spec.Node.Columns, ref.ForeignKeys...)
 	}
-	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
+	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Ref).scanValues(nil, columns)
 	}
-	_spec.Assign = func(columns []string, values []interface{}) error {
+	_spec.Assign = func(columns []string, values []any) error {
 		node := &Ref{config: rq.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
+	}
+	if len(rq.modifiers) > 0 {
+		_spec.Modifiers = rq.modifiers
 	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
@@ -460,99 +467,123 @@ func (rq *RefQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Ref, err
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-
 	if query := rq.withWorkflow; query != nil {
-		ids := make([]uuid.UUID, 0, len(nodes))
-		nodeids := make(map[uuid.UUID][]*Ref)
-		for i := range nodes {
-			if nodes[i].workflow_refs == nil {
-				continue
-			}
-			fk := *nodes[i].workflow_refs
-			if _, ok := nodeids[fk]; !ok {
-				ids = append(ids, fk)
-			}
-			nodeids[fk] = append(nodeids[fk], nodes[i])
-		}
-		query.Where(workflow.IDIn(ids...))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := rq.loadWorkflow(ctx, query, nodes, nil,
+			func(n *Ref, e *Workflow) { n.Edges.Workflow = e }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			nodes, ok := nodeids[n.ID]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "workflow_refs" returned %v`, n.ID)
-			}
-			for i := range nodes {
-				nodes[i].Edges.Workflow = n
-			}
-		}
 	}
-
 	if query := rq.withRevision; query != nil {
-		ids := make([]uuid.UUID, 0, len(nodes))
-		nodeids := make(map[uuid.UUID][]*Ref)
-		for i := range nodes {
-			if nodes[i].revision_refs == nil {
-				continue
-			}
-			fk := *nodes[i].revision_refs
-			if _, ok := nodeids[fk]; !ok {
-				ids = append(ids, fk)
-			}
-			nodeids[fk] = append(nodeids[fk], nodes[i])
-		}
-		query.Where(revision.IDIn(ids...))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := rq.loadRevision(ctx, query, nodes, nil,
+			func(n *Ref, e *Revision) { n.Edges.Revision = e }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			nodes, ok := nodeids[n.ID]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "revision_refs" returned %v`, n.ID)
-			}
-			for i := range nodes {
-				nodes[i].Edges.Revision = n
-			}
-		}
 	}
-
 	if query := rq.withRoutes; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[uuid.UUID]*Ref)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Routes = []*Route{}
-		}
-		query.withFKs = true
-		query.Where(predicate.Route(func(s *sql.Selector) {
-			s.Where(sql.InValues(ref.RoutesColumn, fks...))
-		}))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := rq.loadRoutes(ctx, query, nodes,
+			func(n *Ref) { n.Edges.Routes = []*Route{} },
+			func(n *Ref, e *Route) { n.Edges.Routes = append(n.Edges.Routes, e) }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			fk := n.ref_routes
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "ref_routes" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "ref_routes" returned %v for node %v`, *fk, n.ID)
-			}
-			node.Edges.Routes = append(node.Edges.Routes, n)
+	}
+	return nodes, nil
+}
+
+func (rq *RefQuery) loadWorkflow(ctx context.Context, query *WorkflowQuery, nodes []*Ref, init func(*Ref), assign func(*Ref, *Workflow)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Ref)
+	for i := range nodes {
+		if nodes[i].workflow_refs == nil {
+			continue
+		}
+		fk := *nodes[i].workflow_refs
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	query.Where(workflow.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "workflow_refs" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
 		}
 	}
-
-	return nodes, nil
+	return nil
+}
+func (rq *RefQuery) loadRevision(ctx context.Context, query *RevisionQuery, nodes []*Ref, init func(*Ref), assign func(*Ref, *Revision)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Ref)
+	for i := range nodes {
+		if nodes[i].revision_refs == nil {
+			continue
+		}
+		fk := *nodes[i].revision_refs
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	query.Where(revision.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "revision_refs" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (rq *RefQuery) loadRoutes(ctx context.Context, query *RouteQuery, nodes []*Ref, init func(*Ref), assign func(*Ref, *Route)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Ref)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Route(func(s *sql.Selector) {
+		s.Where(sql.InValues(ref.RoutesColumn, fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.ref_routes
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "ref_routes" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "ref_routes" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
 }
 
 func (rq *RefQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := rq.querySpec()
+	if len(rq.modifiers) > 0 {
+		_spec.Modifiers = rq.modifiers
+	}
 	_spec.Node.Columns = rq.fields
 	if len(rq.fields) > 0 {
 		_spec.Unique = rq.unique != nil && *rq.unique
@@ -561,11 +592,14 @@ func (rq *RefQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (rq *RefQuery) sqlExist(ctx context.Context) (bool, error) {
-	n, err := rq.sqlCount(ctx)
-	if err != nil {
+	switch _, err := rq.FirstID(ctx); {
+	case IsNotFound(err):
+		return false, nil
+	case err != nil:
 		return false, fmt.Errorf("ent: check existence: %w", err)
+	default:
+		return true, nil
 	}
-	return n > 0, nil
 }
 
 func (rq *RefQuery) querySpec() *sqlgraph.QuerySpec {
@@ -631,6 +665,9 @@ func (rq *RefQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if rq.unique != nil && *rq.unique {
 		selector.Distinct()
 	}
+	for _, m := range rq.modifiers {
+		m(selector)
+	}
 	for _, p := range rq.predicates {
 		p(selector)
 	}
@@ -646,6 +683,38 @@ func (rq *RefQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector.Limit(*limit)
 	}
 	return selector
+}
+
+// ForUpdate locks the selected rows against concurrent updates, and prevent them from being
+// updated, deleted or "selected ... for update" by other sessions, until the transaction is
+// either committed or rolled-back.
+func (rq *RefQuery) ForUpdate(opts ...sql.LockOption) *RefQuery {
+	if rq.driver.Dialect() == dialect.Postgres {
+		rq.Unique(false)
+	}
+	rq.modifiers = append(rq.modifiers, func(s *sql.Selector) {
+		s.ForUpdate(opts...)
+	})
+	return rq
+}
+
+// ForShare behaves similarly to ForUpdate, except that it acquires a shared mode lock
+// on any rows that are read. Other sessions can read the rows, but cannot modify them
+// until your transaction commits.
+func (rq *RefQuery) ForShare(opts ...sql.LockOption) *RefQuery {
+	if rq.driver.Dialect() == dialect.Postgres {
+		rq.Unique(false)
+	}
+	rq.modifiers = append(rq.modifiers, func(s *sql.Selector) {
+		s.ForShare(opts...)
+	})
+	return rq
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (rq *RefQuery) Modify(modifiers ...func(s *sql.Selector)) *RefSelect {
+	rq.modifiers = append(rq.modifiers, modifiers...)
+	return rq.Select()
 }
 
 // RefGroupBy is the group-by builder for Ref entities.
@@ -666,7 +735,7 @@ func (rgb *RefGroupBy) Aggregate(fns ...AggregateFunc) *RefGroupBy {
 }
 
 // Scan applies the group-by query and scans the result into the given value.
-func (rgb *RefGroupBy) Scan(ctx context.Context, v interface{}) error {
+func (rgb *RefGroupBy) Scan(ctx context.Context, v any) error {
 	query, err := rgb.path(ctx)
 	if err != nil {
 		return err
@@ -675,7 +744,7 @@ func (rgb *RefGroupBy) Scan(ctx context.Context, v interface{}) error {
 	return rgb.sqlScan(ctx, v)
 }
 
-func (rgb *RefGroupBy) sqlScan(ctx context.Context, v interface{}) error {
+func (rgb *RefGroupBy) sqlScan(ctx context.Context, v any) error {
 	for _, f := range rgb.fields {
 		if !ref.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for group-by", f)}
@@ -700,8 +769,6 @@ func (rgb *RefGroupBy) sqlQuery() *sql.Selector {
 	for _, fn := range rgb.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	// If no columns were selected in a custom aggregation function, the default
-	// selection is the fields used for "group-by", and the aggregation functions.
 	if len(selector.SelectedColumns()) == 0 {
 		columns := make([]string, 0, len(rgb.fields)+len(rgb.fns))
 		for _, f := range rgb.fields {
@@ -721,8 +788,14 @@ type RefSelect struct {
 	sql *sql.Selector
 }
 
+// Aggregate adds the given aggregation functions to the selector query.
+func (rs *RefSelect) Aggregate(fns ...AggregateFunc) *RefSelect {
+	rs.fns = append(rs.fns, fns...)
+	return rs
+}
+
 // Scan applies the selector query and scans the result into the given value.
-func (rs *RefSelect) Scan(ctx context.Context, v interface{}) error {
+func (rs *RefSelect) Scan(ctx context.Context, v any) error {
 	if err := rs.prepareQuery(ctx); err != nil {
 		return err
 	}
@@ -730,7 +803,17 @@ func (rs *RefSelect) Scan(ctx context.Context, v interface{}) error {
 	return rs.sqlScan(ctx, v)
 }
 
-func (rs *RefSelect) sqlScan(ctx context.Context, v interface{}) error {
+func (rs *RefSelect) sqlScan(ctx context.Context, v any) error {
+	aggregation := make([]string, 0, len(rs.fns))
+	for _, fn := range rs.fns {
+		aggregation = append(aggregation, fn(rs.sql))
+	}
+	switch n := len(*rs.selector.flds); {
+	case n == 0 && len(aggregation) > 0:
+		rs.sql.Select(aggregation...)
+	case n != 0 && len(aggregation) > 0:
+		rs.sql.AppendSelect(aggregation...)
+	}
 	rows := &sql.Rows{}
 	query, args := rs.sql.Query()
 	if err := rs.driver.Query(ctx, query, args, rows); err != nil {
@@ -738,4 +821,10 @@ func (rs *RefSelect) sqlScan(ctx context.Context, v interface{}) error {
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (rs *RefSelect) Modify(modifiers ...func(s *sql.Selector)) *RefSelect {
+	rs.modifiers = append(rs.modifiers, modifiers...)
+	return rs
 }

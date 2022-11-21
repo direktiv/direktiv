@@ -111,11 +111,7 @@ func (su *ServicesUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 	}
 	if value, ok := su.mutation.Data(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: services.FieldData,
-		})
+		_spec.SetField(services.FieldData, field.TypeString, value)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, su.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -250,11 +246,7 @@ func (suo *ServicesUpdateOne) sqlSave(ctx context.Context) (_node *Services, err
 		}
 	}
 	if value, ok := suo.mutation.Data(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: services.FieldData,
-		})
+		_spec.SetField(services.FieldData, field.TypeString, value)
 	}
 	_node = &Services{config: suo.config}
 	_spec.Assign = _node.assignValues

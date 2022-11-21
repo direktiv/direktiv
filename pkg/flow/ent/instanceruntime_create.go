@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"time"
 
+	"entgo.io/ent/dialect"
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
@@ -20,6 +22,7 @@ type InstanceRuntimeCreate struct {
 	config
 	mutation *InstanceRuntimeMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetInput sets the "input" field.
@@ -355,112 +358,61 @@ func (irc *InstanceRuntimeCreate) createSpec() (*InstanceRuntime, *sqlgraph.Crea
 			},
 		}
 	)
+	_spec.OnConflict = irc.conflict
 	if id, ok := irc.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
 	if value, ok := irc.mutation.Input(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeBytes,
-			Value:  value,
-			Column: instanceruntime.FieldInput,
-		})
+		_spec.SetField(instanceruntime.FieldInput, field.TypeBytes, value)
 		_node.Input = value
 	}
 	if value, ok := irc.mutation.Data(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: instanceruntime.FieldData,
-		})
+		_spec.SetField(instanceruntime.FieldData, field.TypeString, value)
 		_node.Data = value
 	}
 	if value, ok := irc.mutation.Controller(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: instanceruntime.FieldController,
-		})
+		_spec.SetField(instanceruntime.FieldController, field.TypeString, value)
 		_node.Controller = value
 	}
 	if value, ok := irc.mutation.Memory(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: instanceruntime.FieldMemory,
-		})
+		_spec.SetField(instanceruntime.FieldMemory, field.TypeString, value)
 		_node.Memory = value
 	}
 	if value, ok := irc.mutation.Flow(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Value:  value,
-			Column: instanceruntime.FieldFlow,
-		})
+		_spec.SetField(instanceruntime.FieldFlow, field.TypeJSON, value)
 		_node.Flow = value
 	}
 	if value, ok := irc.mutation.Output(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: instanceruntime.FieldOutput,
-		})
+		_spec.SetField(instanceruntime.FieldOutput, field.TypeString, value)
 		_node.Output = value
 	}
 	if value, ok := irc.mutation.StateBeginTime(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: instanceruntime.FieldStateBeginTime,
-		})
+		_spec.SetField(instanceruntime.FieldStateBeginTime, field.TypeTime, value)
 		_node.StateBeginTime = value
 	}
 	if value, ok := irc.mutation.Deadline(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: instanceruntime.FieldDeadline,
-		})
+		_spec.SetField(instanceruntime.FieldDeadline, field.TypeTime, value)
 		_node.Deadline = value
 	}
 	if value, ok := irc.mutation.Attempts(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
-			Value:  value,
-			Column: instanceruntime.FieldAttempts,
-		})
+		_spec.SetField(instanceruntime.FieldAttempts, field.TypeInt, value)
 		_node.Attempts = value
 	}
 	if value, ok := irc.mutation.CallerData(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: instanceruntime.FieldCallerData,
-		})
+		_spec.SetField(instanceruntime.FieldCallerData, field.TypeString, value)
 		_node.CallerData = value
 	}
 	if value, ok := irc.mutation.InstanceContext(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: instanceruntime.FieldInstanceContext,
-		})
+		_spec.SetField(instanceruntime.FieldInstanceContext, field.TypeString, value)
 		_node.InstanceContext = value
 	}
 	if value, ok := irc.mutation.StateContext(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: instanceruntime.FieldStateContext,
-		})
+		_spec.SetField(instanceruntime.FieldStateContext, field.TypeString, value)
 		_node.StateContext = value
 	}
 	if value, ok := irc.mutation.Metadata(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: instanceruntime.FieldMetadata,
-		})
+		_spec.SetField(instanceruntime.FieldMetadata, field.TypeString, value)
 		_node.Metadata = value
 	}
 	if nodes := irc.mutation.InstanceIDs(); len(nodes) > 0 {
@@ -506,10 +458,617 @@ func (irc *InstanceRuntimeCreate) createSpec() (*InstanceRuntime, *sqlgraph.Crea
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.InstanceRuntime.Create().
+//		SetInput(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.InstanceRuntimeUpsert) {
+//			SetInput(v+v).
+//		}).
+//		Exec(ctx)
+func (irc *InstanceRuntimeCreate) OnConflict(opts ...sql.ConflictOption) *InstanceRuntimeUpsertOne {
+	irc.conflict = opts
+	return &InstanceRuntimeUpsertOne{
+		create: irc,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.InstanceRuntime.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (irc *InstanceRuntimeCreate) OnConflictColumns(columns ...string) *InstanceRuntimeUpsertOne {
+	irc.conflict = append(irc.conflict, sql.ConflictColumns(columns...))
+	return &InstanceRuntimeUpsertOne{
+		create: irc,
+	}
+}
+
+type (
+	// InstanceRuntimeUpsertOne is the builder for "upsert"-ing
+	//  one InstanceRuntime node.
+	InstanceRuntimeUpsertOne struct {
+		create *InstanceRuntimeCreate
+	}
+
+	// InstanceRuntimeUpsert is the "OnConflict" setter.
+	InstanceRuntimeUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetData sets the "data" field.
+func (u *InstanceRuntimeUpsert) SetData(v string) *InstanceRuntimeUpsert {
+	u.Set(instanceruntime.FieldData, v)
+	return u
+}
+
+// UpdateData sets the "data" field to the value that was provided on create.
+func (u *InstanceRuntimeUpsert) UpdateData() *InstanceRuntimeUpsert {
+	u.SetExcluded(instanceruntime.FieldData)
+	return u
+}
+
+// SetController sets the "controller" field.
+func (u *InstanceRuntimeUpsert) SetController(v string) *InstanceRuntimeUpsert {
+	u.Set(instanceruntime.FieldController, v)
+	return u
+}
+
+// UpdateController sets the "controller" field to the value that was provided on create.
+func (u *InstanceRuntimeUpsert) UpdateController() *InstanceRuntimeUpsert {
+	u.SetExcluded(instanceruntime.FieldController)
+	return u
+}
+
+// ClearController clears the value of the "controller" field.
+func (u *InstanceRuntimeUpsert) ClearController() *InstanceRuntimeUpsert {
+	u.SetNull(instanceruntime.FieldController)
+	return u
+}
+
+// SetMemory sets the "memory" field.
+func (u *InstanceRuntimeUpsert) SetMemory(v string) *InstanceRuntimeUpsert {
+	u.Set(instanceruntime.FieldMemory, v)
+	return u
+}
+
+// UpdateMemory sets the "memory" field to the value that was provided on create.
+func (u *InstanceRuntimeUpsert) UpdateMemory() *InstanceRuntimeUpsert {
+	u.SetExcluded(instanceruntime.FieldMemory)
+	return u
+}
+
+// ClearMemory clears the value of the "memory" field.
+func (u *InstanceRuntimeUpsert) ClearMemory() *InstanceRuntimeUpsert {
+	u.SetNull(instanceruntime.FieldMemory)
+	return u
+}
+
+// SetFlow sets the "flow" field.
+func (u *InstanceRuntimeUpsert) SetFlow(v []string) *InstanceRuntimeUpsert {
+	u.Set(instanceruntime.FieldFlow, v)
+	return u
+}
+
+// UpdateFlow sets the "flow" field to the value that was provided on create.
+func (u *InstanceRuntimeUpsert) UpdateFlow() *InstanceRuntimeUpsert {
+	u.SetExcluded(instanceruntime.FieldFlow)
+	return u
+}
+
+// ClearFlow clears the value of the "flow" field.
+func (u *InstanceRuntimeUpsert) ClearFlow() *InstanceRuntimeUpsert {
+	u.SetNull(instanceruntime.FieldFlow)
+	return u
+}
+
+// SetOutput sets the "output" field.
+func (u *InstanceRuntimeUpsert) SetOutput(v string) *InstanceRuntimeUpsert {
+	u.Set(instanceruntime.FieldOutput, v)
+	return u
+}
+
+// UpdateOutput sets the "output" field to the value that was provided on create.
+func (u *InstanceRuntimeUpsert) UpdateOutput() *InstanceRuntimeUpsert {
+	u.SetExcluded(instanceruntime.FieldOutput)
+	return u
+}
+
+// ClearOutput clears the value of the "output" field.
+func (u *InstanceRuntimeUpsert) ClearOutput() *InstanceRuntimeUpsert {
+	u.SetNull(instanceruntime.FieldOutput)
+	return u
+}
+
+// SetStateBeginTime sets the "stateBeginTime" field.
+func (u *InstanceRuntimeUpsert) SetStateBeginTime(v time.Time) *InstanceRuntimeUpsert {
+	u.Set(instanceruntime.FieldStateBeginTime, v)
+	return u
+}
+
+// UpdateStateBeginTime sets the "stateBeginTime" field to the value that was provided on create.
+func (u *InstanceRuntimeUpsert) UpdateStateBeginTime() *InstanceRuntimeUpsert {
+	u.SetExcluded(instanceruntime.FieldStateBeginTime)
+	return u
+}
+
+// ClearStateBeginTime clears the value of the "stateBeginTime" field.
+func (u *InstanceRuntimeUpsert) ClearStateBeginTime() *InstanceRuntimeUpsert {
+	u.SetNull(instanceruntime.FieldStateBeginTime)
+	return u
+}
+
+// SetDeadline sets the "deadline" field.
+func (u *InstanceRuntimeUpsert) SetDeadline(v time.Time) *InstanceRuntimeUpsert {
+	u.Set(instanceruntime.FieldDeadline, v)
+	return u
+}
+
+// UpdateDeadline sets the "deadline" field to the value that was provided on create.
+func (u *InstanceRuntimeUpsert) UpdateDeadline() *InstanceRuntimeUpsert {
+	u.SetExcluded(instanceruntime.FieldDeadline)
+	return u
+}
+
+// ClearDeadline clears the value of the "deadline" field.
+func (u *InstanceRuntimeUpsert) ClearDeadline() *InstanceRuntimeUpsert {
+	u.SetNull(instanceruntime.FieldDeadline)
+	return u
+}
+
+// SetAttempts sets the "attempts" field.
+func (u *InstanceRuntimeUpsert) SetAttempts(v int) *InstanceRuntimeUpsert {
+	u.Set(instanceruntime.FieldAttempts, v)
+	return u
+}
+
+// UpdateAttempts sets the "attempts" field to the value that was provided on create.
+func (u *InstanceRuntimeUpsert) UpdateAttempts() *InstanceRuntimeUpsert {
+	u.SetExcluded(instanceruntime.FieldAttempts)
+	return u
+}
+
+// AddAttempts adds v to the "attempts" field.
+func (u *InstanceRuntimeUpsert) AddAttempts(v int) *InstanceRuntimeUpsert {
+	u.Add(instanceruntime.FieldAttempts, v)
+	return u
+}
+
+// ClearAttempts clears the value of the "attempts" field.
+func (u *InstanceRuntimeUpsert) ClearAttempts() *InstanceRuntimeUpsert {
+	u.SetNull(instanceruntime.FieldAttempts)
+	return u
+}
+
+// SetCallerData sets the "caller_data" field.
+func (u *InstanceRuntimeUpsert) SetCallerData(v string) *InstanceRuntimeUpsert {
+	u.Set(instanceruntime.FieldCallerData, v)
+	return u
+}
+
+// UpdateCallerData sets the "caller_data" field to the value that was provided on create.
+func (u *InstanceRuntimeUpsert) UpdateCallerData() *InstanceRuntimeUpsert {
+	u.SetExcluded(instanceruntime.FieldCallerData)
+	return u
+}
+
+// ClearCallerData clears the value of the "caller_data" field.
+func (u *InstanceRuntimeUpsert) ClearCallerData() *InstanceRuntimeUpsert {
+	u.SetNull(instanceruntime.FieldCallerData)
+	return u
+}
+
+// SetInstanceContext sets the "instanceContext" field.
+func (u *InstanceRuntimeUpsert) SetInstanceContext(v string) *InstanceRuntimeUpsert {
+	u.Set(instanceruntime.FieldInstanceContext, v)
+	return u
+}
+
+// UpdateInstanceContext sets the "instanceContext" field to the value that was provided on create.
+func (u *InstanceRuntimeUpsert) UpdateInstanceContext() *InstanceRuntimeUpsert {
+	u.SetExcluded(instanceruntime.FieldInstanceContext)
+	return u
+}
+
+// ClearInstanceContext clears the value of the "instanceContext" field.
+func (u *InstanceRuntimeUpsert) ClearInstanceContext() *InstanceRuntimeUpsert {
+	u.SetNull(instanceruntime.FieldInstanceContext)
+	return u
+}
+
+// SetStateContext sets the "stateContext" field.
+func (u *InstanceRuntimeUpsert) SetStateContext(v string) *InstanceRuntimeUpsert {
+	u.Set(instanceruntime.FieldStateContext, v)
+	return u
+}
+
+// UpdateStateContext sets the "stateContext" field to the value that was provided on create.
+func (u *InstanceRuntimeUpsert) UpdateStateContext() *InstanceRuntimeUpsert {
+	u.SetExcluded(instanceruntime.FieldStateContext)
+	return u
+}
+
+// ClearStateContext clears the value of the "stateContext" field.
+func (u *InstanceRuntimeUpsert) ClearStateContext() *InstanceRuntimeUpsert {
+	u.SetNull(instanceruntime.FieldStateContext)
+	return u
+}
+
+// SetMetadata sets the "metadata" field.
+func (u *InstanceRuntimeUpsert) SetMetadata(v string) *InstanceRuntimeUpsert {
+	u.Set(instanceruntime.FieldMetadata, v)
+	return u
+}
+
+// UpdateMetadata sets the "metadata" field to the value that was provided on create.
+func (u *InstanceRuntimeUpsert) UpdateMetadata() *InstanceRuntimeUpsert {
+	u.SetExcluded(instanceruntime.FieldMetadata)
+	return u
+}
+
+// ClearMetadata clears the value of the "metadata" field.
+func (u *InstanceRuntimeUpsert) ClearMetadata() *InstanceRuntimeUpsert {
+	u.SetNull(instanceruntime.FieldMetadata)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// Using this option is equivalent to using:
+//
+//	client.InstanceRuntime.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(instanceruntime.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *InstanceRuntimeUpsertOne) UpdateNewValues() *InstanceRuntimeUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(instanceruntime.FieldID)
+		}
+		if _, exists := u.create.mutation.Input(); exists {
+			s.SetIgnore(instanceruntime.FieldInput)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.InstanceRuntime.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *InstanceRuntimeUpsertOne) Ignore() *InstanceRuntimeUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *InstanceRuntimeUpsertOne) DoNothing() *InstanceRuntimeUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the InstanceRuntimeCreate.OnConflict
+// documentation for more info.
+func (u *InstanceRuntimeUpsertOne) Update(set func(*InstanceRuntimeUpsert)) *InstanceRuntimeUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&InstanceRuntimeUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetData sets the "data" field.
+func (u *InstanceRuntimeUpsertOne) SetData(v string) *InstanceRuntimeUpsertOne {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.SetData(v)
+	})
+}
+
+// UpdateData sets the "data" field to the value that was provided on create.
+func (u *InstanceRuntimeUpsertOne) UpdateData() *InstanceRuntimeUpsertOne {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.UpdateData()
+	})
+}
+
+// SetController sets the "controller" field.
+func (u *InstanceRuntimeUpsertOne) SetController(v string) *InstanceRuntimeUpsertOne {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.SetController(v)
+	})
+}
+
+// UpdateController sets the "controller" field to the value that was provided on create.
+func (u *InstanceRuntimeUpsertOne) UpdateController() *InstanceRuntimeUpsertOne {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.UpdateController()
+	})
+}
+
+// ClearController clears the value of the "controller" field.
+func (u *InstanceRuntimeUpsertOne) ClearController() *InstanceRuntimeUpsertOne {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.ClearController()
+	})
+}
+
+// SetMemory sets the "memory" field.
+func (u *InstanceRuntimeUpsertOne) SetMemory(v string) *InstanceRuntimeUpsertOne {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.SetMemory(v)
+	})
+}
+
+// UpdateMemory sets the "memory" field to the value that was provided on create.
+func (u *InstanceRuntimeUpsertOne) UpdateMemory() *InstanceRuntimeUpsertOne {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.UpdateMemory()
+	})
+}
+
+// ClearMemory clears the value of the "memory" field.
+func (u *InstanceRuntimeUpsertOne) ClearMemory() *InstanceRuntimeUpsertOne {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.ClearMemory()
+	})
+}
+
+// SetFlow sets the "flow" field.
+func (u *InstanceRuntimeUpsertOne) SetFlow(v []string) *InstanceRuntimeUpsertOne {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.SetFlow(v)
+	})
+}
+
+// UpdateFlow sets the "flow" field to the value that was provided on create.
+func (u *InstanceRuntimeUpsertOne) UpdateFlow() *InstanceRuntimeUpsertOne {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.UpdateFlow()
+	})
+}
+
+// ClearFlow clears the value of the "flow" field.
+func (u *InstanceRuntimeUpsertOne) ClearFlow() *InstanceRuntimeUpsertOne {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.ClearFlow()
+	})
+}
+
+// SetOutput sets the "output" field.
+func (u *InstanceRuntimeUpsertOne) SetOutput(v string) *InstanceRuntimeUpsertOne {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.SetOutput(v)
+	})
+}
+
+// UpdateOutput sets the "output" field to the value that was provided on create.
+func (u *InstanceRuntimeUpsertOne) UpdateOutput() *InstanceRuntimeUpsertOne {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.UpdateOutput()
+	})
+}
+
+// ClearOutput clears the value of the "output" field.
+func (u *InstanceRuntimeUpsertOne) ClearOutput() *InstanceRuntimeUpsertOne {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.ClearOutput()
+	})
+}
+
+// SetStateBeginTime sets the "stateBeginTime" field.
+func (u *InstanceRuntimeUpsertOne) SetStateBeginTime(v time.Time) *InstanceRuntimeUpsertOne {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.SetStateBeginTime(v)
+	})
+}
+
+// UpdateStateBeginTime sets the "stateBeginTime" field to the value that was provided on create.
+func (u *InstanceRuntimeUpsertOne) UpdateStateBeginTime() *InstanceRuntimeUpsertOne {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.UpdateStateBeginTime()
+	})
+}
+
+// ClearStateBeginTime clears the value of the "stateBeginTime" field.
+func (u *InstanceRuntimeUpsertOne) ClearStateBeginTime() *InstanceRuntimeUpsertOne {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.ClearStateBeginTime()
+	})
+}
+
+// SetDeadline sets the "deadline" field.
+func (u *InstanceRuntimeUpsertOne) SetDeadline(v time.Time) *InstanceRuntimeUpsertOne {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.SetDeadline(v)
+	})
+}
+
+// UpdateDeadline sets the "deadline" field to the value that was provided on create.
+func (u *InstanceRuntimeUpsertOne) UpdateDeadline() *InstanceRuntimeUpsertOne {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.UpdateDeadline()
+	})
+}
+
+// ClearDeadline clears the value of the "deadline" field.
+func (u *InstanceRuntimeUpsertOne) ClearDeadline() *InstanceRuntimeUpsertOne {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.ClearDeadline()
+	})
+}
+
+// SetAttempts sets the "attempts" field.
+func (u *InstanceRuntimeUpsertOne) SetAttempts(v int) *InstanceRuntimeUpsertOne {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.SetAttempts(v)
+	})
+}
+
+// AddAttempts adds v to the "attempts" field.
+func (u *InstanceRuntimeUpsertOne) AddAttempts(v int) *InstanceRuntimeUpsertOne {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.AddAttempts(v)
+	})
+}
+
+// UpdateAttempts sets the "attempts" field to the value that was provided on create.
+func (u *InstanceRuntimeUpsertOne) UpdateAttempts() *InstanceRuntimeUpsertOne {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.UpdateAttempts()
+	})
+}
+
+// ClearAttempts clears the value of the "attempts" field.
+func (u *InstanceRuntimeUpsertOne) ClearAttempts() *InstanceRuntimeUpsertOne {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.ClearAttempts()
+	})
+}
+
+// SetCallerData sets the "caller_data" field.
+func (u *InstanceRuntimeUpsertOne) SetCallerData(v string) *InstanceRuntimeUpsertOne {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.SetCallerData(v)
+	})
+}
+
+// UpdateCallerData sets the "caller_data" field to the value that was provided on create.
+func (u *InstanceRuntimeUpsertOne) UpdateCallerData() *InstanceRuntimeUpsertOne {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.UpdateCallerData()
+	})
+}
+
+// ClearCallerData clears the value of the "caller_data" field.
+func (u *InstanceRuntimeUpsertOne) ClearCallerData() *InstanceRuntimeUpsertOne {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.ClearCallerData()
+	})
+}
+
+// SetInstanceContext sets the "instanceContext" field.
+func (u *InstanceRuntimeUpsertOne) SetInstanceContext(v string) *InstanceRuntimeUpsertOne {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.SetInstanceContext(v)
+	})
+}
+
+// UpdateInstanceContext sets the "instanceContext" field to the value that was provided on create.
+func (u *InstanceRuntimeUpsertOne) UpdateInstanceContext() *InstanceRuntimeUpsertOne {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.UpdateInstanceContext()
+	})
+}
+
+// ClearInstanceContext clears the value of the "instanceContext" field.
+func (u *InstanceRuntimeUpsertOne) ClearInstanceContext() *InstanceRuntimeUpsertOne {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.ClearInstanceContext()
+	})
+}
+
+// SetStateContext sets the "stateContext" field.
+func (u *InstanceRuntimeUpsertOne) SetStateContext(v string) *InstanceRuntimeUpsertOne {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.SetStateContext(v)
+	})
+}
+
+// UpdateStateContext sets the "stateContext" field to the value that was provided on create.
+func (u *InstanceRuntimeUpsertOne) UpdateStateContext() *InstanceRuntimeUpsertOne {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.UpdateStateContext()
+	})
+}
+
+// ClearStateContext clears the value of the "stateContext" field.
+func (u *InstanceRuntimeUpsertOne) ClearStateContext() *InstanceRuntimeUpsertOne {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.ClearStateContext()
+	})
+}
+
+// SetMetadata sets the "metadata" field.
+func (u *InstanceRuntimeUpsertOne) SetMetadata(v string) *InstanceRuntimeUpsertOne {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.SetMetadata(v)
+	})
+}
+
+// UpdateMetadata sets the "metadata" field to the value that was provided on create.
+func (u *InstanceRuntimeUpsertOne) UpdateMetadata() *InstanceRuntimeUpsertOne {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.UpdateMetadata()
+	})
+}
+
+// ClearMetadata clears the value of the "metadata" field.
+func (u *InstanceRuntimeUpsertOne) ClearMetadata() *InstanceRuntimeUpsertOne {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.ClearMetadata()
+	})
+}
+
+// Exec executes the query.
+func (u *InstanceRuntimeUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for InstanceRuntimeCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *InstanceRuntimeUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *InstanceRuntimeUpsertOne) ID(ctx context.Context) (id uuid.UUID, err error) {
+	if u.create.driver.Dialect() == dialect.MySQL {
+		// In case of "ON CONFLICT", there is no way to get back non-numeric ID
+		// fields from the database since MySQL does not support the RETURNING clause.
+		return id, errors.New("ent: InstanceRuntimeUpsertOne.ID is not supported by MySQL driver. Use InstanceRuntimeUpsertOne.Exec instead")
+	}
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *InstanceRuntimeUpsertOne) IDX(ctx context.Context) uuid.UUID {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // InstanceRuntimeCreateBulk is the builder for creating many InstanceRuntime entities in bulk.
 type InstanceRuntimeCreateBulk struct {
 	config
 	builders []*InstanceRuntimeCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the InstanceRuntime entities in the database.
@@ -536,6 +1095,7 @@ func (ircb *InstanceRuntimeCreateBulk) Save(ctx context.Context) ([]*InstanceRun
 					_, err = mutators[i+1].Mutate(root, ircb.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = ircb.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, ircb.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -582,6 +1142,372 @@ func (ircb *InstanceRuntimeCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (ircb *InstanceRuntimeCreateBulk) ExecX(ctx context.Context) {
 	if err := ircb.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.InstanceRuntime.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.InstanceRuntimeUpsert) {
+//			SetInput(v+v).
+//		}).
+//		Exec(ctx)
+func (ircb *InstanceRuntimeCreateBulk) OnConflict(opts ...sql.ConflictOption) *InstanceRuntimeUpsertBulk {
+	ircb.conflict = opts
+	return &InstanceRuntimeUpsertBulk{
+		create: ircb,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.InstanceRuntime.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (ircb *InstanceRuntimeCreateBulk) OnConflictColumns(columns ...string) *InstanceRuntimeUpsertBulk {
+	ircb.conflict = append(ircb.conflict, sql.ConflictColumns(columns...))
+	return &InstanceRuntimeUpsertBulk{
+		create: ircb,
+	}
+}
+
+// InstanceRuntimeUpsertBulk is the builder for "upsert"-ing
+// a bulk of InstanceRuntime nodes.
+type InstanceRuntimeUpsertBulk struct {
+	create *InstanceRuntimeCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.InstanceRuntime.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(instanceruntime.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *InstanceRuntimeUpsertBulk) UpdateNewValues() *InstanceRuntimeUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(instanceruntime.FieldID)
+			}
+			if _, exists := b.mutation.Input(); exists {
+				s.SetIgnore(instanceruntime.FieldInput)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.InstanceRuntime.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *InstanceRuntimeUpsertBulk) Ignore() *InstanceRuntimeUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *InstanceRuntimeUpsertBulk) DoNothing() *InstanceRuntimeUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the InstanceRuntimeCreateBulk.OnConflict
+// documentation for more info.
+func (u *InstanceRuntimeUpsertBulk) Update(set func(*InstanceRuntimeUpsert)) *InstanceRuntimeUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&InstanceRuntimeUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetData sets the "data" field.
+func (u *InstanceRuntimeUpsertBulk) SetData(v string) *InstanceRuntimeUpsertBulk {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.SetData(v)
+	})
+}
+
+// UpdateData sets the "data" field to the value that was provided on create.
+func (u *InstanceRuntimeUpsertBulk) UpdateData() *InstanceRuntimeUpsertBulk {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.UpdateData()
+	})
+}
+
+// SetController sets the "controller" field.
+func (u *InstanceRuntimeUpsertBulk) SetController(v string) *InstanceRuntimeUpsertBulk {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.SetController(v)
+	})
+}
+
+// UpdateController sets the "controller" field to the value that was provided on create.
+func (u *InstanceRuntimeUpsertBulk) UpdateController() *InstanceRuntimeUpsertBulk {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.UpdateController()
+	})
+}
+
+// ClearController clears the value of the "controller" field.
+func (u *InstanceRuntimeUpsertBulk) ClearController() *InstanceRuntimeUpsertBulk {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.ClearController()
+	})
+}
+
+// SetMemory sets the "memory" field.
+func (u *InstanceRuntimeUpsertBulk) SetMemory(v string) *InstanceRuntimeUpsertBulk {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.SetMemory(v)
+	})
+}
+
+// UpdateMemory sets the "memory" field to the value that was provided on create.
+func (u *InstanceRuntimeUpsertBulk) UpdateMemory() *InstanceRuntimeUpsertBulk {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.UpdateMemory()
+	})
+}
+
+// ClearMemory clears the value of the "memory" field.
+func (u *InstanceRuntimeUpsertBulk) ClearMemory() *InstanceRuntimeUpsertBulk {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.ClearMemory()
+	})
+}
+
+// SetFlow sets the "flow" field.
+func (u *InstanceRuntimeUpsertBulk) SetFlow(v []string) *InstanceRuntimeUpsertBulk {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.SetFlow(v)
+	})
+}
+
+// UpdateFlow sets the "flow" field to the value that was provided on create.
+func (u *InstanceRuntimeUpsertBulk) UpdateFlow() *InstanceRuntimeUpsertBulk {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.UpdateFlow()
+	})
+}
+
+// ClearFlow clears the value of the "flow" field.
+func (u *InstanceRuntimeUpsertBulk) ClearFlow() *InstanceRuntimeUpsertBulk {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.ClearFlow()
+	})
+}
+
+// SetOutput sets the "output" field.
+func (u *InstanceRuntimeUpsertBulk) SetOutput(v string) *InstanceRuntimeUpsertBulk {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.SetOutput(v)
+	})
+}
+
+// UpdateOutput sets the "output" field to the value that was provided on create.
+func (u *InstanceRuntimeUpsertBulk) UpdateOutput() *InstanceRuntimeUpsertBulk {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.UpdateOutput()
+	})
+}
+
+// ClearOutput clears the value of the "output" field.
+func (u *InstanceRuntimeUpsertBulk) ClearOutput() *InstanceRuntimeUpsertBulk {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.ClearOutput()
+	})
+}
+
+// SetStateBeginTime sets the "stateBeginTime" field.
+func (u *InstanceRuntimeUpsertBulk) SetStateBeginTime(v time.Time) *InstanceRuntimeUpsertBulk {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.SetStateBeginTime(v)
+	})
+}
+
+// UpdateStateBeginTime sets the "stateBeginTime" field to the value that was provided on create.
+func (u *InstanceRuntimeUpsertBulk) UpdateStateBeginTime() *InstanceRuntimeUpsertBulk {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.UpdateStateBeginTime()
+	})
+}
+
+// ClearStateBeginTime clears the value of the "stateBeginTime" field.
+func (u *InstanceRuntimeUpsertBulk) ClearStateBeginTime() *InstanceRuntimeUpsertBulk {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.ClearStateBeginTime()
+	})
+}
+
+// SetDeadline sets the "deadline" field.
+func (u *InstanceRuntimeUpsertBulk) SetDeadline(v time.Time) *InstanceRuntimeUpsertBulk {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.SetDeadline(v)
+	})
+}
+
+// UpdateDeadline sets the "deadline" field to the value that was provided on create.
+func (u *InstanceRuntimeUpsertBulk) UpdateDeadline() *InstanceRuntimeUpsertBulk {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.UpdateDeadline()
+	})
+}
+
+// ClearDeadline clears the value of the "deadline" field.
+func (u *InstanceRuntimeUpsertBulk) ClearDeadline() *InstanceRuntimeUpsertBulk {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.ClearDeadline()
+	})
+}
+
+// SetAttempts sets the "attempts" field.
+func (u *InstanceRuntimeUpsertBulk) SetAttempts(v int) *InstanceRuntimeUpsertBulk {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.SetAttempts(v)
+	})
+}
+
+// AddAttempts adds v to the "attempts" field.
+func (u *InstanceRuntimeUpsertBulk) AddAttempts(v int) *InstanceRuntimeUpsertBulk {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.AddAttempts(v)
+	})
+}
+
+// UpdateAttempts sets the "attempts" field to the value that was provided on create.
+func (u *InstanceRuntimeUpsertBulk) UpdateAttempts() *InstanceRuntimeUpsertBulk {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.UpdateAttempts()
+	})
+}
+
+// ClearAttempts clears the value of the "attempts" field.
+func (u *InstanceRuntimeUpsertBulk) ClearAttempts() *InstanceRuntimeUpsertBulk {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.ClearAttempts()
+	})
+}
+
+// SetCallerData sets the "caller_data" field.
+func (u *InstanceRuntimeUpsertBulk) SetCallerData(v string) *InstanceRuntimeUpsertBulk {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.SetCallerData(v)
+	})
+}
+
+// UpdateCallerData sets the "caller_data" field to the value that was provided on create.
+func (u *InstanceRuntimeUpsertBulk) UpdateCallerData() *InstanceRuntimeUpsertBulk {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.UpdateCallerData()
+	})
+}
+
+// ClearCallerData clears the value of the "caller_data" field.
+func (u *InstanceRuntimeUpsertBulk) ClearCallerData() *InstanceRuntimeUpsertBulk {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.ClearCallerData()
+	})
+}
+
+// SetInstanceContext sets the "instanceContext" field.
+func (u *InstanceRuntimeUpsertBulk) SetInstanceContext(v string) *InstanceRuntimeUpsertBulk {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.SetInstanceContext(v)
+	})
+}
+
+// UpdateInstanceContext sets the "instanceContext" field to the value that was provided on create.
+func (u *InstanceRuntimeUpsertBulk) UpdateInstanceContext() *InstanceRuntimeUpsertBulk {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.UpdateInstanceContext()
+	})
+}
+
+// ClearInstanceContext clears the value of the "instanceContext" field.
+func (u *InstanceRuntimeUpsertBulk) ClearInstanceContext() *InstanceRuntimeUpsertBulk {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.ClearInstanceContext()
+	})
+}
+
+// SetStateContext sets the "stateContext" field.
+func (u *InstanceRuntimeUpsertBulk) SetStateContext(v string) *InstanceRuntimeUpsertBulk {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.SetStateContext(v)
+	})
+}
+
+// UpdateStateContext sets the "stateContext" field to the value that was provided on create.
+func (u *InstanceRuntimeUpsertBulk) UpdateStateContext() *InstanceRuntimeUpsertBulk {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.UpdateStateContext()
+	})
+}
+
+// ClearStateContext clears the value of the "stateContext" field.
+func (u *InstanceRuntimeUpsertBulk) ClearStateContext() *InstanceRuntimeUpsertBulk {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.ClearStateContext()
+	})
+}
+
+// SetMetadata sets the "metadata" field.
+func (u *InstanceRuntimeUpsertBulk) SetMetadata(v string) *InstanceRuntimeUpsertBulk {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.SetMetadata(v)
+	})
+}
+
+// UpdateMetadata sets the "metadata" field to the value that was provided on create.
+func (u *InstanceRuntimeUpsertBulk) UpdateMetadata() *InstanceRuntimeUpsertBulk {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.UpdateMetadata()
+	})
+}
+
+// ClearMetadata clears the value of the "metadata" field.
+func (u *InstanceRuntimeUpsertBulk) ClearMetadata() *InstanceRuntimeUpsertBulk {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.ClearMetadata()
+	})
+}
+
+// Exec executes the query.
+func (u *InstanceRuntimeUpsertBulk) Exec(ctx context.Context) error {
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the InstanceRuntimeCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for InstanceRuntimeCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *InstanceRuntimeUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

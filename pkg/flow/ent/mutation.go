@@ -615,8 +615,6 @@ func (m *CloudEventsMutation) RemovedEdges() []string {
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *CloudEventsMutation) RemovedIDs(name string) []ent.Value {
-	switch name {
-	}
 	return nil
 }
 
@@ -668,7 +666,9 @@ type EventsMutation struct {
 	typ                 string
 	id                  *uuid.UUID
 	events              *[]map[string]interface{}
+	appendevents        []map[string]interface{}
 	correlations        *[]string
+	appendcorrelations  []string
 	signature           *[]byte
 	count               *int
 	addcount            *int
@@ -796,6 +796,7 @@ func (m *EventsMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 // SetEvents sets the "events" field.
 func (m *EventsMutation) SetEvents(value []map[string]interface{}) {
 	m.events = &value
+	m.appendevents = nil
 }
 
 // Events returns the value of the "events" field in the mutation.
@@ -824,14 +825,29 @@ func (m *EventsMutation) OldEvents(ctx context.Context) (v []map[string]interfac
 	return oldValue.Events, nil
 }
 
+// AppendEvents adds value to the "events" field.
+func (m *EventsMutation) AppendEvents(value []map[string]interface{}) {
+	m.appendevents = append(m.appendevents, value...)
+}
+
+// AppendedEvents returns the list of values that were appended to the "events" field in this mutation.
+func (m *EventsMutation) AppendedEvents() ([]map[string]interface{}, bool) {
+	if len(m.appendevents) == 0 {
+		return nil, false
+	}
+	return m.appendevents, true
+}
+
 // ResetEvents resets all changes to the "events" field.
 func (m *EventsMutation) ResetEvents() {
 	m.events = nil
+	m.appendevents = nil
 }
 
 // SetCorrelations sets the "correlations" field.
 func (m *EventsMutation) SetCorrelations(s []string) {
 	m.correlations = &s
+	m.appendcorrelations = nil
 }
 
 // Correlations returns the value of the "correlations" field in the mutation.
@@ -860,9 +876,23 @@ func (m *EventsMutation) OldCorrelations(ctx context.Context) (v []string, err e
 	return oldValue.Correlations, nil
 }
 
+// AppendCorrelations adds s to the "correlations" field.
+func (m *EventsMutation) AppendCorrelations(s []string) {
+	m.appendcorrelations = append(m.appendcorrelations, s...)
+}
+
+// AppendedCorrelations returns the list of values that were appended to the "correlations" field in this mutation.
+func (m *EventsMutation) AppendedCorrelations() ([]string, bool) {
+	if len(m.appendcorrelations) == 0 {
+		return nil, false
+	}
+	return m.appendcorrelations, true
+}
+
 // ResetCorrelations resets all changes to the "correlations" field.
 func (m *EventsMutation) ResetCorrelations() {
 	m.correlations = nil
+	m.appendcorrelations = nil
 }
 
 // SetSignature sets the "signature" field.
@@ -1916,8 +1946,6 @@ func (m *EventsWaitMutation) RemovedEdges() []string {
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *EventsWaitMutation) RemovedIDs(name string) []ent.Value {
-	switch name {
-	}
 	return nil
 }
 
@@ -1973,6 +2001,7 @@ type InodeMutation struct {
 	name             *string
 	_type            *string
 	attributes       *[]string
+	appendattributes []string
 	extended_type    *string
 	readOnly         *bool
 	clearedFields    map[string]struct{}
@@ -2256,6 +2285,7 @@ func (m *InodeMutation) ResetType() {
 // SetAttributes sets the "attributes" field.
 func (m *InodeMutation) SetAttributes(s []string) {
 	m.attributes = &s
+	m.appendattributes = nil
 }
 
 // Attributes returns the value of the "attributes" field in the mutation.
@@ -2284,9 +2314,23 @@ func (m *InodeMutation) OldAttributes(ctx context.Context) (v []string, err erro
 	return oldValue.Attributes, nil
 }
 
+// AppendAttributes adds s to the "attributes" field.
+func (m *InodeMutation) AppendAttributes(s []string) {
+	m.appendattributes = append(m.appendattributes, s...)
+}
+
+// AppendedAttributes returns the list of values that were appended to the "attributes" field in this mutation.
+func (m *InodeMutation) AppendedAttributes() ([]string, bool) {
+	if len(m.appendattributes) == 0 {
+		return nil, false
+	}
+	return m.appendattributes, true
+}
+
 // ClearAttributes clears the value of the "attributes" field.
 func (m *InodeMutation) ClearAttributes() {
 	m.attributes = nil
+	m.appendattributes = nil
 	m.clearedFields[inode.FieldAttributes] = struct{}{}
 }
 
@@ -2299,6 +2343,7 @@ func (m *InodeMutation) AttributesCleared() bool {
 // ResetAttributes resets all changes to the "attributes" field.
 func (m *InodeMutation) ResetAttributes() {
 	m.attributes = nil
+	m.appendattributes = nil
 	delete(m.clearedFields, inode.FieldAttributes)
 }
 
@@ -4374,6 +4419,7 @@ type InstanceRuntimeMutation struct {
 	controller      *string
 	memory          *string
 	flow            *[]string
+	appendflow      []string
 	output          *string
 	stateBeginTime  *time.Time
 	deadline        *time.Time
@@ -4670,6 +4716,7 @@ func (m *InstanceRuntimeMutation) ResetMemory() {
 // SetFlow sets the "flow" field.
 func (m *InstanceRuntimeMutation) SetFlow(s []string) {
 	m.flow = &s
+	m.appendflow = nil
 }
 
 // Flow returns the value of the "flow" field in the mutation.
@@ -4698,9 +4745,23 @@ func (m *InstanceRuntimeMutation) OldFlow(ctx context.Context) (v []string, err 
 	return oldValue.Flow, nil
 }
 
+// AppendFlow adds s to the "flow" field.
+func (m *InstanceRuntimeMutation) AppendFlow(s []string) {
+	m.appendflow = append(m.appendflow, s...)
+}
+
+// AppendedFlow returns the list of values that were appended to the "flow" field in this mutation.
+func (m *InstanceRuntimeMutation) AppendedFlow() ([]string, bool) {
+	if len(m.appendflow) == 0 {
+		return nil, false
+	}
+	return m.appendflow, true
+}
+
 // ClearFlow clears the value of the "flow" field.
 func (m *InstanceRuntimeMutation) ClearFlow() {
 	m.flow = nil
+	m.appendflow = nil
 	m.clearedFields[instanceruntime.FieldFlow] = struct{}{}
 }
 
@@ -4713,6 +4774,7 @@ func (m *InstanceRuntimeMutation) FlowCleared() bool {
 // ResetFlow resets all changes to the "flow" field.
 func (m *InstanceRuntimeMutation) ResetFlow() {
 	m.flow = nil
+	m.appendflow = nil
 	delete(m.clearedFields, instanceruntime.FieldFlow)
 }
 
@@ -5648,8 +5710,6 @@ func (m *InstanceRuntimeMutation) RemovedEdges() []string {
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *InstanceRuntimeMutation) RemovedIDs(name string) []ent.Value {
-	switch name {
-	}
 	return nil
 }
 
@@ -6243,8 +6303,6 @@ func (m *LogMsgMutation) RemovedEdges() []string {
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *LogMsgMutation) RemovedIDs(name string) []ent.Value {
-	switch name {
-	}
 	return nil
 }
 
@@ -11245,8 +11303,6 @@ func (m *RouteMutation) RemovedEdges() []string {
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *RouteMutation) RemovedIDs(name string) []ent.Value {
-	switch name {
-	}
 	return nil
 }
 
@@ -12597,8 +12653,6 @@ func (m *VarRefMutation) RemovedEdges() []string {
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *VarRefMutation) RemovedIDs(name string) []ent.Value {
-	switch name {
-	}
 	return nil
 }
 

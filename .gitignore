@@ -84,3 +84,5 @@ scripts/wip/kong/proto
 
 logs.log
 build/docker/all/k3s
+
+scripts/dev.yaml

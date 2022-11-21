@@ -553,6 +553,51 @@
         }
       }
     },
+    "/api/functions/namespaces/{namespace}/tree/{workflow}?op=delete-service": {
+      "delete": {
+        "description": "Deletes workflow scoped knative service.\n",
+        "tags": [
+          "Workflow Services"
+        ],
+        "summary": "Delete Namespace Service",
+        "operationId": "deleteWorkflowService",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "path to target workflow",
+            "name": "workflow",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "target service name",
+            "name": "svn",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "target service version",
+            "name": "version",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully deleted service"
+          }
+        }
+      }
+    },
     "/api/functions/namespaces/{namespace}/tree/{workflow}?op=function": {
       "get": {
         "description": "Get a workflow scoped knative service details.\nNote: This is a Server-Sent-Event endpoint, and will not work with the default swagger client.\n",
@@ -1579,6 +1624,99 @@
         }
       }
     },
+    "/api/namespaces/overwrite/{namespace}/secrets/{secret}": {
+      "put": {
+        "description": "Overwrite a namespace secret.\n",
+        "consumes": [
+          "text/plain"
+        ],
+        "tags": [
+          "Secrets"
+        ],
+        "summary": "Overwrite a Namespace Secret",
+        "operationId": "overwriteSecret",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "target secret",
+            "name": "secret",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Payload that contains secret data.",
+            "name": "Secret Payload",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "7F8E7B0124ACB2BD20B383DE0756C7C0"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "namespace has been successfully overwritten",
+            "schema": {
+              "$ref": "#/definitions/OkBody"
+            }
+          },
+          "default": {
+            "description": "secret not found",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/namespaces/search/{namespace}/secrets/{name}": {
+      "get": {
+        "description": "secrets and folders which including given name.\n",
+        "tags": [
+          "Secrets"
+        ],
+        "summary": "Get List of Namespace nodes contains name",
+        "operationId": "searchSecret",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "target name",
+            "name": "name",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully got namespace nodes",
+            "schema": {
+              "$ref": "#/definitions/OkBody"
+            }
+          },
+          "default": {
+            "description": "an error has occurred",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
     "/api/namespaces/{namespace}": {
       "put": {
         "description": "Creates a new namespace.\n",
@@ -2072,6 +2210,37 @@
         }
       }
     },
+    "/api/namespaces/{namespace}/instances/{instance}/metadata": {
+      "get": {
+        "description": "Gets the metadata of an instance.\n",
+        "tags": [
+          "Instances"
+        ],
+        "summary": "Get a Instance Metadata",
+        "operationId": "getInstanceMetadata",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "target instance",
+            "name": "instance",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully got instance metadata"
+          }
+        }
+      }
+    },
     "/api/namespaces/{namespace}/instances/{instance}/output": {
       "get": {
         "description": "Gets the output an instance was provided when executed.\n",
@@ -2444,6 +2613,122 @@
         }
       }
     },
+    "/api/namespaces/{namespace}/secrets/{folder}/": {
+      "get": {
+        "description": "Gets the list of namespace secrets and folders inside specific folder.\n",
+        "tags": [
+          "Secrets"
+        ],
+        "summary": "Get List of Namespace nodes inside Folder",
+        "operationId": "getSecretsInsideFolder",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "target folder path",
+            "name": "folder",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully got namespace nodes inside sepcific folder",
+            "schema": {
+              "$ref": "#/definitions/OkBody"
+            }
+          },
+          "default": {
+            "description": "an error has occurred",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      },
+      "put": {
+        "description": "Create a namespace folder.\n",
+        "tags": [
+          "Secrets"
+        ],
+        "summary": "Create a Namespace Folder",
+        "operationId": "createFolder",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "target secret",
+            "name": "folder",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "namespace folder has been successfully created",
+            "schema": {
+              "$ref": "#/definitions/OkBody"
+            }
+          },
+          "default": {
+            "description": "an error has occurred",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      },
+      "delete": {
+        "description": "Delete a namespace folder.\n",
+        "tags": [
+          "Secrets"
+        ],
+        "summary": "Delete a Namespace Folder",
+        "operationId": "deleteFolder",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "target folder",
+            "name": "folder",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "namespace folder has been successfully deleted",
+            "schema": {
+              "$ref": "#/definitions/OkBody"
+            }
+          },
+          "default": {
+            "description": "folder not found",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
     "/api/namespaces/{namespace}/secrets/{secret}": {
       "put": {
         "description": "Create a namespace secret.\n",
@@ -2483,7 +2768,7 @@
         ],
         "responses": {
           "200": {
-            "description": "namespace has been successfully created",
+            "description": "namespace secret has been successfully created",
             "schema": {
               "$ref": "#/definitions/OkBody"
             }
@@ -2521,13 +2806,13 @@
         ],
         "responses": {
           "200": {
-            "description": "namespace has been successfully created",
+            "description": "namespace secret has been successfully deleted",
             "schema": {
               "$ref": "#/definitions/OkBody"
             }
           },
           "default": {
-            "description": "an error has occurred",
+            "description": "secret not found",
             "schema": {
               "$ref": "#/definitions/ErrorResponse"
             }
@@ -2653,6 +2938,12 @@
             "name": "node",
             "in": "path",
             "required": true
+          },
+          {
+            "type": "boolean",
+            "description": "whether to recursively delete child nodes",
+            "name": "recursive",
+            "in": "query"
           }
         ],
         "responses": {
@@ -3587,70 +3878,98 @@
     }
   },
   "definitions": {
+    "CreateGlobalPrivateRegistryBody": {
+      "description": "CreateGlobalPrivateRegistryBody create global private registry body\nExample: {\"data\":\"admin:8QwFLg%D$qg*\",\"reg\":\"https://prod.customreg.io\"}",
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/registries"
+    },
+    "CreateGlobalRegistryBody": {
+      "description": "CreateGlobalRegistryBody create global registry body\nExample: {\"data\":\"admin:8QwFLg%D$qg*\",\"reg\":\"https://prod.customreg.io\"}",
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/registries"
+    },
+    "CreateGlobalServiceBody": {
+      "description": "CreateGlobalServiceBody create global service body\nExample: {\"cmd\":\"\",\"image\":\"direktiv/request:v12\",\"minScale\":\"1\",\"name\":\"fast-request\",\"size\":\"small\"}",
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/global_services"
+    },
+    "CreateNamespaceServiceBody": {
+      "description": "CreateNamespaceServiceBody create namespace service body\nExample: {\"cmd\":\"\",\"image\":\"direktiv/request:v12\",\"minScale\":\"1\",\"name\":\"fast-request\",\"size\":\"small\"}",
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/namespace_services"
+    },
+    "CreateRegistryBody": {
+      "description": "CreateRegistryBody create registry body\nExample: {\"data\":\"admin:8QwFLg%D$qg*\",\"reg\":\"https://prod.customreg.io\"}",
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/registries"
+    },
+    "DeleteGlobalPrivateRegistryBody": {
+      "description": "DeleteGlobalPrivateRegistryBody delete global private registry body\nExample: {\"data\":\"admin:8QwFLg%D$qg*\",\"reg\":\"https://prod.customreg.io\"}",
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/registries"
+    },
+    "DeleteGlobalRegistryBody": {
+      "description": "DeleteGlobalRegistryBody delete global registry body\nExample: {\"data\":\"admin:8QwFLg%D$qg*\",\"reg\":\"https://prod.customreg.io\"}",
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/registries"
+    },
+    "DeleteRegistryBody": {
+      "description": "DeleteRegistryBody delete registry body\nExample: {\"data\":\"admin:8QwFLg%D$qg*\",\"reg\":\"https://prod.customreg.io\"}",
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/registries"
+    },
     "ErrorResponse": {
-      "type": "object",
-      "properties": {
-        "Message": {
-          "type": "string",
-          "x-go-name": "Error"
-        },
-        "StatusCode": {
-          "type": "integer",
-          "format": "int64"
-        }
-      },
       "x-go-package": "github.com/direktiv/direktiv/pkg/api"
+    },
+    "JqPlaygroundBody": {
+      "description": "JqPlaygroundBody jq playground body\nExample: {\"data\":\"eyJhIjogMSwgImIiOiAyLCAiYyI6IDQsICJkIjogN30=\",\"query\":\"map(select(. \\u003e= 2))\"}",
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/other"
     },
     "OkBody": {
       "description": "OkBody is an arbitrary placeholder response that represents an ok response body",
-      "type": "object",
-      "additionalProperties": {
-        "type": "object"
-      },
       "x-go-package": "github.com/direktiv/direktiv/pkg/api"
+    },
+    "SetNamespaceConfigBody": {
+      "description": "SetNamespaceConfigBody set namespace config body\nExample: {\"broadcast\":{\"directory.create\":false,\"directory.delete\":false,\"instance.failed\":false,\"instance.started\":false,\"instance.success\":false,\"instance.variable.create\":false,\"instance.variable.delete\":false,\"instance.variable.update\":false,\"namespace.variable.create\":false,\"namespace.variable.delete\":false,\"namespace.variable.update\":false,\"workflow.create\":false,\"workflow.delete\":false,\"workflow.update\":false,\"workflow.variable.create\":false,\"workflow.variable.delete\":false,\"workflow.variable.update\":false}}",
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/namespaces"
+    },
+    "SetWorkflowCloudEventLogsBody": {
+      "description": "SetWorkflowCloudEventLogsBody set workflow cloud event logs body\nExample: {\"logger\":\"mylog\"}",
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/workflows"
+    },
+    "TestRegistryBody": {
+      "description": "TestRegistryBody test registry body\nExample: {\"token\":\"8QwFLg%D$qg*\",\"url\":\"https://prod.customreg.io\",\"username\":\"admin\"}",
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/operations"
+    },
+    "ToggleWorkflowBody": {
+      "description": "ToggleWorkflowBody toggle workflow body\nExample: {\"live\":false}",
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/workflows"
+    },
+    "UpdateGlobalServiceBody": {
+      "description": "UpdateGlobalServiceBody update global service body\nExample: {\"cmd\":\"\",\"image\":\"direktiv/request:v10\",\"minScale\":\"1\",\"size\":\"small\",\"trafficPercent\":50}",
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/global_services"
+    },
+    "UpdateGlobalServiceTrafficBody": {
+      "description": "UpdateGlobalServiceTrafficBody update global service traffic body\nExample: {\"values\":[{\"percent\":60,\"revision\":\"global-fast-request-00002\"},{\"percent\":40,\"revision\":\"global-fast-request-00001\"}]}",
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/global_services"
+    },
+    "UpdateGlobalServiceTrafficParamsBodyValuesItems0": {
+      "description": "UpdateGlobalServiceTrafficParamsBodyValuesItems0 update global service traffic params body values items0",
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/global_services"
+    },
+    "UpdateNamespaceServiceBody": {
+      "description": "UpdateNamespaceServiceBody update namespace service body\nExample: {\"cmd\":\"\",\"image\":\"direktiv/request:v10\",\"minScale\":\"1\",\"size\":\"small\",\"trafficPercent\":50}",
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/namespace_services"
+    },
+    "UpdateNamespaceServiceTrafficBody": {
+      "description": "UpdateNamespaceServiceTrafficBody update namespace service traffic body\nExample: {\"values\":[{\"percent\":60,\"revision\":\"namespace-direktiv-fast-request-00002\"},{\"percent\":40,\"revision\":\"namespace-direktiv-fast-request-00001\"}]}",
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/namespace_services"
+    },
+    "UpdateNamespaceServiceTrafficParamsBodyValuesItems0": {
+      "description": "UpdateNamespaceServiceTrafficParamsBodyValuesItems0 update namespace service traffic params body values items0",
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/namespace_services"
     },
     "UpdateServiceRequest": {
       "description": "UpdateServiceRequest UpdateServiceRequest update service request",
-      "type": "object",
-      "required": [
-        "image",
-        "cmd",
-        "size",
-        "minScale",
-        "trafficPercent"
-      ],
-      "properties": {
-        "cmd": {
-          "description": "cmd",
-          "type": "string",
-          "x-go-name": "Cmd"
-        },
-        "image": {
-          "description": "image",
-          "type": "string",
-          "x-go-name": "Image"
-        },
-        "minScale": {
-          "description": "minScale",
-          "type": "integer",
-          "format": "int32",
-          "x-go-name": "MinScale"
-        },
-        "size": {
-          "description": "size",
-          "type": "integer",
-          "format": "int32",
-          "x-go-name": "Size"
-        },
-        "trafficPercent": {
-          "description": "trafficPercent",
-          "type": "integer",
-          "format": "int64",
-          "x-go-name": "TrafficPercent"
-        }
-      },
       "x-go-name": "updateServiceRequest",
       "x-go-package": "github.com/direktiv/direktiv/pkg/api"
+    },
+    "updateServiceRequest": {
+      "description": "UpdateServiceRequest UpdateServiceRequest UpdateServiceRequest update service request",
+      "x-go-name": "UpdateServiceRequest",
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/models"
     }
   },
   "securityDefinitions": {

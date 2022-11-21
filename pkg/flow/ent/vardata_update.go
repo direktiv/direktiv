@@ -20,8 +20,9 @@ import (
 // VarDataUpdate is the builder for updating VarData entities.
 type VarDataUpdate struct {
 	config
-	hooks    []Hook
-	mutation *VarDataMutation
+	hooks     []Hook
+	mutation  *VarDataMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // Where appends a list predicates to the VarDataUpdate builder.
@@ -179,6 +180,12 @@ func (vdu *VarDataUpdate) defaults() {
 	}
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (vdu *VarDataUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *VarDataUpdate {
+	vdu.modifiers = append(vdu.modifiers, modifiers...)
+	return vdu
+}
+
 func (vdu *VarDataUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -198,46 +205,22 @@ func (vdu *VarDataUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 	}
 	if value, ok := vdu.mutation.UpdatedAt(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: vardata.FieldUpdatedAt,
-		})
+		_spec.SetField(vardata.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if value, ok := vdu.mutation.Size(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
-			Value:  value,
-			Column: vardata.FieldSize,
-		})
+		_spec.SetField(vardata.FieldSize, field.TypeInt, value)
 	}
 	if value, ok := vdu.mutation.AddedSize(); ok {
-		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
-			Value:  value,
-			Column: vardata.FieldSize,
-		})
+		_spec.AddField(vardata.FieldSize, field.TypeInt, value)
 	}
 	if value, ok := vdu.mutation.Hash(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: vardata.FieldHash,
-		})
+		_spec.SetField(vardata.FieldHash, field.TypeString, value)
 	}
 	if value, ok := vdu.mutation.Data(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeBytes,
-			Value:  value,
-			Column: vardata.FieldData,
-		})
+		_spec.SetField(vardata.FieldData, field.TypeBytes, value)
 	}
 	if value, ok := vdu.mutation.MimeType(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: vardata.FieldMimeType,
-		})
+		_spec.SetField(vardata.FieldMimeType, field.TypeString, value)
 	}
 	if vdu.mutation.VarrefsCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -293,6 +276,7 @@ func (vdu *VarDataUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	_spec.AddModifiers(vdu.modifiers...)
 	if n, err = sqlgraph.UpdateNodes(ctx, vdu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{vardata.Label}
@@ -307,9 +291,10 @@ func (vdu *VarDataUpdate) sqlSave(ctx context.Context) (n int, err error) {
 // VarDataUpdateOne is the builder for updating a single VarData entity.
 type VarDataUpdateOne struct {
 	config
-	fields   []string
-	hooks    []Hook
-	mutation *VarDataMutation
+	fields    []string
+	hooks     []Hook
+	mutation  *VarDataMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // SetUpdatedAt sets the "updated_at" field.
@@ -474,6 +459,12 @@ func (vduo *VarDataUpdateOne) defaults() {
 	}
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (vduo *VarDataUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *VarDataUpdateOne {
+	vduo.modifiers = append(vduo.modifiers, modifiers...)
+	return vduo
+}
+
 func (vduo *VarDataUpdateOne) sqlSave(ctx context.Context) (_node *VarData, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -510,46 +501,22 @@ func (vduo *VarDataUpdateOne) sqlSave(ctx context.Context) (_node *VarData, err 
 		}
 	}
 	if value, ok := vduo.mutation.UpdatedAt(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: vardata.FieldUpdatedAt,
-		})
+		_spec.SetField(vardata.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if value, ok := vduo.mutation.Size(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
-			Value:  value,
-			Column: vardata.FieldSize,
-		})
+		_spec.SetField(vardata.FieldSize, field.TypeInt, value)
 	}
 	if value, ok := vduo.mutation.AddedSize(); ok {
-		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
-			Value:  value,
-			Column: vardata.FieldSize,
-		})
+		_spec.AddField(vardata.FieldSize, field.TypeInt, value)
 	}
 	if value, ok := vduo.mutation.Hash(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: vardata.FieldHash,
-		})
+		_spec.SetField(vardata.FieldHash, field.TypeString, value)
 	}
 	if value, ok := vduo.mutation.Data(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeBytes,
-			Value:  value,
-			Column: vardata.FieldData,
-		})
+		_spec.SetField(vardata.FieldData, field.TypeBytes, value)
 	}
 	if value, ok := vduo.mutation.MimeType(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: vardata.FieldMimeType,
-		})
+		_spec.SetField(vardata.FieldMimeType, field.TypeString, value)
 	}
 	if vduo.mutation.VarrefsCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -605,6 +572,7 @@ func (vduo *VarDataUpdateOne) sqlSave(ctx context.Context) (_node *VarData, err 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	_spec.AddModifiers(vduo.modifiers...)
 	_node = &VarData{config: vduo.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

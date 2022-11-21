@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math"
 
+	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -19,16 +20,16 @@ import (
 // InstanceRuntimeQuery is the builder for querying InstanceRuntime entities.
 type InstanceRuntimeQuery struct {
 	config
-	limit      *int
-	offset     *int
-	unique     *bool
-	order      []OrderFunc
-	fields     []string
-	predicates []predicate.InstanceRuntime
-	// eager-loading edges.
+	limit        *int
+	offset       *int
+	unique       *bool
+	order        []OrderFunc
+	fields       []string
+	predicates   []predicate.InstanceRuntime
 	withInstance *InstanceQuery
 	withCaller   *InstanceQuery
 	withFKs      bool
+	modifiers    []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -335,7 +336,6 @@ func (irq *InstanceRuntimeQuery) WithCaller(opts ...func(*InstanceQuery)) *Insta
 //		GroupBy(instanceruntime.FieldInput).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-//
 func (irq *InstanceRuntimeQuery) GroupBy(field string, fields ...string) *InstanceRuntimeGroupBy {
 	grbuild := &InstanceRuntimeGroupBy{config: irq.config}
 	grbuild.fields = append([]string{field}, fields...)
@@ -362,13 +362,17 @@ func (irq *InstanceRuntimeQuery) GroupBy(field string, fields ...string) *Instan
 //	client.InstanceRuntime.Query().
 //		Select(instanceruntime.FieldInput).
 //		Scan(ctx, &v)
-//
 func (irq *InstanceRuntimeQuery) Select(fields ...string) *InstanceRuntimeSelect {
 	irq.fields = append(irq.fields, fields...)
 	selbuild := &InstanceRuntimeSelect{InstanceRuntimeQuery: irq}
 	selbuild.label = instanceruntime.Label
 	selbuild.flds, selbuild.scan = &irq.fields, selbuild.Scan
 	return selbuild
+}
+
+// Aggregate returns a InstanceRuntimeSelect configured with the given aggregations.
+func (irq *InstanceRuntimeQuery) Aggregate(fns ...AggregateFunc) *InstanceRuntimeSelect {
+	return irq.Select().Aggregate(fns...)
 }
 
 func (irq *InstanceRuntimeQuery) prepareQuery(ctx context.Context) error {
@@ -403,14 +407,17 @@ func (irq *InstanceRuntimeQuery) sqlAll(ctx context.Context, hooks ...queryHook)
 	if withFKs {
 		_spec.Node.Columns = append(_spec.Node.Columns, instanceruntime.ForeignKeys...)
 	}
-	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
+	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*InstanceRuntime).scanValues(nil, columns)
 	}
-	_spec.Assign = func(columns []string, values []interface{}) error {
+	_spec.Assign = func(columns []string, values []any) error {
 		node := &InstanceRuntime{config: irq.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
+	}
+	if len(irq.modifiers) > 0 {
+		_spec.Modifiers = irq.modifiers
 	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
@@ -421,70 +428,85 @@ func (irq *InstanceRuntimeQuery) sqlAll(ctx context.Context, hooks ...queryHook)
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-
 	if query := irq.withInstance; query != nil {
-		ids := make([]uuid.UUID, 0, len(nodes))
-		nodeids := make(map[uuid.UUID][]*InstanceRuntime)
-		for i := range nodes {
-			if nodes[i].instance_runtime == nil {
-				continue
-			}
-			fk := *nodes[i].instance_runtime
-			if _, ok := nodeids[fk]; !ok {
-				ids = append(ids, fk)
-			}
-			nodeids[fk] = append(nodeids[fk], nodes[i])
-		}
-		query.Where(instance.IDIn(ids...))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := irq.loadInstance(ctx, query, nodes, nil,
+			func(n *InstanceRuntime, e *Instance) { n.Edges.Instance = e }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			nodes, ok := nodeids[n.ID]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "instance_runtime" returned %v`, n.ID)
-			}
-			for i := range nodes {
-				nodes[i].Edges.Instance = n
-			}
-		}
 	}
-
 	if query := irq.withCaller; query != nil {
-		ids := make([]uuid.UUID, 0, len(nodes))
-		nodeids := make(map[uuid.UUID][]*InstanceRuntime)
-		for i := range nodes {
-			if nodes[i].instance_children == nil {
-				continue
-			}
-			fk := *nodes[i].instance_children
-			if _, ok := nodeids[fk]; !ok {
-				ids = append(ids, fk)
-			}
-			nodeids[fk] = append(nodeids[fk], nodes[i])
-		}
-		query.Where(instance.IDIn(ids...))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := irq.loadCaller(ctx, query, nodes, nil,
+			func(n *InstanceRuntime, e *Instance) { n.Edges.Caller = e }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			nodes, ok := nodeids[n.ID]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "instance_children" returned %v`, n.ID)
-			}
-			for i := range nodes {
-				nodes[i].Edges.Caller = n
-			}
+	}
+	return nodes, nil
+}
+
+func (irq *InstanceRuntimeQuery) loadInstance(ctx context.Context, query *InstanceQuery, nodes []*InstanceRuntime, init func(*InstanceRuntime), assign func(*InstanceRuntime, *Instance)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*InstanceRuntime)
+	for i := range nodes {
+		if nodes[i].instance_runtime == nil {
+			continue
+		}
+		fk := *nodes[i].instance_runtime
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	query.Where(instance.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "instance_runtime" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
 		}
 	}
-
-	return nodes, nil
+	return nil
+}
+func (irq *InstanceRuntimeQuery) loadCaller(ctx context.Context, query *InstanceQuery, nodes []*InstanceRuntime, init func(*InstanceRuntime), assign func(*InstanceRuntime, *Instance)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*InstanceRuntime)
+	for i := range nodes {
+		if nodes[i].instance_children == nil {
+			continue
+		}
+		fk := *nodes[i].instance_children
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	query.Where(instance.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "instance_children" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
 }
 
 func (irq *InstanceRuntimeQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := irq.querySpec()
+	if len(irq.modifiers) > 0 {
+		_spec.Modifiers = irq.modifiers
+	}
 	_spec.Node.Columns = irq.fields
 	if len(irq.fields) > 0 {
 		_spec.Unique = irq.unique != nil && *irq.unique
@@ -493,11 +515,14 @@ func (irq *InstanceRuntimeQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (irq *InstanceRuntimeQuery) sqlExist(ctx context.Context) (bool, error) {
-	n, err := irq.sqlCount(ctx)
-	if err != nil {
+	switch _, err := irq.FirstID(ctx); {
+	case IsNotFound(err):
+		return false, nil
+	case err != nil:
 		return false, fmt.Errorf("ent: check existence: %w", err)
+	default:
+		return true, nil
 	}
-	return n > 0, nil
 }
 
 func (irq *InstanceRuntimeQuery) querySpec() *sqlgraph.QuerySpec {
@@ -563,6 +588,9 @@ func (irq *InstanceRuntimeQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if irq.unique != nil && *irq.unique {
 		selector.Distinct()
 	}
+	for _, m := range irq.modifiers {
+		m(selector)
+	}
 	for _, p := range irq.predicates {
 		p(selector)
 	}
@@ -578,6 +606,38 @@ func (irq *InstanceRuntimeQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector.Limit(*limit)
 	}
 	return selector
+}
+
+// ForUpdate locks the selected rows against concurrent updates, and prevent them from being
+// updated, deleted or "selected ... for update" by other sessions, until the transaction is
+// either committed or rolled-back.
+func (irq *InstanceRuntimeQuery) ForUpdate(opts ...sql.LockOption) *InstanceRuntimeQuery {
+	if irq.driver.Dialect() == dialect.Postgres {
+		irq.Unique(false)
+	}
+	irq.modifiers = append(irq.modifiers, func(s *sql.Selector) {
+		s.ForUpdate(opts...)
+	})
+	return irq
+}
+
+// ForShare behaves similarly to ForUpdate, except that it acquires a shared mode lock
+// on any rows that are read. Other sessions can read the rows, but cannot modify them
+// until your transaction commits.
+func (irq *InstanceRuntimeQuery) ForShare(opts ...sql.LockOption) *InstanceRuntimeQuery {
+	if irq.driver.Dialect() == dialect.Postgres {
+		irq.Unique(false)
+	}
+	irq.modifiers = append(irq.modifiers, func(s *sql.Selector) {
+		s.ForShare(opts...)
+	})
+	return irq
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (irq *InstanceRuntimeQuery) Modify(modifiers ...func(s *sql.Selector)) *InstanceRuntimeSelect {
+	irq.modifiers = append(irq.modifiers, modifiers...)
+	return irq.Select()
 }
 
 // InstanceRuntimeGroupBy is the group-by builder for InstanceRuntime entities.
@@ -598,7 +658,7 @@ func (irgb *InstanceRuntimeGroupBy) Aggregate(fns ...AggregateFunc) *InstanceRun
 }
 
 // Scan applies the group-by query and scans the result into the given value.
-func (irgb *InstanceRuntimeGroupBy) Scan(ctx context.Context, v interface{}) error {
+func (irgb *InstanceRuntimeGroupBy) Scan(ctx context.Context, v any) error {
 	query, err := irgb.path(ctx)
 	if err != nil {
 		return err
@@ -607,7 +667,7 @@ func (irgb *InstanceRuntimeGroupBy) Scan(ctx context.Context, v interface{}) err
 	return irgb.sqlScan(ctx, v)
 }
 
-func (irgb *InstanceRuntimeGroupBy) sqlScan(ctx context.Context, v interface{}) error {
+func (irgb *InstanceRuntimeGroupBy) sqlScan(ctx context.Context, v any) error {
 	for _, f := range irgb.fields {
 		if !instanceruntime.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for group-by", f)}
@@ -632,8 +692,6 @@ func (irgb *InstanceRuntimeGroupBy) sqlQuery() *sql.Selector {
 	for _, fn := range irgb.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	// If no columns were selected in a custom aggregation function, the default
-	// selection is the fields used for "group-by", and the aggregation functions.
 	if len(selector.SelectedColumns()) == 0 {
 		columns := make([]string, 0, len(irgb.fields)+len(irgb.fns))
 		for _, f := range irgb.fields {
@@ -653,8 +711,14 @@ type InstanceRuntimeSelect struct {
 	sql *sql.Selector
 }
 
+// Aggregate adds the given aggregation functions to the selector query.
+func (irs *InstanceRuntimeSelect) Aggregate(fns ...AggregateFunc) *InstanceRuntimeSelect {
+	irs.fns = append(irs.fns, fns...)
+	return irs
+}
+
 // Scan applies the selector query and scans the result into the given value.
-func (irs *InstanceRuntimeSelect) Scan(ctx context.Context, v interface{}) error {
+func (irs *InstanceRuntimeSelect) Scan(ctx context.Context, v any) error {
 	if err := irs.prepareQuery(ctx); err != nil {
 		return err
 	}
@@ -662,7 +726,17 @@ func (irs *InstanceRuntimeSelect) Scan(ctx context.Context, v interface{}) error
 	return irs.sqlScan(ctx, v)
 }
 
-func (irs *InstanceRuntimeSelect) sqlScan(ctx context.Context, v interface{}) error {
+func (irs *InstanceRuntimeSelect) sqlScan(ctx context.Context, v any) error {
+	aggregation := make([]string, 0, len(irs.fns))
+	for _, fn := range irs.fns {
+		aggregation = append(aggregation, fn(irs.sql))
+	}
+	switch n := len(*irs.selector.flds); {
+	case n == 0 && len(aggregation) > 0:
+		irs.sql.Select(aggregation...)
+	case n != 0 && len(aggregation) > 0:
+		irs.sql.AppendSelect(aggregation...)
+	}
 	rows := &sql.Rows{}
 	query, args := irs.sql.Query()
 	if err := irs.driver.Query(ctx, query, args, rows); err != nil {
@@ -670,4 +744,10 @@ func (irs *InstanceRuntimeSelect) sqlScan(ctx context.Context, v interface{}) er
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (irs *InstanceRuntimeSelect) Modify(modifiers ...func(s *sql.Selector)) *InstanceRuntimeSelect {
+	irs.modifiers = append(irs.modifiers, modifiers...)
+	return irs
 }

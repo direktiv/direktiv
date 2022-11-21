@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"math"
 
+	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -28,13 +29,12 @@ import (
 // WorkflowQuery is the builder for querying Workflow entities.
 type WorkflowQuery struct {
 	config
-	limit      *int
-	offset     *int
-	unique     *bool
-	order      []OrderFunc
-	fields     []string
-	predicates []predicate.Workflow
-	// eager-loading edges.
+	limit         *int
+	offset        *int
+	unique        *bool
+	order         []OrderFunc
+	fields        []string
+	predicates    []predicate.Workflow
 	withInode     *InodeQuery
 	withNamespace *NamespaceQuery
 	withRevisions *RevisionQuery
@@ -45,6 +45,7 @@ type WorkflowQuery struct {
 	withVars      *VarRefQuery
 	withWfevents  *EventsQuery
 	withFKs       bool
+	modifiers     []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -589,7 +590,6 @@ func (wq *WorkflowQuery) WithWfevents(opts ...func(*EventsQuery)) *WorkflowQuery
 //		GroupBy(workflow.FieldLive).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-//
 func (wq *WorkflowQuery) GroupBy(field string, fields ...string) *WorkflowGroupBy {
 	grbuild := &WorkflowGroupBy{config: wq.config}
 	grbuild.fields = append([]string{field}, fields...)
@@ -616,13 +616,17 @@ func (wq *WorkflowQuery) GroupBy(field string, fields ...string) *WorkflowGroupB
 //	client.Workflow.Query().
 //		Select(workflow.FieldLive).
 //		Scan(ctx, &v)
-//
 func (wq *WorkflowQuery) Select(fields ...string) *WorkflowSelect {
 	wq.fields = append(wq.fields, fields...)
 	selbuild := &WorkflowSelect{WorkflowQuery: wq}
 	selbuild.label = workflow.Label
 	selbuild.flds, selbuild.scan = &wq.fields, selbuild.Scan
 	return selbuild
+}
+
+// Aggregate returns a WorkflowSelect configured with the given aggregations.
+func (wq *WorkflowQuery) Aggregate(fns ...AggregateFunc) *WorkflowSelect {
+	return wq.Select().Aggregate(fns...)
 }
 
 func (wq *WorkflowQuery) prepareQuery(ctx context.Context) error {
@@ -664,14 +668,17 @@ func (wq *WorkflowQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Wor
 	if withFKs {
 		_spec.Node.Columns = append(_spec.Node.Columns, workflow.ForeignKeys...)
 	}
-	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
+	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Workflow).scanValues(nil, columns)
 	}
-	_spec.Assign = func(columns []string, values []interface{}) error {
+	_spec.Assign = func(columns []string, values []any) error {
 		node := &Workflow{config: wq.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
+	}
+	if len(wq.modifiers) > 0 {
+		_spec.Modifiers = wq.modifiers
 	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
@@ -682,273 +689,351 @@ func (wq *WorkflowQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Wor
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-
 	if query := wq.withInode; query != nil {
-		ids := make([]uuid.UUID, 0, len(nodes))
-		nodeids := make(map[uuid.UUID][]*Workflow)
-		for i := range nodes {
-			if nodes[i].inode_workflow == nil {
-				continue
-			}
-			fk := *nodes[i].inode_workflow
-			if _, ok := nodeids[fk]; !ok {
-				ids = append(ids, fk)
-			}
-			nodeids[fk] = append(nodeids[fk], nodes[i])
-		}
-		query.Where(inode.IDIn(ids...))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := wq.loadInode(ctx, query, nodes, nil,
+			func(n *Workflow, e *Inode) { n.Edges.Inode = e }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			nodes, ok := nodeids[n.ID]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "inode_workflow" returned %v`, n.ID)
-			}
-			for i := range nodes {
-				nodes[i].Edges.Inode = n
-			}
-		}
 	}
-
 	if query := wq.withNamespace; query != nil {
-		ids := make([]uuid.UUID, 0, len(nodes))
-		nodeids := make(map[uuid.UUID][]*Workflow)
-		for i := range nodes {
-			if nodes[i].namespace_workflows == nil {
-				continue
-			}
-			fk := *nodes[i].namespace_workflows
-			if _, ok := nodeids[fk]; !ok {
-				ids = append(ids, fk)
-			}
-			nodeids[fk] = append(nodeids[fk], nodes[i])
-		}
-		query.Where(namespace.IDIn(ids...))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := wq.loadNamespace(ctx, query, nodes, nil,
+			func(n *Workflow, e *Namespace) { n.Edges.Namespace = e }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			nodes, ok := nodeids[n.ID]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "namespace_workflows" returned %v`, n.ID)
-			}
-			for i := range nodes {
-				nodes[i].Edges.Namespace = n
-			}
-		}
 	}
-
 	if query := wq.withRevisions; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[uuid.UUID]*Workflow)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Revisions = []*Revision{}
-		}
-		query.withFKs = true
-		query.Where(predicate.Revision(func(s *sql.Selector) {
-			s.Where(sql.InValues(workflow.RevisionsColumn, fks...))
-		}))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := wq.loadRevisions(ctx, query, nodes,
+			func(n *Workflow) { n.Edges.Revisions = []*Revision{} },
+			func(n *Workflow, e *Revision) { n.Edges.Revisions = append(n.Edges.Revisions, e) }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			fk := n.workflow_revisions
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "workflow_revisions" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "workflow_revisions" returned %v for node %v`, *fk, n.ID)
-			}
-			node.Edges.Revisions = append(node.Edges.Revisions, n)
-		}
 	}
-
 	if query := wq.withRefs; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[uuid.UUID]*Workflow)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Refs = []*Ref{}
-		}
-		query.withFKs = true
-		query.Where(predicate.Ref(func(s *sql.Selector) {
-			s.Where(sql.InValues(workflow.RefsColumn, fks...))
-		}))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := wq.loadRefs(ctx, query, nodes,
+			func(n *Workflow) { n.Edges.Refs = []*Ref{} },
+			func(n *Workflow, e *Ref) { n.Edges.Refs = append(n.Edges.Refs, e) }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			fk := n.workflow_refs
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "workflow_refs" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "workflow_refs" returned %v for node %v`, *fk, n.ID)
-			}
-			node.Edges.Refs = append(node.Edges.Refs, n)
-		}
 	}
-
 	if query := wq.withInstances; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[uuid.UUID]*Workflow)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Instances = []*Instance{}
-		}
-		query.withFKs = true
-		query.Where(predicate.Instance(func(s *sql.Selector) {
-			s.Where(sql.InValues(workflow.InstancesColumn, fks...))
-		}))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := wq.loadInstances(ctx, query, nodes,
+			func(n *Workflow) { n.Edges.Instances = []*Instance{} },
+			func(n *Workflow, e *Instance) { n.Edges.Instances = append(n.Edges.Instances, e) }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			fk := n.workflow_instances
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "workflow_instances" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "workflow_instances" returned %v for node %v`, *fk, n.ID)
-			}
-			node.Edges.Instances = append(node.Edges.Instances, n)
-		}
 	}
-
 	if query := wq.withRoutes; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[uuid.UUID]*Workflow)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Routes = []*Route{}
-		}
-		query.withFKs = true
-		query.Where(predicate.Route(func(s *sql.Selector) {
-			s.Where(sql.InValues(workflow.RoutesColumn, fks...))
-		}))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := wq.loadRoutes(ctx, query, nodes,
+			func(n *Workflow) { n.Edges.Routes = []*Route{} },
+			func(n *Workflow, e *Route) { n.Edges.Routes = append(n.Edges.Routes, e) }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			fk := n.workflow_routes
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "workflow_routes" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "workflow_routes" returned %v for node %v`, *fk, n.ID)
-			}
-			node.Edges.Routes = append(node.Edges.Routes, n)
-		}
 	}
-
 	if query := wq.withLogs; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[uuid.UUID]*Workflow)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Logs = []*LogMsg{}
-		}
-		query.withFKs = true
-		query.Where(predicate.LogMsg(func(s *sql.Selector) {
-			s.Where(sql.InValues(workflow.LogsColumn, fks...))
-		}))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := wq.loadLogs(ctx, query, nodes,
+			func(n *Workflow) { n.Edges.Logs = []*LogMsg{} },
+			func(n *Workflow, e *LogMsg) { n.Edges.Logs = append(n.Edges.Logs, e) }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			fk := n.workflow_logs
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "workflow_logs" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "workflow_logs" returned %v for node %v`, *fk, n.ID)
-			}
-			node.Edges.Logs = append(node.Edges.Logs, n)
-		}
 	}
-
 	if query := wq.withVars; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[uuid.UUID]*Workflow)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Vars = []*VarRef{}
-		}
-		query.withFKs = true
-		query.Where(predicate.VarRef(func(s *sql.Selector) {
-			s.Where(sql.InValues(workflow.VarsColumn, fks...))
-		}))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := wq.loadVars(ctx, query, nodes,
+			func(n *Workflow) { n.Edges.Vars = []*VarRef{} },
+			func(n *Workflow, e *VarRef) { n.Edges.Vars = append(n.Edges.Vars, e) }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			fk := n.workflow_vars
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "workflow_vars" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "workflow_vars" returned %v for node %v`, *fk, n.ID)
-			}
-			node.Edges.Vars = append(node.Edges.Vars, n)
-		}
 	}
-
 	if query := wq.withWfevents; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[uuid.UUID]*Workflow)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Wfevents = []*Events{}
-		}
-		query.withFKs = true
-		query.Where(predicate.Events(func(s *sql.Selector) {
-			s.Where(sql.InValues(workflow.WfeventsColumn, fks...))
-		}))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := wq.loadWfevents(ctx, query, nodes,
+			func(n *Workflow) { n.Edges.Wfevents = []*Events{} },
+			func(n *Workflow, e *Events) { n.Edges.Wfevents = append(n.Edges.Wfevents, e) }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			fk := n.workflow_wfevents
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "workflow_wfevents" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "workflow_wfevents" returned %v for node %v`, *fk, n.ID)
-			}
-			node.Edges.Wfevents = append(node.Edges.Wfevents, n)
+	}
+	return nodes, nil
+}
+
+func (wq *WorkflowQuery) loadInode(ctx context.Context, query *InodeQuery, nodes []*Workflow, init func(*Workflow), assign func(*Workflow, *Inode)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Workflow)
+	for i := range nodes {
+		if nodes[i].inode_workflow == nil {
+			continue
+		}
+		fk := *nodes[i].inode_workflow
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	query.Where(inode.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "inode_workflow" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
 		}
 	}
-
-	return nodes, nil
+	return nil
+}
+func (wq *WorkflowQuery) loadNamespace(ctx context.Context, query *NamespaceQuery, nodes []*Workflow, init func(*Workflow), assign func(*Workflow, *Namespace)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Workflow)
+	for i := range nodes {
+		if nodes[i].namespace_workflows == nil {
+			continue
+		}
+		fk := *nodes[i].namespace_workflows
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	query.Where(namespace.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "namespace_workflows" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (wq *WorkflowQuery) loadRevisions(ctx context.Context, query *RevisionQuery, nodes []*Workflow, init func(*Workflow), assign func(*Workflow, *Revision)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Workflow)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Revision(func(s *sql.Selector) {
+		s.Where(sql.InValues(workflow.RevisionsColumn, fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.workflow_revisions
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "workflow_revisions" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "workflow_revisions" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (wq *WorkflowQuery) loadRefs(ctx context.Context, query *RefQuery, nodes []*Workflow, init func(*Workflow), assign func(*Workflow, *Ref)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Workflow)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Ref(func(s *sql.Selector) {
+		s.Where(sql.InValues(workflow.RefsColumn, fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.workflow_refs
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "workflow_refs" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "workflow_refs" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (wq *WorkflowQuery) loadInstances(ctx context.Context, query *InstanceQuery, nodes []*Workflow, init func(*Workflow), assign func(*Workflow, *Instance)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Workflow)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.InValues(workflow.InstancesColumn, fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.workflow_instances
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "workflow_instances" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "workflow_instances" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (wq *WorkflowQuery) loadRoutes(ctx context.Context, query *RouteQuery, nodes []*Workflow, init func(*Workflow), assign func(*Workflow, *Route)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Workflow)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Route(func(s *sql.Selector) {
+		s.Where(sql.InValues(workflow.RoutesColumn, fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.workflow_routes
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "workflow_routes" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "workflow_routes" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (wq *WorkflowQuery) loadLogs(ctx context.Context, query *LogMsgQuery, nodes []*Workflow, init func(*Workflow), assign func(*Workflow, *LogMsg)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Workflow)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.InValues(workflow.LogsColumn, fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.workflow_logs
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "workflow_logs" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "workflow_logs" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (wq *WorkflowQuery) loadVars(ctx context.Context, query *VarRefQuery, nodes []*Workflow, init func(*Workflow), assign func(*Workflow, *VarRef)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Workflow)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.VarRef(func(s *sql.Selector) {
+		s.Where(sql.InValues(workflow.VarsColumn, fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.workflow_vars
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "workflow_vars" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "workflow_vars" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (wq *WorkflowQuery) loadWfevents(ctx context.Context, query *EventsQuery, nodes []*Workflow, init func(*Workflow), assign func(*Workflow, *Events)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Workflow)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Events(func(s *sql.Selector) {
+		s.Where(sql.InValues(workflow.WfeventsColumn, fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.workflow_wfevents
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "workflow_wfevents" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "workflow_wfevents" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
 }
 
 func (wq *WorkflowQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := wq.querySpec()
+	if len(wq.modifiers) > 0 {
+		_spec.Modifiers = wq.modifiers
+	}
 	_spec.Node.Columns = wq.fields
 	if len(wq.fields) > 0 {
 		_spec.Unique = wq.unique != nil && *wq.unique
@@ -957,11 +1042,14 @@ func (wq *WorkflowQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (wq *WorkflowQuery) sqlExist(ctx context.Context) (bool, error) {
-	n, err := wq.sqlCount(ctx)
-	if err != nil {
+	switch _, err := wq.FirstID(ctx); {
+	case IsNotFound(err):
+		return false, nil
+	case err != nil:
 		return false, fmt.Errorf("ent: check existence: %w", err)
+	default:
+		return true, nil
 	}
-	return n > 0, nil
 }
 
 func (wq *WorkflowQuery) querySpec() *sqlgraph.QuerySpec {
@@ -1027,6 +1115,9 @@ func (wq *WorkflowQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if wq.unique != nil && *wq.unique {
 		selector.Distinct()
 	}
+	for _, m := range wq.modifiers {
+		m(selector)
+	}
 	for _, p := range wq.predicates {
 		p(selector)
 	}
@@ -1042,6 +1133,38 @@ func (wq *WorkflowQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector.Limit(*limit)
 	}
 	return selector
+}
+
+// ForUpdate locks the selected rows against concurrent updates, and prevent them from being
+// updated, deleted or "selected ... for update" by other sessions, until the transaction is
+// either committed or rolled-back.
+func (wq *WorkflowQuery) ForUpdate(opts ...sql.LockOption) *WorkflowQuery {
+	if wq.driver.Dialect() == dialect.Postgres {
+		wq.Unique(false)
+	}
+	wq.modifiers = append(wq.modifiers, func(s *sql.Selector) {
+		s.ForUpdate(opts...)
+	})
+	return wq
+}
+
+// ForShare behaves similarly to ForUpdate, except that it acquires a shared mode lock
+// on any rows that are read. Other sessions can read the rows, but cannot modify them
+// until your transaction commits.
+func (wq *WorkflowQuery) ForShare(opts ...sql.LockOption) *WorkflowQuery {
+	if wq.driver.Dialect() == dialect.Postgres {
+		wq.Unique(false)
+	}
+	wq.modifiers = append(wq.modifiers, func(s *sql.Selector) {
+		s.ForShare(opts...)
+	})
+	return wq
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (wq *WorkflowQuery) Modify(modifiers ...func(s *sql.Selector)) *WorkflowSelect {
+	wq.modifiers = append(wq.modifiers, modifiers...)
+	return wq.Select()
 }
 
 // WorkflowGroupBy is the group-by builder for Workflow entities.
@@ -1062,7 +1185,7 @@ func (wgb *WorkflowGroupBy) Aggregate(fns ...AggregateFunc) *WorkflowGroupBy {
 }
 
 // Scan applies the group-by query and scans the result into the given value.
-func (wgb *WorkflowGroupBy) Scan(ctx context.Context, v interface{}) error {
+func (wgb *WorkflowGroupBy) Scan(ctx context.Context, v any) error {
 	query, err := wgb.path(ctx)
 	if err != nil {
 		return err
@@ -1071,7 +1194,7 @@ func (wgb *WorkflowGroupBy) Scan(ctx context.Context, v interface{}) error {
 	return wgb.sqlScan(ctx, v)
 }
 
-func (wgb *WorkflowGroupBy) sqlScan(ctx context.Context, v interface{}) error {
+func (wgb *WorkflowGroupBy) sqlScan(ctx context.Context, v any) error {
 	for _, f := range wgb.fields {
 		if !workflow.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for group-by", f)}
@@ -1096,8 +1219,6 @@ func (wgb *WorkflowGroupBy) sqlQuery() *sql.Selector {
 	for _, fn := range wgb.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	// If no columns were selected in a custom aggregation function, the default
-	// selection is the fields used for "group-by", and the aggregation functions.
 	if len(selector.SelectedColumns()) == 0 {
 		columns := make([]string, 0, len(wgb.fields)+len(wgb.fns))
 		for _, f := range wgb.fields {
@@ -1117,8 +1238,14 @@ type WorkflowSelect struct {
 	sql *sql.Selector
 }
 
+// Aggregate adds the given aggregation functions to the selector query.
+func (ws *WorkflowSelect) Aggregate(fns ...AggregateFunc) *WorkflowSelect {
+	ws.fns = append(ws.fns, fns...)
+	return ws
+}
+
 // Scan applies the selector query and scans the result into the given value.
-func (ws *WorkflowSelect) Scan(ctx context.Context, v interface{}) error {
+func (ws *WorkflowSelect) Scan(ctx context.Context, v any) error {
 	if err := ws.prepareQuery(ctx); err != nil {
 		return err
 	}
@@ -1126,7 +1253,17 @@ func (ws *WorkflowSelect) Scan(ctx context.Context, v interface{}) error {
 	return ws.sqlScan(ctx, v)
 }
 
-func (ws *WorkflowSelect) sqlScan(ctx context.Context, v interface{}) error {
+func (ws *WorkflowSelect) sqlScan(ctx context.Context, v any) error {
+	aggregation := make([]string, 0, len(ws.fns))
+	for _, fn := range ws.fns {
+		aggregation = append(aggregation, fn(ws.sql))
+	}
+	switch n := len(*ws.selector.flds); {
+	case n == 0 && len(aggregation) > 0:
+		ws.sql.Select(aggregation...)
+	case n != 0 && len(aggregation) > 0:
+		ws.sql.AppendSelect(aggregation...)
+	}
 	rows := &sql.Rows{}
 	query, args := ws.sql.Query()
 	if err := ws.driver.Query(ctx, query, args, rows); err != nil {
@@ -1134,4 +1271,10 @@ func (ws *WorkflowSelect) sqlScan(ctx context.Context, v interface{}) error {
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (ws *WorkflowSelect) Modify(modifiers ...func(s *sql.Selector)) *WorkflowSelect {
+	ws.modifiers = append(ws.modifiers, modifiers...)
+	return ws
 }
