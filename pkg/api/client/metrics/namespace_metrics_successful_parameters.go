@@ -52,10 +52,12 @@ func NewNamespaceMetricsSuccessfulParamsWithHTTPClient(client *http.Client) *Nam
 	}
 }
 
-/* NamespaceMetricsSuccessfulParams contains all the parameters to send to the API endpoint
-   for the namespace metrics successful operation.
+/*
+NamespaceMetricsSuccessfulParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the namespace metrics successful operation.
+
+	Typically these are written to a http.Request.
 */
 type NamespaceMetricsSuccessfulParams struct {
 

@@ -58,10 +58,9 @@ type ClientService interface {
 }
 
 /*
-  DeleteInstanceVariable deletes a instance variable
+DeleteInstanceVariable deletes a instance variable
 
-  Delete a instance variable.
-
+Delete a instance variable.
 */
 func (a *Client) DeleteInstanceVariable(params *DeleteInstanceVariableParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DeleteInstanceVariableOK, error) {
 	// TODO: Validate the params before sending
@@ -100,10 +99,9 @@ func (a *Client) DeleteInstanceVariable(params *DeleteInstanceVariableParams, au
 }
 
 /*
-  DeleteNamespaceVariable deletes a namespace variable
+DeleteNamespaceVariable deletes a namespace variable
 
-  Delete a namespace variable.
-
+Delete a namespace variable.
 */
 func (a *Client) DeleteNamespaceVariable(params *DeleteNamespaceVariableParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DeleteNamespaceVariableOK, error) {
 	// TODO: Validate the params before sending
@@ -142,10 +140,9 @@ func (a *Client) DeleteNamespaceVariable(params *DeleteNamespaceVariableParams, 
 }
 
 /*
-  DeleteWorkflowVariable deletes a workflow variable
+DeleteWorkflowVariable deletes a workflow variable
 
-  Delete a workflow variable.
-
+Delete a workflow variable.
 */
 func (a *Client) DeleteWorkflowVariable(params *DeleteWorkflowVariableParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DeleteWorkflowVariableOK, error) {
 	// TODO: Validate the params before sending
@@ -184,10 +181,9 @@ func (a *Client) DeleteWorkflowVariable(params *DeleteWorkflowVariableParams, au
 }
 
 /*
-  GetInstanceVariable gets a instance variable
+GetInstanceVariable gets a instance variable
 
-  Get the value sorted in a instance variable.
-
+Get the value sorted in a instance variable.
 */
 func (a *Client) GetInstanceVariable(params *GetInstanceVariableParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetInstanceVariableOK, error) {
 	// TODO: Validate the params before sending
@@ -226,10 +222,9 @@ func (a *Client) GetInstanceVariable(params *GetInstanceVariableParams, authInfo
 }
 
 /*
-  GetInstanceVariables gets list of instance variable
+GetInstanceVariables gets list of instance variable
 
-  Gets a list of variables in a instance.
-
+Gets a list of variables in a instance.
 */
 func (a *Client) GetInstanceVariables(params *GetInstanceVariablesParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetInstanceVariablesOK, error) {
 	// TODO: Validate the params before sending
@@ -268,10 +263,9 @@ func (a *Client) GetInstanceVariables(params *GetInstanceVariablesParams, authIn
 }
 
 /*
-  GetNamespaceVariable gets a namespace variable
+GetNamespaceVariable gets a namespace variable
 
-  Get the value sorted in a namespace variable.
-
+Get the value sorted in a namespace variable.
 */
 func (a *Client) GetNamespaceVariable(params *GetNamespaceVariableParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetNamespaceVariableOK, error) {
 	// TODO: Validate the params before sending
@@ -310,10 +304,9 @@ func (a *Client) GetNamespaceVariable(params *GetNamespaceVariableParams, authIn
 }
 
 /*
-  GetNamespaceVariables gets namespace variable list
+GetNamespaceVariables gets namespace variable list
 
-  Gets a list of variables in a namespace.
-
+Gets a list of variables in a namespace.
 */
 func (a *Client) GetNamespaceVariables(params *GetNamespaceVariablesParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetNamespaceVariablesOK, error) {
 	// TODO: Validate the params before sending
@@ -352,10 +345,9 @@ func (a *Client) GetNamespaceVariables(params *GetNamespaceVariablesParams, auth
 }
 
 /*
-  GetWorkflowVariable gets a workflow variable
+GetWorkflowVariable gets a workflow variable
 
-  Get the value sorted in a workflow variable.
-
+Get the value sorted in a workflow variable.
 */
 func (a *Client) GetWorkflowVariable(params *GetWorkflowVariableParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetWorkflowVariableOK, error) {
 	// TODO: Validate the params before sending
@@ -394,10 +386,9 @@ func (a *Client) GetWorkflowVariable(params *GetWorkflowVariableParams, authInfo
 }
 
 /*
-  GetWorkflowVariables gets list of workflow variables
+GetWorkflowVariables gets list of workflow variables
 
-  Gets a list of variables in a workflow.
-
+Gets a list of variables in a workflow.
 */
 func (a *Client) GetWorkflowVariables(params *GetWorkflowVariablesParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetWorkflowVariablesOK, error) {
 	// TODO: Validate the params before sending
@@ -436,12 +427,12 @@ func (a *Client) GetWorkflowVariables(params *GetWorkflowVariablesParams, authIn
 }
 
 /*
-  SetInstanceVariable sets a instance variable
+	SetInstanceVariable sets a instance variable
 
-  Set the value sorted in a instance variable.
+	Set the value sorted in a instance variable.
+
 If the target variable does not exists, it will be created.
 Variable data can be anything.
-
 */
 func (a *Client) SetInstanceVariable(params *SetInstanceVariableParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SetInstanceVariableOK, error) {
 	// TODO: Validate the params before sending
@@ -480,12 +471,12 @@ func (a *Client) SetInstanceVariable(params *SetInstanceVariableParams, authInfo
 }
 
 /*
-  SetNamespaceVariable sets a namespace variable
+	SetNamespaceVariable sets a namespace variable
 
-  Set the value sorted in a namespace variable.
+	Set the value sorted in a namespace variable.
+
 If the target variable does not exists, it will be created.
 Variable data can be anything.
-
 */
 func (a *Client) SetNamespaceVariable(params *SetNamespaceVariableParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SetNamespaceVariableOK, error) {
 	// TODO: Validate the params before sending
@@ -524,12 +515,12 @@ func (a *Client) SetNamespaceVariable(params *SetNamespaceVariableParams, authIn
 }
 
 /*
-  SetWorkflowVariable sets a workflow variable
+	SetWorkflowVariable sets a workflow variable
 
-  Set the value sorted in a workflow variable.
+	Set the value sorted in a workflow variable.
+
 If the target variable does not exists, it will be created.
 Variable data can be anything.
-
 */
 func (a *Client) SetWorkflowVariable(params *SetWorkflowVariableParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SetWorkflowVariableOK, error) {
 	// TODO: Validate the params before sending

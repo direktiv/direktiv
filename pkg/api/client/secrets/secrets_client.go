@@ -28,20 +28,69 @@ type ClientOption func(*runtime.ClientOperation)
 
 // ClientService is the interface for Client methods
 type ClientService interface {
+	CreateFolder(params *CreateFolderParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CreateFolderOK, error)
+
 	CreateSecret(params *CreateSecretParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CreateSecretOK, error)
+
+	DeleteFolder(params *DeleteFolderParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DeleteFolderOK, error)
 
 	DeleteSecret(params *DeleteSecretParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DeleteSecretOK, error)
 
 	GetSecrets(params *GetSecretsParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetSecretsOK, error)
 
+	GetSecretsInsideFolder(params *GetSecretsInsideFolderParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetSecretsInsideFolderOK, error)
+
+	OverwriteSecret(params *OverwriteSecretParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*OverwriteSecretOK, error)
+
+	SearchSecret(params *SearchSecretParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SearchSecretOK, error)
+
 	SetTransport(transport runtime.ClientTransport)
 }
 
 /*
-  CreateSecret creates a namespace secret
+CreateFolder creates a namespace folder
 
-  Create a namespace secret.
+Create a namespace folder.
+*/
+func (a *Client) CreateFolder(params *CreateFolderParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CreateFolderOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewCreateFolderParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "createFolder",
+		Method:             "PUT",
+		PathPattern:        "/api/namespaces/{namespace}/secrets/{folder}/",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http", "https"},
+		Params:             params,
+		Reader:             &CreateFolderReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
 
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*CreateFolderOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*CreateFolderDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+CreateSecret creates a namespace secret
+
+Create a namespace secret.
 */
 func (a *Client) CreateSecret(params *CreateSecretParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CreateSecretOK, error) {
 	// TODO: Validate the params before sending
@@ -79,10 +128,49 @@ func (a *Client) CreateSecret(params *CreateSecretParams, authInfo runtime.Clien
 }
 
 /*
-  DeleteSecret deletes a namespace secret
+DeleteFolder deletes a namespace folder
 
-  Delete a namespace secret.
+Delete a namespace folder.
+*/
+func (a *Client) DeleteFolder(params *DeleteFolderParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DeleteFolderOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewDeleteFolderParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "deleteFolder",
+		Method:             "DELETE",
+		PathPattern:        "/api/namespaces/{namespace}/secrets/{folder}/",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http", "https"},
+		Params:             params,
+		Reader:             &DeleteFolderReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
 
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*DeleteFolderOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*DeleteFolderDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+DeleteSecret deletes a namespace secret
+
+Delete a namespace secret.
 */
 func (a *Client) DeleteSecret(params *DeleteSecretParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DeleteSecretOK, error) {
 	// TODO: Validate the params before sending
@@ -120,10 +208,9 @@ func (a *Client) DeleteSecret(params *DeleteSecretParams, authInfo runtime.Clien
 }
 
 /*
-  GetSecrets gets list of namespace secrets
+GetSecrets gets list of namespace secrets
 
-  Gets the list of namespace secrets.
-
+Gets the list of namespace secrets.
 */
 func (a *Client) GetSecrets(params *GetSecretsParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetSecretsOK, error) {
 	// TODO: Validate the params before sending
@@ -157,6 +244,126 @@ func (a *Client) GetSecrets(params *GetSecretsParams, authInfo runtime.ClientAut
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*GetSecretsDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+GetSecretsInsideFolder gets list of namespace nodes inside folder
+
+Gets the list of namespace secrets and folders inside specific folder.
+*/
+func (a *Client) GetSecretsInsideFolder(params *GetSecretsInsideFolderParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetSecretsInsideFolderOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGetSecretsInsideFolderParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "getSecretsInsideFolder",
+		Method:             "GET",
+		PathPattern:        "/api/namespaces/{namespace}/secrets/{folder}/",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http", "https"},
+		Params:             params,
+		Reader:             &GetSecretsInsideFolderReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*GetSecretsInsideFolderOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*GetSecretsInsideFolderDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+OverwriteSecret overwrites a namespace secret
+
+Overwrite a namespace secret.
+*/
+func (a *Client) OverwriteSecret(params *OverwriteSecretParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*OverwriteSecretOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewOverwriteSecretParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "overwriteSecret",
+		Method:             "PUT",
+		PathPattern:        "/api/namespaces/overwrite/{namespace}/secrets/{secret}",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"text/plain"},
+		Schemes:            []string{"http", "https"},
+		Params:             params,
+		Reader:             &OverwriteSecretReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*OverwriteSecretOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*OverwriteSecretDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+SearchSecret gets list of namespace nodes contains name
+
+secrets and folders which including given name.
+*/
+func (a *Client) SearchSecret(params *SearchSecretParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SearchSecretOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSearchSecretParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "searchSecret",
+		Method:             "GET",
+		PathPattern:        "/api/namespaces/search/{namespace}/secrets/{name}",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http", "https"},
+		Params:             params,
+		Reader:             &SearchSecretReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SearchSecretOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SearchSecretDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 

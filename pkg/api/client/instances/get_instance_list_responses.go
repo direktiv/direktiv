@@ -36,14 +36,44 @@ func NewGetInstanceListOK() *GetInstanceListOK {
 	return &GetInstanceListOK{}
 }
 
-/* GetInstanceListOK describes a response with status code 200, with default header values.
+/*
+GetInstanceListOK describes a response with status code 200, with default header values.
 
 successfully got namespace instances
 */
 type GetInstanceListOK struct {
 }
 
+// IsSuccess returns true when this get instance list o k response has a 2xx status code
+func (o *GetInstanceListOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this get instance list o k response has a 3xx status code
+func (o *GetInstanceListOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this get instance list o k response has a 4xx status code
+func (o *GetInstanceListOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this get instance list o k response has a 5xx status code
+func (o *GetInstanceListOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this get instance list o k response a status code equal to that given
+func (o *GetInstanceListOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *GetInstanceListOK) Error() string {
+	return fmt.Sprintf("[GET /api/namespaces/{namespace}/instances][%d] getInstanceListOK ", 200)
+}
+
+func (o *GetInstanceListOK) String() string {
 	return fmt.Sprintf("[GET /api/namespaces/{namespace}/instances][%d] getInstanceListOK ", 200)
 }
 

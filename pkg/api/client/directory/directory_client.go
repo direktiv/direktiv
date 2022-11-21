@@ -34,10 +34,9 @@ type ClientService interface {
 }
 
 /*
-  CreateDirectory creates a directory
+CreateDirectory creates a directory
 
-  Creates a directory at the target path.
-
+Creates a directory at the target path.
 */
 func (a *Client) CreateDirectory(params *CreateDirectoryParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CreateDirectoryOK, error) {
 	// TODO: Validate the params before sending

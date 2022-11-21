@@ -36,10 +36,9 @@ type ClientService interface {
 }
 
 /*
-  TestRegistry tests a registry to make sure the connection is okay
+TestRegistry tests a registry to make sure the connection is okay
 
-  Test a registry with provided url, username and token
-
+Test a registry with provided url, username and token
 */
 func (a *Client) TestRegistry(params *TestRegistryParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TestRegistryOK, error) {
 	// TODO: Validate the params before sending

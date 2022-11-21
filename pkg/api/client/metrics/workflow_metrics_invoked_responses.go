@@ -36,14 +36,44 @@ func NewWorkflowMetricsInvokedOK() *WorkflowMetricsInvokedOK {
 	return &WorkflowMetricsInvokedOK{}
 }
 
-/* WorkflowMetricsInvokedOK describes a response with status code 200, with default header values.
+/*
+WorkflowMetricsInvokedOK describes a response with status code 200, with default header values.
 
 successfully got workflow metrics
 */
 type WorkflowMetricsInvokedOK struct {
 }
 
+// IsSuccess returns true when this workflow metrics invoked o k response has a 2xx status code
+func (o *WorkflowMetricsInvokedOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this workflow metrics invoked o k response has a 3xx status code
+func (o *WorkflowMetricsInvokedOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this workflow metrics invoked o k response has a 4xx status code
+func (o *WorkflowMetricsInvokedOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this workflow metrics invoked o k response has a 5xx status code
+func (o *WorkflowMetricsInvokedOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this workflow metrics invoked o k response a status code equal to that given
+func (o *WorkflowMetricsInvokedOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *WorkflowMetricsInvokedOK) Error() string {
+	return fmt.Sprintf("[GET /api/namespaces/{namespace}/tree/{workflow}?op=metrics-invoked][%d] workflowMetricsInvokedOK ", 200)
+}
+
+func (o *WorkflowMetricsInvokedOK) String() string {
 	return fmt.Sprintf("[GET /api/namespaces/{namespace}/tree/{workflow}?op=metrics-invoked][%d] workflowMetricsInvokedOK ", 200)
 }
 

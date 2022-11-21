@@ -36,14 +36,44 @@ func NewWatchNamespaceServiceRevisionListOK() *WatchNamespaceServiceRevisionList
 	return &WatchNamespaceServiceRevisionListOK{}
 }
 
-/* WatchNamespaceServiceRevisionListOK describes a response with status code 200, with default header values.
+/*
+WatchNamespaceServiceRevisionListOK describes a response with status code 200, with default header values.
 
 successfully watching service revisions
 */
 type WatchNamespaceServiceRevisionListOK struct {
 }
 
+// IsSuccess returns true when this watch namespace service revision list o k response has a 2xx status code
+func (o *WatchNamespaceServiceRevisionListOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this watch namespace service revision list o k response has a 3xx status code
+func (o *WatchNamespaceServiceRevisionListOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this watch namespace service revision list o k response has a 4xx status code
+func (o *WatchNamespaceServiceRevisionListOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this watch namespace service revision list o k response has a 5xx status code
+func (o *WatchNamespaceServiceRevisionListOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this watch namespace service revision list o k response a status code equal to that given
+func (o *WatchNamespaceServiceRevisionListOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *WatchNamespaceServiceRevisionListOK) Error() string {
+	return fmt.Sprintf("[GET /api/functions/namespaces/{namespace}/function/{serviceName}/revisions][%d] watchNamespaceServiceRevisionListOK ", 200)
+}
+
+func (o *WatchNamespaceServiceRevisionListOK) String() string {
 	return fmt.Sprintf("[GET /api/functions/namespaces/{namespace}/function/{serviceName}/revisions][%d] watchNamespaceServiceRevisionListOK ", 200)
 }
 

@@ -38,14 +38,44 @@ func NewSetNamespaceConfigOK() *SetNamespaceConfigOK {
 	return &SetNamespaceConfigOK{}
 }
 
-/* SetNamespaceConfigOK describes a response with status code 200, with default header values.
+/*
+SetNamespaceConfigOK describes a response with status code 200, with default header values.
 
 namespace config has been successfully been updated
 */
 type SetNamespaceConfigOK struct {
 }
 
+// IsSuccess returns true when this set namespace config o k response has a 2xx status code
+func (o *SetNamespaceConfigOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this set namespace config o k response has a 3xx status code
+func (o *SetNamespaceConfigOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this set namespace config o k response has a 4xx status code
+func (o *SetNamespaceConfigOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this set namespace config o k response has a 5xx status code
+func (o *SetNamespaceConfigOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this set namespace config o k response a status code equal to that given
+func (o *SetNamespaceConfigOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *SetNamespaceConfigOK) Error() string {
+	return fmt.Sprintf("[PATCH /api/namespaces/{namespace}/config][%d] setNamespaceConfigOK ", 200)
+}
+
+func (o *SetNamespaceConfigOK) String() string {
 	return fmt.Sprintf("[PATCH /api/namespaces/{namespace}/config][%d] setNamespaceConfigOK ", 200)
 }
 
@@ -54,7 +84,8 @@ func (o *SetNamespaceConfigOK) readResponse(response runtime.ClientResponse, con
 	return nil
 }
 
-/*SetNamespaceConfigBody set namespace config body
+/*
+SetNamespaceConfigBody set namespace config body
 // Example: {"broadcast":{"directory.create":false,"directory.delete":false,"instance.failed":false,"instance.started":false,"instance.success":false,"instance.variable.create":false,"instance.variable.delete":false,"instance.variable.update":false,"namespace.variable.create":false,"namespace.variable.delete":false,"namespace.variable.update":false,"workflow.create":false,"workflow.delete":false,"workflow.update":false,"workflow.variable.create":false,"workflow.variable.delete":false,"workflow.variable.update":false}}
 swagger:model SetNamespaceConfigBody
 */

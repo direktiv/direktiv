@@ -52,10 +52,12 @@ func NewWorkflowMetricsMillisecondsParamsWithHTTPClient(client *http.Client) *Wo
 	}
 }
 
-/* WorkflowMetricsMillisecondsParams contains all the parameters to send to the API endpoint
-   for the workflow metrics milliseconds operation.
+/*
+WorkflowMetricsMillisecondsParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the workflow metrics milliseconds operation.
+
+	Typically these are written to a http.Request.
 */
 type WorkflowMetricsMillisecondsParams struct {
 

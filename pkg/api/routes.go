@@ -96,6 +96,7 @@ const (
 	RN_ListWorkflowServices   = "listWorkflowServices"
 	RN_DeleteWorkflowServices = "deleteWorkflowService"
 	RN_ListWorkflowPods       = "listWorkflowPods"
+	RN_PodLogs                = "podLogs"
 
 	// git
 	RN_UpdateMirror          = "updateMirror"

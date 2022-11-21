@@ -52,10 +52,12 @@ func NewDeleteWorkflowVariableParamsWithHTTPClient(client *http.Client) *DeleteW
 	}
 }
 
-/* DeleteWorkflowVariableParams contains all the parameters to send to the API endpoint
-   for the delete workflow variable operation.
+/*
+DeleteWorkflowVariableParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the delete workflow variable operation.
+
+	Typically these are written to a http.Request.
 */
 type DeleteWorkflowVariableParams struct {
 

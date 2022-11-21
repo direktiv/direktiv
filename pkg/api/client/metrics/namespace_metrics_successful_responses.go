@@ -36,14 +36,44 @@ func NewNamespaceMetricsSuccessfulOK() *NamespaceMetricsSuccessfulOK {
 	return &NamespaceMetricsSuccessfulOK{}
 }
 
-/* NamespaceMetricsSuccessfulOK describes a response with status code 200, with default header values.
+/*
+NamespaceMetricsSuccessfulOK describes a response with status code 200, with default header values.
 
 successfully got namespace metrics
 */
 type NamespaceMetricsSuccessfulOK struct {
 }
 
+// IsSuccess returns true when this namespace metrics successful o k response has a 2xx status code
+func (o *NamespaceMetricsSuccessfulOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this namespace metrics successful o k response has a 3xx status code
+func (o *NamespaceMetricsSuccessfulOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this namespace metrics successful o k response has a 4xx status code
+func (o *NamespaceMetricsSuccessfulOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this namespace metrics successful o k response has a 5xx status code
+func (o *NamespaceMetricsSuccessfulOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this namespace metrics successful o k response a status code equal to that given
+func (o *NamespaceMetricsSuccessfulOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *NamespaceMetricsSuccessfulOK) Error() string {
+	return fmt.Sprintf("[GET /api/namespaces/{namespace}/metrics/successful][%d] namespaceMetricsSuccessfulOK ", 200)
+}
+
+func (o *NamespaceMetricsSuccessfulOK) String() string {
 	return fmt.Sprintf("[GET /api/namespaces/{namespace}/metrics/successful][%d] namespaceMetricsSuccessfulOK ", 200)
 }
 

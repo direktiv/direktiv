@@ -52,10 +52,12 @@ func NewReplayCloudeventParamsWithHTTPClient(client *http.Client) *ReplayCloudev
 	}
 }
 
-/* ReplayCloudeventParams contains all the parameters to send to the API endpoint
-   for the replay cloudevent operation.
+/*
+ReplayCloudeventParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the replay cloudevent operation.
+
+	Typically these are written to a http.Request.
 */
 type ReplayCloudeventParams struct {
 

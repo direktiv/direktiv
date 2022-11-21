@@ -40,14 +40,44 @@ func NewCreateRegistryOK() *CreateRegistryOK {
 	return &CreateRegistryOK{}
 }
 
-/* CreateRegistryOK describes a response with status code 200, with default header values.
+/*
+CreateRegistryOK describes a response with status code 200, with default header values.
 
 successfully created namespace registry
 */
 type CreateRegistryOK struct {
 }
 
+// IsSuccess returns true when this create registry o k response has a 2xx status code
+func (o *CreateRegistryOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this create registry o k response has a 3xx status code
+func (o *CreateRegistryOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this create registry o k response has a 4xx status code
+func (o *CreateRegistryOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this create registry o k response has a 5xx status code
+func (o *CreateRegistryOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this create registry o k response a status code equal to that given
+func (o *CreateRegistryOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *CreateRegistryOK) Error() string {
+	return fmt.Sprintf("[POST /api/functions/registries/namespaces/{namespace}][%d] createRegistryOK ", 200)
+}
+
+func (o *CreateRegistryOK) String() string {
 	return fmt.Sprintf("[POST /api/functions/registries/namespaces/{namespace}][%d] createRegistryOK ", 200)
 }
 
@@ -56,7 +86,8 @@ func (o *CreateRegistryOK) readResponse(response runtime.ClientResponse, consume
 	return nil
 }
 
-/*CreateRegistryBody create registry body
+/*
+CreateRegistryBody create registry body
 // Example: {"data":"admin:8QwFLg%D$qg*","reg":"https://prod.customreg.io"}
 swagger:model CreateRegistryBody
 */

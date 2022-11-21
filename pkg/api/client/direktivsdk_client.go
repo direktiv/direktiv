@@ -12,7 +12,6 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/api/client/directory"
 	"github.com/direktiv/direktiv/pkg/api/client/events"
-	"github.com/direktiv/direktiv/pkg/api/client/global_services"
 	"github.com/direktiv/direktiv/pkg/api/client/instances"
 	"github.com/direktiv/direktiv/pkg/api/client/logs"
 	"github.com/direktiv/direktiv/pkg/api/client/metrics"
@@ -21,6 +20,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/api/client/node"
 	"github.com/direktiv/direktiv/pkg/api/client/operations"
 	"github.com/direktiv/direktiv/pkg/api/client/other"
+	"github.com/direktiv/direktiv/pkg/api/client/pod"
 	"github.com/direktiv/direktiv/pkg/api/client/registries"
 	"github.com/direktiv/direktiv/pkg/api/client/secrets"
 	"github.com/direktiv/direktiv/pkg/api/client/variables"
@@ -72,7 +72,6 @@ func New(transport runtime.ClientTransport, formats strfmt.Registry) *Direktivsd
 	cli.Transport = transport
 	cli.Directory = directory.New(transport, formats)
 	cli.Events = events.New(transport, formats)
-	cli.GlobalServices = global_services.New(transport, formats)
 	cli.Instances = instances.New(transport, formats)
 	cli.Logs = logs.New(transport, formats)
 	cli.Metrics = metrics.New(transport, formats)
@@ -81,6 +80,7 @@ func New(transport runtime.ClientTransport, formats strfmt.Registry) *Direktivsd
 	cli.Node = node.New(transport, formats)
 	cli.Operations = operations.New(transport, formats)
 	cli.Other = other.New(transport, formats)
+	cli.Pod = pod.New(transport, formats)
 	cli.Registries = registries.New(transport, formats)
 	cli.Secrets = secrets.New(transport, formats)
 	cli.Variables = variables.New(transport, formats)
@@ -134,8 +134,6 @@ type Direktivsdk struct {
 
 	Events events.ClientService
 
-	GlobalServices global_services.ClientService
-
 	Instances instances.ClientService
 
 	Logs logs.ClientService
@@ -151,6 +149,8 @@ type Direktivsdk struct {
 	Operations operations.ClientService
 
 	Other other.ClientService
+
+	Pod pod.ClientService
 
 	Registries registries.ClientService
 
@@ -170,7 +170,6 @@ func (c *Direktivsdk) SetTransport(transport runtime.ClientTransport) {
 	c.Transport = transport
 	c.Directory.SetTransport(transport)
 	c.Events.SetTransport(transport)
-	c.GlobalServices.SetTransport(transport)
 	c.Instances.SetTransport(transport)
 	c.Logs.SetTransport(transport)
 	c.Metrics.SetTransport(transport)
@@ -179,6 +178,7 @@ func (c *Direktivsdk) SetTransport(transport runtime.ClientTransport) {
 	c.Node.SetTransport(transport)
 	c.Operations.SetTransport(transport)
 	c.Other.SetTransport(transport)
+	c.Pod.SetTransport(transport)
 	c.Registries.SetTransport(transport)
 	c.Secrets.SetTransport(transport)
 	c.Variables.SetTransport(transport)

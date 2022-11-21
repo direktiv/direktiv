@@ -36,14 +36,44 @@ func NewGetEventHistoryOK() *GetEventHistoryOK {
 	return &GetEventHistoryOK{}
 }
 
-/* GetEventHistoryOK describes a response with status code 200, with default header values.
+/*
+GetEventHistoryOK describes a response with status code 200, with default header values.
 
 successfully got events history
 */
 type GetEventHistoryOK struct {
 }
 
+// IsSuccess returns true when this get event history o k response has a 2xx status code
+func (o *GetEventHistoryOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this get event history o k response has a 3xx status code
+func (o *GetEventHistoryOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this get event history o k response has a 4xx status code
+func (o *GetEventHistoryOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this get event history o k response has a 5xx status code
+func (o *GetEventHistoryOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this get event history o k response a status code equal to that given
+func (o *GetEventHistoryOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *GetEventHistoryOK) Error() string {
+	return fmt.Sprintf("[GET /api/namespaces/{namespace}/events][%d] getEventHistoryOK ", 200)
+}
+
+func (o *GetEventHistoryOK) String() string {
 	return fmt.Sprintf("[GET /api/namespaces/{namespace}/events][%d] getEventHistoryOK ", 200)
 }
 

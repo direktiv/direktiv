@@ -36,14 +36,44 @@ func NewGetNamespaceVariablesOK() *GetNamespaceVariablesOK {
 	return &GetNamespaceVariablesOK{}
 }
 
-/* GetNamespaceVariablesOK describes a response with status code 200, with default header values.
+/*
+GetNamespaceVariablesOK describes a response with status code 200, with default header values.
 
 successfully got namespace variables
 */
 type GetNamespaceVariablesOK struct {
 }
 
+// IsSuccess returns true when this get namespace variables o k response has a 2xx status code
+func (o *GetNamespaceVariablesOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this get namespace variables o k response has a 3xx status code
+func (o *GetNamespaceVariablesOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this get namespace variables o k response has a 4xx status code
+func (o *GetNamespaceVariablesOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this get namespace variables o k response has a 5xx status code
+func (o *GetNamespaceVariablesOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this get namespace variables o k response a status code equal to that given
+func (o *GetNamespaceVariablesOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *GetNamespaceVariablesOK) Error() string {
+	return fmt.Sprintf("[GET /api/namespaces/{namespace}/vars][%d] getNamespaceVariablesOK ", 200)
+}
+
+func (o *GetNamespaceVariablesOK) String() string {
 	return fmt.Sprintf("[GET /api/namespaces/{namespace}/vars][%d] getNamespaceVariablesOK ", 200)
 }
 

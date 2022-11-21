@@ -36,14 +36,44 @@ func NewGetInstanceInputOK() *GetInstanceInputOK {
 	return &GetInstanceInputOK{}
 }
 
-/* GetInstanceInputOK describes a response with status code 200, with default header values.
+/*
+GetInstanceInputOK describes a response with status code 200, with default header values.
 
 successfully got instance input
 */
 type GetInstanceInputOK struct {
 }
 
+// IsSuccess returns true when this get instance input o k response has a 2xx status code
+func (o *GetInstanceInputOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this get instance input o k response has a 3xx status code
+func (o *GetInstanceInputOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this get instance input o k response has a 4xx status code
+func (o *GetInstanceInputOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this get instance input o k response has a 5xx status code
+func (o *GetInstanceInputOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this get instance input o k response a status code equal to that given
+func (o *GetInstanceInputOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *GetInstanceInputOK) Error() string {
+	return fmt.Sprintf("[GET /api/namespaces/{namespace}/instances/{instance}/input][%d] getInstanceInputOK ", 200)
+}
+
+func (o *GetInstanceInputOK) String() string {
 	return fmt.Sprintf("[GET /api/namespaces/{namespace}/instances/{instance}/input][%d] getInstanceInputOK ", 200)
 }
 

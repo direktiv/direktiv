@@ -46,7 +46,8 @@ func NewGetSecretsOK() *GetSecretsOK {
 	return &GetSecretsOK{}
 }
 
-/* GetSecretsOK describes a response with status code 200, with default header values.
+/*
+GetSecretsOK describes a response with status code 200, with default header values.
 
 successfully got namespace nodes
 */
@@ -54,9 +55,39 @@ type GetSecretsOK struct {
 	Payload models.OkBody
 }
 
+// IsSuccess returns true when this get secrets o k response has a 2xx status code
+func (o *GetSecretsOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this get secrets o k response has a 3xx status code
+func (o *GetSecretsOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this get secrets o k response has a 4xx status code
+func (o *GetSecretsOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this get secrets o k response has a 5xx status code
+func (o *GetSecretsOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this get secrets o k response a status code equal to that given
+func (o *GetSecretsOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *GetSecretsOK) Error() string {
 	return fmt.Sprintf("[GET /api/namespaces/{namespace}/secrets][%d] getSecretsOK  %+v", 200, o.Payload)
 }
+
+func (o *GetSecretsOK) String() string {
+	return fmt.Sprintf("[GET /api/namespaces/{namespace}/secrets][%d] getSecretsOK  %+v", 200, o.Payload)
+}
+
 func (o *GetSecretsOK) GetPayload() models.OkBody {
 	return o.Payload
 }
@@ -78,14 +109,15 @@ func NewGetSecretsDefault(code int) *GetSecretsDefault {
 	}
 }
 
-/* GetSecretsDefault describes a response with status code -1, with default header values.
+/*
+GetSecretsDefault describes a response with status code -1, with default header values.
 
 an error has occurred
 */
 type GetSecretsDefault struct {
 	_statusCode int
 
-	Payload *models.ErrorResponse
+	Payload models.ErrorResponse
 }
 
 // Code gets the status code for the get secrets default response
@@ -93,19 +125,47 @@ func (o *GetSecretsDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this get secrets default response has a 2xx status code
+func (o *GetSecretsDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this get secrets default response has a 3xx status code
+func (o *GetSecretsDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this get secrets default response has a 4xx status code
+func (o *GetSecretsDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this get secrets default response has a 5xx status code
+func (o *GetSecretsDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this get secrets default response a status code equal to that given
+func (o *GetSecretsDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *GetSecretsDefault) Error() string {
 	return fmt.Sprintf("[GET /api/namespaces/{namespace}/secrets][%d] getSecrets default  %+v", o._statusCode, o.Payload)
 }
-func (o *GetSecretsDefault) GetPayload() *models.ErrorResponse {
+
+func (o *GetSecretsDefault) String() string {
+	return fmt.Sprintf("[GET /api/namespaces/{namespace}/secrets][%d] getSecrets default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *GetSecretsDefault) GetPayload() models.ErrorResponse {
 	return o.Payload
 }
 
 func (o *GetSecretsDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.ErrorResponse)
-
 	// response payload
-	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+	if err := consumer.Consume(response.Body(), &o.Payload); err != nil && err != io.EOF {
 		return err
 	}
 

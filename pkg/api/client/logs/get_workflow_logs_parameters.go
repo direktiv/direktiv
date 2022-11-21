@@ -52,10 +52,12 @@ func NewGetWorkflowLogsParamsWithHTTPClient(client *http.Client) *GetWorkflowLog
 	}
 }
 
-/* GetWorkflowLogsParams contains all the parameters to send to the API endpoint
-   for the get workflow logs operation.
+/*
+GetWorkflowLogsParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the get workflow logs operation.
+
+	Typically these are written to a http.Request.
 */
 type GetWorkflowLogsParams struct {
 

@@ -52,10 +52,12 @@ func NewGetNamespaceServiceListParamsWithHTTPClient(client *http.Client) *GetNam
 	}
 }
 
-/* GetNamespaceServiceListParams contains all the parameters to send to the API endpoint
-   for the get namespace service list operation.
+/*
+GetNamespaceServiceListParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the get namespace service list operation.
+
+	Typically these are written to a http.Request.
 */
 type GetNamespaceServiceListParams struct {
 

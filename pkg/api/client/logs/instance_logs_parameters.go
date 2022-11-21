@@ -52,10 +52,12 @@ func NewInstanceLogsParamsWithHTTPClient(client *http.Client) *InstanceLogsParam
 	}
 }
 
-/* InstanceLogsParams contains all the parameters to send to the API endpoint
-   for the instance logs operation.
+/*
+InstanceLogsParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the instance logs operation.
+
+	Typically these are written to a http.Request.
 */
 type InstanceLogsParams struct {
 

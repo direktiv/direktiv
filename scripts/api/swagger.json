@@ -20,85 +20,6 @@
   },
   "host": "localhost",
   "paths": {
-    "/api/functions": {
-      "get": {
-        "description": "Gets a list of global knative services.\n",
-        "tags": [
-          "Global Services"
-        ],
-        "summary": "Get Global Services List",
-        "operationId": "getGlobalServiceList",
-        "responses": {
-          "200": {
-            "description": "successfully got services list"
-          }
-        }
-      },
-      "post": {
-        "description": "Creates global scoped knative service.\nService Names are unique on a scope level.\nThese services can be used as functions in workflows, more about this can be read here:\nhttps://docs.direktiv.io/docs/walkthrough/using-functions.html\n",
-        "tags": [
-          "Global Services"
-        ],
-        "summary": "Create Global Service",
-        "operationId": "createGlobalService",
-        "parameters": [
-          {
-            "description": "Payload that contains information on new service",
-            "name": "Service",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "type": "object",
-              "required": [
-                "name",
-                "image",
-                "cmd",
-                "minScale",
-                "size"
-              ],
-              "properties": {
-                "cmd": {
-                  "type": "string"
-                },
-                "image": {
-                  "description": "Target image a service will use",
-                  "type": "string"
-                },
-                "minScale": {
-                  "description": "Minimum amount of service pods to be live",
-                  "type": "integer"
-                },
-                "name": {
-                  "description": "Name of new service",
-                  "type": "string"
-                },
-                "size": {
-                  "description": "Size of created service pods",
-                  "type": "string",
-                  "enum": [
-                    "small",
-                    "medium",
-                    "large"
-                  ]
-                }
-              },
-              "example": {
-                "cmd": "",
-                "image": "direktiv/request:v12",
-                "minScale": "1",
-                "name": "fast-request",
-                "size": "small"
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "successfully created service"
-          }
-        }
-      }
-    },
     "/api/functions/namespaces/{namespace}": {
       "get": {
         "description": "Gets a list of namespace knative services.\n",
@@ -155,6 +76,12 @@
                 "cmd": {
                   "type": "string"
                 },
+                "envs": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                },
                 "image": {
                   "description": "Target image a service will use",
                   "type": "string"
@@ -168,13 +95,8 @@
                   "type": "string"
                 },
                 "size": {
-                  "description": "Size of created service pods",
-                  "type": "string",
-                  "enum": [
-                    "small",
-                    "medium",
-                    "large"
-                  ]
+                  "description": "Size of created service pods, 0 = small, 1 = medium, 2 = large",
+                  "type": "integer"
                 }
               },
               "example": {
@@ -225,7 +147,7 @@
         }
       },
       "post": {
-        "description": "Creates a new namespace scoped knative service revision.\nRevisions are created with a traffic percentage. This percentage controls\nhow much traffic will be directed to this revision. Traffic can be set to 100\nto direct all traffic.\n",
+        "description": "Creates a new namespace scoped knative service revision.\n",
         "tags": [
           "Namespace Services"
         ],
@@ -257,8 +179,7 @@
                 "image",
                 "cmd",
                 "minScale",
-                "size",
-                "trafficPercent"
+                "size"
               ],
               "properties": {
                 "cmd": {
@@ -280,18 +201,13 @@
                     "medium",
                     "large"
                   ]
-                },
-                "trafficPercent": {
-                  "description": "Traffic percentage new revision will use",
-                  "type": "integer"
                 }
               },
               "example": {
                 "cmd": "",
                 "image": "direktiv/request:v10",
                 "minScale": "1",
-                "size": "small",
-                "trafficPercent": 50
+                "size": "small"
               }
             }
           }
@@ -328,78 +244,6 @@
         "responses": {
           "200": {
             "description": "successfully deleted service"
-          }
-        }
-      },
-      "patch": {
-        "description": "Update Namespace Service traffic directed to each revision,\ntraffic can only be configured between two revisions. All other revisions\nwill bet set to 0 traffic.\n",
-        "tags": [
-          "Namespace Services"
-        ],
-        "summary": "Update Namespace Service Traffic",
-        "operationId": "updateNamespaceServiceTraffic",
-        "parameters": [
-          {
-            "type": "string",
-            "description": "target namespace",
-            "name": "namespace",
-            "in": "path",
-            "required": true
-          },
-          {
-            "type": "string",
-            "description": "target service name",
-            "name": "serviceName",
-            "in": "path",
-            "required": true
-          },
-          {
-            "description": "Payload that contains information on service traffic",
-            "name": "Service Traffic",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "type": "object",
-              "required": [
-                "values"
-              ],
-              "properties": {
-                "values": {
-                  "description": "List of revision traffic targets",
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "percent": {
-                        "description": "Target traffice percentage",
-                        "type": "integer"
-                      },
-                      "revision": {
-                        "description": "Target service revision",
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              },
-              "example": {
-                "values": [
-                  {
-                    "percent": 60,
-                    "revision": "namespace-direktiv-fast-request-00002"
-                  },
-                  {
-                    "percent": 40,
-                    "revision": "namespace-direktiv-fast-request-00001"
-                  }
-                ]
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "successfully updated service traffic"
           }
         }
       }
@@ -479,7 +323,7 @@
         }
       },
       "delete": {
-        "description": "Delete a namespace scoped knative service revision.\nThe target revision generation is the number suffix on a revision.\nExample: A revision named 'namespace-direktiv-fast-request-00003' would have the revisionGeneration '00003'.\nNote: Revisions with traffic cannot be deleted.\n",
+        "description": "Delete a namespace scoped knative service revision.\nThe target revision generation is the number suffix on a revision.\nExample: A revision named 'namespace-direktiv-fast-request-00003' would have the revisionGeneration '00003'.\n",
         "tags": [
           "Namespace Services"
         ],
@@ -809,100 +653,6 @@
         }
       }
     },
-    "/api/functions/registries/global": {
-      "get": {
-        "description": "Gets the list of global registries.\nGlobal registries are available to all services.\n",
-        "tags": [
-          "Registries"
-        ],
-        "summary": "Get List of Global Registries",
-        "operationId": "getGlobalRegistries",
-        "responses": {
-          "200": {
-            "description": "successfully got global registries"
-          }
-        }
-      },
-      "post": {
-        "description": "Create a global container registry.\nGlobal registries are available to all services.\nThis can be used to connect your workflows to private container registries that require tokens.\nThe data property in the body is made up from the registry user and token. It follows the pattern :\ndata=USER:TOKEN\n",
-        "tags": [
-          "Registries"
-        ],
-        "summary": "Create a Global Container Registry",
-        "operationId": "createGlobalRegistry",
-        "parameters": [
-          {
-            "description": "Payload that contains registry data",
-            "name": "Registry Payload",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "type": "object",
-              "required": [
-                "data",
-                "reg"
-              ],
-              "properties": {
-                "data": {
-                  "description": "Target registry connection data containing the user and token.",
-                  "type": "string"
-                },
-                "reg": {
-                  "description": "Target registry URL",
-                  "type": "string"
-                }
-              },
-              "example": {
-                "data": "admin:8QwFLg%D$qg*",
-                "reg": "https://prod.customreg.io"
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "successfully created global registry"
-          }
-        }
-      },
-      "delete": {
-        "description": "Delete a Global container registry\nGlobal registries are available to all services.\n",
-        "tags": [
-          "Registries"
-        ],
-        "summary": "Delete a global Container Registry",
-        "operationId": "deleteGlobalRegistry",
-        "parameters": [
-          {
-            "description": "Payload that contains registry data",
-            "name": "Registry Payload",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "type": "object",
-              "required": [
-                "reg"
-              ],
-              "properties": {
-                "reg": {
-                  "description": "Target registry URL",
-                  "type": "string"
-                }
-              },
-              "example": {
-                "data": "admin:8QwFLg%D$qg*",
-                "reg": "https://prod.customreg.io"
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "successfully delete global registry"
-          }
-        }
-      }
-    },
     "/api/functions/registries/namespaces/{namespace}": {
       "get": {
         "description": "Gets the list of namespace registries.\n",
@@ -1020,100 +770,6 @@
         }
       }
     },
-    "/api/functions/registries/private": {
-      "get": {
-        "description": "Gets the list of global private registries.\n Global Private registries are only available to global services.\n",
-        "tags": [
-          "Registries"
-        ],
-        "summary": "Get List of Global Private Registries",
-        "operationId": "getGlobalPrivateRegistries",
-        "responses": {
-          "200": {
-            "description": "successfully got global private registries"
-          }
-        }
-      },
-      "post": {
-        "description": "Create a global container registry.\n Global Private registries are only available to global services.\nThis can be used to connect your workflows to private container registries that require tokens.\nThe data property in the body is made up from the registry user and token. It follows the pattern :\ndata=USER:TOKEN\n",
-        "tags": [
-          "Registries"
-        ],
-        "summary": "Create a Global Container Registry",
-        "operationId": "createGlobalPrivateRegistry",
-        "parameters": [
-          {
-            "description": "Payload that contains registry data",
-            "name": "Registry Payload",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "type": "object",
-              "required": [
-                "data",
-                "reg"
-              ],
-              "properties": {
-                "data": {
-                  "description": "Target registry connection data containing the user and token.",
-                  "type": "string"
-                },
-                "reg": {
-                  "description": "Target registry URL",
-                  "type": "string"
-                }
-              },
-              "example": {
-                "data": "admin:8QwFLg%D$qg*",
-                "reg": "https://prod.customreg.io"
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "successfully created global private registry"
-          }
-        }
-      },
-      "delete": {
-        "description": "Delete a global container registry.\n Global Private registries are only available to global services.\n",
-        "tags": [
-          "Registries"
-        ],
-        "summary": "Delete a Global Container Registry",
-        "operationId": "deleteGlobalPrivateRegistry",
-        "parameters": [
-          {
-            "description": "Payload that contains registry data",
-            "name": "Registry Payload",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "type": "object",
-              "required": [
-                "reg"
-              ],
-              "properties": {
-                "reg": {
-                  "description": "Target registry URL",
-                  "type": "string"
-                }
-              },
-              "example": {
-                "data": "admin:8QwFLg%D$qg*",
-                "reg": "https://prod.customreg.io"
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "successfully delete global private registry"
-          }
-        }
-      }
-    },
     "/api/functions/registries/test": {
       "post": {
         "description": "Test a registry with provided url, username and token\n",
@@ -1160,309 +816,6 @@
           },
           "401": {
             "description": "unauthorized to access the registry"
-          }
-        }
-      }
-    },
-    "/api/functions/{serviceName}": {
-      "get": {
-        "description": "Get details of a global scoped knative service.\n",
-        "tags": [
-          "Global Services"
-        ],
-        "summary": "Get Global Service Details",
-        "operationId": "getGlobalService",
-        "parameters": [
-          {
-            "type": "string",
-            "description": "target service name",
-            "name": "serviceName",
-            "in": "path",
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "successfully got service details"
-          }
-        }
-      },
-      "post": {
-        "description": "Creates a new global scoped knative service revision\nRevisions are created with a traffic percentage. This percentage controls how much traffic will be directed to this revision.\nTraffic can be set to 100 to direct all traffic.\n",
-        "tags": [
-          "Global Services"
-        ],
-        "summary": "Create Global Service Revision",
-        "operationId": "updateGlobalService",
-        "parameters": [
-          {
-            "type": "string",
-            "description": "target service name",
-            "name": "serviceName",
-            "in": "path",
-            "required": true
-          },
-          {
-            "description": "Payload that contains information on service revision",
-            "name": "Service",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "type": "object",
-              "required": [
-                "image",
-                "cmd",
-                "minScale",
-                "size",
-                "trafficPercent"
-              ],
-              "properties": {
-                "cmd": {
-                  "type": "string"
-                },
-                "image": {
-                  "description": "Target image a service will use",
-                  "type": "string"
-                },
-                "minScale": {
-                  "description": "Minimum amount of service pods to be live",
-                  "type": "integer"
-                },
-                "size": {
-                  "description": "Size of created service pods",
-                  "type": "string",
-                  "enum": [
-                    "small",
-                    "medium",
-                    "large"
-                  ]
-                },
-                "trafficPercent": {
-                  "description": "Traffic percentage new revision will use",
-                  "type": "integer"
-                }
-              },
-              "example": {
-                "cmd": "",
-                "image": "direktiv/request:v10",
-                "minScale": "1",
-                "size": "small",
-                "trafficPercent": 50
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "successfully created service revision"
-          }
-        }
-      },
-      "delete": {
-        "description": "Deletes global scoped knative service and all its revisions.\n",
-        "tags": [
-          "Global Services"
-        ],
-        "summary": "Delete Global Service",
-        "operationId": "deleteGlobalService",
-        "parameters": [
-          {
-            "type": "string",
-            "description": "target service name",
-            "name": "serviceName",
-            "in": "path",
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "successfully deleted service"
-          }
-        }
-      },
-      "patch": {
-        "description": "Update Global Service traffic directed to each revision, traffic can only be configured between two revisions.\nAll other revisions will bet set to 0 traffic.\n",
-        "tags": [
-          "Global Services"
-        ],
-        "summary": "Update Global Service Traffic",
-        "operationId": "updateGlobalServiceTraffic",
-        "parameters": [
-          {
-            "type": "string",
-            "description": "target service name",
-            "name": "serviceName",
-            "in": "path",
-            "required": true
-          },
-          {
-            "description": "Payload that contains information on service traffic",
-            "name": "Service Traffic",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "type": "object",
-              "required": [
-                "values"
-              ],
-              "properties": {
-                "values": {
-                  "description": "List of revision traffic targets",
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "percent": {
-                        "description": "Target traffice percentage",
-                        "type": "integer"
-                      },
-                      "revision": {
-                        "description": "Target service revision",
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              },
-              "example": {
-                "values": [
-                  {
-                    "percent": 60,
-                    "revision": "global-fast-request-00002"
-                  },
-                  {
-                    "percent": 40,
-                    "revision": "global-fast-request-00001"
-                  }
-                ]
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "successfully updated service traffic"
-          }
-        }
-      }
-    },
-    "/api/functions/{serviceName}/revisions": {
-      "get": {
-        "description": "Watch the revision list of a global scoped knative service.\nNote: This is a Server-Sent-Event endpoint, and will not work with the default swagger client.\n",
-        "produces": [
-          "text/event-stream"
-        ],
-        "tags": [
-          "Global Services"
-        ],
-        "summary": "Watch Global Service Revision List",
-        "operationId": "watchGlobalServiceRevisionList",
-        "parameters": [
-          {
-            "type": "string",
-            "description": "target service name",
-            "name": "serviceName",
-            "in": "path",
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "successfully watching service revisions"
-          }
-        }
-      }
-    },
-    "/api/functions/{serviceName}/revisions/{revisionGeneration}": {
-      "get": {
-        "description": "Watch a global scoped knative service revision.\nThe target revision generation is the number suffix on a revision.\nExample: A revision named 'global-fast-request-00003' would have the revisionGeneration '00003'.\nNote: This is a Server-Sent-Event endpoint, and will not work with the default swagger client.\n",
-        "produces": [
-          "text/event-stream"
-        ],
-        "tags": [
-          "Global Services"
-        ],
-        "summary": "Watch Global Service Revision",
-        "operationId": "watchGlobalServiceRevision",
-        "parameters": [
-          {
-            "type": "string",
-            "description": "target service name",
-            "name": "serviceName",
-            "in": "path",
-            "required": true
-          },
-          {
-            "type": "string",
-            "description": "target revision generation",
-            "name": "revisionGeneration",
-            "in": "path",
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "successfully watching service revision"
-          }
-        }
-      },
-      "delete": {
-        "description": "Delete a global scoped knative service revision.\nThe target revision generation is the number suffix on a revision.\nExample: A revision named 'global-fast-request-00003' would have the revisionGeneration '00003'.\nNote: Revisions with traffic cannot be deleted.\n",
-        "tags": [
-          "Global Services"
-        ],
-        "summary": "Delete Global Service Revision",
-        "operationId": "deleteGlobalRevision",
-        "parameters": [
-          {
-            "type": "string",
-            "description": "target service name",
-            "name": "serviceName",
-            "in": "path",
-            "required": true
-          },
-          {
-            "type": "string",
-            "description": "target revision generation",
-            "name": "revisionGeneration",
-            "in": "path",
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "successfully deleted service revision"
-          }
-        }
-      }
-    },
-    "/api/functions/{serviceName}/revisions/{revisionGeneration}/pods": {
-      "get": {
-        "description": "List a revisions pods of a global scoped knative service.\nThe target revision generation is the number suffix on a revision.\nExample: A revision named 'global-fast-request-00003' would have the revisionGeneration '00003' .\n",
-        "tags": [
-          "Global Services"
-        ],
-        "summary": "Get Global Service Revision Pods List",
-        "operationId": "listGlobalServiceRevisionPods",
-        "parameters": [
-          {
-            "type": "string",
-            "description": "target service name",
-            "name": "serviceName",
-            "in": "path",
-            "required": true
-          },
-          {
-            "type": "string",
-            "description": "target revision generation",
-            "name": "revisionGeneration",
-            "in": "path",
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "successfully got list of a service revision pods"
           }
         }
       }
@@ -1571,6 +924,30 @@
             "schema": {
               "$ref": "#/definitions/ErrorResponse"
             }
+          }
+        }
+      }
+    },
+    "/api/logs/{pod}": {
+      "get": {
+        "description": "Watches logs of the pods for a service. This can be a namespace service or a workflow service.\n",
+        "tags": [
+          "Pod"
+        ],
+        "summary": "Watch Pod Logs",
+        "operationId": "podLogs",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "pod name",
+            "name": "pod",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully watching pod logs"
           }
         }
       }
@@ -3878,98 +3255,17 @@
     }
   },
   "definitions": {
-    "CreateGlobalPrivateRegistryBody": {
-      "description": "CreateGlobalPrivateRegistryBody create global private registry body\nExample: {\"data\":\"admin:8QwFLg%D$qg*\",\"reg\":\"https://prod.customreg.io\"}",
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/registries"
-    },
-    "CreateGlobalRegistryBody": {
-      "description": "CreateGlobalRegistryBody create global registry body\nExample: {\"data\":\"admin:8QwFLg%D$qg*\",\"reg\":\"https://prod.customreg.io\"}",
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/registries"
-    },
-    "CreateGlobalServiceBody": {
-      "description": "CreateGlobalServiceBody create global service body\nExample: {\"cmd\":\"\",\"image\":\"direktiv/request:v12\",\"minScale\":\"1\",\"name\":\"fast-request\",\"size\":\"small\"}",
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/global_services"
-    },
-    "CreateNamespaceServiceBody": {
-      "description": "CreateNamespaceServiceBody create namespace service body\nExample: {\"cmd\":\"\",\"image\":\"direktiv/request:v12\",\"minScale\":\"1\",\"name\":\"fast-request\",\"size\":\"small\"}",
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/namespace_services"
-    },
-    "CreateRegistryBody": {
-      "description": "CreateRegistryBody create registry body\nExample: {\"data\":\"admin:8QwFLg%D$qg*\",\"reg\":\"https://prod.customreg.io\"}",
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/registries"
-    },
-    "DeleteGlobalPrivateRegistryBody": {
-      "description": "DeleteGlobalPrivateRegistryBody delete global private registry body\nExample: {\"data\":\"admin:8QwFLg%D$qg*\",\"reg\":\"https://prod.customreg.io\"}",
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/registries"
-    },
-    "DeleteGlobalRegistryBody": {
-      "description": "DeleteGlobalRegistryBody delete global registry body\nExample: {\"data\":\"admin:8QwFLg%D$qg*\",\"reg\":\"https://prod.customreg.io\"}",
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/registries"
-    },
-    "DeleteRegistryBody": {
-      "description": "DeleteRegistryBody delete registry body\nExample: {\"data\":\"admin:8QwFLg%D$qg*\",\"reg\":\"https://prod.customreg.io\"}",
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/registries"
-    },
     "ErrorResponse": {
       "x-go-package": "github.com/direktiv/direktiv/pkg/api"
-    },
-    "JqPlaygroundBody": {
-      "description": "JqPlaygroundBody jq playground body\nExample: {\"data\":\"eyJhIjogMSwgImIiOiAyLCAiYyI6IDQsICJkIjogN30=\",\"query\":\"map(select(. \\u003e= 2))\"}",
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/other"
     },
     "OkBody": {
       "description": "OkBody is an arbitrary placeholder response that represents an ok response body",
       "x-go-package": "github.com/direktiv/direktiv/pkg/api"
     },
-    "SetNamespaceConfigBody": {
-      "description": "SetNamespaceConfigBody set namespace config body\nExample: {\"broadcast\":{\"directory.create\":false,\"directory.delete\":false,\"instance.failed\":false,\"instance.started\":false,\"instance.success\":false,\"instance.variable.create\":false,\"instance.variable.delete\":false,\"instance.variable.update\":false,\"namespace.variable.create\":false,\"namespace.variable.delete\":false,\"namespace.variable.update\":false,\"workflow.create\":false,\"workflow.delete\":false,\"workflow.update\":false,\"workflow.variable.create\":false,\"workflow.variable.delete\":false,\"workflow.variable.update\":false}}",
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/namespaces"
-    },
-    "SetWorkflowCloudEventLogsBody": {
-      "description": "SetWorkflowCloudEventLogsBody set workflow cloud event logs body\nExample: {\"logger\":\"mylog\"}",
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/workflows"
-    },
-    "TestRegistryBody": {
-      "description": "TestRegistryBody test registry body\nExample: {\"token\":\"8QwFLg%D$qg*\",\"url\":\"https://prod.customreg.io\",\"username\":\"admin\"}",
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/operations"
-    },
-    "ToggleWorkflowBody": {
-      "description": "ToggleWorkflowBody toggle workflow body\nExample: {\"live\":false}",
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/workflows"
-    },
-    "UpdateGlobalServiceBody": {
-      "description": "UpdateGlobalServiceBody update global service body\nExample: {\"cmd\":\"\",\"image\":\"direktiv/request:v10\",\"minScale\":\"1\",\"size\":\"small\",\"trafficPercent\":50}",
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/global_services"
-    },
-    "UpdateGlobalServiceTrafficBody": {
-      "description": "UpdateGlobalServiceTrafficBody update global service traffic body\nExample: {\"values\":[{\"percent\":60,\"revision\":\"global-fast-request-00002\"},{\"percent\":40,\"revision\":\"global-fast-request-00001\"}]}",
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/global_services"
-    },
-    "UpdateGlobalServiceTrafficParamsBodyValuesItems0": {
-      "description": "UpdateGlobalServiceTrafficParamsBodyValuesItems0 update global service traffic params body values items0",
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/global_services"
-    },
-    "UpdateNamespaceServiceBody": {
-      "description": "UpdateNamespaceServiceBody update namespace service body\nExample: {\"cmd\":\"\",\"image\":\"direktiv/request:v10\",\"minScale\":\"1\",\"size\":\"small\",\"trafficPercent\":50}",
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/namespace_services"
-    },
-    "UpdateNamespaceServiceTrafficBody": {
-      "description": "UpdateNamespaceServiceTrafficBody update namespace service traffic body\nExample: {\"values\":[{\"percent\":60,\"revision\":\"namespace-direktiv-fast-request-00002\"},{\"percent\":40,\"revision\":\"namespace-direktiv-fast-request-00001\"}]}",
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/namespace_services"
-    },
-    "UpdateNamespaceServiceTrafficParamsBodyValuesItems0": {
-      "description": "UpdateNamespaceServiceTrafficParamsBodyValuesItems0 update namespace service traffic params body values items0",
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/namespace_services"
-    },
     "UpdateServiceRequest": {
       "description": "UpdateServiceRequest UpdateServiceRequest update service request",
       "x-go-name": "updateServiceRequest",
       "x-go-package": "github.com/direktiv/direktiv/pkg/api"
-    },
-    "updateServiceRequest": {
-      "description": "UpdateServiceRequest UpdateServiceRequest UpdateServiceRequest update service request",
-      "x-go-name": "UpdateServiceRequest",
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/models"
     }
   },
   "securityDefinitions": {

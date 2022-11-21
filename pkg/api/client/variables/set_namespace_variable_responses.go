@@ -36,14 +36,44 @@ func NewSetNamespaceVariableOK() *SetNamespaceVariableOK {
 	return &SetNamespaceVariableOK{}
 }
 
-/* SetNamespaceVariableOK describes a response with status code 200, with default header values.
+/*
+SetNamespaceVariableOK describes a response with status code 200, with default header values.
 
 successfully set namespace variable
 */
 type SetNamespaceVariableOK struct {
 }
 
+// IsSuccess returns true when this set namespace variable o k response has a 2xx status code
+func (o *SetNamespaceVariableOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this set namespace variable o k response has a 3xx status code
+func (o *SetNamespaceVariableOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this set namespace variable o k response has a 4xx status code
+func (o *SetNamespaceVariableOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this set namespace variable o k response has a 5xx status code
+func (o *SetNamespaceVariableOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this set namespace variable o k response a status code equal to that given
+func (o *SetNamespaceVariableOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *SetNamespaceVariableOK) Error() string {
+	return fmt.Sprintf("[PUT /api/namespaces/{namespace}/vars/{variable}][%d] setNamespaceVariableOK ", 200)
+}
+
+func (o *SetNamespaceVariableOK) String() string {
 	return fmt.Sprintf("[PUT /api/namespaces/{namespace}/vars/{variable}][%d] setNamespaceVariableOK ", 200)
 }
 

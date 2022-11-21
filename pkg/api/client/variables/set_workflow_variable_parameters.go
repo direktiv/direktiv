@@ -52,10 +52,12 @@ func NewSetWorkflowVariableParamsWithHTTPClient(client *http.Client) *SetWorkflo
 	}
 }
 
-/* SetWorkflowVariableParams contains all the parameters to send to the API endpoint
-   for the set workflow variable operation.
+/*
+SetWorkflowVariableParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the set workflow variable operation.
+
+	Typically these are written to a http.Request.
 */
 type SetWorkflowVariableParams struct {
 

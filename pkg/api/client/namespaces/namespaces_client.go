@@ -44,10 +44,9 @@ type ClientService interface {
 }
 
 /*
-  CreateNamespace creates a namespace
+CreateNamespace creates a namespace
 
-  Creates a new namespace.
-
+Creates a new namespace.
 */
 func (a *Client) CreateNamespace(params *CreateNamespaceParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CreateNamespaceOK, error) {
 	// TODO: Validate the params before sending
@@ -85,12 +84,12 @@ func (a *Client) CreateNamespace(params *CreateNamespaceParams, authInfo runtime
 }
 
 /*
-  DeleteNamespace deletes a namespace
+	DeleteNamespace deletes a namespace
 
-  Delete a namespace.
+	Delete a namespace.
+
 A namespace will not delete by default if it has any child resources (workflows, etc...).
 Deleting the namespace with all its children can be done using the `recursive` query parameter.
-
 */
 func (a *Client) DeleteNamespace(params *DeleteNamespaceParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DeleteNamespaceOK, error) {
 	// TODO: Validate the params before sending
@@ -128,10 +127,9 @@ func (a *Client) DeleteNamespace(params *DeleteNamespaceParams, authInfo runtime
 }
 
 /*
-  GetNamespaceConfig gets a namespace config
+GetNamespaceConfig gets a namespace config
 
-  Gets a namespace config.
-
+Gets a namespace config.
 */
 func (a *Client) GetNamespaceConfig(params *GetNamespaceConfigParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetNamespaceConfigOK, error) {
 	// TODO: Validate the params before sending
@@ -170,10 +168,9 @@ func (a *Client) GetNamespaceConfig(params *GetNamespaceConfigParams, authInfo r
 }
 
 /*
-  GetNamespaces gets the list of namespaces
+GetNamespaces gets the list of namespaces
 
-  Gets the list of namespaces.
-
+Gets the list of namespaces.
 */
 func (a *Client) GetNamespaces(params *GetNamespacesParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetNamespacesOK, error) {
 	// TODO: Validate the params before sending
@@ -212,10 +209,9 @@ func (a *Client) GetNamespaces(params *GetNamespacesParams, authInfo runtime.Cli
 }
 
 /*
-  SetNamespaceConfig sets a namespace config
+SetNamespaceConfig sets a namespace config
 
-  Sets a namespace config.
-
+Sets a namespace config.
 */
 func (a *Client) SetNamespaceConfig(params *SetNamespaceConfigParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SetNamespaceConfigOK, error) {
 	// TODO: Validate the params before sending

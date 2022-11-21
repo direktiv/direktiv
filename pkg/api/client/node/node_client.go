@@ -36,10 +36,9 @@ type ClientService interface {
 }
 
 /*
-  DeleteNode deletes a node
+DeleteNode deletes a node
 
-  Creates a directory at the target path.
-
+Creates a directory at the target path.
 */
 func (a *Client) DeleteNode(params *DeleteNodeParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DeleteNodeOK, error) {
 	// TODO: Validate the params before sending
@@ -77,10 +76,9 @@ func (a *Client) DeleteNode(params *DeleteNodeParams, authInfo runtime.ClientAut
 }
 
 /*
-  GetNodes gets list of namespace nodes
+GetNodes gets list of namespace nodes
 
-  Gets Workflow and Directory Nodes at nodePath.
-
+Gets Workflow and Directory Nodes at nodePath.
 */
 func (a *Client) GetNodes(params *GetNodesParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetNodesOK, error) {
 	// TODO: Validate the params before sending

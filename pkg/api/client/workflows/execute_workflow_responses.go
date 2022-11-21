@@ -46,7 +46,8 @@ func NewExecuteWorkflowOK() *ExecuteWorkflowOK {
 	return &ExecuteWorkflowOK{}
 }
 
-/* ExecuteWorkflowOK describes a response with status code 200, with default header values.
+/*
+ExecuteWorkflowOK describes a response with status code 200, with default header values.
 
 node has been deleted
 */
@@ -54,9 +55,39 @@ type ExecuteWorkflowOK struct {
 	Payload models.OkBody
 }
 
+// IsSuccess returns true when this execute workflow o k response has a 2xx status code
+func (o *ExecuteWorkflowOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this execute workflow o k response has a 3xx status code
+func (o *ExecuteWorkflowOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this execute workflow o k response has a 4xx status code
+func (o *ExecuteWorkflowOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this execute workflow o k response has a 5xx status code
+func (o *ExecuteWorkflowOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this execute workflow o k response a status code equal to that given
+func (o *ExecuteWorkflowOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *ExecuteWorkflowOK) Error() string {
 	return fmt.Sprintf("[POST /api/namespaces/{namespace}/tree/{workflow}?op=execute][%d] executeWorkflowOK  %+v", 200, o.Payload)
 }
+
+func (o *ExecuteWorkflowOK) String() string {
+	return fmt.Sprintf("[POST /api/namespaces/{namespace}/tree/{workflow}?op=execute][%d] executeWorkflowOK  %+v", 200, o.Payload)
+}
+
 func (o *ExecuteWorkflowOK) GetPayload() models.OkBody {
 	return o.Payload
 }
@@ -78,14 +109,15 @@ func NewExecuteWorkflowDefault(code int) *ExecuteWorkflowDefault {
 	}
 }
 
-/* ExecuteWorkflowDefault describes a response with status code -1, with default header values.
+/*
+ExecuteWorkflowDefault describes a response with status code -1, with default header values.
 
 an error has occurred
 */
 type ExecuteWorkflowDefault struct {
 	_statusCode int
 
-	Payload *models.ErrorResponse
+	Payload models.ErrorResponse
 }
 
 // Code gets the status code for the execute workflow default response
@@ -93,19 +125,47 @@ func (o *ExecuteWorkflowDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this execute workflow default response has a 2xx status code
+func (o *ExecuteWorkflowDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this execute workflow default response has a 3xx status code
+func (o *ExecuteWorkflowDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this execute workflow default response has a 4xx status code
+func (o *ExecuteWorkflowDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this execute workflow default response has a 5xx status code
+func (o *ExecuteWorkflowDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this execute workflow default response a status code equal to that given
+func (o *ExecuteWorkflowDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *ExecuteWorkflowDefault) Error() string {
 	return fmt.Sprintf("[POST /api/namespaces/{namespace}/tree/{workflow}?op=execute][%d] executeWorkflow default  %+v", o._statusCode, o.Payload)
 }
-func (o *ExecuteWorkflowDefault) GetPayload() *models.ErrorResponse {
+
+func (o *ExecuteWorkflowDefault) String() string {
+	return fmt.Sprintf("[POST /api/namespaces/{namespace}/tree/{workflow}?op=execute][%d] executeWorkflow default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *ExecuteWorkflowDefault) GetPayload() models.ErrorResponse {
 	return o.Payload
 }
 
 func (o *ExecuteWorkflowDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.ErrorResponse)
-
 	// response payload
-	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+	if err := consumer.Consume(response.Body(), &o.Payload); err != nil && err != io.EOF {
 		return err
 	}
 

@@ -53,10 +53,12 @@ func NewAwaitExecuteWorkflowBodyParamsWithHTTPClient(client *http.Client) *Await
 	}
 }
 
-/* AwaitExecuteWorkflowBodyParams contains all the parameters to send to the API endpoint
-   for the await execute workflow body operation.
+/*
+AwaitExecuteWorkflowBodyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the await execute workflow body operation.
+
+	Typically these are written to a http.Request.
 */
 type AwaitExecuteWorkflowBodyParams struct {
 

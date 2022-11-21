@@ -48,12 +48,12 @@ type ClientService interface {
 }
 
 /*
-  AwaitExecuteWorkflow awaits execute a workflow
+	AwaitExecuteWorkflow awaits execute a workflow
 
-  Executes a workflow. This path will wait until the workflow execution has completed and return the instance output.
+	Executes a workflow. This path will wait until the workflow execution has completed and return the instance output.
+
 NOTE: Input can also be provided with the `input.X` query parameters; Where `X` is the json key.
 Only top level json keys are supported when providing input with query parameters.
-
 */
 func (a *Client) AwaitExecuteWorkflow(params *AwaitExecuteWorkflowParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AwaitExecuteWorkflowOK, error) {
 	// TODO: Validate the params before sending
@@ -92,14 +92,14 @@ func (a *Client) AwaitExecuteWorkflow(params *AwaitExecuteWorkflowParams, authIn
 }
 
 /*
-  AwaitExecuteWorkflowBody awaits execute a workflow with body
+	AwaitExecuteWorkflowBody awaits execute a workflow with body
 
-  Executes a workflow with optionally some input provided in the request body as json.
+	Executes a workflow with optionally some input provided in the request body as json.
+
 This path will wait until the workflow execution has completed and return the instance output.
 NOTE: Input can also be provided with the `input.X` query parameters; Where `X` is the json key.
 Only top level json keys are supported when providing input with query parameters.
 Input query parameters are only read if the request has no body.
-
 */
 func (a *Client) AwaitExecuteWorkflowBody(params *AwaitExecuteWorkflowBodyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AwaitExecuteWorkflowBodyOK, error) {
 	// TODO: Validate the params before sending
@@ -138,11 +138,11 @@ func (a *Client) AwaitExecuteWorkflowBody(params *AwaitExecuteWorkflowBodyParams
 }
 
 /*
-  CreateWorkflow creates a workflow
+	CreateWorkflow creates a workflow
 
-  Creates a workflow at the target path.
+	Creates a workflow at the target path.
+
 The body of this request should contain the workflow yaml.
-
 */
 func (a *Client) CreateWorkflow(params *CreateWorkflowParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CreateWorkflowOK, error) {
 	// TODO: Validate the params before sending
@@ -180,10 +180,9 @@ func (a *Client) CreateWorkflow(params *CreateWorkflowParams, authInfo runtime.C
 }
 
 /*
-  ExecuteWorkflow executes a workflow
+ExecuteWorkflow executes a workflow
 
-  Executes a workflow with optionally some input provided in the request body as json.
-
+Executes a workflow with optionally some input provided in the request body as json.
 */
 func (a *Client) ExecuteWorkflow(params *ExecuteWorkflowParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ExecuteWorkflowOK, error) {
 	// TODO: Validate the params before sending
@@ -221,14 +220,14 @@ func (a *Client) ExecuteWorkflow(params *ExecuteWorkflowParams, authInfo runtime
 }
 
 /*
-  SetWorkflowCloudEventLogs sets cloud event for workflow to log to
+	SetWorkflowCloudEventLogs sets cloud event for workflow to log to
 
-  Set Cloud Event for Workflow to Log to.
+	Set Cloud Event for Workflow to Log to.
+
 When configured type `direktiv.instanceLog` cloud events will be generated with the `logger` parameter set to the configured value.
 Workflows can be configured to generate cloud events on their namespace anything the log parameter produces data.
 Please find more information on this topic here:
 https://docs.direktiv.io/docs/examples/logging.html
-
 */
 func (a *Client) SetWorkflowCloudEventLogs(params *SetWorkflowCloudEventLogsParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SetWorkflowCloudEventLogsOK, error) {
 	// TODO: Validate the params before sending
@@ -267,11 +266,11 @@ func (a *Client) SetWorkflowCloudEventLogs(params *SetWorkflowCloudEventLogsPara
 }
 
 /*
-  ToggleWorkflow sets cloud event for workflow to log to
+	ToggleWorkflow sets cloud event for workflow to log to
 
-  Toggle's whether or not a workflow is active.
+	Toggle's whether or not a workflow is active.
+
 Disabled workflows cannot be invoked. This includes start event and scheduled workflows.
-
 */
 func (a *Client) ToggleWorkflow(params *ToggleWorkflowParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ToggleWorkflowOK, error) {
 	// TODO: Validate the params before sending
@@ -310,11 +309,11 @@ func (a *Client) ToggleWorkflow(params *ToggleWorkflowParams, authInfo runtime.C
 }
 
 /*
-  UpdateWorkflow updates a workflow
+	UpdateWorkflow updates a workflow
 
-  Updates a workflow at the target path.
+	Updates a workflow at the target path.
+
 The body of this request should contain the workflow yaml you want to update to.
-
 */
 func (a *Client) UpdateWorkflow(params *UpdateWorkflowParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UpdateWorkflowOK, error) {
 	// TODO: Validate the params before sending

@@ -36,14 +36,44 @@ func NewGetWorkflowLogsOK() *GetWorkflowLogsOK {
 	return &GetWorkflowLogsOK{}
 }
 
-/* GetWorkflowLogsOK describes a response with status code 200, with default header values.
+/*
+GetWorkflowLogsOK describes a response with status code 200, with default header values.
 
 successfully got workflow logs
 */
 type GetWorkflowLogsOK struct {
 }
 
+// IsSuccess returns true when this get workflow logs o k response has a 2xx status code
+func (o *GetWorkflowLogsOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this get workflow logs o k response has a 3xx status code
+func (o *GetWorkflowLogsOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this get workflow logs o k response has a 4xx status code
+func (o *GetWorkflowLogsOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this get workflow logs o k response has a 5xx status code
+func (o *GetWorkflowLogsOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this get workflow logs o k response a status code equal to that given
+func (o *GetWorkflowLogsOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *GetWorkflowLogsOK) Error() string {
+	return fmt.Sprintf("[GET /api/namespaces/{namespace}/tree/{workflow}?op=logs][%d] getWorkflowLogsOK ", 200)
+}
+
+func (o *GetWorkflowLogsOK) String() string {
 	return fmt.Sprintf("[GET /api/namespaces/{namespace}/tree/{workflow}?op=logs][%d] getWorkflowLogsOK ", 200)
 }
 

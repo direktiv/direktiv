@@ -46,7 +46,8 @@ func NewDeleteNamespaceOK() *DeleteNamespaceOK {
 	return &DeleteNamespaceOK{}
 }
 
-/* DeleteNamespaceOK describes a response with status code 200, with default header values.
+/*
+DeleteNamespaceOK describes a response with status code 200, with default header values.
 
 namespace has been successfully deleted
 */
@@ -54,9 +55,39 @@ type DeleteNamespaceOK struct {
 	Payload models.OkBody
 }
 
+// IsSuccess returns true when this delete namespace o k response has a 2xx status code
+func (o *DeleteNamespaceOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this delete namespace o k response has a 3xx status code
+func (o *DeleteNamespaceOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this delete namespace o k response has a 4xx status code
+func (o *DeleteNamespaceOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this delete namespace o k response has a 5xx status code
+func (o *DeleteNamespaceOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this delete namespace o k response a status code equal to that given
+func (o *DeleteNamespaceOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *DeleteNamespaceOK) Error() string {
 	return fmt.Sprintf("[DELETE /api/namespaces/{namespace}][%d] deleteNamespaceOK  %+v", 200, o.Payload)
 }
+
+func (o *DeleteNamespaceOK) String() string {
+	return fmt.Sprintf("[DELETE /api/namespaces/{namespace}][%d] deleteNamespaceOK  %+v", 200, o.Payload)
+}
+
 func (o *DeleteNamespaceOK) GetPayload() models.OkBody {
 	return o.Payload
 }
@@ -78,14 +109,15 @@ func NewDeleteNamespaceDefault(code int) *DeleteNamespaceDefault {
 	}
 }
 
-/* DeleteNamespaceDefault describes a response with status code -1, with default header values.
+/*
+DeleteNamespaceDefault describes a response with status code -1, with default header values.
 
 an error has occurred
 */
 type DeleteNamespaceDefault struct {
 	_statusCode int
 
-	Payload *models.ErrorResponse
+	Payload models.ErrorResponse
 }
 
 // Code gets the status code for the delete namespace default response
@@ -93,19 +125,47 @@ func (o *DeleteNamespaceDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this delete namespace default response has a 2xx status code
+func (o *DeleteNamespaceDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this delete namespace default response has a 3xx status code
+func (o *DeleteNamespaceDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this delete namespace default response has a 4xx status code
+func (o *DeleteNamespaceDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this delete namespace default response has a 5xx status code
+func (o *DeleteNamespaceDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this delete namespace default response a status code equal to that given
+func (o *DeleteNamespaceDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *DeleteNamespaceDefault) Error() string {
 	return fmt.Sprintf("[DELETE /api/namespaces/{namespace}][%d] deleteNamespace default  %+v", o._statusCode, o.Payload)
 }
-func (o *DeleteNamespaceDefault) GetPayload() *models.ErrorResponse {
+
+func (o *DeleteNamespaceDefault) String() string {
+	return fmt.Sprintf("[DELETE /api/namespaces/{namespace}][%d] deleteNamespace default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *DeleteNamespaceDefault) GetPayload() models.ErrorResponse {
 	return o.Payload
 }
 
 func (o *DeleteNamespaceDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.ErrorResponse)
-
 	// response payload
-	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+	if err := consumer.Consume(response.Body(), &o.Payload); err != nil && err != io.EOF {
 		return err
 	}
 

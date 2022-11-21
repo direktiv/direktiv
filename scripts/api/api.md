@@ -62,23 +62,6 @@ Direktiv Documentation can be found at https://docs.direktiv.io/
   
 
 
-###  global_services
-
-| Method  | URI     | Name   | Summary |
-|---------|---------|--------|---------|
-| POST | /api/functions | [create global service](#create-global-service) | Create Global Service |
-| DELETE | /api/functions/{serviceName}/revisions/{revisionGeneration} | [delete global revision](#delete-global-revision) | Delete Global Service Revision |
-| DELETE | /api/functions/{serviceName} | [delete global service](#delete-global-service) | Delete Global Service |
-| GET | /api/functions/{serviceName} | [get global service](#get-global-service) | Get Global Service Details |
-| GET | /api/functions | [get global service list](#get-global-service-list) | Get Global Services List |
-| GET | /api/functions/{serviceName}/revisions/{revisionGeneration}/pods | [list global service revision pods](#list-global-service-revision-pods) | Get Global Service Revision Pods List |
-| POST | /api/functions/{serviceName} | [update global service](#update-global-service) | Create Global Service Revision |
-| PATCH | /api/functions/{serviceName} | [update global service traffic](#update-global-service-traffic) | Update Global Service Traffic |
-| GET | /api/functions/{serviceName}/revisions/{revisionGeneration} | [watch global service revision](#watch-global-service-revision) | Watch Global Service Revision |
-| GET | /api/functions/{serviceName}/revisions | [watch global service revision list](#watch-global-service-revision-list) | Watch Global Service Revision List |
-  
-
-
 ###  instances
 
 | Method  | URI     | Name   | Summary |
@@ -130,7 +113,6 @@ Direktiv Documentation can be found at https://docs.direktiv.io/
 | GET | /api/functions/namespaces/{namespace} | [get namespace service list](#get-namespace-service-list) | Get Namespace Services List |
 | GET | /api/functions/namespaces/{namespace}/function/{serviceName}/revisions/{revisionGeneration}/pods | [list namespace service revision pods](#list-namespace-service-revision-pods) | Get Namespace Service Revision Pods List |
 | POST | /api/functions/namespaces/{namespace}/function/{serviceName} | [update namespace service](#update-namespace-service) | Create Namespace Service Revision |
-| PATCH | /api/functions/namespaces/{namespace}/function/{serviceName} | [update namespace service traffic](#update-namespace-service-traffic) | Update Namespace Service Traffic |
 | GET | /api/functions/namespaces/{namespace}/function/{serviceName}/revisions/{revisionGeneration} | [watch namespace service revision](#watch-namespace-service-revision) | Watch Namespace Service Revision |
 | GET | /api/functions/namespaces/{namespace}/function/{serviceName}/revisions | [watch namespace service revision list](#watch-namespace-service-revision-list) | Watch Namespace Service Revision List |
   
@@ -176,18 +158,20 @@ Direktiv Documentation can be found at https://docs.direktiv.io/
   
 
 
+###  pod
+
+| Method  | URI     | Name   | Summary |
+|---------|---------|--------|---------|
+| GET | /api/logs/{pod} | [pod logs](#pod-logs) | Watch Pod Logs |
+  
+
+
 ###  registries
 
 | Method  | URI     | Name   | Summary |
 |---------|---------|--------|---------|
-| POST | /api/functions/registries/private | [create global private registry](#create-global-private-registry) | Create a Global Container Registry |
-| POST | /api/functions/registries/global | [create global registry](#create-global-registry) | Create a Global Container Registry |
 | POST | /api/functions/registries/namespaces/{namespace} | [create registry](#create-registry) | Create a Namespace Container Registry |
-| DELETE | /api/functions/registries/private | [delete global private registry](#delete-global-private-registry) | Delete a Global Container Registry |
-| DELETE | /api/functions/registries/global | [delete global registry](#delete-global-registry) | Delete a global Container Registry |
 | DELETE | /api/functions/registries/namespaces/{namespace} | [delete registry](#delete-registry) | Delete a Namespace Container Registry |
-| GET | /api/functions/registries/private | [get global private registries](#get-global-private-registries) | Get List of Global Private Registries |
-| GET | /api/functions/registries/global | [get global registries](#get-global-registries) | Get List of Global Registries |
 | GET | /api/functions/registries/namespaces/{namespace} | [get registries](#get-registries) | Get List of Namespace Registries |
   
 
@@ -479,161 +463,6 @@ an error has occurred
 
 [ErrorResponse](#error-response)
 
-### <span id="create-global-private-registry"></span> Create a Global Container Registry (*createGlobalPrivateRegistry*)
-
-```
-POST /api/functions/registries/private
-```
-
-Create a global container registry.
- Global Private registries are only available to global services.
-This can be used to connect your workflows to private container registries that require tokens.
-The data property in the body is made up from the registry user and token. It follows the pattern :
-data=USER:TOKEN
-
-
-#### Parameters
-
-| Name | Source | Type | Go type | Separator | Required | Default | Description |
-|------|--------|------|---------|-----------| :------: |---------|-------------|
-| Registry Payload | `body` | [CreateGlobalPrivateRegistryBody](#create-global-private-registry-body) | `CreateGlobalPrivateRegistryBody` | | ✓ | | Payload that contains registry data |
-
-#### All responses
-
-| Code | Status | Description | Has headers | Schema |
-|------|--------|-------------|:-----------:|--------|
-| [200](#create-global-private-registry-200) | OK | successfully created global private registry |  | [schema](#create-global-private-registry-200-schema) |
-
-#### Responses
-
-
-##### <span id="create-global-private-registry-200"></span> 200 - successfully created global private registry
-Status: OK
-
-###### <span id="create-global-private-registry-200-schema"></span> Schema
-
-###### Inlined models
-
-**<span id="create-global-private-registry-body"></span> CreateGlobalPrivateRegistryBody**
-
-
-  
-
-
-
-**Properties**
-
-| Name | Type | Go type | Required | Default | Description | Example |
-|------|------|---------|:--------:| ------- |-------------|---------|
-| data | string| `string` | ✓ | | Target registry connection data containing the user and token. |  |
-| reg | string| `string` | ✓ | | Target registry URL |  |
-
-
-
-### <span id="create-global-registry"></span> Create a Global Container Registry (*createGlobalRegistry*)
-
-```
-POST /api/functions/registries/global
-```
-
-Create a global container registry.
-Global registries are available to all services.
-This can be used to connect your workflows to private container registries that require tokens.
-The data property in the body is made up from the registry user and token. It follows the pattern :
-data=USER:TOKEN
-
-
-#### Parameters
-
-| Name | Source | Type | Go type | Separator | Required | Default | Description |
-|------|--------|------|---------|-----------| :------: |---------|-------------|
-| Registry Payload | `body` | [CreateGlobalRegistryBody](#create-global-registry-body) | `CreateGlobalRegistryBody` | | ✓ | | Payload that contains registry data |
-
-#### All responses
-
-| Code | Status | Description | Has headers | Schema |
-|------|--------|-------------|:-----------:|--------|
-| [200](#create-global-registry-200) | OK | successfully created global registry |  | [schema](#create-global-registry-200-schema) |
-
-#### Responses
-
-
-##### <span id="create-global-registry-200"></span> 200 - successfully created global registry
-Status: OK
-
-###### <span id="create-global-registry-200-schema"></span> Schema
-
-###### Inlined models
-
-**<span id="create-global-registry-body"></span> CreateGlobalRegistryBody**
-
-
-  
-
-
-
-**Properties**
-
-| Name | Type | Go type | Required | Default | Description | Example |
-|------|------|---------|:--------:| ------- |-------------|---------|
-| data | string| `string` | ✓ | | Target registry connection data containing the user and token. |  |
-| reg | string| `string` | ✓ | | Target registry URL |  |
-
-
-
-### <span id="create-global-service"></span> Create Global Service (*createGlobalService*)
-
-```
-POST /api/functions
-```
-
-Creates global scoped knative service.
-Service Names are unique on a scope level.
-These services can be used as functions in workflows, more about this can be read here:
-https://docs.direktiv.io/docs/walkthrough/using-functions.html
-
-
-#### Parameters
-
-| Name | Source | Type | Go type | Separator | Required | Default | Description |
-|------|--------|------|---------|-----------| :------: |---------|-------------|
-| Service | `body` | [CreateGlobalServiceBody](#create-global-service-body) | `CreateGlobalServiceBody` | | ✓ | | Payload that contains information on new service |
-
-#### All responses
-
-| Code | Status | Description | Has headers | Schema |
-|------|--------|-------------|:-----------:|--------|
-| [200](#create-global-service-200) | OK | successfully created service |  | [schema](#create-global-service-200-schema) |
-
-#### Responses
-
-
-##### <span id="create-global-service-200"></span> 200 - successfully created service
-Status: OK
-
-###### <span id="create-global-service-200-schema"></span> Schema
-
-###### Inlined models
-
-**<span id="create-global-service-body"></span> CreateGlobalServiceBody**
-
-
-  
-
-
-
-**Properties**
-
-| Name | Type | Go type | Required | Default | Description | Example |
-|------|------|---------|:--------:| ------- |-------------|---------|
-| cmd | string| `string` | ✓ | |  |  |
-| image | string| `string` | ✓ | | Target image a service will use |  |
-| minScale | integer| `int64` | ✓ | | Minimum amount of service pods to be live |  |
-| name | string| `string` | ✓ | | Name of new service |  |
-| size | string| `string` | ✓ | | Size of created service pods |  |
-
-
-
 ### <span id="create-namespace"></span> Creates a namespace (*createNamespace*)
 
 ```
@@ -724,10 +553,11 @@ Status: OK
 | Name | Type | Go type | Required | Default | Description | Example |
 |------|------|---------|:--------:| ------- |-------------|---------|
 | cmd | string| `string` | ✓ | |  |  |
+| envs | map of string| `map[string]string` |  | |  |  |
 | image | string| `string` | ✓ | | Target image a service will use |  |
 | minScale | integer| `int64` | ✓ | | Minimum amount of service pods to be live |  |
 | name | string| `string` | ✓ | | Name of new service |  |
-| size | string| `string` | ✓ | | Size of created service pods |  |
+| size | integer| `int64` | ✓ | | Size of created service pods, 0 = small, 1 = medium, 2 = large |  |
 
 
 
@@ -924,162 +754,6 @@ folder not found
 
 [ErrorResponse](#error-response)
 
-### <span id="delete-global-private-registry"></span> Delete a Global Container Registry (*deleteGlobalPrivateRegistry*)
-
-```
-DELETE /api/functions/registries/private
-```
-
-Delete a global container registry.
- Global Private registries are only available to global services.
-
-
-#### Parameters
-
-| Name | Source | Type | Go type | Separator | Required | Default | Description |
-|------|--------|------|---------|-----------| :------: |---------|-------------|
-| Registry Payload | `body` | [DeleteGlobalPrivateRegistryBody](#delete-global-private-registry-body) | `DeleteGlobalPrivateRegistryBody` | | ✓ | | Payload that contains registry data |
-
-#### All responses
-
-| Code | Status | Description | Has headers | Schema |
-|------|--------|-------------|:-----------:|--------|
-| [200](#delete-global-private-registry-200) | OK | successfully delete global private registry |  | [schema](#delete-global-private-registry-200-schema) |
-
-#### Responses
-
-
-##### <span id="delete-global-private-registry-200"></span> 200 - successfully delete global private registry
-Status: OK
-
-###### <span id="delete-global-private-registry-200-schema"></span> Schema
-
-###### Inlined models
-
-**<span id="delete-global-private-registry-body"></span> DeleteGlobalPrivateRegistryBody**
-
-
-  
-
-
-
-**Properties**
-
-| Name | Type | Go type | Required | Default | Description | Example |
-|------|------|---------|:--------:| ------- |-------------|---------|
-| reg | string| `string` | ✓ | | Target registry URL |  |
-
-
-
-### <span id="delete-global-registry"></span> Delete a global Container Registry (*deleteGlobalRegistry*)
-
-```
-DELETE /api/functions/registries/global
-```
-
-Delete a Global container registry
-Global registries are available to all services.
-
-
-#### Parameters
-
-| Name | Source | Type | Go type | Separator | Required | Default | Description |
-|------|--------|------|---------|-----------| :------: |---------|-------------|
-| Registry Payload | `body` | [DeleteGlobalRegistryBody](#delete-global-registry-body) | `DeleteGlobalRegistryBody` | | ✓ | | Payload that contains registry data |
-
-#### All responses
-
-| Code | Status | Description | Has headers | Schema |
-|------|--------|-------------|:-----------:|--------|
-| [200](#delete-global-registry-200) | OK | successfully delete global registry |  | [schema](#delete-global-registry-200-schema) |
-
-#### Responses
-
-
-##### <span id="delete-global-registry-200"></span> 200 - successfully delete global registry
-Status: OK
-
-###### <span id="delete-global-registry-200-schema"></span> Schema
-
-###### Inlined models
-
-**<span id="delete-global-registry-body"></span> DeleteGlobalRegistryBody**
-
-
-  
-
-
-
-**Properties**
-
-| Name | Type | Go type | Required | Default | Description | Example |
-|------|------|---------|:--------:| ------- |-------------|---------|
-| reg | string| `string` | ✓ | | Target registry URL |  |
-
-
-
-### <span id="delete-global-revision"></span> Delete Global Service Revision (*deleteGlobalRevision*)
-
-```
-DELETE /api/functions/{serviceName}/revisions/{revisionGeneration}
-```
-
-Delete a global scoped knative service revision.
-The target revision generation is the number suffix on a revision.
-Example: A revision named 'global-fast-request-00003' would have the revisionGeneration '00003'.
-Note: Revisions with traffic cannot be deleted.
-
-
-#### Parameters
-
-| Name | Source | Type | Go type | Separator | Required | Default | Description |
-|------|--------|------|---------|-----------| :------: |---------|-------------|
-| revisionGeneration | `path` | string | `string` |  | ✓ |  | target revision generation |
-| serviceName | `path` | string | `string` |  | ✓ |  | target service name |
-
-#### All responses
-
-| Code | Status | Description | Has headers | Schema |
-|------|--------|-------------|:-----------:|--------|
-| [200](#delete-global-revision-200) | OK | successfully deleted service revision |  | [schema](#delete-global-revision-200-schema) |
-
-#### Responses
-
-
-##### <span id="delete-global-revision-200"></span> 200 - successfully deleted service revision
-Status: OK
-
-###### <span id="delete-global-revision-200-schema"></span> Schema
-
-### <span id="delete-global-service"></span> Delete Global Service (*deleteGlobalService*)
-
-```
-DELETE /api/functions/{serviceName}
-```
-
-Deletes global scoped knative service and all its revisions.
-
-
-#### Parameters
-
-| Name | Source | Type | Go type | Separator | Required | Default | Description |
-|------|--------|------|---------|-----------| :------: |---------|-------------|
-| serviceName | `path` | string | `string` |  | ✓ |  | target service name |
-
-#### All responses
-
-| Code | Status | Description | Has headers | Schema |
-|------|--------|-------------|:-----------:|--------|
-| [200](#delete-global-service-200) | OK | successfully deleted service |  | [schema](#delete-global-service-200-schema) |
-
-#### Responses
-
-
-##### <span id="delete-global-service-200"></span> 200 - successfully deleted service
-Status: OK
-
-###### <span id="delete-global-service-200-schema"></span> Schema
-
 ### <span id="delete-instance-variable"></span> Delete a Instance Variable (*deleteInstanceVariable*)
 
 ```
@@ -1166,7 +840,6 @@ DELETE /api/functions/namespaces/{namespace}/function/{serviceName}/revisions/{r
 Delete a namespace scoped knative service revision.
 The target revision generation is the number suffix on a revision.
 Example: A revision named 'namespace-direktiv-fast-request-00003' would have the revisionGeneration '00003'.
-Note: Revisions with traffic cannot be deleted.
 
 
 #### Parameters
@@ -1554,106 +1227,6 @@ Get current event listeners.
 Status: OK
 
 ###### <span id="get-event-listeners-200-schema"></span> Schema
-
-### <span id="get-global-private-registries"></span> Get List of Global Private Registries (*getGlobalPrivateRegistries*)
-
-```
-GET /api/functions/registries/private
-```
-
-Gets the list of global private registries.
- Global Private registries are only available to global services.
-
-
-#### All responses
-
-| Code | Status | Description | Has headers | Schema |
-|------|--------|-------------|:-----------:|--------|
-| [200](#get-global-private-registries-200) | OK | successfully got global private registries |  | [schema](#get-global-private-registries-200-schema) |
-
-#### Responses
-
-
-##### <span id="get-global-private-registries-200"></span> 200 - successfully got global private registries
-Status: OK
-
-###### <span id="get-global-private-registries-200-schema"></span> Schema
-
-### <span id="get-global-registries"></span> Get List of Global Registries (*getGlobalRegistries*)
-
-```
-GET /api/functions/registries/global
-```
-
-Gets the list of global registries.
-Global registries are available to all services.
-
-
-#### All responses
-
-| Code | Status | Description | Has headers | Schema |
-|------|--------|-------------|:-----------:|--------|
-| [200](#get-global-registries-200) | OK | successfully got global registries |  | [schema](#get-global-registries-200-schema) |
-
-#### Responses
-
-
-##### <span id="get-global-registries-200"></span> 200 - successfully got global registries
-Status: OK
-
-###### <span id="get-global-registries-200-schema"></span> Schema
-
-### <span id="get-global-service"></span> Get Global Service Details (*getGlobalService*)
-
-```
-GET /api/functions/{serviceName}
-```
-
-Get details of a global scoped knative service.
-
-
-#### Parameters
-
-| Name | Source | Type | Go type | Separator | Required | Default | Description |
-|------|--------|------|---------|-----------| :------: |---------|-------------|
-| serviceName | `path` | string | `string` |  | ✓ |  | target service name |
-
-#### All responses
-
-| Code | Status | Description | Has headers | Schema |
-|------|--------|-------------|:-----------:|--------|
-| [200](#get-global-service-200) | OK | successfully got service details |  | [schema](#get-global-service-200-schema) |
-
-#### Responses
-
-
-##### <span id="get-global-service-200"></span> 200 - successfully got service details
-Status: OK
-
-###### <span id="get-global-service-200-schema"></span> Schema
-
-### <span id="get-global-service-list"></span> Get Global Services List (*getGlobalServiceList*)
-
-```
-GET /api/functions
-```
-
-Gets a list of global knative services.
-
-
-#### All responses
-
-| Code | Status | Description | Has headers | Schema |
-|------|--------|-------------|:-----------:|--------|
-| [200](#get-global-service-list-200) | OK | successfully got services list |  | [schema](#get-global-service-list-200-schema) |
-
-#### Responses
-
-
-##### <span id="get-global-service-list-200"></span> 200 - successfully got services list
-Status: OK
-
-###### <span id="get-global-service-list-200-schema"></span> Schema
 
 ### <span id="get-instance"></span> Get a Instance (*getInstance*)
 
@@ -2524,38 +2097,6 @@ Status: Internal Server Error
 
 
 
-### <span id="list-global-service-revision-pods"></span> Get Global Service Revision Pods List (*listGlobalServiceRevisionPods*)
-
-```
-GET /api/functions/{serviceName}/revisions/{revisionGeneration}/pods
-```
-
-List a revisions pods of a global scoped knative service.
-The target revision generation is the number suffix on a revision.
-Example: A revision named 'global-fast-request-00003' would have the revisionGeneration '00003' .
-
-
-#### Parameters
-
-| Name | Source | Type | Go type | Separator | Required | Default | Description |
-|------|--------|------|---------|-----------| :------: |---------|-------------|
-| revisionGeneration | `path` | string | `string` |  | ✓ |  | target revision generation |
-| serviceName | `path` | string | `string` |  | ✓ |  | target service name |
-
-#### All responses
-
-| Code | Status | Description | Has headers | Schema |
-|------|--------|-------------|:-----------:|--------|
-| [200](#list-global-service-revision-pods-200) | OK | successfully got list of a service revision pods |  | [schema](#list-global-service-revision-pods-200-schema) |
-
-#### Responses
-
-
-##### <span id="list-global-service-revision-pods-200"></span> 200 - successfully got list of a service revision pods
-Status: OK
-
-###### <span id="list-global-service-revision-pods-200-schema"></span> Schema
-
 ### <span id="list-namespace-service-revision-pods"></span> Get Namespace Service Revision Pods List (*listNamespaceServiceRevisionPods*)
 
 ```
@@ -2849,6 +2390,35 @@ secret not found
   
 
 [ErrorResponse](#error-response)
+
+### <span id="pod-logs"></span> Watch Pod Logs (*podLogs*)
+
+```
+GET /api/logs/{pod}
+```
+
+Watches logs of the pods for a service. This can be a namespace service or a workflow service.
+
+
+#### Parameters
+
+| Name | Source | Type | Go type | Separator | Required | Default | Description |
+|------|--------|------|---------|-----------| :------: |---------|-------------|
+| pod | `path` | string | `string` |  | ✓ |  | pod name |
+
+#### All responses
+
+| Code | Status | Description | Has headers | Schema |
+|------|--------|-------------|:-----------:|--------|
+| [200](#pod-logs-200) | OK | successfully watching pod logs |  | [schema](#pod-logs-200-schema) |
+
+#### Responses
+
+
+##### <span id="pod-logs-200"></span> 200 - successfully watching pod logs
+Status: OK
+
+###### <span id="pod-logs-200-schema"></span> Schema
 
 ### <span id="replay-cloudevent"></span> Replay Cloud Event (*replayCloudevent*)
 
@@ -3282,123 +2852,6 @@ Status: OK
 
 
 
-### <span id="update-global-service"></span> Create Global Service Revision (*updateGlobalService*)
-
-```
-POST /api/functions/{serviceName}
-```
-
-Creates a new global scoped knative service revision
-Revisions are created with a traffic percentage. This percentage controls how much traffic will be directed to this revision.
-Traffic can be set to 100 to direct all traffic.
-
-
-#### Parameters
-
-| Name | Source | Type | Go type | Separator | Required | Default | Description |
-|------|--------|------|---------|-----------| :------: |---------|-------------|
-| serviceName | `path` | string | `string` |  | ✓ |  | target service name |
-| Service | `body` | [UpdateGlobalServiceBody](#update-global-service-body) | `UpdateGlobalServiceBody` | | ✓ | | Payload that contains information on service revision |
-
-#### All responses
-
-| Code | Status | Description | Has headers | Schema |
-|------|--------|-------------|:-----------:|--------|
-| [200](#update-global-service-200) | OK | successfully created service revision |  | [schema](#update-global-service-200-schema) |
-
-#### Responses
-
-
-##### <span id="update-global-service-200"></span> 200 - successfully created service revision
-Status: OK
-
-###### <span id="update-global-service-200-schema"></span> Schema
-
-###### Inlined models
-
-**<span id="update-global-service-body"></span> UpdateGlobalServiceBody**
-
-
-  
-
-
-
-**Properties**
-
-| Name | Type | Go type | Required | Default | Description | Example |
-|------|------|---------|:--------:| ------- |-------------|---------|
-| cmd | string| `string` | ✓ | |  |  |
-| image | string| `string` | ✓ | | Target image a service will use |  |
-| minScale | integer| `int64` | ✓ | | Minimum amount of service pods to be live |  |
-| size | string| `string` | ✓ | | Size of created service pods |  |
-| trafficPercent | integer| `int64` | ✓ | | Traffic percentage new revision will use |  |
-
-
-
-### <span id="update-global-service-traffic"></span> Update Global Service Traffic (*updateGlobalServiceTraffic*)
-
-```
-PATCH /api/functions/{serviceName}
-```
-
-Update Global Service traffic directed to each revision, traffic can only be configured between two revisions.
-All other revisions will bet set to 0 traffic.
-
-
-#### Parameters
-
-| Name | Source | Type | Go type | Separator | Required | Default | Description |
-|------|--------|------|---------|-----------| :------: |---------|-------------|
-| serviceName | `path` | string | `string` |  | ✓ |  | target service name |
-| Service Traffic | `body` | [UpdateGlobalServiceTrafficBody](#update-global-service-traffic-body) | `UpdateGlobalServiceTrafficBody` | | ✓ | | Payload that contains information on service traffic |
-
-#### All responses
-
-| Code | Status | Description | Has headers | Schema |
-|------|--------|-------------|:-----------:|--------|
-| [200](#update-global-service-traffic-200) | OK | successfully updated service traffic |  | [schema](#update-global-service-traffic-200-schema) |
-
-#### Responses
-
-
-##### <span id="update-global-service-traffic-200"></span> 200 - successfully updated service traffic
-Status: OK
-
-###### <span id="update-global-service-traffic-200-schema"></span> Schema
-
-###### Inlined models
-
-**<span id="update-global-service-traffic-body"></span> UpdateGlobalServiceTrafficBody**
-
-
-  
-
-
-
-**Properties**
-
-| Name | Type | Go type | Required | Default | Description | Example |
-|------|------|---------|:--------:| ------- |-------------|---------|
-| values | [][UpdateGlobalServiceTrafficParamsBodyValuesItems0](#update-global-service-traffic-params-body-values-items0)| `[]*models.UpdateGlobalServiceTrafficParamsBodyValuesItems0` | ✓ | | List of revision traffic targets |  |
-
-
-
-**<span id="update-global-service-traffic-params-body-values-items0"></span> UpdateGlobalServiceTrafficParamsBodyValuesItems0**
-
-
-  
-
-
-
-**Properties**
-
-| Name | Type | Go type | Required | Default | Description | Example |
-|------|------|---------|:--------:| ------- |-------------|---------|
-| percent | integer| `int64` |  | | Target traffice percentage |  |
-| revision | string| `string` |  | | Target service revision |  |
-
-
-
 ### <span id="update-namespace-service"></span> Create Namespace Service Revision (*updateNamespaceService*)
 
 ```
@@ -3406,9 +2859,6 @@ POST /api/functions/namespaces/{namespace}/function/{serviceName}
 ```
 
 Creates a new namespace scoped knative service revision.
-Revisions are created with a traffic percentage. This percentage controls
-how much traffic will be directed to this revision. Traffic can be set to 100
-to direct all traffic.
 
 
 #### Parameters
@@ -3450,73 +2900,6 @@ Status: OK
 | image | string| `string` | ✓ | | Target image a service will use |  |
 | minScale | integer| `int64` | ✓ | | Minimum amount of service pods to be live |  |
 | size | string| `string` | ✓ | | Size of created service pods |  |
-| trafficPercent | integer| `int64` | ✓ | | Traffic percentage new revision will use |  |
-
-
-
-### <span id="update-namespace-service-traffic"></span> Update Namespace Service Traffic (*updateNamespaceServiceTraffic*)
-
-```
-PATCH /api/functions/namespaces/{namespace}/function/{serviceName}
-```
-
-Update Namespace Service traffic directed to each revision,
-traffic can only be configured between two revisions. All other revisions
-will bet set to 0 traffic.
-
-
-#### Parameters
-
-| Name | Source | Type | Go type | Separator | Required | Default | Description |
-|------|--------|------|---------|-----------| :------: |---------|-------------|
-| namespace | `path` | string | `string` |  | ✓ |  | target namespace |
-| serviceName | `path` | string | `string` |  | ✓ |  | target service name |
-| Service Traffic | `body` | [UpdateNamespaceServiceTrafficBody](#update-namespace-service-traffic-body) | `UpdateNamespaceServiceTrafficBody` | | ✓ | | Payload that contains information on service traffic |
-
-#### All responses
-
-| Code | Status | Description | Has headers | Schema |
-|------|--------|-------------|:-----------:|--------|
-| [200](#update-namespace-service-traffic-200) | OK | successfully updated service traffic |  | [schema](#update-namespace-service-traffic-200-schema) |
-
-#### Responses
-
-
-##### <span id="update-namespace-service-traffic-200"></span> 200 - successfully updated service traffic
-Status: OK
-
-###### <span id="update-namespace-service-traffic-200-schema"></span> Schema
-
-###### Inlined models
-
-**<span id="update-namespace-service-traffic-body"></span> UpdateNamespaceServiceTrafficBody**
-
-
-  
-
-
-
-**Properties**
-
-| Name | Type | Go type | Required | Default | Description | Example |
-|------|------|---------|:--------:| ------- |-------------|---------|
-| values | [][UpdateNamespaceServiceTrafficParamsBodyValuesItems0](#update-namespace-service-traffic-params-body-values-items0)| `[]*models.UpdateNamespaceServiceTrafficParamsBodyValuesItems0` | ✓ | | List of revision traffic targets |  |
-
-
-
-**<span id="update-namespace-service-traffic-params-body-values-items0"></span> UpdateNamespaceServiceTrafficParamsBodyValuesItems0**
-
-
-  
-
-
-
-**Properties**
-
-| Name | Type | Go type | Required | Default | Description | Example |
-|------|------|---------|:--------:| ------- |-------------|---------|
-| percent | integer| `int64` |  | | Target traffice percentage |  |
-| revision | string| `string` |  | | Target service revision |  |
 
 
 
@@ -3577,75 +2960,6 @@ Returns version information for servers in the cluster.
 Status: OK
 
 ###### <span id="version-200-schema"></span> Schema
-
-### <span id="watch-global-service-revision"></span> Watch Global Service Revision (*watchGlobalServiceRevision*)
-
-```
-GET /api/functions/{serviceName}/revisions/{revisionGeneration}
-```
-
-Watch a global scoped knative service revision.
-The target revision generation is the number suffix on a revision.
-Example: A revision named 'global-fast-request-00003' would have the revisionGeneration '00003'.
-Note: This is a Server-Sent-Event endpoint, and will not work with the default swagger client.
-
-
-#### Produces
-  * text/event-stream
-
-#### Parameters
-
-| Name | Source | Type | Go type | Separator | Required | Default | Description |
-|------|--------|------|---------|-----------| :------: |---------|-------------|
-| revisionGeneration | `path` | string | `string` |  | ✓ |  | target revision generation |
-| serviceName | `path` | string | `string` |  | ✓ |  | target service name |
-
-#### All responses
-
-| Code | Status | Description | Has headers | Schema |
-|------|--------|-------------|:-----------:|--------|
-| [200](#watch-global-service-revision-200) | OK | successfully watching service revision |  | [schema](#watch-global-service-revision-200-schema) |
-
-#### Responses
-
-
-##### <span id="watch-global-service-revision-200"></span> 200 - successfully watching service revision
-Status: OK
-
-###### <span id="watch-global-service-revision-200-schema"></span> Schema
-
-### <span id="watch-global-service-revision-list"></span> Watch Global Service Revision List (*watchGlobalServiceRevisionList*)
-
-```
-GET /api/functions/{serviceName}/revisions
-```
-
-Watch the revision list of a global scoped knative service.
-Note: This is a Server-Sent-Event endpoint, and will not work with the default swagger client.
-
-
-#### Produces
-  * text/event-stream
-
-#### Parameters
-
-| Name | Source | Type | Go type | Separator | Required | Default | Description |
-|------|--------|------|---------|-----------| :------: |---------|-------------|
-| serviceName | `path` | string | `string` |  | ✓ |  | target service name |
-
-#### All responses
-
-| Code | Status | Description | Has headers | Schema |
-|------|--------|-------------|:-----------:|--------|
-| [200](#watch-global-service-revision-list-200) | OK | successfully watching service revisions |  | [schema](#watch-global-service-revision-list-200-schema) |
-
-#### Responses
-
-
-##### <span id="watch-global-service-revision-list-200"></span> 200 - successfully watching service revisions
-Status: OK
-
-###### <span id="watch-global-service-revision-list-200-schema"></span> Schema
 
 ### <span id="watch-namespace-service-revision"></span> Watch Namespace Service Revision (*watchNamespaceServiceRevision*)
 
@@ -3875,126 +3189,6 @@ Status: OK
 
 ## Models
 
-### <span id="create-global-private-registry-body"></span> CreateGlobalPrivateRegistryBody
-
-
-> CreateGlobalPrivateRegistryBody create global private registry body
-
-**Example**
-```
-{"data":"admin:8QwFLg%D$qg*","reg":"https://prod.customreg.io"}
-```
-  
-
-
-
-[interface{}](#interface)
-
-### <span id="create-global-registry-body"></span> CreateGlobalRegistryBody
-
-
-> CreateGlobalRegistryBody create global registry body
-
-**Example**
-```
-{"data":"admin:8QwFLg%D$qg*","reg":"https://prod.customreg.io"}
-```
-  
-
-
-
-[interface{}](#interface)
-
-### <span id="create-global-service-body"></span> CreateGlobalServiceBody
-
-
-> CreateGlobalServiceBody create global service body
-
-**Example**
-```
-{"cmd":"","image":"direktiv/request:v12","minScale":"1","name":"fast-request","size":"small"}
-```
-  
-
-
-
-[interface{}](#interface)
-
-### <span id="create-namespace-service-body"></span> CreateNamespaceServiceBody
-
-
-> CreateNamespaceServiceBody create namespace service body
-
-**Example**
-```
-{"cmd":"","image":"direktiv/request:v12","minScale":"1","name":"fast-request","size":"small"}
-```
-  
-
-
-
-[interface{}](#interface)
-
-### <span id="create-registry-body"></span> CreateRegistryBody
-
-
-> CreateRegistryBody create registry body
-
-**Example**
-```
-{"data":"admin:8QwFLg%D$qg*","reg":"https://prod.customreg.io"}
-```
-  
-
-
-
-[interface{}](#interface)
-
-### <span id="delete-global-private-registry-body"></span> DeleteGlobalPrivateRegistryBody
-
-
-> DeleteGlobalPrivateRegistryBody delete global private registry body
-
-**Example**
-```
-{"data":"admin:8QwFLg%D$qg*","reg":"https://prod.customreg.io"}
-```
-  
-
-
-
-[interface{}](#interface)
-
-### <span id="delete-global-registry-body"></span> DeleteGlobalRegistryBody
-
-
-> DeleteGlobalRegistryBody delete global registry body
-
-**Example**
-```
-{"data":"admin:8QwFLg%D$qg*","reg":"https://prod.customreg.io"}
-```
-  
-
-
-
-[interface{}](#interface)
-
-### <span id="delete-registry-body"></span> DeleteRegistryBody
-
-
-> DeleteRegistryBody delete registry body
-
-**Example**
-```
-{"data":"admin:8QwFLg%D$qg*","reg":"https://prod.customreg.io"}
-```
-  
-
-
-
-[interface{}](#interface)
-
 ### <span id="error-response"></span> ErrorResponse
 
 
@@ -4002,175 +3196,10 @@ Status: OK
 
 [interface{}](#interface)
 
-### <span id="jq-playground-body"></span> JqPlaygroundBody
-
-
-> JqPlaygroundBody jq playground body
-
-**Example**
-```
-{"data":"eyJhIjogMSwgImIiOiAyLCAiYyI6IDQsICJkIjogN30=","query":"map(select(. \u003e= 2))"}
-```
-  
-
-
-
-[interface{}](#interface)
-
 ### <span id="ok-body"></span> OkBody
 
 
 > OkBody is an arbitrary placeholder response that represents an ok response body
-  
-
-
-
-[interface{}](#interface)
-
-### <span id="set-namespace-config-body"></span> SetNamespaceConfigBody
-
-
-> SetNamespaceConfigBody set namespace config body
-
-**Example**
-```
-{"broadcast":{"directory.create":false,"directory.delete":false,"instance.failed":false,"instance.started":false,"instance.success":false,"instance.variable.create":false,"instance.variable.delete":false,"instance.variable.update":false,"namespace.variable.create":false,"namespace.variable.delete":false,"namespace.variable.update":false,"workflow.create":false,"workflow.delete":false,"workflow.update":false,"workflow.variable.create":false,"workflow.variable.delete":false,"workflow.variable.update":false}}
-```
-  
-
-
-
-[interface{}](#interface)
-
-### <span id="set-workflow-cloud-event-logs-body"></span> SetWorkflowCloudEventLogsBody
-
-
-> SetWorkflowCloudEventLogsBody set workflow cloud event logs body
-
-**Example**
-```
-{"logger":"mylog"}
-```
-  
-
-
-
-[interface{}](#interface)
-
-### <span id="test-registry-body"></span> TestRegistryBody
-
-
-> TestRegistryBody test registry body
-
-**Example**
-```
-{"token":"8QwFLg%D$qg*","url":"https://prod.customreg.io","username":"admin"}
-```
-  
-
-
-
-[interface{}](#interface)
-
-### <span id="toggle-workflow-body"></span> ToggleWorkflowBody
-
-
-> ToggleWorkflowBody toggle workflow body
-
-**Example**
-```
-{"live":false}
-```
-  
-
-
-
-[interface{}](#interface)
-
-### <span id="update-global-service-body"></span> UpdateGlobalServiceBody
-
-
-> UpdateGlobalServiceBody update global service body
-
-**Example**
-```
-{"cmd":"","image":"direktiv/request:v10","minScale":"1","size":"small","trafficPercent":50}
-```
-  
-
-
-
-[interface{}](#interface)
-
-### <span id="update-global-service-traffic-body"></span> UpdateGlobalServiceTrafficBody
-
-
-> UpdateGlobalServiceTrafficBody update global service traffic body
-
-**Example**
-```
-{"values":[{"percent":60,"revision":"global-fast-request-00002"},{"percent":40,"revision":"global-fast-request-00001"}]}
-```
-  
-
-
-
-[interface{}](#interface)
-
-### <span id="update-global-service-traffic-params-body-values-items0"></span> UpdateGlobalServiceTrafficParamsBodyValuesItems0
-
-
-> UpdateGlobalServiceTrafficParamsBodyValuesItems0 update global service traffic params body values items0
-  
-
-
-
-[interface{}](#interface)
-
-### <span id="update-namespace-service-body"></span> UpdateNamespaceServiceBody
-
-
-> UpdateNamespaceServiceBody update namespace service body
-
-**Example**
-```
-{"cmd":"","image":"direktiv/request:v10","minScale":"1","size":"small","trafficPercent":50}
-```
-  
-
-
-
-[interface{}](#interface)
-
-### <span id="update-namespace-service-traffic-body"></span> UpdateNamespaceServiceTrafficBody
-
-
-> UpdateNamespaceServiceTrafficBody update namespace service traffic body
-
-**Example**
-```
-{"values":[{"percent":60,"revision":"namespace-direktiv-fast-request-00002"},{"percent":40,"revision":"namespace-direktiv-fast-request-00001"}]}
-```
-  
-
-
-
-[interface{}](#interface)
-
-### <span id="update-namespace-service-traffic-params-body-values-items0"></span> UpdateNamespaceServiceTrafficParamsBodyValuesItems0
-
-
-> UpdateNamespaceServiceTrafficParamsBodyValuesItems0 update namespace service traffic params body values items0
-  
-
-
-
-[interface{}](#interface)
-
-### <span id="update-service-request"></span> UpdateServiceRequest
-
-
-> UpdateServiceRequest UpdateServiceRequest UpdateServiceRequest update service request
   
 
 

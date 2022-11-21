@@ -36,14 +36,44 @@ func NewSetWorkflowVariableOK() *SetWorkflowVariableOK {
 	return &SetWorkflowVariableOK{}
 }
 
-/* SetWorkflowVariableOK describes a response with status code 200, with default header values.
+/*
+SetWorkflowVariableOK describes a response with status code 200, with default header values.
 
 successfully set workflow variable
 */
 type SetWorkflowVariableOK struct {
 }
 
+// IsSuccess returns true when this set workflow variable o k response has a 2xx status code
+func (o *SetWorkflowVariableOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this set workflow variable o k response has a 3xx status code
+func (o *SetWorkflowVariableOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this set workflow variable o k response has a 4xx status code
+func (o *SetWorkflowVariableOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this set workflow variable o k response has a 5xx status code
+func (o *SetWorkflowVariableOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this set workflow variable o k response a status code equal to that given
+func (o *SetWorkflowVariableOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *SetWorkflowVariableOK) Error() string {
+	return fmt.Sprintf("[PUT /api/namespaces/{namespace}/tree/{workflow}?op=set-var][%d] setWorkflowVariableOK ", 200)
+}
+
+func (o *SetWorkflowVariableOK) String() string {
 	return fmt.Sprintf("[PUT /api/namespaces/{namespace}/tree/{workflow}?op=set-var][%d] setWorkflowVariableOK ", 200)
 }
 

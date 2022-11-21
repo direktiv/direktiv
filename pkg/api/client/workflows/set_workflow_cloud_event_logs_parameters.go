@@ -52,10 +52,12 @@ func NewSetWorkflowCloudEventLogsParamsWithHTTPClient(client *http.Client) *SetW
 	}
 }
 
-/* SetWorkflowCloudEventLogsParams contains all the parameters to send to the API endpoint
-   for the set workflow cloud event logs operation.
+/*
+SetWorkflowCloudEventLogsParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the set workflow cloud event logs operation.
+
+	Typically these are written to a http.Request.
 */
 type SetWorkflowCloudEventLogsParams struct {
 

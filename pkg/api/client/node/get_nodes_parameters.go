@@ -52,10 +52,12 @@ func NewGetNodesParamsWithHTTPClient(client *http.Client) *GetNodesParams {
 	}
 }
 
-/* GetNodesParams contains all the parameters to send to the API endpoint
-   for the get nodes operation.
+/*
+GetNodesParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the get nodes operation.
+
+	Typically these are written to a http.Request.
 */
 type GetNodesParams struct {
 

@@ -52,10 +52,12 @@ func NewTestRegistryParamsWithHTTPClient(client *http.Client) *TestRegistryParam
 	}
 }
 
-/* TestRegistryParams contains all the parameters to send to the API endpoint
-   for the test registry operation.
+/*
+TestRegistryParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the test registry operation.
+
+	Typically these are written to a http.Request.
 */
 type TestRegistryParams struct {
 

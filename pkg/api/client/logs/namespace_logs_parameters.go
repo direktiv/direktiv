@@ -52,10 +52,12 @@ func NewNamespaceLogsParamsWithHTTPClient(client *http.Client) *NamespaceLogsPar
 	}
 }
 
-/* NamespaceLogsParams contains all the parameters to send to the API endpoint
-   for the namespace logs operation.
+/*
+NamespaceLogsParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the namespace logs operation.
+
+	Typically these are written to a http.Request.
 */
 type NamespaceLogsParams struct {
 

@@ -52,10 +52,12 @@ func NewWorkflowMetricsInvokedParamsWithHTTPClient(client *http.Client) *Workflo
 	}
 }
 
-/* WorkflowMetricsInvokedParams contains all the parameters to send to the API endpoint
-   for the workflow metrics invoked operation.
+/*
+WorkflowMetricsInvokedParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the workflow metrics invoked operation.
+
+	Typically these are written to a http.Request.
 */
 type WorkflowMetricsInvokedParams struct {
 

@@ -52,10 +52,12 @@ func NewSetInstanceVariableParamsWithHTTPClient(client *http.Client) *SetInstanc
 	}
 }
 
-/* SetInstanceVariableParams contains all the parameters to send to the API endpoint
-   for the set instance variable operation.
+/*
+SetInstanceVariableParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the set instance variable operation.
+
+	Typically these are written to a http.Request.
 */
 type SetInstanceVariableParams struct {
 

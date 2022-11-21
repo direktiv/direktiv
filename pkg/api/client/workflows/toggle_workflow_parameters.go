@@ -52,10 +52,12 @@ func NewToggleWorkflowParamsWithHTTPClient(client *http.Client) *ToggleWorkflowP
 	}
 }
 
-/* ToggleWorkflowParams contains all the parameters to send to the API endpoint
-   for the toggle workflow operation.
+/*
+ToggleWorkflowParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the toggle workflow operation.
+
+	Typically these are written to a http.Request.
 */
 type ToggleWorkflowParams struct {
 

@@ -52,10 +52,12 @@ func NewWorkflowMetricsSankeyParamsWithHTTPClient(client *http.Client) *Workflow
 	}
 }
 
-/* WorkflowMetricsSankeyParams contains all the parameters to send to the API endpoint
-   for the workflow metrics sankey operation.
+/*
+WorkflowMetricsSankeyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the workflow metrics sankey operation.
+
+	Typically these are written to a http.Request.
 */
 type WorkflowMetricsSankeyParams struct {
 

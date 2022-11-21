@@ -52,10 +52,12 @@ func NewWorkflowMetricsSuccessfulParamsWithHTTPClient(client *http.Client) *Work
 	}
 }
 
-/* WorkflowMetricsSuccessfulParams contains all the parameters to send to the API endpoint
-   for the workflow metrics successful operation.
+/*
+WorkflowMetricsSuccessfulParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the workflow metrics successful operation.
+
+	Typically these are written to a http.Request.
 */
 type WorkflowMetricsSuccessfulParams struct {
 

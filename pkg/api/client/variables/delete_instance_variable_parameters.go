@@ -52,10 +52,12 @@ func NewDeleteInstanceVariableParamsWithHTTPClient(client *http.Client) *DeleteI
 	}
 }
 
-/* DeleteInstanceVariableParams contains all the parameters to send to the API endpoint
-   for the delete instance variable operation.
+/*
+DeleteInstanceVariableParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the delete instance variable operation.
+
+	Typically these are written to a http.Request.
 */
 type DeleteInstanceVariableParams struct {
 

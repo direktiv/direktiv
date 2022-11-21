@@ -46,7 +46,8 @@ func NewInstanceLogsOK() *InstanceLogsOK {
 	return &InstanceLogsOK{}
 }
 
-/* InstanceLogsOK describes a response with status code 200, with default header values.
+/*
+InstanceLogsOK describes a response with status code 200, with default header values.
 
 successfully got instance logs
 */
@@ -54,9 +55,39 @@ type InstanceLogsOK struct {
 	Payload models.OkBody
 }
 
+// IsSuccess returns true when this instance logs o k response has a 2xx status code
+func (o *InstanceLogsOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this instance logs o k response has a 3xx status code
+func (o *InstanceLogsOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this instance logs o k response has a 4xx status code
+func (o *InstanceLogsOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this instance logs o k response has a 5xx status code
+func (o *InstanceLogsOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this instance logs o k response a status code equal to that given
+func (o *InstanceLogsOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *InstanceLogsOK) Error() string {
 	return fmt.Sprintf("[GET /api/namespaces/{namespace}/instances/{instance}/logs][%d] instanceLogsOK  %+v", 200, o.Payload)
 }
+
+func (o *InstanceLogsOK) String() string {
+	return fmt.Sprintf("[GET /api/namespaces/{namespace}/instances/{instance}/logs][%d] instanceLogsOK  %+v", 200, o.Payload)
+}
+
 func (o *InstanceLogsOK) GetPayload() models.OkBody {
 	return o.Payload
 }
@@ -78,14 +109,15 @@ func NewInstanceLogsDefault(code int) *InstanceLogsDefault {
 	}
 }
 
-/* InstanceLogsDefault describes a response with status code -1, with default header values.
+/*
+InstanceLogsDefault describes a response with status code -1, with default header values.
 
 an error has occurred
 */
 type InstanceLogsDefault struct {
 	_statusCode int
 
-	Payload *models.ErrorResponse
+	Payload models.ErrorResponse
 }
 
 // Code gets the status code for the instance logs default response
@@ -93,19 +125,47 @@ func (o *InstanceLogsDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this instance logs default response has a 2xx status code
+func (o *InstanceLogsDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this instance logs default response has a 3xx status code
+func (o *InstanceLogsDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this instance logs default response has a 4xx status code
+func (o *InstanceLogsDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this instance logs default response has a 5xx status code
+func (o *InstanceLogsDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this instance logs default response a status code equal to that given
+func (o *InstanceLogsDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *InstanceLogsDefault) Error() string {
 	return fmt.Sprintf("[GET /api/namespaces/{namespace}/instances/{instance}/logs][%d] instanceLogs default  %+v", o._statusCode, o.Payload)
 }
-func (o *InstanceLogsDefault) GetPayload() *models.ErrorResponse {
+
+func (o *InstanceLogsDefault) String() string {
+	return fmt.Sprintf("[GET /api/namespaces/{namespace}/instances/{instance}/logs][%d] instanceLogs default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *InstanceLogsDefault) GetPayload() models.ErrorResponse {
 	return o.Payload
 }
 
 func (o *InstanceLogsDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.ErrorResponse)
-
 	// response payload
-	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+	if err := consumer.Consume(response.Body(), &o.Payload); err != nil && err != io.EOF {
 		return err
 	}
 

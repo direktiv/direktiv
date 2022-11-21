@@ -40,14 +40,44 @@ func NewDeleteRegistryOK() *DeleteRegistryOK {
 	return &DeleteRegistryOK{}
 }
 
-/* DeleteRegistryOK describes a response with status code 200, with default header values.
+/*
+DeleteRegistryOK describes a response with status code 200, with default header values.
 
 successfully delete namespace registry
 */
 type DeleteRegistryOK struct {
 }
 
+// IsSuccess returns true when this delete registry o k response has a 2xx status code
+func (o *DeleteRegistryOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this delete registry o k response has a 3xx status code
+func (o *DeleteRegistryOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this delete registry o k response has a 4xx status code
+func (o *DeleteRegistryOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this delete registry o k response has a 5xx status code
+func (o *DeleteRegistryOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this delete registry o k response a status code equal to that given
+func (o *DeleteRegistryOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *DeleteRegistryOK) Error() string {
+	return fmt.Sprintf("[DELETE /api/functions/registries/namespaces/{namespace}][%d] deleteRegistryOK ", 200)
+}
+
+func (o *DeleteRegistryOK) String() string {
 	return fmt.Sprintf("[DELETE /api/functions/registries/namespaces/{namespace}][%d] deleteRegistryOK ", 200)
 }
 
@@ -56,7 +86,8 @@ func (o *DeleteRegistryOK) readResponse(response runtime.ClientResponse, consume
 	return nil
 }
 
-/*DeleteRegistryBody delete registry body
+/*
+DeleteRegistryBody delete registry body
 // Example: {"data":"admin:8QwFLg%D$qg*","reg":"https://prod.customreg.io"}
 swagger:model DeleteRegistryBody
 */

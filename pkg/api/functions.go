@@ -78,7 +78,22 @@ func newFunctionHandler(srv *Server, logger *zap.SugaredLogger,
 
 func (h *functionHandler) initRoutes(r *mux.Router) {
 
-	// TODO: SWAGGER-SPEC
+	// swagger:operation GET /api/logs/{pod} podLogs
+	// ---
+	// description: |
+	//    Watches logs of the pods for a service. This can be a namespace service or a workflow service.
+	// summary: Watch Pod Logs
+	// tags:
+	// - "Pod"
+	// parameters:
+	// - in: path
+	//   name: pod
+	//   type: string
+	//   required: true
+	//   description: 'pod name'
+	// responses:
+	//   '200':
+	//     "description": "successfully watching pod logs"
 	r.HandleFunc("/logs/pod/{pod}", h.watchLogs).Methods(http.MethodGet).Name(RN_WatchLogs)
 
 	// namespace
@@ -267,8 +282,8 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	//         description: Size of created service pods, 0 = small, 1 = medium, 2 = large
 	//       envs:
 	//         type: object
-	//   	   additionalProperties:
-	//         type: string
+	//         additionalProperties:
+	//           type: string
 	// responses:
 	//   '200':
 	//     "description": "successfully created service"
@@ -844,8 +859,6 @@ func (h *functionHandler) getRegistries(w http.ResponseWriter, r *http.Request) 
 	respond(w, resp, err)
 }
 
-// global private
-
 func (h *functionHandler) listNamespaceServices(w http.ResponseWriter, r *http.Request) {
 
 	h.logger.Debugf("Handling request: %s", this())
@@ -983,16 +996,6 @@ func (h *functionHandler) singleWorkflowServiceSSE(w http.ResponseWriter, r *htt
 	annotations[functions.ServiceKnativeHeaderName] = svc
 
 	h.listServicesSSE(annotations, w, r)
-
-}
-
-func (h *functionHandler) listGlobalServicesSSE(w http.ResponseWriter, r *http.Request) {
-
-	h.logger.Debugf("Handling request: %s", this())
-
-	// annotations := make(map[string]string)
-	// annotations[functions.ServiceHeaderScope] = functions.PrefixGlobal
-	// h.listServicesSSE(annotations, w, r)
 
 }
 
@@ -1138,16 +1141,6 @@ type getFunctionResponseRevision struct {
 	Status     string            `json:"status,omitempty"`
 	Conditions []*grpc.Condition `json:"conditions,omitempty"`
 	Revision   string            `json:"revision,omitempty"`
-}
-
-func (h *functionHandler) getGlobalServiceSSE(w http.ResponseWriter, r *http.Request) {
-
-	// h.logger.Debugf("Handling request: %s", this())
-
-	// annotations := make(map[string]string)
-	// annotations[functions.ServiceHeaderScope] = functions.PrefixGlobal
-	// annotations[functions.ServiceHeaderName] = fmt.Sprintf("%s-%s", functions.PrefixGlobal, mux.Vars(r)["svn"])
-	// h.getServiceSSE(annotations, w, r)
 }
 
 func (h *functionHandler) getNamespaceService(w http.ResponseWriter, r *http.Request) {
@@ -1419,257 +1412,6 @@ func (h *functionHandler) deleteRevision(rev string,
 	respond(w, resp, err)
 
 }
-
-// type serviceItem struct {
-// 	name, service string
-// }
-//
-// func calculateList(client grpc.FunctionsServiceClient,
-// 	items []serviceItem, annotations map[string]string, ns string) ([]*grpc.FunctionsInfo, error) {
-//
-// 	resp, err := client.ListFunctions(context.Background(),
-// 		&grpc.ListFunctionsRequest{
-// 			Annotations: annotations,
-// 		})
-// 	if err != nil {
-// 		return nil, err
-// 	}
-//
-// 	gisos := make(map[string]*grpc.FunctionsInfo)
-//
-// 	imgStatus := "False"
-// 	imgErr := "not found"
-// 	imgNS := ""
-//
-// 	condName := "Ready"
-// 	condStatus := "False"
-//
-// 	condMessage := "Global service does not exist"
-//
-// 	if len(annotations) > 1 {
-// 		condMessage = "Namespace service does not exist"
-// 		imgNS = ns
-// 	}
-//
-// 	cond := &grpc.Condition{
-// 		Name:    &condName,
-// 		Status:  &condStatus,
-// 		Message: &condMessage,
-// 	}
-//
-// 	// populate the map with "error items"
-// 	for i := range items {
-// 		li := items[i]
-//
-// 		ns := ""
-// 		if annons, ok := annotations[functions.ServiceHeaderNamespace]; ok {
-// 			ns = annons
-// 		}
-//
-// 		svcName, _, err := functions.GenerateServiceName(ns, "", li.service)
-// 		if err != nil {
-// 			logger.Errorf("can not generate service name: %v", err)
-// 			continue
-// 		}
-//
-// 		info := &grpc.FunctionsInfo{
-// 			Status:      &imgStatus,
-// 			ServiceName: &li.service,
-// 			Info: &grpc.BaseInfo{
-// 				Image:     &imgErr,
-// 				Namespace: &imgNS,
-// 			},
-// 			Conditions: []*grpc.Condition{
-// 				cond,
-// 			},
-// 		}
-// 		gisos[svcName] = info
-//
-// 	}
-//
-// 	isos := resp.GetFunctions()
-//
-// 	for i := range isos {
-// 		// that item exists, we replace
-// 		logger.Debugf("checking %v", isos[i].GetServiceName())
-// 		if _, ok := gisos[isos[i].GetServiceName()]; ok {
-// 			gisos[isos[i].GetServiceName()] = isos[i]
-// 		}
-// 	}
-//
-// 	var retIsos []*grpc.FunctionsInfo
-//
-// 	for _, v := range gisos {
-// 		retIsos = append(retIsos, v)
-// 	}
-// 	return retIsos, nil
-//
-// }
-//
-// // /api/namespaces/{namespace}/workflows/{workflowTarget}/functions
-// func (h *Handler) getWorkflowFunctions(w http.ResponseWriter, r *http.Request) {
-//
-// 	ns := mux.Vars(r)["namespace"]
-// 	wf := mux.Vars(r)["workflowTarget"]
-//
-// 	grpcReq1 := &ingress.GetWorkflowByNameRequest{
-// 		Namespace: &ns,
-// 		Name:      &wf,
-// 	}
-//
-// 	resp, err := h.s.direktiv.GetWorkflowByName(r.Context(), grpcReq1)
-// 	if err != nil {
-// 		ErrResponse(w, err)
-// 		return
-// 	}
-//
-// 	workflow := new(model.Workflow)
-// 	err = workflow.Load(resp.Workflow)
-// 	if err != nil {
-// 		ErrResponse(w, err)
-// 		return
-// 	}
-//
-// 	var fnNS, fnGlobal []serviceItem
-//
-// 	allFunctions := make([]*grpc.FunctionsInfo, 0)
-// 	wfFns := false
-//
-// 	for _, fn := range workflow.Functions {
-// 		switch fn.GetType() {
-// 		case model.ReusableContainerFunctionType:
-// 			wfFns = true
-// 		case model.NamespacedKnativeFunctionType:
-// 			fnNS = append(fnNS, serviceItem{
-// 				name:    fn.GetID(),
-// 				service: fn.(*model.NamespacedFunctionDefinition).KnativeService,
-// 			})
-// 		case model.GlobalKnativeFunctionType:
-// 			fnGlobal = append(fnGlobal, serviceItem{
-// 				name:    fn.GetID(),
-// 				service: fn.(*model.GlobalFunctionDefinition).KnativeService,
-// 			})
-// 		}
-// 	}
-//
-// 	// we add all workflow functions
-// 	if wfFns {
-// 		wfResp, err := h.s.functions.ListFunctions(r.Context(), &grpc.ListFunctionsRequest{
-// 			Annotations: map[string]string{
-// 				functions.ServiceHeaderWorkflow:  wf,
-// 				functions.ServiceHeaderNamespace: ns,
-// 				functions.ServiceHeaderScope:     functions.PrefixWorkflow,
-// 			},
-// 		})
-// 		if err != nil {
-// 			ErrResponse(w, err)
-// 			return
-// 		}
-// 		allFunctions = append(allFunctions, wfResp.GetFunctions()...)
-// 	}
-//
-// 	if len(fnNS) > 0 {
-//
-// 		i, err := calculateList(h.s.functions, fnNS,
-// 			map[string]string{
-// 				functions.ServiceHeaderNamespace: ns,
-// 				functions.ServiceHeaderScope:     functions.PrefixNamespace,
-// 			}, ns)
-//
-// 		if err != nil {
-// 			ErrResponse(w, err)
-// 			return
-// 		}
-// 		allFunctions = append(allFunctions, i...)
-//
-// 	}
-//
-// 	if len(fnGlobal) > 0 {
-//
-// 		i, err := calculateList(h.s.functions, fnGlobal,
-// 			map[string]string{
-// 				functions.ServiceHeaderScope: functions.PrefixGlobal,
-// 			}, ns)
-//
-// 		if err != nil {
-// 			ErrResponse(w, err)
-// 			return
-// 		}
-// 		allFunctions = append(allFunctions, i...)
-//
-// 	}
-//
-// 	out := prepareFunctionsForResponse(allFunctions)
-// 	if err := json.NewEncoder(w).Encode(out); err != nil {
-// 		ErrResponse(w, err)
-// 		return
-// 	}
-//
-// }
-//
-// func (h *Handler) watchFunctions(w http.ResponseWriter, r *http.Request) {
-//
-// 	a, err := getFunctionAnnotations(r)
-// 	if err != nil {
-// 		w.WriteHeader(http.StatusBadRequest)
-// 		w.Write([]byte(err.Error()))
-// 		return
-// 	}
-//
-// 	grpcReq := grpc.WatchFunctionsRequest{
-// 		Annotations: a,
-// 	}
-//
-// 	client, err := h.s.functions.WatchFunctions(r.Context(), &grpcReq)
-// 	if err != nil {
-// 		ErrResponse(w, err)
-// 		return
-// 	}
-//
-// 	flusher, err := SetupSEEWriter(w)
-// 	if err != nil {
-// 		ErrResponse(w, err)
-// 		return
-// 	}
-//
-// 	// Create Heartbeat Ticker
-// 	heartbeat := time.NewTicker(10 * time.Second)
-// 	defer heartbeat.Stop()
-//
-// 	// Start watcher client stream channels
-// 	dataCh := make(chan interface{})
-// 	errorCh := make(chan error)
-// 	go func() {
-// 		for {
-// 			data, err := client.Recv()
-// 			if err != nil {
-// 				errorCh <- err
-// 				break
-// 			} else {
-// 				dataCh <- data
-// 			}
-// 		}
-// 	}()
-//
-// 	for {
-// 		select {
-// 		case data := <-dataCh:
-// 			err = WriteSSEJSONData(w, flusher, data)
-// 		case err = <-errorCh:
-// 		case <-client.Context().Done():
-// 			err = fmt.Errorf("requested stream has timed out")
-// 		case <-heartbeat.C:
-// 			SendSSEHeartbeat(w, flusher)
-// 		}
-//
-// 		// Check for errors
-// 		if err != nil {
-// 			ErrSSEResponse(w, flusher, err)
-// 			heartbeat.Stop()
-// 			return
-// 		}
-// 	}
-// }
 
 func (h *functionHandler) watchNamespaceRevision(w http.ResponseWriter, r *http.Request) {
 	h.logger.Debugf("Handling request: %s", this())
@@ -1953,15 +1695,6 @@ func (h *functionHandler) listWorkflowPods(w http.ResponseWriter, r *http.Reques
 
 	h.listPods(annotations, w, r)
 
-}
-
-func (h *functionHandler) listGlobalPodsSSE(w http.ResponseWriter, r *http.Request) {
-
-	// h.logger.Debugf("Handling request: %s", this())
-
-	// svc := fmt.Sprintf("%s-%s", functions.PrefixGlobal, mux.Vars(r)["svn"])
-	// rev := fmt.Sprintf("%s-%s", svc, mux.Vars(r)["rev"])
-	// h.listPodsSSE(svc, rev, w, r)
 }
 
 func (h *functionHandler) listNamespacePodsSSE(w http.ResponseWriter, r *http.Request) {

@@ -41,14 +41,44 @@ func NewUpdateNamespaceServiceOK() *UpdateNamespaceServiceOK {
 	return &UpdateNamespaceServiceOK{}
 }
 
-/* UpdateNamespaceServiceOK describes a response with status code 200, with default header values.
+/*
+UpdateNamespaceServiceOK describes a response with status code 200, with default header values.
 
 successfully created service revision
 */
 type UpdateNamespaceServiceOK struct {
 }
 
+// IsSuccess returns true when this update namespace service o k response has a 2xx status code
+func (o *UpdateNamespaceServiceOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this update namespace service o k response has a 3xx status code
+func (o *UpdateNamespaceServiceOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this update namespace service o k response has a 4xx status code
+func (o *UpdateNamespaceServiceOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this update namespace service o k response has a 5xx status code
+func (o *UpdateNamespaceServiceOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this update namespace service o k response a status code equal to that given
+func (o *UpdateNamespaceServiceOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *UpdateNamespaceServiceOK) Error() string {
+	return fmt.Sprintf("[POST /api/functions/namespaces/{namespace}/function/{serviceName}][%d] updateNamespaceServiceOK ", 200)
+}
+
+func (o *UpdateNamespaceServiceOK) String() string {
 	return fmt.Sprintf("[POST /api/functions/namespaces/{namespace}/function/{serviceName}][%d] updateNamespaceServiceOK ", 200)
 }
 
@@ -57,8 +87,9 @@ func (o *UpdateNamespaceServiceOK) readResponse(response runtime.ClientResponse,
 	return nil
 }
 
-/*UpdateNamespaceServiceBody update namespace service body
-// Example: {"cmd":"","image":"direktiv/request:v10","minScale":"1","size":"small","trafficPercent":50}
+/*
+UpdateNamespaceServiceBody update namespace service body
+// Example: {"cmd":"","image":"direktiv/request:v10","minScale":"1","size":"small"}
 swagger:model UpdateNamespaceServiceBody
 */
 type UpdateNamespaceServiceBody struct {
@@ -79,10 +110,6 @@ type UpdateNamespaceServiceBody struct {
 	// Required: true
 	// Enum: [small medium large]
 	Size *string `json:"size"`
-
-	// Traffic percentage new revision will use
-	// Required: true
-	TrafficPercent *int64 `json:"trafficPercent"`
 }
 
 // Validate validates this update namespace service body
@@ -102,10 +129,6 @@ func (o *UpdateNamespaceServiceBody) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := o.validateSize(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := o.validateTrafficPercent(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -182,15 +205,6 @@ func (o *UpdateNamespaceServiceBody) validateSize(formats strfmt.Registry) error
 
 	// value enum
 	if err := o.validateSizeEnum("Service"+"."+"size", "body", *o.Size); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (o *UpdateNamespaceServiceBody) validateTrafficPercent(formats strfmt.Registry) error {
-
-	if err := validate.Required("Service"+"."+"trafficPercent", "body", o.TrafficPercent); err != nil {
 		return err
 	}
 

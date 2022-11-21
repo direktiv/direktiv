@@ -36,14 +36,44 @@ func NewListWorkflowServiceRevisionPodsOK() *ListWorkflowServiceRevisionPodsOK {
 	return &ListWorkflowServiceRevisionPodsOK{}
 }
 
-/* ListWorkflowServiceRevisionPodsOK describes a response with status code 200, with default header values.
+/*
+ListWorkflowServiceRevisionPodsOK describes a response with status code 200, with default header values.
 
 successfully got list of a service revision pods
 */
 type ListWorkflowServiceRevisionPodsOK struct {
 }
 
+// IsSuccess returns true when this list workflow service revision pods o k response has a 2xx status code
+func (o *ListWorkflowServiceRevisionPodsOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this list workflow service revision pods o k response has a 3xx status code
+func (o *ListWorkflowServiceRevisionPodsOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this list workflow service revision pods o k response has a 4xx status code
+func (o *ListWorkflowServiceRevisionPodsOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this list workflow service revision pods o k response has a 5xx status code
+func (o *ListWorkflowServiceRevisionPodsOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this list workflow service revision pods o k response a status code equal to that given
+func (o *ListWorkflowServiceRevisionPodsOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *ListWorkflowServiceRevisionPodsOK) Error() string {
+	return fmt.Sprintf("[GET /api/functions/namespaces/{namespace}/tree/{workflow}?op=pods][%d] listWorkflowServiceRevisionPodsOK ", 200)
+}
+
+func (o *ListWorkflowServiceRevisionPodsOK) String() string {
 	return fmt.Sprintf("[GET /api/functions/namespaces/{namespace}/tree/{workflow}?op=pods][%d] listWorkflowServiceRevisionPodsOK ", 200)
 }
 

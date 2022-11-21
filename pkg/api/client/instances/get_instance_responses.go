@@ -46,7 +46,8 @@ func NewGetInstanceOK() *GetInstanceOK {
 	return &GetInstanceOK{}
 }
 
-/* GetInstanceOK describes a response with status code 200, with default header values.
+/*
+GetInstanceOK describes a response with status code 200, with default header values.
 
 successfully got instance
 */
@@ -54,9 +55,39 @@ type GetInstanceOK struct {
 	Payload models.OkBody
 }
 
+// IsSuccess returns true when this get instance o k response has a 2xx status code
+func (o *GetInstanceOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this get instance o k response has a 3xx status code
+func (o *GetInstanceOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this get instance o k response has a 4xx status code
+func (o *GetInstanceOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this get instance o k response has a 5xx status code
+func (o *GetInstanceOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this get instance o k response a status code equal to that given
+func (o *GetInstanceOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *GetInstanceOK) Error() string {
 	return fmt.Sprintf("[GET /api/namespaces/{namespace}/instances/{instance}][%d] getInstanceOK  %+v", 200, o.Payload)
 }
+
+func (o *GetInstanceOK) String() string {
+	return fmt.Sprintf("[GET /api/namespaces/{namespace}/instances/{instance}][%d] getInstanceOK  %+v", 200, o.Payload)
+}
+
 func (o *GetInstanceOK) GetPayload() models.OkBody {
 	return o.Payload
 }
@@ -78,14 +109,15 @@ func NewGetInstanceDefault(code int) *GetInstanceDefault {
 	}
 }
 
-/* GetInstanceDefault describes a response with status code -1, with default header values.
+/*
+GetInstanceDefault describes a response with status code -1, with default header values.
 
 an error has occurred
 */
 type GetInstanceDefault struct {
 	_statusCode int
 
-	Payload *models.ErrorResponse
+	Payload models.ErrorResponse
 }
 
 // Code gets the status code for the get instance default response
@@ -93,19 +125,47 @@ func (o *GetInstanceDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this get instance default response has a 2xx status code
+func (o *GetInstanceDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this get instance default response has a 3xx status code
+func (o *GetInstanceDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this get instance default response has a 4xx status code
+func (o *GetInstanceDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this get instance default response has a 5xx status code
+func (o *GetInstanceDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this get instance default response a status code equal to that given
+func (o *GetInstanceDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *GetInstanceDefault) Error() string {
 	return fmt.Sprintf("[GET /api/namespaces/{namespace}/instances/{instance}][%d] getInstance default  %+v", o._statusCode, o.Payload)
 }
-func (o *GetInstanceDefault) GetPayload() *models.ErrorResponse {
+
+func (o *GetInstanceDefault) String() string {
+	return fmt.Sprintf("[GET /api/namespaces/{namespace}/instances/{instance}][%d] getInstance default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *GetInstanceDefault) GetPayload() models.ErrorResponse {
 	return o.Payload
 }
 
 func (o *GetInstanceDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.ErrorResponse)
-
 	// response payload
-	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+	if err := consumer.Consume(response.Body(), &o.Payload); err != nil && err != io.EOF {
 		return err
 	}
 

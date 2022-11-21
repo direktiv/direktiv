@@ -52,10 +52,12 @@ func NewNamespaceMetricsInvokedParamsWithHTTPClient(client *http.Client) *Namesp
 	}
 }
 
-/* NamespaceMetricsInvokedParams contains all the parameters to send to the API endpoint
-   for the namespace metrics invoked operation.
+/*
+NamespaceMetricsInvokedParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the namespace metrics invoked operation.
+
+	Typically these are written to a http.Request.
 */
 type NamespaceMetricsInvokedParams struct {
 

@@ -52,10 +52,12 @@ func NewCancelInstanceParamsWithHTTPClient(client *http.Client) *CancelInstanceP
 	}
 }
 
-/* CancelInstanceParams contains all the parameters to send to the API endpoint
-   for the cancel instance operation.
+/*
+CancelInstanceParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the cancel instance operation.
+
+	Typically these are written to a http.Request.
 */
 type CancelInstanceParams struct {
 

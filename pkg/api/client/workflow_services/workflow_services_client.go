@@ -30,6 +30,8 @@ type ClientOption func(*runtime.ClientOperation)
 
 // ClientService is the interface for Client methods
 type ClientService interface {
+	DeleteWorkflowService(params *DeleteWorkflowServiceParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DeleteWorkflowServiceOK, error)
+
 	GetWorkflowService(params *GetWorkflowServiceParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetWorkflowServiceOK, error)
 
 	GetWorkflowServiceRevision(params *GetWorkflowServiceRevisionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetWorkflowServiceRevisionOK, error)
@@ -44,11 +46,52 @@ type ClientService interface {
 }
 
 /*
-  GetWorkflowService gets workflow service details
+DeleteWorkflowService deletes namespace service
 
-  Get a workflow scoped knative service details.
+Deletes workflow scoped knative service.
+*/
+func (a *Client) DeleteWorkflowService(params *DeleteWorkflowServiceParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DeleteWorkflowServiceOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewDeleteWorkflowServiceParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "deleteWorkflowService",
+		Method:             "DELETE",
+		PathPattern:        "/api/functions/namespaces/{namespace}/tree/{workflow}?op=delete-service",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http", "https"},
+		Params:             params,
+		Reader:             &DeleteWorkflowServiceReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*DeleteWorkflowServiceOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for deleteWorkflowService: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+	GetWorkflowService gets workflow service details
+
+	Get a workflow scoped knative service details.
+
 Note: This is a Server-Sent-Event endpoint, and will not work with the default swagger client.
-
 */
 func (a *Client) GetWorkflowService(params *GetWorkflowServiceParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetWorkflowServiceOK, error) {
 	// TODO: Validate the params before sending
@@ -87,13 +130,13 @@ func (a *Client) GetWorkflowService(params *GetWorkflowServiceParams, authInfo r
 }
 
 /*
-  GetWorkflowServiceRevision gets workflow service revision
+	GetWorkflowServiceRevision gets workflow service revision
 
-  Get a workflow scoped knative service revision.
+	Get a workflow scoped knative service revision.
+
 This will return details on a single revision.
 The target revision generation (rev query) is the number suffix on a revision.
 Example: A revision named 'workflow-10640097968065193909-get-00001' would have the revisionGeneration '00001'.
-
 */
 func (a *Client) GetWorkflowServiceRevision(params *GetWorkflowServiceRevisionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetWorkflowServiceRevisionOK, error) {
 	// TODO: Validate the params before sending
@@ -132,10 +175,9 @@ func (a *Client) GetWorkflowServiceRevision(params *GetWorkflowServiceRevisionPa
 }
 
 /*
-  GetWorkflowServiceRevisionList gets workflow service revision list
+GetWorkflowServiceRevisionList gets workflow service revision list
 
-  Get the revision list of a workflow scoped knative service.
-
+Get the revision list of a workflow scoped knative service.
 */
 func (a *Client) GetWorkflowServiceRevisionList(params *GetWorkflowServiceRevisionListParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetWorkflowServiceRevisionListOK, error) {
 	// TODO: Validate the params before sending
@@ -174,12 +216,12 @@ func (a *Client) GetWorkflowServiceRevisionList(params *GetWorkflowServiceRevisi
 }
 
 /*
-  ListWorkflowServiceRevisionPods gets workflow service revision pods list
+	ListWorkflowServiceRevisionPods gets workflow service revision pods list
 
-  List a revisions pods of a workflow scoped knative service.
+	List a revisions pods of a workflow scoped knative service.
+
 The target revision generation (rev query) is the number suffix on a revision.
 Example: A revision named 'workflow-10640097968065193909-get-00001' would have the revisionGeneration '00001'.
-
 */
 func (a *Client) ListWorkflowServiceRevisionPods(params *ListWorkflowServiceRevisionPodsParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ListWorkflowServiceRevisionPodsOK, error) {
 	// TODO: Validate the params before sending
@@ -218,10 +260,9 @@ func (a *Client) ListWorkflowServiceRevisionPods(params *ListWorkflowServiceRevi
 }
 
 /*
-  ListWorkflowServices gets workflow services list
+ListWorkflowServices gets workflow services list
 
-  Gets a list of workflow knative services.
-
+Gets a list of workflow knative services.
 */
 func (a *Client) ListWorkflowServices(params *ListWorkflowServicesParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ListWorkflowServicesOK, error) {
 	// TODO: Validate the params before sending

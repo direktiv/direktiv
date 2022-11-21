@@ -42,12 +42,12 @@ type ClientService interface {
 }
 
 /*
-  BroadcastCloudevent broadcasts cloud event
+	BroadcastCloudevent broadcasts cloud event
 
-  Broadcast a cloud event to a namespace.
+	Broadcast a cloud event to a namespace.
+
 Cloud events posted to this api will be picked up by any workflows listening to the same event type on the namescape.
 The body of this request should follow the cloud event core specification defined at https://github.com/cloudevents/spec .
-
 */
 func (a *Client) BroadcastCloudevent(params *BroadcastCloudeventParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*BroadcastCloudeventOK, error) {
 	// TODO: Validate the params before sending
@@ -86,10 +86,9 @@ func (a *Client) BroadcastCloudevent(params *BroadcastCloudeventParams, authInfo
 }
 
 /*
-  JqPlayground js q playground api to test jq queries
+JqPlayground js q playground api to test jq queries
 
-  JQ Playground is a sandbox where you can test jq queries with custom data.
-
+JQ Playground is a sandbox where you can test jq queries with custom data.
 */
 func (a *Client) JqPlayground(params *JqPlaygroundParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*JqPlaygroundOK, error) {
 	// TODO: Validate the params before sending
@@ -128,10 +127,9 @@ func (a *Client) JqPlayground(params *JqPlaygroundParams, authInfo runtime.Clien
 }
 
 /*
-  ReplayCloudevent replays cloud event
+ReplayCloudevent replays cloud event
 
-  Replay a cloud event to a namespace.
-
+Replay a cloud event to a namespace.
 */
 func (a *Client) ReplayCloudevent(params *ReplayCloudeventParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ReplayCloudeventOK, error) {
 	// TODO: Validate the params before sending
@@ -170,10 +168,9 @@ func (a *Client) ReplayCloudevent(params *ReplayCloudeventParams, authInfo runti
 }
 
 /*
-  Version returns version information for servers in the cluster
+Version returns version information for servers in the cluster
 
-  Returns version information for servers in the cluster.
-
+Returns version information for servers in the cluster.
 */
 func (a *Client) Version(params *VersionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VersionOK, error) {
 	// TODO: Validate the params before sending

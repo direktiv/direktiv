@@ -36,14 +36,44 @@ func NewAwaitExecuteWorkflowOK() *AwaitExecuteWorkflowOK {
 	return &AwaitExecuteWorkflowOK{}
 }
 
-/* AwaitExecuteWorkflowOK describes a response with status code 200, with default header values.
+/*
+AwaitExecuteWorkflowOK describes a response with status code 200, with default header values.
 
 successfully executed workflow
 */
 type AwaitExecuteWorkflowOK struct {
 }
 
+// IsSuccess returns true when this await execute workflow o k response has a 2xx status code
+func (o *AwaitExecuteWorkflowOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this await execute workflow o k response has a 3xx status code
+func (o *AwaitExecuteWorkflowOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this await execute workflow o k response has a 4xx status code
+func (o *AwaitExecuteWorkflowOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this await execute workflow o k response has a 5xx status code
+func (o *AwaitExecuteWorkflowOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this await execute workflow o k response a status code equal to that given
+func (o *AwaitExecuteWorkflowOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *AwaitExecuteWorkflowOK) Error() string {
+	return fmt.Sprintf("[GET /api/namespaces/{namespace}/tree/{workflow}?op=wait][%d] awaitExecuteWorkflowOK ", 200)
+}
+
+func (o *AwaitExecuteWorkflowOK) String() string {
 	return fmt.Sprintf("[GET /api/namespaces/{namespace}/tree/{workflow}?op=wait][%d] awaitExecuteWorkflowOK ", 200)
 }
 

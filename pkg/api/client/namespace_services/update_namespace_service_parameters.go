@@ -52,10 +52,12 @@ func NewUpdateNamespaceServiceParamsWithHTTPClient(client *http.Client) *UpdateN
 	}
 }
 
-/* UpdateNamespaceServiceParams contains all the parameters to send to the API endpoint
-   for the update namespace service operation.
+/*
+UpdateNamespaceServiceParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the update namespace service operation.
+
+	Typically these are written to a http.Request.
 */
 type UpdateNamespaceServiceParams struct {
 

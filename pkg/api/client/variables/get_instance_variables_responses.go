@@ -36,14 +36,44 @@ func NewGetInstanceVariablesOK() *GetInstanceVariablesOK {
 	return &GetInstanceVariablesOK{}
 }
 
-/* GetInstanceVariablesOK describes a response with status code 200, with default header values.
+/*
+GetInstanceVariablesOK describes a response with status code 200, with default header values.
 
 successfully got instance variables
 */
 type GetInstanceVariablesOK struct {
 }
 
+// IsSuccess returns true when this get instance variables o k response has a 2xx status code
+func (o *GetInstanceVariablesOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this get instance variables o k response has a 3xx status code
+func (o *GetInstanceVariablesOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this get instance variables o k response has a 4xx status code
+func (o *GetInstanceVariablesOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this get instance variables o k response has a 5xx status code
+func (o *GetInstanceVariablesOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this get instance variables o k response a status code equal to that given
+func (o *GetInstanceVariablesOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *GetInstanceVariablesOK) Error() string {
+	return fmt.Sprintf("[GET /api/namespaces/{namespace}/instances/{instance}/vars][%d] getInstanceVariablesOK ", 200)
+}
+
+func (o *GetInstanceVariablesOK) String() string {
 	return fmt.Sprintf("[GET /api/namespaces/{namespace}/instances/{instance}/vars][%d] getInstanceVariablesOK ", 200)
 }
 

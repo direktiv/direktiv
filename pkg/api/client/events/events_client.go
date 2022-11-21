@@ -38,10 +38,9 @@ type ClientService interface {
 }
 
 /*
-  GetEventHistory gets events history
+GetEventHistory gets events history
 
-  Get recent events history.
-
+Get recent events history.
 */
 func (a *Client) GetEventHistory(params *GetEventHistoryParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetEventHistoryOK, error) {
 	// TODO: Validate the params before sending
@@ -80,10 +79,9 @@ func (a *Client) GetEventHistory(params *GetEventHistoryParams, authInfo runtime
 }
 
 /*
-  GetEventListeners gets current event listeners
+GetEventListeners gets current event listeners
 
-  Get current event listeners.
-
+Get current event listeners.
 */
 func (a *Client) GetEventListeners(params *GetEventListenersParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetEventListenersOK, error) {
 	// TODO: Validate the params before sending

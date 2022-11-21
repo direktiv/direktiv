@@ -36,14 +36,44 @@ func NewGetEventListenersOK() *GetEventListenersOK {
 	return &GetEventListenersOK{}
 }
 
-/* GetEventListenersOK describes a response with status code 200, with default header values.
+/*
+GetEventListenersOK describes a response with status code 200, with default header values.
 
 successfully got event listeners
 */
 type GetEventListenersOK struct {
 }
 
+// IsSuccess returns true when this get event listeners o k response has a 2xx status code
+func (o *GetEventListenersOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this get event listeners o k response has a 3xx status code
+func (o *GetEventListenersOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this get event listeners o k response has a 4xx status code
+func (o *GetEventListenersOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this get event listeners o k response has a 5xx status code
+func (o *GetEventListenersOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this get event listeners o k response a status code equal to that given
+func (o *GetEventListenersOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *GetEventListenersOK) Error() string {
+	return fmt.Sprintf("[GET /api/namespaces/{namespace}/event-listeners][%d] getEventListenersOK ", 200)
+}
+
+func (o *GetEventListenersOK) String() string {
 	return fmt.Sprintf("[GET /api/namespaces/{namespace}/event-listeners][%d] getEventListenersOK ", 200)
 }
 

@@ -38,16 +38,17 @@ type ClientService interface {
 
 	GetInstanceList(params *GetInstanceListParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetInstanceListOK, error)
 
+	GetInstanceMetadata(params *GetInstanceMetadataParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetInstanceMetadataOK, error)
+
 	GetInstanceOutput(params *GetInstanceOutputParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetInstanceOutputOK, error)
 
 	SetTransport(transport runtime.ClientTransport)
 }
 
 /*
-  CancelInstance cancels a pending instance
+CancelInstance cancels a pending instance
 
-  Cancel a currently pending instance.
-
+Cancel a currently pending instance.
 */
 func (a *Client) CancelInstance(params *CancelInstanceParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CancelInstanceOK, error) {
 	// TODO: Validate the params before sending
@@ -86,10 +87,9 @@ func (a *Client) CancelInstance(params *CancelInstanceParams, authInfo runtime.C
 }
 
 /*
-  GetInstance gets a instance
+GetInstance gets a instance
 
-  Gets the details of a executed workflow instance in this namespace.
-
+Gets the details of a executed workflow instance in this namespace.
 */
 func (a *Client) GetInstance(params *GetInstanceParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetInstanceOK, error) {
 	// TODO: Validate the params before sending
@@ -127,10 +127,9 @@ func (a *Client) GetInstance(params *GetInstanceParams, authInfo runtime.ClientA
 }
 
 /*
-  GetInstanceInput gets a instance input
+GetInstanceInput gets a instance input
 
-  Gets the input an instance was provided when executed.
-
+Gets the input an instance was provided when executed.
 */
 func (a *Client) GetInstanceInput(params *GetInstanceInputParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetInstanceInputOK, error) {
 	// TODO: Validate the params before sending
@@ -169,10 +168,9 @@ func (a *Client) GetInstanceInput(params *GetInstanceInputParams, authInfo runti
 }
 
 /*
-  GetInstanceList gets list instances
+GetInstanceList gets list instances
 
-  Gets a list of instances in a namespace.
-
+Gets a list of instances in a namespace.
 */
 func (a *Client) GetInstanceList(params *GetInstanceListParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetInstanceListOK, error) {
 	// TODO: Validate the params before sending
@@ -211,10 +209,50 @@ func (a *Client) GetInstanceList(params *GetInstanceListParams, authInfo runtime
 }
 
 /*
-  GetInstanceOutput gets a instance output
+GetInstanceMetadata gets a instance metadata
 
-  Gets the output an instance was provided when executed.
+Gets the metadata of an instance.
+*/
+func (a *Client) GetInstanceMetadata(params *GetInstanceMetadataParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetInstanceMetadataOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGetInstanceMetadataParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "getInstanceMetadata",
+		Method:             "GET",
+		PathPattern:        "/api/namespaces/{namespace}/instances/{instance}/metadata",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http", "https"},
+		Params:             params,
+		Reader:             &GetInstanceMetadataReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
 
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*GetInstanceMetadataOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for getInstanceMetadata: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+GetInstanceOutput gets a instance output
+
+Gets the output an instance was provided when executed.
 */
 func (a *Client) GetInstanceOutput(params *GetInstanceOutputParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetInstanceOutputOK, error) {
 	// TODO: Validate the params before sending

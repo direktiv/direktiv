@@ -36,14 +36,44 @@ func NewGetWorkflowVariablesOK() *GetWorkflowVariablesOK {
 	return &GetWorkflowVariablesOK{}
 }
 
-/* GetWorkflowVariablesOK describes a response with status code 200, with default header values.
+/*
+GetWorkflowVariablesOK describes a response with status code 200, with default header values.
 
 successfully got workflow variables
 */
 type GetWorkflowVariablesOK struct {
 }
 
+// IsSuccess returns true when this get workflow variables o k response has a 2xx status code
+func (o *GetWorkflowVariablesOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this get workflow variables o k response has a 3xx status code
+func (o *GetWorkflowVariablesOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this get workflow variables o k response has a 4xx status code
+func (o *GetWorkflowVariablesOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this get workflow variables o k response has a 5xx status code
+func (o *GetWorkflowVariablesOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this get workflow variables o k response a status code equal to that given
+func (o *GetWorkflowVariablesOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *GetWorkflowVariablesOK) Error() string {
+	return fmt.Sprintf("[GET /api/namespaces/{namespace}/tree/{workflow}?op=vars][%d] getWorkflowVariablesOK ", 200)
+}
+
+func (o *GetWorkflowVariablesOK) String() string {
 	return fmt.Sprintf("[GET /api/namespaces/{namespace}/tree/{workflow}?op=vars][%d] getWorkflowVariablesOK ", 200)
 }
 

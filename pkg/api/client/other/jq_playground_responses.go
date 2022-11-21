@@ -52,14 +52,44 @@ func NewJqPlaygroundOK() *JqPlaygroundOK {
 	return &JqPlaygroundOK{}
 }
 
-/* JqPlaygroundOK describes a response with status code 200, with default header values.
+/*
+JqPlaygroundOK describes a response with status code 200, with default header values.
 
 jq query was successful
 */
 type JqPlaygroundOK struct {
 }
 
+// IsSuccess returns true when this jq playground o k response has a 2xx status code
+func (o *JqPlaygroundOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this jq playground o k response has a 3xx status code
+func (o *JqPlaygroundOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this jq playground o k response has a 4xx status code
+func (o *JqPlaygroundOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this jq playground o k response has a 5xx status code
+func (o *JqPlaygroundOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this jq playground o k response a status code equal to that given
+func (o *JqPlaygroundOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *JqPlaygroundOK) Error() string {
+	return fmt.Sprintf("[POST /api/jq][%d] jqPlaygroundOK ", 200)
+}
+
+func (o *JqPlaygroundOK) String() string {
 	return fmt.Sprintf("[POST /api/jq][%d] jqPlaygroundOK ", 200)
 }
 
@@ -73,14 +103,44 @@ func NewJqPlaygroundBadRequest() *JqPlaygroundBadRequest {
 	return &JqPlaygroundBadRequest{}
 }
 
-/* JqPlaygroundBadRequest describes a response with status code 400, with default header values.
+/*
+JqPlaygroundBadRequest describes a response with status code 400, with default header values.
 
 the request was invalid
 */
 type JqPlaygroundBadRequest struct {
 }
 
+// IsSuccess returns true when this jq playground bad request response has a 2xx status code
+func (o *JqPlaygroundBadRequest) IsSuccess() bool {
+	return false
+}
+
+// IsRedirect returns true when this jq playground bad request response has a 3xx status code
+func (o *JqPlaygroundBadRequest) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this jq playground bad request response has a 4xx status code
+func (o *JqPlaygroundBadRequest) IsClientError() bool {
+	return true
+}
+
+// IsServerError returns true when this jq playground bad request response has a 5xx status code
+func (o *JqPlaygroundBadRequest) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this jq playground bad request response a status code equal to that given
+func (o *JqPlaygroundBadRequest) IsCode(code int) bool {
+	return code == 400
+}
+
 func (o *JqPlaygroundBadRequest) Error() string {
+	return fmt.Sprintf("[POST /api/jq][%d] jqPlaygroundBadRequest ", 400)
+}
+
+func (o *JqPlaygroundBadRequest) String() string {
 	return fmt.Sprintf("[POST /api/jq][%d] jqPlaygroundBadRequest ", 400)
 }
 
@@ -94,14 +154,44 @@ func NewJqPlaygroundInternalServerError() *JqPlaygroundInternalServerError {
 	return &JqPlaygroundInternalServerError{}
 }
 
-/* JqPlaygroundInternalServerError describes a response with status code 500, with default header values.
+/*
+JqPlaygroundInternalServerError describes a response with status code 500, with default header values.
 
 an unexpected internal error occurred
 */
 type JqPlaygroundInternalServerError struct {
 }
 
+// IsSuccess returns true when this jq playground internal server error response has a 2xx status code
+func (o *JqPlaygroundInternalServerError) IsSuccess() bool {
+	return false
+}
+
+// IsRedirect returns true when this jq playground internal server error response has a 3xx status code
+func (o *JqPlaygroundInternalServerError) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this jq playground internal server error response has a 4xx status code
+func (o *JqPlaygroundInternalServerError) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this jq playground internal server error response has a 5xx status code
+func (o *JqPlaygroundInternalServerError) IsServerError() bool {
+	return true
+}
+
+// IsCode returns true when this jq playground internal server error response a status code equal to that given
+func (o *JqPlaygroundInternalServerError) IsCode(code int) bool {
+	return code == 500
+}
+
 func (o *JqPlaygroundInternalServerError) Error() string {
+	return fmt.Sprintf("[POST /api/jq][%d] jqPlaygroundInternalServerError ", 500)
+}
+
+func (o *JqPlaygroundInternalServerError) String() string {
 	return fmt.Sprintf("[POST /api/jq][%d] jqPlaygroundInternalServerError ", 500)
 }
 
@@ -110,7 +200,8 @@ func (o *JqPlaygroundInternalServerError) readResponse(response runtime.ClientRe
 	return nil
 }
 
-/*JqPlaygroundBody jq playground body
+/*
+JqPlaygroundBody jq playground body
 // Example: {"data":"eyJhIjogMSwgImIiOiAyLCAiYyI6IDQsICJkIjogN30=","query":"map(select(. \u003e= 2))"}
 swagger:model JqPlaygroundBody
 */

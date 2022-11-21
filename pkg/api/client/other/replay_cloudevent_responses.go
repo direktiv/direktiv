@@ -36,14 +36,44 @@ func NewReplayCloudeventOK() *ReplayCloudeventOK {
 	return &ReplayCloudeventOK{}
 }
 
-/* ReplayCloudeventOK describes a response with status code 200, with default header values.
+/*
+ReplayCloudeventOK describes a response with status code 200, with default header values.
 
 successfully replayed cloud event
 */
 type ReplayCloudeventOK struct {
 }
 
+// IsSuccess returns true when this replay cloudevent o k response has a 2xx status code
+func (o *ReplayCloudeventOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this replay cloudevent o k response has a 3xx status code
+func (o *ReplayCloudeventOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this replay cloudevent o k response has a 4xx status code
+func (o *ReplayCloudeventOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this replay cloudevent o k response has a 5xx status code
+func (o *ReplayCloudeventOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this replay cloudevent o k response a status code equal to that given
+func (o *ReplayCloudeventOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *ReplayCloudeventOK) Error() string {
+	return fmt.Sprintf("[POST /api/namespaces/{namespace}/events/{event}/replay][%d] replayCloudeventOK ", 200)
+}
+
+func (o *ReplayCloudeventOK) String() string {
 	return fmt.Sprintf("[POST /api/namespaces/{namespace}/events/{event}/replay][%d] replayCloudeventOK ", 200)
 }
 

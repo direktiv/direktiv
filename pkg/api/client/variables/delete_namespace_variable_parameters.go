@@ -52,10 +52,12 @@ func NewDeleteNamespaceVariableParamsWithHTTPClient(client *http.Client) *Delete
 	}
 }
 
-/* DeleteNamespaceVariableParams contains all the parameters to send to the API endpoint
-   for the delete namespace variable operation.
+/*
+DeleteNamespaceVariableParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the delete namespace variable operation.
+
+	Typically these are written to a http.Request.
 */
 type DeleteNamespaceVariableParams struct {
 

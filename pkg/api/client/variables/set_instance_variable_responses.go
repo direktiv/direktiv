@@ -36,14 +36,44 @@ func NewSetInstanceVariableOK() *SetInstanceVariableOK {
 	return &SetInstanceVariableOK{}
 }
 
-/* SetInstanceVariableOK describes a response with status code 200, with default header values.
+/*
+SetInstanceVariableOK describes a response with status code 200, with default header values.
 
 successfully set instance variable
 */
 type SetInstanceVariableOK struct {
 }
 
+// IsSuccess returns true when this set instance variable o k response has a 2xx status code
+func (o *SetInstanceVariableOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this set instance variable o k response has a 3xx status code
+func (o *SetInstanceVariableOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this set instance variable o k response has a 4xx status code
+func (o *SetInstanceVariableOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this set instance variable o k response has a 5xx status code
+func (o *SetInstanceVariableOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this set instance variable o k response a status code equal to that given
+func (o *SetInstanceVariableOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *SetInstanceVariableOK) Error() string {
+	return fmt.Sprintf("[PUT /api/namespaces/{namespace}/instances/{instance}/vars/{variable}][%d] setInstanceVariableOK ", 200)
+}
+
+func (o *SetInstanceVariableOK) String() string {
 	return fmt.Sprintf("[PUT /api/namespaces/{namespace}/instances/{instance}/vars/{variable}][%d] setInstanceVariableOK ", 200)
 }
 

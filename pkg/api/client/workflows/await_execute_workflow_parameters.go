@@ -53,10 +53,12 @@ func NewAwaitExecuteWorkflowParamsWithHTTPClient(client *http.Client) *AwaitExec
 	}
 }
 
-/* AwaitExecuteWorkflowParams contains all the parameters to send to the API endpoint
-   for the await execute workflow operation.
+/*
+AwaitExecuteWorkflowParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the await execute workflow operation.
+
+	Typically these are written to a http.Request.
 */
 type AwaitExecuteWorkflowParams struct {
 

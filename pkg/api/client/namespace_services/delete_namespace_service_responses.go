@@ -36,14 +36,44 @@ func NewDeleteNamespaceServiceOK() *DeleteNamespaceServiceOK {
 	return &DeleteNamespaceServiceOK{}
 }
 
-/* DeleteNamespaceServiceOK describes a response with status code 200, with default header values.
+/*
+DeleteNamespaceServiceOK describes a response with status code 200, with default header values.
 
 successfully deleted service
 */
 type DeleteNamespaceServiceOK struct {
 }
 
+// IsSuccess returns true when this delete namespace service o k response has a 2xx status code
+func (o *DeleteNamespaceServiceOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this delete namespace service o k response has a 3xx status code
+func (o *DeleteNamespaceServiceOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this delete namespace service o k response has a 4xx status code
+func (o *DeleteNamespaceServiceOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this delete namespace service o k response has a 5xx status code
+func (o *DeleteNamespaceServiceOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this delete namespace service o k response a status code equal to that given
+func (o *DeleteNamespaceServiceOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *DeleteNamespaceServiceOK) Error() string {
+	return fmt.Sprintf("[DELETE /api/functions/namespaces/{namespace}/function/{serviceName}][%d] deleteNamespaceServiceOK ", 200)
+}
+
+func (o *DeleteNamespaceServiceOK) String() string {
 	return fmt.Sprintf("[DELETE /api/functions/namespaces/{namespace}/function/{serviceName}][%d] deleteNamespaceServiceOK ", 200)
 }
 

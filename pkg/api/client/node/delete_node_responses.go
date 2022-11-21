@@ -46,7 +46,8 @@ func NewDeleteNodeOK() *DeleteNodeOK {
 	return &DeleteNodeOK{}
 }
 
-/* DeleteNodeOK describes a response with status code 200, with default header values.
+/*
+DeleteNodeOK describes a response with status code 200, with default header values.
 
 node has been deleted
 */
@@ -54,9 +55,39 @@ type DeleteNodeOK struct {
 	Payload models.OkBody
 }
 
+// IsSuccess returns true when this delete node o k response has a 2xx status code
+func (o *DeleteNodeOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this delete node o k response has a 3xx status code
+func (o *DeleteNodeOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this delete node o k response has a 4xx status code
+func (o *DeleteNodeOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this delete node o k response has a 5xx status code
+func (o *DeleteNodeOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this delete node o k response a status code equal to that given
+func (o *DeleteNodeOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *DeleteNodeOK) Error() string {
 	return fmt.Sprintf("[DELETE /api/namespaces/{namespace}/tree/{node}?op=delete-node][%d] deleteNodeOK  %+v", 200, o.Payload)
 }
+
+func (o *DeleteNodeOK) String() string {
+	return fmt.Sprintf("[DELETE /api/namespaces/{namespace}/tree/{node}?op=delete-node][%d] deleteNodeOK  %+v", 200, o.Payload)
+}
+
 func (o *DeleteNodeOK) GetPayload() models.OkBody {
 	return o.Payload
 }
@@ -78,14 +109,15 @@ func NewDeleteNodeDefault(code int) *DeleteNodeDefault {
 	}
 }
 
-/* DeleteNodeDefault describes a response with status code -1, with default header values.
+/*
+DeleteNodeDefault describes a response with status code -1, with default header values.
 
 an error has occurred
 */
 type DeleteNodeDefault struct {
 	_statusCode int
 
-	Payload *models.ErrorResponse
+	Payload models.ErrorResponse
 }
 
 // Code gets the status code for the delete node default response
@@ -93,19 +125,47 @@ func (o *DeleteNodeDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this delete node default response has a 2xx status code
+func (o *DeleteNodeDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this delete node default response has a 3xx status code
+func (o *DeleteNodeDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this delete node default response has a 4xx status code
+func (o *DeleteNodeDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this delete node default response has a 5xx status code
+func (o *DeleteNodeDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this delete node default response a status code equal to that given
+func (o *DeleteNodeDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *DeleteNodeDefault) Error() string {
 	return fmt.Sprintf("[DELETE /api/namespaces/{namespace}/tree/{node}?op=delete-node][%d] deleteNode default  %+v", o._statusCode, o.Payload)
 }
-func (o *DeleteNodeDefault) GetPayload() *models.ErrorResponse {
+
+func (o *DeleteNodeDefault) String() string {
+	return fmt.Sprintf("[DELETE /api/namespaces/{namespace}/tree/{node}?op=delete-node][%d] deleteNode default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *DeleteNodeDefault) GetPayload() models.ErrorResponse {
 	return o.Payload
 }
 
 func (o *DeleteNodeDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.ErrorResponse)
-
 	// response payload
-	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+	if err := consumer.Consume(response.Body(), &o.Payload); err != nil && err != io.EOF {
 		return err
 	}
 

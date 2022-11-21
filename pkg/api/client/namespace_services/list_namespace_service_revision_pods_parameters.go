@@ -52,10 +52,12 @@ func NewListNamespaceServiceRevisionPodsParamsWithHTTPClient(client *http.Client
 	}
 }
 
-/* ListNamespaceServiceRevisionPodsParams contains all the parameters to send to the API endpoint
-   for the list namespace service revision pods operation.
+/*
+ListNamespaceServiceRevisionPodsParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the list namespace service revision pods operation.
+
+	Typically these are written to a http.Request.
 */
 type ListNamespaceServiceRevisionPodsParams struct {
 

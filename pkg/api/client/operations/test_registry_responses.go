@@ -46,14 +46,44 @@ func NewTestRegistryOK() *TestRegistryOK {
 	return &TestRegistryOK{}
 }
 
-/* TestRegistryOK describes a response with status code 200, with default header values.
+/*
+TestRegistryOK describes a response with status code 200, with default header values.
 
 registry is valid
 */
 type TestRegistryOK struct {
 }
 
+// IsSuccess returns true when this test registry o k response has a 2xx status code
+func (o *TestRegistryOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this test registry o k response has a 3xx status code
+func (o *TestRegistryOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this test registry o k response has a 4xx status code
+func (o *TestRegistryOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this test registry o k response has a 5xx status code
+func (o *TestRegistryOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this test registry o k response a status code equal to that given
+func (o *TestRegistryOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *TestRegistryOK) Error() string {
+	return fmt.Sprintf("[POST /api/functions/registries/test][%d] testRegistryOK ", 200)
+}
+
+func (o *TestRegistryOK) String() string {
 	return fmt.Sprintf("[POST /api/functions/registries/test][%d] testRegistryOK ", 200)
 }
 
@@ -67,14 +97,44 @@ func NewTestRegistryUnauthorized() *TestRegistryUnauthorized {
 	return &TestRegistryUnauthorized{}
 }
 
-/* TestRegistryUnauthorized describes a response with status code 401, with default header values.
+/*
+TestRegistryUnauthorized describes a response with status code 401, with default header values.
 
 unauthorized to access the registry
 */
 type TestRegistryUnauthorized struct {
 }
 
+// IsSuccess returns true when this test registry unauthorized response has a 2xx status code
+func (o *TestRegistryUnauthorized) IsSuccess() bool {
+	return false
+}
+
+// IsRedirect returns true when this test registry unauthorized response has a 3xx status code
+func (o *TestRegistryUnauthorized) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this test registry unauthorized response has a 4xx status code
+func (o *TestRegistryUnauthorized) IsClientError() bool {
+	return true
+}
+
+// IsServerError returns true when this test registry unauthorized response has a 5xx status code
+func (o *TestRegistryUnauthorized) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this test registry unauthorized response a status code equal to that given
+func (o *TestRegistryUnauthorized) IsCode(code int) bool {
+	return code == 401
+}
+
 func (o *TestRegistryUnauthorized) Error() string {
+	return fmt.Sprintf("[POST /api/functions/registries/test][%d] testRegistryUnauthorized ", 401)
+}
+
+func (o *TestRegistryUnauthorized) String() string {
 	return fmt.Sprintf("[POST /api/functions/registries/test][%d] testRegistryUnauthorized ", 401)
 }
 
@@ -83,7 +143,8 @@ func (o *TestRegistryUnauthorized) readResponse(response runtime.ClientResponse,
 	return nil
 }
 
-/*TestRegistryBody test registry body
+/*
+TestRegistryBody test registry body
 // Example: {"token":"8QwFLg%D$qg*","url":"https://prod.customreg.io","username":"admin"}
 swagger:model TestRegistryBody
 */

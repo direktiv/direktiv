@@ -36,14 +36,44 @@ func NewListWorkflowServicesOK() *ListWorkflowServicesOK {
 	return &ListWorkflowServicesOK{}
 }
 
-/* ListWorkflowServicesOK describes a response with status code 200, with default header values.
+/*
+ListWorkflowServicesOK describes a response with status code 200, with default header values.
 
 successfully got services list
 */
 type ListWorkflowServicesOK struct {
 }
 
+// IsSuccess returns true when this list workflow services o k response has a 2xx status code
+func (o *ListWorkflowServicesOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this list workflow services o k response has a 3xx status code
+func (o *ListWorkflowServicesOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this list workflow services o k response has a 4xx status code
+func (o *ListWorkflowServicesOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this list workflow services o k response has a 5xx status code
+func (o *ListWorkflowServicesOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this list workflow services o k response a status code equal to that given
+func (o *ListWorkflowServicesOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *ListWorkflowServicesOK) Error() string {
+	return fmt.Sprintf("[GET /api/functions/namespaces/{namespace}/tree/{workflow}?op=services][%d] listWorkflowServicesOK ", 200)
+}
+
+func (o *ListWorkflowServicesOK) String() string {
 	return fmt.Sprintf("[GET /api/functions/namespaces/{namespace}/tree/{workflow}?op=services][%d] listWorkflowServicesOK ", 200)
 }
 

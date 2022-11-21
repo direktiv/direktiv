@@ -52,10 +52,12 @@ func NewServerLogsParamsWithHTTPClient(client *http.Client) *ServerLogsParams {
 	}
 }
 
-/* ServerLogsParams contains all the parameters to send to the API endpoint
-   for the server logs operation.
+/*
+ServerLogsParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the server logs operation.
+
+	Typically these are written to a http.Request.
 */
 type ServerLogsParams struct {
 

@@ -36,14 +36,44 @@ func NewGetRegistriesOK() *GetRegistriesOK {
 	return &GetRegistriesOK{}
 }
 
-/* GetRegistriesOK describes a response with status code 200, with default header values.
+/*
+GetRegistriesOK describes a response with status code 200, with default header values.
 
 successfully got namespace registries
 */
 type GetRegistriesOK struct {
 }
 
+// IsSuccess returns true when this get registries o k response has a 2xx status code
+func (o *GetRegistriesOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this get registries o k response has a 3xx status code
+func (o *GetRegistriesOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this get registries o k response has a 4xx status code
+func (o *GetRegistriesOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this get registries o k response has a 5xx status code
+func (o *GetRegistriesOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this get registries o k response a status code equal to that given
+func (o *GetRegistriesOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *GetRegistriesOK) Error() string {
+	return fmt.Sprintf("[GET /api/functions/registries/namespaces/{namespace}][%d] getRegistriesOK ", 200)
+}
+
+func (o *GetRegistriesOK) String() string {
 	return fmt.Sprintf("[GET /api/functions/registries/namespaces/{namespace}][%d] getRegistriesOK ", 200)
 }
 

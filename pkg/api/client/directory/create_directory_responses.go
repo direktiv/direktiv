@@ -46,7 +46,8 @@ func NewCreateDirectoryOK() *CreateDirectoryOK {
 	return &CreateDirectoryOK{}
 }
 
-/* CreateDirectoryOK describes a response with status code 200, with default header values.
+/*
+CreateDirectoryOK describes a response with status code 200, with default header values.
 
 directory has been created
 */
@@ -54,9 +55,39 @@ type CreateDirectoryOK struct {
 	Payload models.OkBody
 }
 
+// IsSuccess returns true when this create directory o k response has a 2xx status code
+func (o *CreateDirectoryOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this create directory o k response has a 3xx status code
+func (o *CreateDirectoryOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this create directory o k response has a 4xx status code
+func (o *CreateDirectoryOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this create directory o k response has a 5xx status code
+func (o *CreateDirectoryOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this create directory o k response a status code equal to that given
+func (o *CreateDirectoryOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *CreateDirectoryOK) Error() string {
 	return fmt.Sprintf("[PUT /api/namespaces/{namespace}/tree/{directory}?op=create-directory][%d] createDirectoryOK  %+v", 200, o.Payload)
 }
+
+func (o *CreateDirectoryOK) String() string {
+	return fmt.Sprintf("[PUT /api/namespaces/{namespace}/tree/{directory}?op=create-directory][%d] createDirectoryOK  %+v", 200, o.Payload)
+}
+
 func (o *CreateDirectoryOK) GetPayload() models.OkBody {
 	return o.Payload
 }
@@ -78,14 +109,15 @@ func NewCreateDirectoryDefault(code int) *CreateDirectoryDefault {
 	}
 }
 
-/* CreateDirectoryDefault describes a response with status code -1, with default header values.
+/*
+CreateDirectoryDefault describes a response with status code -1, with default header values.
 
 an error has occurred
 */
 type CreateDirectoryDefault struct {
 	_statusCode int
 
-	Payload *models.ErrorResponse
+	Payload models.ErrorResponse
 }
 
 // Code gets the status code for the create directory default response
@@ -93,19 +125,47 @@ func (o *CreateDirectoryDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this create directory default response has a 2xx status code
+func (o *CreateDirectoryDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this create directory default response has a 3xx status code
+func (o *CreateDirectoryDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this create directory default response has a 4xx status code
+func (o *CreateDirectoryDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this create directory default response has a 5xx status code
+func (o *CreateDirectoryDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this create directory default response a status code equal to that given
+func (o *CreateDirectoryDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *CreateDirectoryDefault) Error() string {
 	return fmt.Sprintf("[PUT /api/namespaces/{namespace}/tree/{directory}?op=create-directory][%d] createDirectory default  %+v", o._statusCode, o.Payload)
 }
-func (o *CreateDirectoryDefault) GetPayload() *models.ErrorResponse {
+
+func (o *CreateDirectoryDefault) String() string {
+	return fmt.Sprintf("[PUT /api/namespaces/{namespace}/tree/{directory}?op=create-directory][%d] createDirectory default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *CreateDirectoryDefault) GetPayload() models.ErrorResponse {
 	return o.Payload
 }
 
 func (o *CreateDirectoryDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.ErrorResponse)
-
 	// response payload
-	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+	if err := consumer.Consume(response.Body(), &o.Payload); err != nil && err != io.EOF {
 		return err
 	}
 

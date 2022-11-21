@@ -42,10 +42,9 @@ type ClientService interface {
 }
 
 /*
-  GetWorkflowLogs gets workflow level logs
+GetWorkflowLogs gets workflow level logs
 
-  Get workflow level logs.
-
+Get workflow level logs.
 */
 func (a *Client) GetWorkflowLogs(params *GetWorkflowLogsParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetWorkflowLogsOK, error) {
 	// TODO: Validate the params before sending
@@ -84,10 +83,9 @@ func (a *Client) GetWorkflowLogs(params *GetWorkflowLogsParams, authInfo runtime
 }
 
 /*
-  InstanceLogs gets instance logs
+InstanceLogs gets instance logs
 
-  Gets the logs of an executed instance.
-
+Gets the logs of an executed instance.
 */
 func (a *Client) InstanceLogs(params *InstanceLogsParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*InstanceLogsOK, error) {
 	// TODO: Validate the params before sending
@@ -125,10 +123,9 @@ func (a *Client) InstanceLogs(params *InstanceLogsParams, authInfo runtime.Clien
 }
 
 /*
-  NamespaceLogs gets namespace level logs
+NamespaceLogs gets namespace level logs
 
-  Gets Namespace Level Logs.
-
+Gets Namespace Level Logs.
 */
 func (a *Client) NamespaceLogs(params *NamespaceLogsParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NamespaceLogsOK, error) {
 	// TODO: Validate the params before sending
@@ -167,10 +164,9 @@ func (a *Client) NamespaceLogs(params *NamespaceLogsParams, authInfo runtime.Cli
 }
 
 /*
-  ServerLogs gets direktiv server logs
+ServerLogs gets direktiv server logs
 
-  Gets Direktiv Server Logs.
-
+Gets Direktiv Server Logs.
 */
 func (a *Client) ServerLogs(params *ServerLogsParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ServerLogsOK, error) {
 	// TODO: Validate the params before sending

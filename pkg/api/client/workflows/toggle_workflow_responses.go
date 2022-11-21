@@ -40,14 +40,44 @@ func NewToggleWorkflowOK() *ToggleWorkflowOK {
 	return &ToggleWorkflowOK{}
 }
 
-/* ToggleWorkflowOK describes a response with status code 200, with default header values.
+/*
+ToggleWorkflowOK describes a response with status code 200, with default header values.
 
 successfully updated workflow live status
 */
 type ToggleWorkflowOK struct {
 }
 
+// IsSuccess returns true when this toggle workflow o k response has a 2xx status code
+func (o *ToggleWorkflowOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this toggle workflow o k response has a 3xx status code
+func (o *ToggleWorkflowOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this toggle workflow o k response has a 4xx status code
+func (o *ToggleWorkflowOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this toggle workflow o k response has a 5xx status code
+func (o *ToggleWorkflowOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this toggle workflow o k response a status code equal to that given
+func (o *ToggleWorkflowOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *ToggleWorkflowOK) Error() string {
+	return fmt.Sprintf("[POST /api/namespaces/{namespace}/tree/{workflow}?op=toggle][%d] toggleWorkflowOK ", 200)
+}
+
+func (o *ToggleWorkflowOK) String() string {
 	return fmt.Sprintf("[POST /api/namespaces/{namespace}/tree/{workflow}?op=toggle][%d] toggleWorkflowOK ", 200)
 }
 
@@ -56,7 +86,8 @@ func (o *ToggleWorkflowOK) readResponse(response runtime.ClientResponse, consume
 	return nil
 }
 
-/*ToggleWorkflowBody toggle workflow body
+/*
+ToggleWorkflowBody toggle workflow body
 // Example: {"live":false}
 swagger:model ToggleWorkflowBody
 */

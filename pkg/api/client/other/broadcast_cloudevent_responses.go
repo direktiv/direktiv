@@ -36,14 +36,44 @@ func NewBroadcastCloudeventOK() *BroadcastCloudeventOK {
 	return &BroadcastCloudeventOK{}
 }
 
-/* BroadcastCloudeventOK describes a response with status code 200, with default header values.
+/*
+BroadcastCloudeventOK describes a response with status code 200, with default header values.
 
 successfully sent cloud event
 */
 type BroadcastCloudeventOK struct {
 }
 
+// IsSuccess returns true when this broadcast cloudevent o k response has a 2xx status code
+func (o *BroadcastCloudeventOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this broadcast cloudevent o k response has a 3xx status code
+func (o *BroadcastCloudeventOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this broadcast cloudevent o k response has a 4xx status code
+func (o *BroadcastCloudeventOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this broadcast cloudevent o k response has a 5xx status code
+func (o *BroadcastCloudeventOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this broadcast cloudevent o k response a status code equal to that given
+func (o *BroadcastCloudeventOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *BroadcastCloudeventOK) Error() string {
+	return fmt.Sprintf("[POST /api/namespaces/{namespace}/broadcast][%d] broadcastCloudeventOK ", 200)
+}
+
+func (o *BroadcastCloudeventOK) String() string {
 	return fmt.Sprintf("[POST /api/namespaces/{namespace}/broadcast][%d] broadcastCloudeventOK ", 200)
 }
 

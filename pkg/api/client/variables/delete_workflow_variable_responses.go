@@ -36,14 +36,44 @@ func NewDeleteWorkflowVariableOK() *DeleteWorkflowVariableOK {
 	return &DeleteWorkflowVariableOK{}
 }
 
-/* DeleteWorkflowVariableOK describes a response with status code 200, with default header values.
+/*
+DeleteWorkflowVariableOK describes a response with status code 200, with default header values.
 
 successfully deleted workflow variable
 */
 type DeleteWorkflowVariableOK struct {
 }
 
+// IsSuccess returns true when this delete workflow variable o k response has a 2xx status code
+func (o *DeleteWorkflowVariableOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this delete workflow variable o k response has a 3xx status code
+func (o *DeleteWorkflowVariableOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this delete workflow variable o k response has a 4xx status code
+func (o *DeleteWorkflowVariableOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this delete workflow variable o k response has a 5xx status code
+func (o *DeleteWorkflowVariableOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this delete workflow variable o k response a status code equal to that given
+func (o *DeleteWorkflowVariableOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *DeleteWorkflowVariableOK) Error() string {
+	return fmt.Sprintf("[DELETE /api/namespaces/{namespace}/tree/{workflow}?op=delete-var][%d] deleteWorkflowVariableOK ", 200)
+}
+
+func (o *DeleteWorkflowVariableOK) String() string {
 	return fmt.Sprintf("[DELETE /api/namespaces/{namespace}/tree/{workflow}?op=delete-var][%d] deleteWorkflowVariableOK ", 200)
 }
 

@@ -46,17 +46,48 @@ func NewCreateSecretOK() *CreateSecretOK {
 	return &CreateSecretOK{}
 }
 
-/* CreateSecretOK describes a response with status code 200, with default header values.
+/*
+CreateSecretOK describes a response with status code 200, with default header values.
 
-namespace has been successfully created
+namespace secret has been successfully created
 */
 type CreateSecretOK struct {
 	Payload models.OkBody
 }
 
+// IsSuccess returns true when this create secret o k response has a 2xx status code
+func (o *CreateSecretOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this create secret o k response has a 3xx status code
+func (o *CreateSecretOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this create secret o k response has a 4xx status code
+func (o *CreateSecretOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this create secret o k response has a 5xx status code
+func (o *CreateSecretOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this create secret o k response a status code equal to that given
+func (o *CreateSecretOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *CreateSecretOK) Error() string {
 	return fmt.Sprintf("[PUT /api/namespaces/{namespace}/secrets/{secret}][%d] createSecretOK  %+v", 200, o.Payload)
 }
+
+func (o *CreateSecretOK) String() string {
+	return fmt.Sprintf("[PUT /api/namespaces/{namespace}/secrets/{secret}][%d] createSecretOK  %+v", 200, o.Payload)
+}
+
 func (o *CreateSecretOK) GetPayload() models.OkBody {
 	return o.Payload
 }
@@ -78,14 +109,15 @@ func NewCreateSecretDefault(code int) *CreateSecretDefault {
 	}
 }
 
-/* CreateSecretDefault describes a response with status code -1, with default header values.
+/*
+CreateSecretDefault describes a response with status code -1, with default header values.
 
 an error has occurred
 */
 type CreateSecretDefault struct {
 	_statusCode int
 
-	Payload *models.ErrorResponse
+	Payload models.ErrorResponse
 }
 
 // Code gets the status code for the create secret default response
@@ -93,19 +125,47 @@ func (o *CreateSecretDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this create secret default response has a 2xx status code
+func (o *CreateSecretDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this create secret default response has a 3xx status code
+func (o *CreateSecretDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this create secret default response has a 4xx status code
+func (o *CreateSecretDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this create secret default response has a 5xx status code
+func (o *CreateSecretDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this create secret default response a status code equal to that given
+func (o *CreateSecretDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *CreateSecretDefault) Error() string {
 	return fmt.Sprintf("[PUT /api/namespaces/{namespace}/secrets/{secret}][%d] createSecret default  %+v", o._statusCode, o.Payload)
 }
-func (o *CreateSecretDefault) GetPayload() *models.ErrorResponse {
+
+func (o *CreateSecretDefault) String() string {
+	return fmt.Sprintf("[PUT /api/namespaces/{namespace}/secrets/{secret}][%d] createSecret default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *CreateSecretDefault) GetPayload() models.ErrorResponse {
 	return o.Payload
 }
 
 func (o *CreateSecretDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.ErrorResponse)
-
 	// response payload
-	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+	if err := consumer.Consume(response.Body(), &o.Payload); err != nil && err != io.EOF {
 		return err
 	}
 

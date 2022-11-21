@@ -52,10 +52,9 @@ type ClientService interface {
 }
 
 /*
-  NamespaceMetricsFailed gets namespace failed workflow instances metrics
+NamespaceMetricsFailed gets namespace failed workflow instances metrics
 
-  Get metrics of failed workflows in the targeted namespace.
-
+Get metrics of failed workflows in the targeted namespace.
 */
 func (a *Client) NamespaceMetricsFailed(params *NamespaceMetricsFailedParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NamespaceMetricsFailedOK, error) {
 	// TODO: Validate the params before sending
@@ -94,10 +93,9 @@ func (a *Client) NamespaceMetricsFailed(params *NamespaceMetricsFailedParams, au
 }
 
 /*
-  NamespaceMetricsInvoked gets namespace invoked workflow metrics
+NamespaceMetricsInvoked gets namespace invoked workflow metrics
 
-  Get metrics of invoked workflows in the targeted namespace.
-
+Get metrics of invoked workflows in the targeted namespace.
 */
 func (a *Client) NamespaceMetricsInvoked(params *NamespaceMetricsInvokedParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NamespaceMetricsInvokedOK, error) {
 	// TODO: Validate the params before sending
@@ -136,10 +134,9 @@ func (a *Client) NamespaceMetricsInvoked(params *NamespaceMetricsInvokedParams, 
 }
 
 /*
-  NamespaceMetricsMilliseconds gets namespace workflow timing metrics
+NamespaceMetricsMilliseconds gets namespace workflow timing metrics
 
-  Get timing metrics of workflows in the targeted namespace.
-
+Get timing metrics of workflows in the targeted namespace.
 */
 func (a *Client) NamespaceMetricsMilliseconds(params *NamespaceMetricsMillisecondsParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NamespaceMetricsMillisecondsOK, error) {
 	// TODO: Validate the params before sending
@@ -178,10 +175,9 @@ func (a *Client) NamespaceMetricsMilliseconds(params *NamespaceMetricsMillisecon
 }
 
 /*
-  NamespaceMetricsSuccessful gets namespace successful workflow instances metrics
+NamespaceMetricsSuccessful gets namespace successful workflow instances metrics
 
-  Get metrics of successful workflows in the targeted namespace.
-
+Get metrics of successful workflows in the targeted namespace.
 */
 func (a *Client) NamespaceMetricsSuccessful(params *NamespaceMetricsSuccessfulParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NamespaceMetricsSuccessfulOK, error) {
 	// TODO: Validate the params before sending
@@ -220,10 +216,9 @@ func (a *Client) NamespaceMetricsSuccessful(params *NamespaceMetricsSuccessfulPa
 }
 
 /*
-  WorkflowMetricsInvoked gets invoked workflow metrics
+WorkflowMetricsInvoked gets invoked workflow metrics
 
-  Get metrics of invoked workflow instances.
-
+Get metrics of invoked workflow instances.
 */
 func (a *Client) WorkflowMetricsInvoked(params *WorkflowMetricsInvokedParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WorkflowMetricsInvokedOK, error) {
 	// TODO: Validate the params before sending
@@ -262,11 +257,11 @@ func (a *Client) WorkflowMetricsInvoked(params *WorkflowMetricsInvokedParams, au
 }
 
 /*
-  WorkflowMetricsMilliseconds gets workflow time metrics
+	WorkflowMetricsMilliseconds gets workflow time metrics
 
-  Get the timing metrics of a workflow's instance.
+	Get the timing metrics of a workflow's instance.
+
 This returns a total sum of the milliseconds a workflow has been executed for.
-
 */
 func (a *Client) WorkflowMetricsMilliseconds(params *WorkflowMetricsMillisecondsParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WorkflowMetricsMillisecondsOK, error) {
 	// TODO: Validate the params before sending
@@ -305,12 +300,12 @@ func (a *Client) WorkflowMetricsMilliseconds(params *WorkflowMetricsMilliseconds
 }
 
 /*
-  WorkflowMetricsSankey gets sankey metrics of a workflow revision
+	WorkflowMetricsSankey gets sankey metrics of a workflow revision
 
-  Get Sankey metrics of a workflow revision.
+	Get Sankey metrics of a workflow revision.
+
 If ref query is not provided, metrics for the latest revision
 will be retrieved.
-
 */
 func (a *Client) WorkflowMetricsSankey(params *WorkflowMetricsSankeyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WorkflowMetricsSankeyOK, error) {
 	// TODO: Validate the params before sending
@@ -349,11 +344,11 @@ func (a *Client) WorkflowMetricsSankey(params *WorkflowMetricsSankeyParams, auth
 }
 
 /*
-  WorkflowMetricsStateMilliseconds gets a workflow state time metrics
+	WorkflowMetricsStateMilliseconds gets a workflow state time metrics
 
-  Get the state timing metrics of a workflow's instance.
+	Get the state timing metrics of a workflow's instance.
+
 This returns the timing of individual states in a workflow.
-
 */
 func (a *Client) WorkflowMetricsStateMilliseconds(params *WorkflowMetricsStateMillisecondsParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WorkflowMetricsStateMillisecondsOK, error) {
 	// TODO: Validate the params before sending
@@ -392,10 +387,9 @@ func (a *Client) WorkflowMetricsStateMilliseconds(params *WorkflowMetricsStateMi
 }
 
 /*
-  WorkflowMetricsSuccessful gets successful workflow metrics
+WorkflowMetricsSuccessful gets successful workflow metrics
 
-  Get metrics of a workflow, where the instance was successful.
-
+Get metrics of a workflow, where the instance was successful.
 */
 func (a *Client) WorkflowMetricsSuccessful(params *WorkflowMetricsSuccessfulParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WorkflowMetricsSuccessfulOK, error) {
 	// TODO: Validate the params before sending

@@ -36,14 +36,44 @@ func NewGetNamespaceServiceOK() *GetNamespaceServiceOK {
 	return &GetNamespaceServiceOK{}
 }
 
-/* GetNamespaceServiceOK describes a response with status code 200, with default header values.
+/*
+GetNamespaceServiceOK describes a response with status code 200, with default header values.
 
 successfully got service details
 */
 type GetNamespaceServiceOK struct {
 }
 
+// IsSuccess returns true when this get namespace service o k response has a 2xx status code
+func (o *GetNamespaceServiceOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this get namespace service o k response has a 3xx status code
+func (o *GetNamespaceServiceOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this get namespace service o k response has a 4xx status code
+func (o *GetNamespaceServiceOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this get namespace service o k response has a 5xx status code
+func (o *GetNamespaceServiceOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this get namespace service o k response a status code equal to that given
+func (o *GetNamespaceServiceOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *GetNamespaceServiceOK) Error() string {
+	return fmt.Sprintf("[GET /api/functions/namespaces/{namespace}/function/{serviceName}][%d] getNamespaceServiceOK ", 200)
+}
+
+func (o *GetNamespaceServiceOK) String() string {
 	return fmt.Sprintf("[GET /api/functions/namespaces/{namespace}/function/{serviceName}][%d] getNamespaceServiceOK ", 200)
 }
 

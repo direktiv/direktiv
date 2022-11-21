@@ -52,10 +52,12 @@ func NewGetInstanceParamsWithHTTPClient(client *http.Client) *GetInstanceParams 
 	}
 }
 
-/* GetInstanceParams contains all the parameters to send to the API endpoint
-   for the get instance operation.
+/*
+GetInstanceParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the get instance operation.
+
+	Typically these are written to a http.Request.
 */
 type GetInstanceParams struct {
 

@@ -52,10 +52,12 @@ func NewDeleteRegistryParamsWithHTTPClient(client *http.Client) *DeleteRegistryP
 	}
 }
 
-/* DeleteRegistryParams contains all the parameters to send to the API endpoint
-   for the delete registry operation.
+/*
+DeleteRegistryParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the delete registry operation.
+
+	Typically these are written to a http.Request.
 */
 type DeleteRegistryParams struct {
 

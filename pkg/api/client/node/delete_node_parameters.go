@@ -14,6 +14,7 @@ import (
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
 )
 
 // NewDeleteNodeParams creates a new DeleteNodeParams object,
@@ -52,10 +53,12 @@ func NewDeleteNodeParamsWithHTTPClient(client *http.Client) *DeleteNodeParams {
 	}
 }
 
-/* DeleteNodeParams contains all the parameters to send to the API endpoint
-   for the delete node operation.
+/*
+DeleteNodeParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the delete node operation.
+
+	Typically these are written to a http.Request.
 */
 type DeleteNodeParams struct {
 
@@ -78,6 +81,12 @@ type DeleteNodeParams struct {
 	   Default: "delete-node"
 	*/
 	Op string
+
+	/* Recursive.
+
+	   whether to recursively delete child nodes
+	*/
+	Recursive *bool
 
 	timeout    time.Duration
 	Context    context.Context
@@ -176,6 +185,17 @@ func (o *DeleteNodeParams) SetOp(op string) {
 	o.Op = op
 }
 
+// WithRecursive adds the recursive to the delete node params
+func (o *DeleteNodeParams) WithRecursive(recursive *bool) *DeleteNodeParams {
+	o.SetRecursive(recursive)
+	return o
+}
+
+// SetRecursive adds the recursive to the delete node params
+func (o *DeleteNodeParams) SetRecursive(recursive *bool) {
+	o.Recursive = recursive
+}
+
 // WriteToRequest writes these params to a swagger request
 func (o *DeleteNodeParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
 
@@ -201,6 +221,23 @@ func (o *DeleteNodeParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 
 		if err := r.SetQueryParam("op", qOp); err != nil {
 			return err
+		}
+	}
+
+	if o.Recursive != nil {
+
+		// query param recursive
+		var qrRecursive bool
+
+		if o.Recursive != nil {
+			qrRecursive = *o.Recursive
+		}
+		qRecursive := swag.FormatBool(qrRecursive)
+		if qRecursive != "" {
+
+			if err := r.SetQueryParam("recursive", qRecursive); err != nil {
+				return err
+			}
 		}
 	}
 

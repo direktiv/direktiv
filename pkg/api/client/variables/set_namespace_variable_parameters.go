@@ -52,10 +52,12 @@ func NewSetNamespaceVariableParamsWithHTTPClient(client *http.Client) *SetNamesp
 	}
 }
 
-/* SetNamespaceVariableParams contains all the parameters to send to the API endpoint
-   for the set namespace variable operation.
+/*
+SetNamespaceVariableParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the set namespace variable operation.
+
+	Typically these are written to a http.Request.
 */
 type SetNamespaceVariableParams struct {
 

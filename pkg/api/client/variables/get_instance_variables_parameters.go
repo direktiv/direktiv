@@ -52,10 +52,12 @@ func NewGetInstanceVariablesParamsWithHTTPClient(client *http.Client) *GetInstan
 	}
 }
 
-/* GetInstanceVariablesParams contains all the parameters to send to the API endpoint
-   for the get instance variables operation.
+/*
+GetInstanceVariablesParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the get instance variables operation.
+
+	Typically these are written to a http.Request.
 */
 type GetInstanceVariablesParams struct {
 

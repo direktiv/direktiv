@@ -46,7 +46,8 @@ func NewCreateNamespaceOK() *CreateNamespaceOK {
 	return &CreateNamespaceOK{}
 }
 
-/* CreateNamespaceOK describes a response with status code 200, with default header values.
+/*
+CreateNamespaceOK describes a response with status code 200, with default header values.
 
 namespace has been successfully created
 */
@@ -54,9 +55,39 @@ type CreateNamespaceOK struct {
 	Payload models.OkBody
 }
 
+// IsSuccess returns true when this create namespace o k response has a 2xx status code
+func (o *CreateNamespaceOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this create namespace o k response has a 3xx status code
+func (o *CreateNamespaceOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this create namespace o k response has a 4xx status code
+func (o *CreateNamespaceOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this create namespace o k response has a 5xx status code
+func (o *CreateNamespaceOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this create namespace o k response a status code equal to that given
+func (o *CreateNamespaceOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *CreateNamespaceOK) Error() string {
 	return fmt.Sprintf("[PUT /api/namespaces/{namespace}][%d] createNamespaceOK  %+v", 200, o.Payload)
 }
+
+func (o *CreateNamespaceOK) String() string {
+	return fmt.Sprintf("[PUT /api/namespaces/{namespace}][%d] createNamespaceOK  %+v", 200, o.Payload)
+}
+
 func (o *CreateNamespaceOK) GetPayload() models.OkBody {
 	return o.Payload
 }
@@ -78,14 +109,15 @@ func NewCreateNamespaceDefault(code int) *CreateNamespaceDefault {
 	}
 }
 
-/* CreateNamespaceDefault describes a response with status code -1, with default header values.
+/*
+CreateNamespaceDefault describes a response with status code -1, with default header values.
 
 an error has occurred
 */
 type CreateNamespaceDefault struct {
 	_statusCode int
 
-	Payload *models.ErrorResponse
+	Payload models.ErrorResponse
 }
 
 // Code gets the status code for the create namespace default response
@@ -93,19 +125,47 @@ func (o *CreateNamespaceDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this create namespace default response has a 2xx status code
+func (o *CreateNamespaceDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this create namespace default response has a 3xx status code
+func (o *CreateNamespaceDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this create namespace default response has a 4xx status code
+func (o *CreateNamespaceDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this create namespace default response has a 5xx status code
+func (o *CreateNamespaceDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this create namespace default response a status code equal to that given
+func (o *CreateNamespaceDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *CreateNamespaceDefault) Error() string {
 	return fmt.Sprintf("[PUT /api/namespaces/{namespace}][%d] createNamespace default  %+v", o._statusCode, o.Payload)
 }
-func (o *CreateNamespaceDefault) GetPayload() *models.ErrorResponse {
+
+func (o *CreateNamespaceDefault) String() string {
+	return fmt.Sprintf("[PUT /api/namespaces/{namespace}][%d] createNamespace default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *CreateNamespaceDefault) GetPayload() models.ErrorResponse {
 	return o.Payload
 }
 
 func (o *CreateNamespaceDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.ErrorResponse)
-
 	// response payload
-	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+	if err := consumer.Consume(response.Body(), &o.Payload); err != nil && err != io.EOF {
 		return err
 	}
 

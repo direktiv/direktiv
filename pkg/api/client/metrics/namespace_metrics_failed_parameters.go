@@ -52,10 +52,12 @@ func NewNamespaceMetricsFailedParamsWithHTTPClient(client *http.Client) *Namespa
 	}
 }
 
-/* NamespaceMetricsFailedParams contains all the parameters to send to the API endpoint
-   for the namespace metrics failed operation.
+/*
+NamespaceMetricsFailedParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the namespace metrics failed operation.
+
+	Typically these are written to a http.Request.
 */
 type NamespaceMetricsFailedParams struct {
 

@@ -52,10 +52,12 @@ func NewJqPlaygroundParamsWithHTTPClient(client *http.Client) *JqPlaygroundParam
 	}
 }
 
-/* JqPlaygroundParams contains all the parameters to send to the API endpoint
-   for the jq playground operation.
+/*
+JqPlaygroundParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the jq playground operation.
+
+	Typically these are written to a http.Request.
 */
 type JqPlaygroundParams struct {
 

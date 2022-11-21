@@ -52,10 +52,12 @@ func NewWatchNamespaceServiceRevisionParamsWithHTTPClient(client *http.Client) *
 	}
 }
 
-/* WatchNamespaceServiceRevisionParams contains all the parameters to send to the API endpoint
-   for the watch namespace service revision operation.
+/*
+WatchNamespaceServiceRevisionParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the watch namespace service revision operation.
+
+	Typically these are written to a http.Request.
 */
 type WatchNamespaceServiceRevisionParams struct {
 

@@ -52,10 +52,12 @@ func NewGetWorkflowServiceRevisionListParamsWithHTTPClient(client *http.Client) 
 	}
 }
 
-/* GetWorkflowServiceRevisionListParams contains all the parameters to send to the API endpoint
-   for the get workflow service revision list operation.
+/*
+GetWorkflowServiceRevisionListParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the get workflow service revision list operation.
+
+	Typically these are written to a http.Request.
 */
 type GetWorkflowServiceRevisionListParams struct {
 

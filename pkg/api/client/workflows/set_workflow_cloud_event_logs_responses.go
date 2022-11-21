@@ -40,14 +40,44 @@ func NewSetWorkflowCloudEventLogsOK() *SetWorkflowCloudEventLogsOK {
 	return &SetWorkflowCloudEventLogsOK{}
 }
 
-/* SetWorkflowCloudEventLogsOK describes a response with status code 200, with default header values.
+/*
+SetWorkflowCloudEventLogsOK describes a response with status code 200, with default header values.
 
 successfully update workflow
 */
 type SetWorkflowCloudEventLogsOK struct {
 }
 
+// IsSuccess returns true when this set workflow cloud event logs o k response has a 2xx status code
+func (o *SetWorkflowCloudEventLogsOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this set workflow cloud event logs o k response has a 3xx status code
+func (o *SetWorkflowCloudEventLogsOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this set workflow cloud event logs o k response has a 4xx status code
+func (o *SetWorkflowCloudEventLogsOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this set workflow cloud event logs o k response has a 5xx status code
+func (o *SetWorkflowCloudEventLogsOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this set workflow cloud event logs o k response a status code equal to that given
+func (o *SetWorkflowCloudEventLogsOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *SetWorkflowCloudEventLogsOK) Error() string {
+	return fmt.Sprintf("[POST /api/namespaces/{namespace}/tree/{workflow}?op=set-workflow-event-logging][%d] setWorkflowCloudEventLogsOK ", 200)
+}
+
+func (o *SetWorkflowCloudEventLogsOK) String() string {
 	return fmt.Sprintf("[POST /api/namespaces/{namespace}/tree/{workflow}?op=set-workflow-event-logging][%d] setWorkflowCloudEventLogsOK ", 200)
 }
 
@@ -56,7 +86,8 @@ func (o *SetWorkflowCloudEventLogsOK) readResponse(response runtime.ClientRespon
 	return nil
 }
 
-/*SetWorkflowCloudEventLogsBody set workflow cloud event logs body
+/*
+SetWorkflowCloudEventLogsBody set workflow cloud event logs body
 // Example: {"logger":"mylog"}
 swagger:model SetWorkflowCloudEventLogsBody
 */

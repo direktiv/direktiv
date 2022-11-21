@@ -52,10 +52,12 @@ func NewCreateSecretParamsWithHTTPClient(client *http.Client) *CreateSecretParam
 	}
 }
 
-/* CreateSecretParams contains all the parameters to send to the API endpoint
-   for the create secret operation.
+/*
+CreateSecretParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the create secret operation.
+
+	Typically these are written to a http.Request.
 */
 type CreateSecretParams struct {
 

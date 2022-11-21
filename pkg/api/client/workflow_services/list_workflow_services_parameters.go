@@ -52,10 +52,12 @@ func NewListWorkflowServicesParamsWithHTTPClient(client *http.Client) *ListWorkf
 	}
 }
 
-/* ListWorkflowServicesParams contains all the parameters to send to the API endpoint
-   for the list workflow services operation.
+/*
+ListWorkflowServicesParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the list workflow services operation.
+
+	Typically these are written to a http.Request.
 */
 type ListWorkflowServicesParams struct {
 

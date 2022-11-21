@@ -44,8 +44,6 @@ type ClientService interface {
 
 	UpdateNamespaceService(params *UpdateNamespaceServiceParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UpdateNamespaceServiceOK, error)
 
-	UpdateNamespaceServiceTraffic(params *UpdateNamespaceServiceTrafficParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UpdateNamespaceServiceTrafficOK, error)
-
 	WatchNamespaceServiceRevision(params *WatchNamespaceServiceRevisionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WatchNamespaceServiceRevisionOK, error)
 
 	WatchNamespaceServiceRevisionList(params *WatchNamespaceServiceRevisionListParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WatchNamespaceServiceRevisionListOK, error)
@@ -54,13 +52,13 @@ type ClientService interface {
 }
 
 /*
-  CreateNamespaceService creates namespace service
+	CreateNamespaceService creates namespace service
 
-  Creates namespace scoped knative service.
+	Creates namespace scoped knative service.
+
 Service Names are unique on a scope level.
 These services can be used as functions in workflows, more about this can be read here:
 https://docs.direktiv.io/docs/walkthrough/using-functions.html
-
 */
 func (a *Client) CreateNamespaceService(params *CreateNamespaceServiceParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CreateNamespaceServiceOK, error) {
 	// TODO: Validate the params before sending
@@ -99,13 +97,12 @@ func (a *Client) CreateNamespaceService(params *CreateNamespaceServiceParams, au
 }
 
 /*
-  DeleteNamespaceRevision deletes namespace service revision
+	DeleteNamespaceRevision deletes namespace service revision
 
-  Delete a namespace scoped knative service revision.
+	Delete a namespace scoped knative service revision.
+
 The target revision generation is the number suffix on a revision.
 Example: A revision named 'namespace-direktiv-fast-request-00003' would have the revisionGeneration '00003'.
-Note: Revisions with traffic cannot be deleted.
-
 */
 func (a *Client) DeleteNamespaceRevision(params *DeleteNamespaceRevisionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DeleteNamespaceRevisionOK, error) {
 	// TODO: Validate the params before sending
@@ -144,10 +141,9 @@ func (a *Client) DeleteNamespaceRevision(params *DeleteNamespaceRevisionParams, 
 }
 
 /*
-  DeleteNamespaceService deletes namespace service
+DeleteNamespaceService deletes namespace service
 
-  Deletes namespace scoped knative service and all its revisions.
-
+Deletes namespace scoped knative service and all its revisions.
 */
 func (a *Client) DeleteNamespaceService(params *DeleteNamespaceServiceParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DeleteNamespaceServiceOK, error) {
 	// TODO: Validate the params before sending
@@ -186,10 +182,9 @@ func (a *Client) DeleteNamespaceService(params *DeleteNamespaceServiceParams, au
 }
 
 /*
-  GetNamespaceService gets namespace service details
+GetNamespaceService gets namespace service details
 
-  Get details of a namespace scoped knative service.
-
+Get details of a namespace scoped knative service.
 */
 func (a *Client) GetNamespaceService(params *GetNamespaceServiceParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetNamespaceServiceOK, error) {
 	// TODO: Validate the params before sending
@@ -228,10 +223,9 @@ func (a *Client) GetNamespaceService(params *GetNamespaceServiceParams, authInfo
 }
 
 /*
-  GetNamespaceServiceList gets namespace services list
+GetNamespaceServiceList gets namespace services list
 
-  Gets a list of namespace knative services.
-
+Gets a list of namespace knative services.
 */
 func (a *Client) GetNamespaceServiceList(params *GetNamespaceServiceListParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetNamespaceServiceListOK, error) {
 	// TODO: Validate the params before sending
@@ -270,12 +264,12 @@ func (a *Client) GetNamespaceServiceList(params *GetNamespaceServiceListParams, 
 }
 
 /*
-  ListNamespaceServiceRevisionPods gets namespace service revision pods list
+	ListNamespaceServiceRevisionPods gets namespace service revision pods list
 
-  List a revisions pods of a namespace scoped knative service.
+	List a revisions pods of a namespace scoped knative service.
+
 The target revision generation is the number suffix on a revision.
 Example: A revision named 'namespace-direktiv-fast-request-00003' would have the revisionGeneration '00003'.
-
 */
 func (a *Client) ListNamespaceServiceRevisionPods(params *ListNamespaceServiceRevisionPodsParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ListNamespaceServiceRevisionPodsOK, error) {
 	// TODO: Validate the params before sending
@@ -314,13 +308,9 @@ func (a *Client) ListNamespaceServiceRevisionPods(params *ListNamespaceServiceRe
 }
 
 /*
-  UpdateNamespaceService creates namespace service revision
+UpdateNamespaceService creates namespace service revision
 
-  Creates a new namespace scoped knative service revision.
-Revisions are created with a traffic percentage. This percentage controls
-how much traffic will be directed to this revision. Traffic can be set to 100
-to direct all traffic.
-
+Creates a new namespace scoped knative service revision.
 */
 func (a *Client) UpdateNamespaceService(params *UpdateNamespaceServiceParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UpdateNamespaceServiceOK, error) {
 	// TODO: Validate the params before sending
@@ -359,57 +349,13 @@ func (a *Client) UpdateNamespaceService(params *UpdateNamespaceServiceParams, au
 }
 
 /*
-  UpdateNamespaceServiceTraffic updates namespace service traffic
+	WatchNamespaceServiceRevision watches namespace service revision
 
-  Update Namespace Service traffic directed to each revision,
-traffic can only be configured between two revisions. All other revisions
-will bet set to 0 traffic.
+	Watch a namespace scoped knative service revision.
 
-*/
-func (a *Client) UpdateNamespaceServiceTraffic(params *UpdateNamespaceServiceTrafficParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UpdateNamespaceServiceTrafficOK, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewUpdateNamespaceServiceTrafficParams()
-	}
-	op := &runtime.ClientOperation{
-		ID:                 "updateNamespaceServiceTraffic",
-		Method:             "PATCH",
-		PathPattern:        "/api/functions/namespaces/{namespace}/function/{serviceName}",
-		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{"application/json"},
-		Schemes:            []string{"http", "https"},
-		Params:             params,
-		Reader:             &UpdateNamespaceServiceTrafficReader{formats: a.formats},
-		AuthInfo:           authInfo,
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
-	if err != nil {
-		return nil, err
-	}
-	success, ok := result.(*UpdateNamespaceServiceTrafficOK)
-	if ok {
-		return success, nil
-	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for updateNamespaceServiceTraffic: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
-}
-
-/*
-  WatchNamespaceServiceRevision watches namespace service revision
-
-  Watch a namespace scoped knative service revision.
 The target revision generation is the number suffix on a revision.
 Example: A revision named 'namespace-direktiv-fast-request-00003' would have the revisionGeneration '00003'.
 Note: This is a Server-Sent-Event endpoint, and will not work with the default swagger client.
-
 */
 func (a *Client) WatchNamespaceServiceRevision(params *WatchNamespaceServiceRevisionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WatchNamespaceServiceRevisionOK, error) {
 	// TODO: Validate the params before sending
@@ -448,11 +394,11 @@ func (a *Client) WatchNamespaceServiceRevision(params *WatchNamespaceServiceRevi
 }
 
 /*
-  WatchNamespaceServiceRevisionList watches namespace service revision list
+	WatchNamespaceServiceRevisionList watches namespace service revision list
 
-  Watch the revision list of a namespace scoped knative service.
+	Watch the revision list of a namespace scoped knative service.
+
 Note: This is a Server-Sent-Event endpoint, and will not work with the default swagger client.
-
 */
 func (a *Client) WatchNamespaceServiceRevisionList(params *WatchNamespaceServiceRevisionListParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WatchNamespaceServiceRevisionListOK, error) {
 	// TODO: Validate the params before sending

@@ -7,7 +7,6 @@ package namespace_services
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"github.com/go-openapi/errors"
@@ -41,14 +40,44 @@ func NewCreateNamespaceServiceOK() *CreateNamespaceServiceOK {
 	return &CreateNamespaceServiceOK{}
 }
 
-/* CreateNamespaceServiceOK describes a response with status code 200, with default header values.
+/*
+CreateNamespaceServiceOK describes a response with status code 200, with default header values.
 
 successfully created service
 */
 type CreateNamespaceServiceOK struct {
 }
 
+// IsSuccess returns true when this create namespace service o k response has a 2xx status code
+func (o *CreateNamespaceServiceOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this create namespace service o k response has a 3xx status code
+func (o *CreateNamespaceServiceOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this create namespace service o k response has a 4xx status code
+func (o *CreateNamespaceServiceOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this create namespace service o k response has a 5xx status code
+func (o *CreateNamespaceServiceOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this create namespace service o k response a status code equal to that given
+func (o *CreateNamespaceServiceOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *CreateNamespaceServiceOK) Error() string {
+	return fmt.Sprintf("[POST /api/functions/namespaces/{namespace}][%d] createNamespaceServiceOK ", 200)
+}
+
+func (o *CreateNamespaceServiceOK) String() string {
 	return fmt.Sprintf("[POST /api/functions/namespaces/{namespace}][%d] createNamespaceServiceOK ", 200)
 }
 
@@ -57,7 +86,8 @@ func (o *CreateNamespaceServiceOK) readResponse(response runtime.ClientResponse,
 	return nil
 }
 
-/*CreateNamespaceServiceBody create namespace service body
+/*
+CreateNamespaceServiceBody create namespace service body
 // Example: {"cmd":"","image":"direktiv/request:v12","minScale":"1","name":"fast-request","size":"small"}
 swagger:model CreateNamespaceServiceBody
 */
@@ -66,6 +96,9 @@ type CreateNamespaceServiceBody struct {
 	// cmd
 	// Required: true
 	Cmd *string `json:"cmd"`
+
+	// envs
+	Envs map[string]string `json:"envs,omitempty"`
 
 	// Target image a service will use
 	// Required: true
@@ -79,10 +112,9 @@ type CreateNamespaceServiceBody struct {
 	// Required: true
 	Name *string `json:"name"`
 
-	// Size of created service pods
+	// Size of created service pods, 0 = small, 1 = medium, 2 = large
 	// Required: true
-	// Enum: [small medium large]
-	Size *string `json:"size"`
+	Size *int64 `json:"size"`
 }
 
 // Validate validates this create namespace service body
@@ -151,46 +183,9 @@ func (o *CreateNamespaceServiceBody) validateName(formats strfmt.Registry) error
 	return nil
 }
 
-var createNamespaceServiceBodyTypeSizePropEnum []interface{}
-
-func init() {
-	var res []string
-	if err := json.Unmarshal([]byte(`["small","medium","large"]`), &res); err != nil {
-		panic(err)
-	}
-	for _, v := range res {
-		createNamespaceServiceBodyTypeSizePropEnum = append(createNamespaceServiceBodyTypeSizePropEnum, v)
-	}
-}
-
-const (
-
-	// CreateNamespaceServiceBodySizeSmall captures enum value "small"
-	CreateNamespaceServiceBodySizeSmall string = "small"
-
-	// CreateNamespaceServiceBodySizeMedium captures enum value "medium"
-	CreateNamespaceServiceBodySizeMedium string = "medium"
-
-	// CreateNamespaceServiceBodySizeLarge captures enum value "large"
-	CreateNamespaceServiceBodySizeLarge string = "large"
-)
-
-// prop value enum
-func (o *CreateNamespaceServiceBody) validateSizeEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, createNamespaceServiceBodyTypeSizePropEnum, true); err != nil {
-		return err
-	}
-	return nil
-}
-
 func (o *CreateNamespaceServiceBody) validateSize(formats strfmt.Registry) error {
 
 	if err := validate.Required("Service"+"."+"size", "body", o.Size); err != nil {
-		return err
-	}
-
-	// value enum
-	if err := o.validateSizeEnum("Service"+"."+"size", "body", *o.Size); err != nil {
 		return err
 	}
 

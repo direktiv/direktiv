@@ -52,10 +52,12 @@ func NewListWorkflowServiceRevisionPodsParamsWithHTTPClient(client *http.Client)
 	}
 }
 
-/* ListWorkflowServiceRevisionPodsParams contains all the parameters to send to the API endpoint
-   for the list workflow service revision pods operation.
+/*
+ListWorkflowServiceRevisionPodsParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the list workflow service revision pods operation.
+
+	Typically these are written to a http.Request.
 */
 type ListWorkflowServiceRevisionPodsParams struct {
 
