@@ -255,29 +255,6 @@ func (is *functionsServer) ReconstructFunction(ctx context.Context,
 
 }
 
-func (is *functionsServer) SetFunctionsTraffic(ctx context.Context,
-	in *igrpc.SetTrafficRequest) (*emptypb.Empty, error) {
-
-	// svc, err := trafficKnativeFunctions(in.GetName(), in.GetTraffic())
-	// if err != nil {
-	// 	logger.Errorf("can not set traffic: %v", err)
-	// 	return &empty, err
-	// }
-
-	// // backup service
-	// if svc.ObjectMeta.Labels[ServiceHeaderWorkflowID] == "" {
-	// 	if err := is.backupService(svc.Name, backupServiceOptions{
-	// 		patch: true,
-	// 	}); err != nil {
-	// 		logger.Errorf("can not backup knative service: %v", err)
-	// 		return &empty, err
-	// 	}
-	// }
-
-	return &empty, nil
-
-}
-
 func deleteKnativeFunction(name string) error {
 
 	cs, err := fetchServiceAPI()
