@@ -238,13 +238,31 @@ func (im *instanceMemory) SetVariables(ctx context.Context, vars []states.Variab
 			return derrors.NewInternalError(errors.New("invalid scope"))
 		}
 
-		_, _, err = im.engine.flow.SetVariable(ctx, vrefc, vdatac, q, v.Key, v.Data, v.MIMEType, thread)
-		if err != nil {
-			return err
+		// if statements have to be same order
+
+		d := string(v.Data)
+
+		if len(d) == 0 {
+			_, _, err = im.engine.flow.DeleteVariable(ctx, vrefc, vdatac, q, v.Key, v.Data, v.MIMEType, thread)
+			if err != nil {
+				return err
+			}
+			continue
+
 		}
 
-		if err != nil {
-			return err
+		if !(v.MIMEType == "text/plain; charset=utf-8" || v.MIMEType == "text/plain" || v.MIMEType == "application/octet-stream") && (d == "{}" || d == "[]" || d == "0" || d == `""` || d == "null") {
+			_, _, err = im.engine.flow.DeleteVariable(ctx, vrefc, vdatac, q, v.Key, v.Data, v.MIMEType, thread)
+			if err != nil {
+				return err
+			}
+			continue
+
+		} else {
+			_, _, err = im.engine.flow.SetVariable(ctx, vrefc, vdatac, q, v.Key, v.Data, v.MIMEType, thread)
+			if err != nil {
+				return err
+			}
 		}
 
 	}
