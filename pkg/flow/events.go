@@ -1161,9 +1161,12 @@ func (flow *flow) CreateCloudEventFilter(ctx context.Context, in *grpc.CreateClo
 		return &resp, err
 	}
 
-	ceventfilter, _ := ns.QueryCloudeventfilters().Where(enteventsfilter.NameEQ(filterName)).Only(ctx)
+	k, err := ns.QueryCloudeventfilters().Where(enteventsfilter.NameEQ(filterName)).Count(ctx)
+	if err != nil {
+		return &resp, err
+	}
 
-	if ceventfilter != nil {
+	if k != 0 {
 		err = errors.New("cloud event filter already exist")
 		return &resp, err
 	}
