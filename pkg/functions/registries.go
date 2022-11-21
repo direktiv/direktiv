@@ -20,9 +20,7 @@ import (
 )
 
 const (
-	secretsPrefix              = "direktiv-secret"
-	secretsGlobalPrefix        = "direktiv-global-secret"
-	secretsGlobalPrivatePrefix = "direktiv-global-private-secret"
+	secretsPrefix = "direktiv-secret"
 
 	annotationNamespace = "direktiv.io/namespace"
 	annotationURL       = "direktiv.io/url"
