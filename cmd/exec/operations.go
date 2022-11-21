@@ -584,3 +584,204 @@ func pingNamespace() error {
 
 	return nil
 }
+
+func executeDeleteCloudEventFilter() error {
+	var err error
+
+	if CloudEventFilterName == "" {
+		err = fmt.Errorf("filtername was not set")
+		return err
+	}
+
+	url := fmt.Sprintf("%s/eventfilter/%s", urlPrefix, CloudEventFilterName)
+
+	req, err := http.NewRequest(
+		http.MethodDelete,
+		url,
+		nil,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	addAuthHeaders(req)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode == http.StatusNotFound {
+		err = fmt.Errorf("filter " + CloudEventFilterName + " not exist")
+		return err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		err = fmt.Errorf("failed to delete filter:" + url + " (rejected by server)")
+		return err
+	}
+
+	return err
+}
+
+func executeCreateCloudEventFilter() error {
+
+	var url string
+
+	if CloudEventFilterName == "" {
+		return errors.New("filtername required, got null")
+	}
+	// Read input data from flag file
+	inputData, err := safeLoadFile(localAbsPath)
+	if err != nil {
+		log.Fatalf("Failed to load input file: %v", err)
+	}
+
+	// If inputData is empty attempt to read from stdin
+	if inputData.Len() == 0 {
+		inputData, err = safeLoadStdIn()
+		if err != nil {
+			log.Fatalf("Failed to load stdin: %v", err)
+		}
+	}
+
+	url = fmt.Sprintf("%s/eventfilter/%s", urlPrefix, CloudEventFilterName)
+
+	req, err := http.NewRequest(
+		http.MethodPut,
+		url,
+		inputData,
+	)
+	if err != nil {
+		return err
+	}
+
+	req.Header.Add("Content-Type", inputType)
+	addAuthHeaders(req)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode == http.StatusInternalServerError {
+
+		return errors.New("cloud event filter " + CloudEventFilterName + " already exist")
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		err = fmt.Errorf("failed to create filter: " + CloudEventFilterName + " (rejected by server)")
+		return err
+	}
+
+	return err
+}
+
+func executeApplyCloudEventFilter() error {
+
+	var url string
+	// Read input data from flag file
+	inputData, err := safeLoadFile(localAbsPath)
+	if err != nil {
+		log.Fatalf("Failed to load input file: %v", err)
+	}
+
+	// If inputData is empty attempt to read from stdin
+	if inputData.Len() == 0 {
+		inputData, err = safeLoadStdIn()
+		if err != nil {
+			log.Fatalf("Failed to load stdin: %v", err)
+		}
+	}
+
+	url = fmt.Sprintf("%s/broadcast/%s", urlPrefix, CloudEventFilterName)
+
+	req, err := http.NewRequest(
+		http.MethodPost,
+		url,
+		inputData,
+	)
+	if err != nil {
+		return err
+	}
+
+	req.Header.Add("Content-Type", inputType)
+	addAuthHeaders(req)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode == http.StatusNotFound {
+		err = fmt.Errorf("eventfilter: " + CloudEventFilterName + " not found")
+		return err
+	}
+
+	if resp.StatusCode == http.StatusConflict {
+		err = fmt.Errorf("cloud event already exist")
+		return err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		err = fmt.Errorf("failed to apply filter: " + CloudEventFilterName + " (rejected by server)")
+		return err
+	}
+
+	return err
+
+}
+
+func executeUpdateCloudEventFilter() error {
+
+	var url string
+
+	if CloudEventFilterName == "" {
+		return errors.New("filtername required, got null")
+	}
+	// Read input data from flag file
+	inputData, err := safeLoadFile(localAbsPath)
+	if err != nil {
+		log.Fatalf("Failed to load input file: %v", err)
+	}
+
+	// If inputData is empty attempt to read from stdin
+	if inputData.Len() == 0 {
+		inputData, err = safeLoadStdIn()
+		if err != nil {
+			log.Fatalf("Failed to load stdin: %v", err)
+		}
+	}
+
+	url = fmt.Sprintf("%s/eventfilter/%s", urlPrefix, CloudEventFilterName)
+
+	req, err := http.NewRequest(
+		http.MethodPatch,
+		url,
+		inputData,
+	)
+	if err != nil {
+		return err
+	}
+
+	req.Header.Add("Content-Type", inputType)
+	addAuthHeaders(req)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode == http.StatusNotFound {
+
+		return errors.New("cloud event filter " + CloudEventFilterName + " not exist")
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		err = fmt.Errorf("failed to update filter: " + CloudEventFilterName + " (rejected by server)")
+		return err
+	}
+
+	return err
+}
