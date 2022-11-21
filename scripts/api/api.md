@@ -3189,10 +3189,73 @@ Status: OK
 
 ## Models
 
+### <span id="create-namespace-service-body"></span> CreateNamespaceServiceBody
+
+
+> CreateNamespaceServiceBody create namespace service body
+
+**Example**
+```
+{"cmd":"","image":"direktiv/request:v12","minScale":"1","name":"fast-request","size":"small"}
+```
+  
+
+
+
+[interface{}](#interface)
+
+### <span id="create-registry-body"></span> CreateRegistryBody
+
+
+> CreateRegistryBody create registry body
+
+**Example**
+```
+{"data":"admin:8QwFLg%D$qg*","reg":"https://prod.customreg.io"}
+```
+  
+
+
+
+[interface{}](#interface)
+
+### <span id="delete-registry-body"></span> DeleteRegistryBody
+
+
+> DeleteRegistryBody delete registry body
+
+**Example**
+```
+{"data":"admin:8QwFLg%D$qg*","reg":"https://prod.customreg.io"}
+```
+  
+
+
+
+[interface{}](#interface)
+
 ### <span id="error-response"></span> ErrorResponse
 
 
+> ErrorResponse error response
   
+
+
+
+[interface{}](#interface)
+
+### <span id="jq-playground-body"></span> JqPlaygroundBody
+
+
+> JqPlaygroundBody jq playground body
+
+**Example**
+```
+{"data":"eyJhIjogMSwgImIiOiAyLCAiYyI6IDQsICJkIjogN30=","query":"map(select(. \u003e= 2))"}
+```
+  
+
+
 
 [interface{}](#interface)
 
@@ -3200,6 +3263,91 @@ Status: OK
 
 
 > OkBody is an arbitrary placeholder response that represents an ok response body
+  
+
+
+
+[interface{}](#interface)
+
+### <span id="set-namespace-config-body"></span> SetNamespaceConfigBody
+
+
+> SetNamespaceConfigBody set namespace config body
+
+**Example**
+```
+{"broadcast":{"directory.create":false,"directory.delete":false,"instance.failed":false,"instance.started":false,"instance.success":false,"instance.variable.create":false,"instance.variable.delete":false,"instance.variable.update":false,"namespace.variable.create":false,"namespace.variable.delete":false,"namespace.variable.update":false,"workflow.create":false,"workflow.delete":false,"workflow.update":false,"workflow.variable.create":false,"workflow.variable.delete":false,"workflow.variable.update":false}}
+```
+  
+
+
+
+[interface{}](#interface)
+
+### <span id="set-workflow-cloud-event-logs-body"></span> SetWorkflowCloudEventLogsBody
+
+
+> SetWorkflowCloudEventLogsBody set workflow cloud event logs body
+
+**Example**
+```
+{"logger":"mylog"}
+```
+  
+
+
+
+[interface{}](#interface)
+
+### <span id="test-registry-body"></span> TestRegistryBody
+
+
+> TestRegistryBody test registry body
+
+**Example**
+```
+{"token":"8QwFLg%D$qg*","url":"https://prod.customreg.io","username":"admin"}
+```
+  
+
+
+
+[interface{}](#interface)
+
+### <span id="toggle-workflow-body"></span> ToggleWorkflowBody
+
+
+> ToggleWorkflowBody toggle workflow body
+
+**Example**
+```
+{"live":false}
+```
+  
+
+
+
+[interface{}](#interface)
+
+### <span id="update-namespace-service-body"></span> UpdateNamespaceServiceBody
+
+
+> UpdateNamespaceServiceBody update namespace service body
+
+**Example**
+```
+{"cmd":"","image":"direktiv/request:v10","minScale":"1","size":"small"}
+```
+  
+
+
+
+[interface{}](#interface)
+
+### <span id="update-service-request"></span> UpdateServiceRequest
+
+
+> UpdateServiceRequest UpdateServiceRequest UpdateServiceRequest update service request
   
 
 

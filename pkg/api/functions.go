@@ -257,8 +257,8 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	//       name: "fast-request"
 	//       image: "direktiv/request:v12"
 	//       cmd: ""
-	//       minScale: "1"
-	//       size: "small"
+	//       minScale: 1
+	//       size: 0
 	//     required:
 	//       - name
 	//       - image
@@ -362,7 +362,7 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	//     example:
 	//       image: "direktiv/request:v10"
 	//       cmd: ""
-	//       minScale: "1"
+	//       minScale: 1
 	//       size: "small"
 	//     required:
 	//       - image
@@ -641,7 +641,7 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	//     example:
 	//       username: "admin"
 	//       url: "https://prod.customreg.io"
-	//       token: "8QwFLg%D$qg*"
+	//       password: "8QwFLg%D$qg*"
 	//     required:
 	//       - url
 	//       - username

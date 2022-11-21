@@ -776,8 +776,6 @@ func (engine *engine) doActionRequest(ctx context.Context, ar *functionRequest) 
 		fallthrough
 	case model.NamespacedKnativeFunctionType:
 		fallthrough
-	case model.GlobalKnativeFunctionType:
-		fallthrough
 	case model.ReusableContainerFunctionType:
 		go engine.doKnativeHTTPRequest(ctx, ar)
 	}
@@ -798,7 +796,7 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 	// configured namespace for workflows
 	ns := os.Getenv(util.DirektivServiceNamespace)
 
-	// set service name if global/namespace
+	// set service name if namespace
 	// otherwise generate baes on action request
 	svn := ar.Container.Service
 
@@ -895,8 +893,7 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 						}
 
 						// recreate if the service if it exists in the database but not knative
-						if (ar.Container.Type == model.GlobalKnativeFunctionType ||
-							ar.Container.Type == model.NamespacedKnativeFunctionType) &&
+						if (ar.Container.Type == model.NamespacedKnativeFunctionType) &&
 							!engine.isScopedKnativeFunction(engine.actions.client, ar.Container.Service) {
 
 							err := reconstructScopedKnativeFunction(engine.actions.client, ar.Container.Service)

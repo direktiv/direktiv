@@ -102,9 +102,9 @@
               "example": {
                 "cmd": "",
                 "image": "direktiv/request:v12",
-                "minScale": "1",
+                "minScale": 1,
                 "name": "fast-request",
-                "size": "small"
+                "size": 0
               }
             }
           }
@@ -206,7 +206,7 @@
               "example": {
                 "cmd": "",
                 "image": "direktiv/request:v10",
-                "minScale": "1",
+                "minScale": 1,
                 "size": "small"
               }
             }
@@ -803,7 +803,7 @@
                 }
               },
               "example": {
-                "token": "8QwFLg%D$qg*",
+                "password": "8QwFLg%D$qg*",
                 "url": "https://prod.customreg.io",
                 "username": "admin"
               }
@@ -1756,9 +1756,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "example": {
-                "counter": 0
-              }
+              "example": "Data to Store"
             }
           }
         ],
@@ -2769,9 +2767,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "example": {
-                "counter": 0
-              }
+              "example": "Data to Store"
             }
           }
         ],
@@ -3196,9 +3192,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "example": {
-                "counter": 0
-              }
+              "example": "Data to Store"
             }
           }
         ],
@@ -3255,17 +3249,59 @@
     }
   },
   "definitions": {
+    "CreateNamespaceServiceBody": {
+      "description": "CreateNamespaceServiceBody create namespace service body\nExample: {\"cmd\":\"\",\"image\":\"direktiv/request:v12\",\"minScale\":\"1\",\"name\":\"fast-request\",\"size\":\"small\"}",
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/namespace_services"
+    },
+    "CreateRegistryBody": {
+      "description": "CreateRegistryBody create registry body\nExample: {\"data\":\"admin:8QwFLg%D$qg*\",\"reg\":\"https://prod.customreg.io\"}",
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/registries"
+    },
+    "DeleteRegistryBody": {
+      "description": "DeleteRegistryBody delete registry body\nExample: {\"data\":\"admin:8QwFLg%D$qg*\",\"reg\":\"https://prod.customreg.io\"}",
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/registries"
+    },
     "ErrorResponse": {
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api"
+      "description": "ErrorResponse error response",
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/models"
+    },
+    "JqPlaygroundBody": {
+      "description": "JqPlaygroundBody jq playground body\nExample: {\"data\":\"eyJhIjogMSwgImIiOiAyLCAiYyI6IDQsICJkIjogN30=\",\"query\":\"map(select(. \\u003e= 2))\"}",
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/other"
     },
     "OkBody": {
       "description": "OkBody is an arbitrary placeholder response that represents an ok response body",
       "x-go-package": "github.com/direktiv/direktiv/pkg/api"
     },
+    "SetNamespaceConfigBody": {
+      "description": "SetNamespaceConfigBody set namespace config body\nExample: {\"broadcast\":{\"directory.create\":false,\"directory.delete\":false,\"instance.failed\":false,\"instance.started\":false,\"instance.success\":false,\"instance.variable.create\":false,\"instance.variable.delete\":false,\"instance.variable.update\":false,\"namespace.variable.create\":false,\"namespace.variable.delete\":false,\"namespace.variable.update\":false,\"workflow.create\":false,\"workflow.delete\":false,\"workflow.update\":false,\"workflow.variable.create\":false,\"workflow.variable.delete\":false,\"workflow.variable.update\":false}}",
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/namespaces"
+    },
+    "SetWorkflowCloudEventLogsBody": {
+      "description": "SetWorkflowCloudEventLogsBody set workflow cloud event logs body\nExample: {\"logger\":\"mylog\"}",
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/workflows"
+    },
+    "TestRegistryBody": {
+      "description": "TestRegistryBody test registry body\nExample: {\"token\":\"8QwFLg%D$qg*\",\"url\":\"https://prod.customreg.io\",\"username\":\"admin\"}",
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/operations"
+    },
+    "ToggleWorkflowBody": {
+      "description": "ToggleWorkflowBody toggle workflow body\nExample: {\"live\":false}",
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/workflows"
+    },
+    "UpdateNamespaceServiceBody": {
+      "description": "UpdateNamespaceServiceBody update namespace service body\nExample: {\"cmd\":\"\",\"image\":\"direktiv/request:v10\",\"minScale\":\"1\",\"size\":\"small\"}",
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/namespace_services"
+    },
     "UpdateServiceRequest": {
       "description": "UpdateServiceRequest UpdateServiceRequest update service request",
       "x-go-name": "updateServiceRequest",
       "x-go-package": "github.com/direktiv/direktiv/pkg/api"
+    },
+    "updateServiceRequest": {
+      "description": "UpdateServiceRequest UpdateServiceRequest UpdateServiceRequest update service request",
+      "x-go-name": "UpdateServiceRequest",
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/models"
     }
   },
   "securityDefinitions": {

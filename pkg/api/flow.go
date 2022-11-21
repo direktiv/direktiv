@@ -570,8 +570,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//   required: true
 	//   description: "Payload that contains variable data."
 	//   schema:
-	//     example:
-	//       counter: 0
+	//     example: Data to Store
 	//     type: string
 	// responses:
 	//   '200':
@@ -676,8 +675,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//   required: true
 	//   description: "Payload that contains variable data."
 	//   schema:
-	//     example:
-	//       counter: 0
+	//     example: "Data to Store"
 	//     type: string
 	// responses:
 	//   '200':
@@ -787,8 +785,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//   required: true
 	//   description: "Payload that contains variable data."
 	//   schema:
-	//     example:
-	//       counter: 0
+	//     example: "Data to Store"
 	//     type: string
 	// responses:
 	//   '200':
