@@ -358,6 +358,11 @@ upgrade: push # Pushes all images and reboots flow, function, and api pods
 	@$(MAKE) reboot-api
 	@$(MAKE) reboot-functions
 
+.PHONY: dependencies
+dependencies: # installs tools 
+	go install github.com/google/go-licenses@latest
+
+
 .PHONY: license-check 
 license-check: # Scans dependencies looking for licenses.
 	go-licenses check --ignore=github.com/bbuck/go-lexer ./... --disallowed_types forbidden,unknown,restricted
@@ -368,3 +373,8 @@ UNITTEST_PACKAGES = $(shell echo ${TEST_PACKAGES} | sed 's/ /\n/g' | awk '{print
 .PHONY: unittest
 unittest: # Runs all Go unit tests. Or, you can run a specific set of unit tests by defining TEST_PACKAGES relative to the root directory.
 	go test -cover -timeout 3s ${UNITTEST_PACKAGES}
+
+.PHONY: lint 
+lint: # Runs very strict linting on the project.
+	golangci-lint run --issues-exit-code=1
+	# golangci-lint run --tests --issues-exit-code=1 --skip-dirs="ent/" --skip-files=".pb.go" -E asciicheck -E containedctx -E contextcheck -E decorder -E dupword -E errchkjson -E errname -E errorlint -E exhaustive -E exhaustruct -E exportloopref -E goconst -E godot -E godox -E goerr113 -E gofmt -E goprintffuncname -E gosec -E interfacebloat -E loggercheck -E misspell -E nilerr -E nilnil -E noctx -E nosprintfhostport -E revive -E tagliatelle -E unconvert -E unparam -E usestdlibvars -E wastedassign -E varnamelen -E wrapcheck
