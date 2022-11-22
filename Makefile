@@ -358,3 +358,10 @@ upgrade: push # Pushes all images and reboots flow, function, and api pods
 	@$(MAKE) reboot-flow
 	@$(MAKE) reboot-api
 	@$(MAKE) reboot-functions
+
+TEST_PACKAGES := $(shell find . -type f -name '*_test.go' | sed -e 's/^\.\///g' | sed -r 's|/[^/]+$$||'  |sort |uniq)
+UNITTEST_PACKAGES = $(shell echo ${TEST_PACKAGES} | sed 's/ /\n/g' | awk '{print "github.com/direktiv/direktiv/" $$0}')
+
+.PHONY: unittest 
+unittest: # Runs all Go unit tests. Or, you can run a specific set of unit tests by defining TEST_PACKAGES relative to the root directory.
+	go test -cover -timeout 3s ${UNITTEST_PACKAGES}

@@ -182,7 +182,7 @@ func TestSearchSecret(t *testing.T) {
 
 }
 
-//////////////////HELPER FUNCTIONS//////////////////////////////////
+// ////////////////HELPER FUNCTIONS//////////////////////////////////
 func FillDatabase(ip string, namespace string, list []string) {
 	for _, secretName := range list {
 		AddSecretOrFolder(ip, namespace, secretName)
