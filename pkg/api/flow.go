@@ -1502,7 +1502,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	// responses:
 	//   '200':
 	//     "description": "successfully replayed cloud event"
-	r.HandleFunc("/namespaces/{ns}/events/{event}/replay", h.ReplayEvent).Name(RN_NamespaceEvent).Methods(http.MethodPost)
+	r.HandleFunc("/namespaces/{ns}/events/{event:.*}/replay", h.ReplayEvent).Name(RN_NamespaceEvent).Methods(http.MethodPost)
 
 	// swagger:operation POST /api/namespaces/{namespace}/tree/{workflow}?op=set-workflow-event-logging Workflows setWorkflowCloudEventLogs
 	// ---
