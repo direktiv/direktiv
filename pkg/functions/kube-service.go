@@ -343,7 +343,7 @@ func generateResourceLimits(size int) (corev1.ResourceRequirements, error) {
 
 	var (
 		m int
-		c float64
+		c string
 		d int
 	)
 
@@ -388,21 +388,13 @@ func generateResourceLimits(size int) (corev1.ResourceRequirements, error) {
 		rl["memory"] = qmem
 	}
 
-	if c != 0.0 {
-		qcpu, err := resource.ParseQuantity(fmt.Sprintf("%f", c))
+	if c != "" {
+		qcpu, err := resource.ParseQuantity(fmt.Sprintf("%s", c))
 		if err != nil {
 			return corev1.ResourceRequirements{}, err
 		}
 		rl["cpu"] = qcpu
 	}
-
-	// if m != 0 {
-	// 	qdisk, err := resource.ParseQuantity(fmt.Sprintf("%dM", d))
-	// 	if err != nil {
-	// 		return corev1.ResourceRequirements{}, err
-	// 	}
-	// 	rl["ephemeral-storage"] = qdisk
-	// }
 
 	return corev1.ResourceRequirements{
 		Requests: corev1.ResourceList{

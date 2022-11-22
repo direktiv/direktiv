@@ -30,9 +30,9 @@ type config struct {
 		Large  int `yaml:"large"`
 	} `yaml:"memory"`
 	CPU struct {
-		Small  float64 `yaml:"small"`
-		Medium float64 `yaml:"medium"`
-		Large  float64 `yaml:"large"`
+		Small  string `yaml:"small"`
+		Medium string `yaml:"medium"`
+		Large  string `yaml:"large"`
 	} `yaml:"cpu"`
 	Disk struct {
 		Small  int `yaml:"small"`

@@ -34,7 +34,11 @@ func ParseFunctionType(s string) (FunctionType, error) {
 		if FunctionTypeStrings[i] == s {
 			return FunctionType(i), nil
 		}
-	}knative-global",
+	}
+
+	if s == "reusable" {
+		return FunctionType(ReusableContainerFunctionType), nil
+	}
 
 unknown:
 
