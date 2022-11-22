@@ -14,17 +14,12 @@ type config struct {
 	IngressClass string `yaml:"ingress-class"`
 	FlowService  string `yaml:"flow-service"`
 
-	ServiceAccount  string `yaml:"service-account"`
-	Namespace       string `yaml:"namespace"`
-	Sidecar         string `yaml:"sidecar"`
-	PodCleaner      bool   `yaml:"pod-cleaner"`
-	InitPod         string `yaml:"init-pod"`
-	KeepRevisions   int    `yaml:"keep-revisions"`
-	MaxJobs         int    `yaml:"max-jobs"`
-	MaxScale        int    `yaml:"max-scale"`
-	NetShape        string `yaml:"net-shape"`
-	Database        string `yaml:"db"`
-	RolloutDuration int    `yaml:"rollout-duration"`
+	ServiceAccount string `yaml:"service-account"`
+	Namespace      string `yaml:"namespace"`
+	Sidecar        string `yaml:"sidecar"`
+
+	MaxScale int    `yaml:"max-scale"`
+	NetShape string `yaml:"net-shape"`
 
 	Runtime              string `yaml:"runtime"`
 	OpenTelemetryBackend string `yaml:"opentelemetry-backend"`
@@ -55,9 +50,15 @@ type config struct {
 	extraVolumes    []v1.Volume     `yaml:"-"`
 
 	// Deprecated
-	RequestTimeout int `yaml:"request-timeout"`
-	Concurrency    int `yaml:"concurrency"`
-	Storage        int `yaml:"storage"`
+	RequestTimeout  int    `yaml:"request-timeout"`
+	Concurrency     int    `yaml:"concurrency"`
+	Storage         int    `yaml:"storage"`
+	PodCleaner      bool   `yaml:"pod-cleaner"`
+	InitPod         string `yaml:"init-pod"`
+	KeepRevisions   int    `yaml:"keep-revisions"`
+	MaxJobs         int    `yaml:"max-jobs"`
+	RolloutDuration int    `yaml:"rollout-duration"`
+	Database        string `yaml:"db"`
 }
 
 type subConfig struct {
