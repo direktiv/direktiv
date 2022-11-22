@@ -359,6 +359,10 @@ upgrade: push # Pushes all images and reboots flow, function, and api pods
 	@$(MAKE) reboot-api
 	@$(MAKE) reboot-functions
 
+.PHONY: license-check 
+license-check: # Scans dependencies looking for licenses.
+	go-licenses check --ignore=github.com/bbuck/go-lexer ./... --disallowed_types forbidden,unknown,restricted
+
 TEST_PACKAGES := $(shell find . -type f -name '*_test.go' | sed -e 's/^\.\///g' | sed -r 's|/[^/]+$$||'  |sort |uniq)
 UNITTEST_PACKAGES = $(shell echo ${TEST_PACKAGES} | sed 's/ /\n/g' | awk '{print "github.com/direktiv/direktiv/" $$0}')
 
