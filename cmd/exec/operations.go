@@ -613,12 +613,12 @@ func executeDeleteCloudEventFilter() error {
 	}
 
 	if resp.StatusCode == http.StatusNotFound {
-		err = fmt.Errorf("filter " + CloudEventFilterName + " not exist")
+		err = fmt.Errorf("filter: " + CloudEventFilterName + " not exist")
 		return err
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		err = fmt.Errorf("failed to delete filter:" + url + " (rejected by server)")
+		err = fmt.Errorf("failed to delete filter: %s (rejected by server)", CloudEventFilterName)
 		return err
 	}
 
@@ -630,7 +630,7 @@ func executeCreateCloudEventFilter() error {
 	var url string
 
 	if CloudEventFilterName == "" {
-		return errors.New("filtername required, got null")
+		return errors.New("filtername was not set")
 	}
 	// Read input data from flag file
 	inputData, err := safeLoadFile(localAbsPath)
@@ -667,11 +667,17 @@ func executeCreateCloudEventFilter() error {
 
 	if resp.StatusCode == http.StatusInternalServerError {
 
-		return errors.New("cloud event filter " + CloudEventFilterName + " already exist")
+		body, error := ioutil.ReadAll(resp.Body)
+		if error != nil {
+			fmt.Println(error)
+		}
+
+		err = fmt.Errorf("failed to create eventfilter: %s \n %s", CloudEventFilterName, string(body))
+		return err
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		err = fmt.Errorf("failed to create filter: " + CloudEventFilterName + " (rejected by server)")
+		err = fmt.Errorf("failed to create filter: %s (rejected by server)", CloudEventFilterName)
 		return err
 	}
 
@@ -775,11 +781,23 @@ func executeUpdateCloudEventFilter() error {
 
 	if resp.StatusCode == http.StatusNotFound {
 
-		return errors.New("cloud event filter " + CloudEventFilterName + " not exist")
+		err = fmt.Errorf("cloud event filter %s not exist", CloudEventFilterName)
+		return err
+	}
+
+	if resp.StatusCode == http.StatusInternalServerError {
+
+		body, error := ioutil.ReadAll(resp.Body)
+		if error != nil {
+			fmt.Println(error)
+		}
+
+		err = fmt.Errorf("failed to create eventfilter: %s \n %s", CloudEventFilterName, string(body))
+		return err
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		err = fmt.Errorf("failed to update filter: " + CloudEventFilterName + " (rejected by server)")
+		err = fmt.Errorf("failed to update filter: %s (rejected by server)", CloudEventFilterName)
 		return err
 	}
 
