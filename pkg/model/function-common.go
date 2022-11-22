@@ -18,7 +18,7 @@ const (
 	SubflowFunctionType
 )
 
-var FunctionTypeStrings = []string{"unknown", "knative-workflow" /*"reusable"*/, "knative-namespace", "knative-global", "subflow"}
+var FunctionTypeStrings = []string{"unknown", "knative-workflow" /*"reusable"*/, "knative-namespace", "subflow"}
 
 func (a FunctionType) String() string {
 	return FunctionTypeStrings[a]
@@ -34,11 +34,7 @@ func ParseFunctionType(s string) (FunctionType, error) {
 		if FunctionTypeStrings[i] == s {
 			return FunctionType(i), nil
 		}
-	}
-
-	if s == "reusable" {
-		return FunctionType(ReusableContainerFunctionType), nil
-	}
+	}knative-global",
 
 unknown:
 
@@ -134,9 +130,9 @@ func getFunctionDefFromType(ftype string) (FunctionDefinition, error) {
 	case SubflowFunctionType.String():
 		f = new(SubflowFunctionDefinition)
 	case "":
-		err = errors.New("type required(reusable, knative-namespace, subflow)")
+		err = errors.New("type required(reusable, knative-workflow, knative-namespace, subflow)")
 	default:
-		err = errors.New("type unrecognized(reusable, knative-namespace, subflow)")
+		err = errors.New("type unrecognized(reusable, knative-workflow, knative-namespace, subflow)")
 	}
 
 	return f, err
