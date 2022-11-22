@@ -217,10 +217,9 @@ protoc: protoc-flow protoc-health protoc-secrets protoc-functions
 # Patterns
 
 build/%-binary: Makefile ${GO_SOURCE_FILES}
-	@set -e; 
 	if [ -d "cmd/$*" ] && [ ".all" != "${DOCKER_BASE}" ]; then \
 		echo "Building $* binary..."; \
-		go build -ldflags "-X github.com/direktiv/direktiv/pkg/version.Version=${FULL_VERSION}" -tags ${GO_BUILD_TAGS} -o $@ cmd/$*/*.go; \
+		go build -ldflags "-X github.com/direktiv/direktiv/pkg/version.Version=${FULL_VERSION}" -tags ${GO_BUILD_TAGS} -o $@ cmd/$*/*.go || exit 1; \
 		cp build/$*-binary build/$*; \
 	else \
    	touch $@; \
@@ -366,6 +365,6 @@ license-check: # Scans dependencies looking for licenses.
 TEST_PACKAGES := $(shell find . -type f -name '*_test.go' | sed -e 's/^\.\///g' | sed -r 's|/[^/]+$$||'  |sort |uniq)
 UNITTEST_PACKAGES = $(shell echo ${TEST_PACKAGES} | sed 's/ /\n/g' | awk '{print "github.com/direktiv/direktiv/" $$0}')
 
-.PHONY: unittest 
+.PHONY: unittest
 unittest: # Runs all Go unit tests. Or, you can run a specific set of unit tests by defining TEST_PACKAGES relative to the root directory.
 	go test -cover -timeout 3s ${UNITTEST_PACKAGES}
