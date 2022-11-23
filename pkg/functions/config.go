@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/util"
 	"gopkg.in/yaml.v2"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -99,7 +100,7 @@ func watchConfigChanges(cs *kubernetes.Clientset) (bool, error) {
 
 	logger.Info("start watching configuration")
 
-	ns := os.Getenv("DIREKTIV_NAMESPACE")
+	ns := os.Getenv(util.DirektivNamespace)
 
 	watcher, err := cs.CoreV1().ConfigMaps(ns).Watch(context.TODO(),
 		metav1.SingleObject(metav1.ObjectMeta{Name: "direktiv-config-functions", Namespace: ns}))
@@ -112,9 +113,6 @@ func watchConfigChanges(cs *kubernetes.Clientset) (bool, error) {
 		case event := <-watcher.ResultChan():
 			switch event.Type {
 			case watch.Modified:
-				// fmt.Printf("EVENT!! %v", event)
-				// fmt.Printf("EVENT!! %v", event.DeepCopy().Object)
-
 				cm := event.DeepCopy().Object.(*v1.ConfigMap)
 				c := cm.Data["functions-config.yaml"]
 				updateConfig([]byte(c), &functionsConfig)
@@ -172,21 +170,5 @@ func readConfig(path string, c *config) {
 	}
 
 	updateConfig(buf, &functionsConfig)
-	// err = yaml.Unmarshal(buf, c)
-	// if err != nil {
-	// 	logger.Fatalf("can not unmarshal config file: %v", err)
-	// 	return
-	// }
-
-	// var sc subConfig
-	// err = kyaml.Unmarshal(buf, &sc)
-	// if err != nil {
-	// 	logger.Fatalf("can not unmarshal config file (k8s): %v", err)
-	// 	return
-	// }
-
-	// c.extraVolumes = sc.ExtraVolumes
-	// c.extraContainers = sc.ExtraContainers
-	// c.knativeAffinity = sc.KnativeAffinity
 
 }
