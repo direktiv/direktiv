@@ -1056,7 +1056,6 @@ func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloud
 
 	var mapEvent map[string]interface{}
 	err = json.Unmarshal(cloudevent, &mapEvent)
-
 	if err != nil {
 		return resp, err
 	}
@@ -1068,12 +1067,14 @@ func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloud
 
 	_, err = vm.RunString(script)
 	if err != nil {
+		flow.logToNamespace(ctx, time.Now(), ns, "CloudEvent filter '%s' produced an error (1): %v", filterName, err)
 		return resp, err
 	}
 
 	var fn func() any
 	err = vm.ExportTo(vm.Get("filter"), &fn)
 	if err != nil {
+		flow.logToNamespace(ctx, time.Now(), ns, "CloudEvent filter '%s' produced an error (2): %v", filterName, err)
 		return resp, err
 	}
 
@@ -1081,6 +1082,7 @@ func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloud
 
 	newBytesEvent, err := json.Marshal(newEventMap)
 	if err != nil {
+		flow.logToNamespace(ctx, time.Now(), ns, "CloudEvent filter '%s' produced an error (3): %v", filterName, err)
 		return resp, err
 	}
 	resp.Event = newBytesEvent
@@ -1088,12 +1090,14 @@ func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloud
 	if string(resp.GetEvent()) == "null" {
 		event, err := EventByteToCloudevent(cloudevent)
 		if err != nil {
+			flow.logToNamespace(ctx, time.Now(), ns, "CloudEvent filter '%s' produced an error (4): %v", filterName, err)
 			return resp, err
 		}
 		flow.logToNamespace(ctx, time.Now(), ns, "Dropped Event: %s", event.ID())
 	} else {
 		event, err := EventByteToCloudevent(newBytesEvent)
 		if err != nil {
+			flow.logToNamespace(ctx, time.Now(), ns, "CloudEvent filter '%s' produced an error (5): %v", filterName, err)
 			return resp, err
 		}
 		flow.logToNamespace(ctx, time.Now(), ns, "cloud event filter applied, new Event : %s (%s / %s)", event.ID(), event.Type(), event.Source())
