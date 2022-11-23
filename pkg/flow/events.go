@@ -7,7 +7,6 @@ import (
 	"encoding/base64"
 	"encoding/gob"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"strings"
 	"sync"
@@ -1042,15 +1041,16 @@ func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloud
 	}
 
 	if jsCode, ok := eventFilterCache.get(key); ok {
-		script = jsCode
+		script = fmt.Sprintf("function filter() {\n %s \n}", jsCode)
 
 	} else {
 		ceventfilter, err := ns.QueryCloudeventfilters().Where(enteventsfilter.NameEQ(filterName)).Only(ctx)
 		if err != nil {
+			err = fmt.Errorf("cloud event filter %s not exist", filterName)
 			return resp, err
 		}
 
-		script = ceventfilter.Jscode
+		script = fmt.Sprintf("function filter() {\n %s \n}", ceventfilter.Jscode)
 
 	}
 
@@ -1071,18 +1071,18 @@ func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloud
 		return resp, err
 	}
 
-	var fn func() map[string]interface{}
+	var fn func() any
 	err = vm.ExportTo(vm.Get("filter"), &fn)
 	if err != nil {
 		return resp, err
 	}
 
 	newEventMap := fn()
+
 	newBytesEvent, err := json.Marshal(newEventMap)
 	if err != nil {
 		return resp, err
 	}
-
 	resp.Event = newBytesEvent
 
 	if string(resp.GetEvent()) == "null" {
@@ -1096,7 +1096,7 @@ func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloud
 		if err != nil {
 			return resp, err
 		}
-		flow.logToNamespace(ctx, time.Now(), ns, "Eventfilter applied, new Event : %s (%s / %s)", event.ID(), event.Type(), event.Source())
+		flow.logToNamespace(ctx, time.Now(), ns, "cloud event filter applied, new Event : %s (%s / %s)", event.ID(), event.Type(), event.Source())
 	}
 
 	return resp, err
@@ -1148,10 +1148,10 @@ func (flow *flow) CreateCloudEventFilter(ctx context.Context, in *grpc.CreateClo
 	filterName := in.GetFiltername()
 	script := in.GetJsCode()
 
-	script = fmt.Sprintf("function filter() {\n %s \n}", script)
+	fullScript := fmt.Sprintf("function filter() {\n %s \n}", script)
 
 	//compiling js code is needed
-	_, err := goja.Compile("filter", script, false)
+	_, err := goja.Compile("filter", fullScript, false)
 	if err != nil {
 		return &resp, err
 	}
@@ -1167,7 +1167,7 @@ func (flow *flow) CreateCloudEventFilter(ctx context.Context, in *grpc.CreateClo
 	}
 
 	if k != 0 {
-		err = errors.New("cloud event filter already exist")
+		err = fmt.Errorf("cloud event filter %s already exist", filterName)
 		return &resp, err
 	}
 
@@ -1183,6 +1183,59 @@ func (flow *flow) CreateCloudEventFilter(ctx context.Context, in *grpc.CreateClo
 
 	return &resp, err
 
+}
+
+func (flow *flow) GetCloudEventFilters(ctx context.Context, in *grpc.GetCloudEventFiltersRequest) (*grpc.GetCloudEventFiltersResponse, error) {
+
+	var ls []*grpc.GetCloudEventFiltersResponse_EventFilter
+	resp := new(grpc.GetCloudEventFiltersResponse)
+
+	namespace := in.GetNamespace()
+
+	ns, err := flow.getNamespace(ctx, flow.db.Namespace, namespace)
+	if err != nil {
+		return resp, err
+	}
+
+	dbs, err := ns.QueryCloudeventfilters().Where(enteventsfilter.HasNamespace()).All(ctx)
+	if err != nil {
+		return resp, err
+	}
+
+	for _, s := range dbs {
+		var name = s.Name
+		ls = append(ls, &grpc.GetCloudEventFiltersResponse_EventFilter{
+			Name: name,
+		})
+
+	}
+
+	resp.EventFilter = ls
+	return resp, err
+
+}
+
+func (flow *flow) GetCloudEventFilterScript(ctx context.Context, in *grpc.GetCloudEventFilterScriptRequest) (*grpc.GetCloudEventFilterScriptResponse, error) {
+
+	resp := new(grpc.GetCloudEventFilterScriptResponse)
+
+	namespace := in.GetNamespace()
+	filterName := in.GetName()
+
+	ns, err := flow.getNamespace(ctx, flow.db.Namespace, namespace)
+	if err != nil {
+		return resp, err
+	}
+
+	script, err := ns.QueryCloudeventfilters().Where(enteventsfilter.NameEQ(filterName)).Only(ctx)
+	if err != nil {
+		err = fmt.Errorf("cloud event filter %s not exist", filterName)
+		return resp, err
+	}
+
+	resp.JsCode = script.Jscode
+
+	return resp, err
 }
 
 func EventByteToCloudevent(byteEvent []byte) (event.Event, error) {

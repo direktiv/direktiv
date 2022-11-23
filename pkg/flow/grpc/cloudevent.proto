@@ -110,6 +110,28 @@ message UpdateCloudEventFilterRequest{
 	string jsCode = 3;  
 }	
 
+message GetCloudEventFiltersRequest{
+	 string namespace = 1;
+	 string name = 2;
+}
 
+message GetCloudEventFiltersResponse {
+	message EventFilter {
+		 string name = 1;
+	}
+	repeated EventFilter eventFilter = 1;
+}
+
+message GetCloudEventFilterScriptRequest{
+	string namespace = 1;
+	string name = 2;
+
+}
+
+message GetCloudEventFilterScriptResponse{
+	string filtername = 1;
+	string jsCode = 2;
+
+}
 	
 

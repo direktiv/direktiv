@@ -1077,6 +1077,265 @@ func (x *UpdateCloudEventFilterRequest) GetJsCode() string {
 	return ""
 }
 
+type GetCloudEventFiltersRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Namespace string `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
+	Name      string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+}
+
+func (x *GetCloudEventFiltersRequest) Reset() {
+	*x = GetCloudEventFiltersRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_pkg_flow_grpc_cloudevent_proto_msgTypes[17]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetCloudEventFiltersRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetCloudEventFiltersRequest) ProtoMessage() {}
+
+func (x *GetCloudEventFiltersRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_pkg_flow_grpc_cloudevent_proto_msgTypes[17]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetCloudEventFiltersRequest.ProtoReflect.Descriptor instead.
+func (*GetCloudEventFiltersRequest) Descriptor() ([]byte, []int) {
+	return file_pkg_flow_grpc_cloudevent_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *GetCloudEventFiltersRequest) GetNamespace() string {
+	if x != nil {
+		return x.Namespace
+	}
+	return ""
+}
+
+func (x *GetCloudEventFiltersRequest) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+type GetCloudEventFiltersResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	EventFilter []*GetCloudEventFiltersResponse_EventFilter `protobuf:"bytes,1,rep,name=eventFilter,proto3" json:"eventFilter,omitempty"`
+}
+
+func (x *GetCloudEventFiltersResponse) Reset() {
+	*x = GetCloudEventFiltersResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_pkg_flow_grpc_cloudevent_proto_msgTypes[18]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetCloudEventFiltersResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetCloudEventFiltersResponse) ProtoMessage() {}
+
+func (x *GetCloudEventFiltersResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_pkg_flow_grpc_cloudevent_proto_msgTypes[18]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetCloudEventFiltersResponse.ProtoReflect.Descriptor instead.
+func (*GetCloudEventFiltersResponse) Descriptor() ([]byte, []int) {
+	return file_pkg_flow_grpc_cloudevent_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *GetCloudEventFiltersResponse) GetEventFilter() []*GetCloudEventFiltersResponse_EventFilter {
+	if x != nil {
+		return x.EventFilter
+	}
+	return nil
+}
+
+type GetCloudEventFilterScriptRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Namespace string `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
+	Name      string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+}
+
+func (x *GetCloudEventFilterScriptRequest) Reset() {
+	*x = GetCloudEventFilterScriptRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_pkg_flow_grpc_cloudevent_proto_msgTypes[19]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetCloudEventFilterScriptRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetCloudEventFilterScriptRequest) ProtoMessage() {}
+
+func (x *GetCloudEventFilterScriptRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_pkg_flow_grpc_cloudevent_proto_msgTypes[19]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetCloudEventFilterScriptRequest.ProtoReflect.Descriptor instead.
+func (*GetCloudEventFilterScriptRequest) Descriptor() ([]byte, []int) {
+	return file_pkg_flow_grpc_cloudevent_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *GetCloudEventFilterScriptRequest) GetNamespace() string {
+	if x != nil {
+		return x.Namespace
+	}
+	return ""
+}
+
+func (x *GetCloudEventFilterScriptRequest) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+type GetCloudEventFilterScriptResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Filtername string `protobuf:"bytes,1,opt,name=filtername,proto3" json:"filtername,omitempty"`
+	JsCode     string `protobuf:"bytes,2,opt,name=jsCode,proto3" json:"jsCode,omitempty"`
+}
+
+func (x *GetCloudEventFilterScriptResponse) Reset() {
+	*x = GetCloudEventFilterScriptResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_pkg_flow_grpc_cloudevent_proto_msgTypes[20]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetCloudEventFilterScriptResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetCloudEventFilterScriptResponse) ProtoMessage() {}
+
+func (x *GetCloudEventFilterScriptResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_pkg_flow_grpc_cloudevent_proto_msgTypes[20]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetCloudEventFilterScriptResponse.ProtoReflect.Descriptor instead.
+func (*GetCloudEventFilterScriptResponse) Descriptor() ([]byte, []int) {
+	return file_pkg_flow_grpc_cloudevent_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *GetCloudEventFilterScriptResponse) GetFiltername() string {
+	if x != nil {
+		return x.Filtername
+	}
+	return ""
+}
+
+func (x *GetCloudEventFilterScriptResponse) GetJsCode() string {
+	if x != nil {
+		return x.JsCode
+	}
+	return ""
+}
+
+type GetCloudEventFiltersResponse_EventFilter struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+}
+
+func (x *GetCloudEventFiltersResponse_EventFilter) Reset() {
+	*x = GetCloudEventFiltersResponse_EventFilter{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_pkg_flow_grpc_cloudevent_proto_msgTypes[22]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetCloudEventFiltersResponse_EventFilter) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetCloudEventFiltersResponse_EventFilter) ProtoMessage() {}
+
+func (x *GetCloudEventFiltersResponse_EventFilter) ProtoReflect() protoreflect.Message {
+	mi := &file_pkg_flow_grpc_cloudevent_proto_msgTypes[22]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetCloudEventFiltersResponse_EventFilter.ProtoReflect.Descriptor instead.
+func (*GetCloudEventFiltersResponse_EventFilter) Descriptor() ([]byte, []int) {
+	return file_pkg_flow_grpc_cloudevent_proto_rawDescGZIP(), []int{18, 0}
+}
+
+func (x *GetCloudEventFiltersResponse_EventFilter) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
 var File_pkg_flow_grpc_cloudevent_proto protoreflect.FileDescriptor
 
 var file_pkg_flow_grpc_cloudevent_proto_rawDesc = []byte{
@@ -1222,10 +1481,36 @@ var file_pkg_flow_grpc_cloudevent_proto_rawDesc = []byte{
 	0x66, 0x69, 0x6c, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09,
 	0x52, 0x0a, 0x66, 0x69, 0x6c, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x16, 0x0a, 0x06,
 	0x6a, 0x73, 0x43, 0x6f, 0x64, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x6a, 0x73,
-	0x43, 0x6f, 0x64, 0x65, 0x42, 0x2c, 0x5a, 0x2a, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63,
-	0x6f, 0x6d, 0x2f, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x2f, 0x64, 0x69, 0x72, 0x65,
-	0x6b, 0x74, 0x69, 0x76, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x66, 0x6c, 0x6f, 0x77, 0x2f, 0x67, 0x72,
-	0x70, 0x63, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x43, 0x6f, 0x64, 0x65, 0x22, 0x4f, 0x0a, 0x1b, 0x47, 0x65, 0x74, 0x43, 0x6c, 0x6f, 0x75, 0x64,
+	0x45, 0x76, 0x65, 0x6e, 0x74, 0x46, 0x69, 0x6c, 0x74, 0x65, 0x72, 0x73, 0x52, 0x65, 0x71, 0x75,
+	0x65, 0x73, 0x74, 0x12, 0x1c, 0x0a, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65,
+	0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63,
+	0x65, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52,
+	0x04, 0x6e, 0x61, 0x6d, 0x65, 0x22, 0x9c, 0x01, 0x0a, 0x1c, 0x47, 0x65, 0x74, 0x43, 0x6c, 0x6f,
+	0x75, 0x64, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x46, 0x69, 0x6c, 0x74, 0x65, 0x72, 0x73, 0x52, 0x65,
+	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x59, 0x0a, 0x0b, 0x65, 0x76, 0x65, 0x6e, 0x74, 0x46,
+	0x69, 0x6c, 0x74, 0x65, 0x72, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x37, 0x2e, 0x64, 0x69,
+	0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x5f, 0x66, 0x6c, 0x6f, 0x77, 0x2e, 0x47, 0x65, 0x74, 0x43,
+	0x6c, 0x6f, 0x75, 0x64, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x46, 0x69, 0x6c, 0x74, 0x65, 0x72, 0x73,
+	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x2e, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x46, 0x69,
+	0x6c, 0x74, 0x65, 0x72, 0x52, 0x0b, 0x65, 0x76, 0x65, 0x6e, 0x74, 0x46, 0x69, 0x6c, 0x74, 0x65,
+	0x72, 0x1a, 0x21, 0x0a, 0x0b, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x46, 0x69, 0x6c, 0x74, 0x65, 0x72,
+	0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04,
+	0x6e, 0x61, 0x6d, 0x65, 0x22, 0x54, 0x0a, 0x20, 0x47, 0x65, 0x74, 0x43, 0x6c, 0x6f, 0x75, 0x64,
+	0x45, 0x76, 0x65, 0x6e, 0x74, 0x46, 0x69, 0x6c, 0x74, 0x65, 0x72, 0x53, 0x63, 0x72, 0x69, 0x70,
+	0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1c, 0x0a, 0x09, 0x6e, 0x61, 0x6d, 0x65,
+	0x73, 0x70, 0x61, 0x63, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6e, 0x61, 0x6d,
+	0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x22, 0x5b, 0x0a, 0x21, 0x47, 0x65,
+	0x74, 0x43, 0x6c, 0x6f, 0x75, 0x64, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x46, 0x69, 0x6c, 0x74, 0x65,
+	0x72, 0x53, 0x63, 0x72, 0x69, 0x70, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12,
+	0x1e, 0x0a, 0x0a, 0x66, 0x69, 0x6c, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x0a, 0x66, 0x69, 0x6c, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6d, 0x65, 0x12,
+	0x16, 0x0a, 0x06, 0x6a, 0x73, 0x43, 0x6f, 0x64, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52,
+	0x06, 0x6a, 0x73, 0x43, 0x6f, 0x64, 0x65, 0x42, 0x2c, 0x5a, 0x2a, 0x67, 0x69, 0x74, 0x68, 0x75,
+	0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x2f, 0x64,
+	0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x66, 0x6c, 0x6f, 0x77,
+	0x2f, 0x67, 0x72, 0x70, 0x63, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -1240,49 +1525,55 @@ func file_pkg_flow_grpc_cloudevent_proto_rawDescGZIP() []byte {
 	return file_pkg_flow_grpc_cloudevent_proto_rawDescData
 }
 
-var file_pkg_flow_grpc_cloudevent_proto_msgTypes = make([]protoimpl.MessageInfo, 18)
+var file_pkg_flow_grpc_cloudevent_proto_msgTypes = make([]protoimpl.MessageInfo, 23)
 var file_pkg_flow_grpc_cloudevent_proto_goTypes = []interface{}{
-	(*BroadcastCloudeventRequest)(nil),    // 0: direktiv_flow.BroadcastCloudeventRequest
-	(*EventListenersRequest)(nil),         // 1: direktiv_flow.EventListenersRequest
-	(*EventDef)(nil),                      // 2: direktiv_flow.EventDef
-	(*EventListener)(nil),                 // 3: direktiv_flow.EventListener
-	(*EventListenersResponse)(nil),        // 4: direktiv_flow.EventListenersResponse
-	(*HistoricalEventRequest)(nil),        // 5: direktiv_flow.HistoricalEventRequest
-	(*HistoricalEventResponse)(nil),       // 6: direktiv_flow.HistoricalEventResponse
-	(*EventHistoryRequest)(nil),           // 7: direktiv_flow.EventHistoryRequest
-	(*Event)(nil),                         // 8: direktiv_flow.Event
-	(*Events)(nil),                        // 9: direktiv_flow.Events
-	(*EventHistoryResponse)(nil),          // 10: direktiv_flow.EventHistoryResponse
-	(*ReplayEventRequest)(nil),            // 11: direktiv_flow.ReplayEventRequest
-	(*ApplyCloudEventFilterRequest)(nil),  // 12: direktiv_flow.ApplyCloudEventFilterRequest
-	(*ApplyCloudEventFilterResponse)(nil), // 13: direktiv_flow.ApplyCloudEventFilterResponse
-	(*DeleteCloudEventFilterRequest)(nil), // 14: direktiv_flow.DeleteCloudEventFilterRequest
-	(*CreateCloudEventFilterRequest)(nil), // 15: direktiv_flow.CreateCloudEventFilterRequest
-	(*UpdateCloudEventFilterRequest)(nil), // 16: direktiv_flow.UpdateCloudEventFilterRequest
-	nil,                                   // 17: direktiv_flow.EventDef.FiltersEntry
-	(*Pagination)(nil),                    // 18: direktiv_flow.Pagination
-	(*timestamppb.Timestamp)(nil),         // 19: google.protobuf.Timestamp
-	(*PageInfo)(nil),                      // 20: direktiv_flow.PageInfo
+	(*BroadcastCloudeventRequest)(nil),        // 0: direktiv_flow.BroadcastCloudeventRequest
+	(*EventListenersRequest)(nil),             // 1: direktiv_flow.EventListenersRequest
+	(*EventDef)(nil),                          // 2: direktiv_flow.EventDef
+	(*EventListener)(nil),                     // 3: direktiv_flow.EventListener
+	(*EventListenersResponse)(nil),            // 4: direktiv_flow.EventListenersResponse
+	(*HistoricalEventRequest)(nil),            // 5: direktiv_flow.HistoricalEventRequest
+	(*HistoricalEventResponse)(nil),           // 6: direktiv_flow.HistoricalEventResponse
+	(*EventHistoryRequest)(nil),               // 7: direktiv_flow.EventHistoryRequest
+	(*Event)(nil),                             // 8: direktiv_flow.Event
+	(*Events)(nil),                            // 9: direktiv_flow.Events
+	(*EventHistoryResponse)(nil),              // 10: direktiv_flow.EventHistoryResponse
+	(*ReplayEventRequest)(nil),                // 11: direktiv_flow.ReplayEventRequest
+	(*ApplyCloudEventFilterRequest)(nil),      // 12: direktiv_flow.ApplyCloudEventFilterRequest
+	(*ApplyCloudEventFilterResponse)(nil),     // 13: direktiv_flow.ApplyCloudEventFilterResponse
+	(*DeleteCloudEventFilterRequest)(nil),     // 14: direktiv_flow.DeleteCloudEventFilterRequest
+	(*CreateCloudEventFilterRequest)(nil),     // 15: direktiv_flow.CreateCloudEventFilterRequest
+	(*UpdateCloudEventFilterRequest)(nil),     // 16: direktiv_flow.UpdateCloudEventFilterRequest
+	(*GetCloudEventFiltersRequest)(nil),       // 17: direktiv_flow.GetCloudEventFiltersRequest
+	(*GetCloudEventFiltersResponse)(nil),      // 18: direktiv_flow.GetCloudEventFiltersResponse
+	(*GetCloudEventFilterScriptRequest)(nil),  // 19: direktiv_flow.GetCloudEventFilterScriptRequest
+	(*GetCloudEventFilterScriptResponse)(nil), // 20: direktiv_flow.GetCloudEventFilterScriptResponse
+	nil, // 21: direktiv_flow.EventDef.FiltersEntry
+	(*GetCloudEventFiltersResponse_EventFilter)(nil), // 22: direktiv_flow.GetCloudEventFiltersResponse.EventFilter
+	(*Pagination)(nil),            // 23: direktiv_flow.Pagination
+	(*timestamppb.Timestamp)(nil), // 24: google.protobuf.Timestamp
+	(*PageInfo)(nil),              // 25: direktiv_flow.PageInfo
 }
 var file_pkg_flow_grpc_cloudevent_proto_depIdxs = []int32{
-	18, // 0: direktiv_flow.EventListenersRequest.pagination:type_name -> direktiv_flow.Pagination
-	17, // 1: direktiv_flow.EventDef.filters:type_name -> direktiv_flow.EventDef.FiltersEntry
-	19, // 2: direktiv_flow.EventListener.updated_at:type_name -> google.protobuf.Timestamp
+	23, // 0: direktiv_flow.EventListenersRequest.pagination:type_name -> direktiv_flow.Pagination
+	21, // 1: direktiv_flow.EventDef.filters:type_name -> direktiv_flow.EventDef.FiltersEntry
+	24, // 2: direktiv_flow.EventListener.updated_at:type_name -> google.protobuf.Timestamp
 	2,  // 3: direktiv_flow.EventListener.events:type_name -> direktiv_flow.EventDef
-	19, // 4: direktiv_flow.EventListener.created_at:type_name -> google.protobuf.Timestamp
-	20, // 5: direktiv_flow.EventListenersResponse.pageInfo:type_name -> direktiv_flow.PageInfo
+	24, // 4: direktiv_flow.EventListener.created_at:type_name -> google.protobuf.Timestamp
+	25, // 5: direktiv_flow.EventListenersResponse.pageInfo:type_name -> direktiv_flow.PageInfo
 	3,  // 6: direktiv_flow.EventListenersResponse.results:type_name -> direktiv_flow.EventListener
-	19, // 7: direktiv_flow.HistoricalEventResponse.received_at:type_name -> google.protobuf.Timestamp
-	18, // 8: direktiv_flow.EventHistoryRequest.pagination:type_name -> direktiv_flow.Pagination
-	19, // 9: direktiv_flow.Event.received_at:type_name -> google.protobuf.Timestamp
-	20, // 10: direktiv_flow.Events.pageInfo:type_name -> direktiv_flow.PageInfo
+	24, // 7: direktiv_flow.HistoricalEventResponse.received_at:type_name -> google.protobuf.Timestamp
+	23, // 8: direktiv_flow.EventHistoryRequest.pagination:type_name -> direktiv_flow.Pagination
+	24, // 9: direktiv_flow.Event.received_at:type_name -> google.protobuf.Timestamp
+	25, // 10: direktiv_flow.Events.pageInfo:type_name -> direktiv_flow.PageInfo
 	8,  // 11: direktiv_flow.Events.results:type_name -> direktiv_flow.Event
 	9,  // 12: direktiv_flow.EventHistoryResponse.events:type_name -> direktiv_flow.Events
-	13, // [13:13] is the sub-list for method output_type
-	13, // [13:13] is the sub-list for method input_type
-	13, // [13:13] is the sub-list for extension type_name
-	13, // [13:13] is the sub-list for extension extendee
-	0,  // [0:13] is the sub-list for field type_name
+	22, // 13: direktiv_flow.GetCloudEventFiltersResponse.eventFilter:type_name -> direktiv_flow.GetCloudEventFiltersResponse.EventFilter
+	14, // [14:14] is the sub-list for method output_type
+	14, // [14:14] is the sub-list for method input_type
+	14, // [14:14] is the sub-list for extension type_name
+	14, // [14:14] is the sub-list for extension extendee
+	0,  // [0:14] is the sub-list for field type_name
 }
 
 func init() { file_pkg_flow_grpc_cloudevent_proto_init() }
@@ -1496,6 +1787,66 @@ func file_pkg_flow_grpc_cloudevent_proto_init() {
 				return nil
 			}
 		}
+		file_pkg_flow_grpc_cloudevent_proto_msgTypes[17].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*GetCloudEventFiltersRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_pkg_flow_grpc_cloudevent_proto_msgTypes[18].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*GetCloudEventFiltersResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_pkg_flow_grpc_cloudevent_proto_msgTypes[19].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*GetCloudEventFilterScriptRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_pkg_flow_grpc_cloudevent_proto_msgTypes[20].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*GetCloudEventFilterScriptResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_pkg_flow_grpc_cloudevent_proto_msgTypes[22].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*GetCloudEventFiltersResponse_EventFilter); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -1503,7 +1854,7 @@ func file_pkg_flow_grpc_cloudevent_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_pkg_flow_grpc_cloudevent_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   18,
+			NumMessages:   23,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

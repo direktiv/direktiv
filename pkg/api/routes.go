@@ -34,6 +34,8 @@ const (
 	RN_CreateNamespaceEventFilter  = "CreateNamespaceEventFilter"
 	RN_DeleteNamespaceEventFilter  = "DeleteNamespaceEventFilter"
 	RN_UpdateNamespaceEventFilter  = "UpdateNamespaceEventFilter"
+	RN_ListNamespaceEventFilters   = "ListNamespaceEventFilters"
+	RN_GetNamespaceEventFilter     = "GetNamespaceEventFilter"
 	RN_ListSecrets                 = "listSecrets"
 	RN_SearchSecret                = "searchSecret"
 	RN_OverwriteSecret             = "overwriteSecret"
