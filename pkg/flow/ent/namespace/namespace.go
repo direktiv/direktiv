@@ -39,6 +39,8 @@ const (
 	EdgeCloudevents = "cloudevents"
 	// EdgeNamespacelisteners holds the string denoting the namespacelisteners edge name in mutations.
 	EdgeNamespacelisteners = "namespacelisteners"
+	// EdgeServices holds the string denoting the services edge name in mutations.
+	EdgeServices = "services"
 	// Table holds the table name of the namespace in the database.
 	Table = "namespaces"
 	// InodesTable is the table that holds the inodes relation/edge.
@@ -104,6 +106,13 @@ const (
 	NamespacelistenersInverseTable = "events"
 	// NamespacelistenersColumn is the table column denoting the namespacelisteners relation/edge.
 	NamespacelistenersColumn = "namespace_namespacelisteners"
+	// ServicesTable is the table that holds the services relation/edge.
+	ServicesTable = "services"
+	// ServicesInverseTable is the table name for the Services entity.
+	// It exists in this package in order to avoid circular dependency with the "services" package.
+	ServicesInverseTable = "services"
+	// ServicesColumn is the table column denoting the services relation/edge.
+	ServicesColumn = "namespace_services"
 )
 
 // Columns holds all SQL columns for namespace fields.

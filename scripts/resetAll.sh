@@ -12,11 +12,10 @@ sudo -s source  $dir/resetk3s.sh
 
 export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
 
-kubectl create namespace knative-serving
 kubectl create namespace postgres
 
 # prepare linkerd
-kubectl annotate ns knative-serving default linkerd.io/inject=enabled
+kubectl annotate ns default linkerd.io/inject=enabled
 
 certDir=$(exe='step certificate create root.linkerd.cluster.local ca.crt ca.key \
 --profile root-ca --no-password --insecure \

@@ -45,6 +45,9 @@ type Revision func(*sql.Selector)
 // Route is the predicate function for route builders.
 type Route func(*sql.Selector)
 
+// Services is the predicate function for services builders.
+type Services func(*sql.Selector)
+
 // VarData is the predicate function for vardata builders.
 type VarData func(*sql.Selector)
 
