@@ -418,7 +418,7 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	// responses:
 	//   '200':
 	//     "description": "successfully deleted service revision"
-	r.HandleFunc("/namespaces/{ns}/function/{svn}/revisions/{rev}", h.deleteNamespaceServiceRevision).Methods(http.MethodDelete).Name(RN_DeleteNamespaceRevision)
+	r.HandleFunc("/namespaces/{ns}/function/{svn}/revisions/{rev}", h.deleteNamespaceServiceRevision).Methods(http.MethodDelete).Name(RN_DeleteNamespaceServiceRevision)
 
 	// workflow
 

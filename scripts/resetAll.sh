@@ -103,6 +103,8 @@ functions:
 EOF
 fi
 
+# remove old database setting
+sed -i '/database:/,+6 d' $dir/dev.yaml
 
 echo "" >> $dir/dev.yaml
 echo "database:
