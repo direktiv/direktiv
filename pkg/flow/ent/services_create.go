@@ -6,7 +6,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
+	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -21,6 +23,34 @@ type ServicesCreate struct {
 	mutation *ServicesMutation
 	hooks    []Hook
 	conflict []sql.ConflictOption
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (sc *ServicesCreate) SetCreatedAt(t time.Time) *ServicesCreate {
+	sc.mutation.SetCreatedAt(t)
+	return sc
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (sc *ServicesCreate) SetNillableCreatedAt(t *time.Time) *ServicesCreate {
+	if t != nil {
+		sc.SetCreatedAt(*t)
+	}
+	return sc
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (sc *ServicesCreate) SetUpdatedAt(t time.Time) *ServicesCreate {
+	sc.mutation.SetUpdatedAt(t)
+	return sc
+}
+
+// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
+func (sc *ServicesCreate) SetNillableUpdatedAt(t *time.Time) *ServicesCreate {
+	if t != nil {
+		sc.SetUpdatedAt(*t)
+	}
+	return sc
 }
 
 // SetURL sets the "url" field.
@@ -38,6 +68,20 @@ func (sc *ServicesCreate) SetName(s string) *ServicesCreate {
 // SetData sets the "data" field.
 func (sc *ServicesCreate) SetData(s string) *ServicesCreate {
 	sc.mutation.SetData(s)
+	return sc
+}
+
+// SetID sets the "id" field.
+func (sc *ServicesCreate) SetID(u uuid.UUID) *ServicesCreate {
+	sc.mutation.SetID(u)
+	return sc
+}
+
+// SetNillableID sets the "id" field if the given value is not nil.
+func (sc *ServicesCreate) SetNillableID(u *uuid.UUID) *ServicesCreate {
+	if u != nil {
+		sc.SetID(*u)
+	}
 	return sc
 }
 
@@ -63,6 +107,7 @@ func (sc *ServicesCreate) Save(ctx context.Context) (*Services, error) {
 		err  error
 		node *Services
 	)
+	sc.defaults()
 	if len(sc.hooks) == 0 {
 		if err = sc.check(); err != nil {
 			return nil, err
@@ -126,8 +171,30 @@ func (sc *ServicesCreate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (sc *ServicesCreate) defaults() {
+	if _, ok := sc.mutation.CreatedAt(); !ok {
+		v := services.DefaultCreatedAt()
+		sc.mutation.SetCreatedAt(v)
+	}
+	if _, ok := sc.mutation.UpdatedAt(); !ok {
+		v := services.DefaultUpdatedAt()
+		sc.mutation.SetUpdatedAt(v)
+	}
+	if _, ok := sc.mutation.ID(); !ok {
+		v := services.DefaultID()
+		sc.mutation.SetID(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (sc *ServicesCreate) check() error {
+	if _, ok := sc.mutation.CreatedAt(); !ok {
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Services.created_at"`)}
+	}
+	if _, ok := sc.mutation.UpdatedAt(); !ok {
+		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Services.updated_at"`)}
+	}
 	if _, ok := sc.mutation.URL(); !ok {
 		return &ValidationError{Name: "url", err: errors.New(`ent: missing required field "Services.url"`)}
 	}
@@ -166,8 +233,13 @@ func (sc *ServicesCreate) sqlSave(ctx context.Context) (*Services, error) {
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
+	if _spec.ID.Value != nil {
+		if id, ok := _spec.ID.Value.(*uuid.UUID); ok {
+			_node.ID = *id
+		} else if err := _node.ID.Scan(_spec.ID.Value); err != nil {
+			return nil, err
+		}
+	}
 	return _node, nil
 }
 
@@ -177,12 +249,24 @@ func (sc *ServicesCreate) createSpec() (*Services, *sqlgraph.CreateSpec) {
 		_spec = &sqlgraph.CreateSpec{
 			Table: services.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: services.FieldID,
 			},
 		}
 	)
 	_spec.OnConflict = sc.conflict
+	if id, ok := sc.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = &id
+	}
+	if value, ok := sc.mutation.CreatedAt(); ok {
+		_spec.SetField(services.FieldCreatedAt, field.TypeTime, value)
+		_node.CreatedAt = value
+	}
+	if value, ok := sc.mutation.UpdatedAt(); ok {
+		_spec.SetField(services.FieldUpdatedAt, field.TypeTime, value)
+		_node.UpdatedAt = value
+	}
 	if value, ok := sc.mutation.URL(); ok {
 		_spec.SetField(services.FieldURL, field.TypeString, value)
 		_node.URL = value
@@ -222,7 +306,7 @@ func (sc *ServicesCreate) createSpec() (*Services, *sqlgraph.CreateSpec) {
 // of the `INSERT` statement. For example:
 //
 //	client.Services.Create().
-//		SetURL(v).
+//		SetCreatedAt(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -231,7 +315,7 @@ func (sc *ServicesCreate) createSpec() (*Services, *sqlgraph.CreateSpec) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.ServicesUpsert) {
-//			SetURL(v+v).
+//			SetCreatedAt(v+v).
 //		}).
 //		Exec(ctx)
 func (sc *ServicesCreate) OnConflict(opts ...sql.ConflictOption) *ServicesUpsertOne {
@@ -266,6 +350,18 @@ type (
 		*sql.UpdateSet
 	}
 )
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *ServicesUpsert) SetUpdatedAt(v time.Time) *ServicesUpsert {
+	u.Set(services.FieldUpdatedAt, v)
+	return u
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *ServicesUpsert) UpdateUpdatedAt() *ServicesUpsert {
+	u.SetExcluded(services.FieldUpdatedAt)
+	return u
+}
 
 // SetURL sets the "url" field.
 func (u *ServicesUpsert) SetURL(v string) *ServicesUpsert {
@@ -303,16 +399,27 @@ func (u *ServicesUpsert) UpdateData() *ServicesUpsert {
 	return u
 }
 
-// UpdateNewValues updates the mutable fields using the new values that were set on create.
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
 //	client.Services.Create().
 //		OnConflict(
 //			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(services.FieldID)
+//			}),
 //		).
 //		Exec(ctx)
 func (u *ServicesUpsertOne) UpdateNewValues() *ServicesUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(services.FieldID)
+		}
+		if _, exists := u.create.mutation.CreatedAt(); exists {
+			s.SetIgnore(services.FieldCreatedAt)
+		}
+	}))
 	return u
 }
 
@@ -341,6 +448,20 @@ func (u *ServicesUpsertOne) Update(set func(*ServicesUpsert)) *ServicesUpsertOne
 		set(&ServicesUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *ServicesUpsertOne) SetUpdatedAt(v time.Time) *ServicesUpsertOne {
+	return u.Update(func(s *ServicesUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *ServicesUpsertOne) UpdateUpdatedAt() *ServicesUpsertOne {
+	return u.Update(func(s *ServicesUpsert) {
+		s.UpdateUpdatedAt()
+	})
 }
 
 // SetURL sets the "url" field.
@@ -401,7 +522,12 @@ func (u *ServicesUpsertOne) ExecX(ctx context.Context) {
 }
 
 // Exec executes the UPSERT query and returns the inserted/updated ID.
-func (u *ServicesUpsertOne) ID(ctx context.Context) (id int, err error) {
+func (u *ServicesUpsertOne) ID(ctx context.Context) (id uuid.UUID, err error) {
+	if u.create.driver.Dialect() == dialect.MySQL {
+		// In case of "ON CONFLICT", there is no way to get back non-numeric ID
+		// fields from the database since MySQL does not support the RETURNING clause.
+		return id, errors.New("ent: ServicesUpsertOne.ID is not supported by MySQL driver. Use ServicesUpsertOne.Exec instead")
+	}
 	node, err := u.create.Save(ctx)
 	if err != nil {
 		return id, err
@@ -410,7 +536,7 @@ func (u *ServicesUpsertOne) ID(ctx context.Context) (id int, err error) {
 }
 
 // IDX is like ID, but panics if an error occurs.
-func (u *ServicesUpsertOne) IDX(ctx context.Context) int {
+func (u *ServicesUpsertOne) IDX(ctx context.Context) uuid.UUID {
 	id, err := u.ID(ctx)
 	if err != nil {
 		panic(err)
@@ -433,6 +559,7 @@ func (scb *ServicesCreateBulk) Save(ctx context.Context) ([]*Services, error) {
 	for i := range scb.builders {
 		func(i int, root context.Context) {
 			builder := scb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*ServicesMutation)
 				if !ok {
@@ -460,10 +587,6 @@ func (scb *ServicesCreateBulk) Save(ctx context.Context) ([]*Services, error) {
 					return nil, err
 				}
 				mutation.id = &nodes[i].ID
-				if specs[i].ID.Value != nil {
-					id := specs[i].ID.Value.(int64)
-					nodes[i].ID = int(id)
-				}
 				mutation.done = true
 				return nodes[i], nil
 			})
@@ -515,7 +638,7 @@ func (scb *ServicesCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.ServicesUpsert) {
-//			SetURL(v+v).
+//			SetCreatedAt(v+v).
 //		}).
 //		Exec(ctx)
 func (scb *ServicesCreateBulk) OnConflict(opts ...sql.ConflictOption) *ServicesUpsertBulk {
@@ -550,10 +673,23 @@ type ServicesUpsertBulk struct {
 //	client.Services.Create().
 //		OnConflict(
 //			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(services.FieldID)
+//			}),
 //		).
 //		Exec(ctx)
 func (u *ServicesUpsertBulk) UpdateNewValues() *ServicesUpsertBulk {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(services.FieldID)
+			}
+			if _, exists := b.mutation.CreatedAt(); exists {
+				s.SetIgnore(services.FieldCreatedAt)
+			}
+		}
+	}))
 	return u
 }
 
@@ -582,6 +718,20 @@ func (u *ServicesUpsertBulk) Update(set func(*ServicesUpsert)) *ServicesUpsertBu
 		set(&ServicesUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *ServicesUpsertBulk) SetUpdatedAt(v time.Time) *ServicesUpsertBulk {
+	return u.Update(func(s *ServicesUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *ServicesUpsertBulk) UpdateUpdatedAt() *ServicesUpsertBulk {
+	return u.Update(func(s *ServicesUpsert) {
+		s.UpdateUpdatedAt()
+	})
 }
 
 // SetURL sets the "url" field.

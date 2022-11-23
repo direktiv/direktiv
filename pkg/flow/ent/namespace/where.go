@@ -693,7 +693,7 @@ func HasServices() predicate.Namespace {
 	return predicate.Namespace(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(ServicesTable, ServicesFieldID),
+			sqlgraph.To(ServicesTable, FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, ServicesTable, ServicesColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
@@ -705,7 +705,7 @@ func HasServicesWith(preds ...predicate.Services) predicate.Namespace {
 	return predicate.Namespace(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(ServicesInverseTable, ServicesFieldID),
+			sqlgraph.To(ServicesInverseTable, FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, ServicesTable, ServicesColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {

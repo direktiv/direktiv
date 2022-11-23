@@ -94,7 +94,7 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	// responses:
 	//   '200':
 	//     "description": "successfully watching pod logs"
-	r.HandleFunc("/logs/pod/{pod}", h.watchLogs).Methods(http.MethodGet).Name(RN_WatchLogs)
+	r.HandleFunc("/logs/pod/{pod}", h.watchPodLogs).Methods(http.MethodGet).Name(RN_WatchPodLogs)
 
 	// namespace
 
@@ -418,7 +418,7 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	// responses:
 	//   '200':
 	//     "description": "successfully deleted service revision"
-	r.HandleFunc("/namespaces/{ns}/function/{svn}/revisions/{rev}", h.deleteNamespaceRevision).Methods(http.MethodDelete).Name(RN_DeleteNamespaceRevision)
+	r.HandleFunc("/namespaces/{ns}/function/{svn}/revisions/{rev}", h.deleteNamespaceServiceRevision).Methods(http.MethodDelete).Name(RN_DeleteNamespaceRevision)
 
 	// workflow
 
@@ -988,7 +988,6 @@ func (h *functionHandler) singleWorkflowServiceSSE(w http.ResponseWriter, r *htt
 		return
 	}
 
-	// svn := r.URL.Query().Get("svn")
 	svc := functions.AssembleWorkflowServiceName(resp.Oid, hash)
 
 	annotations := make(map[string]string)
@@ -1246,7 +1245,7 @@ func (h *functionHandler) getService(svn string, w http.ResponseWriter, r *http.
 
 }
 
-type createRequest struct {
+type createNamespaceServiceRequest struct {
 	Cmd      string            `json:"cmd,omitempty"`
 	Image    string            `json:"image,omitempty"`
 	Name     string            `json:"name,omitempty"`
@@ -1277,7 +1276,7 @@ func (h *functionHandler) createNamespaceService(w http.ResponseWriter, r *http.
 		return
 	}
 
-	var cr createRequest
+	var cr createNamespaceServiceRequest
 	err = json.NewDecoder(r.Body).Decode(&cr)
 	if err != nil {
 		respond(w, nil, err)
@@ -1291,7 +1290,7 @@ func (h *functionHandler) createNamespaceService(w http.ResponseWriter, r *http.
 
 }
 
-func (h *functionHandler) createService(cr createRequest, r *http.Request, w http.ResponseWriter) {
+func (h *functionHandler) createService(cr createNamespaceServiceRequest, r *http.Request, w http.ResponseWriter) {
 
 	grpcReq := new(grpcfunc.CreateFunctionRequest)
 	grpcReq.Info = &grpc.BaseInfo{
@@ -1385,7 +1384,7 @@ func (h *functionHandler) updateService(svc, name string, ns *igrpc.Namespace, w
 
 }
 
-func (h *functionHandler) deleteNamespaceRevision(w http.ResponseWriter, r *http.Request) {
+func (h *functionHandler) deleteNamespaceServiceRevision(w http.ResponseWriter, r *http.Request) {
 
 	h.logger.Debugf("Handling request: %s", this())
 
@@ -1574,7 +1573,7 @@ func (h *functionHandler) watchRevisions(svc, rev /*, scope*/ string,
 
 }
 
-func (h *functionHandler) watchLogs(w http.ResponseWriter, r *http.Request) {
+func (h *functionHandler) watchPodLogs(w http.ResponseWriter, r *http.Request) {
 
 	h.logger.Debugf("Handling request: %s", this())
 
@@ -1808,135 +1807,3 @@ func (h *functionHandler) listPods(annotations map[string]string,
 	resp, err := h.client.ListPods(r.Context(), &grpcReq)
 	respond(w, resp, err)
 }
-
-// func (h *functionHandler) watchPods(w http.ResponseWriter, r *http.Request) {
-//
-// }
-//
-// 	sn := mux.Vars(r)["serviceName"]
-// 	rn := mux.Vars(r)["revisionName"]
-//
-// 	// Append prefixNamespace if in namespace route and not found
-// 	ns := mux.Vars(r)["namespace"]
-// 	if ns != "" && !strings.HasPrefix(sn, functions.PrefixNamespace+"-") {
-// 		sn = fmt.Sprintf("%s-%s-%s", functions.PrefixNamespace, ns, sn)
-// 	}
-//
-// 	grpcReq := new(grpc.WatchPodsRequest)
-// 	grpcReq.ServiceName = &sn
-// 	grpcReq.RevisionName = &rn
-//
-// 	client, err := h.s.functions.WatchPods(r.Context(), grpcReq)
-// 	if err != nil {
-// 		ErrResponse(w, err)
-// 		return
-// 	}
-//
-// 	defer client.CloseSend()
-// 	flusher, err := SetupSEEWriter(w)
-// 	if err != nil {
-// 		ErrResponse(w, err)
-// 		return
-// 	}
-//
-// 	// Create Heartbeat Ticker
-// 	heartbeat := time.NewTicker(10 * time.Second)
-// 	defer heartbeat.Stop()
-//
-// 	// Start watcher client stream channels
-// 	dataCh := make(chan interface{})
-// 	errorCh := make(chan error)
-// 	go func() {
-// 		for {
-// 			data, err := client.Recv()
-// 			if err != nil {
-// 				errorCh <- err
-// 				break
-// 			} else {
-// 				dataCh <- data
-// 			}
-// 		}
-// 	}()
-//
-// 	for {
-// 		select {
-// 		case data := <-dataCh:
-// 			err = WriteSSEJSONData(w, flusher, data)
-// 		case err = <-errorCh:
-// 		case <-client.Context().Done():
-// 			err = fmt.Errorf("requested stream has timed out")
-// 		case <-heartbeat.C:
-// 			SendSSEHeartbeat(w, flusher)
-// 		}
-//
-// 		// Check for errors
-// 		if err != nil {
-// 			ErrSSEResponse(w, flusher, err)
-// 			heartbeat.Stop()
-// 			return
-// 		}
-// 	}
-//
-// }
-//
-// func (h *Handler) watchInstanceLogs(w http.ResponseWriter, r *http.Request) {
-//
-// 	ns := mux.Vars(r)["namespace"]
-// 	wf := mux.Vars(r)["workflowTarget"]
-// 	id := mux.Vars(r)["id"]
-// 	iid := fmt.Sprintf("%s/%s/%s", ns, wf, id)
-//
-// 	flusher, err := SetupSEEWriter(w)
-// 	if err != nil {
-// 		ErrResponse(w, err)
-// 		return
-// 	}
-//
-// 	grpcReq := new(ingress.WatchWorkflowInstanceLogsRequest)
-// 	grpcReq.InstanceId = &iid
-//
-// 	client, err := h.s.direktiv.WatchWorkflowInstanceLogs(r.Context(), grpcReq)
-// 	defer client.CloseSend()
-// 	if err != nil {
-// 		ErrResponse(w, err)
-// 		return
-// 	}
-//
-// 	// Create Heartbeat Ticker
-// 	heartbeat := time.NewTicker(10 * time.Second)
-// 	defer heartbeat.Stop()
-//
-// 	// Start watcher client stream channels
-// 	dataCh := make(chan interface{})
-// 	errorCh := make(chan error)
-// 	go func() {
-// 		for {
-// 			data, err := client.Recv()
-// 			if err != nil {
-// 				errorCh <- err
-// 				break
-// 			} else {
-// 				dataCh <- data
-// 			}
-// 		}
-// 	}()
-//
-// 	for {
-// 		select {
-// 		case data := <-dataCh:
-// 			err = WriteSSEJSONData(w, flusher, data)
-// 		case err = <-errorCh:
-// 		case <-client.Context().Done():
-// 			err = fmt.Errorf("requested stream has timed out")
-// 		case <-heartbeat.C:
-// 			SendSSEHeartbeat(w, flusher)
-// 		}
-//
-// 		// Check for errors
-// 		if err != nil {
-// 			ErrSSEResponse(w, flusher, err)
-// 			heartbeat.Stop()
-// 			return
-// 		}
-// 	}
-// }

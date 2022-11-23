@@ -2,11 +2,21 @@
 
 package services
 
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
+
 const (
 	// Label holds the string label denoting the services type in the database.
 	Label = "services"
 	// FieldID holds the string denoting the id field in the database.
-	FieldID = "id"
+	FieldID = "oid"
+	// FieldCreatedAt holds the string denoting the created_at field in the database.
+	FieldCreatedAt = "created_at"
+	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
+	FieldUpdatedAt = "updated_at"
 	// FieldURL holds the string denoting the url field in the database.
 	FieldURL = "url"
 	// FieldName holds the string denoting the name field in the database.
@@ -15,8 +25,6 @@ const (
 	FieldData = "data"
 	// EdgeNamespace holds the string denoting the namespace edge name in mutations.
 	EdgeNamespace = "namespace"
-	// NamespaceFieldID holds the string denoting the ID field of the Namespace.
-	NamespaceFieldID = "oid"
 	// Table holds the table name of the services in the database.
 	Table = "services"
 	// NamespaceTable is the table that holds the namespace relation/edge.
@@ -31,6 +39,8 @@ const (
 // Columns holds all SQL columns for services fields.
 var Columns = []string{
 	FieldID,
+	FieldCreatedAt,
+	FieldUpdatedAt,
 	FieldURL,
 	FieldName,
 	FieldData,
@@ -58,10 +68,18 @@ func ValidColumn(column string) bool {
 }
 
 var (
+	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
+	DefaultCreatedAt func() time.Time
+	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
+	DefaultUpdatedAt func() time.Time
+	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
+	UpdateDefaultUpdatedAt func() time.Time
 	// URLValidator is a validator for the "url" field. It is called by the builders before save.
 	URLValidator func(string) error
 	// NameValidator is a validator for the "name" field. It is called by the builders before save.
 	NameValidator func(string) error
 	// DataValidator is a validator for the "data" field. It is called by the builders before save.
 	DataValidator func(string) error
+	// DefaultID holds the default value on creation for the "id" field.
+	DefaultID func() uuid.UUID
 )

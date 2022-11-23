@@ -77,7 +77,7 @@ const (
 	RN_WatchServices                 = "watchServices"
 	RN_WatchRevisions                = "watchRevisions"
 	RN_WatchPods                     = "watchPods"
-	RN_WatchLogs                     = "watchLogs"
+	RN_WatchPodLogs                  = "watchLogs"
 	RN_ListPods                      = "listPods"
 	RN_DeleteServices                = "deleteServices"
 	RN_GetService                    = "getService"

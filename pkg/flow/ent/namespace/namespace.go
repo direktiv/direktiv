@@ -41,8 +41,6 @@ const (
 	EdgeNamespacelisteners = "namespacelisteners"
 	// EdgeServices holds the string denoting the services edge name in mutations.
 	EdgeServices = "services"
-	// ServicesFieldID holds the string denoting the ID field of the Services.
-	ServicesFieldID = "id"
 	// Table holds the table name of the namespace in the database.
 	Table = "namespaces"
 	// InodesTable is the table that holds the inodes relation/edge.

@@ -149,25 +149,9 @@ type generationUpgrader struct {
 }
 
 func updateGeneration_0_7_1(db *sql.Tx) error {
-
-	row := db.QueryRow(`SELECT count(column_name) FROM information_schema.columns WHERE table_name = 'services'`)
-
-	if row.Err() != nil {
-		return row.Err()
-	}
-
-	var count int
-	row.Scan(&count)
-
 	// old is id, name, data, new one has namespace
-	if count == 3 {
-		_, err := db.Exec("drop table services")
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
+	_, err := db.Exec("drop table services")
+	return err
 }
 
 func updateGeneration_0_6_0(db *sql.Tx) error {

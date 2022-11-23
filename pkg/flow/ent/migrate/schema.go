@@ -430,7 +430,9 @@ var (
 	}
 	// ServicesColumns holds the columns for the "services" table.
 	ServicesColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "oid", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "url", Type: field.TypeString},
 		{Name: "name", Type: field.TypeString, Unique: true},
 		{Name: "data", Type: field.TypeString},
@@ -444,7 +446,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "services_namespaces_services",
-				Columns:    []*schema.Column{ServicesColumns[4]},
+				Columns:    []*schema.Column{ServicesColumns[6]},
 				RefColumns: []*schema.Column{NamespacesColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
@@ -453,7 +455,7 @@ var (
 			{
 				Name:    "services_name_namespace_services",
 				Unique:  true,
-				Columns: []*schema.Column{ServicesColumns[2], ServicesColumns[4]},
+				Columns: []*schema.Column{ServicesColumns[4], ServicesColumns[6]},
 			},
 		},
 	}
