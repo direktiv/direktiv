@@ -11,6 +11,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/migrate"
 	"github.com/google/uuid"
 
+	"github.com/direktiv/direktiv/pkg/flow/ent/cloudeventfilters"
 	"github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
 	"github.com/direktiv/direktiv/pkg/flow/ent/events"
 	"github.com/direktiv/direktiv/pkg/flow/ent/eventswait"
@@ -39,6 +40,8 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
+	// CloudEventFilters is the client for interacting with the CloudEventFilters builders.
+	CloudEventFilters *CloudEventFiltersClient
 	// CloudEvents is the client for interacting with the CloudEvents builders.
 	CloudEvents *CloudEventsClient
 	// Events is the client for interacting with the Events builders.
@@ -86,6 +89,7 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
+	c.CloudEventFilters = NewCloudEventFiltersClient(c.config)
 	c.CloudEvents = NewCloudEventsClient(c.config)
 	c.Events = NewEventsClient(c.config)
 	c.EventsWait = NewEventsWaitClient(c.config)
@@ -134,25 +138,26 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:             ctx,
-		config:          cfg,
-		CloudEvents:     NewCloudEventsClient(cfg),
-		Events:          NewEventsClient(cfg),
-		EventsWait:      NewEventsWaitClient(cfg),
-		Inode:           NewInodeClient(cfg),
-		Instance:        NewInstanceClient(cfg),
-		InstanceRuntime: NewInstanceRuntimeClient(cfg),
-		LogMsg:          NewLogMsgClient(cfg),
-		Mirror:          NewMirrorClient(cfg),
-		MirrorActivity:  NewMirrorActivityClient(cfg),
-		Namespace:       NewNamespaceClient(cfg),
-		Ref:             NewRefClient(cfg),
-		Revision:        NewRevisionClient(cfg),
-		Route:           NewRouteClient(cfg),
-		Services:        NewServicesClient(cfg),
-		VarData:         NewVarDataClient(cfg),
-		VarRef:          NewVarRefClient(cfg),
-		Workflow:        NewWorkflowClient(cfg),
+		ctx:               ctx,
+		config:            cfg,
+		CloudEventFilters: NewCloudEventFiltersClient(cfg),
+		CloudEvents:       NewCloudEventsClient(cfg),
+		Events:            NewEventsClient(cfg),
+		EventsWait:        NewEventsWaitClient(cfg),
+		Inode:             NewInodeClient(cfg),
+		Instance:          NewInstanceClient(cfg),
+		InstanceRuntime:   NewInstanceRuntimeClient(cfg),
+		LogMsg:            NewLogMsgClient(cfg),
+		Mirror:            NewMirrorClient(cfg),
+		MirrorActivity:    NewMirrorActivityClient(cfg),
+		Namespace:         NewNamespaceClient(cfg),
+		Ref:               NewRefClient(cfg),
+		Revision:          NewRevisionClient(cfg),
+		Route:             NewRouteClient(cfg),
+		Services:          NewServicesClient(cfg),
+		VarData:           NewVarDataClient(cfg),
+		VarRef:            NewVarRefClient(cfg),
+		Workflow:          NewWorkflowClient(cfg),
 	}, nil
 }
 
@@ -170,32 +175,33 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:             ctx,
-		config:          cfg,
-		CloudEvents:     NewCloudEventsClient(cfg),
-		Events:          NewEventsClient(cfg),
-		EventsWait:      NewEventsWaitClient(cfg),
-		Inode:           NewInodeClient(cfg),
-		Instance:        NewInstanceClient(cfg),
-		InstanceRuntime: NewInstanceRuntimeClient(cfg),
-		LogMsg:          NewLogMsgClient(cfg),
-		Mirror:          NewMirrorClient(cfg),
-		MirrorActivity:  NewMirrorActivityClient(cfg),
-		Namespace:       NewNamespaceClient(cfg),
-		Ref:             NewRefClient(cfg),
-		Revision:        NewRevisionClient(cfg),
-		Route:           NewRouteClient(cfg),
-		Services:        NewServicesClient(cfg),
-		VarData:         NewVarDataClient(cfg),
-		VarRef:          NewVarRefClient(cfg),
-		Workflow:        NewWorkflowClient(cfg),
+		ctx:               ctx,
+		config:            cfg,
+		CloudEventFilters: NewCloudEventFiltersClient(cfg),
+		CloudEvents:       NewCloudEventsClient(cfg),
+		Events:            NewEventsClient(cfg),
+		EventsWait:        NewEventsWaitClient(cfg),
+		Inode:             NewInodeClient(cfg),
+		Instance:          NewInstanceClient(cfg),
+		InstanceRuntime:   NewInstanceRuntimeClient(cfg),
+		LogMsg:            NewLogMsgClient(cfg),
+		Mirror:            NewMirrorClient(cfg),
+		MirrorActivity:    NewMirrorActivityClient(cfg),
+		Namespace:         NewNamespaceClient(cfg),
+		Ref:               NewRefClient(cfg),
+		Revision:          NewRevisionClient(cfg),
+		Route:             NewRouteClient(cfg),
+		Services:          NewServicesClient(cfg),
+		VarData:           NewVarDataClient(cfg),
+		VarRef:            NewVarRefClient(cfg),
+		Workflow:          NewWorkflowClient(cfg),
 	}, nil
 }
 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		CloudEvents.
+//		CloudEventFilters.
 //		Query().
 //		Count(ctx)
 func (c *Client) Debug() *Client {
@@ -217,6 +223,7 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
+	c.CloudEventFilters.Use(hooks...)
 	c.CloudEvents.Use(hooks...)
 	c.Events.Use(hooks...)
 	c.EventsWait.Use(hooks...)
@@ -234,6 +241,112 @@ func (c *Client) Use(hooks ...Hook) {
 	c.VarData.Use(hooks...)
 	c.VarRef.Use(hooks...)
 	c.Workflow.Use(hooks...)
+}
+
+// CloudEventFiltersClient is a client for the CloudEventFilters schema.
+type CloudEventFiltersClient struct {
+	config
+}
+
+// NewCloudEventFiltersClient returns a client for the CloudEventFilters from the given config.
+func NewCloudEventFiltersClient(c config) *CloudEventFiltersClient {
+	return &CloudEventFiltersClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `cloudeventfilters.Hooks(f(g(h())))`.
+func (c *CloudEventFiltersClient) Use(hooks ...Hook) {
+	c.hooks.CloudEventFilters = append(c.hooks.CloudEventFilters, hooks...)
+}
+
+// Create returns a builder for creating a CloudEventFilters entity.
+func (c *CloudEventFiltersClient) Create() *CloudEventFiltersCreate {
+	mutation := newCloudEventFiltersMutation(c.config, OpCreate)
+	return &CloudEventFiltersCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of CloudEventFilters entities.
+func (c *CloudEventFiltersClient) CreateBulk(builders ...*CloudEventFiltersCreate) *CloudEventFiltersCreateBulk {
+	return &CloudEventFiltersCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for CloudEventFilters.
+func (c *CloudEventFiltersClient) Update() *CloudEventFiltersUpdate {
+	mutation := newCloudEventFiltersMutation(c.config, OpUpdate)
+	return &CloudEventFiltersUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *CloudEventFiltersClient) UpdateOne(cef *CloudEventFilters) *CloudEventFiltersUpdateOne {
+	mutation := newCloudEventFiltersMutation(c.config, OpUpdateOne, withCloudEventFilters(cef))
+	return &CloudEventFiltersUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *CloudEventFiltersClient) UpdateOneID(id int) *CloudEventFiltersUpdateOne {
+	mutation := newCloudEventFiltersMutation(c.config, OpUpdateOne, withCloudEventFiltersID(id))
+	return &CloudEventFiltersUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for CloudEventFilters.
+func (c *CloudEventFiltersClient) Delete() *CloudEventFiltersDelete {
+	mutation := newCloudEventFiltersMutation(c.config, OpDelete)
+	return &CloudEventFiltersDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *CloudEventFiltersClient) DeleteOne(cef *CloudEventFilters) *CloudEventFiltersDeleteOne {
+	return c.DeleteOneID(cef.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *CloudEventFiltersClient) DeleteOneID(id int) *CloudEventFiltersDeleteOne {
+	builder := c.Delete().Where(cloudeventfilters.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &CloudEventFiltersDeleteOne{builder}
+}
+
+// Query returns a query builder for CloudEventFilters.
+func (c *CloudEventFiltersClient) Query() *CloudEventFiltersQuery {
+	return &CloudEventFiltersQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a CloudEventFilters entity by its id.
+func (c *CloudEventFiltersClient) Get(ctx context.Context, id int) (*CloudEventFilters, error) {
+	return c.Query().Where(cloudeventfilters.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *CloudEventFiltersClient) GetX(ctx context.Context, id int) *CloudEventFilters {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryNamespace queries the namespace edge of a CloudEventFilters.
+func (c *CloudEventFiltersClient) QueryNamespace(cef *CloudEventFilters) *NamespaceQuery {
+	query := &NamespaceQuery{config: c.config}
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := cef.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(cloudeventfilters.Table, cloudeventfilters.FieldID, id),
+			sqlgraph.To(namespace.Table, namespace.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, cloudeventfilters.NamespaceTable, cloudeventfilters.NamespaceColumn),
+		)
+		fromV = sqlgraph.Neighbors(cef.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *CloudEventFiltersClient) Hooks() []Hook {
+	return c.hooks.CloudEventFilters
 }
 
 // CloudEventsClient is a client for the CloudEvents schema.
@@ -1764,6 +1877,22 @@ func (c *NamespaceClient) QueryNamespacelisteners(n *Namespace) *EventsQuery {
 			sqlgraph.From(namespace.Table, namespace.FieldID, id),
 			sqlgraph.To(events.Table, events.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, namespace.NamespacelistenersTable, namespace.NamespacelistenersColumn),
+		)
+		fromV = sqlgraph.Neighbors(n.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryCloudeventfilters queries the cloudeventfilters edge of a Namespace.
+func (c *NamespaceClient) QueryCloudeventfilters(n *Namespace) *CloudEventFiltersQuery {
+	query := &CloudEventFiltersQuery{config: c.config}
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := n.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(namespace.Table, namespace.FieldID, id),
+			sqlgraph.To(cloudeventfilters.Table, cloudeventfilters.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, namespace.CloudeventfiltersTable, namespace.CloudeventfiltersColumn),
 		)
 		fromV = sqlgraph.Neighbors(n.driver.Dialect(), step)
 		return fromV, nil

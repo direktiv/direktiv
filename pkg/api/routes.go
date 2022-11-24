@@ -25,6 +25,13 @@ const (
 	RN_Retag                = "retag"
 	RN_GetWorkflowRouter    = "getWorkflowRouter"
 
+	RN_NamespaceEventFilter       = "namespaceEventFilter"
+	RN_CreateNamespaceEventFilter = "CreateNamespaceEventFilter"
+	RN_DeleteNamespaceEventFilter = "DeleteNamespaceEventFilter"
+	RN_UpdateNamespaceEventFilter = "UpdateNamespaceEventFilter"
+	RN_ListNamespaceEventFilters  = "ListNamespaceEventFilters"
+	RN_GetNamespaceEventFilter    = "GetNamespaceEventFilter"
+
 	RN_EventListeners     = "eventListeners"
 	RN_EventHistory       = "eventHistory"
 	RN_EditWorkflowRouter = "editWorkflowRouter"

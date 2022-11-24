@@ -9,6 +9,19 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 )
 
+// The CloudEventFiltersFunc type is an adapter to allow the use of ordinary
+// function as CloudEventFilters mutator.
+type CloudEventFiltersFunc func(context.Context, *ent.CloudEventFiltersMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f CloudEventFiltersFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.CloudEventFiltersMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.CloudEventFiltersMutation", m)
+	}
+	return f(ctx, mv)
+}
+
 // The CloudEventsFunc type is an adapter to allow the use of ordinary
 // function as CloudEvents mutator.
 type CloudEventsFunc func(context.Context, *ent.CloudEventsMutation) (ent.Value, error)

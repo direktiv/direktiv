@@ -5,6 +5,7 @@ package ent
 import (
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/flow/ent/cloudeventfilters"
 	"github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
 	"github.com/direktiv/direktiv/pkg/flow/ent/events"
 	"github.com/direktiv/direktiv/pkg/flow/ent/eventswait"
@@ -30,6 +31,16 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	cloudeventfiltersFields := schema.CloudEventFilters{}.Fields()
+	_ = cloudeventfiltersFields
+	// cloudeventfiltersDescName is the schema descriptor for name field.
+	cloudeventfiltersDescName := cloudeventfiltersFields[0].Descriptor()
+	// cloudeventfilters.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	cloudeventfilters.NameValidator = cloudeventfiltersDescName.Validators[0].(func(string) error)
+	// cloudeventfiltersDescJscode is the schema descriptor for jscode field.
+	cloudeventfiltersDescJscode := cloudeventfiltersFields[1].Descriptor()
+	// cloudeventfilters.JscodeValidator is a validator for the "jscode" field. It is called by the builders before save.
+	cloudeventfilters.JscodeValidator = cloudeventfiltersDescJscode.Validators[0].(func(string) error)
 	cloudeventsFields := schema.CloudEvents{}.Fields()
 	_ = cloudeventsFields
 	// cloudeventsDescEventId is the schema descriptor for eventId field.

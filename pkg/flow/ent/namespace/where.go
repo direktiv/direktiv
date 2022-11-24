@@ -688,6 +688,34 @@ func HasNamespacelistenersWith(preds ...predicate.Events) predicate.Namespace {
 	})
 }
 
+// HasCloudeventfilters applies the HasEdge predicate on the "cloudeventfilters" edge.
+func HasCloudeventfilters() predicate.Namespace {
+	return predicate.Namespace(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(CloudeventfiltersTable, CloudEventFiltersFieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, CloudeventfiltersTable, CloudeventfiltersColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasCloudeventfiltersWith applies the HasEdge predicate on the "cloudeventfilters" edge with a given conditions (other predicates).
+func HasCloudeventfiltersWith(preds ...predicate.CloudEventFilters) predicate.Namespace {
+	return predicate.Namespace(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(CloudeventfiltersInverseTable, CloudEventFiltersFieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, CloudeventfiltersTable, CloudeventfiltersColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasServices applies the HasEdge predicate on the "services" edge.
 func HasServices() predicate.Namespace {
 	return predicate.Namespace(func(s *sql.Selector) {

@@ -82,6 +82,12 @@ type FlowClient interface {
 	RunWorkflow(ctx context.Context, in *RunWorkflowRequest, opts ...grpc.CallOption) (Flow_RunWorkflowClient, error)
 	CancelInstance(ctx context.Context, in *CancelInstanceRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	BroadcastCloudevent(ctx context.Context, in *BroadcastCloudeventRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	ApplyCloudEventFilter(ctx context.Context, in *ApplyCloudEventFilterRequest, opts ...grpc.CallOption) (*ApplyCloudEventFilterResponse, error)
+	DeleteCloudEventFilter(ctx context.Context, in *DeleteCloudEventFilterRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	CreateCloudEventFilter(ctx context.Context, in *CreateCloudEventFilterRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	UpdateCloudEventFilter(ctx context.Context, in *UpdateCloudEventFilterRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	GetCloudEventFilterScript(ctx context.Context, in *GetCloudEventFilterScriptRequest, opts ...grpc.CallOption) (*GetCloudEventFilterScriptResponse, error)
+	GetCloudEventFilters(ctx context.Context, in *GetCloudEventFiltersRequest, opts ...grpc.CallOption) (*GetCloudEventFiltersResponse, error)
 	NamespaceVariable(ctx context.Context, in *NamespaceVariableRequest, opts ...grpc.CallOption) (*NamespaceVariableResponse, error)
 	NamespaceVariableParcels(ctx context.Context, in *NamespaceVariableRequest, opts ...grpc.CallOption) (Flow_NamespaceVariableParcelsClient, error)
 	NamespaceVariables(ctx context.Context, in *NamespaceVariablesRequest, opts ...grpc.CallOption) (*NamespaceVariablesResponse, error)
@@ -1028,6 +1034,60 @@ func (c *flowClient) BroadcastCloudevent(ctx context.Context, in *BroadcastCloud
 	return out, nil
 }
 
+func (c *flowClient) ApplyCloudEventFilter(ctx context.Context, in *ApplyCloudEventFilterRequest, opts ...grpc.CallOption) (*ApplyCloudEventFilterResponse, error) {
+	out := new(ApplyCloudEventFilterResponse)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/ApplyCloudEventFilter", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *flowClient) DeleteCloudEventFilter(ctx context.Context, in *DeleteCloudEventFilterRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/DeleteCloudEventFilter", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *flowClient) CreateCloudEventFilter(ctx context.Context, in *CreateCloudEventFilterRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/CreateCloudEventFilter", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *flowClient) UpdateCloudEventFilter(ctx context.Context, in *UpdateCloudEventFilterRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/UpdateCloudEventFilter", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *flowClient) GetCloudEventFilterScript(ctx context.Context, in *GetCloudEventFilterScriptRequest, opts ...grpc.CallOption) (*GetCloudEventFilterScriptResponse, error) {
+	out := new(GetCloudEventFilterScriptResponse)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/GetCloudEventFilterScript", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *flowClient) GetCloudEventFilters(ctx context.Context, in *GetCloudEventFiltersRequest, opts ...grpc.CallOption) (*GetCloudEventFiltersResponse, error) {
+	out := new(GetCloudEventFiltersResponse)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/GetCloudEventFilters", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *flowClient) NamespaceVariable(ctx context.Context, in *NamespaceVariableRequest, opts ...grpc.CallOption) (*NamespaceVariableResponse, error) {
 	out := new(NamespaceVariableResponse)
 	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/NamespaceVariable", in, out, opts...)
@@ -1882,6 +1942,12 @@ type FlowServer interface {
 	RunWorkflow(*RunWorkflowRequest, Flow_RunWorkflowServer) error
 	CancelInstance(context.Context, *CancelInstanceRequest) (*emptypb.Empty, error)
 	BroadcastCloudevent(context.Context, *BroadcastCloudeventRequest) (*emptypb.Empty, error)
+	ApplyCloudEventFilter(context.Context, *ApplyCloudEventFilterRequest) (*ApplyCloudEventFilterResponse, error)
+	DeleteCloudEventFilter(context.Context, *DeleteCloudEventFilterRequest) (*emptypb.Empty, error)
+	CreateCloudEventFilter(context.Context, *CreateCloudEventFilterRequest) (*emptypb.Empty, error)
+	UpdateCloudEventFilter(context.Context, *UpdateCloudEventFilterRequest) (*emptypb.Empty, error)
+	GetCloudEventFilterScript(context.Context, *GetCloudEventFilterScriptRequest) (*GetCloudEventFilterScriptResponse, error)
+	GetCloudEventFilters(context.Context, *GetCloudEventFiltersRequest) (*GetCloudEventFiltersResponse, error)
 	NamespaceVariable(context.Context, *NamespaceVariableRequest) (*NamespaceVariableResponse, error)
 	NamespaceVariableParcels(*NamespaceVariableRequest, Flow_NamespaceVariableParcelsServer) error
 	NamespaceVariables(context.Context, *NamespaceVariablesRequest) (*NamespaceVariablesResponse, error)
@@ -2125,6 +2191,24 @@ func (UnimplementedFlowServer) CancelInstance(context.Context, *CancelInstanceRe
 }
 func (UnimplementedFlowServer) BroadcastCloudevent(context.Context, *BroadcastCloudeventRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method BroadcastCloudevent not implemented")
+}
+func (UnimplementedFlowServer) ApplyCloudEventFilter(context.Context, *ApplyCloudEventFilterRequest) (*ApplyCloudEventFilterResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ApplyCloudEventFilter not implemented")
+}
+func (UnimplementedFlowServer) DeleteCloudEventFilter(context.Context, *DeleteCloudEventFilterRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteCloudEventFilter not implemented")
+}
+func (UnimplementedFlowServer) CreateCloudEventFilter(context.Context, *CreateCloudEventFilterRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateCloudEventFilter not implemented")
+}
+func (UnimplementedFlowServer) UpdateCloudEventFilter(context.Context, *UpdateCloudEventFilterRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateCloudEventFilter not implemented")
+}
+func (UnimplementedFlowServer) GetCloudEventFilterScript(context.Context, *GetCloudEventFilterScriptRequest) (*GetCloudEventFilterScriptResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetCloudEventFilterScript not implemented")
+}
+func (UnimplementedFlowServer) GetCloudEventFilters(context.Context, *GetCloudEventFiltersRequest) (*GetCloudEventFiltersResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetCloudEventFilters not implemented")
 }
 func (UnimplementedFlowServer) NamespaceVariable(context.Context, *NamespaceVariableRequest) (*NamespaceVariableResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method NamespaceVariable not implemented")
@@ -3408,6 +3492,114 @@ func _Flow_BroadcastCloudevent_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Flow_ApplyCloudEventFilter_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ApplyCloudEventFilterRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FlowServer).ApplyCloudEventFilter(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/direktiv_flow.Flow/ApplyCloudEventFilter",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FlowServer).ApplyCloudEventFilter(ctx, req.(*ApplyCloudEventFilterRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Flow_DeleteCloudEventFilter_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteCloudEventFilterRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FlowServer).DeleteCloudEventFilter(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/direktiv_flow.Flow/DeleteCloudEventFilter",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FlowServer).DeleteCloudEventFilter(ctx, req.(*DeleteCloudEventFilterRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Flow_CreateCloudEventFilter_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateCloudEventFilterRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FlowServer).CreateCloudEventFilter(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/direktiv_flow.Flow/CreateCloudEventFilter",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FlowServer).CreateCloudEventFilter(ctx, req.(*CreateCloudEventFilterRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Flow_UpdateCloudEventFilter_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateCloudEventFilterRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FlowServer).UpdateCloudEventFilter(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/direktiv_flow.Flow/UpdateCloudEventFilter",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FlowServer).UpdateCloudEventFilter(ctx, req.(*UpdateCloudEventFilterRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Flow_GetCloudEventFilterScript_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetCloudEventFilterScriptRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FlowServer).GetCloudEventFilterScript(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/direktiv_flow.Flow/GetCloudEventFilterScript",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FlowServer).GetCloudEventFilterScript(ctx, req.(*GetCloudEventFilterScriptRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Flow_GetCloudEventFilters_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetCloudEventFiltersRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FlowServer).GetCloudEventFilters(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/direktiv_flow.Flow/GetCloudEventFilters",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FlowServer).GetCloudEventFilters(ctx, req.(*GetCloudEventFiltersRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Flow_NamespaceVariable_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(NamespaceVariableRequest)
 	if err := dec(in); err != nil {
@@ -4616,6 +4808,30 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "BroadcastCloudevent",
 			Handler:    _Flow_BroadcastCloudevent_Handler,
+		},
+		{
+			MethodName: "ApplyCloudEventFilter",
+			Handler:    _Flow_ApplyCloudEventFilter_Handler,
+		},
+		{
+			MethodName: "DeleteCloudEventFilter",
+			Handler:    _Flow_DeleteCloudEventFilter_Handler,
+		},
+		{
+			MethodName: "CreateCloudEventFilter",
+			Handler:    _Flow_CreateCloudEventFilter_Handler,
+		},
+		{
+			MethodName: "UpdateCloudEventFilter",
+			Handler:    _Flow_UpdateCloudEventFilter_Handler,
+		},
+		{
+			MethodName: "GetCloudEventFilterScript",
+			Handler:    _Flow_GetCloudEventFilterScript_Handler,
+		},
+		{
+			MethodName: "GetCloudEventFilters",
+			Handler:    _Flow_GetCloudEventFilters_Handler,
 		},
 		{
 			MethodName: "NamespaceVariable",

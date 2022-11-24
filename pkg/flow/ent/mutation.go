@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/cloudevents/sdk-go/v2/event"
+	"github.com/direktiv/direktiv/pkg/flow/ent/cloudeventfilters"
 	"github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
 	"github.com/direktiv/direktiv/pkg/flow/ent/events"
 	"github.com/direktiv/direktiv/pkg/flow/ent/eventswait"
@@ -42,24 +43,457 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
-	TypeCloudEvents     = "CloudEvents"
-	TypeEvents          = "Events"
-	TypeEventsWait      = "EventsWait"
-	TypeInode           = "Inode"
-	TypeInstance        = "Instance"
-	TypeInstanceRuntime = "InstanceRuntime"
-	TypeLogMsg          = "LogMsg"
-	TypeMirror          = "Mirror"
-	TypeMirrorActivity  = "MirrorActivity"
-	TypeNamespace       = "Namespace"
-	TypeRef             = "Ref"
-	TypeRevision        = "Revision"
-	TypeRoute           = "Route"
-	TypeServices        = "Services"
-	TypeVarData         = "VarData"
-	TypeVarRef          = "VarRef"
-	TypeWorkflow        = "Workflow"
+	TypeCloudEventFilters = "CloudEventFilters"
+	TypeCloudEvents       = "CloudEvents"
+	TypeEvents            = "Events"
+	TypeEventsWait        = "EventsWait"
+	TypeInode             = "Inode"
+	TypeInstance          = "Instance"
+	TypeInstanceRuntime   = "InstanceRuntime"
+	TypeLogMsg            = "LogMsg"
+	TypeMirror            = "Mirror"
+	TypeMirrorActivity    = "MirrorActivity"
+	TypeNamespace         = "Namespace"
+	TypeRef               = "Ref"
+	TypeRevision          = "Revision"
+	TypeRoute             = "Route"
+	TypeServices          = "Services"
+	TypeVarData           = "VarData"
+	TypeVarRef            = "VarRef"
+	TypeWorkflow          = "Workflow"
 )
+
+// CloudEventFiltersMutation represents an operation that mutates the CloudEventFilters nodes in the graph.
+type CloudEventFiltersMutation struct {
+	config
+	op               Op
+	typ              string
+	id               *int
+	name             *string
+	jscode           *string
+	clearedFields    map[string]struct{}
+	namespace        *uuid.UUID
+	clearednamespace bool
+	done             bool
+	oldValue         func(context.Context) (*CloudEventFilters, error)
+	predicates       []predicate.CloudEventFilters
+}
+
+var _ ent.Mutation = (*CloudEventFiltersMutation)(nil)
+
+// cloudeventfiltersOption allows management of the mutation configuration using functional options.
+type cloudeventfiltersOption func(*CloudEventFiltersMutation)
+
+// newCloudEventFiltersMutation creates new mutation for the CloudEventFilters entity.
+func newCloudEventFiltersMutation(c config, op Op, opts ...cloudeventfiltersOption) *CloudEventFiltersMutation {
+	m := &CloudEventFiltersMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeCloudEventFilters,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withCloudEventFiltersID sets the ID field of the mutation.
+func withCloudEventFiltersID(id int) cloudeventfiltersOption {
+	return func(m *CloudEventFiltersMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *CloudEventFilters
+		)
+		m.oldValue = func(ctx context.Context) (*CloudEventFilters, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().CloudEventFilters.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withCloudEventFilters sets the old CloudEventFilters of the mutation.
+func withCloudEventFilters(node *CloudEventFilters) cloudeventfiltersOption {
+	return func(m *CloudEventFiltersMutation) {
+		m.oldValue = func(context.Context) (*CloudEventFilters, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m CloudEventFiltersMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m CloudEventFiltersMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *CloudEventFiltersMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *CloudEventFiltersMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().CloudEventFilters.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetName sets the "name" field.
+func (m *CloudEventFiltersMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the value of the "name" field in the mutation.
+func (m *CloudEventFiltersMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old "name" field's value of the CloudEventFilters entity.
+// If the CloudEventFilters object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CloudEventFiltersMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName resets all changes to the "name" field.
+func (m *CloudEventFiltersMutation) ResetName() {
+	m.name = nil
+}
+
+// SetJscode sets the "jscode" field.
+func (m *CloudEventFiltersMutation) SetJscode(s string) {
+	m.jscode = &s
+}
+
+// Jscode returns the value of the "jscode" field in the mutation.
+func (m *CloudEventFiltersMutation) Jscode() (r string, exists bool) {
+	v := m.jscode
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldJscode returns the old "jscode" field's value of the CloudEventFilters entity.
+// If the CloudEventFilters object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CloudEventFiltersMutation) OldJscode(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldJscode is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldJscode requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldJscode: %w", err)
+	}
+	return oldValue.Jscode, nil
+}
+
+// ResetJscode resets all changes to the "jscode" field.
+func (m *CloudEventFiltersMutation) ResetJscode() {
+	m.jscode = nil
+}
+
+// SetNamespaceID sets the "namespace" edge to the Namespace entity by id.
+func (m *CloudEventFiltersMutation) SetNamespaceID(id uuid.UUID) {
+	m.namespace = &id
+}
+
+// ClearNamespace clears the "namespace" edge to the Namespace entity.
+func (m *CloudEventFiltersMutation) ClearNamespace() {
+	m.clearednamespace = true
+}
+
+// NamespaceCleared reports if the "namespace" edge to the Namespace entity was cleared.
+func (m *CloudEventFiltersMutation) NamespaceCleared() bool {
+	return m.clearednamespace
+}
+
+// NamespaceID returns the "namespace" edge ID in the mutation.
+func (m *CloudEventFiltersMutation) NamespaceID() (id uuid.UUID, exists bool) {
+	if m.namespace != nil {
+		return *m.namespace, true
+	}
+	return
+}
+
+// NamespaceIDs returns the "namespace" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// NamespaceID instead. It exists only for internal usage by the builders.
+func (m *CloudEventFiltersMutation) NamespaceIDs() (ids []uuid.UUID) {
+	if id := m.namespace; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetNamespace resets all changes to the "namespace" edge.
+func (m *CloudEventFiltersMutation) ResetNamespace() {
+	m.namespace = nil
+	m.clearednamespace = false
+}
+
+// Where appends a list predicates to the CloudEventFiltersMutation builder.
+func (m *CloudEventFiltersMutation) Where(ps ...predicate.CloudEventFilters) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// Op returns the operation name.
+func (m *CloudEventFiltersMutation) Op() Op {
+	return m.op
+}
+
+// Type returns the node type of this mutation (CloudEventFilters).
+func (m *CloudEventFiltersMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *CloudEventFiltersMutation) Fields() []string {
+	fields := make([]string, 0, 2)
+	if m.name != nil {
+		fields = append(fields, cloudeventfilters.FieldName)
+	}
+	if m.jscode != nil {
+		fields = append(fields, cloudeventfilters.FieldJscode)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *CloudEventFiltersMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case cloudeventfilters.FieldName:
+		return m.Name()
+	case cloudeventfilters.FieldJscode:
+		return m.Jscode()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *CloudEventFiltersMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case cloudeventfilters.FieldName:
+		return m.OldName(ctx)
+	case cloudeventfilters.FieldJscode:
+		return m.OldJscode(ctx)
+	}
+	return nil, fmt.Errorf("unknown CloudEventFilters field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *CloudEventFiltersMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case cloudeventfilters.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
+		return nil
+	case cloudeventfilters.FieldJscode:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetJscode(v)
+		return nil
+	}
+	return fmt.Errorf("unknown CloudEventFilters field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *CloudEventFiltersMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *CloudEventFiltersMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *CloudEventFiltersMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown CloudEventFilters numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *CloudEventFiltersMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *CloudEventFiltersMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *CloudEventFiltersMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown CloudEventFilters nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *CloudEventFiltersMutation) ResetField(name string) error {
+	switch name {
+	case cloudeventfilters.FieldName:
+		m.ResetName()
+		return nil
+	case cloudeventfilters.FieldJscode:
+		m.ResetJscode()
+		return nil
+	}
+	return fmt.Errorf("unknown CloudEventFilters field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *CloudEventFiltersMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.namespace != nil {
+		edges = append(edges, cloudeventfilters.EdgeNamespace)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *CloudEventFiltersMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case cloudeventfilters.EdgeNamespace:
+		if id := m.namespace; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *CloudEventFiltersMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *CloudEventFiltersMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *CloudEventFiltersMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.clearednamespace {
+		edges = append(edges, cloudeventfilters.EdgeNamespace)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *CloudEventFiltersMutation) EdgeCleared(name string) bool {
+	switch name {
+	case cloudeventfilters.EdgeNamespace:
+		return m.clearednamespace
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *CloudEventFiltersMutation) ClearEdge(name string) error {
+	switch name {
+	case cloudeventfilters.EdgeNamespace:
+		m.ClearNamespace()
+		return nil
+	}
+	return fmt.Errorf("unknown CloudEventFilters unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *CloudEventFiltersMutation) ResetEdge(name string) error {
+	switch name {
+	case cloudeventfilters.EdgeNamespace:
+		m.ResetNamespace()
+		return nil
+	}
+	return fmt.Errorf("unknown CloudEventFilters edge %s", name)
+}
 
 // CloudEventsMutation represents an operation that mutates the CloudEvents nodes in the graph.
 type CloudEventsMutation struct {
@@ -8333,6 +8767,9 @@ type NamespaceMutation struct {
 	namespacelisteners        map[uuid.UUID]struct{}
 	removednamespacelisteners map[uuid.UUID]struct{}
 	clearednamespacelisteners bool
+	cloudeventfilters         map[int]struct{}
+	removedcloudeventfilters  map[int]struct{}
+	clearedcloudeventfilters  bool
 	services                  map[uuid.UUID]struct{}
 	removedservices           map[uuid.UUID]struct{}
 	clearedservices           bool
@@ -9075,6 +9512,60 @@ func (m *NamespaceMutation) ResetNamespacelisteners() {
 	m.removednamespacelisteners = nil
 }
 
+// AddCloudeventfilterIDs adds the "cloudeventfilters" edge to the CloudEventFilters entity by ids.
+func (m *NamespaceMutation) AddCloudeventfilterIDs(ids ...int) {
+	if m.cloudeventfilters == nil {
+		m.cloudeventfilters = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.cloudeventfilters[ids[i]] = struct{}{}
+	}
+}
+
+// ClearCloudeventfilters clears the "cloudeventfilters" edge to the CloudEventFilters entity.
+func (m *NamespaceMutation) ClearCloudeventfilters() {
+	m.clearedcloudeventfilters = true
+}
+
+// CloudeventfiltersCleared reports if the "cloudeventfilters" edge to the CloudEventFilters entity was cleared.
+func (m *NamespaceMutation) CloudeventfiltersCleared() bool {
+	return m.clearedcloudeventfilters
+}
+
+// RemoveCloudeventfilterIDs removes the "cloudeventfilters" edge to the CloudEventFilters entity by IDs.
+func (m *NamespaceMutation) RemoveCloudeventfilterIDs(ids ...int) {
+	if m.removedcloudeventfilters == nil {
+		m.removedcloudeventfilters = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.cloudeventfilters, ids[i])
+		m.removedcloudeventfilters[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedCloudeventfilters returns the removed IDs of the "cloudeventfilters" edge to the CloudEventFilters entity.
+func (m *NamespaceMutation) RemovedCloudeventfiltersIDs() (ids []int) {
+	for id := range m.removedcloudeventfilters {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// CloudeventfiltersIDs returns the "cloudeventfilters" edge IDs in the mutation.
+func (m *NamespaceMutation) CloudeventfiltersIDs() (ids []int) {
+	for id := range m.cloudeventfilters {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetCloudeventfilters resets all changes to the "cloudeventfilters" edge.
+func (m *NamespaceMutation) ResetCloudeventfilters() {
+	m.cloudeventfilters = nil
+	m.clearedcloudeventfilters = false
+	m.removedcloudeventfilters = nil
+}
+
 // AddServiceIDs adds the "services" edge to the Services entity by ids.
 func (m *NamespaceMutation) AddServiceIDs(ids ...uuid.UUID) {
 	if m.services == nil {
@@ -9298,7 +9789,7 @@ func (m *NamespaceMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *NamespaceMutation) AddedEdges() []string {
-	edges := make([]string, 0, 10)
+	edges := make([]string, 0, 11)
 	if m.inodes != nil {
 		edges = append(edges, namespace.EdgeInodes)
 	}
@@ -9325,6 +9816,9 @@ func (m *NamespaceMutation) AddedEdges() []string {
 	}
 	if m.namespacelisteners != nil {
 		edges = append(edges, namespace.EdgeNamespacelisteners)
+	}
+	if m.cloudeventfilters != nil {
+		edges = append(edges, namespace.EdgeCloudeventfilters)
 	}
 	if m.services != nil {
 		edges = append(edges, namespace.EdgeServices)
@@ -9390,6 +9884,12 @@ func (m *NamespaceMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case namespace.EdgeCloudeventfilters:
+		ids := make([]ent.Value, 0, len(m.cloudeventfilters))
+		for id := range m.cloudeventfilters {
+			ids = append(ids, id)
+		}
+		return ids
 	case namespace.EdgeServices:
 		ids := make([]ent.Value, 0, len(m.services))
 		for id := range m.services {
@@ -9402,7 +9902,7 @@ func (m *NamespaceMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *NamespaceMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 10)
+	edges := make([]string, 0, 11)
 	if m.removedinodes != nil {
 		edges = append(edges, namespace.EdgeInodes)
 	}
@@ -9429,6 +9929,9 @@ func (m *NamespaceMutation) RemovedEdges() []string {
 	}
 	if m.removednamespacelisteners != nil {
 		edges = append(edges, namespace.EdgeNamespacelisteners)
+	}
+	if m.removedcloudeventfilters != nil {
+		edges = append(edges, namespace.EdgeCloudeventfilters)
 	}
 	if m.removedservices != nil {
 		edges = append(edges, namespace.EdgeServices)
@@ -9494,6 +9997,12 @@ func (m *NamespaceMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case namespace.EdgeCloudeventfilters:
+		ids := make([]ent.Value, 0, len(m.removedcloudeventfilters))
+		for id := range m.removedcloudeventfilters {
+			ids = append(ids, id)
+		}
+		return ids
 	case namespace.EdgeServices:
 		ids := make([]ent.Value, 0, len(m.removedservices))
 		for id := range m.removedservices {
@@ -9506,7 +10015,7 @@ func (m *NamespaceMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *NamespaceMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 10)
+	edges := make([]string, 0, 11)
 	if m.clearedinodes {
 		edges = append(edges, namespace.EdgeInodes)
 	}
@@ -9533,6 +10042,9 @@ func (m *NamespaceMutation) ClearedEdges() []string {
 	}
 	if m.clearednamespacelisteners {
 		edges = append(edges, namespace.EdgeNamespacelisteners)
+	}
+	if m.clearedcloudeventfilters {
+		edges = append(edges, namespace.EdgeCloudeventfilters)
 	}
 	if m.clearedservices {
 		edges = append(edges, namespace.EdgeServices)
@@ -9562,6 +10074,8 @@ func (m *NamespaceMutation) EdgeCleared(name string) bool {
 		return m.clearedcloudevents
 	case namespace.EdgeNamespacelisteners:
 		return m.clearednamespacelisteners
+	case namespace.EdgeCloudeventfilters:
+		return m.clearedcloudeventfilters
 	case namespace.EdgeServices:
 		return m.clearedservices
 	}
@@ -9606,6 +10120,9 @@ func (m *NamespaceMutation) ResetEdge(name string) error {
 		return nil
 	case namespace.EdgeNamespacelisteners:
 		m.ResetNamespacelisteners()
+		return nil
+	case namespace.EdgeCloudeventfilters:
+		m.ResetCloudeventfilters()
 		return nil
 	case namespace.EdgeServices:
 		m.ResetServices()
