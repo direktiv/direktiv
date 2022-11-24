@@ -659,12 +659,6 @@ EXAMPLE: direktiv-sync event create -s script.txt -f filtername
 	     direktiv-sync event delete filternanme
 		 direktiv-sync event update -s script.txt -f filtername
 `,
-
-	Run: func(cmd *cobra.Command, args []string) {
-
-		cmd.PrintErrf("Error: must specify a operation like create, delete, or update")
-
-	},
 }
 
 var createCmd = &cobra.Command{
