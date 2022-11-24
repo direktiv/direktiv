@@ -28,6 +28,7 @@ type config struct {
 
 // hooks per client, for fast access.
 type hooks struct {
+	Annotation        []ent.Hook
 	CloudEventFilters []ent.Hook
 	CloudEvents       []ent.Hook
 	Events            []ent.Hook

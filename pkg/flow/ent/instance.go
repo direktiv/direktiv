@@ -63,9 +63,11 @@ type InstanceEdges struct {
 	Children []*InstanceRuntime `json:"children,omitempty"`
 	// Eventlisteners holds the value of the eventlisteners edge.
 	Eventlisteners []*Events `json:"eventlisteners,omitempty"`
+	// Annotations holds the value of the annotations edge.
+	Annotations []*Annotation `json:"annotations,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [8]bool
+	loadedTypes [9]bool
 }
 
 // NamespaceOrErr returns the Namespace value or an error if the edge
@@ -154,6 +156,15 @@ func (e InstanceEdges) EventlistenersOrErr() ([]*Events, error) {
 		return e.Eventlisteners, nil
 	}
 	return nil, &NotLoadedError{edge: "eventlisteners"}
+}
+
+// AnnotationsOrErr returns the Annotations value or an error if the edge
+// was not loaded in eager-loading.
+func (e InstanceEdges) AnnotationsOrErr() ([]*Annotation, error) {
+	if e.loadedTypes[8] {
+		return e.Annotations, nil
+	}
+	return nil, &NotLoadedError{edge: "annotations"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -306,6 +317,11 @@ func (i *Instance) QueryChildren() *InstanceRuntimeQuery {
 // QueryEventlisteners queries the "eventlisteners" edge of the Instance entity.
 func (i *Instance) QueryEventlisteners() *EventsQuery {
 	return (&InstanceClient{config: i.config}).QueryEventlisteners(i)
+}
+
+// QueryAnnotations queries the "annotations" edge of the Instance entity.
+func (i *Instance) QueryAnnotations() *AnnotationQuery {
+	return (&InstanceClient{config: i.config}).QueryAnnotations(i)
 }
 
 // Update returns a builder for updating this Instance.

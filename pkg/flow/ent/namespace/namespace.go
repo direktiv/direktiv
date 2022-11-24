@@ -39,6 +39,8 @@ const (
 	EdgeCloudevents = "cloudevents"
 	// EdgeNamespacelisteners holds the string denoting the namespacelisteners edge name in mutations.
 	EdgeNamespacelisteners = "namespacelisteners"
+	// EdgeAnnotations holds the string denoting the annotations edge name in mutations.
+	EdgeAnnotations = "annotations"
 	// EdgeCloudeventfilters holds the string denoting the cloudeventfilters edge name in mutations.
 	EdgeCloudeventfilters = "cloudeventfilters"
 	// EdgeServices holds the string denoting the services edge name in mutations.
@@ -110,6 +112,13 @@ const (
 	NamespacelistenersInverseTable = "events"
 	// NamespacelistenersColumn is the table column denoting the namespacelisteners relation/edge.
 	NamespacelistenersColumn = "namespace_namespacelisteners"
+	// AnnotationsTable is the table that holds the annotations relation/edge.
+	AnnotationsTable = "annotations"
+	// AnnotationsInverseTable is the table name for the Annotation entity.
+	// It exists in this package in order to avoid circular dependency with the "annotation" package.
+	AnnotationsInverseTable = "annotations"
+	// AnnotationsColumn is the table column denoting the annotations relation/edge.
+	AnnotationsColumn = "namespace_annotations"
 	// CloudeventfiltersTable is the table that holds the cloudeventfilters relation/edge.
 	CloudeventfiltersTable = "cloud_event_filters"
 	// CloudeventfiltersInverseTable is the table name for the CloudEventFilters entity.

@@ -11,6 +11,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/migrate"
 	"github.com/google/uuid"
 
+	"github.com/direktiv/direktiv/pkg/flow/ent/annotation"
 	"github.com/direktiv/direktiv/pkg/flow/ent/cloudeventfilters"
 	"github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
 	"github.com/direktiv/direktiv/pkg/flow/ent/events"
@@ -40,6 +41,8 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
+	// Annotation is the client for interacting with the Annotation builders.
+	Annotation *AnnotationClient
 	// CloudEventFilters is the client for interacting with the CloudEventFilters builders.
 	CloudEventFilters *CloudEventFiltersClient
 	// CloudEvents is the client for interacting with the CloudEvents builders.
@@ -89,6 +92,7 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
+	c.Annotation = NewAnnotationClient(c.config)
 	c.CloudEventFilters = NewCloudEventFiltersClient(c.config)
 	c.CloudEvents = NewCloudEventsClient(c.config)
 	c.Events = NewEventsClient(c.config)
@@ -140,6 +144,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	return &Tx{
 		ctx:               ctx,
 		config:            cfg,
+		Annotation:        NewAnnotationClient(cfg),
 		CloudEventFilters: NewCloudEventFiltersClient(cfg),
 		CloudEvents:       NewCloudEventsClient(cfg),
 		Events:            NewEventsClient(cfg),
@@ -177,6 +182,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	return &Tx{
 		ctx:               ctx,
 		config:            cfg,
+		Annotation:        NewAnnotationClient(cfg),
 		CloudEventFilters: NewCloudEventFiltersClient(cfg),
 		CloudEvents:       NewCloudEventsClient(cfg),
 		Events:            NewEventsClient(cfg),
@@ -201,7 +207,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		CloudEventFilters.
+//		Annotation.
 //		Query().
 //		Count(ctx)
 func (c *Client) Debug() *Client {
@@ -223,6 +229,7 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
+	c.Annotation.Use(hooks...)
 	c.CloudEventFilters.Use(hooks...)
 	c.CloudEvents.Use(hooks...)
 	c.Events.Use(hooks...)
@@ -241,6 +248,160 @@ func (c *Client) Use(hooks ...Hook) {
 	c.VarData.Use(hooks...)
 	c.VarRef.Use(hooks...)
 	c.Workflow.Use(hooks...)
+}
+
+// AnnotationClient is a client for the Annotation schema.
+type AnnotationClient struct {
+	config
+}
+
+// NewAnnotationClient returns a client for the Annotation from the given config.
+func NewAnnotationClient(c config) *AnnotationClient {
+	return &AnnotationClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `annotation.Hooks(f(g(h())))`.
+func (c *AnnotationClient) Use(hooks ...Hook) {
+	c.hooks.Annotation = append(c.hooks.Annotation, hooks...)
+}
+
+// Create returns a builder for creating a Annotation entity.
+func (c *AnnotationClient) Create() *AnnotationCreate {
+	mutation := newAnnotationMutation(c.config, OpCreate)
+	return &AnnotationCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Annotation entities.
+func (c *AnnotationClient) CreateBulk(builders ...*AnnotationCreate) *AnnotationCreateBulk {
+	return &AnnotationCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Annotation.
+func (c *AnnotationClient) Update() *AnnotationUpdate {
+	mutation := newAnnotationMutation(c.config, OpUpdate)
+	return &AnnotationUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *AnnotationClient) UpdateOne(a *Annotation) *AnnotationUpdateOne {
+	mutation := newAnnotationMutation(c.config, OpUpdateOne, withAnnotation(a))
+	return &AnnotationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *AnnotationClient) UpdateOneID(id uuid.UUID) *AnnotationUpdateOne {
+	mutation := newAnnotationMutation(c.config, OpUpdateOne, withAnnotationID(id))
+	return &AnnotationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Annotation.
+func (c *AnnotationClient) Delete() *AnnotationDelete {
+	mutation := newAnnotationMutation(c.config, OpDelete)
+	return &AnnotationDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *AnnotationClient) DeleteOne(a *Annotation) *AnnotationDeleteOne {
+	return c.DeleteOneID(a.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *AnnotationClient) DeleteOneID(id uuid.UUID) *AnnotationDeleteOne {
+	builder := c.Delete().Where(annotation.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &AnnotationDeleteOne{builder}
+}
+
+// Query returns a query builder for Annotation.
+func (c *AnnotationClient) Query() *AnnotationQuery {
+	return &AnnotationQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a Annotation entity by its id.
+func (c *AnnotationClient) Get(ctx context.Context, id uuid.UUID) (*Annotation, error) {
+	return c.Query().Where(annotation.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *AnnotationClient) GetX(ctx context.Context, id uuid.UUID) *Annotation {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryNamespace queries the namespace edge of a Annotation.
+func (c *AnnotationClient) QueryNamespace(a *Annotation) *NamespaceQuery {
+	query := &NamespaceQuery{config: c.config}
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := a.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(annotation.Table, annotation.FieldID, id),
+			sqlgraph.To(namespace.Table, namespace.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, annotation.NamespaceTable, annotation.NamespaceColumn),
+		)
+		fromV = sqlgraph.Neighbors(a.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryWorkflow queries the workflow edge of a Annotation.
+func (c *AnnotationClient) QueryWorkflow(a *Annotation) *WorkflowQuery {
+	query := &WorkflowQuery{config: c.config}
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := a.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(annotation.Table, annotation.FieldID, id),
+			sqlgraph.To(workflow.Table, workflow.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, annotation.WorkflowTable, annotation.WorkflowColumn),
+		)
+		fromV = sqlgraph.Neighbors(a.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryInstance queries the instance edge of a Annotation.
+func (c *AnnotationClient) QueryInstance(a *Annotation) *InstanceQuery {
+	query := &InstanceQuery{config: c.config}
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := a.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(annotation.Table, annotation.FieldID, id),
+			sqlgraph.To(instance.Table, instance.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, annotation.InstanceTable, annotation.InstanceColumn),
+		)
+		fromV = sqlgraph.Neighbors(a.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryInode queries the inode edge of a Annotation.
+func (c *AnnotationClient) QueryInode(a *Annotation) *InodeQuery {
+	query := &InodeQuery{config: c.config}
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := a.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(annotation.Table, annotation.FieldID, id),
+			sqlgraph.To(inode.Table, inode.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, annotation.InodeTable, annotation.InodeColumn),
+		)
+		fromV = sqlgraph.Neighbors(a.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *AnnotationClient) Hooks() []Hook {
+	return c.hooks.Annotation
 }
 
 // CloudEventFiltersClient is a client for the CloudEventFilters schema.
@@ -880,6 +1041,22 @@ func (c *InodeClient) QueryMirror(i *Inode) *MirrorQuery {
 	return query
 }
 
+// QueryAnnotations queries the annotations edge of a Inode.
+func (c *InodeClient) QueryAnnotations(i *Inode) *AnnotationQuery {
+	query := &AnnotationQuery{config: c.config}
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := i.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(inode.Table, inode.FieldID, id),
+			sqlgraph.To(annotation.Table, annotation.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, inode.AnnotationsTable, inode.AnnotationsColumn),
+		)
+		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *InodeClient) Hooks() []Hook {
 	return c.hooks.Inode
@@ -1091,6 +1268,22 @@ func (c *InstanceClient) QueryEventlisteners(i *Instance) *EventsQuery {
 			sqlgraph.From(instance.Table, instance.FieldID, id),
 			sqlgraph.To(events.Table, events.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, instance.EventlistenersTable, instance.EventlistenersColumn),
+		)
+		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAnnotations queries the annotations edge of a Instance.
+func (c *InstanceClient) QueryAnnotations(i *Instance) *AnnotationQuery {
+	query := &AnnotationQuery{config: c.config}
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := i.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(instance.Table, instance.FieldID, id),
+			sqlgraph.To(annotation.Table, annotation.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, instance.AnnotationsTable, instance.AnnotationsColumn),
 		)
 		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
 		return fromV, nil
@@ -1877,6 +2070,22 @@ func (c *NamespaceClient) QueryNamespacelisteners(n *Namespace) *EventsQuery {
 			sqlgraph.From(namespace.Table, namespace.FieldID, id),
 			sqlgraph.To(events.Table, events.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, namespace.NamespacelistenersTable, namespace.NamespacelistenersColumn),
+		)
+		fromV = sqlgraph.Neighbors(n.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAnnotations queries the annotations edge of a Namespace.
+func (c *NamespaceClient) QueryAnnotations(n *Namespace) *AnnotationQuery {
+	query := &AnnotationQuery{config: c.config}
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := n.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(namespace.Table, namespace.FieldID, id),
+			sqlgraph.To(annotation.Table, annotation.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, namespace.AnnotationsTable, namespace.AnnotationsColumn),
 		)
 		fromV = sqlgraph.Neighbors(n.driver.Dialect(), step)
 		return fromV, nil
@@ -2907,6 +3116,22 @@ func (c *WorkflowClient) QueryWfevents(w *Workflow) *EventsQuery {
 			sqlgraph.From(workflow.Table, workflow.FieldID, id),
 			sqlgraph.To(events.Table, events.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, workflow.WfeventsTable, workflow.WfeventsColumn),
+		)
+		fromV = sqlgraph.Neighbors(w.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAnnotations queries the annotations edge of a Workflow.
+func (c *WorkflowClient) QueryAnnotations(w *Workflow) *AnnotationQuery {
+	query := &AnnotationQuery{config: c.config}
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := w.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(workflow.Table, workflow.FieldID, id),
+			sqlgraph.To(annotation.Table, annotation.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, workflow.AnnotationsTable, workflow.AnnotationsColumn),
 		)
 		fromV = sqlgraph.Neighbors(w.driver.Dialect(), step)
 		return fromV, nil

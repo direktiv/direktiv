@@ -37,6 +37,8 @@ const (
 	EdgeWorkflow = "workflow"
 	// EdgeMirror holds the string denoting the mirror edge name in mutations.
 	EdgeMirror = "mirror"
+	// EdgeAnnotations holds the string denoting the annotations edge name in mutations.
+	EdgeAnnotations = "annotations"
 	// Table holds the table name of the inode in the database.
 	Table = "inodes"
 	// NamespaceTable is the table that holds the namespace relation/edge.
@@ -68,6 +70,13 @@ const (
 	MirrorInverseTable = "mirrors"
 	// MirrorColumn is the table column denoting the mirror relation/edge.
 	MirrorColumn = "inode_mirror"
+	// AnnotationsTable is the table that holds the annotations relation/edge.
+	AnnotationsTable = "annotations"
+	// AnnotationsInverseTable is the table name for the Annotation entity.
+	// It exists in this package in order to avoid circular dependency with the "annotation" package.
+	AnnotationsInverseTable = "annotations"
+	// AnnotationsColumn is the table column denoting the annotations relation/edge.
+	AnnotationsColumn = "inode_annotations"
 )
 
 // Columns holds all SQL columns for inode fields.

@@ -136,6 +136,39 @@ type FlowClient interface {
 	GetNamespaceConfig(ctx context.Context, in *GetNamespaceConfigRequest, opts ...grpc.CallOption) (*GetNamespaceConfigResponse, error)
 	Build(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*BuildResponse, error)
 	InstanceMetadata(ctx context.Context, in *InstanceMetadataRequest, opts ...grpc.CallOption) (*InstanceMetadataResponse, error)
+	NamespaceAnnotation(ctx context.Context, in *NamespaceAnnotationRequest, opts ...grpc.CallOption) (*NamespaceAnnotationResponse, error)
+	NamespaceAnnotationParcels(ctx context.Context, in *NamespaceAnnotationRequest, opts ...grpc.CallOption) (Flow_NamespaceAnnotationParcelsClient, error)
+	NamespaceAnnotations(ctx context.Context, in *NamespaceAnnotationsRequest, opts ...grpc.CallOption) (*NamespaceAnnotationsResponse, error)
+	NamespaceAnnotationsStream(ctx context.Context, in *NamespaceAnnotationsRequest, opts ...grpc.CallOption) (Flow_NamespaceAnnotationsStreamClient, error)
+	SetNamespaceAnnotation(ctx context.Context, in *SetNamespaceAnnotationRequest, opts ...grpc.CallOption) (*SetNamespaceAnnotationResponse, error)
+	SetNamespaceAnnotationParcels(ctx context.Context, opts ...grpc.CallOption) (Flow_SetNamespaceAnnotationParcelsClient, error)
+	DeleteNamespaceAnnotation(ctx context.Context, in *DeleteNamespaceAnnotationRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	RenameNamespaceAnnotation(ctx context.Context, in *RenameNamespaceAnnotationRequest, opts ...grpc.CallOption) (*RenameNamespaceAnnotationResponse, error)
+	WorkflowAnnotation(ctx context.Context, in *WorkflowAnnotationRequest, opts ...grpc.CallOption) (*WorkflowAnnotationResponse, error)
+	WorkflowAnnotationParcels(ctx context.Context, in *WorkflowAnnotationRequest, opts ...grpc.CallOption) (Flow_WorkflowAnnotationParcelsClient, error)
+	WorkflowAnnotations(ctx context.Context, in *WorkflowAnnotationsRequest, opts ...grpc.CallOption) (*WorkflowAnnotationsResponse, error)
+	WorkflowAnnotationsStream(ctx context.Context, in *WorkflowAnnotationsRequest, opts ...grpc.CallOption) (Flow_WorkflowAnnotationsStreamClient, error)
+	SetWorkflowAnnotation(ctx context.Context, in *SetWorkflowAnnotationRequest, opts ...grpc.CallOption) (*SetWorkflowAnnotationResponse, error)
+	SetWorkflowAnnotationParcels(ctx context.Context, opts ...grpc.CallOption) (Flow_SetWorkflowAnnotationParcelsClient, error)
+	DeleteWorkflowAnnotation(ctx context.Context, in *DeleteWorkflowAnnotationRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	RenameWorkflowAnnotation(ctx context.Context, in *RenameWorkflowAnnotationRequest, opts ...grpc.CallOption) (*RenameWorkflowAnnotationResponse, error)
+	InstanceAnnotation(ctx context.Context, in *InstanceAnnotationRequest, opts ...grpc.CallOption) (*InstanceAnnotationResponse, error)
+	InstanceAnnotationParcels(ctx context.Context, in *InstanceAnnotationRequest, opts ...grpc.CallOption) (Flow_InstanceAnnotationParcelsClient, error)
+	InstanceAnnotations(ctx context.Context, in *InstanceAnnotationsRequest, opts ...grpc.CallOption) (*InstanceAnnotationsResponse, error)
+	InstanceAnnotationsStream(ctx context.Context, in *InstanceAnnotationsRequest, opts ...grpc.CallOption) (Flow_InstanceAnnotationsStreamClient, error)
+	SetInstanceAnnotation(ctx context.Context, in *SetInstanceAnnotationRequest, opts ...grpc.CallOption) (*SetInstanceAnnotationResponse, error)
+	SetInstanceAnnotationParcels(ctx context.Context, opts ...grpc.CallOption) (Flow_SetInstanceAnnotationParcelsClient, error)
+	DeleteInstanceAnnotation(ctx context.Context, in *DeleteInstanceAnnotationRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	RenameInstanceAnnotation(ctx context.Context, in *RenameInstanceAnnotationRequest, opts ...grpc.CallOption) (*RenameInstanceAnnotationResponse, error)
+	ReleaseInstance(ctx context.Context, in *ReleaseInstanceRequest, opts ...grpc.CallOption) (*ReleaseInstanceResponse, error)
+	NodeAnnotation(ctx context.Context, in *NodeAnnotationRequest, opts ...grpc.CallOption) (*NodeAnnotationResponse, error)
+	NodeAnnotationParcels(ctx context.Context, in *NodeAnnotationRequest, opts ...grpc.CallOption) (Flow_NodeAnnotationParcelsClient, error)
+	NodeAnnotations(ctx context.Context, in *NodeAnnotationsRequest, opts ...grpc.CallOption) (*NodeAnnotationsResponse, error)
+	NodeAnnotationsStream(ctx context.Context, in *NodeAnnotationsRequest, opts ...grpc.CallOption) (Flow_NodeAnnotationsStreamClient, error)
+	SetNodeAnnotation(ctx context.Context, in *SetNodeAnnotationRequest, opts ...grpc.CallOption) (*SetNodeAnnotationResponse, error)
+	SetNodeAnnotationParcels(ctx context.Context, opts ...grpc.CallOption) (Flow_SetNodeAnnotationParcelsClient, error)
+	DeleteNodeAnnotation(ctx context.Context, in *DeleteNodeAnnotationRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	RenameNodeAnnotation(ctx context.Context, in *RenameNodeAnnotationRequest, opts ...grpc.CallOption) (*RenameNodeAnnotationResponse, error)
 	CreateNamespaceMirror(ctx context.Context, in *CreateNamespaceMirrorRequest, opts ...grpc.CallOption) (*CreateNamespaceResponse, error)
 	CreateDirectoryMirror(ctx context.Context, in *CreateDirectoryMirrorRequest, opts ...grpc.CallOption) (*CreateDirectoryResponse, error)
 	UpdateMirrorSettings(ctx context.Context, in *UpdateMirrorSettingsRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
@@ -1725,6 +1758,587 @@ func (c *flowClient) InstanceMetadata(ctx context.Context, in *InstanceMetadataR
 	return out, nil
 }
 
+func (c *flowClient) NamespaceAnnotation(ctx context.Context, in *NamespaceAnnotationRequest, opts ...grpc.CallOption) (*NamespaceAnnotationResponse, error) {
+	out := new(NamespaceAnnotationResponse)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/NamespaceAnnotation", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *flowClient) NamespaceAnnotationParcels(ctx context.Context, in *NamespaceAnnotationRequest, opts ...grpc.CallOption) (Flow_NamespaceAnnotationParcelsClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[26], "/direktiv_flow.Flow/NamespaceAnnotationParcels", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &flowNamespaceAnnotationParcelsClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Flow_NamespaceAnnotationParcelsClient interface {
+	Recv() (*NamespaceAnnotationResponse, error)
+	grpc.ClientStream
+}
+
+type flowNamespaceAnnotationParcelsClient struct {
+	grpc.ClientStream
+}
+
+func (x *flowNamespaceAnnotationParcelsClient) Recv() (*NamespaceAnnotationResponse, error) {
+	m := new(NamespaceAnnotationResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *flowClient) NamespaceAnnotations(ctx context.Context, in *NamespaceAnnotationsRequest, opts ...grpc.CallOption) (*NamespaceAnnotationsResponse, error) {
+	out := new(NamespaceAnnotationsResponse)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/NamespaceAnnotations", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *flowClient) NamespaceAnnotationsStream(ctx context.Context, in *NamespaceAnnotationsRequest, opts ...grpc.CallOption) (Flow_NamespaceAnnotationsStreamClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[27], "/direktiv_flow.Flow/NamespaceAnnotationsStream", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &flowNamespaceAnnotationsStreamClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Flow_NamespaceAnnotationsStreamClient interface {
+	Recv() (*NamespaceAnnotationsResponse, error)
+	grpc.ClientStream
+}
+
+type flowNamespaceAnnotationsStreamClient struct {
+	grpc.ClientStream
+}
+
+func (x *flowNamespaceAnnotationsStreamClient) Recv() (*NamespaceAnnotationsResponse, error) {
+	m := new(NamespaceAnnotationsResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *flowClient) SetNamespaceAnnotation(ctx context.Context, in *SetNamespaceAnnotationRequest, opts ...grpc.CallOption) (*SetNamespaceAnnotationResponse, error) {
+	out := new(SetNamespaceAnnotationResponse)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/SetNamespaceAnnotation", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *flowClient) SetNamespaceAnnotationParcels(ctx context.Context, opts ...grpc.CallOption) (Flow_SetNamespaceAnnotationParcelsClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[28], "/direktiv_flow.Flow/SetNamespaceAnnotationParcels", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &flowSetNamespaceAnnotationParcelsClient{stream}
+	return x, nil
+}
+
+type Flow_SetNamespaceAnnotationParcelsClient interface {
+	Send(*SetNamespaceAnnotationRequest) error
+	CloseAndRecv() (*SetNamespaceAnnotationResponse, error)
+	grpc.ClientStream
+}
+
+type flowSetNamespaceAnnotationParcelsClient struct {
+	grpc.ClientStream
+}
+
+func (x *flowSetNamespaceAnnotationParcelsClient) Send(m *SetNamespaceAnnotationRequest) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *flowSetNamespaceAnnotationParcelsClient) CloseAndRecv() (*SetNamespaceAnnotationResponse, error) {
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	m := new(SetNamespaceAnnotationResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *flowClient) DeleteNamespaceAnnotation(ctx context.Context, in *DeleteNamespaceAnnotationRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/DeleteNamespaceAnnotation", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *flowClient) RenameNamespaceAnnotation(ctx context.Context, in *RenameNamespaceAnnotationRequest, opts ...grpc.CallOption) (*RenameNamespaceAnnotationResponse, error) {
+	out := new(RenameNamespaceAnnotationResponse)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/RenameNamespaceAnnotation", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *flowClient) WorkflowAnnotation(ctx context.Context, in *WorkflowAnnotationRequest, opts ...grpc.CallOption) (*WorkflowAnnotationResponse, error) {
+	out := new(WorkflowAnnotationResponse)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/WorkflowAnnotation", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *flowClient) WorkflowAnnotationParcels(ctx context.Context, in *WorkflowAnnotationRequest, opts ...grpc.CallOption) (Flow_WorkflowAnnotationParcelsClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[29], "/direktiv_flow.Flow/WorkflowAnnotationParcels", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &flowWorkflowAnnotationParcelsClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Flow_WorkflowAnnotationParcelsClient interface {
+	Recv() (*WorkflowAnnotationResponse, error)
+	grpc.ClientStream
+}
+
+type flowWorkflowAnnotationParcelsClient struct {
+	grpc.ClientStream
+}
+
+func (x *flowWorkflowAnnotationParcelsClient) Recv() (*WorkflowAnnotationResponse, error) {
+	m := new(WorkflowAnnotationResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *flowClient) WorkflowAnnotations(ctx context.Context, in *WorkflowAnnotationsRequest, opts ...grpc.CallOption) (*WorkflowAnnotationsResponse, error) {
+	out := new(WorkflowAnnotationsResponse)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/WorkflowAnnotations", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *flowClient) WorkflowAnnotationsStream(ctx context.Context, in *WorkflowAnnotationsRequest, opts ...grpc.CallOption) (Flow_WorkflowAnnotationsStreamClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[30], "/direktiv_flow.Flow/WorkflowAnnotationsStream", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &flowWorkflowAnnotationsStreamClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Flow_WorkflowAnnotationsStreamClient interface {
+	Recv() (*WorkflowAnnotationsResponse, error)
+	grpc.ClientStream
+}
+
+type flowWorkflowAnnotationsStreamClient struct {
+	grpc.ClientStream
+}
+
+func (x *flowWorkflowAnnotationsStreamClient) Recv() (*WorkflowAnnotationsResponse, error) {
+	m := new(WorkflowAnnotationsResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *flowClient) SetWorkflowAnnotation(ctx context.Context, in *SetWorkflowAnnotationRequest, opts ...grpc.CallOption) (*SetWorkflowAnnotationResponse, error) {
+	out := new(SetWorkflowAnnotationResponse)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/SetWorkflowAnnotation", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *flowClient) SetWorkflowAnnotationParcels(ctx context.Context, opts ...grpc.CallOption) (Flow_SetWorkflowAnnotationParcelsClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[31], "/direktiv_flow.Flow/SetWorkflowAnnotationParcels", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &flowSetWorkflowAnnotationParcelsClient{stream}
+	return x, nil
+}
+
+type Flow_SetWorkflowAnnotationParcelsClient interface {
+	Send(*SetWorkflowAnnotationRequest) error
+	CloseAndRecv() (*SetWorkflowAnnotationResponse, error)
+	grpc.ClientStream
+}
+
+type flowSetWorkflowAnnotationParcelsClient struct {
+	grpc.ClientStream
+}
+
+func (x *flowSetWorkflowAnnotationParcelsClient) Send(m *SetWorkflowAnnotationRequest) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *flowSetWorkflowAnnotationParcelsClient) CloseAndRecv() (*SetWorkflowAnnotationResponse, error) {
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	m := new(SetWorkflowAnnotationResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *flowClient) DeleteWorkflowAnnotation(ctx context.Context, in *DeleteWorkflowAnnotationRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/DeleteWorkflowAnnotation", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *flowClient) RenameWorkflowAnnotation(ctx context.Context, in *RenameWorkflowAnnotationRequest, opts ...grpc.CallOption) (*RenameWorkflowAnnotationResponse, error) {
+	out := new(RenameWorkflowAnnotationResponse)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/RenameWorkflowAnnotation", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *flowClient) InstanceAnnotation(ctx context.Context, in *InstanceAnnotationRequest, opts ...grpc.CallOption) (*InstanceAnnotationResponse, error) {
+	out := new(InstanceAnnotationResponse)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/InstanceAnnotation", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *flowClient) InstanceAnnotationParcels(ctx context.Context, in *InstanceAnnotationRequest, opts ...grpc.CallOption) (Flow_InstanceAnnotationParcelsClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[32], "/direktiv_flow.Flow/InstanceAnnotationParcels", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &flowInstanceAnnotationParcelsClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Flow_InstanceAnnotationParcelsClient interface {
+	Recv() (*InstanceAnnotationResponse, error)
+	grpc.ClientStream
+}
+
+type flowInstanceAnnotationParcelsClient struct {
+	grpc.ClientStream
+}
+
+func (x *flowInstanceAnnotationParcelsClient) Recv() (*InstanceAnnotationResponse, error) {
+	m := new(InstanceAnnotationResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *flowClient) InstanceAnnotations(ctx context.Context, in *InstanceAnnotationsRequest, opts ...grpc.CallOption) (*InstanceAnnotationsResponse, error) {
+	out := new(InstanceAnnotationsResponse)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/InstanceAnnotations", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *flowClient) InstanceAnnotationsStream(ctx context.Context, in *InstanceAnnotationsRequest, opts ...grpc.CallOption) (Flow_InstanceAnnotationsStreamClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[33], "/direktiv_flow.Flow/InstanceAnnotationsStream", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &flowInstanceAnnotationsStreamClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Flow_InstanceAnnotationsStreamClient interface {
+	Recv() (*InstanceAnnotationsResponse, error)
+	grpc.ClientStream
+}
+
+type flowInstanceAnnotationsStreamClient struct {
+	grpc.ClientStream
+}
+
+func (x *flowInstanceAnnotationsStreamClient) Recv() (*InstanceAnnotationsResponse, error) {
+	m := new(InstanceAnnotationsResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *flowClient) SetInstanceAnnotation(ctx context.Context, in *SetInstanceAnnotationRequest, opts ...grpc.CallOption) (*SetInstanceAnnotationResponse, error) {
+	out := new(SetInstanceAnnotationResponse)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/SetInstanceAnnotation", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *flowClient) SetInstanceAnnotationParcels(ctx context.Context, opts ...grpc.CallOption) (Flow_SetInstanceAnnotationParcelsClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[34], "/direktiv_flow.Flow/SetInstanceAnnotationParcels", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &flowSetInstanceAnnotationParcelsClient{stream}
+	return x, nil
+}
+
+type Flow_SetInstanceAnnotationParcelsClient interface {
+	Send(*SetInstanceAnnotationRequest) error
+	CloseAndRecv() (*SetInstanceAnnotationResponse, error)
+	grpc.ClientStream
+}
+
+type flowSetInstanceAnnotationParcelsClient struct {
+	grpc.ClientStream
+}
+
+func (x *flowSetInstanceAnnotationParcelsClient) Send(m *SetInstanceAnnotationRequest) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *flowSetInstanceAnnotationParcelsClient) CloseAndRecv() (*SetInstanceAnnotationResponse, error) {
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	m := new(SetInstanceAnnotationResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *flowClient) DeleteInstanceAnnotation(ctx context.Context, in *DeleteInstanceAnnotationRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/DeleteInstanceAnnotation", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *flowClient) RenameInstanceAnnotation(ctx context.Context, in *RenameInstanceAnnotationRequest, opts ...grpc.CallOption) (*RenameInstanceAnnotationResponse, error) {
+	out := new(RenameInstanceAnnotationResponse)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/RenameInstanceAnnotation", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *flowClient) ReleaseInstance(ctx context.Context, in *ReleaseInstanceRequest, opts ...grpc.CallOption) (*ReleaseInstanceResponse, error) {
+	out := new(ReleaseInstanceResponse)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/ReleaseInstance", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *flowClient) NodeAnnotation(ctx context.Context, in *NodeAnnotationRequest, opts ...grpc.CallOption) (*NodeAnnotationResponse, error) {
+	out := new(NodeAnnotationResponse)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/NodeAnnotation", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *flowClient) NodeAnnotationParcels(ctx context.Context, in *NodeAnnotationRequest, opts ...grpc.CallOption) (Flow_NodeAnnotationParcelsClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[35], "/direktiv_flow.Flow/NodeAnnotationParcels", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &flowNodeAnnotationParcelsClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Flow_NodeAnnotationParcelsClient interface {
+	Recv() (*NodeAnnotationResponse, error)
+	grpc.ClientStream
+}
+
+type flowNodeAnnotationParcelsClient struct {
+	grpc.ClientStream
+}
+
+func (x *flowNodeAnnotationParcelsClient) Recv() (*NodeAnnotationResponse, error) {
+	m := new(NodeAnnotationResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *flowClient) NodeAnnotations(ctx context.Context, in *NodeAnnotationsRequest, opts ...grpc.CallOption) (*NodeAnnotationsResponse, error) {
+	out := new(NodeAnnotationsResponse)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/NodeAnnotations", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *flowClient) NodeAnnotationsStream(ctx context.Context, in *NodeAnnotationsRequest, opts ...grpc.CallOption) (Flow_NodeAnnotationsStreamClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[36], "/direktiv_flow.Flow/NodeAnnotationsStream", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &flowNodeAnnotationsStreamClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Flow_NodeAnnotationsStreamClient interface {
+	Recv() (*NodeAnnotationsResponse, error)
+	grpc.ClientStream
+}
+
+type flowNodeAnnotationsStreamClient struct {
+	grpc.ClientStream
+}
+
+func (x *flowNodeAnnotationsStreamClient) Recv() (*NodeAnnotationsResponse, error) {
+	m := new(NodeAnnotationsResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *flowClient) SetNodeAnnotation(ctx context.Context, in *SetNodeAnnotationRequest, opts ...grpc.CallOption) (*SetNodeAnnotationResponse, error) {
+	out := new(SetNodeAnnotationResponse)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/SetNodeAnnotation", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *flowClient) SetNodeAnnotationParcels(ctx context.Context, opts ...grpc.CallOption) (Flow_SetNodeAnnotationParcelsClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[37], "/direktiv_flow.Flow/SetNodeAnnotationParcels", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &flowSetNodeAnnotationParcelsClient{stream}
+	return x, nil
+}
+
+type Flow_SetNodeAnnotationParcelsClient interface {
+	Send(*SetNodeAnnotationRequest) error
+	CloseAndRecv() (*SetNodeAnnotationResponse, error)
+	grpc.ClientStream
+}
+
+type flowSetNodeAnnotationParcelsClient struct {
+	grpc.ClientStream
+}
+
+func (x *flowSetNodeAnnotationParcelsClient) Send(m *SetNodeAnnotationRequest) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *flowSetNodeAnnotationParcelsClient) CloseAndRecv() (*SetNodeAnnotationResponse, error) {
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	m := new(SetNodeAnnotationResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *flowClient) DeleteNodeAnnotation(ctx context.Context, in *DeleteNodeAnnotationRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/DeleteNodeAnnotation", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *flowClient) RenameNodeAnnotation(ctx context.Context, in *RenameNodeAnnotationRequest, opts ...grpc.CallOption) (*RenameNodeAnnotationResponse, error) {
+	out := new(RenameNodeAnnotationResponse)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/RenameNodeAnnotation", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *flowClient) CreateNamespaceMirror(ctx context.Context, in *CreateNamespaceMirrorRequest, opts ...grpc.CallOption) (*CreateNamespaceResponse, error) {
 	out := new(CreateNamespaceResponse)
 	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/CreateNamespaceMirror", in, out, opts...)
@@ -1798,7 +2412,7 @@ func (c *flowClient) MirrorInfo(ctx context.Context, in *MirrorInfoRequest, opts
 }
 
 func (c *flowClient) MirrorInfoStream(ctx context.Context, in *MirrorInfoRequest, opts ...grpc.CallOption) (Flow_MirrorInfoStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[26], "/direktiv_flow.Flow/MirrorInfoStream", opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[38], "/direktiv_flow.Flow/MirrorInfoStream", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1839,7 +2453,7 @@ func (c *flowClient) MirrorActivityLogs(ctx context.Context, in *MirrorActivityL
 }
 
 func (c *flowClient) MirrorActivityLogsParcels(ctx context.Context, in *MirrorActivityLogsRequest, opts ...grpc.CallOption) (Flow_MirrorActivityLogsParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[27], "/direktiv_flow.Flow/MirrorActivityLogsParcels", opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[39], "/direktiv_flow.Flow/MirrorActivityLogsParcels", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1996,6 +2610,39 @@ type FlowServer interface {
 	GetNamespaceConfig(context.Context, *GetNamespaceConfigRequest) (*GetNamespaceConfigResponse, error)
 	Build(context.Context, *emptypb.Empty) (*BuildResponse, error)
 	InstanceMetadata(context.Context, *InstanceMetadataRequest) (*InstanceMetadataResponse, error)
+	NamespaceAnnotation(context.Context, *NamespaceAnnotationRequest) (*NamespaceAnnotationResponse, error)
+	NamespaceAnnotationParcels(*NamespaceAnnotationRequest, Flow_NamespaceAnnotationParcelsServer) error
+	NamespaceAnnotations(context.Context, *NamespaceAnnotationsRequest) (*NamespaceAnnotationsResponse, error)
+	NamespaceAnnotationsStream(*NamespaceAnnotationsRequest, Flow_NamespaceAnnotationsStreamServer) error
+	SetNamespaceAnnotation(context.Context, *SetNamespaceAnnotationRequest) (*SetNamespaceAnnotationResponse, error)
+	SetNamespaceAnnotationParcels(Flow_SetNamespaceAnnotationParcelsServer) error
+	DeleteNamespaceAnnotation(context.Context, *DeleteNamespaceAnnotationRequest) (*emptypb.Empty, error)
+	RenameNamespaceAnnotation(context.Context, *RenameNamespaceAnnotationRequest) (*RenameNamespaceAnnotationResponse, error)
+	WorkflowAnnotation(context.Context, *WorkflowAnnotationRequest) (*WorkflowAnnotationResponse, error)
+	WorkflowAnnotationParcels(*WorkflowAnnotationRequest, Flow_WorkflowAnnotationParcelsServer) error
+	WorkflowAnnotations(context.Context, *WorkflowAnnotationsRequest) (*WorkflowAnnotationsResponse, error)
+	WorkflowAnnotationsStream(*WorkflowAnnotationsRequest, Flow_WorkflowAnnotationsStreamServer) error
+	SetWorkflowAnnotation(context.Context, *SetWorkflowAnnotationRequest) (*SetWorkflowAnnotationResponse, error)
+	SetWorkflowAnnotationParcels(Flow_SetWorkflowAnnotationParcelsServer) error
+	DeleteWorkflowAnnotation(context.Context, *DeleteWorkflowAnnotationRequest) (*emptypb.Empty, error)
+	RenameWorkflowAnnotation(context.Context, *RenameWorkflowAnnotationRequest) (*RenameWorkflowAnnotationResponse, error)
+	InstanceAnnotation(context.Context, *InstanceAnnotationRequest) (*InstanceAnnotationResponse, error)
+	InstanceAnnotationParcels(*InstanceAnnotationRequest, Flow_InstanceAnnotationParcelsServer) error
+	InstanceAnnotations(context.Context, *InstanceAnnotationsRequest) (*InstanceAnnotationsResponse, error)
+	InstanceAnnotationsStream(*InstanceAnnotationsRequest, Flow_InstanceAnnotationsStreamServer) error
+	SetInstanceAnnotation(context.Context, *SetInstanceAnnotationRequest) (*SetInstanceAnnotationResponse, error)
+	SetInstanceAnnotationParcels(Flow_SetInstanceAnnotationParcelsServer) error
+	DeleteInstanceAnnotation(context.Context, *DeleteInstanceAnnotationRequest) (*emptypb.Empty, error)
+	RenameInstanceAnnotation(context.Context, *RenameInstanceAnnotationRequest) (*RenameInstanceAnnotationResponse, error)
+	ReleaseInstance(context.Context, *ReleaseInstanceRequest) (*ReleaseInstanceResponse, error)
+	NodeAnnotation(context.Context, *NodeAnnotationRequest) (*NodeAnnotationResponse, error)
+	NodeAnnotationParcels(*NodeAnnotationRequest, Flow_NodeAnnotationParcelsServer) error
+	NodeAnnotations(context.Context, *NodeAnnotationsRequest) (*NodeAnnotationsResponse, error)
+	NodeAnnotationsStream(*NodeAnnotationsRequest, Flow_NodeAnnotationsStreamServer) error
+	SetNodeAnnotation(context.Context, *SetNodeAnnotationRequest) (*SetNodeAnnotationResponse, error)
+	SetNodeAnnotationParcels(Flow_SetNodeAnnotationParcelsServer) error
+	DeleteNodeAnnotation(context.Context, *DeleteNodeAnnotationRequest) (*emptypb.Empty, error)
+	RenameNodeAnnotation(context.Context, *RenameNodeAnnotationRequest) (*RenameNodeAnnotationResponse, error)
 	CreateNamespaceMirror(context.Context, *CreateNamespaceMirrorRequest) (*CreateNamespaceResponse, error)
 	CreateDirectoryMirror(context.Context, *CreateDirectoryMirrorRequest) (*CreateDirectoryResponse, error)
 	UpdateMirrorSettings(context.Context, *UpdateMirrorSettingsRequest) (*emptypb.Empty, error)
@@ -2335,6 +2982,105 @@ func (UnimplementedFlowServer) Build(context.Context, *emptypb.Empty) (*BuildRes
 }
 func (UnimplementedFlowServer) InstanceMetadata(context.Context, *InstanceMetadataRequest) (*InstanceMetadataResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method InstanceMetadata not implemented")
+}
+func (UnimplementedFlowServer) NamespaceAnnotation(context.Context, *NamespaceAnnotationRequest) (*NamespaceAnnotationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method NamespaceAnnotation not implemented")
+}
+func (UnimplementedFlowServer) NamespaceAnnotationParcels(*NamespaceAnnotationRequest, Flow_NamespaceAnnotationParcelsServer) error {
+	return status.Errorf(codes.Unimplemented, "method NamespaceAnnotationParcels not implemented")
+}
+func (UnimplementedFlowServer) NamespaceAnnotations(context.Context, *NamespaceAnnotationsRequest) (*NamespaceAnnotationsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method NamespaceAnnotations not implemented")
+}
+func (UnimplementedFlowServer) NamespaceAnnotationsStream(*NamespaceAnnotationsRequest, Flow_NamespaceAnnotationsStreamServer) error {
+	return status.Errorf(codes.Unimplemented, "method NamespaceAnnotationsStream not implemented")
+}
+func (UnimplementedFlowServer) SetNamespaceAnnotation(context.Context, *SetNamespaceAnnotationRequest) (*SetNamespaceAnnotationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetNamespaceAnnotation not implemented")
+}
+func (UnimplementedFlowServer) SetNamespaceAnnotationParcels(Flow_SetNamespaceAnnotationParcelsServer) error {
+	return status.Errorf(codes.Unimplemented, "method SetNamespaceAnnotationParcels not implemented")
+}
+func (UnimplementedFlowServer) DeleteNamespaceAnnotation(context.Context, *DeleteNamespaceAnnotationRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteNamespaceAnnotation not implemented")
+}
+func (UnimplementedFlowServer) RenameNamespaceAnnotation(context.Context, *RenameNamespaceAnnotationRequest) (*RenameNamespaceAnnotationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RenameNamespaceAnnotation not implemented")
+}
+func (UnimplementedFlowServer) WorkflowAnnotation(context.Context, *WorkflowAnnotationRequest) (*WorkflowAnnotationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method WorkflowAnnotation not implemented")
+}
+func (UnimplementedFlowServer) WorkflowAnnotationParcels(*WorkflowAnnotationRequest, Flow_WorkflowAnnotationParcelsServer) error {
+	return status.Errorf(codes.Unimplemented, "method WorkflowAnnotationParcels not implemented")
+}
+func (UnimplementedFlowServer) WorkflowAnnotations(context.Context, *WorkflowAnnotationsRequest) (*WorkflowAnnotationsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method WorkflowAnnotations not implemented")
+}
+func (UnimplementedFlowServer) WorkflowAnnotationsStream(*WorkflowAnnotationsRequest, Flow_WorkflowAnnotationsStreamServer) error {
+	return status.Errorf(codes.Unimplemented, "method WorkflowAnnotationsStream not implemented")
+}
+func (UnimplementedFlowServer) SetWorkflowAnnotation(context.Context, *SetWorkflowAnnotationRequest) (*SetWorkflowAnnotationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetWorkflowAnnotation not implemented")
+}
+func (UnimplementedFlowServer) SetWorkflowAnnotationParcels(Flow_SetWorkflowAnnotationParcelsServer) error {
+	return status.Errorf(codes.Unimplemented, "method SetWorkflowAnnotationParcels not implemented")
+}
+func (UnimplementedFlowServer) DeleteWorkflowAnnotation(context.Context, *DeleteWorkflowAnnotationRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteWorkflowAnnotation not implemented")
+}
+func (UnimplementedFlowServer) RenameWorkflowAnnotation(context.Context, *RenameWorkflowAnnotationRequest) (*RenameWorkflowAnnotationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RenameWorkflowAnnotation not implemented")
+}
+func (UnimplementedFlowServer) InstanceAnnotation(context.Context, *InstanceAnnotationRequest) (*InstanceAnnotationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method InstanceAnnotation not implemented")
+}
+func (UnimplementedFlowServer) InstanceAnnotationParcels(*InstanceAnnotationRequest, Flow_InstanceAnnotationParcelsServer) error {
+	return status.Errorf(codes.Unimplemented, "method InstanceAnnotationParcels not implemented")
+}
+func (UnimplementedFlowServer) InstanceAnnotations(context.Context, *InstanceAnnotationsRequest) (*InstanceAnnotationsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method InstanceAnnotations not implemented")
+}
+func (UnimplementedFlowServer) InstanceAnnotationsStream(*InstanceAnnotationsRequest, Flow_InstanceAnnotationsStreamServer) error {
+	return status.Errorf(codes.Unimplemented, "method InstanceAnnotationsStream not implemented")
+}
+func (UnimplementedFlowServer) SetInstanceAnnotation(context.Context, *SetInstanceAnnotationRequest) (*SetInstanceAnnotationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetInstanceAnnotation not implemented")
+}
+func (UnimplementedFlowServer) SetInstanceAnnotationParcels(Flow_SetInstanceAnnotationParcelsServer) error {
+	return status.Errorf(codes.Unimplemented, "method SetInstanceAnnotationParcels not implemented")
+}
+func (UnimplementedFlowServer) DeleteInstanceAnnotation(context.Context, *DeleteInstanceAnnotationRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteInstanceAnnotation not implemented")
+}
+func (UnimplementedFlowServer) RenameInstanceAnnotation(context.Context, *RenameInstanceAnnotationRequest) (*RenameInstanceAnnotationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RenameInstanceAnnotation not implemented")
+}
+func (UnimplementedFlowServer) ReleaseInstance(context.Context, *ReleaseInstanceRequest) (*ReleaseInstanceResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ReleaseInstance not implemented")
+}
+func (UnimplementedFlowServer) NodeAnnotation(context.Context, *NodeAnnotationRequest) (*NodeAnnotationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method NodeAnnotation not implemented")
+}
+func (UnimplementedFlowServer) NodeAnnotationParcels(*NodeAnnotationRequest, Flow_NodeAnnotationParcelsServer) error {
+	return status.Errorf(codes.Unimplemented, "method NodeAnnotationParcels not implemented")
+}
+func (UnimplementedFlowServer) NodeAnnotations(context.Context, *NodeAnnotationsRequest) (*NodeAnnotationsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method NodeAnnotations not implemented")
+}
+func (UnimplementedFlowServer) NodeAnnotationsStream(*NodeAnnotationsRequest, Flow_NodeAnnotationsStreamServer) error {
+	return status.Errorf(codes.Unimplemented, "method NodeAnnotationsStream not implemented")
+}
+func (UnimplementedFlowServer) SetNodeAnnotation(context.Context, *SetNodeAnnotationRequest) (*SetNodeAnnotationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetNodeAnnotation not implemented")
+}
+func (UnimplementedFlowServer) SetNodeAnnotationParcels(Flow_SetNodeAnnotationParcelsServer) error {
+	return status.Errorf(codes.Unimplemented, "method SetNodeAnnotationParcels not implemented")
+}
+func (UnimplementedFlowServer) DeleteNodeAnnotation(context.Context, *DeleteNodeAnnotationRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteNodeAnnotation not implemented")
+}
+func (UnimplementedFlowServer) RenameNodeAnnotation(context.Context, *RenameNodeAnnotationRequest) (*RenameNodeAnnotationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RenameNodeAnnotation not implemented")
 }
 func (UnimplementedFlowServer) CreateNamespaceMirror(context.Context, *CreateNamespaceMirrorRequest) (*CreateNamespaceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateNamespaceMirror not implemented")
@@ -4404,6 +5150,656 @@ func _Flow_InstanceMetadata_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Flow_NamespaceAnnotation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(NamespaceAnnotationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FlowServer).NamespaceAnnotation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/direktiv_flow.Flow/NamespaceAnnotation",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FlowServer).NamespaceAnnotation(ctx, req.(*NamespaceAnnotationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Flow_NamespaceAnnotationParcels_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(NamespaceAnnotationRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(FlowServer).NamespaceAnnotationParcels(m, &flowNamespaceAnnotationParcelsServer{stream})
+}
+
+type Flow_NamespaceAnnotationParcelsServer interface {
+	Send(*NamespaceAnnotationResponse) error
+	grpc.ServerStream
+}
+
+type flowNamespaceAnnotationParcelsServer struct {
+	grpc.ServerStream
+}
+
+func (x *flowNamespaceAnnotationParcelsServer) Send(m *NamespaceAnnotationResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func _Flow_NamespaceAnnotations_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(NamespaceAnnotationsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FlowServer).NamespaceAnnotations(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/direktiv_flow.Flow/NamespaceAnnotations",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FlowServer).NamespaceAnnotations(ctx, req.(*NamespaceAnnotationsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Flow_NamespaceAnnotationsStream_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(NamespaceAnnotationsRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(FlowServer).NamespaceAnnotationsStream(m, &flowNamespaceAnnotationsStreamServer{stream})
+}
+
+type Flow_NamespaceAnnotationsStreamServer interface {
+	Send(*NamespaceAnnotationsResponse) error
+	grpc.ServerStream
+}
+
+type flowNamespaceAnnotationsStreamServer struct {
+	grpc.ServerStream
+}
+
+func (x *flowNamespaceAnnotationsStreamServer) Send(m *NamespaceAnnotationsResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func _Flow_SetNamespaceAnnotation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetNamespaceAnnotationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FlowServer).SetNamespaceAnnotation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/direktiv_flow.Flow/SetNamespaceAnnotation",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FlowServer).SetNamespaceAnnotation(ctx, req.(*SetNamespaceAnnotationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Flow_SetNamespaceAnnotationParcels_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(FlowServer).SetNamespaceAnnotationParcels(&flowSetNamespaceAnnotationParcelsServer{stream})
+}
+
+type Flow_SetNamespaceAnnotationParcelsServer interface {
+	SendAndClose(*SetNamespaceAnnotationResponse) error
+	Recv() (*SetNamespaceAnnotationRequest, error)
+	grpc.ServerStream
+}
+
+type flowSetNamespaceAnnotationParcelsServer struct {
+	grpc.ServerStream
+}
+
+func (x *flowSetNamespaceAnnotationParcelsServer) SendAndClose(m *SetNamespaceAnnotationResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *flowSetNamespaceAnnotationParcelsServer) Recv() (*SetNamespaceAnnotationRequest, error) {
+	m := new(SetNamespaceAnnotationRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func _Flow_DeleteNamespaceAnnotation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteNamespaceAnnotationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FlowServer).DeleteNamespaceAnnotation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/direktiv_flow.Flow/DeleteNamespaceAnnotation",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FlowServer).DeleteNamespaceAnnotation(ctx, req.(*DeleteNamespaceAnnotationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Flow_RenameNamespaceAnnotation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RenameNamespaceAnnotationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FlowServer).RenameNamespaceAnnotation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/direktiv_flow.Flow/RenameNamespaceAnnotation",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FlowServer).RenameNamespaceAnnotation(ctx, req.(*RenameNamespaceAnnotationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Flow_WorkflowAnnotation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(WorkflowAnnotationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FlowServer).WorkflowAnnotation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/direktiv_flow.Flow/WorkflowAnnotation",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FlowServer).WorkflowAnnotation(ctx, req.(*WorkflowAnnotationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Flow_WorkflowAnnotationParcels_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(WorkflowAnnotationRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(FlowServer).WorkflowAnnotationParcels(m, &flowWorkflowAnnotationParcelsServer{stream})
+}
+
+type Flow_WorkflowAnnotationParcelsServer interface {
+	Send(*WorkflowAnnotationResponse) error
+	grpc.ServerStream
+}
+
+type flowWorkflowAnnotationParcelsServer struct {
+	grpc.ServerStream
+}
+
+func (x *flowWorkflowAnnotationParcelsServer) Send(m *WorkflowAnnotationResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func _Flow_WorkflowAnnotations_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(WorkflowAnnotationsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FlowServer).WorkflowAnnotations(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/direktiv_flow.Flow/WorkflowAnnotations",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FlowServer).WorkflowAnnotations(ctx, req.(*WorkflowAnnotationsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Flow_WorkflowAnnotationsStream_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(WorkflowAnnotationsRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(FlowServer).WorkflowAnnotationsStream(m, &flowWorkflowAnnotationsStreamServer{stream})
+}
+
+type Flow_WorkflowAnnotationsStreamServer interface {
+	Send(*WorkflowAnnotationsResponse) error
+	grpc.ServerStream
+}
+
+type flowWorkflowAnnotationsStreamServer struct {
+	grpc.ServerStream
+}
+
+func (x *flowWorkflowAnnotationsStreamServer) Send(m *WorkflowAnnotationsResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func _Flow_SetWorkflowAnnotation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetWorkflowAnnotationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FlowServer).SetWorkflowAnnotation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/direktiv_flow.Flow/SetWorkflowAnnotation",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FlowServer).SetWorkflowAnnotation(ctx, req.(*SetWorkflowAnnotationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Flow_SetWorkflowAnnotationParcels_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(FlowServer).SetWorkflowAnnotationParcels(&flowSetWorkflowAnnotationParcelsServer{stream})
+}
+
+type Flow_SetWorkflowAnnotationParcelsServer interface {
+	SendAndClose(*SetWorkflowAnnotationResponse) error
+	Recv() (*SetWorkflowAnnotationRequest, error)
+	grpc.ServerStream
+}
+
+type flowSetWorkflowAnnotationParcelsServer struct {
+	grpc.ServerStream
+}
+
+func (x *flowSetWorkflowAnnotationParcelsServer) SendAndClose(m *SetWorkflowAnnotationResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *flowSetWorkflowAnnotationParcelsServer) Recv() (*SetWorkflowAnnotationRequest, error) {
+	m := new(SetWorkflowAnnotationRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func _Flow_DeleteWorkflowAnnotation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteWorkflowAnnotationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FlowServer).DeleteWorkflowAnnotation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/direktiv_flow.Flow/DeleteWorkflowAnnotation",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FlowServer).DeleteWorkflowAnnotation(ctx, req.(*DeleteWorkflowAnnotationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Flow_RenameWorkflowAnnotation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RenameWorkflowAnnotationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FlowServer).RenameWorkflowAnnotation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/direktiv_flow.Flow/RenameWorkflowAnnotation",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FlowServer).RenameWorkflowAnnotation(ctx, req.(*RenameWorkflowAnnotationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Flow_InstanceAnnotation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(InstanceAnnotationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FlowServer).InstanceAnnotation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/direktiv_flow.Flow/InstanceAnnotation",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FlowServer).InstanceAnnotation(ctx, req.(*InstanceAnnotationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Flow_InstanceAnnotationParcels_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(InstanceAnnotationRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(FlowServer).InstanceAnnotationParcels(m, &flowInstanceAnnotationParcelsServer{stream})
+}
+
+type Flow_InstanceAnnotationParcelsServer interface {
+	Send(*InstanceAnnotationResponse) error
+	grpc.ServerStream
+}
+
+type flowInstanceAnnotationParcelsServer struct {
+	grpc.ServerStream
+}
+
+func (x *flowInstanceAnnotationParcelsServer) Send(m *InstanceAnnotationResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func _Flow_InstanceAnnotations_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(InstanceAnnotationsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FlowServer).InstanceAnnotations(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/direktiv_flow.Flow/InstanceAnnotations",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FlowServer).InstanceAnnotations(ctx, req.(*InstanceAnnotationsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Flow_InstanceAnnotationsStream_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(InstanceAnnotationsRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(FlowServer).InstanceAnnotationsStream(m, &flowInstanceAnnotationsStreamServer{stream})
+}
+
+type Flow_InstanceAnnotationsStreamServer interface {
+	Send(*InstanceAnnotationsResponse) error
+	grpc.ServerStream
+}
+
+type flowInstanceAnnotationsStreamServer struct {
+	grpc.ServerStream
+}
+
+func (x *flowInstanceAnnotationsStreamServer) Send(m *InstanceAnnotationsResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func _Flow_SetInstanceAnnotation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetInstanceAnnotationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FlowServer).SetInstanceAnnotation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/direktiv_flow.Flow/SetInstanceAnnotation",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FlowServer).SetInstanceAnnotation(ctx, req.(*SetInstanceAnnotationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Flow_SetInstanceAnnotationParcels_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(FlowServer).SetInstanceAnnotationParcels(&flowSetInstanceAnnotationParcelsServer{stream})
+}
+
+type Flow_SetInstanceAnnotationParcelsServer interface {
+	SendAndClose(*SetInstanceAnnotationResponse) error
+	Recv() (*SetInstanceAnnotationRequest, error)
+	grpc.ServerStream
+}
+
+type flowSetInstanceAnnotationParcelsServer struct {
+	grpc.ServerStream
+}
+
+func (x *flowSetInstanceAnnotationParcelsServer) SendAndClose(m *SetInstanceAnnotationResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *flowSetInstanceAnnotationParcelsServer) Recv() (*SetInstanceAnnotationRequest, error) {
+	m := new(SetInstanceAnnotationRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func _Flow_DeleteInstanceAnnotation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteInstanceAnnotationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FlowServer).DeleteInstanceAnnotation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/direktiv_flow.Flow/DeleteInstanceAnnotation",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FlowServer).DeleteInstanceAnnotation(ctx, req.(*DeleteInstanceAnnotationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Flow_RenameInstanceAnnotation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RenameInstanceAnnotationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FlowServer).RenameInstanceAnnotation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/direktiv_flow.Flow/RenameInstanceAnnotation",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FlowServer).RenameInstanceAnnotation(ctx, req.(*RenameInstanceAnnotationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Flow_ReleaseInstance_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ReleaseInstanceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FlowServer).ReleaseInstance(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/direktiv_flow.Flow/ReleaseInstance",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FlowServer).ReleaseInstance(ctx, req.(*ReleaseInstanceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Flow_NodeAnnotation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(NodeAnnotationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FlowServer).NodeAnnotation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/direktiv_flow.Flow/NodeAnnotation",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FlowServer).NodeAnnotation(ctx, req.(*NodeAnnotationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Flow_NodeAnnotationParcels_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(NodeAnnotationRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(FlowServer).NodeAnnotationParcels(m, &flowNodeAnnotationParcelsServer{stream})
+}
+
+type Flow_NodeAnnotationParcelsServer interface {
+	Send(*NodeAnnotationResponse) error
+	grpc.ServerStream
+}
+
+type flowNodeAnnotationParcelsServer struct {
+	grpc.ServerStream
+}
+
+func (x *flowNodeAnnotationParcelsServer) Send(m *NodeAnnotationResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func _Flow_NodeAnnotations_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(NodeAnnotationsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FlowServer).NodeAnnotations(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/direktiv_flow.Flow/NodeAnnotations",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FlowServer).NodeAnnotations(ctx, req.(*NodeAnnotationsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Flow_NodeAnnotationsStream_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(NodeAnnotationsRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(FlowServer).NodeAnnotationsStream(m, &flowNodeAnnotationsStreamServer{stream})
+}
+
+type Flow_NodeAnnotationsStreamServer interface {
+	Send(*NodeAnnotationsResponse) error
+	grpc.ServerStream
+}
+
+type flowNodeAnnotationsStreamServer struct {
+	grpc.ServerStream
+}
+
+func (x *flowNodeAnnotationsStreamServer) Send(m *NodeAnnotationsResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func _Flow_SetNodeAnnotation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetNodeAnnotationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FlowServer).SetNodeAnnotation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/direktiv_flow.Flow/SetNodeAnnotation",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FlowServer).SetNodeAnnotation(ctx, req.(*SetNodeAnnotationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Flow_SetNodeAnnotationParcels_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(FlowServer).SetNodeAnnotationParcels(&flowSetNodeAnnotationParcelsServer{stream})
+}
+
+type Flow_SetNodeAnnotationParcelsServer interface {
+	SendAndClose(*SetNodeAnnotationResponse) error
+	Recv() (*SetNodeAnnotationRequest, error)
+	grpc.ServerStream
+}
+
+type flowSetNodeAnnotationParcelsServer struct {
+	grpc.ServerStream
+}
+
+func (x *flowSetNodeAnnotationParcelsServer) SendAndClose(m *SetNodeAnnotationResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *flowSetNodeAnnotationParcelsServer) Recv() (*SetNodeAnnotationRequest, error) {
+	m := new(SetNodeAnnotationRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func _Flow_DeleteNodeAnnotation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteNodeAnnotationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FlowServer).DeleteNodeAnnotation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/direktiv_flow.Flow/DeleteNodeAnnotation",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FlowServer).DeleteNodeAnnotation(ctx, req.(*DeleteNodeAnnotationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Flow_RenameNodeAnnotation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RenameNodeAnnotationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FlowServer).RenameNodeAnnotation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/direktiv_flow.Flow/RenameNodeAnnotation",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FlowServer).RenameNodeAnnotation(ctx, req.(*RenameNodeAnnotationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Flow_CreateNamespaceMirror_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CreateNamespaceMirrorRequest)
 	if err := dec(in); err != nil {
@@ -4958,6 +6354,90 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Flow_InstanceMetadata_Handler,
 		},
 		{
+			MethodName: "NamespaceAnnotation",
+			Handler:    _Flow_NamespaceAnnotation_Handler,
+		},
+		{
+			MethodName: "NamespaceAnnotations",
+			Handler:    _Flow_NamespaceAnnotations_Handler,
+		},
+		{
+			MethodName: "SetNamespaceAnnotation",
+			Handler:    _Flow_SetNamespaceAnnotation_Handler,
+		},
+		{
+			MethodName: "DeleteNamespaceAnnotation",
+			Handler:    _Flow_DeleteNamespaceAnnotation_Handler,
+		},
+		{
+			MethodName: "RenameNamespaceAnnotation",
+			Handler:    _Flow_RenameNamespaceAnnotation_Handler,
+		},
+		{
+			MethodName: "WorkflowAnnotation",
+			Handler:    _Flow_WorkflowAnnotation_Handler,
+		},
+		{
+			MethodName: "WorkflowAnnotations",
+			Handler:    _Flow_WorkflowAnnotations_Handler,
+		},
+		{
+			MethodName: "SetWorkflowAnnotation",
+			Handler:    _Flow_SetWorkflowAnnotation_Handler,
+		},
+		{
+			MethodName: "DeleteWorkflowAnnotation",
+			Handler:    _Flow_DeleteWorkflowAnnotation_Handler,
+		},
+		{
+			MethodName: "RenameWorkflowAnnotation",
+			Handler:    _Flow_RenameWorkflowAnnotation_Handler,
+		},
+		{
+			MethodName: "InstanceAnnotation",
+			Handler:    _Flow_InstanceAnnotation_Handler,
+		},
+		{
+			MethodName: "InstanceAnnotations",
+			Handler:    _Flow_InstanceAnnotations_Handler,
+		},
+		{
+			MethodName: "SetInstanceAnnotation",
+			Handler:    _Flow_SetInstanceAnnotation_Handler,
+		},
+		{
+			MethodName: "DeleteInstanceAnnotation",
+			Handler:    _Flow_DeleteInstanceAnnotation_Handler,
+		},
+		{
+			MethodName: "RenameInstanceAnnotation",
+			Handler:    _Flow_RenameInstanceAnnotation_Handler,
+		},
+		{
+			MethodName: "ReleaseInstance",
+			Handler:    _Flow_ReleaseInstance_Handler,
+		},
+		{
+			MethodName: "NodeAnnotation",
+			Handler:    _Flow_NodeAnnotation_Handler,
+		},
+		{
+			MethodName: "NodeAnnotations",
+			Handler:    _Flow_NodeAnnotations_Handler,
+		},
+		{
+			MethodName: "SetNodeAnnotation",
+			Handler:    _Flow_SetNodeAnnotation_Handler,
+		},
+		{
+			MethodName: "DeleteNodeAnnotation",
+			Handler:    _Flow_DeleteNodeAnnotation_Handler,
+		},
+		{
+			MethodName: "RenameNodeAnnotation",
+			Handler:    _Flow_RenameNodeAnnotation_Handler,
+		},
+		{
 			MethodName: "CreateNamespaceMirror",
 			Handler:    _Flow_CreateNamespaceMirror_Handler,
 		},
@@ -5128,6 +6608,66 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 			StreamName:    "EventHistoryStream",
 			Handler:       _Flow_EventHistoryStream_Handler,
 			ServerStreams: true,
+		},
+		{
+			StreamName:    "NamespaceAnnotationParcels",
+			Handler:       _Flow_NamespaceAnnotationParcels_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "NamespaceAnnotationsStream",
+			Handler:       _Flow_NamespaceAnnotationsStream_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "SetNamespaceAnnotationParcels",
+			Handler:       _Flow_SetNamespaceAnnotationParcels_Handler,
+			ClientStreams: true,
+		},
+		{
+			StreamName:    "WorkflowAnnotationParcels",
+			Handler:       _Flow_WorkflowAnnotationParcels_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "WorkflowAnnotationsStream",
+			Handler:       _Flow_WorkflowAnnotationsStream_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "SetWorkflowAnnotationParcels",
+			Handler:       _Flow_SetWorkflowAnnotationParcels_Handler,
+			ClientStreams: true,
+		},
+		{
+			StreamName:    "InstanceAnnotationParcels",
+			Handler:       _Flow_InstanceAnnotationParcels_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "InstanceAnnotationsStream",
+			Handler:       _Flow_InstanceAnnotationsStream_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "SetInstanceAnnotationParcels",
+			Handler:       _Flow_SetInstanceAnnotationParcels_Handler,
+			ClientStreams: true,
+		},
+		{
+			StreamName:    "NodeAnnotationParcels",
+			Handler:       _Flow_NodeAnnotationParcels_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "NodeAnnotationsStream",
+			Handler:       _Flow_NodeAnnotationsStream_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "SetNodeAnnotationParcels",
+			Handler:       _Flow_SetNodeAnnotationParcels_Handler,
+			ClientStreams: true,
 		},
 		{
 			StreamName:    "MirrorInfoStream",
