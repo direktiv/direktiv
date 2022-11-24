@@ -19,7 +19,7 @@ type Server struct {
 	logger     *zap.SugaredLogger
 	router     *mux.Router
 	srv        *http.Server
-	flowClient grpc.FlowClient
+	FlowClient grpc.FlowClient
 
 	config *util.Config
 
@@ -96,7 +96,7 @@ func NewServer(l *zap.SugaredLogger) (*Server, error) {
 		return nil, err
 	}
 
-	s.flowClient = s.flowHandler.client
+	s.FlowClient = s.flowHandler.client
 
 	s.functionHandler, err = newFunctionHandler(s, logger,
 		r.PathPrefix("/functions").Subrouter(), s.config.FunctionsService)
