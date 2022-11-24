@@ -19,15 +19,14 @@ import (
 
 // Flags
 var (
-	input                string
-	inputType            string
-	outputFlag           string
-	execNoPushFlag       bool
-	Source               string
-	Type                 string
-	Id                   string
-	Specversion          string
-	CloudEventFilterName string
+	input          string
+	inputType      string
+	outputFlag     string
+	execNoPushFlag bool
+	Source         string
+	Type           string
+	Id             string
+	Specversion    string
 
 	maxSize int64 = 1073741824
 )
@@ -49,12 +48,10 @@ func main() {
 	rootCmd.AddCommand(execCmd)
 	rootCmd.AddCommand(pushCmd)
 	rootCmd.AddCommand(setCmd)
-	rootCmd.AddCommand(eventCmd)
-	rootCmd.AddCommand(eventfilterCmd)
-	eventfilterCmd.AddCommand(createCmd)
-	eventfilterCmd.AddCommand(deleteCmd)
-	eventfilterCmd.AddCommand(updateCmd)
-	eventfilterCmd.AddCommand(applyCmd)
+	rootCmd.AddCommand(eventsCmd)
+	eventsCmd.AddCommand(sendEventCmd)
+	eventsCmd.AddCommand(setFilterCmd)
+	eventsCmd.AddCommand(deleteFilterCmd)
 
 	rootCmd.PersistentFlags().StringP("profile", "P", "", "Select the named profile from the loaded multi-profile configuration file.")
 	rootCmd.PersistentFlags().StringP("directory", "C", "", "Change to this directory before evaluating any paths or searching for a configuration file.")
@@ -71,14 +68,13 @@ func main() {
 
 	execCmd.Flags().StringVar(&inputType, "input-type", "application/json", "Content Type of input data")
 
-	eventCmd.PersistentFlags().StringVar(&Source, "source", "", "Context in which event happen")
-	eventCmd.PersistentFlags().StringVar(&Type, "type", "", "Type of event")
-	eventCmd.PersistentFlags().StringVar(&Id, "id", "", "Event id ")
-	eventCmd.PersistentFlags().StringVar(&Specversion, "specversion", "", "The version of the CloudEvents specification which the event uses")
+	sendEventCmd.Flags().StringVar(&Source, "source", "", "Context in which event happen")
+	sendEventCmd.Flags().StringVar(&Type, "type", "", "Type of event")
+	sendEventCmd.Flags().StringVar(&Id, "id", "", "Event id ")
+	sendEventCmd.Flags().StringVar(&Specversion, "specversion", "", "The version of the CloudEvents specification which the event uses")
+	sendEventCmd.Flags().String("endpoint", "", "Custom endpoint for filtered CloudEvents.")
 
-	createCmd.PersistentFlags().StringVar(&CloudEventFilterName, "filtername", "", "cloud event filtername")
-	updateCmd.PersistentFlags().StringVar(&CloudEventFilterName, "filtername", "", "cloud event filtername")
-	applyCmd.PersistentFlags().StringVar(&CloudEventFilterName, "filtername", "", "cloud event filtername")
+	setFilterCmd.PersistentFlags().BoolP("force", "f", false, "Update if it already exists.")
 
 	err := viper.BindPFlags(rootCmd.PersistentFlags())
 	if err != nil {
@@ -609,38 +605,26 @@ Will update the helloworld workflow and set the remote workflow variable 'data.j
 	},
 }
 
-var eventCmd = &cobra.Command{
-	Use:   "event EVENT_PATH",
+var sendEventCmd = &cobra.Command{
+	Use:   "send PATH",
 	Short: "Remotely trigger direktiv event with local files",
-	Long: `Remotely trigger direktiv event with local files. This process will trigger and create the given Event when its not already existing.
-
-EXAMPLE: direktiv-sync event greeting.yaml 
-`,
-	Args: cobra.ExactArgs(1),
+	Args:  cobra.ExactArgs(1),
 	PreRun: func(cmd *cobra.Command, args []string) {
 		cmdPrepareEvent(args[0])
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 
-		localVars, err := getLocalWorkflowVariables(localAbsPath)
-		if err != nil {
-			log.Fatalf("failed to get local variable files: %v\n", err)
-		}
-		if len(localVars) > 0 {
-			cmd.PrintErrf("found %v local variables to push to remote\n", len(localVars))
-		}
-
-		// Set Remote Vars
-		for _, v := range localVars {
-			varName := filepath.ToSlash(strings.TrimPrefix(v, localAbsPath+"."))
-			cmd.PrintErrf("updating remote workflow variable: '%s'\n", varName)
-			err = setRemoteWorkflowVariable(urlWorkflow, varName, v)
-			if err != nil {
-				log.Fatalf("Failed to set remote variable file: %v\n", err)
-			}
-		}
-
 		urlExecuteEvent := fmt.Sprintf("%s/broadcast", urlPrefix)
+
+		filter, err := cmd.Flags().GetString("endpoint")
+		if err != nil {
+			panic(err)
+		}
+
+		if filter != "" {
+			urlExecuteEvent += "/" + strings.TrimPrefix(filter, "/")
+		}
+
 		event, err := executeEvent(urlExecuteEvent)
 		if err != nil {
 			log.Fatalf("failed to trigger event: %s %v\n", event, err)
@@ -651,113 +635,65 @@ EXAMPLE: direktiv-sync event greeting.yaml
 	},
 }
 
-var eventfilterCmd = &cobra.Command{
-	Use:   "eventfilter operation EVENTFILTER_PATH",
-	Short: "Remotely manage direktiv eventfilter",
-	Long: `Remotely manage direktiv eventfilters. This process can delete, create and update eventfilter.
-EXAMPLE: direktiv-sync event create -s script.txt -f filtername
-	     direktiv-sync event delete filternanme
-		 direktiv-sync event update -s script.txt -f filtername
-`,
+var eventsCmd = &cobra.Command{
+	Use:   "events",
+	Short: "Event-related commands.",
 }
 
-var createCmd = &cobra.Command{
-	Use:   "create SCRIPT_PATH",
-	Short: "Remotely manage direktiv eventfilter",
-	Long: `Remotely manage direktiv eventfilters. This process can delete, create and update eventfilter.
-EXAMPLE: direktiv-sync event create -s script.txt -f filtername
-	     direktiv-sync event delete filternanme
-		 direktiv-sync event update -s script.txt -f filtername
-`,
-
-	Args: cobra.ExactArgs(1),
+var setFilterCmd = &cobra.Command{
+	Use:   "set-filter NAME SCRIPT",
+	Short: "Define an event filter.",
+	Args:  cobra.ExactArgs(2),
 	PreRun: func(cmd *cobra.Command, args []string) {
-		cmdPrepareEvent(args[0])
+		cmdPrepareEvent(args[1])
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 
-		err := executeCreateCloudEventFilter()
+		filterName := args[0]
+
+		// Read input data from flag file
+		inputData, err := safeLoadFile(localAbsPath)
+		if err != nil {
+			log.Fatalf("Failed to load input file: %v", err)
+		}
+
+		// If inputData is empty attempt to read from stdin
+		if inputData.Len() == 0 {
+			inputData, err = safeLoadStdIn()
+			if err != nil {
+				log.Fatalf("Failed to load stdin: %v", err)
+			}
+		}
+
+		force, err := cmd.Flags().GetBool("force")
+		if err != nil {
+			panic(err)
+		}
+
+		err = executeCreateCloudEventFilter(filterName, inputData, force)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		cmd.PrintErrln("successfully created cloud event filter: " + CloudEventFilterName)
+		cmd.PrintErrln("successfully created cloud event filter: " + filterName)
 
 	},
 }
 
-var deleteCmd = &cobra.Command{
-	Use:   "delete FILTERNAME",
-	Short: "Remotely manage direktiv eventfilter",
-	Long: `Remotely manage direktiv eventfilters. This process can delete, create and update eventfilter.
-EXAMPLE: direktiv-sync event create -s script.txt -f filtername
-	     direktiv-sync event delete filternanme
-		 direktiv-sync event update -s script.txt -f filtername
-`,
-
-	Args: cobra.ExactArgs(1),
-	PreRun: func(cmd *cobra.Command, args []string) {
-		CloudEventFilterName = args[0]
-	},
-
+var deleteFilterCmd = &cobra.Command{
+	Use:   "delete-filter NAME",
+	Short: "Delete an event filter.",
+	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 
-		err := executeDeleteCloudEventFilter()
+		filterName := args[0]
+
+		err := executeDeleteCloudEventFilter(filterName)
 		if err != nil {
 			log.Fatalf("error: %v\n", err)
 		}
 
-		cmd.PrintErrln("successfully deleted cloud event filter: " + CloudEventFilterName)
-
-	},
-}
-
-var updateCmd = &cobra.Command{
-	Use:   "update SCRIPT_PATH",
-	Short: "Remotely manage direktiv eventfilter",
-	Long: `Remotely manage direktiv eventfilters. This process can delete, create and update eventfilter.
-EXAMPLE: direktiv-sync event create -s script.txt -f filtername
-	     direktiv-sync event delete filternanme
-		 direktiv-sync event update -s script.txt -f filtername
-`,
-
-	Args: cobra.ExactArgs(1),
-	PreRun: func(cmd *cobra.Command, args []string) {
-		cmdPrepareEvent(args[0])
-	},
-	Run: func(cmd *cobra.Command, args []string) {
-
-		err := executeUpdateCloudEventFilter()
-		if err != nil {
-			log.Fatalf("error: %v\n", err)
-		}
-
-		cmd.PrintErrln("successfully updated cloud event filter: " + CloudEventFilterName)
-
-	},
-}
-
-var applyCmd = &cobra.Command{
-	Use:   "apply SCRIPT_PATH",
-	Short: "Remotely manage direktiv eventfilter",
-	Long: `Remotely manage direktiv eventfilters. This process can delete, create and update eventfilter.
-EXAMPLE: direktiv-sync event create -s script.txt -f filtername
-	     direktiv-sync event delete filternanme
-		 direktiv-sync event update -s script.txt -f filtername
-`,
-
-	Args: cobra.ExactArgs(1),
-	PreRun: func(cmd *cobra.Command, args []string) {
-		cmdPrepareEvent(args[0])
-	},
-	Run: func(cmd *cobra.Command, args []string) {
-
-		err := executeApplyCloudEventFilter()
-		if err != nil {
-			log.Fatalf("error: %v\n", err)
-		}
-
-		cmd.PrintErrln("successfully apply cloud event filter: " + CloudEventFilterName + " and brodcast filtered event")
+		cmd.PrintErrln("successfully deleted cloud event filter: " + filterName)
 
 	},
 }

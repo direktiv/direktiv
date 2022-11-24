@@ -1171,7 +1171,7 @@ func (flow *flow) CreateCloudEventFilter(ctx context.Context, in *grpc.CreateClo
 	}
 
 	if k != 0 {
-		err = fmt.Errorf("cloud event filter %s already exist", filterName)
+		err = status.Error(codes.AlreadyExists, fmt.Sprintf("CloudEvent filter %s already exists", filterName))
 		return &resp, err
 	}
 
