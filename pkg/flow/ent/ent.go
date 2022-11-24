@@ -24,6 +24,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/ref"
 	"github.com/direktiv/direktiv/pkg/flow/ent/revision"
 	"github.com/direktiv/direktiv/pkg/flow/ent/route"
+	"github.com/direktiv/direktiv/pkg/flow/ent/services"
 	"github.com/direktiv/direktiv/pkg/flow/ent/vardata"
 	"github.com/direktiv/direktiv/pkg/flow/ent/varref"
 	"github.com/direktiv/direktiv/pkg/flow/ent/workflow"
@@ -61,6 +62,7 @@ func columnChecker(table string) func(string) error {
 		ref.Table:               ref.ValidColumn,
 		revision.Table:          revision.ValidColumn,
 		route.Table:             route.ValidColumn,
+		services.Table:          services.ValidColumn,
 		vardata.Table:           vardata.ValidColumn,
 		varref.Table:            varref.ValidColumn,
 		workflow.Table:          workflow.ValidColumn,

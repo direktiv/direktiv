@@ -42,6 +42,7 @@ type hooks struct {
 	Ref               []ent.Hook
 	Revision          []ent.Hook
 	Route             []ent.Hook
+	Services          []ent.Hook
 	VarData           []ent.Hook
 	VarRef            []ent.Hook
 	Workflow          []ent.Hook

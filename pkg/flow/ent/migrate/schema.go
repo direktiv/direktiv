@@ -456,6 +456,37 @@ var (
 			},
 		},
 	}
+	// ServicesColumns holds the columns for the "services" table.
+	ServicesColumns = []*schema.Column{
+		{Name: "oid", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "url", Type: field.TypeString},
+		{Name: "name", Type: field.TypeString, Unique: true},
+		{Name: "data", Type: field.TypeString},
+		{Name: "namespace_services", Type: field.TypeUUID},
+	}
+	// ServicesTable holds the schema information for the "services" table.
+	ServicesTable = &schema.Table{
+		Name:       "services",
+		Columns:    ServicesColumns,
+		PrimaryKey: []*schema.Column{ServicesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "services_namespaces_services",
+				Columns:    []*schema.Column{ServicesColumns[6]},
+				RefColumns: []*schema.Column{NamespacesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "services_name_namespace_services",
+				Unique:  true,
+				Columns: []*schema.Column{ServicesColumns[4], ServicesColumns[6]},
+			},
+		},
+	}
 	// VarDataColumns holds the columns for the "var_data" table.
 	VarDataColumns = []*schema.Column{
 		{Name: "oid", Type: field.TypeUUID},
@@ -560,6 +591,7 @@ var (
 		RefsTable,
 		RevisionsTable,
 		RoutesTable,
+		ServicesTable,
 		VarDataTable,
 		VarRefsTable,
 		WorkflowsTable,
@@ -593,6 +625,7 @@ func init() {
 	RevisionsTable.ForeignKeys[0].RefTable = WorkflowsTable
 	RoutesTable.ForeignKeys[0].RefTable = RefsTable
 	RoutesTable.ForeignKeys[1].RefTable = WorkflowsTable
+	ServicesTable.ForeignKeys[0].RefTable = NamespacesTable
 	VarRefsTable.ForeignKeys[0].RefTable = InstancesTable
 	VarRefsTable.ForeignKeys[1].RefTable = NamespacesTable
 	VarRefsTable.ForeignKeys[2].RefTable = VarDataTable

@@ -191,6 +191,19 @@ func (f RouteFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error
 	return f(ctx, mv)
 }
 
+// The ServicesFunc type is an adapter to allow the use of ordinary
+// function as Services mutator.
+type ServicesFunc func(context.Context, *ent.ServicesMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ServicesFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.ServicesMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ServicesMutation", m)
+	}
+	return f(ctx, mv)
+}
+
 // The VarDataFunc type is an adapter to allow the use of ordinary
 // function as VarData mutator.
 type VarDataFunc func(context.Context, *ent.VarDataMutation) (ent.Value, error)
