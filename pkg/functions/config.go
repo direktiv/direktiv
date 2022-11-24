@@ -1,11 +1,18 @@
 package functions
 
 import (
+	"context"
+	"fmt"
 	"io"
 	"os"
+	"time"
 
+	"github.com/direktiv/direktiv/pkg/util"
 	"gopkg.in/yaml.v2"
 	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/watch"
+	"k8s.io/client-go/kubernetes"
 	kyaml "sigs.k8s.io/yaml"
 )
 
@@ -67,6 +74,78 @@ type subConfig struct {
 	KnativeAffinity v1.NodeAffinity `yaml:"knativeAffinity"`
 }
 
+func configWatcher() {
+
+	cs, err := getClientSet()
+	if err != nil {
+		fmt.Printf("could not create fetch client: %v", err)
+		return
+	}
+
+	for {
+		if done, err := watchConfigChanges(cs); err != nil {
+			logger.Errorf("function watcher channel failed to restart: %s", err.Error())
+			return
+		} else if done {
+			// connection has ended
+			return
+		}
+		logger.Debugf("function watcher channel has closed, attempting to restart")
+		time.Sleep(5 * time.Second)
+	}
+
+}
+
+func watchConfigChanges(cs *kubernetes.Clientset) (bool, error) {
+
+	logger.Info("start watching configuration")
+
+	ns := os.Getenv(util.DirektivNamespace)
+
+	watcher, err := cs.CoreV1().ConfigMaps(ns).Watch(context.TODO(),
+		metav1.SingleObject(metav1.ObjectMeta{Name: "direktiv-config-functions", Namespace: ns}))
+	if err != nil {
+		return false, fmt.Errorf("could not start watcher: %v", err)
+	}
+
+	for {
+		select {
+		case event := <-watcher.ResultChan():
+			switch event.Type {
+			case watch.Modified:
+				cm := event.DeepCopy().Object.(*v1.ConfigMap)
+				c := cm.Data["functions-config.yaml"]
+				updateConfig([]byte(c), &functionsConfig)
+			}
+
+		case <-time.After(watcherTimeout):
+			return false, nil
+		}
+	}
+
+}
+
+func updateConfig(data []byte, c *config) {
+
+	err := yaml.Unmarshal(data, c)
+	if err != nil {
+		logger.Fatalf("can not unmarshal config file: %v", err)
+		return
+	}
+
+	var sc subConfig
+	err = kyaml.Unmarshal(data, &sc)
+	if err != nil {
+		logger.Fatalf("can not unmarshal config file (k8s): %v", err)
+		return
+	}
+
+	c.extraVolumes = sc.ExtraVolumes
+	c.extraContainers = sc.ExtraContainers
+	c.knativeAffinity = sc.KnativeAffinity
+
+}
+
 func readConfig(path string, c *config) {
 
 	logger.Debugf("reading config %s", path)
@@ -90,21 +169,6 @@ func readConfig(path string, c *config) {
 		return
 	}
 
-	err = yaml.Unmarshal(buf, c)
-	if err != nil {
-		logger.Fatalf("can not unmarshal config file: %v", err)
-		return
-	}
-
-	var sc subConfig
-	err = kyaml.Unmarshal(buf, &sc)
-	if err != nil {
-		logger.Fatalf("can not unmarshal config file (k8s): %v", err)
-		return
-	}
-
-	c.extraVolumes = sc.ExtraVolumes
-	c.extraContainers = sc.ExtraContainers
-	c.knativeAffinity = sc.KnativeAffinity
+	updateConfig(buf, &functionsConfig)
 
 }

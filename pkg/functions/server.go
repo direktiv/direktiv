@@ -64,8 +64,12 @@ func StartServer(echan chan error) {
 		return
 	}
 
+	// we read first in case the watcher is not working
 	logger.Infof("loading config file %s", confFile)
 	readConfig(confFile, &functionsConfig)
+
+	// start watcher for congfig changes
+	go configWatcher()
 
 	err = initLocks(os.Getenv(util.DBConn))
 	if err != nil {
