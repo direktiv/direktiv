@@ -19,8 +19,9 @@ import (
 // EventsWaitUpdate is the builder for updating EventsWait entities.
 type EventsWaitUpdate struct {
 	config
-	hooks    []Hook
-	mutation *EventsWaitMutation
+	hooks     []Hook
+	mutation  *EventsWaitMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // Where appends a list predicates to the EventsWaitUpdate builder.
@@ -125,6 +126,12 @@ func (ewu *EventsWaitUpdate) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (ewu *EventsWaitUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *EventsWaitUpdate {
+	ewu.modifiers = append(ewu.modifiers, modifiers...)
+	return ewu
+}
+
 func (ewu *EventsWaitUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -144,11 +151,7 @@ func (ewu *EventsWaitUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 	}
 	if value, ok := ewu.mutation.Events(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Value:  value,
-			Column: eventswait.FieldEvents,
-		})
+		_spec.SetField(eventswait.FieldEvents, field.TypeJSON, value)
 	}
 	if ewu.mutation.WorkfloweventCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -185,6 +188,7 @@ func (ewu *EventsWaitUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	_spec.AddModifiers(ewu.modifiers...)
 	if n, err = sqlgraph.UpdateNodes(ctx, ewu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{eventswait.Label}
@@ -199,9 +203,10 @@ func (ewu *EventsWaitUpdate) sqlSave(ctx context.Context) (n int, err error) {
 // EventsWaitUpdateOne is the builder for updating a single EventsWait entity.
 type EventsWaitUpdateOne struct {
 	config
-	fields   []string
-	hooks    []Hook
-	mutation *EventsWaitMutation
+	fields    []string
+	hooks     []Hook
+	mutation  *EventsWaitMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // SetEvents sets the "events" field.
@@ -313,6 +318,12 @@ func (ewuo *EventsWaitUpdateOne) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (ewuo *EventsWaitUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *EventsWaitUpdateOne {
+	ewuo.modifiers = append(ewuo.modifiers, modifiers...)
+	return ewuo
+}
+
 func (ewuo *EventsWaitUpdateOne) sqlSave(ctx context.Context) (_node *EventsWait, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -349,11 +360,7 @@ func (ewuo *EventsWaitUpdateOne) sqlSave(ctx context.Context) (_node *EventsWait
 		}
 	}
 	if value, ok := ewuo.mutation.Events(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Value:  value,
-			Column: eventswait.FieldEvents,
-		})
+		_spec.SetField(eventswait.FieldEvents, field.TypeJSON, value)
 	}
 	if ewuo.mutation.WorkfloweventCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -390,6 +397,7 @@ func (ewuo *EventsWaitUpdateOne) sqlSave(ctx context.Context) (_node *EventsWait
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	_spec.AddModifiers(ewuo.modifiers...)
 	_node = &EventsWait{config: ewuo.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

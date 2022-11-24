@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math"
 
+	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -23,6 +24,7 @@ type NamespaceSecretQuery struct {
 	order      []OrderFunc
 	fields     []string
 	predicates []predicate.NamespaceSecret
+	modifiers  []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -261,7 +263,6 @@ func (nsq *NamespaceSecretQuery) Clone() *NamespaceSecretQuery {
 //		GroupBy(namespacesecret.FieldNs).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-//
 func (nsq *NamespaceSecretQuery) GroupBy(field string, fields ...string) *NamespaceSecretGroupBy {
 	grbuild := &NamespaceSecretGroupBy{config: nsq.config}
 	grbuild.fields = append([]string{field}, fields...)
@@ -288,13 +289,17 @@ func (nsq *NamespaceSecretQuery) GroupBy(field string, fields ...string) *Namesp
 //	client.NamespaceSecret.Query().
 //		Select(namespacesecret.FieldNs).
 //		Scan(ctx, &v)
-//
 func (nsq *NamespaceSecretQuery) Select(fields ...string) *NamespaceSecretSelect {
 	nsq.fields = append(nsq.fields, fields...)
 	selbuild := &NamespaceSecretSelect{NamespaceSecretQuery: nsq}
 	selbuild.label = namespacesecret.Label
 	selbuild.flds, selbuild.scan = &nsq.fields, selbuild.Scan
 	return selbuild
+}
+
+// Aggregate returns a NamespaceSecretSelect configured with the given aggregations.
+func (nsq *NamespaceSecretQuery) Aggregate(fns ...AggregateFunc) *NamespaceSecretSelect {
+	return nsq.Select().Aggregate(fns...)
 }
 
 func (nsq *NamespaceSecretQuery) prepareQuery(ctx context.Context) error {
@@ -318,13 +323,16 @@ func (nsq *NamespaceSecretQuery) sqlAll(ctx context.Context, hooks ...queryHook)
 		nodes = []*NamespaceSecret{}
 		_spec = nsq.querySpec()
 	)
-	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
+	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*NamespaceSecret).scanValues(nil, columns)
 	}
-	_spec.Assign = func(columns []string, values []interface{}) error {
+	_spec.Assign = func(columns []string, values []any) error {
 		node := &NamespaceSecret{config: nsq.config}
 		nodes = append(nodes, node)
 		return node.assignValues(columns, values)
+	}
+	if len(nsq.modifiers) > 0 {
+		_spec.Modifiers = nsq.modifiers
 	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
@@ -340,6 +348,9 @@ func (nsq *NamespaceSecretQuery) sqlAll(ctx context.Context, hooks ...queryHook)
 
 func (nsq *NamespaceSecretQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := nsq.querySpec()
+	if len(nsq.modifiers) > 0 {
+		_spec.Modifiers = nsq.modifiers
+	}
 	_spec.Node.Columns = nsq.fields
 	if len(nsq.fields) > 0 {
 		_spec.Unique = nsq.unique != nil && *nsq.unique
@@ -348,11 +359,14 @@ func (nsq *NamespaceSecretQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (nsq *NamespaceSecretQuery) sqlExist(ctx context.Context) (bool, error) {
-	n, err := nsq.sqlCount(ctx)
-	if err != nil {
+	switch _, err := nsq.FirstID(ctx); {
+	case IsNotFound(err):
+		return false, nil
+	case err != nil:
 		return false, fmt.Errorf("ent: check existence: %w", err)
+	default:
+		return true, nil
 	}
-	return n > 0, nil
 }
 
 func (nsq *NamespaceSecretQuery) querySpec() *sqlgraph.QuerySpec {
@@ -418,6 +432,9 @@ func (nsq *NamespaceSecretQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if nsq.unique != nil && *nsq.unique {
 		selector.Distinct()
 	}
+	for _, m := range nsq.modifiers {
+		m(selector)
+	}
 	for _, p := range nsq.predicates {
 		p(selector)
 	}
@@ -433,6 +450,38 @@ func (nsq *NamespaceSecretQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector.Limit(*limit)
 	}
 	return selector
+}
+
+// ForUpdate locks the selected rows against concurrent updates, and prevent them from being
+// updated, deleted or "selected ... for update" by other sessions, until the transaction is
+// either committed or rolled-back.
+func (nsq *NamespaceSecretQuery) ForUpdate(opts ...sql.LockOption) *NamespaceSecretQuery {
+	if nsq.driver.Dialect() == dialect.Postgres {
+		nsq.Unique(false)
+	}
+	nsq.modifiers = append(nsq.modifiers, func(s *sql.Selector) {
+		s.ForUpdate(opts...)
+	})
+	return nsq
+}
+
+// ForShare behaves similarly to ForUpdate, except that it acquires a shared mode lock
+// on any rows that are read. Other sessions can read the rows, but cannot modify them
+// until your transaction commits.
+func (nsq *NamespaceSecretQuery) ForShare(opts ...sql.LockOption) *NamespaceSecretQuery {
+	if nsq.driver.Dialect() == dialect.Postgres {
+		nsq.Unique(false)
+	}
+	nsq.modifiers = append(nsq.modifiers, func(s *sql.Selector) {
+		s.ForShare(opts...)
+	})
+	return nsq
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (nsq *NamespaceSecretQuery) Modify(modifiers ...func(s *sql.Selector)) *NamespaceSecretSelect {
+	nsq.modifiers = append(nsq.modifiers, modifiers...)
+	return nsq.Select()
 }
 
 // NamespaceSecretGroupBy is the group-by builder for NamespaceSecret entities.
@@ -453,7 +502,7 @@ func (nsgb *NamespaceSecretGroupBy) Aggregate(fns ...AggregateFunc) *NamespaceSe
 }
 
 // Scan applies the group-by query and scans the result into the given value.
-func (nsgb *NamespaceSecretGroupBy) Scan(ctx context.Context, v interface{}) error {
+func (nsgb *NamespaceSecretGroupBy) Scan(ctx context.Context, v any) error {
 	query, err := nsgb.path(ctx)
 	if err != nil {
 		return err
@@ -462,7 +511,7 @@ func (nsgb *NamespaceSecretGroupBy) Scan(ctx context.Context, v interface{}) err
 	return nsgb.sqlScan(ctx, v)
 }
 
-func (nsgb *NamespaceSecretGroupBy) sqlScan(ctx context.Context, v interface{}) error {
+func (nsgb *NamespaceSecretGroupBy) sqlScan(ctx context.Context, v any) error {
 	for _, f := range nsgb.fields {
 		if !namespacesecret.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for group-by", f)}
@@ -487,8 +536,6 @@ func (nsgb *NamespaceSecretGroupBy) sqlQuery() *sql.Selector {
 	for _, fn := range nsgb.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	// If no columns were selected in a custom aggregation function, the default
-	// selection is the fields used for "group-by", and the aggregation functions.
 	if len(selector.SelectedColumns()) == 0 {
 		columns := make([]string, 0, len(nsgb.fields)+len(nsgb.fns))
 		for _, f := range nsgb.fields {
@@ -508,8 +555,14 @@ type NamespaceSecretSelect struct {
 	sql *sql.Selector
 }
 
+// Aggregate adds the given aggregation functions to the selector query.
+func (nss *NamespaceSecretSelect) Aggregate(fns ...AggregateFunc) *NamespaceSecretSelect {
+	nss.fns = append(nss.fns, fns...)
+	return nss
+}
+
 // Scan applies the selector query and scans the result into the given value.
-func (nss *NamespaceSecretSelect) Scan(ctx context.Context, v interface{}) error {
+func (nss *NamespaceSecretSelect) Scan(ctx context.Context, v any) error {
 	if err := nss.prepareQuery(ctx); err != nil {
 		return err
 	}
@@ -517,7 +570,17 @@ func (nss *NamespaceSecretSelect) Scan(ctx context.Context, v interface{}) error
 	return nss.sqlScan(ctx, v)
 }
 
-func (nss *NamespaceSecretSelect) sqlScan(ctx context.Context, v interface{}) error {
+func (nss *NamespaceSecretSelect) sqlScan(ctx context.Context, v any) error {
+	aggregation := make([]string, 0, len(nss.fns))
+	for _, fn := range nss.fns {
+		aggregation = append(aggregation, fn(nss.sql))
+	}
+	switch n := len(*nss.selector.flds); {
+	case n == 0 && len(aggregation) > 0:
+		nss.sql.Select(aggregation...)
+	case n != 0 && len(aggregation) > 0:
+		nss.sql.AppendSelect(aggregation...)
+	}
 	rows := &sql.Rows{}
 	query, args := nss.sql.Query()
 	if err := nss.driver.Query(ctx, query, args, rows); err != nil {
@@ -525,4 +588,10 @@ func (nss *NamespaceSecretSelect) sqlScan(ctx context.Context, v interface{}) er
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (nss *NamespaceSecretSelect) Modify(modifiers ...func(s *sql.Selector)) *NamespaceSecretSelect {
+	nss.modifiers = append(nss.modifiers, modifiers...)
+	return nss
 }

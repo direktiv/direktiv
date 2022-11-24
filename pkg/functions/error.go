@@ -1,6 +1,8 @@
 package functions
 
 import (
+	"fmt"
+
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -17,7 +19,7 @@ func k8sToGRPCError(err error) error {
 	}
 
 	if errors.IsInvalid(err) {
-		return status.Error(codes.InvalidArgument, "invalid")
+		return status.Error(codes.InvalidArgument, fmt.Sprintf("invalid: %v", err))
 	}
 
 	return err

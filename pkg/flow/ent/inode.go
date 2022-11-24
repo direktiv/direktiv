@@ -66,8 +66,7 @@ type InodeEdges struct {
 func (e InodeEdges) NamespaceOrErr() (*Namespace, error) {
 	if e.loadedTypes[0] {
 		if e.Namespace == nil {
-			// The edge namespace was loaded in eager-loading,
-			// but was not found.
+			// Edge was loaded but was not found.
 			return nil, &NotFoundError{label: namespace.Label}
 		}
 		return e.Namespace, nil
@@ -89,8 +88,7 @@ func (e InodeEdges) ChildrenOrErr() ([]*Inode, error) {
 func (e InodeEdges) ParentOrErr() (*Inode, error) {
 	if e.loadedTypes[2] {
 		if e.Parent == nil {
-			// The edge parent was loaded in eager-loading,
-			// but was not found.
+			// Edge was loaded but was not found.
 			return nil, &NotFoundError{label: inode.Label}
 		}
 		return e.Parent, nil
@@ -103,8 +101,7 @@ func (e InodeEdges) ParentOrErr() (*Inode, error) {
 func (e InodeEdges) WorkflowOrErr() (*Workflow, error) {
 	if e.loadedTypes[3] {
 		if e.Workflow == nil {
-			// The edge workflow was loaded in eager-loading,
-			// but was not found.
+			// Edge was loaded but was not found.
 			return nil, &NotFoundError{label: workflow.Label}
 		}
 		return e.Workflow, nil
@@ -117,8 +114,7 @@ func (e InodeEdges) WorkflowOrErr() (*Workflow, error) {
 func (e InodeEdges) MirrorOrErr() (*Mirror, error) {
 	if e.loadedTypes[4] {
 		if e.Mirror == nil {
-			// The edge mirror was loaded in eager-loading,
-			// but was not found.
+			// Edge was loaded but was not found.
 			return nil, &NotFoundError{label: mirror.Label}
 		}
 		return e.Mirror, nil
@@ -136,8 +132,8 @@ func (e InodeEdges) AnnotationsOrErr() ([]*Annotation, error) {
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
-func (*Inode) scanValues(columns []string) ([]interface{}, error) {
-	values := make([]interface{}, len(columns))
+func (*Inode) scanValues(columns []string) ([]any, error) {
+	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
 		case inode.FieldAttributes:
@@ -163,7 +159,7 @@ func (*Inode) scanValues(columns []string) ([]interface{}, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the Inode fields.
-func (i *Inode) assignValues(columns []string, values []interface{}) error {
+func (i *Inode) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}

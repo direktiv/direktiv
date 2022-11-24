@@ -10,7 +10,6 @@ import (
 	"os/exec"
 	"os/signal"
 	"strings"
-	"time"
 
 	"github.com/direktiv/direktiv/pkg/dlog"
 	"github.com/direktiv/direktiv/pkg/flow"
@@ -101,20 +100,6 @@ func main() {
 	rootCmd.AddCommand(secretsCmd)
 	rootCmd.AddCommand(setSecretCmd)
 	rootCmd.AddCommand(deleteSecretCmd)
-
-	rootCmd.AddCommand(testsCmd)
-	rootCmd.AddCommand(testsAPICmd)
-	testsCmd.Flags().BoolVarP(&skipLongTests, "quick", "q", false, "")
-	testsCmd.Flags().BoolVarP(&persistTest, "persist-test", "p", false, "If true, test will stop on first fail or last success and will not cleanup resources. Only supported when clients=1")
-	testsCmd.Flags().IntVarP(&parallelTests, "clients", "c", 1, "")
-	testsCmd.Flags().DurationVarP(&instanceTimeout, "instance-timeout", "t", time.Second*5, "")
-	testsCmd.Flags().DurationVarP(&testTimeout, "test-timeout", "T", time.Second*10, "")
-
-	testsAPICmd.Flags().BoolVarP(&skipLongTests, "quick", "q", false, "")
-	testsAPICmd.Flags().BoolVarP(&persistTest, "persist-test", "p", false, "If true, test will stop on first fail or last success and will not cleanup resources. Only supported when clients=1")
-	testsAPICmd.Flags().IntVarP(&parallelTests, "clients", "c", 1, "")
-	testsAPICmd.Flags().DurationVarP(&instanceTimeout, "instance-timeout", "t", time.Second*5, "")
-	testsAPICmd.Flags().DurationVarP(&testTimeout, "test-timeout", "T", time.Second*10, "")
 
 	err = rootCmd.Execute()
 	if err != nil {

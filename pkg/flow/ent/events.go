@@ -61,8 +61,7 @@ type EventsEdges struct {
 func (e EventsEdges) WorkflowOrErr() (*Workflow, error) {
 	if e.loadedTypes[0] {
 		if e.Workflow == nil {
-			// The edge workflow was loaded in eager-loading,
-			// but was not found.
+			// Edge was loaded but was not found.
 			return nil, &NotFoundError{label: workflow.Label}
 		}
 		return e.Workflow, nil
@@ -84,8 +83,7 @@ func (e EventsEdges) WfeventswaitOrErr() ([]*EventsWait, error) {
 func (e EventsEdges) InstanceOrErr() (*Instance, error) {
 	if e.loadedTypes[2] {
 		if e.Instance == nil {
-			// The edge instance was loaded in eager-loading,
-			// but was not found.
+			// Edge was loaded but was not found.
 			return nil, &NotFoundError{label: instance.Label}
 		}
 		return e.Instance, nil
@@ -98,8 +96,7 @@ func (e EventsEdges) InstanceOrErr() (*Instance, error) {
 func (e EventsEdges) NamespaceOrErr() (*Namespace, error) {
 	if e.loadedTypes[3] {
 		if e.Namespace == nil {
-			// The edge namespace was loaded in eager-loading,
-			// but was not found.
+			// Edge was loaded but was not found.
 			return nil, &NotFoundError{label: namespace.Label}
 		}
 		return e.Namespace, nil
@@ -108,8 +105,8 @@ func (e EventsEdges) NamespaceOrErr() (*Namespace, error) {
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
-func (*Events) scanValues(columns []string) ([]interface{}, error) {
-	values := make([]interface{}, len(columns))
+func (*Events) scanValues(columns []string) ([]any, error) {
+	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
 		case events.FieldEvents, events.FieldCorrelations, events.FieldSignature:
@@ -135,7 +132,7 @@ func (*Events) scanValues(columns []string) ([]interface{}, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the Events fields.
-func (e *Events) assignValues(columns []string, values []interface{}) error {
+func (e *Events) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}

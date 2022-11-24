@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math"
 
+	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -23,6 +24,7 @@ type MetricsQuery struct {
 	order      []OrderFunc
 	fields     []string
 	predicates []predicate.Metrics
+	modifiers  []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -261,7 +263,6 @@ func (mq *MetricsQuery) Clone() *MetricsQuery {
 //		GroupBy(metrics.FieldNamespace).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-//
 func (mq *MetricsQuery) GroupBy(field string, fields ...string) *MetricsGroupBy {
 	grbuild := &MetricsGroupBy{config: mq.config}
 	grbuild.fields = append([]string{field}, fields...)
@@ -288,13 +289,17 @@ func (mq *MetricsQuery) GroupBy(field string, fields ...string) *MetricsGroupBy 
 //	client.Metrics.Query().
 //		Select(metrics.FieldNamespace).
 //		Scan(ctx, &v)
-//
 func (mq *MetricsQuery) Select(fields ...string) *MetricsSelect {
 	mq.fields = append(mq.fields, fields...)
 	selbuild := &MetricsSelect{MetricsQuery: mq}
 	selbuild.label = metrics.Label
 	selbuild.flds, selbuild.scan = &mq.fields, selbuild.Scan
 	return selbuild
+}
+
+// Aggregate returns a MetricsSelect configured with the given aggregations.
+func (mq *MetricsQuery) Aggregate(fns ...AggregateFunc) *MetricsSelect {
+	return mq.Select().Aggregate(fns...)
 }
 
 func (mq *MetricsQuery) prepareQuery(ctx context.Context) error {
@@ -318,13 +323,16 @@ func (mq *MetricsQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Metr
 		nodes = []*Metrics{}
 		_spec = mq.querySpec()
 	)
-	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
+	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Metrics).scanValues(nil, columns)
 	}
-	_spec.Assign = func(columns []string, values []interface{}) error {
+	_spec.Assign = func(columns []string, values []any) error {
 		node := &Metrics{config: mq.config}
 		nodes = append(nodes, node)
 		return node.assignValues(columns, values)
+	}
+	if len(mq.modifiers) > 0 {
+		_spec.Modifiers = mq.modifiers
 	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
@@ -340,6 +348,9 @@ func (mq *MetricsQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Metr
 
 func (mq *MetricsQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := mq.querySpec()
+	if len(mq.modifiers) > 0 {
+		_spec.Modifiers = mq.modifiers
+	}
 	_spec.Node.Columns = mq.fields
 	if len(mq.fields) > 0 {
 		_spec.Unique = mq.unique != nil && *mq.unique
@@ -348,11 +359,14 @@ func (mq *MetricsQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (mq *MetricsQuery) sqlExist(ctx context.Context) (bool, error) {
-	n, err := mq.sqlCount(ctx)
-	if err != nil {
+	switch _, err := mq.FirstID(ctx); {
+	case IsNotFound(err):
+		return false, nil
+	case err != nil:
 		return false, fmt.Errorf("ent: check existence: %w", err)
+	default:
+		return true, nil
 	}
-	return n > 0, nil
 }
 
 func (mq *MetricsQuery) querySpec() *sqlgraph.QuerySpec {
@@ -418,6 +432,9 @@ func (mq *MetricsQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if mq.unique != nil && *mq.unique {
 		selector.Distinct()
 	}
+	for _, m := range mq.modifiers {
+		m(selector)
+	}
 	for _, p := range mq.predicates {
 		p(selector)
 	}
@@ -433,6 +450,38 @@ func (mq *MetricsQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector.Limit(*limit)
 	}
 	return selector
+}
+
+// ForUpdate locks the selected rows against concurrent updates, and prevent them from being
+// updated, deleted or "selected ... for update" by other sessions, until the transaction is
+// either committed or rolled-back.
+func (mq *MetricsQuery) ForUpdate(opts ...sql.LockOption) *MetricsQuery {
+	if mq.driver.Dialect() == dialect.Postgres {
+		mq.Unique(false)
+	}
+	mq.modifiers = append(mq.modifiers, func(s *sql.Selector) {
+		s.ForUpdate(opts...)
+	})
+	return mq
+}
+
+// ForShare behaves similarly to ForUpdate, except that it acquires a shared mode lock
+// on any rows that are read. Other sessions can read the rows, but cannot modify them
+// until your transaction commits.
+func (mq *MetricsQuery) ForShare(opts ...sql.LockOption) *MetricsQuery {
+	if mq.driver.Dialect() == dialect.Postgres {
+		mq.Unique(false)
+	}
+	mq.modifiers = append(mq.modifiers, func(s *sql.Selector) {
+		s.ForShare(opts...)
+	})
+	return mq
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (mq *MetricsQuery) Modify(modifiers ...func(s *sql.Selector)) *MetricsSelect {
+	mq.modifiers = append(mq.modifiers, modifiers...)
+	return mq.Select()
 }
 
 // MetricsGroupBy is the group-by builder for Metrics entities.
@@ -453,7 +502,7 @@ func (mgb *MetricsGroupBy) Aggregate(fns ...AggregateFunc) *MetricsGroupBy {
 }
 
 // Scan applies the group-by query and scans the result into the given value.
-func (mgb *MetricsGroupBy) Scan(ctx context.Context, v interface{}) error {
+func (mgb *MetricsGroupBy) Scan(ctx context.Context, v any) error {
 	query, err := mgb.path(ctx)
 	if err != nil {
 		return err
@@ -462,7 +511,7 @@ func (mgb *MetricsGroupBy) Scan(ctx context.Context, v interface{}) error {
 	return mgb.sqlScan(ctx, v)
 }
 
-func (mgb *MetricsGroupBy) sqlScan(ctx context.Context, v interface{}) error {
+func (mgb *MetricsGroupBy) sqlScan(ctx context.Context, v any) error {
 	for _, f := range mgb.fields {
 		if !metrics.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for group-by", f)}
@@ -487,8 +536,6 @@ func (mgb *MetricsGroupBy) sqlQuery() *sql.Selector {
 	for _, fn := range mgb.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	// If no columns were selected in a custom aggregation function, the default
-	// selection is the fields used for "group-by", and the aggregation functions.
 	if len(selector.SelectedColumns()) == 0 {
 		columns := make([]string, 0, len(mgb.fields)+len(mgb.fns))
 		for _, f := range mgb.fields {
@@ -508,8 +555,14 @@ type MetricsSelect struct {
 	sql *sql.Selector
 }
 
+// Aggregate adds the given aggregation functions to the selector query.
+func (ms *MetricsSelect) Aggregate(fns ...AggregateFunc) *MetricsSelect {
+	ms.fns = append(ms.fns, fns...)
+	return ms
+}
+
 // Scan applies the selector query and scans the result into the given value.
-func (ms *MetricsSelect) Scan(ctx context.Context, v interface{}) error {
+func (ms *MetricsSelect) Scan(ctx context.Context, v any) error {
 	if err := ms.prepareQuery(ctx); err != nil {
 		return err
 	}
@@ -517,7 +570,17 @@ func (ms *MetricsSelect) Scan(ctx context.Context, v interface{}) error {
 	return ms.sqlScan(ctx, v)
 }
 
-func (ms *MetricsSelect) sqlScan(ctx context.Context, v interface{}) error {
+func (ms *MetricsSelect) sqlScan(ctx context.Context, v any) error {
+	aggregation := make([]string, 0, len(ms.fns))
+	for _, fn := range ms.fns {
+		aggregation = append(aggregation, fn(ms.sql))
+	}
+	switch n := len(*ms.selector.flds); {
+	case n == 0 && len(aggregation) > 0:
+		ms.sql.Select(aggregation...)
+	case n != 0 && len(aggregation) > 0:
+		ms.sql.AppendSelect(aggregation...)
+	}
 	rows := &sql.Rows{}
 	query, args := ms.sql.Query()
 	if err := ms.driver.Query(ctx, query, args, rows); err != nil {
@@ -525,4 +588,10 @@ func (ms *MetricsSelect) sqlScan(ctx context.Context, v interface{}) error {
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (ms *MetricsSelect) Modify(modifiers ...func(s *sql.Selector)) *MetricsSelect {
+	ms.modifiers = append(ms.modifiers, modifiers...)
+	return ms
 }

@@ -66,8 +66,7 @@ type WorkflowEdges struct {
 func (e WorkflowEdges) InodeOrErr() (*Inode, error) {
 	if e.loadedTypes[0] {
 		if e.Inode == nil {
-			// The edge inode was loaded in eager-loading,
-			// but was not found.
+			// Edge was loaded but was not found.
 			return nil, &NotFoundError{label: inode.Label}
 		}
 		return e.Inode, nil
@@ -80,8 +79,7 @@ func (e WorkflowEdges) InodeOrErr() (*Inode, error) {
 func (e WorkflowEdges) NamespaceOrErr() (*Namespace, error) {
 	if e.loadedTypes[1] {
 		if e.Namespace == nil {
-			// The edge namespace was loaded in eager-loading,
-			// but was not found.
+			// Edge was loaded but was not found.
 			return nil, &NotFoundError{label: namespace.Label}
 		}
 		return e.Namespace, nil
@@ -162,8 +160,8 @@ func (e WorkflowEdges) AnnotationsOrErr() ([]*Annotation, error) {
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
-func (*Workflow) scanValues(columns []string) ([]interface{}, error) {
-	values := make([]interface{}, len(columns))
+func (*Workflow) scanValues(columns []string) ([]any, error) {
+	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
 		case workflow.FieldLive, workflow.FieldReadOnly:
@@ -187,7 +185,7 @@ func (*Workflow) scanValues(columns []string) ([]interface{}, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the Workflow fields.
-func (w *Workflow) assignValues(columns []string, values []interface{}) error {
+func (w *Workflow) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}

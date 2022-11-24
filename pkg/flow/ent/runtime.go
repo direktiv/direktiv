@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/ent/annotation"
+	"github.com/direktiv/direktiv/pkg/flow/ent/cloudeventfilters"
 	"github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
 	"github.com/direktiv/direktiv/pkg/flow/ent/events"
 	"github.com/direktiv/direktiv/pkg/flow/ent/eventswait"
@@ -20,6 +21,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/revision"
 	"github.com/direktiv/direktiv/pkg/flow/ent/route"
 	"github.com/direktiv/direktiv/pkg/flow/ent/schema"
+	"github.com/direktiv/direktiv/pkg/flow/ent/services"
 	"github.com/direktiv/direktiv/pkg/flow/ent/vardata"
 	"github.com/direktiv/direktiv/pkg/flow/ent/varref"
 	"github.com/direktiv/direktiv/pkg/flow/ent/workflow"
@@ -50,6 +52,16 @@ func init() {
 	annotationDescID := annotationFields[0].Descriptor()
 	// annotation.DefaultID holds the default value on creation for the id field.
 	annotation.DefaultID = annotationDescID.Default.(func() uuid.UUID)
+	cloudeventfiltersFields := schema.CloudEventFilters{}.Fields()
+	_ = cloudeventfiltersFields
+	// cloudeventfiltersDescName is the schema descriptor for name field.
+	cloudeventfiltersDescName := cloudeventfiltersFields[0].Descriptor()
+	// cloudeventfilters.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	cloudeventfilters.NameValidator = cloudeventfiltersDescName.Validators[0].(func(string) error)
+	// cloudeventfiltersDescJscode is the schema descriptor for jscode field.
+	cloudeventfiltersDescJscode := cloudeventfiltersFields[1].Descriptor()
+	// cloudeventfilters.JscodeValidator is a validator for the "jscode" field. It is called by the builders before save.
+	cloudeventfilters.JscodeValidator = cloudeventfiltersDescJscode.Validators[0].(func(string) error)
 	cloudeventsFields := schema.CloudEvents{}.Fields()
 	_ = cloudeventsFields
 	// cloudeventsDescEventId is the schema descriptor for eventId field.
@@ -244,6 +256,34 @@ func init() {
 	routeDescID := routeFields[0].Descriptor()
 	// route.DefaultID holds the default value on creation for the id field.
 	route.DefaultID = routeDescID.Default.(func() uuid.UUID)
+	servicesFields := schema.Services{}.Fields()
+	_ = servicesFields
+	// servicesDescCreatedAt is the schema descriptor for created_at field.
+	servicesDescCreatedAt := servicesFields[1].Descriptor()
+	// services.DefaultCreatedAt holds the default value on creation for the created_at field.
+	services.DefaultCreatedAt = servicesDescCreatedAt.Default.(func() time.Time)
+	// servicesDescUpdatedAt is the schema descriptor for updated_at field.
+	servicesDescUpdatedAt := servicesFields[2].Descriptor()
+	// services.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	services.DefaultUpdatedAt = servicesDescUpdatedAt.Default.(func() time.Time)
+	// services.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	services.UpdateDefaultUpdatedAt = servicesDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// servicesDescURL is the schema descriptor for url field.
+	servicesDescURL := servicesFields[3].Descriptor()
+	// services.URLValidator is a validator for the "url" field. It is called by the builders before save.
+	services.URLValidator = servicesDescURL.Validators[0].(func(string) error)
+	// servicesDescName is the schema descriptor for name field.
+	servicesDescName := servicesFields[4].Descriptor()
+	// services.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	services.NameValidator = servicesDescName.Validators[0].(func(string) error)
+	// servicesDescData is the schema descriptor for data field.
+	servicesDescData := servicesFields[5].Descriptor()
+	// services.DataValidator is a validator for the "data" field. It is called by the builders before save.
+	services.DataValidator = servicesDescData.Validators[0].(func(string) error)
+	// servicesDescID is the schema descriptor for id field.
+	servicesDescID := servicesFields[0].Descriptor()
+	// services.DefaultID holds the default value on creation for the id field.
+	services.DefaultID = servicesDescID.Default.(func() uuid.UUID)
 	vardataFields := schema.VarData{}.Fields()
 	_ = vardataFields
 	// vardataDescCreatedAt is the schema descriptor for created_at field.

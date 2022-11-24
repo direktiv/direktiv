@@ -66,7 +66,7 @@ func initDatabase(ctx context.Context, addr string) (*ent.Client, error) {
 	err = row.Scan(&gen)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			_, err = tx.Exec(fmt.Sprintf(`INSERT INTO db_generation(generation) VALUES('%s')`, "0.6.0")) // this value needs to be manually updated each time there's an important database change
+			_, err = tx.Exec(fmt.Sprintf(`INSERT INTO db_generation(generation) VALUES('%s')`, "0.7.1")) // this value needs to be manually updated each time there's an important database change
 			if err != nil {
 				_ = db.Close()
 				return nil, err

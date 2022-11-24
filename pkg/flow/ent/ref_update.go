@@ -21,8 +21,9 @@ import (
 // RefUpdate is the builder for updating Ref entities.
 type RefUpdate struct {
 	config
-	hooks    []Hook
-	mutation *RefMutation
+	hooks     []Hook
+	mutation  *RefMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // Where appends a list predicates to the RefUpdate builder.
@@ -177,6 +178,12 @@ func (ru *RefUpdate) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (ru *RefUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *RefUpdate {
+	ru.modifiers = append(ru.modifiers, modifiers...)
+	return ru
+}
+
 func (ru *RefUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -319,6 +326,7 @@ func (ru *RefUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	_spec.AddModifiers(ru.modifiers...)
 	if n, err = sqlgraph.UpdateNodes(ctx, ru.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{ref.Label}
@@ -333,9 +341,10 @@ func (ru *RefUpdate) sqlSave(ctx context.Context) (n int, err error) {
 // RefUpdateOne is the builder for updating a single Ref entity.
 type RefUpdateOne struct {
 	config
-	fields   []string
-	hooks    []Hook
-	mutation *RefMutation
+	fields    []string
+	hooks     []Hook
+	mutation  *RefMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // SetWorkflowID sets the "workflow" edge to the Workflow entity by ID.
@@ -497,6 +506,12 @@ func (ruo *RefUpdateOne) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (ruo *RefUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *RefUpdateOne {
+	ruo.modifiers = append(ruo.modifiers, modifiers...)
+	return ruo
+}
+
 func (ruo *RefUpdateOne) sqlSave(ctx context.Context) (_node *Ref, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -656,6 +671,7 @@ func (ruo *RefUpdateOne) sqlSave(ctx context.Context) (_node *Ref, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	_spec.AddModifiers(ruo.modifiers...)
 	_node = &Ref{config: ruo.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

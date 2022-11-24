@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"time"
 
+	"entgo.io/ent/dialect"
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/direktiv/direktiv/pkg/flow/ent/annotation"
@@ -27,6 +29,7 @@ type InstanceCreate struct {
 	config
 	mutation *InstanceMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -417,72 +420,41 @@ func (ic *InstanceCreate) createSpec() (*Instance, *sqlgraph.CreateSpec) {
 			},
 		}
 	)
+	_spec.OnConflict = ic.conflict
 	if id, ok := ic.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
 	if value, ok := ic.mutation.CreatedAt(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: instance.FieldCreatedAt,
-		})
+		_spec.SetField(instance.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
 	if value, ok := ic.mutation.UpdatedAt(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: instance.FieldUpdatedAt,
-		})
+		_spec.SetField(instance.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
 	if value, ok := ic.mutation.EndAt(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: instance.FieldEndAt,
-		})
+		_spec.SetField(instance.FieldEndAt, field.TypeTime, value)
 		_node.EndAt = value
 	}
 	if value, ok := ic.mutation.Status(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: instance.FieldStatus,
-		})
+		_spec.SetField(instance.FieldStatus, field.TypeString, value)
 		_node.Status = value
 	}
 	if value, ok := ic.mutation.As(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: instance.FieldAs,
-		})
+		_spec.SetField(instance.FieldAs, field.TypeString, value)
 		_node.As = value
 	}
 	if value, ok := ic.mutation.ErrorCode(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: instance.FieldErrorCode,
-		})
+		_spec.SetField(instance.FieldErrorCode, field.TypeString, value)
 		_node.ErrorCode = value
 	}
 	if value, ok := ic.mutation.ErrorMessage(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: instance.FieldErrorMessage,
-		})
+		_spec.SetField(instance.FieldErrorMessage, field.TypeString, value)
 		_node.ErrorMessage = value
 	}
 	if value, ok := ic.mutation.Invoker(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: instance.FieldInvoker,
-		})
+		_spec.SetField(instance.FieldInvoker, field.TypeString, value)
 		_node.Invoker = value
 	}
 	if nodes := ic.mutation.NamespaceIDs(); len(nodes) > 0 {
@@ -662,10 +634,360 @@ func (ic *InstanceCreate) createSpec() (*Instance, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Instance.Create().
+//		SetCreatedAt(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.InstanceUpsert) {
+//			SetCreatedAt(v+v).
+//		}).
+//		Exec(ctx)
+func (ic *InstanceCreate) OnConflict(opts ...sql.ConflictOption) *InstanceUpsertOne {
+	ic.conflict = opts
+	return &InstanceUpsertOne{
+		create: ic,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Instance.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (ic *InstanceCreate) OnConflictColumns(columns ...string) *InstanceUpsertOne {
+	ic.conflict = append(ic.conflict, sql.ConflictColumns(columns...))
+	return &InstanceUpsertOne{
+		create: ic,
+	}
+}
+
+type (
+	// InstanceUpsertOne is the builder for "upsert"-ing
+	//  one Instance node.
+	InstanceUpsertOne struct {
+		create *InstanceCreate
+	}
+
+	// InstanceUpsert is the "OnConflict" setter.
+	InstanceUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *InstanceUpsert) SetUpdatedAt(v time.Time) *InstanceUpsert {
+	u.Set(instance.FieldUpdatedAt, v)
+	return u
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *InstanceUpsert) UpdateUpdatedAt() *InstanceUpsert {
+	u.SetExcluded(instance.FieldUpdatedAt)
+	return u
+}
+
+// SetEndAt sets the "end_at" field.
+func (u *InstanceUpsert) SetEndAt(v time.Time) *InstanceUpsert {
+	u.Set(instance.FieldEndAt, v)
+	return u
+}
+
+// UpdateEndAt sets the "end_at" field to the value that was provided on create.
+func (u *InstanceUpsert) UpdateEndAt() *InstanceUpsert {
+	u.SetExcluded(instance.FieldEndAt)
+	return u
+}
+
+// ClearEndAt clears the value of the "end_at" field.
+func (u *InstanceUpsert) ClearEndAt() *InstanceUpsert {
+	u.SetNull(instance.FieldEndAt)
+	return u
+}
+
+// SetStatus sets the "status" field.
+func (u *InstanceUpsert) SetStatus(v string) *InstanceUpsert {
+	u.Set(instance.FieldStatus, v)
+	return u
+}
+
+// UpdateStatus sets the "status" field to the value that was provided on create.
+func (u *InstanceUpsert) UpdateStatus() *InstanceUpsert {
+	u.SetExcluded(instance.FieldStatus)
+	return u
+}
+
+// SetErrorCode sets the "errorCode" field.
+func (u *InstanceUpsert) SetErrorCode(v string) *InstanceUpsert {
+	u.Set(instance.FieldErrorCode, v)
+	return u
+}
+
+// UpdateErrorCode sets the "errorCode" field to the value that was provided on create.
+func (u *InstanceUpsert) UpdateErrorCode() *InstanceUpsert {
+	u.SetExcluded(instance.FieldErrorCode)
+	return u
+}
+
+// ClearErrorCode clears the value of the "errorCode" field.
+func (u *InstanceUpsert) ClearErrorCode() *InstanceUpsert {
+	u.SetNull(instance.FieldErrorCode)
+	return u
+}
+
+// SetErrorMessage sets the "errorMessage" field.
+func (u *InstanceUpsert) SetErrorMessage(v string) *InstanceUpsert {
+	u.Set(instance.FieldErrorMessage, v)
+	return u
+}
+
+// UpdateErrorMessage sets the "errorMessage" field to the value that was provided on create.
+func (u *InstanceUpsert) UpdateErrorMessage() *InstanceUpsert {
+	u.SetExcluded(instance.FieldErrorMessage)
+	return u
+}
+
+// ClearErrorMessage clears the value of the "errorMessage" field.
+func (u *InstanceUpsert) ClearErrorMessage() *InstanceUpsert {
+	u.SetNull(instance.FieldErrorMessage)
+	return u
+}
+
+// SetInvoker sets the "invoker" field.
+func (u *InstanceUpsert) SetInvoker(v string) *InstanceUpsert {
+	u.Set(instance.FieldInvoker, v)
+	return u
+}
+
+// UpdateInvoker sets the "invoker" field to the value that was provided on create.
+func (u *InstanceUpsert) UpdateInvoker() *InstanceUpsert {
+	u.SetExcluded(instance.FieldInvoker)
+	return u
+}
+
+// ClearInvoker clears the value of the "invoker" field.
+func (u *InstanceUpsert) ClearInvoker() *InstanceUpsert {
+	u.SetNull(instance.FieldInvoker)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// Using this option is equivalent to using:
+//
+//	client.Instance.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(instance.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *InstanceUpsertOne) UpdateNewValues() *InstanceUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(instance.FieldID)
+		}
+		if _, exists := u.create.mutation.CreatedAt(); exists {
+			s.SetIgnore(instance.FieldCreatedAt)
+		}
+		if _, exists := u.create.mutation.As(); exists {
+			s.SetIgnore(instance.FieldAs)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Instance.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *InstanceUpsertOne) Ignore() *InstanceUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *InstanceUpsertOne) DoNothing() *InstanceUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the InstanceCreate.OnConflict
+// documentation for more info.
+func (u *InstanceUpsertOne) Update(set func(*InstanceUpsert)) *InstanceUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&InstanceUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *InstanceUpsertOne) SetUpdatedAt(v time.Time) *InstanceUpsertOne {
+	return u.Update(func(s *InstanceUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *InstanceUpsertOne) UpdateUpdatedAt() *InstanceUpsertOne {
+	return u.Update(func(s *InstanceUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
+// SetEndAt sets the "end_at" field.
+func (u *InstanceUpsertOne) SetEndAt(v time.Time) *InstanceUpsertOne {
+	return u.Update(func(s *InstanceUpsert) {
+		s.SetEndAt(v)
+	})
+}
+
+// UpdateEndAt sets the "end_at" field to the value that was provided on create.
+func (u *InstanceUpsertOne) UpdateEndAt() *InstanceUpsertOne {
+	return u.Update(func(s *InstanceUpsert) {
+		s.UpdateEndAt()
+	})
+}
+
+// ClearEndAt clears the value of the "end_at" field.
+func (u *InstanceUpsertOne) ClearEndAt() *InstanceUpsertOne {
+	return u.Update(func(s *InstanceUpsert) {
+		s.ClearEndAt()
+	})
+}
+
+// SetStatus sets the "status" field.
+func (u *InstanceUpsertOne) SetStatus(v string) *InstanceUpsertOne {
+	return u.Update(func(s *InstanceUpsert) {
+		s.SetStatus(v)
+	})
+}
+
+// UpdateStatus sets the "status" field to the value that was provided on create.
+func (u *InstanceUpsertOne) UpdateStatus() *InstanceUpsertOne {
+	return u.Update(func(s *InstanceUpsert) {
+		s.UpdateStatus()
+	})
+}
+
+// SetErrorCode sets the "errorCode" field.
+func (u *InstanceUpsertOne) SetErrorCode(v string) *InstanceUpsertOne {
+	return u.Update(func(s *InstanceUpsert) {
+		s.SetErrorCode(v)
+	})
+}
+
+// UpdateErrorCode sets the "errorCode" field to the value that was provided on create.
+func (u *InstanceUpsertOne) UpdateErrorCode() *InstanceUpsertOne {
+	return u.Update(func(s *InstanceUpsert) {
+		s.UpdateErrorCode()
+	})
+}
+
+// ClearErrorCode clears the value of the "errorCode" field.
+func (u *InstanceUpsertOne) ClearErrorCode() *InstanceUpsertOne {
+	return u.Update(func(s *InstanceUpsert) {
+		s.ClearErrorCode()
+	})
+}
+
+// SetErrorMessage sets the "errorMessage" field.
+func (u *InstanceUpsertOne) SetErrorMessage(v string) *InstanceUpsertOne {
+	return u.Update(func(s *InstanceUpsert) {
+		s.SetErrorMessage(v)
+	})
+}
+
+// UpdateErrorMessage sets the "errorMessage" field to the value that was provided on create.
+func (u *InstanceUpsertOne) UpdateErrorMessage() *InstanceUpsertOne {
+	return u.Update(func(s *InstanceUpsert) {
+		s.UpdateErrorMessage()
+	})
+}
+
+// ClearErrorMessage clears the value of the "errorMessage" field.
+func (u *InstanceUpsertOne) ClearErrorMessage() *InstanceUpsertOne {
+	return u.Update(func(s *InstanceUpsert) {
+		s.ClearErrorMessage()
+	})
+}
+
+// SetInvoker sets the "invoker" field.
+func (u *InstanceUpsertOne) SetInvoker(v string) *InstanceUpsertOne {
+	return u.Update(func(s *InstanceUpsert) {
+		s.SetInvoker(v)
+	})
+}
+
+// UpdateInvoker sets the "invoker" field to the value that was provided on create.
+func (u *InstanceUpsertOne) UpdateInvoker() *InstanceUpsertOne {
+	return u.Update(func(s *InstanceUpsert) {
+		s.UpdateInvoker()
+	})
+}
+
+// ClearInvoker clears the value of the "invoker" field.
+func (u *InstanceUpsertOne) ClearInvoker() *InstanceUpsertOne {
+	return u.Update(func(s *InstanceUpsert) {
+		s.ClearInvoker()
+	})
+}
+
+// Exec executes the query.
+func (u *InstanceUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for InstanceCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *InstanceUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *InstanceUpsertOne) ID(ctx context.Context) (id uuid.UUID, err error) {
+	if u.create.driver.Dialect() == dialect.MySQL {
+		// In case of "ON CONFLICT", there is no way to get back non-numeric ID
+		// fields from the database since MySQL does not support the RETURNING clause.
+		return id, errors.New("ent: InstanceUpsertOne.ID is not supported by MySQL driver. Use InstanceUpsertOne.Exec instead")
+	}
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *InstanceUpsertOne) IDX(ctx context.Context) uuid.UUID {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // InstanceCreateBulk is the builder for creating many Instance entities in bulk.
 type InstanceCreateBulk struct {
 	config
 	builders []*InstanceCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the Instance entities in the database.
@@ -692,6 +1014,7 @@ func (icb *InstanceCreateBulk) Save(ctx context.Context) ([]*Instance, error) {
 					_, err = mutators[i+1].Mutate(root, icb.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = icb.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, icb.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -738,6 +1061,235 @@ func (icb *InstanceCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (icb *InstanceCreateBulk) ExecX(ctx context.Context) {
 	if err := icb.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Instance.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.InstanceUpsert) {
+//			SetCreatedAt(v+v).
+//		}).
+//		Exec(ctx)
+func (icb *InstanceCreateBulk) OnConflict(opts ...sql.ConflictOption) *InstanceUpsertBulk {
+	icb.conflict = opts
+	return &InstanceUpsertBulk{
+		create: icb,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Instance.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (icb *InstanceCreateBulk) OnConflictColumns(columns ...string) *InstanceUpsertBulk {
+	icb.conflict = append(icb.conflict, sql.ConflictColumns(columns...))
+	return &InstanceUpsertBulk{
+		create: icb,
+	}
+}
+
+// InstanceUpsertBulk is the builder for "upsert"-ing
+// a bulk of Instance nodes.
+type InstanceUpsertBulk struct {
+	create *InstanceCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.Instance.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(instance.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *InstanceUpsertBulk) UpdateNewValues() *InstanceUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(instance.FieldID)
+			}
+			if _, exists := b.mutation.CreatedAt(); exists {
+				s.SetIgnore(instance.FieldCreatedAt)
+			}
+			if _, exists := b.mutation.As(); exists {
+				s.SetIgnore(instance.FieldAs)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Instance.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *InstanceUpsertBulk) Ignore() *InstanceUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *InstanceUpsertBulk) DoNothing() *InstanceUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the InstanceCreateBulk.OnConflict
+// documentation for more info.
+func (u *InstanceUpsertBulk) Update(set func(*InstanceUpsert)) *InstanceUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&InstanceUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *InstanceUpsertBulk) SetUpdatedAt(v time.Time) *InstanceUpsertBulk {
+	return u.Update(func(s *InstanceUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *InstanceUpsertBulk) UpdateUpdatedAt() *InstanceUpsertBulk {
+	return u.Update(func(s *InstanceUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
+// SetEndAt sets the "end_at" field.
+func (u *InstanceUpsertBulk) SetEndAt(v time.Time) *InstanceUpsertBulk {
+	return u.Update(func(s *InstanceUpsert) {
+		s.SetEndAt(v)
+	})
+}
+
+// UpdateEndAt sets the "end_at" field to the value that was provided on create.
+func (u *InstanceUpsertBulk) UpdateEndAt() *InstanceUpsertBulk {
+	return u.Update(func(s *InstanceUpsert) {
+		s.UpdateEndAt()
+	})
+}
+
+// ClearEndAt clears the value of the "end_at" field.
+func (u *InstanceUpsertBulk) ClearEndAt() *InstanceUpsertBulk {
+	return u.Update(func(s *InstanceUpsert) {
+		s.ClearEndAt()
+	})
+}
+
+// SetStatus sets the "status" field.
+func (u *InstanceUpsertBulk) SetStatus(v string) *InstanceUpsertBulk {
+	return u.Update(func(s *InstanceUpsert) {
+		s.SetStatus(v)
+	})
+}
+
+// UpdateStatus sets the "status" field to the value that was provided on create.
+func (u *InstanceUpsertBulk) UpdateStatus() *InstanceUpsertBulk {
+	return u.Update(func(s *InstanceUpsert) {
+		s.UpdateStatus()
+	})
+}
+
+// SetErrorCode sets the "errorCode" field.
+func (u *InstanceUpsertBulk) SetErrorCode(v string) *InstanceUpsertBulk {
+	return u.Update(func(s *InstanceUpsert) {
+		s.SetErrorCode(v)
+	})
+}
+
+// UpdateErrorCode sets the "errorCode" field to the value that was provided on create.
+func (u *InstanceUpsertBulk) UpdateErrorCode() *InstanceUpsertBulk {
+	return u.Update(func(s *InstanceUpsert) {
+		s.UpdateErrorCode()
+	})
+}
+
+// ClearErrorCode clears the value of the "errorCode" field.
+func (u *InstanceUpsertBulk) ClearErrorCode() *InstanceUpsertBulk {
+	return u.Update(func(s *InstanceUpsert) {
+		s.ClearErrorCode()
+	})
+}
+
+// SetErrorMessage sets the "errorMessage" field.
+func (u *InstanceUpsertBulk) SetErrorMessage(v string) *InstanceUpsertBulk {
+	return u.Update(func(s *InstanceUpsert) {
+		s.SetErrorMessage(v)
+	})
+}
+
+// UpdateErrorMessage sets the "errorMessage" field to the value that was provided on create.
+func (u *InstanceUpsertBulk) UpdateErrorMessage() *InstanceUpsertBulk {
+	return u.Update(func(s *InstanceUpsert) {
+		s.UpdateErrorMessage()
+	})
+}
+
+// ClearErrorMessage clears the value of the "errorMessage" field.
+func (u *InstanceUpsertBulk) ClearErrorMessage() *InstanceUpsertBulk {
+	return u.Update(func(s *InstanceUpsert) {
+		s.ClearErrorMessage()
+	})
+}
+
+// SetInvoker sets the "invoker" field.
+func (u *InstanceUpsertBulk) SetInvoker(v string) *InstanceUpsertBulk {
+	return u.Update(func(s *InstanceUpsert) {
+		s.SetInvoker(v)
+	})
+}
+
+// UpdateInvoker sets the "invoker" field to the value that was provided on create.
+func (u *InstanceUpsertBulk) UpdateInvoker() *InstanceUpsertBulk {
+	return u.Update(func(s *InstanceUpsert) {
+		s.UpdateInvoker()
+	})
+}
+
+// ClearInvoker clears the value of the "invoker" field.
+func (u *InstanceUpsertBulk) ClearInvoker() *InstanceUpsertBulk {
+	return u.Update(func(s *InstanceUpsert) {
+		s.ClearInvoker()
+	})
+}
+
+// Exec executes the query.
+func (u *InstanceUpsertBulk) Exec(ctx context.Context) error {
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the InstanceCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for InstanceCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *InstanceUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

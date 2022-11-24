@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math"
 
+	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -22,18 +23,18 @@ import (
 // AnnotationQuery is the builder for querying Annotation entities.
 type AnnotationQuery struct {
 	config
-	limit      *int
-	offset     *int
-	unique     *bool
-	order      []OrderFunc
-	fields     []string
-	predicates []predicate.Annotation
-	// eager-loading edges.
+	limit         *int
+	offset        *int
+	unique        *bool
+	order         []OrderFunc
+	fields        []string
+	predicates    []predicate.Annotation
 	withNamespace *NamespaceQuery
 	withWorkflow  *WorkflowQuery
 	withInstance  *InstanceQuery
 	withInode     *InodeQuery
 	withFKs       bool
+	modifiers     []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -408,7 +409,6 @@ func (aq *AnnotationQuery) WithInode(opts ...func(*InodeQuery)) *AnnotationQuery
 //		GroupBy(annotation.FieldName).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-//
 func (aq *AnnotationQuery) GroupBy(field string, fields ...string) *AnnotationGroupBy {
 	grbuild := &AnnotationGroupBy{config: aq.config}
 	grbuild.fields = append([]string{field}, fields...)
@@ -435,13 +435,17 @@ func (aq *AnnotationQuery) GroupBy(field string, fields ...string) *AnnotationGr
 //	client.Annotation.Query().
 //		Select(annotation.FieldName).
 //		Scan(ctx, &v)
-//
 func (aq *AnnotationQuery) Select(fields ...string) *AnnotationSelect {
 	aq.fields = append(aq.fields, fields...)
 	selbuild := &AnnotationSelect{AnnotationQuery: aq}
 	selbuild.label = annotation.Label
 	selbuild.flds, selbuild.scan = &aq.fields, selbuild.Scan
 	return selbuild
+}
+
+// Aggregate returns a AnnotationSelect configured with the given aggregations.
+func (aq *AnnotationQuery) Aggregate(fns ...AggregateFunc) *AnnotationSelect {
+	return aq.Select().Aggregate(fns...)
 }
 
 func (aq *AnnotationQuery) prepareQuery(ctx context.Context) error {
@@ -478,14 +482,17 @@ func (aq *AnnotationQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*A
 	if withFKs {
 		_spec.Node.Columns = append(_spec.Node.Columns, annotation.ForeignKeys...)
 	}
-	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
+	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Annotation).scanValues(nil, columns)
 	}
-	_spec.Assign = func(columns []string, values []interface{}) error {
+	_spec.Assign = func(columns []string, values []any) error {
 		node := &Annotation{config: aq.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
+	}
+	if len(aq.modifiers) > 0 {
+		_spec.Modifiers = aq.modifiers
 	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
@@ -496,128 +503,155 @@ func (aq *AnnotationQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*A
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-
 	if query := aq.withNamespace; query != nil {
-		ids := make([]uuid.UUID, 0, len(nodes))
-		nodeids := make(map[uuid.UUID][]*Annotation)
-		for i := range nodes {
-			if nodes[i].namespace_annotations == nil {
-				continue
-			}
-			fk := *nodes[i].namespace_annotations
-			if _, ok := nodeids[fk]; !ok {
-				ids = append(ids, fk)
-			}
-			nodeids[fk] = append(nodeids[fk], nodes[i])
-		}
-		query.Where(namespace.IDIn(ids...))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := aq.loadNamespace(ctx, query, nodes, nil,
+			func(n *Annotation, e *Namespace) { n.Edges.Namespace = e }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			nodes, ok := nodeids[n.ID]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "namespace_annotations" returned %v`, n.ID)
-			}
-			for i := range nodes {
-				nodes[i].Edges.Namespace = n
-			}
-		}
 	}
-
 	if query := aq.withWorkflow; query != nil {
-		ids := make([]uuid.UUID, 0, len(nodes))
-		nodeids := make(map[uuid.UUID][]*Annotation)
-		for i := range nodes {
-			if nodes[i].workflow_annotations == nil {
-				continue
-			}
-			fk := *nodes[i].workflow_annotations
-			if _, ok := nodeids[fk]; !ok {
-				ids = append(ids, fk)
-			}
-			nodeids[fk] = append(nodeids[fk], nodes[i])
-		}
-		query.Where(workflow.IDIn(ids...))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := aq.loadWorkflow(ctx, query, nodes, nil,
+			func(n *Annotation, e *Workflow) { n.Edges.Workflow = e }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			nodes, ok := nodeids[n.ID]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "workflow_annotations" returned %v`, n.ID)
-			}
-			for i := range nodes {
-				nodes[i].Edges.Workflow = n
-			}
-		}
 	}
-
 	if query := aq.withInstance; query != nil {
-		ids := make([]uuid.UUID, 0, len(nodes))
-		nodeids := make(map[uuid.UUID][]*Annotation)
-		for i := range nodes {
-			if nodes[i].instance_annotations == nil {
-				continue
-			}
-			fk := *nodes[i].instance_annotations
-			if _, ok := nodeids[fk]; !ok {
-				ids = append(ids, fk)
-			}
-			nodeids[fk] = append(nodeids[fk], nodes[i])
-		}
-		query.Where(instance.IDIn(ids...))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := aq.loadInstance(ctx, query, nodes, nil,
+			func(n *Annotation, e *Instance) { n.Edges.Instance = e }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			nodes, ok := nodeids[n.ID]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "instance_annotations" returned %v`, n.ID)
-			}
-			for i := range nodes {
-				nodes[i].Edges.Instance = n
-			}
-		}
 	}
-
 	if query := aq.withInode; query != nil {
-		ids := make([]uuid.UUID, 0, len(nodes))
-		nodeids := make(map[uuid.UUID][]*Annotation)
-		for i := range nodes {
-			if nodes[i].inode_annotations == nil {
-				continue
-			}
-			fk := *nodes[i].inode_annotations
-			if _, ok := nodeids[fk]; !ok {
-				ids = append(ids, fk)
-			}
-			nodeids[fk] = append(nodeids[fk], nodes[i])
-		}
-		query.Where(inode.IDIn(ids...))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := aq.loadInode(ctx, query, nodes, nil,
+			func(n *Annotation, e *Inode) { n.Edges.Inode = e }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			nodes, ok := nodeids[n.ID]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "inode_annotations" returned %v`, n.ID)
-			}
-			for i := range nodes {
-				nodes[i].Edges.Inode = n
-			}
+	}
+	return nodes, nil
+}
+
+func (aq *AnnotationQuery) loadNamespace(ctx context.Context, query *NamespaceQuery, nodes []*Annotation, init func(*Annotation), assign func(*Annotation, *Namespace)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Annotation)
+	for i := range nodes {
+		if nodes[i].namespace_annotations == nil {
+			continue
+		}
+		fk := *nodes[i].namespace_annotations
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	query.Where(namespace.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "namespace_annotations" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
 		}
 	}
-
-	return nodes, nil
+	return nil
+}
+func (aq *AnnotationQuery) loadWorkflow(ctx context.Context, query *WorkflowQuery, nodes []*Annotation, init func(*Annotation), assign func(*Annotation, *Workflow)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Annotation)
+	for i := range nodes {
+		if nodes[i].workflow_annotations == nil {
+			continue
+		}
+		fk := *nodes[i].workflow_annotations
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	query.Where(workflow.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "workflow_annotations" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (aq *AnnotationQuery) loadInstance(ctx context.Context, query *InstanceQuery, nodes []*Annotation, init func(*Annotation), assign func(*Annotation, *Instance)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Annotation)
+	for i := range nodes {
+		if nodes[i].instance_annotations == nil {
+			continue
+		}
+		fk := *nodes[i].instance_annotations
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	query.Where(instance.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "instance_annotations" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (aq *AnnotationQuery) loadInode(ctx context.Context, query *InodeQuery, nodes []*Annotation, init func(*Annotation), assign func(*Annotation, *Inode)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Annotation)
+	for i := range nodes {
+		if nodes[i].inode_annotations == nil {
+			continue
+		}
+		fk := *nodes[i].inode_annotations
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	query.Where(inode.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "inode_annotations" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
 }
 
 func (aq *AnnotationQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := aq.querySpec()
+	if len(aq.modifiers) > 0 {
+		_spec.Modifiers = aq.modifiers
+	}
 	_spec.Node.Columns = aq.fields
 	if len(aq.fields) > 0 {
 		_spec.Unique = aq.unique != nil && *aq.unique
@@ -626,11 +660,14 @@ func (aq *AnnotationQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (aq *AnnotationQuery) sqlExist(ctx context.Context) (bool, error) {
-	n, err := aq.sqlCount(ctx)
-	if err != nil {
+	switch _, err := aq.FirstID(ctx); {
+	case IsNotFound(err):
+		return false, nil
+	case err != nil:
 		return false, fmt.Errorf("ent: check existence: %w", err)
+	default:
+		return true, nil
 	}
-	return n > 0, nil
 }
 
 func (aq *AnnotationQuery) querySpec() *sqlgraph.QuerySpec {
@@ -696,6 +733,9 @@ func (aq *AnnotationQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if aq.unique != nil && *aq.unique {
 		selector.Distinct()
 	}
+	for _, m := range aq.modifiers {
+		m(selector)
+	}
 	for _, p := range aq.predicates {
 		p(selector)
 	}
@@ -711,6 +751,38 @@ func (aq *AnnotationQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector.Limit(*limit)
 	}
 	return selector
+}
+
+// ForUpdate locks the selected rows against concurrent updates, and prevent them from being
+// updated, deleted or "selected ... for update" by other sessions, until the transaction is
+// either committed or rolled-back.
+func (aq *AnnotationQuery) ForUpdate(opts ...sql.LockOption) *AnnotationQuery {
+	if aq.driver.Dialect() == dialect.Postgres {
+		aq.Unique(false)
+	}
+	aq.modifiers = append(aq.modifiers, func(s *sql.Selector) {
+		s.ForUpdate(opts...)
+	})
+	return aq
+}
+
+// ForShare behaves similarly to ForUpdate, except that it acquires a shared mode lock
+// on any rows that are read. Other sessions can read the rows, but cannot modify them
+// until your transaction commits.
+func (aq *AnnotationQuery) ForShare(opts ...sql.LockOption) *AnnotationQuery {
+	if aq.driver.Dialect() == dialect.Postgres {
+		aq.Unique(false)
+	}
+	aq.modifiers = append(aq.modifiers, func(s *sql.Selector) {
+		s.ForShare(opts...)
+	})
+	return aq
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (aq *AnnotationQuery) Modify(modifiers ...func(s *sql.Selector)) *AnnotationSelect {
+	aq.modifiers = append(aq.modifiers, modifiers...)
+	return aq.Select()
 }
 
 // AnnotationGroupBy is the group-by builder for Annotation entities.
@@ -731,7 +803,7 @@ func (agb *AnnotationGroupBy) Aggregate(fns ...AggregateFunc) *AnnotationGroupBy
 }
 
 // Scan applies the group-by query and scans the result into the given value.
-func (agb *AnnotationGroupBy) Scan(ctx context.Context, v interface{}) error {
+func (agb *AnnotationGroupBy) Scan(ctx context.Context, v any) error {
 	query, err := agb.path(ctx)
 	if err != nil {
 		return err
@@ -740,7 +812,7 @@ func (agb *AnnotationGroupBy) Scan(ctx context.Context, v interface{}) error {
 	return agb.sqlScan(ctx, v)
 }
 
-func (agb *AnnotationGroupBy) sqlScan(ctx context.Context, v interface{}) error {
+func (agb *AnnotationGroupBy) sqlScan(ctx context.Context, v any) error {
 	for _, f := range agb.fields {
 		if !annotation.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for group-by", f)}
@@ -765,8 +837,6 @@ func (agb *AnnotationGroupBy) sqlQuery() *sql.Selector {
 	for _, fn := range agb.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	// If no columns were selected in a custom aggregation function, the default
-	// selection is the fields used for "group-by", and the aggregation functions.
 	if len(selector.SelectedColumns()) == 0 {
 		columns := make([]string, 0, len(agb.fields)+len(agb.fns))
 		for _, f := range agb.fields {
@@ -786,8 +856,14 @@ type AnnotationSelect struct {
 	sql *sql.Selector
 }
 
+// Aggregate adds the given aggregation functions to the selector query.
+func (as *AnnotationSelect) Aggregate(fns ...AggregateFunc) *AnnotationSelect {
+	as.fns = append(as.fns, fns...)
+	return as
+}
+
 // Scan applies the selector query and scans the result into the given value.
-func (as *AnnotationSelect) Scan(ctx context.Context, v interface{}) error {
+func (as *AnnotationSelect) Scan(ctx context.Context, v any) error {
 	if err := as.prepareQuery(ctx); err != nil {
 		return err
 	}
@@ -795,7 +871,17 @@ func (as *AnnotationSelect) Scan(ctx context.Context, v interface{}) error {
 	return as.sqlScan(ctx, v)
 }
 
-func (as *AnnotationSelect) sqlScan(ctx context.Context, v interface{}) error {
+func (as *AnnotationSelect) sqlScan(ctx context.Context, v any) error {
+	aggregation := make([]string, 0, len(as.fns))
+	for _, fn := range as.fns {
+		aggregation = append(aggregation, fn(as.sql))
+	}
+	switch n := len(*as.selector.flds); {
+	case n == 0 && len(aggregation) > 0:
+		as.sql.Select(aggregation...)
+	case n != 0 && len(aggregation) > 0:
+		as.sql.AppendSelect(aggregation...)
+	}
 	rows := &sql.Rows{}
 	query, args := as.sql.Query()
 	if err := as.driver.Query(ctx, query, args, rows); err != nil {
@@ -803,4 +889,10 @@ func (as *AnnotationSelect) sqlScan(ctx context.Context, v interface{}) error {
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (as *AnnotationSelect) Modify(modifiers ...func(s *sql.Selector)) *AnnotationSelect {
+	as.modifiers = append(as.modifiers, modifiers...)
+	return as
 }

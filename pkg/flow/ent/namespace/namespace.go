@@ -41,6 +41,12 @@ const (
 	EdgeNamespacelisteners = "namespacelisteners"
 	// EdgeAnnotations holds the string denoting the annotations edge name in mutations.
 	EdgeAnnotations = "annotations"
+	// EdgeCloudeventfilters holds the string denoting the cloudeventfilters edge name in mutations.
+	EdgeCloudeventfilters = "cloudeventfilters"
+	// EdgeServices holds the string denoting the services edge name in mutations.
+	EdgeServices = "services"
+	// CloudEventFiltersFieldID holds the string denoting the ID field of the CloudEventFilters.
+	CloudEventFiltersFieldID = "id"
 	// Table holds the table name of the namespace in the database.
 	Table = "namespaces"
 	// InodesTable is the table that holds the inodes relation/edge.
@@ -113,6 +119,20 @@ const (
 	AnnotationsInverseTable = "annotations"
 	// AnnotationsColumn is the table column denoting the annotations relation/edge.
 	AnnotationsColumn = "namespace_annotations"
+	// CloudeventfiltersTable is the table that holds the cloudeventfilters relation/edge.
+	CloudeventfiltersTable = "cloud_event_filters"
+	// CloudeventfiltersInverseTable is the table name for the CloudEventFilters entity.
+	// It exists in this package in order to avoid circular dependency with the "cloudeventfilters" package.
+	CloudeventfiltersInverseTable = "cloud_event_filters"
+	// CloudeventfiltersColumn is the table column denoting the cloudeventfilters relation/edge.
+	CloudeventfiltersColumn = "namespace_cloudeventfilters"
+	// ServicesTable is the table that holds the services relation/edge.
+	ServicesTable = "services"
+	// ServicesInverseTable is the table name for the Services entity.
+	// It exists in this package in order to avoid circular dependency with the "services" package.
+	ServicesInverseTable = "services"
+	// ServicesColumn is the table column denoting the services relation/edge.
+	ServicesColumn = "namespace_services"
 )
 
 // Columns holds all SQL columns for namespace fields.

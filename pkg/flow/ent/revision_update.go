@@ -21,8 +21,9 @@ import (
 // RevisionUpdate is the builder for updating Revision entities.
 type RevisionUpdate struct {
 	config
-	hooks    []Hook
-	mutation *RevisionMutation
+	hooks     []Hook
+	mutation  *RevisionMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // Where appends a list predicates to the RevisionUpdate builder.
@@ -199,6 +200,12 @@ func (ru *RevisionUpdate) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (ru *RevisionUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *RevisionUpdate {
+	ru.modifiers = append(ru.modifiers, modifiers...)
+	return ru
+}
+
 func (ru *RevisionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -218,11 +225,7 @@ func (ru *RevisionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 	}
 	if value, ok := ru.mutation.Metadata(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Value:  value,
-			Column: revision.FieldMetadata,
-		})
+		_spec.SetField(revision.FieldMetadata, field.TypeJSON, value)
 	}
 	if ru.mutation.WorkflowCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -367,6 +370,7 @@ func (ru *RevisionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	_spec.AddModifiers(ru.modifiers...)
 	if n, err = sqlgraph.UpdateNodes(ctx, ru.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{revision.Label}
@@ -381,9 +385,10 @@ func (ru *RevisionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 // RevisionUpdateOne is the builder for updating a single Revision entity.
 type RevisionUpdateOne struct {
 	config
-	fields   []string
-	hooks    []Hook
-	mutation *RevisionMutation
+	fields    []string
+	hooks     []Hook
+	mutation  *RevisionMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // SetMetadata sets the "metadata" field.
@@ -567,6 +572,12 @@ func (ruo *RevisionUpdateOne) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (ruo *RevisionUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *RevisionUpdateOne {
+	ruo.modifiers = append(ruo.modifiers, modifiers...)
+	return ruo
+}
+
 func (ruo *RevisionUpdateOne) sqlSave(ctx context.Context) (_node *Revision, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -603,11 +614,7 @@ func (ruo *RevisionUpdateOne) sqlSave(ctx context.Context) (_node *Revision, err
 		}
 	}
 	if value, ok := ruo.mutation.Metadata(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Value:  value,
-			Column: revision.FieldMetadata,
-		})
+		_spec.SetField(revision.FieldMetadata, field.TypeJSON, value)
 	}
 	if ruo.mutation.WorkflowCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -752,6 +759,7 @@ func (ruo *RevisionUpdateOne) sqlSave(ctx context.Context) (_node *Revision, err
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	_spec.AddModifiers(ruo.modifiers...)
 	_node = &Revision{config: ruo.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

@@ -12,12 +12,10 @@ sudo -s source  $dir/resetk3s.sh
 
 export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
 
-kubectl create namespace knative-serving
-kubectl create namespace direktiv-services-direktiv
 kubectl create namespace postgres
 
 # prepare linkerd
-kubectl annotate ns knative-serving default direktiv-services-direktiv linkerd.io/inject=enabled
+kubectl annotate ns default linkerd.io/inject=enabled
 
 certDir=$(exe='step certificate create root.linkerd.cluster.local ca.crt ca.key \
 --profile root-ca --no-password --insecure \
@@ -42,22 +40,25 @@ if [ ! -d "$dir/direktiv-charts" ]; then
   git clone git@github.com:direktiv/direktiv-charts.git $dir/direktiv-charts
 fi
 
-helm dependency update $dir/direktiv-charts/charts/knative
+cd $dir/direktiv-charts/charts/knative-instance && helm dependency update $dir/direktiv-charts/charts/knative-instance
+
+kubectl apply -f https://github.com/knative/operator/releases/download/knative-v1.8.1/operator.yaml 
+kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=knative-operator
 
 CACERT=$dir/registry/share/out/ca.cert.pem
 echo "checking for ca $CACERT"
 if test -f "$CACERT"; then
   echo "using ca-cert"
-  helm install --set-file=controller.ca=$CACERT -n knative-serving knative $dir/direktiv-charts/charts/knative
+  helm install -n knative-serving --set-file=certificate=$CACERT --create-namespace knative-serving direktiv/knative-instance
 else
   echo "not using ca-cert"
-  helm install -n knative-serving knative $dir/direktiv-charts/charts/knative
+  helm install -n knative-serving --create-namespace knative-serving direktiv/knative-instance
 fi
 
 kubectl delete --all -n postgres persistentvolumeclaims
 kubectl delete --all -n default persistentvolumeclaims
 
-helm dependency update $dir/direktiv-charts/charts/direktiv
+cd  $dir/direktiv-charts/charts/direktiv && helm dependency update $dir/direktiv-charts/charts/direktiv
 
 # install db
 helm install -n postgres --set singleNamespace=true postgres $dir/direktiv-charts/charts/pgo --wait
@@ -102,6 +103,8 @@ functions:
 EOF
 fi
 
+# remove old database setting
+sed -i '/database:/,+6 d' $dir/dev.yaml
 
 echo "" >> $dir/dev.yaml
 echo "database:

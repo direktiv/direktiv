@@ -10,7 +10,6 @@ import (
 	secretsgrpc "github.com/direktiv/direktiv/pkg/secrets/grpc"
 	"github.com/direktiv/direktiv/pkg/secrets/handler"
 	"github.com/direktiv/direktiv/pkg/util"
-	"github.com/golang/protobuf/ptypes/empty"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -94,7 +93,7 @@ func (s *Server) Lifeline() chan bool {
 }
 
 // StoreSecret stores secrets in backends
-func (s *Server) StoreSecret(ctx context.Context, in *secretsgrpc.SecretsStoreRequest) (*empty.Empty, error) {
+func (s *Server) StoreSecret(ctx context.Context, in *secretsgrpc.SecretsStoreRequest) (*emptypb.Empty, error) {
 
 	var resp emptypb.Empty
 
@@ -189,7 +188,7 @@ func (s *Server) GetSecrets(ctx context.Context, in *secretsgrpc.GetSecretsReque
 }
 
 // DeleteSecret deletes single secret from backend
-func (s *Server) DeleteSecret(ctx context.Context, in *secretsgrpc.SecretsDeleteRequest) (*empty.Empty, error) {
+func (s *Server) DeleteSecret(ctx context.Context, in *secretsgrpc.SecretsDeleteRequest) (*emptypb.Empty, error) {
 
 	var resp emptypb.Empty
 
@@ -205,7 +204,7 @@ func (s *Server) DeleteSecret(ctx context.Context, in *secretsgrpc.SecretsDelete
 }
 
 // DeleteNamespaceSecrets deletes secrets for a namespace
-func (s *Server) DeleteNamespaceSecrets(ctx context.Context, in *secretsgrpc.DeleteNamespaceSecretsRequest) (*empty.Empty, error) {
+func (s *Server) DeleteNamespaceSecrets(ctx context.Context, in *secretsgrpc.DeleteNamespaceSecretsRequest) (*emptypb.Empty, error) {
 
 	var resp emptypb.Empty
 	return &resp, s.handler.RemoveNamespaceSecrets(in.GetNamespace())
@@ -213,7 +212,7 @@ func (s *Server) DeleteNamespaceSecrets(ctx context.Context, in *secretsgrpc.Del
 }
 
 // CreateFolder stores folders and create all missing folders in the path
-func (s *Server) CreateSecretsFolder(ctx context.Context, in *secretsgrpc.CreateSecretsFolderRequest) (*empty.Empty, error) {
+func (s *Server) CreateSecretsFolder(ctx context.Context, in *secretsgrpc.CreateSecretsFolderRequest) (*emptypb.Empty, error) {
 
 	var resp emptypb.Empty
 
@@ -249,7 +248,7 @@ func (s *Server) CreateSecretsFolder(ctx context.Context, in *secretsgrpc.Create
 }
 
 // DeleteFolder deletes folder from backend
-func (s *Server) DeleteSecretsFolder(ctx context.Context, in *secretsgrpc.DeleteSecretsFolderRequest) (*empty.Empty, error) {
+func (s *Server) DeleteSecretsFolder(ctx context.Context, in *secretsgrpc.DeleteSecretsFolderRequest) (*emptypb.Empty, error) {
 
 	var resp emptypb.Empty
 
@@ -298,7 +297,7 @@ func (s *Server) SearchSecret(ctx context.Context, in *secretsgrpc.SearchSecretR
 }
 
 // StoreSecret stores secrets in backends
-func (s *Server) UpdateSecret(ctx context.Context, in *secretsgrpc.UpdateSecretRequest) (*empty.Empty, error) {
+func (s *Server) UpdateSecret(ctx context.Context, in *secretsgrpc.UpdateSecretRequest) (*emptypb.Empty, error) {
 
 	var resp emptypb.Empty
 

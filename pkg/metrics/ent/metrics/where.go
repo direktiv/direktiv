@@ -33,7 +33,7 @@ func IDNEQ(id int) predicate.Metrics {
 // IDIn applies the In predicate on the ID field.
 func IDIn(ids ...int) predicate.Metrics {
 	return predicate.Metrics(func(s *sql.Selector) {
-		v := make([]interface{}, len(ids))
+		v := make([]any, len(ids))
 		for i := range v {
 			v[i] = ids[i]
 		}
@@ -44,7 +44,7 @@ func IDIn(ids ...int) predicate.Metrics {
 // IDNotIn applies the NotIn predicate on the ID field.
 func IDNotIn(ids ...int) predicate.Metrics {
 	return predicate.Metrics(func(s *sql.Selector) {
-		v := make([]interface{}, len(ids))
+		v := make([]any, len(ids))
 		for i := range v {
 			v[i] = ids[i]
 		}
@@ -180,34 +180,22 @@ func NamespaceNEQ(v string) predicate.Metrics {
 
 // NamespaceIn applies the In predicate on the "namespace" field.
 func NamespaceIn(vs ...string) predicate.Metrics {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.Metrics(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.In(s.C(FieldNamespace), v...))
 	})
 }
 
 // NamespaceNotIn applies the NotIn predicate on the "namespace" field.
 func NamespaceNotIn(vs ...string) predicate.Metrics {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.Metrics(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.NotIn(s.C(FieldNamespace), v...))
 	})
 }
@@ -291,34 +279,22 @@ func WorkflowNEQ(v string) predicate.Metrics {
 
 // WorkflowIn applies the In predicate on the "workflow" field.
 func WorkflowIn(vs ...string) predicate.Metrics {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.Metrics(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.In(s.C(FieldWorkflow), v...))
 	})
 }
 
 // WorkflowNotIn applies the NotIn predicate on the "workflow" field.
 func WorkflowNotIn(vs ...string) predicate.Metrics {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.Metrics(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.NotIn(s.C(FieldWorkflow), v...))
 	})
 }
@@ -402,34 +378,22 @@ func RevisionNEQ(v string) predicate.Metrics {
 
 // RevisionIn applies the In predicate on the "revision" field.
 func RevisionIn(vs ...string) predicate.Metrics {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.Metrics(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.In(s.C(FieldRevision), v...))
 	})
 }
 
 // RevisionNotIn applies the NotIn predicate on the "revision" field.
 func RevisionNotIn(vs ...string) predicate.Metrics {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.Metrics(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.NotIn(s.C(FieldRevision), v...))
 	})
 }
@@ -513,34 +477,22 @@ func InstanceNEQ(v string) predicate.Metrics {
 
 // InstanceIn applies the In predicate on the "instance" field.
 func InstanceIn(vs ...string) predicate.Metrics {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.Metrics(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.In(s.C(FieldInstance), v...))
 	})
 }
 
 // InstanceNotIn applies the NotIn predicate on the "instance" field.
 func InstanceNotIn(vs ...string) predicate.Metrics {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.Metrics(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.NotIn(s.C(FieldInstance), v...))
 	})
 }
@@ -624,34 +576,22 @@ func StateNEQ(v string) predicate.Metrics {
 
 // StateIn applies the In predicate on the "state" field.
 func StateIn(vs ...string) predicate.Metrics {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.Metrics(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.In(s.C(FieldState), v...))
 	})
 }
 
 // StateNotIn applies the NotIn predicate on the "state" field.
 func StateNotIn(vs ...string) predicate.Metrics {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.Metrics(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.NotIn(s.C(FieldState), v...))
 	})
 }
@@ -735,34 +675,22 @@ func TimestampNEQ(v time.Time) predicate.Metrics {
 
 // TimestampIn applies the In predicate on the "timestamp" field.
 func TimestampIn(vs ...time.Time) predicate.Metrics {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.Metrics(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.In(s.C(FieldTimestamp), v...))
 	})
 }
 
 // TimestampNotIn applies the NotIn predicate on the "timestamp" field.
 func TimestampNotIn(vs ...time.Time) predicate.Metrics {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.Metrics(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.NotIn(s.C(FieldTimestamp), v...))
 	})
 }
@@ -811,34 +739,22 @@ func WorkflowMsNEQ(v int64) predicate.Metrics {
 
 // WorkflowMsIn applies the In predicate on the "workflow_ms" field.
 func WorkflowMsIn(vs ...int64) predicate.Metrics {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.Metrics(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.In(s.C(FieldWorkflowMs), v...))
 	})
 }
 
 // WorkflowMsNotIn applies the NotIn predicate on the "workflow_ms" field.
 func WorkflowMsNotIn(vs ...int64) predicate.Metrics {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.Metrics(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.NotIn(s.C(FieldWorkflowMs), v...))
 	})
 }
@@ -887,34 +803,22 @@ func IsolateMsNEQ(v int64) predicate.Metrics {
 
 // IsolateMsIn applies the In predicate on the "isolate_ms" field.
 func IsolateMsIn(vs ...int64) predicate.Metrics {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.Metrics(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.In(s.C(FieldIsolateMs), v...))
 	})
 }
 
 // IsolateMsNotIn applies the NotIn predicate on the "isolate_ms" field.
 func IsolateMsNotIn(vs ...int64) predicate.Metrics {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.Metrics(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.NotIn(s.C(FieldIsolateMs), v...))
 	})
 }
@@ -963,34 +867,22 @@ func ErrorCodeNEQ(v string) predicate.Metrics {
 
 // ErrorCodeIn applies the In predicate on the "error_code" field.
 func ErrorCodeIn(vs ...string) predicate.Metrics {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.Metrics(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.In(s.C(FieldErrorCode), v...))
 	})
 }
 
 // ErrorCodeNotIn applies the NotIn predicate on the "error_code" field.
 func ErrorCodeNotIn(vs ...string) predicate.Metrics {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.Metrics(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.NotIn(s.C(FieldErrorCode), v...))
 	})
 }
@@ -1088,34 +980,22 @@ func InvokerNEQ(v string) predicate.Metrics {
 
 // InvokerIn applies the In predicate on the "invoker" field.
 func InvokerIn(vs ...string) predicate.Metrics {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.Metrics(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.In(s.C(FieldInvoker), v...))
 	})
 }
 
 // InvokerNotIn applies the NotIn predicate on the "invoker" field.
 func InvokerNotIn(vs ...string) predicate.Metrics {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.Metrics(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.NotIn(s.C(FieldInvoker), v...))
 	})
 }
@@ -1199,34 +1079,22 @@ func NextNEQ(v int8) predicate.Metrics {
 
 // NextIn applies the In predicate on the "next" field.
 func NextIn(vs ...int8) predicate.Metrics {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.Metrics(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.In(s.C(FieldNext), v...))
 	})
 }
 
 // NextNotIn applies the NotIn predicate on the "next" field.
 func NextNotIn(vs ...int8) predicate.Metrics {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.Metrics(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.NotIn(s.C(FieldNext), v...))
 	})
 }
@@ -1275,34 +1143,22 @@ func TransitionNEQ(v string) predicate.Metrics {
 
 // TransitionIn applies the In predicate on the "transition" field.
 func TransitionIn(vs ...string) predicate.Metrics {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.Metrics(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.In(s.C(FieldTransition), v...))
 	})
 }
 
 // TransitionNotIn applies the NotIn predicate on the "transition" field.
 func TransitionNotIn(vs ...string) predicate.Metrics {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.Metrics(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.NotIn(s.C(FieldTransition), v...))
 	})
 }

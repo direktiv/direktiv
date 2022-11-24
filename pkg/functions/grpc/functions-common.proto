@@ -17,6 +17,8 @@ message BaseInfo {
 	optional string namespaceName = 8;
 	optional string path = 9;
 	optional string revision = 10;
+
+	map<string, string> envs = 11;
 }
 
 message Condition {

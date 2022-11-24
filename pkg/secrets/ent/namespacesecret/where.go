@@ -31,7 +31,7 @@ func IDNEQ(id int) predicate.NamespaceSecret {
 // IDIn applies the In predicate on the ID field.
 func IDIn(ids ...int) predicate.NamespaceSecret {
 	return predicate.NamespaceSecret(func(s *sql.Selector) {
-		v := make([]interface{}, len(ids))
+		v := make([]any, len(ids))
 		for i := range v {
 			v[i] = ids[i]
 		}
@@ -42,7 +42,7 @@ func IDIn(ids ...int) predicate.NamespaceSecret {
 // IDNotIn applies the NotIn predicate on the ID field.
 func IDNotIn(ids ...int) predicate.NamespaceSecret {
 	return predicate.NamespaceSecret(func(s *sql.Selector) {
-		v := make([]interface{}, len(ids))
+		v := make([]any, len(ids))
 		for i := range v {
 			v[i] = ids[i]
 		}
@@ -115,34 +115,22 @@ func NsNEQ(v string) predicate.NamespaceSecret {
 
 // NsIn applies the In predicate on the "ns" field.
 func NsIn(vs ...string) predicate.NamespaceSecret {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.NamespaceSecret(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.In(s.C(FieldNs), v...))
 	})
 }
 
 // NsNotIn applies the NotIn predicate on the "ns" field.
 func NsNotIn(vs ...string) predicate.NamespaceSecret {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.NamespaceSecret(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.NotIn(s.C(FieldNs), v...))
 	})
 }
@@ -226,34 +214,22 @@ func NameNEQ(v string) predicate.NamespaceSecret {
 
 // NameIn applies the In predicate on the "name" field.
 func NameIn(vs ...string) predicate.NamespaceSecret {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.NamespaceSecret(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.In(s.C(FieldName), v...))
 	})
 }
 
 // NameNotIn applies the NotIn predicate on the "name" field.
 func NameNotIn(vs ...string) predicate.NamespaceSecret {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.NamespaceSecret(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.NotIn(s.C(FieldName), v...))
 	})
 }
@@ -337,34 +313,22 @@ func SecretNEQ(v []byte) predicate.NamespaceSecret {
 
 // SecretIn applies the In predicate on the "secret" field.
 func SecretIn(vs ...[]byte) predicate.NamespaceSecret {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.NamespaceSecret(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.In(s.C(FieldSecret), v...))
 	})
 }
 
 // SecretNotIn applies the NotIn predicate on the "secret" field.
 func SecretNotIn(vs ...[]byte) predicate.NamespaceSecret {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.NamespaceSecret(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.NotIn(s.C(FieldSecret), v...))
 	})
 }

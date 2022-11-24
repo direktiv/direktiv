@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"time"
 
+	"entgo.io/ent/dialect"
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/direktiv/direktiv/pkg/flow/ent/annotation"
@@ -23,6 +25,7 @@ type AnnotationCreate struct {
 	config
 	mutation *AnnotationMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetName sets the "name" field.
@@ -324,64 +327,37 @@ func (ac *AnnotationCreate) createSpec() (*Annotation, *sqlgraph.CreateSpec) {
 			},
 		}
 	)
+	_spec.OnConflict = ac.conflict
 	if id, ok := ac.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
 	if value, ok := ac.mutation.Name(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: annotation.FieldName,
-		})
+		_spec.SetField(annotation.FieldName, field.TypeString, value)
 		_node.Name = value
 	}
 	if value, ok := ac.mutation.CreatedAt(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: annotation.FieldCreatedAt,
-		})
+		_spec.SetField(annotation.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
 	if value, ok := ac.mutation.UpdatedAt(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: annotation.FieldUpdatedAt,
-		})
+		_spec.SetField(annotation.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
 	if value, ok := ac.mutation.Size(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
-			Value:  value,
-			Column: annotation.FieldSize,
-		})
+		_spec.SetField(annotation.FieldSize, field.TypeInt, value)
 		_node.Size = value
 	}
 	if value, ok := ac.mutation.Hash(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: annotation.FieldHash,
-		})
+		_spec.SetField(annotation.FieldHash, field.TypeString, value)
 		_node.Hash = value
 	}
 	if value, ok := ac.mutation.Data(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeBytes,
-			Value:  value,
-			Column: annotation.FieldData,
-		})
+		_spec.SetField(annotation.FieldData, field.TypeBytes, value)
 		_node.Data = value
 	}
 	if value, ok := ac.mutation.MimeType(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: annotation.FieldMimeType,
-		})
+		_spec.SetField(annotation.FieldMimeType, field.TypeString, value)
 		_node.MimeType = value
 	}
 	if nodes := ac.mutation.NamespaceIDs(); len(nodes) > 0 {
@@ -467,10 +443,318 @@ func (ac *AnnotationCreate) createSpec() (*Annotation, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Annotation.Create().
+//		SetName(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.AnnotationUpsert) {
+//			SetName(v+v).
+//		}).
+//		Exec(ctx)
+func (ac *AnnotationCreate) OnConflict(opts ...sql.ConflictOption) *AnnotationUpsertOne {
+	ac.conflict = opts
+	return &AnnotationUpsertOne{
+		create: ac,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Annotation.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (ac *AnnotationCreate) OnConflictColumns(columns ...string) *AnnotationUpsertOne {
+	ac.conflict = append(ac.conflict, sql.ConflictColumns(columns...))
+	return &AnnotationUpsertOne{
+		create: ac,
+	}
+}
+
+type (
+	// AnnotationUpsertOne is the builder for "upsert"-ing
+	//  one Annotation node.
+	AnnotationUpsertOne struct {
+		create *AnnotationCreate
+	}
+
+	// AnnotationUpsert is the "OnConflict" setter.
+	AnnotationUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetName sets the "name" field.
+func (u *AnnotationUpsert) SetName(v string) *AnnotationUpsert {
+	u.Set(annotation.FieldName, v)
+	return u
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *AnnotationUpsert) UpdateName() *AnnotationUpsert {
+	u.SetExcluded(annotation.FieldName)
+	return u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *AnnotationUpsert) SetUpdatedAt(v time.Time) *AnnotationUpsert {
+	u.Set(annotation.FieldUpdatedAt, v)
+	return u
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *AnnotationUpsert) UpdateUpdatedAt() *AnnotationUpsert {
+	u.SetExcluded(annotation.FieldUpdatedAt)
+	return u
+}
+
+// SetSize sets the "size" field.
+func (u *AnnotationUpsert) SetSize(v int) *AnnotationUpsert {
+	u.Set(annotation.FieldSize, v)
+	return u
+}
+
+// UpdateSize sets the "size" field to the value that was provided on create.
+func (u *AnnotationUpsert) UpdateSize() *AnnotationUpsert {
+	u.SetExcluded(annotation.FieldSize)
+	return u
+}
+
+// AddSize adds v to the "size" field.
+func (u *AnnotationUpsert) AddSize(v int) *AnnotationUpsert {
+	u.Add(annotation.FieldSize, v)
+	return u
+}
+
+// SetHash sets the "hash" field.
+func (u *AnnotationUpsert) SetHash(v string) *AnnotationUpsert {
+	u.Set(annotation.FieldHash, v)
+	return u
+}
+
+// UpdateHash sets the "hash" field to the value that was provided on create.
+func (u *AnnotationUpsert) UpdateHash() *AnnotationUpsert {
+	u.SetExcluded(annotation.FieldHash)
+	return u
+}
+
+// SetData sets the "data" field.
+func (u *AnnotationUpsert) SetData(v []byte) *AnnotationUpsert {
+	u.Set(annotation.FieldData, v)
+	return u
+}
+
+// UpdateData sets the "data" field to the value that was provided on create.
+func (u *AnnotationUpsert) UpdateData() *AnnotationUpsert {
+	u.SetExcluded(annotation.FieldData)
+	return u
+}
+
+// SetMimeType sets the "mime_type" field.
+func (u *AnnotationUpsert) SetMimeType(v string) *AnnotationUpsert {
+	u.Set(annotation.FieldMimeType, v)
+	return u
+}
+
+// UpdateMimeType sets the "mime_type" field to the value that was provided on create.
+func (u *AnnotationUpsert) UpdateMimeType() *AnnotationUpsert {
+	u.SetExcluded(annotation.FieldMimeType)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// Using this option is equivalent to using:
+//
+//	client.Annotation.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(annotation.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *AnnotationUpsertOne) UpdateNewValues() *AnnotationUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(annotation.FieldID)
+		}
+		if _, exists := u.create.mutation.CreatedAt(); exists {
+			s.SetIgnore(annotation.FieldCreatedAt)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Annotation.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *AnnotationUpsertOne) Ignore() *AnnotationUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *AnnotationUpsertOne) DoNothing() *AnnotationUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the AnnotationCreate.OnConflict
+// documentation for more info.
+func (u *AnnotationUpsertOne) Update(set func(*AnnotationUpsert)) *AnnotationUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&AnnotationUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetName sets the "name" field.
+func (u *AnnotationUpsertOne) SetName(v string) *AnnotationUpsertOne {
+	return u.Update(func(s *AnnotationUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *AnnotationUpsertOne) UpdateName() *AnnotationUpsertOne {
+	return u.Update(func(s *AnnotationUpsert) {
+		s.UpdateName()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *AnnotationUpsertOne) SetUpdatedAt(v time.Time) *AnnotationUpsertOne {
+	return u.Update(func(s *AnnotationUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *AnnotationUpsertOne) UpdateUpdatedAt() *AnnotationUpsertOne {
+	return u.Update(func(s *AnnotationUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
+// SetSize sets the "size" field.
+func (u *AnnotationUpsertOne) SetSize(v int) *AnnotationUpsertOne {
+	return u.Update(func(s *AnnotationUpsert) {
+		s.SetSize(v)
+	})
+}
+
+// AddSize adds v to the "size" field.
+func (u *AnnotationUpsertOne) AddSize(v int) *AnnotationUpsertOne {
+	return u.Update(func(s *AnnotationUpsert) {
+		s.AddSize(v)
+	})
+}
+
+// UpdateSize sets the "size" field to the value that was provided on create.
+func (u *AnnotationUpsertOne) UpdateSize() *AnnotationUpsertOne {
+	return u.Update(func(s *AnnotationUpsert) {
+		s.UpdateSize()
+	})
+}
+
+// SetHash sets the "hash" field.
+func (u *AnnotationUpsertOne) SetHash(v string) *AnnotationUpsertOne {
+	return u.Update(func(s *AnnotationUpsert) {
+		s.SetHash(v)
+	})
+}
+
+// UpdateHash sets the "hash" field to the value that was provided on create.
+func (u *AnnotationUpsertOne) UpdateHash() *AnnotationUpsertOne {
+	return u.Update(func(s *AnnotationUpsert) {
+		s.UpdateHash()
+	})
+}
+
+// SetData sets the "data" field.
+func (u *AnnotationUpsertOne) SetData(v []byte) *AnnotationUpsertOne {
+	return u.Update(func(s *AnnotationUpsert) {
+		s.SetData(v)
+	})
+}
+
+// UpdateData sets the "data" field to the value that was provided on create.
+func (u *AnnotationUpsertOne) UpdateData() *AnnotationUpsertOne {
+	return u.Update(func(s *AnnotationUpsert) {
+		s.UpdateData()
+	})
+}
+
+// SetMimeType sets the "mime_type" field.
+func (u *AnnotationUpsertOne) SetMimeType(v string) *AnnotationUpsertOne {
+	return u.Update(func(s *AnnotationUpsert) {
+		s.SetMimeType(v)
+	})
+}
+
+// UpdateMimeType sets the "mime_type" field to the value that was provided on create.
+func (u *AnnotationUpsertOne) UpdateMimeType() *AnnotationUpsertOne {
+	return u.Update(func(s *AnnotationUpsert) {
+		s.UpdateMimeType()
+	})
+}
+
+// Exec executes the query.
+func (u *AnnotationUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for AnnotationCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *AnnotationUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *AnnotationUpsertOne) ID(ctx context.Context) (id uuid.UUID, err error) {
+	if u.create.driver.Dialect() == dialect.MySQL {
+		// In case of "ON CONFLICT", there is no way to get back non-numeric ID
+		// fields from the database since MySQL does not support the RETURNING clause.
+		return id, errors.New("ent: AnnotationUpsertOne.ID is not supported by MySQL driver. Use AnnotationUpsertOne.Exec instead")
+	}
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *AnnotationUpsertOne) IDX(ctx context.Context) uuid.UUID {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // AnnotationCreateBulk is the builder for creating many Annotation entities in bulk.
 type AnnotationCreateBulk struct {
 	config
 	builders []*AnnotationCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the Annotation entities in the database.
@@ -497,6 +781,7 @@ func (acb *AnnotationCreateBulk) Save(ctx context.Context) ([]*Annotation, error
 					_, err = mutators[i+1].Mutate(root, acb.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = acb.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, acb.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -543,6 +828,211 @@ func (acb *AnnotationCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (acb *AnnotationCreateBulk) ExecX(ctx context.Context) {
 	if err := acb.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Annotation.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.AnnotationUpsert) {
+//			SetName(v+v).
+//		}).
+//		Exec(ctx)
+func (acb *AnnotationCreateBulk) OnConflict(opts ...sql.ConflictOption) *AnnotationUpsertBulk {
+	acb.conflict = opts
+	return &AnnotationUpsertBulk{
+		create: acb,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Annotation.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (acb *AnnotationCreateBulk) OnConflictColumns(columns ...string) *AnnotationUpsertBulk {
+	acb.conflict = append(acb.conflict, sql.ConflictColumns(columns...))
+	return &AnnotationUpsertBulk{
+		create: acb,
+	}
+}
+
+// AnnotationUpsertBulk is the builder for "upsert"-ing
+// a bulk of Annotation nodes.
+type AnnotationUpsertBulk struct {
+	create *AnnotationCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.Annotation.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(annotation.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *AnnotationUpsertBulk) UpdateNewValues() *AnnotationUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(annotation.FieldID)
+			}
+			if _, exists := b.mutation.CreatedAt(); exists {
+				s.SetIgnore(annotation.FieldCreatedAt)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Annotation.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *AnnotationUpsertBulk) Ignore() *AnnotationUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *AnnotationUpsertBulk) DoNothing() *AnnotationUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the AnnotationCreateBulk.OnConflict
+// documentation for more info.
+func (u *AnnotationUpsertBulk) Update(set func(*AnnotationUpsert)) *AnnotationUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&AnnotationUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetName sets the "name" field.
+func (u *AnnotationUpsertBulk) SetName(v string) *AnnotationUpsertBulk {
+	return u.Update(func(s *AnnotationUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *AnnotationUpsertBulk) UpdateName() *AnnotationUpsertBulk {
+	return u.Update(func(s *AnnotationUpsert) {
+		s.UpdateName()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *AnnotationUpsertBulk) SetUpdatedAt(v time.Time) *AnnotationUpsertBulk {
+	return u.Update(func(s *AnnotationUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *AnnotationUpsertBulk) UpdateUpdatedAt() *AnnotationUpsertBulk {
+	return u.Update(func(s *AnnotationUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
+// SetSize sets the "size" field.
+func (u *AnnotationUpsertBulk) SetSize(v int) *AnnotationUpsertBulk {
+	return u.Update(func(s *AnnotationUpsert) {
+		s.SetSize(v)
+	})
+}
+
+// AddSize adds v to the "size" field.
+func (u *AnnotationUpsertBulk) AddSize(v int) *AnnotationUpsertBulk {
+	return u.Update(func(s *AnnotationUpsert) {
+		s.AddSize(v)
+	})
+}
+
+// UpdateSize sets the "size" field to the value that was provided on create.
+func (u *AnnotationUpsertBulk) UpdateSize() *AnnotationUpsertBulk {
+	return u.Update(func(s *AnnotationUpsert) {
+		s.UpdateSize()
+	})
+}
+
+// SetHash sets the "hash" field.
+func (u *AnnotationUpsertBulk) SetHash(v string) *AnnotationUpsertBulk {
+	return u.Update(func(s *AnnotationUpsert) {
+		s.SetHash(v)
+	})
+}
+
+// UpdateHash sets the "hash" field to the value that was provided on create.
+func (u *AnnotationUpsertBulk) UpdateHash() *AnnotationUpsertBulk {
+	return u.Update(func(s *AnnotationUpsert) {
+		s.UpdateHash()
+	})
+}
+
+// SetData sets the "data" field.
+func (u *AnnotationUpsertBulk) SetData(v []byte) *AnnotationUpsertBulk {
+	return u.Update(func(s *AnnotationUpsert) {
+		s.SetData(v)
+	})
+}
+
+// UpdateData sets the "data" field to the value that was provided on create.
+func (u *AnnotationUpsertBulk) UpdateData() *AnnotationUpsertBulk {
+	return u.Update(func(s *AnnotationUpsert) {
+		s.UpdateData()
+	})
+}
+
+// SetMimeType sets the "mime_type" field.
+func (u *AnnotationUpsertBulk) SetMimeType(v string) *AnnotationUpsertBulk {
+	return u.Update(func(s *AnnotationUpsert) {
+		s.SetMimeType(v)
+	})
+}
+
+// UpdateMimeType sets the "mime_type" field to the value that was provided on create.
+func (u *AnnotationUpsertBulk) UpdateMimeType() *AnnotationUpsertBulk {
+	return u.Update(func(s *AnnotationUpsert) {
+		s.UpdateMimeType()
+	})
+}
+
+// Exec executes the query.
+func (u *AnnotationUpsertBulk) Exec(ctx context.Context) error {
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the AnnotationCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for AnnotationCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *AnnotationUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"time"
 
+	"entgo.io/ent/dialect"
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/direktiv/direktiv/pkg/flow/ent/vardata"
@@ -20,6 +22,7 @@ type VarDataCreate struct {
 	config
 	mutation *VarDataMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -258,56 +261,33 @@ func (vdc *VarDataCreate) createSpec() (*VarData, *sqlgraph.CreateSpec) {
 			},
 		}
 	)
+	_spec.OnConflict = vdc.conflict
 	if id, ok := vdc.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
 	if value, ok := vdc.mutation.CreatedAt(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: vardata.FieldCreatedAt,
-		})
+		_spec.SetField(vardata.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
 	if value, ok := vdc.mutation.UpdatedAt(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: vardata.FieldUpdatedAt,
-		})
+		_spec.SetField(vardata.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
 	if value, ok := vdc.mutation.Size(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
-			Value:  value,
-			Column: vardata.FieldSize,
-		})
+		_spec.SetField(vardata.FieldSize, field.TypeInt, value)
 		_node.Size = value
 	}
 	if value, ok := vdc.mutation.Hash(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: vardata.FieldHash,
-		})
+		_spec.SetField(vardata.FieldHash, field.TypeString, value)
 		_node.Hash = value
 	}
 	if value, ok := vdc.mutation.Data(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeBytes,
-			Value:  value,
-			Column: vardata.FieldData,
-		})
+		_spec.SetField(vardata.FieldData, field.TypeBytes, value)
 		_node.Data = value
 	}
 	if value, ok := vdc.mutation.MimeType(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: vardata.FieldMimeType,
-		})
+		_spec.SetField(vardata.FieldMimeType, field.TypeString, value)
 		_node.MimeType = value
 	}
 	if nodes := vdc.mutation.VarrefsIDs(); len(nodes) > 0 {
@@ -332,10 +312,292 @@ func (vdc *VarDataCreate) createSpec() (*VarData, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.VarData.Create().
+//		SetCreatedAt(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.VarDataUpsert) {
+//			SetCreatedAt(v+v).
+//		}).
+//		Exec(ctx)
+func (vdc *VarDataCreate) OnConflict(opts ...sql.ConflictOption) *VarDataUpsertOne {
+	vdc.conflict = opts
+	return &VarDataUpsertOne{
+		create: vdc,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.VarData.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (vdc *VarDataCreate) OnConflictColumns(columns ...string) *VarDataUpsertOne {
+	vdc.conflict = append(vdc.conflict, sql.ConflictColumns(columns...))
+	return &VarDataUpsertOne{
+		create: vdc,
+	}
+}
+
+type (
+	// VarDataUpsertOne is the builder for "upsert"-ing
+	//  one VarData node.
+	VarDataUpsertOne struct {
+		create *VarDataCreate
+	}
+
+	// VarDataUpsert is the "OnConflict" setter.
+	VarDataUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *VarDataUpsert) SetUpdatedAt(v time.Time) *VarDataUpsert {
+	u.Set(vardata.FieldUpdatedAt, v)
+	return u
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *VarDataUpsert) UpdateUpdatedAt() *VarDataUpsert {
+	u.SetExcluded(vardata.FieldUpdatedAt)
+	return u
+}
+
+// SetSize sets the "size" field.
+func (u *VarDataUpsert) SetSize(v int) *VarDataUpsert {
+	u.Set(vardata.FieldSize, v)
+	return u
+}
+
+// UpdateSize sets the "size" field to the value that was provided on create.
+func (u *VarDataUpsert) UpdateSize() *VarDataUpsert {
+	u.SetExcluded(vardata.FieldSize)
+	return u
+}
+
+// AddSize adds v to the "size" field.
+func (u *VarDataUpsert) AddSize(v int) *VarDataUpsert {
+	u.Add(vardata.FieldSize, v)
+	return u
+}
+
+// SetHash sets the "hash" field.
+func (u *VarDataUpsert) SetHash(v string) *VarDataUpsert {
+	u.Set(vardata.FieldHash, v)
+	return u
+}
+
+// UpdateHash sets the "hash" field to the value that was provided on create.
+func (u *VarDataUpsert) UpdateHash() *VarDataUpsert {
+	u.SetExcluded(vardata.FieldHash)
+	return u
+}
+
+// SetData sets the "data" field.
+func (u *VarDataUpsert) SetData(v []byte) *VarDataUpsert {
+	u.Set(vardata.FieldData, v)
+	return u
+}
+
+// UpdateData sets the "data" field to the value that was provided on create.
+func (u *VarDataUpsert) UpdateData() *VarDataUpsert {
+	u.SetExcluded(vardata.FieldData)
+	return u
+}
+
+// SetMimeType sets the "mime_type" field.
+func (u *VarDataUpsert) SetMimeType(v string) *VarDataUpsert {
+	u.Set(vardata.FieldMimeType, v)
+	return u
+}
+
+// UpdateMimeType sets the "mime_type" field to the value that was provided on create.
+func (u *VarDataUpsert) UpdateMimeType() *VarDataUpsert {
+	u.SetExcluded(vardata.FieldMimeType)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// Using this option is equivalent to using:
+//
+//	client.VarData.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(vardata.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *VarDataUpsertOne) UpdateNewValues() *VarDataUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(vardata.FieldID)
+		}
+		if _, exists := u.create.mutation.CreatedAt(); exists {
+			s.SetIgnore(vardata.FieldCreatedAt)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.VarData.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *VarDataUpsertOne) Ignore() *VarDataUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *VarDataUpsertOne) DoNothing() *VarDataUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the VarDataCreate.OnConflict
+// documentation for more info.
+func (u *VarDataUpsertOne) Update(set func(*VarDataUpsert)) *VarDataUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&VarDataUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *VarDataUpsertOne) SetUpdatedAt(v time.Time) *VarDataUpsertOne {
+	return u.Update(func(s *VarDataUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *VarDataUpsertOne) UpdateUpdatedAt() *VarDataUpsertOne {
+	return u.Update(func(s *VarDataUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
+// SetSize sets the "size" field.
+func (u *VarDataUpsertOne) SetSize(v int) *VarDataUpsertOne {
+	return u.Update(func(s *VarDataUpsert) {
+		s.SetSize(v)
+	})
+}
+
+// AddSize adds v to the "size" field.
+func (u *VarDataUpsertOne) AddSize(v int) *VarDataUpsertOne {
+	return u.Update(func(s *VarDataUpsert) {
+		s.AddSize(v)
+	})
+}
+
+// UpdateSize sets the "size" field to the value that was provided on create.
+func (u *VarDataUpsertOne) UpdateSize() *VarDataUpsertOne {
+	return u.Update(func(s *VarDataUpsert) {
+		s.UpdateSize()
+	})
+}
+
+// SetHash sets the "hash" field.
+func (u *VarDataUpsertOne) SetHash(v string) *VarDataUpsertOne {
+	return u.Update(func(s *VarDataUpsert) {
+		s.SetHash(v)
+	})
+}
+
+// UpdateHash sets the "hash" field to the value that was provided on create.
+func (u *VarDataUpsertOne) UpdateHash() *VarDataUpsertOne {
+	return u.Update(func(s *VarDataUpsert) {
+		s.UpdateHash()
+	})
+}
+
+// SetData sets the "data" field.
+func (u *VarDataUpsertOne) SetData(v []byte) *VarDataUpsertOne {
+	return u.Update(func(s *VarDataUpsert) {
+		s.SetData(v)
+	})
+}
+
+// UpdateData sets the "data" field to the value that was provided on create.
+func (u *VarDataUpsertOne) UpdateData() *VarDataUpsertOne {
+	return u.Update(func(s *VarDataUpsert) {
+		s.UpdateData()
+	})
+}
+
+// SetMimeType sets the "mime_type" field.
+func (u *VarDataUpsertOne) SetMimeType(v string) *VarDataUpsertOne {
+	return u.Update(func(s *VarDataUpsert) {
+		s.SetMimeType(v)
+	})
+}
+
+// UpdateMimeType sets the "mime_type" field to the value that was provided on create.
+func (u *VarDataUpsertOne) UpdateMimeType() *VarDataUpsertOne {
+	return u.Update(func(s *VarDataUpsert) {
+		s.UpdateMimeType()
+	})
+}
+
+// Exec executes the query.
+func (u *VarDataUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for VarDataCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *VarDataUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *VarDataUpsertOne) ID(ctx context.Context) (id uuid.UUID, err error) {
+	if u.create.driver.Dialect() == dialect.MySQL {
+		// In case of "ON CONFLICT", there is no way to get back non-numeric ID
+		// fields from the database since MySQL does not support the RETURNING clause.
+		return id, errors.New("ent: VarDataUpsertOne.ID is not supported by MySQL driver. Use VarDataUpsertOne.Exec instead")
+	}
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *VarDataUpsertOne) IDX(ctx context.Context) uuid.UUID {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // VarDataCreateBulk is the builder for creating many VarData entities in bulk.
 type VarDataCreateBulk struct {
 	config
 	builders []*VarDataCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the VarData entities in the database.
@@ -362,6 +624,7 @@ func (vdcb *VarDataCreateBulk) Save(ctx context.Context) ([]*VarData, error) {
 					_, err = mutators[i+1].Mutate(root, vdcb.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = vdcb.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, vdcb.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -408,6 +671,197 @@ func (vdcb *VarDataCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (vdcb *VarDataCreateBulk) ExecX(ctx context.Context) {
 	if err := vdcb.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.VarData.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.VarDataUpsert) {
+//			SetCreatedAt(v+v).
+//		}).
+//		Exec(ctx)
+func (vdcb *VarDataCreateBulk) OnConflict(opts ...sql.ConflictOption) *VarDataUpsertBulk {
+	vdcb.conflict = opts
+	return &VarDataUpsertBulk{
+		create: vdcb,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.VarData.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (vdcb *VarDataCreateBulk) OnConflictColumns(columns ...string) *VarDataUpsertBulk {
+	vdcb.conflict = append(vdcb.conflict, sql.ConflictColumns(columns...))
+	return &VarDataUpsertBulk{
+		create: vdcb,
+	}
+}
+
+// VarDataUpsertBulk is the builder for "upsert"-ing
+// a bulk of VarData nodes.
+type VarDataUpsertBulk struct {
+	create *VarDataCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.VarData.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(vardata.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *VarDataUpsertBulk) UpdateNewValues() *VarDataUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(vardata.FieldID)
+			}
+			if _, exists := b.mutation.CreatedAt(); exists {
+				s.SetIgnore(vardata.FieldCreatedAt)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.VarData.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *VarDataUpsertBulk) Ignore() *VarDataUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *VarDataUpsertBulk) DoNothing() *VarDataUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the VarDataCreateBulk.OnConflict
+// documentation for more info.
+func (u *VarDataUpsertBulk) Update(set func(*VarDataUpsert)) *VarDataUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&VarDataUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *VarDataUpsertBulk) SetUpdatedAt(v time.Time) *VarDataUpsertBulk {
+	return u.Update(func(s *VarDataUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *VarDataUpsertBulk) UpdateUpdatedAt() *VarDataUpsertBulk {
+	return u.Update(func(s *VarDataUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
+// SetSize sets the "size" field.
+func (u *VarDataUpsertBulk) SetSize(v int) *VarDataUpsertBulk {
+	return u.Update(func(s *VarDataUpsert) {
+		s.SetSize(v)
+	})
+}
+
+// AddSize adds v to the "size" field.
+func (u *VarDataUpsertBulk) AddSize(v int) *VarDataUpsertBulk {
+	return u.Update(func(s *VarDataUpsert) {
+		s.AddSize(v)
+	})
+}
+
+// UpdateSize sets the "size" field to the value that was provided on create.
+func (u *VarDataUpsertBulk) UpdateSize() *VarDataUpsertBulk {
+	return u.Update(func(s *VarDataUpsert) {
+		s.UpdateSize()
+	})
+}
+
+// SetHash sets the "hash" field.
+func (u *VarDataUpsertBulk) SetHash(v string) *VarDataUpsertBulk {
+	return u.Update(func(s *VarDataUpsert) {
+		s.SetHash(v)
+	})
+}
+
+// UpdateHash sets the "hash" field to the value that was provided on create.
+func (u *VarDataUpsertBulk) UpdateHash() *VarDataUpsertBulk {
+	return u.Update(func(s *VarDataUpsert) {
+		s.UpdateHash()
+	})
+}
+
+// SetData sets the "data" field.
+func (u *VarDataUpsertBulk) SetData(v []byte) *VarDataUpsertBulk {
+	return u.Update(func(s *VarDataUpsert) {
+		s.SetData(v)
+	})
+}
+
+// UpdateData sets the "data" field to the value that was provided on create.
+func (u *VarDataUpsertBulk) UpdateData() *VarDataUpsertBulk {
+	return u.Update(func(s *VarDataUpsert) {
+		s.UpdateData()
+	})
+}
+
+// SetMimeType sets the "mime_type" field.
+func (u *VarDataUpsertBulk) SetMimeType(v string) *VarDataUpsertBulk {
+	return u.Update(func(s *VarDataUpsert) {
+		s.SetMimeType(v)
+	})
+}
+
+// UpdateMimeType sets the "mime_type" field to the value that was provided on create.
+func (u *VarDataUpsertBulk) UpdateMimeType() *VarDataUpsertBulk {
+	return u.Update(func(s *VarDataUpsert) {
+		s.UpdateMimeType()
+	})
+}
+
+// Exec executes the query.
+func (u *VarDataUpsertBulk) Exec(ctx context.Context) error {
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the VarDataCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for VarDataCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *VarDataUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

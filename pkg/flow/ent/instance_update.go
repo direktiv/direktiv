@@ -27,8 +27,9 @@ import (
 // InstanceUpdate is the builder for updating Instance entities.
 type InstanceUpdate struct {
 	config
-	hooks    []Hook
-	mutation *InstanceMutation
+	hooks     []Hook
+	mutation  *InstanceMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // Where appends a list predicates to the InstanceUpdate builder.
@@ -478,6 +479,12 @@ func (iu *InstanceUpdate) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (iu *InstanceUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *InstanceUpdate {
+	iu.modifiers = append(iu.modifiers, modifiers...)
+	return iu
+}
+
 func (iu *InstanceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -497,70 +504,34 @@ func (iu *InstanceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 	}
 	if value, ok := iu.mutation.UpdatedAt(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: instance.FieldUpdatedAt,
-		})
+		_spec.SetField(instance.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if value, ok := iu.mutation.EndAt(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: instance.FieldEndAt,
-		})
+		_spec.SetField(instance.FieldEndAt, field.TypeTime, value)
 	}
 	if iu.mutation.EndAtCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Column: instance.FieldEndAt,
-		})
+		_spec.ClearField(instance.FieldEndAt, field.TypeTime)
 	}
 	if value, ok := iu.mutation.Status(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: instance.FieldStatus,
-		})
+		_spec.SetField(instance.FieldStatus, field.TypeString, value)
 	}
 	if value, ok := iu.mutation.ErrorCode(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: instance.FieldErrorCode,
-		})
+		_spec.SetField(instance.FieldErrorCode, field.TypeString, value)
 	}
 	if iu.mutation.ErrorCodeCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Column: instance.FieldErrorCode,
-		})
+		_spec.ClearField(instance.FieldErrorCode, field.TypeString)
 	}
 	if value, ok := iu.mutation.ErrorMessage(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: instance.FieldErrorMessage,
-		})
+		_spec.SetField(instance.FieldErrorMessage, field.TypeString, value)
 	}
 	if iu.mutation.ErrorMessageCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Column: instance.FieldErrorMessage,
-		})
+		_spec.ClearField(instance.FieldErrorMessage, field.TypeString)
 	}
 	if value, ok := iu.mutation.Invoker(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: instance.FieldInvoker,
-		})
+		_spec.SetField(instance.FieldInvoker, field.TypeString, value)
 	}
 	if iu.mutation.InvokerCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Column: instance.FieldInvoker,
-		})
+		_spec.ClearField(instance.FieldInvoker, field.TypeString)
 	}
 	if iu.mutation.NamespaceCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -972,6 +943,7 @@ func (iu *InstanceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	_spec.AddModifiers(iu.modifiers...)
 	if n, err = sqlgraph.UpdateNodes(ctx, iu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{instance.Label}
@@ -986,9 +958,10 @@ func (iu *InstanceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 // InstanceUpdateOne is the builder for updating a single Instance entity.
 type InstanceUpdateOne struct {
 	config
-	fields   []string
-	hooks    []Hook
-	mutation *InstanceMutation
+	fields    []string
+	hooks     []Hook
+	mutation  *InstanceMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // SetUpdatedAt sets the "updated_at" field.
@@ -1445,6 +1418,12 @@ func (iuo *InstanceUpdateOne) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (iuo *InstanceUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *InstanceUpdateOne {
+	iuo.modifiers = append(iuo.modifiers, modifiers...)
+	return iuo
+}
+
 func (iuo *InstanceUpdateOne) sqlSave(ctx context.Context) (_node *Instance, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -1481,70 +1460,34 @@ func (iuo *InstanceUpdateOne) sqlSave(ctx context.Context) (_node *Instance, err
 		}
 	}
 	if value, ok := iuo.mutation.UpdatedAt(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: instance.FieldUpdatedAt,
-		})
+		_spec.SetField(instance.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if value, ok := iuo.mutation.EndAt(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: instance.FieldEndAt,
-		})
+		_spec.SetField(instance.FieldEndAt, field.TypeTime, value)
 	}
 	if iuo.mutation.EndAtCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Column: instance.FieldEndAt,
-		})
+		_spec.ClearField(instance.FieldEndAt, field.TypeTime)
 	}
 	if value, ok := iuo.mutation.Status(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: instance.FieldStatus,
-		})
+		_spec.SetField(instance.FieldStatus, field.TypeString, value)
 	}
 	if value, ok := iuo.mutation.ErrorCode(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: instance.FieldErrorCode,
-		})
+		_spec.SetField(instance.FieldErrorCode, field.TypeString, value)
 	}
 	if iuo.mutation.ErrorCodeCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Column: instance.FieldErrorCode,
-		})
+		_spec.ClearField(instance.FieldErrorCode, field.TypeString)
 	}
 	if value, ok := iuo.mutation.ErrorMessage(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: instance.FieldErrorMessage,
-		})
+		_spec.SetField(instance.FieldErrorMessage, field.TypeString, value)
 	}
 	if iuo.mutation.ErrorMessageCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Column: instance.FieldErrorMessage,
-		})
+		_spec.ClearField(instance.FieldErrorMessage, field.TypeString)
 	}
 	if value, ok := iuo.mutation.Invoker(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: instance.FieldInvoker,
-		})
+		_spec.SetField(instance.FieldInvoker, field.TypeString, value)
 	}
 	if iuo.mutation.InvokerCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Column: instance.FieldInvoker,
-		})
+		_spec.ClearField(instance.FieldInvoker, field.TypeString)
 	}
 	if iuo.mutation.NamespaceCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -1956,6 +1899,7 @@ func (iuo *InstanceUpdateOne) sqlSave(ctx context.Context) (_node *Instance, err
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	_spec.AddModifiers(iuo.modifiers...)
 	_node = &Instance{config: iuo.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

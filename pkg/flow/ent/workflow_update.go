@@ -29,8 +29,9 @@ import (
 // WorkflowUpdate is the builder for updating Workflow entities.
 type WorkflowUpdate struct {
 	config
-	hooks    []Hook
-	mutation *WorkflowMutation
+	hooks     []Hook
+	mutation  *WorkflowMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // Where appends a list predicates to the WorkflowUpdate builder.
@@ -517,6 +518,12 @@ func (wu *WorkflowUpdate) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (wu *WorkflowUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *WorkflowUpdate {
+	wu.modifiers = append(wu.modifiers, modifiers...)
+	return wu
+}
+
 func (wu *WorkflowUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -536,50 +543,25 @@ func (wu *WorkflowUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 	}
 	if value, ok := wu.mutation.Live(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeBool,
-			Value:  value,
-			Column: workflow.FieldLive,
-		})
+		_spec.SetField(workflow.FieldLive, field.TypeBool, value)
 	}
 	if value, ok := wu.mutation.LogToEvents(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: workflow.FieldLogToEvents,
-		})
+		_spec.SetField(workflow.FieldLogToEvents, field.TypeString, value)
 	}
 	if wu.mutation.LogToEventsCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Column: workflow.FieldLogToEvents,
-		})
+		_spec.ClearField(workflow.FieldLogToEvents, field.TypeString)
 	}
 	if value, ok := wu.mutation.ReadOnly(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeBool,
-			Value:  value,
-			Column: workflow.FieldReadOnly,
-		})
+		_spec.SetField(workflow.FieldReadOnly, field.TypeBool, value)
 	}
 	if wu.mutation.ReadOnlyCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeBool,
-			Column: workflow.FieldReadOnly,
-		})
+		_spec.ClearField(workflow.FieldReadOnly, field.TypeBool)
 	}
 	if value, ok := wu.mutation.UpdatedAt(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: workflow.FieldUpdatedAt,
-		})
+		_spec.SetField(workflow.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if wu.mutation.UpdatedAtCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Column: workflow.FieldUpdatedAt,
-		})
+		_spec.ClearField(workflow.FieldUpdatedAt, field.TypeTime)
 	}
 	if wu.mutation.InodeCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -1083,6 +1065,7 @@ func (wu *WorkflowUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	_spec.AddModifiers(wu.modifiers...)
 	if n, err = sqlgraph.UpdateNodes(ctx, wu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{workflow.Label}
@@ -1097,9 +1080,10 @@ func (wu *WorkflowUpdate) sqlSave(ctx context.Context) (n int, err error) {
 // WorkflowUpdateOne is the builder for updating a single Workflow entity.
 type WorkflowUpdateOne struct {
 	config
-	fields   []string
-	hooks    []Hook
-	mutation *WorkflowMutation
+	fields    []string
+	hooks     []Hook
+	mutation  *WorkflowMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // SetLive sets the "live" field.
@@ -1593,6 +1577,12 @@ func (wuo *WorkflowUpdateOne) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (wuo *WorkflowUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *WorkflowUpdateOne {
+	wuo.modifiers = append(wuo.modifiers, modifiers...)
+	return wuo
+}
+
 func (wuo *WorkflowUpdateOne) sqlSave(ctx context.Context) (_node *Workflow, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -1629,50 +1619,25 @@ func (wuo *WorkflowUpdateOne) sqlSave(ctx context.Context) (_node *Workflow, err
 		}
 	}
 	if value, ok := wuo.mutation.Live(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeBool,
-			Value:  value,
-			Column: workflow.FieldLive,
-		})
+		_spec.SetField(workflow.FieldLive, field.TypeBool, value)
 	}
 	if value, ok := wuo.mutation.LogToEvents(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: workflow.FieldLogToEvents,
-		})
+		_spec.SetField(workflow.FieldLogToEvents, field.TypeString, value)
 	}
 	if wuo.mutation.LogToEventsCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Column: workflow.FieldLogToEvents,
-		})
+		_spec.ClearField(workflow.FieldLogToEvents, field.TypeString)
 	}
 	if value, ok := wuo.mutation.ReadOnly(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeBool,
-			Value:  value,
-			Column: workflow.FieldReadOnly,
-		})
+		_spec.SetField(workflow.FieldReadOnly, field.TypeBool, value)
 	}
 	if wuo.mutation.ReadOnlyCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeBool,
-			Column: workflow.FieldReadOnly,
-		})
+		_spec.ClearField(workflow.FieldReadOnly, field.TypeBool)
 	}
 	if value, ok := wuo.mutation.UpdatedAt(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: workflow.FieldUpdatedAt,
-		})
+		_spec.SetField(workflow.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if wuo.mutation.UpdatedAtCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Column: workflow.FieldUpdatedAt,
-		})
+		_spec.ClearField(workflow.FieldUpdatedAt, field.TypeTime)
 	}
 	if wuo.mutation.InodeCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -2176,6 +2141,7 @@ func (wuo *WorkflowUpdateOne) sqlSave(ctx context.Context) (_node *Workflow, err
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	_spec.AddModifiers(wuo.modifiers...)
 	_node = &Workflow{config: wuo.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
