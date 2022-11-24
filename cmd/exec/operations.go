@@ -654,7 +654,7 @@ func executeCreateCloudEventFilter(filterName string, data io.Reader, force bool
 		return err
 	}
 
-	if resp.StatusCode == http.StatusInternalServerError {
+	if resp.StatusCode == http.StatusInternalServerError && !force {
 
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
@@ -666,16 +666,9 @@ func executeCreateCloudEventFilter(filterName string, data io.Reader, force bool
 
 	}
 
-	if resp.StatusCode == http.StatusConflict {
-
-		if force {
-			err = executeUpdateCloudEventFilter(filterName)
-			return err
-		}
-
-		err = fmt.Errorf("event filter already exists")
+	if force {
+		err = executeUpdateCloudEventFilter(filterName)
 		return err
-
 	}
 
 	if resp.StatusCode != http.StatusOK {
@@ -792,4 +785,84 @@ func executeUpdateCloudEventFilter(filterName string) error {
 	}
 
 	return err
+}
+
+func executeGetCloudEventFilter(filterName string) ([]byte, error) {
+
+	var err error
+
+	if filterName == "" {
+		err = fmt.Errorf("filtername was not set")
+		return nil, err
+	}
+
+	url := fmt.Sprintf("%s/eventfilter/%s", urlPrefix, filterName)
+
+	req, err := http.NewRequest(
+		http.MethodGet,
+		url,
+		nil,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	addAuthHeaders(req)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode == http.StatusNotFound {
+		err = fmt.Errorf("filter: " + filterName + " not exist")
+		return nil, err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		err = fmt.Errorf("failed to get filter: %s (rejected by server)", filterName)
+		return nil, err
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	return body, err
+
+}
+
+func executeListCloudEventFilter() ([]byte, error) {
+
+	var err error
+
+	url := fmt.Sprintf("%s/eventfilter", urlPrefix)
+
+	req, err := http.NewRequest(
+		http.MethodGet,
+		url,
+		nil,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	addAuthHeaders(req)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		err = fmt.Errorf("failed to list filters (rejected by server)")
+		return nil, err
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	return body, err
+
 }

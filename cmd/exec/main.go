@@ -43,15 +43,18 @@ var (
 func main() {
 
 	// Read Config
-	setCmd.AddCommand(setWritableCmd)
-	setCmd.AddCommand(setReadonlyCmd)
-	rootCmd.AddCommand(execCmd)
-	rootCmd.AddCommand(pushCmd)
 	rootCmd.AddCommand(setCmd)
+	rootCmd.AddCommand(workflowCmd)
 	rootCmd.AddCommand(eventsCmd)
+	workflowCmd.AddCommand(setWritableCmd)
+	workflowCmd.AddCommand(setReadonlyCmd)
+	workflowCmd.AddCommand(pushCmd)
+	workflowCmd.AddCommand(execCmd)
 	eventsCmd.AddCommand(sendEventCmd)
 	eventsCmd.AddCommand(setFilterCmd)
 	eventsCmd.AddCommand(deleteFilterCmd)
+	eventsCmd.AddCommand(getFilterCmd)
+	eventsCmd.AddCommand(listFilterCmd)
 
 	rootCmd.PersistentFlags().StringP("profile", "P", "", "Select the named profile from the loaded multi-profile configuration file.")
 	rootCmd.PersistentFlags().StringP("directory", "C", "", "Change to this directory before evaluating any paths or searching for a configuration file.")
@@ -605,6 +608,11 @@ Will update the helloworld workflow and set the remote workflow variable 'data.j
 	},
 }
 
+var workflowCmd = &cobra.Command{
+	Use:   "workflow",
+	Short: "Workflow-related commands.",
+}
+
 var sendEventCmd = &cobra.Command{
 	Use:   "send PATH",
 	Short: "Remotely trigger direktiv event with local files",
@@ -695,6 +703,39 @@ var deleteFilterCmd = &cobra.Command{
 
 		cmd.PrintErrln("successfully deleted cloud event filter: " + filterName)
 
+	},
+}
+
+var getFilterCmd = &cobra.Command{
+	Use:   "get-filter NAME",
+	Short: "Get an event filter.",
+	Args:  cobra.ExactArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+
+		filterName := args[0]
+
+		resp, err := executeGetCloudEventFilter(filterName)
+		if err != nil {
+			log.Fatalf("error: %v\n", err)
+		}
+
+		cmd.PrintErrln(string(resp))
+
+	},
+}
+
+var listFilterCmd = &cobra.Command{
+	Use:   "list-filters",
+	Short: "List all event filters in target namespace.",
+	Args:  cobra.ExactArgs(0),
+	Run: func(cmd *cobra.Command, args []string) {
+
+		resp, err := executeListCloudEventFilter()
+		if err != nil {
+			log.Fatalf("error: %v\n", err)
+		}
+
+		cmd.PrintErrln(string(resp))
 	},
 }
 
