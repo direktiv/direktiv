@@ -119,7 +119,7 @@ func (s *Server) version(w http.ResponseWriter, r *http.Request) {
 	m := make(map[string]string)
 	m["api"] = version.Version
 
-	flowResp, _ := s.flowClient.Build(ctx, &emptypb.Empty{})
+	flowResp, _ := s.FlowClient.Build(ctx, &emptypb.Empty{})
 	if flowResp != nil {
 		m["flow"] = flowResp.GetBuild()
 	}
