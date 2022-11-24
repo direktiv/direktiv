@@ -15,11 +15,10 @@ const (
 	DefaultFunctionType           FunctionType = iota
 	ReusableContainerFunctionType              // Old school knative
 	NamespacedKnativeFunctionType
-	GlobalKnativeFunctionType
 	SubflowFunctionType
 )
 
-var FunctionTypeStrings = []string{"unknown", "knative-workflow" /*"reusable"*/, "knative-namespace", "knative-global", "subflow"}
+var FunctionTypeStrings = []string{"unknown", "knative-workflow" /*"reusable"*/, "knative-namespace", "subflow"}
 
 func (a FunctionType) String() string {
 	return FunctionTypeStrings[a]
@@ -132,14 +131,12 @@ func getFunctionDefFromType(ftype string) (FunctionDefinition, error) {
 		f = new(ReusableFunctionDefinition)
 	case NamespacedKnativeFunctionType.String():
 		f = new(NamespacedFunctionDefinition)
-	case GlobalKnativeFunctionType.String():
-		f = new(GlobalFunctionDefinition)
 	case SubflowFunctionType.String():
 		f = new(SubflowFunctionDefinition)
 	case "":
-		err = errors.New("type required(reusable, knative-namespace, knative-global, subflow)")
+		err = errors.New("type required(reusable, knative-workflow, knative-namespace, subflow)")
 	default:
-		err = errors.New("type unrecognized(reusable, knative-namespace, knative-global, subflow)")
+		err = errors.New("type unrecognized(reusable, knative-workflow, knative-namespace, subflow)")
 	}
 
 	return f, err

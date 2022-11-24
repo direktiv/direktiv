@@ -14,6 +14,8 @@ import (
 // Tx is a transactional client that is created by calling Client.Tx().
 type Tx struct {
 	config
+	// Annotation is the client for interacting with the Annotation builders.
+	Annotation *AnnotationClient
 	// CloudEventFilters is the client for interacting with the CloudEventFilters builders.
 	CloudEventFilters *CloudEventFiltersClient
 	// CloudEvents is the client for interacting with the CloudEvents builders.
@@ -42,6 +44,8 @@ type Tx struct {
 	Revision *RevisionClient
 	// Route is the client for interacting with the Route builders.
 	Route *RouteClient
+	// Services is the client for interacting with the Services builders.
+	Services *ServicesClient
 	// VarData is the client for interacting with the VarData builders.
 	VarData *VarDataClient
 	// VarRef is the client for interacting with the VarRef builders.
@@ -179,6 +183,7 @@ func (tx *Tx) Client() *Client {
 }
 
 func (tx *Tx) init() {
+	tx.Annotation = NewAnnotationClient(tx.config)
 	tx.CloudEventFilters = NewCloudEventFiltersClient(tx.config)
 	tx.CloudEvents = NewCloudEventsClient(tx.config)
 	tx.Events = NewEventsClient(tx.config)
@@ -193,6 +198,7 @@ func (tx *Tx) init() {
 	tx.Ref = NewRefClient(tx.config)
 	tx.Revision = NewRevisionClient(tx.config)
 	tx.Route = NewRouteClient(tx.config)
+	tx.Services = NewServicesClient(tx.config)
 	tx.VarData = NewVarDataClient(tx.config)
 	tx.VarRef = NewVarRefClient(tx.config)
 	tx.Workflow = NewWorkflowClient(tx.config)
@@ -205,7 +211,7 @@ func (tx *Tx) init() {
 // of them in order to commit or rollback the transaction.
 //
 // If a closed transaction is embedded in one of the generated entities, and the entity
-// applies a query, for example: CloudEventFilters.QueryXXX(), the query will be executed
+// applies a query, for example: Annotation.QueryXXX(), the query will be executed
 // through the driver which created this transaction.
 //
 // Note that txDriver is not goroutine safe.

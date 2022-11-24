@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/direktiv/direktiv/pkg/flow/ent/annotation"
 	"github.com/direktiv/direktiv/pkg/flow/ent/cloudeventfilters"
 	"github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
 	"github.com/direktiv/direktiv/pkg/flow/ent/events"
@@ -24,6 +25,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/ref"
 	"github.com/direktiv/direktiv/pkg/flow/ent/revision"
 	"github.com/direktiv/direktiv/pkg/flow/ent/route"
+	"github.com/direktiv/direktiv/pkg/flow/ent/services"
 	"github.com/direktiv/direktiv/pkg/flow/ent/vardata"
 	"github.com/direktiv/direktiv/pkg/flow/ent/varref"
 	"github.com/direktiv/direktiv/pkg/flow/ent/workflow"
@@ -47,6 +49,7 @@ type OrderFunc func(*sql.Selector)
 // columnChecker returns a function indicates if the column exists in the given column.
 func columnChecker(table string) func(string) error {
 	checks := map[string]func(string) bool{
+		annotation.Table:        annotation.ValidColumn,
 		cloudeventfilters.Table: cloudeventfilters.ValidColumn,
 		cloudevents.Table:       cloudevents.ValidColumn,
 		events.Table:            events.ValidColumn,
@@ -61,6 +64,7 @@ func columnChecker(table string) func(string) error {
 		ref.Table:               ref.ValidColumn,
 		revision.Table:          revision.ValidColumn,
 		route.Table:             route.ValidColumn,
+		services.Table:          services.ValidColumn,
 		vardata.Table:           vardata.ValidColumn,
 		varref.Table:            varref.ValidColumn,
 		workflow.Table:          workflow.ValidColumn,

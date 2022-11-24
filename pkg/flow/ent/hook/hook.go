@@ -9,6 +9,19 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 )
 
+// The AnnotationFunc type is an adapter to allow the use of ordinary
+// function as Annotation mutator.
+type AnnotationFunc func(context.Context, *ent.AnnotationMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f AnnotationFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.AnnotationMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AnnotationMutation", m)
+	}
+	return f(ctx, mv)
+}
+
 // The CloudEventFiltersFunc type is an adapter to allow the use of ordinary
 // function as CloudEventFilters mutator.
 type CloudEventFiltersFunc func(context.Context, *ent.CloudEventFiltersMutation) (ent.Value, error)
@@ -187,6 +200,19 @@ func (f RouteFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error
 	mv, ok := m.(*ent.RouteMutation)
 	if !ok {
 		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.RouteMutation", m)
+	}
+	return f(ctx, mv)
+}
+
+// The ServicesFunc type is an adapter to allow the use of ordinary
+// function as Services mutator.
+type ServicesFunc func(context.Context, *ent.ServicesMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ServicesFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.ServicesMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ServicesMutation", m)
 	}
 	return f(ctx, mv)
 }

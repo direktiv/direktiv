@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/direktiv/direktiv/pkg/flow/ent/annotation"
 	"github.com/direktiv/direktiv/pkg/flow/ent/events"
 	"github.com/direktiv/direktiv/pkg/flow/ent/inode"
 	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
@@ -29,23 +30,24 @@ import (
 // WorkflowQuery is the builder for querying Workflow entities.
 type WorkflowQuery struct {
 	config
-	limit         *int
-	offset        *int
-	unique        *bool
-	order         []OrderFunc
-	fields        []string
-	predicates    []predicate.Workflow
-	withInode     *InodeQuery
-	withNamespace *NamespaceQuery
-	withRevisions *RevisionQuery
-	withRefs      *RefQuery
-	withInstances *InstanceQuery
-	withRoutes    *RouteQuery
-	withLogs      *LogMsgQuery
-	withVars      *VarRefQuery
-	withWfevents  *EventsQuery
-	withFKs       bool
-	modifiers     []func(*sql.Selector)
+	limit           *int
+	offset          *int
+	unique          *bool
+	order           []OrderFunc
+	fields          []string
+	predicates      []predicate.Workflow
+	withInode       *InodeQuery
+	withNamespace   *NamespaceQuery
+	withRevisions   *RevisionQuery
+	withRefs        *RefQuery
+	withInstances   *InstanceQuery
+	withRoutes      *RouteQuery
+	withLogs        *LogMsgQuery
+	withVars        *VarRefQuery
+	withWfevents    *EventsQuery
+	withAnnotations *AnnotationQuery
+	withFKs         bool
+	modifiers       []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -280,6 +282,28 @@ func (wq *WorkflowQuery) QueryWfevents() *EventsQuery {
 	return query
 }
 
+// QueryAnnotations chains the current query on the "annotations" edge.
+func (wq *WorkflowQuery) QueryAnnotations() *AnnotationQuery {
+	query := &AnnotationQuery{config: wq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := wq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := wq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(workflow.Table, workflow.FieldID, selector),
+			sqlgraph.To(annotation.Table, annotation.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, workflow.AnnotationsTable, workflow.AnnotationsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(wq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // First returns the first Workflow entity from the query.
 // Returns a *NotFoundError when no Workflow was found.
 func (wq *WorkflowQuery) First(ctx context.Context) (*Workflow, error) {
@@ -456,20 +480,21 @@ func (wq *WorkflowQuery) Clone() *WorkflowQuery {
 		return nil
 	}
 	return &WorkflowQuery{
-		config:        wq.config,
-		limit:         wq.limit,
-		offset:        wq.offset,
-		order:         append([]OrderFunc{}, wq.order...),
-		predicates:    append([]predicate.Workflow{}, wq.predicates...),
-		withInode:     wq.withInode.Clone(),
-		withNamespace: wq.withNamespace.Clone(),
-		withRevisions: wq.withRevisions.Clone(),
-		withRefs:      wq.withRefs.Clone(),
-		withInstances: wq.withInstances.Clone(),
-		withRoutes:    wq.withRoutes.Clone(),
-		withLogs:      wq.withLogs.Clone(),
-		withVars:      wq.withVars.Clone(),
-		withWfevents:  wq.withWfevents.Clone(),
+		config:          wq.config,
+		limit:           wq.limit,
+		offset:          wq.offset,
+		order:           append([]OrderFunc{}, wq.order...),
+		predicates:      append([]predicate.Workflow{}, wq.predicates...),
+		withInode:       wq.withInode.Clone(),
+		withNamespace:   wq.withNamespace.Clone(),
+		withRevisions:   wq.withRevisions.Clone(),
+		withRefs:        wq.withRefs.Clone(),
+		withInstances:   wq.withInstances.Clone(),
+		withRoutes:      wq.withRoutes.Clone(),
+		withLogs:        wq.withLogs.Clone(),
+		withVars:        wq.withVars.Clone(),
+		withWfevents:    wq.withWfevents.Clone(),
+		withAnnotations: wq.withAnnotations.Clone(),
 		// clone intermediate query.
 		sql:    wq.sql.Clone(),
 		path:   wq.path,
@@ -576,6 +601,17 @@ func (wq *WorkflowQuery) WithWfevents(opts ...func(*EventsQuery)) *WorkflowQuery
 	return wq
 }
 
+// WithAnnotations tells the query-builder to eager-load the nodes that are connected to
+// the "annotations" edge. The optional arguments are used to configure the query builder of the edge.
+func (wq *WorkflowQuery) WithAnnotations(opts ...func(*AnnotationQuery)) *WorkflowQuery {
+	query := &AnnotationQuery{config: wq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	wq.withAnnotations = query
+	return wq
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
@@ -650,7 +686,7 @@ func (wq *WorkflowQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Wor
 		nodes       = []*Workflow{}
 		withFKs     = wq.withFKs
 		_spec       = wq.querySpec()
-		loadedTypes = [9]bool{
+		loadedTypes = [10]bool{
 			wq.withInode != nil,
 			wq.withNamespace != nil,
 			wq.withRevisions != nil,
@@ -660,6 +696,7 @@ func (wq *WorkflowQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Wor
 			wq.withLogs != nil,
 			wq.withVars != nil,
 			wq.withWfevents != nil,
+			wq.withAnnotations != nil,
 		}
 	)
 	if wq.withInode != nil || wq.withNamespace != nil {
@@ -747,6 +784,13 @@ func (wq *WorkflowQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Wor
 		if err := wq.loadWfevents(ctx, query, nodes,
 			func(n *Workflow) { n.Edges.Wfevents = []*Events{} },
 			func(n *Workflow, e *Events) { n.Edges.Wfevents = append(n.Edges.Wfevents, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := wq.withAnnotations; query != nil {
+		if err := wq.loadAnnotations(ctx, query, nodes,
+			func(n *Workflow) { n.Edges.Annotations = []*Annotation{} },
+			func(n *Workflow, e *Annotation) { n.Edges.Annotations = append(n.Edges.Annotations, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -1023,6 +1067,37 @@ func (wq *WorkflowQuery) loadWfevents(ctx context.Context, query *EventsQuery, n
 		node, ok := nodeids[*fk]
 		if !ok {
 			return fmt.Errorf(`unexpected foreign-key "workflow_wfevents" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (wq *WorkflowQuery) loadAnnotations(ctx context.Context, query *AnnotationQuery, nodes []*Workflow, init func(*Workflow), assign func(*Workflow, *Annotation)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Workflow)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Annotation(func(s *sql.Selector) {
+		s.Where(sql.InValues(workflow.AnnotationsColumn, fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.workflow_annotations
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "workflow_annotations" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "workflow_annotations" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}

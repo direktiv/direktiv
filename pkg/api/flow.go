@@ -572,8 +572,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//   required: true
 	//   description: "Payload that contains variable data."
 	//   schema:
-	//     example:
-	//       counter: 0
+	//     example: Data to Store
 	//     type: string
 	// responses:
 	//   '200':
@@ -678,8 +677,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//   required: true
 	//   description: "Payload that contains variable data."
 	//   schema:
-	//     example:
-	//       counter: 0
+	//     example: "Data to Store"
 	//     type: string
 	// responses:
 	//   '200':
@@ -789,8 +787,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//   required: true
 	//   description: "Payload that contains variable data."
 	//   schema:
-	//     example:
-	//       counter: 0
+	//     example: "Data to Store"
 	//     type: string
 	// responses:
 	//   '200':
@@ -1321,6 +1318,10 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//   '200':
 	r.HandleFunc("/namespaces/{ns}/eventfilter/{filter}", h.UpdateBroadcastCloudeventFilter).Name(RN_UpdateNamespaceEventFilter).Methods(http.MethodPatch)
 
+	r.HandleFunc("/namespaces/{ns}/eventfilter", h.GetCloudeventFilterList).Name(RN_ListNamespaceEventFilters).Methods(http.MethodGet)
+
+	r.HandleFunc("/namespaces/{ns}/eventfilter/{filter}", h.GetCloudEventFilter).Name(RN_GetNamespaceEventFilter).Methods(http.MethodGet)
+
 	// swagger:operation GET /api/namespaces/{namespace}/tree/{workflow}?op=logs Logs getWorkflowLogs
 	// ---
 	// description: |
@@ -1605,7 +1606,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	// responses:
 	//   '200':
 	//     "description": "successfully replayed cloud event"
-	r.HandleFunc("/namespaces/{ns}/events/{event}/replay", h.ReplayEvent).Name(RN_NamespaceEvent).Methods(http.MethodPost)
+	r.HandleFunc("/namespaces/{ns}/events/{event:.*}/replay", h.ReplayEvent).Name(RN_NamespaceEvent).Methods(http.MethodPost)
 
 	// swagger:operation POST /api/namespaces/{namespace}/tree/{workflow}?op=set-workflow-event-logging Workflows setWorkflowCloudEventLogs
 	// ---
@@ -4679,6 +4680,47 @@ func (h *flowHandler) UpdateBroadcastCloudeventFilter(w http.ResponseWriter, r *
 	}
 
 	respond(w, respCreate, errCreate)
+
+}
+
+func (h *flowHandler) GetCloudeventFilterList(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+
+	in := new(grpc.GetCloudEventFiltersRequest)
+
+	in.Namespace = namespace
+
+	resp, err := h.client.GetCloudEventFilters(ctx, in)
+
+	respond(w, resp, err)
+
+}
+
+func (h *flowHandler) GetCloudEventFilter(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	filterName := mux.Vars(r)["filter"]
+
+	in := new(grpc.GetCloudEventFilterScriptRequest)
+
+	in.Namespace = namespace
+	in.Name = filterName
+
+	resp, err := h.client.GetCloudEventFilterScript(ctx, in)
+	if err != nil {
+		respond(w, resp, err)
+		return
+	}
+	resp.Filtername = filterName
+
+	respond(w, resp, err)
 
 }
 

@@ -36,6 +36,8 @@ func init() {
 // CreateCloudEventFilter stores cloudEventFilter in backend
 func TestCreateCloudEventFilterAndDeleteCloudEventfilter(t *testing.T) {
 
+	CreateNamespace(ip, namespace)
+
 	//create new eventCloudFilter
 	statusCode, _ := CreateCloudEventFilter(ip, namespace, "filter", script)
 	assert.Equal(t, statusCode, http.StatusOK)
@@ -51,6 +53,7 @@ func TestCreateCloudEventFilterAndDeleteCloudEventfilter(t *testing.T) {
 // UpdateCloudEventFilter update cloudEventFilter in backend
 func TestUpdateCloudEventFilter(t *testing.T) {
 
+	CreateNamespace(ip, namespace)
 	//create new eventCloudFilter
 	statusCode, _ := CreateCloudEventFilter(ip, namespace, "filter", script)
 	assert.Equal(t, statusCode, http.StatusOK)
@@ -71,6 +74,7 @@ func TestUpdateCloudEventFilter(t *testing.T) {
 // ApplyCloudEventFilter aplly filter on given cloudevent and drop or modified it
 func TestApplyCloudEventFilter(t *testing.T) {
 
+	CreateNamespace(ip, namespace)
 	//create new eventCloudFilter
 	statusCode, _ := CreateCloudEventFilter(ip, namespace, "filter", script)
 	assert.Equal(t, statusCode, http.StatusOK)
@@ -85,7 +89,7 @@ func TestApplyCloudEventFilter(t *testing.T) {
 	statusCode, _ = ApplyCloudEventFilter(ip, namespace, "filter", event)
 	assert.Equal(t, statusCode, http.StatusOK)
 
-	//DeleteNamespace(ip, namespace)
+	DeleteNamespace(ip, namespace)
 
 }
 

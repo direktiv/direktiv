@@ -526,9 +526,30 @@ func (pubsub *pubsub) CloseInode(ino *ent.Inode) {
 
 }
 
+func (pubsub *pubsub) inodeAnnotations(ino *ent.Inode) string {
+
+	return fmt.Sprintf("inonotes:%s", ino.ID.String())
+
+}
+
+func (pubsub *pubsub) SubscribeInodeAnnotations(ino *ent.Inode) *subscription {
+
+	keys := pubsub.walkInodeKeys(ino)
+	keys = append(keys, pubsub.inodeAnnotations(ino))
+
+	return pubsub.Subscribe(keys...)
+
+}
+
 func (pubsub *pubsub) mirror(ino *ent.Inode) string {
 
 	return fmt.Sprintf("mirror:%s", ino.ID.String())
+
+}
+
+func (pubsub *pubsub) NotifyInodeAnnotations(ino *ent.Inode) {
+
+	pubsub.publish(pubsubNotify(pubsub.inodeAnnotations(ino)))
 
 }
 
@@ -572,6 +593,28 @@ func (pubsub *pubsub) SubscribeWorkflowVariables(wf *ent.Workflow) *subscription
 func (pubsub *pubsub) NotifyWorkflowVariables(wf *ent.Workflow) {
 
 	pubsub.publish(pubsubNotify(pubsub.workflowVars(wf)))
+
+}
+
+func (pubsub *pubsub) workflowAnnotations(wf *ent.Workflow) string {
+
+	return fmt.Sprintf("wfnotes:%s", wf.ID.String())
+
+}
+
+func (pubsub *pubsub) SubscribeWorkflowAnnotations(wf *ent.Workflow) *subscription {
+
+	keys := pubsub.walkInodeKeys(wf.Edges.Inode)
+
+	keys = append(keys, wf.ID.String(), pubsub.workflowAnnotations(wf))
+
+	return pubsub.Subscribe(keys...)
+
+}
+
+func (pubsub *pubsub) NotifyWorkflowAnnotations(wf *ent.Workflow) {
+
+	pubsub.publish(pubsubNotify(pubsub.workflowAnnotations(wf)))
 
 }
 
@@ -634,6 +677,24 @@ func (pubsub *pubsub) SubscribeNamespaceVariables(ns *ent.Namespace) *subscripti
 func (pubsub *pubsub) NotifyNamespaceVariables(ns *ent.Namespace) {
 
 	pubsub.publish(pubsubNotify(pubsub.namespaceVars(ns)))
+
+}
+
+func (pubsub *pubsub) namespaceAnnotations(ns *ent.Namespace) string {
+
+	return fmt.Sprintf("nsnote:%s", ns.ID.String())
+
+}
+
+func (pubsub *pubsub) SubscribeNamespaceAnnotations(ns *ent.Namespace) *subscription {
+
+	return pubsub.Subscribe(ns.ID.String(), pubsub.namespaceAnnotations(ns))
+
+}
+
+func (pubsub *pubsub) NotifyNamespaceAnnotations(ns *ent.Namespace) {
+
+	pubsub.publish(pubsubNotify(pubsub.namespaceAnnotations(ns)))
 
 }
 
@@ -730,6 +791,24 @@ func (pubsub *pubsub) SubscribeInstanceVariables(in *ent.Instance) *subscription
 func (pubsub *pubsub) NotifyInstanceVariables(in *ent.Instance) {
 
 	pubsub.publish(pubsubNotify(pubsub.instanceVars(in)))
+
+}
+
+func (pubsub *pubsub) instanceAnnotations(in *ent.Instance) string {
+
+	return fmt.Sprintf("instnote:%s", in.ID.String())
+
+}
+
+func (pubsub *pubsub) SubscribeInstanceAnnotations(in *ent.Instance) *subscription {
+
+	return pubsub.Subscribe(in.Edges.Namespace.ID.String(), pubsub.instanceAnnotations(in))
+
+}
+
+func (pubsub *pubsub) NotifyInstanceAnnotations(in *ent.Instance) {
+
+	pubsub.publish(pubsubNotify(pubsub.instanceAnnotations(in)))
 
 }
 

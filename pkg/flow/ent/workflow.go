@@ -54,9 +54,11 @@ type WorkflowEdges struct {
 	Vars []*VarRef `json:"vars,omitempty"`
 	// Wfevents holds the value of the wfevents edge.
 	Wfevents []*Events `json:"wfevents,omitempty"`
+	// Annotations holds the value of the annotations edge.
+	Annotations []*Annotation `json:"annotations,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [9]bool
+	loadedTypes [10]bool
 }
 
 // InodeOrErr returns the Inode value or an error if the edge
@@ -146,6 +148,15 @@ func (e WorkflowEdges) WfeventsOrErr() ([]*Events, error) {
 		return e.Wfevents, nil
 	}
 	return nil, &NotLoadedError{edge: "wfevents"}
+}
+
+// AnnotationsOrErr returns the Annotations value or an error if the edge
+// was not loaded in eager-loading.
+func (e WorkflowEdges) AnnotationsOrErr() ([]*Annotation, error) {
+	if e.loadedTypes[9] {
+		return e.Annotations, nil
+	}
+	return nil, &NotLoadedError{edge: "annotations"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -272,6 +283,11 @@ func (w *Workflow) QueryVars() *VarRefQuery {
 // QueryWfevents queries the "wfevents" edge of the Workflow entity.
 func (w *Workflow) QueryWfevents() *EventsQuery {
 	return (&WorkflowClient{config: w.config}).QueryWfevents(w)
+}
+
+// QueryAnnotations queries the "annotations" edge of the Workflow entity.
+func (w *Workflow) QueryAnnotations() *AnnotationQuery {
+	return (&WorkflowClient{config: w.config}).QueryAnnotations(w)
 }
 
 // Update returns a builder for updating this Workflow.

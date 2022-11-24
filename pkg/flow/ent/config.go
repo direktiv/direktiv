@@ -28,6 +28,7 @@ type config struct {
 
 // hooks per client, for fast access.
 type hooks struct {
+	Annotation        []ent.Hook
 	CloudEventFilters []ent.Hook
 	CloudEvents       []ent.Hook
 	Events            []ent.Hook
@@ -42,6 +43,7 @@ type hooks struct {
 	Ref               []ent.Hook
 	Revision          []ent.Hook
 	Route             []ent.Hook
+	Services          []ent.Hook
 	VarData           []ent.Hook
 	VarRef            []ent.Hook
 	Workflow          []ent.Hook

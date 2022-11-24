@@ -6,6 +6,9 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
+// Annotation is the predicate function for annotation builders.
+type Annotation func(*sql.Selector)
+
 // CloudEventFilters is the predicate function for cloudeventfilters builders.
 type CloudEventFilters func(*sql.Selector)
 
@@ -47,6 +50,9 @@ type Revision func(*sql.Selector)
 
 // Route is the predicate function for route builders.
 type Route func(*sql.Selector)
+
+// Services is the predicate function for services builders.
+type Services func(*sql.Selector)
 
 // VarData is the predicate function for vardata builders.
 type VarData func(*sql.Selector)

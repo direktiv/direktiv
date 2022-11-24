@@ -27,7 +27,7 @@ type UpdateFunctionRequest struct {
 
 	Info           *BaseInfo `protobuf:"bytes,1,opt,name=info,proto3,oneof" json:"info,omitempty"`
 	ServiceName    *string   `protobuf:"bytes,2,opt,name=ServiceName,proto3,oneof" json:"ServiceName,omitempty"`
-	TrafficPercent *int64    `protobuf:"varint,3,opt,name=TrafficPercent,proto3,oneof" json:"TrafficPercent,omitempty"`
+	TrafficPercent *int64    `protobuf:"varint,3,opt,name=TrafficPercent,proto3,oneof" json:"TrafficPercent,omitempty"` // deprecated
 }
 
 func (x *UpdateFunctionRequest) Reset() {

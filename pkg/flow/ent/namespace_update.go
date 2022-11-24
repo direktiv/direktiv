@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/direktiv/direktiv/pkg/flow/ent/annotation"
 	"github.com/direktiv/direktiv/pkg/flow/ent/cloudeventfilters"
 	"github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
 	"github.com/direktiv/direktiv/pkg/flow/ent/events"
@@ -21,6 +22,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/mirroractivity"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/predicate"
+	"github.com/direktiv/direktiv/pkg/flow/ent/services"
 	"github.com/direktiv/direktiv/pkg/flow/ent/varref"
 	"github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 	"github.com/google/uuid"
@@ -201,6 +203,21 @@ func (nu *NamespaceUpdate) AddNamespacelisteners(e ...*Events) *NamespaceUpdate 
 	return nu.AddNamespacelistenerIDs(ids...)
 }
 
+// AddAnnotationIDs adds the "annotations" edge to the Annotation entity by IDs.
+func (nu *NamespaceUpdate) AddAnnotationIDs(ids ...uuid.UUID) *NamespaceUpdate {
+	nu.mutation.AddAnnotationIDs(ids...)
+	return nu
+}
+
+// AddAnnotations adds the "annotations" edges to the Annotation entity.
+func (nu *NamespaceUpdate) AddAnnotations(a ...*Annotation) *NamespaceUpdate {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return nu.AddAnnotationIDs(ids...)
+}
+
 // AddCloudeventfilterIDs adds the "cloudeventfilters" edge to the CloudEventFilters entity by IDs.
 func (nu *NamespaceUpdate) AddCloudeventfilterIDs(ids ...int) *NamespaceUpdate {
 	nu.mutation.AddCloudeventfilterIDs(ids...)
@@ -214,6 +231,21 @@ func (nu *NamespaceUpdate) AddCloudeventfilters(c ...*CloudEventFilters) *Namesp
 		ids[i] = c[i].ID
 	}
 	return nu.AddCloudeventfilterIDs(ids...)
+}
+
+// AddServiceIDs adds the "services" edge to the Services entity by IDs.
+func (nu *NamespaceUpdate) AddServiceIDs(ids ...uuid.UUID) *NamespaceUpdate {
+	nu.mutation.AddServiceIDs(ids...)
+	return nu
+}
+
+// AddServices adds the "services" edges to the Services entity.
+func (nu *NamespaceUpdate) AddServices(s ...*Services) *NamespaceUpdate {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return nu.AddServiceIDs(ids...)
 }
 
 // Mutation returns the NamespaceMutation object of the builder.
@@ -410,6 +442,27 @@ func (nu *NamespaceUpdate) RemoveNamespacelisteners(e ...*Events) *NamespaceUpda
 	return nu.RemoveNamespacelistenerIDs(ids...)
 }
 
+// ClearAnnotations clears all "annotations" edges to the Annotation entity.
+func (nu *NamespaceUpdate) ClearAnnotations() *NamespaceUpdate {
+	nu.mutation.ClearAnnotations()
+	return nu
+}
+
+// RemoveAnnotationIDs removes the "annotations" edge to Annotation entities by IDs.
+func (nu *NamespaceUpdate) RemoveAnnotationIDs(ids ...uuid.UUID) *NamespaceUpdate {
+	nu.mutation.RemoveAnnotationIDs(ids...)
+	return nu
+}
+
+// RemoveAnnotations removes "annotations" edges to Annotation entities.
+func (nu *NamespaceUpdate) RemoveAnnotations(a ...*Annotation) *NamespaceUpdate {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return nu.RemoveAnnotationIDs(ids...)
+}
+
 // ClearCloudeventfilters clears all "cloudeventfilters" edges to the CloudEventFilters entity.
 func (nu *NamespaceUpdate) ClearCloudeventfilters() *NamespaceUpdate {
 	nu.mutation.ClearCloudeventfilters()
@@ -429,6 +482,27 @@ func (nu *NamespaceUpdate) RemoveCloudeventfilters(c ...*CloudEventFilters) *Nam
 		ids[i] = c[i].ID
 	}
 	return nu.RemoveCloudeventfilterIDs(ids...)
+}
+
+// ClearServices clears all "services" edges to the Services entity.
+func (nu *NamespaceUpdate) ClearServices() *NamespaceUpdate {
+	nu.mutation.ClearServices()
+	return nu
+}
+
+// RemoveServiceIDs removes the "services" edge to Services entities by IDs.
+func (nu *NamespaceUpdate) RemoveServiceIDs(ids ...uuid.UUID) *NamespaceUpdate {
+	nu.mutation.RemoveServiceIDs(ids...)
+	return nu
+}
+
+// RemoveServices removes "services" edges to Services entities.
+func (nu *NamespaceUpdate) RemoveServices(s ...*Services) *NamespaceUpdate {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return nu.RemoveServiceIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -1029,6 +1103,60 @@ func (nu *NamespaceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if nu.mutation.AnnotationsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   namespace.AnnotationsTable,
+			Columns: []string{namespace.AnnotationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: annotation.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := nu.mutation.RemovedAnnotationsIDs(); len(nodes) > 0 && !nu.mutation.AnnotationsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   namespace.AnnotationsTable,
+			Columns: []string{namespace.AnnotationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: annotation.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := nu.mutation.AnnotationsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   namespace.AnnotationsTable,
+			Columns: []string{namespace.AnnotationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: annotation.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if nu.mutation.CloudeventfiltersCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -1075,6 +1203,60 @@ func (nu *NamespaceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: cloudeventfilters.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if nu.mutation.ServicesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   namespace.ServicesTable,
+			Columns: []string{namespace.ServicesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: services.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := nu.mutation.RemovedServicesIDs(); len(nodes) > 0 && !nu.mutation.ServicesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   namespace.ServicesTable,
+			Columns: []string{namespace.ServicesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: services.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := nu.mutation.ServicesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   namespace.ServicesTable,
+			Columns: []string{namespace.ServicesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: services.FieldID,
 				},
 			},
 		}
@@ -1265,6 +1447,21 @@ func (nuo *NamespaceUpdateOne) AddNamespacelisteners(e ...*Events) *NamespaceUpd
 	return nuo.AddNamespacelistenerIDs(ids...)
 }
 
+// AddAnnotationIDs adds the "annotations" edge to the Annotation entity by IDs.
+func (nuo *NamespaceUpdateOne) AddAnnotationIDs(ids ...uuid.UUID) *NamespaceUpdateOne {
+	nuo.mutation.AddAnnotationIDs(ids...)
+	return nuo
+}
+
+// AddAnnotations adds the "annotations" edges to the Annotation entity.
+func (nuo *NamespaceUpdateOne) AddAnnotations(a ...*Annotation) *NamespaceUpdateOne {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return nuo.AddAnnotationIDs(ids...)
+}
+
 // AddCloudeventfilterIDs adds the "cloudeventfilters" edge to the CloudEventFilters entity by IDs.
 func (nuo *NamespaceUpdateOne) AddCloudeventfilterIDs(ids ...int) *NamespaceUpdateOne {
 	nuo.mutation.AddCloudeventfilterIDs(ids...)
@@ -1278,6 +1475,21 @@ func (nuo *NamespaceUpdateOne) AddCloudeventfilters(c ...*CloudEventFilters) *Na
 		ids[i] = c[i].ID
 	}
 	return nuo.AddCloudeventfilterIDs(ids...)
+}
+
+// AddServiceIDs adds the "services" edge to the Services entity by IDs.
+func (nuo *NamespaceUpdateOne) AddServiceIDs(ids ...uuid.UUID) *NamespaceUpdateOne {
+	nuo.mutation.AddServiceIDs(ids...)
+	return nuo
+}
+
+// AddServices adds the "services" edges to the Services entity.
+func (nuo *NamespaceUpdateOne) AddServices(s ...*Services) *NamespaceUpdateOne {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return nuo.AddServiceIDs(ids...)
 }
 
 // Mutation returns the NamespaceMutation object of the builder.
@@ -1474,6 +1686,27 @@ func (nuo *NamespaceUpdateOne) RemoveNamespacelisteners(e ...*Events) *Namespace
 	return nuo.RemoveNamespacelistenerIDs(ids...)
 }
 
+// ClearAnnotations clears all "annotations" edges to the Annotation entity.
+func (nuo *NamespaceUpdateOne) ClearAnnotations() *NamespaceUpdateOne {
+	nuo.mutation.ClearAnnotations()
+	return nuo
+}
+
+// RemoveAnnotationIDs removes the "annotations" edge to Annotation entities by IDs.
+func (nuo *NamespaceUpdateOne) RemoveAnnotationIDs(ids ...uuid.UUID) *NamespaceUpdateOne {
+	nuo.mutation.RemoveAnnotationIDs(ids...)
+	return nuo
+}
+
+// RemoveAnnotations removes "annotations" edges to Annotation entities.
+func (nuo *NamespaceUpdateOne) RemoveAnnotations(a ...*Annotation) *NamespaceUpdateOne {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return nuo.RemoveAnnotationIDs(ids...)
+}
+
 // ClearCloudeventfilters clears all "cloudeventfilters" edges to the CloudEventFilters entity.
 func (nuo *NamespaceUpdateOne) ClearCloudeventfilters() *NamespaceUpdateOne {
 	nuo.mutation.ClearCloudeventfilters()
@@ -1493,6 +1726,27 @@ func (nuo *NamespaceUpdateOne) RemoveCloudeventfilters(c ...*CloudEventFilters) 
 		ids[i] = c[i].ID
 	}
 	return nuo.RemoveCloudeventfilterIDs(ids...)
+}
+
+// ClearServices clears all "services" edges to the Services entity.
+func (nuo *NamespaceUpdateOne) ClearServices() *NamespaceUpdateOne {
+	nuo.mutation.ClearServices()
+	return nuo
+}
+
+// RemoveServiceIDs removes the "services" edge to Services entities by IDs.
+func (nuo *NamespaceUpdateOne) RemoveServiceIDs(ids ...uuid.UUID) *NamespaceUpdateOne {
+	nuo.mutation.RemoveServiceIDs(ids...)
+	return nuo
+}
+
+// RemoveServices removes "services" edges to Services entities.
+func (nuo *NamespaceUpdateOne) RemoveServices(s ...*Services) *NamespaceUpdateOne {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return nuo.RemoveServiceIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -2123,6 +2377,60 @@ func (nuo *NamespaceUpdateOne) sqlSave(ctx context.Context) (_node *Namespace, e
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if nuo.mutation.AnnotationsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   namespace.AnnotationsTable,
+			Columns: []string{namespace.AnnotationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: annotation.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := nuo.mutation.RemovedAnnotationsIDs(); len(nodes) > 0 && !nuo.mutation.AnnotationsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   namespace.AnnotationsTable,
+			Columns: []string{namespace.AnnotationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: annotation.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := nuo.mutation.AnnotationsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   namespace.AnnotationsTable,
+			Columns: []string{namespace.AnnotationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: annotation.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if nuo.mutation.CloudeventfiltersCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -2169,6 +2477,60 @@ func (nuo *NamespaceUpdateOne) sqlSave(ctx context.Context) (_node *Namespace, e
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: cloudeventfilters.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if nuo.mutation.ServicesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   namespace.ServicesTable,
+			Columns: []string{namespace.ServicesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: services.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := nuo.mutation.RemovedServicesIDs(); len(nodes) > 0 && !nuo.mutation.ServicesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   namespace.ServicesTable,
+			Columns: []string{namespace.ServicesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: services.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := nuo.mutation.ServicesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   namespace.ServicesTable,
+			Columns: []string{namespace.ServicesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: services.FieldID,
 				},
 			},
 		}

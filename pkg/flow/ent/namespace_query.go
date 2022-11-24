@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/direktiv/direktiv/pkg/flow/ent/annotation"
 	"github.com/direktiv/direktiv/pkg/flow/ent/cloudeventfilters"
 	"github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
 	"github.com/direktiv/direktiv/pkg/flow/ent/events"
@@ -22,6 +23,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/mirroractivity"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/predicate"
+	"github.com/direktiv/direktiv/pkg/flow/ent/services"
 	"github.com/direktiv/direktiv/pkg/flow/ent/varref"
 	"github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 	"github.com/google/uuid"
@@ -45,7 +47,9 @@ type NamespaceQuery struct {
 	withVars               *VarRefQuery
 	withCloudevents        *CloudEventsQuery
 	withNamespacelisteners *EventsQuery
+	withAnnotations        *AnnotationQuery
 	withCloudeventfilters  *CloudEventFiltersQuery
+	withServices           *ServicesQuery
 	modifiers              []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -281,6 +285,28 @@ func (nq *NamespaceQuery) QueryNamespacelisteners() *EventsQuery {
 	return query
 }
 
+// QueryAnnotations chains the current query on the "annotations" edge.
+func (nq *NamespaceQuery) QueryAnnotations() *AnnotationQuery {
+	query := &AnnotationQuery{config: nq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := nq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := nq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(namespace.Table, namespace.FieldID, selector),
+			sqlgraph.To(annotation.Table, annotation.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, namespace.AnnotationsTable, namespace.AnnotationsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(nq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // QueryCloudeventfilters chains the current query on the "cloudeventfilters" edge.
 func (nq *NamespaceQuery) QueryCloudeventfilters() *CloudEventFiltersQuery {
 	query := &CloudEventFiltersQuery{config: nq.config}
@@ -296,6 +322,28 @@ func (nq *NamespaceQuery) QueryCloudeventfilters() *CloudEventFiltersQuery {
 			sqlgraph.From(namespace.Table, namespace.FieldID, selector),
 			sqlgraph.To(cloudeventfilters.Table, cloudeventfilters.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, namespace.CloudeventfiltersTable, namespace.CloudeventfiltersColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(nq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryServices chains the current query on the "services" edge.
+func (nq *NamespaceQuery) QueryServices() *ServicesQuery {
+	query := &ServicesQuery{config: nq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := nq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := nq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(namespace.Table, namespace.FieldID, selector),
+			sqlgraph.To(services.Table, services.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, namespace.ServicesTable, namespace.ServicesColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(nq.driver.Dialect(), step)
 		return fromU, nil
@@ -493,7 +541,9 @@ func (nq *NamespaceQuery) Clone() *NamespaceQuery {
 		withVars:               nq.withVars.Clone(),
 		withCloudevents:        nq.withCloudevents.Clone(),
 		withNamespacelisteners: nq.withNamespacelisteners.Clone(),
+		withAnnotations:        nq.withAnnotations.Clone(),
 		withCloudeventfilters:  nq.withCloudeventfilters.Clone(),
+		withServices:           nq.withServices.Clone(),
 		// clone intermediate query.
 		sql:    nq.sql.Clone(),
 		path:   nq.path,
@@ -600,6 +650,17 @@ func (nq *NamespaceQuery) WithNamespacelisteners(opts ...func(*EventsQuery)) *Na
 	return nq
 }
 
+// WithAnnotations tells the query-builder to eager-load the nodes that are connected to
+// the "annotations" edge. The optional arguments are used to configure the query builder of the edge.
+func (nq *NamespaceQuery) WithAnnotations(opts ...func(*AnnotationQuery)) *NamespaceQuery {
+	query := &AnnotationQuery{config: nq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	nq.withAnnotations = query
+	return nq
+}
+
 // WithCloudeventfilters tells the query-builder to eager-load the nodes that are connected to
 // the "cloudeventfilters" edge. The optional arguments are used to configure the query builder of the edge.
 func (nq *NamespaceQuery) WithCloudeventfilters(opts ...func(*CloudEventFiltersQuery)) *NamespaceQuery {
@@ -608,6 +669,17 @@ func (nq *NamespaceQuery) WithCloudeventfilters(opts ...func(*CloudEventFiltersQ
 		opt(query)
 	}
 	nq.withCloudeventfilters = query
+	return nq
+}
+
+// WithServices tells the query-builder to eager-load the nodes that are connected to
+// the "services" edge. The optional arguments are used to configure the query builder of the edge.
+func (nq *NamespaceQuery) WithServices(opts ...func(*ServicesQuery)) *NamespaceQuery {
+	query := &ServicesQuery{config: nq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	nq.withServices = query
 	return nq
 }
 
@@ -684,7 +756,7 @@ func (nq *NamespaceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Na
 	var (
 		nodes       = []*Namespace{}
 		_spec       = nq.querySpec()
-		loadedTypes = [10]bool{
+		loadedTypes = [12]bool{
 			nq.withInodes != nil,
 			nq.withWorkflows != nil,
 			nq.withMirrors != nil,
@@ -694,7 +766,9 @@ func (nq *NamespaceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Na
 			nq.withVars != nil,
 			nq.withCloudevents != nil,
 			nq.withNamespacelisteners != nil,
+			nq.withAnnotations != nil,
 			nq.withCloudeventfilters != nil,
+			nq.withServices != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -781,12 +855,26 @@ func (nq *NamespaceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Na
 			return nil, err
 		}
 	}
+	if query := nq.withAnnotations; query != nil {
+		if err := nq.loadAnnotations(ctx, query, nodes,
+			func(n *Namespace) { n.Edges.Annotations = []*Annotation{} },
+			func(n *Namespace, e *Annotation) { n.Edges.Annotations = append(n.Edges.Annotations, e) }); err != nil {
+			return nil, err
+		}
+	}
 	if query := nq.withCloudeventfilters; query != nil {
 		if err := nq.loadCloudeventfilters(ctx, query, nodes,
 			func(n *Namespace) { n.Edges.Cloudeventfilters = []*CloudEventFilters{} },
 			func(n *Namespace, e *CloudEventFilters) {
 				n.Edges.Cloudeventfilters = append(n.Edges.Cloudeventfilters, e)
 			}); err != nil {
+			return nil, err
+		}
+	}
+	if query := nq.withServices; query != nil {
+		if err := nq.loadServices(ctx, query, nodes,
+			func(n *Namespace) { n.Edges.Services = []*Services{} },
+			func(n *Namespace, e *Services) { n.Edges.Services = append(n.Edges.Services, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -1072,6 +1160,37 @@ func (nq *NamespaceQuery) loadNamespacelisteners(ctx context.Context, query *Eve
 	}
 	return nil
 }
+func (nq *NamespaceQuery) loadAnnotations(ctx context.Context, query *AnnotationQuery, nodes []*Namespace, init func(*Namespace), assign func(*Namespace, *Annotation)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Namespace)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Annotation(func(s *sql.Selector) {
+		s.Where(sql.InValues(namespace.AnnotationsColumn, fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.namespace_annotations
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "namespace_annotations" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "namespace_annotations" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
 func (nq *NamespaceQuery) loadCloudeventfilters(ctx context.Context, query *CloudEventFiltersQuery, nodes []*Namespace, init func(*Namespace), assign func(*Namespace, *CloudEventFilters)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*Namespace)
@@ -1098,6 +1217,37 @@ func (nq *NamespaceQuery) loadCloudeventfilters(ctx context.Context, query *Clou
 		node, ok := nodeids[*fk]
 		if !ok {
 			return fmt.Errorf(`unexpected foreign-key "namespace_cloudeventfilters" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (nq *NamespaceQuery) loadServices(ctx context.Context, query *ServicesQuery, nodes []*Namespace, init func(*Namespace), assign func(*Namespace, *Services)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Namespace)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Services(func(s *sql.Selector) {
+		s.Where(sql.InValues(namespace.ServicesColumn, fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.namespace_services
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "namespace_services" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "namespace_services" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}

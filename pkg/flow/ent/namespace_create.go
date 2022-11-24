@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/direktiv/direktiv/pkg/flow/ent/annotation"
 	"github.com/direktiv/direktiv/pkg/flow/ent/cloudeventfilters"
 	"github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
 	"github.com/direktiv/direktiv/pkg/flow/ent/events"
@@ -21,6 +22,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/mirror"
 	"github.com/direktiv/direktiv/pkg/flow/ent/mirroractivity"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
+	"github.com/direktiv/direktiv/pkg/flow/ent/services"
 	"github.com/direktiv/direktiv/pkg/flow/ent/varref"
 	"github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 	"github.com/google/uuid"
@@ -231,6 +233,21 @@ func (nc *NamespaceCreate) AddNamespacelisteners(e ...*Events) *NamespaceCreate 
 	return nc.AddNamespacelistenerIDs(ids...)
 }
 
+// AddAnnotationIDs adds the "annotations" edge to the Annotation entity by IDs.
+func (nc *NamespaceCreate) AddAnnotationIDs(ids ...uuid.UUID) *NamespaceCreate {
+	nc.mutation.AddAnnotationIDs(ids...)
+	return nc
+}
+
+// AddAnnotations adds the "annotations" edges to the Annotation entity.
+func (nc *NamespaceCreate) AddAnnotations(a ...*Annotation) *NamespaceCreate {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return nc.AddAnnotationIDs(ids...)
+}
+
 // AddCloudeventfilterIDs adds the "cloudeventfilters" edge to the CloudEventFilters entity by IDs.
 func (nc *NamespaceCreate) AddCloudeventfilterIDs(ids ...int) *NamespaceCreate {
 	nc.mutation.AddCloudeventfilterIDs(ids...)
@@ -244,6 +261,21 @@ func (nc *NamespaceCreate) AddCloudeventfilters(c ...*CloudEventFilters) *Namesp
 		ids[i] = c[i].ID
 	}
 	return nc.AddCloudeventfilterIDs(ids...)
+}
+
+// AddServiceIDs adds the "services" edge to the Services entity by IDs.
+func (nc *NamespaceCreate) AddServiceIDs(ids ...uuid.UUID) *NamespaceCreate {
+	nc.mutation.AddServiceIDs(ids...)
+	return nc
+}
+
+// AddServices adds the "services" edges to the Services entity.
+func (nc *NamespaceCreate) AddServices(s ...*Services) *NamespaceCreate {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return nc.AddServiceIDs(ids...)
 }
 
 // Mutation returns the NamespaceMutation object of the builder.
@@ -584,6 +616,25 @@ func (nc *NamespaceCreate) createSpec() (*Namespace, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
+	if nodes := nc.mutation.AnnotationsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   namespace.AnnotationsTable,
+			Columns: []string{namespace.AnnotationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: annotation.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	if nodes := nc.mutation.CloudeventfiltersIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -595,6 +646,25 @@ func (nc *NamespaceCreate) createSpec() (*Namespace, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: cloudeventfilters.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := nc.mutation.ServicesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   namespace.ServicesTable,
+			Columns: []string{namespace.ServicesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: services.FieldID,
 				},
 			},
 		}
