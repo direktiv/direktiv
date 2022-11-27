@@ -492,20 +492,6 @@ function GlobalNavItems({namespace}) {
                         </NavItem>
                     </Link>
                 </li>
-                <li className={`${!namespace ? "disabled-nav-item":""}`}>
-                    <Link to={!!namespace && "/g/services"}>
-                        <NavItem className={gs || gservice || grevision ? "active":""} label="Global Services">
-                            <VscLayers />
-                        </NavItem>
-                    </Link>
-                </li>
-                <li className={`${!namespace ? "disabled-nav-item":""}`}>
-                    <Link to={!!namespace && "/g/registries"}>
-                        <NavItem className={gr ? "active":""} label="Global Registries">
-                            <VscServer/>
-                        </NavItem>
-                    </Link>
-                </li>
             </ul>
         </FlexBox>
     );

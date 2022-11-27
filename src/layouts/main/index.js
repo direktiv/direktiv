@@ -12,13 +12,9 @@ import { Config } from '../../util'
 import { BrowserRouter, Routes, Route, useNavigate} from 'react-router-dom'
 import InstancesPage from '../instances';
 import JQPlayground from '../jqplayground';
-import GlobalRegistriesPanel from '../global-registries';
 import NamespaceServices from '../namespace-services';
 import NamespaceRevisions from '../namespace-services/revisions';
 import PodPanel from '../namespace-services/pod';
-import GlobalServicesPanel from '../global-services';
-import GlobalRevisionsPanel from '../global-services/revisions';
-import GlobalPodPanel from '../global-services/pod'
 import Loader from '../../components/loader';
 import Button from '../../components/button';
 import { IoMenu } from 'react-icons/io5';
@@ -136,12 +132,6 @@ function NamespaceNavigation(props){
 
                     {/* non-namespace routes */}
                     <Route path="/jq" element={<JQPlayground />} />
-
-                    <Route path="/g/services" element={<GlobalServicesPanel/>} />
-                    <Route path="/g/services/:service" element={<GlobalRevisionsPanel/>} />
-                    <Route path="/g/services/:service/:revision" element={<GlobalPodPanel/>} />
-
-                    <Route path="/g/registries" element={<GlobalRegistriesPanel />} />
                     <Route path='*' exact={true} element={<NotFound/>} />
                 </Routes>:""}
             </FlexBox>

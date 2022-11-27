@@ -203,7 +203,7 @@ function NamespaceRevisions(props) {
                     </ContentPanelBody>
                 </ContentPanel>
             </FlexBox>
-            <UpdateTraffic setNamespaceServiceRevisionTraffic={setNamespaceServiceRevisionTraffic} service={service} revisions={revisions} traffic={traffic}/>
+            {/* <UpdateTraffic setNamespaceServiceRevisionTraffic={setNamespaceServiceRevisionTraffic} service={service} revisions={revisions} traffic={traffic}/> */}
         </FlexBox>
     )
 }

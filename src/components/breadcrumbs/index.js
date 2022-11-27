@@ -7,8 +7,8 @@ import {GenerateRandomKey} from '../../util';
 
 const routes = [
     { path: '/jq', breadcrumb: 'JQ Playground' },
-    { path: '/g/services', breadcrumb: 'Global Services' },
-    { path: '/g/registries', breadcrumb: 'Global Registries'},
+    // { path: '/g/services', breadcrumb: 'Global Services' },
+    // { path: '/g/registries', breadcrumb: 'Global Registries'},
     { path: '/n/:namespace/services', breadcrumb: "Namespace Services"}
 ];
 

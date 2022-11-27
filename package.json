@@ -58,7 +58,7 @@
   "scripts": {
     "link-hooks": "yalc link direktiv-react-hooks",
     "unlink-hooks": "yalc remove direktiv-react-hooks",
-    "start": "REACT_APP_API=$DIREKTIV_API react-scripts start",
+    "start": "REACT_APP_API=$DIREKTIV_API react-scripts --openssl-legacy-provider start",
     "start-win": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",

@@ -165,10 +165,7 @@ export function PodLogs(props){
                     <FlexBox className="col" style={{backgroundColor:"#223848"}}>
                         <FlexBox style={{maxHeight:"30px"}}>
                             {pods.map((obj)=>{
-                                let name = `global-${service}-${revision}-deployment-`
-                                if(namespace){
-                                    name = `namespace-${namespace}-${service}-${revision}-deployment-`
-                                }
+                                let name = `namespace-${namespace}-${service}-${revision}-deployment-`
                                 if(version){
                                     name = `workflow-${version}-${service}-${revision}-deployment-`
                                 }
