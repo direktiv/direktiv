@@ -4315,9 +4315,16 @@ func (h *flowHandler) WaitWorkflow(w http.ResponseWriter, r *http.Request) {
 
 				x, exists := m[field]
 				if exists {
-					data, _ = json.Marshal(x)
+					data, err = json.Marshal(x)
+					if err != nil {
+						respond(w, nil, err)
+						return
+					}
 				} else {
-					data, _ = json.Marshal(nil)
+					data, err = json.Marshal(nil)
+					if err != nil {
+						panic(err)
+					}
 				}
 
 			}
@@ -4417,13 +4424,14 @@ func ToGRPCCloudEvents(r *http.Request) ([]cloudevents.Event, error) {
 	}
 
 	if strings.HasPrefix(ct, "application/json") {
-		x, _ := json.Marshal(r.Header)
-		fmt.Println(string(x))
+		_, err := json.Marshal(r.Header)
+		if err != nil {
+			return nil, err
+		}
 		s := r.Header.Get("Ce-Type")
 		if s == "" {
 			ct = "application/cloudevents+json; charset=UTF-8"
 			r.Header.Set("Content-Type", ct)
-			fmt.Println(r.Header.Get("Content-Type"))
 		}
 	}
 

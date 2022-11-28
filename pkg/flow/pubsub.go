@@ -178,9 +178,10 @@ func (pubsub *pubsub) dispatcher() {
 			return
 		}
 
-		b, _ := json.Marshal(req)
-
-		var err error
+		b, err := json.Marshal(req)
+		if err != nil {
+			panic(err)
+		}
 
 		if req.Hostname == "" {
 			err = pubsub.notifier.notifyCluster(string(b))

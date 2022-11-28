@@ -681,12 +681,15 @@ const retryWakeupFunction = "retryWakeup"
 
 func (engine *engine) scheduleRetry(id, state string, step int, t time.Time, data []byte) error {
 
-	data, _ = json.Marshal(&retryMessage{
+	data, err := json.Marshal(&retryMessage{
 		InstanceID: id,
 		// State:      state,
 		Step: step,
 		Data: data,
 	})
+	if err != nil {
+		panic(err)
+	}
 
 	if d := time.Until(t); d < time.Second*5 {
 		go func() {
@@ -697,7 +700,7 @@ func (engine *engine) scheduleRetry(id, state string, step int, t time.Time, dat
 		return nil
 	}
 
-	err := engine.timers.addOneShot(id, retryWakeupFunction, t, data)
+	err = engine.timers.addOneShot(id, retryWakeupFunction, t, data)
 	if err != nil {
 		return derrors.NewInternalError(err)
 	}
