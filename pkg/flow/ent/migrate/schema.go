@@ -8,6 +8,81 @@ import (
 )
 
 var (
+	// AnnotationsColumns holds the columns for the "annotations" table.
+	AnnotationsColumns = []*schema.Column{
+		{Name: "oid", Type: field.TypeUUID},
+		{Name: "name", Type: field.TypeString},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "size", Type: field.TypeInt},
+		{Name: "hash", Type: field.TypeString},
+		{Name: "data", Type: field.TypeBytes},
+		{Name: "mime_type", Type: field.TypeString},
+		{Name: "inode_annotations", Type: field.TypeUUID, Nullable: true},
+		{Name: "instance_annotations", Type: field.TypeUUID, Nullable: true},
+		{Name: "namespace_annotations", Type: field.TypeUUID, Nullable: true},
+		{Name: "workflow_annotations", Type: field.TypeUUID, Nullable: true},
+	}
+	// AnnotationsTable holds the schema information for the "annotations" table.
+	AnnotationsTable = &schema.Table{
+		Name:       "annotations",
+		Columns:    AnnotationsColumns,
+		PrimaryKey: []*schema.Column{AnnotationsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "annotations_inodes_annotations",
+				Columns:    []*schema.Column{AnnotationsColumns[8]},
+				RefColumns: []*schema.Column{InodesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "annotations_instances_annotations",
+				Columns:    []*schema.Column{AnnotationsColumns[9]},
+				RefColumns: []*schema.Column{InstancesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "annotations_namespaces_annotations",
+				Columns:    []*schema.Column{AnnotationsColumns[10]},
+				RefColumns: []*schema.Column{NamespacesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "annotations_workflows_annotations",
+				Columns:    []*schema.Column{AnnotationsColumns[11]},
+				RefColumns: []*schema.Column{WorkflowsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
+	// CloudEventFiltersColumns holds the columns for the "cloud_event_filters" table.
+	CloudEventFiltersColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "name", Type: field.TypeString},
+		{Name: "jscode", Type: field.TypeString},
+		{Name: "namespace_cloudeventfilters", Type: field.TypeUUID},
+	}
+	// CloudEventFiltersTable holds the schema information for the "cloud_event_filters" table.
+	CloudEventFiltersTable = &schema.Table{
+		Name:       "cloud_event_filters",
+		Columns:    CloudEventFiltersColumns,
+		PrimaryKey: []*schema.Column{CloudEventFiltersColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "cloud_event_filters_namespaces_cloudeventfilters",
+				Columns:    []*schema.Column{CloudEventFiltersColumns[3]},
+				RefColumns: []*schema.Column{NamespacesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "cloudeventfilters_name_namespace_cloudeventfilters",
+				Unique:  true,
+				Columns: []*schema.Column{CloudEventFiltersColumns[1], CloudEventFiltersColumns[3]},
+			},
+		},
+	}
 	// CloudEventsColumns holds the columns for the "cloud_events" table.
 	CloudEventsColumns = []*schema.Column{
 		{Name: "oid", Type: field.TypeUUID},
@@ -428,6 +503,37 @@ var (
 			},
 		},
 	}
+	// ServicesColumns holds the columns for the "services" table.
+	ServicesColumns = []*schema.Column{
+		{Name: "oid", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "url", Type: field.TypeString},
+		{Name: "name", Type: field.TypeString, Unique: true},
+		{Name: "data", Type: field.TypeString},
+		{Name: "namespace_services", Type: field.TypeUUID},
+	}
+	// ServicesTable holds the schema information for the "services" table.
+	ServicesTable = &schema.Table{
+		Name:       "services",
+		Columns:    ServicesColumns,
+		PrimaryKey: []*schema.Column{ServicesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "services_namespaces_services",
+				Columns:    []*schema.Column{ServicesColumns[6]},
+				RefColumns: []*schema.Column{NamespacesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "services_name_namespace_services",
+				Unique:  true,
+				Columns: []*schema.Column{ServicesColumns[4], ServicesColumns[6]},
+			},
+		},
+	}
 	// VarDataColumns holds the columns for the "var_data" table.
 	VarDataColumns = []*schema.Column{
 		{Name: "oid", Type: field.TypeUUID},
@@ -518,6 +624,8 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		AnnotationsTable,
+		CloudEventFiltersTable,
 		CloudEventsTable,
 		EventsTable,
 		EventsWaitsTable,
@@ -531,6 +639,7 @@ var (
 		RefsTable,
 		RevisionsTable,
 		RoutesTable,
+		ServicesTable,
 		VarDataTable,
 		VarRefsTable,
 		WorkflowsTable,
@@ -538,6 +647,11 @@ var (
 )
 
 func init() {
+	AnnotationsTable.ForeignKeys[0].RefTable = InodesTable
+	AnnotationsTable.ForeignKeys[1].RefTable = InstancesTable
+	AnnotationsTable.ForeignKeys[2].RefTable = NamespacesTable
+	AnnotationsTable.ForeignKeys[3].RefTable = WorkflowsTable
+	CloudEventFiltersTable.ForeignKeys[0].RefTable = NamespacesTable
 	CloudEventsTable.ForeignKeys[0].RefTable = NamespacesTable
 	EventsTable.ForeignKeys[0].RefTable = InstancesTable
 	EventsTable.ForeignKeys[1].RefTable = NamespacesTable
@@ -563,6 +677,7 @@ func init() {
 	RevisionsTable.ForeignKeys[0].RefTable = WorkflowsTable
 	RoutesTable.ForeignKeys[0].RefTable = RefsTable
 	RoutesTable.ForeignKeys[1].RefTable = WorkflowsTable
+	ServicesTable.ForeignKeys[0].RefTable = NamespacesTable
 	VarRefsTable.ForeignKeys[0].RefTable = InstancesTable
 	VarRefsTable.ForeignKeys[1].RefTable = NamespacesTable
 	VarRefsTable.ForeignKeys[2].RefTable = VarDataTable

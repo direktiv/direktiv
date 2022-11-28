@@ -85,4 +85,18 @@ scripts/wip/kong/proto
 logs.log
 build/docker/all/k3s
 
+ca.crt
+ca.key
+cmd/exec/.direktiv.yaml
+cmd/exec/greeting.json
+cmd/exec/test.json
+cmd/exec/test.yaml
+ent/schema/cloudeventFilters.go
+greeting.json
+issuer.crt
+issuer.key
+scripts/dev.yaml
+
+scripts/api/api.md
+scripts/api/swagger.json
 scripts/dev.yaml

@@ -54,9 +54,11 @@ type InodeEdges struct {
 	Workflow *Workflow `json:"workflow,omitempty"`
 	// Mirror holds the value of the mirror edge.
 	Mirror *Mirror `json:"mirror,omitempty"`
+	// Annotations holds the value of the annotations edge.
+	Annotations []*Annotation `json:"annotations,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [5]bool
+	loadedTypes [6]bool
 }
 
 // NamespaceOrErr returns the Namespace value or an error if the edge
@@ -118,6 +120,15 @@ func (e InodeEdges) MirrorOrErr() (*Mirror, error) {
 		return e.Mirror, nil
 	}
 	return nil, &NotLoadedError{edge: "mirror"}
+}
+
+// AnnotationsOrErr returns the Annotations value or an error if the edge
+// was not loaded in eager-loading.
+func (e InodeEdges) AnnotationsOrErr() ([]*Annotation, error) {
+	if e.loadedTypes[5] {
+		return e.Annotations, nil
+	}
+	return nil, &NotLoadedError{edge: "annotations"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -246,6 +257,11 @@ func (i *Inode) QueryWorkflow() *WorkflowQuery {
 // QueryMirror queries the "mirror" edge of the Inode entity.
 func (i *Inode) QueryMirror() *MirrorQuery {
 	return (&InodeClient{config: i.config}).QueryMirror(i)
+}
+
+// QueryAnnotations queries the "annotations" edge of the Inode entity.
+func (i *Inode) QueryAnnotations() *AnnotationQuery {
+	return (&InodeClient{config: i.config}).QueryAnnotations(i)
 }
 
 // Update returns a builder for updating this Inode.

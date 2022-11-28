@@ -358,7 +358,6 @@ func (im *instanceMemory) CreateChild(ctx context.Context, args states.CreateChi
 	}
 
 	switch args.Definition.GetType() {
-	case model.GlobalKnativeFunctionType:
 	case model.NamespacedKnativeFunctionType:
 	case model.ReusableContainerFunctionType:
 	default:
@@ -455,13 +454,6 @@ func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory,
 			Name:          &con.KnativeService,
 			Namespace:     &nsID,
 			NamespaceName: &ar.Workflow.NamespaceName,
-		})
-	case model.GlobalKnativeFunctionType:
-		con := fn.(*model.GlobalFunctionDefinition)
-		ar.Container.Files = files
-		ar.Container.ID = con.ID
-		ar.Container.Service, _, _ = functions.GenerateServiceName(&igrpc.BaseInfo{
-			Name: &con.KnativeService,
 		})
 	default:
 		return nil, fmt.Errorf("unexpected function type: %v", fn)

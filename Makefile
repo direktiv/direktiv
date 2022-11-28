@@ -71,6 +71,7 @@ clean: ## Deletes all build artifacts and tears down existing cluster.
 	rm -f build/functions
 	rm -f build/flow-dbinit
 	if helm status direktiv; then helm uninstall direktiv; fi
+	kubectl wait --for=delete namespace/direktiv-services-direktiv --timeout=60s
 	kubectl delete --all ksvc -n direktiv-services-direktiv
 	kubectl delete --all jobs -n direktiv-services-direktiv
 
@@ -88,6 +89,7 @@ push: push-api push-flow push-secrets push-sidecar push-functions push-flow-dbin
 .PHONY: helm-reinstall
 helm-reinstall: ## Re-installes direktiv without pushing images
 	if helm status direktiv; then helm uninstall direktiv; fi
+	kubectl wait --for=delete namespace/direktiv-services-direktiv --timeout=60s
 	helm install -f ${HELM_CONFIG} direktiv kubernetes/charts/direktiv/
 
 .PHONY: cluster
@@ -98,15 +100,17 @@ cluster: push
 		helm dependency update scripts/direktiv-charts/charts/direktiv; \
 	fi
 	if helm status direktiv; then helm uninstall direktiv; fi
+	kubectl wait --for=delete namespace/direktiv-services-direktiv --timeout=60s
 	kubectl delete -l direktiv.io/scope=w  ksvc -n direktiv-services-direktiv || true
 	kubectl delete --all jobs -n direktiv-services-direktiv || true
 	helm install -f ${HELM_CONFIG} direktiv scripts/direktiv-charts/charts/direktiv/
 
 .PHONY: teardown
 teardown: ## Brings down an existing cluster.
-	if helm status direktiv; then helm uninstall direktiv; fi
+	if helm status direktiv; then helm uninstall direktiv --wait; fi
 	kubectl delete -l direktiv.io/scope=w ksvc -n direktiv-services-direktiv
 	kubectl delete --all jobs -n direktiv-services-direktiv
+	kubectl wait --for=delete namespace/direktiv-services-direktiv --timeout=60s
 
 GO_SOURCE_FILES = $(shell find . -type f -name '*.go' -not -name '*_test.go')
 DOCKER_FILES = $(shell find build/docker/ -type f)
@@ -123,11 +127,6 @@ ent-secrets: ## Manually regenerates ent database package for secrets.
 	cd build/ent && docker build -t ent .
 	docker run -v `pwd`:/ent ent ./pkg/secrets/ent
 
-.PHONY: ent-functions
-ent-functions: ## Manually regenerates ent database package for functions. 
-	cd build/ent && docker build -t ent .
-	docker run -v `pwd`:/ent ent ./pkg/functions/ent
-
 .PHONY: ent-metrics
 ent-metrics: ## Manually regenerates ent database package for metrics. 
 	cd build/ent && docker build -t ent .
@@ -135,20 +134,21 @@ ent-metrics: ## Manually regenerates ent database package for metrics.
 
 .PHONY: ent
 ent: ## Manually regenerates ent database packages.
-ent: ent-flow ent-secrets ent-functions ent-metrics
+ent: ent-flow ent-secrets ent-metrics
 
+# Not need anymore, commented out for now to not accidentally building those
 # Cleans API client inside of pkg api
-.PHONY: api-clean-client
-api-clean-client: ## Cleans golang client swagger files
-api-clean-client:
-	rm -rf pkg/api/models
-	rm -rf pkg/api/client
+# .PHONY: api-clean-client
+# api-clean-client: ## Cleans golang client swagger files
+# api-clean-client:
+# 	rm -rf pkg/api/models
+# 	rm -rf pkg/api/client
 
-# Generate API client inside of pkg api
-.PHONY: api-client
-api-client: ## Generates a golang client to use based off swagger
-api-client: api-clean-client  api-docs
-	swagger generate client -t pkg/api -f scripts/api/swagger.json --name direktivsdk
+# # Generate API client inside of pkg api
+# .PHONY: api-client
+# api-client: ## Generates a golang client to use based off swagger
+# api-client: api-clean-client  api-docs
+# 	swagger generate client -t pkg/api -f scripts/api/swagger.json --name direktivsdk
 
 # API docs
 

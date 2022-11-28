@@ -9,6 +9,8 @@ import (
 	entns "github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/functions"
+	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -263,6 +265,7 @@ respond:
 func (flow *flow) DeleteNamespace(ctx context.Context, req *grpc.DeleteNamespaceRequest) (*emptypb.Empty, error) {
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	var resp emptypb.Empty
 
 	tx, err := flow.db.Tx(ctx)
 	if err != nil {
@@ -275,7 +278,7 @@ func (flow *flow) DeleteNamespace(ctx context.Context, req *grpc.DeleteNamespace
 	if err != nil {
 		if derrors.IsNotFound(err) && req.GetIdempotent() {
 			rollback(tx)
-			goto respond
+			return &resp, nil
 		}
 		return nil, err
 	}
@@ -307,11 +310,15 @@ func (flow *flow) DeleteNamespace(ctx context.Context, req *grpc.DeleteNamespace
 	flow.pubsub.NotifyNamespaces()
 	flow.pubsub.CloseNamespace(ns)
 
-respond:
+	// delete all knative services
+	annotations := make(map[string]string)
+	annotations[functions.ServiceHeaderNamespaceName] = req.Name
+	lfr := igrpc.ListFunctionsRequest{
+		Annotations: annotations,
+	}
+	_, err = flow.actions.client.DeleteFunctions(ctx, &lfr)
 
-	var resp emptypb.Empty
-
-	return &resp, nil
+	return &resp, err
 
 }
 

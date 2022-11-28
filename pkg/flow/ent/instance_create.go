@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/direktiv/direktiv/pkg/flow/ent/annotation"
 	"github.com/direktiv/direktiv/pkg/flow/ent/events"
 	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	"github.com/direktiv/direktiv/pkg/flow/ent/instanceruntime"
@@ -259,6 +260,21 @@ func (ic *InstanceCreate) AddEventlisteners(e ...*Events) *InstanceCreate {
 		ids[i] = e[i].ID
 	}
 	return ic.AddEventlistenerIDs(ids...)
+}
+
+// AddAnnotationIDs adds the "annotations" edge to the Annotation entity by IDs.
+func (ic *InstanceCreate) AddAnnotationIDs(ids ...uuid.UUID) *InstanceCreate {
+	ic.mutation.AddAnnotationIDs(ids...)
+	return ic
+}
+
+// AddAnnotations adds the "annotations" edges to the Annotation entity.
+func (ic *InstanceCreate) AddAnnotations(a ...*Annotation) *InstanceCreate {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return ic.AddAnnotationIDs(ids...)
 }
 
 // Mutation returns the InstanceMutation object of the builder.
@@ -588,6 +604,25 @@ func (ic *InstanceCreate) createSpec() (*Instance, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: events.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := ic.mutation.AnnotationsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   instance.AnnotationsTable,
+			Columns: []string{instance.AnnotationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: annotation.FieldID,
 				},
 			},
 		}

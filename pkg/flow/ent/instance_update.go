@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/direktiv/direktiv/pkg/flow/ent/annotation"
 	"github.com/direktiv/direktiv/pkg/flow/ent/events"
 	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	"github.com/direktiv/direktiv/pkg/flow/ent/instanceruntime"
@@ -249,6 +250,21 @@ func (iu *InstanceUpdate) AddEventlisteners(e ...*Events) *InstanceUpdate {
 	return iu.AddEventlistenerIDs(ids...)
 }
 
+// AddAnnotationIDs adds the "annotations" edge to the Annotation entity by IDs.
+func (iu *InstanceUpdate) AddAnnotationIDs(ids ...uuid.UUID) *InstanceUpdate {
+	iu.mutation.AddAnnotationIDs(ids...)
+	return iu
+}
+
+// AddAnnotations adds the "annotations" edges to the Annotation entity.
+func (iu *InstanceUpdate) AddAnnotations(a ...*Annotation) *InstanceUpdate {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return iu.AddAnnotationIDs(ids...)
+}
+
 // Mutation returns the InstanceMutation object of the builder.
 func (iu *InstanceUpdate) Mutation() *InstanceMutation {
 	return iu.mutation
@@ -360,6 +376,27 @@ func (iu *InstanceUpdate) RemoveEventlisteners(e ...*Events) *InstanceUpdate {
 		ids[i] = e[i].ID
 	}
 	return iu.RemoveEventlistenerIDs(ids...)
+}
+
+// ClearAnnotations clears all "annotations" edges to the Annotation entity.
+func (iu *InstanceUpdate) ClearAnnotations() *InstanceUpdate {
+	iu.mutation.ClearAnnotations()
+	return iu
+}
+
+// RemoveAnnotationIDs removes the "annotations" edge to Annotation entities by IDs.
+func (iu *InstanceUpdate) RemoveAnnotationIDs(ids ...uuid.UUID) *InstanceUpdate {
+	iu.mutation.RemoveAnnotationIDs(ids...)
+	return iu
+}
+
+// RemoveAnnotations removes "annotations" edges to Annotation entities.
+func (iu *InstanceUpdate) RemoveAnnotations(a ...*Annotation) *InstanceUpdate {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return iu.RemoveAnnotationIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -852,6 +889,60 @@ func (iu *InstanceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if iu.mutation.AnnotationsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   instance.AnnotationsTable,
+			Columns: []string{instance.AnnotationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: annotation.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := iu.mutation.RemovedAnnotationsIDs(); len(nodes) > 0 && !iu.mutation.AnnotationsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   instance.AnnotationsTable,
+			Columns: []string{instance.AnnotationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: annotation.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := iu.mutation.AnnotationsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   instance.AnnotationsTable,
+			Columns: []string{instance.AnnotationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: annotation.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	_spec.AddModifiers(iu.modifiers...)
 	if n, err = sqlgraph.UpdateNodes(ctx, iu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -1085,6 +1176,21 @@ func (iuo *InstanceUpdateOne) AddEventlisteners(e ...*Events) *InstanceUpdateOne
 	return iuo.AddEventlistenerIDs(ids...)
 }
 
+// AddAnnotationIDs adds the "annotations" edge to the Annotation entity by IDs.
+func (iuo *InstanceUpdateOne) AddAnnotationIDs(ids ...uuid.UUID) *InstanceUpdateOne {
+	iuo.mutation.AddAnnotationIDs(ids...)
+	return iuo
+}
+
+// AddAnnotations adds the "annotations" edges to the Annotation entity.
+func (iuo *InstanceUpdateOne) AddAnnotations(a ...*Annotation) *InstanceUpdateOne {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return iuo.AddAnnotationIDs(ids...)
+}
+
 // Mutation returns the InstanceMutation object of the builder.
 func (iuo *InstanceUpdateOne) Mutation() *InstanceMutation {
 	return iuo.mutation
@@ -1196,6 +1302,27 @@ func (iuo *InstanceUpdateOne) RemoveEventlisteners(e ...*Events) *InstanceUpdate
 		ids[i] = e[i].ID
 	}
 	return iuo.RemoveEventlistenerIDs(ids...)
+}
+
+// ClearAnnotations clears all "annotations" edges to the Annotation entity.
+func (iuo *InstanceUpdateOne) ClearAnnotations() *InstanceUpdateOne {
+	iuo.mutation.ClearAnnotations()
+	return iuo
+}
+
+// RemoveAnnotationIDs removes the "annotations" edge to Annotation entities by IDs.
+func (iuo *InstanceUpdateOne) RemoveAnnotationIDs(ids ...uuid.UUID) *InstanceUpdateOne {
+	iuo.mutation.RemoveAnnotationIDs(ids...)
+	return iuo
+}
+
+// RemoveAnnotations removes "annotations" edges to Annotation entities.
+func (iuo *InstanceUpdateOne) RemoveAnnotations(a ...*Annotation) *InstanceUpdateOne {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return iuo.RemoveAnnotationIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -1710,6 +1837,60 @@ func (iuo *InstanceUpdateOne) sqlSave(ctx context.Context) (_node *Instance, err
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: events.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if iuo.mutation.AnnotationsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   instance.AnnotationsTable,
+			Columns: []string{instance.AnnotationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: annotation.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := iuo.mutation.RemovedAnnotationsIDs(); len(nodes) > 0 && !iuo.mutation.AnnotationsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   instance.AnnotationsTable,
+			Columns: []string{instance.AnnotationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: annotation.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := iuo.mutation.AnnotationsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   instance.AnnotationsTable,
+			Columns: []string{instance.AnnotationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: annotation.FieldID,
 				},
 			},
 		}

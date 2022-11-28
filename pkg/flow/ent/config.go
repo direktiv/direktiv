@@ -28,22 +28,25 @@ type config struct {
 
 // hooks per client, for fast access.
 type hooks struct {
-	CloudEvents     []ent.Hook
-	Events          []ent.Hook
-	EventsWait      []ent.Hook
-	Inode           []ent.Hook
-	Instance        []ent.Hook
-	InstanceRuntime []ent.Hook
-	LogMsg          []ent.Hook
-	Mirror          []ent.Hook
-	MirrorActivity  []ent.Hook
-	Namespace       []ent.Hook
-	Ref             []ent.Hook
-	Revision        []ent.Hook
-	Route           []ent.Hook
-	VarData         []ent.Hook
-	VarRef          []ent.Hook
-	Workflow        []ent.Hook
+	Annotation        []ent.Hook
+	CloudEventFilters []ent.Hook
+	CloudEvents       []ent.Hook
+	Events            []ent.Hook
+	EventsWait        []ent.Hook
+	Inode             []ent.Hook
+	Instance          []ent.Hook
+	InstanceRuntime   []ent.Hook
+	LogMsg            []ent.Hook
+	Mirror            []ent.Hook
+	MirrorActivity    []ent.Hook
+	Namespace         []ent.Hook
+	Ref               []ent.Hook
+	Revision          []ent.Hook
+	Route             []ent.Hook
+	Services          []ent.Hook
+	VarData           []ent.Hook
+	VarRef            []ent.Hook
+	Workflow          []ent.Hook
 }
 
 // Options applies the options on the config object.
