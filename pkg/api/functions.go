@@ -1318,7 +1318,7 @@ func (h *functionHandler) createService(cr createNamespaceServiceRequest, r *htt
 
 }
 
-// UpdateServiceRequest UpdateServiceRequest update service request
+// UpdateServiceRequest update service request
 //
 // swagger:model UpdateServiceRequest
 type updateServiceRequest struct {
