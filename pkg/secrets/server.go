@@ -55,9 +55,12 @@ func (s *Server) Run() {
 
 	logger.Infof("starting secret server")
 
-	util.GrpcStart(&s.grpc, "secrets", "127.0.0.1:2610", func(srv *grpc.Server) {
+	err := util.GrpcStart(&s.grpc, "secrets", "127.0.0.1:2610", func(srv *grpc.Server) {
 		secretsgrpc.RegisterSecretsServiceServer(srv, s)
 	})
+	if err != nil {
+		logger.Errorf("Failed to start secrets server: %v.", err)
+	}
 
 }
 

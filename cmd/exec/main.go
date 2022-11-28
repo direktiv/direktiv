@@ -4,7 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -37,7 +37,6 @@ var (
 	localAbsPath string
 	urlPrefix    string
 	urlWorkflow  string
-	urlEvent     string
 )
 
 func main() {
@@ -110,7 +109,7 @@ func getOutput(url string) ([]byte, error) {
 			return nil, fmt.Errorf("failed to get instance output, request was unauthorized")
 		}
 
-		errBody, err := ioutil.ReadAll(resp.Body)
+		errBody, err := io.ReadAll(resp.Body)
 		if err == nil {
 			return nil, fmt.Errorf("failed to get instance output, server responded with %s\n------DUMPING ERROR BODY ------\n%s", resp.Status, string(errBody))
 		}
@@ -119,7 +118,7 @@ func getOutput(url string) ([]byte, error) {
 
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -175,7 +174,6 @@ func cmdPrepareEvent(wfPath string) {
 		log.Fatalf("Failed to locate event file in filesystem: %v\n", err)
 	}
 
-	urlEvent = fmt.Sprintf("%s/broadcast", urlPrefix)
 }
 
 var rootCmd = &cobra.Command{
@@ -517,7 +515,10 @@ Will update the helloworld workflow and set the remote workflow variable 'data.j
 		addSSEAuthHeaders(clientLogs)
 
 		logsChannel := make(chan *sse.Event)
-		clientLogs.SubscribeChan("messages", logsChannel)
+		err = clientLogs.SubscribeChan("messages", logsChannel)
+		if err != nil {
+			log.Fatalf("Failed to subscribe to messages channel: %v\n", err)
+		}
 
 		// Get Logs
 		go func() {
@@ -555,7 +556,11 @@ Will update the helloworld workflow and set the remote workflow variable 'data.j
 		addSSEAuthHeaders(clientInstance)
 
 		channelInstance := make(chan *sse.Event)
-		clientInstance.SubscribeChan("messages", channelInstance)
+		err = clientInstance.SubscribeChan("messages", channelInstance)
+		if err != nil {
+			log.Fatalf("Failed to subscribe to messages channel: %v\n", err)
+		}
+
 		for {
 			msg := <-channelInstance
 			if msg == nil {

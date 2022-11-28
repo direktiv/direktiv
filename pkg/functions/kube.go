@@ -5,10 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"sort"
 	"strings"
 	"time"
 
-	"github.com/bradfitz/slice"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/predicate"
@@ -502,7 +502,7 @@ func getKnativeFunction(name string) (*igrpc.GetFunctionResponse, error) {
 		revs = append(revs, info)
 	}
 
-	slice.Sort(revs[:], func(i, j int) bool {
+	sort.Slice(revs[:], func(i, j int) bool {
 		return *revs[i].Generation > *revs[j].Generation
 	})
 

@@ -1,7 +1,7 @@
 package util
 
 import (
-	"io/ioutil"
+	"os"
 	"time"
 
 	"gopkg.in/yaml.v2"
@@ -28,7 +28,7 @@ func ReadConfig(file string) (*Config, error) {
 	c := new(Config)
 
 	/* #nosec */
-	data, err := ioutil.ReadFile(file)
+	data, err := os.ReadFile(file)
 	if err != nil {
 		return nil, err
 	}

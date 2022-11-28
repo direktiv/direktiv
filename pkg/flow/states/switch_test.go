@@ -36,7 +36,7 @@ func TestSwitchGood001(t *testing.T) {
 		return
 	}
 
-	if logic.Deadline(ctx).Sub(time.Now()) > DefaultShortDeadline {
+	if time.Until(logic.Deadline(ctx)) > DefaultShortDeadline {
 		t.Error(errors.New("deadline too long"))
 		return
 	}
@@ -102,7 +102,7 @@ func TestSwitchGood002(t *testing.T) {
 		return
 	}
 
-	if logic.Deadline(ctx).Sub(time.Now()) > DefaultShortDeadline {
+	if time.Until(logic.Deadline(ctx)) > DefaultShortDeadline {
 		t.Error(errors.New("deadline too long"))
 		return
 	}
@@ -161,9 +161,14 @@ func TestSwitchBadMemory(t *testing.T) {
 	ctx := context.Background()
 
 	instance := newTesterInstance()
-	instance.SetMemory(ctx, map[string]int{
+	err := instance.SetMemory(ctx, map[string]int{
 		"a": 5,
 	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
 	instance.resetTrace()
 
 	state := new(model.SwitchState)

@@ -389,7 +389,7 @@ func generateResourceLimits(size int) (corev1.ResourceRequirements, error) {
 	}
 
 	if c != "" {
-		qcpu, err := resource.ParseQuantity(fmt.Sprintf("%s", c))
+		qcpu, err := resource.ParseQuantity(c)
 		if err != nil {
 			return corev1.ResourceRequirements{}, err
 		}

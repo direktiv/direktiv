@@ -24,26 +24,6 @@ var (
 	WrappingDecrement = "}}"
 )
 
-/*
-	// Existing settings
-	StringQueryRequiresWrappings = false
-	TrimWhitespaceOnQueryStrings = false
-	SearchInStrings              = false
-	WrappingBegin                = ""
-	WrappingIncrement            = "{{"
-	WrappingDecrement            = "}}"
-*/
-
-/*
-	// New settings
-	StringQueryRequiresWrappings = true
-	TrimWhitespaceOnQueryStrings = true
-	SearchInStrings              = true
-	WrappingBegin                = "jq"
-	WrappingIncrement            = "("
-	WrappingDecrement            = ")"
-*/
-
 // Evaluate evaluates the data against the query provided and returns the result
 func Evaluate(data, query interface{}) ([]interface{}, error) {
 
@@ -66,16 +46,16 @@ func recursiveEvaluate(data, query interface{}) ([]interface{}, error) {
 		return out, nil
 	}
 
-	switch query.(type) {
+	switch q := query.(type) {
 	case bool:
 	case int:
 	case float64:
 	case string:
-		return recurseIntoString(data, query.(string))
+		return recurseIntoString(data, q)
 	case map[string]interface{}:
-		return recurseIntoMap(data, query.(map[string]interface{}))
+		return recurseIntoMap(data, q)
 	case []interface{}:
-		return recurseIntoArray(data, query.([]interface{}))
+		return recurseIntoArray(data, q)
 	default:
 		return nil, fmt.Errorf("unexpected type: %s", reflect.TypeOf(query).String())
 	}

@@ -83,7 +83,7 @@ func validateRouter(ctx context.Context, wf *ent.Workflow) (*muxStart, error, er
 
 		if ref.Edges.Revision == nil {
 			err = &derrors.NotFoundError{
-				Label: fmt.Sprintf("revision not found"),
+				Label: "revision not found",
 			}
 			return nil, nil, err
 		}
@@ -105,14 +105,14 @@ func validateRouter(ctx context.Context, wf *ent.Workflow) (*muxStart, error, er
 			route := routes[i]
 			if route.Edges.Ref == nil {
 				err = &derrors.NotFoundError{
-					Label: fmt.Sprintf("ref not found"),
+					Label: "ref not found",
 				}
 				return nil, nil, err
 			}
 
 			if route.Edges.Ref.Edges.Revision == nil {
 				err = &derrors.NotFoundError{
-					Label: fmt.Sprintf("revision not found"),
+					Label: "revision not found",
 				}
 				return nil, nil, err
 			}
@@ -216,7 +216,7 @@ func (engine *engine) mux(ctx context.Context, nsc *ent.NamespaceClient, namespa
 
 	if d.ref.Edges.Revision == nil {
 		err = &derrors.NotFoundError{
-			Label: fmt.Sprintf("revision not found"),
+			Label: "revision not found",
 		}
 		return nil, err
 	}

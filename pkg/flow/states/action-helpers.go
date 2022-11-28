@@ -301,7 +301,7 @@ func ISO8601StringtoSecs(timeout string) (int, error) {
 			return wfto, err
 		}
 
-		dur := to.Shift(time.Now()).Sub(time.Now())
+		dur := time.Until(to.Shift(time.Now()))
 		wfto = int(dur.Seconds())
 
 	}

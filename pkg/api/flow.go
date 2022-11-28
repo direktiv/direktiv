@@ -8,7 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"strconv"
 	"strings"
@@ -2155,7 +2154,6 @@ func (h *flowHandler) UpdateMirror(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.client.UpdateMirrorSettings(ctx, in)
 	respond(w, resp, err)
-	return
 
 }
 
@@ -2720,7 +2718,6 @@ workflow:
 	})
 
 	respond(w, resp, err)
-	return
 
 }
 
@@ -2857,7 +2854,6 @@ workflow:
 	}()
 
 	sse(w, ch)
-	return
 
 }
 
@@ -2925,7 +2921,6 @@ func (h *flowHandler) CreateWorkflow(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.client.CreateWorkflow(ctx, in)
 	respond(w, resp, err)
-	return
 
 }
 
@@ -2951,7 +2946,6 @@ func (h *flowHandler) UpdateWorkflow(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.client.UpdateWorkflow(ctx, in)
 	respond(w, resp, err)
-	return
 
 }
 
@@ -2970,7 +2964,6 @@ func (h *flowHandler) SaveWorkflow(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.client.SaveHead(ctx, in)
 	respond(w, resp, err)
-	return
 
 }
 
@@ -2989,7 +2982,6 @@ func (h *flowHandler) DiscardWorkflow(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.client.DiscardHead(ctx, in)
 	respond(w, resp, err)
-	return
 
 }
 
@@ -3735,7 +3727,7 @@ func (h *flowHandler) Secrets(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
-	folder, _ := mux.Vars(r)["folder"]
+	folder := mux.Vars(r)["folder"]
 
 	p, err := pagination(r)
 	if err != nil {
@@ -3760,7 +3752,7 @@ func (h *flowHandler) SecretsSSE(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
-	folder, _ := mux.Vars(r)["folder"]
+	folder := mux.Vars(r)["folder"]
 
 	p, err := pagination(r)
 	if err != nil {
@@ -3823,7 +3815,7 @@ func (h *flowHandler) SearchSecret(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
-	name, _ := mux.Vars(r)["name"]
+	name := mux.Vars(r)["name"]
 
 	p, err := pagination(r)
 	if err != nil {
@@ -3914,7 +3906,7 @@ func (h *flowHandler) DeleteSecretsFolder(w http.ResponseWriter, r *http.Request
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
-	folder, _ := mux.Vars(r)["folder"]
+	folder := mux.Vars(r)["folder"]
 
 	in := new(grpc.DeleteSecretsFolderRequest)
 	in.Namespace = namespace
@@ -3931,7 +3923,7 @@ func (h *flowHandler) CreateSecretsFolder(w http.ResponseWriter, r *http.Request
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
-	folder, _ := mux.Vars(r)["folder"]
+	folder := mux.Vars(r)["folder"]
 
 	in := new(grpc.CreateSecretsFolderRequest)
 
@@ -4279,7 +4271,12 @@ func (h *flowHandler) WaitWorkflow(w http.ResponseWriter, r *http.Request) {
 		respond(w, nil, err)
 		return
 	}
-	defer c.CloseSend()
+	defer func() {
+		err := c.CloseSend()
+		if err != nil {
+			h.logger.Errorf("Failed to close connection: %v.", err)
+		}
+	}()
 
 	for {
 		status, err := c.Recv()
@@ -4290,13 +4287,15 @@ func (h *flowHandler) WaitWorkflow(w http.ResponseWriter, r *http.Request) {
 
 		if s := status.Instance.GetStatus(); s == util.InstanceStatusComplete {
 
-			_ = c.CloseSend()
+			err = c.CloseSend()
+			if err != nil {
+				h.logger.Errorf("Failed to close connection: %v.", err)
+			}
 
 			output, err := h.client.InstanceOutput(ctx, &grpc.InstanceOutputRequest{
 				Namespace: namespace,
 				Instance:  resp.Instance,
 			})
-
 			if err != nil {
 				respond(w, nil, err)
 				return
@@ -4306,6 +4305,7 @@ func (h *flowHandler) WaitWorkflow(w http.ResponseWriter, r *http.Request) {
 
 			field := r.URL.Query().Get("field")
 			if field != "" {
+
 				m := make(map[string]interface{})
 				err = json.Unmarshal(data, &m)
 				if err != nil {
@@ -4319,9 +4319,11 @@ func (h *flowHandler) WaitWorkflow(w http.ResponseWriter, r *http.Request) {
 				} else {
 					data, _ = json.Marshal(nil)
 				}
+
 			}
 
 			var x interface{}
+
 			err = json.Unmarshal(data, &x)
 			if err != nil {
 				respond(w, nil, err)
@@ -4353,7 +4355,11 @@ func (h *flowHandler) WaitWorkflow(w http.ResponseWriter, r *http.Request) {
 
 			w.Header().Set("Content-Type", ctype)
 
-			_, _ = io.Copy(w, bytes.NewReader(data))
+			_, err = io.Copy(w, bytes.NewReader(data))
+			if err != nil {
+				h.logger.Errorf("Failed to send response: %v.", err)
+			}
+
 			return
 
 		} else if s == util.InstanceStatusFailed {
@@ -4421,7 +4427,7 @@ func ToGRPCCloudEvents(r *http.Request) ([]cloudevents.Event, error) {
 		}
 	}
 
-	bodyData, err := ioutil.ReadAll(r.Body)
+	bodyData, err := io.ReadAll(r.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -4442,7 +4448,10 @@ func ToGRPCCloudEvents(r *http.Request) ([]cloudevents.Event, error) {
 
 	// azure hack for dataschema '#' which is an invalid cloudevent
 	if err != nil && strings.HasPrefix(err.Error(), "dataschema: if present") {
-		ev.Context.SetDataSchema("")
+		err = ev.Context.SetDataSchema("")
+		if err != nil {
+			panic(err)
+		}
 	} else if err != nil {
 		goto generic
 	}
@@ -4554,8 +4563,8 @@ func (h *flowHandler) BroadcastCloudeventFilter(w http.ResponseWriter, r *http.R
 
 		d, err := json.Marshal(ces[i])
 		if err != nil {
-			respond(w, nil, err)
-			return
+			h.logger.Errorf("Failed to marshal CloudEvent: %v.", err)
+			continue
 		}
 
 		inFilter := &grpc.ApplyCloudEventFilterRequest{
@@ -4566,13 +4575,12 @@ func (h *flowHandler) BroadcastCloudeventFilter(w http.ResponseWriter, r *http.R
 
 		rsp, err := h.client.ApplyCloudEventFilter(ctx, inFilter)
 		if err != nil {
-			respond(w, nil, err)
-			return
+			h.logger.Errorf("Failed to apply CloudEvent filter: %v.", err)
+			continue
 		}
 
 		if string(rsp.GetEvent()) == "null" {
-			respond(w, nil, nil) // drop event if not passed filter
-			return
+			continue
 		}
 
 		in := &grpc.BroadcastCloudeventRequest{
@@ -4580,9 +4588,11 @@ func (h *flowHandler) BroadcastCloudeventFilter(w http.ResponseWriter, r *http.R
 			Cloudevent: rsp.GetEvent(),
 		}
 
-		resp, err := h.client.BroadcastCloudevent(ctx, in)
-		respond(w, resp, err)
-		return
+		_, err = h.client.BroadcastCloudevent(ctx, in)
+		if err != nil {
+			h.logger.Errorf("Failed to broadcast CloudEvent: %v.", err)
+			continue
+		}
 
 	}
 

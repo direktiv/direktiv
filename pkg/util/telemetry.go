@@ -186,7 +186,12 @@ func InitTelemetry(conf *Config, svcName, imName string) (func(), error) {
 		tp := otel.GetTracerProvider()
 		tr := tp.Tracer(imName)
 
-		ctx, span := tr.Start(ctx, info.FullMethod, trace.WithSpanKind(trace.SpanKindServer))
+		var span trace.Span
+		ctx, span = tr.Start(
+			ctx,
+			info.FullMethod,
+			trace.WithSpanKind(trace.SpanKindServer),
+		)
 		defer span.End()
 
 		resp, err = handler(ctx, req)
@@ -212,7 +217,12 @@ func InitTelemetry(conf *Config, svcName, imName string) (func(), error) {
 		tp := otel.GetTracerProvider()
 		tr := tp.Tracer(imName)
 
-		ctx, span := tr.Start(ctx, info.FullMethod, trace.WithSpanKind(trace.SpanKindServer))
+		var span trace.Span
+		_, span = tr.Start(
+			ctx,
+			info.FullMethod,
+			trace.WithSpanKind(trace.SpanKindServer),
+		)
 		defer span.End()
 
 		err = handler(srv, ss)
@@ -242,24 +252,6 @@ type telemetryHandler struct {
 }
 
 func (h *telemetryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-
-	/*
-		ctx := r.Context()
-
-		prop := otel.GetTextMapPropagator()
-		requestMetadata, _ := metadata.FromIncomingContext(ctx)
-		metadataCopy := requestMetadata.Copy()
-		carrier := &grpcMetadataTMC{&metadataCopy}
-		ctx = prop.Extract(ctx, carrier)
-
-		tp := otel.GetTracerProvider()
-		tr := tp.Tracer(h.imName)
-
-		ctx, span := tr.Start(ctx, mux.CurrentRoute(r).GetName(), trace.WithSpanKind(trace.SpanKindServer))
-		defer span.End()
-
-		subr := r.WithContext(ctx)
-	*/
 
 	prop := otel.GetTextMapPropagator()
 	ctx := prop.Extract(r.Context(), &httpCarrier{
@@ -355,7 +347,7 @@ type GenericTelemetryCarrier struct {
 }
 
 func (c *GenericTelemetryCarrier) Get(key string) string {
-	v, _ := c.Trace[key]
+	v := c.Trace[key]
 	return v
 }
 

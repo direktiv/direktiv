@@ -8,8 +8,6 @@ import (
 )
 
 const (
-	humanErrorInvalidRegex string = "must be less than 36 characters and may only use lowercase letters, numbers, and “-_”"
-
 	// GenericErrorCode - Reserved status code for generic non grpc errors
 	GenericErrorCode codes.Code = 50
 )

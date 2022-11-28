@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -18,6 +17,8 @@ import (
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 	libgrpc "google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 )
@@ -46,10 +47,14 @@ func main() {
 
 	logger, err = dlog.ApplicationLogger("flow")
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "failed to initialize logger: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Failed to initialize logger: %v\n", err)
 		os.Exit(1)
 	}
-	defer logger.Sync()
+	defer func() {
+		err := logger.Sync()
+		fmt.Fprintf(os.Stderr, "Failed to sync logger: %v\n", err)
+		os.Exit(1)
+	}()
 
 	rootCmd.PersistentFlags().StringVar(&addr, "addr", "localhost:8080", "")
 	rootCmd.AddCommand(serverCmd)
@@ -121,7 +126,7 @@ func addPaginationFlags(cmd *cobra.Command) {
 
 func client() (grpc.FlowClient, io.Closer, error) {
 
-	conn, err := libgrpc.Dial(addr, libgrpc.WithInsecure())
+	conn, err := libgrpc.Dial(addr, libgrpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, nil, err
 	}
@@ -148,9 +153,9 @@ func print(x interface{}) {
 
 func exit(err error) {
 
-	desc := libgrpc.ErrorDesc(err)
+	desc := status.Convert(err)
 
-	logger.Error(fmt.Sprintf("%s", desc))
+	logger.Error(desc)
 
 	os.Exit(1)
 
@@ -189,7 +194,7 @@ var serverCmd = &cobra.Command{
 func shutdown() {
 
 	// just in case, stop DNS server
-	pv, err := ioutil.ReadFile("/proc/version")
+	pv, err := os.ReadFile("/proc/version")
 	if err == nil {
 
 		// this is a direktiv machine, so we press poweroff

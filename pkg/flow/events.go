@@ -382,8 +382,6 @@ func (events *events) handleEventLoopLogic(ctx context.Context, rows *sql.Rows, 
 
 	}
 
-	return
-
 }
 
 func (events *events) handleEvent(ns *ent.Namespace, ce *cloudevents.Event) error {
@@ -1063,7 +1061,10 @@ func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloud
 	//create js runtime
 	vm := goja.New()
 
-	vm.Set("event", mapEvent)
+	err = vm.Set("event", mapEvent)
+	if err != nil {
+		return resp, fmt.Errorf("failed to initialize js runtime: %w", err)
+	}
 
 	_, err = vm.RunString(script)
 	if err != nil {

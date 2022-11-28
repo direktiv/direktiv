@@ -1,5 +1,7 @@
 package secrets
 
+/*
+
 import (
 	"encoding/json"
 	"io/ioutil"
@@ -282,3 +284,4 @@ func SearchSecret(ip string, namespace string, name string) GetSecretsBody {
 	_ = json.Unmarshal(b, &body)
 	return body
 }
+*/

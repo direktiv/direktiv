@@ -29,7 +29,7 @@ func TestDelayGood001(t *testing.T) {
 		return
 	}
 
-	if logic.Deadline(ctx).Sub(time.Now()) < delay-time.Second {
+	if time.Until(logic.Deadline(ctx)) < delay-time.Second {
 		t.Error(errors.New("deadline too short"))
 		return
 	}
@@ -112,7 +112,7 @@ func TestDelayGood002(t *testing.T) {
 		return
 	}
 
-	if logic.Deadline(ctx).Sub(time.Now()) < delay-time.Second {
+	if time.Until(logic.Deadline(ctx)) < delay-time.Second {
 		t.Error(errors.New("deadline too short"))
 		return
 	}
@@ -197,9 +197,14 @@ func TestDelayBadMemory(t *testing.T) {
 	ctx := context.Background()
 
 	instance := newTesterInstance()
-	instance.SetMemory(ctx, map[string]int{
+	err := instance.SetMemory(ctx, map[string]int{
 		"a": 5,
 	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
 	instance.resetTrace()
 
 	state := new(model.DelayState)

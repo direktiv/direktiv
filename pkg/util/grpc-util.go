@@ -1,12 +1,15 @@
 package util
 
 import (
+	"errors"
 	"net"
 	"strings"
 	"time"
 
+	"github.com/emicklei/go-restful/v3/log"
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 const maxSize = 134217728
@@ -21,12 +24,8 @@ func GetEndpointTLS(service string) (*grpc.ClientConn, error) {
 		grpc_retry.WithPerRetryTimeout(1*time.Second))
 
 	var options []grpc.DialOption
-	options = append(options, grpc.WithInsecure(), grpc.WithBlock())
-
-	options = append(options,
-		grpc.WithDefaultCallOptions(additionalCallOptions...),
-	)
-
+	options = append(options, grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithBlock())
+	options = append(options, grpc.WithDefaultCallOptions(additionalCallOptions...))
 	options = append(options, globalGRPCDialOptions...)
 
 	return grpc.Dial(service, options...)
@@ -47,7 +46,14 @@ func GrpcStart(server **grpc.Server, name, bind string, register func(srv *grpc.
 
 	register(*server)
 
-	go (*server).Serve(listener)
+	go func() {
+		err := (*server).Serve(listener)
+		if err != nil {
+			if !errors.Is(err, grpc.ErrServerStopped) {
+				log.Printf("gRPC server error: %v", err)
+			}
+		}
+	}()
 
 	return nil
 

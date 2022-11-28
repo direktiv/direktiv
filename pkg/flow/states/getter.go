@@ -135,7 +135,6 @@ func (logic *getterLogic) Run(ctx context.Context, wakedata []byte) (*Transition
 			err = json.Unmarshal(result.Data, &x)
 			if err != nil {
 				x = result.Data
-				err = nil
 			}
 
 		}

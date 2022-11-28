@@ -68,7 +68,10 @@ func (flow *flow) BroadcastWorkflow(ctx context.Context, eventType string, input
 	event.SetID(uid.String())
 	event.SetType(target)
 	event.SetSource("direktiv")
-	event.SetData("application/json", input)
+	err = event.SetData("application/json", input)
+	if err != nil {
+		return fmt.Errorf("failed to create CloudEvent: %w", err)
+	}
 
 	return flow.events.BroadcastCloudevent(ctx, ns, &event, 60)
 }
@@ -96,7 +99,10 @@ func (flow *flow) BroadcastDirectory(ctx context.Context, eventType string, inpu
 	event.SetID(uid.String())
 	event.SetType(target)
 	event.SetSource("direktiv")
-	event.SetData("application/json", input)
+	err = event.SetData("application/json", input)
+	if err != nil {
+		return fmt.Errorf("failed to create CloudEvent: %w", err)
+	}
 
 	return flow.events.BroadcastCloudevent(ctx, ns, &event, 60)
 }
@@ -127,7 +133,10 @@ func (flow *flow) BroadcastVariable(ctx context.Context, eventType string, event
 	event.SetID(uid.String())
 	event.SetType(target)
 	event.SetSource("direktiv")
-	event.SetData("application/json", input)
+	err = event.SetData("application/json", input)
+	if err != nil {
+		return fmt.Errorf("failed to create CloudEvent: %w", err)
+	}
 
 	return flow.events.BroadcastCloudevent(ctx, ns, &event, 60)
 }
@@ -156,7 +165,10 @@ func (flow *flow) BroadcastInstance(eventType string, ctx context.Context, input
 	event.SetID(uid.String())
 	event.SetType(target)
 	event.SetSource("direktiv")
-	event.SetData("application/json", input)
+	err = event.SetData("application/json", input)
+	if err != nil {
+		return fmt.Errorf("failed to create CloudEvent: %w", err)
+	}
 
 	return flow.events.BroadcastCloudevent(ctx, ns, &event, 60)
 }

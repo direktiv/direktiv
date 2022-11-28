@@ -123,7 +123,3 @@ func (engine *engine) queue(im *instanceMemory) {
 	go engine.start(im)
 
 }
-
-func (engine *engine) hold(im *instanceMemory) {
-
-}

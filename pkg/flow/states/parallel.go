@@ -363,10 +363,7 @@ func (logic *parallelLogic) processActionResults(ctx context.Context, children [
 
 		if !ready && completed == len(children) {
 			err = derrors.NewCatchableError(ErrCodeAllBranchesFailed, "all branches failed")
-			if err != nil {
-				return nil, err
-			}
-			return nil, nil
+			return nil, err
 		}
 
 	default:

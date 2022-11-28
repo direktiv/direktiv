@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"crypto/tls"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -129,7 +128,7 @@ func findConfig() string {
 
 		if _, err := os.Stat(path); err == nil {
 
-			data, err := ioutil.ReadFile(path)
+			data, err := os.ReadFile(path)
 			if err != nil {
 				fail("failed to read config file: %v", err)
 			}

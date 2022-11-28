@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"io"
-	"io/ioutil"
 	"net"
 	"net/http"
 
@@ -128,7 +127,7 @@ func (vars *vars) nsHandler(w http.ResponseWriter, r *http.Request) {
 
 	case http.MethodPut:
 
-		data, err := ioutil.ReadAll(r.Body)
+		data, err := io.ReadAll(r.Body)
 		if err != nil {
 			vars.sugar.Error(err)
 			return
@@ -191,7 +190,7 @@ func (vars *vars) wfHandler(w http.ResponseWriter, r *http.Request) {
 
 	case http.MethodPut:
 
-		data, err := ioutil.ReadAll(r.Body)
+		data, err := io.ReadAll(r.Body)
 		if err != nil {
 			vars.sugar.Error(err)
 			return
@@ -255,7 +254,7 @@ func (vars *vars) inHandler(w http.ResponseWriter, r *http.Request) {
 
 	case http.MethodPut:
 
-		data, err := ioutil.ReadAll(r.Body)
+		data, err := io.ReadAll(r.Body)
 		if err != nil {
 			vars.sugar.Error(err)
 			return

@@ -49,7 +49,9 @@ func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.Variab
 
 		case "workflow":
 
-			wf, err := im.engine.InstanceWorkflow(ctx, im)
+			var wf *ent.Workflow
+
+			wf, err = im.engine.InstanceWorkflow(ctx, im)
 			if err != nil {
 				return nil, derrors.NewInternalError(err)
 			}
@@ -64,7 +66,9 @@ func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.Variab
 
 		case "namespace":
 
-			ns, err := im.engine.InstanceNamespace(ctx, im)
+			var ns *ent.Namespace
+
+			ns, err = im.engine.InstanceNamespace(ctx, im)
 			if err != nil {
 				return nil, derrors.NewInternalError(err)
 			}
@@ -101,7 +105,7 @@ func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.Variab
 			if ref.Edges.Vardata == nil {
 
 				err = &derrors.NotFoundError{
-					Label: fmt.Sprintf("variable data not found"),
+					Label: "variable data not found",
 				}
 
 				return nil, err

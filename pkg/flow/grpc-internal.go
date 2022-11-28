@@ -75,7 +75,7 @@ func (internal *internal) ReportActionResults(ctx context.Context, req *grpc.Rep
 		return nil, err
 	}
 
-	ctx, im, err := internal.engine.loadInstanceMemory(req.GetInstanceId(), int(req.GetStep()))
+	ctx2, im, err := internal.engine.loadInstanceMemory(req.GetInstanceId(), int(req.GetStep()))
 	if err != nil {
 		internal.sugar.Error(err)
 		return nil, err
@@ -83,9 +83,9 @@ func (internal *internal) ReportActionResults(ctx context.Context, req *grpc.Rep
 
 	internal.sugar.Debugf("Handling report action results: %s", this())
 
-	traceActionResult(ctx, payload)
+	traceActionResult(ctx2, payload)
 
-	go internal.engine.runState(ctx, im, wakedata, nil)
+	go internal.engine.runState(ctx2, im, wakedata, nil)
 
 	var resp emptypb.Empty
 

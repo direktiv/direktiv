@@ -119,19 +119,20 @@ func StartServer(echan chan error) {
 
 	go func(l *pq.Listener) {
 
-		defer l.UnlistenAll()
+		defer func() {
+			err := l.UnlistenAll()
+			logger.Errorf("Failed to deregister listeners: %v.", err)
+		}()
 
 		for {
 
 			var more bool
 			var notification *pq.Notification
 
-			select {
-			case notification, more = <-l.Notify:
-				if !more {
-					logger.Errorf("database listener closed\n")
-					return
-				}
+			notification, more = <-l.Notify
+			if !more {
+				logger.Errorf("database listener closed\n")
+				return
 			}
 
 			if notification == nil {

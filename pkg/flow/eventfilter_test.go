@@ -1,5 +1,6 @@
 package flow
 
+/*
 import (
 	"bytes"
 	"net/http"
@@ -158,3 +159,4 @@ func CreateNamespace(ip string, name string) error {
 	}
 	return nil
 }
+*/

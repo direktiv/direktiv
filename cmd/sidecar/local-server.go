@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"strconv"
@@ -127,12 +126,18 @@ func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
 	actionId := r.URL.Query().Get("aid")
 
 	srv.requestsLock.Lock()
-	req, _ := srv.requests[actionId]
+	req, ok := srv.requests[actionId]
 	srv.requestsLock.Unlock()
 
 	reportError := func(code int, err error) {
 		http.Error(w, err.Error(), code)
 		log.Warnf("Log handler for '%s' returned %v: %v.", actionId, code, err)
+	}
+
+	if !ok {
+		err := errors.New("the action id went missing")
+		code := http.StatusInternalServerError
+		reportError(code, err)
 		return
 	}
 
@@ -154,7 +159,7 @@ func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		r := io.LimitReader(r.Body, cap)
 
-		data, err := ioutil.ReadAll(r)
+		data, err := io.ReadAll(r)
 		if err != nil {
 			code := http.StatusBadRequest
 			reportError(code, err)
@@ -191,12 +196,18 @@ func (srv *LocalServer) varHandler(w http.ResponseWriter, r *http.Request) {
 	actionId := r.URL.Query().Get("aid")
 
 	srv.requestsLock.Lock()
-	req, _ := srv.requests[actionId]
+	req, ok := srv.requests[actionId]
 	srv.requestsLock.Unlock()
 
 	reportError := func(code int, err error) {
 		http.Error(w, err.Error(), code)
 		log.Warnf("Var handler for '%s' returned %v: %v.", actionId, code, err)
+	}
+
+	if !ok {
+		err := errors.New("the action id went missing")
+		code := http.StatusInternalServerError
+		reportError(code, err)
 		return
 	}
 
@@ -285,9 +296,7 @@ func (srv *LocalServer) deregisterActiveRequest(actionId string) {
 func (srv *LocalServer) cancelActiveRequest(ctx context.Context, actionId string) {
 
 	srv.requestsLock.Lock()
-
-	req, _ := srv.requests[actionId]
-
+	req := srv.requests[actionId]
 	srv.requestsLock.Unlock()
 
 	if req == nil {
@@ -378,8 +387,6 @@ type functionRequest struct {
 	deadline   time.Time
 	input      []byte
 	files      []*functionFiles
-	errCode    string
-	errMsg     string
 }
 
 type functionFiles struct {
@@ -478,6 +485,10 @@ func (srv *LocalServer) setVar(ctx context.Context, ir *functionRequest, totalSi
 	case "namespace":
 		var nvClient grpc.Internal_SetNamespaceVariableParcelsClient
 		nvClient, err = srv.flow.SetNamespaceVariableParcels(ctx)
+		if err != nil {
+			return err
+		}
+
 		client = nvClient
 		send = func(x *varSetClientMsg) error {
 			req := &grpc.SetVariableInternalRequest{}
@@ -492,6 +503,10 @@ func (srv *LocalServer) setVar(ctx context.Context, ir *functionRequest, totalSi
 	case "workflow":
 		var wvClient grpc.Internal_SetWorkflowVariableParcelsClient
 		wvClient, err = srv.flow.SetWorkflowVariableParcels(ctx)
+		if err != nil {
+			return err
+		}
+
 		client = wvClient
 		send = func(x *varSetClientMsg) error {
 			req := &grpc.SetVariableInternalRequest{}
@@ -509,6 +524,10 @@ func (srv *LocalServer) setVar(ctx context.Context, ir *functionRequest, totalSi
 	case "instance":
 		var ivClient grpc.Internal_SetInstanceVariableParcelsClient
 		ivClient, err = srv.flow.SetInstanceVariableParcels(ctx)
+		if err != nil {
+			return err
+		}
+
 		client = ivClient
 		send = func(x *varSetClientMsg) error {
 			req := &grpc.SetVariableInternalRequest{}

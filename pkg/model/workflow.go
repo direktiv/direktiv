@@ -107,6 +107,7 @@ func (o *Workflow) unmStart(m map[string]interface{}) (err error) {
 		err = start.Validate()
 		if err != nil {
 			err = fmt.Errorf("start invalid: %w", err)
+			return err
 		}
 
 		o.Start = start
@@ -116,6 +117,7 @@ func (o *Workflow) unmStart(m map[string]interface{}) (err error) {
 }
 
 // unmState - unmarshal "state" object to Workflow States
+//
 //	the state interface is casted to a supported State 'type'
 //	and then inserted into workflow[sIndex]
 func (o *Workflow) unmState(state interface{}, sIndex int) error {
@@ -230,19 +232,6 @@ func (o *Workflow) validate() error {
 
 	// timeout
 	return o.Timeouts.Validate()
-}
-
-func (o *Workflow) regexValidateID() error {
-	// if o.ID == "" {
-	// 	return fmt.Errorf("workflow id required")
-	// }
-
-	// // ensure workflow id complies with regex pattern
-	// if ok := util.MatchesRegex(o.ID); !ok {
-	// 	return fmt.Errorf("workflow id must match regex pattern `%s`", util.RegexPattern)
-	// }
-
-	return nil
 }
 
 // GetStates returns all the states of a workflow

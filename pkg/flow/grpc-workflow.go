@@ -41,13 +41,6 @@ func (flow *flow) ResolveWorkflowUID(ctx context.Context, req *grpc.ResolveWorkf
 	resp.Node.Path = d.path
 	resp.Oid = d.wf.ID.String()
 
-	// resp.EventLogging = d.wf.LogToEvents
-	//
-	// err = atob(d.rev(), &resp.Revision)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
 	return &resp, nil
 
 }
@@ -649,7 +642,7 @@ func (flow *flow) SaveHead(ctx context.Context, req *grpc.SaveHeadRequest) (*grp
 		goto respond
 	}
 
-	if metadata != nil && len(metadata) != 0 {
+	if len(metadata) != 0 {
 		obj := make(map[string]interface{})
 		err := unmarshal(string(metadata), &obj)
 		if err != nil {

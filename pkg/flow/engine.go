@@ -220,6 +220,9 @@ func (engine *engine) loadStateLogic(im *instanceMemory, stateID string) error {
 	}
 
 	im.logic, err = states.StateLogic(im, state)
+	if err != nil {
+		return err
+	}
 
 	return nil
 
@@ -272,14 +275,6 @@ func (engine *engine) Transition(ctx context.Context, im *instanceMemory, nextSt
 		engine.ScheduleHardTimeout(im, oldController, tHard)
 
 	}
-
-	// TODO: I don't think this is actually possible?
-	// if len(wli.rec.Flow) != wli.step {
-	// 	err := errors.New("workflow logic instance aborted for being tardy")
-	// 	engine.sugar.Error(err)
-	// 	wli.Close()
-	// 	return
-	// }
 
 	if nextState == "" {
 		panic("don't call this function with an empty nextState")
@@ -505,7 +500,7 @@ failure:
 					NextState: catch.Transition,
 				}
 
-				breaker++
+				// breaker++
 
 				code = cerr.Code
 
@@ -611,8 +606,6 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 
 }
 
-const maxSubflowDepth = 5
-
 func (engine *engine) subflowInvoke(ctx context.Context, caller *subflowCaller, ns *ent.Namespace, name string, input []byte) (*instanceMemory, error) {
 
 	var err error
@@ -631,32 +624,28 @@ func (engine *engine) subflowInvoke(ctx context.Context, caller *subflowCaller, 
 
 	var threadVars []*ent.VarRef
 
-	if caller != nil {
+	callerData, err := json.Marshal(caller)
+	if err != nil {
+		return nil, derrors.NewInternalError(err)
+	}
+	args.CallerData = string(callerData)
 
-		callerData, err := json.Marshal(caller)
-		if err != nil {
-			return nil, derrors.NewInternalError(err)
+	parent, err := engine.getInstance(ctx, engine.db.Namespace, ns.Name, caller.InstanceID, false)
+	if err != nil {
+		return nil, derrors.NewInternalError(err)
+	}
+
+	threadVars, err = parent.in.QueryVars().Where(entvar.BehaviourEQ("thread")).All(ctx)
+	if err != nil {
+		return nil, derrors.NewInternalError(err)
+	}
+
+	if !filepath.IsAbs(args.Path) {
+		dir, _ := filepath.Split(caller.As)
+		if dir == "" {
+			dir = "/"
 		}
-		args.CallerData = string(callerData)
-
-		parent, err := engine.getInstance(ctx, engine.db.Namespace, ns.Name, caller.InstanceID, false)
-		if err != nil {
-			return nil, derrors.NewInternalError(err)
-		}
-
-		threadVars, err = parent.in.QueryVars().Where(entvar.BehaviourEQ("thread")).All(ctx)
-		if err != nil {
-			return nil, derrors.NewInternalError(err)
-		}
-
-		if !filepath.IsAbs(args.Path) {
-			dir, _ := filepath.Split(caller.As)
-			if dir == "" {
-				dir = "/"
-			}
-			args.Path = filepath.Join(dir, args.Path)
-		}
-
+		args.Path = filepath.Join(dir, args.Path)
 	}
 
 	im, err := engine.NewInstance(ctx, args)
@@ -676,8 +665,6 @@ func (engine *engine) subflowInvoke(ctx context.Context, caller *subflowCaller, 
 	}
 
 	traceSubflowInvoke(ctx, args.Path, im.ID().String())
-
-	// engine.queue(im)
 
 	return im, nil
 
@@ -701,7 +688,7 @@ func (engine *engine) scheduleRetry(id, state string, step int, t time.Time, dat
 		Data: data,
 	})
 
-	if d := t.Sub(time.Now()); d < time.Second*5 {
+	if d := time.Until(t); d < time.Second*5 {
 		go func() {
 			time.Sleep(d)
 			/* #nosec */
@@ -765,9 +752,12 @@ func (engine *engine) doActionRequest(ctx context.Context, ar *functionRequest) 
 
 	// Log warning if timeout exceeds max allowed timeout
 	if actionTimeout := (time.Duration(ar.Workflow.Timeout) * time.Second); actionTimeout > engine.conf.GetFunctionsTimeout() {
-		engine.internal.ActionLog(context.Background(), &grpc.ActionLogRequest{
+		_, err := engine.internal.ActionLog(context.Background(), &grpc.ActionLogRequest{
 			InstanceId: ar.Workflow.InstanceID, Msg: []string{fmt.Sprintf("Warning: Action timeout '%v' is longer than max allowed duariton '%v'", actionTimeout, engine.conf.GetFunctionsTimeout())},
 		})
+		if err != nil {
+			engine.sugar.Errorf("Failed to log: %v.", err)
+		}
 	}
 
 	// TODO: should this ctx be modified with a shorter deadline?
@@ -828,7 +818,7 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 	rctx, cancel := context.WithDeadline(context.Background(), deadline)
 	defer cancel()
 
-	engine.sugar.Debugf("deadline for request: %v", deadline.Sub(time.Now()))
+	engine.sugar.Debugf("deadline for request: %v", time.Until(deadline))
 
 	req, err := http.NewRequestWithContext(rctx, http.MethodPost, addr,
 		bytes.NewReader(ar.Container.Data))
@@ -974,8 +964,6 @@ func (engine *engine) createTransport() *http.Transport {
 	return tr
 
 }
-
-const eventsWakeupFunction = "eventsWakeup"
 
 func (engine *engine) wakeEventsWaiter(signature []byte, events []*cloudevents.Event) {
 

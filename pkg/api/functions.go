@@ -32,8 +32,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"strconv"
+	"strings"
 
 	igrpc "github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/functions"
@@ -827,14 +829,16 @@ func (h *functionHandler) testRegistry(w http.ResponseWriter, r *http.Request) {
 	}
 
 	_, err = registry.NewInsecure(d["url"], d["username"], d["password"])
-
 	if err != nil {
 		respond(w, nil, err)
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("{}"))
+	_, err = io.Copy(w, strings.NewReader("{}"))
+	if err != nil {
+		h.logger.Errorf("Failed to write response: %v.", err)
+	}
 
 }
 
@@ -1158,6 +1162,7 @@ func (h *functionHandler) getNamespaceService(w http.ResponseWriter, r *http.Req
 
 }
 
+/*
 func (h *functionHandler) getServiceSSE(annotations map[string]string,
 	w http.ResponseWriter, r *http.Request) {
 
@@ -1204,6 +1209,7 @@ func (h *functionHandler) getServiceSSE(annotations map[string]string,
 
 	sse(w, ch)
 }
+*/
 
 func (h *functionHandler) getService(svn string, w http.ResponseWriter, r *http.Request) {
 

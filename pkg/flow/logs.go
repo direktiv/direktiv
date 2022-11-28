@@ -247,10 +247,14 @@ func (engine *engine) UserLog(ctx context.Context, im *instanceMemory, msg strin
 		event.SetType("direktiv.instanceLog")
 		event.SetExtension("logger", attr)
 		event.SetDataContentType("application/json")
-		event.SetData("application/json", s)
+		err = event.SetData("application/json", s)
+		if err != nil {
+			engine.sugar.Errorf("Failed to create CloudEvent: %v.", err)
+		}
+
 		err = engine.events.BroadcastCloudevent(ctx, im.in.Edges.Namespace, &event, 0)
 		if err != nil {
-			engine.sugar.Errorf("failed to broadcast cloudevent: %v", err)
+			engine.sugar.Errorf("Failed to broadcast CloudEvent: %v.", err)
 			return
 		}
 	}

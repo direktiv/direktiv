@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
-	"io/ioutil"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -396,12 +395,11 @@ func (syncer *syncer) beginActivity(tx *ent.Tx, args *newMirrorActivityArgs) (*a
 
 	var err error
 	var ctx context.Context
-	var conn *sql.Conn
 
 	if args.LockConn != nil {
 		ctx = args.LockCtx
-		conn = args.LockConn
 	} else {
+		var conn *sql.Conn
 		ctx, conn, err = syncer.lock(args.MirrorID, defaultLockWait)
 		if err != nil {
 			return nil, err
@@ -657,7 +655,7 @@ func (syncer *syncer) initMirror(ctx context.Context, am *activityMemory) error 
 
 func (syncer *syncer) tarGzDir(path string) ([]byte, error) {
 
-	tf, err := ioutil.TempFile("", "outtar")
+	tf, err := os.CreateTemp("", "outtar")
 	if err != nil {
 		return nil, err
 	}
@@ -668,7 +666,7 @@ func (syncer *syncer) tarGzDir(path string) ([]byte, error) {
 		return nil, err
 	}
 
-	return ioutil.ReadFile(tf.Name())
+	return os.ReadFile(tf.Name())
 
 }
 
@@ -678,6 +676,10 @@ func tarGzDir(src string, buf io.Writer) error {
 	tw := tar.NewWriter(zr)
 
 	err := filepath.Walk(src, func(file string, fi os.FileInfo, err error) error {
+
+		if err != nil {
+			return err
+		}
 
 		if !fi.Mode().IsDir() && !fi.Mode().IsRegular() {
 			return nil
@@ -872,7 +874,7 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 		}
 
 		truepath := filepath.Join(md.path, path)
-		dir, base := filepath.Split(truepath)
+		dir := filepath.Dir(truepath)
 
 		switch n.ntype {
 		case mntDir:
@@ -892,7 +894,7 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 
 		case mntWorkflow:
 
-			data, err := ioutil.ReadFile(filepath.Join(lr.path, path+n.extension))
+			data, err := os.ReadFile(filepath.Join(lr.path, path+n.extension))
 			if err != nil {
 				return err
 			}
@@ -943,7 +945,7 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 			if n.isDir {
 				data, err = syncer.tarGzDir(fpath)
 			} else {
-				data, err = ioutil.ReadFile(fpath)
+				data, err = os.ReadFile(fpath)
 			}
 			if err != nil {
 				return err
@@ -967,7 +969,7 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 			if n.isDir {
 				data, err = syncer.tarGzDir(fpath)
 			} else {
-				data, err = ioutil.ReadFile(fpath)
+				data, err = os.ReadFile(fpath)
 			}
 			if err != nil {
 				return err
@@ -981,7 +983,7 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 				}
 			}
 			trimmed := x[1]
-			_, base = filepath.Split(x[0])
+			_, base := filepath.Split(x[0])
 
 			pino := cache[dir]
 			wf, err := syncer.flow.lookupWorkflowFromParent(ctx, &lookupWorkflowFromParentArgs{
@@ -1114,17 +1116,6 @@ const (
 	mntWorkflowVar  = "wfvar"
 	mntNamespaceVar = "nsvar"
 )
-
-var (
-	ntypeShort map[string]string
-)
-
-func init() {
-	ntypeShort = map[string]string{
-		mntDir:      "d",
-		mntWorkflow: "w",
-	}
-}
 
 type mirrorNode struct {
 	parent    *mirrorNode
@@ -1314,17 +1305,26 @@ func (model *mirrorModel) finalize() error {
 
 }
 
-func (model *mirrorModel) dump() {
+// var (
+// 	ntypeShort map[string]string
+// )
 
-	err := modelWalk(model.root, ".", func(path string, n *mirrorNode, err error) error {
-		fmt.Println(ntypeShort[n.ntype], path, n.change)
-		return nil
-	})
-	if err != nil {
-		fmt.Println(err)
-	}
+// func init() {
+// 	ntypeShort = map[string]string{
+// 		mntDir:      "d",
+// 		mntWorkflow: "w",
+// 	}
+// }
 
-}
+// func (model *mirrorModel) dump() {
+// 	err := modelWalk(model.root, ".", func(path string, n *mirrorNode, err error) error {
+// 		fmt.Println(ntypeShort[n.ntype], path, n.change)
+// 		return nil
+// 	})
+// 	if err != nil {
+// 		fmt.Println(err)
+// 	}
+// }
 
 func modelWalk(node *mirrorNode, path string, fn func(path string, n *mirrorNode, err error) error) error {
 
@@ -1416,7 +1416,9 @@ func (model *mirrorModel) diff(repo *localRepository) error {
 	if err != nil {
 		return err
 	}
-	defer diff.Free()
+	defer func() {
+		_ = diff.Free()
+	}()
 
 	dopts, err := git.DefaultDiffFindOptions()
 	if err != nil {
@@ -1480,7 +1482,7 @@ func buildModel(ctx context.Context, repo *localRepository) (*mirrorModel, error
 	cfg := new(project.Config)
 
 	scfpath := filepath.Join(repo.path, project.ConfigFile)
-	scfgbytes, err := ioutil.ReadFile(scfpath)
+	scfgbytes, err := os.ReadFile(scfpath)
 	if os.IsNotExist(err) {
 		cfg.Ignore = make([]string, 0)
 	} else if err != nil {
@@ -1502,6 +1504,10 @@ func buildModel(ctx context.Context, repo *localRepository) (*mirrorModel, error
 	}
 
 	err = filepath.WalkDir(repo.path, func(path string, d fs.DirEntry, err error) error {
+
+		if err != nil {
+			return err
+		}
 
 		rel, err := filepath.Rel(repo.path, path)
 		if err != nil {

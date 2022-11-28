@@ -184,24 +184,6 @@ func (timers *timers) registerFunction(name string, fn func([]byte)) {
 
 }
 
-/* TODO
-func (timers *timers) addCron(name, fn, pattern string, data []byte) error {
-
-	err := syncServer(ctx, timers.srv, &timers.srv.ID, map[string]interface{}{
-		"name":    name,
-		"fn":      fn,
-		"pattern": pattern,
-		"data":    data,
-	}, AddCron)
-	if err != nil {
-		appLog.Error(err)
-	}
-
-	return timers.addCronNoBroadcast(name, fn, pattern, data)
-
-}
-*/
-
 func (timers *timers) addCron(name, fn, pattern string, data []byte) error {
 
 	timers.deleteCronForWorkflow(name)
@@ -254,7 +236,7 @@ func (timers *timers) addOneShot(name, fn string, timeos time.Time, data []byte)
 		return fmt.Errorf("one-shot %s is in the past", t.name)
 	}
 
-	func(timer *timer, duration time.Duration) error {
+	err = func(timer *timer, duration time.Duration) error {
 
 		clock := time.AfterFunc(duration, func() {
 			timers.executeFunction(timer)
@@ -265,6 +247,9 @@ func (timers *timers) addOneShot(name, fn string, timeos time.Time, data []byte)
 		return nil
 
 	}(t, duration)
+	if err != nil {
+		return err
+	}
 
 	return nil
 

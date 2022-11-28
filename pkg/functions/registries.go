@@ -145,7 +145,10 @@ func (is *functionsServer) StoreRegistry(ctx context.Context, in *igrpc.StoreReg
 
 	secretName := fmt.Sprintf("%s-%s-%s", secretsPrefix, in.GetNamespace(), u.Hostname())
 
-	kubernetesDeleteRegistry(ctx, in.GetName(), in.GetNamespace())
+	err = kubernetesDeleteRegistry(ctx, in.GetName(), in.GetNamespace())
+	if err != nil {
+		return &empty, err
+	}
 
 	sa := prepareNewRegistrySecret(secretName, in.GetName(), auth)
 	sa.Labels[annotationNamespace] = in.GetNamespace()
@@ -217,7 +220,10 @@ func prepareNewRegistrySecret(name, url, authConfig string) v1.Secret {
 
 	sa.Labels = make(map[string]string)
 
-	h, _ := hash.Hash(fmt.Sprintf("%s", url), hash.FormatV2, nil)
+	h, err := hash.Hash(url, hash.FormatV2, nil)
+	if err != nil {
+		panic(err)
+	}
 	sa.Labels[annotationURLHash] = fmt.Sprintf("%d", h)
 
 	sa.Annotations = make(map[string]string)

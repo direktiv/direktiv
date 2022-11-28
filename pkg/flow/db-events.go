@@ -12,7 +12,6 @@ import (
 	entcev "github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
 	entev "github.com/direktiv/direktiv/pkg/flow/ent/events"
 	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
-	"github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 	entwf "github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/google/uuid"
@@ -37,20 +36,6 @@ func (events *events) markEventAsProcessed(ctx context.Context, cevc *ent.CloudE
 	ev := cloudevents.Event(e.Event)
 
 	return &ev, nil
-
-}
-
-func (events *events) deleteExpiredEvents(ctx context.Context, cevc *ent.CloudEventsClient) error {
-
-	_, err := cevc.Delete().
-		Where(entcev.And(entcev.Processed(true), entcev.FireLT(time.Now().Add(-1*time.Hour)))).
-		Exec(ctx)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
 
 }
 
@@ -91,22 +76,6 @@ func (events *events) addEvent(ctx context.Context, cevc *ent.CloudEventsClient,
 	}
 
 	return nil
-
-}
-
-func (events *events) getWorkflowEventByWorkflowUID(ctx context.Context, evc *ent.EventsClient, id uuid.UUID) (*ent.Events, error) {
-
-	evs, err := evc.Query().
-		Where(entev.HasWorkflowWith(
-			workflow.IDEQ(id),
-		)).
-		WithWorkflow().
-		Only(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	return evs, nil
 
 }
 

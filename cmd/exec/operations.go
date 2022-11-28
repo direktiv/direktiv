@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -47,7 +47,7 @@ func setRemoteWorkflowVariable(wfURL string, varName string, varPath string) err
 			return fmt.Errorf("failed to set workflow var, request was unauthorized")
 		}
 
-		errBody, err := ioutil.ReadAll(resp.Body)
+		errBody, err := io.ReadAll(resp.Body)
 		if err == nil {
 			return fmt.Errorf("failed to set workflow var, server responded with %s\n------DUMPING ERROR BODY ------\n%s", resp.Status, string(errBody))
 		}
@@ -62,7 +62,7 @@ func getLocalWorkflowVariables(absPath string) ([]string, error) {
 	varFiles := make([]string, 0)
 	wfFileName := filepath.Base(absPath)
 	dirPath := filepath.Dir(absPath)
-	files, err := ioutil.ReadDir(dirPath)
+	files, err := os.ReadDir(dirPath)
 	if err != nil {
 		return varFiles, fmt.Errorf("failed to read dir: %v", err)
 	}
@@ -116,7 +116,7 @@ func recurseMkdirParent(path string) error {
 			return fmt.Errorf("failed to create parent, request was unauthorized")
 		}
 
-		errBody, err := ioutil.ReadAll(resp.Body)
+		errBody, err := io.ReadAll(resp.Body)
 		if err == nil {
 			return fmt.Errorf("failed to create parent, server responded with %s\n------DUMPING ERROR BODY ------\n%s", resp.Status, string(errBody))
 		}
@@ -128,8 +128,8 @@ func recurseMkdirParent(path string) error {
 
 }
 
-//	getClosestNodeReadOnly : Recursively searches upwards to find closest
-//	existing node and returns whether it is read only.
+// getClosestNodeReadOnly : Recursively searches upwards to find closest
+// existing node and returns whether it is read only.
 func getClosestNodeReadOnly(path string) (bool, string, error) {
 	isReadOnly, nodeType, err := getNodeReadOnly(path)
 
@@ -172,7 +172,7 @@ func getNodeReadOnly(path string) (bool, string, error) {
 			return false, "", ErrNotFound
 		}
 
-		errBody, err := ioutil.ReadAll(resp.Body)
+		errBody, err := io.ReadAll(resp.Body)
 		if err == nil {
 			return false, "", fmt.Errorf("failed to get node information, server responded with %s\n------DUMPING ERROR BODY ------\n%s", resp.Status, string(errBody))
 		}
@@ -180,7 +180,7 @@ func getNodeReadOnly(path string) (bool, string, error) {
 		return false, "", fmt.Errorf("failed to get node information, server responded with %s\n------DUMPING ERROR BODY ------\nCould read response body", resp.Status)
 	}
 
-	data, err := ioutil.ReadAll(resp.Body)
+	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return false, "", fmt.Errorf("failed to read response: %v", err)
 	}
@@ -281,7 +281,7 @@ func setWritable(path string, value bool) error {
 				return fmt.Errorf("failed to modify node, request was unauthorized")
 			}
 
-			errBody, err := ioutil.ReadAll(resp.Body)
+			errBody, err := io.ReadAll(resp.Body)
 			if err == nil {
 				return fmt.Errorf("failed to modify node, server responded with %s\n------DUMPING ERROR BODY ------\n%s", resp.Status, string(errBody))
 			}
@@ -329,7 +329,7 @@ func updateRemoteWorkflow(path string, localPath string) error {
 	if err != nil {
 		log.Fatalf("Failed to load workflow file: %v", err)
 	}
-	data, err := ioutil.ReadAll(buf)
+	data, err := io.ReadAll(buf)
 	if err != nil {
 		log.Fatalf("Failed to load workflow file: %v", err)
 	}
@@ -367,7 +367,7 @@ retry:
 			method = http.MethodPut
 			goto retry
 		}
-		errBody, err := ioutil.ReadAll(resp.Body)
+		errBody, err := io.ReadAll(resp.Body)
 		if err == nil {
 			return fmt.Errorf("failed to update workflow, server responded with %s\n------DUMPING ERROR BODY ------\n%s", resp.Status, string(errBody))
 		}
@@ -422,7 +422,7 @@ func executeWorkflow(url string) (executeResponse, error) {
 			return instanceDetails, fmt.Errorf("failed to execute workflow, request was unauthorized")
 		}
 
-		errBody, err := ioutil.ReadAll(resp.Body)
+		errBody, err := io.ReadAll(resp.Body)
 		if err == nil {
 			return instanceDetails, fmt.Errorf("failed to execute workflow, server responded with %s\n------DUMPING ERROR BODY ------\n%s", resp.Status, string(errBody))
 		}
@@ -430,7 +430,7 @@ func executeWorkflow(url string) (executeResponse, error) {
 		return instanceDetails, fmt.Errorf("failed to execute workflow, server responded with %s\n------DUMPING ERROR BODY ------\nCould read response body", resp.Status)
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return instanceDetails, err
 	}
@@ -450,7 +450,7 @@ func executeEvent(url string) (string, error) {
 	}
 
 	defer inputDataOsFile.Close()
-	byteResult, err := ioutil.ReadAll(inputDataOsFile)
+	byteResult, err := io.ReadAll(inputDataOsFile)
 
 	if err != nil {
 		return "", err
@@ -573,7 +573,7 @@ func pingNamespace() error {
 			return fmt.Errorf("failed to ping namespace, request was unauthorized")
 		}
 
-		errBody, err := ioutil.ReadAll(resp.Body)
+		errBody, err := io.ReadAll(resp.Body)
 		if err == nil {
 			return fmt.Errorf("failed to ping namespace, server responded with %s\n------DUMPING ERROR BODY ------\n%s", resp.Status, string(errBody))
 		}

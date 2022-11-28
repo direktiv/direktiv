@@ -282,7 +282,7 @@ func (flow *flow) Untag(ctx context.Context, req *grpc.UntagRequest) (*emptypb.E
 		return nil, err
 	}
 
-	if d.ref.Immutable == true || d.ref.Name == latest {
+	if d.ref.Immutable || d.ref.Name == latest {
 		return nil, errors.New("not a tag")
 	}
 
@@ -340,7 +340,7 @@ func (flow *flow) Retag(ctx context.Context, req *grpc.RetagRequest) (*emptypb.E
 		goto respond
 	}
 
-	if dt.ref.Immutable == true || dt.ref.Name == latest {
+	if dt.ref.Immutable || dt.ref.Name == latest {
 		return nil, errors.New("not a tag")
 	}
 

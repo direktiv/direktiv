@@ -2,7 +2,7 @@ package flow
 
 import (
 	"context"
-	"net"
+	"errors"
 	"net/http"
 	"strings"
 	"time"
@@ -10,17 +10,10 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/metrics"
 	"github.com/direktiv/direktiv/pkg/util"
-	"github.com/gorilla/mux"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
-
-type metricsServer struct {
-	*server
-	listener net.Listener
-	http     *http.Server
-	router   *mux.Router
-}
 
 var (
 	metricsWf = prometheus.NewGaugeVec(
@@ -133,20 +126,20 @@ var (
 
 func reportStateEnd(namespace, workflow, state string, t time.Time) {
 
-	ms := time.Now().Sub(t).Milliseconds()
+	ms := time.Since(t).Milliseconds()
 	metricsWfStateDuration.WithLabelValues(namespace, GetInodePath(workflow), state, namespace).Observe(float64(ms))
 
 }
 
-func setupPrometheusEndpoint() {
+func setupPrometheusEndpoint() error {
 
 	prometheus.MustRegister(metricsWfInvoked)
 	prometheus.MustRegister(metricsWfSuccess)
 	prometheus.MustRegister(metricsWfFail)
 	prometheus.MustRegister(metricsWfDuration)
 	prometheus.MustRegister(metricsWfStateDuration)
-	prometheus.Unregister(prometheus.NewGoCollector())
-	prometheus.Unregister(prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{}))
+	prometheus.Unregister(collectors.NewGoCollector())
+	prometheus.Unregister(collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}))
 
 	prometheus.MustRegister(metricsWf)
 	prometheus.MustRegister(metricsWfUpdated)
@@ -156,7 +149,14 @@ func setupPrometheusEndpoint() {
 	prometheus.MustRegister(metricsCloudEventsCaptured)
 
 	http.Handle("/metrics", promhttp.Handler())
-	http.ListenAndServe(":2112", nil)
+	err := http.ListenAndServe(":2112", nil)
+	if err != nil {
+		if !errors.Is(err, http.ErrServerClosed) {
+			return err
+		}
+	}
+
+	return nil
 
 }
 
@@ -269,10 +269,6 @@ func (engine *engine) metricsCompleteState(ctx context.Context, im *instanceMemo
 		return
 	}
 
-	// if im.Status() != util.InstanceStatusPending {
-	// 	return
-	// }
-
 	args := new(metrics.InsertRecordArgs)
 
 	args.Namespace = ns.Name
@@ -288,7 +284,7 @@ func (engine *engine) metricsCompleteState(ctx context.Context, im *instanceMemo
 	flow := im.Flow()
 	args.State = flow[len(flow)-1]
 
-	d := time.Now().Sub(im.StateBeginTime())
+	d := time.Since(im.StateBeginTime())
 	args.WorkflowMilliSeconds = d.Milliseconds()
 
 	args.ErrorCode = errCode

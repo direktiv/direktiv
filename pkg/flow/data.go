@@ -215,9 +215,9 @@ deref:
 		fallthrough
 	case reflect.Map:
 		x := v.Interface()
-		switch x.(type) {
+		switch y := x.(type) {
 		case time.Time:
-			return timestamppb.New(x.(time.Time))
+			return timestamppb.New(y)
 		case map[string]interface{}:
 			return atobMapBuilder(t, v)
 		default:
@@ -299,43 +299,5 @@ func jqObject(input interface{}, command interface{}) (map[string]interface{}, e
 	}
 
 	return m, nil
-
-}
-
-func truth(x interface{}) bool {
-
-	var success bool
-
-	if x != nil {
-		switch x.(type) {
-		case bool:
-			if x.(bool) {
-				success = true
-			}
-		case string:
-			if x.(string) != "" {
-				success = true
-			}
-		case int:
-			if x.(int) != 0 {
-				success = true
-			}
-		case float64:
-			if x.(float64) != 0.0 {
-				success = true
-			}
-		case []interface{}:
-			if len(x.([]interface{})) > 0 {
-				success = true
-			}
-		case map[string]interface{}:
-			if len(x.(map[string]interface{})) > 0 {
-				success = true
-			}
-		default:
-		}
-	}
-
-	return success
 
 }

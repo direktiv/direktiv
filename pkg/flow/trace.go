@@ -17,7 +17,7 @@ type Carrier struct {
 
 // Get returns a value of a trace
 func (c *Carrier) Get(key string) string {
-	v, _ := c.Trace[key]
+	v := c.Trace[key]
 	return v
 }
 

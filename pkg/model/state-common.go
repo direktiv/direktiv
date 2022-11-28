@@ -141,14 +141,6 @@ func (o *StateCommon) commonValidate() error {
 		return fmt.Errorf("state id must match the regex pattern `%s`", util.RegexPattern)
 	}
 
-	if s, ok := o.Log.(string); ok && s != "" {
-		/*
-			if _, err := gojq.Parse(s); err != nil {
-				return fmt.Errorf("log is an invalid jq string: %v", err)
-			}
-		*/
-	}
-
 	for _, catch := range o.Catch {
 		if err := catch.Validate(); err != nil {
 			return err

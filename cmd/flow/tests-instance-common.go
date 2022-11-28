@@ -1,5 +1,7 @@
 package main
 
+/*
+
 import (
 	"context"
 	"encoding/json"
@@ -139,7 +141,7 @@ func testStateLogSimple(ctx context.Context, c grpc.FlowClient, namespace string
 		Source: []byte(`
 states:
   - id: a
-    type: noop 
+    type: noop
     log: "Hello, world!"
 `),
 	})
@@ -231,7 +233,7 @@ func testStateLogJQ(ctx context.Context, c grpc.FlowClient, namespace string) er
 		Source: []byte(`
 states:
   - id: a
-    type: noop 
+    type: noop
     log: 'jq(.name)!'
 `),
 	})
@@ -324,7 +326,7 @@ func testStateLogJQNested(ctx context.Context, c grpc.FlowClient, namespace stri
 		Source: []byte(`
 states:
   - id: a
-    type: noop 
+    type: noop
     log: 'Hello, jq(.name)!'
 `),
 	})
@@ -417,8 +419,8 @@ func testStateLogJQObject(ctx context.Context, c grpc.FlowClient, namespace stri
 		Source: []byte(`
 states:
   - id: a
-    type: noop 
-    log: 
+    type: noop
+    log:
       Name: 'jq(.name)'
       Constant: 5
 `),
@@ -837,7 +839,7 @@ func testInstanceError(ctx context.Context, c grpc.FlowClient, namespace string)
                 format: email
           catch:
           - error: direktiv.schema.*
-            transition: email-not-valid 
+            transition: email-not-valid
           transition: email-valid
         - id: email-not-valid
           type: error
@@ -845,7 +847,7 @@ func testInstanceError(ctx context.Context, c grpc.FlowClient, namespace string)
           message: "email '.email' is not valid"
         - id: email-valid
           type: noop
-          transform: 
+          transform:
             result: "Email is valid."
 `)})
 	if err != nil {
@@ -1255,13 +1257,13 @@ func testInstanceSimpleChain(ctx context.Context, c grpc.FlowClient, namespace s
 		Source: []byte(`
 states:
   - id: a
-    type: noop 
+    type: noop
     transition: b
   - id: b
-    type: noop 
+    type: noop
     transition: c
   - id: c
-    type: noop 
+    type: noop
 `),
 	})
 	if err != nil {
@@ -1335,19 +1337,19 @@ func testInstanceSwitchLoop(ctx context.Context, c grpc.FlowClient, namespace st
 		Source: []byte(`
 states:
   - id: a
-    type: noop 
-    transform: 
+    type: noop
+    transform:
       k: 5
     transition: b
   - id: b
-    type: switch 
+    type: switch
     conditions:
       - condition: 'jq(.k > 0)'
         transition: b
         transform: 'jq(.k -= 1)'
     defaultTransition: c
   - id: c
-    type: noop 
+    type: noop
 `),
 	})
 	if err != nil {
@@ -1442,9 +1444,9 @@ states:
         transition: fail
     defaultTransition: e
   - id: e
-    type: noop 
+    type: noop
   - id: fail
-    type: noop 
+    type: noop
 `),
 	})
 	if err != nil {
@@ -1541,7 +1543,7 @@ states:
   event:
     type: testcloudevent
     source: Direktiv
-    data: 
+    data:
       message: "helloworld"
 `),
 	})
@@ -1621,7 +1623,7 @@ func testInstanceTimeoutKill(ctx context.Context, c grpc.FlowClient, namespace s
 		Namespace: namespace,
 		Path:      "/testwf-timeout-subflow",
 		Source: []byte(`
-timeouts: 
+timeouts:
   kill: PT2S
 states:
   - id: a
@@ -1642,7 +1644,7 @@ functions:
   type: subflow
   workflow: testwf-timeout-subflow
 states:
-- id: a 
+- id: a
   type: action
   action:
     function: sub
@@ -1747,7 +1749,7 @@ func testInstanceTimeoutKillLong(ctx context.Context, c grpc.FlowClient, namespa
 		Namespace: namespace,
 		Path:      "/testwf-timeout-subflow",
 		Source: []byte(`
-timeouts: 
+timeouts:
   kill: PT60S
 states:
   - id: a
@@ -1768,7 +1770,7 @@ functions:
   type: subflow
   workflow: testwf-timeout-subflow
 states:
-- id: a 
+- id: a
   type: action
   action:
     function: sub
@@ -1873,7 +1875,7 @@ func testInstanceTimeoutInterrupt(ctx context.Context, c grpc.FlowClient, namesp
 		Namespace: namespace,
 		Path:      "/testwf-timeout-subflow",
 		Source: []byte(`
-timeouts: 
+timeouts:
   interrupt: PT2S
 states:
   - id: a
@@ -1894,7 +1896,7 @@ functions:
   type: subflow
   workflow: testwf-timeout-subflow
 states:
-- id: a 
+- id: a
   type: action
   action:
     function: sub
@@ -1999,7 +2001,7 @@ func testInstanceTimeoutInterruptLong(ctx context.Context, c grpc.FlowClient, na
 		Namespace: namespace,
 		Path:      "/testwf-timeout-subflow",
 		Source: []byte(`
-timeouts: 
+timeouts:
   interrupt: PT60S
 states:
   - id: a
@@ -2020,7 +2022,7 @@ functions:
   type: subflow
   workflow: testwf-timeout-subflow
 states:
-- id: a 
+- id: a
   type: action
   action:
     function: sub
@@ -2111,3 +2113,5 @@ states:
 	return nil
 
 }
+
+*/

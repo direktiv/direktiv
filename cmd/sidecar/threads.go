@@ -5,10 +5,6 @@ import (
 	"time"
 )
 
-type stoppable interface {
-	Stop()
-}
-
 var threads Threads
 
 func init() {

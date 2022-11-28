@@ -67,8 +67,7 @@ func GenerateWorkflowServiceName(info *igrpc.BaseInfo) (string, string) {
 	wf := info.GetWorkflow()
 	fndef := fndefFromBaseInfo(info)
 
-	var strs []string
-	strs = []string{fndef.Cmd, fndef.ID, fndef.Image,
+	strs := []string{fndef.Cmd, fndef.ID, fndef.Image,
 		fmt.Sprintf("%v", fndef.Size), fmt.Sprintf("%v", fndef.Type),
 		fmt.Sprintf("%v", info.GetEnvs())}
 

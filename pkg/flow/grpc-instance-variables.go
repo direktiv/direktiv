@@ -459,7 +459,6 @@ func (internal *internal) SetThreadVariableParcels(srv grpc.Internal_SetThreadVa
 		return err
 	}
 
-	inc := internal.db.Instance
 	mimeType := req.GetMimeType()
 	instance := req.GetInstance()
 	key := req.GetKey()
@@ -515,7 +514,7 @@ func (internal *internal) SetThreadVariableParcels(srv grpc.Internal_SetThreadVa
 	}
 	defer rollback(tx)
 
-	inc = tx.Instance
+	inc := tx.Instance
 	vrefc := tx.VarRef
 	vdatac := tx.VarData
 
@@ -575,7 +574,6 @@ func (internal *internal) SetInstanceVariableParcels(srv grpc.Internal_SetInstan
 		return err
 	}
 
-	inc := internal.db.Instance
 	mimeType := req.GetMimeType()
 	instance := req.GetInstance()
 	key := req.GetKey()
@@ -631,7 +629,7 @@ func (internal *internal) SetInstanceVariableParcels(srv grpc.Internal_SetInstan
 	}
 	defer rollback(tx)
 
-	inc = tx.Instance
+	inc := tx.Instance
 	vrefc := tx.VarRef
 	vdatac := tx.VarData
 

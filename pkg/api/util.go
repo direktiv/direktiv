@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"runtime"
 	"strconv"
@@ -82,7 +81,7 @@ func loadRawBody(r *http.Request) ([]byte, error) {
 
 	rdr := io.LimitReader(r.Body, limit)
 
-	data, err := ioutil.ReadAll(rdr)
+	data, err := io.ReadAll(rdr)
 	if err != nil {
 		return nil, err
 	}
@@ -197,7 +196,6 @@ func badRequest(w http.ResponseWriter, err error) {
 	code := http.StatusBadRequest
 	msg := http.StatusText(code)
 	http.Error(w, msg, code)
-	return
 }
 
 func respondStruct(w http.ResponseWriter, resp interface{}, code int, err error) {
@@ -257,10 +255,16 @@ func respond(w http.ResponseWriter, resp interface{}, err error) {
 			Message: st.Message(),
 		}
 
-		data, _ := json.Marshal(&o)
+		data, err := json.Marshal(&o)
+		if err != nil {
+			panic(err)
+		}
+
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(code)
-		io.Copy(w, bytes.NewReader(data))
+
+		_, _ = io.Copy(w, bytes.NewReader(data))
+
 		return
 
 	}
@@ -289,14 +293,7 @@ func respondJSON(w http.ResponseWriter, resp interface{}, err error) {
 		// TODO fix grpc to send back useful error code for http translation
 		code := ConvertGRPCStatusCodeToHTTPCode(status.Code(err))
 
-		var msg string
-		// if code < 500 {
-		// 	msg = err.Error()
-		// } else {
-		// 	msg = http.StatusText(code)
-		// }
-
-		msg = err.Error()
+		msg := err.Error()
 		http.Error(w, msg, code)
 		return
 
@@ -373,7 +370,7 @@ func unmarshalBody(r *http.Request, x interface{}) error {
 
 func pathAndRef(r *http.Request) (string, string) {
 
-	path, _ := mux.Vars(r)["path"]
+	path := mux.Vars(r)["path"]
 	ref := r.URL.Query().Get("ref")
 	return path, ref
 
@@ -521,12 +518,6 @@ func sseHeartbeat(w http.ResponseWriter, flusher http.Flusher) error {
 // swagger:parameters getWorkflowLogs getNamespaces serverLogs namespaceLogs instanceLogs getInstanceList getWorkflowLogs
 type PaginationQuery struct {
 
-	// TODO: swagger-spec. Export Field when spec is done
-	offset int32 `json:"offset"`
-
-	// TODO: swagger-spec. Export Field when spec is done
-	limit int32 `json:"limit"`
-
 	// field to order by
 	//
 	// in: query
@@ -563,9 +554,6 @@ type PaginationQuery struct {
 	// required: false
 	// description: "filter behaviour"
 	PageFilterType string `json:"filter.type"`
-
-	// TODO: swagger-spec. Export Field when spec is done
-	pageFilterVal string `json:"filter.val"`
 }
 
 type telemetryHandler struct {
@@ -643,8 +631,8 @@ func (s *Server) logMiddleware(h http.Handler) http.Handler {
 
 }
 
-//	readSingularFromQueryOrBody : Reads a single key passed in params from
-//	query and body and returns value of that key to corresponding read values.
+// readSingularFromQueryOrBody : Reads a single key passed in params from
+// query and body and returns value of that key to corresponding read values.
 func readSingularFromQueryOrBody(r *http.Request, key string) (string, error) {
 	in := make(map[string]string)
 

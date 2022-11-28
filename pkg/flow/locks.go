@@ -147,7 +147,10 @@ func (engine *engine) lock(key string, timeout time.Duration) (context.Context, 
 
 	engine.cancellers[key] = func() {
 		defer func() {
-			recover()
+			r := recover()
+			if r != nil {
+				engine.sugar.Errorf("Recovered from an okay panic: %v.", err)
+			}
 		}()
 		cancel()
 		close(ch)

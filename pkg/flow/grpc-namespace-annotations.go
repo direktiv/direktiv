@@ -295,13 +295,13 @@ func (flow *flow) SetAnnotation(ctx context.Context, annotationc *ent.Annotation
 
 		query := annotationc.Create().SetSize(len(data)).SetHash(hash).SetData(data).SetName(key).SetMimeType(mimetype)
 
-		switch q.(type) {
+		switch v := q.(type) {
 		case *ent.Namespace:
-			query = query.SetNamespace(q.(*ent.Namespace))
+			query = query.SetNamespace(v)
 		case *ent.Workflow:
-			query = query.SetWorkflow(q.(*ent.Workflow))
+			query = query.SetWorkflow(v)
 		case *ent.Instance:
-			query = query.SetInstance(q.(*ent.Instance))
+			query = query.SetInstance(v)
 		default:
 			panic(errors.New("bad querier"))
 		}

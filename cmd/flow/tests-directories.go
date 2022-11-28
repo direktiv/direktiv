@@ -1,5 +1,7 @@
 package main
 
+/*
+
 import (
 	"context"
 	"errors"
@@ -907,3 +909,5 @@ func testDirectoryStreamDisconnectNamespace(ctx context.Context, c grpc.FlowClie
 	return nil
 
 }
+
+*/
