@@ -235,9 +235,6 @@ type ErrorBody struct {
 	Message string `json:"message"`
 }
 
-func (e *ErrorBody) Error() string {
-	return e.Message
-}
 func (e *ErrorBody) StatusCode() int {
 	return e.Code
 }
