@@ -1,0 +1,27 @@
+name: golangci-unittests
+on:
+  push:
+    tags:
+      - v*
+    branches:
+      - master
+      - main
+  pull_request:
+permissions:
+  contents: read
+  # Optional: allow read access to pull request. Use with `only-new-issues` option.
+  # pull-requests: read
+jobs:
+  golangci:
+    name: go-unittests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+      - uses: actions/checkout@v3
+      - name: Install dependencies
+        run: ./scripts/install-dependencies.sh 
+        shell: bash
+      - name: Run check
+        run: make unittest
