@@ -189,7 +189,7 @@ func recurseIntoString(data interface{}, s string) ([]interface{}, error) {
 		case JqStartToken:
 			x, err := jq(data, tok.Value)
 			if err != nil {
-				return nil, fmt.Errorf("error executing jq query %s: %v", tok.Value, err)
+				return nil, fmt.Errorf("error executing jq query %s: %w", tok.Value, err)
 			}
 
 			if len(x) == 0 || len(x) > 0 && x[0] == nil {
@@ -209,12 +209,12 @@ func recurseIntoString(data interface{}, s string) ([]interface{}, error) {
 			fn := fmt.Sprintf("function fn(data) {\n %s \n}", tok.Value)
 			_, err := vm.RunString(fn)
 			if err != nil {
-				return nil, fmt.Errorf("error loading js query %s: %v", tok.Value, err)
+				return nil, fmt.Errorf("error loading js query %s: %w", tok.Value, err)
 			}
 
 			fnExe, ok := goja.AssertFunction(vm.Get("fn"))
 			if !ok {
-				return nil, fmt.Errorf("error getting js query %s: %v", tok.Value, err)
+				return nil, fmt.Errorf("error getting js query %s: %w", tok.Value, err)
 			}
 
 			ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
@@ -237,7 +237,7 @@ func recurseIntoString(data interface{}, s string) ([]interface{}, error) {
 			// execute and get results
 			v, err := fnExe(goja.Undefined(), vm.ToValue(data))
 			if err != nil {
-				return nil, fmt.Errorf("error running js query %s: %v", tok.Value, err)
+				return nil, fmt.Errorf("error running js query %s: %w", tok.Value, err)
 			}
 
 			ret := v.Export()
@@ -289,7 +289,7 @@ func recurseIntoMap(data interface{}, m map[string]interface{}) ([]interface{}, 
 		k := keys[i]
 		x, err := recursiveEvaluate(data, m[k])
 		if err != nil {
-			return nil, fmt.Errorf("error in '%s': %v", k, err)
+			return nil, fmt.Errorf("error in '%s': %w", k, err)
 		}
 		if len(x) == 0 {
 			return nil, fmt.Errorf("error in element '%s': no results", k)
@@ -309,7 +309,7 @@ func recurseIntoArray(data interface{}, q []interface{}) ([]interface{}, error) 
 	for i := range q {
 		x, err := recursiveEvaluate(data, q[i])
 		if err != nil {
-			return nil, fmt.Errorf("error in element %d: %v", i, err)
+			return nil, fmt.Errorf("error in element %d: %w", i, err)
 		}
 		if len(x) == 0 {
 			return nil, fmt.Errorf("error in element %d: no results", i)

@@ -98,7 +98,7 @@ func (o *SwitchState) Validate() error {
 
 	if s, ok := o.DefaultTransform.(string); ok {
 		if err := validateTransformJQ(s); err != nil {
-			return fmt.Errorf("default transform: %v", err)
+			return fmt.Errorf("default transform: %w", err)
 		}
 	}
 
@@ -108,13 +108,13 @@ func (o *SwitchState) Validate() error {
 
 	for i, condition := range o.GetConditions() {
 		if err := condition.Validate(); err != nil {
-			return fmt.Errorf("conditions[%v] is invalid: %v", i, err)
+			return fmt.Errorf("conditions[%v] is invalid: %w", i, err)
 		}
 	}
 
 	for i, errDef := range o.ErrorDefinitions() {
 		if err := errDef.Validate(); err != nil {
-			return fmt.Errorf("catch[%v] is invalid: %v", i, err)
+			return fmt.Errorf("catch[%v] is invalid: %w", i, err)
 		}
 	}
 

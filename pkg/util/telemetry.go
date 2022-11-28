@@ -94,12 +94,12 @@ func InitTelemetry(conf *Config, svcName, imName string) (func(), error) {
 
 	exp, err := otlp.New(ctx, driver)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create exporter: %v", err)
+		return nil, fmt.Errorf("failed to create exporter: %w", err)
 	}
 
 	res, err := resource.New(ctx, resource.WithAttributes(semconv.ServiceNameKey.String(svcName)))
 	if err != nil {
-		return nil, fmt.Errorf("failed to create resource: %v", err)
+		return nil, fmt.Errorf("failed to create resource: %w", err)
 	}
 
 	bsp := sdktrace.NewBatchSpanProcessor(exp)

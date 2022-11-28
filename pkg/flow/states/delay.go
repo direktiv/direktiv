@@ -74,7 +74,7 @@ func (logic *delayLogic) Run(ctx context.Context, wakedata []byte) (*Transition,
 
 		d, err = duration.ParseISO8601(logic.Duration)
 		if err != nil {
-			return nil, derrors.NewInternalError(fmt.Errorf("failed to parse delay duration: %v", err))
+			return nil, derrors.NewInternalError(fmt.Errorf("failed to parse delay duration: %w", err))
 		}
 
 		t0 := time.Now()

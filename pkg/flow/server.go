@@ -2,6 +2,7 @@ package flow
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"sync"
@@ -323,10 +324,13 @@ func (srv *server) notifyCluster(msg string) error {
 	defer conn.Close()
 
 	_, err = conn.ExecContext(ctx, "SELECT pg_notify($1, $2)", flowSync, msg)
-	if err, ok := err.(*pq.Error); ok {
 
-		srv.sugar.Errorf("db notification failed: %v", err)
-		if err.Code == "57014" {
+	perr := new(pq.Error)
+
+	if errors.As(err, &perr) {
+
+		srv.sugar.Errorf("db notification failed: %v", perr)
+		if perr.Code == "57014" {
 			return fmt.Errorf("canceled query")
 		}
 
@@ -351,10 +355,13 @@ func (srv *server) notifyHostname(hostname, msg string) error {
 	channel := fmt.Sprintf("hostname:%s", hostname)
 
 	_, err = conn.ExecContext(ctx, "SELECT pg_notify($1, $2)", channel, msg)
-	if err, ok := err.(*pq.Error); ok {
 
-		fmt.Fprintf(os.Stderr, "db notification failed: %v", err)
-		if err.Code == "57014" {
+	perr := new(pq.Error)
+
+	if errors.As(err, &perr) {
+
+		fmt.Fprintf(os.Stderr, "db notification failed: %v", perr)
+		if perr.Code == "57014" {
 			return fmt.Errorf("canceled query")
 		}
 

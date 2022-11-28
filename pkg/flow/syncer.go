@@ -252,7 +252,7 @@ func (syncer *syncer) cronHandler(data []byte) {
 		LockConn: conn,
 	})
 	if err != nil {
-		if err == ErrMirrorLocked {
+		if errors.Is(err, ErrMirrorLocked) {
 			return
 		}
 		syncer.sugar.Error(err)
@@ -782,7 +782,7 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 			if child.Type == util.InodeTypeDirectory && child.ExtendedType == util.InodeTypeGit {
 
 				_, err = model.lookup(cpath)
-				if err == os.ErrNotExist {
+				if errors.Is(err, os.ErrNotExist) {
 					continue
 				}
 				if err != nil {
@@ -810,11 +810,11 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 				}
 
 				mn, err := model.lookup(cpath)
-				if err != nil && err != os.ErrNotExist {
+				if err != nil && !errors.Is(err, os.ErrNotExist) {
 					return err
 				}
 
-				if err == os.ErrNotExist || mn.ntype != mntDir {
+				if errors.Is(err, os.ErrNotExist) || mn.ntype != mntDir {
 
 					err = syncer.flow.deleteNode(ctx, &deleteNodeArgs{
 						inoc:      tx.Inode,
@@ -833,11 +833,11 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 			} else if child.Type == util.InodeTypeWorkflow {
 
 				mn, err := model.lookup(cpath)
-				if err != nil && err != os.ErrNotExist {
+				if err != nil && !errors.Is(err, os.ErrNotExist) {
 					return err
 				}
 
-				if err == os.ErrNotExist || mn.ntype != mntWorkflow {
+				if errors.Is(err, os.ErrNotExist) || mn.ntype != mntWorkflow {
 
 					err = syncer.flow.deleteNode(ctx, &deleteNodeArgs{
 						inoc:      tx.Inode,
@@ -916,7 +916,7 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 			if wf == nil {
 				return err
 			}
-			if err == os.ErrExist {
+			if errors.Is(err, os.ErrExist) {
 				_, err = syncer.flow.updateWorkflow(ctx, &updateWorkflowArgs{
 					revc:       tx.Revision,
 					eventc:     tx.Events,
@@ -1329,7 +1329,7 @@ func (model *mirrorModel) finalize() error {
 func modelWalk(node *mirrorNode, path string, fn func(path string, n *mirrorNode, err error) error) error {
 
 	err := fn(path, node, nil)
-	if err == filepath.SkipDir {
+	if errors.Is(err, filepath.SkipDir) {
 		return nil
 	}
 	if err != nil {
@@ -1433,7 +1433,7 @@ func (model *mirrorModel) diff(repo *localRepository) error {
 	err = diff.ForEach(func(delta git.DiffDelta, progress float64) (git.DiffForEachHunkCallback, error) {
 
 		node, err := model.lookup(delta.NewFile.Path)
-		if err == os.ErrNotExist {
+		if errors.Is(err, os.ErrNotExist) {
 			return func(x git.DiffHunk) (git.DiffForEachLineCallback, error) {
 				return func(x git.DiffLine) error {
 					return nil

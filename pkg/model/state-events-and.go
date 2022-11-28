@@ -76,13 +76,13 @@ func (o *EventsAndState) Validate() error {
 
 	for i, event := range o.GetEvents() {
 		if err := event.Validate(); err != nil {
-			return fmt.Errorf("event[%v] is invalid: %v", i, err)
+			return fmt.Errorf("event[%v] is invalid: %w", i, err)
 		}
 	}
 
 	for i, errDef := range o.ErrorDefinitions() {
 		if err := errDef.Validate(); err != nil {
-			return fmt.Errorf("catch[%v] is invalid: %v", i, err)
+			return fmt.Errorf("catch[%v] is invalid: %w", i, err)
 		}
 	}
 

@@ -74,7 +74,7 @@ func main() {
 	var gen string
 	err = row.Scan(&gen)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			gen = "0.5.10"
 		} else {
 			log.Printf("error running sql: %v", err)

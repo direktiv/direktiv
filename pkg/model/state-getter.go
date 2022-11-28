@@ -89,7 +89,7 @@ func (o *GetterState) Validate() error {
 
 	for i, varDef := range o.Variables {
 		if err := varDef.Validate(); err != nil {
-			return fmt.Errorf("variables[%d] is invalid: %v", i, err)
+			return fmt.Errorf("variables[%d] is invalid: %w", i, err)
 		}
 	}
 
@@ -101,7 +101,7 @@ func (o *GetterState) Validate() error {
 
 	for i, errDef := range o.ErrorDefinitions() {
 		if err := errDef.Validate(); err != nil {
-			return fmt.Errorf("catch[%v] is invalid: %v", i, err)
+			return fmt.Errorf("catch[%v] is invalid: %w", i, err)
 		}
 	}
 

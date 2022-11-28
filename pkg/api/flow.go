@@ -4927,7 +4927,7 @@ func (h *flowHandler) SetNamespaceVariable(w http.ResponseWriter, r *http.Reques
 	if total <= 0 {
 		data, err := loadRawBody(r)
 		if err != nil {
-			if err == io.EOF {
+			if errors.Is(err, io.EOF) {
 				total = 0
 				rdr = bytes.NewReader([]byte(""))
 			} else {

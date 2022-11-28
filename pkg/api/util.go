@@ -636,9 +636,9 @@ func readSingularFromQueryOrBody(r *http.Request, key string) (string, error) {
 	value := r.URL.Query().Get(key)
 
 	err := unmarshalBody(r, &in)
-	if err == io.EOF && value == "" {
+	if errors.Is(err, io.EOF) && value == "" {
 		return "", fmt.Errorf("%s is missing from query and body", key)
-	} else if err != nil && err != io.EOF {
+	} else if err != nil && !errors.Is(err, io.EOF) {
 		return "", err
 	}
 

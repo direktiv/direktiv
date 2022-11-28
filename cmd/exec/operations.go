@@ -21,7 +21,7 @@ var ErrNodeIsReadOnly = errors.New("resource is read-only")
 func setRemoteWorkflowVariable(wfURL string, varName string, varPath string) error {
 	varData, err := safeLoadFile(varPath)
 	if err != nil {
-		return fmt.Errorf("failed to load variable file: %v", err)
+		return fmt.Errorf("failed to load variable file: %w", err)
 	}
 
 	url := wfURL + "?op=set-var&var=" + varName
@@ -32,14 +32,14 @@ func setRemoteWorkflowVariable(wfURL string, varName string, varPath string) err
 		varData,
 	)
 	if err != nil {
-		return fmt.Errorf("failed to create request: %v", err)
+		return fmt.Errorf("failed to create request: %w", err)
 	}
 
 	addAuthHeaders(req)
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return fmt.Errorf("failed to send request: %v", err)
+		return fmt.Errorf("failed to send request: %w", err)
 	}
 
 	if resp.StatusCode != http.StatusOK {
@@ -64,7 +64,7 @@ func getLocalWorkflowVariables(absPath string) ([]string, error) {
 	dirPath := filepath.Dir(absPath)
 	files, err := os.ReadDir(dirPath)
 	if err != nil {
-		return varFiles, fmt.Errorf("failed to read dir: %v", err)
+		return varFiles, fmt.Errorf("failed to read dir: %w", err)
 	}
 
 	// Find all var files: {LOCAL_PATH}/{WF_FILE}.{VAR}
@@ -101,14 +101,14 @@ func recurseMkdirParent(path string) error {
 		nil,
 	)
 	if err != nil {
-		return fmt.Errorf("failed to create request file: %v", err)
+		return fmt.Errorf("failed to create request file: %w", err)
 	}
 
 	addAuthHeaders(req)
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return fmt.Errorf("failed to send request: %v", err)
+		return fmt.Errorf("failed to send request: %w", err)
 	}
 
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusConflict {
@@ -133,7 +133,7 @@ func recurseMkdirParent(path string) error {
 func getClosestNodeReadOnly(path string) (bool, string, error) {
 	isReadOnly, nodeType, err := getNodeReadOnly(path)
 
-	if err == ErrNotFound {
+	if errors.Is(err, ErrNotFound) {
 		dir, _ := filepath.Split(path)
 		dir = strings.TrimSuffix(dir, "/")
 
@@ -153,14 +153,14 @@ func getNodeReadOnly(path string) (bool, string, error) {
 		nil,
 	)
 	if err != nil {
-		return false, "", fmt.Errorf("failed to create request file: %v", err)
+		return false, "", fmt.Errorf("failed to create request file: %w", err)
 	}
 
 	addAuthHeaders(req)
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return false, "", fmt.Errorf("failed to send request: %v", err)
+		return false, "", fmt.Errorf("failed to send request: %w", err)
 	}
 
 	if resp.StatusCode != http.StatusOK {
@@ -182,13 +182,13 @@ func getNodeReadOnly(path string) (bool, string, error) {
 
 	data, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return false, "", fmt.Errorf("failed to read response: %v", err)
+		return false, "", fmt.Errorf("failed to read response: %w", err)
 	}
 
 	m := make(map[string]interface{})
 	err = json.Unmarshal(data, &m)
 	if err != nil {
-		return false, "", fmt.Errorf("failed to unmarshal response: %v", err)
+		return false, "", fmt.Errorf("failed to unmarshal response: %w", err)
 	}
 
 	x, exists := m["node"]
@@ -233,7 +233,7 @@ func setWritable(path string, value bool) error {
 
 	isReadOnly, nodeType, err := getNodeReadOnly(path)
 	if err != nil {
-		if err == ErrNotFound {
+		if errors.Is(err, ErrNotFound) {
 			err = setWritable(dir, value)
 			if err != nil {
 				return err
@@ -266,19 +266,19 @@ func setWritable(path string, value bool) error {
 			nil,
 		)
 		if err != nil {
-			return fmt.Errorf("failed to create request file: %v", err)
+			return fmt.Errorf("failed to create request file: %w", err)
 		}
 
 		addAuthHeaders(req)
 
 		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
-			return fmt.Errorf("failed to send request: %v", err)
+			return fmt.Errorf("failed to send request: %w", err)
 		}
 
 		if resp.StatusCode != http.StatusOK {
 			if resp.StatusCode == http.StatusUnauthorized {
-				return fmt.Errorf("failed to modify node, request was unauthorized")
+				return errors.New("failed to modify node, request was unauthorized")
 			}
 
 			errBody, err := io.ReadAll(resp.Body)
@@ -307,7 +307,7 @@ func updateRemoteWorkflow(path string, localPath string) error {
 	printlog("updating namespace: '%s' workflow: '%s'\n", getNamespace(), path)
 
 	isReadOnly, _, err := getClosestNodeReadOnly(path)
-	if err != nil && err != ErrNotFound {
+	if err != nil && !errors.Is(err, ErrNotFound) {
 		log.Fatalf("Failed to get node : %v", err)
 	}
 
@@ -346,14 +346,14 @@ retry:
 		bytes.NewReader(data),
 	)
 	if err != nil {
-		return fmt.Errorf("failed to create request file: %v", err)
+		return fmt.Errorf("failed to create request file: %w", err)
 	}
 
 	addAuthHeaders(req)
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return fmt.Errorf("failed to send request: %v", err)
+		return fmt.Errorf("failed to send request: %w", err)
 	}
 
 	if resp.StatusCode != http.StatusOK {
@@ -558,14 +558,14 @@ func pingNamespace() error {
 		nil,
 	)
 	if err != nil {
-		return fmt.Errorf("failed to create request file: %v", err)
+		return fmt.Errorf("failed to create request file: %w", err)
 	}
 
 	addAuthHeaders(req)
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return fmt.Errorf("failed to ping namespace: %v", err)
+		return fmt.Errorf("failed to ping namespace: %w", err)
 	}
 
 	if resp.StatusCode != http.StatusOK {

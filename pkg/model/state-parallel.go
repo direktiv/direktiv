@@ -73,7 +73,7 @@ func (o *ParallelState) Validate() error {
 
 	for i, action := range o.GetActions() {
 		if err := action.Validate(); err != nil {
-			return fmt.Errorf("action[%v] is invalid: %v", i, err)
+			return fmt.Errorf("action[%v] is invalid: %w", i, err)
 		}
 	}
 
@@ -83,7 +83,7 @@ func (o *ParallelState) Validate() error {
 
 	for i, errDef := range o.ErrorDefinitions() {
 		if err := errDef.Validate(); err != nil {
-			return fmt.Errorf("catch[%v] is invalid: %v", i, err)
+			return fmt.Errorf("catch[%v] is invalid: %w", i, err)
 		}
 	}
 

@@ -287,7 +287,7 @@ func (is *functionsServer) DeleteFunction(ctx context.Context,
 
 		if err != nil {
 			logger.Errorf("successfully delete service, but could not delete backup record: %v", err)
-			return &empty, fmt.Errorf("successfully delete service, but could not delete backup record: %v", err)
+			return &empty, fmt.Errorf("successfully delete service, but could not delete backup record: %w", err)
 		}
 		logger.Infof("Successfully deleted knative service and record")
 	}

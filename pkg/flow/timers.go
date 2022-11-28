@@ -208,7 +208,7 @@ func (timers *timers) addCron(name, fn, pattern string, data []byte) error {
 		timers.executeFunction(t)
 	})
 	if err != nil {
-		return fmt.Errorf("can not enable timer %s: %v", name, err)
+		return fmt.Errorf("can not enable timer %s: %w", name, err)
 	}
 
 	t.cron.cronID = id

@@ -74,8 +74,8 @@ func preprocessRetry(retry *model.RetryDefinition, attempt int, err error) (time
 		return d, err
 	}
 
-	cerr, ok := err.(*derrors.CatchableError)
-	if !ok {
+	cerr := new(derrors.CatchableError)
+	if !errors.As(err, &cerr) {
 		return d, err
 	}
 

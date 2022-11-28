@@ -550,7 +550,7 @@ func (srv *LocalServer) setVar(ctx context.Context, ir *functionRequest, totalSi
 		if err == nil {
 			return errors.New("large payload requires defined Content-Length")
 		}
-		if err != io.EOF {
+		if !errors.Is(err, io.EOF) {
 			return err
 		}
 
@@ -590,7 +590,7 @@ func (srv *LocalServer) setVar(ctx context.Context, ir *functionRequest, totalSi
 	}
 
 	_, err = client.CloseAndRecv()
-	if err != nil && err != io.EOF {
+	if err != nil && !errors.Is(err, io.EOF) {
 		return err
 	}
 
@@ -609,7 +609,7 @@ func (srv *LocalServer) getVar(ctx context.Context, ir *functionRequest, w io.Wr
 	var noEOF = true
 	for noEOF {
 		msg, err := recv()
-		if err == io.EOF {
+		if errors.Is(err, io.EOF) {
 			noEOF = false
 		} else if err != nil {
 			return err
@@ -644,7 +644,7 @@ func (srv *LocalServer) getVar(ctx context.Context, ir *functionRequest, w io.Wr
 	}
 
 	err = client.CloseSend()
-	if err != nil && err != io.EOF {
+	if err != nil && !errors.Is(err, io.EOF) {
 		return err
 	}
 

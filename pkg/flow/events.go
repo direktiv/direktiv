@@ -426,7 +426,7 @@ func eventToBytes(cevent cloudevents.Event) ([]byte, error) {
 	enc := gob.NewEncoder(&ev)
 	err := enc.Encode(cevent)
 	if err != nil {
-		return nil, fmt.Errorf("can not convert event to bytes: %v", err)
+		return nil, fmt.Errorf("can not convert event to bytes: %w", err)
 	}
 
 	return ev.Bytes(), nil
@@ -440,7 +440,7 @@ func bytesToEvent(b []byte) (*cloudevents.Event, error) {
 	enc := gob.NewDecoder(bytes.NewReader(b))
 	err := enc.Decode(ev)
 	if err != nil {
-		return nil, fmt.Errorf("can not convert bytes to event: %v", err)
+		return nil, fmt.Errorf("can not convert bytes to event: %w", err)
 	}
 
 	return ev, nil
@@ -991,7 +991,7 @@ func (events *events) listenForEvents(ctx context.Context, im *instanceMemory, c
 
 			ev.Context[k], err = jqOne(im.data, v)
 			if err != nil {
-				return fmt.Errorf("failed to execute jq query for key '%s' on event definition %d: %v", k, i, err)
+				return fmt.Errorf("failed to execute jq query for key '%s' on event definition %d: %w", k, i, err)
 			}
 
 		}

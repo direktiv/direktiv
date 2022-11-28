@@ -97,7 +97,7 @@ func (db *dbHandler) AddSecret(namespace, name string, secret []byte, ignoreErro
 	if !strings.HasSuffix(name, "/") { // dont excrypt when folder cause  folder have empty data
 		d, err = encryptData([]byte(db.key), secret)
 		if err != nil {
-			return fmt.Errorf("error encrypting data: %v", err)
+			return fmt.Errorf("error encrypting data: %w", err)
 		}
 	}
 

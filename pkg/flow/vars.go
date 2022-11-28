@@ -3,6 +3,7 @@ package flow
 import (
 	"bytes"
 	"context"
+	"errors"
 	"io"
 	"net"
 	"net/http"
@@ -64,14 +65,14 @@ func (vars *vars) Close() error {
 
 	err := vars.http.Close()
 	if err != nil {
-		if err != http.ErrServerClosed {
+		if !errors.Is(err, http.ErrServerClosed) {
 			return err
 		}
 	}
 
 	err = vars.listener.Close()
 	if err != nil {
-		if err != net.ErrClosed {
+		if !errors.Is(err, net.ErrClosed) {
 			return err
 		}
 	}

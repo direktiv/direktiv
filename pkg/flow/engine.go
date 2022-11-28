@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	"net/url"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -332,10 +331,13 @@ func (engine *engine) Transition(ctx context.Context, im *instanceMemory, nextSt
 
 func (engine *engine) CrashInstance(ctx context.Context, im *instanceMemory, err error) {
 
-	if cerr, catchable := err.(*derrors.CatchableError); catchable {
+	cerr := new(derrors.CatchableError)
+	uerr := new(derrors.UncatchableError)
+
+	if errors.As(err, &cerr) {
 		engine.sugar.Errorf("Instance failed with error '%s': %v", cerr.Code, err)
 		engine.logToInstance(ctx, time.Now(), im.in, "Instance failed with error '%s': %s", cerr.Code, err.Error())
-	} else if uerr, uncatchable := err.(*derrors.UncatchableError); uncatchable && uerr.Code != "" {
+	} else if errors.As(err, &uerr) && uerr.Code != "" {
 		engine.sugar.Errorf("Instance failed with uncatchable error '%s': %v", uerr.Code, err)
 		engine.logToInstance(ctx, time.Now(), im.in, "Instance failed with uncatchable error '%s': %s", uerr.Code, err.Error())
 	} else {
@@ -472,7 +474,9 @@ failure:
 
 	engine.CancelInstanceChildren(ctx, im)
 
-	if cerr, ok := err.(*derrors.CatchableError); ok {
+	cerr := new(derrors.CatchableError)
+
+	if errors.As(err, &cerr) {
 
 		_ = im.StoreData("error", cerr)
 
@@ -870,43 +874,40 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 				return
 			}
 			engine.sugar.Debugf("error in request: %v", err)
-			if err, ok := err.(*url.Error); ok {
-				if err, ok := err.Err.(*net.OpError); ok {
-					if _, ok := err.Err.(*net.DNSError); ok {
+			dnsErr := new(net.DNSError)
+			if errors.As(err, &dnsErr) {
 
-						// recreate if the service does not exist
-						if ar.Container.Type == model.ReusableContainerFunctionType &&
-							!engine.isKnativeFunction(engine.actions.client, ar) {
-							err := createKnativeFunction(engine.actions.client, ar)
-							if err != nil && !strings.Contains(err.Error(), "already exists") {
-								engine.sugar.Errorf("can not create knative function: %v", err)
-								engine.reportError(ar, err)
-								return
-							}
-						}
-
-						// recreate if the service if it exists in the database but not knative
-						if (ar.Container.Type == model.NamespacedKnativeFunctionType) &&
-							!engine.isScopedKnativeFunction(engine.actions.client, ar.Container.Service) {
-
-							err := reconstructScopedKnativeFunction(engine.actions.client, ar.Container.Service)
-							if err != nil {
-								if stErr, ok := status.FromError(err); ok && stErr.Code() == codes.NotFound {
-									engine.sugar.Errorf("knative function: '%s' does not exist", ar.Container.Service)
-									engine.reportError(ar, fmt.Errorf("knative function: '%s' does not exist", ar.Container.Service))
-									return
-								}
-
-								engine.sugar.Errorf("can not create scoped knative function: %v", err)
-								engine.reportError(ar, err)
-								return
-							}
-						}
-
-						time.Sleep(1000 * time.Millisecond)
-						continue
+				// recreate if the service does not exist
+				if ar.Container.Type == model.ReusableContainerFunctionType &&
+					!engine.isKnativeFunction(engine.actions.client, ar) {
+					err := createKnativeFunction(engine.actions.client, ar)
+					if err != nil && !strings.Contains(err.Error(), "already exists") {
+						engine.sugar.Errorf("can not create knative function: %v", err)
+						engine.reportError(ar, err)
+						return
 					}
 				}
+
+				// recreate if the service if it exists in the database but not knative
+				if (ar.Container.Type == model.NamespacedKnativeFunctionType) &&
+					!engine.isScopedKnativeFunction(engine.actions.client, ar.Container.Service) {
+
+					err := reconstructScopedKnativeFunction(engine.actions.client, ar.Container.Service)
+					if err != nil {
+						if stErr, ok := status.FromError(err); ok && stErr.Code() == codes.NotFound {
+							engine.sugar.Errorf("knative function: '%s' does not exist", ar.Container.Service)
+							engine.reportError(ar, fmt.Errorf("knative function: '%s' does not exist", ar.Container.Service))
+							return
+						}
+
+						engine.sugar.Errorf("can not create scoped knative function: %v", err)
+						engine.reportError(ar, err)
+						return
+					}
+				}
+
+				time.Sleep(1000 * time.Millisecond)
+				continue
 			}
 
 			time.Sleep(1000 * time.Millisecond)
@@ -980,14 +981,14 @@ func (engine *engine) wakeEventsWaiter(signature []byte, events []*cloudevents.E
 
 	ctx, im, err := engine.loadInstanceMemory(sig.InstanceID, sig.Step)
 	if err != nil {
-		err = fmt.Errorf("cannot load workflow logic instance: %v", err)
+		err = fmt.Errorf("cannot load workflow logic instance: %w", err)
 		engine.sugar.Error(err)
 		return
 	}
 
 	wakedata, err := json.Marshal(events)
 	if err != nil {
-		err = fmt.Errorf("cannot marshal the action results payload: %v", err)
+		err = fmt.Errorf("cannot marshal the action results payload: %w", err)
 		engine.CrashInstance(ctx, im, err)
 		return
 	}

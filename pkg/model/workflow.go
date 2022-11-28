@@ -196,7 +196,7 @@ func (o *Workflow) validate() error {
 	// functions
 	for i, function := range o.GetFunctions() {
 		if sErr := function.Validate(); sErr != nil {
-			return fmt.Errorf("workflow function[%v] is invalid: %v", i, sErr)
+			return fmt.Errorf("workflow function[%v] is invalid: %w", i, sErr)
 		}
 	}
 

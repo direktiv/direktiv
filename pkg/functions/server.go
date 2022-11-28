@@ -345,7 +345,7 @@ func (fServer *functionsServer) orphansGC() {
 
 		cs, err := fetchServiceAPI()
 		if err != nil {
-			err = fmt.Errorf("error getting clientset for knative: %v", err)
+			err = fmt.Errorf("error getting clientset for knative: %w", err)
 			logger.Errorf("reusable orphans garbage collector failed to list workflow functions: %v", err)
 			continue
 		}

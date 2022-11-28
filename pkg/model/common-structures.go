@@ -58,7 +58,7 @@ func (o *ActionDefinition) Validate() error {
 	for i, f := range o.Files {
 		err := f.Validate()
 		if err != nil {
-			return fmt.Errorf("function file %d: %v", i, err)
+			return fmt.Errorf("function file %d: %w", i, err)
 		}
 	}
 

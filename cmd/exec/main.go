@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -397,7 +398,7 @@ Will update the helloworld workflow and set the remote workflow variable 'data.j
 			cmd.PrintErrf("[%v/%v] Updating Namespace: '%s' Workflow: '%s'\n", i+1, len(pathsToUpdate), getNamespace(), path)
 			err = updateRemoteWorkflow(path, localPath)
 			if err != nil {
-				if err == ErrNodeIsReadOnly {
+				if errors.Is(err, ErrNodeIsReadOnly) {
 					var flagSuffix string
 					if config.profile != "" {
 						flagSuffix = " -P=\"" + config.profile + "\""
@@ -462,7 +463,7 @@ Will update the helloworld workflow and set the remote workflow variable 'data.j
 		if !execNoPushFlag {
 			err := updateRemoteWorkflow(path, localAbsPath)
 			if err != nil {
-				if err == ErrNodeIsReadOnly {
+				if errors.Is(err, ErrNodeIsReadOnly) {
 					var flagSuffix string
 					if config.profile != "" {
 						flagSuffix = " -P=\"" + config.profile + "\""

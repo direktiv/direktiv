@@ -105,7 +105,7 @@ func watchConfigChanges(cs *kubernetes.Clientset) (bool, error) {
 	watcher, err := cs.CoreV1().ConfigMaps(ns).Watch(context.TODO(),
 		metav1.SingleObject(metav1.ObjectMeta{Name: "direktiv-config-functions", Namespace: ns}))
 	if err != nil {
-		return false, fmt.Errorf("could not start watcher: %v", err)
+		return false, fmt.Errorf("could not start watcher: %w", err)
 	}
 
 	for {
