@@ -376,5 +376,6 @@ unittest: # Runs all Go unit tests. Or, you can run a specific set of unit tests
 
 .PHONY: lint 
 lint: # Runs very strict linting on the project.
-	golangci-lint run --tests --issues-exit-code=1 --skip-dirs="ent/" --skip-files=".pb.go" -E asciicheck 
-	# golangci-lint run --tests --issues-exit-code=1 --skip-dirs="ent/" --skip-files=".pb.go" -E asciicheck -E containedctx -E contextcheck -E decorder -E dupword -E errchkjson -E errname -E errorlint -E exhaustive -E exhaustruct -E exportloopref -E goconst -E godot -E godox -E goerr113 -E gofmt -E goprintffuncname -E gosec -E interfacebloat -E loggercheck -E misspell -E nilerr -E nilnil -E noctx -E nosprintfhostport -E revive -E tagliatelle -E unconvert -E unparam -E usestdlibvars -E wastedassign -E varnamelen -E wrapcheck
+	golangci-lint run --tests --issues-exit-code=1 --skip-dirs="ent/" --skip-files=".pb.go" -E asciicheck -E decorder
+	# -E containedctx -E contextcheck
+	# -E dupword -E errchkjson -E errname -E errorlint -E exhaustive -E exhaustruct -E exportloopref -E goconst -E godot -E godox -E goerr113 -E gofmt -E goprintffuncname -E gosec -E interfacebloat -E loggercheck -E misspell -E nilerr -E nilnil -E noctx -E nosprintfhostport -E revive -E tagliatelle -E unconvert -E unparam -E usestdlibvars -E wastedassign -E varnamelen -E wrapcheck
