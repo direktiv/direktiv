@@ -873,7 +873,7 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 		}
 
 		truepath := filepath.Join(md.path, path)
-		dir := filepath.Dir(truepath)
+		dir, _ := filepath.Split(truepath)
 
 		switch n.ntype {
 		case mntDir:
