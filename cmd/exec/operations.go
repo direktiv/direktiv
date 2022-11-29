@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -26,7 +27,8 @@ func setRemoteWorkflowVariable(wfURL string, varName string, varPath string) err
 
 	url := wfURL + "?op=set-var&var=" + varName
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		context.Background(),
 		http.MethodPut,
 		url,
 		varData,
@@ -95,7 +97,8 @@ func recurseMkdirParent(path string) error {
 	urlDir := fmt.Sprintf("%s/tree/%s", urlPrefix, strings.Trim(dir, "/"))
 	urlMkdir := fmt.Sprintf("%s?op=create-directory", urlDir)
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		context.Background(),
 		http.MethodPut,
 		urlMkdir,
 		nil,
@@ -147,7 +150,8 @@ func getClosestNodeReadOnly(path string) (bool, string, error) {
 func getNodeReadOnly(path string) (bool, string, error) {
 	urlGetNode := fmt.Sprintf("%s/tree/%s", urlPrefix, strings.TrimPrefix(path, "/"))
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		context.Background(),
 		http.MethodGet,
 		urlGetNode,
 		nil,
@@ -260,7 +264,8 @@ func setWritable(path string, value bool) error {
 
 		urlLockMirror := fmt.Sprintf("%s?op=%s", urlWorkflow, operation)
 
-		req, err := http.NewRequest(
+		req, err := http.NewRequestWithContext(
+			context.Background(),
 			http.MethodPost,
 			urlLockMirror,
 			nil,
@@ -340,7 +345,8 @@ func updateRemoteWorkflow(path string, localPath string) error {
 
 retry:
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		context.Background(),
 		method,
 		url,
 		bytes.NewReader(data),
@@ -400,7 +406,8 @@ func executeWorkflow(url string) (executeResponse, error) {
 		inputData = bytes.NewBufferString("{}")
 	}
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		context.Background(),
 		http.MethodPost,
 		url,
 		inputData,
@@ -489,7 +496,8 @@ func executeEvent(url string) (string, error) {
 	}
 
 	body := bytes.NewReader(eventBody)
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		context.Background(),
 		http.MethodPost,
 		url,
 		body,
@@ -510,7 +518,8 @@ func executeEvent(url string) (string, error) {
 		eventId := event["id"]
 		url := fmt.Sprintf("%s/events/%s/replay", urlPrefix, eventId)
 
-		req, err := http.NewRequest(
+		req, err := http.NewRequestWithContext(
+			context.Background(),
 			http.MethodPost,
 			url,
 			nil,
@@ -552,7 +561,8 @@ func executeEvent(url string) (string, error) {
 func pingNamespace() error {
 	urlGetNode := fmt.Sprintf("%s/tree/", urlPrefix)
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		context.Background(),
 		http.MethodGet,
 		urlGetNode,
 		nil,

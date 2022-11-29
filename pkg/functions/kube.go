@@ -727,7 +727,7 @@ func (is *functionsServer) CancelWorfklow(ctx context.Context, in *igrpc.CancelW
 			logger.Infof("cancelling %v", name)
 			addr := fmt.Sprintf("http://%s.%s/cancel", svc, ns)
 
-			req, err := http.NewRequest(http.MethodPost, addr, nil)
+			req, err := http.NewRequestWithContext(ctx, http.MethodPost, addr, nil)
 			if err != nil {
 				logger.Errorf("error creating delete request: %v", err)
 				return

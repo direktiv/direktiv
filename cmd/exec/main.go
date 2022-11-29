@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -89,7 +90,8 @@ func main() {
 func getOutput(url string) ([]byte, error) {
 	var output instanceOutput
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		context.Background(),
 		http.MethodGet,
 		url,
 		nil,
