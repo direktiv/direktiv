@@ -187,7 +187,7 @@ func getInsecure() bool {
 
 func getTLSConfig() *tls.Config {
 
-	return &tls.Config{InsecureSkipVerify: getInsecure()}
+	return &tls.Config{InsecureSkipVerify: getInsecure()} //nolint:gosec
 
 }
 

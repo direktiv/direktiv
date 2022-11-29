@@ -2,8 +2,9 @@ package flow
 
 import (
 	"context"
+	"crypto/rand"
 	"fmt"
-	"math/rand"
+	"math/big"
 	"time"
 
 	"google.golang.org/grpc/codes"
@@ -186,7 +187,12 @@ func (engine *engine) mux(ctx context.Context, nsc *ent.NamespaceClient, namespa
 				weight += route.Weight
 			}
 
-			n := rand.Int()
+			cn, err := rand.Int(rand.Reader, big.NewInt(int64(weight)))
+			if err != nil {
+				return nil, err
+			}
+
+			n := int(cn.Int64())
 
 			n = n % weight
 

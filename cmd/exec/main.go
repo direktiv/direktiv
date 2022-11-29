@@ -596,7 +596,7 @@ Will update the helloworld workflow and set the remote workflow variable 'data.j
 
 		output, err := getOutput(urlOutput)
 		if outputFlag != "" {
-			err = os.WriteFile(outputFlag, output, 0644)
+			err = os.WriteFile(outputFlag, output, 0600)
 			if err != nil {
 				log.Fatalf("Failed to write output file: %v\n", err)
 			}

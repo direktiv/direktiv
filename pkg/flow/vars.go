@@ -7,6 +7,7 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/gorilla/mux"
@@ -38,8 +39,9 @@ func initVarsServer(ctx context.Context, srv *server) (*vars, error) {
 	vars.router.HandleFunc("/api/vars/namespaces/{namespace}/instances/{instance}/vars/{var}", vars.inHandler)
 
 	vars.http = &http.Server{
-		Addr:    ":9999",
-		Handler: vars.router,
+		Addr:              ":9999",
+		Handler:           vars.router,
+		ReadHeaderTimeout: time.Second * 60,
 	}
 
 	go func() {

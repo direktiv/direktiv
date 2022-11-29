@@ -2,6 +2,7 @@ package api
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/util"
@@ -56,8 +57,9 @@ func NewServer(l *zap.SugaredLogger) (*Server, error) {
 		logger: l,
 		router: r,
 		srv: &http.Server{
-			Handler: r,
-			Addr:    ":8080",
+			Handler:           r,
+			Addr:              ":8080",
+			ReadHeaderTimeout: time.Second * 60,
 		},
 	}
 

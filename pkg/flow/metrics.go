@@ -149,6 +149,7 @@ func setupPrometheusEndpoint() error {
 	prometheus.MustRegister(metricsCloudEventsCaptured)
 
 	http.Handle("/metrics", promhttp.Handler())
+
 	err := http.ListenAndServe(":2112", nil)
 	if err != nil {
 		if !errors.Is(err, http.ErrServerClosed) {
