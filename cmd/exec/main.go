@@ -316,7 +316,7 @@ Pushing local directory cannot be used with config flag. Config must be found au
 EXAMPLE: push helloworld.yaml --addr http://192.168.1.1 --namespace admin
 
 Variables will also be uploaded if they are prefixed with your local workflow name
-EXMAPLE:  
+EXAMPLE:  
   dir: /pwd
         /helloworld.yaml
         /helloworld.yaml.data.json
@@ -444,7 +444,7 @@ var execCmd = &cobra.Command{
 EXAMPLE: exec helloworld.yaml --addr http://192.168.1.1 --namespace admin --path helloworld
 
 Variables will also be uploaded if they are prefixed with your local workflow name
-EXMAPLE:  
+EXAMPLE:  
   dir: /pwd
         /helloworld.yaml
         /helloworld.yaml.data.json

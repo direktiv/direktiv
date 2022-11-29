@@ -931,7 +931,7 @@ func testInstanceError(ctx context.Context, c grpc.FlowClient, namespace string)
 	}
 
 	if iresp.GetInstance().ErrorCode != "" && iresp.GetInstance().ErrorMessage != "" {
-		return fmt.Errorf("successfull error instance run still ended up erroring")
+		return fmt.Errorf("successful error instance run still ended up erroring")
 	}
 
 	return nil
