@@ -182,8 +182,6 @@ func getStateFromType(stype string) (State, error) {
 		s = new(NoopState)
 	case StateTypeValidate.String():
 		s = new(ValidateState)
-	case StateTypeCallback.String():
-		s = new(CallbackState)
 	case StateTypeParallel.String():
 		s = new(ParallelState)
 	case StateTypeGetter.String():

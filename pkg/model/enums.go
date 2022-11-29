@@ -190,7 +190,6 @@ const (
 	StateTypeSwitch
 	StateTypeValidate
 	StateTypeConsume
-	StateTypeCallback
 	StateTypeGetter
 	StateTypeSetter
 )
@@ -209,7 +208,6 @@ var stateTypeStrings []string = []string{
 	"switch",
 	"validate",
 	"consumeEvent",
-	"callback",
 	"getter",
 	"setter",
 }
