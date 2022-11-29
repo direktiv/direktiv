@@ -922,7 +922,7 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 		return
 	}
 
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 		engine.reportError(ar, fmt.Errorf("action error status: %d",
 			resp.StatusCode))
 	}
