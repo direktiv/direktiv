@@ -425,7 +425,6 @@ func (flow *flow) SetVariable(ctx context.Context, vrefc *ent.VarRefClient, vdat
 		broadcastInput.WorkflowPath = d.path
 		ns = d.ns()
 	case *ent.Instance:
-		// TODO: thread scope broadcast?
 		broadcastInput.Scope = BroadcastEventScopeInstance
 		ns, err = v.Namespace(ctx)
 		if err != nil {
@@ -501,7 +500,6 @@ func (flow *flow) DeleteVariable(ctx context.Context, vrefc *ent.VarRefClient, v
 		broadcastInput.WorkflowPath = d.path
 		ns = d.ns()
 	case *ent.Instance:
-		// TODO: thread scope broadcast?
 		broadcastInput.Scope = BroadcastEventScopeInstance
 		ns, err = v.Namespace(ctx)
 		if err != nil {

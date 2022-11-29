@@ -624,7 +624,7 @@ func (engine *engine) subflowInvoke(ctx context.Context, caller *subflowCaller, 
 	}
 
 	args.Input = input
-	args.Caller = fmt.Sprintf("instance:%v", caller.InstanceID) // TODO: human readable
+	args.Caller = fmt.Sprintf("instance:%v", caller.InstanceID)
 
 	var threadVars []*ent.VarRef
 
@@ -767,7 +767,6 @@ func (engine *engine) doActionRequest(ctx context.Context, ar *functionRequest) 
 		}
 	}
 
-	// TODO: should this ctx be modified with a shorter deadline?
 	switch ar.Container.Type {
 	case model.DefaultFunctionType:
 		fallthrough
@@ -1039,9 +1038,7 @@ func (engine *engine) EventsInvoke(workflowID string, events ...*cloudevents.Eve
 	args.Path = d.path
 
 	args.Input = input
-	args.Caller = "cloudevent" // TODO: human readable
-
-	// TODO: TRACE traceEventsInvoked
+	args.Caller = "cloudevent"
 
 	im, err := engine.NewInstance(ctx, args)
 	if err != nil {

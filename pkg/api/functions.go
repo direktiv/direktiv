@@ -618,7 +618,6 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully got service revision details"
 	pathHandlerPair(r, RN_ListWorkflowServices, "function-revision", h.singleWorkflowServiceRevision, h.singleWorkflowServiceRevisionSSE)
 
-	// TODO: direct control?
 	// r.HandleFunc("/namespaces/{ns}/workflow/{wf}", h.createWorkflowService).Methods(http.MethodPost).Name(RN_CreateNamespaceService)
 	// r.HandleFunc("/namespaces/{ns}/function/{svn}", h.deleteNamespaceService).Methods(http.MethodDelete).Name(RN_DeleteNamespaceServices)
 	// r.HandleFunc("/namespaces/{ns}/function/{svn}", h.getNamespaceService).Methods(http.MethodGet).Name(RN_GetNamespaceService)

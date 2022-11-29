@@ -117,7 +117,6 @@ func (syncer *syncer) scheduleTimeout(activityId string, oldController string, t
 	err = syncer.timers.addOneShot(id, syncerTimeoutFunction, deadline, data)
 	if err != nil {
 		syncer.sugar.Error(err)
-		// TODO: abort?
 	}
 
 }
@@ -1070,7 +1069,7 @@ func (repository *localRepository) clone(ctx context.Context) error {
 
 	fetchOpts := git.FetchOptions{
 		RemoteCallbacks: git.RemoteCallbacks{
-			CertificateCheckCallback: func(cert *git.Certificate, valid bool, hostname string) error { return nil }, // TODO
+			CertificateCheckCallback: func(cert *git.Certificate, valid bool, hostname string) error { return nil },
 			CredentialsCallback: func(url string, username_from_url string, allowed_types git.CredentialType) (*git.Credential, error) {
 				cred, err := git.NewCredentialSSHKeyFromMemory(username_from_url, repository.repo.PublicKey, repository.repo.PrivateKey, repository.repo.Passphrase)
 				if err != nil {
@@ -1209,7 +1208,6 @@ func (model *mirrorModel) addWorkflowNode(path string) error {
 	}
 
 	if !util.NameRegex.MatchString(name) {
-		// TODO: log something
 		return nil
 	}
 
@@ -1476,7 +1474,7 @@ func buildModel(ctx context.Context, repo *localRepository) (*mirrorModel, error
 		parent:   model.root,
 		children: make([]*mirrorNode, 0),
 		ntype:    mntDir,
-		name:     ".", // TODO
+		name:     ".",
 	}
 
 	cfg := new(project.Config)

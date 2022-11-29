@@ -408,7 +408,6 @@ func (flow *flow) deleteNode(ctx context.Context, args *deleteNodeArgs) error {
 		if k != 0 {
 			return status.Error(codes.InvalidArgument, "refusing to delete non-empty directory without explicit recursive argument")
 		}
-		// TODO: don't delete if directory has stuff unless 'recursive' explicitly requested
 	}
 
 	err := inoc.DeleteOne(ino).Exec(ctx)

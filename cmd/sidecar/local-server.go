@@ -233,7 +233,6 @@ func (srv *LocalServer) varHandler(w http.ResponseWriter, r *http.Request) {
 
 		err := srv.getVar(ctx, ir, w, setTotalSize, scope, key)
 		if err != nil {
-			// TODO: more specific errors
 			reportError(http.StatusInternalServerError, err)
 			return
 		}
@@ -244,7 +243,6 @@ func (srv *LocalServer) varHandler(w http.ResponseWriter, r *http.Request) {
 
 		err := srv.setVar(ctx, ir, r.ContentLength, r.Body, scope, key, vMimeType)
 		if err != nil {
-			// TODO: more specific errors
 			reportError(http.StatusInternalServerError, err)
 			return
 		}
@@ -409,10 +407,6 @@ type varClientMsg interface {
 
 func (srv *LocalServer) requestVar(ctx context.Context, ir *functionRequest, scope, key string) (client varClient, recv func() (varClientMsg, error), err error) {
 
-	// TODO: const the scopes
-	// TODO: validate scope earlier so that the switch cannot get unexpected data here
-	// TODO: log missing files but proceed anyway
-
 	switch scope {
 
 	case util.VarScopeNamespace:
@@ -471,10 +465,6 @@ type varSetClientMsg struct {
 }
 
 func (srv *LocalServer) setVar(ctx context.Context, ir *functionRequest, totalSize int64, r io.Reader, scope, key, vMimeType string) error {
-
-	// TODO: const the scopes
-	// TODO: validate scope earlier so that the switch cannot get unexpected data here
-	// TODO: log missing files but proceed anyway
 
 	var err error
 	var client varSetClient

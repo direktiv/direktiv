@@ -542,7 +542,7 @@ func (internal *internal) SetThreadVariableParcels(srv grpc.Internal_SetThreadVa
 		internal.logToInstance(ctx, time.Now(), d.in, "Updated thread variable '%s'.", key)
 	}
 
-	internal.pubsub.NotifyInstanceVariables(d.in) // TODO: what do we do about this for thread variables?
+	internal.pubsub.NotifyInstanceVariables(d.in) // what do we do about this for thread variables?
 
 	var resp grpc.SetVariableInternalResponse
 

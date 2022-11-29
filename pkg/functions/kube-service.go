@@ -136,9 +136,6 @@ func createKnativeFunction(info *igrpc.BaseInfo) (*v1.Service, error) {
 		return nil, err
 	}
 
-	// b, _ := json.MarshalIndent(svc, "", "  ")
-	// fmt.Printf("%v\n", string(b))
-
 	return newSvc, nil
 }
 

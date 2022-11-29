@@ -145,8 +145,6 @@ func (instance *testerInstance) GetVariables(ctx context.Context, vars []Variabl
 
 	var variables = make([]Variable, len(vars))
 
-	// TODO
-
 	return variables, nil
 
 }

@@ -232,8 +232,6 @@ func (engine *engine) UserLog(ctx context.Context, im *instanceMemory, msg strin
 
 	s := fmt.Sprintf(msg, a...)
 
-	// TODO: detect content type and handle base64 data
-
 	wf, err := engine.InstanceWorkflow(ctx, im)
 	if err != nil {
 		engine.sugar.Error(err)
@@ -243,7 +241,7 @@ func (engine *engine) UserLog(ctx context.Context, im *instanceMemory, msg strin
 	if attr := wf.LogToEvents; attr != "" {
 		event := cloudevents.NewEvent()
 		event.SetID(uuid.New().String())
-		event.SetSource(wf.ID.String()) // TODO: resolve to a human-readable path
+		event.SetSource(wf.ID.String())
 		event.SetType("direktiv.instanceLog")
 		event.SetExtension("logger", attr)
 		event.SetDataContentType("application/json")

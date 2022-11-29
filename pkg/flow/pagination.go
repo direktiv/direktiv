@@ -180,7 +180,6 @@ func (cpds *cpdSecrets) Filter(filter *grpc.PageFilter) error {
 		return fmt.Errorf("invalid filter field: %s", filter.GetField())
 	}
 
-	// TODO
 	switch filter.GetType() {
 	case "":
 	default:

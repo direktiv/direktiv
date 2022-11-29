@@ -118,8 +118,6 @@ func (locks *locks) lock(key string, blocking bool) (*sql.Conn, error) {
 		wait = int(time.Minute) * 15
 	}
 
-	logger.Debugf("locking %s", key)
-
 	conn, err := locks.lockDB(hash, wait)
 	if err != nil {
 		return nil, err

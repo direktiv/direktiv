@@ -71,7 +71,6 @@ func (srv *NetworkServer) Start() {
 
 func (srv *NetworkServer) cancel(w http.ResponseWriter, r *http.Request) {
 
-	// TODO: opentelemetry?
 	srv.local.cancelActiveRequest(context.Background(),
 		r.Header.Get(actionIDHeader))
 
@@ -142,7 +141,6 @@ func (srv *NetworkServer) functions(w http.ResponseWriter, r *http.Request) {
 			log.Debugf("Request '%s' queued.", id)
 		case <-time.After(time.Second * 30):
 			log.Warnf("Request '%s' is starving!", id)
-			// TODO: reject request after some number of failures
 		}
 	}
 

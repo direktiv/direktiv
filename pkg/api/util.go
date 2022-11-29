@@ -243,7 +243,6 @@ func respond(w http.ResponseWriter, resp interface{}, err error) {
 
 	if err != nil {
 
-		// TODO fix grpc to send back useful error code for http translation
 		code := ConvertGRPCStatusCodeToHTTPCode(status.Code(err))
 		st := status.Convert(err)
 
@@ -287,7 +286,6 @@ func respondJSON(w http.ResponseWriter, resp interface{}, err error) {
 
 	if err != nil {
 
-		// TODO fix grpc to send back useful error code for http translation
 		code := ConvertGRPCStatusCodeToHTTPCode(status.Code(err))
 
 		msg := err.Error()

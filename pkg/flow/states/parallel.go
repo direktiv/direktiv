@@ -122,7 +122,6 @@ func (logic *parallelLogic) scheduleFirstActions(ctx context.Context) error {
 
 		child, err := logic.scheduleAction(ctx, action, 0)
 		if err != nil {
-			// TODO: cleanup the ones that succeeded
 			return err
 		}
 
@@ -202,7 +201,7 @@ func (logic *parallelLogic) scheduleRetryAction(ctx context.Context, retry *acti
 		return err
 	}
 
-	children[retry.Idx] = child // TODO: check for out of bounds issues?
+	children[retry.Idx] = child
 
 	err = logic.SetMemory(ctx, children)
 	if err != nil {

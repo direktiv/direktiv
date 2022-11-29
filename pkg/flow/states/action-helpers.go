@@ -14,8 +14,6 @@ import (
 	"github.com/senseyeio/duration"
 )
 
-// TODO: some of these structs should be refactored elsewhere to reduce duplication
-
 type actionRetryInfo struct {
 	Children []ChildInfo
 	Idx      int

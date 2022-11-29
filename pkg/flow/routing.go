@@ -274,7 +274,7 @@ func (flow *flow) configureRouter(ctx context.Context, evc *ent.EventsClient, wf
 	if muxErr2 != nil {
 
 		if hasFlag(flags, rcfNoValidate) && existingRoutes <= 1 {
-			// TODO: log error
+			// no need to do anything here?
 		} else if muxErr1 == nil || !hasFlag(flags, rcfBreaking) {
 			return muxErr2
 		}

@@ -387,7 +387,7 @@ func (engine *engine) freeResources(im *instanceMemory) {
 		}
 	}
 
-	// TODO: do we actually want to delete variables here? There could be value in keeping them around for a little while.
+	// do we actually want to delete variables here? There could be value in keeping them around for a little while.
 
 	// var namespace, workflow, instance string
 	// namespace = rec.Edges.Workflow.Edges.Namespace.ID

@@ -43,8 +43,6 @@ func (engine *engine) WakeInstanceCaller(ctx context.Context, im *instanceMemory
 
 		step := int32(msg.Step)
 
-		// TODO: TRACE
-
 		_, err := engine.server.internal.ReportActionResults(ctx, &grpc.ReportActionResultsRequest{
 			InstanceId:   msg.InstanceID,
 			Step:         step,
@@ -119,7 +117,6 @@ func (engine *engine) queue(im *instanceMemory) {
 	metricsWfInvoked.WithLabelValues(namespace, workflow, namespace).Inc()
 	metricsWfPending.WithLabelValues(namespace, workflow, namespace).Inc()
 
-	// TODO: expand on this
 	go engine.start(im)
 
 }

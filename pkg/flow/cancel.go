@@ -56,8 +56,6 @@ func (engine *engine) CancelInstanceChildren(ctx context.Context, im *instanceMe
 	for _, child := range children {
 		switch child.Type {
 		case "isolate":
-			// TODO
-			// engine.pubsub.CancelFunction(child.Id)
 			if child.ServiceName != "" {
 				err := engine.actions.CancelWorkflowInstance(child.ServiceName, child.Id)
 				if err != nil {
@@ -96,8 +94,6 @@ func (engine *engine) cancelInstance(id, code, message string, soft bool) {
 	}
 
 	engine.sugar.Debugf("Handling cancel instance: %s", this())
-
-	// TODO: TRACE cancel
 
 	go engine.runState(ctx, im, nil, err)
 

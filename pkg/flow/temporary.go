@@ -414,7 +414,6 @@ func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory,
 		ar.Workflow.Step = im.Step()
 	}
 
-	// TODO: timeout
 	fnt := fn.GetType()
 	ar.Container.Type = fnt
 	ar.Container.Data = inputData

@@ -276,8 +276,6 @@ func (wr *WrapperReader) Read(p []byte) (n int, err error) {
 
 func (worker *inboundWorker) writeFile(ftype, dst string, pr io.Reader) error {
 
-	// TODO: const the types
-
 	var err error
 
 	// wrap reader to detect empty tar/gz and DON'T error if the variable
@@ -351,8 +349,6 @@ func (worker *inboundWorker) writeFile(ftype, dst string, pr io.Reader) error {
 }
 
 func (worker *inboundWorker) fileWriter(ctx context.Context, ir *functionRequest, f *functionFiles, pr *io.PipeReader) error {
-
-	// TODO: validate f.Type earlier so that the switch cannot get unexpected data here
 
 	dir := worker.functionDir(ir)
 	dst := f.Key
@@ -646,7 +642,7 @@ func (worker *inboundWorker) respondToFlow(ctx context.Context, ir *functionRequ
 
 func (worker *inboundWorker) reportSidecarError(ir *functionRequest, err error) {
 
-	ctx := context.Background() // TODO
+	ctx := context.Background()
 
 	worker.respondToFlow(ctx, ir, &outcome{
 		errMsg: err.Error(),
@@ -760,8 +756,6 @@ func (worker *inboundWorker) validateFilesHeaders(req *inboundRequest, ifiles *[
 			worker.reportValidationError(req, http.StatusBadRequest, fmt.Errorf("invalid %s [%d]: %w", hdr, i, err))
 			return false
 		}
-
-		// TODO: extra validation
 
 		*ifiles = append(*ifiles, files)
 
