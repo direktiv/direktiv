@@ -29,7 +29,7 @@ var inodesOrderings = []*orderingInfo{
 	},
 	{
 		db:           entino.FieldName,
-		req:          "NAME",
+		req:          util.PaginationKeyName,
 		defaultOrder: ent.Asc,
 		isDefault:    true,
 	},
@@ -47,7 +47,7 @@ var inodesOrderings = []*orderingInfo{
 
 var inodesFilters = map[*filteringInfo]func(query *ent.InodeQuery, v string) (*ent.InodeQuery, error){
 	{
-		field: "NAME",
+		field: util.PaginationKeyName,
 		ftype: "CONTAINS",
 	}: func(query *ent.InodeQuery, v string) (*ent.InodeQuery, error) {
 		return query.Where(entino.NameContains(v)), nil

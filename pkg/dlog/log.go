@@ -2,6 +2,7 @@ package dlog
 
 import (
 	"os"
+	"strconv"
 
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/direktiv/direktiv/pkg/version"
@@ -33,10 +34,10 @@ func FunctionsLogger() (*zap.SugaredLogger, error) {
 
 func customLogger() (*zap.Logger, error) {
 
-	l := os.Getenv(util.DirektivDebug)
+	l, _ := strconv.ParseBool(os.Getenv(util.DirektivDebug))
 
 	inLvl := zapcore.InfoLevel
-	if l == "true" {
+	if l {
 		inLvl = zapcore.DebugLevel
 	}
 

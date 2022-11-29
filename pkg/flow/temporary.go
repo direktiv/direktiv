@@ -16,6 +16,7 @@ import (
 	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
 	"github.com/direktiv/direktiv/pkg/model"
 	secretsgrpc "github.com/direktiv/direktiv/pkg/secrets/grpc"
+	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -41,13 +42,13 @@ func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.Variab
 
 		switch scope {
 
-		case "instance":
+		case util.VarScopeInstance:
 			ref, err = im.in.QueryVars().Where(entvar.NameEQ(key), entvar.BehaviourIsNil()).WithVardata().Only(ctx)
 
-		case "thread":
+		case util.VarScopeThread:
 			ref, err = im.in.QueryVars().Where(entvar.NameEQ(key), entvar.BehaviourEQ("thread")).WithVardata().Only(ctx)
 
-		case "workflow":
+		case util.VarScopeWorkflow:
 
 			var wf *ent.Workflow
 
@@ -64,7 +65,7 @@ func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.Variab
 
 			ref, err = wf.QueryVars().Where(entvar.NameEQ(key)).WithVardata().Only(ctx)
 
-		case "namespace":
+		case util.VarScopeNamespace:
 
 			var ns *ent.Namespace
 

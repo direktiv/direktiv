@@ -201,10 +201,10 @@ func generateActionInput(ctx context.Context, args *generateActionInputArgs) ([]
 
 		switch file.Scope {
 		case "":
-		case "namespace":
-		case "workflow":
-		case "instance":
-		case "thread":
+		case util.VarScopeNamespace:
+		case util.VarScopeWorkflow:
+		case util.VarScopeInstance:
+		case util.VarScopeThread:
 		default:
 			return nil, nil, derrors.NewCatchableError(ErrCodeInvalidVariableScope, "invalid 'scope' for function file %d: %s", idx, file.Scope)
 		}

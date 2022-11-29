@@ -12,6 +12,7 @@ import (
 	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
 )
 
@@ -272,7 +273,7 @@ func (engine *engine) InstanceCaller(ctx context.Context, im *instanceMemory) *s
 	var err error
 
 	str := im.in.Edges.Runtime.CallerData
-	if str == "" || str == "cron" {
+	if str == "" || str == util.CallerCron {
 		return nil
 	}
 

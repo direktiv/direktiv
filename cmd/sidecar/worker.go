@@ -415,7 +415,7 @@ func (worker *inboundWorker) prepFunctionFiles(ctx context.Context, ir *function
 		}
 	}
 
-	subDirs := []string{"namespace", "workflow", "instance"}
+	subDirs := []string{util.VarScopeNamespace, util.VarScopeWorkflow, util.VarScopeInstance}
 	for _, d := range subDirs {
 		err := os.MkdirAll(path.Join(dir, fmt.Sprintf("out/%s", d)), 0777)
 		if err != nil {
@@ -485,7 +485,7 @@ func (worker *inboundWorker) handleFunctionRequest(req *inboundRequest) {
 
 func (worker *inboundWorker) setOutVariables(ctx context.Context, ir *functionRequest) error {
 
-	subDirs := []string{"namespace", "workflow", "instance"}
+	subDirs := []string{util.VarScopeNamespace, util.VarScopeWorkflow, util.VarScopeInstance}
 	for _, d := range subDirs {
 
 		out := path.Join(worker.functionDir(ir), "out", d)

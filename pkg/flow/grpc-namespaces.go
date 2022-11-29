@@ -19,14 +19,14 @@ import (
 var namespacesOrderings = []*orderingInfo{
 	{
 		db:           entns.FieldName,
-		req:          "NAME",
+		req:          util.PaginationKeyName,
 		defaultOrder: ent.Asc,
 	},
 }
 
 var namespacesFilters = map[*filteringInfo]func(query *ent.NamespaceQuery, v string) (*ent.NamespaceQuery, error){
 	{
-		field: "NAME",
+		field: util.PaginationKeyName,
 		ftype: "CONTAINS",
 	}: func(query *ent.NamespaceQuery, v string) (*ent.NamespaceQuery, error) {
 		return query.Where(entns.NameContains(v)), nil

@@ -415,7 +415,7 @@ func (srv *LocalServer) requestVar(ctx context.Context, ir *functionRequest, sco
 
 	switch scope {
 
-	case "namespace":
+	case util.VarScopeNamespace:
 		var nvClient grpc.Internal_NamespaceVariableParcelsClient
 		nvClient, err = srv.flow.NamespaceVariableParcels(ctx, &grpc.VariableInternalRequest{
 			Instance: ir.instanceId,
@@ -426,7 +426,7 @@ func (srv *LocalServer) requestVar(ctx context.Context, ir *functionRequest, sco
 			return nvClient.Recv()
 		}
 
-	case "workflow":
+	case util.VarScopeWorkflow:
 		var wvClient grpc.Internal_WorkflowVariableParcelsClient
 		wvClient, err = srv.flow.WorkflowVariableParcels(ctx, &grpc.VariableInternalRequest{
 			Instance: ir.instanceId,
@@ -440,7 +440,7 @@ func (srv *LocalServer) requestVar(ctx context.Context, ir *functionRequest, sco
 	case "":
 		fallthrough
 
-	case "instance":
+	case util.VarScopeInstance:
 		var ivClient grpc.Internal_InstanceVariableParcelsClient
 		ivClient, err = srv.flow.InstanceVariableParcels(ctx, &grpc.VariableInternalRequest{
 			Instance: ir.instanceId,
@@ -482,7 +482,7 @@ func (srv *LocalServer) setVar(ctx context.Context, ir *functionRequest, totalSi
 
 	switch scope {
 
-	case "namespace":
+	case util.VarScopeNamespace:
 		var nvClient grpc.Internal_SetNamespaceVariableParcelsClient
 		nvClient, err = srv.flow.SetNamespaceVariableParcels(ctx)
 		if err != nil {
@@ -500,7 +500,7 @@ func (srv *LocalServer) setVar(ctx context.Context, ir *functionRequest, totalSi
 			return nvClient.Send(req)
 		}
 
-	case "workflow":
+	case util.VarScopeWorkflow:
 		var wvClient grpc.Internal_SetWorkflowVariableParcelsClient
 		wvClient, err = srv.flow.SetWorkflowVariableParcels(ctx)
 		if err != nil {
@@ -521,7 +521,7 @@ func (srv *LocalServer) setVar(ctx context.Context, ir *functionRequest, totalSi
 	case "":
 		fallthrough
 
-	case "instance":
+	case util.VarScopeInstance:
 		var ivClient grpc.Internal_SetInstanceVariableParcelsClient
 		ivClient, err = srv.flow.SetInstanceVariableParcels(ctx)
 		if err != nil {

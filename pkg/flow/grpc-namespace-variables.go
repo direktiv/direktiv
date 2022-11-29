@@ -12,6 +12,7 @@ import (
 	entvar "github.com/direktiv/direktiv/pkg/flow/ent/varref"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/util"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -200,7 +201,7 @@ var variablesOrderings = []*orderingInfo{
 
 var variablesFilters = map[*filteringInfo]func(query *ent.VarRefQuery, v string) (*ent.VarRefQuery, error){
 	{
-		field: "NAME",
+		field: util.PaginationKeyName,
 		ftype: "CONTAINS",
 	}: func(query *ent.VarRefQuery, v string) (*ent.VarRefQuery, error) {
 		return query.Where(entvar.NameContains(v)), nil

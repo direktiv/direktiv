@@ -3,6 +3,8 @@ package model
 import (
 	"errors"
 	"fmt"
+
+	"github.com/direktiv/direktiv/pkg/util"
 )
 
 // GetterState defines the state for a getter
@@ -24,11 +26,11 @@ type GetterDefinition struct {
 func (o *GetterDefinition) Validate() error {
 
 	switch o.Scope {
-	case "instance":
-	case "workflow":
-	case "namespace":
-	case "thread":
-	case "system":
+	case util.VarScopeInstance:
+	case util.VarScopeWorkflow:
+	case util.VarScopeNamespace:
+	case util.VarScopeThread:
+	case util.VarScopeSystem:
 	default:
 		return ErrVarScope
 	}

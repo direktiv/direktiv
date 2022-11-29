@@ -9,6 +9,7 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/util"
 )
 
 type pagination struct {
@@ -175,7 +176,7 @@ func (cpds *cpdSecrets) Filter(filter *grpc.PageFilter) error {
 		return nil
 	}
 
-	if filter.GetField() != "" && filter.GetField() != "NAME" {
+	if filter.GetField() != "" && filter.GetField() != util.PaginationKeyName {
 		return fmt.Errorf("invalid filter field: %s", filter.GetField())
 	}
 
@@ -204,7 +205,7 @@ func (cpds *cpdSecrets) Filter(filter *grpc.PageFilter) error {
 
 func (cpds *cpdSecrets) Order(order *grpc.PageOrder) error {
 
-	if order.GetField() != "" && order.GetField() != "NAME" {
+	if order.GetField() != "" && order.GetField() != util.PaginationKeyName {
 		return fmt.Errorf("invalid order field: %s", order.GetField())
 	}
 

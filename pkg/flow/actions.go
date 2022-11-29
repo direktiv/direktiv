@@ -161,7 +161,7 @@ func (cpds *cpdRegistries) Filter(filter *grpc.PageFilter) error {
 		return nil
 	}
 
-	if filter.GetField() != "" && filter.GetField() != "NAME" {
+	if filter.GetField() != "" && filter.GetField() != util.PaginationKeyName {
 		return fmt.Errorf("invalid filter field: %s", filter.GetField())
 	}
 
@@ -190,7 +190,7 @@ func (cpds *cpdRegistries) Filter(filter *grpc.PageFilter) error {
 
 func (cpds *cpdRegistries) Order(order *grpc.PageOrder) error {
 
-	if order.GetField() != "" && order.GetField() != "NAME" {
+	if order.GetField() != "" && order.GetField() != util.PaginationKeyName {
 		return fmt.Errorf("invalid order field: %s", order.GetField())
 	}
 

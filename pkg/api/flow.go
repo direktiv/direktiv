@@ -3024,9 +3024,9 @@ func (h *flowHandler) SyncMirror(w http.ResponseWriter, r *http.Request) {
 	namespace := mux.Vars(r)["ns"]
 	path, _ := pathAndRef(r)
 
-	force := r.URL.Query().Get("force")
+	force, _ := strconv.ParseBool(r.URL.Query().Get("force"))
 
-	if force == "true" {
+	if force {
 		in := &grpc.HardSyncMirrorRequest{}
 
 		in.Namespace = namespace
@@ -3083,11 +3083,7 @@ func (h *flowHandler) DeleteNode(w http.ResponseWriter, r *http.Request) {
 	namespace := mux.Vars(r)["ns"]
 	path, _ := pathAndRef(r)
 
-	recursiveDelete := false
-	recursiveDeleteStr := r.URL.Query().Get("recursive")
-	if recursiveDeleteStr == "true" {
-		recursiveDelete = true
-	}
+	recursiveDelete, _ := strconv.ParseBool(r.URL.Query().Get("recursive"))
 
 	in := &grpc.DeleteNodeRequest{
 		Namespace: namespace,
@@ -4337,8 +4333,9 @@ func (h *flowHandler) WaitWorkflow(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			rawo := r.URL.Query().Get("raw-output")
-			if rawo == "true" {
+			rawo, _ := strconv.ParseBool(r.URL.Query().Get("raw-output"))
+
+			if rawo {
 
 				if x == nil {
 					data = make([]byte, 0)

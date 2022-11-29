@@ -9,6 +9,8 @@ import (
 	"github.com/direktiv/direktiv/pkg/model"
 )
 
+const d1s = "PT1S"
+
 func TestDelayGood001(t *testing.T) {
 
 	ctx := context.Background()
@@ -21,7 +23,7 @@ func TestDelayGood001(t *testing.T) {
 	state.Transition = "b"
 
 	delay := time.Second * 1
-	state.Duration = "PT1S"
+	state.Duration = d1s
 
 	logic, err := Delay(instance, state)
 	if err != nil {
@@ -212,7 +214,7 @@ func TestDelayBadMemory(t *testing.T) {
 	state.Transform = "a"
 	state.Transition = "b"
 
-	state.Duration = "PT1S"
+	state.Duration = d1s
 
 	logic, err := Delay(instance, state)
 	if err != nil {
@@ -255,7 +257,7 @@ func TestDelayBadWakedata(t *testing.T) {
 	state.Transform = "a"
 	state.Transition = "b"
 
-	state.Duration = "PT1S"
+	state.Duration = d1s
 
 	logic, err := Delay(instance, state)
 	if err != nil {

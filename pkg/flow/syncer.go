@@ -242,8 +242,8 @@ func (syncer *syncer) cronHandler(data []byte) {
 	args.Path = d.path
 	args.Ref = ""
 	args.Input = nil
-	args.Caller = "cron"
-	args.CallerData = "cron"
+	args.Caller = util.CallerCron
+	args.CallerData = util.CallerCron
 
 	err = syncer.NewActivity(nil, &newMirrorActivityArgs{
 		MirrorID: d.mir.ID.String(),

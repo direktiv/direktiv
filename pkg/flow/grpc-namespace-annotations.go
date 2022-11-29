@@ -12,6 +12,7 @@ import (
 	entnote "github.com/direktiv/direktiv/pkg/flow/ent/annotation"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/util"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -21,14 +22,14 @@ import (
 var annotationsOrderings = []*orderingInfo{
 	{
 		db:           entnote.FieldName,
-		req:          "NAME",
+		req:          util.PaginationKeyName,
 		defaultOrder: ent.Asc,
 	},
 }
 
 var annotationsFilters = map[*filteringInfo]func(query *ent.AnnotationQuery, v string) (*ent.AnnotationQuery, error){
 	{
-		field: "NAME",
+		field: util.PaginationKeyName,
 		ftype: "CONTAINS",
 	}: func(query *ent.AnnotationQuery, v string) (*ent.AnnotationQuery, error) {
 		return query.Where(entnote.NameContains(v)), nil

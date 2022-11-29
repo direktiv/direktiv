@@ -15,6 +15,7 @@ import (
 	entref "github.com/direktiv/direktiv/pkg/flow/ent/ref"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/util"
 )
 
 type muxStart struct {
@@ -373,7 +374,7 @@ func (flow *flow) cronHandler(data []byte) {
 
 	}
 
-	k, err := d.wf.QueryInstances().Where(entinst.CreatedAtGT(time.Now().Add(-time.Second*30)), entinst.HasRuntimeWith(entirt.CallerData("cron"))).Count(ctx)
+	k, err := d.wf.QueryInstances().Where(entinst.CreatedAtGT(time.Now().Add(-time.Second*30)), entinst.HasRuntimeWith(entirt.CallerData(util.CallerCron))).Count(ctx)
 	if err != nil {
 		flow.sugar.Error(err)
 		return
@@ -389,8 +390,8 @@ func (flow *flow) cronHandler(data []byte) {
 	args.Path = d.path
 	args.Ref = ""
 	args.Input = nil
-	args.Caller = "cron"
-	args.CallerData = "cron"
+	args.Caller = util.CallerCron
+	args.CallerData = util.CallerCron
 
 	im, err := flow.engine.NewInstance(ctx, args)
 	if err != nil {

@@ -10,6 +10,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entref "github.com/direktiv/direktiv/pkg/flow/ent/ref"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/util"
 )
 
 var refsOrderings = []*orderingInfo{
@@ -20,14 +21,14 @@ var refsOrderings = []*orderingInfo{
 	},
 	{
 		db:           entref.FieldName,
-		req:          "NAME",
+		req:          util.PaginationKeyName,
 		defaultOrder: ent.Asc,
 	},
 }
 
 var refsFilters = map[*filteringInfo]func(query *ent.RefQuery, v string) (*ent.RefQuery, error){
 	{
-		field: "NAME",
+		field: util.PaginationKeyName,
 		ftype: "CONTAINS",
 	}: func(query *ent.RefQuery, v string) (*ent.RefQuery, error) {
 		return query.Where(entref.NameContains(v)), nil

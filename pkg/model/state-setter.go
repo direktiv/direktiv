@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+
+	"github.com/direktiv/direktiv/pkg/util"
 )
 
 const DefaultVarMimeType = "application/json"
@@ -73,10 +75,10 @@ func (a *SetterDefinition) UnmarshalYAML(unmarshal func(interface{}) error) erro
 func (o *SetterDefinition) Validate() error {
 
 	switch o.Scope {
-	case "instance":
-	case "workflow":
-	case "namespace":
-	case "thread":
+	case util.VarScopeInstance:
+	case util.VarScopeWorkflow:
+	case util.VarScopeNamespace:
+	case util.VarScopeThread:
 	default:
 		return ErrVarScope
 	}
