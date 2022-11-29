@@ -201,7 +201,7 @@ func (srv *server) logToWorkflow(ctx context.Context, t time.Time, d *wfData, ms
 
 }
 
-// log To instance with string interpolation
+// log To instance with string interpolation.
 func (srv *server) logToInstance(ctx context.Context, t time.Time, in *ent.Instance, msg string, a ...interface{}) {
 
 	msg = fmt.Sprintf(msg, a...)
@@ -210,7 +210,7 @@ func (srv *server) logToInstance(ctx context.Context, t time.Time, in *ent.Insta
 
 }
 
-// log To instance with raw string
+// log To instance with raw string.
 func (srv *server) logToInstanceRaw(ctx context.Context, t time.Time, in *ent.Instance, msg string) {
 
 	defer func() {

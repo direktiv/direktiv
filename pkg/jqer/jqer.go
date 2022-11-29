@@ -24,7 +24,7 @@ var (
 	WrappingDecrement = "}}"
 )
 
-// Evaluate evaluates the data against the query provided and returns the result
+// Evaluate evaluates the data against the query provided and returns the result.
 func Evaluate(data, query interface{}) ([]interface{}, error) {
 
 	if query == nil {

@@ -10,7 +10,7 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-// ApplicationLogger returns logger for applications
+// ApplicationLogger returns logger for applications.
 func ApplicationLogger(component string) (*zap.SugaredLogger, error) {
 
 	appLogger, err := customLogger()
@@ -21,7 +21,7 @@ func ApplicationLogger(component string) (*zap.SugaredLogger, error) {
 
 }
 
-// FunctionsLogger returns logger for functions
+// FunctionsLogger returns logger for functions.
 func FunctionsLogger() (*zap.SugaredLogger, error) {
 
 	fnLogger, err := customLogger()

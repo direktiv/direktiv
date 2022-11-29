@@ -26,7 +26,7 @@ const (
 	annotationURL       = "direktiv.io/url"
 	annotationURLHash   = "direktiv.io/urlhash"
 
-	// Registry Types
+	// Registry Types.
 	annotationRegistryTypeKey            = "direktiv.io/registry-type"
 	annotationRegistryTypeNamespaceValue = "namespace"
 	annotationRegistryObfuscatedUser     = "direktiv.io/obf-user"
@@ -102,7 +102,6 @@ func listRegistriesNames(namespace string) []string {
 
 }
 
-// namespace
 func (is *functionsServer) DeleteRegistry(ctx context.Context, in *igrpc.DeleteRegistryRequest) (*emptypb.Empty, error) {
 	var resp emptypb.Empty
 	return &resp, kubernetesDeleteRegistry(ctx, in.GetName(), in.GetNamespace())
@@ -210,8 +209,6 @@ func obfuscateUser(user string) string {
 	return user
 
 }
-
-// util
 
 func prepareNewRegistrySecret(name, url, authConfig string) v1.Secret {
 	sa := v1.Secret{

@@ -148,7 +148,6 @@ func PublishKnativeEvent(ce *cloudevents.Event) {
 
 }
 
-// func (flow *flow) InstanceInput(ctx context.Context, req *grpc.InstanceInputRequest) (*grpc.InstanceInputResponse, error) {
 func (rcv *eventReceiver) RequestEvents(req *igrpc.EventingRequest, stream igrpc.Eventing_RequestEventsServer) error {
 
 	rcv.logger.Infof("client connected: %v", req.GetUuid())

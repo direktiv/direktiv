@@ -53,7 +53,7 @@ type functionsServer struct {
 	reusableCacheIndex map[string]*cacheTuple
 }
 
-// StartServer starts functions grpc server
+// StartServer starts functions grpc server.
 func StartServer(echan chan error) {
 
 	var err error
@@ -162,7 +162,7 @@ func StartServer(echan chan error) {
 
 }
 
-// StopServer is stopping server gracefully
+// StopServer is stopping server gracefully.
 func StopServer() {
 	if grpcServer != nil {
 		grpcServer.GracefulStop()

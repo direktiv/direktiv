@@ -81,7 +81,7 @@ type timer struct {
 	}
 }
 
-// stopTimers stops crons and one-shots
+// stopTimers stops crons and one-shots.
 func (timers *timers) stopTimers() {
 
 	ctx := timers.cron.Stop()
@@ -117,7 +117,7 @@ func (timers *timers) prepDisableTimer(timer *timer) string {
 
 }
 
-// must be locked before calling
+// must be locked before calling.
 func (timers *timers) disableTimer(timer *timer) {
 
 	name := timers.prepDisableTimer(timer)
@@ -170,7 +170,7 @@ func (timers *timers) newTimer(name, fn string, data []byte, time *time.Time, pa
 
 }
 
-// registerFunction adds functions which can be executed by one-shots or crons
+// registerFunction adds functions which can be executed by one-shots or crons.
 func (timers *timers) registerFunction(name string, fn func([]byte)) {
 
 	timers.mtx.Lock()
@@ -384,51 +384,3 @@ func (timers *timers) deleteCronForWorkflow(id string) {
 func (timers *timers) deleteCronForSyncer(id string) {
 	timers.deleteTimerByName("", timers.hostname, fmt.Sprintf("cron:%s", id))
 }
-
-/*
-func (timers *timers) cleanExpiredEvents(data []byte) error {
-
-	return timers.srv.deleteExpiredEvents()
-
-}
-
-// cron job delete old namespace logs every 2 hrs
-func (timers *timers) cleanNamespaceRecords(data []byte) error {
-
-	lc := timers.srv.components[util.LogComponent].(*logClient)
-	return lc.deleteNamespaceLogs()
-
-}
-
-// cron job to delete old instance records / logs
-func (timers *timers) cleanInstanceRecords(data []byte) error {
-	ctx := context.Background()
-
-	// search db for instances where "endTime" > defined lifespan
-	wfis, err := timers.server.dbManager.dbEnt.WorkflowInstance.Query().
-		Where(workflowinstance.EndTimeLTE(time.Now().Add(time.Minute * -10))).All(ctx)
-	if err != nil {
-		return err
-	}
-
-	// for each result, delete instance logs and delete row from DB
-	for _, wfi := range wfis {
-
-		lc := timers.server.components[util.LogComponent].(*logClient)
-		err = lc.deleteInstanceLogs(wfi.InstanceID)
-		if err != nil {
-			return err
-		}
-
-		err = timers.server.dbManager.deleteWorkflowInstance(wfi.ID)
-		if err != nil {
-			if !ent.IsNotFound(err) {
-				return err
-			}
-		}
-	}
-	appLog.Debugf("deleted %d instance records", len(wfis))
-
-	return nil
-}
-*/

@@ -21,7 +21,7 @@ func (o *Workflow) GetStartDefinition() StartDefinition {
 
 }
 
-// FIXME: Going to be renamed later
+// FIXME: Going to be renamed later.
 type StartEventDefinition struct {
 	Type    string                 `yaml:"type"`
 	Context map[string]interface{} `yaml:"context,omitempty"`
@@ -66,8 +66,6 @@ func (o *StartCommon) GetState() string {
 	return o.State
 
 }
-
-// util
 
 func getStartFromType(startType string) (StartDefinition, error) {
 	var s StartDefinition

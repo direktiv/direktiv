@@ -15,7 +15,6 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 
-	// entmir "github.com/direktiv/direktiv/pkg/flow/ent/mirror"
 	entmiract "github.com/direktiv/direktiv/pkg/flow/ent/mirroractivity"
 )
 

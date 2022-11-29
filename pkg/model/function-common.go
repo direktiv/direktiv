@@ -119,7 +119,6 @@ func (o FunctionFileDefinition) Validate() error {
 
 }
 
-// util
 func getFunctionDefFromType(ftype string) (FunctionDefinition, error) {
 	var f FunctionDefinition
 	var err error

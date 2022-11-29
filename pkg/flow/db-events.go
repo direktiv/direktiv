@@ -148,7 +148,7 @@ func (events *events) deleteInstanceEventListeners(ctx context.Context, in *ent.
 
 }
 
-// called by add workflow, adds event listeners if required
+// called by add workflow, adds event listeners if required.
 func (events *events) processWorkflowEvents(ctx context.Context, evc *ent.EventsClient,
 	wf *ent.Workflow, ms *muxStart) error {
 
@@ -219,7 +219,7 @@ func (events *events) updateInstanceEventListener(ctx context.Context, evc *ent.
 
 }
 
-// called from workflow instances to create event listeners
+// called from workflow instances to create event listeners.
 func (events *events) addInstanceEventListener(ctx context.Context, evc *ent.EventsClient,
 	wf *ent.Workflow, in *ent.Instance,
 	sevents []*model.ConsumeEventDefinition, signature []byte, all bool) error {

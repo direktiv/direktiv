@@ -1,6 +1,6 @@
 package api
 
-// RN = Route Name
+// RN = Route Name.
 const (
 	RN_Preflight            = "preflight"
 	RN_ListNamespaces       = "listNamespaces"
@@ -39,7 +39,7 @@ const (
 	RN_ValidateRouter     = "validateRouter"
 	RN_NamespaceEvent     = "namespaceEvent"
 
-	// secrets
+	// secrets.
 	RN_ListSecrets         = "listSecrets"
 	RN_SearchSecret        = "searchSecret"
 	RN_OverwriteSecret     = "overwriteSecret"
@@ -48,13 +48,13 @@ const (
 	RN_DeleteSecretsFolder = "deleteSecretsFolder"
 	RN_CreateSecretsFolder = "createSecretsFolder"
 
-	// registries
+	// registries.
 	RN_ListRegistries = "listRegistries"
 	RN_CreateRegistry = "createRegistry"
 	RN_DeleteRegistry = "deleteRegistry"
 	RN_TestRegistry   = "testRegistry"
 
-	// metrics
+	// metrics.
 	RN_GetNamespaceMetrics = "getNamespaceMetrics"
 	RN_GetWorkflowMetrics  = "getWorkflowMetrics"
 
@@ -105,7 +105,7 @@ const (
 	RN_ListWorkflowPods       = "listWorkflowPods"
 	RN_PodLogs                = "podLogs"
 
-	// git
+	// git.
 	RN_UpdateMirror          = "updateMirror"
 	RN_LockMirror            = "lockMirror"
 	RN_SyncMirror            = "syncMirror"

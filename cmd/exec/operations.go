@@ -143,7 +143,7 @@ func getClosestNodeReadOnly(path string) (bool, string, error) {
 	return isReadOnly, nodeType, err
 }
 
-// getNodeReadOnly : Returns if node at path is read only
+// getNodeReadOnly : Returns if node at path is read only.
 func getNodeReadOnly(path string) (bool, string, error) {
 	urlGetNode := fmt.Sprintf("%s/tree/%s", urlPrefix, strings.TrimPrefix(path, "/"))
 

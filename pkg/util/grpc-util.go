@@ -14,7 +14,7 @@ import (
 
 const maxSize = 134217728
 
-// GetEndpointTLS creates a grpc client
+// GetEndpointTLS creates a grpc client.
 func GetEndpointTLS(service string) (*grpc.ClientConn, error) {
 
 	var additionalCallOptions []grpc.CallOption
@@ -32,7 +32,7 @@ func GetEndpointTLS(service string) (*grpc.ClientConn, error) {
 
 }
 
-// GrpcStart starts a grpc server
+// GrpcStart starts a grpc server.
 func GrpcStart(server **grpc.Server, name, bind string, register func(srv *grpc.Server)) error {
 
 	listener, err := net.Listen("tcp", bind)
@@ -102,7 +102,7 @@ func GrpcServerOptions(unaryInterceptor grpc.UnaryServerInterceptor, streamInter
 
 }
 
-// SanitizeAsField removes initial slash if one exists and returns the new value
+// SanitizeAsField removes initial slash if one exists and returns the new value.
 func SanitizeAsField(as string) string {
 	if strings.HasPrefix(as, "/") {
 		newas := strings.TrimPrefix(as, "/")

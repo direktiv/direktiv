@@ -118,7 +118,7 @@ func fetchServiceAPI() (*versioned.Clientset, error) {
 	return versioned.NewForConfig(config)
 }
 
-// Available prefixes for different scopes
+// Available prefixes for different scopes.
 const (
 	PrefixWorkflow  = "workflow"
 	PrefixNamespace = "namespace"
@@ -193,7 +193,7 @@ func (is *functionsServer) GetFunction(ctx context.Context,
 
 }
 
-// ListPods returns pods based on label filter
+// ListPods returns pods based on label filter.
 func (is *functionsServer) ListPods(ctx context.Context,
 	in *igrpc.ListPodsRequest) (*igrpc.ListPodsResponse, error) {
 
@@ -208,7 +208,7 @@ func (is *functionsServer) ListPods(ctx context.Context,
 	return &resp, nil
 }
 
-// ListFunctions returns isoaltes based on label filter
+// ListFunctions returns isoaltes based on label filter.
 func (is *functionsServer) ListFunctions(ctx context.Context,
 	in *igrpc.ListFunctionsRequest) (*igrpc.ListFunctionsResponse, error) {
 
@@ -652,7 +652,7 @@ func (is *functionsServer) reconstructService(name string, ctx context.Context) 
 	return nil
 }
 
-// recretae all services on startup
+// recretae all services on startup.
 func (is *functionsServer) reconstructServices(ctx context.Context) error {
 
 	svcs, err := is.db.Services.Query().All(ctx)

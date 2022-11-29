@@ -17,7 +17,7 @@ import (
 
 var logger *zap.SugaredLogger
 
-// NewServer creates a new secrets server
+// NewServer creates a new secrets server.
 func NewServer(backend string) (*Server, error) {
 
 	var err error
@@ -50,7 +50,7 @@ func NewServer(backend string) (*Server, error) {
 
 }
 
-// Run starts the secrets server
+// Run starts the secrets server.
 func (s *Server) Run() {
 
 	logger.Infof("starting secret server")
@@ -64,7 +64,7 @@ func (s *Server) Run() {
 
 }
 
-// Stop stops the server gracefully
+// Stop stops the server gracefully.
 func (s *Server) Stop() {
 
 	go func() {
@@ -75,7 +75,7 @@ func (s *Server) Stop() {
 	}()
 }
 
-// Kill kills the server
+// Kill kills the server.
 func (s *Server) Kill() {
 
 	go func() {
@@ -90,12 +90,12 @@ func (s *Server) Kill() {
 
 }
 
-// Lifeline interface impl
+// Lifeline interface impl.
 func (s *Server) Lifeline() chan bool {
 	return s.lifeLine
 }
 
-// StoreSecret stores secrets in backends
+// StoreSecret stores secrets in backends.
 func (s *Server) StoreSecret(ctx context.Context, in *secretsgrpc.SecretsStoreRequest) (*emptypb.Empty, error) {
 
 	var resp emptypb.Empty
@@ -139,7 +139,7 @@ func (s *Server) StoreSecret(ctx context.Context, in *secretsgrpc.SecretsStoreRe
 
 }
 
-// RetrieveSecret retrieves secret from backend
+// RetrieveSecret retrieves secret from backend.
 func (s *Server) RetrieveSecret(ctx context.Context, in *secretsgrpc.SecretsRetrieveRequest) (*secretsgrpc.SecretsRetrieveResponse, error) {
 
 	var resp secretsgrpc.SecretsRetrieveResponse
@@ -160,7 +160,7 @@ func (s *Server) RetrieveSecret(ctx context.Context, in *secretsgrpc.SecretsRetr
 	return &resp, err
 }
 
-// GetSecrets returns secrets for one namespace in specific fodler
+// GetSecrets returns secrets for one namespace in specific folder.
 func (s *Server) GetSecrets(ctx context.Context, in *secretsgrpc.GetSecretsRequest) (*secretsgrpc.GetSecretsResponse, error) {
 
 	var (
@@ -190,7 +190,7 @@ func (s *Server) GetSecrets(ctx context.Context, in *secretsgrpc.GetSecretsReque
 
 }
 
-// DeleteSecret deletes single secret from backend
+// DeleteSecret deletes single secret from backend.
 func (s *Server) DeleteSecret(ctx context.Context, in *secretsgrpc.SecretsDeleteRequest) (*emptypb.Empty, error) {
 
 	var resp emptypb.Empty
@@ -206,7 +206,7 @@ func (s *Server) DeleteSecret(ctx context.Context, in *secretsgrpc.SecretsDelete
 	return &resp, s.handler.RemoveSecret(in.GetNamespace(), in.GetName())
 }
 
-// DeleteNamespaceSecrets deletes secrets for a namespace
+// DeleteNamespaceSecrets deletes secrets for a namespace.
 func (s *Server) DeleteNamespaceSecrets(ctx context.Context, in *secretsgrpc.DeleteNamespaceSecretsRequest) (*emptypb.Empty, error) {
 
 	var resp emptypb.Empty
@@ -214,7 +214,7 @@ func (s *Server) DeleteNamespaceSecrets(ctx context.Context, in *secretsgrpc.Del
 
 }
 
-// CreateFolder stores folders and create all missing folders in the path
+// CreateFolder stores folders and create all missing folders in the path.
 func (s *Server) CreateSecretsFolder(ctx context.Context, in *secretsgrpc.CreateSecretsFolderRequest) (*emptypb.Empty, error) {
 
 	var resp emptypb.Empty
@@ -250,7 +250,7 @@ func (s *Server) CreateSecretsFolder(ctx context.Context, in *secretsgrpc.Create
 
 }
 
-// DeleteFolder deletes folder from backend
+// DeleteFolder deletes folder from backend.
 func (s *Server) DeleteSecretsFolder(ctx context.Context, in *secretsgrpc.DeleteSecretsFolderRequest) (*emptypb.Empty, error) {
 
 	var resp emptypb.Empty
@@ -299,7 +299,7 @@ func (s *Server) SearchSecret(ctx context.Context, in *secretsgrpc.SearchSecretR
 
 }
 
-// StoreSecret stores secrets in backends
+// StoreSecret stores secrets in backends.
 func (s *Server) UpdateSecret(ctx context.Context, in *secretsgrpc.UpdateSecretRequest) (*emptypb.Empty, error) {
 
 	var resp emptypb.Empty
@@ -327,7 +327,7 @@ func (s *Server) UpdateSecret(ctx context.Context, in *secretsgrpc.UpdateSecretR
 
 }
 
-// IsFolder Checks if name is folder
+// IsFolder Checks if name is folder.
 func isFolder(name string) bool {
 	return (strings.HasSuffix(name, "/") || name == "")
 }

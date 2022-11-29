@@ -13,7 +13,7 @@ import (
 
 const actionIDHeader = "Direktiv-ActionID"
 
-// NetworkServer defines a network server object
+// NetworkServer defines a network server object.
 type NetworkServer struct {
 	end     func()
 	local   *LocalServer
@@ -42,7 +42,7 @@ func waitForUserContainer() {
 	}
 }
 
-// Start starts the network server for the sidecar
+// Start starts the network server for the sidecar.
 func (srv *NetworkServer) Start() {
 
 	waitForUserContainer()

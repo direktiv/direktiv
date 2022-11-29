@@ -7,7 +7,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-// Config contain direktiv configuration
+// Config contain direktiv configuration.
 type Config struct {
 	FunctionsService string `yaml:"functions-service"`
 
@@ -22,7 +22,7 @@ type Config struct {
 	Eventing bool `yaml:"eventing"`
 }
 
-// ReadConfig reads direktiv config file
+// ReadConfig reads direktiv config file.
 func ReadConfig(file string) (*Config, error) {
 
 	c := new(Config)

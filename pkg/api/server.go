@@ -14,7 +14,7 @@ import (
 
 var logger *zap.SugaredLogger
 
-// Server struct for API server
+// Server struct for API server.
 type Server struct {
 	logger     *zap.SugaredLogger
 	router     *mux.Router
@@ -30,7 +30,7 @@ type Server struct {
 	telend func()
 }
 
-// GetRouter is a getter for s.router
+// GetRouter is a getter for s.router.
 func (s *Server) GetRouter() *mux.Router {
 	return s.router
 }
@@ -44,7 +44,7 @@ func (mw *mw) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	mw.h.ServeHTTP(w, r)
 }
 
-// NewServer return new API server
+// NewServer return new API server.
 func NewServer(l *zap.SugaredLogger) (*Server, error) {
 
 	logger = l
@@ -133,7 +133,7 @@ func (s *Server) version(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// Start starts API server
+// Start starts API server.
 func (s *Server) Start() error {
 	defer s.telend()
 	logger.Infof("start listening")

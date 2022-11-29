@@ -18,7 +18,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-// Flags
+// Flags.
 var (
 	input          string
 	inputType      string
@@ -32,7 +32,7 @@ var (
 	maxSize int64 = 1073741824
 )
 
-// Shared Vars
+// Shared Vars.
 var (
 	cmdArgPath   string
 	localAbsPath string

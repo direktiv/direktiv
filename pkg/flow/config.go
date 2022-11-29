@@ -62,7 +62,7 @@ func (c *Config) mergeIntoNamespaceConfig(sourceCfg []byte) ([]byte, error) {
 	return mergedCfg, err
 }
 
-// loadNSConfig : loads config object from json cfgData
+// loadNSConfig : loads config object from json cfgData.
 func loadNSConfig(cfgData []byte) (*Config, error) {
 	nsCFG := new(Config)
 	dec := json.NewDecoder(bytes.NewReader(cfgData))
@@ -74,7 +74,7 @@ func loadNSConfig(cfgData []byte) (*Config, error) {
 }
 
 // broadcastEnabled : Checks if a broadcastTarget is available.
-// If available return if it's value; mising target keys are returned as false
+// If available return if it's value; mising target keys are returned as false.
 func (c *Config) broadcastEnabled(broadcastTarget string) bool {
 	var broadcastMap map[string]bool
 	bData, err := json.Marshal(c.Broadcast)

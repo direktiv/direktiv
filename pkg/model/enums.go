@@ -89,7 +89,7 @@ func (a *BranchMode) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
 // -------------- Size --------------
 
-// Size string enum to differentiate function sizes
+// Size string enum to differentiate function sizes.
 type Size int
 
 const (

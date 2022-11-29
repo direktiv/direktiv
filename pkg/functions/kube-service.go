@@ -26,9 +26,9 @@ const (
 	containerSidecar = "direktiv-sidecar"
 )
 
-// Headers for knative services
+// Headers for knative services.
 const (
-	// Direktiv Headers
+	// Direktiv Headers.
 	ServiceHeaderName          = "direktiv.io/name"
 	ServiceHeaderNamespaceID   = "direktiv.io/namespace-id"
 	ServiceHeaderNamespaceName = "direktiv.io/namespace-name"
@@ -40,7 +40,7 @@ const (
 	ServiceTemplateGeneration  = "direktiv.io/templateGeneration"
 	ServiceHeaderScope         = "direktiv.io/scope"
 
-	// Serving Headers
+	// Serving Headers.
 	ServiceKnativeHeaderName            = "serving.knative.dev/service"
 	ServiceKnativeHeaderConfiguration   = "serving.knative.dev/configuration"
 	ServiceKnativeHeaderGeneration      = "serving.knative.dev/configurationGeneration"
@@ -180,7 +180,6 @@ func generateServiceMeta(svn, scope, hash string, size int, info *igrpc.BaseInfo
 	return meta
 }
 
-// func generatePodMeta(net string, min, max int, nsID, nsName, wfID, path, name, scope string, size int, hash string) metav1.ObjectMeta {
 func generatePodMeta(svn, scope, hash string, size int, info *igrpc.BaseInfo) metav1.ObjectMeta {
 
 	metaSpec := metav1.ObjectMeta{

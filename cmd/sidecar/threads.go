@@ -11,7 +11,7 @@ func init() {
 	threads.finished = make(chan bool)
 }
 
-// Threads definition of a thread being maintained on a sidecar
+// Threads definition of a thread being maintained on a sidecar.
 type Threads struct {
 	finished chan bool
 	stoppers []chan *time.Time
@@ -22,13 +22,13 @@ type Threads struct {
 	code    int
 }
 
-// Wait waits until all the threads have been returned
+// Wait waits until all the threads have been returned.
 func (t *Threads) Wait() {
 	<-t.finished
 	log.Info("All threads returned.")
 }
 
-// Register adds a new channel to the threads
+// Register adds a new channel to the threads.
 func (t *Threads) Register(stopper chan *time.Time) func() {
 
 	t.lock.Lock()
@@ -58,7 +58,7 @@ func (t *Threads) Register(stopper chan *time.Time) func() {
 
 }
 
-// Stop stops a thread
+// Stop stops a thread.
 func (t *Threads) Stop(st *time.Time, code int) {
 
 	t.lock.Lock()
@@ -83,7 +83,7 @@ func (t *Threads) Stop(st *time.Time, code int) {
 
 }
 
-// ExitStatus returns the exit status of a code
+// ExitStatus returns the exit status of a code.
 func (t *Threads) ExitStatus() int {
 	return t.code
 }
