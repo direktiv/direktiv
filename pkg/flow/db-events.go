@@ -7,7 +7,6 @@ import (
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entcev "github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
 	entev "github.com/direktiv/direktiv/pkg/flow/ent/events"
@@ -33,7 +32,7 @@ func (events *events) markEventAsProcessed(ctx context.Context, cevc *ent.CloudE
 		return nil, err
 	}
 
-	ev := cloudevents.Event(e.Event)
+	ev := e.Event
 
 	return &ev, nil
 
@@ -61,7 +60,7 @@ func (events *events) addEvent(ctx context.Context, cevc *ent.CloudEventsClient,
 
 	processed := (delay == 0)
 
-	ev := event.Event(*eventin)
+	ev := *eventin
 
 	_, err := cevc.
 		Create().

@@ -193,8 +193,8 @@ func (flow *flow) WorkflowMetrics(ctx context.Context, req *grpc.WorkflowMetrics
 	out.ErrorCodesRepresentation = resp.ErrorCodesRepresentation
 
 	var sr, fr float32
-	sr = float32(resp.SuccessRate)
-	fr = float32(resp.FailureRate)
+	sr = resp.SuccessRate
+	fr = resp.FailureRate
 
 	out.SuccessRate = sr
 	out.FailureRate = fr
@@ -223,8 +223,8 @@ func (flow *flow) WorkflowMetrics(ctx context.Context, req *grpc.WorkflowMetrics
 		}
 
 		var fr, sr float32
-		sr = float32(thisState.MeanOutcomes.EndStates.Success)
-		fr = float32(thisState.MeanOutcomes.EndStates.Failure)
+		sr = thisState.MeanOutcomes.EndStates.Success
+		fr = thisState.MeanOutcomes.EndStates.Failure
 
 		is.MeanOutcomes = &grpc.MeanOutcomes{
 			Success:     sr,
@@ -234,9 +234,9 @@ func (flow *flow) WorkflowMetrics(ctx context.Context, req *grpc.WorkflowMetrics
 		is.MeanExecutionsPerInstance = thisState.MeanExecutionsPerInstance
 		is.MeanMillisecondsPerInstance = thisState.MeanMilliSecondsPerInstance
 
-		sr2 := float32(thisState.SuccessRate)
-		fr2 := float32(thisState.FailureRate)
-		ar := float32(thisState.MeanRetries)
+		sr2 := thisState.SuccessRate
+		fr2 := thisState.FailureRate
+		ar := thisState.MeanRetries
 
 		is.SuccessRate = sr2
 		is.FailureRate = fr2

@@ -52,7 +52,7 @@ func (is *functionsServer) storeService(ctx context.Context, info *igrpc.BaseInf
 	svc, err := is.db.Services.Query().Where(services.And(
 		services.Name(info.GetName()),
 		services.HasNamespaceWith(
-			predicate.Namespace(namespace.ID(uid)),
+			namespace.ID(uid),
 		),
 	)).Only(ctx)
 

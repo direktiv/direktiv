@@ -464,7 +464,7 @@ func executeEvent(url string) (string, error) {
 	}
 
 	var event map[string]interface{}
-	err = json.Unmarshal([]byte(byteResult), &event)
+	err = json.Unmarshal(byteResult, &event)
 
 	if err != nil {
 		return "", err

@@ -37,7 +37,7 @@ func ParseFunctionType(s string) (FunctionType, error) {
 	}
 
 	if s == "reusable" {
-		return FunctionType(ReusableContainerFunctionType), nil
+		return ReusableContainerFunctionType, nil
 	}
 
 unknown:

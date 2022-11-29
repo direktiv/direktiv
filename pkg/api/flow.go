@@ -4343,7 +4343,7 @@ func (h *flowHandler) WaitWorkflow(w http.ResponseWriter, r *http.Request) {
 					data = []byte(str)
 					b64, err := base64.StdEncoding.DecodeString(str)
 					if err == nil {
-						data = []byte(b64)
+						data = b64
 					}
 				}
 

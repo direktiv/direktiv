@@ -733,7 +733,7 @@ func (engine *engine) retryWakeup(data []byte) {
 
 	engine.sugar.Debugf("Handling retry wakeup: %s", this())
 
-	go engine.runState(ctx, im, []byte(msg.Data), nil)
+	go engine.runState(ctx, im, msg.Data, nil)
 
 }
 
