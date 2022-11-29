@@ -91,29 +91,29 @@ func truth(x interface{}) bool {
 	var success bool
 
 	if x != nil {
-		switch x.(type) {
+		switch v := x.(type) {
 		case bool:
-			if x.(bool) {
+			if v {
 				success = true
 			}
 		case string:
-			if x.(string) != "" {
+			if v != "" {
 				success = true
 			}
 		case int:
-			if x.(int) != 0 {
+			if v != 0 {
 				success = true
 			}
 		case float64:
-			if x.(float64) != 0.0 {
+			if v != 0.0 {
 				success = true
 			}
 		case []interface{}:
-			if len(x.([]interface{})) > 0 {
+			if len(v) > 0 {
 				success = true
 			}
 		case map[string]interface{}:
-			if len(x.(map[string]interface{})) > 0 {
+			if len(v) > 0 {
 				success = true
 			}
 		default:

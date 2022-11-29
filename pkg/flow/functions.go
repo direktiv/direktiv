@@ -2,6 +2,7 @@ package flow
 
 import (
 	"context"
+	"errors"
 
 	"github.com/direktiv/direktiv/pkg/functions"
 	"github.com/direktiv/direktiv/pkg/model"
@@ -130,9 +131,10 @@ func (flow *flow) flushHeartbeatTuples(tuples []*functions.HeartbeatTuple) {
 	defer conn.Close()
 
 	_, err = conn.ExecContext(ctx, "SELECT pg_notify($1, $2)", functions.FunctionsChannel, msg)
-	if err, ok := err.(*pq.Error); ok {
+	perr := new(pq.Error)
+	if errors.As(err, &perr) {
 
-		flow.sugar.Errorf("db notification failed: %v", err)
+		flow.sugar.Errorf("db notification failed: %v", perr)
 		return
 
 	}

@@ -60,12 +60,6 @@ func (o *EventsAndState) Validate() error {
 		return err
 	}
 
-	if s, ok := o.Transform.(string); ok {
-		if err := validateTransformJQ(s); err != nil {
-			return err
-		}
-	}
-
 	if o.Timeout != "" && !isISO8601(o.Timeout) {
 		return errors.New("timeout is not a ISO8601 string")
 	}
@@ -76,13 +70,13 @@ func (o *EventsAndState) Validate() error {
 
 	for i, event := range o.GetEvents() {
 		if err := event.Validate(); err != nil {
-			return fmt.Errorf("event[%v] is invalid: %v", i, err)
+			return fmt.Errorf("event[%v] is invalid: %w", i, err)
 		}
 	}
 
 	for i, errDef := range o.ErrorDefinitions() {
 		if err := errDef.Validate(); err != nil {
-			return fmt.Errorf("catch[%v] is invalid: %v", i, err)
+			return fmt.Errorf("catch[%v] is invalid: %w", i, err)
 		}
 	}
 

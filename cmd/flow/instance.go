@@ -42,37 +42,12 @@ var startWorkflowCmd = &cobra.Command{
 			Input:     source,
 		}
 
-		if stream {
-
-			// TODO
-			/*
-				srv, err := c.RunWorkflow(ctx, req)
-				if err != nil {
-					exit(err)
-				}
-
-				for {
-
-					resp, err := srv.Recv()
-					if err != nil {
-						exit(err)
-					}
-
-					print(resp)
-
-				}
-			*/
-
-		} else {
-
-			resp, err := c.StartWorkflow(ctx, req)
-			if err != nil {
-				exit(err)
-			}
-
-			print(resp)
-
+		resp, err := c.StartWorkflow(ctx, req)
+		if err != nil {
+			exit(err)
 		}
+
+		print(resp)
 
 	},
 }

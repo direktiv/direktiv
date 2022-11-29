@@ -10,7 +10,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"path"
@@ -131,7 +130,7 @@ func (worker *inboundWorker) doFunctionRequest(ctx context.Context, ir *function
 	}
 	r := io.LimitReader(resp.Body, cap)
 
-	out.data, err = ioutil.ReadAll(r)
+	out.data, err = io.ReadAll(r)
 	if err != nil {
 		return nil, err
 	}
@@ -206,7 +205,7 @@ func untar(dst string, r io.Reader) error {
 	for {
 		/* #nosec */
 		hdr, err := tr.Next()
-		if err == io.EOF {
+		if errors.Is(err, io.EOF) {
 			break
 		}
 		if err != nil {
@@ -277,8 +276,6 @@ func (wr *WrapperReader) Read(p []byte) (n int, err error) {
 
 func (worker *inboundWorker) writeFile(ftype, dst string, pr io.Reader) error {
 
-	// TODO: const the types
-
 	var err error
 
 	// wrap reader to detect empty tar/gz and DON'T error if the variable
@@ -322,7 +319,12 @@ func (worker *inboundWorker) writeFile(ftype, dst string, pr io.Reader) error {
 		gr, err := gzip.NewReader(pr)
 		if err != nil {
 			if wr.offset == 0 {
-				os.MkdirAll(dst, 0750)
+				err = os.MkdirAll(dst, 0750)
+				if err != nil {
+					if !errors.Is(err, os.ErrExist) {
+						return err
+					}
+				}
 				return nil
 			}
 			return err
@@ -347,8 +349,6 @@ func (worker *inboundWorker) writeFile(ftype, dst string, pr io.Reader) error {
 }
 
 func (worker *inboundWorker) fileWriter(ctx context.Context, ir *functionRequest, f *functionFiles, pr *io.PipeReader) error {
-
-	// TODO: validate f.Type earlier so that the switch cannot get unexpected data here
 
 	dir := worker.functionDir(ir)
 	dst := f.Key
@@ -388,7 +388,7 @@ func (worker *inboundWorker) prepFunctionRequest(ctx context.Context, ir *functi
 
 	err := worker.prepFunctionFiles(ctx, ir)
 	if err != nil {
-		return fmt.Errorf("failed to prepare functions files: %v", err)
+		return fmt.Errorf("failed to prepare functions files: %w", err)
 	}
 
 	return nil
@@ -407,15 +407,15 @@ func (worker *inboundWorker) prepFunctionFiles(ctx context.Context, ir *function
 	for i, f := range ir.files {
 		err = worker.prepOneFunctionFiles(ctx, ir, f)
 		if err != nil {
-			return fmt.Errorf("failed to prepare function files %d: %v", i, err)
+			return fmt.Errorf("failed to prepare function files %d: %w", i, err)
 		}
 	}
 
-	subDirs := []string{"namespace", "workflow", "instance"}
+	subDirs := []string{util.VarScopeNamespace, util.VarScopeWorkflow, util.VarScopeInstance}
 	for _, d := range subDirs {
 		err := os.MkdirAll(path.Join(dir, fmt.Sprintf("out/%s", d)), 0777)
 		if err != nil {
-			return fmt.Errorf("failed to prepare function output dirs: %v", err)
+			return fmt.Errorf("failed to prepare function output dirs: %w", err)
 		}
 	}
 
@@ -481,24 +481,29 @@ func (worker *inboundWorker) handleFunctionRequest(req *inboundRequest) {
 
 func (worker *inboundWorker) setOutVariables(ctx context.Context, ir *functionRequest) error {
 
-	subDirs := []string{"namespace", "workflow", "instance"}
+	subDirs := []string{util.VarScopeNamespace, util.VarScopeWorkflow, util.VarScopeInstance}
 	for _, d := range subDirs {
 
 		out := path.Join(worker.functionDir(ir), "out", d)
 
-		files, err := ioutil.ReadDir(out)
+		files, err := os.ReadDir(out)
 		if err != nil {
-			return fmt.Errorf("can not read out folder: %v", err)
+			return fmt.Errorf("can not read out folder: %w", err)
 		}
 
 		for _, f := range files {
 
 			fp := path.Join(worker.functionDir(ir), "out", d, f.Name())
 
-			switch mode := f.Mode(); {
+			fi, err := f.Info()
+			if err != nil {
+				return err
+			}
+
+			switch mode := fi.Mode(); {
 			case mode.IsDir():
 
-				tf, err := ioutil.TempFile("", "outtar")
+				tf, err := os.CreateTemp("", "outtar")
 				if err != nil {
 					return err
 				}
@@ -532,7 +537,7 @@ func (worker *inboundWorker) setOutVariables(ctx context.Context, ir *functionRe
 					return err
 				}
 
-				err = worker.srv.setVar(ctx, ir, f.Size(), v, d, f.Name(), "")
+				err = worker.srv.setVar(ctx, ir, fi.Size(), v, d, f.Name(), "")
 				if err != nil {
 					_ = v.Close()
 					return err
@@ -558,6 +563,10 @@ func tarGzDir(src string, buf io.Writer) error {
 	tw := tar.NewWriter(zr)
 
 	err := filepath.Walk(src, func(file string, fi os.FileInfo, err error) error {
+
+		if err != nil {
+			return err
+		}
 
 		if !fi.Mode().IsDir() && !fi.Mode().IsRegular() {
 			return nil
@@ -633,7 +642,7 @@ func (worker *inboundWorker) respondToFlow(ctx context.Context, ir *functionRequ
 
 func (worker *inboundWorker) reportSidecarError(ir *functionRequest, err error) {
 
-	ctx := context.Background() // TODO
+	ctx := context.Background()
 
 	worker.respondToFlow(ctx, ir, &outcome{
 		errMsg: err.Error(),
@@ -672,7 +681,7 @@ func (worker *inboundWorker) validateUintHeader(req *inboundRequest, x *int, hdr
 
 	*x, err = strconv.Atoi(s)
 	if err != nil {
-		worker.reportValidationError(req, http.StatusBadRequest, fmt.Errorf("invalid %s: %v", hdr, err))
+		worker.reportValidationError(req, http.StatusBadRequest, fmt.Errorf("invalid %s: %w", hdr, err))
 		return false
 	}
 	if *x < 0 {
@@ -690,7 +699,7 @@ func (worker *inboundWorker) validateTimeHeader(req *inboundRequest, x *time.Tim
 
 	*x, err = time.Parse(time.RFC3339, s)
 	if err != nil {
-		worker.reportValidationError(req, http.StatusBadRequest, fmt.Errorf("invalid %s: %v", hdr, err))
+		worker.reportValidationError(req, http.StatusBadRequest, fmt.Errorf("invalid %s: %w", hdr, err))
 		return false
 	}
 
@@ -713,9 +722,9 @@ func (worker *inboundWorker) loadBody(req *inboundRequest, data *[]byte) bool {
 	r := io.LimitReader(req.r.Body, cap)
 
 	var err error
-	*data, err = ioutil.ReadAll(r)
+	*data, err = io.ReadAll(r)
 	if err != nil {
-		worker.reportValidationError(req, http.StatusBadRequest, fmt.Errorf("failed to read request body: %v", err))
+		worker.reportValidationError(req, http.StatusBadRequest, fmt.Errorf("failed to read request body: %w", err))
 		return false
 	}
 	if int64(len(*data)) != req.r.ContentLength {
@@ -735,7 +744,7 @@ func (worker *inboundWorker) validateFilesHeaders(req *inboundRequest, ifiles *[
 
 		data, err := base64.StdEncoding.DecodeString(s)
 		if err != nil {
-			worker.reportValidationError(req, http.StatusBadRequest, fmt.Errorf("invalid %s [%d]: %v", hdr, i, err))
+			worker.reportValidationError(req, http.StatusBadRequest, fmt.Errorf("invalid %s [%d]: %w", hdr, i, err))
 			return false
 		}
 
@@ -744,11 +753,9 @@ func (worker *inboundWorker) validateFilesHeaders(req *inboundRequest, ifiles *[
 		dec.DisallowUnknownFields()
 		err = dec.Decode(files)
 		if err != nil {
-			worker.reportValidationError(req, http.StatusBadRequest, fmt.Errorf("invalid %s [%d]: %v", hdr, i, err))
+			worker.reportValidationError(req, http.StatusBadRequest, fmt.Errorf("invalid %s [%d]: %w", hdr, i, err))
 			return false
 		}
-
-		// TODO: extra validation
 
 		*ifiles = append(*ifiles, files)
 

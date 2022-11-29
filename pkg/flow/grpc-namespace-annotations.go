@@ -12,6 +12,7 @@ import (
 	entnote "github.com/direktiv/direktiv/pkg/flow/ent/annotation"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/util"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -21,14 +22,14 @@ import (
 var annotationsOrderings = []*orderingInfo{
 	{
 		db:           entnote.FieldName,
-		req:          "NAME",
+		req:          util.PaginationKeyName,
 		defaultOrder: ent.Asc,
 	},
 }
 
 var annotationsFilters = map[*filteringInfo]func(query *ent.AnnotationQuery, v string) (*ent.AnnotationQuery, error){
 	{
-		field: "NAME",
+		field: util.PaginationKeyName,
 		ftype: "CONTAINS",
 	}: func(query *ent.AnnotationQuery, v string) (*ent.AnnotationQuery, error) {
 		return query.Where(entnote.NameContains(v)), nil
@@ -295,13 +296,13 @@ func (flow *flow) SetAnnotation(ctx context.Context, annotationc *ent.Annotation
 
 		query := annotationc.Create().SetSize(len(data)).SetHash(hash).SetData(data).SetName(key).SetMimeType(mimetype)
 
-		switch q.(type) {
+		switch v := q.(type) {
 		case *ent.Namespace:
-			query = query.SetNamespace(q.(*ent.Namespace))
+			query = query.SetNamespace(v)
 		case *ent.Workflow:
-			query = query.SetWorkflow(q.(*ent.Workflow))
+			query = query.SetWorkflow(v)
 		case *ent.Instance:
-			query = query.SetInstance(q.(*ent.Instance))
+			query = query.SetInstance(v)
 		default:
 			panic(errors.New("bad querier"))
 		}

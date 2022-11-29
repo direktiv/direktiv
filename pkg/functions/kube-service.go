@@ -26,9 +26,9 @@ const (
 	containerSidecar = "direktiv-sidecar"
 )
 
-// Headers for knative services
+// Headers for knative services.
 const (
-	// Direktiv Headers
+	// Direktiv Headers.
 	ServiceHeaderName          = "direktiv.io/name"
 	ServiceHeaderNamespaceID   = "direktiv.io/namespace-id"
 	ServiceHeaderNamespaceName = "direktiv.io/namespace-name"
@@ -40,7 +40,7 @@ const (
 	ServiceTemplateGeneration  = "direktiv.io/templateGeneration"
 	ServiceHeaderScope         = "direktiv.io/scope"
 
-	// Serving Headers
+	// Serving Headers.
 	ServiceKnativeHeaderName            = "serving.knative.dev/service"
 	ServiceKnativeHeaderConfiguration   = "serving.knative.dev/configuration"
 	ServiceKnativeHeaderGeneration      = "serving.knative.dev/configurationGeneration"
@@ -136,9 +136,6 @@ func createKnativeFunction(info *igrpc.BaseInfo) (*v1.Service, error) {
 		return nil, err
 	}
 
-	// b, _ := json.MarshalIndent(svc, "", "  ")
-	// fmt.Printf("%v\n", string(b))
-
 	return newSvc, nil
 }
 
@@ -180,7 +177,6 @@ func generateServiceMeta(svn, scope, hash string, size int, info *igrpc.BaseInfo
 	return meta
 }
 
-// func generatePodMeta(net string, min, max int, nsID, nsName, wfID, path, name, scope string, size int, hash string) metav1.ObjectMeta {
 func generatePodMeta(svn, scope, hash string, size int, info *igrpc.BaseInfo) metav1.ObjectMeta {
 
 	metaSpec := metav1.ObjectMeta{
@@ -389,7 +385,7 @@ func generateResourceLimits(size int) (corev1.ResourceRequirements, error) {
 	}
 
 	if c != "" {
-		qcpu, err := resource.ParseQuantity(fmt.Sprintf("%s", c))
+		qcpu, err := resource.ParseQuantity(c)
 		if err != nil {
 			return corev1.ResourceRequirements{}, err
 		}

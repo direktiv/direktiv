@@ -1,5 +1,7 @@
 package main
 
+/*
+
 import (
 	"context"
 	"errors"
@@ -480,3 +482,5 @@ func testNamespaceLogsStreamDisconnect(ctx context.Context, c grpc.FlowClient, n
 	return nil
 
 }
+
+*/

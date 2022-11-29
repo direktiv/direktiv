@@ -5,10 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"sort"
 	"strings"
 	"time"
 
-	"github.com/bradfitz/slice"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/predicate"
@@ -52,7 +52,7 @@ func (is *functionsServer) storeService(ctx context.Context, info *igrpc.BaseInf
 	svc, err := is.db.Services.Query().Where(services.And(
 		services.Name(info.GetName()),
 		services.HasNamespaceWith(
-			predicate.Namespace(namespace.ID(uid)),
+			namespace.ID(uid),
 		),
 	)).Only(ctx)
 
@@ -118,7 +118,7 @@ func fetchServiceAPI() (*versioned.Clientset, error) {
 	return versioned.NewForConfig(config)
 }
 
-// Available prefixes for different scopes
+// Available prefixes for different scopes.
 const (
 	PrefixWorkflow  = "workflow"
 	PrefixNamespace = "namespace"
@@ -193,7 +193,7 @@ func (is *functionsServer) GetFunction(ctx context.Context,
 
 }
 
-// ListPods returns pods based on label filter
+// ListPods returns pods based on label filter.
 func (is *functionsServer) ListPods(ctx context.Context,
 	in *igrpc.ListPodsRequest) (*igrpc.ListPodsResponse, error) {
 
@@ -208,7 +208,7 @@ func (is *functionsServer) ListPods(ctx context.Context,
 	return &resp, nil
 }
 
-// ListFunctions returns isoaltes based on label filter
+// ListFunctions returns isoaltes based on label filter.
 func (is *functionsServer) ListFunctions(ctx context.Context,
 	in *igrpc.ListFunctionsRequest) (*igrpc.ListFunctionsResponse, error) {
 
@@ -287,7 +287,7 @@ func (is *functionsServer) DeleteFunction(ctx context.Context,
 
 		if err != nil {
 			logger.Errorf("successfully delete service, but could not delete backup record: %v", err)
-			return &empty, fmt.Errorf("successfully delete service, but could not delete backup record: %v", err)
+			return &empty, fmt.Errorf("successfully delete service, but could not delete backup record: %w", err)
 		}
 		logger.Infof("Successfully deleted knative service and record")
 	}
@@ -502,7 +502,7 @@ func getKnativeFunction(name string) (*igrpc.GetFunctionResponse, error) {
 		revs = append(revs, info)
 	}
 
-	slice.Sort(revs[:], func(i, j int) bool {
+	sort.Slice(revs[:], func(i, j int) bool {
 		return *revs[i].Generation > *revs[j].Generation
 	})
 
@@ -652,7 +652,7 @@ func (is *functionsServer) reconstructService(name string, ctx context.Context) 
 	return nil
 }
 
-// recretae all services on startup
+// recretae all services on startup.
 func (is *functionsServer) reconstructServices(ctx context.Context) error {
 
 	svcs, err := is.db.Services.Query().All(ctx)
@@ -727,7 +727,7 @@ func (is *functionsServer) CancelWorfklow(ctx context.Context, in *igrpc.CancelW
 			logger.Infof("cancelling %v", name)
 			addr := fmt.Sprintf("http://%s.%s/cancel", svc, ns)
 
-			req, err := http.NewRequest(http.MethodPost, addr, nil)
+			req, err := http.NewRequestWithContext(ctx, http.MethodPost, addr, nil)
 			if err != nil {
 				logger.Errorf("error creating delete request: %v", err)
 				return

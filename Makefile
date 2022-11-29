@@ -217,10 +217,9 @@ protoc: protoc-flow protoc-health protoc-secrets protoc-functions
 # Patterns
 
 build/%-binary: Makefile ${GO_SOURCE_FILES}
-	@set -e; 
 	if [ -d "cmd/$*" ] && [ ".all" != "${DOCKER_BASE}" ]; then \
 		echo "Building $* binary..."; \
-		go build -ldflags "-X github.com/direktiv/direktiv/pkg/version.Version=${FULL_VERSION}" -tags ${GO_BUILD_TAGS} -o $@ cmd/$*/*.go; \
+		go build -ldflags "-X github.com/direktiv/direktiv/pkg/version.Version=${FULL_VERSION}" -tags ${GO_BUILD_TAGS} -o $@ cmd/$*/*.go || exit 1; \
 		cp build/$*-binary build/$*; \
 	else \
    	touch $@; \
@@ -358,3 +357,26 @@ upgrade: push # Pushes all images and reboots flow, function, and api pods
 	@$(MAKE) reboot-flow
 	@$(MAKE) reboot-api
 	@$(MAKE) reboot-functions
+
+.PHONY: dependencies
+dependencies: # installs tools 
+	go install github.com/google/go-licenses@latest
+
+
+.PHONY: license-check 
+license-check: # Scans dependencies looking for licenses.
+	go-licenses check --ignore=github.com/bbuck/go-lexer ./... --disallowed_types forbidden,unknown,restricted
+
+TEST_PACKAGES := $(shell find . -type f -name '*_test.go' | sed -e 's/^\.\///g' | sed -r 's|/[^/]+$$||'  |sort |uniq)
+UNITTEST_PACKAGES = $(shell echo ${TEST_PACKAGES} | sed 's/ /\n/g' | awk '{print "github.com/direktiv/direktiv/" $$0}')
+
+.PHONY: unittest
+unittest: # Runs all Go unit tests. Or, you can run a specific set of unit tests by defining TEST_PACKAGES relative to the root directory.
+	go test -cover -timeout 3s ${UNITTEST_PACKAGES}
+
+.PHONY: lint 
+lint: # Runs very strict linting on the project.
+	golangci-lint run --tests --issues-exit-code=1 --skip-dirs="ent/" --skip-files=".pb.go" -E asciicheck -E containedctx -E decorder -E dupword -E errchkjson -E errname -E errorlint -E exportloopref -E goconst -E godot -E gofmt -E goprintffuncname -E loggercheck -E misspell -E nilerr -E noctx -E nosprintfhostport -E unconvert -E usestdlibvars
+	# -E gosec
+	# -E revive
+	# -E contextcheck -E goerr113 -E godox -E interfacebloat -E tagliatelle -E unparam -E varnamelen -E wrapcheck

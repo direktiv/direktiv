@@ -97,7 +97,7 @@ func (db *dbHandler) AddSecret(namespace, name string, secret []byte, ignoreErro
 	if !strings.HasSuffix(name, "/") { // dont excrypt when folder cause  folder have empty data
 		d, err = encryptData([]byte(db.key), secret)
 		if err != nil {
-			return fmt.Errorf("error encrypting data: %v", err)
+			return fmt.Errorf("error encrypting data: %w", err)
 		}
 	}
 
@@ -127,7 +127,6 @@ func (db *dbHandler) UpdateSecret(namespace, name string, secret []byte) error {
 				namespacesecret.NameEQ(name),
 			)).
 		Only(context.Background())
-
 	if err != nil {
 		if ent.IsNotFound(err) {
 			return status.Errorf(codes.NotFound, "secret '%s' not found", name)
@@ -137,16 +136,20 @@ func (db *dbHandler) UpdateSecret(namespace, name string, secret []byte) error {
 
 	var d []byte
 	d, err = encryptData([]byte(db.key), secret)
+	if err != nil {
+		return fmt.Errorf("failed to encrypt secret: %w", err)
+	}
 
 	_, err = db.db.NamespaceSecret.
 		UpdateOne(bs).
 		SetSecret(d).
 		Save(context.Background())
 	if err != nil {
-		return nil
+		return fmt.Errorf("failed to store encrypted secret: %w", err)
 	}
 
 	return err
+
 }
 
 func (db *dbHandler) GetSecret(namespace, name string) ([]byte, error) {

@@ -84,8 +84,6 @@ func (logic *setterLogic) Run(ctx context.Context, wakedata []byte) (*Transition
 				}
 			}
 
-			// TODO: check that it matches a known mimetype?
-
 		}
 
 		x, err = jqOne(logic.GetInstanceData(), v.Value)

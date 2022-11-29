@@ -10,6 +10,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entref "github.com/direktiv/direktiv/pkg/flow/ent/ref"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/util"
 )
 
 var refsOrderings = []*orderingInfo{
@@ -20,14 +21,14 @@ var refsOrderings = []*orderingInfo{
 	},
 	{
 		db:           entref.FieldName,
-		req:          "NAME",
+		req:          util.PaginationKeyName,
 		defaultOrder: ent.Asc,
 	},
 }
 
 var refsFilters = map[*filteringInfo]func(query *ent.RefQuery, v string) (*ent.RefQuery, error){
 	{
-		field: "NAME",
+		field: util.PaginationKeyName,
 		ftype: "CONTAINS",
 	}: func(query *ent.RefQuery, v string) (*ent.RefQuery, error) {
 		return query.Where(entref.NameContains(v)), nil
@@ -282,7 +283,7 @@ func (flow *flow) Untag(ctx context.Context, req *grpc.UntagRequest) (*emptypb.E
 		return nil, err
 	}
 
-	if d.ref.Immutable == true || d.ref.Name == latest {
+	if d.ref.Immutable || d.ref.Name == latest {
 		return nil, errors.New("not a tag")
 	}
 
@@ -340,7 +341,7 @@ func (flow *flow) Retag(ctx context.Context, req *grpc.RetagRequest) (*emptypb.E
 		goto respond
 	}
 
-	if dt.ref.Immutable == true || dt.ref.Name == latest {
+	if dt.ref.Immutable || dt.ref.Name == latest {
 		return nil, errors.New("not a tag")
 	}
 

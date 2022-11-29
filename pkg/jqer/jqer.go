@@ -24,27 +24,7 @@ var (
 	WrappingDecrement = "}}"
 )
 
-/*
-	// Existing settings
-	StringQueryRequiresWrappings = false
-	TrimWhitespaceOnQueryStrings = false
-	SearchInStrings              = false
-	WrappingBegin                = ""
-	WrappingIncrement            = "{{"
-	WrappingDecrement            = "}}"
-*/
-
-/*
-	// New settings
-	StringQueryRequiresWrappings = true
-	TrimWhitespaceOnQueryStrings = true
-	SearchInStrings              = true
-	WrappingBegin                = "jq"
-	WrappingIncrement            = "("
-	WrappingDecrement            = ")"
-*/
-
-// Evaluate evaluates the data against the query provided and returns the result
+// Evaluate evaluates the data against the query provided and returns the result.
 func Evaluate(data, query interface{}) ([]interface{}, error) {
 
 	if query == nil {
@@ -66,16 +46,16 @@ func recursiveEvaluate(data, query interface{}) ([]interface{}, error) {
 		return out, nil
 	}
 
-	switch query.(type) {
+	switch q := query.(type) {
 	case bool:
 	case int:
 	case float64:
 	case string:
-		return recurseIntoString(data, query.(string))
+		return recurseIntoString(data, q)
 	case map[string]interface{}:
-		return recurseIntoMap(data, query.(map[string]interface{}))
+		return recurseIntoMap(data, q)
 	case []interface{}:
-		return recurseIntoArray(data, query.([]interface{}))
+		return recurseIntoArray(data, q)
 	default:
 		return nil, fmt.Errorf("unexpected type: %s", reflect.TypeOf(query).String())
 	}
@@ -209,7 +189,7 @@ func recurseIntoString(data interface{}, s string) ([]interface{}, error) {
 		case JqStartToken:
 			x, err := jq(data, tok.Value)
 			if err != nil {
-				return nil, fmt.Errorf("error executing jq query %s: %v", tok.Value, err)
+				return nil, fmt.Errorf("error executing jq query %s: %w", tok.Value, err)
 			}
 
 			if len(x) == 0 || len(x) > 0 && x[0] == nil {
@@ -229,12 +209,12 @@ func recurseIntoString(data interface{}, s string) ([]interface{}, error) {
 			fn := fmt.Sprintf("function fn(data) {\n %s \n}", tok.Value)
 			_, err := vm.RunString(fn)
 			if err != nil {
-				return nil, fmt.Errorf("error loading js query %s: %v", tok.Value, err)
+				return nil, fmt.Errorf("error loading js query %s: %w", tok.Value, err)
 			}
 
 			fnExe, ok := goja.AssertFunction(vm.Get("fn"))
 			if !ok {
-				return nil, fmt.Errorf("error getting js query %s: %v", tok.Value, err)
+				return nil, fmt.Errorf("error getting js query %s: %w", tok.Value, err)
 			}
 
 			ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
@@ -257,7 +237,7 @@ func recurseIntoString(data interface{}, s string) ([]interface{}, error) {
 			// execute and get results
 			v, err := fnExe(goja.Undefined(), vm.ToValue(data))
 			if err != nil {
-				return nil, fmt.Errorf("error running js query %s: %v", tok.Value, err)
+				return nil, fmt.Errorf("error running js query %s: %w", tok.Value, err)
 			}
 
 			ret := v.Export()
@@ -309,7 +289,7 @@ func recurseIntoMap(data interface{}, m map[string]interface{}) ([]interface{}, 
 		k := keys[i]
 		x, err := recursiveEvaluate(data, m[k])
 		if err != nil {
-			return nil, fmt.Errorf("error in '%s': %v", k, err)
+			return nil, fmt.Errorf("error in '%s': %w", k, err)
 		}
 		if len(x) == 0 {
 			return nil, fmt.Errorf("error in element '%s': no results", k)
@@ -329,7 +309,7 @@ func recurseIntoArray(data interface{}, q []interface{}) ([]interface{}, error) 
 	for i := range q {
 		x, err := recursiveEvaluate(data, q[i])
 		if err != nil {
-			return nil, fmt.Errorf("error in element %d: %v", i, err)
+			return nil, fmt.Errorf("error in element %d: %w", i, err)
 		}
 		if len(x) == 0 {
 			return nil, fmt.Errorf("error in element %d: no results", i)

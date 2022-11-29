@@ -4,13 +4,8 @@ import (
 	"context"
 	"time"
 
-	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/states"
 	"github.com/direktiv/direktiv/pkg/model"
-	secretsgrpc "github.com/direktiv/direktiv/pkg/secrets/grpc"
-	"github.com/senseyeio/duration"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 //
@@ -45,81 +40,4 @@ type stateLogic interface {
 
 	Deadline(ctx context.Context) time.Time
 	Run(ctx context.Context, wakedata []byte) (transition *states.Transition, err error)
-}
-
-//
-// Helper functions
-//
-
-func deadlineFromString(ctx context.Context, s string) time.Time {
-
-	var t time.Time
-	var d time.Duration
-
-	d = time.Minute * 15
-
-	if s != "" {
-		dur, err := duration.ParseISO8601(s)
-		if err != nil {
-			// TODO: engine.logToInstance(ctx, time.Now(), im.in, "Got an invalid ISO8601 timeout: %v", err)
-		} else {
-			now := time.Now()
-			later := dur.Shift(now)
-			d = later.Sub(now)
-		}
-	}
-
-	t = time.Now()
-	t = t.Add(d)
-	t = t.Add(time.Second * 5)
-
-	return t
-
-}
-
-func addSecrets(ctx context.Context, engine *engine, im *instanceMemory, m map[string]interface{}, secrets ...string) (map[string]interface{}, error) {
-
-	var err error
-
-	if len(secrets) > 0 {
-		engine.logToInstance(ctx, time.Now(), im.in, "Decrypting secrets.")
-
-		s := make(map[string]string)
-
-		for _, name := range secrets {
-			var dd []byte
-			dd, err = getSecretsForInstance(ctx, engine, im, name)
-			if err != nil {
-				return nil, err
-			}
-			s[name] = string(dd)
-		}
-
-		m["secrets"] = s
-	}
-
-	return m, nil
-
-}
-
-func getSecretsForInstance(ctx context.Context, engine *engine, im *instanceMemory, name string) ([]byte, error) {
-
-	var resp *secretsgrpc.SecretsRetrieveResponse
-
-	namespace := im.in.Edges.Namespace.ID.String()
-
-	resp, err := engine.secrets.client.RetrieveSecret(ctx, &secretsgrpc.SecretsRetrieveRequest{
-		Namespace: &namespace,
-		Name:      &name,
-	})
-	if err != nil {
-		s := status.Convert(err)
-		if s.Code() == codes.NotFound {
-			return nil, derrors.NewUncatchableError("direktiv.secrets.notFound", "secret '%s' not found", name)
-		}
-		return nil, derrors.NewInternalError(err)
-	}
-
-	return resp.GetData(), nil
-
 }

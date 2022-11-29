@@ -58,12 +58,12 @@ func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
 			t := time.Now().Add(time.Hour * -24)
 			_, err := flow.db.Instance.Delete().Where(entinst.EndAtLT(t)).Exec(ctx)
 			if err != nil {
-				flow.sugar.Error(fmt.Errorf("failed to cleanup old instances: %v", err))
+				flow.sugar.Error(fmt.Errorf("failed to cleanup old instances: %w", err))
 			}
 
 			_, err = flow.db.VarData.Delete().Where(entvardata.Not(entvardata.HasVarrefs())).Exec(ctx)
 			if err != nil {
-				flow.sugar.Error(fmt.Errorf("failed to cleanup old variables: %v", err))
+				flow.sugar.Error(fmt.Errorf("failed to cleanup old variables: %w", err))
 			}
 		}
 	}()
@@ -77,7 +77,7 @@ func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
 			t := time.Now().Add(time.Hour * -24)
 			_, err := flow.db.LogMsg.Delete().Where(entlog.TLT(t)).Exec(ctx)
 			if err != nil {
-				flow.sugar.Error(fmt.Errorf("failed to cleanup old logs: %v", err))
+				flow.sugar.Error(fmt.Errorf("failed to cleanup old logs: %w", err))
 			}
 		}
 	}()
@@ -104,7 +104,7 @@ func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
 
 	go func() {
 		// function heart-beats
-		ticker := time.NewTicker(1 * time.Minute) // TODO: not this every one minute.
+		ticker := time.NewTicker(1 * time.Minute)
 		for {
 			go flow.functionsHeartbeat()
 			<-ticker.C

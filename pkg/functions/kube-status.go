@@ -2,6 +2,7 @@ package functions
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"strings"
@@ -24,7 +25,7 @@ func (is *functionsServer) WatchFunctions(in *igrpc.WatchFunctionsRequest, out i
 
 	cs, err := fetchServiceAPI()
 	if err != nil {
-		return fmt.Errorf("could not create fetch client: %v", err)
+		return fmt.Errorf("could not create fetch client: %w", err)
 	}
 
 	annotations := in.GetAnnotations()
@@ -52,7 +53,7 @@ func (is *functionsServer) watcherFunctions(cs *versioned.Clientset, labels stri
 		TimeoutSeconds: &timeout,
 	})
 	if err != nil {
-		return false, fmt.Errorf("could start watcher: %v", err)
+		return false, fmt.Errorf("could start watcher: %w", err)
 	}
 
 	for {
@@ -76,7 +77,7 @@ func (is *functionsServer) watcherFunctions(cs *versioned.Clientset, labels stri
 
 			err = out.Send(&resp)
 			if err != nil {
-				return false, fmt.Errorf("failed to send event: %v", err)
+				return false, fmt.Errorf("failed to send event: %w", err)
 			}
 
 		case <-time.After(watcherTimeout):
@@ -100,7 +101,7 @@ func (is *functionsServer) WatchRevisions(in *igrpc.WatchRevisionsRequest, out i
 
 	cs, err := fetchServiceAPI()
 	if err != nil {
-		return fmt.Errorf("could not create fetch client: %v", err)
+		return fmt.Errorf("could not create fetch client: %w", err)
 	}
 
 	l := map[string]string{
@@ -137,7 +138,7 @@ func (is *functionsServer) watcherRevisions(cs *versioned.Clientset, labels stri
 		TimeoutSeconds: &timeout,
 	})
 	if err != nil {
-		return false, fmt.Errorf("could start watcher: %v", err)
+		return false, fmt.Errorf("could start watcher: %w", err)
 	}
 
 	for {
@@ -202,7 +203,7 @@ func (is *functionsServer) watcherRevisions(cs *versioned.Clientset, labels stri
 
 			err = out.Send(&resp)
 			if err != nil {
-				return false, fmt.Errorf("failed to send event: %v", err)
+				return false, fmt.Errorf("failed to send event: %w", err)
 			}
 
 		case <-time.After(watcherTimeout):
@@ -224,7 +225,7 @@ func (is *functionsServer) WatchPods(in *igrpc.WatchPodsRequest, out igrpc.Funct
 
 	cs, err := getClientSet()
 	if err != nil {
-		return fmt.Errorf("could not create fetch client: %v", err)
+		return fmt.Errorf("could not create fetch client: %w", err)
 	}
 
 	l := map[string]string{
@@ -258,7 +259,7 @@ func (is *functionsServer) watcherPods(cs *kubernetes.Clientset, labels string, 
 		TimeoutSeconds: &timeout,
 	})
 	if err != nil {
-		return false, fmt.Errorf("could start watcher: %v", err)
+		return false, fmt.Errorf("could start watcher: %w", err)
 	}
 
 	for {
@@ -286,7 +287,7 @@ func (is *functionsServer) watcherPods(cs *kubernetes.Clientset, labels string, 
 
 			err = out.Send(&resp)
 			if err != nil {
-				return false, fmt.Errorf("failed to send event: %v", err)
+				return false, fmt.Errorf("failed to send event: %w", err)
 			}
 
 		case <-time.After(watcherTimeout):
@@ -308,7 +309,7 @@ func (is *functionsServer) WatchLogs(in *igrpc.WatchLogsRequest, out igrpc.Funct
 
 	cs, err := getClientSet()
 	if err != nil {
-		return fmt.Errorf("could not create fetch client: %v", err)
+		return fmt.Errorf("could not create fetch client: %w", err)
 	}
 
 	req := cs.CoreV1().Pods(functionsConfig.Namespace).GetLogs(*in.PodName, &corev1.PodLogOptions{
@@ -318,7 +319,7 @@ func (is *functionsServer) WatchLogs(in *igrpc.WatchLogsRequest, out igrpc.Funct
 
 	plogs, err := req.Stream(context.Background())
 	if err != nil {
-		return fmt.Errorf("could not get logs: %v", err)
+		return fmt.Errorf("could not get logs: %w", err)
 	}
 	defer plogs.Close()
 
@@ -340,7 +341,7 @@ func (is *functionsServer) WatchLogs(in *igrpc.WatchLogsRequest, out igrpc.Funct
 		if numBytes == 0 {
 			continue
 		}
-		if err == io.EOF {
+		if errors.Is(err, io.EOF) {
 			break
 		}
 		if err != nil {
@@ -353,7 +354,7 @@ func (is *functionsServer) WatchLogs(in *igrpc.WatchLogsRequest, out igrpc.Funct
 
 		err = out.Send(&resp)
 		if err != nil {
-			return fmt.Errorf("log watcher failed to send event: %v", err)
+			return fmt.Errorf("log watcher failed to send event: %w", err)
 		}
 	}
 

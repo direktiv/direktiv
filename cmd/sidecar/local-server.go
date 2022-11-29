@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"strconv"
@@ -127,12 +126,18 @@ func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
 	actionId := r.URL.Query().Get("aid")
 
 	srv.requestsLock.Lock()
-	req, _ := srv.requests[actionId]
+	req, ok := srv.requests[actionId]
 	srv.requestsLock.Unlock()
 
 	reportError := func(code int, err error) {
 		http.Error(w, err.Error(), code)
 		log.Warnf("Log handler for '%s' returned %v: %v.", actionId, code, err)
+	}
+
+	if !ok {
+		err := errors.New("the action id went missing")
+		code := http.StatusInternalServerError
+		reportError(code, err)
 		return
 	}
 
@@ -154,7 +159,7 @@ func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		r := io.LimitReader(r.Body, cap)
 
-		data, err := ioutil.ReadAll(r)
+		data, err := io.ReadAll(r)
 		if err != nil {
 			code := http.StatusBadRequest
 			reportError(code, err)
@@ -191,12 +196,18 @@ func (srv *LocalServer) varHandler(w http.ResponseWriter, r *http.Request) {
 	actionId := r.URL.Query().Get("aid")
 
 	srv.requestsLock.Lock()
-	req, _ := srv.requests[actionId]
+	req, ok := srv.requests[actionId]
 	srv.requestsLock.Unlock()
 
 	reportError := func(code int, err error) {
 		http.Error(w, err.Error(), code)
 		log.Warnf("Var handler for '%s' returned %v: %v.", actionId, code, err)
+	}
+
+	if !ok {
+		err := errors.New("the action id went missing")
+		code := http.StatusInternalServerError
+		reportError(code, err)
 		return
 	}
 
@@ -222,7 +233,6 @@ func (srv *LocalServer) varHandler(w http.ResponseWriter, r *http.Request) {
 
 		err := srv.getVar(ctx, ir, w, setTotalSize, scope, key)
 		if err != nil {
-			// TODO: more specific errors
 			reportError(http.StatusInternalServerError, err)
 			return
 		}
@@ -233,7 +243,6 @@ func (srv *LocalServer) varHandler(w http.ResponseWriter, r *http.Request) {
 
 		err := srv.setVar(ctx, ir, r.ContentLength, r.Body, scope, key, vMimeType)
 		if err != nil {
-			// TODO: more specific errors
 			reportError(http.StatusInternalServerError, err)
 			return
 		}
@@ -251,7 +260,7 @@ func (srv *LocalServer) varHandler(w http.ResponseWriter, r *http.Request) {
 type activeRequest struct {
 	*functionRequest
 	cancel func()
-	ctx    context.Context
+	ctx    context.Context //nolint:containedctx
 }
 
 func (srv *LocalServer) registerActiveRequest(ir *functionRequest, ctx context.Context, cancel func()) {
@@ -285,9 +294,7 @@ func (srv *LocalServer) deregisterActiveRequest(actionId string) {
 func (srv *LocalServer) cancelActiveRequest(ctx context.Context, actionId string) {
 
 	srv.requestsLock.Lock()
-
-	req, _ := srv.requests[actionId]
-
+	req := srv.requests[actionId]
 	srv.requestsLock.Unlock()
 
 	if req == nil {
@@ -378,8 +385,6 @@ type functionRequest struct {
 	deadline   time.Time
 	input      []byte
 	files      []*functionFiles
-	errCode    string
-	errMsg     string
 }
 
 type functionFiles struct {
@@ -402,13 +407,9 @@ type varClientMsg interface {
 
 func (srv *LocalServer) requestVar(ctx context.Context, ir *functionRequest, scope, key string) (client varClient, recv func() (varClientMsg, error), err error) {
 
-	// TODO: const the scopes
-	// TODO: validate scope earlier so that the switch cannot get unexpected data here
-	// TODO: log missing files but proceed anyway
-
 	switch scope {
 
-	case "namespace":
+	case util.VarScopeNamespace:
 		var nvClient grpc.Internal_NamespaceVariableParcelsClient
 		nvClient, err = srv.flow.NamespaceVariableParcels(ctx, &grpc.VariableInternalRequest{
 			Instance: ir.instanceId,
@@ -419,7 +420,7 @@ func (srv *LocalServer) requestVar(ctx context.Context, ir *functionRequest, sco
 			return nvClient.Recv()
 		}
 
-	case "workflow":
+	case util.VarScopeWorkflow:
 		var wvClient grpc.Internal_WorkflowVariableParcelsClient
 		wvClient, err = srv.flow.WorkflowVariableParcels(ctx, &grpc.VariableInternalRequest{
 			Instance: ir.instanceId,
@@ -433,7 +434,7 @@ func (srv *LocalServer) requestVar(ctx context.Context, ir *functionRequest, sco
 	case "":
 		fallthrough
 
-	case "instance":
+	case util.VarScopeInstance:
 		var ivClient grpc.Internal_InstanceVariableParcelsClient
 		ivClient, err = srv.flow.InstanceVariableParcels(ctx, &grpc.VariableInternalRequest{
 			Instance: ir.instanceId,
@@ -465,19 +466,19 @@ type varSetClientMsg struct {
 
 func (srv *LocalServer) setVar(ctx context.Context, ir *functionRequest, totalSize int64, r io.Reader, scope, key, vMimeType string) error {
 
-	// TODO: const the scopes
-	// TODO: validate scope earlier so that the switch cannot get unexpected data here
-	// TODO: log missing files but proceed anyway
-
 	var err error
 	var client varSetClient
 	var send func(*varSetClientMsg) error
 
 	switch scope {
 
-	case "namespace":
+	case util.VarScopeNamespace:
 		var nvClient grpc.Internal_SetNamespaceVariableParcelsClient
 		nvClient, err = srv.flow.SetNamespaceVariableParcels(ctx)
+		if err != nil {
+			return err
+		}
+
 		client = nvClient
 		send = func(x *varSetClientMsg) error {
 			req := &grpc.SetVariableInternalRequest{}
@@ -489,9 +490,13 @@ func (srv *LocalServer) setVar(ctx context.Context, ir *functionRequest, totalSi
 			return nvClient.Send(req)
 		}
 
-	case "workflow":
+	case util.VarScopeWorkflow:
 		var wvClient grpc.Internal_SetWorkflowVariableParcelsClient
 		wvClient, err = srv.flow.SetWorkflowVariableParcels(ctx)
+		if err != nil {
+			return err
+		}
+
 		client = wvClient
 		send = func(x *varSetClientMsg) error {
 			req := &grpc.SetVariableInternalRequest{}
@@ -506,9 +511,13 @@ func (srv *LocalServer) setVar(ctx context.Context, ir *functionRequest, totalSi
 	case "":
 		fallthrough
 
-	case "instance":
+	case util.VarScopeInstance:
 		var ivClient grpc.Internal_SetInstanceVariableParcelsClient
 		ivClient, err = srv.flow.SetInstanceVariableParcels(ctx)
+		if err != nil {
+			return err
+		}
+
 		client = ivClient
 		send = func(x *varSetClientMsg) error {
 			req := &grpc.SetVariableInternalRequest{}
@@ -531,7 +540,7 @@ func (srv *LocalServer) setVar(ctx context.Context, ir *functionRequest, totalSi
 		if err == nil {
 			return errors.New("large payload requires defined Content-Length")
 		}
-		if err != io.EOF {
+		if !errors.Is(err, io.EOF) {
 			return err
 		}
 
@@ -571,7 +580,7 @@ func (srv *LocalServer) setVar(ctx context.Context, ir *functionRequest, totalSi
 	}
 
 	_, err = client.CloseAndRecv()
-	if err != nil && err != io.EOF {
+	if err != nil && !errors.Is(err, io.EOF) {
 		return err
 	}
 
@@ -590,7 +599,7 @@ func (srv *LocalServer) getVar(ctx context.Context, ir *functionRequest, w io.Wr
 	var noEOF = true
 	for noEOF {
 		msg, err := recv()
-		if err == io.EOF {
+		if errors.Is(err, io.EOF) {
 			noEOF = false
 		} else if err != nil {
 			return err
@@ -625,7 +634,7 @@ func (srv *LocalServer) getVar(ctx context.Context, ir *functionRequest, w io.Wr
 	}
 
 	err = client.CloseSend()
-	if err != nil && err != io.EOF {
+	if err != nil && !errors.Is(err, io.EOF) {
 		return err
 	}
 

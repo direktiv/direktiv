@@ -62,7 +62,7 @@ func serviceBaseInfo(s *v1.Service) *igrpc.BaseInfo {
 
 func statusFromCondition(conditions []apis.Condition) (string, []*igrpc.Condition) {
 	// status and status messages
-	status := fmt.Sprintf("%s", corev1.ConditionUnknown)
+	status := string(corev1.ConditionUnknown)
 
 	var condList []*igrpc.Condition
 
@@ -70,7 +70,7 @@ func statusFromCondition(conditions []apis.Condition) (string, []*igrpc.Conditio
 		cond := conditions[m]
 
 		if cond.Type == v1.RevisionConditionReady {
-			status = fmt.Sprintf("%s", cond.Status)
+			status = string(cond.Status)
 		}
 
 		ct := string(cond.Type)

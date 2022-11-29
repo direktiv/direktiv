@@ -13,7 +13,7 @@ import (
 
 const actionIDHeader = "Direktiv-ActionID"
 
-// NetworkServer defines a network server object
+// NetworkServer defines a network server object.
 type NetworkServer struct {
 	end     func()
 	local   *LocalServer
@@ -42,7 +42,7 @@ func waitForUserContainer() {
 	}
 }
 
-// Start starts the network server for the sidecar
+// Start starts the network server for the sidecar.
 func (srv *NetworkServer) Start() {
 
 	waitForUserContainer()
@@ -71,7 +71,6 @@ func (srv *NetworkServer) Start() {
 
 func (srv *NetworkServer) cancel(w http.ResponseWriter, r *http.Request) {
 
-	// TODO: opentelemetry?
 	srv.local.cancelActiveRequest(context.Background(),
 		r.Header.Get(actionIDHeader))
 
@@ -142,7 +141,6 @@ func (srv *NetworkServer) functions(w http.ResponseWriter, r *http.Request) {
 			log.Debugf("Request '%s' queued.", id)
 		case <-time.After(time.Second * 30):
 			log.Warnf("Request '%s' is starving!", id)
-			// TODO: reject request after some number of failures
 		}
 	}
 

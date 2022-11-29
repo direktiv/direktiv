@@ -1,13 +1,14 @@
 package util
 
 import (
-	"io/ioutil"
+	"fmt"
+	"os"
 	"time"
 
 	"gopkg.in/yaml.v2"
 )
 
-// Config contain direktiv configuration
+// Config contain direktiv configuration.
 type Config struct {
 	FunctionsService string `yaml:"functions-service"`
 
@@ -22,20 +23,20 @@ type Config struct {
 	Eventing bool `yaml:"eventing"`
 }
 
-// ReadConfig reads direktiv config file
+// ReadConfig reads direktiv config file.
 func ReadConfig(file string) (*Config, error) {
 
 	c := new(Config)
 
 	/* #nosec */
-	data, err := ioutil.ReadFile(file)
+	data, err := os.ReadFile(file)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to read configuration file: %w", err)
 	}
 
 	err = yaml.Unmarshal(data, c)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to parse configuration file: %w", err)
 	}
 
 	return c, nil

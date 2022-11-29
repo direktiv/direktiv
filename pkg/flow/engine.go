@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	"net/url"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -220,6 +219,9 @@ func (engine *engine) loadStateLogic(im *instanceMemory, stateID string) error {
 	}
 
 	im.logic, err = states.StateLogic(im, state)
+	if err != nil {
+		return err
+	}
 
 	return nil
 
@@ -272,14 +274,6 @@ func (engine *engine) Transition(ctx context.Context, im *instanceMemory, nextSt
 		engine.ScheduleHardTimeout(im, oldController, tHard)
 
 	}
-
-	// TODO: I don't think this is actually possible?
-	// if len(wli.rec.Flow) != wli.step {
-	// 	err := errors.New("workflow logic instance aborted for being tardy")
-	// 	engine.sugar.Error(err)
-	// 	wli.Close()
-	// 	return
-	// }
 
 	if nextState == "" {
 		panic("don't call this function with an empty nextState")
@@ -337,10 +331,13 @@ func (engine *engine) Transition(ctx context.Context, im *instanceMemory, nextSt
 
 func (engine *engine) CrashInstance(ctx context.Context, im *instanceMemory, err error) {
 
-	if cerr, catchable := err.(*derrors.CatchableError); catchable {
+	cerr := new(derrors.CatchableError)
+	uerr := new(derrors.UncatchableError)
+
+	if errors.As(err, &cerr) {
 		engine.sugar.Errorf("Instance failed with error '%s': %v", cerr.Code, err)
 		engine.logToInstance(ctx, time.Now(), im.in, "Instance failed with error '%s': %s", cerr.Code, err.Error())
-	} else if uerr, uncatchable := err.(*derrors.UncatchableError); uncatchable && uerr.Code != "" {
+	} else if errors.As(err, &uerr) && uerr.Code != "" {
 		engine.sugar.Errorf("Instance failed with uncatchable error '%s': %v", uerr.Code, err)
 		engine.logToInstance(ctx, time.Now(), im.in, "Instance failed with uncatchable error '%s': %s", uerr.Code, err.Error())
 	} else {
@@ -477,7 +474,9 @@ failure:
 
 	engine.CancelInstanceChildren(ctx, im)
 
-	if cerr, ok := err.(*derrors.CatchableError); ok {
+	cerr := new(derrors.CatchableError)
+
+	if errors.As(err, &cerr) {
 
 		_ = im.StoreData("error", cerr)
 
@@ -505,7 +504,7 @@ failure:
 					NextState: catch.Transition,
 				}
 
-				breaker++
+				// breaker++
 
 				code = cerr.Code
 
@@ -611,8 +610,6 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 
 }
 
-const maxSubflowDepth = 5
-
 func (engine *engine) subflowInvoke(ctx context.Context, caller *subflowCaller, ns *ent.Namespace, name string, input []byte) (*instanceMemory, error) {
 
 	var err error
@@ -627,36 +624,32 @@ func (engine *engine) subflowInvoke(ctx context.Context, caller *subflowCaller, 
 	}
 
 	args.Input = input
-	args.Caller = fmt.Sprintf("instance:%v", caller.InstanceID) // TODO: human readable
+	args.Caller = fmt.Sprintf("instance:%v", caller.InstanceID)
 
 	var threadVars []*ent.VarRef
 
-	if caller != nil {
+	callerData, err := json.Marshal(caller)
+	if err != nil {
+		return nil, derrors.NewInternalError(err)
+	}
+	args.CallerData = string(callerData)
 
-		callerData, err := json.Marshal(caller)
-		if err != nil {
-			return nil, derrors.NewInternalError(err)
+	parent, err := engine.getInstance(ctx, engine.db.Namespace, ns.Name, caller.InstanceID, false)
+	if err != nil {
+		return nil, derrors.NewInternalError(err)
+	}
+
+	threadVars, err = parent.in.QueryVars().Where(entvar.BehaviourEQ("thread")).All(ctx)
+	if err != nil {
+		return nil, derrors.NewInternalError(err)
+	}
+
+	if !filepath.IsAbs(args.Path) {
+		dir, _ := filepath.Split(caller.As)
+		if dir == "" {
+			dir = "/"
 		}
-		args.CallerData = string(callerData)
-
-		parent, err := engine.getInstance(ctx, engine.db.Namespace, ns.Name, caller.InstanceID, false)
-		if err != nil {
-			return nil, derrors.NewInternalError(err)
-		}
-
-		threadVars, err = parent.in.QueryVars().Where(entvar.BehaviourEQ("thread")).All(ctx)
-		if err != nil {
-			return nil, derrors.NewInternalError(err)
-		}
-
-		if !filepath.IsAbs(args.Path) {
-			dir, _ := filepath.Split(caller.As)
-			if dir == "" {
-				dir = "/"
-			}
-			args.Path = filepath.Join(dir, args.Path)
-		}
-
+		args.Path = filepath.Join(dir, args.Path)
 	}
 
 	im, err := engine.NewInstance(ctx, args)
@@ -677,8 +670,6 @@ func (engine *engine) subflowInvoke(ctx context.Context, caller *subflowCaller, 
 
 	traceSubflowInvoke(ctx, args.Path, im.ID().String())
 
-	// engine.queue(im)
-
 	return im, nil
 
 }
@@ -694,14 +685,17 @@ const retryWakeupFunction = "retryWakeup"
 
 func (engine *engine) scheduleRetry(id, state string, step int, t time.Time, data []byte) error {
 
-	data, _ = json.Marshal(&retryMessage{
+	data, err := json.Marshal(&retryMessage{
 		InstanceID: id,
 		// State:      state,
 		Step: step,
 		Data: data,
 	})
+	if err != nil {
+		panic(err)
+	}
 
-	if d := t.Sub(time.Now()); d < time.Second*5 {
+	if d := time.Until(t); d < time.Second*5 {
 		go func() {
 			time.Sleep(d)
 			/* #nosec */
@@ -710,7 +704,7 @@ func (engine *engine) scheduleRetry(id, state string, step int, t time.Time, dat
 		return nil
 	}
 
-	err := engine.timers.addOneShot(id, retryWakeupFunction, t, data)
+	err = engine.timers.addOneShot(id, retryWakeupFunction, t, data)
 	if err != nil {
 		return derrors.NewInternalError(err)
 	}
@@ -739,7 +733,7 @@ func (engine *engine) retryWakeup(data []byte) {
 
 	engine.sugar.Debugf("Handling retry wakeup: %s", this())
 
-	go engine.runState(ctx, im, []byte(msg.Data), nil)
+	go engine.runState(ctx, im, msg.Data, nil)
 
 }
 
@@ -765,12 +759,14 @@ func (engine *engine) doActionRequest(ctx context.Context, ar *functionRequest) 
 
 	// Log warning if timeout exceeds max allowed timeout
 	if actionTimeout := (time.Duration(ar.Workflow.Timeout) * time.Second); actionTimeout > engine.conf.GetFunctionsTimeout() {
-		engine.internal.ActionLog(context.Background(), &grpc.ActionLogRequest{
+		_, err := engine.internal.ActionLog(context.Background(), &grpc.ActionLogRequest{
 			InstanceId: ar.Workflow.InstanceID, Msg: []string{fmt.Sprintf("Warning: Action timeout '%v' is longer than max allowed duariton '%v'", actionTimeout, engine.conf.GetFunctionsTimeout())},
 		})
+		if err != nil {
+			engine.sugar.Errorf("Failed to log: %v.", err)
+		}
 	}
 
-	// TODO: should this ctx be modified with a shorter deadline?
 	switch ar.Container.Type {
 	case model.DefaultFunctionType:
 		fallthrough
@@ -828,7 +824,7 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 	rctx, cancel := context.WithDeadline(context.Background(), deadline)
 	defer cancel()
 
-	engine.sugar.Debugf("deadline for request: %v", deadline.Sub(time.Now()))
+	engine.sugar.Debugf("deadline for request: %v", time.Until(deadline))
 
 	req, err := http.NewRequestWithContext(rctx, http.MethodPost, addr,
 		bytes.NewReader(ar.Container.Data))
@@ -877,43 +873,40 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 				return
 			}
 			engine.sugar.Debugf("error in request: %v", err)
-			if err, ok := err.(*url.Error); ok {
-				if err, ok := err.Err.(*net.OpError); ok {
-					if _, ok := err.Err.(*net.DNSError); ok {
+			dnsErr := new(net.DNSError)
+			if errors.As(err, &dnsErr) {
 
-						// recreate if the service does not exist
-						if ar.Container.Type == model.ReusableContainerFunctionType &&
-							!engine.isKnativeFunction(engine.actions.client, ar) {
-							err := createKnativeFunction(engine.actions.client, ar)
-							if err != nil && !strings.Contains(err.Error(), "already exists") {
-								engine.sugar.Errorf("can not create knative function: %v", err)
-								engine.reportError(ar, err)
-								return
-							}
-						}
-
-						// recreate if the service if it exists in the database but not knative
-						if (ar.Container.Type == model.NamespacedKnativeFunctionType) &&
-							!engine.isScopedKnativeFunction(engine.actions.client, ar.Container.Service) {
-
-							err := reconstructScopedKnativeFunction(engine.actions.client, ar.Container.Service)
-							if err != nil {
-								if stErr, ok := status.FromError(err); ok && stErr.Code() == codes.NotFound {
-									engine.sugar.Errorf("knative function: '%s' does not exist", ar.Container.Service)
-									engine.reportError(ar, fmt.Errorf("knative function: '%s' does not exist", ar.Container.Service))
-									return
-								}
-
-								engine.sugar.Errorf("can not create scoped knative function: %v", err)
-								engine.reportError(ar, err)
-								return
-							}
-						}
-
-						time.Sleep(1000 * time.Millisecond)
-						continue
+				// recreate if the service does not exist
+				if ar.Container.Type == model.ReusableContainerFunctionType &&
+					!engine.isKnativeFunction(engine.actions.client, ar) {
+					err := createKnativeFunction(engine.actions.client, ar)
+					if err != nil && !strings.Contains(err.Error(), "already exists") {
+						engine.sugar.Errorf("can not create knative function: %v", err)
+						engine.reportError(ar, err)
+						return
 					}
 				}
+
+				// recreate if the service if it exists in the database but not knative
+				if (ar.Container.Type == model.NamespacedKnativeFunctionType) &&
+					!engine.isScopedKnativeFunction(engine.actions.client, ar.Container.Service) {
+
+					err := reconstructScopedKnativeFunction(engine.actions.client, ar.Container.Service)
+					if err != nil {
+						if stErr, ok := status.FromError(err); ok && stErr.Code() == codes.NotFound {
+							engine.sugar.Errorf("knative function: '%s' does not exist", ar.Container.Service)
+							engine.reportError(ar, fmt.Errorf("knative function: '%s' does not exist", ar.Container.Service))
+							return
+						}
+
+						engine.sugar.Errorf("can not create scoped knative function: %v", err)
+						engine.reportError(ar, err)
+						return
+					}
+				}
+
+				time.Sleep(1000 * time.Millisecond)
+				continue
 			}
 
 			time.Sleep(1000 * time.Millisecond)
@@ -928,7 +921,7 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 		return
 	}
 
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 		engine.reportError(ar, fmt.Errorf("action error status: %d",
 			resp.StatusCode))
 	}
@@ -975,8 +968,6 @@ func (engine *engine) createTransport() *http.Transport {
 
 }
 
-const eventsWakeupFunction = "eventsWakeup"
-
 func (engine *engine) wakeEventsWaiter(signature []byte, events []*cloudevents.Event) {
 
 	sig := new(eventsWaiterSignature)
@@ -989,14 +980,14 @@ func (engine *engine) wakeEventsWaiter(signature []byte, events []*cloudevents.E
 
 	ctx, im, err := engine.loadInstanceMemory(sig.InstanceID, sig.Step)
 	if err != nil {
-		err = fmt.Errorf("cannot load workflow logic instance: %v", err)
+		err = fmt.Errorf("cannot load workflow logic instance: %w", err)
 		engine.sugar.Error(err)
 		return
 	}
 
 	wakedata, err := json.Marshal(events)
 	if err != nil {
-		err = fmt.Errorf("cannot marshal the action results payload: %v", err)
+		err = fmt.Errorf("cannot marshal the action results payload: %w", err)
 		engine.CrashInstance(ctx, im, err)
 		return
 	}
@@ -1047,9 +1038,7 @@ func (engine *engine) EventsInvoke(workflowID string, events ...*cloudevents.Eve
 	args.Path = d.path
 
 	args.Input = input
-	args.Caller = "cloudevent" // TODO: human readable
-
-	// TODO: TRACE traceEventsInvoked
+	args.Caller = "cloudevent"
 
 	im, err := engine.NewInstance(ctx, args)
 	if err != nil {

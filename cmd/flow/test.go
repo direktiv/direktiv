@@ -1,5 +1,7 @@
 package main
 
+/*
+
 import (
 	"bytes"
 	"context"
@@ -99,23 +101,21 @@ var testsCmd = &cobra.Command{
 		registerTest("StartTypeCron", []string{"cron", "start", "long"}, testStartTypeCron)
 
 		// TODO:
-		/*
-			Error State (uses a validate state to check email and then gets caught by a catch to the error state)
-			ValidateState (done checks if valid or invalid in two different workflows)
-			Foreach State (done runs a foreach for 3 objects)
-			Parallel State (done runs 3 separate workflows 1 mode or with a failing action, 1 mode and with a failing action, 1 mode and with completed actions)
-			CloudEvents (done eventAnd, evenXor and start type events)
+			// Error State (uses a validate state to check email and then gets caught by a catch to the error state)
+			// ValidateState (done checks if valid or invalid in two different workflows)
+			// Foreach State (done runs a foreach for 3 objects)
+			// Parallel State (done runs 3 separate workflows 1 mode or with a failing action, 1 mode and with a failing action, 1 mode and with completed actions)
+			// CloudEvents (done eventAnd, evenXor and start type events)
 
-			Crons (runs for 3 minutes checks how many instances it created to see if it matched)
+			// Crons (runs for 3 minutes checks how many instances it created to see if it matched)
 
-			Action Types
-				Global
-				Namespace
-				Reusable
-				Isolate
+			// Action Types
+			// 	Global
+			// 	Namespace
+			// 	Reusable
+			// 	Isolate
 
-			Workflow Management Tests (revisions, tags, routers, etc)
-		*/
+			// Workflow Management Tests (revisions, tags, routers, etc)
 
 	},
 	Run: func(cmd *cobra.Command, args []string) {
@@ -168,9 +168,18 @@ func getTests(labels ...string) []test {
 
 func runTestsParallel(tests []test, c int) {
 
-	testsFullReset()
+	err := testsFullReset()
+	if err != nil {
+		os.Exit(1)
+	}
+
 	if !persistTest || c != 1 {
-		defer testsFullReset()
+		defer func() {
+			err := testsFullReset()
+			if err != nil {
+				os.Exit(1)
+			}
+		}()
 	}
 
 	if c == 1 {
@@ -184,7 +193,6 @@ func runTestsParallel(tests []test, c int) {
 	var wg sync.WaitGroup
 	wg.Add(c)
 
-	var err error
 	var lock sync.Mutex
 
 	for i := 0; i < c; i++ {
@@ -422,3 +430,5 @@ func registerTest(name string, labels []string, fn func(context.Context, grpc.Fl
 		run:    fn,
 	})
 }
+
+*/

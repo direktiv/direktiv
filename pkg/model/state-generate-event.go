@@ -76,12 +76,6 @@ func (o *GenerateEventState) Validate() error {
 		return err
 	}
 
-	if s, ok := o.Transform.(string); ok {
-		if err := validateTransformJQ(s); err != nil {
-			return err
-		}
-	}
-
 	if o.Delay != "immediate" && o.Delay != "" && !isISO8601(o.Delay) {
 		return errors.New("delay is not a ISO8601 string")
 	}
@@ -97,7 +91,7 @@ func (o *GenerateEventState) Validate() error {
 
 	for i, errDef := range o.ErrorDefinitions() {
 		if err := errDef.Validate(); err != nil {
-			return fmt.Errorf("catch[%v] is invalid: %v", i, err)
+			return fmt.Errorf("catch[%v] is invalid: %w", i, err)
 		}
 	}
 	return nil

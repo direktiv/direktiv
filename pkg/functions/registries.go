@@ -26,7 +26,7 @@ const (
 	annotationURL       = "direktiv.io/url"
 	annotationURLHash   = "direktiv.io/urlhash"
 
-	// Registry Types
+	// Registry Types.
 	annotationRegistryTypeKey            = "direktiv.io/registry-type"
 	annotationRegistryTypeNamespaceValue = "namespace"
 	annotationRegistryObfuscatedUser     = "direktiv.io/obf-user"
@@ -102,7 +102,6 @@ func listRegistriesNames(namespace string) []string {
 
 }
 
-// namespace
 func (is *functionsServer) DeleteRegistry(ctx context.Context, in *igrpc.DeleteRegistryRequest) (*emptypb.Empty, error) {
 	var resp emptypb.Empty
 	return &resp, kubernetesDeleteRegistry(ctx, in.GetName(), in.GetNamespace())
@@ -145,7 +144,10 @@ func (is *functionsServer) StoreRegistry(ctx context.Context, in *igrpc.StoreReg
 
 	secretName := fmt.Sprintf("%s-%s-%s", secretsPrefix, in.GetNamespace(), u.Hostname())
 
-	kubernetesDeleteRegistry(ctx, in.GetName(), in.GetNamespace())
+	err = kubernetesDeleteRegistry(ctx, in.GetName(), in.GetNamespace())
+	if err != nil {
+		return &empty, err
+	}
 
 	sa := prepareNewRegistrySecret(secretName, in.GetName(), auth)
 	sa.Labels[annotationNamespace] = in.GetNamespace()
@@ -208,8 +210,6 @@ func obfuscateUser(user string) string {
 
 }
 
-// util
-
 func prepareNewRegistrySecret(name, url, authConfig string) v1.Secret {
 	sa := v1.Secret{
 		Data: make(map[string][]byte),
@@ -217,7 +217,10 @@ func prepareNewRegistrySecret(name, url, authConfig string) v1.Secret {
 
 	sa.Labels = make(map[string]string)
 
-	h, _ := hash.Hash(fmt.Sprintf("%s", url), hash.FormatV2, nil)
+	h, err := hash.Hash(url, hash.FormatV2, nil)
+	if err != nil {
+		panic(err)
+	}
 	sa.Labels[annotationURLHash] = fmt.Sprintf("%d", h)
 
 	sa.Annotations = make(map[string]string)

@@ -246,6 +246,9 @@ func (flow *flow) CreateSecretsFolder(ctx context.Context, req *grpc.CreateSecre
 	}
 
 	_, err = flow.secrets.client.CreateSecretsFolder(ctx, request)
+	if err != nil {
+		return nil, err
+	}
 
 	flow.logToNamespace(ctx, time.Now(), ns, "Created secrets folder '%s'.", req.GetKey())
 	flow.pubsub.NotifyNamespaceSecrets(ns)
