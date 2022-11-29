@@ -1016,7 +1016,7 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 
 	err = tx.Commit()
 	if err != nil {
-		return nil
+		return err
 	}
 
 	return nil
