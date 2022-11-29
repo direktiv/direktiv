@@ -27,6 +27,7 @@ var (
 	Type           string
 	Id             string
 	Specversion    string
+	output         string
 
 	maxSize int64 = 1073741824
 )
@@ -76,6 +77,9 @@ func main() {
 	sendEventCmd.Flags().StringVar(&Id, "id", "", "Event id ")
 	sendEventCmd.Flags().StringVar(&Specversion, "specversion", "", "The version of the CloudEvents specification which the event uses")
 	sendEventCmd.Flags().String("endpoint", "", "Custom endpoint for filtered CloudEvents.")
+
+	getFilterCmd.Flags().StringVar(&output, "output", "", "output type, by default human readable")
+	listFilterCmd.Flags().StringVar(&output, "output", "", "output type, by default human readable")
 
 	setFilterCmd.PersistentFlags().BoolP("force", "f", false, "Update if it already exists.")
 
@@ -609,7 +613,7 @@ Will update the helloworld workflow and set the remote workflow variable 'data.j
 }
 
 var workflowCmd = &cobra.Command{
-	Use:   "workflow",
+	Use:   "workflows",
 	Short: "Workflow-related commands.",
 }
 
@@ -706,6 +710,11 @@ var deleteFilterCmd = &cobra.Command{
 	},
 }
 
+type getFilterResp struct {
+	Filtername string `json:"filtername"`
+	JsCode     string `json:"jsCode"`
+}
+
 var getFilterCmd = &cobra.Command{
 	Use:   "get-filter NAME",
 	Short: "Get an event filter.",
@@ -719,9 +728,27 @@ var getFilterCmd = &cobra.Command{
 			log.Fatalf("error: %v\n", err)
 		}
 
-		cmd.PrintErrln(string(resp))
+		if output == "json" {
+
+			cmd.PrintErrln(string(resp))
+
+		} else {
+
+			var eventfilter getFilterResp
+			err = json.Unmarshal(resp, &eventfilter)
+
+			cmd.PrintErrln("filtername:", eventfilter.Filtername)
+			cmd.PrintErrln("script: \n", eventfilter.JsCode)
+
+		}
 
 	},
+}
+
+type listFiltersResp struct {
+	EventFilter []struct {
+		Name string `json:"name"`
+	} `json:"eventFilter"`
 }
 
 var listFilterCmd = &cobra.Command{
@@ -735,7 +762,23 @@ var listFilterCmd = &cobra.Command{
 			log.Fatalf("error: %v\n", err)
 		}
 
-		cmd.PrintErrln(string(resp))
+		if err != nil {
+			log.Fatalf("error: %v\n", err)
+		}
+
+		if output == "json" {
+
+			cmd.PrintErrln(string(resp))
+
+		} else {
+			var eventfilter listFiltersResp
+			err = json.Unmarshal(resp, &eventfilter)
+
+			for _, name := range eventfilter.EventFilter {
+				cmd.PrintErrln(name.Name)
+			}
+		}
+
 	},
 }
 
