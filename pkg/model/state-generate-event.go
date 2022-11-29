@@ -76,12 +76,6 @@ func (o *GenerateEventState) Validate() error {
 		return err
 	}
 
-	if s, ok := o.Transform.(string); ok {
-		if err := validateTransformJQ(s); err != nil {
-			return err
-		}
-	}
-
 	if o.Delay != "immediate" && o.Delay != "" && !isISO8601(o.Delay) {
 		return errors.New("delay is not a ISO8601 string")
 	}

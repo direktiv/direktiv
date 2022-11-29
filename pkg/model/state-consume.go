@@ -52,12 +52,6 @@ func (o *ConsumeEventState) Validate() error {
 		return err
 	}
 
-	if s, ok := o.Transform.(string); ok {
-		if err := validateTransformJQ(s); err != nil {
-			return err
-		}
-	}
-
 	if o.Event == nil {
 		return errors.New("event required")
 	}

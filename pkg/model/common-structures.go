@@ -86,23 +86,6 @@ func isJSONSchema(schema interface{}) error {
 	return nil
 }
 
-func validateTransformJQ(transform string) error {
-
-	return nil
-
-	/*
-		if transform == "" {
-			return nil
-		}
-
-		if _, err := gojq.Parse(transform); err != nil {
-			return fmt.Errorf("transform is an invalid jq string: %v", err)
-		}
-
-		return nil
-	*/
-}
-
 func processInterfaceMap(s interface{}) (map[string]interface{}, string, error) {
 	var iType string
 

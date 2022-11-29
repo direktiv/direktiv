@@ -91,12 +91,6 @@ func (o *SetterDefinition) Validate() error {
 		return errors.New(`value required`)
 	}
 
-	if s, ok := o.Value.(string); ok {
-		if err := validateTransformJQ(s); err != nil {
-			return err
-		}
-	}
-
 	return nil
 
 }
@@ -147,12 +141,6 @@ func (o *SetterState) Validate() error {
 	for i, varDef := range o.Variables {
 		if err := varDef.Validate(); err != nil {
 			return fmt.Errorf("variables[%d] is invalid: %w", i, err)
-		}
-	}
-
-	if s, ok := o.Transform.(string); ok {
-		if err := validateTransformJQ(s); err != nil {
-			return err
 		}
 	}
 

@@ -51,12 +51,6 @@ func (o *DelayState) Validate() error {
 		return err
 	}
 
-	if s, ok := o.Transform.(string); ok {
-		if err := validateTransformJQ(s); err != nil {
-			return err
-		}
-	}
-
 	if o.Duration == "" {
 		return errors.New("duration required")
 	}

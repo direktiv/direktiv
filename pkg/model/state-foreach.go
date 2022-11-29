@@ -57,12 +57,6 @@ func (o *ForEachState) Validate() error {
 		return err
 	}
 
-	if s, ok := o.Transform.(string); ok {
-		if err := validateTransformJQ(s); err != nil {
-			return err
-		}
-	}
-
 	if o.Array == "" {
 		return errors.New("array required")
 	}

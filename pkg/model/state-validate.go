@@ -56,12 +56,6 @@ func (o *ValidateState) Validate() error {
 		return err
 	}
 
-	if s, ok := o.Transform.(string); ok {
-		if err := validateTransformJQ(s); err != nil {
-			return err
-		}
-	}
-
 	if o.Schema == nil {
 		return errors.New("schema required")
 	}

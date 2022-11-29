@@ -2,6 +2,7 @@ package util
 
 import (
 	"errors"
+	"fmt"
 	"net"
 	"strings"
 	"time"
@@ -28,7 +29,12 @@ func GetEndpointTLS(service string) (*grpc.ClientConn, error) {
 	options = append(options, grpc.WithDefaultCallOptions(additionalCallOptions...))
 	options = append(options, globalGRPCDialOptions...)
 
-	return grpc.Dial(service, options...)
+	conn, err := grpc.Dial(service, options...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to connec to gRPC server: %w", err)
+	}
+
+	return conn, nil
 
 }
 
@@ -37,7 +43,7 @@ func GrpcStart(server **grpc.Server, name, bind string, register func(srv *grpc.
 
 	listener, err := net.Listen("tcp", bind)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to start tcp listener: %w", err)
 	}
 
 	additionalServerOptions := GrpcServerOptions(nil, nil)

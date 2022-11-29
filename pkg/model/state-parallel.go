@@ -61,12 +61,6 @@ func (o *ParallelState) Validate() error {
 		return err
 	}
 
-	if s, ok := o.Transform.(string); ok {
-		if err := validateTransformJQ(s); err != nil {
-			return err
-		}
-	}
-
 	if o.Actions == nil || len(o.Actions) == 0 {
 		return errors.New("actions required")
 	}

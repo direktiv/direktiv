@@ -1,6 +1,7 @@
 package util
 
 import (
+	"fmt"
 	"os"
 	"time"
 
@@ -30,12 +31,12 @@ func ReadConfig(file string) (*Config, error) {
 	/* #nosec */
 	data, err := os.ReadFile(file)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to read configuration file: %w", err)
 	}
 
 	err = yaml.Unmarshal(data, c)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to parse configuration file: %w", err)
 	}
 
 	return c, nil

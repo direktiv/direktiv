@@ -18,12 +18,6 @@ func (o *SwitchConditionDefinition) Validate() error {
 		return errors.New("condition required")
 	}
 
-	if s, ok := o.Transform.(string); ok {
-		if err := validateTransformJQ(s); err != nil {
-			return err
-		}
-	}
-
 	return nil
 }
 
@@ -94,12 +88,6 @@ func (o *SwitchState) GetConditions() []SwitchConditionDefinition {
 func (o *SwitchState) Validate() error {
 	if err := o.commonValidate(); err != nil {
 		return err
-	}
-
-	if s, ok := o.DefaultTransform.(string); ok {
-		if err := validateTransformJQ(s); err != nil {
-			return fmt.Errorf("default transform: %w", err)
-		}
 	}
 
 	if o.Conditions == nil || len(o.Conditions) == 0 {

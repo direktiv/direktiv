@@ -79,12 +79,6 @@ func (o *EventsXorState) Validate() error {
 	}
 
 	for i, event := range o.GetEvents() {
-		if s, ok := event.Transform.(string); ok {
-			if err := validateTransformJQ(s); err != nil {
-				return fmt.Errorf("event[%v]: %w", i, err)
-			}
-		}
-
 		if err := event.Event.Validate(); err != nil {
 			return fmt.Errorf("event[%v] is invalid: %w", i, err)
 		}

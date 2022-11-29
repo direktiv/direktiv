@@ -60,12 +60,6 @@ func (o *EventsAndState) Validate() error {
 		return err
 	}
 
-	if s, ok := o.Transform.(string); ok {
-		if err := validateTransformJQ(s); err != nil {
-			return err
-		}
-	}
-
 	if o.Timeout != "" && !isISO8601(o.Timeout) {
 		return errors.New("timeout is not a ISO8601 string")
 	}
