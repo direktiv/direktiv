@@ -262,7 +262,7 @@ func (srv *LocalServer) varHandler(w http.ResponseWriter, r *http.Request) {
 type activeRequest struct {
 	*functionRequest
 	cancel func()
-	ctx    context.Context
+	ctx    context.Context //nolint:containedctx
 }
 
 func (srv *LocalServer) registerActiveRequest(ir *functionRequest, ctx context.Context, cancel func()) {

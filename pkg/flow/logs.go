@@ -15,7 +15,7 @@ import (
 )
 
 type logMessage struct {
-	ctx context.Context
+	ctx context.Context //nolint:containedctx
 	t   time.Time
 	msg string
 	ns  *ent.Namespace

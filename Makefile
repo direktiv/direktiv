@@ -376,5 +376,5 @@ unittest: # Runs all Go unit tests. Or, you can run a specific set of unit tests
 
 .PHONY: lint 
 lint: # Runs very strict linting on the project.
-	golangci-lint run --tests --issues-exit-code=1 --skip-dirs="ent/" --skip-files=".pb.go" -E asciicheck -E decorder -E dupword -E errchkjson -E errname -E errorlint -E exportloopref -E goconst -E godot -E gofmt -E goprintffuncname -E loggercheck -E misspell -E nilerr -E noctx -E nosprintfhostport -E unconvert -E usestdlibvars
-	# -E containedctx -E contextcheck -E godox -E goerr113 -E gosec -E interfacebloat -E nilnil -E revive -E tagliatelle -E unparam -E varnamelen -E wrapcheck
+	golangci-lint run --tests --issues-exit-code=1 --skip-dirs="ent/" --skip-files=".pb.go" -E asciicheck -E containedctx -E decorder -E dupword -E errchkjson -E errname -E errorlint -E exportloopref -E goconst -E godot -E gofmt -E goprintffuncname -E loggercheck -E misspell -E nilerr -E noctx -E nosprintfhostport -E unconvert -E usestdlibvars
+	# -E contextcheck -E godox -E goerr113 -E gosec -E interfacebloat -E nilnil -E revive -E tagliatelle -E unparam -E varnamelen -E wrapcheck

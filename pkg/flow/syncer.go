@@ -387,7 +387,7 @@ func (am *activityMemory) ID() uuid.UUID {
 type newMirrorActivityArgs struct {
 	MirrorID string
 	Type     string
-	LockCtx  context.Context
+	LockCtx  context.Context //nolint:containedctx
 	LockConn *sql.Conn
 }
 
