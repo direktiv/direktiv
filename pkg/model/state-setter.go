@@ -25,7 +25,7 @@ type SetterDefinition struct {
 	MimeType interface{} `yaml:"mimeType,omitempty"`
 }
 
-func (a *SetterDefinition) UnmarshalJSON(data []byte) error {
+func (o *SetterDefinition) UnmarshalJSON(data []byte) error {
 
 	type SetterDefinitionAlias SetterDefinition
 
@@ -42,16 +42,16 @@ func (a *SetterDefinition) UnmarshalJSON(data []byte) error {
 	}
 
 	// Set Definition
-	a.Key = s.Key
-	a.Scope = s.Scope
-	a.Value = s.Value
-	a.MimeType = s.MimeType
+	o.Key = s.Key
+	o.Scope = s.Scope
+	o.Value = s.Value
+	o.MimeType = s.MimeType
 
 	return nil
 
 }
 
-func (a *SetterDefinition) UnmarshalYAML(unmarshal func(interface{}) error) error {
+func (o *SetterDefinition) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
 	var s interface{}
 
@@ -67,7 +67,7 @@ func (a *SetterDefinition) UnmarshalYAML(unmarshal func(interface{}) error) erro
 		sD.MimeType = DefaultVarMimeType
 	}
 
-	*a = sD
+	*o = sD
 
 	return nil
 }

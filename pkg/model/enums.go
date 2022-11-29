@@ -14,7 +14,7 @@ const (
 	BranchModeOr
 )
 
-var branchModeStrings []string = []string{
+var branchModeStrings = []string{
 	"and",
 	"or",
 }
@@ -98,7 +98,7 @@ const (
 	LargeSize
 )
 
-var sizeStrings []string = []string{
+var sizeStrings = []string{
 	"small",
 	"medium",
 	"large",
@@ -194,7 +194,7 @@ const (
 	StateTypeSetter
 )
 
-var stateTypeStrings []string = []string{
+var stateTypeStrings = []string{
 	"action",
 	"consumeEvent",
 	"delay",
@@ -300,7 +300,7 @@ const (
 	StartTypeEventsAnd
 )
 
-var startTypeStrings []string = []string{
+var startTypeStrings = []string{
 	"default",
 	"scheduled",
 	"event",
