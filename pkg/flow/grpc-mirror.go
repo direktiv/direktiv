@@ -15,7 +15,6 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 
-	// entmir "github.com/direktiv/direktiv/pkg/flow/ent/mirror"
 	entmiract "github.com/direktiv/direktiv/pkg/flow/ent/mirroractivity"
 )
 
@@ -376,7 +375,7 @@ func (flow *flow) LockMirror(ctx context.Context, req *grpc.LockMirrorRequest) (
 				if err != nil {
 					return err
 				}
-				wf, err = wf.Update().SetReadOnly(false).Save(ctx)
+				_, err = wf.Update().SetReadOnly(false).Save(ctx)
 				if err != nil {
 					return err
 				}
@@ -472,7 +471,7 @@ func (flow *flow) UnlockMirror(ctx context.Context, req *grpc.UnlockMirrorReques
 				if err != nil {
 					return err
 				}
-				wf, err = wf.Update().SetReadOnly(true).Save(ctx)
+				_, err = wf.Update().SetReadOnly(true).Save(ctx)
 				if err != nil {
 					return err
 				}
@@ -728,11 +727,7 @@ resend:
 
 type mirrorActivityData struct {
 	act *ent.MirrorActivity
-	*mirData
-}
-
-func (d *mirrorActivityData) ns() *ent.Namespace {
-	return d.act.Edges.Namespace
+	// *mirData
 }
 
 func (d *mirrorActivityData) namespace() string {

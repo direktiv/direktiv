@@ -1,6 +1,6 @@
 package util
 
-// Environtment variable keys
+// Environtment variable keys.
 const (
 	DBConn                   = "DIREKTIV_DB"
 	DirektivDebug            = "DIREKTIV_DEBUG"

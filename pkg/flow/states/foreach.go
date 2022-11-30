@@ -225,7 +225,7 @@ func (logic *forEachLogic) scheduleRetryAction(ctx context.Context, retry *actio
 		return err
 	}
 
-	children[retry.Idx] = child // TODO: check for out of bounds issues?
+	children[retry.Idx] = child
 
 	err = logic.SetMemory(ctx, children)
 	if err != nil {

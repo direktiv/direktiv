@@ -2,7 +2,7 @@ package flow
 
 import (
 	"context"
-	"net"
+	"errors"
 	"net/http"
 	"strings"
 	"time"
@@ -10,17 +10,10 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/metrics"
 	"github.com/direktiv/direktiv/pkg/util"
-	"github.com/gorilla/mux"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
-
-type metricsServer struct {
-	*server
-	listener net.Listener
-	http     *http.Server
-	router   *mux.Router
-}
 
 var (
 	metricsWf = prometheus.NewGaugeVec(
@@ -133,20 +126,20 @@ var (
 
 func reportStateEnd(namespace, workflow, state string, t time.Time) {
 
-	ms := time.Now().Sub(t).Milliseconds()
+	ms := time.Since(t).Milliseconds()
 	metricsWfStateDuration.WithLabelValues(namespace, GetInodePath(workflow), state, namespace).Observe(float64(ms))
 
 }
 
-func setupPrometheusEndpoint() {
+func setupPrometheusEndpoint() error {
 
 	prometheus.MustRegister(metricsWfInvoked)
 	prometheus.MustRegister(metricsWfSuccess)
 	prometheus.MustRegister(metricsWfFail)
 	prometheus.MustRegister(metricsWfDuration)
 	prometheus.MustRegister(metricsWfStateDuration)
-	prometheus.Unregister(prometheus.NewGoCollector())
-	prometheus.Unregister(prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{}))
+	prometheus.Unregister(collectors.NewGoCollector())
+	prometheus.Unregister(collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}))
 
 	prometheus.MustRegister(metricsWf)
 	prometheus.MustRegister(metricsWfUpdated)
@@ -156,12 +149,20 @@ func setupPrometheusEndpoint() {
 	prometheus.MustRegister(metricsCloudEventsCaptured)
 
 	http.Handle("/metrics", promhttp.Handler())
-	http.ListenAndServe(":2112", nil)
+
+	err := http.ListenAndServe(":2112", nil)
+	if err != nil {
+		if !errors.Is(err, http.ErrServerClosed) {
+			return err
+		}
+	}
+
+	return nil
 
 }
 
 // WorkflowMetrics - Gets the Workflow metrics of a given Workflow Revision Ref
-// if ref is not set in the request, it will be automatically be set to latest
+// if ref is not set in the request, it will be automatically be set to latest.
 func (flow *flow) WorkflowMetrics(ctx context.Context, req *grpc.WorkflowMetricsRequest) (*grpc.WorkflowMetricsResponse, error) {
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
@@ -193,8 +194,8 @@ func (flow *flow) WorkflowMetrics(ctx context.Context, req *grpc.WorkflowMetrics
 	out.ErrorCodesRepresentation = resp.ErrorCodesRepresentation
 
 	var sr, fr float32
-	sr = float32(resp.SuccessRate)
-	fr = float32(resp.FailureRate)
+	sr = resp.SuccessRate
+	fr = resp.FailureRate
 
 	out.SuccessRate = sr
 	out.FailureRate = fr
@@ -223,8 +224,8 @@ func (flow *flow) WorkflowMetrics(ctx context.Context, req *grpc.WorkflowMetrics
 		}
 
 		var fr, sr float32
-		sr = float32(thisState.MeanOutcomes.EndStates.Success)
-		fr = float32(thisState.MeanOutcomes.EndStates.Failure)
+		sr = thisState.MeanOutcomes.EndStates.Success
+		fr = thisState.MeanOutcomes.EndStates.Failure
 
 		is.MeanOutcomes = &grpc.MeanOutcomes{
 			Success:     sr,
@@ -234,9 +235,9 @@ func (flow *flow) WorkflowMetrics(ctx context.Context, req *grpc.WorkflowMetrics
 		is.MeanExecutionsPerInstance = thisState.MeanExecutionsPerInstance
 		is.MeanMillisecondsPerInstance = thisState.MeanMilliSecondsPerInstance
 
-		sr2 := float32(thisState.SuccessRate)
-		fr2 := float32(thisState.FailureRate)
-		ar := float32(thisState.MeanRetries)
+		sr2 := thisState.SuccessRate
+		fr2 := thisState.FailureRate
+		ar := thisState.MeanRetries
 
 		is.SuccessRate = sr2
 		is.FailureRate = fr2
@@ -269,10 +270,6 @@ func (engine *engine) metricsCompleteState(ctx context.Context, im *instanceMemo
 		return
 	}
 
-	// if im.Status() != util.InstanceStatusPending {
-	// 	return
-	// }
-
 	args := new(metrics.InsertRecordArgs)
 
 	args.Namespace = ns.Name
@@ -288,7 +285,7 @@ func (engine *engine) metricsCompleteState(ctx context.Context, im *instanceMemo
 	flow := im.Flow()
 	args.State = flow[len(flow)-1]
 
-	d := time.Now().Sub(im.StateBeginTime())
+	d := time.Since(im.StateBeginTime())
 	args.WorkflowMilliSeconds = d.Milliseconds()
 
 	args.ErrorCode = errCode

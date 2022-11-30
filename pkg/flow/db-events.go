@@ -7,12 +7,10 @@ import (
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entcev "github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
 	entev "github.com/direktiv/direktiv/pkg/flow/ent/events"
 	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
-	"github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 	entwf "github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/google/uuid"
@@ -34,23 +32,9 @@ func (events *events) markEventAsProcessed(ctx context.Context, cevc *ent.CloudE
 		return nil, err
 	}
 
-	ev := cloudevents.Event(e.Event)
+	ev := e.Event
 
 	return &ev, nil
-
-}
-
-func (events *events) deleteExpiredEvents(ctx context.Context, cevc *ent.CloudEventsClient) error {
-
-	_, err := cevc.Delete().
-		Where(entcev.And(entcev.Processed(true), entcev.FireLT(time.Now().Add(-1*time.Hour)))).
-		Exec(ctx)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
 
 }
 
@@ -76,7 +60,7 @@ func (events *events) addEvent(ctx context.Context, cevc *ent.CloudEventsClient,
 
 	processed := (delay == 0)
 
-	ev := event.Event(*eventin)
+	ev := *eventin
 
 	_, err := cevc.
 		Create().
@@ -91,22 +75,6 @@ func (events *events) addEvent(ctx context.Context, cevc *ent.CloudEventsClient,
 	}
 
 	return nil
-
-}
-
-func (events *events) getWorkflowEventByWorkflowUID(ctx context.Context, evc *ent.EventsClient, id uuid.UUID) (*ent.Events, error) {
-
-	evs, err := evc.Query().
-		Where(entev.HasWorkflowWith(
-			workflow.IDEQ(id),
-		)).
-		WithWorkflow().
-		Only(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	return evs, nil
 
 }
 
@@ -179,7 +147,7 @@ func (events *events) deleteInstanceEventListeners(ctx context.Context, in *ent.
 
 }
 
-// called by add workflow, adds event listeners if required
+// called by add workflow, adds event listeners if required.
 func (events *events) processWorkflowEvents(ctx context.Context, evc *ent.EventsClient,
 	wf *ent.Workflow, ms *muxStart) error {
 
@@ -250,7 +218,7 @@ func (events *events) updateInstanceEventListener(ctx context.Context, evc *ent.
 
 }
 
-// called from workflow instances to create event listeners
+// called from workflow instances to create event listeners.
 func (events *events) addInstanceEventListener(ctx context.Context, evc *ent.EventsClient,
 	wf *ent.Workflow, in *ent.Instance,
 	sevents []*model.ConsumeEventDefinition, signature []byte, all bool) error {

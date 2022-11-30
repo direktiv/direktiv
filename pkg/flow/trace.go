@@ -10,18 +10,18 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-// Carrier controls the trace
+// Carrier controls the trace.
 type Carrier struct {
 	Trace map[string]string
 }
 
-// Get returns a value of a trace
+// Get returns a value of a trace.
 func (c *Carrier) Get(key string) string {
-	v, _ := c.Trace[key]
+	v := c.Trace[key]
 	return v
 }
 
-// Keys returns all the keys of the trace
+// Keys returns all the keys of the trace.
 func (c *Carrier) Keys() []string {
 	var keys []string
 	for k := range c.Trace {
@@ -30,7 +30,7 @@ func (c *Carrier) Keys() []string {
 	return keys
 }
 
-// Set sets a trace key and value
+// Set sets a trace key and value.
 func (c *Carrier) Set(key, val string) {
 	c.Trace[key] = val
 }

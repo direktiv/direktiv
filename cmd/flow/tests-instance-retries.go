@@ -1,5 +1,7 @@
 package main
 
+/*
+
 import (
 	"context"
 	"fmt"
@@ -27,17 +29,17 @@ states:
   - id: a
     type: getter
     transition: b
-    transform: 
+    transform:
       newValue: jq(.var.Counter + 1)
     variables:
     - key: Counter
-      scope: workflow 
+      scope: workflow
   - id: b
     type: setter
     transition: c
     variables:
     - key: Counter
-      scope: workflow 
+      scope: workflow
       value: jq(.newValue)
   - id: c
     type: switch
@@ -50,7 +52,7 @@ states:
   - id: e
     type: error
     error: validation.Invalid.Counter
-    message: "Counter is less than 10" 
+    message: "Counter is less than 10"
 `),
 	})
 	if err != nil {
@@ -66,7 +68,7 @@ functions:
     type: subflow
     workflow: testwf-retry-subflow
 states:
-  - id: a 
+  - id: a
     type: action
     action:
       function: sub
@@ -145,17 +147,17 @@ states:
   - id: a
     type: getter
     transition: b
-    transform: 
+    transform:
       newValue: jq(.var.Counter + 1)
     variables:
     - key: Counter
-      scope: workflow 
+      scope: workflow
   - id: b
     type: setter
     transition: c
     variables:
     - key: Counter
-      scope: workflow 
+      scope: workflow
       value: jq(.newValue)
   - id: c
     type: switch
@@ -168,7 +170,7 @@ states:
   - id: e
     type: error
     error: validation.Invalid.Counter
-    message: "Counter is less than 10" 
+    message: "Counter is less than 10"
 `),
 	})
 	if err != nil {
@@ -184,7 +186,7 @@ functions:
     type: subflow
     workflow: testwf-retry-subflow
 states:
-  - id: a 
+  - id: a
     type: action
     action:
       function: sub
@@ -265,7 +267,7 @@ functions:
   image: jkizo/persistent-counter:v1
   type: reusable
 states:
-- id: a 
+- id: a
   type: action
   action:
     function: counter
@@ -274,7 +276,7 @@ states:
         delay: PT1S
         codes:
           - "com.invalid-value.error"
-    input: 
+    input:
       uuid: "%s"
       min: 10
 `, counterUUID)),
@@ -349,7 +351,7 @@ functions:
   image: jkizo/persistent-counter:v1
   type: reusable
 states:
-- id: a 
+- id: a
   type: action
   action:
     function: counter
@@ -358,7 +360,7 @@ states:
         delay: PT1S
         codes:
           - "com.invalid-value.error"
-    input: 
+    input:
       uuid: "%s"
       min: 25
 `, counterUUID)),
@@ -376,7 +378,7 @@ functions:
     type: subflow
     workflow: testwf-retry-action
 states:
-  - id: a 
+  - id: a
     type: action
     action:
       function: sub
@@ -530,3 +532,5 @@ states:
 
 	return nil
 }
+
+*/

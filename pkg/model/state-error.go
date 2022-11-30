@@ -48,12 +48,6 @@ func (o *ErrorState) Validate() error {
 		return err
 	}
 
-	if s, ok := o.Transform.(string); ok {
-		if err := validateTransformJQ(s); err != nil {
-			return err
-		}
-	}
-
 	if o.Error == "" {
 		return errors.New("error required")
 	}

@@ -8,7 +8,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/model"
 )
 
-// headers for flow->container communication
+// headers for flow->container communication.
 const (
 	DirektivActionIDHeader    = "Direktiv-ActionID"
 	DirektivInstanceIDHeader  = "Direktiv-InstanceID"
@@ -26,7 +26,7 @@ const (
 	DirektivErrorMessageHeader = "Direktiv-ErrorMessage"
 )
 
-// internal error codes for knative services
+// internal error codes for knative services.
 const (
 	ServiceResponseNoError = ""
 	ServiceErrorInternal   = "au.com.direktiv.error.internal"
@@ -35,7 +35,7 @@ const (
 	ServiceErrorIO         = "au.com.direktiv.error.io"
 )
 
-// ServiceResponse is the response structure for internal knative services
+// ServiceResponse is the response structure for internal knative services.
 type ServiceResponse struct {
 	ErrorCode    string      `json:"errorCode"`
 	ErrorMessage string      `json:"errorMessage"`
@@ -157,89 +157,3 @@ func createKnativeFunction(client igrpc.FunctionsServiceClient,
 	return err
 
 }
-
-/*
-func (engine *engine) createKnativeFunctions(client igrpc.FunctionsServiceClient,
-	wfm model.Workflow, ns string) error {
-
-	for _, f := range wfm.GetFunctions() {
-
-		// only build workflow based functions
-		if f.GetType() != model.ReusableContainerFunctionType {
-			continue
-		}
-
-		fn := f.(*model.ReusableFunctionDefinition)
-
-		// create services async
-		go func(fd *model.ReusableFunctionDefinition,
-			model model.Workflow, name, namespace string) {
-
-			sz := int32(fd.Size)
-			scale := int32(fd.Scale)
-
-			cr := igrpc.CreateFunctionRequest{
-				Info: &igrpc.BaseInfo{
-					Name:          &name,
-					Namespace:     &namespace,
-					Workflow:      &model.ID,
-					Image:         &fd.Image,
-					Cmd:           &fd.Cmd,
-					Size:          &sz,
-					MinScale:      &scale,
-					NamespaceName: &ir.Workflow.NamespaceName,
-					Path:          &ir.Workflow.Path,
-					Revision:      &ir.Workflow.Revision,
-				},
-			}
-
-			_, err := client.CreateFunction(context.Background(), &cr)
-			if err != nil {
-				engine.sugar.Errorf("can not create knative service: %v", err)
-			}
-
-		}(fn, wfm, fn.ID, ns)
-
-	}
-
-	return nil
-}
-*/
-
-/*
-func (engine *engine) deleteKnativeFunctions(client igrpc.FunctionsServiceClient,
-	ns, wf, name string) error {
-
-	annotations := make(map[string]string)
-
-	scope := functions.PrefixService
-
-	if ns != "" {
-		annotations[functions.ServiceHeaderNamespace] = ns
-		scope = functions.PrefixNamespace
-	}
-
-	if wf != "" {
-		annotations[functions.ServiceHeaderWorkflow] = wf
-		scope = functions.PrefixWorkflow
-	}
-
-	if name != "" {
-		annotations[functions.ServiceHeaderName] = name
-		scope = functions.PrefixService
-	}
-	annotations[functions.ServiceHeaderScope] = scope
-
-	dr := igrpc.ListFunctionsRequest{
-		Annotations: annotations,
-	}
-
-	_, err := client.DeleteFunctions(context.Background(), &dr)
-	if err != nil {
-		engine.sugar.Errorf("can not delete knative service: %v", err)
-	}
-
-	return nil
-
-}
-*/

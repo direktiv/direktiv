@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -41,6 +42,11 @@ func startHealthHandler() {
 		fmt.Fprintf(w, "")
 	})
 
-	http.ListenAndServe("0.0.0.0:1234", nil)
+	err := http.ListenAndServe("0.0.0.0:1234", nil)
+	if err != nil {
+		if !errors.Is(err, http.ErrServerClosed) {
+			log.Fatalf("Server error: %v.", err)
+		}
+	}
 
 }

@@ -7,24 +7,24 @@ import (
 	"github.com/direktiv/direktiv/pkg/util"
 )
 
-// NamespacedFunctionDefinition defines a namespace service in the workflow
+// NamespacedFunctionDefinition defines a namespace service in the workflow.
 type NamespacedFunctionDefinition struct {
 	Type           FunctionType `yaml:"type" json:"type"`
 	ID             string       `yaml:"id" json:"id"`
 	KnativeService string       `yaml:"service" json:"service"`
 }
 
-// GetID returns the id of a namespace function
+// GetID returns the id of a namespace function.
 func (o *NamespacedFunctionDefinition) GetID() string {
 	return o.ID
 }
 
-// GetType returns the type of the function
+// GetType returns the type of the function.
 func (o *NamespacedFunctionDefinition) GetType() FunctionType {
 	return NamespacedKnativeFunctionType
 }
 
-// Validate validates the namespace function definition's arguments
+// Validate validates the namespace function definition's arguments.
 func (o *NamespacedFunctionDefinition) Validate() error {
 	if o == nil {
 		return nil
@@ -41,13 +41,6 @@ func (o *NamespacedFunctionDefinition) Validate() error {
 	if o.KnativeService == "" {
 		return errors.New("service required")
 	}
-
-	// for i, f := range o.Files {
-	// 	err := f.Validate()
-	// 	if err != nil {
-	// 		return fmt.Errorf("function file %d: %v", i, err)
-	// 	}
-	// }
 
 	return nil
 

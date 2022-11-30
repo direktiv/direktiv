@@ -19,14 +19,14 @@ import (
 var namespacesOrderings = []*orderingInfo{
 	{
 		db:           entns.FieldName,
-		req:          "NAME",
+		req:          util.PaginationKeyName,
 		defaultOrder: ent.Asc,
 	},
 }
 
 var namespacesFilters = map[*filteringInfo]func(query *ent.NamespaceQuery, v string) (*ent.NamespaceQuery, error){
 	{
-		field: "NAME",
+		field: util.PaginationKeyName,
 		ftype: "CONTAINS",
 	}: func(query *ent.NamespaceQuery, v string) (*ent.NamespaceQuery, error) {
 		return query.Where(entns.NameContains(v)), nil
@@ -291,7 +291,6 @@ func (flow *flow) DeleteNamespace(ctx context.Context, req *grpc.DeleteNamespace
 		if k != 1 { // root dir
 			return nil, errors.New("refusing to delete non-empty namespace without explicit recursive argument")
 		}
-		// TODO: don't delete if namespace has stuff unless 'recursive' explicitly requested
 	}
 
 	err = nsc.DeleteOne(ns).Exec(ctx)
@@ -363,8 +362,3 @@ func (flow *flow) RenameNamespace(ctx context.Context, req *grpc.RenameNamespace
 	return &resp, nil
 
 }
-
-// TODO: translate ent errors for grpc
-// TODO: validate filters
-// TODO: validate orderings
-// TODO: validate other request fields

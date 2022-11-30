@@ -1,5 +1,7 @@
 package secrets
 
+/*
+
 import (
 	"encoding/json"
 	"io/ioutil"
@@ -182,7 +184,7 @@ func TestSearchSecret(t *testing.T) {
 
 }
 
-//////////////////HELPER FUNCTIONS//////////////////////////////////
+// ////////////////HELPER FUNCTIONS//////////////////////////////////
 func FillDatabase(ip string, namespace string, list []string) {
 	for _, secretName := range list {
 		AddSecretOrFolder(ip, namespace, secretName)
@@ -282,3 +284,4 @@ func SearchSecret(ip string, namespace string, name string) GetSecretsBody {
 	_ = json.Unmarshal(b, &body)
 	return body
 }
+*/

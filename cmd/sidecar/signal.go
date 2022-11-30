@@ -8,13 +8,13 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-// SignalListener controls the signals for a sidecar
+// SignalListener controls the signals for a sidecar.
 type SignalListener struct {
 	signals chan os.Signal
 	stopper chan *time.Time
 }
 
-// Start starts listening for signals
+// Start starts listening for signals.
 func (sl *SignalListener) Start() {
 
 	sl.signals = make(chan os.Signal, 2)

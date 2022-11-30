@@ -1,5 +1,7 @@
 package main
 
+/*
+
 import (
 	"context"
 	"errors"
@@ -140,12 +142,12 @@ states:
 		Source: []byte(`
 functions:
   - id: sf
-    type: subflow 
+    type: subflow
     workflow: '/test-subflow'
 states:
   - id: a
     type: action
-    action: 
+    action:
       function: sf
       secrets: ['testSecret']
 `),
@@ -212,3 +214,5 @@ states:
 	return nil
 
 }
+
+*/

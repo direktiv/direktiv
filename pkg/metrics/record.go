@@ -23,12 +23,3 @@ func (r *record) didSucceed() bool {
 	// uncaught error
 	return false
 }
-
-func (r *record) unhandledErrorOccurred() bool {
-
-	if r.r.ErrorCode != "" && NextEnums[r.r.Next] == NextTransition {
-		return true
-	}
-
-	return false
-}

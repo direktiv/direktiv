@@ -3,7 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 )
 
@@ -51,7 +51,7 @@ func safeLoadStdIn() (*bytes.Buffer, error) {
 		return buf, fmt.Errorf("stdin is larger than maximum allowed size: %v. Set configfile 'max-size' to change", maxSize)
 	}
 
-	fData, err := ioutil.ReadAll(os.Stdin)
+	fData, err := io.ReadAll(os.Stdin)
 	if err != nil {
 		return buf, err
 	}

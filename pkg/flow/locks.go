@@ -3,6 +3,7 @@ package flow
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"runtime/debug"
 	"time"
@@ -82,9 +83,11 @@ func (locks *locks) lockDB(id uint64, wait int) (*sql.Conn, error) {
 
 	_, err = conn.ExecContext(ctx, "SELECT pg_advisory_lock($1)", int64(id))
 
-	if err, ok := err.(*pq.Error); ok {
+	perr := new(pq.Error)
 
-		if err.Code == "57014" {
+	if errors.As(err, &perr) {
+
+		if perr.Code == "57014" {
 			return conn, fmt.Errorf("canceled query")
 		}
 		return conn, err
@@ -100,7 +103,7 @@ func (locks *locks) unlockDB(id uint64, conn *sql.Conn) (err error) {
 	defer func() {
 		err = conn.Close()
 		if err != nil {
-			err = fmt.Errorf("can not close database connection %d: %v", id, err)
+			err = fmt.Errorf("can not close database connection %d: %w", id, err)
 		}
 	}()
 
@@ -108,7 +111,7 @@ func (locks *locks) unlockDB(id uint64, conn *sql.Conn) (err error) {
 		"SELECT pg_advisory_unlock($1)", int64(id))
 
 	if err != nil {
-		err = fmt.Errorf("can not unlock lock %d: %v", id, err)
+		err = fmt.Errorf("can not unlock lock %d: %w", id, err)
 	}
 
 	return err
@@ -147,7 +150,10 @@ func (engine *engine) lock(key string, timeout time.Duration) (context.Context, 
 
 	engine.cancellers[key] = func() {
 		defer func() {
-			recover()
+			r := recover()
+			if r != nil {
+				engine.sugar.Errorf("Recovered from an okay panic: %v.", err)
+			}
 		}()
 		cancel()
 		close(ch)

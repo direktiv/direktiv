@@ -1,10 +1,12 @@
 package main
 
 import (
+	"context"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -17,7 +19,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-// Flags
+// Flags.
 var (
 	input          string
 	inputType      string
@@ -31,13 +33,12 @@ var (
 	maxSize int64 = 1073741824
 )
 
-// Shared Vars
+// Shared Vars.
 var (
 	cmdArgPath   string
 	localAbsPath string
 	urlPrefix    string
 	urlWorkflow  string
-	urlEvent     string
 )
 
 func main() {
@@ -89,7 +90,8 @@ func main() {
 func getOutput(url string) ([]byte, error) {
 	var output instanceOutput
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		context.Background(),
 		http.MethodGet,
 		url,
 		nil,
@@ -110,7 +112,7 @@ func getOutput(url string) ([]byte, error) {
 			return nil, fmt.Errorf("failed to get instance output, request was unauthorized")
 		}
 
-		errBody, err := ioutil.ReadAll(resp.Body)
+		errBody, err := io.ReadAll(resp.Body)
 		if err == nil {
 			return nil, fmt.Errorf("failed to get instance output, server responded with %s\n------DUMPING ERROR BODY ------\n%s", resp.Status, string(errBody))
 		}
@@ -119,7 +121,7 @@ func getOutput(url string) ([]byte, error) {
 
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -175,7 +177,6 @@ func cmdPrepareEvent(wfPath string) {
 		log.Fatalf("Failed to locate event file in filesystem: %v\n", err)
 	}
 
-	urlEvent = fmt.Sprintf("%s/broadcast", urlPrefix)
 }
 
 var rootCmd = &cobra.Command{
@@ -317,7 +318,7 @@ Pushing local directory cannot be used with config flag. Config must be found au
 EXAMPLE: push helloworld.yaml --addr http://192.168.1.1 --namespace admin
 
 Variables will also be uploaded if they are prefixed with your local workflow name
-EXMAPLE:  
+EXAMPLE:  
   dir: /pwd
         /helloworld.yaml
         /helloworld.yaml.data.json
@@ -399,7 +400,7 @@ Will update the helloworld workflow and set the remote workflow variable 'data.j
 			cmd.PrintErrf("[%v/%v] Updating Namespace: '%s' Workflow: '%s'\n", i+1, len(pathsToUpdate), getNamespace(), path)
 			err = updateRemoteWorkflow(path, localPath)
 			if err != nil {
-				if err == ErrNodeIsReadOnly {
+				if errors.Is(err, ErrNodeIsReadOnly) {
 					var flagSuffix string
 					if config.profile != "" {
 						flagSuffix = " -P=\"" + config.profile + "\""
@@ -445,7 +446,7 @@ var execCmd = &cobra.Command{
 EXAMPLE: exec helloworld.yaml --addr http://192.168.1.1 --namespace admin --path helloworld
 
 Variables will also be uploaded if they are prefixed with your local workflow name
-EXMAPLE:  
+EXAMPLE:  
   dir: /pwd
         /helloworld.yaml
         /helloworld.yaml.data.json
@@ -464,7 +465,7 @@ Will update the helloworld workflow and set the remote workflow variable 'data.j
 		if !execNoPushFlag {
 			err := updateRemoteWorkflow(path, localAbsPath)
 			if err != nil {
-				if err == ErrNodeIsReadOnly {
+				if errors.Is(err, ErrNodeIsReadOnly) {
 					var flagSuffix string
 					if config.profile != "" {
 						flagSuffix = " -P=\"" + config.profile + "\""
@@ -517,7 +518,10 @@ Will update the helloworld workflow and set the remote workflow variable 'data.j
 		addSSEAuthHeaders(clientLogs)
 
 		logsChannel := make(chan *sse.Event)
-		clientLogs.SubscribeChan("messages", logsChannel)
+		err = clientLogs.SubscribeChan("messages", logsChannel)
+		if err != nil {
+			log.Fatalf("Failed to subscribe to messages channel: %v\n", err)
+		}
 
 		// Get Logs
 		go func() {
@@ -555,7 +559,11 @@ Will update the helloworld workflow and set the remote workflow variable 'data.j
 		addSSEAuthHeaders(clientInstance)
 
 		channelInstance := make(chan *sse.Event)
-		clientInstance.SubscribeChan("messages", channelInstance)
+		err = clientInstance.SubscribeChan("messages", channelInstance)
+		if err != nil {
+			log.Fatalf("Failed to subscribe to messages channel: %v\n", err)
+		}
+
 		for {
 			msg := <-channelInstance
 			if msg == nil {
@@ -588,7 +596,7 @@ Will update the helloworld workflow and set the remote workflow variable 'data.j
 
 		output, err := getOutput(urlOutput)
 		if outputFlag != "" {
-			err = os.WriteFile(outputFlag, output, 0644)
+			err = os.WriteFile(outputFlag, output, 0600)
 			if err != nil {
 				log.Fatalf("Failed to write output file: %v\n", err)
 			}

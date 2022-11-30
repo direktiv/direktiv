@@ -1,6 +1,7 @@
 package errors
 
 import (
+	"errors"
 	"fmt"
 	"runtime"
 )
@@ -13,13 +14,18 @@ type InternalError struct {
 }
 
 func NewInternalError(err error) error {
-	if _, ok := err.(*InternalError); ok {
+
+	ierr := new(InternalError)
+	uerr := new(UncatchableError)
+	cerr := new(CatchableError)
+
+	if errors.As(err, &ierr) {
 		return err
 	}
-	if _, ok := err.(*UncatchableError); ok {
+	if errors.As(err, &uerr) {
 		return err
 	}
-	if _, ok := err.(*CatchableError); ok {
+	if errors.As(err, &cerr) {
 		return err
 	}
 	fn, file, line, _ := runtime.Caller(1)

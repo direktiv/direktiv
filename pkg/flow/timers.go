@@ -81,7 +81,7 @@ type timer struct {
 	}
 }
 
-// stopTimers stops crons and one-shots
+// stopTimers stops crons and one-shots.
 func (timers *timers) stopTimers() {
 
 	ctx := timers.cron.Stop()
@@ -117,7 +117,7 @@ func (timers *timers) prepDisableTimer(timer *timer) string {
 
 }
 
-// must be locked before calling
+// must be locked before calling.
 func (timers *timers) disableTimer(timer *timer) {
 
 	name := timers.prepDisableTimer(timer)
@@ -170,7 +170,7 @@ func (timers *timers) newTimer(name, fn string, data []byte, time *time.Time, pa
 
 }
 
-// registerFunction adds functions which can be executed by one-shots or crons
+// registerFunction adds functions which can be executed by one-shots or crons.
 func (timers *timers) registerFunction(name string, fn func([]byte)) {
 
 	timers.mtx.Lock()
@@ -183,24 +183,6 @@ func (timers *timers) registerFunction(name string, fn func([]byte)) {
 	timers.fns[name] = fn
 
 }
-
-/* TODO
-func (timers *timers) addCron(name, fn, pattern string, data []byte) error {
-
-	err := syncServer(ctx, timers.srv, &timers.srv.ID, map[string]interface{}{
-		"name":    name,
-		"fn":      fn,
-		"pattern": pattern,
-		"data":    data,
-	}, AddCron)
-	if err != nil {
-		appLog.Error(err)
-	}
-
-	return timers.addCronNoBroadcast(name, fn, pattern, data)
-
-}
-*/
 
 func (timers *timers) addCron(name, fn, pattern string, data []byte) error {
 
@@ -226,7 +208,7 @@ func (timers *timers) addCron(name, fn, pattern string, data []byte) error {
 		timers.executeFunction(t)
 	})
 	if err != nil {
-		return fmt.Errorf("can not enable timer %s: %v", name, err)
+		return fmt.Errorf("can not enable timer %s: %w", name, err)
 	}
 
 	t.cron.cronID = id
@@ -254,7 +236,7 @@ func (timers *timers) addOneShot(name, fn string, timeos time.Time, data []byte)
 		return fmt.Errorf("one-shot %s is in the past", t.name)
 	}
 
-	func(timer *timer, duration time.Duration) error {
+	err = func(timer *timer, duration time.Duration) error {
 
 		clock := time.AfterFunc(duration, func() {
 			timers.executeFunction(timer)
@@ -265,6 +247,9 @@ func (timers *timers) addOneShot(name, fn string, timeos time.Time, data []byte)
 		return nil
 
 	}(t, duration)
+	if err != nil {
+		return err
+	}
 
 	return nil
 
@@ -399,51 +384,3 @@ func (timers *timers) deleteCronForWorkflow(id string) {
 func (timers *timers) deleteCronForSyncer(id string) {
 	timers.deleteTimerByName("", timers.hostname, fmt.Sprintf("cron:%s", id))
 }
-
-/*
-func (timers *timers) cleanExpiredEvents(data []byte) error {
-
-	return timers.srv.deleteExpiredEvents()
-
-}
-
-// cron job delete old namespace logs every 2 hrs
-func (timers *timers) cleanNamespaceRecords(data []byte) error {
-
-	lc := timers.srv.components[util.LogComponent].(*logClient)
-	return lc.deleteNamespaceLogs()
-
-}
-
-// cron job to delete old instance records / logs
-func (timers *timers) cleanInstanceRecords(data []byte) error {
-	ctx := context.Background()
-
-	// search db for instances where "endTime" > defined lifespan
-	wfis, err := timers.server.dbManager.dbEnt.WorkflowInstance.Query().
-		Where(workflowinstance.EndTimeLTE(time.Now().Add(time.Minute * -10))).All(ctx)
-	if err != nil {
-		return err
-	}
-
-	// for each result, delete instance logs and delete row from DB
-	for _, wfi := range wfis {
-
-		lc := timers.server.components[util.LogComponent].(*logClient)
-		err = lc.deleteInstanceLogs(wfi.InstanceID)
-		if err != nil {
-			return err
-		}
-
-		err = timers.server.dbManager.deleteWorkflowInstance(wfi.ID)
-		if err != nil {
-			if !ent.IsNotFound(err) {
-				return err
-			}
-		}
-	}
-	appLog.Debugf("deleted %d instance records", len(wfis))
-
-	return nil
-}
-*/

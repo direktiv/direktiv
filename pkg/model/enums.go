@@ -14,7 +14,7 @@ const (
 	BranchModeOr
 )
 
-var branchModeStrings []string = []string{
+var branchModeStrings = []string{
 	"and",
 	"or",
 }
@@ -89,7 +89,7 @@ func (a *BranchMode) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
 // -------------- Size --------------
 
-// Size string enum to differentiate function sizes
+// Size string enum to differentiate function sizes.
 type Size int
 
 const (
@@ -98,7 +98,7 @@ const (
 	LargeSize
 )
 
-var sizeStrings []string = []string{
+var sizeStrings = []string{
 	"small",
 	"medium",
 	"large",
@@ -190,12 +190,11 @@ const (
 	StateTypeSwitch
 	StateTypeValidate
 	StateTypeConsume
-	StateTypeCallback
 	StateTypeGetter
 	StateTypeSetter
 )
 
-var stateTypeStrings []string = []string{
+var stateTypeStrings = []string{
 	"action",
 	"consumeEvent",
 	"delay",
@@ -209,7 +208,6 @@ var stateTypeStrings []string = []string{
 	"switch",
 	"validate",
 	"consumeEvent",
-	"callback",
 	"getter",
 	"setter",
 }
@@ -302,7 +300,7 @@ const (
 	StartTypeEventsAnd
 )
 
-var startTypeStrings []string = []string{
+var startTypeStrings = []string{
 	"default",
 	"scheduled",
 	"event",
