@@ -51,7 +51,7 @@ func (logic *switchLogic) Run(ctx context.Context, wakedata []byte) (*Transition
 		var x interface{}
 		x, err = jqOne(logic.GetInstanceData(), condition.Condition)
 		if err != nil {
-			return nil, derrors.NewInternalError(fmt.Errorf("switch condition %d condition failed to run: %v", i, err))
+			return nil, derrors.NewInternalError(fmt.Errorf("switch condition %d condition failed to run: %w", i, err))
 		}
 
 		if truth(x) {

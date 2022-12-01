@@ -2,7 +2,6 @@ package flow
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 
 	"github.com/direktiv/direktiv/pkg/flow/ent"
@@ -42,18 +41,22 @@ func translateError(err error) error {
 		return err
 	}
 
-	if _, ok := err.(*ent.ConstraintError); ok {
+	cerr := new(ent.ConstraintError)
 
-		if strings.Contains(err.Error(), "duplicate key value violates unique constraint") {
+	if errors.As(err, &cerr) {
+
+		if strings.Contains(cerr.Error(), "duplicate key value violates unique constraint") {
 			err = status.Error(codes.AlreadyExists, "resource already exists")
 			return err
 		}
 
 	}
 
-	if _, ok := err.(*ent.ValidationError); ok {
+	verr := new(ent.ValidationError)
 
-		if strings.Contains(err.Error(), "validator failed") {
+	if errors.As(err, &verr) {
+
+		if strings.Contains(verr.Error(), "validator failed") {
 			err = status.Error(codes.InvalidArgument, "one or more fields has an invalid value")
 			return err
 		}
@@ -64,8 +67,6 @@ func translateError(err error) error {
 		err = status.Error(codes.AlreadyExists, "resource already exists")
 		return err
 	}
-
-	fmt.Println("TRANSLATE", err)
 
 	return err
 

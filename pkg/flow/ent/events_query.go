@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"math"
 
+	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -23,18 +24,18 @@ import (
 // EventsQuery is the builder for querying Events entities.
 type EventsQuery struct {
 	config
-	limit      *int
-	offset     *int
-	unique     *bool
-	order      []OrderFunc
-	fields     []string
-	predicates []predicate.Events
-	// eager-loading edges.
+	limit            *int
+	offset           *int
+	unique           *bool
+	order            []OrderFunc
+	fields           []string
+	predicates       []predicate.Events
 	withWorkflow     *WorkflowQuery
 	withWfeventswait *EventsWaitQuery
 	withInstance     *InstanceQuery
 	withNamespace    *NamespaceQuery
 	withFKs          bool
+	modifiers        []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -409,7 +410,6 @@ func (eq *EventsQuery) WithNamespace(opts ...func(*NamespaceQuery)) *EventsQuery
 //		GroupBy(events.FieldEvents).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-//
 func (eq *EventsQuery) GroupBy(field string, fields ...string) *EventsGroupBy {
 	grbuild := &EventsGroupBy{config: eq.config}
 	grbuild.fields = append([]string{field}, fields...)
@@ -436,13 +436,17 @@ func (eq *EventsQuery) GroupBy(field string, fields ...string) *EventsGroupBy {
 //	client.Events.Query().
 //		Select(events.FieldEvents).
 //		Scan(ctx, &v)
-//
 func (eq *EventsQuery) Select(fields ...string) *EventsSelect {
 	eq.fields = append(eq.fields, fields...)
 	selbuild := &EventsSelect{EventsQuery: eq}
 	selbuild.label = events.Label
 	selbuild.flds, selbuild.scan = &eq.fields, selbuild.Scan
 	return selbuild
+}
+
+// Aggregate returns a EventsSelect configured with the given aggregations.
+func (eq *EventsQuery) Aggregate(fns ...AggregateFunc) *EventsSelect {
+	return eq.Select().Aggregate(fns...)
 }
 
 func (eq *EventsQuery) prepareQuery(ctx context.Context) error {
@@ -479,14 +483,17 @@ func (eq *EventsQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Event
 	if withFKs {
 		_spec.Node.Columns = append(_spec.Node.Columns, events.ForeignKeys...)
 	}
-	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
+	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Events).scanValues(nil, columns)
 	}
-	_spec.Assign = func(columns []string, values []interface{}) error {
+	_spec.Assign = func(columns []string, values []any) error {
 		node := &Events{config: eq.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
+	}
+	if len(eq.modifiers) > 0 {
+		_spec.Modifiers = eq.modifiers
 	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
@@ -497,128 +504,158 @@ func (eq *EventsQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Event
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-
 	if query := eq.withWorkflow; query != nil {
-		ids := make([]uuid.UUID, 0, len(nodes))
-		nodeids := make(map[uuid.UUID][]*Events)
-		for i := range nodes {
-			if nodes[i].workflow_wfevents == nil {
-				continue
-			}
-			fk := *nodes[i].workflow_wfevents
-			if _, ok := nodeids[fk]; !ok {
-				ids = append(ids, fk)
-			}
-			nodeids[fk] = append(nodeids[fk], nodes[i])
-		}
-		query.Where(workflow.IDIn(ids...))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := eq.loadWorkflow(ctx, query, nodes, nil,
+			func(n *Events, e *Workflow) { n.Edges.Workflow = e }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			nodes, ok := nodeids[n.ID]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "workflow_wfevents" returned %v`, n.ID)
-			}
-			for i := range nodes {
-				nodes[i].Edges.Workflow = n
-			}
-		}
 	}
-
 	if query := eq.withWfeventswait; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[uuid.UUID]*Events)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Wfeventswait = []*EventsWait{}
-		}
-		query.withFKs = true
-		query.Where(predicate.EventsWait(func(s *sql.Selector) {
-			s.Where(sql.InValues(events.WfeventswaitColumn, fks...))
-		}))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := eq.loadWfeventswait(ctx, query, nodes,
+			func(n *Events) { n.Edges.Wfeventswait = []*EventsWait{} },
+			func(n *Events, e *EventsWait) { n.Edges.Wfeventswait = append(n.Edges.Wfeventswait, e) }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			fk := n.events_wfeventswait
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "events_wfeventswait" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "events_wfeventswait" returned %v for node %v`, *fk, n.ID)
-			}
-			node.Edges.Wfeventswait = append(node.Edges.Wfeventswait, n)
-		}
 	}
-
 	if query := eq.withInstance; query != nil {
-		ids := make([]uuid.UUID, 0, len(nodes))
-		nodeids := make(map[uuid.UUID][]*Events)
-		for i := range nodes {
-			if nodes[i].instance_eventlisteners == nil {
-				continue
-			}
-			fk := *nodes[i].instance_eventlisteners
-			if _, ok := nodeids[fk]; !ok {
-				ids = append(ids, fk)
-			}
-			nodeids[fk] = append(nodeids[fk], nodes[i])
-		}
-		query.Where(instance.IDIn(ids...))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := eq.loadInstance(ctx, query, nodes, nil,
+			func(n *Events, e *Instance) { n.Edges.Instance = e }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			nodes, ok := nodeids[n.ID]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "instance_eventlisteners" returned %v`, n.ID)
-			}
-			for i := range nodes {
-				nodes[i].Edges.Instance = n
-			}
-		}
 	}
-
 	if query := eq.withNamespace; query != nil {
-		ids := make([]uuid.UUID, 0, len(nodes))
-		nodeids := make(map[uuid.UUID][]*Events)
-		for i := range nodes {
-			if nodes[i].namespace_namespacelisteners == nil {
-				continue
-			}
-			fk := *nodes[i].namespace_namespacelisteners
-			if _, ok := nodeids[fk]; !ok {
-				ids = append(ids, fk)
-			}
-			nodeids[fk] = append(nodeids[fk], nodes[i])
-		}
-		query.Where(namespace.IDIn(ids...))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := eq.loadNamespace(ctx, query, nodes, nil,
+			func(n *Events, e *Namespace) { n.Edges.Namespace = e }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			nodes, ok := nodeids[n.ID]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "namespace_namespacelisteners" returned %v`, n.ID)
-			}
-			for i := range nodes {
-				nodes[i].Edges.Namespace = n
-			}
+	}
+	return nodes, nil
+}
+
+func (eq *EventsQuery) loadWorkflow(ctx context.Context, query *WorkflowQuery, nodes []*Events, init func(*Events), assign func(*Events, *Workflow)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Events)
+	for i := range nodes {
+		if nodes[i].workflow_wfevents == nil {
+			continue
+		}
+		fk := *nodes[i].workflow_wfevents
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	query.Where(workflow.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "workflow_wfevents" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
 		}
 	}
-
-	return nodes, nil
+	return nil
+}
+func (eq *EventsQuery) loadWfeventswait(ctx context.Context, query *EventsWaitQuery, nodes []*Events, init func(*Events), assign func(*Events, *EventsWait)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Events)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.EventsWait(func(s *sql.Selector) {
+		s.Where(sql.InValues(events.WfeventswaitColumn, fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.events_wfeventswait
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "events_wfeventswait" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "events_wfeventswait" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (eq *EventsQuery) loadInstance(ctx context.Context, query *InstanceQuery, nodes []*Events, init func(*Events), assign func(*Events, *Instance)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Events)
+	for i := range nodes {
+		if nodes[i].instance_eventlisteners == nil {
+			continue
+		}
+		fk := *nodes[i].instance_eventlisteners
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	query.Where(instance.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "instance_eventlisteners" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (eq *EventsQuery) loadNamespace(ctx context.Context, query *NamespaceQuery, nodes []*Events, init func(*Events), assign func(*Events, *Namespace)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Events)
+	for i := range nodes {
+		if nodes[i].namespace_namespacelisteners == nil {
+			continue
+		}
+		fk := *nodes[i].namespace_namespacelisteners
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	query.Where(namespace.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "namespace_namespacelisteners" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
 }
 
 func (eq *EventsQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := eq.querySpec()
+	if len(eq.modifiers) > 0 {
+		_spec.Modifiers = eq.modifiers
+	}
 	_spec.Node.Columns = eq.fields
 	if len(eq.fields) > 0 {
 		_spec.Unique = eq.unique != nil && *eq.unique
@@ -627,11 +664,14 @@ func (eq *EventsQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (eq *EventsQuery) sqlExist(ctx context.Context) (bool, error) {
-	n, err := eq.sqlCount(ctx)
-	if err != nil {
+	switch _, err := eq.FirstID(ctx); {
+	case IsNotFound(err):
+		return false, nil
+	case err != nil:
 		return false, fmt.Errorf("ent: check existence: %w", err)
+	default:
+		return true, nil
 	}
-	return n > 0, nil
 }
 
 func (eq *EventsQuery) querySpec() *sqlgraph.QuerySpec {
@@ -697,6 +737,9 @@ func (eq *EventsQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if eq.unique != nil && *eq.unique {
 		selector.Distinct()
 	}
+	for _, m := range eq.modifiers {
+		m(selector)
+	}
 	for _, p := range eq.predicates {
 		p(selector)
 	}
@@ -712,6 +755,38 @@ func (eq *EventsQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector.Limit(*limit)
 	}
 	return selector
+}
+
+// ForUpdate locks the selected rows against concurrent updates, and prevent them from being
+// updated, deleted or "selected ... for update" by other sessions, until the transaction is
+// either committed or rolled-back.
+func (eq *EventsQuery) ForUpdate(opts ...sql.LockOption) *EventsQuery {
+	if eq.driver.Dialect() == dialect.Postgres {
+		eq.Unique(false)
+	}
+	eq.modifiers = append(eq.modifiers, func(s *sql.Selector) {
+		s.ForUpdate(opts...)
+	})
+	return eq
+}
+
+// ForShare behaves similarly to ForUpdate, except that it acquires a shared mode lock
+// on any rows that are read. Other sessions can read the rows, but cannot modify them
+// until your transaction commits.
+func (eq *EventsQuery) ForShare(opts ...sql.LockOption) *EventsQuery {
+	if eq.driver.Dialect() == dialect.Postgres {
+		eq.Unique(false)
+	}
+	eq.modifiers = append(eq.modifiers, func(s *sql.Selector) {
+		s.ForShare(opts...)
+	})
+	return eq
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (eq *EventsQuery) Modify(modifiers ...func(s *sql.Selector)) *EventsSelect {
+	eq.modifiers = append(eq.modifiers, modifiers...)
+	return eq.Select()
 }
 
 // EventsGroupBy is the group-by builder for Events entities.
@@ -732,7 +807,7 @@ func (egb *EventsGroupBy) Aggregate(fns ...AggregateFunc) *EventsGroupBy {
 }
 
 // Scan applies the group-by query and scans the result into the given value.
-func (egb *EventsGroupBy) Scan(ctx context.Context, v interface{}) error {
+func (egb *EventsGroupBy) Scan(ctx context.Context, v any) error {
 	query, err := egb.path(ctx)
 	if err != nil {
 		return err
@@ -741,7 +816,7 @@ func (egb *EventsGroupBy) Scan(ctx context.Context, v interface{}) error {
 	return egb.sqlScan(ctx, v)
 }
 
-func (egb *EventsGroupBy) sqlScan(ctx context.Context, v interface{}) error {
+func (egb *EventsGroupBy) sqlScan(ctx context.Context, v any) error {
 	for _, f := range egb.fields {
 		if !events.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for group-by", f)}
@@ -766,8 +841,6 @@ func (egb *EventsGroupBy) sqlQuery() *sql.Selector {
 	for _, fn := range egb.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	// If no columns were selected in a custom aggregation function, the default
-	// selection is the fields used for "group-by", and the aggregation functions.
 	if len(selector.SelectedColumns()) == 0 {
 		columns := make([]string, 0, len(egb.fields)+len(egb.fns))
 		for _, f := range egb.fields {
@@ -787,8 +860,14 @@ type EventsSelect struct {
 	sql *sql.Selector
 }
 
+// Aggregate adds the given aggregation functions to the selector query.
+func (es *EventsSelect) Aggregate(fns ...AggregateFunc) *EventsSelect {
+	es.fns = append(es.fns, fns...)
+	return es
+}
+
 // Scan applies the selector query and scans the result into the given value.
-func (es *EventsSelect) Scan(ctx context.Context, v interface{}) error {
+func (es *EventsSelect) Scan(ctx context.Context, v any) error {
 	if err := es.prepareQuery(ctx); err != nil {
 		return err
 	}
@@ -796,7 +875,17 @@ func (es *EventsSelect) Scan(ctx context.Context, v interface{}) error {
 	return es.sqlScan(ctx, v)
 }
 
-func (es *EventsSelect) sqlScan(ctx context.Context, v interface{}) error {
+func (es *EventsSelect) sqlScan(ctx context.Context, v any) error {
+	aggregation := make([]string, 0, len(es.fns))
+	for _, fn := range es.fns {
+		aggregation = append(aggregation, fn(es.sql))
+	}
+	switch n := len(*es.selector.flds); {
+	case n == 0 && len(aggregation) > 0:
+		es.sql.Select(aggregation...)
+	case n != 0 && len(aggregation) > 0:
+		es.sql.AppendSelect(aggregation...)
+	}
 	rows := &sql.Rows{}
 	query, args := es.sql.Query()
 	if err := es.driver.Query(ctx, query, args, rows); err != nil {
@@ -804,4 +893,10 @@ func (es *EventsSelect) sqlScan(ctx context.Context, v interface{}) error {
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (es *EventsSelect) Modify(modifiers ...func(s *sql.Selector)) *EventsSelect {
+	es.modifiers = append(es.modifiers, modifiers...)
+	return es
 }

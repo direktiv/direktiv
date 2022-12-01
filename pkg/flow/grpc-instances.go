@@ -3,12 +3,14 @@ package flow
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/util"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -334,9 +336,39 @@ func (flow *flow) StartWorkflow(ctx context.Context, req *grpc.StartWorkflowRequ
 
 	fmt.Printf("INIT TIME: %v\n", tf.Sub(t0))
 
-	flow.engine.queue(im)
+	if !req.GetHold() {
+		flow.engine.queue(im)
+	}
 
 	var resp grpc.StartWorkflowResponse
+
+	resp.Namespace = req.GetNamespace()
+	resp.Instance = im.ID().String()
+
+	return &resp, nil
+
+}
+
+func (flow *flow) ReleaseInstance(ctx context.Context, req *grpc.ReleaseInstanceRequest) (*grpc.ReleaseInstanceResponse, error) {
+
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
+
+	im, err := flow.engine.getInstanceMemory(ctx, flow.db.Instance, req.GetInstance())
+	if err != nil {
+		return nil, err
+	}
+
+	if im.in.Edges.Namespace.Name != req.GetNamespace() {
+		return nil, errors.New("instance not found")
+	}
+
+	if im.in.Status != util.InstanceStatusPending {
+		return nil, errors.New("instance already released")
+	}
+
+	flow.engine.queue(im)
+
+	var resp grpc.ReleaseInstanceResponse
 
 	resp.Namespace = req.GetNamespace()
 	resp.Instance = im.ID().String()

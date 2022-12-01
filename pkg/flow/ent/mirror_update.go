@@ -22,8 +22,9 @@ import (
 // MirrorUpdate is the builder for updating Mirror entities.
 type MirrorUpdate struct {
 	config
-	hooks    []Hook
-	mutation *MirrorMutation
+	hooks     []Hook
+	mutation  *MirrorMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // Where appends a list predicates to the MirrorUpdate builder.
@@ -266,6 +267,12 @@ func (mu *MirrorUpdate) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (mu *MirrorUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *MirrorUpdate {
+	mu.modifiers = append(mu.modifiers, modifiers...)
+	return mu
+}
+
 func (mu *MirrorUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -285,79 +292,37 @@ func (mu *MirrorUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 	}
 	if value, ok := mu.mutation.URL(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: mirror.FieldURL,
-		})
+		_spec.SetField(mirror.FieldURL, field.TypeString, value)
 	}
 	if value, ok := mu.mutation.Ref(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: mirror.FieldRef,
-		})
+		_spec.SetField(mirror.FieldRef, field.TypeString, value)
 	}
 	if value, ok := mu.mutation.Cron(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: mirror.FieldCron,
-		})
+		_spec.SetField(mirror.FieldCron, field.TypeString, value)
 	}
 	if value, ok := mu.mutation.PublicKey(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: mirror.FieldPublicKey,
-		})
+		_spec.SetField(mirror.FieldPublicKey, field.TypeString, value)
 	}
 	if value, ok := mu.mutation.PrivateKey(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: mirror.FieldPrivateKey,
-		})
+		_spec.SetField(mirror.FieldPrivateKey, field.TypeString, value)
 	}
 	if value, ok := mu.mutation.Passphrase(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: mirror.FieldPassphrase,
-		})
+		_spec.SetField(mirror.FieldPassphrase, field.TypeString, value)
 	}
 	if value, ok := mu.mutation.Commit(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: mirror.FieldCommit,
-		})
+		_spec.SetField(mirror.FieldCommit, field.TypeString, value)
 	}
 	if value, ok := mu.mutation.LastSync(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: mirror.FieldLastSync,
-		})
+		_spec.SetField(mirror.FieldLastSync, field.TypeTime, value)
 	}
 	if mu.mutation.LastSyncCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Column: mirror.FieldLastSync,
-		})
+		_spec.ClearField(mirror.FieldLastSync, field.TypeTime)
 	}
 	if value, ok := mu.mutation.UpdatedAt(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: mirror.FieldUpdatedAt,
-		})
+		_spec.SetField(mirror.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if mu.mutation.UpdatedAtCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Column: mirror.FieldUpdatedAt,
-		})
+		_spec.ClearField(mirror.FieldUpdatedAt, field.TypeTime)
 	}
 	if mu.mutation.NamespaceCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -483,6 +448,7 @@ func (mu *MirrorUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	_spec.AddModifiers(mu.modifiers...)
 	if n, err = sqlgraph.UpdateNodes(ctx, mu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{mirror.Label}
@@ -497,9 +463,10 @@ func (mu *MirrorUpdate) sqlSave(ctx context.Context) (n int, err error) {
 // MirrorUpdateOne is the builder for updating a single Mirror entity.
 type MirrorUpdateOne struct {
 	config
-	fields   []string
-	hooks    []Hook
-	mutation *MirrorMutation
+	fields    []string
+	hooks     []Hook
+	mutation  *MirrorMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // SetURL sets the "url" field.
@@ -749,6 +716,12 @@ func (muo *MirrorUpdateOne) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (muo *MirrorUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *MirrorUpdateOne {
+	muo.modifiers = append(muo.modifiers, modifiers...)
+	return muo
+}
+
 func (muo *MirrorUpdateOne) sqlSave(ctx context.Context) (_node *Mirror, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -785,79 +758,37 @@ func (muo *MirrorUpdateOne) sqlSave(ctx context.Context) (_node *Mirror, err err
 		}
 	}
 	if value, ok := muo.mutation.URL(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: mirror.FieldURL,
-		})
+		_spec.SetField(mirror.FieldURL, field.TypeString, value)
 	}
 	if value, ok := muo.mutation.Ref(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: mirror.FieldRef,
-		})
+		_spec.SetField(mirror.FieldRef, field.TypeString, value)
 	}
 	if value, ok := muo.mutation.Cron(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: mirror.FieldCron,
-		})
+		_spec.SetField(mirror.FieldCron, field.TypeString, value)
 	}
 	if value, ok := muo.mutation.PublicKey(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: mirror.FieldPublicKey,
-		})
+		_spec.SetField(mirror.FieldPublicKey, field.TypeString, value)
 	}
 	if value, ok := muo.mutation.PrivateKey(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: mirror.FieldPrivateKey,
-		})
+		_spec.SetField(mirror.FieldPrivateKey, field.TypeString, value)
 	}
 	if value, ok := muo.mutation.Passphrase(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: mirror.FieldPassphrase,
-		})
+		_spec.SetField(mirror.FieldPassphrase, field.TypeString, value)
 	}
 	if value, ok := muo.mutation.Commit(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: mirror.FieldCommit,
-		})
+		_spec.SetField(mirror.FieldCommit, field.TypeString, value)
 	}
 	if value, ok := muo.mutation.LastSync(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: mirror.FieldLastSync,
-		})
+		_spec.SetField(mirror.FieldLastSync, field.TypeTime, value)
 	}
 	if muo.mutation.LastSyncCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Column: mirror.FieldLastSync,
-		})
+		_spec.ClearField(mirror.FieldLastSync, field.TypeTime)
 	}
 	if value, ok := muo.mutation.UpdatedAt(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: mirror.FieldUpdatedAt,
-		})
+		_spec.SetField(mirror.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if muo.mutation.UpdatedAtCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Column: mirror.FieldUpdatedAt,
-		})
+		_spec.ClearField(mirror.FieldUpdatedAt, field.TypeTime)
 	}
 	if muo.mutation.NamespaceCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -983,6 +914,7 @@ func (muo *MirrorUpdateOne) sqlSave(ctx context.Context) (_node *Mirror, err err
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	_spec.AddModifiers(muo.modifiers...)
 	_node = &Mirror{config: muo.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

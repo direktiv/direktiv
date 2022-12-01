@@ -18,8 +18,9 @@ import (
 // MetricsUpdate is the builder for updating Metrics entities.
 type MetricsUpdate struct {
 	config
-	hooks    []Hook
-	mutation *MetricsMutation
+	hooks     []Hook
+	mutation  *MetricsMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // Where appends a list predicates to the MetricsUpdate builder.
@@ -254,6 +255,12 @@ func (mu *MetricsUpdate) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (mu *MetricsUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *MetricsUpdate {
+	mu.modifiers = append(mu.modifiers, modifiers...)
+	return mu
+}
+
 func (mu *MetricsUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -273,122 +280,57 @@ func (mu *MetricsUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 	}
 	if value, ok := mu.mutation.Namespace(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: metrics.FieldNamespace,
-		})
+		_spec.SetField(metrics.FieldNamespace, field.TypeString, value)
 	}
 	if value, ok := mu.mutation.Workflow(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: metrics.FieldWorkflow,
-		})
+		_spec.SetField(metrics.FieldWorkflow, field.TypeString, value)
 	}
 	if value, ok := mu.mutation.Revision(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: metrics.FieldRevision,
-		})
+		_spec.SetField(metrics.FieldRevision, field.TypeString, value)
 	}
 	if value, ok := mu.mutation.Instance(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: metrics.FieldInstance,
-		})
+		_spec.SetField(metrics.FieldInstance, field.TypeString, value)
 	}
 	if value, ok := mu.mutation.State(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: metrics.FieldState,
-		})
+		_spec.SetField(metrics.FieldState, field.TypeString, value)
 	}
 	if value, ok := mu.mutation.Timestamp(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: metrics.FieldTimestamp,
-		})
+		_spec.SetField(metrics.FieldTimestamp, field.TypeTime, value)
 	}
 	if value, ok := mu.mutation.WorkflowMs(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt64,
-			Value:  value,
-			Column: metrics.FieldWorkflowMs,
-		})
+		_spec.SetField(metrics.FieldWorkflowMs, field.TypeInt64, value)
 	}
 	if value, ok := mu.mutation.AddedWorkflowMs(); ok {
-		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt64,
-			Value:  value,
-			Column: metrics.FieldWorkflowMs,
-		})
+		_spec.AddField(metrics.FieldWorkflowMs, field.TypeInt64, value)
 	}
 	if value, ok := mu.mutation.IsolateMs(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt64,
-			Value:  value,
-			Column: metrics.FieldIsolateMs,
-		})
+		_spec.SetField(metrics.FieldIsolateMs, field.TypeInt64, value)
 	}
 	if value, ok := mu.mutation.AddedIsolateMs(); ok {
-		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt64,
-			Value:  value,
-			Column: metrics.FieldIsolateMs,
-		})
+		_spec.AddField(metrics.FieldIsolateMs, field.TypeInt64, value)
 	}
 	if value, ok := mu.mutation.ErrorCode(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: metrics.FieldErrorCode,
-		})
+		_spec.SetField(metrics.FieldErrorCode, field.TypeString, value)
 	}
 	if mu.mutation.ErrorCodeCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Column: metrics.FieldErrorCode,
-		})
+		_spec.ClearField(metrics.FieldErrorCode, field.TypeString)
 	}
 	if value, ok := mu.mutation.Invoker(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: metrics.FieldInvoker,
-		})
+		_spec.SetField(metrics.FieldInvoker, field.TypeString, value)
 	}
 	if value, ok := mu.mutation.Next(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt8,
-			Value:  value,
-			Column: metrics.FieldNext,
-		})
+		_spec.SetField(metrics.FieldNext, field.TypeInt8, value)
 	}
 	if value, ok := mu.mutation.AddedNext(); ok {
-		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt8,
-			Value:  value,
-			Column: metrics.FieldNext,
-		})
+		_spec.AddField(metrics.FieldNext, field.TypeInt8, value)
 	}
 	if value, ok := mu.mutation.Transition(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: metrics.FieldTransition,
-		})
+		_spec.SetField(metrics.FieldTransition, field.TypeString, value)
 	}
 	if mu.mutation.TransitionCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Column: metrics.FieldTransition,
-		})
+		_spec.ClearField(metrics.FieldTransition, field.TypeString)
 	}
+	_spec.AddModifiers(mu.modifiers...)
 	if n, err = sqlgraph.UpdateNodes(ctx, mu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{metrics.Label}
@@ -403,9 +345,10 @@ func (mu *MetricsUpdate) sqlSave(ctx context.Context) (n int, err error) {
 // MetricsUpdateOne is the builder for updating a single Metrics entity.
 type MetricsUpdateOne struct {
 	config
-	fields   []string
-	hooks    []Hook
-	mutation *MetricsMutation
+	fields    []string
+	hooks     []Hook
+	mutation  *MetricsMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // SetNamespace sets the "namespace" field.
@@ -647,6 +590,12 @@ func (muo *MetricsUpdateOne) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (muo *MetricsUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *MetricsUpdateOne {
+	muo.modifiers = append(muo.modifiers, modifiers...)
+	return muo
+}
+
 func (muo *MetricsUpdateOne) sqlSave(ctx context.Context) (_node *Metrics, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -683,122 +632,57 @@ func (muo *MetricsUpdateOne) sqlSave(ctx context.Context) (_node *Metrics, err e
 		}
 	}
 	if value, ok := muo.mutation.Namespace(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: metrics.FieldNamespace,
-		})
+		_spec.SetField(metrics.FieldNamespace, field.TypeString, value)
 	}
 	if value, ok := muo.mutation.Workflow(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: metrics.FieldWorkflow,
-		})
+		_spec.SetField(metrics.FieldWorkflow, field.TypeString, value)
 	}
 	if value, ok := muo.mutation.Revision(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: metrics.FieldRevision,
-		})
+		_spec.SetField(metrics.FieldRevision, field.TypeString, value)
 	}
 	if value, ok := muo.mutation.Instance(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: metrics.FieldInstance,
-		})
+		_spec.SetField(metrics.FieldInstance, field.TypeString, value)
 	}
 	if value, ok := muo.mutation.State(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: metrics.FieldState,
-		})
+		_spec.SetField(metrics.FieldState, field.TypeString, value)
 	}
 	if value, ok := muo.mutation.Timestamp(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: metrics.FieldTimestamp,
-		})
+		_spec.SetField(metrics.FieldTimestamp, field.TypeTime, value)
 	}
 	if value, ok := muo.mutation.WorkflowMs(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt64,
-			Value:  value,
-			Column: metrics.FieldWorkflowMs,
-		})
+		_spec.SetField(metrics.FieldWorkflowMs, field.TypeInt64, value)
 	}
 	if value, ok := muo.mutation.AddedWorkflowMs(); ok {
-		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt64,
-			Value:  value,
-			Column: metrics.FieldWorkflowMs,
-		})
+		_spec.AddField(metrics.FieldWorkflowMs, field.TypeInt64, value)
 	}
 	if value, ok := muo.mutation.IsolateMs(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt64,
-			Value:  value,
-			Column: metrics.FieldIsolateMs,
-		})
+		_spec.SetField(metrics.FieldIsolateMs, field.TypeInt64, value)
 	}
 	if value, ok := muo.mutation.AddedIsolateMs(); ok {
-		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt64,
-			Value:  value,
-			Column: metrics.FieldIsolateMs,
-		})
+		_spec.AddField(metrics.FieldIsolateMs, field.TypeInt64, value)
 	}
 	if value, ok := muo.mutation.ErrorCode(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: metrics.FieldErrorCode,
-		})
+		_spec.SetField(metrics.FieldErrorCode, field.TypeString, value)
 	}
 	if muo.mutation.ErrorCodeCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Column: metrics.FieldErrorCode,
-		})
+		_spec.ClearField(metrics.FieldErrorCode, field.TypeString)
 	}
 	if value, ok := muo.mutation.Invoker(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: metrics.FieldInvoker,
-		})
+		_spec.SetField(metrics.FieldInvoker, field.TypeString, value)
 	}
 	if value, ok := muo.mutation.Next(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt8,
-			Value:  value,
-			Column: metrics.FieldNext,
-		})
+		_spec.SetField(metrics.FieldNext, field.TypeInt8, value)
 	}
 	if value, ok := muo.mutation.AddedNext(); ok {
-		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt8,
-			Value:  value,
-			Column: metrics.FieldNext,
-		})
+		_spec.AddField(metrics.FieldNext, field.TypeInt8, value)
 	}
 	if value, ok := muo.mutation.Transition(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: metrics.FieldTransition,
-		})
+		_spec.SetField(metrics.FieldTransition, field.TypeString, value)
 	}
 	if muo.mutation.TransitionCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Column: metrics.FieldTransition,
-		})
+		_spec.ClearField(metrics.FieldTransition, field.TypeString)
 	}
+	_spec.AddModifiers(muo.modifiers...)
 	_node = &Metrics{config: muo.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

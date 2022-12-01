@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"time"
 
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/direktiv/direktiv/pkg/metrics/ent/metrics"
@@ -18,6 +19,7 @@ type MetricsCreate struct {
 	config
 	mutation *MetricsMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetNamespace sets the "namespace" field.
@@ -276,109 +278,562 @@ func (mc *MetricsCreate) createSpec() (*Metrics, *sqlgraph.CreateSpec) {
 			},
 		}
 	)
+	_spec.OnConflict = mc.conflict
 	if value, ok := mc.mutation.Namespace(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: metrics.FieldNamespace,
-		})
+		_spec.SetField(metrics.FieldNamespace, field.TypeString, value)
 		_node.Namespace = value
 	}
 	if value, ok := mc.mutation.Workflow(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: metrics.FieldWorkflow,
-		})
+		_spec.SetField(metrics.FieldWorkflow, field.TypeString, value)
 		_node.Workflow = value
 	}
 	if value, ok := mc.mutation.Revision(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: metrics.FieldRevision,
-		})
+		_spec.SetField(metrics.FieldRevision, field.TypeString, value)
 		_node.Revision = value
 	}
 	if value, ok := mc.mutation.Instance(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: metrics.FieldInstance,
-		})
+		_spec.SetField(metrics.FieldInstance, field.TypeString, value)
 		_node.Instance = value
 	}
 	if value, ok := mc.mutation.State(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: metrics.FieldState,
-		})
+		_spec.SetField(metrics.FieldState, field.TypeString, value)
 		_node.State = value
 	}
 	if value, ok := mc.mutation.Timestamp(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: metrics.FieldTimestamp,
-		})
+		_spec.SetField(metrics.FieldTimestamp, field.TypeTime, value)
 		_node.Timestamp = value
 	}
 	if value, ok := mc.mutation.WorkflowMs(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt64,
-			Value:  value,
-			Column: metrics.FieldWorkflowMs,
-		})
+		_spec.SetField(metrics.FieldWorkflowMs, field.TypeInt64, value)
 		_node.WorkflowMs = value
 	}
 	if value, ok := mc.mutation.IsolateMs(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt64,
-			Value:  value,
-			Column: metrics.FieldIsolateMs,
-		})
+		_spec.SetField(metrics.FieldIsolateMs, field.TypeInt64, value)
 		_node.IsolateMs = value
 	}
 	if value, ok := mc.mutation.ErrorCode(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: metrics.FieldErrorCode,
-		})
+		_spec.SetField(metrics.FieldErrorCode, field.TypeString, value)
 		_node.ErrorCode = value
 	}
 	if value, ok := mc.mutation.Invoker(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: metrics.FieldInvoker,
-		})
+		_spec.SetField(metrics.FieldInvoker, field.TypeString, value)
 		_node.Invoker = value
 	}
 	if value, ok := mc.mutation.Next(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt8,
-			Value:  value,
-			Column: metrics.FieldNext,
-		})
+		_spec.SetField(metrics.FieldNext, field.TypeInt8, value)
 		_node.Next = value
 	}
 	if value, ok := mc.mutation.Transition(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: metrics.FieldTransition,
-		})
+		_spec.SetField(metrics.FieldTransition, field.TypeString, value)
 		_node.Transition = value
 	}
 	return _node, _spec
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Metrics.Create().
+//		SetNamespace(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.MetricsUpsert) {
+//			SetNamespace(v+v).
+//		}).
+//		Exec(ctx)
+func (mc *MetricsCreate) OnConflict(opts ...sql.ConflictOption) *MetricsUpsertOne {
+	mc.conflict = opts
+	return &MetricsUpsertOne{
+		create: mc,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Metrics.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (mc *MetricsCreate) OnConflictColumns(columns ...string) *MetricsUpsertOne {
+	mc.conflict = append(mc.conflict, sql.ConflictColumns(columns...))
+	return &MetricsUpsertOne{
+		create: mc,
+	}
+}
+
+type (
+	// MetricsUpsertOne is the builder for "upsert"-ing
+	//  one Metrics node.
+	MetricsUpsertOne struct {
+		create *MetricsCreate
+	}
+
+	// MetricsUpsert is the "OnConflict" setter.
+	MetricsUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetNamespace sets the "namespace" field.
+func (u *MetricsUpsert) SetNamespace(v string) *MetricsUpsert {
+	u.Set(metrics.FieldNamespace, v)
+	return u
+}
+
+// UpdateNamespace sets the "namespace" field to the value that was provided on create.
+func (u *MetricsUpsert) UpdateNamespace() *MetricsUpsert {
+	u.SetExcluded(metrics.FieldNamespace)
+	return u
+}
+
+// SetWorkflow sets the "workflow" field.
+func (u *MetricsUpsert) SetWorkflow(v string) *MetricsUpsert {
+	u.Set(metrics.FieldWorkflow, v)
+	return u
+}
+
+// UpdateWorkflow sets the "workflow" field to the value that was provided on create.
+func (u *MetricsUpsert) UpdateWorkflow() *MetricsUpsert {
+	u.SetExcluded(metrics.FieldWorkflow)
+	return u
+}
+
+// SetRevision sets the "revision" field.
+func (u *MetricsUpsert) SetRevision(v string) *MetricsUpsert {
+	u.Set(metrics.FieldRevision, v)
+	return u
+}
+
+// UpdateRevision sets the "revision" field to the value that was provided on create.
+func (u *MetricsUpsert) UpdateRevision() *MetricsUpsert {
+	u.SetExcluded(metrics.FieldRevision)
+	return u
+}
+
+// SetInstance sets the "instance" field.
+func (u *MetricsUpsert) SetInstance(v string) *MetricsUpsert {
+	u.Set(metrics.FieldInstance, v)
+	return u
+}
+
+// UpdateInstance sets the "instance" field to the value that was provided on create.
+func (u *MetricsUpsert) UpdateInstance() *MetricsUpsert {
+	u.SetExcluded(metrics.FieldInstance)
+	return u
+}
+
+// SetState sets the "state" field.
+func (u *MetricsUpsert) SetState(v string) *MetricsUpsert {
+	u.Set(metrics.FieldState, v)
+	return u
+}
+
+// UpdateState sets the "state" field to the value that was provided on create.
+func (u *MetricsUpsert) UpdateState() *MetricsUpsert {
+	u.SetExcluded(metrics.FieldState)
+	return u
+}
+
+// SetTimestamp sets the "timestamp" field.
+func (u *MetricsUpsert) SetTimestamp(v time.Time) *MetricsUpsert {
+	u.Set(metrics.FieldTimestamp, v)
+	return u
+}
+
+// UpdateTimestamp sets the "timestamp" field to the value that was provided on create.
+func (u *MetricsUpsert) UpdateTimestamp() *MetricsUpsert {
+	u.SetExcluded(metrics.FieldTimestamp)
+	return u
+}
+
+// SetWorkflowMs sets the "workflow_ms" field.
+func (u *MetricsUpsert) SetWorkflowMs(v int64) *MetricsUpsert {
+	u.Set(metrics.FieldWorkflowMs, v)
+	return u
+}
+
+// UpdateWorkflowMs sets the "workflow_ms" field to the value that was provided on create.
+func (u *MetricsUpsert) UpdateWorkflowMs() *MetricsUpsert {
+	u.SetExcluded(metrics.FieldWorkflowMs)
+	return u
+}
+
+// AddWorkflowMs adds v to the "workflow_ms" field.
+func (u *MetricsUpsert) AddWorkflowMs(v int64) *MetricsUpsert {
+	u.Add(metrics.FieldWorkflowMs, v)
+	return u
+}
+
+// SetIsolateMs sets the "isolate_ms" field.
+func (u *MetricsUpsert) SetIsolateMs(v int64) *MetricsUpsert {
+	u.Set(metrics.FieldIsolateMs, v)
+	return u
+}
+
+// UpdateIsolateMs sets the "isolate_ms" field to the value that was provided on create.
+func (u *MetricsUpsert) UpdateIsolateMs() *MetricsUpsert {
+	u.SetExcluded(metrics.FieldIsolateMs)
+	return u
+}
+
+// AddIsolateMs adds v to the "isolate_ms" field.
+func (u *MetricsUpsert) AddIsolateMs(v int64) *MetricsUpsert {
+	u.Add(metrics.FieldIsolateMs, v)
+	return u
+}
+
+// SetErrorCode sets the "error_code" field.
+func (u *MetricsUpsert) SetErrorCode(v string) *MetricsUpsert {
+	u.Set(metrics.FieldErrorCode, v)
+	return u
+}
+
+// UpdateErrorCode sets the "error_code" field to the value that was provided on create.
+func (u *MetricsUpsert) UpdateErrorCode() *MetricsUpsert {
+	u.SetExcluded(metrics.FieldErrorCode)
+	return u
+}
+
+// ClearErrorCode clears the value of the "error_code" field.
+func (u *MetricsUpsert) ClearErrorCode() *MetricsUpsert {
+	u.SetNull(metrics.FieldErrorCode)
+	return u
+}
+
+// SetInvoker sets the "invoker" field.
+func (u *MetricsUpsert) SetInvoker(v string) *MetricsUpsert {
+	u.Set(metrics.FieldInvoker, v)
+	return u
+}
+
+// UpdateInvoker sets the "invoker" field to the value that was provided on create.
+func (u *MetricsUpsert) UpdateInvoker() *MetricsUpsert {
+	u.SetExcluded(metrics.FieldInvoker)
+	return u
+}
+
+// SetNext sets the "next" field.
+func (u *MetricsUpsert) SetNext(v int8) *MetricsUpsert {
+	u.Set(metrics.FieldNext, v)
+	return u
+}
+
+// UpdateNext sets the "next" field to the value that was provided on create.
+func (u *MetricsUpsert) UpdateNext() *MetricsUpsert {
+	u.SetExcluded(metrics.FieldNext)
+	return u
+}
+
+// AddNext adds v to the "next" field.
+func (u *MetricsUpsert) AddNext(v int8) *MetricsUpsert {
+	u.Add(metrics.FieldNext, v)
+	return u
+}
+
+// SetTransition sets the "transition" field.
+func (u *MetricsUpsert) SetTransition(v string) *MetricsUpsert {
+	u.Set(metrics.FieldTransition, v)
+	return u
+}
+
+// UpdateTransition sets the "transition" field to the value that was provided on create.
+func (u *MetricsUpsert) UpdateTransition() *MetricsUpsert {
+	u.SetExcluded(metrics.FieldTransition)
+	return u
+}
+
+// ClearTransition clears the value of the "transition" field.
+func (u *MetricsUpsert) ClearTransition() *MetricsUpsert {
+	u.SetNull(metrics.FieldTransition)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create.
+// Using this option is equivalent to using:
+//
+//	client.Metrics.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//		).
+//		Exec(ctx)
+func (u *MetricsUpsertOne) UpdateNewValues() *MetricsUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Metrics.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *MetricsUpsertOne) Ignore() *MetricsUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *MetricsUpsertOne) DoNothing() *MetricsUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the MetricsCreate.OnConflict
+// documentation for more info.
+func (u *MetricsUpsertOne) Update(set func(*MetricsUpsert)) *MetricsUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&MetricsUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetNamespace sets the "namespace" field.
+func (u *MetricsUpsertOne) SetNamespace(v string) *MetricsUpsertOne {
+	return u.Update(func(s *MetricsUpsert) {
+		s.SetNamespace(v)
+	})
+}
+
+// UpdateNamespace sets the "namespace" field to the value that was provided on create.
+func (u *MetricsUpsertOne) UpdateNamespace() *MetricsUpsertOne {
+	return u.Update(func(s *MetricsUpsert) {
+		s.UpdateNamespace()
+	})
+}
+
+// SetWorkflow sets the "workflow" field.
+func (u *MetricsUpsertOne) SetWorkflow(v string) *MetricsUpsertOne {
+	return u.Update(func(s *MetricsUpsert) {
+		s.SetWorkflow(v)
+	})
+}
+
+// UpdateWorkflow sets the "workflow" field to the value that was provided on create.
+func (u *MetricsUpsertOne) UpdateWorkflow() *MetricsUpsertOne {
+	return u.Update(func(s *MetricsUpsert) {
+		s.UpdateWorkflow()
+	})
+}
+
+// SetRevision sets the "revision" field.
+func (u *MetricsUpsertOne) SetRevision(v string) *MetricsUpsertOne {
+	return u.Update(func(s *MetricsUpsert) {
+		s.SetRevision(v)
+	})
+}
+
+// UpdateRevision sets the "revision" field to the value that was provided on create.
+func (u *MetricsUpsertOne) UpdateRevision() *MetricsUpsertOne {
+	return u.Update(func(s *MetricsUpsert) {
+		s.UpdateRevision()
+	})
+}
+
+// SetInstance sets the "instance" field.
+func (u *MetricsUpsertOne) SetInstance(v string) *MetricsUpsertOne {
+	return u.Update(func(s *MetricsUpsert) {
+		s.SetInstance(v)
+	})
+}
+
+// UpdateInstance sets the "instance" field to the value that was provided on create.
+func (u *MetricsUpsertOne) UpdateInstance() *MetricsUpsertOne {
+	return u.Update(func(s *MetricsUpsert) {
+		s.UpdateInstance()
+	})
+}
+
+// SetState sets the "state" field.
+func (u *MetricsUpsertOne) SetState(v string) *MetricsUpsertOne {
+	return u.Update(func(s *MetricsUpsert) {
+		s.SetState(v)
+	})
+}
+
+// UpdateState sets the "state" field to the value that was provided on create.
+func (u *MetricsUpsertOne) UpdateState() *MetricsUpsertOne {
+	return u.Update(func(s *MetricsUpsert) {
+		s.UpdateState()
+	})
+}
+
+// SetTimestamp sets the "timestamp" field.
+func (u *MetricsUpsertOne) SetTimestamp(v time.Time) *MetricsUpsertOne {
+	return u.Update(func(s *MetricsUpsert) {
+		s.SetTimestamp(v)
+	})
+}
+
+// UpdateTimestamp sets the "timestamp" field to the value that was provided on create.
+func (u *MetricsUpsertOne) UpdateTimestamp() *MetricsUpsertOne {
+	return u.Update(func(s *MetricsUpsert) {
+		s.UpdateTimestamp()
+	})
+}
+
+// SetWorkflowMs sets the "workflow_ms" field.
+func (u *MetricsUpsertOne) SetWorkflowMs(v int64) *MetricsUpsertOne {
+	return u.Update(func(s *MetricsUpsert) {
+		s.SetWorkflowMs(v)
+	})
+}
+
+// AddWorkflowMs adds v to the "workflow_ms" field.
+func (u *MetricsUpsertOne) AddWorkflowMs(v int64) *MetricsUpsertOne {
+	return u.Update(func(s *MetricsUpsert) {
+		s.AddWorkflowMs(v)
+	})
+}
+
+// UpdateWorkflowMs sets the "workflow_ms" field to the value that was provided on create.
+func (u *MetricsUpsertOne) UpdateWorkflowMs() *MetricsUpsertOne {
+	return u.Update(func(s *MetricsUpsert) {
+		s.UpdateWorkflowMs()
+	})
+}
+
+// SetIsolateMs sets the "isolate_ms" field.
+func (u *MetricsUpsertOne) SetIsolateMs(v int64) *MetricsUpsertOne {
+	return u.Update(func(s *MetricsUpsert) {
+		s.SetIsolateMs(v)
+	})
+}
+
+// AddIsolateMs adds v to the "isolate_ms" field.
+func (u *MetricsUpsertOne) AddIsolateMs(v int64) *MetricsUpsertOne {
+	return u.Update(func(s *MetricsUpsert) {
+		s.AddIsolateMs(v)
+	})
+}
+
+// UpdateIsolateMs sets the "isolate_ms" field to the value that was provided on create.
+func (u *MetricsUpsertOne) UpdateIsolateMs() *MetricsUpsertOne {
+	return u.Update(func(s *MetricsUpsert) {
+		s.UpdateIsolateMs()
+	})
+}
+
+// SetErrorCode sets the "error_code" field.
+func (u *MetricsUpsertOne) SetErrorCode(v string) *MetricsUpsertOne {
+	return u.Update(func(s *MetricsUpsert) {
+		s.SetErrorCode(v)
+	})
+}
+
+// UpdateErrorCode sets the "error_code" field to the value that was provided on create.
+func (u *MetricsUpsertOne) UpdateErrorCode() *MetricsUpsertOne {
+	return u.Update(func(s *MetricsUpsert) {
+		s.UpdateErrorCode()
+	})
+}
+
+// ClearErrorCode clears the value of the "error_code" field.
+func (u *MetricsUpsertOne) ClearErrorCode() *MetricsUpsertOne {
+	return u.Update(func(s *MetricsUpsert) {
+		s.ClearErrorCode()
+	})
+}
+
+// SetInvoker sets the "invoker" field.
+func (u *MetricsUpsertOne) SetInvoker(v string) *MetricsUpsertOne {
+	return u.Update(func(s *MetricsUpsert) {
+		s.SetInvoker(v)
+	})
+}
+
+// UpdateInvoker sets the "invoker" field to the value that was provided on create.
+func (u *MetricsUpsertOne) UpdateInvoker() *MetricsUpsertOne {
+	return u.Update(func(s *MetricsUpsert) {
+		s.UpdateInvoker()
+	})
+}
+
+// SetNext sets the "next" field.
+func (u *MetricsUpsertOne) SetNext(v int8) *MetricsUpsertOne {
+	return u.Update(func(s *MetricsUpsert) {
+		s.SetNext(v)
+	})
+}
+
+// AddNext adds v to the "next" field.
+func (u *MetricsUpsertOne) AddNext(v int8) *MetricsUpsertOne {
+	return u.Update(func(s *MetricsUpsert) {
+		s.AddNext(v)
+	})
+}
+
+// UpdateNext sets the "next" field to the value that was provided on create.
+func (u *MetricsUpsertOne) UpdateNext() *MetricsUpsertOne {
+	return u.Update(func(s *MetricsUpsert) {
+		s.UpdateNext()
+	})
+}
+
+// SetTransition sets the "transition" field.
+func (u *MetricsUpsertOne) SetTransition(v string) *MetricsUpsertOne {
+	return u.Update(func(s *MetricsUpsert) {
+		s.SetTransition(v)
+	})
+}
+
+// UpdateTransition sets the "transition" field to the value that was provided on create.
+func (u *MetricsUpsertOne) UpdateTransition() *MetricsUpsertOne {
+	return u.Update(func(s *MetricsUpsert) {
+		s.UpdateTransition()
+	})
+}
+
+// ClearTransition clears the value of the "transition" field.
+func (u *MetricsUpsertOne) ClearTransition() *MetricsUpsertOne {
+	return u.Update(func(s *MetricsUpsert) {
+		s.ClearTransition()
+	})
+}
+
+// Exec executes the query.
+func (u *MetricsUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for MetricsCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *MetricsUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *MetricsUpsertOne) ID(ctx context.Context) (id int, err error) {
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *MetricsUpsertOne) IDX(ctx context.Context) int {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
 }
 
 // MetricsCreateBulk is the builder for creating many Metrics entities in bulk.
 type MetricsCreateBulk struct {
 	config
 	builders []*MetricsCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the Metrics entities in the database.
@@ -404,6 +859,7 @@ func (mcb *MetricsCreateBulk) Save(ctx context.Context) ([]*Metrics, error) {
 					_, err = mutators[i+1].Mutate(root, mcb.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = mcb.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, mcb.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -454,6 +910,310 @@ func (mcb *MetricsCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (mcb *MetricsCreateBulk) ExecX(ctx context.Context) {
 	if err := mcb.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Metrics.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.MetricsUpsert) {
+//			SetNamespace(v+v).
+//		}).
+//		Exec(ctx)
+func (mcb *MetricsCreateBulk) OnConflict(opts ...sql.ConflictOption) *MetricsUpsertBulk {
+	mcb.conflict = opts
+	return &MetricsUpsertBulk{
+		create: mcb,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Metrics.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (mcb *MetricsCreateBulk) OnConflictColumns(columns ...string) *MetricsUpsertBulk {
+	mcb.conflict = append(mcb.conflict, sql.ConflictColumns(columns...))
+	return &MetricsUpsertBulk{
+		create: mcb,
+	}
+}
+
+// MetricsUpsertBulk is the builder for "upsert"-ing
+// a bulk of Metrics nodes.
+type MetricsUpsertBulk struct {
+	create *MetricsCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.Metrics.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//		).
+//		Exec(ctx)
+func (u *MetricsUpsertBulk) UpdateNewValues() *MetricsUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Metrics.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *MetricsUpsertBulk) Ignore() *MetricsUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *MetricsUpsertBulk) DoNothing() *MetricsUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the MetricsCreateBulk.OnConflict
+// documentation for more info.
+func (u *MetricsUpsertBulk) Update(set func(*MetricsUpsert)) *MetricsUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&MetricsUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetNamespace sets the "namespace" field.
+func (u *MetricsUpsertBulk) SetNamespace(v string) *MetricsUpsertBulk {
+	return u.Update(func(s *MetricsUpsert) {
+		s.SetNamespace(v)
+	})
+}
+
+// UpdateNamespace sets the "namespace" field to the value that was provided on create.
+func (u *MetricsUpsertBulk) UpdateNamespace() *MetricsUpsertBulk {
+	return u.Update(func(s *MetricsUpsert) {
+		s.UpdateNamespace()
+	})
+}
+
+// SetWorkflow sets the "workflow" field.
+func (u *MetricsUpsertBulk) SetWorkflow(v string) *MetricsUpsertBulk {
+	return u.Update(func(s *MetricsUpsert) {
+		s.SetWorkflow(v)
+	})
+}
+
+// UpdateWorkflow sets the "workflow" field to the value that was provided on create.
+func (u *MetricsUpsertBulk) UpdateWorkflow() *MetricsUpsertBulk {
+	return u.Update(func(s *MetricsUpsert) {
+		s.UpdateWorkflow()
+	})
+}
+
+// SetRevision sets the "revision" field.
+func (u *MetricsUpsertBulk) SetRevision(v string) *MetricsUpsertBulk {
+	return u.Update(func(s *MetricsUpsert) {
+		s.SetRevision(v)
+	})
+}
+
+// UpdateRevision sets the "revision" field to the value that was provided on create.
+func (u *MetricsUpsertBulk) UpdateRevision() *MetricsUpsertBulk {
+	return u.Update(func(s *MetricsUpsert) {
+		s.UpdateRevision()
+	})
+}
+
+// SetInstance sets the "instance" field.
+func (u *MetricsUpsertBulk) SetInstance(v string) *MetricsUpsertBulk {
+	return u.Update(func(s *MetricsUpsert) {
+		s.SetInstance(v)
+	})
+}
+
+// UpdateInstance sets the "instance" field to the value that was provided on create.
+func (u *MetricsUpsertBulk) UpdateInstance() *MetricsUpsertBulk {
+	return u.Update(func(s *MetricsUpsert) {
+		s.UpdateInstance()
+	})
+}
+
+// SetState sets the "state" field.
+func (u *MetricsUpsertBulk) SetState(v string) *MetricsUpsertBulk {
+	return u.Update(func(s *MetricsUpsert) {
+		s.SetState(v)
+	})
+}
+
+// UpdateState sets the "state" field to the value that was provided on create.
+func (u *MetricsUpsertBulk) UpdateState() *MetricsUpsertBulk {
+	return u.Update(func(s *MetricsUpsert) {
+		s.UpdateState()
+	})
+}
+
+// SetTimestamp sets the "timestamp" field.
+func (u *MetricsUpsertBulk) SetTimestamp(v time.Time) *MetricsUpsertBulk {
+	return u.Update(func(s *MetricsUpsert) {
+		s.SetTimestamp(v)
+	})
+}
+
+// UpdateTimestamp sets the "timestamp" field to the value that was provided on create.
+func (u *MetricsUpsertBulk) UpdateTimestamp() *MetricsUpsertBulk {
+	return u.Update(func(s *MetricsUpsert) {
+		s.UpdateTimestamp()
+	})
+}
+
+// SetWorkflowMs sets the "workflow_ms" field.
+func (u *MetricsUpsertBulk) SetWorkflowMs(v int64) *MetricsUpsertBulk {
+	return u.Update(func(s *MetricsUpsert) {
+		s.SetWorkflowMs(v)
+	})
+}
+
+// AddWorkflowMs adds v to the "workflow_ms" field.
+func (u *MetricsUpsertBulk) AddWorkflowMs(v int64) *MetricsUpsertBulk {
+	return u.Update(func(s *MetricsUpsert) {
+		s.AddWorkflowMs(v)
+	})
+}
+
+// UpdateWorkflowMs sets the "workflow_ms" field to the value that was provided on create.
+func (u *MetricsUpsertBulk) UpdateWorkflowMs() *MetricsUpsertBulk {
+	return u.Update(func(s *MetricsUpsert) {
+		s.UpdateWorkflowMs()
+	})
+}
+
+// SetIsolateMs sets the "isolate_ms" field.
+func (u *MetricsUpsertBulk) SetIsolateMs(v int64) *MetricsUpsertBulk {
+	return u.Update(func(s *MetricsUpsert) {
+		s.SetIsolateMs(v)
+	})
+}
+
+// AddIsolateMs adds v to the "isolate_ms" field.
+func (u *MetricsUpsertBulk) AddIsolateMs(v int64) *MetricsUpsertBulk {
+	return u.Update(func(s *MetricsUpsert) {
+		s.AddIsolateMs(v)
+	})
+}
+
+// UpdateIsolateMs sets the "isolate_ms" field to the value that was provided on create.
+func (u *MetricsUpsertBulk) UpdateIsolateMs() *MetricsUpsertBulk {
+	return u.Update(func(s *MetricsUpsert) {
+		s.UpdateIsolateMs()
+	})
+}
+
+// SetErrorCode sets the "error_code" field.
+func (u *MetricsUpsertBulk) SetErrorCode(v string) *MetricsUpsertBulk {
+	return u.Update(func(s *MetricsUpsert) {
+		s.SetErrorCode(v)
+	})
+}
+
+// UpdateErrorCode sets the "error_code" field to the value that was provided on create.
+func (u *MetricsUpsertBulk) UpdateErrorCode() *MetricsUpsertBulk {
+	return u.Update(func(s *MetricsUpsert) {
+		s.UpdateErrorCode()
+	})
+}
+
+// ClearErrorCode clears the value of the "error_code" field.
+func (u *MetricsUpsertBulk) ClearErrorCode() *MetricsUpsertBulk {
+	return u.Update(func(s *MetricsUpsert) {
+		s.ClearErrorCode()
+	})
+}
+
+// SetInvoker sets the "invoker" field.
+func (u *MetricsUpsertBulk) SetInvoker(v string) *MetricsUpsertBulk {
+	return u.Update(func(s *MetricsUpsert) {
+		s.SetInvoker(v)
+	})
+}
+
+// UpdateInvoker sets the "invoker" field to the value that was provided on create.
+func (u *MetricsUpsertBulk) UpdateInvoker() *MetricsUpsertBulk {
+	return u.Update(func(s *MetricsUpsert) {
+		s.UpdateInvoker()
+	})
+}
+
+// SetNext sets the "next" field.
+func (u *MetricsUpsertBulk) SetNext(v int8) *MetricsUpsertBulk {
+	return u.Update(func(s *MetricsUpsert) {
+		s.SetNext(v)
+	})
+}
+
+// AddNext adds v to the "next" field.
+func (u *MetricsUpsertBulk) AddNext(v int8) *MetricsUpsertBulk {
+	return u.Update(func(s *MetricsUpsert) {
+		s.AddNext(v)
+	})
+}
+
+// UpdateNext sets the "next" field to the value that was provided on create.
+func (u *MetricsUpsertBulk) UpdateNext() *MetricsUpsertBulk {
+	return u.Update(func(s *MetricsUpsert) {
+		s.UpdateNext()
+	})
+}
+
+// SetTransition sets the "transition" field.
+func (u *MetricsUpsertBulk) SetTransition(v string) *MetricsUpsertBulk {
+	return u.Update(func(s *MetricsUpsert) {
+		s.SetTransition(v)
+	})
+}
+
+// UpdateTransition sets the "transition" field to the value that was provided on create.
+func (u *MetricsUpsertBulk) UpdateTransition() *MetricsUpsertBulk {
+	return u.Update(func(s *MetricsUpsert) {
+		s.UpdateTransition()
+	})
+}
+
+// ClearTransition clears the value of the "transition" field.
+func (u *MetricsUpsertBulk) ClearTransition() *MetricsUpsertBulk {
+	return u.Update(func(s *MetricsUpsert) {
+		s.ClearTransition()
+	})
+}
+
+// Exec executes the query.
+func (u *MetricsUpsertBulk) Exec(ctx context.Context) error {
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the MetricsCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for MetricsCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *MetricsUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

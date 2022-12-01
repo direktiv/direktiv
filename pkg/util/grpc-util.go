@@ -1,17 +1,21 @@
 package util
 
 import (
+	"errors"
+	"fmt"
 	"net"
 	"strings"
 	"time"
 
+	"github.com/emicklei/go-restful/v3/log"
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 const maxSize = 134217728
 
-// GetEndpointTLS creates a grpc client
+// GetEndpointTLS creates a grpc client.
 func GetEndpointTLS(service string) (*grpc.ClientConn, error) {
 
 	var additionalCallOptions []grpc.CallOption
@@ -21,24 +25,25 @@ func GetEndpointTLS(service string) (*grpc.ClientConn, error) {
 		grpc_retry.WithPerRetryTimeout(1*time.Second))
 
 	var options []grpc.DialOption
-	options = append(options, grpc.WithInsecure(), grpc.WithBlock())
-
-	options = append(options,
-		grpc.WithDefaultCallOptions(additionalCallOptions...),
-	)
-
+	options = append(options, grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithBlock())
+	options = append(options, grpc.WithDefaultCallOptions(additionalCallOptions...))
 	options = append(options, globalGRPCDialOptions...)
 
-	return grpc.Dial(service, options...)
+	conn, err := grpc.Dial(service, options...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to connec to gRPC server: %w", err)
+	}
+
+	return conn, nil
 
 }
 
-// GrpcStart starts a grpc server
+// GrpcStart starts a grpc server.
 func GrpcStart(server **grpc.Server, name, bind string, register func(srv *grpc.Server)) error {
 
 	listener, err := net.Listen("tcp", bind)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to start tcp listener: %w", err)
 	}
 
 	additionalServerOptions := GrpcServerOptions(nil, nil)
@@ -47,7 +52,14 @@ func GrpcStart(server **grpc.Server, name, bind string, register func(srv *grpc.
 
 	register(*server)
 
-	go (*server).Serve(listener)
+	go func() {
+		err := (*server).Serve(listener)
+		if err != nil {
+			if !errors.Is(err, grpc.ErrServerStopped) {
+				log.Printf("gRPC server error: %v", err)
+			}
+		}
+	}()
 
 	return nil
 
@@ -96,7 +108,7 @@ func GrpcServerOptions(unaryInterceptor grpc.UnaryServerInterceptor, streamInter
 
 }
 
-// SanitizeAsField removes initial slash if one exists and returns the new value
+// SanitizeAsField removes initial slash if one exists and returns the new value.
 func SanitizeAsField(as string) string {
 	if strings.HasPrefix(as, "/") {
 		newas := strings.TrimPrefix(as, "/")

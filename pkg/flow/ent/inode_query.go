@@ -8,9 +8,11 @@ import (
 	"fmt"
 	"math"
 
+	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/direktiv/direktiv/pkg/flow/ent/annotation"
 	"github.com/direktiv/direktiv/pkg/flow/ent/inode"
 	"github.com/direktiv/direktiv/pkg/flow/ent/mirror"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
@@ -22,19 +24,20 @@ import (
 // InodeQuery is the builder for querying Inode entities.
 type InodeQuery struct {
 	config
-	limit      *int
-	offset     *int
-	unique     *bool
-	order      []OrderFunc
-	fields     []string
-	predicates []predicate.Inode
-	// eager-loading edges.
-	withNamespace *NamespaceQuery
-	withChildren  *InodeQuery
-	withParent    *InodeQuery
-	withWorkflow  *WorkflowQuery
-	withMirror    *MirrorQuery
-	withFKs       bool
+	limit           *int
+	offset          *int
+	unique          *bool
+	order           []OrderFunc
+	fields          []string
+	predicates      []predicate.Inode
+	withNamespace   *NamespaceQuery
+	withChildren    *InodeQuery
+	withParent      *InodeQuery
+	withWorkflow    *WorkflowQuery
+	withMirror      *MirrorQuery
+	withAnnotations *AnnotationQuery
+	withFKs         bool
+	modifiers       []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -174,6 +177,28 @@ func (iq *InodeQuery) QueryMirror() *MirrorQuery {
 			sqlgraph.From(inode.Table, inode.FieldID, selector),
 			sqlgraph.To(mirror.Table, mirror.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, false, inode.MirrorTable, inode.MirrorColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryAnnotations chains the current query on the "annotations" edge.
+func (iq *InodeQuery) QueryAnnotations() *AnnotationQuery {
+	query := &AnnotationQuery{config: iq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := iq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := iq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(inode.Table, inode.FieldID, selector),
+			sqlgraph.To(annotation.Table, annotation.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, inode.AnnotationsTable, inode.AnnotationsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
 		return fromU, nil
@@ -357,16 +382,17 @@ func (iq *InodeQuery) Clone() *InodeQuery {
 		return nil
 	}
 	return &InodeQuery{
-		config:        iq.config,
-		limit:         iq.limit,
-		offset:        iq.offset,
-		order:         append([]OrderFunc{}, iq.order...),
-		predicates:    append([]predicate.Inode{}, iq.predicates...),
-		withNamespace: iq.withNamespace.Clone(),
-		withChildren:  iq.withChildren.Clone(),
-		withParent:    iq.withParent.Clone(),
-		withWorkflow:  iq.withWorkflow.Clone(),
-		withMirror:    iq.withMirror.Clone(),
+		config:          iq.config,
+		limit:           iq.limit,
+		offset:          iq.offset,
+		order:           append([]OrderFunc{}, iq.order...),
+		predicates:      append([]predicate.Inode{}, iq.predicates...),
+		withNamespace:   iq.withNamespace.Clone(),
+		withChildren:    iq.withChildren.Clone(),
+		withParent:      iq.withParent.Clone(),
+		withWorkflow:    iq.withWorkflow.Clone(),
+		withMirror:      iq.withMirror.Clone(),
+		withAnnotations: iq.withAnnotations.Clone(),
 		// clone intermediate query.
 		sql:    iq.sql.Clone(),
 		path:   iq.path,
@@ -429,6 +455,17 @@ func (iq *InodeQuery) WithMirror(opts ...func(*MirrorQuery)) *InodeQuery {
 	return iq
 }
 
+// WithAnnotations tells the query-builder to eager-load the nodes that are connected to
+// the "annotations" edge. The optional arguments are used to configure the query builder of the edge.
+func (iq *InodeQuery) WithAnnotations(opts ...func(*AnnotationQuery)) *InodeQuery {
+	query := &AnnotationQuery{config: iq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	iq.withAnnotations = query
+	return iq
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
@@ -443,7 +480,6 @@ func (iq *InodeQuery) WithMirror(opts ...func(*MirrorQuery)) *InodeQuery {
 //		GroupBy(inode.FieldCreatedAt).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-//
 func (iq *InodeQuery) GroupBy(field string, fields ...string) *InodeGroupBy {
 	grbuild := &InodeGroupBy{config: iq.config}
 	grbuild.fields = append([]string{field}, fields...)
@@ -470,13 +506,17 @@ func (iq *InodeQuery) GroupBy(field string, fields ...string) *InodeGroupBy {
 //	client.Inode.Query().
 //		Select(inode.FieldCreatedAt).
 //		Scan(ctx, &v)
-//
 func (iq *InodeQuery) Select(fields ...string) *InodeSelect {
 	iq.fields = append(iq.fields, fields...)
 	selbuild := &InodeSelect{InodeQuery: iq}
 	selbuild.label = inode.Label
 	selbuild.flds, selbuild.scan = &iq.fields, selbuild.Scan
 	return selbuild
+}
+
+// Aggregate returns a InodeSelect configured with the given aggregations.
+func (iq *InodeQuery) Aggregate(fns ...AggregateFunc) *InodeSelect {
+	return iq.Select().Aggregate(fns...)
 }
 
 func (iq *InodeQuery) prepareQuery(ctx context.Context) error {
@@ -500,12 +540,13 @@ func (iq *InodeQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Inode,
 		nodes       = []*Inode{}
 		withFKs     = iq.withFKs
 		_spec       = iq.querySpec()
-		loadedTypes = [5]bool{
+		loadedTypes = [6]bool{
 			iq.withNamespace != nil,
 			iq.withChildren != nil,
 			iq.withParent != nil,
 			iq.withWorkflow != nil,
 			iq.withMirror != nil,
+			iq.withAnnotations != nil,
 		}
 	)
 	if iq.withNamespace != nil || iq.withParent != nil {
@@ -514,14 +555,17 @@ func (iq *InodeQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Inode,
 	if withFKs {
 		_spec.Node.Columns = append(_spec.Node.Columns, inode.ForeignKeys...)
 	}
-	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
+	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Inode).scanValues(nil, columns)
 	}
-	_spec.Assign = func(columns []string, values []interface{}) error {
+	_spec.Assign = func(columns []string, values []any) error {
 		node := &Inode{config: iq.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
+	}
+	if len(iq.modifiers) > 0 {
+		_spec.Modifiers = iq.modifiers
 	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
@@ -532,155 +576,229 @@ func (iq *InodeQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Inode,
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-
 	if query := iq.withNamespace; query != nil {
-		ids := make([]uuid.UUID, 0, len(nodes))
-		nodeids := make(map[uuid.UUID][]*Inode)
-		for i := range nodes {
-			if nodes[i].namespace_inodes == nil {
-				continue
-			}
-			fk := *nodes[i].namespace_inodes
-			if _, ok := nodeids[fk]; !ok {
-				ids = append(ids, fk)
-			}
-			nodeids[fk] = append(nodeids[fk], nodes[i])
-		}
-		query.Where(namespace.IDIn(ids...))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := iq.loadNamespace(ctx, query, nodes, nil,
+			func(n *Inode, e *Namespace) { n.Edges.Namespace = e }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			nodes, ok := nodeids[n.ID]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "namespace_inodes" returned %v`, n.ID)
-			}
-			for i := range nodes {
-				nodes[i].Edges.Namespace = n
-			}
-		}
 	}
-
 	if query := iq.withChildren; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[uuid.UUID]*Inode)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Children = []*Inode{}
-		}
-		query.withFKs = true
-		query.Where(predicate.Inode(func(s *sql.Selector) {
-			s.Where(sql.InValues(inode.ChildrenColumn, fks...))
-		}))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := iq.loadChildren(ctx, query, nodes,
+			func(n *Inode) { n.Edges.Children = []*Inode{} },
+			func(n *Inode, e *Inode) { n.Edges.Children = append(n.Edges.Children, e) }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			fk := n.inode_children
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "inode_children" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "inode_children" returned %v for node %v`, *fk, n.ID)
-			}
-			node.Edges.Children = append(node.Edges.Children, n)
-		}
 	}
-
 	if query := iq.withParent; query != nil {
-		ids := make([]uuid.UUID, 0, len(nodes))
-		nodeids := make(map[uuid.UUID][]*Inode)
-		for i := range nodes {
-			if nodes[i].inode_children == nil {
-				continue
-			}
-			fk := *nodes[i].inode_children
-			if _, ok := nodeids[fk]; !ok {
-				ids = append(ids, fk)
-			}
-			nodeids[fk] = append(nodeids[fk], nodes[i])
-		}
-		query.Where(inode.IDIn(ids...))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := iq.loadParent(ctx, query, nodes, nil,
+			func(n *Inode, e *Inode) { n.Edges.Parent = e }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			nodes, ok := nodeids[n.ID]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "inode_children" returned %v`, n.ID)
-			}
-			for i := range nodes {
-				nodes[i].Edges.Parent = n
-			}
-		}
 	}
-
 	if query := iq.withWorkflow; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[uuid.UUID]*Inode)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-		}
-		query.withFKs = true
-		query.Where(predicate.Workflow(func(s *sql.Selector) {
-			s.Where(sql.InValues(inode.WorkflowColumn, fks...))
-		}))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := iq.loadWorkflow(ctx, query, nodes, nil,
+			func(n *Inode, e *Workflow) { n.Edges.Workflow = e }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			fk := n.inode_workflow
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "inode_workflow" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "inode_workflow" returned %v for node %v`, *fk, n.ID)
-			}
-			node.Edges.Workflow = n
-		}
 	}
-
 	if query := iq.withMirror; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[uuid.UUID]*Inode)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-		}
-		query.withFKs = true
-		query.Where(predicate.Mirror(func(s *sql.Selector) {
-			s.Where(sql.InValues(inode.MirrorColumn, fks...))
-		}))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := iq.loadMirror(ctx, query, nodes, nil,
+			func(n *Inode, e *Mirror) { n.Edges.Mirror = e }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			fk := n.inode_mirror
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "inode_mirror" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "inode_mirror" returned %v for node %v`, *fk, n.ID)
-			}
-			node.Edges.Mirror = n
+	}
+	if query := iq.withAnnotations; query != nil {
+		if err := iq.loadAnnotations(ctx, query, nodes,
+			func(n *Inode) { n.Edges.Annotations = []*Annotation{} },
+			func(n *Inode, e *Annotation) { n.Edges.Annotations = append(n.Edges.Annotations, e) }); err != nil {
+			return nil, err
 		}
 	}
-
 	return nodes, nil
+}
+
+func (iq *InodeQuery) loadNamespace(ctx context.Context, query *NamespaceQuery, nodes []*Inode, init func(*Inode), assign func(*Inode, *Namespace)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Inode)
+	for i := range nodes {
+		if nodes[i].namespace_inodes == nil {
+			continue
+		}
+		fk := *nodes[i].namespace_inodes
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	query.Where(namespace.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "namespace_inodes" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (iq *InodeQuery) loadChildren(ctx context.Context, query *InodeQuery, nodes []*Inode, init func(*Inode), assign func(*Inode, *Inode)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Inode)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Inode(func(s *sql.Selector) {
+		s.Where(sql.InValues(inode.ChildrenColumn, fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.inode_children
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "inode_children" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "inode_children" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (iq *InodeQuery) loadParent(ctx context.Context, query *InodeQuery, nodes []*Inode, init func(*Inode), assign func(*Inode, *Inode)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Inode)
+	for i := range nodes {
+		if nodes[i].inode_children == nil {
+			continue
+		}
+		fk := *nodes[i].inode_children
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	query.Where(inode.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "inode_children" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (iq *InodeQuery) loadWorkflow(ctx context.Context, query *WorkflowQuery, nodes []*Inode, init func(*Inode), assign func(*Inode, *Workflow)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Inode)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+	}
+	query.withFKs = true
+	query.Where(predicate.Workflow(func(s *sql.Selector) {
+		s.Where(sql.InValues(inode.WorkflowColumn, fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.inode_workflow
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "inode_workflow" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "inode_workflow" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (iq *InodeQuery) loadMirror(ctx context.Context, query *MirrorQuery, nodes []*Inode, init func(*Inode), assign func(*Inode, *Mirror)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Inode)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+	}
+	query.withFKs = true
+	query.Where(predicate.Mirror(func(s *sql.Selector) {
+		s.Where(sql.InValues(inode.MirrorColumn, fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.inode_mirror
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "inode_mirror" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "inode_mirror" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (iq *InodeQuery) loadAnnotations(ctx context.Context, query *AnnotationQuery, nodes []*Inode, init func(*Inode), assign func(*Inode, *Annotation)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Inode)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Annotation(func(s *sql.Selector) {
+		s.Where(sql.InValues(inode.AnnotationsColumn, fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.inode_annotations
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "inode_annotations" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "inode_annotations" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
 }
 
 func (iq *InodeQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := iq.querySpec()
+	if len(iq.modifiers) > 0 {
+		_spec.Modifiers = iq.modifiers
+	}
 	_spec.Node.Columns = iq.fields
 	if len(iq.fields) > 0 {
 		_spec.Unique = iq.unique != nil && *iq.unique
@@ -689,11 +807,14 @@ func (iq *InodeQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (iq *InodeQuery) sqlExist(ctx context.Context) (bool, error) {
-	n, err := iq.sqlCount(ctx)
-	if err != nil {
+	switch _, err := iq.FirstID(ctx); {
+	case IsNotFound(err):
+		return false, nil
+	case err != nil:
 		return false, fmt.Errorf("ent: check existence: %w", err)
+	default:
+		return true, nil
 	}
-	return n > 0, nil
 }
 
 func (iq *InodeQuery) querySpec() *sqlgraph.QuerySpec {
@@ -759,6 +880,9 @@ func (iq *InodeQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if iq.unique != nil && *iq.unique {
 		selector.Distinct()
 	}
+	for _, m := range iq.modifiers {
+		m(selector)
+	}
 	for _, p := range iq.predicates {
 		p(selector)
 	}
@@ -774,6 +898,38 @@ func (iq *InodeQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector.Limit(*limit)
 	}
 	return selector
+}
+
+// ForUpdate locks the selected rows against concurrent updates, and prevent them from being
+// updated, deleted or "selected ... for update" by other sessions, until the transaction is
+// either committed or rolled-back.
+func (iq *InodeQuery) ForUpdate(opts ...sql.LockOption) *InodeQuery {
+	if iq.driver.Dialect() == dialect.Postgres {
+		iq.Unique(false)
+	}
+	iq.modifiers = append(iq.modifiers, func(s *sql.Selector) {
+		s.ForUpdate(opts...)
+	})
+	return iq
+}
+
+// ForShare behaves similarly to ForUpdate, except that it acquires a shared mode lock
+// on any rows that are read. Other sessions can read the rows, but cannot modify them
+// until your transaction commits.
+func (iq *InodeQuery) ForShare(opts ...sql.LockOption) *InodeQuery {
+	if iq.driver.Dialect() == dialect.Postgres {
+		iq.Unique(false)
+	}
+	iq.modifiers = append(iq.modifiers, func(s *sql.Selector) {
+		s.ForShare(opts...)
+	})
+	return iq
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (iq *InodeQuery) Modify(modifiers ...func(s *sql.Selector)) *InodeSelect {
+	iq.modifiers = append(iq.modifiers, modifiers...)
+	return iq.Select()
 }
 
 // InodeGroupBy is the group-by builder for Inode entities.
@@ -794,7 +950,7 @@ func (igb *InodeGroupBy) Aggregate(fns ...AggregateFunc) *InodeGroupBy {
 }
 
 // Scan applies the group-by query and scans the result into the given value.
-func (igb *InodeGroupBy) Scan(ctx context.Context, v interface{}) error {
+func (igb *InodeGroupBy) Scan(ctx context.Context, v any) error {
 	query, err := igb.path(ctx)
 	if err != nil {
 		return err
@@ -803,7 +959,7 @@ func (igb *InodeGroupBy) Scan(ctx context.Context, v interface{}) error {
 	return igb.sqlScan(ctx, v)
 }
 
-func (igb *InodeGroupBy) sqlScan(ctx context.Context, v interface{}) error {
+func (igb *InodeGroupBy) sqlScan(ctx context.Context, v any) error {
 	for _, f := range igb.fields {
 		if !inode.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for group-by", f)}
@@ -828,8 +984,6 @@ func (igb *InodeGroupBy) sqlQuery() *sql.Selector {
 	for _, fn := range igb.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	// If no columns were selected in a custom aggregation function, the default
-	// selection is the fields used for "group-by", and the aggregation functions.
 	if len(selector.SelectedColumns()) == 0 {
 		columns := make([]string, 0, len(igb.fields)+len(igb.fns))
 		for _, f := range igb.fields {
@@ -849,8 +1003,14 @@ type InodeSelect struct {
 	sql *sql.Selector
 }
 
+// Aggregate adds the given aggregation functions to the selector query.
+func (is *InodeSelect) Aggregate(fns ...AggregateFunc) *InodeSelect {
+	is.fns = append(is.fns, fns...)
+	return is
+}
+
 // Scan applies the selector query and scans the result into the given value.
-func (is *InodeSelect) Scan(ctx context.Context, v interface{}) error {
+func (is *InodeSelect) Scan(ctx context.Context, v any) error {
 	if err := is.prepareQuery(ctx); err != nil {
 		return err
 	}
@@ -858,7 +1018,17 @@ func (is *InodeSelect) Scan(ctx context.Context, v interface{}) error {
 	return is.sqlScan(ctx, v)
 }
 
-func (is *InodeSelect) sqlScan(ctx context.Context, v interface{}) error {
+func (is *InodeSelect) sqlScan(ctx context.Context, v any) error {
+	aggregation := make([]string, 0, len(is.fns))
+	for _, fn := range is.fns {
+		aggregation = append(aggregation, fn(is.sql))
+	}
+	switch n := len(*is.selector.flds); {
+	case n == 0 && len(aggregation) > 0:
+		is.sql.Select(aggregation...)
+	case n != 0 && len(aggregation) > 0:
+		is.sql.AppendSelect(aggregation...)
+	}
 	rows := &sql.Rows{}
 	query, args := is.sql.Query()
 	if err := is.driver.Query(ctx, query, args, rows); err != nil {
@@ -866,4 +1036,10 @@ func (is *InodeSelect) sqlScan(ctx context.Context, v interface{}) error {
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (is *InodeSelect) Modify(modifiers ...func(s *sql.Selector)) *InodeSelect {
+	is.modifiers = append(is.modifiers, modifiers...)
+	return is
 }

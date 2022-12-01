@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math"
 
+	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -22,18 +23,18 @@ import (
 // VarRefQuery is the builder for querying VarRef entities.
 type VarRefQuery struct {
 	config
-	limit      *int
-	offset     *int
-	unique     *bool
-	order      []OrderFunc
-	fields     []string
-	predicates []predicate.VarRef
-	// eager-loading edges.
+	limit         *int
+	offset        *int
+	unique        *bool
+	order         []OrderFunc
+	fields        []string
+	predicates    []predicate.VarRef
 	withVardata   *VarDataQuery
 	withNamespace *NamespaceQuery
 	withWorkflow  *WorkflowQuery
 	withInstance  *InstanceQuery
 	withFKs       bool
+	modifiers     []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -408,7 +409,6 @@ func (vrq *VarRefQuery) WithInstance(opts ...func(*InstanceQuery)) *VarRefQuery 
 //		GroupBy(varref.FieldName).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-//
 func (vrq *VarRefQuery) GroupBy(field string, fields ...string) *VarRefGroupBy {
 	grbuild := &VarRefGroupBy{config: vrq.config}
 	grbuild.fields = append([]string{field}, fields...)
@@ -435,13 +435,17 @@ func (vrq *VarRefQuery) GroupBy(field string, fields ...string) *VarRefGroupBy {
 //	client.VarRef.Query().
 //		Select(varref.FieldName).
 //		Scan(ctx, &v)
-//
 func (vrq *VarRefQuery) Select(fields ...string) *VarRefSelect {
 	vrq.fields = append(vrq.fields, fields...)
 	selbuild := &VarRefSelect{VarRefQuery: vrq}
 	selbuild.label = varref.Label
 	selbuild.flds, selbuild.scan = &vrq.fields, selbuild.Scan
 	return selbuild
+}
+
+// Aggregate returns a VarRefSelect configured with the given aggregations.
+func (vrq *VarRefQuery) Aggregate(fns ...AggregateFunc) *VarRefSelect {
+	return vrq.Select().Aggregate(fns...)
 }
 
 func (vrq *VarRefQuery) prepareQuery(ctx context.Context) error {
@@ -478,14 +482,17 @@ func (vrq *VarRefQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*VarR
 	if withFKs {
 		_spec.Node.Columns = append(_spec.Node.Columns, varref.ForeignKeys...)
 	}
-	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
+	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*VarRef).scanValues(nil, columns)
 	}
-	_spec.Assign = func(columns []string, values []interface{}) error {
+	_spec.Assign = func(columns []string, values []any) error {
 		node := &VarRef{config: vrq.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
+	}
+	if len(vrq.modifiers) > 0 {
+		_spec.Modifiers = vrq.modifiers
 	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
@@ -496,128 +503,155 @@ func (vrq *VarRefQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*VarR
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-
 	if query := vrq.withVardata; query != nil {
-		ids := make([]uuid.UUID, 0, len(nodes))
-		nodeids := make(map[uuid.UUID][]*VarRef)
-		for i := range nodes {
-			if nodes[i].var_data_varrefs == nil {
-				continue
-			}
-			fk := *nodes[i].var_data_varrefs
-			if _, ok := nodeids[fk]; !ok {
-				ids = append(ids, fk)
-			}
-			nodeids[fk] = append(nodeids[fk], nodes[i])
-		}
-		query.Where(vardata.IDIn(ids...))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := vrq.loadVardata(ctx, query, nodes, nil,
+			func(n *VarRef, e *VarData) { n.Edges.Vardata = e }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			nodes, ok := nodeids[n.ID]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "var_data_varrefs" returned %v`, n.ID)
-			}
-			for i := range nodes {
-				nodes[i].Edges.Vardata = n
-			}
-		}
 	}
-
 	if query := vrq.withNamespace; query != nil {
-		ids := make([]uuid.UUID, 0, len(nodes))
-		nodeids := make(map[uuid.UUID][]*VarRef)
-		for i := range nodes {
-			if nodes[i].namespace_vars == nil {
-				continue
-			}
-			fk := *nodes[i].namespace_vars
-			if _, ok := nodeids[fk]; !ok {
-				ids = append(ids, fk)
-			}
-			nodeids[fk] = append(nodeids[fk], nodes[i])
-		}
-		query.Where(namespace.IDIn(ids...))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := vrq.loadNamespace(ctx, query, nodes, nil,
+			func(n *VarRef, e *Namespace) { n.Edges.Namespace = e }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			nodes, ok := nodeids[n.ID]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "namespace_vars" returned %v`, n.ID)
-			}
-			for i := range nodes {
-				nodes[i].Edges.Namespace = n
-			}
-		}
 	}
-
 	if query := vrq.withWorkflow; query != nil {
-		ids := make([]uuid.UUID, 0, len(nodes))
-		nodeids := make(map[uuid.UUID][]*VarRef)
-		for i := range nodes {
-			if nodes[i].workflow_vars == nil {
-				continue
-			}
-			fk := *nodes[i].workflow_vars
-			if _, ok := nodeids[fk]; !ok {
-				ids = append(ids, fk)
-			}
-			nodeids[fk] = append(nodeids[fk], nodes[i])
-		}
-		query.Where(workflow.IDIn(ids...))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := vrq.loadWorkflow(ctx, query, nodes, nil,
+			func(n *VarRef, e *Workflow) { n.Edges.Workflow = e }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			nodes, ok := nodeids[n.ID]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "workflow_vars" returned %v`, n.ID)
-			}
-			for i := range nodes {
-				nodes[i].Edges.Workflow = n
-			}
-		}
 	}
-
 	if query := vrq.withInstance; query != nil {
-		ids := make([]uuid.UUID, 0, len(nodes))
-		nodeids := make(map[uuid.UUID][]*VarRef)
-		for i := range nodes {
-			if nodes[i].instance_vars == nil {
-				continue
-			}
-			fk := *nodes[i].instance_vars
-			if _, ok := nodeids[fk]; !ok {
-				ids = append(ids, fk)
-			}
-			nodeids[fk] = append(nodeids[fk], nodes[i])
-		}
-		query.Where(instance.IDIn(ids...))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := vrq.loadInstance(ctx, query, nodes, nil,
+			func(n *VarRef, e *Instance) { n.Edges.Instance = e }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			nodes, ok := nodeids[n.ID]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "instance_vars" returned %v`, n.ID)
-			}
-			for i := range nodes {
-				nodes[i].Edges.Instance = n
-			}
+	}
+	return nodes, nil
+}
+
+func (vrq *VarRefQuery) loadVardata(ctx context.Context, query *VarDataQuery, nodes []*VarRef, init func(*VarRef), assign func(*VarRef, *VarData)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*VarRef)
+	for i := range nodes {
+		if nodes[i].var_data_varrefs == nil {
+			continue
+		}
+		fk := *nodes[i].var_data_varrefs
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	query.Where(vardata.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "var_data_varrefs" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
 		}
 	}
-
-	return nodes, nil
+	return nil
+}
+func (vrq *VarRefQuery) loadNamespace(ctx context.Context, query *NamespaceQuery, nodes []*VarRef, init func(*VarRef), assign func(*VarRef, *Namespace)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*VarRef)
+	for i := range nodes {
+		if nodes[i].namespace_vars == nil {
+			continue
+		}
+		fk := *nodes[i].namespace_vars
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	query.Where(namespace.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "namespace_vars" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (vrq *VarRefQuery) loadWorkflow(ctx context.Context, query *WorkflowQuery, nodes []*VarRef, init func(*VarRef), assign func(*VarRef, *Workflow)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*VarRef)
+	for i := range nodes {
+		if nodes[i].workflow_vars == nil {
+			continue
+		}
+		fk := *nodes[i].workflow_vars
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	query.Where(workflow.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "workflow_vars" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (vrq *VarRefQuery) loadInstance(ctx context.Context, query *InstanceQuery, nodes []*VarRef, init func(*VarRef), assign func(*VarRef, *Instance)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*VarRef)
+	for i := range nodes {
+		if nodes[i].instance_vars == nil {
+			continue
+		}
+		fk := *nodes[i].instance_vars
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	query.Where(instance.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "instance_vars" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
 }
 
 func (vrq *VarRefQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := vrq.querySpec()
+	if len(vrq.modifiers) > 0 {
+		_spec.Modifiers = vrq.modifiers
+	}
 	_spec.Node.Columns = vrq.fields
 	if len(vrq.fields) > 0 {
 		_spec.Unique = vrq.unique != nil && *vrq.unique
@@ -626,11 +660,14 @@ func (vrq *VarRefQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (vrq *VarRefQuery) sqlExist(ctx context.Context) (bool, error) {
-	n, err := vrq.sqlCount(ctx)
-	if err != nil {
+	switch _, err := vrq.FirstID(ctx); {
+	case IsNotFound(err):
+		return false, nil
+	case err != nil:
 		return false, fmt.Errorf("ent: check existence: %w", err)
+	default:
+		return true, nil
 	}
-	return n > 0, nil
 }
 
 func (vrq *VarRefQuery) querySpec() *sqlgraph.QuerySpec {
@@ -696,6 +733,9 @@ func (vrq *VarRefQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if vrq.unique != nil && *vrq.unique {
 		selector.Distinct()
 	}
+	for _, m := range vrq.modifiers {
+		m(selector)
+	}
 	for _, p := range vrq.predicates {
 		p(selector)
 	}
@@ -711,6 +751,38 @@ func (vrq *VarRefQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector.Limit(*limit)
 	}
 	return selector
+}
+
+// ForUpdate locks the selected rows against concurrent updates, and prevent them from being
+// updated, deleted or "selected ... for update" by other sessions, until the transaction is
+// either committed or rolled-back.
+func (vrq *VarRefQuery) ForUpdate(opts ...sql.LockOption) *VarRefQuery {
+	if vrq.driver.Dialect() == dialect.Postgres {
+		vrq.Unique(false)
+	}
+	vrq.modifiers = append(vrq.modifiers, func(s *sql.Selector) {
+		s.ForUpdate(opts...)
+	})
+	return vrq
+}
+
+// ForShare behaves similarly to ForUpdate, except that it acquires a shared mode lock
+// on any rows that are read. Other sessions can read the rows, but cannot modify them
+// until your transaction commits.
+func (vrq *VarRefQuery) ForShare(opts ...sql.LockOption) *VarRefQuery {
+	if vrq.driver.Dialect() == dialect.Postgres {
+		vrq.Unique(false)
+	}
+	vrq.modifiers = append(vrq.modifiers, func(s *sql.Selector) {
+		s.ForShare(opts...)
+	})
+	return vrq
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (vrq *VarRefQuery) Modify(modifiers ...func(s *sql.Selector)) *VarRefSelect {
+	vrq.modifiers = append(vrq.modifiers, modifiers...)
+	return vrq.Select()
 }
 
 // VarRefGroupBy is the group-by builder for VarRef entities.
@@ -731,7 +803,7 @@ func (vrgb *VarRefGroupBy) Aggregate(fns ...AggregateFunc) *VarRefGroupBy {
 }
 
 // Scan applies the group-by query and scans the result into the given value.
-func (vrgb *VarRefGroupBy) Scan(ctx context.Context, v interface{}) error {
+func (vrgb *VarRefGroupBy) Scan(ctx context.Context, v any) error {
 	query, err := vrgb.path(ctx)
 	if err != nil {
 		return err
@@ -740,7 +812,7 @@ func (vrgb *VarRefGroupBy) Scan(ctx context.Context, v interface{}) error {
 	return vrgb.sqlScan(ctx, v)
 }
 
-func (vrgb *VarRefGroupBy) sqlScan(ctx context.Context, v interface{}) error {
+func (vrgb *VarRefGroupBy) sqlScan(ctx context.Context, v any) error {
 	for _, f := range vrgb.fields {
 		if !varref.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for group-by", f)}
@@ -765,8 +837,6 @@ func (vrgb *VarRefGroupBy) sqlQuery() *sql.Selector {
 	for _, fn := range vrgb.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	// If no columns were selected in a custom aggregation function, the default
-	// selection is the fields used for "group-by", and the aggregation functions.
 	if len(selector.SelectedColumns()) == 0 {
 		columns := make([]string, 0, len(vrgb.fields)+len(vrgb.fns))
 		for _, f := range vrgb.fields {
@@ -786,8 +856,14 @@ type VarRefSelect struct {
 	sql *sql.Selector
 }
 
+// Aggregate adds the given aggregation functions to the selector query.
+func (vrs *VarRefSelect) Aggregate(fns ...AggregateFunc) *VarRefSelect {
+	vrs.fns = append(vrs.fns, fns...)
+	return vrs
+}
+
 // Scan applies the selector query and scans the result into the given value.
-func (vrs *VarRefSelect) Scan(ctx context.Context, v interface{}) error {
+func (vrs *VarRefSelect) Scan(ctx context.Context, v any) error {
 	if err := vrs.prepareQuery(ctx); err != nil {
 		return err
 	}
@@ -795,7 +871,17 @@ func (vrs *VarRefSelect) Scan(ctx context.Context, v interface{}) error {
 	return vrs.sqlScan(ctx, v)
 }
 
-func (vrs *VarRefSelect) sqlScan(ctx context.Context, v interface{}) error {
+func (vrs *VarRefSelect) sqlScan(ctx context.Context, v any) error {
+	aggregation := make([]string, 0, len(vrs.fns))
+	for _, fn := range vrs.fns {
+		aggregation = append(aggregation, fn(vrs.sql))
+	}
+	switch n := len(*vrs.selector.flds); {
+	case n == 0 && len(aggregation) > 0:
+		vrs.sql.Select(aggregation...)
+	case n != 0 && len(aggregation) > 0:
+		vrs.sql.AppendSelect(aggregation...)
+	}
 	rows := &sql.Rows{}
 	query, args := vrs.sql.Query()
 	if err := vrs.driver.Query(ctx, query, args, rows); err != nil {
@@ -803,4 +889,10 @@ func (vrs *VarRefSelect) sqlScan(ctx context.Context, v interface{}) error {
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (vrs *VarRefSelect) Modify(modifiers ...func(s *sql.Selector)) *VarRefSelect {
+	vrs.modifiers = append(vrs.modifiers, modifiers...)
+	return vrs
 }

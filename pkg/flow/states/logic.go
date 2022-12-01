@@ -33,7 +33,7 @@ func StateLogic(instance Instance, state model.State) (Logic, error) {
 
 	logic, err := init(instance, state)
 	if err != nil {
-		return nil, fmt.Errorf("cannot initialize state logic: %v", err)
+		return nil, fmt.Errorf("cannot initialize state logic: %w", err)
 	}
 
 	return logic, nil

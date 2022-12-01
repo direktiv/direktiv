@@ -50,9 +50,15 @@ type NamespaceEdges struct {
 	Cloudevents []*CloudEvents `json:"cloudevents,omitempty"`
 	// Namespacelisteners holds the value of the namespacelisteners edge.
 	Namespacelisteners []*Events `json:"namespacelisteners,omitempty"`
+	// Annotations holds the value of the annotations edge.
+	Annotations []*Annotation `json:"annotations,omitempty"`
+	// Cloudeventfilters holds the value of the cloudeventfilters edge.
+	Cloudeventfilters []*CloudEventFilters `json:"cloudeventfilters,omitempty"`
+	// Services holds the value of the services edge.
+	Services []*Services `json:"services,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [9]bool
+	loadedTypes [12]bool
 }
 
 // InodesOrErr returns the Inodes value or an error if the edge
@@ -136,9 +142,36 @@ func (e NamespaceEdges) NamespacelistenersOrErr() ([]*Events, error) {
 	return nil, &NotLoadedError{edge: "namespacelisteners"}
 }
 
+// AnnotationsOrErr returns the Annotations value or an error if the edge
+// was not loaded in eager-loading.
+func (e NamespaceEdges) AnnotationsOrErr() ([]*Annotation, error) {
+	if e.loadedTypes[9] {
+		return e.Annotations, nil
+	}
+	return nil, &NotLoadedError{edge: "annotations"}
+}
+
+// CloudeventfiltersOrErr returns the Cloudeventfilters value or an error if the edge
+// was not loaded in eager-loading.
+func (e NamespaceEdges) CloudeventfiltersOrErr() ([]*CloudEventFilters, error) {
+	if e.loadedTypes[10] {
+		return e.Cloudeventfilters, nil
+	}
+	return nil, &NotLoadedError{edge: "cloudeventfilters"}
+}
+
+// ServicesOrErr returns the Services value or an error if the edge
+// was not loaded in eager-loading.
+func (e NamespaceEdges) ServicesOrErr() ([]*Services, error) {
+	if e.loadedTypes[11] {
+		return e.Services, nil
+	}
+	return nil, &NotLoadedError{edge: "services"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
-func (*Namespace) scanValues(columns []string) ([]interface{}, error) {
-	values := make([]interface{}, len(columns))
+func (*Namespace) scanValues(columns []string) ([]any, error) {
+	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
 		case namespace.FieldConfig, namespace.FieldName:
@@ -156,7 +189,7 @@ func (*Namespace) scanValues(columns []string) ([]interface{}, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the Namespace fields.
-func (n *Namespace) assignValues(columns []string, values []interface{}) error {
+func (n *Namespace) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -240,6 +273,21 @@ func (n *Namespace) QueryCloudevents() *CloudEventsQuery {
 // QueryNamespacelisteners queries the "namespacelisteners" edge of the Namespace entity.
 func (n *Namespace) QueryNamespacelisteners() *EventsQuery {
 	return (&NamespaceClient{config: n.config}).QueryNamespacelisteners(n)
+}
+
+// QueryAnnotations queries the "annotations" edge of the Namespace entity.
+func (n *Namespace) QueryAnnotations() *AnnotationQuery {
+	return (&NamespaceClient{config: n.config}).QueryAnnotations(n)
+}
+
+// QueryCloudeventfilters queries the "cloudeventfilters" edge of the Namespace entity.
+func (n *Namespace) QueryCloudeventfilters() *CloudEventFiltersQuery {
+	return (&NamespaceClient{config: n.config}).QueryCloudeventfilters(n)
+}
+
+// QueryServices queries the "services" edge of the Namespace entity.
+func (n *Namespace) QueryServices() *ServicesQuery {
+	return (&NamespaceClient{config: n.config}).QueryServices(n)
 }
 
 // Update returns a builder for updating this Namespace.

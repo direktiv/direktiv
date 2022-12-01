@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math"
 
+	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -20,16 +21,16 @@ import (
 // RouteQuery is the builder for querying Route entities.
 type RouteQuery struct {
 	config
-	limit      *int
-	offset     *int
-	unique     *bool
-	order      []OrderFunc
-	fields     []string
-	predicates []predicate.Route
-	// eager-loading edges.
+	limit        *int
+	offset       *int
+	unique       *bool
+	order        []OrderFunc
+	fields       []string
+	predicates   []predicate.Route
 	withWorkflow *WorkflowQuery
 	withRef      *RefQuery
 	withFKs      bool
+	modifiers    []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -336,7 +337,6 @@ func (rq *RouteQuery) WithRef(opts ...func(*RefQuery)) *RouteQuery {
 //		GroupBy(route.FieldWeight).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-//
 func (rq *RouteQuery) GroupBy(field string, fields ...string) *RouteGroupBy {
 	grbuild := &RouteGroupBy{config: rq.config}
 	grbuild.fields = append([]string{field}, fields...)
@@ -363,13 +363,17 @@ func (rq *RouteQuery) GroupBy(field string, fields ...string) *RouteGroupBy {
 //	client.Route.Query().
 //		Select(route.FieldWeight).
 //		Scan(ctx, &v)
-//
 func (rq *RouteQuery) Select(fields ...string) *RouteSelect {
 	rq.fields = append(rq.fields, fields...)
 	selbuild := &RouteSelect{RouteQuery: rq}
 	selbuild.label = route.Label
 	selbuild.flds, selbuild.scan = &rq.fields, selbuild.Scan
 	return selbuild
+}
+
+// Aggregate returns a RouteSelect configured with the given aggregations.
+func (rq *RouteQuery) Aggregate(fns ...AggregateFunc) *RouteSelect {
+	return rq.Select().Aggregate(fns...)
 }
 
 func (rq *RouteQuery) prepareQuery(ctx context.Context) error {
@@ -404,14 +408,17 @@ func (rq *RouteQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Route,
 	if withFKs {
 		_spec.Node.Columns = append(_spec.Node.Columns, route.ForeignKeys...)
 	}
-	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
+	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Route).scanValues(nil, columns)
 	}
-	_spec.Assign = func(columns []string, values []interface{}) error {
+	_spec.Assign = func(columns []string, values []any) error {
 		node := &Route{config: rq.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
+	}
+	if len(rq.modifiers) > 0 {
+		_spec.Modifiers = rq.modifiers
 	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
@@ -422,70 +429,85 @@ func (rq *RouteQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Route,
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-
 	if query := rq.withWorkflow; query != nil {
-		ids := make([]uuid.UUID, 0, len(nodes))
-		nodeids := make(map[uuid.UUID][]*Route)
-		for i := range nodes {
-			if nodes[i].workflow_routes == nil {
-				continue
-			}
-			fk := *nodes[i].workflow_routes
-			if _, ok := nodeids[fk]; !ok {
-				ids = append(ids, fk)
-			}
-			nodeids[fk] = append(nodeids[fk], nodes[i])
-		}
-		query.Where(workflow.IDIn(ids...))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := rq.loadWorkflow(ctx, query, nodes, nil,
+			func(n *Route, e *Workflow) { n.Edges.Workflow = e }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			nodes, ok := nodeids[n.ID]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "workflow_routes" returned %v`, n.ID)
-			}
-			for i := range nodes {
-				nodes[i].Edges.Workflow = n
-			}
-		}
 	}
-
 	if query := rq.withRef; query != nil {
-		ids := make([]uuid.UUID, 0, len(nodes))
-		nodeids := make(map[uuid.UUID][]*Route)
-		for i := range nodes {
-			if nodes[i].ref_routes == nil {
-				continue
-			}
-			fk := *nodes[i].ref_routes
-			if _, ok := nodeids[fk]; !ok {
-				ids = append(ids, fk)
-			}
-			nodeids[fk] = append(nodeids[fk], nodes[i])
-		}
-		query.Where(ref.IDIn(ids...))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := rq.loadRef(ctx, query, nodes, nil,
+			func(n *Route, e *Ref) { n.Edges.Ref = e }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			nodes, ok := nodeids[n.ID]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "ref_routes" returned %v`, n.ID)
-			}
-			for i := range nodes {
-				nodes[i].Edges.Ref = n
-			}
+	}
+	return nodes, nil
+}
+
+func (rq *RouteQuery) loadWorkflow(ctx context.Context, query *WorkflowQuery, nodes []*Route, init func(*Route), assign func(*Route, *Workflow)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Route)
+	for i := range nodes {
+		if nodes[i].workflow_routes == nil {
+			continue
+		}
+		fk := *nodes[i].workflow_routes
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	query.Where(workflow.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "workflow_routes" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
 		}
 	}
-
-	return nodes, nil
+	return nil
+}
+func (rq *RouteQuery) loadRef(ctx context.Context, query *RefQuery, nodes []*Route, init func(*Route), assign func(*Route, *Ref)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Route)
+	for i := range nodes {
+		if nodes[i].ref_routes == nil {
+			continue
+		}
+		fk := *nodes[i].ref_routes
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	query.Where(ref.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "ref_routes" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
 }
 
 func (rq *RouteQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := rq.querySpec()
+	if len(rq.modifiers) > 0 {
+		_spec.Modifiers = rq.modifiers
+	}
 	_spec.Node.Columns = rq.fields
 	if len(rq.fields) > 0 {
 		_spec.Unique = rq.unique != nil && *rq.unique
@@ -494,11 +516,14 @@ func (rq *RouteQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (rq *RouteQuery) sqlExist(ctx context.Context) (bool, error) {
-	n, err := rq.sqlCount(ctx)
-	if err != nil {
+	switch _, err := rq.FirstID(ctx); {
+	case IsNotFound(err):
+		return false, nil
+	case err != nil:
 		return false, fmt.Errorf("ent: check existence: %w", err)
+	default:
+		return true, nil
 	}
-	return n > 0, nil
 }
 
 func (rq *RouteQuery) querySpec() *sqlgraph.QuerySpec {
@@ -564,6 +589,9 @@ func (rq *RouteQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if rq.unique != nil && *rq.unique {
 		selector.Distinct()
 	}
+	for _, m := range rq.modifiers {
+		m(selector)
+	}
 	for _, p := range rq.predicates {
 		p(selector)
 	}
@@ -579,6 +607,38 @@ func (rq *RouteQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector.Limit(*limit)
 	}
 	return selector
+}
+
+// ForUpdate locks the selected rows against concurrent updates, and prevent them from being
+// updated, deleted or "selected ... for update" by other sessions, until the transaction is
+// either committed or rolled-back.
+func (rq *RouteQuery) ForUpdate(opts ...sql.LockOption) *RouteQuery {
+	if rq.driver.Dialect() == dialect.Postgres {
+		rq.Unique(false)
+	}
+	rq.modifiers = append(rq.modifiers, func(s *sql.Selector) {
+		s.ForUpdate(opts...)
+	})
+	return rq
+}
+
+// ForShare behaves similarly to ForUpdate, except that it acquires a shared mode lock
+// on any rows that are read. Other sessions can read the rows, but cannot modify them
+// until your transaction commits.
+func (rq *RouteQuery) ForShare(opts ...sql.LockOption) *RouteQuery {
+	if rq.driver.Dialect() == dialect.Postgres {
+		rq.Unique(false)
+	}
+	rq.modifiers = append(rq.modifiers, func(s *sql.Selector) {
+		s.ForShare(opts...)
+	})
+	return rq
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (rq *RouteQuery) Modify(modifiers ...func(s *sql.Selector)) *RouteSelect {
+	rq.modifiers = append(rq.modifiers, modifiers...)
+	return rq.Select()
 }
 
 // RouteGroupBy is the group-by builder for Route entities.
@@ -599,7 +659,7 @@ func (rgb *RouteGroupBy) Aggregate(fns ...AggregateFunc) *RouteGroupBy {
 }
 
 // Scan applies the group-by query and scans the result into the given value.
-func (rgb *RouteGroupBy) Scan(ctx context.Context, v interface{}) error {
+func (rgb *RouteGroupBy) Scan(ctx context.Context, v any) error {
 	query, err := rgb.path(ctx)
 	if err != nil {
 		return err
@@ -608,7 +668,7 @@ func (rgb *RouteGroupBy) Scan(ctx context.Context, v interface{}) error {
 	return rgb.sqlScan(ctx, v)
 }
 
-func (rgb *RouteGroupBy) sqlScan(ctx context.Context, v interface{}) error {
+func (rgb *RouteGroupBy) sqlScan(ctx context.Context, v any) error {
 	for _, f := range rgb.fields {
 		if !route.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for group-by", f)}
@@ -633,8 +693,6 @@ func (rgb *RouteGroupBy) sqlQuery() *sql.Selector {
 	for _, fn := range rgb.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	// If no columns were selected in a custom aggregation function, the default
-	// selection is the fields used for "group-by", and the aggregation functions.
 	if len(selector.SelectedColumns()) == 0 {
 		columns := make([]string, 0, len(rgb.fields)+len(rgb.fns))
 		for _, f := range rgb.fields {
@@ -654,8 +712,14 @@ type RouteSelect struct {
 	sql *sql.Selector
 }
 
+// Aggregate adds the given aggregation functions to the selector query.
+func (rs *RouteSelect) Aggregate(fns ...AggregateFunc) *RouteSelect {
+	rs.fns = append(rs.fns, fns...)
+	return rs
+}
+
 // Scan applies the selector query and scans the result into the given value.
-func (rs *RouteSelect) Scan(ctx context.Context, v interface{}) error {
+func (rs *RouteSelect) Scan(ctx context.Context, v any) error {
 	if err := rs.prepareQuery(ctx); err != nil {
 		return err
 	}
@@ -663,7 +727,17 @@ func (rs *RouteSelect) Scan(ctx context.Context, v interface{}) error {
 	return rs.sqlScan(ctx, v)
 }
 
-func (rs *RouteSelect) sqlScan(ctx context.Context, v interface{}) error {
+func (rs *RouteSelect) sqlScan(ctx context.Context, v any) error {
+	aggregation := make([]string, 0, len(rs.fns))
+	for _, fn := range rs.fns {
+		aggregation = append(aggregation, fn(rs.sql))
+	}
+	switch n := len(*rs.selector.flds); {
+	case n == 0 && len(aggregation) > 0:
+		rs.sql.Select(aggregation...)
+	case n != 0 && len(aggregation) > 0:
+		rs.sql.AppendSelect(aggregation...)
+	}
 	rows := &sql.Rows{}
 	query, args := rs.sql.Query()
 	if err := rs.driver.Query(ctx, query, args, rows); err != nil {
@@ -671,4 +745,10 @@ func (rs *RouteSelect) sqlScan(ctx context.Context, v interface{}) error {
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (rs *RouteSelect) Modify(modifiers ...func(s *sql.Selector)) *RouteSelect {
+	rs.modifiers = append(rs.modifiers, modifiers...)
+	return rs
 }

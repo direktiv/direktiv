@@ -7,6 +7,8 @@ import (
 	"errors"
 	"fmt"
 
+	"entgo.io/ent/dialect"
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
@@ -22,6 +24,7 @@ type VarRefCreate struct {
 	config
 	mutation *VarRefMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetName sets the "name" field.
@@ -259,24 +262,17 @@ func (vrc *VarRefCreate) createSpec() (*VarRef, *sqlgraph.CreateSpec) {
 			},
 		}
 	)
+	_spec.OnConflict = vrc.conflict
 	if id, ok := vrc.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
 	if value, ok := vrc.mutation.Name(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: varref.FieldName,
-		})
+		_spec.SetField(varref.FieldName, field.TypeString, value)
 		_node.Name = value
 	}
 	if value, ok := vrc.mutation.Behaviour(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: varref.FieldBehaviour,
-		})
+		_spec.SetField(varref.FieldBehaviour, field.TypeString, value)
 		_node.Behaviour = value
 	}
 	if nodes := vrc.mutation.VardataIDs(); len(nodes) > 0 {
@@ -362,10 +358,224 @@ func (vrc *VarRefCreate) createSpec() (*VarRef, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.VarRef.Create().
+//		SetName(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.VarRefUpsert) {
+//			SetName(v+v).
+//		}).
+//		Exec(ctx)
+func (vrc *VarRefCreate) OnConflict(opts ...sql.ConflictOption) *VarRefUpsertOne {
+	vrc.conflict = opts
+	return &VarRefUpsertOne{
+		create: vrc,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.VarRef.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (vrc *VarRefCreate) OnConflictColumns(columns ...string) *VarRefUpsertOne {
+	vrc.conflict = append(vrc.conflict, sql.ConflictColumns(columns...))
+	return &VarRefUpsertOne{
+		create: vrc,
+	}
+}
+
+type (
+	// VarRefUpsertOne is the builder for "upsert"-ing
+	//  one VarRef node.
+	VarRefUpsertOne struct {
+		create *VarRefCreate
+	}
+
+	// VarRefUpsert is the "OnConflict" setter.
+	VarRefUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetName sets the "name" field.
+func (u *VarRefUpsert) SetName(v string) *VarRefUpsert {
+	u.Set(varref.FieldName, v)
+	return u
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *VarRefUpsert) UpdateName() *VarRefUpsert {
+	u.SetExcluded(varref.FieldName)
+	return u
+}
+
+// ClearName clears the value of the "name" field.
+func (u *VarRefUpsert) ClearName() *VarRefUpsert {
+	u.SetNull(varref.FieldName)
+	return u
+}
+
+// SetBehaviour sets the "behaviour" field.
+func (u *VarRefUpsert) SetBehaviour(v string) *VarRefUpsert {
+	u.Set(varref.FieldBehaviour, v)
+	return u
+}
+
+// UpdateBehaviour sets the "behaviour" field to the value that was provided on create.
+func (u *VarRefUpsert) UpdateBehaviour() *VarRefUpsert {
+	u.SetExcluded(varref.FieldBehaviour)
+	return u
+}
+
+// ClearBehaviour clears the value of the "behaviour" field.
+func (u *VarRefUpsert) ClearBehaviour() *VarRefUpsert {
+	u.SetNull(varref.FieldBehaviour)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// Using this option is equivalent to using:
+//
+//	client.VarRef.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(varref.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *VarRefUpsertOne) UpdateNewValues() *VarRefUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(varref.FieldID)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.VarRef.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *VarRefUpsertOne) Ignore() *VarRefUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *VarRefUpsertOne) DoNothing() *VarRefUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the VarRefCreate.OnConflict
+// documentation for more info.
+func (u *VarRefUpsertOne) Update(set func(*VarRefUpsert)) *VarRefUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&VarRefUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetName sets the "name" field.
+func (u *VarRefUpsertOne) SetName(v string) *VarRefUpsertOne {
+	return u.Update(func(s *VarRefUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *VarRefUpsertOne) UpdateName() *VarRefUpsertOne {
+	return u.Update(func(s *VarRefUpsert) {
+		s.UpdateName()
+	})
+}
+
+// ClearName clears the value of the "name" field.
+func (u *VarRefUpsertOne) ClearName() *VarRefUpsertOne {
+	return u.Update(func(s *VarRefUpsert) {
+		s.ClearName()
+	})
+}
+
+// SetBehaviour sets the "behaviour" field.
+func (u *VarRefUpsertOne) SetBehaviour(v string) *VarRefUpsertOne {
+	return u.Update(func(s *VarRefUpsert) {
+		s.SetBehaviour(v)
+	})
+}
+
+// UpdateBehaviour sets the "behaviour" field to the value that was provided on create.
+func (u *VarRefUpsertOne) UpdateBehaviour() *VarRefUpsertOne {
+	return u.Update(func(s *VarRefUpsert) {
+		s.UpdateBehaviour()
+	})
+}
+
+// ClearBehaviour clears the value of the "behaviour" field.
+func (u *VarRefUpsertOne) ClearBehaviour() *VarRefUpsertOne {
+	return u.Update(func(s *VarRefUpsert) {
+		s.ClearBehaviour()
+	})
+}
+
+// Exec executes the query.
+func (u *VarRefUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for VarRefCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *VarRefUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *VarRefUpsertOne) ID(ctx context.Context) (id uuid.UUID, err error) {
+	if u.create.driver.Dialect() == dialect.MySQL {
+		// In case of "ON CONFLICT", there is no way to get back non-numeric ID
+		// fields from the database since MySQL does not support the RETURNING clause.
+		return id, errors.New("ent: VarRefUpsertOne.ID is not supported by MySQL driver. Use VarRefUpsertOne.Exec instead")
+	}
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *VarRefUpsertOne) IDX(ctx context.Context) uuid.UUID {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // VarRefCreateBulk is the builder for creating many VarRef entities in bulk.
 type VarRefCreateBulk struct {
 	config
 	builders []*VarRefCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the VarRef entities in the database.
@@ -392,6 +602,7 @@ func (vrcb *VarRefCreateBulk) Save(ctx context.Context) ([]*VarRef, error) {
 					_, err = mutators[i+1].Mutate(root, vrcb.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = vrcb.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, vrcb.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -438,6 +649,159 @@ func (vrcb *VarRefCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (vrcb *VarRefCreateBulk) ExecX(ctx context.Context) {
 	if err := vrcb.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.VarRef.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.VarRefUpsert) {
+//			SetName(v+v).
+//		}).
+//		Exec(ctx)
+func (vrcb *VarRefCreateBulk) OnConflict(opts ...sql.ConflictOption) *VarRefUpsertBulk {
+	vrcb.conflict = opts
+	return &VarRefUpsertBulk{
+		create: vrcb,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.VarRef.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (vrcb *VarRefCreateBulk) OnConflictColumns(columns ...string) *VarRefUpsertBulk {
+	vrcb.conflict = append(vrcb.conflict, sql.ConflictColumns(columns...))
+	return &VarRefUpsertBulk{
+		create: vrcb,
+	}
+}
+
+// VarRefUpsertBulk is the builder for "upsert"-ing
+// a bulk of VarRef nodes.
+type VarRefUpsertBulk struct {
+	create *VarRefCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.VarRef.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(varref.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *VarRefUpsertBulk) UpdateNewValues() *VarRefUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(varref.FieldID)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.VarRef.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *VarRefUpsertBulk) Ignore() *VarRefUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *VarRefUpsertBulk) DoNothing() *VarRefUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the VarRefCreateBulk.OnConflict
+// documentation for more info.
+func (u *VarRefUpsertBulk) Update(set func(*VarRefUpsert)) *VarRefUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&VarRefUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetName sets the "name" field.
+func (u *VarRefUpsertBulk) SetName(v string) *VarRefUpsertBulk {
+	return u.Update(func(s *VarRefUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *VarRefUpsertBulk) UpdateName() *VarRefUpsertBulk {
+	return u.Update(func(s *VarRefUpsert) {
+		s.UpdateName()
+	})
+}
+
+// ClearName clears the value of the "name" field.
+func (u *VarRefUpsertBulk) ClearName() *VarRefUpsertBulk {
+	return u.Update(func(s *VarRefUpsert) {
+		s.ClearName()
+	})
+}
+
+// SetBehaviour sets the "behaviour" field.
+func (u *VarRefUpsertBulk) SetBehaviour(v string) *VarRefUpsertBulk {
+	return u.Update(func(s *VarRefUpsert) {
+		s.SetBehaviour(v)
+	})
+}
+
+// UpdateBehaviour sets the "behaviour" field to the value that was provided on create.
+func (u *VarRefUpsertBulk) UpdateBehaviour() *VarRefUpsertBulk {
+	return u.Update(func(s *VarRefUpsert) {
+		s.UpdateBehaviour()
+	})
+}
+
+// ClearBehaviour clears the value of the "behaviour" field.
+func (u *VarRefUpsertBulk) ClearBehaviour() *VarRefUpsertBulk {
+	return u.Update(func(s *VarRefUpsert) {
+		s.ClearBehaviour()
+	})
+}
+
+// Exec executes the query.
+func (u *VarRefUpsertBulk) Exec(ctx context.Context) error {
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the VarRefCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for VarRefCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *VarRefUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

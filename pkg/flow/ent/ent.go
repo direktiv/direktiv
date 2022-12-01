@@ -10,6 +10,8 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/direktiv/direktiv/pkg/flow/ent/annotation"
+	"github.com/direktiv/direktiv/pkg/flow/ent/cloudeventfilters"
 	"github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
 	"github.com/direktiv/direktiv/pkg/flow/ent/events"
 	"github.com/direktiv/direktiv/pkg/flow/ent/eventswait"
@@ -23,6 +25,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/ref"
 	"github.com/direktiv/direktiv/pkg/flow/ent/revision"
 	"github.com/direktiv/direktiv/pkg/flow/ent/route"
+	"github.com/direktiv/direktiv/pkg/flow/ent/services"
 	"github.com/direktiv/direktiv/pkg/flow/ent/vardata"
 	"github.com/direktiv/direktiv/pkg/flow/ent/varref"
 	"github.com/direktiv/direktiv/pkg/flow/ent/workflow"
@@ -46,22 +49,25 @@ type OrderFunc func(*sql.Selector)
 // columnChecker returns a function indicates if the column exists in the given column.
 func columnChecker(table string) func(string) error {
 	checks := map[string]func(string) bool{
-		cloudevents.Table:     cloudevents.ValidColumn,
-		events.Table:          events.ValidColumn,
-		eventswait.Table:      eventswait.ValidColumn,
-		inode.Table:           inode.ValidColumn,
-		instance.Table:        instance.ValidColumn,
-		instanceruntime.Table: instanceruntime.ValidColumn,
-		logmsg.Table:          logmsg.ValidColumn,
-		mirror.Table:          mirror.ValidColumn,
-		mirroractivity.Table:  mirroractivity.ValidColumn,
-		namespace.Table:       namespace.ValidColumn,
-		ref.Table:             ref.ValidColumn,
-		revision.Table:        revision.ValidColumn,
-		route.Table:           route.ValidColumn,
-		vardata.Table:         vardata.ValidColumn,
-		varref.Table:          varref.ValidColumn,
-		workflow.Table:        workflow.ValidColumn,
+		annotation.Table:        annotation.ValidColumn,
+		cloudeventfilters.Table: cloudeventfilters.ValidColumn,
+		cloudevents.Table:       cloudevents.ValidColumn,
+		events.Table:            events.ValidColumn,
+		eventswait.Table:        eventswait.ValidColumn,
+		inode.Table:             inode.ValidColumn,
+		instance.Table:          instance.ValidColumn,
+		instanceruntime.Table:   instanceruntime.ValidColumn,
+		logmsg.Table:            logmsg.ValidColumn,
+		mirror.Table:            mirror.ValidColumn,
+		mirroractivity.Table:    mirroractivity.ValidColumn,
+		namespace.Table:         namespace.ValidColumn,
+		ref.Table:               ref.ValidColumn,
+		revision.Table:          revision.ValidColumn,
+		route.Table:             route.ValidColumn,
+		services.Table:          services.ValidColumn,
+		vardata.Table:           vardata.ValidColumn,
+		varref.Table:            varref.ValidColumn,
+		workflow.Table:          workflow.ValidColumn,
 	}
 	check, ok := checks[table]
 	if !ok {
@@ -111,7 +117,6 @@ type AggregateFunc func(*sql.Selector) string
 //	GroupBy(field1, field2).
 //	Aggregate(ent.As(ent.Sum(field1), "sum_field1"), (ent.As(ent.Sum(field2), "sum_field2")).
 //	Scan(ctx, &v)
-//
 func As(fn AggregateFunc, end string) AggregateFunc {
 	return func(s *sql.Selector) string {
 		return sql.As(fn(s), end)
@@ -294,11 +299,12 @@ func IsConstraintError(err error) bool {
 type selector struct {
 	label string
 	flds  *[]string
-	scan  func(context.Context, interface{}) error
+	fns   []AggregateFunc
+	scan  func(context.Context, any) error
 }
 
 // ScanX is like Scan, but panics if an error occurs.
-func (s *selector) ScanX(ctx context.Context, v interface{}) {
+func (s *selector) ScanX(ctx context.Context, v any) {
 	if err := s.scan(ctx, v); err != nil {
 		panic(err)
 	}

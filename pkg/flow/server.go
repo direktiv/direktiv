@@ -2,6 +2,7 @@ package flow
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"sync"
@@ -31,19 +32,18 @@ type server struct {
 	fnLogger *zap.SugaredLogger
 	conf     *util.Config
 
-	db           *ent.Client
-	pubsub       *pubsub
-	locks        *locks
-	timers       *timers
-	engine       *engine
-	syncer       *syncer
-	secrets      *secrets
-	flow         *flow
-	internal     *internal
-	events       *events
-	vars         *vars
-	actions      *actions
-	metricServer *metricsServer
+	db       *ent.Client
+	pubsub   *pubsub
+	locks    *locks
+	timers   *timers
+	engine   *engine
+	syncer   *syncer
+	secrets  *secrets
+	flow     *flow
+	internal *internal
+	events   *events
+	vars     *vars
+	actions  *actions
 
 	metrics *metrics.Client
 
@@ -101,7 +101,12 @@ func (srv *server) start(ctx context.Context) error {
 	}
 	defer telend()
 
-	go setupPrometheusEndpoint()
+	go func() {
+		err := setupPrometheusEndpoint()
+		if err != nil {
+			srv.sugar.Errorf("Failed to set up Prometheus endpoint: %v.", err)
+		}
+	}()
 
 	srv.sugar.Debug("Initializing secrets.")
 	srv.secrets, err = initSecrets()
@@ -319,10 +324,13 @@ func (srv *server) notifyCluster(msg string) error {
 	defer conn.Close()
 
 	_, err = conn.ExecContext(ctx, "SELECT pg_notify($1, $2)", flowSync, msg)
-	if err, ok := err.(*pq.Error); ok {
 
-		srv.sugar.Errorf("db notification failed: %v", err)
-		if err.Code == "57014" {
+	perr := new(pq.Error)
+
+	if errors.As(err, &perr) {
+
+		srv.sugar.Errorf("db notification failed: %v", perr)
+		if perr.Code == "57014" {
 			return fmt.Errorf("canceled query")
 		}
 
@@ -347,10 +355,13 @@ func (srv *server) notifyHostname(hostname, msg string) error {
 	channel := fmt.Sprintf("hostname:%s", hostname)
 
 	_, err = conn.ExecContext(ctx, "SELECT pg_notify($1, $2)", channel, msg)
-	if err, ok := err.(*pq.Error); ok {
 
-		fmt.Fprintf(os.Stderr, "db notification failed: %v", err)
-		if err.Code == "57014" {
+	perr := new(pq.Error)
+
+	if errors.As(err, &perr) {
+
+		fmt.Fprintf(os.Stderr, "db notification failed: %v", perr)
+		if perr.Code == "57014" {
 			return fmt.Errorf("canceled query")
 		}
 

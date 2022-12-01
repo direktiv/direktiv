@@ -62,8 +62,7 @@ type MirrorEdges struct {
 func (e MirrorEdges) NamespaceOrErr() (*Namespace, error) {
 	if e.loadedTypes[0] {
 		if e.Namespace == nil {
-			// The edge namespace was loaded in eager-loading,
-			// but was not found.
+			// Edge was loaded but was not found.
 			return nil, &NotFoundError{label: namespace.Label}
 		}
 		return e.Namespace, nil
@@ -76,8 +75,7 @@ func (e MirrorEdges) NamespaceOrErr() (*Namespace, error) {
 func (e MirrorEdges) InodeOrErr() (*Inode, error) {
 	if e.loadedTypes[1] {
 		if e.Inode == nil {
-			// The edge inode was loaded in eager-loading,
-			// but was not found.
+			// Edge was loaded but was not found.
 			return nil, &NotFoundError{label: inode.Label}
 		}
 		return e.Inode, nil
@@ -95,8 +93,8 @@ func (e MirrorEdges) ActivitiesOrErr() ([]*MirrorActivity, error) {
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
-func (*Mirror) scanValues(columns []string) ([]interface{}, error) {
-	values := make([]interface{}, len(columns))
+func (*Mirror) scanValues(columns []string) ([]any, error) {
+	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
 		case mirror.FieldURL, mirror.FieldRef, mirror.FieldCron, mirror.FieldPublicKey, mirror.FieldPrivateKey, mirror.FieldPassphrase, mirror.FieldCommit:
@@ -118,7 +116,7 @@ func (*Mirror) scanValues(columns []string) ([]interface{}, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the Mirror fields.
-func (m *Mirror) assignValues(columns []string, values []interface{}) error {
+func (m *Mirror) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}

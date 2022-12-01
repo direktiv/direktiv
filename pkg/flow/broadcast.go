@@ -10,11 +10,11 @@ import (
 )
 
 const (
-	// BroadcastEventTypeCreate is an event type for listening to 'create'
+	// BroadcastEventTypeCreate is an event type for listening to 'create'.
 	BroadcastEventTypeCreate string = "create"
-	// BroadcastEventTypeUpdate is an event type for listening to 'update'
+	// BroadcastEventTypeUpdate is an event type for listening to 'update'.
 	BroadcastEventTypeUpdate string = "update"
-	// BroadcastEventTypeDelete is an event type for listenting to 'delete'
+	// BroadcastEventTypeDelete is an event type for listenting to 'delete'.
 	BroadcastEventTypeDelete string = "delete"
 
 	BroadcastEventTypeInstanceStarted string = "started"
@@ -23,22 +23,22 @@ const (
 )
 
 const (
-	// BroadcastEventScopeWorkflow is the scope in which you want to listen for events
+	// BroadcastEventScopeWorkflow is the scope in which you want to listen for events.
 	BroadcastEventScopeWorkflow string = "workflow"
-	// BroadcastEventScopeNamespace is the scope in which you want to listen for events
+	// BroadcastEventScopeNamespace is the scope in which you want to listen for events.
 	BroadcastEventScopeNamespace string = "namespace"
-	// BroadcastEventScopeInstance is the scope in which you want to listen for events
+	// BroadcastEventScopeInstance is the scope in which you want to listen for events.
 	BroadcastEventScopeInstance string = "instance"
 )
 
 const (
-	// BroadcastEventPrefixWorkflow is the event prefix that is being broadcasted
+	// BroadcastEventPrefixWorkflow is the event prefix that is being broadcasted.
 	BroadcastEventPrefixWorkflow string = "workflow"
-	// BroadcastEventPrefixDirectory is the event prefix that is being broadcasted
+	// BroadcastEventPrefixDirectory is the event prefix that is being broadcasted.
 	BroadcastEventPrefixDirectory string = "directory"
-	// BroadcastEventPrefixVariable is the event prefix that is being broadcasted
+	// BroadcastEventPrefixVariable is the event prefix that is being broadcasted.
 	BroadcastEventPrefixVariable string = "variable"
-	// BroadcastEventPrefixInstance is the event prefix that is being broadcasted
+	// BroadcastEventPrefixInstance is the event prefix that is being broadcasted.
 	BroadcastEventPrefixInstance string = "instance"
 )
 
@@ -68,7 +68,10 @@ func (flow *flow) BroadcastWorkflow(ctx context.Context, eventType string, input
 	event.SetID(uid.String())
 	event.SetType(target)
 	event.SetSource("direktiv")
-	event.SetData("application/json", input)
+	err = event.SetData("application/json", input)
+	if err != nil {
+		return fmt.Errorf("failed to create CloudEvent: %w", err)
+	}
 
 	return flow.events.BroadcastCloudevent(ctx, ns, &event, 60)
 }
@@ -96,7 +99,10 @@ func (flow *flow) BroadcastDirectory(ctx context.Context, eventType string, inpu
 	event.SetID(uid.String())
 	event.SetType(target)
 	event.SetSource("direktiv")
-	event.SetData("application/json", input)
+	err = event.SetData("application/json", input)
+	if err != nil {
+		return fmt.Errorf("failed to create CloudEvent: %w", err)
+	}
 
 	return flow.events.BroadcastCloudevent(ctx, ns, &event, 60)
 }
@@ -127,7 +133,10 @@ func (flow *flow) BroadcastVariable(ctx context.Context, eventType string, event
 	event.SetID(uid.String())
 	event.SetType(target)
 	event.SetSource("direktiv")
-	event.SetData("application/json", input)
+	err = event.SetData("application/json", input)
+	if err != nil {
+		return fmt.Errorf("failed to create CloudEvent: %w", err)
+	}
 
 	return flow.events.BroadcastCloudevent(ctx, ns, &event, 60)
 }
@@ -156,7 +165,10 @@ func (flow *flow) BroadcastInstance(eventType string, ctx context.Context, input
 	event.SetID(uid.String())
 	event.SetType(target)
 	event.SetSource("direktiv")
-	event.SetData("application/json", input)
+	err = event.SetData("application/json", input)
+	if err != nil {
+		return fmt.Errorf("failed to create CloudEvent: %w", err)
+	}
 
 	return flow.events.BroadcastCloudevent(ctx, ns, &event, 60)
 }

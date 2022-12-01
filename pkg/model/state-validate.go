@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-// ValidateState defines the fields that can be used in a validate state
+// ValidateState defines the fields that can be used in a validate state.
 type ValidateState struct {
 	StateCommon `yaml:",inline"`
 	Subject     string      `yaml:"subject,omitempty"`
@@ -14,7 +14,7 @@ type ValidateState struct {
 	Transition  string      `yaml:"transition,omitempty"`
 }
 
-// GetID returns the id of a validate state
+// GetID returns the id of a validate state.
 func (o *ValidateState) GetID() string {
 	return o.ID
 }
@@ -34,7 +34,7 @@ func (o *ValidateState) getTransitions() map[string]string {
 	return transitions
 }
 
-// GetTransitions returns all the transitions for a validate state
+// GetTransitions returns all the transitions for a validate state.
 func (o *ValidateState) GetTransitions() []string {
 	transitions := make([]string, 0)
 	if o.Transition != "" {
@@ -50,16 +50,10 @@ func (o *ValidateState) GetTransitions() []string {
 	return transitions
 }
 
-// Validate validates the validate state
+// Validate validates the validate state.
 func (o *ValidateState) Validate() error {
 	if err := o.commonValidate(); err != nil {
 		return err
-	}
-
-	if s, ok := o.Transform.(string); ok {
-		if err := validateTransformJQ(s); err != nil {
-			return err
-		}
 	}
 
 	if o.Schema == nil {
@@ -72,7 +66,7 @@ func (o *ValidateState) Validate() error {
 
 	for i, errDef := range o.ErrorDefinitions() {
 		if err := errDef.Validate(); err != nil {
-			return fmt.Errorf("catch[%v] is invalid: %v", i, err)
+			return fmt.Errorf("catch[%v] is invalid: %w", i, err)
 		}
 	}
 

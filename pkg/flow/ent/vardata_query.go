@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"math"
 
+	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -20,14 +21,14 @@ import (
 // VarDataQuery is the builder for querying VarData entities.
 type VarDataQuery struct {
 	config
-	limit      *int
-	offset     *int
-	unique     *bool
-	order      []OrderFunc
-	fields     []string
-	predicates []predicate.VarData
-	// eager-loading edges.
+	limit       *int
+	offset      *int
+	unique      *bool
+	order       []OrderFunc
+	fields      []string
+	predicates  []predicate.VarData
 	withVarrefs *VarRefQuery
+	modifiers   []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -300,7 +301,6 @@ func (vdq *VarDataQuery) WithVarrefs(opts ...func(*VarRefQuery)) *VarDataQuery {
 //		GroupBy(vardata.FieldCreatedAt).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-//
 func (vdq *VarDataQuery) GroupBy(field string, fields ...string) *VarDataGroupBy {
 	grbuild := &VarDataGroupBy{config: vdq.config}
 	grbuild.fields = append([]string{field}, fields...)
@@ -327,13 +327,17 @@ func (vdq *VarDataQuery) GroupBy(field string, fields ...string) *VarDataGroupBy
 //	client.VarData.Query().
 //		Select(vardata.FieldCreatedAt).
 //		Scan(ctx, &v)
-//
 func (vdq *VarDataQuery) Select(fields ...string) *VarDataSelect {
 	vdq.fields = append(vdq.fields, fields...)
 	selbuild := &VarDataSelect{VarDataQuery: vdq}
 	selbuild.label = vardata.Label
 	selbuild.flds, selbuild.scan = &vdq.fields, selbuild.Scan
 	return selbuild
+}
+
+// Aggregate returns a VarDataSelect configured with the given aggregations.
+func (vdq *VarDataQuery) Aggregate(fns ...AggregateFunc) *VarDataSelect {
+	return vdq.Select().Aggregate(fns...)
 }
 
 func (vdq *VarDataQuery) prepareQuery(ctx context.Context) error {
@@ -360,14 +364,17 @@ func (vdq *VarDataQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Var
 			vdq.withVarrefs != nil,
 		}
 	)
-	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
+	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*VarData).scanValues(nil, columns)
 	}
-	_spec.Assign = func(columns []string, values []interface{}) error {
+	_spec.Assign = func(columns []string, values []any) error {
 		node := &VarData{config: vdq.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
+	}
+	if len(vdq.modifiers) > 0 {
+		_spec.Modifiers = vdq.modifiers
 	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
@@ -378,41 +385,53 @@ func (vdq *VarDataQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Var
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-
 	if query := vdq.withVarrefs; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[uuid.UUID]*VarData)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Varrefs = []*VarRef{}
-		}
-		query.withFKs = true
-		query.Where(predicate.VarRef(func(s *sql.Selector) {
-			s.Where(sql.InValues(vardata.VarrefsColumn, fks...))
-		}))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := vdq.loadVarrefs(ctx, query, nodes,
+			func(n *VarData) { n.Edges.Varrefs = []*VarRef{} },
+			func(n *VarData, e *VarRef) { n.Edges.Varrefs = append(n.Edges.Varrefs, e) }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			fk := n.var_data_varrefs
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "var_data_varrefs" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "var_data_varrefs" returned %v for node %v`, *fk, n.ID)
-			}
-			node.Edges.Varrefs = append(node.Edges.Varrefs, n)
+	}
+	return nodes, nil
+}
+
+func (vdq *VarDataQuery) loadVarrefs(ctx context.Context, query *VarRefQuery, nodes []*VarData, init func(*VarData), assign func(*VarData, *VarRef)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*VarData)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
 		}
 	}
-
-	return nodes, nil
+	query.withFKs = true
+	query.Where(predicate.VarRef(func(s *sql.Selector) {
+		s.Where(sql.InValues(vardata.VarrefsColumn, fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.var_data_varrefs
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "var_data_varrefs" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "var_data_varrefs" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
 }
 
 func (vdq *VarDataQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := vdq.querySpec()
+	if len(vdq.modifiers) > 0 {
+		_spec.Modifiers = vdq.modifiers
+	}
 	_spec.Node.Columns = vdq.fields
 	if len(vdq.fields) > 0 {
 		_spec.Unique = vdq.unique != nil && *vdq.unique
@@ -421,11 +440,14 @@ func (vdq *VarDataQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (vdq *VarDataQuery) sqlExist(ctx context.Context) (bool, error) {
-	n, err := vdq.sqlCount(ctx)
-	if err != nil {
+	switch _, err := vdq.FirstID(ctx); {
+	case IsNotFound(err):
+		return false, nil
+	case err != nil:
 		return false, fmt.Errorf("ent: check existence: %w", err)
+	default:
+		return true, nil
 	}
-	return n > 0, nil
 }
 
 func (vdq *VarDataQuery) querySpec() *sqlgraph.QuerySpec {
@@ -491,6 +513,9 @@ func (vdq *VarDataQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if vdq.unique != nil && *vdq.unique {
 		selector.Distinct()
 	}
+	for _, m := range vdq.modifiers {
+		m(selector)
+	}
 	for _, p := range vdq.predicates {
 		p(selector)
 	}
@@ -506,6 +531,38 @@ func (vdq *VarDataQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector.Limit(*limit)
 	}
 	return selector
+}
+
+// ForUpdate locks the selected rows against concurrent updates, and prevent them from being
+// updated, deleted or "selected ... for update" by other sessions, until the transaction is
+// either committed or rolled-back.
+func (vdq *VarDataQuery) ForUpdate(opts ...sql.LockOption) *VarDataQuery {
+	if vdq.driver.Dialect() == dialect.Postgres {
+		vdq.Unique(false)
+	}
+	vdq.modifiers = append(vdq.modifiers, func(s *sql.Selector) {
+		s.ForUpdate(opts...)
+	})
+	return vdq
+}
+
+// ForShare behaves similarly to ForUpdate, except that it acquires a shared mode lock
+// on any rows that are read. Other sessions can read the rows, but cannot modify them
+// until your transaction commits.
+func (vdq *VarDataQuery) ForShare(opts ...sql.LockOption) *VarDataQuery {
+	if vdq.driver.Dialect() == dialect.Postgres {
+		vdq.Unique(false)
+	}
+	vdq.modifiers = append(vdq.modifiers, func(s *sql.Selector) {
+		s.ForShare(opts...)
+	})
+	return vdq
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (vdq *VarDataQuery) Modify(modifiers ...func(s *sql.Selector)) *VarDataSelect {
+	vdq.modifiers = append(vdq.modifiers, modifiers...)
+	return vdq.Select()
 }
 
 // VarDataGroupBy is the group-by builder for VarData entities.
@@ -526,7 +583,7 @@ func (vdgb *VarDataGroupBy) Aggregate(fns ...AggregateFunc) *VarDataGroupBy {
 }
 
 // Scan applies the group-by query and scans the result into the given value.
-func (vdgb *VarDataGroupBy) Scan(ctx context.Context, v interface{}) error {
+func (vdgb *VarDataGroupBy) Scan(ctx context.Context, v any) error {
 	query, err := vdgb.path(ctx)
 	if err != nil {
 		return err
@@ -535,7 +592,7 @@ func (vdgb *VarDataGroupBy) Scan(ctx context.Context, v interface{}) error {
 	return vdgb.sqlScan(ctx, v)
 }
 
-func (vdgb *VarDataGroupBy) sqlScan(ctx context.Context, v interface{}) error {
+func (vdgb *VarDataGroupBy) sqlScan(ctx context.Context, v any) error {
 	for _, f := range vdgb.fields {
 		if !vardata.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for group-by", f)}
@@ -560,8 +617,6 @@ func (vdgb *VarDataGroupBy) sqlQuery() *sql.Selector {
 	for _, fn := range vdgb.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	// If no columns were selected in a custom aggregation function, the default
-	// selection is the fields used for "group-by", and the aggregation functions.
 	if len(selector.SelectedColumns()) == 0 {
 		columns := make([]string, 0, len(vdgb.fields)+len(vdgb.fns))
 		for _, f := range vdgb.fields {
@@ -581,8 +636,14 @@ type VarDataSelect struct {
 	sql *sql.Selector
 }
 
+// Aggregate adds the given aggregation functions to the selector query.
+func (vds *VarDataSelect) Aggregate(fns ...AggregateFunc) *VarDataSelect {
+	vds.fns = append(vds.fns, fns...)
+	return vds
+}
+
 // Scan applies the selector query and scans the result into the given value.
-func (vds *VarDataSelect) Scan(ctx context.Context, v interface{}) error {
+func (vds *VarDataSelect) Scan(ctx context.Context, v any) error {
 	if err := vds.prepareQuery(ctx); err != nil {
 		return err
 	}
@@ -590,7 +651,17 @@ func (vds *VarDataSelect) Scan(ctx context.Context, v interface{}) error {
 	return vds.sqlScan(ctx, v)
 }
 
-func (vds *VarDataSelect) sqlScan(ctx context.Context, v interface{}) error {
+func (vds *VarDataSelect) sqlScan(ctx context.Context, v any) error {
+	aggregation := make([]string, 0, len(vds.fns))
+	for _, fn := range vds.fns {
+		aggregation = append(aggregation, fn(vds.sql))
+	}
+	switch n := len(*vds.selector.flds); {
+	case n == 0 && len(aggregation) > 0:
+		vds.sql.Select(aggregation...)
+	case n != 0 && len(aggregation) > 0:
+		vds.sql.AppendSelect(aggregation...)
+	}
 	rows := &sql.Rows{}
 	query, args := vds.sql.Query()
 	if err := vds.driver.Query(ctx, query, args, rows); err != nil {
@@ -598,4 +669,10 @@ func (vds *VarDataSelect) sqlScan(ctx context.Context, v interface{}) error {
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (vds *VarDataSelect) Modify(modifiers ...func(s *sql.Selector)) *VarDataSelect {
+	vds.modifiers = append(vds.modifiers, modifiers...)
+	return vds
 }

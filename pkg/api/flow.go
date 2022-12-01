@@ -5,9 +5,9 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"strconv"
 	"strings"
@@ -17,6 +17,7 @@ import (
 	protocol "github.com/cloudevents/sdk-go/v2/protocol/http"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/util"
+	"github.com/dop251/goja"
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
@@ -570,8 +571,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//   required: true
 	//   description: "Payload that contains variable data."
 	//   schema:
-	//     example:
-	//       counter: 0
+	//     example: Data to Store
 	//     type: string
 	// responses:
 	//   '200':
@@ -676,8 +676,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//   required: true
 	//   description: "Payload that contains variable data."
 	//   schema:
-	//     example:
-	//       counter: 0
+	//     example: "Data to Store"
 	//     type: string
 	// responses:
 	//   '200':
@@ -787,8 +786,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//   required: true
 	//   description: "Payload that contains variable data."
 	//   schema:
-	//     example:
-	//       counter: 0
+	//     example: "Data to Store"
 	//     type: string
 	// responses:
 	//   '200':
@@ -1218,6 +1216,111 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully sent cloud event"
 	r.HandleFunc("/namespaces/{ns}/broadcast", h.BroadcastCloudevent).Name(RN_NamespaceEvent).Methods(http.MethodPost)
 
+	// swagger:operation POST /api/namespaces/{namespace}/broadcast/{filtername} Other broadcastCloudeventFilter
+	// ---
+	// description: |
+	//   Filter cloud event by given filtername and broadcast to a namespace.
+	//   Cloud events posted to this api will filter cloud event by given filtername and be picked up by any workflows listening to the same event type on the namescape.
+	//   The body of this request should follow the cloud event core specification defined at https://github.com/cloudevents/spec .
+	// summary: Filter given cloud event and broadcast it
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: filtername
+	//   type: string
+	//   required: true
+	//   description: 'target filtername'
+	// - in: body
+	//   name: cloudevent
+	//   required: true
+	//   description: Cloud Event request to be sent.
+	//   schema:
+	//     type: object
+	// responses:
+	//   '200':
+	r.HandleFunc("/namespaces/{ns}/broadcast/{filter}", h.BroadcastCloudeventFilter).Name(RN_NamespaceEventFilter).Methods(http.MethodPost)
+
+	// swagger:operation PUT /api/namespaces/{namespace}/eventfilter/{filtername} CloudEventFilter createCloudeventFilter
+	// ---
+	// description: |
+	//   Creates new cloud event filter in target namespace
+	//   The body of this request should be a compilable javascript code without function header.
+	// summary: Creates new cloudEventFilter
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: filtername
+	//   type: string
+	//   required: true
+	//   description: 'new filtername'
+	// - in: body
+	//   name: script
+	//   required: true
+	//   description: compilable javascript code.
+	//   schema:
+	//     type: object
+	// responses:
+	//   '200':
+	r.HandleFunc("/namespaces/{ns}/eventfilter/{filter}", h.CreateBroadcastCloudeventFilter).Name(RN_CreateNamespaceEventFilter).Methods(http.MethodPut)
+
+	// swagger:operation DELETE /api/namespaces/{namespace}/broadcast/{filtername} CloudEventFilter deleteCloudeventFilter
+	// ---
+	// description: |
+	//   Delete existing cloud event filter in target namespace
+	// summary: Delete existing cloudEventFilter
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: filtername
+	//   type: string
+	//   required: true
+	//   description: 'target filtername'
+	// responses:
+	//   '200':
+	r.HandleFunc("/namespaces/{ns}/eventfilter/{filter}", h.DeleteBroadcastCloudeventFilter).Name(RN_DeleteNamespaceEventFilter).Methods(http.MethodDelete)
+
+	// swagger:operation PATCH /api/namespaces/{namespace}/eventfilter/{filtername} CloudEventFilter updateCloudeventFilter
+	// ---
+	// description: |
+	//   Update existing cloud event filter in target namespace
+	// summary: Update existing cloudEventFilter
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: filtername
+	//   type: string
+	//   required: true
+	//   description: 'target filtername'
+	// - in: body
+	//   name: script
+	//   required: true
+	//   description: compilable javascript code.
+	//   schema:
+	//     type: object
+	// responses:
+	//   '200':
+	r.HandleFunc("/namespaces/{ns}/eventfilter/{filter}", h.UpdateBroadcastCloudeventFilter).Name(RN_UpdateNamespaceEventFilter).Methods(http.MethodPatch)
+
+	r.HandleFunc("/namespaces/{ns}/eventfilter", h.GetCloudeventFilterList).Name(RN_ListNamespaceEventFilters).Methods(http.MethodGet)
+
+	r.HandleFunc("/namespaces/{ns}/eventfilter/{filter}", h.GetCloudEventFilter).Name(RN_GetNamespaceEventFilter).Methods(http.MethodGet)
+
 	// swagger:operation GET /api/namespaces/{namespace}/tree/{workflow}?op=logs Logs getWorkflowLogs
 	// ---
 	// description: |
@@ -1502,7 +1605,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	// responses:
 	//   '200':
 	//     "description": "successfully replayed cloud event"
-	r.HandleFunc("/namespaces/{ns}/events/{event}/replay", h.ReplayEvent).Name(RN_NamespaceEvent).Methods(http.MethodPost)
+	r.HandleFunc("/namespaces/{ns}/events/{event:.*}/replay", h.ReplayEvent).Name(RN_NamespaceEvent).Methods(http.MethodPost)
 
 	// swagger:operation POST /api/namespaces/{namespace}/tree/{workflow}?op=set-workflow-event-logging Workflows setWorkflowCloudEventLogs
 	// ---
@@ -2051,7 +2154,6 @@ func (h *flowHandler) UpdateMirror(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.client.UpdateMirrorSettings(ctx, in)
 	respond(w, resp, err)
-	return
 
 }
 
@@ -2616,7 +2718,6 @@ workflow:
 	})
 
 	respond(w, resp, err)
-	return
 
 }
 
@@ -2753,7 +2854,6 @@ workflow:
 	}()
 
 	sse(w, ch)
-	return
 
 }
 
@@ -2821,7 +2921,6 @@ func (h *flowHandler) CreateWorkflow(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.client.CreateWorkflow(ctx, in)
 	respond(w, resp, err)
-	return
 
 }
 
@@ -2847,7 +2946,6 @@ func (h *flowHandler) UpdateWorkflow(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.client.UpdateWorkflow(ctx, in)
 	respond(w, resp, err)
-	return
 
 }
 
@@ -2866,7 +2964,6 @@ func (h *flowHandler) SaveWorkflow(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.client.SaveHead(ctx, in)
 	respond(w, resp, err)
-	return
 
 }
 
@@ -2885,7 +2982,6 @@ func (h *flowHandler) DiscardWorkflow(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.client.DiscardHead(ctx, in)
 	respond(w, resp, err)
-	return
 
 }
 
@@ -2928,9 +3024,9 @@ func (h *flowHandler) SyncMirror(w http.ResponseWriter, r *http.Request) {
 	namespace := mux.Vars(r)["ns"]
 	path, _ := pathAndRef(r)
 
-	force := r.URL.Query().Get("force")
+	force, _ := strconv.ParseBool(r.URL.Query().Get("force"))
 
-	if force == "true" {
+	if force {
 		in := &grpc.HardSyncMirrorRequest{}
 
 		in.Namespace = namespace
@@ -2987,11 +3083,7 @@ func (h *flowHandler) DeleteNode(w http.ResponseWriter, r *http.Request) {
 	namespace := mux.Vars(r)["ns"]
 	path, _ := pathAndRef(r)
 
-	recursiveDelete := false
-	recursiveDeleteStr := r.URL.Query().Get("recursive")
-	if recursiveDeleteStr == "true" {
-		recursiveDelete = true
-	}
+	recursiveDelete, _ := strconv.ParseBool(r.URL.Query().Get("recursive"))
 
 	in := &grpc.DeleteNodeRequest{
 		Namespace: namespace,
@@ -3631,7 +3723,7 @@ func (h *flowHandler) Secrets(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
-	folder, _ := mux.Vars(r)["folder"]
+	folder := mux.Vars(r)["folder"]
 
 	p, err := pagination(r)
 	if err != nil {
@@ -3656,7 +3748,7 @@ func (h *flowHandler) SecretsSSE(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
-	folder, _ := mux.Vars(r)["folder"]
+	folder := mux.Vars(r)["folder"]
 
 	p, err := pagination(r)
 	if err != nil {
@@ -3719,7 +3811,7 @@ func (h *flowHandler) SearchSecret(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
-	name, _ := mux.Vars(r)["name"]
+	name := mux.Vars(r)["name"]
 
 	p, err := pagination(r)
 	if err != nil {
@@ -3810,7 +3902,7 @@ func (h *flowHandler) DeleteSecretsFolder(w http.ResponseWriter, r *http.Request
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
-	folder, _ := mux.Vars(r)["folder"]
+	folder := mux.Vars(r)["folder"]
 
 	in := new(grpc.DeleteSecretsFolderRequest)
 	in.Namespace = namespace
@@ -3827,7 +3919,7 @@ func (h *flowHandler) CreateSecretsFolder(w http.ResponseWriter, r *http.Request
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
-	folder, _ := mux.Vars(r)["folder"]
+	folder := mux.Vars(r)["folder"]
 
 	in := new(grpc.CreateSecretsFolderRequest)
 
@@ -4175,7 +4267,12 @@ func (h *flowHandler) WaitWorkflow(w http.ResponseWriter, r *http.Request) {
 		respond(w, nil, err)
 		return
 	}
-	defer c.CloseSend()
+	defer func() {
+		err := c.CloseSend()
+		if err != nil {
+			h.logger.Errorf("Failed to close connection: %v.", err)
+		}
+	}()
 
 	for {
 		status, err := c.Recv()
@@ -4186,13 +4283,15 @@ func (h *flowHandler) WaitWorkflow(w http.ResponseWriter, r *http.Request) {
 
 		if s := status.Instance.GetStatus(); s == util.InstanceStatusComplete {
 
-			_ = c.CloseSend()
+			err = c.CloseSend()
+			if err != nil {
+				h.logger.Errorf("Failed to close connection: %v.", err)
+			}
 
 			output, err := h.client.InstanceOutput(ctx, &grpc.InstanceOutputRequest{
 				Namespace: namespace,
 				Instance:  resp.Instance,
 			})
-
 			if err != nil {
 				respond(w, nil, err)
 				return
@@ -4202,6 +4301,7 @@ func (h *flowHandler) WaitWorkflow(w http.ResponseWriter, r *http.Request) {
 
 			field := r.URL.Query().Get("field")
 			if field != "" {
+
 				m := make(map[string]interface{})
 				err = json.Unmarshal(data, &m)
 				if err != nil {
@@ -4211,21 +4311,31 @@ func (h *flowHandler) WaitWorkflow(w http.ResponseWriter, r *http.Request) {
 
 				x, exists := m[field]
 				if exists {
-					data, _ = json.Marshal(x)
+					data, err = json.Marshal(x)
+					if err != nil {
+						respond(w, nil, err)
+						return
+					}
 				} else {
-					data, _ = json.Marshal(nil)
+					data, err = json.Marshal(nil)
+					if err != nil {
+						panic(err)
+					}
 				}
+
 			}
 
 			var x interface{}
+
 			err = json.Unmarshal(data, &x)
 			if err != nil {
 				respond(w, nil, err)
 				return
 			}
 
-			rawo := r.URL.Query().Get("raw-output")
-			if rawo == "true" {
+			rawo, _ := strconv.ParseBool(r.URL.Query().Get("raw-output"))
+
+			if rawo {
 
 				if x == nil {
 					data = make([]byte, 0)
@@ -4233,7 +4343,7 @@ func (h *flowHandler) WaitWorkflow(w http.ResponseWriter, r *http.Request) {
 					data = []byte(str)
 					b64, err := base64.StdEncoding.DecodeString(str)
 					if err == nil {
-						data = []byte(b64)
+						data = b64
 					}
 				}
 
@@ -4249,7 +4359,11 @@ func (h *flowHandler) WaitWorkflow(w http.ResponseWriter, r *http.Request) {
 
 			w.Header().Set("Content-Type", ctype)
 
-			_, _ = io.Copy(w, bytes.NewReader(data))
+			_, err = io.Copy(w, bytes.NewReader(data))
+			if err != nil {
+				h.logger.Errorf("Failed to send response: %v.", err)
+			}
+
 			return
 
 		} else if s == util.InstanceStatusFailed {
@@ -4307,17 +4421,18 @@ func ToGRPCCloudEvents(r *http.Request) ([]cloudevents.Event, error) {
 	}
 
 	if strings.HasPrefix(ct, "application/json") {
-		x, _ := json.Marshal(r.Header)
-		fmt.Println(string(x))
+		_, err := json.Marshal(r.Header)
+		if err != nil {
+			return nil, err
+		}
 		s := r.Header.Get("Ce-Type")
 		if s == "" {
 			ct = "application/cloudevents+json; charset=UTF-8"
 			r.Header.Set("Content-Type", ct)
-			fmt.Println(r.Header.Get("Content-Type"))
 		}
 	}
 
-	bodyData, err := ioutil.ReadAll(r.Body)
+	bodyData, err := io.ReadAll(r.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -4338,7 +4453,10 @@ func ToGRPCCloudEvents(r *http.Request) ([]cloudevents.Event, error) {
 
 	// azure hack for dataschema '#' which is an invalid cloudevent
 	if err != nil && strings.HasPrefix(err.Error(), "dataschema: if present") {
-		ev.Context.SetDataSchema("")
+		err = ev.Context.SetDataSchema("")
+		if err != nil {
+			panic(err)
+		}
 	} else if err != nil {
 		goto generic
 	}
@@ -4429,6 +4547,195 @@ func (h *flowHandler) BroadcastCloudevent(w http.ResponseWriter, r *http.Request
 		respond(w, resp, err)
 
 	}
+
+}
+
+func (h *flowHandler) BroadcastCloudeventFilter(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	filter := mux.Vars(r)["filter"]
+
+	ces, err := ToGRPCCloudEvents(r)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
+	for i := range ces {
+
+		d, err := json.Marshal(ces[i])
+		if err != nil {
+			h.logger.Errorf("Failed to marshal CloudEvent: %v.", err)
+			continue
+		}
+
+		inFilter := &grpc.ApplyCloudEventFilterRequest{
+			Namespace:  namespace,
+			Cloudevent: d,
+			FilterName: filter,
+		}
+
+		rsp, err := h.client.ApplyCloudEventFilter(ctx, inFilter)
+		if err != nil {
+			h.logger.Errorf("Failed to apply CloudEvent filter: %v.", err)
+			continue
+		}
+
+		if string(rsp.GetEvent()) == "null" {
+			continue
+		}
+
+		in := &grpc.BroadcastCloudeventRequest{
+			Namespace:  namespace,
+			Cloudevent: rsp.GetEvent(),
+		}
+
+		_, err = h.client.BroadcastCloudevent(ctx, in)
+		if err != nil {
+			h.logger.Errorf("Failed to broadcast CloudEvent: %v.", err)
+			continue
+		}
+
+	}
+
+}
+
+func (h *flowHandler) CreateBroadcastCloudeventFilter(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	filterName := mux.Vars(r)["filter"]
+
+	jsCode, err := loadRawBody(r)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
+	//CREATE FILTER
+	in := new(grpc.CreateCloudEventFilterRequest)
+	in.Namespace = namespace
+	in.Filtername = filterName
+	in.JsCode = string(jsCode)
+	resp, err := h.client.CreateCloudEventFilter(ctx, in)
+	if err != nil {
+		respond(w, resp, err)
+		return
+	}
+	respond(w, resp, err)
+
+}
+
+func (h *flowHandler) DeleteBroadcastCloudeventFilter(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	filterName := mux.Vars(r)["filter"]
+
+	in := new(grpc.DeleteCloudEventFilterRequest)
+	in.Namespace = namespace
+	in.FilterName = filterName
+
+	resp, err := h.client.DeleteCloudEventFilter(ctx, in)
+	if err != nil {
+		respond(w, resp, err)
+		return
+	}
+	respond(w, resp, err)
+
+}
+
+func (h *flowHandler) UpdateBroadcastCloudeventFilter(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	filterName := mux.Vars(r)["filter"]
+
+	jsCode, err := loadRawBody(r)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
+	_, err = goja.Compile("filter", fmt.Sprintf("function filter() {\n %s \n}", string(jsCode)), false)
+	if err != nil {
+		err := errors.New("js code does not compile")
+		respond(w, nil, err)
+		return
+	}
+
+	//DELETE Filter
+	inDelete := new(grpc.DeleteCloudEventFilterRequest)
+	inDelete.Namespace = namespace
+	inDelete.FilterName = filterName
+	respDelete, errDelete := h.client.DeleteCloudEventFilter(ctx, inDelete)
+	if errDelete != nil {
+		respond(w, respDelete, errDelete)
+		return
+	}
+
+	//CREATE FILTER
+	inAdd := new(grpc.CreateCloudEventFilterRequest)
+	inAdd.Namespace = namespace
+	inAdd.Filtername = filterName
+	inAdd.JsCode = string(jsCode)
+	respCreate, errCreate := h.client.CreateCloudEventFilter(ctx, inAdd)
+	if respCreate != nil {
+		respond(w, respCreate, errCreate)
+		return
+	}
+
+	respond(w, respCreate, errCreate)
+
+}
+
+func (h *flowHandler) GetCloudeventFilterList(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+
+	in := new(grpc.GetCloudEventFiltersRequest)
+
+	in.Namespace = namespace
+
+	resp, err := h.client.GetCloudEventFilters(ctx, in)
+
+	respond(w, resp, err)
+
+}
+
+func (h *flowHandler) GetCloudEventFilter(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	filterName := mux.Vars(r)["filter"]
+
+	in := new(grpc.GetCloudEventFilterScriptRequest)
+
+	in.Namespace = namespace
+	in.Name = filterName
+
+	resp, err := h.client.GetCloudEventFilterScript(ctx, in)
+	if err != nil {
+		respond(w, resp, err)
+		return
+	}
+	resp.Filtername = filterName
+
+	respond(w, resp, err)
 
 }
 
@@ -4617,7 +4924,7 @@ func (h *flowHandler) SetNamespaceVariable(w http.ResponseWriter, r *http.Reques
 	if total <= 0 {
 		data, err := loadRawBody(r)
 		if err != nil {
-			if err == io.EOF {
+			if errors.Is(err, io.EOF) {
 				total = 0
 				rdr = bytes.NewReader([]byte(""))
 			} else {

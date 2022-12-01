@@ -10,13 +10,10 @@ import "pkg/functions/grpc/registries-get.proto";
 import "pkg/functions/grpc/registry-delete.proto";
 import "pkg/functions/grpc/registry-store.proto";
 
-import "pkg/functions/grpc/registries-global.proto";
-
 import "pkg/functions/grpc/functions-get.proto";
 import "pkg/functions/grpc/functions-create.proto";
 import "pkg/functions/grpc/functions-reconstruct.proto";
 import "pkg/functions/grpc/functions-list.proto";
-import "pkg/functions/grpc/functions-traffic.proto";
 import "pkg/functions/grpc/functions-update.proto";
 import "pkg/functions/grpc/revision-delete.proto";
 import "pkg/functions/grpc/pod-list.proto";
@@ -34,15 +31,6 @@ service FunctionsService {
 
 	rpc StoreRegistry (StoreRegistryRequest) returns (google.protobuf.Empty) {}
   rpc GetRegistries (GetRegistriesRequest) returns (GetRegistriesResponse) {}
-
-  rpc StoreGlobalRegistry (StoreGlobalRegistryRequest) returns (google.protobuf.Empty) {}
-  rpc GetGlobalRegistries (google.protobuf.Empty) returns (GetRegistriesResponse) {}
-  rpc DeleteGlobalRegistry (DeleteGlobalRegistryRequest) returns (google.protobuf.Empty) {}
-
-  rpc StoreGlobalPrivateRegistry (StoreGlobalRegistryRequest) returns (google.protobuf.Empty) {}
-  rpc GetGlobalPrivateRegistries (google.protobuf.Empty) returns (GetRegistriesResponse) {}
-  rpc DeleteGlobalPrivateRegistry (DeleteGlobalRegistryRequest) returns (google.protobuf.Empty) {}
-
   rpc DeleteRegistry (DeleteRegistryRequest) returns (google.protobuf.Empty) {}
 
   rpc ReconstructFunction(ReconstructFunctionRequest) returns (google.protobuf.Empty)  {}
@@ -52,7 +40,6 @@ service FunctionsService {
   rpc ListFunctions(ListFunctionsRequest) returns (ListFunctionsResponse)  {}
   rpc GetFunction(GetFunctionRequest) returns (GetFunctionResponse)  {}
   rpc DeleteFunction(GetFunctionRequest) returns (google.protobuf.Empty)  {}
-  rpc SetFunctionsTraffic(SetTrafficRequest) returns (google.protobuf.Empty)  {}
   rpc DeleteRevision(DeleteRevisionRequest) returns (google.protobuf.Empty)  {}
   rpc WatchFunctions(WatchFunctionsRequest) returns (stream WatchFunctionsResponse)  {}
   rpc WatchPods(WatchPodsRequest) returns (stream WatchPodsResponse)  {}

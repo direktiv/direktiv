@@ -2,6 +2,7 @@ package dlog
 
 import (
 	"os"
+	"strconv"
 
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/direktiv/direktiv/pkg/version"
@@ -9,7 +10,7 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-// ApplicationLogger returns logger for applications
+// ApplicationLogger returns logger for applications.
 func ApplicationLogger(component string) (*zap.SugaredLogger, error) {
 
 	appLogger, err := customLogger()
@@ -20,7 +21,7 @@ func ApplicationLogger(component string) (*zap.SugaredLogger, error) {
 
 }
 
-// FunctionsLogger returns logger for functions
+// FunctionsLogger returns logger for functions.
 func FunctionsLogger() (*zap.SugaredLogger, error) {
 
 	fnLogger, err := customLogger()
@@ -33,10 +34,10 @@ func FunctionsLogger() (*zap.SugaredLogger, error) {
 
 func customLogger() (*zap.Logger, error) {
 
-	l := os.Getenv(util.DirektivDebug)
+	l, _ := strconv.ParseBool(os.Getenv(util.DirektivDebug))
 
 	inLvl := zapcore.InfoLevel
-	if l == "true" {
+	if l {
 		inLvl = zapcore.DebugLevel
 	}
 

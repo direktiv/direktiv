@@ -6,7 +6,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-// Server serves backend implementation
+// Server serves backend implementation.
 type Server struct {
 	secretsgrpc.UnimplementedSecretsServiceServer
 	lifeLine chan bool

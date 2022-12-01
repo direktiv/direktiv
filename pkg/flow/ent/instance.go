@@ -63,9 +63,11 @@ type InstanceEdges struct {
 	Children []*InstanceRuntime `json:"children,omitempty"`
 	// Eventlisteners holds the value of the eventlisteners edge.
 	Eventlisteners []*Events `json:"eventlisteners,omitempty"`
+	// Annotations holds the value of the annotations edge.
+	Annotations []*Annotation `json:"annotations,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [8]bool
+	loadedTypes [9]bool
 }
 
 // NamespaceOrErr returns the Namespace value or an error if the edge
@@ -73,8 +75,7 @@ type InstanceEdges struct {
 func (e InstanceEdges) NamespaceOrErr() (*Namespace, error) {
 	if e.loadedTypes[0] {
 		if e.Namespace == nil {
-			// The edge namespace was loaded in eager-loading,
-			// but was not found.
+			// Edge was loaded but was not found.
 			return nil, &NotFoundError{label: namespace.Label}
 		}
 		return e.Namespace, nil
@@ -87,8 +88,7 @@ func (e InstanceEdges) NamespaceOrErr() (*Namespace, error) {
 func (e InstanceEdges) WorkflowOrErr() (*Workflow, error) {
 	if e.loadedTypes[1] {
 		if e.Workflow == nil {
-			// The edge workflow was loaded in eager-loading,
-			// but was not found.
+			// Edge was loaded but was not found.
 			return nil, &NotFoundError{label: workflow.Label}
 		}
 		return e.Workflow, nil
@@ -101,8 +101,7 @@ func (e InstanceEdges) WorkflowOrErr() (*Workflow, error) {
 func (e InstanceEdges) RevisionOrErr() (*Revision, error) {
 	if e.loadedTypes[2] {
 		if e.Revision == nil {
-			// The edge revision was loaded in eager-loading,
-			// but was not found.
+			// Edge was loaded but was not found.
 			return nil, &NotFoundError{label: revision.Label}
 		}
 		return e.Revision, nil
@@ -133,8 +132,7 @@ func (e InstanceEdges) VarsOrErr() ([]*VarRef, error) {
 func (e InstanceEdges) RuntimeOrErr() (*InstanceRuntime, error) {
 	if e.loadedTypes[5] {
 		if e.Runtime == nil {
-			// The edge runtime was loaded in eager-loading,
-			// but was not found.
+			// Edge was loaded but was not found.
 			return nil, &NotFoundError{label: instanceruntime.Label}
 		}
 		return e.Runtime, nil
@@ -160,9 +158,18 @@ func (e InstanceEdges) EventlistenersOrErr() ([]*Events, error) {
 	return nil, &NotLoadedError{edge: "eventlisteners"}
 }
 
+// AnnotationsOrErr returns the Annotations value or an error if the edge
+// was not loaded in eager-loading.
+func (e InstanceEdges) AnnotationsOrErr() ([]*Annotation, error) {
+	if e.loadedTypes[8] {
+		return e.Annotations, nil
+	}
+	return nil, &NotLoadedError{edge: "annotations"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
-func (*Instance) scanValues(columns []string) ([]interface{}, error) {
-	values := make([]interface{}, len(columns))
+func (*Instance) scanValues(columns []string) ([]any, error) {
+	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
 		case instance.FieldStatus, instance.FieldAs, instance.FieldErrorCode, instance.FieldErrorMessage, instance.FieldInvoker:
@@ -186,7 +193,7 @@ func (*Instance) scanValues(columns []string) ([]interface{}, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the Instance fields.
-func (i *Instance) assignValues(columns []string, values []interface{}) error {
+func (i *Instance) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -310,6 +317,11 @@ func (i *Instance) QueryChildren() *InstanceRuntimeQuery {
 // QueryEventlisteners queries the "eventlisteners" edge of the Instance entity.
 func (i *Instance) QueryEventlisteners() *EventsQuery {
 	return (&InstanceClient{config: i.config}).QueryEventlisteners(i)
+}
+
+// QueryAnnotations queries the "annotations" edge of the Instance entity.
+func (i *Instance) QueryAnnotations() *AnnotationQuery {
+	return (&InstanceClient{config: i.config}).QueryAnnotations(i)
 }
 
 // Update returns a builder for updating this Instance.

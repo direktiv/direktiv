@@ -4,13 +4,11 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
 	"os/signal"
 	"strings"
-	"time"
 
 	"github.com/direktiv/direktiv/pkg/dlog"
 	"github.com/direktiv/direktiv/pkg/flow"
@@ -19,6 +17,8 @@ import (
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 	libgrpc "google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 )
@@ -47,10 +47,14 @@ func main() {
 
 	logger, err = dlog.ApplicationLogger("flow")
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "failed to initialize logger: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Failed to initialize logger: %v\n", err)
 		os.Exit(1)
 	}
-	defer logger.Sync()
+	defer func() {
+		err := logger.Sync()
+		fmt.Fprintf(os.Stderr, "Failed to sync logger: %v\n", err)
+		os.Exit(1)
+	}()
 
 	rootCmd.PersistentFlags().StringVar(&addr, "addr", "localhost:8080", "")
 	rootCmd.AddCommand(serverCmd)
@@ -69,6 +73,11 @@ func main() {
 	rootCmd.AddCommand(createNamespaceCmd)
 	rootCmd.AddCommand(deleteNamespaceCmd)
 	rootCmd.AddCommand(renameNamespaceCmd)
+	rootCmd.AddCommand(annotationSetNamespaceCmd)
+	rootCmd.AddCommand(annotationGetNamespaceCmd)
+	rootCmd.AddCommand(annotationListNamespaceCmd)
+	rootCmd.AddCommand(annotationRenameNamespaceCmd)
+	rootCmd.AddCommand(annotationDeleteNamespaceCmd)
 
 	rootCmd.AddCommand(directoryCmd)
 	rootCmd.AddCommand(createDirectoryCmd)
@@ -97,20 +106,6 @@ func main() {
 	rootCmd.AddCommand(setSecretCmd)
 	rootCmd.AddCommand(deleteSecretCmd)
 
-	rootCmd.AddCommand(testsCmd)
-	rootCmd.AddCommand(testsAPICmd)
-	testsCmd.Flags().BoolVarP(&skipLongTests, "quick", "q", false, "")
-	testsCmd.Flags().BoolVarP(&persistTest, "persist-test", "p", false, "If true, test will stop on first fail or last success and will not cleanup resources. Only supported when clients=1")
-	testsCmd.Flags().IntVarP(&parallelTests, "clients", "c", 1, "")
-	testsCmd.Flags().DurationVarP(&instanceTimeout, "instance-timeout", "t", time.Second*5, "")
-	testsCmd.Flags().DurationVarP(&testTimeout, "test-timeout", "T", time.Second*10, "")
-
-	testsAPICmd.Flags().BoolVarP(&skipLongTests, "quick", "q", false, "")
-	testsAPICmd.Flags().BoolVarP(&persistTest, "persist-test", "p", false, "If true, test will stop on first fail or last success and will not cleanup resources. Only supported when clients=1")
-	testsAPICmd.Flags().IntVarP(&parallelTests, "clients", "c", 1, "")
-	testsAPICmd.Flags().DurationVarP(&instanceTimeout, "instance-timeout", "t", time.Second*5, "")
-	testsAPICmd.Flags().DurationVarP(&testTimeout, "test-timeout", "T", time.Second*10, "")
-
 	err = rootCmd.Execute()
 	if err != nil {
 		exit(err)
@@ -131,7 +126,7 @@ func addPaginationFlags(cmd *cobra.Command) {
 
 func client() (grpc.FlowClient, io.Closer, error) {
 
-	conn, err := libgrpc.Dial(addr, libgrpc.WithInsecure())
+	conn, err := libgrpc.Dial(addr, libgrpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, nil, err
 	}
@@ -158,9 +153,9 @@ func print(x interface{}) {
 
 func exit(err error) {
 
-	desc := libgrpc.ErrorDesc(err)
+	desc := status.Convert(err)
 
-	logger.Error(fmt.Sprintf("%s", desc))
+	logger.Error(desc)
 
 	os.Exit(1)
 
@@ -199,7 +194,7 @@ var serverCmd = &cobra.Command{
 func shutdown() {
 
 	// just in case, stop DNS server
-	pv, err := ioutil.ReadFile("/proc/version")
+	pv, err := os.ReadFile("/proc/version")
 	if err == nil {
 
 		// this is a direktiv machine, so we press poweroff

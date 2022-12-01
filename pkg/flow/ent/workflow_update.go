@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/direktiv/direktiv/pkg/flow/ent/annotation"
 	"github.com/direktiv/direktiv/pkg/flow/ent/events"
 	"github.com/direktiv/direktiv/pkg/flow/ent/inode"
 	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
@@ -28,8 +29,9 @@ import (
 // WorkflowUpdate is the builder for updating Workflow entities.
 type WorkflowUpdate struct {
 	config
-	hooks    []Hook
-	mutation *WorkflowMutation
+	hooks     []Hook
+	mutation  *WorkflowMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // Where appends a list predicates to the WorkflowUpdate builder.
@@ -239,6 +241,21 @@ func (wu *WorkflowUpdate) AddWfevents(e ...*Events) *WorkflowUpdate {
 	return wu.AddWfeventIDs(ids...)
 }
 
+// AddAnnotationIDs adds the "annotations" edge to the Annotation entity by IDs.
+func (wu *WorkflowUpdate) AddAnnotationIDs(ids ...uuid.UUID) *WorkflowUpdate {
+	wu.mutation.AddAnnotationIDs(ids...)
+	return wu
+}
+
+// AddAnnotations adds the "annotations" edges to the Annotation entity.
+func (wu *WorkflowUpdate) AddAnnotations(a ...*Annotation) *WorkflowUpdate {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return wu.AddAnnotationIDs(ids...)
+}
+
 // Mutation returns the WorkflowMutation object of the builder.
 func (wu *WorkflowUpdate) Mutation() *WorkflowMutation {
 	return wu.mutation
@@ -403,6 +420,27 @@ func (wu *WorkflowUpdate) RemoveWfevents(e ...*Events) *WorkflowUpdate {
 	return wu.RemoveWfeventIDs(ids...)
 }
 
+// ClearAnnotations clears all "annotations" edges to the Annotation entity.
+func (wu *WorkflowUpdate) ClearAnnotations() *WorkflowUpdate {
+	wu.mutation.ClearAnnotations()
+	return wu
+}
+
+// RemoveAnnotationIDs removes the "annotations" edge to Annotation entities by IDs.
+func (wu *WorkflowUpdate) RemoveAnnotationIDs(ids ...uuid.UUID) *WorkflowUpdate {
+	wu.mutation.RemoveAnnotationIDs(ids...)
+	return wu
+}
+
+// RemoveAnnotations removes "annotations" edges to Annotation entities.
+func (wu *WorkflowUpdate) RemoveAnnotations(a ...*Annotation) *WorkflowUpdate {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return wu.RemoveAnnotationIDs(ids...)
+}
+
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (wu *WorkflowUpdate) Save(ctx context.Context) (int, error) {
 	var (
@@ -480,6 +518,12 @@ func (wu *WorkflowUpdate) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (wu *WorkflowUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *WorkflowUpdate {
+	wu.modifiers = append(wu.modifiers, modifiers...)
+	return wu
+}
+
 func (wu *WorkflowUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -499,50 +543,25 @@ func (wu *WorkflowUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 	}
 	if value, ok := wu.mutation.Live(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeBool,
-			Value:  value,
-			Column: workflow.FieldLive,
-		})
+		_spec.SetField(workflow.FieldLive, field.TypeBool, value)
 	}
 	if value, ok := wu.mutation.LogToEvents(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: workflow.FieldLogToEvents,
-		})
+		_spec.SetField(workflow.FieldLogToEvents, field.TypeString, value)
 	}
 	if wu.mutation.LogToEventsCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Column: workflow.FieldLogToEvents,
-		})
+		_spec.ClearField(workflow.FieldLogToEvents, field.TypeString)
 	}
 	if value, ok := wu.mutation.ReadOnly(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeBool,
-			Value:  value,
-			Column: workflow.FieldReadOnly,
-		})
+		_spec.SetField(workflow.FieldReadOnly, field.TypeBool, value)
 	}
 	if wu.mutation.ReadOnlyCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeBool,
-			Column: workflow.FieldReadOnly,
-		})
+		_spec.ClearField(workflow.FieldReadOnly, field.TypeBool)
 	}
 	if value, ok := wu.mutation.UpdatedAt(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: workflow.FieldUpdatedAt,
-		})
+		_spec.SetField(workflow.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if wu.mutation.UpdatedAtCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Column: workflow.FieldUpdatedAt,
-		})
+		_spec.ClearField(workflow.FieldUpdatedAt, field.TypeTime)
 	}
 	if wu.mutation.InodeCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -992,6 +1011,61 @@ func (wu *WorkflowUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if wu.mutation.AnnotationsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   workflow.AnnotationsTable,
+			Columns: []string{workflow.AnnotationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: annotation.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := wu.mutation.RemovedAnnotationsIDs(); len(nodes) > 0 && !wu.mutation.AnnotationsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   workflow.AnnotationsTable,
+			Columns: []string{workflow.AnnotationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: annotation.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := wu.mutation.AnnotationsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   workflow.AnnotationsTable,
+			Columns: []string{workflow.AnnotationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: annotation.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	_spec.AddModifiers(wu.modifiers...)
 	if n, err = sqlgraph.UpdateNodes(ctx, wu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{workflow.Label}
@@ -1006,9 +1080,10 @@ func (wu *WorkflowUpdate) sqlSave(ctx context.Context) (n int, err error) {
 // WorkflowUpdateOne is the builder for updating a single Workflow entity.
 type WorkflowUpdateOne struct {
 	config
-	fields   []string
-	hooks    []Hook
-	mutation *WorkflowMutation
+	fields    []string
+	hooks     []Hook
+	mutation  *WorkflowMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // SetLive sets the "live" field.
@@ -1212,6 +1287,21 @@ func (wuo *WorkflowUpdateOne) AddWfevents(e ...*Events) *WorkflowUpdateOne {
 	return wuo.AddWfeventIDs(ids...)
 }
 
+// AddAnnotationIDs adds the "annotations" edge to the Annotation entity by IDs.
+func (wuo *WorkflowUpdateOne) AddAnnotationIDs(ids ...uuid.UUID) *WorkflowUpdateOne {
+	wuo.mutation.AddAnnotationIDs(ids...)
+	return wuo
+}
+
+// AddAnnotations adds the "annotations" edges to the Annotation entity.
+func (wuo *WorkflowUpdateOne) AddAnnotations(a ...*Annotation) *WorkflowUpdateOne {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return wuo.AddAnnotationIDs(ids...)
+}
+
 // Mutation returns the WorkflowMutation object of the builder.
 func (wuo *WorkflowUpdateOne) Mutation() *WorkflowMutation {
 	return wuo.mutation
@@ -1376,6 +1466,27 @@ func (wuo *WorkflowUpdateOne) RemoveWfevents(e ...*Events) *WorkflowUpdateOne {
 	return wuo.RemoveWfeventIDs(ids...)
 }
 
+// ClearAnnotations clears all "annotations" edges to the Annotation entity.
+func (wuo *WorkflowUpdateOne) ClearAnnotations() *WorkflowUpdateOne {
+	wuo.mutation.ClearAnnotations()
+	return wuo
+}
+
+// RemoveAnnotationIDs removes the "annotations" edge to Annotation entities by IDs.
+func (wuo *WorkflowUpdateOne) RemoveAnnotationIDs(ids ...uuid.UUID) *WorkflowUpdateOne {
+	wuo.mutation.RemoveAnnotationIDs(ids...)
+	return wuo
+}
+
+// RemoveAnnotations removes "annotations" edges to Annotation entities.
+func (wuo *WorkflowUpdateOne) RemoveAnnotations(a ...*Annotation) *WorkflowUpdateOne {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return wuo.RemoveAnnotationIDs(ids...)
+}
+
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
 func (wuo *WorkflowUpdateOne) Select(field string, fields ...string) *WorkflowUpdateOne {
@@ -1466,6 +1577,12 @@ func (wuo *WorkflowUpdateOne) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (wuo *WorkflowUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *WorkflowUpdateOne {
+	wuo.modifiers = append(wuo.modifiers, modifiers...)
+	return wuo
+}
+
 func (wuo *WorkflowUpdateOne) sqlSave(ctx context.Context) (_node *Workflow, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -1502,50 +1619,25 @@ func (wuo *WorkflowUpdateOne) sqlSave(ctx context.Context) (_node *Workflow, err
 		}
 	}
 	if value, ok := wuo.mutation.Live(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeBool,
-			Value:  value,
-			Column: workflow.FieldLive,
-		})
+		_spec.SetField(workflow.FieldLive, field.TypeBool, value)
 	}
 	if value, ok := wuo.mutation.LogToEvents(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: workflow.FieldLogToEvents,
-		})
+		_spec.SetField(workflow.FieldLogToEvents, field.TypeString, value)
 	}
 	if wuo.mutation.LogToEventsCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Column: workflow.FieldLogToEvents,
-		})
+		_spec.ClearField(workflow.FieldLogToEvents, field.TypeString)
 	}
 	if value, ok := wuo.mutation.ReadOnly(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeBool,
-			Value:  value,
-			Column: workflow.FieldReadOnly,
-		})
+		_spec.SetField(workflow.FieldReadOnly, field.TypeBool, value)
 	}
 	if wuo.mutation.ReadOnlyCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeBool,
-			Column: workflow.FieldReadOnly,
-		})
+		_spec.ClearField(workflow.FieldReadOnly, field.TypeBool)
 	}
 	if value, ok := wuo.mutation.UpdatedAt(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: workflow.FieldUpdatedAt,
-		})
+		_spec.SetField(workflow.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if wuo.mutation.UpdatedAtCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Column: workflow.FieldUpdatedAt,
-		})
+		_spec.ClearField(workflow.FieldUpdatedAt, field.TypeTime)
 	}
 	if wuo.mutation.InodeCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -1995,6 +2087,61 @@ func (wuo *WorkflowUpdateOne) sqlSave(ctx context.Context) (_node *Workflow, err
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if wuo.mutation.AnnotationsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   workflow.AnnotationsTable,
+			Columns: []string{workflow.AnnotationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: annotation.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := wuo.mutation.RemovedAnnotationsIDs(); len(nodes) > 0 && !wuo.mutation.AnnotationsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   workflow.AnnotationsTable,
+			Columns: []string{workflow.AnnotationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: annotation.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := wuo.mutation.AnnotationsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   workflow.AnnotationsTable,
+			Columns: []string{workflow.AnnotationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: annotation.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	_spec.AddModifiers(wuo.modifiers...)
 	_node = &Workflow{config: wuo.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

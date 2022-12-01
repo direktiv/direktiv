@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -12,8 +13,6 @@ import (
 	"github.com/google/uuid"
 	_ "github.com/lib/pq"
 )
-
-var generations map[int]func(*sql.DB) error
 
 func main() {
 
@@ -64,13 +63,18 @@ func main() {
 		log.Printf("error running sql: %v", err)
 		os.Exit(1)
 	}
-	defer tx.Rollback()
+	defer func() {
+		err := tx.Rollback()
+		if !errors.Is(err, sql.ErrTxDone) {
+			log.Printf("error rolling back sql: %v", err)
+		}
+	}()
 
 	row = tx.QueryRow(`SELECT generation FROM db_generation`)
 	var gen string
 	err = row.Scan(&gen)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			gen = "0.5.10"
 		} else {
 			log.Printf("error running sql: %v", err)
@@ -86,6 +90,9 @@ func main() {
 	upgraders = append(upgraders, generationUpgrader{
 		version: "0.6.0",
 		logic:   updateGeneration_0_6_0,
+	}, generationUpgrader{
+		version: "0.7.1",
+		logic:   updateGeneration_0_7_1,
 	})
 
 	for _, upgrader := range upgraders {
@@ -143,6 +150,12 @@ func main() {
 type generationUpgrader struct {
 	version string
 	logic   func(tx *sql.Tx) error
+}
+
+func updateGeneration_0_7_1(db *sql.Tx) error {
+	// old is id, name, data, new one has namespace
+	_, err := db.Exec("drop table services")
+	return err
 }
 
 func updateGeneration_0_6_0(db *sql.Tx) error {

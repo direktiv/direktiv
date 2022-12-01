@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"time"
 
+	"entgo.io/ent/dialect"
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/cloudevents/sdk-go/v2/event"
@@ -21,6 +23,7 @@ type CloudEventsCreate struct {
 	config
 	mutation *CloudEventsMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetEventId sets the "eventId" field.
@@ -242,48 +245,29 @@ func (cec *CloudEventsCreate) createSpec() (*CloudEvents, *sqlgraph.CreateSpec) 
 			},
 		}
 	)
+	_spec.OnConflict = cec.conflict
 	if id, ok := cec.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
 	if value, ok := cec.mutation.EventId(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: cloudevents.FieldEventId,
-		})
+		_spec.SetField(cloudevents.FieldEventId, field.TypeString, value)
 		_node.EventId = value
 	}
 	if value, ok := cec.mutation.Event(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Value:  value,
-			Column: cloudevents.FieldEvent,
-		})
+		_spec.SetField(cloudevents.FieldEvent, field.TypeJSON, value)
 		_node.Event = value
 	}
 	if value, ok := cec.mutation.Fire(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: cloudevents.FieldFire,
-		})
+		_spec.SetField(cloudevents.FieldFire, field.TypeTime, value)
 		_node.Fire = value
 	}
 	if value, ok := cec.mutation.Created(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: cloudevents.FieldCreated,
-		})
+		_spec.SetField(cloudevents.FieldCreated, field.TypeTime, value)
 		_node.Created = value
 	}
 	if value, ok := cec.mutation.Processed(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeBool,
-			Value:  value,
-			Column: cloudevents.FieldProcessed,
-		})
+		_spec.SetField(cloudevents.FieldProcessed, field.TypeBool, value)
 		_node.Processed = value
 	}
 	if nodes := cec.mutation.NamespaceIDs(); len(nodes) > 0 {
@@ -309,10 +293,207 @@ func (cec *CloudEventsCreate) createSpec() (*CloudEvents, *sqlgraph.CreateSpec) 
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.CloudEvents.Create().
+//		SetEventId(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.CloudEventsUpsert) {
+//			SetEventId(v+v).
+//		}).
+//		Exec(ctx)
+func (cec *CloudEventsCreate) OnConflict(opts ...sql.ConflictOption) *CloudEventsUpsertOne {
+	cec.conflict = opts
+	return &CloudEventsUpsertOne{
+		create: cec,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.CloudEvents.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (cec *CloudEventsCreate) OnConflictColumns(columns ...string) *CloudEventsUpsertOne {
+	cec.conflict = append(cec.conflict, sql.ConflictColumns(columns...))
+	return &CloudEventsUpsertOne{
+		create: cec,
+	}
+}
+
+type (
+	// CloudEventsUpsertOne is the builder for "upsert"-ing
+	//  one CloudEvents node.
+	CloudEventsUpsertOne struct {
+		create *CloudEventsCreate
+	}
+
+	// CloudEventsUpsert is the "OnConflict" setter.
+	CloudEventsUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetEvent sets the "event" field.
+func (u *CloudEventsUpsert) SetEvent(v event.Event) *CloudEventsUpsert {
+	u.Set(cloudevents.FieldEvent, v)
+	return u
+}
+
+// UpdateEvent sets the "event" field to the value that was provided on create.
+func (u *CloudEventsUpsert) UpdateEvent() *CloudEventsUpsert {
+	u.SetExcluded(cloudevents.FieldEvent)
+	return u
+}
+
+// SetProcessed sets the "processed" field.
+func (u *CloudEventsUpsert) SetProcessed(v bool) *CloudEventsUpsert {
+	u.Set(cloudevents.FieldProcessed, v)
+	return u
+}
+
+// UpdateProcessed sets the "processed" field to the value that was provided on create.
+func (u *CloudEventsUpsert) UpdateProcessed() *CloudEventsUpsert {
+	u.SetExcluded(cloudevents.FieldProcessed)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// Using this option is equivalent to using:
+//
+//	client.CloudEvents.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(cloudevents.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *CloudEventsUpsertOne) UpdateNewValues() *CloudEventsUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(cloudevents.FieldID)
+		}
+		if _, exists := u.create.mutation.EventId(); exists {
+			s.SetIgnore(cloudevents.FieldEventId)
+		}
+		if _, exists := u.create.mutation.Fire(); exists {
+			s.SetIgnore(cloudevents.FieldFire)
+		}
+		if _, exists := u.create.mutation.Created(); exists {
+			s.SetIgnore(cloudevents.FieldCreated)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.CloudEvents.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *CloudEventsUpsertOne) Ignore() *CloudEventsUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *CloudEventsUpsertOne) DoNothing() *CloudEventsUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the CloudEventsCreate.OnConflict
+// documentation for more info.
+func (u *CloudEventsUpsertOne) Update(set func(*CloudEventsUpsert)) *CloudEventsUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&CloudEventsUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetEvent sets the "event" field.
+func (u *CloudEventsUpsertOne) SetEvent(v event.Event) *CloudEventsUpsertOne {
+	return u.Update(func(s *CloudEventsUpsert) {
+		s.SetEvent(v)
+	})
+}
+
+// UpdateEvent sets the "event" field to the value that was provided on create.
+func (u *CloudEventsUpsertOne) UpdateEvent() *CloudEventsUpsertOne {
+	return u.Update(func(s *CloudEventsUpsert) {
+		s.UpdateEvent()
+	})
+}
+
+// SetProcessed sets the "processed" field.
+func (u *CloudEventsUpsertOne) SetProcessed(v bool) *CloudEventsUpsertOne {
+	return u.Update(func(s *CloudEventsUpsert) {
+		s.SetProcessed(v)
+	})
+}
+
+// UpdateProcessed sets the "processed" field to the value that was provided on create.
+func (u *CloudEventsUpsertOne) UpdateProcessed() *CloudEventsUpsertOne {
+	return u.Update(func(s *CloudEventsUpsert) {
+		s.UpdateProcessed()
+	})
+}
+
+// Exec executes the query.
+func (u *CloudEventsUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for CloudEventsCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *CloudEventsUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *CloudEventsUpsertOne) ID(ctx context.Context) (id uuid.UUID, err error) {
+	if u.create.driver.Dialect() == dialect.MySQL {
+		// In case of "ON CONFLICT", there is no way to get back non-numeric ID
+		// fields from the database since MySQL does not support the RETURNING clause.
+		return id, errors.New("ent: CloudEventsUpsertOne.ID is not supported by MySQL driver. Use CloudEventsUpsertOne.Exec instead")
+	}
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *CloudEventsUpsertOne) IDX(ctx context.Context) uuid.UUID {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // CloudEventsCreateBulk is the builder for creating many CloudEvents entities in bulk.
 type CloudEventsCreateBulk struct {
 	config
 	builders []*CloudEventsCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the CloudEvents entities in the database.
@@ -339,6 +520,7 @@ func (cecb *CloudEventsCreateBulk) Save(ctx context.Context) ([]*CloudEvents, er
 					_, err = mutators[i+1].Mutate(root, cecb.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = cecb.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, cecb.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -385,6 +567,154 @@ func (cecb *CloudEventsCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (cecb *CloudEventsCreateBulk) ExecX(ctx context.Context) {
 	if err := cecb.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.CloudEvents.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.CloudEventsUpsert) {
+//			SetEventId(v+v).
+//		}).
+//		Exec(ctx)
+func (cecb *CloudEventsCreateBulk) OnConflict(opts ...sql.ConflictOption) *CloudEventsUpsertBulk {
+	cecb.conflict = opts
+	return &CloudEventsUpsertBulk{
+		create: cecb,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.CloudEvents.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (cecb *CloudEventsCreateBulk) OnConflictColumns(columns ...string) *CloudEventsUpsertBulk {
+	cecb.conflict = append(cecb.conflict, sql.ConflictColumns(columns...))
+	return &CloudEventsUpsertBulk{
+		create: cecb,
+	}
+}
+
+// CloudEventsUpsertBulk is the builder for "upsert"-ing
+// a bulk of CloudEvents nodes.
+type CloudEventsUpsertBulk struct {
+	create *CloudEventsCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.CloudEvents.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(cloudevents.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *CloudEventsUpsertBulk) UpdateNewValues() *CloudEventsUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(cloudevents.FieldID)
+			}
+			if _, exists := b.mutation.EventId(); exists {
+				s.SetIgnore(cloudevents.FieldEventId)
+			}
+			if _, exists := b.mutation.Fire(); exists {
+				s.SetIgnore(cloudevents.FieldFire)
+			}
+			if _, exists := b.mutation.Created(); exists {
+				s.SetIgnore(cloudevents.FieldCreated)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.CloudEvents.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *CloudEventsUpsertBulk) Ignore() *CloudEventsUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *CloudEventsUpsertBulk) DoNothing() *CloudEventsUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the CloudEventsCreateBulk.OnConflict
+// documentation for more info.
+func (u *CloudEventsUpsertBulk) Update(set func(*CloudEventsUpsert)) *CloudEventsUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&CloudEventsUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetEvent sets the "event" field.
+func (u *CloudEventsUpsertBulk) SetEvent(v event.Event) *CloudEventsUpsertBulk {
+	return u.Update(func(s *CloudEventsUpsert) {
+		s.SetEvent(v)
+	})
+}
+
+// UpdateEvent sets the "event" field to the value that was provided on create.
+func (u *CloudEventsUpsertBulk) UpdateEvent() *CloudEventsUpsertBulk {
+	return u.Update(func(s *CloudEventsUpsert) {
+		s.UpdateEvent()
+	})
+}
+
+// SetProcessed sets the "processed" field.
+func (u *CloudEventsUpsertBulk) SetProcessed(v bool) *CloudEventsUpsertBulk {
+	return u.Update(func(s *CloudEventsUpsert) {
+		s.SetProcessed(v)
+	})
+}
+
+// UpdateProcessed sets the "processed" field to the value that was provided on create.
+func (u *CloudEventsUpsertBulk) UpdateProcessed() *CloudEventsUpsertBulk {
+	return u.Update(func(s *CloudEventsUpsert) {
+		s.UpdateProcessed()
+	})
+}
+
+// Exec executes the query.
+func (u *CloudEventsUpsertBulk) Exec(ctx context.Context) error {
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the CloudEventsCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for CloudEventsCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *CloudEventsUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

@@ -365,13 +365,13 @@ func (flow *flow) SetVariable(ctx context.Context, vrefc *ent.VarRefClient, vdat
 
 		query := vrefc.Create().SetVardata(vdata).SetName(key)
 
-		switch q.(type) {
+		switch v := q.(type) {
 		case *ent.Namespace:
-			query = query.SetNamespace(q.(*ent.Namespace))
+			query = query.SetNamespace(v)
 		case *ent.Workflow:
-			query = query.SetWorkflow(q.(*ent.Workflow))
+			query = query.SetWorkflow(v)
 		case *ent.Instance:
-			query = query.SetInstance(q.(*ent.Instance))
+			query = query.SetInstance(v)
 			if thread {
 				query = query.SetBehaviour("thread")
 			}
@@ -412,26 +412,25 @@ func (flow *flow) SetVariable(ctx context.Context, vrefc *ent.VarRefClient, vdat
 		Key:       key,
 		TotalSize: int64(vdata.Size),
 	}
-	switch q.(type) {
+	switch v := q.(type) {
 	case *ent.Namespace:
 		broadcastInput.Scope = BroadcastEventScopeNamespace
-		ns = q.(*ent.Namespace)
+		ns = v
 	case *ent.Workflow:
 		broadcastInput.Scope = BroadcastEventScopeWorkflow
-		d, tErr := flow.reverseTraverseToWorkflow(ctx, q.(*ent.Workflow).ID.String())
+		d, tErr := flow.reverseTraverseToWorkflow(ctx, v.ID.String())
 		if tErr != nil {
 			return nil, false, err
 		}
 		broadcastInput.WorkflowPath = d.path
 		ns = d.ns()
 	case *ent.Instance:
-		// TODO: thread scope broadcast?
 		broadcastInput.Scope = BroadcastEventScopeInstance
-		ns, err = q.(*ent.Instance).Namespace(ctx)
+		ns, err = v.Namespace(ctx)
 		if err != nil {
 			return nil, false, err
 		}
-		broadcastInput.InstanceID = q.(*ent.Instance).ID.String()
+		broadcastInput.InstanceID = v.ID.String()
 	}
 
 	if newVar {
@@ -439,6 +438,77 @@ func (flow *flow) SetVariable(ctx context.Context, vrefc *ent.VarRefClient, vdat
 	} else {
 		err = flow.BroadcastVariable(ctx, BroadcastEventTypeUpdate, broadcastInput.Scope, broadcastInput, ns)
 	}
+
+	return vdata, newVar, err
+}
+
+func (flow *flow) DeleteVariable(ctx context.Context, vrefc *ent.VarRefClient, vdatac *ent.VarDataClient, q varQuerier, key string, data []byte, vMimeType string, thread bool) (*ent.VarData, bool, error) {
+
+	var err error
+	var vdata *ent.VarData
+	var newVar bool
+
+	var vref *ent.VarRef
+
+	if thread {
+		vref, err = q.QueryVars().Where(varref.NameEQ(key), varref.BehaviourContains("thread")).Only(ctx)
+	} else {
+		vref, err = q.QueryVars().Where(varref.NameEQ(key), varref.BehaviourIsNil()).Only(ctx)
+	}
+
+	if err != nil {
+		return nil, false, err
+	}
+
+	vdata, err = vref.QueryVardata().Select(vardata.FieldID).Only(ctx)
+	if err != nil {
+		return nil, false, err
+	}
+	_, err = vrefc.Delete().Where(varref.NameEQ(key)).Exec(ctx)
+	if err != nil {
+		return nil, false, err
+	}
+
+	k, err := vdata.QueryVarrefs().Count(ctx)
+	if err != nil {
+		return nil, false, err
+	}
+
+	if k == 0 {
+		err = vdatac.DeleteOne(vdata).Exec(ctx)
+		if err != nil {
+			return nil, false, err
+		}
+	}
+
+	// Broadcast Event
+	ns := new(ent.Namespace)
+	broadcastInput := broadcastVariableInput{
+		Key:       key,
+		TotalSize: int64(vdata.Size),
+	}
+	switch v := q.(type) {
+	case *ent.Namespace:
+		broadcastInput.Scope = BroadcastEventScopeNamespace
+		ns = v
+	case *ent.Workflow:
+		broadcastInput.Scope = BroadcastEventScopeWorkflow
+		d, tErr := flow.reverseTraverseToWorkflow(ctx, v.ID.String())
+		if tErr != nil {
+			return nil, false, err
+		}
+		broadcastInput.WorkflowPath = d.path
+		ns = d.ns()
+	case *ent.Instance:
+		broadcastInput.Scope = BroadcastEventScopeInstance
+		ns, err = v.Namespace(ctx)
+		if err != nil {
+			return nil, false, err
+		}
+		broadcastInput.InstanceID = v.ID.String()
+	}
+
+	err = flow.BroadcastVariable(ctx, BroadcastEventTypeDelete, broadcastInput.Scope, broadcastInput, ns)
 
 	return vdata, newVar, err
 }

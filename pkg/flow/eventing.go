@@ -2,6 +2,7 @@ package flow
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"sync"
@@ -56,16 +57,6 @@ func newEventReceiver(events *events, flow *flow) (*eventReceiver, error) {
 		flow:   flow,
 	}, nil
 
-}
-
-func requestToEvent(r *http.Request) (*cloudevents.Event, error) {
-	m := protocol.NewMessageFromHttpRequest(r)
-	ev, err := binding.ToEvent(context.Background(), m)
-	if err != nil {
-		return nil, err
-	}
-
-	return ev, ev.Validate()
 }
 
 func (rcv *eventReceiver) sendToNamespace(ns string, r *http.Request) error {
@@ -157,7 +148,6 @@ func PublishKnativeEvent(ce *cloudevents.Event) {
 
 }
 
-// func (flow *flow) InstanceInput(ctx context.Context, req *grpc.InstanceInputRequest) (*grpc.InstanceInputResponse, error) {
 func (rcv *eventReceiver) RequestEvents(req *igrpc.EventingRequest, stream igrpc.Eventing_RequestEventsServer) error {
 
 	rcv.logger.Infof("client connected: %v", req.GetUuid())
@@ -166,27 +156,28 @@ func (rcv *eventReceiver) RequestEvents(req *igrpc.EventingRequest, stream igrpc
 
 	ctx := stream.Context()
 
-	for {
-		select {
-		case <-ctx.Done():
-			rcv.logger.Infof("client %s has disconnected", req.GetUuid())
-			knativeClients.Delete(req.GetUuid())
-			return nil
-		}
-	}
+	<-ctx.Done()
+
+	rcv.logger.Infof("client %s has disconnected", req.GetUuid())
+	knativeClients.Delete(req.GetUuid())
+	return nil
 
 }
 
 func (rcv *eventReceiver) startGRPC() {
 
-	rcv.logger.Infof("starting eventing grpc")
+	rcv.logger.Infof("Starting eventing gRPC server.")
 
 	var grpcServer *grpc.Server
-	util.GrpcStart(&grpcServer, "eventing",
+
+	err := util.GrpcStart(&grpcServer, "eventing",
 		fmt.Sprintf(":%d", 3333), func(srv *grpc.Server) {
 			igrpc.RegisterEventingServer(srv, rcv)
 			reflection.Register(srv)
 		})
+	if err != nil {
+		rcv.logger.Errorf("Failed to start gRPC server: %v.", err)
+	}
 
 }
 
@@ -199,6 +190,12 @@ func (rcv *eventReceiver) Start() {
 	go rcv.startGRPC()
 
 	rcv.logger.Infof("starting event receiver")
-	http.ListenAndServe(":8080", r)
+
+	err := http.ListenAndServe(":8080", r)
+	if err != nil {
+		if !errors.Is(err, http.ErrServerClosed) {
+			rcv.logger.Errorf("Failed to start HTTP server: %v.", err)
+		}
+	}
 
 }

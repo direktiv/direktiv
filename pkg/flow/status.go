@@ -2,6 +2,7 @@ package flow
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
@@ -14,18 +15,22 @@ func (engine *engine) SetInstanceFailed(ctx context.Context, im *instanceMemory,
 	status = util.InstanceStatusFailed
 	code = ErrCodeInternal
 
-	if uerr, ok := err.(*derrors.UncatchableError); ok {
+	uerr := new(derrors.UncatchableError)
+	cerr := new(derrors.CatchableError)
+	ierr := new(derrors.InternalError)
+
+	if errors.As(err, &uerr) {
 		code = uerr.Code
 		message = uerr.Message
-	} else if cerr, ok := err.(*derrors.CatchableError); ok {
+	} else if errors.As(err, &cerr) {
 		code = cerr.Code
 		message = cerr.Message
-	} else if _, ok := err.(*derrors.InternalError); ok {
-		engine.sugar.Error(fmt.Errorf("internal error: %v", err))
+	} else if errors.As(err, &ierr) {
+		engine.sugar.Error(fmt.Errorf("internal error: %w", ierr))
 		status = util.InstanceStatusCrashed
 		message = "an internal error occurred"
 	} else {
-		engine.sugar.Error(fmt.Errorf("Unhandled error: %v", err))
+		engine.sugar.Error(fmt.Errorf("unhandled error: %w", err))
 		code = ErrCodeInternal
 		message = err.Error()
 	}

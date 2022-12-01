@@ -10,7 +10,9 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/dialect/sql/sqljson"
 	"entgo.io/ent/schema/field"
+	"github.com/direktiv/direktiv/pkg/flow/ent/annotation"
 	"github.com/direktiv/direktiv/pkg/flow/ent/inode"
 	"github.com/direktiv/direktiv/pkg/flow/ent/mirror"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
@@ -22,8 +24,9 @@ import (
 // InodeUpdate is the builder for updating Inode entities.
 type InodeUpdate struct {
 	config
-	hooks    []Hook
-	mutation *InodeMutation
+	hooks     []Hook
+	mutation  *InodeMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // Where appends a list predicates to the InodeUpdate builder.
@@ -61,6 +64,12 @@ func (iu *InodeUpdate) ClearName() *InodeUpdate {
 // SetAttributes sets the "attributes" field.
 func (iu *InodeUpdate) SetAttributes(s []string) *InodeUpdate {
 	iu.mutation.SetAttributes(s)
+	return iu
+}
+
+// AppendAttributes appends s to the "attributes" field.
+func (iu *InodeUpdate) AppendAttributes(s []string) *InodeUpdate {
+	iu.mutation.AppendAttributes(s)
 	return iu
 }
 
@@ -193,6 +202,21 @@ func (iu *InodeUpdate) SetMirror(m *Mirror) *InodeUpdate {
 	return iu.SetMirrorID(m.ID)
 }
 
+// AddAnnotationIDs adds the "annotations" edge to the Annotation entity by IDs.
+func (iu *InodeUpdate) AddAnnotationIDs(ids ...uuid.UUID) *InodeUpdate {
+	iu.mutation.AddAnnotationIDs(ids...)
+	return iu
+}
+
+// AddAnnotations adds the "annotations" edges to the Annotation entity.
+func (iu *InodeUpdate) AddAnnotations(a ...*Annotation) *InodeUpdate {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return iu.AddAnnotationIDs(ids...)
+}
+
 // Mutation returns the InodeMutation object of the builder.
 func (iu *InodeUpdate) Mutation() *InodeMutation {
 	return iu.mutation
@@ -241,6 +265,27 @@ func (iu *InodeUpdate) ClearWorkflow() *InodeUpdate {
 func (iu *InodeUpdate) ClearMirror() *InodeUpdate {
 	iu.mutation.ClearMirror()
 	return iu
+}
+
+// ClearAnnotations clears all "annotations" edges to the Annotation entity.
+func (iu *InodeUpdate) ClearAnnotations() *InodeUpdate {
+	iu.mutation.ClearAnnotations()
+	return iu
+}
+
+// RemoveAnnotationIDs removes the "annotations" edge to Annotation entities by IDs.
+func (iu *InodeUpdate) RemoveAnnotationIDs(ids ...uuid.UUID) *InodeUpdate {
+	iu.mutation.RemoveAnnotationIDs(ids...)
+	return iu
+}
+
+// RemoveAnnotations removes "annotations" edges to Annotation entities.
+func (iu *InodeUpdate) RemoveAnnotations(a ...*Annotation) *InodeUpdate {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return iu.RemoveAnnotationIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -325,6 +370,12 @@ func (iu *InodeUpdate) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (iu *InodeUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *InodeUpdate {
+	iu.modifiers = append(iu.modifiers, modifiers...)
+	return iu
+}
+
 func (iu *InodeUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -344,63 +395,36 @@ func (iu *InodeUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 	}
 	if value, ok := iu.mutation.UpdatedAt(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: inode.FieldUpdatedAt,
-		})
+		_spec.SetField(inode.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if value, ok := iu.mutation.Name(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: inode.FieldName,
-		})
+		_spec.SetField(inode.FieldName, field.TypeString, value)
 	}
 	if iu.mutation.NameCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Column: inode.FieldName,
-		})
+		_spec.ClearField(inode.FieldName, field.TypeString)
 	}
 	if value, ok := iu.mutation.Attributes(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Value:  value,
-			Column: inode.FieldAttributes,
+		_spec.SetField(inode.FieldAttributes, field.TypeJSON, value)
+	}
+	if value, ok := iu.mutation.AppendedAttributes(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, inode.FieldAttributes, value)
 		})
 	}
 	if iu.mutation.AttributesCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Column: inode.FieldAttributes,
-		})
+		_spec.ClearField(inode.FieldAttributes, field.TypeJSON)
 	}
 	if value, ok := iu.mutation.ExtendedType(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: inode.FieldExtendedType,
-		})
+		_spec.SetField(inode.FieldExtendedType, field.TypeString, value)
 	}
 	if iu.mutation.ExtendedTypeCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Column: inode.FieldExtendedType,
-		})
+		_spec.ClearField(inode.FieldExtendedType, field.TypeString)
 	}
 	if value, ok := iu.mutation.ReadOnly(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeBool,
-			Value:  value,
-			Column: inode.FieldReadOnly,
-		})
+		_spec.SetField(inode.FieldReadOnly, field.TypeBool, value)
 	}
 	if iu.mutation.ReadOnlyCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeBool,
-			Column: inode.FieldReadOnly,
-		})
+		_spec.ClearField(inode.FieldReadOnly, field.TypeBool)
 	}
 	if iu.mutation.NamespaceCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -596,6 +620,61 @@ func (iu *InodeUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if iu.mutation.AnnotationsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   inode.AnnotationsTable,
+			Columns: []string{inode.AnnotationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: annotation.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := iu.mutation.RemovedAnnotationsIDs(); len(nodes) > 0 && !iu.mutation.AnnotationsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   inode.AnnotationsTable,
+			Columns: []string{inode.AnnotationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: annotation.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := iu.mutation.AnnotationsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   inode.AnnotationsTable,
+			Columns: []string{inode.AnnotationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: annotation.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	_spec.AddModifiers(iu.modifiers...)
 	if n, err = sqlgraph.UpdateNodes(ctx, iu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{inode.Label}
@@ -610,9 +689,10 @@ func (iu *InodeUpdate) sqlSave(ctx context.Context) (n int, err error) {
 // InodeUpdateOne is the builder for updating a single Inode entity.
 type InodeUpdateOne struct {
 	config
-	fields   []string
-	hooks    []Hook
-	mutation *InodeMutation
+	fields    []string
+	hooks     []Hook
+	mutation  *InodeMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // SetUpdatedAt sets the "updated_at" field.
@@ -644,6 +724,12 @@ func (iuo *InodeUpdateOne) ClearName() *InodeUpdateOne {
 // SetAttributes sets the "attributes" field.
 func (iuo *InodeUpdateOne) SetAttributes(s []string) *InodeUpdateOne {
 	iuo.mutation.SetAttributes(s)
+	return iuo
+}
+
+// AppendAttributes appends s to the "attributes" field.
+func (iuo *InodeUpdateOne) AppendAttributes(s []string) *InodeUpdateOne {
+	iuo.mutation.AppendAttributes(s)
 	return iuo
 }
 
@@ -776,6 +862,21 @@ func (iuo *InodeUpdateOne) SetMirror(m *Mirror) *InodeUpdateOne {
 	return iuo.SetMirrorID(m.ID)
 }
 
+// AddAnnotationIDs adds the "annotations" edge to the Annotation entity by IDs.
+func (iuo *InodeUpdateOne) AddAnnotationIDs(ids ...uuid.UUID) *InodeUpdateOne {
+	iuo.mutation.AddAnnotationIDs(ids...)
+	return iuo
+}
+
+// AddAnnotations adds the "annotations" edges to the Annotation entity.
+func (iuo *InodeUpdateOne) AddAnnotations(a ...*Annotation) *InodeUpdateOne {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return iuo.AddAnnotationIDs(ids...)
+}
+
 // Mutation returns the InodeMutation object of the builder.
 func (iuo *InodeUpdateOne) Mutation() *InodeMutation {
 	return iuo.mutation
@@ -824,6 +925,27 @@ func (iuo *InodeUpdateOne) ClearWorkflow() *InodeUpdateOne {
 func (iuo *InodeUpdateOne) ClearMirror() *InodeUpdateOne {
 	iuo.mutation.ClearMirror()
 	return iuo
+}
+
+// ClearAnnotations clears all "annotations" edges to the Annotation entity.
+func (iuo *InodeUpdateOne) ClearAnnotations() *InodeUpdateOne {
+	iuo.mutation.ClearAnnotations()
+	return iuo
+}
+
+// RemoveAnnotationIDs removes the "annotations" edge to Annotation entities by IDs.
+func (iuo *InodeUpdateOne) RemoveAnnotationIDs(ids ...uuid.UUID) *InodeUpdateOne {
+	iuo.mutation.RemoveAnnotationIDs(ids...)
+	return iuo
+}
+
+// RemoveAnnotations removes "annotations" edges to Annotation entities.
+func (iuo *InodeUpdateOne) RemoveAnnotations(a ...*Annotation) *InodeUpdateOne {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return iuo.RemoveAnnotationIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -921,6 +1043,12 @@ func (iuo *InodeUpdateOne) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (iuo *InodeUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *InodeUpdateOne {
+	iuo.modifiers = append(iuo.modifiers, modifiers...)
+	return iuo
+}
+
 func (iuo *InodeUpdateOne) sqlSave(ctx context.Context) (_node *Inode, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -957,63 +1085,36 @@ func (iuo *InodeUpdateOne) sqlSave(ctx context.Context) (_node *Inode, err error
 		}
 	}
 	if value, ok := iuo.mutation.UpdatedAt(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: inode.FieldUpdatedAt,
-		})
+		_spec.SetField(inode.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if value, ok := iuo.mutation.Name(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: inode.FieldName,
-		})
+		_spec.SetField(inode.FieldName, field.TypeString, value)
 	}
 	if iuo.mutation.NameCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Column: inode.FieldName,
-		})
+		_spec.ClearField(inode.FieldName, field.TypeString)
 	}
 	if value, ok := iuo.mutation.Attributes(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Value:  value,
-			Column: inode.FieldAttributes,
+		_spec.SetField(inode.FieldAttributes, field.TypeJSON, value)
+	}
+	if value, ok := iuo.mutation.AppendedAttributes(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, inode.FieldAttributes, value)
 		})
 	}
 	if iuo.mutation.AttributesCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Column: inode.FieldAttributes,
-		})
+		_spec.ClearField(inode.FieldAttributes, field.TypeJSON)
 	}
 	if value, ok := iuo.mutation.ExtendedType(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: inode.FieldExtendedType,
-		})
+		_spec.SetField(inode.FieldExtendedType, field.TypeString, value)
 	}
 	if iuo.mutation.ExtendedTypeCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Column: inode.FieldExtendedType,
-		})
+		_spec.ClearField(inode.FieldExtendedType, field.TypeString)
 	}
 	if value, ok := iuo.mutation.ReadOnly(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeBool,
-			Value:  value,
-			Column: inode.FieldReadOnly,
-		})
+		_spec.SetField(inode.FieldReadOnly, field.TypeBool, value)
 	}
 	if iuo.mutation.ReadOnlyCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeBool,
-			Column: inode.FieldReadOnly,
-		})
+		_spec.ClearField(inode.FieldReadOnly, field.TypeBool)
 	}
 	if iuo.mutation.NamespaceCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -1209,6 +1310,61 @@ func (iuo *InodeUpdateOne) sqlSave(ctx context.Context) (_node *Inode, err error
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if iuo.mutation.AnnotationsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   inode.AnnotationsTable,
+			Columns: []string{inode.AnnotationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: annotation.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := iuo.mutation.RemovedAnnotationsIDs(); len(nodes) > 0 && !iuo.mutation.AnnotationsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   inode.AnnotationsTable,
+			Columns: []string{inode.AnnotationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: annotation.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := iuo.mutation.AnnotationsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   inode.AnnotationsTable,
+			Columns: []string{inode.AnnotationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: annotation.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	_spec.AddModifiers(iuo.modifiers...)
 	_node = &Inode{config: iuo.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

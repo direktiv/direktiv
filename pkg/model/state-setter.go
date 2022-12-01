@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+
+	"github.com/direktiv/direktiv/pkg/util"
 )
 
 const DefaultVarMimeType = "application/json"
@@ -23,7 +25,7 @@ type SetterDefinition struct {
 	MimeType interface{} `yaml:"mimeType,omitempty"`
 }
 
-func (a *SetterDefinition) UnmarshalJSON(data []byte) error {
+func (o *SetterDefinition) UnmarshalJSON(data []byte) error {
 
 	type SetterDefinitionAlias SetterDefinition
 
@@ -40,16 +42,16 @@ func (a *SetterDefinition) UnmarshalJSON(data []byte) error {
 	}
 
 	// Set Definition
-	a.Key = s.Key
-	a.Scope = s.Scope
-	a.Value = s.Value
-	a.MimeType = s.MimeType
+	o.Key = s.Key
+	o.Scope = s.Scope
+	o.Value = s.Value
+	o.MimeType = s.MimeType
 
 	return nil
 
 }
 
-func (a *SetterDefinition) UnmarshalYAML(unmarshal func(interface{}) error) error {
+func (o *SetterDefinition) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
 	var s interface{}
 
@@ -65,7 +67,7 @@ func (a *SetterDefinition) UnmarshalYAML(unmarshal func(interface{}) error) erro
 		sD.MimeType = DefaultVarMimeType
 	}
 
-	*a = sD
+	*o = sD
 
 	return nil
 }
@@ -73,10 +75,10 @@ func (a *SetterDefinition) UnmarshalYAML(unmarshal func(interface{}) error) erro
 func (o *SetterDefinition) Validate() error {
 
 	switch o.Scope {
-	case "instance":
-	case "workflow":
-	case "namespace":
-	case "thread":
+	case util.VarScopeInstance:
+	case util.VarScopeWorkflow:
+	case util.VarScopeNamespace:
+	case util.VarScopeThread:
 	default:
 		return ErrVarScope
 	}
@@ -87,12 +89,6 @@ func (o *SetterDefinition) Validate() error {
 
 	if o.Value == "" {
 		return errors.New(`value required`)
-	}
-
-	if s, ok := o.Value.(string); ok {
-		if err := validateTransformJQ(s); err != nil {
-			return err
-		}
 	}
 
 	return nil
@@ -144,19 +140,13 @@ func (o *SetterState) Validate() error {
 
 	for i, varDef := range o.Variables {
 		if err := varDef.Validate(); err != nil {
-			return fmt.Errorf("variables[%d] is invalid: %v", i, err)
-		}
-	}
-
-	if s, ok := o.Transform.(string); ok {
-		if err := validateTransformJQ(s); err != nil {
-			return err
+			return fmt.Errorf("variables[%d] is invalid: %w", i, err)
 		}
 	}
 
 	for i, errDef := range o.ErrorDefinitions() {
 		if err := errDef.Validate(); err != nil {
-			return fmt.Errorf("catch[%v] is invalid: %v", i, err)
+			return fmt.Errorf("catch[%v] is invalid: %w", i, err)
 		}
 	}
 

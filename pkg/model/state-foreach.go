@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-// ForEachState defines the fields attached for a foreach
+// ForEachState defines the fields attached for a foreach.
 type ForEachState struct {
 	StateCommon `yaml:",inline"`
 	Array       interface{}       `yaml:"array"`
@@ -15,7 +15,7 @@ type ForEachState struct {
 	Transition  string            `yaml:"transition,omitempty"`
 }
 
-// GetID returns the ID of the state
+// GetID returns the ID of the state.
 func (o *ForEachState) GetID() string {
 	return o.ID
 }
@@ -35,7 +35,7 @@ func (o *ForEachState) getTransitions() map[string]string {
 	return transitions
 }
 
-// GetTransitions returns all transitions for the state
+// GetTransitions returns all transitions for the state.
 func (o *ForEachState) GetTransitions() []string {
 	transitions := make([]string, 0)
 	if o.Transition != "" {
@@ -51,16 +51,10 @@ func (o *ForEachState) GetTransitions() []string {
 	return transitions
 }
 
-// Validate validates the arguments for a foreach state
+// Validate validates the arguments for a foreach state.
 func (o *ForEachState) Validate() error {
 	if err := o.commonValidate(); err != nil {
 		return err
-	}
-
-	if s, ok := o.Transform.(string); ok {
-		if err := validateTransformJQ(s); err != nil {
-			return err
-		}
 	}
 
 	if o.Array == "" {

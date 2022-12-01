@@ -23,8 +23,9 @@ import (
 // LogMsgUpdate is the builder for updating LogMsg entities.
 type LogMsgUpdate struct {
 	config
-	hooks    []Hook
-	mutation *LogMsgMutation
+	hooks     []Hook
+	mutation  *LogMsgMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // Where appends a list predicates to the LogMsgUpdate builder.
@@ -204,6 +205,12 @@ func (lmu *LogMsgUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (lmu *LogMsgUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *LogMsgUpdate {
+	lmu.modifiers = append(lmu.modifiers, modifiers...)
+	return lmu
+}
+
 func (lmu *LogMsgUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -223,18 +230,10 @@ func (lmu *LogMsgUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 	}
 	if value, ok := lmu.mutation.T(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: logmsg.FieldT,
-		})
+		_spec.SetField(logmsg.FieldT, field.TypeTime, value)
 	}
 	if value, ok := lmu.mutation.Msg(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: logmsg.FieldMsg,
-		})
+		_spec.SetField(logmsg.FieldMsg, field.TypeString, value)
 	}
 	if lmu.mutation.NamespaceCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -376,6 +375,7 @@ func (lmu *LogMsgUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	_spec.AddModifiers(lmu.modifiers...)
 	if n, err = sqlgraph.UpdateNodes(ctx, lmu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{logmsg.Label}
@@ -390,9 +390,10 @@ func (lmu *LogMsgUpdate) sqlSave(ctx context.Context) (n int, err error) {
 // LogMsgUpdateOne is the builder for updating a single LogMsg entity.
 type LogMsgUpdateOne struct {
 	config
-	fields   []string
-	hooks    []Hook
-	mutation *LogMsgMutation
+	fields    []string
+	hooks     []Hook
+	mutation  *LogMsgMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // SetT sets the "t" field.
@@ -579,6 +580,12 @@ func (lmuo *LogMsgUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (lmuo *LogMsgUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *LogMsgUpdateOne {
+	lmuo.modifiers = append(lmuo.modifiers, modifiers...)
+	return lmuo
+}
+
 func (lmuo *LogMsgUpdateOne) sqlSave(ctx context.Context) (_node *LogMsg, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -615,18 +622,10 @@ func (lmuo *LogMsgUpdateOne) sqlSave(ctx context.Context) (_node *LogMsg, err er
 		}
 	}
 	if value, ok := lmuo.mutation.T(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: logmsg.FieldT,
-		})
+		_spec.SetField(logmsg.FieldT, field.TypeTime, value)
 	}
 	if value, ok := lmuo.mutation.Msg(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: logmsg.FieldMsg,
-		})
+		_spec.SetField(logmsg.FieldMsg, field.TypeString, value)
 	}
 	if lmuo.mutation.NamespaceCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -768,6 +767,7 @@ func (lmuo *LogMsgUpdateOne) sqlSave(ctx context.Context) (_node *LogMsg, err er
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	_spec.AddModifiers(lmuo.modifiers...)
 	_node = &LogMsg{config: lmuo.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

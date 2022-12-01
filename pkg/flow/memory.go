@@ -12,6 +12,7 @@ import (
 	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
 )
 
@@ -264,7 +265,7 @@ func (engine *engine) getInstanceMemory(ctx context.Context, inc *ent.InstanceCl
 
 	if in.Edges.Namespace == nil {
 		err = &derrors.NotFoundError{
-			Label: fmt.Sprintf("namespace not found"),
+			Label: "namespace not found",
 		}
 
 		engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", err.Error()))
@@ -273,7 +274,7 @@ func (engine *engine) getInstanceMemory(ctx context.Context, inc *ent.InstanceCl
 
 	if in.Edges.Workflow == nil {
 		err = &derrors.NotFoundError{
-			Label: fmt.Sprintf("workflow not found"),
+			Label: "workflow not found",
 		}
 		engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", err.Error()))
 		return nil, err
@@ -281,7 +282,7 @@ func (engine *engine) getInstanceMemory(ctx context.Context, inc *ent.InstanceCl
 
 	if in.Edges.Revision == nil {
 		err = &derrors.NotFoundError{
-			Label: fmt.Sprintf("revision not found"),
+			Label: "revision not found",
 		}
 		engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", err.Error()))
 		return nil, err
@@ -289,7 +290,7 @@ func (engine *engine) getInstanceMemory(ctx context.Context, inc *ent.InstanceCl
 
 	if in.Edges.Runtime == nil {
 		err = &derrors.NotFoundError{
-			Label: fmt.Sprintf("instance runtime data not found"),
+			Label: "instance runtime data not found",
 		}
 		engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", err.Error()))
 		return nil, err
@@ -354,7 +355,7 @@ func (engine *engine) InstanceCaller(ctx context.Context, im *instanceMemory) *s
 	var err error
 
 	str := im.in.Edges.Runtime.CallerData
-	if str == "" || str == "cron" {
+	if str == "" || str == util.CallerCron {
 		return nil
 	}
 
@@ -452,10 +453,13 @@ func (engine *engine) freeResources(im *instanceMemory) {
 	ctx := context.Background()
 
 	for i := range im.eventQueue {
-		engine.events.flushEvent(ctx, im.eventQueue[i], im.in.Edges.Namespace, true)
+		err := engine.events.flushEvent(ctx, im.eventQueue[i], im.in.Edges.Namespace, true)
+		if err != nil {
+			engine.sugar.Errorf("Failed to flush event: %v.", err)
+		}
 	}
 
-	// TODO: do we actually want to delete variables here? There could be value in keeping them around for a little while.
+	// do we actually want to delete variables here? There could be value in keeping them around for a little while.
 
 	// var namespace, workflow, instance string
 	// namespace = rec.Edges.Workflow.Edges.Namespace.ID

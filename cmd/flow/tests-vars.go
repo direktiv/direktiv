@@ -1,5 +1,7 @@
 package main
 
+/*
+
 import (
 	"bytes"
 	"context"
@@ -728,12 +730,12 @@ func testInstanceNamespaceVariables(ctx context.Context, c grpc.FlowClient, name
 		Source: []byte(`
 states:
   - id: a
-    type: noop 
-    transform: 
+    type: noop
+    transform:
       k: 5
     transition: b
   - id: b
-    type: switch 
+    type: switch
     conditions:
       - condition: 'jq(.k > 0)'
         transition: c
@@ -743,14 +745,14 @@ states:
     type: getter
     variables:
       - key: x
-        scope: namespace 
+        scope: namespace
     transform: 'jq(.var.x += 1)'
     transition: d
   - id: d
     type: setter
     variables:
       - key: x
-        scope: namespace 
+        scope: namespace
         value: 'jq(.var.x)'
     transition: b
   - id: e
@@ -767,12 +769,12 @@ states:
 		Source: []byte(`
 states:
   - id: a
-    type: noop 
-    transform: 
+    type: noop
+    transform:
       k: 5
     transition: b
   - id: b
-    type: switch 
+    type: switch
     conditions:
       - condition: 'jq(.k > 0)'
         transition: c
@@ -782,7 +784,7 @@ states:
     type: getter
     variables:
       - key: x
-        scope: namespace 
+        scope: namespace
     transform: 'jq(.var.x += 1)'
     transition: d
   - id: d
@@ -929,12 +931,12 @@ func testInstanceWorkflowVariables(ctx context.Context, c grpc.FlowClient, names
 		Source: []byte(`
 states:
   - id: a
-    type: noop 
-    transform: 
+    type: noop
+    transform:
       k: 5
     transition: b
   - id: b
-    type: switch 
+    type: switch
     conditions:
       - condition: 'jq(.k > 0)'
         transition: c
@@ -944,14 +946,14 @@ states:
     type: getter
     variables:
       - key: x
-        scope: workflow 
+        scope: workflow
     transform: 'jq(.var.x += 1)'
     transition: d
   - id: d
     type: setter
     variables:
       - key: x
-        scope: workflow 
+        scope: workflow
         value: 'jq(.var.x)'
     transition: b
   - id: e
@@ -1093,12 +1095,12 @@ func testInstanceInstanceVariables(ctx context.Context, c grpc.FlowClient, names
 		Source: []byte(`
 states:
   - id: a
-    type: noop 
-    transform: 
+    type: noop
+    transform:
       k: 5
     transition: b
   - id: b
-    type: switch 
+    type: switch
     conditions:
       - condition: 'jq(.k > 0)'
         transition: c
@@ -1108,14 +1110,14 @@ states:
     type: getter
     variables:
       - key: x
-        scope: instance 
+        scope: instance
     transform: 'jq(.var.x += 1)'
     transition: d
   - id: d
     type: setter
     variables:
       - key: x
-        scope: instance 
+        scope: instance
         value: 'jq(.var.x)'
     transition: b
   - id: e
@@ -1241,3 +1243,5 @@ states:
 	return nil
 
 }
+
+*/

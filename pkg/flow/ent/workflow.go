@@ -54,9 +54,11 @@ type WorkflowEdges struct {
 	Vars []*VarRef `json:"vars,omitempty"`
 	// Wfevents holds the value of the wfevents edge.
 	Wfevents []*Events `json:"wfevents,omitempty"`
+	// Annotations holds the value of the annotations edge.
+	Annotations []*Annotation `json:"annotations,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [9]bool
+	loadedTypes [10]bool
 }
 
 // InodeOrErr returns the Inode value or an error if the edge
@@ -64,8 +66,7 @@ type WorkflowEdges struct {
 func (e WorkflowEdges) InodeOrErr() (*Inode, error) {
 	if e.loadedTypes[0] {
 		if e.Inode == nil {
-			// The edge inode was loaded in eager-loading,
-			// but was not found.
+			// Edge was loaded but was not found.
 			return nil, &NotFoundError{label: inode.Label}
 		}
 		return e.Inode, nil
@@ -78,8 +79,7 @@ func (e WorkflowEdges) InodeOrErr() (*Inode, error) {
 func (e WorkflowEdges) NamespaceOrErr() (*Namespace, error) {
 	if e.loadedTypes[1] {
 		if e.Namespace == nil {
-			// The edge namespace was loaded in eager-loading,
-			// but was not found.
+			// Edge was loaded but was not found.
 			return nil, &NotFoundError{label: namespace.Label}
 		}
 		return e.Namespace, nil
@@ -150,9 +150,18 @@ func (e WorkflowEdges) WfeventsOrErr() ([]*Events, error) {
 	return nil, &NotLoadedError{edge: "wfevents"}
 }
 
+// AnnotationsOrErr returns the Annotations value or an error if the edge
+// was not loaded in eager-loading.
+func (e WorkflowEdges) AnnotationsOrErr() ([]*Annotation, error) {
+	if e.loadedTypes[9] {
+		return e.Annotations, nil
+	}
+	return nil, &NotLoadedError{edge: "annotations"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
-func (*Workflow) scanValues(columns []string) ([]interface{}, error) {
-	values := make([]interface{}, len(columns))
+func (*Workflow) scanValues(columns []string) ([]any, error) {
+	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
 		case workflow.FieldLive, workflow.FieldReadOnly:
@@ -176,7 +185,7 @@ func (*Workflow) scanValues(columns []string) ([]interface{}, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the Workflow fields.
-func (w *Workflow) assignValues(columns []string, values []interface{}) error {
+func (w *Workflow) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -274,6 +283,11 @@ func (w *Workflow) QueryVars() *VarRefQuery {
 // QueryWfevents queries the "wfevents" edge of the Workflow entity.
 func (w *Workflow) QueryWfevents() *EventsQuery {
 	return (&WorkflowClient{config: w.config}).QueryWfevents(w)
+}
+
+// QueryAnnotations queries the "annotations" edge of the Workflow entity.
+func (w *Workflow) QueryAnnotations() *AnnotationQuery {
+	return (&WorkflowClient{config: w.config}).QueryAnnotations(w)
 }
 
 // Update returns a builder for updating this Workflow.

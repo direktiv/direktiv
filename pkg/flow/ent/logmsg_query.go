@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math"
 
+	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -22,18 +23,18 @@ import (
 // LogMsgQuery is the builder for querying LogMsg entities.
 type LogMsgQuery struct {
 	config
-	limit      *int
-	offset     *int
-	unique     *bool
-	order      []OrderFunc
-	fields     []string
-	predicates []predicate.LogMsg
-	// eager-loading edges.
+	limit         *int
+	offset        *int
+	unique        *bool
+	order         []OrderFunc
+	fields        []string
+	predicates    []predicate.LogMsg
 	withNamespace *NamespaceQuery
 	withWorkflow  *WorkflowQuery
 	withInstance  *InstanceQuery
 	withActivity  *MirrorActivityQuery
 	withFKs       bool
+	modifiers     []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -408,7 +409,6 @@ func (lmq *LogMsgQuery) WithActivity(opts ...func(*MirrorActivityQuery)) *LogMsg
 //		GroupBy(logmsg.FieldT).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-//
 func (lmq *LogMsgQuery) GroupBy(field string, fields ...string) *LogMsgGroupBy {
 	grbuild := &LogMsgGroupBy{config: lmq.config}
 	grbuild.fields = append([]string{field}, fields...)
@@ -435,13 +435,17 @@ func (lmq *LogMsgQuery) GroupBy(field string, fields ...string) *LogMsgGroupBy {
 //	client.LogMsg.Query().
 //		Select(logmsg.FieldT).
 //		Scan(ctx, &v)
-//
 func (lmq *LogMsgQuery) Select(fields ...string) *LogMsgSelect {
 	lmq.fields = append(lmq.fields, fields...)
 	selbuild := &LogMsgSelect{LogMsgQuery: lmq}
 	selbuild.label = logmsg.Label
 	selbuild.flds, selbuild.scan = &lmq.fields, selbuild.Scan
 	return selbuild
+}
+
+// Aggregate returns a LogMsgSelect configured with the given aggregations.
+func (lmq *LogMsgQuery) Aggregate(fns ...AggregateFunc) *LogMsgSelect {
+	return lmq.Select().Aggregate(fns...)
 }
 
 func (lmq *LogMsgQuery) prepareQuery(ctx context.Context) error {
@@ -478,14 +482,17 @@ func (lmq *LogMsgQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*LogM
 	if withFKs {
 		_spec.Node.Columns = append(_spec.Node.Columns, logmsg.ForeignKeys...)
 	}
-	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
+	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*LogMsg).scanValues(nil, columns)
 	}
-	_spec.Assign = func(columns []string, values []interface{}) error {
+	_spec.Assign = func(columns []string, values []any) error {
 		node := &LogMsg{config: lmq.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
+	}
+	if len(lmq.modifiers) > 0 {
+		_spec.Modifiers = lmq.modifiers
 	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
@@ -496,128 +503,155 @@ func (lmq *LogMsgQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*LogM
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-
 	if query := lmq.withNamespace; query != nil {
-		ids := make([]uuid.UUID, 0, len(nodes))
-		nodeids := make(map[uuid.UUID][]*LogMsg)
-		for i := range nodes {
-			if nodes[i].namespace_logs == nil {
-				continue
-			}
-			fk := *nodes[i].namespace_logs
-			if _, ok := nodeids[fk]; !ok {
-				ids = append(ids, fk)
-			}
-			nodeids[fk] = append(nodeids[fk], nodes[i])
-		}
-		query.Where(namespace.IDIn(ids...))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := lmq.loadNamespace(ctx, query, nodes, nil,
+			func(n *LogMsg, e *Namespace) { n.Edges.Namespace = e }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			nodes, ok := nodeids[n.ID]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "namespace_logs" returned %v`, n.ID)
-			}
-			for i := range nodes {
-				nodes[i].Edges.Namespace = n
-			}
-		}
 	}
-
 	if query := lmq.withWorkflow; query != nil {
-		ids := make([]uuid.UUID, 0, len(nodes))
-		nodeids := make(map[uuid.UUID][]*LogMsg)
-		for i := range nodes {
-			if nodes[i].workflow_logs == nil {
-				continue
-			}
-			fk := *nodes[i].workflow_logs
-			if _, ok := nodeids[fk]; !ok {
-				ids = append(ids, fk)
-			}
-			nodeids[fk] = append(nodeids[fk], nodes[i])
-		}
-		query.Where(workflow.IDIn(ids...))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := lmq.loadWorkflow(ctx, query, nodes, nil,
+			func(n *LogMsg, e *Workflow) { n.Edges.Workflow = e }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			nodes, ok := nodeids[n.ID]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "workflow_logs" returned %v`, n.ID)
-			}
-			for i := range nodes {
-				nodes[i].Edges.Workflow = n
-			}
-		}
 	}
-
 	if query := lmq.withInstance; query != nil {
-		ids := make([]uuid.UUID, 0, len(nodes))
-		nodeids := make(map[uuid.UUID][]*LogMsg)
-		for i := range nodes {
-			if nodes[i].instance_logs == nil {
-				continue
-			}
-			fk := *nodes[i].instance_logs
-			if _, ok := nodeids[fk]; !ok {
-				ids = append(ids, fk)
-			}
-			nodeids[fk] = append(nodeids[fk], nodes[i])
-		}
-		query.Where(instance.IDIn(ids...))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := lmq.loadInstance(ctx, query, nodes, nil,
+			func(n *LogMsg, e *Instance) { n.Edges.Instance = e }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			nodes, ok := nodeids[n.ID]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "instance_logs" returned %v`, n.ID)
-			}
-			for i := range nodes {
-				nodes[i].Edges.Instance = n
-			}
-		}
 	}
-
 	if query := lmq.withActivity; query != nil {
-		ids := make([]uuid.UUID, 0, len(nodes))
-		nodeids := make(map[uuid.UUID][]*LogMsg)
-		for i := range nodes {
-			if nodes[i].mirror_activity_logs == nil {
-				continue
-			}
-			fk := *nodes[i].mirror_activity_logs
-			if _, ok := nodeids[fk]; !ok {
-				ids = append(ids, fk)
-			}
-			nodeids[fk] = append(nodeids[fk], nodes[i])
-		}
-		query.Where(mirroractivity.IDIn(ids...))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := lmq.loadActivity(ctx, query, nodes, nil,
+			func(n *LogMsg, e *MirrorActivity) { n.Edges.Activity = e }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			nodes, ok := nodeids[n.ID]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "mirror_activity_logs" returned %v`, n.ID)
-			}
-			for i := range nodes {
-				nodes[i].Edges.Activity = n
-			}
+	}
+	return nodes, nil
+}
+
+func (lmq *LogMsgQuery) loadNamespace(ctx context.Context, query *NamespaceQuery, nodes []*LogMsg, init func(*LogMsg), assign func(*LogMsg, *Namespace)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*LogMsg)
+	for i := range nodes {
+		if nodes[i].namespace_logs == nil {
+			continue
+		}
+		fk := *nodes[i].namespace_logs
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	query.Where(namespace.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "namespace_logs" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
 		}
 	}
-
-	return nodes, nil
+	return nil
+}
+func (lmq *LogMsgQuery) loadWorkflow(ctx context.Context, query *WorkflowQuery, nodes []*LogMsg, init func(*LogMsg), assign func(*LogMsg, *Workflow)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*LogMsg)
+	for i := range nodes {
+		if nodes[i].workflow_logs == nil {
+			continue
+		}
+		fk := *nodes[i].workflow_logs
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	query.Where(workflow.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "workflow_logs" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (lmq *LogMsgQuery) loadInstance(ctx context.Context, query *InstanceQuery, nodes []*LogMsg, init func(*LogMsg), assign func(*LogMsg, *Instance)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*LogMsg)
+	for i := range nodes {
+		if nodes[i].instance_logs == nil {
+			continue
+		}
+		fk := *nodes[i].instance_logs
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	query.Where(instance.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "instance_logs" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (lmq *LogMsgQuery) loadActivity(ctx context.Context, query *MirrorActivityQuery, nodes []*LogMsg, init func(*LogMsg), assign func(*LogMsg, *MirrorActivity)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*LogMsg)
+	for i := range nodes {
+		if nodes[i].mirror_activity_logs == nil {
+			continue
+		}
+		fk := *nodes[i].mirror_activity_logs
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	query.Where(mirroractivity.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "mirror_activity_logs" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
 }
 
 func (lmq *LogMsgQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := lmq.querySpec()
+	if len(lmq.modifiers) > 0 {
+		_spec.Modifiers = lmq.modifiers
+	}
 	_spec.Node.Columns = lmq.fields
 	if len(lmq.fields) > 0 {
 		_spec.Unique = lmq.unique != nil && *lmq.unique
@@ -626,11 +660,14 @@ func (lmq *LogMsgQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (lmq *LogMsgQuery) sqlExist(ctx context.Context) (bool, error) {
-	n, err := lmq.sqlCount(ctx)
-	if err != nil {
+	switch _, err := lmq.FirstID(ctx); {
+	case IsNotFound(err):
+		return false, nil
+	case err != nil:
 		return false, fmt.Errorf("ent: check existence: %w", err)
+	default:
+		return true, nil
 	}
-	return n > 0, nil
 }
 
 func (lmq *LogMsgQuery) querySpec() *sqlgraph.QuerySpec {
@@ -696,6 +733,9 @@ func (lmq *LogMsgQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if lmq.unique != nil && *lmq.unique {
 		selector.Distinct()
 	}
+	for _, m := range lmq.modifiers {
+		m(selector)
+	}
 	for _, p := range lmq.predicates {
 		p(selector)
 	}
@@ -711,6 +751,38 @@ func (lmq *LogMsgQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector.Limit(*limit)
 	}
 	return selector
+}
+
+// ForUpdate locks the selected rows against concurrent updates, and prevent them from being
+// updated, deleted or "selected ... for update" by other sessions, until the transaction is
+// either committed or rolled-back.
+func (lmq *LogMsgQuery) ForUpdate(opts ...sql.LockOption) *LogMsgQuery {
+	if lmq.driver.Dialect() == dialect.Postgres {
+		lmq.Unique(false)
+	}
+	lmq.modifiers = append(lmq.modifiers, func(s *sql.Selector) {
+		s.ForUpdate(opts...)
+	})
+	return lmq
+}
+
+// ForShare behaves similarly to ForUpdate, except that it acquires a shared mode lock
+// on any rows that are read. Other sessions can read the rows, but cannot modify them
+// until your transaction commits.
+func (lmq *LogMsgQuery) ForShare(opts ...sql.LockOption) *LogMsgQuery {
+	if lmq.driver.Dialect() == dialect.Postgres {
+		lmq.Unique(false)
+	}
+	lmq.modifiers = append(lmq.modifiers, func(s *sql.Selector) {
+		s.ForShare(opts...)
+	})
+	return lmq
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (lmq *LogMsgQuery) Modify(modifiers ...func(s *sql.Selector)) *LogMsgSelect {
+	lmq.modifiers = append(lmq.modifiers, modifiers...)
+	return lmq.Select()
 }
 
 // LogMsgGroupBy is the group-by builder for LogMsg entities.
@@ -731,7 +803,7 @@ func (lmgb *LogMsgGroupBy) Aggregate(fns ...AggregateFunc) *LogMsgGroupBy {
 }
 
 // Scan applies the group-by query and scans the result into the given value.
-func (lmgb *LogMsgGroupBy) Scan(ctx context.Context, v interface{}) error {
+func (lmgb *LogMsgGroupBy) Scan(ctx context.Context, v any) error {
 	query, err := lmgb.path(ctx)
 	if err != nil {
 		return err
@@ -740,7 +812,7 @@ func (lmgb *LogMsgGroupBy) Scan(ctx context.Context, v interface{}) error {
 	return lmgb.sqlScan(ctx, v)
 }
 
-func (lmgb *LogMsgGroupBy) sqlScan(ctx context.Context, v interface{}) error {
+func (lmgb *LogMsgGroupBy) sqlScan(ctx context.Context, v any) error {
 	for _, f := range lmgb.fields {
 		if !logmsg.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for group-by", f)}
@@ -765,8 +837,6 @@ func (lmgb *LogMsgGroupBy) sqlQuery() *sql.Selector {
 	for _, fn := range lmgb.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	// If no columns were selected in a custom aggregation function, the default
-	// selection is the fields used for "group-by", and the aggregation functions.
 	if len(selector.SelectedColumns()) == 0 {
 		columns := make([]string, 0, len(lmgb.fields)+len(lmgb.fns))
 		for _, f := range lmgb.fields {
@@ -786,8 +856,14 @@ type LogMsgSelect struct {
 	sql *sql.Selector
 }
 
+// Aggregate adds the given aggregation functions to the selector query.
+func (lms *LogMsgSelect) Aggregate(fns ...AggregateFunc) *LogMsgSelect {
+	lms.fns = append(lms.fns, fns...)
+	return lms
+}
+
 // Scan applies the selector query and scans the result into the given value.
-func (lms *LogMsgSelect) Scan(ctx context.Context, v interface{}) error {
+func (lms *LogMsgSelect) Scan(ctx context.Context, v any) error {
 	if err := lms.prepareQuery(ctx); err != nil {
 		return err
 	}
@@ -795,7 +871,17 @@ func (lms *LogMsgSelect) Scan(ctx context.Context, v interface{}) error {
 	return lms.sqlScan(ctx, v)
 }
 
-func (lms *LogMsgSelect) sqlScan(ctx context.Context, v interface{}) error {
+func (lms *LogMsgSelect) sqlScan(ctx context.Context, v any) error {
+	aggregation := make([]string, 0, len(lms.fns))
+	for _, fn := range lms.fns {
+		aggregation = append(aggregation, fn(lms.sql))
+	}
+	switch n := len(*lms.selector.flds); {
+	case n == 0 && len(aggregation) > 0:
+		lms.sql.Select(aggregation...)
+	case n != 0 && len(aggregation) > 0:
+		lms.sql.AppendSelect(aggregation...)
+	}
 	rows := &sql.Rows{}
 	query, args := lms.sql.Query()
 	if err := lms.driver.Query(ctx, query, args, rows); err != nil {
@@ -803,4 +889,10 @@ func (lms *LogMsgSelect) sqlScan(ctx context.Context, v interface{}) error {
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (lms *LogMsgSelect) Modify(modifiers ...func(s *sql.Selector)) *LogMsgSelect {
+	lms.modifiers = append(lms.modifiers, modifiers...)
+	return lms
 }

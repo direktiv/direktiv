@@ -84,23 +84,23 @@ func (logic *getterLogic) Run(ctx context.Context, wakedata []byte) (*Transition
 		switch v.Scope {
 
 		case "":
-			selector.Scope = "instance"
+			selector.Scope = util.VarScopeInstance
 			fallthrough
 
-		case "instance":
+		case util.VarScopeInstance:
 			fallthrough
 
-		case "thread":
+		case util.VarScopeThread:
 			fallthrough
 
-		case "workflow":
+		case util.VarScopeWorkflow:
 			fallthrough
 
-		case "namespace":
+		case util.VarScopeNamespace:
 			vars = append(vars, selector)
 			ptrs = append(ptrs, as)
 
-		case "system":
+		case util.VarScopeSystem:
 
 			value, err := valueForSystem(key, logic.Instance)
 			if err != nil {
@@ -135,7 +135,6 @@ func (logic *getterLogic) Run(ctx context.Context, wakedata []byte) (*Transition
 			err = json.Unmarshal(result.Data, &x)
 			if err != nil {
 				x = result.Data
-				err = nil
 			}
 
 		}

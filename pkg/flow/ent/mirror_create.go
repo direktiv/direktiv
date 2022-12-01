@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"time"
 
+	"entgo.io/ent/dialect"
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/direktiv/direktiv/pkg/flow/ent/inode"
@@ -22,6 +24,7 @@ type MirrorCreate struct {
 	config
 	mutation *MirrorMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetURL sets the "url" field.
@@ -298,80 +301,45 @@ func (mc *MirrorCreate) createSpec() (*Mirror, *sqlgraph.CreateSpec) {
 			},
 		}
 	)
+	_spec.OnConflict = mc.conflict
 	if id, ok := mc.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
 	if value, ok := mc.mutation.URL(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: mirror.FieldURL,
-		})
+		_spec.SetField(mirror.FieldURL, field.TypeString, value)
 		_node.URL = value
 	}
 	if value, ok := mc.mutation.Ref(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: mirror.FieldRef,
-		})
+		_spec.SetField(mirror.FieldRef, field.TypeString, value)
 		_node.Ref = value
 	}
 	if value, ok := mc.mutation.Cron(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: mirror.FieldCron,
-		})
+		_spec.SetField(mirror.FieldCron, field.TypeString, value)
 		_node.Cron = value
 	}
 	if value, ok := mc.mutation.PublicKey(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: mirror.FieldPublicKey,
-		})
+		_spec.SetField(mirror.FieldPublicKey, field.TypeString, value)
 		_node.PublicKey = value
 	}
 	if value, ok := mc.mutation.PrivateKey(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: mirror.FieldPrivateKey,
-		})
+		_spec.SetField(mirror.FieldPrivateKey, field.TypeString, value)
 		_node.PrivateKey = value
 	}
 	if value, ok := mc.mutation.Passphrase(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: mirror.FieldPassphrase,
-		})
+		_spec.SetField(mirror.FieldPassphrase, field.TypeString, value)
 		_node.Passphrase = value
 	}
 	if value, ok := mc.mutation.Commit(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: mirror.FieldCommit,
-		})
+		_spec.SetField(mirror.FieldCommit, field.TypeString, value)
 		_node.Commit = value
 	}
 	if value, ok := mc.mutation.LastSync(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: mirror.FieldLastSync,
-		})
+		_spec.SetField(mirror.FieldLastSync, field.TypeTime, value)
 		_node.LastSync = &value
 	}
 	if value, ok := mc.mutation.UpdatedAt(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: mirror.FieldUpdatedAt,
-		})
+		_spec.SetField(mirror.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
 	if nodes := mc.mutation.NamespaceIDs(); len(nodes) > 0 {
@@ -436,10 +404,406 @@ func (mc *MirrorCreate) createSpec() (*Mirror, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Mirror.Create().
+//		SetURL(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.MirrorUpsert) {
+//			SetURL(v+v).
+//		}).
+//		Exec(ctx)
+func (mc *MirrorCreate) OnConflict(opts ...sql.ConflictOption) *MirrorUpsertOne {
+	mc.conflict = opts
+	return &MirrorUpsertOne{
+		create: mc,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Mirror.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (mc *MirrorCreate) OnConflictColumns(columns ...string) *MirrorUpsertOne {
+	mc.conflict = append(mc.conflict, sql.ConflictColumns(columns...))
+	return &MirrorUpsertOne{
+		create: mc,
+	}
+}
+
+type (
+	// MirrorUpsertOne is the builder for "upsert"-ing
+	//  one Mirror node.
+	MirrorUpsertOne struct {
+		create *MirrorCreate
+	}
+
+	// MirrorUpsert is the "OnConflict" setter.
+	MirrorUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetURL sets the "url" field.
+func (u *MirrorUpsert) SetURL(v string) *MirrorUpsert {
+	u.Set(mirror.FieldURL, v)
+	return u
+}
+
+// UpdateURL sets the "url" field to the value that was provided on create.
+func (u *MirrorUpsert) UpdateURL() *MirrorUpsert {
+	u.SetExcluded(mirror.FieldURL)
+	return u
+}
+
+// SetRef sets the "ref" field.
+func (u *MirrorUpsert) SetRef(v string) *MirrorUpsert {
+	u.Set(mirror.FieldRef, v)
+	return u
+}
+
+// UpdateRef sets the "ref" field to the value that was provided on create.
+func (u *MirrorUpsert) UpdateRef() *MirrorUpsert {
+	u.SetExcluded(mirror.FieldRef)
+	return u
+}
+
+// SetCron sets the "cron" field.
+func (u *MirrorUpsert) SetCron(v string) *MirrorUpsert {
+	u.Set(mirror.FieldCron, v)
+	return u
+}
+
+// UpdateCron sets the "cron" field to the value that was provided on create.
+func (u *MirrorUpsert) UpdateCron() *MirrorUpsert {
+	u.SetExcluded(mirror.FieldCron)
+	return u
+}
+
+// SetPublicKey sets the "public_key" field.
+func (u *MirrorUpsert) SetPublicKey(v string) *MirrorUpsert {
+	u.Set(mirror.FieldPublicKey, v)
+	return u
+}
+
+// UpdatePublicKey sets the "public_key" field to the value that was provided on create.
+func (u *MirrorUpsert) UpdatePublicKey() *MirrorUpsert {
+	u.SetExcluded(mirror.FieldPublicKey)
+	return u
+}
+
+// SetPrivateKey sets the "private_key" field.
+func (u *MirrorUpsert) SetPrivateKey(v string) *MirrorUpsert {
+	u.Set(mirror.FieldPrivateKey, v)
+	return u
+}
+
+// UpdatePrivateKey sets the "private_key" field to the value that was provided on create.
+func (u *MirrorUpsert) UpdatePrivateKey() *MirrorUpsert {
+	u.SetExcluded(mirror.FieldPrivateKey)
+	return u
+}
+
+// SetPassphrase sets the "passphrase" field.
+func (u *MirrorUpsert) SetPassphrase(v string) *MirrorUpsert {
+	u.Set(mirror.FieldPassphrase, v)
+	return u
+}
+
+// UpdatePassphrase sets the "passphrase" field to the value that was provided on create.
+func (u *MirrorUpsert) UpdatePassphrase() *MirrorUpsert {
+	u.SetExcluded(mirror.FieldPassphrase)
+	return u
+}
+
+// SetCommit sets the "commit" field.
+func (u *MirrorUpsert) SetCommit(v string) *MirrorUpsert {
+	u.Set(mirror.FieldCommit, v)
+	return u
+}
+
+// UpdateCommit sets the "commit" field to the value that was provided on create.
+func (u *MirrorUpsert) UpdateCommit() *MirrorUpsert {
+	u.SetExcluded(mirror.FieldCommit)
+	return u
+}
+
+// SetLastSync sets the "last_sync" field.
+func (u *MirrorUpsert) SetLastSync(v time.Time) *MirrorUpsert {
+	u.Set(mirror.FieldLastSync, v)
+	return u
+}
+
+// UpdateLastSync sets the "last_sync" field to the value that was provided on create.
+func (u *MirrorUpsert) UpdateLastSync() *MirrorUpsert {
+	u.SetExcluded(mirror.FieldLastSync)
+	return u
+}
+
+// ClearLastSync clears the value of the "last_sync" field.
+func (u *MirrorUpsert) ClearLastSync() *MirrorUpsert {
+	u.SetNull(mirror.FieldLastSync)
+	return u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *MirrorUpsert) SetUpdatedAt(v time.Time) *MirrorUpsert {
+	u.Set(mirror.FieldUpdatedAt, v)
+	return u
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *MirrorUpsert) UpdateUpdatedAt() *MirrorUpsert {
+	u.SetExcluded(mirror.FieldUpdatedAt)
+	return u
+}
+
+// ClearUpdatedAt clears the value of the "updated_at" field.
+func (u *MirrorUpsert) ClearUpdatedAt() *MirrorUpsert {
+	u.SetNull(mirror.FieldUpdatedAt)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// Using this option is equivalent to using:
+//
+//	client.Mirror.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(mirror.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *MirrorUpsertOne) UpdateNewValues() *MirrorUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(mirror.FieldID)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Mirror.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *MirrorUpsertOne) Ignore() *MirrorUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *MirrorUpsertOne) DoNothing() *MirrorUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the MirrorCreate.OnConflict
+// documentation for more info.
+func (u *MirrorUpsertOne) Update(set func(*MirrorUpsert)) *MirrorUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&MirrorUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetURL sets the "url" field.
+func (u *MirrorUpsertOne) SetURL(v string) *MirrorUpsertOne {
+	return u.Update(func(s *MirrorUpsert) {
+		s.SetURL(v)
+	})
+}
+
+// UpdateURL sets the "url" field to the value that was provided on create.
+func (u *MirrorUpsertOne) UpdateURL() *MirrorUpsertOne {
+	return u.Update(func(s *MirrorUpsert) {
+		s.UpdateURL()
+	})
+}
+
+// SetRef sets the "ref" field.
+func (u *MirrorUpsertOne) SetRef(v string) *MirrorUpsertOne {
+	return u.Update(func(s *MirrorUpsert) {
+		s.SetRef(v)
+	})
+}
+
+// UpdateRef sets the "ref" field to the value that was provided on create.
+func (u *MirrorUpsertOne) UpdateRef() *MirrorUpsertOne {
+	return u.Update(func(s *MirrorUpsert) {
+		s.UpdateRef()
+	})
+}
+
+// SetCron sets the "cron" field.
+func (u *MirrorUpsertOne) SetCron(v string) *MirrorUpsertOne {
+	return u.Update(func(s *MirrorUpsert) {
+		s.SetCron(v)
+	})
+}
+
+// UpdateCron sets the "cron" field to the value that was provided on create.
+func (u *MirrorUpsertOne) UpdateCron() *MirrorUpsertOne {
+	return u.Update(func(s *MirrorUpsert) {
+		s.UpdateCron()
+	})
+}
+
+// SetPublicKey sets the "public_key" field.
+func (u *MirrorUpsertOne) SetPublicKey(v string) *MirrorUpsertOne {
+	return u.Update(func(s *MirrorUpsert) {
+		s.SetPublicKey(v)
+	})
+}
+
+// UpdatePublicKey sets the "public_key" field to the value that was provided on create.
+func (u *MirrorUpsertOne) UpdatePublicKey() *MirrorUpsertOne {
+	return u.Update(func(s *MirrorUpsert) {
+		s.UpdatePublicKey()
+	})
+}
+
+// SetPrivateKey sets the "private_key" field.
+func (u *MirrorUpsertOne) SetPrivateKey(v string) *MirrorUpsertOne {
+	return u.Update(func(s *MirrorUpsert) {
+		s.SetPrivateKey(v)
+	})
+}
+
+// UpdatePrivateKey sets the "private_key" field to the value that was provided on create.
+func (u *MirrorUpsertOne) UpdatePrivateKey() *MirrorUpsertOne {
+	return u.Update(func(s *MirrorUpsert) {
+		s.UpdatePrivateKey()
+	})
+}
+
+// SetPassphrase sets the "passphrase" field.
+func (u *MirrorUpsertOne) SetPassphrase(v string) *MirrorUpsertOne {
+	return u.Update(func(s *MirrorUpsert) {
+		s.SetPassphrase(v)
+	})
+}
+
+// UpdatePassphrase sets the "passphrase" field to the value that was provided on create.
+func (u *MirrorUpsertOne) UpdatePassphrase() *MirrorUpsertOne {
+	return u.Update(func(s *MirrorUpsert) {
+		s.UpdatePassphrase()
+	})
+}
+
+// SetCommit sets the "commit" field.
+func (u *MirrorUpsertOne) SetCommit(v string) *MirrorUpsertOne {
+	return u.Update(func(s *MirrorUpsert) {
+		s.SetCommit(v)
+	})
+}
+
+// UpdateCommit sets the "commit" field to the value that was provided on create.
+func (u *MirrorUpsertOne) UpdateCommit() *MirrorUpsertOne {
+	return u.Update(func(s *MirrorUpsert) {
+		s.UpdateCommit()
+	})
+}
+
+// SetLastSync sets the "last_sync" field.
+func (u *MirrorUpsertOne) SetLastSync(v time.Time) *MirrorUpsertOne {
+	return u.Update(func(s *MirrorUpsert) {
+		s.SetLastSync(v)
+	})
+}
+
+// UpdateLastSync sets the "last_sync" field to the value that was provided on create.
+func (u *MirrorUpsertOne) UpdateLastSync() *MirrorUpsertOne {
+	return u.Update(func(s *MirrorUpsert) {
+		s.UpdateLastSync()
+	})
+}
+
+// ClearLastSync clears the value of the "last_sync" field.
+func (u *MirrorUpsertOne) ClearLastSync() *MirrorUpsertOne {
+	return u.Update(func(s *MirrorUpsert) {
+		s.ClearLastSync()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *MirrorUpsertOne) SetUpdatedAt(v time.Time) *MirrorUpsertOne {
+	return u.Update(func(s *MirrorUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *MirrorUpsertOne) UpdateUpdatedAt() *MirrorUpsertOne {
+	return u.Update(func(s *MirrorUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
+// ClearUpdatedAt clears the value of the "updated_at" field.
+func (u *MirrorUpsertOne) ClearUpdatedAt() *MirrorUpsertOne {
+	return u.Update(func(s *MirrorUpsert) {
+		s.ClearUpdatedAt()
+	})
+}
+
+// Exec executes the query.
+func (u *MirrorUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for MirrorCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *MirrorUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *MirrorUpsertOne) ID(ctx context.Context) (id uuid.UUID, err error) {
+	if u.create.driver.Dialect() == dialect.MySQL {
+		// In case of "ON CONFLICT", there is no way to get back non-numeric ID
+		// fields from the database since MySQL does not support the RETURNING clause.
+		return id, errors.New("ent: MirrorUpsertOne.ID is not supported by MySQL driver. Use MirrorUpsertOne.Exec instead")
+	}
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *MirrorUpsertOne) IDX(ctx context.Context) uuid.UUID {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // MirrorCreateBulk is the builder for creating many Mirror entities in bulk.
 type MirrorCreateBulk struct {
 	config
 	builders []*MirrorCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the Mirror entities in the database.
@@ -466,6 +830,7 @@ func (mcb *MirrorCreateBulk) Save(ctx context.Context) ([]*Mirror, error) {
 					_, err = mutators[i+1].Mutate(root, mcb.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = mcb.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, mcb.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -512,6 +877,257 @@ func (mcb *MirrorCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (mcb *MirrorCreateBulk) ExecX(ctx context.Context) {
 	if err := mcb.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Mirror.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.MirrorUpsert) {
+//			SetURL(v+v).
+//		}).
+//		Exec(ctx)
+func (mcb *MirrorCreateBulk) OnConflict(opts ...sql.ConflictOption) *MirrorUpsertBulk {
+	mcb.conflict = opts
+	return &MirrorUpsertBulk{
+		create: mcb,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Mirror.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (mcb *MirrorCreateBulk) OnConflictColumns(columns ...string) *MirrorUpsertBulk {
+	mcb.conflict = append(mcb.conflict, sql.ConflictColumns(columns...))
+	return &MirrorUpsertBulk{
+		create: mcb,
+	}
+}
+
+// MirrorUpsertBulk is the builder for "upsert"-ing
+// a bulk of Mirror nodes.
+type MirrorUpsertBulk struct {
+	create *MirrorCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.Mirror.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(mirror.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *MirrorUpsertBulk) UpdateNewValues() *MirrorUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(mirror.FieldID)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Mirror.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *MirrorUpsertBulk) Ignore() *MirrorUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *MirrorUpsertBulk) DoNothing() *MirrorUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the MirrorCreateBulk.OnConflict
+// documentation for more info.
+func (u *MirrorUpsertBulk) Update(set func(*MirrorUpsert)) *MirrorUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&MirrorUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetURL sets the "url" field.
+func (u *MirrorUpsertBulk) SetURL(v string) *MirrorUpsertBulk {
+	return u.Update(func(s *MirrorUpsert) {
+		s.SetURL(v)
+	})
+}
+
+// UpdateURL sets the "url" field to the value that was provided on create.
+func (u *MirrorUpsertBulk) UpdateURL() *MirrorUpsertBulk {
+	return u.Update(func(s *MirrorUpsert) {
+		s.UpdateURL()
+	})
+}
+
+// SetRef sets the "ref" field.
+func (u *MirrorUpsertBulk) SetRef(v string) *MirrorUpsertBulk {
+	return u.Update(func(s *MirrorUpsert) {
+		s.SetRef(v)
+	})
+}
+
+// UpdateRef sets the "ref" field to the value that was provided on create.
+func (u *MirrorUpsertBulk) UpdateRef() *MirrorUpsertBulk {
+	return u.Update(func(s *MirrorUpsert) {
+		s.UpdateRef()
+	})
+}
+
+// SetCron sets the "cron" field.
+func (u *MirrorUpsertBulk) SetCron(v string) *MirrorUpsertBulk {
+	return u.Update(func(s *MirrorUpsert) {
+		s.SetCron(v)
+	})
+}
+
+// UpdateCron sets the "cron" field to the value that was provided on create.
+func (u *MirrorUpsertBulk) UpdateCron() *MirrorUpsertBulk {
+	return u.Update(func(s *MirrorUpsert) {
+		s.UpdateCron()
+	})
+}
+
+// SetPublicKey sets the "public_key" field.
+func (u *MirrorUpsertBulk) SetPublicKey(v string) *MirrorUpsertBulk {
+	return u.Update(func(s *MirrorUpsert) {
+		s.SetPublicKey(v)
+	})
+}
+
+// UpdatePublicKey sets the "public_key" field to the value that was provided on create.
+func (u *MirrorUpsertBulk) UpdatePublicKey() *MirrorUpsertBulk {
+	return u.Update(func(s *MirrorUpsert) {
+		s.UpdatePublicKey()
+	})
+}
+
+// SetPrivateKey sets the "private_key" field.
+func (u *MirrorUpsertBulk) SetPrivateKey(v string) *MirrorUpsertBulk {
+	return u.Update(func(s *MirrorUpsert) {
+		s.SetPrivateKey(v)
+	})
+}
+
+// UpdatePrivateKey sets the "private_key" field to the value that was provided on create.
+func (u *MirrorUpsertBulk) UpdatePrivateKey() *MirrorUpsertBulk {
+	return u.Update(func(s *MirrorUpsert) {
+		s.UpdatePrivateKey()
+	})
+}
+
+// SetPassphrase sets the "passphrase" field.
+func (u *MirrorUpsertBulk) SetPassphrase(v string) *MirrorUpsertBulk {
+	return u.Update(func(s *MirrorUpsert) {
+		s.SetPassphrase(v)
+	})
+}
+
+// UpdatePassphrase sets the "passphrase" field to the value that was provided on create.
+func (u *MirrorUpsertBulk) UpdatePassphrase() *MirrorUpsertBulk {
+	return u.Update(func(s *MirrorUpsert) {
+		s.UpdatePassphrase()
+	})
+}
+
+// SetCommit sets the "commit" field.
+func (u *MirrorUpsertBulk) SetCommit(v string) *MirrorUpsertBulk {
+	return u.Update(func(s *MirrorUpsert) {
+		s.SetCommit(v)
+	})
+}
+
+// UpdateCommit sets the "commit" field to the value that was provided on create.
+func (u *MirrorUpsertBulk) UpdateCommit() *MirrorUpsertBulk {
+	return u.Update(func(s *MirrorUpsert) {
+		s.UpdateCommit()
+	})
+}
+
+// SetLastSync sets the "last_sync" field.
+func (u *MirrorUpsertBulk) SetLastSync(v time.Time) *MirrorUpsertBulk {
+	return u.Update(func(s *MirrorUpsert) {
+		s.SetLastSync(v)
+	})
+}
+
+// UpdateLastSync sets the "last_sync" field to the value that was provided on create.
+func (u *MirrorUpsertBulk) UpdateLastSync() *MirrorUpsertBulk {
+	return u.Update(func(s *MirrorUpsert) {
+		s.UpdateLastSync()
+	})
+}
+
+// ClearLastSync clears the value of the "last_sync" field.
+func (u *MirrorUpsertBulk) ClearLastSync() *MirrorUpsertBulk {
+	return u.Update(func(s *MirrorUpsert) {
+		s.ClearLastSync()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *MirrorUpsertBulk) SetUpdatedAt(v time.Time) *MirrorUpsertBulk {
+	return u.Update(func(s *MirrorUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *MirrorUpsertBulk) UpdateUpdatedAt() *MirrorUpsertBulk {
+	return u.Update(func(s *MirrorUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
+// ClearUpdatedAt clears the value of the "updated_at" field.
+func (u *MirrorUpsertBulk) ClearUpdatedAt() *MirrorUpsertBulk {
+	return u.Update(func(s *MirrorUpsert) {
+		s.ClearUpdatedAt()
+	})
+}
+
+// Exec executes the query.
+func (u *MirrorUpsertBulk) Exec(ctx context.Context) error {
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the MirrorCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for MirrorCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *MirrorUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

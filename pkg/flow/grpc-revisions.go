@@ -127,7 +127,7 @@ func (flow *flow) DeleteRevision(ctx context.Context, req *grpc.DeleteRevisionRe
 		return nil, err
 	}
 
-	if d.ref.Immutable != true {
+	if !d.ref.Immutable {
 		return nil, errors.New("not a revision")
 	}
 

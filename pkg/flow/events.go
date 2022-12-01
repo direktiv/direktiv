@@ -13,11 +13,13 @@ import (
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/dop251/goja"
 
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 
+	enteventsfilter "github.com/direktiv/direktiv/pkg/flow/ent/cloudeventfilters"
 	cevents "github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
 	entevents "github.com/direktiv/direktiv/pkg/flow/ent/events"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
@@ -46,6 +48,17 @@ func init() {
 type events struct {
 	*server
 }
+
+type keyPair struct {
+	namespace  string
+	filtername string
+}
+
+type CacheObject struct {
+	value sync.Map
+}
+
+var eventFilterCache = &CacheObject{}
 
 func initEvents(srv *server) (*events, error) {
 
@@ -369,8 +382,6 @@ func (events *events) handleEventLoopLogic(ctx context.Context, rows *sql.Rows, 
 
 	}
 
-	return
-
 }
 
 func (events *events) handleEvent(ns *ent.Namespace, ce *cloudevents.Event) error {
@@ -415,7 +426,7 @@ func eventToBytes(cevent cloudevents.Event) ([]byte, error) {
 	enc := gob.NewEncoder(&ev)
 	err := enc.Encode(cevent)
 	if err != nil {
-		return nil, fmt.Errorf("can not convert event to bytes: %v", err)
+		return nil, fmt.Errorf("can not convert event to bytes: %w", err)
 	}
 
 	return ev.Bytes(), nil
@@ -429,7 +440,7 @@ func bytesToEvent(b []byte) (*cloudevents.Event, error) {
 	enc := gob.NewDecoder(bytes.NewReader(b))
 	err := enc.Decode(ev)
 	if err != nil {
-		return nil, fmt.Errorf("can not convert bytes to event: %v", err)
+		return nil, fmt.Errorf("can not convert bytes to event: %w", err)
 	}
 
 	return ev, nil
@@ -980,7 +991,7 @@ func (events *events) listenForEvents(ctx context.Context, im *instanceMemory, c
 
 			ev.Context[k], err = jqOne(im.data, v)
 			if err != nil {
-				return fmt.Errorf("failed to execute jq query for key '%s' on event definition %d: %v", k, i, err)
+				return fmt.Errorf("failed to execute jq query for key '%s' on event definition %d: %w", k, i, err)
 			}
 
 		}
@@ -1004,4 +1015,257 @@ func (events *events) listenForEvents(ctx context.Context, im *instanceMemory, c
 
 	return nil
 
+}
+
+func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloudEventFilterRequest) (*grpc.ApplyCloudEventFilterResponse, error) {
+
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
+
+	resp := new(grpc.ApplyCloudEventFilterResponse)
+
+	namespace := in.GetNamespace()
+	filterName := in.GetFilterName()
+	cloudevent := in.GetCloudevent()
+
+	var script string
+
+	var key keyPair
+	key.filtername = filterName
+	key.namespace = namespace
+
+	ns, err := flow.getNamespace(ctx, flow.db.Namespace, namespace)
+	if err != nil {
+		return resp, err
+	}
+
+	if jsCode, ok := eventFilterCache.get(key); ok {
+		script = fmt.Sprintf("function filter() {\n %s \n}", jsCode)
+
+	} else {
+		ceventfilter, err := ns.QueryCloudeventfilters().Where(enteventsfilter.NameEQ(filterName)).Only(ctx)
+		if err != nil {
+			err = fmt.Errorf("cloud event filter %s not exist", filterName)
+			return resp, err
+		}
+
+		script = fmt.Sprintf("function filter() {\n %s \n}", ceventfilter.Jscode)
+
+	}
+
+	var mapEvent map[string]interface{}
+	err = json.Unmarshal(cloudevent, &mapEvent)
+	if err != nil {
+		return resp, err
+	}
+
+	//create js runtime
+	vm := goja.New()
+
+	err = vm.Set("event", mapEvent)
+	if err != nil {
+		return resp, fmt.Errorf("failed to initialize js runtime: %w", err)
+	}
+
+	_, err = vm.RunString(script)
+	if err != nil {
+		flow.logToNamespace(ctx, time.Now(), ns, "CloudEvent filter '%s' produced an error (1): %v", filterName, err)
+		return resp, err
+	}
+
+	var fn func() any
+	err = vm.ExportTo(vm.Get("filter"), &fn)
+	if err != nil {
+		flow.logToNamespace(ctx, time.Now(), ns, "CloudEvent filter '%s' produced an error (2): %v", filterName, err)
+		return resp, err
+	}
+
+	newEventMap := fn()
+
+	newBytesEvent, err := json.Marshal(newEventMap)
+	if err != nil {
+		flow.logToNamespace(ctx, time.Now(), ns, "CloudEvent filter '%s' produced an error (3): %v", filterName, err)
+		return resp, err
+	}
+	resp.Event = newBytesEvent
+
+	if string(resp.GetEvent()) == "null" {
+		event, err := EventByteToCloudevent(cloudevent)
+		if err != nil {
+			flow.logToNamespace(ctx, time.Now(), ns, "CloudEvent filter '%s' produced an error (4): %v", filterName, err)
+			return resp, err
+		}
+		flow.logToNamespace(ctx, time.Now(), ns, "Dropped Event: %s", event.ID())
+	} else {
+		event, err := EventByteToCloudevent(newBytesEvent)
+		if err != nil {
+			flow.logToNamespace(ctx, time.Now(), ns, "CloudEvent filter '%s' produced an error (5): %v", filterName, err)
+			return resp, err
+		}
+		flow.logToNamespace(ctx, time.Now(), ns, "cloud event filter applied, new Event : %s (%s / %s)", event.ID(), event.Type(), event.Source())
+	}
+
+	return resp, err
+}
+
+func (flow *flow) DeleteCloudEventFilter(ctx context.Context, in *grpc.DeleteCloudEventFilterRequest) (*emptypb.Empty, error) {
+
+	var resp emptypb.Empty
+
+	namespace := in.GetNamespace()
+	filterName := in.GetFilterName()
+
+	ns, err := flow.getNamespace(ctx, flow.db.Namespace, namespace)
+	if err != nil {
+		return &resp, err
+	}
+
+	_, err = ns.QueryCloudeventfilters().Where(enteventsfilter.NameEQ(filterName)).Only(ctx)
+	if err != nil {
+		return &resp, err
+	}
+
+	_, err = flow.db.CloudEventFilters.
+		Delete().
+		Where(
+			enteventsfilter.And(
+				enteventsfilter.NameEQ(filterName),
+			)).
+		Exec(ctx)
+
+	if err != nil {
+		return &resp, err
+	}
+
+	var key keyPair
+	key.filtername = filterName
+	key.namespace = namespace
+	eventFilterCache.delete(key)
+
+	return &resp, err
+
+}
+
+func (flow *flow) CreateCloudEventFilter(ctx context.Context, in *grpc.CreateCloudEventFilterRequest) (*emptypb.Empty, error) {
+
+	var resp emptypb.Empty
+
+	namespace := in.GetNamespace()
+	filterName := in.GetFiltername()
+	script := in.GetJsCode()
+
+	fullScript := fmt.Sprintf("function filter() {\n %s \n}", script)
+
+	//compiling js code is needed
+	_, err := goja.Compile("filter", fullScript, false)
+	if err != nil {
+		return &resp, err
+	}
+
+	ns, err := flow.getNamespace(ctx, flow.db.Namespace, namespace)
+	if err != nil {
+		return &resp, err
+	}
+
+	k, err := ns.QueryCloudeventfilters().Where(enteventsfilter.NameEQ(filterName)).Count(ctx)
+	if err != nil {
+		return &resp, err
+	}
+
+	if k != 0 {
+		err = fmt.Errorf("cloud event filter %s already exist", filterName)
+		return &resp, err
+	}
+
+	_, err = flow.db.CloudEventFilters.Create().SetName(filterName).SetNamespace(ns).SetJscode(script).Save(ctx)
+	if err != nil {
+		return &resp, err
+	}
+
+	var key keyPair
+	key.filtername = filterName
+	key.namespace = namespace
+	eventFilterCache.put(key, script)
+
+	return &resp, err
+
+}
+
+func (flow *flow) GetCloudEventFilters(ctx context.Context, in *grpc.GetCloudEventFiltersRequest) (*grpc.GetCloudEventFiltersResponse, error) {
+
+	var ls []*grpc.GetCloudEventFiltersResponse_EventFilter
+	resp := new(grpc.GetCloudEventFiltersResponse)
+
+	namespace := in.GetNamespace()
+
+	ns, err := flow.getNamespace(ctx, flow.db.Namespace, namespace)
+	if err != nil {
+		return resp, err
+	}
+
+	dbs, err := ns.QueryCloudeventfilters().Where(enteventsfilter.HasNamespace()).All(ctx)
+	if err != nil {
+		return resp, err
+	}
+
+	for _, s := range dbs {
+		var name = s.Name
+		ls = append(ls, &grpc.GetCloudEventFiltersResponse_EventFilter{
+			Name: name,
+		})
+
+	}
+
+	resp.EventFilter = ls
+	return resp, err
+
+}
+
+func (flow *flow) GetCloudEventFilterScript(ctx context.Context, in *grpc.GetCloudEventFilterScriptRequest) (*grpc.GetCloudEventFilterScriptResponse, error) {
+
+	resp := new(grpc.GetCloudEventFilterScriptResponse)
+
+	namespace := in.GetNamespace()
+	filterName := in.GetName()
+
+	ns, err := flow.getNamespace(ctx, flow.db.Namespace, namespace)
+	if err != nil {
+		return resp, err
+	}
+
+	script, err := ns.QueryCloudeventfilters().Where(enteventsfilter.NameEQ(filterName)).Only(ctx)
+	if err != nil {
+		err = fmt.Errorf("cloud event filter %s not exist", filterName)
+		return resp, err
+	}
+
+	resp.JsCode = script.Jscode
+
+	return resp, err
+}
+
+func EventByteToCloudevent(byteEvent []byte) (event.Event, error) {
+	ev := &event.Event{}
+	err := json.Unmarshal(byteEvent, ev)
+	return *ev, err
+
+}
+
+func (c *CacheObject) get(key keyPair) (string, bool) {
+	v, ok := c.value.Load(key)
+	var s string
+	if ok {
+		s, ok = v.(string)
+		if ok {
+			return s, true
+		}
+	}
+	return "", false
+}
+
+func (c *CacheObject) put(key keyPair, value string) {
+	c.value.Store(key, value)
+}
+
+func (c *CacheObject) delete(key keyPair) {
+	c.value.Delete(key)
 }

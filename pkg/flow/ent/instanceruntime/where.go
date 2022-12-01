@@ -35,7 +35,7 @@ func IDNEQ(id uuid.UUID) predicate.InstanceRuntime {
 // IDIn applies the In predicate on the ID field.
 func IDIn(ids ...uuid.UUID) predicate.InstanceRuntime {
 	return predicate.InstanceRuntime(func(s *sql.Selector) {
-		v := make([]interface{}, len(ids))
+		v := make([]any, len(ids))
 		for i := range v {
 			v[i] = ids[i]
 		}
@@ -46,7 +46,7 @@ func IDIn(ids ...uuid.UUID) predicate.InstanceRuntime {
 // IDNotIn applies the NotIn predicate on the ID field.
 func IDNotIn(ids ...uuid.UUID) predicate.InstanceRuntime {
 	return predicate.InstanceRuntime(func(s *sql.Selector) {
-		v := make([]interface{}, len(ids))
+		v := make([]any, len(ids))
 		for i := range v {
 			v[i] = ids[i]
 		}
@@ -182,34 +182,22 @@ func InputNEQ(v []byte) predicate.InstanceRuntime {
 
 // InputIn applies the In predicate on the "input" field.
 func InputIn(vs ...[]byte) predicate.InstanceRuntime {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.InstanceRuntime(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.In(s.C(FieldInput), v...))
 	})
 }
 
 // InputNotIn applies the NotIn predicate on the "input" field.
 func InputNotIn(vs ...[]byte) predicate.InstanceRuntime {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.InstanceRuntime(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.NotIn(s.C(FieldInput), v...))
 	})
 }
@@ -258,34 +246,22 @@ func DataNEQ(v string) predicate.InstanceRuntime {
 
 // DataIn applies the In predicate on the "data" field.
 func DataIn(vs ...string) predicate.InstanceRuntime {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.InstanceRuntime(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.In(s.C(FieldData), v...))
 	})
 }
 
 // DataNotIn applies the NotIn predicate on the "data" field.
 func DataNotIn(vs ...string) predicate.InstanceRuntime {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.InstanceRuntime(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.NotIn(s.C(FieldData), v...))
 	})
 }
@@ -369,34 +345,22 @@ func ControllerNEQ(v string) predicate.InstanceRuntime {
 
 // ControllerIn applies the In predicate on the "controller" field.
 func ControllerIn(vs ...string) predicate.InstanceRuntime {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.InstanceRuntime(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.In(s.C(FieldController), v...))
 	})
 }
 
 // ControllerNotIn applies the NotIn predicate on the "controller" field.
 func ControllerNotIn(vs ...string) predicate.InstanceRuntime {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.InstanceRuntime(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.NotIn(s.C(FieldController), v...))
 	})
 }
@@ -494,34 +458,22 @@ func MemoryNEQ(v string) predicate.InstanceRuntime {
 
 // MemoryIn applies the In predicate on the "memory" field.
 func MemoryIn(vs ...string) predicate.InstanceRuntime {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.InstanceRuntime(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.In(s.C(FieldMemory), v...))
 	})
 }
 
 // MemoryNotIn applies the NotIn predicate on the "memory" field.
 func MemoryNotIn(vs ...string) predicate.InstanceRuntime {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.InstanceRuntime(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.NotIn(s.C(FieldMemory), v...))
 	})
 }
@@ -633,34 +585,22 @@ func OutputNEQ(v string) predicate.InstanceRuntime {
 
 // OutputIn applies the In predicate on the "output" field.
 func OutputIn(vs ...string) predicate.InstanceRuntime {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.InstanceRuntime(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.In(s.C(FieldOutput), v...))
 	})
 }
 
 // OutputNotIn applies the NotIn predicate on the "output" field.
 func OutputNotIn(vs ...string) predicate.InstanceRuntime {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.InstanceRuntime(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.NotIn(s.C(FieldOutput), v...))
 	})
 }
@@ -758,34 +698,22 @@ func StateBeginTimeNEQ(v time.Time) predicate.InstanceRuntime {
 
 // StateBeginTimeIn applies the In predicate on the "stateBeginTime" field.
 func StateBeginTimeIn(vs ...time.Time) predicate.InstanceRuntime {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.InstanceRuntime(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.In(s.C(FieldStateBeginTime), v...))
 	})
 }
 
 // StateBeginTimeNotIn applies the NotIn predicate on the "stateBeginTime" field.
 func StateBeginTimeNotIn(vs ...time.Time) predicate.InstanceRuntime {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.InstanceRuntime(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.NotIn(s.C(FieldStateBeginTime), v...))
 	})
 }
@@ -848,34 +776,22 @@ func DeadlineNEQ(v time.Time) predicate.InstanceRuntime {
 
 // DeadlineIn applies the In predicate on the "deadline" field.
 func DeadlineIn(vs ...time.Time) predicate.InstanceRuntime {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.InstanceRuntime(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.In(s.C(FieldDeadline), v...))
 	})
 }
 
 // DeadlineNotIn applies the NotIn predicate on the "deadline" field.
 func DeadlineNotIn(vs ...time.Time) predicate.InstanceRuntime {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.InstanceRuntime(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.NotIn(s.C(FieldDeadline), v...))
 	})
 }
@@ -938,34 +854,22 @@ func AttemptsNEQ(v int) predicate.InstanceRuntime {
 
 // AttemptsIn applies the In predicate on the "attempts" field.
 func AttemptsIn(vs ...int) predicate.InstanceRuntime {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.InstanceRuntime(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.In(s.C(FieldAttempts), v...))
 	})
 }
 
 // AttemptsNotIn applies the NotIn predicate on the "attempts" field.
 func AttemptsNotIn(vs ...int) predicate.InstanceRuntime {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.InstanceRuntime(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.NotIn(s.C(FieldAttempts), v...))
 	})
 }
@@ -1028,34 +932,22 @@ func CallerDataNEQ(v string) predicate.InstanceRuntime {
 
 // CallerDataIn applies the In predicate on the "caller_data" field.
 func CallerDataIn(vs ...string) predicate.InstanceRuntime {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.InstanceRuntime(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.In(s.C(FieldCallerData), v...))
 	})
 }
 
 // CallerDataNotIn applies the NotIn predicate on the "caller_data" field.
 func CallerDataNotIn(vs ...string) predicate.InstanceRuntime {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.InstanceRuntime(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.NotIn(s.C(FieldCallerData), v...))
 	})
 }
@@ -1153,34 +1045,22 @@ func InstanceContextNEQ(v string) predicate.InstanceRuntime {
 
 // InstanceContextIn applies the In predicate on the "instanceContext" field.
 func InstanceContextIn(vs ...string) predicate.InstanceRuntime {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.InstanceRuntime(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.In(s.C(FieldInstanceContext), v...))
 	})
 }
 
 // InstanceContextNotIn applies the NotIn predicate on the "instanceContext" field.
 func InstanceContextNotIn(vs ...string) predicate.InstanceRuntime {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.InstanceRuntime(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.NotIn(s.C(FieldInstanceContext), v...))
 	})
 }
@@ -1278,34 +1158,22 @@ func StateContextNEQ(v string) predicate.InstanceRuntime {
 
 // StateContextIn applies the In predicate on the "stateContext" field.
 func StateContextIn(vs ...string) predicate.InstanceRuntime {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.InstanceRuntime(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.In(s.C(FieldStateContext), v...))
 	})
 }
 
 // StateContextNotIn applies the NotIn predicate on the "stateContext" field.
 func StateContextNotIn(vs ...string) predicate.InstanceRuntime {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.InstanceRuntime(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.NotIn(s.C(FieldStateContext), v...))
 	})
 }
@@ -1403,34 +1271,22 @@ func MetadataNEQ(v string) predicate.InstanceRuntime {
 
 // MetadataIn applies the In predicate on the "metadata" field.
 func MetadataIn(vs ...string) predicate.InstanceRuntime {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.InstanceRuntime(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.In(s.C(FieldMetadata), v...))
 	})
 }
 
 // MetadataNotIn applies the NotIn predicate on the "metadata" field.
 func MetadataNotIn(vs ...string) predicate.InstanceRuntime {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.InstanceRuntime(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
 		s.Where(sql.NotIn(s.C(FieldMetadata), v...))
 	})
 }

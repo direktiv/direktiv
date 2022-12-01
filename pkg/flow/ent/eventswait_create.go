@@ -7,6 +7,8 @@ import (
 	"errors"
 	"fmt"
 
+	"entgo.io/ent/dialect"
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/direktiv/direktiv/pkg/flow/ent/events"
@@ -19,6 +21,7 @@ type EventsWaitCreate struct {
 	config
 	mutation *EventsWaitMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetEvents sets the "events" field.
@@ -175,16 +178,13 @@ func (ewc *EventsWaitCreate) createSpec() (*EventsWait, *sqlgraph.CreateSpec) {
 			},
 		}
 	)
+	_spec.OnConflict = ewc.conflict
 	if id, ok := ewc.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
 	if value, ok := ewc.mutation.Events(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Value:  value,
-			Column: eventswait.FieldEvents,
-		})
+		_spec.SetField(eventswait.FieldEvents, field.TypeJSON, value)
 		_node.Events = value
 	}
 	if nodes := ewc.mutation.WorkfloweventIDs(); len(nodes) > 0 {
@@ -210,10 +210,172 @@ func (ewc *EventsWaitCreate) createSpec() (*EventsWait, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.EventsWait.Create().
+//		SetEvents(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.EventsWaitUpsert) {
+//			SetEvents(v+v).
+//		}).
+//		Exec(ctx)
+func (ewc *EventsWaitCreate) OnConflict(opts ...sql.ConflictOption) *EventsWaitUpsertOne {
+	ewc.conflict = opts
+	return &EventsWaitUpsertOne{
+		create: ewc,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.EventsWait.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (ewc *EventsWaitCreate) OnConflictColumns(columns ...string) *EventsWaitUpsertOne {
+	ewc.conflict = append(ewc.conflict, sql.ConflictColumns(columns...))
+	return &EventsWaitUpsertOne{
+		create: ewc,
+	}
+}
+
+type (
+	// EventsWaitUpsertOne is the builder for "upsert"-ing
+	//  one EventsWait node.
+	EventsWaitUpsertOne struct {
+		create *EventsWaitCreate
+	}
+
+	// EventsWaitUpsert is the "OnConflict" setter.
+	EventsWaitUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetEvents sets the "events" field.
+func (u *EventsWaitUpsert) SetEvents(v map[string]interface{}) *EventsWaitUpsert {
+	u.Set(eventswait.FieldEvents, v)
+	return u
+}
+
+// UpdateEvents sets the "events" field to the value that was provided on create.
+func (u *EventsWaitUpsert) UpdateEvents() *EventsWaitUpsert {
+	u.SetExcluded(eventswait.FieldEvents)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// Using this option is equivalent to using:
+//
+//	client.EventsWait.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(eventswait.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *EventsWaitUpsertOne) UpdateNewValues() *EventsWaitUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(eventswait.FieldID)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.EventsWait.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *EventsWaitUpsertOne) Ignore() *EventsWaitUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *EventsWaitUpsertOne) DoNothing() *EventsWaitUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the EventsWaitCreate.OnConflict
+// documentation for more info.
+func (u *EventsWaitUpsertOne) Update(set func(*EventsWaitUpsert)) *EventsWaitUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&EventsWaitUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetEvents sets the "events" field.
+func (u *EventsWaitUpsertOne) SetEvents(v map[string]interface{}) *EventsWaitUpsertOne {
+	return u.Update(func(s *EventsWaitUpsert) {
+		s.SetEvents(v)
+	})
+}
+
+// UpdateEvents sets the "events" field to the value that was provided on create.
+func (u *EventsWaitUpsertOne) UpdateEvents() *EventsWaitUpsertOne {
+	return u.Update(func(s *EventsWaitUpsert) {
+		s.UpdateEvents()
+	})
+}
+
+// Exec executes the query.
+func (u *EventsWaitUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for EventsWaitCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *EventsWaitUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *EventsWaitUpsertOne) ID(ctx context.Context) (id uuid.UUID, err error) {
+	if u.create.driver.Dialect() == dialect.MySQL {
+		// In case of "ON CONFLICT", there is no way to get back non-numeric ID
+		// fields from the database since MySQL does not support the RETURNING clause.
+		return id, errors.New("ent: EventsWaitUpsertOne.ID is not supported by MySQL driver. Use EventsWaitUpsertOne.Exec instead")
+	}
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *EventsWaitUpsertOne) IDX(ctx context.Context) uuid.UUID {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // EventsWaitCreateBulk is the builder for creating many EventsWait entities in bulk.
 type EventsWaitCreateBulk struct {
 	config
 	builders []*EventsWaitCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the EventsWait entities in the database.
@@ -240,6 +402,7 @@ func (ewcb *EventsWaitCreateBulk) Save(ctx context.Context) ([]*EventsWait, erro
 					_, err = mutators[i+1].Mutate(root, ewcb.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = ewcb.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, ewcb.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -286,6 +449,131 @@ func (ewcb *EventsWaitCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (ewcb *EventsWaitCreateBulk) ExecX(ctx context.Context) {
 	if err := ewcb.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.EventsWait.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.EventsWaitUpsert) {
+//			SetEvents(v+v).
+//		}).
+//		Exec(ctx)
+func (ewcb *EventsWaitCreateBulk) OnConflict(opts ...sql.ConflictOption) *EventsWaitUpsertBulk {
+	ewcb.conflict = opts
+	return &EventsWaitUpsertBulk{
+		create: ewcb,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.EventsWait.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (ewcb *EventsWaitCreateBulk) OnConflictColumns(columns ...string) *EventsWaitUpsertBulk {
+	ewcb.conflict = append(ewcb.conflict, sql.ConflictColumns(columns...))
+	return &EventsWaitUpsertBulk{
+		create: ewcb,
+	}
+}
+
+// EventsWaitUpsertBulk is the builder for "upsert"-ing
+// a bulk of EventsWait nodes.
+type EventsWaitUpsertBulk struct {
+	create *EventsWaitCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.EventsWait.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(eventswait.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *EventsWaitUpsertBulk) UpdateNewValues() *EventsWaitUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(eventswait.FieldID)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.EventsWait.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *EventsWaitUpsertBulk) Ignore() *EventsWaitUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *EventsWaitUpsertBulk) DoNothing() *EventsWaitUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the EventsWaitCreateBulk.OnConflict
+// documentation for more info.
+func (u *EventsWaitUpsertBulk) Update(set func(*EventsWaitUpsert)) *EventsWaitUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&EventsWaitUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetEvents sets the "events" field.
+func (u *EventsWaitUpsertBulk) SetEvents(v map[string]interface{}) *EventsWaitUpsertBulk {
+	return u.Update(func(s *EventsWaitUpsert) {
+		s.SetEvents(v)
+	})
+}
+
+// UpdateEvents sets the "events" field to the value that was provided on create.
+func (u *EventsWaitUpsertBulk) UpdateEvents() *EventsWaitUpsertBulk {
+	return u.Update(func(s *EventsWaitUpsert) {
+		s.UpdateEvents()
+	})
+}
+
+// Exec executes the query.
+func (u *EventsWaitUpsertBulk) Exec(ctx context.Context) error {
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the EventsWaitCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for EventsWaitCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *EventsWaitUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

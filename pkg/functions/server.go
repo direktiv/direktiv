@@ -14,7 +14,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 
-	"github.com/direktiv/direktiv/pkg/functions/ent"
+	"github.com/direktiv/direktiv/pkg/flow/ent"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/version"
 	"github.com/lib/pq"
@@ -53,7 +53,7 @@ type functionsServer struct {
 	reusableCacheIndex map[string]*cacheTuple
 }
 
-// StartServer starts functions grpc server
+// StartServer starts functions grpc server.
 func StartServer(echan chan error) {
 
 	var err error
@@ -64,16 +64,12 @@ func StartServer(echan chan error) {
 		return
 	}
 
-	/*
-		err = initKubernetesLock()
-		if err != nil {
-			echan <- err
-			return
-		}
-	*/
-
+	// we read first in case the watcher is not working
 	logger.Infof("loading config file %s", confFile)
 	readConfig(confFile, &functionsConfig)
+
+	// start watcher for congfig changes
+	go configWatcher()
 
 	err = initLocks(os.Getenv(util.DBConn))
 	if err != nil {
@@ -86,12 +82,6 @@ func StartServer(echan chan error) {
 	if err != nil {
 		logger.Errorf("failed to connect database client: %w", err)
 		echan <- fmt.Errorf("failed to connect database client: %w", err)
-	}
-
-	// Run the auto migration tool.
-	if err := db.Schema.Create(context.Background()); err != nil {
-		logger.Errorf("failed to auto migrate database: %v", err)
-		echan <- fmt.Errorf("failed to auto migrate database: %v", err)
 	}
 
 	fServer := functionsServer{
@@ -129,19 +119,20 @@ func StartServer(echan chan error) {
 
 	go func(l *pq.Listener) {
 
-		defer l.UnlistenAll()
+		defer func() {
+			err := l.UnlistenAll()
+			logger.Errorf("Failed to deregister listeners: %v.", err)
+		}()
 
 		for {
 
 			var more bool
 			var notification *pq.Notification
 
-			select {
-			case notification, more = <-l.Notify:
-				if !more {
-					logger.Errorf("database listener closed\n")
-					return
-				}
+			notification, more = <-l.Notify
+			if !more {
+				logger.Errorf("database listener closed\n")
+				return
 			}
 
 			if notification == nil {
@@ -152,7 +143,7 @@ func StartServer(echan chan error) {
 
 			err = json.Unmarshal([]byte(notification.Extra), &tuples)
 			if err != nil {
-				logger.Error(fmt.Sprintf("Unexpected notification on redis listener: %v", err))
+				logger.Error(fmt.Sprintf("unexpected notification listener: %v", err))
 				continue
 			} else {
 				go fServer.heartbeat(tuples)
@@ -171,7 +162,7 @@ func StartServer(echan chan error) {
 
 }
 
-// StopServer is stopping server gracefully
+// StopServer is stopping server gracefully.
 func StopServer() {
 	if grpcServer != nil {
 		grpcServer.GracefulStop()
@@ -189,7 +180,7 @@ type HeartbeatTuple struct {
 
 func (fServer *functionsServer) heartbeat(tuples []*HeartbeatTuple) {
 
-	logger.Debugf("Workflow functions heartbeat received.")
+	logger.Debugf("workflow functions heartbeat received.")
 
 	ctx := context.Background()
 
@@ -213,7 +204,9 @@ func (fServer *functionsServer) heartbeat(tuples []*HeartbeatTuple) {
 			},
 		}
 
-		name, _ := GenerateWorkflowServiceName(in.Info)
+		name, _, _ := GenerateServiceName(in.Info)
+
+		logger.Debugf("checking service %s in heartbeat", name)
 
 		fServer.reusableCacheLock.Lock()
 
@@ -228,7 +221,7 @@ func (fServer *functionsServer) heartbeat(tuples []*HeartbeatTuple) {
 		fServer.reusableCacheIndex[name] = ct
 		fServer.reusableCacheLock.Unlock()
 
-		logger.Debugf("Creating workflow function in heartbeat: %s", name)
+		logger.Debugf("creating workflow function in heartbeat: %s", name)
 
 		_, err := fServer.CreateFunction(ctx, in)
 		if err != nil {
@@ -250,7 +243,7 @@ func (fServer *functionsServer) reusableGC() {
 
 		<-ticker.C
 
-		logger.Debugf("Reusable heartbeat garbage collector running.")
+		logger.Debugf("reusable heartbeat garbage collector running.")
 
 		cutoff := time.Now().Add(time.Minute * -15)
 
@@ -312,7 +305,7 @@ func (fServer *functionsServer) reusableFree(k string) {
 
 	ctx := context.Background()
 
-	logger.Debugf("Reusable heartbeat garbage collector purging workflow functions: %s", k)
+	logger.Debugf("reusable heartbeat garbage collector purging workflow functions: %s", k)
 
 	for i := range x.names {
 
@@ -322,11 +315,11 @@ func (fServer *functionsServer) reusableFree(k string) {
 			ServiceName: &name,
 		}
 
-		logger.Debugf("Reusable heartbeat garbage collector purging workflow function: %s", name)
+		logger.Debugf("reusable heartbeat garbage collector purging workflow function: %s", name)
 
 		_, err := fServer.DeleteFunction(ctx, in)
 		if err != nil {
-			logger.Errorf("Reusable heartbeat garbage collector failed to purge workflow function: %v", err)
+			logger.Errorf("reusable heartbeat garbage collector failed to purge workflow function: %v", err)
 			continue
 		}
 
@@ -342,7 +335,7 @@ func (fServer *functionsServer) orphansGC() {
 
 		<-ticker.C
 
-		logger.Debugf("Reusable orphans garbage collector running.")
+		logger.Debugf("reusable orphans garbage collector running.")
 
 		ctx := context.Background()
 
@@ -352,15 +345,15 @@ func (fServer *functionsServer) orphansGC() {
 
 		cs, err := fetchServiceAPI()
 		if err != nil {
-			err = fmt.Errorf("error getting clientset for knative: %v", err)
-			logger.Errorf("Reusable orphans garbage collector failed to list workflow functions: %v", err)
+			err = fmt.Errorf("error getting clientset for knative: %w", err)
+			logger.Errorf("reusable orphans garbage collector failed to list workflow functions: %v", err)
 			continue
 		}
 
 		lo := metav1.ListOptions{LabelSelector: labels.Set(filtered).String()}
 		l, err := cs.ServingV1().Services(functionsConfig.Namespace).List(context.Background(), lo)
 		if err != nil {
-			logger.Errorf("Reusable orphans garbage collector failed to list workflow functions: %v", err)
+			logger.Errorf("reusable orphans garbage collector failed to list workflow functions: %v", err)
 			continue
 		}
 
@@ -377,7 +370,6 @@ func (fServer *functionsServer) orphansGC() {
 				if !item.CreationTimestamp.Time.Before(time.Now().Add(time.Minute * -60)) {
 					continue
 				}
-
 				logger.Debugf("Reusable orphans garbage collector deleting detected orphan function: %s", item.Name)
 
 				_, err := fServer.DeleteFunction(ctx, &igrpc.GetFunctionRequest{

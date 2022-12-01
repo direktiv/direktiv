@@ -16,6 +16,7 @@ import (
 	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
 	"github.com/direktiv/direktiv/pkg/model"
 	secretsgrpc "github.com/direktiv/direktiv/pkg/secrets/grpc"
+	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -41,15 +42,17 @@ func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.Variab
 
 		switch scope {
 
-		case "instance":
+		case util.VarScopeInstance:
 			ref, err = im.in.QueryVars().Where(entvar.NameEQ(key), entvar.BehaviourIsNil()).WithVardata().Only(ctx)
 
-		case "thread":
+		case util.VarScopeThread:
 			ref, err = im.in.QueryVars().Where(entvar.NameEQ(key), entvar.BehaviourEQ("thread")).WithVardata().Only(ctx)
 
-		case "workflow":
+		case util.VarScopeWorkflow:
 
-			wf, err := im.engine.InstanceWorkflow(ctx, im)
+			var wf *ent.Workflow
+
+			wf, err = im.engine.InstanceWorkflow(ctx, im)
 			if err != nil {
 				return nil, derrors.NewInternalError(err)
 			}
@@ -62,9 +65,11 @@ func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.Variab
 
 			ref, err = wf.QueryVars().Where(entvar.NameEQ(key)).WithVardata().Only(ctx)
 
-		case "namespace":
+		case util.VarScopeNamespace:
 
-			ns, err := im.engine.InstanceNamespace(ctx, im)
+			var ns *ent.Namespace
+
+			ns, err = im.engine.InstanceNamespace(ctx, im)
 			if err != nil {
 				return nil, derrors.NewInternalError(err)
 			}
@@ -101,7 +106,7 @@ func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.Variab
 			if ref.Edges.Vardata == nil {
 
 				err = &derrors.NotFoundError{
-					Label: fmt.Sprintf("variable data not found"),
+					Label: "variable data not found",
 				}
 
 				return nil, err
@@ -238,13 +243,31 @@ func (im *instanceMemory) SetVariables(ctx context.Context, vars []states.Variab
 			return derrors.NewInternalError(errors.New("invalid scope"))
 		}
 
-		_, _, err = im.engine.flow.SetVariable(ctx, vrefc, vdatac, q, v.Key, v.Data, v.MIMEType, thread)
-		if err != nil {
-			return err
+		// if statements have to be same order
+
+		d := string(v.Data)
+
+		if len(d) == 0 {
+			_, _, err = im.engine.flow.DeleteVariable(ctx, vrefc, vdatac, q, v.Key, v.Data, v.MIMEType, thread)
+			if err != nil {
+				return err
+			}
+			continue
+
 		}
 
-		if err != nil {
-			return err
+		if !(v.MIMEType == "text/plain; charset=utf-8" || v.MIMEType == "text/plain" || v.MIMEType == "application/octet-stream") && (d == "{}" || d == "[]" || d == "0" || d == `""` || d == "null") {
+			_, _, err = im.engine.flow.DeleteVariable(ctx, vrefc, vdatac, q, v.Key, v.Data, v.MIMEType, thread)
+			if err != nil {
+				return err
+			}
+			continue
+
+		} else {
+			_, _, err = im.engine.flow.SetVariable(ctx, vrefc, vdatac, q, v.Key, v.Data, v.MIMEType, thread)
+			if err != nil {
+				return err
+			}
 		}
 
 	}
@@ -340,7 +363,6 @@ func (im *instanceMemory) CreateChild(ctx context.Context, args states.CreateChi
 	}
 
 	switch args.Definition.GetType() {
-	case model.GlobalKnativeFunctionType:
 	case model.NamespacedKnativeFunctionType:
 	case model.ReusableContainerFunctionType:
 	default:
@@ -392,7 +414,6 @@ func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory,
 		ar.Workflow.Step = im.Step()
 	}
 
-	// TODO: timeout
 	fnt := fn.GetType()
 	ar.Container.Type = fnt
 	ar.Container.Data = inputData
@@ -437,13 +458,6 @@ func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory,
 			Name:          &con.KnativeService,
 			Namespace:     &nsID,
 			NamespaceName: &ar.Workflow.NamespaceName,
-		})
-	case model.GlobalKnativeFunctionType:
-		con := fn.(*model.GlobalFunctionDefinition)
-		ar.Container.Files = files
-		ar.Container.ID = con.ID
-		ar.Container.Service, _, _ = functions.GenerateServiceName(&igrpc.BaseInfo{
-			Name: &con.KnativeService,
 		})
 	default:
 		return nil, fmt.Errorf("unexpected function type: %v", fn)

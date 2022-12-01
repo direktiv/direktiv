@@ -1,5 +1,7 @@
 package main
 
+/*
+
 import (
 	"context"
 	"encoding/json"
@@ -20,7 +22,7 @@ states:
 const aCheckedCloudEvent = `
 {
   "specversion": "1.0",
-  "type": "%s-checked",  
+  "type": "%s-checked",
   "source": "https://test.io",
   "id": "%v",
   "data": {
@@ -293,3 +295,5 @@ func testStartTypeCron(ctx context.Context, c grpc.FlowClient, namespace string)
 	return fmt.Errorf("cron job schedule instances created: %v wanted 3", len(instances))
 
 }
+
+*/

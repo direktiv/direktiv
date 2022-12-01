@@ -8,9 +8,11 @@ import (
 	"fmt"
 	"math"
 
+	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/direktiv/direktiv/pkg/flow/ent/annotation"
 	"github.com/direktiv/direktiv/pkg/flow/ent/events"
 	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	"github.com/direktiv/direktiv/pkg/flow/ent/instanceruntime"
@@ -26,13 +28,12 @@ import (
 // InstanceQuery is the builder for querying Instance entities.
 type InstanceQuery struct {
 	config
-	limit      *int
-	offset     *int
-	unique     *bool
-	order      []OrderFunc
-	fields     []string
-	predicates []predicate.Instance
-	// eager-loading edges.
+	limit              *int
+	offset             *int
+	unique             *bool
+	order              []OrderFunc
+	fields             []string
+	predicates         []predicate.Instance
 	withNamespace      *NamespaceQuery
 	withWorkflow       *WorkflowQuery
 	withRevision       *RevisionQuery
@@ -41,7 +42,9 @@ type InstanceQuery struct {
 	withRuntime        *InstanceRuntimeQuery
 	withChildren       *InstanceRuntimeQuery
 	withEventlisteners *EventsQuery
+	withAnnotations    *AnnotationQuery
 	withFKs            bool
+	modifiers          []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -254,6 +257,28 @@ func (iq *InstanceQuery) QueryEventlisteners() *EventsQuery {
 	return query
 }
 
+// QueryAnnotations chains the current query on the "annotations" edge.
+func (iq *InstanceQuery) QueryAnnotations() *AnnotationQuery {
+	query := &AnnotationQuery{config: iq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := iq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := iq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(instance.Table, instance.FieldID, selector),
+			sqlgraph.To(annotation.Table, annotation.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, instance.AnnotationsTable, instance.AnnotationsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // First returns the first Instance entity from the query.
 // Returns a *NotFoundError when no Instance was found.
 func (iq *InstanceQuery) First(ctx context.Context) (*Instance, error) {
@@ -443,6 +468,7 @@ func (iq *InstanceQuery) Clone() *InstanceQuery {
 		withRuntime:        iq.withRuntime.Clone(),
 		withChildren:       iq.withChildren.Clone(),
 		withEventlisteners: iq.withEventlisteners.Clone(),
+		withAnnotations:    iq.withAnnotations.Clone(),
 		// clone intermediate query.
 		sql:    iq.sql.Clone(),
 		path:   iq.path,
@@ -538,6 +564,17 @@ func (iq *InstanceQuery) WithEventlisteners(opts ...func(*EventsQuery)) *Instanc
 	return iq
 }
 
+// WithAnnotations tells the query-builder to eager-load the nodes that are connected to
+// the "annotations" edge. The optional arguments are used to configure the query builder of the edge.
+func (iq *InstanceQuery) WithAnnotations(opts ...func(*AnnotationQuery)) *InstanceQuery {
+	query := &AnnotationQuery{config: iq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	iq.withAnnotations = query
+	return iq
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
@@ -552,7 +589,6 @@ func (iq *InstanceQuery) WithEventlisteners(opts ...func(*EventsQuery)) *Instanc
 //		GroupBy(instance.FieldCreatedAt).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-//
 func (iq *InstanceQuery) GroupBy(field string, fields ...string) *InstanceGroupBy {
 	grbuild := &InstanceGroupBy{config: iq.config}
 	grbuild.fields = append([]string{field}, fields...)
@@ -579,13 +615,17 @@ func (iq *InstanceQuery) GroupBy(field string, fields ...string) *InstanceGroupB
 //	client.Instance.Query().
 //		Select(instance.FieldCreatedAt).
 //		Scan(ctx, &v)
-//
 func (iq *InstanceQuery) Select(fields ...string) *InstanceSelect {
 	iq.fields = append(iq.fields, fields...)
 	selbuild := &InstanceSelect{InstanceQuery: iq}
 	selbuild.label = instance.Label
 	selbuild.flds, selbuild.scan = &iq.fields, selbuild.Scan
 	return selbuild
+}
+
+// Aggregate returns a InstanceSelect configured with the given aggregations.
+func (iq *InstanceQuery) Aggregate(fns ...AggregateFunc) *InstanceSelect {
+	return iq.Select().Aggregate(fns...)
 }
 
 func (iq *InstanceQuery) prepareQuery(ctx context.Context) error {
@@ -609,7 +649,7 @@ func (iq *InstanceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Ins
 		nodes       = []*Instance{}
 		withFKs     = iq.withFKs
 		_spec       = iq.querySpec()
-		loadedTypes = [8]bool{
+		loadedTypes = [9]bool{
 			iq.withNamespace != nil,
 			iq.withWorkflow != nil,
 			iq.withRevision != nil,
@@ -618,6 +658,7 @@ func (iq *InstanceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Ins
 			iq.withRuntime != nil,
 			iq.withChildren != nil,
 			iq.withEventlisteners != nil,
+			iq.withAnnotations != nil,
 		}
 	)
 	if iq.withNamespace != nil || iq.withWorkflow != nil || iq.withRevision != nil {
@@ -626,14 +667,17 @@ func (iq *InstanceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Ins
 	if withFKs {
 		_spec.Node.Columns = append(_spec.Node.Columns, instance.ForeignKeys...)
 	}
-	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
+	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Instance).scanValues(nil, columns)
 	}
-	_spec.Assign = func(columns []string, values []interface{}) error {
+	_spec.Assign = func(columns []string, values []any) error {
 		node := &Instance{config: iq.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
+	}
+	if len(iq.modifiers) > 0 {
+		_spec.Modifiers = iq.modifiers
 	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
@@ -644,243 +688,344 @@ func (iq *InstanceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Ins
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-
 	if query := iq.withNamespace; query != nil {
-		ids := make([]uuid.UUID, 0, len(nodes))
-		nodeids := make(map[uuid.UUID][]*Instance)
-		for i := range nodes {
-			if nodes[i].namespace_instances == nil {
-				continue
-			}
-			fk := *nodes[i].namespace_instances
-			if _, ok := nodeids[fk]; !ok {
-				ids = append(ids, fk)
-			}
-			nodeids[fk] = append(nodeids[fk], nodes[i])
-		}
-		query.Where(namespace.IDIn(ids...))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := iq.loadNamespace(ctx, query, nodes, nil,
+			func(n *Instance, e *Namespace) { n.Edges.Namespace = e }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			nodes, ok := nodeids[n.ID]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "namespace_instances" returned %v`, n.ID)
-			}
-			for i := range nodes {
-				nodes[i].Edges.Namespace = n
-			}
-		}
 	}
-
 	if query := iq.withWorkflow; query != nil {
-		ids := make([]uuid.UUID, 0, len(nodes))
-		nodeids := make(map[uuid.UUID][]*Instance)
-		for i := range nodes {
-			if nodes[i].workflow_instances == nil {
-				continue
-			}
-			fk := *nodes[i].workflow_instances
-			if _, ok := nodeids[fk]; !ok {
-				ids = append(ids, fk)
-			}
-			nodeids[fk] = append(nodeids[fk], nodes[i])
-		}
-		query.Where(workflow.IDIn(ids...))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := iq.loadWorkflow(ctx, query, nodes, nil,
+			func(n *Instance, e *Workflow) { n.Edges.Workflow = e }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			nodes, ok := nodeids[n.ID]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "workflow_instances" returned %v`, n.ID)
-			}
-			for i := range nodes {
-				nodes[i].Edges.Workflow = n
-			}
-		}
 	}
-
 	if query := iq.withRevision; query != nil {
-		ids := make([]uuid.UUID, 0, len(nodes))
-		nodeids := make(map[uuid.UUID][]*Instance)
-		for i := range nodes {
-			if nodes[i].revision_instances == nil {
-				continue
-			}
-			fk := *nodes[i].revision_instances
-			if _, ok := nodeids[fk]; !ok {
-				ids = append(ids, fk)
-			}
-			nodeids[fk] = append(nodeids[fk], nodes[i])
-		}
-		query.Where(revision.IDIn(ids...))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := iq.loadRevision(ctx, query, nodes, nil,
+			func(n *Instance, e *Revision) { n.Edges.Revision = e }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			nodes, ok := nodeids[n.ID]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "revision_instances" returned %v`, n.ID)
-			}
-			for i := range nodes {
-				nodes[i].Edges.Revision = n
-			}
-		}
 	}
-
 	if query := iq.withLogs; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[uuid.UUID]*Instance)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Logs = []*LogMsg{}
-		}
-		query.withFKs = true
-		query.Where(predicate.LogMsg(func(s *sql.Selector) {
-			s.Where(sql.InValues(instance.LogsColumn, fks...))
-		}))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := iq.loadLogs(ctx, query, nodes,
+			func(n *Instance) { n.Edges.Logs = []*LogMsg{} },
+			func(n *Instance, e *LogMsg) { n.Edges.Logs = append(n.Edges.Logs, e) }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			fk := n.instance_logs
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "instance_logs" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "instance_logs" returned %v for node %v`, *fk, n.ID)
-			}
-			node.Edges.Logs = append(node.Edges.Logs, n)
-		}
 	}
-
 	if query := iq.withVars; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[uuid.UUID]*Instance)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Vars = []*VarRef{}
-		}
-		query.withFKs = true
-		query.Where(predicate.VarRef(func(s *sql.Selector) {
-			s.Where(sql.InValues(instance.VarsColumn, fks...))
-		}))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := iq.loadVars(ctx, query, nodes,
+			func(n *Instance) { n.Edges.Vars = []*VarRef{} },
+			func(n *Instance, e *VarRef) { n.Edges.Vars = append(n.Edges.Vars, e) }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			fk := n.instance_vars
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "instance_vars" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "instance_vars" returned %v for node %v`, *fk, n.ID)
-			}
-			node.Edges.Vars = append(node.Edges.Vars, n)
-		}
 	}
-
 	if query := iq.withRuntime; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[uuid.UUID]*Instance)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-		}
-		query.withFKs = true
-		query.Where(predicate.InstanceRuntime(func(s *sql.Selector) {
-			s.Where(sql.InValues(instance.RuntimeColumn, fks...))
-		}))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := iq.loadRuntime(ctx, query, nodes, nil,
+			func(n *Instance, e *InstanceRuntime) { n.Edges.Runtime = e }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			fk := n.instance_runtime
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "instance_runtime" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "instance_runtime" returned %v for node %v`, *fk, n.ID)
-			}
-			node.Edges.Runtime = n
-		}
 	}
-
 	if query := iq.withChildren; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[uuid.UUID]*Instance)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Children = []*InstanceRuntime{}
-		}
-		query.withFKs = true
-		query.Where(predicate.InstanceRuntime(func(s *sql.Selector) {
-			s.Where(sql.InValues(instance.ChildrenColumn, fks...))
-		}))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := iq.loadChildren(ctx, query, nodes,
+			func(n *Instance) { n.Edges.Children = []*InstanceRuntime{} },
+			func(n *Instance, e *InstanceRuntime) { n.Edges.Children = append(n.Edges.Children, e) }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			fk := n.instance_children
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "instance_children" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "instance_children" returned %v for node %v`, *fk, n.ID)
-			}
-			node.Edges.Children = append(node.Edges.Children, n)
-		}
 	}
-
 	if query := iq.withEventlisteners; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[uuid.UUID]*Instance)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Eventlisteners = []*Events{}
-		}
-		query.withFKs = true
-		query.Where(predicate.Events(func(s *sql.Selector) {
-			s.Where(sql.InValues(instance.EventlistenersColumn, fks...))
-		}))
-		neighbors, err := query.All(ctx)
-		if err != nil {
+		if err := iq.loadEventlisteners(ctx, query, nodes,
+			func(n *Instance) { n.Edges.Eventlisteners = []*Events{} },
+			func(n *Instance, e *Events) { n.Edges.Eventlisteners = append(n.Edges.Eventlisteners, e) }); err != nil {
 			return nil, err
 		}
-		for _, n := range neighbors {
-			fk := n.instance_eventlisteners
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "instance_eventlisteners" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "instance_eventlisteners" returned %v for node %v`, *fk, n.ID)
-			}
-			node.Edges.Eventlisteners = append(node.Edges.Eventlisteners, n)
+	}
+	if query := iq.withAnnotations; query != nil {
+		if err := iq.loadAnnotations(ctx, query, nodes,
+			func(n *Instance) { n.Edges.Annotations = []*Annotation{} },
+			func(n *Instance, e *Annotation) { n.Edges.Annotations = append(n.Edges.Annotations, e) }); err != nil {
+			return nil, err
 		}
 	}
-
 	return nodes, nil
+}
+
+func (iq *InstanceQuery) loadNamespace(ctx context.Context, query *NamespaceQuery, nodes []*Instance, init func(*Instance), assign func(*Instance, *Namespace)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Instance)
+	for i := range nodes {
+		if nodes[i].namespace_instances == nil {
+			continue
+		}
+		fk := *nodes[i].namespace_instances
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	query.Where(namespace.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "namespace_instances" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (iq *InstanceQuery) loadWorkflow(ctx context.Context, query *WorkflowQuery, nodes []*Instance, init func(*Instance), assign func(*Instance, *Workflow)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Instance)
+	for i := range nodes {
+		if nodes[i].workflow_instances == nil {
+			continue
+		}
+		fk := *nodes[i].workflow_instances
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	query.Where(workflow.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "workflow_instances" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (iq *InstanceQuery) loadRevision(ctx context.Context, query *RevisionQuery, nodes []*Instance, init func(*Instance), assign func(*Instance, *Revision)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Instance)
+	for i := range nodes {
+		if nodes[i].revision_instances == nil {
+			continue
+		}
+		fk := *nodes[i].revision_instances
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	query.Where(revision.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "revision_instances" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (iq *InstanceQuery) loadLogs(ctx context.Context, query *LogMsgQuery, nodes []*Instance, init func(*Instance), assign func(*Instance, *LogMsg)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Instance)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.InValues(instance.LogsColumn, fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.instance_logs
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "instance_logs" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "instance_logs" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (iq *InstanceQuery) loadVars(ctx context.Context, query *VarRefQuery, nodes []*Instance, init func(*Instance), assign func(*Instance, *VarRef)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Instance)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.VarRef(func(s *sql.Selector) {
+		s.Where(sql.InValues(instance.VarsColumn, fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.instance_vars
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "instance_vars" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "instance_vars" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (iq *InstanceQuery) loadRuntime(ctx context.Context, query *InstanceRuntimeQuery, nodes []*Instance, init func(*Instance), assign func(*Instance, *InstanceRuntime)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Instance)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+	}
+	query.withFKs = true
+	query.Where(predicate.InstanceRuntime(func(s *sql.Selector) {
+		s.Where(sql.InValues(instance.RuntimeColumn, fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.instance_runtime
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "instance_runtime" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "instance_runtime" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (iq *InstanceQuery) loadChildren(ctx context.Context, query *InstanceRuntimeQuery, nodes []*Instance, init func(*Instance), assign func(*Instance, *InstanceRuntime)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Instance)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.InstanceRuntime(func(s *sql.Selector) {
+		s.Where(sql.InValues(instance.ChildrenColumn, fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.instance_children
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "instance_children" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "instance_children" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (iq *InstanceQuery) loadEventlisteners(ctx context.Context, query *EventsQuery, nodes []*Instance, init func(*Instance), assign func(*Instance, *Events)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Instance)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Events(func(s *sql.Selector) {
+		s.Where(sql.InValues(instance.EventlistenersColumn, fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.instance_eventlisteners
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "instance_eventlisteners" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "instance_eventlisteners" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (iq *InstanceQuery) loadAnnotations(ctx context.Context, query *AnnotationQuery, nodes []*Instance, init func(*Instance), assign func(*Instance, *Annotation)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Instance)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Annotation(func(s *sql.Selector) {
+		s.Where(sql.InValues(instance.AnnotationsColumn, fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.instance_annotations
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "instance_annotations" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "instance_annotations" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
 }
 
 func (iq *InstanceQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := iq.querySpec()
+	if len(iq.modifiers) > 0 {
+		_spec.Modifiers = iq.modifiers
+	}
 	_spec.Node.Columns = iq.fields
 	if len(iq.fields) > 0 {
 		_spec.Unique = iq.unique != nil && *iq.unique
@@ -889,11 +1034,14 @@ func (iq *InstanceQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (iq *InstanceQuery) sqlExist(ctx context.Context) (bool, error) {
-	n, err := iq.sqlCount(ctx)
-	if err != nil {
+	switch _, err := iq.FirstID(ctx); {
+	case IsNotFound(err):
+		return false, nil
+	case err != nil:
 		return false, fmt.Errorf("ent: check existence: %w", err)
+	default:
+		return true, nil
 	}
-	return n > 0, nil
 }
 
 func (iq *InstanceQuery) querySpec() *sqlgraph.QuerySpec {
@@ -959,6 +1107,9 @@ func (iq *InstanceQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if iq.unique != nil && *iq.unique {
 		selector.Distinct()
 	}
+	for _, m := range iq.modifiers {
+		m(selector)
+	}
 	for _, p := range iq.predicates {
 		p(selector)
 	}
@@ -974,6 +1125,38 @@ func (iq *InstanceQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector.Limit(*limit)
 	}
 	return selector
+}
+
+// ForUpdate locks the selected rows against concurrent updates, and prevent them from being
+// updated, deleted or "selected ... for update" by other sessions, until the transaction is
+// either committed or rolled-back.
+func (iq *InstanceQuery) ForUpdate(opts ...sql.LockOption) *InstanceQuery {
+	if iq.driver.Dialect() == dialect.Postgres {
+		iq.Unique(false)
+	}
+	iq.modifiers = append(iq.modifiers, func(s *sql.Selector) {
+		s.ForUpdate(opts...)
+	})
+	return iq
+}
+
+// ForShare behaves similarly to ForUpdate, except that it acquires a shared mode lock
+// on any rows that are read. Other sessions can read the rows, but cannot modify them
+// until your transaction commits.
+func (iq *InstanceQuery) ForShare(opts ...sql.LockOption) *InstanceQuery {
+	if iq.driver.Dialect() == dialect.Postgres {
+		iq.Unique(false)
+	}
+	iq.modifiers = append(iq.modifiers, func(s *sql.Selector) {
+		s.ForShare(opts...)
+	})
+	return iq
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (iq *InstanceQuery) Modify(modifiers ...func(s *sql.Selector)) *InstanceSelect {
+	iq.modifiers = append(iq.modifiers, modifiers...)
+	return iq.Select()
 }
 
 // InstanceGroupBy is the group-by builder for Instance entities.
@@ -994,7 +1177,7 @@ func (igb *InstanceGroupBy) Aggregate(fns ...AggregateFunc) *InstanceGroupBy {
 }
 
 // Scan applies the group-by query and scans the result into the given value.
-func (igb *InstanceGroupBy) Scan(ctx context.Context, v interface{}) error {
+func (igb *InstanceGroupBy) Scan(ctx context.Context, v any) error {
 	query, err := igb.path(ctx)
 	if err != nil {
 		return err
@@ -1003,7 +1186,7 @@ func (igb *InstanceGroupBy) Scan(ctx context.Context, v interface{}) error {
 	return igb.sqlScan(ctx, v)
 }
 
-func (igb *InstanceGroupBy) sqlScan(ctx context.Context, v interface{}) error {
+func (igb *InstanceGroupBy) sqlScan(ctx context.Context, v any) error {
 	for _, f := range igb.fields {
 		if !instance.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for group-by", f)}
@@ -1028,8 +1211,6 @@ func (igb *InstanceGroupBy) sqlQuery() *sql.Selector {
 	for _, fn := range igb.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	// If no columns were selected in a custom aggregation function, the default
-	// selection is the fields used for "group-by", and the aggregation functions.
 	if len(selector.SelectedColumns()) == 0 {
 		columns := make([]string, 0, len(igb.fields)+len(igb.fns))
 		for _, f := range igb.fields {
@@ -1049,8 +1230,14 @@ type InstanceSelect struct {
 	sql *sql.Selector
 }
 
+// Aggregate adds the given aggregation functions to the selector query.
+func (is *InstanceSelect) Aggregate(fns ...AggregateFunc) *InstanceSelect {
+	is.fns = append(is.fns, fns...)
+	return is
+}
+
 // Scan applies the selector query and scans the result into the given value.
-func (is *InstanceSelect) Scan(ctx context.Context, v interface{}) error {
+func (is *InstanceSelect) Scan(ctx context.Context, v any) error {
 	if err := is.prepareQuery(ctx); err != nil {
 		return err
 	}
@@ -1058,7 +1245,17 @@ func (is *InstanceSelect) Scan(ctx context.Context, v interface{}) error {
 	return is.sqlScan(ctx, v)
 }
 
-func (is *InstanceSelect) sqlScan(ctx context.Context, v interface{}) error {
+func (is *InstanceSelect) sqlScan(ctx context.Context, v any) error {
+	aggregation := make([]string, 0, len(is.fns))
+	for _, fn := range is.fns {
+		aggregation = append(aggregation, fn(is.sql))
+	}
+	switch n := len(*is.selector.flds); {
+	case n == 0 && len(aggregation) > 0:
+		is.sql.Select(aggregation...)
+	case n != 0 && len(aggregation) > 0:
+		is.sql.AppendSelect(aggregation...)
+	}
 	rows := &sql.Rows{}
 	query, args := is.sql.Query()
 	if err := is.driver.Query(ctx, query, args, rows); err != nil {
@@ -1066,4 +1263,10 @@ func (is *InstanceSelect) sqlScan(ctx context.Context, v interface{}) error {
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (is *InstanceSelect) Modify(modifiers ...func(s *sql.Selector)) *InstanceSelect {
+	is.modifiers = append(is.modifiers, modifiers...)
+	return is
 }

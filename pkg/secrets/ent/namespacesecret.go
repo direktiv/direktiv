@@ -24,8 +24,8 @@ type NamespaceSecret struct {
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
-func (*NamespaceSecret) scanValues(columns []string) ([]interface{}, error) {
-	values := make([]interface{}, len(columns))
+func (*NamespaceSecret) scanValues(columns []string) ([]any, error) {
+	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
 		case namespacesecret.FieldSecret:
@@ -43,7 +43,7 @@ func (*NamespaceSecret) scanValues(columns []string) ([]interface{}, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the NamespaceSecret fields.
-func (ns *NamespaceSecret) assignValues(columns []string, values []interface{}) error {
+func (ns *NamespaceSecret) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}

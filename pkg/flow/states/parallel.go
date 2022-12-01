@@ -122,7 +122,6 @@ func (logic *parallelLogic) scheduleFirstActions(ctx context.Context) error {
 
 		child, err := logic.scheduleAction(ctx, action, 0)
 		if err != nil {
-			// TODO: cleanup the ones that succeeded
 			return err
 		}
 
@@ -202,7 +201,7 @@ func (logic *parallelLogic) scheduleRetryAction(ctx context.Context, retry *acti
 		return err
 	}
 
-	children[retry.Idx] = child // TODO: check for out of bounds issues?
+	children[retry.Idx] = child
 
 	err = logic.SetMemory(ctx, children)
 	if err != nil {
@@ -363,10 +362,7 @@ func (logic *parallelLogic) processActionResults(ctx context.Context, children [
 
 		if !ready && completed == len(children) {
 			err = derrors.NewCatchableError(ErrCodeAllBranchesFailed, "all branches failed")
-			if err != nil {
-				return nil, err
-			}
-			return nil, nil
+			return nil, err
 		}
 
 	default:
