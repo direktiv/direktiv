@@ -2,20 +2,30 @@ package api
 
 // RN = Route Name.
 const (
-	RN_Preflight            = "preflight"
-	RN_ListNamespaces       = "listNamespaces"
-	RN_AddNamespace         = "addNamespace"
-	RN_GetNamespaceConfig   = "getNamespaceConfiguration"
-	RN_SetNamespaceConfig   = "setNamespaceConfiguration"
-	RN_DeleteNamespace      = "deleteNamespace"
-	RN_GetNode              = "getNode"
-	RN_CreateDirectory      = "createDirectory"
-	RN_CreateWorkflow       = "createWorkflow"
+
+	// unauthenticated routes
+	RN_Preflight = "preflight"
+
+	// namespace routes
+	RN_AddNamespace    = "addNamespace"
+	RN_DeleteNamespace = "deleteNamespace"
+	RN_ListNamespaces  = "listNamespaces"
+
+	// broadcast namespace event routes
+	RN_GetNamespaceConfig = "getNamespaceConfiguration"
+	RN_SetNamespaceConfig = "setNamespaceConfiguration"
+
+	// explorer routes
+	RN_GetNode         = "getNode"
+	RN_CreateDirectory = "createDirectory"
+	RN_CreateWorkflow  = "createWorkflow"
+	RN_DeleteNode      = "deleteNode"
+	RN_RenameNode      = "renameNode"
+
+	// workflow routes
 	RN_UpdateWorkflow       = "updateWorkflow"
 	RN_SaveWorkflow         = "saveWorkflow"
 	RN_DiscardWorkflow      = "discardWorkflow"
-	RN_DeleteNode           = "deleteNode"
-	RN_RenameNode           = "renameNode"
 	RN_GetWorkflowTags      = "getWorkflowTags"
 	RN_GetWorkflowRevisions = "getWorkflowRevisions"
 	RN_GetWorkflowRefs      = "getWorkflowRefs"
@@ -24,7 +34,11 @@ const (
 	RN_Untag                = "untag"
 	RN_Retag                = "retag"
 	RN_GetWorkflowRouter    = "getWorkflowRouter"
+	RN_EditWorkflowRouter   = "editWorkflowRouter"
+	RN_ValidateRef          = "validateRef"
+	RN_ValidateRouter       = "validateRouter"
 
+	// filter routes
 	RN_NamespaceEventFilter       = "namespaceEventFilter"
 	RN_CreateNamespaceEventFilter = "CreateNamespaceEventFilter"
 	RN_DeleteNamespaceEventFilter = "DeleteNamespaceEventFilter"
@@ -32,12 +46,10 @@ const (
 	RN_ListNamespaceEventFilters  = "ListNamespaceEventFilters"
 	RN_GetNamespaceEventFilter    = "GetNamespaceEventFilter"
 
-	RN_EventListeners     = "eventListeners"
-	RN_EventHistory       = "eventHistory"
-	RN_EditWorkflowRouter = "editWorkflowRouter"
-	RN_ValidateRef        = "validateRef"
-	RN_ValidateRouter     = "validateRouter"
-	RN_NamespaceEvent     = "namespaceEvent"
+	// event routes
+	RN_EventListeners = "eventListeners"
+	RN_EventHistory   = "eventHistory"
+	RN_NamespaceEvent = "namespaceEvent"
 
 	// secrets.
 	RN_ListSecrets         = "listSecrets"
