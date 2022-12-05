@@ -36,7 +36,7 @@ func fixAnnotations(in map[string]string) map[string]string {
 
 }
 
-// GenerateServiceName generates a knative name based on workflow details
+// GenerateServiceName generates a knative name based on workflow details.
 func GenerateServiceName(info *igrpc.BaseInfo /* ns, wf, n string*/) (string, string, string) {
 
 	var name, scope, hash string
@@ -61,14 +61,13 @@ func GenerateServiceName(info *igrpc.BaseInfo /* ns, wf, n string*/) (string, st
 
 }
 
-// GenerateWorkflowServiceName generates a knative name based on workflow details
+// GenerateWorkflowServiceName generates a knative name based on workflow details.
 func GenerateWorkflowServiceName(info *igrpc.BaseInfo) (string, string) {
 
 	wf := info.GetWorkflow()
 	fndef := fndefFromBaseInfo(info)
 
-	var strs []string
-	strs = []string{fndef.Cmd, fndef.ID, fndef.Image,
+	strs := []string{fndef.Cmd, fndef.ID, fndef.Image,
 		fmt.Sprintf("%v", fndef.Size), fmt.Sprintf("%v", fndef.Type),
 		fmt.Sprintf("%v", info.GetEnvs())}
 
@@ -101,7 +100,7 @@ func fndefFromBaseInfo(info *igrpc.BaseInfo) *model.ReusableFunctionDefinition {
 
 }
 
-// AssembleWorkflowServiceName generates a knative name based on workflow details
+// AssembleWorkflowServiceName generates a knative name based on workflow details.
 func AssembleWorkflowServiceName(wf string, hash uint64) string {
 	return SanitizeLabel(fmt.Sprintf("%s-%d", PrefixWorkflow, hash))
 }

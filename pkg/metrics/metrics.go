@@ -38,7 +38,7 @@ func NewClient() (*Client, error) {
 	return out, nil
 }
 
-// InsertRecord inserts a metric record into the database
+// InsertRecord inserts a metric record into the database.
 func (c *Client) InsertRecord(args *InsertRecordArgs) error {
 
 	wf := strings.Split(args.Workflow, ":")[0]
@@ -61,7 +61,7 @@ func (c *Client) InsertRecord(args *InsertRecordArgs) error {
 	return err
 }
 
-// GetMetrics returns the metrics from the database
+// GetMetrics returns the metrics from the database.
 func (c *Client) GetMetrics(args *GetMetricsArgs) (*Dataset, error) {
 
 	ctx := context.Background()
@@ -168,13 +168,13 @@ func sortRecord(m map[string]*StateData, instances map[string]int, v *ent.Metric
 	if _, ok := s.Invokers[r.r.Invoker]; !ok {
 		s.Invokers[r.r.Invoker] = 0
 	}
-	s.Invokers[r.r.Invoker] += 1
+	s.Invokers[r.r.Invoker]++
 
 	if _, ok := s.InvokersRepresentation[r.r.Invoker]; !ok {
 		s.InvokersRepresentation[r.r.Invoker] = 0
 	}
 
-	s.TotalExecutions += 1
+	s.TotalExecutions++
 	s.TotalMilliSeconds += int32(v.WorkflowMs)
 
 	handleSuccessRecord(&r, s)
@@ -190,14 +190,14 @@ func handleSuccessRecord(r *record, s *StateData) {
 	}
 
 	if NextEnums[r.r.Next] == NextEnd {
-		s.TotalSuccesses += 1
-		s.Outcomes.EndStates.Success += 1
+		s.TotalSuccesses++
+		s.Outcomes.EndStates.Success++
 	} else {
 		if _, ok := s.Outcomes.Transitions[r.r.Transition]; !ok {
 			s.Outcomes.Transitions[r.r.Transition] = 1
 			s.MeanOutcomes.Transitions[r.r.Transition] = 0
 		} else {
-			s.Outcomes.Transitions[r.r.Transition] += 1
+			s.Outcomes.Transitions[r.r.Transition]++
 		}
 	}
 }
@@ -208,8 +208,8 @@ func handleFailRecord(r *record, s *StateData) {
 		return
 	}
 
-	s.Outcomes.EndStates.Failure += 1
-	s.totalUnhandledErrors += 1
+	s.Outcomes.EndStates.Failure++
+	s.totalUnhandledErrors++
 
 	if _, ok := s.UnhandledErrors[r.r.ErrorCode]; !ok {
 		s.UnhandledErrors[r.r.ErrorCode] = 0
@@ -218,9 +218,9 @@ func handleFailRecord(r *record, s *StateData) {
 	s.UnhandledErrors[r.r.ErrorCode] = s.UnhandledErrors[r.r.ErrorCode] + 1
 
 	if NextEnums[r.r.Next] == NextRetry {
-		s.TotalRetries += 1
+		s.TotalRetries++
 	} else {
-		s.TotalFailures += 1
+		s.TotalFailures++
 	}
 
 }

@@ -15,7 +15,7 @@ import (
 )
 
 type logMessage struct {
-	ctx context.Context
+	ctx context.Context //nolint:containedctx
 	t   time.Time
 	msg string
 	ns  *ent.Namespace
@@ -201,7 +201,7 @@ func (srv *server) logToWorkflow(ctx context.Context, t time.Time, d *wfData, ms
 
 }
 
-// log To instance with string interpolation
+// log To instance with string interpolation.
 func (srv *server) logToInstance(ctx context.Context, t time.Time, in *ent.Instance, msg string, a ...interface{}) {
 
 	msg = fmt.Sprintf(msg, a...)
@@ -210,7 +210,7 @@ func (srv *server) logToInstance(ctx context.Context, t time.Time, in *ent.Insta
 
 }
 
-// log To instance with raw string
+// log To instance with raw string.
 func (srv *server) logToInstanceRaw(ctx context.Context, t time.Time, in *ent.Instance, msg string) {
 
 	defer func() {
@@ -232,8 +232,6 @@ func (engine *engine) UserLog(ctx context.Context, im *instanceMemory, msg strin
 
 	s := fmt.Sprintf(msg, a...)
 
-	// TODO: detect content type and handle base64 data
-
 	wf, err := engine.InstanceWorkflow(ctx, im)
 	if err != nil {
 		engine.sugar.Error(err)
@@ -243,14 +241,18 @@ func (engine *engine) UserLog(ctx context.Context, im *instanceMemory, msg strin
 	if attr := wf.LogToEvents; attr != "" {
 		event := cloudevents.NewEvent()
 		event.SetID(uuid.New().String())
-		event.SetSource(wf.ID.String()) // TODO: resolve to a human-readable path
+		event.SetSource(wf.ID.String())
 		event.SetType("direktiv.instanceLog")
 		event.SetExtension("logger", attr)
 		event.SetDataContentType("application/json")
-		event.SetData("application/json", s)
+		err = event.SetData("application/json", s)
+		if err != nil {
+			engine.sugar.Errorf("Failed to create CloudEvent: %v.", err)
+		}
+
 		err = engine.events.BroadcastCloudevent(ctx, im.in.Edges.Namespace, &event, 0)
 		if err != nil {
-			engine.sugar.Errorf("failed to broadcast cloudevent: %v", err)
+			engine.sugar.Errorf("Failed to broadcast CloudEvent: %v.", err)
 			return
 		}
 	}

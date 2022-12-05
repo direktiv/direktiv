@@ -1,13 +1,9 @@
 package flow
 
 import (
-	"time"
-
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	"github.com/direktiv/direktiv/pkg/model"
 )
-
-const defaultDeadline = time.Second * 5
 
 func loadSource(rev *ent.Revision) (*model.Workflow, error) {
 

@@ -382,8 +382,6 @@ func (events *events) handleEventLoopLogic(ctx context.Context, rows *sql.Rows, 
 
 	}
 
-	return
-
 }
 
 func (events *events) handleEvent(ns *ent.Namespace, ce *cloudevents.Event) error {
@@ -428,7 +426,7 @@ func eventToBytes(cevent cloudevents.Event) ([]byte, error) {
 	enc := gob.NewEncoder(&ev)
 	err := enc.Encode(cevent)
 	if err != nil {
-		return nil, fmt.Errorf("can not convert event to bytes: %v", err)
+		return nil, fmt.Errorf("can not convert event to bytes: %w", err)
 	}
 
 	return ev.Bytes(), nil
@@ -442,7 +440,7 @@ func bytesToEvent(b []byte) (*cloudevents.Event, error) {
 	enc := gob.NewDecoder(bytes.NewReader(b))
 	err := enc.Decode(ev)
 	if err != nil {
-		return nil, fmt.Errorf("can not convert bytes to event: %v", err)
+		return nil, fmt.Errorf("can not convert bytes to event: %w", err)
 	}
 
 	return ev, nil
@@ -993,7 +991,7 @@ func (events *events) listenForEvents(ctx context.Context, im *instanceMemory, c
 
 			ev.Context[k], err = jqOne(im.data, v)
 			if err != nil {
-				return fmt.Errorf("failed to execute jq query for key '%s' on event definition %d: %v", k, i, err)
+				return fmt.Errorf("failed to execute jq query for key '%s' on event definition %d: %w", k, i, err)
 			}
 
 		}
@@ -1063,7 +1061,10 @@ func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloud
 	//create js runtime
 	vm := goja.New()
 
-	vm.Set("event", mapEvent)
+	err = vm.Set("event", mapEvent)
+	if err != nil {
+		return resp, fmt.Errorf("failed to initialize js runtime: %w", err)
+	}
 
 	_, err = vm.RunString(script)
 	if err != nil {

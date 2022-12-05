@@ -210,7 +210,7 @@ var instanceLogsCmd = &cobra.Command{
 
 		req := &grpc.InstanceLogsRequest{
 			Pagination: &grpc.Pagination{
-				Limit: limit,
+				Limit:  limit,
 				Offset: offset,
 				Order: []*grpc.PageOrder{{
 					Field:     orderField,

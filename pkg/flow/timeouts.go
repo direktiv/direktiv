@@ -44,7 +44,6 @@ func (engine *engine) scheduleTimeout(im *instanceMemory, oldController string, 
 	err = engine.timers.addOneShot(id, timeoutFunction, deadline, data)
 	if err != nil {
 		engine.sugar.Error(err)
-		// TODO: abort?
 	}
 
 }

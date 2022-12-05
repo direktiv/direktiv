@@ -7,10 +7,10 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// WorkflowIDRegex - Regex used to validate ID
+// WorkflowIDRegex - Regex used to validate ID.
 const WorkflowIDRegex = "^[a-z][a-z0-9._-]{1,34}[a-z0-9]$"
 
-// Workflow global object defining the fields for a workflow
+// Workflow global object defining the fields for a workflow.
 type Workflow struct {
 	// ID          string               `yaml:"id" json:"id"`
 	// Name        string               `yaml:"name,omitempty" json:"name,omitempty"`
@@ -82,7 +82,7 @@ func (o *Workflow) unmarshal(m map[string]interface{}) error {
 	return o.validate()
 }
 
-// unmStart - unmarshal "start" object to Workflow
+// unmStart - unmarshal "start" object to Workflow.
 func (o *Workflow) unmStart(m map[string]interface{}) (err error) {
 	// split start out from the rest
 	y, startFound := m["start"]
@@ -107,6 +107,7 @@ func (o *Workflow) unmStart(m map[string]interface{}) (err error) {
 		err = start.Validate()
 		if err != nil {
 			err = fmt.Errorf("start invalid: %w", err)
+			return err
 		}
 
 		o.Start = start
@@ -115,9 +116,10 @@ func (o *Workflow) unmStart(m map[string]interface{}) (err error) {
 	return err
 }
 
-// unmState - unmarshal "state" object to Workflow States
+// unmState - unmarshal "state" object to Workflow States.
+//
 //	the state interface is casted to a supported State 'type'
-//	and then inserted into workflow[sIndex]
+//	and then inserted into workflow[sIndex].
 func (o *Workflow) unmState(state interface{}, sIndex int) error {
 	stateMap, stateType, err := processInterfaceMap(state)
 	if err != nil {
@@ -194,7 +196,7 @@ func (o *Workflow) validate() error {
 	// functions
 	for i, function := range o.GetFunctions() {
 		if sErr := function.Validate(); sErr != nil {
-			return fmt.Errorf("workflow function[%v] is invalid: %v", i, sErr)
+			return fmt.Errorf("workflow function[%v] is invalid: %w", i, sErr)
 		}
 	}
 
@@ -232,20 +234,7 @@ func (o *Workflow) validate() error {
 	return o.Timeouts.Validate()
 }
 
-func (o *Workflow) regexValidateID() error {
-	// if o.ID == "" {
-	// 	return fmt.Errorf("workflow id required")
-	// }
-
-	// // ensure workflow id complies with regex pattern
-	// if ok := util.MatchesRegex(o.ID); !ok {
-	// 	return fmt.Errorf("workflow id must match regex pattern `%s`", util.RegexPattern)
-	// }
-
-	return nil
-}
-
-// GetStates returns all the states of a workflow
+// GetStates returns all the states of a workflow.
 func (o *Workflow) GetStates() []State {
 	if o.States == nil {
 		return make([]State, 0)
@@ -254,7 +243,7 @@ func (o *Workflow) GetStates() []State {
 	return o.States
 }
 
-// GetStatesMap : Get workflow states as a map
+// GetStatesMap : Get workflow states as a map.
 func (o *Workflow) GetStatesMap() map[string]State {
 	statesMap := make(map[string]State)
 	for _, state := range o.GetStates() {
@@ -264,7 +253,7 @@ func (o *Workflow) GetStatesMap() map[string]State {
 	return statesMap
 }
 
-// getStatesMap : Get workflow states as a map, and returns error if the same state is defined more than once
+// getStatesMap : Get workflow states as a map, and returns error if the same state is defined more than once.
 func (o *Workflow) getStatesMap() (map[string]State, error) {
 	statesMap := make(map[string]State)
 
@@ -279,7 +268,7 @@ func (o *Workflow) getStatesMap() (map[string]State, error) {
 	return statesMap, nil
 }
 
-// getFunctionMap : Get functions as a map, and returns error if the same function id is defined more than once
+// getFunctionMap : Get functions as a map, and returns error if the same function id is defined more than once.
 func (o *Workflow) getFunctionMap() (map[string]FunctionDefinition, error) {
 	funcMap := make(map[string]FunctionDefinition)
 
@@ -294,7 +283,7 @@ func (o *Workflow) getFunctionMap() (map[string]FunctionDefinition, error) {
 	return funcMap, nil
 }
 
-// GetFunctions: Get all function definitions
+// GetFunctions: Get all function definitions.
 func (o *Workflow) GetFunctions() []FunctionDefinition {
 	if o.Functions == nil {
 		return make([]FunctionDefinition, 0)
@@ -303,7 +292,7 @@ func (o *Workflow) GetFunctions() []FunctionDefinition {
 	return o.Functions
 }
 
-// GetFunction: Returns the function definition
+// GetFunction: Returns the function definition.
 func (o *Workflow) GetFunction(id string) (FunctionDefinition, error) {
 
 	for i, fn := range o.Functions {
@@ -316,7 +305,7 @@ func (o *Workflow) GetFunction(id string) (FunctionDefinition, error) {
 
 }
 
-// UnmarshalYAML unmarshals the workflow YAMl
+// UnmarshalYAML unmarshals the workflow YAMl.
 func (o *Workflow) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
 	m := make(map[string]interface{})
@@ -334,7 +323,7 @@ func (o *Workflow) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
 }
 
-// Load unmarshals the data and validates it
+// Load unmarshals the data and validates it.
 func (o *Workflow) Load(data []byte) error {
 
 	err := yaml.Unmarshal(data, o)
@@ -351,7 +340,7 @@ func (o *Workflow) Load(data []byte) error {
 
 }
 
-// GetStartState returns the start state of a workflow
+// GetStartState returns the start state of a workflow.
 func (o *Workflow) GetStartState() State {
 
 	if o.Start == nil || o.Start.GetState() == "" {
@@ -368,14 +357,14 @@ func (o *Workflow) GetStartState() State {
 
 }
 
-// VariableReference - Workflow variable referenced in getter or setter
+// VariableReference - Workflow variable referenced in getter or setter.
 type VariableReference struct {
 	Scope     string   `json:"scope"`
 	Key       string   `json:"key"`
 	Operation []string `json:"operation"`
 }
 
-// GetSecretReferences - Get all secrets referenced in actions
+// GetSecretReferences - Get all secrets referenced in actions.
 func (o *Workflow) GetSecretReferences() []string {
 	refs := make([]string, 0)
 	refsMap := make(map[string]bool)

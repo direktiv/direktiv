@@ -14,8 +14,6 @@ import (
 	"github.com/senseyeio/duration"
 )
 
-// TODO: some of these structs should be refactored elsewhere to reduce duplication
-
 type actionRetryInfo struct {
 	Children []ChildInfo
 	Idx      int
@@ -74,8 +72,8 @@ func preprocessRetry(retry *model.RetryDefinition, attempt int, err error) (time
 		return d, err
 	}
 
-	cerr, ok := err.(*derrors.CatchableError)
-	if !ok {
+	cerr := new(derrors.CatchableError)
+	if !errors.As(err, &cerr) {
 		return d, err
 	}
 
@@ -201,10 +199,10 @@ func generateActionInput(ctx context.Context, args *generateActionInputArgs) ([]
 
 		switch file.Scope {
 		case "":
-		case "namespace":
-		case "workflow":
-		case "instance":
-		case "thread":
+		case util.VarScopeNamespace:
+		case util.VarScopeWorkflow:
+		case util.VarScopeInstance:
+		case util.VarScopeThread:
 		default:
 			return nil, nil, derrors.NewCatchableError(ErrCodeInvalidVariableScope, "invalid 'scope' for function file %d: %s", idx, file.Scope)
 		}
@@ -301,7 +299,7 @@ func ISO8601StringtoSecs(timeout string) (int, error) {
 			return wfto, err
 		}
 
-		dur := to.Shift(time.Now()).Sub(time.Now())
+		dur := time.Until(to.Shift(time.Now()))
 		wfto = int(dur.Seconds())
 
 	}

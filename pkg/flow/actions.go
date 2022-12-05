@@ -91,8 +91,6 @@ func (actions *actions) SetNamespaceRegistry(ctx context.Context, req *grpc.SetN
 		return nil, err
 	}
 
-	// TODO actions.pubsub.NotifyNamespaceRegistry(ns)
-
 	var resp emptypb.Empty
 
 	return &resp, nil
@@ -118,8 +116,6 @@ func (actions *actions) DeleteNamespaceRegistry(ctx context.Context, req *grpc.D
 	if err != nil {
 		return nil, err
 	}
-
-	// TODO actions.pubsub.NotifyNamespaceRegistry(ns)
 
 	var resp emptypb.Empty
 
@@ -161,11 +157,10 @@ func (cpds *cpdRegistries) Filter(filter *grpc.PageFilter) error {
 		return nil
 	}
 
-	if filter.GetField() != "" && filter.GetField() != "NAME" {
+	if filter.GetField() != "" && filter.GetField() != util.PaginationKeyName {
 		return fmt.Errorf("invalid filter field: %s", filter.GetField())
 	}
 
-	// TODO
 	switch filter.GetType() {
 	case "":
 	default:
@@ -190,7 +185,7 @@ func (cpds *cpdRegistries) Filter(filter *grpc.PageFilter) error {
 
 func (cpds *cpdRegistries) Order(order *grpc.PageOrder) error {
 
-	if order.GetField() != "" && order.GetField() != "NAME" {
+	if order.GetField() != "" && order.GetField() != util.PaginationKeyName {
 		return fmt.Errorf("invalid order field: %s", order.GetField())
 	}
 

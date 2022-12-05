@@ -37,7 +37,7 @@ func ParseFunctionType(s string) (FunctionType, error) {
 	}
 
 	if s == "reusable" {
-		return FunctionType(ReusableContainerFunctionType), nil
+		return ReusableContainerFunctionType, nil
 	}
 
 unknown:
@@ -119,7 +119,6 @@ func (o FunctionFileDefinition) Validate() error {
 
 }
 
-// util
 func getFunctionDefFromType(ftype string) (FunctionDefinition, error) {
 	var f FunctionDefinition
 	var err error

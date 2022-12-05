@@ -45,7 +45,7 @@ func (instance *testerInstance) dt() time.Duration {
 }
 
 func (instance *testerInstance) dtCPU() time.Duration {
-	return time.Now().Sub(instance.t0)
+	return time.Since(instance.t0)
 }
 
 func (instance *testerInstance) getTrace() []string {
@@ -144,8 +144,6 @@ func (instance *testerInstance) GetVariables(ctx context.Context, vars []Variabl
 	instance.trace()
 
 	var variables = make([]Variable, len(vars))
-
-	// TODO
 
 	return variables, nil
 

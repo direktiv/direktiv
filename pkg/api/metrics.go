@@ -14,7 +14,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-// GetInodePath returns the path without the first slash
+// GetInodePath returns the path without the first slash.
 func GetInodePath(path string) string {
 	path = strings.TrimSuffix(path, "/")
 	if !strings.HasPrefix(path, "/") {

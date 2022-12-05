@@ -8,13 +8,11 @@ import (
 )
 
 const (
-	humanErrorInvalidRegex string = "must be less than 36 characters and may only use lowercase letters, numbers, and “-_”"
-
-	// GenericErrorCode - Reserved status code for generic non grpc errors
+	// GenericErrorCode - Reserved status code for generic non grpc errors.
 	GenericErrorCode codes.Code = 50
 )
 
-// ErrObject for grpc
+// ErrObject for grpc.
 type ErrObject struct {
 	Code    codes.Code
 	Message string
@@ -40,7 +38,7 @@ var grpcErrorHTTPCodeMap = map[codes.Code]int{
 	GenericErrorCode:         http.StatusInternalServerError,
 }
 
-// ConvertGRPCStatusCodeToHTTPCode - Convert Grpc Code errors to http response codes
+// ConvertGRPCStatusCodeToHTTPCode - Convert Grpc Code errors to http response codes.
 func ConvertGRPCStatusCodeToHTTPCode(code codes.Code) int {
 
 	if val, ok := grpcErrorHTTPCodeMap[code]; ok {
@@ -52,7 +50,7 @@ func ConvertGRPCStatusCodeToHTTPCode(code codes.Code) int {
 
 }
 
-// GenerateErrObject - Unwrap grpc errors into ErrorObject
+// GenerateErrObject - Unwrap grpc errors into ErrorObject.
 func GenerateErrObject(err error) *ErrObject {
 	eo := new(ErrObject)
 	if st, ok := status.FromError(err); ok {

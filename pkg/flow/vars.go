@@ -3,10 +3,11 @@ package flow
 import (
 	"bytes"
 	"context"
+	"errors"
 	"io"
-	"io/ioutil"
 	"net"
 	"net/http"
+	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/gorilla/mux"
@@ -38,8 +39,9 @@ func initVarsServer(ctx context.Context, srv *server) (*vars, error) {
 	vars.router.HandleFunc("/api/vars/namespaces/{namespace}/instances/{instance}/vars/{var}", vars.inHandler)
 
 	vars.http = &http.Server{
-		Addr:    ":9999",
-		Handler: vars.router,
+		Addr:              ":9999",
+		Handler:           vars.router,
+		ReadHeaderTimeout: time.Second * 60,
 	}
 
 	go func() {
@@ -65,14 +67,14 @@ func (vars *vars) Close() error {
 
 	err := vars.http.Close()
 	if err != nil {
-		if err != http.ErrServerClosed {
+		if !errors.Is(err, http.ErrServerClosed) {
 			return err
 		}
 	}
 
 	err = vars.listener.Close()
 	if err != nil {
-		if err != net.ErrClosed {
+		if !errors.Is(err, net.ErrClosed) {
 			return err
 		}
 	}
@@ -128,7 +130,7 @@ func (vars *vars) nsHandler(w http.ResponseWriter, r *http.Request) {
 
 	case http.MethodPut:
 
-		data, err := ioutil.ReadAll(r.Body)
+		data, err := io.ReadAll(r.Body)
 		if err != nil {
 			vars.sugar.Error(err)
 			return
@@ -191,7 +193,7 @@ func (vars *vars) wfHandler(w http.ResponseWriter, r *http.Request) {
 
 	case http.MethodPut:
 
-		data, err := ioutil.ReadAll(r.Body)
+		data, err := io.ReadAll(r.Body)
 		if err != nil {
 			vars.sugar.Error(err)
 			return
@@ -255,7 +257,7 @@ func (vars *vars) inHandler(w http.ResponseWriter, r *http.Request) {
 
 	case http.MethodPut:
 
-		data, err := ioutil.ReadAll(r.Body)
+		data, err := io.ReadAll(r.Body)
 		if err != nil {
 			vars.sugar.Error(err)
 			return

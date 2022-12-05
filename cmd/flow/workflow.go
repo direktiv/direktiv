@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"errors"
 	"io"
-	"io/ioutil"
 	"os"
 	"strconv"
 
@@ -87,7 +86,7 @@ func loadSource() ([]byte, error) {
 		return nil, nil
 	}
 
-	data, err := ioutil.ReadFile(filein)
+	data, err := os.ReadFile(filein)
 	if err != nil {
 		return nil, err
 	}

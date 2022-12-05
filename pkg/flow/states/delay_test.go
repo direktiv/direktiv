@@ -9,6 +9,8 @@ import (
 	"github.com/direktiv/direktiv/pkg/model"
 )
 
+const d1s = "PT1S"
+
 func TestDelayGood001(t *testing.T) {
 
 	ctx := context.Background()
@@ -21,7 +23,7 @@ func TestDelayGood001(t *testing.T) {
 	state.Transition = "b"
 
 	delay := time.Second * 1
-	state.Duration = "PT1S"
+	state.Duration = d1s
 
 	logic, err := Delay(instance, state)
 	if err != nil {
@@ -29,7 +31,7 @@ func TestDelayGood001(t *testing.T) {
 		return
 	}
 
-	if logic.Deadline(ctx).Sub(time.Now()) < delay-time.Second {
+	if time.Until(logic.Deadline(ctx)) < delay-time.Second {
 		t.Error(errors.New("deadline too short"))
 		return
 	}
@@ -112,7 +114,7 @@ func TestDelayGood002(t *testing.T) {
 		return
 	}
 
-	if logic.Deadline(ctx).Sub(time.Now()) < delay-time.Second {
+	if time.Until(logic.Deadline(ctx)) < delay-time.Second {
 		t.Error(errors.New("deadline too short"))
 		return
 	}
@@ -197,9 +199,14 @@ func TestDelayBadMemory(t *testing.T) {
 	ctx := context.Background()
 
 	instance := newTesterInstance()
-	instance.SetMemory(ctx, map[string]int{
+	err := instance.SetMemory(ctx, map[string]int{
 		"a": 5,
 	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
 	instance.resetTrace()
 
 	state := new(model.DelayState)
@@ -207,7 +214,7 @@ func TestDelayBadMemory(t *testing.T) {
 	state.Transform = "a"
 	state.Transition = "b"
 
-	state.Duration = "PT1S"
+	state.Duration = d1s
 
 	logic, err := Delay(instance, state)
 	if err != nil {
@@ -250,7 +257,7 @@ func TestDelayBadWakedata(t *testing.T) {
 	state.Transform = "a"
 	state.Transition = "b"
 
-	state.Duration = "PT1S"
+	state.Duration = d1s
 
 	logic, err := Delay(instance, state)
 	if err != nil {

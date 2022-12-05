@@ -53,7 +53,7 @@ type functionsServer struct {
 	reusableCacheIndex map[string]*cacheTuple
 }
 
-// StartServer starts functions grpc server
+// StartServer starts functions grpc server.
 func StartServer(echan chan error) {
 
 	var err error
@@ -119,19 +119,20 @@ func StartServer(echan chan error) {
 
 	go func(l *pq.Listener) {
 
-		defer l.UnlistenAll()
+		defer func() {
+			err := l.UnlistenAll()
+			logger.Errorf("Failed to deregister listeners: %v.", err)
+		}()
 
 		for {
 
 			var more bool
 			var notification *pq.Notification
 
-			select {
-			case notification, more = <-l.Notify:
-				if !more {
-					logger.Errorf("database listener closed\n")
-					return
-				}
+			notification, more = <-l.Notify
+			if !more {
+				logger.Errorf("database listener closed\n")
+				return
 			}
 
 			if notification == nil {
@@ -161,7 +162,7 @@ func StartServer(echan chan error) {
 
 }
 
-// StopServer is stopping server gracefully
+// StopServer is stopping server gracefully.
 func StopServer() {
 	if grpcServer != nil {
 		grpcServer.GracefulStop()
@@ -344,7 +345,7 @@ func (fServer *functionsServer) orphansGC() {
 
 		cs, err := fetchServiceAPI()
 		if err != nil {
-			err = fmt.Errorf("error getting clientset for knative: %v", err)
+			err = fmt.Errorf("error getting clientset for knative: %w", err)
 			logger.Errorf("reusable orphans garbage collector failed to list workflow functions: %v", err)
 			continue
 		}

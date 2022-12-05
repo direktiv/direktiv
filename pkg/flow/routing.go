@@ -2,8 +2,9 @@ package flow
 
 import (
 	"context"
+	"crypto/rand"
 	"fmt"
-	"math/rand"
+	"math/big"
 	"time"
 
 	"google.golang.org/grpc/codes"
@@ -15,6 +16,7 @@ import (
 	entref "github.com/direktiv/direktiv/pkg/flow/ent/ref"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/util"
 )
 
 type muxStart struct {
@@ -83,7 +85,7 @@ func validateRouter(ctx context.Context, wf *ent.Workflow) (*muxStart, error, er
 
 		if ref.Edges.Revision == nil {
 			err = &derrors.NotFoundError{
-				Label: fmt.Sprintf("revision not found"),
+				Label: "revision not found",
 			}
 			return nil, nil, err
 		}
@@ -105,14 +107,14 @@ func validateRouter(ctx context.Context, wf *ent.Workflow) (*muxStart, error, er
 			route := routes[i]
 			if route.Edges.Ref == nil {
 				err = &derrors.NotFoundError{
-					Label: fmt.Sprintf("ref not found"),
+					Label: "ref not found",
 				}
 				return nil, nil, err
 			}
 
 			if route.Edges.Ref.Edges.Revision == nil {
 				err = &derrors.NotFoundError{
-					Label: fmt.Sprintf("revision not found"),
+					Label: "revision not found",
 				}
 				return nil, nil, err
 			}
@@ -185,7 +187,12 @@ func (engine *engine) mux(ctx context.Context, nsc *ent.NamespaceClient, namespa
 				weight += route.Weight
 			}
 
-			n := rand.Int()
+			cn, err := rand.Int(rand.Reader, big.NewInt(int64(weight)))
+			if err != nil {
+				return nil, err
+			}
+
+			n := int(cn.Int64())
 
 			n = n % weight
 
@@ -216,7 +223,7 @@ func (engine *engine) mux(ctx context.Context, nsc *ent.NamespaceClient, namespa
 
 	if d.ref.Edges.Revision == nil {
 		err = &derrors.NotFoundError{
-			Label: fmt.Sprintf("revision not found"),
+			Label: "revision not found",
 		}
 		return nil, err
 	}
@@ -273,7 +280,7 @@ func (flow *flow) configureRouter(ctx context.Context, evc *ent.EventsClient, wf
 	if muxErr2 != nil {
 
 		if hasFlag(flags, rcfNoValidate) && existingRoutes <= 1 {
-			// TODO: log error
+			// no need to do anything here?
 		} else if muxErr1 == nil || !hasFlag(flags, rcfBreaking) {
 			return muxErr2
 		}
@@ -373,7 +380,7 @@ func (flow *flow) cronHandler(data []byte) {
 
 	}
 
-	k, err := d.wf.QueryInstances().Where(entinst.CreatedAtGT(time.Now().Add(-time.Second*30)), entinst.HasRuntimeWith(entirt.CallerData("cron"))).Count(ctx)
+	k, err := d.wf.QueryInstances().Where(entinst.CreatedAtGT(time.Now().Add(-time.Second*30)), entinst.HasRuntimeWith(entirt.CallerData(util.CallerCron))).Count(ctx)
 	if err != nil {
 		flow.sugar.Error(err)
 		return
@@ -389,8 +396,8 @@ func (flow *flow) cronHandler(data []byte) {
 	args.Path = d.path
 	args.Ref = ""
 	args.Input = nil
-	args.Caller = "cron"
-	args.CallerData = "cron"
+	args.Caller = util.CallerCron
+	args.CallerData = util.CallerCron
 
 	im, err := flow.engine.NewInstance(ctx, args)
 	if err != nil {

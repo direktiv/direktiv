@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
-	"io/ioutil"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -118,7 +117,6 @@ func (syncer *syncer) scheduleTimeout(activityId string, oldController string, t
 	err = syncer.timers.addOneShot(id, syncerTimeoutFunction, deadline, data)
 	if err != nil {
 		syncer.sugar.Error(err)
-		// TODO: abort?
 	}
 
 }
@@ -243,8 +241,8 @@ func (syncer *syncer) cronHandler(data []byte) {
 	args.Path = d.path
 	args.Ref = ""
 	args.Input = nil
-	args.Caller = "cron"
-	args.CallerData = "cron"
+	args.Caller = util.CallerCron
+	args.CallerData = util.CallerCron
 
 	err = syncer.NewActivity(nil, &newMirrorActivityArgs{
 		MirrorID: d.mir.ID.String(),
@@ -253,7 +251,7 @@ func (syncer *syncer) cronHandler(data []byte) {
 		LockConn: conn,
 	})
 	if err != nil {
-		if err == ErrMirrorLocked {
+		if errors.Is(err, ErrMirrorLocked) {
 			return
 		}
 		syncer.sugar.Error(err)
@@ -388,7 +386,7 @@ func (am *activityMemory) ID() uuid.UUID {
 type newMirrorActivityArgs struct {
 	MirrorID string
 	Type     string
-	LockCtx  context.Context
+	LockCtx  context.Context //nolint:containedctx
 	LockConn *sql.Conn
 }
 
@@ -396,12 +394,11 @@ func (syncer *syncer) beginActivity(tx *ent.Tx, args *newMirrorActivityArgs) (*a
 
 	var err error
 	var ctx context.Context
-	var conn *sql.Conn
 
 	if args.LockConn != nil {
 		ctx = args.LockCtx
-		conn = args.LockConn
 	} else {
+		var conn *sql.Conn
 		ctx, conn, err = syncer.lock(args.MirrorID, defaultLockWait)
 		if err != nil {
 			return nil, err
@@ -657,7 +654,7 @@ func (syncer *syncer) initMirror(ctx context.Context, am *activityMemory) error 
 
 func (syncer *syncer) tarGzDir(path string) ([]byte, error) {
 
-	tf, err := ioutil.TempFile("", "outtar")
+	tf, err := os.CreateTemp("", "outtar")
 	if err != nil {
 		return nil, err
 	}
@@ -668,7 +665,7 @@ func (syncer *syncer) tarGzDir(path string) ([]byte, error) {
 		return nil, err
 	}
 
-	return ioutil.ReadFile(tf.Name())
+	return os.ReadFile(tf.Name())
 
 }
 
@@ -678,6 +675,10 @@ func tarGzDir(src string, buf io.Writer) error {
 	tw := tar.NewWriter(zr)
 
 	err := filepath.Walk(src, func(file string, fi os.FileInfo, err error) error {
+
+		if err != nil {
+			return err
+		}
 
 		if !fi.Mode().IsDir() && !fi.Mode().IsRegular() {
 			return nil
@@ -780,7 +781,7 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 			if child.Type == util.InodeTypeDirectory && child.ExtendedType == util.InodeTypeGit {
 
 				_, err = model.lookup(cpath)
-				if err == os.ErrNotExist {
+				if errors.Is(err, os.ErrNotExist) {
 					continue
 				}
 				if err != nil {
@@ -808,11 +809,11 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 				}
 
 				mn, err := model.lookup(cpath)
-				if err != nil && err != os.ErrNotExist {
+				if err != nil && !errors.Is(err, os.ErrNotExist) {
 					return err
 				}
 
-				if err == os.ErrNotExist || mn.ntype != mntDir {
+				if errors.Is(err, os.ErrNotExist) || mn.ntype != mntDir {
 
 					err = syncer.flow.deleteNode(ctx, &deleteNodeArgs{
 						inoc:      tx.Inode,
@@ -831,11 +832,11 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 			} else if child.Type == util.InodeTypeWorkflow {
 
 				mn, err := model.lookup(cpath)
-				if err != nil && err != os.ErrNotExist {
+				if err != nil && !errors.Is(err, os.ErrNotExist) {
 					return err
 				}
 
-				if err == os.ErrNotExist || mn.ntype != mntWorkflow {
+				if errors.Is(err, os.ErrNotExist) || mn.ntype != mntWorkflow {
 
 					err = syncer.flow.deleteNode(ctx, &deleteNodeArgs{
 						inoc:      tx.Inode,
@@ -872,7 +873,7 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 		}
 
 		truepath := filepath.Join(md.path, path)
-		dir, base := filepath.Split(truepath)
+		dir, _ := filepath.Split(truepath)
 
 		switch n.ntype {
 		case mntDir:
@@ -892,7 +893,7 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 
 		case mntWorkflow:
 
-			data, err := ioutil.ReadFile(filepath.Join(lr.path, path+n.extension))
+			data, err := os.ReadFile(filepath.Join(lr.path, path+n.extension))
 			if err != nil {
 				return err
 			}
@@ -914,7 +915,7 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 			if wf == nil {
 				return err
 			}
-			if err == os.ErrExist {
+			if errors.Is(err, os.ErrExist) {
 				_, err = syncer.flow.updateWorkflow(ctx, &updateWorkflowArgs{
 					revc:       tx.Revision,
 					eventc:     tx.Events,
@@ -943,7 +944,7 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 			if n.isDir {
 				data, err = syncer.tarGzDir(fpath)
 			} else {
-				data, err = ioutil.ReadFile(fpath)
+				data, err = os.ReadFile(fpath)
 			}
 			if err != nil {
 				return err
@@ -967,7 +968,7 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 			if n.isDir {
 				data, err = syncer.tarGzDir(fpath)
 			} else {
-				data, err = ioutil.ReadFile(fpath)
+				data, err = os.ReadFile(fpath)
 			}
 			if err != nil {
 				return err
@@ -981,7 +982,7 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 				}
 			}
 			trimmed := x[1]
-			_, base = filepath.Split(x[0])
+			_, base := filepath.Split(x[0])
 
 			pino := cache[dir]
 			wf, err := syncer.flow.lookupWorkflowFromParent(ctx, &lookupWorkflowFromParentArgs{
@@ -1014,7 +1015,7 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 
 	err = tx.Commit()
 	if err != nil {
-		return nil
+		return err
 	}
 
 	return nil
@@ -1068,7 +1069,7 @@ func (repository *localRepository) clone(ctx context.Context) error {
 
 	fetchOpts := git.FetchOptions{
 		RemoteCallbacks: git.RemoteCallbacks{
-			CertificateCheckCallback: func(cert *git.Certificate, valid bool, hostname string) error { return nil }, // TODO
+			CertificateCheckCallback: func(cert *git.Certificate, valid bool, hostname string) error { return nil },
 			CredentialsCallback: func(url string, username_from_url string, allowed_types git.CredentialType) (*git.Credential, error) {
 				cred, err := git.NewCredentialSSHKeyFromMemory(username_from_url, repository.repo.PublicKey, repository.repo.PrivateKey, repository.repo.Passphrase)
 				if err != nil {
@@ -1114,17 +1115,6 @@ const (
 	mntWorkflowVar  = "wfvar"
 	mntNamespaceVar = "nsvar"
 )
-
-var (
-	ntypeShort map[string]string
-)
-
-func init() {
-	ntypeShort = map[string]string{
-		mntDir:      "d",
-		mntWorkflow: "w",
-	}
-}
 
 type mirrorNode struct {
 	parent    *mirrorNode
@@ -1218,7 +1208,6 @@ func (model *mirrorModel) addWorkflowNode(path string) error {
 	}
 
 	if !util.NameRegex.MatchString(name) {
-		// TODO: log something
 		return nil
 	}
 
@@ -1314,22 +1303,31 @@ func (model *mirrorModel) finalize() error {
 
 }
 
-func (model *mirrorModel) dump() {
+// var (
+// 	ntypeShort map[string]string
+// )
 
-	err := modelWalk(model.root, ".", func(path string, n *mirrorNode, err error) error {
-		fmt.Println(ntypeShort[n.ntype], path, n.change)
-		return nil
-	})
-	if err != nil {
-		fmt.Println(err)
-	}
+// func init() {
+// 	ntypeShort = map[string]string{
+// 		mntDir:      "d",
+// 		mntWorkflow: "w",
+// 	}
+// }
 
-}
+// func (model *mirrorModel) dump() {
+// 	err := modelWalk(model.root, ".", func(path string, n *mirrorNode, err error) error {
+// 		fmt.Println(ntypeShort[n.ntype], path, n.change)
+// 		return nil
+// 	})
+// 	if err != nil {
+// 		fmt.Println(err)
+// 	}
+// }
 
 func modelWalk(node *mirrorNode, path string, fn func(path string, n *mirrorNode, err error) error) error {
 
 	err := fn(path, node, nil)
-	if err == filepath.SkipDir {
+	if errors.Is(err, filepath.SkipDir) {
 		return nil
 	}
 	if err != nil {
@@ -1416,7 +1414,9 @@ func (model *mirrorModel) diff(repo *localRepository) error {
 	if err != nil {
 		return err
 	}
-	defer diff.Free()
+	defer func() {
+		_ = diff.Free()
+	}()
 
 	dopts, err := git.DefaultDiffFindOptions()
 	if err != nil {
@@ -1431,7 +1431,7 @@ func (model *mirrorModel) diff(repo *localRepository) error {
 	err = diff.ForEach(func(delta git.DiffDelta, progress float64) (git.DiffForEachHunkCallback, error) {
 
 		node, err := model.lookup(delta.NewFile.Path)
-		if err == os.ErrNotExist {
+		if errors.Is(err, os.ErrNotExist) {
 			return func(x git.DiffHunk) (git.DiffForEachLineCallback, error) {
 				return func(x git.DiffLine) error {
 					return nil
@@ -1474,13 +1474,13 @@ func buildModel(ctx context.Context, repo *localRepository) (*mirrorModel, error
 		parent:   model.root,
 		children: make([]*mirrorNode, 0),
 		ntype:    mntDir,
-		name:     ".", // TODO
+		name:     ".",
 	}
 
 	cfg := new(project.Config)
 
 	scfpath := filepath.Join(repo.path, project.ConfigFile)
-	scfgbytes, err := ioutil.ReadFile(scfpath)
+	scfgbytes, err := os.ReadFile(scfpath)
 	if os.IsNotExist(err) {
 		cfg.Ignore = make([]string, 0)
 	} else if err != nil {
@@ -1502,6 +1502,10 @@ func buildModel(ctx context.Context, repo *localRepository) (*mirrorModel, error
 	}
 
 	err = filepath.WalkDir(repo.path, func(path string, d fs.DirEntry, err error) error {
+
+		if err != nil {
+			return err
+		}
 
 		rel, err := filepath.Rel(repo.path, path)
 		if err != nil {

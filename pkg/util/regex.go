@@ -17,7 +17,7 @@ var URIRegex = regexp.MustCompile(URIRegexPattern)
 
 const VarNameRegexPattern = `^(([a-zA-Z][a-zA-Z0-9_\-\.]*[a-zA-Z0-9])|([a-zA-Z]))$`
 
-const VarSecretNameAndSecretsFolderNamePattern = `^(([a-zA-Z][a-zA-Z0-9_\-\./]*[a-zA-Z0-9/])|([a-zA-Z/]))$`
+const VarSecretNameAndSecretsFolderNamePattern = `^(([a-zA-Z][a-zA-Z0-9_\-\./]*[a-zA-Z0-9/])|([a-zA-Z/]))$` //nolint:gosec
 
 var VarNameRegex = regexp.MustCompile(VarNameRegexPattern)
 

@@ -3,6 +3,7 @@ package functions
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"time"
 
@@ -71,10 +72,10 @@ func (locks *locks) lockDB(id uint64, wait int) (*sql.Conn, error) {
 	}
 
 	_, err = conn.ExecContext(ctx, "SELECT pg_advisory_lock($1)", int64(id))
+	pqErr := new(pq.Error)
+	if errors.As(err, &pqErr) {
 
-	if err, ok := err.(*pq.Error); ok {
-
-		if err.Code == "57014" {
+		if pqErr.Code == "57014" {
 			return conn, fmt.Errorf("canceled query")
 		}
 		return conn, err
@@ -91,13 +92,13 @@ func (locks *locks) unlockDB(id uint64, conn *sql.Conn) error {
 		"SELECT pg_advisory_unlock($1)", int64(id))
 
 	if err != nil {
-		return fmt.Errorf("can not unlock lock %d: %v", id, err)
+		return fmt.Errorf("can not unlock lock %d: %w", id, err)
 	}
 
 	err = conn.Close()
 
 	if err != nil {
-		return fmt.Errorf("can not close database connection %d: %v", id, err)
+		return fmt.Errorf("can not close database connection %d: %w", id, err)
 	}
 
 	return nil
@@ -116,8 +117,6 @@ func (locks *locks) lock(key string, blocking bool) (*sql.Conn, error) {
 	if blocking {
 		wait = int(time.Minute) * 15
 	}
-
-	logger.Debugf("locking %s", key)
 
 	conn, err := locks.lockDB(hash, wait)
 	if err != nil {

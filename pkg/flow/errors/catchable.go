@@ -1,6 +1,9 @@
 package errors
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
 
 type CatchableError struct {
 	Code    string `json:"code"`
@@ -20,7 +23,9 @@ func (err *CatchableError) Error() string {
 
 func WrapCatchableError(msg string, err error) error {
 
-	if cerr, ok := err.(*CatchableError); ok {
+	cerr := new(CatchableError)
+
+	if errors.As(err, &cerr) {
 		return &CatchableError{
 			Code:    cerr.Code,
 			Message: fmt.Sprintf(msg, err),

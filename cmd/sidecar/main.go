@@ -21,7 +21,12 @@ func main() {
 		fmt.Fprintf(os.Stderr, "failed to initialize logger: %v\n", err)
 		os.Exit(1)
 	}
-	defer log.Sync()
+	defer func() {
+		err := log.Sync()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "failed to sync logs: %v\n", err)
+		}
+	}()
 
 	sl := new(SignalListener)
 	sl.Start()

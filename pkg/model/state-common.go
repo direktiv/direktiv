@@ -7,7 +7,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/util"
 )
 
-// RetryDefinition defines a retry object to be used in the workflow
+// RetryDefinition defines a retry object to be used in the workflow.
 type RetryDefinition struct {
 	MaxAttempts int      `yaml:"max_attempts" json:"max_attempts"`
 	Delay       string   `yaml:"delay,omitempty" json:"delay"`
@@ -15,7 +15,7 @@ type RetryDefinition struct {
 	Codes       []string `yaml:"codes" json:"codes"`
 }
 
-// Validate checks the arguments for the retry definition
+// Validate checks the arguments for the retry definition.
 func (o *RetryDefinition) Validate() error {
 	if o == nil {
 		return nil
@@ -36,13 +36,13 @@ func (o *RetryDefinition) Validate() error {
 	return nil
 }
 
-// ErrorDefinition defines an error object to be used in the workflow
+// ErrorDefinition defines an error object to be used in the workflow.
 type ErrorDefinition struct {
 	Error      string `yaml:"error"`
 	Transition string `yaml:"transition,omitempty"`
 }
 
-// Validate checks the arguments for the error definition
+// Validate checks the arguments for the error definition.
 func (o *ErrorDefinition) Validate() error {
 	if o.Error == "" {
 		return errors.New("error required")
@@ -51,7 +51,7 @@ func (o *ErrorDefinition) Validate() error {
 	return nil
 }
 
-// State a simple interface to define a state
+// State a simple interface to define a state.
 type State interface {
 	GetID() string
 	GetType() StateType
@@ -61,13 +61,13 @@ type State interface {
 	getTransitions() map[string]string
 }
 
-// ConsumeEventDefinition defines what a consume event is
+// ConsumeEventDefinition defines what a consume event is.
 type ConsumeEventDefinition struct {
 	Type    string                 `yaml:"type"`
 	Context map[string]interface{} `yaml:"context,omitempty"`
 }
 
-// Validate validates the arguments provided for the consume event definition
+// Validate validates the arguments provided for the consume event definition.
 func (o *ConsumeEventDefinition) Validate() error {
 	if o.Type == "" {
 		return errors.New("type required")
@@ -77,7 +77,7 @@ func (o *ConsumeEventDefinition) Validate() error {
 
 }
 
-// ProduceEventDefinition defines what a produce event is
+// ProduceEventDefinition defines what a produce event is.
 type ProduceEventDefinition struct {
 	Type    string                 `yaml:"type,omitempty"`
 	Source  string                 `yaml:"source,omitempty"`
@@ -85,7 +85,7 @@ type ProduceEventDefinition struct {
 	Context map[string]interface{} `yaml:"context,omitempty"`
 }
 
-// Validate validates the arguments provided for the produce event definition
+// Validate validates the arguments provided for the produce event definition.
 func (o *ProduceEventDefinition) Validate() error {
 	if o.Source == "" {
 		return errors.New("source required")
@@ -99,7 +99,7 @@ func (o *ProduceEventDefinition) Validate() error {
 
 }
 
-// StateCommon defines the common attributes of a state
+// StateCommon defines the common attributes of a state.
 type StateCommon struct {
 	ID       string            `yaml:"id"`
 	Type     StateType         `yaml:"type"`
@@ -108,22 +108,22 @@ type StateCommon struct {
 	Catch    []ErrorDefinition `yaml:"catch,omitempty"`
 }
 
-// GetType returns the type of a state common
+// GetType returns the type of a state common.
 func (o *StateCommon) GetType() StateType {
 	return o.Type
 }
 
-// GetLog returns the log query
+// GetLog returns the log query.
 func (o *StateCommon) GetLog() interface{} {
 	return o.Log
 }
 
-// GetMetadata returns the metadata query
+// GetMetadata returns the metadata query.
 func (o *StateCommon) GetMetadata() interface{} {
 	return o.Metadata
 }
 
-// ErrorDefinitions returns an array of error definitions
+// ErrorDefinitions returns an array of error definitions.
 func (o *StateCommon) ErrorDefinitions() []ErrorDefinition {
 	if o.Catch == nil {
 		return make([]ErrorDefinition, 0)
@@ -141,14 +141,6 @@ func (o *StateCommon) commonValidate() error {
 		return fmt.Errorf("state id must match the regex pattern `%s`", util.RegexPattern)
 	}
 
-	if s, ok := o.Log.(string); ok && s != "" {
-		/*
-			if _, err := gojq.Parse(s); err != nil {
-				return fmt.Errorf("log is an invalid jq string: %v", err)
-			}
-		*/
-	}
-
 	for _, catch := range o.Catch {
 		if err := catch.Validate(); err != nil {
 			return err
@@ -158,7 +150,6 @@ func (o *StateCommon) commonValidate() error {
 	return nil
 }
 
-// util
 func getStateFromType(stype string) (State, error) {
 	var s State
 	var err error
@@ -190,8 +181,6 @@ func getStateFromType(stype string) (State, error) {
 		s = new(NoopState)
 	case StateTypeValidate.String():
 		s = new(ValidateState)
-	case StateTypeCallback.String():
-		s = new(CallbackState)
 	case StateTypeParallel.String():
 		s = new(ParallelState)
 	case StateTypeGetter.String():
