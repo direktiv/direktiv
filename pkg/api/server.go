@@ -1,7 +1,6 @@
 package api
 
 import (
-	"fmt"
 	"net/http"
 	"time"
 
@@ -109,6 +108,7 @@ func NewServer(l *zap.SugaredLogger) (*Server, error) {
 		return nil, err
 	}
 
+	logger.Debug("adding options routes")
 	s.prepareHelperRoutes()
 
 	return s, nil
@@ -145,11 +145,11 @@ func (s *Server) Start() error {
 
 func (s *Server) prepareHelperRoutes() {
 
-	fmt.Println("PREPARE HELPER ROUTE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+	logger.Infof("PREPARE HELPER ROUTE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
 	// Options ..
 	s.router.HandleFunc("/{path:.*}", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println("HIT THIS ROUTE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+		logger.Infof("HIT THIS ROUTE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 		// https://github.com/cloudevents/spec/blob/v1.0/http-webhook.md#4-abuse-protection
 		w.Header().Add("WebHook-Allowed-Rate", "120")
 		w.Header().Add("Webhook-Allowed-Origin", "eventgrid.azure.net")
