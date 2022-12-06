@@ -20,9 +20,7 @@ const (
 	RN_DeleteNamespace = "deleteNamespace"
 
 	// namespace get
-	RN_GetNamespaceLogs = "getNamespaceLogs"
-
-	// namespace variable get
+	RN_GetNamespaceLogs       = "getNamespaceLogs"
 	RN_ListNamespaceVariables = "listNamespaceVariables"
 	RN_GetNamespaceVariable   = "getNamespaceVariable"
 
@@ -35,16 +33,22 @@ const (
 	// set namespace config
 	RN_SetNamespaceConfig = "setNamespaceConfiguration"
 
-	// explore
-	RN_GetNode         = "getNode"
+	// explorer get
+	RN_GetNode = "getNode"
+
+	// explorer set
 	RN_CreateDirectory = "createDirectory"
 	RN_DeleteNode      = "deleteNode"
 	RN_RenameNode      = "renameNode"
 
 	// instance
-	RN_ListInstances  = "listInstances"
-	RN_GetInstance    = "getInstance"
-	RN_CancelInstance = "cancelInstance"
+	RN_ListInstances         = "listInstances"
+	RN_GetInstance           = "getInstance"
+	RN_CancelInstance        = "cancelInstance"
+	RN_GetInstanceLogs       = "getInstanceLogs"
+	RN_ListInstanceVariables = "listInstanceVariables"
+	RN_GetInstanceVariable   = "getInstanceVariable"
+	RN_SetInstanceVariable   = "setInstanceVariable"
 
 	RN_CreateWorkflow        = "createWorkflow"
 	RN_UpdateWorkflow        = "updateWorkflow"
@@ -63,9 +67,6 @@ const (
 	RN_ExecuteWorkflow       = "executeWorkflow"
 	RN_DeleteNodeAttributes  = "deleteNodeAttributes"
 	RN_CreateNodeAttributes  = "createNodeAttributes"
-	RN_ListInstanceVariables = "listInstanceVariables"
-	RN_GetInstanceVariable   = "getInstanceVariable"
-	RN_SetInstanceVariable   = "setInstanceVariable"
 	RN_ListWorkflowVariables = "listWorkflowVariables"
 	RN_GetWorkflowVariable   = "getWorkflowVariable"
 	RN_SetWorkflowVariable   = "setWorkflowVariable"
@@ -73,7 +74,6 @@ const (
 	RN_GetServerLogs = "getServerLogs"
 
 	RN_GetWorkflowLogs = "getWorkflowLogs"
-	RN_GetInstanceLogs = "getInstanceLogs"
 
 	RN_ListServices                   = "listServices"
 	RN_ListNamespaceServices          = "listNamespacesServices"
