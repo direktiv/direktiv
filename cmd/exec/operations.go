@@ -663,7 +663,7 @@ func executeCreateCloudEventFilter(filterName string, data io.Reader, force bool
 		return err
 	}
 
-	if resp.StatusCode == http.StatusInternalServerError && !force {
+	if resp.StatusCode == http.StatusInternalServerError { // when script is not compilable, then print error message
 
 		body, err := io.ReadAll(resp.Body)
 		if err != nil {
@@ -675,9 +675,15 @@ func executeCreateCloudEventFilter(filterName string, data io.Reader, force bool
 
 	}
 
-	if force {
-		err = executeUpdateCloudEventFilter(filterName)
+	if resp.StatusCode == http.StatusConflict {
+
+		if force {
+			err = executeUpdateCloudEventFilter(filterName)
+			return err
+		}
+		err = fmt.Errorf("event filter already exists")
 		return err
+
 	}
 
 	if resp.StatusCode != http.StatusOK {
