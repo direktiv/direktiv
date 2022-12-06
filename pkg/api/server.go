@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -144,11 +145,17 @@ func (s *Server) Start() error {
 
 func (s *Server) prepareHelperRoutes() {
 
+	fmt.Println("PREPARE HELPER ROUTE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+
 	// Options ..
 	s.router.HandleFunc("/{path:.*}", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println("HIT THIS ROUTE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 		// https://github.com/cloudevents/spec/blob/v1.0/http-webhook.md#4-abuse-protection
 		w.Header().Add("WebHook-Allowed-Rate", "120")
 		w.Header().Add("Webhook-Allowed-Origin", "eventgrid.azure.net")
+		w.Header().Add("Cache-Control", "no-cache, no-store, must-revalidate")
+		w.Header().Add("Pragma", "no-cache")
+		w.Header().Add("Expires", "0")
 		w.WriteHeader(http.StatusOK)
 	}).Methods(http.MethodOptions).Name(RN_Preflight)
 

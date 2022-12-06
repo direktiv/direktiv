@@ -3,94 +3,78 @@ package api
 // RN = Route Name.
 const (
 
-	// unauthenticated routes
+	// admin only
+	RN_AddNamespace = "addNamespace"
+
+	// misc for azure
 	RN_Preflight = "preflight"
 
-	// namespace routes
-	RN_AddNamespace    = "addNamespace"
-	RN_DeleteNamespace = "deleteNamespace"
-	RN_ListNamespaces  = "listNamespaces"
+	// all authenticated
+	RN_JQPlayground = "jqPlayground"
+	RN_Version      = "version"
 
-	// broadcast namespace event routes
+	// permission if any other permission is set in namespace
+	RN_ListNamespaces = "listNamespaces"
+
+	// namespace set
+	RN_DeleteNamespace = "deleteNamespace"
+
+	// namespace get
+	RN_GetNamespaceLogs = "getNamespaceLogs"
+
+	// namespace variable get
+	RN_ListNamespaceVariables = "listNamespaceVariables"
+	RN_GetNamespaceVariable   = "getNamespaceVariable"
+
+	// namespace variable set
+	RN_SetNamespaceVariable = "setNamespaceVariable"
+
+	// get namespace config
 	RN_GetNamespaceConfig = "getNamespaceConfiguration"
+
+	// set namespace config
 	RN_SetNamespaceConfig = "setNamespaceConfiguration"
 
-	// explorer routes
+	// explore
 	RN_GetNode         = "getNode"
 	RN_CreateDirectory = "createDirectory"
-	RN_CreateWorkflow  = "createWorkflow"
 	RN_DeleteNode      = "deleteNode"
 	RN_RenameNode      = "renameNode"
 
-	// workflow routes
-	RN_UpdateWorkflow       = "updateWorkflow"
-	RN_SaveWorkflow         = "saveWorkflow"
-	RN_DiscardWorkflow      = "discardWorkflow"
-	RN_GetWorkflowTags      = "getWorkflowTags"
-	RN_GetWorkflowRevisions = "getWorkflowRevisions"
-	RN_GetWorkflowRefs      = "getWorkflowRefs"
-	RN_DeleteRevision       = "deleteRevision"
-	RN_Tag                  = "tag"
-	RN_Untag                = "untag"
-	RN_Retag                = "retag"
-	RN_GetWorkflowRouter    = "getWorkflowRouter"
-	RN_EditWorkflowRouter   = "editWorkflowRouter"
-	RN_ValidateRef          = "validateRef"
-	RN_ValidateRouter       = "validateRouter"
+	// instance
+	RN_ListInstances  = "listInstances"
+	RN_GetInstance    = "getInstance"
+	RN_CancelInstance = "cancelInstance"
 
-	// filter routes
-	RN_NamespaceEventFilter       = "namespaceEventFilter"
-	RN_CreateNamespaceEventFilter = "CreateNamespaceEventFilter"
-	RN_DeleteNamespaceEventFilter = "DeleteNamespaceEventFilter"
-	RN_UpdateNamespaceEventFilter = "UpdateNamespaceEventFilter"
-	RN_ListNamespaceEventFilters  = "ListNamespaceEventFilters"
-	RN_GetNamespaceEventFilter    = "GetNamespaceEventFilter"
+	RN_CreateWorkflow        = "createWorkflow"
+	RN_UpdateWorkflow        = "updateWorkflow"
+	RN_SaveWorkflow          = "saveWorkflow"
+	RN_DiscardWorkflow       = "discardWorkflow"
+	RN_GetWorkflowTags       = "getWorkflowTags"
+	RN_GetWorkflowRevisions  = "getWorkflowRevisions"
+	RN_GetWorkflowRefs       = "getWorkflowRefs"
+	RN_DeleteRevision        = "deleteRevision"
+	RN_Tag                   = "tag"
+	RN_Untag                 = "untag"
+	RN_Retag                 = "retag"
+	RN_GetWorkflowRouter     = "getWorkflowRouter"
+	RN_GetNamespaceMetrics   = "getNamespaceMetrics"
+	RN_GetWorkflowMetrics    = "getWorkflowMetrics"
+	RN_ExecuteWorkflow       = "executeWorkflow"
+	RN_DeleteNodeAttributes  = "deleteNodeAttributes"
+	RN_CreateNodeAttributes  = "createNodeAttributes"
+	RN_ListInstanceVariables = "listInstanceVariables"
+	RN_GetInstanceVariable   = "getInstanceVariable"
+	RN_SetInstanceVariable   = "setInstanceVariable"
+	RN_ListWorkflowVariables = "listWorkflowVariables"
+	RN_GetWorkflowVariable   = "getWorkflowVariable"
+	RN_SetWorkflowVariable   = "setWorkflowVariable"
 
-	// event routes
-	RN_EventListeners = "eventListeners"
-	RN_EventHistory   = "eventHistory"
-	RN_NamespaceEvent = "namespaceEvent"
+	RN_GetServerLogs = "getServerLogs"
 
-	// secrets.
-	RN_ListSecrets         = "listSecrets"
-	RN_SearchSecret        = "searchSecret"
-	RN_OverwriteSecret     = "overwriteSecret"
-	RN_CreateSecret        = "createSecret"
-	RN_DeleteSecret        = "deleteSecret"
-	RN_DeleteSecretsFolder = "deleteSecretsFolder"
-	RN_CreateSecretsFolder = "createSecretsFolder"
+	RN_GetWorkflowLogs = "getWorkflowLogs"
+	RN_GetInstanceLogs = "getInstanceLogs"
 
-	// registries.
-	RN_ListRegistries = "listRegistries"
-	RN_CreateRegistry = "createRegistry"
-	RN_DeleteRegistry = "deleteRegistry"
-	RN_TestRegistry   = "testRegistry"
-
-	// metrics.
-	RN_GetNamespaceMetrics = "getNamespaceMetrics"
-	RN_GetWorkflowMetrics  = "getWorkflowMetrics"
-
-	RN_ExecuteWorkflow                = "executeWorkflow"
-	RN_ListInstances                  = "listInstances"
-	RN_GetInstance                    = "getInstance"
-	RN_CancelInstance                 = "cancelInstance"
-	RN_DeleteNodeAttributes           = "deleteNodeAttributes"
-	RN_CreateNodeAttributes           = "createNodeAttributes"
-	RN_ListInstanceVariables          = "listInstanceVariables"
-	RN_GetInstanceVariable            = "getInstanceVariable"
-	RN_SetInstanceVariable            = "setInstanceVariable"
-	RN_ListWorkflowVariables          = "listWorkflowVariables"
-	RN_GetWorkflowVariable            = "getWorkflowVariable"
-	RN_SetWorkflowVariable            = "setWorkflowVariable"
-	RN_ListNamespaceVariables         = "listNamespaceVariables"
-	RN_GetNamespaceVariable           = "getNamespaceVariable"
-	RN_GetServerLogs                  = "getServerLogs"
-	RN_GetNamespaceLogs               = "getNamespaceLogs"
-	RN_GetWorkflowLogs                = "getWorkflowLogs"
-	RN_GetInstanceLogs                = "getInstanceLogs"
-	RN_SetNamespaceVariable           = "setNamespaceVariable"
-	RN_JQPlayground                   = "jqPlayground"
-	RN_Version                        = "version"
 	RN_ListServices                   = "listServices"
 	RN_ListNamespaceServices          = "listNamespacesServices"
 	RN_WatchServices                  = "watchServices"
@@ -111,17 +95,59 @@ const (
 	RN_UpdateNamespaceService         = "updateNamespaceService"
 	RN_UpdateNamespaceServiceTraffic  = "updateNamespaceServiceTraffic"
 	RN_DeleteNamespaceServiceRevision = "deleteNamespaceServiceRevision"
+	RN_ListWorkflowServices           = "listWorkflowServices"
+	RN_DeleteWorkflowServices         = "deleteWorkflowService"
+	RN_ListWorkflowPods               = "listWorkflowPods"
+	RN_PodLogs                        = "podLogs"
+	RN_EventListeners                 = "eventListeners"
+	RN_EventHistory                   = "eventHistory"
+	RN_EditWorkflowRouter             = "editWorkflowRouter"
+	RN_ValidateRef                    = "validateRef"
+	RN_ValidateRouter                 = "validateRouter"
+	RN_NamespaceEvent                 = "namespaceEvent"
 
-	RN_ListWorkflowServices   = "listWorkflowServices"
-	RN_DeleteWorkflowServices = "deleteWorkflowService"
-	RN_ListWorkflowPods       = "listWorkflowPods"
-	RN_PodLogs                = "podLogs"
+	// filter get
+	RN_NamespaceEventFilter      = "namespaceEventFilter"
+	RN_ListNamespaceEventFilters = "listNamespaceEventFilters"
+	RN_GetNamespaceEventFilter   = "getNamespaceEventFilter"
 
-	// git.
-	RN_UpdateMirror          = "updateMirror"
-	RN_LockMirror            = "lockMirror"
-	RN_SyncMirror            = "syncMirror"
-	RN_GetMirrorInfo         = "getMirrorInfo"
-	RN_CancelMirrorActivity  = "cancelMirrorActivity"
+	// filter set
+	RN_CreateNamespaceEventFilter = "createNamespaceEventFilter"
+	RN_UpdateNamespaceEventFilter = "updateNamespaceEventFilter"
+
+	// filter delete
+	RN_DeleteNamespaceEventFilter = "deleteNamespaceEventFilter"
+
+	// secrets get
+	RN_ListSecrets  = "listSecrets"
+	RN_SearchSecret = "searchSecret"
+
+	// secrets set
+	RN_OverwriteSecret     = "overwriteSecret"
+	RN_CreateSecret        = "createSecret"
+	RN_CreateSecretsFolder = "createSecretsFolder"
+
+	// secrets delete
+	RN_DeleteSecret        = "deleteSecret"
+	RN_DeleteSecretsFolder = "deleteSecretsFolder"
+
+	// registries get
+	RN_ListRegistries = "listRegistries"
+	RN_TestRegistry   = "testRegistry"
+
+	// registries set
+	RN_CreateRegistry = "createRegistry"
+
+	// registries delete
+	RN_DeleteRegistry = "deleteRegistry"
+
+	// git set
+	RN_UpdateMirror         = "updateMirror"
+	RN_LockMirror           = "lockMirror"
+	RN_SyncMirror           = "syncMirror"
+	RN_CancelMirrorActivity = "cancelMirrorActivity"
+
+	// git get
 	RN_GetMirrorActivityLogs = "getMirrorActivityLogs"
+	RN_GetMirrorInfo         = "getMirrorInfo"
 )
