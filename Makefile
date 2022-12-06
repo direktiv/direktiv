@@ -361,6 +361,7 @@ upgrade: push # Pushes all images and reboots flow, function, and api pods
 .PHONY: dependencies
 dependencies: # installs tools 
 	go install github.com/google/go-licenses@latest
+	cd build/lint && docker build -t direktiv-linter .
 
 
 .PHONY: license-check 
@@ -380,3 +381,8 @@ lint: # Runs very strict linting on the project.
 	# -E gosec
 	# -E revive
 	# -E contextcheck -E goerr113 -E godox -E interfacebloat -E tagliatelle -E unparam -E varnamelen -E wrapcheck
+
+.PHONY: lint-docker
+lint-docker: # Runs very strict linting on the project.
+	docker run -v `pwd`:/direktiv direktiv-linter 
+
