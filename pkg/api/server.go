@@ -145,11 +145,8 @@ func (s *Server) Start() error {
 
 func (s *Server) prepareHelperRoutes() {
 
-	logger.Infof("PREPARE HELPER ROUTE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-
 	// Options ..
 	s.router.HandleFunc("/{path:.*}", func(w http.ResponseWriter, r *http.Request) {
-		logger.Infof("HIT THIS ROUTE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 		// https://github.com/cloudevents/spec/blob/v1.0/http-webhook.md#4-abuse-protection
 		w.Header().Add("WebHook-Allowed-Rate", "120")
 		w.Header().Add("Webhook-Allowed-Origin", "eventgrid.azure.net")
