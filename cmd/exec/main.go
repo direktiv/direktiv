@@ -744,6 +744,9 @@ var getFilterCmd = &cobra.Command{
 
 			var eventfilter getFilterResp
 			err = json.Unmarshal(resp, &eventfilter)
+			if err != nil {
+				log.Fatalf("error: %v\n", err)
+			}
 
 			cmd.PrintErrln("filtername:", eventfilter.Filtername)
 			cmd.PrintErrln("script: \n", eventfilter.JsCode)
@@ -781,6 +784,9 @@ var listFilterCmd = &cobra.Command{
 		} else {
 			var eventfilter listFiltersResp
 			err = json.Unmarshal(resp, &eventfilter)
+			if err != nil {
+				log.Fatalf("error: %v\n", err)
+			}
 
 			for _, name := range eventfilter.EventFilter {
 				cmd.PrintErrln(name.Name)

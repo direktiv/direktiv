@@ -12,6 +12,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/direktiv/direktiv/pkg/util"
 )
@@ -606,7 +607,11 @@ func executeDeleteCloudEventFilter(filterName string) error {
 
 	url := fmt.Sprintf("%s/eventfilter/%s", urlPrefix, filterName)
 
-	req, err := http.NewRequest(
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(
+		ctx,
 		http.MethodDelete,
 		url,
 		nil,
@@ -646,7 +651,11 @@ func executeCreateCloudEventFilter(filterName string, data io.Reader, force bool
 
 	url = fmt.Sprintf("%s/eventfilter/%s", urlPrefix, filterName)
 
-	req, err := http.NewRequest(
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(
+		ctx,
 		http.MethodPut,
 		url,
 		data,
@@ -695,48 +704,6 @@ func executeCreateCloudEventFilter(filterName string, data io.Reader, force bool
 
 }
 
-func executeApplyCloudEventFilter(filterName string, data io.Reader) error {
-
-	var url string
-
-	url = fmt.Sprintf("%s/broadcast/%s", urlPrefix, filterName)
-
-	req, err := http.NewRequest(
-		http.MethodPost,
-		url,
-		data,
-	)
-	if err != nil {
-		return err
-	}
-
-	req.Header.Add("Content-Type", inputType)
-	addAuthHeaders(req)
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return err
-	}
-
-	if resp.StatusCode == http.StatusNotFound {
-		err = fmt.Errorf("eventfilter: " + filterName + " not found")
-		return err
-	}
-
-	if resp.StatusCode == http.StatusConflict {
-		err = fmt.Errorf("cloud event already exist")
-		return err
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		err = fmt.Errorf("failed to apply filter: " + filterName + " (rejected by server)")
-		return err
-	}
-
-	return err
-
-}
-
 func executeUpdateCloudEventFilter(filterName string) error {
 
 	var url string
@@ -760,7 +727,11 @@ func executeUpdateCloudEventFilter(filterName string) error {
 
 	url = fmt.Sprintf("%s/eventfilter/%s", urlPrefix, filterName)
 
-	req, err := http.NewRequest(
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(
+		ctx,
 		http.MethodPatch,
 		url,
 		inputData,
@@ -813,7 +784,11 @@ func executeGetCloudEventFilter(filterName string) ([]byte, error) {
 
 	url := fmt.Sprintf("%s/eventfilter/%s", urlPrefix, filterName)
 
-	req, err := http.NewRequest(
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(
+		ctx,
 		http.MethodGet,
 		url,
 		nil,
@@ -821,6 +796,8 @@ func executeGetCloudEventFilter(filterName string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	req = req.WithContext(ctx)
 
 	addAuthHeaders(req)
 
@@ -853,7 +830,11 @@ func executeListCloudEventFilter() ([]byte, error) {
 
 	url := fmt.Sprintf("%s/eventfilter", urlPrefix)
 
-	req, err := http.NewRequest(
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(
+		ctx,
 		http.MethodGet,
 		url,
 		nil,
