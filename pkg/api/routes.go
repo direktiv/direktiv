@@ -16,27 +16,19 @@ const (
 	// permission if any other permission is set in namespace
 	RN_ListNamespaces = "listNamespaces"
 
-	// namespace set
-	RN_DeleteNamespace = "deleteNamespace"
-
 	// namespace get
-	RN_GetNamespaceLogs       = "getNamespaceLogs"
 	RN_ListNamespaceVariables = "listNamespaceVariables"
 	RN_GetNamespaceVariable   = "getNamespaceVariable"
 
 	// namespace variable set
 	RN_SetNamespaceVariable = "setNamespaceVariable"
 
-	// get namespace config
+	// namespace config
 	RN_GetNamespaceConfig = "getNamespaceConfiguration"
-
-	// set namespace config
 	RN_SetNamespaceConfig = "setNamespaceConfiguration"
 
 	// explorer get
-	RN_GetNode = "getNode"
-
-	// explorer set
+	RN_GetNode         = "getNode"
 	RN_CreateDirectory = "createDirectory"
 	RN_DeleteNode      = "deleteNode"
 	RN_RenameNode      = "renameNode"
@@ -71,40 +63,47 @@ const (
 	RN_GetWorkflowVariable   = "getWorkflowVariable"
 	RN_SetWorkflowVariable   = "setWorkflowVariable"
 
-	RN_GetServerLogs = "getServerLogs"
-
+	RN_GetServerLogs   = "getServerLogs"
 	RN_GetWorkflowLogs = "getWorkflowLogs"
+	// namespace set LEFTOVER
+	RN_DeleteNamespace  = "deleteNamespace"
+	RN_GetNamespaceLogs = "getNamespaceLogs"
 
-	RN_ListServices                   = "listServices"
-	RN_ListNamespaceServices          = "listNamespacesServices"
-	RN_WatchServices                  = "watchServices"
-	RN_WatchRevisions                 = "watchRevisions"
-	RN_WatchPods                      = "watchPods"
-	RN_WatchPodLogs                   = "watchLogs"
-	RN_ListPods                       = "listPods"
-	RN_DeleteServices                 = "deleteServices"
-	RN_GetService                     = "getService"
-	RN_CreateService                  = "createService"
-	RN_UpdateService                  = "updateService"
-	RN_UpdateServiceTraffic           = "updateServiceTraffic"
-	RN_DeleteService                  = "deleteService"
-	RN_ListNamespacePods              = "listNamespacePods"
+	// RN_ListServices = "listServices"
+	// RN_DeleteServices       = "deleteServices"
+	// RN_GetService           = "getService"
+	// RN_CreateService        = "createService"
+	// RN_UpdateService        = "updateService"
+	// RN_UpdateServiceTraffic = "updateServiceTraffic"
+	// RN_DeleteService        = "deleteService"
+
+	RN_WatchServices  = "watchServices"
+	RN_WatchRevisions = "watchRevisions"
+	// RN_WatchPods      = "watchPods"
+	RN_WatchPodLogs = "watchLogs"
+	RN_ListPods     = "listPods"
+
+	RN_ListWorkflowServices   = "listWorkflowServices"
+	RN_DeleteWorkflowServices = "deleteWorkflowService"
+	RN_ListWorkflowPods       = "listWorkflowPods"
+	RN_PodLogs                = "podLogs"
+	RN_EventListeners         = "eventListeners"
+	RN_EventHistory           = "eventHistory"
+	RN_EditWorkflowRouter     = "editWorkflowRouter"
+	RN_ValidateRef            = "validateRef"
+	RN_ValidateRouter         = "validateRouter"
+	RN_NamespaceEvent         = "namespaceEvent"
+
+	// services get
+	RN_ListNamespaceServices = "listNamespacesServices"
+	RN_ListNamespacePods     = "listNamespacePods"
+	RN_GetNamespaceService   = "getNamespaceService"
+
+	// services set
 	RN_CreateNamespaceService         = "createNamespaceService"
 	RN_DeleteNamespaceServices        = "deleteNamespaceService"
-	RN_GetNamespaceService            = "getNamespaceService"
 	RN_UpdateNamespaceService         = "updateNamespaceService"
-	RN_UpdateNamespaceServiceTraffic  = "updateNamespaceServiceTraffic"
 	RN_DeleteNamespaceServiceRevision = "deleteNamespaceServiceRevision"
-	RN_ListWorkflowServices           = "listWorkflowServices"
-	RN_DeleteWorkflowServices         = "deleteWorkflowService"
-	RN_ListWorkflowPods               = "listWorkflowPods"
-	RN_PodLogs                        = "podLogs"
-	RN_EventListeners                 = "eventListeners"
-	RN_EventHistory                   = "eventHistory"
-	RN_EditWorkflowRouter             = "editWorkflowRouter"
-	RN_ValidateRef                    = "validateRef"
-	RN_ValidateRouter                 = "validateRouter"
-	RN_NamespaceEvent                 = "namespaceEvent"
 
 	// filter get
 	RN_NamespaceEventFilter      = "namespaceEventFilter"
