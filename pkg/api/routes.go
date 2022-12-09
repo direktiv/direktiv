@@ -36,10 +36,11 @@ const (
 	// instance
 	RN_ListInstances         = "listInstances"
 	RN_GetInstance           = "getInstance"
-	RN_CancelInstance        = "cancelInstance"
 	RN_GetInstanceLogs       = "getInstanceLogs"
-	RN_ListInstanceVariables = "listInstanceVariables"
 	RN_GetInstanceVariable   = "getInstanceVariable"
+	RN_GetNamespaceLogs      = "getNamespaceLogs"
+	RN_CancelInstance        = "cancelInstance"
+	RN_ListInstanceVariables = "listInstanceVariables"
 	RN_SetInstanceVariable   = "setInstanceVariable"
 
 	RN_CreateWorkflow        = "createWorkflow"
@@ -66,8 +67,7 @@ const (
 	RN_GetServerLogs   = "getServerLogs"
 	RN_GetWorkflowLogs = "getWorkflowLogs"
 	// namespace set LEFTOVER
-	RN_DeleteNamespace  = "deleteNamespace"
-	RN_GetNamespaceLogs = "getNamespaceLogs"
+	RN_DeleteNamespace = "deleteNamespace"
 
 	// RN_ListServices = "listServices"
 	// RN_DeleteServices       = "deleteServices"
