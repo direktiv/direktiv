@@ -1001,59 +1001,6 @@
         }
       }
     },
-    "/api/namespaces/overwrite/{namespace}/secrets/{secret}": {
-      "put": {
-        "description": "Overwrite a namespace secret.\n",
-        "consumes": [
-          "text/plain"
-        ],
-        "tags": [
-          "Secrets"
-        ],
-        "summary": "Overwrite a Namespace Secret",
-        "operationId": "overwriteSecret",
-        "parameters": [
-          {
-            "type": "string",
-            "description": "target namespace",
-            "name": "namespace",
-            "in": "path",
-            "required": true
-          },
-          {
-            "type": "string",
-            "description": "target secret",
-            "name": "secret",
-            "in": "path",
-            "required": true
-          },
-          {
-            "description": "Payload that contains secret data.",
-            "name": "Secret Payload",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "example": "7F8E7B0124ACB2BD20B383DE0756C7C0"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "namespace has been successfully overwritten",
-            "schema": {
-              "$ref": "#/definitions/OkBody"
-            }
-          },
-          "default": {
-            "description": "secret not found",
-            "schema": {
-              "$ref": "#/definitions/ErrorResponse"
-            }
-          }
-        }
-      }
-    },
     "/api/namespaces/search/{namespace}/secrets/{name}": {
       "get": {
         "description": "secrets and folders which including given name.\n",
@@ -1197,6 +1144,75 @@
         }
       }
     },
+    "/api/namespaces/{namespace}/broadcast/{filtername}": {
+      "post": {
+        "description": "Filter cloud event by given filtername and broadcast to a namespace.\nCloud events posted to this api will filter cloud event by given filtername and be picked up by any workflows listening to the same event type on the namescape.\nThe body of this request should follow the cloud event core specification defined at https://github.com/cloudevents/spec .\n",
+        "tags": [
+          "Other"
+        ],
+        "summary": "Filter given cloud event and broadcast it",
+        "operationId": "broadcastCloudeventFilter",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "target filtername",
+            "name": "filtername",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Cloud Event request to be sent.",
+            "name": "cloudevent",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      },
+      "delete": {
+        "description": "Delete existing cloud event filter in target namespace\n",
+        "tags": [
+          "CloudEventFilter"
+        ],
+        "summary": "Delete existing cloudEventFilter",
+        "operationId": "deleteCloudeventFilter",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "target filtername",
+            "name": "filtername",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
     "/api/namespaces/{namespace}/config": {
       "get": {
         "description": "Gets a namespace config.\n",
@@ -1298,6 +1314,84 @@
         "responses": {
           "200": {
             "description": "successfully got event listeners"
+          }
+        }
+      }
+    },
+    "/api/namespaces/{namespace}/eventfilter/{filtername}": {
+      "put": {
+        "description": "Creates new cloud event filter in target namespace\nThe body of this request should be a compilable javascript code without function header.\n",
+        "tags": [
+          "CloudEventFilter"
+        ],
+        "summary": "Creates new cloudEventFilter",
+        "operationId": "createCloudeventFilter",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "new filtername",
+            "name": "filtername",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "compilable javascript code.",
+            "name": "script",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      },
+      "patch": {
+        "description": "Update existing cloud event filter in target namespace\n",
+        "tags": [
+          "CloudEventFilter"
+        ],
+        "summary": "Update existing cloudEventFilter",
+        "operationId": "updateCloudeventFilter",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "target filtername",
+            "name": "filtername",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "compilable javascript code.",
+            "name": "script",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
           }
         }
       }
@@ -2182,6 +2276,57 @@
         "responses": {
           "200": {
             "description": "namespace secret has been successfully deleted",
+            "schema": {
+              "$ref": "#/definitions/OkBody"
+            }
+          },
+          "default": {
+            "description": "secret not found",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      },
+      "patch": {
+        "description": "Overwrite a namespace secret, or search for a search secret which contains by given name\n",
+        "consumes": [
+          "text/plain"
+        ],
+        "tags": [
+          "Secrets"
+        ],
+        "summary": "Overwrite a Namespace Secret or Search for a Secret by given Name. Set op query param for search function like /api/namespaces/{namespace}/secrets/{name}?op=name",
+        "operationId": "overwriteAndSearchSecret",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "target secret",
+            "name": "secret",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Payload that contains secret data, when using search functions its not necessary",
+            "name": "Secret Payload",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "7F8E7B0124ACB2BD20B383DE0756C7C0"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "namespace has been successfully overwritten",
             "schema": {
               "$ref": "#/definitions/OkBody"
             }
@@ -3249,59 +3394,17 @@
     }
   },
   "definitions": {
-    "CreateNamespaceServiceBody": {
-      "description": "CreateNamespaceServiceBody create namespace service body\nExample: {\"cmd\":\"\",\"image\":\"direktiv/request:v12\",\"minScale\":\"1\",\"name\":\"fast-request\",\"size\":\"small\"}",
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/namespace_services"
-    },
-    "CreateRegistryBody": {
-      "description": "CreateRegistryBody create registry body\nExample: {\"data\":\"admin:8QwFLg%D$qg*\",\"reg\":\"https://prod.customreg.io\"}",
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/registries"
-    },
-    "DeleteRegistryBody": {
-      "description": "DeleteRegistryBody delete registry body\nExample: {\"data\":\"admin:8QwFLg%D$qg*\",\"reg\":\"https://prod.customreg.io\"}",
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/registries"
-    },
     "ErrorResponse": {
-      "description": "ErrorResponse error response",
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/models"
-    },
-    "JqPlaygroundBody": {
-      "description": "JqPlaygroundBody jq playground body\nExample: {\"data\":\"eyJhIjogMSwgImIiOiAyLCAiYyI6IDQsICJkIjogN30=\",\"query\":\"map(select(. \\u003e= 2))\"}",
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/other"
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api"
     },
     "OkBody": {
       "description": "OkBody is an arbitrary placeholder response that represents an ok response body",
       "x-go-package": "github.com/direktiv/direktiv/pkg/api"
     },
-    "SetNamespaceConfigBody": {
-      "description": "SetNamespaceConfigBody set namespace config body\nExample: {\"broadcast\":{\"directory.create\":false,\"directory.delete\":false,\"instance.failed\":false,\"instance.started\":false,\"instance.success\":false,\"instance.variable.create\":false,\"instance.variable.delete\":false,\"instance.variable.update\":false,\"namespace.variable.create\":false,\"namespace.variable.delete\":false,\"namespace.variable.update\":false,\"workflow.create\":false,\"workflow.delete\":false,\"workflow.update\":false,\"workflow.variable.create\":false,\"workflow.variable.delete\":false,\"workflow.variable.update\":false}}",
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/namespaces"
-    },
-    "SetWorkflowCloudEventLogsBody": {
-      "description": "SetWorkflowCloudEventLogsBody set workflow cloud event logs body\nExample: {\"logger\":\"mylog\"}",
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/workflows"
-    },
-    "TestRegistryBody": {
-      "description": "TestRegistryBody test registry body\nExample: {\"token\":\"8QwFLg%D$qg*\",\"url\":\"https://prod.customreg.io\",\"username\":\"admin\"}",
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/operations"
-    },
-    "ToggleWorkflowBody": {
-      "description": "ToggleWorkflowBody toggle workflow body\nExample: {\"live\":false}",
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/workflows"
-    },
-    "UpdateNamespaceServiceBody": {
-      "description": "UpdateNamespaceServiceBody update namespace service body\nExample: {\"cmd\":\"\",\"image\":\"direktiv/request:v10\",\"minScale\":\"1\",\"size\":\"small\"}",
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/namespace_services"
-    },
     "UpdateServiceRequest": {
-      "description": "UpdateServiceRequest UpdateServiceRequest update service request",
+      "description": "UpdateServiceRequest update service request",
       "x-go-name": "updateServiceRequest",
       "x-go-package": "github.com/direktiv/direktiv/pkg/api"
-    },
-    "updateServiceRequest": {
-      "description": "UpdateServiceRequest UpdateServiceRequest UpdateServiceRequest update service request",
-      "x-go-name": "UpdateServiceRequest",
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/models"
     }
   },
   "securityDefinitions": {

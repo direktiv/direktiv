@@ -45,6 +45,16 @@ Direktiv Documentation can be found at https://docs.direktiv.io/
 
 ## All endpoints
 
+###  cloud_event_filter
+
+| Method  | URI     | Name   | Summary |
+|---------|---------|--------|---------|
+| PUT | /api/namespaces/{namespace}/eventfilter/{filtername} | [create cloudevent filter](#create-cloudevent-filter) | Creates new cloudEventFilter |
+| DELETE | /api/namespaces/{namespace}/broadcast/{filtername} | [delete cloudevent filter](#delete-cloudevent-filter) | Delete existing cloudEventFilter |
+| PATCH | /api/namespaces/{namespace}/eventfilter/{filtername} | [update cloudevent filter](#update-cloudevent-filter) | Update existing cloudEventFilter |
+  
+
+
 ###  directory
 
 | Method  | URI     | Name   | Summary |
@@ -152,6 +162,7 @@ Direktiv Documentation can be found at https://docs.direktiv.io/
 | Method  | URI     | Name   | Summary |
 |---------|---------|--------|---------|
 | POST | /api/namespaces/{namespace}/broadcast | [broadcast cloudevent](#broadcast-cloudevent) | Broadcast Cloud Event |
+| POST | /api/namespaces/{namespace}/broadcast/{filtername} | [broadcast cloudevent filter](#broadcast-cloudevent-filter) | Filter given cloud event and broadcast it |
 | POST | /api/jq | [jq playground](#jq-playground) | JQ Playground api to test jq queries |
 | POST | /api/namespaces/{namespace}/events/{event}/replay | [replay cloudevent](#replay-cloudevent) | Replay Cloud Event |
 | GET | /api/version | [version](#version) | Returns version information for servers in the cluster. |
@@ -186,7 +197,7 @@ Direktiv Documentation can be found at https://docs.direktiv.io/
 | DELETE | /api/namespaces/{namespace}/secrets/{secret} | [delete secret](#delete-secret) | Delete a Namespace Secret |
 | GET | /api/namespaces/{namespace}/secrets | [get secrets](#get-secrets) | Get List of Namespace Secrets |
 | GET | /api/namespaces/{namespace}/secrets/{folder} | [get secrets inside folder](#get-secrets-inside-folder) | Get List of Namespace nodes inside Folder |
-| PUT | /api/namespaces/overwrite/{namespace}/secrets/{secret} | [overwrite secret](#overwrite-secret) | Overwrite a Namespace Secret |
+| PATCH | /api/namespaces/{namespace}/secrets/{secret} | [overwrite and search secret](#overwrite-and-search-secret) | Overwrite a Namespace Secret or Search for a Secret by given Name. Set op query param for search function like /api/namespaces/{namespace}/secrets/{name}?op=name |
 | GET | /api/namespaces/search/{namespace}/secrets/{name} | [search secret](#search-secret) | Get List of Namespace nodes contains name |
   
 
@@ -344,6 +355,39 @@ Status: OK
 
 ###### <span id="broadcast-cloudevent-200-schema"></span> Schema
 
+### <span id="broadcast-cloudevent-filter"></span> Filter given cloud event and broadcast it (*broadcastCloudeventFilter*)
+
+```
+POST /api/namespaces/{namespace}/broadcast/{filtername}
+```
+
+Filter cloud event by given filtername and broadcast to a namespace.
+Cloud events posted to this api will filter cloud event by given filtername and be picked up by any workflows listening to the same event type on the namescape.
+The body of this request should follow the cloud event core specification defined at https://github.com/cloudevents/spec .
+
+
+#### Parameters
+
+| Name | Source | Type | Go type | Separator | Required | Default | Description |
+|------|--------|------|---------|-----------| :------: |---------|-------------|
+| filtername | `path` | string | `string` |  | ✓ |  | target filtername |
+| namespace | `path` | string | `string` |  | ✓ |  | target namespace |
+| cloudevent | `body` | [interface{}](#interface) | `interface{}` | | ✓ | | Cloud Event request to be sent. |
+
+#### All responses
+
+| Code | Status | Description | Has headers | Schema |
+|------|--------|-------------|:-----------:|--------|
+| [200](#broadcast-cloudevent-filter-200) | OK |  |  | [schema](#broadcast-cloudevent-filter-200-schema) |
+
+#### Responses
+
+
+##### <span id="broadcast-cloudevent-filter-200"></span> 200
+Status: OK
+
+###### <span id="broadcast-cloudevent-filter-200-schema"></span> Schema
+
 ### <span id="cancel-instance"></span> Cancel a Pending Instance (*cancelInstance*)
 
 ```
@@ -373,6 +417,38 @@ Cancel a currently pending instance.
 Status: OK
 
 ###### <span id="cancel-instance-200-schema"></span> Schema
+
+### <span id="create-cloudevent-filter"></span> Creates new cloudEventFilter (*createCloudeventFilter*)
+
+```
+PUT /api/namespaces/{namespace}/eventfilter/{filtername}
+```
+
+Creates new cloud event filter in target namespace
+The body of this request should be a compilable javascript code without function header.
+
+
+#### Parameters
+
+| Name | Source | Type | Go type | Separator | Required | Default | Description |
+|------|--------|------|---------|-----------| :------: |---------|-------------|
+| filtername | `path` | string | `string` |  | ✓ |  | new filtername |
+| namespace | `path` | string | `string` |  | ✓ |  | target namespace |
+| script | `body` | [interface{}](#interface) | `interface{}` | | ✓ | | compilable javascript code. |
+
+#### All responses
+
+| Code | Status | Description | Has headers | Schema |
+|------|--------|-------------|:-----------:|--------|
+| [200](#create-cloudevent-filter-200) | OK |  |  | [schema](#create-cloudevent-filter-200-schema) |
+
+#### Responses
+
+
+##### <span id="create-cloudevent-filter-200"></span> 200
+Status: OK
+
+###### <span id="create-cloudevent-filter-200-schema"></span> Schema
 
 ### <span id="create-directory"></span> Create a Directory (*createDirectory*)
 
@@ -709,6 +785,36 @@ an error has occurred
   
 
 [ErrorResponse](#error-response)
+
+### <span id="delete-cloudevent-filter"></span> Delete existing cloudEventFilter (*deleteCloudeventFilter*)
+
+```
+DELETE /api/namespaces/{namespace}/broadcast/{filtername}
+```
+
+Delete existing cloud event filter in target namespace
+
+
+#### Parameters
+
+| Name | Source | Type | Go type | Separator | Required | Default | Description |
+|------|--------|------|---------|-----------| :------: |---------|-------------|
+| filtername | `path` | string | `string` |  | ✓ |  | target filtername |
+| namespace | `path` | string | `string` |  | ✓ |  | target namespace |
+
+#### All responses
+
+| Code | Status | Description | Has headers | Schema |
+|------|--------|-------------|:-----------:|--------|
+| [200](#delete-cloudevent-filter-200) | OK |  |  | [schema](#delete-cloudevent-filter-200-schema) |
+
+#### Responses
+
+
+##### <span id="delete-cloudevent-filter-200"></span> 200
+Status: OK
+
+###### <span id="delete-cloudevent-filter-200-schema"></span> Schema
 
 ### <span id="delete-folder"></span> Delete a Namespace Folder (*deleteFolder*)
 
@@ -2343,13 +2449,13 @@ Status: OK
 
 ###### <span id="namespace-metrics-successful-200-schema"></span> Schema
 
-### <span id="overwrite-secret"></span> Overwrite a Namespace Secret (*overwriteSecret*)
+### <span id="overwrite-and-search-secret"></span> Overwrite a Namespace Secret or Search for a Secret by given Name. Set op query param for search function like /api/namespaces/{namespace}/secrets/{name}?op=name (*overwriteAndSearchSecret*)
 
 ```
-PUT /api/namespaces/overwrite/{namespace}/secrets/{secret}
+PATCH /api/namespaces/{namespace}/secrets/{secret}
 ```
 
-Overwrite a namespace secret.
+Overwrite a namespace secret, or search for a search secret which contains by given name
 
 
 #### Consumes
@@ -2361,31 +2467,31 @@ Overwrite a namespace secret.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | namespace | `path` | string | `string` |  | ✓ |  | target namespace |
 | secret | `path` | string | `string` |  | ✓ |  | target secret |
-| Secret Payload | `body` | string | `string` | | ✓ | | Payload that contains secret data. |
+| Secret Payload | `body` | string | `string` | | ✓ | | Payload that contains secret data, when using search functions its not necessary |
 
 #### All responses
 
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
-| [200](#overwrite-secret-200) | OK | namespace has been successfully overwritten |  | [schema](#overwrite-secret-200-schema) |
-| [default](#overwrite-secret-default) | | secret not found |  | [schema](#overwrite-secret-default-schema) |
+| [200](#overwrite-and-search-secret-200) | OK | namespace has been successfully overwritten |  | [schema](#overwrite-and-search-secret-200-schema) |
+| [default](#overwrite-and-search-secret-default) | | secret not found |  | [schema](#overwrite-and-search-secret-default-schema) |
 
 #### Responses
 
 
-##### <span id="overwrite-secret-200"></span> 200 - namespace has been successfully overwritten
+##### <span id="overwrite-and-search-secret-200"></span> 200 - namespace has been successfully overwritten
 Status: OK
 
-###### <span id="overwrite-secret-200-schema"></span> Schema
+###### <span id="overwrite-and-search-secret-200-schema"></span> Schema
    
   
 
 [OkBody](#ok-body)
 
-##### <span id="overwrite-secret-default"></span> Default Response
+##### <span id="overwrite-and-search-secret-default"></span> Default Response
 secret not found
 
-###### <span id="overwrite-secret-default-schema"></span> Schema
+###### <span id="overwrite-and-search-secret-default-schema"></span> Schema
 
   
 
@@ -2852,6 +2958,37 @@ Status: OK
 
 
 
+### <span id="update-cloudevent-filter"></span> Update existing cloudEventFilter (*updateCloudeventFilter*)
+
+```
+PATCH /api/namespaces/{namespace}/eventfilter/{filtername}
+```
+
+Update existing cloud event filter in target namespace
+
+
+#### Parameters
+
+| Name | Source | Type | Go type | Separator | Required | Default | Description |
+|------|--------|------|---------|-----------| :------: |---------|-------------|
+| filtername | `path` | string | `string` |  | ✓ |  | target filtername |
+| namespace | `path` | string | `string` |  | ✓ |  | target namespace |
+| script | `body` | [interface{}](#interface) | `interface{}` | | ✓ | | compilable javascript code. |
+
+#### All responses
+
+| Code | Status | Description | Has headers | Schema |
+|------|--------|-------------|:-----------:|--------|
+| [200](#update-cloudevent-filter-200) | OK |  |  | [schema](#update-cloudevent-filter-200-schema) |
+
+#### Responses
+
+
+##### <span id="update-cloudevent-filter-200"></span> 200
+Status: OK
+
+###### <span id="update-cloudevent-filter-200-schema"></span> Schema
+
 ### <span id="update-namespace-service"></span> Create Namespace Service Revision (*updateNamespaceService*)
 
 ```
@@ -3189,73 +3326,10 @@ Status: OK
 
 ## Models
 
-### <span id="create-namespace-service-body"></span> CreateNamespaceServiceBody
-
-
-> CreateNamespaceServiceBody create namespace service body
-
-**Example**
-```
-{"cmd":"","image":"direktiv/request:v12","minScale":"1","name":"fast-request","size":"small"}
-```
-  
-
-
-
-[interface{}](#interface)
-
-### <span id="create-registry-body"></span> CreateRegistryBody
-
-
-> CreateRegistryBody create registry body
-
-**Example**
-```
-{"data":"admin:8QwFLg%D$qg*","reg":"https://prod.customreg.io"}
-```
-  
-
-
-
-[interface{}](#interface)
-
-### <span id="delete-registry-body"></span> DeleteRegistryBody
-
-
-> DeleteRegistryBody delete registry body
-
-**Example**
-```
-{"data":"admin:8QwFLg%D$qg*","reg":"https://prod.customreg.io"}
-```
-  
-
-
-
-[interface{}](#interface)
-
 ### <span id="error-response"></span> ErrorResponse
 
 
-> ErrorResponse error response
   
-
-
-
-[interface{}](#interface)
-
-### <span id="jq-playground-body"></span> JqPlaygroundBody
-
-
-> JqPlaygroundBody jq playground body
-
-**Example**
-```
-{"data":"eyJhIjogMSwgImIiOiAyLCAiYyI6IDQsICJkIjogN30=","query":"map(select(. \u003e= 2))"}
-```
-  
-
-
 
 [interface{}](#interface)
 
@@ -3269,95 +3343,10 @@ Status: OK
 
 [interface{}](#interface)
 
-### <span id="set-namespace-config-body"></span> SetNamespaceConfigBody
-
-
-> SetNamespaceConfigBody set namespace config body
-
-**Example**
-```
-{"broadcast":{"directory.create":false,"directory.delete":false,"instance.failed":false,"instance.started":false,"instance.success":false,"instance.variable.create":false,"instance.variable.delete":false,"instance.variable.update":false,"namespace.variable.create":false,"namespace.variable.delete":false,"namespace.variable.update":false,"workflow.create":false,"workflow.delete":false,"workflow.update":false,"workflow.variable.create":false,"workflow.variable.delete":false,"workflow.variable.update":false}}
-```
-  
-
-
-
-[interface{}](#interface)
-
-### <span id="set-workflow-cloud-event-logs-body"></span> SetWorkflowCloudEventLogsBody
-
-
-> SetWorkflowCloudEventLogsBody set workflow cloud event logs body
-
-**Example**
-```
-{"logger":"mylog"}
-```
-  
-
-
-
-[interface{}](#interface)
-
-### <span id="test-registry-body"></span> TestRegistryBody
-
-
-> TestRegistryBody test registry body
-
-**Example**
-```
-{"token":"8QwFLg%D$qg*","url":"https://prod.customreg.io","username":"admin"}
-```
-  
-
-
-
-[interface{}](#interface)
-
-### <span id="toggle-workflow-body"></span> ToggleWorkflowBody
-
-
-> ToggleWorkflowBody toggle workflow body
-
-**Example**
-```
-{"live":false}
-```
-  
-
-
-
-[interface{}](#interface)
-
-### <span id="update-namespace-service-body"></span> UpdateNamespaceServiceBody
-
-
-> UpdateNamespaceServiceBody update namespace service body
-
-**Example**
-```
-{"cmd":"","image":"direktiv/request:v10","minScale":"1","size":"small"}
-```
-  
-
-
-
-[interface{}](#interface)
-
-### <span id="update-service-request"></span> UpdateServiceRequest
-
-
-> UpdateServiceRequest UpdateServiceRequest UpdateServiceRequest update service request
-  
-
-
-
-[interface{}](#interface)
-
 ### <span id="update-service-request"></span> updateServiceRequest
 
 
-> UpdateServiceRequest UpdateServiceRequest update service request
+> UpdateServiceRequest update service request
   
 
 
