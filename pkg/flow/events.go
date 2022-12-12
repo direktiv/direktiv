@@ -1159,7 +1159,7 @@ func (flow *flow) CreateCloudEventFilter(ctx context.Context, in *grpc.CreateClo
 	//compiling js code is needed
 	_, err := goja.Compile("filter", fullScript, false)
 	if err != nil {
-		err = status.Error(codes.FailedPrecondition, fmt.Sprintf(err.Error())) // precondition -> executable js script
+		err = status.Error(codes.FailedPrecondition, err.Error()) // precondition -> executable js script
 		return &resp, err
 	}
 
