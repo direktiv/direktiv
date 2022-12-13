@@ -4581,7 +4581,7 @@ func (h *flowHandler) BroadcastCloudeventFilter(w http.ResponseWriter, r *http.R
 		rsp, err := h.client.ApplyCloudEventFilter(ctx, inFilter)
 		if err != nil {
 			h.logger.Errorf("Failed to apply CloudEvent filter: %v.", err)
-			continue
+			respond(w, rsp, err)
 		}
 
 		if string(rsp.GetEvent()) == "null" {
@@ -4593,11 +4593,8 @@ func (h *flowHandler) BroadcastCloudeventFilter(w http.ResponseWriter, r *http.R
 			Cloudevent: rsp.GetEvent(),
 		}
 
-		_, err = h.client.BroadcastCloudevent(ctx, in)
-		if err != nil {
-			h.logger.Errorf("Failed to broadcast CloudEvent: %v.", err)
-			continue
-		}
+		resp, err := h.client.BroadcastCloudevent(ctx, in)
+		respond(w, resp, err)
 
 	}
 
