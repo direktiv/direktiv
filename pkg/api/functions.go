@@ -900,6 +900,7 @@ func (h *functionHandler) listNamespaceServicesSSE(w http.ResponseWriter, r *htt
 	annotations := make(map[string]string)
 	annotations[functions.ServiceHeaderNamespaceID] = resp.Namespace.GetOid()
 	annotations[functions.ServiceHeaderScope] = functions.PrefixNamespace
+
 	h.listServicesSSE(annotations, w, r)
 
 }
@@ -1643,14 +1644,14 @@ func (h *functionHandler) listNamespacePods(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	ns := resp.Namespace.GetOid()
+	ns := resp.Namespace.GetName()
 	svn := mux.Vars(r)["svn"]
 
 	annotations := make(map[string]string)
 
 	svn, _, _ = functions.GenerateServiceName(&grpcfunc.BaseInfo{
-		Namespace: &ns,
-		Name:      &svn,
+		NamespaceName: &ns,
+		Name:          &svn,
 	})
 
 	annotations[functions.ServiceKnativeHeaderRevision] = fmt.Sprintf("%s-%s", svn, mux.Vars(r)["rev"])
@@ -1714,6 +1715,7 @@ func (h *functionHandler) listNamespacePodsSSE(w http.ResponseWriter, r *http.Re
 	})
 
 	rev := fmt.Sprintf("%s-%s", svn, mux.Vars(r)["rev"])
+
 	h.listPodsSSE(svn, rev, w, r)
 }
 

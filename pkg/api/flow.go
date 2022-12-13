@@ -817,8 +817,8 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	// swagger:operation GET /api/namespaces/{namespace}/secrets Secrets getSecrets
 	// ---
 	// description: |
-	//   Gets the list of namespace secrets.
-	// summary: Get List of Namespace Secrets
+	//   Gets the list of namespace secrets. Also can use for search by setting query param op=search
+	// summary: Get List of Namespace Secrets or Search for Namespace Secrets by given name
 	// parameters:
 	// - in: path
 	//   name: namespace
@@ -865,7 +865,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     description: an error has occurred
 	//     schema:
 	//       "$ref": '#/definitions/ErrorResponse'
-	handlerPair(r, RN_ListSecrets, "/namespaces/{ns}/secrets/{folder:.*[/]$}", h.Secrets, h.SecretsSSE)
+	handlerPair(r, RN_ListSecrets, "/namespaces/{ns}/secrets/{folder:.*}", h.Secrets, h.SecretsSSE)
 
 	// swagger:operation PUT /api/namespaces/{namespace}/secrets/{secret} Secrets createSecret
 	// ---
@@ -992,10 +992,10 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//       "$ref": '#/definitions/ErrorResponse'
 	r.HandleFunc("/namespaces/{ns}/secrets/{folder:.*[/]$}", h.CreateSecretsFolder).Name(RN_CreateSecretsFolder).Methods(http.MethodPut)
 
-	// swagger:operation PUT /api/namespaces/overwrite/{namespace}/secrets/{secret} Secrets overwriteSecret
+	// swagger:operation PATCH /api/namespaces/{namespace}/secrets/{secret} Secrets overwriteAndSearchSecret
 	// ---
 	// description: |
-	//   Overwrite a namespace secret.
+	//   Overwrite a namespace secret
 	// summary: Overwrite a Namespace Secret
 	// consumes:
 	// - text/plain
@@ -1013,7 +1013,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	// - in: body
 	//   name: Secret Payload
 	//   required: true
-	//   description: "Payload that contains secret data."
+	//   description: "Payload that contains secret data"
 	//   schema:
 	//     example: 7F8E7B0124ACB2BD20B383DE0756C7C0
 	//     type: string
@@ -1028,36 +1028,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     description: secret not found
 	//     schema:
 	//       "$ref": '#/definitions/ErrorResponse'
-	r.HandleFunc("/namespaces/{ns}/overwrite/secrets/{secret:.*[^/]$}", h.OverwriteSecret).Name(RN_OverwriteSecret).Methods(http.MethodPut)
-
-	// swagger:operation GET /api/namespaces/search/{namespace}/secrets/{name} Secrets searchSecret
-	// ---
-	// description: |
-	//    secrets and folders which including given name.
-	// summary: Get List of Namespace nodes contains name
-	// parameters:
-	// - in: path
-	//   name: namespace
-	//   type: string
-	//   required: true
-	//   description: 'target namespace'
-	// - in: path
-	//   name: name
-	//   type: string
-	//   required: true
-	//   description: 'target name'
-	// responses:
-	//   200:
-	//     produces: application/json
-	//     description: "successfully got namespace nodes"
-	//     schema:
-	//       "$ref": '#/definitions/OkBody'
-	//   default:
-	//     produces: application/json
-	//     description: an error has occurred
-	//     schema:
-	//       "$ref": '#/definitions/ErrorResponse'
-	r.HandleFunc("/namespaces/{ns}/search/secrets/{name:.*}", h.SearchSecret).Name(RN_SearchSecret).Methods(http.MethodGet)
+	r.HandleFunc("/namespaces/{ns}/secrets/{secret:.*[^/]$}", h.OverwriteSecret).Name(RN_OverwriteSecret).Methods(http.MethodPatch)
 
 	// swagger:operation GET /api/namespaces/{namespace}/instances/{instance} Instances getInstance
 	// ---
@@ -1317,8 +1288,39 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//   '200':
 	r.HandleFunc("/namespaces/{ns}/eventfilter/{filter}", h.UpdateBroadcastCloudeventFilter).Name(RN_UpdateNamespaceEventFilter).Methods(http.MethodPatch)
 
+	// swagger:operation GET /api/namespaces/{namespace}/eventfilter CloudEventFilter listCloudeventFilter
+	// ---
+	// description: |
+	//   list all existing cloud event filter in target namespace
+	// summary: List existing cloudEventFilters
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// responses:
+	//   '200':
 	r.HandleFunc("/namespaces/{ns}/eventfilter", h.GetCloudeventFilterList).Name(RN_ListNamespaceEventFilters).Methods(http.MethodGet)
 
+	// swagger:operation GET /api/namespaces/{namespace}/eventfilter/{filtername} CloudEventFilter getCloudEventFilter
+	// ---
+	// description: |
+	//   Get specific cloud event filter by given name in target namespace
+	// summary: Get specific cloudEventFilter
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: filtername
+	//   type: string
+	//   required: true
+	//   description: 'target filtername'
+	// responses:
+	//   '200':
 	r.HandleFunc("/namespaces/{ns}/eventfilter/{filter}", h.GetCloudEventFilter).Name(RN_GetNamespaceEventFilter).Methods(http.MethodGet)
 
 	// swagger:operation GET /api/namespaces/{namespace}/tree/{workflow}?op=logs Logs getWorkflowLogs
@@ -3724,21 +3726,40 @@ func (h *flowHandler) Secrets(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
 	folder := mux.Vars(r)["folder"]
+	op := r.FormValue("op")
 
-	p, err := pagination(r)
-	if err != nil {
-		respond(w, nil, err)
-		return
+	if op == "search" {
+		p, err := pagination(r)
+		if err != nil {
+			respond(w, nil, err)
+			return
+		}
+
+		in := &grpc.SearchSecretRequest{
+			Namespace:  namespace,
+			Pagination: p,
+			Key:        folder,
+		}
+
+		resp, err := h.client.SearchSecret(ctx, in)
+		respond(w, resp, err)
+	} else {
+
+		p, err := pagination(r)
+		if err != nil {
+			respond(w, nil, err)
+			return
+		}
+
+		in := &grpc.SecretsRequest{
+			Namespace:  namespace,
+			Pagination: p,
+			Key:        folder,
+		}
+
+		resp, err := h.client.Secrets(ctx, in)
+		respond(w, resp, err)
 	}
-
-	in := &grpc.SecretsRequest{
-		Namespace:  namespace,
-		Pagination: p,
-		Key:        folder,
-	}
-
-	resp, err := h.client.Secrets(ctx, in)
-	respond(w, resp, err)
 
 }
 
@@ -3802,31 +3823,6 @@ func (h *flowHandler) SecretsSSE(w http.ResponseWriter, r *http.Request) {
 	}()
 
 	sse(w, ch)
-
-}
-
-func (h *flowHandler) SearchSecret(w http.ResponseWriter, r *http.Request) {
-
-	h.logger.Debugf("Handling request: %s", this())
-
-	ctx := r.Context()
-	namespace := mux.Vars(r)["ns"]
-	name := mux.Vars(r)["name"]
-
-	p, err := pagination(r)
-	if err != nil {
-		respond(w, nil, err)
-		return
-	}
-
-	in := &grpc.SearchSecretRequest{
-		Namespace:  namespace,
-		Pagination: p,
-		Key:        name,
-	}
-
-	resp, err := h.client.SearchSecret(ctx, in)
-	respond(w, resp, err)
 
 }
 
@@ -4581,7 +4577,7 @@ func (h *flowHandler) BroadcastCloudeventFilter(w http.ResponseWriter, r *http.R
 		rsp, err := h.client.ApplyCloudEventFilter(ctx, inFilter)
 		if err != nil {
 			h.logger.Errorf("Failed to apply CloudEvent filter: %v.", err)
-			continue
+			respond(w, rsp, err)
 		}
 
 		if string(rsp.GetEvent()) == "null" {
@@ -4593,11 +4589,8 @@ func (h *flowHandler) BroadcastCloudeventFilter(w http.ResponseWriter, r *http.R
 			Cloudevent: rsp.GetEvent(),
 		}
 
-		_, err = h.client.BroadcastCloudevent(ctx, in)
-		if err != nil {
-			h.logger.Errorf("Failed to broadcast CloudEvent: %v.", err)
-			continue
-		}
+		resp, err := h.client.BroadcastCloudevent(ctx, in)
+		respond(w, resp, err)
 
 	}
 
