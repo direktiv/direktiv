@@ -66,7 +66,7 @@ const (
 
 	RN_GetServerLogs   = "getServerLogs"
 	RN_GetWorkflowLogs = "getWorkflowLogs"
-	// namespace set LEFTOVER
+
 	RN_DeleteNamespace = "deleteNamespace"
 
 	// RN_ListServices = "listServices"
@@ -87,12 +87,10 @@ const (
 	RN_DeleteWorkflowServices = "deleteWorkflowService"
 	RN_ListWorkflowPods       = "listWorkflowPods"
 	RN_PodLogs                = "podLogs"
-	RN_EventListeners         = "eventListeners"
-	RN_EventHistory           = "eventHistory"
-	RN_EditWorkflowRouter     = "editWorkflowRouter"
-	RN_ValidateRef            = "validateRef"
-	RN_ValidateRouter         = "validateRouter"
-	RN_NamespaceEvent         = "namespaceEvent"
+
+	RN_EditWorkflowRouter = "editWorkflowRouter"
+	RN_ValidateRef        = "validateRef"
+	RN_ValidateRouter     = "validateRouter"
 
 	// services get
 	RN_ListNamespaceServices = "listNamespacesServices"
@@ -104,6 +102,11 @@ const (
 	RN_DeleteNamespaceServices        = "deleteNamespaceService"
 	RN_UpdateNamespaceService         = "updateNamespaceService"
 	RN_DeleteNamespaceServiceRevision = "deleteNamespaceServiceRevision"
+
+	// events
+	RN_EventListeners = "eventListeners"
+	RN_EventHistory   = "eventHistory"
+	RN_NamespaceEvent = "namespaceEvent"
 
 	// filter get
 	RN_NamespaceEventFilter      = "namespaceEventFilter"
