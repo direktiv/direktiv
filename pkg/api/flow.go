@@ -817,8 +817,8 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	// swagger:operation GET /api/namespaces/{namespace}/secrets Secrets getSecrets
 	// ---
 	// description: |
-	//   Gets the list of namespace secrets.
-	// summary: Get List of Namespace Secrets
+	//   Gets the list of namespace secrets. Also can use for search by setting query param op=search
+	// summary: Get List of Namespace Secrets or Search for Namespace Secrets by given name
 	// parameters:
 	// - in: path
 	//   name: namespace
@@ -865,7 +865,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     description: an error has occurred
 	//     schema:
 	//       "$ref": '#/definitions/ErrorResponse'
-	handlerPair(r, RN_ListSecrets, "/namespaces/{ns}/secrets/{folder:.*[/]$}", h.Secrets, h.SecretsSSE)
+	handlerPair(r, RN_ListSecrets, "/namespaces/{ns}/secrets/{folder:.*}", h.Secrets, h.SecretsSSE)
 
 	// swagger:operation PUT /api/namespaces/{namespace}/secrets/{secret} Secrets createSecret
 	// ---
@@ -992,11 +992,11 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//       "$ref": '#/definitions/ErrorResponse'
 	r.HandleFunc("/namespaces/{ns}/secrets/{folder:.*[/]$}", h.CreateSecretsFolder).Name(RN_CreateSecretsFolder).Methods(http.MethodPut)
 
-	// swagger:operation PATCH /api/namespaces/{namespace}/secrets/{secret} Secrets overwriteAndSearchSecret
+	// swagger:operation POST /api/namespaces/{namespace}/secrets/{secret} Secrets overwriteAndSearchSecret
 	// ---
 	// description: |
-	//   Overwrite a namespace secret, or search for a search secret which contains by given name
-	// summary: Overwrite a Namespace Secret or Search for a Secret by given Name. Set op query param for search function like /api/namespaces/{namespace}/secrets/{name}?op=name
+	//   Overwrite a namespace secret
+	// summary: Overwrite a Namespace Secret
 	// consumes:
 	// - text/plain
 	// parameters:
@@ -1013,7 +1013,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	// - in: body
 	//   name: Secret Payload
 	//   required: true
-	//   description: "Payload that contains secret data, when using search functions its not necessary"
+	//   description: "Payload that contains secret data"
 	//   schema:
 	//     example: 7F8E7B0124ACB2BD20B383DE0756C7C0
 	//     type: string
@@ -1028,7 +1028,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     description: secret not found
 	//     schema:
 	//       "$ref": '#/definitions/ErrorResponse'
-	r.HandleFunc("/namespaces/{ns}/secrets/{secret:.*}", h.OverwriteSecret).Name(RN_OverwriteSecret).Methods(http.MethodPatch)
+	r.HandleFunc("/namespaces/{ns}/secrets/{secret:.*[^/]$}", h.OverwriteSecret).Name(RN_OverwriteSecret).Methods(http.MethodPost)
 
 	// swagger:operation GET /api/namespaces/{namespace}/instances/{instance} Instances getInstance
 	// ---
@@ -3695,21 +3695,40 @@ func (h *flowHandler) Secrets(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
 	folder := mux.Vars(r)["folder"]
+	op := r.FormValue("op")
 
-	p, err := pagination(r)
-	if err != nil {
-		respond(w, nil, err)
-		return
+	if op == "search" {
+		p, err := pagination(r)
+		if err != nil {
+			respond(w, nil, err)
+			return
+		}
+
+		in := &grpc.SearchSecretRequest{
+			Namespace:  namespace,
+			Pagination: p,
+			Key:        folder,
+		}
+
+		resp, err := h.client.SearchSecret(ctx, in)
+		respond(w, resp, err)
+	} else {
+
+		p, err := pagination(r)
+		if err != nil {
+			respond(w, nil, err)
+			return
+		}
+
+		in := &grpc.SecretsRequest{
+			Namespace:  namespace,
+			Pagination: p,
+			Key:        folder,
+		}
+
+		resp, err := h.client.Secrets(ctx, in)
+		respond(w, resp, err)
 	}
-
-	in := &grpc.SecretsRequest{
-		Namespace:  namespace,
-		Pagination: p,
-		Key:        folder,
-	}
-
-	resp, err := h.client.Secrets(ctx, in)
-	respond(w, resp, err)
 
 }
 
@@ -3808,40 +3827,20 @@ func (h *flowHandler) OverwriteSecret(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
 	secret := mux.Vars(r)["secret"]
-	op := r.FormValue("op")
 
-	if op == "search" {
-		p, err := pagination(r)
-		if err != nil {
-			respond(w, nil, err)
-			return
-		}
-
-		in := &grpc.SearchSecretRequest{
-			Namespace:  namespace,
-			Pagination: p,
-			Key:        secret,
-		}
-
-		resp, err := h.client.SearchSecret(ctx, in)
-		respond(w, resp, err)
-
-	} else {
-
-		data, err := loadRawBody(r)
-		if err != nil {
-			respond(w, nil, err)
-			return
-		}
-
-		in := new(grpc.UpdateSecretRequest)
-		in.Namespace = namespace
-		in.Key = secret
-		in.Data = data
-
-		resp, err := h.client.UpdateSecret(ctx, in)
-		respond(w, resp, err)
+	data, err := loadRawBody(r)
+	if err != nil {
+		respond(w, nil, err)
+		return
 	}
+
+	in := new(grpc.UpdateSecretRequest)
+	in.Namespace = namespace
+	in.Key = secret
+	in.Data = data
+
+	resp, err := h.client.UpdateSecret(ctx, in)
+	respond(w, resp, err)
 
 }
 
