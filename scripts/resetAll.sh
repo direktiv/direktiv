@@ -26,6 +26,7 @@ certDir=$(exe='step certificate create root.linkerd.cluster.local ca.crt ca.key 
 echo $(pwd));
 
 helm repo add linkerd https://helm.linkerd.io/stable;
+helm repo add direktiv https://chart.direktiv.io
 
 helm install linkerd-crds linkerd/linkerd-crds -n linkerd --create-namespace 
 
