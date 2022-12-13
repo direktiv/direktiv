@@ -992,7 +992,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//       "$ref": '#/definitions/ErrorResponse'
 	r.HandleFunc("/namespaces/{ns}/secrets/{folder:.*[/]$}", h.CreateSecretsFolder).Name(RN_CreateSecretsFolder).Methods(http.MethodPut)
 
-	// swagger:operation POST /api/namespaces/{namespace}/secrets/{secret} Secrets overwriteAndSearchSecret
+	// swagger:operation PATCH /api/namespaces/{namespace}/secrets/{secret} Secrets overwriteAndSearchSecret
 	// ---
 	// description: |
 	//   Overwrite a namespace secret
@@ -1028,7 +1028,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     description: secret not found
 	//     schema:
 	//       "$ref": '#/definitions/ErrorResponse'
-	r.HandleFunc("/namespaces/{ns}/secrets/{secret:.*[^/]$}", h.OverwriteSecret).Name(RN_OverwriteSecret).Methods(http.MethodPost)
+	r.HandleFunc("/namespaces/{ns}/secrets/{secret:.*[^/]$}", h.OverwriteSecret).Name(RN_OverwriteSecret).Methods(http.MethodPatch)
 
 	// swagger:operation GET /api/namespaces/{namespace}/instances/{instance} Instances getInstance
 	// ---
