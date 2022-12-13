@@ -146,10 +146,12 @@ func (is *functionsServer) StoreRegistry(ctx context.Context, in *igrpc.StoreReg
 
 	err = kubernetesDeleteRegistry(ctx, in.GetName(), in.GetNamespace())
 	if err != nil {
-		return &empty, err
+		// delete the old registry is just a safety measure
+		logger.Debugf("ignoring error")
 	}
 
 	sa := prepareNewRegistrySecret(secretName, in.GetName(), auth)
+
 	sa.Labels[annotationNamespace] = in.GetNamespace()
 	sa.Labels[annotationRegistryTypeKey] = annotationRegistryTypeNamespaceValue
 
