@@ -29,6 +29,7 @@ var (
 	Type           string
 	Id             string
 	Specversion    string
+	output         string
 
 	maxSize int64 = 1073741824
 )
@@ -44,12 +45,18 @@ var (
 func main() {
 
 	// Read Config
-	setCmd.AddCommand(setWritableCmd)
-	setCmd.AddCommand(setReadonlyCmd)
-	rootCmd.AddCommand(execCmd)
-	rootCmd.AddCommand(pushCmd)
 	rootCmd.AddCommand(setCmd)
-	rootCmd.AddCommand(eventCmd)
+	rootCmd.AddCommand(workflowCmd)
+	rootCmd.AddCommand(eventsCmd)
+	workflowCmd.AddCommand(setWritableCmd)
+	workflowCmd.AddCommand(setReadonlyCmd)
+	workflowCmd.AddCommand(pushCmd)
+	workflowCmd.AddCommand(execCmd)
+	eventsCmd.AddCommand(sendEventCmd)
+	eventsCmd.AddCommand(setFilterCmd)
+	eventsCmd.AddCommand(deleteFilterCmd)
+	eventsCmd.AddCommand(getFilterCmd)
+	eventsCmd.AddCommand(listFilterCmd)
 
 	rootCmd.PersistentFlags().StringP("profile", "P", "", "Select the named profile from the loaded multi-profile configuration file.")
 	rootCmd.PersistentFlags().StringP("directory", "C", "", "Change to this directory before evaluating any paths or searching for a configuration file.")
@@ -66,10 +73,16 @@ func main() {
 
 	execCmd.Flags().StringVar(&inputType, "input-type", "application/json", "Content Type of input data")
 
-	eventCmd.PersistentFlags().StringVar(&Source, "source", "", "Context in which event happen")
-	eventCmd.PersistentFlags().StringVar(&Type, "type", "", "Type of event")
-	eventCmd.PersistentFlags().StringVar(&Id, "id", "", "Event id ")
-	eventCmd.PersistentFlags().StringVar(&Specversion, "specversion", "", "The version of the CloudEvents specification which the event uses")
+	sendEventCmd.Flags().StringVar(&Source, "source", "", "Context in which event happen")
+	sendEventCmd.Flags().StringVar(&Type, "type", "", "Type of event")
+	sendEventCmd.Flags().StringVar(&Id, "id", "", "Event id ")
+	sendEventCmd.Flags().StringVar(&Specversion, "specversion", "", "The version of the CloudEvents specification which the event uses")
+	sendEventCmd.Flags().String("endpoint", "", "Custom endpoint for filtered CloudEvents.")
+
+	getFilterCmd.Flags().StringVar(&output, "output", "", "output type, by default human readable")
+	listFilterCmd.Flags().StringVar(&output, "output", "", "output type, by default human readable")
+
+	setFilterCmd.PersistentFlags().BoolP("force", "f", false, "Update if it already exists.")
 
 	err := viper.BindPFlags(rootCmd.PersistentFlags())
 	if err != nil {
@@ -607,44 +620,178 @@ Will update the helloworld workflow and set the remote workflow variable 'data.j
 	},
 }
 
-var eventCmd = &cobra.Command{
-	Use:   "event EVENT_PATH",
-	Short: "Remotely trigger direktiv event with local files",
-	Long: `Remotely trigger direktiv event with local files. This process will trigger and create the given Event when its not already existing.
+var workflowCmd = &cobra.Command{
+	Use:   "workflows",
+	Short: "Workflow-related commands.",
+}
 
-EXAMPLE: direktiv-sync event greeting.yaml 
-`,
-	Args: cobra.ExactArgs(1),
+var sendEventCmd = &cobra.Command{
+	Use:   "send PATH",
+	Short: "Remotely trigger direktiv event with local files",
+	Args:  cobra.ExactArgs(1),
 	PreRun: func(cmd *cobra.Command, args []string) {
 		cmdPrepareEvent(args[0])
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 
-		localVars, err := getLocalWorkflowVariables(localAbsPath)
-		if err != nil {
-			log.Fatalf("failed to get local variable files: %v\n", err)
-		}
-		if len(localVars) > 0 {
-			cmd.PrintErrf("found %v local variables to push to remote\n", len(localVars))
-		}
-
-		// Set Remote Vars
-		for _, v := range localVars {
-			varName := filepath.ToSlash(strings.TrimPrefix(v, localAbsPath+"."))
-			cmd.PrintErrf("updating remote workflow variable: '%s'\n", varName)
-			err = setRemoteWorkflowVariable(urlWorkflow, varName, v)
-			if err != nil {
-				log.Fatalf("Failed to set remote variable file: %v\n", err)
-			}
-		}
-
 		urlExecuteEvent := fmt.Sprintf("%s/broadcast", urlPrefix)
+
+		filter, err := cmd.Flags().GetString("endpoint")
+		if err != nil {
+			panic(err)
+		}
+
+		if filter != "" {
+			urlExecuteEvent += "/" + strings.TrimPrefix(filter, "/")
+		}
+
 		event, err := executeEvent(urlExecuteEvent)
 		if err != nil {
 			log.Fatalf("failed to trigger event: %s %v\n", event, err)
 		}
 
 		cmd.PrintErrln("successfully triggered event: " + event)
+
+	},
+}
+
+var eventsCmd = &cobra.Command{
+	Use:   "events",
+	Short: "Event-related commands.",
+}
+
+var setFilterCmd = &cobra.Command{
+	Use:   "set-filter NAME SCRIPT",
+	Short: "Define an event filter.",
+	Args:  cobra.ExactArgs(2),
+	PreRun: func(cmd *cobra.Command, args []string) {
+		cmdPrepareEvent(args[1])
+	},
+	Run: func(cmd *cobra.Command, args []string) {
+
+		filterName := args[0]
+
+		// Read input data from flag file
+		inputData, err := safeLoadFile(localAbsPath)
+		if err != nil {
+			log.Fatalf("Failed to load input file: %v", err)
+		}
+
+		// If inputData is empty attempt to read from stdin
+		if inputData.Len() == 0 {
+			inputData, err = safeLoadStdIn()
+			if err != nil {
+				log.Fatalf("Failed to load stdin: %v", err)
+			}
+		}
+
+		force, err := cmd.Flags().GetBool("force")
+		if err != nil {
+			panic(err)
+		}
+
+		err = executeCreateCloudEventFilter(filterName, inputData, force)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		cmd.PrintErrln("successfully created cloud event filter: " + filterName)
+
+	},
+}
+
+var deleteFilterCmd = &cobra.Command{
+	Use:   "delete-filter NAME",
+	Short: "Delete an event filter.",
+	Args:  cobra.ExactArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+
+		filterName := args[0]
+
+		err := executeDeleteCloudEventFilter(filterName)
+		if err != nil {
+			log.Fatalf("error: %v\n", err)
+		}
+
+		cmd.PrintErrln("successfully deleted cloud event filter: " + filterName)
+
+	},
+}
+
+type getFilterResp struct {
+	Filtername string `json:"filtername"`
+	JsCode     string `json:"jsCode"`
+}
+
+var getFilterCmd = &cobra.Command{
+	Use:   "get-filter NAME",
+	Short: "Get an event filter.",
+	Args:  cobra.ExactArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+
+		filterName := args[0]
+
+		resp, err := executeGetCloudEventFilter(filterName)
+		if err != nil {
+			log.Fatalf("error: %v\n", err)
+		}
+
+		if output == "json" {
+
+			cmd.PrintErrln(string(resp))
+
+		} else {
+
+			var eventfilter getFilterResp
+			err = json.Unmarshal(resp, &eventfilter)
+			if err != nil {
+				log.Fatalf("error: %v\n", err)
+			}
+
+			cmd.PrintErrln("filtername:", eventfilter.Filtername)
+			cmd.PrintErrln("script: \n", eventfilter.JsCode)
+
+		}
+
+	},
+}
+
+type listFiltersResp struct {
+	EventFilter []struct {
+		Name string `json:"name"`
+	} `json:"eventFilter"`
+}
+
+var listFilterCmd = &cobra.Command{
+	Use:   "list-filters",
+	Short: "List all event filters in target namespace.",
+	Args:  cobra.ExactArgs(0),
+	Run: func(cmd *cobra.Command, args []string) {
+
+		resp, err := executeListCloudEventFilter()
+		if err != nil {
+			log.Fatalf("error: %v\n", err)
+		}
+
+		if err != nil {
+			log.Fatalf("error: %v\n", err)
+		}
+
+		if output == "json" {
+
+			cmd.PrintErrln(string(resp))
+
+		} else {
+			var eventfilter listFiltersResp
+			err = json.Unmarshal(resp, &eventfilter)
+			if err != nil {
+				log.Fatalf("error: %v\n", err)
+			}
+
+			for _, name := range eventfilter.EventFilter {
+				cmd.PrintErrln(name.Name)
+			}
+		}
 
 	},
 }
