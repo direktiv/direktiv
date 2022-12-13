@@ -1288,8 +1288,39 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//   '200':
 	r.HandleFunc("/namespaces/{ns}/eventfilter/{filter}", h.UpdateBroadcastCloudeventFilter).Name(RN_UpdateNamespaceEventFilter).Methods(http.MethodPatch)
 
+	// swagger:operation GET /api/namespaces/{namespace}/eventfilter CloudEventFilter listCloudeventFilter
+	// ---
+	// description: |
+	//   list all existing cloud event filter in target namespace
+	// summary: List existing cloudEventFilters
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// responses:
+	//   '200':
 	r.HandleFunc("/namespaces/{ns}/eventfilter", h.GetCloudeventFilterList).Name(RN_ListNamespaceEventFilters).Methods(http.MethodGet)
 
+	// swagger:operation GET /api/namespaces/{namespace}/eventfilter/{filtername} CloudEventFilter getCloudEventFilter
+	// ---
+	// description: |
+	//   Get specific cloud event filter by given name in target namespace
+	// summary: Get specific cloudEventFilter
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: filtername
+	//   type: string
+	//   required: true
+	//   description: 'target filtername'
+	// responses:
+	//   '200':
 	r.HandleFunc("/namespaces/{ns}/eventfilter/{filter}", h.GetCloudEventFilter).Name(RN_GetNamespaceEventFilter).Methods(http.MethodGet)
 
 	// swagger:operation GET /api/namespaces/{namespace}/tree/{workflow}?op=logs Logs getWorkflowLogs

@@ -1001,46 +1001,6 @@
         }
       }
     },
-    "/api/namespaces/search/{namespace}/secrets/{name}": {
-      "get": {
-        "description": "secrets and folders which including given name.\n",
-        "tags": [
-          "Secrets"
-        ],
-        "summary": "Get List of Namespace nodes contains name",
-        "operationId": "searchSecret",
-        "parameters": [
-          {
-            "type": "string",
-            "description": "target namespace",
-            "name": "namespace",
-            "in": "path",
-            "required": true
-          },
-          {
-            "type": "string",
-            "description": "target name",
-            "name": "name",
-            "in": "path",
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "successfully got namespace nodes",
-            "schema": {
-              "$ref": "#/definitions/OkBody"
-            }
-          },
-          "default": {
-            "description": "an error has occurred",
-            "schema": {
-              "$ref": "#/definitions/ErrorResponse"
-            }
-          }
-        }
-      }
-    },
     "/api/namespaces/{namespace}": {
       "put": {
         "description": "Creates a new namespace.\n",
@@ -1318,7 +1278,60 @@
         }
       }
     },
+    "/api/namespaces/{namespace}/eventfilter": {
+      "get": {
+        "description": "list all existing cloud event filter in target namespace\n",
+        "tags": [
+          "CloudEventFilter"
+        ],
+        "summary": "List existing cloudEventFilters",
+        "operationId": "listCloudeventFilter",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
     "/api/namespaces/{namespace}/eventfilter/{filtername}": {
+      "get": {
+        "description": "Get specific cloud event filter by given name in target namespace\n",
+        "tags": [
+          "CloudEventFilter"
+        ],
+        "summary": "Get specific cloudEventFilter",
+        "operationId": "getCloudEventFilter",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "target filtername",
+            "name": "filtername",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      },
       "put": {
         "description": "Creates new cloud event filter in target namespace\nThe body of this request should be a compilable javascript code without function header.\n",
         "tags": [
@@ -2051,11 +2064,11 @@
     },
     "/api/namespaces/{namespace}/secrets": {
       "get": {
-        "description": "Gets the list of namespace secrets.\n",
+        "description": "Gets the list of namespace secrets. Also can use for search by setting query param op=search\n",
         "tags": [
           "Secrets"
         ],
-        "summary": "Get List of Namespace Secrets",
+        "summary": "Get List of Namespace Secrets or Search for Namespace Secrets by given name",
         "operationId": "getSecrets",
         "parameters": [
           {
@@ -2289,14 +2302,14 @@
         }
       },
       "patch": {
-        "description": "Overwrite a namespace secret, or search for a search secret which contains by given name\n",
+        "description": "Overwrite a namespace secret\n",
         "consumes": [
           "text/plain"
         ],
         "tags": [
           "Secrets"
         ],
-        "summary": "Overwrite a Namespace Secret or Search for a Secret by given Name. Set op query param for search function like /api/namespaces/{namespace}/secrets/{name}?op=name",
+        "summary": "Overwrite a Namespace Secret",
         "operationId": "overwriteAndSearchSecret",
         "parameters": [
           {
@@ -2314,7 +2327,7 @@
             "required": true
           },
           {
-            "description": "Payload that contains secret data, when using search functions its not necessary",
+            "description": "Payload that contains secret data",
             "name": "Secret Payload",
             "in": "body",
             "required": true,

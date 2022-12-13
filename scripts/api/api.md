@@ -51,6 +51,8 @@ Direktiv Documentation can be found at https://docs.direktiv.io/
 |---------|---------|--------|---------|
 | PUT | /api/namespaces/{namespace}/eventfilter/{filtername} | [create cloudevent filter](#create-cloudevent-filter) | Creates new cloudEventFilter |
 | DELETE | /api/namespaces/{namespace}/broadcast/{filtername} | [delete cloudevent filter](#delete-cloudevent-filter) | Delete existing cloudEventFilter |
+| GET | /api/namespaces/{namespace}/eventfilter/{filtername} | [get cloud event filter](#get-cloud-event-filter) | Get specific cloudEventFilter |
+| GET | /api/namespaces/{namespace}/eventfilter | [list cloudevent filter](#list-cloudevent-filter) | List existing cloudEventFilters |
 | PATCH | /api/namespaces/{namespace}/eventfilter/{filtername} | [update cloudevent filter](#update-cloudevent-filter) | Update existing cloudEventFilter |
   
 
@@ -195,10 +197,9 @@ Direktiv Documentation can be found at https://docs.direktiv.io/
 | PUT | /api/namespaces/{namespace}/secrets/{secret} | [create secret](#create-secret) | Create a Namespace Secret |
 | DELETE | /api/namespaces/{namespace}/secrets/{folder} | [delete folder](#delete-folder) | Delete a Namespace Folder |
 | DELETE | /api/namespaces/{namespace}/secrets/{secret} | [delete secret](#delete-secret) | Delete a Namespace Secret |
-| GET | /api/namespaces/{namespace}/secrets | [get secrets](#get-secrets) | Get List of Namespace Secrets |
+| GET | /api/namespaces/{namespace}/secrets | [get secrets](#get-secrets) | Get List of Namespace Secrets or Search for Namespace Secrets by given name |
 | GET | /api/namespaces/{namespace}/secrets/{folder} | [get secrets inside folder](#get-secrets-inside-folder) | Get List of Namespace nodes inside Folder |
-| PATCH | /api/namespaces/{namespace}/secrets/{secret} | [overwrite and search secret](#overwrite-and-search-secret) | Overwrite a Namespace Secret or Search for a Secret by given Name. Set op query param for search function like /api/namespaces/{namespace}/secrets/{name}?op=name |
-| GET | /api/namespaces/search/{namespace}/secrets/{name} | [search secret](#search-secret) | Get List of Namespace nodes contains name |
+| PATCH | /api/namespaces/{namespace}/secrets/{secret} | [overwrite and search secret](#overwrite-and-search-secret) | Overwrite a Namespace Secret |
   
 
 
@@ -1276,6 +1277,36 @@ an error has occurred
 
 [ErrorResponse](#error-response)
 
+### <span id="get-cloud-event-filter"></span> Get specific cloudEventFilter (*getCloudEventFilter*)
+
+```
+GET /api/namespaces/{namespace}/eventfilter/{filtername}
+```
+
+Get specific cloud event filter by given name in target namespace
+
+
+#### Parameters
+
+| Name | Source | Type | Go type | Separator | Required | Default | Description |
+|------|--------|------|---------|-----------| :------: |---------|-------------|
+| filtername | `path` | string | `string` |  | ✓ |  | target filtername |
+| namespace | `path` | string | `string` |  | ✓ |  | target namespace |
+
+#### All responses
+
+| Code | Status | Description | Has headers | Schema |
+|------|--------|-------------|:-----------:|--------|
+| [200](#get-cloud-event-filter-200) | OK |  |  | [schema](#get-cloud-event-filter-200-schema) |
+
+#### Responses
+
+
+##### <span id="get-cloud-event-filter-200"></span> 200
+Status: OK
+
+###### <span id="get-cloud-event-filter-200-schema"></span> Schema
+
 ### <span id="get-event-history"></span> Get events history. (*getEventHistory*)
 
 ```
@@ -1814,13 +1845,13 @@ Status: OK
 
 ###### <span id="get-registries-200-schema"></span> Schema
 
-### <span id="get-secrets"></span> Get List of Namespace Secrets (*getSecrets*)
+### <span id="get-secrets"></span> Get List of Namespace Secrets or Search for Namespace Secrets by given name (*getSecrets*)
 
 ```
 GET /api/namespaces/{namespace}/secrets
 ```
 
-Gets the list of namespace secrets.
+Gets the list of namespace secrets. Also can use for search by setting query param op=search
 
 
 #### Parameters
@@ -2203,6 +2234,35 @@ Status: Internal Server Error
 
 
 
+### <span id="list-cloudevent-filter"></span> List existing cloudEventFilters (*listCloudeventFilter*)
+
+```
+GET /api/namespaces/{namespace}/eventfilter
+```
+
+list all existing cloud event filter in target namespace
+
+
+#### Parameters
+
+| Name | Source | Type | Go type | Separator | Required | Default | Description |
+|------|--------|------|---------|-----------| :------: |---------|-------------|
+| namespace | `path` | string | `string` |  | ✓ |  | target namespace |
+
+#### All responses
+
+| Code | Status | Description | Has headers | Schema |
+|------|--------|-------------|:-----------:|--------|
+| [200](#list-cloudevent-filter-200) | OK |  |  | [schema](#list-cloudevent-filter-200-schema) |
+
+#### Responses
+
+
+##### <span id="list-cloudevent-filter-200"></span> 200
+Status: OK
+
+###### <span id="list-cloudevent-filter-200-schema"></span> Schema
+
 ### <span id="list-namespace-service-revision-pods"></span> Get Namespace Service Revision Pods List (*listNamespaceServiceRevisionPods*)
 
 ```
@@ -2449,13 +2509,13 @@ Status: OK
 
 ###### <span id="namespace-metrics-successful-200-schema"></span> Schema
 
-### <span id="overwrite-and-search-secret"></span> Overwrite a Namespace Secret or Search for a Secret by given Name. Set op query param for search function like /api/namespaces/{namespace}/secrets/{name}?op=name (*overwriteAndSearchSecret*)
+### <span id="overwrite-and-search-secret"></span> Overwrite a Namespace Secret (*overwriteAndSearchSecret*)
 
 ```
 PATCH /api/namespaces/{namespace}/secrets/{secret}
 ```
 
-Overwrite a namespace secret, or search for a search secret which contains by given name
+Overwrite a namespace secret
 
 
 #### Consumes
@@ -2467,7 +2527,7 @@ Overwrite a namespace secret, or search for a search secret which contains by gi
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | namespace | `path` | string | `string` |  | ✓ |  | target namespace |
 | secret | `path` | string | `string` |  | ✓ |  | target secret |
-| Secret Payload | `body` | string | `string` | | ✓ | | Payload that contains secret data, when using search functions its not necessary |
+| Secret Payload | `body` | string | `string` | | ✓ | | Payload that contains secret data |
 
 #### All responses
 
@@ -2555,50 +2615,6 @@ Replay a cloud event to a namespace.
 Status: OK
 
 ###### <span id="replay-cloudevent-200-schema"></span> Schema
-
-### <span id="search-secret"></span> Get List of Namespace nodes contains name (*searchSecret*)
-
-```
-GET /api/namespaces/search/{namespace}/secrets/{name}
-```
-
-secrets and folders which including given name.
-
-
-#### Parameters
-
-| Name | Source | Type | Go type | Separator | Required | Default | Description |
-|------|--------|------|---------|-----------| :------: |---------|-------------|
-| name | `path` | string | `string` |  | ✓ |  | target name |
-| namespace | `path` | string | `string` |  | ✓ |  | target namespace |
-
-#### All responses
-
-| Code | Status | Description | Has headers | Schema |
-|------|--------|-------------|:-----------:|--------|
-| [200](#search-secret-200) | OK | successfully got namespace nodes |  | [schema](#search-secret-200-schema) |
-| [default](#search-secret-default) | | an error has occurred |  | [schema](#search-secret-default-schema) |
-
-#### Responses
-
-
-##### <span id="search-secret-200"></span> 200 - successfully got namespace nodes
-Status: OK
-
-###### <span id="search-secret-200-schema"></span> Schema
-   
-  
-
-[OkBody](#ok-body)
-
-##### <span id="search-secret-default"></span> Default Response
-an error has occurred
-
-###### <span id="search-secret-default-schema"></span> Schema
-
-  
-
-[ErrorResponse](#error-response)
 
 ### <span id="server-logs"></span> Get Direktiv Server Logs (*serverLogs*)
 
