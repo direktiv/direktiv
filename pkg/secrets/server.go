@@ -12,6 +12,8 @@ import (
 	"github.com/direktiv/direktiv/pkg/util"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -174,6 +176,11 @@ func (s *Server) GetSecrets(ctx context.Context, in *secretsgrpc.GetSecretsReque
 
 	names, err := s.handler.GetSecrets(in.GetNamespace(), in.GetName())
 	if err != nil {
+		return &resp, err
+	}
+
+	if len(names) == 0 {
+		err = status.Error(codes.NotFound, fmt.Sprintf("folder %s not exists", in.GetName()))
 		return &resp, err
 	}
 

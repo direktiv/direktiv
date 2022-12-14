@@ -3727,6 +3727,7 @@ func (h *flowHandler) Secrets(w http.ResponseWriter, r *http.Request) {
 	namespace := mux.Vars(r)["ns"]
 	folder := mux.Vars(r)["folder"]
 	op := r.FormValue("op")
+	term := r.FormValue("term")
 
 	if op == "search" {
 		p, err := pagination(r)
@@ -3738,7 +3739,7 @@ func (h *flowHandler) Secrets(w http.ResponseWriter, r *http.Request) {
 		in := &grpc.SearchSecretRequest{
 			Namespace:  namespace,
 			Pagination: p,
-			Key:        folder,
+			Key:        term,
 		}
 
 		resp, err := h.client.SearchSecret(ctx, in)
