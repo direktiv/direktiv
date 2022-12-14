@@ -514,6 +514,10 @@ func executeEvent(url string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
+	if resp.StatusCode == http.StatusNotFound {
+		return "", fmt.Errorf("eventfilter not exists")
+	}
 	//if event already exist just replay the event
 	if resp.StatusCode != http.StatusOK {
 		eventId := event["id"]
