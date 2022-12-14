@@ -4,7 +4,8 @@ package api
 const (
 
 	// admin only
-	RN_AddNamespace = "addNamespace"
+	RN_AddNamespace  = "addNamespace"
+	RN_GetServerLogs = "getServerLogs"
 
 	// misc for azure
 	RN_Preflight = "preflight"
@@ -27,11 +28,13 @@ const (
 	RN_GetNamespaceConfig = "getNamespaceConfiguration"
 	RN_SetNamespaceConfig = "setNamespaceConfiguration"
 
-	// explorer get
-	RN_GetNode         = "getNode"
-	RN_CreateDirectory = "createDirectory"
-	RN_DeleteNode      = "deleteNode"
-	RN_RenameNode      = "renameNode"
+	// explorer
+	RN_GetNode              = "getNode"
+	RN_CreateDirectory      = "createDirectory"
+	RN_DeleteNode           = "deleteNode"
+	RN_RenameNode           = "renameNode"
+	RN_DeleteNodeAttributes = "deleteNodeAttributes"
+	RN_CreateNodeAttributes = "createNodeAttributes"
 
 	// instance
 	RN_ListInstances         = "listInstances"
@@ -42,55 +45,45 @@ const (
 	RN_CancelInstance        = "cancelInstance"
 	RN_ListInstanceVariables = "listInstanceVariables"
 	RN_SetInstanceVariable   = "setInstanceVariable"
+	RN_GetNamespaceMetrics   = "getNamespaceMetrics"
 
-	RN_CreateWorkflow        = "createWorkflow"
-	RN_UpdateWorkflow        = "updateWorkflow"
-	RN_SaveWorkflow          = "saveWorkflow"
-	RN_DiscardWorkflow       = "discardWorkflow"
+	// workflow
 	RN_GetWorkflowTags       = "getWorkflowTags"
 	RN_GetWorkflowRevisions  = "getWorkflowRevisions"
 	RN_GetWorkflowRefs       = "getWorkflowRefs"
-	RN_DeleteRevision        = "deleteRevision"
-	RN_Tag                   = "tag"
-	RN_Untag                 = "untag"
-	RN_Retag                 = "retag"
 	RN_GetWorkflowRouter     = "getWorkflowRouter"
-	RN_GetNamespaceMetrics   = "getNamespaceMetrics"
 	RN_GetWorkflowMetrics    = "getWorkflowMetrics"
-	RN_ExecuteWorkflow       = "executeWorkflow"
-	RN_DeleteNodeAttributes  = "deleteNodeAttributes"
-	RN_CreateNodeAttributes  = "createNodeAttributes"
+	RN_GetWorkflowLogs       = "getWorkflowLogs"
 	RN_ListWorkflowVariables = "listWorkflowVariables"
 	RN_GetWorkflowVariable   = "getWorkflowVariable"
-	RN_SetWorkflowVariable   = "setWorkflowVariable"
+	RN_ListWorkflowServices  = "listWorkflowServices"
+	RN_ListWorkflowPods      = "listWorkflowPods"
 
-	RN_GetServerLogs   = "getServerLogs"
-	RN_GetWorkflowLogs = "getWorkflowLogs"
+	RN_CreateWorkflow         = "createWorkflow"
+	RN_UpdateWorkflow         = "updateWorkflow"
+	RN_SaveWorkflow           = "saveWorkflow"
+	RN_DiscardWorkflow        = "discardWorkflow"
+	RN_DeleteRevision         = "deleteRevision"
+	RN_Tag                    = "tag"
+	RN_Untag                  = "untag"
+	RN_Retag                  = "retag"
+	RN_SetWorkflowVariable    = "setWorkflowVariable"
+	RN_EditWorkflowRouter     = "editWorkflowRouter"
+	RN_ValidateRef            = "validateRef"
+	RN_ValidateRouter         = "validateRouter"
+	RN_DeleteWorkflowServices = "deleteWorkflowService"
 
-	RN_DeleteNamespace = "deleteNamespace"
+	RN_ExecuteWorkflow = "executeWorkflow"
 
-	// RN_ListServices = "listServices"
-	// RN_DeleteServices       = "deleteServices"
-	// RN_GetService           = "getService"
-	// RN_CreateService        = "createService"
-	// RN_UpdateService        = "updateService"
-	// RN_UpdateServiceTraffic = "updateServiceTraffic"
-	// RN_DeleteService        = "deleteService"
-
+	// TODO
 	RN_WatchServices  = "watchServices"
 	RN_WatchRevisions = "watchRevisions"
-	// RN_WatchPods      = "watchPods"
-	RN_WatchPodLogs = "watchLogs"
-	RN_ListPods     = "listPods"
+	RN_WatchPodLogs   = "watchLogs"
+	RN_ListPods       = "listPods"
+	RN_PodLogs        = "podLogs"
 
-	RN_ListWorkflowServices   = "listWorkflowServices"
-	RN_DeleteWorkflowServices = "deleteWorkflowService"
-	RN_ListWorkflowPods       = "listWorkflowPods"
-	RN_PodLogs                = "podLogs"
-
-	RN_EditWorkflowRouter = "editWorkflowRouter"
-	RN_ValidateRef        = "validateRef"
-	RN_ValidateRouter     = "validateRouter"
+	// delete namespace
+	RN_DeleteNamespace = "deleteNamespace"
 
 	// services get
 	RN_ListNamespaceServices = "listNamespacesServices"
