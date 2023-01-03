@@ -38,7 +38,7 @@ helm install linkerd-control-plane \
   linkerd/linkerd-control-plane --wait
 
 if [ ! -d "$dir/direktiv-charts" ]; then
-  git clone git@github.com:direktiv/direktiv-charts.git $dir/direktiv-charts
+  git clone https://github.com/direktiv/direktiv-charts.git $dir/direktiv-charts
 fi
 
 cd $dir/direktiv-charts/charts/knative-instance && helm dependency update $dir/direktiv-charts/charts/knative-instance
