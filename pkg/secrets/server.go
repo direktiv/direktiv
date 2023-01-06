@@ -179,7 +179,7 @@ func (s *Server) GetSecrets(ctx context.Context, in *secretsgrpc.GetSecretsReque
 		return &resp, err
 	}
 
-	logger.Debugf("!!!!!!!!!!!!!!!!!!!!!! %d secrets found", len(names))
+	logger.Debugf("%d secrets found", len(names))
 
 	// root folder can be empty
 	if len(names) == 0 && len(in.GetName()) > 0 {
