@@ -49,7 +49,6 @@ const (
 
 	// workflow
 	RN_GetWorkflowTags       = "getWorkflowTags"
-	RN_GetWorkflowRevisions  = "getWorkflowRevisions"
 	RN_GetWorkflowRefs       = "getWorkflowRefs"
 	RN_GetWorkflowRouter     = "getWorkflowRouter"
 	RN_GetWorkflowMetrics    = "getWorkflowMetrics"
@@ -57,7 +56,7 @@ const (
 	RN_ListWorkflowVariables = "listWorkflowVariables"
 	RN_GetWorkflowVariable   = "getWorkflowVariable"
 	RN_ListWorkflowServices  = "listWorkflowServices"
-	RN_ListWorkflowPods      = "listWorkflowPods"
+	// RN_ListWorkflowPods      = "listWorkflowPods"
 
 	RN_CreateWorkflow         = "createWorkflow"
 	RN_UpdateWorkflow         = "updateWorkflow"
@@ -75,12 +74,8 @@ const (
 
 	RN_ExecuteWorkflow = "executeWorkflow"
 
-	// TODO
-	RN_WatchServices  = "watchServices"
-	RN_WatchRevisions = "watchRevisions"
-	RN_WatchPodLogs   = "watchLogs"
-	RN_ListPods       = "listPods"
-	RN_PodLogs        = "podLogs"
+	// service and workflow service
+	RN_WatchPodLogs = "watchLogs"
 
 	// delete namespace
 	RN_DeleteNamespace = "deleteNamespace"
@@ -89,6 +84,8 @@ const (
 	RN_ListNamespaceServices = "listNamespacesServices"
 	RN_ListNamespacePods     = "listNamespacePods"
 	RN_GetNamespaceService   = "getNamespaceService"
+	RN_WatchServices         = "watchServices"
+	RN_WatchRevisions        = "watchRevisions"
 
 	// services set
 	RN_CreateNamespaceService         = "createNamespaceService"
