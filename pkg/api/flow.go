@@ -817,7 +817,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	// swagger:operation GET /api/namespaces/{namespace}/secrets Secrets getSecrets
 	// ---
 	// description: |
-	//   Gets the list of namespace secrets. Also can use for search by setting query param op=search
+	//   Gets the list of namespace secrets. Also can use for search by setting query param op=search and term=<searchingName>
 	// summary: Get List of Namespace Secrets or Search for Namespace Secrets by given name
 	// parameters:
 	// - in: path
