@@ -6,10 +6,12 @@ import {Config, GenerateRandomKey} from '../../../util';
 import { useBroadcastConfiguration } from 'direktiv-react-hooks';
 import HelpIcon from '../../../components/help';
 import { VscSettings } from 'react-icons/vsc';
+import { useApiKey } from '../../../util/apiKeyProvider';
 
 function BroadcastConfigurationsPanel(props){
     const {namespace} = props
-    const {data, setBroadcastConfiguration, getBroadcastConfiguration} = useBroadcastConfiguration(Config.url, namespace, localStorage.getItem("apikey"))
+    const [apiKey] = useApiKey()
+    const {data, setBroadcastConfiguration, getBroadcastConfiguration} = useBroadcastConfiguration(Config.url, namespace, apiKey)
 
     return (
         <ContentPanel className="broadcast-panel">

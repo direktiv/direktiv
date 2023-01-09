@@ -10,12 +10,15 @@ import { Config } from "../../util"
 import { useGlobalService } from "direktiv-react-hooks"
 
 import { VscAdd } from 'react-icons/vsc';
+import { useApiKey } from "../../util/apiKeyProvider";
 
 
 export default function GlobalRevisionsPanel(props){
     const {service} = useParams()
     const navigate = useNavigate()
-    const {revisions, config, traffic, createGlobalServiceRevision, deleteGlobalServiceRevision, setGlobalServiceRevisionTraffic, getServiceConfig} = useGlobalService(Config.url, service, navigate, localStorage.getItem("apikey"))
+    const [apiKey] = useApiKey()
+
+    const {revisions, config, traffic, createGlobalServiceRevision, deleteGlobalServiceRevision, setGlobalServiceRevisionTraffic, getServiceConfig} = useGlobalService(Config.url, service, navigate, apiKey)
 
     const [load, setLoad] = useState(true)
     const [image, setImage] = useState("")

@@ -15,6 +15,7 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import utc from "dayjs/plugin/utc";
 import { useNavigate } from 'react-router-dom';
 import Loader from '../../components/loader';
+import { useApiKey } from '../../util/apiKeyProvider';
 
 const PAGE_SIZE = 10
 
@@ -38,7 +39,8 @@ export default InstancesPage;
 export function InstancesTable(props) {
     const {namespace, mini, hideTitle, panelStyle, bodyStyle, filter, placeholder} = props
     const [load, setLoad] = useState(true)
-
+    
+    const [apiKey] = useApiKey()
     const [filterName, setFilterName] = useState("")
     const [filterCreatedBefore, setFilterCreatedBefore] = useState("")
     const [filterCreatedAfter, setFilterCreatedAfter] = useState("")
@@ -76,7 +78,7 @@ export function InstancesTable(props) {
 
     const pageHandler = usePageHandler(PAGE_SIZE)
     const goToFirstPage = pageHandler.goToFirstPage
-    const {data, err, pageInfo} = useInstances(Config.url, true, namespace, localStorage.getItem("apikey"), pageHandler.pageParams, ...queryFilters)
+    const {data, err, pageInfo} = useInstances(Config.url, true, namespace, apiKey, pageHandler.pageParams, ...queryFilters)
 
     useEffect(()=>{
         if(data !== null || err !== null) {

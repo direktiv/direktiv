@@ -13,6 +13,7 @@ import FlexBox from '../../components/flexbox';
 import Loader from '../../components/loader';
 import Logs, { LogFooterButtons } from '../../components/logs/logs';
 import { Config, GenerateRandomKey } from '../../util';
+import { useApiKey } from '../../util/apiKeyProvider';
 import { CancelledState, FailState, InstancesTable, RunningState, SuccessState } from '../instances';
 import './style.css';
 
@@ -75,6 +76,7 @@ function InstancePage(props) {
     const [searchParams, setSearchParams] = useSearchParams()
     const navigate = useNavigate()
 
+    const [apiKey] = useApiKey()
     const [load, setLoad] = useState(true)
     const [wfpath, setWFPath] = useState("")
     const [ref, setRef] = useState("")
@@ -118,7 +120,7 @@ function InstancePage(props) {
         setInstanceID(id)
     }, [id]);
 
-    let {data, err, workflow, latestRevision, getInput, getOutput, cancelInstance} = useInstance(Config.url, true, namespace, instanceID, localStorage.getItem("apikey"));
+    let {data, err, workflow, latestRevision, getInput, getOutput, cancelInstance} = useInstance(Config.url, true, namespace, instanceID, apiKey);
 
     useEffect(()=>{
         if(load && data !== null && workflow != null && latestRevision != null) {
@@ -293,14 +295,14 @@ function InstancePage(props) {
 }
 
 function InstanceLogs(props) {
-
+    const [apiKey] = useApiKey()
     let {noPadding, namespace, instanceID } = props;
     let paddingStyle = { padding: "12px" }
     if (noPadding) {
         paddingStyle = { padding: "0px" }
     }
 
-    let {data} = useInstanceLogs(Config.url, true, namespace, instanceID, localStorage.getItem("apikey"))
+    let {data} = useInstanceLogs(Config.url, true, namespace, instanceID, apiKey)
     const [wordWrap, setWordWrap] = useState(false)
     const [follow, setFollow] = useState(true)
 
@@ -326,8 +328,9 @@ function InstanceDiagram(props) {
     const [load, setLoad] = useState(true)
     const [workflowMissing, setWorkflowMissing] = useState(false)
     const [wfdata, setWFData] = useState("")
-
-    const {getWorkflowRevisionData} = useWorkflow(Config.url, false, namespace, wfpath, localStorage.getItem("apikey"))
+    const [apiKey] = useApiKey()
+    
+    const {getWorkflowRevisionData} = useWorkflow(Config.url, false, namespace, wfpath, apiKey)
 
     useEffect(() => {
         const handler = setTimeout(() => {

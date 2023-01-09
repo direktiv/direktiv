@@ -9,6 +9,7 @@ import HelpIcon from '../../components/help';
 import { Config } from '../../util';
 import './style.css';
 import Button from '../../components/button';
+import { useApiKey } from '../../util/apiKeyProvider';
 
 
 export default function JQPlayground() {
@@ -16,10 +17,9 @@ export default function JQPlayground() {
     const [filter, setFilter] = useState(localStorage.getItem('jqFilter') ? localStorage.getItem('jqFilter') : ".")
     const [input, setInput] = useState(localStorage.getItem('jqInput') ? localStorage.getItem('jqInput') : JSON.stringify({}, null, 2))
     const [error, setError] = useState(null)
+    const [apiKey] = useApiKey()
 
-
-
-    const {data, err, executeJQ, cheatSheet} = useJQPlayground(Config.url, localStorage.getItem("apikey"))
+    const {data, err, executeJQ, cheatSheet} = useJQPlayground(Config.url, apiKey)
 
     const executeAndSave = useCallback((...args)=>{
         localStorage.setItem('jqInput', input)

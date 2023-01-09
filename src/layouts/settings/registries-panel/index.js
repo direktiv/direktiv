@@ -10,12 +10,14 @@ import HelpIcon from '../../../components/help';
 import { VscServer, VscTrash } from 'react-icons/vsc';
 
 import { VscAdd } from 'react-icons/vsc';
+import { useApiKey } from '../../../util/apiKeyProvider';
 
 
 function RegistriesPanel(props){
 
     const {namespace} = props
-    const {data, getRegistries, createRegistry, deleteRegistry}  = useRegistries(Config.url, namespace, localStorage.getItem("apikey"))
+    const [apiKey] = useApiKey()
+    const {data, getRegistries, createRegistry, deleteRegistry}  = useRegistries(Config.url, namespace, apiKey)
 
     const [testConnLoading, setTestConnLoading] = useState(false)
     const [successFeedback, setSuccessFeedback] = useState("")

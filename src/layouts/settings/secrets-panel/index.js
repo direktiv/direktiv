@@ -14,6 +14,7 @@ import DirektivEditor from '../../../components/editor';
 import { AutoSizer } from 'react-virtualized';
 
 import { VscAdd } from 'react-icons/vsc';
+import { useApiKey } from '../../../util/apiKeyProvider';
 
 
 
@@ -23,7 +24,8 @@ function SecretsPanel(props){
     const [keyValue, setKeyValue] = useState("")
     const [file, setFile] = useState(null)
     const [vValue, setVValue] = useState("")
-    const {data, createSecret, deleteSecret, getSecrets} = useSecrets(Config.url, namespace, localStorage.getItem("apikey"))
+    const [apiKey] = useApiKey()
+    const {data, createSecret, deleteSecret, getSecrets} = useSecrets(Config.url, namespace, apiKey)
 
     return (
         <ContentPanel style={{ height: "100%", minHeight: "180px", width: "100%" }}>

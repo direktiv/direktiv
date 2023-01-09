@@ -8,6 +8,7 @@ import {AddRegistryPanel, Registries, TestRegistry} from '../settings/registries
 import { Config } from '../../util';
 import HelpIcon from '../../components/help';
 import { VscAdd, VscServer } from 'react-icons/vsc';
+import { useApiKey } from '../../util/apiKeyProvider';
 
 
 
@@ -25,8 +26,8 @@ export default function GlobalRegistriesPanel(){
 }
 
 export function GlobalRegistries(){
-
-    const {data, getRegistries, createRegistry, deleteRegistry} = useGlobalRegistries(Config.url, localStorage.getItem("apikey"))
+    const [apiKey] = useApiKey()
+    const {data, getRegistries, createRegistry, deleteRegistry} = useGlobalRegistries(Config.url, apiKey)
 
     const [url, setURL] = useState("")
     const [username, setUsername] = useState("")

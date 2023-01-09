@@ -3,14 +3,16 @@ import React, { useState } from 'react';
 import FlexBox from '../../components/flexbox';
 import Logs, { LogFooterButtons } from '../../components/logs/logs';
 import { Config } from '../../util';
+import { useApiKey } from '../../util/apiKeyProvider';
 import './style.css';
 
 
 
 export default function ActivityLogs(props) {
     const { activity, namespace } = props
-
-    const { data } = useMirrorLogs(Config.url, true, namespace, activity, localStorage.getItem("apikey"))
+    const [apiKey] = useApiKey()
+    
+    const { data } = useMirrorLogs(Config.url, true, namespace, activity, apiKey)
     const [follow, setFollow] = useState(true)
 
     return (

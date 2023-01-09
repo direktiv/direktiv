@@ -9,10 +9,12 @@ import { VscLayers } from 'react-icons/vsc';
 import HelpIcon from "../../components/help"
 
 import { VscAdd } from 'react-icons/vsc';
+import { useApiKey } from "../../util/apiKeyProvider";
 
 
 export default function GlobalServicesPanel(props) {
-    const {data, err, config, createGlobalService, getConfig, getGlobalServices, deleteGlobalService} = useGlobalServices(Config.url, true, localStorage.getItem("apikey"))
+    const [apiKey] = useApiKey()
+    const {data, err, config, createGlobalService, getConfig, getGlobalServices, deleteGlobalService} = useGlobalServices(Config.url, true, apiKey)
     const [load, setLoad] = useState(true)
 
     const [serviceName, setServiceName] = useState("")

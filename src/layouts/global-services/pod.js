@@ -8,11 +8,13 @@ import 'react-virtualized/styles.css'; // only needs to be imported once
 import { ServiceStatus } from "../namespace-services"
 import { PodLogs } from "../namespace-services/pod"
 import * as dayjs from 'dayjs'
+import { useApiKey } from "../../util/apiKeyProvider";
 
 export default function GlobalPodPanel(props) {
     const {service, revision} = useParams()
+    const [apiKey] = useApiKey()
 
-    const {revisionDetails, pods, err} = useGlobalServiceRevision(Config.url, service, revision, localStorage.getItem("apikey"))
+    const {revisionDetails, pods, err} = useGlobalServiceRevision(Config.url, service, revision, apiKey)
 
     if (err) {
         console.log(err, "listing pods")

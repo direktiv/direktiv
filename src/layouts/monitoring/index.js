@@ -11,6 +11,7 @@ import HelpIcon from "../../components/help"
 import Loader from "../../components/loader"
 import Logs, { LogFooterButtons } from "../../components/logs/logs"
 import { Config } from "../../util"
+import { useApiKey } from "../../util/apiKeyProvider"
 
 dayjs.extend(utc)
 dayjs.extend(relativeTime);
@@ -34,9 +35,10 @@ function MonitoringPage(props) {
     const {namespace, noPadding} = props
     const [follow, setFollow] = useState(true)
     const [load, setLoad] = useState(true)
+    const [apiKey] = useApiKey()
 
     const [clipData, setClipData] = useState(null)
-    const {data, err} = useNamespaceLogs(Config.url, true, namespace, localStorage.getItem('apikey'))
+    const {data, err} = useNamespaceLogs(Config.url, true, namespace, apiKey)
     let paddingStyle = { padding: "12px" }
     if (noPadding) {
         paddingStyle = { padding: "0px" }
@@ -142,8 +144,9 @@ function MonitoringPage(props) {
 function FailedExecutions(props) {
     const {namespace} = props
     const [qParams] = useState(["limit=5", "filter.field=STATUS", "filter.type=MATCH", "filter.val=failed"])
+    const [apiKey] = useApiKey()
 
-    const {data} = useInstances(Config.url, true, namespace, localStorage.getItem("apikey"), ...qParams)
+    const {data} = useInstances(Config.url, true, namespace, apiKey, ...qParams)
     
     // todo implement loading
     if(data === null) {
@@ -192,8 +195,9 @@ function FailedExecutions(props) {
 function SuccessfulExecutions(props) {
     const {namespace} = props
     const [qParams] = useState(["limit=5", "filter.field=STATUS", "filter.type=MATCH", "filter.val=complete"])
+    const [apiKey] = useApiKey()
 
-    const {data} = useInstances(Config.url, true, namespace, localStorage.getItem("apikey"), ...qParams)
+    const {data} = useInstances(Config.url, true, namespace, apiKey, ...qParams)
     // todo implement loading
     if(data === null) {
         return ""

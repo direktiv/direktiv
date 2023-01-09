@@ -11,6 +11,7 @@ import ContentPanel, { ContentPanelBody, ContentPanelTitle, ContentPanelTitleIco
 import FlexBox from "../../components/flexbox";
 import { LogFooterButtons } from "../../components/logs/logs";
 import { Config } from "../../util";
+import { useApiKey } from '../../util/apiKeyProvider';
 
 export default function PodPanel(props) {
     const {namespace} = props
@@ -30,7 +31,8 @@ export default function PodPanel(props) {
 
 function NamespaceRevisionDetails(props){
     const {service, namespace, revision} = props
-    const {revisionDetails, pods, err} = useNamespaceServiceRevision(Config.url, namespace, service, revision, localStorage.getItem("apikey"))
+    const [apiKey] = useApiKey()
+    const {revisionDetails, pods, err} = useNamespaceServiceRevision(Config.url, namespace, service, revision, apiKey)
 
     if(err) {
         console.log(err, "listing pods")
@@ -208,8 +210,9 @@ export function PodLogs(props){
 
 function Logs(props) {
     const {pod, follow, clipData, setClipData} = props
+    const [apiKey] = useApiKey()
 
-    const {data} = usePodLogs(Config.url, pod, localStorage.getItem("apikey"))
+    const {data} = usePodLogs(Config.url, pod, apiKey)
 
     useEffect(()=>{
         if(data !== null) {

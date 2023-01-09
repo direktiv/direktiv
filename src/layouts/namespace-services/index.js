@@ -15,6 +15,7 @@ import Tippy from '@tippyjs/react';
 import 'tippy.js/dist/tippy.css';
 
 import { VscAdd } from 'react-icons/vsc';
+import { useApiKey } from "../../util/apiKeyProvider";
 
 
 export default function ServicesPanel(props) {
@@ -74,7 +75,6 @@ export function ServiceCreatePanel(props) {
 
 function NamespaceServices(props) {
     const {namespace} = props
-
     const [load, setLoad] = useState(true)
     const [serviceName, setServiceName] = useState("")
     const [image, setImage] = useState("")
@@ -82,8 +82,9 @@ function NamespaceServices(props) {
     const [size, setSize] = useState(0)
     const [cmd, setCmd] = useState("")
     const [maxScale, setMaxScale] = useState(0)
+    const [apiKey] = useApiKey()
 
-    const {data, err, config, getNamespaceConfig, getNamespaceServices, createNamespaceService, deleteNamespaceService} = useNamespaceServices(Config.url, true, namespace, localStorage.getItem("apikey"))
+    const {data, err, config, getNamespaceConfig, getNamespaceServices, createNamespaceService, deleteNamespaceService} = useNamespaceServices(Config.url, true, namespace, apiKey)
 
     useEffect(()=>{
         async function getcfg() {

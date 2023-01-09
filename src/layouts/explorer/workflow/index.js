@@ -40,6 +40,7 @@ import SankeyDiagram from '../../../components/sankey';
 import Form from "@rjsf/core";
 import { windowBlocker } from '../../../components/diagram-editor/usePrompt';
 import Tabs from '../../../components/tabs';
+import { useApiKey } from '../../../util/apiKeyProvider';
 
 dayjs.extend(utc)
 dayjs.extend(relativeTime);
@@ -80,6 +81,7 @@ function WorkflowPage(props) {
 
 function InitialWorkflowHook(props){
     const {namespace, filepath, searchParams, setSearchParams} = props
+    const [apiKey] = useApiKey()
 
     const [activeTab, setActiveTab] = useState(searchParams.get("tab") !== null ? parseInt(searchParams.get('tab')): 0)
     const [tabBlocker, setTabBlocker] = useState(false)
@@ -88,7 +90,7 @@ function InitialWorkflowHook(props){
         setActiveTab(searchParams.get("tab") !== null ? parseInt(searchParams.get('tab')): 0)
     }, [searchParams])
     // todo handle err from hook below
-    const {data,  getSuccessFailedMetrics, tagWorkflow, addAttributes, deleteAttributes, setWorkflowLogToEvent, editWorkflowRouter, getWorkflowSankeyMetrics, getWorkflowRevisionData, getWorkflowRouter, toggleWorkflow, executeWorkflow, getInstancesForWorkflow, getRevisions, getTags, deleteRevision, saveWorkflow, updateWorkflow, discardWorkflow, removeTag, executeWorkflowRouter} = useWorkflow(Config.url, true, namespace, filepath.substring(1), localStorage.getItem("apikey"))
+    const {data,  getSuccessFailedMetrics, tagWorkflow, addAttributes, deleteAttributes, setWorkflowLogToEvent, editWorkflowRouter, getWorkflowSankeyMetrics, getWorkflowRevisionData, getWorkflowRouter, toggleWorkflow, executeWorkflow, getInstancesForWorkflow, getRevisions, getTags, deleteRevision, saveWorkflow, updateWorkflow, discardWorkflow, removeTag, executeWorkflowRouter} = useWorkflow(Config.url, true, namespace, filepath.substring(1), apiKey)
     const [router, setRouter] = useState(null)
 
 
@@ -931,7 +933,8 @@ function TrafficDistribution(props) {
 
 function WorkflowServices(props) {
     const {namespace, filepath} = props
-    const {data, err, deleteWorkflowService} = useWorkflowServices(Config.url, true, namespace, filepath.substring(1), localStorage.getItem("apikey"))
+    const [apiKey] = useApiKey()
+    const {data, err, deleteWorkflowService} = useWorkflowServices(Config.url, true, namespace, filepath.substring(1), apiKey)
 
     if (data === null) {
         return     <div className="col">

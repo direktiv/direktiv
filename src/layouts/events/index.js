@@ -15,6 +15,7 @@ import utc from "dayjs/plugin/utc";
 import { Link } from 'react-router-dom';
 import Pagination, { usePageHandler } from '../../components/pagination';
 import './style.css';
+import { useApiKey } from '../../util/apiKeyProvider';
 
 dayjs.extend(utc)
 dayjs.extend(relativeTime);
@@ -40,13 +41,14 @@ const PAGE_SIZE = 8;
 function EventsPage(props) {
 
     let {namespace} = props;
+    const [apiKey] = useApiKey()
 
     // errHistory and errListeners TODO show error if one
 
     const historyPageHandler = usePageHandler(PAGE_SIZE)
     const listenersPageHandler = usePageHandler(PAGE_SIZE)
 
-    let {eventHistory, eventListeners, eventListenersPageInfo, eventHistoryPageInfo, sendEvent, replayEvent} = useEvents(Config.url, true, namespace, localStorage.getItem("apikey"), {listeners: [listenersPageHandler.pageParams], history: [historyPageHandler.pageParams]})
+    let {eventHistory, eventListeners, eventListenersPageInfo, eventHistoryPageInfo, sendEvent, replayEvent} = useEvents(Config.url, true, namespace, apiKey, {listeners: [listenersPageHandler.pageParams], history: [historyPageHandler.pageParams]})
     
     return (
         <>

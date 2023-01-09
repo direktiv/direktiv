@@ -11,6 +11,7 @@ import FlexBox from '../../components/flexbox';
 import Loader from '../../components/loader';
 import { ModalHeadless } from '../../components/modal';
 import { Config } from '../../util';
+import { useApiKey } from '../../util/apiKeyProvider';
 import ActivityTable from './activities';
 import MirrorInfoPanel from './info';
 import ActivityLogs from './logs';
@@ -24,6 +25,7 @@ export default function MirrorPage(props) {
     const [activity, setActivity] = useState(null)
     const [currentlyLocking, setCurrentlyLocking] = useState(true)
     const [isReadOnly, setIsReadOnly] = useState(true)
+    const [apiKey] = useApiKey()
 
     const [errorMsg, setErrorMsg] = useState(null)
     const [load, setLoad] = useState(true)
@@ -34,8 +36,8 @@ export default function MirrorPage(props) {
         path = `/${params["*"]}`
     }
 
-    const { info, activities, err, setLock, updateSettings, cancelActivity, sync } = useMirror(Config.url, true, namespace, path, localStorage.getItem("apikey"), "limit=50", "order.field=CREATED", "order.direction=DESC")
-    const { data, getNode, err: nodeErr } = useNodes(Config.url, false, namespace, path, localStorage.getItem("apikey"), `limit=1`)
+    const { info, activities, err, setLock, updateSettings, cancelActivity, sync } = useMirror(Config.url, true, namespace, path, apiKey, "limit=50", "order.field=CREATED", "order.direction=DESC")
+    const { data, getNode, err: nodeErr } = useNodes(Config.url, false, namespace, path, apiKey, `limit=1`)
 
     const setLockRef = useRef(setLock)
     const syncRef = useRef(sync)

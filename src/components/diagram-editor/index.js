@@ -28,6 +28,7 @@ import Modal, { ModalHeadless } from '../modal';
 import Ajv from "ajv"
 import { CustomWidgets } from './widgets';
 import InvalidWorkflow from '../invalid-workflow';
+import { useApiKey } from '../../util/apiKeyProvider';
 
 const actionsNodesFuse = new Fuse(ActionsNodes, {
     keys: ['name']
@@ -102,13 +103,14 @@ function Actions(props) {
 
 function FunctionsList(props) {
     const { functionList, setFunctionList, namespace, functionDrawerWidth } = props
+    const [apiKey] = useApiKey()
 
     const [newFunctionFormRef, setNewFunctionFormRef] = useState(null)
     const [formData, setFormData] = useState({})
 
-    const namespaceServiceHook = useNamespaceServices(Config.url, false, namespace, localStorage.getItem("apikey"))
-    const globalServiceHook = useGlobalServices(Config.url, false, localStorage.getItem("apikey"))
-    const namespaceNodesHook = useNodes(Config.url, false, namespace, "/", localStorage.getItem("apikey"), "first=20")
+    const namespaceServiceHook = useNamespaceServices(Config.url, false, namespace, apiKey)
+    const globalServiceHook = useGlobalServices(Config.url, false, apiKey)
+    const namespaceNodesHook = useNodes(Config.url, false, namespace, "/", apiKey, "first=20")
 
 
     if (namespaceServiceHook.data === null || globalServiceHook.data === null || namespaceNodesHook.data === null) {

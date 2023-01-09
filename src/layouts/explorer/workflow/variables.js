@@ -18,6 +18,7 @@ import { CanPreviewMimeType, Config, MimeTypeFileExtension } from '../../../util
 import { VariableFilePicker } from '../../settings/variables-panel';
 
 import Button from '../../../components/button';
+import { useApiKey } from '../../../util/apiKeyProvider';
 
 
 const PAGE_SIZE = 10 ;
@@ -31,12 +32,13 @@ function AddWorkflowVariablePanel(props) {
     const [uploading, setUploading] = useState(false)
     const [mimeType, setMimeType] = useState("application/json")
     const [search, setSearch] = useState("")
+    const [apiKey] = useApiKey()
 
     let wfVar = workflow.substring(1)
 
     const pageHandler = usePageHandler(PAGE_SIZE)
     const goToFirstPage = pageHandler.goToFirstPage
-    const {data, pageInfo, setWorkflowVariable, getWorkflowVariable, getWorkflowVariableBlob, deleteWorkflowVariable} = useWorkflowVariables(Config.url, true, namespace, wfVar, localStorage.getItem("apikey"), pageHandler.pageParams, `filter.field=NAME`, `filter.val=${search}`, `filter.type=CONTAINS`)
+    const {data, pageInfo, setWorkflowVariable, getWorkflowVariable, getWorkflowVariableBlob, deleteWorkflowVariable} = useWorkflowVariables(Config.url, true, namespace, wfVar, apiKey, pageHandler.pageParams, `filter.field=NAME`, `filter.val=${search}`, `filter.type=CONTAINS`)
 
     // Reset Page to start when filters changes
     useEffect(() => {

@@ -6,11 +6,12 @@ import { Config } from "../../../util"
 import { ServiceStatus } from "../../namespace-services"
 import * as dayjs from 'dayjs'
 import { PodLogs } from "../../namespace-services/pod"
+import { useApiKey } from "../../../util/apiKeyProvider";
 
 export default function WorkflowPod(props) {
     const {namespace, service, version, filepath, revision} = props
-
-    const {revisionDetails, pods, err} = useWorkflowServiceRevision(Config.url, namespace, filepath, service, version, revision, localStorage.getItem("apikey"))
+    const [apiKey] = useApiKey()
+    const {revisionDetails, pods, err} = useWorkflowServiceRevision(Config.url, namespace, filepath, service, version, revision, apiKey)
 
     if(err) {
         console.log(err, "listing pods")

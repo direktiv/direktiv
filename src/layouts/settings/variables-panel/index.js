@@ -18,6 +18,7 @@ import { SearchBar } from '../../explorer';
 import './style.css';
 
 import { VscAdd } from 'react-icons/vsc';
+import { useApiKey } from '../../../util/apiKeyProvider';
 
 
 const PAGE_SIZE = 10 ;
@@ -34,7 +35,9 @@ function VariablesPanel(props){
 
     const pageHandler = usePageHandler(PAGE_SIZE)
     const goToFirstPage = pageHandler.goToFirstPage
-    const {data, err, pageInfo, setNamespaceVariable, getNamespaceVariable, deleteNamespaceVariable, getNamespaceVariableBlob} = useNamespaceVariables(Config.url, true, namespace, localStorage.getItem("apikey"), pageHandler.pageParams,  `filter.field=NAME`, `filter.val=${search}`, `filter.type=CONTAINS`)
+    const [apiKey] = useApiKey()
+
+    const {data, err, pageInfo, setNamespaceVariable, getNamespaceVariable, deleteNamespaceVariable, getNamespaceVariableBlob} = useNamespaceVariables(Config.url, true, namespace, apiKey, pageHandler.pageParams,  `filter.field=NAME`, `filter.val=${search}`, `filter.type=CONTAINS`)
 
     // Reset Page to start when filters changes
     useEffect(() => {

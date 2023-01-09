@@ -13,6 +13,7 @@ import Tippy from '@tippyjs/react'
 import 'tippy.js/dist/tippy.css'
 
 import { VscAdd } from 'react-icons/vsc';
+import { useApiKey } from "../../util/apiKeyProvider";
 
 
 export default function NamespaceRevisionsPanel(props) {
@@ -79,7 +80,9 @@ export function RevisionCreatePanel(props){
 function NamespaceRevisions(props) {
     const {namespace, service} = props
     const navigate = useNavigate()
-    const {revisions, config, traffic, setNamespaceServiceRevisionTraffic, deleteNamespaceServiceRevision, getNamespaceServiceConfig, createNamespaceServiceRevision} = useNamespaceService(Config.url, namespace, service, navigate, localStorage.getItem("apikey"))
+    const [apiKey] = useApiKey()
+
+    const {revisions, config, traffic, setNamespaceServiceRevisionTraffic, deleteNamespaceServiceRevision, getNamespaceServiceConfig, createNamespaceServiceRevision} = useNamespaceService(Config.url, namespace, service, navigate, apiKey)
 
     const [load, setLoad] = useState(true)
     const [image, setImage] = useState("")
