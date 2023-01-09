@@ -38,6 +38,7 @@ import { ClientFileUpload } from '../../components/navbar';
 import Tabs from '../../components/tabs';
 import { MirrorReadOnlyBadge } from '../mirror';
 import { mirrorSettingInfoMetaInfo } from '../mirror/info';
+import { useApiKey } from '../../util/apiKeyProvider';
 
 const PAGE_SIZE = 10
 const apiHelps = (namespace) => {
@@ -162,6 +163,7 @@ const orderFieldKeys = Object.keys(orderFieldDictionary)
 function ExplorerList(props) {
     const {namespace, path, setBreadcrumbChildren} = props
     const setBreadcrumbChildrenRef = useRef(setBreadcrumbChildren)
+    const [apiKey] = useApiKey()
 
     const navigate= useNavigate()
     
@@ -182,8 +184,8 @@ function ExplorerList(props) {
 
     const pageHandler = usePageHandler(PAGE_SIZE)
     const goToFirstPage = pageHandler.goToFirstPage
-
-    const {data, err, templates, pageInfo, createNode, createMirrorNode, deleteNode, renameNode } = useNodes(Config.url, streamNodes, namespace, path, localStorage.getItem("apikey"), pageHandler.pageParams, ...queryParams, `order.field=${orderFieldDictionary[orderFieldKey]}`, `filter.field=NAME`, `filter.val=${search}`, `filter.type=CONTAINS`)
+    
+    const {data, err, templates, pageInfo, createNode, createMirrorNode, deleteNode, renameNode } = useNodes(Config.url, streamNodes, namespace, path, apiKey, pageHandler.pageParams, ...queryParams, `order.field=${orderFieldDictionary[orderFieldKey]}`, `filter.field=NAME`, `filter.val=${search}`, `filter.type=CONTAINS`)
 
     const [wfData, setWfData] = useState(templates["noop"].data)
     const [wfTemplate, setWfTemplate] = useState("noop")
