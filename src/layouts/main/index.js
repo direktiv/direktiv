@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import './style.css';
 import SmallLogo from '../../assets/small-logo.jpeg';
 import Breadcrumbs from '../../components/breadcrumbs';
