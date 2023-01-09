@@ -27,6 +27,7 @@ import InstancePageWrapper from '../instance';
 import EventsPageWrapper from '../events';
 import Monitoring from '../monitoring';
 import MirrorPage from '../mirror';
+import { useApiKey } from "../../util/apiKeyProvider";
 
 
 function NamespaceNavigation(props){
@@ -152,8 +153,8 @@ function NamespaceNavigation(props){
 
 function MainLayout(props) {
     let {onClick, style, className, extraNavigation, extraRoutes, footer, akey, akeyReq} = props;
-
-   
+    const [, setApiKey] = useApiKey()
+    setApiKey(akey)
     const [load, setLoad] = useState(true)
  
     const [namespace, setNamespace] = useState(null)
