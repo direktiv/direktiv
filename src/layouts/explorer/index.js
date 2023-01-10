@@ -6,7 +6,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 import Fade from "@mui/material/Fade";
 import { useNodes } from "direktiv-react-hooks";
 import { FcWorkflow } from "react-icons/fc";
-import { FiFolder } from "react-icons/fi";
+import { FiFolder, FiAlertTriangle } from "react-icons/fi";
 import { HiOutlineTrash } from "react-icons/hi";
 import {
   VscAdd,
@@ -972,29 +972,51 @@ function ExplorerList(props) {
                   {data === null || pageInfo === null ? (
                     <div className="explorer-item">
                       <FlexBox className="explorer-item-container">
-                        <FlexBox
-                          style={{ display: "flex", alignItems: "center" }}
-                          className="explorer-item-icon"
-                        >
-                          <Fade
-                            in={data === null || pageInfo === null}
-                            style={{
-                              transitionDelay:
-                                data === null || pageInfo === null
-                                  ? "200ms"
-                                  : "0ms",
-                            }}
-                            unmountOnExit
-                          >
-                            <CircularProgress size="1rem" color="primary" />
-                          </Fade>
-                        </FlexBox>
-                        <FlexBox
-                          style={{ fontSize: "10pt" }}
-                          className="explorer-item-name"
-                        >
-                          Loading results for '{path}'.
-                        </FlexBox>
+                        {err === "permission denied" ? (
+                          <>
+                            <FlexBox
+                              style={{ display: "flex", alignItems: "center" }}
+                              className="explorer-item-icon-warning"
+                            >
+                              <FiAlertTriangle
+                                className="auto-margin"
+                              />
+                            </FlexBox>
+                            <FlexBox
+                              style={{ fontSize: "10pt" }}
+                              className="explorer-item-name"
+                            >
+                              Unfortunately, you do not have the necessary
+                              permissions
+                            </FlexBox>
+                          </>
+                        ) : (
+                          <>
+                            <FlexBox
+                              style={{ display: "flex", alignItems: "center" }}
+                              className="explorer-item-icon"
+                            >
+                              <Fade
+                                in={data === null || pageInfo === null}
+                                style={{
+                                  transitionDelay:
+                                    data === null || pageInfo === null
+                                      ? "200ms"
+                                      : "0ms",
+                                }}
+                                unmountOnExit
+                              >
+                                <CircularProgress size="1rem" color="primary" />
+                              </Fade>
+                            </FlexBox>
+                            <FlexBox
+                              style={{ fontSize: "10pt" }}
+                              className="explorer-item-name"
+                            >
+                              Loading results for '{path}'.
+                            </FlexBox>
+                          </>
+                        )}
                       </FlexBox>
                     </div>
                   ) : (

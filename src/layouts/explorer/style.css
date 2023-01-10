@@ -54,6 +54,13 @@
     color: var(--theme-brand-blue);
 }
 
+.explorer-item-icon-warning {
+    min-width: 42px;
+    max-width: 42px;
+    font-size: 20px;
+    color: var(--theme-yellow);
+}
+
 .explorer-item-container {
     line-height: 42px;
 }
