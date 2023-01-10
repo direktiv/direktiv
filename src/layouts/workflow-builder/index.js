@@ -5,7 +5,7 @@ import FlexBox from "../../components/flexbox";
 export default function WorkflowBuilder(props) {
 
     return(
-        <FlexBox className="gap wrap" style={{paddingRight:"8px"}}>
+        <FlexBox gap wrap style={{paddingRight:"8px"}}>
             <ContentPanel style={{width:"100%"}}>
                 <ContentPanelTitle>
                     <ContentPanelTitleIcon>
@@ -16,7 +16,7 @@ export default function WorkflowBuilder(props) {
                     </FlexBox>
                 </ContentPanelTitle>
                 <ContentPanelBody className="secrets-panel">
-                    <FlexBox className="gap col">
+                    <FlexBox col gap>
                         wf builder
                     </FlexBox>
                 </ContentPanelBody>

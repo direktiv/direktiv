@@ -22,8 +22,8 @@ export default function Login(props) {
                     <FlexBox className="navbar-logo" style={{margin:0}}>
                         <img alt="logo" src={Logo} />
                     </FlexBox>
-                    <FlexBox className="col gap" style={{alignItems:"center", justifyContent:'center'}}>
-                        <FlexBox className="col gap" style={{padding:"15px", width:"400px", maxHeight:"150px", background:"white"}}>
+                    <FlexBox col gap style={{alignItems:"center", justifyContent:'center'}}>
+                        <FlexBox col gap style={{padding:"15px", width:"400px", maxHeight:"150px", background:"white"}}>
                             <h1 style={{fontSize:"12pt"}}>Sign In</h1>
                             <div style={{paddingRight:"10px"}}>
                                 <input type="password" value={apiKey} onChange={e=>setApiKey(e.target.value)} placeholder="Enter an apikey..."/> 

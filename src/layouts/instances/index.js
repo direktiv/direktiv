@@ -15,6 +15,7 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import utc from "dayjs/plugin/utc";
 import { useNavigate } from 'react-router-dom';
 import Loader from '../../components/loader';
+import { useApiKey } from '../../util/apiKeyProvider';
 
 const PAGE_SIZE = 10
 
@@ -27,7 +28,7 @@ function InstancesPage(props) {
         return <></>
     }
     return(
-        <FlexBox className="col gap" style={{ paddingRight: "8px" }}>
+        <FlexBox col gap style={{ paddingRight: "8px" }}>
             <InstancesTable namespace={namespace}/>
         </FlexBox>
     );
@@ -38,7 +39,8 @@ export default InstancesPage;
 export function InstancesTable(props) {
     const {namespace, mini, hideTitle, panelStyle, bodyStyle, filter, placeholder} = props
     const [load, setLoad] = useState(true)
-
+    
+    const [apiKey] = useApiKey()
     const [filterName, setFilterName] = useState("")
     const [filterCreatedBefore, setFilterCreatedBefore] = useState("")
     const [filterCreatedAfter, setFilterCreatedAfter] = useState("")
@@ -76,7 +78,7 @@ export function InstancesTable(props) {
 
     const pageHandler = usePageHandler(PAGE_SIZE)
     const goToFirstPage = pageHandler.goToFirstPage
-    const {data, err, pageInfo} = useInstances(Config.url, true, namespace, localStorage.getItem("apikey"), pageHandler.pageParams, ...queryFilters)
+    const {data, err, pageInfo} = useInstances(Config.url, true, namespace, apiKey, pageHandler.pageParams, ...queryFilters)
 
     useEffect(()=>{
         if(data !== null || err !== null) {
@@ -94,8 +96,8 @@ export function InstancesTable(props) {
         <Loader load={load} timer={3000}>
         {hideTitle ?<></>:
         <FlexBox className="gap instance-filter" style={{justifyContent: "space-between", alignItems: "center", paddingBottom: "8px", flexGrow:"0"}}>
-            <FlexBox className="col gap">
-                <FlexBox className="row center-y gap">
+            <FlexBox col gap>
+                <FlexBox row gap center="y" >
                     Filter Name
                     {filterName === "" ?  <></> : <div className="filter-close-btn" onClick={()=>{setFilterName("")}}><VscClose/></div>}
                 </FlexBox>
@@ -103,8 +105,8 @@ export function InstancesTable(props) {
                     setFilterName(e.target.value)
                 }}/>
             </FlexBox>
-            <FlexBox className="col gap" >
-                <FlexBox className="row center-y gap">
+            <FlexBox col gap >
+                <FlexBox row gap center="y" >
                     Filter State
                     {filterState === "" ?  <></> : <div className="filter-close-btn" onClick={()=>{setFilterState("")}}><VscClose/></div>}
                 </FlexBox>
@@ -118,8 +120,8 @@ export function InstancesTable(props) {
                     <option value="cancelled">Cancelled</option>
                 </select>
             </FlexBox>
-            <FlexBox className="col gap" >
-                <FlexBox className="row center-y gap">
+            <FlexBox col gap >
+                <FlexBox row gap center="y" >
                     Filter Invoker
                     {filterInvoker === "" ?  <></> : <div className="filter-close-btn" onClick={()=>{setFilterInvoker("")}}><VscClose/></div>}
                 </FlexBox>
@@ -133,8 +135,8 @@ export function InstancesTable(props) {
                     <option value="cron">Cron</option>
                 </select>
             </FlexBox>
-            <FlexBox className="col gap" >
-                <FlexBox className="row center-y gap">
+            <FlexBox col gap >
+                <FlexBox row gap center="y" >
                     Filter Created Before
                     {filterCreatedBefore === "" ?  <></> : <div className="filter-close-btn" onClick={()=>{setFilterCreatedBefore("")}}><VscClose/></div>}
                 </FlexBox>
@@ -142,8 +144,8 @@ export function InstancesTable(props) {
                     setFilterCreatedBefore(e.target.value)
                 }}/>
             </FlexBox>
-            <FlexBox className="col gap" >
-                <FlexBox className="row center-y gap">
+            <FlexBox col gap >
+                <FlexBox row gap center="y" >
                     Filter Created After
                     {filterCreatedAfter === "" ?  <></> : <div className="filter-close-btn" onClick={()=>{setFilterCreatedAfter("")}}><VscClose/></div>}
                 </FlexBox>
@@ -160,7 +162,7 @@ export function InstancesTable(props) {
             <ContentPanelTitleIcon>
                 <VscVmRunning/>
             </ContentPanelTitleIcon>
-            <FlexBox className="gap" style={{ alignItems: "center" }}>
+            <FlexBox gap style={{ alignItems: "center" }}>
                 <div>
                     Instances
                 </div>
@@ -213,7 +215,7 @@ export function InstancesTable(props) {
         }
         </ContentPanelBody>
         </ContentPanel>
-        <FlexBox className="row" style={{justifyContent:"flex-end", paddingBottom:"1em", flexGrow: 0}}>
+        <FlexBox row style={{justifyContent:"flex-end", paddingBottom:"1em", flexGrow: 0}}>
             <Pagination pageHandler={pageHandler} pageInfo={pageInfo}/>
         </FlexBox>
     </Loader>

@@ -101,7 +101,7 @@ export function ActivityRow(props) {
             </td>
             <td className="center-align">
                 <FlexBox className="center gap">
-                    <Button className={`small light`} style={state !== "pending" ? { visibility: "hidden" } : {}} onClick={async () => {
+                    <Button color="info" variant="outlined" className={`small light`} style={state !== "pending" ? { visibility: "hidden" } : {}} onClick={async () => {
                         try {
                             await cancelActivity(id)
                         } catch (e) {
@@ -111,7 +111,7 @@ export function ActivityRow(props) {
                     }}>
                         Cancel
                     </Button>
-                    <Button className="small" onClick={async () => {
+                    <Button onClick={async () => {
                         setActivity(id)
                     }}>
                         Logs

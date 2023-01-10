@@ -1,3 +1,4 @@
+// Start Block Node
 export const NodeStartBlock = {
     name: 'StartBlock',
     family: "special",
@@ -20,6 +21,7 @@ export const NodeStartBlock = {
     html: 'Start Block'
 }
 
+// Error Block Node
 export const NodeErrorBlock = {
     name: 'CatchError',
     family: "special",
@@ -42,7 +44,7 @@ export const NodeErrorBlock = {
     html: 'Catch Error'
 }
 
-
+// Array of Node Blocks used to represent workflow states
 export const NodeStateAction = {
     name: 'StateAction',
     family: "primitive",

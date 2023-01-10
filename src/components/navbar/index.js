@@ -4,8 +4,7 @@ import Logo from '../../assets/nav-logo.png'
 import FlexBox from '../flexbox';
 import NamespaceSelector from '../namespace-selector';
 
-import Modal, { KeyDownDefinition } from '../modal';
-import { ButtonDefinition } from '../modal';
+import Modal  from '../modal';
 import {VscAdd,  VscFolderOpened, VscGraph, VscLayers, VscServer,  VscSettingsGear,  VscSymbolEvent, VscVmRunning, VscPlayCircle, VscCloudUpload} from 'react-icons/vsc';
 
 import { Link, matchPath, useLocation, useNavigate } from 'react-router-dom';
@@ -40,7 +39,7 @@ function NavBar(props) {
         <>
             <ResponsiveNavbar toggled={toggleResponsive} setToggled={setToggleResponsive} />
             <FlexBox onClick={onClick} style={{...style}} className={className}>
-                <FlexBox className="col tall" style={{ gap: "12px" }}>
+                <FlexBox col tall style={{ gap: "12px" }}>
                     <FlexBox className="navbar-logo">
                         <img alt="logo" src={Logo} />
                     </FlexBox>
@@ -142,20 +141,16 @@ function NewNamespaceBtn(props) {
             escapeToCancel
             modalStyle={{ width: "340px" }}
             button={(
-                <FlexBox className="new-namespace-btn">
-                    <div className="auto-margin">
-                        <FlexBox className="row" style={{ gap: "8px", alignItems: "center" }}>
-                            <FlexBox>
-                                <VscAdd />
-                            </FlexBox>
-                            <FlexBox>
-                                New namespace
-                            </FlexBox>
-                        </FlexBox>
-                    </div>
+                <FlexBox className="gap center">
+                <VscAdd />
+                <span style={{fontSize:"15px", fontWeight:"normal"}}>New namespace</span>
                 </FlexBox>
             )}
-
+            buttonProps={{
+                auto: true,
+                size: "medium",
+                fontSize: "large"
+            }}
             titleIcon={<VscAdd />}
 
             onClose={() => {
@@ -175,42 +170,66 @@ function NewNamespaceBtn(props) {
             }}
 
             keyDownActions={[
-                KeyDownDefinition("Enter", async () => {
-                    await createNamespace(ns)
-                    setTimeout(() => {
-                        navigate(`/n/${ns}`)
-                    }, 200)
-                    setNs("")
-                }, () => { }, true)
+                {
+                    code: "Enter",
+
+                    fn: async () => {
+                        await createNamespace(ns)
+                        setTimeout(() => {
+                            navigate(`/n/${ns}`)
+                        }, 200)
+                        setNs("")
+                    },
+
+                    errFunc: () => { },
+                    closeModal: true
+                }
             ]}
 
             actionButtons={[
-                ButtonDefinition("Add", async () => {
-                    if (tabIndex === 0) {
-                        await createNamespace(ns)
-                    } else {
-                        let processesMirrorSettings = JSON.parse(JSON.stringify(mirrorSettings))
-                        if (mirrorAuthMethod === "token") {
-                            processesMirrorSettings["passphrase"] = processesMirrorSettings["token"]
-                            processesMirrorSettings["privateKey"] = ""
-                            processesMirrorSettings["publicKey"] = ""
-                        } else if (mirrorAuthMethod === "none") {
-                            processesMirrorSettings["passphrase"] = ""
-                            processesMirrorSettings["privateKey"] = ""
-                            processesMirrorSettings["publicKey"] = ""
-                        }
+                {
+                    label: "Add",
 
-                        delete processesMirrorSettings["token"]
-                        await createMirrorNamespace(ns, processesMirrorSettings)
-                    }
-                    setTimeout(() => {
-                        navigate(`/n/${ns}`)
-                    }, 200)
-                    setNs("")
-                }, "small", () => { }, true, false, true),
-                ButtonDefinition("Cancel", () => {
-                    setNs("")
-                }, "small light", () => { }, true, false)
+                    onClick: async () => {
+                        if (tabIndex === 0) {
+                            await createNamespace(ns)
+                        } else {
+                            let processesMirrorSettings = JSON.parse(JSON.stringify(mirrorSettings))
+                            if (mirrorAuthMethod === "token") {
+                                processesMirrorSettings["passphrase"] = processesMirrorSettings["token"]
+                                processesMirrorSettings["privateKey"] = ""
+                                processesMirrorSettings["publicKey"] = ""
+                            } else if (mirrorAuthMethod === "none") {
+                                processesMirrorSettings["passphrase"] = ""
+                                processesMirrorSettings["privateKey"] = ""
+                                processesMirrorSettings["publicKey"] = ""
+                            }
+
+                            delete processesMirrorSettings["token"]
+                            await createMirrorNamespace(ns, processesMirrorSettings)
+                        }
+                        setTimeout(() => {
+                            navigate(`/n/${ns}`)
+                        }, 200)
+                        setNs("")
+                    },
+
+                    buttonProps: {variant: "contained", color: "primary"},
+                    errFunc: () => { },
+                    closesModal: true,
+                    validate: true
+                },
+                {
+                    label: "Cancel",
+
+                    onClick: () => {
+                        setNs("")
+                    },
+
+                    buttonProps: {},
+                    errFunc: () => { },
+                    closesModal: true
+                }
             ]}
 
             requiredFields={[
@@ -239,13 +258,13 @@ function NewNamespaceBtn(props) {
                     </FlexBox>), (
                     <FlexBox key={`form-new-ns-mirror`} className="col gap">
                         <FlexBox key={`input-new-ns-name`} className="col gap-md" style={{ paddingRight: "12px" }}>
-                            <FlexBox className="row gap-sm" style={{ justifyContent: "flex-start" }}>
+                            <FlexBox row gap="sm" style={{ justifyContent: "flex-start" }}>
                                 <span className={`input-title`}>Namespace*</span>
                             </FlexBox>
                             <input autoFocus value={ns} onChange={(e) => setNs(e.target.value)} placeholder="Enter namespace name" />
                         </FlexBox>
                         <FlexBox key={`input-new-ns-auth`} className="col gap-md">
-                            <FlexBox className="row gap-sm" style={{ justifyContent: "flex-start" }}>
+                            <FlexBox row gap="sm" style={{ justifyContent: "flex-start" }}>
                                 <span className={`input-title`}>Authentication Method</span>
                             </FlexBox>
                             <div style={{ width: "100%", paddingRight: "12px", display: "flex" }}>
@@ -267,8 +286,8 @@ function NewNamespaceBtn(props) {
 
                             return (
                                 <FlexBox key={`input-new-ns-${key}`} className="col gap-sm" style={{ paddingRight: "12px" }}>
-                                    <FlexBox className="row" style={{ justifyContent: "space-between" }}>
-                                        <FlexBox className="row gap-sm" style={{ justifyContent: "flex-start" }}>
+                                    <FlexBox row style={{ justifyContent: "space-between" }}>
+                                        <FlexBox row gap="sm" style={{ justifyContent: "flex-start" }}>
                                             <span className={`input-title`}>{mirrorSettingInfoMetaInfo[key].plainName}{mirrorSettingInfoMetaInfo[key].required ? "*" : ""}</span>
                                             {
                                                 mirrorSettingInfoMetaInfo[key].info ?
@@ -300,7 +319,7 @@ function NewNamespaceBtn(props) {
                                                 }}
                                                     zIndex={9999}>
                                                     <div className='input-title-button'>
-                                                        <FlexBox className="row gap-sm center" style={{ justifyContent: "flex-end", marginRight: "-6px" }}>
+                                                        <FlexBox center row gap="sm" style={{ justifyContent: "flex-end", marginRight: "-6px" }}>
                                                             <span onClick={(e) => {
                                                             }}>Upload</span>
                                                             <VscCloudUpload />

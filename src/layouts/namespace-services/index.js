@@ -2,19 +2,21 @@ import { useNamespaceServices } from "direktiv-react-hooks";
 import {VscLayers, VscChevronDown, VscChevronRight, VscRefresh} from 'react-icons/vsc';
 
 import "./style.css"
-import {useEffect, useState} from "react"
+import {useEffect, useState, useMemo} from "react"
 import { VscTrash, VscCircleLargeFilled } from 'react-icons/vsc';
 
 import ContentPanel, { ContentPanelBody, ContentPanelTitle, ContentPanelTitleIcon } from "../../components/content-panel";
 import FlexBox from "../../components/flexbox";
 import { Config, GenerateRandomKey } from "../../util";
-import Modal, { ButtonDefinition, KeyDownDefinition } from "../../components/modal";
-import AddValueButton from "../../components/add-button";
+import Modal  from "../../components/modal";
 import {Link} from 'react-router-dom'
 import HelpIcon from "../../components/help"
 import Tippy from '@tippyjs/react';
 import 'tippy.js/dist/tippy.css';
-import Button from "../../components/button";
+
+import { VscAdd } from 'react-icons/vsc';
+import { useApiKey } from "../../util/apiKeyProvider";
+
 
 export default function ServicesPanel(props) {
     const {namespace} = props
@@ -23,7 +25,7 @@ export default function ServicesPanel(props) {
         return <></>
     }
     return(
-        <FlexBox className="gap wrap" style={{paddingRight:"8px"}}>
+        <FlexBox gap wrap style={{paddingRight:"8px"}}>
             <NamespaceServices namespace={namespace}/>
         </FlexBox>
     )
@@ -33,17 +35,17 @@ export function ServiceCreatePanel(props) {
     const {name, setName, image, setImage, scale, setScale, size, setSize, cmd, setCmd, maxScale} = props
 
     return(
-        <FlexBox className="col gap" style={{fontSize: "12px"}}>
-                <FlexBox className="col gap">
-                    <FlexBox className="col" style={{paddingRight:"10px"}}>
+        <FlexBox col gap style={{fontSize: "12px"}}>
+                <FlexBox col gap>
+                    <FlexBox col style={{paddingRight:"10px"}}>
                         Name
                         <input value={name} onChange={(e)=>setName(e.target.value)} placeholder="Enter name for service" />
                     </FlexBox>
-                    <FlexBox className="col" style={{paddingRight:"10px"}}>
+                    <FlexBox col style={{paddingRight:"10px"}}>
                         Image
                         <input value={image} onChange={(e)=>setImage(e.target.value)} placeholder="Enter an image name" />
                     </FlexBox>
-                    <FlexBox className="col" style={{paddingRight:"10px"}}>
+                    <FlexBox col style={{paddingRight:"10px"}}>
                         Scale
                         <Tippy content={scale} trigger={"mouseenter click"}>
                             <input type="range" style={{paddingLeft:"0px"}} min={"0"} max={maxScale.toString()} value={scale.toString()} onChange={(e)=>setScale(e.target.value)} />
@@ -53,7 +55,7 @@ export function ServiceCreatePanel(props) {
                             <option style={{flex:"auto", textAlign:"right", lineHeight:"10px", paddingRight:"5px" }} value={maxScale} label={maxScale}/>
                         </datalist>
                     </FlexBox>
-                    <FlexBox className="col" style={{paddingRight:"10px"}}>
+                    <FlexBox col style={{paddingRight:"10px"}}>
                         Size
                         <input list="sizeMarks" style={{paddingLeft:"0px"}} type="range" min={"0"} value={size.toString()}  max={"2"} onChange={(e)=>setSize(e.target.value)}/>
                         <datalist style={{display:"flex", alignItems:'center'}} id="sizeMarks">
@@ -62,7 +64,7 @@ export function ServiceCreatePanel(props) {
                             <option style={{flex:"auto", textAlign:"right", lineHeight:"10px" }} value="2" label="large"/>
                         </datalist>
                     </FlexBox>
-                    <FlexBox className="col" style={{paddingRight:"10px"}}>
+                    <FlexBox col style={{paddingRight:"10px"}}>
                         CMD
                         <input value={cmd} onChange={(e)=>setCmd(e.target.value)} placeholder="Enter the CMD for a service" />
                     </FlexBox>
@@ -73,7 +75,6 @@ export function ServiceCreatePanel(props) {
 
 function NamespaceServices(props) {
     const {namespace} = props
-
     const [load, setLoad] = useState(true)
     const [serviceName, setServiceName] = useState("")
     const [image, setImage] = useState("")
@@ -81,8 +82,9 @@ function NamespaceServices(props) {
     const [size, setSize] = useState(0)
     const [cmd, setCmd] = useState("")
     const [maxScale, setMaxScale] = useState(0)
+    const [apiKey] = useApiKey()
 
-    const {data, err, config, getNamespaceConfig, getNamespaceServices, createNamespaceService, deleteNamespaceService} = useNamespaceServices(Config.url, true, namespace, localStorage.getItem("apikey"))
+    const {data, err, config, getNamespaceConfig, getNamespaceServices, createNamespaceService, deleteNamespaceService} = useNamespaceServices(Config.url, true, namespace, apiKey)
 
     useEffect(()=>{
         async function getcfg() {
@@ -106,13 +108,13 @@ function NamespaceServices(props) {
         return <></>
     }
 
-    return(
+    return (
         <ContentPanel style={{width:"100%", minWidth: "300px"}}>
             <ContentPanelTitle>
                 <ContentPanelTitleIcon>
                     <VscLayers/>
                 </ContentPanelTitleIcon>
-                <FlexBox style={{display:"flex", alignItems:"center"}} className="gap">
+                <FlexBox style={{display:"flex", alignItems:"center"}} gap>
                             <div>
                                 Services 
                             </div>
@@ -134,18 +136,45 @@ function NamespaceServices(props) {
                         setCmd("")
                     }}
                     button={(
-                        <AddValueButton  label=" " />
-                    )}  
+                        <VscAdd/>
+                    )}
+                    buttonProps={{
+                        auto: true,
+                    }}
                     keyDownActions={[
-                        KeyDownDefinition("Enter", async () => {
-                        }, ()=>{}, true)
+                        {
+                            code: "Enter",
+
+                            fn: async () => {
+                            },
+
+                            errFunc: ()=>{},
+                            closeModal: true
+                        }
                     ]}
                     actionButtons={[
-                        ButtonDefinition("Add", async () => {
-                            await createNamespaceService(serviceName, image, parseInt(scale), parseInt(size), cmd)
-                        }, "small", ()=>{}, true, false, true),
-                        ButtonDefinition("Cancel", () => {
-                        }, "small light", ()=>{}, true, false)
+                        {
+                            label: "Add",
+
+                            onClick: async () => {
+                                await createNamespaceService(serviceName, image, parseInt(scale), parseInt(size), cmd)
+                            },
+
+                            buttonProps: {variant: "contained", color: "primary"},
+                            errFunc: ()=>{},
+                            closesModal: true,
+                            validate: true
+                        },
+                        {
+                            label: "Cancel",
+
+                            onClick: () => {
+                            },
+
+                            buttonProps: {},
+                            errFunc: ()=>{},
+                            closesModal: true
+                        }
                     ]}
                     requiredFields={[
                         {tip: "service name is required", value: serviceName},
@@ -161,12 +190,12 @@ function NamespaceServices(props) {
             </div>
             </ContentPanelTitle>
             <ContentPanelBody className="secrets-panel">
-                <FlexBox className="gap col">
-                    <FlexBox className="col gap">
+                <FlexBox col gap>
+                    <FlexBox col gap>
                         {data.length === 0 ?
                         <div className="col">
                         <FlexBox style={{ height:"40px", }}>
-                                <FlexBox className="gap" style={{alignItems:"center", paddingLeft:"8px"}}>
+                                <FlexBox gap style={{alignItems:"center", paddingLeft:"8px"}}>
                                     <div style={{fontSize:"10pt", }}>
                                         No services have been created.
                                     </div>
@@ -194,17 +223,16 @@ function NamespaceServices(props) {
                 </FlexBox>
             </ContentPanelBody>
         </ContentPanel>
-
-    )
+    );
 }
 
 export function Service(props) {
     const {allowRedeploy, name, image, status, conditions, deleteService, url, revision, dontDelete, traffic, latest} = props
-    return(
+    return (
         <div className="col" style={{minWidth: "300px"}}>
             <FlexBox style={{ height:"40px", border:"1px solid #f4f4f4", backgroundColor:"#fcfdfe"}}>
                 <Link to={url} style={{ width: "100%", display: "flex", alignItems: "center" }}>
-                    <FlexBox className="gap" style={{alignItems:"center", paddingLeft:"8px"}}>
+                    <FlexBox gap style={{alignItems:"center", paddingLeft:"8px"}}>
                         <ServiceStatus status={status} />
                         <div style={{fontWeight:"bold"}}>
                             {name}
@@ -241,21 +269,40 @@ export function Service(props) {
                         }}
                         button={(
                             <ServicesDeleteButton />
-                        )}  
+                        )}
+                        buttonProps={{
+                            color: "info"
+                        }} 
                         actionButtons={[
-                            ButtonDefinition("Delete", async () => {
-                                if(revision !== undefined) {
-                                    await deleteService(revision)
-                                }else {
-                                    await deleteService(name)
-                                }
-                             
-                            }, "small red", ()=>{}, true, false),
-                            ButtonDefinition("Cancel", () => {
-                            }, "small light", ()=>{}, true, false)
+                            {
+                                label: "Delete",
+
+                                onClick: async () => {
+                                    if(revision !== undefined) {
+                                        await deleteService(revision)
+                                    }else {
+                                        await deleteService(name)
+                                    }
+                                 
+                                },
+
+                                buttonProps: {variant: "contained", color: "error"},
+                                errFunc: ()=>{},
+                                closesModal: true
+                            },
+                            {
+                                label: "Cancel",
+
+                                onClick: () => {
+                                },
+
+                                buttonProps: {},
+                                errFunc: ()=>{},
+                                closesModal: true
+                            }
                         ]}
                     >
-                        <FlexBox className="col gap">
+                        <FlexBox col gap>
                             <FlexBox >
                                 Are you sure you want to delete '{name}'?
                                 <br/>
@@ -283,31 +330,34 @@ export function Service(props) {
                                 <VscRefresh />
                             )}
                             button={(
-                                <Button className="light small">
-                                    <VscRefresh className="grey-text" style={{ fontSize: "16px" }} />
-                                </Button>
+                                <VscRefresh className="grey-text" style={{ fontSize: "16px" }} />
                             )}
+                            buttonProps={{
+                                auto: true,
+                            }}
                             actionButtons={[
-                                ButtonDefinition(
-                                    "Yes", 
-                                    async () => {
+                                {
+                                    label: "Yes",
+
+                                    onClick: async () => {
                                         await deleteService(name, revision)
                                     },
-                                    "small",
-                                    () => {
+
+                                    buttonProps: {variant: "contained", color: "primary"},
+
+                                    errFunc: () => {
                                         console.log("err func")
                                     },
-                                    true,
-                                    true
-                                ),
-                                ButtonDefinition(
-                                    "Cancel", 
-                                    () => {},
-                                    "small light",
-                                    () => {},
-                                    true,
-                                    false
-                                )
+
+                                    closesModal: true
+                                },
+                                {
+                                    label: "Cancel",
+                                    onClick: () => {},
+                                    buttonProps: {},
+                                    errFunc: () => {},
+                                    closesModal: true
+                                }
                             ]}
                         >
                             <div style={{ textAlign: "center" }}>
@@ -331,7 +381,7 @@ export function Service(props) {
                 <ServiceDetails conditions={conditions} />
             </FlexBox>
         </div>
-    )
+    );
 }
 
 function ServiceDetails(props) {
@@ -369,12 +419,12 @@ function Condition(props){
 
     return (
         <li style={{ display: "flex", gap: "8px" }}>
-            <FlexBox className="col">
-                <FlexBox className="gap">
+            <FlexBox col>
+                <FlexBox gap>
                     <div>
                         <ServiceStatus status={status}/>
                     </div>
-                    <FlexBox className="gap">
+                    <FlexBox gap>
                         <FlexBox>
                             {name}
                         </FlexBox>
@@ -438,16 +488,22 @@ function Condition(props){
 }
 
 export function ServiceStatus(props) {
-    const {status} = props
+    const color =  useMemo(()=>{
+        if (props.status) {
+            switch (props.status) {
+                case "False":
+                    return "#FF616D"
+                case "Unknown":
+                    return "#082032"
+                default:
+                    break;
+            }
+        }
 
-    let color = "#66DE93"
-    if (status === "False") {
-        color = "#FF616D"
-    }
+        // default status color
+        return "#66DE93"
 
-    if (status === "Unknown") {
-        color = "#082032"
-    }
+    },[props])
 
     return(
         <div>   
@@ -456,14 +512,10 @@ export function ServiceStatus(props) {
     )
 }
 
-function ServicesDeleteButton(props) {
-    const {onClick} = props
-
+function ServicesDeleteButton() {
     return (
-        <FlexBox onClick={onClick} className="col red-text" style={{height: "100%", textAlign:"right", width:"30px"}}>
-            <div className="secrets-delete-btn" style={{height: "100%", display: "flex", paddingRight: "8px" }}>
-                <VscTrash className="auto-margin" />
-            </div>
-        </FlexBox>
+        <div className="red-text" style={{ display: "flex", alignItems: "center", height: "100%" }}>
+            <VscTrash className="auto-margin" />
+        </div>
     )
 }

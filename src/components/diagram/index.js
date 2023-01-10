@@ -13,6 +13,14 @@ export const position = { x: 0, y: 0}
 const dagreGraph = new dagre.graphlib.Graph()
 dagreGraph.setDefaultEdgeLabel(() => ({}))
 
+/**
+* Renders a diagram of a workflow and optionally its current state position during a instance.
+* * Props
+*   * workflow: YAML string of workflow.
+*   * flow: Array of executed states in an instance. Example - ['noopA', 'noopB']
+*   * instanceStatus: Status of current instance. This is used to display if flow is complete with animated connections.
+*   * disabled: Disables diagram zoom-in
+*/
 export default function WorkflowDiagram(props) {
     const {workflow, flow, instanceStatus, disabled} = props
 

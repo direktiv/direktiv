@@ -6,11 +6,13 @@ import { VscLayers } from 'react-icons/vsc';
 
 import { Service } from "../../namespace-services"
 import { useNavigate } from "react-router"
+import { useApiKey } from "../../../util/apiKeyProvider";
 
 export default function WorkflowRevisions(props) {
     const {namespace, service, version, filepath} = props
     const navigate = useNavigate()
-    const {revisions, err} = useWorkflowService(Config.url, namespace, filepath, service, version, navigate, localStorage.getItem("apikey"))
+    const [apiKey] = useApiKey()
+    const {revisions, err} = useWorkflowService(Config.url, namespace, filepath, service, version, navigate, apiKey)
 
     if(revisions === null) {
         return <></>
@@ -21,7 +23,7 @@ export default function WorkflowRevisions(props) {
     }
 
     return (
-        <FlexBox className="gap wrap" style={{paddingRight: "8px"}}>
+        <FlexBox gap wrap style={{paddingRight: "8px"}}>
         <FlexBox style={{flex: 6}}>
             <ContentPanel style={{width: "100%"}}>
                 <ContentPanelTitle>
@@ -34,8 +36,8 @@ export default function WorkflowRevisions(props) {
                 </ContentPanelTitle>
                 <ContentPanelBody>
 
-                    <FlexBox className="gap col">
-                        <FlexBox className="gap col">
+                    <FlexBox col gap>
+                        <FlexBox col gap>
                             {revisions.map((obj) => {
                                 let dontDelete = true
 

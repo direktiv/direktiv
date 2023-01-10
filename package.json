@@ -4,7 +4,6 @@
   "private": true,
   "dependencies": {
     "@babel/helper-environment-visitor": "^7.16.7",
-    "@chakra-ui/react": "^1.7",
     "@craco/craco": "^6.4.5",
     "@emotion/react": "^11.9.3",
     "@emotion/styled": "^11.9.3",
@@ -24,7 +23,7 @@
     "d3-sankey-circular": "^0.34.0",
     "dagre": "^0.8.5",
     "dayjs": "^1.10.7",
-    "direktiv-react-hooks": "^0.0.437",
+    "direktiv-react-hooks": "^0.0.438",
     "drawflow": "^0.0.55",
     "file-saver": "^2.0.5",
     "fuse.js": "^6.5.3",
@@ -63,12 +62,28 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "analyze": "craco build"
+    "analyze": "craco build",
+    "storybook": "start-storybook -p 6006 -s public",
+    "build-storybook": "build-storybook -s public"
+  },
+  "resolutions": {
+    "babel-loader": "8.1.0",
+    "react-error-overlay": "6.0.9"
   },
   "eslintConfig": {
     "extends": [
       "react-app",
       "react-app/jest"
+    ],
+    "overrides": [
+      {
+        "files": [
+          "**/*.stories.*"
+        ],
+        "rules": {
+          "import/no-anonymous-default-export": "off"
+        }
+      }
     ]
   },
   "browserslist": {
@@ -85,9 +100,22 @@
   },
   "devDependencies": {
     "@faker-js/faker": "^7.3.0",
+    "@storybook/addon-actions": "^6.5.10",
+    "@storybook/addon-essentials": "^6.5.10",
+    "@storybook/addon-interactions": "^6.5.10",
+    "@storybook/addon-links": "^6.5.10",
+    "@storybook/builder-webpack4": "^6.5.10",
+    "@storybook/manager-webpack4": "^6.5.10",
+    "@storybook/node-logger": "^6.5.10",
+    "@storybook/preset-create-react-app": "^3.2.0",
+    "@storybook/react": "^6.5.10",
+    "@storybook/testing-library": "^0.0.13",
     "@types/drawflow": "^0.0.4",
+    "@types/react-virtualized": "^9.21.21",
     "@types/react-window": "^1.8.5",
     "encoding": "^0.1.13",
+    "react-error-overlay": "6.0.9",
+    "storybook-addon-react-router-v6": "^0.2.1",
     "yalc": "^1.0.0-pre.53"
   }
 }

@@ -9,12 +9,11 @@ import { Config } from './util';
 import Login from './layouts/login';
 import { ThemeProvider } from "@mui/material/styles";
 import theme from "./theme/style"
+import { ApiKeyProvider } from "./util/apiKeyProvider";
 
-function App() {
-
+function App() {    
     const [version, setVersion] = useState("")
     const [loadVersion, setLoadVersion] = useState(true)
-
     const [akey, setAKey] = useState(localStorage.getItem('apikey'))
     const [login, setLogin] = useState(false)
     const [akeyReq, setAKeyReq] = useState(false)
@@ -85,15 +84,23 @@ function App() {
         </div>
     </>
     return (
-        <ThemeProvider theme={theme}>
-            <div className="App">
-                {login ?
-                    <Login setLogin={setLogin} setAKey={setAKey} />
-                    :
-                    <MainLayout akey={akey} akeyReq={akeyReq} footer={f} extraRoutes={[]} extraNavigation={[]} />
-                }
-            </div>
-        </ThemeProvider>
+      <ThemeProvider theme={theme}>
+        <ApiKeyProvider>
+          <div className="App">
+            {login ? (
+              <Login setLogin={setLogin} setAKey={setAKey} />
+            ) : (
+              <MainLayout
+                akey={akey}
+                akeyReq={akeyReq}
+                footer={f}
+                extraRoutes={[]}
+                extraNavigation={[]}
+              />
+            )}
+          </div>
+        </ApiKeyProvider>
+      </ThemeProvider>
     );
 }
 

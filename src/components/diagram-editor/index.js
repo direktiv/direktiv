@@ -23,11 +23,12 @@ import './styles/style.css';
 import 'drawflow/dist/drawflow.min.css'
 
 import { importFromWorkflowData } from '../../components/diagram-editor/import';
-import Modal, { ButtonDefinition, ModalHeadless } from '../modal';
+import Modal, { ModalHeadless } from '../modal';
 
 import Ajv from "ajv"
 import { CustomWidgets } from './widgets';
 import InvalidWorkflow from '../invalid-workflow';
+import { useApiKey } from '../../util/apiKeyProvider';
 
 const actionsNodesFuse = new Fuse(ActionsNodes, {
     keys: ['name']
@@ -102,13 +103,14 @@ function Actions(props) {
 
 function FunctionsList(props) {
     const { functionList, setFunctionList, namespace, functionDrawerWidth } = props
+    const [apiKey] = useApiKey()
 
     const [newFunctionFormRef, setNewFunctionFormRef] = useState(null)
     const [formData, setFormData] = useState({})
 
-    const namespaceServiceHook = useNamespaceServices(Config.url, false, namespace, localStorage.getItem("apikey"))
-    const globalServiceHook = useGlobalServices(Config.url, false, localStorage.getItem("apikey"))
-    const namespaceNodesHook = useNodes(Config.url, false, namespace, "/", localStorage.getItem("apikey"), "first=20")
+    const namespaceServiceHook = useNamespaceServices(Config.url, false, namespace, apiKey)
+    const globalServiceHook = useGlobalServices(Config.url, false, apiKey)
+    const namespaceNodesHook = useNodes(Config.url, false, namespace, "/", apiKey, "first=20")
 
 
     if (namespaceServiceHook.data === null || globalServiceHook.data === null || namespaceNodesHook.data === null) {
@@ -179,43 +181,53 @@ function FunctionsList(props) {
                     setFormData({})
                 }}
                 actionButtons={[
-                    ButtonDefinition("Create Function", async () => {
-                        newFunctionFormRef.click()
+                    {
+                        label: "Create Function",
+                        onClick: async () => {
+                            newFunctionFormRef.click()
 
-                        // Check if form data is valid
-                        if (!validate(formData)) {
-                            if (formData.type === "knative-namespace" && namespaceServiceHook.data.length === 0) {
-                                throw Error("Invalid Function: No Namespace Services Exist")
-                            } else if (formData.type === "knative-global" && globalServiceHook.data.length === 0) {
-                                throw Error("Invalid Function: No Global Services Exist")
+                            // Check if form data is valid
+                            if (!validate(formData)) {
+                                if (formData.type === "knative-namespace" && namespaceServiceHook.data.length === 0) {
+                                    throw Error("Invalid Function: No Namespace Services Exist")
+                                } else if (formData.type === "knative-global" && globalServiceHook.data.length === 0) {
+                                    throw Error("Invalid Function: No Global Services Exist")
+                                }
+
+                                throw Error("Invalid Function")
                             }
 
-                            throw Error("Invalid Function")
-                        }
+                            // Throw error if id already exists
+                            const result = functionList.filter(functionItem => functionItem.id === formData.id)
+                            if (result.length > 0) {
+                                throw Error(`Function '${formData.id}' already exists`)
+                            }
 
-                        // Throw error if id already exists
-                        const result = functionList.filter(functionItem => functionItem.id === formData.id)
-                        if (result.length > 0) {
-                            throw Error(`Function '${formData.id}' already exists`)
-                        }
-
-                        // Update list
-                        setFunctionList((oldfList) => {
-                            oldfList.push(formData)
-                            return [...oldfList]
-                        })
-                    }, "small", () => { }, true, false, true),
-                    ButtonDefinition("Cancel", async () => {
-                    }, "small light", () => { }, true, false)
+                            // Update list
+                            setFunctionList((oldfList) => {
+                                oldfList.push(formData)
+                                return [...oldfList]
+                            })
+                        },
+                        buttonProps: { variant: "contained", color: "primary" },
+                        closesModal: true,
+                        validate: true
+                    },
+                    {
+                        label: "Cancel",
+                        closesModal: true
+                    }
                 ]}
                 button={(
-                    <div className={`btn function-btn`}>
+                    <span>
                         New function
-                    </div>
-
+                    </span>
                 )}
+                buttonProps={{
+                    auto: true
+                }}
             >
-                <FlexBox className="col" style={{ height: "45vh", minWidth: "250px", minHeight: "200px", justifyContent: "space-between" }}>
+                <FlexBox col style={{ height: "45vh", minWidth: "250px", minHeight: "200px", justifyContent: "space-between" }}>
                     <div style={{ overflow: "auto" }}>
                         <Form
                             id={"builder-form"}
@@ -587,9 +599,9 @@ export default function DiagramEditor(props) {
             ) : (
                 <> </>
             )}
-            <FlexBox id="builder-page" className="col" style={{ paddingRight: "8px", visibility: load ? "hidden" : "visible", maxWidth: load ? "0px" : undefined }}>
+            <FlexBox id="builder-page" col style={{ paddingRight: "8px", visibility: load ? "hidden" : "visible", maxWidth: load ? "0px" : undefined }}>
                 {error ?
-                    <Alert className="critical" style={{ flex: "0", margin: "3px" }}>{error} </Alert>
+                    <Alert severity="error" variant="filled" onClose={()=>{setError(null)}}>{error} </Alert>
                     :
                     <></>
                 }
@@ -846,61 +858,77 @@ export default function DiagramEditor(props) {
                             modalStyle={{ width: "60vw" }}
                             title={`Node Details: ${selectedNode ? selectedNode.data.id : ""}`}
                             actionButtons={[
-                                ButtonDefinition("Submit", () => {
-                                    setBlock(true)
+                                {
+                                    label: "Submit",
 
-                                    formRef.click()
-                                    const ajv = new Ajv()
-                                    const validate = ajv.compile(selectedNodeSchema)
+                                    onClick: () => {
+                                        setBlock(true)
 
-                                    // Check if form data is valid
-                                    if (!validate(selectedNodeFormData)) {
-                                        throw Error("Invalid Values")
-                                    }
+                                        formRef.click()
+                                        const ajv = new Ajv()
+                                        const validate = ajv.compile(selectedNodeSchema)
 
-                                    const updatedNode = {
-                                        ...selectedNode,
-                                        data: {
-                                            ...selectedNode.data,
-                                            formData: selectedNodeFormData,
-                                            init: true
+                                        // Check if form data is valid
+                                        if (!validate(selectedNodeFormData)) {
+                                            throw Error("Invalid Values")
                                         }
-                                    }
 
-                                    // Preflight custom formData
-                                    let onSubmitValidateCallback = onValidateSubmitCallbackMap[updatedNode.name]
-                                    if (onSubmitValidateCallback) {
-                                        onSubmitValidateCallback(selectedNodeFormData)
-                                    } else {
-                                        DefaultValidateSubmitCallbackMap(selectedNodeFormData)
-                                    }
-
-
-                                    // Update form data into node
-                                    diagramEditor.updateNodeDataFromId(updatedNode.id, updatedNode.data)
-
-                                    // Do Custom callback logic if it exists for data type
-                                    let onSubmitCallback = onSubmitCallbackMap[updatedNode.name]
-                                    if (onSubmitCallback) {
-                                        onSubmitCallback(updatedNode.id, diagramEditor)
-                                    } else {
-                                        // Update SelectedNode state to updated state
-                                        setSelectedNode(updatedNode)
-                                    }
-
-                                    // Track that node has data set
-                                    setNodeInitTracker((old) => {
-                                        old[selectedNode.id] = { init: updatedNode.data.init, stateID: updatedNode.data.id }
-                                        return {
-                                            ...old
+                                        const updatedNode = {
+                                            ...selectedNode,
+                                            data: {
+                                                ...selectedNode.data,
+                                                formData: selectedNodeFormData,
+                                                init: true
+                                            }
                                         }
-                                    })
 
-                                    setOldSelectedNodeFormData(selectedNodeFormData)
-                                }, "small", () => { }, true, false),
-                                ButtonDefinition("Cancel", async () => {
-                                    setSelectedNodeFormData(oldSelectedNodeFormData)
-                                }, "small light", () => { }, true, false)
+                                        // Preflight custom formData
+                                        let onSubmitValidateCallback = onValidateSubmitCallbackMap[updatedNode.name]
+                                        if (onSubmitValidateCallback) {
+                                            onSubmitValidateCallback(selectedNodeFormData)
+                                        } else {
+                                            DefaultValidateSubmitCallbackMap(selectedNodeFormData)
+                                        }
+
+
+                                        // Update form data into node
+                                        diagramEditor.updateNodeDataFromId(updatedNode.id, updatedNode.data)
+
+                                        // Do Custom callback logic if it exists for data type
+                                        let onSubmitCallback = onSubmitCallbackMap[updatedNode.name]
+                                        if (onSubmitCallback) {
+                                            onSubmitCallback(updatedNode.id, diagramEditor)
+                                        } else {
+                                            // Update SelectedNode state to updated state
+                                            setSelectedNode(updatedNode)
+                                        }
+
+                                        // Track that node has data set
+                                        setNodeInitTracker((old) => {
+                                            old[selectedNode.id] = { init: updatedNode.data.init, stateID: updatedNode.data.id }
+                                            return {
+                                                ...old
+                                            }
+                                        })
+
+                                        setOldSelectedNodeFormData(selectedNodeFormData)
+                                    },
+
+                                    buttonProps: {variant: "contained", color: "primary"},
+                                    errFunc: () => { },
+                                    closesModal: true
+                                },
+                                {
+                                    label: "Cancel",
+
+                                    onClick: async () => {
+                                        setSelectedNodeFormData(oldSelectedNodeFormData)
+                                    },
+
+                                    buttonProps: {},
+                                    errFunc: () => { },
+                                    closesModal: true
+                                }
                             ]}
                         >
                             <Form
@@ -923,41 +951,57 @@ export default function DiagramEditor(props) {
                             title={`Node Details: ${selectedNode ? selectedNode.data.id : ""}`}
                             modalStyle={{ width: "20vw" }}
                             actionButtons={[
-                                ButtonDefinition("Save", () => {
-                                    setError(null)
-                                    // Update id to node data
-                                    const updatedNode = {
-                                        ...selectedNode,
-                                        data: {
-                                            ...selectedNode.data,
-                                            formData: selectedNodeFormData
+                                {
+                                    label: "Save",
+
+                                    onClick: () => {
+                                        setError(null)
+                                        // Update id to node data
+                                        const updatedNode = {
+                                            ...selectedNode,
+                                            data: {
+                                                ...selectedNode.data,
+                                                formData: selectedNodeFormData
+                                            }
                                         }
-                                    }
 
-                                    updatedNode.data.id = newNodeID
+                                        updatedNode.data.id = newNodeID
 
-                                    // Update form data into node
-                                    diagramEditor.updateNodeDataFromId(updatedNode.id, updatedNode.data)
+                                        // Update form data into node
+                                        diagramEditor.updateNodeDataFromId(updatedNode.id, updatedNode.data)
 
-                                    setSelectedNode(updatedNode)
+                                        setSelectedNode(updatedNode)
 
-                                    // Track that node has data set
-                                    setNodeInitTracker((old) => {
-                                        old[selectedNode.id] = { init: updatedNode.data.init, stateID: updatedNode.data.id }
-                                        return {
-                                            ...old
-                                        }
-                                    })
+                                        // Track that node has data set
+                                        setNodeInitTracker((old) => {
+                                            old[selectedNode.id] = { init: updatedNode.data.init, stateID: updatedNode.data.id }
+                                            return {
+                                                ...old
+                                            }
+                                        })
 
-                                    setNewNodeID("")
-                                }, "small", () => { }, true, false),
-                                ButtonDefinition("Cancel", async () => {
-                                    setNewNodeID("")
-                                }, "small light", () => { }, true, false)
+                                        setNewNodeID("")
+                                    },
+
+                                    buttonProps: {variant: "contained", color: "primary"},
+                                    errFunc: () => { },
+                                    closesModal: true
+                                },
+                                {
+                                    label: "Cancel",
+
+                                    onClick: async () => {
+                                        setNewNodeID("")
+                                    },
+
+                                    buttonProps: {},
+                                    errFunc: () => { },
+                                    closesModal: true
+                                }
                             ]}
                         >
-                            <FlexBox className="col center" style={{ margin: "8px 16px 8px 16px" }}>
-                                <FlexBox className="row center">
+                            <FlexBox col center style={{ margin: "8px 16px 8px 16px" }}>
+                                <FlexBox row center>
                                     <span style={{ whiteSpace: "nowrap", paddingRight: "6px" }}>
                                         Node ID:
                                     </span>

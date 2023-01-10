@@ -6,10 +6,12 @@ import {Config, GenerateRandomKey} from '../../../util';
 import { useBroadcastConfiguration } from 'direktiv-react-hooks';
 import HelpIcon from '../../../components/help';
 import { VscSettings } from 'react-icons/vsc';
+import { useApiKey } from '../../../util/apiKeyProvider';
 
 function BroadcastConfigurationsPanel(props){
     const {namespace} = props
-    const {data, setBroadcastConfiguration, getBroadcastConfiguration} = useBroadcastConfiguration(Config.url, namespace, localStorage.getItem("apikey"))
+    const [apiKey] = useApiKey()
+    const {data, setBroadcastConfiguration, getBroadcastConfiguration} = useBroadcastConfiguration(Config.url, namespace, apiKey)
 
     return (
         <ContentPanel className="broadcast-panel">
@@ -17,7 +19,7 @@ function BroadcastConfigurationsPanel(props){
                 <ContentPanelTitleIcon>
                     <VscSettings />
                 </ContentPanelTitleIcon>
-                <FlexBox style={{display:"flex", alignItems:"center"}} className="gap">
+                <FlexBox style={{display:"flex", alignItems:"center"}} gap>
                     <div>
                         Broadcast Configurations   
                     </div>
@@ -41,7 +43,7 @@ function BroadcastOptions(props) {
     const {config, setBroadcastConfiguration, getBroadcastConfiguration} = props
     return(
         <FlexBox>
-            <FlexBox className="col gap">
+            <FlexBox col gap>
                 <FlexBox className="options-row">
                 <BroadcastOptionsRow 
                     title="Directory" 

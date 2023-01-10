@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import './style.css';
 import SmallLogo from '../../assets/small-logo.jpeg';
 import Breadcrumbs from '../../components/breadcrumbs';
@@ -23,6 +23,7 @@ import InstancePageWrapper from '../instance';
 import EventsPageWrapper from '../events';
 import Monitoring from '../monitoring';
 import MirrorPage from '../mirror';
+import { useApiKey } from "../../util/apiKeyProvider";
 
 
 function NamespaceNavigation(props){
@@ -89,9 +90,9 @@ function NamespaceNavigation(props){
     return(
         <FlexBox className="content-col col">
             <FlexBox className="breadcrumbs-row">
-                <Breadcrumbs namespace={namespace} additionalChildren={breadcrumbChildren}/>
+                { namespace? <Breadcrumbs namespace={namespace} additionalChildren={breadcrumbChildren}/> :<></>}
             </FlexBox>
-            <FlexBox className="col" style={{paddingBottom: "8px"}}>
+            <FlexBox col style={{paddingBottom: "8px"}}>
                 {namespaces !== null ? 
                 <Routes>
                     <Route path="/" element={
@@ -142,8 +143,8 @@ function NamespaceNavigation(props){
 
 function MainLayout(props) {
     let {onClick, style, className, extraNavigation, extraRoutes, footer, akey, akeyReq} = props;
-
-   
+    const [, setApiKey] = useApiKey()
+    setApiKey(akey)
     const [load, setLoad] = useState(true)
  
     const [namespace, setNamespace] = useState(null)
@@ -217,14 +218,13 @@ function ResponsiveHeaderBar(props) {
                     <Button onClick={(e) => {
                             setToggleResponsive(!toggleResponsive)
                             e.stopPropagation()
-                        }} className="light small" style={{
+                        }} variant="outlined" color="info" style={{
                             marginTop: "5px",
                             marginLeft: "5px",
-                            maxWidth: "32px",
-                            paddingBottom: "8px"
+                            maxWidth: "32px"
                         }}>
-                            <IoMenu className="auto-margin" style={{
-                                fontSize: "18px"
+                            <IoMenu style={{
+                                fontSize: "20px"
                             }} />
                     </Button>
                 </div>
