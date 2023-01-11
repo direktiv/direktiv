@@ -3,7 +3,7 @@
 **Install k3s**
 
 ```
-curl -sfL https://get.k3s.io | sh -s - --disable traefik --write-kubeconfig-mode=644 --kube-apiserver-arg feature-gates=TTLAfterFinished=true
+curl -sfL https://get.k3s.io | sh -s - --disable traefik --write-kubeconfig-mode=644
 ```
 
 **Change ~/.bashrc for code completion**
