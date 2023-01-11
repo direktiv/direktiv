@@ -1044,7 +1044,7 @@ func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloud
 	} else {
 		ceventfilter, err := ns.QueryCloudeventfilters().Where(enteventsfilter.NameEQ(filterName)).Only(ctx)
 		if err != nil {
-			err = fmt.Errorf("cloud event filter %s not exist", filterName)
+			err = status.Error(codes.NotFound, fmt.Sprintf("CloudEvent filter %s not exists", filterName))
 			return resp, err
 		}
 
@@ -1121,6 +1121,7 @@ func (flow *flow) DeleteCloudEventFilter(ctx context.Context, in *grpc.DeleteClo
 
 	_, err = ns.QueryCloudeventfilters().Where(enteventsfilter.NameEQ(filterName)).Only(ctx)
 	if err != nil {
+		err = status.Error(codes.NotFound, fmt.Sprintf("CloudEvent filter %s not exists", filterName))
 		return &resp, err
 	}
 
@@ -1158,6 +1159,7 @@ func (flow *flow) CreateCloudEventFilter(ctx context.Context, in *grpc.CreateClo
 	//compiling js code is needed
 	_, err := goja.Compile("filter", fullScript, false)
 	if err != nil {
+		err = status.Error(codes.FailedPrecondition, err.Error()) // precondition -> executable js script
 		return &resp, err
 	}
 
@@ -1172,7 +1174,7 @@ func (flow *flow) CreateCloudEventFilter(ctx context.Context, in *grpc.CreateClo
 	}
 
 	if k != 0 {
-		err = fmt.Errorf("cloud event filter %s already exist", filterName)
+		err = status.Error(codes.AlreadyExists, fmt.Sprintf("CloudEvent filter %s already exists", filterName))
 		return &resp, err
 	}
 
@@ -1234,7 +1236,7 @@ func (flow *flow) GetCloudEventFilterScript(ctx context.Context, in *grpc.GetClo
 
 	script, err := ns.QueryCloudeventfilters().Where(enteventsfilter.NameEQ(filterName)).Only(ctx)
 	if err != nil {
-		err = fmt.Errorf("cloud event filter %s not exist", filterName)
+		err = status.Error(codes.NotFound, fmt.Sprintf("CloudEvent filter %s not exists", filterName))
 		return resp, err
 	}
 

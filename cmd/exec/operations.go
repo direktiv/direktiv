@@ -12,6 +12,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/direktiv/direktiv/pkg/util"
 )
@@ -513,6 +514,10 @@ func executeEvent(url string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
+	if resp.StatusCode == http.StatusNotFound {
+		return "", fmt.Errorf("eventfilter not exists")
+	}
 	//if event already exist just replay the event
 	if resp.StatusCode != http.StatusOK {
 		eventId := event["id"]
@@ -593,4 +598,271 @@ func pingNamespace() error {
 	}
 
 	return nil
+}
+
+func executeDeleteCloudEventFilter(filterName string) error {
+
+	var err error
+
+	if filterName == "" {
+		err = fmt.Errorf("filtername was not set")
+		return err
+	}
+
+	url := fmt.Sprintf("%s/eventfilter/%s", urlPrefix, filterName)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(
+		ctx,
+		http.MethodDelete,
+		url,
+		nil,
+	)
+	if err != nil {
+		return err
+	}
+
+	addAuthHeaders(req)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode == http.StatusNotFound {
+		err = fmt.Errorf("filter: " + filterName + " not exist")
+		return err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		err = fmt.Errorf("failed to delete filter: %s (rejected by server)", filterName)
+		return err
+	}
+
+	return err
+
+}
+
+func executeCreateCloudEventFilter(filterName string, data io.Reader, force bool) error {
+
+	var url string
+
+	if filterName == "" {
+		return errors.New("filtername was not set")
+	}
+
+	url = fmt.Sprintf("%s/eventfilter/%s", urlPrefix, filterName)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(
+		ctx,
+		http.MethodPut,
+		url,
+		data,
+	)
+	if err != nil {
+		return err
+	}
+
+	req.Header.Add("Content-Type", inputType)
+	addAuthHeaders(req)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode == http.StatusInternalServerError { // when script is not compilable, then print error message
+
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		err = fmt.Errorf("failed to create eventfilter: %s \n %s", filterName, string(body))
+		return err
+
+	}
+
+	if resp.StatusCode == http.StatusConflict {
+
+		if force {
+			err = executeUpdateCloudEventFilter(filterName)
+			return err
+		}
+		err = fmt.Errorf("event filter already exists")
+		return err
+
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		err = fmt.Errorf("failed to create filter: %s (rejected by server)", filterName)
+		return err
+	}
+
+	return err
+
+}
+
+func executeUpdateCloudEventFilter(filterName string) error {
+
+	var url string
+
+	if filterName == "" {
+		return errors.New("filtername required, got null")
+	}
+	// Read input data from flag file
+	inputData, err := safeLoadFile(localAbsPath)
+	if err != nil {
+		log.Fatalf("Failed to load input file: %v", err)
+	}
+
+	// If inputData is empty attempt to read from stdin
+	if inputData.Len() == 0 {
+		inputData, err = safeLoadStdIn()
+		if err != nil {
+			log.Fatalf("Failed to load stdin: %v", err)
+		}
+	}
+
+	url = fmt.Sprintf("%s/eventfilter/%s", urlPrefix, filterName)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(
+		ctx,
+		http.MethodPatch,
+		url,
+		inputData,
+	)
+	if err != nil {
+		return err
+	}
+
+	req.Header.Add("Content-Type", inputType)
+	addAuthHeaders(req)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode == http.StatusNotFound {
+
+		err = fmt.Errorf("cloud event filter %s not exist", filterName)
+		return err
+	}
+
+	if resp.StatusCode == http.StatusInternalServerError {
+
+		body, error := io.ReadAll(resp.Body)
+		if error != nil {
+			fmt.Println(error)
+		}
+
+		err = fmt.Errorf("failed to create eventfilter: %s \n %s", filterName, string(body))
+		return err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		err = fmt.Errorf("failed to update filter: %s (rejected by server)", filterName)
+		return err
+	}
+
+	return err
+}
+
+func executeGetCloudEventFilter(filterName string) ([]byte, error) {
+
+	var err error
+
+	if filterName == "" {
+		err = fmt.Errorf("filtername was not set")
+		return nil, err
+	}
+
+	url := fmt.Sprintf("%s/eventfilter/%s", urlPrefix, filterName)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(
+		ctx,
+		http.MethodGet,
+		url,
+		nil,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	req = req.WithContext(ctx)
+
+	addAuthHeaders(req)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode == http.StatusNotFound {
+		err = fmt.Errorf("filter: " + filterName + " not exist")
+		return nil, err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		err = fmt.Errorf("failed to get filter: %s (rejected by server)", filterName)
+		return nil, err
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	return body, err
+
+}
+
+func executeListCloudEventFilter() ([]byte, error) {
+
+	var err error
+
+	url := fmt.Sprintf("%s/eventfilter", urlPrefix)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(
+		ctx,
+		http.MethodGet,
+		url,
+		nil,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	addAuthHeaders(req)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		err = fmt.Errorf("failed to list filters (rejected by server)")
+		return nil, err
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	return body, err
+
 }
