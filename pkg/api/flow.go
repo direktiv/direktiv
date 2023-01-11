@@ -4241,25 +4241,14 @@ func (h *flowHandler) WaitWorkflow(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-	in := &grpc.StartWorkflowRequest{
+	in := &grpc.AwaitWorkflowRequest{
 		Namespace: namespace,
 		Path:      path,
 		Ref:       ref,
 		Input:     input,
 	}
 
-	resp, err := h.client.StartWorkflow(ctx, in)
-	if err != nil {
-		respond(w, nil, err)
-		return
-	}
-
-	w.Header().Set("Direktiv-Instance-Id", resp.Instance)
-
-	c, err := h.client.InstanceStream(ctx, &grpc.InstanceRequest{
-		Namespace: namespace,
-		Instance:  resp.Instance,
-	})
+	c, err := h.client.AwaitWorkflow(ctx, in)
 	if err != nil {
 		respond(w, nil, err)
 		return
@@ -4271,30 +4260,27 @@ func (h *flowHandler) WaitWorkflow(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 
+	instanceID := ""
+
 	for {
 		status, err := c.Recv()
 		if err != nil {
 			respond(w, nil, err)
 			return
 		}
+		if instanceID == "" {
+			instanceID = status.Instance.Id
+			w.Header().Set("Direktiv-Instance-Id", instanceID)
+		}
 
 		if s := status.Instance.GetStatus(); s == util.InstanceStatusComplete {
+
+			data := status.Data
 
 			err = c.CloseSend()
 			if err != nil {
 				h.logger.Errorf("Failed to close connection: %v.", err)
 			}
-
-			output, err := h.client.InstanceOutput(ctx, &grpc.InstanceOutputRequest{
-				Namespace: namespace,
-				Instance:  resp.Instance,
-			})
-			if err != nil {
-				respond(w, nil, err)
-				return
-			}
-
-			data := output.Data
 
 			field := r.URL.Query().Get("field")
 			if field != "" {
@@ -4367,11 +4353,11 @@ func (h *flowHandler) WaitWorkflow(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Direktiv-Instance-Error-Code", status.Instance.ErrorCode)
 			w.Header().Set("Direktiv-Instance-Error-Message", status.Instance.ErrorMessage)
 			code := http.StatusInternalServerError
-			http.Error(w, fmt.Sprintf("An error occurred executing instance %s: %s: %s", resp.Instance, status.Instance.ErrorCode, status.Instance.ErrorMessage), code)
+			http.Error(w, fmt.Sprintf("An error occurred executing instance %s: %s: %s", instanceID, status.Instance.ErrorCode, status.Instance.ErrorMessage), code)
 			return
 		} else if s == util.InstanceStatusCrashed {
 			code := http.StatusInternalServerError
-			http.Error(w, fmt.Sprintf("An internal error occurred executing instance: %s", resp.Instance), code)
+			http.Error(w, fmt.Sprintf("An internal error occurred executing instance: %s", instanceID), code)
 			return
 		} else {
 			continue

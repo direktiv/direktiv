@@ -460,3 +460,111 @@ func (flow *flow) CancelInstance(ctx context.Context, req *grpc.CancelInstanceRe
 	return &resp, nil
 
 }
+
+func (flow *flow) AwaitWorkflow(req *grpc.AwaitWorkflowRequest, srv grpc.Flow_AwaitWorkflowServer) error {
+
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
+
+	ctx := srv.Context()
+	phash := ""
+	nhash := ""
+
+	args := new(newInstanceArgs)
+	args.Namespace = req.GetNamespace()
+	args.Path = req.GetPath()
+	args.Ref = req.GetRef()
+	args.Input = req.GetInput()
+	args.Caller = "api"
+
+	im, err := flow.engine.NewInstance(ctx, args)
+	if err != nil {
+		flow.sugar.Debugf("Error returned to gRPC request %s: %v", this(), err)
+		return err
+	}
+
+	var sub *subscription
+
+	flow.engine.queue(im)
+
+	var d *instData
+
+resend:
+
+	tx, err := flow.db.Tx(ctx)
+	if err != nil {
+		return err
+	}
+	defer rollback(tx)
+
+	nsc := tx.Namespace
+
+	if d == nil {
+		d, err = flow.traverseToInstance(ctx, nsc, req.GetNamespace(), im.in.ID.String())
+		if err != nil {
+			return err
+		}
+	}
+
+	d, err = flow.fastGetInstance(ctx, d)
+	if err != nil {
+		return err
+	}
+
+	rollback(tx)
+
+	if sub == nil {
+		sub = flow.pubsub.SubscribeInstance(d.in)
+		defer flow.cleanup(sub.Close)
+		goto resend
+	}
+
+	resp := new(grpc.AwaitWorkflowResponse)
+
+	err = atob(d.in, &resp.Instance)
+	if err != nil {
+		return err
+	}
+
+	if d.in.Edges.Runtime != nil {
+		resp.Flow = d.in.Edges.Runtime.Flow
+		if caller := d.in.Edges.Runtime.Edges.Caller; caller != nil {
+			resp.InvokedBy = caller.ID.String()
+		}
+
+		if d.in.Status == util.InstanceStatusComplete {
+			resp.Data = []byte(d.in.Edges.Runtime.Output)
+		}
+	}
+
+	resp.Namespace = d.namespace()
+
+	rwf := new(grpc.InstanceWorkflow)
+	rwf.Name = d.base
+	rwf.Parent = d.dir
+	rwf.Path = d.path
+	if d.in.Edges.Revision != nil {
+		rwf.Revision = d.in.Edges.Revision.ID.String()
+	}
+	resp.Workflow = rwf
+
+	nhash = checksum(resp)
+	if nhash != phash {
+		err = srv.Send(resp)
+		if err != nil {
+			return err
+		}
+	}
+	phash = nhash
+
+	if d.in.Status != util.InstanceStatusPending {
+		return nil
+	}
+
+	more := sub.Wait(ctx)
+	if !more {
+		return nil
+	}
+
+	goto resend
+
+}

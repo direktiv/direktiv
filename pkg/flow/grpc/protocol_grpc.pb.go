@@ -80,6 +80,7 @@ type FlowClient interface {
 	InstanceLogsParcels(ctx context.Context, in *InstanceLogsRequest, opts ...grpc.CallOption) (Flow_InstanceLogsParcelsClient, error)
 	StartWorkflow(ctx context.Context, in *StartWorkflowRequest, opts ...grpc.CallOption) (*StartWorkflowResponse, error)
 	RunWorkflow(ctx context.Context, in *RunWorkflowRequest, opts ...grpc.CallOption) (Flow_RunWorkflowClient, error)
+	AwaitWorkflow(ctx context.Context, in *AwaitWorkflowRequest, opts ...grpc.CallOption) (Flow_AwaitWorkflowClient, error)
 	CancelInstance(ctx context.Context, in *CancelInstanceRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	BroadcastCloudevent(ctx context.Context, in *BroadcastCloudeventRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	ApplyCloudEventFilter(ctx context.Context, in *ApplyCloudEventFilterRequest, opts ...grpc.CallOption) (*ApplyCloudEventFilterResponse, error)
@@ -1049,6 +1050,38 @@ func (x *flowRunWorkflowClient) Recv() (*RunWorkflowResponse, error) {
 	return m, nil
 }
 
+func (c *flowClient) AwaitWorkflow(ctx context.Context, in *AwaitWorkflowRequest, opts ...grpc.CallOption) (Flow_AwaitWorkflowClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[15], "/direktiv_flow.Flow/AwaitWorkflow", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &flowAwaitWorkflowClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Flow_AwaitWorkflowClient interface {
+	Recv() (*AwaitWorkflowResponse, error)
+	grpc.ClientStream
+}
+
+type flowAwaitWorkflowClient struct {
+	grpc.ClientStream
+}
+
+func (x *flowAwaitWorkflowClient) Recv() (*AwaitWorkflowResponse, error) {
+	m := new(AwaitWorkflowResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 func (c *flowClient) CancelInstance(ctx context.Context, in *CancelInstanceRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/CancelInstance", in, out, opts...)
@@ -1131,7 +1164,7 @@ func (c *flowClient) NamespaceVariable(ctx context.Context, in *NamespaceVariabl
 }
 
 func (c *flowClient) NamespaceVariableParcels(ctx context.Context, in *NamespaceVariableRequest, opts ...grpc.CallOption) (Flow_NamespaceVariableParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[15], "/direktiv_flow.Flow/NamespaceVariableParcels", opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[16], "/direktiv_flow.Flow/NamespaceVariableParcels", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1172,7 +1205,7 @@ func (c *flowClient) NamespaceVariables(ctx context.Context, in *NamespaceVariab
 }
 
 func (c *flowClient) NamespaceVariablesStream(ctx context.Context, in *NamespaceVariablesRequest, opts ...grpc.CallOption) (Flow_NamespaceVariablesStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[16], "/direktiv_flow.Flow/NamespaceVariablesStream", opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[17], "/direktiv_flow.Flow/NamespaceVariablesStream", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1213,7 +1246,7 @@ func (c *flowClient) SetNamespaceVariable(ctx context.Context, in *SetNamespaceV
 }
 
 func (c *flowClient) SetNamespaceVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Flow_SetNamespaceVariableParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[17], "/direktiv_flow.Flow/SetNamespaceVariableParcels", opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[18], "/direktiv_flow.Flow/SetNamespaceVariableParcels", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1274,7 +1307,7 @@ func (c *flowClient) WorkflowVariable(ctx context.Context, in *WorkflowVariableR
 }
 
 func (c *flowClient) WorkflowVariableParcels(ctx context.Context, in *WorkflowVariableRequest, opts ...grpc.CallOption) (Flow_WorkflowVariableParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[18], "/direktiv_flow.Flow/WorkflowVariableParcels", opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[19], "/direktiv_flow.Flow/WorkflowVariableParcels", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1315,7 +1348,7 @@ func (c *flowClient) WorkflowVariables(ctx context.Context, in *WorkflowVariable
 }
 
 func (c *flowClient) WorkflowVariablesStream(ctx context.Context, in *WorkflowVariablesRequest, opts ...grpc.CallOption) (Flow_WorkflowVariablesStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[19], "/direktiv_flow.Flow/WorkflowVariablesStream", opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[20], "/direktiv_flow.Flow/WorkflowVariablesStream", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1356,7 +1389,7 @@ func (c *flowClient) SetWorkflowVariable(ctx context.Context, in *SetWorkflowVar
 }
 
 func (c *flowClient) SetWorkflowVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Flow_SetWorkflowVariableParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[20], "/direktiv_flow.Flow/SetWorkflowVariableParcels", opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[21], "/direktiv_flow.Flow/SetWorkflowVariableParcels", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1417,7 +1450,7 @@ func (c *flowClient) InstanceVariable(ctx context.Context, in *InstanceVariableR
 }
 
 func (c *flowClient) InstanceVariableParcels(ctx context.Context, in *InstanceVariableRequest, opts ...grpc.CallOption) (Flow_InstanceVariableParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[21], "/direktiv_flow.Flow/InstanceVariableParcels", opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[22], "/direktiv_flow.Flow/InstanceVariableParcels", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1458,7 +1491,7 @@ func (c *flowClient) InstanceVariables(ctx context.Context, in *InstanceVariable
 }
 
 func (c *flowClient) InstanceVariablesStream(ctx context.Context, in *InstanceVariablesRequest, opts ...grpc.CallOption) (Flow_InstanceVariablesStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[22], "/direktiv_flow.Flow/InstanceVariablesStream", opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[23], "/direktiv_flow.Flow/InstanceVariablesStream", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1499,7 +1532,7 @@ func (c *flowClient) SetInstanceVariable(ctx context.Context, in *SetInstanceVar
 }
 
 func (c *flowClient) SetInstanceVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Flow_SetInstanceVariableParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[23], "/direktiv_flow.Flow/SetInstanceVariableParcels", opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[24], "/direktiv_flow.Flow/SetInstanceVariableParcels", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1596,7 +1629,7 @@ func (c *flowClient) EventListeners(ctx context.Context, in *EventListenersReque
 }
 
 func (c *flowClient) EventListenersStream(ctx context.Context, in *EventListenersRequest, opts ...grpc.CallOption) (Flow_EventListenersStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[24], "/direktiv_flow.Flow/EventListenersStream", opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[25], "/direktiv_flow.Flow/EventListenersStream", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1637,7 +1670,7 @@ func (c *flowClient) EventHistory(ctx context.Context, in *EventHistoryRequest, 
 }
 
 func (c *flowClient) EventHistoryStream(ctx context.Context, in *EventHistoryRequest, opts ...grpc.CallOption) (Flow_EventHistoryStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[25], "/direktiv_flow.Flow/EventHistoryStream", opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[26], "/direktiv_flow.Flow/EventHistoryStream", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1768,7 +1801,7 @@ func (c *flowClient) NamespaceAnnotation(ctx context.Context, in *NamespaceAnnot
 }
 
 func (c *flowClient) NamespaceAnnotationParcels(ctx context.Context, in *NamespaceAnnotationRequest, opts ...grpc.CallOption) (Flow_NamespaceAnnotationParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[26], "/direktiv_flow.Flow/NamespaceAnnotationParcels", opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[27], "/direktiv_flow.Flow/NamespaceAnnotationParcels", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1809,7 +1842,7 @@ func (c *flowClient) NamespaceAnnotations(ctx context.Context, in *NamespaceAnno
 }
 
 func (c *flowClient) NamespaceAnnotationsStream(ctx context.Context, in *NamespaceAnnotationsRequest, opts ...grpc.CallOption) (Flow_NamespaceAnnotationsStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[27], "/direktiv_flow.Flow/NamespaceAnnotationsStream", opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[28], "/direktiv_flow.Flow/NamespaceAnnotationsStream", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1850,7 +1883,7 @@ func (c *flowClient) SetNamespaceAnnotation(ctx context.Context, in *SetNamespac
 }
 
 func (c *flowClient) SetNamespaceAnnotationParcels(ctx context.Context, opts ...grpc.CallOption) (Flow_SetNamespaceAnnotationParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[28], "/direktiv_flow.Flow/SetNamespaceAnnotationParcels", opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[29], "/direktiv_flow.Flow/SetNamespaceAnnotationParcels", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1911,7 +1944,7 @@ func (c *flowClient) WorkflowAnnotation(ctx context.Context, in *WorkflowAnnotat
 }
 
 func (c *flowClient) WorkflowAnnotationParcels(ctx context.Context, in *WorkflowAnnotationRequest, opts ...grpc.CallOption) (Flow_WorkflowAnnotationParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[29], "/direktiv_flow.Flow/WorkflowAnnotationParcels", opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[30], "/direktiv_flow.Flow/WorkflowAnnotationParcels", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1952,7 +1985,7 @@ func (c *flowClient) WorkflowAnnotations(ctx context.Context, in *WorkflowAnnota
 }
 
 func (c *flowClient) WorkflowAnnotationsStream(ctx context.Context, in *WorkflowAnnotationsRequest, opts ...grpc.CallOption) (Flow_WorkflowAnnotationsStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[30], "/direktiv_flow.Flow/WorkflowAnnotationsStream", opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[31], "/direktiv_flow.Flow/WorkflowAnnotationsStream", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1993,7 +2026,7 @@ func (c *flowClient) SetWorkflowAnnotation(ctx context.Context, in *SetWorkflowA
 }
 
 func (c *flowClient) SetWorkflowAnnotationParcels(ctx context.Context, opts ...grpc.CallOption) (Flow_SetWorkflowAnnotationParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[31], "/direktiv_flow.Flow/SetWorkflowAnnotationParcels", opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[32], "/direktiv_flow.Flow/SetWorkflowAnnotationParcels", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -2054,7 +2087,7 @@ func (c *flowClient) InstanceAnnotation(ctx context.Context, in *InstanceAnnotat
 }
 
 func (c *flowClient) InstanceAnnotationParcels(ctx context.Context, in *InstanceAnnotationRequest, opts ...grpc.CallOption) (Flow_InstanceAnnotationParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[32], "/direktiv_flow.Flow/InstanceAnnotationParcels", opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[33], "/direktiv_flow.Flow/InstanceAnnotationParcels", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -2095,7 +2128,7 @@ func (c *flowClient) InstanceAnnotations(ctx context.Context, in *InstanceAnnota
 }
 
 func (c *flowClient) InstanceAnnotationsStream(ctx context.Context, in *InstanceAnnotationsRequest, opts ...grpc.CallOption) (Flow_InstanceAnnotationsStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[33], "/direktiv_flow.Flow/InstanceAnnotationsStream", opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[34], "/direktiv_flow.Flow/InstanceAnnotationsStream", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -2136,7 +2169,7 @@ func (c *flowClient) SetInstanceAnnotation(ctx context.Context, in *SetInstanceA
 }
 
 func (c *flowClient) SetInstanceAnnotationParcels(ctx context.Context, opts ...grpc.CallOption) (Flow_SetInstanceAnnotationParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[34], "/direktiv_flow.Flow/SetInstanceAnnotationParcels", opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[35], "/direktiv_flow.Flow/SetInstanceAnnotationParcels", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -2206,7 +2239,7 @@ func (c *flowClient) NodeAnnotation(ctx context.Context, in *NodeAnnotationReque
 }
 
 func (c *flowClient) NodeAnnotationParcels(ctx context.Context, in *NodeAnnotationRequest, opts ...grpc.CallOption) (Flow_NodeAnnotationParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[35], "/direktiv_flow.Flow/NodeAnnotationParcels", opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[36], "/direktiv_flow.Flow/NodeAnnotationParcels", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -2247,7 +2280,7 @@ func (c *flowClient) NodeAnnotations(ctx context.Context, in *NodeAnnotationsReq
 }
 
 func (c *flowClient) NodeAnnotationsStream(ctx context.Context, in *NodeAnnotationsRequest, opts ...grpc.CallOption) (Flow_NodeAnnotationsStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[36], "/direktiv_flow.Flow/NodeAnnotationsStream", opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[37], "/direktiv_flow.Flow/NodeAnnotationsStream", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -2288,7 +2321,7 @@ func (c *flowClient) SetNodeAnnotation(ctx context.Context, in *SetNodeAnnotatio
 }
 
 func (c *flowClient) SetNodeAnnotationParcels(ctx context.Context, opts ...grpc.CallOption) (Flow_SetNodeAnnotationParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[37], "/direktiv_flow.Flow/SetNodeAnnotationParcels", opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[38], "/direktiv_flow.Flow/SetNodeAnnotationParcels", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -2412,7 +2445,7 @@ func (c *flowClient) MirrorInfo(ctx context.Context, in *MirrorInfoRequest, opts
 }
 
 func (c *flowClient) MirrorInfoStream(ctx context.Context, in *MirrorInfoRequest, opts ...grpc.CallOption) (Flow_MirrorInfoStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[38], "/direktiv_flow.Flow/MirrorInfoStream", opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[39], "/direktiv_flow.Flow/MirrorInfoStream", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -2453,7 +2486,7 @@ func (c *flowClient) MirrorActivityLogs(ctx context.Context, in *MirrorActivityL
 }
 
 func (c *flowClient) MirrorActivityLogsParcels(ctx context.Context, in *MirrorActivityLogsRequest, opts ...grpc.CallOption) (Flow_MirrorActivityLogsParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[39], "/direktiv_flow.Flow/MirrorActivityLogsParcels", opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[40], "/direktiv_flow.Flow/MirrorActivityLogsParcels", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -2554,6 +2587,7 @@ type FlowServer interface {
 	InstanceLogsParcels(*InstanceLogsRequest, Flow_InstanceLogsParcelsServer) error
 	StartWorkflow(context.Context, *StartWorkflowRequest) (*StartWorkflowResponse, error)
 	RunWorkflow(*RunWorkflowRequest, Flow_RunWorkflowServer) error
+	AwaitWorkflow(*AwaitWorkflowRequest, Flow_AwaitWorkflowServer) error
 	CancelInstance(context.Context, *CancelInstanceRequest) (*emptypb.Empty, error)
 	BroadcastCloudevent(context.Context, *BroadcastCloudeventRequest) (*emptypb.Empty, error)
 	ApplyCloudEventFilter(context.Context, *ApplyCloudEventFilterRequest) (*ApplyCloudEventFilterResponse, error)
@@ -2832,6 +2866,9 @@ func (UnimplementedFlowServer) StartWorkflow(context.Context, *StartWorkflowRequ
 }
 func (UnimplementedFlowServer) RunWorkflow(*RunWorkflowRequest, Flow_RunWorkflowServer) error {
 	return status.Errorf(codes.Unimplemented, "method RunWorkflow not implemented")
+}
+func (UnimplementedFlowServer) AwaitWorkflow(*AwaitWorkflowRequest, Flow_AwaitWorkflowServer) error {
+	return status.Errorf(codes.Unimplemented, "method AwaitWorkflow not implemented")
 }
 func (UnimplementedFlowServer) CancelInstance(context.Context, *CancelInstanceRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CancelInstance not implemented")
@@ -4199,6 +4236,27 @@ type flowRunWorkflowServer struct {
 }
 
 func (x *flowRunWorkflowServer) Send(m *RunWorkflowResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func _Flow_AwaitWorkflow_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(AwaitWorkflowRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(FlowServer).AwaitWorkflow(m, &flowAwaitWorkflowServer{stream})
+}
+
+type Flow_AwaitWorkflowServer interface {
+	Send(*AwaitWorkflowResponse) error
+	grpc.ServerStream
+}
+
+type flowAwaitWorkflowServer struct {
+	grpc.ServerStream
+}
+
+func (x *flowAwaitWorkflowServer) Send(m *AwaitWorkflowResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
@@ -6552,6 +6610,11 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "RunWorkflow",
 			Handler:       _Flow_RunWorkflow_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "AwaitWorkflow",
+			Handler:       _Flow_AwaitWorkflow_Handler,
 			ServerStreams: true,
 		},
 		{
