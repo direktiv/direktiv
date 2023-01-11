@@ -527,6 +527,32 @@ func (srv *server) getInstance(ctx context.Context, nsc *ent.NamespaceClient, na
 
 }
 
+func (srv *server) fastGetInstance(ctx context.Context, d *instData) (*instData, error) {
+
+	query := srv.db.Instance.Query().Where(entinst.IDEQ(d.in.ID)).WithRuntime()
+
+	in, err := query.Only(ctx)
+	if err != nil {
+		srv.sugar.Debugf("%s failed to query instance: %v", parent(), err)
+		return nil, err
+	}
+
+	if in.Edges.Runtime == nil {
+		err = &derrors.NotFoundError{
+			Label: "instance runtime not found",
+		}
+		srv.sugar.Debugf("%s failed to query instance runtime: %v", parent(), err)
+		return nil, err
+	}
+
+	in.Edges.Namespace = d.ns()
+
+	d.in = in
+
+	return d, nil
+
+}
+
 func (srv *server) traverseToInstance(ctx context.Context, nsc *ent.NamespaceClient, namespace, instance string) (*instData, error) {
 
 	d, err := srv.getInstance(ctx, nsc, namespace, instance, false)
