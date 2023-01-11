@@ -484,19 +484,16 @@ func (flow *flow) AwaitWorkflow(req *grpc.AwaitWorkflowRequest, srv grpc.Flow_Aw
 
 	var sub *subscription
 
+	sub = flow.pubsub.SubscribeInstance(im.in)
+	defer flow.cleanup(sub.Close)
+
 	flow.engine.queue(im)
 
 	var d *instData
 
 resend:
 
-	tx, err := flow.db.Tx(ctx)
-	if err != nil {
-		return err
-	}
-	defer rollback(tx)
-
-	nsc := tx.Namespace
+	nsc := flow.db.Namespace
 
 	if d == nil {
 		d, err = flow.traverseToInstance(ctx, nsc, req.GetNamespace(), im.in.ID.String())
@@ -508,14 +505,6 @@ resend:
 	d, err = flow.fastGetInstance(ctx, d)
 	if err != nil {
 		return err
-	}
-
-	rollback(tx)
-
-	if sub == nil {
-		sub = flow.pubsub.SubscribeInstance(d.in)
-		defer flow.cleanup(sub.Close)
-		goto resend
 	}
 
 	resp := new(grpc.AwaitWorkflowResponse)
