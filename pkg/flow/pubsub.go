@@ -143,6 +143,10 @@ func initPubSub(log *zap.SugaredLogger, notifier notifier, database string) (*pu
 				continue
 			}
 
+			if req.Sender == pubsub.id.String() {
+				continue
+			}
+
 			handler, exists := pubsub.handlers[req.Handler]
 			if !exists {
 				log.Errorf("unexpected notification type on database listener: %v\n", err)
@@ -181,6 +185,13 @@ func (pubsub *pubsub) dispatcher() {
 		b, err := json.Marshal(req)
 		if err != nil {
 			panic(err)
+		}
+
+		handler, exists := pubsub.handlers[req.Handler]
+		if !exists {
+			pubsub.log.Errorf("unexpected notification type on database listener: %v\n", err)
+		} else {
+			go handler(req)
 		}
 
 		if req.Hostname == "" {
