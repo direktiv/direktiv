@@ -242,27 +242,29 @@ type subscription struct {
 	ch     chan bool
 	closed bool
 	pubsub *pubsub
-	last   time.Time
+	// last   time.Time
 }
 
 func (s *subscription) Wait(ctx context.Context) bool {
 
-	t := time.Now()
-	dt := t.Sub(s.last)
-	if dt < (time.Millisecond * 150) {
-		time.Sleep(dt)
-	}
+	/*
+		t := time.Now()
+		dt := t.Sub(s.last)
+		if dt < (time.Millisecond * 150) {
+			time.Sleep(dt)
+		}
 
-	defer func() {
-		s.last = time.Now()
-	}()
+		defer func() {
+			s.last = time.Now()
+		}()
+	*/
 
 	select {
 	case <-ctx.Done():
 		return false
 	case _, more := <-s.ch:
 		return more
-	case <-time.After(time.Minute):
+	case <-time.After(time.Second * 30):
 		return true
 	}
 
