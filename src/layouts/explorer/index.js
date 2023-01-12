@@ -6,7 +6,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 import Fade from "@mui/material/Fade";
 import { useNodes } from "direktiv-react-hooks";
 import { FcWorkflow } from "react-icons/fc";
-import { FiFolder, FiAlertTriangle } from "react-icons/fi";
+import { FiFolder } from "react-icons/fi";
 import { HiOutlineTrash } from "react-icons/hi";
 import {
   VscAdd,
@@ -973,23 +973,10 @@ function ExplorerList(props) {
                     <div className="explorer-item">
                       <FlexBox className="explorer-item-container">
                         {err === "permission denied" ? (
-                          <>
-                            <FlexBox
-                              style={{ display: "flex", alignItems: "center" }}
-                              className="explorer-item-icon-warning"
-                            >
-                              <FiAlertTriangle
-                                className="auto-margin"
-                              />
-                            </FlexBox>
-                            <FlexBox
-                              style={{ fontSize: "10pt" }}
-                              className="explorer-item-name"
-                            >
-                              Unfortunately, you do not have the necessary
-                              permissions
-                            </FlexBox>
-                          </>
+                          <Alert severity="warning" variant="standard" grow>
+                            Unfortunately, you do not have the necessary
+                            permissions
+                          </Alert>
                         ) : (
                           <>
                             <FlexBox
