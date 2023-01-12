@@ -96,32 +96,56 @@ function InitialWorkflowHook(props){
 
     const [revisions, setRevisions] = useState(null)
     // todo handle revsErr
-    const [, setRevsErr] = useState("")
+    const [revsErr, setRevsErr] = useState(null)
 
     // fetch revisions using the workflow hook from above
     useEffect(()=>{
         async function listData() {
-            if(revisions === null){
+            if(revisions === null && revsErr === null){
                 // get workflow revisions
-                let resp = await getRevisions()
-                if(Array.isArray(resp.results)){
-                    setRevisions(resp.results)
-                } else {
-                    setRevsErr(resp)
+                try {
+                    let resp = await getRevisions()
+                    if(Array.isArray(resp.results)){
+                        setRevisions(resp.results)
+                    } else {
+                        setRevsErr(resp)
+                    }    
+                } catch (error) {          
+                    setRevsErr(error?.message)
                 }
             }
         }
         listData()
-    },[getRevisions, revisions])
+    },[getRevisions, revsErr, revisions])
 
-    useEffect(()=>{
-        async function getD() {
-            if(data !== null && router === null) {
-                setRouter(await getWorkflowRouter())
-            }
+    useEffect(() => {
+      async function getD() {
+        if (data !== null && router === null) {
+          try {
+            setRouter(await getWorkflowRouter());
+          } catch (e) {}
         }
-        getD()
-    },[router, data, getWorkflowRouter])
+      }
+      getD();
+    }, [router, data, getWorkflowRouter]);
+
+    if (revsErr) {
+      return (
+        <FlexBox
+          id="workflow-page"
+          className="gap col"
+          style={{ paddingRight: "8px" }}
+        >
+          <FlexBox style={{ width: "100%" }}>
+            <ContentPanel style={{ width: "100%" }}>
+              <Alert severity="warning" variant="standard">
+                {revsErr}
+              </Alert>
+            </ContentPanel>
+          </FlexBox>
+        </FlexBox>
+      );
+    }
 
     if(data === null || router === null) {
         return <></>
