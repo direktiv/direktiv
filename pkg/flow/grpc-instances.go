@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/ent"
@@ -325,11 +326,15 @@ func (flow *flow) StartWorkflow(ctx context.Context, req *grpc.StartWorkflowRequ
 	args.Input = req.GetInput()
 	args.Caller = "api"
 
+	t0 := time.Now()
 	im, err := flow.engine.NewInstance(ctx, args)
 	if err != nil {
 		flow.sugar.Debugf("Error returned to gRPC request %s: %v", this(), err)
 		return nil, err
 	}
+	tf := time.Now()
+
+	fmt.Printf("INIT TIME: %v\n", tf.Sub(t0))
 
 	if !req.GetHold() {
 		flow.engine.queue(im)

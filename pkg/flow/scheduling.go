@@ -13,6 +13,11 @@ func (engine *engine) InstanceYield(im *instanceMemory) {
 
 	engine.sugar.Debugf("Instance going to sleep: %s", im.ID().String())
 
+	e := im.flushUpdates(context.Background())
+	if e != nil {
+		engine.sugar.Errorf("Failed to flush updates: %v", e)
+	}
+
 	engine.freeResources(im)
 
 	if im.lock != nil {

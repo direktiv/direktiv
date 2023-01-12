@@ -916,13 +916,10 @@ func (engine *engine) SetMemory(ctx context.Context, im *instanceMemory, x inter
 	}
 	s := string(data)
 
-	ir, err := im.in.Edges.Runtime.Update().SetMemory(s).Save(ctx)
-	if err != nil {
-		return derrors.NewInternalError(err)
-	}
-
-	ir.Edges = im.in.Edges.Runtime.Edges
-	im.in.Edges.Runtime = ir
+	updater := im.getRuntimeUpdater()
+	updater = updater.SetMemory(s)
+	im.in.Edges.Runtime.Memory = s
+	im.runtimeUpdater = updater
 
 	return nil
 

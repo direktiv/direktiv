@@ -12,6 +12,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"strings"
 	"sync"
 	"time"
@@ -288,9 +289,6 @@ func (engine *engine) Transition(ctx context.Context, im *instanceMemory, nextSt
 	flow := append(im.Flow(), nextState)
 	deadline := im.logic.Deadline(ctx)
 
-	rt := im.in.Edges.Runtime
-	edges := rt.Edges
-
 	err = engine.SetMemory(ctx, im, nil)
 	if err != nil {
 		engine.CrashInstance(ctx, im, err)
@@ -304,24 +302,32 @@ func (engine *engine) Transition(ctx context.Context, im *instanceMemory, nextSt
 	}
 	defer cleanup()
 
-	rt, err = rt.Update().
-		SetFlow(flow).
+	t := time.Now()
+	data := im.MarshalData()
+	memory := im.MarshalMemory()
+	updater := im.getRuntimeUpdater()
+	updater = updater.SetFlow(flow).
 		SetController(engine.pubsub.hostname).
 		SetAttempts(attempt).
 		SetDeadline(deadline).
-		SetStateBeginTime(time.Now()).
-		SetData(im.MarshalData()).
-		SetMemory(im.MarshalMemory()).
-		Save(ctx)
+		SetStateBeginTime(t).
+		SetData(data).
+		SetMemory(memory)
+	im.in.Edges.Runtime.Flow = flow
+	im.in.Edges.Runtime.Controller = engine.pubsub.hostname
+	im.in.Edges.Runtime.Attempts = attempt
+	im.in.Edges.Runtime.Deadline = deadline
+	im.in.Edges.Runtime.StateBeginTime = t
+	im.in.Edges.Runtime.Data = data
+	im.in.Edges.Runtime.Memory = memory
+	im.runtimeUpdater = updater
+
+	// TODO: flush here?
+	err = im.flushUpdates(ctx)
 	if err != nil {
-		engine.CrashInstance(ctx, im, err)
+		engine.sugar.Errorf("Failed to update database record: %v", err)
 		return
 	}
-
-	engine.pubsub.NotifyInstance(im.in)
-
-	rt.Edges = edges
-	im.in.Edges.Runtime = rt
 
 	engine.ScheduleSoftTimeout(im, oldController, deadline)
 
@@ -341,7 +347,8 @@ func (engine *engine) CrashInstance(ctx context.Context, im *instanceMemory, err
 		engine.sugar.Errorf("Instance failed with uncatchable error '%s': %v", uerr.Code, err)
 		engine.logToInstance(ctx, time.Now(), im.in, "Instance failed with uncatchable error '%s': %s", uerr.Code, err.Error())
 	} else {
-		engine.sugar.Errorf("Instance failed with uncatchable error: %v", err)
+		_, file, line, _ := runtime.Caller(1)
+		engine.sugar.Errorf("Instance failed with uncatchable error (thrown by %s:%d): %v", file, line, err)
 		engine.logToInstance(ctx, time.Now(), im.in, "Instance failed with uncatchable error: %s", err.Error())
 	}
 
@@ -368,16 +375,11 @@ func (engine *engine) CrashInstance(ctx context.Context, im *instanceMemory, err
 
 func (engine *engine) setEndAt(im *instanceMemory) {
 
-	ctx := context.Background()
-
-	in, err := im.in.Update().SetEndAt(time.Now()).Save(ctx)
-	if err != nil {
-		engine.sugar.Error(err)
-		return
-	}
-
-	in.Edges = im.in.Edges
-	im.in = in
+	t := time.Now()
+	updater := im.getInstanceUpdater()
+	updater = updater.SetEndAt(t)
+	im.in.EndAt = t
+	im.instanceUpdater = updater
 
 }
 
@@ -385,9 +387,16 @@ func (engine *engine) TerminateInstance(ctx context.Context, im *instanceMemory)
 
 	engine.setEndAt(im)
 
+	err := im.flushUpdates(ctx)
+	if err != nil {
+		engine.sugar.Errorf("Failed to update database record: %v", err)
+		return
+	}
+
 	if im.logic != nil {
 		engine.metricsCompleteState(ctx, im, "", im.ErrorCode(), false)
 	}
+
 	engine.metricsCompleteInstance(ctx, im)
 	engine.FreeInstanceMemory(im)
 	engine.WakeInstanceCaller(ctx, im)
@@ -395,6 +404,13 @@ func (engine *engine) TerminateInstance(ctx context.Context, im *instanceMemory)
 }
 
 func (engine *engine) runState(ctx context.Context, im *instanceMemory, wakedata []byte, err error) {
+
+	defer func() {
+		e := im.flushUpdates(ctx)
+		if e != nil {
+			err = e
+		}
+	}()
 
 	engine.logRunState(ctx, im, wakedata, err)
 
@@ -545,6 +561,11 @@ func (engine *engine) transformState(ctx context.Context, im *instanceMemory, tr
 
 func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, transition *states.Transition, errCode string) {
 
+	e := im.flushUpdates(ctx)
+	if e != nil {
+		engine.sugar.Errorf("Failed to flush updates: %v", e)
+	}
+
 	if transition == nil {
 		engine.InstanceYield(im)
 		return
@@ -567,27 +588,16 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 
 	engine.sugar.Debugf("Instance terminated: %s", im.ID().String())
 
-	var err error
+	rtUpdater := im.getRuntimeUpdater()
+	output := im.MarshalData()
+	rtUpdater = rtUpdater.SetOutput(output)
+	im.in.Edges.Runtime.Output = output
+	im.runtimeUpdater = rtUpdater
 
-	rt := im.in.Edges.Runtime
-	rte := rt.Edges
-	rt, err = rt.Update().SetOutput(im.MarshalData()).Save(ctx)
-	if err != nil {
-		engine.CrashInstance(ctx, im, err)
-		return
-	}
-	rt.Edges = rte
-	im.in.Edges.Runtime = rt
-
-	in := im.in
-	ine := in.Edges
-	in, err = in.Update().SetStatus(status).Save(ctx)
-	if err != nil {
-		engine.CrashInstance(ctx, im, err)
-		return
-	}
-	in.Edges = ine
-	im.in = in
+	updater := im.getInstanceUpdater()
+	updater = updater.SetStatus(status)
+	im.in.Status = status
+	im.instanceUpdater = updater
 
 	engine.pubsub.NotifyInstance(im.in)
 
