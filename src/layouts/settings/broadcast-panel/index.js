@@ -74,8 +74,15 @@ function BroadcastOptions(props) {
                       let cc = config;
                       cc.broadcast["directory.create"] =
                         !config.broadcast["directory.create"];
-                      await setBroadcastConfiguration(JSON.stringify(cc));
-                      await getBroadcastConfiguration();
+                      setError(null);
+                      try {
+                        await setBroadcastConfiguration(JSON.stringify(cc));
+                        await getBroadcastConfiguration();
+                      } catch (error) {
+                        cc.broadcast["directory.create"] =
+                          !config.broadcast["directory.create"];
+                        setError(error?.message);
+                      }
                     },
                   },
                   {
@@ -85,8 +92,15 @@ function BroadcastOptions(props) {
                       let cc = config;
                       cc.broadcast["directory.delete"] =
                         !config.broadcast["directory.delete"];
-                      await setBroadcastConfiguration(JSON.stringify(cc));
-                      await getBroadcastConfiguration();
+                      setError(null);
+                      try {
+                        await setBroadcastConfiguration(JSON.stringify(cc));
+                        await getBroadcastConfiguration();
+                      } catch (error) {
+                        cc.broadcast["directory.delete"] =
+                          !config.broadcast["directory.delete"];
+                        setError(error?.message);
+                      }
                     },
                   },
                 ]}
@@ -104,8 +118,15 @@ function BroadcastOptions(props) {
                       let cc = config;
                       cc.broadcast["instance.success"] =
                         !config.broadcast["instance.success"];
-                      await setBroadcastConfiguration(JSON.stringify(cc));
-                      await getBroadcastConfiguration();
+                      setError(null);
+                      try {
+                        await setBroadcastConfiguration(JSON.stringify(cc));
+                        await getBroadcastConfiguration();
+                      } catch (error) {
+                        cc.broadcast["instance.success"] =
+                          !config.broadcast["instance.success"];
+                        setError(error?.message);
+                      }
                     },
                   },
                   {
@@ -115,8 +136,15 @@ function BroadcastOptions(props) {
                       let cc = config;
                       cc.broadcast["instance.started"] =
                         !config.broadcast["instance.started"];
-                      await setBroadcastConfiguration(JSON.stringify(cc));
-                      await getBroadcastConfiguration();
+                      setError(null);
+                      try {
+                        await setBroadcastConfiguration(JSON.stringify(cc));
+                        await getBroadcastConfiguration();
+                      } catch (error) {
+                        cc.broadcast["instance.started"] =
+                          !config.broadcast["instance.started"];
+                        setError(error?.message);
+                      }
                     },
                   },
                   {
@@ -126,8 +154,15 @@ function BroadcastOptions(props) {
                       let cc = config;
                       cc.broadcast["instance.failed"] =
                         !config.broadcast["instance.failed"];
-                      await setBroadcastConfiguration(JSON.stringify(cc));
-                      await getBroadcastConfiguration();
+                      setError(null);
+                      try {
+                        await setBroadcastConfiguration(JSON.stringify(cc));
+                        await getBroadcastConfiguration();
+                      } catch (error) {
+                        cc.broadcast["instance.failed"] =
+                          !config.broadcast["instance.failed"];
+                        setError(error?.message);
+                      }
                     },
                   },
                 ]}
@@ -142,8 +177,15 @@ function BroadcastOptions(props) {
                       let cc = config;
                       cc.broadcast["instance.variable.create"] =
                         !config.broadcast["instance.variable.create"];
-                      await setBroadcastConfiguration(JSON.stringify(cc));
-                      await getBroadcastConfiguration();
+                      setError(null);
+                      try {
+                        await setBroadcastConfiguration(JSON.stringify(cc));
+                        await getBroadcastConfiguration();
+                      } catch (error) {
+                        cc.broadcast["instance.variable.create"] =
+                          !config.broadcast["instance.variable.create"];
+                        setError(error?.message);
+                      }
                     },
                   },
                   {
@@ -153,8 +195,15 @@ function BroadcastOptions(props) {
                       let cc = config;
                       cc.broadcast["instance.variable.update"] =
                         !config.broadcast["instance.variable.update"];
-                      await setBroadcastConfiguration(JSON.stringify(cc));
-                      await getBroadcastConfiguration();
+                      setError(null);
+                      try {
+                        await setBroadcastConfiguration(JSON.stringify(cc));
+                        await getBroadcastConfiguration();
+                      } catch (error) {
+                        cc.broadcast["instance.variable.update"] =
+                          !config.broadcast["instance.variable.update"];
+                        setError(error?.message);
+                      }
                     },
                   },
                   {
@@ -164,8 +213,15 @@ function BroadcastOptions(props) {
                       let cc = config;
                       cc.broadcast["instance.variable.delete"] =
                         !config.broadcast["instance.variable.delete"];
-                      await setBroadcastConfiguration(JSON.stringify(cc));
-                      await getBroadcastConfiguration();
+                      setError(null);
+                      try {
+                        await setBroadcastConfiguration(JSON.stringify(cc));
+                        await getBroadcastConfiguration();
+                      } catch (error) {
+                        cc.broadcast["instance.variable.delete"] =
+                          !config.broadcast["instance.variable.delete"];
+                        setError(error?.message);
+                      }
                     },
                   },
                 ]}
@@ -182,8 +238,15 @@ function BroadcastOptions(props) {
                       let cc = config;
                       cc.broadcast["namespace.variable.create"] =
                         !config.broadcast["namespace.variable.create"];
-                      await setBroadcastConfiguration(JSON.stringify(cc));
-                      await getBroadcastConfiguration();
+                      setError(null);
+                      try {
+                        await setBroadcastConfiguration(JSON.stringify(cc));
+                        await getBroadcastConfiguration();
+                      } catch (error) {
+                        cc.broadcast["namespace.variable.create"] =
+                          !config.broadcast["namespace.variable.create"];
+                        setError(error?.message);
+                      }
                     },
                   },
                   {
@@ -193,8 +256,15 @@ function BroadcastOptions(props) {
                       let cc = config;
                       cc.broadcast["namespace.variable.update"] =
                         !config.broadcast["namespace.variable.update"];
-                      await setBroadcastConfiguration(JSON.stringify(cc));
-                      await getBroadcastConfiguration();
+                      setError(null);
+                      try {
+                        await setBroadcastConfiguration(JSON.stringify(cc));
+                        await getBroadcastConfiguration();
+                      } catch (error) {
+                        cc.broadcast["namespace.variable.update"] =
+                          !config.broadcast["namespace.variable.update"];
+                        setError(error?.message);
+                      }
                     },
                   },
                   {
@@ -204,8 +274,15 @@ function BroadcastOptions(props) {
                       let cc = config;
                       cc.broadcast["namespace.variable.delete"] =
                         !config.broadcast["namespace.variable.delete"];
-                      await setBroadcastConfiguration(JSON.stringify(cc));
-                      await getBroadcastConfiguration();
+                      setError(null);
+                      try {
+                        await setBroadcastConfiguration(JSON.stringify(cc));
+                        await getBroadcastConfiguration();
+                      } catch (error) {
+                        cc.broadcast["namespace.variable.delete"] =
+                          !config.broadcast["namespace.variable.delete"];
+                        setError(error?.message);
+                      }
                     },
                   },
                 ]}
@@ -223,8 +300,15 @@ function BroadcastOptions(props) {
                       let cc = config;
                       cc.broadcast["workflow.create"] =
                         !config.broadcast["workflow.create"];
-                      await setBroadcastConfiguration(JSON.stringify(cc));
-                      await getBroadcastConfiguration();
+                      setError(null);
+                      try {
+                        await setBroadcastConfiguration(JSON.stringify(cc));
+                        await getBroadcastConfiguration();
+                      } catch (error) {
+                        cc.broadcast["workflow.create"] =
+                          !config.broadcast["workflow.create"];
+                        setError(error?.message);
+                      }
                     },
                   },
                   {
@@ -234,8 +318,15 @@ function BroadcastOptions(props) {
                       let cc = config;
                       cc.broadcast["workflow.update"] =
                         !config.broadcast["workflow.update"];
-                      await setBroadcastConfiguration(JSON.stringify(cc));
-                      await getBroadcastConfiguration();
+                      setError(null);
+                      try {
+                        await setBroadcastConfiguration(JSON.stringify(cc));
+                        await getBroadcastConfiguration();
+                      } catch (error) {
+                        cc.broadcast["workflow.update"] =
+                          !config.broadcast["workflow.update"];
+                        setError(error?.message);
+                      }
                     },
                   },
                   {
@@ -245,8 +336,15 @@ function BroadcastOptions(props) {
                       let cc = config;
                       cc.broadcast["workflow.delete"] =
                         !config.broadcast["workflow.delete"];
-                      await setBroadcastConfiguration(JSON.stringify(cc));
-                      await getBroadcastConfiguration();
+                      setError(null);
+                      try {
+                        await setBroadcastConfiguration(JSON.stringify(cc));
+                        await getBroadcastConfiguration();
+                      } catch (error) {
+                        cc.broadcast["workflow.delete"] =
+                          !config.broadcast["workflow.delete"];
+                        setError(error?.message);
+                      }
                     },
                   },
                 ]}
@@ -261,8 +359,15 @@ function BroadcastOptions(props) {
                       let cc = config;
                       cc.broadcast["workflow.variable.create"] =
                         !config.broadcast["workflow.variable.create"];
-                      await setBroadcastConfiguration(JSON.stringify(cc));
-                      await getBroadcastConfiguration();
+                      setError(null);
+                      try {
+                        await setBroadcastConfiguration(JSON.stringify(cc));
+                        await getBroadcastConfiguration();
+                      } catch (error) {
+                        cc.broadcast["workflow.variable.create"] =
+                          !config.broadcast["workflow.variable.create"];
+                        setError(error?.message);
+                      }
                     },
                   },
                   {
@@ -272,8 +377,15 @@ function BroadcastOptions(props) {
                       let cc = config;
                       cc.broadcast["workflow.variable.update"] =
                         !config.broadcast["workflow.variable.update"];
-                      await setBroadcastConfiguration(JSON.stringify(cc));
-                      await getBroadcastConfiguration();
+                      setError(null);
+                      try {
+                        await setBroadcastConfiguration(JSON.stringify(cc));
+                        await getBroadcastConfiguration();
+                      } catch (error) {
+                        cc.broadcast["workflow.variable.update"] =
+                          !config.broadcast["workflow.variable.update"];
+                        setError(error?.message);
+                      }
                     },
                   },
                   {
@@ -283,8 +395,15 @@ function BroadcastOptions(props) {
                       let cc = config;
                       cc.broadcast["workflow.variable.delete"] =
                         !config.broadcast["workflow.variable.delete"];
-                      await setBroadcastConfiguration(JSON.stringify(cc));
-                      await getBroadcastConfiguration();
+                      setError(null);
+                      try {
+                        await setBroadcastConfiguration(JSON.stringify(cc));
+                        await getBroadcastConfiguration();
+                      } catch (error) {
+                        cc.broadcast["workflow.variable.delete"] =
+                          !config.broadcast["workflow.variable.delete"];
+                        setError(error?.message);
+                      }
                     },
                   },
                 ]}
