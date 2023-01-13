@@ -33,17 +33,13 @@ function BroadcastConfigurationsPanel(props) {
           />
         </FlexBox>
       </ContentPanelTitle>
-      <ContentPanelBody>
-        {data !== null ? (
-          <BroadcastOptions
-            getBroadcastConfiguration={getBroadcastConfiguration}
-            setBroadcastConfiguration={setBroadcastConfiguration}
-            config={data}
-          />
-        ) : (
-          ""
-        )}
-      </ContentPanelBody>
+      {data !== null ? (
+        <BroadcastOptions
+          getBroadcastConfiguration={getBroadcastConfiguration}
+          setBroadcastConfiguration={setBroadcastConfiguration}
+          config={data}
+        />
+      ) : null}
     </ContentPanel>
   );
 }
@@ -54,237 +50,241 @@ function BroadcastOptions(props) {
   const { config, setBroadcastConfiguration, getBroadcastConfiguration } =
     props;
   return (
-    <FlexBox>
-      <FlexBox col gap>
-        <FlexBox className="options-row">
-          <BroadcastOptionsRow
-            title="Directory"
-            options={[
-              {
-                label: "Create",
-                value: config.broadcast["directory.create"],
-                onClick: async () => {
-                  let cc = config;
-                  cc.broadcast["directory.create"] =
-                    !config.broadcast["directory.create"];
-                  await setBroadcastConfiguration(JSON.stringify(cc));
-                  await getBroadcastConfiguration();
-                },
-              },
-              {
-                label: "Delete",
-                value: config.broadcast["directory.delete"],
-                onClick: async () => {
-                  let cc = config;
-                  cc.broadcast["directory.delete"] =
-                    !config.broadcast["directory.delete"];
-                  await setBroadcastConfiguration(JSON.stringify(cc));
-                  await getBroadcastConfiguration();
-                },
-              },
-            ]}
-          />
-          <BroadcastOptionsRow></BroadcastOptionsRow>
-        </FlexBox>
-        <FlexBox className="options-row">
-          <BroadcastOptionsRow
-            title="Instance"
-            options={[
-              {
-                label: "Success",
-                value: config.broadcast["instance.success"],
-                onClick: async () => {
-                  let cc = config;
-                  cc.broadcast["instance.success"] =
-                    !config.broadcast["instance.success"];
-                  await setBroadcastConfiguration(JSON.stringify(cc));
-                  await getBroadcastConfiguration();
-                },
-              },
-              {
-                label: "Started",
-                value: config.broadcast["instance.started"],
-                onClick: async () => {
-                  let cc = config;
-                  cc.broadcast["instance.started"] =
-                    !config.broadcast["instance.started"];
-                  await setBroadcastConfiguration(JSON.stringify(cc));
-                  await getBroadcastConfiguration();
-                },
-              },
-              {
-                label: "Failed",
-                value: config.broadcast["instance.failed"],
-                onClick: async () => {
-                  let cc = config;
-                  cc.broadcast["instance.failed"] =
-                    !config.broadcast["instance.failed"];
-                  await setBroadcastConfiguration(JSON.stringify(cc));
-                  await getBroadcastConfiguration();
-                },
-              },
-            ]}
-          />
-          <BroadcastOptionsRow
-            title="Instance Variable"
-            options={[
-              {
-                label: "Create",
-                value: config.broadcast["instance.variable.create"],
-                onClick: async () => {
-                  let cc = config;
-                  cc.broadcast["instance.variable.create"] =
-                    !config.broadcast["instance.variable.create"];
-                  await setBroadcastConfiguration(JSON.stringify(cc));
-                  await getBroadcastConfiguration();
-                },
-              },
-              {
-                label: "Update",
-                value: config.broadcast["instance.variable.update"],
-                onClick: async () => {
-                  let cc = config;
-                  cc.broadcast["instance.variable.update"] =
-                    !config.broadcast["instance.variable.update"];
-                  await setBroadcastConfiguration(JSON.stringify(cc));
-                  await getBroadcastConfiguration();
-                },
-              },
-              {
-                label: "Delete",
-                value: config.broadcast["instance.variable.delete"],
-                onClick: async () => {
-                  let cc = config;
-                  cc.broadcast["instance.variable.delete"] =
-                    !config.broadcast["instance.variable.delete"];
-                  await setBroadcastConfiguration(JSON.stringify(cc));
-                  await getBroadcastConfiguration();
-                },
-              },
-            ]}
-          />
-        </FlexBox>
-        <FlexBox className="options-row">
-          <BroadcastOptionsRow
-            title="Namespace Variable"
-            options={[
-              {
-                label: "Create",
-                value: config.broadcast["namespace.variable.create"],
-                onClick: async () => {
-                  let cc = config;
-                  cc.broadcast["namespace.variable.create"] =
-                    !config.broadcast["namespace.variable.create"];
-                  await setBroadcastConfiguration(JSON.stringify(cc));
-                  await getBroadcastConfiguration();
-                },
-              },
-              {
-                label: "Update",
-                value: config.broadcast["namespace.variable.update"],
-                onClick: async () => {
-                  let cc = config;
-                  cc.broadcast["namespace.variable.update"] =
-                    !config.broadcast["namespace.variable.update"];
-                  await setBroadcastConfiguration(JSON.stringify(cc));
-                  await getBroadcastConfiguration();
-                },
-              },
-              {
-                label: "Delete",
-                value: config.broadcast["namespace.variable.delete"],
-                onClick: async () => {
-                  let cc = config;
-                  cc.broadcast["namespace.variable.delete"] =
-                    !config.broadcast["namespace.variable.delete"];
-                  await setBroadcastConfiguration(JSON.stringify(cc));
-                  await getBroadcastConfiguration();
-                },
-              },
-            ]}
-          />
-          <BroadcastOptionsRow />
-        </FlexBox>
+    <div>
+      <ContentPanelBody>
         <FlexBox>
-          <BroadcastOptionsRow
-            title="Workflow"
-            options={[
-              {
-                label: "Create",
-                value: config.broadcast["workflow.create"],
-                onClick: async () => {
-                  let cc = config;
-                  cc.broadcast["workflow.create"] =
-                    !config.broadcast["workflow.create"];
-                  await setBroadcastConfiguration(JSON.stringify(cc));
-                  await getBroadcastConfiguration();
-                },
-              },
-              {
-                label: "Update",
-                value: config.broadcast["workflow.update"],
-                onClick: async () => {
-                  let cc = config;
-                  cc.broadcast["workflow.update"] =
-                    !config.broadcast["workflow.update"];
-                  await setBroadcastConfiguration(JSON.stringify(cc));
-                  await getBroadcastConfiguration();
-                },
-              },
-              {
-                label: "Delete",
-                value: config.broadcast["workflow.delete"],
-                onClick: async () => {
-                  let cc = config;
-                  cc.broadcast["workflow.delete"] =
-                    !config.broadcast["workflow.delete"];
-                  await setBroadcastConfiguration(JSON.stringify(cc));
-                  await getBroadcastConfiguration();
-                },
-              },
-            ]}
-          />
-          <BroadcastOptionsRow
-            title="Workflow Variable"
-            options={[
-              {
-                label: "Create",
-                value: config.broadcast["workflow.variable.create"],
-                onClick: async () => {
-                  let cc = config;
-                  cc.broadcast["workflow.variable.create"] =
-                    !config.broadcast["workflow.variable.create"];
-                  await setBroadcastConfiguration(JSON.stringify(cc));
-                  await getBroadcastConfiguration();
-                },
-              },
-              {
-                label: "Update",
-                value: config.broadcast["workflow.variable.update"],
-                onClick: async () => {
-                  let cc = config;
-                  cc.broadcast["workflow.variable.update"] =
-                    !config.broadcast["workflow.variable.update"];
-                  await setBroadcastConfiguration(JSON.stringify(cc));
-                  await getBroadcastConfiguration();
-                },
-              },
-              {
-                label: "Delete",
-                value: config.broadcast["workflow.variable.delete"],
-                onClick: async () => {
-                  let cc = config;
-                  cc.broadcast["workflow.variable.delete"] =
-                    !config.broadcast["workflow.variable.delete"];
-                  await setBroadcastConfiguration(JSON.stringify(cc));
-                  await getBroadcastConfiguration();
-                },
-              },
-            ]}
-          />
+          <FlexBox col gap>
+            <FlexBox className="options-row">
+              <BroadcastOptionsRow
+                title="Directory"
+                options={[
+                  {
+                    label: "Create",
+                    value: config.broadcast["directory.create"],
+                    onClick: async () => {
+                      let cc = config;
+                      cc.broadcast["directory.create"] =
+                        !config.broadcast["directory.create"];
+                      await setBroadcastConfiguration(JSON.stringify(cc));
+                      await getBroadcastConfiguration();
+                    },
+                  },
+                  {
+                    label: "Delete",
+                    value: config.broadcast["directory.delete"],
+                    onClick: async () => {
+                      let cc = config;
+                      cc.broadcast["directory.delete"] =
+                        !config.broadcast["directory.delete"];
+                      await setBroadcastConfiguration(JSON.stringify(cc));
+                      await getBroadcastConfiguration();
+                    },
+                  },
+                ]}
+              />
+              <BroadcastOptionsRow></BroadcastOptionsRow>
+            </FlexBox>
+            <FlexBox className="options-row">
+              <BroadcastOptionsRow
+                title="Instance"
+                options={[
+                  {
+                    label: "Success",
+                    value: config.broadcast["instance.success"],
+                    onClick: async () => {
+                      let cc = config;
+                      cc.broadcast["instance.success"] =
+                        !config.broadcast["instance.success"];
+                      await setBroadcastConfiguration(JSON.stringify(cc));
+                      await getBroadcastConfiguration();
+                    },
+                  },
+                  {
+                    label: "Started",
+                    value: config.broadcast["instance.started"],
+                    onClick: async () => {
+                      let cc = config;
+                      cc.broadcast["instance.started"] =
+                        !config.broadcast["instance.started"];
+                      await setBroadcastConfiguration(JSON.stringify(cc));
+                      await getBroadcastConfiguration();
+                    },
+                  },
+                  {
+                    label: "Failed",
+                    value: config.broadcast["instance.failed"],
+                    onClick: async () => {
+                      let cc = config;
+                      cc.broadcast["instance.failed"] =
+                        !config.broadcast["instance.failed"];
+                      await setBroadcastConfiguration(JSON.stringify(cc));
+                      await getBroadcastConfiguration();
+                    },
+                  },
+                ]}
+              />
+              <BroadcastOptionsRow
+                title="Instance Variable"
+                options={[
+                  {
+                    label: "Create",
+                    value: config.broadcast["instance.variable.create"],
+                    onClick: async () => {
+                      let cc = config;
+                      cc.broadcast["instance.variable.create"] =
+                        !config.broadcast["instance.variable.create"];
+                      await setBroadcastConfiguration(JSON.stringify(cc));
+                      await getBroadcastConfiguration();
+                    },
+                  },
+                  {
+                    label: "Update",
+                    value: config.broadcast["instance.variable.update"],
+                    onClick: async () => {
+                      let cc = config;
+                      cc.broadcast["instance.variable.update"] =
+                        !config.broadcast["instance.variable.update"];
+                      await setBroadcastConfiguration(JSON.stringify(cc));
+                      await getBroadcastConfiguration();
+                    },
+                  },
+                  {
+                    label: "Delete",
+                    value: config.broadcast["instance.variable.delete"],
+                    onClick: async () => {
+                      let cc = config;
+                      cc.broadcast["instance.variable.delete"] =
+                        !config.broadcast["instance.variable.delete"];
+                      await setBroadcastConfiguration(JSON.stringify(cc));
+                      await getBroadcastConfiguration();
+                    },
+                  },
+                ]}
+              />
+            </FlexBox>
+            <FlexBox className="options-row">
+              <BroadcastOptionsRow
+                title="Namespace Variable"
+                options={[
+                  {
+                    label: "Create",
+                    value: config.broadcast["namespace.variable.create"],
+                    onClick: async () => {
+                      let cc = config;
+                      cc.broadcast["namespace.variable.create"] =
+                        !config.broadcast["namespace.variable.create"];
+                      await setBroadcastConfiguration(JSON.stringify(cc));
+                      await getBroadcastConfiguration();
+                    },
+                  },
+                  {
+                    label: "Update",
+                    value: config.broadcast["namespace.variable.update"],
+                    onClick: async () => {
+                      let cc = config;
+                      cc.broadcast["namespace.variable.update"] =
+                        !config.broadcast["namespace.variable.update"];
+                      await setBroadcastConfiguration(JSON.stringify(cc));
+                      await getBroadcastConfiguration();
+                    },
+                  },
+                  {
+                    label: "Delete",
+                    value: config.broadcast["namespace.variable.delete"],
+                    onClick: async () => {
+                      let cc = config;
+                      cc.broadcast["namespace.variable.delete"] =
+                        !config.broadcast["namespace.variable.delete"];
+                      await setBroadcastConfiguration(JSON.stringify(cc));
+                      await getBroadcastConfiguration();
+                    },
+                  },
+                ]}
+              />
+              <BroadcastOptionsRow />
+            </FlexBox>
+            <FlexBox>
+              <BroadcastOptionsRow
+                title="Workflow"
+                options={[
+                  {
+                    label: "Create",
+                    value: config.broadcast["workflow.create"],
+                    onClick: async () => {
+                      let cc = config;
+                      cc.broadcast["workflow.create"] =
+                        !config.broadcast["workflow.create"];
+                      await setBroadcastConfiguration(JSON.stringify(cc));
+                      await getBroadcastConfiguration();
+                    },
+                  },
+                  {
+                    label: "Update",
+                    value: config.broadcast["workflow.update"],
+                    onClick: async () => {
+                      let cc = config;
+                      cc.broadcast["workflow.update"] =
+                        !config.broadcast["workflow.update"];
+                      await setBroadcastConfiguration(JSON.stringify(cc));
+                      await getBroadcastConfiguration();
+                    },
+                  },
+                  {
+                    label: "Delete",
+                    value: config.broadcast["workflow.delete"],
+                    onClick: async () => {
+                      let cc = config;
+                      cc.broadcast["workflow.delete"] =
+                        !config.broadcast["workflow.delete"];
+                      await setBroadcastConfiguration(JSON.stringify(cc));
+                      await getBroadcastConfiguration();
+                    },
+                  },
+                ]}
+              />
+              <BroadcastOptionsRow
+                title="Workflow Variable"
+                options={[
+                  {
+                    label: "Create",
+                    value: config.broadcast["workflow.variable.create"],
+                    onClick: async () => {
+                      let cc = config;
+                      cc.broadcast["workflow.variable.create"] =
+                        !config.broadcast["workflow.variable.create"];
+                      await setBroadcastConfiguration(JSON.stringify(cc));
+                      await getBroadcastConfiguration();
+                    },
+                  },
+                  {
+                    label: "Update",
+                    value: config.broadcast["workflow.variable.update"],
+                    onClick: async () => {
+                      let cc = config;
+                      cc.broadcast["workflow.variable.update"] =
+                        !config.broadcast["workflow.variable.update"];
+                      await setBroadcastConfiguration(JSON.stringify(cc));
+                      await getBroadcastConfiguration();
+                    },
+                  },
+                  {
+                    label: "Delete",
+                    value: config.broadcast["workflow.variable.delete"],
+                    onClick: async () => {
+                      let cc = config;
+                      cc.broadcast["workflow.variable.delete"] =
+                        !config.broadcast["workflow.variable.delete"];
+                      await setBroadcastConfiguration(JSON.stringify(cc));
+                      await getBroadcastConfiguration();
+                    },
+                  },
+                ]}
+              />
+            </FlexBox>
+          </FlexBox>
         </FlexBox>
-      </FlexBox>
-    </FlexBox>
+      </ContentPanelBody>
+    </div>
   );
 }
 
