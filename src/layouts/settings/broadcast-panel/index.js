@@ -11,6 +11,7 @@ import { useBroadcastConfiguration } from "direktiv-react-hooks";
 import HelpIcon from "../../../components/help";
 import { VscSettings } from "react-icons/vsc";
 import { useApiKey } from "../../../util/apiKeyProvider";
+import Alert from "../../../components/alert";
 
 function BroadcastConfigurationsPanel(props) {
   const { namespace } = props;
@@ -49,8 +50,16 @@ export default BroadcastConfigurationsPanel;
 function BroadcastOptions(props) {
   const { config, setBroadcastConfiguration, getBroadcastConfiguration } =
     props;
+  const [error, setError] = React.useState(null);
   return (
     <div>
+      {error && (
+        <ContentPanelBody>
+          <Alert severity="warning" variant="standard" grow>
+            {error}
+          </Alert>
+        </ContentPanelBody>
+      )}
       <ContentPanelBody>
         <FlexBox>
           <FlexBox col gap>
