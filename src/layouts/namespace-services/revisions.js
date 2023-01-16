@@ -82,7 +82,7 @@ function NamespaceRevisions(props) {
     const navigate = useNavigate()
     const [apiKey] = useApiKey()
 
-    const {revisions, config, traffic, setNamespaceServiceRevisionTraffic, deleteNamespaceServiceRevision, getNamespaceServiceConfig, createNamespaceServiceRevision} = useNamespaceService(Config.url, namespace, service, navigate, apiKey)
+    const {revisions, config, traffic, deleteNamespaceServiceRevision, getNamespaceServiceConfig, createNamespaceServiceRevision} = useNamespaceService(Config.url, namespace, service, navigate, apiKey)
 
     const [load, setLoad] = useState(true)
     const [image, setImage] = useState("")
