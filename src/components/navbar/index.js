@@ -5,7 +5,7 @@ import FlexBox from '../flexbox';
 import NamespaceSelector from '../namespace-selector';
 
 import Modal  from '../modal';
-import {VscAdd,  VscFolderOpened, VscGraph, VscLayers, VscServer,  VscSettingsGear,  VscSymbolEvent, VscVmRunning, VscPlayCircle, VscCloudUpload} from 'react-icons/vsc';
+import {VscAdd,  VscFolderOpened, VscGraph, VscLayers,  VscSettingsGear,  VscSymbolEvent, VscVmRunning, VscPlayCircle, VscCloudUpload} from 'react-icons/vsc';
 
 import { Link, matchPath, useLocation, useNavigate } from 'react-router-dom';
 import Tabs from '../tabs';
@@ -495,11 +495,6 @@ function GlobalNavItems({namespace}) {
     const {pathname} = useLocation()
 
     let jq = matchPath("/jq", pathname)
-    let gs = matchPath("/g/services", pathname)
-    let gservice = matchPath("/g/services/:service", pathname)
-    let grevision = matchPath("/g/services/:service/:revision", pathname)
-
-    let gr = matchPath("/g/registries", pathname)
 
     return (
         <FlexBox className="nav-items">
