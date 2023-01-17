@@ -1112,7 +1112,6 @@ type mirrorNode struct {
 	children  []*mirrorNode
 	ntype     string
 	name      string
-	change    string
 	extension string
 	isDir     bool
 }
