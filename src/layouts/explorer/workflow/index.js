@@ -755,7 +755,7 @@ function WorkingRevision(props) {
                           setShowErrors(true);
                         }
                       } catch (e) {
-                        setErrors(e.toString());
+                        setErrors([e.toString()]);
                         setShowErrors(true);
                       }
                     }}
