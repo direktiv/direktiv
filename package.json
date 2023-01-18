@@ -113,6 +113,7 @@
     "encoding": "^0.1.13",
     "event-source-polyfill": "^1.0.31",
     "isomorphic-fetch": "^3.0.0",
+    "jest-extended": "^3.2.3",
     "react-error-overlay": "6.0.9",
     "storybook-addon-react-router-v6": "^0.2.1",
     "yalc": "^1.0.0-pre.53"
