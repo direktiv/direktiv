@@ -355,6 +355,7 @@ export const useDirektivWorkflowServices = (
     }
   }, [stream, path, namespace, url]);
 
+  // not in use atm?
   async function getWorkflowServices(...queryParameters) {
     let resp = await fetch(
       `${url}functions/namespaces/${namespace}/tree/${path}?op=services${ExtractQueryString(
@@ -367,9 +368,8 @@ export const useDirektivWorkflowServices = (
       }
     );
     if (resp.ok) {
-      let json = await resp.json();
-      setData(json);
-      return json;
+      //   setData(json); // setData is not defined
+      return await resp.json();
     } else {
       throw new Error(
         await HandleError("get workflow services", resp, "listServices")
