@@ -1,5 +1,4 @@
 import { ComponentMeta, ComponentStory } from "@storybook/react";
-import { AutoSizer } from "react-virtualized";
 import "../../App.css";
 import "./style.css";
 import FlexBox from "../flexbox";

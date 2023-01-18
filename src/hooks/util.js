@@ -1,4 +1,3 @@
-import _fetch from "isomorphic-fetch";
 import * as React from "react";
 
 // Config default config to test with

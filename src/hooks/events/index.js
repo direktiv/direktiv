@@ -43,12 +43,11 @@ export const useDirektivEvents = (
 
   // Event history SSE
   const [eventHistorySource, setEventHistorySource] = React.useState(null);
-  const { eventHistorySourceRef } = useEventSourceCleaner(eventHistorySource);
+  useEventSourceCleaner(eventHistorySource);
 
   // Event Listener SSE
   const [eventListenersSource, setEventListenersSource] = React.useState(null);
-  const { eventListenersSourceRef } =
-    useEventSourceCleaner(eventListenersSource);
+  useEventSourceCleaner(eventListenersSource);
   const [pathString, setPathString] = React.useState(null);
 
   // Store Query parameters

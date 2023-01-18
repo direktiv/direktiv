@@ -1,7 +1,7 @@
-import { renderHook, act } from "@testing-library/react-hooks";
+import { renderHook } from "@testing-library/react-hooks";
 import * as matchers from "jest-extended";
 import { Config } from "./util";
-import { useNamespaceLogs, useNamespaces } from "./index";
+import { useNamespaces } from "./index";
 expect.extend(matchers);
 
 // mock timer using jest

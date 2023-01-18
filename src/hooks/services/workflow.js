@@ -5,8 +5,6 @@ import {
   HandleError,
   ExtractQueryString,
   SanitizePath,
-  StateReducer,
-  STATE,
   useEventSourceCleaner,
   useQueryString,
   genericEventSourceErrorHandler,
@@ -284,10 +282,7 @@ export const useDirektivWorkflowServices = (
   const [err, setErr] = React.useState(null);
 
   const [eventSource, setEventSource] = React.useState(null);
-  const { eventSourceRef } = useEventSourceCleaner(
-    eventSource,
-    "useDirektivWorkflowServices"
-  );
+  useEventSourceCleaner(eventSource, "useDirektivWorkflowServices");
 
   // Store Query parameters
   const { queryString } = useQueryString(true, queryParameters);

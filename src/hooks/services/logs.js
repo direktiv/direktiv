@@ -1,5 +1,4 @@
 import * as React from "react";
-import fetch from "cross-fetch";
 import { CloseEventSource, apiKeyHeaders } from "../util";
 const { EventSourcePolyfill } = require("event-source-polyfill");
 

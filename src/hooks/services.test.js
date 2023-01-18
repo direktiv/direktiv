@@ -143,7 +143,7 @@ describe("useNamespaceServices", () => {
     expect(result.current.data.config.maxscale).toBe(3);
   });
   it("stream namespace services, create a service then delete a service", async () => {
-    const { result, waitForNextUpdate } = renderHook(() =>
+    const { result } = renderHook(() =>
       useNamespaceServices(Config.url, true, Config.namespace)
     );
 
@@ -285,9 +285,7 @@ describe("useGlobalServices", () => {
     expect(result.current.data.config.maxscale).toBe(3);
   });
   it("stream global services, create a service then delete a service", async () => {
-    const { result, waitForNextUpdate } = renderHook(() =>
-      useGlobalServices(Config.url, true)
-    );
+    const { result } = renderHook(() => useGlobalServices(Config.url, true));
 
     await act(async () => {
       await result.current.createGlobalService(

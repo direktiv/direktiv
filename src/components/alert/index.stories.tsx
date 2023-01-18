@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import Alert, { AlertProps } from "./index";
+import { useState } from "react";
+import Alert from "./index";
 import { ComponentStory, ComponentMeta } from "@storybook/react";
 import "../../App.css";
 import "./style.css";

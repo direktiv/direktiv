@@ -1,4 +1,3 @@
-import * as React from "react";
 import fetch from "cross-fetch";
 import { HandleError, ExtractQueryString, apiKeyHeaders } from "../util";
 

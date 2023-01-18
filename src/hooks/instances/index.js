@@ -33,7 +33,7 @@ export const useDirektivInstances = (
   const [data, dispatchData] = React.useReducer(StateReducer, null);
   const [err, setErr] = React.useState(null);
   const [eventSource, setEventSource] = React.useState(null);
-  const { eventSourceRef } = useEventSourceCleaner(eventSource, "useInstances");
+  useEventSourceCleaner(eventSource, "useInstances");
 
   // Store Query parameters
   const { queryString } = useQueryString(false, queryParameters);

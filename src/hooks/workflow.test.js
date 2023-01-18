@@ -188,10 +188,9 @@ describe("useWorkflow", () => {
     let revisions = await result.current.getRevisions();
     expect(revisions[0].node.name).toBe("latest");
 
-    let rev = null;
     await act(async () => {
       await result.current.updateWorkflow(wfyaml3);
-      rev = await result.current.saveWorkflow();
+      await result.current.saveWorkflow();
       revisions = await result.current.getRevisions();
     });
 

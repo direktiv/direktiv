@@ -1,12 +1,6 @@
 import { renderHook, act } from "@testing-library/react-hooks";
 import * as matchers from "jest-extended";
-import {
-  useInstance,
-  useInstanceLogs,
-  useNodes,
-  useWorkflow,
-  useWorkflowLogs,
-} from "./index";
+import { useInstance, useInstanceLogs, useNodes, useWorkflow } from "./index";
 import { Config } from "./util";
 expect.extend(matchers);
 
