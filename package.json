@@ -27,6 +27,7 @@
     "js-yaml": "^4.1.0",
     "json-to-pretty-yaml": "^1.2.2",
     "monaco": "^1.201704190613.0",
+    "prettier": "2.8.3",
     "rc-slider": "^9.7.5",
     "re-resizable": "^6.9.1",
     "react": "^17.0.2",
