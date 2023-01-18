@@ -129,11 +129,6 @@ export const useDirektivWorkflow = (
   }
 
   async function getWorkflowSankeyMetrics(rev, ...queryParameters) {
-    let ref = "latest";
-    if (rev) {
-      ref = rev;
-    }
-
     let uri = `${url}namespaces/${namespace}/tree/${path}?ref=${rev}&op=metrics-sankey`;
     let resp = await fetch(
       `${uri}${ExtractQueryString(true, ...queryParameters)}`,
