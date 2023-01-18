@@ -1,6 +1,6 @@
-import { Meta } from '@storybook/addon-docs';
-import NewWorkflow from "./assets/new-workflow.png"
-import "./stories.css"
+import { Meta } from "@storybook/addon-docs";
+import NewWorkflow from "./assets/new-workflow.png";
+import "./stories.css";
 
 <Meta title="Systems/Workflow Templates" />
 
@@ -8,13 +8,14 @@ import "./stories.css"
 
 When creating a new Workflow the user is presented with multiple templates to select from to use as a base. However if the specification of a workflow changes, or additional new templates are requested you may need to update the workflow templates.
 
-<img src={NewWorkflow} alt="new-workflow" class="center"/>
+<img src={NewWorkflow} alt="new-workflow" class="center" />
 
 Workflow templates need to be changed in the [direktiv-react-hooks](https://github.com/direktiv/direktiv-react-hooks) package. This document will guide you on how to update the workflow templates.
 
 <div className="subheading">How to update</div>
 
-Workflow templates are defined and exported from [nodes/template.js](https://github.com/direktiv/direktiv-react-hooks/blob/main/src/nodes/templates.js) in the [direktiv-react-hooks](https://github.com/direktiv/direktiv-react-hooks) package. 
+Workflow templates are defined and exported from [nodes/template.js](https://github.com/direktiv/direktiv-react-hooks/blob/main/src/nodes/templates.js) in the [direktiv-react-hooks](https://github.com/direktiv/direktiv-react-hooks) package.
+
 ```js
 export const noop = {name: "noop", data: `description: A simple 'no-op' state that returns 'Hello world!'
 states:
@@ -41,6 +42,7 @@ export const Templates = {
     eventAnd,
 }
 ```
+
 To edit an existing template simply update the constants defined in [nodes/template.js](https://github.com/direktiv/direktiv-react-hooks/blob/main/src/nodes/templates.js). If a new template needs to be added, a new constant will need to be defined and added the the `Templates` const export in [nodes/template.js](https://github.com/direktiv/direktiv-react-hooks/blob/main/src/nodes/templates.js).
 
 <div className="subheading">Example - Edit noop template</div>
@@ -74,7 +76,7 @@ states:
     type: action
     action:
       function: get
-      input: 
+      input:
         method: "GET"
         url: "https://fakerapi.it/api/v1/persons?_quantity=1"
 `}
@@ -102,4 +104,4 @@ export const Templates = {
 
 Once changes have been made to the [direktiv-react-hooks](https://github.com/direktiv/direktiv-react-hooks) package. You will need to publish a new version of [direktiv-react-hooks](https://github.com/direktiv/direktiv-react-hooks) to npm and update its dependencies on [direktiv-ui](https://github.com/direktiv/direktiv-ui) repository to see the changes.
 
-Workflow templates are used in the frontend with the `useNodes` [direktiv-react-hooks](https://github.com/direktiv/direktiv-react-hooks) hook. 
+Workflow templates are used in the frontend with the `useNodes` [direktiv-react-hooks](https://github.com/direktiv/direktiv-react-hooks) hook.
