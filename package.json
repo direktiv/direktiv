@@ -105,6 +105,7 @@
     "@storybook/preset-create-react-app": "^3.2.0",
     "@storybook/react": "^6.5.15",
     "@storybook/testing-library": "^0.0.13",
+    "@testing-library/react-hooks": "^8.0.1",
     "@types/drawflow": "^0.0.4",
     "@types/react-virtualized": "^9.21.21",
     "@types/react-window": "^1.8.5",
