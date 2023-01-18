@@ -29,7 +29,7 @@ describe("utilHandleError", () => {
     };
     expect.toBeString(await HandleError("test forbidden", resp, "forbidden"));
   });
-  it("test non json result", async () => {
+  it("test non json result (plain/text)", async () => {
     let resp = {
       headers: new Map().set("content-type", "plain/text"),
       status: 400,
@@ -39,7 +39,7 @@ describe("utilHandleError", () => {
     };
     expect.toBeString(await HandleError("test forbidden", resp, "forbidden"));
   });
-  it("test non json result", async () => {
+  it("test non json result (application/json)", async () => {
     let resp = {
       headers: new Map().set("content-type", "application/json"),
       status: 400,
