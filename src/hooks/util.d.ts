@@ -1,24 +1,17 @@
 interface ListStateAction {
-    type: string,
-    data: object,
-}  
+  type: string;
+  data: object;
+}
 
-export const StateReducer: (
-    state: any,
-    action: ListStateAction
-) => any;
-
+export const StateReducer: (state: any, action: ListStateAction) => any;
 
 interface EventStatAction {
-    event: string,
-    data: object,
+  event: string;
+  data: object;
 
-    idKey ?: string
-    idNewItemKey? :string,
-    idData?: string,
-}  
+  idKey?: string;
+  idNewItemKey?: string;
+  idData?: string;
+}
 
-export const EventStateReducer: (
-    state: any,
-    action: EventStatAction
-) => any;
+export const EventStateReducer: (state: any, action: EventStatAction) => any;
