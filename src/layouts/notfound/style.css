@@ -1,13 +1,12 @@
-.header-404{
-    font-size: 120px;
-    font-weight: bolder;
+.header-404 {
+  font-size: 120px;
+  font-weight: bolder;
 }
 
 .link-404 {
-    text-decoration: underline;
+  text-decoration: underline;
 }
 
 .link-404:hover {
-    color: #3d93c6
+  color: #3d93c6;
 }
-
