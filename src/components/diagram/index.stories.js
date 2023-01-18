@@ -1,4 +1,3 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
 import '../../App.css';
 import FlexBox from '../flexbox';
 
