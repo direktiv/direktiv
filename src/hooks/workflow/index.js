@@ -33,10 +33,7 @@ export const useDirektivWorkflow = (
   const [data, dispatchData] = React.useReducer(StateReducer, null);
   const [err, setErr] = React.useState(null);
   const [eventSource, setEventSource] = React.useState(null);
-  const { eventSourceRef } = useEventSourceCleaner(
-    eventSource,
-    "useDirektivWorkflow"
-  );
+  useEventSourceCleaner(eventSource, "useDirektivWorkflow");
 
   // Store Query parameters
   const { queryString } = useQueryString(false, queryParameters);
