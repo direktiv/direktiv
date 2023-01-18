@@ -1,4 +1,4 @@
-import { useWorkflowServiceRevision } from "direktiv-react-hooks"
+import { useWorkflowServiceRevision } from "../../../hooks"
 import { VscLayers } from 'react-icons/vsc';
 import ContentPanel, { ContentPanelBody, ContentPanelTitle, ContentPanelTitleIcon } from "../../../components/content-panel"
 import FlexBox from "../../../components/flexbox"

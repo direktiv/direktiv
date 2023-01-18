@@ -6,7 +6,7 @@ import Modal  from '../../../components/modal';
 import {useDropzone} from 'react-dropzone'
 import FlexBox from '../../../components/flexbox';
 import Alert from '../../../components/alert';
-import {useSecrets} from 'direktiv-react-hooks'
+import {useSecrets} from '../../../hooks'
 import {Config, GenerateRandomKey} from '../../../util'
 import HelpIcon from '../../../components/help';
 import Tabs from '../../../components/tabs'

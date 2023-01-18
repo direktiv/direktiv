@@ -1,4 +1,4 @@
-import { useInstance, useInstanceLogs, useWorkflow } from 'direktiv-react-hooks';
+import { useInstance, useInstanceLogs, useWorkflow } from '../../hooks';
 import React, { useCallback, useEffect, useState } from 'react';
 import { VscScreenFull, VscScreenNormal, VscSourceControl, VscTerminal } from 'react-icons/vsc';
 import { useParams } from 'react-router';

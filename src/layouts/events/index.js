@@ -1,4 +1,4 @@
-import { useEvents } from 'direktiv-react-hooks';
+import { useEvents } from '../../hooks';
 import { useState } from 'react';
 import { VscCloud, VscDebugStepInto, VscPlay } from 'react-icons/vsc';
 import { AutoSizer } from 'react-virtualized';

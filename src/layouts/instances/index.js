@@ -1,4 +1,4 @@
-import { useInstances } from 'direktiv-react-hooks';
+import { useInstances } from '../../hooks';
 import { useEffect, useMemo, useState } from 'react';
 import { BsDot } from 'react-icons/bs';
 import { VscClose, VscVmRunning } from 'react-icons/vsc';

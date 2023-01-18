@@ -1,4 +1,4 @@
-import { useJQPlayground } from 'direktiv-react-hooks';
+import { useJQPlayground } from '../../hooks';
 import { useCallback, useEffect, useState } from 'react';
 import { VscFileCode, VscArrowRight } from 'react-icons/vsc';
 import ContentPanel, { ContentPanelBody, ContentPanelTitle, ContentPanelTitleIcon } from '../../components/content-panel';

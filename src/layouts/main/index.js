@@ -7,7 +7,7 @@ import Explorer from '../explorer';
 import NotFound from '../notfound';
 import FlexBox from '../../components/flexbox';
 import NavBar from '../../components/navbar';
-import { useNamespaces } from 'direktiv-react-hooks' 
+import { useNamespaces } from '../../hooks' 
 import { Config } from '../../util'
 import { BrowserRouter, Routes, Route, useNavigate} from 'react-router-dom'
 import InstancesPage from '../instances';

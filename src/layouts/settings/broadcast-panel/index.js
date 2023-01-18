@@ -7,7 +7,7 @@ import ContentPanel, {
 } from "../../../components/content-panel";
 import FlexBox from "../../../components/flexbox";
 import { Config, GenerateRandomKey } from "../../../util";
-import { useBroadcastConfiguration } from "direktiv-react-hooks";
+import { useBroadcastConfiguration } from "../../../hooks";
 import HelpIcon from "../../../components/help";
 import { VscSettings } from "react-icons/vsc";
 import { useApiKey } from "../../../util/apiKeyProvider";

@@ -1,4 +1,4 @@
-import { useGlobalServices, useNamespaceServices, useNodes } from 'direktiv-react-hooks';
+import { useGlobalServices, useNamespaceServices, useNodes } from "../../hooks";
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { VscGear, VscListUnordered, VscSymbolEvent, VscInfo, VscFileCode } from 'react-icons/vsc';
 import Alert from '../../components/alert';

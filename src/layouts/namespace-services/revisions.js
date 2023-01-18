@@ -1,4 +1,4 @@
-import { useNamespaceService } from "direktiv-react-hooks"
+import { useNamespaceService } from "../../hooks"
 import { useEffect, useState } from "react"
 import { VscLayers } from 'react-icons/vsc';
 import { useNavigate, useParams } from "react-router"

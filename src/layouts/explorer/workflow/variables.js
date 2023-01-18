@@ -1,4 +1,4 @@
-import { useWorkflowVariables } from 'direktiv-react-hooks';
+import { useWorkflowVariables } from '../../../hooks';
 import { useEffect, useState } from 'react';
 
 import { VscCloudDownload, VscCloudUpload, VscEye, VscLoading, VscTrash, VscVariableGroup, VscAdd } from 'react-icons/vsc';

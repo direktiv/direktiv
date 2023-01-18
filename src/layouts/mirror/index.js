@@ -1,6 +1,6 @@
 import { useTheme } from '@mui/material/styles';
 import Tippy from '@tippyjs/react';
-import { useMirror, useNodes } from 'direktiv-react-hooks';
+import { useMirror, useNodes } from '../../hooks';
 import React, { useEffect, useRef, useState } from 'react';
 import { VscAdd, VscLock, VscSync, VscUnlock } from 'react-icons/vsc';
 import { useNavigate, useParams } from 'react-router';

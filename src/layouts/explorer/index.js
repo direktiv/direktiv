@@ -4,7 +4,7 @@ import "./style.css";
 import CircularProgress from "@mui/material/CircularProgress";
 
 import Fade from "@mui/material/Fade";
-import { useNodes } from "direktiv-react-hooks";
+import { useNodes } from "../../hooks";
 import { FcWorkflow } from "react-icons/fc";
 import { FiFolder } from "react-icons/fi";
 import { HiOutlineTrash } from "react-icons/hi";

@@ -1,4 +1,4 @@
-import { useWorkflowService } from "direktiv-react-hooks"
+import { useWorkflowService } from "../../../hooks"
 import { Config } from "../../../util"
 import FlexBox from "../../../components/flexbox"
 import ContentPanel, { ContentPanelBody, ContentPanelTitle, ContentPanelTitleIcon } from "../../../components/content-panel"

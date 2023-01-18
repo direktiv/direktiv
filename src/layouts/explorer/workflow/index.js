@@ -1,4 +1,4 @@
-import { useWorkflow, useWorkflowServices } from 'direktiv-react-hooks';
+import { useWorkflow, useWorkflowServices } from '../../../hooks';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { VscFileCode } from 'react-icons/vsc';
 import { useNavigate, useParams } from 'react-router';

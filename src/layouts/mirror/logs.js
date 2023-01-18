@@ -1,4 +1,4 @@
-import { useMirrorLogs } from 'direktiv-react-hooks';
+import { useMirrorLogs } from '../../hooks';
 import React, { useState } from 'react';
 import FlexBox from '../../components/flexbox';
 import Logs, { LogFooterButtons } from '../../components/logs/logs';

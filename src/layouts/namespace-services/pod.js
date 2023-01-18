@@ -1,5 +1,5 @@
 import * as dayjs from 'dayjs';
-import { useNamespaceServiceRevision, usePodLogs } from "direktiv-react-hooks";
+import { useNamespaceServiceRevision, usePodLogs } from "../../hooks";
 import { useEffect, useState } from "react";
 import { VscLayers, VscServerEnvironment, VscTerminal } from 'react-icons/vsc';
 import { useParams } from "react-router";

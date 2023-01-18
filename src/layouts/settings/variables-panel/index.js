@@ -1,5 +1,5 @@
 import Tippy from '@tippyjs/react';
-import { useNamespaceVariables } from 'direktiv-react-hooks';
+import { useNamespaceVariables } from '../../../hooks';
 import { saveAs } from 'file-saver';
 import { useCallback, useEffect, useState } from 'react';
 import { useDropzone } from 'react-dropzone';

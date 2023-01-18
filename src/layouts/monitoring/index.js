@@ -1,7 +1,7 @@
 import * as dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
 import utc from "dayjs/plugin/utc"
-import { useInstances, useNamespaceLogs } from "direktiv-react-hooks"
+import { useInstances, useNamespaceLogs } from "../../hooks"
 import { useEffect, useState } from "react"
 import { VscCheck, VscChromeClose, VscTerminal } from "react-icons/vsc"
 import { Link } from "react-router-dom"

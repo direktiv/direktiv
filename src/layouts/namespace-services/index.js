@@ -1,4 +1,4 @@
-import { useNamespaceServices } from "direktiv-react-hooks";
+import { useNamespaceServices } from "../../hooks";
 import {VscLayers, VscChevronDown, VscChevronRight, VscRefresh} from 'react-icons/vsc';
 
 import "./style.css"
