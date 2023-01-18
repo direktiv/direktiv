@@ -57,7 +57,7 @@ export const useDirektivNamespaceLogs = (url, stream, namespace, apikey, ...quer
                 getNamespaceLogs()
             }
         }
-    }, [data])
+    }, [data, apikey])
 
     // If queryParameters change and streaming: update queryString, and reset sse connection
     React.useEffect(() => {

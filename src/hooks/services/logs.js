@@ -40,7 +40,7 @@ export const useDirektivPodLogs = (url, pod, apikey) => {
             listener.onmessage = e => readData(e)
             setEventSource(listener)
         }
-    }, [])
+    }, [apikey])
 
     React.useEffect(() => {
         return () => CloseEventSource(eventSource)
@@ -73,7 +73,7 @@ export const useDirektivPodLogs = (url, pod, apikey) => {
             setEventSource(listener)
         }
 
-    }, [pod])
+    }, [pod, apikey])
 
     return {
         data,

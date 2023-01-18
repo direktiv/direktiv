@@ -56,7 +56,7 @@ export const useDirektivMirror = (url, stream, namespace, path, apikey, ...query
         } else {
             setEventSource(null)
         }
-    }, [stream, queryString, pathString])
+    }, [stream, queryString, pathString, apikey])
 
     // Non Stream Data Dispatch Handler
     React.useEffect(async () => {

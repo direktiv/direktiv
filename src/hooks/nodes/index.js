@@ -88,7 +88,7 @@ export const useDirektivNodes = (
     return () => {
       clearTimeout(handler);
     };
-  }, [stream, queryString, pathString]);
+  }, [stream, queryString, pathString, apikey]);
 
   // Non Stream Data Dispatch Handler
   React.useEffect(async () => {

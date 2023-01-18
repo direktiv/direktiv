@@ -88,7 +88,7 @@ export const useDirektivNamespaceServiceRevision = (url, namespace, service, rev
             listener.onmessage = e => readData(e)
             setPodSource(listener)
         }
-    })
+    }, [apikey])
 
     React.useEffect(() => {
         if (revisionSource === null) {
@@ -128,7 +128,7 @@ export const useDirektivNamespaceServiceRevision = (url, namespace, service, rev
             listener.onmessage = e => readData(e)
             setRevisionSource(listener)
         }
-    }, [revisionSource])
+    }, [revisionSource, apikey])
 
     React.useEffect(() => {
         return () => {
@@ -202,7 +202,7 @@ export const useDirektivNamespaceService = (url, namespace, service, navigate, a
             listener.onmessage = e => readData(e)
             setTrafficSource(listener)
         }
-    }, [fn])
+    }, [fn, apikey])
 
     React.useEffect(() => {
         if (eventSource === null) {
@@ -276,7 +276,7 @@ export const useDirektivNamespaceService = (url, namespace, service, navigate, a
             listener.onmessage = e => readData(e)
             setEventSource(listener)
         }
-    }, [revisions])
+    }, [revisions, apikey])
 
     React.useEffect(() => {
         return () => {
@@ -313,7 +313,7 @@ export const useDirektivNamespaceService = (url, namespace, service, navigate, a
             })
         })
         if (!resp.ok) {
-            throw new Error(await HandleError('create namespace service revision', resp, 'createRevision'))
+            throw new Error(await HandleError('create namespace service revision', resp))
         }
     }
 
@@ -452,7 +452,7 @@ export const useDirektivNamespaceServices = (url, stream, namespace, apikey) => 
                 getNamespaceServices()
             }
         }
-    }, [data])
+    }, [data, apikey])
 
     React.useEffect(() => {
         return () => CloseEventSource(eventSource)
@@ -500,7 +500,7 @@ export const useDirektivNamespaceServices = (url, stream, namespace, apikey) => 
             })
         })
         if (!resp.ok) {
-            throw new Error(await HandleError('create namespace service', resp, 'createService'))
+            throw new Error(await HandleError('create namespace service', resp))
         }
     }
 

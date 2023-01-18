@@ -63,7 +63,7 @@ export const useDirektivInstanceLogs = (url, stream, namespace, instance, apikey
                 getInstanceLogs()
             }
         }
-    }, [data])
+    }, [data, stream, apikey])
 
     React.useEffect(() => {
         return () => CloseEventSource(eventSource)

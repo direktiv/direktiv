@@ -46,7 +46,7 @@ export const useDirektivMirrorLogs = (url, stream, namespace, activity, apikey, 
         } else {
             setEventSource(null)
         }
-    }, [stream, queryString, pathString])
+    }, [stream, queryString, pathString, apikey])
 
     // Non Stream Data Dispatch Handler
     React.useEffect(() => {

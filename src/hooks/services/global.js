@@ -82,7 +82,7 @@ export const useDirektivGlobalServiceRevision = (url, service, revision, apikey)
             listener.onmessage = e => readData(e)
             setPodSource(listener)
         }
-    })
+    }, [apikey])
 
     React.useEffect(() => {
         if (revisionSource === null) {
@@ -115,7 +115,7 @@ export const useDirektivGlobalServiceRevision = (url, service, revision, apikey)
             listener.onmessage = e => readData(e)
             setRevisionSource(listener)
         }
-    }, [revisionSource])
+    }, [revisionSource, apikey])
 
     React.useEffect(() => {
         return () => {
@@ -182,7 +182,7 @@ export const useDirektivGlobalService = (url, service, navigate, apikey) => {
             listener.onmessage = e => readData(e)
             setTrafficSource(listener)
         }
-    }, [fn])
+    }, [fn, apikey])
 
     React.useEffect(() => {
         if (eventSource === null) {
@@ -247,7 +247,7 @@ export const useDirektivGlobalService = (url, service, navigate, apikey) => {
             listener.onmessage = e => readData(e)
             setEventSource(listener)
         }
-    }, [revisions])
+    }, [revisions, apikey])
 
     React.useEffect(() => {
         return () => {
@@ -414,7 +414,7 @@ export const useDirektivGlobalServices = (url, stream, apikey) => {
                 getGlobalServices()
             }
         }
-    }, [data])
+    }, [data, apikey])
 
     React.useEffect(() => {
         return () => CloseEventSource(eventSource)

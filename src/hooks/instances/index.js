@@ -62,7 +62,7 @@ export const useDirektivInstances = (url, stream, namespace, apikey, ...queryPar
         return () => {
             clearTimeout(handler);
         };
-    }, [stream, queryString, pathString])
+    }, [stream, queryString, pathString, apikey])
 
     // Non Stream Data Dispatch Handler
     React.useEffect(async () => {

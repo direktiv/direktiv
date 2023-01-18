@@ -59,7 +59,7 @@ export const useDirektivNamespaces = (url, stream, apikey, ...queryParameters) =
                 getNamespaces()
             }
         }
-    }, [data])
+    }, [data, apikey])
 
     React.useEffect(() => {
         if (!load && eventSource !== null) {

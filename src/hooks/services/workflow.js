@@ -84,7 +84,7 @@ export const useDirektivWorkflowServiceRevision = (url, namespace, path, service
             listener.onmessage = e => readData(e)
             setPodSource(listener)
         }
-    })
+    }, [apikey])
 
     React.useEffect(() => {
         if (revisionSource === null) {
@@ -117,7 +117,7 @@ export const useDirektivWorkflowServiceRevision = (url, namespace, path, service
             listener.onmessage = e => readData(e)
             setRevisionSource(listener)
         }
-    }, [revisionSource])
+    }, [revisionSource, apikey])
 
     React.useEffect(() => {
         return () => {
@@ -216,7 +216,7 @@ export const useDirektivWorkflowService = (url, namespace, path, service, versio
             listener.onmessage = e => readData(e)
             setEventSource(listener)
         }
-    }, [revisions])
+    }, [revisions, apikey])
 
     React.useEffect(() => {
         return () => {
@@ -287,7 +287,7 @@ export const useDirektivWorkflowServices = (url, stream, namespace, path, apikey
         return () => {
             clearTimeout(handler);
         };
-    }, [stream, queryString, pathString])
+    }, [stream, queryString, pathString, apikey])
 
     // Reset states when any prop that affects path is changed
     React.useEffect(() => {

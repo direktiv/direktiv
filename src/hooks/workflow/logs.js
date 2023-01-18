@@ -57,7 +57,7 @@ export const useDirektivWorkflowLogs = (url, stream, namespace, path, apikey, ..
                 getWorkflowLogs()
             }
         }
-    }, [data])
+    }, [data, apikey])
 
     React.useEffect(() => {
         return () => {
