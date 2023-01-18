@@ -58,7 +58,8 @@
     "analyze": "craco build",
     "storybook": "start-storybook -p 6006 -s public",
     "build-storybook": "build-storybook -s public",
-    "lint": "eslint src --ext .js,.jsx,.ts,.tsx"
+    "lint": "eslint src --ext .js,.jsx,.ts,.tsx",
+    "prettier": "prettier --write ./src/"
   },
   "resolutions": {
     "babel-loader": "8.1.0",
