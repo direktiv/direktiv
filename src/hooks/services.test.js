@@ -8,6 +8,7 @@ import {
   useGlobalServiceRevision,
   usePodLogs,
   useGlobalServices,
+  useGlobalService,
   useNamespaceServices,
   useNodes,
   useWorkflowServices,
