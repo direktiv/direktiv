@@ -76,18 +76,39 @@ export const useDirektivWorkflow = (
     };
   }, [stream, queryString, pathString, apikey]);
 
-  // Non Stream Data Dispatch Handler
-  React.useEffect(async () => {
-    if (!stream && pathString !== null && !err) {
-      setEventSource(null);
-      try {
-        const nodeData = await getWorkflow();
-        dispatchData({ type: STATE.UPDATE, data: nodeData });
-      } catch (e) {
-        setErr(e);
+  const getWorkflow = React.useCallback(
+    async (...queryParameters) => {
+      let uri = `${url}namespaces/${namespace}/tree/${path}`;
+      let resp = await fetch(
+        `${uri}/${ExtractQueryString(false, ...queryParameters)}`,
+        {
+          headers: apiKeyHeaders(apikey),
+        }
+      );
+      if (resp.ok) {
+        return await resp.json();
+      } else {
+        throw new Error(await HandleError("get node", resp, "listNodes"));
       }
-    }
-  }, [stream, queryString, pathString, err]);
+    },
+    [apikey, namespace, path, url]
+  );
+
+  // Non Stream Data Dispatch Handler
+  React.useEffect(() => {
+    const fetchData = async () => {
+      if (!stream && pathString !== null && !err) {
+        setEventSource(null);
+        try {
+          const nodeData = await getWorkflow();
+          dispatchData({ type: STATE.UPDATE, data: nodeData });
+        } catch (e) {
+          setErr(e);
+        }
+      }
+    };
+    fetchData();
+  }, [stream, queryString, pathString, err, getWorkflow]);
 
   // Reset states when any prop that affects path is changed
   React.useEffect(() => {
@@ -106,24 +127,6 @@ export const useDirektivWorkflow = (
       );
     }
   }, [stream, path, namespace, url]);
-
-  async function getWorkflow(...queryParameters) {
-    let uri = `${url}namespaces/${namespace}/tree/${path}`;
-
-    let resp = await fetch(
-      `${uri}/${ExtractQueryString(false, ...queryParameters)}`,
-      {
-        headers: apiKeyHeaders(apikey),
-      }
-    );
-    if (resp.ok) {
-      let json = await resp.json();
-      setData(json);
-      return json;
-    } else {
-      throw new Error(await HandleError("get node", resp, "listNodes"));
-    }
-  }
 
   async function getWorkflowSankeyMetrics(rev, ...queryParameters) {
     let uri = `${url}namespaces/${namespace}/tree/${path}?ref=${rev}&op=metrics-sankey`;
