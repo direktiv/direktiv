@@ -1,7 +1,6 @@
 import * as React from 'react'
-const fetch = require('isomorphic-fetch')
 import { HandleError, ExtractQueryString, apiKeyHeaders } from '../util'
-
+const fetch = require('isomorphic-fetch')
 
 const cheatSheetMap = [
     {
