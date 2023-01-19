@@ -40,14 +40,9 @@ describe("useNodes", () => {
     });
     await waitForNextUpdate();
 
-    let found = false;
-    for (var i = 0; i < result.current.data.children.edges.length; i++) {
-      if (
-        result.current.data.children.edges[i].node.name === "test-directory"
-      ) {
-        found = true;
-      }
-    }
+    let found = result.current.data.children.edges.some(
+      (x) => x.node.name === "test-directory"
+    );
 
     expect(found).toBeTrue();
 
@@ -57,17 +52,12 @@ describe("useNodes", () => {
 
     await waitForNextUpdate();
 
-    found = false;
-    for (var i = 0; i < result.current.data.children.edges.length; i++) {
-      if (
-        result.current.data.children.edges[i].node.name === "test-directory2"
-      ) {
-        found = true;
-      }
-    }
-
+    found = result.current.data.children.edges.some(
+      (x) => x.node.name === "test-directory2"
+    );
     expect(found).toBeTrue();
   });
+
   it("create directory check if exist then delete", async () => {
     const { result, waitForNextUpdate } = renderHook(() =>
       useNodes(Config.url, true, Config.namespace, "")
@@ -78,14 +68,10 @@ describe("useNodes", () => {
       await result.current.createNode("/test-directory", "directory");
     });
     await waitForNextUpdate();
-    let found = false;
-    for (var i = 0; i < result.current.data.children.edges.length; i++) {
-      if (
-        result.current.data.children.edges[i].node.name === "test-directory"
-      ) {
-        found = true;
-      }
-    }
+
+    let found = result.current.data.children.edges.some(
+      (x) => x.node.name === "test-directory"
+    );
 
     expect(found).toBeTrue();
 
@@ -95,14 +81,9 @@ describe("useNodes", () => {
 
     await waitForNextUpdate();
 
-    found = false;
-    for (var i = 0; i < result.current.data.children.edges.length; i++) {
-      if (
-        result.current.data.children.edges[i].node.name === "test-directory"
-      ) {
-        found = true;
-      }
-    }
+    found = result.current.data.children.edges.some(
+      (x) => x.node.name === "test-directory"
+    );
     expect(found).not.toBeTrue();
   });
   it("create workflow then toggle it to false and check if its false", async () => {
@@ -152,12 +133,10 @@ describe("useNodes", () => {
 
     await waitForNextUpdate();
 
-    found = false;
-    for (var i = 0; i < result.current.data.children.edges.length; i++) {
-      if (result.current.data.children.edges[i].node.name === "test-workflow") {
-        found = true;
-      }
-    }
+    found = result.current.data.children.edges.some(
+      (x) => x.node.name === "test-workflow"
+    );
+
     expect(found).not.toBeTrue();
   });
   it("create workflow check if exist then delete", async () => {
@@ -182,12 +161,9 @@ describe("useNodes", () => {
 
     await waitForNextUpdate();
 
-    let found = false;
-    for (var i = 0; i < result.current.data.children.edges.length; i++) {
-      if (result.current.data.children.edges[i].node.name === "test-workflow") {
-        found = true;
-      }
-    }
+    let found = result.current.data.children.edges.some(
+      (x) => x.node.name === "test-workflow"
+    );
 
     expect(found).toBeTrue();
     await act(async () => {
