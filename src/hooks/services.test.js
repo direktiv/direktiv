@@ -164,24 +164,18 @@ describe("useNamespaceServices", () => {
       );
     });
 
-    let found = false;
-    for (var i = 0; i < result.current.data.length; i++) {
-      if (result.current.data[i].info.name === "testglobalservice") {
-        found = true;
-      }
-    }
+    let found = result.current.data.some(
+      (x) => x.info.name === "testglobalservice"
+    );
     expect(found).toBeTrue();
 
     await act(async () => {
       await result.current.deleteNamespaceService("testglobalservice");
     });
 
-    found = false;
-    for (var i = 0; i < result.current.data.length; i++) {
-      if (result.current.data[i].info.name === "testglobalservice") {
-        found = true;
-      }
-    }
+    found = result.current.data.some(
+      (x) => x.info.name === "testglobalservice"
+    );
     expect(found).not.toBeTrue();
   });
   describe("useNamespaceService", () => {
@@ -304,24 +298,20 @@ describe("useGlobalServices", () => {
       );
     });
 
-    let found = false;
-    for (var i = 0; i < result.current.data.length; i++) {
-      if (result.current.data[i].info.name === "testglobalservice") {
-        found = true;
-      }
-    }
+    let found = result.current.data.some(
+      (x) => x.info.name === "testglobalservice"
+    );
+
     expect(found).toBeTrue();
 
     await act(async () => {
       await result.current.deleteGlobalService("testglobalservice");
     });
 
-    found = false;
-    for (var i = 0; i < result.current.data.length; i++) {
-      if (result.current.data[i].info.name === "testglobalservice") {
-        found = true;
-      }
-    }
+    found = result.current.data.some(
+      (x) => x.info.name === "testglobalservice"
+    );
+
     expect(found).not.toBeTrue();
   });
   describe("useGlobalService", () => {
