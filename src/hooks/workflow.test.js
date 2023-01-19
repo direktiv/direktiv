@@ -172,12 +172,7 @@ describe("useWorkflow", () => {
       await result.current.tagWorkflow("latest", "latest2");
     });
     revisions = await result.current.getRevisions();
-    let found = false;
-    for (var i = 0; i < revisions.length; i++) {
-      if (revisions[i].node.name === "latest2") {
-        found = true;
-      }
-    }
+    const found = revisions.some((x) => x.node.name === "latest2");
     expect(found).toBeTrue();
   });
   it("get revisions, update workflow, delete revision, update back to old flow then discard", async () => {

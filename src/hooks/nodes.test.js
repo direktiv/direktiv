@@ -108,12 +108,9 @@ describe("useNodes", () => {
 
     await waitForNextUpdate();
 
-    let found = false;
-    for (var i = 0; i < result.current.data.children.edges.length; i++) {
-      if (result.current.data.children.edges[i].node.name === "test-workflow") {
-        found = true;
-      }
-    }
+    let found = result.current.data.children.edges.some(
+      (x) => x.node.name === "test-workflow"
+    );
 
     expect(found).toBeTrue();
 
