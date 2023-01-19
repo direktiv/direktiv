@@ -5,35 +5,92 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
+	entns "github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/util"
+	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
+
+func (srv *server) getInstance(ctx context.Context, tx Transaction, namespace, instanceID string) (*CacheData, error) {
+
+	id, err := uuid.Parse(instanceID)
+	if err != nil {
+		return nil, err
+	}
+
+	cached := new(CacheData)
+
+	err = srv.database.Instance(ctx, nil, cached, id)
+	if err != nil {
+		return nil, err
+	}
+
+	if namespace != cached.Namespace.Name {
+		return nil, os.ErrNotExist
+	}
+
+	return cached, nil
+
+}
+
+func (internal *internal) getInstance(ctx context.Context, tx Transaction, instanceID string) (*CacheData, error) {
+
+	id, err := uuid.Parse(instanceID)
+	if err != nil {
+		return nil, err
+	}
+
+	cached := new(CacheData)
+
+	err = internal.database.Instance(ctx, nil, cached, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return cached, nil
+
+}
+
+func (srv *server) getInstanceRuntime(ctx context.Context, tx Transaction, namespace, instanceID string) (*CacheData, *InstanceRuntime, error) {
+
+	cached, err := srv.getInstance(ctx, tx, namespace, instanceID)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	rt, err := srv.database.InstanceRuntime(ctx, tx, cached.Instance.Runtime)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return cached, rt, nil
+
+}
 
 func (flow *flow) InstanceInput(ctx context.Context, req *grpc.InstanceInputRequest) (*grpc.InstanceInputResponse, error) {
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	nsc := flow.db.Namespace
-
-	d, err := flow.getInstance(ctx, nsc, req.GetNamespace(), req.GetInstance(), true)
+	cached, rt, err := flow.getInstanceRuntime(ctx, nil, req.GetNamespace(), req.GetInstance())
 	if err != nil {
 		return nil, err
 	}
 
 	var resp grpc.InstanceInputResponse
 
-	err = atob(d.in, &resp.Instance)
+	err = atob(cached.Instance, &resp.Instance)
 	if err != nil {
 		return nil, err
 	}
 
 	m := make(map[string]interface{})
-	err = json.Unmarshal(d.in.Edges.Runtime.Input, &m)
+	err = json.Unmarshal(rt.Input, &m)
 	if err != nil {
 		return nil, err
 	}
@@ -41,7 +98,7 @@ func (flow *flow) InstanceInput(ctx context.Context, req *grpc.InstanceInputRequ
 	input := marshal(m)
 
 	resp.Data = []byte(input)
-	resp.Namespace = d.namespace()
+	resp.Namespace = cached.Namespace.Name
 
 	return &resp, nil
 
@@ -51,22 +108,20 @@ func (flow *flow) InstanceOutput(ctx context.Context, req *grpc.InstanceOutputRe
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	nsc := flow.db.Namespace
-
-	d, err := flow.getInstance(ctx, nsc, req.GetNamespace(), req.GetInstance(), true)
+	cached, rt, err := flow.getInstanceRuntime(ctx, nil, req.GetNamespace(), req.GetInstance())
 	if err != nil {
 		return nil, err
 	}
 
 	var resp grpc.InstanceOutputResponse
 
-	err = atob(d.in, &resp.Instance)
+	err = atob(cached.Instance, &resp.Instance)
 	if err != nil {
 		return nil, err
 	}
 
 	m := make(map[string]interface{})
-	err = json.Unmarshal([]byte(d.in.Edges.Runtime.Output), &m)
+	err = json.Unmarshal([]byte(rt.Output), &m)
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +129,7 @@ func (flow *flow) InstanceOutput(ctx context.Context, req *grpc.InstanceOutputRe
 	output := marshal(m)
 
 	resp.Data = []byte(output)
-	resp.Namespace = d.namespace()
+	resp.Namespace = cached.Namespace.Name
 
 	return &resp, nil
 
@@ -84,22 +139,22 @@ func (flow *flow) InstanceMetadata(ctx context.Context, req *grpc.InstanceMetada
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	nsc := flow.db.Namespace
+	Namespace := flow.db.Namespace
 
-	d, err := flow.getInstance(ctx, nsc, req.GetNamespace(), req.GetInstance(), true)
+	cached, rt, err := flow.getInstanceRuntime(ctx, Namespace, req.GetNamespace(), req.GetInstance())
 	if err != nil {
 		return nil, err
 	}
 
 	var resp grpc.InstanceMetadataResponse
 
-	err = atob(d.in, &resp.Instance)
+	err = atob(cached.Instance, &resp.Instance)
 	if err != nil {
 		return nil, err
 	}
 
-	resp.Data = []byte(d.in.Edges.Runtime.Metadata)
-	resp.Namespace = d.namespace()
+	resp.Data = []byte(rt.Metadata)
+	resp.Namespace = cached.Namespace.Name
 
 	return &resp, nil
 
@@ -109,12 +164,16 @@ func (flow *flow) Instances(ctx context.Context, req *grpc.InstancesRequest) (*g
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	ns, err := flow.getNamespace(ctx, flow.db.Namespace, req.GetNamespace())
+	cached := new(CacheData)
+
+	err := flow.database.NamespaceByName(ctx, nil, cached, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
 
-	query := ns.QueryInstances()
+	clients := flow.entClients(nil)
+
+	query := clients.Instance.Query().Where(entinst.HasNamespaceWith(entns.ID(cached.Namespace.ID)))
 
 	results, pi, err := paginate[*ent.InstanceQuery, *ent.Instance](ctx, req.Pagination, query, instancesOrderings, instancesFilters)
 	if err != nil {
@@ -122,7 +181,7 @@ func (flow *flow) Instances(ctx context.Context, req *grpc.InstancesRequest) (*g
 	}
 
 	resp := new(grpc.InstancesResponse)
-	resp.Namespace = ns.Name
+	resp.Namespace = cached.Namespace.Name
 	resp.Instances = new(grpc.Instances)
 	resp.Instances.PageInfo = pi
 
@@ -143,17 +202,21 @@ func (flow *flow) InstancesStream(req *grpc.InstancesRequest, srv grpc.Flow_Inst
 	phash := ""
 	nhash := ""
 
-	ns, err := flow.getNamespace(ctx, flow.db.Namespace, req.GetNamespace())
+	cached := new(CacheData)
+
+	err := flow.database.NamespaceByName(ctx, nil, cached, req.GetNamespace())
 	if err != nil {
 		return err
 	}
 
-	sub := flow.pubsub.SubscribeInstances(ns)
+	sub := flow.pubsub.SubscribeInstances(cached.Namespace)
 	defer flow.cleanup(sub.Close)
 
 resend:
 
-	query := ns.QueryInstances()
+	clients := flow.entClients(nil)
+
+	query := clients.Instance.Query().Where(entinst.HasNamespaceWith(entns.ID(cached.Namespace.ID)))
 
 	results, pi, err := paginate[*ent.InstanceQuery, *ent.Instance](ctx, req.Pagination, query, instancesOrderings, instancesFilters)
 	if err != nil {
@@ -161,7 +224,7 @@ resend:
 	}
 
 	resp := new(grpc.InstancesResponse)
-	resp.Namespace = ns.Name
+	resp.Namespace = cached.Namespace.Name
 	resp.Instances = new(grpc.Instances)
 	resp.Instances.PageInfo = pi
 
@@ -192,46 +255,29 @@ func (flow *flow) Instance(ctx context.Context, req *grpc.InstanceRequest) (*grp
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tx, err := flow.db.Tx(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer rollback(tx)
-
-	nsc := tx.Namespace
-
-	d, err := flow.traverseToInstance(ctx, nsc, req.GetNamespace(), req.GetInstance())
-	if err != nil {
-		return nil, err
-	}
-
-	err = tx.Commit()
+	cached, rt, err := flow.getInstanceRuntime(ctx, nil, req.GetNamespace(), req.GetInstance())
 	if err != nil {
 		return nil, err
 	}
 
 	var resp grpc.InstanceResponse
 
-	err = atob(d.in, &resp.Instance)
+	err = atob(cached.Instance, &resp.Instance)
 	if err != nil {
 		return nil, err
 	}
 
-	if d.in.Edges.Runtime != nil {
-		resp.Flow = d.in.Edges.Runtime.Flow
-		if caller := d.in.Edges.Runtime.Edges.Caller; caller != nil {
-			resp.InvokedBy = caller.ID.String()
-		}
-	}
+	resp.Flow = rt.Flow
+	resp.InvokedBy = rt.Caller.String()
 
-	resp.Namespace = d.namespace()
+	resp.Namespace = cached.Namespace.Name
 
 	rwf := new(grpc.InstanceWorkflow)
-	rwf.Name = d.base
-	rwf.Parent = d.dir
-	rwf.Path = d.path
-	if d.in.Edges.Revision != nil {
-		rwf.Revision = d.in.Edges.Revision.ID.String()
+	rwf.Name = cached.Inode().Name
+	rwf.Parent = cached.Dir()
+	rwf.Path = cached.Path()
+	if cached.Revision != nil {
+		rwf.Revision = cached.Revision.ID.String()
 	}
 	resp.Workflow = rwf
 
@@ -251,49 +297,35 @@ func (flow *flow) InstanceStream(req *grpc.InstanceRequest, srv grpc.Flow_Instan
 
 resend:
 
-	tx, err := flow.db.Tx(ctx)
+	cached, rt, err := flow.getInstanceRuntime(ctx, nil, req.GetNamespace(), req.GetInstance())
 	if err != nil {
 		return err
 	}
-	defer rollback(tx)
-
-	nsc := tx.Namespace
-
-	d, err := flow.traverseToInstance(ctx, nsc, req.GetNamespace(), req.GetInstance())
-	if err != nil {
-		return err
-	}
-
-	rollback(tx)
 
 	if sub == nil {
-		sub = flow.pubsub.SubscribeInstance(d.in)
+		sub = flow.pubsub.SubscribeInstance(cached)
 		defer flow.cleanup(sub.Close)
 		goto resend
 	}
 
 	resp := new(grpc.InstanceResponse)
 
-	err = atob(d.in, &resp.Instance)
+	err = atob(cached.Instance, &resp.Instance)
 	if err != nil {
 		return err
 	}
 
-	if d.in.Edges.Runtime != nil {
-		resp.Flow = d.in.Edges.Runtime.Flow
-		if caller := d.in.Edges.Runtime.Edges.Caller; caller != nil {
-			resp.InvokedBy = caller.ID.String()
-		}
-	}
+	resp.Flow = rt.Flow
+	resp.InvokedBy = rt.Caller.String()
 
-	resp.Namespace = d.namespace()
+	resp.Namespace = cached.Namespace.Name
 
 	rwf := new(grpc.InstanceWorkflow)
-	rwf.Name = d.base
-	rwf.Parent = d.dir
-	rwf.Path = d.path
-	if d.in.Edges.Revision != nil {
-		rwf.Revision = d.in.Edges.Revision.ID.String()
+	rwf.Name = cached.Inode().Name
+	rwf.Parent = cached.Dir()
+	rwf.Path = cached.Path()
+	if cached.Revision != nil {
+		rwf.Revision = cached.Revision.ID.String()
 	}
 	resp.Workflow = rwf
 
@@ -358,11 +390,11 @@ func (flow *flow) ReleaseInstance(ctx context.Context, req *grpc.ReleaseInstance
 		return nil, err
 	}
 
-	if im.in.Edges.Namespace.Name != req.GetNamespace() {
+	if im.cached.Namespace.Name != req.GetNamespace() {
 		return nil, errors.New("instance not found")
 	}
 
-	if im.in.Status != util.InstanceStatusPending {
+	if im.cached.Instance.Status != util.InstanceStatusPending {
 		return nil, errors.New("instance already released")
 	}
 
@@ -453,12 +485,12 @@ func (flow *flow) CancelInstance(ctx context.Context, req *grpc.CancelInstanceRe
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	d, err := flow.getInstance(ctx, flow.db.Namespace, req.GetNamespace(), req.GetInstance(), false)
+	cached, err := flow.getInstance(ctx, flow.db.Namespace, req.GetNamespace(), req.GetInstance())
 	if err != nil {
 		return nil, err
 	}
 
-	flow.engine.cancelInstance(d.in.ID.String(), "direktiv.cancels.api", "cancelled by api request", false)
+	flow.engine.cancelInstance(cached.Instance.ID.String(), "direktiv.cancels.api", "cancelled by api request", false)
 
 	var resp emptypb.Empty
 
@@ -489,57 +521,49 @@ func (flow *flow) AwaitWorkflow(req *grpc.AwaitWorkflowRequest, srv grpc.Flow_Aw
 
 	var sub *subscription
 
-	sub = flow.pubsub.SubscribeInstance(im.in)
+	sub = flow.pubsub.SubscribeInstance(im.cached)
 	defer flow.cleanup(sub.Close)
 
 	flow.engine.queue(im)
 
-	var d *instData
+	var cached *CacheData
 
 resend:
 
-	nsc := flow.db.Namespace
-
-	if d == nil {
-		d, err = flow.traverseToInstance(ctx, nsc, req.GetNamespace(), im.in.ID.String())
+	if cached == nil {
+		cached, err = flow.getInstance(ctx, nil, req.GetNamespace(), im.cached.Instance.ID.String())
 		if err != nil {
 			return err
 		}
 	}
 
-	d, err = flow.fastGetInstance(ctx, d)
+	err = flow.database.Instance(ctx, nil, cached, cached.Instance.ID)
 	if err != nil {
 		return err
 	}
 
 	resp := new(grpc.AwaitWorkflowResponse)
 
-	err = atob(d.in, &resp.Instance)
+	err = atob(cached.Instance, &resp.Instance)
 	if err != nil {
 		return err
 	}
 
-	if d.in.Edges.Runtime != nil {
-		resp.Flow = d.in.Edges.Runtime.Flow
-		if caller := d.in.Edges.Runtime.Edges.Caller; caller != nil {
-			resp.InvokedBy = caller.ID.String()
-		}
-
-		if d.in.Status == util.InstanceStatusComplete {
-			resp.Data = []byte(d.in.Edges.Runtime.Output)
-		}
-	}
-
-	resp.Namespace = d.namespace()
-
 	rwf := new(grpc.InstanceWorkflow)
-	rwf.Name = d.base
-	rwf.Parent = d.dir
-	rwf.Path = d.path
-	if d.in.Edges.Revision != nil {
-		rwf.Revision = d.in.Edges.Revision.ID.String()
-	}
+	rwf.Name = cached.Inode().Name
+	rwf.Parent = cached.Dir()
+	rwf.Path = cached.Path()
+	resp.Namespace = cached.Namespace.Name
+	rwf.Revision = cached.Revision.ID.String()
 	resp.Workflow = rwf
+
+	if cached.Instance.Status == util.InstanceStatusComplete {
+		runtime, err := flow.database.InstanceRuntime(ctx, nil, cached.Instance.Runtime)
+		if err != nil {
+			return err
+		}
+		resp.Data = []byte(runtime.Output)
+	}
 
 	nhash = checksum(resp)
 	if nhash != phash {
@@ -550,7 +574,7 @@ resend:
 	}
 	phash = nhash
 
-	if d.in.Status != util.InstanceStatusPending {
+	if cached.Instance.Status != util.InstanceStatusPending {
 		return nil
 	}
 

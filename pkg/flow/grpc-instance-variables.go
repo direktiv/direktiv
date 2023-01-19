@@ -5,46 +5,107 @@ import (
 	"context"
 	"errors"
 	"io"
+	"os"
 	"time"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
 	"github.com/direktiv/direktiv/pkg/flow/ent"
+	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	entvardata "github.com/direktiv/direktiv/pkg/flow/ent/vardata"
+	entvar "github.com/direktiv/direktiv/pkg/flow/ent/varref"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
+
+func (srv *server) getInstanceVariable(ctx context.Context, tx Transaction, cached *CacheData, key string, load bool) (*VarRef, *VarData, error) {
+
+	vref, err := srv.database.InstanceVariable(ctx, tx, cached.Instance.ID, key)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	vdata, err := srv.database.VariableData(ctx, tx, vref.VarData, load)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return vref, vdata, nil
+
+}
+
+func (srv *server) getThreadVariable(ctx context.Context, tx Transaction, cached *CacheData, key string, load bool) (*VarRef, *VarData, error) {
+
+	vref, err := srv.database.ThreadVariable(ctx, tx, cached.Instance.ID, key)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	vdata, err := srv.database.VariableData(ctx, tx, vref.VarData, load)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return vref, vdata, nil
+
+}
+
+func (srv *server) traverseToInstanceVariable(ctx context.Context, tx Transaction, namespace, instance, key string, load bool) (*CacheData, *VarRef, *VarData, error) {
+
+	id, err := uuid.Parse(instance)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	cached := new(CacheData)
+
+	err = srv.database.Instance(ctx, tx, cached, id)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	if cached.Namespace.Name != namespace {
+		return nil, nil, nil, os.ErrNotExist
+	}
+
+	vref, vdata, err := srv.getInstanceVariable(ctx, tx, cached, key, load)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	return cached, vref, vdata, nil
+
+}
 
 func (flow *flow) InstanceVariable(ctx context.Context, req *grpc.InstanceVariableRequest) (*grpc.InstanceVariableResponse, error) {
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	nsc := flow.db.Namespace
-
-	d, err := flow.traverseToInstanceVariable(ctx, nsc, req.GetNamespace(), req.GetInstance(), req.GetKey(), true)
+	cached, vref, vdata, err := flow.traverseToInstanceVariable(ctx, nil, req.GetNamespace(), req.GetInstance(), req.GetKey(), true)
 	if err != nil {
 		return nil, err
 	}
 
 	var resp grpc.InstanceVariableResponse
 
-	resp.Namespace = d.ns().Name
-	resp.Instance = d.in.ID.String()
-	resp.Key = d.vref.Name
-	resp.CreatedAt = timestamppb.New(d.vdata.CreatedAt)
-	resp.UpdatedAt = timestamppb.New(d.vdata.UpdatedAt)
-	resp.Checksum = d.vdata.Hash
-	resp.TotalSize = int64(d.vdata.Size)
-	resp.MimeType = d.vdata.MimeType
+	resp.Namespace = cached.Namespace.Name
+	resp.Instance = cached.Instance.ID.String()
+	resp.Key = vref.Name
+	resp.CreatedAt = timestamppb.New(vdata.CreatedAt)
+	resp.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
+	resp.Checksum = vdata.Hash
+	resp.TotalSize = int64(vdata.Size)
+	resp.MimeType = vdata.MimeType
 
 	if resp.TotalSize > parcelSize {
 		return nil, status.Error(codes.ResourceExhausted, "variable too large to return without using the parcelling API")
 	}
 
-	resp.Data = d.vdata.Data
+	resp.Data = vdata.Data
 
 	return &resp, nil
 
@@ -56,48 +117,51 @@ func (internal *internal) InstanceVariableParcels(req *grpc.VariableInternalRequ
 
 	ctx := srv.Context()
 
-	nsc := internal.db.Namespace
-	inc := internal.db.Instance
-
-	id, err := internal.getInstance(ctx, inc, req.GetInstance(), false)
+	instID, err := uuid.Parse(req.GetInstance())
 	if err != nil {
 		return err
 	}
 
-	d, err := internal.traverseToInstanceVariable(ctx, nsc, id.namespace(), req.GetInstance(), req.GetKey(), true)
+	cached := new(CacheData)
+
+	err = internal.database.Instance(ctx, nil, cached, instID)
+	if err != nil {
+		return err
+	}
+
+	vref, vdata, err := internal.getInstanceVariable(ctx, nil, cached, req.GetKey(), true)
 	if err != nil && !derrors.IsNotFound(err) {
 		return err
 	}
 
 	if derrors.IsNotFound(err) {
-		d = new(instvarData)
-		d.vref = new(ent.VarRef)
-		d.vref.Name = req.GetKey()
-		d.vdata = new(ent.VarData)
+		vref = new(VarRef)
+		vref.Name = req.GetKey()
+		vdata = new(VarData)
 		t := time.Now()
-		d.vdata.Data = make([]byte, 0)
-		hash, err := computeHash(d.vdata.Data)
+		vdata.Data = make([]byte, 0)
+		hash, err := computeHash(vdata.Data)
 		if err != nil {
 			internal.sugar.Error(err)
 		}
-		d.vdata.CreatedAt = t
-		d.vdata.UpdatedAt = t
-		d.vdata.Hash = hash
-		d.vdata.Size = 0
+		vdata.CreatedAt = t
+		vdata.UpdatedAt = t
+		vdata.Hash = hash
+		vdata.Size = 0
 	}
 
-	rdr := bytes.NewReader(d.vdata.Data)
+	rdr := bytes.NewReader(vdata.Data)
 
 	for {
 
 		resp := new(grpc.VariableInternalResponse)
 
-		resp.Key = d.vref.Name
-		resp.CreatedAt = timestamppb.New(d.vdata.CreatedAt)
-		resp.UpdatedAt = timestamppb.New(d.vdata.UpdatedAt)
-		resp.Checksum = d.vdata.Hash
-		resp.TotalSize = int64(d.vdata.Size)
-		resp.MimeType = d.vdata.MimeType
+		resp.Key = vref.Name
+		resp.CreatedAt = timestamppb.New(vdata.CreatedAt)
+		resp.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
+		resp.Checksum = vdata.Hash
+		resp.TotalSize = int64(vdata.Size)
+		resp.MimeType = vdata.MimeType
 
 		buf := new(bytes.Buffer)
 		k, err := io.CopyN(buf, rdr, parcelSize)
@@ -141,48 +205,51 @@ func (internal *internal) ThreadVariableParcels(req *grpc.VariableInternalReques
 
 	ctx := srv.Context()
 
-	nsc := internal.db.Namespace
-	inc := internal.db.Instance
-
-	id, err := internal.getInstance(ctx, inc, req.GetInstance(), false)
+	instID, err := uuid.Parse(req.GetInstance())
 	if err != nil {
 		return err
 	}
 
-	d, err := internal.traverseToThreadVariable(ctx, nsc, id.namespace(), req.GetInstance(), req.GetKey(), true)
+	cached := new(CacheData)
+
+	err = internal.database.Instance(ctx, nil, cached, instID)
+	if err != nil {
+		return err
+	}
+
+	vref, vdata, err := internal.getThreadVariable(ctx, nil, cached, req.GetKey(), true)
 	if err != nil && !derrors.IsNotFound(err) {
 		return err
 	}
 
 	if derrors.IsNotFound(err) {
-		d = new(instvarData)
-		d.vref = new(ent.VarRef)
-		d.vref.Name = req.GetKey()
-		d.vdata = new(ent.VarData)
+		vref = new(VarRef)
+		vref.Name = req.GetKey()
+		vdata = new(VarData)
 		t := time.Now()
-		d.vdata.Data = make([]byte, 0)
-		hash, err := computeHash(d.vdata.Data)
+		vdata.Data = make([]byte, 0)
+		hash, err := computeHash(vdata.Data)
 		if err != nil {
 			internal.sugar.Error(err)
 		}
-		d.vdata.CreatedAt = t
-		d.vdata.UpdatedAt = t
-		d.vdata.Hash = hash
-		d.vdata.Size = 0
+		vdata.CreatedAt = t
+		vdata.UpdatedAt = t
+		vdata.Hash = hash
+		vdata.Size = 0
 	}
 
-	rdr := bytes.NewReader(d.vdata.Data)
+	rdr := bytes.NewReader(vdata.Data)
 
 	for {
 
 		resp := new(grpc.VariableInternalResponse)
 
-		resp.Key = d.vref.Name
-		resp.CreatedAt = timestamppb.New(d.vdata.CreatedAt)
-		resp.UpdatedAt = timestamppb.New(d.vdata.UpdatedAt)
-		resp.Checksum = d.vdata.Hash
-		resp.TotalSize = int64(d.vdata.Size)
-		resp.MimeType = d.vdata.MimeType
+		resp.Key = vref.Name
+		resp.CreatedAt = timestamppb.New(vdata.CreatedAt)
+		resp.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
+		resp.Checksum = vdata.Hash
+		resp.TotalSize = int64(vdata.Size)
+		resp.MimeType = vdata.MimeType
 
 		buf := new(bytes.Buffer)
 		k, err := io.CopyN(buf, rdr, parcelSize)
@@ -219,27 +286,25 @@ func (flow *flow) InstanceVariableParcels(req *grpc.InstanceVariableRequest, srv
 
 	ctx := srv.Context()
 
-	nsc := flow.db.Namespace
-
-	d, err := flow.traverseToInstanceVariable(ctx, nsc, req.GetNamespace(), req.GetInstance(), req.GetKey(), true)
+	cached, vref, vdata, err := flow.traverseToInstanceVariable(ctx, nil, req.GetNamespace(), req.GetInstance(), req.GetKey(), true)
 	if err != nil {
 		return err
 	}
 
-	rdr := bytes.NewReader(d.vdata.Data)
+	rdr := bytes.NewReader(vdata.Data)
 
 	for {
 
 		resp := new(grpc.InstanceVariableResponse)
 
-		resp.Namespace = d.ns().Name
-		resp.Instance = d.in.ID.String()
-		resp.Key = d.vref.Name
-		resp.CreatedAt = timestamppb.New(d.vdata.CreatedAt)
-		resp.UpdatedAt = timestamppb.New(d.vdata.UpdatedAt)
-		resp.Checksum = d.vdata.Hash
-		resp.TotalSize = int64(d.vdata.Size)
-		resp.MimeType = d.vdata.MimeType
+		resp.Namespace = cached.Namespace.Name
+		resp.Instance = cached.Instance.ID.String()
+		resp.Key = vref.Name
+		resp.CreatedAt = timestamppb.New(vdata.CreatedAt)
+		resp.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
+		resp.Checksum = vdata.Hash
+		resp.TotalSize = int64(vdata.Size)
+		resp.MimeType = vdata.MimeType
 
 		buf := new(bytes.Buffer)
 		k, err := io.CopyN(buf, rdr, parcelSize)
@@ -274,12 +339,14 @@ func (flow *flow) InstanceVariables(ctx context.Context, req *grpc.InstanceVaria
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	d, err := flow.getInstance(ctx, flow.db.Namespace, req.GetNamespace(), req.GetInstance(), false)
+	cached, err := flow.getInstance(ctx, nil, req.GetNamespace(), req.GetInstance())
 	if err != nil {
 		return nil, err
 	}
 
-	query := d.in.QueryVars()
+	clients := flow.entClients(nil)
+
+	query := clients.VarRef.Query().Where(entvar.HasInstanceWith(entinst.ID(cached.Instance.ID)))
 
 	results, pi, err := paginate[*ent.VarRefQuery, *ent.VarRef](ctx, req.Pagination, query, variablesOrderings, variablesFilters)
 	if err != nil {
@@ -287,8 +354,8 @@ func (flow *flow) InstanceVariables(ctx context.Context, req *grpc.InstanceVaria
 	}
 
 	resp := new(grpc.InstanceVariablesResponse)
-	resp.Namespace = d.namespace()
-	resp.Instance = d.in.ID.String()
+	resp.Namespace = cached.Namespace.Name
+	resp.Instance = cached.Instance.ID.String()
 	resp.Variables = new(grpc.Variables)
 	resp.Variables.PageInfo = pi
 
@@ -327,17 +394,19 @@ func (flow *flow) InstanceVariablesStream(req *grpc.InstanceVariablesRequest, sr
 	phash := ""
 	nhash := ""
 
-	d, err := flow.getInstance(ctx, flow.db.Namespace, req.GetNamespace(), req.GetInstance(), false)
+	cached, err := flow.getInstance(ctx, flow.db.Namespace, req.GetNamespace(), req.GetInstance())
 	if err != nil {
 		return err
 	}
 
-	sub := flow.pubsub.SubscribeInstanceVariables(d.in)
+	sub := flow.pubsub.SubscribeInstanceVariables(cached)
 	defer flow.cleanup(sub.Close)
 
 resend:
 
-	query := d.in.QueryVars()
+	clients := flow.entClients(nil)
+
+	query := clients.VarRef.Query().Where(entvar.HasInstanceWith(entinst.ID(cached.Instance.ID)))
 
 	results, pi, err := paginate[*ent.VarRefQuery, *ent.VarRef](ctx, req.Pagination, query, variablesOrderings, variablesFilters)
 	if err != nil {
@@ -345,8 +414,8 @@ resend:
 	}
 
 	resp := new(grpc.InstanceVariablesResponse)
-	resp.Namespace = d.namespace()
-	resp.Instance = d.in.ID.String()
+	resp.Namespace = cached.Namespace.Name
+	resp.Instance = cached.Instance.ID.String()
 	resp.Variables = new(grpc.Variables)
 	resp.Variables.PageInfo = pi
 
@@ -401,13 +470,13 @@ func (flow *flow) SetInstanceVariable(ctx context.Context, req *grpc.SetInstance
 	}
 	defer rollback(tx)
 
-	nsc := tx.Namespace
+	Namespace := tx.Namespace
 	vrefc := tx.VarRef
 	vdatac := tx.VarData
 
 	key := req.GetKey()
 
-	d, err := flow.getInstance(ctx, nsc, req.GetNamespace(), req.GetInstance(), false)
+	cached, err := flow.getInstance(ctx, Namespace, req.GetNamespace(), req.GetInstance())
 	if err != nil {
 		return nil, err
 	}
@@ -415,7 +484,7 @@ func (flow *flow) SetInstanceVariable(ctx context.Context, req *grpc.SetInstance
 	var vdata *ent.VarData
 	var newVar bool
 
-	vdata, newVar, err = flow.SetVariable(ctx, vrefc, vdatac, d.in, key, req.GetData(), req.GetMimeType(), false)
+	vdata, newVar, err = flow.SetVariable(ctx, vrefc, vdatac, &entInstanceVarQuerier{clients: flow.entClients(tx), cached: cached}, key, req.GetData(), req.GetMimeType(), false)
 	if err != nil {
 		return nil, err
 	}
@@ -426,17 +495,17 @@ func (flow *flow) SetInstanceVariable(ctx context.Context, req *grpc.SetInstance
 	}
 
 	if newVar {
-		flow.logToInstance(ctx, time.Now(), d.in, "Created instance variable '%s'.", key)
+		flow.logToInstance(ctx, time.Now(), cached, "Created instance variable '%s'.", key)
 	} else {
-		flow.logToInstance(ctx, time.Now(), d.in, "Updated instance variable '%s'.", key)
+		flow.logToInstance(ctx, time.Now(), cached, "Updated instance variable '%s'.", key)
 
 	}
-	flow.pubsub.NotifyInstanceVariables(d.in)
+	flow.pubsub.NotifyInstanceVariables(cached.Instance)
 
 	var resp grpc.SetInstanceVariableResponse
 
-	resp.Namespace = d.ns().Name
-	resp.Instance = d.in.ID.String()
+	resp.Namespace = cached.Namespace.Name
+	resp.Instance = cached.Instance.ID.String()
 	resp.Key = key
 	resp.CreatedAt = timestamppb.New(vdata.CreatedAt)
 	resp.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
@@ -514,11 +583,10 @@ func (internal *internal) SetThreadVariableParcels(srv grpc.Internal_SetThreadVa
 	}
 	defer rollback(tx)
 
-	inc := tx.Instance
 	vrefc := tx.VarRef
 	vdatac := tx.VarData
 
-	d, err := internal.getInstance(ctx, inc, instance, false)
+	cached, err := internal.getInstance(ctx, tx, instance)
 	if err != nil {
 		return err
 	}
@@ -526,7 +594,7 @@ func (internal *internal) SetThreadVariableParcels(srv grpc.Internal_SetThreadVa
 	var vdata *ent.VarData
 	var newVar bool
 
-	vdata, newVar, err = internal.flow.SetVariable(ctx, vrefc, vdatac, d.in, key, buf.Bytes(), mimeType, true)
+	vdata, newVar, err = internal.flow.SetVariable(ctx, vrefc, vdatac, &entInstanceVarQuerier{clients: internal.entClients(tx), cached: cached}, key, buf.Bytes(), mimeType, true)
 	if err != nil {
 		return err
 	}
@@ -537,16 +605,16 @@ func (internal *internal) SetThreadVariableParcels(srv grpc.Internal_SetThreadVa
 	}
 
 	if newVar {
-		internal.logToInstance(ctx, time.Now(), d.in, "Created thread variable '%s'.", key)
+		internal.logToInstance(ctx, time.Now(), cached, "Created thread variable '%s'.", key)
 	} else {
-		internal.logToInstance(ctx, time.Now(), d.in, "Updated thread variable '%s'.", key)
+		internal.logToInstance(ctx, time.Now(), cached, "Updated thread variable '%s'.", key)
 	}
 
-	internal.pubsub.NotifyInstanceVariables(d.in) // what do we do about this for thread variables?
+	internal.pubsub.NotifyInstanceVariables(cached.Instance) // what do we do about this for thread variables?
 
 	var resp grpc.SetVariableInternalResponse
 
-	resp.Instance = d.in.ID.String()
+	resp.Instance = cached.Instance.ID.String()
 	resp.Key = key
 	resp.CreatedAt = timestamppb.New(vdata.CreatedAt)
 	resp.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
@@ -629,11 +697,11 @@ func (internal *internal) SetInstanceVariableParcels(srv grpc.Internal_SetInstan
 	}
 	defer rollback(tx)
 
-	inc := tx.Instance
+	Instance := tx.Instance
 	vrefc := tx.VarRef
 	vdatac := tx.VarData
 
-	d, err := internal.getInstance(ctx, inc, instance, false)
+	cached, err := internal.getInstance(ctx, Instance, instance)
 	if err != nil {
 		return err
 	}
@@ -641,7 +709,7 @@ func (internal *internal) SetInstanceVariableParcels(srv grpc.Internal_SetInstan
 	var vdata *ent.VarData
 	var newVar bool
 
-	vdata, newVar, err = internal.flow.SetVariable(ctx, vrefc, vdatac, d.in, key, buf.Bytes(), mimeType, false)
+	vdata, newVar, err = internal.flow.SetVariable(ctx, vrefc, vdatac, &entInstanceVarQuerier{clients: internal.entClients(tx), cached: cached}, key, buf.Bytes(), mimeType, false)
 	if err != nil {
 		return err
 	}
@@ -652,16 +720,16 @@ func (internal *internal) SetInstanceVariableParcels(srv grpc.Internal_SetInstan
 	}
 
 	if newVar {
-		internal.logToInstance(ctx, time.Now(), d.in, "Created instance variable '%s'.", key)
+		internal.logToInstance(ctx, time.Now(), cached, "Created instance variable '%s'.", key)
 	} else {
-		internal.logToInstance(ctx, time.Now(), d.in, "Updated instance variable '%s'.", key)
+		internal.logToInstance(ctx, time.Now(), cached, "Updated instance variable '%s'.", key)
 	}
 
-	internal.pubsub.NotifyInstanceVariables(d.in)
+	internal.pubsub.NotifyInstanceVariables(cached.Instance)
 
 	var resp grpc.SetVariableInternalResponse
 
-	resp.Instance = d.in.ID.String()
+	resp.Instance = cached.Instance.ID.String()
 	resp.Key = key
 	resp.CreatedAt = timestamppb.New(vdata.CreatedAt)
 	resp.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
@@ -745,11 +813,11 @@ func (flow *flow) SetInstanceVariableParcels(srv grpc.Flow_SetInstanceVariablePa
 	}
 	defer rollback(tx)
 
-	nsc := tx.Namespace
+	Namespace := tx.Namespace
 	vrefc := tx.VarRef
 	vdatac := tx.VarData
 
-	d, err := flow.getInstance(ctx, nsc, namespace, instance, false)
+	cached, err := flow.getInstance(ctx, Namespace, namespace, instance)
 	if err != nil {
 		return err
 	}
@@ -757,7 +825,7 @@ func (flow *flow) SetInstanceVariableParcels(srv grpc.Flow_SetInstanceVariablePa
 	var vdata *ent.VarData
 	var newVar bool
 
-	vdata, newVar, err = flow.SetVariable(ctx, vrefc, vdatac, d.in, key, req.GetData(), mimeType, false)
+	vdata, newVar, err = flow.SetVariable(ctx, vrefc, vdatac, &entInstanceVarQuerier{clients: flow.entClients(tx), cached: cached}, key, req.GetData(), mimeType, false)
 	if err != nil {
 		return err
 	}
@@ -768,17 +836,17 @@ func (flow *flow) SetInstanceVariableParcels(srv grpc.Flow_SetInstanceVariablePa
 	}
 
 	if newVar {
-		flow.logToInstance(ctx, time.Now(), d.in, "Created instance variable '%s'.", key)
+		flow.logToInstance(ctx, time.Now(), cached, "Created instance variable '%s'.", key)
 	} else {
-		flow.logToInstance(ctx, time.Now(), d.in, "Updated instance variable '%s'.", key)
+		flow.logToInstance(ctx, time.Now(), cached, "Updated instance variable '%s'.", key)
 	}
 
-	flow.pubsub.NotifyInstanceVariables(d.in)
+	flow.pubsub.NotifyInstanceVariables(cached.Instance)
 
 	var resp grpc.SetInstanceVariableResponse
 
-	resp.Namespace = d.ns().Name
-	resp.Instance = d.in.ID.String()
+	resp.Namespace = cached.Namespace.Name
+	resp.Instance = cached.Instance.ID.String()
 	resp.Key = key
 	resp.CreatedAt = timestamppb.New(vdata.CreatedAt)
 	resp.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
@@ -805,9 +873,7 @@ func (flow *flow) DeleteInstanceVariable(ctx context.Context, req *grpc.DeleteIn
 	}
 	defer rollback(tx)
 
-	nsc := tx.Namespace
-
-	d, err := flow.traverseToInstanceVariable(ctx, nsc, req.GetNamespace(), req.GetInstance(), req.GetKey(), false)
+	cached, vref, vdata, err := flow.traverseToInstanceVariable(ctx, tx, req.GetNamespace(), req.GetInstance(), req.GetKey(), false)
 	if err != nil {
 		return nil, err
 	}
@@ -815,18 +881,13 @@ func (flow *flow) DeleteInstanceVariable(ctx context.Context, req *grpc.DeleteIn
 	vrefc := tx.VarRef
 	vdatac := tx.VarData
 
-	err = vrefc.DeleteOne(d.vref).Exec(ctx)
+	err = vrefc.DeleteOneID(vref.ID).Exec(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	k, err := d.vdata.QueryVarrefs().Count(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	if k == 0 {
-		err = vdatac.DeleteOne(d.vdata).Exec(ctx)
+	if vdata.RefCount == 0 {
+		err = vdatac.DeleteOneID(vdata.ID).Exec(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -837,17 +898,17 @@ func (flow *flow) DeleteInstanceVariable(ctx context.Context, req *grpc.DeleteIn
 		return nil, err
 	}
 
-	flow.logToInstance(ctx, time.Now(), d.in, "Deleted instance variable '%s'.", d.vref.Name)
-	flow.pubsub.NotifyInstanceVariables(d.in)
+	flow.logToInstance(ctx, time.Now(), cached, "Deleted instance variable '%s'.", vref.Name)
+	flow.pubsub.NotifyInstanceVariables(cached.Instance)
 
 	// Broadcast Event
 	broadcastInput := broadcastVariableInput{
 		Key:        req.GetKey(),
 		InstanceID: req.GetInstance(),
-		TotalSize:  int64(d.vdata.Size),
+		TotalSize:  int64(vdata.Size),
 		Scope:      BroadcastEventScopeInstance,
 	}
-	err = flow.BroadcastVariable(ctx, BroadcastEventTypeDelete, BroadcastEventScopeInstance, broadcastInput, d.ns())
+	err = flow.BroadcastVariable(ctx, BroadcastEventTypeDelete, BroadcastEventScopeInstance, broadcastInput, cached)
 	if err != nil {
 		return nil, err
 	}
@@ -868,34 +929,35 @@ func (flow *flow) RenameInstanceVariable(ctx context.Context, req *grpc.RenameIn
 	}
 	defer rollback(tx)
 
-	nsc := tx.Namespace
-	d, err := flow.traverseToInstanceVariable(ctx, nsc, req.GetNamespace(), req.GetInstance(), req.GetOld(), false)
+	cached, vref, vdata, err := flow.traverseToInstanceVariable(ctx, tx, req.GetNamespace(), req.GetInstance(), req.GetOld(), false)
 	if err != nil {
 		return nil, err
 	}
 
-	vref, err := d.vref.Update().SetName(req.GetNew()).Save(ctx)
+	x, err := tx.VarRef.UpdateOneID(vref.ID).SetName(req.GetNew()).Save(ctx)
 	if err != nil {
 		return nil, err
 	}
+
+	vref.Name = x.Name
 
 	err = tx.Commit()
 	if err != nil {
 		return nil, err
 	}
 
-	flow.logToInstance(ctx, time.Now(), d.in, "Renamed instance variable from '%s' to '%s'.", req.GetOld(), req.GetNew())
-	flow.pubsub.NotifyInstanceVariables(d.in)
+	flow.logToInstance(ctx, time.Now(), cached, "Renamed instance variable from '%s' to '%s'.", req.GetOld(), req.GetNew())
+	flow.pubsub.NotifyInstanceVariables(cached.Instance)
 
 	var resp grpc.RenameInstanceVariableResponse
 
-	resp.Checksum = d.vdata.Hash
-	resp.CreatedAt = timestamppb.New(d.vdata.CreatedAt)
+	resp.Checksum = vdata.Hash
+	resp.CreatedAt = timestamppb.New(vdata.CreatedAt)
 	resp.Key = vref.Name
-	resp.Namespace = d.ns().Name
-	resp.TotalSize = int64(d.vdata.Size)
-	resp.UpdatedAt = timestamppb.New(d.vdata.UpdatedAt)
-	resp.MimeType = d.vdata.MimeType
+	resp.Namespace = cached.Namespace.Name
+	resp.TotalSize = int64(vdata.Size)
+	resp.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
+	resp.MimeType = vdata.MimeType
 
 	return &resp, nil
 

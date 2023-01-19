@@ -37,9 +37,9 @@ func (engine *engine) SetInstanceFailed(ctx context.Context, im *instanceMemory,
 
 	updater := im.getInstanceUpdater()
 	updater = updater.SetStatus(status).SetErrorCode(code).SetErrorMessage(message)
-	im.in.Status = status
-	im.in.ErrorCode = code
-	im.in.ErrorMessage = message
+	im.cached.Instance.Status = status
+	im.cached.Instance.ErrorCode = code
+	im.cached.Instance.ErrorMessage = message
 	im.instanceUpdater = updater
 
 	return nil
@@ -52,9 +52,9 @@ func (engine *engine) InstanceRaise(ctx context.Context, im *instanceMemory, cer
 
 		updater := im.getInstanceUpdater()
 		updater = updater.SetStatus(util.InstanceStatusFailed).SetErrorCode(cerr.Code).SetErrorMessage(cerr.Message)
-		im.in.Status = util.InstanceStatusFailed
-		im.in.ErrorCode = cerr.Code
-		im.in.ErrorMessage = cerr.Message
+		im.cached.Instance.Status = util.InstanceStatusFailed
+		im.cached.Instance.ErrorCode = cerr.Code
+		im.cached.Instance.ErrorMessage = cerr.Message
 		im.instanceUpdater = updater
 
 	} else {

@@ -49,6 +49,8 @@ type server struct {
 
 	logQueue     chan *logMessage
 	logWorkersWG sync.WaitGroup
+
+	database *CachedDatabase
 }
 
 func Run(ctx context.Context, logger *zap.SugaredLogger, conf *util.Config) error {
@@ -132,6 +134,14 @@ func (srv *server) start(ctx context.Context) error {
 		return err
 	}
 	defer srv.cleanup(srv.db.Close)
+
+	srv.database = InitCachedDatabase(&CachedDatabase{
+		sugar: srv.sugar,
+		source: &EntDatabase{
+			client: srv.db,
+			sugar:  srv.sugar,
+		},
+	})
 
 	srv.startLogWorkers(1)
 
@@ -415,32 +425,36 @@ func (srv *server) cronPoll() {
 	}
 
 	for _, wf := range wfs {
-		srv.cronPollerWorkflow(wf)
+		cached, err := srv.reverseTraverseToWorkflow(ctx, nil, wf.ID.String())
+		if err != nil {
+			srv.sugar.Error(err)
+			continue
+		}
+
+		srv.cronPollerWorkflow(ctx, nil, cached)
 	}
 
 }
 
-func (srv *server) cronPollerWorkflow(wf *ent.Workflow) {
+func (srv *server) cronPollerWorkflow(ctx context.Context, tx Transaction, cached *CacheData) {
 
-	ctx := context.Background()
-
-	ms, muxErr, err := validateRouter(ctx, wf)
+	ms, muxErr, err := srv.validateRouter(ctx, tx, cached)
 	if err != nil || muxErr != nil {
 		return
 	}
 
 	if !ms.Enabled || ms.Cron != "" {
-		srv.timers.deleteCronForWorkflow(wf.ID.String())
+		srv.timers.deleteCronForWorkflow(cached.Workflow.ID.String())
 	}
 
 	if ms.Cron != "" && ms.Enabled {
-		err = srv.timers.addCron(wf.ID.String(), wfCron, ms.Cron, []byte(wf.ID.String()))
+		err = srv.timers.addCron(cached.Workflow.ID.String(), wfCron, ms.Cron, []byte(cached.Workflow.ID.String()))
 		if err != nil {
 			srv.sugar.Error(err)
 			return
 		}
 
-		srv.sugar.Debugf("Loaded cron: %s", wf.ID.String())
+		srv.sugar.Debugf("Loaded cron: %s", cached.Workflow.ID.String())
 
 	}
 

@@ -10,24 +10,105 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entino "github.com/direktiv/direktiv/pkg/flow/ent/inode"
+	entref "github.com/direktiv/direktiv/pkg/flow/ent/ref"
 	entrev "github.com/direktiv/direktiv/pkg/flow/ent/revision"
+	entwf "github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/util"
+	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
+
+func (srv *server) traverseToWorkflow(ctx context.Context, tx Transaction, namespace, path string) (*CacheData, error) {
+
+	cached, err := srv.traverseToInode(ctx, tx, namespace, path)
+	if err != nil {
+		return nil, err
+	}
+
+	err = srv.database.Workflow(ctx, tx, cached, cached.Inode().Workflow)
+	if err != nil {
+		return nil, err
+	}
+
+	return cached, nil
+
+}
+
+func (srv *server) reverseTraverseToWorkflow(ctx context.Context, tx Transaction, workflow string) (*CacheData, error) {
+
+	id, err := uuid.Parse(workflow)
+	if err != nil {
+		return nil, err
+	}
+
+	cached := new(CacheData)
+
+	err = srv.database.Workflow(ctx, tx, cached, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return cached, nil
+
+}
+
+type lookupRefAndRevArgs struct {
+	wf        *Workflow
+	reference string
+}
+
+func (srv *server) traverseToRef(ctx context.Context, tx Transaction, namespace, path, reference string) (*CacheData, error) {
+
+	if reference == "" {
+		reference = latest
+	}
+
+	cached, err := srv.traverseToWorkflow(ctx, tx, namespace, path)
+	if err != nil {
+		srv.sugar.Debugf("%s failed to resolve workflow: %v", parent(), err)
+		return nil, err
+	}
+
+	var ref *Ref
+
+	for i := range cached.Workflow.Refs {
+		x := cached.Workflow.Refs[i]
+		if x.Name == reference {
+			ref = x
+			break
+		}
+	}
+
+	cached.Ref = ref
+
+	err = srv.database.Revision(ctx, tx, cached, ref.Revision)
+	if err != nil {
+		return nil, err
+	}
+
+	return cached, nil
+
+}
 
 func (flow *flow) ResolveWorkflowUID(ctx context.Context, req *grpc.ResolveWorkflowUIDRequest) (*grpc.WorkflowResponse, error) {
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	d, err := flow.reverseTraverseToWorkflow(ctx, req.GetId())
+	id, err := uuid.Parse(req.GetId())
+	if err != nil {
+		return nil, err
+	}
+
+	cached := new(CacheData)
+	err = flow.database.Workflow(ctx, nil, cached, id)
 	if err != nil {
 		return nil, err
 	}
 
 	var resp grpc.WorkflowResponse
 
-	err = atob(d.ino, &resp.Node)
+	err = atob(cached.Inode(), &resp.Node)
 	if err != nil {
 		return nil, err
 	}
@@ -36,10 +117,10 @@ func (flow *flow) ResolveWorkflowUID(ctx context.Context, req *grpc.ResolveWorkf
 		resp.Node.ExpandedType = resp.Node.Type
 	}
 
-	resp.Namespace = d.namespace()
-	resp.Node.Parent = d.dir
-	resp.Node.Path = d.path
-	resp.Oid = d.wf.ID.String()
+	resp.Namespace = cached.Namespace.Name
+	resp.Node.Parent = cached.Dir()
+	resp.Node.Path = cached.Path()
+	resp.Oid = cached.Workflow.ID.String()
 
 	return &resp, nil
 
@@ -49,15 +130,14 @@ func (flow *flow) Workflow(ctx context.Context, req *grpc.WorkflowRequest) (*grp
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	nsc := flow.db.Namespace
-	d, err := flow.traverseToRef(ctx, nsc, req.GetNamespace(), req.GetPath(), req.GetRef())
+	cached, err := flow.traverseToRef(ctx, nil, req.GetNamespace(), req.GetPath(), req.GetRef())
 	if err != nil {
 		return nil, err
 	}
 
 	var resp grpc.WorkflowResponse
 
-	err = atob(d.ino, &resp.Node)
+	err = atob(cached.Inode(), &resp.Node)
 	if err != nil {
 		return nil, err
 	}
@@ -66,18 +146,18 @@ func (flow *flow) Workflow(ctx context.Context, req *grpc.WorkflowRequest) (*grp
 		resp.Node.ExpandedType = resp.Node.Type
 	}
 
-	resp.Namespace = d.namespace()
-	resp.Node.Parent = d.dir
-	resp.Node.Path = d.path
-	resp.EventLogging = d.wf.LogToEvents
-	resp.Oid = d.wf.ID.String()
+	resp.Namespace = cached.Namespace.Name
+	resp.Node.Parent = cached.Dir()
+	resp.Node.Path = cached.Path()
+	resp.EventLogging = cached.Workflow.LogToEvents
+	resp.Oid = cached.Workflow.ID.String()
 
-	err = atob(d.rev(), &resp.Revision)
+	err = atob(cached.Revision, &resp.Revision)
 	if err != nil {
 		return nil, err
 	}
 
-	resp.Revision.Name = d.rev().ID.String()
+	resp.Revision.Name = cached.Revision.ID.String()
 
 	return &resp, nil
 
@@ -91,20 +171,19 @@ func (flow *flow) WorkflowStream(req *grpc.WorkflowRequest, srv grpc.Flow_Workfl
 	phash := ""
 	nhash := ""
 
-	nsc := flow.db.Namespace
-	d, err := flow.traverseToRef(ctx, nsc, req.GetNamespace(), req.GetPath(), req.GetRef())
+	cached, err := flow.traverseToRef(ctx, nil, req.GetNamespace(), req.GetPath(), req.GetRef())
 	if err != nil {
 		return err
 	}
 
-	sub := flow.pubsub.SubscribeWorkflow(d.wf)
+	sub := flow.pubsub.SubscribeWorkflow(cached)
 	defer flow.cleanup(sub.Close)
 
 resend:
 
 	resp := new(grpc.WorkflowResponse)
 
-	err = atob(d.ino, &resp.Node)
+	err = atob(cached.Inode(), &resp.Node)
 	if err != nil {
 		return err
 	}
@@ -113,18 +192,18 @@ resend:
 		resp.Node.ExpandedType = resp.Node.Type
 	}
 
-	resp.Namespace = d.namespace()
-	resp.Node.Parent = d.dir
-	resp.Node.Path = d.path
-	resp.Oid = d.wf.ID.String()
-	resp.EventLogging = d.wf.LogToEvents
+	resp.Namespace = cached.Namespace.Name
+	resp.Node.Parent = cached.Dir()
+	resp.Node.Path = cached.Path()
+	resp.Oid = cached.Workflow.ID.String()
+	resp.EventLogging = cached.Workflow.LogToEvents
 
-	err = atob(d.rev(), &resp.Revision)
+	err = atob(cached.Revision, &resp.Revision)
 	if err != nil {
 		return err
 	}
 
-	resp.Revision.Name = d.rev().ID.String()
+	resp.Revision.Name = cached.Revision.ID.String()
 
 	nhash = checksum(resp)
 	if nhash != phash {
@@ -140,25 +219,23 @@ resend:
 		return nil
 	}
 
-	ref, err := flow.getRef(ctx, d.wf, req.GetRef())
+	cached, err = flow.traverseToRef(ctx, nil, cached.Namespace.Name, cached.Path(), req.GetRef())
 	if err != nil {
 		return err
 	}
-
-	d.ref = ref
 
 	goto resend
 
 }
 
 type lookupWorkflowFromParentArgs struct {
-	pino *ent.Inode
+	pino *Inode
 	name string
 }
 
-func (flow *flow) lookupWorkflowFromParent(ctx context.Context, args *lookupWorkflowFromParentArgs) (*ent.Workflow, error) {
+func (flow *flow) lookupWorkflowFromParent(ctx context.Context, tx Transaction, args *lookupWorkflowFromParentArgs) (*Workflow, error) {
 
-	ino, err := flow.lookupInodeFromParent(ctx, &lookupInodeFromParentArgs{
+	ino, err := flow.lookupInodeFromParent(ctx, tx, &lookupInodeFromParentArgs{
 		pino: args.pino,
 		name: args.name,
 	})
@@ -171,33 +248,20 @@ func (flow *flow) lookupWorkflowFromParent(ctx context.Context, args *lookupWork
 		return nil, err
 	}
 
-	wf.Edges.Inode = ino
-
-	return wf, nil
+	return entWorkflow(wf), nil
 
 }
 
 type createWorkflowArgs struct {
-	inoc *ent.InodeClient
-	wfc  *ent.WorkflowClient
-	revc *ent.RevisionClient
-	refc *ent.RefClient
-	evc  *ent.EventsClient
-
-	ns         *ent.Namespace
-	pino       *ent.Inode
+	ns         *Namespace
+	pino       *Inode
 	path       string
 	super      bool
 	data       []byte
 	noValidate bool
 }
 
-func (flow *flow) createWorkflow(ctx context.Context, args *createWorkflowArgs) (*ent.Workflow, error) {
-
-	inoc := args.inoc
-	wfc := args.wfc
-	revc := args.revc
-	refc := args.refc
+func (flow *flow) createWorkflow(ctx context.Context, tx Transaction, args *createWorkflowArgs) (*Workflow, *Inode, error) {
 
 	ns := args.ns
 	pino := args.pino
@@ -207,58 +271,59 @@ func (flow *flow) createWorkflow(ctx context.Context, args *createWorkflowArgs) 
 	data := args.data
 	hash, err := computeHash(data)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	if pino.Type != util.InodeTypeDirectory {
-		return nil, errors.New("parent inode is not a directory")
+		return nil, nil, errors.New("parent inode is not a directory")
 	}
 
 	if !args.super && pino.ReadOnly {
-		return nil, errors.New("cannot write into read-only directory")
+		return nil, nil, errors.New("cannot write into read-only directory")
 	}
 
-	ino, err := pino.QueryChildren().Where(entino.NameEQ(base)).Only(ctx)
+	clients := flow.entClients(tx)
+
+	ino, err := clients.Inode.Query().Where(entino.HasParentWith(entino.ID(pino.ID))).Where(entino.NameEQ(base)).Only(ctx)
 	if err != nil && !ent.IsNotFound(err) {
-		return nil, err
+		return nil, nil, err
 	} else if err == nil {
 		if ino.Type != util.InodeTypeWorkflow {
-			return nil, os.ErrExist
+			return nil, nil, os.ErrExist
 		}
 		wf, err := ino.QueryWorkflow().Only(ctx)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
-		wf.Edges.Inode = ino
-		return wf, os.ErrExist
+		return entWorkflow(wf), entInode(ino), os.ErrExist
 	}
 
-	ino, err = inoc.Create().SetName(base).SetNamespace(ns).SetParent(pino).SetReadOnly(pino.ReadOnly).SetType(util.InodeTypeWorkflow).Save(ctx)
+	ino, err = clients.Inode.Create().SetName(base).SetNamespaceID(ns.ID).SetParentID(pino.ID).SetReadOnly(pino.ReadOnly).SetType(util.InodeTypeWorkflow).Save(ctx)
 	if err != nil {
 		if strings.Contains(err.Error(), "duplicate key value violates unique constraint") {
-			return nil, os.ErrExist
+			return nil, nil, os.ErrExist
 		}
-		return nil, err
+		return nil, nil, err
 	}
 
-	wf, err := wfc.Create().SetInode(ino).SetNamespace(ns).Save(ctx)
+	wf, err := clients.Workflow.Create().SetInodeID(ino.ID).SetNamespaceID(ns.ID).Save(ctx)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	rev, err := revc.Create().SetHash(hash).SetSource(data).SetWorkflow(wf).SetMetadata(make(map[string]interface{})).Save(ctx)
+	rev, err := clients.Revision.Create().SetHash(hash).SetSource(data).SetWorkflow(wf).SetMetadata(make(map[string]interface{})).Save(ctx)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	_, err = refc.Create().SetImmutable(false).SetName(latest).SetWorkflow(wf).SetRevision(rev).Save(ctx)
+	_, err = clients.Ref.Create().SetImmutable(false).SetName(latest).SetWorkflow(wf).SetRevision(rev).Save(ctx)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	_, err = pino.Update().SetUpdatedAt(time.Now()).Save(ctx)
+	_, err = clients.Inode.UpdateOneID(pino.ID).SetUpdatedAt(time.Now()).Save(ctx)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	flags := rcfNoPriors
@@ -266,7 +331,12 @@ func (flow *flow) createWorkflow(ctx context.Context, args *createWorkflowArgs) 
 		flags |= rcfNoValidate
 	}
 
-	err = flow.configureRouter(ctx, args.evc, &wf, flags,
+	cached, err := flow.traverseToRef(ctx, tx, ns.Name, args.path, latest)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	err = flow.configureRouter(ctx, tx, cached, flags,
 		func() error {
 			return nil
 		},
@@ -276,14 +346,14 @@ func (flow *flow) createWorkflow(ctx context.Context, args *createWorkflowArgs) 
 		//tx.Commit,
 	)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	metricsWf.WithLabelValues(ns.Name, ns.Name).Inc()
 	metricsWfUpdated.WithLabelValues(ns.Name, path, ns.Name).Inc()
 
-	flow.logToNamespace(ctx, time.Now(), ns, "Created workflow '%s'.", path)
-	flow.pubsub.NotifyInode(ino)
+	flow.logToNamespace(ctx, time.Now(), cached, "Created workflow '%s'.", path)
+	flow.pubsub.NotifyInode(cached.Inode())
 
 	err = flow.BroadcastWorkflow(ctx, BroadcastEventTypeCreate,
 		broadcastWorkflowInput{
@@ -291,15 +361,13 @@ func (flow *flow) createWorkflow(ctx context.Context, args *createWorkflowArgs) 
 			Path:   path,
 			Parent: dir,
 			Live:   true,
-		}, ns)
+		}, cached)
 
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	wf.Edges.Inode = ino
-
-	return wf, nil
+	return entWorkflow(wf), entInode(ino), nil
 
 }
 
@@ -321,56 +389,56 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 
 	defer rollback(tx)
 
-	nsc := tx.Namespace
 	path := GetInodePath(req.GetPath())
 	dir, base := filepath.Split(path)
-	d, err := flow.traverseToInode(ctx, nsc, req.GetNamespace(), dir)
+
+	cached, err := flow.traverseToInode(ctx, tx, req.GetNamespace(), dir)
 	if err != nil {
 		return nil, err
 	}
 
-	if d.ino.Type != util.InodeTypeDirectory {
+	if cached.Inode().Type != util.InodeTypeDirectory {
 		return nil, errors.New("parent inode is not a directory")
 	}
 
-	if d.ino.ReadOnly {
+	if cached.Inode().ReadOnly {
 		return nil, errors.New("cannot write into read-only directory")
 	}
 
-	inoc := tx.Inode
+	Inode := tx.Inode
 
-	ino, err := inoc.Create().SetName(base).SetNamespace(d.ns()).SetParent(d.ino).SetType(util.InodeTypeWorkflow).Save(ctx)
+	ino, err := Inode.Create().SetName(base).SetNamespaceID(cached.Namespace.ID).SetParentID(cached.Inode().ID).SetType(util.InodeTypeWorkflow).Save(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	wfc := tx.Workflow
+	Workflow := tx.Workflow
 
-	wf, err := wfc.Create().SetInode(ino).SetNamespace(d.ns()).Save(ctx)
+	wf, err := Workflow.Create().SetInodeID(ino.ID).SetNamespaceID(cached.Namespace.ID).Save(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	revc := tx.Revision
+	Revision := tx.Revision
 
-	rev, err := revc.Create().SetHash(hash).SetSource(data).SetWorkflow(wf).SetMetadata(make(map[string]interface{})).Save(ctx)
+	rev, err := Revision.Create().SetHash(hash).SetSource(data).SetWorkflow(wf).SetMetadata(make(map[string]interface{})).Save(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	refc := tx.Ref
+	Ref := tx.Ref
 
-	_, err = refc.Create().SetImmutable(false).SetName(latest).SetWorkflow(wf).SetRevision(rev).Save(ctx)
+	_, err = Ref.Create().SetImmutable(false).SetName(latest).SetWorkflow(wf).SetRevision(rev).Save(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = d.ino.Update().SetUpdatedAt(time.Now()).Save(ctx)
+	_, err = tx.Inode.UpdateOneID(cached.Inode().ID).SetUpdatedAt(time.Now()).Save(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	err = flow.configureRouter(ctx, tx.Events, &wf, rcfNoPriors,
+	err = flow.configureRouter(ctx, tx, cached, rcfNoPriors,
 		func() error {
 			return nil
 		},
@@ -382,11 +450,11 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 
 	// CREATE HERE
 
-	metricsWf.WithLabelValues(d.ns().Name, d.ns().Name).Inc()
-	metricsWfUpdated.WithLabelValues(d.ns().Name, path, d.ns().Name).Inc()
+	metricsWf.WithLabelValues(cached.Namespace.Name, cached.Namespace.Name).Inc()
+	metricsWfUpdated.WithLabelValues(cached.Namespace.Name, path, cached.Namespace.Name).Inc()
 
-	flow.logToNamespace(ctx, time.Now(), d.ns(), "Created workflow '%s'.", path)
-	flow.pubsub.NotifyInode(d.ino)
+	flow.logToNamespace(ctx, time.Now(), cached, "Created workflow '%s'.", path)
+	flow.pubsub.NotifyInode(cached.Inode())
 
 	var resp grpc.CreateWorkflowResponse
 
@@ -399,7 +467,7 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 		resp.Node.ExpandedType = resp.Node.Type
 	}
 
-	resp.Namespace = d.namespace()
+	resp.Namespace = cached.Namespace.Name
 	resp.Node.Parent = dir
 	resp.Node.Path = path
 
@@ -416,7 +484,7 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 			Path:   resp.Node.Path,
 			Parent: resp.Node.Parent,
 			Live:   true,
-		}, d.ns())
+		}, cached)
 
 	if err != nil {
 		return nil, err
@@ -427,19 +495,14 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 }
 
 type updateWorkflowArgs struct {
-	revc   *ent.RevisionClient
-	eventc *ent.EventsClient
-
-	ns         *ent.Namespace
-	ino        *ent.Inode
-	wf         *ent.Workflow
+	cached     *CacheData
 	path       string
 	super      bool
 	data       []byte
 	noValidate bool
 }
 
-func (flow *flow) updateWorkflow(ctx context.Context, args *updateWorkflowArgs) (*ent.Revision, error) {
+func (flow *flow) updateWorkflow(ctx context.Context, tx Transaction, args *updateWorkflowArgs) (*Revision, error) {
 
 	data := args.data
 
@@ -448,30 +511,31 @@ func (flow *flow) updateWorkflow(ctx context.Context, args *updateWorkflowArgs) 
 		return nil, err
 	}
 
-	if !args.super && args.ino.ReadOnly {
+	if !args.super && args.cached.Inode().ReadOnly {
 		return nil, errors.New("cannot write into read-only directory")
 	}
 
-	path := GetInodePath(args.path)
-	dir, base := filepath.Split(path)
-	ns := args.ns
-	wf := args.wf
-	ino := args.ino
+	var ref *Ref
 
-	revc := args.revc
+	for i := range args.cached.Workflow.Refs {
+		x := args.cached.Workflow.Refs[i]
+		if x.Name == latest {
+			ref = x
+			break
+		}
+	}
 
-	ref, err := flow.lookupRefAndRev(ctx, &lookupRefAndRevArgs{
-		wf:        wf,
-		reference: "",
-	})
+	args.cached.Ref = ref
+
+	err = flow.database.Revision(ctx, tx, args.cached, ref.Revision)
 	if err != nil {
 		return nil, err
 	}
 
-	oldrev := ref.Edges.Revision
+	oldrev := args.cached.Revision
 
 	var k int
-	var rev *ent.Revision
+	var rev *Revision
 
 	if oldrev.Hash == hash {
 		// gracefully abort if hash matches latest
@@ -484,21 +548,25 @@ func (flow *flow) updateWorkflow(ctx context.Context, args *updateWorkflowArgs) 
 		flags |= rcfNoValidate
 	}
 
-	err = flow.configureRouter(ctx, args.eventc, &wf, flags,
+	err = flow.configureRouter(ctx, tx, args.cached, flags,
 		func() error {
 
-			rev, err = revc.Create().SetHash(hash).SetSource(data).SetWorkflow(wf).SetMetadata(make(map[string]interface{})).Save(ctx)
+			clients := flow.entClients(tx)
+
+			x, err := clients.Revision.Create().SetHash(hash).SetSource(data).SetWorkflowID(args.cached.Workflow.ID).SetMetadata(make(map[string]interface{})).Save(ctx)
 			if err != nil {
 				return err
 			}
+
+			rev := entRevision(x)
 
 			// change latest tag
-			err = ref.Update().SetRevision(rev).Exec(ctx)
+			err = clients.Ref.UpdateOneID(ref.ID).SetRevisionID(rev.ID).Exec(ctx)
 			if err != nil {
 				return err
 			}
 
-			k, err = oldrev.QueryRefs().Count(ctx)
+			k, err = clients.Ref.Query().Where(entref.HasRevisionWith(entrev.ID(oldrev.ID))).Count(ctx)
 			if err != nil {
 				return err
 			}
@@ -507,7 +575,7 @@ func (flow *flow) updateWorkflow(ctx context.Context, args *updateWorkflowArgs) 
 
 			if k == 0 {
 				// delete previous latest if untagged
-				err = revc.DeleteOne(oldrev).Exec(ctx)
+				err = clients.Revision.DeleteOneID(oldrev.ID).Exec(ctx)
 				if err != nil {
 					return err
 				}
@@ -522,27 +590,18 @@ func (flow *flow) updateWorkflow(ctx context.Context, args *updateWorkflowArgs) 
 		return nil, err
 	}
 
-	metricsWfUpdated.WithLabelValues(ns.Name, path, ns.Name).Inc()
+	metricsWfUpdated.WithLabelValues(args.cached.Namespace.Name, args.cached.Path(), args.cached.Namespace.Name).Inc()
 
-	d := new(wfData)
-	d.nodeData = new(nodeData)
-	d.path = path
-	d.base = base
-	d.dir = dir
-	d.ino = ino
-	d.wf = wf
-	wf.Edges.Namespace = args.ns
-
-	flow.logToWorkflow(ctx, time.Now(), d, "Updated workflow.")
-	flow.pubsub.NotifyWorkflow(wf)
+	flow.logToWorkflow(ctx, time.Now(), args.cached, "Updated workflow.")
+	flow.pubsub.NotifyWorkflow(args.cached.Workflow)
 
 	err = flow.BroadcastWorkflow(ctx, BroadcastEventTypeUpdate,
 		broadcastWorkflowInput{
-			Name:   base,
-			Path:   path,
-			Parent: dir,
-			Live:   wf.Live,
-		}, ns)
+			Name:   args.cached.Inode().Name,
+			Path:   args.cached.Path(),
+			Parent: args.cached.Dir(),
+			Live:   args.cached.Workflow.Live,
+		}, args.cached)
 
 	if err != nil {
 		return nil, err
@@ -562,18 +621,14 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 	}
 	defer rollback(tx)
 
-	d, err := flow.traverseToWorkflow(ctx, tx.Namespace, req.GetNamespace(), req.GetPath())
+	cached, err := flow.traverseToWorkflow(ctx, tx, req.GetNamespace(), req.GetPath())
 	if err != nil {
 		return nil, err
 	}
 
-	rev, err := flow.updateWorkflow(ctx, &updateWorkflowArgs{
-		revc:   tx.Revision,
-		eventc: tx.Events,
-		ns:     d.ns(),
-		ino:    d.ino,
-		wf:     d.wf,
-		path:   d.path,
+	rev, err := flow.updateWorkflow(ctx, tx, &updateWorkflowArgs{
+		cached: cached,
+		path:   cached.Path(),
 		data:   req.GetSource(),
 	})
 	if err != nil {
@@ -587,7 +642,7 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 
 	var resp grpc.UpdateWorkflowResponse
 
-	err = atob(d.ino, &resp.Node)
+	err = atob(cached.Inode(), &resp.Node)
 	if err != nil {
 		return nil, err
 	}
@@ -596,9 +651,9 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 		resp.Node.ExpandedType = resp.Node.Type
 	}
 
-	resp.Namespace = d.namespace()
-	resp.Node.Parent = d.dir
-	resp.Node.Path = d.path
+	resp.Namespace = cached.Namespace.Name
+	resp.Node.Parent = cached.Dir()
+	resp.Node.Path = cached.Path()
 
 	err = atob(rev, &resp.Revision)
 	if err != nil {
@@ -621,18 +676,17 @@ func (flow *flow) SaveHead(ctx context.Context, req *grpc.SaveHeadRequest) (*grp
 	}
 	defer rollback(tx)
 
-	nsc := tx.Namespace
-	d, err := flow.traverseToRef(ctx, nsc, req.GetNamespace(), req.GetPath(), "")
+	cached, err := flow.traverseToRef(ctx, tx, req.GetNamespace(), req.GetPath(), "")
 	if err != nil {
 		return nil, err
 	}
 
-	k, err := d.rev().QueryRefs().Count(ctx)
+	k, err := tx.Ref.Query().Where(entref.HasRevisionWith(entrev.ID(cached.Revision.ID))).Count(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	refc := tx.Ref
+	Ref := tx.Ref
 
 	metadata := req.GetMetadata()
 
@@ -649,13 +703,13 @@ func (flow *flow) SaveHead(ctx context.Context, req *grpc.SaveHeadRequest) (*grp
 			return nil, err
 		}
 
-		_, err = d.rev().Update().SetMetadata(obj).Save(ctx)
+		_, err = tx.Revision.UpdateOneID(cached.Revision.ID).SetMetadata(obj).Save(ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	err = refc.Create().SetImmutable(true).SetName(d.rev().ID.String()).SetRevision(d.rev()).SetWorkflow(d.wf).Exec(ctx)
+	err = Ref.Create().SetImmutable(true).SetName(cached.Revision.ID.String()).SetRevisionID(cached.Revision.ID).SetWorkflowID(cached.Workflow.ID).Exec(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -665,14 +719,14 @@ func (flow *flow) SaveHead(ctx context.Context, req *grpc.SaveHeadRequest) (*grp
 		return nil, err
 	}
 
-	flow.logToWorkflow(ctx, time.Now(), d.wfData, "Saved workflow: %s.", d.rev().ID.String())
-	flow.pubsub.NotifyWorkflow(d.wf)
+	flow.logToWorkflow(ctx, time.Now(), cached, "Saved workflow: %s.", cached.Revision.ID.String())
+	flow.pubsub.NotifyWorkflow(cached.Workflow)
 
 respond:
 
 	var resp grpc.SaveHeadResponse
 
-	err = atob(d.ino, &resp.Node)
+	err = atob(cached.Inode(), &resp.Node)
 	if err != nil {
 		return nil, err
 	}
@@ -681,16 +735,16 @@ respond:
 		resp.Node.ExpandedType = resp.Node.Type
 	}
 
-	resp.Namespace = d.namespace()
-	resp.Node.Parent = d.dir
-	resp.Node.Path = d.path
+	resp.Namespace = cached.Namespace.Name
+	resp.Node.Parent = cached.Dir()
+	resp.Node.Path = cached.Path()
 
-	err = atob(d.rev(), &resp.Revision)
+	err = atob(cached.Revision, &resp.Revision)
 	if err != nil {
 		return nil, err
 	}
 
-	resp.Revision.Name = d.rev().ID.String()
+	resp.Revision.Name = cached.Revision.ID.String()
 
 	return &resp, nil
 
@@ -706,35 +760,21 @@ func (flow *flow) DiscardHead(ctx context.Context, req *grpc.DiscardHeadRequest)
 	}
 	defer rollback(tx)
 
-	nsc := tx.Namespace
-	d, err := flow.traverseToRef(ctx, nsc, req.GetNamespace(), req.GetPath(), "")
+	cached, err := flow.traverseToRef(ctx, tx, req.GetNamespace(), req.GetPath(), "")
 	if err != nil {
 		return nil, err
 	}
 
-	revcount, err := d.wf.QueryRevisions().Count(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	refcount, err := d.rev().QueryRefs().Count(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	revc := tx.Revision
-	var rev *ent.Revision
+	Revision := tx.Revision
 	var prevrev []*ent.Revision
 
-	rev = d.rev()
-
-	if revcount == 1 || refcount > 1 {
+	if len(cached.Workflow.Revisions) == 1 || len(cached.Workflow.Refs) > 1 {
 		// already saved, or not discardable, gracefully back out
 		rollback(tx)
 		goto respond
 	}
 
-	prevrev, err = d.wf.QueryRevisions().Order(ent.Desc(entrev.FieldCreatedAt)).Offset(1).Limit(1).All(ctx)
+	prevrev, err = tx.Revision.Query().Where(entrev.HasWorkflowWith(entwf.ID(cached.Workflow.ID))).Order(ent.Desc(entrev.FieldCreatedAt)).Offset(1).Limit(1).All(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -743,21 +783,20 @@ func (flow *flow) DiscardHead(ctx context.Context, req *grpc.DiscardHeadRequest)
 		return nil, errors.New("revisions list returned more than one")
 	}
 
-	err = flow.configureRouter(ctx, tx.Events, &d.wf, rcfBreaking,
+	err = flow.configureRouter(ctx, tx, cached, rcfBreaking,
 		func() error {
 
-			err = d.ref.Update().SetRevision(prevrev[0]).Exec(ctx)
+			err = tx.Ref.UpdateOneID(cached.Ref.ID).SetRevision(prevrev[0]).Exec(ctx)
 			if err != nil {
 				return err
 			}
 
-			rev = d.rev()
-			err = revc.DeleteOne(rev).Exec(ctx)
+			err = Revision.DeleteOneID(cached.Revision.ID).Exec(ctx)
 			if err != nil {
 				return err
 			}
 
-			rev = prevrev[0]
+			cached.Revision = entRevision(prevrev[0])
 
 			return nil
 
@@ -768,16 +807,16 @@ func (flow *flow) DiscardHead(ctx context.Context, req *grpc.DiscardHeadRequest)
 		return nil, err
 	}
 
-	metricsWfUpdated.WithLabelValues(d.ns().Name, d.path, d.ns().Name).Inc()
+	metricsWfUpdated.WithLabelValues(cached.Namespace.Name, cached.Path(), cached.Namespace.Name).Inc()
 
-	flow.logToWorkflow(ctx, time.Now(), d.wfData, "Discard unsaved changes to workflow.")
-	flow.pubsub.NotifyWorkflow(d.wf)
+	flow.logToWorkflow(ctx, time.Now(), cached, "Discard unsaved changes to workflow.")
+	flow.pubsub.NotifyWorkflow(cached.Workflow)
 
 respond:
 
 	var resp grpc.DiscardHeadResponse
 
-	err = atob(d.ino, &resp.Node)
+	err = atob(cached.Inode(), &resp.Node)
 	if err != nil {
 		return nil, err
 	}
@@ -786,16 +825,16 @@ respond:
 		resp.Node.ExpandedType = resp.Node.Type
 	}
 
-	resp.Namespace = d.namespace()
-	resp.Node.Parent = d.dir
-	resp.Node.Path = d.path
+	resp.Namespace = cached.Namespace.Name
+	resp.Node.Parent = cached.Dir()
+	resp.Node.Path = cached.Path()
 
-	err = atob(rev, &resp.Revision)
+	err = atob(cached.Revision, &resp.Revision)
 	if err != nil {
 		return nil, err
 	}
 
-	resp.Revision.Name = rev.ID.String()
+	resp.Revision.Name = cached.Revision.ID.String()
 
 	return &resp, nil
 
@@ -811,33 +850,26 @@ func (flow *flow) ToggleWorkflow(ctx context.Context, req *grpc.ToggleWorkflowRe
 	}
 	defer rollback(tx)
 
-	nsc := tx.Namespace
-	d, err := flow.traverseToWorkflow(ctx, nsc, req.GetNamespace(), req.GetPath())
+	cached, err := flow.traverseToWorkflow(ctx, tx, req.GetNamespace(), req.GetPath())
 	if err != nil {
 		return nil, err
 	}
 
 	var resp emptypb.Empty
 
-	if d.wf.Live == req.GetLive() {
+	if cached.Workflow.Live == req.GetLive() {
 		rollback(tx)
 		return &resp, nil
 	}
 
-	wfr := &d.wf
-
-	err = flow.configureRouter(ctx, tx.Events, wfr, rcfBreaking,
+	err = flow.configureRouter(ctx, tx, cached, rcfBreaking,
 		func() error {
-			edges := (*wfr).Edges
-			wf, err := (*wfr).Update().SetLive(req.GetLive()).Save(ctx)
+			wf, err := tx.Workflow.UpdateOneID(cached.Workflow.ID).SetLive(req.GetLive()).Save(ctx)
 			if err != nil {
 				return err
 			}
-			wf.Edges = edges
-			(*wfr) = wf
-
+			cached.Workflow.Live = wf.Live
 			return nil
-
 		},
 		tx.Commit,
 	)
@@ -846,24 +878,24 @@ func (flow *flow) ToggleWorkflow(ctx context.Context, req *grpc.ToggleWorkflowRe
 	}
 
 	live := "disabled"
-	if d.wf.Live {
+	if cached.Workflow.Live {
 		live = "enabled"
 	}
 
 	err = flow.BroadcastWorkflow(ctx, BroadcastEventTypeUpdate,
 		broadcastWorkflowInput{
-			Name:   d.base,
-			Path:   d.path,
-			Parent: d.dir,
-			Live:   d.wf.Live,
-		}, d.ns())
+			Name:   cached.Inode().Name,
+			Path:   cached.Path(),
+			Parent: cached.Dir(),
+			Live:   cached.Workflow.Live,
+		}, cached)
 
 	if err != nil {
 		return nil, err
 	}
 
-	flow.logToWorkflow(ctx, time.Now(), d, "Workflow is now %s", live)
-	flow.pubsub.NotifyWorkflow(d.wf)
+	flow.logToWorkflow(ctx, time.Now(), cached, "Workflow is now %s", live)
+	flow.pubsub.NotifyWorkflow(cached.Workflow)
 
 	return &resp, nil
 
@@ -879,14 +911,12 @@ func (flow *flow) SetWorkflowEventLogging(ctx context.Context, req *grpc.SetWork
 	}
 	defer rollback(tx)
 
-	nsc := tx.Namespace
-
-	d, err := flow.traverseToWorkflow(ctx, nsc, req.GetNamespace(), req.GetPath())
+	cached, err := flow.traverseToWorkflow(ctx, tx, req.GetNamespace(), req.GetPath())
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = d.wf.Update().SetLogToEvents(req.GetLogger()).Save(ctx)
+	_, err = tx.Workflow.UpdateOneID(cached.Workflow.ID).SetLogToEvents(req.GetLogger()).Save(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -896,8 +926,8 @@ func (flow *flow) SetWorkflowEventLogging(ctx context.Context, req *grpc.SetWork
 		return nil, err
 	}
 
-	flow.logToWorkflow(ctx, time.Now(), d, "Workflow now logging to cloudevents: %s", req.GetLogger())
-	flow.pubsub.NotifyWorkflow(d.wf)
+	flow.logToWorkflow(ctx, time.Now(), cached, "Workflow now logging to cloudevents: %s", req.GetLogger())
+	flow.pubsub.NotifyWorkflow(cached.Workflow)
 	var resp emptypb.Empty
 
 	return &resp, nil

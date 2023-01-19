@@ -20,7 +20,6 @@ type instanceMemory struct {
 	engine *engine
 
 	lock   *sql.Conn
-	in     *ent.Instance
 	data   interface{}
 	memory interface{}
 	logic  stateLogic
@@ -31,12 +30,17 @@ type instanceMemory struct {
 	// stores row updates to fire all at once
 	instanceUpdater *ent.InstanceUpdateOne
 	runtimeUpdater  *ent.InstanceRuntimeUpdateOne
+
+	tx      Transaction
+	cached  *CacheData
+	runtime *InstanceRuntime
 }
 
 func (im *instanceMemory) getInstanceUpdater() *ent.InstanceUpdateOne {
 
 	if im.instanceUpdater == nil {
-		im.instanceUpdater = im.in.Update()
+		clients := im.engine.entClients(im.tx)
+		im.instanceUpdater = clients.Instance.UpdateOneID(im.cached.Instance.ID)
 	}
 
 	return im.instanceUpdater
@@ -46,7 +50,8 @@ func (im *instanceMemory) getInstanceUpdater() *ent.InstanceUpdateOne {
 func (im *instanceMemory) getRuntimeUpdater() *ent.InstanceRuntimeUpdateOne {
 
 	if im.runtimeUpdater == nil {
-		im.runtimeUpdater = im.in.Edges.Runtime.Update()
+		clients := im.engine.entClients(im.tx)
+		im.runtimeUpdater = clients.InstanceRuntime.UpdateOneID(im.runtime.ID)
 	}
 
 	return im.runtimeUpdater
@@ -69,8 +74,7 @@ func (im *instanceMemory) flushUpdates(ctx context.Context) error {
 			return err
 		}
 
-		rt.Edges = im.in.Edges.Runtime.Edges
-		im.in.Edges.Runtime = rt
+		im.runtime = entInstanceRuntime(rt)
 
 	}
 
@@ -86,17 +90,14 @@ func (im *instanceMemory) flushUpdates(ctx context.Context) error {
 			return err
 		}
 
-		in.Edges = im.in.Edges
-		im.in = in
+		im.cached.Instance = entInstance(in)
 
 	}
 
 	if changes {
 
-		im.engine.pubsub.NotifyInstance(im.in)
-		if ns, err := im.in.Namespace(ctx); err == nil {
-			im.engine.pubsub.NotifyInstances(ns)
-		}
+		im.engine.pubsub.NotifyInstance(im.cached.Instance)
+		im.engine.pubsub.NotifyInstances(im.cached.Namespace)
 
 	}
 
@@ -106,19 +107,19 @@ func (im *instanceMemory) flushUpdates(ctx context.Context) error {
 
 func (im *instanceMemory) ID() uuid.UUID {
 
-	return im.in.ID
+	return im.cached.Instance.ID
 
 }
 
 func (im *instanceMemory) Controller() string {
 
-	return im.in.Edges.Runtime.Controller
+	return im.runtime.Controller
 
 }
 
 func (im *instanceMemory) Model() (*model.Workflow, error) {
 
-	data := im.in.Edges.Revision.Source
+	data := im.cached.Revision.Source
 
 	workflow := new(model.Workflow)
 
@@ -131,28 +132,16 @@ func (im *instanceMemory) Model() (*model.Workflow, error) {
 
 }
 
-func (im *instanceMemory) Unwrap() {
-
-	defer func() {
-		_ = recover()
-	}()
-
-	in := im.in.Unwrap()
-	im.in = in
-	im.in.Edges.Runtime = im.in.Edges.Runtime.Unwrap()
-
-}
-
 func (im *instanceMemory) Step() int {
-	return len(im.in.Edges.Runtime.Flow)
+	return len(im.runtime.Flow)
 }
 
 func (im *instanceMemory) Status() string {
-	return im.in.Status
+	return im.cached.Instance.Status
 }
 
 func (im *instanceMemory) Flow() []string {
-	return im.in.Edges.Runtime.Flow
+	return im.runtime.Flow
 }
 
 func (im *instanceMemory) MarshalData() string {
@@ -216,15 +205,15 @@ func (im *instanceMemory) UnmarshalMemory(x interface{}) error {
 }
 
 func (im *instanceMemory) ErrorCode() string {
-	return im.in.ErrorCode
+	return im.cached.Instance.ErrorCode
 }
 
 func (im *instanceMemory) ErrorMessage() string {
-	return im.in.ErrorMessage
+	return im.cached.Instance.ErrorMessage
 }
 
 func (im *instanceMemory) StateBeginTime() time.Time {
-	return im.in.Edges.Runtime.StateBeginTime
+	return im.runtime.StateBeginTime
 }
 
 func (im *instanceMemory) StoreData(key string, val interface{}) error {
@@ -240,21 +229,21 @@ func (im *instanceMemory) StoreData(key string, val interface{}) error {
 
 }
 
-func (engine *engine) getInstanceMemory(ctx context.Context, inc *ent.InstanceClient, id string) (*instanceMemory, error) {
+func (engine *engine) getInstanceMemory(ctx context.Context, Instance *ent.InstanceClient, id string) (*instanceMemory, error) {
 
 	uid, err := uuid.Parse(id)
 	if err != nil {
 		return nil, err
 	}
 
-	in, err := inc.Query().Where(entinst.IDEQ(uid)).WithNamespace().WithWorkflow().WithRevision().WithRuntime().Only(ctx)
+	in, err := Instance.Query().Where(entinst.IDEQ(uid)).WithNamespace().WithWorkflow().WithRevision().WithRuntime().Only(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	im := new(instanceMemory)
 	im.engine = engine
-	im.in = in
+	im.cached.Instance = entInstance(in)
 
 	defer func() {
 		e := im.flushUpdates(ctx)
@@ -296,19 +285,19 @@ func (engine *engine) getInstanceMemory(ctx context.Context, inc *ent.InstanceCl
 		return nil, err
 	}
 
-	err = json.Unmarshal([]byte(im.in.Edges.Runtime.Data), &im.data)
+	err = json.Unmarshal([]byte(im.runtime.Data), &im.data)
 	if err != nil {
 		engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", err.Error()))
 		return nil, err
 	}
 
-	err = json.Unmarshal([]byte(im.in.Edges.Runtime.Memory), &im.memory)
+	err = json.Unmarshal([]byte(im.runtime.Memory), &im.memory)
 	if err != nil {
 		engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", err.Error()))
 		return nil, err
 	}
 
-	flow := im.in.Edges.Runtime.Flow
+	flow := im.runtime.Flow
 	stateID := flow[len(flow)-1]
 
 	err = engine.loadStateLogic(im, stateID)
@@ -336,7 +325,7 @@ func (engine *engine) loadInstanceMemory(id string, step int) (context.Context, 
 
 	im.lock = conn
 
-	if !im.in.EndAt.IsZero() {
+	if !im.cached.Instance.EndAt.IsZero() {
 		engine.InstanceUnlock(im)
 		return nil, nil, derrors.NewInternalError(fmt.Errorf("aborting workflow logic: database records instance terminated"))
 	}
@@ -354,7 +343,7 @@ func (engine *engine) InstanceCaller(ctx context.Context, im *instanceMemory) *s
 
 	var err error
 
-	str := im.in.Edges.Runtime.CallerData
+	str := im.runtime.CallerData
 	if str == "" || str == util.CallerCron {
 		return nil
 	}
@@ -370,61 +359,11 @@ func (engine *engine) InstanceCaller(ctx context.Context, im *instanceMemory) *s
 
 }
 
-func (engine *engine) InstanceNamespace(ctx context.Context, im *instanceMemory) (*ent.Namespace, error) {
-
-	var err error
-	var ns *ent.Namespace
-
-	if im.in.Edges.Namespace != nil {
-		goto out
-	}
-
-	ns, err = im.in.Namespace(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	im.in.Edges.Namespace = ns
-
-out:
-	return im.in.Edges.Namespace, nil
-
-}
-
-func (engine *engine) InstanceWorkflow(ctx context.Context, im *instanceMemory) (*ent.Workflow, error) {
-
-	var err error
-	var wf *ent.Workflow
-
-	if im.in.Edges.Workflow != nil {
-		goto out
-	}
-
-	wf, err = im.in.Workflow(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	im.in.Edges.Workflow = wf
-
-out:
-
-	ns, err := engine.InstanceNamespace(ctx, im)
-	if err != nil {
-		return nil, err
-	}
-
-	im.in.Edges.Workflow.Edges.Namespace = ns
-
-	return im.in.Edges.Workflow, nil
-
-}
-
 func (engine *engine) StoreMetadata(ctx context.Context, im *instanceMemory, data string) {
 
 	updater := im.getRuntimeUpdater()
 	updater = updater.SetMetadata(data)
-	im.in.Edges.Runtime.Metadata = data
+	im.runtime.Metadata = data
 	im.runtimeUpdater = updater
 
 }
@@ -441,7 +380,7 @@ func (engine *engine) FreeInstanceMemory(im *instanceMemory) {
 
 	ctx := context.Background()
 
-	err := engine.events.deleteInstanceEventListeners(ctx, im.in)
+	err := engine.events.deleteInstanceEventListeners(ctx, im.cached)
 	if err != nil {
 		engine.sugar.Error(err)
 	}
@@ -453,7 +392,7 @@ func (engine *engine) freeResources(im *instanceMemory) {
 	ctx := context.Background()
 
 	for i := range im.eventQueue {
-		err := engine.events.flushEvent(ctx, im.eventQueue[i], im.in.Edges.Namespace, true)
+		err := engine.events.flushEvent(ctx, im.eventQueue[i], im.cached.Namespace, true)
 		if err != nil {
 			engine.sugar.Errorf("Failed to flush event: %v.", err)
 		}

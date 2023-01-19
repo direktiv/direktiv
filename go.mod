@@ -9,6 +9,8 @@ require (
 	github.com/cloudevents/sdk-go/binding/format/protobuf/v2 v2.6.1
 	github.com/cloudevents/sdk-go/v2 v2.10.1
 	github.com/dop251/goja v0.0.0-20220214123719-b09a6bfa842f
+	github.com/eko/gocache/lib/v4 v4.1.2
+	github.com/eko/gocache/store/go_cache/v4 v4.1.2
 	github.com/emicklei/go-restful/v3 v3.8.0
 	github.com/gabriel-vasile/mimetype v1.3.1
 	github.com/gobwas/glob v0.2.3
@@ -23,7 +25,8 @@ require (
 	github.com/libgit2/git2go/v33 v33.0.9
 	github.com/mattn/go-shellwords v1.0.12
 	github.com/mitchellh/hashstructure/v2 v2.0.1
-	github.com/prometheus/client_golang v1.11.1
+	github.com/patrickmn/go-cache v2.1.0+incompatible
+	github.com/prometheus/client_golang v1.14.0
 	github.com/qri-io/jsonschema v0.2.0
 	github.com/r3labs/sse v0.0.0-20210224172625-26fe804710bc
 	github.com/robfig/cron/v3 v3.0.1
@@ -74,6 +77,7 @@ require (
 	github.com/go-openapi/swag v0.21.1 // indirect
 	github.com/go-sourcemap/sourcemap v2.1.3+incompatible // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
+	github.com/golang/mock v1.6.0 // indirect
 	github.com/google/gnostic v0.6.9 // indirect
 	github.com/google/go-cmp v0.5.8 // indirect
 	github.com/google/go-containerregistry v0.8.1-0.20220414143355-892d7a808387 // indirect
@@ -98,9 +102,9 @@ require (
 	github.com/opencontainers/image-spec v1.0.3-0.20220114050600-8b9d41f48198 // indirect
 	github.com/pelletier/go-toml v1.9.4 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/prometheus/client_model v0.2.0 // indirect
-	github.com/prometheus/common v0.32.1 // indirect
-	github.com/prometheus/procfs v0.7.3 // indirect
+	github.com/prometheus/client_model v0.3.0 // indirect
+	github.com/prometheus/common v0.37.0 // indirect
+	github.com/prometheus/procfs v0.8.0 // indirect
 	github.com/qri-io/jsonpointer v0.1.1 // indirect
 	github.com/sergi/go-diff v1.2.0 // indirect
 	github.com/sirupsen/logrus v1.8.1 // indirect
@@ -117,13 +121,13 @@ require (
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
 	golang.org/x/crypto v0.1.0 // indirect
+	golang.org/x/exp v0.0.0-20221126150942-6ab00d035af9 // indirect
 	golang.org/x/mod v0.6.0 // indirect
 	golang.org/x/net v0.1.0 // indirect
 	golang.org/x/oauth2 v0.0.0-20220630143837-2104d58473e0 // indirect
 	golang.org/x/term v0.1.0 // indirect
 	golang.org/x/text v0.4.0 // indirect
 	golang.org/x/time v0.0.0-20220609170525-579cf78fd858 // indirect
-	golang.org/x/tools v0.2.0 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.2.0 // indirect
 	google.golang.org/api v0.93.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect

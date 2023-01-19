@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/ent"
+	entns "github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	entvardata "github.com/direktiv/direktiv/pkg/flow/ent/vardata"
 	entvar "github.com/direktiv/direktiv/pkg/flow/ent/varref"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
@@ -19,32 +20,64 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
+func (srv *server) getNamespaceVariable(ctx context.Context, tx Transaction, cached *CacheData, key string, load bool) (*VarRef, *VarData, error) {
+
+	vref, err := srv.database.NamespaceVariable(ctx, tx, cached.Namespace.ID, key)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	vdata, err := srv.database.VariableData(ctx, tx, vref.VarData, load)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return vref, vdata, nil
+
+}
+
+func (srv *server) traverseToNamespaceVariable(ctx context.Context, tx Transaction, namespace, key string, load bool) (*CacheData, *VarRef, *VarData, error) {
+
+	cached := new(CacheData)
+
+	err := srv.database.NamespaceByName(ctx, tx, cached, namespace)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	vref, vdata, err := srv.getNamespaceVariable(ctx, tx, cached, key, load)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	return cached, vref, vdata, nil
+
+}
+
 func (flow *flow) NamespaceVariable(ctx context.Context, req *grpc.NamespaceVariableRequest) (*grpc.NamespaceVariableResponse, error) {
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	nsc := flow.db.Namespace
-
-	d, err := flow.traverseToNamespaceVariable(ctx, nsc, req.GetNamespace(), req.GetKey(), true)
+	cached, vref, vdata, err := flow.traverseToNamespaceVariable(ctx, nil, req.GetNamespace(), req.GetKey(), true)
 	if err != nil {
 		return nil, err
 	}
 
 	var resp grpc.NamespaceVariableResponse
 
-	resp.Namespace = d.ns().Name
-	resp.Key = d.vref.Name
-	resp.CreatedAt = timestamppb.New(d.vdata.CreatedAt)
-	resp.UpdatedAt = timestamppb.New(d.vdata.UpdatedAt)
-	resp.Checksum = d.vdata.Hash
-	resp.TotalSize = int64(d.vdata.Size)
-	resp.MimeType = d.vdata.MimeType
+	resp.Namespace = cached.Namespace.Name
+	resp.Key = vref.Name
+	resp.CreatedAt = timestamppb.New(vdata.CreatedAt)
+	resp.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
+	resp.Checksum = vdata.Hash
+	resp.TotalSize = int64(vdata.Size)
+	resp.MimeType = vdata.MimeType
 
 	if resp.TotalSize > parcelSize {
 		return nil, status.Error(codes.ResourceExhausted, "variable too large to return without using the parcelling API")
 	}
 
-	resp.Data = d.vdata.Data
+	resp.Data = vdata.Data
 
 	return &resp, nil
 
@@ -56,48 +89,44 @@ func (internal *internal) NamespaceVariableParcels(req *grpc.VariableInternalReq
 
 	ctx := srv.Context()
 
-	nsc := internal.db.Namespace
-	inc := internal.db.Instance
-
-	id, err := internal.getInstance(ctx, inc, req.GetInstance(), false)
+	cached, err := internal.getInstance(ctx, nil, req.GetInstance())
 	if err != nil {
 		return err
 	}
 
-	d, err := internal.traverseToNamespaceVariable(ctx, nsc, id.namespace(), req.GetKey(), true)
+	vref, vdata, err := internal.getNamespaceVariable(ctx, nil, cached, req.GetKey(), true)
 	if err != nil && !derrors.IsNotFound(err) {
 		return err
 	}
 
 	if derrors.IsNotFound(err) {
-		d = new(nsvarData)
-		d.vref = new(ent.VarRef)
-		d.vref.Name = req.GetKey()
-		d.vdata = new(ent.VarData)
+		vref = new(VarRef)
+		vref.Name = req.GetKey()
+		vdata = new(VarData)
 		t := time.Now()
-		d.vdata.Data = make([]byte, 0)
-		hash, err := computeHash(d.vdata.Data)
+		vdata.Data = make([]byte, 0)
+		hash, err := computeHash(vdata.Data)
 		if err != nil {
 			internal.sugar.Error(err)
 		}
-		d.vdata.CreatedAt = t
-		d.vdata.UpdatedAt = t
-		d.vdata.Hash = hash
-		d.vdata.Size = 0
+		vdata.CreatedAt = t
+		vdata.UpdatedAt = t
+		vdata.Hash = hash
+		vdata.Size = 0
 	}
 
-	rdr := bytes.NewReader(d.vdata.Data)
+	rdr := bytes.NewReader(vdata.Data)
 
 	for {
 
 		resp := new(grpc.VariableInternalResponse)
 
-		resp.Key = d.vref.Name
-		resp.CreatedAt = timestamppb.New(d.vdata.CreatedAt)
-		resp.UpdatedAt = timestamppb.New(d.vdata.UpdatedAt)
-		resp.Checksum = d.vdata.Hash
-		resp.TotalSize = int64(d.vdata.Size)
-		resp.MimeType = d.vdata.MimeType
+		resp.Key = vref.Name
+		resp.CreatedAt = timestamppb.New(vdata.CreatedAt)
+		resp.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
+		resp.Checksum = vdata.Hash
+		resp.TotalSize = int64(vdata.Size)
+		resp.MimeType = vdata.MimeType
 
 		buf := new(bytes.Buffer)
 		k, err := io.CopyN(buf, rdr, parcelSize)
@@ -134,26 +163,24 @@ func (flow *flow) NamespaceVariableParcels(req *grpc.NamespaceVariableRequest, s
 
 	ctx := srv.Context()
 
-	nsc := flow.db.Namespace
-
-	d, err := flow.traverseToNamespaceVariable(ctx, nsc, req.GetNamespace(), req.GetKey(), true)
+	cached, vref, vdata, err := flow.traverseToNamespaceVariable(ctx, nil, req.GetNamespace(), req.GetKey(), true)
 	if err != nil {
 		return err
 	}
 
-	rdr := bytes.NewReader(d.vdata.Data)
+	rdr := bytes.NewReader(vdata.Data)
 
 	for {
 
 		resp := new(grpc.NamespaceVariableResponse)
 
-		resp.Namespace = d.ns().Name
-		resp.Key = d.vref.Name
-		resp.CreatedAt = timestamppb.New(d.vdata.CreatedAt)
-		resp.UpdatedAt = timestamppb.New(d.vdata.UpdatedAt)
-		resp.Checksum = d.vdata.Hash
-		resp.TotalSize = int64(d.vdata.Size)
-		resp.MimeType = d.vdata.MimeType
+		resp.Namespace = cached.Namespace.Name
+		resp.Key = vref.Name
+		resp.CreatedAt = timestamppb.New(vdata.CreatedAt)
+		resp.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
+		resp.Checksum = vdata.Hash
+		resp.TotalSize = int64(vdata.Size)
+		resp.MimeType = vdata.MimeType
 
 		buf := new(bytes.Buffer)
 		k, err := io.CopyN(buf, rdr, parcelSize)
@@ -212,12 +239,16 @@ func (flow *flow) NamespaceVariables(ctx context.Context, req *grpc.NamespaceVar
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	ns, err := flow.getNamespace(ctx, flow.db.Namespace, req.GetNamespace())
+	cached := new(CacheData)
+
+	err := flow.database.NamespaceByName(ctx, nil, cached, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
 
-	query := ns.QueryVars()
+	clients := flow.entClients(nil)
+
+	query := clients.VarRef.Query().Where(entvar.HasNamespaceWith(entns.ID(cached.Namespace.ID)))
 
 	results, pi, err := paginate[*ent.VarRefQuery, *ent.VarRef](ctx, req.Pagination, query, variablesOrderings, variablesFilters)
 	if err != nil {
@@ -225,7 +256,7 @@ func (flow *flow) NamespaceVariables(ctx context.Context, req *grpc.NamespaceVar
 	}
 
 	resp := new(grpc.NamespaceVariablesResponse)
-	resp.Namespace = ns.Name
+	resp.Namespace = cached.Namespace.Name
 	resp.Variables = new(grpc.Variables)
 	resp.Variables.PageInfo = pi
 
@@ -264,17 +295,21 @@ func (flow *flow) NamespaceVariablesStream(req *grpc.NamespaceVariablesRequest, 
 	phash := ""
 	nhash := ""
 
-	ns, err := flow.getNamespace(ctx, flow.db.Namespace, req.GetNamespace())
+	cached := new(CacheData)
+
+	err := flow.database.NamespaceByName(ctx, nil, cached, req.GetNamespace())
 	if err != nil {
 		return err
 	}
 
-	sub := flow.pubsub.SubscribeNamespaceVariables(ns)
+	clients := flow.entClients(nil)
+
+	sub := flow.pubsub.SubscribeNamespaceVariables(cached.Namespace)
 	defer flow.cleanup(sub.Close)
 
 resend:
 
-	query := ns.QueryVars()
+	query := clients.VarRef.Query().Where(entvar.HasNamespaceWith(entns.ID(cached.Namespace.ID)))
 
 	results, pi, err := paginate[*ent.VarRefQuery, *ent.VarRef](ctx, req.Pagination, query, variablesOrderings, variablesFilters)
 	if err != nil {
@@ -282,7 +317,7 @@ resend:
 	}
 
 	resp := new(grpc.NamespaceVariablesResponse)
-	resp.Namespace = ns.Name
+	resp.Namespace = cached.Namespace.Name
 	resp.Variables = new(grpc.Variables)
 	resp.Variables.PageInfo = pi
 
@@ -337,11 +372,12 @@ func (flow *flow) SetNamespaceVariable(ctx context.Context, req *grpc.SetNamespa
 	}
 	defer rollback(tx)
 
-	nsc := tx.Namespace
 	vrefc := tx.VarRef
 	vdatac := tx.VarData
 
-	ns, err := flow.getNamespace(ctx, nsc, req.GetNamespace())
+	cached := new(CacheData)
+
+	err = flow.database.NamespaceByName(ctx, tx, cached, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
@@ -351,7 +387,7 @@ func (flow *flow) SetNamespaceVariable(ctx context.Context, req *grpc.SetNamespa
 	key := req.GetKey()
 
 	var newVar bool
-	vdata, newVar, err = flow.SetVariable(ctx, vrefc, vdatac, ns, key, req.GetData(), req.GetMimeType(), false)
+	vdata, newVar, err = flow.SetVariable(ctx, vrefc, vdatac, &entNamespaceVarQuerier{cached: cached, clients: flow.entClients(tx)}, key, req.GetData(), req.GetMimeType(), false)
 	if err != nil {
 		return nil, err
 	}
@@ -362,16 +398,16 @@ func (flow *flow) SetNamespaceVariable(ctx context.Context, req *grpc.SetNamespa
 	}
 
 	if newVar {
-		flow.logToNamespace(ctx, time.Now(), ns, "Created namespace variable '%s'.", key)
+		flow.logToNamespace(ctx, time.Now(), cached, "Created namespace variable '%s'.", key)
 	} else {
-		flow.logToNamespace(ctx, time.Now(), ns, "Updated namespace variable '%s'.", key)
+		flow.logToNamespace(ctx, time.Now(), cached, "Updated namespace variable '%s'.", key)
 	}
 
-	flow.pubsub.NotifyNamespaceVariables(ns)
+	flow.pubsub.NotifyNamespaceVariables(cached.Namespace)
 
 	var resp grpc.SetNamespaceVariableResponse
 
-	resp.Namespace = ns.Name
+	resp.Namespace = cached.Namespace.Name
 	resp.Key = key
 	resp.CreatedAt = timestamppb.New(vdata.CreatedAt)
 	resp.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
@@ -394,15 +430,14 @@ func (internal *internal) SetNamespaceVariableParcels(srv grpc.Internal_SetNames
 		return err
 	}
 
-	inc := internal.db.Instance
+	Instance := internal.db.Instance
 
-	id, err := internal.getInstance(ctx, inc, req.GetInstance(), false)
+	cached, err := internal.getInstance(ctx, Instance, req.GetInstance())
 	if err != nil {
 		return err
 	}
 
 	mimeType := req.GetMimeType()
-	namespace := id.namespace()
 	key := req.GetKey()
 
 	totalSize := int(req.GetTotalSize())
@@ -456,19 +491,13 @@ func (internal *internal) SetNamespaceVariableParcels(srv grpc.Internal_SetNames
 	}
 	defer rollback(tx)
 
-	nsc := tx.Namespace
 	vrefc := tx.VarRef
 	vdatac := tx.VarData
-
-	ns, err := internal.getNamespace(ctx, nsc, namespace)
-	if err != nil {
-		return err
-	}
 
 	var vdata *ent.VarData
 
 	var newVar bool
-	vdata, newVar, err = internal.flow.SetVariable(ctx, vrefc, vdatac, ns, key, buf.Bytes(), mimeType, false)
+	vdata, newVar, err = internal.flow.SetVariable(ctx, vrefc, vdatac, &entNamespaceVarQuerier{cached: cached, clients: internal.entClients(tx)}, key, buf.Bytes(), mimeType, false)
 	if err != nil {
 		return err
 	}
@@ -479,12 +508,12 @@ func (internal *internal) SetNamespaceVariableParcels(srv grpc.Internal_SetNames
 	}
 
 	if newVar {
-		internal.logToNamespace(ctx, time.Now(), ns, "Created namespace variable '%s'.", key)
+		internal.logToNamespace(ctx, time.Now(), cached, "Created namespace variable '%s'.", key)
 	} else {
-		internal.logToNamespace(ctx, time.Now(), ns, "Updated namespace variable '%s'.", key)
+		internal.logToNamespace(ctx, time.Now(), cached, "Updated namespace variable '%s'.", key)
 	}
 
-	internal.pubsub.NotifyNamespaceVariables(ns)
+	internal.pubsub.NotifyNamespaceVariables(cached.Namespace)
 
 	var resp grpc.SetVariableInternalResponse
 
@@ -570,11 +599,12 @@ func (flow *flow) SetNamespaceVariableParcels(srv grpc.Flow_SetNamespaceVariable
 	}
 	defer rollback(tx)
 
-	nsc := tx.Namespace
 	vrefc := tx.VarRef
 	vdatac := tx.VarData
 
-	ns, err := flow.getNamespace(ctx, nsc, namespace)
+	cached := new(CacheData)
+
+	err = flow.database.NamespaceByName(ctx, tx, cached, namespace)
 	if err != nil {
 		return err
 	}
@@ -582,7 +612,7 @@ func (flow *flow) SetNamespaceVariableParcels(srv grpc.Flow_SetNamespaceVariable
 	var vdata *ent.VarData
 
 	var newVar bool
-	vdata, newVar, err = flow.SetVariable(ctx, vrefc, vdatac, ns, key, buf.Bytes(), mimeType, false)
+	vdata, newVar, err = flow.SetVariable(ctx, vrefc, vdatac, &entNamespaceVarQuerier{cached: cached, clients: flow.entClients(tx)}, key, buf.Bytes(), mimeType, false)
 	if err != nil {
 		return err
 	}
@@ -593,16 +623,16 @@ func (flow *flow) SetNamespaceVariableParcels(srv grpc.Flow_SetNamespaceVariable
 	}
 
 	if newVar {
-		flow.logToNamespace(ctx, time.Now(), ns, "Created namespace variable '%s'.", key)
+		flow.logToNamespace(ctx, time.Now(), cached, "Created namespace variable '%s'.", key)
 	} else {
-		flow.logToNamespace(ctx, time.Now(), ns, "Updated namespace variable '%s'.", key)
+		flow.logToNamespace(ctx, time.Now(), cached, "Updated namespace variable '%s'.", key)
 	}
 
-	flow.pubsub.NotifyNamespaceVariables(ns)
+	flow.pubsub.NotifyNamespaceVariables(cached.Namespace)
 
 	var resp grpc.SetNamespaceVariableResponse
 
-	resp.Namespace = ns.Name
+	resp.Namespace = cached.Namespace.Name
 	resp.Key = key
 	resp.CreatedAt = timestamppb.New(vdata.CreatedAt)
 	resp.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
@@ -629,9 +659,7 @@ func (flow *flow) DeleteNamespaceVariable(ctx context.Context, req *grpc.DeleteN
 	}
 	defer rollback(tx)
 
-	nsc := tx.Namespace
-
-	d, err := flow.traverseToNamespaceVariable(ctx, nsc, req.GetNamespace(), req.GetKey(), false)
+	cached, vref, vdata, err := flow.traverseToNamespaceVariable(ctx, tx, req.GetNamespace(), req.GetKey(), false)
 	if err != nil {
 		return nil, err
 	}
@@ -639,18 +667,13 @@ func (flow *flow) DeleteNamespaceVariable(ctx context.Context, req *grpc.DeleteN
 	vrefc := tx.VarRef
 	vdatac := tx.VarData
 
-	err = vrefc.DeleteOne(d.vref).Exec(ctx)
+	err = vrefc.DeleteOneID(vref.ID).Exec(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	k, err := d.vdata.QueryVarrefs().Count(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	if k == 0 {
-		err = vdatac.DeleteOne(d.vdata).Exec(ctx)
+	if vdata.RefCount == 0 {
+		err = vdatac.DeleteOneID(vdata.ID).Exec(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -661,17 +684,17 @@ func (flow *flow) DeleteNamespaceVariable(ctx context.Context, req *grpc.DeleteN
 		return nil, err
 	}
 
-	flow.logToNamespace(ctx, time.Now(), d.ns(), "Deleted namespace variable '%s'.", d.vref.Name)
-	flow.pubsub.NotifyNamespaceVariables(d.ns())
+	flow.logToNamespace(ctx, time.Now(), cached, "Deleted namespace variable '%s'.", vref.Name)
+	flow.pubsub.NotifyNamespaceVariables(cached.Namespace)
 
 	// Broadcast Event
 	broadcastInput := broadcastVariableInput{
 		WorkflowPath: "",
 		Key:          req.GetKey(),
-		TotalSize:    int64(d.vdata.Size),
+		TotalSize:    int64(vdata.Size),
 		Scope:        BroadcastEventScopeNamespace,
 	}
-	err = flow.BroadcastVariable(ctx, BroadcastEventTypeDelete, BroadcastEventScopeNamespace, broadcastInput, d.ns())
+	err = flow.BroadcastVariable(ctx, BroadcastEventTypeDelete, BroadcastEventScopeNamespace, broadcastInput, cached)
 	if err != nil {
 		return nil, err
 	}
@@ -692,34 +715,35 @@ func (flow *flow) RenameNamespaceVariable(ctx context.Context, req *grpc.RenameN
 	}
 	defer rollback(tx)
 
-	nsc := tx.Namespace
-	d, err := flow.traverseToNamespaceVariable(ctx, nsc, req.GetNamespace(), req.GetOld(), false)
+	cached, vref, vdata, err := flow.traverseToNamespaceVariable(ctx, tx, req.GetNamespace(), req.GetOld(), false)
 	if err != nil {
 		return nil, err
 	}
 
-	vref, err := d.vref.Update().SetName(req.GetNew()).Save(ctx)
+	x, err := tx.VarRef.UpdateOneID(vref.ID).SetName(req.GetNew()).Save(ctx)
 	if err != nil {
 		return nil, err
 	}
+
+	vref.Name = x.Name
 
 	err = tx.Commit()
 	if err != nil {
 		return nil, err
 	}
 
-	flow.logToNamespace(ctx, time.Now(), d.ns(), "Renamed namespace variable from '%s' to '%s'.", req.GetOld(), req.GetNew())
-	flow.pubsub.NotifyNamespaceVariables(d.ns())
+	flow.logToNamespace(ctx, time.Now(), cached, "Renamed namespace variable from '%s' to '%s'.", req.GetOld(), req.GetNew())
+	flow.pubsub.NotifyNamespaceVariables(cached.Namespace)
 
 	var resp grpc.RenameNamespaceVariableResponse
 
-	resp.Checksum = d.vdata.Hash
-	resp.CreatedAt = timestamppb.New(d.vdata.CreatedAt)
+	resp.Checksum = vdata.Hash
+	resp.CreatedAt = timestamppb.New(vdata.CreatedAt)
 	resp.Key = vref.Name
-	resp.Namespace = d.ns().Name
-	resp.TotalSize = int64(d.vdata.Size)
-	resp.UpdatedAt = timestamppb.New(d.vdata.UpdatedAt)
-	resp.MimeType = d.vdata.MimeType
+	resp.Namespace = cached.Namespace.Name
+	resp.TotalSize = int64(vdata.Size)
+	resp.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
+	resp.MimeType = vdata.MimeType
 
 	return &resp, nil
 

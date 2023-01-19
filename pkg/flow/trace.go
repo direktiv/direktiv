@@ -44,58 +44,58 @@ func dbTrace(ctx context.Context) *Carrier {
 	return carrier
 }
 
-func traceAddWorkflowInstance(ctx context.Context, d *refData, im *instanceMemory) {
+func traceAddWorkflowInstance(ctx context.Context, im *instanceMemory) {
 
 	span := trace.SpanFromContext(ctx)
 
 	span.SetAttributes(
 		attribute.KeyValue{
 			Key:   "namespace",
-			Value: attribute.StringValue(d.namespace()),
+			Value: attribute.StringValue(im.cached.Namespace.Name),
 		},
 		attribute.KeyValue{
 			Key:   "namespace-id",
-			Value: attribute.StringValue(d.ns().ID.String()),
+			Value: attribute.StringValue(im.cached.Namespace.ID.String()),
 		},
 		attribute.KeyValue{
 			Key:   "workflow",
-			Value: attribute.StringValue(d.path),
+			Value: attribute.StringValue(im.cached.Path()),
 		},
 		attribute.KeyValue{
 			Key:   "workflow-id",
-			Value: attribute.StringValue(d.wf.ID.String()),
+			Value: attribute.StringValue(im.cached.Workflow.ID.String()),
 		},
 		attribute.KeyValue{
 			Key:   "revision",
-			Value: attribute.StringValue(fmt.Sprintf("%v", d.rev().ID.String())),
+			Value: attribute.StringValue(fmt.Sprintf("%v", im.cached.Revision.ID.String())),
 		},
 		attribute.KeyValue{
 			Key:   "instance",
-			Value: attribute.StringValue(im.in.ID.String()),
+			Value: attribute.StringValue(im.cached.Instance.ID.String()),
 		},
 		attribute.KeyValue{
 			Key:   "as",
-			Value: attribute.StringValue(im.in.As),
+			Value: attribute.StringValue(im.cached.Instance.As),
 		},
 	)
 
 }
 
-func traceFullAddWorkflowInstance(ctx context.Context, d *refData, im *instanceMemory) (context.Context, error) {
+func traceFullAddWorkflowInstance(ctx context.Context, im *instanceMemory) (context.Context, error) {
 
-	traceAddWorkflowInstance(ctx, d, im)
+	traceAddWorkflowInstance(ctx, im)
 	tp := otel.GetTracerProvider()
 	tr := tp.Tracer("direktiv/flow")
 	ctx, span := tr.Start(ctx, "new-workflow-instance", trace.WithSpanKind(trace.SpanKindInternal))
 	defer span.End()
-	traceAddWorkflowInstance(ctx, d, im)
+	traceAddWorkflowInstance(ctx, im)
 
 	x := dbTrace(ctx)
 	s := marshal(x)
 
 	updater := im.getRuntimeUpdater()
 	updater = updater.SetInstanceContext(s)
-	im.in.Edges.Runtime.InstanceContext = s
+	im.runtime.InstanceContext = s
 	im.runtimeUpdater = updater
 
 	return ctx, nil
@@ -131,7 +131,7 @@ func traceStateGenericBegin(ctx context.Context, im *instanceMemory) (context.Co
 	var span trace.Span
 
 	carrier := new(Carrier)
-	err := unmarshal(im.in.Edges.Runtime.InstanceContext, carrier)
+	err := unmarshal(im.runtime.InstanceContext, carrier)
 	if err != nil {
 		return ctx, nil, err
 	}
@@ -145,7 +145,7 @@ func traceStateGenericBegin(ctx context.Context, im *instanceMemory) (context.Co
 
 	updater := im.getRuntimeUpdater()
 	updater = updater.SetStateContext(s)
-	im.in.Edges.Runtime.StateContext = s
+	im.runtime.StateContext = s
 	im.runtimeUpdater = updater
 
 	finish := func() {
@@ -164,7 +164,7 @@ func traceStateGenericLogicThread(ctx context.Context, im *instanceMemory) (cont
 	var span trace.Span
 
 	carrier := new(Carrier)
-	err := unmarshal(im.in.Edges.Runtime.StateContext, carrier)
+	err := unmarshal(im.runtime.StateContext, carrier)
 	if err != nil {
 		return nil, nil, err
 	}

@@ -18,6 +18,8 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/ent"
+	entino "github.com/direktiv/direktiv/pkg/flow/ent/inode"
+	entmir "github.com/direktiv/direktiv/pkg/flow/ent/mirror"
 	entact "github.com/direktiv/direktiv/pkg/flow/ent/mirroractivity"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/project"
@@ -53,40 +55,37 @@ func (syncer *syncer) Close() error {
 
 }
 
-func (srv *server) reverseTraverseToMirror(ctx context.Context, inoc *ent.InodeClient, mirc *ent.MirrorClient, id string) (*mirData, error) {
+func (srv *server) reverseTraverseToMirror(ctx context.Context, tx Transaction, id string) (*CacheData, *Mirror, error) {
+
+	clients := srv.entClients(tx)
 
 	uid, err := uuid.Parse(id)
 	if err != nil {
 		srv.sugar.Debugf("%s failed to parse mirror UUID: %v", parent(), err)
-		return nil, err
+		return nil, nil, err
 	}
 
-	mir, err := mirc.Get(ctx, uid)
+	mir, err := clients.Mirror.Get(ctx, uid)
 	if err != nil {
 		srv.sugar.Debugf("%s failed to query mirror: %v", parent(), err)
-		return nil, err
+		return nil, nil, err
 	}
 
 	ino, err := mir.Inode(ctx)
 	if err != nil {
 		srv.sugar.Debugf("%s failed to query mirror's inode: %v", parent(), err)
-		return nil, err
+		return nil, nil, err
 	}
 
-	nd, err := srv.reverseTraverseToInode(ctx, inoc, ino.ID.String())
+	cached := new(CacheData)
+
+	err = srv.database.Inode(ctx, tx, cached, ino.ID)
 	if err != nil {
 		srv.sugar.Debugf("%s failed to resolve inode's parent(s): %v", parent(), err)
-		return nil, err
+		return nil, nil, err
 	}
 
-	mir.Edges.Inode = nd.ino
-	mir.Edges.Namespace = nd.ino.Edges.Namespace
-
-	d := new(mirData)
-	d.mir = mir
-	d.nodeData = nd
-
-	return d, nil
+	return cached, entMirror(mir), nil
 
 }
 
@@ -133,13 +132,13 @@ const syncerTimeoutFunction = "syncerTimeoutFunction"
 
 func (syncer *syncer) cancelActivity(activityId, code, message string) {
 
-	am, err := syncer.loadActivityMemory(activityId)
+	cached, mirror, activity, err := syncer.loadActivityMemory(activityId)
 	if err != nil {
 		syncer.sugar.Error(err)
 		return
 	}
 
-	syncer.fail(am, errors.New(code))
+	syncer.fail(cached, mirror, activity, errors.New(code))
 
 }
 
@@ -178,12 +177,12 @@ func (srv *server) syncerCronPoll() {
 	}
 
 	for _, mir := range mirs {
-		srv.syncerCronPollerMirror(mir)
+		srv.syncerCronPollerMirror(entMirror(mir))
 	}
 
 }
 
-func (srv *server) syncerCronPollerMirror(mir *ent.Mirror) {
+func (srv *server) syncerCronPollerMirror(mir *Mirror) {
 
 	if mir.Cron != "" {
 		srv.timers.deleteCronForSyncer(mir.ID.String())
@@ -211,7 +210,7 @@ func (syncer *syncer) cronHandler(data []byte) {
 	}
 	defer syncer.unlock(id, conn)
 
-	d, err := syncer.reverseTraverseToMirror(ctx, syncer.db.Inode, syncer.db.Mirror, id)
+	cached, mirror, err := syncer.reverseTraverseToMirror(ctx, nil, id)
 	if err != nil {
 
 		if derrors.IsNotFound(err) {
@@ -225,7 +224,9 @@ func (syncer *syncer) cronHandler(data []byte) {
 
 	}
 
-	k, err := d.mir.QueryActivities().Where(entact.CreatedAtGT(time.Now().Add(-time.Second*30)), entact.TypeEQ(util.MirrorActivityTypeCronSync)).Count(ctx)
+	clients := syncer.entClients(nil)
+
+	k, err := clients.MirrorActivity.Query().Where(entact.HasMirrorWith(entmir.ID(mirror.ID))).Where(entact.CreatedAtGT(time.Now().Add(-time.Second*30)), entact.TypeEQ(util.MirrorActivityTypeCronSync)).Count(ctx)
 	if err != nil {
 		syncer.sugar.Error(err)
 		return
@@ -237,15 +238,15 @@ func (syncer *syncer) cronHandler(data []byte) {
 	}
 
 	args := new(newInstanceArgs)
-	args.Namespace = d.namespace()
-	args.Path = d.path
+	args.Namespace = cached.Namespace.Name
+	args.Path = cached.Path()
 	args.Ref = ""
 	args.Input = nil
 	args.Caller = util.CallerCron
 	args.CallerData = util.CallerCron
 
 	err = syncer.NewActivity(nil, &newMirrorActivityArgs{
-		MirrorID: d.mir.ID.String(),
+		MirrorID: mirror.ID.String(),
 		Type:     util.MirrorActivityTypeCronSync,
 		LockCtx:  ctx,
 		LockConn: conn,
@@ -331,53 +332,35 @@ func (syncer *syncer) kickExpiredActivities() {
 
 // activity memory
 
-type activityMemory struct {
-	act *ent.MirrorActivity
-	mir *ent.Mirror
-	ino *ent.Inode
-	ns  *ent.Namespace
-}
-
-func (syncer *syncer) loadActivityMemory(id string) (*activityMemory, error) {
+func (syncer *syncer) loadActivityMemory(id string) (*CacheData, *Mirror, *MirrorActivity, error) {
 
 	ctx := context.Background()
 
 	uid, err := uuid.Parse(id)
 	if err != nil {
-		return nil, err
+		return nil, nil, nil, err
 	}
 
-	act, err := syncer.db.MirrorActivity.Get(ctx, uid)
+	clients := syncer.entClients(nil)
+
+	act, err := clients.MirrorActivity.Get(ctx, uid)
 	if err != nil {
-		return nil, err
+		return nil, nil, nil, err
 	}
 
-	mir, err := act.QueryMirror().WithNamespace().WithInode().Only(ctx)
+	mir, err := act.QueryMirror().WithInode().Only(ctx)
 	if err != nil {
-		return nil, err
+		return nil, nil, nil, err
 	}
 
-	ino, err := mir.QueryInode().Only(ctx)
+	cached := new(CacheData)
+
+	err = syncer.database.Inode(ctx, nil, cached, mir.Edges.Inode.ID)
 	if err != nil {
-		return nil, err
+		return nil, nil, nil, err
 	}
 
-	am := new(activityMemory)
-	am.act = act
-	am.mir = mir
-	am.ino = ino
-	ino.Edges.Namespace = mir.Edges.Namespace
-	act.Edges.Namespace = mir.Edges.Namespace
-	act.Edges.Mirror = am.mir
-	am.ns = act.Edges.Namespace
-
-	return am, nil
-
-}
-
-func (am *activityMemory) ID() uuid.UUID {
-
-	return am.act.ID
+	return cached, entMirror(mir), entMirrorActivity(act), nil
 
 }
 
@@ -390,7 +373,7 @@ type newMirrorActivityArgs struct {
 	LockConn *sql.Conn
 }
 
-func (syncer *syncer) beginActivity(tx *ent.Tx, args *newMirrorActivityArgs) (*activityMemory, error) {
+func (syncer *syncer) beginActivity(tx *ent.Tx, args *newMirrorActivityArgs) (*CacheData, *Mirror, *MirrorActivity, error) {
 
 	var err error
 	var ctx context.Context
@@ -401,7 +384,7 @@ func (syncer *syncer) beginActivity(tx *ent.Tx, args *newMirrorActivityArgs) (*a
 		var conn *sql.Conn
 		ctx, conn, err = syncer.lock(args.MirrorID, defaultLockWait)
 		if err != nil {
-			return nil, err
+			return nil, nil, nil, err
 		}
 		defer syncer.unlock(args.MirrorID, conn)
 	}
@@ -409,30 +392,30 @@ func (syncer *syncer) beginActivity(tx *ent.Tx, args *newMirrorActivityArgs) (*a
 	if tx == nil {
 		tx, err = syncer.db.Tx(ctx)
 		if err != nil {
-			return nil, err
+			return nil, nil, nil, err
 		}
 		defer rollback(tx)
 	}
 
-	d, err := syncer.reverseTraverseToMirror(ctx, tx.Inode, tx.Mirror, args.MirrorID)
+	cached, mirror, err := syncer.reverseTraverseToMirror(ctx, tx, args.MirrorID)
 	if err != nil {
-		return nil, err
+		return nil, nil, nil, err
 	}
 
-	unfinishedActivities, err := d.mir.QueryActivities().Where(entact.StatusIn(util.MirrorActivityStatusPending, util.MirrorActivityStatusExecuting)).Count(ctx)
+	unfinishedActivities, err := tx.MirrorActivity.Query().Where(entact.HasMirrorWith(entmir.ID(mirror.ID))).Where(entact.StatusIn(util.MirrorActivityStatusPending, util.MirrorActivityStatusExecuting)).Count(ctx)
 	if err != nil {
-		return nil, err
+		return nil, nil, nil, err
 	}
 
 	if unfinishedActivities > 0 {
-		return nil, errors.New("mirror operations are already underway")
+		return nil, nil, nil, errors.New("mirror operations are already underway")
 	}
 
-	if !d.ino.ReadOnly {
+	if !cached.Inode().ReadOnly {
 		switch args.Type {
 		case util.MirrorActivityTypeLocked:
 		default:
-			return nil, ErrMirrorLocked
+			return nil, nil, nil, ErrMirrorLocked
 		}
 	}
 
@@ -442,41 +425,32 @@ func (syncer *syncer) beginActivity(tx *ent.Tx, args *newMirrorActivityArgs) (*a
 		SetType(args.Type).
 		SetStatus(util.MirrorActivityStatusPending).
 		SetEndAt(time.Now()).
-		SetMirror(d.mir).
-		SetNamespace(d.ns()).
+		SetMirrorID(mirror.ID).
+		SetNamespaceID(cached.Namespace.ID).
 		SetController(syncer.pubsub.hostname).
 		SetDeadline(deadline).
 		Save(ctx)
 	if err != nil {
-		return nil, err
+		return nil, nil, nil, err
 	}
 
 	err = tx.Commit()
 	if err != nil {
-		return nil, err
+		return nil, nil, nil, err
 	}
 
-	act.Edges.Mirror = d.mir
-	act.Edges.Namespace = d.ns()
+	activity := entMirrorActivity(act)
 
-	am := new(activityMemory)
-	am.act = act
-	am.mir = d.mir
-	am.ino = d.ino
-	act.Edges.Mirror = am.mir
-	act.Edges.Namespace = d.ns()
-	am.ns = d.ns()
+	syncer.logToNamespace(ctx, time.Now(), cached, "Commenced new mirror activity '%s' on mirror: %s", args.Type, cached.Path())
 
-	syncer.logToNamespace(ctx, time.Now(), d.ns(), "Commenced new mirror activity '%s' on mirror: %s", args.Type, d.path)
+	syncer.pubsub.NotifyMirror(cached.Inode())
 
-	syncer.pubsub.NotifyMirror(d.ino)
-
-	syncer.logToMirrorActivity(ctx, time.Now(), act, "Commenced new mirror activity '%s' on mirror: %s", args.Type, d.path)
+	syncer.logToMirrorActivity(ctx, time.Now(), cached.Namespace, mirror, activity, "Commenced new mirror activity '%s' on mirror: %s", args.Type, cached.Path())
 
 	// schedule timeouts
-	syncer.scheduleTimeout(am.act.ID.String(), am.act.Controller, deadline)
+	syncer.scheduleTimeout(activity.ID.String(), activity.Controller, deadline)
 
-	return am, nil
+	return cached, mirror, activity, nil
 
 }
 
@@ -484,77 +458,77 @@ func (syncer *syncer) NewActivity(tx *ent.Tx, args *newMirrorActivityArgs) error
 
 	syncer.sugar.Debugf("Handling mirror activity: %s", this())
 
-	am, err := syncer.beginActivity(tx, args)
+	cached, mirror, activity, err := syncer.beginActivity(tx, args)
 	if err != nil {
 		return err
 	}
 
-	go syncer.execute(am)
+	go syncer.execute(cached, mirror, activity)
 
 	return nil
 
 }
 
-func (syncer *syncer) execute(am *activityMemory) {
+func (syncer *syncer) execute(cached *CacheData, mirror *Mirror, activity *MirrorActivity) {
 
 	var err error
 
 	defer func() {
-		syncer.fail(am, err)
+		syncer.fail(cached, mirror, activity, err)
 	}()
 
 	ctx := context.Background()
 
-	switch am.act.Type {
+	switch activity.Type {
 	case util.MirrorActivityTypeInit:
-		err = syncer.initMirror(ctx, am)
+		err = syncer.initMirror(ctx, cached, mirror, activity)
 		if err != nil {
 			return
 		}
 	case util.MirrorActivityTypeLocked: // NOTE: intentionally left empty
 	case util.MirrorActivityTypeUnlocked: // NOTE: intentionally left empty
 	case util.MirrorActivityTypeReconfigure:
-		err = syncer.hardSync(ctx, am)
+		err = syncer.hardSync(ctx, cached, mirror, activity)
 		if err != nil {
 			return
 		}
 
 		// in case of cron
-		syncer.server.syncerCronPollerMirror(am.mir)
+		syncer.server.syncerCronPollerMirror(mirror)
 
 	case util.MirrorActivityTypeCronSync:
-		err = syncer.hardSync(ctx, am)
+		err = syncer.hardSync(ctx, cached, mirror, activity)
 		if err != nil {
 			return
 		}
 	case util.MirrorActivityTypeSync:
-		err = syncer.hardSync(ctx, am)
+		err = syncer.hardSync(ctx, cached, mirror, activity)
 		if err != nil {
 			return
 		}
 	default:
-		syncer.logToMirrorActivity(ctx, time.Now(), am.act, "Unrecognized syncer activity type.")
+		syncer.logToMirrorActivity(ctx, time.Now(), cached.Namespace, mirror, activity, "Unrecognized syncer activity type.")
 	}
 
-	err = syncer.success(am)
+	err = syncer.success(cached, mirror, activity)
 	if err != nil {
 		return
 	}
 
 }
 
-func (syncer *syncer) fail(am *activityMemory, e error) {
+func (syncer *syncer) fail(cached *CacheData, mirror *Mirror, activity *MirrorActivity, e error) {
 
 	if e == nil {
 		return
 	}
 
-	ctx, conn, err := syncer.lock(am.act.Edges.Mirror.ID.String(), defaultLockWait)
+	ctx, conn, err := syncer.lock(mirror.ID.String(), defaultLockWait)
 	if err != nil {
 		syncer.sugar.Error(err)
 		return
 	}
-	defer syncer.unlock(am.act.Edges.Mirror.ID.String(), conn)
+	defer syncer.unlock(mirror.ID.String(), conn)
 
 	tx, err := syncer.db.Tx(ctx)
 	if err != nil {
@@ -563,9 +537,7 @@ func (syncer *syncer) fail(am *activityMemory, e error) {
 	}
 	defer rollback(tx)
 
-	edges := am.act.Edges
-
-	act, err := tx.MirrorActivity.Get(ctx, am.act.ID)
+	act, err := tx.MirrorActivity.Get(ctx, activity.ID)
 	if err != nil {
 		syncer.sugar.Error(err)
 		return
@@ -583,29 +555,27 @@ func (syncer *syncer) fail(am *activityMemory, e error) {
 		return
 	}
 
-	act.Edges = edges
-
 	err = tx.Commit()
 	if err != nil {
 		syncer.sugar.Error(err)
 		return
 	}
 
-	syncer.pubsub.NotifyMirror(am.ino)
+	syncer.pubsub.NotifyMirror(cached.Inode())
 
-	syncer.logToMirrorActivity(ctx, time.Now(), act, "Mirror activity '%s' failed: %v", act.Type, e)
+	syncer.logToMirrorActivity(ctx, time.Now(), cached.Namespace, mirror, activity, "Mirror activity '%s' failed: %v", act.Type, e)
 
-	syncer.timers.deleteTimersForActivity(am.ID().String())
+	syncer.timers.deleteTimersForActivity(activity.ID.String())
 
 }
 
-func (syncer *syncer) success(am *activityMemory) error {
+func (syncer *syncer) success(cached *CacheData, mirror *Mirror, activity *MirrorActivity) error {
 
-	ctx, conn, err := syncer.lock(am.act.Edges.Mirror.ID.String(), defaultLockWait)
+	ctx, conn, err := syncer.lock(mirror.ID.String(), defaultLockWait)
 	if err != nil {
 		return err
 	}
-	defer syncer.unlock(am.act.Edges.Mirror.ID.String(), conn)
+	defer syncer.unlock(mirror.ID.String(), conn)
 
 	tx, err := syncer.db.Tx(ctx)
 	if err != nil {
@@ -613,9 +583,7 @@ func (syncer *syncer) success(am *activityMemory) error {
 	}
 	defer rollback(tx)
 
-	edges := am.act.Edges
-
-	act, err := tx.MirrorActivity.Get(ctx, am.act.ID)
+	act, err := tx.MirrorActivity.Get(ctx, activity.ID)
 	if err != nil {
 		return err
 	}
@@ -629,26 +597,24 @@ func (syncer *syncer) success(am *activityMemory) error {
 		return err
 	}
 
-	act.Edges = edges
-
 	err = tx.Commit()
 	if err != nil {
 		return err
 	}
 
-	syncer.pubsub.NotifyMirror(am.ino)
+	syncer.pubsub.NotifyMirror(cached.Inode())
 
-	syncer.logToMirrorActivity(ctx, time.Now(), act, "Completed mirror activity '%s'.", act.Type)
+	syncer.logToMirrorActivity(ctx, time.Now(), cached.Namespace, mirror, activity, "Completed mirror activity '%s'.", act.Type)
 
-	syncer.timers.deleteTimersForActivity(am.ID().String())
+	syncer.timers.deleteTimersForActivity(activity.ID.String())
 
 	return nil
 
 }
 
-func (syncer *syncer) initMirror(ctx context.Context, am *activityMemory) error {
+func (syncer *syncer) initMirror(ctx context.Context, cached *CacheData, mirror *Mirror, activity *MirrorActivity) error {
 
-	return syncer.hardSync(ctx, am)
+	return syncer.hardSync(ctx, cached, mirror, activity)
 
 }
 
@@ -724,22 +690,20 @@ func tarGzDir(src string, buf io.Writer) error {
 	return nil
 }
 
-func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
+func (syncer *syncer) hardSync(ctx context.Context, cached *CacheData, mirror *Mirror, activity *MirrorActivity) error {
 
 	lr, err := loadRepository(ctx, &repositorySettings{
-		UUID:       am.mir.ID,
-		URL:        am.mir.URL,
-		Branch:     am.mir.Ref,
-		Passphrase: am.mir.Passphrase,
-		PrivateKey: am.mir.PrivateKey,
-		PublicKey:  am.mir.PublicKey,
+		UUID:       mirror.ID,
+		URL:        mirror.URL,
+		Branch:     mirror.Ref,
+		Passphrase: mirror.Passphrase,
+		PrivateKey: mirror.PrivateKey,
+		PublicKey:  mirror.PublicKey,
 	})
 	if err != nil {
 		return err
 	}
 	defer lr.Cleanup()
-
-	// lr.lastCommit = opts.LastCommit
 
 	model, err := buildModel(ctx, lr)
 	if err != nil {
@@ -752,23 +716,23 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 	}
 	defer rollback(tx)
 
-	md, err := syncer.reverseTraverseToMirror(ctx, tx.Inode, tx.Mirror, am.mir.ID.String())
+	cached, mirror, err = syncer.reverseTraverseToMirror(ctx, tx, mirror.ID.String())
 	if err != nil {
 		return err
 	}
 
-	cache := make(map[string]*ent.Inode)
-	trueroot := filepath.Join(md.path, ".")
+	cache := make(map[string]*Inode)
+	trueroot := filepath.Join(cached.Path(), ".")
 	if trueroot == "/" {
-		cache[trueroot] = md.ino
+		cache[trueroot] = cached.Inode()
 	} else {
-		cache[trueroot+"/"] = md.ino
+		cache[trueroot+"/"] = cached.Inode()
 	}
 
-	var recurser func(parent *ent.Inode, path string) error
-	recurser = func(parent *ent.Inode, path string) error {
+	var recurser func(parent *Inode, path string) error
+	recurser = func(parent *Inode, path string) error {
 
-		children, err := parent.Children(ctx)
+		children, err := tx.Inode.Query().Where(entino.HasParentWith(entino.ID(parent.ID))).All(ctx)
 		if err != nil {
 			return err
 		}
@@ -776,7 +740,7 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 		for _, child := range children {
 
 			cpath := filepath.Join(path, child.Name)
-			actualpath := filepath.Join(trueroot, cpath)
+			// actualpath := filepath.Join(trueroot, cpath)
 
 			if child.Type == util.InodeTypeDirectory && child.ExtendedType == util.InodeTypeGit {
 
@@ -788,12 +752,8 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 					return err
 				}
 
-				err = syncer.flow.deleteNode(ctx, &deleteNodeArgs{
-					inoc:      tx.Inode,
-					ns:        md.ns(),
-					pino:      parent,
-					ino:       child,
-					path:      actualpath,
+				err = syncer.flow.deleteNode(ctx, tx, &deleteNodeArgs{
+					cached:    cached,
 					super:     true,
 					recursive: true,
 				})
@@ -803,7 +763,7 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 
 			} else if child.Type == util.InodeTypeDirectory {
 
-				err = recurser(child, cpath)
+				err = recurser(entInode(child), cpath)
 				if err != nil {
 					return err
 				}
@@ -815,12 +775,8 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 
 				if errors.Is(err, os.ErrNotExist) || mn.ntype != mntDir {
 
-					err = syncer.flow.deleteNode(ctx, &deleteNodeArgs{
-						inoc:      tx.Inode,
-						ns:        md.ns(),
-						pino:      parent,
-						ino:       child,
-						path:      actualpath,
+					err = syncer.flow.deleteNode(ctx, tx, &deleteNodeArgs{
+						cached:    cached,
 						super:     true,
 						recursive: true,
 					})
@@ -838,12 +794,8 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 
 				if errors.Is(err, os.ErrNotExist) || mn.ntype != mntWorkflow {
 
-					err = syncer.flow.deleteNode(ctx, &deleteNodeArgs{
-						inoc:      tx.Inode,
-						ns:        md.ns(),
-						pino:      parent,
-						ino:       child,
-						path:      actualpath,
+					err = syncer.flow.deleteNode(ctx, tx, &deleteNodeArgs{
+						cached:    cached,
 						super:     true,
 						recursive: true,
 					})
@@ -861,7 +813,7 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 
 	}
 
-	err = recurser(md.ino, ".")
+	err = recurser(cached.Inode(), ".")
 	if err != nil {
 		return err
 	}
@@ -872,24 +824,29 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 			return nil
 		}
 
-		truepath := filepath.Join(md.path, path)
+		truepath := filepath.Join(cached.Path(), path)
 		dir, _ := filepath.Split(truepath)
 
 		switch n.ntype {
 		case mntDir:
 
-			ino, err := syncer.flow.createDirectory(ctx, &createDirectoryArgs{
-				inoc:  tx.Inode,
-				ns:    md.ns(),
-				pino:  cache[dir],
-				path:  truepath,
-				super: true,
+			pino := cache[dir]
+			pcached := new(CacheData)
+			err := syncer.database.Inode(ctx, tx, pcached, pino.ID)
+			if err != nil {
+				return err
+			}
+
+			ino, err := syncer.flow.createDirectory(ctx, tx, &createDirectoryArgs{
+				pcached: pcached,
+				path:    truepath,
+				super:   true,
 			})
 			if ino == nil {
 				return err
 			}
 
-			cache[truepath+"/"] = ino
+			cache[truepath+"/"] = entInode(ino)
 
 		case mntWorkflow:
 
@@ -898,14 +855,8 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 				return err
 			}
 
-			wf, err := syncer.flow.createWorkflow(ctx, &createWorkflowArgs{
-				inoc: tx.Inode,
-				wfc:  tx.Workflow,
-				revc: tx.Revision,
-				refc: tx.Ref,
-				evc:  tx.Events,
-
-				ns:         md.ns(),
+			wf, ino, err := syncer.flow.createWorkflow(ctx, tx, &createWorkflowArgs{
+				ns:         cached.Namespace,
 				pino:       cache[dir],
 				path:       truepath,
 				super:      true,
@@ -916,12 +867,15 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 				return err
 			}
 			if errors.Is(err, os.ErrExist) {
-				_, err = syncer.flow.updateWorkflow(ctx, &updateWorkflowArgs{
-					revc:       tx.Revision,
-					eventc:     tx.Events,
-					ns:         md.ns(),
-					ino:        wf.Edges.Inode,
-					wf:         wf,
+
+				ucached := new(CacheData)
+				err = syncer.database.Workflow(ctx, tx, ucached, wf.ID)
+				if err != nil {
+					return err
+				}
+
+				_, err = syncer.flow.updateWorkflow(ctx, tx, &updateWorkflowArgs{
+					cached:     ucached,
 					path:       truepath,
 					super:      true,
 					data:       data,
@@ -930,9 +884,11 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 				if err != nil {
 					return err
 				}
-			}
 
-			cache[truepath+"/"] = wf.Edges.Inode
+				cache[truepath+"/"] = ucached.Inode()
+			} else {
+				cache[truepath+"/"] = ino
+			}
 
 		case mntNamespaceVar:
 
@@ -953,7 +909,7 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 			_, base := filepath.Split(path)
 			trimmed := strings.TrimPrefix(base, "var.")
 
-			_, _, err = syncer.flow.SetVariable(ctx, tx.VarRef, tx.VarData, md.ns(), trimmed, data, "", false)
+			_, _, err = syncer.flow.SetVariable(ctx, tx.VarRef, tx.VarData, &entNamespaceVarQuerier{cached: cached, clients: syncer.entClients(tx)}, trimmed, data, "", false)
 			if err != nil {
 				return err
 			}
@@ -985,19 +941,19 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 			_, base := filepath.Split(x[0])
 
 			pino := cache[dir]
-			wf, err := syncer.flow.lookupWorkflowFromParent(ctx, &lookupWorkflowFromParentArgs{
+			_, err = syncer.flow.lookupWorkflowFromParent(ctx, tx, &lookupWorkflowFromParentArgs{
 				pino: pino,
 				name: base,
 			})
 			if err != nil {
 				if derrors.IsNotFound(err) {
-					syncer.logToMirrorActivity(ctx, time.Now(), am.act, "Found something that looks like a workflow variable with no matching workflow: "+path)
+					syncer.logToMirrorActivity(ctx, time.Now(), cached.Namespace, mirror, activity, "Found something that looks like a workflow variable with no matching workflow: "+cached.Path())
 					return nil
 				}
 				return err
 			}
 
-			_, _, err = syncer.flow.SetVariable(ctx, tx.VarRef, tx.VarData, wf, trimmed, data, "", false)
+			_, _, err = syncer.flow.SetVariable(ctx, tx.VarRef, tx.VarData, &entWorkflowVarQuerier{cached: cached, clients: syncer.entClients(tx)}, trimmed, data, "", false)
 			if err != nil {
 				return err
 			}

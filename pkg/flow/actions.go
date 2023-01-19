@@ -76,15 +76,15 @@ func (actions *actions) SetNamespaceRegistry(ctx context.Context, req *grpc.SetN
 
 	actions.sugar.Debugf("Handling gRPC request: %s", this())
 
-	ns, err := actions.getNamespace(ctx, actions.db.Namespace, req.GetNamespace())
+	cached := new(CacheData)
+
+	err := actions.database.NamespaceByName(ctx, nil, cached, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
 
-	namespace := ns.ID.String()
-
 	_, err = actions.client.StoreRegistry(ctx, &igrpc.StoreRegistryRequest{
-		Namespace: &namespace,
+		Namespace: &cached.Namespace.Name,
 		Data:      req.GetData(),
 	})
 	if err != nil {
@@ -101,16 +101,17 @@ func (actions *actions) DeleteNamespaceRegistry(ctx context.Context, req *grpc.D
 
 	actions.sugar.Debugf("Handling gRPC request: %s", this())
 
-	ns, err := actions.getNamespace(ctx, actions.db.Namespace, req.GetNamespace())
+	cached := new(CacheData)
+
+	err := actions.database.NamespaceByName(ctx, nil, cached, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
 
-	namespace := ns.ID.String()
 	name := req.GetRegistry()
 
 	_, err = actions.client.DeleteRegistry(ctx, &igrpc.DeleteRegistryRequest{
-		Namespace: &namespace,
+		Namespace: &cached.Namespace.Name,
 		Name:      &name,
 	})
 	if err != nil {
@@ -213,12 +214,12 @@ func (actions *actions) NamespaceRegistries(ctx context.Context, req *grpc.Names
 
 	actions.sugar.Debugf("Handling gRPC request: %s", this())
 
-	ns, err := actions.getNamespace(ctx, actions.db.Namespace, req.GetNamespace())
+	cached := new(CacheData)
+
+	err := actions.database.NamespaceByName(ctx, nil, cached, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
-
-	namespace := ns.ID.String()
 
 	p, err := getPagination(req.Pagination)
 	if err != nil {
@@ -226,7 +227,7 @@ func (actions *actions) NamespaceRegistries(ctx context.Context, req *grpc.Names
 	}
 
 	response, err := actions.client.GetRegistries(ctx, &igrpc.GetRegistriesRequest{
-		Namespace: &namespace,
+		Namespace: &cached.Namespace.Name,
 	})
 	if err != nil {
 		return nil, err
@@ -245,7 +246,7 @@ func (actions *actions) NamespaceRegistries(ctx context.Context, req *grpc.Names
 
 	var resp grpc.NamespaceRegistriesResponse
 
-	resp.Namespace = ns.Name
+	resp.Namespace = cached.Namespace.Name
 	resp.Registries = new(grpc.Registries)
 	resp.Registries.PageInfo = new(grpc.PageInfo)
 
@@ -266,23 +267,24 @@ func (actions *actions) NamespaceRegistriesStream(req *grpc.NamespaceRegistriesR
 	phash := ""
 	nhash := ""
 
-	ns, err := actions.getNamespace(ctx, actions.db.Namespace, req.GetNamespace())
+	cached := new(CacheData)
+
+	err := actions.database.NamespaceByName(ctx, nil, cached, req.GetNamespace())
 	if err != nil {
 		return err
 	}
-
-	namespace := ns.ID.String()
 
 	p, err := getPagination(req.Pagination)
 	if err != nil {
 		return err
 	}
 
-	sub := actions.pubsub.SubscribeNamespaceRegistries(ns)
+	sub := actions.pubsub.SubscribeNamespaceRegistries(cached.Namespace)
 	defer actions.cleanup(sub.Close)
 
 resend:
 
+	namespace := cached.Namespace.ID.String()
 	response, err := actions.client.GetRegistries(ctx, &igrpc.GetRegistriesRequest{
 		Namespace: &namespace,
 	})
@@ -303,7 +305,7 @@ resend:
 
 	resp := new(grpc.NamespaceRegistriesResponse)
 
-	resp.Namespace = ns.Name
+	resp.Namespace = cached.Namespace.Name
 	resp.Registries = new(grpc.Registries)
 	resp.Registries.PageInfo = new(grpc.PageInfo)
 

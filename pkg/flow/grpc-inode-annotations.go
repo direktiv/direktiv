@@ -7,6 +7,8 @@ import (
 	"io"
 
 	"github.com/direktiv/direktiv/pkg/flow/ent"
+	entnote "github.com/direktiv/direktiv/pkg/flow/ent/annotation"
+	entino "github.com/direktiv/direktiv/pkg/flow/ent/inode"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -14,33 +16,54 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
+func (flow *flow) traverseToInodeAnnotation(ctx context.Context, tx Transaction, namespace, path, key string) (*CacheData, *Annotation, error) {
+
+	cached := new(CacheData)
+
+	err := flow.database.NamespaceByName(ctx, tx, cached, namespace)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	err = flow.database.InodeByPath(ctx, tx, cached, path)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	annotation, err := flow.database.InodeAnnotation(ctx, tx, cached.Inode().ID, key)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return cached, annotation, nil
+
+}
+
 func (flow *flow) NodeAnnotation(ctx context.Context, req *grpc.NodeAnnotationRequest) (*grpc.NodeAnnotationResponse, error) {
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	nsc := flow.db.Namespace
-
-	d, err := flow.traverseToInodeAnnotation(ctx, nsc, req.GetNamespace(), req.GetPath(), req.GetKey())
+	cached, annotation, err := flow.traverseToInodeAnnotation(ctx, nil, req.GetNamespace(), req.GetPath(), req.GetKey())
 	if err != nil {
 		return nil, err
 	}
 
 	var resp grpc.NodeAnnotationResponse
 
-	resp.Namespace = d.ns().Name
-	resp.Path = d.path
-	resp.Key = d.annotation.Name
-	resp.CreatedAt = timestamppb.New(d.annotation.CreatedAt)
-	resp.UpdatedAt = timestamppb.New(d.annotation.UpdatedAt)
-	resp.Checksum = d.annotation.Hash
-	resp.Size = int64(d.annotation.Size)
-	resp.MimeType = d.annotation.MimeType
+	resp.Namespace = cached.Namespace.Name
+	resp.Path = cached.Path()
+	resp.Key = annotation.Name
+	resp.CreatedAt = timestamppb.New(annotation.CreatedAt)
+	resp.UpdatedAt = timestamppb.New(annotation.UpdatedAt)
+	resp.Checksum = annotation.Hash
+	resp.Size = int64(annotation.Size)
+	resp.MimeType = annotation.MimeType
 
 	if resp.Size > parcelSize {
 		return nil, status.Error(codes.ResourceExhausted, "annotation too large to return without using the parcelling API")
 	}
 
-	resp.Data = d.annotation.Data
+	resp.Data = annotation.Data
 
 	return &resp, nil
 
@@ -52,27 +75,25 @@ func (flow *flow) NodeAnnotationParcels(req *grpc.NodeAnnotationRequest, srv grp
 
 	ctx := srv.Context()
 
-	nsc := flow.db.Namespace
-
-	d, err := flow.traverseToInodeAnnotation(ctx, nsc, req.GetNamespace(), req.GetPath(), req.GetKey())
+	cached, annotation, err := flow.traverseToInodeAnnotation(ctx, nil, req.GetNamespace(), req.GetPath(), req.GetKey())
 	if err != nil {
 		return err
 	}
 
-	rdr := bytes.NewReader(d.annotation.Data)
+	rdr := bytes.NewReader(annotation.Data)
 
 	for {
 
 		resp := new(grpc.NodeAnnotationResponse)
 
-		resp.Namespace = d.ns().Name
-		resp.Path = d.path
-		resp.Key = d.annotation.Name
-		resp.CreatedAt = timestamppb.New(d.annotation.CreatedAt)
-		resp.UpdatedAt = timestamppb.New(d.annotation.UpdatedAt)
-		resp.Checksum = d.annotation.Hash
-		resp.Size = int64(d.annotation.Size)
-		resp.MimeType = d.annotation.MimeType
+		resp.Namespace = cached.Namespace.Name
+		resp.Path = cached.Path()
+		resp.Key = annotation.Name
+		resp.CreatedAt = timestamppb.New(annotation.CreatedAt)
+		resp.UpdatedAt = timestamppb.New(annotation.UpdatedAt)
+		resp.Checksum = annotation.Hash
+		resp.Size = int64(annotation.Size)
+		resp.MimeType = annotation.MimeType
 
 		buf := new(bytes.Buffer)
 		k, err := io.CopyN(buf, rdr, parcelSize)
@@ -114,12 +135,14 @@ func (flow *flow) NodeAnnotations(ctx context.Context, req *grpc.NodeAnnotations
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	d, err := flow.traverseToInode(ctx, flow.db.Namespace, req.GetNamespace(), req.GetPath())
+	cached, err := flow.traverseToInode(ctx, nil, req.GetNamespace(), req.GetPath())
 	if err != nil {
 		return nil, err
 	}
 
-	query := d.ino.QueryAnnotations()
+	clients := flow.entClients(nil)
+
+	query := clients.Annotation.Query().Where(entnote.HasInodeWith(entino.ID(cached.Inode().ID)))
 
 	results, pi, err := paginate[*ent.AnnotationQuery, *ent.Annotation](ctx, req.Pagination, query, annotationsOrderings, annotationsFilters)
 	if err != nil {
@@ -127,7 +150,7 @@ func (flow *flow) NodeAnnotations(ctx context.Context, req *grpc.NodeAnnotations
 	}
 
 	resp := new(grpc.NodeAnnotationsResponse)
-	resp.Namespace = d.namespace()
+	resp.Namespace = cached.Namespace.Name
 	resp.Annotations = new(grpc.Annotations)
 	resp.Annotations.PageInfo = pi
 
@@ -148,17 +171,19 @@ func (flow *flow) NodeAnnotationsStream(req *grpc.NodeAnnotationsRequest, srv gr
 	phash := ""
 	nhash := ""
 
-	d, err := flow.traverseToInode(ctx, flow.db.Namespace, req.GetNamespace(), req.GetPath())
+	cached, err := flow.traverseToInode(ctx, nil, req.GetNamespace(), req.GetPath())
 	if err != nil {
 		return err
 	}
 
-	sub := flow.pubsub.SubscribeInodeAnnotations(d.ino)
+	sub := flow.pubsub.SubscribeInodeAnnotations(cached)
 	defer flow.cleanup(sub.Close)
 
 resend:
 
-	query := d.ino.QueryAnnotations()
+	clients := flow.entClients(nil)
+
+	query := clients.Annotation.Query().Where(entnote.HasInodeWith(entino.ID(cached.Inode().ID)))
 
 	results, pi, err := paginate[*ent.AnnotationQuery, *ent.Annotation](ctx, req.Pagination, query, annotationsOrderings, annotationsFilters)
 	if err != nil {
@@ -166,7 +191,7 @@ resend:
 	}
 
 	resp := new(grpc.NodeAnnotationsResponse)
-	resp.Namespace = d.namespace()
+	resp.Namespace = cached.Namespace.Name
 	resp.Annotations = new(grpc.Annotations)
 	resp.Annotations.PageInfo = pi
 
@@ -203,10 +228,7 @@ func (flow *flow) SetNodeAnnotation(ctx context.Context, req *grpc.SetNodeAnnota
 	}
 	defer rollback(tx)
 
-	nsc := tx.Namespace
-	annotationc := tx.Annotation
-
-	d, err := flow.traverseToInode(ctx, nsc, req.GetNamespace(), req.GetPath())
+	cached, err := flow.traverseToInode(ctx, tx, req.GetNamespace(), req.GetPath())
 	if err != nil {
 		return nil, err
 	}
@@ -215,8 +237,7 @@ func (flow *flow) SetNodeAnnotation(ctx context.Context, req *grpc.SetNodeAnnota
 
 	key := req.GetKey()
 
-	// var newVar bool
-	annotation /*newVar*/, _, err = flow.SetAnnotation(ctx, annotationc, d.ino, key, req.GetMimeType(), req.GetData())
+	annotation, _, err = flow.SetAnnotation(ctx, tx.Annotation, &entInodeAnnotationQuerier{clients: flow.entClients(tx), cached: cached}, key, req.GetMimeType(), req.GetData())
 	if err != nil {
 		return nil, err
 	}
@@ -226,18 +247,12 @@ func (flow *flow) SetNodeAnnotation(ctx context.Context, req *grpc.SetNodeAnnota
 		return nil, err
 	}
 
-	// if newVar {
-	// 	flow.logToInode(ctx, time.Now(), d, "Created inode annotation '%s'.", key)
-	// } else {
-	// 	flow.logToInode(ctx, time.Now(), d, "Updated inode annotation '%s'.", key)
-	// }
-
-	flow.pubsub.NotifyInodeAnnotations(d.ino)
+	flow.pubsub.NotifyInodeAnnotations(cached.Inode())
 
 	var resp grpc.SetNodeAnnotationResponse
 
-	resp.Namespace = d.ns().Name
-	resp.Path = d.path
+	resp.Namespace = cached.Namespace.Name
+	resp.Path = cached.Path()
 	resp.Key = key
 	resp.CreatedAt = timestamppb.New(annotation.CreatedAt)
 	resp.UpdatedAt = timestamppb.New(annotation.UpdatedAt)
@@ -315,18 +330,14 @@ func (flow *flow) SetNodeAnnotationParcels(srv grpc.Flow_SetNodeAnnotationParcel
 	}
 	defer rollback(tx)
 
-	nsc := tx.Namespace
-	annotationc := tx.Annotation
-
-	d, err := flow.traverseToInode(ctx, nsc, namespace, path)
+	cached, err := flow.traverseToInode(ctx, tx, namespace, path)
 	if err != nil {
 		return err
 	}
 
 	var annotation *ent.Annotation
 
-	// var newVar bool
-	annotation /*newVar*/, _, err = flow.SetAnnotation(ctx, annotationc, d.ino, key, req.GetMimeType(), buf.Bytes())
+	annotation, _, err = flow.SetAnnotation(ctx, tx.Annotation, &entInodeAnnotationQuerier{clients: flow.entClients(tx), cached: cached}, key, req.GetMimeType(), buf.Bytes())
 	if err != nil {
 		return err
 	}
@@ -336,18 +347,12 @@ func (flow *flow) SetNodeAnnotationParcels(srv grpc.Flow_SetNodeAnnotationParcel
 		return err
 	}
 
-	// if newVar {
-	// 	flow.logToInode(ctx, time.Now(), d, "Created inode annotation '%s'.", key)
-	// } else {
-	// 	flow.logToInode(ctx, time.Now(), d, "Updated inode annotation '%s'.", key)
-	// }
-
-	flow.pubsub.NotifyInodeAnnotations(d.ino)
+	flow.pubsub.NotifyInodeAnnotations(cached.Inode())
 
 	var resp grpc.SetNodeAnnotationResponse
 
-	resp.Namespace = d.ns().Name
-	resp.Path = d.path
+	resp.Namespace = cached.Namespace.Name
+	resp.Path = cached.Path()
 	resp.Key = key
 	resp.CreatedAt = timestamppb.New(annotation.CreatedAt)
 	resp.UpdatedAt = timestamppb.New(annotation.UpdatedAt)
@@ -374,16 +379,14 @@ func (flow *flow) DeleteNodeAnnotation(ctx context.Context, req *grpc.DeleteNode
 	}
 	defer rollback(tx)
 
-	nsc := tx.Namespace
-
-	d, err := flow.traverseToInodeAnnotation(ctx, nsc, req.GetNamespace(), req.GetPath(), req.GetKey())
+	cached, annotation, err := flow.traverseToInodeAnnotation(ctx, tx, req.GetNamespace(), req.GetPath(), req.GetKey())
 	if err != nil {
 		return nil, err
 	}
 
 	annotationc := tx.Annotation
 
-	err = annotationc.DeleteOne(d.annotation).Exec(ctx)
+	err = annotationc.DeleteOneID(annotation.ID).Exec(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -393,8 +396,7 @@ func (flow *flow) DeleteNodeAnnotation(ctx context.Context, req *grpc.DeleteNode
 		return nil, err
 	}
 
-	// flow.logToInode(ctx, time.Now(), d.wfData, "Deleted inode annotation '%s'.", d.annotation.Name)
-	flow.pubsub.NotifyInodeAnnotations(d.ino)
+	flow.pubsub.NotifyInodeAnnotations(cached.Inode())
 
 	var resp emptypb.Empty
 
@@ -412,13 +414,12 @@ func (flow *flow) RenameNodeAnnotation(ctx context.Context, req *grpc.RenameNode
 	}
 	defer rollback(tx)
 
-	nsc := tx.Namespace
-	d, err := flow.traverseToInodeAnnotation(ctx, nsc, req.GetNamespace(), req.GetPath(), req.GetOld())
+	cached, annotation, err := flow.traverseToInodeAnnotation(ctx, tx, req.GetNamespace(), req.GetPath(), req.GetOld())
 	if err != nil {
 		return nil, err
 	}
 
-	annotation, err := d.annotation.Update().SetName(req.GetNew()).Save(ctx)
+	anno, err := tx.Annotation.UpdateOneID(annotation.ID).SetName(req.GetNew()).Save(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -428,18 +429,17 @@ func (flow *flow) RenameNodeAnnotation(ctx context.Context, req *grpc.RenameNode
 		return nil, err
 	}
 
-	// flow.logToInode(ctx, time.Now(), d.wfData, "Renamed inode annotation from '%s' to '%s'.", req.GetOld(), req.GetNew())
-	flow.pubsub.NotifyInodeAnnotations(d.ino)
+	flow.pubsub.NotifyInodeAnnotations(cached.Inode())
 
 	var resp grpc.RenameNodeAnnotationResponse
 
-	resp.Checksum = d.annotation.Hash
-	resp.CreatedAt = timestamppb.New(d.annotation.CreatedAt)
+	resp.Checksum = anno.Hash
+	resp.CreatedAt = timestamppb.New(anno.CreatedAt)
 	resp.Key = annotation.Name
-	resp.Namespace = d.ns().Name
-	resp.Size = int64(d.annotation.Size)
-	resp.UpdatedAt = timestamppb.New(d.annotation.UpdatedAt)
-	resp.MimeType = d.annotation.MimeType
+	resp.Namespace = cached.Namespace.Name
+	resp.Size = int64(anno.Size)
+	resp.UpdatedAt = timestamppb.New(anno.UpdatedAt)
+	resp.MimeType = anno.MimeType
 
 	return &resp, nil
 

@@ -83,7 +83,7 @@ func (engine *engine) cancelInstance(id, code, message string, soft bool) {
 		return
 	}
 
-	if im.in.Status != util.InstanceStatusPending {
+	if im.cached.Instance.Status != util.InstanceStatusPending {
 		return
 	}
 

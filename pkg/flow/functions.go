@@ -32,7 +32,8 @@ func (flow *flow) functionsHeartbeat() {
 			var tuples = make([]*functions.HeartbeatTuple, 0)
 			checksums := make(map[string]bool)
 
-			d, err := flow.reverseTraverseToWorkflow(ctx, wf.ID.String())
+			cached := new(CacheData)
+			err = flow.database.Workflow(ctx, nil, cached, wf.ID)
 			if err != nil {
 				flow.sugar.Error(err)
 				continue
@@ -46,7 +47,16 @@ func (flow *flow) functionsHeartbeat() {
 
 			for _, rev := range revs {
 
-				w, err := loadSource(rev)
+				x := &Revision{
+					ID:        rev.ID,
+					CreatedAt: rev.CreatedAt,
+					Hash:      rev.Hash,
+					Source:    rev.Source,
+					Metadata:  rev.Metadata,
+					Workflow:  rev.Edges.Workflow.ID,
+				}
+
+				w, err := loadSource(x)
 				if err != nil {
 					continue
 				}
@@ -69,8 +79,8 @@ func (flow *flow) functionsHeartbeat() {
 					tuple := &functions.HeartbeatTuple{
 						NamespaceName:      ns.Name,
 						NamespaceID:        ns.ID.String(),
-						WorkflowPath:       d.path,
-						WorkflowID:         wf.ID.String(),
+						WorkflowPath:       cached.Path(),
+						WorkflowID:         cached.Workflow.ID.String(),
 						Revision:           rev.Hash,
 						FunctionDefinition: def,
 					}
