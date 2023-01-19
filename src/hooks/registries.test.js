@@ -34,12 +34,7 @@ describe("useRegistries", () => {
     });
 
     await waitForNextUpdate();
-    let found = false;
-    for (var i = 0; i < result.current.data.length; i++) {
-      if (result.current.data[i].name === Config.registry) {
-        found = true;
-      }
-    }
+    let found = result.current.data.some((x) => x.name === Config.registry);
     expect(found).toBeTrue();
 
     await result.current.deleteRegistry(Config.registry);
@@ -49,13 +44,7 @@ describe("useRegistries", () => {
     });
 
     await waitForNextUpdate();
-
-    found = false;
-    for (var i = 0; i < result.current.data.length; i++) {
-      if (result.current.data[i].name === Config.registry) {
-        found = true;
-      }
-    }
+    found = result.current.data.some((r) => r.name === Config.registry);
     expect(found).toBeFalse();
   });
   it("create dumb registry", async () => {
@@ -105,12 +94,8 @@ describe("useGlobalRegistries", () => {
     });
 
     await waitForNextUpdate();
-    let found = false;
-    for (var i = 0; i < result.current.data.length; i++) {
-      if (result.current.data[i].name === Config.registry) {
-        found = true;
-      }
-    }
+
+    let found = result.current.data.some((x) => x.name === Config.registry);
     expect(found).toBeTrue();
 
     await result.current.deleteRegistry(Config.registry);
@@ -121,12 +106,7 @@ describe("useGlobalRegistries", () => {
 
     await waitForNextUpdate();
 
-    found = false;
-    for (var i = 0; i < result.current.data.length; i++) {
-      if (result.current.data[i].name === Config.registry) {
-        found = true;
-      }
-    }
+    found = result.current.data.some((x) => x.name === Config.registry);
     expect(found).toBeFalse();
   });
   it("create dumb registry", async () => {
@@ -174,12 +154,7 @@ describe("useGlobalPrivateRegistries", () => {
     });
 
     await waitForNextUpdate();
-    let found = false;
-    for (var i = 0; i < result.current.data.length; i++) {
-      if (result.current.data[i].name === Config.registry) {
-        found = true;
-      }
-    }
+    let found = result.current.data.some((x) => x.name === Config.registry);
     expect(found).toBeTrue();
 
     await result.current.deleteRegistry(Config.registry);
@@ -190,12 +165,7 @@ describe("useGlobalPrivateRegistries", () => {
 
     await waitForNextUpdate();
 
-    found = false;
-    for (var i = 0; i < result.current.data.length; i++) {
-      if (result.current.data[i].name === Config.registry) {
-        found = true;
-      }
-    }
+    found = result.current.data.some((x) => x.name === Config.registry);
     expect(found).toBeFalse();
   });
   it("create dumb registry", async () => {
