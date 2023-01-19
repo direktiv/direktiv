@@ -26,7 +26,7 @@ export const useDirektivMirror = (
   const [err, setErr] = React.useState(null);
 
   const [eventSource, setEventSource] = React.useState(null);
-  const {} = useEventSourceCleaner(eventSource);
+  useEventSourceCleaner(eventSource);
 
   // Store Query parameters
   const { queryString } = useQueryString(true, queryParameters);
