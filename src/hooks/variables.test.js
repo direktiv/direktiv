@@ -119,12 +119,7 @@ describe("useWorkflowVariables", () => {
     });
 
     await waitForNextUpdate();
-    let found = false;
-    for (var i = 0; i < result.current.data.length; i++) {
-      if (result.current.data[i].node.name === "test") {
-        found = true;
-      }
-    }
+    let found = result.current.data.some((x) => x.node.name === "test");
     expect(found).toBeTrue();
 
     // get workflow variable data
@@ -138,12 +133,7 @@ describe("useWorkflowVariables", () => {
     });
 
     await waitForNextUpdate();
-    found = false;
-    for (var i = 0; i < result.current.data.length; i++) {
-      if (result.current.data[i].node.name === "test") {
-        found = true;
-      }
-    }
+    found = result.current.data.some((x) => x.node.name === "test");
     expect(found).not.toBeTrue();
   });
 });
