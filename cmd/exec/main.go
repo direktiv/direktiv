@@ -422,7 +422,7 @@ Will update the helloworld workflow and set the remote workflow variable 'data.j
 						"Cannot update node that is read only.\n"+
 							"To set node to writable use the set command\n"+
 							"Use the example below to set this path to writable:\n\n"+
-							"  direktiv-sync push set writable %s%s\n\n", cmdArgPath, flagSuffix)
+							"  direktiv-sync workflows writable %s%s\n\n", cmdArgPath, flagSuffix)
 				}
 
 				log.Fatalf("Failed to update remote workflow: %v\n", err)
