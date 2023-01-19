@@ -29,12 +29,8 @@ describe("useSecrets", () => {
     });
 
     await waitForNextUpdate();
-    let found = false;
-    for (var i = 0; i < result.current.data.length; i++) {
-      if (result.current.data[i].node.name === Config.secret) {
-        found = true;
-      }
-    }
+
+    let found = result.current.data.some((x) => x.node.name === Config.secret);
     expect(found).toBeTrue();
 
     await result.current.deleteSecret(Config.secret);
@@ -45,12 +41,7 @@ describe("useSecrets", () => {
 
     await waitForNextUpdate();
 
-    found = false;
-    for (var i = 0; i < result.current.data.length; i++) {
-      if (result.current.data[i].name === Config.secret) {
-        found = true;
-      }
-    }
+    found = result.current.data.some((x) => x.name === Config.secret);
     expect(found).toBeFalse();
   });
   it("create dumb secret", async () => {
