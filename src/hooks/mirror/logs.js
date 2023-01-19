@@ -23,7 +23,7 @@ export const useDirektivMirrorLogs = (
   const [err, setErr] = React.useState(null);
 
   const [eventSource, setEventSource] = React.useState(null);
-  const {} = useEventSourceCleaner(eventSource);
+  useEventSourceCleaner(eventSource);
 
   const { queryString } = useQueryString(false, queryParameters);
   const [pathString, setPathString] = React.useState(null);
