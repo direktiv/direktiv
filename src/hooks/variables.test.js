@@ -53,12 +53,10 @@ describe("useNamespaceVariables", () => {
     });
 
     await waitForNextUpdate();
-    let found = false;
-    for (var i = 0; i < result.current.data.length; i++) {
-      if (result.current.data[i].node.name === "testnamespace") {
-        found = true;
-      }
-    }
+    let found = result.current.data.some(
+      (x) => x.node.name === "testnamespace"
+    );
+
     expect(found).toBeTrue();
 
     // get workflow variable data
@@ -72,12 +70,8 @@ describe("useNamespaceVariables", () => {
     });
 
     await waitForNextUpdate();
-    found = false;
-    for (var i = 0; i < result.current.data.length; i++) {
-      if (result.current.data[i].node.name === "testnamespace") {
-        found = true;
-      }
-    }
+    found = result.current.data.some((x) => x.node.name === "testnamespace");
+
     expect(found).not.toBeTrue();
   });
 });
