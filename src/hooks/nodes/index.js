@@ -90,18 +90,41 @@ export const useDirektivNodes = (
     };
   }, [stream, queryString, pathString, apikey]);
 
-  // Non Stream Data Dispatch Handler
-  React.useEffect(async () => {
-    if (!stream && pathString !== null && !err) {
-      setEventSource(null);
-      try {
-        const nodeData = await getNode();
-        dispatchData({ type: STATE.UPDATE, data: nodeData });
-      } catch (e) {
-        setErr(e);
-      }
+  const getNode = React.useCallback(async () => {
+    let uri = `${url}namespaces/${namespace}/tree`;
+    if (path !== "") {
+      uri += `${SanitizePath(path)}`;
     }
-  }, [stream, queryString, pathString, err]);
+    let resp = await fetch(`${uri}/${queryString}`, {
+      headers: apiKeyHeaders(apikey),
+    });
+    if (resp.ok) {
+      let json = await resp.json();
+      if (json.children) {
+        setPageInfo(json.children.pageInfo);
+      }
+
+      return json;
+    } else {
+      throw new Error(await HandleError("get node", resp, "listNodes"));
+    }
+  }, [apikey, namespace, path, queryString, url]);
+
+  // Non Stream Data Dispatch Handler
+  React.useEffect(() => {
+    const update = async () => {
+      if (!stream && pathString !== null && !err) {
+        setEventSource(null);
+        try {
+          const nodeData = await getNode();
+          dispatchData({ type: STATE.UPDATE, data: nodeData });
+        } catch (e) {
+          setErr(e);
+        }
+      }
+    };
+    update();
+  }, [stream, queryString, pathString, err, getNode]);
 
   // Reset states when any prop that affects path is changed
   React.useEffect(() => {
@@ -121,26 +144,6 @@ export const useDirektivNodes = (
       );
     }
   }, [stream, path, namespace, url]);
-
-  async function getNode() {
-    let uri = `${url}namespaces/${namespace}/tree`;
-    if (path !== "") {
-      uri += `${SanitizePath(path)}`;
-    }
-    let resp = await fetch(`${uri}/${queryString}`, {
-      headers: apiKeyHeaders(apikey),
-    });
-    if (resp.ok) {
-      let json = await resp.json();
-      if (json.children) {
-        setPageInfo(json.children.pageInfo);
-      }
-
-      return json;
-    } else {
-      throw new Error(await HandleError("get node", resp, "listNodes"));
-    }
-  }
 
   async function createNode(name, type, yaml, ...queryParameters) {
     let uriPath = `${url}namespaces/${namespace}/tree`;
