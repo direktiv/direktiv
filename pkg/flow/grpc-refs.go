@@ -7,6 +7,7 @@ import (
 
 	"google.golang.org/protobuf/types/known/emptypb"
 
+	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entref "github.com/direktiv/direktiv/pkg/flow/ent/ref"
 	entwf "github.com/direktiv/direktiv/pkg/flow/ent/workflow"
@@ -15,7 +16,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/util"
 )
 
-func loadSource(rev *Revision) (*model.Workflow, error) {
+func loadSource(rev *database.Revision) (*model.Workflow, error) {
 
 	workflow := new(model.Workflow)
 
@@ -59,7 +60,7 @@ func (flow *flow) Tags(ctx context.Context, req *grpc.TagsRequest) (*grpc.TagsRe
 		return nil, err
 	}
 
-	clients := flow.entClients(nil)
+	clients := flow.edb.Clients(nil)
 
 	query := clients.Ref.Query().Where(entref.HasWorkflowWith(entwf.ID(cached.Workflow.ID)), entref.Immutable(false))
 
@@ -107,7 +108,7 @@ func (flow *flow) TagsStream(req *grpc.TagsRequest, srv grpc.Flow_TagsStreamServ
 
 resend:
 
-	clients := flow.entClients(nil)
+	clients := flow.edb.Clients(nil)
 
 	query := clients.Ref.Query().Where(entref.HasWorkflowWith(entwf.ID(cached.Workflow.ID)), entref.Immutable(false))
 
@@ -160,7 +161,7 @@ func (flow *flow) Refs(ctx context.Context, req *grpc.RefsRequest) (*grpc.RefsRe
 		return nil, err
 	}
 
-	clients := flow.entClients(nil)
+	clients := flow.edb.Clients(nil)
 
 	query := clients.Ref.Query().Where(entref.HasWorkflowWith(entwf.ID(cached.Workflow.ID)))
 
@@ -208,7 +209,7 @@ func (flow *flow) RefsStream(req *grpc.RefsRequest, srv grpc.Flow_RefsStreamServ
 
 resend:
 
-	clients := flow.entClients(nil)
+	clients := flow.edb.Clients(nil)
 
 	query := clients.Ref.Query().Where(entref.HasWorkflowWith(entwf.ID(cached.Workflow.ID)))
 
@@ -256,7 +257,7 @@ func (flow *flow) Tag(ctx context.Context, req *grpc.TagRequest) (*emptypb.Empty
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tx, err := flow.db.Tx(ctx)
+	tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -267,8 +268,9 @@ func (flow *flow) Tag(ctx context.Context, req *grpc.TagRequest) (*emptypb.Empty
 		return nil, err
 	}
 
-	Ref := tx.Ref
-	err = Ref.Create().SetImmutable(false).SetName(req.GetTag()).SetRevisionID(cached.Revision.ID).SetWorkflowID(cached.Workflow.ID).Exec(ctx)
+	clients := flow.edb.Clients(tx)
+
+	err = clients.Ref.Create().SetImmutable(false).SetName(req.GetTag()).SetRevisionID(cached.Revision.ID).SetWorkflowID(cached.Workflow.ID).Exec(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -291,7 +293,7 @@ func (flow *flow) Untag(ctx context.Context, req *grpc.UntagRequest) (*emptypb.E
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tx, err := flow.db.Tx(ctx)
+	tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -309,8 +311,8 @@ func (flow *flow) Untag(ctx context.Context, req *grpc.UntagRequest) (*emptypb.E
 	err = flow.configureRouter(ctx, tx, cached, rcfBreaking,
 		func() error {
 
-			Ref := tx.Ref
-			err = Ref.DeleteOneID(cached.Ref.ID).Exec(ctx)
+			clients := flow.edb.Clients(tx)
+			err = clients.Ref.DeleteOneID(cached.Ref.ID).Exec(ctx)
 			if err != nil {
 				return err
 			}
@@ -337,7 +339,7 @@ func (flow *flow) Retag(ctx context.Context, req *grpc.RetagRequest) (*emptypb.E
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tx, err := flow.db.Tx(ctx)
+	tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -366,7 +368,8 @@ func (flow *flow) Retag(ctx context.Context, req *grpc.RetagRequest) (*emptypb.E
 	err = flow.configureRouter(ctx, tx, cached, rcfBreaking,
 		func() error {
 
-			err = tx.Ref.UpdateOneID(dt.Ref.ID).SetRevisionID(cached.Revision.ID).Exec(ctx)
+			clients := flow.edb.Clients(tx)
+			err = clients.Ref.UpdateOneID(dt.Ref.ID).SetRevisionID(cached.Revision.ID).Exec(ctx)
 			if err != nil {
 				return err
 			}

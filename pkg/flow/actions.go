@@ -12,6 +12,7 @@ import (
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/protobuf/types/known/emptypb"
 
+	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
 	"github.com/direktiv/direktiv/pkg/util"
@@ -76,7 +77,7 @@ func (actions *actions) SetNamespaceRegistry(ctx context.Context, req *grpc.SetN
 
 	actions.sugar.Debugf("Handling gRPC request: %s", this())
 
-	cached := new(CacheData)
+	cached := new(database.CacheData)
 
 	err := actions.database.NamespaceByName(ctx, nil, cached, req.GetNamespace())
 	if err != nil {
@@ -101,7 +102,7 @@ func (actions *actions) DeleteNamespaceRegistry(ctx context.Context, req *grpc.D
 
 	actions.sugar.Debugf("Handling gRPC request: %s", this())
 
-	cached := new(CacheData)
+	cached := new(database.CacheData)
 
 	err := actions.database.NamespaceByName(ctx, nil, cached, req.GetNamespace())
 	if err != nil {
@@ -214,7 +215,7 @@ func (actions *actions) NamespaceRegistries(ctx context.Context, req *grpc.Names
 
 	actions.sugar.Debugf("Handling gRPC request: %s", this())
 
-	cached := new(CacheData)
+	cached := new(database.CacheData)
 
 	err := actions.database.NamespaceByName(ctx, nil, cached, req.GetNamespace())
 	if err != nil {
@@ -267,7 +268,7 @@ func (actions *actions) NamespaceRegistriesStream(req *grpc.NamespaceRegistriesR
 	phash := ""
 	nhash := ""
 
-	cached := new(CacheData)
+	cached := new(database.CacheData)
 
 	err := actions.database.NamespaceByName(ctx, nil, cached, req.GetNamespace())
 	if err != nil {

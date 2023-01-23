@@ -12,6 +12,7 @@ import (
 	"github.com/cloudevents/sdk-go/v2/binding"
 	protocol "github.com/cloudevents/sdk-go/v2/protocol/http"
 	"github.com/direktiv/direktiv/pkg/dlog"
+	"github.com/direktiv/direktiv/pkg/flow/database"
 	igrpc "github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/gorilla/mux"
@@ -71,7 +72,7 @@ func (rcv *eventReceiver) sendToNamespace(name string, r *http.Request) error {
 		return err
 	}
 
-	cached := new(CacheData)
+	cached := new(database.CacheData)
 
 	err = rcv.flow.database.NamespaceByName(ctx, nil, cached, name)
 	if err != nil {
@@ -103,8 +104,9 @@ func (rcv *eventReceiver) NamespaceHandler(w http.ResponseWriter, r *http.Reques
 
 func (rcv *eventReceiver) MultiNamespaceHandler(w http.ResponseWriter, r *http.Request) {
 
-	Namespace := rcv.flow.db.Namespace
-	nss, err := Namespace.Query().All(context.Background())
+	clients := rcv.events.edb.Clients(nil)
+
+	nss, err := clients.Namespace.Query().All(context.Background())
 	if err != nil {
 		rcv.logger.Errorf("can not get namespaces: %s", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)

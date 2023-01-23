@@ -8,6 +8,7 @@ import (
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
 	"go.opentelemetry.io/otel/trace"
@@ -17,7 +18,7 @@ type logMessage struct {
 	ctx    context.Context //nolint:containedctx
 	t      time.Time
 	msg    string
-	cached *CacheData
+	cached *database.CacheData
 }
 
 func (srv *server) startLogWorkers(n int) {
@@ -59,11 +60,11 @@ func (srv *server) closeLogWorkers() {
 
 func (srv *server) workerLogToServer(l *logMessage) {
 
-	LogMsg := srv.db.LogMsg
-
 	util.Trace(l.ctx, l.msg)
 
-	_, err := LogMsg.Create().SetMsg(l.msg).SetT(l.t).Save(context.Background())
+	clients := srv.edb.Clients(nil)
+
+	_, err := clients.LogMsg.Create().SetMsg(l.msg).SetT(l.t).Save(context.Background())
 	if err != nil {
 		srv.sugar.Error(err)
 		return
@@ -80,11 +81,11 @@ func (srv *server) workerLogToServer(l *logMessage) {
 
 func (srv *server) workerLogToNamespace(l *logMessage) {
 
-	LogMsg := srv.db.LogMsg
+	clients := srv.edb.Clients(nil)
 
 	util.Trace(l.ctx, l.msg)
 
-	_, err := LogMsg.Create().SetMsg(l.msg).SetNamespaceID(l.cached.Namespace.ID).SetT(l.t).Save(l.ctx)
+	_, err := clients.LogMsg.Create().SetMsg(l.msg).SetNamespaceID(l.cached.Namespace.ID).SetT(l.t).Save(l.ctx)
 	if err != nil {
 		srv.sugar.Error(err)
 		return
@@ -101,11 +102,11 @@ func (srv *server) workerLogToNamespace(l *logMessage) {
 
 func (srv *server) workerLogToWorkflow(l *logMessage) {
 
-	LogMsg := srv.db.LogMsg
+	clients := srv.edb.Clients(nil)
 
 	util.Trace(l.ctx, l.msg)
 
-	_, err := LogMsg.Create().SetMsg(l.msg).SetWorkflowID(l.cached.Workflow.ID).SetT(l.t).Save(l.ctx)
+	_, err := clients.LogMsg.Create().SetMsg(l.msg).SetWorkflowID(l.cached.Workflow.ID).SetT(l.t).Save(l.ctx)
 	if err != nil {
 		srv.sugar.Error(err)
 		return
@@ -122,11 +123,11 @@ func (srv *server) workerLogToWorkflow(l *logMessage) {
 
 func (srv *server) workerLogToInstance(l *logMessage) {
 
-	LogMsg := srv.db.LogMsg
+	clients := srv.edb.Clients(nil)
 
 	util.Trace(l.ctx, l.msg)
 
-	_, err := LogMsg.Create().SetMsg(l.msg).SetInstanceID(l.cached.Instance.ID).SetT(l.t).Save(l.ctx)
+	_, err := clients.LogMsg.Create().SetMsg(l.msg).SetInstanceID(l.cached.Instance.ID).SetT(l.t).Save(l.ctx)
 	if err != nil {
 		srv.sugar.Error(err)
 		return
@@ -167,13 +168,13 @@ func (srv *server) logToServer(ctx context.Context, t time.Time, msg string, a .
 
 }
 
-func (srv *server) logToNamespace(ctx context.Context, t time.Time, cached *CacheData, msg string, a ...interface{}) {
+func (srv *server) logToNamespace(ctx context.Context, t time.Time, cached *database.CacheData, msg string, a ...interface{}) {
 
 	defer func() {
 		_ = recover()
 	}()
 
-	var cd CacheData // We do this to zero some fields without modifying the argument.
+	var cd database.CacheData // We do this to zero some fields without modifying the argument.
 	cd = *cached
 	cd.Workflow = nil
 	cd.Instance = nil
@@ -187,13 +188,13 @@ func (srv *server) logToNamespace(ctx context.Context, t time.Time, cached *Cach
 
 }
 
-func (srv *server) logToWorkflow(ctx context.Context, t time.Time, cached *CacheData, msg string, a ...interface{}) {
+func (srv *server) logToWorkflow(ctx context.Context, t time.Time, cached *database.CacheData, msg string, a ...interface{}) {
 
 	defer func() {
 		_ = recover()
 	}()
 
-	var cd CacheData // We do this to zero some fields without modifying the argument.
+	var cd database.CacheData // We do this to zero some fields without modifying the argument.
 	cd = *cached
 	cd.Workflow = nil
 
@@ -207,7 +208,7 @@ func (srv *server) logToWorkflow(ctx context.Context, t time.Time, cached *Cache
 }
 
 // log To instance with string interpolation.
-func (srv *server) logToInstance(ctx context.Context, t time.Time, cached *CacheData, msg string, a ...interface{}) {
+func (srv *server) logToInstance(ctx context.Context, t time.Time, cached *database.CacheData, msg string, a ...interface{}) {
 
 	msg = fmt.Sprintf(msg, a...)
 
@@ -216,7 +217,7 @@ func (srv *server) logToInstance(ctx context.Context, t time.Time, cached *Cache
 }
 
 // log To instance with raw string.
-func (srv *server) logToInstanceRaw(ctx context.Context, t time.Time, cached *CacheData, msg string) {
+func (srv *server) logToInstanceRaw(ctx context.Context, t time.Time, cached *database.CacheData, msg string) {
 
 	defer func() {
 		_ = recover()
@@ -284,15 +285,15 @@ func parent() string {
 	return elems[len(elems)-1]
 }
 
-func (srv *server) logToMirrorActivity(ctx context.Context, t time.Time, ns *Namespace, mirror *Mirror, act *MirrorActivity, msg string, a ...interface{}) {
+func (srv *server) logToMirrorActivity(ctx context.Context, t time.Time, ns *database.Namespace, mirror *database.Mirror, act *database.MirrorActivity, msg string, a ...interface{}) {
 
-	LogMsg := srv.db.LogMsg
+	clients := srv.edb.Clients(nil)
 
 	msg = fmt.Sprintf(msg, a...)
 
 	util.Trace(ctx, msg)
 
-	_, err := LogMsg.Create().SetMsg(msg).SetActivityID(act.ID).SetT(t).Save(ctx)
+	_, err := clients.LogMsg.Create().SetMsg(msg).SetActivityID(act.ID).SetT(t).Save(ctx)
 	if err != nil {
 		srv.sugar.Error(err)
 		return

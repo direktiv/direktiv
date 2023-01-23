@@ -17,7 +17,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/flow/ent"
+	"github.com/direktiv/direktiv/pkg/flow/database"
+	"github.com/direktiv/direktiv/pkg/flow/database/entwrapper"
 	entino "github.com/direktiv/direktiv/pkg/flow/ent/inode"
 	entmir "github.com/direktiv/direktiv/pkg/flow/ent/mirror"
 	entact "github.com/direktiv/direktiv/pkg/flow/ent/mirroractivity"
@@ -55,9 +56,9 @@ func (syncer *syncer) Close() error {
 
 }
 
-func (srv *server) reverseTraverseToMirror(ctx context.Context, tx Transaction, id string) (*CacheData, *Mirror, error) {
+func (srv *server) reverseTraverseToMirror(ctx context.Context, tx database.Transaction, id string) (*database.CacheData, *database.Mirror, error) {
 
-	clients := srv.entClients(tx)
+	clients := srv.edb.Clients(tx)
 
 	uid, err := uuid.Parse(id)
 	if err != nil {
@@ -77,7 +78,7 @@ func (srv *server) reverseTraverseToMirror(ctx context.Context, tx Transaction, 
 		return nil, nil, err
 	}
 
-	cached := new(CacheData)
+	cached := new(database.CacheData)
 
 	err = srv.database.Inode(ctx, tx, cached, ino.ID)
 	if err != nil {
@@ -85,7 +86,7 @@ func (srv *server) reverseTraverseToMirror(ctx context.Context, tx Transaction, 
 		return nil, nil, err
 	}
 
-	return cached, entMirror(mir), nil
+	return cached, entwrapper.EntMirror(mir), nil
 
 }
 
@@ -170,19 +171,21 @@ func (srv *server) syncerCronPoll() {
 
 	ctx := context.Background()
 
-	mirs, err := srv.db.Mirror.Query().All(ctx)
+	clients := srv.edb.Clients(nil)
+
+	mirs, err := clients.Mirror.Query().All(ctx)
 	if err != nil {
 		srv.sugar.Error(err)
 		return
 	}
 
 	for _, mir := range mirs {
-		srv.syncerCronPollerMirror(entMirror(mir))
+		srv.syncerCronPollerMirror(entwrapper.EntMirror(mir))
 	}
 
 }
 
-func (srv *server) syncerCronPollerMirror(mir *Mirror) {
+func (srv *server) syncerCronPollerMirror(mir *database.Mirror) {
 
 	if mir.Cron != "" {
 		srv.timers.deleteCronForSyncer(mir.ID.String())
@@ -224,7 +227,7 @@ func (syncer *syncer) cronHandler(data []byte) {
 
 	}
 
-	clients := syncer.entClients(nil)
+	clients := syncer.edb.Clients(nil)
 
 	k, err := clients.MirrorActivity.Query().Where(entact.HasMirrorWith(entmir.ID(mirror.ID))).Where(entact.CreatedAtGT(time.Now().Add(-time.Second*30)), entact.TypeEQ(util.MirrorActivityTypeCronSync)).Count(ctx)
 	if err != nil {
@@ -314,7 +317,9 @@ func (syncer *syncer) kickExpiredActivities() {
 
 	t := time.Now().Add(-1 * time.Minute)
 
-	list, err := syncer.db.MirrorActivity.Query().
+	clients := syncer.edb.Clients(nil)
+
+	list, err := clients.MirrorActivity.Query().
 		Where(entact.DeadlineLT(t), entact.StatusIn(util.MirrorActivityStatusExecuting, util.MirrorActivityStatusPending)).
 		All(ctx)
 	if err != nil {
@@ -332,7 +337,7 @@ func (syncer *syncer) kickExpiredActivities() {
 
 // activity memory
 
-func (syncer *syncer) loadActivityMemory(id string) (*CacheData, *Mirror, *MirrorActivity, error) {
+func (syncer *syncer) loadActivityMemory(id string) (*database.CacheData, *database.Mirror, *database.MirrorActivity, error) {
 
 	ctx := context.Background()
 
@@ -341,7 +346,7 @@ func (syncer *syncer) loadActivityMemory(id string) (*CacheData, *Mirror, *Mirro
 		return nil, nil, nil, err
 	}
 
-	clients := syncer.entClients(nil)
+	clients := syncer.edb.Clients(nil)
 
 	act, err := clients.MirrorActivity.Get(ctx, uid)
 	if err != nil {
@@ -353,14 +358,14 @@ func (syncer *syncer) loadActivityMemory(id string) (*CacheData, *Mirror, *Mirro
 		return nil, nil, nil, err
 	}
 
-	cached := new(CacheData)
+	cached := new(database.CacheData)
 
 	err = syncer.database.Inode(ctx, nil, cached, mir.Edges.Inode.ID)
 	if err != nil {
 		return nil, nil, nil, err
 	}
 
-	return cached, entMirror(mir), entMirrorActivity(act), nil
+	return cached, entwrapper.EntMirror(mir), entwrapper.EntMirrorActivity(act), nil
 
 }
 
@@ -373,7 +378,7 @@ type newMirrorActivityArgs struct {
 	LockConn *sql.Conn
 }
 
-func (syncer *syncer) beginActivity(tx *ent.Tx, args *newMirrorActivityArgs) (*CacheData, *Mirror, *MirrorActivity, error) {
+func (syncer *syncer) beginActivity(tx database.Transaction, args *newMirrorActivityArgs) (*database.CacheData, *database.Mirror, *database.MirrorActivity, error) {
 
 	var err error
 	var ctx context.Context
@@ -390,7 +395,7 @@ func (syncer *syncer) beginActivity(tx *ent.Tx, args *newMirrorActivityArgs) (*C
 	}
 
 	if tx == nil {
-		tx, err = syncer.db.Tx(ctx)
+		tx, err = syncer.database.Tx(ctx)
 		if err != nil {
 			return nil, nil, nil, err
 		}
@@ -402,7 +407,9 @@ func (syncer *syncer) beginActivity(tx *ent.Tx, args *newMirrorActivityArgs) (*C
 		return nil, nil, nil, err
 	}
 
-	unfinishedActivities, err := tx.MirrorActivity.Query().Where(entact.HasMirrorWith(entmir.ID(mirror.ID))).Where(entact.StatusIn(util.MirrorActivityStatusPending, util.MirrorActivityStatusExecuting)).Count(ctx)
+	clients := syncer.edb.Clients(tx)
+
+	unfinishedActivities, err := clients.MirrorActivity.Query().Where(entact.HasMirrorWith(entmir.ID(mirror.ID))).Where(entact.StatusIn(util.MirrorActivityStatusPending, util.MirrorActivityStatusExecuting)).Count(ctx)
 	if err != nil {
 		return nil, nil, nil, err
 	}
@@ -421,7 +428,7 @@ func (syncer *syncer) beginActivity(tx *ent.Tx, args *newMirrorActivityArgs) (*C
 
 	deadline := time.Now().Add(time.Minute * 20)
 
-	act, err := tx.MirrorActivity.Create().
+	act, err := clients.MirrorActivity.Create().
 		SetType(args.Type).
 		SetStatus(util.MirrorActivityStatusPending).
 		SetEndAt(time.Now()).
@@ -439,7 +446,7 @@ func (syncer *syncer) beginActivity(tx *ent.Tx, args *newMirrorActivityArgs) (*C
 		return nil, nil, nil, err
 	}
 
-	activity := entMirrorActivity(act)
+	activity := entwrapper.EntMirrorActivity(act)
 
 	syncer.logToNamespace(ctx, time.Now(), cached, "Commenced new mirror activity '%s' on mirror: %s", args.Type, cached.Path())
 
@@ -454,7 +461,7 @@ func (syncer *syncer) beginActivity(tx *ent.Tx, args *newMirrorActivityArgs) (*C
 
 }
 
-func (syncer *syncer) NewActivity(tx *ent.Tx, args *newMirrorActivityArgs) error {
+func (syncer *syncer) NewActivity(tx database.Transaction, args *newMirrorActivityArgs) error {
 
 	syncer.sugar.Debugf("Handling mirror activity: %s", this())
 
@@ -469,7 +476,7 @@ func (syncer *syncer) NewActivity(tx *ent.Tx, args *newMirrorActivityArgs) error
 
 }
 
-func (syncer *syncer) execute(cached *CacheData, mirror *Mirror, activity *MirrorActivity) {
+func (syncer *syncer) execute(cached *database.CacheData, mirror *database.Mirror, activity *database.MirrorActivity) {
 
 	var err error
 
@@ -517,7 +524,7 @@ func (syncer *syncer) execute(cached *CacheData, mirror *Mirror, activity *Mirro
 
 }
 
-func (syncer *syncer) fail(cached *CacheData, mirror *Mirror, activity *MirrorActivity, e error) {
+func (syncer *syncer) fail(cached *database.CacheData, mirror *database.Mirror, activity *database.MirrorActivity, e error) {
 
 	if e == nil {
 		return
@@ -530,14 +537,16 @@ func (syncer *syncer) fail(cached *CacheData, mirror *Mirror, activity *MirrorAc
 	}
 	defer syncer.unlock(mirror.ID.String(), conn)
 
-	tx, err := syncer.db.Tx(ctx)
+	tx, err := syncer.database.Tx(ctx)
 	if err != nil {
 		syncer.sugar.Error(err)
 		return
 	}
 	defer rollback(tx)
 
-	act, err := tx.MirrorActivity.Get(ctx, activity.ID)
+	clients := syncer.edb.Clients(tx)
+
+	act, err := clients.MirrorActivity.Get(ctx, activity.ID)
 	if err != nil {
 		syncer.sugar.Error(err)
 		return
@@ -569,7 +578,7 @@ func (syncer *syncer) fail(cached *CacheData, mirror *Mirror, activity *MirrorAc
 
 }
 
-func (syncer *syncer) success(cached *CacheData, mirror *Mirror, activity *MirrorActivity) error {
+func (syncer *syncer) success(cached *database.CacheData, mirror *database.Mirror, activity *database.MirrorActivity) error {
 
 	ctx, conn, err := syncer.lock(mirror.ID.String(), defaultLockWait)
 	if err != nil {
@@ -577,13 +586,15 @@ func (syncer *syncer) success(cached *CacheData, mirror *Mirror, activity *Mirro
 	}
 	defer syncer.unlock(mirror.ID.String(), conn)
 
-	tx, err := syncer.db.Tx(ctx)
+	tx, err := syncer.database.Tx(ctx)
 	if err != nil {
 		return err
 	}
 	defer rollback(tx)
 
-	act, err := tx.MirrorActivity.Get(ctx, activity.ID)
+	clients := syncer.edb.Clients(tx)
+
+	act, err := clients.MirrorActivity.Get(ctx, activity.ID)
 	if err != nil {
 		return err
 	}
@@ -612,7 +623,7 @@ func (syncer *syncer) success(cached *CacheData, mirror *Mirror, activity *Mirro
 
 }
 
-func (syncer *syncer) initMirror(ctx context.Context, cached *CacheData, mirror *Mirror, activity *MirrorActivity) error {
+func (syncer *syncer) initMirror(ctx context.Context, cached *database.CacheData, mirror *database.Mirror, activity *database.MirrorActivity) error {
 
 	return syncer.hardSync(ctx, cached, mirror, activity)
 
@@ -690,7 +701,7 @@ func tarGzDir(src string, buf io.Writer) error {
 	return nil
 }
 
-func (syncer *syncer) hardSync(ctx context.Context, cached *CacheData, mirror *Mirror, activity *MirrorActivity) error {
+func (syncer *syncer) hardSync(ctx context.Context, cached *database.CacheData, mirror *database.Mirror, activity *database.MirrorActivity) error {
 
 	lr, err := loadRepository(ctx, &repositorySettings{
 		UUID:       mirror.ID,
@@ -710,7 +721,7 @@ func (syncer *syncer) hardSync(ctx context.Context, cached *CacheData, mirror *M
 		return err
 	}
 
-	tx, err := syncer.db.Tx(ctx)
+	tx, err := syncer.database.Tx(ctx)
 	if err != nil {
 		return err
 	}
@@ -721,7 +732,7 @@ func (syncer *syncer) hardSync(ctx context.Context, cached *CacheData, mirror *M
 		return err
 	}
 
-	cache := make(map[string]*Inode)
+	cache := make(map[string]*database.Inode)
 	trueroot := filepath.Join(cached.Path(), ".")
 	if trueroot == "/" {
 		cache[trueroot] = cached.Inode()
@@ -729,10 +740,12 @@ func (syncer *syncer) hardSync(ctx context.Context, cached *CacheData, mirror *M
 		cache[trueroot+"/"] = cached.Inode()
 	}
 
-	var recurser func(parent *Inode, path string) error
-	recurser = func(parent *Inode, path string) error {
+	clients := syncer.edb.Clients(tx)
 
-		children, err := tx.Inode.Query().Where(entino.HasParentWith(entino.ID(parent.ID))).All(ctx)
+	var recurser func(parent *database.Inode, path string) error
+	recurser = func(parent *database.Inode, path string) error {
+
+		children, err := clients.Inode.Query().Where(entino.HasParentWith(entino.ID(parent.ID))).All(ctx)
 		if err != nil {
 			return err
 		}
@@ -763,7 +776,7 @@ func (syncer *syncer) hardSync(ctx context.Context, cached *CacheData, mirror *M
 
 			} else if child.Type == util.InodeTypeDirectory {
 
-				err = recurser(entInode(child), cpath)
+				err = recurser(entwrapper.EntInode(child), cpath)
 				if err != nil {
 					return err
 				}
@@ -831,7 +844,7 @@ func (syncer *syncer) hardSync(ctx context.Context, cached *CacheData, mirror *M
 		case mntDir:
 
 			pino := cache[dir]
-			pcached := new(CacheData)
+			pcached := new(database.CacheData)
 			err := syncer.database.Inode(ctx, tx, pcached, pino.ID)
 			if err != nil {
 				return err
@@ -846,7 +859,7 @@ func (syncer *syncer) hardSync(ctx context.Context, cached *CacheData, mirror *M
 				return err
 			}
 
-			cache[truepath+"/"] = entInode(ino)
+			cache[truepath+"/"] = entwrapper.EntInode(ino)
 
 		case mntWorkflow:
 
@@ -868,7 +881,7 @@ func (syncer *syncer) hardSync(ctx context.Context, cached *CacheData, mirror *M
 			}
 			if errors.Is(err, os.ErrExist) {
 
-				ucached := new(CacheData)
+				ucached := new(database.CacheData)
 				err = syncer.database.Workflow(ctx, tx, ucached, wf.ID)
 				if err != nil {
 					return err
@@ -909,7 +922,7 @@ func (syncer *syncer) hardSync(ctx context.Context, cached *CacheData, mirror *M
 			_, base := filepath.Split(path)
 			trimmed := strings.TrimPrefix(base, "var.")
 
-			_, _, err = syncer.flow.SetVariable(ctx, tx.VarRef, tx.VarData, &entNamespaceVarQuerier{cached: cached, clients: syncer.entClients(tx)}, trimmed, data, "", false)
+			_, _, err = syncer.flow.SetVariable(ctx, tx, &entNamespaceVarQuerier{cached: cached, clients: syncer.edb.Clients(tx)}, trimmed, data, "", false)
 			if err != nil {
 				return err
 			}
@@ -953,7 +966,7 @@ func (syncer *syncer) hardSync(ctx context.Context, cached *CacheData, mirror *M
 				return err
 			}
 
-			_, _, err = syncer.flow.SetVariable(ctx, tx.VarRef, tx.VarData, &entWorkflowVarQuerier{cached: cached, clients: syncer.entClients(tx)}, trimmed, data, "", false)
+			_, _, err = syncer.flow.SetVariable(ctx, tx, &entWorkflowVarQuerier{cached: cached, clients: syncer.edb.Clients(tx)}, trimmed, data, "", false)
 			if err != nil {
 				return err
 			}

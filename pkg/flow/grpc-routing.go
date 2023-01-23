@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 
+	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entmux "github.com/direktiv/direktiv/pkg/flow/ent/route"
 	entwf "github.com/direktiv/direktiv/pkg/flow/ent/workflow"
@@ -107,7 +108,7 @@ func (flow *flow) EditRouter(ctx context.Context, req *grpc.EditRouterRequest) (
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tx, err := flow.db.Tx(ctx)
+	tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -120,10 +121,12 @@ func (flow *flow) EditRouter(ctx context.Context, req *grpc.EditRouterRequest) (
 
 	var routes []*ent.Route
 
+	clients := flow.edb.Clients(tx)
+
 	err = flow.configureRouter(ctx, tx, cached, rcfBreaking,
 		func() error {
 
-			_, err = tx.Route.Delete().Where(entmux.HasWorkflowWith(entwf.ID(cached.Workflow.ID))).Exec(ctx)
+			_, err = clients.Route.Delete().Where(entmux.HasWorkflowWith(entwf.ID(cached.Workflow.ID))).Exec(ctx)
 			if err != nil {
 				return err
 			}
@@ -137,7 +140,7 @@ func (flow *flow) EditRouter(ctx context.Context, req *grpc.EditRouterRequest) (
 					continue
 				}
 
-				var ref *Ref
+				var ref *database.Ref
 
 				for idx := range cached.Workflow.Refs {
 					if cached.Workflow.Refs[idx].Name == route.Ref {
@@ -150,7 +153,7 @@ func (flow *flow) EditRouter(ctx context.Context, req *grpc.EditRouterRequest) (
 					return os.ErrNotExist
 				}
 
-				err = tx.Route.Create().SetWorkflowID(cached.Workflow.ID).SetWeight(int(route.Weight)).SetRefID(ref.ID).Exec(ctx)
+				err = clients.Route.Create().SetWorkflowID(cached.Workflow.ID).SetWeight(int(route.Weight)).SetRefID(ref.ID).Exec(ctx)
 				if err != nil {
 					return err
 				}
@@ -158,7 +161,7 @@ func (flow *flow) EditRouter(ctx context.Context, req *grpc.EditRouterRequest) (
 			}
 
 			if cached.Workflow.Live != req.GetLive() {
-				err = tx.Workflow.UpdateOneID(cached.Workflow.ID).SetLive(req.GetLive()).Exec(ctx)
+				err = clients.Workflow.UpdateOneID(cached.Workflow.ID).SetLive(req.GetLive()).Exec(ctx)
 				if err != nil {
 					return err
 				}

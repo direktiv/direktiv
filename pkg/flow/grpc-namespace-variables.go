@@ -7,6 +7,7 @@ import (
 	"io"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entns "github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	entvardata "github.com/direktiv/direktiv/pkg/flow/ent/vardata"
@@ -20,7 +21,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func (srv *server) getNamespaceVariable(ctx context.Context, tx Transaction, cached *CacheData, key string, load bool) (*VarRef, *VarData, error) {
+func (srv *server) getNamespaceVariable(ctx context.Context, tx database.Transaction, cached *database.CacheData, key string, load bool) (*database.VarRef, *database.VarData, error) {
 
 	vref, err := srv.database.NamespaceVariable(ctx, tx, cached.Namespace.ID, key)
 	if err != nil {
@@ -36,9 +37,9 @@ func (srv *server) getNamespaceVariable(ctx context.Context, tx Transaction, cac
 
 }
 
-func (srv *server) traverseToNamespaceVariable(ctx context.Context, tx Transaction, namespace, key string, load bool) (*CacheData, *VarRef, *VarData, error) {
+func (srv *server) traverseToNamespaceVariable(ctx context.Context, tx database.Transaction, namespace, key string, load bool) (*database.CacheData, *database.VarRef, *database.VarData, error) {
 
-	cached := new(CacheData)
+	cached := new(database.CacheData)
 
 	err := srv.database.NamespaceByName(ctx, tx, cached, namespace)
 	if err != nil {
@@ -100,9 +101,9 @@ func (internal *internal) NamespaceVariableParcels(req *grpc.VariableInternalReq
 	}
 
 	if derrors.IsNotFound(err) {
-		vref = new(VarRef)
+		vref = new(database.VarRef)
 		vref.Name = req.GetKey()
-		vdata = new(VarData)
+		vdata = new(database.VarData)
 		t := time.Now()
 		vdata.Data = make([]byte, 0)
 		hash, err := computeHash(vdata.Data)
@@ -239,14 +240,14 @@ func (flow *flow) NamespaceVariables(ctx context.Context, req *grpc.NamespaceVar
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	cached := new(CacheData)
+	cached := new(database.CacheData)
 
 	err := flow.database.NamespaceByName(ctx, nil, cached, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
 
-	clients := flow.entClients(nil)
+	clients := flow.edb.Clients(nil)
 
 	query := clients.VarRef.Query().Where(entvar.HasNamespaceWith(entns.ID(cached.Namespace.ID)))
 
@@ -295,14 +296,14 @@ func (flow *flow) NamespaceVariablesStream(req *grpc.NamespaceVariablesRequest, 
 	phash := ""
 	nhash := ""
 
-	cached := new(CacheData)
+	cached := new(database.CacheData)
 
 	err := flow.database.NamespaceByName(ctx, nil, cached, req.GetNamespace())
 	if err != nil {
 		return err
 	}
 
-	clients := flow.entClients(nil)
+	clients := flow.edb.Clients(nil)
 
 	sub := flow.pubsub.SubscribeNamespaceVariables(cached.Namespace)
 	defer flow.cleanup(sub.Close)
@@ -366,16 +367,13 @@ func (flow *flow) SetNamespaceVariable(ctx context.Context, req *grpc.SetNamespa
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tx, err := flow.db.Tx(ctx)
+	tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer rollback(tx)
 
-	vrefc := tx.VarRef
-	vdatac := tx.VarData
-
-	cached := new(CacheData)
+	cached := new(database.CacheData)
 
 	err = flow.database.NamespaceByName(ctx, tx, cached, req.GetNamespace())
 	if err != nil {
@@ -387,7 +385,7 @@ func (flow *flow) SetNamespaceVariable(ctx context.Context, req *grpc.SetNamespa
 	key := req.GetKey()
 
 	var newVar bool
-	vdata, newVar, err = flow.SetVariable(ctx, vrefc, vdatac, &entNamespaceVarQuerier{cached: cached, clients: flow.entClients(tx)}, key, req.GetData(), req.GetMimeType(), false)
+	vdata, newVar, err = flow.SetVariable(ctx, tx, &entNamespaceVarQuerier{cached: cached, clients: flow.edb.Clients(tx)}, key, req.GetData(), req.GetMimeType(), false)
 	if err != nil {
 		return nil, err
 	}
@@ -430,9 +428,7 @@ func (internal *internal) SetNamespaceVariableParcels(srv grpc.Internal_SetNames
 		return err
 	}
 
-	Instance := internal.db.Instance
-
-	cached, err := internal.getInstance(ctx, Instance, req.GetInstance())
+	cached, err := internal.getInstance(ctx, nil, req.GetInstance())
 	if err != nil {
 		return err
 	}
@@ -485,19 +481,16 @@ func (internal *internal) SetNamespaceVariableParcels(srv grpc.Internal_SetNames
 		return errors.New("received more data than expected")
 	}
 
-	tx, err := internal.db.Tx(ctx)
+	tx, err := internal.database.Tx(ctx)
 	if err != nil {
 		return err
 	}
 	defer rollback(tx)
 
-	vrefc := tx.VarRef
-	vdatac := tx.VarData
-
 	var vdata *ent.VarData
 
 	var newVar bool
-	vdata, newVar, err = internal.flow.SetVariable(ctx, vrefc, vdatac, &entNamespaceVarQuerier{cached: cached, clients: internal.entClients(tx)}, key, buf.Bytes(), mimeType, false)
+	vdata, newVar, err = internal.flow.SetVariable(ctx, tx, &entNamespaceVarQuerier{cached: cached, clients: internal.edb.Clients(tx)}, key, buf.Bytes(), mimeType, false)
 	if err != nil {
 		return err
 	}
@@ -593,16 +586,13 @@ func (flow *flow) SetNamespaceVariableParcels(srv grpc.Flow_SetNamespaceVariable
 		return errors.New("received more data than expected")
 	}
 
-	tx, err := flow.db.Tx(ctx)
+	tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return err
 	}
 	defer rollback(tx)
 
-	vrefc := tx.VarRef
-	vdatac := tx.VarData
-
-	cached := new(CacheData)
+	cached := new(database.CacheData)
 
 	err = flow.database.NamespaceByName(ctx, tx, cached, namespace)
 	if err != nil {
@@ -612,7 +602,7 @@ func (flow *flow) SetNamespaceVariableParcels(srv grpc.Flow_SetNamespaceVariable
 	var vdata *ent.VarData
 
 	var newVar bool
-	vdata, newVar, err = flow.SetVariable(ctx, vrefc, vdatac, &entNamespaceVarQuerier{cached: cached, clients: flow.entClients(tx)}, key, buf.Bytes(), mimeType, false)
+	vdata, newVar, err = flow.SetVariable(ctx, tx, &entNamespaceVarQuerier{cached: cached, clients: flow.edb.Clients(tx)}, key, buf.Bytes(), mimeType, false)
 	if err != nil {
 		return err
 	}
@@ -653,7 +643,7 @@ func (flow *flow) DeleteNamespaceVariable(ctx context.Context, req *grpc.DeleteN
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tx, err := flow.db.Tx(ctx)
+	tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -664,16 +654,15 @@ func (flow *flow) DeleteNamespaceVariable(ctx context.Context, req *grpc.DeleteN
 		return nil, err
 	}
 
-	vrefc := tx.VarRef
-	vdatac := tx.VarData
+	clients := flow.edb.Clients(tx)
 
-	err = vrefc.DeleteOneID(vref.ID).Exec(ctx)
+	err = clients.VarRef.DeleteOneID(vref.ID).Exec(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	if vdata.RefCount == 0 {
-		err = vdatac.DeleteOneID(vdata.ID).Exec(ctx)
+		err = clients.VarData.DeleteOneID(vdata.ID).Exec(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -709,7 +698,7 @@ func (flow *flow) RenameNamespaceVariable(ctx context.Context, req *grpc.RenameN
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tx, err := flow.db.Tx(ctx)
+	tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -720,7 +709,9 @@ func (flow *flow) RenameNamespaceVariable(ctx context.Context, req *grpc.RenameN
 		return nil, err
 	}
 
-	x, err := tx.VarRef.UpdateOneID(vref.ID).SetName(req.GetNew()).Save(ctx)
+	clients := flow.edb.Clients(tx)
+
+	x, err := clients.VarRef.UpdateOneID(vref.ID).SetName(req.GetNew()).Save(ctx)
 	if err != nil {
 		return nil, err
 	}

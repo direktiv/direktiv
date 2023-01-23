@@ -23,7 +23,7 @@ func (flow *flow) Revisions(ctx context.Context, req *grpc.RevisionsRequest) (*g
 		return nil, err
 	}
 
-	clients := flow.entClients(nil)
+	clients := flow.edb.Clients(nil)
 
 	query := clients.Ref.Query().Where(entref.HasWorkflowWith(entwf.ID(cached.Workflow.ID)), entref.Immutable(true))
 
@@ -71,7 +71,7 @@ func (flow *flow) RevisionsStream(req *grpc.RevisionsRequest, srv grpc.Flow_Revi
 
 resend:
 
-	clients := flow.entClients(nil)
+	clients := flow.edb.Clients(nil)
 
 	query := clients.Ref.Query().Where(entref.HasWorkflowWith(entwf.ID(cached.Workflow.ID)), entref.Immutable(true))
 
@@ -119,7 +119,7 @@ func (flow *flow) DeleteRevision(ctx context.Context, req *grpc.DeleteRevisionRe
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tx, err := flow.db.Tx(ctx)
+	tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -134,7 +134,7 @@ func (flow *flow) DeleteRevision(ctx context.Context, req *grpc.DeleteRevisionRe
 		return nil, errors.New("not a revision")
 	}
 
-	clients := flow.entClients(nil)
+	clients := flow.edb.Clients(nil)
 
 	query := clients.Ref.Query().Where(entref.HasRevisionWith(entrev.ID(cached.Revision.ID)), entref.Immutable(false))
 
@@ -151,8 +151,7 @@ func (flow *flow) DeleteRevision(ctx context.Context, req *grpc.DeleteRevisionRe
 		err = flow.configureRouter(ctx, tx, cached, rcfBreaking,
 			func() error {
 
-				Ref := tx.Ref
-				err := Ref.DeleteOneID(cached.Ref.ID).Exec(ctx)
+				err := clients.Ref.DeleteOneID(cached.Ref.ID).Exec(ctx)
 				if err != nil {
 					return err
 				}
@@ -169,8 +168,7 @@ func (flow *flow) DeleteRevision(ctx context.Context, req *grpc.DeleteRevisionRe
 		err = flow.configureRouter(ctx, tx, cached, rcfBreaking,
 			func() error {
 
-				Revision := tx.Revision
-				err := Revision.DeleteOneID(cached.Revision.ID).Exec(ctx)
+				err := clients.Revision.DeleteOneID(cached.Revision.ID).Exec(ctx)
 				if err != nil {
 					return err
 				}

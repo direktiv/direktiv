@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/functions"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/lib/pq"
@@ -13,7 +14,9 @@ func (flow *flow) functionsHeartbeat() {
 
 	ctx := context.Background()
 
-	nss, err := flow.db.Namespace.Query().All(ctx)
+	clients := flow.edb.Clients(nil)
+
+	nss, err := clients.Namespace.Query().All(ctx)
 	if err != nil {
 		flow.sugar.Error(err)
 		return
@@ -32,7 +35,7 @@ func (flow *flow) functionsHeartbeat() {
 			var tuples = make([]*functions.HeartbeatTuple, 0)
 			checksums := make(map[string]bool)
 
-			cached := new(CacheData)
+			cached := new(database.CacheData)
 			err = flow.database.Workflow(ctx, nil, cached, wf.ID)
 			if err != nil {
 				flow.sugar.Error(err)
@@ -47,7 +50,7 @@ func (flow *flow) functionsHeartbeat() {
 
 			for _, rev := range revs {
 
-				x := &Revision{
+				x := &database.Revision{
 					ID:        rev.ID,
 					CreatedAt: rev.CreatedAt,
 					Hash:      rev.Hash,
@@ -133,7 +136,7 @@ func (flow *flow) flushHeartbeatTuples(tuples []*functions.HeartbeatTuple) {
 
 	ctx := context.Background()
 
-	conn, err := flow.db.DB().Conn(ctx)
+	conn, err := flow.edb.DB().Conn(ctx)
 	if err != nil {
 		flow.sugar.Error(err)
 		return

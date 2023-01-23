@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/flow/database"
+	"github.com/direktiv/direktiv/pkg/flow/database/entwrapper"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
@@ -31,15 +33,15 @@ type instanceMemory struct {
 	instanceUpdater *ent.InstanceUpdateOne
 	runtimeUpdater  *ent.InstanceRuntimeUpdateOne
 
-	tx      Transaction
-	cached  *CacheData
-	runtime *InstanceRuntime
+	tx      database.Transaction
+	cached  *database.CacheData
+	runtime *database.InstanceRuntime
 }
 
 func (im *instanceMemory) getInstanceUpdater() *ent.InstanceUpdateOne {
 
 	if im.instanceUpdater == nil {
-		clients := im.engine.entClients(im.tx)
+		clients := im.engine.edb.Clients(im.tx)
 		im.instanceUpdater = clients.Instance.UpdateOneID(im.cached.Instance.ID)
 	}
 
@@ -50,7 +52,7 @@ func (im *instanceMemory) getInstanceUpdater() *ent.InstanceUpdateOne {
 func (im *instanceMemory) getRuntimeUpdater() *ent.InstanceRuntimeUpdateOne {
 
 	if im.runtimeUpdater == nil {
-		clients := im.engine.entClients(im.tx)
+		clients := im.engine.edb.Clients(im.tx)
 		im.runtimeUpdater = clients.InstanceRuntime.UpdateOneID(im.runtime.ID)
 	}
 
@@ -74,7 +76,7 @@ func (im *instanceMemory) flushUpdates(ctx context.Context) error {
 			return err
 		}
 
-		im.runtime = entInstanceRuntime(rt)
+		im.runtime = entwrapper.EntInstanceRuntime(rt)
 
 	}
 
@@ -90,7 +92,7 @@ func (im *instanceMemory) flushUpdates(ctx context.Context) error {
 			return err
 		}
 
-		im.cached.Instance = entInstance(in)
+		im.cached.Instance = entwrapper.EntInstance(in)
 
 	}
 
@@ -229,21 +231,23 @@ func (im *instanceMemory) StoreData(key string, val interface{}) error {
 
 }
 
-func (engine *engine) getInstanceMemory(ctx context.Context, Instance *ent.InstanceClient, id string) (*instanceMemory, error) {
+func (engine *engine) getInstanceMemory(ctx context.Context, tx database.Transaction, id string) (*instanceMemory, error) {
 
 	uid, err := uuid.Parse(id)
 	if err != nil {
 		return nil, err
 	}
 
-	in, err := Instance.Query().Where(entinst.IDEQ(uid)).WithNamespace().WithWorkflow().WithRevision().WithRuntime().Only(ctx)
+	clients := engine.edb.Clients(tx)
+
+	in, err := clients.Instance.Query().Where(entinst.IDEQ(uid)).WithNamespace().WithWorkflow().WithRevision().WithRuntime().Only(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	im := new(instanceMemory)
 	im.engine = engine
-	im.cached.Instance = entInstance(in)
+	im.cached.Instance = entwrapper.EntInstance(in)
 
 	defer func() {
 		e := im.flushUpdates(ctx)
@@ -317,7 +321,7 @@ func (engine *engine) loadInstanceMemory(id string, step int) (context.Context, 
 		return nil, nil, err
 	}
 
-	im, err := engine.getInstanceMemory(ctx, engine.db.Instance, id)
+	im, err := engine.getInstanceMemory(ctx, nil, id)
 	if err != nil {
 		engine.unlock(id, conn)
 		return nil, nil, err
@@ -380,7 +384,7 @@ func (engine *engine) FreeInstanceMemory(im *instanceMemory) {
 
 	ctx := context.Background()
 
-	err := engine.events.deleteInstanceEventListeners(ctx, im.cached)
+	err := engine.events.deleteInstanceEventListeners(ctx, nil, im.cached)
 	if err != nil {
 		engine.sugar.Error(err)
 	}

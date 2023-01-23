@@ -35,7 +35,7 @@ func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.Variab
 
 	var x = make([]states.Variable, 0)
 
-	clients := im.engine.entClients(im.tx)
+	clients := im.engine.edb.Clients(im.tx)
 
 	for _, selector := range vars {
 
@@ -122,7 +122,7 @@ func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.Variab
 
 func (im *instanceMemory) ListenForEvents(ctx context.Context, events []*model.ConsumeEventDefinition, all bool) error {
 
-	err := im.engine.events.deleteInstanceEventListeners(ctx, im.cached)
+	err := im.engine.events.deleteInstanceEventListeners(ctx, nil, im.cached)
 	if err != nil {
 		return err
 	}
@@ -172,14 +172,13 @@ func (im *instanceMemory) RetrieveSecret(ctx context.Context, secret string) (st
 
 func (im *instanceMemory) SetVariables(ctx context.Context, vars []states.VariableSetter) error {
 
-	tx, err := im.engine.db.Tx(ctx)
+	tx, err := im.engine.database.Tx(ctx)
 	if err != nil {
 		return err
 	}
 	defer rollback(tx)
 
-	vdatac := tx.VarData
-	vrefc := tx.VarRef
+	clients := im.engine.edb.Clients(tx)
 
 	for idx := range vars {
 
@@ -196,26 +195,26 @@ func (im *instanceMemory) SetVariables(ctx context.Context, vars []states.Variab
 			fallthrough
 
 		case "instance":
-			q, err = tx.Instance.Get(ctx, im.cached.Instance.ID)
+			q, err = clients.Instance.Get(ctx, im.cached.Instance.ID)
 			if err != nil {
 				return err
 			}
 
 		case "thread":
-			q, err = tx.Instance.Get(ctx, im.cached.Instance.ID)
+			q, err = clients.Instance.Get(ctx, im.cached.Instance.ID)
 			if err != nil {
 				return err
 			}
 			thread = true
 
 		case "workflow":
-			q, err = tx.Workflow.Get(ctx, im.cached.Workflow.ID)
+			q, err = clients.Workflow.Get(ctx, im.cached.Workflow.ID)
 			if err != nil {
 				return err
 			}
 
 		case "namespace":
-			q, err = tx.Namespace.Get(ctx, im.cached.Namespace.ID)
+			q, err = clients.Namespace.Get(ctx, im.cached.Namespace.ID)
 			if err != nil {
 				return err
 			}
@@ -229,7 +228,7 @@ func (im *instanceMemory) SetVariables(ctx context.Context, vars []states.Variab
 		d := string(v.Data)
 
 		if len(d) == 0 {
-			_, _, err = im.engine.flow.DeleteVariable(ctx, vrefc, vdatac, q, v.Key, v.Data, v.MIMEType, thread)
+			_, _, err = im.engine.flow.DeleteVariable(ctx, tx, q, v.Key, v.Data, v.MIMEType, thread)
 			if err != nil {
 				return err
 			}
@@ -238,14 +237,14 @@ func (im *instanceMemory) SetVariables(ctx context.Context, vars []states.Variab
 		}
 
 		if !(v.MIMEType == "text/plain; charset=utf-8" || v.MIMEType == "text/plain" || v.MIMEType == "application/octet-stream") && (d == "{}" || d == "[]" || d == "0" || d == `""` || d == "null") {
-			_, _, err = im.engine.flow.DeleteVariable(ctx, vrefc, vdatac, q, v.Key, v.Data, v.MIMEType, thread)
+			_, _, err = im.engine.flow.DeleteVariable(ctx, tx, q, v.Key, v.Data, v.MIMEType, thread)
 			if err != nil {
 				return err
 			}
 			continue
 
 		} else {
-			_, _, err = im.engine.flow.SetVariable(ctx, vrefc, vdatac, q, v.Key, v.Data, v.MIMEType, thread)
+			_, _, err = im.engine.flow.SetVariable(ctx, tx, q, v.Key, v.Data, v.MIMEType, thread)
 			if err != nil {
 				return err
 			}

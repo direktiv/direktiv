@@ -3,6 +3,7 @@ package flow
 import (
 	"context"
 
+	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	entlog "github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
@@ -25,7 +26,9 @@ func (flow *flow) ServerLogs(ctx context.Context, req *grpc.ServerLogsRequest) (
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	query := flow.db.LogMsg.Query()
+	clients := flow.edb.Clients(nil)
+
+	query := clients.LogMsg.Query()
 	query = query.Where(entlog.Not(entlog.HasNamespace()), entlog.Not(entlog.HasWorkflow()))
 
 	results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
@@ -58,7 +61,8 @@ func (flow *flow) ServerLogsParcels(req *grpc.ServerLogsRequest, srv grpc.Flow_S
 
 resend:
 
-	query := flow.db.LogMsg.Query()
+	clients := flow.edb.Clients(nil)
+	query := clients.LogMsg.Query()
 	query = query.Where(entlog.Not(entlog.HasNamespace()), entlog.Not(entlog.HasWorkflow()))
 
 	results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
@@ -100,14 +104,14 @@ func (flow *flow) NamespaceLogs(ctx context.Context, req *grpc.NamespaceLogsRequ
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	cached := new(CacheData)
+	cached := new(database.CacheData)
 
 	err := flow.database.NamespaceByName(ctx, nil, cached, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
 
-	clients := flow.entClients(nil)
+	clients := flow.edb.Clients(nil)
 
 	query := clients.LogMsg.Query().Where(entlog.HasNamespaceWith(entns.ID(cached.Namespace.ID)))
 
@@ -137,7 +141,7 @@ func (flow *flow) NamespaceLogsParcels(req *grpc.NamespaceLogsRequest, srv grpc.
 
 	var tailing bool
 
-	cached := new(CacheData)
+	cached := new(database.CacheData)
 
 	err := flow.database.NamespaceByName(ctx, nil, cached, req.GetNamespace())
 	if err != nil {
@@ -147,7 +151,7 @@ func (flow *flow) NamespaceLogsParcels(req *grpc.NamespaceLogsRequest, srv grpc.
 	sub := flow.pubsub.SubscribeNamespaceLogs(cached.Namespace)
 	defer flow.cleanup(sub.Close)
 
-	clients := flow.entClients(nil)
+	clients := flow.edb.Clients(nil)
 
 resend:
 
@@ -193,7 +197,7 @@ func (flow *flow) WorkflowLogs(ctx context.Context, req *grpc.WorkflowLogsReques
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	cached := new(CacheData)
+	cached := new(database.CacheData)
 
 	err := flow.database.NamespaceByName(ctx, nil, cached, req.GetNamespace())
 	if err != nil {
@@ -210,7 +214,7 @@ func (flow *flow) WorkflowLogs(ctx context.Context, req *grpc.WorkflowLogsReques
 		return nil, err
 	}
 
-	clients := flow.entClients(nil)
+	clients := flow.edb.Clients(nil)
 
 	query := clients.LogMsg.Query().Where(entlog.HasWorkflowWith(entwf.ID(cached.Workflow.ID)))
 
@@ -241,7 +245,7 @@ func (flow *flow) WorkflowLogsParcels(req *grpc.WorkflowLogsRequest, srv grpc.Fl
 
 	var tailing bool
 
-	cached := new(CacheData)
+	cached := new(database.CacheData)
 
 	err := flow.database.NamespaceByName(ctx, nil, cached, req.GetNamespace())
 	if err != nil {
@@ -263,7 +267,7 @@ func (flow *flow) WorkflowLogsParcels(req *grpc.WorkflowLogsRequest, srv grpc.Fl
 
 resend:
 
-	clients := flow.entClients(nil)
+	clients := flow.edb.Clients(nil)
 
 	query := clients.LogMsg.Query().Where(entlog.HasWorkflowWith(entwf.ID(cached.Workflow.ID)))
 
@@ -308,12 +312,12 @@ func (flow *flow) InstanceLogs(ctx context.Context, req *grpc.InstanceLogsReques
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	cached, err := flow.getInstance(ctx, flow.db.Namespace, req.GetNamespace(), req.GetInstance())
+	cached, err := flow.getInstance(ctx, nil, req.GetNamespace(), req.GetInstance())
 	if err != nil {
 		return nil, err
 	}
 
-	clients := flow.entClients(nil)
+	clients := flow.edb.Clients(nil)
 
 	query := clients.LogMsg.Query().Where(entlog.HasInstanceWith(entinst.ID(cached.Instance.ID)))
 
@@ -344,7 +348,7 @@ func (flow *flow) InstanceLogsParcels(req *grpc.InstanceLogsRequest, srv grpc.Fl
 
 	var tailing bool
 
-	cached, err := flow.getInstance(ctx, flow.db.Namespace, req.GetNamespace(), req.GetInstance())
+	cached, err := flow.getInstance(ctx, nil, req.GetNamespace(), req.GetInstance())
 	if err != nil {
 		return err
 	}
@@ -354,7 +358,7 @@ func (flow *flow) InstanceLogsParcels(req *grpc.InstanceLogsRequest, srv grpc.Fl
 
 resend:
 
-	clients := flow.entClients(nil)
+	clients := flow.edb.Clients(nil)
 
 	query := clients.LogMsg.Query().Where(entlog.HasInstanceWith(entinst.ID(cached.Instance.ID)))
 

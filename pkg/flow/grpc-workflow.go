@@ -8,6 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/flow/database"
+	"github.com/direktiv/direktiv/pkg/flow/database/entwrapper"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entino "github.com/direktiv/direktiv/pkg/flow/ent/inode"
 	entref "github.com/direktiv/direktiv/pkg/flow/ent/ref"
@@ -19,7 +21,7 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-func (srv *server) traverseToWorkflow(ctx context.Context, tx Transaction, namespace, path string) (*CacheData, error) {
+func (srv *server) traverseToWorkflow(ctx context.Context, tx database.Transaction, namespace, path string) (*database.CacheData, error) {
 
 	cached, err := srv.traverseToInode(ctx, tx, namespace, path)
 	if err != nil {
@@ -35,14 +37,14 @@ func (srv *server) traverseToWorkflow(ctx context.Context, tx Transaction, names
 
 }
 
-func (srv *server) reverseTraverseToWorkflow(ctx context.Context, tx Transaction, workflow string) (*CacheData, error) {
+func (srv *server) reverseTraverseToWorkflow(ctx context.Context, tx database.Transaction, workflow string) (*database.CacheData, error) {
 
 	id, err := uuid.Parse(workflow)
 	if err != nil {
 		return nil, err
 	}
 
-	cached := new(CacheData)
+	cached := new(database.CacheData)
 
 	err = srv.database.Workflow(ctx, tx, cached, id)
 	if err != nil {
@@ -54,11 +56,11 @@ func (srv *server) reverseTraverseToWorkflow(ctx context.Context, tx Transaction
 }
 
 type lookupRefAndRevArgs struct {
-	wf        *Workflow
+	wf        *database.Workflow
 	reference string
 }
 
-func (srv *server) traverseToRef(ctx context.Context, tx Transaction, namespace, path, reference string) (*CacheData, error) {
+func (srv *server) traverseToRef(ctx context.Context, tx database.Transaction, namespace, path, reference string) (*database.CacheData, error) {
 
 	if reference == "" {
 		reference = latest
@@ -70,7 +72,7 @@ func (srv *server) traverseToRef(ctx context.Context, tx Transaction, namespace,
 		return nil, err
 	}
 
-	var ref *Ref
+	var ref *database.Ref
 
 	for i := range cached.Workflow.Refs {
 		x := cached.Workflow.Refs[i]
@@ -100,7 +102,7 @@ func (flow *flow) ResolveWorkflowUID(ctx context.Context, req *grpc.ResolveWorkf
 		return nil, err
 	}
 
-	cached := new(CacheData)
+	cached := new(database.CacheData)
 	err = flow.database.Workflow(ctx, nil, cached, id)
 	if err != nil {
 		return nil, err
@@ -229,11 +231,11 @@ resend:
 }
 
 type lookupWorkflowFromParentArgs struct {
-	pino *Inode
+	pino *database.Inode
 	name string
 }
 
-func (flow *flow) lookupWorkflowFromParent(ctx context.Context, tx Transaction, args *lookupWorkflowFromParentArgs) (*Workflow, error) {
+func (flow *flow) lookupWorkflowFromParent(ctx context.Context, tx database.Transaction, args *lookupWorkflowFromParentArgs) (*database.Workflow, error) {
 
 	ino, err := flow.lookupInodeFromParent(ctx, tx, &lookupInodeFromParentArgs{
 		pino: args.pino,
@@ -248,20 +250,20 @@ func (flow *flow) lookupWorkflowFromParent(ctx context.Context, tx Transaction, 
 		return nil, err
 	}
 
-	return entWorkflow(wf), nil
+	return entwrapper.EntWorkflow(wf), nil
 
 }
 
 type createWorkflowArgs struct {
-	ns         *Namespace
-	pino       *Inode
+	ns         *database.Namespace
+	pino       *database.Inode
 	path       string
 	super      bool
 	data       []byte
 	noValidate bool
 }
 
-func (flow *flow) createWorkflow(ctx context.Context, tx Transaction, args *createWorkflowArgs) (*Workflow, *Inode, error) {
+func (flow *flow) createWorkflow(ctx context.Context, tx database.Transaction, args *createWorkflowArgs) (*database.Workflow, *database.Inode, error) {
 
 	ns := args.ns
 	pino := args.pino
@@ -282,7 +284,7 @@ func (flow *flow) createWorkflow(ctx context.Context, tx Transaction, args *crea
 		return nil, nil, errors.New("cannot write into read-only directory")
 	}
 
-	clients := flow.entClients(tx)
+	clients := flow.edb.Clients(tx)
 
 	ino, err := clients.Inode.Query().Where(entino.HasParentWith(entino.ID(pino.ID))).Where(entino.NameEQ(base)).Only(ctx)
 	if err != nil && !ent.IsNotFound(err) {
@@ -295,7 +297,7 @@ func (flow *flow) createWorkflow(ctx context.Context, tx Transaction, args *crea
 		if err != nil {
 			return nil, nil, err
 		}
-		return entWorkflow(wf), entInode(ino), os.ErrExist
+		return entwrapper.EntWorkflow(wf), entwrapper.EntInode(ino), os.ErrExist
 	}
 
 	ino, err = clients.Inode.Create().SetName(base).SetNamespaceID(ns.ID).SetParentID(pino.ID).SetReadOnly(pino.ReadOnly).SetType(util.InodeTypeWorkflow).Save(ctx)
@@ -367,7 +369,7 @@ func (flow *flow) createWorkflow(ctx context.Context, tx Transaction, args *crea
 		return nil, nil, err
 	}
 
-	return entWorkflow(wf), entInode(ino), nil
+	return entwrapper.EntWorkflow(wf), entwrapper.EntInode(ino), nil
 
 }
 
@@ -382,7 +384,7 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 		return nil, err
 	}
 
-	tx, err := flow.db.Tx(ctx)
+	tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -405,35 +407,29 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 		return nil, errors.New("cannot write into read-only directory")
 	}
 
-	Inode := tx.Inode
+	clients := flow.edb.Clients(tx)
 
-	ino, err := Inode.Create().SetName(base).SetNamespaceID(cached.Namespace.ID).SetParentID(cached.Inode().ID).SetType(util.InodeTypeWorkflow).Save(ctx)
+	ino, err := clients.Inode.Create().SetName(base).SetNamespaceID(cached.Namespace.ID).SetParentID(cached.Inode().ID).SetType(util.InodeTypeWorkflow).Save(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	Workflow := tx.Workflow
-
-	wf, err := Workflow.Create().SetInodeID(ino.ID).SetNamespaceID(cached.Namespace.ID).Save(ctx)
+	wf, err := clients.Workflow.Create().SetInodeID(ino.ID).SetNamespaceID(cached.Namespace.ID).Save(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	Revision := tx.Revision
-
-	rev, err := Revision.Create().SetHash(hash).SetSource(data).SetWorkflow(wf).SetMetadata(make(map[string]interface{})).Save(ctx)
+	rev, err := clients.Revision.Create().SetHash(hash).SetSource(data).SetWorkflow(wf).SetMetadata(make(map[string]interface{})).Save(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	Ref := tx.Ref
-
-	_, err = Ref.Create().SetImmutable(false).SetName(latest).SetWorkflow(wf).SetRevision(rev).Save(ctx)
+	_, err = clients.Ref.Create().SetImmutable(false).SetName(latest).SetWorkflow(wf).SetRevision(rev).Save(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = tx.Inode.UpdateOneID(cached.Inode().ID).SetUpdatedAt(time.Now()).Save(ctx)
+	_, err = clients.Inode.UpdateOneID(cached.Inode().ID).SetUpdatedAt(time.Now()).Save(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -495,14 +491,14 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 }
 
 type updateWorkflowArgs struct {
-	cached     *CacheData
+	cached     *database.CacheData
 	path       string
 	super      bool
 	data       []byte
 	noValidate bool
 }
 
-func (flow *flow) updateWorkflow(ctx context.Context, tx Transaction, args *updateWorkflowArgs) (*Revision, error) {
+func (flow *flow) updateWorkflow(ctx context.Context, tx database.Transaction, args *updateWorkflowArgs) (*database.Revision, error) {
 
 	data := args.data
 
@@ -515,7 +511,7 @@ func (flow *flow) updateWorkflow(ctx context.Context, tx Transaction, args *upda
 		return nil, errors.New("cannot write into read-only directory")
 	}
 
-	var ref *Ref
+	var ref *database.Ref
 
 	for i := range args.cached.Workflow.Refs {
 		x := args.cached.Workflow.Refs[i]
@@ -535,7 +531,7 @@ func (flow *flow) updateWorkflow(ctx context.Context, tx Transaction, args *upda
 	oldrev := args.cached.Revision
 
 	var k int
-	var rev *Revision
+	var rev *database.Revision
 
 	if oldrev.Hash == hash {
 		// gracefully abort if hash matches latest
@@ -551,14 +547,14 @@ func (flow *flow) updateWorkflow(ctx context.Context, tx Transaction, args *upda
 	err = flow.configureRouter(ctx, tx, args.cached, flags,
 		func() error {
 
-			clients := flow.entClients(tx)
+			clients := flow.edb.Clients(tx)
 
 			x, err := clients.Revision.Create().SetHash(hash).SetSource(data).SetWorkflowID(args.cached.Workflow.ID).SetMetadata(make(map[string]interface{})).Save(ctx)
 			if err != nil {
 				return err
 			}
 
-			rev := entRevision(x)
+			rev := entwrapper.EntRevision(x)
 
 			// change latest tag
 			err = clients.Ref.UpdateOneID(ref.ID).SetRevisionID(rev.ID).Exec(ctx)
@@ -615,7 +611,7 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tx, err := flow.db.Tx(ctx)
+	tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -670,7 +666,7 @@ func (flow *flow) SaveHead(ctx context.Context, req *grpc.SaveHeadRequest) (*grp
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tx, err := flow.db.Tx(ctx)
+	tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -681,12 +677,12 @@ func (flow *flow) SaveHead(ctx context.Context, req *grpc.SaveHeadRequest) (*grp
 		return nil, err
 	}
 
-	k, err := tx.Ref.Query().Where(entref.HasRevisionWith(entrev.ID(cached.Revision.ID))).Count(ctx)
+	clients := flow.edb.Clients(tx)
+
+	k, err := clients.Ref.Query().Where(entref.HasRevisionWith(entrev.ID(cached.Revision.ID))).Count(ctx)
 	if err != nil {
 		return nil, err
 	}
-
-	Ref := tx.Ref
 
 	metadata := req.GetMetadata()
 
@@ -703,13 +699,13 @@ func (flow *flow) SaveHead(ctx context.Context, req *grpc.SaveHeadRequest) (*grp
 			return nil, err
 		}
 
-		_, err = tx.Revision.UpdateOneID(cached.Revision.ID).SetMetadata(obj).Save(ctx)
+		_, err = clients.Revision.UpdateOneID(cached.Revision.ID).SetMetadata(obj).Save(ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	err = Ref.Create().SetImmutable(true).SetName(cached.Revision.ID.String()).SetRevisionID(cached.Revision.ID).SetWorkflowID(cached.Workflow.ID).Exec(ctx)
+	err = clients.Ref.Create().SetImmutable(true).SetName(cached.Revision.ID.String()).SetRevisionID(cached.Revision.ID).SetWorkflowID(cached.Workflow.ID).Exec(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -754,7 +750,7 @@ func (flow *flow) DiscardHead(ctx context.Context, req *grpc.DiscardHeadRequest)
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tx, err := flow.db.Tx(ctx)
+	tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -765,8 +761,9 @@ func (flow *flow) DiscardHead(ctx context.Context, req *grpc.DiscardHeadRequest)
 		return nil, err
 	}
 
-	Revision := tx.Revision
 	var prevrev []*ent.Revision
+
+	clients := flow.edb.Clients(tx)
 
 	if len(cached.Workflow.Revisions) == 1 || len(cached.Workflow.Refs) > 1 {
 		// already saved, or not discardable, gracefully back out
@@ -774,7 +771,7 @@ func (flow *flow) DiscardHead(ctx context.Context, req *grpc.DiscardHeadRequest)
 		goto respond
 	}
 
-	prevrev, err = tx.Revision.Query().Where(entrev.HasWorkflowWith(entwf.ID(cached.Workflow.ID))).Order(ent.Desc(entrev.FieldCreatedAt)).Offset(1).Limit(1).All(ctx)
+	prevrev, err = clients.Revision.Query().Where(entrev.HasWorkflowWith(entwf.ID(cached.Workflow.ID))).Order(ent.Desc(entrev.FieldCreatedAt)).Offset(1).Limit(1).All(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -786,17 +783,17 @@ func (flow *flow) DiscardHead(ctx context.Context, req *grpc.DiscardHeadRequest)
 	err = flow.configureRouter(ctx, tx, cached, rcfBreaking,
 		func() error {
 
-			err = tx.Ref.UpdateOneID(cached.Ref.ID).SetRevision(prevrev[0]).Exec(ctx)
+			err = clients.Ref.UpdateOneID(cached.Ref.ID).SetRevision(prevrev[0]).Exec(ctx)
 			if err != nil {
 				return err
 			}
 
-			err = Revision.DeleteOneID(cached.Revision.ID).Exec(ctx)
+			err = clients.Revision.DeleteOneID(cached.Revision.ID).Exec(ctx)
 			if err != nil {
 				return err
 			}
 
-			cached.Revision = entRevision(prevrev[0])
+			cached.Revision = entwrapper.EntRevision(prevrev[0])
 
 			return nil
 
@@ -844,7 +841,7 @@ func (flow *flow) ToggleWorkflow(ctx context.Context, req *grpc.ToggleWorkflowRe
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tx, err := flow.db.Tx(ctx)
+	tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -862,9 +859,11 @@ func (flow *flow) ToggleWorkflow(ctx context.Context, req *grpc.ToggleWorkflowRe
 		return &resp, nil
 	}
 
+	clients := flow.edb.Clients(tx)
+
 	err = flow.configureRouter(ctx, tx, cached, rcfBreaking,
 		func() error {
-			wf, err := tx.Workflow.UpdateOneID(cached.Workflow.ID).SetLive(req.GetLive()).Save(ctx)
+			wf, err := clients.Workflow.UpdateOneID(cached.Workflow.ID).SetLive(req.GetLive()).Save(ctx)
 			if err != nil {
 				return err
 			}
@@ -905,7 +904,7 @@ func (flow *flow) SetWorkflowEventLogging(ctx context.Context, req *grpc.SetWork
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tx, err := flow.db.Tx(ctx)
+	tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -916,7 +915,9 @@ func (flow *flow) SetWorkflowEventLogging(ctx context.Context, req *grpc.SetWork
 		return nil, err
 	}
 
-	_, err = tx.Workflow.UpdateOneID(cached.Workflow.ID).SetLogToEvents(req.GetLogger()).Save(ctx)
+	clients := flow.edb.Clients(tx)
+
+	_, err = clients.Workflow.UpdateOneID(cached.Workflow.ID).SetLogToEvents(req.GetLogger()).Save(ctx)
 	if err != nil {
 		return nil, err
 	}

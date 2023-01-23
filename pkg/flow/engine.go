@@ -23,6 +23,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/direktiv/direktiv/pkg/flow/database"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/flow/states"
@@ -75,7 +76,7 @@ type subflowCaller struct {
 
 func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*instanceMemory, error) {
 
-	tx, err := engine.db.Tx(ctx)
+	tx, err := engine.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -111,13 +112,14 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 
 	data := marshalInstanceInputData(args.Input)
 
-	// SetFlow()
-	rt, err := tx.InstanceRuntime.Create().SetInput(args.Input).SetData(data).SetMemory("null").SetCallerData(args.CallerData).Save(ctx)
+	clients := engine.edb.Clients(tx)
+
+	rt, err := clients.InstanceRuntime.Create().SetInput(args.Input).SetData(data).SetMemory("null").SetCallerData(args.CallerData).Save(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	inst, err := tx.Instance.Create().SetNamespaceID(cached.Namespace.ID).SetWorkflowID(cached.Workflow.ID).SetRevisionID(cached.Revision.ID).SetRuntime(rt).SetStatus(util.InstanceStatusPending).SetInvoker(args.Caller).SetAs(util.SanitizeAsField(as)).Save(ctx)
+	inst, err := clients.Instance.Create().SetNamespaceID(cached.Namespace.ID).SetWorkflowID(cached.Workflow.ID).SetRevisionID(cached.Revision.ID).SetRuntime(rt).SetStatus(util.InstanceStatusPending).SetInvoker(args.Caller).SetAs(util.SanitizeAsField(as)).Save(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -127,7 +129,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 		return nil, err
 	}
 
-	runtime := &InstanceRuntime{
+	runtime := &database.InstanceRuntime{
 		ID:              rt.ID,
 		Input:           rt.Input,
 		Data:            rt.Data,
@@ -144,7 +146,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 		Metadata:        rt.Metadata,
 	}
 
-	cached.Instance = &Instance{
+	cached.Instance = &database.Instance{
 		ID:           inst.ID,
 		CreatedAt:    inst.CreatedAt,
 		UpdatedAt:    inst.UpdatedAt,
@@ -631,7 +633,7 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 
 }
 
-func (engine *engine) subflowInvoke(ctx context.Context, caller *subflowCaller, cached *CacheData, name string, input []byte) (*instanceMemory, error) {
+func (engine *engine) subflowInvoke(ctx context.Context, caller *subflowCaller, cached *database.CacheData, name string, input []byte) (*instanceMemory, error) {
 
 	var err error
 
@@ -654,7 +656,7 @@ func (engine *engine) subflowInvoke(ctx context.Context, caller *subflowCaller, 
 
 	args.CallerData = string(callerData)
 
-	pcached := new(CacheData)
+	pcached := new(database.CacheData)
 	err = engine.database.Instance(ctx, nil, pcached, caller.InstanceID)
 	if err != nil {
 		return nil, derrors.NewInternalError(err)
@@ -678,8 +680,10 @@ func (engine *engine) subflowInvoke(ctx context.Context, caller *subflowCaller, 
 		return nil, err
 	}
 
+	clients := engine.edb.Clients(nil)
+
 	for _, tv := range threadVars {
-		err = engine.db.VarRef.Create().SetBehaviour("thread").SetInstanceID(im.cached.Instance.ID).SetName(tv.Name).SetVardataID(tv.VarData).Exec(ctx)
+		err = clients.VarRef.Create().SetBehaviour("thread").SetInstanceID(im.cached.Instance.ID).SetName(tv.Name).SetVardataID(tv.VarData).Exec(ctx)
 		if err != nil {
 			return nil, derrors.NewInternalError(err)
 		}
@@ -1032,7 +1036,7 @@ func (engine *engine) EventsInvoke(workflowID string, events ...*cloudevents.Eve
 		return
 	}
 
-	cached := new(CacheData)
+	cached := new(database.CacheData)
 	err = engine.database.Workflow(ctx, nil, cached, id)
 	if err != nil {
 		engine.sugar.Error(err)
@@ -1091,4 +1095,25 @@ func (engine *engine) SetMemory(ctx context.Context, im *instanceMemory, x inter
 
 	return nil
 
+}
+
+const latest = "latest"
+
+func rollback(tx database.Transaction) {
+
+	err := tx.Rollback()
+	if err != nil && !strings.Contains(err.Error(), "already been") {
+		fmt.Fprintf(os.Stderr, "failed to rollback transaction: %v\n", err)
+	}
+
+}
+
+// GetInodePath returns the exact path to a inode.
+func GetInodePath(path string) string {
+	path = strings.TrimSuffix(path, "/")
+	if !strings.HasPrefix(path, "/") {
+		return "/" + path
+	}
+	path = filepath.Clean(path)
+	return path
 }

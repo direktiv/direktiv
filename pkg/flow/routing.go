@@ -11,6 +11,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/direktiv/direktiv/pkg/flow/database"
 	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	entirt "github.com/direktiv/direktiv/pkg/flow/ent/instanceruntime"
 	entwf "github.com/direktiv/direktiv/pkg/flow/ent/workflow"
@@ -67,12 +68,12 @@ func (ms *muxStart) Hash() string {
 
 }
 
-func (srv *server) validateRouter(ctx context.Context, tx Transaction, cached *CacheData) (*muxStart, error, error) {
+func (srv *server) validateRouter(ctx context.Context, tx database.Transaction, cached *database.CacheData) (*muxStart, error, error) {
 
 	if len(cached.Workflow.Routes) == 0 {
 
 		// latest
-		var ref *Ref
+		var ref *database.Ref
 		for i := range cached.Workflow.Refs {
 			if cached.Workflow.Refs[i].Name == latest {
 				ref = cached.Workflow.Refs[i]
@@ -154,7 +155,7 @@ func (srv *server) validateRouter(ctx context.Context, tx Transaction, cached *C
 
 }
 
-func (engine *engine) mux(ctx context.Context, tx Transaction, namespace, path, ref string) (*CacheData, error) {
+func (engine *engine) mux(ctx context.Context, tx database.Transaction, namespace, path, ref string) (*database.CacheData, error) {
 
 	cached, err := engine.traverseToWorkflow(ctx, tx, namespace, path)
 	if err != nil {
@@ -186,7 +187,7 @@ func (engine *engine) mux(ctx context.Context, tx Transaction, namespace, path, 
 
 			n = n % weight
 
-			var route *Route
+			var route *database.Route
 
 			for idx := range cached.Workflow.Routes {
 				route = cached.Workflow.Routes[idx]
@@ -232,7 +233,7 @@ func hasFlag(flags, flag int) bool {
 	return flags&flag != 0
 }
 
-func (flow *flow) configureRouter(ctx context.Context, tx Transaction, cached *CacheData, flags int, changer, commit func() error) error {
+func (flow *flow) configureRouter(ctx context.Context, tx database.Transaction, cached *database.CacheData, flags int, changer, commit func() error) error {
 
 	var err error
 	var muxErr1 error
@@ -294,7 +295,7 @@ func (flow *flow) configureRouter(ctx context.Context, tx Transaction, cached *C
 
 }
 
-func (flow *flow) preCommitRouterConfiguration(ctx context.Context, tx Transaction, cached *CacheData, ms *muxStart) error {
+func (flow *flow) preCommitRouterConfiguration(ctx context.Context, tx database.Transaction, cached *database.CacheData, ms *muxStart) error {
 
 	err := flow.events.processWorkflowEvents(ctx, tx, cached, ms)
 	if err != nil {
@@ -350,7 +351,7 @@ func (flow *flow) cronHandler(data []byte) {
 	}
 	defer flow.engine.unlock(id.String(), conn)
 
-	cached := new(CacheData)
+	cached := new(database.CacheData)
 	err = flow.database.Workflow(ctx, nil, cached, id)
 	if err != nil {
 
@@ -365,7 +366,7 @@ func (flow *flow) cronHandler(data []byte) {
 
 	}
 
-	clients := flow.entClients(nil)
+	clients := flow.edb.Clients(nil)
 
 	k, err := clients.Instance.Query().Where(entinst.HasWorkflowWith(entwf.ID(cached.Workflow.ID))).Where(entinst.CreatedAtGT(time.Now().Add(-time.Second*30)), entinst.HasRuntimeWith(entirt.CallerData(util.CallerCron))).Count(ctx)
 	if err != nil {

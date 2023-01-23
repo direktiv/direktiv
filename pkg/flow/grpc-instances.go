@@ -8,6 +8,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	entns "github.com/direktiv/direktiv/pkg/flow/ent/namespace"
@@ -17,14 +18,14 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-func (srv *server) getInstance(ctx context.Context, tx Transaction, namespace, instanceID string) (*CacheData, error) {
+func (srv *server) getInstance(ctx context.Context, tx database.Transaction, namespace, instanceID string) (*database.CacheData, error) {
 
 	id, err := uuid.Parse(instanceID)
 	if err != nil {
 		return nil, err
 	}
 
-	cached := new(CacheData)
+	cached := new(database.CacheData)
 
 	err = srv.database.Instance(ctx, nil, cached, id)
 	if err != nil {
@@ -39,14 +40,14 @@ func (srv *server) getInstance(ctx context.Context, tx Transaction, namespace, i
 
 }
 
-func (internal *internal) getInstance(ctx context.Context, tx Transaction, instanceID string) (*CacheData, error) {
+func (internal *internal) getInstance(ctx context.Context, tx database.Transaction, instanceID string) (*database.CacheData, error) {
 
 	id, err := uuid.Parse(instanceID)
 	if err != nil {
 		return nil, err
 	}
 
-	cached := new(CacheData)
+	cached := new(database.CacheData)
 
 	err = internal.database.Instance(ctx, nil, cached, id)
 	if err != nil {
@@ -57,7 +58,7 @@ func (internal *internal) getInstance(ctx context.Context, tx Transaction, insta
 
 }
 
-func (srv *server) getInstanceRuntime(ctx context.Context, tx Transaction, namespace, instanceID string) (*CacheData, *InstanceRuntime, error) {
+func (srv *server) getInstanceRuntime(ctx context.Context, tx database.Transaction, namespace, instanceID string) (*database.CacheData, *database.InstanceRuntime, error) {
 
 	cached, err := srv.getInstance(ctx, tx, namespace, instanceID)
 	if err != nil {
@@ -139,9 +140,7 @@ func (flow *flow) InstanceMetadata(ctx context.Context, req *grpc.InstanceMetada
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	Namespace := flow.db.Namespace
-
-	cached, rt, err := flow.getInstanceRuntime(ctx, Namespace, req.GetNamespace(), req.GetInstance())
+	cached, rt, err := flow.getInstanceRuntime(ctx, nil, req.GetNamespace(), req.GetInstance())
 	if err != nil {
 		return nil, err
 	}
@@ -164,14 +163,14 @@ func (flow *flow) Instances(ctx context.Context, req *grpc.InstancesRequest) (*g
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	cached := new(CacheData)
+	cached := new(database.CacheData)
 
 	err := flow.database.NamespaceByName(ctx, nil, cached, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
 
-	clients := flow.entClients(nil)
+	clients := flow.edb.Clients(nil)
 
 	query := clients.Instance.Query().Where(entinst.HasNamespaceWith(entns.ID(cached.Namespace.ID)))
 
@@ -202,7 +201,7 @@ func (flow *flow) InstancesStream(req *grpc.InstancesRequest, srv grpc.Flow_Inst
 	phash := ""
 	nhash := ""
 
-	cached := new(CacheData)
+	cached := new(database.CacheData)
 
 	err := flow.database.NamespaceByName(ctx, nil, cached, req.GetNamespace())
 	if err != nil {
@@ -214,7 +213,7 @@ func (flow *flow) InstancesStream(req *grpc.InstancesRequest, srv grpc.Flow_Inst
 
 resend:
 
-	clients := flow.entClients(nil)
+	clients := flow.edb.Clients(nil)
 
 	query := clients.Instance.Query().Where(entinst.HasNamespaceWith(entns.ID(cached.Namespace.ID)))
 
@@ -385,7 +384,7 @@ func (flow *flow) ReleaseInstance(ctx context.Context, req *grpc.ReleaseInstance
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	im, err := flow.engine.getInstanceMemory(ctx, flow.db.Instance, req.GetInstance())
+	im, err := flow.engine.getInstanceMemory(ctx, nil, req.GetInstance())
 	if err != nil {
 		return nil, err
 	}
@@ -485,7 +484,7 @@ func (flow *flow) CancelInstance(ctx context.Context, req *grpc.CancelInstanceRe
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	cached, err := flow.getInstance(ctx, flow.db.Namespace, req.GetNamespace(), req.GetInstance())
+	cached, err := flow.getInstance(ctx, nil, req.GetNamespace(), req.GetInstance())
 	if err != nil {
 		return nil, err
 	}
@@ -526,7 +525,7 @@ func (flow *flow) AwaitWorkflow(req *grpc.AwaitWorkflowRequest, srv grpc.Flow_Aw
 
 	flow.engine.queue(im)
 
-	var cached *CacheData
+	var cached *database.CacheData
 
 resend:
 

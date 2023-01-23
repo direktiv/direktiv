@@ -14,7 +14,8 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/direktiv/direktiv/pkg/dlog"
-	"github.com/direktiv/direktiv/pkg/flow/ent"
+	"github.com/direktiv/direktiv/pkg/flow/database"
+	"github.com/direktiv/direktiv/pkg/flow/database/entwrapper"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/metrics"
 	"github.com/direktiv/direktiv/pkg/util"
@@ -32,7 +33,7 @@ type server struct {
 	fnLogger *zap.SugaredLogger
 	conf     *util.Config
 
-	db       *ent.Client
+	// db       *ent.Client
 	pubsub   *pubsub
 	locks    *locks
 	timers   *timers
@@ -50,7 +51,8 @@ type server struct {
 	logQueue     chan *logMessage
 	logWorkersWG sync.WaitGroup
 
-	database *CachedDatabase
+	edb      *entwrapper.Database // TODO: remove
+	database *database.CachedDatabase
 }
 
 func Run(ctx context.Context, logger *zap.SugaredLogger, conf *util.Config) error {
@@ -129,19 +131,20 @@ func (srv *server) start(ctx context.Context) error {
 
 	srv.sugar.Debug("Initializing database.")
 
-	srv.db, err = initDatabase(ctx, db)
+	// srv.db, err = initDatabase(ctx, db)
+	// if err != nil {
+	// 	return err
+	// }
+	// defer srv.cleanup(srv.db.Close)
+
+	edb, err := entwrapper.New(ctx, srv.sugar, db)
 	if err != nil {
 		return err
 	}
-	defer srv.cleanup(srv.db.Close)
+	srv.edb = edb
 
-	srv.database = InitCachedDatabase(&CachedDatabase{
-		sugar: srv.sugar,
-		source: &EntDatabase{
-			client: srv.db,
-			sugar:  srv.sugar,
-		},
-	})
+	srv.database = database.NewCachedDatabase(srv.sugar, edb)
+	defer srv.cleanup(srv.database.Close)
 
 	srv.startLogWorkers(1)
 
@@ -327,7 +330,7 @@ func (srv *server) notifyCluster(msg string) error {
 
 	ctx := context.Background()
 
-	conn, err := srv.db.DB().Conn(ctx)
+	conn, err := srv.edb.DB().Conn(ctx)
 	if err != nil {
 		return err
 	}
@@ -356,7 +359,7 @@ func (srv *server) notifyHostname(hostname, msg string) error {
 
 	ctx := context.Background()
 
-	conn, err := srv.db.DB().Conn(ctx)
+	conn, err := srv.edb.DB().Conn(ctx)
 	if err != nil {
 		return err
 	}
@@ -418,7 +421,9 @@ func (srv *server) cronPoll() {
 
 	ctx := context.Background()
 
-	wfs, err := srv.db.Workflow.Query().All(ctx)
+	clients := srv.edb.Clients(nil)
+
+	wfs, err := clients.Workflow.Query().All(ctx)
 	if err != nil {
 		srv.sugar.Error(err)
 		return
@@ -436,7 +441,7 @@ func (srv *server) cronPoll() {
 
 }
 
-func (srv *server) cronPollerWorkflow(ctx context.Context, tx Transaction, cached *CacheData) {
+func (srv *server) cronPollerWorkflow(ctx context.Context, tx database.Transaction, cached *database.CacheData) {
 
 	ms, muxErr, err := srv.validateRouter(ctx, tx, cached)
 	if err != nil || muxErr != nil {

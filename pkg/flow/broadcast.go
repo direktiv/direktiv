@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/google/uuid"
 )
 
@@ -48,7 +49,7 @@ type broadcastWorkflowInput struct {
 	Live   bool
 }
 
-func (flow *flow) BroadcastWorkflow(ctx context.Context, eventType string, input broadcastWorkflowInput, cached *CacheData) error {
+func (flow *flow) BroadcastWorkflow(ctx context.Context, eventType string, input broadcastWorkflowInput, cached *database.CacheData) error {
 	// BROADCAST EVENT
 
 	target := fmt.Sprintf("%s.%s", BroadcastEventPrefixWorkflow, eventType)
@@ -80,7 +81,7 @@ type broadcastDirectoryInput struct {
 	Parent string
 }
 
-func (flow *flow) BroadcastDirectory(ctx context.Context, eventType string, input broadcastDirectoryInput, cached *CacheData) error {
+func (flow *flow) BroadcastDirectory(ctx context.Context, eventType string, input broadcastDirectoryInput, cached *database.CacheData) error {
 	// BROADCAST EVENT
 	target := fmt.Sprintf("%s.%s", BroadcastEventPrefixDirectory, eventType)
 	cfg, err := loadNSConfig([]byte(cached.Namespace.Config))
@@ -114,7 +115,7 @@ type broadcastVariableInput struct {
 	Scope        string
 }
 
-func (flow *flow) BroadcastVariable(ctx context.Context, eventType string, eventScope string, input broadcastVariableInput, cached *CacheData) error {
+func (flow *flow) BroadcastVariable(ctx context.Context, eventType string, eventScope string, input broadcastVariableInput, cached *database.CacheData) error {
 	// BROADCAST EVENT
 	target := fmt.Sprintf("%s.%s.%s", eventScope, BroadcastEventPrefixVariable, eventType)
 	cfg, err := loadNSConfig([]byte(cached.Namespace.Config))
@@ -146,7 +147,7 @@ type broadcastInstanceInput struct {
 	Caller       string
 }
 
-func (flow *flow) BroadcastInstance(eventType string, ctx context.Context, input broadcastInstanceInput, cached *CacheData) error {
+func (flow *flow) BroadcastInstance(eventType string, ctx context.Context, input broadcastInstanceInput, cached *database.CacheData) error {
 	// BROADCAST EVENT
 	target := fmt.Sprintf("%s.%s", BroadcastEventPrefixInstance, eventType)
 	cfg, err := loadNSConfig([]byte(cached.Namespace.Config))

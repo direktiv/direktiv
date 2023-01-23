@@ -1,8 +1,12 @@
-package flow
+package entwrapper
 
 import (
 	"context"
+	"database/sql"
+	"errors"
+	"fmt"
 
+	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -21,7 +25,8 @@ import (
 	entwf "github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 )
 
-type entClients struct {
+// TODO: un-export EntClients
+type EntClients struct {
 	Namespace         *ent.NamespaceClient
 	Inode             *ent.InodeClient
 	Annotation        *ent.AnnotationClient
@@ -41,10 +46,15 @@ type entClients struct {
 	InstanceRuntime   *ent.InstanceRuntimeClient
 }
 
-func (db *EntDatabase) clients(tx Transaction) *entClients {
+// TODO: delete
+func (db *Database) Clients(tx database.Transaction) *EntClients {
+	return db.clients(tx)
+}
+
+func (db *Database) clients(tx database.Transaction) *EntClients {
 
 	if tx == nil {
-		return &entClients{
+		return &EntClients{
 			Namespace:         db.client.Namespace,
 			Inode:             db.client.Inode,
 			Annotation:        db.client.Annotation,
@@ -67,7 +77,7 @@ func (db *EntDatabase) clients(tx Transaction) *entClients {
 
 	x := tx.(*ent.Tx)
 
-	return &entClients{
+	return &EntClients{
 		Namespace:         x.Namespace,
 		Inode:             x.Inode,
 		Annotation:        x.Annotation,
@@ -89,341 +99,89 @@ func (db *EntDatabase) clients(tx Transaction) *entClients {
 
 }
 
-func (srv *server) entClients(tx Transaction) *entClients {
+type Database struct {
+	sugar  *zap.SugaredLogger
+	client *ent.Client
+}
 
-	if tx == nil {
-		return &entClients{
-			Namespace:         srv.db.Namespace,
-			Inode:             srv.db.Inode,
-			Annotation:        srv.db.Annotation,
-			Events:            srv.db.Events,
-			CloudEvents:       srv.db.CloudEvents,
-			CloudEventFilters: srv.db.CloudEventFilters,
-			Route:             srv.db.Route,
-			Ref:               srv.db.Ref,
-			Revision:          srv.db.Revision,
-			VarRef:            srv.db.VarRef,
-			VarData:           srv.db.VarData,
-			Instance:          srv.db.Instance,
-			Workflow:          srv.db.Workflow,
-			LogMsg:            srv.db.LogMsg,
-			Mirror:            srv.db.Mirror,
-			MirrorActivity:    srv.db.MirrorActivity,
-			InstanceRuntime:   srv.db.InstanceRuntime,
+func New(ctx context.Context, sugar *zap.SugaredLogger, addr string) (*Database, error) {
+
+	db, err := ent.Open("postgres", addr)
+	if err != nil {
+		return nil, err
+	}
+
+	udb := db.DB()
+	udb.SetMaxIdleConns(64)
+	udb.SetMaxOpenConns(32)
+
+	// Run the auto migration tool.
+	if err = db.Schema.Create(ctx); err != nil {
+		_ = db.Close()
+		return nil, err
+	}
+
+	//
+	// initialize generation table if not exists
+	qstr := `CREATE TABLE IF NOT EXISTS db_generation (
+		generation VARCHAR
+	)`
+
+	_, err = db.DB().Exec(qstr)
+	if err != nil {
+		_ = db.Close()
+		return nil, err
+	}
+
+	tx, err := db.DB().Begin()
+	if err != nil {
+		_ = db.Close()
+		return nil, err
+	}
+	defer func() {
+		_ = tx.Rollback()
+	}()
+
+	row := tx.QueryRow(`SELECT generation FROM db_generation`)
+	var gen string
+	err = row.Scan(&gen)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			_, err = tx.Exec(fmt.Sprintf(`INSERT INTO db_generation(generation) VALUES('%s')`, "0.7.1")) // this value needs to be manually updated each time there's an important database change
+			if err != nil {
+				_ = db.Close()
+				return nil, err
+			}
+			err = tx.Commit()
+			if err != nil {
+				_ = db.Close()
+				return nil, err
+			}
+		} else {
+			return nil, err
 		}
 	}
 
-	x := tx.(*ent.Tx)
-
-	return &entClients{
-		Namespace:         x.Namespace,
-		Inode:             x.Inode,
-		Annotation:        x.Annotation,
-		Events:            x.Events,
-		CloudEvents:       x.CloudEvents,
-		CloudEventFilters: x.CloudEventFilters,
-		Route:             x.Route,
-		Ref:               x.Ref,
-		Revision:          x.Revision,
-		VarRef:            x.VarRef,
-		VarData:           x.VarData,
-		Instance:          x.Instance,
-		Workflow:          x.Workflow,
-		LogMsg:            x.LogMsg,
-		Mirror:            x.Mirror,
-		MirrorActivity:    x.MirrorActivity,
-		InstanceRuntime:   x.InstanceRuntime,
-	}
+	return &Database{
+		sugar:  sugar,
+		client: db,
+	}, nil
 
 }
 
-type EntDatabase struct {
-	client *ent.Client
-	sugar  *zap.SugaredLogger
+func (db *Database) Close() error {
+	return db.client.Close()
 }
 
-func (db *EntDatabase) entNamespace(ns *ent.Namespace) *Namespace {
-
-	if ns == nil {
-		return nil
-	}
-
-	return &Namespace{
-		ID:        ns.ID,
-		CreatedAt: ns.CreatedAt,
-		UpdatedAt: ns.UpdatedAt,
-		Config:    ns.Config,
-		Name:      ns.Name,
-		Root:      ns.Edges.Inodes[0].ID,
-	}
-
+func (db *Database) Tx(ctx context.Context) (database.Transaction, error) {
+	return db.client.Tx(ctx)
 }
 
-func entInode(ino *ent.Inode) *Inode {
-
-	if ino == nil {
-		return nil
-	}
-
-	var children []*Inode
-	for _, x := range ino.Edges.Children {
-		children = append(children, &Inode{
-			ID:   x.ID,
-			Name: x.Name,
-		})
-	}
-
-	x := &Inode{
-		ID:           ino.ID,
-		CreatedAt:    ino.CreatedAt,
-		UpdatedAt:    ino.UpdatedAt,
-		Name:         ino.Name,
-		Type:         ino.Type,
-		Attributes:   ino.Attributes,
-		ExtendedType: ino.ExtendedType,
-		ReadOnly:     ino.ReadOnly,
-		Children:     children,
-		Parent:       ino.Edges.Parent.ID,
-		Namespace:    ino.Edges.Namespace.ID,
-	}
-
-	if ino.Edges.Workflow != nil {
-		x.Workflow = ino.Edges.Workflow.ID
-	}
-
-	return x
-
+func (db *Database) DB() *sql.DB {
+	return db.client.DB()
 }
 
-func entWorkflow(wf *ent.Workflow) *Workflow {
-
-	if wf == nil {
-		return nil
-	}
-
-	var refs []*Ref
-	for _, x := range wf.Edges.Refs {
-		refs = append(refs, entRef(x))
-	}
-
-	var revisions []*Revision
-	for _, x := range wf.Edges.Revisions {
-		revisions = append(revisions, &Revision{
-			ID:   x.ID,
-			Hash: x.Hash,
-		})
-	}
-
-	var routes []*Route
-	for _, x := range wf.Edges.Routes {
-		routes = append(routes, &Route{
-			ID:     x.ID,
-			Weight: x.Weight,
-			Ref:    entRef(x.Edges.Ref),
-		})
-	}
-
-	return &Workflow{
-		ID:          wf.ID,
-		Live:        wf.Live,
-		LogToEvents: wf.LogToEvents,
-		ReadOnly:    wf.ReadOnly,
-		UpdatedAt:   wf.UpdatedAt,
-		Namespace:   wf.Edges.Namespace.ID,
-		Inode:       wf.Edges.Inode.ID,
-		Refs:        refs,
-		Revisions:   revisions,
-		Routes:      routes,
-	}
-
-}
-
-func entRef(ref *ent.Ref) *Ref {
-
-	if ref == nil {
-		return nil
-	}
-
-	x := &Ref{
-		ID:        ref.ID,
-		Name:      ref.Name,
-		Immutable: ref.Immutable,
-		CreatedAt: ref.CreatedAt,
-	}
-
-	if ref.Edges.Revision != nil {
-		x.Revision = ref.Edges.Revision.ID
-	}
-
-	return x
-
-}
-
-func entRevision(rev *ent.Revision) *Revision {
-
-	if rev == nil {
-		return nil
-	}
-
-	return &Revision{
-		ID:        rev.ID,
-		CreatedAt: rev.CreatedAt,
-		Hash:      rev.Hash,
-		Source:    rev.Source,
-		Metadata:  rev.Metadata,
-		Workflow:  rev.Edges.Workflow.ID,
-	}
-
-}
-
-func entInstance(inst *ent.Instance) *Instance {
-
-	if inst == nil {
-		return nil
-	}
-
-	return &Instance{
-		ID:           inst.ID,
-		CreatedAt:    inst.CreatedAt,
-		UpdatedAt:    inst.UpdatedAt,
-		EndAt:        inst.EndAt,
-		Status:       inst.Status,
-		As:           inst.As,
-		ErrorCode:    inst.ErrorCode,
-		ErrorMessage: inst.ErrorMessage,
-		Invoker:      inst.Invoker,
-		Namespace:    inst.Edges.Namespace.ID,
-		Workflow:     inst.Edges.Workflow.ID,
-		Revision:     inst.Edges.Revision.ID,
-		Runtime:      inst.Edges.Runtime.ID,
-	}
-
-}
-
-func entInstanceRuntime(rt *ent.InstanceRuntime) *InstanceRuntime {
-
-	if rt == nil {
-		return nil
-	}
-
-	x := &InstanceRuntime{
-		ID:              rt.ID,
-		Input:           rt.Input,
-		Data:            rt.Data,
-		Controller:      rt.Controller,
-		Memory:          rt.Memory,
-		Flow:            rt.Flow,
-		Output:          rt.Output,
-		StateBeginTime:  rt.StateBeginTime,
-		Deadline:        rt.Deadline,
-		Attempts:        rt.Attempts,
-		CallerData:      rt.CallerData,
-		InstanceContext: rt.InstanceContext,
-		StateContext:    rt.StateContext,
-		Metadata:        rt.Metadata,
-	}
-
-	if rt.Edges.Caller != nil {
-		x.Caller = rt.Edges.Caller.ID
-	}
-
-	return x
-
-}
-
-func (db *EntDatabase) entAnnotation(annotation *ent.Annotation) *Annotation {
-
-	if annotation == nil {
-		return nil
-	}
-
-	return &Annotation{
-		ID:        annotation.ID,
-		Name:      annotation.Name,
-		CreatedAt: annotation.CreatedAt,
-		UpdatedAt: annotation.UpdatedAt,
-		Size:      annotation.Size,
-		Hash:      annotation.Hash,
-		Data:      annotation.Data,
-		MimeType:  annotation.MimeType,
-	}
-
-}
-
-func (db *EntDatabase) entVarRef(vref *ent.VarRef) *VarRef {
-
-	if vref == nil {
-		return nil
-	}
-
-	return &VarRef{
-		ID:        vref.ID,
-		Name:      vref.Name,
-		Behaviour: vref.Behaviour,
-		VarData:   vref.Edges.Vardata.ID,
-	}
-
-}
-
-func (db *EntDatabase) entVarData(v *ent.VarData) *VarData {
-
-	if v == nil {
-		return nil
-	}
-
-	return &VarData{
-		ID:        v.ID,
-		CreatedAt: v.CreatedAt,
-		UpdatedAt: v.UpdatedAt,
-		Size:      v.Size,
-		Hash:      v.Hash,
-		Data:      v.Data,
-		MimeType:  v.MimeType,
-	}
-
-}
-
-func entMirror(v *ent.Mirror) *Mirror {
-
-	if v == nil {
-		return nil
-	}
-
-	return &Mirror{
-		ID:         v.ID,
-		URL:        v.URL,
-		Ref:        v.Ref,
-		Cron:       v.Cron,
-		PublicKey:  v.PublicKey,
-		PrivateKey: v.PrivateKey,
-		Passphrase: v.Passphrase,
-		Commit:     v.Commit,
-		LastSync:   v.LastSync,
-		UpdatedAt:  v.UpdatedAt,
-	}
-
-}
-
-func entMirrorActivity(v *ent.MirrorActivity) *MirrorActivity {
-
-	if v == nil {
-		return nil
-	}
-
-	return &MirrorActivity{
-		ID:         v.ID,
-		Type:       v.Type,
-		Status:     v.Status,
-		CreatedAt:  v.CreatedAt,
-		UpdatedAt:  v.UpdatedAt,
-		EndAt:      v.EndAt,
-		Controller: v.Controller,
-		Deadline:   v.Deadline,
-	}
-
-}
-
-func (db *EntDatabase) Namespace(ctx context.Context, tx Transaction, id uuid.UUID) (*Namespace, error) {
+func (db *Database) Namespace(ctx context.Context, tx database.Transaction, id uuid.UUID) (*database.Namespace, error) {
 
 	clients := db.clients(tx)
 
@@ -439,7 +197,7 @@ func (db *EntDatabase) Namespace(ctx context.Context, tx Transaction, id uuid.UU
 
 }
 
-func (db *EntDatabase) NamespaceByName(ctx context.Context, tx Transaction, name string) (*Namespace, error) {
+func (db *Database) NamespaceByName(ctx context.Context, tx database.Transaction, name string) (*database.Namespace, error) {
 
 	clients := db.clients(tx)
 
@@ -455,7 +213,7 @@ func (db *EntDatabase) NamespaceByName(ctx context.Context, tx Transaction, name
 
 }
 
-func (db *EntDatabase) Inode(ctx context.Context, tx Transaction, id uuid.UUID) (*Inode, error) {
+func (db *Database) Inode(ctx context.Context, tx database.Transaction, id uuid.UUID) (*database.Inode, error) {
 
 	clients := db.clients(tx)
 
@@ -479,7 +237,7 @@ func (db *EntDatabase) Inode(ctx context.Context, tx Transaction, id uuid.UUID) 
 
 }
 
-func (db *EntDatabase) Workflow(ctx context.Context, tx Transaction, id uuid.UUID) (*Workflow, error) {
+func (db *Database) Workflow(ctx context.Context, tx database.Transaction, id uuid.UUID) (*database.Workflow, error) {
 
 	clients := db.clients(tx)
 
@@ -509,7 +267,7 @@ func (db *EntDatabase) Workflow(ctx context.Context, tx Transaction, id uuid.UUI
 
 }
 
-func (db *EntDatabase) Revision(ctx context.Context, tx Transaction, id uuid.UUID) (*Revision, error) {
+func (db *Database) Revision(ctx context.Context, tx database.Transaction, id uuid.UUID) (*database.Revision, error) {
 
 	clients := db.clients(tx)
 
@@ -525,7 +283,7 @@ func (db *EntDatabase) Revision(ctx context.Context, tx Transaction, id uuid.UUI
 
 }
 
-func (db *EntDatabase) Instance(ctx context.Context, tx Transaction, id uuid.UUID) (*Instance, error) {
+func (db *Database) Instance(ctx context.Context, tx database.Transaction, id uuid.UUID) (*database.Instance, error) {
 
 	clients := db.clients(tx)
 
@@ -547,7 +305,7 @@ func (db *EntDatabase) Instance(ctx context.Context, tx Transaction, id uuid.UUI
 
 }
 
-func (db *EntDatabase) InstanceRuntime(ctx context.Context, tx Transaction, id uuid.UUID) (*InstanceRuntime, error) {
+func (db *Database) InstanceRuntime(ctx context.Context, tx database.Transaction, id uuid.UUID) (*database.InstanceRuntime, error) {
 
 	clients := db.clients(tx)
 
@@ -563,7 +321,7 @@ func (db *EntDatabase) InstanceRuntime(ctx context.Context, tx Transaction, id u
 
 }
 
-func (db *EntDatabase) NamespaceAnnotation(ctx context.Context, tx Transaction, nsID uuid.UUID, key string) (*Annotation, error) {
+func (db *Database) NamespaceAnnotation(ctx context.Context, tx database.Transaction, nsID uuid.UUID, key string) (*database.Annotation, error) {
 
 	clients := db.clients(tx)
 
@@ -577,7 +335,7 @@ func (db *EntDatabase) NamespaceAnnotation(ctx context.Context, tx Transaction, 
 
 }
 
-func (db *EntDatabase) InodeAnnotation(ctx context.Context, tx Transaction, inodeID uuid.UUID, key string) (*Annotation, error) {
+func (db *Database) InodeAnnotation(ctx context.Context, tx database.Transaction, inodeID uuid.UUID, key string) (*database.Annotation, error) {
 
 	clients := db.clients(tx)
 
@@ -591,7 +349,7 @@ func (db *EntDatabase) InodeAnnotation(ctx context.Context, tx Transaction, inod
 
 }
 
-func (db *EntDatabase) WorkflowAnnotation(ctx context.Context, tx Transaction, wfID uuid.UUID, key string) (*Annotation, error) {
+func (db *Database) WorkflowAnnotation(ctx context.Context, tx database.Transaction, wfID uuid.UUID, key string) (*database.Annotation, error) {
 
 	clients := db.clients(tx)
 
@@ -605,7 +363,7 @@ func (db *EntDatabase) WorkflowAnnotation(ctx context.Context, tx Transaction, w
 
 }
 
-func (db *EntDatabase) InstanceAnnotation(ctx context.Context, tx Transaction, instID uuid.UUID, key string) (*Annotation, error) {
+func (db *Database) InstanceAnnotation(ctx context.Context, tx database.Transaction, instID uuid.UUID, key string) (*database.Annotation, error) {
 
 	clients := db.clients(tx)
 
@@ -619,7 +377,7 @@ func (db *EntDatabase) InstanceAnnotation(ctx context.Context, tx Transaction, i
 
 }
 
-func (db *EntDatabase) ThreadVariables(ctx context.Context, tx Transaction, instID uuid.UUID) ([]*VarRef, error) {
+func (db *Database) ThreadVariables(ctx context.Context, tx database.Transaction, instID uuid.UUID) ([]*database.VarRef, error) {
 
 	clients := db.clients(tx)
 
@@ -631,7 +389,7 @@ func (db *EntDatabase) ThreadVariables(ctx context.Context, tx Transaction, inst
 		return nil, err
 	}
 
-	x := make([]*VarRef, 0)
+	x := make([]*database.VarRef, 0)
 
 	for _, y := range varrefs {
 		x = append(x, db.entVarRef(y))
@@ -641,7 +399,7 @@ func (db *EntDatabase) ThreadVariables(ctx context.Context, tx Transaction, inst
 
 }
 
-func (db *EntDatabase) NamespaceVariableRef(ctx context.Context, tx Transaction, nsID uuid.UUID, key string) (*VarRef, error) {
+func (db *Database) NamespaceVariableRef(ctx context.Context, tx database.Transaction, nsID uuid.UUID, key string) (*database.VarRef, error) {
 
 	clients := db.clients(tx)
 
@@ -657,7 +415,7 @@ func (db *EntDatabase) NamespaceVariableRef(ctx context.Context, tx Transaction,
 
 }
 
-func (db *EntDatabase) WorkflowVariableRef(ctx context.Context, tx Transaction, wfID uuid.UUID, key string) (*VarRef, error) {
+func (db *Database) WorkflowVariableRef(ctx context.Context, tx database.Transaction, wfID uuid.UUID, key string) (*database.VarRef, error) {
 
 	clients := db.clients(tx)
 
@@ -673,7 +431,7 @@ func (db *EntDatabase) WorkflowVariableRef(ctx context.Context, tx Transaction, 
 
 }
 
-func (db *EntDatabase) InstanceVariableRef(ctx context.Context, tx Transaction, instID uuid.UUID, key string) (*VarRef, error) {
+func (db *Database) InstanceVariableRef(ctx context.Context, tx database.Transaction, instID uuid.UUID, key string) (*database.VarRef, error) {
 
 	clients := db.clients(tx)
 
@@ -689,7 +447,7 @@ func (db *EntDatabase) InstanceVariableRef(ctx context.Context, tx Transaction, 
 
 }
 
-func (db *EntDatabase) ThreadVariableRef(ctx context.Context, tx Transaction, instID uuid.UUID, key string) (*VarRef, error) {
+func (db *Database) ThreadVariableRef(ctx context.Context, tx database.Transaction, instID uuid.UUID, key string) (*database.VarRef, error) {
 
 	clients := db.clients(tx)
 
@@ -705,7 +463,7 @@ func (db *EntDatabase) ThreadVariableRef(ctx context.Context, tx Transaction, in
 
 }
 
-func (db *EntDatabase) VariableData(ctx context.Context, tx Transaction, id uuid.UUID, load bool) (*VarData, error) {
+func (db *Database) VariableData(ctx context.Context, tx database.Transaction, id uuid.UUID, load bool) (*database.VarData, error) {
 
 	var err error
 	var vardata *ent.VarData
@@ -740,7 +498,7 @@ func (db *EntDatabase) VariableData(ctx context.Context, tx Transaction, id uuid
 
 }
 
-func (db *EntDatabase) Mirror(ctx context.Context, tx Transaction, id uuid.UUID) (*Mirror, error) {
+func (db *Database) Mirror(ctx context.Context, tx database.Transaction, id uuid.UUID) (*database.Mirror, error) {
 
 	clients := db.clients(tx)
 

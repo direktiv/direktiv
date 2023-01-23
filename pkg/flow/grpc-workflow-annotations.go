@@ -7,6 +7,7 @@ import (
 	"io"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entnote "github.com/direktiv/direktiv/pkg/flow/ent/annotation"
 	entwf "github.com/direktiv/direktiv/pkg/flow/ent/workflow"
@@ -17,7 +18,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func (flow *flow) traverseToWorkflowAnnotation(ctx context.Context, tx Transaction, namespace, path, key string) (*CacheData, *Annotation, error) {
+func (flow *flow) traverseToWorkflowAnnotation(ctx context.Context, tx database.Transaction, namespace, path, key string) (*database.CacheData, *database.Annotation, error) {
 
 	cached, err := flow.traverseToWorkflow(ctx, tx, namespace, path)
 
@@ -131,7 +132,7 @@ func (flow *flow) WorkflowAnnotations(ctx context.Context, req *grpc.WorkflowAnn
 		return nil, err
 	}
 
-	clients := flow.entClients(nil)
+	clients := flow.edb.Clients(nil)
 
 	query := clients.Annotation.Query().Where(entnote.HasWorkflowWith(entwf.ID(cached.Workflow.ID)))
 
@@ -172,7 +173,7 @@ func (flow *flow) WorkflowAnnotationsStream(req *grpc.WorkflowAnnotationsRequest
 
 resend:
 
-	clients := flow.entClients(nil)
+	clients := flow.edb.Clients(nil)
 
 	query := clients.Annotation.Query().Where(entnote.HasWorkflowWith(entwf.ID(cached.Workflow.ID)))
 
@@ -213,7 +214,7 @@ func (flow *flow) SetWorkflowAnnotation(ctx context.Context, req *grpc.SetWorkfl
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tx, err := flow.db.Tx(ctx)
+	tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -229,7 +230,7 @@ func (flow *flow) SetWorkflowAnnotation(ctx context.Context, req *grpc.SetWorkfl
 	key := req.GetKey()
 
 	var newVar bool
-	annotation, newVar, err = flow.SetAnnotation(ctx, tx, &entWorkflowAnnotationQuerier{clients: flow.entClients(tx), cached: cached}, key, req.GetMimeType(), req.GetData())
+	annotation, newVar, err = flow.SetAnnotation(ctx, tx, &entWorkflowAnnotationQuerier{clients: flow.edb.Clients(tx), cached: cached}, key, req.GetMimeType(), req.GetData())
 	if err != nil {
 		return nil, err
 	}
@@ -322,13 +323,11 @@ func (flow *flow) SetWorkflowAnnotationParcels(srv grpc.Flow_SetWorkflowAnnotati
 		return errors.New("received more data than expected")
 	}
 
-	tx, err := flow.db.Tx(ctx)
+	tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return err
 	}
 	defer rollback(tx)
-
-	annotationc := tx.Annotation
 
 	cached, err := flow.traverseToWorkflow(ctx, tx, namespace, path)
 	if err != nil {
@@ -338,7 +337,7 @@ func (flow *flow) SetWorkflowAnnotationParcels(srv grpc.Flow_SetWorkflowAnnotati
 	var annotation *ent.Annotation
 
 	var newVar bool
-	annotation, newVar, err = flow.SetAnnotation(ctx, annotationc, &entWorkflowAnnotationQuerier{clients: flow.entClients(tx), cached: cached}, key, req.GetMimeType(), buf.Bytes())
+	annotation, newVar, err = flow.SetAnnotation(ctx, tx, &entWorkflowAnnotationQuerier{clients: flow.edb.Clients(tx), cached: cached}, key, req.GetMimeType(), buf.Bytes())
 	if err != nil {
 		return err
 	}
@@ -380,7 +379,7 @@ func (flow *flow) DeleteWorkflowAnnotation(ctx context.Context, req *grpc.Delete
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tx, err := flow.db.Tx(ctx)
+	tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -391,9 +390,9 @@ func (flow *flow) DeleteWorkflowAnnotation(ctx context.Context, req *grpc.Delete
 		return nil, err
 	}
 
-	annotationc := tx.Annotation
+	clients := flow.edb.Clients(tx)
 
-	err = annotationc.DeleteOneID(annotation.ID).Exec(ctx)
+	err = clients.Annotation.DeleteOneID(annotation.ID).Exec(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -416,7 +415,7 @@ func (flow *flow) RenameWorkflowAnnotation(ctx context.Context, req *grpc.Rename
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tx, err := flow.db.Tx(ctx)
+	tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -427,7 +426,9 @@ func (flow *flow) RenameWorkflowAnnotation(ctx context.Context, req *grpc.Rename
 		return nil, err
 	}
 
-	x, err := tx.Annotation.UpdateOneID(annotation.ID).SetName(req.GetNew()).Save(ctx)
+	clients := flow.edb.Clients(tx)
+
+	x, err := clients.Annotation.UpdateOneID(annotation.ID).SetName(req.GetNew()).Save(ctx)
 	if err != nil {
 		return nil, err
 	}
