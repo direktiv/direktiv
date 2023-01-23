@@ -165,11 +165,65 @@ export const useDirektivInstance = (
   const [workflow, setWorkflow] = React.useState(null);
   const [err, setErr] = React.useState(null);
   const [instanceID, setInstanceID] = React.useState(instance);
-  const [eventSource, setEventSource] = React.useState(null);
+  const eventSource = React.useRef(null);
+
+  const getLatestRevision = React.useCallback(
+    async (workflowPath, ...queryParameters) => {
+      // workflow doesnt exist anymore
+      if (workflowPath === "") {
+        setLatestRevision("");
+      }
+
+      let path = TrimPathSlashes(workflowPath);
+      let resp = await fetch(
+        `${url}namespaces/${namespace}/tree/${path}?op=validate-ref&ref=latest${ExtractQueryString(
+          true,
+          ...queryParameters
+        )}`,
+        {
+          headers: apiKeyHeaders(apikey),
+        }
+      );
+      if (resp.ok) {
+        let json = await resp.json();
+        setLatestRevision(json.revision.name);
+        return json.revision.name;
+      }
+      throw new Error(
+        await HandleError("get instance wf details", resp, "getInstance")
+      );
+    },
+    [apikey, namespace, url]
+  );
+
+  // getInstance returns a list of instances
+  const getInstance = React.useCallback(
+    async (...queryParameters) => {
+      // fetch instance list by default
+      let resp = await fetch(
+        `${url}namespaces/${namespace}/instances/${instanceID}${ExtractQueryString(
+          false,
+          ...queryParameters
+        )}`,
+        {
+          headers: apiKeyHeaders(apikey),
+        }
+      );
+      if (resp.ok) {
+        let json = await resp.json();
+        setData(json.instance);
+        setWorkflow(json.workflow);
+        getLatestRevision(json.workflow.path);
+        return json.instance;
+      }
+      throw new Error(await HandleError("get instance", resp, "getInstance"));
+    },
+    [apikey, getLatestRevision, instanceID, namespace, url]
+  );
 
   React.useEffect(() => {
     if (stream) {
-      if (eventSource === null) {
+      if (eventSource.current === null) {
         // setup event listener
         let listener = new EventSourcePolyfill(
           `${url}namespaces/${namespace}/instances/${instanceID}`,
@@ -205,78 +259,43 @@ export const useDirektivInstance = (
         }
 
         listener.onmessage = (e) => readData(e);
-        setEventSource(listener);
+        eventSource.current = listener;
       }
     } else {
       if (data === null) {
         getInstance();
       }
     }
-  }, [data, eventSource]);
+  }, [
+    apikey,
+    data,
+    getInstance,
+    getLatestRevision,
+    instanceID,
+    namespace,
+    stream,
+    url,
+  ]);
 
   // If instance changes reset eventSource
+
+  // TODO: check if this is really necessary
   React.useEffect(() => {
     if (stream) {
       if (instance !== instanceID) {
         setInstanceID(instance);
-        CloseEventSource(eventSource);
-        setEventSource(null);
+        CloseEventSource(eventSource.current);
+        eventSource.current = null;
         setData(null);
       }
     }
-  }, [eventSource, instanceID, instance, stream]);
+  }, [instanceID, instance, stream]);
 
   React.useEffect(() => {
-    return () => CloseEventSource(eventSource);
-  }, [eventSource]);
-
-  // getInstance returns a list of instances
-  async function getInstance(...queryParameters) {
-    // fetch instance list by default
-    let resp = await fetch(
-      `${url}namespaces/${namespace}/instances/${instanceID}${ExtractQueryString(
-        false,
-        ...queryParameters
-      )}`,
-      {
-        headers: apiKeyHeaders(apikey),
-      }
-    );
-    if (resp.ok) {
-      let json = await resp.json();
-      setData(json.instance);
-      setWorkflow(json.workflow);
-      getLatestRevision(json.workflow.path);
-      return json.instance;
-    }
-    throw new Error(await HandleError("get instance", resp, "getInstance"));
-  }
-
-  async function getLatestRevision(workflowPath, ...queryParameters) {
-    // workflow doesnt exist anymore
-    if (workflowPath === "") {
-      setLatestRevision("");
-    }
-
-    let path = TrimPathSlashes(workflowPath);
-    let resp = await fetch(
-      `${url}namespaces/${namespace}/tree/${path}?op=validate-ref&ref=latest${ExtractQueryString(
-        true,
-        ...queryParameters
-      )}`,
-      {
-        headers: apiKeyHeaders(apikey),
-      }
-    );
-    if (resp.ok) {
-      let json = await resp.json();
-      setLatestRevision(json.revision.name);
-      return json.revision.name;
-    }
-    throw new Error(
-      await HandleError("get instance wf details", resp, "getInstance")
-    );
-  }
+    return () => {
+      CloseEventSource(eventSource.current);
+    };
+  }, []);
 
   async function getInput(...queryParameters) {
     let resp = await fetch(
