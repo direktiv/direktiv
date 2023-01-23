@@ -26,7 +26,7 @@ export const useDirektivNamespaceLogs = (
 ) => {
   const [data, setData] = React.useState(null);
   const [err, setErr] = React.useState(null);
-  const [eventSource, setEventSource] = React.useState(null);
+  const eventSource = React.useRef(null);
 
   // Store Query parameters
   const [queryString, setQueryString] = React.useState(
@@ -36,9 +36,36 @@ export const useDirektivNamespaceLogs = (
   // Stores PageInfo about namespace log stream
   const [pageInfo, setPageInfo] = React.useState(null);
 
+  // getNamespaces returns a list of namespaces
+  const getNamespaceLogs = React.useCallback(
+    async (...queryParameters) => {
+      // fetch namespace list by default
+      let resp = await fetch(
+        `${url}namespaces/${namespace}/logs${ExtractQueryString(
+          false,
+          ...queryParameters
+        )}`,
+        {
+          headers: apiKeyHeaders(apikey),
+        }
+      );
+      if (resp.ok) {
+        let json = await resp.json();
+        setData(json.results);
+        setPageInfo(json.pageInfo);
+        return json.results;
+      } else {
+        throw new Error(
+          await HandleError("list namespace logs", resp, "namespaceLogs")
+        );
+      }
+    },
+    [apikey, namespace, url]
+  );
+
   React.useEffect(() => {
     if (stream) {
-      if (eventSource === null) {
+      if (eventSource.current === null) {
         // setup event listener
         let listener = new EventSourcePolyfill(
           `${url}namespaces/${namespace}/logs${queryString}`,
@@ -65,14 +92,14 @@ export const useDirektivNamespaceLogs = (
         }
 
         listener.onmessage = (e) => readData(e);
-        setEventSource(listener);
+        eventSource.current = listener;
       }
     } else {
       if (data === null) {
         getNamespaceLogs();
       }
     }
-  }, [data, apikey]);
+  }, [data, apikey, stream, url, namespace, queryString, getNamespaceLogs]);
 
   // If queryParameters change and streaming: update queryString, and reset sse connection
   React.useEffect(() => {
@@ -80,41 +107,17 @@ export const useDirektivNamespaceLogs = (
       let newQueryString = ExtractQueryString(false, ...queryParameters);
       if (newQueryString !== queryString) {
         setQueryString(newQueryString);
-        CloseEventSource(eventSource);
-        setEventSource(null);
+        CloseEventSource(eventSource.current);
+        eventSource.current = null;
       }
     }
-  }, [eventSource, queryParameters, queryString, stream]);
+  }, [queryParameters, queryString, stream]);
 
   React.useEffect(() => {
     return () => {
-      CloseEventSource(eventSource);
+      CloseEventSource(eventSource.current);
     };
-  }, [eventSource]);
-
-  // getNamespaces returns a list of namespaces
-  async function getNamespaceLogs(...queryParameters) {
-    // fetch namespace list by default
-    let resp = await fetch(
-      `${url}namespaces/${namespace}/logs${ExtractQueryString(
-        false,
-        ...queryParameters
-      )}`,
-      {
-        headers: apiKeyHeaders(apikey),
-      }
-    );
-    if (resp.ok) {
-      let json = await resp.json();
-      setData(json.results);
-      setPageInfo(json.pageInfo);
-      return json.results;
-    } else {
-      throw new Error(
-        await HandleError("list namespace logs", resp, "namespaceLogs")
-      );
-    }
-  }
+  }, []);
 
   return {
     data,
