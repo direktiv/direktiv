@@ -77,22 +77,54 @@ export const useDirektivMirror = (
     }
   }, [stream, queryString, pathString, apikey]);
 
-  // Non Stream Data Dispatch Handler
-  React.useEffect(async () => {
-    if (!stream && pathString !== null && !err) {
-      setEventSource(null);
-      try {
-        const data = await getInfo();
-        dispatchInfo({ type: STATE.UPDATE, data: data.info });
-        dispatchActivities({
-          type: STATE.UPDATE,
-          data: data.activities.results,
-        });
-      } catch (e) {
-        setErr(e.onmessage);
+  const getInfo = React.useCallback(
+    async (...queryParameters) => {
+      let uriPath = `${url}namespaces/${namespace}/tree`;
+      if (path !== "") {
+        uriPath += `${SanitizePath(path)}`;
       }
-    }
-  }, [stream, queryString, pathString, err]);
+      let request = {
+        method: "GET",
+        headers: apiKeyHeaders(apikey),
+      };
+
+      let resp = await fetch(
+        `${uriPath}?op=mirror-info${ExtractQueryString(
+          true,
+          ...queryParameters
+        )}`,
+        request
+      );
+      if (!resp.ok) {
+        throw new Error(
+          await HandleError("get mirror info", resp, "mirrorInfo")
+        );
+      }
+
+      return await resp.json();
+    },
+    [apikey, namespace, path, url]
+  );
+
+  // Non Stream Data Dispatch Handler
+  React.useEffect(() => {
+    const fetcupdateInfo = async () => {
+      if (!stream && pathString !== null && !err) {
+        setEventSource(null);
+        try {
+          const data = await getInfo();
+          dispatchInfo({ type: STATE.UPDATE, data: data.info });
+          dispatchActivities({
+            type: STATE.UPDATE,
+            data: data.activities.results,
+          });
+        } catch (e) {
+          setErr(e.onmessage);
+        }
+      }
+    };
+    fetcupdateInfo();
+  }, [stream, queryString, pathString, err, getInfo]);
 
   // Update PageInfo Ref
   React.useEffect(() => {
@@ -122,30 +154,6 @@ export const useDirektivMirror = (
       );
     }
   }, [stream, path, namespace, url]);
-
-  async function getInfo(...queryParameters) {
-    let uriPath = `${url}namespaces/${namespace}/tree`;
-    if (path !== "") {
-      uriPath += `${SanitizePath(path)}`;
-    }
-    let request = {
-      method: "GET",
-      headers: apiKeyHeaders(apikey),
-    };
-
-    let resp = await fetch(
-      `${uriPath}?op=mirror-info${ExtractQueryString(
-        true,
-        ...queryParameters
-      )}`,
-      request
-    );
-    if (!resp.ok) {
-      throw new Error(await HandleError("get mirror info", resp, "mirrorInfo"));
-    }
-
-    return await resp.json();
-  }
 
   async function updateSettings(mirrorSettings, ...queryParameters) {
     let uriPath = `${url}namespaces/${namespace}/tree`;
