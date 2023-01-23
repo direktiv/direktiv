@@ -30,7 +30,7 @@ export const useDirektivInstanceLogs = (
   const logsRef = React.useRef([]);
 
   const [err, setErr] = React.useState(null);
-  const [eventSource, setEventSource] = React.useState(null);
+  const eventSource = React.useRef(null);
 
   // Store Query parameters
   const [queryString, setQueryString] = React.useState(
@@ -40,10 +40,37 @@ export const useDirektivInstanceLogs = (
   // Stores PageInfo about instance log stream
   const [pageInfo, setPageInfo] = React.useState(null);
 
+  // getInstanceLogs returns a list of logs
+  const getInstanceLogs = React.useCallback(
+    async (...queryParameters) => {
+      // fetch instance list by default
+      let resp = await fetch(
+        `${url}namespaces/${namespace}/instances/${instance}/logs${ExtractQueryString(
+          false,
+          ...queryParameters
+        )}`,
+        {
+          headers: apiKeyHeaders(apikey),
+        }
+      );
+      if (resp.ok) {
+        let json = await resp.json();
+        setData(json.results);
+        setPageInfo(json.pageInfo);
+        return json.results;
+      }
+
+      throw new Error(
+        await HandleError("get instance logs", resp, "instanceLogs")
+      );
+    },
+    [apikey, instance, namespace, url]
+  );
+
   React.useEffect(() => {
     if (stream) {
       let log = logsRef.current;
-      if (eventSource === null) {
+      if (eventSource.current === null) {
         // setup event listener
         let listener = new EventSourcePolyfill(
           `${url}namespaces/${namespace}/instances/${instance}/logs${queryString}`,
@@ -74,18 +101,29 @@ export const useDirektivInstanceLogs = (
         }
 
         listener.onmessage = (e) => readData(e);
-        setEventSource(listener);
+        eventSource.current = listener;
       }
     } else {
       if (data === null) {
         getInstanceLogs();
       }
     }
-  }, [data, stream, apikey]);
+  }, [
+    data,
+    stream,
+    apikey,
+    url,
+    namespace,
+    instance,
+    queryString,
+    getInstanceLogs,
+  ]);
 
   React.useEffect(() => {
-    return () => CloseEventSource(eventSource);
-  }, [eventSource]);
+    return () => {
+      CloseEventSource(eventSource.current);
+    };
+  }, []);
 
   // If queryParameters change and streaming: update queryString, and reset sse connection
   React.useEffect(() => {
@@ -93,35 +131,11 @@ export const useDirektivInstanceLogs = (
       let newQueryString = ExtractQueryString(false, ...queryParameters);
       if (newQueryString !== queryString) {
         setQueryString(newQueryString);
-        CloseEventSource(eventSource);
-        setEventSource(null);
+        CloseEventSource(eventSource.current);
+        eventSource.current = null;
       }
     }
-  }, [eventSource, queryParameters, queryString, stream]);
-
-  // getInstanceLogs returns a list of logs
-  async function getInstanceLogs(...queryParameters) {
-    // fetch instance list by default
-    let resp = await fetch(
-      `${url}namespaces/${namespace}/instances/${instance}/logs${ExtractQueryString(
-        false,
-        ...queryParameters
-      )}`,
-      {
-        headers: apiKeyHeaders(apikey),
-      }
-    );
-    if (resp.ok) {
-      let json = await resp.json();
-      setData(json.results);
-      setPageInfo(json.pageInfo);
-      return json.results;
-    }
-
-    throw new Error(
-      await HandleError("get instance logs", resp, "instanceLogs")
-    );
-  }
+  }, [queryParameters, queryString, stream]);
 
   return {
     data,
