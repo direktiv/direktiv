@@ -148,69 +148,85 @@ export const useDirektivEvents = (
     }
   }, [stream, apikey, eventListenersQueryString, pathString]);
 
+  const getEventListeners = React.useCallback(
+    async (...queryParameters) => {
+      let resp = await fetch(
+        `${url}namespaces/${namespace}/event-listeners${ExtractQueryString(
+          false,
+          ...queryParameters
+        )}`,
+        {
+          method: "GET",
+          headers: apiKeyHeaders(apikey),
+        }
+      );
+      if (!resp.ok) {
+        throw new Error(
+          await HandleError("get event listeners", resp, "listEventHistory")
+        );
+      }
+      return await resp.json();
+    },
+    [apikey, namespace, url]
+  );
+
+  const getEventHistory = React.useCallback(
+    async (...queryParameters) => {
+      let resp = await fetch(
+        `${url}namespaces/${namespace}/events${ExtractQueryString(
+          false,
+          ...queryParameters
+        )}`,
+        {
+          method: "GET",
+          headers: apiKeyHeaders(apikey),
+        }
+      );
+      if (!resp.ok) {
+        throw new Error(
+          await HandleError("get event history", resp, "listEventHistory")
+        );
+      }
+      return await resp.json();
+    },
+    [apikey, namespace, url]
+  );
+
   // Non Stream Data Dispatch Handler
-  React.useEffect(async () => {
-    if (!stream && pathString !== null && !errHistory && !errListeners) {
-      setEventHistorySource(null);
-      setEventListenersSource(null);
+  React.useEffect(() => {
+    const update = async () => {
+      if (!stream && pathString !== null && !errHistory && !errListeners) {
+        setEventHistorySource(null);
+        setEventListenersSource(null);
 
-      const history = await getEventHistory();
+        const history = await getEventHistory();
 
-      dispatchEventHistory({
-        type: STATE.UPDATE,
-        data: history.events.results,
-      });
+        dispatchEventHistory({
+          type: STATE.UPDATE,
+          data: history.events.results,
+        });
 
-      setEventHistoryPageInfo(history.events.pageInfo);
+        setEventHistoryPageInfo(history.events.pageInfo);
 
-      const listeners = await getEventListeners();
-
-      dispatchEventListeners({
-        type: STATE.UPDATE,
-        data: listeners.results,
-      });
-
-      setEventListenersPageInfo(listeners.pageInfo);
-    }
-  }, [stream, pathString, errHistory, errListeners, apikey]);
-
-  async function getEventListeners(...queryParameters) {
-    let resp = await fetch(
-      `${url}namespaces/${namespace}/event-listeners${ExtractQueryString(
-        false,
-        ...queryParameters
-      )}`,
-      {
-        method: "GET",
-        headers: apiKeyHeaders(apikey),
+        const listeners = await getEventListeners();
+        dispatchEventListeners({
+          type: STATE.UPDATE,
+          data: listeners.results,
+        });
+        setEventListenersPageInfo(listeners.pageInfo);
       }
-    );
-    if (!resp.ok) {
-      throw new Error(
-        await HandleError("get event listeners", resp, "listEventHistory")
-      );
-    }
-    return await resp.json();
-  }
+    };
 
-  async function getEventHistory(...queryParameters) {
-    let resp = await fetch(
-      `${url}namespaces/${namespace}/events${ExtractQueryString(
-        false,
-        ...queryParameters
-      )}`,
-      {
-        method: "GET",
-        headers: apiKeyHeaders(apikey),
-      }
-    );
-    if (!resp.ok) {
-      throw new Error(
-        await HandleError("get event history", resp, "listEventHistory")
-      );
-    }
-    return await resp.json();
-  }
+    update();
+  }, [
+    stream,
+    pathString,
+    errHistory,
+    errListeners,
+    apikey,
+    getEventHistory,
+    getEventListeners,
+  ]);
 
   async function replayEvent(event, ...queryParameters) {
     const resp = await fetch(
