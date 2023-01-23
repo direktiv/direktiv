@@ -11,10 +11,10 @@ const { EventSourcePolyfill } = require("event-source-polyfill");
 export const useDirektivPodLogs = (url, pod, apikey) => {
   const [data, setData] = React.useState(null);
   const [err, setErr] = React.useState(null);
-  const [eventSource, setEventSource] = React.useState(null);
+  const eventSource = React.useRef(null);
 
   React.useEffect(() => {
-    if (eventSource === null) {
+    if (eventSource.current === null) {
       // setup event listener
       let listener = new EventSourcePolyfill(
         `${url}functions/logs/pod/${pod}`,
@@ -38,18 +38,20 @@ export const useDirektivPodLogs = (url, pod, apikey) => {
         let json = JSON.parse(e.data);
         setData(json);
       }
-
       listener.onmessage = (e) => readData(e);
-      setEventSource(listener);
+      eventSource.current = listener;
     }
-  }, [apikey]);
+  }, [apikey, pod, url]);
 
   React.useEffect(() => {
-    return () => CloseEventSource(eventSource);
-  }, [eventSource]);
+    return () => {
+      // cleanup
+      CloseEventSource(eventSource.current);
+    };
+  }, []);
 
   React.useEffect(() => {
-    if (eventSource !== null) {
+    if (eventSource.current !== null) {
       // setup event listener
       let listener = new EventSourcePolyfill(
         `${url}functions/logs/pod/${pod}`,
@@ -73,11 +75,10 @@ export const useDirektivPodLogs = (url, pod, apikey) => {
         let json = JSON.parse(e.data);
         setData(json);
       }
-
       listener.onmessage = (e) => readData(e);
-      setEventSource(listener);
+      eventSource.current = listener;
     }
-  }, [pod, apikey]);
+  }, [pod, apikey, url]);
 
   return {
     data,
