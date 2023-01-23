@@ -65,6 +65,22 @@ export const useDirektivMirrorLogs = (
     }
   }, [stream, queryString, pathString, apikey]);
 
+  const getActivityLogs = React.useCallback(async () => {
+    let request = {
+      method: "GET",
+      headers: apiKeyHeaders(apikey),
+    };
+
+    let resp = await fetch(`${pathString}${queryString}`, request);
+    if (!resp.ok) {
+      throw new Error(
+        await HandleError("mirror activity logs", resp, "mirrorActivityLogs")
+      );
+    }
+
+    return await resp.json();
+  }, [apikey, pathString, queryString]);
+
   // Non Stream Data Dispatch Handler
   React.useEffect(() => {
     if (!stream && pathString !== null) {
@@ -73,7 +89,7 @@ export const useDirektivMirrorLogs = (
         dataDispatch({ type: STATE.UPDATE, data: data });
       });
     }
-  }, [stream, queryString, pathString]);
+  }, [stream, queryString, pathString, getActivityLogs]);
 
   // Reset states when any prop that affects path is changed
   React.useEffect(() => {
@@ -94,22 +110,6 @@ export const useDirektivMirrorLogs = (
       );
     }
   }, [stream, activity, namespace, url]);
-
-  async function getActivityLogs() {
-    let request = {
-      method: "GET",
-      headers: apiKeyHeaders(apikey),
-    };
-
-    let resp = await fetch(`${pathString}${queryString}`, request);
-    if (!resp.ok) {
-      throw new Error(
-        await HandleError("mirror activity logs", resp, "mirrorActivityLogs")
-      );
-    }
-
-    return await resp.json();
-  }
 
   return {
     data,
