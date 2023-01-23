@@ -12,32 +12,35 @@ const fetch = require("isomorphic-fetch");
 export const useDirektivBroadcastConfiguration = (url, namespace, apikey) => {
   const [data, setData] = React.useState(null);
 
+  const getBroadcastConfiguration = React.useCallback(
+    async (...queryParameters) => {
+      let resp = await fetch(
+        `${url}namespaces/${namespace}/config${ExtractQueryString(
+          false,
+          ...queryParameters
+        )}`,
+        {
+          headers: apiKeyHeaders(apikey),
+        }
+      );
+      if (!resp.ok) {
+        throw new Error(
+          await HandleError("fetch config", resp, "getNamespaceConfiguration")
+        );
+      }
+      let json = await resp.json();
+      setData(json);
+      return json;
+    },
+    [apikey, namespace, url]
+  );
+
   React.useEffect(() => {
     const getData = async () => getBroadcastConfiguration();
     if (data === null) {
       getData().catch(() => {});
     }
-  }, [data]);
-
-  async function getBroadcastConfiguration(...queryParameters) {
-    let resp = await fetch(
-      `${url}namespaces/${namespace}/config${ExtractQueryString(
-        false,
-        ...queryParameters
-      )}`,
-      {
-        headers: apiKeyHeaders(apikey),
-      }
-    );
-    if (!resp.ok) {
-      throw new Error(
-        await HandleError("fetch config", resp, "getNamespaceConfiguration")
-      );
-    }
-    let json = await resp.json();
-    setData(json);
-    return json;
-  }
+  }, [data, getBroadcastConfiguration]);
 
   async function setBroadcastConfiguration(newconfig, ...queryParameters) {
     let resp = await fetch(
