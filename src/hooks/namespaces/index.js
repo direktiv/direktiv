@@ -24,7 +24,7 @@ export const useDirektivNamespaces = (
   const [data, setData] = React.useState(null);
   const [load, setLoad] = React.useState(true);
   const [err, setErr] = React.useState(null);
-  const [eventSource, setEventSource] = React.useState(null);
+  const eventSource = React.useRef(null);
 
   // Store Query parameters
   const [queryString, setQueryString] = React.useState(
@@ -34,9 +34,33 @@ export const useDirektivNamespaces = (
   // Stores PageInfo about namespace list stream
   const [pageInfo, setPageInfo] = React.useState(null);
 
+  // getNamespaces returns a list of namespaces and update the internal state
+  const getNamespaces = React.useCallback(
+    async (...queryParameters) => {
+      // fetch namespace list by default
+      let resp = await fetch(
+        `${url}namespaces${ExtractQueryString(false, ...queryParameters)}`,
+        {
+          headers: apiKeyHeaders(apikey),
+        }
+      );
+      if (resp.ok) {
+        let json = await resp.json();
+        setData(json.results);
+        setPageInfo(json.pageInfo);
+        return json.results;
+      } else {
+        throw new Error(
+          await HandleError("list namespaces", resp, "listNamespaces")
+        );
+      }
+    },
+    [apikey, url]
+  );
+
   React.useEffect(() => {
     if (stream) {
-      if (eventSource === null) {
+      if (eventSource.current === null) {
         // setup event listener
         let listener = new EventSourcePolyfill(
           `${url}namespaces${queryString}`,
@@ -64,7 +88,7 @@ export const useDirektivNamespaces = (
         }
 
         listener.onmessage = (e) => readData(e);
-        setEventSource(listener);
+        eventSource.current = listener;
         setLoad(false);
         setErr("");
       }
@@ -73,11 +97,11 @@ export const useDirektivNamespaces = (
         getNamespaces();
       }
     }
-  }, [data, apikey]);
+  }, [apikey, data, getNamespaces, queryString, stream, url]);
 
   React.useEffect(() => {
-    if (!load && eventSource !== null) {
-      CloseEventSource(eventSource);
+    if (!load && eventSource.current !== null) {
+      CloseEventSource(eventSource.current);
       // setup event listener
       let listener = new EventSourcePolyfill(`${url}namespaces${queryString}`, {
         headers: apiKeyHeaders(apikey),
@@ -101,10 +125,10 @@ export const useDirektivNamespaces = (
       }
 
       listener.onmessage = (e) => readData(e);
-      setEventSource(listener);
+      eventSource.current = listener;
       setErr("");
     }
-  }, [apikey]);
+  }, [apikey, load, queryString, url]);
 
   // If queryParameters change and streaming: update queryString, and reset sse connection
   React.useEffect(() => {
@@ -112,38 +136,17 @@ export const useDirektivNamespaces = (
       let newQueryString = ExtractQueryString(false, ...queryParameters);
       if (newQueryString !== queryString) {
         setQueryString(newQueryString);
-        CloseEventSource(eventSource);
-        setEventSource(null);
+        CloseEventSource(eventSource.current);
+        eventSource.current = null;
       }
     }
-  }, [eventSource, queryParameters, queryString, stream]);
+  }, [queryParameters, queryString, stream]);
 
   React.useEffect(() => {
     return () => {
-      CloseEventSource(eventSource);
+      CloseEventSource(eventSource.current);
     };
-  }, [eventSource]);
-
-  // getNamespaces returns a list of namespaces
-  async function getNamespaces(...queryParameters) {
-    // fetch namespace list by default
-    let resp = await fetch(
-      `${url}namespaces${ExtractQueryString(false, ...queryParameters)}`,
-      {
-        headers: apiKeyHeaders(apikey),
-      }
-    );
-    if (resp.ok) {
-      let json = await resp.json();
-      setData(json.results);
-      setPageInfo(json.pageInfo);
-      return json.results;
-    } else {
-      throw new Error(
-        await HandleError("list namespaces", resp, "listNamespaces")
-      );
-    }
-  }
+  }, []);
 
   // createNamespace creates a namespace from direktiv
   async function createNamespace(namespace, ...queryParameters) {
