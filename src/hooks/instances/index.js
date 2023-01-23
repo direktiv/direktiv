@@ -81,18 +81,48 @@ export const useDirektivInstances = (
     };
   }, [stream, queryString, pathString, apikey]);
 
-  // Non Stream Data Dispatch Handler
-  React.useEffect(async () => {
-    if (!stream && pathString !== null && !err) {
-      setEventSource(null);
-      try {
-        const instancesData = await getInstances();
-        dispatchData({ type: STATE.UPDATE, data: instancesData });
-      } catch (e) {
-        setErr(e);
+  // getInstances returns a list of instances
+  const getInstances = React.useCallback(
+    async (...queryParameters) => {
+      // fetch instance list by default
+      let resp = await fetch(
+        `${url}namespaces/${namespace}/instances${ExtractQueryString(
+          false,
+          ...queryParameters
+        )}`,
+        {
+          headers: apiKeyHeaders(apikey),
+        }
+      );
+      if (!resp.ok) {
+        throw new Error(
+          await HandleError("list instances", resp, "listInstances")
+        );
       }
-    }
-  }, [stream, queryString, pathString, err]);
+
+      let json = await resp.json();
+      setPageInfo(json.instances.pageInfo);
+      return json.instances.results;
+    },
+    [apikey, namespace, url]
+  );
+
+  // Non Stream Data Dispatch Handler
+  React.useEffect(() => {
+    const update = async () => {
+      if (!stream && pathString !== null && !err) {
+        setEventSource(null);
+        try {
+          const instancesData = await getInstances();
+          dispatchData({ type: STATE.UPDATE, data: instancesData });
+        } catch (e) {
+          setErr(e);
+        }
+      }
+    };
+
+    update();
+  }, [stream, queryString, pathString, err, getInstances]);
 
   // Reset states when any prop that affects path is changed
   React.useEffect(() => {
@@ -108,29 +138,6 @@ export const useDirektivInstances = (
       );
     }
   }, [stream, namespace, url]);
-
-  // getInstances returns a list of instances
-  async function getInstances(...queryParameters) {
-    // fetch instance list by default
-    let resp = await fetch(
-      `${url}namespaces/${namespace}/instances${ExtractQueryString(
-        false,
-        ...queryParameters
-      )}`,
-      {
-        headers: apiKeyHeaders(apikey),
-      }
-    );
-    if (!resp.ok) {
-      throw new Error(
-        await HandleError("list instances", resp, "listInstances")
-      );
-    }
-
-    let json = await resp.json();
-    setPageInfo(json.instances.pageInfo);
-    return json.instances.results;
-  }
 
   return {
     data,
