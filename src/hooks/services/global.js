@@ -417,11 +417,33 @@ export const useDirektivGlobalServices = (url, stream, apikey) => {
 
   const functionsRef = React.useRef(data ? data : []);
   const [err, setErr] = React.useState(null);
-  const [eventSource, setEventSource] = React.useState(null);
+  const eventSource = React.useRef(null);
+
+  const getGlobalServices = React.useCallback(
+    async (...queryParameters) => {
+      let resp = await fetch(
+        `${url}functions${ExtractQueryString(false, ...queryParameters)}`,
+        {
+          headers: apiKeyHeaders(apikey),
+          method: "GET",
+        }
+      );
+      if (resp.ok) {
+        let json = await resp.json();
+        setData(json.functions);
+        return json.functions;
+      } else {
+        throw new Error(
+          await HandleError("get global services", resp, "listServices")
+        );
+      }
+    },
+    [apikey, url]
+  );
 
   React.useEffect(() => {
     if (stream) {
-      if (eventSource === null) {
+      if (eventSource.current === null) {
         // setup event listener
         let listener = new EventSourcePolyfill(`${url}functions`, {
           headers: apiKeyHeaders(apikey),
@@ -480,18 +502,20 @@ export const useDirektivGlobalServices = (url, stream, apikey) => {
         }
 
         listener.onmessage = (e) => readData(e);
-        setEventSource(listener);
+        eventSource.current = listener;
       }
     } else {
       if (data === null) {
         getGlobalServices();
       }
     }
-  }, [data, apikey]);
+  }, [data, apikey, stream, url, getGlobalServices]);
 
   React.useEffect(() => {
-    return () => CloseEventSource(eventSource);
-  }, [eventSource]);
+    return () => {
+      CloseEventSource(eventSource.current);
+    };
+  }, []);
 
   async function getConfig(...queryParameters) {
     let resp = await fetch(
@@ -508,25 +532,6 @@ export const useDirektivGlobalServices = (url, stream, apikey) => {
     } else {
       throw new Error(
         await HandleError("get namespace service", resp, "listServices")
-      );
-    }
-  }
-
-  async function getGlobalServices(...queryParameters) {
-    let resp = await fetch(
-      `${url}functions${ExtractQueryString(false, ...queryParameters)}`,
-      {
-        headers: apiKeyHeaders(apikey),
-        method: "GET",
-      }
-    );
-    if (resp.ok) {
-      let json = await resp.json();
-      setData(json.functions);
-      return json.functions;
-    } else {
-      throw new Error(
-        await HandleError("get global services", resp, "listServices")
       );
     }
   }
