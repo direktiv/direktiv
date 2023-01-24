@@ -457,14 +457,38 @@ export const useDirektivNamespaceServices = (
 ) => {
   const [data, setData] = React.useState(null);
   const [config, setConfig] = React.useState(null);
-
   const functionsRef = React.useRef(data ? data : []);
   const [err, setErr] = React.useState(null);
-  const [eventSource, setEventSource] = React.useState(null);
+  const eventSource = React.useRef(null);
+
+  const getNamespaceServices = React.useCallback(
+    async (...queryParameters) => {
+      let resp = await fetch(
+        `${url}functions/namespaces/${namespace}${ExtractQueryString(
+          false,
+          ...queryParameters
+        )}`,
+        {
+          headers: apiKeyHeaders(apikey),
+          method: "GET",
+        }
+      );
+      if (resp.ok) {
+        let json = await resp.json();
+        setData(json.functions);
+        return json.functions;
+      } else {
+        throw new Error(
+          await HandleError("get namespace service", resp, "listServices")
+        );
+      }
+    },
+    [apikey, namespace, url]
+  );
 
   React.useEffect(() => {
     if (stream) {
-      if (eventSource === null) {
+      if (eventSource.current === null) {
         // setup event listener
         let listener = new EventSourcePolyfill(
           `${url}functions/namespaces/${namespace}`,
@@ -530,40 +554,20 @@ export const useDirektivNamespaceServices = (
         }
 
         listener.onmessage = (e) => readData(e);
-        setEventSource(listener);
+        eventSource.current = listener;
       }
     } else {
       if (data === null) {
         getNamespaceServices();
       }
     }
-  }, [data, apikey]);
+  }, [data, apikey, stream, url, namespace, getNamespaceServices]);
 
   React.useEffect(() => {
-    return () => CloseEventSource(eventSource);
-  }, [eventSource]);
-
-  async function getNamespaceServices(...queryParameters) {
-    let resp = await fetch(
-      `${url}functions/namespaces/${namespace}${ExtractQueryString(
-        false,
-        ...queryParameters
-      )}`,
-      {
-        headers: apiKeyHeaders(apikey),
-        method: "GET",
-      }
-    );
-    if (resp.ok) {
-      let json = await resp.json();
-      setData(json.functions);
-      return json.functions;
-    } else {
-      throw new Error(
-        await HandleError("get namespace service", resp, "listServices")
-      );
-    }
-  }
+    return () => {
+      CloseEventSource(eventSource.current);
+    };
+  }, []);
 
   async function getNamespaceConfig(...queryParameters) {
     let resp = await fetch(
