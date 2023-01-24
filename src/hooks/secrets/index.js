@@ -12,32 +12,35 @@ const fetch = require("isomorphic-fetch");
 export const useDirektivSecrets = (url, namespace, apikey) => {
   const [data, setData] = React.useState(null);
 
+  // getSecrets returns a list of registries
+  const getSecrets = React.useCallback(
+    async (...queryParameters) => {
+      let resp = await fetch(
+        `${url}namespaces/${namespace}/secrets${ExtractQueryString(
+          false,
+          ...queryParameters
+        )}`,
+        {
+          headers: apiKeyHeaders(apikey),
+        }
+      );
+      if (resp.ok) {
+        let json = await resp.json();
+        setData(json.secrets.results);
+        return json.secrets.results;
+      } else {
+        throw new Error(await HandleError("list secrets", resp, "listSecrets"));
+      }
+    },
+    [apikey, namespace, url]
+  );
+
   React.useEffect(() => {
     const getData = async () => getSecrets();
     if (data === null) {
       getData().catch(() => {});
     }
-  }, [data]);
-
-  // getSecrets returns a list of registries
-  async function getSecrets(...queryParameters) {
-    let resp = await fetch(
-      `${url}namespaces/${namespace}/secrets${ExtractQueryString(
-        false,
-        ...queryParameters
-      )}`,
-      {
-        headers: apiKeyHeaders(apikey),
-      }
-    );
-    if (resp.ok) {
-      let json = await resp.json();
-      setData(json.secrets.results);
-      return json.secrets.results;
-    } else {
-      throw new Error(await HandleError("list secrets", resp, "listSecrets"));
-    }
-  }
+  }, [data, getSecrets]);
 
   async function createSecret(name, value, ...queryParameters) {
     let resp = await fetch(
