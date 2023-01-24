@@ -14,7 +14,3 @@ func parent() string {
 	elems := strings.Split(fn.Name(), ".")
 	return elems[len(elems)-1]
 }
-
-func (db *Database) IsNotFound(err error) bool {
-	return false
-}

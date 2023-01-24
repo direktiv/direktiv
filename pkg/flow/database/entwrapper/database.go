@@ -5,6 +5,9 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"os"
+	"strings"
+	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
@@ -218,7 +221,7 @@ func (db *Database) Inode(ctx context.Context, tx database.Transaction, id uuid.
 	clients := db.clients(tx)
 
 	ino, err := clients.Inode.Query().Where(entino.ID(id)).WithChildren(func(q *ent.InodeQuery) {
-		q.Order(ent.Asc(entino.FieldName)).Select(entino.FieldID)
+		q.Order(ent.Asc(entino.FieldName)).Select(entino.FieldID, entino.FieldName, entino.FieldType, entino.FieldExtendedType)
 	}).WithNamespace(func(q *ent.NamespaceQuery) {
 		q.Select(entns.FieldID)
 	}).WithParent(func(q *ent.InodeQuery) {
@@ -230,6 +233,63 @@ func (db *Database) Inode(ctx context.Context, tx database.Transaction, id uuid.
 	}).Only(ctx)
 	if err != nil {
 		db.sugar.Debugf("%s failed to resolve inode: %v", parent(), err)
+		return nil, err
+	}
+
+	return entInode(ino), nil
+
+}
+
+func (db *Database) CreateInode(ctx context.Context, tx database.Transaction, args *database.CreateInodeArgs) (*database.Inode, error) {
+
+	clients := db.clients(tx)
+
+	ino, err := clients.Inode.Create().
+		SetName(args.Name).
+		SetType(args.Type).
+		SetAttributes(args.Attributes).
+		SetExtendedType(args.ExtendedType).
+		SetReadOnly(args.ReadOnly).
+		SetNamespaceID(args.Namespace).
+		SetParentID(args.Parent).
+		Save(ctx)
+	if err != nil {
+		if strings.Contains(err.Error(), "duplicate key value violates unique constraint") {
+			return nil, os.ErrExist
+		}
+		db.sugar.Debugf("%s failed to create inode: %v", parent(), err)
+		return nil, err
+	}
+
+	return entInode(ino), nil
+
+}
+
+func (db *Database) UpdateInode(ctx context.Context, tx database.Transaction, args *database.UpdateInodeArgs) (*database.Inode, error) {
+
+	clients := db.clients(tx)
+
+	query := clients.Inode.UpdateOneID(args.ID).SetUpdatedAt(time.Now())
+
+	if args.Name != nil {
+		query = query.SetName(*args.Name)
+	}
+
+	if args.Attributes != nil {
+		query = query.SetAttributes(*args.Attributes)
+	}
+
+	if args.ReadOnly != nil {
+		query = query.SetReadOnly(*args.ReadOnly)
+	}
+
+	if args.Parent != nil {
+		query = query.SetParentID(*args.Parent)
+	}
+
+	ino, err := query.Save(ctx)
+	if err != nil {
+		db.sugar.Debugf("%s failed to update inode: %v", parent(), err)
 		return nil, err
 	}
 
@@ -267,6 +327,63 @@ func (db *Database) Workflow(ctx context.Context, tx database.Transaction, id uu
 
 }
 
+func (db *Database) CreateWorkflow(ctx context.Context, tx database.Transaction, args *database.CreateWorkflowArgs) (*database.Workflow, error) {
+
+	clients := db.clients(tx)
+
+	wf, err := clients.Workflow.Create().
+		SetInodeID(args.Inode.ID).
+		SetNamespaceID(args.Inode.Namespace).
+		SetReadOnly(args.Inode.ReadOnly).
+		Save(ctx)
+	if err != nil {
+		db.sugar.Debugf("%s failed to create workflow: %v", parent(), err)
+		return nil, err
+	}
+
+	return entWorkflow(wf), nil
+
+}
+
+func (db *Database) UpdateWorkflow(ctx context.Context, tx database.Transaction, args *database.UpdateWorkflowArgs) (*database.Workflow, error) {
+
+	clients := db.clients(tx)
+
+	query := clients.Workflow.UpdateOneID(args.ID).SetUpdatedAt(time.Now())
+
+	if args.ReadOnly != nil {
+		query = query.SetReadOnly(*args.ReadOnly)
+	}
+
+	wf, err := query.Save(ctx)
+	if err != nil {
+		db.sugar.Debugf("%s failed to update workflow: %v", parent(), err)
+		return nil, err
+	}
+
+	return entWorkflow(wf), nil
+
+}
+
+func (db *Database) CreateRef(ctx context.Context, tx database.Transaction, args *database.CreateRefArgs) (*database.Ref, error) {
+
+	clients := db.clients(tx)
+
+	ref, err := clients.Ref.Create().
+		SetImmutable(args.Immutable).
+		SetName(args.Name).
+		SetWorkflowID(args.Workflow).
+		SetRevisionID(args.Revision).
+		Save(ctx)
+	if err != nil {
+		db.sugar.Debugf("%s failed to create ref: %v", parent(), err)
+		return nil, err
+	}
+
+	return entRef(ref), nil
+
+}
+
 func (db *Database) Revision(ctx context.Context, tx database.Transaction, id uuid.UUID) (*database.Revision, error) {
 
 	clients := db.clients(tx)
@@ -276,6 +393,24 @@ func (db *Database) Revision(ctx context.Context, tx database.Transaction, id uu
 	}).Only(ctx)
 	if err != nil {
 		db.sugar.Debugf("%s failed to resolve revision: %v", parent(), err)
+		return nil, err
+	}
+
+	return entRevision(rev), nil
+
+}
+
+func (db *Database) CreateRevision(ctx context.Context, tx database.Transaction, args *database.CreateRevisionArgs) (*database.Revision, error) {
+
+	clients := db.clients(tx)
+
+	rev, err := clients.Revision.Create().
+		SetHash(args.Hash).
+		SetSource(args.Source).
+		SetWorkflowID(args.Workflow).
+		SetMetadata(args.Metadata).
+		Save(ctx)
+	if err != nil {
 		return nil, err
 	}
 
@@ -508,5 +643,58 @@ func (db *Database) Mirror(ctx context.Context, tx database.Transaction, id uuid
 	}
 
 	return entMirror(mir), nil
+
+}
+
+func (db *Database) Mirrors(ctx context.Context, tx database.Transaction) ([]uuid.UUID, error) {
+
+	clients := db.clients(tx)
+
+	var ids = make([]uuid.UUID, 0)
+
+	rows, err := clients.Mirror.Query().Select(entmir.FieldID).All(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	for idx := range rows {
+		ids = append(ids, rows[idx].ID)
+	}
+
+	return ids, nil
+
+}
+
+func (db *Database) MirrorActivity(ctx context.Context, tx database.Transaction, id uuid.UUID) (*database.MirrorActivity, error) {
+
+	clients := db.clients(tx)
+
+	act, err := clients.MirrorActivity.Get(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return entMirrorActivity(act), nil
+
+}
+
+func (db *Database) CreateMirrorActivity(ctx context.Context, tx database.Transaction, args *database.CreateMirrorActivityArgs) (*database.MirrorActivity, error) {
+
+	clients := db.clients(tx)
+
+	act, err := clients.MirrorActivity.Create().
+		SetType(args.Type).
+		SetStatus(args.Status).
+		SetEndAt(args.EndAt).
+		SetMirrorID(args.Mirror).
+		SetNamespaceID(args.Namespace).
+		SetController(args.Controller).
+		SetDeadline(args.Deadline).
+		Save(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return entMirrorActivity(act), nil
 
 }

@@ -22,11 +22,6 @@ func (db *Database) entNamespace(ns *ent.Namespace) *database.Namespace {
 
 }
 
-// TODO: delete this
-func EntInode(ino *ent.Inode) *database.Inode {
-	return entInode(ino)
-}
-
 func entInode(ino *ent.Inode) *database.Inode {
 
 	if ino == nil {
@@ -61,11 +56,6 @@ func entInode(ino *ent.Inode) *database.Inode {
 
 	return x
 
-}
-
-// TODO: delete this
-func EntWorkflow(wf *ent.Workflow) *database.Workflow {
-	return entWorkflow(wf)
 }
 
 func entWorkflow(wf *ent.Workflow) *database.Workflow {
@@ -130,11 +120,6 @@ func entRef(ref *ent.Ref) *database.Ref {
 
 	return x
 
-}
-
-// TODO: delete this
-func EntRevision(rev *ent.Revision) *database.Revision {
-	return entRevision(rev)
 }
 
 func entRevision(rev *ent.Revision) *database.Revision {
@@ -271,11 +256,6 @@ func (db *Database) entVarData(v *ent.VarData) *database.VarData {
 
 }
 
-// TODO: delete this
-func EntMirror(v *ent.Mirror) *database.Mirror {
-	return entMirror(v)
-}
-
 func entMirror(v *ent.Mirror) *database.Mirror {
 
 	if v == nil {
@@ -293,13 +273,9 @@ func entMirror(v *ent.Mirror) *database.Mirror {
 		Commit:     v.Commit,
 		LastSync:   v.LastSync,
 		UpdatedAt:  v.UpdatedAt,
+		Inode:      v.Edges.Inode.ID,
 	}
 
-}
-
-// TODO: delete this
-func EntMirrorActivity(v *ent.MirrorActivity) *database.MirrorActivity {
-	return entMirrorActivity(v)
 }
 
 func entMirrorActivity(v *ent.MirrorActivity) *database.MirrorActivity {
@@ -317,6 +293,8 @@ func entMirrorActivity(v *ent.MirrorActivity) *database.MirrorActivity {
 		EndAt:      v.EndAt,
 		Controller: v.Controller,
 		Deadline:   v.Deadline,
+		Mirror:     v.Edges.Mirror.ID,
+		Namespace:  v.Edges.Namespace.ID,
 	}
 
 }

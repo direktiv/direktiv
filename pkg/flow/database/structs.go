@@ -31,6 +31,51 @@ type Inode struct {
 	Mirror       uuid.UUID `json:"mirror,omitempty"`
 }
 
+func (ino *Inode) addChild(child *Inode) {
+
+	x := &Inode{
+		ID:           child.ID,
+		Name:         child.Name,
+		Type:         child.Type,
+		ExtendedType: child.ExtendedType,
+	}
+
+	idx := 0
+	for i := range ino.Children {
+		if ino.Children[i].Name > x.Name {
+			idx = i
+			break
+		}
+	}
+
+	ino.Children = append(ino.Children[:idx], append([]*Inode{x}, ino.Children[idx:]...)...)
+
+}
+
+type CreateInodeArgs struct {
+	Name         string    `json:"name,omitempty"`
+	Type         string    `json:"type,omitempty"`
+	Attributes   []string  `json:"attributes,omitempty"`
+	ExtendedType string    `json:"expandedType,omitempty"`
+	ReadOnly     bool      `json:"readOnly,omitempty"`
+	Namespace    uuid.UUID `json:"namespace,omitempty"`
+	Parent       uuid.UUID `json:"parent,omitempty"`
+}
+
+type UpdateInodeArgs struct {
+	ID         uuid.UUID  `json:"id,omitempty"`
+	Name       *string    `json:"name,omitempty"`
+	Attributes *[]string  `json:"attributes,omitempty"`
+	ReadOnly   *bool      `json:"readOnly,omitempty"`
+	Parent     *uuid.UUID `json:"parent,omitempty"`
+}
+
+type CreateDirectoryInodeArgs struct {
+	Name     string `json:"name,omitempty"`
+	ReadOnly bool   `json:"readOnly,omitempty"`
+	Parent   *Inode `json:"parent,omitempty"`
+}
+
 type Workflow struct {
 	ID          uuid.UUID   `json:"id,omitempty"`
 	Live        bool        `json:"live,omitempty"`
@@ -44,11 +89,36 @@ type Workflow struct {
 	Routes      []*Route    `json:"route,omitempty"`
 }
 
+type CreateWorkflowArgs struct {
+	Inode *Inode `json:"parent,omitempty"`
+}
+
+type CreateCompleteWorkflowArgs struct {
+	Name     string                 `json:"name,omitempty"`
+	ReadOnly bool                   `json:"readOnly,omitempty"`
+	Parent   *CacheData             `json:"parent,omitempty"`
+	Hash     string                 `json:"hash,omitempty"`
+	Source   []byte                 `json:"source,omitempty"`
+	Metadata map[string]interface{} `json:"metadata,omitempty"`
+}
+
+type UpdateWorkflowArgs struct {
+	ID       uuid.UUID `json:"id,omitempty"`
+	ReadOnly *bool     `json:"readOnly,omitempty"`
+}
+
 type Ref struct {
 	ID        uuid.UUID `json:"id"`
 	Immutable bool      `json:"immutable,omitempty"`
 	Name      string    `json:"name,omitempty"`
 	CreatedAt time.Time `json:"created_at,omitempty"`
+	Revision  uuid.UUID `json:"revision,omitempty"`
+}
+
+type CreateRefArgs struct {
+	Immutable bool      `json:"immutable,omitempty"`
+	Name      string    `json:"name,omitempty"`
+	Workflow  uuid.UUID `json:"workflow,omitempty"`
 	Revision  uuid.UUID `json:"revision,omitempty"`
 }
 
@@ -59,6 +129,13 @@ type Revision struct {
 	Source    []byte                 `json:"source,omitempty"`
 	Metadata  map[string]interface{} `json:"metadata,omitempty"`
 	Workflow  uuid.UUID              `json:"workflow,omitempty"`
+}
+
+type CreateRevisionArgs struct {
+	Hash     string                 `json:"hash,omitempty"`
+	Source   []byte                 `json:"source,omitempty"`
+	Metadata map[string]interface{} `json:"metadata,omitempty"`
+	Workflow uuid.UUID              `json:"workflow,omitempty"`
 }
 
 type Route struct {
@@ -141,6 +218,7 @@ type Mirror struct {
 	Commit     string     `json:"commit,omitempty"`
 	LastSync   *time.Time `json:"last_sync,omitempty"`
 	UpdatedAt  time.Time  `json:"updated_at,omitempty"`
+	Inode      uuid.UUID  `json:"inode,omitempty"`
 }
 
 type MirrorActivity struct {
@@ -152,4 +230,16 @@ type MirrorActivity struct {
 	EndAt      time.Time `json:"end_at,omitempty"`
 	Controller string    `json:"controller,omitempty"`
 	Deadline   time.Time `json:"deadline,omitempty"`
+	Namespace  uuid.UUID `json:"namespace,omitempty"`
+	Mirror     uuid.UUID `json:"mirror,omitempty"`
+}
+
+type CreateMirrorActivityArgs struct {
+	Type       string    `json:"type,omitempty"`
+	Status     string    `json:"status,omitempty"`
+	EndAt      time.Time `json:"end_at,omitempty"`
+	Controller string    `json:"controller,omitempty"`
+	Deadline   time.Time `json:"deadline,omitempty"`
+	Namespace  uuid.UUID `json:"namespace,omitempty"`
+	Mirror     uuid.UUID `json:"mirror,omitempty"`
 }

@@ -3,7 +3,6 @@ package flow
 import (
 	"context"
 	"errors"
-	"os"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -267,53 +266,30 @@ type createDirectoryArgs struct {
 	super   bool
 }
 
-func (flow *flow) createDirectory(ctx context.Context, tx database.Transaction, args *createDirectoryArgs) (*ent.Inode, error) {
+func (flow *flow) createDirectory(ctx context.Context, tx database.Transaction, args *createDirectoryArgs) (*database.Inode, error) {
 
-	path := args.path
 	dir, base := filepath.Split(args.path)
-
-	if args.pcached.Inode().Type != util.InodeTypeDirectory {
-		return nil, status.Error(codes.AlreadyExists, "parent node is not a directory")
-	}
 
 	if args.pcached.Inode().ReadOnly && !args.super {
 		return nil, errors.New("cannot write into read-only directory")
 	}
 
-	clients := flow.edb.Clients(tx)
-
-	ino, err := clients.Inode.Query().Where(entino.HasParentWith(entino.ID(args.pcached.Inode().ID)), entino.NameEQ(base)).Only(ctx)
-	if err != nil && !ent.IsNotFound(err) {
-		return nil, err
-	} else if err == nil {
-		if ino.Type != util.InodeTypeDirectory {
-			return nil, os.ErrExist
-		}
-		return ino, os.ErrExist
-	}
-
-	ino, err = clients.Inode.Create().SetName(base).SetNamespaceID(args.pcached.Namespace.ID).SetParentID(args.pcached.Inode().ID).SetReadOnly(args.pcached.Inode().ReadOnly).SetType(util.InodeTypeDirectory).Save(ctx)
-	if err != nil {
-		if strings.Contains(err.Error(), "duplicate key value violates unique constraint") {
-			return nil, os.ErrExist
-		}
-		return nil, err
-	}
-
-	pino, err := clients.Inode.UpdateOneID(args.pcached.Inode().ID).SetUpdatedAt(time.Now()).Save(ctx)
+	ino, err := flow.database.CreateDirectoryInode(ctx, tx, &database.CreateDirectoryInodeArgs{
+		Name:     base,
+		ReadOnly: args.pcached.Inode().ReadOnly,
+		Parent:   args.pcached.Inode(),
+	})
 	if err != nil {
 		return nil, err
 	}
 
-	args.pcached.Inode().UpdatedAt = pino.UpdatedAt
-
-	flow.logToNamespace(ctx, time.Now(), args.pcached, "Created directory '%s'.", path)
+	flow.logToNamespace(ctx, time.Now(), args.pcached, "Created directory '%s'.", args.path)
 	flow.pubsub.NotifyInode(args.pcached.Inode())
 
 	// Broadcast
 	err = flow.BroadcastDirectory(ctx, BroadcastEventTypeCreate,
 		broadcastDirectoryInput{
-			Path:   path,
+			Path:   args.path,
 			Parent: dir,
 		}, args.pcached)
 	if err != nil {

@@ -35,6 +35,16 @@ type Database interface {
 	ThreadVariableRef(ctx context.Context, tx Transaction, instID uuid.UUID, key string) (*VarRef, error)
 	VariableData(ctx context.Context, tx Transaction, id uuid.UUID, load bool) (*VarData, error)
 	Mirror(ctx context.Context, tx Transaction, id uuid.UUID) (*Mirror, error)
+	Mirrors(ctx context.Context, tx Transaction) ([]uuid.UUID, error)
+	MirrorActivity(ctx context.Context, tx Transaction, id uuid.UUID) (*MirrorActivity, error)
+
+	CreateInode(ctx context.Context, tx Transaction, args *CreateInodeArgs) (*Inode, error)
+	UpdateInode(ctx context.Context, tx Transaction, args *UpdateInodeArgs) (*Inode, error)
+	CreateMirrorActivity(ctx context.Context, tx Transaction, args *CreateMirrorActivityArgs) (*MirrorActivity, error)
+	CreateWorkflow(ctx context.Context, tx Transaction, args *CreateWorkflowArgs) (*Workflow, error)
+	UpdateWorkflow(ctx context.Context, tx Transaction, args *UpdateWorkflowArgs) (*Workflow, error)
+	CreateRevision(ctx context.Context, tx Transaction, args *CreateRevisionArgs) (*Revision, error)
+	CreateRef(ctx context.Context, tx Transaction, args *CreateRefArgs) (*Ref, error)
 }
 
 type CacheData struct {

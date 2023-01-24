@@ -3,11 +3,11 @@ package flow
 import (
 	"context"
 	"errors"
+	"os"
 	"path/filepath"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/database"
-	"github.com/direktiv/direktiv/pkg/flow/database/entwrapper"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
@@ -17,11 +17,9 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 
-	entino "github.com/direktiv/direktiv/pkg/flow/ent/inode"
 	entlog "github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
 	entmir "github.com/direktiv/direktiv/pkg/flow/ent/mirror"
 	entmiract "github.com/direktiv/direktiv/pkg/flow/ent/mirroractivity"
-	entns "github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 )
 
 func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNamespaceMirrorRequest) (*grpc.CreateNamespaceResponse, error) {
@@ -286,17 +284,15 @@ func (flow *flow) UpdateMirrorSettings(ctx context.Context, req *grpc.UpdateMirr
 	if err != nil {
 		return nil, err
 	}
-	mirror = entwrapper.EntMirror(x)
 
 	err = flow.syncer.NewActivity(tx, &newMirrorActivityArgs{
-		MirrorID: mirror.ID.String(),
+		MirrorID: x.ID.String(),
 		Type:     util.MirrorActivityTypeReconfigure,
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	// flow.logToNamespace(ctx, time.Now(), ns, "Created directory as git mirror '%s'.", path)
 	flow.pubsub.NotifyMirror(cached.Inode())
 
 	var resp emptypb.Empty
@@ -327,42 +323,55 @@ func (flow *flow) LockMirror(ctx context.Context, req *grpc.LockMirrorRequest) (
 	ino := cached.Inode()
 	updatedInodes := make([]*database.Inode, 0)
 
-	clients := flow.edb.Clients(tx)
-
 	var recurser func(ino *database.Inode) error
 	recurser = func(ino *database.Inode) error {
 
-		inos, err := clients.Inode.Query().Where(entino.HasParentWith(entino.ID(ino.ID))).All(ctx)
-		if err != nil {
-			return err
-		}
-
-		for _, ino := range inos {
+		for _, child := range ino.Children {
 			if ino.ExtendedType == util.InodeTypeGit {
 				continue
 			}
 
-			x, err := ino.Update().SetReadOnly(false).Save(ctx)
+			readonly := false
+
+			ino, err = flow.database.UpdateInode(ctx, tx, &database.UpdateInodeArgs{
+				ID:       child.ID,
+				ReadOnly: &readonly,
+			})
 			if err != nil {
 				return err
 			}
 
-			updatedInodes = append(updatedInodes, entwrapper.EntInode(x))
+			updatedInodes = append(updatedInodes, ino)
 
 			if ino.Type == util.InodeTypeDirectory {
-				err = recurser(entwrapper.EntInode(ino))
+				err = recurser(ino)
 				if err != nil {
 					return err
 				}
 			} else if ino.Type == util.InodeTypeWorkflow {
-				wf, err := ino.QueryWorkflow().Only(ctx)
+
+				cached := new(database.CacheData)
+
+				err = flow.database.Inode(ctx, tx, cached, ino.ID)
 				if err != nil {
 					return err
 				}
-				_, err = wf.Update().SetReadOnly(false).Save(ctx)
+
+				err = flow.database.Workflow(ctx, tx, cached, cached.Inode().Workflow)
 				if err != nil {
 					return err
 				}
+
+				readonly := false
+
+				_, err = flow.database.UpdateWorkflow(ctx, tx, &database.UpdateWorkflowArgs{
+					ID:       cached.Workflow.ID,
+					ReadOnly: &readonly,
+				})
+				if err != nil {
+					return err
+				}
+
 			} else {
 				return errors.New("inode type unaccounted for")
 			}
@@ -372,12 +381,17 @@ func (flow *flow) LockMirror(ctx context.Context, req *grpc.LockMirrorRequest) (
 
 	}
 
-	x, err := clients.Inode.UpdateOneID(ino.ID).SetReadOnly(false).Save(ctx)
+	readonly := false
+
+	ino, err = flow.database.UpdateInode(ctx, tx, &database.UpdateInodeArgs{
+		ID:       ino.ID,
+		ReadOnly: &readonly,
+	})
 	if err != nil {
 		return nil, err
 	}
 
-	updatedInodes = append(updatedInodes, entwrapper.EntInode(x))
+	updatedInodes = append(updatedInodes, ino)
 
 	err = recurser(ino)
 	if err != nil {
@@ -425,42 +439,55 @@ func (flow *flow) UnlockMirror(ctx context.Context, req *grpc.UnlockMirrorReques
 	ino := cached.Inode()
 	updatedInodes := make([]*database.Inode, 0)
 
-	clients := flow.edb.Clients(tx)
-
 	var recurser func(ino *database.Inode) error
 	recurser = func(ino *database.Inode) error {
 
-		inos, err := clients.Inode.Query().Where(entino.HasParentWith(entino.ID(ino.ID))).All(ctx)
-		if err != nil {
-			return err
-		}
-
-		for _, ino := range inos {
+		for _, child := range ino.Children {
 			if ino.ExtendedType == util.InodeTypeGit {
 				continue
 			}
 
-			ino, err := ino.Update().SetReadOnly(true).Save(ctx)
+			readonly := false
+
+			ino, err := flow.database.UpdateInode(ctx, tx, &database.UpdateInodeArgs{
+				ID:       child.ID,
+				ReadOnly: &readonly,
+			})
 			if err != nil {
 				return err
 			}
 
-			updatedInodes = append(updatedInodes, entwrapper.EntInode(ino))
+			updatedInodes = append(updatedInodes, ino)
 
 			if ino.Type == util.InodeTypeDirectory {
-				err = recurser(entwrapper.EntInode(ino))
+				err = recurser(ino)
 				if err != nil {
 					return err
 				}
 			} else if ino.Type == util.InodeTypeWorkflow {
-				wf, err := ino.QueryWorkflow().Only(ctx)
+
+				cached := new(database.CacheData)
+
+				err = flow.database.Inode(ctx, tx, cached, ino.ID)
 				if err != nil {
 					return err
 				}
-				_, err = wf.Update().SetReadOnly(true).Save(ctx)
+
+				err = flow.database.Workflow(ctx, tx, cached, cached.Inode().Workflow)
 				if err != nil {
 					return err
 				}
+
+				readonly := false
+
+				_, err = flow.database.UpdateWorkflow(ctx, tx, &database.UpdateWorkflowArgs{
+					ID:       cached.Workflow.ID,
+					ReadOnly: &readonly,
+				})
+				if err != nil {
+					return err
+				}
+
 			} else {
 				return errors.New("inode type unaccounted for")
 			}
@@ -470,12 +497,14 @@ func (flow *flow) UnlockMirror(ctx context.Context, req *grpc.UnlockMirrorReques
 
 	}
 
-	x, err := clients.Inode.UpdateOneID(ino.ID).SetReadOnly(true).Save(ctx)
-	if err != nil {
-		return nil, err
-	}
+	readonly := false
 
-	updatedInodes = append(updatedInodes, entwrapper.EntInode(x))
+	x, err := flow.database.UpdateInode(ctx, tx, &database.UpdateInodeArgs{
+		ID:       ino.ID,
+		ReadOnly: &readonly,
+	})
+
+	updatedInodes = append(updatedInodes, x)
 
 	err = recurser(ino)
 	if err != nil {
@@ -731,16 +760,17 @@ func (srv *server) getMirrorActivity(ctx context.Context, tx database.Transactio
 		return nil, nil, err
 	}
 
-	clients := srv.edb.Clients(tx)
-
-	query := clients.MirrorActivity.Query().Where(entmiract.HasNamespaceWith(entns.ID(cached.Namespace.ID))).Where(entmiract.IDEQ(id))
-	act, err := query.Only(ctx)
+	act, err := srv.database.MirrorActivity(ctx, tx, id)
 	if err != nil {
 		srv.sugar.Debugf("%s failed to query instance: %v", parent(), err)
 		return nil, nil, err
 	}
 
-	return cached, entwrapper.EntMirrorActivity(act), nil
+	if act.Namespace != cached.Namespace.ID {
+		return nil, nil, os.ErrNotExist
+	}
+
+	return cached, act, nil
 
 }
 

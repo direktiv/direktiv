@@ -6,11 +6,14 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/eko/gocache/lib/v4/cache"
 	gocache_store "github.com/eko/gocache/store/go_cache/v4"
 	"github.com/google/uuid"
 	gocache "github.com/patrickmn/go-cache"
 	"go.uber.org/zap"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type CachedDatabase struct {
@@ -180,6 +183,60 @@ func (db *CachedDatabase) InodeByPath(ctx context.Context, tx Transaction, cache
 
 }
 
+func (db *CachedDatabase) CreateDirectoryInode(ctx context.Context, tx Transaction, args *CreateDirectoryInodeArgs) (*Inode, error) {
+
+	if args.Parent.Type != util.InodeTypeDirectory {
+		return nil, status.Error(codes.AlreadyExists, "parent node is not a directory")
+	}
+
+	for i := range args.Parent.Children {
+		child := args.Parent.Children[i]
+		if child.Name == args.Name {
+			if child.Type == util.InodeTypeDirectory {
+				cached := new(CacheData)
+				err := db.Inode(ctx, tx, cached, child.ID)
+				if err != nil {
+					return nil, err
+				}
+				return cached.Inode(), os.ErrExist
+			}
+			return nil, os.ErrExist
+		}
+	}
+
+	ino, err := db.source.CreateInode(ctx, tx, &CreateInodeArgs{
+		Name:      args.Name,
+		Type:      util.InodeTypeDirectory,
+		ReadOnly:  args.ReadOnly,
+		Namespace: args.Parent.Namespace,
+		Parent:    args.Parent.ID,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	args.Parent.addChild(ino)
+
+	pino, err := db.source.UpdateInode(ctx, tx, &UpdateInodeArgs{
+		ID: args.Parent.ID,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	*args.Parent = *pino
+
+	// TODO: add to cache and cache invalidate anything relevant
+
+	return ino, nil
+
+}
+
+func (db *CachedDatabase) UpdateInode(ctx context.Context, tx Transaction, args *UpdateInodeArgs) (*Inode, error) {
+	// TODO: add to cache and cache invalidate anything relevant
+	return db.source.UpdateInode(ctx, tx, args)
+}
+
 func (db *CachedDatabase) Workflow(ctx context.Context, tx Transaction, cached *CacheData, id uuid.UUID) error {
 
 	var err error
@@ -213,6 +270,88 @@ func (db *CachedDatabase) Workflow(ctx context.Context, tx Transaction, cached *
 
 }
 
+func (db *CachedDatabase) CreateCompleteWorkflow(ctx context.Context, tx Transaction, args *CreateCompleteWorkflowArgs) (*CacheData, error) {
+
+	if args.Parent.Inode().Type != util.InodeTypeWorkflow {
+		return nil, status.Error(codes.AlreadyExists, "parent node is not a directory")
+	}
+
+	for i := range args.Parent.Inode().Children {
+		child := args.Parent.Inode().Children[i]
+		if child.Name == args.Name {
+			return nil, os.ErrExist
+		}
+	}
+
+	ino, err := db.source.CreateInode(ctx, tx, &CreateInodeArgs{
+		Name:      args.Name,
+		Type:      util.InodeTypeWorkflow,
+		ReadOnly:  args.ReadOnly,
+		Namespace: args.Parent.Inode().Namespace,
+		Parent:    args.Parent.Inode().ID,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	args.Parent.Inode().addChild(ino)
+
+	pino, err := db.source.UpdateInode(ctx, tx, &UpdateInodeArgs{
+		ID: args.Parent.Inode().ID,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	*args.Parent.Inode() = *pino
+
+	cached := new(CacheData)
+	*cached = *args.Parent
+	cached.Inodes = make([]*Inode, 0)
+	copy(cached.Inodes, args.Parent.Inodes)
+	cached.Inodes = append(cached.Inodes, ino)
+
+	wf, err := db.source.CreateWorkflow(ctx, tx, &CreateWorkflowArgs{
+		Inode: ino,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	cached.Workflow = wf
+
+	rev, err := db.source.CreateRevision(ctx, tx, &CreateRevisionArgs{
+		Hash:     args.Hash,
+		Source:   args.Source,
+		Metadata: args.Metadata,
+		Workflow: wf.ID,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	cached.Revision = rev
+
+	ref, err := db.source.CreateRef(ctx, tx, &CreateRefArgs{})
+	if err != nil {
+		return nil, err
+	}
+
+	cached.Ref = ref
+
+	// CONFIGURE ROUTER?
+
+	// TODO: add to cache and cache invalidate anything relevant
+
+	return cached, nil
+
+}
+
+func (db *CachedDatabase) UpdateWorkflow(ctx context.Context, tx Transaction, args *UpdateWorkflowArgs) (*Workflow, error) {
+	// TODO: add to cache and cache invalidate anything relevant
+	return db.source.UpdateWorkflow(ctx, tx, args)
+}
+
 func (db *CachedDatabase) Revision(ctx context.Context, tx Transaction, cached *CacheData, id uuid.UUID) error {
 
 	var err error
@@ -237,6 +376,11 @@ func (db *CachedDatabase) Revision(ctx context.Context, tx Transaction, cached *
 
 	return nil
 
+}
+
+func (db *CachedDatabase) CreateRevision(ctx context.Context, tx Transaction, args *CreateRevisionArgs) (*Revision, error) {
+	// TODO: add to cache and cache invalidate anything relevant
+	return db.source.CreateRevision(ctx, tx, args)
 }
 
 func (db *CachedDatabase) Instance(ctx context.Context, tx Transaction, cached *CacheData, id uuid.UUID) error {
@@ -328,4 +472,19 @@ func (db *CachedDatabase) VariableData(ctx context.Context, tx Transaction, id u
 func (db *CachedDatabase) Mirror(ctx context.Context, tx Transaction, id uuid.UUID) (*Mirror, error) {
 	// NOTE: not bothering to cache this right now
 	return db.source.Mirror(ctx, tx, id)
+}
+
+func (db *CachedDatabase) Mirrors(ctx context.Context, tx Transaction) ([]uuid.UUID, error) {
+	// NOTE: not bothering to cache this right now
+	return db.source.Mirrors(ctx, tx)
+}
+
+func (db *CachedDatabase) MirrorActivity(ctx context.Context, tx Transaction, id uuid.UUID) (*MirrorActivity, error) {
+	// NOTE: not bothering to cache this right now
+	return db.source.MirrorActivity(ctx, tx, id)
+}
+
+func (db *CachedDatabase) CreateMirrorActivity(ctx context.Context, tx Transaction, args *CreateMirrorActivityArgs) (*MirrorActivity, error) {
+	// NOTE: not bothering to cache this right now
+	return db.source.CreateMirrorActivity(ctx, tx, args)
 }
