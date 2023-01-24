@@ -27,7 +27,7 @@ export const useDirektivWorkflowLogs = (
 ) => {
   const [data, setData] = React.useState(null);
   const [err, setErr] = React.useState(null);
-  const [eventSource, setEventSource] = React.useState(null);
+  const eventSource = React.useRef(null);
 
   // Store Query parameters
   const [queryString, setQueryString] = React.useState(
@@ -37,9 +37,36 @@ export const useDirektivWorkflowLogs = (
   // Stores PageInfo about workflow log stream
   const [pageInfo, setPageInfo] = React.useState(null);
 
+  // getWorkflowLogs returns a list of workflow logs
+  const getWorkflowLogs = React.useCallback(
+    async (...queryParameters) => {
+      // fetch namespace list by default
+      let resp = await fetch(
+        `${url}namespaces/${namespace}/tree/${path}?op=logs${ExtractQueryString(
+          true,
+          ...queryParameters
+        )}`,
+        {
+          headers: apiKeyHeaders(apikey),
+        }
+      );
+      if (resp.ok) {
+        let json = await resp.json();
+        setData(json.results);
+        setPageInfo(json.pageInfo);
+        return json.results;
+      } else {
+        throw new Error(
+          await HandleError("list namespace logs", resp, "namespaceLogs")
+        );
+      }
+    },
+    [apikey, namespace, path, url]
+  );
+
   React.useEffect(() => {
     if (stream) {
-      if (eventSource === null) {
+      if (eventSource.current === null) {
         // setup event listener
         let listener = new EventSourcePolyfill(
           `${url}namespaces/${namespace}/tree/${path}?op=logs${queryString}`,
@@ -66,20 +93,29 @@ export const useDirektivWorkflowLogs = (
         }
 
         listener.onmessage = (e) => readData(e);
-        setEventSource(listener);
+        eventSource.current = listener;
       }
     } else {
       if (data === null) {
         getWorkflowLogs();
       }
     }
-  }, [data, apikey]);
+  }, [
+    data,
+    apikey,
+    stream,
+    url,
+    namespace,
+    path,
+    queryString,
+    getWorkflowLogs,
+  ]);
 
   React.useEffect(() => {
     return () => {
-      CloseEventSource(eventSource);
+      CloseEventSource(eventSource.current);
     };
-  }, [eventSource]);
+  }, []);
 
   // If queryParameters change and streaming: update queryString, and reset sse connection
   React.useEffect(() => {
@@ -87,35 +123,11 @@ export const useDirektivWorkflowLogs = (
       let newQueryString = ExtractQueryString(true, ...queryParameters);
       if (newQueryString !== queryString) {
         setQueryString(newQueryString);
-        CloseEventSource(eventSource);
-        setEventSource(null);
+        CloseEventSource(eventSource.current);
+        eventSource.current = null;
       }
     }
-  }, [eventSource, queryParameters, queryString, stream]);
-
-  // getWorkflowLogs returns a list of workflow logs
-  async function getWorkflowLogs(...queryParameters) {
-    // fetch namespace list by default
-    let resp = await fetch(
-      `${url}namespaces/${namespace}/tree/${path}?op=logs${ExtractQueryString(
-        true,
-        ...queryParameters
-      )}`,
-      {
-        headers: apiKeyHeaders(apikey),
-      }
-    );
-    if (resp.ok) {
-      let json = await resp.json();
-      setData(json.results);
-      setPageInfo(json.pageInfo);
-      return json.results;
-    } else {
-      throw new Error(
-        await HandleError("list namespace logs", resp, "namespaceLogs")
-      );
-    }
-  }
+  }, [queryParameters, queryString, stream]);
 
   return {
     data,
