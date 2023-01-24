@@ -23,15 +23,14 @@ export const useDirektivGlobalServiceRevision = (
   apikey
 ) => {
   const [revisionDetails, setRevisionDetails] = React.useState(null);
-  const [podSource, setPodSource] = React.useState(null);
   const [pods, setPods] = React.useState([]);
   const [err, setErr] = React.useState(null);
-  const [revisionSource, setRevisionSource] = React.useState(null);
-
+  const podSource = React.useRef(null);
+  const revisionSource = React.useRef(null);
   const podsRef = React.useRef(pods);
 
   React.useEffect(() => {
-    if (podSource === null) {
+    if (podSource.current === null) {
       let listener = new EventSourcePolyfill(
         `${url}functions/${service}/revisions/${revision}/pods`,
         {
@@ -90,12 +89,12 @@ export const useDirektivGlobalServiceRevision = (
         setPods(JSON.parse(JSON.stringify(podsRef.current)));
       }
       listener.onmessage = (e) => readData(e);
-      setPodSource(listener);
+      podSource.current = listener;
     }
-  }, [apikey]);
+  }, [apikey, pods, revision, service, url]);
 
   React.useEffect(() => {
-    if (revisionSource === null) {
+    if (revisionSource.current === null) {
       // setup event listener
       let listener = new EventSourcePolyfill(
         `${url}functions/${service}/revisions/${revision}`,
@@ -126,16 +125,16 @@ export const useDirektivGlobalServiceRevision = (
       }
 
       listener.onmessage = (e) => readData(e);
-      setRevisionSource(listener);
+      revisionSource.current = listener;
     }
-  }, [revisionSource, apikey]);
+  }, [apikey, url, service, revision]);
 
   React.useEffect(() => {
     return () => {
-      CloseEventSource(revisionSource);
-      CloseEventSource(podSource);
+      CloseEventSource(revisionSource.current);
+      CloseEventSource(podSource.current);
     };
-  }, [revisionSource, podSource]);
+  }, []);
 
   return {
     revisionDetails,
