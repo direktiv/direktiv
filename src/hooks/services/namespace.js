@@ -181,11 +181,11 @@ export const useDirektivNamespaceService = (
 
   const [err, setErr] = React.useState(null);
 
-  const [trafficSource, setTrafficSource] = React.useState(null);
-  const [eventSource, setEventSource] = React.useState(null);
+  const trafficSource = React.useRef(null);
+  const eventSource = React.useRef(null);
 
   React.useEffect(() => {
-    if (trafficSource === null) {
+    if (trafficSource.current === null) {
       // setup event listener
       let listener = new EventSourcePolyfill(
         `${url}functions/namespaces/${namespace}/function/${service}`,
@@ -222,12 +222,13 @@ export const useDirektivNamespaceService = (
       }
 
       listener.onmessage = (e) => readData(e);
-      setTrafficSource(listener);
+
+      trafficSource.current = listener;
     }
-  }, [fn, apikey]);
+  }, [fn, apikey, url, namespace, service]);
 
   React.useEffect(() => {
-    if (eventSource === null) {
+    if (eventSource.current === null) {
       // setup event listener
       let listener = new EventSourcePolyfill(
         `${url}functions/namespaces/${namespace}/function/${service}/revisions`,
@@ -299,16 +300,16 @@ export const useDirektivNamespaceService = (
       }
 
       listener.onmessage = (e) => readData(e);
-      setEventSource(listener);
+      eventSource.current = listener;
     }
-  }, [revisions, apikey]);
+  }, [revisions, apikey, url, namespace, service, navigate]);
 
   React.useEffect(() => {
     return () => {
-      CloseEventSource(eventSource);
-      CloseEventSource(trafficSource);
+      CloseEventSource(eventSource.current);
+      CloseEventSource(trafficSource.current);
     };
-  }, [eventSource, trafficSource]);
+  }, []);
 
   async function getNamespaceServiceConfig(...queryParameters) {
     let resp = await fetch(
