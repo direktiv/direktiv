@@ -11,33 +11,36 @@ const fetch = require("isomorphic-fetch");
 export const useDirektivGlobalRegistries = (url, apikey) => {
   const [data, setData] = React.useState(null);
 
+  // getGlobalRegistries returns a list of registries
+  const getRegistries = React.useCallback(
+    async (...queryParameters) => {
+      let resp = await fetch(
+        `${url}functions/registries/global${ExtractQueryString(
+          false,
+          ...queryParameters
+        )}`,
+        {
+          headers: apiKeyHeaders(apikey),
+        }
+      );
+      if (resp.ok) {
+        let json = await resp.json();
+        setData(json.registries);
+        return json.registries;
+      } else {
+        throw new Error(
+          await HandleError("list registries", resp, "listGlobalRegistries")
+        );
+      }
+    },
+    [apikey, url]
+  );
+
   React.useEffect(() => {
     if (data === null) {
       getRegistries();
     }
-  }, [data]);
-
-  // getGlobalRegistries returns a list of registries
-  async function getRegistries(...queryParameters) {
-    let resp = await fetch(
-      `${url}functions/registries/global${ExtractQueryString(
-        false,
-        ...queryParameters
-      )}`,
-      {
-        headers: apiKeyHeaders(apikey),
-      }
-    );
-    if (resp.ok) {
-      let json = await resp.json();
-      setData(json.registries);
-      return json.registries;
-    } else {
-      throw new Error(
-        await HandleError("list registries", resp, "listGlobalRegistries")
-      );
-    }
-  }
+  }, [data, getRegistries]);
 
   async function createRegistry(key, val, ...queryParameters) {
     let resp = await fetch(
