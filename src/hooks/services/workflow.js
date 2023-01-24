@@ -33,15 +33,15 @@ export const useDirektivWorkflowServiceRevision = (
   apikey
 ) => {
   const [revisionDetails, setRevisionDetails] = React.useState(null);
-  const [podSource, setPodSource] = React.useState(null);
   const [pods, setPods] = React.useState([]);
   const [err, setErr] = React.useState(null);
-  const [revisionSource, setRevisionSource] = React.useState(null);
+  const podSource = React.useRef(null);
+  const revisionSource = React.useRef(null);
 
   const podsRef = React.useRef(pods);
 
   React.useEffect(() => {
-    if (podSource === null) {
+    if (podSource.current === null) {
       let listener = new EventSourcePolyfill(
         `${url}functions/namespaces/${namespace}/tree/${path}?op=pods&svn=${service}&rev=${revision}&version=${version}`,
         {
@@ -100,12 +100,12 @@ export const useDirektivWorkflowServiceRevision = (
         setPods(JSON.parse(JSON.stringify(podsRef.current)));
       }
       listener.onmessage = (e) => readData(e);
-      setPodSource(listener);
+      podSource.current = listener;
     }
-  }, [apikey]);
+  }, [apikey, namespace, path, pods, revision, service, url, version]);
 
   React.useEffect(() => {
-    if (revisionSource === null) {
+    if (revisionSource.current === null) {
       // setup event listener
       let listener = new EventSourcePolyfill(
         `${url}functions/namespaces/${namespace}/tree/${path}?op=function-revision&svn=${service}&rev=${revision}&version=${version}`,
@@ -136,16 +136,16 @@ export const useDirektivWorkflowServiceRevision = (
       }
 
       listener.onmessage = (e) => readData(e);
-      setRevisionSource(listener);
+      revisionSource.current = listener;
     }
-  }, [revisionSource, apikey]);
+  }, [apikey, url, namespace, path, service, revision, version]);
 
   React.useEffect(() => {
     return () => {
-      CloseEventSource(revisionSource);
-      CloseEventSource(podSource);
+      CloseEventSource(revisionSource.current);
+      CloseEventSource(podSource.current);
     };
-  }, [revisionSource, podSource]);
+  }, []);
 
   return {
     revisionDetails,
@@ -247,7 +247,17 @@ export const useDirektivWorkflowService = (
       listener.onmessage = (e) => readData(e);
       setEventSource(listener);
     }
-  }, [revisions, apikey]);
+  }, [
+    revisions,
+    apikey,
+    eventSource,
+    url,
+    namespace,
+    path,
+    service,
+    version,
+    navigate,
+  ]);
 
   React.useEffect(() => {
     return () => {
