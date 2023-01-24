@@ -159,12 +159,11 @@ export const useDirektivGlobalService = (url, service, navigate, apikey) => {
   const revisionsRef = React.useRef(revisions ? revisions : []);
 
   const [err, setErr] = React.useState(null);
-
-  const [trafficSource, setTrafficSource] = React.useState(null);
-  const [eventSource, setEventSource] = React.useState(null);
+  const trafficSource = React.useRef(null);
+  const eventSource = React.useRef(null);
 
   React.useEffect(() => {
-    if (trafficSource === null) {
+    if (trafficSource.current === null) {
       // setup event listener
       let listener = new EventSourcePolyfill(`${url}functions/${service}`, {
         headers: apiKeyHeaders(apikey),
@@ -191,12 +190,12 @@ export const useDirektivGlobalService = (url, service, navigate, apikey) => {
       }
 
       listener.onmessage = (e) => readData(e);
-      setTrafficSource(listener);
+      trafficSource.current = listener;
     }
-  }, [fn, apikey]);
+  }, [fn, apikey, url, service]);
 
   React.useEffect(() => {
-    if (eventSource === null) {
+    if (eventSource.current === null) {
       // setup event listener
       let listener = new EventSourcePolyfill(
         `${url}functions/${service}/revisions`,
@@ -259,16 +258,16 @@ export const useDirektivGlobalService = (url, service, navigate, apikey) => {
       }
 
       listener.onmessage = (e) => readData(e);
-      setEventSource(listener);
+      eventSource.current = listener;
     }
-  }, [revisions, apikey]);
+  }, [revisions, apikey, url, service, navigate]);
 
   React.useEffect(() => {
     return () => {
-      CloseEventSource(eventSource);
-      CloseEventSource(trafficSource);
+      CloseEventSource(eventSource.current);
+      CloseEventSource(trafficSource.current);
     };
-  }, [eventSource, trafficSource]);
+  }, []);
 
   async function createGlobalServiceRevision(
     image,
