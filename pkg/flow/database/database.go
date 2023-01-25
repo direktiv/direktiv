@@ -61,6 +61,7 @@ func (cached *CacheData) Path() string {
 	for _, ino := range cached.Inodes {
 		elems = append(elems, ino.Name)
 	}
+
 	return strings.Join(elems, "/")
 }
 

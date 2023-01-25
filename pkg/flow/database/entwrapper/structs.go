@@ -46,8 +46,15 @@ func entInode(ino *ent.Inode) *database.Inode {
 		ExtendedType: ino.ExtendedType,
 		ReadOnly:     ino.ReadOnly,
 		Children:     children,
-		Parent:       ino.Edges.Parent.ID,
 		Namespace:    ino.Edges.Namespace.ID,
+	}
+
+	if ino.Edges.Parent == nil {
+		if x.Name != "" {
+			panic("failed to resolve inode parent")
+		}
+	} else {
+		x.Parent = ino.Edges.Parent.ID
 	}
 
 	if ino.Edges.Workflow != nil {

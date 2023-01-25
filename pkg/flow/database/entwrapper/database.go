@@ -20,7 +20,6 @@ import (
 	entrt "github.com/direktiv/direktiv/pkg/flow/ent/instanceruntime"
 	entmir "github.com/direktiv/direktiv/pkg/flow/ent/mirror"
 	entns "github.com/direktiv/direktiv/pkg/flow/ent/namespace"
-	entref "github.com/direktiv/direktiv/pkg/flow/ent/ref"
 	entrev "github.com/direktiv/direktiv/pkg/flow/ent/revision"
 	entroute "github.com/direktiv/direktiv/pkg/flow/ent/route"
 	entvardata "github.com/direktiv/direktiv/pkg/flow/ent/vardata"
@@ -306,11 +305,11 @@ func (db *Database) Workflow(ctx context.Context, tx database.Transaction, id uu
 	}).WithNamespace(func(q *ent.NamespaceQuery) {
 		q.Select(entns.FieldID)
 	}).WithRefs(func(q *ent.RefQuery) {
-		q.Order(ent.Desc(entref.FieldCreatedAt)).WithRevision(func(q *ent.RevisionQuery) {
+		q.WithRevision(func(q *ent.RevisionQuery) {
 			q.Select(entrev.FieldID)
 		})
 	}).WithRevisions(func(q *ent.RevisionQuery) {
-		q.Order(ent.Desc(entrev.FieldCreatedAt)).Select(entrev.FieldID, entrev.FieldHash)
+		q.Select(entrev.FieldID, entrev.FieldHash)
 	}).WithRoutes(func(q *ent.RouteQuery) {
 		q.WithRef(func(q *ent.RefQuery) {
 			q.WithRevision(func(q *ent.RevisionQuery) {

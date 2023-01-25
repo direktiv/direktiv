@@ -42,7 +42,7 @@ func (flow *flow) functionsHeartbeat() {
 				continue
 			}
 
-			revs, err := wf.QueryRevisions().All(ctx)
+			revs, err := wf.QueryRevisions().WithWorkflow().All(ctx)
 			if err != nil {
 				flow.sugar.Error(err)
 				continue

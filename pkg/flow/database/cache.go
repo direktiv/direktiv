@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/util"
@@ -117,8 +118,9 @@ func (db *CachedDatabase) Inode(ctx context.Context, tx Transaction, cached *Cac
 		if err != nil {
 			return err
 		}
-
 		cached.Inodes = append(cached.Inodes, ino)
+	} else {
+		cached.Inodes = []*Inode{ino}
 	}
 
 	if cached.Namespace == nil {
@@ -143,7 +145,11 @@ func (db *CachedDatabase) InodeByPath(ctx context.Context, tx Transaction, cache
 	}
 
 	path = filepath.Join("/", path)
-	elems := filepath.SplitList(path)
+	if path == "/" {
+		path = ""
+	}
+
+	elems := strings.Split(path, "/")
 
 	err := db.Inode(ctx, tx, cached, cached.Namespace.Root)
 	if err != nil {
