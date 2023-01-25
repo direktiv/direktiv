@@ -15,12 +15,12 @@ COPY yarn.lock ./
 
 RUN yarn install
 # If this causes problems on github actions: A potential fix is to change the builder image to `node:alpine`
-RUN NODE_OPTIONS=--openssl-legacy-provider REACT_APP_VERSION=$FULL_VERSION yarn build
+RUN NODE_OPTIONS=--openssl-legacy-provider VITE_APP_VERSION=$FULL_VERSION yarn build
 
 # production environment
 FROM nginx:stable-alpine
 
 COPY --from=build /app/build /usr/share/nginx/html
 COPY conf/nginx.conf /etc/nginx/conf.d/default.conf
- 
+
 CMD ["nginx", "-g", "daemon off;"]
