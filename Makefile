@@ -231,7 +231,7 @@ scan-%: push-%
 
 .PHONY: image-%
 image-%: build/%-binary
-	DOCKER_BUILDKIT=1 docker build  --build-arg RELEASE_VERSION=${FULL_VERSION} -t direktiv-$* -f build/docker/$*/Dockerfile${DOCKER_BASE} .
+	DOCKER_BUILDKIT=1 docker build --build-arg RELEASE_VERSION=${FULL_VERSION} -t direktiv-$* -f build/docker/$*/Dockerfile${DOCKER_BASE} .
 	@echo "Make $@: SUCCESS"
 
 .PHONY: push-%
