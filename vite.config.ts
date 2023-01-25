@@ -33,6 +33,7 @@ export default ({ mode }) => {
 
   return defineConfig({
     server: {
+      host: "0.0.0.0",
       port: 3000,
       proxy: VITE_DEV_API_DOMAIN
         ? {
