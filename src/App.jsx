@@ -75,11 +75,8 @@ function App() {
               </li>
             </ul>
           </FlexBox>
-        ) : (
-          ""
-        )}
+        ) : null}
       </FlexBox>
-
       <div>
         <FlexBox className="col navbar-userinfo">
           <FlexBox className="navbar-version">
