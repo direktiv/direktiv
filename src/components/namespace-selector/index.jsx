@@ -53,9 +53,6 @@ function NamespaceSelector(props) {
     // If namespaces is null/undefined, the request to get namespaces has not yet succeeded.
     // Show a loader.
     loading = true;
-  } else if (namespaces === []) {
-    // Else if namespaces is an empty array, the request succeeded but no namespaces are listed.
-    // In this case, prompt with a 'create namespace' modal.
   }
 
   if (loading) {
