@@ -13,6 +13,7 @@ COPY index.html ./
 COPY package.json ./
 COPY tsconfig.json ./
 COPY yarn.lock ./
+COPY vite.config.ts ./
 
 RUN yarn install
 # If this causes problems on github actions: A potential fix is to change the builder image to `node:alpine`
