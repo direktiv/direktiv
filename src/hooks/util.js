@@ -2,8 +2,8 @@ import * as React from "react";
 
 // Config default config to test with
 export const Config = {
-  namespace: process.env.NAMESPACE,
-  url: process.env.API_URL,
+  namespace: import.meta.env.NAMESPACE,
+  url: import.meta.env.API_URL,
   registry: "https://docker.io",
   "direktiv-token": "testapikey",
   secret: "test-secret",
