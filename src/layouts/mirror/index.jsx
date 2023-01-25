@@ -18,7 +18,7 @@ import { Config } from "../../util";
 import { useApiKey } from "../../util/apiKeyProvider";
 import ActivityTable from "./activities";
 import MirrorInfoPanel from "./info";
-import ActivityLogs from "./logs";
+import ActivityLogs from "./logs.jsx";
 import "./style.css";
 
 export default function MirrorPage(props) {

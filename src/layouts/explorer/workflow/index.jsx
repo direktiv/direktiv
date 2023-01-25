@@ -32,7 +32,7 @@ import {
 } from "react-icons/vsc";
 
 import YAML from "js-yaml";
-import DiagramEditor from "../../../components/diagram-editor";
+import DiagramEditor from "../../../components/diagram-editor/index.jsx";
 import DirektivEditor from "../../../components/editor";
 import { Service } from "../../namespace-services";
 import { RevisionSelectorTab, TabbedButtons } from "./revisionTab";

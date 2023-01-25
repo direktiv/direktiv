@@ -7,8 +7,8 @@ import {
   VscInfo,
   VscFileCode,
 } from "react-icons/vsc";
-import Alert from "../../components/alert";
-import FlexBox from "../../components/flexbox";
+import Alert from "../alert";
+import FlexBox from "../flexbox";
 import { Config } from "../../util";
 import Drawflow from "drawflow";
 import { Resizable } from "re-resizable";
@@ -18,7 +18,7 @@ import {
   getSchemaCallbackMap,
   getSchemaDefault,
   SchemaUIMap,
-} from "../../components/diagram-editor/jsonSchema";
+} from "./jsonSchema";
 import Form from "@rjsf/core";
 import {
   CreateNode,
@@ -29,7 +29,7 @@ import {
   setConnections,
   sortNodes,
   unescapeJSStrings,
-} from "../../components/diagram-editor/util";
+} from "./util";
 import {
   AutoSizer,
   CellMeasurer,
@@ -37,10 +37,7 @@ import {
   List,
 } from "react-virtualized";
 import Fuse from "fuse.js";
-import {
-  ActionsNodes,
-  NodeStateAction,
-} from "../../components/diagram-editor/nodes";
+import { ActionsNodes, NodeStateAction } from "./nodes";
 import PrettyYAML from "json-to-pretty-yaml";
 import YAML from "js-yaml";
 
@@ -50,7 +47,7 @@ import "./styles/node.css";
 import "./styles/style.css";
 import "drawflow/dist/drawflow.min.css";
 
-import { importFromWorkflowData } from "../../components/diagram-editor/import";
+import { importFromWorkflowData } from "./import";
 import Modal, { ModalHeadless } from "../modal";
 
 import Ajv from "ajv";
