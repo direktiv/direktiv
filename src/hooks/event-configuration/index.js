@@ -1,6 +1,6 @@
 import * as React from "react";
 import { HandleError, ExtractQueryString, apiKeyHeaders } from "../util";
-const fetch = require("isomorphic-fetch");
+import fetch from "isomorphic-fetch";
 
 /*
     useBroadcastConfiguration is a react hook

@@ -9,8 +9,8 @@ import {
   useQueryString,
   genericEventSourceErrorHandler,
 } from "../util";
-const { EventSourcePolyfill } = require("event-source-polyfill");
-const fetch = require("isomorphic-fetch");
+import { EventSourcePolyfill } from "event-source-polyfill";
+import fetch from "isomorphic-fetch";
 
 /*
     useEvents is a react hook which returns details

@@ -6,8 +6,8 @@ import {
   TrimPathSlashes,
   apiKeyHeaders,
 } from "../util";
-const { EventSourcePolyfill } = require("event-source-polyfill");
-const fetch = require("isomorphic-fetch");
+import { EventSourcePolyfill } from "event-source-polyfill";
+import fetch from "isomorphic-fetch";
 
 /*
     useInstanceLogs is a react hook which returns details for an instance

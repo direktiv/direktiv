@@ -10,8 +10,8 @@ import {
   useQueryString,
   apiKeyHeaders,
 } from "../util";
-const { EventSourcePolyfill } = require("event-source-polyfill");
-const fetch = require("isomorphic-fetch");
+import { EventSourcePolyfill } from "event-source-polyfill";
+import fetch from "isomorphic-fetch";
 
 /*
     useWorkflows is a react hook which returns a list of items, createDirectory, createWorkflow, deleteDirectory, deleteWorkflow

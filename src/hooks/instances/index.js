@@ -13,8 +13,9 @@ import {
 // For testing
 // import fetch from "cross-fetch"
 // In Production
-const fetch = require("isomorphic-fetch");
-const { EventSourcePolyfill } = require("event-source-polyfill");
+import fetch from "isomorphic-fetch";
+import { EventSourcePolyfill } from "event-source-polyfill";
+
 /*
     useInstances is a react hook which returns a list of instances
     takes:

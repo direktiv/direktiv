@@ -5,8 +5,8 @@ import {
   ExtractQueryString,
   apiKeyHeaders,
 } from "../util";
-const { EventSourcePolyfill } = require("event-source-polyfill");
-const fetch = require("isomorphic-fetch");
+import { EventSourcePolyfill } from "event-source-polyfill";
+import fetch from "isomorphic-fetch";
 
 /*
     useNamespaces is a react hook which returns createNamespace, deleteNamespace and data

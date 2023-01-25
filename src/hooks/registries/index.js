@@ -1,6 +1,6 @@
 import * as React from "react";
 import { HandleError, ExtractQueryString, apiKeyHeaders } from "../util";
-const fetch = require("isomorphic-fetch");
+import fetch from "isomorphic-fetch";
 
 /*
     useRegistries is a react hook which returns create registry, delete registry and data

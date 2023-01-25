@@ -9,8 +9,8 @@ import {
   genericEventSourceErrorHandler,
   apiKeyHeaders,
 } from "../util";
-const { EventSourcePolyfill } = require("event-source-polyfill");
-const fetch = require("isomorphic-fetch");
+import { EventSourcePolyfill } from "event-source-polyfill";
+import fetch from "isomorphic-fetch";
 
 /*
     useWorkflowVariables is a react hook

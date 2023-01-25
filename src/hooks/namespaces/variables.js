@@ -9,8 +9,8 @@ import {
   useEventSourceCleaner,
   useQueryString,
 } from "../util";
-const { EventSourcePolyfill } = require("event-source-polyfill");
-const fetch = require("isomorphic-fetch");
+import { EventSourcePolyfill } from "event-source-polyfill";
+import fetch from "isomorphic-fetch";
 
 /*
     useNamespaceVariables is a react hook

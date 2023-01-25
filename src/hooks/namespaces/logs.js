@@ -6,8 +6,8 @@ import {
   apiKeyHeaders,
 } from "../util";
 
-const fetch = require("isomorphic-fetch");
-const { EventSourcePolyfill } = require("event-source-polyfill");
+import fetch from "isomorphic-fetch";
+import { EventSourcePolyfill } from "event-source-polyfill";
 
 /*
     useNamespaceLogs is a react hook which returns data, err or getNamespaceLogs()

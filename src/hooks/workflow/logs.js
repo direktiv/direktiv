@@ -6,7 +6,7 @@ import {
   ExtractQueryString,
   apiKeyHeaders,
 } from "../util";
-const { EventSourcePolyfill } = require("event-source-polyfill");
+import { EventSourcePolyfill } from "event-source-polyfill";
 
 /*
     useWorkflowLogs is a react hook which returns data, err or getWorkflowLogs()

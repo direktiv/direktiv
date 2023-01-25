@@ -1,6 +1,6 @@
 import * as React from "react";
 import { CloseEventSource, apiKeyHeaders } from "../util";
-const { EventSourcePolyfill } = require("event-source-polyfill");
+import { EventSourcePolyfill } from "event-source-polyfill";
 
 /*
     usePodLogs
