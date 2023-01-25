@@ -49,7 +49,7 @@
     "webpack-bundle-analyzer": "^4.5.0"
   },
   "scripts": {
-    "start": "REACT_APP_API=$DIREKTIV_API react-scripts --openssl-legacy-provider start",
+    "start": "REACT_APP_API=$DIREKTIV_API vite",
     "start-win": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
