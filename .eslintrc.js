@@ -28,6 +28,6 @@ module.exports = {
     browser: true,
   },
   rules: {
-    // Add your own rules here to override ones from the extended configs.
+    "react/react-in-jsx-scope": "off",
   },
 };
