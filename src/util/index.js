@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 
 export const Config = {
-  url: import.meta.env.REACT_APP_API ? import.meta.env.REACT_APP_API : "/api/",
+  url: "/api/",
 };
 
 function fallbackCopyTextToClipboard(text) {

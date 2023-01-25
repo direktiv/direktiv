@@ -27,6 +27,11 @@ export function reactVirtualized() {
 export default defineConfig({
   server: {
     port: 3000,
+    proxy: {
+      "/api": {
+        target: process.env.DIREKTIV_API_HOST,
+      },
+    },
   },
   optimizeDeps: {
     esbuildOptions: {
