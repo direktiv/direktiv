@@ -47,6 +47,7 @@ describe("useWorkflow", () => {
     await waitForNextUpdate();
     expect(result.current.data.revision.source).not.toEqual("");
   });
+
   it("stream  workflow", async () => {
     const { result, waitForNextUpdate } = renderHook(() =>
       useWorkflow(Config.url, true, Config.namespace, "test-workflow-hook")
@@ -54,6 +55,7 @@ describe("useWorkflow", () => {
     await waitForNextUpdate();
     expect(result.current.data.revision.source).not.toEqual("");
   });
+
   it("update workflow", async () => {
     const { result, waitForNextUpdate } = renderHook(() =>
       useWorkflow(Config.url, true, Config.namespace, "test-workflow-hook")
@@ -65,6 +67,7 @@ describe("useWorkflow", () => {
     await waitForNextUpdate();
     expect(atob(result.current.data.revision.source)).toEqual(wfyaml2);
   });
+
   it("add workflow attributes", async () => {
     const { result, waitForNextUpdate } = renderHook(() =>
       useWorkflow(Config.url, false, Config.namespace, "test-workflow-hook")
@@ -83,6 +86,7 @@ describe("useWorkflow", () => {
 
     expect(result.current.data.node.attributes.length).toEqual(0);
   });
+
   it("execute workflow", async () => {
     const { result, waitForNextUpdate } = renderHook(() =>
       useWorkflow(Config.url, true, Config.namespace, "test-workflow-hook")
@@ -91,6 +95,7 @@ describe("useWorkflow", () => {
     let instanceId = await result.current.executeWorkflow();
     expect(instanceId).not.toEqual("");
   });
+
   it("list instances for workflow", async () => {
     const { result, waitForNextUpdate } = renderHook(() =>
       useWorkflow(Config.url, true, Config.namespace, "test-workflow-hook")
@@ -99,6 +104,7 @@ describe("useWorkflow", () => {
     let instances = await result.current.getInstancesForWorkflow();
     expect(instances[0].node.as).toEqual("test-workflow-hook");
   });
+
   it("toggle workflow and check router to see active is false", async () => {
     const { result, waitForNextUpdate } = renderHook(() =>
       useWorkflow(Config.url, true, Config.namespace, "test-workflow-hook")
@@ -115,6 +121,7 @@ describe("useWorkflow", () => {
     json = await result.current.getWorkflowRouter();
     expect(json.live).toBeTrue();
   });
+
   it("edit workflow router set active to true", async () => {
     const { result, waitForNextUpdate } = renderHook(() =>
       useWorkflow(Config.url, true, Config.namespace, "test-workflow-hook")
@@ -126,6 +133,7 @@ describe("useWorkflow", () => {
     let json = await result.current.getWorkflowRouter();
     expect(json.live).toBeTrue();
   });
+
   it("set workflow to log to event", async () => {
     const { result, waitForNextUpdate } = renderHook(() =>
       useWorkflow(Config.url, false, Config.namespace, "test-workflow-hook")
@@ -137,6 +145,7 @@ describe("useWorkflow", () => {
     });
     expect(result.current.data.eventLogging).toEqual("test");
   });
+
   it("get state metrics for workflow", async () => {
     const { result, waitForNextUpdate } = renderHook(() =>
       useWorkflow(Config.url, false, Config.namespace, "test-workflow-hook")
@@ -146,6 +155,7 @@ describe("useWorkflow", () => {
       Array
     );
   });
+
   it("fetch workflow logs", async () => {
     const { result, waitForNextUpdate } = renderHook(() =>
       useWorkflowLogs(Config.url, false, Config.namespace, "test-workflow-hook")
@@ -153,6 +163,7 @@ describe("useWorkflow", () => {
     await waitForNextUpdate();
     expect(result.current.data).toBeInstanceOf(Array);
   });
+
   it("stream workflow logs", async () => {
     const { result, waitForNextUpdate } = renderHook(() =>
       useWorkflowLogs(Config.url, true, Config.namespace, "test-workflow-hook")
@@ -160,6 +171,7 @@ describe("useWorkflow", () => {
     await waitForNextUpdate();
     expect(result.current.data).toBeInstanceOf(Array);
   });
+
   it("get revisions for workflow, tag latest as a version", async () => {
     const { result, waitForNextUpdate } = renderHook(() =>
       useWorkflow(Config.url, true, Config.namespace, "test-workflow-hook")
@@ -175,6 +187,7 @@ describe("useWorkflow", () => {
     const found = revisions.some((x) => x.node.name === "latest2");
     expect(found).toBeTrue();
   });
+
   it("get revisions, update workflow, delete revision, update back to old flow then discard", async () => {
     const { result, waitForNextUpdate } = renderHook(() =>
       useWorkflow(Config.url, true, Config.namespace, "test-workflow-hook")
