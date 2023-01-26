@@ -304,6 +304,8 @@ function AddVariablePanel(props) {
       style={{ minHeight: "500px", minWidth: "90%" }}
       headers={["Manual", "Upload"]}
       tabs={[
+        // no key needed for static array
+        // eslint-disable-next-line react/jsx-key
         <FlexBox
           id="written"
           className="col gap"
@@ -348,6 +350,8 @@ function AddVariablePanel(props) {
             </FlexBox>
           </FlexBox>
         </FlexBox>,
+        // no key needed for static array
+        // eslint-disable-next-line react/jsx-key
         <FlexBox
           id="file-picker"
           className="col gap"
@@ -396,18 +400,17 @@ function Variables(props) {
       ) : (
         <table className="variables-table">
           <tbody>
-            {variables.map((obj) => {
-              return (
-                <Variable
-                  namespace={namespace}
-                  obj={obj}
-                  getNamespaceVariable={getNamespaceVariable}
-                  deleteNamespaceVariable={deleteNamespaceVariable}
-                  setNamespaceVariable={setNamespaceVariable}
-                  getNamespaceVariableBlob={getNamespaceVariableBlob}
-                />
-              );
-            })}
+            {variables.map((obj) => (
+              <Variable
+                key={obj.checksum}
+                namespace={namespace}
+                obj={obj}
+                getNamespaceVariable={getNamespaceVariable}
+                deleteNamespaceVariable={deleteNamespaceVariable}
+                setNamespaceVariable={setNamespaceVariable}
+                getNamespaceVariableBlob={getNamespaceVariableBlob}
+              />
+            ))}
           </tbody>
         </table>
       )}

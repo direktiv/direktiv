@@ -5,7 +5,7 @@ import ContentPanel, {
   ContentPanelTitleIcon,
   ContentPanelBody,
 } from "../../../components/content-panel";
-import { VscLock, VscTrash , VscAdd } from "react-icons/vsc";
+import { VscLock, VscTrash, VscAdd } from "react-icons/vsc";
 import Modal from "../../../components/modal";
 import { useDropzone } from "react-dropzone";
 import FlexBox from "../../../components/flexbox";
@@ -110,12 +110,16 @@ function SecretsPanel(props) {
               style={{ minHeight: "100px", minWidth: "400px" }}
               headers={["Manual", "Upload"]}
               tabs={[
+                // no key needed for static array
+                // eslint-disable-next-line react/jsx-key
                 <AddSecretPanel
                   keyValue={keyValue}
                   vValue={vValue}
                   setKeyValue={setKeyValue}
                   setVValue={setVValue}
                 />,
+                // no key needed for static array
+                // eslint-disable-next-line react/jsx-key
                 <FlexBox
                   id="file-picker"
                   className="col gap"
