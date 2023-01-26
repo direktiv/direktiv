@@ -27,8 +27,11 @@ module.exports = {
   env: {
     browser: true,
   },
+
   rules: {
-    "react/react-in-jsx-scope": "off", // No need to import React when using vite
-    "react/prop-types": "off", // we will use TypeScript's types for component props instead.
+    // PLEASE ALWAYS PROVIDE A REASON FOR DISABLING/OVERWRITING A RULE
+    "react/react-in-jsx-scope": "off", // It's save to import React when using vite
+    // remove when we have 100 % typescript
+    "react/prop-types": "off", // we will use TypeScript's types for component props instead)
   },
 };
