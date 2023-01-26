@@ -41,6 +41,19 @@ export const useDirektivNamespaceVariables = (
 
   // Stream Event Source Data Dispatch Handler
   React.useEffect(() => {
+    async function readData(e) {
+      if (e.data === "") {
+        return;
+      }
+      const json = JSON.parse(e.data);
+      if (json) {
+        dispatchData({
+          type: STATE.UPDATE,
+          data: json.variables.results,
+        });
+        setPageInfo(json.variables.pageInfo);
+      }
+    }
     if (stream && pathString !== null) {
       // setup event listener
       const listener = new EventSourcePolyfill(`${pathString}${queryString}`, {
@@ -50,21 +63,6 @@ export const useDirektivNamespaceVariables = (
       listener.onerror = (e) => {
         genericEventSourceErrorHandler(e, setErr);
       };
-
-      async function readData(e) {
-        if (e.data === "") {
-          return;
-        }
-        const json = JSON.parse(e.data);
-        if (json) {
-          dispatchData({
-            type: STATE.UPDATE,
-            data: json.variables.results,
-          });
-
-          setPageInfo(json.variables.pageInfo);
-        }
-      }
 
       listener.onmessage = (e) => readData(e);
       setEventSource(listener);

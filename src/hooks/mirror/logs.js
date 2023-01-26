@@ -33,6 +33,20 @@ export const useDirektivMirrorLogs = (
 
   // Stream Event Source Data Dispatch Handler
   React.useEffect(() => {
+    async function readData(e) {
+      if (e.data === "") {
+        return;
+      }
+      const json = JSON.parse(e.data);
+      if (json) {
+        dataDispatch({
+          type: STATE.APPENDLIST,
+          data: json.results,
+        });
+
+        setPageInfo(json.pageInfo);
+      }
+    }
     if (stream && pathString !== null) {
       // setup event listener
       const listener = new EventSourcePolyfill(`${pathString}${queryString}`, {
@@ -42,21 +56,6 @@ export const useDirektivMirrorLogs = (
       listener.onerror = (e) => {
         genericEventSourceErrorHandler(e, setErr);
       };
-
-      async function readData(e) {
-        if (e.data === "") {
-          return;
-        }
-        const json = JSON.parse(e.data);
-        if (json) {
-          dataDispatch({
-            type: STATE.APPENDLIST,
-            data: json.results,
-          });
-
-          setPageInfo(json.pageInfo);
-        }
-      }
 
       listener.onmessage = (e) => readData(e);
       setEventSource(listener);

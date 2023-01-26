@@ -205,17 +205,18 @@ export function StateReducer(state, action) {
   switch (action.type) {
     case STATE.UPDATE:
       return action.data;
-    case STATE.PUSHITEM:
+    case STATE.PUSHITEM: {
       const pushListData = state ? JSON.parse(JSON.stringify(state)) : [];
       pushListData.push(action.data);
       return pushListData;
-    case STATE.APPENDLIST:
+    }
+    case STATE.APPENDLIST: {
       const appendListData = state ? JSON.parse(JSON.stringify(state)) : [];
       for (let i = 0; i < action.data.length; i++) {
         appendListData.push(action.data[i]);
       }
-
       return appendListData;
+    }
     case STATE.UPDATEKEY:
       if (state[action.key]) {
         state[action.key] = JSON.parse(JSON.stringify(action.data));
@@ -228,7 +229,7 @@ export function StateReducer(state, action) {
 }
 
 // Auto clean eventsource when changed or unmounted
-export const useEventSourceCleaner = (eventSource, extra) => {
+export const useEventSourceCleaner = (eventSource) => {
   const eventSourceRef = React.useRef(eventSource);
 
   // CLEANUP: close old eventsource and updates ref

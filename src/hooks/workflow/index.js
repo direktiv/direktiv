@@ -42,27 +42,30 @@ export const useDirektivWorkflow = (
   // Stream Event Source Data Dispatch Handler
   React.useEffect(() => {
     const handler = setTimeout(() => {
+      async function readData(e) {
+        if (e.data === "") {
+          return;
+        }
+
+        const json = JSON.parse(e.data);
+        dispatchData({
+          type: STATE.UPDATE,
+          data: json,
+        });
+      }
+
       if (stream && pathString !== null) {
         // setup event listener
-        const listener = new EventSourcePolyfill(`${pathString}${queryString}`, {
-          headers: apiKeyHeaders(apikey),
-        });
+        const listener = new EventSourcePolyfill(
+          `${pathString}${queryString}`,
+          {
+            headers: apiKeyHeaders(apikey),
+          }
+        );
 
         listener.onerror = (e) => {
           genericEventSourceErrorHandler(e, setErr);
         };
-
-        async function readData(e) {
-          if (e.data === "") {
-            return;
-          }
-
-          const json = JSON.parse(e.data);
-          dispatchData({
-            type: STATE.UPDATE,
-            data: json,
-          });
-        }
 
         listener.onmessage = (e) => readData(e);
         setEventSource(listener);

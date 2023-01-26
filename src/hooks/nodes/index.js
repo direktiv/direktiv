@@ -46,37 +46,39 @@ export const useDirektivNodes = (
 
   // Stream Event Source Data Dispatch Handler
   React.useEffect(() => {
+    async function readData(e) {
+      if (e.data === "") {
+        return;
+      }
+
+      const json = JSON.parse(e.data);
+      if (json?.children) {
+        dispatchData({
+          type: STATE.UPDATE,
+          data: json,
+        });
+
+        setPageInfo(json.children.pageInfo);
+      } else {
+        dispatchData({
+          type: STATE.UPDATE,
+          data: json,
+        });
+      }
+    }
     const handler = setTimeout(() => {
       if (stream && pathString !== null) {
         // setup event listener
-        const listener = new EventSourcePolyfill(`${pathString}${queryString}`, {
-          headers: apiKeyHeaders(apikey),
-        });
+        const listener = new EventSourcePolyfill(
+          `${pathString}${queryString}`,
+          {
+            headers: apiKeyHeaders(apikey),
+          }
+        );
 
         listener.onerror = (e) => {
           genericEventSourceErrorHandler(e, setErr);
         };
-
-        async function readData(e) {
-          if (e.data === "") {
-            return;
-          }
-
-          const json = JSON.parse(e.data);
-          if (json?.children) {
-            dispatchData({
-              type: STATE.UPDATE,
-              data: json,
-            });
-
-            setPageInfo(json.children.pageInfo);
-          } else {
-            dispatchData({
-              type: STATE.UPDATE,
-              data: json,
-            });
-          }
-        }
 
         listener.onmessage = (e) => readData(e);
         setEventSource(listener);

@@ -59,6 +59,14 @@ export const useDirektivNamespaces = (
   );
 
   React.useEffect(() => {
+    async function readData(e) {
+      if (e.data === "") {
+        return;
+      }
+      const json = JSON.parse(e.data);
+      setData(json.results);
+      setPageInfo(json.pageInfo);
+    }
     if (stream) {
       if (eventSource.current === null) {
         // setup event listener
@@ -78,15 +86,6 @@ export const useDirektivNamespaces = (
           }
         };
 
-        async function readData(e) {
-          if (e.data === "") {
-            return;
-          }
-          const json = JSON.parse(e.data);
-          setData(json.results);
-          setPageInfo(json.pageInfo);
-        }
-
         listener.onmessage = (e) => readData(e);
         eventSource.current = listener;
         setLoad(false);
@@ -100,12 +99,23 @@ export const useDirektivNamespaces = (
   }, [apikey, data, getNamespaces, queryString, stream, url]);
 
   React.useEffect(() => {
+    async function readData(e) {
+      if (e.data === "") {
+        return;
+      }
+      const json = JSON.parse(e.data);
+      setData(json.results);
+      setPageInfo(json.pageInfo);
+    }
     if (!load && eventSource.current !== null) {
       CloseEventSource(eventSource.current);
       // setup event listener
-      const listener = new EventSourcePolyfill(`${url}namespaces${queryString}`, {
-        headers: apiKeyHeaders(apikey),
-      });
+      const listener = new EventSourcePolyfill(
+        `${url}namespaces${queryString}`,
+        {
+          headers: apiKeyHeaders(apikey),
+        }
+      );
 
       listener.onerror = (e) => {
         if (e.status === 404) {
@@ -114,15 +124,6 @@ export const useDirektivNamespaces = (
           setErr("permission denied");
         }
       };
-
-      async function readData(e) {
-        if (e.data === "") {
-          return;
-        }
-        const json = JSON.parse(e.data);
-        setData(json.results);
-        setPageInfo(json.pageInfo);
-      }
 
       listener.onmessage = (e) => readData(e);
       eventSource.current = listener;

@@ -68,8 +68,20 @@ export const useDirektivInstanceLogs = (
   );
 
   React.useEffect(() => {
+    const log = logsRef.current;
+    async function readData(e) {
+      if (e.data === "") {
+        return;
+      }
+      const json = JSON.parse(e.data);
+      for (let i = 0; i < json.results.length; i++) {
+        log.push(json.results[i]);
+      }
+      logsRef.current = log;
+      setData(JSON.parse(JSON.stringify(logsRef.current)));
+      setPageInfo(json.pageInfo);
+    }
     if (stream) {
-      const log = logsRef.current;
       if (eventSource.current === null) {
         // setup event listener
         const listener = new EventSourcePolyfill(
@@ -86,19 +98,6 @@ export const useDirektivInstanceLogs = (
             setErr(e.statusText);
           }
         };
-
-        async function readData(e) {
-          if (e.data === "") {
-            return;
-          }
-          const json = JSON.parse(e.data);
-          for (let i = 0; i < json.results.length; i++) {
-            log.push(json.results[i]);
-          }
-          logsRef.current = log;
-          setData(JSON.parse(JSON.stringify(logsRef.current)));
-          setPageInfo(json.pageInfo);
-        }
 
         listener.onmessage = (e) => readData(e);
         eventSource.current = listener;
@@ -222,6 +221,16 @@ export const useDirektivInstance = (
   );
 
   React.useEffect(() => {
+    async function readData(e) {
+      if (e.data === "") {
+        return;
+      }
+      const json = JSON.parse(e.data);
+      json.instance["flow"] = json.flow;
+      setData(json.instance);
+      setWorkflow(json.workflow);
+      getLatestRevision(json.workflow.path);
+    }
     if (stream) {
       if (eventSource.current === null) {
         // setup event listener
@@ -242,21 +251,10 @@ export const useDirektivInstance = (
               const json = JSON.parse(e.data);
               setErr(json.Message);
             } catch (e) {
-              // TODO
+              console.error(e);
             }
           }
         };
-
-        async function readData(e) {
-          if (e.data === "") {
-            return;
-          }
-          const json = JSON.parse(e.data);
-          json.instance["flow"] = json.flow;
-          setData(json.instance);
-          setWorkflow(json.workflow);
-          getLatestRevision(json.workflow.path);
-        }
 
         listener.onmessage = (e) => readData(e);
         eventSource.current = listener;

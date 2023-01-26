@@ -64,6 +64,14 @@ export const useDirektivNamespaceLogs = (
   );
 
   React.useEffect(() => {
+    async function readData(e) {
+      if (e.data === "") {
+        return;
+      }
+      const json = JSON.parse(e.data);
+      setData(json.results);
+      setPageInfo(json.pageInfo);
+    }
     if (stream) {
       if (eventSource.current === null) {
         // setup event listener
@@ -81,16 +89,6 @@ export const useDirektivNamespaceLogs = (
             setErr("permission denied");
           }
         };
-
-        async function readData(e) {
-          if (e.data === "") {
-            return;
-          }
-          const json = JSON.parse(e.data);
-          setData(json.results);
-          setPageInfo(json.pageInfo);
-        }
-
         listener.onmessage = (e) => readData(e);
         eventSource.current = listener;
       }

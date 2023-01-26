@@ -14,6 +14,14 @@ export const useDirektivPodLogs = (url, pod, apikey) => {
   const eventSource = React.useRef(null);
 
   React.useEffect(() => {
+    async function readData(e) {
+      if (e.data === "") {
+        return;
+      }
+      const json = JSON.parse(e.data);
+      setData(json);
+    }
+
     if (eventSource.current === null) {
       // setup event listener
       const listener = new EventSourcePolyfill(
@@ -31,13 +39,6 @@ export const useDirektivPodLogs = (url, pod, apikey) => {
         }
       };
 
-      async function readData(e) {
-        if (e.data === "") {
-          return;
-        }
-        const json = JSON.parse(e.data);
-        setData(json);
-      }
       listener.onmessage = (e) => readData(e);
       eventSource.current = listener;
     }
@@ -51,6 +52,14 @@ export const useDirektivPodLogs = (url, pod, apikey) => {
   }, []);
 
   React.useEffect(() => {
+    async function readData(e) {
+      if (e.data === "") {
+        return;
+      }
+      const json = JSON.parse(e.data);
+      setData(json);
+    }
+
     if (eventSource.current !== null) {
       // setup event listener
       const listener = new EventSourcePolyfill(
@@ -68,13 +77,6 @@ export const useDirektivPodLogs = (url, pod, apikey) => {
         }
       };
 
-      async function readData(e) {
-        if (e.data === "") {
-          return;
-        }
-        const json = JSON.parse(e.data);
-        setData(json);
-      }
       listener.onmessage = (e) => readData(e);
       eventSource.current = listener;
     }

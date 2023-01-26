@@ -76,6 +76,20 @@ export const useDirektivEvents = (
 
   // Stream Event Source History Data Dispatch Handler
   React.useEffect(() => {
+    async function readData(e) {
+      if (e.data === "") {
+        return;
+      }
+      const json = JSON.parse(e.data);
+      if (json) {
+        dispatchEventHistory({
+          type: STATE.UPDATE,
+          data: json.events.results,
+        });
+
+        setEventHistoryPageInfo(json.events.pageInfo);
+      }
+    }
     if (stream && pathString !== null) {
       // setup event listener
       const listener = new EventSourcePolyfill(
@@ -89,21 +103,6 @@ export const useDirektivEvents = (
         genericEventSourceErrorHandler(e, setErrHistory);
       };
 
-      async function readData(e) {
-        if (e.data === "") {
-          return;
-        }
-        const json = JSON.parse(e.data);
-        if (json) {
-          dispatchEventHistory({
-            type: STATE.UPDATE,
-            data: json.events.results,
-          });
-
-          setEventHistoryPageInfo(json.events.pageInfo);
-        }
-      }
-
       listener.onmessage = (e) => readData(e);
       setEventHistorySource(listener);
     } else {
@@ -113,6 +112,20 @@ export const useDirektivEvents = (
 
   // Stream Event Source Listeners Data Dispatch Handler
   React.useEffect(() => {
+    async function readData(e) {
+      if (e.data === "") {
+        return;
+      }
+      const json = JSON.parse(e.data);
+      if (json) {
+        dispatchEventListeners({
+          type: STATE.UPDATE,
+          data: json.results,
+        });
+
+        setEventListenersPageInfo(json.pageInfo);
+      }
+    }
     if (stream && pathString !== null) {
       // setup event listener
       const listener = new EventSourcePolyfill(
@@ -125,21 +138,6 @@ export const useDirektivEvents = (
       listener.onerror = (e) => {
         genericEventSourceErrorHandler(e, setErrListeners);
       };
-
-      async function readData(e) {
-        if (e.data === "") {
-          return;
-        }
-        const json = JSON.parse(e.data);
-        if (json) {
-          dispatchEventListeners({
-            type: STATE.UPDATE,
-            data: json.results,
-          });
-
-          setEventListenersPageInfo(json.pageInfo);
-        }
-      }
 
       listener.onmessage = (e) => readData(e);
       setEventListenersSource(listener);

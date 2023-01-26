@@ -38,6 +38,27 @@ export const useDirektivMirror = (
 
   // Stream Event Source Data Dispatch Handler
   React.useEffect(() => {
+    async function readData(e) {
+      if (e.data === "") {
+        return;
+      }
+      const json = JSON.parse(e.data);
+      if (json?.activities) {
+        dispatchActivities({
+          type: STATE.UPDATE,
+          data: json.activities.results,
+        });
+
+        setPageInfo(json.activities.pageInfo);
+      }
+
+      if (json?.info) {
+        dispatchInfo({
+          type: STATE.UPDATE,
+          data: json.info,
+        });
+      }
+    }
     if (stream && pathString !== null) {
       // setup event listener
       const listener = new EventSourcePolyfill(`${pathString}${queryString}`, {
@@ -47,29 +68,6 @@ export const useDirektivMirror = (
       listener.onerror = (e) => {
         genericEventSourceErrorHandler(e, setErr);
       };
-
-      async function readData(e) {
-        if (e.data === "") {
-          return;
-        }
-        const json = JSON.parse(e.data);
-        if (json?.activities) {
-          dispatchActivities({
-            type: STATE.UPDATE,
-            data: json.activities.results,
-          });
-
-          setPageInfo(json.activities.pageInfo);
-        }
-
-        if (json?.info) {
-          dispatchInfo({
-            type: STATE.UPDATE,
-            data: json.info,
-          });
-        }
-      }
-
       listener.onmessage = (e) => readData(e);
       setEventSource(listener);
     } else {
