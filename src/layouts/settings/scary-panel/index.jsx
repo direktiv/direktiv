@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./style.css";
 import ContentPanel, {
   ContentPanelTitle,
@@ -94,17 +94,12 @@ function Scary(props) {
                 },
 
                 buttonProps: { variant: "contained", color: "error" },
-                errFunc: () => {},
                 closesModal: true,
                 validate: true,
               },
               {
                 label: "Cancel",
-
-                onClick: () => {},
-
                 buttonProps: {},
-                errFunc: () => {},
                 closesModal: true,
               },
             ]}
@@ -125,6 +120,10 @@ function DeleteNamespaceConfirmationPanel(props) {
 
   const [inputValue, setInputValue] = useState("");
 
+  useEffect(() => {
+    setDelButtonEnabled(inputValue === namespace);
+  }, [inputValue, namespace, setDelButtonEnabled]);
+
   return (
     <FlexBox col style={{ fontSize: "12px" }}>
       <FlexBox col>
@@ -139,7 +138,8 @@ function DeleteNamespaceConfirmationPanel(props) {
       </FlexBox>
       <FlexBox>
         <input
-          ovalue={inputValue}
+          value={inputValue}
+          onChangeCapture={setInputValue}
           onChange={(e) => {
             setInputValue(e.target.value);
             if (e.target.value === namespace) {
