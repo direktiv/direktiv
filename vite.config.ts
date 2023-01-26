@@ -51,5 +51,9 @@ export default ({ mode }) => {
       },
     },
     plugins: [react(), viteTsconfigPaths(), svgrPlugin(), reactVirtualized()],
+    test: {
+      globals: true,
+      environment: "jsdom",
+    },
   });
 };
