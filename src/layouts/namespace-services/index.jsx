@@ -315,18 +315,17 @@ function NamespaceServices(props) {
               </div>
             ) : (
               <>
-                {data.map((obj) => {
-                  return (
-                    <Service
-                      url={`/n/${namespace}/services/${obj.info.name}`}
-                      deleteService={deleteNamespaceService}
-                      conditions={obj.conditions}
-                      name={obj.info.name}
-                      status={obj.status}
-                      image={obj.info.image}
-                    />
-                  );
-                })}
+                {data.map((obj) => (
+                  <Service
+                    id={obj.serviceName}
+                    url={`/n/${namespace}/services/${obj.info.name}`}
+                    deleteService={deleteNamespaceService}
+                    conditions={obj.conditions}
+                    name={obj.info.name}
+                    status={obj.status}
+                    image={obj.info.image}
+                  />
+                ))}
               </>
             )}
           </FlexBox>

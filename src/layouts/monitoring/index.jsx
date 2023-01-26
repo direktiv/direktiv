@@ -223,12 +223,10 @@ function FailedExecutions(props) {
           {data.map((obj) => {
             const split = obj.as.split(":");
             const wf = split[0];
-            let revision = split[1];
-            if (!revision) {
-              revision = "latest";
-            }
+            const revision = split[1] ?? "latest";
+
             return (
-              <tr className="instance-row">
+              <tr className="instance-row" key={obj.id}>
                 <td
                   title={obj.as}
                   style={{ overflow: "hidden", textOverflow: "ellipsis" }}
@@ -297,12 +295,10 @@ function SuccessfulExecutions(props) {
           {data.map((obj) => {
             const split = obj.as.split(":");
             const wf = split[0];
-            let revision = split[1];
-            if (!revision) {
-              revision = "latest";
-            }
+            const revision = split[1] ?? "latest";
+
             return (
-              <tr className="instance-row">
+              <tr className="instance-row" key={obj.id}>
                 <td
                   title={obj.as}
                   style={{ overflow: "hidden", textOverflow: "ellipsis" }}
