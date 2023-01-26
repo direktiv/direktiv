@@ -1,6 +1,6 @@
 import { useNamespaceService } from "../../hooks";
 import { useEffect, useState } from "react";
-import { VscLayers , VscAdd } from "react-icons/vsc";
+import { VscLayers, VscAdd } from "react-icons/vsc";
 import { useNavigate, useParams } from "react-router";
 import { Service } from ".";
 import Alert from "../../components/alert";
@@ -318,9 +318,9 @@ function NamespaceRevisions(props) {
                         break;
                       }
                     }
-
                     return (
                       <Service
+                        key={obj.name}
                         latest={i === 0}
                         traffic={t}
                         dontDelete={dontDelete && i !== 0}
