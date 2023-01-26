@@ -1,5 +1,6 @@
 import { Tooltip } from "@mui/material";
-import MUIButton, { ButtonProps as MUIButtonProps } from "@mui/material/Button";
+import MUIButton from "@mui/material/Button";
+import type { ButtonProps as MUIButtonProps } from "@mui/material/Button";
 import { styled } from "@mui/material/styles";
 import * as React from "react";
 
@@ -34,13 +35,11 @@ const DirektivButton = styled(MUIButton, {
   ({
     theme,
     color,
-    size,
     auto,
     variant,
     disabledTooltip,
     disabled,
     disableShadows,
-    loading,
   }) => ({
     // Defaults
     textTransform: "none",

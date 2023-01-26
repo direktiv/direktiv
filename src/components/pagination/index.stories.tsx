@@ -1,4 +1,4 @@
-import { ComponentMeta, ComponentStory } from "@storybook/react";
+import type { ComponentMeta, ComponentStory } from "@storybook/react";
 import "../../App.css";
 
 import Pagination, { PageInfo, usePageHandler } from "./index";

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Alert from "./index";
-import { ComponentStory, ComponentMeta } from "@storybook/react";
+import type { ComponentStory, ComponentMeta } from "@storybook/react";
 import "../../App.css";
 import "./style.css";
 import Button from "../button";

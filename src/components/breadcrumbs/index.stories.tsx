@@ -1,5 +1,5 @@
 import React from "react";
-import { ComponentStory, ComponentMeta } from "@storybook/react";
+import type { ComponentStory, ComponentMeta } from "@storybook/react";
 import { withRouter } from "storybook-addon-react-router-v6";
 import "../../App.css";
 import "./style.css";

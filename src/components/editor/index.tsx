@@ -1,4 +1,5 @@
-import Editor, { useMonaco, loader, EditorProps } from "@monaco-editor/react";
+import Editor, { useMonaco, loader } from "@monaco-editor/react";
+import type { EditorProps } from "@monaco-editor/react";
 import { useEffect, useState } from "react";
 import "./style.css";
 // import * as cobalt from './cobalt.json'

@@ -1,4 +1,5 @@
-import MUIAlert, { AlertProps as MUIAlertProps } from "@mui/material/Alert";
+import MUIAlert from "@mui/material/Alert";
+import type { AlertProps as MUIAlertProps } from "@mui/material/Alert";
 import { styled } from "@mui/material/styles";
 import { VscWarning } from "react-icons/vsc";
 import "./style.css";
@@ -16,7 +17,7 @@ export interface AlertProps extends MUIAlertProps {
 
 const DirektivAlert = styled(MUIAlert, {
   shouldForwardProp: (prop) => prop !== "grow",
-})<AlertProps>(({ theme, variant, severity, grow }) => ({
+})<AlertProps>(({ variant, severity, grow }) => ({
   ...(grow && {
     width: "100%",
   }),
