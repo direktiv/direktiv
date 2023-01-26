@@ -537,7 +537,8 @@ export function InstanceRow(props) {
 }
 
 function StateLabel(props) {
-  let { className, label } = props;
+  let { className } = props;
+  const { label } = props;
   className += " label-cell";
 
   return (

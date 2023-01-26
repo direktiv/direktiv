@@ -19,7 +19,8 @@ import "tippy.js/dist/tippy.css";
  *   * namespaces: Array of available namespaces.
  */
 function NamespaceSelector(props) {
-  let { style, className, namespaces, namespace } = props;
+  let { className } = props;
+  const { style, namespaces, namespace } = props;
   const [showSelector, setShowSelector] = useState(false);
   const wrapperRef = useRef(null);
   useOutsideCallback(
@@ -109,7 +110,8 @@ function NamespaceSelector(props) {
 export default NamespaceSelector;
 
 function NamespaceListItem(props) {
-  let { disabled, namespace, loading, label, setShowSelector } = props;
+  let { namespace, label } = props;
+  const { disabled, loading, setShowSelector } = props;
   let className = "namespace-list-item";
 
   if (!namespace) {

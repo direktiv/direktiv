@@ -26,11 +26,11 @@ import { useDropzone } from "react-dropzone";
 import HideShowButton from "../hide-show";
 
 function NavBar(props) {
-  let {
+  let { className } = props;
+  const {
     onClick,
     style,
     footer,
-    className,
     createNamespace,
     createMirrorNamespace,
     namespace,
@@ -40,6 +40,7 @@ function NavBar(props) {
     setToggleResponsive,
     extraNavigation,
   } = props;
+
   if (!className) {
     className = "";
   }
@@ -533,7 +534,8 @@ function NewNamespaceBtn(props) {
 }
 
 function NavItems(props) {
-  const { pathname, style, namespace, toggleResponsive, extraNavigation } = props;
+  const { pathname, style, namespace, toggleResponsive, extraNavigation } =
+    props;
 
   const explorer = matchPath("/n/:namespace", pathname);
   const wfexplorer = matchPath("/n/:namespace/explorer/*", pathname);
@@ -741,7 +743,8 @@ function GlobalNavItems({ namespace }) {
 }
 
 export function NavItem(props) {
-  let { children, label, className } = props;
+  let { className } = props;
+  const { children, label } = props;
   if (!className) {
     className = "";
   }
