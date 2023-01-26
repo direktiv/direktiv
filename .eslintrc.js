@@ -30,10 +30,22 @@ module.exports = {
 
   rules: {
     // PLEASE ALWAYS PROVIDE A REASON FOR DISABLING/OVERWRITING A RULE
-    "react/react-in-jsx-scope": "off", // It's save to import React when using vite
-    // remove when we have 100 % typescript
-    "react/prop-types": "off", // we will use TypeScript's types for component props instead)
-    "prefer-const": "error", // this is the default in typescript and we want to enforce it in JavaScript as well
-    "no-console": "error", // this is the default in typescript and we want to enforce it in JavaScript as well
+    // IT'S HARD TO EVALUATE THIS SECTION AT A LATER POINT IN TIME
+
+    // It's save to import React when using vite
+    "react/react-in-jsx-scope": "off",
+
+    // console logs are fine in development, but eslint can help us
+    // remember to remove them. console.error and console.warn are
+    // allowed for now. They should only be placed in code that should
+    // not be reached and can provide a helpful hint to the developer.
+    "no-console": ["error", { allow: ["error", "warn"] }],
+
+    // REMOVE WHEN 100 % TYPESCRIPT IS ACHIEVED
+
+    // we will use TypeScript's types for component props instead)
+    "react/prop-types": "off",
+    // this is the default in typescript and we want to enforce it in JavaScript as well
+    "prefer-const": "error",
   },
 };
