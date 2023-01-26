@@ -14,13 +14,12 @@ import WorkflowDiagram from "../../../components/diagram";
 import YAML from "js-yaml";
 import Modal, { ModalHeadless } from "../../../components/modal";
 import SankeyDiagram from "../../../components/sankey";
-import { VscVersions, VscTypeHierarchySub } from "react-icons/vsc";
+import { VscVersions, VscTypeHierarchySub , VscCode, VscDebugStepBack } from "react-icons/vsc";
 import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
 import { useNavigate } from "react-router";
 import HelpIcon from "../../../components/help";
 import { AutoSizer } from "react-virtualized";
-import { VscCode, VscDebugStepBack } from "react-icons/vsc";
 import { ApiFragment } from "..";
 
 import Form from "@rjsf/core";
@@ -67,7 +66,7 @@ function RevisionTab(props) {
   useEffect(() => {
     async function getRevWorkflow() {
       if (load && searchParams.get("revtab") !== null) {
-        let wfdata = await getWorkflowRevisionData(revision);
+        const wfdata = await getWorkflowRevisionData(revision);
         setWorkflowData(atob(wfdata.revision.source));
         setRevisionID(wfdata.revision.name);
         setLoad(false);
@@ -196,7 +195,7 @@ function RevisionTab(props) {
                           },
                         ]}
                         onOpen={() => {
-                          let wfObj = YAML.load(workflow);
+                          const wfObj = YAML.load(workflow);
                           if (
                             wfObj &&
                             wfObj.states &&
@@ -325,7 +324,7 @@ function RevisionTab(props) {
 
 export default RevisionTab;
 export function TabbedButtons(props) {
-  let {
+  const {
     tabBtn,
     setTabBtn,
     searchParams,
@@ -337,14 +336,14 @@ export function TabbedButtons(props) {
     blockMsg,
   } = props;
 
-  let tabBtns = [];
+  const tabBtns = [];
   let tabBtnLabels = ["YAML", "Diagram", "Sankey"];
   if (enableDiagramEditor !== undefined) {
     tabBtnLabels = ["YAML", "Editor", "Diagram", "Sankey"];
   }
 
   for (let i = 0; i < tabBtnLabels.length; i++) {
-    let key = GenerateRandomKey();
+    const key = GenerateRandomKey();
     let classes = "tab-btn";
     if (i === tabBtn) {
       classes += " active-tab-btn";
@@ -401,7 +400,7 @@ export function TabbedButtons(props) {
 }
 
 const apiHelps = (namespace, workflow) => {
-  let url = window.location.origin;
+  const url = window.location.origin;
   return [
     {
       method: "GET",
@@ -472,7 +471,7 @@ export function RevisionSelectorTab(props) {
   const [tags, setTags] = useState(null);
 
   function updateTags(newTags) {
-    let processedTags = {};
+    const processedTags = {};
     newTags.forEach((edge) => {
       if (edge.name !== "latest") {
         processedTags[edge.name] = true;
@@ -485,7 +484,7 @@ export function RevisionSelectorTab(props) {
     async function listData() {
       if (tags === null) {
         // get workflow tags
-        let resp = await getTags();
+        const resp = await getTags();
         if (Array.isArray(resp.results)) {
           updateTags(resp.results);
         } else {
@@ -638,8 +637,8 @@ export function RevisionSelectorTab(props) {
 
                               onClick: async () => {
                                 await removeTag(obj.name);
-                                let tagsResp = await getTags();
-                                let revResp = await getRevisions();
+                                const tagsResp = await getTags();
+                                const revResp = await getRevisions();
                                 setRevisions(revResp.results);
                                 updateTags(tagsResp.results);
                               },
@@ -693,7 +692,7 @@ export function RevisionSelectorTab(props) {
 
                               onClick: async () => {
                                 await deleteRevision(obj.name);
-                                let x = await getRevisions();
+                                const x = await getRevisions();
                                 setRevisions(x.results);
                                 setRouter(await getWorkflowRouter());
                               },
@@ -759,7 +758,7 @@ export function RevisionSelectorTab(props) {
                                 label: "Revert",
 
                                 onClick: async () => {
-                                  let data = await getWorkflowRevisionData(
+                                  const data = await getWorkflowRevisionData(
                                     obj.name
                                   );
                                   await updateWorkflow(
@@ -897,7 +896,7 @@ function RevertTrafficAmount(props) {
 }
 
 function TagRevisionBtn(props) {
-  let { tagWorkflow, obj, getRevisions, setRevisions, updateTags, getTags } =
+  const { tagWorkflow, obj, getRevisions, setRevisions, updateTags, getTags } =
     props;
   const [tag, setTag] = useState("");
 
@@ -927,8 +926,8 @@ function TagRevisionBtn(props) {
 
           onClick: async () => {
             await tagWorkflow(obj.name, tag);
-            let tagsResp = await getTags();
-            let revResp = await getRevisions();
+            const tagsResp = await getTags();
+            const revResp = await getRevisions();
             setRevisions(revResp.results);
             updateTags(tagsResp.results);
           },
@@ -1176,7 +1175,7 @@ export function RevisionTrafficShaper(props) {
           >
             <Button
               onClick={async () => {
-                let arr = [];
+                const arr = [];
                 if (rev1 !== "" && rev2 !== "") {
                   arr.push({
                     ref: rev1,

@@ -33,7 +33,7 @@ export const useDirektivNamespaceServiceRevision = (
 
   React.useEffect(() => {
     if (podSource.current === null) {
-      let listener = new EventSourcePolyfill(
+      const listener = new EventSourcePolyfill(
         `${url}functions/namespaces/${namespace}/function/${service}/revisions/${revision}/pods`,
         {
           headers: apiKeyHeaders(apikey),
@@ -47,7 +47,7 @@ export const useDirektivNamespaceServiceRevision = (
           setErr("permission denied");
         } else {
           try {
-            let json = JSON.parse(e.data);
+            const json = JSON.parse(e.data);
             setErr(json.Message);
           } catch (e) {
             // TODO
@@ -56,12 +56,12 @@ export const useDirektivNamespaceServiceRevision = (
       };
 
       async function readData(e) {
-        let podz = podsRef.current;
+        const podz = podsRef.current;
 
         if (e.data === "") {
           return;
         }
-        let json = JSON.parse(e.data);
+        const json = JSON.parse(e.data);
 
         switch (json.event) {
           case "DELETED":
@@ -105,7 +105,7 @@ export const useDirektivNamespaceServiceRevision = (
   React.useEffect(() => {
     if (revisionSource.current === null) {
       // setup event listener
-      let listener = new EventSourcePolyfill(
+      const listener = new EventSourcePolyfill(
         `${url}functions/namespaces/${namespace}/function/${service}/revisions/${revision}`,
         {
           headers: apiKeyHeaders(apikey),
@@ -119,7 +119,7 @@ export const useDirektivNamespaceServiceRevision = (
           setErr("permission denied");
         } else {
           try {
-            let json = JSON.parse(e.data);
+            const json = JSON.parse(e.data);
             setErr(json.Message);
           } catch (e) {
             // TODO handle error/error handling
@@ -131,7 +131,7 @@ export const useDirektivNamespaceServiceRevision = (
         if (e.data === "") {
           return;
         }
-        let json = JSON.parse(e.data);
+        const json = JSON.parse(e.data);
         if (json.event === "ADDED" || json.event === "MODIFIED") {
           setRevisionDetails(json.revision);
         }
@@ -187,7 +187,7 @@ export const useDirektivNamespaceService = (
   React.useEffect(() => {
     if (trafficSource.current === null) {
       // setup event listener
-      let listener = new EventSourcePolyfill(
+      const listener = new EventSourcePolyfill(
         `${url}functions/namespaces/${namespace}/function/${service}`,
         {
           headers: apiKeyHeaders(apikey),
@@ -201,7 +201,7 @@ export const useDirektivNamespaceService = (
           setErr("permission denied");
         } else {
           try {
-            let json = JSON.parse(e.data);
+            const json = JSON.parse(e.data);
             setErr(json.Message);
           } catch (e) {
             // TODO
@@ -213,7 +213,7 @@ export const useDirektivNamespaceService = (
         if (e.data === "") {
           return;
         }
-        let json = JSON.parse(e.data);
+        const json = JSON.parse(e.data);
 
         if (json.event === "MODIFIED" || json.event === "ADDED") {
           setFn(JSON.parse(JSON.stringify(json.function)));
@@ -230,7 +230,7 @@ export const useDirektivNamespaceService = (
   React.useEffect(() => {
     if (eventSource.current === null) {
       // setup event listener
-      let listener = new EventSourcePolyfill(
+      const listener = new EventSourcePolyfill(
         `${url}functions/namespaces/${namespace}/function/${service}/revisions`,
         {
           headers: apiKeyHeaders(apikey),
@@ -244,7 +244,7 @@ export const useDirektivNamespaceService = (
           setErr("permission denied");
         } else {
           try {
-            let json = JSON.parse(e.data);
+            const json = JSON.parse(e.data);
             setErr(json.Message);
           } catch (e) {
             // TODO
@@ -253,11 +253,11 @@ export const useDirektivNamespaceService = (
       };
 
       async function readData(e) {
-        let revs = revisionsRef.current;
+        const revs = revisionsRef.current;
         if (e.data === "") {
           return;
         }
-        let json = JSON.parse(e.data);
+        const json = JSON.parse(e.data);
         switch (json.event) {
           case "DELETED":
             for (var i = 0; i < revs.length; i++) {
@@ -312,7 +312,7 @@ export const useDirektivNamespaceService = (
   }, []);
 
   async function getNamespaceServiceConfig(...queryParameters) {
-    let resp = await fetch(
+    const resp = await fetch(
       `${url}functions/namespaces/${namespace}/function/${service}${ExtractQueryString(
         false,
         ...queryParameters
@@ -323,7 +323,7 @@ export const useDirektivNamespaceService = (
       }
     );
     if (resp.ok) {
-      let json = await resp.json();
+      const json = await resp.json();
       setConfig(json.config);
       return json.config;
     } else {
@@ -341,7 +341,7 @@ export const useDirektivNamespaceService = (
     traffic,
     ...queryParameters
   ) {
-    let resp = await fetch(
+    const resp = await fetch(
       `${url}functions/namespaces/${namespace}/function/${service}${ExtractQueryString(
         false,
         ...queryParameters
@@ -366,7 +366,7 @@ export const useDirektivNamespaceService = (
   }
 
   async function deleteNamespaceServiceRevision(rev, ...queryParameters) {
-    let resp = await fetch(
+    const resp = await fetch(
       `${url}functions/namespaces/${namespace}/function/${service}/revisions/${rev}${ExtractQueryString(
         false,
         ...queryParameters
@@ -394,7 +394,7 @@ export const useDirektivNamespaceService = (
     rev2value,
     ...queryParameters
   ) {
-    let trafficarr = [];
+    const trafficarr = [];
     if (rev1 !== "") {
       trafficarr.push({
         revision: rev1,
@@ -407,7 +407,7 @@ export const useDirektivNamespaceService = (
         percent: rev2value,
       });
     }
-    let resp = await fetch(
+    const resp = await fetch(
       `${url}functions/namespaces/${namespace}/function/${service}${ExtractQueryString(
         false,
         ...queryParameters
@@ -463,7 +463,7 @@ export const useDirektivNamespaceServices = (
 
   const getNamespaceServices = React.useCallback(
     async (...queryParameters) => {
-      let resp = await fetch(
+      const resp = await fetch(
         `${url}functions/namespaces/${namespace}${ExtractQueryString(
           false,
           ...queryParameters
@@ -474,7 +474,7 @@ export const useDirektivNamespaceServices = (
         }
       );
       if (resp.ok) {
-        let json = await resp.json();
+        const json = await resp.json();
         setData(json.functions);
         return json.functions;
       } else {
@@ -490,7 +490,7 @@ export const useDirektivNamespaceServices = (
     if (stream) {
       if (eventSource.current === null) {
         // setup event listener
-        let listener = new EventSourcePolyfill(
+        const listener = new EventSourcePolyfill(
           `${url}functions/namespaces/${namespace}`,
           {
             headers: apiKeyHeaders(apikey),
@@ -504,7 +504,7 @@ export const useDirektivNamespaceServices = (
             setErr("permission denied");
           } else {
             try {
-              let json = JSON.parse(e.data);
+              const json = JSON.parse(e.data);
               setErr(json.Message);
             } catch (e) {
               // TODO
@@ -513,11 +513,11 @@ export const useDirektivNamespaceServices = (
         };
 
         async function readData(e) {
-          let funcs = functionsRef.current;
+          const funcs = functionsRef.current;
           if (e.data === "") {
             return;
           }
-          let json = JSON.parse(e.data);
+          const json = JSON.parse(e.data);
           switch (json.event) {
             case "DELETED":
               for (var i = 0; i < funcs.length; i++) {
@@ -570,7 +570,7 @@ export const useDirektivNamespaceServices = (
   }, []);
 
   async function getNamespaceConfig(...queryParameters) {
-    let resp = await fetch(
+    const resp = await fetch(
       `${url}functions/namespaces/${namespace}${ExtractQueryString(
         false,
         ...queryParameters
@@ -581,7 +581,7 @@ export const useDirektivNamespaceServices = (
       }
     );
     if (resp.ok) {
-      let json = await resp.json();
+      const json = await resp.json();
       setConfig(json.config);
       return json.config;
     } else {
@@ -599,7 +599,7 @@ export const useDirektivNamespaceServices = (
     cmd,
     ...queryParameters
   ) {
-    let resp = await fetch(
+    const resp = await fetch(
       `${url}functions/namespaces/${namespace}${ExtractQueryString(
         false,
         ...queryParameters
@@ -622,7 +622,7 @@ export const useDirektivNamespaceServices = (
   }
 
   async function deleteNamespaceService(name, ...queryParameters) {
-    let resp = await fetch(
+    const resp = await fetch(
       `${url}functions/namespaces/${namespace}/function/${name}${ExtractQueryString(
         false,
         ...queryParameters

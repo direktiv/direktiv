@@ -13,9 +13,9 @@ export function importFromYAML(diagramEditor, setFunctions, wfYAML) {
   return importFromWorkflowData(diagramEditor, setFunctions, wfData);
 }
 export function importFromWorkflowData(diagramEditor, setFunctions, wfData) {
-  let nodeIDToStateIDMap = {};
-  let catchNodes = [];
-  let pos = { x: 20, y: 200 };
+  const nodeIDToStateIDMap = {};
+  const catchNodes = [];
+  const pos = { x: 20, y: 200 };
 
   // Set functions
   if (wfData.functions) {
@@ -23,7 +23,7 @@ export function importFromWorkflowData(diagramEditor, setFunctions, wfData) {
   }
 
   // Add StartNode
-  let startNode = JSON.parse(JSON.stringify(NodeStartBlock));
+  const startNode = JSON.parse(JSON.stringify(NodeStartBlock));
   if (wfData.start) {
     startNode.data.formData = wfData.start;
     startNode.data.init = true;
@@ -50,10 +50,10 @@ export function importFromWorkflowData(diagramEditor, setFunctions, wfData) {
     pos.x += 220;
 
     // Add Node to Diagram (DEEP COPY to avoid references changes)
-    let newNode = JSON.parse(JSON.stringify(result[0]));
+    const newNode = JSON.parse(JSON.stringify(result[0]));
 
     // Create nodeData from state
-    let newNodeData = Object.assign({}, state);
+    const newNodeData = Object.assign({}, state);
 
     delete newNodeData["type"];
     delete newNodeData["id"];
@@ -76,7 +76,7 @@ export function importFromWorkflowData(diagramEditor, setFunctions, wfData) {
     // Add Catch Node
     if (state.catch) {
       pos.x += 220;
-      let errorNode = JSON.parse(JSON.stringify(NodeErrorBlock));
+      const errorNode = JSON.parse(JSON.stringify(NodeErrorBlock));
       const catchNodeRef = `SPECIAL-ERROR: ` + state.id;
       errorNode.data.formData = state.catch;
       errorNode.connections.output = state.catch.length;
@@ -127,7 +127,7 @@ export function importFromWorkflowData(diagramEditor, setFunctions, wfData) {
       diagramEditor.addConnection(nodeID, catchNodeID, "output_2", "input_1");
     }
 
-    let connCallback = importConnectionsCallbackMap[node.name];
+    const connCallback = importConnectionsCallbackMap[node.name];
     if (connCallback) {
       connCallback(diagramEditor, state, nodeID, nodeIDToStateIDMap);
       continue;
@@ -261,7 +261,7 @@ function importDefaultProcessTransformCallback(state, transformKey) {
     oldTransform.trim().endsWith(")")
   ) {
     let javascriptString = "";
-    let oldTransformArr = oldTransform.split("\n");
+    const oldTransformArr = oldTransform.split("\n");
     for (let i = 1; i < oldTransformArr.length - 1; i++) {
       const line = oldTransformArr[i].startsWith("  ")
         ? oldTransformArr[i].slice(2)

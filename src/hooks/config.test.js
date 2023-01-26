@@ -21,7 +21,7 @@ describe("useBroadcastConfiguration", () => {
     );
     await waitForNextUpdate();
 
-    let newdata = result.current.data;
+    const newdata = result.current.data;
     newdata.broadcast["directory.delete"] = true;
 
     await act(async () => {

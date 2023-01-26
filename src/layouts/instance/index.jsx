@@ -33,7 +33,7 @@ import {
 import "./style.css";
 
 function InstancePageWrapper(props) {
-  let { namespace } = props;
+  const { namespace } = props;
   if (!namespace) {
     return <></>;
   }
@@ -44,13 +44,13 @@ function InstancePageWrapper(props) {
 export default InstancePageWrapper;
 
 function TabbedButtons(props) {
-  let { tabBtn, setTabBtn, setSearchParams } = props;
+  const { tabBtn, setTabBtn, setSearchParams } = props;
 
-  let tabBtns = [];
-  let tabBtnLabels = ["Flow Graph", "Child Instances"];
+  const tabBtns = [];
+  const tabBtnLabels = ["Flow Graph", "Child Instances"];
 
   for (let i = 0; i < tabBtnLabels.length; i++) {
-    let key = GenerateRandomKey();
+    const key = GenerateRandomKey();
     let classes = "tab-btn";
     if (i === tabBtn) {
       classes += " active-tab-btn";
@@ -83,7 +83,7 @@ function TabbedButtons(props) {
 }
 
 function InstancePage(props) {
-  let { namespace } = props;
+  const { namespace } = props;
   const { id } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -142,7 +142,7 @@ function InstancePage(props) {
     setInstanceID(id);
   }, [id]);
 
-  let {
+  const {
     data,
     err,
     workflow,
@@ -154,7 +154,7 @@ function InstancePage(props) {
 
   useEffect(() => {
     if (load && data !== null && workflow != null && latestRevision != null) {
-      let split = data.as.split(":");
+      const split = data.as.split(":");
       setWFPath(split[0]);
       if (workflow.revision === latestRevision) {
         setRef("latest");
@@ -198,7 +198,7 @@ function InstancePage(props) {
     label = <RunningState />;
   }
 
-  let wfName = data.as.split(":")[0];
+  const wfName = data.as.split(":")[0];
 
   return (
     <Loader load={load} timer={3000}>
@@ -432,13 +432,13 @@ function InstancePage(props) {
 
 function InstanceLogs(props) {
   const [apiKey] = useApiKey();
-  let { noPadding, namespace, instanceID } = props;
+  const { noPadding, namespace, instanceID } = props;
   let paddingStyle = { padding: "12px" };
   if (noPadding) {
     paddingStyle = { padding: "0px" };
   }
 
-  let { data } = useInstanceLogs(
+  const { data } = useInstanceLogs(
     Config.url,
     true,
     namespace,
@@ -516,7 +516,7 @@ function InstanceDiagram(props) {
           rev !== "" &&
           load
         ) {
-          let refWF = await getWorkflowRevisionData(
+          const refWF = await getWorkflowRevisionData(
             instRef === "latest" ? instRef : rev
           );
           setWFData(atob(refWF.revision.source));
@@ -564,9 +564,9 @@ function Input(props) {
 
   useEffect(() => {
     async function get() {
-      let data = await getInput();
+      const data = await getInput();
       try {
-        let x = JSON.stringify(JSON.parse(data), null, 2);
+        const x = JSON.stringify(JSON.parse(data), null, 2);
         setInput(x);
       } catch (e) {
         setInput(data);
@@ -614,8 +614,8 @@ function Output(props) {
       if (load && status !== "pending" && output === null && getOutput) {
         setLoad(false);
         try {
-          let data = await getOutput();
-          let x = JSON.stringify(JSON.parse(data), null, 2);
+          const data = await getOutput();
+          const x = JSON.stringify(JSON.parse(data), null, 2);
           setOutput(x);
         } catch (e) {
           console.log(e);

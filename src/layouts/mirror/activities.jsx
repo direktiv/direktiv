@@ -127,7 +127,7 @@ const cancelled = "cancelled";
 const running = "pending";
 
 export function ActivityRow(props) {
-  let {
+  const {
     state,
     startedDate,
     startedTime,

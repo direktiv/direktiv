@@ -38,14 +38,14 @@ export const useDirektivNamespaces = (
   const getNamespaces = React.useCallback(
     async (...queryParameters) => {
       // fetch namespace list by default
-      let resp = await fetch(
+      const resp = await fetch(
         `${url}namespaces${ExtractQueryString(false, ...queryParameters)}`,
         {
           headers: apiKeyHeaders(apikey),
         }
       );
       if (resp.ok) {
-        let json = await resp.json();
+        const json = await resp.json();
         setData(json.results);
         setPageInfo(json.pageInfo);
         return json.results;
@@ -62,7 +62,7 @@ export const useDirektivNamespaces = (
     if (stream) {
       if (eventSource.current === null) {
         // setup event listener
-        let listener = new EventSourcePolyfill(
+        const listener = new EventSourcePolyfill(
           `${url}namespaces${queryString}`,
           {
             headers: apiKeyHeaders(apikey),
@@ -82,7 +82,7 @@ export const useDirektivNamespaces = (
           if (e.data === "") {
             return;
           }
-          let json = JSON.parse(e.data);
+          const json = JSON.parse(e.data);
           setData(json.results);
           setPageInfo(json.pageInfo);
         }
@@ -103,7 +103,7 @@ export const useDirektivNamespaces = (
     if (!load && eventSource.current !== null) {
       CloseEventSource(eventSource.current);
       // setup event listener
-      let listener = new EventSourcePolyfill(`${url}namespaces${queryString}`, {
+      const listener = new EventSourcePolyfill(`${url}namespaces${queryString}`, {
         headers: apiKeyHeaders(apikey),
       });
 
@@ -119,7 +119,7 @@ export const useDirektivNamespaces = (
         if (e.data === "") {
           return;
         }
-        let json = JSON.parse(e.data);
+        const json = JSON.parse(e.data);
         setData(json.results);
         setPageInfo(json.pageInfo);
       }
@@ -133,7 +133,7 @@ export const useDirektivNamespaces = (
   // If queryParameters change and streaming: update queryString, and reset sse connection
   React.useEffect(() => {
     if (stream) {
-      let newQueryString = ExtractQueryString(false, ...queryParameters);
+      const newQueryString = ExtractQueryString(false, ...queryParameters);
       if (newQueryString !== queryString) {
         setQueryString(newQueryString);
         CloseEventSource(eventSource.current);
@@ -150,7 +150,7 @@ export const useDirektivNamespaces = (
 
   // createNamespace creates a namespace from direktiv
   async function createNamespace(namespace, ...queryParameters) {
-    let resp = await fetch(
+    const resp = await fetch(
       `${url}namespaces/${namespace}${ExtractQueryString(
         false,
         ...queryParameters
@@ -172,13 +172,13 @@ export const useDirektivNamespaces = (
     mirrorSettings,
     ...queryParameters
   ) {
-    let request = {
+    const request = {
       method: "PUT",
       body: JSON.stringify(mirrorSettings),
       headers: apiKeyHeaders(apikey),
     };
 
-    let resp = await fetch(
+    const resp = await fetch(
       `${url}namespaces/${namespace}${ExtractQueryString(
         false,
         ...queryParameters
@@ -194,7 +194,7 @@ export const useDirektivNamespaces = (
 
   // deleteNamespace deletes a namespace from direktiv
   async function deleteNamespace(namespace, ...queryParameters) {
-    let resp = await fetch(
+    const resp = await fetch(
       `${url}namespaces/${namespace}?recursive=true${ExtractQueryString(
         true,
         ...queryParameters

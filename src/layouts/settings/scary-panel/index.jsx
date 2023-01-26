@@ -121,7 +121,7 @@ function Scary(props) {
 }
 
 function DeleteNamespaceConfirmationPanel(props) {
-  let { namespace, setDelButtonEnabled } = props;
+  const { namespace, setDelButtonEnabled } = props;
 
   const [inputValue, setInputValue] = useState("");
 

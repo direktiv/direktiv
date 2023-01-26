@@ -1,6 +1,17 @@
 import { useWorkflow, useWorkflowServices } from "../../../hooks";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { VscFileCode } from "react-icons/vsc";
+import { VscFileCode ,
+  VscChevronDown,
+  VscChevronUp,
+  VscError,
+  VscLayers,
+  VscNote,
+  VscPass,
+  VscPieChart,
+  VscTag,
+  VscTypeHierarchySub,
+  VscVmRunning,
+} from "react-icons/vsc";
 import { useNavigate, useParams } from "react-router";
 import { useSearchParams } from "react-router-dom";
 import ContentPanel, {
@@ -18,18 +29,6 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import utc from "dayjs/plugin/utc";
 import { InstanceRow } from "../../instances";
 
-import {
-  VscChevronDown,
-  VscChevronUp,
-  VscError,
-  VscLayers,
-  VscNote,
-  VscPass,
-  VscPieChart,
-  VscTag,
-  VscTypeHierarchySub,
-  VscVmRunning,
-} from "react-icons/vsc";
 
 import YAML from "js-yaml";
 import DiagramEditor from "../../../components/diagram-editor/index.jsx";
@@ -149,7 +148,7 @@ function InitialWorkflowHook(props) {
       if (revisions === null && revsErr === null) {
         // get workflow revisions
         try {
-          let resp = await getRevisions();
+          const resp = await getRevisions();
           if (Array.isArray(resp.results)) {
             setRevisions(resp.results);
           } else {
@@ -427,7 +426,7 @@ function WorkingRevision(props) {
   // Push a operation loading state to a target.
   const pushOpLoadingState = useCallback(
     (target, value) => {
-      let old = opLoadingStates;
+      const old = opLoadingStates;
       old[target] = value;
 
       // If any operation is executing, this is set to ture
@@ -609,7 +608,7 @@ function WorkingRevision(props) {
                     ]}
                     onOpen={() => {
                       try {
-                        let wfObj = YAML.load(oldWf);
+                        const wfObj = YAML.load(oldWf);
                         if (
                           wfObj &&
                           wfObj.states &&
@@ -828,7 +827,7 @@ function WorkingRevision(props) {
 }
 
 function TabBar(props) {
-  let {
+  const {
     activeTab,
     setActiveTab,
     setSearchParams,
@@ -842,14 +841,14 @@ function TabBar(props) {
   } = props;
   const tabLabels = ["Overview", "Revisions", "Active Revision", "Settings"];
 
-  let tabDOMs = [];
+  const tabDOMs = [];
   for (let i = 0; i < 4; i++) {
     let className = "tab-bar-item";
     if (i === activeTab) {
       className += " active";
     }
 
-    let key = GenerateRandomKey("tab-item-");
+    const key = GenerateRandomKey("tab-item-");
     tabDOMs.push(
       <FlexBox
         key={key}
@@ -943,7 +942,7 @@ function WorkflowInstances(props) {
                           state = "cancelled";
                         }
 
-                        let key = GenerateRandomKey("instance-");
+                        const key = GenerateRandomKey("instance-");
                         return (
                           <InstanceRow
                             wf={true}
@@ -1004,7 +1003,7 @@ function OverviewTab(props) {
     async function listData() {
       // get the instances
       try {
-        let resp = await getInstancesForWorkflow(pageHandler.pageParams);
+        const resp = await getInstancesForWorkflow(pageHandler.pageParams);
         setPageInfo(resp?.instances?.pageInfo);
         if (Array.isArray(resp?.instances?.results)) {
           setInstances(resp?.instances?.results);
@@ -1127,8 +1126,8 @@ function SuccessFailureGraph(props) {
     async function get() {
       try {
         if (load) {
-          let ms = metrics;
-          let mets = await getSuccessFailedMetrics();
+          const ms = metrics;
+          const mets = await getSuccessFailedMetrics();
           let t = 0;
           if (mets.success && mets.failure) {
             if (mets.success[0]) {

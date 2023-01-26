@@ -41,7 +41,7 @@ export const useDirektivWorkflowLogs = (
   const getWorkflowLogs = React.useCallback(
     async (...queryParameters) => {
       // fetch namespace list by default
-      let resp = await fetch(
+      const resp = await fetch(
         `${url}namespaces/${namespace}/tree/${path}?op=logs${ExtractQueryString(
           true,
           ...queryParameters
@@ -51,7 +51,7 @@ export const useDirektivWorkflowLogs = (
         }
       );
       if (resp.ok) {
-        let json = await resp.json();
+        const json = await resp.json();
         setData(json.results);
         setPageInfo(json.pageInfo);
         return json.results;
@@ -68,7 +68,7 @@ export const useDirektivWorkflowLogs = (
     if (stream) {
       if (eventSource.current === null) {
         // setup event listener
-        let listener = new EventSourcePolyfill(
+        const listener = new EventSourcePolyfill(
           `${url}namespaces/${namespace}/tree/${path}?op=logs${queryString}`,
           {
             headers: apiKeyHeaders(apikey),
@@ -87,7 +87,7 @@ export const useDirektivWorkflowLogs = (
           if (e.data === "") {
             return;
           }
-          let json = JSON.parse(e.data);
+          const json = JSON.parse(e.data);
           setData(json.results);
           setPageInfo(json.pageInfo);
         }
@@ -120,7 +120,7 @@ export const useDirektivWorkflowLogs = (
   // If queryParameters change and streaming: update queryString, and reset sse connection
   React.useEffect(() => {
     if (stream) {
-      let newQueryString = ExtractQueryString(true, ...queryParameters);
+      const newQueryString = ExtractQueryString(true, ...queryParameters);
       if (newQueryString !== queryString) {
         setQueryString(newQueryString);
         CloseEventSource(eventSource.current);

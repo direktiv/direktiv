@@ -192,7 +192,7 @@ export default function MirrorInfoPanel(props) {
       return;
     }
 
-    let authMethodChanged = mirrorAuthMethod !== mirrorAuthMethodOld;
+    const authMethodChanged = mirrorAuthMethod !== mirrorAuthMethodOld;
     let validateMsg = "";
 
     switch (mirrorAuthMethod) {
@@ -377,7 +377,7 @@ export default function MirrorInfoPanel(props) {
                       label: "Update Settings",
 
                       onClick: async () => {
-                        let newSettings = {
+                        const newSettings = {
                           url: infoChangesTracker.url ? infoURL : "-",
                           ref: infoChangesTracker.ref ? infoRef : "-",
                           cron: infoChangesTracker.cron ? infoCron : "-",
@@ -504,7 +504,7 @@ export default function MirrorInfoPanel(props) {
                         </FlexBox>
                         <input
                           className={`info-input-value readonly`}
-                          readonly={true}
+                          readOnly={true}
                           value={infoCron}
                         />
                       </FlexBox>
@@ -527,7 +527,7 @@ export default function MirrorInfoPanel(props) {
                         </FlexBox>
                         <textarea
                           className={`info-textarea-value readonly`}
-                          readonly={true}
+                          readOnly={true}
                           rows={5}
                           style={{ width: "100%", resize: "none" }}
                           value={infoPassphrase}
@@ -554,7 +554,7 @@ export default function MirrorInfoPanel(props) {
                         </FlexBox>
                         <input
                           className={`info-input-value readonly`}
-                          readonly={true}
+                          readOnly={true}
                           type="password"
                           value={infoPassphrase}
                         />
@@ -580,7 +580,7 @@ export default function MirrorInfoPanel(props) {
                         </FlexBox>
                         <textarea
                           className={`info-textarea-value readonly`}
-                          readonly={true}
+                          readOnly={true}
                           rows={5}
                           style={{ width: "100%", resize: "none" }}
                           value={infoPublicKey}
@@ -607,7 +607,7 @@ export default function MirrorInfoPanel(props) {
                         </FlexBox>
                         <textarea
                           className={`info-textarea-value readonly`}
-                          readonly={true}
+                          readOnly={true}
                           rows={5}
                           style={{ width: "100%", resize: "none" }}
                           value={infoPrivateKey}
@@ -912,7 +912,7 @@ export default function MirrorInfoPanel(props) {
                         });
                       }}
                       setError={(errorMsg) => {
-                        let newErrors = mirrorErrors;
+                        const newErrors = mirrorErrors;
                         newErrors["publicKey"] = errorMsg;
                         setMirrorErrors({ ...newErrors });
                       }}
@@ -926,7 +926,7 @@ export default function MirrorInfoPanel(props) {
                         }
                         trigger={"click mouseenter focus"}
                         onHide={() => {
-                          let newErrors = mirrorErrors;
+                          const newErrors = mirrorErrors;
                           newErrors["publicKey"] = null;
                           setMirrorErrors({ ...newErrors });
                         }}
@@ -1019,7 +1019,7 @@ export default function MirrorInfoPanel(props) {
                         });
                       }}
                       setError={(errorMsg) => {
-                        let newErrors = mirrorErrors;
+                        const newErrors = mirrorErrors;
                         newErrors["privateKey"] = errorMsg;
                         setMirrorErrors({ ...newErrors });
                       }}
@@ -1033,7 +1033,7 @@ export default function MirrorInfoPanel(props) {
                         }
                         trigger={"click mouseenter focus"}
                         onHide={() => {
-                          let newErrors = mirrorErrors;
+                          const newErrors = mirrorErrors;
                           newErrors["privateKey"] = null;
                           setMirrorErrors({ ...newErrors });
                         }}

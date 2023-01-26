@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState , useRef } from "react";
 import "./style.css";
 
 import CircularProgress from "@mui/material/CircularProgress";
@@ -46,7 +46,6 @@ import Tippy from "@tippyjs/react";
 import * as dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import utc from "dayjs/plugin/utc";
-import { useRef } from "react";
 import HideShowButton from "../../components/hide-show";
 import { ClientFileUpload } from "../../components/navbar";
 import Tabs from "../../components/tabs";
@@ -56,7 +55,7 @@ import { useApiKey } from "../../util/apiKeyProvider";
 
 const PAGE_SIZE = 10;
 const apiHelps = (namespace) => {
-  let url = window.location.origin;
+  const url = window.location.origin;
   return [
     {
       method: "GET",
@@ -518,7 +517,7 @@ function ExplorerList(props) {
                         }}
                       >
                         {Object.keys(templates).map((obj) => {
-                          let key = GenerateRandomKey("");
+                          const key = GenerateRandomKey("");
                           return (
                             <option key={key} value={obj}>
                               {templates[obj].name}
@@ -577,7 +576,7 @@ function ExplorerList(props) {
                           if (tabIndex === 0) {
                             await createNode(name, "directory");
                           } else {
-                            let processesMirrorSettings = JSON.parse(
+                            const processesMirrorSettings = JSON.parse(
                               JSON.stringify(mirrorSettings)
                             );
                             if (mirrorAuthMethod === "token") {
@@ -821,14 +820,14 @@ function ExplorerList(props) {
                                     key === "privateKey" ? (
                                       <ClientFileUpload
                                         setFile={(fileData) => {
-                                          let newSettings = mirrorSettings;
+                                          const newSettings = mirrorSettings;
                                           newSettings[key] = fileData;
                                           setMirrorSettings({
                                             ...newSettings,
                                           });
                                         }}
                                         setError={(errorMsg) => {
-                                          let newErrors = mirrorErrors;
+                                          const newErrors = mirrorErrors;
                                           newErrors[key] = errorMsg;
                                           setMirrorErrors({ ...newErrors });
                                         }}
@@ -842,7 +841,7 @@ function ExplorerList(props) {
                                           }
                                           trigger={"click mouseenter focus"}
                                           onHide={() => {
-                                            let newErrors = mirrorErrors;
+                                            const newErrors = mirrorErrors;
                                             newErrors[key] = null;
                                             setMirrorErrors({ ...newErrors });
                                           }}
@@ -882,7 +881,7 @@ function ExplorerList(props) {
                                       rows={5}
                                       value={value}
                                       onChange={(e) => {
-                                        let newSettings = mirrorSettings;
+                                        const newSettings = mirrorSettings;
                                         newSettings[key] = e.target.value;
                                         setMirrorSettings({ ...newSettings });
                                       }}
@@ -902,7 +901,7 @@ function ExplorerList(props) {
                                       style={{ width: "100%" }}
                                       value={value}
                                       onChange={(e) => {
-                                        let newSettings = mirrorSettings;
+                                        const newSettings = mirrorSettings;
                                         newSettings[key] = e.target.value;
                                         setMirrorSettings({ ...newSettings });
                                       }}
@@ -1083,7 +1082,7 @@ function ExplorerList(props) {
 }
 
 function DirListItem(props) {
-  let {
+  const {
     name,
     path,
     deleteNode,
@@ -1203,8 +1202,8 @@ function DirListItem(props) {
                       label: "Delete",
 
                       onClick: async () => {
-                        let p = path.split("/", -1);
-                        let pLast = p[p.length - 1];
+                        const p = path.split("/", -1);
+                        const pLast = p[p.length - 1];
                         await deleteNode(pLast, recursiveDelete);
                       },
 
@@ -1254,7 +1253,7 @@ function DirListItem(props) {
 }
 
 function WorkflowListItem(props) {
-  let { name, path, deleteNode, renameNode, namespace } = props;
+  const { name, path, deleteNode, renameNode, namespace } = props;
 
   const navigate = useNavigate();
   const [renameValue, setRenameValue] = useState(path);
@@ -1359,8 +1358,8 @@ function WorkflowListItem(props) {
                       label: "Delete",
 
                       onClick: async () => {
-                        let p = path.split("/", -1);
-                        let pLast = p[p.length - 1];
+                        const p = path.split("/", -1);
+                        const pLast = p[p.length - 1];
                         await deleteNode(pLast, false);
                       },
 

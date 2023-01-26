@@ -43,7 +43,7 @@ export const useDirektivNamespaceVariables = (
   React.useEffect(() => {
     if (stream && pathString !== null) {
       // setup event listener
-      let listener = new EventSourcePolyfill(`${pathString}${queryString}`, {
+      const listener = new EventSourcePolyfill(`${pathString}${queryString}`, {
         headers: apiKeyHeaders(apikey),
       });
 
@@ -55,7 +55,7 @@ export const useDirektivNamespaceVariables = (
         if (e.data === "") {
           return;
         }
-        let json = JSON.parse(e.data);
+        const json = JSON.parse(e.data);
         if (json) {
           dispatchData({
             type: STATE.UPDATE,
@@ -113,7 +113,7 @@ export const useDirektivNamespaceVariables = (
   // getNamespaces returns a list of namespaces
   async function getNamespaceVariables(...queryParameters) {
     // fetch namespace list by default
-    let resp = await fetch(
+    const resp = await fetch(
       `${url}namespaces/${namespace}/vars${ExtractQueryString(
         false,
         ...queryParameters
@@ -123,7 +123,7 @@ export const useDirektivNamespaceVariables = (
       }
     );
     if (resp.ok) {
-      let json = await resp.json();
+      const json = await resp.json();
       return json.variables.results;
     } else {
       throw new Error(
@@ -133,7 +133,7 @@ export const useDirektivNamespaceVariables = (
   }
 
   async function getNamespaceVariable(name, ...queryParameters) {
-    let resp = await fetch(
+    const resp = await fetch(
       `${url}namespaces/${namespace}/vars/${name}${ExtractQueryString(
         false,
         ...queryParameters
@@ -155,7 +155,7 @@ export const useDirektivNamespaceVariables = (
   }
 
   async function getNamespaceVariableBuffer(name, ...queryParameters) {
-    let resp = await fetch(
+    const resp = await fetch(
       `${url}namespaces/${namespace}/vars/${name}${ExtractQueryString(
         false,
         ...queryParameters
@@ -177,7 +177,7 @@ export const useDirektivNamespaceVariables = (
   }
 
   async function getNamespaceVariableBlob(name, ...queryParameters) {
-    let resp = await fetch(
+    const resp = await fetch(
       `${url}namespaces/${namespace}/vars/${name}${ExtractQueryString(
         false,
         ...queryParameters
@@ -199,7 +199,7 @@ export const useDirektivNamespaceVariables = (
   }
 
   async function deleteNamespaceVariable(name, ...queryParameters) {
-    let resp = await fetch(
+    const resp = await fetch(
       `${url}namespaces/${namespace}/vars/${name}${ExtractQueryString(
         false,
         ...queryParameters
@@ -220,7 +220,7 @@ export const useDirektivNamespaceVariables = (
     if (mimeType === undefined) {
       mimeType = "application/json";
     }
-    let resp = await fetch(
+    const resp = await fetch(
       `${url}namespaces/${namespace}/vars/${name}${ExtractQueryString(
         false,
         ...queryParameters

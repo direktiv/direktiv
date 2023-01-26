@@ -1,7 +1,5 @@
 import * as React from "react";
-import { EventStateReducer } from "../util";
-import { EVENTSTATE } from "../util";
-import {
+import { EventStateReducer , EVENTSTATE ,
   HandleError,
   ExtractQueryString,
   SanitizePath,
@@ -42,7 +40,7 @@ export const useDirektivWorkflowServiceRevision = (
 
   React.useEffect(() => {
     if (podSource.current === null) {
-      let listener = new EventSourcePolyfill(
+      const listener = new EventSourcePolyfill(
         `${url}functions/namespaces/${namespace}/tree/${path}?op=pods&svn=${service}&rev=${revision}&version=${version}`,
         {
           headers: apiKeyHeaders(apikey),
@@ -58,12 +56,12 @@ export const useDirektivWorkflowServiceRevision = (
       };
 
       async function readData(e) {
-        let podz = podsRef.current;
+        const podz = podsRef.current;
 
         if (e.data === "") {
           return;
         }
-        let json = JSON.parse(e.data);
+        const json = JSON.parse(e.data);
 
         switch (json.event) {
           case "DELETED":
@@ -107,7 +105,7 @@ export const useDirektivWorkflowServiceRevision = (
   React.useEffect(() => {
     if (revisionSource.current === null) {
       // setup event listener
-      let listener = new EventSourcePolyfill(
+      const listener = new EventSourcePolyfill(
         `${url}functions/namespaces/${namespace}/tree/${path}?op=function-revision&svn=${service}&rev=${revision}&version=${version}`,
         {
           headers: apiKeyHeaders(apikey),
@@ -126,7 +124,7 @@ export const useDirektivWorkflowServiceRevision = (
         if (e.data === "") {
           return;
         }
-        let json = JSON.parse(e.data);
+        const json = JSON.parse(e.data);
         if (json.event === "ADDED" || json.event === "MODIFIED") {
           setRevisionDetails(json.revision);
         }
@@ -184,7 +182,7 @@ export const useDirektivWorkflowService = (
   React.useEffect(() => {
     if (eventSource === null) {
       // setup event listener
-      let listener = new EventSourcePolyfill(
+      const listener = new EventSourcePolyfill(
         `${url}functions/namespaces/${namespace}/tree${path}?op=function-revisions&svn=${service}&version=${version}`,
         {
           headers: apiKeyHeaders(apikey),
@@ -200,11 +198,11 @@ export const useDirektivWorkflowService = (
       };
 
       async function readData(e) {
-        let revs = revisionsRef.current;
+        const revs = revisionsRef.current;
         if (e.data === "") {
           return;
         }
-        let json = JSON.parse(e.data);
+        const json = JSON.parse(e.data);
         switch (json.event) {
           case "DELETED":
             for (var i = 0; i < revs.length; i++) {
@@ -303,7 +301,7 @@ export const useDirektivWorkflowServices = (
     const handler = setTimeout(() => {
       if (stream && pathString !== null) {
         // setup event listener
-        let listener = new EventSourcePolyfill(`${pathString}${queryString}`, {
+        const listener = new EventSourcePolyfill(`${pathString}${queryString}`, {
           headers: apiKeyHeaders(apikey),
         });
 
@@ -316,7 +314,7 @@ export const useDirektivWorkflowServices = (
             return;
           }
 
-          let json = JSON.parse(e.data);
+          const json = JSON.parse(e.data);
           dispatchData({
             event: json.event,
             data: json,
@@ -362,7 +360,7 @@ export const useDirektivWorkflowServices = (
 
   // not in use atm?
   async function getWorkflowServices(...queryParameters) {
-    let resp = await fetch(
+    const resp = await fetch(
       `${url}functions/namespaces/${namespace}/tree/${path}?op=services${ExtractQueryString(
         true,
         ...queryParameters
@@ -383,7 +381,7 @@ export const useDirektivWorkflowServices = (
   }
 
   async function deleteWorkflowService(service, version, ...queryParameters) {
-    let resp = await fetch(
+    const resp = await fetch(
       `${url}functions/namespaces/${namespace}/tree/${path}?op=delete-service&svn=${service}&version=${version}${ExtractQueryString(
         true,
         ...queryParameters

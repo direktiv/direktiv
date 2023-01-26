@@ -47,7 +47,7 @@ export default function JQPlayground() {
       return;
     }
 
-    let timer = setInterval(async () => {
+    const timer = setInterval(async () => {
       localStorage.setItem("jqInput", input);
       localStorage.setItem("jqFilter", filter);
     }, 2000);

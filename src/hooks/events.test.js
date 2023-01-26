@@ -27,7 +27,7 @@ describe("useEvents", () => {
       useEvents(Config.url, true, Config.namespace)
     );
     await waitForNextUpdate();
-    let json = {
+    const json = {
       specversion: "1.0",
       type: "com.github.pull.create",
       source: "https://github.com/cloudevents/spec/pull",
@@ -49,7 +49,7 @@ describe("useEvents", () => {
       useEvents(Config.url, true, Config.namespace)
     );
     await waitForNextUpdate();
-    let json = {
+    const json = {
       specversion: "1.0",
       type: "com.github.pull.create",
       subject: "123",

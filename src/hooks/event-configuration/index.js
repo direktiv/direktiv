@@ -14,7 +14,7 @@ export const useDirektivBroadcastConfiguration = (url, namespace, apikey) => {
 
   const getBroadcastConfiguration = React.useCallback(
     async (...queryParameters) => {
-      let resp = await fetch(
+      const resp = await fetch(
         `${url}namespaces/${namespace}/config${ExtractQueryString(
           false,
           ...queryParameters
@@ -28,7 +28,7 @@ export const useDirektivBroadcastConfiguration = (url, namespace, apikey) => {
           await HandleError("fetch config", resp, "getNamespaceConfiguration")
         );
       }
-      let json = await resp.json();
+      const json = await resp.json();
       setData(json);
       return json;
     },
@@ -43,7 +43,7 @@ export const useDirektivBroadcastConfiguration = (url, namespace, apikey) => {
   }, [data, getBroadcastConfiguration]);
 
   async function setBroadcastConfiguration(newconfig, ...queryParameters) {
-    let resp = await fetch(
+    const resp = await fetch(
       `${url}namespaces/${namespace}/config${ExtractQueryString(
         false,
         ...queryParameters

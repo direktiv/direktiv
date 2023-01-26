@@ -78,7 +78,7 @@ export const useDirektivEvents = (
   React.useEffect(() => {
     if (stream && pathString !== null) {
       // setup event listener
-      let listener = new EventSourcePolyfill(
+      const listener = new EventSourcePolyfill(
         `${pathString}/events${eventHistoryQueryString}`,
         {
           headers: apiKeyHeaders(apikey),
@@ -93,7 +93,7 @@ export const useDirektivEvents = (
         if (e.data === "") {
           return;
         }
-        let json = JSON.parse(e.data);
+        const json = JSON.parse(e.data);
         if (json) {
           dispatchEventHistory({
             type: STATE.UPDATE,
@@ -115,7 +115,7 @@ export const useDirektivEvents = (
   React.useEffect(() => {
     if (stream && pathString !== null) {
       // setup event listener
-      let listener = new EventSourcePolyfill(
+      const listener = new EventSourcePolyfill(
         `${pathString}/event-listeners${eventListenersQueryString}`,
         {
           headers: apiKeyHeaders(apikey),
@@ -130,7 +130,7 @@ export const useDirektivEvents = (
         if (e.data === "") {
           return;
         }
-        let json = JSON.parse(e.data);
+        const json = JSON.parse(e.data);
         if (json) {
           dispatchEventListeners({
             type: STATE.UPDATE,
@@ -150,7 +150,7 @@ export const useDirektivEvents = (
 
   const getEventListeners = React.useCallback(
     async (...queryParameters) => {
-      let resp = await fetch(
+      const resp = await fetch(
         `${url}namespaces/${namespace}/event-listeners${ExtractQueryString(
           false,
           ...queryParameters
@@ -172,7 +172,7 @@ export const useDirektivEvents = (
 
   const getEventHistory = React.useCallback(
     async (...queryParameters) => {
-      let resp = await fetch(
+      const resp = await fetch(
         `${url}namespaces/${namespace}/events${ExtractQueryString(
           false,
           ...queryParameters

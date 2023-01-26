@@ -40,7 +40,7 @@ export const useDirektivNamespaceLogs = (
   const getNamespaceLogs = React.useCallback(
     async (...queryParameters) => {
       // fetch namespace list by default
-      let resp = await fetch(
+      const resp = await fetch(
         `${url}namespaces/${namespace}/logs${ExtractQueryString(
           false,
           ...queryParameters
@@ -50,7 +50,7 @@ export const useDirektivNamespaceLogs = (
         }
       );
       if (resp.ok) {
-        let json = await resp.json();
+        const json = await resp.json();
         setData(json.results);
         setPageInfo(json.pageInfo);
         return json.results;
@@ -67,7 +67,7 @@ export const useDirektivNamespaceLogs = (
     if (stream) {
       if (eventSource.current === null) {
         // setup event listener
-        let listener = new EventSourcePolyfill(
+        const listener = new EventSourcePolyfill(
           `${url}namespaces/${namespace}/logs${queryString}`,
           {
             headers: apiKeyHeaders(apikey),
@@ -86,7 +86,7 @@ export const useDirektivNamespaceLogs = (
           if (e.data === "") {
             return;
           }
-          let json = JSON.parse(e.data);
+          const json = JSON.parse(e.data);
           setData(json.results);
           setPageInfo(json.pageInfo);
         }
@@ -104,7 +104,7 @@ export const useDirektivNamespaceLogs = (
   // If queryParameters change and streaming: update queryString, and reset sse connection
   React.useEffect(() => {
     if (stream) {
-      let newQueryString = ExtractQueryString(false, ...queryParameters);
+      const newQueryString = ExtractQueryString(false, ...queryParameters);
       if (newQueryString !== queryString) {
         setQueryString(newQueryString);
         CloseEventSource(eventSource.current);

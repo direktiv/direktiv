@@ -44,7 +44,7 @@ export const useDirektivWorkflow = (
     const handler = setTimeout(() => {
       if (stream && pathString !== null) {
         // setup event listener
-        let listener = new EventSourcePolyfill(`${pathString}${queryString}`, {
+        const listener = new EventSourcePolyfill(`${pathString}${queryString}`, {
           headers: apiKeyHeaders(apikey),
         });
 
@@ -57,7 +57,7 @@ export const useDirektivWorkflow = (
             return;
           }
 
-          let json = JSON.parse(e.data);
+          const json = JSON.parse(e.data);
           dispatchData({
             type: STATE.UPDATE,
             data: json,
@@ -78,8 +78,8 @@ export const useDirektivWorkflow = (
 
   const getWorkflow = React.useCallback(
     async (...queryParameters) => {
-      let uri = `${url}namespaces/${namespace}/tree/${path}`;
-      let resp = await fetch(
+      const uri = `${url}namespaces/${namespace}/tree/${path}`;
+      const resp = await fetch(
         `${uri}/${ExtractQueryString(false, ...queryParameters)}`,
         {
           headers: apiKeyHeaders(apikey),
@@ -129,8 +129,8 @@ export const useDirektivWorkflow = (
   }, [stream, path, namespace, url]);
 
   async function getWorkflowSankeyMetrics(rev, ...queryParameters) {
-    let uri = `${url}namespaces/${namespace}/tree/${path}?ref=${rev}&op=metrics-sankey`;
-    let resp = await fetch(
+    const uri = `${url}namespaces/${namespace}/tree/${path}?ref=${rev}&op=metrics-sankey`;
+    const resp = await fetch(
       `${uri}${ExtractQueryString(true, ...queryParameters)}`,
       {
         headers: apiKeyHeaders(apikey),
@@ -146,8 +146,8 @@ export const useDirektivWorkflow = (
   }
 
   async function getWorkflowRevisionData(rev, ...queryParameters) {
-    let uri = `${url}namespaces/${namespace}/tree/${path}?ref=${rev}`;
-    let resp = await fetch(
+    const uri = `${url}namespaces/${namespace}/tree/${path}?ref=${rev}`;
+    const resp = await fetch(
       `${uri}${ExtractQueryString(true, ...queryParameters)}`,
       {
         headers: apiKeyHeaders(apikey),
@@ -163,7 +163,7 @@ export const useDirektivWorkflow = (
   }
 
   async function getRevisions(...queryParameters) {
-    let resp = await fetch(
+    const resp = await fetch(
       `${url}namespaces/${namespace}/tree/${path}?op=refs${ExtractQueryString(
         true,
         ...queryParameters
@@ -182,7 +182,7 @@ export const useDirektivWorkflow = (
   }
 
   async function getTags(...queryParameters) {
-    let resp = await fetch(
+    const resp = await fetch(
       `${url}namespaces/${namespace}/tree/${path}?op=tags${ExtractQueryString(
         true,
         ...queryParameters
@@ -201,7 +201,7 @@ export const useDirektivWorkflow = (
   }
 
   async function updateWorkflow(newwf, ...queryParameters) {
-    let resp = await fetch(
+    const resp = await fetch(
       `${url}namespaces/${namespace}/tree/${path}?op=update-workflow${ExtractQueryString(
         true,
         ...queryParameters
@@ -222,7 +222,7 @@ export const useDirektivWorkflow = (
   }
 
   async function toggleWorkflow(active, ...queryParameters) {
-    let resp = await fetch(
+    const resp = await fetch(
       `${url}namespaces/${namespace}/tree/${path}?op=toggle${ExtractQueryString(
         true,
         ...queryParameters
@@ -243,7 +243,7 @@ export const useDirektivWorkflow = (
   }
 
   async function getWorkflowRouter(...queryParameters) {
-    let resp = await fetch(
+    const resp = await fetch(
       `${url}namespaces/${namespace}/tree/${path}?op=router${ExtractQueryString(
         true,
         ...queryParameters
@@ -263,7 +263,7 @@ export const useDirektivWorkflow = (
   }
 
   async function editWorkflowRouter(routes, live, ...queryParameters) {
-    let resp = await fetch(
+    const resp = await fetch(
       `${url}namespaces/${namespace}/tree/${path}?op=edit-router${ExtractQueryString(
         true,
         ...queryParameters
@@ -285,7 +285,7 @@ export const useDirektivWorkflow = (
   }
 
   async function setWorkflowLogToEvent(val, ...queryParameters) {
-    let resp = await fetch(
+    const resp = await fetch(
       `${url}namespaces/${namespace}/tree/${path}?op=set-workflow-event-logging${ExtractQueryString(
         true,
         ...queryParameters
@@ -310,7 +310,7 @@ export const useDirektivWorkflow = (
     if (revision) {
       ref = revision;
     }
-    let resp = await fetch(
+    const resp = await fetch(
       `${url}namespaces/${namespace}/tree/${path}?op=execute&ref=${ref}${ExtractQueryString(
         true,
         ...queryParameters
@@ -322,7 +322,7 @@ export const useDirektivWorkflow = (
       }
     );
     if (resp.ok) {
-      let json = await resp.json();
+      const json = await resp.json();
       return json.instance;
     } else {
       throw new Error(
@@ -332,7 +332,7 @@ export const useDirektivWorkflow = (
   }
 
   async function executeWorkflowRouter(input, ...queryParameters) {
-    let resp = await fetch(
+    const resp = await fetch(
       `${url}namespaces/${namespace}/tree/${path}?op=execute${ExtractQueryString(
         true,
         ...queryParameters
@@ -344,7 +344,7 @@ export const useDirektivWorkflow = (
       }
     );
     if (resp.ok) {
-      let json = await resp.json();
+      const json = await resp.json();
       return json.instance;
     } else {
       throw new Error(
@@ -354,7 +354,7 @@ export const useDirektivWorkflow = (
   }
 
   async function addAttributes(attributes, ...queryParameters) {
-    let resp = await fetch(
+    const resp = await fetch(
       `${url}namespaces/${namespace}/tree/${path}?op=create-node-attributes${ExtractQueryString(
         true,
         ...queryParameters
@@ -375,7 +375,7 @@ export const useDirektivWorkflow = (
   }
 
   async function deleteAttributes(attributes, ...queryParameters) {
-    let resp = await fetch(
+    const resp = await fetch(
       `${url}namespaces/${namespace}/tree/${path}?op=delete-node-attributes${ExtractQueryString(
         true,
         ...queryParameters
@@ -396,7 +396,7 @@ export const useDirektivWorkflow = (
   }
 
   async function getInstancesForWorkflow(...queryParameters) {
-    let resp = await fetch(
+    const resp = await fetch(
       `${url}namespaces/${namespace}/instances?filter.field=AS&filter.type=WORKFLOW&filter.val=${path}${ExtractQueryString(
         true,
         ...queryParameters
@@ -406,7 +406,7 @@ export const useDirektivWorkflow = (
       }
     );
     if (resp.ok) {
-      let json = await resp.json();
+      const json = await resp.json();
       return json;
     } else {
       throw new Error(
@@ -416,7 +416,7 @@ export const useDirektivWorkflow = (
   }
 
   async function getSuccessFailedMetrics(...queryParameters) {
-    let respFailed = await fetch(
+    const respFailed = await fetch(
       `${url}namespaces/${namespace}/tree/${path}?op=metrics-failed${ExtractQueryString(
         true,
         ...queryParameters
@@ -425,7 +425,7 @@ export const useDirektivWorkflow = (
         headers: apiKeyHeaders(apikey),
       }
     );
-    let respSuccess = await fetch(
+    const respSuccess = await fetch(
       `${url}namespaces/${namespace}/tree/${path}?op=metrics-successful${ExtractQueryString(
         true,
         ...queryParameters
@@ -435,13 +435,13 @@ export const useDirektivWorkflow = (
       }
     );
 
-    let x = {
+    const x = {
       success: [],
       failure: [],
     };
 
     if (respFailed.ok) {
-      let j = await respFailed.json();
+      const j = await respFailed.json();
       x.failure = j.results;
     } else {
       throw new Error(
@@ -450,7 +450,7 @@ export const useDirektivWorkflow = (
     }
 
     if (respSuccess.ok) {
-      let j = await respSuccess.json();
+      const j = await respSuccess.json();
       x.success = j.results;
     } else {
       throw new Error(
@@ -462,7 +462,7 @@ export const useDirektivWorkflow = (
   }
 
   async function getStateMillisecondMetrics(...queryParameters) {
-    let resp = await fetch(
+    const resp = await fetch(
       `${url}namespaces/${namespace}/tree/${path}?op=metrics-state-milliseconds${ExtractQueryString(
         true,
         ...queryParameters
@@ -472,7 +472,7 @@ export const useDirektivWorkflow = (
       }
     );
     if (resp.ok) {
-      let json = await resp.json();
+      const json = await resp.json();
       return json.results;
     } else {
       throw new Error(
@@ -486,7 +486,7 @@ export const useDirektivWorkflow = (
     if (rev === undefined) {
       rev = "latest";
     }
-    let resp = await fetch(
+    const resp = await fetch(
       `${url}namespaces/${namespace}/tree/${path}?op=save-workflow&ref=${rev}${ExtractQueryString(
         true,
         ...queryParameters
@@ -509,7 +509,7 @@ export const useDirektivWorkflow = (
       rev = "latest";
     }
 
-    let resp = await fetch(
+    const resp = await fetch(
       `${url}namespaces/${namespace}/tree/${path}?op=delete-revision&ref=${ref}${ExtractQueryString(
         true,
         ...queryParameters
@@ -527,7 +527,7 @@ export const useDirektivWorkflow = (
   }
 
   async function removeTag(tag, ...queryParameters) {
-    let resp = await fetch(
+    const resp = await fetch(
       `${url}namespaces/${namespace}/tree/${path}?op=untag&ref=${tag}${ExtractQueryString(
         true,
         ...queryParameters
@@ -548,7 +548,7 @@ export const useDirektivWorkflow = (
       rev = "latest";
     }
 
-    let resp = await fetch(
+    const resp = await fetch(
       `${url}namespaces/${namespace}/tree/${path}?op=discard-workflow&ref=${rev}${ExtractQueryString(
         true,
         ...queryParameters
@@ -570,7 +570,7 @@ export const useDirektivWorkflow = (
     if (rev === undefined) {
       rev = "latest";
     }
-    let resp = await fetch(
+    const resp = await fetch(
       `${url}namespaces/${namespace}/tree/${path}?op=tag&ref=${ref}${ExtractQueryString(
         true,
         ...queryParameters

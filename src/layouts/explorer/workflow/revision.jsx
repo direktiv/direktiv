@@ -48,7 +48,7 @@ export default function WorkflowRevisions(props) {
             <FlexBox col gap>
               <FlexBox col gap>
                 {revisions.map((obj) => {
-                  let dontDelete = true;
+                  const dontDelete = true;
 
                   return (
                     <Service

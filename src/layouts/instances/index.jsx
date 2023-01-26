@@ -63,7 +63,7 @@ export function InstancesTable(props) {
       return filter;
     }
 
-    let newFilters = [];
+    const newFilters = [];
     if (filterName !== "") {
       newFilters.push(
         `filter.field=AS&filter.type=CONTAINS&filter.val=${filterName}`
@@ -410,7 +410,7 @@ const cancelled = "cancelled";
 const running = "pending";
 
 export function InstanceRow(props) {
-  let {
+  const {
     state,
     name,
     wf,
@@ -436,11 +436,11 @@ export function InstanceRow(props) {
     label = <RunningState />;
   }
 
-  let wfStr = name.split(":")[0];
-  let revStr = name.split(":")[1];
+  const wfStr = name.split(":")[0];
+  const revStr = name.split(":")[1];
 
-  let pathwf = wfStr.split("/");
-  let wfname = pathwf[pathwf.length - 1];
+  const pathwf = wfStr.split("/");
+  const wfname = pathwf[pathwf.length - 1];
   pathwf.pop();
 
   return (

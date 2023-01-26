@@ -49,7 +49,7 @@ describe("useSecrets", () => {
       useSecrets(Config.url, Config.namespace)
     );
     await waitForNextUpdate();
-    let err = await result.current.createSecret("not a url", "us e r:tes t");
+    const err = await result.current.createSecret("not a url", "us e r:tes t");
     expect(err).toBe(
       "create secret: secret name must match the regex pattern `^(([a-z][a-z0-9_\\-]*[a-z0-9])|([a-z]))$`"
     );
@@ -59,7 +59,7 @@ describe("useSecrets", () => {
       useSecrets(Config.url, Config.namespace)
     );
     await waitForNextUpdate();
-    let err = await result.current.deleteSecret("test");
+    const err = await result.current.deleteSecret("test");
     // todo fix non existent secret
     expect(err).toBe(undefined);
   });

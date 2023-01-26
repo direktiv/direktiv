@@ -1,6 +1,6 @@
 import { useNamespaceService } from "../../hooks";
 import { useEffect, useState } from "react";
-import { VscLayers } from "react-icons/vsc";
+import { VscLayers , VscAdd } from "react-icons/vsc";
 import { useNavigate, useParams } from "react-router";
 import { Service } from ".";
 import Alert from "../../components/alert";
@@ -17,7 +17,6 @@ import { Config } from "../../util";
 import Tippy from "@tippyjs/react";
 import "tippy.js/dist/tippy.css";
 
-import { VscAdd } from "react-icons/vsc";
 import { useApiKey } from "../../util/apiKeyProvider";
 
 export default function NamespaceRevisionsPanel(props) {

@@ -45,7 +45,7 @@ export const useDirektivWorkflowVariables = (
   React.useEffect(() => {
     if (stream && pathString !== null) {
       // setup event listener
-      let listener = new EventSourcePolyfill(`${pathString}${queryString}`, {
+      const listener = new EventSourcePolyfill(`${pathString}${queryString}`, {
         headers: apiKeyHeaders(apikey),
       });
 
@@ -57,7 +57,7 @@ export const useDirektivWorkflowVariables = (
         if (e.data === "") {
           return;
         }
-        let json = JSON.parse(e.data);
+        const json = JSON.parse(e.data);
         if (json) {
           dispatchData({
             type: STATE.UPDATE,
@@ -115,15 +115,15 @@ export const useDirektivWorkflowVariables = (
   }, [stream, namespace, path, url]);
 
   async function getWorkflowVariables(...queryParameters) {
-    let uri = `${url}namespaces/${namespace}/tree/${path}?op=vars${ExtractQueryString(
+    const uri = `${url}namespaces/${namespace}/tree/${path}?op=vars${ExtractQueryString(
       true,
       ...queryParameters
     )}`;
-    let resp = await fetch(`${uri}`, {
+    const resp = await fetch(`${uri}`, {
       headers: apiKeyHeaders(apikey),
     });
     if (resp.ok) {
-      let json = await resp.json();
+      const json = await resp.json();
       return json.variables.results;
     } else {
       throw new Error(await HandleError("get node", resp, "listNodes"));
@@ -134,7 +134,7 @@ export const useDirektivWorkflowVariables = (
     if (mimeType === undefined) {
       mimeType = "application/json";
     }
-    let resp = await fetch(
+    const resp = await fetch(
       `${url}namespaces/${namespace}/tree/${path}?op=set-var&var=${name}${ExtractQueryString(
         true,
         ...queryParameters
@@ -158,7 +158,7 @@ export const useDirektivWorkflowVariables = (
   }
 
   async function getWorkflowVariable(name, ...queryParameters) {
-    let resp = await fetch(
+    const resp = await fetch(
       `${url}namespaces/${namespace}/tree/${path}?op=var&var=${name}${ExtractQueryString(
         true,
         ...queryParameters
@@ -180,7 +180,7 @@ export const useDirektivWorkflowVariables = (
   }
 
   async function getWorkflowVariableBuffer(name, ...queryParameters) {
-    let resp = await fetch(
+    const resp = await fetch(
       `${url}namespaces/${namespace}/tree/${path}?op=var&var=${name}${ExtractQueryString(
         true,
         ...queryParameters
@@ -202,7 +202,7 @@ export const useDirektivWorkflowVariables = (
   }
 
   async function getWorkflowVariableBlob(name, ...queryParameters) {
-    let resp = await fetch(
+    const resp = await fetch(
       `${url}namespaces/${namespace}/tree/${path}?op=var&var=${name}${ExtractQueryString(
         true,
         ...queryParameters
@@ -224,7 +224,7 @@ export const useDirektivWorkflowVariables = (
   }
 
   async function deleteWorkflowVariable(name, ...queryParameters) {
-    let resp = await fetch(
+    const resp = await fetch(
       `${url}namespaces/${namespace}/tree/${path}?op=delete-var&var=${name}${ExtractQueryString(
         true,
         ...queryParameters

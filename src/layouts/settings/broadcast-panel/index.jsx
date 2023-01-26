@@ -71,7 +71,7 @@ function BroadcastOptions(props) {
                     label: "Create",
                     value: config.broadcast["directory.create"],
                     onClick: async () => {
-                      let cc = config;
+                      const cc = config;
                       cc.broadcast["directory.create"] =
                         !config.broadcast["directory.create"];
                       setError(null);
@@ -89,7 +89,7 @@ function BroadcastOptions(props) {
                     label: "Delete",
                     value: config.broadcast["directory.delete"],
                     onClick: async () => {
-                      let cc = config;
+                      const cc = config;
                       cc.broadcast["directory.delete"] =
                         !config.broadcast["directory.delete"];
                       setError(null);
@@ -115,7 +115,7 @@ function BroadcastOptions(props) {
                     label: "Success",
                     value: config.broadcast["instance.success"],
                     onClick: async () => {
-                      let cc = config;
+                      const cc = config;
                       cc.broadcast["instance.success"] =
                         !config.broadcast["instance.success"];
                       setError(null);
@@ -133,7 +133,7 @@ function BroadcastOptions(props) {
                     label: "Started",
                     value: config.broadcast["instance.started"],
                     onClick: async () => {
-                      let cc = config;
+                      const cc = config;
                       cc.broadcast["instance.started"] =
                         !config.broadcast["instance.started"];
                       setError(null);
@@ -151,7 +151,7 @@ function BroadcastOptions(props) {
                     label: "Failed",
                     value: config.broadcast["instance.failed"],
                     onClick: async () => {
-                      let cc = config;
+                      const cc = config;
                       cc.broadcast["instance.failed"] =
                         !config.broadcast["instance.failed"];
                       setError(null);
@@ -174,7 +174,7 @@ function BroadcastOptions(props) {
                     label: "Create",
                     value: config.broadcast["instance.variable.create"],
                     onClick: async () => {
-                      let cc = config;
+                      const cc = config;
                       cc.broadcast["instance.variable.create"] =
                         !config.broadcast["instance.variable.create"];
                       setError(null);
@@ -192,7 +192,7 @@ function BroadcastOptions(props) {
                     label: "Update",
                     value: config.broadcast["instance.variable.update"],
                     onClick: async () => {
-                      let cc = config;
+                      const cc = config;
                       cc.broadcast["instance.variable.update"] =
                         !config.broadcast["instance.variable.update"];
                       setError(null);
@@ -210,7 +210,7 @@ function BroadcastOptions(props) {
                     label: "Delete",
                     value: config.broadcast["instance.variable.delete"],
                     onClick: async () => {
-                      let cc = config;
+                      const cc = config;
                       cc.broadcast["instance.variable.delete"] =
                         !config.broadcast["instance.variable.delete"];
                       setError(null);
@@ -235,7 +235,7 @@ function BroadcastOptions(props) {
                     label: "Create",
                     value: config.broadcast["namespace.variable.create"],
                     onClick: async () => {
-                      let cc = config;
+                      const cc = config;
                       cc.broadcast["namespace.variable.create"] =
                         !config.broadcast["namespace.variable.create"];
                       setError(null);
@@ -253,7 +253,7 @@ function BroadcastOptions(props) {
                     label: "Update",
                     value: config.broadcast["namespace.variable.update"],
                     onClick: async () => {
-                      let cc = config;
+                      const cc = config;
                       cc.broadcast["namespace.variable.update"] =
                         !config.broadcast["namespace.variable.update"];
                       setError(null);
@@ -271,7 +271,7 @@ function BroadcastOptions(props) {
                     label: "Delete",
                     value: config.broadcast["namespace.variable.delete"],
                     onClick: async () => {
-                      let cc = config;
+                      const cc = config;
                       cc.broadcast["namespace.variable.delete"] =
                         !config.broadcast["namespace.variable.delete"];
                       setError(null);
@@ -297,7 +297,7 @@ function BroadcastOptions(props) {
                     label: "Create",
                     value: config.broadcast["workflow.create"],
                     onClick: async () => {
-                      let cc = config;
+                      const cc = config;
                       cc.broadcast["workflow.create"] =
                         !config.broadcast["workflow.create"];
                       setError(null);
@@ -315,7 +315,7 @@ function BroadcastOptions(props) {
                     label: "Update",
                     value: config.broadcast["workflow.update"],
                     onClick: async () => {
-                      let cc = config;
+                      const cc = config;
                       cc.broadcast["workflow.update"] =
                         !config.broadcast["workflow.update"];
                       setError(null);
@@ -333,7 +333,7 @@ function BroadcastOptions(props) {
                     label: "Delete",
                     value: config.broadcast["workflow.delete"],
                     onClick: async () => {
-                      let cc = config;
+                      const cc = config;
                       cc.broadcast["workflow.delete"] =
                         !config.broadcast["workflow.delete"];
                       setError(null);
@@ -356,7 +356,7 @@ function BroadcastOptions(props) {
                     label: "Create",
                     value: config.broadcast["workflow.variable.create"],
                     onClick: async () => {
-                      let cc = config;
+                      const cc = config;
                       cc.broadcast["workflow.variable.create"] =
                         !config.broadcast["workflow.variable.create"];
                       setError(null);
@@ -374,7 +374,7 @@ function BroadcastOptions(props) {
                     label: "Update",
                     value: config.broadcast["workflow.variable.update"],
                     onClick: async () => {
-                      let cc = config;
+                      const cc = config;
                       cc.broadcast["workflow.variable.update"] =
                         !config.broadcast["workflow.variable.update"];
                       setError(null);
@@ -392,7 +392,7 @@ function BroadcastOptions(props) {
                     label: "Delete",
                     value: config.broadcast["workflow.variable.delete"],
                     onClick: async () => {
-                      let cc = config;
+                      const cc = config;
                       cc.broadcast["workflow.variable.delete"] =
                         !config.broadcast["workflow.variable.delete"];
                       setError(null);
@@ -417,11 +417,11 @@ function BroadcastOptions(props) {
 }
 
 function BroadcastOptionsRow(props) {
-  let { title, options } = props;
-  let opts = [];
+  const { title, options } = props;
+  const opts = [];
 
   for (let i = 0; i < 3; i++) {
-    let key = GenerateRandomKey("broadcast-opt-");
+    const key = GenerateRandomKey("broadcast-opt-");
 
     if (!options || i >= options.length) {
       opts.push(

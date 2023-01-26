@@ -48,7 +48,7 @@ export const useDirektivInstances = (
     const handler = setTimeout(() => {
       if (stream && pathString !== null) {
         // setup event listener
-        let listener = new EventSourcePolyfill(`${pathString}${queryString}`, {
+        const listener = new EventSourcePolyfill(`${pathString}${queryString}`, {
           headers: apiKeyHeaders(apikey),
         });
 
@@ -61,7 +61,7 @@ export const useDirektivInstances = (
             return;
           }
 
-          let json = JSON.parse(e.data);
+          const json = JSON.parse(e.data);
           dispatchData({
             type: STATE.UPDATE,
             data: json.instances.results,
@@ -86,7 +86,7 @@ export const useDirektivInstances = (
   const getInstances = React.useCallback(
     async (...queryParameters) => {
       // fetch instance list by default
-      let resp = await fetch(
+      const resp = await fetch(
         `${url}namespaces/${namespace}/instances${ExtractQueryString(
           false,
           ...queryParameters
@@ -101,7 +101,7 @@ export const useDirektivInstances = (
         );
       }
 
-      let json = await resp.json();
+      const json = await resp.json();
       setPageInfo(json.instances.pageInfo);
       return json.instances.results;
     },

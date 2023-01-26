@@ -379,7 +379,7 @@ function DirektivEditor({
   if (readonly) {
     handleEditorDidMount = function (editor, monaco) {
       setCommonEditorTriggers(editor, monaco);
-      let messageContribution = editor.getContribution(
+      const messageContribution = editor.getContribution(
         "editor.contrib.messageController"
       );
       editor.onDidAttemptReadOnlyEdit(() => {

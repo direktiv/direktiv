@@ -23,17 +23,17 @@ function App() {
   useEffect(() => {
     async function fetchVersion() {
       try {
-        let resp = await fetch(`${Config.url}version`, {
+        const resp = await fetch(`${Config.url}version`, {
           method: "GET",
           headers: {
             "direktiv-token": akey,
           },
         });
-        let respNoKey = await fetch(`${Config.url}version`, {
+        const respNoKey = await fetch(`${Config.url}version`, {
           method: "GET",
         });
         if (resp.ok) {
-          let json = await resp.json();
+          const json = await resp.json();
           setLoadVersion(false);
           setVersion(json.api);
 

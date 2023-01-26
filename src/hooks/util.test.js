@@ -7,21 +7,21 @@ jest.useFakeTimers();
 
 describe("utilHandleError", () => {
   it("test forbidden", async () => {
-    let resp = {
+    const resp = {
       headers: new Map().set("content-type", "application/json"),
       status: 403,
     };
     expect.toBeString(await HandleError("test forbidden", resp, "forbidden"));
   });
   it("test method not allowed", async () => {
-    let resp = {
+    const resp = {
       headers: new Map().set("content-type", "application/json"),
       status: 405,
     };
     expect.toBeString(await HandleError("test forbidden", resp, "forbidden"));
   });
   it("test grpc message", async () => {
-    let resp = {
+    const resp = {
       headers: new Map()
         .set("content-type", "application/json")
         .set("grpc-message", "an error has occurred"),
@@ -30,7 +30,7 @@ describe("utilHandleError", () => {
     expect.toBeString(await HandleError("test forbidden", resp, "forbidden"));
   });
   it("test non json result (plain/text)", async () => {
-    let resp = {
+    const resp = {
       headers: new Map().set("content-type", "plain/text"),
       status: 400,
       text: () => {
@@ -40,7 +40,7 @@ describe("utilHandleError", () => {
     expect.toBeString(await HandleError("test forbidden", resp, "forbidden"));
   });
   it("test non json result (application/json)", async () => {
-    let resp = {
+    const resp = {
       headers: new Map().set("content-type", "application/json"),
       status: 400,
       json: () => {

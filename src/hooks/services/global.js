@@ -31,7 +31,7 @@ export const useDirektivGlobalServiceRevision = (
 
   React.useEffect(() => {
     if (podSource.current === null) {
-      let listener = new EventSourcePolyfill(
+      const listener = new EventSourcePolyfill(
         `${url}functions/${service}/revisions/${revision}/pods`,
         {
           headers: apiKeyHeaders(apikey),
@@ -47,12 +47,12 @@ export const useDirektivGlobalServiceRevision = (
       };
 
       async function readData(e) {
-        let podz = podsRef.current;
+        const podz = podsRef.current;
 
         if (e.data === "") {
           return;
         }
-        let json = JSON.parse(e.data);
+        const json = JSON.parse(e.data);
 
         switch (json.event) {
           case "DELETED":
@@ -96,7 +96,7 @@ export const useDirektivGlobalServiceRevision = (
   React.useEffect(() => {
     if (revisionSource.current === null) {
       // setup event listener
-      let listener = new EventSourcePolyfill(
+      const listener = new EventSourcePolyfill(
         `${url}functions/${service}/revisions/${revision}`,
         {
           headers: apiKeyHeaders(apikey),
@@ -115,7 +115,7 @@ export const useDirektivGlobalServiceRevision = (
         if (e.data === "") {
           return;
         }
-        let json = JSON.parse(e.data);
+        const json = JSON.parse(e.data);
         if (json.event === "ADDED" || json.event === "MODIFIED") {
           setRevisionDetails(json.revision);
         }
@@ -164,7 +164,7 @@ export const useDirektivGlobalService = (url, service, navigate, apikey) => {
   React.useEffect(() => {
     if (trafficSource.current === null) {
       // setup event listener
-      let listener = new EventSourcePolyfill(`${url}functions/${service}`, {
+      const listener = new EventSourcePolyfill(`${url}functions/${service}`, {
         headers: apiKeyHeaders(apikey),
       });
 
@@ -180,7 +180,7 @@ export const useDirektivGlobalService = (url, service, navigate, apikey) => {
         if (e.data === "") {
           return;
         }
-        let json = JSON.parse(e.data);
+        const json = JSON.parse(e.data);
 
         if (json.event === "MODIFIED" || json.event === "ADDED") {
           setFn(JSON.parse(JSON.stringify(json.function)));
@@ -196,7 +196,7 @@ export const useDirektivGlobalService = (url, service, navigate, apikey) => {
   React.useEffect(() => {
     if (eventSource.current === null) {
       // setup event listener
-      let listener = new EventSourcePolyfill(
+      const listener = new EventSourcePolyfill(
         `${url}functions/${service}/revisions`,
         {
           headers: apiKeyHeaders(apikey),
@@ -212,11 +212,11 @@ export const useDirektivGlobalService = (url, service, navigate, apikey) => {
       };
 
       async function readData(e) {
-        let revs = revisionsRef.current;
+        const revs = revisionsRef.current;
         if (e.data === "") {
           return;
         }
-        let json = JSON.parse(e.data);
+        const json = JSON.parse(e.data);
         switch (json.event) {
           case "DELETED":
             for (var i = 0; i < revs.length; i++) {
@@ -276,7 +276,7 @@ export const useDirektivGlobalService = (url, service, navigate, apikey) => {
     traffic,
     ...queryParameters
   ) {
-    let resp = await fetch(
+    const resp = await fetch(
       `${url}functions/${service}${ExtractQueryString(
         false,
         ...queryParameters
@@ -305,7 +305,7 @@ export const useDirektivGlobalService = (url, service, navigate, apikey) => {
   }
 
   async function deleteGlobalServiceRevision(rev, ...queryParameters) {
-    let resp = await fetch(
+    const resp = await fetch(
       `${url}functions/${service}/revisions/${rev}${ExtractQueryString(
         false,
         ...queryParameters
@@ -327,7 +327,7 @@ export const useDirektivGlobalService = (url, service, navigate, apikey) => {
   }
 
   async function getServiceConfig(...queryParameters) {
-    let resp = await fetch(
+    const resp = await fetch(
       `${url}functions/${service}${ExtractQueryString(
         false,
         ...queryParameters
@@ -338,7 +338,7 @@ export const useDirektivGlobalService = (url, service, navigate, apikey) => {
       }
     );
     if (resp.ok) {
-      let json = await resp.json();
+      const json = await resp.json();
       setConfig(json.config);
       return json.config;
     } else {
@@ -355,7 +355,7 @@ export const useDirektivGlobalService = (url, service, navigate, apikey) => {
     rev2value,
     ...queryParameters
   ) {
-    let resp = await fetch(
+    const resp = await fetch(
       `${url}functions/${service}${ExtractQueryString(
         false,
         ...queryParameters
@@ -419,7 +419,7 @@ export const useDirektivGlobalServices = (url, stream, apikey) => {
 
   const getGlobalServices = React.useCallback(
     async (...queryParameters) => {
-      let resp = await fetch(
+      const resp = await fetch(
         `${url}functions${ExtractQueryString(false, ...queryParameters)}`,
         {
           headers: apiKeyHeaders(apikey),
@@ -427,7 +427,7 @@ export const useDirektivGlobalServices = (url, stream, apikey) => {
         }
       );
       if (resp.ok) {
-        let json = await resp.json();
+        const json = await resp.json();
         setData(json.functions);
         return json.functions;
       } else {
@@ -443,7 +443,7 @@ export const useDirektivGlobalServices = (url, stream, apikey) => {
     if (stream) {
       if (eventSource.current === null) {
         // setup event listener
-        let listener = new EventSourcePolyfill(`${url}functions`, {
+        const listener = new EventSourcePolyfill(`${url}functions`, {
           headers: apiKeyHeaders(apikey),
         });
 
@@ -456,14 +456,14 @@ export const useDirektivGlobalServices = (url, stream, apikey) => {
         };
 
         async function readData(e) {
-          let funcs = functionsRef.current;
+          const funcs = functionsRef.current;
           if (e.data === "") {
             if (funcs === null) {
               setData([]);
             }
             return;
           }
-          let json = JSON.parse(e.data);
+          const json = JSON.parse(e.data);
           switch (json.event) {
             case "DELETED":
               for (var i = 0; i < funcs.length; i++) {
@@ -516,7 +516,7 @@ export const useDirektivGlobalServices = (url, stream, apikey) => {
   }, []);
 
   async function getConfig(...queryParameters) {
-    let resp = await fetch(
+    const resp = await fetch(
       `${url}functions${ExtractQueryString(false, ...queryParameters)}`,
       {
         headers: apiKeyHeaders(apikey),
@@ -524,7 +524,7 @@ export const useDirektivGlobalServices = (url, stream, apikey) => {
       }
     );
     if (resp.ok) {
-      let json = await resp.json();
+      const json = await resp.json();
       setConfig(json.config);
       return json.config;
     } else {
@@ -542,7 +542,7 @@ export const useDirektivGlobalServices = (url, stream, apikey) => {
     cmd,
     ...queryParameters
   ) {
-    let resp = await fetch(
+    const resp = await fetch(
       `${url}functions${ExtractQueryString(false, ...queryParameters)}`,
       {
         headers: apiKeyHeaders(apikey),
@@ -564,7 +564,7 @@ export const useDirektivGlobalServices = (url, stream, apikey) => {
   }
 
   async function deleteGlobalService(name, ...queryParameters) {
-    let resp = await fetch(
+    const resp = await fetch(
       `${url}functions/${name}${ExtractQueryString(false, ...queryParameters)}`,
       {
         headers: apiKeyHeaders(apikey),

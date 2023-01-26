@@ -266,7 +266,7 @@ function FunctionsList(props) {
             }}
           >
             <div
-              class="node-labels"
+              className="node-labels"
               style={{
                 display: "flex",
                 gap: "4px",
@@ -277,14 +277,14 @@ function FunctionsList(props) {
               <div>
                 ID:{" "}
                 <span
-                  class="label-id"
+                  className="label-id"
                   style={{ maxWidth: functionDrawerWidth - 50 }}
                 >
                   {functionList[index].id}
                 </span>
               </div>
               <div>
-                Type: <span class="label-type">{functionList[index].type}</span>
+                Type: <span className="label-type">{functionList[index].type}</span>
               </div>
               <div>
                 {functionList[index].service ? `Service:` : ""}
@@ -292,7 +292,7 @@ function FunctionsList(props) {
                 {functionList[index].workflow ? `Workflow:` : ""}
                 <span
                   style={{ maxWidth: functionDrawerWidth - 80 }}
-                  class="label-type"
+                  className="label-type"
                 >
                   {functionList[index].service
                     ? `${functionList[index].service}`
@@ -515,7 +515,7 @@ export default function DiagramEditor(props) {
   useEffect(() => {
     var id = document.getElementById("drawflow");
     // if (!diagramEditor) {
-    let editor = new Drawflow(id);
+    const editor = new Drawflow(id);
     editor.start();
     editor.force_first_input = true;
     editor.on("nodeSelected", function (id) {
@@ -580,7 +580,7 @@ export default function DiagramEditor(props) {
     });
 
     editor.on("nodeCreated", function (id) {
-      let node = editor.getNodeFromId(id);
+      const node = editor.getNodeFromId(id);
       // If node was created without id, geneate one
       if (!node.data.id) {
         if (node.data.family === "special") {
@@ -838,7 +838,7 @@ export default function DiagramEditor(props) {
               setError(null);
 
               // Check if any nodes are have not been initialized
-              let nonInitNodes = [];
+              const nonInitNodes = [];
               for (const n of Object.keys(nodeInitTracker)) {
                 if (!nodeInitTracker[`${n}`].init) {
                   nonInitNodes.push(nodeInitTracker[`${n}`].stateID);
@@ -853,8 +853,8 @@ export default function DiagramEditor(props) {
               }
 
               // Export Nodes to an object so we can convert it to a workflow yaml
-              let rawExport = diagramEditor.export();
-              let rawData = rawExport.drawflow.Home.data;
+              const rawExport = diagramEditor.export();
+              const rawData = rawExport.drawflow.Home.data;
               let wfData = { start: {}, functions: functionList, states: [] };
 
               // Delete empty functions from workflow YAML
@@ -866,7 +866,7 @@ export default function DiagramEditor(props) {
               const startBlockIDs =
                 diagramEditor.getNodesFromName("StartBlock");
               rawData[startBlockIDs[0]].compiled = true;
-              let startBlock = rawData[startBlockIDs[0]];
+              const startBlock = rawData[startBlockIDs[0]];
               let startState;
 
               // Setup Workflow Start State
@@ -1150,7 +1150,7 @@ export default function DiagramEditor(props) {
                     };
 
                     // Preflight custom formData
-                    let onSubmitValidateCallback =
+                    const onSubmitValidateCallback =
                       onValidateSubmitCallbackMap[updatedNode.name];
                     if (onSubmitValidateCallback) {
                       onSubmitValidateCallback(selectedNodeFormData);
@@ -1165,7 +1165,7 @@ export default function DiagramEditor(props) {
                     );
 
                     // Do Custom callback logic if it exists for data type
-                    let onSubmitCallback =
+                    const onSubmitCallback =
                       onSubmitCallbackMap[updatedNode.name];
                     if (onSubmitCallback) {
                       onSubmitCallback(updatedNode.id, diagramEditor);

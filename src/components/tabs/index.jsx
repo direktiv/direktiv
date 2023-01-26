@@ -23,7 +23,7 @@ function Tabs(props) {
     setInit(true);
   }, [tabIndex]);
 
-  let { style, headers, tabs } = props;
+  const { style, headers, tabs } = props;
   if (!headers || !tabs) {
     return <>Bad tabs definition (missing tabs or headers).</>;
   }
@@ -36,7 +36,7 @@ function Tabs(props) {
     );
   }
 
-  let headerDOMs = [];
+  const headerDOMs = [];
   for (let i = 0; i < headers.length; i++) {
     let classes = "tab-header center-align";
     if (i === activeTab) {
@@ -66,6 +66,6 @@ function Tabs(props) {
 export default Tabs;
 
 export function Tab(props) {
-  let { children, style } = props;
+  const { children, style } = props;
   return <FlexBox style={{ ...style }}>{children}</FlexBox>;
 }

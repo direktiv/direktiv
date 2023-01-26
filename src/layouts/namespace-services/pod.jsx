@@ -223,7 +223,7 @@ export function PodLogs(props) {
   const [clipData, setClipData] = useState(null);
   const [searchParams] = useSearchParams(); // removed 'setSearchParams' from square brackets (this should not affect anything: search 'destructuring assignment')
 
-  let version = searchParams.get("version");
+  const version = searchParams.get("version");
 
   return (
     <ContentPanel style={{ width: "100%" }}>

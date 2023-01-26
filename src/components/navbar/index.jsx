@@ -123,7 +123,7 @@ export function ClientFileUpload(props) {
           try {
             const binaryStr = reader.result;
             var enc = new TextDecoder("utf-8");
-            let fileData = enc.decode(binaryStr);
+            const fileData = enc.decode(binaryStr);
             setFile(fileData);
           } catch (e) {
             setError("Failed to decode file: " + e.message);
@@ -241,7 +241,7 @@ function NewNamespaceBtn(props) {
             if (tabIndex === 0) {
               await createNamespace(ns);
             } else {
-              let processesMirrorSettings = JSON.parse(
+              const processesMirrorSettings = JSON.parse(
                 JSON.stringify(mirrorSettings)
               );
               if (mirrorAuthMethod === "token") {
@@ -442,12 +442,12 @@ function NewNamespaceBtn(props) {
                     {key === "publicKey" || key === "privateKey" ? (
                       <ClientFileUpload
                         setFile={(fileData) => {
-                          let newSettings = mirrorSettings;
+                          const newSettings = mirrorSettings;
                           newSettings[key] = fileData;
                           setMirrorSettings({ ...newSettings });
                         }}
                         setError={(errorMsg) => {
-                          let newErrors = mirrorErrors;
+                          const newErrors = mirrorErrors;
                           newErrors[key] = errorMsg;
                           setMirrorErrors({ ...newErrors });
                         }}
@@ -461,7 +461,7 @@ function NewNamespaceBtn(props) {
                           }
                           trigger={"click mouseenter focus"}
                           onHide={() => {
-                            let newErrors = mirrorErrors;
+                            const newErrors = mirrorErrors;
                             newErrors[key] = null;
                             setMirrorErrors({ ...newErrors });
                           }}
@@ -494,9 +494,9 @@ function NewNamespaceBtn(props) {
                       style={{ width: "100%", resize: "none" }}
                       rows={5}
                       value={value}
-                      spellcheck="false"
+                      spellCheck="false"
                       onChange={(e) => {
-                        let newSettings = mirrorSettings;
+                        const newSettings = mirrorSettings;
                         newSettings[key] = e.target.value;
                         setMirrorSettings({ ...newSettings });
                       }}
@@ -512,9 +512,9 @@ function NewNamespaceBtn(props) {
                       }
                       style={{ width: "100%" }}
                       value={value}
-                      spellcheck="false"
+                      spellCheck="false"
                       onChange={(e) => {
-                        let newSettings = mirrorSettings;
+                        const newSettings = mirrorSettings;
                         newSettings[key] = e.target.value;
                         setMirrorSettings({ ...newSettings });
                       }}
@@ -533,19 +533,19 @@ function NewNamespaceBtn(props) {
 }
 
 function NavItems(props) {
-  let { pathname, style, namespace, toggleResponsive, extraNavigation } = props;
+  const { pathname, style, namespace, toggleResponsive, extraNavigation } = props;
 
-  let explorer = matchPath("/n/:namespace", pathname);
-  let wfexplorer = matchPath("/n/:namespace/explorer/*", pathname);
-  let monitoring = matchPath("/n/:namespace/monitoring", pathname);
+  const explorer = matchPath("/n/:namespace", pathname);
+  const wfexplorer = matchPath("/n/:namespace/explorer/*", pathname);
+  const monitoring = matchPath("/n/:namespace/monitoring", pathname);
   // let builder = matchPath("/n/:namespace/builder", pathname)
-  let events = matchPath("/n/:namespace/events", pathname);
+  const events = matchPath("/n/:namespace/events", pathname);
 
   // instance path matching
-  let instances = matchPath("/n/:namespace/instances", pathname);
-  let instanceid = matchPath("/n/:namespace/instances/:id", pathname);
+  const instances = matchPath("/n/:namespace/instances", pathname);
+  const instanceid = matchPath("/n/:namespace/instances/:id", pathname);
 
-  let navItemMap = {};
+  const navItemMap = {};
   if (namespace !== null && namespace !== "") {
     if (extraNavigation) {
       for (let i = 0; i < extraNavigation.length; i++) {
@@ -559,14 +559,14 @@ function NavItems(props) {
   // let permissions = matchPath("/n/:namespace/permissions", pathname)
 
   // services pathname matching
-  let services = matchPath("/n/:namespace/services", pathname);
-  let service = matchPath("/n/:namespace/services/:service", pathname);
-  let revision = matchPath(
+  const services = matchPath("/n/:namespace/services", pathname);
+  const service = matchPath("/n/:namespace/services/:service", pathname);
+  const revision = matchPath(
     "/n/:namespace/services/:service/:revision",
     pathname
   );
 
-  let settings = matchPath("/n/:namespace/settings", pathname);
+  const settings = matchPath("/n/:namespace/settings", pathname);
 
   return (
     <FlexBox style={{ ...style }} className="nav-items">
@@ -720,7 +720,7 @@ function NavItems(props) {
 function GlobalNavItems({ namespace }) {
   const { pathname } = useLocation();
 
-  let jq = matchPath("/jq", pathname);
+  const jq = matchPath("/jq", pathname);
 
   return (
     <FlexBox className="nav-items">
@@ -757,7 +757,7 @@ export function NavItem(props) {
 }
 
 function ResponsiveNavbar(props) {
-  let { toggled, setToggled } = props;
+  const { toggled, setToggled } = props;
   let panelClasses = "panel";
   let responsiveNavClasses = "responsive-nav hide-on-large";
   let responsiveNavOverlayClasses = "responsive-nav-overlay hide-on-large";

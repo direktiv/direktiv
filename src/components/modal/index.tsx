@@ -7,9 +7,8 @@ import ContentPanel, {
 } from "../content-panel";
 import "./style.css";
 
-import { VscDiffAdded } from "react-icons/vsc";
+import { VscDiffAdded , VscClose } from "react-icons/vsc";
 
-import { VscClose } from "react-icons/vsc";
 import Alert from "../alert";
 import FlexBox from "../flexbox";
 
@@ -214,7 +213,7 @@ function ModalOverlay({
   requiredFields,
 }: ModalOverlayProps) {
   function validateFields(reqFields?: RequiredField[]) {
-    let tipMessages: string[] = [];
+    const tipMessages: string[] = [];
 
     if (!reqFields) {
       return { tips: tipMessages, valid: tipMessages.length === 0 };
@@ -256,7 +255,7 @@ function ModalOverlay({
       }
     }
 
-    let removeListeners: { label: string; fn: (...e: any) => any }[] = [];
+    const removeListeners: { label: string; fn: (...e: any) => any }[] = [];
 
     if (escapeToCancel) {
       window.addEventListener("keydown", closeModal);
@@ -267,7 +266,7 @@ function ModalOverlay({
       for (let i = 0; i < keyDownActions.length; i++) {
         const action = keyDownActions[i];
 
-        let fn = async (e: KeyboardEvent) => {
+        const fn = async (e: KeyboardEvent) => {
           const eventTarget: any = e.target;
 
           // Check if event target matches keyboard action id
@@ -524,11 +523,11 @@ function generateButtons(
 ) {
   // label, onClick, classList, closesModal, async
 
-  let out = [];
+  const out = [];
   for (let i = 0; i < actionButtons.length; i++) {
-    let btn = actionButtons[i];
+    const btn = actionButtons[i];
 
-    let onClick = async () => {
+    const onClick = async () => {
       try {
         if (btn.onClick) {
           await btn.onClick();

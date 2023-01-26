@@ -89,7 +89,7 @@ export const useDirektivJQPlayground = (url, apikey) => {
 
   async function executeJQ(query, data, ...queryParameters) {
     // fetch namespace list by default
-    let resp = await fetch(
+    const resp = await fetch(
       `${url}jq${ExtractQueryString(false, ...queryParameters)}`,
       {
         headers: apiKeyHeaders(apikey),
@@ -104,7 +104,7 @@ export const useDirektivJQPlayground = (url, apikey) => {
       throw new Error(await HandleError("execute jq", resp, "jqPlayground"));
     }
 
-    let json = await resp.json();
+    const json = await resp.json();
     setData(json.results);
     return json.results;
   }

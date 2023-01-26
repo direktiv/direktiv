@@ -60,7 +60,7 @@ describe("useNamespaceVariables", () => {
     expect(found).toBeTrue();
 
     // get workflow variable data
-    let testvar = await result.current.getNamespaceVariable("testnamespace");
+    const testvar = await result.current.getNamespaceVariable("testnamespace");
     expect(testvar.data).toEqual("testnamespace");
     expect(testvar.contentType).toEqual("application/json");
 
@@ -123,7 +123,7 @@ describe("useWorkflowVariables", () => {
     expect(found).toBeTrue();
 
     // get workflow variable data
-    let testvar = await result.current.getWorkflowVariable("test");
+    const testvar = await result.current.getWorkflowVariable("test");
     expect(testvar.data).toEqual("test");
     expect(testvar.contentType).toEqual("application/json");
 

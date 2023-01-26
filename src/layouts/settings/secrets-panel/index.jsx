@@ -5,7 +5,7 @@ import ContentPanel, {
   ContentPanelTitleIcon,
   ContentPanelBody,
 } from "../../../components/content-panel";
-import { VscLock, VscTrash } from "react-icons/vsc";
+import { VscLock, VscTrash , VscAdd } from "react-icons/vsc";
 import Modal from "../../../components/modal";
 import { useDropzone } from "react-dropzone";
 import FlexBox from "../../../components/flexbox";
@@ -17,7 +17,6 @@ import Tabs from "../../../components/tabs";
 import DirektivEditor from "../../../components/editor";
 import { AutoSizer } from "react-virtualized";
 
-import { VscAdd } from "react-icons/vsc";
 import { useApiKey } from "../../../util/apiKeyProvider";
 
 function SecretsPanel(props) {
@@ -222,7 +221,7 @@ function Secrets(props) {
         ) : (
           <>
             {secrets.map((obj) => {
-              let key = GenerateRandomKey("secret-");
+              const key = GenerateRandomKey("secret-");
 
               return (
                 <FlexBox className="secret-tuple" key={key} id={key}>

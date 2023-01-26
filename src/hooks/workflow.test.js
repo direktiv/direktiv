@@ -92,7 +92,7 @@ describe("useWorkflow", () => {
       useWorkflow(Config.url, true, Config.namespace, "test-workflow-hook")
     );
     await waitForNextUpdate();
-    let instanceId = await result.current.executeWorkflow();
+    const instanceId = await result.current.executeWorkflow();
     expect(instanceId).not.toEqual("");
   });
 
@@ -101,7 +101,7 @@ describe("useWorkflow", () => {
       useWorkflow(Config.url, true, Config.namespace, "test-workflow-hook")
     );
     await waitForNextUpdate();
-    let instances = await result.current.getInstancesForWorkflow();
+    const instances = await result.current.getInstancesForWorkflow();
     expect(instances[0].node.as).toEqual("test-workflow-hook");
   });
 
@@ -130,7 +130,7 @@ describe("useWorkflow", () => {
     await act(async () => {
       await result.current.editWorkflowRouter([], true);
     });
-    let json = await result.current.getWorkflowRouter();
+    const json = await result.current.getWorkflowRouter();
     expect(json.live).toBeTrue();
   });
 
@@ -202,7 +202,7 @@ describe("useWorkflow", () => {
       revisions = await result.current.getRevisions();
     });
 
-    let revlength = revisions.length;
+    const revlength = revisions.length;
 
     for (var i = 0; i < revisions.length; i++) {
       if (

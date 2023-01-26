@@ -4,11 +4,10 @@ import {
   VscChevronDown,
   VscChevronRight,
   VscRefresh,
-} from "react-icons/vsc";
+ VscTrash, VscCircleLargeFilled , VscAdd } from "react-icons/vsc";
 
 import "./style.css";
 import { useEffect, useState, useMemo } from "react";
-import { VscTrash, VscCircleLargeFilled } from "react-icons/vsc";
 
 import ContentPanel, {
   ContentPanelBody,
@@ -23,7 +22,6 @@ import HelpIcon from "../../components/help";
 import Tippy from "@tippyjs/react";
 import "tippy.js/dist/tippy.css";
 
-import { VscAdd } from "react-icons/vsc";
 import { useApiKey } from "../../util/apiKeyProvider";
 
 export default function ServicesPanel(props) {

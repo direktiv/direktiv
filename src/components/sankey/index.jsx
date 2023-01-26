@@ -15,16 +15,16 @@ export default function Sankey(props) {
 
   useEffect(() => {
     async function fetchMet() {
-      let resp = await getWorkflowSankeyMetrics(revision);
+      const resp = await getWorkflowSankeyMetrics(revision);
       return resp.states;
     }
     async function gatherMetrics() {
       setLoad(true);
 
-      let n = [];
-      let l = [];
+      const n = [];
+      const l = [];
 
-      let states = await fetchMet();
+      const states = await fetchMet();
       // Fill the nodes before doing the links so we can search up the states
       for (var i = 0; i < states.length; i++) {
         n.push({ name: states[i].name });
@@ -36,12 +36,12 @@ export default function Sankey(props) {
       var success = 0;
       // Write the links
       for (i = 0; i < states.length; i++) {
-        let outcomes = states[i].outcomes;
-        let source = states[i].name;
-        let invokers = states[i].invokers;
+        const outcomes = states[i].outcomes;
+        const source = states[i].name;
+        const invokers = states[i].invokers;
 
         if (invokers.start) {
-          let tpos = n
+          const tpos = n
             .map((obj) => {
               return obj.name;
             })
@@ -53,7 +53,7 @@ export default function Sankey(props) {
         }
 
         if (outcomes.success !== 0) {
-          let tpos = n
+          const tpos = n
             .map((obj) => {
               return obj.name;
             })
@@ -69,7 +69,7 @@ export default function Sankey(props) {
           success += outcomes.success;
         }
         if (outcomes.failure !== 0) {
-          let tpos = n
+          const tpos = n
             .map((obj) => {
               return obj.name;
             })
@@ -203,9 +203,9 @@ function SankeyDiagram(props) {
       .attr("font-size", 10)
       .selectAll("g");
 
-    let sankeyData = sankey({ nodes: nodes, links: links });
-    let sankeyNodes = sankeyData.nodes;
-    let sankeyLinks = sankeyData.links;
+    const sankeyData = sankey({ nodes: nodes, links: links });
+    const sankeyNodes = sankeyData.nodes;
+    const sankeyLinks = sankeyData.links;
 
     var nodeColour = d3.scaleSequential(d3.interpolateCool).domain([0, width]);
 
@@ -261,9 +261,9 @@ function SankeyDiagram(props) {
         return Math.max(1, d.width);
       })
       .style("stroke", function (linkz) {
-        let id = GenerateRandomKey();
+        const id = GenerateRandomKey();
 
-        let lingrad = defs
+        const lingrad = defs
           .append("linearGradient")
           .attr("id", id)
           .attr("x1", linkz.source.x0)
@@ -272,17 +272,17 @@ function SankeyDiagram(props) {
           .attr("y2", linkz.target.y0)
           .attr("gradientUnits", "userSpaceOnUse");
 
-        let s1 = lingrad.append("stop").attr("offset", "0");
+        const s1 = lingrad.append("stop").attr("offset", "0");
 
-        let s2 = lingrad.append("stop").attr("offset", "1");
+        const s2 = lingrad.append("stop").attr("offset", "1");
 
-        let sourceColour =
+        const sourceColour =
           (linkz.source.x0 +
             linkz.source.x1 +
             linkz.source.y0 +
             linkz.source.y1) %
           width;
-        let targetColour =
+        const targetColour =
           (linkz.target.x0 +
             linkz.target.x1 +
             linkz.target.y0 +

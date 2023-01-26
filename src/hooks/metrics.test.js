@@ -12,28 +12,28 @@ describe("useNamespaceMetrics", () => {
     const { result } = renderHook(() =>
       useNamespaceMetrics(Config.url, Config.namespace)
     );
-    let invoked = await result.current.getInvoked();
+    const invoked = await result.current.getInvoked();
     expect(invoked.results).toBeInstanceOf(Array);
   });
   it("successful", async () => {
     const { result } = renderHook(() =>
       useNamespaceMetrics(Config.url, Config.namespace)
     );
-    let successful = await result.current.getSuccessful();
+    const successful = await result.current.getSuccessful();
     expect(successful.results).toBeInstanceOf(Array);
   });
   it("failed", async () => {
     const { result } = renderHook(() =>
       useNamespaceMetrics(Config.url, Config.namespace)
     );
-    let failed = await result.current.getFailed();
+    const failed = await result.current.getFailed();
     expect(failed.results).toBeInstanceOf(Array);
   });
   it("milliseconds", async () => {
     const { result } = renderHook(() =>
       useNamespaceMetrics(Config.url, Config.namespace)
     );
-    let milliseconds = await result.current.getMilliseconds();
+    const milliseconds = await result.current.getMilliseconds();
     expect(milliseconds.results).toBeInstanceOf(Array);
   });
 });

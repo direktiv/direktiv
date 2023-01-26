@@ -16,7 +16,7 @@ export const useDirektivPodLogs = (url, pod, apikey) => {
   React.useEffect(() => {
     if (eventSource.current === null) {
       // setup event listener
-      let listener = new EventSourcePolyfill(
+      const listener = new EventSourcePolyfill(
         `${url}functions/logs/pod/${pod}`,
         {
           headers: apiKeyHeaders(apikey),
@@ -35,7 +35,7 @@ export const useDirektivPodLogs = (url, pod, apikey) => {
         if (e.data === "") {
           return;
         }
-        let json = JSON.parse(e.data);
+        const json = JSON.parse(e.data);
         setData(json);
       }
       listener.onmessage = (e) => readData(e);
@@ -53,7 +53,7 @@ export const useDirektivPodLogs = (url, pod, apikey) => {
   React.useEffect(() => {
     if (eventSource.current !== null) {
       // setup event listener
-      let listener = new EventSourcePolyfill(
+      const listener = new EventSourcePolyfill(
         `${url}functions/logs/pod/${pod}`,
         {
           headers: apiKeyHeaders(apikey),
@@ -72,7 +72,7 @@ export const useDirektivPodLogs = (url, pod, apikey) => {
         if (e.data === "") {
           return;
         }
-        let json = JSON.parse(e.data);
+        const json = JSON.parse(e.data);
         setData(json);
       }
       listener.onmessage = (e) => readData(e);

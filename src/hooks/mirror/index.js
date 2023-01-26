@@ -40,7 +40,7 @@ export const useDirektivMirror = (
   React.useEffect(() => {
     if (stream && pathString !== null) {
       // setup event listener
-      let listener = new EventSourcePolyfill(`${pathString}${queryString}`, {
+      const listener = new EventSourcePolyfill(`${pathString}${queryString}`, {
         headers: apiKeyHeaders(apikey),
       });
 
@@ -52,7 +52,7 @@ export const useDirektivMirror = (
         if (e.data === "") {
           return;
         }
-        let json = JSON.parse(e.data);
+        const json = JSON.parse(e.data);
         if (json?.activities) {
           dispatchActivities({
             type: STATE.UPDATE,
@@ -83,12 +83,12 @@ export const useDirektivMirror = (
       if (path !== "") {
         uriPath += `${SanitizePath(path)}`;
       }
-      let request = {
+      const request = {
         method: "GET",
         headers: apiKeyHeaders(apikey),
       };
 
-      let resp = await fetch(
+      const resp = await fetch(
         `${uriPath}?op=mirror-info${ExtractQueryString(
           true,
           ...queryParameters
@@ -161,13 +161,13 @@ export const useDirektivMirror = (
       uriPath += `${SanitizePath(path)}`;
     }
 
-    let request = {
+    const request = {
       method: "POST",
       body: JSON.stringify(mirrorSettings),
       headers: apiKeyHeaders(apikey),
     };
 
-    let resp = await fetch(
+    const resp = await fetch(
       `${uriPath}?op=update-mirror${ExtractQueryString(
         true,
         ...queryParameters
@@ -189,12 +189,12 @@ export const useDirektivMirror = (
       uriPath += `${SanitizePath(path)}`;
     }
 
-    let request = {
+    const request = {
       method: "POST",
       headers: apiKeyHeaders(apikey),
     };
 
-    let resp = await fetch(
+    const resp = await fetch(
       `${uriPath}?op=sync-mirror${
         force ? "&force=true" : ""
       }${ExtractQueryString(true, ...queryParameters)}`,
@@ -213,12 +213,12 @@ export const useDirektivMirror = (
       uriPath += `${SanitizePath(path)}`;
     }
 
-    let request = {
+    const request = {
       method: "POST",
       headers: apiKeyHeaders(apikey),
     };
 
-    let resp = await fetch(
+    const resp = await fetch(
       `${uriPath}?op=${
         lock ? "lock-mirror" : "unlock-mirror"
       }${ExtractQueryString(true, ...queryParameters)}`,
@@ -232,14 +232,14 @@ export const useDirektivMirror = (
   }
 
   async function cancelActivity(activity, ...queryParameters) {
-    let uriPath = `${url}namespaces/${namespace}/activities/${activity}/cancel`;
+    const uriPath = `${url}namespaces/${namespace}/activities/${activity}/cancel`;
 
-    let request = {
+    const request = {
       method: "POST",
       headers: apiKeyHeaders(apikey),
     };
 
-    let resp = await fetch(
+    const resp = await fetch(
       `${uriPath}${ExtractQueryString(false, ...queryParameters)}`,
       request
     );

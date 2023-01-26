@@ -16,7 +16,7 @@ export const useDirektivRegistries = (url, namespace, apikey) => {
   // getRegistries returns a list of registries
   const getRegistries = React.useCallback(
     async (...queryParameters) => {
-      let resp = await fetch(
+      const resp = await fetch(
         `${url}functions/registries/namespaces/${namespace}${ExtractQueryString(
           false,
           ...queryParameters
@@ -26,7 +26,7 @@ export const useDirektivRegistries = (url, namespace, apikey) => {
         }
       );
       if (resp.ok) {
-        let json = await resp.json();
+        const json = await resp.json();
         setData(json.registries);
         return await json.registries;
       } else {
@@ -46,7 +46,7 @@ export const useDirektivRegistries = (url, namespace, apikey) => {
   }, [data, getRegistries]);
 
   async function createRegistry(key, val, ...queryParameters) {
-    let resp = await fetch(
+    const resp = await fetch(
       `${url}functions/registries/namespaces/${namespace}${ExtractQueryString(
         false,
         ...queryParameters
@@ -65,7 +65,7 @@ export const useDirektivRegistries = (url, namespace, apikey) => {
   }
 
   async function deleteRegistry(key, ...queryParameters) {
-    let resp = await fetch(
+    const resp = await fetch(
       `${url}functions/registries/namespaces/${namespace}${ExtractQueryString(
         false,
         ...queryParameters

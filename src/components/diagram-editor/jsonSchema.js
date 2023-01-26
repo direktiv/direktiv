@@ -856,10 +856,10 @@ export function GenerateFunctionSchemaWithEnum(
   globalServices,
   nodes
 ) {
-  let nsFuncSchema = FunctionSchemaNamespace;
-  let globalFuncSchema = FunctionSchemaGlobal;
-  let subflowFuncSchema = FunctionSchemaSubflow;
-  let uiSchema = {
+  const nsFuncSchema = FunctionSchemaNamespace;
+  const globalFuncSchema = FunctionSchemaGlobal;
+  const subflowFuncSchema = FunctionSchemaSubflow;
+  const uiSchema = {
     "knative-namespace": {
       service: {},
     },
@@ -1055,7 +1055,7 @@ export const SchemaMap = {
 };
 
 function functionListToActionEnum(functionList) {
-  let availableFunctions = [];
+  const availableFunctions = [];
   for (let i = 0; i < functionList.length; i++) {
     const f = functionList[i];
     availableFunctions.push(f.id);
@@ -1069,19 +1069,19 @@ export function getSchemaDefault(schemaKey) {
 }
 export const getSchemaCallbackMap = {
   stateSchemaAction: (schemaKey, functionList, varList) => {
-    let selectedSchema = SchemaMap[schemaKey];
+    const selectedSchema = SchemaMap[schemaKey];
     selectedSchema.properties.action.properties.function.enum =
       functionListToActionEnum(functionList);
     return selectedSchema;
   },
   stateSchemaForeach: (schemaKey, functionList, varList) => {
-    let selectedSchema = SchemaMap[schemaKey];
+    const selectedSchema = SchemaMap[schemaKey];
     selectedSchema.properties.action.properties.function.enum =
       functionListToActionEnum(functionList);
     return selectedSchema;
   },
   stateSchemaParallel: (schemaKey, functionList, varList) => {
-    let selectedSchema = SchemaMap[schemaKey];
+    const selectedSchema = SchemaMap[schemaKey];
     selectedSchema.properties.actions.items.properties.function.enum =
       functionListToActionEnum(functionList);
     return selectedSchema;

@@ -28,7 +28,7 @@ function Loader({ children, timer = 1000, load }: LoaderProps) {
   // show loader if timer is hit set timeout to set display to true
   useEffect(() => {
     if (load) {
-      let t = setTimeout(() => {
+      const t = setTimeout(() => {
         setDisplay(true);
       }, timer);
       setTimeoutTimer(t);

@@ -10,7 +10,7 @@ import { HandleError, ExtractQueryString, apiKeyHeaders } from "../util";
 */
 export const useDirektivNamespaceMetrics = (url, namespace, apikey) => {
   async function getInvoked(...queryParameters) {
-    let resp = await fetch(
+    const resp = await fetch(
       `${url}namespaces/${namespace}/metrics/invoked${ExtractQueryString(
         false,
         ...queryParameters
@@ -29,7 +29,7 @@ export const useDirektivNamespaceMetrics = (url, namespace, apikey) => {
   }
 
   async function getSuccessful(...queryParameters) {
-    let resp = await fetch(
+    const resp = await fetch(
       `${url}namespaces/${namespace}/metrics/successful${ExtractQueryString(
         false,
         ...queryParameters
@@ -48,7 +48,7 @@ export const useDirektivNamespaceMetrics = (url, namespace, apikey) => {
   }
 
   async function getFailed(...queryParameters) {
-    let resp = await fetch(
+    const resp = await fetch(
       `${url}namespaces/${namespace}/metrics/failed${ExtractQueryString(
         false,
         ...queryParameters
@@ -67,7 +67,7 @@ export const useDirektivNamespaceMetrics = (url, namespace, apikey) => {
   }
 
   async function getMilliseconds(...queryParameters) {
-    let resp = await fetch(
+    const resp = await fetch(
       `${url}namespaces/${namespace}/metrics/milliseconds${ExtractQueryString(
         false,
         ...queryParameters

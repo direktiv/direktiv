@@ -48,7 +48,7 @@ function AddWorkflowVariablePanel(props) {
   const [search, setSearch] = useState("");
   const [apiKey] = useApiKey();
 
-  let wfVar = workflow.substring(1);
+  const wfVar = workflow.substring(1);
 
   const pageHandler = usePageHandler(PAGE_SIZE);
   const goToFirstPage = pageHandler.goToFirstPage;
@@ -366,7 +366,7 @@ function Variable(props) {
   const [downloading, setDownloading] = useState(false);
   const [uploading, setUploading] = useState(false);
 
-  let lang = MimeTypeFileExtension(mimeType);
+  const lang = MimeTypeFileExtension(mimeType);
 
   return (
     <tr className="body-row" key={`var-${obj.name}${obj.size}`}>
@@ -409,7 +409,7 @@ function Variable(props) {
                 setValue("");
               }}
               onOpen={async () => {
-                let data = await getWorkflowVariable(obj.name);
+                const data = await getWorkflowVariable(obj.name);
                 setType(data.contentType);
                 setValue(data.data);
               }}

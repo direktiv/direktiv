@@ -33,10 +33,7 @@ export interface PageHandler {
 /**
  * Hook to track and update the current state of a pagination component. Additionally a goToFirstPage util function is returned.
  */
-export function usePageHandler(
-  limit: number,
-  initPage: number = 1
-): PageHandler {
+export function usePageHandler(limit: number, initPage = 1): PageHandler {
   const [page, setPage] = React.useState(initPage);
   const offset = React.useMemo(() => {
     return (page - 1) * limit;

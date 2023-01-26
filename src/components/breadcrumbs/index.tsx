@@ -50,7 +50,7 @@ function Breadcrumbs({ namespace, additionalChildren }: BreadcrumbsProps) {
             ) {
               return "";
             }
-            let key = GenerateRandomKey("crumb-");
+            const key = GenerateRandomKey("crumb-");
 
             return (
               <li
@@ -83,7 +83,7 @@ function Breadcrumbs({ namespace, additionalChildren }: BreadcrumbsProps) {
               ) {
                 return "";
               }
-              let key = GenerateRandomKey("crumb-");
+              const key = GenerateRandomKey("crumb-");
 
               return (
                 <li
@@ -108,7 +108,7 @@ function Breadcrumbs({ namespace, additionalChildren }: BreadcrumbsProps) {
               <span>{". . . "}</span>
             </li>
             {breadcrumbs.slice(-3).map((obj) => {
-              let key = GenerateRandomKey("crumb-");
+              const key = GenerateRandomKey("crumb-");
 
               return (
                 <li

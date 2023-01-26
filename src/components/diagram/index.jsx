@@ -90,7 +90,7 @@ export default function WorkflowDiagram(props) {
     };
 
     if (load && (wf !== null || instanceStatus !== ostatus)) {
-      let saveElements = generateElements(
+      const saveElements = generateElements(
         getLayoutedElements,
         wf,
         flow,
@@ -105,7 +105,7 @@ export default function WorkflowDiagram(props) {
 
     // if status changes make sure to redraw
     if (instanceStatus !== ostatus) {
-      let saveElements = generateElements(
+      const saveElements = generateElements(
         getLayoutedElements,
         wf,
         flow,
@@ -207,7 +207,7 @@ function End() {
 }
 
 function generateElements(getLayoutedElements, value, flow, status) {
-  let newElements = [];
+  const newElements = [];
 
   if (value.states) {
     for (let i = 0; i < value.states.length; i++) {

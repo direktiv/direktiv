@@ -19,7 +19,7 @@ states:
   type: delay
   duration: PT5S`;
 
-let createWF = async () => {
+const createWF = async () => {
   console.log("create workflow");
   const { result, waitForNextUpdate } = renderHook(() =>
     useNodes(Config.url, true, Config.namespace, "")
@@ -35,7 +35,7 @@ let createWF = async () => {
   });
 };
 
-let executeWF = async () => {
+const executeWF = async () => {
   console.log("execute workflow");
   const { result, waitForNextUpdate } = renderHook(() =>
     useWorkflow(
@@ -52,7 +52,7 @@ let executeWF = async () => {
     );
   });
 };
-let executeDelayWF = async () => {
+const executeDelayWF = async () => {
   console.log("execute delay workflow");
   const { result, waitForNextUpdate } = renderHook(() =>
     useWorkflow(Config.url, true, Config.namespace, "test-delay")
@@ -89,7 +89,7 @@ describe("useInstance", () => {
       useInstance(Config.url, false, Config.namespace, process.env.INSTANCE_ID)
     );
     await waitForNextUpdate();
-    let input = await result.current.getInput();
+    const input = await result.current.getInput();
     expect(JSON.parse(input).test).toBe("hello");
   });
   it("get output", async () => {
@@ -97,7 +97,7 @@ describe("useInstance", () => {
       useInstance(Config.url, false, Config.namespace, process.env.INSTANCE_ID)
     );
     await waitForNextUpdate();
-    let output = await result.current.getOutput();
+    const output = await result.current.getOutput();
     expect(JSON.parse(output).result).toBe("Hello world!");
   });
   it("execute delay wf and cancel check status to make sure it was cancelled", async () => {

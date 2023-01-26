@@ -15,7 +15,7 @@ export const useDirektivSecrets = (url, namespace, apikey) => {
   // getSecrets returns a list of registries
   const getSecrets = React.useCallback(
     async (...queryParameters) => {
-      let resp = await fetch(
+      const resp = await fetch(
         `${url}namespaces/${namespace}/secrets${ExtractQueryString(
           false,
           ...queryParameters
@@ -25,7 +25,7 @@ export const useDirektivSecrets = (url, namespace, apikey) => {
         }
       );
       if (resp.ok) {
-        let json = await resp.json();
+        const json = await resp.json();
         setData(json.secrets.results);
         return json.secrets.results;
       } else {
@@ -43,7 +43,7 @@ export const useDirektivSecrets = (url, namespace, apikey) => {
   }, [data, getSecrets]);
 
   async function createSecret(name, value, ...queryParameters) {
-    let resp = await fetch(
+    const resp = await fetch(
       `${url}namespaces/${namespace}/secrets/${name}${ExtractQueryString(
         false,
         ...queryParameters
@@ -60,7 +60,7 @@ export const useDirektivSecrets = (url, namespace, apikey) => {
   }
 
   async function deleteSecret(name, ...queryParameters) {
-    let resp = await fetch(
+    const resp = await fetch(
       `${url}namespaces/${namespace}/secrets/${name}${ExtractQueryString(
         false,
         ...queryParameters

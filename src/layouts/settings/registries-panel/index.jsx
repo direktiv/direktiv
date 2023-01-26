@@ -11,9 +11,8 @@ import Alert from "../../../components/alert";
 import { useRegistries } from "../../../hooks";
 import { Config } from "../../../util";
 import HelpIcon from "../../../components/help";
-import { VscServer, VscTrash } from "react-icons/vsc";
+import { VscServer, VscTrash , VscAdd } from "react-icons/vsc";
 
-import { VscAdd } from "react-icons/vsc";
 import { useApiKey } from "../../../util/apiKeyProvider";
 
 function RegistriesPanel(props) {
@@ -169,7 +168,7 @@ function RegistriesPanel(props) {
                   if (!filledOut)
                     throw new Error("all fields must be filled out");
                   setTestConnLoading(true);
-                  let resp = await TestRegistry(url, username, token);
+                  const resp = await TestRegistry(url, username, token);
                   if (resp.success) {
                     setTestConnLoading(false);
                     setSuccessFeedback(true);
@@ -249,7 +248,7 @@ export default RegistriesPanel;
 
 export async function TestRegistry(url, username, token) {
   try {
-    let resp = await fetch(`${Config.url}functions/registries/test`, {
+    const resp = await fetch(`${Config.url}functions/registries/test`, {
       method: "POST",
       body: JSON.stringify({
         username,
@@ -267,7 +266,7 @@ export async function TestRegistry(url, username, token) {
     }
 
     if (resp.status === 500) {
-      let json = await resp.json();
+      const json = await resp.json();
       return {
         success: false,
         message: json.message,
@@ -276,13 +275,13 @@ export async function TestRegistry(url, username, token) {
 
     if (resp.status === 401) {
       if (url === "https://registry.hub.docker.com") {
-        let text = await resp.text();
+        const text = await resp.text();
         return {
           success: false,
           message: text,
         };
       } else {
-        let json = await resp.json();
+        const json = await resp.json();
         return {
           success: false,
           message: json.errors[0].message,

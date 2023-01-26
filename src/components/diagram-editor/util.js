@@ -2,7 +2,7 @@ import YAML from "js-yaml";
 import dagre from "dagre";
 
 export function sortNodes(diagramEditor) {
-  let allNodes = diagramEditor.export();
+  const allNodes = diagramEditor.export();
 
   // Create a new directed graph
   var g = new dagre.graphlib.Graph({ ordering: "out" });
@@ -50,7 +50,7 @@ export function sortNodes(diagramEditor) {
 }
 
 export function nodeGetInputConnections(node) {
-  let inputs = {};
+  const inputs = {};
 
   if (!node) {
     return undefined;
@@ -74,7 +74,7 @@ export function nodeGetInputConnections(node) {
 }
 
 export function nodeGetOutputConnections(node) {
-  let outputs = {};
+  const outputs = {};
 
   if (!node) {
     return undefined;
@@ -106,14 +106,14 @@ export function insertHangingNodes(
 ) {
   // Use Custom connection callback logic if it exists for data type
   rawData[nodeID].compiled = true;
-  let currentNode = rawData[nodeID];
-  let connCallback = connectionsCallbackMap[currentNode.name];
+  const currentNode = rawData[nodeID];
+  const connCallback = connectionsCallbackMap[currentNode.name];
   if (connCallback) {
     connCallback(nodeID, previousNodeID, previousState, rawData, wfData);
     return;
   }
 
-  let state = {
+  const state = {
     id: currentNode.data.id,
     type: currentNode.data.type,
     ...currentNode.data.formData,
@@ -206,14 +206,14 @@ export function setConnections(
 
   // Use Custom connection callback logic if it exists for data type
   rawData[nodeID].compiled = true;
-  let currentNode = rawData[nodeID];
-  let connCallback = connectionsCallbackMap[currentNode.name];
+  const currentNode = rawData[nodeID];
+  const connCallback = connectionsCallbackMap[currentNode.name];
   if (connCallback) {
     connCallback(nodeID, previousNodeID, previousState, rawData, wfData);
     return;
   }
 
-  let state = {
+  const state = {
     id: currentNode.data.id,
     type: currentNode.data.type,
     ...currentNode.data.formData,
@@ -262,7 +262,7 @@ function processConnection(nodeID, rawData, state, wfData) {
 // connectionsCallbackMap : Map of functions to be used in setConnections function
 const connectionsCallbackMap = {
   CatchError: (nodeID, previousNodeID, previousState, rawData, wfData) => {
-    let stateCatch = rawData[nodeID].data.formData;
+    const stateCatch = rawData[nodeID].data.formData;
     const outputKeys = Object.keys(rawData[nodeID].outputs);
 
     // Add transitions to catched errors if connections are set
@@ -301,7 +301,7 @@ const connectionsCallbackMap = {
     }
   },
   StateSwitch: (nodeID, previousNodeID, previousState, rawData, wfData) => {
-    let state = {
+    const state = {
       id: rawData[nodeID].data.id,
       type: rawData[nodeID].data.type,
       ...rawData[nodeID].data.formData,
@@ -341,7 +341,7 @@ const connectionsCallbackMap = {
     wfData.states.push(state);
   },
   StateEventXor: (nodeID, previousNodeID, previousState, rawData, wfData) => {
-    let state = {
+    const state = {
       id: rawData[nodeID].data.id,
       type: rawData[nodeID].data.type,
       ...rawData[nodeID].data.formData,
@@ -384,7 +384,7 @@ const connectionsCallbackMap = {
     rawData,
     wfData
   ) => {
-    let state = {
+    const state = {
       id: rawData[nodeID].data.id,
       type: rawData[nodeID].data.type,
       ...rawData[nodeID].data.formData,
@@ -397,7 +397,7 @@ const connectionsCallbackMap = {
     processConnection(nodeID, rawData, state, wfData);
   },
   StateSetter: (nodeID, previousNodeID, previousState, rawData, wfData) => {
-    let state = {
+    const state = {
       id: rawData[nodeID].data.id,
       type: rawData[nodeID].data.type,
       ...rawData[nodeID].data.formData,
@@ -413,7 +413,7 @@ const connectionsCallbackMap = {
     processConnection(nodeID, rawData, state, wfData);
   },
   StateAction: (nodeID, previousNodeID, previousState, rawData, wfData) => {
-    let state = {
+    const state = {
       id: rawData[nodeID].data.id,
       type: rawData[nodeID].data.type,
       ...rawData[nodeID].data.formData,
@@ -427,7 +427,7 @@ const connectionsCallbackMap = {
     processConnection(nodeID, rawData, state, wfData);
   },
   StateForeach: (nodeID, previousNodeID, previousState, rawData, wfData) => {
-    let state = {
+    const state = {
       id: rawData[nodeID].data.id,
       type: rawData[nodeID].data.type,
       ...rawData[nodeID].data.formData,
@@ -441,7 +441,7 @@ const connectionsCallbackMap = {
     processConnection(nodeID, rawData, state, wfData);
   },
   StateValidate: (nodeID, previousNodeID, previousState, rawData, wfData) => {
-    let state = {
+    const state = {
       id: rawData[nodeID].data.id,
       type: rawData[nodeID].data.type,
       ...rawData[nodeID].data.formData,
@@ -512,7 +512,7 @@ export const onValidateSubmitCallbackMap = {
 export const onSubmitCallbackMap = {
   StateSwitch: (nodeID, diagramEditor) => {
     const node = diagramEditor.getNodeFromId(nodeID);
-    let conditionsLength = node.data.formData.conditions
+    const conditionsLength = node.data.formData.conditions
       ? node.data.formData.conditions.length
       : 0;
     // outputLen : Is the outputs minus the error and default transition outputs
@@ -530,7 +530,7 @@ export const onSubmitCallbackMap = {
   },
   StateEventXor: (nodeID, diagramEditor) => {
     const node = diagramEditor.getNodeFromId(nodeID);
-    let eventsLength = node.data.formData.events
+    const eventsLength = node.data.formData.events
       ? node.data.formData.events.length
       : 0;
     const outputLen = Object.keys(node.outputs).length - 1;
@@ -547,7 +547,7 @@ export const onSubmitCallbackMap = {
   },
   CatchError: (nodeID, diagramEditor) => {
     const node = diagramEditor.getNodeFromId(nodeID);
-    let errorsLength = node.data.formData ? node.data.formData.length : 0;
+    const errorsLength = node.data.formData ? node.data.formData.length : 0;
     const outputLen = Object.keys(node.outputs).length;
 
     // Add Missing Node Outputs

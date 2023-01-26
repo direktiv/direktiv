@@ -49,7 +49,7 @@ export const useDirektivNodes = (
     const handler = setTimeout(() => {
       if (stream && pathString !== null) {
         // setup event listener
-        let listener = new EventSourcePolyfill(`${pathString}${queryString}`, {
+        const listener = new EventSourcePolyfill(`${pathString}${queryString}`, {
           headers: apiKeyHeaders(apikey),
         });
 
@@ -62,7 +62,7 @@ export const useDirektivNodes = (
             return;
           }
 
-          let json = JSON.parse(e.data);
+          const json = JSON.parse(e.data);
           if (json?.children) {
             dispatchData({
               type: STATE.UPDATE,
@@ -95,11 +95,11 @@ export const useDirektivNodes = (
     if (path !== "") {
       uri += `${SanitizePath(path)}`;
     }
-    let resp = await fetch(`${uri}/${queryString}`, {
+    const resp = await fetch(`${uri}/${queryString}`, {
       headers: apiKeyHeaders(apikey),
     });
     if (resp.ok) {
-      let json = await resp.json();
+      const json = await resp.json();
       if (json.children) {
         setPageInfo(json.children.pageInfo);
       }
@@ -150,7 +150,7 @@ export const useDirektivNodes = (
     if (path !== "") {
       uriPath += `${SanitizePath(path)}`;
     }
-    let request = {
+    const request = {
       method: "PUT",
       headers: apiKeyHeaders(apikey),
     };
@@ -161,7 +161,7 @@ export const useDirektivNodes = (
     } else {
       name += `?op=create-directory`;
     }
-    let resp = await fetch(
+    const resp = await fetch(
       `${uriPath}/${name}${ExtractQueryString(true, ...queryParameters)}`,
       request
     );
@@ -177,13 +177,13 @@ export const useDirektivNodes = (
     if (path !== "") {
       uriPath += `${SanitizePath(path)}`;
     }
-    let request = {
+    const request = {
       method: "PUT",
       body: JSON.stringify(mirrorSettings),
       headers: apiKeyHeaders(apikey),
     };
 
-    let resp = await fetch(
+    const resp = await fetch(
       `${uriPath}/${name}?op=create-directory${ExtractQueryString(
         true,
         ...queryParameters
@@ -202,7 +202,7 @@ export const useDirektivNodes = (
     if (path) {
       uriPath += `${SanitizePath(path)}`;
     }
-    let resp = await fetch(
+    const resp = await fetch(
       `${uriPath}/${name}?op=delete-node&recursive=${
         recursive ? "true" : "false"
       }${ExtractQueryString(true, ...queryParameters)}`,
@@ -221,7 +221,7 @@ export const useDirektivNodes = (
     if (path) {
       uriPath += `${SanitizePath(fpath)}`;
     }
-    let resp = await fetch(
+    const resp = await fetch(
       `${uriPath}${oldname}?op=rename-node${ExtractQueryString(
         true,
         ...queryParameters
@@ -240,7 +240,7 @@ export const useDirektivNodes = (
   }
 
   async function getWorkflowRouter(workflow, ...queryParameters) {
-    let resp = await fetch(
+    const resp = await fetch(
       `${url}namespaces/${namespace}/tree/${workflow}?op=router${ExtractQueryString(
         true,
         ...queryParameters
@@ -251,7 +251,7 @@ export const useDirektivNodes = (
       }
     );
     if (resp.ok) {
-      let json = await resp.json();
+      const json = await resp.json();
       return json.live;
     } else {
       throw new Error(
@@ -261,7 +261,7 @@ export const useDirektivNodes = (
   }
 
   async function toggleWorkflow(workflow, active, ...queryParameters) {
-    let resp = await fetch(
+    const resp = await fetch(
       `${url}namespaces/${namespace}/tree/${workflow}?op=toggle${ExtractQueryString(
         true,
         ...queryParameters

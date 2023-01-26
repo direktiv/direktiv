@@ -10,7 +10,7 @@ import {
   VscLoading,
   VscTrash,
   VscVariableGroup,
-} from "react-icons/vsc";
+ VscAdd } from "react-icons/vsc";
 import { AutoSizer } from "react-virtualized";
 import Button from "../../../components/button";
 import ContentPanel, {
@@ -32,7 +32,6 @@ import {
 import { SearchBar } from "../../explorer";
 import "./style.css";
 
-import { VscAdd } from "react-icons/vsc";
 import { useApiKey } from "../../../util/apiKeyProvider";
 
 const PAGE_SIZE = 10;
@@ -297,7 +296,7 @@ function AddVariablePanel(props) {
     }
   };
 
-  let lang = getLangByMimeType(mimeType);
+  const lang = getLangByMimeType(mimeType);
 
   return (
     <Tabs
@@ -430,7 +429,7 @@ function Variable(props) {
   const [downloading, setDownloading] = useState(false);
   const [uploading, setUploading] = useState(false);
 
-  let lang = MimeTypeFileExtension(mimeType);
+  const lang = MimeTypeFileExtension(mimeType);
 
   return (
     <tr className="body-row" key={`var-${obj.name}${obj.size}`}>
@@ -473,7 +472,7 @@ function Variable(props) {
                 setValue("");
               }}
               onOpen={async () => {
-                let data = await getNamespaceVariable(obj.name);
+                const data = await getNamespaceVariable(obj.name);
                 setType(data.contentType);
                 setValue(data.data);
               }}

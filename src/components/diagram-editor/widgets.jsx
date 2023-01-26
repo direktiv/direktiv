@@ -2,8 +2,8 @@ export const TextAreaWidgetYAML = (props) => {
   return (
     <textarea
       type="text"
-      class="field-description yaml"
-      spellcheck="false"
+      className="field-description yaml"
+      spellCheck="false"
       value={props.value}
       required={props.required}
       onChange={(event) => props.onChange(event.target.value)}
@@ -30,8 +30,8 @@ export const TextAreaWidgetJS = (props) => {
   return (
     <textarea
       type="text"
-      class="field-description yaml"
-      spellcheck="false"
+      className="field-description yaml"
+      spellCheck="false"
       value={props.value}
       required={props.required}
       onChange={(event) => props.onChange(event.target.value)}

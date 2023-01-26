@@ -35,7 +35,7 @@ export const useDirektivMirrorLogs = (
   React.useEffect(() => {
     if (stream && pathString !== null) {
       // setup event listener
-      let listener = new EventSourcePolyfill(`${pathString}${queryString}`, {
+      const listener = new EventSourcePolyfill(`${pathString}${queryString}`, {
         headers: apiKeyHeaders(apikey),
       });
 
@@ -47,7 +47,7 @@ export const useDirektivMirrorLogs = (
         if (e.data === "") {
           return;
         }
-        let json = JSON.parse(e.data);
+        const json = JSON.parse(e.data);
         if (json) {
           dataDispatch({
             type: STATE.APPENDLIST,
@@ -66,12 +66,12 @@ export const useDirektivMirrorLogs = (
   }, [stream, queryString, pathString, apikey]);
 
   const getActivityLogs = React.useCallback(async () => {
-    let request = {
+    const request = {
       method: "GET",
       headers: apiKeyHeaders(apikey),
     };
 
-    let resp = await fetch(`${pathString}${queryString}`, request);
+    const resp = await fetch(`${pathString}${queryString}`, request);
     if (!resp.ok) {
       throw new Error(
         await HandleError("mirror activity logs", resp, "mirrorActivityLogs")

@@ -221,8 +221,8 @@ function FailedExecutions(props) {
         </thead>
         <tbody>
           {data.map((obj) => {
-            let split = obj.as.split(":");
-            let wf = split[0];
+            const split = obj.as.split(":");
+            const wf = split[0];
             let revision = split[1];
             if (!revision) {
               revision = "latest";
@@ -295,8 +295,8 @@ function SuccessfulExecutions(props) {
         </thead>
         <tbody>
           {data.map((obj) => {
-            let split = obj.as.split(":");
-            let wf = split[0];
+            const split = obj.as.split(":");
+            const wf = split[0];
             let revision = split[1];
             if (!revision) {
               revision = "latest";

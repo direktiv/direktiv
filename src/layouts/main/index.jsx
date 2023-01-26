@@ -47,7 +47,7 @@ function NamespaceNavigation(props) {
       namespaces !== undefined &&
       namespaces.length > 0
     ) {
-      let urlpath = window.location.pathname.split("/");
+      const urlpath = window.location.pathname.split("/");
       let ns = localStorage.getItem("namespace");
       if (urlpath[1] && urlpath[1] === "n") {
         // urlpath[2] would be the namespace
@@ -226,7 +226,7 @@ function NamespaceNavigation(props) {
 }
 
 function MainLayout(props) {
-  let {
+  const {
     onClick,
     style,
     className,
@@ -317,7 +317,7 @@ function MainLayout(props) {
 export default MainLayout;
 
 function ResponsiveHeaderBar(props) {
-  let { toggleResponsive, setToggleResponsive } = props;
+  const { toggleResponsive, setToggleResponsive } = props;
 
   return (
     <FlexBox

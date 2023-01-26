@@ -25,7 +25,7 @@ dayjs.extend(utc);
 dayjs.extend(relativeTime);
 
 function EventsPageWrapper(props) {
-  let { namespace } = props;
+  const { namespace } = props;
   if (!namespace) {
     return <></>;
   }
@@ -38,7 +38,7 @@ export default EventsPageWrapper;
 const PAGE_SIZE = 8;
 
 function EventsPage(props) {
-  let { namespace } = props;
+  const { namespace } = props;
   const [apiKey] = useApiKey();
 
   // errHistory and errListeners TODO show error if one
@@ -46,7 +46,7 @@ function EventsPage(props) {
   const historyPageHandler = usePageHandler(PAGE_SIZE);
   const listenersPageHandler = usePageHandler(PAGE_SIZE);
 
-  let {
+  const {
     eventHistory,
     eventListeners,
     eventListenersPageInfo,
@@ -413,7 +413,7 @@ function EventsPage(props) {
 
 function SendEventModal(props) {
   const { sendEvent } = props;
-  let [eventData, setEventData] = useState(`{
+  const [eventData, setEventData] = useState(`{
     "specversion" : "1.0",
     "type" : "com.github.pull.create",
     "source" : "https://github.com/cloudevents/spec/pull",

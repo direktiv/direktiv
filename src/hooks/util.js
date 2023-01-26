@@ -49,13 +49,13 @@ export async function HandleError(summary, resp, perm) {
 
   if (resp.status !== 403) {
     if (!contentType || !contentType.includes("application/json")) {
-      let text = await resp.text();
+      const text = await resp.text();
       return `${summary}: ${text}`;
     } else {
       if (resp.headers.get("grpc-message")) {
         return `${summary}: ${resp.headers.get("grpc-message")}`;
       } else {
-        let text = (await resp.json()).message;
+        const text = (await resp.json()).message;
         return `${summary}: ${text}`;
       }
     }
@@ -206,11 +206,11 @@ export function StateReducer(state, action) {
     case STATE.UPDATE:
       return action.data;
     case STATE.PUSHITEM:
-      let pushListData = state ? JSON.parse(JSON.stringify(state)) : [];
+      const pushListData = state ? JSON.parse(JSON.stringify(state)) : [];
       pushListData.push(action.data);
       return pushListData;
     case STATE.APPENDLIST:
-      let appendListData = state ? JSON.parse(JSON.stringify(state)) : [];
+      const appendListData = state ? JSON.parse(JSON.stringify(state)) : [];
       for (let i = 0; i < action.data.length; i++) {
         appendListData.push(action.data[i]);
       }
@@ -258,7 +258,7 @@ export const useQueryString = (appendMode, queryParameters, throttle) => {
   const [queryString, setQueryString] = React.useState("");
 
   React.useEffect(() => {
-    let newQueryString = ExtractQueryString(appendMode, ...queryParameters);
+    const newQueryString = ExtractQueryString(appendMode, ...queryParameters);
     if (newQueryString !== queryString) {
       setQueryString(newQueryString);
     }

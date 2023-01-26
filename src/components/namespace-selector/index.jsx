@@ -180,7 +180,7 @@ function NamespaceListItem(props) {
 }
 
 function NamespaceListItemLink(props) {
-  let { disabled, children, namespace, setShowSelector } = props;
+  const { disabled, children, namespace, setShowSelector } = props;
   if (disabled) {
     return <>{children}</>;
   }

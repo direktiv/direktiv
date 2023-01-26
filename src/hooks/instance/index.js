@@ -44,7 +44,7 @@ export const useDirektivInstanceLogs = (
   const getInstanceLogs = React.useCallback(
     async (...queryParameters) => {
       // fetch instance list by default
-      let resp = await fetch(
+      const resp = await fetch(
         `${url}namespaces/${namespace}/instances/${instance}/logs${ExtractQueryString(
           false,
           ...queryParameters
@@ -54,7 +54,7 @@ export const useDirektivInstanceLogs = (
         }
       );
       if (resp.ok) {
-        let json = await resp.json();
+        const json = await resp.json();
         setData(json.results);
         setPageInfo(json.pageInfo);
         return json.results;
@@ -69,10 +69,10 @@ export const useDirektivInstanceLogs = (
 
   React.useEffect(() => {
     if (stream) {
-      let log = logsRef.current;
+      const log = logsRef.current;
       if (eventSource.current === null) {
         // setup event listener
-        let listener = new EventSourcePolyfill(
+        const listener = new EventSourcePolyfill(
           `${url}namespaces/${namespace}/instances/${instance}/logs${queryString}`,
           {
             headers: apiKeyHeaders(apikey),
@@ -91,7 +91,7 @@ export const useDirektivInstanceLogs = (
           if (e.data === "") {
             return;
           }
-          let json = JSON.parse(e.data);
+          const json = JSON.parse(e.data);
           for (let i = 0; i < json.results.length; i++) {
             log.push(json.results[i]);
           }
@@ -128,7 +128,7 @@ export const useDirektivInstanceLogs = (
   // If queryParameters change and streaming: update queryString, and reset sse connection
   React.useEffect(() => {
     if (stream) {
-      let newQueryString = ExtractQueryString(false, ...queryParameters);
+      const newQueryString = ExtractQueryString(false, ...queryParameters);
       if (newQueryString !== queryString) {
         setQueryString(newQueryString);
         CloseEventSource(eventSource.current);
@@ -174,8 +174,8 @@ export const useDirektivInstance = (
         setLatestRevision("");
       }
 
-      let path = TrimPathSlashes(workflowPath);
-      let resp = await fetch(
+      const path = TrimPathSlashes(workflowPath);
+      const resp = await fetch(
         `${url}namespaces/${namespace}/tree/${path}?op=validate-ref&ref=latest${ExtractQueryString(
           true,
           ...queryParameters
@@ -185,7 +185,7 @@ export const useDirektivInstance = (
         }
       );
       if (resp.ok) {
-        let json = await resp.json();
+        const json = await resp.json();
         setLatestRevision(json.revision.name);
         return json.revision.name;
       }
@@ -200,7 +200,7 @@ export const useDirektivInstance = (
   const getInstance = React.useCallback(
     async (...queryParameters) => {
       // fetch instance list by default
-      let resp = await fetch(
+      const resp = await fetch(
         `${url}namespaces/${namespace}/instances/${instanceID}${ExtractQueryString(
           false,
           ...queryParameters
@@ -210,7 +210,7 @@ export const useDirektivInstance = (
         }
       );
       if (resp.ok) {
-        let json = await resp.json();
+        const json = await resp.json();
         setData(json.instance);
         setWorkflow(json.workflow);
         getLatestRevision(json.workflow.path);
@@ -225,7 +225,7 @@ export const useDirektivInstance = (
     if (stream) {
       if (eventSource.current === null) {
         // setup event listener
-        let listener = new EventSourcePolyfill(
+        const listener = new EventSourcePolyfill(
           `${url}namespaces/${namespace}/instances/${instanceID}`,
           {
             headers: apiKeyHeaders(apikey),
@@ -239,7 +239,7 @@ export const useDirektivInstance = (
             setErr(e.statusText);
           } else {
             try {
-              let json = JSON.parse(e.data);
+              const json = JSON.parse(e.data);
               setErr(json.Message);
             } catch (e) {
               // TODO
@@ -251,7 +251,7 @@ export const useDirektivInstance = (
           if (e.data === "") {
             return;
           }
-          let json = JSON.parse(e.data);
+          const json = JSON.parse(e.data);
           json.instance["flow"] = json.flow;
           setData(json.instance);
           setWorkflow(json.workflow);
@@ -298,7 +298,7 @@ export const useDirektivInstance = (
   }, []);
 
   async function getInput(...queryParameters) {
-    let resp = await fetch(
+    const resp = await fetch(
       `${url}namespaces/${namespace}/instances/${instanceID}/input${ExtractQueryString(
         false,
         ...queryParameters
@@ -309,7 +309,7 @@ export const useDirektivInstance = (
       }
     );
     if (resp.ok) {
-      let json = await resp.json();
+      const json = await resp.json();
       return atob(json.data);
     }
     throw new Error(
@@ -318,7 +318,7 @@ export const useDirektivInstance = (
   }
 
   async function getOutput(...queryParameters) {
-    let resp = await fetch(
+    const resp = await fetch(
       `${url}namespaces/${namespace}/instances/${instanceID}/output${ExtractQueryString(
         false,
         ...queryParameters
@@ -329,7 +329,7 @@ export const useDirektivInstance = (
       }
     );
     if (resp.ok) {
-      let json = await resp.json();
+      const json = await resp.json();
       return atob(json.data);
     }
     throw new Error(
@@ -338,7 +338,7 @@ export const useDirektivInstance = (
   }
 
   async function cancelInstance(...queryParameters) {
-    let resp = await fetch(
+    const resp = await fetch(
       `${url}namespaces/${namespace}/instances/${instanceID}/cancel${ExtractQueryString(
         false,
         ...queryParameters
