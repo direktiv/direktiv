@@ -337,23 +337,20 @@ function WorkingRevisionErrorBar(props) {
         >
           {errors.length > 0 ? (
             <>
-              {errors.map((err) => {
-                return (
-                  <FlexBox
-                    row
-                    style={{
-                      justifyContent: "flex-start",
-                      alignItems: "center",
-                      paddingBottom: "4px",
-                    }}
-                  >
-                    <VscError
-                      style={{ paddingRight: "6px", color: "#ec4f79" }}
-                    />
-                    <div>{err}</div>
-                  </FlexBox>
-                );
-              })}
+              {errors.map((err, i) => (
+                <FlexBox
+                  key={i}
+                  row
+                  style={{
+                    justifyContent: "flex-start",
+                    alignItems: "center",
+                    paddingBottom: "4px",
+                  }}
+                >
+                  <VscError style={{ paddingRight: "6px", color: "#ec4f79" }} />
+                  <div>{err}</div>
+                </FlexBox>
+              ))}
             </>
           ) : (
             <FlexBox
@@ -653,6 +650,8 @@ function WorkingRevision(props) {
                         }
                         headers={["JSON", "Form"]}
                         tabs={[
+                          // no key needed for static array
+                          // eslint-disable-next-line react/jsx-key
                           <FlexBox>
                             <AutoSizer>
                               {({ height, width }) => (
@@ -666,6 +665,8 @@ function WorkingRevision(props) {
                               )}
                             </AutoSizer>
                           </FlexBox>,
+                          // no key needed for static array
+                          // eslint-disable-next-line react/jsx-key
                           <FlexBox col style={{ overflow: "hidden" }}>
                             {workflowJSONSchema === null ? (
                               <div
