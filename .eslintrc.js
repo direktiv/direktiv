@@ -27,7 +27,29 @@ module.exports = {
   env: {
     browser: true,
   },
-  ignorePatterns: ["node_modules/", "dist/", ".eslintrc.js", "env.d.ts"],
+  ignorePatterns: [
+    "node_modules/",
+    "dist/",
+    ".eslintrc.js",
+    "env.d.ts",
+    /**
+     * TODO_HOOKS_TESTS
+     * The Problem: All hooks tests are currently not working and have some linting issues.
+     * We must decide:
+     *  - Do we keep the hooks as they are?
+     *    - when we migrate to typescript, we could potentially refactor them. There are a lot
+     *      of repeating patterns.
+     *  - if we want to keep the hooks, do we keep and update the tests
+     *    - PROS: they are already written and could be useful
+     *    - CONS: they are an impplementation detail and maybe
+     *      should not be tested
+     *    - if we delete them, we need to test the data fetching layer but on a
+     *      much higher level. We might use PlayWright for end to end tests.
+     *
+     */
+    // 🚧 search for TODO_HOOKS_TESTS to find all places that needs some action 🚧
+    "src/hooks/*test.js",
+  ],
   rules: {
     // PLEASE ALWAYS PROVIDE A REASON FOR DISABLING/OVERWRITING A RULE
     // IT'S HARD TO EVALUATE THIS SECTION AT A LATER POINT IN TIME
