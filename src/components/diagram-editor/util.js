@@ -661,8 +661,7 @@ export function unescapeJSStrings(str) {
       const jsStr = lineStr.slice(replaceIndex + 1, -2).trim();
 
       // Count leading whitespaces
-      let whiteSpaceCount = 0;
-      for (; lineStr[whiteSpaceCount] === " "; whiteSpaceCount++) {}
+      const whiteSpaceCount = 0;
 
       // Split javascript into multiline YAML string
       newWorkflowStr += lineStr.slice(0, replaceIndex - 1) + " |\n";

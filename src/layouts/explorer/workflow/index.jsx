@@ -1,6 +1,7 @@
 import { useWorkflow, useWorkflowServices } from "../../../hooks";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { VscFileCode ,
+import {
+  VscFileCode,
   VscChevronDown,
   VscChevronUp,
   VscError,
@@ -28,7 +29,6 @@ import * as dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import utc from "dayjs/plugin/utc";
 import { InstanceRow } from "../../instances";
-
 
 import YAML from "js-yaml";
 import DiagramEditor from "../../../components/diagram-editor/index.jsx";
@@ -167,7 +167,9 @@ function InitialWorkflowHook(props) {
       if (data !== null && router === null) {
         try {
           setRouter(await getWorkflowRouter());
-        } catch (e) {}
+        } catch (e) {
+          console.error(e);
+        }
       }
     }
     getD();
@@ -618,7 +620,9 @@ function WorkingRevision(props) {
                           setWorkflowJSONSchema(wfObj.states[0].schema);
                           setTabIndex(1);
                         }
-                      } catch (e) {}
+                      } catch (e) {
+                        console.error(e);
+                      }
                     }}
                     button={<span style={{ fontSize: "15px" }}>Run</span>}
                     buttonProps={{
@@ -1456,7 +1460,9 @@ function WorkflowAttributes(props) {
         await addAttributes([val]);
         setAttris([...attris, val]);
         tagInput.current.value = null;
-      } catch (e) {}
+      } catch (e) {
+        console.error(e);
+      }
     } else if (e.key === "Backspace" && !val) {
       removeTag(attris.length - 1);
     }

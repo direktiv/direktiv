@@ -14,7 +14,12 @@ import WorkflowDiagram from "../../../components/diagram";
 import YAML from "js-yaml";
 import Modal, { ModalHeadless } from "../../../components/modal";
 import SankeyDiagram from "../../../components/sankey";
-import { VscVersions, VscTypeHierarchySub , VscCode, VscDebugStepBack } from "react-icons/vsc";
+import {
+  VscVersions,
+  VscTypeHierarchySub,
+  VscCode,
+  VscDebugStepBack,
+} from "react-icons/vsc";
 import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
 import { useNavigate } from "react-router";
@@ -579,10 +584,6 @@ export function RevisionSelectorTab(props) {
           </ContentPanelTitle>
           <ContentPanelBody style={{ flexDirection: "column" }}>
             {revisions.map((obj) => {
-              for (var i = 0; i < router.routes.length; i++) {
-                if (obj.name === router.routes[i].ref) {
-                }
-              }
               return (
                 <FlexBox
                   key={GenerateRandomKey()}
