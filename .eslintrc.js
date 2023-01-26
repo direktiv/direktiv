@@ -27,7 +27,7 @@ module.exports = {
   env: {
     browser: true,
   },
-
+  ignorePatterns: ["node_modules/", "dist/", ".eslintrc.js", "env.d.ts"],
   rules: {
     // PLEASE ALWAYS PROVIDE A REASON FOR DISABLING/OVERWRITING A RULE
     // IT'S HARD TO EVALUATE THIS SECTION AT A LATER POINT IN TIME
