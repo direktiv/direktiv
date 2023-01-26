@@ -33,6 +33,7 @@
     "file-saver": "^2.0.5",
     "fuse.js": "^6.5.3",
     "jest": "^29.4.0",
+    "jest-watch-typeahead": "^2.2.2",
     "js-yaml": "^4.1.0",
     "json-to-pretty-yaml": "^1.2.2",
     "monaco": "^1.201704190613.0",
