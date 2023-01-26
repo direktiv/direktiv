@@ -1,4 +1,4 @@
-import { useEffect, useState , useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import "./style.css";
 
 import CircularProgress from "@mui/material/CircularProgress";
@@ -681,6 +681,8 @@ function ExplorerList(props) {
                       style={{ minWidth: "300px" }}
                       headers={["Standard", "Mirror"]}
                       tabs={[
+                        // no key needed for static array
+                        // eslint-disable-next-line react/jsx-key
                         <FlexBox col gap="sm" style={{ paddingRight: "12px" }}>
                           <FlexBox
                             row
@@ -696,6 +698,8 @@ function ExplorerList(props) {
                             placeholder="Enter a directory name"
                           />
                         </FlexBox>,
+                        // no key needed for static array
+                        // eslint-disable-next-line react/jsx-key
                         <FlexBox col gap>
                           <FlexBox
                             col
