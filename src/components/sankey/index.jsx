@@ -253,7 +253,6 @@ function SankeyDiagram(props) {
     link
       .append("path")
       .attr("d", function (linkz) {
-        console.log(linkz);
         return linkz.path;
       })
       .attr("class", "sankey-link")

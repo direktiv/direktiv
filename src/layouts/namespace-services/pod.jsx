@@ -48,7 +48,7 @@ function NamespaceRevisionDetails(props) {
   );
 
   if (err) {
-    console.log(err, "listing pods");
+    console.error(err, "listing pods");
   }
 
   if (revisionDetails === null) {

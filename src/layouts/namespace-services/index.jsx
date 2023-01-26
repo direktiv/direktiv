@@ -4,7 +4,10 @@ import {
   VscChevronDown,
   VscChevronRight,
   VscRefresh,
- VscTrash, VscCircleLargeFilled , VscAdd } from "react-icons/vsc";
+  VscTrash,
+  VscCircleLargeFilled,
+  VscAdd,
+} from "react-icons/vsc";
 
 import "./style.css";
 import { useEffect, useState, useMemo } from "react";
@@ -190,7 +193,7 @@ function NamespaceServices(props) {
 
   if (err !== null) {
     // error happened with listing services
-    console.log(err);
+    console.error(err);
   }
 
   if (data === null) {
@@ -497,7 +500,7 @@ export function Service(props) {
                     buttonProps: { variant: "contained", color: "primary" },
 
                     errFunc: () => {
-                      console.log("err func");
+                      console.error("err func");
                     },
 
                     closesModal: true,

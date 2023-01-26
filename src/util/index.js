@@ -18,11 +18,7 @@ function fallbackCopyTextToClipboard(text) {
   textArea.select();
 
   try {
-    var successful = document.execCommand("copy");
-    var msg = successful ? "successful" : "unsuccessful";
-    if (msg) {
-      console.log(msg);
-    }
+    document.execCommand("copy");
   } catch (err) {
     console.error("Fallback: Oops, unable to copy", err);
   }
@@ -34,14 +30,7 @@ export function copyTextToClipboard(text) {
     fallbackCopyTextToClipboard(text);
     return;
   }
-  navigator.clipboard.writeText(text).then(
-    function () {
-      console.log("Async: Copying to clipboard was successful!");
-    },
-    function (err) {
-      console.error("Async: Could not copy text: ", err);
-    }
-  );
+  navigator.clipboard.writeText(text);
 }
 
 export function GenerateRandomKey(prefix) {

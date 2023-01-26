@@ -618,7 +618,7 @@ function Output(props) {
           const x = JSON.stringify(JSON.parse(data), null, 2);
           setOutput(x);
         } catch (e) {
-          console.log(e);
+          console.error(e);
         }
       }
     }

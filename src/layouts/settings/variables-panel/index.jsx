@@ -10,7 +10,8 @@ import {
   VscLoading,
   VscTrash,
   VscVariableGroup,
- VscAdd } from "react-icons/vsc";
+  VscAdd,
+} from "react-icons/vsc";
 import { AutoSizer } from "react-virtualized";
 import Button from "../../../components/button";
 import ContentPanel, {
@@ -76,7 +77,7 @@ function VariablesPanel(props) {
 
   // something went wrong with error listing for variables
   if (err !== null) {
-    console.log(err, "handle variable list error");
+    console.error(err, "handle variable list error");
   }
 
   return (
