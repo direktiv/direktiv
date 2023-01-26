@@ -47,11 +47,11 @@ export default function WorkflowRevisions(props) {
           <ContentPanelBody>
             <FlexBox col gap>
               <FlexBox col gap>
-                {revisions.map((obj) => {
+                {revisions.map((obj, i) => {
                   const dontDelete = true;
-
                   return (
                     <Service
+                      key={i}
                       dontDelete={dontDelete}
                       revision={obj.rev}
                       url={`/n/${namespace}/explorer/${filepath.substring(

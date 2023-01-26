@@ -84,9 +84,10 @@ export default function WorkflowPod(props) {
                         paddingLeft: "10px",
                       }}
                     >
-                      {pods.map((obj) => {
+                      {pods.map((obj, i) => {
                         return (
                           <li
+                            key={i}
                             style={{
                               display: "flex",
                               alignItems: "center",
@@ -147,6 +148,7 @@ export default function WorkflowPod(props) {
                     ) {
                       return (
                         <li
+                          key={obj.name}
                           style={{
                             display: "flex",
                             alignItems: "center",
@@ -160,6 +162,7 @@ export default function WorkflowPod(props) {
                     }
                     return (
                       <li
+                        key={obj.name}
                         style={{
                           display: "flex",
                           alignItems: "center",

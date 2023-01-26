@@ -238,6 +238,8 @@ function RevisionTab(props) {
                             }
                             headers={["JSON", "Form"]}
                             tabs={[
+                              // no key needed for static array
+                              // eslint-disable-next-line react/jsx-key
                               <FlexBox>
                                 <AutoSizer>
                                   {({ height, width }) => (
@@ -251,6 +253,8 @@ function RevisionTab(props) {
                                   )}
                                 </AutoSizer>
                               </FlexBox>,
+                              // no key needed for static array
+                              // eslint-disable-next-line react/jsx-key
                               <FlexBox col style={{ overflow: "hidden" }}>
                                 {workflowJSONSchema === null ? (
                                   <div

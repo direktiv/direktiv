@@ -181,52 +181,48 @@ function ExamplesJQ(props) {
         <ContentPanelBody>
           <table style={{ width: "50%", fontSize: "10pt" }}>
             <tbody>
-              {firstHalf.map((obj) => {
-                return (
-                  <tr>
-                    <td className="jq-example" style={{ width: "25%" }}>
-                      {obj.example}
-                    </td>
-                    <td>{obj.tip}</td>
-                    <td
-                      style={{ width: "20%" }}
-                      onClick={() => loadJQ(obj.filter, obj.json)}
-                    >
-                      <Button variant="outlined" color="info">
-                        <FlexBox gap>
-                          <VscFileCode className="auto-margin" />
-                          <div>Load</div>
-                        </FlexBox>
-                      </Button>
-                    </td>
-                  </tr>
-                );
-              })}
+              {firstHalf.map((obj, i) => (
+                <tr key={i}>
+                  <td className="jq-example" style={{ width: "25%" }}>
+                    {obj.example}
+                  </td>
+                  <td>{obj.tip}</td>
+                  <td
+                    style={{ width: "20%" }}
+                    onClick={() => loadJQ(obj.filter, obj.json)}
+                  >
+                    <Button variant="outlined" color="info">
+                      <FlexBox gap>
+                        <VscFileCode className="auto-margin" />
+                        <div>Load</div>
+                      </FlexBox>
+                    </Button>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
           <table style={{ width: "50%", fontSize: "10pt" }}>
             <tbody>
-              {secondHalf.map((obj) => {
-                return (
-                  <tr>
-                    <td style={{ width: "25%" }} className="jq-example">
-                      {obj.example}
-                    </td>
-                    <td>{obj.tip}</td>
-                    <td
-                      style={{ width: "20%" }}
-                      onClick={() => loadJQ(obj.filter, obj.json)}
-                    >
-                      <Button variant="outlined" color="info">
-                        <FlexBox gap>
-                          <VscFileCode className="auto-margin" />
-                          <div>Load</div>
-                        </FlexBox>
-                      </Button>
-                    </td>
-                  </tr>
-                );
-              })}
+              {secondHalf.map((obj, i) => (
+                <tr key={i}>
+                  <td style={{ width: "25%" }} className="jq-example">
+                    {obj.example}
+                  </td>
+                  <td>{obj.tip}</td>
+                  <td
+                    style={{ width: "20%" }}
+                    onClick={() => loadJQ(obj.filter, obj.json)}
+                  >
+                    <Button variant="outlined" color="info">
+                      <FlexBox gap>
+                        <VscFileCode className="auto-margin" />
+                        <div>Load</div>
+                      </FlexBox>
+                    </Button>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </ContentPanelBody>
