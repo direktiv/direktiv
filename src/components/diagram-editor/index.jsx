@@ -726,6 +726,7 @@ export default function DiagramEditor(props) {
             {contextMenuResults.map((obj) => {
               return (
                 <li
+                  key={obj.name ? obj.name : obj.item.name}
                   onClick={() => {
                     const newNode = obj.item ? obj.item : obj;
                     setBlock(true);

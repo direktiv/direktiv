@@ -103,151 +103,149 @@ function EventsPage(props) {
                     typeof eventHistory === typeof [] &&
                     eventHistory.length > 0 ? (
                       <tbody>
-                        {eventHistory.map((obj) => {
-                          return (
-                            <tr style={{ borderBottom: "1px solid #f4f4f4" }}>
-                              <td
-                                title={obj.type}
-                                style={{
-                                  textOverflow: "ellipsis",
-                                  overflow: "hidden",
-                                }}
-                              >
-                                {obj.type}
-                              </td>
-                              <td
-                                title={obj.source}
-                                style={{
-                                  textOverflow: "ellipsis",
-                                  overflow: "hidden",
-                                }}
-                              >
-                                {obj.source}
-                              </td>
-                              <td>
-                                {dayjs
-                                  .utc(obj.receivedAt)
-                                  .local()
-                                  .format("HH:mm:ss a")}
-                              </td>
-                              <td
-                                style={{
-                                  textAlign: "center",
-                                  justifyContent: "center",
-                                }}
-                              >
-                                <FlexBox className={"gap center"}>
-                                  <div>
-                                    <Modal
-                                      className="run-workflow-modal"
-                                      style={{ justifyContent: "flex-end" }}
-                                      modalStyle={{
-                                        color: "black",
-                                        width: "360px",
-                                      }}
-                                      title="Retrigger Event"
-                                      onClose={() => {}}
-                                      button={
-                                        <>
-                                          <VscPlay />{" "}
-                                          <span className="hide-800">
-                                            Retrigger
-                                          </span>
-                                        </>
-                                      }
-                                      buttonProps={{
-                                        auto: true,
-                                        color: "info",
-                                      }}
-                                      actionButtons={[
-                                        {
-                                          label: "Retrigger",
+                        {eventHistory.map((obj) => (
+                          <tr
+                            key={obj.id}
+                            style={{ borderBottom: "1px solid #f4f4f4" }}
+                          >
+                            <td
+                              title={obj.type}
+                              style={{
+                                textOverflow: "ellipsis",
+                                overflow: "hidden",
+                              }}
+                            >
+                              {obj.type}
+                            </td>
+                            <td
+                              title={obj.source}
+                              style={{
+                                textOverflow: "ellipsis",
+                                overflow: "hidden",
+                              }}
+                            >
+                              {obj.source}
+                            </td>
+                            <td>
+                              {dayjs
+                                .utc(obj.receivedAt)
+                                .local()
+                                .format("HH:mm:ss a")}
+                            </td>
+                            <td
+                              style={{
+                                textAlign: "center",
+                                justifyContent: "center",
+                              }}
+                            >
+                              <FlexBox className={"gap center"}>
+                                <div>
+                                  <Modal
+                                    className="run-workflow-modal"
+                                    style={{ justifyContent: "flex-end" }}
+                                    modalStyle={{
+                                      color: "black",
+                                      width: "360px",
+                                    }}
+                                    title="Retrigger Event"
+                                    onClose={() => {}}
+                                    button={
+                                      <>
+                                        <VscPlay />{" "}
+                                        <span className="hide-800">
+                                          Retrigger
+                                        </span>
+                                      </>
+                                    }
+                                    buttonProps={{
+                                      auto: true,
+                                      color: "info",
+                                    }}
+                                    actionButtons={[
+                                      {
+                                        label: "Retrigger",
 
-                                          onClick: async () => {
-                                            await replayEvent(obj.id);
-                                          },
-
-                                          buttonProps: {
-                                            variant: "contained",
-                                            color: "primary",
-                                          },
-                                          errFunc: () => {},
-                                          closesModal: true,
+                                        onClick: async () => {
+                                          await replayEvent(obj.id);
                                         },
-                                        {
-                                          label: "Cancel",
 
-                                          onClick: async () => {},
-
-                                          buttonProps: {},
-                                          errFunc: () => {},
-                                          closesModal: true,
+                                        buttonProps: {
+                                          variant: "contained",
+                                          color: "primary",
                                         },
-                                      ]}
-                                    >
-                                      <FlexBox style={{ overflow: "hidden" }}>
-                                        Are you sure you want to retrigger{" "}
-                                        {obj.id}?
-                                      </FlexBox>
-                                    </Modal>
-                                  </div>
-                                  <div>
-                                    <Modal
-                                      className="run-workflow-modal"
-                                      modalStyle={{
-                                        color: "black",
-                                        minWidth: "360px",
-                                        width: "50vw",
-                                        height: "40vh",
-                                        minHeight: "680px",
-                                      }}
-                                      title="View Event"
-                                      onClose={() => {}}
-                                      btnStyle={{ width: "unset" }}
-                                      button={<span>View</span>}
-                                      buttonProps={{
-                                        auto: true,
-                                        color: "info",
-                                      }}
-                                      actionButtons={[
-                                        {
-                                          label: "Close",
+                                        errFunc: () => {},
+                                        closesModal: true,
+                                      },
+                                      {
+                                        label: "Cancel",
 
-                                          onClick: async () => {},
+                                        onClick: async () => {},
 
-                                          buttonProps: {},
-                                          errFunc: () => {},
-                                          closesModal: true,
-                                        },
-                                      ]}
-                                    >
-                                      <FlexBox
-                                        col
-                                        style={{ overflow: "hidden" }}
-                                      >
-                                        <AutoSizer>
-                                          {({ height, width }) => (
-                                            <DirektivEditor
-                                              noBorderRadius
-                                              value={atob(obj.cloudevent)}
-                                              readonly={true}
-                                              dlang="plaintext"
-                                              options={{
-                                                autoLayout: true,
-                                              }}
-                                              width={width}
-                                              height={height}
-                                            />
-                                          )}
-                                        </AutoSizer>
-                                      </FlexBox>
-                                    </Modal>
-                                  </div>
-                                </FlexBox>
-                              </td>
-                            </tr>
-                          );
-                        })}
+                                        buttonProps: {},
+                                        errFunc: () => {},
+                                        closesModal: true,
+                                      },
+                                    ]}
+                                  >
+                                    <FlexBox style={{ overflow: "hidden" }}>
+                                      Are you sure you want to retrigger{" "}
+                                      {obj.id}?
+                                    </FlexBox>
+                                  </Modal>
+                                </div>
+                                <div>
+                                  <Modal
+                                    className="run-workflow-modal"
+                                    modalStyle={{
+                                      color: "black",
+                                      minWidth: "360px",
+                                      width: "50vw",
+                                      height: "40vh",
+                                      minHeight: "680px",
+                                    }}
+                                    title="View Event"
+                                    onClose={() => {}}
+                                    btnStyle={{ width: "unset" }}
+                                    button={<span>View</span>}
+                                    buttonProps={{
+                                      auto: true,
+                                      color: "info",
+                                    }}
+                                    actionButtons={[
+                                      {
+                                        label: "Close",
+
+                                        onClick: async () => {},
+
+                                        buttonProps: {},
+                                        errFunc: () => {},
+                                        closesModal: true,
+                                      },
+                                    ]}
+                                  >
+                                    <FlexBox col style={{ overflow: "hidden" }}>
+                                      <AutoSizer>
+                                        {({ height, width }) => (
+                                          <DirektivEditor
+                                            noBorderRadius
+                                            value={atob(obj.cloudevent)}
+                                            readonly={true}
+                                            dlang="plaintext"
+                                            options={{
+                                              autoLayout: true,
+                                            }}
+                                            width={width}
+                                            height={height}
+                                          />
+                                        )}
+                                      </AutoSizer>
+                                    </FlexBox>
+                                  </Modal>
+                                </div>
+                              </FlexBox>
+                            </td>
+                          </tr>
+                        ))}
                       </tbody>
                     ) : (
                       <tbody>
@@ -320,61 +318,62 @@ function EventsPage(props) {
                     typeof eventListeners === typeof [] &&
                     eventListeners?.length > 0 ? (
                       <tbody>
-                        {eventListeners.map((obj) => {
-                          return (
-                            <tr style={{ borderBottom: "1px solid #f4f4f4" }}>
-                              <td
-                                style={{
-                                  textOverflow: "ellipsis",
-                                  overflow: "hidden",
-                                }}
+                        {eventListeners.map((obj, i) => (
+                          <tr
+                            key={i} // todo: get an id from the backend
+                            style={{ borderBottom: "1px solid #f4f4f4" }}
+                          >
+                            <td
+                              style={{
+                                textOverflow: "ellipsis",
+                                overflow: "hidden",
+                              }}
+                            >
+                              <Link
+                                style={{ color: "#2396d8" }}
+                                to={`/n/${namespace}/explorer${obj.workflow}`}
                               >
+                                {obj.workflow}
+                              </Link>
+                            </td>
+                            <td
+                              style={{
+                                textOverflow: "ellipsis",
+                                overflow: "hidden",
+                              }}
+                            >
+                              {obj.instance !== "" ? (
                                 <Link
                                   style={{ color: "#2396d8" }}
-                                  to={`/n/${namespace}/explorer${obj.workflow}`}
+                                  to={`/n/${namespace}/instances/${obj.instance}`}
                                 >
-                                  {obj.workflow}
+                                  {obj.instance.split("-")[0]}
                                 </Link>
-                              </td>
-                              <td
-                                style={{
-                                  textOverflow: "ellipsis",
-                                  overflow: "hidden",
-                                }}
-                              >
-                                {obj.instance !== "" ? (
-                                  <Link
-                                    style={{ color: "#2396d8" }}
-                                    to={`/n/${namespace}/instances/${obj.instance}`}
-                                  >
-                                    {obj.instance.split("-")[0]}
-                                  </Link>
-                                ) : (
-                                  "start"
-                                )}
-                              </td>
-                              <td
-                                style={{
-                                  textOverflow: "ellipsis",
-                                  overflow: "hidden",
-                                }}
-                              >
-                                {obj.mode}
-                              </td>
-                              <td>
-                                {dayjs
-                                  .utc(obj.updatedAt)
-                                  .local()
-                                  .format("HH:mm:ss a")}
-                              </td>
-                              <td className="event-split">
-                                {obj.events.map((obj) => {
-                                  return <span>{obj.type}</span>;
-                                })}
-                              </td>
-                            </tr>
-                          );
-                        })}
+                              ) : (
+                                "start"
+                              )}
+                            </td>
+                            <td
+                              style={{
+                                textOverflow: "ellipsis",
+                                overflow: "hidden",
+                              }}
+                            >
+                              {obj.mode}
+                            </td>
+                            <td>
+                              {dayjs
+                                .utc(obj.updatedAt)
+                                .local()
+                                .format("HH:mm:ss a")}
+                            </td>
+                            <td className="event-split">
+                              {obj.events.map((obj, i) => (
+                                <span key={i}>{obj.type}</span>
+                              ))}
+                            </td>
+                          </tr>
+                        ))}
                       </tbody>
                     ) : (
                       <tbody>
