@@ -33,5 +33,6 @@ module.exports = {
     "react/react-in-jsx-scope": "off", // It's save to import React when using vite
     // remove when we have 100 % typescript
     "react/prop-types": "off", // we will use TypeScript's types for component props instead)
+    "prefer-const": "error", // this is the default in typescript and we want to enforce it in JavaScript as well
   },
 };
