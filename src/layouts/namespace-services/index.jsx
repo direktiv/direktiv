@@ -317,6 +317,7 @@ function NamespaceServices(props) {
               <>
                 {data.map((obj) => (
                   <Service
+                    key={obj.serviceName}
                     id={obj.serviceName}
                     url={`/n/${namespace}/services/${obj.info.name}`}
                     deleteService={deleteNamespaceService}

@@ -106,20 +106,19 @@ function NamespaceRevisionDetails(props) {
                         paddingLeft: "10px",
                       }}
                     >
-                      {pods.map((obj) => {
-                        return (
-                          <li
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "5px",
-                            }}
-                          >
-                            <ServiceStatus status={obj.status} />
-                            {obj.name}
-                          </li>
-                        );
-                      })}
+                      {pods.map((obj, i) => (
+                        <li
+                          key={i}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "5px",
+                          }}
+                        >
+                          <ServiceStatus status={obj.status} />
+                          {obj.name}
+                        </li>
+                      ))}
                     </ul>
                   </div>
                 ) : (
@@ -169,6 +168,7 @@ function NamespaceRevisionDetails(props) {
                     ) {
                       return (
                         <li
+                          key={obj.name}
                           style={{
                             display: "flex",
                             alignItems: "center",
@@ -182,6 +182,7 @@ function NamespaceRevisionDetails(props) {
                     }
                     return (
                       <li
+                        key={obj.name}
                         style={{
                           display: "flex",
                           alignItems: "center",
@@ -244,6 +245,7 @@ export function PodLogs(props) {
 
               return (
                 <div
+                  key={obj.name}
                   onClick={() => setTab(obj.name)}
                   style={{
                     color: tab === obj.name ? "white" : "#b5b5b5",
