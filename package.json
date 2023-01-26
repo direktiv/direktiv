@@ -61,7 +61,7 @@
   "scripts": {
     "start": "vite",
     "build": "vite build",
-    "test": "jest",
+    "test": "vitest",
     "eject": "react-scripts eject",
     "analyze": "craco build",
     "storybook": "NODE_OPTIONS=--openssl-legacy-provider start-storybook -p 6006 -s public",
