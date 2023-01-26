@@ -213,6 +213,7 @@ const innerElementType = forwardRef(({ style, ...rest }: any, ref) => (
     {...rest}
   />
 ));
+innerElementType.displayName = "innerElementType";
 
 const ListRow = ({ index, width, data, style, wordWrap }: ListRowProps) => {
   const { setSize } = useContext(DynamicListContext);

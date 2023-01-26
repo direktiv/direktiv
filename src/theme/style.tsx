@@ -21,6 +21,7 @@ const LinkBehavior = React.forwardRef<
     <RouterLink data-testid="custom-link" ref={ref} to={href} {...other} />
   );
 });
+LinkBehavior.displayName = "LinkBehavior";
 
 const theme = createTheme({
   typography: {
