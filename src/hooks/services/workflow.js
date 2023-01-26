@@ -1,5 +1,7 @@
 import * as React from "react";
-import { EventStateReducer , EVENTSTATE ,
+import {
+  EventStateReducer,
+  EVENTSTATE,
   HandleError,
   ExtractQueryString,
   SanitizePath,
@@ -39,6 +41,49 @@ export const useDirektivWorkflowServiceRevision = (
   const podsRef = React.useRef(pods);
 
   React.useEffect(() => {
+    async function readData(e) {
+      const podz = podsRef.current;
+
+      if (e.data === "") {
+        return;
+      }
+      const json = JSON.parse(e.data);
+
+      switch (json.event) {
+        case "DELETED":
+          for (var i = 0; i < pods.length; i++) {
+            if (podz[i].name === json.pod.name) {
+              podz.splice(i, 1);
+              podsRef.current = pods;
+              break;
+            }
+          }
+          break;
+        case "MODIFIED":
+          for (i = 0; i < podz.length; i++) {
+            if (podz[i].name === json.pod.name) {
+              podz[i] = json.pod;
+              podsRef.current = podz;
+              break;
+            }
+          }
+          break;
+        default: {
+          let found = false;
+          for (i = 0; i < podz.length; i++) {
+            if (podz[i].name === json.pod.name) {
+              found = true;
+              break;
+            }
+          }
+          if (!found) {
+            podz.push(json.pod);
+            podsRef.current = pods;
+          }
+        }
+      }
+      setPods(JSON.parse(JSON.stringify(podsRef.current)));
+    }
     if (podSource.current === null) {
       const listener = new EventSourcePolyfill(
         `${url}functions/namespaces/${namespace}/tree/${path}?op=pods&svn=${service}&rev=${revision}&version=${version}`,
@@ -55,54 +100,24 @@ export const useDirektivWorkflowServiceRevision = (
         }
       };
 
-      async function readData(e) {
-        const podz = podsRef.current;
-
-        if (e.data === "") {
-          return;
-        }
-        const json = JSON.parse(e.data);
-
-        switch (json.event) {
-          case "DELETED":
-            for (var i = 0; i < pods.length; i++) {
-              if (podz[i].name === json.pod.name) {
-                podz.splice(i, 1);
-                podsRef.current = pods;
-                break;
-              }
-            }
-            break;
-          case "MODIFIED":
-            for (i = 0; i < podz.length; i++) {
-              if (podz[i].name === json.pod.name) {
-                podz[i] = json.pod;
-                podsRef.current = podz;
-                break;
-              }
-            }
-            break;
-          default:
-            let found = false;
-            for (i = 0; i < podz.length; i++) {
-              if (podz[i].name === json.pod.name) {
-                found = true;
-                break;
-              }
-            }
-            if (!found) {
-              podz.push(json.pod);
-              podsRef.current = pods;
-            }
-        }
-        setPods(JSON.parse(JSON.stringify(podsRef.current)));
-      }
       listener.onmessage = (e) => readData(e);
       podSource.current = listener;
     }
   }, [apikey, namespace, path, pods, revision, service, url, version]);
 
   React.useEffect(() => {
+    async function readData(e) {
+      if (e.data === "") {
+        return;
+      }
+      const json = JSON.parse(e.data);
+      if (json.event === "ADDED" || json.event === "MODIFIED") {
+        setRevisionDetails(json.revision);
+      }
+      // if (json.event === "DELETED") {
+      //     history.goBack()
+      // }
+    }
     if (revisionSource.current === null) {
       // setup event listener
       const listener = new EventSourcePolyfill(
@@ -119,19 +134,6 @@ export const useDirektivWorkflowServiceRevision = (
           setErr("permission denied");
         }
       };
-
-      async function readData(e) {
-        if (e.data === "") {
-          return;
-        }
-        const json = JSON.parse(e.data);
-        if (json.event === "ADDED" || json.event === "MODIFIED") {
-          setRevisionDetails(json.revision);
-        }
-        // if (json.event === "DELETED") {
-        //     history.goBack()
-        // }
-      }
 
       listener.onmessage = (e) => readData(e);
       revisionSource.current = listener;
@@ -180,6 +182,51 @@ export const useDirektivWorkflowService = (
   const [eventSource, setEventSource] = React.useState(null);
 
   React.useEffect(() => {
+    async function readData(e) {
+      const revs = revisionsRef.current;
+      if (e.data === "") {
+        return;
+      }
+      const json = JSON.parse(e.data);
+      switch (json.event) {
+        case "DELETED":
+          for (var i = 0; i < revs.length; i++) {
+            if (revs[i].name === json.revision.name) {
+              revs.splice(i, 1);
+              revisionsRef.current = revs;
+              break;
+            }
+          }
+          if (revs.length === 0) {
+            navigate(-1);
+          }
+          break;
+        case "MODIFIED":
+          for (i = 0; i < revs.length; i++) {
+            if (revs[i].name === json.revision.name) {
+              revs[i] = json.revision;
+              revisionsRef.current = revs;
+              break;
+            }
+          }
+          break;
+        default: {
+          let found = false;
+          for (i = 0; i < revs.length; i++) {
+            if (revs[i].name === json.revision.name) {
+              found = true;
+              break;
+            }
+          }
+          if (!found) {
+            revs.push(json.revision);
+            revisionsRef.current = revs;
+          }
+        }
+      }
+
+      setRevisions(JSON.parse(JSON.stringify(revisionsRef.current)));
+    }
     if (eventSource === null) {
       // setup event listener
       const listener = new EventSourcePolyfill(
@@ -196,51 +243,6 @@ export const useDirektivWorkflowService = (
           setErr("permission denied");
         }
       };
-
-      async function readData(e) {
-        const revs = revisionsRef.current;
-        if (e.data === "") {
-          return;
-        }
-        const json = JSON.parse(e.data);
-        switch (json.event) {
-          case "DELETED":
-            for (var i = 0; i < revs.length; i++) {
-              if (revs[i].name === json.revision.name) {
-                revs.splice(i, 1);
-                revisionsRef.current = revs;
-                break;
-              }
-            }
-            if (revs.length === 0) {
-              navigate(-1);
-            }
-            break;
-          case "MODIFIED":
-            for (i = 0; i < revs.length; i++) {
-              if (revs[i].name === json.revision.name) {
-                revs[i] = json.revision;
-                revisionsRef.current = revs;
-                break;
-              }
-            }
-            break;
-          default:
-            let found = false;
-            for (i = 0; i < revs.length; i++) {
-              if (revs[i].name === json.revision.name) {
-                found = true;
-                break;
-              }
-            }
-            if (!found) {
-              revs.push(json.revision);
-              revisionsRef.current = revs;
-            }
-        }
-
-        setRevisions(JSON.parse(JSON.stringify(revisionsRef.current)));
-      }
 
       listener.onmessage = (e) => readData(e);
       setEventSource(listener);
@@ -299,30 +301,32 @@ export const useDirektivWorkflowServices = (
   // Stream Event Source Data Dispatch Handler
   React.useEffect(() => {
     const handler = setTimeout(() => {
+      async function readData(e) {
+        if (e.data === "") {
+          return;
+        }
+
+        const json = JSON.parse(e.data);
+        dispatchData({
+          event: json.event,
+          data: json,
+          idKey: "serviceName",
+          idNewItemKey: "function.serviceName",
+          idData: "function",
+        });
+      }
       if (stream && pathString !== null) {
         // setup event listener
-        const listener = new EventSourcePolyfill(`${pathString}${queryString}`, {
-          headers: apiKeyHeaders(apikey),
-        });
+        const listener = new EventSourcePolyfill(
+          `${pathString}${queryString}`,
+          {
+            headers: apiKeyHeaders(apikey),
+          }
+        );
 
         listener.onerror = (e) => {
           genericEventSourceErrorHandler(e, setErr);
         };
-
-        async function readData(e) {
-          if (e.data === "") {
-            return;
-          }
-
-          const json = JSON.parse(e.data);
-          dispatchData({
-            event: json.event,
-            data: json,
-            idKey: "serviceName",
-            idNewItemKey: "function.serviceName",
-            idData: "function",
-          });
-        }
 
         listener.onmessage = (e) => readData(e);
         setEventSource(listener);
