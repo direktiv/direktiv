@@ -229,8 +229,6 @@ function NewNamespaceBtn(props) {
             }, 200);
             setNs("");
           },
-
-          errFunc: () => {},
           closeModal: true,
         },
       ]}
@@ -266,19 +264,15 @@ function NewNamespaceBtn(props) {
           },
 
           buttonProps: { variant: "contained", color: "primary" },
-          errFunc: () => {},
           closesModal: true,
           validate: true,
         },
         {
           label: "Cancel",
-
           onClick: () => {
             setNs("");
           },
-
           buttonProps: {},
-          errFunc: () => {},
           closesModal: true,
         },
       ]}
@@ -478,7 +472,7 @@ function NewNamespaceBtn(props) {
                                 marginRight: "-6px",
                               }}
                             >
-                              <span onClick={(e) => {}}>Upload</span>
+                              <span>Upload</span>
                               <VscCloudUpload />
                             </FlexBox>
                           </div>
