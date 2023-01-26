@@ -284,7 +284,8 @@ function FunctionsList(props) {
                 </span>
               </div>
               <div>
-                Type: <span className="label-type">{functionList[index].type}</span>
+                Type:{" "}
+                <span className="label-type">{functionList[index].type}</span>
               </div>
               <div>
                 {functionList[index].service ? `Service:` : ""}
