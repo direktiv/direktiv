@@ -123,11 +123,13 @@
     "event-source-polyfill": "^1.0.31",
     "isomorphic-fetch": "^3.0.0",
     "jest-extended": "^3.2.3",
+    "jsdom": "^21.1.0",
     "react-error-overlay": "6.0.9",
     "storybook-addon-react-router-v6": "^0.2.1",
     "vite": "^4.0.4",
     "vite-plugin-svgr": "^2.4.0",
     "vite-tsconfig-paths": "^4.0.5",
+    "vitest": "^0.28.2",
     "yalc": "^1.0.0-pre.53"
   }
 }
