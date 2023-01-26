@@ -87,12 +87,12 @@ function Actions(props) {
           <div
             className={`action ${ActionsNodes[index].family} action-${ActionsNodes[index].type}`}
             draggable={true}
-            node-index={index}
+            data-node-index={index}
             onDragStart={(ev) => {
               ev.stopPropagation();
               ev.dataTransfer.setData(
                 "nodeIndex",
-                ev.target.getAttribute("node-index")
+                ev.target.getAttribute("data-node-index")
               );
             }}
           >
@@ -257,11 +257,11 @@ function FunctionsList(props) {
           <div
             className={`function`}
             draggable={true}
-            function-index={index}
+            data-function-index={index}
             onDragStart={(ev) => {
               ev.dataTransfer.setData(
                 "functionIndex",
-                ev.target.getAttribute("function-index")
+                ev.target.getAttribute("data-function-index")
               );
             }}
           >
