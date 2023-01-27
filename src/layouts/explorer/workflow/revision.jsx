@@ -42,7 +42,7 @@ export default function WorkflowRevisions(props) {
             <ContentPanelTitleIcon>
               <VscLayers />
             </ContentPanelTitleIcon>
-            <FlexBox>Service '{service}' Revisions</FlexBox>
+            <FlexBox>Service &apos;{service}&apos; Revisions</FlexBox>
           </ContentPanelTitle>
           <ContentPanelBody>
             <FlexBox col gap>
