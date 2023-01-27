@@ -59,7 +59,7 @@ const actionsNodesFuse = new Fuse(ActionsNodes, {
   keys: ["name"],
 });
 
-function Actions(props) {
+function Actions() {
   const cache = new CellMeasurerCache({
     fixedWidth: false,
     fixedHeight: true,
@@ -386,7 +386,6 @@ function FunctionsList(props) {
           <div style={{ overflow: "auto" }}>
             <Form
               id={"builder-form"}
-              onSubmit={(form) => {}}
               schema={functionSchemas.schema}
               uiSchema={uiSchema}
               formData={formData}
@@ -603,11 +602,11 @@ export default function DiagramEditor(props) {
       });
     });
 
-    editor.on("nodeUnselected", function (e) {
+    editor.on("nodeUnselected", function () {
       setSelectedNode(null);
     });
 
-    editor.on("nodeRemoved", function (e) {
+    editor.on("nodeRemoved", function () {
       setSelectedNode(null);
     });
 
@@ -1189,27 +1188,21 @@ export default function DiagramEditor(props) {
 
                     setOldSelectedNodeFormData(selectedNodeFormData);
                   },
-
                   buttonProps: { variant: "contained", color: "primary" },
-                  errFunc: () => {},
                   closesModal: true,
                 },
                 {
                   label: "Cancel",
-
                   onClick: async () => {
                     setSelectedNodeFormData(oldSelectedNodeFormData);
                   },
-
                   buttonProps: {},
-                  errFunc: () => {},
                   closesModal: true,
                 },
               ]}
             >
               <Form
                 id={"builder-form"}
-                onSubmit={(form) => {}}
                 schema={selectedNodeSchema}
                 uiSchema={selectedNodeSchemaUI}
                 formData={selectedNodeFormData}
@@ -1268,18 +1261,14 @@ export default function DiagramEditor(props) {
                   },
 
                   buttonProps: { variant: "contained", color: "primary" },
-                  errFunc: () => {},
                   closesModal: true,
                 },
                 {
                   label: "Cancel",
-
                   onClick: async () => {
                     setNewNodeID("");
                   },
-
                   buttonProps: {},
-                  errFunc: () => {},
                   closesModal: true,
                 },
               ]}
