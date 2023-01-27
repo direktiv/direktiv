@@ -6,7 +6,7 @@ import ContentPanel, {
 } from "../../components/content-panel";
 import FlexBox from "../../components/flexbox";
 
-export default function WorkflowBuilder(props) {
+export default function WorkflowBuilder() {
   return (
     <FlexBox gap wrap style={{ paddingRight: "8px" }}>
       <ContentPanel style={{ width: "100%" }}>
