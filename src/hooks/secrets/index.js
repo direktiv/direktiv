@@ -38,7 +38,9 @@ export const useDirektivSecrets = (url, namespace, apikey) => {
   React.useEffect(() => {
     const getData = async () => getSecrets();
     if (data === null) {
-      getData().catch(() => {});
+      getData().catch((e) => {
+        console.error(e);
+      });
     }
   }, [data, getSecrets]);
 

@@ -41,7 +41,9 @@ export const useDirektivRegistries = (url, namespace, apikey) => {
   React.useEffect(() => {
     const getData = async () => getRegistries();
     if (data === null) {
-      getData().catch(() => {});
+      getData().catch((e) => {
+        console.error(e);
+      });
     }
   }, [data, getRegistries]);
 
