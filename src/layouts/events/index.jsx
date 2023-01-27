@@ -148,7 +148,6 @@ function EventsPage(props) {
                                       width: "360px",
                                     }}
                                     title="Retrigger Event"
-                                    onClose={() => {}}
                                     button={
                                       <>
                                         <VscPlay />{" "}
@@ -173,13 +172,10 @@ function EventsPage(props) {
                                           variant: "contained",
                                           color: "primary",
                                         },
-                                        errFunc: () => {},
                                         closesModal: true,
                                       },
                                       {
                                         label: "Cancel",
-                                        onClick: async () => {},
-                                        errFunc: () => {},
                                         closesModal: true,
                                       },
                                     ]}
@@ -201,7 +197,6 @@ function EventsPage(props) {
                                       minHeight: "680px",
                                     }}
                                     title="View Event"
-                                    onClose={() => {}}
                                     btnStyle={{ width: "unset" }}
                                     button={<span>View</span>}
                                     buttonProps={{
@@ -211,10 +206,6 @@ function EventsPage(props) {
                                     actionButtons={[
                                       {
                                         label: "Close",
-
-                                        onClick: async () => {},
-
-                                        errFunc: () => {},
                                         closesModal: true,
                                       },
                                     ]}
@@ -433,15 +424,11 @@ function SendEventModal(props) {
             onClick: async () => {
               await sendEvent(eventData);
             },
-
             buttonProps: { variant: "contained", color: "primary" },
-            errFunc: () => {},
             closesModal: true,
           },
           {
             label: "Cancel",
-            onClick: () => {},
-            errFunc: () => {},
             closesModal: true,
           },
         ]}
