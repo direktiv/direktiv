@@ -112,7 +112,7 @@ function RevisionTab(props) {
               <div>
                 {revision === revisionID
                   ? revision
-                  : `${revision} => ${revisionID}`}
+                  : `${revision} => ${revisionID ?? ""}`}
               </div>
               <TabbedButtons
                 revision={revision}
