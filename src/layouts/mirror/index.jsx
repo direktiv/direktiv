@@ -92,7 +92,7 @@ export default function MirrorPage(props) {
             navigate(`/n/${namespace}/explorer${path}`);
           }
         })
-        .catch((e) => {
+        .catch(() => {
           navigate(`/n/${namespace}/explorer${path}`);
         });
     }
@@ -184,13 +184,10 @@ export default function MirrorPage(props) {
               },
 
               buttonProps: { variant: "contained", color: "primary" },
-              errFunc: () => {},
               closesModal: true,
             },
             {
               label: "Cancel",
-              onClick: () => {},
-              errFunc: () => {},
               closesModal: true,
             },
           ]}
@@ -350,7 +347,7 @@ export default function MirrorPage(props) {
   );
 }
 
-export function MirrorReadOnlyBadge(props) {
+export function MirrorReadOnlyBadge() {
   return (
     <Tippy
       content={`This mirrors contents are currently read-only. This can be unlocked in mirror setttings`}
@@ -374,7 +371,7 @@ export function MirrorReadOnlyBadge(props) {
   );
 }
 
-export function MirrorWritableBadge(props) {
+export function MirrorWritableBadge() {
   const theme = useTheme();
   return (
     <Tippy
