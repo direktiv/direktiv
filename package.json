@@ -67,7 +67,7 @@
     "build-storybook": "build-storybook -s public",
     "check:lint": "eslint src --ext .js,.jsx,.ts,.tsx",
     "check:types": "tsc --tsBuildInfoFile .tsbuildinfo --incremental",
-    "check": "eslint src --ext .js,.jsx,.ts,.tsx",
+    "check:all": "yarn run check:lint && yarn run check:types",
     "prettier": "prettier --write ./src/"
   },
   "resolutions": {
