@@ -143,11 +143,7 @@ function AddWorkflowVariablePanel(props) {
               },
               {
                 label: "Cancel",
-
-                onClick: () => {},
-
                 buttonProps: {},
-                errFunc: () => {},
                 closesModal: true,
               },
             ]}
@@ -434,16 +430,11 @@ function Variable(props) {
                   },
 
                   buttonProps: { variant: "contained", color: "primary" },
-                  errFunc: () => {},
                   closesModal: true,
                 },
                 {
                   label: "Cancel",
-
-                  onClick: () => {},
-
                   buttonProps: {},
-                  errFunc: () => {},
                   closesModal: true,
                 },
               ]}
@@ -571,11 +562,7 @@ function Variable(props) {
                 },
                 {
                   label: "Cancel",
-
-                  onClick: () => {},
-
                   buttonProps: {},
-                  errFunc: () => {},
                   closesModal: true,
                 },
               ]}
@@ -612,25 +599,19 @@ function Variable(props) {
                   onClick: async () => {
                     await deleteWorkflowVariable(obj.name);
                   },
-
                   buttonProps: { variant: "contained", color: "error" },
-                  errFunc: () => {},
                   closesModal: true,
                 },
                 {
                   label: "Cancel",
-
-                  onClick: () => {},
-
                   buttonProps: {},
-                  errFunc: () => {},
                   closesModal: true,
                 },
               ]}
             >
               <FlexBox col gap>
                 <FlexBox>
-                  Are you sure you want to delete '{obj.name}'?
+                  Are you sure you want to delete &apos;{obj.name}&apos;?
                   <br />
                   This action cannot be undone.
                 </FlexBox>
@@ -664,7 +645,7 @@ function VariablesDownloadButton(props) {
   );
 }
 
-function VariablesDownloadingButton(props) {
+function VariablesDownloadingButton() {
   return <VscLoading style={{ animation: "spin 2s linear infinite" }} />;
 }
 
