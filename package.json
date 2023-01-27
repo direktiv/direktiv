@@ -65,7 +65,9 @@
     "analyze": "craco build",
     "storybook": "NODE_OPTIONS=--openssl-legacy-provider start-storybook -p 6006 -s public",
     "build-storybook": "build-storybook -s public",
-    "lint": "eslint src --ext .js,.jsx,.ts,.tsx",
+    "check:lint": "eslint src --ext .js,.jsx,.ts,.tsx",
+    "check:types": "tsc --tsBuildInfoFile .tsbuildinfo --incremental",
+    "check": "eslint src --ext .js,.jsx,.ts,.tsx",
     "prettier": "prettier --write ./src/"
   },
   "resolutions": {
