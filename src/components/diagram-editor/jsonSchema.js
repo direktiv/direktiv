@@ -1068,25 +1068,25 @@ export function getSchemaDefault(schemaKey) {
   return SchemaMap[schemaKey];
 }
 export const getSchemaCallbackMap = {
-  stateSchemaAction: (schemaKey, functionList, varList) => {
+  stateSchemaAction: (schemaKey, functionList) => {
     const selectedSchema = SchemaMap[schemaKey];
     selectedSchema.properties.action.properties.function.enum =
       functionListToActionEnum(functionList);
     return selectedSchema;
   },
-  stateSchemaForeach: (schemaKey, functionList, varList) => {
+  stateSchemaForeach: (schemaKey, functionList) => {
     const selectedSchema = SchemaMap[schemaKey];
     selectedSchema.properties.action.properties.function.enum =
       functionListToActionEnum(functionList);
     return selectedSchema;
   },
-  stateSchemaParallel: (schemaKey, functionList, varList) => {
+  stateSchemaParallel: (schemaKey, functionList) => {
     const selectedSchema = SchemaMap[schemaKey];
     selectedSchema.properties.actions.items.properties.function.enum =
       functionListToActionEnum(functionList);
     return selectedSchema;
   },
-  Default: (schemaKey, functionList, varList) => {
+  Default: (schemaKey) => {
     return getSchemaDefault(schemaKey);
   },
 };
