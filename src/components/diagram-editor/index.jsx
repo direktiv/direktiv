@@ -208,7 +208,7 @@ function FunctionsList(props) {
     globalServiceHook.data === null ||
     namespaceNodesHook.data === null
   ) {
-    return <></>;
+    return null;
   }
 
   const ajv = new Ajv();

@@ -830,7 +830,7 @@ function RevertTrafficAmount(props) {
 
     // Return empty element if revisionName does not exist in routes
     if (routeIndex === -1) {
-      return <></>;
+      return null;
     }
 
     const sliderClass =
@@ -993,9 +993,7 @@ export function RevisionTrafficShaper(props) {
           </ContentPanelTitleIcon>
           <FlexBox style={{ display: "flex", alignItems: "center" }} gap>
             <div>Traffic Shaping</div>
-            <HelpIcon
-              msg="Change the way the traffic is distributed for revisions of this workflow."
-            />
+            <HelpIcon msg="Change the way the traffic is distributed for revisions of this workflow." />
           </FlexBox>
         </ContentPanelTitle>
         <ContentPanelBody style={{ flexDirection: "column" }}>

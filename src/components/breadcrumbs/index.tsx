@@ -32,7 +32,7 @@ function Breadcrumbs({ namespace, additionalChildren }: BreadcrumbsProps) {
   const [searchParams] = useSearchParams(); // removed 'setSearchParams' from square brackets (this should not affect anything: search 'destructuring assignment')
 
   if (!namespace) {
-    return <></>;
+    return null;
   }
 
   return (

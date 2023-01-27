@@ -27,7 +27,7 @@ dayjs.extend(relativeTime);
 function EventsPageWrapper(props) {
   const { namespace } = props;
   if (!namespace) {
-    return <></>;
+    return null;
   }
 
   return <EventsPage namespace={namespace} />;
@@ -69,9 +69,7 @@ function EventsPage(props) {
               </ContentPanelTitleIcon>
               <FlexBox style={{ display: "flex", alignItems: "center" }} gap>
                 <div>Cloud Events History</div>
-                <HelpIcon
-                  msg="A history of events that have hit this specific namespace."
-                />
+                <HelpIcon msg="A history of events that have hit this specific namespace." />
               </FlexBox>
               <SendEventModal sendEvent={sendEvent} />
             </ContentPanelTitle>
@@ -270,9 +268,7 @@ function EventsPage(props) {
               </ContentPanelTitleIcon>
               <FlexBox style={{ display: "flex", alignItems: "center" }} gap>
                 <div>Active Event Listeners</div>
-                <HelpIcon
-                  msg="Current listeners in a namespace that are listening for a cloud a event."
-                />
+                <HelpIcon msg="Current listeners in a namespace that are listening for a cloud a event." />
               </FlexBox>
             </ContentPanelTitle>
             <ContentPanelBody>

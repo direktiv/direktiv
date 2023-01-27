@@ -30,7 +30,7 @@ export default function WorkflowPod(props) {
   }
 
   if (revisionDetails === null) {
-    return <></>;
+    return null;
   }
 
   let size = "small";

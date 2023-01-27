@@ -194,7 +194,7 @@ function InitialWorkflowHook(props) {
   }
 
   if (data === null || router === null) {
-    return <></>;
+    return null;
   }
 
   return (
@@ -494,9 +494,7 @@ function WorkingRevision(props) {
           </ContentPanelTitleIcon>
           <FlexBox style={{ display: "flex", alignItems: "center" }} gap>
             <div>Active Revision</div>
-            <HelpIcon
-              msg="Latest revision where you can edit and create new revisions."
-            />
+            <HelpIcon msg="Latest revision where you can edit and create new revisions." />
             <TabbedButtons
               revision="latest"
               setSearchParams={setSearchParams}
@@ -1057,9 +1055,7 @@ function OverviewTab(props) {
                 </ContentPanelTitleIcon>
                 <FlexBox style={{ display: "flex", alignItems: "center" }} gap>
                   <div>Success/Failure Rate</div>
-                  <HelpIcon
-                    msg="Success and failure of the workflow being run."
-                  />
+                  <HelpIcon msg="Success and failure of the workflow being run." />
                 </FlexBox>
               </ContentPanelTitle>
               <ContentPanelBody>
@@ -1079,9 +1075,7 @@ function OverviewTab(props) {
             </ContentPanelTitleIcon>
             <FlexBox style={{ display: "flex", alignItems: "center" }} gap>
               <div>Traffic Distribution</div>
-              <HelpIcon
-                msg="Distributed traffic between different workflow revisions."
-              />
+              <HelpIcon msg="Distributed traffic between different workflow revisions." />
             </FlexBox>
           </ContentPanelTitle>
           <TrafficDistribution routes={router.routes} />
@@ -1257,7 +1251,7 @@ function TrafficDistribution(props) {
   const { routes } = props;
 
   if (!routes) {
-    return <></>;
+    return null;
   }
 
   // using latest for traffic
@@ -1521,9 +1515,7 @@ function SettingsTab(props) {
                     gap
                   >
                     <div>Log to Event</div>
-                    <HelpIcon
-                      msg="Ability to trigger cloud event logging for that workflow."
-                    />
+                    <HelpIcon msg="Ability to trigger cloud event logging for that workflow." />
                   </FlexBox>
                 </ContentPanelTitle>
                 <ContentPanelBody

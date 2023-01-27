@@ -27,7 +27,7 @@ export default function WorkflowRevisions(props) {
   );
 
   if (revisions === null) {
-    return <></>;
+    return null;
   }
 
   if (err) {

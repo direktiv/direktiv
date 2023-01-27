@@ -24,7 +24,7 @@ export default function NamespaceRevisionsPanel(props) {
   const { service } = useParams();
 
   if (!namespace) {
-    return <></>;
+    return null;
   }
 
   return <NamespaceRevisions namespace={namespace} service={service} />;
@@ -217,7 +217,7 @@ function NamespaceRevisions(props) {
   }, [config, getNamespaceServiceConfig, load, navigate]);
 
   if (revisions === null || traffic === null) {
-    return <></>;
+    return null;
   }
 
   return (
@@ -396,7 +396,7 @@ export function UpdateTraffic(props) {
                           </option>
                         );
                       } else {
-                        return <></>;
+                        return null;
                       }
                     })}
                   </select>
@@ -424,7 +424,7 @@ export function UpdateTraffic(props) {
                           </option>
                         );
                       } else {
-                        return <></>;
+                        return null;
                       }
                     })}
                   </select>

@@ -107,7 +107,7 @@ function Explorer(props) {
   const { namespace, setBreadcrumbChildren } = props;
   let filepath = `/`;
   if (!namespace) {
-    return <></>;
+    return null;
   }
   if (params["*"] !== undefined) {
     filepath = `/${params["*"]}`;
@@ -744,7 +744,7 @@ function ExplorerList(props) {
                                   key === "privateKey" ||
                                   key === "passphrase")
                               ) {
-                                return <></>;
+                                return null;
                               }
 
                               if (
@@ -752,7 +752,7 @@ function ExplorerList(props) {
                                   mirrorAuthMethod === "none") &&
                                 key === "token"
                               ) {
-                                return <></>;
+                                return null;
                               }
 
                               return (
@@ -1041,7 +1041,7 @@ function ExplorerList(props) {
                                 />
                               );
                             }
-                            return <></>;
+                            return null;
                           })}
                         </>
                       )}

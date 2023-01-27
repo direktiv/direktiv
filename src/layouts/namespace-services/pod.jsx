@@ -22,7 +22,7 @@ export default function PodPanel(props) {
   const { service, revision } = useParams();
 
   if (!namespace) {
-    return <></>;
+    return null;
   }
 
   return (
@@ -52,7 +52,7 @@ function NamespaceRevisionDetails(props) {
   }
 
   if (revisionDetails === null) {
-    return <></>;
+    return null;
   }
 
   let size = "small";
@@ -351,7 +351,7 @@ function Logs(props) {
   );
 
   if (data === null || pod === "") {
-    return <></>;
+    return null;
   }
 
   return (

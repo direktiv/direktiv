@@ -258,7 +258,7 @@ export default function MirrorPage(props) {
   }, []);
 
   if (!namespace) {
-    return <></>;
+    return null;
   }
 
   return (

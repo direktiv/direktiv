@@ -35,7 +35,7 @@ import "./style.css";
 function InstancePageWrapper(props) {
   const { namespace } = props;
   if (!namespace) {
-    return <></>;
+    return null;
   }
 
   return <InstancePage namespace={namespace} />;
@@ -176,12 +176,12 @@ function InstancePage(props) {
   }, [err, navigate]);
 
   if (data === null) {
-    return <></>;
+    return null;
   }
 
   if (err !== null) {
     // TODO
-    return <></>;
+    return null;
   }
 
   let label = <></>;
@@ -541,7 +541,7 @@ function InstanceDiagram(props) {
   }
 
   if (load) {
-    return <></>;
+    return null;
   }
 
   return (

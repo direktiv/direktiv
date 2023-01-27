@@ -31,7 +31,7 @@ export default function ServicesPanel(props) {
   const { namespace } = props;
 
   if (!namespace) {
-    return <></>;
+    return null;
   }
   return (
     <FlexBox gap wrap style={{ paddingRight: "8px" }}>
@@ -197,7 +197,7 @@ function NamespaceServices(props) {
   }
 
   if (data === null) {
-    return <></>;
+    return null;
   }
 
   return (
@@ -208,9 +208,7 @@ function NamespaceServices(props) {
         </ContentPanelTitleIcon>
         <FlexBox style={{ display: "flex", alignItems: "center" }} gap>
           <div>Services</div>
-          <HelpIcon
-            msg="Services that are available to be used by workflows in the same namespace."
-          />
+          <HelpIcon msg="Services that are available to be used by workflows in the same namespace." />
         </FlexBox>
         <div>
           <Modal

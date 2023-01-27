@@ -29,7 +29,7 @@ dayjs.extend(relativeTime);
 function InstancesPage(props) {
   const { namespace } = props;
   if (!namespace) {
-    return <></>;
+    return null;
   }
   return (
     <FlexBox col gap style={{ paddingRight: "8px" }}>

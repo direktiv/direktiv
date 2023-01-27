@@ -12,7 +12,7 @@ function Settings(props) {
 
   // if namespace is null top level wait till we have a namespace
   if (!namespace) {
-    return <></>;
+    return null;
   }
 
   return (

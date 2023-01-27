@@ -78,7 +78,7 @@ function AddWorkflowVariablePanel(props) {
   }, [search, goToFirstPage]);
 
   if (data === null) {
-    return <></>;
+    return null;
   }
 
   return (

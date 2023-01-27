@@ -54,7 +54,7 @@ function Loader({ children, timer = 1000, load }: LoaderProps) {
   }
 
   if (load) {
-    return <></>;
+    return null;
   }
 
   return <>{children}</>;
