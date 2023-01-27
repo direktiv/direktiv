@@ -126,7 +126,7 @@ function Modal({
           setVisible(true);
           ev.stopPropagation();
         }}
-        variant={"outlined"}
+        variant="outlined"
         color="info"
         {...buttonProps}
       >

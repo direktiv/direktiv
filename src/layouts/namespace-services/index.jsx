@@ -76,11 +76,11 @@ export function ServiceCreatePanel(props) {
         </FlexBox>
         <FlexBox col style={{ paddingRight: "10px" }}>
           Scale
-          <Tippy content={scale} trigger={"mouseenter click"}>
+          <Tippy content={scale} trigger="mouseenter click">
             <input
               type="range"
               style={{ paddingLeft: "0px" }}
-              min={"0"}
+              min="0"
               max={maxScale.toString()}
               value={scale.toString()}
               onChange={(e) => setScale(e.target.value)}
@@ -118,9 +118,9 @@ export function ServiceCreatePanel(props) {
             list="sizeMarks"
             style={{ paddingLeft: "0px" }}
             type="range"
-            min={"0"}
+            min="0"
             value={size.toString()}
-            max={"2"}
+            max="2"
             onChange={(e) => setSize(e.target.value)}
           />
           <datalist
@@ -209,9 +209,7 @@ function NamespaceServices(props) {
         <FlexBox style={{ display: "flex", alignItems: "center" }} gap>
           <div>Services</div>
           <HelpIcon
-            msg={
-              "Services that are available to be used by workflows in the same namespace."
-            }
+            msg="Services that are available to be used by workflows in the same namespace."
           />
         </FlexBox>
         <div>
@@ -378,7 +376,7 @@ export function Service(props) {
                   paddingRight: "26px",
                 }}
               >
-                <HelpIcon msg={"Unable to delete latest revision"} />
+                <HelpIcon msg="Unable to delete latest revision" />
               </div>
             ) : (
               <div
@@ -540,10 +538,10 @@ function ServiceDetails(props) {
           return (
             <Condition
               key={GenerateRandomKey("service-condition-")}
-              status={"True"}
+              status="True"
               name={obj.name}
-              reason={""}
-              message={""}
+              reason=""
+              message=""
             />
           );
         }

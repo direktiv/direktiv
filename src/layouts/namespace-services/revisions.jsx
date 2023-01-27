@@ -58,11 +58,11 @@ export function RevisionCreatePanel(props) {
         </FlexBox>
         <FlexBox col style={{ paddingRight: "10px" }}>
           Scale
-          <Tippy content={scale} trigger={"mouseenter click"}>
+          <Tippy content={scale} trigger="mouseenter click">
             <input
               type="range"
               style={{ paddingLeft: "0px" }}
-              min={"0"}
+              min="0"
               max={maxScale.toString()}
               value={scale.toString()}
               onChange={(e) => setScale(e.target.value)}
@@ -100,9 +100,9 @@ export function RevisionCreatePanel(props) {
             list="sizeMarks"
             style={{ paddingLeft: "0px" }}
             type="range"
-            min={"0"}
+            min="0"
             value={size.toString()}
-            max={"2"}
+            max="2"
             onChange={(e) => setSize(e.target.value)}
           />
           <datalist
@@ -136,11 +136,11 @@ export function RevisionCreatePanel(props) {
         </FlexBox>
         <FlexBox col style={{ paddingRight: "10px" }}>
           Traffic
-          <Tippy content={`${traffic}%`} trigger={"mouseenter click"}>
+          <Tippy content={`${traffic}%`} trigger="mouseenter click">
             <input
               type="range"
               style={{ paddingLeft: "0px" }}
-              min={"0"}
+              min="0"
               max="100"
               value={traffic.toString()}
               onChange={(e) => setTraffic(e.target.value)}

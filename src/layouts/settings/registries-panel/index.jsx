@@ -46,9 +46,7 @@ function RegistriesPanel(props) {
         <FlexBox style={{ display: "flex", alignItems: "center" }} gap>
           <div>Container Registries</div>
           <HelpIcon
-            msg={
-              "Additional container registries can be added for images to be pulled from when defining services/isolates."
-            }
+            msg="Additional container registries can be added for images to be pulled from when defining services/isolates."
           />
         </FlexBox>
         <div>
@@ -328,7 +326,7 @@ export function AddRegistryPanel(props) {
           <FlexBox gap>
             Registry URL{" "}
             <HelpIcon
-              msg={`An example of url for Docker is https://index.docker.io or for Google https://gcr.io`}
+              msg="An example of url for Docker is https://index.docker.io or for Google https://gcr.io"
             />
           </FlexBox>
           <FlexBox style={{ paddingRight: "8px" }}>
@@ -336,7 +334,7 @@ export function AddRegistryPanel(props) {
               value={url}
               onChange={(e) => setURL(e.target.value)}
               autoFocus
-              placeholder={`Enter URL`}
+              placeholder="Enter URL"
             />
           </FlexBox>
         </FlexBox>

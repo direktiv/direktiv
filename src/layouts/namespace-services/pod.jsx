@@ -175,7 +175,7 @@ function NamespaceRevisionDetails(props) {
                             gap: "5px",
                           }}
                         >
-                          <ServiceStatus status={"True"} />
+                          <ServiceStatus status="True" />
                           {obj.name}
                         </li>
                       );

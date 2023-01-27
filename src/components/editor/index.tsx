@@ -420,8 +420,8 @@ function DirektivEditor({
         language={dlang}
         defaultValue={dvalue}
         value={value}
-        theme={"cobalt"}
-        loading={"Loading component..."}
+        theme="cobalt"
+        loading="Loading component..."
         onChange={handleEditorChange}
         onMount={handleEditorDidMount}
       />

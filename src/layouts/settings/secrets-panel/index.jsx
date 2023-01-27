@@ -41,9 +41,7 @@ function SecretsPanel(props) {
         <FlexBox style={{ display: "flex", alignItems: "center" }} gap>
           <div>Secrets</div>
           <HelpIcon
-            msg={
-              "Encrypted key/value pairs that can be referenced within workflows. Suitable for storing sensitive information (such as tokens) for use in workflows."
-            }
+            msg="Encrypted key/value pairs that can be referenced within workflows. Suitable for storing sensitive information (such as tokens) for use in workflows."
           />
         </FlexBox>
         <div>

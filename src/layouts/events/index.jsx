@@ -70,9 +70,7 @@ function EventsPage(props) {
               <FlexBox style={{ display: "flex", alignItems: "center" }} gap>
                 <div>Cloud Events History</div>
                 <HelpIcon
-                  msg={
-                    "A history of events that have hit this specific namespace."
-                  }
+                  msg="A history of events that have hit this specific namespace."
                 />
               </FlexBox>
               <SendEventModal sendEvent={sendEvent} />
@@ -138,7 +136,7 @@ function EventsPage(props) {
                                 justifyContent: "center",
                               }}
                             >
-                              <FlexBox className={"gap center"}>
+                              <FlexBox className="gap center">
                                 <div>
                                   <Modal
                                     className="run-workflow-modal"
@@ -273,9 +271,7 @@ function EventsPage(props) {
               <FlexBox style={{ display: "flex", alignItems: "center" }} gap>
                 <div>Active Event Listeners</div>
                 <HelpIcon
-                  msg={
-                    "Current listeners in a namespace that are listening for a cloud a event."
-                  }
+                  msg="Current listeners in a namespace that are listening for a cloud a event."
                 />
               </FlexBox>
             </ContentPanelTitle>

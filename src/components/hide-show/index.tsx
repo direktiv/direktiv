@@ -36,11 +36,11 @@ function HideShowButton({
     <>
       <Tippy
         content={show ? `Hide ${field}` : `Show ${field}`}
-        trigger={"mouseenter focus"}
+        trigger="mouseenter focus"
         zIndex={zIndex}
       >
         <div
-          className={"show-hide-icon"}
+          className="show-hide-icon"
           onClick={() => {
             if (!setShow) {
               console.warn("setShow prop missing");

@@ -28,9 +28,7 @@ function BroadcastConfigurationsPanel(props) {
         <FlexBox style={{ display: "flex", alignItems: "center" }} gap>
           <div>Broadcast Configurations</div>
           <HelpIcon
-            msg={
-              "Toggle which Direktiv system events will cause a Cloud Event to be sent to the current namespace."
-            }
+            msg="Toggle which Direktiv system events will cause a Cloud Event to be sent to the current namespace."
           />
         </FlexBox>
       </ContentPanelTitle>

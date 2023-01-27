@@ -5,14 +5,14 @@ import "./style.css";
 
 function NotFound() {
   return (
-    <FlexBox className={"center-y center-x col"}>
+    <FlexBox className="center-y center-x col">
       <div>
         <span style={{ fontSize: "120px", fontWeight: "bolder" }}>404</span>
       </div>
       <div style={{ paddingTop: "16px" }}>
         <span>The Page or Resource was not found</span>
       </div>
-      <Link to={"/"} style={{ paddingTop: "8px" }}>
+      <Link to="/" style={{ paddingTop: "8px" }}>
         <div className="link-404">Go back to home</div>
       </Link>
     </FlexBox>

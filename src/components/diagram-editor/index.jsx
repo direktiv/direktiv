@@ -171,7 +171,7 @@ function Actions() {
             deferredMeasurementCache={cache}
             rowCount={ActionsNodes.length}
             rowHeight={90}
-            scrollToAlignment={"start"}
+            scrollToAlignment="start"
           />
         </div>
       )}
@@ -255,7 +255,7 @@ function FunctionsList(props) {
           }}
         >
           <div
-            className={`function`}
+            className="function"
             draggable={true}
             data-function-index={index}
             onDragStart={(ev) => {
@@ -319,7 +319,7 @@ function FunctionsList(props) {
         style={{ justifyContent: "center" }}
         className="run-workflow-modal"
         modalStyle={{ color: "black", width: "600px" }}
-        title={`Create Function`}
+        title="Create Function"
         onClose={() => {
           setFormData({});
         }}
@@ -385,7 +385,7 @@ function FunctionsList(props) {
         >
           <div style={{ overflow: "auto" }}>
             <Form
-              id={"builder-form"}
+              id="builder-form"
               schema={functionSchemas.schema}
               uiSchema={uiSchema}
               formData={formData}
@@ -409,7 +409,7 @@ function FunctionsList(props) {
               deferredMeasurementCache={cache}
               rowCount={functionList.length}
               rowHeight={84}
-              scrollToAlignment={"start"}
+              scrollToAlignment="start"
             />
           )}
         </AutoSizer>
@@ -1039,7 +1039,7 @@ export default function DiagramEditor(props) {
               maxWidth="60%"
               minWidth={actionDrawerMinWidth}
             >
-              <div className={"panel left"} style={{ display: "flex" }}>
+              <div className="panel left" style={{ display: "flex" }}>
                 <div style={{ width: "100%", margin: "2px 0px 2px 4px" }}>
                   <Actions />
                 </div>
@@ -1059,7 +1059,7 @@ export default function DiagramEditor(props) {
               maxWidth="900"
               minWidth={functionDrawerMinWidth}
             >
-              <div className={"panel left"} style={{ display: "flex" }}>
+              <div className="panel left" style={{ display: "flex" }}>
                 <div style={{ width: "100%", margin: "2px 0px 2px 4px" }}>
                   <FunctionsList
                     functionDrawerWidth={functionDrawerWidth}
@@ -1201,7 +1201,7 @@ export default function DiagramEditor(props) {
               ]}
             >
               <Form
-                id={"builder-form"}
+                id="builder-form"
                 schema={selectedNodeSchema}
                 uiSchema={selectedNodeSchemaUI}
                 formData={selectedNodeFormData}

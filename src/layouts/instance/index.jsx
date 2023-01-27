@@ -376,9 +376,7 @@ function InstancePage(props) {
               )}
               {tabBtn === 1 ? (
                 <InstancesTable
-                  placeholder={
-                    "No child instances have executed from this instance. Child instances will appear here."
-                  }
+                  placeholder="No child instances have executed from this instance. Child instances will appear here."
                   namespace={namespace}
                   mini={true}
                   hideTitle={true}
@@ -451,7 +449,7 @@ function InstanceLogs(props) {
   return (
     <>
       <FlexBox col style={{ ...paddingStyle }}>
-        <FlexBox className={"logs"}>
+        <FlexBox className="logs">
           <Logs
             logItems={data}
             wordWrap={wordWrap}
@@ -460,7 +458,7 @@ function InstanceLogs(props) {
           />
         </FlexBox>
         <div
-          className={"logs-footer"}
+          className="logs-footer"
           style={{
             alignItems: "center",
             borderRadius: " 0px 0px 8px 8px",

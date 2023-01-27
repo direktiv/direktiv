@@ -178,7 +178,7 @@ export function SearchBar(props) {
           onChange={(e) => {
             setInputVal(e.target.value);
           }}
-          placeholder={"Search items"}
+          placeholder="Search items"
           style={{ boxSizing: "border-box" }}
         ></input>
       </FlexBox>
@@ -377,7 +377,7 @@ function ExplorerList(props) {
                     escapeToCancel
                     withCloseButton
                     maximised
-                    title={"Namespace API Interactions"}
+                    title="Namespace API Interactions"
                   >
                     {apiHelps(namespace).map((help) => (
                       <ApiFragment
@@ -403,7 +403,7 @@ function ExplorerList(props) {
                 </ContentPanelTitleIcon>
                 <FlexBox style={{ display: "flex", alignItems: "center" }} gap>
                   <div>Explorer</div>
-                  <HelpIcon msg={"Directory/workflow browser."} />
+                  <HelpIcon msg="Directory/workflow browser." />
                 </FlexBox>
                 <FlexBox
                   className="gap center-y"
@@ -493,7 +493,7 @@ function ExplorerList(props) {
                         }}
                       >
                         <input
-                          id={"workflow-name"}
+                          id="workflow-name"
                           value={name}
                           onChange={(e) => setName(e.target.value)}
                           autoFocus
@@ -522,7 +522,7 @@ function ExplorerList(props) {
                           <AutoSizer>
                             {({ height, width }) => (
                               <DirektivEditor
-                                dlang={"yaml"}
+                                dlang="yaml"
                                 width={width}
                                 value={wfData}
                                 setDValue={setWfData}
@@ -658,8 +658,8 @@ function ExplorerList(props) {
                   >
                     <Tabs
                       // TODO: change wf-execute-input => tabbed-form
-                      id={"wf-execute-input"}
-                      key={"inputForm"}
+                      id="wf-execute-input"
+                      key="inputForm"
                       callback={setTabIndex}
                       tabIndex={tabIndex}
                       style={{ minWidth: "300px" }}
@@ -673,7 +673,7 @@ function ExplorerList(props) {
                             gap="sm"
                             style={{ justifyContent: "flex-start" }}
                           >
-                            <span className={`input-title`}>Directory*</span>
+                            <span className="input-title">Directory*</span>
                           </FlexBox>
                           <input
                             value={name}
@@ -695,7 +695,7 @@ function ExplorerList(props) {
                               gap="sm"
                               style={{ justifyContent: "flex-start" }}
                             >
-                              <span className={`input-title`}>Directory*</span>
+                              <span className="input-title">Directory*</span>
                             </FlexBox>
                             <input
                               autoFocus
@@ -710,7 +710,7 @@ function ExplorerList(props) {
                               gap="sm"
                               style={{ justifyContent: "flex-start" }}
                             >
-                              <span className={`input-title`}>
+                              <span className="input-title">
                                 Authentication Method
                               </span>
                             </FlexBox>
@@ -772,7 +772,7 @@ function ExplorerList(props) {
                                       gap="sm"
                                       style={{ justifyContent: "flex-start" }}
                                     >
-                                      <span className={`input-title`}>
+                                      <span className="input-title">
                                         {
                                           mirrorSettingInfoMetaInfo[key]
                                             .plainName
@@ -794,7 +794,7 @@ function ExplorerList(props) {
                                             <HideShowButton
                                               show={showPassphrase}
                                               setShow={setShowPassphrase}
-                                              field={"Passphrase"}
+                                              field="Passphrase"
                                             />
                                           ) : (
                                             <></>
@@ -827,7 +827,7 @@ function ExplorerList(props) {
                                               ? mirrorErrors[key]
                                               : `Upload key plaintext file content to ${mirrorSettingInfoMetaInfo[key].plainName} input. Warning: this will replace current ${mirrorSettingInfoMetaInfo[key].plainName} content`
                                           }
-                                          trigger={"click mouseenter focus"}
+                                          trigger="click mouseenter focus"
                                           onHide={() => {
                                             const newErrors = mirrorErrors;
                                             newErrors[key] = null;
@@ -1092,7 +1092,7 @@ function DirListItem(props) {
         resetQueryParams();
         navigate(`/n/${namespace}/explorer/${path.substring(1)}`);
       }}
-      className={`explorer-item`}
+      className="explorer-item"
     >
       <FlexBox col>
         <FlexBox className="explorer-item-container gap wrap">

@@ -107,7 +107,7 @@ function HowToJQ() {
           </ContentPanelTitleIcon>
           <FlexBox gap style={{ alignItems: "center" }}>
             <div>How it works</div>
-            <HelpIcon msg={"Brief instructions on how JQ Playground works"} />
+            <HelpIcon msg="Brief instructions on how JQ Playground works" />
           </FlexBox>
         </ContentPanelTitle>
         <ContentPanelBody>
@@ -174,7 +174,7 @@ function ExamplesJQ(props) {
           <FlexBox gap style={{ alignItems: "center" }}>
             <div>Cheatsheet</div>
             <HelpIcon
-              msg={"A list of examples that you can load into the playground"}
+              msg="A list of examples that you can load into the playground"
             />
           </FlexBox>
         </ContentPanelTitle>
@@ -252,14 +252,14 @@ function JQOutput(props) {
         </ContentPanelTitleIcon>
         <FlexBox gap style={{ alignItems: "center" }}>
           <div>Output</div>
-          <HelpIcon msg={"The output of the JQ query"} />
+          <HelpIcon msg="The output of the JQ query" />
         </FlexBox>
       </ContentPanelTitle>
       <ContentPanelBody>
         <FlexBox
           style={{ overflow: "hidden", height: "422px", maxHeight: "422px" }}
         >
-          <DirektivEditor readonly={true} value={output} dlang={"json"} />
+          <DirektivEditor readonly={true} value={output} dlang="json" />
         </FlexBox>
       </ContentPanelBody>
     </ContentPanel>
@@ -276,7 +276,7 @@ function JQInput(props) {
         </ContentPanelTitleIcon>
         <FlexBox gap style={{ alignItems: "center" }}>
           <div>Input</div>
-          <HelpIcon msg={"The input to feed the JQ query"} />
+          <HelpIcon msg="The input to feed the JQ query" />
         </FlexBox>
       </ContentPanelTitle>
       <ContentPanelBody>
@@ -287,7 +287,7 @@ function JQInput(props) {
             readonly={false}
             value={input}
             setDValue={setInput}
-            dlang={"json"}
+            dlang="json"
           />
         </FlexBox>
       </ContentPanelBody>
@@ -325,7 +325,7 @@ function JQFilter(props) {
           </ContentPanelTitleIcon>
           <FlexBox gap style={{ alignItems: "center" }}>
             <div>JQ Filter</div>
-            <HelpIcon msg={"A simple JQ playground to test your queries"} />
+            <HelpIcon msg="A simple JQ playground to test your queries" />
           </FlexBox>
         </ContentPanelTitle>
         <ContentPanelBody>
@@ -335,7 +335,7 @@ function JQFilter(props) {
                 style={{ height: "28px", width: "100%" }}
                 onChange={(e) => setFilter(e.target.value)}
                 value={query}
-                placeholder={"Enter a Filter to JQ on"}
+                placeholder="Enter a Filter to JQ on"
                 type="text"
               />
             </FlexBox>

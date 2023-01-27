@@ -87,9 +87,7 @@ function MonitoringPage(props) {
                 <VscTerminal />
                 <div>Namespace Logs</div>
                 <HelpIcon
-                  msg={
-                    "Namespace logs details action happening throughout the namespace"
-                  }
+                  msg="Namespace logs details action happening throughout the namespace"
                 />
               </FlexBox>
             </ContentPanelTitle>
@@ -97,7 +95,7 @@ function MonitoringPage(props) {
               <>
                 {data !== null ? (
                   <FlexBox col style={{ ...paddingStyle }}>
-                    <FlexBox className={"logs"}>
+                    <FlexBox className="logs">
                       <Logs
                         setFollow={setFollow}
                         follow={follow}
@@ -150,12 +148,12 @@ function MonitoringPage(props) {
             <ContentPanel style={{ width: "100%" }}>
               <ContentPanelTitle>
                 <FlexBox gap style={{ alignItems: "center" }}>
-                  <VscCheck fill={"var(--theme-green)"} />
+                  <VscCheck fill="var(--theme-green)" />
                   <div>
                     Successful <span className="hide-1000">Executions</span>
                   </div>
                   <HelpIcon
-                    msg={"A list of the latest successful executions"}
+                    msg="A list of the latest successful executions"
                   />
                 </FlexBox>
               </ContentPanelTitle>
@@ -168,11 +166,11 @@ function MonitoringPage(props) {
             <ContentPanel style={{ width: "100%" }}>
               <ContentPanelTitle>
                 <FlexBox gap style={{ alignItems: "center" }}>
-                  <VscChromeClose fill={"var(--theme-red)"} />
+                  <VscChromeClose fill="var(--theme-red)" />
                   <div>
                     Failed <span className="hide-1000">Executions</span>
                   </div>
-                  <HelpIcon msg={"A list of the latest failed executions"} />
+                  <HelpIcon msg="A list of the latest failed executions" />
                 </FlexBox>
               </ContentPanelTitle>
               <ContentPanelBody>

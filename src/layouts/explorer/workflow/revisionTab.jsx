@@ -221,8 +221,8 @@ function RevisionTab(props) {
                           }}
                         >
                           <Tabs
-                            id={"wf-execute-input"}
-                            key={"inputForm"}
+                            id="wf-execute-input"
+                            key="inputForm"
                             callback={setTabIndex}
                             tabIndex={tabIndex}
                             style={
@@ -357,8 +357,8 @@ export function TabbedButtons(props) {
       tabBtns.push(
         <FlexBox key={key} className={classes}>
           <Tippy
-            content={"Unsaved changes in Workflow"}
-            trigger={"mouseenter focus click"}
+            content="Unsaved changes in Workflow"
+            trigger="mouseenter focus click"
             zIndex={10}
           >
             <div>{tabBtnLabels[i]}</div>
@@ -540,7 +540,7 @@ export function RevisionSelectorTab(props) {
           escapeToCancel
           withCloseButton
           maximised
-          title={"Namespace API Interactions"}
+          title="Namespace API Interactions"
         >
           {apiHelps(namespace, workflowName).map((help) => (
             <ApiFragment
@@ -577,7 +577,7 @@ export function RevisionSelectorTab(props) {
             </ContentPanelTitleIcon>
             <FlexBox style={{ display: "flex", alignItems: "center" }} gap>
               <div>All Revisions</div>
-              <HelpIcon msg={"A list of all revisions for that workflow."} />
+              <HelpIcon msg="A list of all revisions for that workflow." />
             </FlexBox>
           </ContentPanelTitle>
           <ContentPanelBody style={{ flexDirection: "column" }}>
@@ -994,9 +994,7 @@ export function RevisionTrafficShaper(props) {
           <FlexBox style={{ display: "flex", alignItems: "center" }} gap>
             <div>Traffic Shaping</div>
             <HelpIcon
-              msg={
-                "Change the way the traffic is distributed for revisions of this workflow."
-              }
+              msg="Change the way the traffic is distributed for revisions of this workflow."
             />
           </FlexBox>
         </ContentPanelTitle>
@@ -1133,7 +1131,7 @@ export function RevisionTrafficShaper(props) {
             />
           </FlexBox>
           <FlexBox
-            className={"row gap"}
+            className="row gap"
             style={{ marginTop: "10px", justifyContent: "flex-end" }}
           >
             <Button

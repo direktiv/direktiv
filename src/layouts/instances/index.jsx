@@ -304,7 +304,7 @@ export function InstancesTable(props) {
               </ContentPanelTitleIcon>
               <FlexBox gap style={{ alignItems: "center" }}>
                 <div>Instances</div>
-                <HelpIcon msg={"A list of recently executed instances."} />
+                <HelpIcon msg="A list of recently executed instances." />
               </FlexBox>
             </ContentPanelTitle>
           </>
@@ -453,7 +453,7 @@ export function InstanceRow(props) {
     >
       <td className="label-cell">{label}</td>
       {!wf ? (
-        <Tippy content={`/${wfStr}`} trigger={"mouseenter focus"} zIndex={10}>
+        <Tippy content={`/${wfStr}`} trigger="mouseenter focus" zIndex={10}>
           <td
             className="center-align"
             style={{
@@ -560,17 +560,17 @@ function StateLabel(props) {
 }
 
 export function SuccessState() {
-  return <StateLabel className={"success-label"} label={"Successful"} />;
+  return <StateLabel className="success-label" label="Successful" />;
 }
 
 export function FailState() {
-  return <StateLabel className={"fail-label"} label={"Failed"} />;
+  return <StateLabel className="fail-label" label="Failed" />;
 }
 
 export function CancelledState() {
-  return <StateLabel className={"cancel-label"} label={"Cancelled"} />;
+  return <StateLabel className="cancel-label" label="Cancelled" />;
 }
 
 export function RunningState() {
-  return <StateLabel className={"running-label"} label={"Running"} />;
+  return <StateLabel className="running-label" label="Running" />;
 }

@@ -331,7 +331,7 @@ export default function MirrorInfoPanel(props) {
   }, [info, mirrorAuthMethodOld, infoChangesTracker, infoPassphrase]);
 
   return (
-    <ContentPanel id={`panel-mirror-info`} style={{ ...style }}>
+    <ContentPanel id="panel-mirror-info" style={{ ...style }}>
       <ContentPanelTitle>
         <ContentPanelTitleIcon>
           <VscAdd />
@@ -349,7 +349,7 @@ export default function MirrorInfoPanel(props) {
             <Tippy
               content={mirrorSettingsValidateMsg}
               disabled={mirrorSettingsValidateMsg === ""}
-              trigger={"mouseenter focus"}
+              trigger="mouseenter focus"
               zIndex={10}
             >
               <div>
@@ -445,9 +445,9 @@ export default function MirrorInfoPanel(props) {
                     {infoChangesTracker.url ? (
                       <FlexBox col gap style={{ paddingRight: "10px" }}>
                         <FlexBox col gap="sm" center="x" style={{}}>
-                          <span className={`input-title readonly`}>URL</span>
+                          <span className="input-title readonly">URL</span>
                           {infoURL === "" ? (
-                            <span className={`input-description readonly`}>
+                            <span className="input-description readonly">
                               {" "}
                               Warning: URL will be deleted
                             </span>
@@ -456,7 +456,7 @@ export default function MirrorInfoPanel(props) {
                           )}
                         </FlexBox>
                         <input
-                          className={`info-input-value readonly`}
+                          className="info-input-value readonly"
                           value={infoURL}
                         />
                       </FlexBox>
@@ -466,9 +466,9 @@ export default function MirrorInfoPanel(props) {
                     {infoChangesTracker.ref ? (
                       <FlexBox col gap style={{ paddingRight: "10px" }}>
                         <FlexBox col gap="sm" center="x" style={{}}>
-                          <span className={`input-title readonly`}>Ref</span>
+                          <span className="input-title readonly">Ref</span>
                           {infoRef === "" ? (
-                            <span className={`input-description readonly`}>
+                            <span className="input-description readonly">
                               {" "}
                               Warning: Ref will be deleted
                             </span>
@@ -477,7 +477,7 @@ export default function MirrorInfoPanel(props) {
                           )}
                         </FlexBox>
                         <input
-                          className={`info-input-value readonly`}
+                          className="info-input-value readonly"
                           value={infoRef}
                         />
                       </FlexBox>
@@ -487,9 +487,9 @@ export default function MirrorInfoPanel(props) {
                     {infoChangesTracker.cron ? (
                       <FlexBox col gap style={{ paddingRight: "10px" }}>
                         <FlexBox col gap="sm" center="x" style={{}}>
-                          <span className={`input-title readonly`}>Cron</span>
+                          <span className="input-title readonly">Cron</span>
                           {infoCron === "" ? (
-                            <span className={`input-description readonly`}>
+                            <span className="input-description readonly">
                               {" "}
                               Warning: Cron will be deleted
                             </span>
@@ -498,7 +498,7 @@ export default function MirrorInfoPanel(props) {
                           )}
                         </FlexBox>
                         <input
-                          className={`info-input-value readonly`}
+                          className="info-input-value readonly"
                           readOnly={true}
                           value={infoCron}
                         />
@@ -510,9 +510,9 @@ export default function MirrorInfoPanel(props) {
                     mirrorAuthMethod === "token" ? (
                       <FlexBox col gap style={{ paddingRight: "10px" }}>
                         <FlexBox col gap="sm" center="x" style={{}}>
-                          <span className={`input-title readonly`}>Token</span>
+                          <span className="input-title readonly">Token</span>
                           {infoPassphrase === "" ? (
-                            <span className={`input-description readonly`}>
+                            <span className="input-description readonly">
                               {" "}
                               Warning: Token will be deleted
                             </span>
@@ -521,7 +521,7 @@ export default function MirrorInfoPanel(props) {
                           )}
                         </FlexBox>
                         <textarea
-                          className={`info-textarea-value readonly`}
+                          className="info-textarea-value readonly"
                           readOnly={true}
                           rows={5}
                           style={{ width: "100%", resize: "none" }}
@@ -535,11 +535,11 @@ export default function MirrorInfoPanel(props) {
                     mirrorAuthMethod === "ssh" ? (
                       <FlexBox col gap style={{ paddingRight: "10px" }}>
                         <FlexBox col gap="sm" center="x" style={{}}>
-                          <span className={`input-title readonly`}>
+                          <span className="input-title readonly">
                             Passphrase
                           </span>
                           {infoPassphrase === "" ? (
-                            <span className={`input-description readonly`}>
+                            <span className="input-description readonly">
                               {" "}
                               Warning: Passphrase will be deleted
                             </span>
@@ -548,7 +548,7 @@ export default function MirrorInfoPanel(props) {
                           )}
                         </FlexBox>
                         <input
-                          className={`info-input-value readonly`}
+                          className="info-input-value readonly"
                           readOnly={true}
                           type="password"
                           value={infoPassphrase}
@@ -561,11 +561,11 @@ export default function MirrorInfoPanel(props) {
                     mirrorAuthMethod === "ssh" ? (
                       <FlexBox col gap style={{ paddingRight: "10px" }}>
                         <FlexBox col gap="sm" center="x" style={{}}>
-                          <span className={`input-title readonly`}>
+                          <span className="input-title readonly">
                             Public Key
                           </span>
                           {infoPublicKey === "" ? (
-                            <span className={`input-description readonly`}>
+                            <span className="input-description readonly">
                               {" "}
                               Warning: Public Key will be deleted
                             </span>
@@ -574,7 +574,7 @@ export default function MirrorInfoPanel(props) {
                           )}
                         </FlexBox>
                         <textarea
-                          className={`info-textarea-value readonly`}
+                          className="info-textarea-value readonly"
                           readOnly={true}
                           rows={5}
                           style={{ width: "100%", resize: "none" }}
@@ -588,11 +588,11 @@ export default function MirrorInfoPanel(props) {
                     mirrorAuthMethod === "ssh" ? (
                       <FlexBox col gap style={{ paddingRight: "10px" }}>
                         <FlexBox col gap="sm" center="x" style={{}}>
-                          <span className={`input-title readonly`}>
+                          <span className="input-title readonly">
                             Private Key
                           </span>
                           {infoPrivateKey === "" ? (
-                            <span className={`input-description readonly`}>
+                            <span className="input-description readonly">
                               {" "}
                               Warning: Private Key will be deleted
                             </span>
@@ -601,7 +601,7 @@ export default function MirrorInfoPanel(props) {
                           )}
                         </FlexBox>
                         <textarea
-                          className={`info-textarea-value readonly`}
+                          className="info-textarea-value readonly"
                           readOnly={true}
                           rows={5}
                           style={{ width: "100%", resize: "none" }}
@@ -622,7 +622,7 @@ export default function MirrorInfoPanel(props) {
         <FlexBox col gap style={{ height: "fit-content" }}>
           <FlexBox col gap="sm" style={{}}>
             <FlexBox row gap="sm" style={{ justifyContent: "flex-start" }}>
-              <span className={`input-title`}>Authentication Method</span>
+              <span className="input-title">Authentication Method</span>
             </FlexBox>
             <div
               style={{ width: "100%", paddingRight: "12px", display: "flex" }}
@@ -844,7 +844,7 @@ export default function MirrorInfoPanel(props) {
                     <HideShowButton
                       show={showPassphrase}
                       setShow={setShowPassphrase}
-                      field={"Passphrase"}
+                      field="Passphrase"
                     />
                   </FlexBox>
                   <span
@@ -919,7 +919,7 @@ export default function MirrorInfoPanel(props) {
                             ? mirrorErrors["publicKey"]
                             : `Upload key plaintext file content to ${mirrorSettingInfoMetaInfo["publicKey"].plainName} input. Warning: this will replace current ${mirrorSettingInfoMetaInfo["publicKey"].plainName} content`
                         }
-                        trigger={"click mouseenter focus"}
+                        trigger="click mouseenter focus"
                         onHide={() => {
                           const newErrors = mirrorErrors;
                           newErrors["publicKey"] = null;
@@ -1026,7 +1026,7 @@ export default function MirrorInfoPanel(props) {
                             ? mirrorErrors["privateKey"]
                             : `Upload key plaintext file content to ${mirrorSettingInfoMetaInfo["privateKey"].plainName} input. Warning: this will replace current ${mirrorSettingInfoMetaInfo["privateKey"].plainName} content`
                         }
-                        trigger={"click mouseenter focus"}
+                        trigger="click mouseenter focus"
                         onHide={() => {
                           const newErrors = mirrorErrors;
                           newErrors["privateKey"] = null;

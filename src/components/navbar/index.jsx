@@ -316,41 +316,41 @@ function NewNamespaceBtn(props) {
     >
       <Tabs
         // TODO: change wf-execute-input => tabbed-form
-        id={"wf-execute-input"}
-        key={"inputForm-ns"}
+        id="wf-execute-input"
+        key="inputForm-ns"
         callback={setTabIndex}
         tabIndex={tabIndex}
         style={{ minWidth: "300px" }}
         headers={["Standard", "Mirror"]}
         tabs={[
           <FlexBox
-            key={`form-new-ns`}
+            key="form-new-ns"
             className="col gap-md"
             style={{ paddingRight: "12px" }}
           >
             <FlexBox
-              key={`label-new-ns-name`}
+              key="label-new-ns-name"
               className="row gap-sm"
               style={{ justifyContent: "flex-start" }}
             >
-              <span className={`input-title`}>Namespace*</span>
+              <span className="input-title">Namespace*</span>
             </FlexBox>
             <input
-              key={`input-new-ns-name-input`}
+              key="input-new-ns-name-input"
               autoFocus
               value={ns}
               onChange={(e) => setNs(e.target.value)}
               placeholder="Enter namespace name"
             />
           </FlexBox>,
-          <FlexBox key={`form-new-ns-mirror`} className="col gap">
+          <FlexBox key="form-new-ns-mirror" className="col gap">
             <FlexBox
-              key={`input-new-ns-name`}
+              key="input-new-ns-name"
               className="col gap-md"
               style={{ paddingRight: "12px" }}
             >
               <FlexBox row gap="sm" style={{ justifyContent: "flex-start" }}>
-                <span className={`input-title`}>Namespace*</span>
+                <span className="input-title">Namespace*</span>
               </FlexBox>
               <input
                 autoFocus
@@ -359,9 +359,9 @@ function NewNamespaceBtn(props) {
                 placeholder="Enter namespace name"
               />
             </FlexBox>
-            <FlexBox key={`input-new-ns-auth`} className="col gap-md">
+            <FlexBox key="input-new-ns-auth" className="col gap-md">
               <FlexBox row gap="sm" style={{ justifyContent: "flex-start" }}>
-                <span className={`input-title`}>Authentication Method</span>
+                <span className="input-title">Authentication Method</span>
               </FlexBox>
               <div
                 style={{ width: "100%", paddingRight: "12px", display: "flex" }}
@@ -409,7 +409,7 @@ function NewNamespaceBtn(props) {
                       gap="sm"
                       style={{ justifyContent: "flex-start" }}
                     >
-                      <span className={`input-title`}>
+                      <span className="input-title">
                         {mirrorSettingInfoMetaInfo[key].plainName}
                         {mirrorSettingInfoMetaInfo[key].required ? "*" : ""}
                       </span>
@@ -423,7 +423,7 @@ function NewNamespaceBtn(props) {
                             <HideShowButton
                               show={showPassphrase}
                               setShow={setShowPassphrase}
-                              field={"Passphrase"}
+                              field="Passphrase"
                             />
                           ) : (
                             <></>
@@ -453,7 +453,7 @@ function NewNamespaceBtn(props) {
                               ? mirrorErrors[key]
                               : `Upload key plaintext file content to ${mirrorSettingInfoMetaInfo[key].plainName} input. Warning: this will replace current ${mirrorSettingInfoMetaInfo[key].plainName} content`
                           }
-                          trigger={"click mouseenter focus"}
+                          trigger="click mouseenter focus"
                           onHide={() => {
                             const newErrors = mirrorErrors;
                             newErrors[key] = null;

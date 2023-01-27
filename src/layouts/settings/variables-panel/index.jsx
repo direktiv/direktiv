@@ -89,9 +89,7 @@ function VariablesPanel(props) {
         <FlexBox style={{ display: "flex", alignItems: "center" }} gap>
           <div>Variables</div>
           <HelpIcon
-            msg={
-              "Unencrypted key/value pairs that can be referenced within workflows."
-            }
+            msg="Unencrypted key/value pairs that can be referenced within workflows."
           />
         </FlexBox>
         <SearchBar setSearch={setSearch} style={{ height: "25px" }} />
@@ -443,9 +441,9 @@ function Variable(props) {
           overflow: "hidden",
         }}
       >
-        <Tippy content={obj.name} trigger={"mouseenter focus"} zIndex={10}>
+        <Tippy content={obj.name} trigger="mouseenter focus" zIndex={10}>
           <div
-            className={"variable-name"}
+            className="variable-name"
             style={{
               width: "fit-content",
               maxWidth: "180px",
@@ -478,7 +476,7 @@ function Variable(props) {
                 setValue(data.data);
               }}
               button={
-                <FlexBox className={"gap"} style={{ fontWeight: "bold" }}>
+                <FlexBox className="gap" style={{ fontWeight: "bold" }}>
                   <VscEye className="auto-margin" />
                   Show <span className="hide-600">value</span>
                 </FlexBox>
@@ -695,7 +693,7 @@ function VariablesDownloadButton(props) {
   const { onClick } = props;
 
   return (
-    <Button onClick={onClick} variant={"text"} color={"info"}>
+    <Button onClick={onClick} variant="text" color="info">
       <VscCloudDownload />
     </Button>
   );

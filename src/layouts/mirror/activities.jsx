@@ -165,7 +165,7 @@ export function ActivityRow(props) {
           <Button
             color="info"
             variant="outlined"
-            className={`small light`}
+            className="small light"
             style={state !== "pending" ? { visibility: "hidden" } : {}}
             onClick={async () => {
               try {

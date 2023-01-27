@@ -36,7 +36,7 @@ function Breadcrumbs({ namespace, additionalChildren }: BreadcrumbsProps) {
   }
 
   return (
-    <FlexBox id={"breadcrumb-list"}>
+    <FlexBox id="breadcrumb-list">
       <ul>
         {breadcrumbs.length < 9 ? (
           breadcrumbs.map((obj) => {
@@ -104,7 +104,7 @@ function Breadcrumbs({ namespace, additionalChildren }: BreadcrumbsProps) {
                 </li>
               );
             })}
-            <li id={"crumb-divider"} key={"crumb-divider"}>
+            <li id="crumb-divider" key="crumb-divider">
               <span>{". . . "}</span>
             </li>
             {breadcrumbs.slice(-3).map((obj) => {

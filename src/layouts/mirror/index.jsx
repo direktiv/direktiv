@@ -148,8 +148,8 @@ export default function MirrorPage(props) {
         style={{ justifyContent: "flex-end", paddingRight: "6px" }}
       >
         <Button
-          tooltip={"Sync mirror with remote"}
-          disabledTooltip={"Cannot sync mirror while Writable"}
+          tooltip="Sync mirror with remote"
+          disabledTooltip="Cannot sync mirror while Writable"
           disabled={!isReadOnly}
           variant="outlined"
           color="info"
@@ -289,7 +289,7 @@ export default function MirrorPage(props) {
                     </BreadcrumbCorner> */}
           <FlexBox row gap wrap style={{ flex: "1 1 0%", maxHeight: "65vh" }}>
             <ContentPanel
-              id={`panel-activity-list`}
+              id="panel-activity-list"
               style={{
                 flex: 2,
                 width: "100%",
@@ -350,8 +350,8 @@ export default function MirrorPage(props) {
 export function MirrorReadOnlyBadge() {
   return (
     <Tippy
-      content={`This mirrors contents are currently read-only. This can be unlocked in mirror setttings`}
-      trigger={"mouseenter focus"}
+      content="This mirrors contents are currently read-only. This can be unlocked in mirror setttings"
+      trigger="mouseenter focus"
       zIndex={10}
     >
       <div>
@@ -375,8 +375,8 @@ export function MirrorWritableBadge() {
   const theme = useTheme();
   return (
     <Tippy
-      content={`This mirrors contents are currently writable. This can be unlocked in mirror setttings`}
-      trigger={"mouseenter focus"}
+      content="This mirrors contents are currently writable. This can be unlocked in mirror setttings"
+      trigger="mouseenter focus"
       zIndex={10}
     >
       <div>

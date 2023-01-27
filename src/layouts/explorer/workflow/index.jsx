@@ -214,7 +214,7 @@ function InitialWorkflowHook(props) {
           setActiveTab={setActiveTab}
           block={tabBlocker}
           setBlock={setTabBlocker}
-          blockMsg={"Warning Unsaved Changes. Are you sure you want to leave?"}
+          blockMsg="Warning Unsaved Changes. Are you sure you want to leave?"
         />
         <FlexBox col gap>
           {activeTab === 0 ? (
@@ -495,21 +495,17 @@ function WorkingRevision(props) {
           <FlexBox style={{ display: "flex", alignItems: "center" }} gap>
             <div>Active Revision</div>
             <HelpIcon
-              msg={
-                "Latest revision where you can edit and create new revisions."
-              }
+              msg="Latest revision where you can edit and create new revisions."
             />
             <TabbedButtons
-              revision={"latest"}
+              revision="latest"
               setSearchParams={setSearchParams}
               searchParams={searchParams}
               tabBtn={tabBtn}
               setTabBtn={setTabBtn}
               enableDiagramEditor={!canSave}
               block={tabBlocker}
-              blockMsg={
-                "Warning Unsaved Changes. Are you sure you want to leave?"
-              }
+              blockMsg="Warning Unsaved Changes. Are you sure you want to leave?"
               setBlock={setTabBlocker}
             />
           </FlexBox>
@@ -537,8 +533,8 @@ function WorkingRevision(props) {
                     color="terminal"
                     variant="contained"
                     loading={opLoadingStates["IsLoading"]}
-                    tooltip={"Revert workflow to previous revision"}
-                    disabledTooltip={"Cannot revert while theres changes"}
+                    tooltip="Revert workflow to previous revision"
+                    disabledTooltip="Cannot revert while theres changes"
                     disabled={canSave}
                     onClick={async () => {
                       setErrors([]);
@@ -560,7 +556,7 @@ function WorkingRevision(props) {
                       width: "600px",
                       minWidth: "30vw",
                     }}
-                    title={`Run Workflow`}
+                    title="Run Workflow"
                     buttonDisabled={opLoadingStates["IsLoading"]}
                     onClose={() => {
                       setInput("{\n\t\n}");
@@ -633,8 +629,8 @@ function WorkingRevision(props) {
                       }}
                     >
                       <Tabs
-                        id={"wf-execute-input"}
-                        key={"inputForm"}
+                        id="wf-execute-input"
+                        key="inputForm"
                         callback={setTabIndex}
                         tabIndex={tabIndex}
                         style={
@@ -707,8 +703,8 @@ function WorkingRevision(props) {
                   }}
                 >
                   <Button
-                    tooltip={"Save workflow to latest"}
-                    disabledTooltip={"No changes to workflow"}
+                    tooltip="Save workflow to latest"
+                    disabledTooltip="No changes to workflow"
                     color="terminal"
                     variant="contained"
                     loading={opLoadingStates["Save"]}
@@ -732,8 +728,8 @@ function WorkingRevision(props) {
                   </Button>
 
                   <Button
-                    tooltip={"Save latest workflow as new revision"}
-                    disabledTooltip={"Requires save"}
+                    tooltip="Save latest workflow as new revision"
+                    disabledTooltip="Requires save"
                     color="terminal"
                     variant="contained"
                     loading={opLoadingStates["IsLoading"]}
@@ -813,7 +809,7 @@ function WorkingRevision(props) {
           )}
           {tabBtn === 3 ? (
             <SankeyDiagram
-              revision={"latest"}
+              revision="latest"
               getWorkflowSankeyMetrics={getWorkflowSankeyMetrics}
             />
           ) : (
@@ -1037,7 +1033,7 @@ function OverviewTab(props) {
                 </ContentPanelTitleIcon>
                 <FlexBox style={{ display: "flex", alignItems: "center" }} gap>
                   <div>Instances</div>
-                  <HelpIcon msg={"List of instances for this workflow."} />
+                  <HelpIcon msg="List of instances for this workflow." />
                 </FlexBox>
               </ContentPanelTitle>
               <WorkflowInstances instances={instances} namespace={namespace} />
@@ -1062,7 +1058,7 @@ function OverviewTab(props) {
                 <FlexBox style={{ display: "flex", alignItems: "center" }} gap>
                   <div>Success/Failure Rate</div>
                   <HelpIcon
-                    msg={"Success and failure of the workflow being run."}
+                    msg="Success and failure of the workflow being run."
                   />
                 </FlexBox>
               </ContentPanelTitle>
@@ -1084,9 +1080,7 @@ function OverviewTab(props) {
             <FlexBox style={{ display: "flex", alignItems: "center" }} gap>
               <div>Traffic Distribution</div>
               <HelpIcon
-                msg={
-                  "Distributed traffic between different workflow revisions."
-                }
+                msg="Distributed traffic between different workflow revisions."
               />
             </FlexBox>
           </ContentPanelTitle>
@@ -1101,7 +1095,7 @@ function OverviewTab(props) {
             </ContentPanelTitleIcon>
             <FlexBox style={{ display: "flex", alignItems: "center" }} gap>
               <div>Workflow Services</div>
-              <HelpIcon msg={"A List of services for this workflow."} />
+              <HelpIcon msg="A List of services for this workflow." />
             </FlexBox>
           </ContentPanelTitle>
           <WorkflowServices namespace={namespace} filepath={filepath} />
@@ -1528,9 +1522,7 @@ function SettingsTab(props) {
                   >
                     <div>Log to Event</div>
                     <HelpIcon
-                      msg={
-                        "Ability to trigger cloud event logging for that workflow."
-                      }
+                      msg="Ability to trigger cloud event logging for that workflow."
                     />
                   </FlexBox>
                 </ContentPanelTitle>
@@ -1617,7 +1609,7 @@ function SettingsTab(props) {
                 </ContentPanelTitleIcon>
                 <FlexBox style={{ display: "flex", alignItems: "center" }} gap>
                   <div>Add Attributes</div>
-                  <HelpIcon msg={"Attributes to define the workflow."} />
+                  <HelpIcon msg="Attributes to define the workflow." />
                 </FlexBox>
               </ContentPanelTitle>
               <ContentPanelBody>
