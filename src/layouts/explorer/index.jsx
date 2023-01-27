@@ -448,16 +448,11 @@ function ExplorerList(props) {
                           variant: "contained",
                           color: "primary",
                         },
-                        errFunc: () => {},
                         closesModal: true,
                         validate: true,
                       },
                       {
                         label: "Cancel",
-
-                        onClick: () => {},
-
-                        errFunc: () => {},
                         closesModal: true,
                       },
                     ]}
@@ -472,8 +467,6 @@ function ExplorerList(props) {
                             throw new Error("Please fill in name");
                           }
                         },
-
-                        errFunc: () => {},
                         closeModal: true,
                         id: "workflow-name",
                       },
@@ -602,16 +595,11 @@ function ExplorerList(props) {
                           color: "primary",
                           disabled: name.trim().length === 0,
                         },
-                        errFunc: () => {},
                         closesModal: true,
                         validate: true,
                       },
                       {
                         label: "Cancel",
-
-                        onClick: () => {},
-
-                        errFunc: () => {},
                         closesModal: true,
                       },
                     ]}
@@ -626,8 +614,6 @@ function ExplorerList(props) {
                             await createMirrorNode(name, mirrorSettings);
                           }
                         },
-
-                        errFunc: () => {},
                         closeModal: true,
                       },
                     ]}
@@ -860,9 +846,7 @@ function ExplorerList(props) {
                                                 fontWeight: "normal",
                                               }}
                                             >
-                                              <span onClick={(e) => {}}>
-                                                Upload
-                                              </span>
+                                              <span>Upload</span>
                                               <VscCloudUpload />
                                             </FlexBox>
                                           </div>
@@ -1001,7 +985,7 @@ function ExplorerList(props) {
                               style={{ fontSize: "10pt" }}
                               className="explorer-item-name"
                             >
-                              Loading results for '{path}'.
+                              Loading results for &apos;{path}&apos;.
                             </FlexBox>
                           </>
                         )}
@@ -1025,7 +1009,7 @@ function ExplorerList(props) {
                               style={{ fontSize: "10pt" }}
                               className="explorer-item-name"
                             >
-                              No results found under '{path}'.
+                              No results found under &apos;{path}&apos;.
                             </FlexBox>
                           </FlexBox>
                         </div>
@@ -1104,7 +1088,7 @@ function DirListItem(props) {
   return (
     <div
       style={{ cursor: "pointer" }}
-      onClick={(e) => {
+      onClick={() => {
         resetQueryParams();
         navigate(`/n/${namespace}/explorer/${path.substring(1)}`);
       }}
@@ -1208,17 +1192,11 @@ function DirListItem(props) {
                         const pLast = p[p.length - 1];
                         await deleteNode(pLast, recursiveDelete);
                       },
-
                       buttonProps: { variant: "contained", color: "error" },
-                      errFunc: () => {},
                       closesModal: true,
                     },
                     {
                       label: "Cancel",
-
-                      onClick: () => {},
-
-                      errFunc: () => {},
                       closesModal: true,
                     },
                   ]}
@@ -1238,7 +1216,7 @@ function DirListItem(props) {
                       </label>
                     </FlexBox>
                     <FlexBox>
-                      Are you sure you want to delete '{name}'?
+                      Are you sure you want to delete &apos;{name}&apos;?
                       <br />
                       This action cannot be undone.
                     </FlexBox>
@@ -1363,24 +1341,18 @@ function WorkflowListItem(props) {
                         const pLast = p[p.length - 1];
                         await deleteNode(pLast, false);
                       },
-
                       buttonProps: { variant: "contained", color: "error" },
-                      errFunc: () => {},
                       closesModal: true,
                     },
                     {
                       label: "Cancel",
-
-                      onClick: () => {},
-
-                      errFunc: () => {},
                       closesModal: true,
                     },
                   ]}
                 >
                   <FlexBox col gap>
                     <FlexBox>
-                      Are you sure you want to delete '{name}'?
+                      Are you sure you want to delete &apos;{name}&apos;?
                       <br />
                       This action cannot be undone.
                     </FlexBox>
