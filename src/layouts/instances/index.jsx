@@ -463,9 +463,7 @@ export function InstanceRow(props) {
             <div>/{wfname}</div>
           </td>
         </Tippy>
-      ) : (
-        ""
-      )}
+      ) : null}
       {mini ? null : (
         <td
           title={revStr}
