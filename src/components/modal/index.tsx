@@ -7,7 +7,7 @@ import ContentPanel, {
 } from "../content-panel";
 import "./style.css";
 
-import { VscDiffAdded , VscClose } from "react-icons/vsc";
+import { VscDiffAdded, VscClose } from "react-icons/vsc";
 
 import Alert from "../alert";
 import FlexBox from "../flexbox";
@@ -209,7 +209,6 @@ function ModalOverlay({
   keyDownActions,
   escapeToCancel,
   onClose,
-  onOpen,
   requiredFields,
 }: ModalOverlayProps) {
   function validateFields(reqFields?: RequiredField[]) {
