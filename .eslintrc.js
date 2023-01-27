@@ -53,6 +53,9 @@ module.exports = {
     // PLEASE ALWAYS PROVIDE A REASON FOR DISABLING/OVERWRITING A RULE
     // IT'S HARD TO EVALUATE THIS SECTION AT A LATER POINT IN TIME
 
+    // simpe rule to avoid unnecessary curly braces
+    "react/jsx-curly-brace-presence": "error",
+
     // It's save to import React when using vite
     "react/react-in-jsx-scope": "off",
 
