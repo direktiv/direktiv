@@ -387,14 +387,14 @@ function NewNamespaceBtn(props) {
                   key === "privateKey" ||
                   key === "passphrase")
               ) {
-                return <></>;
+                return null;
               }
 
               if (
                 (mirrorAuthMethod === "ssh" || mirrorAuthMethod === "none") &&
                 key === "token"
               ) {
-                return <></>;
+                return null;
               }
 
               return (
