@@ -168,7 +168,6 @@ function VariablesPanel(props) {
               },
               {
                 label: "Cancel",
-                buttonProps: {},
                 closesModal: true,
               },
             ]}
@@ -498,7 +497,6 @@ function Variable(props) {
                 },
                 {
                   label: "Cancel",
-                  buttonProps: {},
                   closesModal: true,
                 },
               ]}
@@ -626,7 +624,6 @@ function Variable(props) {
                 },
                 {
                   label: "Cancel",
-                  buttonProps: {},
                   closesModal: true,
                 },
               ]}
@@ -664,7 +661,6 @@ function Variable(props) {
                 },
                 {
                   label: "Cancel",
-                  buttonProps: {},
                   closesModal: true,
                 },
               ]}

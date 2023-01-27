@@ -92,7 +92,6 @@ function SecretsPanel(props) {
               },
               {
                 label: "Cancel",
-                buttonProps: {},
                 closesModal: true,
               },
             ]}
@@ -257,7 +256,6 @@ function Secrets(props) {
                         },
                         {
                           label: "Cancel",
-                          buttonProps: {},
                           closesModal: true,
                         },
                       ]}

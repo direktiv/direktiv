@@ -192,7 +192,6 @@ function RegistriesPanel(props) {
               },
               {
                 label: "Cancel",
-                buttonProps: {},
                 closesModal: true,
               },
             ]}
@@ -469,7 +468,6 @@ export function Registries(props) {
                         },
                         {
                           label: "Cancel",
-                          buttonProps: {},
                           closesModal: true,
                         },
                       ]}

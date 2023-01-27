@@ -1196,7 +1196,6 @@ export default function DiagramEditor(props) {
                   onClick: async () => {
                     setSelectedNodeFormData(oldSelectedNodeFormData);
                   },
-                  buttonProps: {},
                   closesModal: true,
                 },
               ]}
@@ -1268,7 +1267,6 @@ export default function DiagramEditor(props) {
                   onClick: async () => {
                     setNewNodeID("");
                   },
-                  buttonProps: {},
                   closesModal: true,
                 },
               ]}

@@ -190,7 +190,6 @@ function RevisionTab(props) {
                           },
                           {
                             label: "Cancel",
-                            buttonProps: {},
                             closesModal: true,
                           },
                         ]}
@@ -651,7 +650,6 @@ export function RevisionSelectorTab(props) {
                             },
                             {
                               label: "Cancel",
-                              buttonProps: {},
                               closesModal: true,
                             },
                           ]}
@@ -769,7 +767,6 @@ export function RevisionSelectorTab(props) {
                               },
                               {
                                 label: "Cancel",
-                                buttonProps: {},
                                 closesModal: true,
                               },
                             ]}
@@ -910,7 +907,6 @@ function TagRevisionBtn(props) {
         },
         {
           label: "Cancel",
-          buttonProps: {},
           closesModal: true,
         },
       ]}
@@ -1199,7 +1195,6 @@ export function RevisionTrafficShaper(props) {
                 },
                 {
                   label: "Cancel",
-                  buttonProps: {},
                   closesModal: true,
                 },
               ]}

@@ -272,7 +272,6 @@ function NewNamespaceBtn(props) {
           onClick: () => {
             setNs("");
           },
-          buttonProps: {},
           closesModal: true,
         },
       ]}

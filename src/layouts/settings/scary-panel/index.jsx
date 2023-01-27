@@ -99,7 +99,6 @@ function Scary(props) {
               },
               {
                 label: "Cancel",
-                buttonProps: {},
                 closesModal: true,
               },
             ]}

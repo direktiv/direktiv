@@ -190,7 +190,6 @@ export default function MirrorPage(props) {
             {
               label: "Cancel",
               onClick: () => {},
-              buttonProps: {},
               errFunc: () => {},
               closesModal: true,
             },

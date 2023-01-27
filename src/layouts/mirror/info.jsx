@@ -415,7 +415,6 @@ export default function MirrorInfoPanel(props) {
                     },
                     {
                       label: "Cancel",
-                      buttonProps: {},
                       closesModal: true,
                     },
                   ]}

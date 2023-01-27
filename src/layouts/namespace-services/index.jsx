@@ -261,7 +261,6 @@ function NamespaceServices(props) {
               },
               {
                 label: "Cancel",
-                buttonProps: {},
                 closesModal: true,
               },
             ]}
@@ -416,7 +415,6 @@ export function Service(props) {
                     },
                     {
                       label: "Cancel",
-                      buttonProps: {},
                       closesModal: true,
                     },
                   ]}
@@ -492,7 +490,6 @@ export function Service(props) {
                   },
                   {
                     label: "Cancel",
-                    buttonProps: {},
                     closesModal: true,
                   },
                 ]}

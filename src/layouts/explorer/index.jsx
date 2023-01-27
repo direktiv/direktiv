@@ -457,7 +457,6 @@ function ExplorerList(props) {
 
                         onClick: () => {},
 
-                        buttonProps: {},
                         errFunc: () => {},
                         closesModal: true,
                       },
@@ -612,7 +611,6 @@ function ExplorerList(props) {
 
                         onClick: () => {},
 
-                        buttonProps: {},
                         errFunc: () => {},
                         closesModal: true,
                       },
@@ -1220,7 +1218,6 @@ function DirListItem(props) {
 
                       onClick: () => {},
 
-                      buttonProps: {},
                       errFunc: () => {},
                       closesModal: true,
                     },
@@ -1376,7 +1373,6 @@ function WorkflowListItem(props) {
 
                       onClick: () => {},
 
-                      buttonProps: {},
                       errFunc: () => {},
                       closesModal: true,
                     },

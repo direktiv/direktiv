@@ -600,7 +600,6 @@ function WorkingRevision(props) {
 
                         onClick: async () => {},
 
-                        buttonProps: {},
                         errFunc: () => {},
                         closesModal: true,
                       },

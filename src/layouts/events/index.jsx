@@ -178,10 +178,7 @@ function EventsPage(props) {
                                       },
                                       {
                                         label: "Cancel",
-
                                         onClick: async () => {},
-
-                                        buttonProps: {},
                                         errFunc: () => {},
                                         closesModal: true,
                                       },
@@ -217,7 +214,6 @@ function EventsPage(props) {
 
                                         onClick: async () => {},
 
-                                        buttonProps: {},
                                         errFunc: () => {},
                                         closesModal: true,
                                       },
@@ -445,7 +441,6 @@ function SendEventModal(props) {
           {
             label: "Cancel",
             onClick: () => {},
-            buttonProps: {},
             errFunc: () => {},
             closesModal: true,
           },

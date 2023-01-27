@@ -268,7 +268,6 @@ function NamespaceRevisions(props) {
                   },
                   {
                     label: "Cancel",
-                    buttonProps: {},
                     closesModal: true,
                   },
                 ]}
