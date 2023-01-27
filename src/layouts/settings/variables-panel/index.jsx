@@ -168,11 +168,7 @@ function VariablesPanel(props) {
               },
               {
                 label: "Cancel",
-
-                onClick: () => {},
-
                 buttonProps: {},
-                errFunc: () => {},
                 closesModal: true,
               },
             ]}
@@ -249,9 +245,11 @@ export function VariableFilePicker(props) {
     >
       <div>
         <input {...getInputProps()} />
-        <p>Drag 'n' drop the file here, or click to select file</p>
+        <p>Drag &apos;n&apos; drop the file here, or click to select file</p>
         {file !== null ? (
-          <p style={{ margin: "0px" }}>Selected file: '{file.path}'</p>
+          <p style={{ margin: "0px" }}>
+            Selected file: &apos;{file.path}&apos;
+          </p>
         ) : (
           ""
         )}
@@ -492,22 +490,15 @@ function Variable(props) {
               actionButtons={[
                 {
                   label: "Save",
-
                   onClick: async () => {
                     await setNamespaceVariable(obj.name, val, mimeType);
                   },
-
                   buttonProps: { variant: "contained", color: "primary" },
-                  errFunc: () => {},
                   closesModal: true,
                 },
                 {
                   label: "Cancel",
-
-                  onClick: () => {},
-
                   buttonProps: {},
-                  errFunc: () => {},
                   closesModal: true,
                 },
               ]}
@@ -635,11 +626,7 @@ function Variable(props) {
                 },
                 {
                   label: "Cancel",
-
-                  onClick: () => {},
-
                   buttonProps: {},
-                  errFunc: () => {},
                   closesModal: true,
                 },
               ]}
@@ -669,29 +656,22 @@ function Variable(props) {
               actionButtons={[
                 {
                   label: "Delete",
-
                   onClick: async () => {
                     await deleteNamespaceVariable(obj.name);
                   },
-
                   buttonProps: { variant: "contained", color: "error" },
-                  errFunc: () => {},
                   closesModal: true,
                 },
                 {
                   label: "Cancel",
-
-                  onClick: () => {},
-
                   buttonProps: {},
-                  errFunc: () => {},
                   closesModal: true,
                 },
               ]}
             >
               <FlexBox col gap>
                 <FlexBox>
-                  Are you sure you want to delete '{obj.name}'?
+                  Are you sure you want to delete &apos;{obj.name}&apos;?
                   <br />
                   This action cannot be undone.
                 </FlexBox>
@@ -725,7 +705,7 @@ function VariablesDownloadButton(props) {
   );
 }
 
-function VariablesDownloadingButton(props) {
+function VariablesDownloadingButton() {
   return <VscLoading style={{ animation: "spin 2s linear infinite" }} />;
 }
 
