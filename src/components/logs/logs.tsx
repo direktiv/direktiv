@@ -126,7 +126,7 @@ function Logs({
     }
   }, []);
 
-  const getSize = useCallback((index: any) => {
+  const getSize = useCallback((index: number) => {
     return sizeMap.current[index] || 100;
   }, []);
 
@@ -146,10 +146,10 @@ function Logs({
   return (
     <FlexBox
       className="log-window"
-      onWheel={(e: any) => {
+      onWheel={() => {
         disableAutoScroll(true);
       }}
-      onMouseDown={(e: any) => {
+      onMouseDown={() => {
         disableAutoScroll(true);
       }}
     >
