@@ -52,7 +52,6 @@ function SecretsPanel(props) {
             escapeToCancel
             titleIcon={<VscLock />}
             modalStyle={{ width: "600px" }}
-            onOpen={() => {}}
             onClose={() => {
               setKeyValue("");
               setVValue("");
@@ -88,17 +87,12 @@ function SecretsPanel(props) {
                 },
 
                 buttonProps: { variant: "contained", color: "primary" },
-                errFunc: () => {},
                 closesModal: true,
                 validate: true,
               },
               {
                 label: "Cancel",
-
-                onClick: () => {},
-
                 buttonProps: {},
-                errFunc: () => {},
                 closesModal: true,
               },
             ]}
@@ -199,9 +193,11 @@ export function SecretFilePicker(props) {
     >
       <div>
         <input {...getInputProps()} />
-        <p>Drag 'n' drop the file here, or click to select file</p>
+        <p>Drag &apos;n&apos; drop the file here, or click to select file</p>
         {file !== null ? (
-          <p style={{ margin: "0px" }}>Selected file: '{file.path}'</p>
+          <p style={{ margin: "0px" }}>
+            Selected file: &apos;{file.path}&apos;
+          </p>
         ) : (
           ""
         )}
@@ -256,25 +252,20 @@ function Secrets(props) {
                             await deleteSecret(obj.name);
                             await getSecrets();
                           },
-
                           buttonProps: { variant: "contained", color: "error" },
-                          errFunc: () => {},
                           closesModal: true,
                         },
                         {
                           label: "Cancel",
-
-                          onClick: () => {},
-
                           buttonProps: {},
-                          errFunc: () => {},
                           closesModal: true,
                         },
                       ]}
                     >
                       <FlexBox col gap>
                         <FlexBox>
-                          Are you sure you want to delete '{obj.name}'?
+                          Are you sure you want to delete &apos;{obj.name}
+                          &apos;?
                           <br />
                           This action cannot be undone.
                         </FlexBox>
@@ -291,7 +282,7 @@ function Secrets(props) {
   );
 }
 
-export function SecretsDeleteButton(props) {
+export function SecretsDeleteButton() {
   return (
     <div
       className="red-text"
