@@ -410,16 +410,12 @@ export default function MirrorInfoPanel(props) {
 
                         resetStates();
                       },
-
                       buttonProps: { variant: "contained", color: "primary" },
-                      errFunc: () => {},
                       closesModal: true,
                     },
                     {
                       label: "Cancel",
-                      onClick: () => {},
                       buttonProps: {},
-                      errFunc: () => {},
                       closesModal: true,
                     },
                   ]}
@@ -668,7 +664,7 @@ export default function MirrorInfoPanel(props) {
                 className={`info-input-undo ${
                   infoChangesTracker.url ? "" : "hide"
                 }`}
-                onClick={(e) => {
+                onClick={() => {
                   setInfoURL(infoURLOld);
                   setInfoChangesTracker((old) => {
                     old.url = false;
@@ -707,7 +703,7 @@ export default function MirrorInfoPanel(props) {
                 className={`info-input-undo ${
                   infoChangesTracker.ref ? "" : "hide"
                 }`}
-                onClick={(e) => {
+                onClick={() => {
                   setInfoRef(infoRefOld);
                   setInfoChangesTracker((old) => {
                     old.ref = false;
@@ -746,7 +742,7 @@ export default function MirrorInfoPanel(props) {
                 className={`info-input-undo ${
                   infoChangesTracker.cron ? "" : "hide"
                 }`}
-                onClick={(e) => {
+                onClick={() => {
                   setInfoCron(infoCronOld);
                   setInfoChangesTracker((old) => {
                     old.cron = false;
@@ -788,7 +784,7 @@ export default function MirrorInfoPanel(props) {
                   className={`info-input-undo ${
                     infoChangesTracker.passphrase ? "" : "hide"
                   }`}
-                  onClick={(e) => {
+                  onClick={() => {
                     setInfoPassphrase(infoPassphraseOld);
                     setInfoChangesTracker((old) => {
                       old.passphrase = false;
@@ -856,7 +852,7 @@ export default function MirrorInfoPanel(props) {
                     className={`info-input-undo ${
                       infoChangesTracker.passphrase ? "" : "hide"
                     }`}
-                    onClick={(e) => {
+                    onClick={() => {
                       setInfoPassphrase(infoPassphraseOld);
                       setInfoChangesTracker((old) => {
                         old.passphrase = false;
@@ -942,7 +938,7 @@ export default function MirrorInfoPanel(props) {
                               marginRight: "-6px",
                             }}
                           >
-                            <span onClick={(e) => {}}>Upload</span>
+                            <span>Upload</span>
                             <VscCloudUpload />
                           </FlexBox>
                         </div>
@@ -952,7 +948,7 @@ export default function MirrorInfoPanel(props) {
                       className={`info-input-undo ${
                         infoChangesTracker.publicKey ? "" : "hide"
                       }`}
-                      onClick={(e) => {
+                      onClick={() => {
                         setInfoPublicKey(infoPublicKeyOld);
                         setInfoChangesTracker((old) => {
                           old.publicKey = false;
@@ -1049,7 +1045,7 @@ export default function MirrorInfoPanel(props) {
                               marginRight: "-6px",
                             }}
                           >
-                            <span onClick={(e) => {}}>Upload</span>
+                            <span>Upload</span>
                             <VscCloudUpload />
                           </FlexBox>
                         </div>
@@ -1059,7 +1055,7 @@ export default function MirrorInfoPanel(props) {
                       className={`info-input-undo ${
                         infoChangesTracker.privateKey ? "" : "hide"
                       }`}
-                      onClick={(e) => {
+                      onClick={() => {
                         setInfoPrivateKey(infoPrivateKeyOld);
                         setInfoChangesTracker((old) => {
                           old.privateKey = false;
