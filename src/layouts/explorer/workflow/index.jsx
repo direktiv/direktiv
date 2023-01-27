@@ -225,9 +225,7 @@ function InitialWorkflowHook(props) {
               getInstancesForWorkflow={getInstancesForWorkflow}
               filepath={filepath}
             />
-          ) : (
-            <></>
-          )}
+          ) : null}
           {activeTab === 1 ? (
             <>
               <RevisionSelectorTab
@@ -254,9 +252,7 @@ function InitialWorkflowHook(props) {
                 executeWorkflowRouter={executeWorkflowRouter}
               />
             </>
-          ) : (
-            <></>
-          )}
+          ) : null}
           {activeTab === 2 ? (
             <WorkingRevision
               getWorkflowSankeyMetrics={getWorkflowSankeyMetrics}
@@ -274,9 +270,7 @@ function InitialWorkflowHook(props) {
               tabBlocker={tabBlocker}
               setTabBlocker={setTabBlocker}
             />
-          ) : (
-            <></>
-          )}
+          ) : null}
           {activeTab === 3 ? (
             <SettingsTab
               addAttributes={addAttributes}
@@ -286,9 +280,7 @@ function InitialWorkflowHook(props) {
               namespace={namespace}
               workflow={filepath}
             />
-          ) : (
-            <></>
-          )}
+          ) : null}
         </FlexBox>
       </FlexBox>
     </>
@@ -664,9 +656,7 @@ function WorkingRevision(props) {
                                 Workflow first state must be a validate state to
                                 generate form.
                               </div>
-                            ) : (
-                              <></>
-                            )}
+                            ) : null}
                             <div className="formContainer">
                               <Form
                                 onSubmit={(form) => {
@@ -965,9 +955,7 @@ function WorkflowInstances(props) {
                       })}
                     </>
                   </>
-                ) : (
-                  <></>
-                )}
+                ) : null}
               </tbody>
             </table>
           )}
@@ -1537,9 +1525,7 @@ function SettingsTab(props) {
                       >
                         {lteStatusMessage}
                       </Alert>
-                    ) : (
-                      <></>
-                    )}
+                    ) : null}
 
                     <FlexBox style={{ width: "100%" }}>
                       <input

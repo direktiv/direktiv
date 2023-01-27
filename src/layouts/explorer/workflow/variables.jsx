@@ -187,9 +187,7 @@ function AddWorkflowVariablePanel(props) {
               <Pagination pageHandler={pageHandler} pageInfo={pageInfo} />
             </FlexBox>
           </FlexBox>
-        ) : (
-          <></>
-        )}
+        ) : null}
       </ContentPanelBody>
     </ContentPanel>
   );

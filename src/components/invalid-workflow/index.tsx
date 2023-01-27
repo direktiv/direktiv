@@ -20,9 +20,7 @@ function InvalidWorkflow({ invalidWorkflow }: InvalidWorkflowProps) {
           <h3 style={{ marginBottom: "0px" }}>Invalid Workflow</h3>
           <pre style={{ whiteSpace: "break-spaces" }}>{invalidWorkflow}</pre>
         </FlexBox>
-      ) : (
-        <></>
-      )}
+      ) : null}
     </>
   );
 }

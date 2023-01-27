@@ -110,9 +110,7 @@ function NamespaceNavigation(props) {
             namespace={namespace}
             additionalChildren={breadcrumbChildren}
           />
-        ) : (
-          <></>
-        )}
+        ) : null}
       </FlexBox>
       <FlexBox col style={{ paddingBottom: "8px" }}>
         {namespaces !== null ? (

@@ -485,9 +485,7 @@ export function UpdateTraffic(props) {
                     >
                       {errMsg}
                     </Alert>
-                  ) : (
-                    <></>
-                  )}
+                  ) : null}
                 </FlexBox>
               </FlexBox>
             </FlexBox>

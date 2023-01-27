@@ -133,9 +133,7 @@ export function InstancesTable(props) {
 
   return (
     <Loader load={load} timer={3000}>
-      {hideTitle ? (
-        <></>
-      ) : (
+      {hideTitle ? null : (
         <FlexBox
           className="gap instance-filter"
           style={{
@@ -148,9 +146,7 @@ export function InstancesTable(props) {
           <FlexBox col gap>
             <FlexBox row gap center="y">
               Filter Name
-              {filterName === "" ? (
-                <></>
-              ) : (
+              {filterName === "" ? null : (
                 <div
                   className="filter-close-btn"
                   onClick={() => {
@@ -173,9 +169,7 @@ export function InstancesTable(props) {
           <FlexBox col gap>
             <FlexBox row gap center="y">
               Filter State
-              {filterState === "" ? (
-                <></>
-              ) : (
+              {filterState === "" ? null : (
                 <div
                   className="filter-close-btn"
                   onClick={() => {
@@ -205,9 +199,7 @@ export function InstancesTable(props) {
           <FlexBox col gap>
             <FlexBox row gap center="y">
               Filter Invoker
-              {filterInvoker === "" ? (
-                <></>
-              ) : (
+              {filterInvoker === "" ? null : (
                 <div
                   className="filter-close-btn"
                   onClick={() => {
@@ -237,9 +229,7 @@ export function InstancesTable(props) {
           <FlexBox col gap>
             <FlexBox row gap center="y">
               Filter Created Before
-              {filterCreatedBefore === "" ? (
-                <></>
-              ) : (
+              {filterCreatedBefore === "" ? null : (
                 <div
                   className="filter-close-btn"
                   onClick={() => {
@@ -265,9 +255,7 @@ export function InstancesTable(props) {
           <FlexBox col gap>
             <FlexBox row gap center="y">
               Filter Created After
-              {filterCreatedAfter === "" ? (
-                <></>
-              ) : (
+              {filterCreatedAfter === "" ? null : (
                 <div
                   className="filter-close-btn"
                   onClick={() => {
@@ -294,9 +282,7 @@ export function InstancesTable(props) {
       )}
 
       <ContentPanel style={{ ...panelStyle }}>
-        {hideTitle ? (
-          <></>
-        ) : (
+        {hideTitle ? null : (
           <>
             <ContentPanelTitle>
               <ContentPanelTitleIcon>
@@ -331,14 +317,12 @@ export function InstancesTable(props) {
                     State
                   </th>
                   <th className="center-align">Name</th>
-                  {mini ? <></> : <th className="center-align">Revision ID</th>}
-                  {mini ? <></> : <th className="center-align">Invoker</th>}
+                  {mini ? null : <th className="center-align">Revision ID</th>}
+                  {mini ? null : <th className="center-align">Invoker</th>}
                   <th className="center-align">
                     Started <span className="hide-1000">at</span>
                   </th>
-                  {mini ? (
-                    <></>
-                  ) : (
+                  {mini ? null : (
                     <th className="center-align">
                       <span className="hide-1000">Last</span> Updated
                     </th>
@@ -475,18 +459,14 @@ export function InstanceRow(props) {
               >
                 /{pathwf.join("/")}
               </div>
-            ) : (
-              <></>
-            )}
+            ) : null}
             <div>/{wfname}</div>
           </td>
         </Tippy>
       ) : (
         ""
       )}
-      {mini ? (
-        <></>
-      ) : (
+      {mini ? null : (
         <td
           title={revStr}
           style={{
@@ -501,9 +481,7 @@ export function InstanceRow(props) {
           {revStr !== undefined ? revStr : "ROUTER"}
         </td>
       )}
-      {mini || wf ? (
-        <></>
-      ) : (
+      {mini || wf ? null : (
         <td
           title={invoker}
           style={{
@@ -524,9 +502,7 @@ export function InstanceRow(props) {
         <span className="hide-864">{startedDate}, </span>
         {startedTime}
       </td>
-      {mini ? (
-        <></>
-      ) : (
+      {mini ? null : (
         <td className="center-align">
           <span className="hide-864">{finishedDate}, </span>
           {finishedTime}

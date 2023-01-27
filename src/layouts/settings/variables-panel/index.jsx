@@ -88,9 +88,7 @@ function VariablesPanel(props) {
         </ContentPanelTitleIcon>
         <FlexBox style={{ display: "flex", alignItems: "center" }} gap>
           <div>Variables</div>
-          <HelpIcon
-            msg="Unencrypted key/value pairs that can be referenced within workflows."
-          />
+          <HelpIcon msg="Unencrypted key/value pairs that can be referenced within workflows." />
         </FlexBox>
         <SearchBar setSearch={setSearch} style={{ height: "25px" }} />
         <div>
@@ -207,9 +205,7 @@ function VariablesPanel(props) {
               <Pagination pageHandler={pageHandler} pageInfo={pageInfo} />
             </FlexBox>
           </FlexBox>
-        ) : (
-          <></>
-        )}
+        ) : null}
       </ContentPanelBody>
     </ContentPanel>
   );

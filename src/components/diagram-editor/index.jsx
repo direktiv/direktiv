@@ -132,9 +132,7 @@ function Actions() {
                   >
                     <VscInfo />
                   </a>
-                ) : (
-                  <></>
-                )}
+                ) : null}
               </div>
               <div
                 style={{
@@ -783,9 +781,7 @@ export default function DiagramEditor(props) {
               >
                 Edit ID
               </li>
-            ) : (
-              <></>
-            )}
+            ) : null}
             {/* Only show delete option if selected node is not a start node */}
             {selectedNode && selectedNode.data.type !== "start" ? (
               <li
@@ -801,9 +797,7 @@ export default function DiagramEditor(props) {
               >
                 Delete
               </li>
-            ) : (
-              <></>
-            )}
+            ) : null}
           </ul>
         </div>
       ) : (
@@ -828,9 +822,7 @@ export default function DiagramEditor(props) {
           >
             {error}{" "}
           </Alert>
-        ) : (
-          <></>
-        )}
+        ) : null}
         {/* <div style={{height:"600px", width: "600px"}}> */}
         <div className="toolbar">
           <div

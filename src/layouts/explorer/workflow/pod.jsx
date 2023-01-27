@@ -101,9 +101,7 @@ export default function WorkflowPod(props) {
                       })}
                     </ul>
                   </div>
-                ) : (
-                  <></>
-                )}
+                ) : null}
               </FlexBox>
               <FlexBox col gap style={{ minWidth: "200px" }}>
                 <div>
@@ -189,9 +187,7 @@ export default function WorkflowPod(props) {
             pods={pods}
           />
         </FlexBox>
-      ) : (
-        <></>
-      )}
+      ) : null}
     </FlexBox>
   );
 }

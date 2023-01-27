@@ -504,9 +504,7 @@ export function Service(props) {
               </Modal>
             </FlexBox>
           </div>
-        ) : (
-          <></>
-        )}
+        ) : null}
       </FlexBox>
       <FlexBox style={{ border: "1px solid #f4f4f4", borderTop: "none" }}>
         <ServiceDetails conditions={conditions} />

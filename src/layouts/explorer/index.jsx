@@ -313,9 +313,7 @@ function ExplorerList(props) {
         >
           <MirrorReadOnlyBadge />
         </FlexBox>
-      ) : (
-        <></>
-      )
+      ) : null
     );
   }, [isReadOnly]);
 
@@ -328,7 +326,7 @@ function ExplorerList(props) {
   useEffect(() => {
     return () => {
       if (setBreadcrumbChildrenRef.current) {
-        setBreadcrumbChildrenRef.current(<></>);
+        setBreadcrumbChildrenRef.current(null);
       }
     };
   }, []);
@@ -796,13 +794,9 @@ function ExplorerList(props) {
                                               setShow={setShowPassphrase}
                                               field="Passphrase"
                                             />
-                                          ) : (
-                                            <></>
-                                          )}
+                                          ) : null}
                                         </>
-                                      ) : (
-                                        <></>
-                                      )}
+                                      ) : null}
                                     </FlexBox>
                                     {key === "publicKey" ||
                                     key === "privateKey" ? (
@@ -852,9 +846,7 @@ function ExplorerList(props) {
                                           </div>
                                         </Tippy>
                                       </ClientFileUpload>
-                                    ) : (
-                                      <></>
-                                    )}
+                                    ) : null}
                                   </FlexBox>
                                   {key === "publicKey" ||
                                   key === "privateKey" ||
@@ -915,9 +907,7 @@ function ExplorerList(props) {
                       <VscRepo />
                       <span>Mirror Info</span>
                     </Button>
-                  ) : (
-                    <></>
-                  )}
+                  ) : null}
                   <div className="explorer-sort-by explorer-action-btn hide-600">
                     <FlexBox gap style={{ marginRight: "8px" }}>
                       <FlexBox center>Sort by:</FlexBox>

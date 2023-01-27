@@ -113,9 +113,7 @@ export default function ActivityTable(props) {
             </table>
           )}
         </>
-      ) : (
-        <></>
-      )}
+      ) : null}
     </Loader>
   );
 }

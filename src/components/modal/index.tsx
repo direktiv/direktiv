@@ -50,7 +50,7 @@ export function ModalHeadless({
   setVisible,
   ...overlayProps
 }: ModalHeadlessProps) {
-  let overlay = <></>;
+  let overlay = null;
   if (visible) {
     overlay = (
       <ModalOverlay
@@ -310,7 +310,7 @@ function ModalOverlay({
   }, [escapeToCancel, onClose, keyDownActions]);
 
   let overlayClasses = "";
-  let closeButton = <></>;
+  let closeButton = null;
   if (withCloseButton) {
     closeButton = (
       <FlexBox
@@ -409,9 +409,7 @@ function ModalOverlay({
                     >
                       {alertMessage}
                     </Alert>
-                  ) : (
-                    <></>
-                  )}
+                  ) : null}
                   {children}
                 </FlexBox>
               </ContentPanelBody>
@@ -426,9 +424,7 @@ function ModalOverlay({
                     </FlexBox>
                   </ContentPanelFooter>
                 </div>
-              ) : (
-                <></>
-              )}
+              ) : null}
             </ContentPanel>
           </div>
         </FlexBox>

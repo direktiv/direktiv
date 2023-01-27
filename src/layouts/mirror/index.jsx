@@ -252,7 +252,7 @@ export default function MirrorPage(props) {
   useEffect(() => {
     return () => {
       if (setBreadcrumbChildrenRef.current) {
-        setBreadcrumbChildrenRef.current(<></>);
+        setBreadcrumbChildrenRef.current(null);
       }
     };
   }, []);
@@ -281,9 +281,7 @@ export default function MirrorPage(props) {
               grow
             >{`Error: ${errorMsg}`}</Alert>
           </FlexBox>
-        ) : (
-          <></>
-        )}
+        ) : null}
         <FlexBox col gap style={{ paddingRight: "8px" }}>
           {/* <BreadcrumbCorner>
                     </BreadcrumbCorner> */}

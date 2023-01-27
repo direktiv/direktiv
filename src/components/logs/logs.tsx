@@ -320,9 +320,7 @@ export function LogFooterButtons({
             )}
           </FlexBox>
         </Button>
-      ) : (
-        <></>
-      )}
+      ) : null}
       {wordWrap !== undefined && setWordWrap !== undefined ? (
         <Button
           color="terminal"
@@ -345,9 +343,7 @@ export function LogFooterButtons({
             )}
           </FlexBox>
         </Button>
-      ) : (
-        <></>
-      )}
+      ) : null}
     </>
   );
 }

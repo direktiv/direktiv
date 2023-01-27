@@ -425,13 +425,9 @@ function NewNamespaceBtn(props) {
                               setShow={setShowPassphrase}
                               field="Passphrase"
                             />
-                          ) : (
-                            <></>
-                          )}
+                          ) : null}
                         </>
-                      ) : (
-                        <></>
-                      )}
+                      ) : null}
                     </FlexBox>
                     {key === "publicKey" || key === "privateKey" ? (
                       <ClientFileUpload
@@ -477,9 +473,7 @@ function NewNamespaceBtn(props) {
                           </div>
                         </Tippy>
                       </ClientFileUpload>
-                    ) : (
-                      <></>
-                    )}
+                    ) : null}
                   </FlexBox>
                   {key === "publicKey" ||
                   key === "privateKey" ||

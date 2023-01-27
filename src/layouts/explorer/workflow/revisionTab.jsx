@@ -261,9 +261,7 @@ function RevisionTab(props) {
                                     Workflow first state must be a validate
                                     state to generate form.
                                   </div>
-                                ) : (
-                                  <></>
-                                )}
+                                ) : null}
                                 <div className="formContainer">
                                   <Form
                                     onSubmit={(form) => {

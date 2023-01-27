@@ -184,7 +184,7 @@ function InstancePage(props) {
     return null;
   }
 
-  let label = <></>;
+  let label = null;
   if (data.status === "complete") {
     label = <SuccessState />;
   } else if (
@@ -236,12 +236,8 @@ function InstancePage(props) {
                       >
                         <span className="red-text">Cancel</span>
                       </Button>
-                    ) : (
-                      <></>
-                    )}
-                    {rev === null || rev === "" ? (
-                      <></>
-                    ) : (
+                    ) : null}
+                    {rev === null || rev === "" ? null : (
                       <Link
                         to={`/n/${namespace}/explorer/${wfName}?${
                           ref === "latest"
@@ -349,9 +345,7 @@ function InstancePage(props) {
                         <span className="hide-600">View</span> Parent
                       </Button>
                     </Link>
-                  ) : (
-                    <></>
-                  )}
+                  ) : null}
                   <TabbedButtons
                     setSearchParams={setSearchParams}
                     searchParams={searchParams}
@@ -371,9 +365,7 @@ function InstancePage(props) {
                     flow={data.flow}
                   />
                 </ContentPanelBody>
-              ) : (
-                <></>
-              )}
+              ) : null}
               {tabBtn === 1 ? (
                 <InstancesTable
                   placeholder="No child instances have executed from this instance. Child instances will appear here."
@@ -385,9 +377,7 @@ function InstancePage(props) {
                     `filter.field=TRIGGER&filter.type=MATCH&filter.val=instance:${instanceID}`,
                   ]}
                 />
-              ) : (
-                <></>
-              )}
+              ) : null}
             </ContentPanel>
           </FlexBox>
           <FlexBox style={{ minWidth: "300px", flex: "2" }}>

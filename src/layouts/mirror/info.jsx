@@ -439,9 +439,7 @@ export default function MirrorInfoPanel(props) {
                           ? ` Changing authentication method to "SSH Keys" will remove Access Token from settings.`
                           : ""}
                       </FlexBox>
-                    ) : (
-                      <></>
-                    )}
+                    ) : null}
                     {infoChangesTracker.url ? (
                       <FlexBox col gap style={{ paddingRight: "10px" }}>
                         <FlexBox col gap="sm" center="x" style={{}}>
@@ -451,18 +449,14 @@ export default function MirrorInfoPanel(props) {
                               {" "}
                               Warning: URL will be deleted
                             </span>
-                          ) : (
-                            <></>
-                          )}
+                          ) : null}
                         </FlexBox>
                         <input
                           className="info-input-value readonly"
                           value={infoURL}
                         />
                       </FlexBox>
-                    ) : (
-                      <></>
-                    )}
+                    ) : null}
                     {infoChangesTracker.ref ? (
                       <FlexBox col gap style={{ paddingRight: "10px" }}>
                         <FlexBox col gap="sm" center="x" style={{}}>
@@ -472,18 +466,14 @@ export default function MirrorInfoPanel(props) {
                               {" "}
                               Warning: Ref will be deleted
                             </span>
-                          ) : (
-                            <></>
-                          )}
+                          ) : null}
                         </FlexBox>
                         <input
                           className="info-input-value readonly"
                           value={infoRef}
                         />
                       </FlexBox>
-                    ) : (
-                      <></>
-                    )}
+                    ) : null}
                     {infoChangesTracker.cron ? (
                       <FlexBox col gap style={{ paddingRight: "10px" }}>
                         <FlexBox col gap="sm" center="x" style={{}}>
@@ -493,9 +483,7 @@ export default function MirrorInfoPanel(props) {
                               {" "}
                               Warning: Cron will be deleted
                             </span>
-                          ) : (
-                            <></>
-                          )}
+                          ) : null}
                         </FlexBox>
                         <input
                           className="info-input-value readonly"
@@ -503,9 +491,7 @@ export default function MirrorInfoPanel(props) {
                           value={infoCron}
                         />
                       </FlexBox>
-                    ) : (
-                      <></>
-                    )}
+                    ) : null}
                     {infoChangesTracker.passphrase &&
                     mirrorAuthMethod === "token" ? (
                       <FlexBox col gap style={{ paddingRight: "10px" }}>
@@ -516,9 +502,7 @@ export default function MirrorInfoPanel(props) {
                               {" "}
                               Warning: Token will be deleted
                             </span>
-                          ) : (
-                            <></>
-                          )}
+                          ) : null}
                         </FlexBox>
                         <textarea
                           className="info-textarea-value readonly"
@@ -528,9 +512,7 @@ export default function MirrorInfoPanel(props) {
                           value={infoPassphrase}
                         />
                       </FlexBox>
-                    ) : (
-                      <></>
-                    )}
+                    ) : null}
                     {infoChangesTracker.passphrase &&
                     mirrorAuthMethod === "ssh" ? (
                       <FlexBox col gap style={{ paddingRight: "10px" }}>
@@ -543,9 +525,7 @@ export default function MirrorInfoPanel(props) {
                               {" "}
                               Warning: Passphrase will be deleted
                             </span>
-                          ) : (
-                            <></>
-                          )}
+                          ) : null}
                         </FlexBox>
                         <input
                           className="info-input-value readonly"
@@ -554,9 +534,7 @@ export default function MirrorInfoPanel(props) {
                           value={infoPassphrase}
                         />
                       </FlexBox>
-                    ) : (
-                      <></>
-                    )}
+                    ) : null}
                     {infoChangesTracker.publicKey &&
                     mirrorAuthMethod === "ssh" ? (
                       <FlexBox col gap style={{ paddingRight: "10px" }}>
@@ -569,9 +547,7 @@ export default function MirrorInfoPanel(props) {
                               {" "}
                               Warning: Public Key will be deleted
                             </span>
-                          ) : (
-                            <></>
-                          )}
+                          ) : null}
                         </FlexBox>
                         <textarea
                           className="info-textarea-value readonly"
@@ -581,9 +557,7 @@ export default function MirrorInfoPanel(props) {
                           value={infoPublicKey}
                         />
                       </FlexBox>
-                    ) : (
-                      <></>
-                    )}
+                    ) : null}
                     {infoChangesTracker.privateKey &&
                     mirrorAuthMethod === "ssh" ? (
                       <FlexBox col gap style={{ paddingRight: "10px" }}>
@@ -596,9 +570,7 @@ export default function MirrorInfoPanel(props) {
                               {" "}
                               Warning: Private Key will be deleted
                             </span>
-                          ) : (
-                            <></>
-                          )}
+                          ) : null}
                         </FlexBox>
                         <textarea
                           className="info-textarea-value readonly"
@@ -608,9 +580,7 @@ export default function MirrorInfoPanel(props) {
                           value={infoPrivateKey}
                         />
                       </FlexBox>
-                    ) : (
-                      <></>
-                    )}
+                    ) : null}
                   </FlexBox>
                 </Modal>
               </div>
@@ -817,9 +787,7 @@ export default function MirrorInfoPanel(props) {
                 placeholder={accessTokenPlaceholder()}
               />
             </FlexBox>
-          ) : (
-            <></>
-          )}
+          ) : null}
 
           {/* SSH Auth Inputs */}
           {mirrorAuthMethod === "ssh" ? (
@@ -1090,9 +1058,7 @@ export default function MirrorInfoPanel(props) {
                 />
               </FlexBox>
             </>
-          ) : (
-            <></>
-          )}
+          ) : null}
         </FlexBox>
       </ContentPanelBody>
     </ContentPanel>

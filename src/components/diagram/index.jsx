@@ -125,9 +125,7 @@ export default function WorkflowDiagram(props) {
         <ReactFlowProvider>
           <ZoomPanDiagram disabled={disabled} elements={elements} />
         </ReactFlowProvider>
-      ) : (
-        <></>
-      )}
+      ) : null}
     </>
   );
 }
