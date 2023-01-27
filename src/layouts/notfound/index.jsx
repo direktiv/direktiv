@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import FlexBox from "../../components/flexbox";
 import "./style.css";
 
-function NotFound(props) {
+function NotFound() {
   return (
     <FlexBox className={"center-y center-x col"}>
       <div>
