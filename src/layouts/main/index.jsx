@@ -235,7 +235,11 @@ function MainLayout(props) {
     akeyReq,
   } = props;
   const [, setApiKey] = useApiKey();
-  setApiKey(akey);
+
+  useEffect(() => {
+    setApiKey(akey);
+  }, [akey, setApiKey]);
+
   const [load, setLoad] = useState(true);
 
   const [namespace, setNamespace] = useState(null);
