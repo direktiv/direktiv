@@ -592,15 +592,10 @@ function WorkingRevision(props) {
                           disabled:
                             tabIndex === 1 && workflowJSONSchema === null,
                         },
-                        errFunc: () => {},
                         closesModal: tabIndex === 0,
                       },
                       {
                         label: "Cancel",
-
-                        onClick: async () => {},
-
-                        errFunc: () => {},
                         closesModal: true,
                       },
                     ]}
