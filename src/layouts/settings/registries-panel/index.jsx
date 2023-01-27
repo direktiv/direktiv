@@ -11,7 +11,7 @@ import Alert from "../../../components/alert";
 import { useRegistries } from "../../../hooks";
 import { Config } from "../../../util";
 import HelpIcon from "../../../components/help";
-import { VscServer, VscTrash , VscAdd } from "react-icons/vsc";
+import { VscServer, VscTrash, VscAdd } from "react-icons/vsc";
 
 import { useApiKey } from "../../../util/apiKeyProvider";
 
@@ -101,8 +101,6 @@ function RegistriesPanel(props) {
                   await createRegistry(url, `${username}:${token}`);
                   await getRegistries();
                 },
-
-                errFunc: () => {},
                 closeModal: true,
               },
             ]}
@@ -140,7 +138,6 @@ function RegistriesPanel(props) {
                 },
 
                 buttonProps: { variant: "contained", color: "primary" },
-                errFunc: () => {},
                 closesModal: true,
                 validate: true,
               },
@@ -195,11 +192,7 @@ function RegistriesPanel(props) {
               },
               {
                 label: "Cancel",
-
-                onClick: () => {},
-
                 buttonProps: {},
-                errFunc: () => {},
                 closesModal: true,
               },
             ]}
@@ -471,25 +464,20 @@ export function Registries(props) {
                             await deleteRegistry(obj.name);
                             await getRegistries();
                           },
-
                           buttonProps: { variant: "contained", color: "error" },
-                          errFunc: () => {},
                           closesModal: true,
                         },
                         {
                           label: "Cancel",
-
-                          onClick: () => {},
-
                           buttonProps: {},
-                          errFunc: () => {},
                           closesModal: true,
                         },
                       ]}
                     >
                       <FlexBox col gap>
                         <FlexBox>
-                          Are you sure you want to remove '{obj.name}'?
+                          Are you sure you want to remove &apos;{obj.name}
+                          &apos;?
                           <br />
                           This action cannot be undone.
                         </FlexBox>
