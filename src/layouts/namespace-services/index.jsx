@@ -221,7 +221,6 @@ function NamespaceServices(props) {
             modalStyle={{
               maxWidth: "300px",
             }}
-            onOpen={() => {}}
             onClose={() => {
               setServiceName("");
               setImage("");
@@ -236,10 +235,9 @@ function NamespaceServices(props) {
             keyDownActions={[
               {
                 code: "Enter",
-
-                fn: async () => {},
-
-                errFunc: () => {},
+                fn: async () => {
+                  return true;
+                },
                 closeModal: true,
               },
             ]}
@@ -258,17 +256,12 @@ function NamespaceServices(props) {
                 },
 
                 buttonProps: { variant: "contained", color: "primary" },
-                errFunc: () => {},
                 closesModal: true,
                 validate: true,
               },
               {
                 label: "Cancel",
-
-                onClick: () => {},
-
                 buttonProps: {},
-                errFunc: () => {},
                 closesModal: true,
               },
             ]}
@@ -403,8 +396,6 @@ export function Service(props) {
                     maxWidth: "400px",
                     width: "400px",
                   }}
-                  onOpen={() => {}}
-                  onClose={() => {}}
                   button={<ServicesDeleteButton />}
                   buttonProps={{
                     color: "info",
@@ -420,25 +411,19 @@ export function Service(props) {
                           await deleteService(name);
                         }
                       },
-
                       buttonProps: { variant: "contained", color: "error" },
-                      errFunc: () => {},
                       closesModal: true,
                     },
                     {
                       label: "Cancel",
-
-                      onClick: () => {},
-
                       buttonProps: {},
-                      errFunc: () => {},
                       closesModal: true,
                     },
                   ]}
                 >
                   <FlexBox col gap>
                     <FlexBox>
-                      Are you sure you want to delete '{name}'?
+                      Are you sure you want to delete &apos;{name}&apos;?
                       <br />
                       This action cannot be undone.
                     </FlexBox>
@@ -507,9 +492,7 @@ export function Service(props) {
                   },
                   {
                     label: "Cancel",
-                    onClick: () => {},
                     buttonProps: {},
-                    errFunc: () => {},
                     closesModal: true,
                   },
                 ]}
@@ -541,7 +524,6 @@ export function Service(props) {
 
 function ServiceDetails(props) {
   const { conditions } = props;
-
   return (
     <ul
       className="condition-list"
