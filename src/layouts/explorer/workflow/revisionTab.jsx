@@ -186,16 +186,11 @@ function RevisionTab(props) {
                               disabled:
                                 tabIndex === 1 && workflowJSONSchema === null,
                             },
-                            errFunc: () => {},
                             closesModal: tabIndex === 0,
                           },
                           {
                             label: "Cancel",
-
-                            onClick: async () => {},
-
                             buttonProps: {},
-                            errFunc: () => {},
                             closesModal: true,
                           },
                         ]}
@@ -652,24 +647,19 @@ export function RevisionSelectorTab(props) {
                                 variant: "contained",
                                 color: "error",
                               },
-                              errFunc: () => {},
                               closesModal: true,
                             },
                             {
                               label: "Cancel",
-
-                              onClick: () => {},
-
                               buttonProps: {},
-                              errFunc: () => {},
                               closesModal: true,
                             },
                           ]}
                         >
                           <FlexBox col gap>
                             <FlexBox>
-                              Are you sure you want to remove the tag '
-                              {obj.name}'?
+                              Are you sure you want to remove the tag &apos;
+                              {obj.name}&apos;?
                             </FlexBox>
                           </FlexBox>
                         </Modal>
@@ -706,23 +696,18 @@ export function RevisionSelectorTab(props) {
                                 variant: "contained",
                                 color: "error",
                               },
-                              errFunc: () => {},
                               closesModal: true,
                             },
                             {
                               label: "Cancel",
-
-                              onClick: () => {},
-
-                              buttonProps: {},
-                              errFunc: () => {},
                               closesModal: true,
                             },
                           ]}
                         >
                           <FlexBox col gap>
                             <FlexBox>
-                              Are you sure you want to delete '{obj.name}'?
+                              Are you sure you want to delete &apos;{obj.name}
+                              &apos;?
                               <br />
                               This action cannot be undone.
                             </FlexBox>
@@ -780,23 +765,19 @@ export function RevisionSelectorTab(props) {
                                   variant: "contained",
                                   color: "error",
                                 },
-                                errFunc: () => {},
                                 closesModal: true,
                               },
                               {
                                 label: "Cancel",
-
-                                onClick: () => {},
-
                                 buttonProps: {},
-                                errFunc: () => {},
                                 closesModal: true,
                               },
                             ]}
                           >
                             <FlexBox col gap>
                               <FlexBox>
-                                Are you sure you want to revert to '{obj.name}'?
+                                Are you sure you want to revert to &apos;
+                                {obj.name}&apos;?
                               </FlexBox>
                             </FlexBox>
                           </Modal>
@@ -815,29 +796,17 @@ export function RevisionSelectorTab(props) {
                         <>
                           {/* Hidden buttons to retain same spacing on latest */}
                           <div style={{ visibility: "hidden" }}>
-                            <Button
-                              color="info"
-                              variant="outlined"
-                              onClick={async () => {}}
-                            >
+                            <Button color="info" variant="outlined">
                               Tag
                             </Button>
                           </div>
                           <div style={{ visibility: "hidden" }}>
-                            <Button
-                              color="info"
-                              variant="outlined"
-                              onClick={async () => {}}
-                            >
+                            <Button color="info" variant="outlined">
                               Revert <span className="hide-900">To</span>
                             </Button>
                           </div>
                           <div>
-                            <Button
-                              color="info"
-                              variant="outlined"
-                              onClick={() => {}}
-                            >
+                            <Button color="info" variant="outlined">
                               Open <span className="hide-900">Revision</span>
                             </Button>
                           </div>
@@ -928,7 +897,6 @@ function TagRevisionBtn(props) {
       actionButtons={[
         {
           label: "Tag",
-
           onClick: async () => {
             await tagWorkflow(obj.name, tag);
             const tagsResp = await getTags();
@@ -936,19 +904,13 @@ function TagRevisionBtn(props) {
             setRevisions(revResp.results);
             updateTags(tagsResp.results);
           },
-
           buttonProps: { variant: "contained", color: "primary" },
-          errFunc: () => {},
           closesModal: true,
           validate: true,
         },
         {
           label: "Cancel",
-
-          onClick: () => {},
-
           buttonProps: {},
-          errFunc: () => {},
           closesModal: true,
         },
       ]}
@@ -1232,18 +1194,12 @@ export function RevisionTrafficShaper(props) {
                       navigate(`/n/${namespace}/instances/${r}`);
                     }
                   },
-
                   buttonProps: { variant: "contained", color: "primary" },
-                  errFunc: () => {},
                   closesModal: true,
                 },
                 {
                   label: "Cancel",
-
-                  onClick: async () => {},
-
                   buttonProps: {},
-                  errFunc: () => {},
                   closesModal: true,
                 },
               ]}
