@@ -228,7 +228,7 @@ function NamespaceRevisions(props) {
             <ContentPanelTitleIcon>
               <VscLayers />
             </ContentPanelTitleIcon>
-            <FlexBox>Service '{service}' Revisions</FlexBox>
+            <FlexBox>Service &apos;{service}&apos; Revisions</FlexBox>
             <div>
               <Modal
                 title={`New '${service}' revision`}
@@ -236,8 +236,6 @@ function NamespaceRevisions(props) {
                 modalStyle={{
                   maxWidth: "300px",
                 }}
-                onOpen={() => {}}
-                onClose={() => {}}
                 button={<VscAdd />}
                 buttonProps={{
                   auto: true,
@@ -245,10 +243,9 @@ function NamespaceRevisions(props) {
                 keyDownActions={[
                   {
                     code: "Enter",
-
-                    fn: async () => {},
-
-                    errFunc: () => {},
+                    fn: async () => {
+                      return true;
+                    },
                     closeModal: true,
                   },
                 ]}
@@ -256,7 +253,6 @@ function NamespaceRevisions(props) {
                 actionButtons={[
                   {
                     label: "Add",
-
                     onClick: async () => {
                       await createNamespaceServiceRevision(
                         image,
@@ -266,19 +262,13 @@ function NamespaceRevisions(props) {
                         parseInt(trafficPercent)
                       );
                     },
-
                     buttonProps: { variant: "contained", color: "primary" },
-                    errFunc: () => {},
                     closesModal: true,
                     validate: true,
                   },
                   {
                     label: "Cancel",
-
-                    onClick: () => {},
-
                     buttonProps: {},
-                    errFunc: () => {},
                     closesModal: true,
                   },
                 ]}
@@ -379,7 +369,7 @@ export function UpdateTraffic(props) {
             <ContentPanelTitleIcon>
               <VscLayers />
             </ContentPanelTitleIcon>
-            <FlexBox>Update '{service}' traffic</FlexBox>
+            <FlexBox>Update &apos;{service}&apos; traffic</FlexBox>
           </ContentPanelTitle>
           <ContentPanelBody className="secrets-panel">
             <FlexBox col gap style={{}}>
