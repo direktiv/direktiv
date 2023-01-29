@@ -7,7 +7,7 @@ require (
 	github.com/Masterminds/semver v1.5.0
 	github.com/bbuck/go-lexer v1.0.0
 	github.com/cloudevents/sdk-go/binding/format/protobuf/v2 v2.6.1
-	github.com/cloudevents/sdk-go/v2 v2.10.1
+	github.com/cloudevents/sdk-go/v2 v2.12.0
 	github.com/dop251/goja v0.0.0-20220214123719-b09a6bfa842f
 	github.com/emicklei/go-restful/v3 v3.8.0
 	github.com/gabriel-vasile/mimetype v1.3.1

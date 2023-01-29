@@ -1044,7 +1044,7 @@ func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloud
 	} else {
 		ceventfilter, err := ns.QueryCloudeventfilters().Where(enteventsfilter.NameEQ(filterName)).Only(ctx)
 		if err != nil {
-			err = status.Error(codes.NotFound, fmt.Sprintf("CloudEvent filter %s not exists", filterName))
+			err = status.Error(codes.NotFound, fmt.Sprintf("cloudEvent filter %s does not exist", filterName))
 			return resp, err
 		}
 
@@ -1060,22 +1060,33 @@ func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloud
 
 	//create js runtime
 	vm := goja.New()
+	time.AfterFunc(1*time.Second, func() {
+		vm.Interrupt("block event filter")
+	})
 
 	err = vm.Set("event", mapEvent)
 	if err != nil {
 		return resp, fmt.Errorf("failed to initialize js runtime: %w", err)
 	}
 
+	// add logging function
+	err = vm.Set("nslog", func(txt interface{}) {
+		flow.logToNamespace(ctx, time.Now(), ns, fmt.Sprintf("%v", txt))
+	})
+	if err != nil {
+		return resp, fmt.Errorf("failed to initialize js runtime: %w", err)
+	}
+
 	_, err = vm.RunString(script)
 	if err != nil {
-		flow.logToNamespace(ctx, time.Now(), ns, "CloudEvent filter '%s' produced an error (1): %v", filterName, err)
+		flow.logToNamespace(ctx, time.Now(), ns, "cloudEvent filter '%s' error: %s", filterName, err.Error())
 		return resp, err
 	}
 
 	var fn func() any
 	err = vm.ExportTo(vm.Get("filter"), &fn)
 	if err != nil {
-		flow.logToNamespace(ctx, time.Now(), ns, "CloudEvent filter '%s' produced an error (2): %v", filterName, err)
+		flow.logToNamespace(ctx, time.Now(), ns, "cloudEvent filter '%s' error: %v", filterName, err)
 		return resp, err
 	}
 
@@ -1083,25 +1094,28 @@ func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloud
 
 	newBytesEvent, err := json.Marshal(newEventMap)
 	if err != nil {
-		flow.logToNamespace(ctx, time.Now(), ns, "CloudEvent filter '%s' produced an error (3): %v", filterName, err)
+		flow.logToNamespace(ctx, time.Now(), ns, "cloudEvent filter '%s' error: %v", filterName, err)
 		return resp, err
 	}
+
 	resp.Event = newBytesEvent
 
-	if string(resp.GetEvent()) == "null" {
-		event, err := EventByteToCloudevent(cloudevent)
+	// if null it has been dropped
+	if string(resp.GetEvent()) != "null" {
+		ev := &event.Event{}
+		err := json.Unmarshal(resp.Event, ev)
 		if err != nil {
-			flow.logToNamespace(ctx, time.Now(), ns, "CloudEvent filter '%s' produced an error (4): %v", filterName, err)
+			flow.logToNamespace(ctx, time.Now(), ns, "cloudEvent filter '%s' error: %v", filterName, err)
 			return resp, err
 		}
-		flow.logToNamespace(ctx, time.Now(), ns, "Dropped Event: %s", event.ID())
-	} else {
-		event, err := EventByteToCloudevent(newBytesEvent)
+
+		// now send it to the backend
+		err = flow.events.handleEvent(ns, ev)
 		if err != nil {
-			flow.logToNamespace(ctx, time.Now(), ns, "CloudEvent filter '%s' produced an error (5): %v", filterName, err)
+			flow.logToNamespace(ctx, time.Now(), ns, "cloudEvent filter '%s' error: %v", filterName, err)
 			return resp, err
 		}
-		flow.logToNamespace(ctx, time.Now(), ns, "cloud event filter applied, new Event : %s (%s / %s)", event.ID(), event.Type(), event.Source())
+
 	}
 
 	return resp, err
@@ -1245,12 +1259,12 @@ func (flow *flow) GetCloudEventFilterScript(ctx context.Context, in *grpc.GetClo
 	return resp, err
 }
 
-func EventByteToCloudevent(byteEvent []byte) (event.Event, error) {
-	ev := &event.Event{}
-	err := json.Unmarshal(byteEvent, ev)
-	return *ev, err
+// func EventByteToCloudevent(byteEvent []byte) (event.Event, error) {
+// 	ev := &event.Event{}
+// 	err := json.Unmarshal(byteEvent, ev)
+// 	return *ev, err
 
-}
+// }
 
 func (c *CacheObject) get(key keyPair) (string, bool) {
 	v, ok := c.value.Load(key)
@@ -1270,4 +1284,6 @@ func (c *CacheObject) put(key keyPair, value string) {
 
 func (c *CacheObject) delete(key keyPair) {
 	c.value.Delete(key)
+
+	// TODO: pubsub
 }
