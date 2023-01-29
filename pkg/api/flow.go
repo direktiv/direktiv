@@ -4512,9 +4512,7 @@ generic:
 
 }
 
-func (h *flowHandler) BroadcastCloudevent(w http.ResponseWriter, r *http.Request) {
-
-	h.logger.Debugf("Handling request: %s", this())
+func (h *flowHandler) doBroadcast(w http.ResponseWriter, r *http.Request, filter string) {
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -4535,15 +4533,38 @@ func (h *flowHandler) BroadcastCloudevent(w http.ResponseWriter, r *http.Request
 			return
 		}
 
-		in := &grpc.BroadcastCloudeventRequest{
-			Namespace:  namespace,
-			Cloudevent: d,
+		if filter == "" {
+
+			in := &grpc.BroadcastCloudeventRequest{
+				Namespace:  namespace,
+				Cloudevent: d,
+			}
+
+			resp, err := h.client.BroadcastCloudevent(ctx, in)
+			respond(w, resp, err)
+
+		} else {
+
+			inFilter := &grpc.ApplyCloudEventFilterRequest{
+				Namespace:  namespace,
+				Cloudevent: d,
+				FilterName: filter,
+			}
+
+			resp, err := h.client.ApplyCloudEventFilter(ctx, inFilter)
+			respond(w, resp, err)
+
 		}
 
-		resp, err := h.client.BroadcastCloudevent(ctx, in)
-		respond(w, resp, err)
-
 	}
+
+}
+
+func (h *flowHandler) BroadcastCloudevent(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	h.doBroadcast(w, r, "")
 
 }
 
@@ -4551,49 +4572,7 @@ func (h *flowHandler) BroadcastCloudeventFilter(w http.ResponseWriter, r *http.R
 
 	h.logger.Debugf("Handling request: %s", this())
 
-	ctx := r.Context()
-	namespace := mux.Vars(r)["ns"]
-	filter := mux.Vars(r)["filter"]
-
-	ces, err := ToGRPCCloudEvents(r)
-	if err != nil {
-		respond(w, nil, err)
-		return
-	}
-
-	for i := range ces {
-
-		d, err := json.Marshal(ces[i])
-		if err != nil {
-			h.logger.Errorf("Failed to marshal CloudEvent: %v.", err)
-			continue
-		}
-
-		inFilter := &grpc.ApplyCloudEventFilterRequest{
-			Namespace:  namespace,
-			Cloudevent: d,
-			FilterName: filter,
-		}
-
-		rsp, err := h.client.ApplyCloudEventFilter(ctx, inFilter)
-		if err != nil {
-			h.logger.Errorf("Failed to apply CloudEvent filter: %v.", err)
-			respond(w, rsp, err)
-		}
-
-		if string(rsp.GetEvent()) == "null" {
-			continue
-		}
-
-		in := &grpc.BroadcastCloudeventRequest{
-			Namespace:  namespace,
-			Cloudevent: rsp.GetEvent(),
-		}
-
-		resp, err := h.client.BroadcastCloudevent(ctx, in)
-		respond(w, resp, err)
-
-	}
+	h.doBroadcast(w, r, mux.Vars(r)["filter"])
 
 }
 

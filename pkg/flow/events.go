@@ -1012,11 +1012,11 @@ func (events *events) listenForEvents(ctx context.Context, im *instanceMemory, c
 
 }
 
-func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloudEventFilterRequest) (*grpc.ApplyCloudEventFilterResponse, error) {
+func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloudEventFilterRequest) (*emptypb.Empty, error) {
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	resp := new(grpc.ApplyCloudEventFilterResponse)
+	resp := new(emptypb.Empty)
 
 	namespace := in.GetNamespace()
 	filterName := in.GetFilterName()
@@ -1092,12 +1092,10 @@ func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloud
 		return resp, err
 	}
 
-	resp.Event = newBytesEvent
-
 	// if null it has been dropped
-	if string(resp.GetEvent()) != "null" {
+	if string(newBytesEvent) != "null" {
 		ev := &event.Event{}
-		err := json.Unmarshal(resp.Event, ev)
+		err := json.Unmarshal(newBytesEvent, ev)
 		if err != nil {
 			flow.logToNamespace(ctx, time.Now(), ns, "cloudEvent filter '%s' error: %v", filterName, err)
 			return resp, err
