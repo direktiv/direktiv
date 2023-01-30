@@ -74,7 +74,7 @@ func getImpactedFiles(start string, filesAllowed, recursive bool) ([]string, err
 
 	pathStat, err := os.Stat(start)
 	if err != nil {
-		return pathsToUpdate, fmt.Errorf("could not access path: %v", err)
+		return pathsToUpdate, fmt.Errorf("could not access path: %w", err)
 	}
 
 	if filesAllowed || pathStat.IsDir() {
@@ -97,7 +97,7 @@ func getImpactedFiles(start string, filesAllowed, recursive bool) ([]string, err
 				})
 
 			if err != nil {
-				return pathsToUpdate, fmt.Errorf("recursive search could not access path: %v", err)
+				return pathsToUpdate, fmt.Errorf("recursive search could not access path: %w", err)
 			}
 		} else {
 			pathsToUpdate = append(pathsToUpdate, start)
@@ -271,7 +271,7 @@ Will update the helloworld workflow and set the remote workflow variable 'data.j
 
 		pathsToUpdate, err := getImpactedFiles(args[0], true, true)
 		if err != nil {
-			root.Fail("could not caluclate impacted files: %v", err)
+			root.Fail("could not calculate impacted files: %v", err)
 		}
 
 		relativeDir := root.GetConfigPath()
@@ -307,7 +307,10 @@ Will update the helloworld workflow and set the remote workflow variable 'data.j
 			root.Printlog("pushing workflow %s", path)
 
 			// push local variables
-			updateLocalVars(wf, path)
+			err = updateLocalVars(wf, path)
+			if err != nil {
+				fmt.Printf("can not update variables: %s\n", err.Error())
+			}
 
 			err := updateRemoteWorkflow(path, wf)
 			if err != nil {
@@ -323,7 +326,7 @@ func updateLocalVars(wf, path string) error {
 	// push local variables
 	localVars, err := getLocalWorkflowVariables(wf)
 	if err != nil {
-		return fmt.Errorf("failed to get local variable files: %v\n", err)
+		return fmt.Errorf("failed to get local variable files: %w\n", err)
 	}
 
 	if len(localVars) > 0 {
@@ -335,7 +338,7 @@ func updateLocalVars(wf, path string) error {
 			root.Printlog("      updating remote workflow variable: '%s'\n", varName)
 			err = setRemoteWorkflowVariable(path, varName, v)
 			if err != nil {
-				return fmt.Errorf("failed to set remote variable file: %v\n", err)
+				return fmt.Errorf("failed to set remote variable file: %w\n", err)
 			}
 		}
 	}
@@ -422,7 +425,7 @@ func updateRemoteWorkflow(path string, localPath string) error {
 
 	err = recurseMkdirParent(path)
 	if err != nil {
-		return fmt.Errorf("Failed to create parent directory: %v", err)
+		return fmt.Errorf("Failed to create parent directory: %w", err)
 	}
 
 	urlWorkflow := fmt.Sprintf("%s/tree/%s", root.UrlPrefix, strings.TrimPrefix(path, "/"))
@@ -634,7 +637,10 @@ Will update the helloworld workflow and set the remote workflow variable 'data.j
 			root.Printlog("skipping updating namespace: '%s' workflow: '%s'\n", root.GetNamespace(), path)
 		}
 
-		updateLocalVars(args[0], path)
+		err := updateLocalVars(args[0], path)
+		if err != nil {
+			fmt.Printf("can not update variables: %s\n", err.Error())
+		}
 
 		urlExecute := fmt.Sprintf("%s/tree/%s?op=execute&ref=latest", root.UrlPrefix, strings.TrimPrefix(path, "/"))
 		instanceDetails, err := executeWorkflow(urlExecute)
@@ -752,14 +758,14 @@ func executeWorkflow(url string) (executeResponse, error) {
 	// Read input data from flag file
 	inputData, err := root.SafeLoadFile(input)
 	if err != nil {
-		return instanceDetails, fmt.Errorf("Failed to load input file: %v", err)
+		return instanceDetails, fmt.Errorf("Failed to load input file: %w", err)
 	}
 
 	// If inputData is empty attempt to read from stdin
 	if inputData.Len() == 0 {
 		inputData, err = root.SafeLoadStdIn()
 		if err != nil {
-			return instanceDetails, fmt.Errorf("Failed to load stdin: %v", err)
+			return instanceDetails, fmt.Errorf("Failed to load stdin: %w", err)
 		}
 	}
 
