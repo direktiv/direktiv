@@ -169,7 +169,11 @@ func executeEvent(url string, args []string) (string, error) {
 	// the root command checks if the namespace exists
 	// this not found has to be a wrong filter
 	if resp.StatusCode == http.StatusNotFound {
-		return "", fmt.Errorf("eventfilter not exists")
+		return "", fmt.Errorf("eventfilter does not exist")
+	} else if resp.StatusCode == http.StatusForbidden {
+		return "", fmt.Errorf("access to server forbidden")
+	} else if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("server responded with status %d", resp.StatusCode)
 	}
 
 	return string(b), err
