@@ -217,7 +217,7 @@ var setFilterCmd = &cobra.Command{
 			root.Fail("can not read force flag: %s", err.Error())
 		}
 
-		method := http.MethodPut
+		method := http.MethodPost
 		if force {
 			method = http.MethodPatch
 		}
