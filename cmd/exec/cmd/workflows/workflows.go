@@ -38,15 +38,18 @@ EXAMPLE:
 
 		r, err := cmd.Flags().GetBool("recursive")
 		if err != nil {
-			root.Fail("Could not access recursive flag: %v", err)
+			root.Fail("could not access recursive flag: %v", err)
 		}
 
 		writable, err := cmd.Flags().GetBool("writable")
 		if err != nil {
-			root.Fail("Could not access writable flag: %v", err)
+			root.Fail("could not access writable flag: %v", err)
 		}
 
-		pathsToUpdate := getImpactedFiles(args[0], false, r)
+		pathsToUpdate, err := getImpactedFiles(args[0], false, r)
+		if err != nil {
+			root.Fail("could not calculate impacted files: %v", err)
+		}
 
 		for i := range pathsToUpdate {
 			p := pathsToUpdate[i]
@@ -65,14 +68,15 @@ EXAMPLE:
 	},
 }
 
-func getImpactedFiles(start string, filesAllowed, recursive bool) []string {
+func getImpactedFiles(start string, filesAllowed, recursive bool) ([]string, error) {
+
+	pathsToUpdate := make([]string, 0)
 
 	pathStat, err := os.Stat(start)
 	if err != nil {
-		root.Fail("could not access path: %v", err)
+		return pathsToUpdate, fmt.Errorf("could not access path: %v", err)
 	}
 
-	pathsToUpdate := make([]string, 0)
 	if filesAllowed || pathStat.IsDir() {
 		if recursive {
 			err := filepath.Walk(start,
@@ -93,7 +97,7 @@ func getImpactedFiles(start string, filesAllowed, recursive bool) []string {
 				})
 
 			if err != nil {
-				root.Fail("recursive search could not access path: %v", err)
+				return pathsToUpdate, fmt.Errorf("recursive search could not access path: %v", err)
 			}
 		} else {
 			pathsToUpdate = append(pathsToUpdate, start)
@@ -102,11 +106,11 @@ func getImpactedFiles(start string, filesAllowed, recursive bool) []string {
 		if filesAllowed {
 			pathsToUpdate = append(pathsToUpdate, start)
 		} else {
-			root.Fail("only directories allowed")
+			return pathsToUpdate, fmt.Errorf("only directories allowed")
 		}
 	}
 
-	return pathsToUpdate
+	return pathsToUpdate, nil
 }
 
 func switchGitStatus(url string, writable bool) error {
@@ -265,7 +269,11 @@ Will update the helloworld workflow and set the remote workflow variable 'data.j
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 
-		pathsToUpdate := getImpactedFiles(args[0], true, true)
+		pathsToUpdate, err := getImpactedFiles(args[0], true, true)
+		if err != nil {
+			root.Fail("could not caluclate impacted files: %v", err)
+		}
+
 		relativeDir := root.GetConfigPath()
 
 		// cull using ignores
@@ -311,11 +319,11 @@ Will update the helloworld workflow and set the remote workflow variable 'data.j
 	},
 }
 
-func updateLocalVars(wf, path string) {
+func updateLocalVars(wf, path string) error {
 	// push local variables
 	localVars, err := getLocalWorkflowVariables(wf)
 	if err != nil {
-		root.Fail("failed to get local variable files: %v\n", err)
+		return fmt.Errorf("failed to get local variable files: %v\n", err)
 	}
 
 	if len(localVars) > 0 {
@@ -327,10 +335,12 @@ func updateLocalVars(wf, path string) {
 			root.Printlog("      updating remote workflow variable: '%s'\n", varName)
 			err = setRemoteWorkflowVariable(path, varName, v)
 			if err != nil {
-				root.Fail("failed to set remote variable file: %v\n", err)
+				return fmt.Errorf("failed to set remote variable file: %v\n", err)
 			}
 		}
 	}
+
+	return nil
 }
 
 func setRemoteWorkflowVariable(wf string, varName string, varPath string) error {
@@ -412,7 +422,7 @@ func updateRemoteWorkflow(path string, localPath string) error {
 
 	err = recurseMkdirParent(path)
 	if err != nil {
-		root.Fail("Failed to create parent directory: %v", err)
+		return fmt.Errorf("Failed to create parent directory: %v", err)
 	}
 
 	urlWorkflow := fmt.Sprintf("%s/tree/%s", root.UrlPrefix, strings.TrimPrefix(path, "/"))
@@ -742,14 +752,14 @@ func executeWorkflow(url string) (executeResponse, error) {
 	// Read input data from flag file
 	inputData, err := root.SafeLoadFile(input)
 	if err != nil {
-		root.Fail("Failed to load input file: %v", err)
+		return instanceDetails, fmt.Errorf("Failed to load input file: %v", err)
 	}
 
 	// If inputData is empty attempt to read from stdin
 	if inputData.Len() == 0 {
 		inputData, err = root.SafeLoadStdIn()
 		if err != nil {
-			root.Fail("Failed to load stdin: %v", err)
+			return instanceDetails, fmt.Errorf("Failed to load stdin: %v", err)
 		}
 	}
 

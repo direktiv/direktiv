@@ -3,14 +3,14 @@ package api
 // RN = Route Name.
 const (
 
-	// admin only
+	// admin only routes.
 	RN_AddNamespace  = "addNamespace"
 	RN_GetServerLogs = "getServerLogs"
 
-	// misc for azure
+	// misc route for azure.
 	RN_Preflight = "preflight"
 
-	// all authenticated
+	// authenticated only routes.
 	RN_JQPlayground = "jqPlayground"
 	RN_Version      = "version"
 
