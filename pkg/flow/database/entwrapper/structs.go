@@ -157,7 +157,7 @@ func entInstance(inst *ent.Instance) *database.Instance {
 		return nil
 	}
 
-	return &database.Instance{
+	x := &database.Instance{
 		ID:           inst.ID,
 		CreatedAt:    inst.CreatedAt,
 		UpdatedAt:    inst.UpdatedAt,
@@ -167,11 +167,25 @@ func entInstance(inst *ent.Instance) *database.Instance {
 		ErrorCode:    inst.ErrorCode,
 		ErrorMessage: inst.ErrorMessage,
 		Invoker:      inst.Invoker,
-		Namespace:    inst.Edges.Namespace.ID,
-		Workflow:     inst.Edges.Workflow.ID,
-		Revision:     inst.Edges.Revision.ID,
-		Runtime:      inst.Edges.Runtime.ID,
 	}
+
+	if inst.Edges.Namespace != nil {
+		x.Namespace = inst.Edges.Namespace.ID
+	}
+
+	if inst.Edges.Workflow != nil {
+		x.Workflow = inst.Edges.Workflow.ID
+	}
+
+	if inst.Edges.Revision != nil {
+		x.Revision = inst.Edges.Revision.ID
+	}
+
+	if inst.Edges.Runtime != nil {
+		x.Runtime = inst.Edges.Runtime.ID
+	}
+
+	return x
 
 }
 

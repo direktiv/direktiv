@@ -376,6 +376,13 @@ func (db *CachedDatabase) Revision(ctx context.Context, tx Transaction, cached *
 
 	cached.Revision = rev
 
+	if cached.Workflow == nil {
+		err = db.Workflow(ctx, tx, cached, cached.Revision.Workflow)
+		if err != nil {
+			return err
+		}
+	}
+
 	if tx == nil {
 		db.storeRevisionInCache(ctx, rev)
 	}
@@ -404,6 +411,13 @@ func (db *CachedDatabase) Instance(ctx context.Context, tx Transaction, cached *
 	}
 
 	cached.Instance = inst
+
+	if cached.Revision == nil {
+		err = db.Revision(ctx, tx, cached, cached.Instance.Revision)
+		if err != nil {
+			return err
+		}
+	}
 
 	if cached.Workflow == nil {
 		err = db.Workflow(ctx, tx, cached, cached.Instance.Workflow)
