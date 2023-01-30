@@ -394,6 +394,7 @@ func (srv *server) registerFunctions() {
 	srv.timers.registerFunction(syncerCron, srv.syncer.cronHandler)
 
 	srv.pubsub.registerFunction(deleteFilterCache, srv.flow.deleteCache)
+	srv.pubsub.registerFunction(deleteFilterCacheNamespace, srv.flow.deleteCacheNamespace)
 
 }
 

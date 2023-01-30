@@ -1092,21 +1092,18 @@ func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloud
 		return resp, err
 	}
 
+	flow.sugar.Debugf("event after script is %v", string(newBytesEvent))
+
 	// if null it has been dropped
 	if string(newBytesEvent) != "null" {
-		ev := &event.Event{}
-		err := json.Unmarshal(newBytesEvent, ev)
-		if err != nil {
-			flow.logToNamespace(ctx, time.Now(), ns, "cloudEvent filter '%s' error: %v", filterName, err)
-			return resp, err
+
+		br := &grpc.BroadcastCloudeventRequest{
+			Namespace:  namespace,
+			Cloudevent: newBytesEvent,
+			Timer:      0,
 		}
 
-		// now send it to the backend
-		err = flow.events.handleEvent(ns, ev)
-		if err != nil {
-			flow.logToNamespace(ctx, time.Now(), ns, "cloudEvent filter '%s' error: %v", filterName, err)
-			return resp, err
-		}
+		resp, err = flow.BroadcastCloudevent(ctx, br)
 
 	}
 
@@ -1127,7 +1124,7 @@ func (flow *flow) DeleteCloudEventFilter(ctx context.Context, in *grpc.DeleteClo
 
 	_, err = ns.QueryCloudeventfilters().Where(enteventsfilter.NameEQ(filterName)).Only(ctx)
 	if err != nil {
-		err = status.Error(codes.NotFound, fmt.Sprintf("CloudEvent filter %s not exists", filterName))
+		err = status.Error(codes.NotFound, fmt.Sprintf("cloudEvent filter %s does not exist", filterName))
 		return &resp, err
 	}
 
@@ -1155,10 +1152,28 @@ func (flow *flow) DeleteCloudEventFilter(ctx context.Context, in *grpc.DeleteClo
 }
 
 const deleteFilterCache = "deleteFilterCache"
+const deleteFilterCacheNamespace = "deleteFilterCacheNamespace"
 
 func (flow *flow) deleteCache(req *PubsubUpdate) {
 	flow.sugar.Debugf("deleting filter cache key: %v\n", req.Key)
 	eventFilterCache.delete(req.Key)
+}
+
+func deleteCacheNamespaceSync(delkey string) {
+
+	eventFilterCache.value.Range(func(key, value any) bool {
+
+		if strings.HasPrefix(key.(string), fmt.Sprintf("%s-", delkey)) {
+			eventFilterCache.value.Delete(key.(string))
+		}
+
+		return true
+	})
+}
+
+func (flow *flow) deleteCacheNamespace(req *PubsubUpdate) {
+	flow.sugar.Debugf("deleting filter cache for namespace: %v\n", req.Key)
+	deleteCacheNamespaceSync(req.Key)
 }
 
 func (flow *flow) CreateCloudEventFilter(ctx context.Context, in *grpc.CreateCloudEventFilterRequest) (*emptypb.Empty, error) {
@@ -1250,7 +1265,7 @@ func (flow *flow) GetCloudEventFilterScript(ctx context.Context, in *grpc.GetClo
 
 	script, err := ns.QueryCloudeventfilters().Where(enteventsfilter.NameEQ(filterName)).Only(ctx)
 	if err != nil {
-		err = status.Error(codes.NotFound, fmt.Sprintf("CloudEvent filter %s not exists", filterName))
+		err = status.Error(codes.NotFound, fmt.Sprintf("cloudEvent filter %s does not exist", filterName))
 		return resp, err
 	}
 

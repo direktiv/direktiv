@@ -1242,7 +1242,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//   '200':
 	r.HandleFunc("/namespaces/{ns}/eventfilter/{filter}", h.CreateBroadcastCloudeventFilter).Name(RN_CreateNamespaceEventFilter).Methods(http.MethodPost)
 
-	// swagger:operation DELETE /api/namespaces/{namespace}/broadcast/{filtername} CloudEventFilter deleteCloudeventFilter
+	// swagger:operation DELETE /api/namespaces/{namespace}/eventfilter/{filtername} CloudEventFilter deleteCloudeventFilter
 	// ---
 	// description: |
 	//   Delete existing cloud event filter in target namespace
