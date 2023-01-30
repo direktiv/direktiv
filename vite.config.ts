@@ -27,7 +27,7 @@ export function reactVirtualized() {
 export default ({ mode }) => {
   const { VITE_DEV_API_DOMAIN } = loadEnv(mode, process.cwd());
 
-  if (VITE_DEV_API_DOMAIN) {
+  if (!VITE_DEV_API_DOMAIN) {
     console.warn("VITE_DEV_API_DOMAIN is not set, no API proxy will be used");
   }
 
