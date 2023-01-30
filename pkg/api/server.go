@@ -20,7 +20,7 @@ type Server struct {
 	logger     *zap.SugaredLogger
 	router     *mux.Router
 	srv        *http.Server
-	flowClient grpc.FlowClient
+	FlowClient grpc.FlowClient
 
 	config *util.Config
 
@@ -98,7 +98,7 @@ func NewServer(l *zap.SugaredLogger) (*Server, error) {
 		return nil, err
 	}
 
-	s.flowClient = s.flowHandler.client
+	s.FlowClient = s.flowHandler.client
 
 	s.functionHandler, err = newFunctionHandler(s, logger,
 		r.PathPrefix("/functions").Subrouter(), s.config.FunctionsService)
@@ -108,6 +108,7 @@ func NewServer(l *zap.SugaredLogger) (*Server, error) {
 		return nil, err
 	}
 
+	logger.Debug("adding options routes")
 	s.prepareHelperRoutes()
 
 	return s, nil
@@ -121,7 +122,7 @@ func (s *Server) version(w http.ResponseWriter, r *http.Request) {
 	m := make(map[string]string)
 	m["api"] = version.Version
 
-	flowResp, _ := s.flowClient.Build(ctx, &emptypb.Empty{})
+	flowResp, _ := s.FlowClient.Build(ctx, &emptypb.Empty{})
 	if flowResp != nil {
 		m["flow"] = flowResp.GetBuild()
 	}
@@ -149,24 +150,10 @@ func (s *Server) prepareHelperRoutes() {
 		// https://github.com/cloudevents/spec/blob/v1.0/http-webhook.md#4-abuse-protection
 		w.Header().Add("WebHook-Allowed-Rate", "120")
 		w.Header().Add("Webhook-Allowed-Origin", "eventgrid.azure.net")
+		w.Header().Add("Cache-Control", "no-cache, no-store, must-revalidate")
+		w.Header().Add("Pragma", "no-cache")
+		w.Header().Add("Expires", "0")
 		w.WriteHeader(http.StatusOK)
 	}).Methods(http.MethodOptions).Name(RN_Preflight)
 
-	// functions ..
-	// s.router.HandleFunc("/api/functions", s.functionHandler.listServices).Methods(http.MethodGet).Name(RN_ListServices)
-	// // s.router.HandleFunc("/api/functions/pods/", s.handler.listPods).Methods(http.MethodPost).Name(RN_ListPods)
-	// // s.router.HandleFunc("/api/functions/", s.handler.deleteServices).Methods(http.MethodDelete).Name(RN_DeleteServices)
-	// s.router.HandleFunc("/api/functions", s.functionHandler.createService).Methods(http.MethodPost).Name(RN_CreateService)
-	// s.router.HandleFunc("/api/functions/{serviceName}", s.handler.getService).Methods(http.MethodGet).Name(RN_GetService)
-	// s.router.HandleFunc("/api/functions/{serviceName}", s.handler.updateService).Methods(http.MethodPost).Name(RN_UpdateService)
-	// s.router.HandleFunc("/api/functions/{serviceName}", s.handler.updateServiceTraffic).Methods(http.MethodPatch).Name(RN_UpdateServiceTraffic)
-	// s.router.HandleFunc("/api/functions/{serviceName}", s.handler.deleteService).Methods(http.MethodDelete).Name(RN_DeleteService)
-	// s.router.HandleFunc("/api/functionrevisions/{revision}", s.handler.deleteRevision).Methods(http.MethodDelete).Name(RN_DeleteRevision)
-
-	// engine
-	// s.router.HandleFunc("/api/flow", s.flowHandler.listFunctions).Methods(http.MethodGet).Name(RN_ListServices)
-
-	// variables
-
-	// metrics
 }

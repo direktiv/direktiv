@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
-	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -1089,7 +1088,7 @@ func (repository *localRepository) clone(ctx context.Context) error {
 
 	if strings.HasPrefix(uri, prefix) && len(repository.repo.Passphrase) > 0 {
 		if !strings.Contains(uri, "@") {
-			uri = fmt.Sprintf("%s%s@", prefix, url.QueryEscape(repository.repo.Passphrase)) + strings.TrimPrefix(uri, prefix)
+			uri = fmt.Sprintf("%s%s@", prefix, repository.repo.Passphrase) + strings.TrimPrefix(uri, prefix)
 		}
 	}
 
