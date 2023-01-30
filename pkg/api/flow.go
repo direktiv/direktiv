@@ -147,7 +147,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	// responses:
 	//   '200':
 	//     "description": "namespace config has been successfully been updated"
-	r.HandleFunc("/namespaces/{ns}/config", h.SetNamespaceConfig).Name(RN_GetNamespaceConfig).Methods(http.MethodPatch)
+	r.HandleFunc("/namespaces/{ns}/config", h.SetNamespaceConfig).Name(RN_SetNamespaceConfig).Methods(http.MethodPatch)
 
 	// swagger:operation GET /api/namespaces/{namespace}/config Namespaces getNamespaceConfig
 	// ---
@@ -163,7 +163,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	// responses:
 	//   '200':
 	//     "description": "successfully got namespace config"
-	r.HandleFunc("/namespaces/{ns}/config", h.GetNamespaceConfig).Name(RN_SetNamespaceConfig).Methods(http.MethodGet)
+	r.HandleFunc("/namespaces/{ns}/config", h.GetNamespaceConfig).Name(RN_GetNamespaceConfig).Methods(http.MethodGet)
 
 	// swagger:operation DELETE /api/namespaces/{namespace} Namespaces deleteNamespace
 	// ---
