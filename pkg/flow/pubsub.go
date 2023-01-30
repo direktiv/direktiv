@@ -471,7 +471,7 @@ func (pubsub *pubsub) walkInodeKeys(cached *database.CacheData) []string {
 
 	array := make([]string, 0)
 
-	for i := len(cached.Inodes) - 1; i >= 0; i++ {
+	for i := len(cached.Inodes) - 1; i >= 0; i-- {
 		x := cached.Inodes[i]
 		array = append(array, x.ID.String())
 	}

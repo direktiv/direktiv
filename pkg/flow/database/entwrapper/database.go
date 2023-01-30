@@ -391,7 +391,7 @@ func (db *Database) Revision(ctx context.Context, tx database.Transaction, id uu
 		q.Select(entwf.FieldID)
 	}).Only(ctx)
 	if err != nil {
-		db.sugar.Debugf("%s failed to resolve revision: %v", parent(), err)
+		db.sugar.Debugf("%s failed to resolve revision '%s': %v", parent(), id, err)
 		return nil, err
 	}
 

@@ -81,11 +81,13 @@ func (flow *flow) Node(ctx context.Context, req *grpc.NodeRequest) (*grpc.NodeRe
 
 	cached, err := flow.traverseToInode(ctx, nil, req.GetNamespace(), req.GetPath())
 	if err != nil {
+		flow.sugar.Debugf("gRPC %s handler failed to traverse to (namespace/inode) %s/%s : %v", this(), req.GetNamespace(), req.GetPath(), err)
 		return nil, err
 	}
 
 	err = atob(cached.Inode(), &resp.Node)
 	if err != nil {
+		flow.sugar.Debugf("gRPC %s handler failed to traverse to marshal response: %v", this(), err)
 		return nil, err
 	}
 

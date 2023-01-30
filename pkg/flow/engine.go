@@ -84,6 +84,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 
 	cached, err := engine.mux(ctx, tx, args.Namespace, args.Path, args.Ref)
 	if err != nil {
+		engine.sugar.Debugf("Failed to create new instance: %v", err)
 		if derrors.IsNotFound(err) {
 			return nil, derrors.NewUncatchableError("direktiv.workflow.notfound", "workflow not found: %v", err.Error())
 		}

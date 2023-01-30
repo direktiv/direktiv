@@ -159,7 +159,7 @@ func (engine *engine) mux(ctx context.Context, tx database.Transaction, namespac
 
 	cached, err := engine.traverseToWorkflow(ctx, tx, namespace, path)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("workflow multiplexer failed to resolve workflow: %w", err)
 	}
 
 	if ref == "" {
@@ -213,9 +213,9 @@ func (engine *engine) mux(ctx context.Context, tx database.Transaction, namespac
 		}
 	}
 
-	err = engine.database.Revision(ctx, tx, cached, cached.Ref.ID)
+	err = engine.database.Revision(ctx, tx, cached, cached.Ref.Revision)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("workflow multiplexer failed to resolve workflow revision matching ref '%s' (UUID: %s): %w", cached.Ref.Name, cached.Ref.Revision, err)
 	}
 
 	return cached, nil

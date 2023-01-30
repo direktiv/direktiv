@@ -62,6 +62,10 @@ func (cached *CacheData) Path() string {
 		elems = append(elems, ino.Name)
 	}
 
+	if len(elems) == 1 {
+		return "/"
+	}
+
 	return strings.Join(elems, "/")
 }
 
