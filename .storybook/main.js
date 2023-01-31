@@ -17,4 +17,7 @@ module.exports = {
     "storybook-addon-material-ui",
   ],
   framework: "@storybook/react",
+  docs: {
+    autodocs: true,
+  },
 };
