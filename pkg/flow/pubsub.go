@@ -195,6 +195,9 @@ func (pubsub *pubsub) dispatcher() {
 		}
 
 		if req.Hostname == "" {
+			x := *req
+			x.Sender = ""
+			go pubsub.Notify(&x)
 			err = pubsub.notifier.notifyCluster(string(b))
 		} else {
 			err = pubsub.notifier.notifyHostname(req.Hostname, string(b))
@@ -210,6 +213,10 @@ func (pubsub *pubsub) dispatcher() {
 }
 
 func (pubsub *pubsub) Notify(req *PubsubUpdate) {
+
+	if pubsub.id.String() == req.Sender {
+		return
+	}
 
 	pubsub.mtx.RLock()
 	defer pubsub.mtx.RUnlock()
@@ -807,7 +814,7 @@ func (pubsub *pubsub) instances(ns *database.Namespace) string {
 
 func (pubsub *pubsub) NotifyInstances(ns *database.Namespace) {
 
-	pubsub.publish(pubsubNotify(pubsub.instances(ns)))
+	// pubsub.publish(pubsubNotify(pubsub.instances(ns)))
 
 }
 

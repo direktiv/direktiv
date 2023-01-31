@@ -45,14 +45,14 @@ func (db *CachedDatabase) Tx(ctx context.Context) (Transaction, error) {
 
 func (db *CachedDatabase) Namespace(ctx context.Context, tx Transaction, cached *CacheData, id uuid.UUID) error {
 
-	if tx == nil {
+	var cacheHit = false
 
-		ns := db.lookupNamespaceByID(ctx, id)
+	ns := db.lookupNamespaceByID(ctx, id)
 
-		if ns != nil {
-			cached.Namespace = ns
-			return nil
-		}
+	if ns != nil {
+		cacheHit = true
+		cached.Namespace = ns
+		return nil
 	}
 
 	ns, err := db.source.Namespace(ctx, tx, id)
@@ -62,7 +62,7 @@ func (db *CachedDatabase) Namespace(ctx context.Context, tx Transaction, cached 
 
 	cached.Namespace = ns
 
-	if tx == nil {
+	if !cacheHit {
 		db.storeNamespaceInCache(ctx, cached.Namespace)
 	}
 
@@ -72,24 +72,25 @@ func (db *CachedDatabase) Namespace(ctx context.Context, tx Transaction, cached 
 
 func (db *CachedDatabase) NamespaceByName(ctx context.Context, tx Transaction, cached *CacheData, name string) error {
 
-	if tx == nil {
+	var err error
+	var cacheHit = false
 
-		ns := db.lookupNamespaceByName(ctx, name)
+	ns := db.lookupNamespaceByName(ctx, name)
 
-		if ns != nil {
-			cached.Namespace = ns
-			return nil
+	if ns != nil {
+		cacheHit = true
+		cached.Namespace = ns
+		return nil
+	} else {
+		ns, err = db.source.NamespaceByName(ctx, tx, name)
+		if err != nil {
+			return err
 		}
-	}
-
-	ns, err := db.source.NamespaceByName(ctx, tx, name)
-	if err != nil {
-		return err
 	}
 
 	cached.Namespace = ns
 
-	if tx == nil {
+	if !cacheHit {
 		db.storeNamespaceInCache(ctx, cached.Namespace)
 	}
 
@@ -100,13 +101,13 @@ func (db *CachedDatabase) NamespaceByName(ctx context.Context, tx Transaction, c
 func (db *CachedDatabase) Inode(ctx context.Context, tx Transaction, cached *CacheData, id uuid.UUID) error {
 
 	var err error
-	var ino *Inode
 
-	if tx == nil {
-		ino = db.lookupInodeByID(ctx, id)
-	}
+	var cacheHit = true
+
+	ino := db.lookupInodeByID(ctx, id)
 
 	if ino == nil {
+		cacheHit = false
 		ino, err = db.source.Inode(ctx, tx, id)
 		if err != nil {
 			return err
@@ -130,7 +131,7 @@ func (db *CachedDatabase) Inode(ctx context.Context, tx Transaction, cached *Cac
 		}
 	}
 
-	if tx == nil {
+	if !cacheHit {
 		db.storeInodeInCache(ctx, ino)
 	}
 
@@ -246,13 +247,13 @@ func (db *CachedDatabase) UpdateInode(ctx context.Context, tx Transaction, args 
 func (db *CachedDatabase) Workflow(ctx context.Context, tx Transaction, cached *CacheData, id uuid.UUID) error {
 
 	var err error
-	var wf *Workflow
 
-	if tx == nil {
-		wf = db.lookupWorkflowByID(ctx, id)
-	}
+	var cacheHit = true
+
+	wf := db.lookupWorkflowByID(ctx, id)
 
 	if wf == nil {
+		cacheHit = false
 		wf, err = db.source.Workflow(ctx, tx, id)
 		if err != nil {
 			return err
@@ -268,7 +269,7 @@ func (db *CachedDatabase) Workflow(ctx context.Context, tx Transaction, cached *
 		}
 	}
 
-	if tx == nil {
+	if !cacheHit {
 		db.storeWorkflowInCache(ctx, wf)
 	}
 
@@ -361,13 +362,13 @@ func (db *CachedDatabase) UpdateWorkflow(ctx context.Context, tx Transaction, ar
 func (db *CachedDatabase) Revision(ctx context.Context, tx Transaction, cached *CacheData, id uuid.UUID) error {
 
 	var err error
-	var rev *Revision
 
-	if tx == nil {
-		rev = db.lookupRevisionByID(ctx, id)
-	}
+	var cacheHit = true
+
+	rev := db.lookupRevisionByID(ctx, id)
 
 	if rev == nil {
+		cacheHit = false
 		rev, err = db.source.Revision(ctx, tx, id)
 		if err != nil {
 			return err
@@ -383,7 +384,7 @@ func (db *CachedDatabase) Revision(ctx context.Context, tx Transaction, cached *
 		}
 	}
 
-	if tx == nil {
+	if !cacheHit {
 		db.storeRevisionInCache(ctx, rev)
 	}
 
@@ -399,15 +400,17 @@ func (db *CachedDatabase) CreateRevision(ctx context.Context, tx Transaction, ar
 func (db *CachedDatabase) Instance(ctx context.Context, tx Transaction, cached *CacheData, id uuid.UUID) error {
 
 	var err error
-	var inst *Instance
 
-	if tx == nil {
-		inst = db.lookupInstanceByID(ctx, id)
-	}
+	var cacheHit = true
 
-	inst, err = db.source.Instance(ctx, tx, id)
-	if err != nil {
-		return err
+	inst := db.lookupInstanceByID(ctx, id)
+
+	if inst == nil {
+		cacheHit = false
+		inst, err = db.source.Instance(ctx, tx, id)
+		if err != nil {
+			return err
+		}
 	}
 
 	cached.Instance = inst
@@ -426,9 +429,17 @@ func (db *CachedDatabase) Instance(ctx context.Context, tx Transaction, cached *
 		}
 	}
 
-	if tx == nil {
+	if !cacheHit {
 		db.storeInstanceInCache(ctx, inst)
 	}
+
+	return nil
+
+}
+
+func (db *CachedDatabase) FlushInstance(ctx context.Context, inst *Instance) error {
+
+	db.storeInstanceInCache(ctx, inst)
 
 	return nil
 

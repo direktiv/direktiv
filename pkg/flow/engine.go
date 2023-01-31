@@ -168,6 +168,11 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 	im.cached = cached
 	im.runtime = runtime
 
+	err = im.engine.database.FlushInstance(ctx, im.cached.Instance)
+	if err != nil {
+		return nil, err
+	}
+
 	err = json.Unmarshal([]byte(im.runtime.Data), &im.data)
 	if err != nil {
 		return nil, err
@@ -188,7 +193,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 	t := time.Now()
 	engine.pubsub.NotifyInstances(cached.Namespace)
 	engine.logToNamespace(ctx, t, im.cached, "Workflow '%s' has been triggered by %s.", args.Path, args.Caller)
-	engine.logToWorkflow(ctx, t, im.cached, "Instance '%s' created by %s.", im.ID().String(), args.Caller)
+	engine.logToWorkflow(ctx, t, im.cached, "Instance '%s' created by %s. (%v)", im.ID().String(), args.Caller, time.Now())
 	engine.logToInstance(ctx, t, im.cached, "Preparing workflow triggered by %s.", args.Caller)
 
 	// Broadcast Event
@@ -344,7 +349,6 @@ func (engine *engine) Transition(ctx context.Context, im *instanceMemory, nextSt
 	im.runtime.Memory = memory
 	im.runtimeUpdater = updater
 
-	// TODO: flush here?
 	err = im.flushUpdates(ctx)
 	if err != nil {
 		engine.sugar.Errorf("Failed to update database record: %v", err)
@@ -617,9 +621,9 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 	im.cached.Instance.Status = status
 	im.instanceUpdater = updater
 
-	engine.pubsub.NotifyInstance(im.cached.Instance)
+	// engine.pubsub.NotifyInstance(im.cached.Instance)
 
-	engine.logToInstance(ctx, time.Now(), im.cached, "Workflow completed.")
+	engine.logToInstance(ctx, time.Now(), im.cached, "Workflow completed. (%v)", time.Now())
 
 	engine.pubsub.NotifyInstances(im.cached.Namespace)
 	broadcastErr := engine.flow.BroadcastInstance(BroadcastEventTypeInstanceSuccess, ctx, broadcastInstanceInput{

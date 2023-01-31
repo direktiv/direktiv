@@ -81,9 +81,9 @@ func (srv *server) workerLogToServer(l *logMessage) {
 
 func (srv *server) workerLogToNamespace(l *logMessage) {
 
-	clients := srv.edb.Clients(nil)
-
 	util.Trace(l.ctx, l.msg)
+
+	clients := srv.edb.Clients(nil)
 
 	_, err := clients.LogMsg.Create().SetMsg(l.msg).SetNamespaceID(l.cached.Namespace.ID).SetT(l.t).Save(l.ctx)
 	if err != nil {
@@ -102,9 +102,9 @@ func (srv *server) workerLogToNamespace(l *logMessage) {
 
 func (srv *server) workerLogToWorkflow(l *logMessage) {
 
-	clients := srv.edb.Clients(nil)
-
 	util.Trace(l.ctx, l.msg)
+
+	clients := srv.edb.Clients(nil)
 
 	_, err := clients.LogMsg.Create().SetMsg(l.msg).SetWorkflowID(l.cached.Workflow.ID).SetT(l.t).Save(l.ctx)
 	if err != nil {
@@ -123,9 +123,9 @@ func (srv *server) workerLogToWorkflow(l *logMessage) {
 
 func (srv *server) workerLogToInstance(l *logMessage) {
 
-	clients := srv.edb.Clients(nil)
-
 	util.Trace(l.ctx, l.msg)
+
+	clients := srv.edb.Clients(nil)
 
 	_, err := clients.LogMsg.Create().SetMsg(l.msg).SetInstanceID(l.cached.Instance.ID).SetT(l.t).Save(l.ctx)
 	if err != nil {
@@ -261,7 +261,7 @@ func (engine *engine) UserLog(ctx context.Context, im *instanceMemory, msg strin
 
 func (engine *engine) logRunState(ctx context.Context, im *instanceMemory, wakedata []byte, err error) {
 
-	engine.sugar.Debugf("Running state logic -- %s:%v (%s)", im.ID().String(), im.Step(), im.logic.GetID())
+	engine.sugar.Debugf("Running state logic -- %s:%v (%s) (%v)", im.ID().String(), im.Step(), im.logic.GetID(), time.Now())
 	if im.GetMemory() == nil && len(wakedata) == 0 && err == nil {
 		engine.logToInstance(ctx, time.Now(), im.cached, "Running state logic (step:%v) -- %s", im.Step(), im.logic.GetID())
 	}
@@ -287,11 +287,11 @@ func parent() string {
 
 func (srv *server) logToMirrorActivity(ctx context.Context, t time.Time, ns *database.Namespace, mirror *database.Mirror, act *database.MirrorActivity, msg string, a ...interface{}) {
 
-	clients := srv.edb.Clients(nil)
-
 	msg = fmt.Sprintf(msg, a...)
 
 	util.Trace(ctx, msg)
+
+	clients := srv.edb.Clients(nil)
 
 	_, err := clients.LogMsg.Create().SetMsg(msg).SetActivityID(act.ID).SetT(t).Save(ctx)
 	if err != nil {

@@ -11,7 +11,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/database/entwrapper"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
-	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/util"
@@ -98,13 +97,16 @@ func (im *instanceMemory) flushUpdates(ctx context.Context) error {
 		im.cached.Instance.Revision = im.cached.Revision.ID
 		im.cached.Instance.Runtime = im.runtime.ID
 
+		err = im.engine.database.FlushInstance(ctx, im.cached.Instance)
+		if err != nil {
+			return err
+		}
+
 	}
 
 	if changes {
-
 		im.engine.pubsub.NotifyInstance(im.cached.Instance)
 		im.engine.pubsub.NotifyInstances(im.cached.Namespace)
-
 	}
 
 	return nil
@@ -242,16 +244,21 @@ func (engine *engine) getInstanceMemory(ctx context.Context, tx database.Transac
 		return nil, err
 	}
 
-	clients := engine.edb.Clients(tx)
+	cached := new(database.CacheData)
+	err = engine.database.Instance(ctx, tx, cached, uid)
+	if err != nil {
+		return nil, err
+	}
 
-	in, err := clients.Instance.Query().Where(entinst.IDEQ(uid)).WithNamespace().WithWorkflow().WithRevision().WithRuntime().Only(ctx)
+	rt, err := engine.database.InstanceRuntime(ctx, tx, cached.Instance.Runtime)
 	if err != nil {
 		return nil, err
 	}
 
 	im := new(instanceMemory)
 	im.engine = engine
-	im.cached.Instance = entwrapper.EntInstance(in)
+	im.cached = cached
+	im.runtime = rt
 
 	defer func() {
 		e := im.flushUpdates(ctx)
@@ -259,39 +266,6 @@ func (engine *engine) getInstanceMemory(ctx context.Context, tx database.Transac
 			err = e
 		}
 	}()
-
-	if in.Edges.Namespace == nil {
-		err = &derrors.NotFoundError{
-			Label: "namespace not found",
-		}
-
-		engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", err.Error()))
-		return nil, err
-	}
-
-	if in.Edges.Workflow == nil {
-		err = &derrors.NotFoundError{
-			Label: "workflow not found",
-		}
-		engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", err.Error()))
-		return nil, err
-	}
-
-	if in.Edges.Revision == nil {
-		err = &derrors.NotFoundError{
-			Label: "revision not found",
-		}
-		engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", err.Error()))
-		return nil, err
-	}
-
-	if in.Edges.Runtime == nil {
-		err = &derrors.NotFoundError{
-			Label: "instance runtime data not found",
-		}
-		engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", err.Error()))
-		return nil, err
-	}
 
 	err = json.Unmarshal([]byte(im.runtime.Data), &im.data)
 	if err != nil {
