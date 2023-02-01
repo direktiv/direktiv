@@ -13,7 +13,6 @@ import (
 	"golang.org/x/crypto/ssh"
 	"io"
 	"io/fs"
-	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -1073,7 +1072,7 @@ func (repository *localRepository) clone(ctx context.Context) error {
 	// https with access token case. Put passphrase inside the git url.
 	if strings.HasPrefix(uri, prefix) && len(repository.repo.Passphrase) > 0 {
 		if !strings.Contains(uri, "@") {
-			uri = fmt.Sprintf("%s%s@", prefix, url.QueryEscape(repository.repo.Passphrase)) + strings.TrimPrefix(uri, prefix)
+			uri = fmt.Sprintf("%s%s@", prefix, repository.repo.Passphrase) + strings.TrimPrefix(uri, prefix)
 		}
 	}
 

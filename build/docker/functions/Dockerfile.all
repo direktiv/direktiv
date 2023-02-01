@@ -15,7 +15,7 @@ RUN --mount=type=cache,target=/root/.cache/go-build cd src && \
     export GIT_HASH=`git rev-parse --short HEAD` && \
     export GIT_DIRTY=`git diff --quiet || echo '-dirty'` && \
     export CGO_LDFLAGS="-static -w -s" && \
-    export FULL_VERSION="${RELEASE}${RELEASE:+-}${GIT_HASH}${GIT_DIRTY}"; echo "${v%.*}" && \
+    export FULL_VERSION="${RELEASE:-$GIT_HASH}"; echo "${v%.*}" && \
     go build -ldflags "-X github.com/direktiv/direktiv/pkg/version.Version=$FULL_VERSION" -tags osusergo,netgo -o /functions cmd/functions/*.go; 
 
 

@@ -231,7 +231,7 @@ scan-%: push-%
 
 .PHONY: image-%
 image-%: build/%-binary
-	DOCKER_BUILDKIT=1 docker build -t direktiv-$* -f build/docker/$*/Dockerfile${DOCKER_BASE} .
+	DOCKER_BUILDKIT=1 docker build --build-arg RELEASE_VERSION=${FULL_VERSION} -t direktiv-$* -f build/docker/$*/Dockerfile${DOCKER_BASE} .
 	@echo "Make $@: SUCCESS"
 
 .PHONY: push-%
@@ -265,14 +265,15 @@ docker-all:
 template-configmaps:
 	scripts/misc/generate-api-configmaps.sh
 
+
 .PHONY: cli
 cli:
 	@echo "Building linux cli binary...";
-	@export ${CGO_LDFLAGS} && go build -tags ${GO_BUILD_TAGS} -o direkcli cmd/direkcli/main.go
+	@export ${CGO_LDFLAGS} && go build -tags ${GO_BUILD_TAGS} -o direktiv-sync cmd/exec/*.go
 	@echo "Building mac cli binary...";
-	@export ${CGO_LDFLAGS} && GOOS=darwin go build -tags ${GO_BUILD_TAGS} -o direkcli-darwin cmd/direkcli/main.go
+	@export ${CGO_LDFLAGS} && GOOS=darwin go build -tags ${GO_BUILD_TAGS} -o direktiv-sync-darwin cmd/exec/*.go
 	@echo "Building linux cli binary...";
-	@export ${CGO_LDFLAGS} && GOOS=windows go build -tags ${GO_BUILD_TAGS} -o direkcli-windows.exe cmd/direkcli/main.go
+	@export ${CGO_LDFLAGS} && GOOS=windows go build -tags ${GO_BUILD_TAGS} -o direktiv-sync.exe cmd/exec/*.go
 
 # Utility Rules
 

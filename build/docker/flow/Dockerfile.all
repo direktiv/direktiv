@@ -19,9 +19,6 @@ RUN cd libgit2/build && cmake --build . --target install
 
 FROM libgit as golang
 
-ARG RELEASE_VERSION
-ENV RELEASE=$RELEASE_VERSION
-
 RUN wget https://go.dev/dl/go1.19.3.linux-amd64.tar.gz
 RUN tar -C /usr/local -xzf go1.19.3.linux-amd64.tar.gz
 ENV PATH=$PATH:/usr/local/go/bin
@@ -35,9 +32,13 @@ COPY pkg src/pkg/
 COPY cmd src/cmd/
 COPY .git .git
 
+
+ARG RELEASE_VERSION
+ENV RELEASE=$RELEASE_VERSION
+
 RUN --mount=type=cache,target=/root/.cache/go-build cd src && \
     export GIT_HASH=`git rev-parse --short HEAD` && \
-    export FULL_VERSION="${RELEASE}${RELEASE:+-}${GIT_HASH}"; echo "${v%.*}" && \
+    export FULL_VERSION="${RELEASE:-$GIT_HASH}"; echo "${v%.*}" && \
     go build -ldflags "-X github.com/direktiv/direktiv/pkg/version.Version=$FULL_VERSION" -o /flow cmd/flow/*.go; 
 
 FROM ubuntu:22.04
