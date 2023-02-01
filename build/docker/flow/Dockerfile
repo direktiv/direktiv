@@ -18,6 +18,7 @@ RUN --mount=type=cache,target=/root/.cache/go-build cd src && \
 
 FROM ubuntu:22.04
 
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 COPY --from=builder /flow /bin/direktiv
 
 EXPOSE 6666
