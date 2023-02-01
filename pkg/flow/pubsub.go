@@ -344,6 +344,8 @@ func (pubsub *pubsub) flush() {
 	messageIndex := 0
 	pubsub.bufferIdx = 0
 
+	set := make(map[string]bool)
+
 	for idx := range slice {
 		req := slice[idx]
 
@@ -351,6 +353,11 @@ func (pubsub *pubsub) flush() {
 		if err != nil {
 			panic(err)
 		}
+
+		if _, exists := set[string(b)]; exists {
+			continue
+		}
+		set[string(b)] = true
 
 		handler, exists := pubsub.handlers[req.Handler]
 		if !exists {
@@ -365,7 +372,6 @@ func (pubsub *pubsub) flush() {
 			go pubsub.Notify(&x)
 			clusterMessages[messageIndex] = string(b)
 			messageIndex++
-			// err = pubsub.notifier.notifyCluster(string(b))
 		} else {
 			err = pubsub.notifier.notifyHostname(req.Hostname, "["+string(b)+"]")
 		}
