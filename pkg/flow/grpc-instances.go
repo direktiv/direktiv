@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"time"
 
@@ -557,6 +558,8 @@ resend:
 			return err
 		}
 		resp.Data = []byte(runtime.Output)
+	} else {
+		fmt.Println("NOT DONE YET")
 	}
 
 	nhash = checksum(resp)
@@ -573,6 +576,7 @@ resend:
 	}
 
 	more := sub.Wait(ctx)
+	fmt.Println("WAIT WOKE")
 	if !more {
 		return nil
 	}

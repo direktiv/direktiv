@@ -38,6 +38,10 @@ type pubsub struct {
 	queue    chan *PubsubUpdate
 	mtx      sync.RWMutex
 	channels map[string]map[*subscription]bool
+
+	bufferIdx int
+	buffer    []*PubsubUpdate
+	bufferMtx sync.Mutex
 }
 
 func (pubsub *pubsub) Close() error {
@@ -85,6 +89,7 @@ func initPubSub(log *zap.SugaredLogger, notifier notifier, database string) (*pu
 	pubsub := new(pubsub)
 	pubsub.id = uuid.New()
 	pubsub.log = log
+	pubsub.buffer = make([]*PubsubUpdate, 1024, 1024)
 
 	pubsub.hostname, err = os.Hostname()
 	if err != nil {
@@ -96,7 +101,8 @@ func initPubSub(log *zap.SugaredLogger, notifier notifier, database string) (*pu
 	pubsub.queue = make(chan *PubsubUpdate, 1024)
 	pubsub.channels = make(map[string]map[*subscription]bool)
 
-	go pubsub.dispatcher()
+	go pubsub.periodicFlush()
+	// go pubsub.dispatcher()
 
 	pubsub.handlers = make(map[string]func(*PubsubUpdate))
 
@@ -136,24 +142,30 @@ func initPubSub(log *zap.SugaredLogger, notifier notifier, database string) (*pu
 				continue
 			}
 
-			req := new(PubsubUpdate)
-			err = json.Unmarshal([]byte(notification.Extra), req)
+			reqs := make([]*PubsubUpdate, 0)
+			err = json.Unmarshal([]byte(notification.Extra), &reqs)
 			if err != nil {
 				log.Errorf("unexpected notification on database listener: %v\n", err)
 				continue
 			}
 
-			if req.Sender == pubsub.id.String() {
+			if len(reqs) == 0 {
 				continue
 			}
 
-			handler, exists := pubsub.handlers[req.Handler]
-			if !exists {
-				log.Errorf("unexpected notification type on database listener: %v\n", err)
-				continue
-			}
+			for _, req := range reqs {
+				if req.Sender == pubsub.id.String() {
+					continue
+				}
 
-			go handler(req)
+				handler, exists := pubsub.handlers[req.Handler]
+				if !exists {
+					log.Errorf("unexpected notification type on database listener: %v\n", err)
+					continue
+				}
+
+				go handler(req)
+			}
 
 		}
 
@@ -318,14 +330,123 @@ func (s *subscription) Close() error {
 
 }
 
+func (pubsub *pubsub) periodicFlush() {
+	for {
+		time.Sleep(time.Millisecond)
+		pubsub.timeFlush()
+	}
+}
+
+func (pubsub *pubsub) flush() {
+
+	slice := pubsub.buffer[:pubsub.bufferIdx]
+	clusterMessages := make([]string, pubsub.bufferIdx, pubsub.bufferIdx)
+	messageIndex := 0
+	pubsub.bufferIdx = 0
+
+	for idx := range slice {
+		req := slice[idx]
+
+		b, err := json.Marshal(req)
+		if err != nil {
+			panic(err)
+		}
+
+		handler, exists := pubsub.handlers[req.Handler]
+		if !exists {
+			pubsub.log.Errorf("unexpected notification type on database listener: %v\n", req.Handler)
+		} else {
+			go handler(req)
+		}
+
+		if req.Hostname == "" {
+			x := *req
+			x.Sender = ""
+			go pubsub.Notify(&x)
+			clusterMessages[messageIndex] = string(b)
+			messageIndex++
+			// err = pubsub.notifier.notifyCluster(string(b))
+		} else {
+			err = pubsub.notifier.notifyHostname(req.Hostname, "["+string(b)+"]")
+		}
+
+		if err != nil {
+			pubsub.log.Errorf("pubsub error: %v\n", err)
+			os.Exit(1)
+		}
+	}
+
+	clusterSlice := clusterMessages[:messageIndex]
+	msg := "["
+	l := 3
+	comma := false
+
+	for idx := range clusterSlice {
+
+		s := clusterSlice[idx]
+
+		if l+len(s) >= 8000 {
+			msg += "]"
+			err := pubsub.notifier.notifyCluster(msg)
+			if err != nil {
+				pubsub.log.Errorf("pubsub error: %v\n", err)
+				os.Exit(1)
+			}
+
+			msg = "["
+			comma = false
+			l = 3
+		} else {
+			if comma {
+				msg += ","
+				l++
+			}
+			msg += s
+			comma = true
+			l += len(s)
+		}
+
+	}
+
+	if l > 3 {
+		msg += "]"
+		err := pubsub.notifier.notifyCluster(msg)
+		if err != nil {
+			pubsub.log.Errorf("pubsub error: %v\n", err)
+			os.Exit(1)
+		}
+	}
+
+	pubsub.bufferMtx.Unlock()
+
+}
+
+func (pubsub *pubsub) timeFlush() {
+	pubsub.bufferMtx.Lock()
+	go pubsub.flush()
+}
+
 func (pubsub *pubsub) publish(req *PubsubUpdate) {
 
 	req.Sender = pubsub.id.String()
 
-	select {
-	case pubsub.queue <- req:
-	default:
+	pubsub.bufferMtx.Lock()
+
+	pubsub.buffer[pubsub.bufferIdx] = req
+	pubsub.bufferIdx++
+
+	if pubsub.bufferIdx >= 1024 {
+		go pubsub.flush()
+	} else {
+		pubsub.bufferMtx.Unlock()
 	}
+
+	/*
+		select {
+		case pubsub.queue <- req:
+		default:
+		}
+	*/
 
 }
 
