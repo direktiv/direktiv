@@ -26,13 +26,13 @@ var workflowCmd = &cobra.Command{
 }
 
 var setReadonlyCmd = &cobra.Command{
-	Use:   "switch DIR_PATH",
+	Use:   "toggle-lock DIR_PATH",
 	Short: "Sets local directory to readonly or writable in Direktiv server.",
 	Long: `Sets local directory to readonly or writable in Direktiv server.
 
 EXAMPLE:
-  switch . --addr http://192.168.1.1 --namespace admin --writable
-  switch path/to/git/subfolder --namespace admin`,
+toggle-lock . --addr http://192.168.1.1 --namespace admin --writable
+toggle-lock path/to/git/subfolder --namespace admin`,
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 

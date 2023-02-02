@@ -101,3 +101,9 @@ scripts/api/api.md
 scripts/api/swagger.json
 scripts/dev.yaml
 .idea
+
+
+direktiv-darwin
+direktiv-darwin-arm64
+direktiv-windows
+direktiv
