@@ -103,7 +103,7 @@ scripts/dev.yaml
 .idea
 
 
-direktiv-darwin
-direktiv-darwin-arm64
-direktiv-windows
-direktiv
+direktivctl-darwin
+direktivctl-darwin-arm64
+direktivctl-windows
+direktivctl
