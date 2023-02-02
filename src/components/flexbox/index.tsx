@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 import "./style.css";
 
 export type FlexBoxCenterAxis = "y" | "x" | "xy" | boolean;
-export type FlexBoxGapSize = "md" | "sm" | boolean;
+export type FlexBoxGapSize = "md" | "sm" | "md" | "lg" | boolean;
 
 export interface FlexBoxProps extends React.HTMLAttributes<HTMLDivElement> {
   /**
@@ -86,6 +86,10 @@ function FlexBox({
         }
         case "sm": {
           clsName += ` gap-sm`;
+          break;
+        }
+        case "lg": {
+          clsName += ` gap-lg`;
           break;
         }
       }

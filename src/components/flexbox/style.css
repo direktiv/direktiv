@@ -32,6 +32,10 @@
   gap: 4px;
 }
 
+.flex-box.gap-lg {
+  gap: 12px;
+}
+
 .flex-box.center-y {
   align-items: center;
 }

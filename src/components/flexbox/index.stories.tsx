@@ -21,7 +21,7 @@ export default {
       defaultValue: false,
     },
     gap: {
-      options: ["md", "sm", false],
+      options: ["md", "sm", "lg", false],
       control: { type: "select" },
       defaultValue: false,
     },
