@@ -14,21 +14,21 @@ const (
 	RN_JQPlayground = "jqPlayground"
 	RN_Version      = "version"
 
-	// permission if any other permission is set in namespace
+	// permission if any other permission is set in namespace.
 	RN_ListNamespaces = "listNamespaces"
 
-	// namespace get
+	// namespace get routes.
 	RN_ListNamespaceVariables = "listNamespaceVariables"
 	RN_GetNamespaceVariable   = "getNamespaceVariable"
 
-	// namespace variable set
+	// namespace variable set routes.
 	RN_SetNamespaceVariable = "setNamespaceVariable"
 
-	// namespace config
+	// namespace config routes.
 	RN_GetNamespaceConfig = "getNamespaceConfiguration"
 	RN_SetNamespaceConfig = "setNamespaceConfiguration"
 
-	// explorer
+	// explorer routes.
 	RN_GetNode              = "getNode"
 	RN_CreateDirectory      = "createDirectory"
 	RN_DeleteNode           = "deleteNode"
@@ -36,7 +36,7 @@ const (
 	RN_DeleteNodeAttributes = "deleteNodeAttributes"
 	RN_CreateNodeAttributes = "createNodeAttributes"
 
-	// instance
+	// instance routes.
 	RN_ListInstances         = "listInstances"
 	RN_GetInstance           = "getInstance"
 	RN_GetInstanceLogs       = "getInstanceLogs"
@@ -47,7 +47,7 @@ const (
 	RN_SetInstanceVariable   = "setInstanceVariable"
 	RN_GetNamespaceMetrics   = "getNamespaceMetrics"
 
-	// workflow
+	// workflow routes.
 	RN_GetWorkflowTags       = "getWorkflowTags"
 	RN_GetWorkflowRefs       = "getWorkflowRefs"
 	RN_GetWorkflowRouter     = "getWorkflowRouter"
@@ -56,7 +56,6 @@ const (
 	RN_ListWorkflowVariables = "listWorkflowVariables"
 	RN_GetWorkflowVariable   = "getWorkflowVariable"
 	RN_ListWorkflowServices  = "listWorkflowServices"
-	// RN_ListWorkflowPods      = "listWorkflowPods"
 
 	RN_CreateWorkflow         = "createWorkflow"
 	RN_UpdateWorkflow         = "updateWorkflow"
@@ -74,72 +73,72 @@ const (
 
 	RN_ExecuteWorkflow = "executeWorkflow"
 
-	// service and workflow service
+	// service and workflow service routes.
 	RN_WatchPodLogs = "watchLogs"
 
-	// delete namespace
+	// delete namespace route.
 	RN_DeleteNamespace = "deleteNamespace"
 
-	// services get
+	// services get routes.
 	RN_ListNamespaceServices = "listNamespacesServices"
 	RN_ListNamespacePods     = "listNamespacePods"
 	RN_GetNamespaceService   = "getNamespaceService"
 	RN_WatchServices         = "watchServices"
 	RN_WatchRevisions        = "watchRevisions"
 
-	// services set
+	// services set routes.
 	RN_CreateNamespaceService         = "createNamespaceService"
 	RN_DeleteNamespaceServices        = "deleteNamespaceService"
 	RN_UpdateNamespaceService         = "updateNamespaceService"
 	RN_DeleteNamespaceServiceRevision = "deleteNamespaceServiceRevision"
 
-	// events
+	// events routes.
 	RN_EventListeners = "eventListeners"
 	RN_EventHistory   = "eventHistory"
 	RN_NamespaceEvent = "namespaceEvent"
 
-	// filter get
+	// filter get routes.
 	RN_NamespaceEventFilter      = "namespaceEventFilter"
 	RN_ListNamespaceEventFilters = "listNamespaceEventFilters"
 	RN_GetNamespaceEventFilter   = "getNamespaceEventFilter"
 
-	// filter set
+	// filter set routes.
 	RN_CreateNamespaceEventFilter = "createNamespaceEventFilter"
 	RN_UpdateNamespaceEventFilter = "updateNamespaceEventFilter"
 
-	// filter delete
+	// filter delete routes.
 	RN_DeleteNamespaceEventFilter = "deleteNamespaceEventFilter"
 
-	// secrets get
+	// secrets get routes.
 	RN_ListSecrets  = "listSecrets"
 	RN_SearchSecret = "searchSecret"
 
-	// secrets set
+	// secrets set routes.
 	RN_OverwriteSecret     = "overwriteSecret"
 	RN_CreateSecret        = "createSecret"
 	RN_CreateSecretsFolder = "createSecretsFolder"
 
-	// secrets delete
+	// secrets delete routes.
 	RN_DeleteSecret        = "deleteSecret"
 	RN_DeleteSecretsFolder = "deleteSecretsFolder"
 
-	// registries get
+	// registries get routes.
 	RN_ListRegistries = "listRegistries"
 	RN_TestRegistry   = "testRegistry"
 
-	// registries set
+	// registries set routes.
 	RN_CreateRegistry = "createRegistry"
 
-	// registries delete
+	// registries delete routes.
 	RN_DeleteRegistry = "deleteRegistry"
 
-	// git set
+	// git set routes.
 	RN_UpdateMirror         = "updateMirror"
 	RN_LockMirror           = "lockMirror"
 	RN_SyncMirror           = "syncMirror"
 	RN_CancelMirrorActivity = "cancelMirrorActivity"
 
-	// git get
+	// git get routes.
 	RN_GetMirrorActivityLogs = "getMirrorActivityLogs"
 	RN_GetMirrorInfo         = "getMirrorInfo"
 )
