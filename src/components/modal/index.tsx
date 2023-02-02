@@ -79,7 +79,9 @@ export function ModalHeadless({
   return <>{overlay}</>;
 }
 
-export interface ModalProps extends ModalHeadlessProps {
+// // extends Omit<ModalHeadlessProps, "visible" | "setVisible"> {
+export interface ModalProps
+  extends Omit<ModalHeadlessProps, "visible" | "setVisible"> {
   /**
    * Button React Node that will open Modal on click.
    */
