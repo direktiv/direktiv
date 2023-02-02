@@ -31,15 +31,20 @@ export interface RequiredField {
   condition?: boolean;
 }
 
-export interface ModalHeadlessProps extends ModalOverlayProps {
+export interface ModalHeadlessProps
+  extends Omit<ModalOverlayProps, "onClose" | "onOpen"> {
   /**
    * State on whether modal is currently visible.
    */
-  visible?: boolean;
+  visible: boolean;
   /**
    * Set State on whether modal is currently visible.
    */
   setVisible: (visible: boolean) => any;
+
+  onClose?: (...e: any) => any;
+
+  onOpen?: (...e: any) => any;
 }
 
 /**
@@ -55,11 +60,17 @@ export function ModalHeadless({
     overlay = (
       <ModalOverlay
         {...overlayProps}
+        onOpen={() => {
+          if (overlayProps.onOpen) {
+            overlayProps.onOpen();
+          }
+          setVisible?.(true);
+        }}
         onClose={() => {
           if (overlayProps.onClose) {
             overlayProps.onClose();
           }
-          setVisible(false);
+          setVisible?.(false);
         }}
       />
     );
