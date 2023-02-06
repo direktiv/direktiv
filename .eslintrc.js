@@ -66,6 +66,12 @@ module.exports = {
     // not be reached and can provide a helpful hint to the developer.
     "no-console": ["error", { allow: ["error", "warn"] }],
 
+    // unused variables should not be allowed in general, but you can use the
+    // underscore prefix to indicate that the variable is unused on purpose
+    // like f.e. in a function signature to indicate that the function takes
+    // a parameter but does not use it
+    "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
+
     // REMOVE WHEN 100 % TYPESCRIPT IS ACHIEVED
 
     // we will use TypeScript's types for component props instead)
