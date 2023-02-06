@@ -7,7 +7,7 @@ require (
 	github.com/Masterminds/semver v1.5.0
 	github.com/bbuck/go-lexer v1.0.0
 	github.com/cloudevents/sdk-go/binding/format/protobuf/v2 v2.6.1
-	github.com/cloudevents/sdk-go/v2 v2.10.1
+	github.com/cloudevents/sdk-go/v2 v2.12.0
 	github.com/dop251/goja v0.0.0-20220214123719-b09a6bfa842f
 	github.com/emicklei/go-restful/v3 v3.8.0
 	github.com/gabriel-vasile/mimetype v1.3.1
@@ -39,6 +39,7 @@ require (
 	go.opentelemetry.io/otel/trace v1.8.0
 	go.uber.org/zap v1.21.0
 	golang.org/x/sys v0.1.0
+	golang.org/x/tools v0.2.0
 	google.golang.org/grpc v1.48.0
 	google.golang.org/protobuf v1.28.1
 	gopkg.in/yaml.v2 v2.4.0
@@ -123,7 +124,6 @@ require (
 	golang.org/x/term v0.1.0 // indirect
 	golang.org/x/text v0.4.0 // indirect
 	golang.org/x/time v0.0.0-20220609170525-579cf78fd858 // indirect
-	golang.org/x/tools v0.2.0 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.2.0 // indirect
 	google.golang.org/api v0.93.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect

@@ -317,6 +317,13 @@ func (flow *flow) DeleteNamespace(ctx context.Context, req *grpc.DeleteNamespace
 	}
 	_, err = flow.actions.client.DeleteFunctions(ctx, &lfr)
 
+	// delete filter cache
+	deleteCacheNamespaceSync(ns.Name)
+	flow.server.pubsub.publish(&PubsubUpdate{
+		Handler: deleteFilterCacheNamespace,
+		Key:     ns.Name,
+	})
+
 	return &resp, err
 
 }

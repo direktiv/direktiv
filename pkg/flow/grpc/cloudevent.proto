@@ -89,10 +89,6 @@ message ApplyCloudEventFilterRequest {
 	string filterName = 3;
 }
 
-message ApplyCloudEventFilterResponse{
-		bytes event = 1;
-	}
-
 message DeleteCloudEventFilterRequest{
 		string namespace = 1;
 		string filterName = 2;
