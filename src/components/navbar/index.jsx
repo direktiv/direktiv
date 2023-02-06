@@ -539,7 +539,10 @@ function NavItems(props) {
     if (extraNavigation) {
       for (let i = 0; i < extraNavigation.length; i++) {
         navItemMap[extraNavigation[i].path(namespace)] = matchPath(
-          extraNavigation[i].path(namespace),
+          {
+            path: extraNavigation[i].path(namespace),
+            end: false,
+          },
           pathname
         );
       }
