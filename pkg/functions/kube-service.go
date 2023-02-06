@@ -269,10 +269,7 @@ func makeContainers(img, cmd string, size int,
 
 	c := []corev1.Container{uc, ds}
 
-	for i := range functionsConfig.extraContainers {
-		container := functionsConfig.extraContainers[i]
-		c = append(c, container)
-	}
+	c = append(c, functionsConfig.extraContainers...)
 
 	return c, nil
 
