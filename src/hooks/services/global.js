@@ -1,8 +1,9 @@
 import * as React from "react";
+
 import {
   CloseEventSource,
-  HandleError,
   ExtractQueryString,
+  HandleError,
   apiKeyHeaders,
 } from "../util";
 

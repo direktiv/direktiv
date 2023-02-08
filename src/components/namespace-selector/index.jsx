@@ -1,15 +1,15 @@
-import React, { useRef, useState } from "react";
 import "./style.css";
 import "../../components/help/style.css";
-import FlexBox from "../flexbox";
-import { VscChevronDown } from "react-icons/vsc";
+import "tippy.js/dist/tippy.css";
 
 import { GenerateRandomKey, useOutsideCallback } from "../../util";
-import { Link } from "react-router-dom";
-import Identicon from "react-identicons";
+import React, { useRef, useState } from "react";
 
+import FlexBox from "../flexbox";
+import Identicon from "react-identicons";
+import { Link } from "react-router-dom";
 import Tippy from "@tippyjs/react";
-import "tippy.js/dist/tippy.css";
+import { VscChevronDown } from "react-icons/vsc";
 
 /**
  * Interactable expandable list of available namespaces to select current namespace. List namespaces are links

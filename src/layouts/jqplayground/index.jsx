@@ -1,19 +1,21 @@
-import { useJQPlayground } from "../../hooks";
-import { useCallback, useEffect, useState } from "react";
-import { VscFileCode, VscArrowRight } from "react-icons/vsc";
+import "./style.css";
+
 import ContentPanel, {
   ContentPanelBody,
   ContentPanelTitle,
   ContentPanelTitleIcon,
 } from "../../components/content-panel";
-import DirektivEditor from "../../components/editor";
+import { VscArrowRight, VscFileCode } from "react-icons/vsc";
+import { useCallback, useEffect, useState } from "react";
+
 import Alert from "../../components/alert";
+import Button from "../../components/button";
+import { Config } from "../../util";
+import DirektivEditor from "../../components/editor";
 import FlexBox from "../../components/flexbox";
 import HelpIcon from "../../components/help";
-import { Config } from "../../util";
-import "./style.css";
-import Button from "../../components/button";
 import { useApiKey } from "../../util/apiKeyProvider";
+import { useJQPlayground } from "../../hooks";
 
 export default function JQPlayground() {
   const [filter, setFilter] = useState(
@@ -173,9 +175,7 @@ function ExamplesJQ(props) {
           </ContentPanelTitleIcon>
           <FlexBox gap style={{ alignItems: "center" }}>
             <div>Cheatsheet</div>
-            <HelpIcon
-              msg="A list of examples that you can load into the playground"
-            />
+            <HelpIcon msg="A list of examples that you can load into the playground" />
           </FlexBox>
         </ContentPanelTitle>
         <ContentPanelBody>

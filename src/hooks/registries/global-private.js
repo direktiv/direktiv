@@ -1,5 +1,7 @@
 import * as React from "react";
-import { HandleError, ExtractQueryString, apiKeyHeaders } from "../util";
+
+import { ExtractQueryString, HandleError, apiKeyHeaders } from "../util";
+
 import fetch from "isomorphic-fetch";
 
 /*

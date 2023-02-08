@@ -1,29 +1,31 @@
-import { useEffect, useState } from "react";
 import "./style.css";
-import SmallLogo from "../../assets/small-logo.jpeg";
+
+import { BrowserRouter, Route, Routes, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+
 import Breadcrumbs from "../../components/breadcrumbs";
-import Settings from "../settings";
-import Explorer from "../explorer";
-import NotFound from "../notfound";
-import FlexBox from "../../components/flexbox";
-import NavBar from "../../components/navbar";
-import { useNamespaces } from "../../hooks";
-import { Config } from "../../util";
-import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
-import InstancesPage from "../instances";
-import JQPlayground from "../jqplayground";
-import NamespaceServices from "../namespace-services";
-import NamespaceRevisions from "../namespace-services/revisions";
-import PodPanel from "../namespace-services/pod";
-import Loader from "../../components/loader";
 import Button from "../../components/button";
-import { IoMenu } from "react-icons/io5";
-import InstancePageWrapper from "../instance";
+import { Config } from "../../util";
 // import PermissionsPageWrapper from '../permissions';
 import EventsPageWrapper from "../events";
-import Monitoring from "../monitoring";
+import Explorer from "../explorer";
+import FlexBox from "../../components/flexbox";
+import InstancePageWrapper from "../instance";
+import InstancesPage from "../instances";
+import { IoMenu } from "react-icons/io5";
+import JQPlayground from "../jqplayground";
+import Loader from "../../components/loader";
 import MirrorPage from "../mirror";
+import Monitoring from "../monitoring";
+import NamespaceRevisions from "../namespace-services/revisions";
+import NamespaceServices from "../namespace-services";
+import NavBar from "../../components/navbar";
+import NotFound from "../notfound";
+import PodPanel from "../namespace-services/pod";
+import Settings from "../settings";
+import SmallLogo from "../../assets/small-logo.jpeg";
 import { useApiKey } from "../../util/apiKeyProvider";
+import { useNamespaces } from "../../hooks";
 
 function NamespaceNavigation(props) {
   const {

@@ -1,16 +1,16 @@
-import { useWorkflowService } from "../../../hooks";
-import { Config } from "../../../util";
-import FlexBox from "../../../components/flexbox";
 import ContentPanel, {
   ContentPanelBody,
   ContentPanelTitle,
   ContentPanelTitleIcon,
 } from "../../../components/content-panel";
-import { VscLayers } from "react-icons/vsc";
 
+import { Config } from "../../../util";
+import FlexBox from "../../../components/flexbox";
 import { Service } from "../../namespace-services";
-import { useNavigate } from "react-router";
+import { VscLayers } from "react-icons/vsc";
 import { useApiKey } from "../../../util/apiKeyProvider";
+import { useNavigate } from "react-router";
+import { useWorkflowService } from "../../../hooks";
 
 export default function WorkflowRevisions(props) {
   const { namespace, service, version, filepath } = props;

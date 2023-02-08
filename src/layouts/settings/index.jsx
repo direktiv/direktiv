@@ -1,11 +1,12 @@
-import React from "react";
 import "./style.css";
-import SecretsPanel from "./secrets-panel";
-import RegistriesPanel from "./registries-panel";
-import FlexBox from "../../components/flexbox";
+
 import BroadcastConfigurationsPanel from "./broadcast-panel";
-import VariablesPanel from "./variables-panel";
+import FlexBox from "../../components/flexbox";
+import React from "react";
+import RegistriesPanel from "./registries-panel";
 import ScarySettings from "./scary-panel";
+import SecretsPanel from "./secrets-panel";
+import VariablesPanel from "./variables-panel";
 
 function Settings(props) {
   const { deleteNamespace, namespace } = props;

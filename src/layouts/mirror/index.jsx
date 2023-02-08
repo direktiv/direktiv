@@ -1,25 +1,27 @@
-import { useTheme } from "@mui/material/styles";
-import Tippy from "@tippyjs/react";
-import { useMirror, useNodes } from "../../hooks";
-import React, { useEffect, useRef, useState } from "react";
-import { VscAdd, VscLock, VscSync, VscUnlock } from "react-icons/vsc";
-import { useNavigate, useParams } from "react-router";
-import Alert from "../../components/alert";
-import Button from "../../components/button";
+import "./style.css";
+
 import ContentPanel, {
   ContentPanelBody,
   ContentPanelTitle,
   ContentPanelTitleIcon,
 } from "../../components/content-panel";
+import React, { useEffect, useRef, useState } from "react";
+import { VscAdd, VscLock, VscSync, VscUnlock } from "react-icons/vsc";
+import { useMirror, useNodes } from "../../hooks";
+import { useNavigate, useParams } from "react-router";
+
+import ActivityLogs from "./logs.jsx";
+import ActivityTable from "./activities";
+import Alert from "../../components/alert";
+import Button from "../../components/button";
+import { Config } from "../../util";
 import FlexBox from "../../components/flexbox";
 import Loader from "../../components/loader";
-import { ModalHeadless } from "../../components/modal";
-import { Config } from "../../util";
-import { useApiKey } from "../../util/apiKeyProvider";
-import ActivityTable from "./activities";
 import MirrorInfoPanel from "./info";
-import ActivityLogs from "./logs.jsx";
-import "./style.css";
+import { ModalHeadless } from "../../components/modal";
+import Tippy from "@tippyjs/react";
+import { useApiKey } from "../../util/apiKeyProvider";
+import { useTheme } from "@mui/material/styles";
 
 export default function MirrorPage(props) {
   const { namespace, setBreadcrumbChildren } = props;

@@ -1,4 +1,5 @@
 import * as React from "react";
+
 import {
   CloseEventSource,
   ExtractQueryString,
@@ -6,6 +7,7 @@ import {
   TrimPathSlashes,
   apiKeyHeaders,
 } from "../util";
+
 import { EventSourcePolyfill } from "event-source-polyfill";
 import fetch from "isomorphic-fetch";
 

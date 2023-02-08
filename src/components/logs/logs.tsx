@@ -1,7 +1,8 @@
-import dayjs from "dayjs";
+import "./style.css";
+
 import {
-  createContext,
   CSSProperties,
+  createContext,
   forwardRef,
   useCallback,
   useContext,
@@ -18,13 +19,14 @@ import {
   VscWholeWord,
   VscWordWrap,
 } from "react-icons/vsc";
-import utc from "dayjs/plugin/utc";
+
 import AutoSizer from "react-virtualized-auto-sizer";
-import { VariableSizeList } from "react-window";
-import { copyTextToClipboard } from "../../util";
 import Button from "../button";
 import FlexBox from "../flexbox";
-import "./style.css";
+import { VariableSizeList } from "react-window";
+import { copyTextToClipboard } from "../../util";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
 
 dayjs.extend(utc);
 export interface LogsProps {

@@ -1,20 +1,18 @@
-import { useEffect, useState } from "react";
+import "./style.css";
+import "tippy.js/dist/tippy.css";
+
+import Button, { ButtonProps } from "../button";
 import ContentPanel, {
   ContentPanelBody,
   ContentPanelFooter,
   ContentPanelTitle,
   ContentPanelTitleIcon,
 } from "../content-panel";
-import "./style.css";
-
-import { VscDiffAdded, VscClose } from "react-icons/vsc";
+import { VscClose, VscDiffAdded } from "react-icons/vsc";
+import { useEffect, useState } from "react";
 
 import Alert from "../alert";
 import FlexBox from "../flexbox";
-
-import "tippy.js/dist/tippy.css";
-
-import Button, { ButtonProps } from "../button";
 
 export interface RequiredField {
   /**

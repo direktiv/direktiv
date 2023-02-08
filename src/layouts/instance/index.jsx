@@ -1,28 +1,5 @@
-import { useInstance, useInstanceLogs, useWorkflow } from "../../hooks";
-import React, { useCallback, useEffect, useState } from "react";
-import {
-  VscScreenFull,
-  VscScreenNormal,
-  VscSourceControl,
-  VscTerminal,
-} from "react-icons/vsc";
-import { useParams } from "react-router";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { AutoSizer } from "react-virtualized";
-import Alert from "../../components/alert";
-import Button from "../../components/button";
-import ContentPanel, {
-  ContentPanelBody,
-  ContentPanelTitle,
-  ContentPanelTitleIcon,
-} from "../../components/content-panel";
-import WorkflowDiagram from "../../components/diagram";
-import DirektivEditor from "../../components/editor";
-import FlexBox from "../../components/flexbox";
-import Loader from "../../components/loader";
-import Logs, { LogFooterButtons } from "../../components/logs/logs";
-import { Config, GenerateRandomKey } from "../../util";
-import { useApiKey } from "../../util/apiKeyProvider";
+import "./style.css";
+
 import {
   CancelledState,
   FailState,
@@ -30,7 +7,32 @@ import {
   RunningState,
   SuccessState,
 } from "../instances";
-import "./style.css";
+import { Config, GenerateRandomKey } from "../../util";
+import ContentPanel, {
+  ContentPanelBody,
+  ContentPanelTitle,
+  ContentPanelTitleIcon,
+} from "../../components/content-panel";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import Logs, { LogFooterButtons } from "../../components/logs/logs";
+import React, { useCallback, useEffect, useState } from "react";
+import {
+  VscScreenFull,
+  VscScreenNormal,
+  VscSourceControl,
+  VscTerminal,
+} from "react-icons/vsc";
+import { useInstance, useInstanceLogs, useWorkflow } from "../../hooks";
+
+import Alert from "../../components/alert";
+import { AutoSizer } from "react-virtualized";
+import Button from "../../components/button";
+import DirektivEditor from "../../components/editor";
+import FlexBox from "../../components/flexbox";
+import Loader from "../../components/loader";
+import WorkflowDiagram from "../../components/diagram";
+import { useApiKey } from "../../util/apiKeyProvider";
+import { useParams } from "react-router";
 
 function InstancePageWrapper(props) {
   const { namespace } = props;

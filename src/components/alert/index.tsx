@@ -1,8 +1,9 @@
+import "./style.css";
+
 import MUIAlert from "@mui/material/Alert";
 import type { AlertProps as MUIAlertProps } from "@mui/material/Alert";
-import { styled } from "@mui/material/styles";
 import { VscWarning } from "react-icons/vsc";
-import "./style.css";
+import { styled } from "@mui/material/styles";
 
 export interface AlertProps extends MUIAlertProps {
   /**

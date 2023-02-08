@@ -1,11 +1,13 @@
-import { renderHook, act } from "@testing-library/react-hooks";
 import * as matchers from "jest-extended";
-import { Config } from "./util";
+
+import { act, renderHook } from "@testing-library/react-hooks";
 import {
-  useRegistries,
   useGlobalPrivateRegistries,
   useGlobalRegistries,
+  useRegistries,
 } from "./index";
+
+import { Config } from "./util";
 expect.extend(matchers);
 
 // mock timer using jest
@@ -52,7 +54,10 @@ describe("useRegistries", () => {
       useRegistries(Config.url, Config.namespace)
     );
     await waitForNextUpdate();
-    const err = await result.current.createRegistry("not a url", "us e r:tes t");
+    const err = await result.current.createRegistry(
+      "not a url",
+      "us e r:tes t"
+    );
     console.log(err);
     expect(err).toBe(
       "create registry: Secret \"direktiv-secret-test-\" is invalid: metadata.name: Invalid value: \"direktiv-secret-test-\": a lowercase RFC 1123 subdomain must consist of lower case alphanumeric characters, '-' or '.', and must start and end with an alphanumeric character (e.g. 'example.com', regex used for validation is '[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*')"

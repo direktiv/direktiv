@@ -1,16 +1,18 @@
-import { useWorkflowServiceRevision } from "../../../hooks";
-import { VscLayers } from "react-icons/vsc";
+import * as dayjs from "dayjs";
+
 import ContentPanel, {
   ContentPanelBody,
   ContentPanelTitle,
   ContentPanelTitleIcon,
 } from "../../../components/content-panel";
-import FlexBox from "../../../components/flexbox";
+
 import { Config } from "../../../util";
-import { ServiceStatus } from "../../namespace-services";
-import * as dayjs from "dayjs";
+import FlexBox from "../../../components/flexbox";
 import { PodLogs } from "../../namespace-services/pod";
+import { ServiceStatus } from "../../namespace-services";
+import { VscLayers } from "react-icons/vsc";
 import { useApiKey } from "../../../util/apiKeyProvider";
+import { useWorkflowServiceRevision } from "../../../hooks";
 
 export default function WorkflowPod(props) {
   const { namespace, service, version, filepath, revision } = props;

@@ -1,12 +1,14 @@
 import * as React from "react";
+
 import {
   CloseEventSource,
-  HandleError,
   ExtractQueryString,
+  HandleError,
   apiKeyHeaders,
 } from "../util";
-import fetch from "isomorphic-fetch";
+
 import { EventSourcePolyfill } from "event-source-polyfill";
+import fetch from "isomorphic-fetch";
 
 /* 
     useNamespaceServiceRevision takes

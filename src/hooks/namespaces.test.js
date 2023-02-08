@@ -1,6 +1,7 @@
-import { renderHook } from "@testing-library/react-hooks";
 import * as matchers from "jest-extended";
+
 import { Config } from "./util";
+import { renderHook } from "@testing-library/react-hooks";
 import { useNamespaces } from "./index";
 expect.extend(matchers);
 

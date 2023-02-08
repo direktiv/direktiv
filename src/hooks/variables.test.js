@@ -1,6 +1,8 @@
-import { renderHook, act } from "@testing-library/react-hooks";
 import * as matchers from "jest-extended";
+
+import { act, renderHook } from "@testing-library/react-hooks";
 import { useNamespaceVariables, useNodes, useWorkflowVariables } from "./index";
+
 import { Config } from "./util";
 expect.extend(matchers);
 

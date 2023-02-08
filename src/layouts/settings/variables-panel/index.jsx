@@ -1,39 +1,40 @@
-import Tippy from "@tippyjs/react";
-import { useNamespaceVariables } from "../../../hooks";
-import { saveAs } from "file-saver";
-import { useCallback, useEffect, useState } from "react";
-import { useDropzone } from "react-dropzone";
+import "./style.css";
+
 import {
+  CanPreviewMimeType,
+  Config,
+  MimeTypeFileExtension,
+} from "../../../util";
+import ContentPanel, {
+  ContentPanelBody,
+  ContentPanelTitle,
+  ContentPanelTitleIcon,
+} from "../../../components/content-panel";
+import Pagination, { usePageHandler } from "../../../components/pagination";
+import {
+  VscAdd,
   VscCloudDownload,
   VscCloudUpload,
   VscEye,
   VscLoading,
   VscTrash,
   VscVariableGroup,
-  VscAdd,
 } from "react-icons/vsc";
+import { useCallback, useEffect, useState } from "react";
+
 import { AutoSizer } from "react-virtualized";
 import Button from "../../../components/button";
-import ContentPanel, {
-  ContentPanelBody,
-  ContentPanelTitle,
-  ContentPanelTitleIcon,
-} from "../../../components/content-panel";
 import DirektivEditor from "../../../components/editor";
 import FlexBox from "../../../components/flexbox";
 import HelpIcon from "../../../components/help";
 import Modal from "../../../components/modal";
-import Pagination, { usePageHandler } from "../../../components/pagination";
-import Tabs from "../../../components/tabs";
-import {
-  CanPreviewMimeType,
-  Config,
-  MimeTypeFileExtension,
-} from "../../../util";
 import { SearchBar } from "../../explorer";
-import "./style.css";
-
+import Tabs from "../../../components/tabs";
+import Tippy from "@tippyjs/react";
+import { saveAs } from "file-saver";
 import { useApiKey } from "../../../util/apiKeyProvider";
+import { useDropzone } from "react-dropzone";
+import { useNamespaceVariables } from "../../../hooks";
 
 const PAGE_SIZE = 10;
 

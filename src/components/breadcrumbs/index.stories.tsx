@@ -1,11 +1,12 @@
-import React from "react";
-import type { ComponentStory, ComponentMeta } from "@storybook/react";
-import { withRouter } from "storybook-addon-react-router-v6";
 import "../../App.css";
 import "./style.css";
 
+import type { ComponentMeta, ComponentStory } from "@storybook/react";
+
 import Breadcrumbs from "./index";
 import FlexBox from "../flexbox";
+import React from "react";
+import { withRouter } from "storybook-addon-react-router-v6";
 
 export default {
   title: "Components/Breadcrumbs",

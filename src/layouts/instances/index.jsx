@@ -1,25 +1,27 @@
-import { useInstances } from "../../hooks";
-import { useEffect, useMemo, useState } from "react";
-import { BsDot } from "react-icons/bs";
-import { VscClose, VscVmRunning } from "react-icons/vsc";
+import "./style.css";
+
+import * as dayjs from "dayjs";
+
+import { Config, GenerateRandomKey } from "../../util";
 import ContentPanel, {
   ContentPanelBody,
   ContentPanelTitle,
   ContentPanelTitleIcon,
 } from "../../components/content-panel";
+import Pagination, { usePageHandler } from "../../components/pagination";
+import { VscClose, VscVmRunning } from "react-icons/vsc";
+import { useEffect, useMemo, useState } from "react";
+
+import { BsDot } from "react-icons/bs";
 import FlexBox from "../../components/flexbox";
 import HelpIcon from "../../components/help";
-import Pagination, { usePageHandler } from "../../components/pagination";
-import { Config, GenerateRandomKey } from "../../util";
-import "./style.css";
-
-import Tippy from "@tippyjs/react";
-import * as dayjs from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime";
-import utc from "dayjs/plugin/utc";
-import { useNavigate } from "react-router-dom";
 import Loader from "../../components/loader";
+import Tippy from "@tippyjs/react";
+import relativeTime from "dayjs/plugin/relativeTime";
 import { useApiKey } from "../../util/apiKeyProvider";
+import { useInstances } from "../../hooks";
+import { useNavigate } from "react-router-dom";
+import utc from "dayjs/plugin/utc";
 
 const PAGE_SIZE = 10;
 

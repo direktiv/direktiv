@@ -54,6 +54,12 @@ module.exports = {
     // PLEASE ALWAYS PROVIDE A REASON FOR DISABLING/OVERWRITING A RULE
     // IT'S HARD TO EVALUATE THIS SECTION AT A LATER POINT IN TIME
 
+    // Imports can be very messy in JavaScript and we should automatically
+    // sort them to make them more readable and consistent accross the project.
+    // this plugin does that automatically and this rule enforces it.
+    // https://marketplace.visualstudio.com/items?itemName=amatiasq.sort-imports
+    "sort-imports": "error",
+
     // simpe rule to avoid unnecessary curly braces
     "react/jsx-curly-brace-presence": "error",
 

@@ -1,15 +1,17 @@
 import * as React from "react";
+
 import {
   ExtractQueryString,
-  genericEventSourceErrorHandler,
   HandleError,
-  SanitizePath,
   STATE,
+  SanitizePath,
   StateReducer,
+  apiKeyHeaders,
+  genericEventSourceErrorHandler,
   useEventSourceCleaner,
   useQueryString,
-  apiKeyHeaders,
 } from "../util";
+
 import { EventSourcePolyfill } from "event-source-polyfill";
 import fetch from "isomorphic-fetch";
 

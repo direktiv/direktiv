@@ -1,14 +1,16 @@
-import React, { useEffect, useState } from "react";
 import "./style.css";
+
 import ContentPanel, {
+  ContentPanelBody,
   ContentPanelTitle,
   ContentPanelTitleIcon,
-  ContentPanelBody,
 } from "../../../components/content-panel";
-import FlexBox from "../../../components/flexbox";
-import Alert from "../../../components/alert";
-import Modal from "../../../components/modal";
+import React, { useEffect, useState } from "react";
 import { VscSettingsGear, VscTrash } from "react-icons/vsc";
+
+import Alert from "../../../components/alert";
+import FlexBox from "../../../components/flexbox";
+import Modal from "../../../components/modal";
 
 function ScarySettings(props) {
   const { deleteNamespace, namespace, deleteErr } = props;

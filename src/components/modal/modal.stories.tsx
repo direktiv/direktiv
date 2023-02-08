@@ -1,6 +1,7 @@
-import type { ComponentMeta, ComponentStory } from "@storybook/react";
 import "../../App.css";
 import "./style.css";
+
+import type { ComponentMeta, ComponentStory } from "@storybook/react";
 
 import FlexBox from "../flexbox";
 import Modal from "./index";

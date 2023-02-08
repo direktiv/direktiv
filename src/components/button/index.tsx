@@ -1,8 +1,9 @@
-import { Tooltip } from "@mui/material";
+import * as React from "react";
+
 import MUIButton from "@mui/material/Button";
 import type { ButtonProps as MUIButtonProps } from "@mui/material/Button";
+import { Tooltip } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import * as React from "react";
 
 export interface ButtonProps extends MUIButtonProps {
   /**

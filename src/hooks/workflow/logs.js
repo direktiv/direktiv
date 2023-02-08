@@ -1,12 +1,14 @@
 import * as React from "react";
-import fetch from "cross-fetch";
+
 import {
   CloseEventSource,
-  HandleError,
   ExtractQueryString,
+  HandleError,
   apiKeyHeaders,
 } from "../util";
+
 import { EventSourcePolyfill } from "event-source-polyfill";
+import fetch from "cross-fetch";
 
 /*
     useWorkflowLogs is a react hook which returns data, err or getWorkflowLogs()

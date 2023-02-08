@@ -1,7 +1,7 @@
-import { useState } from "react";
+import Button from "../../components/button";
 import FlexBox from "../../components/flexbox";
 import Logo from "../../assets/nav-logo.png";
-import Button from "../../components/button";
+import { useState } from "react";
 
 export default function Login(props) {
   const { setLogin, setAKey } = props;

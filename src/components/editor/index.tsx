@@ -1,7 +1,10 @@
-import Editor, { useMonaco, loader } from "@monaco-editor/react";
-import type { EditorProps } from "@monaco-editor/react";
-import { useEffect, useState } from "react";
 import "./style.css";
+
+import Editor, { loader, useMonaco } from "@monaco-editor/react";
+import { useEffect, useState } from "react";
+
+import type { EditorProps } from "@monaco-editor/react";
+
 // import * as cobalt from './cobalt.json'
 
 loader.config({ paths: { vs: "/monaco-0.28.1-min/vs" } });

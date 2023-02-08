@@ -1,8 +1,10 @@
-import React from "react";
-import { BsEye, BsEyeSlash } from "react-icons/bs";
-import Tippy from "@tippyjs/react";
 import "tippy.js/dist/tippy.css";
 import "./style.css";
+
+import { BsEye, BsEyeSlash } from "react-icons/bs";
+
+import React from "react";
+import Tippy from "@tippyjs/react";
 
 export interface HideShowButtonProps {
   /**

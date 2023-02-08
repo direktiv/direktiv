@@ -1,5 +1,6 @@
+import { ExtractQueryString, HandleError, apiKeyHeaders } from "../util";
+
 import fetch from "cross-fetch";
-import { HandleError, ExtractQueryString, apiKeyHeaders } from "../util";
 
 /*
     useNamespaceMetrics is a react hook which metric details

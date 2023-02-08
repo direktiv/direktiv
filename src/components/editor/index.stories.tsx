@@ -1,9 +1,10 @@
-import type { ComponentMeta, ComponentStory } from "@storybook/react";
 import "../../App.css";
 import "./style.css";
-import FlexBox from "../flexbox";
+
+import type { ComponentMeta, ComponentStory } from "@storybook/react";
 
 import DirektivEditor from "./index";
+import FlexBox from "../flexbox";
 
 const exampleWorkflow = `description: A simple 'no-op' state that returns 'Hello world!'
 states:

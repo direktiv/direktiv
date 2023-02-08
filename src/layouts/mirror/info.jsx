@@ -1,19 +1,20 @@
-import { useCallback, useEffect, useRef, useState } from "react";
 import "./style.css";
 
-import Tippy from "@tippyjs/react";
-import { VscAdd, VscCloudUpload, VscTerminal } from "react-icons/vsc";
-import TextareaAutosize from "react-textarea-autosize";
 import ContentPanel, {
   ContentPanelBody,
   ContentPanelTitle,
   ContentPanelTitleIcon,
 } from "../../components/content-panel";
+import { VscAdd, VscCloudUpload, VscTerminal } from "react-icons/vsc";
+import { useCallback, useEffect, useRef, useState } from "react";
+
+import { ClientFileUpload } from "../../components/navbar";
 import FlexBox from "../../components/flexbox";
 import HelpIcon from "../../components/help";
 import HideShowButton from "../../components/hide-show";
 import Modal from "../../components/modal";
-import { ClientFileUpload } from "../../components/navbar";
+import TextareaAutosize from "react-textarea-autosize";
+import Tippy from "@tippyjs/react";
 
 export const mirrorSettingInfoMetaInfo = {
   url: {

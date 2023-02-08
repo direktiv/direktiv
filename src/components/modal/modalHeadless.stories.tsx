@@ -1,11 +1,12 @@
-import type { ComponentMeta, ComponentStory } from "@storybook/react";
 import "../../App.css";
 import "./style.css";
 
+import type { ComponentMeta, ComponentStory } from "@storybook/react";
+
+import Button from "../button";
 import FlexBox from "../flexbox";
 import { ModalHeadless } from "./index";
 import { useState } from "react";
-import Button from "../button";
 
 export default {
   title: "Components/ModalHeadless",

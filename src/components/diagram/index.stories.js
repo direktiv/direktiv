@@ -1,6 +1,6 @@
 import "../../App.css";
-import FlexBox from "../flexbox";
 
+import FlexBox from "../flexbox";
 import WorkflowDiagram from "./index";
 
 const exampleWorkflow = `description: A simple 'no-op' state that returns 'Hello world!'

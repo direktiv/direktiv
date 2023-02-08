@@ -1,20 +1,22 @@
 import * as dayjs from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime";
-import utc from "dayjs/plugin/utc";
-import { useInstances, useNamespaceLogs } from "../../hooks";
-import { useEffect, useState } from "react";
-import { VscCheck, VscChromeClose, VscTerminal } from "react-icons/vsc";
-import { Link } from "react-router-dom";
+
 import ContentPanel, {
   ContentPanelBody,
   ContentPanelTitle,
 } from "../../components/content-panel";
+import Logs, { LogFooterButtons } from "../../components/logs/logs";
+import { VscCheck, VscChromeClose, VscTerminal } from "react-icons/vsc";
+import { useEffect, useState } from "react";
+import { useInstances, useNamespaceLogs } from "../../hooks";
+
+import { Config } from "../../util";
 import FlexBox from "../../components/flexbox";
 import HelpIcon from "../../components/help";
+import { Link } from "react-router-dom";
 import Loader from "../../components/loader";
-import Logs, { LogFooterButtons } from "../../components/logs/logs";
-import { Config } from "../../util";
+import relativeTime from "dayjs/plugin/relativeTime";
 import { useApiKey } from "../../util/apiKeyProvider";
+import utc from "dayjs/plugin/utc";
 
 dayjs.extend(utc);
 dayjs.extend(relativeTime);
@@ -86,9 +88,7 @@ function MonitoringPage(props) {
               <FlexBox gap style={{ alignItems: "center" }}>
                 <VscTerminal />
                 <div>Namespace Logs</div>
-                <HelpIcon
-                  msg="Namespace logs details action happening throughout the namespace"
-                />
+                <HelpIcon msg="Namespace logs details action happening throughout the namespace" />
               </FlexBox>
             </ContentPanelTitle>
             <ContentPanelBody>
@@ -152,9 +152,7 @@ function MonitoringPage(props) {
                   <div>
                     Successful <span className="hide-1000">Executions</span>
                   </div>
-                  <HelpIcon
-                    msg="A list of the latest successful executions"
-                  />
+                  <HelpIcon msg="A list of the latest successful executions" />
                 </FlexBox>
               </ContentPanelTitle>
               <ContentPanelBody>

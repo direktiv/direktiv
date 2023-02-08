@@ -1,16 +1,18 @@
-import dagre from "dagre";
+import "./style.css";
+
+import React, { useEffect, useMemo, useState } from "react";
 import ReactFlow, {
-  ReactFlowProvider,
-  MiniMap,
-  isNode,
   Handle,
+  MiniMap,
+  ReactFlowProvider,
+  isNode,
   useZoomPanHelper,
 } from "react-flow-renderer";
-import React, { useEffect, useMemo, useState } from "react";
-import YAML from "js-yaml";
 
-import "./style.css";
 import InvalidWorkflow from "../invalid-workflow";
+import YAML from "js-yaml";
+import dagre from "dagre";
+
 export const position = { x: 0, y: 0 };
 
 // initialize the dagre graph

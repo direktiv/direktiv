@@ -1,9 +1,11 @@
-import { useState } from "react";
-import Alert from "./index";
-import type { ComponentStory, ComponentMeta } from "@storybook/react";
 import "../../App.css";
 import "./style.css";
+
+import type { ComponentMeta, ComponentStory } from "@storybook/react";
+
+import Alert from "./index";
 import Button from "../button";
+import { useState } from "react";
 
 export default {
   title: "Components/Alert",

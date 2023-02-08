@@ -1,10 +1,11 @@
-import { IoPlay } from "react-icons/io5";
 import ContentPanel, {
   ContentPanelBody,
   ContentPanelTitle,
   ContentPanelTitleIcon,
 } from "../../components/content-panel";
+
 import FlexBox from "../../components/flexbox";
+import { IoPlay } from "react-icons/io5";
 
 export default function WorkflowBuilder() {
   return (

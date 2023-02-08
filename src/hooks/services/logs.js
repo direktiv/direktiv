@@ -1,5 +1,7 @@
 import * as React from "react";
+
 import { CloseEventSource, apiKeyHeaders } from "../util";
+
 import { EventSourcePolyfill } from "event-source-polyfill";
 
 /*

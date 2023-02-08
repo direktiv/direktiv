@@ -1,20 +1,22 @@
-import { renderHook, act } from "@testing-library/react-hooks";
 import * as matchers from "jest-extended";
-import { Config } from "./util";
+
+import { act, renderHook } from "@testing-library/react-hooks";
 import {
-  useWorkflow,
-  useWorkflowServiceRevision,
-  useWorkflowService,
-  useGlobalServiceRevision,
-  usePodLogs,
-  useGlobalServices,
   useGlobalService,
+  useGlobalServiceRevision,
+  useGlobalServices,
+  useNamespaceService,
+  useNamespaceServiceRevision,
   useNamespaceServices,
   useNodes,
+  usePodLogs,
+  useWorkflow,
+  useWorkflowService,
+  useWorkflowServiceRevision,
   useWorkflowServices,
-  useNamespaceServiceRevision,
-  useNamespaceService,
 } from "./index";
+
+import { Config } from "./util";
 expect.extend(matchers);
 
 // mock timer using jest

@@ -1,10 +1,12 @@
-import { useMirrorLogs } from "../../hooks";
-import React, { useState } from "react";
-import FlexBox from "../../components/flexbox";
-import Logs, { LogFooterButtons } from "../../components/logs/logs";
-import { Config } from "../../util";
-import { useApiKey } from "../../util/apiKeyProvider";
 import "./style.css";
+
+import Logs, { LogFooterButtons } from "../../components/logs/logs";
+import React, { useState } from "react";
+
+import { Config } from "../../util";
+import FlexBox from "../../components/flexbox";
+import { useApiKey } from "../../util/apiKeyProvider";
+import { useMirrorLogs } from "../../hooks";
 
 export default function ActivityLogs(props) {
   const { activity, namespace } = props;

@@ -1,29 +1,29 @@
-import React, { useCallback, useState } from "react";
 import "./style.css";
-import Logo from "../../assets/nav-logo.png";
-import FlexBox from "../flexbox";
-import NamespaceSelector from "../namespace-selector";
 
-import Modal from "../modal";
+import { Link, matchPath, useLocation, useNavigate } from "react-router-dom";
+import React, { useCallback, useState } from "react";
 import {
   VscAdd,
+  VscCloudUpload,
   VscFolderOpened,
   VscGraph,
   VscLayers,
+  VscPlayCircle,
   VscSettingsGear,
   VscSymbolEvent,
   VscVmRunning,
-  VscPlayCircle,
-  VscCloudUpload,
 } from "react-icons/vsc";
 
-import { Link, matchPath, useLocation, useNavigate } from "react-router-dom";
-import Tabs from "../tabs";
-import { mirrorSettingInfoMetaInfo } from "../../layouts/mirror/info";
+import FlexBox from "../flexbox";
 import HelpIcon from "../help";
-import Tippy from "@tippyjs/react";
-import { useDropzone } from "react-dropzone";
 import HideShowButton from "../hide-show";
+import Logo from "../../assets/nav-logo.png";
+import Modal from "../modal";
+import NamespaceSelector from "../namespace-selector";
+import Tabs from "../tabs";
+import Tippy from "@tippyjs/react";
+import { mirrorSettingInfoMetaInfo } from "../../layouts/mirror/info";
+import { useDropzone } from "react-dropzone";
 
 function NavBar(props) {
   let { className } = props;

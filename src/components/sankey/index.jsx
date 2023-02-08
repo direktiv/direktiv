@@ -1,8 +1,11 @@
-import { useState, useEffect } from "react";
 import "./style.css";
-import AutoSizer from "react-virtualized-auto-sizer";
+
 import * as d3 from "d3";
+
 import { sankeyCircular, sankeyJustify } from "d3-sankey-circular";
+import { useEffect, useState } from "react";
+
+import AutoSizer from "react-virtualized-auto-sizer";
 import { GenerateRandomKey } from "../../util";
 
 export default function Sankey(props) {

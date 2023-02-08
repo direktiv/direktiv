@@ -1,20 +1,21 @@
 import * as React from "react";
+
 import {
-  HandleError,
   ExtractQueryString,
-  StateReducer,
+  HandleError,
   STATE,
+  StateReducer,
+  apiKeyHeaders,
+  genericEventSourceErrorHandler,
   useEventSourceCleaner,
   useQueryString,
-  genericEventSourceErrorHandler,
-  apiKeyHeaders,
 } from "../util";
 
+import { EventSourcePolyfill } from "event-source-polyfill";
 // For testing
 // import fetch from "cross-fetch"
 // In Production
 import fetch from "isomorphic-fetch";
-import { EventSourcePolyfill } from "event-source-polyfill";
 
 /*
     useInstances is a react hook which returns a list of instances

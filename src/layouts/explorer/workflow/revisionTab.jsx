@@ -1,35 +1,36 @@
-import React, { useCallback, useEffect, useState } from "react";
-import Button from "../../../components/button";
-import { HiOutlineTrash } from "react-icons/hi";
+import "rc-slider/assets/index.css";
+
 import ContentPanel, {
   ContentPanelBody,
   ContentPanelTitle,
   ContentPanelTitleIcon,
 } from "../../../components/content-panel";
-import FlexBox from "../../../components/flexbox";
-import { GenerateRandomKey } from "../../../util";
-import { BiChevronLeft } from "react-icons/bi";
-import DirektivEditor from "../../../components/editor";
-import WorkflowDiagram from "../../../components/diagram";
-import YAML from "js-yaml";
 import Modal, { ModalHeadless } from "../../../components/modal";
-import SankeyDiagram from "../../../components/sankey";
+import React, { useCallback, useEffect, useState } from "react";
 import {
-  VscVersions,
-  VscTypeHierarchySub,
   VscCode,
   VscDebugStepBack,
+  VscTypeHierarchySub,
+  VscVersions,
 } from "react-icons/vsc";
-import Slider from "rc-slider";
-import "rc-slider/assets/index.css";
-import { useNavigate } from "react-router";
-import HelpIcon from "../../../components/help";
-import { AutoSizer } from "react-virtualized";
-import { ApiFragment } from "..";
 
+import { ApiFragment } from "..";
+import { AutoSizer } from "react-virtualized";
+import { BiChevronLeft } from "react-icons/bi";
+import Button from "../../../components/button";
+import DirektivEditor from "../../../components/editor";
+import FlexBox from "../../../components/flexbox";
 import Form from "@rjsf/core";
+import { GenerateRandomKey } from "../../../util";
+import HelpIcon from "../../../components/help";
+import { HiOutlineTrash } from "react-icons/hi";
+import SankeyDiagram from "../../../components/sankey";
+import Slider from "rc-slider";
 import Tabs from "../../../components/tabs";
 import Tippy from "@tippyjs/react";
+import WorkflowDiagram from "../../../components/diagram";
+import YAML from "js-yaml";
+import { useNavigate } from "react-router";
 import { windowBlocker } from "../../../components/diagram-editor/usePrompt";
 
 function RevisionTab(props) {

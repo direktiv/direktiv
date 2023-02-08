@@ -1,23 +1,24 @@
-import React, { useState } from "react";
 import "./style.css";
+
+import { Config, GenerateRandomKey } from "../../../util";
 import ContentPanel, {
+  ContentPanelBody,
   ContentPanelTitle,
   ContentPanelTitleIcon,
-  ContentPanelBody,
 } from "../../../components/content-panel";
-import { VscLock, VscTrash, VscAdd } from "react-icons/vsc";
-import Modal from "../../../components/modal";
-import { useDropzone } from "react-dropzone";
-import FlexBox from "../../../components/flexbox";
-import Alert from "../../../components/alert";
-import { useSecrets } from "../../../hooks";
-import { Config, GenerateRandomKey } from "../../../util";
-import HelpIcon from "../../../components/help";
-import Tabs from "../../../components/tabs";
-import DirektivEditor from "../../../components/editor";
-import { AutoSizer } from "react-virtualized";
+import React, { useState } from "react";
+import { VscAdd, VscLock, VscTrash } from "react-icons/vsc";
 
+import Alert from "../../../components/alert";
+import { AutoSizer } from "react-virtualized";
+import DirektivEditor from "../../../components/editor";
+import FlexBox from "../../../components/flexbox";
+import HelpIcon from "../../../components/help";
+import Modal from "../../../components/modal";
+import Tabs from "../../../components/tabs";
 import { useApiKey } from "../../../util/apiKeyProvider";
+import { useDropzone } from "react-dropzone";
+import { useSecrets } from "../../../hooks";
 
 function SecretsPanel(props) {
   const { namespace } = props;
@@ -40,9 +41,7 @@ function SecretsPanel(props) {
         </ContentPanelTitleIcon>
         <FlexBox style={{ display: "flex", alignItems: "center" }} gap>
           <div>Secrets</div>
-          <HelpIcon
-            msg="Encrypted key/value pairs that can be referenced within workflows. Suitable for storing sensitive information (such as tokens) for use in workflows."
-          />
+          <HelpIcon msg="Encrypted key/value pairs that can be referenced within workflows. Suitable for storing sensitive information (such as tokens) for use in workflows." />
         </FlexBox>
         <div>
           <Modal

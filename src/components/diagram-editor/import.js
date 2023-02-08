@@ -1,12 +1,13 @@
 import { ActionsNodes, NodeErrorBlock, NodeStartBlock } from "./nodes";
-import YAML from "js-yaml";
-import prettyYAML from "json-to-pretty-yaml";
 import {
   CreateNode,
   sortNodes,
-  unescapeJSStrings,
   stateTypeUpgrade,
+  unescapeJSStrings,
 } from "./util";
+
+import YAML from "js-yaml";
+import prettyYAML from "json-to-pretty-yaml";
 
 export function importFromYAML(diagramEditor, setFunctions, wfYAML) {
   const wfData = YAML.load(wfYAML);

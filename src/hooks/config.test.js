@@ -1,7 +1,9 @@
-import { renderHook, act } from "@testing-library/react-hooks";
 import * as matchers from "jest-extended";
-import { useBroadcastConfiguration } from "./index";
+
+import { act, renderHook } from "@testing-library/react-hooks";
+
 import { Config } from "./util";
+import { useBroadcastConfiguration } from "./index";
 expect.extend(matchers);
 
 // mock timer using jest

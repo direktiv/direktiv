@@ -1,7 +1,8 @@
-import React from "react";
-import { Link } from "react-router-dom";
-import FlexBox from "../../components/flexbox";
 import "./style.css";
+
+import FlexBox from "../../components/flexbox";
+import { Link } from "react-router-dom";
+import React from "react";
 
 function NotFound() {
   return (

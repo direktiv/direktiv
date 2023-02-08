@@ -1,13 +1,14 @@
-import type { ComponentStory, ComponentMeta } from "@storybook/react";
 import "../../App.css";
 import "./style.css";
 
+import type { ComponentMeta, ComponentStory } from "@storybook/react";
 import ContentPanel, {
   ContentPanelBody,
   ContentPanelFooter,
   ContentPanelTitle,
   ContentPanelTitleIcon,
 } from "./index";
+
 import FlexBox from "../flexbox";
 import { VscCloud } from "react-icons/vsc";
 

@@ -1,10 +1,9 @@
-import { withRouter } from "storybook-addon-react-router-v6";
-
 import "../../App.css";
-import FlexBox from "../flexbox";
 import "./style.css";
 
+import FlexBox from "../flexbox";
 import NamespaceSelector from "./index";
+import { withRouter } from "storybook-addon-react-router-v6";
 
 export default {
   title: "Components/NamespaceSelector",

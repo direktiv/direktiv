@@ -1,21 +1,24 @@
-import * as dayjs from "dayjs";
-import { useNamespaceServiceRevision, usePodLogs } from "../../hooks";
-import { useEffect, useState } from "react";
-import { VscLayers, VscServerEnvironment, VscTerminal } from "react-icons/vsc";
-import { useParams } from "react-router";
-import { useSearchParams } from "react-router-dom";
-import { AutoSizer, List } from "react-virtualized";
 import "react-virtualized/styles.css"; // only needs to be imported once
-import { ServiceStatus } from ".";
+
+import * as dayjs from "dayjs";
+
+import { AutoSizer, List } from "react-virtualized";
 import ContentPanel, {
   ContentPanelBody,
   ContentPanelTitle,
   ContentPanelTitleIcon,
 } from "../../components/content-panel";
+import { VscLayers, VscServerEnvironment, VscTerminal } from "react-icons/vsc";
+import { useEffect, useState } from "react";
+import { useNamespaceServiceRevision, usePodLogs } from "../../hooks";
+
+import { Config } from "../../util";
 import FlexBox from "../../components/flexbox";
 import { LogFooterButtons } from "../../components/logs/logs";
-import { Config } from "../../util";
+import { ServiceStatus } from ".";
 import { useApiKey } from "../../util/apiKeyProvider";
+import { useParams } from "react-router";
+import { useSearchParams } from "react-router-dom";
 
 export default function PodPanel(props) {
   const { namespace } = props;

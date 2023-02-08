@@ -1,10 +1,21 @@
-import { useWorkflow, useWorkflowServices } from "../../../hooks";
-import { useCallback, useEffect, useRef, useState } from "react";
+import "./style.css";
+import "rc-slider/assets/index.css";
+
+import * as dayjs from "dayjs";
+
+import { Config, GenerateRandomKey } from "../../../util";
+import ContentPanel, {
+  ContentPanelBody,
+  ContentPanelTitle,
+  ContentPanelTitleIcon,
+} from "../../../components/content-panel";
+import Pagination, { usePageHandler } from "../../../components/pagination";
+import { RevisionSelectorTab, TabbedButtons } from "./revisionTab";
 import {
-  VscFileCode,
   VscChevronDown,
   VscChevronUp,
   VscError,
+  VscFileCode,
   VscLayers,
   VscNote,
   VscPass,
@@ -13,48 +24,34 @@ import {
   VscTypeHierarchySub,
   VscVmRunning,
 } from "react-icons/vsc";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router";
-import { useSearchParams } from "react-router-dom";
-import ContentPanel, {
-  ContentPanelBody,
-  ContentPanelTitle,
-  ContentPanelTitleIcon,
-} from "../../../components/content-panel";
-import FlexBox from "../../../components/flexbox";
-import Pagination, { usePageHandler } from "../../../components/pagination";
-import { Config, GenerateRandomKey } from "../../../util";
-import "./style.css";
+import { useWorkflow, useWorkflowServices } from "../../../hooks";
 
-import * as dayjs from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime";
-import utc from "dayjs/plugin/utc";
-import { InstanceRow } from "../../instances";
-
-import YAML from "js-yaml";
+import AddWorkflowVariablePanel from "./variables";
+import Alert from "../../../components/alert";
+import { AutoSizer } from "react-virtualized";
+import Button from "../../../components/button";
 import DiagramEditor from "../../../components/diagram-editor/index.jsx";
 import DirektivEditor from "../../../components/editor";
-import { Service } from "../../namespace-services";
-import { RevisionSelectorTab, TabbedButtons } from "./revisionTab";
-import AddWorkflowVariablePanel from "./variables";
-
-import WorkflowDiagram from "../../../components/diagram";
-
-import Slider from "rc-slider";
-import "rc-slider/assets/index.css";
-import Button from "../../../components/button";
-import Modal from "../../../components/modal";
-
-import { PieChart } from "react-minimal-pie-chart";
-import { AutoSizer } from "react-virtualized";
-import Alert from "../../../components/alert";
-import HelpIcon from "../../../components/help";
-import Loader from "../../../components/loader";
-import SankeyDiagram from "../../../components/sankey";
-
+import FlexBox from "../../../components/flexbox";
 import Form from "@rjsf/core";
-import { windowBlocker } from "../../../components/diagram-editor/usePrompt";
+import HelpIcon from "../../../components/help";
+import { InstanceRow } from "../../instances";
+import Loader from "../../../components/loader";
+import Modal from "../../../components/modal";
+import { PieChart } from "react-minimal-pie-chart";
+import SankeyDiagram from "../../../components/sankey";
+import { Service } from "../../namespace-services";
+import Slider from "rc-slider";
 import Tabs from "../../../components/tabs";
+import WorkflowDiagram from "../../../components/diagram";
+import YAML from "js-yaml";
+import relativeTime from "dayjs/plugin/relativeTime";
 import { useApiKey } from "../../../util/apiKeyProvider";
+import { useSearchParams } from "react-router-dom";
+import utc from "dayjs/plugin/utc";
+import { windowBlocker } from "../../../components/diagram-editor/usePrompt";
 
 dayjs.extend(utc);
 dayjs.extend(relativeTime);

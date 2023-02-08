@@ -1,23 +1,24 @@
-import { useNamespaceService } from "../../hooks";
-import { useEffect, useState } from "react";
-import { VscLayers, VscAdd } from "react-icons/vsc";
-import { useNavigate, useParams } from "react-router";
-import { Service } from ".";
-import Alert from "../../components/alert";
-import Button from "../../components/button";
-import ContentPanel, {
-  ContentPanelBody,
-  ContentPanelTitle,
-  ContentPanelTitleIcon,
-  ContentPanelFooter,
-} from "../../components/content-panel";
-import FlexBox from "../../components/flexbox";
-import Modal from "../../components/modal";
-import { Config } from "../../util";
-import Tippy from "@tippyjs/react";
 import "tippy.js/dist/tippy.css";
 
+import ContentPanel, {
+  ContentPanelBody,
+  ContentPanelFooter,
+  ContentPanelTitle,
+  ContentPanelTitleIcon,
+} from "../../components/content-panel";
+import { VscAdd, VscLayers } from "react-icons/vsc";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router";
+
+import Alert from "../../components/alert";
+import Button from "../../components/button";
+import { Config } from "../../util";
+import FlexBox from "../../components/flexbox";
+import Modal from "../../components/modal";
+import { Service } from ".";
+import Tippy from "@tippyjs/react";
 import { useApiKey } from "../../util/apiKeyProvider";
+import { useNamespaceService } from "../../hooks";
 
 export default function NamespaceRevisionsPanel(props) {
   const { namespace } = props;

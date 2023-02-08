@@ -1,6 +1,7 @@
-import React from "react";
-import FlexBox from "../flexbox";
 import "./style.css";
+
+import FlexBox from "../flexbox";
+import React from "react";
 
 export interface ContentPanelProps
   extends React.HTMLAttributes<HTMLDivElement> {

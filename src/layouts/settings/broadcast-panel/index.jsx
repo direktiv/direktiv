@@ -1,17 +1,19 @@
-import React from "react";
 import "./style.css";
+
+import { Config, GenerateRandomKey } from "../../../util";
 import ContentPanel, {
+  ContentPanelBody,
   ContentPanelTitle,
   ContentPanelTitleIcon,
-  ContentPanelBody,
 } from "../../../components/content-panel";
+
+import Alert from "../../../components/alert";
 import FlexBox from "../../../components/flexbox";
-import { Config, GenerateRandomKey } from "../../../util";
-import { useBroadcastConfiguration } from "../../../hooks";
 import HelpIcon from "../../../components/help";
+import React from "react";
 import { VscSettings } from "react-icons/vsc";
 import { useApiKey } from "../../../util/apiKeyProvider";
-import Alert from "../../../components/alert";
+import { useBroadcastConfiguration } from "../../../hooks";
 
 function BroadcastConfigurationsPanel(props) {
   const { namespace } = props;
@@ -27,9 +29,7 @@ function BroadcastConfigurationsPanel(props) {
         </ContentPanelTitleIcon>
         <FlexBox style={{ display: "flex", alignItems: "center" }} gap>
           <div>Broadcast Configurations</div>
-          <HelpIcon
-            msg="Toggle which Direktiv system events will cause a Cloud Event to be sent to the current namespace."
-          />
+          <HelpIcon msg="Toggle which Direktiv system events will cause a Cloud Event to be sent to the current namespace." />
         </FlexBox>
       </ContentPanelTitle>
       {data !== null ? (

@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
 import "./style.css";
+
+import { useEffect, useState } from "react";
 
 export interface LoaderProps {
   /**

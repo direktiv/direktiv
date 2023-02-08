@@ -1,18 +1,19 @@
-import React, { useEffect, useState } from "react";
 import "./style.css";
 
-import FlexBox from "../../components/flexbox";
-import { GenerateRandomKey } from "../../util";
-import Button from "../../components/button";
-import Loader from "../../components/loader";
-
 import * as dayjs from "dayjs";
+
 import {
-  SuccessState,
   CancelledState,
   FailState,
   RunningState,
+  SuccessState,
 } from "../instances";
+import React, { useEffect, useState } from "react";
+
+import Button from "../../components/button";
+import FlexBox from "../../components/flexbox";
+import { GenerateRandomKey } from "../../util";
+import Loader from "../../components/loader";
 
 export default function ActivityTable(props) {
   const {
