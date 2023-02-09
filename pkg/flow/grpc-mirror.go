@@ -334,7 +334,7 @@ func (flow *flow) LockMirror(ctx context.Context, req *grpc.LockMirrorRequest) (
 			readonly := false
 
 			ino, err = flow.database.UpdateInode(ctx, tx, &database.UpdateInodeArgs{
-				ID:       child.ID,
+				Inode:    child,
 				ReadOnly: &readonly,
 			})
 			if err != nil {
@@ -384,7 +384,7 @@ func (flow *flow) LockMirror(ctx context.Context, req *grpc.LockMirrorRequest) (
 	readonly := false
 
 	ino, err = flow.database.UpdateInode(ctx, tx, &database.UpdateInodeArgs{
-		ID:       ino.ID,
+		Inode:    ino,
 		ReadOnly: &readonly,
 	})
 	if err != nil {
@@ -450,7 +450,7 @@ func (flow *flow) UnlockMirror(ctx context.Context, req *grpc.UnlockMirrorReques
 			readonly := false
 
 			ino, err := flow.database.UpdateInode(ctx, tx, &database.UpdateInodeArgs{
-				ID:       child.ID,
+				Inode:    child,
 				ReadOnly: &readonly,
 			})
 			if err != nil {
@@ -500,7 +500,7 @@ func (flow *flow) UnlockMirror(ctx context.Context, req *grpc.UnlockMirrorReques
 	readonly := false
 
 	x, err := flow.database.UpdateInode(ctx, tx, &database.UpdateInodeArgs{
-		ID:       ino.ID,
+		Inode:    ino,
 		ReadOnly: &readonly,
 	})
 

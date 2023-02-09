@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/database"
@@ -266,14 +267,16 @@ func (flow *flow) Instance(ctx context.Context, req *grpc.InstanceRequest) (*grp
 	}
 
 	resp.Flow = rt.Flow
-	resp.InvokedBy = rt.Caller.String()
+	if rt.Caller != uuid.Nil {
+		resp.InvokedBy = rt.Caller.String()
+	}
 
 	resp.Namespace = cached.Namespace.Name
 
 	rwf := new(grpc.InstanceWorkflow)
 	rwf.Name = cached.Inode().Name
-	rwf.Parent = cached.Dir()
-	rwf.Path = cached.Path()
+	rwf.Parent = strings.TrimPrefix(cached.Dir(), "/") // TODO: get rid of the trim?
+	rwf.Path = strings.TrimPrefix(cached.Path(), "/")  // TODO: get rid of the trim?
 	if cached.Revision != nil {
 		rwf.Revision = cached.Revision.ID.String()
 	}

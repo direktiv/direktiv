@@ -227,8 +227,8 @@ func (flow *flow) CreateNamespace(ctx context.Context, req *grpc.CreateNamespace
 	}
 	defer rollback(tx)
 
-	var ns *database.Namespace
 	var x *ent.Namespace
+	var y *ent.Inode
 
 	cached := new(database.CacheData)
 
@@ -244,32 +244,43 @@ func (flow *flow) CreateNamespace(ctx context.Context, req *grpc.CreateNamespace
 		if !derrors.IsNotFound(err) {
 			return nil, err
 		}
+
 	}
 
 	x, err = clients.Namespace.Create().SetName(req.GetName()).Save(ctx)
 	if err != nil {
 		return nil, err
 	}
-	cached.Namespace.Name = x.Name
 
-	_, err = clients.Inode.Create().SetNillableName(nil).SetType(util.InodeTypeDirectory).SetNamespaceID(ns.ID).Save(ctx)
+	cached.Namespace = &database.Namespace{
+		ID:        x.ID,
+		CreatedAt: x.CreatedAt,
+		UpdatedAt: x.UpdatedAt,
+		Config:    x.Config,
+		Name:      x.Name,
+		// Root: ,
+	}
+
+	y, err = clients.Inode.Create().SetNillableName(nil).SetType(util.InodeTypeDirectory).SetNamespaceID(cached.Namespace.ID).Save(ctx)
 	if err != nil {
 		return nil, err
 	}
+
+	cached.Namespace.Root = y.ID
 
 	err = tx.Commit()
 	if err != nil {
 		return nil, err
 	}
 
-	flow.logToServer(ctx, time.Now(), "Created namespace '%s'.", ns.Name)
+	flow.logToServer(ctx, time.Now(), "Created namespace '%s'.", cached.Namespace.Name)
 	flow.pubsub.NotifyNamespaces()
 
 respond:
 
 	var resp grpc.CreateNamespaceResponse
 
-	err = atob(ns, &resp.Namespace)
+	err = atob(cached.Namespace, &resp.Namespace)
 	if err != nil {
 		return nil, err
 	}
@@ -322,6 +333,8 @@ func (flow *flow) DeleteNamespace(ctx context.Context, req *grpc.DeleteNamespace
 		return nil, err
 	}
 
+	flow.database.InvalidateNamespace(ctx, cached, true)
+
 	flow.deleteNamespaceSecrets(cached.Namespace)
 
 	flow.logToServer(ctx, time.Now(), "Deleted namespace '%s'.", cached.Namespace.Name)
@@ -369,6 +382,8 @@ func (flow *flow) RenameNamespace(ctx context.Context, req *grpc.RenameNamespace
 	if err != nil {
 		return nil, err
 	}
+
+	flow.database.InvalidateNamespace(ctx, cached, true)
 
 	flow.logToServer(ctx, time.Now(), "Renamed namespace from '%s' to '%s'.", req.GetOld(), req.GetNew())
 	flow.logToNamespace(ctx, time.Now(), cached, "Renamed namespace from '%s' to '%s'.", req.GetOld(), req.GetNew())

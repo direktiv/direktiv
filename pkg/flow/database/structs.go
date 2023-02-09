@@ -63,7 +63,7 @@ type CreateInodeArgs struct {
 }
 
 type UpdateInodeArgs struct {
-	ID         uuid.UUID  `json:"id,omitempty"`
+	Inode      *Inode     `json:"inode,omitempty"`
 	Name       *string    `json:"name,omitempty"`
 	Attributes *[]string  `json:"attributes,omitempty"`
 	ReadOnly   *bool      `json:"readOnly,omitempty"`

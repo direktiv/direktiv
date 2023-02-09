@@ -260,6 +260,13 @@ func (db *Database) CreateInode(ctx context.Context, tx database.Transaction, ar
 		return nil, err
 	}
 
+	ino.Edges.Namespace = &ent.Namespace{
+		ID: args.Namespace,
+	}
+	ino.Edges.Parent = &ent.Inode{
+		ID: args.Parent,
+	}
+
 	return entInode(ino), nil
 
 }
@@ -268,7 +275,7 @@ func (db *Database) UpdateInode(ctx context.Context, tx database.Transaction, ar
 
 	clients := db.clients(tx)
 
-	query := clients.Inode.UpdateOneID(args.ID).SetUpdatedAt(time.Now())
+	query := clients.Inode.UpdateOneID(args.Inode.ID).SetUpdatedAt(time.Now())
 
 	if args.Name != nil {
 		query = query.SetName(*args.Name)
@@ -292,7 +299,18 @@ func (db *Database) UpdateInode(ctx context.Context, tx database.Transaction, ar
 		return nil, err
 	}
 
-	return entInode(ino), nil
+	ino.Edges.Namespace = &ent.Namespace{
+		ID: args.Inode.Namespace,
+	}
+	ino.Edges.Parent = &ent.Inode{
+		ID: args.Inode.Parent,
+	}
+
+	x := entInode(ino)
+	x.Children = args.Inode.Children
+	x.Workflow = args.Inode.Workflow
+
+	return x, nil
 
 }
 
@@ -411,6 +429,10 @@ func (db *Database) CreateRevision(ctx context.Context, tx database.Transaction,
 		Save(ctx)
 	if err != nil {
 		return nil, err
+	}
+
+	rev.Edges.Workflow = &ent.Workflow{
+		ID: args.Workflow,
 	}
 
 	return entRevision(rev), nil

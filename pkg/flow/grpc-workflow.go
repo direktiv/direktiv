@@ -356,7 +356,7 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 		return nil, err
 	}
 
-	_, err = clients.Ref.Create().SetImmutable(false).SetName(latest).SetWorkflow(wf).SetRevision(rev).Save(ctx)
+	ref, err := clients.Ref.Create().SetImmutable(false).SetName(latest).SetWorkflow(wf).SetRevision(rev).Save(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -364,6 +364,41 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 	_, err = clients.Inode.UpdateOneID(cached.Inode().ID).SetUpdatedAt(time.Now()).Save(ctx)
 	if err != nil {
 		return nil, err
+	}
+
+	cached.Inodes = append(cached.Inodes, &database.Inode{
+		ID:           ino.ID,
+		CreatedAt:    ino.CreatedAt,
+		UpdatedAt:    ino.UpdatedAt,
+		Name:         ino.Name,
+		Type:         ino.Type,
+		Attributes:   ino.Attributes,
+		ExtendedType: ino.ExtendedType,
+		ReadOnly:     ino.ReadOnly,
+		Namespace:    cached.Namespace.ID,
+		Parent:       cached.Inode().ID,
+		Workflow:     wf.ID,
+	})
+
+	cached.Workflow = &database.Workflow{
+		ID:          wf.ID,
+		Live:        wf.Live,
+		LogToEvents: wf.LogToEvents,
+		ReadOnly:    wf.ReadOnly,
+		UpdatedAt:   wf.UpdatedAt,
+		Namespace:   cached.Namespace.ID,
+		Inode:       ino.ID,
+		Refs: []*database.Ref{{
+			ID:        ref.ID,
+			Immutable: ref.Immutable,
+			Name:      ref.Name,
+			CreatedAt: ref.CreatedAt,
+			Revision:  rev.ID,
+		}},
+		Revisions: []*database.Revision{{
+			ID:   rev.ID,
+			Hash: rev.Hash,
+		}},
 	}
 
 	err = flow.configureRouter(ctx, tx, cached, rcfNoPriors,
@@ -375,6 +410,8 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 	if err != nil {
 		return nil, err
 	}
+
+	flow.database.InvalidateInode(ctx, cached.Parent(), false)
 
 	// CREATE HERE
 
@@ -479,7 +516,7 @@ func (flow *flow) updateWorkflow(ctx context.Context, tx database.Transaction, a
 	err = flow.configureRouter(ctx, tx, args.cached, flags,
 		func() error {
 
-			rev, err := flow.database.CreateRevision(ctx, tx, &database.CreateRevisionArgs{
+			rev, err = flow.database.CreateRevision(ctx, tx, &database.CreateRevisionArgs{
 				Workflow: args.cached.Workflow.ID,
 				Hash:     hash,
 				Source:   data,
@@ -568,6 +605,8 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 		return nil, err
 	}
 
+	flow.database.InvalidateWorkflow(ctx, cached, false)
+
 	var resp grpc.UpdateWorkflowResponse
 
 	err = atob(cached.Inode(), &resp.Node)
@@ -588,7 +627,9 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 		return nil, err
 	}
 
-	resp.Revision.Name = rev.ID.String()
+	resp.Revision = &grpc.Revision{
+		Name: rev.ID.String(),
+	}
 
 	return &resp, nil
 
@@ -646,6 +687,8 @@ func (flow *flow) SaveHead(ctx context.Context, req *grpc.SaveHeadRequest) (*grp
 	if err != nil {
 		return nil, err
 	}
+
+	flow.database.InvalidateWorkflow(ctx, cached, false)
 
 	flow.logToWorkflow(ctx, time.Now(), cached, "Saved workflow: %s.", cached.Revision.ID.String())
 	flow.pubsub.NotifyWorkflow(cached.Workflow)
@@ -728,6 +771,8 @@ func (flow *flow) DiscardHead(ctx context.Context, req *grpc.DiscardHeadRequest)
 		return nil, err
 	}
 
+	flow.database.InvalidateWorkflow(ctx, cached, false)
+
 	metricsWfUpdated.WithLabelValues(cached.Namespace.Name, cached.Path(), cached.Namespace.Name).Inc()
 
 	flow.logToWorkflow(ctx, time.Now(), cached, "Discard unsaved changes to workflow.")
@@ -800,6 +845,8 @@ func (flow *flow) ToggleWorkflow(ctx context.Context, req *grpc.ToggleWorkflowRe
 		return nil, err
 	}
 
+	flow.database.InvalidateWorkflow(ctx, cached, false)
+
 	live := "disabled"
 	if cached.Workflow.Live {
 		live = "enabled"
@@ -850,6 +897,8 @@ func (flow *flow) SetWorkflowEventLogging(ctx context.Context, req *grpc.SetWork
 	if err != nil {
 		return nil, err
 	}
+
+	flow.database.InvalidateWorkflow(ctx, cached, false)
 
 	flow.logToWorkflow(ctx, time.Now(), cached, "Workflow now logging to cloudevents: %s", req.GetLogger())
 	flow.pubsub.NotifyWorkflow(cached.Workflow)

@@ -39,14 +39,16 @@ func (srv *server) logWorker() {
 			return
 		}
 
-		if l.cached.Instance != nil {
+		if l.cached == nil {
+			srv.workerLogToServer(l)
+		} else if l.cached.Instance != nil {
 			srv.workerLogToInstance(l)
 		} else if l.cached.Workflow != nil {
 			srv.workerLogToWorkflow(l)
 		} else if l.cached.Namespace != nil {
 			srv.workerLogToNamespace(l)
 		} else {
-			srv.workerLogToServer(l)
+			panic("how?")
 		}
 
 	}

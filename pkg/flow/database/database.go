@@ -56,6 +56,17 @@ type CacheData struct {
 	Instance  *Instance
 }
 
+func (cached *CacheData) Parent() *CacheData {
+	return &CacheData{
+		Namespace: cached.Namespace,
+		Inodes:    cached.Inodes[:len(cached.Inodes)-1],
+		Workflow:  cached.Workflow,
+		Ref:       cached.Ref,
+		Revision:  cached.Revision,
+		Instance:  cached.Instance,
+	}
+}
+
 func (cached *CacheData) Path() string {
 	var elems []string
 	for _, ino := range cached.Inodes {

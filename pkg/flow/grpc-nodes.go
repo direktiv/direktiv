@@ -321,6 +321,11 @@ func (flow *flow) CreateDirectory(ctx context.Context, req *grpc.CreateDirectory
 
 	cached := new(database.CacheData)
 
+	err = flow.database.NamespaceByName(ctx, tx, cached, req.GetNamespace())
+	if err != nil {
+		return nil, err
+	}
+
 	err = flow.database.InodeByPath(ctx, tx, cached, dir)
 	if err != nil {
 		return nil, err
@@ -338,6 +343,8 @@ func (flow *flow) CreateDirectory(ctx context.Context, req *grpc.CreateDirectory
 	if err != nil {
 		return nil, err
 	}
+
+	flow.database.InvalidateInode(ctx, cached, false)
 
 	var resp grpc.CreateDirectoryResponse
 
@@ -468,6 +475,8 @@ func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (
 		return nil, err
 	}
 
+	flow.database.InvalidateInode(ctx, cached, false)
+
 respond:
 
 	var resp emptypb.Empty
@@ -541,6 +550,9 @@ func (flow *flow) RenameNode(ctx context.Context, req *grpc.RenameNodeRequest) (
 	if err != nil {
 		return nil, err
 	}
+
+	flow.database.InvalidateInode(ctx, cached.Parent(), false)
+	flow.database.InvalidateInode(ctx, pcached, false)
 
 	flow.logToNamespace(ctx, time.Now(), cached, "Renamed %s from '%s' to '%s'.", cached.Inode().Type, req.GetOld(), req.GetNew())
 	flow.pubsub.NotifyInode(cached.ParentInode())

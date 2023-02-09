@@ -98,6 +98,16 @@ func (db *CachedDatabase) NamespaceByName(ctx context.Context, tx Transaction, c
 
 }
 
+func (db *CachedDatabase) InvalidateNamespace(ctx context.Context, cached *CacheData, recursive bool) {
+
+	if recursive {
+		db.recursivelyInvalidateCachedNamespace(ctx, cached.Namespace)
+	} else {
+		db.invalidateCachedNamespace(ctx, cached.Namespace)
+	}
+
+}
+
 func (db *CachedDatabase) Inode(ctx context.Context, tx Transaction, cached *CacheData, id uuid.UUID) error {
 
 	var err error
@@ -190,6 +200,16 @@ func (db *CachedDatabase) InodeByPath(ctx context.Context, tx Transaction, cache
 
 }
 
+func (db *CachedDatabase) InvalidateInode(ctx context.Context, cached *CacheData, recursive bool) {
+
+	if recursive {
+		panic("TODO")
+	} else {
+		db.invalidateCachedInode(ctx, cached.Inode())
+	}
+
+}
+
 func (db *CachedDatabase) CreateDirectoryInode(ctx context.Context, tx Transaction, args *CreateDirectoryInodeArgs) (*Inode, error) {
 
 	if args.Parent.Type != util.InodeTypeDirectory {
@@ -225,7 +245,7 @@ func (db *CachedDatabase) CreateDirectoryInode(ctx context.Context, tx Transacti
 	args.Parent.addChild(ino)
 
 	pino, err := db.source.UpdateInode(ctx, tx, &UpdateInodeArgs{
-		ID: args.Parent.ID,
+		Inode: args.Parent,
 	})
 	if err != nil {
 		return nil, err
@@ -277,6 +297,16 @@ func (db *CachedDatabase) Workflow(ctx context.Context, tx Transaction, cached *
 
 }
 
+func (db *CachedDatabase) InvalidateWorkflow(ctx context.Context, cached *CacheData, recursive bool) {
+
+	if recursive {
+		panic("TODO")
+	} else {
+		db.invalidateCachedWorkflow(ctx, cached.Workflow)
+	}
+
+}
+
 func (db *CachedDatabase) CreateCompleteWorkflow(ctx context.Context, tx Transaction, args *CreateCompleteWorkflowArgs) (*CacheData, error) {
 
 	if args.Parent.Inode().Type != util.InodeTypeWorkflow {
@@ -304,7 +334,7 @@ func (db *CachedDatabase) CreateCompleteWorkflow(ctx context.Context, tx Transac
 	args.Parent.Inode().addChild(ino)
 
 	pino, err := db.source.UpdateInode(ctx, tx, &UpdateInodeArgs{
-		ID: args.Parent.Inode().ID,
+		Inode: args.Parent.Inode(),
 	})
 	if err != nil {
 		return nil, err

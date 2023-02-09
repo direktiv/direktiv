@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/eko/gocache/lib/v4/store"
 	"github.com/google/uuid"
 )
 
@@ -68,18 +69,32 @@ func (db *CachedDatabase) storeNamespaceInCache(ctx context.Context, ns *Namespa
 	}
 
 	key := fmt.Sprintf("nsid:%s", ns.ID)
-	err = db.cache.Set(ctx, key, data)
+	err = db.cache.Set(ctx, key, data, store.WithTags([]string{ns.ID.String()}))
 	if err != nil {
 		db.sugar.Warnf("Namespace cache store error: %v", err)
 		return
 	}
 
 	key = fmt.Sprintf("ns:%s", ns.Name)
-	err = db.cache.Set(ctx, key, data)
+	err = db.cache.Set(ctx, key, data, store.WithTags([]string{ns.ID.String()}))
 	if err != nil {
 		db.sugar.Warnf("Namespace cache store error: %v", err)
 		return
 	}
+
+}
+
+func (db *CachedDatabase) invalidateCachedNamespace(ctx context.Context, ns *Namespace) {
+
+	key := fmt.Sprintf("nsid:%s", ns.ID.String())
+
+	db.cache.Delete(ctx, key)
+
+}
+
+func (db *CachedDatabase) recursivelyInvalidateCachedNamespace(ctx context.Context, ns *Namespace) {
+
+	db.cache.Invalidate(ctx, store.WithInvalidateTags([]string{ns.ID.String()}))
 
 }
 
@@ -117,11 +132,19 @@ func (db *CachedDatabase) storeInodeInCache(ctx context.Context, ino *Inode) {
 	}
 
 	key := fmt.Sprintf("inoid:%s", ino.ID)
-	err = db.cache.Set(ctx, key, data)
+	err = db.cache.Set(ctx, key, data, store.WithTags([]string{ino.Namespace.String()}))
 	if err != nil {
 		db.sugar.Warnf("Inode cache store error: %v", err)
 		return
 	}
+
+}
+
+func (db *CachedDatabase) invalidateCachedInode(ctx context.Context, ino *Inode) {
+
+	key := fmt.Sprintf("inoid:%s", ino.ID)
+
+	db.cache.Delete(ctx, key)
 
 }
 
@@ -159,11 +182,19 @@ func (db *CachedDatabase) storeWorkflowInCache(ctx context.Context, wf *Workflow
 	}
 
 	key := fmt.Sprintf("wfid:%s", wf.ID)
-	err = db.cache.Set(ctx, key, data)
+	err = db.cache.Set(ctx, key, data, store.WithTags([]string{wf.Namespace.String()}))
 	if err != nil {
 		db.sugar.Warnf("Workflow cache store error: %v", err)
 		return
 	}
+
+}
+
+func (db *CachedDatabase) invalidateCachedWorkflow(ctx context.Context, wf *Workflow) {
+
+	key := fmt.Sprintf("wfid:%s", wf.ID)
+
+	db.cache.Delete(ctx, key)
 
 }
 
@@ -201,7 +232,7 @@ func (db *CachedDatabase) storeInstanceInCache(ctx context.Context, inst *Instan
 	}
 
 	key := fmt.Sprintf("instid:%s", inst.ID)
-	err = db.cache.Set(ctx, key, data)
+	err = db.cache.Set(ctx, key, data, store.WithTags([]string{inst.Namespace.String()}))
 	if err != nil {
 		db.sugar.Warnf("Instance cache store error: %v", err)
 		return
@@ -243,7 +274,7 @@ func (db *CachedDatabase) storeRevisionInCache(ctx context.Context, rev *Revisio
 	}
 
 	key := fmt.Sprintf("revid:%s", rev.ID)
-	err = db.cache.Set(ctx, key, data)
+	err = db.cache.Set(ctx, key, data) // , store.WithTags([]string{rev.Namespace.String()}))
 	if err != nil {
 		db.sugar.Warnf("Revision cache store error: %v", err)
 		return
