@@ -20,6 +20,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	"github.com/direktiv/direktiv/pkg/flow/ent/instanceruntime"
 	"github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
+	"github.com/direktiv/direktiv/pkg/flow/ent/logtag"
 	"github.com/direktiv/direktiv/pkg/flow/ent/mirror"
 	"github.com/direktiv/direktiv/pkg/flow/ent/mirroractivity"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
@@ -59,6 +60,8 @@ type Client struct {
 	InstanceRuntime *InstanceRuntimeClient
 	// LogMsg is the client for interacting with the LogMsg builders.
 	LogMsg *LogMsgClient
+	// LogTag is the client for interacting with the LogTag builders.
+	LogTag *LogTagClient
 	// Mirror is the client for interacting with the Mirror builders.
 	Mirror *MirrorClient
 	// MirrorActivity is the client for interacting with the MirrorActivity builders.
@@ -101,6 +104,7 @@ func (c *Client) init() {
 	c.Instance = NewInstanceClient(c.config)
 	c.InstanceRuntime = NewInstanceRuntimeClient(c.config)
 	c.LogMsg = NewLogMsgClient(c.config)
+	c.LogTag = NewLogTagClient(c.config)
 	c.Mirror = NewMirrorClient(c.config)
 	c.MirrorActivity = NewMirrorActivityClient(c.config)
 	c.Namespace = NewNamespaceClient(c.config)
@@ -153,6 +157,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Instance:          NewInstanceClient(cfg),
 		InstanceRuntime:   NewInstanceRuntimeClient(cfg),
 		LogMsg:            NewLogMsgClient(cfg),
+		LogTag:            NewLogTagClient(cfg),
 		Mirror:            NewMirrorClient(cfg),
 		MirrorActivity:    NewMirrorActivityClient(cfg),
 		Namespace:         NewNamespaceClient(cfg),
@@ -191,6 +196,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Instance:          NewInstanceClient(cfg),
 		InstanceRuntime:   NewInstanceRuntimeClient(cfg),
 		LogMsg:            NewLogMsgClient(cfg),
+		LogTag:            NewLogTagClient(cfg),
 		Mirror:            NewMirrorClient(cfg),
 		MirrorActivity:    NewMirrorActivityClient(cfg),
 		Namespace:         NewNamespaceClient(cfg),
@@ -238,6 +244,7 @@ func (c *Client) Use(hooks ...Hook) {
 	c.Instance.Use(hooks...)
 	c.InstanceRuntime.Use(hooks...)
 	c.LogMsg.Use(hooks...)
+	c.LogTag.Use(hooks...)
 	c.Mirror.Use(hooks...)
 	c.MirrorActivity.Use(hooks...)
 	c.Namespace.Use(hooks...)
@@ -1567,9 +1574,131 @@ func (c *LogMsgClient) QueryActivity(lm *LogMsg) *MirrorActivityQuery {
 	return query
 }
 
+// QueryLogtag queries the logtag edge of a LogMsg.
+func (c *LogMsgClient) QueryLogtag(lm *LogMsg) *LogTagQuery {
+	query := &LogTagQuery{config: c.config}
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := lm.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(logmsg.Table, logmsg.FieldID, id),
+			sqlgraph.To(logtag.Table, logtag.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, logmsg.LogtagTable, logmsg.LogtagColumn),
+		)
+		fromV = sqlgraph.Neighbors(lm.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *LogMsgClient) Hooks() []Hook {
 	return c.hooks.LogMsg
+}
+
+// LogTagClient is a client for the LogTag schema.
+type LogTagClient struct {
+	config
+}
+
+// NewLogTagClient returns a client for the LogTag from the given config.
+func NewLogTagClient(c config) *LogTagClient {
+	return &LogTagClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `logtag.Hooks(f(g(h())))`.
+func (c *LogTagClient) Use(hooks ...Hook) {
+	c.hooks.LogTag = append(c.hooks.LogTag, hooks...)
+}
+
+// Create returns a builder for creating a LogTag entity.
+func (c *LogTagClient) Create() *LogTagCreate {
+	mutation := newLogTagMutation(c.config, OpCreate)
+	return &LogTagCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of LogTag entities.
+func (c *LogTagClient) CreateBulk(builders ...*LogTagCreate) *LogTagCreateBulk {
+	return &LogTagCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for LogTag.
+func (c *LogTagClient) Update() *LogTagUpdate {
+	mutation := newLogTagMutation(c.config, OpUpdate)
+	return &LogTagUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *LogTagClient) UpdateOne(lt *LogTag) *LogTagUpdateOne {
+	mutation := newLogTagMutation(c.config, OpUpdateOne, withLogTag(lt))
+	return &LogTagUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *LogTagClient) UpdateOneID(id uuid.UUID) *LogTagUpdateOne {
+	mutation := newLogTagMutation(c.config, OpUpdateOne, withLogTagID(id))
+	return &LogTagUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for LogTag.
+func (c *LogTagClient) Delete() *LogTagDelete {
+	mutation := newLogTagMutation(c.config, OpDelete)
+	return &LogTagDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *LogTagClient) DeleteOne(lt *LogTag) *LogTagDeleteOne {
+	return c.DeleteOneID(lt.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *LogTagClient) DeleteOneID(id uuid.UUID) *LogTagDeleteOne {
+	builder := c.Delete().Where(logtag.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &LogTagDeleteOne{builder}
+}
+
+// Query returns a query builder for LogTag.
+func (c *LogTagClient) Query() *LogTagQuery {
+	return &LogTagQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a LogTag entity by its id.
+func (c *LogTagClient) Get(ctx context.Context, id uuid.UUID) (*LogTag, error) {
+	return c.Query().Where(logtag.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *LogTagClient) GetX(ctx context.Context, id uuid.UUID) *LogTag {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryLogmsg queries the logmsg edge of a LogTag.
+func (c *LogTagClient) QueryLogmsg(lt *LogTag) *LogMsgQuery {
+	query := &LogMsgQuery{config: c.config}
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := lt.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(logtag.Table, logtag.FieldID, id),
+			sqlgraph.To(logmsg.Table, logmsg.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, logtag.LogmsgTable, logtag.LogmsgColumn),
+		)
+		fromV = sqlgraph.Neighbors(lt.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *LogTagClient) Hooks() []Hook {
+	return c.hooks.LogTag
 }
 
 // MirrorClient is a client for the Mirror schema.

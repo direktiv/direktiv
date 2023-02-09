@@ -371,6 +371,34 @@ func HasActivityWith(preds ...predicate.MirrorActivity) predicate.LogMsg {
 	})
 }
 
+// HasLogtag applies the HasEdge predicate on the "logtag" edge.
+func HasLogtag() predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(LogtagTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, LogtagTable, LogtagColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasLogtagWith applies the HasEdge predicate on the "logtag" edge with a given conditions (other predicates).
+func HasLogtagWith(preds ...predicate.LogTag) predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(LogtagInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, LogtagTable, LogtagColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.LogMsg) predicate.LogMsg {
 	return predicate.LogMsg(func(s *sql.Selector) {

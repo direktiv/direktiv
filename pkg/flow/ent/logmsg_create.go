@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	"github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
+	"github.com/direktiv/direktiv/pkg/flow/ent/logtag"
 	"github.com/direktiv/direktiv/pkg/flow/ent/mirroractivity"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/workflow"
@@ -128,6 +129,21 @@ func (lmc *LogMsgCreate) SetNillableActivityID(id *uuid.UUID) *LogMsgCreate {
 // SetActivity sets the "activity" edge to the MirrorActivity entity.
 func (lmc *LogMsgCreate) SetActivity(m *MirrorActivity) *LogMsgCreate {
 	return lmc.SetActivityID(m.ID)
+}
+
+// AddLogtagIDs adds the "logtag" edge to the LogTag entity by IDs.
+func (lmc *LogMsgCreate) AddLogtagIDs(ids ...uuid.UUID) *LogMsgCreate {
+	lmc.mutation.AddLogtagIDs(ids...)
+	return lmc
+}
+
+// AddLogtag adds the "logtag" edges to the LogTag entity.
+func (lmc *LogMsgCreate) AddLogtag(l ...*LogTag) *LogMsgCreate {
+	ids := make([]uuid.UUID, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
+	}
+	return lmc.AddLogtagIDs(ids...)
 }
 
 // Mutation returns the LogMsgMutation object of the builder.
@@ -344,6 +360,25 @@ func (lmc *LogMsgCreate) createSpec() (*LogMsg, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.mirror_activity_logs = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := lmc.mutation.LogtagIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   logmsg.LogtagTable,
+			Columns: []string{logmsg.LogtagColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: logtag.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

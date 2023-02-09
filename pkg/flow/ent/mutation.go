@@ -19,6 +19,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	"github.com/direktiv/direktiv/pkg/flow/ent/instanceruntime"
 	"github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
+	"github.com/direktiv/direktiv/pkg/flow/ent/logtag"
 	"github.com/direktiv/direktiv/pkg/flow/ent/mirror"
 	"github.com/direktiv/direktiv/pkg/flow/ent/mirroractivity"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
@@ -53,6 +54,7 @@ const (
 	TypeInstance          = "Instance"
 	TypeInstanceRuntime   = "InstanceRuntime"
 	TypeLogMsg            = "LogMsg"
+	TypeLogTag            = "LogTag"
 	TypeMirror            = "Mirror"
 	TypeMirrorActivity    = "MirrorActivity"
 	TypeNamespace         = "Namespace"
@@ -7307,6 +7309,9 @@ type LogMsgMutation struct {
 	clearedinstance  bool
 	activity         *uuid.UUID
 	clearedactivity  bool
+	logtag           map[uuid.UUID]struct{}
+	removedlogtag    map[uuid.UUID]struct{}
+	clearedlogtag    bool
 	done             bool
 	oldValue         func(context.Context) (*LogMsg, error)
 	predicates       []predicate.LogMsg
@@ -7644,6 +7649,60 @@ func (m *LogMsgMutation) ResetActivity() {
 	m.clearedactivity = false
 }
 
+// AddLogtagIDs adds the "logtag" edge to the LogTag entity by ids.
+func (m *LogMsgMutation) AddLogtagIDs(ids ...uuid.UUID) {
+	if m.logtag == nil {
+		m.logtag = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.logtag[ids[i]] = struct{}{}
+	}
+}
+
+// ClearLogtag clears the "logtag" edge to the LogTag entity.
+func (m *LogMsgMutation) ClearLogtag() {
+	m.clearedlogtag = true
+}
+
+// LogtagCleared reports if the "logtag" edge to the LogTag entity was cleared.
+func (m *LogMsgMutation) LogtagCleared() bool {
+	return m.clearedlogtag
+}
+
+// RemoveLogtagIDs removes the "logtag" edge to the LogTag entity by IDs.
+func (m *LogMsgMutation) RemoveLogtagIDs(ids ...uuid.UUID) {
+	if m.removedlogtag == nil {
+		m.removedlogtag = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.logtag, ids[i])
+		m.removedlogtag[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedLogtag returns the removed IDs of the "logtag" edge to the LogTag entity.
+func (m *LogMsgMutation) RemovedLogtagIDs() (ids []uuid.UUID) {
+	for id := range m.removedlogtag {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// LogtagIDs returns the "logtag" edge IDs in the mutation.
+func (m *LogMsgMutation) LogtagIDs() (ids []uuid.UUID) {
+	for id := range m.logtag {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetLogtag resets all changes to the "logtag" edge.
+func (m *LogMsgMutation) ResetLogtag() {
+	m.logtag = nil
+	m.clearedlogtag = false
+	m.removedlogtag = nil
+}
+
 // Where appends a list predicates to the LogMsgMutation builder.
 func (m *LogMsgMutation) Where(ps ...predicate.LogMsg) {
 	m.predicates = append(m.predicates, ps...)
@@ -7779,7 +7838,7 @@ func (m *LogMsgMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *LogMsgMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.namespace != nil {
 		edges = append(edges, logmsg.EdgeNamespace)
 	}
@@ -7791,6 +7850,9 @@ func (m *LogMsgMutation) AddedEdges() []string {
 	}
 	if m.activity != nil {
 		edges = append(edges, logmsg.EdgeActivity)
+	}
+	if m.logtag != nil {
+		edges = append(edges, logmsg.EdgeLogtag)
 	}
 	return edges
 }
@@ -7815,25 +7877,42 @@ func (m *LogMsgMutation) AddedIDs(name string) []ent.Value {
 		if id := m.activity; id != nil {
 			return []ent.Value{*id}
 		}
+	case logmsg.EdgeLogtag:
+		ids := make([]ent.Value, 0, len(m.logtag))
+		for id := range m.logtag {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *LogMsgMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
+	if m.removedlogtag != nil {
+		edges = append(edges, logmsg.EdgeLogtag)
+	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *LogMsgMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case logmsg.EdgeLogtag:
+		ids := make([]ent.Value, 0, len(m.removedlogtag))
+		for id := range m.removedlogtag {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *LogMsgMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.clearednamespace {
 		edges = append(edges, logmsg.EdgeNamespace)
 	}
@@ -7845,6 +7924,9 @@ func (m *LogMsgMutation) ClearedEdges() []string {
 	}
 	if m.clearedactivity {
 		edges = append(edges, logmsg.EdgeActivity)
+	}
+	if m.clearedlogtag {
+		edges = append(edges, logmsg.EdgeLogtag)
 	}
 	return edges
 }
@@ -7861,6 +7943,8 @@ func (m *LogMsgMutation) EdgeCleared(name string) bool {
 		return m.clearedinstance
 	case logmsg.EdgeActivity:
 		return m.clearedactivity
+	case logmsg.EdgeLogtag:
+		return m.clearedlogtag
 	}
 	return false
 }
@@ -7901,8 +7985,449 @@ func (m *LogMsgMutation) ResetEdge(name string) error {
 	case logmsg.EdgeActivity:
 		m.ResetActivity()
 		return nil
+	case logmsg.EdgeLogtag:
+		m.ResetLogtag()
+		return nil
 	}
 	return fmt.Errorf("unknown LogMsg edge %s", name)
+}
+
+// LogTagMutation represents an operation that mutates the LogTag nodes in the graph.
+type LogTagMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *uuid.UUID
+	_type         *string
+	value         *string
+	clearedFields map[string]struct{}
+	logmsg        *uuid.UUID
+	clearedlogmsg bool
+	done          bool
+	oldValue      func(context.Context) (*LogTag, error)
+	predicates    []predicate.LogTag
+}
+
+var _ ent.Mutation = (*LogTagMutation)(nil)
+
+// logtagOption allows management of the mutation configuration using functional options.
+type logtagOption func(*LogTagMutation)
+
+// newLogTagMutation creates new mutation for the LogTag entity.
+func newLogTagMutation(c config, op Op, opts ...logtagOption) *LogTagMutation {
+	m := &LogTagMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeLogTag,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withLogTagID sets the ID field of the mutation.
+func withLogTagID(id uuid.UUID) logtagOption {
+	return func(m *LogTagMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *LogTag
+		)
+		m.oldValue = func(ctx context.Context) (*LogTag, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().LogTag.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withLogTag sets the old LogTag of the mutation.
+func withLogTag(node *LogTag) logtagOption {
+	return func(m *LogTagMutation) {
+		m.oldValue = func(context.Context) (*LogTag, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m LogTagMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m LogTagMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of LogTag entities.
+func (m *LogTagMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *LogTagMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *LogTagMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().LogTag.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetType sets the "type" field.
+func (m *LogTagMutation) SetType(s string) {
+	m._type = &s
+}
+
+// GetType returns the value of the "type" field in the mutation.
+func (m *LogTagMutation) GetType() (r string, exists bool) {
+	v := m._type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldType returns the old "type" field's value of the LogTag entity.
+// If the LogTag object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LogTagMutation) OldType(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldType: %w", err)
+	}
+	return oldValue.Type, nil
+}
+
+// ResetType resets all changes to the "type" field.
+func (m *LogTagMutation) ResetType() {
+	m._type = nil
+}
+
+// SetValue sets the "value" field.
+func (m *LogTagMutation) SetValue(s string) {
+	m.value = &s
+}
+
+// Value returns the value of the "value" field in the mutation.
+func (m *LogTagMutation) Value() (r string, exists bool) {
+	v := m.value
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldValue returns the old "value" field's value of the LogTag entity.
+// If the LogTag object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LogTagMutation) OldValue(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldValue is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldValue requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldValue: %w", err)
+	}
+	return oldValue.Value, nil
+}
+
+// ResetValue resets all changes to the "value" field.
+func (m *LogTagMutation) ResetValue() {
+	m.value = nil
+}
+
+// SetLogmsgID sets the "logmsg" edge to the LogMsg entity by id.
+func (m *LogTagMutation) SetLogmsgID(id uuid.UUID) {
+	m.logmsg = &id
+}
+
+// ClearLogmsg clears the "logmsg" edge to the LogMsg entity.
+func (m *LogTagMutation) ClearLogmsg() {
+	m.clearedlogmsg = true
+}
+
+// LogmsgCleared reports if the "logmsg" edge to the LogMsg entity was cleared.
+func (m *LogTagMutation) LogmsgCleared() bool {
+	return m.clearedlogmsg
+}
+
+// LogmsgID returns the "logmsg" edge ID in the mutation.
+func (m *LogTagMutation) LogmsgID() (id uuid.UUID, exists bool) {
+	if m.logmsg != nil {
+		return *m.logmsg, true
+	}
+	return
+}
+
+// LogmsgIDs returns the "logmsg" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// LogmsgID instead. It exists only for internal usage by the builders.
+func (m *LogTagMutation) LogmsgIDs() (ids []uuid.UUID) {
+	if id := m.logmsg; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetLogmsg resets all changes to the "logmsg" edge.
+func (m *LogTagMutation) ResetLogmsg() {
+	m.logmsg = nil
+	m.clearedlogmsg = false
+}
+
+// Where appends a list predicates to the LogTagMutation builder.
+func (m *LogTagMutation) Where(ps ...predicate.LogTag) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// Op returns the operation name.
+func (m *LogTagMutation) Op() Op {
+	return m.op
+}
+
+// Type returns the node type of this mutation (LogTag).
+func (m *LogTagMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *LogTagMutation) Fields() []string {
+	fields := make([]string, 0, 2)
+	if m._type != nil {
+		fields = append(fields, logtag.FieldType)
+	}
+	if m.value != nil {
+		fields = append(fields, logtag.FieldValue)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *LogTagMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case logtag.FieldType:
+		return m.GetType()
+	case logtag.FieldValue:
+		return m.Value()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *LogTagMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case logtag.FieldType:
+		return m.OldType(ctx)
+	case logtag.FieldValue:
+		return m.OldValue(ctx)
+	}
+	return nil, fmt.Errorf("unknown LogTag field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *LogTagMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case logtag.FieldType:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetType(v)
+		return nil
+	case logtag.FieldValue:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetValue(v)
+		return nil
+	}
+	return fmt.Errorf("unknown LogTag field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *LogTagMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *LogTagMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *LogTagMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown LogTag numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *LogTagMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *LogTagMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *LogTagMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown LogTag nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *LogTagMutation) ResetField(name string) error {
+	switch name {
+	case logtag.FieldType:
+		m.ResetType()
+		return nil
+	case logtag.FieldValue:
+		m.ResetValue()
+		return nil
+	}
+	return fmt.Errorf("unknown LogTag field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *LogTagMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.logmsg != nil {
+		edges = append(edges, logtag.EdgeLogmsg)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *LogTagMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case logtag.EdgeLogmsg:
+		if id := m.logmsg; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *LogTagMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *LogTagMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *LogTagMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.clearedlogmsg {
+		edges = append(edges, logtag.EdgeLogmsg)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *LogTagMutation) EdgeCleared(name string) bool {
+	switch name {
+	case logtag.EdgeLogmsg:
+		return m.clearedlogmsg
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *LogTagMutation) ClearEdge(name string) error {
+	switch name {
+	case logtag.EdgeLogmsg:
+		m.ClearLogmsg()
+		return nil
+	}
+	return fmt.Errorf("unknown LogTag unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *LogTagMutation) ResetEdge(name string) error {
+	switch name {
+	case logtag.EdgeLogmsg:
+		m.ResetLogmsg()
+		return nil
+	}
+	return fmt.Errorf("unknown LogTag edge %s", name)
 }
 
 // MirrorMutation represents an operation that mutates the Mirror nodes in the graph.

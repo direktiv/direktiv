@@ -19,6 +19,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	"github.com/direktiv/direktiv/pkg/flow/ent/instanceruntime"
 	"github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
+	"github.com/direktiv/direktiv/pkg/flow/ent/logtag"
 	"github.com/direktiv/direktiv/pkg/flow/ent/mirror"
 	"github.com/direktiv/direktiv/pkg/flow/ent/mirroractivity"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
@@ -58,6 +59,7 @@ func columnChecker(table string) func(string) error {
 		instance.Table:          instance.ValidColumn,
 		instanceruntime.Table:   instanceruntime.ValidColumn,
 		logmsg.Table:            logmsg.ValidColumn,
+		logtag.Table:            logtag.ValidColumn,
 		mirror.Table:            mirror.ValidColumn,
 		mirroractivity.Table:    mirroractivity.ValidColumn,
 		namespace.Table:         namespace.ValidColumn,

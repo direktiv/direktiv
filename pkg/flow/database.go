@@ -486,6 +486,21 @@ func (d *instData) namespace() string {
 	return d.in.Edges.Namespace.Name
 }
 
+func (d *instData) tags() map[string]string {
+	tag := make(map[string]string)
+	if d.in.Edges.Namespace == nil {
+		tag["nil"] = "nil" //TODO: handle this case
+		return tag
+	}
+	tag["Namespace"] = d.namespace()
+	tag["base"] = d.base
+	return tag
+}
+
+func (d instData) instance() *ent.Instance {
+	return d.in
+}
+
 func (srv *server) getInstance(ctx context.Context, nsc *ent.NamespaceClient, namespace, instance string, load bool) (*instData, error) {
 
 	id, err := uuid.Parse(instance)

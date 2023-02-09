@@ -335,6 +335,27 @@ var (
 			},
 		},
 	}
+	// LogTagsColumns holds the columns for the "log_tags" table.
+	LogTagsColumns = []*schema.Column{
+		{Name: "oid", Type: field.TypeUUID},
+		{Name: "type", Type: field.TypeString},
+		{Name: "value", Type: field.TypeString},
+		{Name: "log_msg_logtag", Type: field.TypeUUID},
+	}
+	// LogTagsTable holds the schema information for the "log_tags" table.
+	LogTagsTable = &schema.Table{
+		Name:       "log_tags",
+		Columns:    LogTagsColumns,
+		PrimaryKey: []*schema.Column{LogTagsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "log_tags_log_msgs_logtag",
+				Columns:    []*schema.Column{LogTagsColumns[3]},
+				RefColumns: []*schema.Column{LogMsgsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
 	// MirrorsColumns holds the columns for the "mirrors" table.
 	MirrorsColumns = []*schema.Column{
 		{Name: "oid", Type: field.TypeUUID},
@@ -633,6 +654,7 @@ var (
 		InstancesTable,
 		InstanceRuntimesTable,
 		LogMsgsTable,
+		LogTagsTable,
 		MirrorsTable,
 		MirrorActivitiesTable,
 		NamespacesTable,
@@ -668,6 +690,7 @@ func init() {
 	LogMsgsTable.ForeignKeys[1].RefTable = MirrorActivitiesTable
 	LogMsgsTable.ForeignKeys[2].RefTable = NamespacesTable
 	LogMsgsTable.ForeignKeys[3].RefTable = WorkflowsTable
+	LogTagsTable.ForeignKeys[0].RefTable = LogMsgsTable
 	MirrorsTable.ForeignKeys[0].RefTable = InodesTable
 	MirrorsTable.ForeignKeys[1].RefTable = NamespacesTable
 	MirrorActivitiesTable.ForeignKeys[0].RefTable = MirrorsTable

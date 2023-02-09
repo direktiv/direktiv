@@ -166,7 +166,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 	engine.pubsub.NotifyInstances(d.ns())
 	engine.logToNamespace(ctx, t, d.ns(), "Workflow '%s' has been triggered by %s.", args.Path, args.Caller)
 	engine.logToWorkflow(ctx, t, d.wfData, "Instance '%s' created by %s.", im.ID().String(), args.Caller)
-	engine.logToInstance(ctx, t, in, "Preparing workflow triggered by %s.", args.Caller)
+	engine.tagLogToInstance(ctx, t, im, "Preparing workflow triggered by %s.", args.Caller)
 
 	// Broadcast Event
 	err = engine.flow.BroadcastInstance(BroadcastEventTypeInstanceStarted, ctx,
@@ -336,13 +336,13 @@ func (engine *engine) CrashInstance(ctx context.Context, im *instanceMemory, err
 
 	if errors.As(err, &cerr) {
 		engine.sugar.Errorf("Instance failed with error '%s': %v", cerr.Code, err)
-		engine.logToInstance(ctx, time.Now(), im.in, "Instance failed with error '%s': %s", cerr.Code, err.Error())
+		engine.tagLogToInstance(ctx, time.Now(), im, "Instance failed with error '%s': %s", cerr.Code, err.Error())
 	} else if errors.As(err, &uerr) && uerr.Code != "" {
 		engine.sugar.Errorf("Instance failed with uncatchable error '%s': %v", uerr.Code, err)
-		engine.logToInstance(ctx, time.Now(), im.in, "Instance failed with uncatchable error '%s': %s", uerr.Code, err.Error())
+		engine.tagLogToInstance(ctx, time.Now(), im, "Instance failed with uncatchable error '%s': %s", uerr.Code, err.Error())
 	} else {
 		engine.sugar.Errorf("Instance failed with uncatchable error: %v", err)
-		engine.logToInstance(ctx, time.Now(), im.in, "Instance failed with uncatchable error: %s", err.Error())
+		engine.tagLogToInstance(ctx, time.Now(), im, "Instance failed with uncatchable error: %s", err.Error())
 	}
 
 	err = engine.SetInstanceFailed(ctx, im, err)
@@ -491,13 +491,13 @@ failure:
 
 			matched, regErr := regexp.MatchString(errRegex, cerr.Code)
 			if regErr != nil {
-				engine.logToInstance(ctx, t, im.in, "Error catching regex failed to compile: %v", regErr)
+				engine.tagLogToInstance(ctx, t, im, "Error catching regex failed to compile: %v", regErr)
 			}
 
 			if matched {
 
-				engine.logToInstance(ctx, t, im.in, "State failed with error '%s': %s", cerr.Code, cerr.Message)
-				engine.logToInstance(ctx, t, im.in, "Error caught by error definition %d: %s", i, catch.Error)
+				engine.tagLogToInstance(ctx, t, im, "State failed with error '%s': %s", cerr.Code, cerr.Message)
+				engine.tagLogToInstance(ctx, t, im, "Error caught by error definition %d: %s", i, catch.Error)
 
 				transition = &states.Transition{
 					Transform: "",
@@ -530,7 +530,7 @@ func (engine *engine) transformState(ctx context.Context, im *instanceMemory, tr
 		return nil
 	}
 
-	engine.logToInstance(ctx, time.Now(), im.in, "Transforming state data.")
+	engine.tagLogToInstance(ctx, time.Now(), im, "Transforming state data.")
 
 	x, err := jqObject(im.data, transition.Transform)
 	if err != nil {
@@ -553,7 +553,7 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 	if transition.NextState != "" {
 		engine.metricsCompleteState(ctx, im, transition.NextState, errCode, false)
 		engine.sugar.Debugf("Instance transitioning to next state: %s -> %s", im.ID().String(), transition.NextState)
-		engine.logToInstance(ctx, time.Now(), im.in, "Transitioning to next state: %s (%d).", transition.NextState, im.Step()+1)
+		engine.tagLogToInstance(ctx, time.Now(), im, "Transitioning to next state: %s (%d).", transition.NextState, im.Step()+1)
 		go engine.Transition(ctx, im, transition.NextState, 0)
 		return
 	}
@@ -562,7 +562,7 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 	if im.ErrorCode() != "" {
 		status = util.InstanceStatusFailed
 		engine.sugar.Debugf("Instance failed: %s", im.ID().String())
-		engine.logToInstance(ctx, time.Now(), im.in, "Workflow failed with error '%s': %s", im.ErrorCode(), im.in.ErrorMessage)
+		engine.tagLogToInstance(ctx, time.Now(), im, "Workflow failed with error '%s': %s", im.ErrorCode(), im.in.ErrorMessage)
 	}
 
 	engine.sugar.Debugf("Instance terminated: %s", im.ID().String())
@@ -591,7 +591,7 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 
 	engine.pubsub.NotifyInstance(im.in)
 
-	engine.logToInstance(ctx, time.Now(), im.in, "Workflow completed.")
+	engine.tagLogToInstance(ctx, time.Now(), im, "Workflow completed.")
 
 	if ns, err := im.in.Namespace(ctx); err == nil {
 		engine.pubsub.NotifyInstances(ns)
@@ -729,7 +729,7 @@ func (engine *engine) retryWakeup(data []byte) {
 		return
 	}
 
-	engine.logToInstance(ctx, time.Now(), im.in, "Waking up to retry.")
+	engine.tagLogToInstance(ctx, time.Now(), im, "Waking up to retry.")
 
 	engine.sugar.Debugf("Handling retry wakeup: %s", this())
 

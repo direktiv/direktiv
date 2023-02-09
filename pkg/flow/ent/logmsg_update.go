@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	"github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
+	"github.com/direktiv/direktiv/pkg/flow/ent/logtag"
 	"github.com/direktiv/direktiv/pkg/flow/ent/mirroractivity"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/predicate"
@@ -122,6 +123,21 @@ func (lmu *LogMsgUpdate) SetActivity(m *MirrorActivity) *LogMsgUpdate {
 	return lmu.SetActivityID(m.ID)
 }
 
+// AddLogtagIDs adds the "logtag" edge to the LogTag entity by IDs.
+func (lmu *LogMsgUpdate) AddLogtagIDs(ids ...uuid.UUID) *LogMsgUpdate {
+	lmu.mutation.AddLogtagIDs(ids...)
+	return lmu
+}
+
+// AddLogtag adds the "logtag" edges to the LogTag entity.
+func (lmu *LogMsgUpdate) AddLogtag(l ...*LogTag) *LogMsgUpdate {
+	ids := make([]uuid.UUID, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
+	}
+	return lmu.AddLogtagIDs(ids...)
+}
+
 // Mutation returns the LogMsgMutation object of the builder.
 func (lmu *LogMsgUpdate) Mutation() *LogMsgMutation {
 	return lmu.mutation
@@ -149,6 +165,27 @@ func (lmu *LogMsgUpdate) ClearInstance() *LogMsgUpdate {
 func (lmu *LogMsgUpdate) ClearActivity() *LogMsgUpdate {
 	lmu.mutation.ClearActivity()
 	return lmu
+}
+
+// ClearLogtag clears all "logtag" edges to the LogTag entity.
+func (lmu *LogMsgUpdate) ClearLogtag() *LogMsgUpdate {
+	lmu.mutation.ClearLogtag()
+	return lmu
+}
+
+// RemoveLogtagIDs removes the "logtag" edge to LogTag entities by IDs.
+func (lmu *LogMsgUpdate) RemoveLogtagIDs(ids ...uuid.UUID) *LogMsgUpdate {
+	lmu.mutation.RemoveLogtagIDs(ids...)
+	return lmu
+}
+
+// RemoveLogtag removes "logtag" edges to LogTag entities.
+func (lmu *LogMsgUpdate) RemoveLogtag(l ...*LogTag) *LogMsgUpdate {
+	ids := make([]uuid.UUID, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
+	}
+	return lmu.RemoveLogtagIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -375,6 +412,60 @@ func (lmu *LogMsgUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if lmu.mutation.LogtagCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   logmsg.LogtagTable,
+			Columns: []string{logmsg.LogtagColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: logtag.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := lmu.mutation.RemovedLogtagIDs(); len(nodes) > 0 && !lmu.mutation.LogtagCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   logmsg.LogtagTable,
+			Columns: []string{logmsg.LogtagColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: logtag.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := lmu.mutation.LogtagIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   logmsg.LogtagTable,
+			Columns: []string{logmsg.LogtagColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: logtag.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	_spec.AddModifiers(lmu.modifiers...)
 	if n, err = sqlgraph.UpdateNodes(ctx, lmu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -484,6 +575,21 @@ func (lmuo *LogMsgUpdateOne) SetActivity(m *MirrorActivity) *LogMsgUpdateOne {
 	return lmuo.SetActivityID(m.ID)
 }
 
+// AddLogtagIDs adds the "logtag" edge to the LogTag entity by IDs.
+func (lmuo *LogMsgUpdateOne) AddLogtagIDs(ids ...uuid.UUID) *LogMsgUpdateOne {
+	lmuo.mutation.AddLogtagIDs(ids...)
+	return lmuo
+}
+
+// AddLogtag adds the "logtag" edges to the LogTag entity.
+func (lmuo *LogMsgUpdateOne) AddLogtag(l ...*LogTag) *LogMsgUpdateOne {
+	ids := make([]uuid.UUID, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
+	}
+	return lmuo.AddLogtagIDs(ids...)
+}
+
 // Mutation returns the LogMsgMutation object of the builder.
 func (lmuo *LogMsgUpdateOne) Mutation() *LogMsgMutation {
 	return lmuo.mutation
@@ -511,6 +617,27 @@ func (lmuo *LogMsgUpdateOne) ClearInstance() *LogMsgUpdateOne {
 func (lmuo *LogMsgUpdateOne) ClearActivity() *LogMsgUpdateOne {
 	lmuo.mutation.ClearActivity()
 	return lmuo
+}
+
+// ClearLogtag clears all "logtag" edges to the LogTag entity.
+func (lmuo *LogMsgUpdateOne) ClearLogtag() *LogMsgUpdateOne {
+	lmuo.mutation.ClearLogtag()
+	return lmuo
+}
+
+// RemoveLogtagIDs removes the "logtag" edge to LogTag entities by IDs.
+func (lmuo *LogMsgUpdateOne) RemoveLogtagIDs(ids ...uuid.UUID) *LogMsgUpdateOne {
+	lmuo.mutation.RemoveLogtagIDs(ids...)
+	return lmuo
+}
+
+// RemoveLogtag removes "logtag" edges to LogTag entities.
+func (lmuo *LogMsgUpdateOne) RemoveLogtag(l ...*LogTag) *LogMsgUpdateOne {
+	ids := make([]uuid.UUID, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
+	}
+	return lmuo.RemoveLogtagIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -759,6 +886,60 @@ func (lmuo *LogMsgUpdateOne) sqlSave(ctx context.Context) (_node *LogMsg, err er
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: mirroractivity.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if lmuo.mutation.LogtagCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   logmsg.LogtagTable,
+			Columns: []string{logmsg.LogtagColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: logtag.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := lmuo.mutation.RemovedLogtagIDs(); len(nodes) > 0 && !lmuo.mutation.LogtagCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   logmsg.LogtagTable,
+			Columns: []string{logmsg.LogtagColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: logtag.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := lmuo.mutation.LogtagIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   logmsg.LogtagTable,
+			Columns: []string{logmsg.LogtagColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: logtag.FieldID,
 				},
 			},
 		}

@@ -32,6 +32,8 @@ type Tx struct {
 	InstanceRuntime *InstanceRuntimeClient
 	// LogMsg is the client for interacting with the LogMsg builders.
 	LogMsg *LogMsgClient
+	// LogTag is the client for interacting with the LogTag builders.
+	LogTag *LogTagClient
 	// Mirror is the client for interacting with the Mirror builders.
 	Mirror *MirrorClient
 	// MirrorActivity is the client for interacting with the MirrorActivity builders.
@@ -192,6 +194,7 @@ func (tx *Tx) init() {
 	tx.Instance = NewInstanceClient(tx.config)
 	tx.InstanceRuntime = NewInstanceRuntimeClient(tx.config)
 	tx.LogMsg = NewLogMsgClient(tx.config)
+	tx.LogTag = NewLogTagClient(tx.config)
 	tx.Mirror = NewMirrorClient(tx.config)
 	tx.MirrorActivity = NewMirrorActivityClient(tx.config)
 	tx.Namespace = NewNamespaceClient(tx.config)

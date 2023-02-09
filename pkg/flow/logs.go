@@ -21,6 +21,13 @@ type logMessage struct {
 	ns  *ent.Namespace
 	wf  *wfData
 	in  *ent.Instance
+	tag map[string]string
+}
+
+type tagedInstance interface {
+	tags() map[string]string
+	instance() *ent.Instance
+	//addTag(t, v string)
 }
 
 func (srv *server) startLogWorkers(n int) {
@@ -127,13 +134,21 @@ func (srv *server) workerLogToWorkflow(l *logMessage) {
 func (srv *server) workerLogToInstance(l *logMessage) {
 
 	logc := srv.db.LogMsg
-
+	logTagc := srv.db.LogTag
 	util.Trace(l.ctx, l.msg)
 
-	_, err := logc.Create().SetMsg(l.msg).SetInstance(l.in).SetT(l.t).Save(context.Background())
+	lDB, err := logc.Create().SetMsg(l.msg).SetInstance(l.in).SetT(l.t).Save(context.Background())
 	if err != nil {
 		srv.sugar.Error(err)
 		return
+	}
+
+	for k, v := range l.tag {
+		_, err := logTagc.Create().SetType(k).SetValue(v).SetLogmsgID(lDB.ID).Save(context.Background())
+		if err != nil {
+			srv.sugar.Error(err)
+			return
+		}
 	}
 
 	span := trace.SpanFromContext(l.ctx)
@@ -201,12 +216,19 @@ func (srv *server) logToWorkflow(ctx context.Context, t time.Time, d *wfData, ms
 
 }
 
-// log To instance with string interpolation.
+//log To instance with string interpolation.
 func (srv *server) logToInstance(ctx context.Context, t time.Time, in *ent.Instance, msg string, a ...interface{}) {
 
 	msg = fmt.Sprintf(msg, a...)
 
 	srv.logToInstanceRaw(ctx, t, in, msg)
+
+}
+
+func (srv *server) tagLogToInstance(ctx context.Context, t time.Time, ti tagedInstance, msg string, a ...interface{}) {
+
+	msg = fmt.Sprintf(msg, a...)
+	srv.tagLogToInstanceRaw(ctx, t, ti.instance(), ti.tags(), msg)
 
 }
 
@@ -226,9 +248,26 @@ func (srv *server) logToInstanceRaw(ctx context.Context, t time.Time, in *ent.In
 
 }
 
+// log To instance with raw string.
+func (srv *server) tagLogToInstanceRaw(ctx context.Context, t time.Time, in *ent.Instance, tag map[string]string, msg string) {
+
+	defer func() {
+		_ = recover()
+	}()
+
+	srv.logQueue <- &logMessage{
+		ctx: ctx,
+		t:   t,
+		msg: msg,
+		in:  in,
+		tag: tag,
+	}
+
+}
+
 func (engine *engine) UserLog(ctx context.Context, im *instanceMemory, msg string, a ...interface{}) {
 
-	engine.logToInstance(ctx, time.Now(), im.in, msg, a...)
+	engine.tagLogToInstance(ctx, time.Now(), im, msg, a...)
 
 	s := fmt.Sprintf(msg, a...)
 
@@ -263,7 +302,7 @@ func (engine *engine) logRunState(ctx context.Context, im *instanceMemory, waked
 
 	engine.sugar.Debugf("Running state logic -- %s:%v (%s)", im.ID().String(), im.Step(), im.logic.GetID())
 	if im.GetMemory() == nil && len(wakedata) == 0 && err == nil {
-		engine.logToInstance(ctx, time.Now(), im.in, "Running state logic (step:%v) -- %s", im.Step(), im.logic.GetID())
+		engine.tagLogToInstance(ctx, time.Now(), im, "Running state logic (step:%v) -- %s", im.Step(), im.logic.GetID())
 	}
 
 }

@@ -33,6 +33,9 @@ type InstanceRuntime func(*sql.Selector)
 // LogMsg is the predicate function for logmsg builders.
 type LogMsg func(*sql.Selector)
 
+// LogTag is the predicate function for logtag builders.
+type LogTag func(*sql.Selector)
+
 // Mirror is the predicate function for mirror builders.
 type Mirror func(*sql.Selector)
 

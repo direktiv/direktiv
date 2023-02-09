@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"fmt"
 	"math"
 
@@ -13,6 +14,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	"github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
+	"github.com/direktiv/direktiv/pkg/flow/ent/logtag"
 	"github.com/direktiv/direktiv/pkg/flow/ent/mirroractivity"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/predicate"
@@ -33,6 +35,7 @@ type LogMsgQuery struct {
 	withWorkflow  *WorkflowQuery
 	withInstance  *InstanceQuery
 	withActivity  *MirrorActivityQuery
+	withLogtag    *LogTagQuery
 	withFKs       bool
 	modifiers     []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
@@ -152,6 +155,28 @@ func (lmq *LogMsgQuery) QueryActivity() *MirrorActivityQuery {
 			sqlgraph.From(logmsg.Table, logmsg.FieldID, selector),
 			sqlgraph.To(mirroractivity.Table, mirroractivity.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, logmsg.ActivityTable, logmsg.ActivityColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(lmq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryLogtag chains the current query on the "logtag" edge.
+func (lmq *LogMsgQuery) QueryLogtag() *LogTagQuery {
+	query := &LogTagQuery{config: lmq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := lmq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := lmq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(logmsg.Table, logmsg.FieldID, selector),
+			sqlgraph.To(logtag.Table, logtag.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, logmsg.LogtagTable, logmsg.LogtagColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(lmq.driver.Dialect(), step)
 		return fromU, nil
@@ -344,6 +369,7 @@ func (lmq *LogMsgQuery) Clone() *LogMsgQuery {
 		withWorkflow:  lmq.withWorkflow.Clone(),
 		withInstance:  lmq.withInstance.Clone(),
 		withActivity:  lmq.withActivity.Clone(),
+		withLogtag:    lmq.withLogtag.Clone(),
 		// clone intermediate query.
 		sql:    lmq.sql.Clone(),
 		path:   lmq.path,
@@ -392,6 +418,17 @@ func (lmq *LogMsgQuery) WithActivity(opts ...func(*MirrorActivityQuery)) *LogMsg
 		opt(query)
 	}
 	lmq.withActivity = query
+	return lmq
+}
+
+// WithLogtag tells the query-builder to eager-load the nodes that are connected to
+// the "logtag" edge. The optional arguments are used to configure the query builder of the edge.
+func (lmq *LogMsgQuery) WithLogtag(opts ...func(*LogTagQuery)) *LogMsgQuery {
+	query := &LogTagQuery{config: lmq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	lmq.withLogtag = query
 	return lmq
 }
 
@@ -469,11 +506,12 @@ func (lmq *LogMsgQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*LogM
 		nodes       = []*LogMsg{}
 		withFKs     = lmq.withFKs
 		_spec       = lmq.querySpec()
-		loadedTypes = [4]bool{
+		loadedTypes = [5]bool{
 			lmq.withNamespace != nil,
 			lmq.withWorkflow != nil,
 			lmq.withInstance != nil,
 			lmq.withActivity != nil,
+			lmq.withLogtag != nil,
 		}
 	)
 	if lmq.withNamespace != nil || lmq.withWorkflow != nil || lmq.withInstance != nil || lmq.withActivity != nil {
@@ -524,6 +562,13 @@ func (lmq *LogMsgQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*LogM
 	if query := lmq.withActivity; query != nil {
 		if err := lmq.loadActivity(ctx, query, nodes, nil,
 			func(n *LogMsg, e *MirrorActivity) { n.Edges.Activity = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := lmq.withLogtag; query != nil {
+		if err := lmq.loadLogtag(ctx, query, nodes,
+			func(n *LogMsg) { n.Edges.Logtag = []*LogTag{} },
+			func(n *LogMsg, e *LogTag) { n.Edges.Logtag = append(n.Edges.Logtag, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -643,6 +688,37 @@ func (lmq *LogMsgQuery) loadActivity(ctx context.Context, query *MirrorActivityQ
 		for i := range nodes {
 			assign(nodes[i], n)
 		}
+	}
+	return nil
+}
+func (lmq *LogMsgQuery) loadLogtag(ctx context.Context, query *LogTagQuery, nodes []*LogMsg, init func(*LogMsg), assign func(*LogMsg, *LogTag)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*LogMsg)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.LogTag(func(s *sql.Selector) {
+		s.Where(sql.InValues(logmsg.LogtagColumn, fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.log_msg_logtag
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "log_msg_logtag" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "log_msg_logtag" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
 	}
 	return nil
 }

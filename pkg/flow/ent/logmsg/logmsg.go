@@ -23,6 +23,8 @@ const (
 	EdgeInstance = "instance"
 	// EdgeActivity holds the string denoting the activity edge name in mutations.
 	EdgeActivity = "activity"
+	// EdgeLogtag holds the string denoting the logtag edge name in mutations.
+	EdgeLogtag = "logtag"
 	// Table holds the table name of the logmsg in the database.
 	Table = "log_msgs"
 	// NamespaceTable is the table that holds the namespace relation/edge.
@@ -53,6 +55,13 @@ const (
 	ActivityInverseTable = "mirror_activities"
 	// ActivityColumn is the table column denoting the activity relation/edge.
 	ActivityColumn = "mirror_activity_logs"
+	// LogtagTable is the table that holds the logtag relation/edge.
+	LogtagTable = "log_tags"
+	// LogtagInverseTable is the table name for the LogTag entity.
+	// It exists in this package in order to avoid circular dependency with the "logtag" package.
+	LogtagInverseTable = "log_tags"
+	// LogtagColumn is the table column denoting the logtag relation/edge.
+	LogtagColumn = "log_msg_logtag"
 )
 
 // Columns holds all SQL columns for logmsg fields.

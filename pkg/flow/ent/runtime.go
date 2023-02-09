@@ -14,6 +14,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	"github.com/direktiv/direktiv/pkg/flow/ent/instanceruntime"
 	"github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
+	"github.com/direktiv/direktiv/pkg/flow/ent/logtag"
 	"github.com/direktiv/direktiv/pkg/flow/ent/mirror"
 	"github.com/direktiv/direktiv/pkg/flow/ent/mirroractivity"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
@@ -154,6 +155,12 @@ func init() {
 	logmsgDescID := logmsgFields[0].Descriptor()
 	// logmsg.DefaultID holds the default value on creation for the id field.
 	logmsg.DefaultID = logmsgDescID.Default.(func() uuid.UUID)
+	logtagFields := schema.LogTag{}.Fields()
+	_ = logtagFields
+	// logtagDescID is the schema descriptor for id field.
+	logtagDescID := logtagFields[0].Descriptor()
+	// logtag.DefaultID holds the default value on creation for the id field.
+	logtag.DefaultID = logtagDescID.Default.(func() uuid.UUID)
 	mirrorFields := schema.Mirror{}.Fields()
 	_ = mirrorFields
 	// mirrorDescUpdatedAt is the schema descriptor for updated_at field.

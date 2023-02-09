@@ -126,6 +126,19 @@ func (f LogMsgFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, erro
 	return f(ctx, mv)
 }
 
+// The LogTagFunc type is an adapter to allow the use of ordinary
+// function as LogTag mutator.
+type LogTagFunc func(context.Context, *ent.LogTagMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f LogTagFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.LogTagMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.LogTagMutation", m)
+	}
+	return f(ctx, mv)
+}
+
 // The MirrorFunc type is an adapter to allow the use of ordinary
 // function as Mirror mutator.
 type MirrorFunc func(context.Context, *ent.MirrorMutation) (ent.Value, error)

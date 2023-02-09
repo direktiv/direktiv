@@ -44,9 +44,11 @@ type LogMsgEdges struct {
 	Instance *Instance `json:"instance,omitempty"`
 	// Activity holds the value of the activity edge.
 	Activity *MirrorActivity `json:"activity,omitempty"`
+	// Logtag holds the value of the logtag edge.
+	Logtag []*LogTag `json:"logtag,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [5]bool
 }
 
 // NamespaceOrErr returns the Namespace value or an error if the edge
@@ -99,6 +101,15 @@ func (e LogMsgEdges) ActivityOrErr() (*MirrorActivity, error) {
 		return e.Activity, nil
 	}
 	return nil, &NotLoadedError{edge: "activity"}
+}
+
+// LogtagOrErr returns the Logtag value or an error if the edge
+// was not loaded in eager-loading.
+func (e LogMsgEdges) LogtagOrErr() ([]*LogTag, error) {
+	if e.loadedTypes[4] {
+		return e.Logtag, nil
+	}
+	return nil, &NotLoadedError{edge: "logtag"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -204,6 +215,11 @@ func (lm *LogMsg) QueryInstance() *InstanceQuery {
 // QueryActivity queries the "activity" edge of the LogMsg entity.
 func (lm *LogMsg) QueryActivity() *MirrorActivityQuery {
 	return (&LogMsgClient{config: lm.config}).QueryActivity(lm)
+}
+
+// QueryLogtag queries the "logtag" edge of the LogMsg entity.
+func (lm *LogMsg) QueryLogtag() *LogTagQuery {
+	return (&LogMsgClient{config: lm.config}).QueryLogtag(lm)
 }
 
 // Update returns a builder for updating this LogMsg.
