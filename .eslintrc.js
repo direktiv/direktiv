@@ -60,6 +60,9 @@ module.exports = {
     // https://marketplace.visualstudio.com/items?itemName=amatiasq.sort-imports
     "sort-imports": "error",
 
+    // nested ternary operators are hard to read and should be avoided
+    "no-nested-ternary": "error",
+
     // simpe rule to avoid unnecessary curly braces
     "react/jsx-curly-brace-presence": "error",
 
