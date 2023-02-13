@@ -497,7 +497,7 @@ func (d *instData) tags() map[string]string {
 	return tag
 }
 
-func (d instData) instance() *ent.Instance {
+func (d *instData) instance() *ent.Instance {
 	return d.in
 }
 

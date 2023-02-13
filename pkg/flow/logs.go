@@ -133,24 +133,11 @@ func (srv *server) workerLogToWorkflow(l *logMessage) {
 
 func (srv *server) workerLogToInstance(l *logMessage) {
 
-	logc := srv.db.LogMsg
-	logTagc := srv.db.LogTag
-	util.Trace(l.ctx, l.msg)
-
-	lDB, err := logc.Create().SetMsg(l.msg).SetInstance(l.in).SetT(l.t).Save(context.Background())
+	err := srv.storeLogMsg(l)
 	if err != nil {
 		srv.sugar.Error(err)
 		return
 	}
-
-	for k, v := range l.tag {
-		_, err := logTagc.Create().SetType(k).SetValue(v).SetLogmsgID(lDB.ID).Save(context.Background())
-		if err != nil {
-			srv.sugar.Error(err)
-			return
-		}
-	}
-
 	span := trace.SpanFromContext(l.ctx)
 	tid := span.SpanContext().TraceID()
 
@@ -346,4 +333,27 @@ func (srv *server) logToMirrorActivity(ctx context.Context, t time.Time, act *en
 
 	srv.pubsub.NotifyMirrorActivityLogs(act)
 
+}
+
+func (srv *server) storeLogMsg(l *logMessage) error {
+	util.Trace(l.ctx, l.msg)
+	ctx := context.Background()
+	tx, err := srv.db.Tx(ctx)
+	if err != nil {
+		return fmt.Errorf("starting a transaction: %w", err)
+	}
+	lDB, err := tx.LogMsg.Create().SetMsg(l.msg).SetInstance(l.in).SetT(l.t).Save(ctx)
+	if err != nil {
+		srv.sugar.Error(err)
+		return fmt.Errorf("failed creating the Logmsg: %w", err)
+	}
+	var bt []*ent.LogTagCreate
+	for k, v := range l.tag {
+		bt = append(bt, tx.LogTag.Create().SetType(k).SetValue(v).SetLogmsgID(lDB.ID))
+	}
+	_, err = tx.LogTag.CreateBulk(bt...).Save(ctx)
+	if err != nil {
+		return fmt.Errorf("failed creating the Logtags: %w", err)
+	}
+	return tx.Commit()
 }
