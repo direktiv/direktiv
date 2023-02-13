@@ -1,9 +1,10 @@
 import { defineConfig, loadEnv } from "vite";
-import react from "@vitejs/plugin-react";
-import viteTsconfigPaths from "vite-tsconfig-paths";
-import svgrPlugin from "vite-plugin-svgr";
-import path from "path";
+
 import fs from "fs";
+import path from "path";
+import react from "@vitejs/plugin-react";
+import svgrPlugin from "vite-plugin-svgr";
+import viteTsconfigPaths from "vite-tsconfig-paths";
 
 //  fix https://github.com/uber/baseweb/issues/4129
 const WRONG_CODE = `import { bpfrpt_proptype_WindowScroller } from "../WindowScroller.js";`;
@@ -42,6 +43,23 @@ export default ({ mode }) => {
             },
           }
         : {},
+    },
+    build: {
+      commonjsOptions: {
+        // https://github.com/vitejs/vite/issues/2139#issuecomment-1405624744
+        defaultIsModuleExports(id) {
+          try {
+            // eslint-disable-next-line @typescript-eslint/no-var-requires
+            const module = require(id);
+            if (module?.default) {
+              return false;
+            }
+            return "auto";
+          } catch (error) {
+            return "auto";
+          }
+        },
+      },
     },
     optimizeDeps: {
       esbuildOptions: {
