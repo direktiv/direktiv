@@ -166,12 +166,12 @@ func (im *instanceMemory) StoreData(key string, val interface{}) error {
 }
 
 func (im *instanceMemory) tags() map[string]string {
-	tag := make(map[string]string)
+	tag := instanceTags(im.in)
 	if im.logic == nil {
 		return tag
 	}
-	tag["ID"] = im.logic.GetID()
-	tag["Type"] = im.logic.GetType().String()
+	tag["im-id"] = im.logic.GetID()
+	tag["im-type"] = im.logic.GetType().String()
 	return tag
 }
 

@@ -222,9 +222,9 @@ func (flow *flow) SetInstanceAnnotation(ctx context.Context, req *grpc.SetInstan
 	}
 
 	if newVar {
-		flow.logToInstance(ctx, time.Now(), d.in, "Created instance annotation '%s'.", key)
+		flow.tagLogToInstance(ctx, time.Now(), d, "Created instance annotation '%s'.", key)
 	} else {
-		flow.logToInstance(ctx, time.Now(), d.in, "Updated instance annotation '%s'.", key)
+		flow.tagLogToInstance(ctx, time.Now(), d, "Updated instance annotation '%s'.", key)
 
 	}
 	flow.pubsub.NotifyInstanceAnnotations(d.in)
@@ -332,9 +332,9 @@ func (flow *flow) SetInstanceAnnotationParcels(srv grpc.Flow_SetInstanceAnnotati
 	}
 
 	if newVar {
-		flow.logToInstance(ctx, time.Now(), d.in, "Created instance annotation '%s'.", key)
+		flow.tagLogToInstance(ctx, time.Now(), d, "Created instance annotation '%s'.", key)
 	} else {
-		flow.logToInstance(ctx, time.Now(), d.in, "Updated instance annotation '%s'.", key)
+		flow.tagLogToInstance(ctx, time.Now(), d, "Updated instance annotation '%s'.", key)
 	}
 
 	flow.pubsub.NotifyInstanceAnnotations(d.in)
@@ -388,7 +388,7 @@ func (flow *flow) DeleteInstanceAnnotation(ctx context.Context, req *grpc.Delete
 		return nil, err
 	}
 
-	flow.logToInstance(ctx, time.Now(), d.in, "Deleted instance annotation '%s'.", d.annotation.Name)
+	flow.tagLogToInstance(ctx, time.Now(), d, "Deleted instance annotation '%s'.", d.annotation.Name)
 	flow.pubsub.NotifyInstanceAnnotations(d.in)
 
 	var resp emptypb.Empty
@@ -423,7 +423,7 @@ func (flow *flow) RenameInstanceAnnotation(ctx context.Context, req *grpc.Rename
 		return nil, err
 	}
 
-	flow.logToInstance(ctx, time.Now(), d.in, "Renamed instance annotation from '%s' to '%s'.", req.GetOld(), req.GetNew())
+	flow.tagLogToInstance(ctx, time.Now(), d, "Renamed instance annotation from '%s' to '%s'.", req.GetOld(), req.GetNew())
 	flow.pubsub.NotifyInstanceAnnotations(d.in)
 
 	var resp grpc.RenameInstanceAnnotationResponse

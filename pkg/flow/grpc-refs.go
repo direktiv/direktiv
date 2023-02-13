@@ -258,7 +258,7 @@ func (flow *flow) Tag(ctx context.Context, req *grpc.TagRequest) (*emptypb.Empty
 		return nil, err
 	}
 
-	flow.logToWorkflow(ctx, time.Now(), d.wfData, "Tagged workflow: %s -> %s.", req.GetTag(), d.rev().ID.String())
+	flow.tagLogToWorkflow(ctx, time.Now(), d, "Tagged workflow: %s -> %s.", req.GetTag(), d.rev().ID.String())
 	flow.pubsub.NotifyWorkflow(d.wf)
 
 	var resp emptypb.Empty
@@ -305,7 +305,7 @@ func (flow *flow) Untag(ctx context.Context, req *grpc.UntagRequest) (*emptypb.E
 		return nil, err
 	}
 
-	flow.logToWorkflow(ctx, time.Now(), d.wfData, "Deleted workflow tag: %s.", req.GetTag())
+	flow.tagLogToWorkflow(ctx, time.Now(), d, "Deleted workflow tag: %s.", req.GetTag())
 	flow.pubsub.NotifyWorkflow(d.wf)
 
 	var resp emptypb.Empty
@@ -362,7 +362,7 @@ func (flow *flow) Retag(ctx context.Context, req *grpc.RetagRequest) (*emptypb.E
 		return nil, err
 	}
 
-	flow.logToWorkflow(ctx, time.Now(), d.wfData, "Changed workflow tag: %s -> %s.", req.GetTag(), d.rev().ID.String())
+	flow.tagLogToWorkflow(ctx, time.Now(), d, "Changed workflow tag: %s -> %s.", req.GetTag(), d.rev().ID.String())
 	flow.pubsub.NotifyWorkflow(d.wf)
 
 respond:

@@ -164,8 +164,8 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 
 	t := time.Now()
 	engine.pubsub.NotifyInstances(d.ns())
-	engine.logToNamespace(ctx, t, d.ns(), "Workflow '%s' has been triggered by %s.", args.Path, args.Caller)
-	engine.logToWorkflow(ctx, t, d.wfData, "Instance '%s' created by %s.", im.ID().String(), args.Caller)
+	engine.tagLogToNamespace(ctx, t, d, "Workflow '%s' has been triggered by %s.", args.Path, args.Caller)
+	engine.tagLogToWorkflow(ctx, t, d, "Instance '%s' created by %s.", im.ID().String(), args.Caller)
 	engine.tagLogToInstance(ctx, t, im, "Preparing workflow triggered by %s.", args.Caller)
 
 	// Broadcast Event

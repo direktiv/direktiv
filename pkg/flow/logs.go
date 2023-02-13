@@ -24,10 +24,39 @@ type logMessage struct {
 	tag map[string]string
 }
 
-type tagedInstance interface {
+type taggedInstance interface {
 	tags() map[string]string
 	instance() *ent.Instance
 	//addTag(t, v string)
+}
+
+type taggedNamespace interface {
+	tags() map[string]string
+	ns() *ent.Namespace
+	//addTag(t, v string)
+}
+
+type taggedWfData interface {
+	tags() map[string]string
+	wD() *wfData
+	//addTag(t, v string)
+}
+
+func instanceTags(in *ent.Instance) map[string]string {
+	tags := make(map[string]string)
+	tags["ins-name"] = in.String()
+	tags["ins-as"] = in.As
+	tags["ins-invoker"] = in.Invoker
+	if in.Edges.Namespace != nil {
+		tags["ins-namespace-name"] = in.Edges.Namespace.Name
+	}
+	return tags
+}
+
+func namespaceTags(n *ent.Namespace) map[string]string {
+	tags := make(map[string]string)
+	tags["ns-name"] = n.Name
+	return tags
 }
 
 func (srv *server) startLogWorkers(n int) {
@@ -90,11 +119,7 @@ func (srv *server) workerLogToServer(l *logMessage) {
 
 func (srv *server) workerLogToNamespace(l *logMessage) {
 
-	logc := srv.db.LogMsg
-
-	util.Trace(l.ctx, l.msg)
-
-	_, err := logc.Create().SetMsg(l.msg).SetNamespace(l.ns).SetT(l.t).Save(context.Background())
+	err := srv.storeLogMsg(l)
 	if err != nil {
 		srv.sugar.Error(err)
 		return
@@ -111,16 +136,11 @@ func (srv *server) workerLogToNamespace(l *logMessage) {
 
 func (srv *server) workerLogToWorkflow(l *logMessage) {
 
-	logc := srv.db.LogMsg
-
-	util.Trace(l.ctx, l.msg)
-
-	_, err := logc.Create().SetMsg(l.msg).SetWorkflow(l.wf.wf).SetT(l.t).Save(context.Background())
+	err := srv.storeLogMsg(l)
 	if err != nil {
 		srv.sugar.Error(err)
 		return
 	}
-
 	span := trace.SpanFromContext(l.ctx)
 	tid := span.SpanContext().TraceID()
 
@@ -173,65 +193,57 @@ func (srv *server) logToServer(ctx context.Context, t time.Time, msg string, a .
 
 }
 
-func (srv *server) logToNamespace(ctx context.Context, t time.Time, ns *ent.Namespace, msg string, a ...interface{}) {
+func (srv *server) tagLogToNamespace(ctx context.Context, t time.Time, tn taggedNamespace, msg string, a ...interface{}) {
 
 	defer func() {
 		_ = recover()
 	}()
 
+	srv.logQueue <- &logMessage{
+		ctx: ctx,
+		t:   t,
+		msg: fmt.Sprintf(msg, a...),
+		ns:  tn.ns(),
+		tag: tn.tags(),
+	}
+}
+
+func (srv *server) logToNamespace(ctx context.Context, t time.Time, ns *ent.Namespace, msg string, a ...interface{}) {
+
+	// defer func() {
+	// 	_ = recover()
+	// }()
+	tag := namespaceTags(ns)
 	srv.logQueue <- &logMessage{
 		ctx: ctx,
 		t:   t,
 		msg: fmt.Sprintf(msg, a...),
 		ns:  ns,
+		tag: tag,
 	}
 
 }
 
-func (srv *server) logToWorkflow(ctx context.Context, t time.Time, d *wfData, msg string, a ...interface{}) {
+func (srv *server) tagLogToWorkflow(ctx context.Context, t time.Time, td taggedWfData, msg string, a ...interface{}) {
 
-	defer func() {
-		_ = recover()
-	}()
+	// defer func() {
+	// 	_ = recover()
+	// }()
 
 	srv.logQueue <- &logMessage{
 		ctx: ctx,
 		t:   t,
 		msg: fmt.Sprintf(msg, a...),
-		wf:  d,
+		wf:  td.wD(),
+		tag: td.tags(),
 	}
 
 }
 
-//log To instance with string interpolation.
-func (srv *server) logToInstance(ctx context.Context, t time.Time, in *ent.Instance, msg string, a ...interface{}) {
-
-	msg = fmt.Sprintf(msg, a...)
-
-	srv.logToInstanceRaw(ctx, t, in, msg)
-
-}
-
-func (srv *server) tagLogToInstance(ctx context.Context, t time.Time, ti tagedInstance, msg string, a ...interface{}) {
+func (srv *server) tagLogToInstance(ctx context.Context, t time.Time, ti taggedInstance, msg string, a ...interface{}) {
 
 	msg = fmt.Sprintf(msg, a...)
 	srv.tagLogToInstanceRaw(ctx, t, ti.instance(), ti.tags(), msg)
-
-}
-
-// log To instance with raw string.
-func (srv *server) logToInstanceRaw(ctx context.Context, t time.Time, in *ent.Instance, msg string) {
-
-	defer func() {
-		_ = recover()
-	}()
-
-	srv.logQueue <- &logMessage{
-		ctx: ctx,
-		t:   t,
-		msg: msg,
-		in:  in,
-	}
 
 }
 
@@ -342,10 +354,23 @@ func (srv *server) storeLogMsg(l *logMessage) error {
 	if err != nil {
 		return fmt.Errorf("starting a transaction: %w", err)
 	}
-	lDB, err := tx.LogMsg.Create().SetMsg(l.msg).SetInstance(l.in).SetT(l.t).Save(ctx)
+	lc := tx.LogMsg.Create().SetMsg(l.msg).SetT(l.t)
+	if l.in != nil {
+		lc.SetInstance(l.in)
+	}
+	if l.ns != nil {
+		lc.SetNamespace(l.ns)
+	}
+	if l.wf != nil {
+		lc.SetWorkflow(l.wf.wf)
+	}
+	lDB, err := lc.Save(ctx)
 	if err != nil {
 		srv.sugar.Error(err)
 		return fmt.Errorf("failed creating the Logmsg: %w", err)
+	}
+	if l.tag == nil {
+		return tx.Commit()
 	}
 	var bt []*ent.LogTagCreate
 	for k, v := range l.tag {

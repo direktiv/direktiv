@@ -126,6 +126,16 @@ type nodeData struct {
 	path, dir, base string
 }
 
+func (d *nodeData) tags() map[string]string {
+	tags := make(map[string]string)
+	tags["nd-ino-name"] = d.ino.Name
+	tags["nd-ino-type"] = d.ino.Type
+	tags["nd-path"] = d.path
+	tags["nd-dir"] = d.dir
+	tags["nd-base"] = d.base
+	return tags
+}
+
 func (d *nodeData) ns() *ent.Namespace {
 	return d.ino.Edges.Namespace
 }
@@ -343,6 +353,19 @@ type wfData struct {
 	wf *ent.Workflow
 }
 
+func (w *wfData) tags() map[string]string {
+	tags := make(map[string]string)
+	tags["wf-base"] = w.base
+	tags["wf-dir"] = w.dir
+	tags["wf-namespace"] = w.namespace()
+	tags["wf-value"] = w.wf.String()
+	return tags
+}
+
+func (w *wfData) wD() *wfData {
+	return w
+}
+
 func (srv *server) traverseToWorkflow(ctx context.Context, nsc *ent.NamespaceClient, namespace, path string) (*wfData, error) {
 
 	nd, err := srv.traverseToInode(ctx, nsc, namespace, path)
@@ -417,6 +440,16 @@ func (d *refData) rev() *ent.Revision {
 	return d.ref.Edges.Revision
 }
 
+func (d *refData) tags() map[string]string {
+	tag := d.wfData.tags()
+	tag["wf-ref"] = d.ref.Name
+	return tag
+}
+
+func (d *refData) wD() *wfData {
+	return d.wfData
+}
+
 type lookupRefAndRevArgs struct {
 	wf        *ent.Workflow
 	reference string
@@ -487,13 +520,10 @@ func (d *instData) namespace() string {
 }
 
 func (d *instData) tags() map[string]string {
-	tag := make(map[string]string)
-	if d.in.Edges.Namespace == nil {
-		tag["nil"] = "nil" //TODO: handle this case
-		return tag
-	}
-	tag["Namespace"] = d.namespace()
-	tag["base"] = d.base
+	tag := instanceTags(d.in)
+	tag["ins-namespace"] = d.namespace()
+	tag["ins-base"] = d.base
+	tag["ins-dir"] = d.dir
 	return tag
 }
 
@@ -696,6 +726,14 @@ func (d *nsvarData) ns() *ent.Namespace {
 	return d.vref.Edges.Namespace
 }
 
+func (d *nsvarData) tags() map[string]string {
+	tag := namespaceTags(d.vref.Edges.Namespace)
+	tag["nsvar-name"] = d.vref.Name
+	tag["nsvar-behaviour"] = d.vref.Behaviour
+	tag["nsvar-vdata-mime"] = d.vdata.MimeType
+	return tag
+}
+
 func (srv *server) traverseToNamespaceVariable(ctx context.Context, nsc *ent.NamespaceClient, namespace, key string, load bool) (*nsvarData, error) {
 
 	ns, err := srv.getNamespace(ctx, nsc, namespace)
@@ -746,6 +784,16 @@ type wfvarData struct {
 	*wfData
 	vref  *ent.VarRef
 	vdata *ent.VarData
+}
+
+func (d *wfvarData) tags() map[string]string {
+	tag := d.wfData.tags()
+	tag["wf-vref"] = d.vref.Name
+	return tag
+}
+
+func (d *wfvarData) wD() *wfData {
+	return d.wfData
 }
 
 func (srv *server) traverseToWorkflowVariable(ctx context.Context, nsc *ent.NamespaceClient, namespace, path, key string, load bool) (*wfvarData, error) {
@@ -799,6 +847,13 @@ type instvarData struct {
 	*instData
 	vref  *ent.VarRef
 	vdata *ent.VarData
+}
+
+func (ivd *instvarData) tags() map[string]string {
+	tags := ivd.instData.tags()
+	tags["id-vref"] = ivd.vref.Name
+	tags["id-vref-behaviour"] = ivd.vref.Behaviour
+	return tags
 }
 
 func (srv *server) traverseToInstanceVariable(ctx context.Context, nsc *ent.NamespaceClient, namespace, instance, key string, load bool) (*instvarData, error) {
@@ -925,6 +980,14 @@ func (d *nsAnnotationData) ns() *ent.Namespace {
 	return d.annotation.Edges.Namespace
 }
 
+func (d *nsAnnotationData) tags() map[string]string {
+	tags := make(map[string]string)
+	tags["anno-name"] = d.annotation.Name
+	tags["anno-type-mime"] = d.annotation.MimeType
+	tags["namespace"] = d.annotation.Edges.Namespace.Name
+	return tags
+}
+
 func (srv *server) traverseToNamespaceAnnotation(ctx context.Context, nsc *ent.NamespaceClient, namespace, key string) (*nsAnnotationData, error) {
 
 	ns, err := srv.getNamespace(ctx, nsc, namespace)
@@ -953,6 +1016,16 @@ func (srv *server) traverseToNamespaceAnnotation(ctx context.Context, nsc *ent.N
 type wfAnnotationData struct {
 	*wfData
 	annotation *ent.Annotation
+}
+
+func (d *wfAnnotationData) tags() map[string]string {
+	tag := d.wfData.tags()
+	tag["wf-anno"] = d.annotation.Name
+	return tag
+}
+
+func (d *wfAnnotationData) wD() *wfData {
+	return d.wfData
 }
 
 func (srv *server) traverseToWorkflowAnnotation(ctx context.Context, nsc *ent.NamespaceClient, namespace, path, key string) (*wfAnnotationData, error) {
@@ -984,6 +1057,12 @@ func (srv *server) traverseToWorkflowAnnotation(ctx context.Context, nsc *ent.Na
 type instAnnotationData struct {
 	*instData
 	annotation *ent.Annotation
+}
+
+func (iad *instAnnotationData) tags() map[string]string {
+	tags := iad.instData.tags()
+	tags["id-anno"] = iad.annotation.Name
+	return tags
 }
 
 func (srv *server) traverseToInstanceAnnotation(ctx context.Context, nsc *ent.NamespaceClient, namespace, instance, key string) (*instAnnotationData, error) {

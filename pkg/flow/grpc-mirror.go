@@ -224,6 +224,13 @@ type mirData struct {
 	mir *ent.Mirror
 }
 
+func (m *mirData) tags() map[string]string {
+	tags := m.tags()
+	tags["nd-url"] = m.mir.URL
+	tags["nd-ref"] = m.mir.Ref
+	return tags
+}
+
 func (srv *server) traverseToMirror(ctx context.Context, nsc *ent.NamespaceClient, namespace, path string) (*mirData, error) {
 
 	nd, err := srv.traverseToInode(ctx, nsc, namespace, path)
