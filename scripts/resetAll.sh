@@ -47,15 +47,24 @@ kubectl apply -f https://github.com/knative/operator/releases/download/knative-v
 kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=knative-operator
 
 CACERT=$dir/registry/share/out/ca.cert.pem
+
+
+# knative
+kubectl create namespace knative-serving
+kubectl annotate ns knative-serving linkerd.io/inject=enabled
+
 echo "checking for ca $CACERT"
 if test -f "$CACERT"; then
   echo "using ca-cert"
-  helm install -n knative-serving --set-file=certificate=$CACERT --create-namespace knative-serving direktiv/knative-instance
+  kubectl create secret generic self-signed-registry -n knative-serving --from-file=ca.crt=$CACERT
+  helm install -n knative-serving --set certificate=self-signed-registry knative-serving direktiv/knative-instance
 else
   echo "not using ca-cert"
-  helm install -n knative-serving --create-namespace knative-serving direktiv/knative-instance
+  helm install -n knative-serving knative-serving direktiv/knative-instance
 fi
 
+
+exit 1
 kubectl delete --all -n postgres persistentvolumeclaims
 kubectl delete --all -n default persistentvolumeclaims
 
