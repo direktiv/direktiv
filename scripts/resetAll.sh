@@ -51,7 +51,7 @@ CACERT=$dir/registry/share/out/ca.cert.pem
 
 # knative
 kubectl create namespace knative-serving
-kubectl annotate ns knative-serving linkerd.io/inject=enabled
+#kubectl annotate ns knative-serving linkerd.io/inject=enabled
 
 echo "checking for ca $CACERT"
 if test -f "$CACERT"; then
@@ -63,8 +63,6 @@ else
   helm install -n knative-serving knative-serving direktiv/knative-instance
 fi
 
-
-exit 1
 kubectl delete --all -n postgres persistentvolumeclaims
 kubectl delete --all -n default persistentvolumeclaims
 
