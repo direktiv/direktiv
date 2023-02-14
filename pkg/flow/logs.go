@@ -354,7 +354,12 @@ func (srv *server) storeLogMsg(l *logMessage) error {
 		return fmt.Errorf("starting a transaction: %w", err)
 	}
 	defer rollback(tx)
-	lc := tx.LogMsg.Create().SetMsg(l.msg).SetT(l.t)
+	t := ""
+	for k, v := range l.tag {
+		t += fmt.Sprintf("[%s:%s]", k, v)
+	}
+	//lc := tx.LogMsg.Create().SetMsg(t + " -> " + l.msg).SetT(l.t) //TODO
+	lc := tx.LogMsg.Create().SetMsg(t).SetT(l.t)
 	if l.in != nil {
 		lc.SetInstance(l.in)
 	}

@@ -272,7 +272,7 @@ func (logic *forEachLogic) processActionResults(ctx context.Context, children []
 		return nil, derrors.NewInternalError(errors.New("incorrect child action ID"))
 	}
 
-	logic.Log(ctx, "Child '%s' returned.", id)
+	logic.TagLog(ctx, sd.tags(), "Child '%s' returned.", id)
 
 	if results.ErrorCode != "" {
 

@@ -151,6 +151,34 @@ func (im *instanceMemory) Log(ctx context.Context, a string, x ...interface{}) {
 
 }
 
+func (im *instanceMemory) TagLog(ctx context.Context, tags map[string]string, a string, x ...interface{}) {
+	tc := tagedChild{
+		tag: tags,
+		im:  im,
+	}
+	im.engine.logToInstance(ctx, time.Now(), &tc, a, x...)
+}
+
+type tagedChild struct {
+	tag map[string]string
+	im  *instanceMemory
+}
+
+func (c *tagedChild) tags() map[string]string {
+	t := make(map[string]string)
+	for k, v := range c.im.tags() {
+		t[k] = v
+	}
+	for k, v := range c.tag {
+		t[k] = v
+	}
+	return t
+}
+
+func (c *tagedChild) instance() *ent.Instance {
+	return c.im.in
+}
+
 func (im *instanceMemory) Raise(ctx context.Context, err *derrors.CatchableError) error {
 
 	return im.engine.InstanceRaise(ctx, im, err)

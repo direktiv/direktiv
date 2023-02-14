@@ -23,6 +23,7 @@ type Instance interface {
 	Sleep(ctx context.Context, d time.Duration, x interface{}) error
 	Raise(ctx context.Context, err *derrors.CatchableError) error
 	Log(ctx context.Context, a string, x ...interface{})
+	TagLog(ctx context.Context, tags map[string]string, a string, x ...interface{})
 	SetVariables(ctx context.Context, vars []VariableSetter) error
 	BroadcastCloudevent(ctx context.Context, event *cloudevents.Event, dd int64) error
 	ListenForEvents(ctx context.Context, events []*model.ConsumeEventDefinition, all bool) error
@@ -53,6 +54,14 @@ type ChildInfo struct {
 	Attempts    int
 	Results     interface{}
 	ServiceName string
+}
+
+func (ci *ChildInfo) tags() map[string]string {
+	tags := make(map[string]string)
+	tags["child-id"] = ci.ID
+	tags["child-type"] = ci.Type
+	tags["child-servicename"] = ci.ServiceName
+	return tags
 }
 
 type VariableSelector struct {
