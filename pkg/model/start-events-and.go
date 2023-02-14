@@ -13,9 +13,7 @@ type EventsAndStart struct {
 func (o *EventsAndStart) GetEvents() []StartEventDefinition {
 	events := make([]StartEventDefinition, 0)
 	if o != nil && o.Events != nil {
-		for i := range o.Events {
-			events = append(events, o.Events[i])
-		}
+		events = append(events, o.Events...)
 	}
 	return events
 }

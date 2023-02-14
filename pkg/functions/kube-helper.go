@@ -116,10 +116,7 @@ func createVolumes() []corev1.Volume {
 		},
 	}
 
-	for i := range functionsConfig.extraVolumes {
-		vols := functionsConfig.extraVolumes[i]
-		volumes = append(volumes, vols)
-	}
+	volumes = append(volumes, functionsConfig.extraVolumes...)
 
 	return volumes
 

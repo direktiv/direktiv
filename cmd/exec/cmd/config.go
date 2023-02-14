@@ -1,4 +1,4 @@
-package main
+package cmd
 
 import (
 	"bytes"
@@ -36,37 +36,37 @@ type ConfigFile struct {
 }
 
 var config ConfigFile
-var globbers []glob.Glob
+var Globbers []glob.Glob
 
 func loadConfig(cmd *cobra.Command) {
 
 	chdir, err := cmd.Flags().GetString("directory")
 	if err != nil {
-		fail("error loading 'directory' flag: %v", err)
+		Fail("error loading 'directory' flag: %v", err)
 	}
 
 	if chdir != "" && chdir != "." {
 		err = os.Chdir(chdir)
 		if err != nil {
-			fail("error chanding directory: %v", err)
+			Fail("error chanding directory: %v", err)
 		}
-		printlog("changed to directory: %s", chdir)
+		Printlog("changed to directory: %s", chdir)
 	}
 
 	path := findConfig()
 
-	globbers = make([]glob.Glob, 0)
+	Globbers = make([]glob.Glob, 0)
 	for idx, pattern := range config.Ignore {
 		g, err := glob.Compile(pattern)
 		if err != nil {
-			fail("failed to parse %dth ignore pattern: %w", idx, err)
+			Fail("Failed to parse %dth ignore pattern: %w", idx, err)
 		}
-		globbers = append(globbers, g)
+		Globbers = append(Globbers, g)
 	}
 
 	profile, err := cmd.Flags().GetString("profile")
 	if err != nil {
-		fail("error loading 'profile' flag: %v", err)
+		Fail("error loading 'profile' flag: %v", err)
 	}
 
 	config.profile = profile
@@ -82,7 +82,7 @@ func loadConfig(cmd *cobra.Command) {
 		}
 
 		if cp == nil {
-			fail("error loading profile '%s': no profile exists by this name in the config file", config.profile)
+			Fail("error loading profile '%s': no profile exists by this name in the config file", config.profile)
 		}
 
 	} else if len(config.Profiles) > 0 {
@@ -108,7 +108,7 @@ func loadConfig(cmd *cobra.Command) {
 
 		err = viper.ReadConfig(bytes.NewReader(data))
 		if err != nil {
-			fail("error reading config: %v", err)
+			Fail("error reading config: %v", err)
 		}
 
 	}
@@ -119,7 +119,7 @@ func findConfig() string {
 
 	dir, err := filepath.Abs(".")
 	if err != nil {
-		fail("failed to locate place in filesystem: %v\n", err)
+		Fail("Failed to locate place in filesystem: %v\n", err)
 	}
 
 	for prev := ""; dir != prev; dir = filepath.Dir(dir) {
@@ -130,18 +130,18 @@ func findConfig() string {
 
 			data, err := os.ReadFile(path)
 			if err != nil {
-				fail("failed to read config file: %v", err)
+				Fail("Failed to read config file: %v", err)
 			}
 
 			err = yaml.Unmarshal(data, &config)
 			if err != nil {
-				fail("failed to parse config file: %v", err)
+				Fail("Failed to parse config file: %v", err)
 			}
 
 			if len(config.Profiles) > 0 {
 				if config.Addr != "" || config.ID != "" || config.Auth != "" || config.MaxSize != 0 ||
 					config.Namespace != "" || config.Path != "" {
-					fail("config file cannot have top-level values alongside profiles")
+					Fail("config file cannot have top-level values alongside profiles")
 				}
 			}
 
@@ -161,18 +161,18 @@ func getAddr() string {
 
 	addr := viper.GetString("addr")
 	if addr == "" {
-		fail("addr undefined: ensure it is set as a flag, environment variable, or in the config file")
+		Fail("addr undefined: ensure it is set as a flag, environment variable, or in the config file")
 	}
 
 	return addr
 
 }
 
-func getNamespace() string {
+func GetNamespace() string {
 
 	namespace := viper.GetString("namespace")
 	if namespace == "" {
-		fail("namespace undefined: ensure it is set as a flag, environment variable, or in the config file")
+		Fail("namespace undefined: ensure it is set as a flag, environment variable, or in the config file")
 	}
 
 	return namespace
@@ -185,46 +185,46 @@ func getInsecure() bool {
 
 }
 
-func getTLSConfig() *tls.Config {
+func GetTLSConfig() *tls.Config {
 
 	return &tls.Config{InsecureSkipVerify: getInsecure()} //nolint:gosec
 
 }
 
-func getAuth() string {
+func GetAuth() string {
 
 	return viper.GetString("auth")
 }
 
-func addAuthHeaders(req *http.Request) {
-	req.Header.Add("Direktiv-Token", getAuth())
+func AddAuthHeaders(req *http.Request) {
+	req.Header.Add("Direktiv-Token", GetAuth())
 }
 
-func addSSEAuthHeaders(client *sse.Client) {
-	client.Headers["Direktiv-Token"] = getAuth()
+func AddSSEAuthHeaders(client *sse.Client) {
+	client.Headers["Direktiv-Token"] = GetAuth()
 }
 
-func getRelativePath(configPath, targpath string) string {
+func GetRelativePath(configPath, targpath string) string {
 
 	var err error
 
 	if !filepath.IsAbs(configPath) {
 		configPath, err = filepath.Abs(configPath)
 		if err != nil {
-			fail("failed to determine absolute path: %v", err)
+			Fail("Failed to determine absolute path: %v", err)
 		}
 	}
 
 	if !filepath.IsAbs(targpath) {
 		targpath, err = filepath.Abs(targpath)
 		if err != nil {
-			fail("failed to determine absolute path: %v", err)
+			Fail("Failed to determine absolute path: %v", err)
 		}
 	}
 
 	s, err := filepath.Rel(configPath, targpath)
 	if err != nil {
-		fail("failed to generate relative path: %v", err)
+		Fail("Failed to generate relative path: %v", err)
 	}
 
 	path := filepath.ToSlash(s)
@@ -237,24 +237,25 @@ func getRelativePath(configPath, targpath string) string {
 
 }
 
-func getPath(targpath string) string {
+func GetPath(targpath string) string {
 
 	path := viper.GetString("path")
 
 	if path != "" {
-		path = strings.Trim(path, "/")
+		fj := filepath.Join(path, filepath.Base(targpath))
+		path = strings.Trim(fj, "/")
 		return path
 	}
 
 	// if config file was found automatically, generate path relative to config dir
 
-	configPath := getConfigPath()
+	configPath := GetConfigPath()
 
-	return getRelativePath(configPath, targpath)
+	return GetRelativePath(configPath, targpath)
 
 }
 
-func getConfigPath() string {
+func GetConfigPath() string {
 
 	if config.path != "" {
 

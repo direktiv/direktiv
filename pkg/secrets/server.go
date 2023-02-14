@@ -182,7 +182,7 @@ func (s *Server) GetSecrets(ctx context.Context, in *secretsgrpc.GetSecretsReque
 	logger.Debugf("%d secrets found", len(names))
 
 	// root folder can be empty
-	if len(names) == 0 && len(in.GetName()) > 0 {
+	if len(names) == 0 && !(in.GetName() == "/" || in.GetName() == "") {
 		err = status.Error(codes.NotFound, fmt.Sprintf("folder %s does not exist", in.GetName()))
 		return &resp, err
 	}
