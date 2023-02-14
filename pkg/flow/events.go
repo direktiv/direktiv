@@ -1006,7 +1006,7 @@ func (events *events) listenForEvents(ctx context.Context, im *instanceMemory, c
 		return err
 	}
 
-	events.tagLogToInstance(ctx, time.Now(), im, "Registered to receive events.")
+	events.logToInstance(ctx, time.Now(), im, "Registered to receive events.")
 
 	return nil
 

@@ -354,11 +354,10 @@ type wfData struct {
 }
 
 func (w *wfData) tags() map[string]string {
-	tags := make(map[string]string)
+	tags := w.nodeData.tags()
 	tags["wf-base"] = w.base
 	tags["wf-dir"] = w.dir
 	tags["wf-namespace"] = w.namespace()
-	tags["wf-value"] = w.wf.String()
 	return tags
 }
 
@@ -520,10 +519,10 @@ func (d *instData) namespace() string {
 }
 
 func (d *instData) tags() map[string]string {
-	tag := instanceTags(d.in)
-	tag["ins-namespace"] = d.namespace()
-	tag["ins-base"] = d.base
-	tag["ins-dir"] = d.dir
+	tag := d.nodeData.tags()
+	for k, v := range instanceTags(d.in) {
+		tag[k] = v
+	}
 	return tag
 }
 

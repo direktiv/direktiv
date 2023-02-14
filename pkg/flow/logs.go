@@ -44,7 +44,6 @@ type taggedWfData interface {
 
 func instanceTags(in *ent.Instance) map[string]string {
 	tags := make(map[string]string)
-	tags["ins-name"] = in.String()
 	tags["ins-as"] = in.As
 	tags["ins-invoker"] = in.Invoker
 	if in.Edges.Namespace != nil {
@@ -210,9 +209,9 @@ func (srv *server) tagLogToNamespace(ctx context.Context, t time.Time, tn tagged
 
 func (srv *server) logToNamespace(ctx context.Context, t time.Time, ns *ent.Namespace, msg string, a ...interface{}) {
 
-	// defer func() {
-	// 	_ = recover()
-	// }()
+	defer func() {
+		_ = recover()
+	}()
 	tag := namespaceTags(ns)
 	srv.logQueue <- &logMessage{
 		ctx: ctx,
@@ -226,9 +225,9 @@ func (srv *server) logToNamespace(ctx context.Context, t time.Time, ns *ent.Name
 
 func (srv *server) tagLogToWorkflow(ctx context.Context, t time.Time, td taggedWfData, msg string, a ...interface{}) {
 
-	// defer func() {
-	// 	_ = recover()
-	// }()
+	defer func() {
+		_ = recover()
+	}()
 
 	srv.logQueue <- &logMessage{
 		ctx: ctx,
@@ -240,15 +239,15 @@ func (srv *server) tagLogToWorkflow(ctx context.Context, t time.Time, td taggedW
 
 }
 
-func (srv *server) tagLogToInstance(ctx context.Context, t time.Time, ti taggedInstance, msg string, a ...interface{}) {
+func (srv *server) logToInstance(ctx context.Context, t time.Time, ti taggedInstance, msg string, a ...interface{}) {
 
 	msg = fmt.Sprintf(msg, a...)
-	srv.tagLogToInstanceRaw(ctx, t, ti.instance(), ti.tags(), msg)
+	srv.logToInstanceRaw(ctx, t, ti.instance(), ti.tags(), msg)
 
 }
 
 // log To instance with raw string.
-func (srv *server) tagLogToInstanceRaw(ctx context.Context, t time.Time, in *ent.Instance, tag map[string]string, msg string) {
+func (srv *server) logToInstanceRaw(ctx context.Context, t time.Time, in *ent.Instance, tag map[string]string, msg string) {
 
 	defer func() {
 		_ = recover()
@@ -266,7 +265,7 @@ func (srv *server) tagLogToInstanceRaw(ctx context.Context, t time.Time, in *ent
 
 func (engine *engine) UserLog(ctx context.Context, im *instanceMemory, msg string, a ...interface{}) {
 
-	engine.tagLogToInstance(ctx, time.Now(), im, msg, a...)
+	engine.logToInstance(ctx, time.Now(), im, msg, a...)
 
 	s := fmt.Sprintf(msg, a...)
 
@@ -301,7 +300,7 @@ func (engine *engine) logRunState(ctx context.Context, im *instanceMemory, waked
 
 	engine.sugar.Debugf("Running state logic -- %s:%v (%s)", im.ID().String(), im.Step(), im.logic.GetID())
 	if im.GetMemory() == nil && len(wakedata) == 0 && err == nil {
-		engine.tagLogToInstance(ctx, time.Now(), im, "Running state logic (step:%v) -- %s", im.Step(), im.logic.GetID())
+		engine.logToInstance(ctx, time.Now(), im, "Running state logic (step:%v) -- %s", im.Step(), im.logic.GetID())
 	}
 
 }
@@ -354,6 +353,7 @@ func (srv *server) storeLogMsg(l *logMessage) error {
 	if err != nil {
 		return fmt.Errorf("starting a transaction: %w", err)
 	}
+	defer rollback(tx)
 	lc := tx.LogMsg.Create().SetMsg(l.msg).SetT(l.t)
 	if l.in != nil {
 		lc.SetInstance(l.in)

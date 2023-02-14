@@ -108,7 +108,7 @@ func (internal *internal) ActionLog(ctx context.Context, req *grpc.ActionLogRequ
 	}
 
 	for _, msg := range req.GetMsg() {
-		internal.tagLogToInstanceRaw(ctx, t, d.in, d.tags(), msg)
+		internal.logToInstanceRaw(ctx, t, d.in, d.tags(), msg)
 	}
 
 	var resp emptypb.Empty

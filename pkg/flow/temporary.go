@@ -147,7 +147,7 @@ func (im *instanceMemory) ListenForEvents(ctx context.Context, events []*model.C
 
 func (im *instanceMemory) Log(ctx context.Context, a string, x ...interface{}) {
 
-	im.engine.tagLogToInstance(ctx, time.Now(), im, a, x...)
+	im.engine.logToInstance(ctx, time.Now(), im, a, x...)
 
 }
 

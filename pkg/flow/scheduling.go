@@ -27,7 +27,7 @@ func (engine *engine) WakeInstanceCaller(ctx context.Context, im *instanceMemory
 
 	if caller != nil {
 
-		engine.tagLogToInstance(ctx, time.Now(), im, "Reporting results to calling workflow.")
+		engine.logToInstance(ctx, time.Now(), im, "Reporting results to calling workflow.")
 
 		msg := &actionResultMessage{
 			InstanceID: caller.InstanceID,

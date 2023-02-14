@@ -225,7 +225,7 @@ type mirData struct {
 }
 
 func (m *mirData) tags() map[string]string {
-	tags := m.tags()
+	tags := m.nodeData.tags()
 	tags["nd-url"] = m.mir.URL
 	tags["nd-ref"] = m.mir.Ref
 	return tags
