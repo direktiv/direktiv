@@ -47,6 +47,12 @@ kubectl apply -f https://github.com/knative/operator/releases/download/knative-v
 kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=knative-operator
 
 CACERT=$dir/registry/share/out/ca.cert.pem
+
+
+# knative
+kubectl create namespace knative-serving
+#kubectl annotate ns knative-serving linkerd.io/inject=enabled
+
 echo "checking for ca $CACERT"
 if test -f "$CACERT"; then
   echo "using ca-cert"
