@@ -49,7 +49,11 @@ func instanceTags(in *ent.Instance) map[string]string {
 	if len(as) > 1 {
 		tags["ins-revision"] = as[1]
 	}
-	tags["ins-invoker"] = in.Invoker
+	invoker := strings.Split(in.Invoker, ":")
+	if len(invoker) > 1 {
+		tags["invoker-id"] = invoker[1]
+	}
+	tags["invoker"] = invoker[0]
 	if in.Edges.Namespace != nil {
 		tags["namespace"] = in.Edges.Namespace.Name
 	}

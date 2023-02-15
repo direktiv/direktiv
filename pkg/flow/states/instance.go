@@ -2,7 +2,6 @@ package states
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
@@ -59,10 +58,10 @@ type ChildInfo struct {
 
 func (ci *ChildInfo) tags() map[string]string {
 	tags := make(map[string]string)
-	tags["child-id"] = ci.ID
+	//tags["child-id"] = ci.ID
 	tags["child-type"] = ci.Type
-	tags["child-servicename"] = ci.ServiceName
-	tags["child-attemts"] = fmt.Sprint(ci.Attempts)
+	//tags["child-servicename"] = ci.ServiceName
+	//tags["child-attemts"] = fmt.Sprint(ci.Attempts)
 	return tags
 }
 

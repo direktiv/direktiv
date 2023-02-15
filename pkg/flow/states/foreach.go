@@ -200,8 +200,9 @@ func (logic *forEachLogic) scheduleAction(ctx context.Context, inputSource inter
 }
 
 func (logic *forEachLogic) scheduleRetryAction(ctx context.Context, retry *actionRetryInfo) error {
-
-	logic.Log(ctx, "Retrying...")
+	tags := retry.Children[retry.Idx].tags()
+	tags["child-id"] = fmt.Sprint(retry.Idx)
+	logic.LogWithTags(ctx, tags, "Retrying...")
 
 	x, err := jqOne(logic.GetInstanceData(), logic.Array)
 	if err != nil {
@@ -268,15 +269,17 @@ func (logic *forEachLogic) processActionResults(ctx context.Context, children []
 
 	id := sd.ID
 
+	tags := sd.tags()
+	tags["child-id"] = fmt.Sprint(idx)
 	if results.ActionID != id {
 		return nil, derrors.NewInternalError(errors.New("incorrect child action ID"))
 	}
 
-	logic.LogWithTags(ctx, sd.tags(), "Child '%s' returned.", id)
+	logic.LogWithTags(ctx, tags, "Child '%s' returned.", id)
 
 	if results.ErrorCode != "" {
 
-		logic.Log(ctx, "[%v] Action raised catchable error '%s': %s.", idx, results.ErrorCode, results.ErrorMessage)
+		logic.LogWithTags(ctx, tags, "[%v] Action raised catchable error '%s': %s.", idx, results.ErrorCode, results.ErrorMessage)
 
 		err = derrors.NewCatchableError(results.ErrorCode, results.ErrorMessage)
 		d, err := preprocessRetry(logic.Action.Retries, sd.Attempts, err)
@@ -284,20 +287,20 @@ func (logic *forEachLogic) processActionResults(ctx context.Context, children []
 			return nil, err
 		}
 
-		logic.Log(ctx, "[%v] Scheduling retry attempt in: %v.", idx, d)
+		logic.LogWithTags(ctx, tags, "[%v] Scheduling retry attempt in: %v.", idx, d)
 
 		return nil, scheduleRetry(ctx, logic.Instance, children, idx, d)
 
 	}
 
 	if results.ErrorMessage != "" {
-		logic.Log(ctx, "Action crashed due to an internal error: %v", results.ErrorMessage)
+		logic.LogWithTags(ctx, tags, "Action crashed due to an internal error: %v", results.ErrorMessage)
 		return nil, derrors.NewInternalError(errors.New(results.ErrorMessage))
 	}
 
 	children[idx].Complete = true
 	completed++
-	logic.Log(ctx, "[%v] Action returned. (%d/%d)", idx, completed, len(children))
+	logic.LogWithTags(ctx, tags, "[%v] Action returned. (%d/%d)", idx, completed, len(children))
 
 	var x interface{}
 
