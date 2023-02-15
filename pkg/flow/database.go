@@ -128,8 +128,10 @@ type nodeData struct {
 
 func (d *nodeData) tags() map[string]string {
 	tags := make(map[string]string)
-	tags["nd-ino-name"] = d.ino.Name
-	tags["nd-ino-type"] = d.ino.Type
+	if d.ino != nil {
+		tags["nd-ino-name"] = d.ino.Name
+		tags["nd-ino-type"] = d.ino.Type
+	}
 	tags["nd-path"] = d.path
 	tags["nd-dir"] = d.dir
 	tags["nd-base"] = d.base

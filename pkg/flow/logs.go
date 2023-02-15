@@ -44,10 +44,14 @@ type taggedWfData interface {
 
 func instanceTags(in *ent.Instance) map[string]string {
 	tags := make(map[string]string)
-	tags["ins-as"] = in.As
+	as := strings.Split(in.As, ":")
+	tags["ins-name"] = as[0]
+	if len(as) > 1 {
+		tags["ins-revision"] = as[1]
+	}
 	tags["ins-invoker"] = in.Invoker
 	if in.Edges.Namespace != nil {
-		tags["ins-namespace-name"] = in.Edges.Namespace.Name
+		tags["namespace"] = in.Edges.Namespace.Name
 	}
 	return tags
 }
@@ -354,12 +358,12 @@ func (srv *server) storeLogMsg(l *logMessage) error {
 		return fmt.Errorf("starting a transaction: %w", err)
 	}
 	defer rollback(tx)
-	t := ""
+	tag := ""
 	for k, v := range l.tag {
-		t += fmt.Sprintf("[%s:%s]", k, v)
+		tag += fmt.Sprintf("[%s:%s]", k, v)
 	}
-	//lc := tx.LogMsg.Create().SetMsg(t + " -> " + l.msg).SetT(l.t) //TODO
-	lc := tx.LogMsg.Create().SetMsg(t).SetT(l.t)
+	lc := tx.LogMsg.Create().SetMsg(tag + " -> " + l.msg).SetT(l.t) //TODO
+	//lc := tx.LogMsg.Create().SetMsg(tag).SetT(l.t)
 	if l.in != nil {
 		lc.SetInstance(l.in)
 	}
