@@ -23,7 +23,7 @@ type Instance interface {
 	Sleep(ctx context.Context, d time.Duration, x interface{}) error
 	Raise(ctx context.Context, err *derrors.CatchableError) error
 	Log(ctx context.Context, a string, x ...interface{})
-	TagLog(ctx context.Context, tags map[string]string, a string, x ...interface{})
+	LogWithTags(ctx context.Context, tags map[string]string, a string, x ...interface{})
 	SetVariables(ctx context.Context, vars []VariableSetter) error
 	BroadcastCloudevent(ctx context.Context, event *cloudevents.Event, dd int64) error
 	ListenForEvents(ctx context.Context, events []*model.ConsumeEventDefinition, all bool) error

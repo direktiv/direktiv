@@ -161,7 +161,7 @@ func (instance *testerInstance) LivingChildren(ctx context.Context) []ChildInfo 
 func (instance *testerInstance) Log(ctx context.Context, a string, x ...interface{}) {
 
 }
-func (instance *testerInstance) TagLog(ctx context.Context, tags map[string]string, a string, x ...interface{}) {
+func (instance *testerInstance) LogWithTags(ctx context.Context, tags map[string]string, a string, x ...interface{}) {
 
 }
 
