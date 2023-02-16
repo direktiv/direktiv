@@ -45,18 +45,18 @@ type taggedWfData interface {
 func instanceTags(in *ent.Instance) map[string]string {
 	tags := make(map[string]string)
 	as := strings.Split(in.As, ":")
-	tags["ins-name"] = as[0]
+	tags["name"] = as[0]
 	if len(as) > 1 {
 		tags["ins-revision"] = as[1]
 	}
 	invoker := strings.Split(in.Invoker, ":")
 	if len(invoker) > 1 {
-		tags["invoker-id"] = invoker[1]
+		tags["inv-id"] = invoker[1]
 	}
-	tags["invoker"] = invoker[0]
-	if in.Edges.Namespace != nil {
-		tags["namespace"] = in.Edges.Namespace.Name
-	}
+	tags["inv"] = invoker[0]
+	// if in.Edges.Namespace != nil {
+	// 	tags["namespace"] = in.Edges.Namespace.Name
+	// }
 	return tags
 }
 
@@ -250,12 +250,12 @@ func (srv *server) tagLogToWorkflow(ctx context.Context, t time.Time, td taggedW
 func (srv *server) logToInstance(ctx context.Context, t time.Time, ti taggedInstance, msg string, a ...interface{}) {
 
 	msg = fmt.Sprintf(msg, a...)
-	srv.logToInstanceRaw(ctx, t, ti.instance(), ti.tags(), msg)
+	srv.logToInstanceRaw(ctx, t, ti, msg)
 
 }
 
 // log To instance with raw string.
-func (srv *server) logToInstanceRaw(ctx context.Context, t time.Time, in *ent.Instance, tag map[string]string, msg string) {
+func (srv *server) logToInstanceRaw(ctx context.Context, t time.Time, ti taggedInstance, msg string) {
 
 	defer func() {
 		_ = recover()
@@ -265,8 +265,8 @@ func (srv *server) logToInstanceRaw(ctx context.Context, t time.Time, in *ent.In
 		ctx: ctx,
 		t:   t,
 		msg: msg,
-		in:  in,
-		tag: tag,
+		in:  ti.instance(),
+		tag: ti.tags(),
 	}
 
 }

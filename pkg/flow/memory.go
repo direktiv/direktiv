@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/ent"
@@ -27,6 +28,8 @@ type instanceMemory struct {
 
 	// stores the events to be fired on schedule
 	eventQueue []string
+
+	invTags map[string]string
 }
 
 func (im *instanceMemory) ID() uuid.UUID {
@@ -167,6 +170,14 @@ func (im *instanceMemory) StoreData(key string, val interface{}) error {
 
 func (im *instanceMemory) tags() map[string]string {
 	tag := instanceTags(im.in)
+	for k, v := range im.invTags {
+		s := strings.Split(k, "-")
+		if s[0] == "inv" {
+			tag[k] = v
+		} else {
+			tag["inv-"+k] = v
+		}
+	}
 	tag["step"] = fmt.Sprint(im.Step())
 	if im.logic == nil {
 		return tag

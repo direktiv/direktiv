@@ -68,28 +68,6 @@ type newInstanceArgs struct {
 	CallerTags map[string]string
 }
 
-type taggedInstanceArgs struct {
-	*newInstanceArgs
-	tag map[string]string
-	im  *instanceMemory
-}
-
-func (ia *taggedInstanceArgs) tags() map[string]string {
-	tags := ia.im.tags()
-	for k, v := range tags {
-		delete(tags, k)
-		tags["inv-"+k] = v
-	}
-	for k, v := range ia.tag {
-		tags[k] = v
-	}
-	return tags
-}
-
-func (ia *taggedInstanceArgs) instance() *ent.Instance {
-	return ia.im.instance()
-}
-
 type subflowCaller struct {
 	InstanceID string
 	State      string
@@ -190,12 +168,8 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 	engine.pubsub.NotifyInstances(d.ns())
 	engine.tagLogToNamespace(ctx, t, d, "Workflow '%s' has been triggered by %s.", args.Path, args.Caller)
 	engine.tagLogToWorkflow(ctx, t, d, "Instance '%s' created by %s.", im.ID().String(), args.Caller)
-	tI := taggedInstanceArgs{
-		im:              im,
-		newInstanceArgs: args,
-	}
-	//TODO: im.addtags(taggedInstanceArgs.tags())
-	engine.logToInstance(ctx, t, &tI, "Preparing workflow triggered by %s.", args.Caller) //
+	im.invTags = args.CallerTags
+	engine.logToInstance(ctx, t, im, "Preparing workflow triggered by %s.", args.Caller) //
 
 	// Broadcast Event
 	err = engine.flow.BroadcastInstance(BroadcastEventTypeInstanceStarted, ctx,
@@ -654,12 +628,7 @@ func (engine *engine) subflowInvoke(ctx context.Context, caller *subflowCaller, 
 
 	args.Input = input
 	args.Caller = fmt.Sprintf("instance:%v", caller.InstanceID)
-	tags := caller.Tags
-	for k, v := range tags {
-		delete(tags, k)
-		tags["caller-"+k] = v
-	}
-	args.CallerTags = tags
+	args.CallerTags = caller.Tags
 	var threadVars []*ent.VarRef
 
 	callerData, err := json.Marshal(caller)
@@ -1073,12 +1042,7 @@ func (engine *engine) EventsInvoke(workflowID string, events ...*cloudevents.Eve
 
 	args.Input = input
 	args.Caller = "cloudevent"
-	tags := d.tags()
-	for k, v := range d.tags() {
-		delete(tags, k)
-		tags["invoker-"+k] = v
-	}
-	args.CallerTags = tags
+	args.CallerTags = d.tags()
 	im, err := engine.NewInstance(ctx, args)
 	if err != nil {
 		engine.sugar.Error(err)

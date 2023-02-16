@@ -56,15 +56,6 @@ type ChildInfo struct {
 	ServiceName string
 }
 
-func (ci *ChildInfo) tags() map[string]string {
-	tags := make(map[string]string)
-	//tags["child-id"] = ci.ID
-	tags["child-type"] = ci.Type
-	//tags["child-servicename"] = ci.ServiceName
-	//tags["child-attemts"] = fmt.Sprint(ci.Attempts)
-	return tags
-}
-
 type VariableSelector struct {
 	Scope string
 	Key   string

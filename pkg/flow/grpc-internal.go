@@ -109,7 +109,7 @@ func (internal *internal) ActionLog(ctx context.Context, req *grpc.ActionLogRequ
 
 	for _, msg := range req.GetMsg() {
 		//internal.logToInstanceRaw(ctx, t, d.in, d.tags(), msg)
-		internal.logToInstanceRaw(ctx, t, d.in, nil, msg)
+		internal.logToInstanceRaw(ctx, t, d, msg)
 	}
 
 	var resp emptypb.Empty

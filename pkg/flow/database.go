@@ -132,9 +132,9 @@ func (d *nodeData) tags() map[string]string {
 		tags["nd-ino-name"] = d.ino.Name
 		tags["nd-ino-type"] = d.ino.Type
 	}
-	tags["nd-path"] = d.path
-	tags["nd-dir"] = d.dir
-	tags["nd-base"] = d.base
+	tags["path"] = d.path
+	tags["dir"] = d.dir
+	tags["base"] = d.base
 	return tags
 }
 
@@ -357,9 +357,7 @@ type wfData struct {
 
 func (w *wfData) tags() map[string]string {
 	tags := w.nodeData.tags()
-	tags["wf-base"] = w.base
-	tags["wf-dir"] = w.dir
-	tags["wf-namespace"] = w.namespace()
+	tags["namespace"] = w.namespace()
 	return tags
 }
 
@@ -521,7 +519,10 @@ func (d *instData) namespace() string {
 }
 
 func (d *instData) tags() map[string]string {
-	tag := d.nodeData.tags()
+	tag := make(map[string]string)
+	if d.nodeData != nil {
+		tag = d.nodeData.tags()
+	}
 	for k, v := range instanceTags(d.in) {
 		tag[k] = v
 	}
