@@ -106,10 +106,11 @@ func (internal *internal) ActionLog(ctx context.Context, req *grpc.ActionLogRequ
 		internal.sugar.Error(err)
 		return nil, err
 	}
-
+	tags := d.tags()
+	tags["actionID"] = req.ActionID
 	for _, msg := range req.GetMsg() {
-		//internal.logToInstanceRaw(ctx, t, d.in, d.tags(), msg)
-		internal.logToInstanceRaw(ctx, t, d, msg)
+		internal.logToInstanceRaw(ctx, t, d.in, tags, msg)
+		//internal.logToInstanceRaw(ctx, t, d, msg)
 	}
 
 	var resp emptypb.Empty

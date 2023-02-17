@@ -37,6 +37,7 @@ message GetNamespaceConfigResponse {
 message ActionLogRequest {
 	string instanceId = 1;
 	repeated string msg = 2;
+	string actionID = 3;
 }
 
 message VariableInternalRequest {

@@ -182,6 +182,7 @@ func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
 	_, err := srv.flow.ActionLog(req.ctx, &grpc.ActionLogRequest{
 		InstanceId: req.instanceId,
 		Msg:        []string{msg},
+		ActionID:   req.actionId,
 	})
 	if err != nil {
 		log.Errorf("Failed to forward log to diretiv: %v.", err)

@@ -763,7 +763,9 @@ func (engine *engine) doActionRequest(ctx context.Context, ar *functionRequest) 
 	// Log warning if timeout exceeds max allowed timeout
 	if actionTimeout := (time.Duration(ar.Workflow.Timeout) * time.Second); actionTimeout > engine.conf.GetFunctionsTimeout() {
 		_, err := engine.internal.ActionLog(context.Background(), &grpc.ActionLogRequest{
-			InstanceId: ar.Workflow.InstanceID, Msg: []string{fmt.Sprintf("Warning: Action timeout '%v' is longer than max allowed duariton '%v'", actionTimeout, engine.conf.GetFunctionsTimeout())},
+			InstanceId: ar.Workflow.InstanceID,
+			Msg:        []string{fmt.Sprintf("Warning: Action timeout '%v' is longer than max allowed duariton '%v'", actionTimeout, engine.conf.GetFunctionsTimeout())},
+			ActionID:   ar.ActionID,
 		})
 		if err != nil {
 			engine.sugar.Errorf("Failed to log: %v.", err)

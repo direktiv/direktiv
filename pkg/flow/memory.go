@@ -182,8 +182,8 @@ func (im *instanceMemory) tags() map[string]string {
 	if im.logic == nil {
 		return tag
 	}
-	tag["state-id"] = im.logic.GetID()
-	tag["state-type"] = im.logic.GetType().String()
+	tag["state"] = im.logic.GetID()
+	tag["type"] = im.logic.GetType().String()
 	return tag
 }
 

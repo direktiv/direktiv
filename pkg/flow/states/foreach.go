@@ -201,7 +201,8 @@ func (logic *forEachLogic) scheduleAction(ctx context.Context, inputSource inter
 
 func (logic *forEachLogic) scheduleRetryAction(ctx context.Context, retry *actionRetryInfo) error {
 	tags := make(map[string]string)
-	tags["child-id"] = fmt.Sprint(retry.Idx)
+	tags["i"] = fmt.Sprint(retry.Idx)
+	tags["actionID"] = retry.Children[retry.Idx].ID
 	logic.LogWithTags(ctx, tags, "Retrying...")
 
 	x, err := jqOne(logic.GetInstanceData(), logic.Array)
@@ -270,7 +271,8 @@ func (logic *forEachLogic) processActionResults(ctx context.Context, children []
 	id := sd.ID
 
 	tags := make(map[string]string)
-	tags["child-id"] = fmt.Sprint(idx)
+	tags["i"] = fmt.Sprint(idx)
+	tags["actionID"] = results.ActionID
 	if results.ActionID != id {
 		return nil, derrors.NewInternalError(errors.New("incorrect child action ID"))
 	}

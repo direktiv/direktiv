@@ -209,7 +209,8 @@ func (logic *actionLogic) processActionResults(ctx context.Context, children []C
 	id := sd.ID
 
 	tags := make(map[string]string)
-	tags["child-id"] = "0"
+	tags["i"] = "0"
+	tags["actionID"] = results.ActionID
 	if results.ActionID != id {
 		return nil, derrors.NewInternalError(errors.New("incorrect child action ID"))
 	}

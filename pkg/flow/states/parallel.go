@@ -245,7 +245,8 @@ func (logic *parallelLogic) processActionResults(ctx context.Context, children [
 	id := sd.ID
 
 	tags := make(map[string]string)
-	tags["child-id"] = fmt.Sprint(idx)
+	tags["i"] = fmt.Sprint(idx)
+	tags["actionID"] = results.ActionID
 	if results.ActionID != id {
 		return nil, derrors.NewInternalError(errors.New("incorrect child action ID"))
 	}
