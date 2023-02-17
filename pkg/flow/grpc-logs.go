@@ -22,14 +22,21 @@ func (flow *flow) ServerLogs(ctx context.Context, req *grpc.ServerLogsRequest) (
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	query := flow.db.LogMsg.Query()
+	query := flow.db.LogMsg.Query().WithLogtag()
 	query = query.Where(entlog.Not(entlog.HasNamespace()), entlog.Not(entlog.HasWorkflow()))
 
 	results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
 	if err != nil {
 		return nil, err
 	}
-
+	var respTag []map[string]string
+	for i := 0; i < len(results); i++ {
+		tags := make(map[string]string)
+		for _, tag := range results[i].Edges.Logtag {
+			tags[tag.Type] = tag.Value
+		}
+		respTag = append(respTag, tags)
+	}
 	resp := new(grpc.ServerLogsResponse)
 	resp.PageInfo = pi
 
@@ -37,7 +44,9 @@ func (flow *flow) ServerLogs(ctx context.Context, req *grpc.ServerLogsRequest) (
 	if err != nil {
 		return nil, err
 	}
-
+	for i := 0; i < len(resp.Results); i++ {
+		resp.Results[i].Tags = respTag[i]
+	}
 	return resp, nil
 
 }
@@ -55,14 +64,21 @@ func (flow *flow) ServerLogsParcels(req *grpc.ServerLogsRequest, srv grpc.Flow_S
 
 resend:
 
-	query := flow.db.LogMsg.Query()
+	query := flow.db.LogMsg.Query().WithLogtag()
 	query = query.Where(entlog.Not(entlog.HasNamespace()), entlog.Not(entlog.HasWorkflow()))
 
 	results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
 	if err != nil {
 		return err
 	}
-
+	var respTag []map[string]string
+	for i := 0; i < len(results); i++ {
+		tags := make(map[string]string)
+		for _, tag := range results[i].Edges.Logtag {
+			tags[tag.Type] = tag.Value
+		}
+		respTag = append(respTag, tags)
+	}
 	resp := new(grpc.ServerLogsResponse)
 	resp.PageInfo = pi
 
@@ -70,7 +86,9 @@ resend:
 	if err != nil {
 		return err
 	}
-
+	for i := 0; i < len(resp.Results); i++ {
+		resp.Results[i].Tags = respTag[i]
+	}
 	if len(resp.Results) != 0 || !tailing {
 
 		tailing = true
@@ -102,13 +120,20 @@ func (flow *flow) NamespaceLogs(ctx context.Context, req *grpc.NamespaceLogsRequ
 		return nil, err
 	}
 
-	query := ns.QueryLogs()
+	query := ns.QueryLogs().WithLogtag()
 
 	results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
 	if err != nil {
 		return nil, err
 	}
-
+	var respTag []map[string]string
+	for i := 0; i < len(results); i++ {
+		tags := make(map[string]string)
+		for _, tag := range results[i].Edges.Logtag {
+			tags[tag.Type] = tag.Value
+		}
+		respTag = append(respTag, tags)
+	}
 	resp := new(grpc.NamespaceLogsResponse)
 	resp.Namespace = ns.Name
 	resp.PageInfo = pi
@@ -117,7 +142,9 @@ func (flow *flow) NamespaceLogs(ctx context.Context, req *grpc.NamespaceLogsRequ
 	if err != nil {
 		return nil, err
 	}
-
+	for i := 0; i < len(resp.Results); i++ {
+		resp.Results[i].Tags = respTag[i]
+	}
 	return resp, nil
 
 }
@@ -140,7 +167,7 @@ func (flow *flow) NamespaceLogsParcels(req *grpc.NamespaceLogsRequest, srv grpc.
 
 resend:
 
-	query := ns.QueryLogs()
+	query := ns.QueryLogs().WithLogtag()
 
 	results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
 	if err != nil {
@@ -150,12 +177,21 @@ resend:
 	resp := new(grpc.NamespaceLogsResponse)
 	resp.Namespace = ns.Name
 	resp.PageInfo = pi
-
+	var respTag []map[string]string
+	for i := 0; i < len(results); i++ {
+		tags := make(map[string]string)
+		for _, tag := range results[i].Edges.Logtag {
+			tags[tag.Type] = tag.Value
+		}
+		respTag = append(respTag, tags)
+	}
 	err = atob(results, &resp.Results)
 	if err != nil {
 		return err
 	}
-
+	for i := 0; i < len(resp.Results); i++ {
+		resp.Results[i].Tags = respTag[i]
+	}
 	if len(resp.Results) != 0 || !tailing {
 
 		tailing = true
@@ -187,13 +223,20 @@ func (flow *flow) WorkflowLogs(ctx context.Context, req *grpc.WorkflowLogsReques
 		return nil, err
 	}
 
-	query := d.wf.QueryLogs()
+	query := d.wf.QueryLogs().WithLogtag()
 
 	results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
 	if err != nil {
 		return nil, err
 	}
-
+	var respTag []map[string]string
+	for i := 0; i < len(results); i++ {
+		tags := make(map[string]string)
+		for _, tag := range results[i].Edges.Logtag {
+			tags[tag.Type] = tag.Value
+		}
+		respTag = append(respTag, tags)
+	}
 	resp := new(grpc.WorkflowLogsResponse)
 	resp.Namespace = d.namespace()
 	resp.Path = d.path
@@ -203,7 +246,9 @@ func (flow *flow) WorkflowLogs(ctx context.Context, req *grpc.WorkflowLogsReques
 	if err != nil {
 		return nil, err
 	}
-
+	for i := 0; i < len(resp.Results); i++ {
+		resp.Results[i].Tags = respTag[i]
+	}
 	return resp, nil
 
 }
@@ -226,13 +271,20 @@ func (flow *flow) WorkflowLogsParcels(req *grpc.WorkflowLogsRequest, srv grpc.Fl
 
 resend:
 
-	query := d.wf.QueryLogs()
+	query := d.wf.QueryLogs().WithLogtag()
 
 	results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
 	if err != nil {
 		return err
 	}
-
+	var respTag []map[string]string
+	for i := 0; i < len(results); i++ {
+		tags := make(map[string]string)
+		for _, tag := range results[i].Edges.Logtag {
+			tags[tag.Type] = tag.Value
+		}
+		respTag = append(respTag, tags)
+	}
 	resp := new(grpc.WorkflowLogsResponse)
 	resp.Namespace = d.namespace()
 	resp.Path = d.path
@@ -242,7 +294,9 @@ resend:
 	if err != nil {
 		return err
 	}
-
+	for i := 0; i < len(resp.Results); i++ {
+		resp.Results[i].Tags = respTag[i]
+	}
 	if len(resp.Results) != 0 || !tailing {
 
 		tailing = true
@@ -274,13 +328,19 @@ func (flow *flow) InstanceLogs(ctx context.Context, req *grpc.InstanceLogsReques
 		return nil, err
 	}
 
-	query := d.in.QueryLogs()
-
+	query := d.in.QueryLogs().WithLogtag()
 	results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
 	if err != nil {
 		return nil, err
 	}
-
+	var respTag []map[string]string
+	for i := 0; i < len(results); i++ {
+		tags := make(map[string]string)
+		for _, tag := range results[i].Edges.Logtag {
+			tags[tag.Type] = tag.Value
+		}
+		respTag = append(respTag, tags)
+	}
 	resp := new(grpc.InstanceLogsResponse)
 	resp.Namespace = d.namespace()
 	resp.Instance = d.in.ID.String()
@@ -290,7 +350,9 @@ func (flow *flow) InstanceLogs(ctx context.Context, req *grpc.InstanceLogsReques
 	if err != nil {
 		return nil, err
 	}
-
+	for i := 0; i < len(resp.Results); i++ {
+		resp.Results[i].Tags = respTag[i]
+	}
 	return resp, nil
 
 }
@@ -313,23 +375,32 @@ func (flow *flow) InstanceLogsParcels(req *grpc.InstanceLogsRequest, srv grpc.Fl
 
 resend:
 
-	query := d.in.QueryLogs()
+	query := d.in.QueryLogs().WithLogtag()
 
 	results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
 	if err != nil {
 		return err
 	}
-
 	resp := new(grpc.InstanceLogsResponse)
 	resp.Namespace = d.namespace()
 	resp.Instance = d.in.ID.String()
 	resp.PageInfo = pi
-
+	var respTag []map[string]string
+	for i := 0; i < len(results); i++ {
+		tags := make(map[string]string)
+		for _, tag := range results[i].Edges.Logtag {
+			tags[tag.Type] = tag.Value
+		}
+		respTag = append(respTag, tags)
+	}
 	err = atob(results, &resp.Results)
+
 	if err != nil {
 		return err
 	}
-
+	for i := 0; i < len(resp.Results); i++ {
+		resp.Results[i].Tags = respTag[i]
+	}
 	if len(resp.Results) != 0 || !tailing {
 
 		tailing = true
