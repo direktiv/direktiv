@@ -57,6 +57,10 @@ linters:
     - godox
     - gosec
     - lll
+    - gocritic
+    - rowserrcheck
+    - gocyclo
+    - nakedret
 
   presets:
     - bugs

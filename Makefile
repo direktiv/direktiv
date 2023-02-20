@@ -364,7 +364,6 @@ upgrade: push # Pushes all images and reboots flow, function, and api pods
 .PHONY: dependencies
 dependencies: # installs tools 
 	go install github.com/google/go-licenses@latest
-	cd build/lint && docker build -t direktiv-linter .
 
 
 .PHONY: license-check 
@@ -380,12 +379,4 @@ unittest: # Runs all Go unit tests. Or, you can run a specific set of unit tests
 
 .PHONY: lint 
 lint: # Runs very strict linting on the project.
-	golangci-lint run --tests --issues-exit-code=1 --skip-dirs="ent/" --skip-files=".pb.go" -E asciicheck -E containedctx -E decorder -E dupword -E errchkjson -E errname -E errorlint -E exportloopref -E goconst -E godot -E gofmt -E goprintffuncname -E loggercheck -E misspell -E nilerr -E noctx -E nosprintfhostport -E unconvert -E usestdlibvars
-	# -E gosec
-	# -E revive
-	# -E contextcheck -E goerr113 -E godox -E interfacebloat -E tagliatelle -E unparam -E varnamelen -E wrapcheck
-
-.PHONY: lint-docker
-lint-docker: # Runs very strict linting on the project.
-	docker run -v `pwd`:/direktiv direktiv-linter 
-
+	docker run --rm -v `pwd`:/app -w /app golangci/golangci-lint golangci-lint run -v
