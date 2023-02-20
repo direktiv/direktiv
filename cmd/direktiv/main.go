@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/direktiv/direktiv/cmd/api"
+	"github.com/direktiv/direktiv/cmd/flow"
 	"github.com/direktiv/direktiv/cmd/secrets"
 	"github.com/direktiv/direktiv/cmd/sidecar"
 	"log"
@@ -19,6 +20,8 @@ func main() {
 		secrets.RunApplication()
 	case "sidecar":
 		sidecar.RunApplication()
+	case "flow":
+		flow.RunApplication()
 	case "":
 		log.Fatalf("error: empty DIREKTIV_APP environment variable.\n")
 	default:

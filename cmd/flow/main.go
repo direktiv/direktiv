@@ -1,4 +1,4 @@
-package main
+package flow
 
 import (
 	"context"
@@ -41,7 +41,7 @@ var (
 	logger *zap.SugaredLogger
 )
 
-func main() {
+func RunApplication() {
 
 	var err error
 

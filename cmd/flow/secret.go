@@ -1,4 +1,4 @@
-package main
+package flow
 
 import (
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
