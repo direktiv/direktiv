@@ -1,0 +1,79 @@
+run:
+  timeout: 5m
+  go: latest
+  issues-exit-code: 1
+  tests: true
+  skip-dirs: ["ent/"]
+  skip-files: [".pb.go"]
+
+linters:
+  disable:
+    - wrapcheck
+    - varnamelen
+    - exhaustivestruct
+    - exhaustruct
+    - golint
+    - wsl
+    - funlen
+    - paralleltest
+    - forbidigo
+    - cyclop
+    - nosnakecase
+    - scopelint
+
+    - gofumpt
+    - nilnil
+    - nlreturn
+    - nonamedreturns
+    - stylecheck
+    - tagliatelle
+    - wastedassign
+    - goerr113
+    - gomnd
+    - testpackage
+    - gochecknoglobals
+    - bodyclose
+    - asasalint
+    - whitespace
+    - predeclared
+    - musttag
+    - maintidx
+    - ireturn
+    - interfacebloat
+    - forcetypeassert
+    - exhaustive
+    - contextcheck
+    - unparam
+    - revive
+    - promlinter
+    - prealloc
+    - nestif
+    - makezero
+    - dogsled
+    - dupl
+    - gci
+    - gochecknoinits
+    - gocognit
+    - godox
+    - gosec
+    - lll
+    - gocritic
+    - rowserrcheck
+    - gocyclo
+    - nakedret
+    - goimports
+
+  presets:
+    - bugs
+    - comment
+    - complexity
+    - error
+    - format
+    - import
+    - metalinter
+    - module
+    - performance
+    - sql
+    - style
+    - test
+    - unused
