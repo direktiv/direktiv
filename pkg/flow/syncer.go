@@ -8,6 +8,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/go-git/go-git/v5/plumbing"
+	gitSSH "github.com/go-git/go-git/v5/plumbing/transport/ssh"
+	"golang.org/x/crypto/ssh"
 	"io"
 	"io/fs"
 	"os"
@@ -21,9 +24,9 @@ import (
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/project"
 	"github.com/direktiv/direktiv/pkg/util"
+	git "github.com/go-git/go-git/v5"
 	"github.com/gobwas/glob"
 	"github.com/google/uuid"
-	git "github.com/libgit2/git2go/v33"
 	"github.com/mitchellh/hashstructure/v2"
 	"gopkg.in/yaml.v3"
 )
@@ -738,8 +741,6 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 	}
 	defer lr.Cleanup()
 
-	// lr.lastCommit = opts.LastCommit
-
 	model, err := buildModel(ctx, lr)
 	if err != nil {
 		return err
@@ -1035,7 +1036,6 @@ type localRepository struct {
 	path          string
 	repo          *repositorySettings
 	gitRepository *git.Repository
-	lastCommit    string
 }
 
 func loadRepository(ctx context.Context, repo *repositorySettings) (*localRepository, error) {
@@ -1056,47 +1056,39 @@ func loadRepository(ctx context.Context, repo *repositorySettings) (*localReposi
 }
 
 func (repository *localRepository) Cleanup() {
-	repository.gitRepository.Free()
 	_ = os.RemoveAll(repository.path)
 }
 
 func (repository *localRepository) clone(ctx context.Context) error {
-
-	checkoutOpts := git.CheckoutOptions{
-		Strategy: git.CheckoutForce,
-	}
-
-	fetchOpts := git.FetchOptions{
-		RemoteCallbacks: git.RemoteCallbacks{
-			CertificateCheckCallback: func(cert *git.Certificate, valid bool, hostname string) error { return nil },
-			CredentialsCallback: func(url string, username_from_url string, allowed_types git.CredentialType) (*git.Credential, error) {
-				cred, err := git.NewCredentialSSHKeyFromMemory(username_from_url, repository.repo.PublicKey, repository.repo.PrivateKey, repository.repo.Passphrase)
-				if err != nil {
-					fmt.Println(err)
-					return nil, err
-				}
-				return cred, err
-			},
-		},
-		ProxyOptions: git.ProxyOptions{
-			Type: git.ProxyTypeAuto,
-		},
-	}
-
 	uri := repository.repo.URL
 	prefix := "https://"
 
+	cloneOptions := &git.CloneOptions{
+		URL:           uri,
+		Progress:      os.Stdout,
+		ReferenceName: plumbing.NewBranchReferenceName(repository.repo.Branch),
+	}
+
+	// https with access token case. Put passphrase inside the git url.
 	if strings.HasPrefix(uri, prefix) && len(repository.repo.Passphrase) > 0 {
 		if !strings.Contains(uri, "@") {
 			uri = fmt.Sprintf("%s%s@", prefix, repository.repo.Passphrase) + strings.TrimPrefix(uri, prefix)
 		}
 	}
 
-	r, err := git.Clone(uri, repository.path, &git.CloneOptions{
-		CheckoutOptions: checkoutOpts,
-		FetchOptions:    fetchOpts,
-		CheckoutBranch:  repository.repo.Branch,
-	})
+	// ssh case. Configure cloneOptions.Auth field.
+	if !strings.HasPrefix(uri, prefix) {
+		publicKeys, err := gitSSH.NewPublicKeys("git", []byte(repository.repo.PrivateKey), repository.repo.Passphrase)
+		if err != nil {
+			return err
+		}
+		publicKeys.HostKeyCallbackHelper = gitSSH.HostKeyCallbackHelper{
+			HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+		}
+		cloneOptions.Auth = publicKeys
+	}
+
+	r, err := git.PlainClone(repository.path, false, cloneOptions)
 
 	if err != nil {
 		return err
@@ -1105,7 +1097,6 @@ func (repository *localRepository) clone(ctx context.Context) error {
 	repository.gitRepository = r
 
 	return nil
-
 }
 
 const (
@@ -1120,7 +1111,6 @@ type mirrorNode struct {
 	children  []*mirrorNode
 	ntype     string
 	name      string
-	change    string
 	extension string
 	isDir     bool
 }
@@ -1345,127 +1335,6 @@ func modelWalk(node *mirrorNode, path string, fn func(path string, n *mirrorNode
 
 }
 
-func (model *mirrorModel) diff(repo *localRepository) error {
-
-	var oldid *git.Oid
-
-	oldref, err := repo.gitRepository.References.Lookup(repo.lastCommit)
-	if err != nil {
-
-		oldid, err = git.NewOid(repo.lastCommit)
-		if err != nil {
-			return err
-		}
-
-	} else {
-
-		defer oldref.Free()
-		oldid = oldref.Target()
-
-		if oldid == nil {
-			href, err := repo.gitRepository.Head()
-			if err != nil {
-				return err
-			}
-			defer href.Free()
-			oldid = href.Target()
-		}
-
-	}
-
-	oldcommit, err := repo.gitRepository.LookupCommit(oldid)
-	if err != nil {
-		return err
-	}
-	defer oldcommit.Free()
-
-	oldtree, err := oldcommit.Tree()
-	if err != nil {
-		return err
-	}
-	defer oldtree.Free()
-
-	href, err := repo.gitRepository.Head()
-	if err != nil {
-		return err
-	}
-	defer href.Free()
-	newid := href.Target()
-
-	newcommit, err := repo.gitRepository.LookupCommit(newid)
-	if err != nil {
-		return err
-	}
-	defer newcommit.Free()
-
-	newtree, err := newcommit.Tree()
-	if err != nil {
-		return err
-	}
-	defer newtree.Free()
-
-	opts, err := git.DefaultDiffOptions()
-	if err != nil {
-		return err
-	}
-
-	diff, err := repo.gitRepository.DiffTreeToTree(oldtree, newtree, &opts)
-	if err != nil {
-		return err
-	}
-	defer func() {
-		_ = diff.Free()
-	}()
-
-	dopts, err := git.DefaultDiffFindOptions()
-	if err != nil {
-		return err
-	}
-
-	err = diff.FindSimilar(&dopts)
-	if err != nil {
-		return err
-	}
-
-	err = diff.ForEach(func(delta git.DiffDelta, progress float64) (git.DiffForEachHunkCallback, error) {
-
-		node, err := model.lookup(delta.NewFile.Path)
-		if errors.Is(err, os.ErrNotExist) {
-			return func(x git.DiffHunk) (git.DiffForEachLineCallback, error) {
-				return func(x git.DiffLine) error {
-					return nil
-				}, nil
-			}, nil
-		}
-		if err != nil {
-			return nil, err
-		}
-
-		switch delta.Status {
-		case git.DeltaAdded:
-			node.change = "added"
-		case git.DeltaModified:
-			node.change = "changed"
-		case git.DeltaRenamed:
-			node.change = fmt.Sprintf("renamed from '%s'", delta.OldFile.Path)
-		default:
-			node.change = delta.Status.String()
-		}
-
-		return func(x git.DiffHunk) (git.DiffForEachLineCallback, error) {
-			return func(x git.DiffLine) error {
-				return nil
-			}, nil
-		}, nil
-	}, git.DiffDetailFiles)
-	if err != nil {
-		return err
-	}
-
-	return nil
-
-}
-
 func buildModel(ctx context.Context, repo *localRepository) (*mirrorModel, error) {
 
 	model := new(mirrorModel)
@@ -1587,13 +1456,6 @@ func buildModel(ctx context.Context, repo *localRepository) (*mirrorModel, error
 	err = model.finalize()
 	if err != nil {
 		return nil, err
-	}
-
-	if repo.lastCommit != "" {
-		err = model.diff(repo)
-		if err != nil {
-			return nil, err
-		}
 	}
 
 	// model.dump()
