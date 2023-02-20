@@ -21,6 +21,6 @@ FROM ubuntu:22.04
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 COPY --from=builder /direktiv /bin/direktiv
 
-ENV DIREKTIV_APP=api
+ENV DIREKTIV_APP=sidecar
 
 CMD ["/bin/direktiv"]
