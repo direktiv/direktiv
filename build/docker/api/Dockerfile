@@ -1,9 +1,26 @@
-FROM gcr.io/distroless/static
+FROM golang:1.19 as builder
 
-USER nonroot:nonroot
+ARG RELEASE_VERSION
+ENV RELEASE=$RELEASE_VERSION
 
-COPY build/api /bin/server
+COPY go.mod src/go.mod
+COPY go.sum src/go.sum
+RUN cd src/ && go mod download
 
-EXPOSE 8080
+COPY pkg src/pkg/
+COPY cmd src/cmd/
+COPY .git .git
 
-CMD ["/bin/server", "-c", "/config/api-config.yaml"]
+RUN --mount=type=cache,target=/root/.cache/go-build cd src && \
+    export GIT_HASH=`git rev-parse --short HEAD` && \
+    export FULL_VERSION="${RELEASE:-$GIT_HASH}"; echo "${v%.*}" && \
+    go build -ldflags "-X github.com/direktiv/direktiv/pkg/version.Version=$FULL_VERSION" -o /direktiv cmd/direktiv/*.go;
+
+FROM ubuntu:22.04
+
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+COPY --from=builder /direktiv /bin/direktiv
+
+ENV DIREKTIV_APP=api
+
+CMD ["/bin/direktiv"]

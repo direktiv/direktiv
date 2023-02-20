@@ -1,4 +1,4 @@
-package main
+package api
 
 import (
 	"log"
@@ -7,8 +7,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/dlog"
 )
 
-func main() {
-
+func RunApiApplication() {
 	logger, err := dlog.ApplicationLogger("api")
 	if err != nil {
 		log.Fatalf("can not get logger: %v", err)
@@ -24,5 +23,4 @@ func main() {
 		logger.Errorf("can not start api server: %v", err)
 		log.Fatal(err.Error())
 	}
-
 }
