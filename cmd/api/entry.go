@@ -7,7 +7,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/dlog"
 )
 
-func RunApiApplication() {
+func RunApplication() {
 	logger, err := dlog.ApplicationLogger("api")
 	if err != nil {
 		log.Fatalf("can not get logger: %v", err)

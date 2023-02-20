@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/direktiv/direktiv/cmd/api"
+	"github.com/direktiv/direktiv/cmd/secrets"
 	"log"
 	"os"
 )
@@ -12,7 +13,9 @@ func main() {
 
 	switch appName {
 	case "api":
-		api.RunApiApplication()
+		api.RunApplication()
+	case "secrets":
+		secrets.RunApplication()
 	case "":
 		log.Fatalf("error: empty DIREKTIV_APP environment variable.\n")
 	default:
