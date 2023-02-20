@@ -1077,14 +1077,24 @@ func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloud
 		return resp, err
 	}
 
-	var fn func() any
-	err = vm.ExportTo(vm.Get("filter"), &fn)
+	f, ok := goja.AssertFunction(vm.Get("filter"))
+	if !ok {
+		flow.logToNamespace(ctx, time.Now(), ns, "cloudEvent filter '%s' error: %v", filterName, err)
+		return resp, err
+	}
+
+	newEventMap, err := f(goja.Undefined())
 	if err != nil {
 		flow.logToNamespace(ctx, time.Now(), ns, "cloudEvent filter '%s' error: %v", filterName, err)
 		return resp, err
 	}
 
-	newEventMap := fn()
+	retValue := newEventMap.Export()
+
+	// event dropped
+	if retValue == nil {
+		return resp, nil
+	}
 
 	newBytesEvent, err := json.Marshal(newEventMap)
 	if err != nil {
@@ -1094,18 +1104,13 @@ func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloud
 
 	flow.sugar.Debugf("event after script is %v", string(newBytesEvent))
 
-	// if null it has been dropped
-	if string(newBytesEvent) != "null" {
-
-		br := &grpc.BroadcastCloudeventRequest{
-			Namespace:  namespace,
-			Cloudevent: newBytesEvent,
-			Timer:      0,
-		}
-
-		resp, err = flow.BroadcastCloudevent(ctx, br)
-
+	br := &grpc.BroadcastCloudeventRequest{
+		Namespace:  namespace,
+		Cloudevent: newBytesEvent,
+		Timer:      0,
 	}
+
+	resp, err = flow.BroadcastCloudevent(ctx, br)
 
 	return resp, err
 }
