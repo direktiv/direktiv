@@ -60,6 +60,7 @@ issuer.*
 !*build/docker/flow
 !*build/docker/sidecar
 !*build/docker/api
+!*build/docker/apps
 !*build/docker/functions
 /build/docker/sidecar/sidecar
 *build/docker/functions/functions
