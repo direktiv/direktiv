@@ -14,13 +14,13 @@ COPY .git .git
 RUN --mount=type=cache,target=/root/.cache/go-build cd src && \
     export GIT_HASH=`git rev-parse --short HEAD` && \
     export FULL_VERSION="${RELEASE:-$GIT_HASH}"; echo "${v%.*}" && \
-    go build -ldflags "-X github.com/direktiv/direktiv/pkg/version.Version=$FULL_VERSION" -o /direktiv cmd/direktiv/*.go;
+    go build -ldflags "-X github.com/direktiv/direktiv/pkg/version.Version=$FULL_VERSION" -tags osusergo,netgo -o /direktiv cmd/direktiv/*.go;
 
-FROM ubuntu:22.04
+FROM gcr.io/distroless/static
 
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 COPY --from=builder /direktiv /bin/direktiv
 
 ENV DIREKTIV_APP=sidecar
-
+EXPOSE 8890
 CMD ["/bin/direktiv"]
