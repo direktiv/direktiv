@@ -20,6 +20,7 @@ FROM gcr.io/distroless/static
 
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 COPY --from=builder /direktiv /bin/direktiv
+COPY --from=builder /direktiv /bin/secrets
 
 USER nonroot:nonroot
 ENV DIREKTIV_APP=secrets
