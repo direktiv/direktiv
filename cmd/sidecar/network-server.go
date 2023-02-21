@@ -24,22 +24,23 @@ type NetworkServer struct {
 
 func waitForUserContainer() {
 
-	tick := time.Tick(250 * time.Millisecond)
-	timeout := time.After(2 * time.Minute)
+	ticker := time.NewTicker(250 * time.Millisecond)
 
-	for {
-		select {
-		case <-timeout:
-			panic("user container did not start in time")
-		case <-tick:
-			conn, _ := net.DialTimeout("tcp", "localhost:8080", time.Second)
-			if conn != nil {
-				log.Debug("user container connected")
-				conn.Close()
-				return
-			}
+	go func() {
+		time.Sleep(2 * time.Minute)
+		ticker.Stop()
+	}()
+
+	for range ticker.C {
+		conn, _ := net.DialTimeout("tcp", "localhost:8080", time.Second)
+		if conn != nil {
+			log.Debug("user container connected")
+			_ = conn.Close()
+			return
 		}
 	}
+
+	panic("user container did not start in time")
 }
 
 // Start starts the network server for the sidecar.
