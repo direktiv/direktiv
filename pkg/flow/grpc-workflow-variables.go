@@ -400,6 +400,8 @@ func (flow *flow) SetVariable(ctx context.Context, tx database.Transaction, q va
 
 	clients := flow.edb.Clients(tx)
 
+	var cached *database.CacheData
+
 	if err != nil {
 
 		if !derrors.IsNotFound(err) {
@@ -424,12 +426,15 @@ func (flow *flow) SetVariable(ctx context.Context, tx database.Transaction, q va
 		query := clients.VarRef.Create().SetVardata(vdata).SetName(key)
 
 		switch v := q.(type) {
-		case *ent.Namespace:
-			query = query.SetNamespace(v)
-		case *ent.Workflow:
-			query = query.SetWorkflow(v)
-		case *ent.Instance:
-			query = query.SetInstance(v)
+		case *entNamespaceVarQuerier:
+			cached = v.cached
+			query = query.SetNamespaceID(v.cached.Namespace.ID)
+		case *entWorkflowVarQuerier:
+			cached = v.cached
+			query = query.SetWorkflowID(v.cached.Workflow.ID)
+		case *entInstanceVarQuerier:
+			cached = v.cached
+			query = query.SetInstanceID(v.cached.Instance.ID)
 			if thread {
 				query = query.SetBehaviour("thread")
 			}
@@ -465,7 +470,6 @@ func (flow *flow) SetVariable(ctx context.Context, tx database.Transaction, q va
 	}
 
 	// Broadcast Event
-	var cached *database.CacheData
 	broadcastInput := broadcastVariableInput{
 		Key:       key,
 		TotalSize: int64(vdata.Size),

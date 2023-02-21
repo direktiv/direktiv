@@ -891,9 +891,9 @@ func (syncer *syncer) hardSync(ctx context.Context, cached *database.CacheData, 
 					return err
 				}
 
-				cache[truepath+"/"] = ucached.Inode()
+				cache[truepath] = ucached.Inode()
 			} else {
-				cache[truepath+"/"] = ino
+				cache[truepath] = ino
 			}
 
 		case mntNamespaceVar:
@@ -946,16 +946,7 @@ func (syncer *syncer) hardSync(ctx context.Context, cached *database.CacheData, 
 			trimmed := x[1]
 			_, base := filepath.Split(x[0])
 
-			pino := cache[dir]
-
-			var child *database.Inode
-
-			for i := range pino.Children {
-				if pino.Children[i].Name == base {
-					child = pino.Children[i]
-					break
-				}
-			}
+			child := cache[dir+base]
 
 			if child == nil || child.Type != util.InodeTypeWorkflow {
 				if derrors.IsNotFound(err) {
@@ -964,7 +955,12 @@ func (syncer *syncer) hardSync(ctx context.Context, cached *database.CacheData, 
 				}
 			}
 
-			_, _, err = syncer.flow.SetVariable(ctx, tx, &entWorkflowVarQuerier{cached: cached, clients: syncer.edb.Clients(tx)}, trimmed, data, "", false)
+			wcached, err := syncer.flow.reverseTraverseToWorkflow(ctx, tx, child.Workflow.String())
+			if err != nil {
+				return err
+			}
+
+			_, _, err = syncer.flow.SetVariable(ctx, tx, &entWorkflowVarQuerier{cached: wcached, clients: syncer.edb.Clients(tx)}, trimmed, data, "", false)
 			if err != nil {
 				return err
 			}
@@ -984,6 +980,8 @@ func (syncer *syncer) hardSync(ctx context.Context, cached *database.CacheData, 
 	if err != nil {
 		return err
 	}
+
+	syncer.flow.database.InvalidateNamespace(ctx, cached, true)
 
 	return nil
 

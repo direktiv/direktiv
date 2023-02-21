@@ -19,6 +19,7 @@ import (
 	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	entrt "github.com/direktiv/direktiv/pkg/flow/ent/instanceruntime"
 	entmir "github.com/direktiv/direktiv/pkg/flow/ent/mirror"
+	entmiract "github.com/direktiv/direktiv/pkg/flow/ent/mirroractivity"
 	entns "github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	entrev "github.com/direktiv/direktiv/pkg/flow/ent/revision"
 	entroute "github.com/direktiv/direktiv/pkg/flow/ent/route"
@@ -358,6 +359,14 @@ func (db *Database) CreateWorkflow(ctx context.Context, tx database.Transaction,
 		return nil, err
 	}
 
+	wf.Edges.Namespace = &ent.Namespace{
+		ID: args.Inode.Namespace,
+	}
+
+	wf.Edges.Inode = &ent.Inode{
+		ID: args.Inode.ID,
+	}
+
 	return entWorkflow(wf), nil
 
 }
@@ -395,6 +404,14 @@ func (db *Database) CreateRef(ctx context.Context, tx database.Transaction, args
 	if err != nil {
 		db.sugar.Debugf("%s failed to create ref: %v", parent(), err)
 		return nil, err
+	}
+
+	ref.Edges.Revision = &ent.Revision{
+		ID: args.Revision,
+	}
+
+	ref.Edges.Workflow = &ent.Workflow{
+		ID: args.Workflow,
 	}
 
 	return entRef(ref), nil
@@ -658,7 +675,7 @@ func (db *Database) Mirror(ctx context.Context, tx database.Transaction, id uuid
 
 	clients := db.clients(tx)
 
-	mir, err := clients.Mirror.Get(ctx, id)
+	mir, err := clients.Mirror.Query().Where(entmir.ID(id)).WithInode().Only(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -690,7 +707,7 @@ func (db *Database) MirrorActivity(ctx context.Context, tx database.Transaction,
 
 	clients := db.clients(tx)
 
-	act, err := clients.MirrorActivity.Get(ctx, id)
+	act, err := clients.MirrorActivity.Query().Where(entmiract.ID(id)).WithNamespace().WithMirror().Only(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -714,6 +731,14 @@ func (db *Database) CreateMirrorActivity(ctx context.Context, tx database.Transa
 		Save(ctx)
 	if err != nil {
 		return nil, err
+	}
+
+	act.Edges.Namespace = &ent.Namespace{
+		ID: args.Namespace,
+	}
+
+	act.Edges.Mirror = &ent.Mirror{
+		ID: args.Mirror,
 	}
 
 	return entMirrorActivity(act), nil

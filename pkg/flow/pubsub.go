@@ -631,7 +631,7 @@ func (pubsub *pubsub) SubscribeInode(cached *database.CacheData) *subscription {
 
 func (pubsub *pubsub) NotifyInode(ino *database.Inode) {
 
-	pubsub.log.Debugf("PS Notify Inode: %s", ino.ID.String())
+	// pubsub.log.Debugf("PS Notify Inode: %s", ino.ID.String())
 
 	pubsub.publish(pubsubNotify(ino.ID.String()))
 

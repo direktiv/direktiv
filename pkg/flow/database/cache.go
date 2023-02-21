@@ -309,7 +309,7 @@ func (db *CachedDatabase) InvalidateWorkflow(ctx context.Context, cached *CacheD
 
 func (db *CachedDatabase) CreateCompleteWorkflow(ctx context.Context, tx Transaction, args *CreateCompleteWorkflowArgs) (*CacheData, error) {
 
-	if args.Parent.Inode().Type != util.InodeTypeWorkflow {
+	if args.Parent.Inode().Type != util.InodeTypeDirectory {
 		return nil, status.Error(codes.AlreadyExists, "parent node is not a directory")
 	}
 
@@ -355,6 +355,7 @@ func (db *CachedDatabase) CreateCompleteWorkflow(ctx context.Context, tx Transac
 		return nil, err
 	}
 
+	ino.Workflow = wf.ID
 	cached.Workflow = wf
 
 	rev, err := db.source.CreateRevision(ctx, tx, &CreateRevisionArgs{
@@ -369,14 +370,20 @@ func (db *CachedDatabase) CreateCompleteWorkflow(ctx context.Context, tx Transac
 
 	cached.Revision = rev
 
-	ref, err := db.source.CreateRef(ctx, tx, &CreateRefArgs{})
+	ref, err := db.source.CreateRef(ctx, tx, &CreateRefArgs{
+		Immutable: false,
+		Name:      "latest",
+		Workflow:  wf.ID,
+		Revision:  rev.ID,
+	})
 	if err != nil {
 		return nil, err
 	}
 
 	cached.Ref = ref
 
-	// CONFIGURE ROUTER?
+	cached.Workflow.Refs = []*Ref{ref}
+	cached.Workflow.Revisions = []*Revision{rev}
 
 	// TODO: add to cache and cache invalidate anything relevant
 
