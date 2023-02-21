@@ -16,7 +16,7 @@ RUN --mount=type=cache,target=/root/.cache/go-build cd src && \
     export FULL_VERSION="${RELEASE:-$GIT_HASH}"; echo "${v%.*}" && \
     go build -ldflags "-X github.com/direktiv/direktiv/pkg/version.Version=$FULL_VERSION" -o /direktiv cmd/direktiv/*.go;
 
-FROM gcr.io/distroless/static
+FROM ubuntu:22.04
 
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 COPY --from=builder /direktiv /bin/direktiv
