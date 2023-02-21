@@ -214,7 +214,7 @@ scan-%: push-%
 	trivy image --exit-code 1 localhost:5000/$*
 
 .PHONY: image-%
-image-%: build/%-binary
+image-%: binaries
 	DOCKER_BUILDKIT=1 docker build --build-arg RELEASE_VERSION=${FULL_VERSION} -t direktiv-$* -f build/docker/$*/Dockerfile${DOCKER_BASE} .
 	@echo "Make $@: SUCCESS"
 
