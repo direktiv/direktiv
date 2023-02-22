@@ -1288,13 +1288,7 @@ function TrafficDistribution(props) {
           )}
         </FlexBox>
         <Slider
-          value={
-            routes[0]
-              ? routes.length === 2
-                ? `${routes[0].weight}`
-                : `100`
-              : 0
-          }
+          value={routes.length === 2 ? `${routes?.[0]?.weight ?? 0}` : `100`}
           className="traffic-distribution"
           disabled={true}
         />
