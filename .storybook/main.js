@@ -16,11 +16,11 @@ module.exports = {
     "storybook-addon-react-router-v6",
     "storybook-addon-material-ui",
   ],
-  framework: "@storybook/react",
+  framework: {
+    name: "@storybook/react-vite",
+    options: {},
+  },
   docs: {
     autodocs: true,
-  },
-  core: {
-    builder: "@storybook/builder-vite",
   },
 };
