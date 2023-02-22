@@ -97,7 +97,7 @@
     "@storybook/addon-interactions": "^7.0.0-beta.53",
     "@storybook/node-logger": "^7.0.0-beta.53",
     "@storybook/react": "^7.0.0-beta.53",
-    "@storybook/react-webpack5": "^7.0.0-beta.53",
+    "@storybook/react-vite": "^7.0.0-beta.53",
     "@storybook/testing-library": "^0.0.14-next.1",
     "@testing-library/react-hooks": "^8.0.1",
     "@types/drawflow": "^0.0.4",
