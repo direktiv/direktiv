@@ -1,4 +1,4 @@
-package main
+package flow_dbinit
 
 import (
 	"database/sql"
@@ -14,7 +14,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
-func main() {
+func RunApplication() {
 
 	log.Printf("Checking database for schema updates...")
 

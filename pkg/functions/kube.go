@@ -657,7 +657,7 @@ func (is *functionsServer) reconstructServices(ctx context.Context) error {
 
 	svcs, err := is.db.Services.Query().All(ctx)
 	if err != nil {
-		logger.Error("failed to get services from database: %w", err)
+		logger.Error(fmt.Sprint("failed to get services from database: %w", err))
 		return err
 	}
 

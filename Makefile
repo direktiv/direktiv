@@ -57,19 +57,12 @@ help: ## Prints usage information.
 
 .PHONY: binaries
 binaries: ## Builds all Direktiv binaries. Useful only to check that code compiles.
-binaries: build/flow-binary build/api-binary build/secrets-binary build/sidecar-binary build/functions-binary build/flow-dbinit
+	go build -o /dev/null cmd/direktiv/*.go
 
 .PHONY: clean
 clean: ## Deletes all build artifacts and tears down existing cluster.
 	rm -f build/*.md5
 	rm -f build/*.checksum
-	rm -f build/*-binary
-	rm -f build/flow
-	rm -f build/api
-	rm -f build/secrets
-	rm -f build/sidecar
-	rm -f build/functions
-	rm -f build/flow-dbinit
 	if helm status direktiv; then helm uninstall direktiv; fi
 	kubectl wait --for=delete namespace/direktiv-services-direktiv --timeout=60s
 	kubectl delete --all ksvc -n direktiv-services-direktiv
@@ -216,21 +209,12 @@ protoc: protoc-flow protoc-health protoc-secrets protoc-functions
 
 # Patterns
 
-build/%-binary: Makefile ${GO_SOURCE_FILES}
-	if [ -d "cmd/$*" ] && [ ".all" != "${DOCKER_BASE}" ]; then \
-		echo "Building $* binary..."; \
-		go build -ldflags "-X github.com/direktiv/direktiv/pkg/version.Version=${FULL_VERSION}" -tags ${GO_BUILD_TAGS} -o $@ cmd/$*/*.go || exit 1; \
-		cp build/$*-binary build/$*; \
-	else \
-   	touch $@; \
-	fi
-
 .PHONY: scan-%
 scan-%: push-%
 	trivy image --exit-code 1 localhost:5000/$*
 
 .PHONY: image-%
-image-%: build/%-binary
+image-%: binaries
 	DOCKER_BUILDKIT=1 docker build --build-arg RELEASE_VERSION=${FULL_VERSION} -t direktiv-$* -f build/docker/$*/Dockerfile${DOCKER_BASE} .
 	@echo "Make $@: SUCCESS"
 
