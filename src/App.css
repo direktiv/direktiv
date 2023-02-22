@@ -1,4 +1,7 @@
 @charset "UTF-8";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
   --theme-background: #e5e5e5;
