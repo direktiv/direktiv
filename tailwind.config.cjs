@@ -16,10 +16,15 @@ const {
   blackA,
 } = require("@radix-ui/colors");
 
+const defaultTheme = require("tailwindcss/defaultTheme");
+
 module.exports = {
   content: ["./src/**/*.{js,ts,jsx,tsx}"],
   plugins: [require("daisyui")],
   theme: {
+    fontFamily: {
+      sans: ["Inter", ...defaultTheme.fontFamily.sans],
+    },
     extend: {
       colors: {
         ...blackA,
