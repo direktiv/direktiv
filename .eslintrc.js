@@ -26,6 +26,7 @@ module.exports = {
   },
   env: {
     browser: true,
+    node: true,
   },
   ignorePatterns: [
     "node_modules/",
