@@ -20,4 +20,7 @@ module.exports = {
   docs: {
     autodocs: true,
   },
+  core: {
+    builder: "@storybook/builder-vite",
+  },
 };
