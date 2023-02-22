@@ -23,4 +23,13 @@ module.exports = {
   docs: {
     autodocs: true,
   },
+  async viteFinal(config) {
+    return {
+      ...config,
+      define: {
+        ...config.define,
+        global: "window",
+      },
+    };
+  },
 };
