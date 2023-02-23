@@ -2,23 +2,22 @@ import React, { FC } from "react";
 
 const Button: FC<{
   size?: "xs" | "sm" | "lg";
-  color?: "primary" | "secondary" | "accent" | "ghost" | "link";
-  state?: "info" | "success" | "warning" | "error";
-  active?: boolean;
+  color?:
+    | "primary"
+    | "secondary"
+    | "accent"
+    | "ghost"
+    | "link"
+    | "info"
+    | "success"
+    | "warning"
+    | "error";
   outline?: boolean;
+  active?: boolean;
   loading?: boolean;
-  children?: React.ReactNode;
   className?: string;
-}> = ({
-  size,
-  color,
-  state,
-  active,
-  outline,
-  loading,
-  className,
-  children,
-}) => {
+  children?: React.ReactNode;
+}> = ({ size, color, outline, active, loading, className, children }) => {
   let sizeClass;
   switch (size) {
     case "lg":
@@ -49,21 +48,17 @@ const Button: FC<{
     case "link":
       colorClass = "btn-link";
       break;
-  }
-
-  let stateClass;
-  switch (state) {
     case "info":
-      stateClass = "btn-info";
+      colorClass = "btn-info";
       break;
     case "success":
-      stateClass = "btn-success";
+      colorClass = "btn-success";
       break;
     case "warning":
-      stateClass = "btn-warning";
+      colorClass = "btn-warning";
       break;
     case "error":
-      stateClass = "btn-error";
+      colorClass = "btn-error";
       break;
   }
 
@@ -73,7 +68,7 @@ const Button: FC<{
 
   return (
     <button
-      className={`btn ${sizeClass} ${colorClass} ${stateClass} ${activeClass} ${outlineClass} ${loadingClass} ${
+      className={`btn ${sizeClass} ${colorClass} ${activeClass} ${outlineClass} ${loadingClass} ${
         className ?? ""
       }}`}
     >
