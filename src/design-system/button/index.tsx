@@ -27,6 +27,7 @@ const Button: FC<{
   circle,
   className,
   children,
+  ...props
 }) => {
   let sizeClass;
   switch (size) {
@@ -82,6 +83,7 @@ const Button: FC<{
       className={`btn ${sizeClass} ${colorClass} ${activeClass} ${outlineClass} ${loadingClass} ${circleClass} ${
         className ?? ""
       }}`}
+      {...props}
     >
       {children}
     </button>
