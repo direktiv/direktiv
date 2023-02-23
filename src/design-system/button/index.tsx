@@ -17,6 +17,7 @@ const Button: FC<{
   active?: boolean;
   loading?: boolean;
   circle?: boolean;
+  block?: boolean;
   className?: string;
   children?: React.ReactNode;
 }> = ({
@@ -26,6 +27,7 @@ const Button: FC<{
   active,
   loading,
   circle,
+  block,
   className,
   children,
   ...props
@@ -49,7 +51,8 @@ const Button: FC<{
       active && "btn-active",
       outline && "btn-outline",
       loading && "loading",
-      circle && "btn-circle"
+      circle && "btn-circle",
+      block && "btn-block"
     )}
     {...props}
   >

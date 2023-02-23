@@ -68,6 +68,11 @@ export const Default: Story = {
       control: "boolean",
       type: { name: "boolean", required: false },
     },
+    block: {
+      description: "make button full width",
+      control: "boolean",
+      type: { name: "boolean", required: false },
+    },
   },
 };
 
@@ -193,3 +198,5 @@ export const CircleButton = () => (
     </Button>
   </div>
 );
+
+export const Block = () => <Button block>Block Element Button</Button>;
