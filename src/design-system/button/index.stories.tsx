@@ -15,21 +15,21 @@ export const Default: Story = {
     return <Button {...args}>{children}</Button>;
   },
   args: {
-    children: "Hello",
+    children: "Button",
   },
   argTypes: {
     children: {
       description: "Button text",
       control: {
         type: "text",
-        defaultValue: "Hello",
+        defaultValue: "Button",
       },
       type: { name: "string", required: false },
     },
     size: {
       description: "Button size",
       control: "select",
-      options: ["xs", "md", "lg"],
+      options: ["xs", "sm", "lg"],
       type: { name: "string", required: false },
     },
     color: {
