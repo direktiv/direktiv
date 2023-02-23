@@ -45,19 +45,19 @@
   background-color: white;
 }
 
-a,
+/* a,
 a:hover,
 a:visited,
 a:active {
   color: inherit;
   text-decoration: none;
-}
+} */
 
 .grey-text {
   color: var(--theme-dark-gray-text);
 }
 
-body {
+/* body {
   color: var(--theme-dark-text);
   background-color: #f8f8f9;
 
@@ -70,9 +70,9 @@ body {
   text-align: left;
 
   max-height: 100vh;
-  /* min-width: 800px; */
   overflow-x: auto;
-}
+} 
+*/
 
 #overlay-helper {
   height: 0px;
@@ -123,7 +123,7 @@ body {
   cursor: pointer !important;
 }
 
-input {
+/* input {
   font-family: var(--font-family);
   min-width: 0px;
   width: 100%;
@@ -148,7 +148,7 @@ textarea {
 input:focus-visible,
 textarea:focus-visible {
   outline: solid 1px var(--theme-brand-blue);
-}
+} */
 
 /* Switch CSS */
 .switch {
@@ -194,7 +194,7 @@ input:checked + .slider-broadcast {
   border-radius: 50%;
 }
 
-input:checked + .slider-broadcast:before {
+/* input:checked + .slider-broadcast:before {
   background-color: white;
   -webkit-transform: translateX(14px);
   -ms-transform: translateX(14px);
@@ -210,7 +210,7 @@ table {
 tr {
   padding-left: 8px;
   padding-right: 8px;
-}
+} */
 
 .left-align {
   text-align: left;
@@ -251,7 +251,7 @@ tr {
     border: 3px solid #ffffff;
   } */
 
-select {
+/* select {
   line-height: 48px;
   height: 48px;
   background-color: white;
@@ -262,7 +262,7 @@ select {
 
   width: 100%;
   height: auto;
-}
+} */
 
 .hidden {
   visibility: hidden;
@@ -305,9 +305,9 @@ select {
   height: 36px;
 }
 
-select:focus-visible {
+/* select:focus-visible {
   outline: none;
-}
+} */
 
 .container-alert {
   display: flex;
