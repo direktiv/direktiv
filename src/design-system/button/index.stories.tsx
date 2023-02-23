@@ -165,17 +165,15 @@ export const Outline = () => (
 );
 
 export const Loading = () => (
-  <div className="flex flex-wrap gap-5">
-    <Button outline loading>
-      Loading
-    </Button>
-  </div>
+  <Button outline loading>
+    Loading
+  </Button>
 );
 
 export const WithIcon = () => (
   <div className="flex flex-wrap gap-5">
     <Button color="primary" className="gap-5">
-      <VscZoomIn /> Loading
+      <VscZoomIn /> with icon
     </Button>
   </div>
 );
