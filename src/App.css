@@ -2,6 +2,24 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* fix daisyui outline buttons with state colors */
+.btn-outline.btn-info {
+  @apply border-info-content text-info-content;
+}
+
+.btn-outline.btn-success {
+  @apply border-success-content text-success-content;
+}
+
+.btn-outline.btn-warning {
+  @apply border-warning-content text-warning-content;
+}
+
+.btn-outline.btn-error {
+  @apply border-error-content text-error-content;
+}
+
 @font-face {
   font-family: "Inter";
   font-style: normal;
