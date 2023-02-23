@@ -12,16 +12,19 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  render: (args) => <Button {...args}>{args.children}</Button>,
-  args: {},
+  render: (args) => {
+    return <Button {...args}>{args.children}</Button>;
+  },
+  args: {
+    children: "Hello",
+  },
   argTypes: {
     children: {
       description: "Button text",
       control: {
         type: "text",
-        defaultValue: "Button",
+        defaultValue: "Hello",
       },
-      defaultValue: "Button",
       type: { name: "string", required: false },
     },
     size: {
@@ -47,12 +50,12 @@ export const Default: Story = {
       type: { name: "string", required: false },
     },
     outline: {
-      description: "Outline button",
+      description: "button with outline",
       control: "boolean",
       type: { name: "boolean", required: false },
     },
     active: {
-      description: "Button in active state",
+      description: "button in active state",
       control: "boolean",
       type: { name: "boolean", required: false },
     },
@@ -62,7 +65,7 @@ export const Default: Story = {
       type: { name: "boolean", required: false },
     },
     circle: {
-      description: "Round button",
+      description: "round variation of a button",
       control: "boolean",
       type: { name: "boolean", required: false },
     },

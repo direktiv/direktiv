@@ -15,9 +15,19 @@ const Button: FC<{
   outline?: boolean;
   active?: boolean;
   loading?: boolean;
+  circle?: boolean;
   className?: string;
   children?: React.ReactNode;
-}> = ({ size, color, outline, active, loading, className, children }) => {
+}> = ({
+  size,
+  color,
+  outline,
+  active,
+  loading,
+  circle,
+  className,
+  children,
+}) => {
   let sizeClass;
   switch (size) {
     case "lg":
@@ -65,10 +75,11 @@ const Button: FC<{
   const activeClass = active ? "btn-active" : "";
   const outlineClass = outline ? "btn-outline" : "";
   const loadingClass = loading ? "loading" : "";
+  const circleClass = circle ? "btn-circle" : "";
 
   return (
     <button
-      className={`btn ${sizeClass} ${colorClass} ${activeClass} ${outlineClass} ${loadingClass} ${
+      className={`btn ${sizeClass} ${colorClass} ${activeClass} ${outlineClass} ${loadingClass} ${circleClass} ${
         className ?? ""
       }}`}
     >
