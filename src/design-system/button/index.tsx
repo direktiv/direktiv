@@ -82,7 +82,7 @@ const Button: FC<{
     <button
       className={`btn ${sizeClass} ${colorClass} ${activeClass} ${outlineClass} ${loadingClass} ${circleClass} ${
         className ?? ""
-      }}`}
+      }`}
       {...props}
     >
       {children}

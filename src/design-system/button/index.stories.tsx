@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from "@storybook/react";
-
 import Button from "./index";
 import { VscZoomIn } from "react-icons/vsc";
 
@@ -172,7 +171,7 @@ export const Loading = () => (
 
 export const WithIcon = () => (
   <div className="flex flex-wrap gap-5">
-    <Button color="primary" className="gap-5">
+    <Button color="primary" className="gap-2">
       <VscZoomIn /> with icon
     </Button>
   </div>
