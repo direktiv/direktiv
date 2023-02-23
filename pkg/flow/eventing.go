@@ -12,6 +12,7 @@ import (
 	"github.com/cloudevents/sdk-go/v2/binding"
 	protocol "github.com/cloudevents/sdk-go/v2/protocol/http"
 	"github.com/direktiv/direktiv/pkg/dlog"
+	"github.com/direktiv/direktiv/pkg/flow/database"
 	igrpc "github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/gorilla/mux"
@@ -59,9 +60,11 @@ func newEventReceiver(events *events, flow *flow) (*eventReceiver, error) {
 
 }
 
-func (rcv *eventReceiver) sendToNamespace(ns string, r *http.Request) error {
+func (rcv *eventReceiver) sendToNamespace(name string, r *http.Request) error {
 
-	rcv.logger.Debugf("event for namespace %s", ns)
+	ctx := context.Background()
+
+	rcv.logger.Debugf("event for namespace %s", name)
 
 	m := protocol.NewMessageFromHttpRequest(r)
 	ev, err := binding.ToEvent(context.Background(), m)
@@ -69,7 +72,9 @@ func (rcv *eventReceiver) sendToNamespace(ns string, r *http.Request) error {
 		return err
 	}
 
-	namespace, err := rcv.flow.getNamespace(context.Background(), rcv.flow.db.Namespace, ns)
+	cached := new(database.CacheData)
+
+	err = rcv.flow.database.NamespaceByName(ctx, nil, cached, name)
 	if err != nil {
 		rcv.logger.Errorf("error getting namespace: %s", err.Error())
 		return err
@@ -77,7 +82,7 @@ func (rcv *eventReceiver) sendToNamespace(ns string, r *http.Request) error {
 
 	c := context.WithValue(context.Background(), EventingCtxKeySource, "eventing")
 
-	return rcv.events.BroadcastCloudevent(c, namespace, ev, 0)
+	return rcv.events.BroadcastCloudevent(c, cached, ev, 0)
 
 }
 
@@ -99,8 +104,9 @@ func (rcv *eventReceiver) NamespaceHandler(w http.ResponseWriter, r *http.Reques
 
 func (rcv *eventReceiver) MultiNamespaceHandler(w http.ResponseWriter, r *http.Request) {
 
-	nsc := rcv.flow.db.Namespace
-	nss, err := nsc.Query().All(context.Background())
+	clients := rcv.events.edb.Clients(nil)
+
+	nss, err := clients.Namespace.Query().All(context.Background())
 	if err != nil {
 		rcv.logger.Errorf("can not get namespaces: %s", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)

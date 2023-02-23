@@ -2,9 +2,9 @@ package flow
 
 import (
 	"context"
-	"fmt"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	secretsgrpc "github.com/direktiv/direktiv/pkg/secrets/grpc"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -14,18 +14,20 @@ func (flow *flow) Secrets(ctx context.Context, req *grpc.SecretsRequest) (*grpc.
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	ns, err := flow.getNamespace(ctx, flow.db.Namespace, req.GetNamespace())
+	cached := new(database.CacheData)
+
+	err := flow.database.NamespaceByName(ctx, nil, cached, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
-
-	namespace := ns.ID.String()
-	name := req.GetKey()
 
 	p, err := getPagination(req.Pagination)
 	if err != nil {
 		return nil, err
 	}
+
+	namespace := cached.Namespace.ID.String()
+	name := req.GetKey()
 
 	request := &secretsgrpc.GetSecretsRequest{
 		Namespace: &namespace,
@@ -50,7 +52,7 @@ func (flow *flow) Secrets(ctx context.Context, req *grpc.SecretsRequest) (*grpc.
 
 	var resp grpc.SecretsResponse
 
-	resp.Namespace = ns.Name
+	resp.Namespace = cached.Namespace.Name
 	resp.Secrets = new(grpc.Secrets)
 	resp.Secrets.PageInfo = new(grpc.PageInfo)
 
@@ -71,23 +73,25 @@ func (flow *flow) SecretsStream(req *grpc.SecretsRequest, srv grpc.Flow_SecretsS
 	phash := ""
 	nhash := ""
 
-	ns, err := flow.getNamespace(ctx, flow.db.Namespace, req.GetNamespace())
+	cached := new(database.CacheData)
+
+	err := flow.database.NamespaceByName(ctx, nil, cached, req.GetNamespace())
 	if err != nil {
 		return err
 	}
-
-	namespace := ns.ID.String()
-	name := req.GetKey()
 
 	p, err := getPagination(req.Pagination)
 	if err != nil {
 		return err
 	}
 
-	sub := flow.pubsub.SubscribeNamespaceSecrets(ns)
+	sub := flow.pubsub.SubscribeNamespaceSecrets(cached.Namespace)
 	defer flow.cleanup(sub.Close)
 
 resend:
+
+	namespace := cached.Namespace.ID.String()
+	name := req.GetKey()
 
 	request := &secretsgrpc.GetSecretsRequest{
 		Namespace: &namespace,
@@ -112,7 +116,7 @@ resend:
 
 	var resp = new(grpc.SecretsResponse)
 
-	resp.Namespace = ns.Name
+	resp.Namespace = cached.Namespace.Name
 	resp.Secrets = new(grpc.Secrets)
 	resp.Secrets.PageInfo = new(grpc.PageInfo)
 
@@ -143,18 +147,20 @@ func (flow *flow) SearchSecret(ctx context.Context, req *grpc.SearchSecretReques
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	ns, err := flow.getNamespace(ctx, flow.db.Namespace, req.GetNamespace())
+	cached := new(database.CacheData)
+
+	err := flow.database.NamespaceByName(ctx, nil, cached, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
-
-	namespace := ns.ID.String()
-	name := req.GetKey()
 
 	p, err := getPagination(req.Pagination)
 	if err != nil {
 		return nil, err
 	}
+
+	namespace := cached.Namespace.ID.String()
+	name := req.GetKey()
 
 	request := &secretsgrpc.SearchSecretRequest{
 		Namespace: &namespace,
@@ -179,7 +185,7 @@ func (flow *flow) SearchSecret(ctx context.Context, req *grpc.SearchSecretReques
 
 	var resp grpc.SearchSecretResponse
 
-	resp.Namespace = ns.Name
+	resp.Namespace = cached.Namespace.Name
 	resp.Secrets = new(grpc.Secrets)
 	resp.Secrets.PageInfo = new(grpc.PageInfo)
 
@@ -196,12 +202,14 @@ func (flow *flow) SetSecret(ctx context.Context, req *grpc.SetSecretRequest) (*g
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	ns, err := flow.getNamespace(ctx, flow.db.Namespace, req.GetNamespace())
+	cached := new(database.CacheData)
+
+	err := flow.database.NamespaceByName(ctx, nil, cached, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
 
-	namespace := ns.ID.String()
+	namespace := cached.Namespace.ID.String()
 	name := req.GetKey()
 
 	request := &secretsgrpc.SecretsStoreRequest{
@@ -212,16 +220,15 @@ func (flow *flow) SetSecret(ctx context.Context, req *grpc.SetSecretRequest) (*g
 
 	_, err = flow.secrets.client.StoreSecret(ctx, request)
 	if err != nil {
-		fmt.Println("==== FAILED TO STORE SECRET", namespace)
 		return nil, err
 	}
 
-	flow.logToNamespace(ctx, time.Now(), ns, "Created namespace secret '%s'.", req.GetKey())
-	flow.pubsub.NotifyNamespaceSecrets(ns)
+	flow.logToNamespace(ctx, time.Now(), cached, "Created namespace secret '%s'.", req.GetKey())
+	flow.pubsub.NotifyNamespaceSecrets(cached.Namespace)
 
 	var resp grpc.SetSecretResponse
 
-	resp.Namespace = ns.Name
+	resp.Namespace = cached.Namespace.Name
 	resp.Key = req.GetKey()
 
 	return &resp, nil
@@ -232,12 +239,14 @@ func (flow *flow) CreateSecretsFolder(ctx context.Context, req *grpc.CreateSecre
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	ns, err := flow.getNamespace(ctx, flow.db.Namespace, req.GetNamespace())
+	cached := new(database.CacheData)
+
+	err := flow.database.NamespaceByName(ctx, nil, cached, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
 
-	namespace := ns.ID.String()
+	namespace := cached.Namespace.ID.String()
 	name := req.GetKey()
 
 	request := &secretsgrpc.CreateSecretsFolderRequest{
@@ -250,12 +259,12 @@ func (flow *flow) CreateSecretsFolder(ctx context.Context, req *grpc.CreateSecre
 		return nil, err
 	}
 
-	flow.logToNamespace(ctx, time.Now(), ns, "Created secrets folder '%s'.", req.GetKey())
-	flow.pubsub.NotifyNamespaceSecrets(ns)
+	flow.logToNamespace(ctx, time.Now(), cached, "Created secrets folder '%s'.", req.GetKey())
+	flow.pubsub.NotifyNamespaceSecrets(cached.Namespace)
 
 	var resp grpc.CreateSecretsFolderResponse
 
-	resp.Namespace = ns.Name
+	resp.Namespace = cached.Namespace.Name
 	resp.Key = req.GetKey()
 
 	return &resp, nil
@@ -266,12 +275,14 @@ func (flow *flow) DeleteSecret(ctx context.Context, req *grpc.DeleteSecretReques
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	ns, err := flow.getNamespace(ctx, flow.db.Namespace, req.GetNamespace())
+	cached := new(database.CacheData)
+
+	err := flow.database.NamespaceByName(ctx, nil, cached, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
 
-	namespace := ns.ID.String()
+	namespace := cached.Namespace.ID.String()
 	name := req.GetKey()
 
 	request := &secretsgrpc.SecretsDeleteRequest{
@@ -284,8 +295,8 @@ func (flow *flow) DeleteSecret(ctx context.Context, req *grpc.DeleteSecretReques
 		return nil, err
 	}
 
-	flow.logToNamespace(ctx, time.Now(), ns, "Deleted namespace secret '%s'.", req.GetKey())
-	flow.pubsub.NotifyNamespaceSecrets(ns)
+	flow.logToNamespace(ctx, time.Now(), cached, "Deleted namespace secret '%s'.", req.GetKey())
+	flow.pubsub.NotifyNamespaceSecrets(cached.Namespace)
 
 	var resp emptypb.Empty
 
@@ -297,12 +308,14 @@ func (flow *flow) DeleteSecretsFolder(ctx context.Context, req *grpc.DeleteSecre
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	ns, err := flow.getNamespace(ctx, flow.db.Namespace, req.GetNamespace())
+	cached := new(database.CacheData)
+
+	err := flow.database.NamespaceByName(ctx, nil, cached, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
 
-	namespace := ns.ID.String()
+	namespace := cached.Namespace.ID.String()
 	name := req.GetKey()
 
 	request := &secretsgrpc.DeleteSecretsFolderRequest{
@@ -315,8 +328,8 @@ func (flow *flow) DeleteSecretsFolder(ctx context.Context, req *grpc.DeleteSecre
 		return nil, err
 	}
 
-	flow.logToNamespace(ctx, time.Now(), ns, "Deleted namespace folder '%s'.", req.GetKey())
-	flow.pubsub.NotifyNamespaceSecrets(ns)
+	flow.logToNamespace(ctx, time.Now(), cached, "Deleted namespace folder '%s'.", req.GetKey())
+	flow.pubsub.NotifyNamespaceSecrets(cached.Namespace)
 
 	var resp emptypb.Empty
 
@@ -328,12 +341,14 @@ func (flow *flow) UpdateSecret(ctx context.Context, req *grpc.UpdateSecretReques
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	ns, err := flow.getNamespace(ctx, flow.db.Namespace, req.GetNamespace())
+	cached := new(database.CacheData)
+
+	err := flow.database.NamespaceByName(ctx, nil, cached, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
 
-	namespace := ns.ID.String()
+	namespace := cached.Namespace.ID.String()
 	name := req.GetKey()
 
 	request := &secretsgrpc.UpdateSecretRequest{
@@ -347,12 +362,12 @@ func (flow *flow) UpdateSecret(ctx context.Context, req *grpc.UpdateSecretReques
 		return nil, err
 	}
 
-	flow.logToNamespace(ctx, time.Now(), ns, "Updated namespace secret '%s'.", req.GetKey())
-	flow.pubsub.NotifyNamespaceSecrets(ns)
+	flow.logToNamespace(ctx, time.Now(), cached, "Updated namespace secret '%s'.", req.GetKey())
+	flow.pubsub.NotifyNamespaceSecrets(cached.Namespace)
 
 	var resp grpc.UpdateSecretResponse
 
-	resp.Namespace = ns.Name
+	resp.Namespace = cached.Namespace.Name
 	resp.Key = req.GetKey()
 
 	return &resp, nil

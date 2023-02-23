@@ -5,7 +5,7 @@ import (
 
 	libgrpc "google.golang.org/grpc"
 
-	"github.com/direktiv/direktiv/pkg/flow/ent"
+	"github.com/direktiv/direktiv/pkg/flow/database"
 	secretsgrpc "github.com/direktiv/direktiv/pkg/secrets/grpc"
 	"github.com/direktiv/direktiv/pkg/util"
 )
@@ -49,7 +49,7 @@ func (secrets *secrets) Close() error {
 
 }
 
-func (srv *server) deleteNamespaceSecrets(ns *ent.Namespace) {
+func (srv *server) deleteNamespaceSecrets(ns *database.Namespace) {
 
 	err := srv.secrets.deleteNamespaceSecrets(ns)
 	if err != nil {
@@ -58,7 +58,7 @@ func (srv *server) deleteNamespaceSecrets(ns *ent.Namespace) {
 
 }
 
-func (secrets *secrets) deleteNamespaceSecrets(ns *ent.Namespace) error {
+func (secrets *secrets) deleteNamespaceSecrets(ns *database.Namespace) error {
 
 	namespace := ns.ID.String()
 

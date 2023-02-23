@@ -99,16 +99,14 @@ func (internal *internal) ActionLog(ctx context.Context, req *grpc.ActionLogRequ
 
 	t := time.Now()
 
-	inc := internal.db.Instance
-
-	d, err := internal.getInstance(ctx, inc, req.GetInstanceId(), false)
+	cached, err := internal.getInstance(ctx, nil, req.GetInstanceId())
 	if err != nil {
 		internal.sugar.Error(err)
 		return nil, err
 	}
 
 	for _, msg := range req.GetMsg() {
-		internal.logToInstanceRaw(ctx, t, d.in, msg)
+		internal.logToInstanceRaw(ctx, t, cached, msg)
 	}
 
 	var resp emptypb.Empty

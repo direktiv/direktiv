@@ -5,44 +5,74 @@ import (
 	"context"
 	"errors"
 	"io"
+	"os"
 	"time"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
+	entnote "github.com/direktiv/direktiv/pkg/flow/ent/annotation"
+	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
+
+func (flow *flow) traverseToInstanceAnnotation(ctx context.Context, tx database.Transaction, namespace, instance, key string) (*database.CacheData, *database.Annotation, error) {
+
+	id, err := uuid.Parse(instance)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	cached := new(database.CacheData)
+
+	err = flow.database.Instance(ctx, tx, cached, id)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if cached.Namespace.Name != namespace {
+		return nil, nil, os.ErrNotExist
+	}
+
+	annotation, err := flow.database.InstanceAnnotation(ctx, tx, cached.Instance.ID, key)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return cached, annotation, nil
+
+}
 
 func (flow *flow) InstanceAnnotation(ctx context.Context, req *grpc.InstanceAnnotationRequest) (*grpc.InstanceAnnotationResponse, error) {
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	nsc := flow.db.Namespace
-
-	d, err := flow.traverseToInstanceAnnotation(ctx, nsc, req.GetNamespace(), req.GetInstance(), req.GetKey())
+	cached, annotation, err := flow.traverseToInstanceAnnotation(ctx, nil, req.GetNamespace(), req.GetInstance(), req.GetKey())
 	if err != nil {
 		return nil, err
 	}
 
 	var resp grpc.InstanceAnnotationResponse
 
-	resp.Namespace = d.ns().Name
-	resp.Instance = d.in.ID.String()
-	resp.Key = d.annotation.Name
-	resp.CreatedAt = timestamppb.New(d.annotation.CreatedAt)
-	resp.UpdatedAt = timestamppb.New(d.annotation.UpdatedAt)
-	resp.Checksum = d.annotation.Hash
-	resp.Size = int64(d.annotation.Size)
-	resp.MimeType = d.annotation.MimeType
+	resp.Namespace = cached.Namespace.Name
+	resp.Instance = cached.Instance.ID.String()
+	resp.Key = annotation.Name
+	resp.CreatedAt = timestamppb.New(annotation.CreatedAt)
+	resp.UpdatedAt = timestamppb.New(annotation.UpdatedAt)
+	resp.Checksum = annotation.Hash
+	resp.Size = int64(annotation.Size)
+	resp.MimeType = annotation.MimeType
 
 	if resp.Size > parcelSize {
 		return nil, status.Error(codes.ResourceExhausted, "annotation too large to return without using the parcelling API")
 	}
 
-	resp.Data = d.annotation.Data
+	resp.Data = annotation.Data
 
 	return &resp, nil
 
@@ -54,27 +84,25 @@ func (flow *flow) InstanceAnnotationParcels(req *grpc.InstanceAnnotationRequest,
 
 	ctx := srv.Context()
 
-	nsc := flow.db.Namespace
-
-	d, err := flow.traverseToInstanceAnnotation(ctx, nsc, req.GetNamespace(), req.GetInstance(), req.GetKey())
+	cached, annotation, err := flow.traverseToInstanceAnnotation(ctx, nil, req.GetNamespace(), req.GetInstance(), req.GetKey())
 	if err != nil {
 		return err
 	}
 
-	rdr := bytes.NewReader(d.annotation.Data)
+	rdr := bytes.NewReader(annotation.Data)
 
 	for {
 
 		resp := new(grpc.InstanceAnnotationResponse)
 
-		resp.Namespace = d.ns().Name
-		resp.Instance = d.in.ID.String()
-		resp.Key = d.annotation.Name
-		resp.CreatedAt = timestamppb.New(d.annotation.CreatedAt)
-		resp.UpdatedAt = timestamppb.New(d.annotation.UpdatedAt)
-		resp.Checksum = d.annotation.Hash
-		resp.Size = int64(d.annotation.Size)
-		resp.MimeType = d.annotation.MimeType
+		resp.Namespace = cached.Namespace.Name
+		resp.Instance = cached.Instance.ID.String()
+		resp.Key = annotation.Name
+		resp.CreatedAt = timestamppb.New(annotation.CreatedAt)
+		resp.UpdatedAt = timestamppb.New(annotation.UpdatedAt)
+		resp.Checksum = annotation.Hash
+		resp.Size = int64(annotation.Size)
+		resp.MimeType = annotation.MimeType
 
 		buf := new(bytes.Buffer)
 		k, err := io.CopyN(buf, rdr, parcelSize)
@@ -109,12 +137,14 @@ func (flow *flow) InstanceAnnotations(ctx context.Context, req *grpc.InstanceAnn
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	d, err := flow.getInstance(ctx, flow.db.Namespace, req.GetNamespace(), req.GetInstance(), false)
+	cached, err := flow.getInstance(ctx, nil, req.GetNamespace(), req.GetInstance())
 	if err != nil {
 		return nil, err
 	}
 
-	query := d.in.QueryAnnotations()
+	clients := flow.edb.Clients(nil)
+
+	query := clients.Annotation.Query().Where(entnote.HasInstanceWith(entinst.ID(cached.Instance.ID)))
 
 	results, pi, err := paginate[*ent.AnnotationQuery, *ent.Annotation](ctx, req.Pagination, query, annotationsOrderings, annotationsFilters)
 	if err != nil {
@@ -122,7 +152,7 @@ func (flow *flow) InstanceAnnotations(ctx context.Context, req *grpc.InstanceAnn
 	}
 
 	resp := new(grpc.InstanceAnnotationsResponse)
-	resp.Namespace = d.namespace()
+	resp.Namespace = cached.Namespace.Name
 	resp.Annotations = new(grpc.Annotations)
 	resp.Annotations.PageInfo = pi
 
@@ -143,17 +173,19 @@ func (flow *flow) InstanceAnnotationsStream(req *grpc.InstanceAnnotationsRequest
 	phash := ""
 	nhash := ""
 
-	d, err := flow.getInstance(ctx, flow.db.Namespace, req.GetNamespace(), req.GetInstance(), false)
+	cached, err := flow.getInstance(ctx, nil, req.GetNamespace(), req.GetInstance())
 	if err != nil {
 		return err
 	}
 
-	sub := flow.pubsub.SubscribeInstanceAnnotations(d.in)
+	sub := flow.pubsub.SubscribeInstanceAnnotations(cached)
 	defer flow.cleanup(sub.Close)
 
 resend:
 
-	query := d.in.QueryAnnotations()
+	clients := flow.edb.Clients(nil)
+
+	query := clients.Annotation.Query().Where(entnote.HasInstanceWith(entinst.ID(cached.Instance.ID)))
 
 	results, pi, err := paginate[*ent.AnnotationQuery, *ent.Annotation](ctx, req.Pagination, query, annotationsOrderings, annotationsFilters)
 	if err != nil {
@@ -161,7 +193,7 @@ resend:
 	}
 
 	resp := new(grpc.InstanceAnnotationsResponse)
-	resp.Namespace = d.namespace()
+	resp.Namespace = cached.Namespace.Name
 	resp.Annotations = new(grpc.Annotations)
 	resp.Annotations.PageInfo = pi
 
@@ -192,18 +224,15 @@ func (flow *flow) SetInstanceAnnotation(ctx context.Context, req *grpc.SetInstan
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tx, err := flow.db.Tx(ctx)
+	tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer rollback(tx)
 
-	nsc := tx.Namespace
-	annotationc := tx.Annotation
-
 	key := req.GetKey()
 
-	d, err := flow.getInstance(ctx, nsc, req.GetNamespace(), req.GetInstance(), false)
+	cached, err := flow.getInstance(ctx, tx, req.GetNamespace(), req.GetInstance())
 	if err != nil {
 		return nil, err
 	}
@@ -211,7 +240,7 @@ func (flow *flow) SetInstanceAnnotation(ctx context.Context, req *grpc.SetInstan
 	var annotation *ent.Annotation
 	var newVar bool
 
-	annotation, newVar, err = flow.SetAnnotation(ctx, annotationc, d.in, key, req.GetMimeType(), req.GetData())
+	annotation, newVar, err = flow.SetAnnotation(ctx, tx, &entInstanceAnnotationQuerier{clients: flow.edb.Clients(tx), cached: cached}, key, req.GetMimeType(), req.GetData())
 	if err != nil {
 		return nil, err
 	}
@@ -222,17 +251,17 @@ func (flow *flow) SetInstanceAnnotation(ctx context.Context, req *grpc.SetInstan
 	}
 
 	if newVar {
-		flow.logToInstance(ctx, time.Now(), d.in, "Created instance annotation '%s'.", key)
+		flow.logToInstance(ctx, time.Now(), cached, "Created instance annotation '%s'.", key)
 	} else {
-		flow.logToInstance(ctx, time.Now(), d.in, "Updated instance annotation '%s'.", key)
+		flow.logToInstance(ctx, time.Now(), cached, "Updated instance annotation '%s'.", key)
 
 	}
-	flow.pubsub.NotifyInstanceAnnotations(d.in)
+	flow.pubsub.NotifyInstanceAnnotations(cached.Instance)
 
 	var resp grpc.SetInstanceAnnotationResponse
 
-	resp.Namespace = d.ns().Name
-	resp.Instance = d.in.ID.String()
+	resp.Namespace = cached.Namespace.Name
+	resp.Instance = cached.Instance.ID.String()
 	resp.Key = key
 	resp.CreatedAt = timestamppb.New(annotation.CreatedAt)
 	resp.UpdatedAt = timestamppb.New(annotation.UpdatedAt)
@@ -304,16 +333,13 @@ func (flow *flow) SetInstanceAnnotationParcels(srv grpc.Flow_SetInstanceAnnotati
 		return errors.New("received more data than expected")
 	}
 
-	tx, err := flow.db.Tx(ctx)
+	tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return err
 	}
 	defer rollback(tx)
 
-	nsc := tx.Namespace
-	annotationc := tx.Annotation
-
-	d, err := flow.getInstance(ctx, nsc, namespace, instance, false)
+	cached, err := flow.getInstance(ctx, tx, namespace, instance)
 	if err != nil {
 		return err
 	}
@@ -321,7 +347,7 @@ func (flow *flow) SetInstanceAnnotationParcels(srv grpc.Flow_SetInstanceAnnotati
 	var annotation *ent.Annotation
 	var newVar bool
 
-	annotation, newVar, err = flow.SetAnnotation(ctx, annotationc, d.in, key, req.GetMimeType(), req.GetData())
+	annotation, newVar, err = flow.SetAnnotation(ctx, tx, &entInstanceAnnotationQuerier{clients: flow.edb.Clients(tx), cached: cached}, key, req.GetMimeType(), req.GetData())
 	if err != nil {
 		return err
 	}
@@ -332,17 +358,17 @@ func (flow *flow) SetInstanceAnnotationParcels(srv grpc.Flow_SetInstanceAnnotati
 	}
 
 	if newVar {
-		flow.logToInstance(ctx, time.Now(), d.in, "Created instance annotation '%s'.", key)
+		flow.logToInstance(ctx, time.Now(), cached, "Created instance annotation '%s'.", key)
 	} else {
-		flow.logToInstance(ctx, time.Now(), d.in, "Updated instance annotation '%s'.", key)
+		flow.logToInstance(ctx, time.Now(), cached, "Updated instance annotation '%s'.", key)
 	}
 
-	flow.pubsub.NotifyInstanceAnnotations(d.in)
+	flow.pubsub.NotifyInstanceAnnotations(cached.Instance)
 
 	var resp grpc.SetInstanceAnnotationResponse
 
-	resp.Namespace = d.ns().Name
-	resp.Instance = d.in.ID.String()
+	resp.Namespace = cached.Namespace.Name
+	resp.Instance = cached.Instance.ID.String()
 	resp.Key = key
 	resp.CreatedAt = timestamppb.New(annotation.CreatedAt)
 	resp.UpdatedAt = timestamppb.New(annotation.UpdatedAt)
@@ -363,22 +389,20 @@ func (flow *flow) DeleteInstanceAnnotation(ctx context.Context, req *grpc.Delete
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tx, err := flow.db.Tx(ctx)
+	tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer rollback(tx)
 
-	nsc := tx.Namespace
-
-	d, err := flow.traverseToInstanceAnnotation(ctx, nsc, req.GetNamespace(), req.GetInstance(), req.GetKey())
+	cached, annotation, err := flow.traverseToInstanceAnnotation(ctx, tx, req.GetNamespace(), req.GetInstance(), req.GetKey())
 	if err != nil {
 		return nil, err
 	}
 
-	annotationc := tx.Annotation
+	clients := flow.edb.Clients(tx)
 
-	err = annotationc.DeleteOne(d.annotation).Exec(ctx)
+	err = clients.Annotation.DeleteOneID(annotation.ID).Exec(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -388,8 +412,8 @@ func (flow *flow) DeleteInstanceAnnotation(ctx context.Context, req *grpc.Delete
 		return nil, err
 	}
 
-	flow.logToInstance(ctx, time.Now(), d.in, "Deleted instance annotation '%s'.", d.annotation.Name)
-	flow.pubsub.NotifyInstanceAnnotations(d.in)
+	flow.logToInstance(ctx, time.Now(), cached, "Deleted instance annotation '%s'.", annotation.Name)
+	flow.pubsub.NotifyInstanceAnnotations(cached.Instance)
 
 	var resp emptypb.Empty
 
@@ -401,19 +425,20 @@ func (flow *flow) RenameInstanceAnnotation(ctx context.Context, req *grpc.Rename
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tx, err := flow.db.Tx(ctx)
+	tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer rollback(tx)
 
-	nsc := tx.Namespace
-	d, err := flow.traverseToInstanceAnnotation(ctx, nsc, req.GetNamespace(), req.GetInstance(), req.GetOld())
+	cached, annotation, err := flow.traverseToInstanceAnnotation(ctx, tx, req.GetNamespace(), req.GetInstance(), req.GetOld())
 	if err != nil {
 		return nil, err
 	}
 
-	annotation, err := d.annotation.Update().SetName(req.GetNew()).Save(ctx)
+	clients := flow.edb.Clients(tx)
+
+	anno, err := clients.Annotation.UpdateOneID(annotation.ID).SetName(req.GetNew()).Save(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -423,18 +448,18 @@ func (flow *flow) RenameInstanceAnnotation(ctx context.Context, req *grpc.Rename
 		return nil, err
 	}
 
-	flow.logToInstance(ctx, time.Now(), d.in, "Renamed instance annotation from '%s' to '%s'.", req.GetOld(), req.GetNew())
-	flow.pubsub.NotifyInstanceAnnotations(d.in)
+	flow.logToInstance(ctx, time.Now(), cached, "Renamed instance annotation from '%s' to '%s'.", req.GetOld(), req.GetNew())
+	flow.pubsub.NotifyInstanceAnnotations(cached.Instance)
 
 	var resp grpc.RenameInstanceAnnotationResponse
 
-	resp.Checksum = d.annotation.Hash
-	resp.CreatedAt = timestamppb.New(d.annotation.CreatedAt)
-	resp.Key = annotation.Name
-	resp.Namespace = d.ns().Name
-	resp.Size = int64(d.annotation.Size)
-	resp.UpdatedAt = timestamppb.New(d.annotation.UpdatedAt)
-	resp.MimeType = d.annotation.MimeType
+	resp.Checksum = anno.Hash
+	resp.CreatedAt = timestamppb.New(anno.CreatedAt)
+	resp.Key = anno.Name
+	resp.Namespace = cached.Namespace.Name
+	resp.Size = int64(anno.Size)
+	resp.UpdatedAt = timestamppb.New(anno.UpdatedAt)
+	resp.MimeType = anno.MimeType
 
 	return &resp, nil
 

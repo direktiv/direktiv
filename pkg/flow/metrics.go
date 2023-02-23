@@ -167,15 +167,15 @@ func (flow *flow) WorkflowMetrics(ctx context.Context, req *grpc.WorkflowMetrics
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	d, err := flow.traverseToRef(ctx, flow.db.Namespace, req.GetNamespace(), req.GetPath(), req.GetRef())
+	cached, err := flow.traverseToRef(ctx, nil, req.GetNamespace(), req.GetPath(), req.GetRef())
 	if err != nil {
 		return nil, err
 	}
 
 	resp, err := flow.metrics.GetMetrics(&metrics.GetMetricsArgs{
-		Namespace: d.namespace(),
-		Workflow:  d.path,
-		Revision:  d.rev().ID.String(),
+		Namespace: cached.Namespace.Name,
+		Workflow:  cached.Path(),
+		Revision:  cached.Revision.ID.String(),
 		Since:     req.SinceTimestamp.AsTime(),
 	})
 	if err != nil {
@@ -256,15 +256,9 @@ func (flow *flow) WorkflowMetrics(ctx context.Context, req *grpc.WorkflowMetrics
 
 func (engine *engine) metricsCompleteState(ctx context.Context, im *instanceMemory, nextState, errCode string, retrying bool) {
 
-	ns, err := engine.InstanceNamespace(ctx, im)
-	if err != nil {
-		engine.sugar.Error(err)
-		return
-	}
+	workflow := GetInodePath(im.cached.Instance.As)
 
-	workflow := GetInodePath(im.in.As)
-
-	reportStateEnd(ns.Name, workflow, im.logic.GetID(), im.in.Edges.Runtime.StateBeginTime)
+	reportStateEnd(im.cached.Namespace.Name, workflow, im.logic.GetID(), im.runtime.StateBeginTime)
 
 	if im.Step() == 0 {
 		return
@@ -272,14 +266,14 @@ func (engine *engine) metricsCompleteState(ctx context.Context, im *instanceMemo
 
 	args := new(metrics.InsertRecordArgs)
 
-	args.Namespace = ns.Name
+	args.Namespace = im.cached.Namespace.Name
 	args.Workflow = workflow
-	args.Revision = im.in.Edges.Revision.ID.String()
-	args.Instance = im.ID().String()
+	args.Revision = im.cached.Revision.ID.String()
+	args.Instance = im.cached.Instance.ID.String()
 
 	caller := engine.InstanceCaller(ctx, im)
 	if caller != nil {
-		args.Invoker = caller.InstanceID
+		args.Invoker = caller.InstanceID.String()
 	}
 
 	flow := im.Flow()
@@ -301,7 +295,7 @@ func (engine *engine) metricsCompleteState(ctx context.Context, im *instanceMemo
 		args.Invoker = "start"
 	}
 
-	err = engine.metrics.InsertRecord(args)
+	err := engine.metrics.InsertRecord(args)
 	if err != nil {
 		engine.sugar.Error(err)
 	}
@@ -310,15 +304,9 @@ func (engine *engine) metricsCompleteState(ctx context.Context, im *instanceMemo
 
 func (engine *engine) metricsCompleteInstance(ctx context.Context, im *instanceMemory) {
 
-	ns, err := engine.InstanceNamespace(ctx, im)
-	if err != nil {
-		engine.sugar.Error(err)
-		return
-	}
-
 	t := im.StateBeginTime()
-	namespace := ns.Name
-	workflow := GetInodePath(im.in.As)
+	namespace := im.cached.Namespace.Name
+	workflow := GetInodePath(im.cached.Instance.As)
 
 	// Trim workflow revision until revisions are fully implemented.
 	if divider := strings.LastIndex(workflow, ":"); divider > 0 {
@@ -334,7 +322,7 @@ func (engine *engine) metricsCompleteInstance(ctx context.Context, im *instanceM
 		metricsWfSuccess.WithLabelValues(namespace, workflow, namespace).Inc()
 	}
 
-	metricsWfOutcome.WithLabelValues(namespace, workflow, namespace, im.in.Status, im.in.ErrorCode).Inc()
+	metricsWfOutcome.WithLabelValues(namespace, workflow, namespace, im.cached.Instance.Status, im.cached.Instance.ErrorCode).Inc()
 	metricsWfPending.WithLabelValues(namespace, workflow, namespace).Dec()
 
 	if t != empty {

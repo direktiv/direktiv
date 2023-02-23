@@ -44,6 +44,8 @@ func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
 	grpc.RegisterFlowServer(flow.srv, flow)
 	reflection.Register(flow.srv)
 
+	clients := flow.edb.Clients(nil)
+
 	go func() {
 		<-ctx.Done()
 		flow.srv.Stop()
@@ -56,12 +58,12 @@ func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
 		for {
 			<-time.After(time.Hour)
 			t := time.Now().Add(time.Hour * -24)
-			_, err := flow.db.Instance.Delete().Where(entinst.EndAtLT(t)).Exec(ctx)
+			_, err := clients.Instance.Delete().Where(entinst.EndAtLT(t)).Exec(ctx)
 			if err != nil {
 				flow.sugar.Error(fmt.Errorf("failed to cleanup old instances: %w", err))
 			}
 
-			_, err = flow.db.VarData.Delete().Where(entvardata.Not(entvardata.HasVarrefs())).Exec(ctx)
+			_, err = clients.VarData.Delete().Where(entvardata.Not(entvardata.HasVarrefs())).Exec(ctx)
 			if err != nil {
 				flow.sugar.Error(fmt.Errorf("failed to cleanup old variables: %w", err))
 			}
@@ -75,7 +77,7 @@ func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
 		for {
 			<-time.After(time.Hour)
 			t := time.Now().Add(time.Hour * -24)
-			_, err := flow.db.LogMsg.Delete().Where(entlog.TLT(t)).Exec(ctx)
+			_, err := clients.LogMsg.Delete().Where(entlog.TLT(t)).Exec(ctx)
 			if err != nil {
 				flow.sugar.Error(fmt.Errorf("failed to cleanup old logs: %w", err))
 			}
@@ -121,7 +123,9 @@ func (flow *flow) kickExpiredInstances() {
 
 	t := time.Now().Add(-1 * time.Minute)
 
-	list, err := flow.db.InstanceRuntime.Query().
+	clients := flow.edb.Clients(nil)
+
+	list, err := clients.InstanceRuntime.Query().
 		Select(entirt.FieldID, entirt.FieldFlow, entirt.FieldDeadline).
 		Where(entirt.DeadlineLT(t), entirt.HasInstanceWith(entinst.StatusEQ(util.InstanceStatusPending))).
 		WithInstance().

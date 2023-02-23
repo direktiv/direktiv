@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/functions"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/lib/pq"
@@ -13,7 +14,9 @@ func (flow *flow) functionsHeartbeat() {
 
 	ctx := context.Background()
 
-	nss, err := flow.db.Namespace.Query().All(ctx)
+	clients := flow.edb.Clients(nil)
+
+	nss, err := clients.Namespace.Query().All(ctx)
 	if err != nil {
 		flow.sugar.Error(err)
 		return
@@ -32,13 +35,14 @@ func (flow *flow) functionsHeartbeat() {
 			var tuples = make([]*functions.HeartbeatTuple, 0)
 			checksums := make(map[string]bool)
 
-			d, err := flow.reverseTraverseToWorkflow(ctx, wf.ID.String())
+			cached := new(database.CacheData)
+			err = flow.database.Workflow(ctx, nil, cached, wf.ID)
 			if err != nil {
 				flow.sugar.Error(err)
 				continue
 			}
 
-			revs, err := wf.QueryRevisions().All(ctx)
+			revs, err := wf.QueryRevisions().WithWorkflow().All(ctx)
 			if err != nil {
 				flow.sugar.Error(err)
 				continue
@@ -46,7 +50,16 @@ func (flow *flow) functionsHeartbeat() {
 
 			for _, rev := range revs {
 
-				w, err := loadSource(rev)
+				x := &database.Revision{
+					ID:        rev.ID,
+					CreatedAt: rev.CreatedAt,
+					Hash:      rev.Hash,
+					Source:    rev.Source,
+					Metadata:  rev.Metadata,
+					Workflow:  rev.Edges.Workflow.ID,
+				}
+
+				w, err := loadSource(x)
 				if err != nil {
 					continue
 				}
@@ -69,8 +82,8 @@ func (flow *flow) functionsHeartbeat() {
 					tuple := &functions.HeartbeatTuple{
 						NamespaceName:      ns.Name,
 						NamespaceID:        ns.ID.String(),
-						WorkflowPath:       d.path,
-						WorkflowID:         wf.ID.String(),
+						WorkflowPath:       cached.Path(),
+						WorkflowID:         cached.Workflow.ID.String(),
 						Revision:           rev.Hash,
 						FunctionDefinition: def,
 					}
@@ -123,7 +136,7 @@ func (flow *flow) flushHeartbeatTuples(tuples []*functions.HeartbeatTuple) {
 
 	ctx := context.Background()
 
-	conn, err := flow.db.DB().Conn(ctx)
+	conn, err := flow.edb.DB().Conn(ctx)
 	if err != nil {
 		flow.sugar.Error(err)
 		return

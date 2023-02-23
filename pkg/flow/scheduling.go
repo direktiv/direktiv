@@ -13,6 +13,11 @@ func (engine *engine) InstanceYield(im *instanceMemory) {
 
 	engine.sugar.Debugf("Instance going to sleep: %s", im.ID().String())
 
+	e := im.flushUpdates(context.Background())
+	if e != nil {
+		engine.sugar.Errorf("Failed to flush updates: %v", e)
+	}
+
 	engine.freeResources(im)
 
 	if im.lock != nil {
@@ -27,10 +32,10 @@ func (engine *engine) WakeInstanceCaller(ctx context.Context, im *instanceMemory
 
 	if caller != nil {
 
-		engine.logToInstance(ctx, time.Now(), im.in, "Reporting results to calling workflow.")
+		engine.logToInstance(ctx, time.Now(), im.cached, "Reporting results to calling workflow.")
 
 		msg := &actionResultMessage{
-			InstanceID: caller.InstanceID,
+			InstanceID: caller.InstanceID.String(),
 			State:      caller.State,
 			Step:       caller.Step,
 			Payload: actionResultPayload{
@@ -111,8 +116,8 @@ func (engine *engine) sleepWakeup(data []byte) {
 
 func (engine *engine) queue(im *instanceMemory) {
 
-	namespace := im.in.Edges.Namespace.Name
-	workflow := GetInodePath(im.in.As)
+	namespace := im.cached.Namespace.Name
+	workflow := GetInodePath(im.cached.Instance.As)
 
 	metricsWfInvoked.WithLabelValues(namespace, workflow, namespace).Inc()
 	metricsWfPending.WithLabelValues(namespace, workflow, namespace).Inc()

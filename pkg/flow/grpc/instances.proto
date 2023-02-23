@@ -127,3 +127,20 @@ message RunWorkflowResponse {
 	string instance = 2;
 	// TODO
 }
+
+message AwaitWorkflowRequest {
+	string namespace = 1;
+	string path = 2;
+	string ref = 3;
+	bytes input = 4;
+}
+
+message AwaitWorkflowResponse {
+	string namespace = 1;
+	Instance instance = 2;
+	string invokedBy = 3;
+	repeated string flow = 4;
+	InstanceWorkflow workflow = 5;
+	bytes data = 6;
+}
+
