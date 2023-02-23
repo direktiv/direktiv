@@ -40,6 +40,7 @@
     "json-to-pretty-yaml": "^1.2.2",
     "monaco": "^1.201704190613.0",
     "postcss": "^8.4.21",
+    "postcss-loader": "^7.0.2",
     "prettier": "^2.8.3",
     "rc-slider": "^9.7.5",
     "re-resizable": "^6.9.1",
