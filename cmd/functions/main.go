@@ -1,4 +1,4 @@
-package main
+package functions
 
 import (
 	"errors"
@@ -12,7 +12,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/functions"
 )
 
-func main() {
+func RunApplication() {
 
 	// start health check
 	go startHealthHandler()

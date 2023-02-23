@@ -147,7 +147,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	// responses:
 	//   '200':
 	//     "description": "namespace config has been successfully been updated"
-	r.HandleFunc("/namespaces/{ns}/config", h.SetNamespaceConfig).Name(RN_GetNamespaceConfig).Methods(http.MethodPatch)
+	r.HandleFunc("/namespaces/{ns}/config", h.SetNamespaceConfig).Name(RN_SetNamespaceConfig).Methods(http.MethodPatch)
 
 	// swagger:operation GET /api/namespaces/{namespace}/config Namespaces getNamespaceConfig
 	// ---
@@ -163,7 +163,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	// responses:
 	//   '200':
 	//     "description": "successfully got namespace config"
-	r.HandleFunc("/namespaces/{ns}/config", h.GetNamespaceConfig).Name(RN_SetNamespaceConfig).Methods(http.MethodGet)
+	r.HandleFunc("/namespaces/{ns}/config", h.GetNamespaceConfig).Name(RN_GetNamespaceConfig).Methods(http.MethodGet)
 
 	// swagger:operation DELETE /api/namespaces/{namespace} Namespaces deleteNamespace
 	// ---
@@ -1215,7 +1215,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//   '200':
 	r.HandleFunc("/namespaces/{ns}/broadcast/{filter}", h.BroadcastCloudeventFilter).Name(RN_NamespaceEventFilter).Methods(http.MethodPost)
 
-	// swagger:operation PUT /api/namespaces/{namespace}/eventfilter/{filtername} CloudEventFilter createCloudeventFilter
+	// swagger:operation POST /api/namespaces/{namespace}/eventfilter/{filtername} CloudEventFilter createCloudeventFilter
 	// ---
 	// description: |
 	//   Creates new cloud event filter in target namespace
@@ -1240,9 +1240,9 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     type: object
 	// responses:
 	//   '200':
-	r.HandleFunc("/namespaces/{ns}/eventfilter/{filter}", h.CreateBroadcastCloudeventFilter).Name(RN_CreateNamespaceEventFilter).Methods(http.MethodPut)
+	r.HandleFunc("/namespaces/{ns}/eventfilter/{filter}", h.CreateBroadcastCloudeventFilter).Name(RN_CreateNamespaceEventFilter).Methods(http.MethodPost)
 
-	// swagger:operation DELETE /api/namespaces/{namespace}/broadcast/{filtername} CloudEventFilter deleteCloudeventFilter
+	// swagger:operation DELETE /api/namespaces/{namespace}/eventfilter/{filtername} CloudEventFilter deleteCloudeventFilter
 	// ---
 	// description: |
 	//   Delete existing cloud event filter in target namespace
@@ -4498,9 +4498,7 @@ generic:
 
 }
 
-func (h *flowHandler) BroadcastCloudevent(w http.ResponseWriter, r *http.Request) {
-
-	h.logger.Debugf("Handling request: %s", this())
+func (h *flowHandler) doBroadcast(w http.ResponseWriter, r *http.Request, filter string) {
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -4521,15 +4519,38 @@ func (h *flowHandler) BroadcastCloudevent(w http.ResponseWriter, r *http.Request
 			return
 		}
 
-		in := &grpc.BroadcastCloudeventRequest{
-			Namespace:  namespace,
-			Cloudevent: d,
+		if filter == "" {
+
+			in := &grpc.BroadcastCloudeventRequest{
+				Namespace:  namespace,
+				Cloudevent: d,
+			}
+
+			resp, err := h.client.BroadcastCloudevent(ctx, in)
+			respond(w, resp, err)
+
+		} else {
+
+			inFilter := &grpc.ApplyCloudEventFilterRequest{
+				Namespace:  namespace,
+				Cloudevent: d,
+				FilterName: filter,
+			}
+
+			resp, err := h.client.ApplyCloudEventFilter(ctx, inFilter)
+			respond(w, resp, err)
+
 		}
 
-		resp, err := h.client.BroadcastCloudevent(ctx, in)
-		respond(w, resp, err)
-
 	}
+
+}
+
+func (h *flowHandler) BroadcastCloudevent(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	h.doBroadcast(w, r, "")
 
 }
 
@@ -4537,49 +4558,7 @@ func (h *flowHandler) BroadcastCloudeventFilter(w http.ResponseWriter, r *http.R
 
 	h.logger.Debugf("Handling request: %s", this())
 
-	ctx := r.Context()
-	namespace := mux.Vars(r)["ns"]
-	filter := mux.Vars(r)["filter"]
-
-	ces, err := ToGRPCCloudEvents(r)
-	if err != nil {
-		respond(w, nil, err)
-		return
-	}
-
-	for i := range ces {
-
-		d, err := json.Marshal(ces[i])
-		if err != nil {
-			h.logger.Errorf("Failed to marshal CloudEvent: %v.", err)
-			continue
-		}
-
-		inFilter := &grpc.ApplyCloudEventFilterRequest{
-			Namespace:  namespace,
-			Cloudevent: d,
-			FilterName: filter,
-		}
-
-		rsp, err := h.client.ApplyCloudEventFilter(ctx, inFilter)
-		if err != nil {
-			h.logger.Errorf("Failed to apply CloudEvent filter: %v.", err)
-			respond(w, rsp, err)
-		}
-
-		if string(rsp.GetEvent()) == "null" {
-			continue
-		}
-
-		in := &grpc.BroadcastCloudeventRequest{
-			Namespace:  namespace,
-			Cloudevent: rsp.GetEvent(),
-		}
-
-		resp, err := h.client.BroadcastCloudevent(ctx, in)
-		respond(w, resp, err)
-
-	}
+	h.doBroadcast(w, r, mux.Vars(r)["filter"])
 
 }
 

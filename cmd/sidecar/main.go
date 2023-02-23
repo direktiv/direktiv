@@ -1,4 +1,4 @@
-package main
+package sidecar
 
 import (
 	"fmt"
@@ -12,7 +12,7 @@ import (
 
 var log *zap.SugaredLogger
 
-func main() {
+func RunApplication() {
 
 	var err error
 

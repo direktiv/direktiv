@@ -51,11 +51,6 @@ type events struct {
 	*server
 }
 
-type keyPair struct {
-	namespace  string
-	filtername string
-}
-
 type CacheObject struct {
 	value sync.Map
 }
@@ -1050,11 +1045,11 @@ func (events *events) listenForEvents(ctx context.Context, im *instanceMemory, c
 
 }
 
-func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloudEventFilterRequest) (*grpc.ApplyCloudEventFilterResponse, error) {
+func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloudEventFilterRequest) (*emptypb.Empty, error) {
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	resp := new(grpc.ApplyCloudEventFilterResponse)
+	resp := new(emptypb.Empty)
 
 	namespace := in.GetNamespace()
 	filterName := in.GetFilterName()
@@ -1062,9 +1057,7 @@ func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloud
 
 	var script string
 
-	var key keyPair
-	key.filtername = filterName
-	key.namespace = namespace
+	key := fmt.Sprintf("%s-%s", namespace, filterName)
 
 	cached := new(database.CacheData)
 
@@ -1075,19 +1068,20 @@ func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloud
 
 	if jsCode, ok := eventFilterCache.get(key); ok {
 		script = fmt.Sprintf("function filter() {\n %s \n}", jsCode)
-
 	} else {
 
 		clients := flow.edb.Clients(nil)
 
 		ceventfilter, err := clients.CloudEventFilters.Query().Where(enteventsfilter.HasNamespaceWith(entns.ID(cached.Namespace.ID))).Where(enteventsfilter.NameEQ(filterName)).Only(ctx)
 		if err != nil {
-			err = status.Error(codes.NotFound, fmt.Sprintf("CloudEvent filter %s not exists", filterName))
+			err = status.Error(codes.NotFound, fmt.Sprintf("cloudEvent filter %s does not exist", filterName))
 			return resp, err
 		}
 
 		script = fmt.Sprintf("function filter() {\n %s \n}", ceventfilter.Jscode)
 
+		flow.sugar.Debugf("adding filter cache key: %v\n", key)
+		eventFilterCache.put(key, script)
 	}
 
 	var mapEvent map[string]interface{}
@@ -1098,8 +1092,19 @@ func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloud
 
 	//create js runtime
 	vm := goja.New()
+	time.AfterFunc(1*time.Second, func() {
+		vm.Interrupt("block event filter")
+	})
 
 	err = vm.Set("event", mapEvent)
+	if err != nil {
+		return resp, fmt.Errorf("failed to initialize js runtime: %w", err)
+	}
+
+	// add logging function
+	err = vm.Set("nslog", func(txt interface{}) {
+		flow.logToNamespace(ctx, time.Now(), cached, fmt.Sprintf("%v", txt))
+	})
 	if err != nil {
 		return resp, fmt.Errorf("failed to initialize js runtime: %w", err)
 	}
@@ -1110,39 +1115,43 @@ func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloud
 		return resp, err
 	}
 
-	var fn func() any
-	err = vm.ExportTo(vm.Get("filter"), &fn)
+	f, ok := goja.AssertFunction(vm.Get("filter"))
+	if !ok {
+		flow.logToNamespace(ctx, time.Now(), cached, "cloudEvent filter '%s' error: %v", filterName, err)
+		return resp, err
+	}
+
+	newEventMap, err := f(goja.Undefined())
 	if err != nil {
 		flow.logToNamespace(ctx, time.Now(), cached, "CloudEvent filter '%s' produced an error (2): %v", filterName, err)
 		return resp, err
 	}
 
-	newEventMap := fn()
+	retValue := newEventMap.Export()
+
+	// event dropped
+	if retValue == nil {
+		return resp, nil
+	}
 
 	newBytesEvent, err := json.Marshal(newEventMap)
 	if err != nil {
 		flow.logToNamespace(ctx, time.Now(), cached, "CloudEvent filter '%s' produced an error (3): %v", filterName, err)
 		return resp, err
 	}
-	resp.Event = newBytesEvent
 
-	if string(resp.GetEvent()) == "null" {
-		event, err := EventByteToCloudevent(cloudevent)
-		if err != nil {
-			flow.logToNamespace(ctx, time.Now(), cached, "CloudEvent filter '%s' produced an error (4): %v", filterName, err)
-			return resp, err
-		}
-		flow.logToNamespace(ctx, time.Now(), cached, "Dropped Event: %s", event.ID())
-	} else {
-		event, err := EventByteToCloudevent(newBytesEvent)
-		if err != nil {
-			flow.logToNamespace(ctx, time.Now(), cached, "CloudEvent filter '%s' produced an error (5): %v", filterName, err)
-			return resp, err
-		}
-		flow.logToNamespace(ctx, time.Now(), cached, "cloud event filter applied, new Event : %s (%s / %s)", event.ID(), event.Type(), event.Source())
+	flow.sugar.Debugf("event after script is %v", string(newBytesEvent))
+
+	br := &grpc.BroadcastCloudeventRequest{
+		Namespace:  namespace,
+		Cloudevent: newBytesEvent,
+		Timer:      0,
 	}
 
+	resp, err = flow.BroadcastCloudevent(ctx, br)
+
 	return resp, err
+
 }
 
 func (flow *flow) DeleteCloudEventFilter(ctx context.Context, in *grpc.DeleteCloudEventFilterRequest) (*emptypb.Empty, error) {
@@ -1163,7 +1172,7 @@ func (flow *flow) DeleteCloudEventFilter(ctx context.Context, in *grpc.DeleteClo
 
 	_, err = clients.CloudEventFilters.Query().Where(enteventsfilter.HasNamespaceWith(entns.ID(cached.Namespace.ID))).Where(enteventsfilter.NameEQ(filterName)).Only(ctx)
 	if err != nil {
-		err = status.Error(codes.NotFound, fmt.Sprintf("CloudEvent filter %s not exists", filterName))
+		err = status.Error(codes.NotFound, fmt.Sprintf("cloudEvent filter %s does not exist", filterName))
 		return &resp, err
 	}
 
@@ -1179,13 +1188,40 @@ func (flow *flow) DeleteCloudEventFilter(ctx context.Context, in *grpc.DeleteClo
 		return &resp, err
 	}
 
-	var key keyPair
-	key.filtername = filterName
-	key.namespace = namespace
+	key := fmt.Sprintf("%s-%s", namespace, filterName)
 	eventFilterCache.delete(key)
+	flow.server.pubsub.publish(&PubsubUpdate{
+		Handler: deleteFilterCache,
+		Key:     key,
+	})
 
 	return &resp, err
 
+}
+
+const deleteFilterCache = "deleteFilterCache"
+const deleteFilterCacheNamespace = "deleteFilterCacheNamespace"
+
+func (flow *flow) deleteCache(req *PubsubUpdate) {
+	flow.sugar.Debugf("deleting filter cache key: %v\n", req.Key)
+	eventFilterCache.delete(req.Key)
+}
+
+func deleteCacheNamespaceSync(delkey string) {
+
+	eventFilterCache.value.Range(func(key, value any) bool {
+
+		if strings.HasPrefix(key.(string), fmt.Sprintf("%s-", delkey)) {
+			eventFilterCache.value.Delete(key.(string))
+		}
+
+		return true
+	})
+}
+
+func (flow *flow) deleteCacheNamespace(req *PubsubUpdate) {
+	flow.sugar.Debugf("deleting filter cache for namespace: %v\n", req.Key)
+	deleteCacheNamespaceSync(req.Key)
 }
 
 func (flow *flow) CreateCloudEventFilter(ctx context.Context, in *grpc.CreateCloudEventFilterRequest) (*emptypb.Empty, error) {
@@ -1229,9 +1265,8 @@ func (flow *flow) CreateCloudEventFilter(ctx context.Context, in *grpc.CreateClo
 		return &resp, err
 	}
 
-	var key keyPair
-	key.filtername = filterName
-	key.namespace = namespace
+	key := fmt.Sprintf("%s-%s", namespace, filterName)
+	flow.sugar.Debugf("adding filter cache key: %v\n", key)
 	eventFilterCache.put(key, script)
 
 	return &resp, err
@@ -1290,7 +1325,7 @@ func (flow *flow) GetCloudEventFilterScript(ctx context.Context, in *grpc.GetClo
 
 	script, err := clients.CloudEventFilters.Query().Where(enteventsfilter.HasNamespaceWith(entns.ID(cached.Namespace.ID))).Where(enteventsfilter.NameEQ(filterName)).Only(ctx)
 	if err != nil {
-		err = status.Error(codes.NotFound, fmt.Sprintf("CloudEvent filter %s not exists", filterName))
+		err = status.Error(codes.NotFound, fmt.Sprintf("cloudEvent filter %s does not exist", filterName))
 		return resp, err
 	}
 
@@ -1299,14 +1334,14 @@ func (flow *flow) GetCloudEventFilterScript(ctx context.Context, in *grpc.GetClo
 	return resp, err
 }
 
-func EventByteToCloudevent(byteEvent []byte) (event.Event, error) {
-	ev := &event.Event{}
-	err := json.Unmarshal(byteEvent, ev)
-	return *ev, err
+// func EventByteToCloudevent(byteEvent []byte) (event.Event, error) {
+// 	ev := &event.Event{}
+// 	err := json.Unmarshal(byteEvent, ev)
+// 	return *ev, err
 
-}
+// }
 
-func (c *CacheObject) get(key keyPair) (string, bool) {
+func (c *CacheObject) get(key string) (string, bool) {
 	v, ok := c.value.Load(key)
 	var s string
 	if ok {
@@ -1318,10 +1353,10 @@ func (c *CacheObject) get(key keyPair) (string, bool) {
 	return "", false
 }
 
-func (c *CacheObject) put(key keyPair, value string) {
+func (c *CacheObject) put(key string, value string) {
 	c.value.Store(key, value)
 }
 
-func (c *CacheObject) delete(key keyPair) {
+func (c *CacheObject) delete(key string) {
 	c.value.Delete(key)
 }

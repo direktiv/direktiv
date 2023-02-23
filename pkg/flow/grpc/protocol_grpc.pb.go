@@ -83,7 +83,7 @@ type FlowClient interface {
 	AwaitWorkflow(ctx context.Context, in *AwaitWorkflowRequest, opts ...grpc.CallOption) (Flow_AwaitWorkflowClient, error)
 	CancelInstance(ctx context.Context, in *CancelInstanceRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	BroadcastCloudevent(ctx context.Context, in *BroadcastCloudeventRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	ApplyCloudEventFilter(ctx context.Context, in *ApplyCloudEventFilterRequest, opts ...grpc.CallOption) (*ApplyCloudEventFilterResponse, error)
+	ApplyCloudEventFilter(ctx context.Context, in *ApplyCloudEventFilterRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	DeleteCloudEventFilter(ctx context.Context, in *DeleteCloudEventFilterRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	CreateCloudEventFilter(ctx context.Context, in *CreateCloudEventFilterRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	UpdateCloudEventFilter(ctx context.Context, in *UpdateCloudEventFilterRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
@@ -1100,8 +1100,8 @@ func (c *flowClient) BroadcastCloudevent(ctx context.Context, in *BroadcastCloud
 	return out, nil
 }
 
-func (c *flowClient) ApplyCloudEventFilter(ctx context.Context, in *ApplyCloudEventFilterRequest, opts ...grpc.CallOption) (*ApplyCloudEventFilterResponse, error) {
-	out := new(ApplyCloudEventFilterResponse)
+func (c *flowClient) ApplyCloudEventFilter(ctx context.Context, in *ApplyCloudEventFilterRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/ApplyCloudEventFilter", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -2590,7 +2590,7 @@ type FlowServer interface {
 	AwaitWorkflow(*AwaitWorkflowRequest, Flow_AwaitWorkflowServer) error
 	CancelInstance(context.Context, *CancelInstanceRequest) (*emptypb.Empty, error)
 	BroadcastCloudevent(context.Context, *BroadcastCloudeventRequest) (*emptypb.Empty, error)
-	ApplyCloudEventFilter(context.Context, *ApplyCloudEventFilterRequest) (*ApplyCloudEventFilterResponse, error)
+	ApplyCloudEventFilter(context.Context, *ApplyCloudEventFilterRequest) (*emptypb.Empty, error)
 	DeleteCloudEventFilter(context.Context, *DeleteCloudEventFilterRequest) (*emptypb.Empty, error)
 	CreateCloudEventFilter(context.Context, *CreateCloudEventFilterRequest) (*emptypb.Empty, error)
 	UpdateCloudEventFilter(context.Context, *UpdateCloudEventFilterRequest) (*emptypb.Empty, error)
@@ -2876,7 +2876,7 @@ func (UnimplementedFlowServer) CancelInstance(context.Context, *CancelInstanceRe
 func (UnimplementedFlowServer) BroadcastCloudevent(context.Context, *BroadcastCloudeventRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method BroadcastCloudevent not implemented")
 }
-func (UnimplementedFlowServer) ApplyCloudEventFilter(context.Context, *ApplyCloudEventFilterRequest) (*ApplyCloudEventFilterResponse, error) {
+func (UnimplementedFlowServer) ApplyCloudEventFilter(context.Context, *ApplyCloudEventFilterRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ApplyCloudEventFilter not implemented")
 }
 func (UnimplementedFlowServer) DeleteCloudEventFilter(context.Context, *DeleteCloudEventFilterRequest) (*emptypb.Empty, error) {

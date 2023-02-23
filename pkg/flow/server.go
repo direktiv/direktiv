@@ -406,6 +406,9 @@ func (srv *server) registerFunctions() {
 	srv.timers.registerFunction(syncerTimeoutFunction, srv.syncer.timeoutHandler)
 	srv.timers.registerFunction(syncerCron, srv.syncer.cronHandler)
 
+	srv.pubsub.registerFunction(deleteFilterCache, srv.flow.deleteCache)
+	srv.pubsub.registerFunction(deleteFilterCacheNamespace, srv.flow.deleteCacheNamespace)
+
 }
 
 func (srv *server) cronPoller() {

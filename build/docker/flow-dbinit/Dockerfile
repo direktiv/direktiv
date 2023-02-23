@@ -1,9 +1,28 @@
-FROM alpine:3.15.0
+FROM golang:1.19 as builder
 
-COPY build/flow-dbinit /bin/flow-dbinit
-RUN chmod 755 /bin/flow-dbinit
+ARG RELEASE_VERSION
+ENV RELEASE=$RELEASE_VERSION
 
-RUN apk add shadow
-RUN /usr/sbin/groupadd -g 22222 direktivg && /usr/sbin/useradd -s /bin/sh -g 22222 -u 33333 direktivu
+COPY go.mod src/go.mod
+COPY go.sum src/go.sum
+RUN cd src/ && go mod download
 
-CMD /bin/flow-dbinit
+COPY pkg src/pkg/
+COPY cmd src/cmd/
+COPY .git .git
+
+RUN --mount=type=cache,target=/root/.cache/go-build cd src && \
+    export GIT_HASH=`git rev-parse --short HEAD` && \
+    export FULL_VERSION="${RELEASE:-$GIT_HASH}"; echo "${v%.*}" && \
+    go build -ldflags "-X github.com/direktiv/direktiv/pkg/version.Version=$FULL_VERSION" -tags osusergo,netgo -o /direktiv cmd/direktiv/*.go;
+
+FROM gcr.io/distroless/static
+
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+COPY --from=builder /direktiv /bin/direktiv
+
+USER nonroot:nonroot
+ENV DIREKTIV_APP=flow_dbinit
+EXPOSE 6666
+EXPOSE 7777
+CMD ["/bin/direktiv"]

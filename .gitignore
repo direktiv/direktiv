@@ -100,3 +100,10 @@ scripts/dev.yaml
 scripts/api/api.md
 scripts/api/swagger.json
 scripts/dev.yaml
+.idea
+
+
+direktivctl-darwin
+direktivctl-darwin-arm64
+direktivctl-windows
+direktivctl

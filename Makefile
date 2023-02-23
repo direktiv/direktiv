@@ -57,19 +57,12 @@ help: ## Prints usage information.
 
 .PHONY: binaries
 binaries: ## Builds all Direktiv binaries. Useful only to check that code compiles.
-binaries: build/flow-binary build/api-binary build/secrets-binary build/sidecar-binary build/functions-binary build/flow-dbinit
+	go build -o /dev/null cmd/direktiv/*.go
 
 .PHONY: clean
 clean: ## Deletes all build artifacts and tears down existing cluster.
 	rm -f build/*.md5
 	rm -f build/*.checksum
-	rm -f build/*-binary
-	rm -f build/flow
-	rm -f build/api
-	rm -f build/secrets
-	rm -f build/sidecar
-	rm -f build/functions
-	rm -f build/flow-dbinit
 	if helm status direktiv; then helm uninstall direktiv; fi
 	kubectl wait --for=delete namespace/direktiv-services-direktiv --timeout=60s
 	kubectl delete --all ksvc -n direktiv-services-direktiv
@@ -216,22 +209,13 @@ protoc: protoc-flow protoc-health protoc-secrets protoc-functions
 
 # Patterns
 
-build/%-binary: Makefile ${GO_SOURCE_FILES}
-	if [ -d "cmd/$*" ] && [ ".all" != "${DOCKER_BASE}" ]; then \
-		echo "Building $* binary..."; \
-		go build -ldflags "-X github.com/direktiv/direktiv/pkg/version.Version=${FULL_VERSION}" -tags ${GO_BUILD_TAGS} -o $@ cmd/$*/*.go || exit 1; \
-		cp build/$*-binary build/$*; \
-	else \
-   	touch $@; \
-	fi
-
 .PHONY: scan-%
 scan-%: push-%
 	trivy image --exit-code 1 localhost:5000/$*
 
 .PHONY: image-%
-image-%: build/%-binary
-	DOCKER_BUILDKIT=1 docker build -t direktiv-$* -f build/docker/$*/Dockerfile${DOCKER_BASE} .
+image-%: binaries
+	DOCKER_BUILDKIT=1 docker build --build-arg RELEASE_VERSION=${FULL_VERSION} -t direktiv-$* -f build/docker/$*/Dockerfile${DOCKER_BASE} .
 	@echo "Make $@: SUCCESS"
 
 .PHONY: push-%
@@ -265,14 +249,17 @@ docker-all:
 template-configmaps:
 	scripts/misc/generate-api-configmaps.sh
 
+
 .PHONY: cli
 cli:
 	@echo "Building linux cli binary...";
-	@export ${CGO_LDFLAGS} && go build -tags ${GO_BUILD_TAGS} -o direkcli cmd/direkcli/main.go
+	@export ${CGO_LDFLAGS} && go build -tags ${GO_BUILD_TAGS} -o direktivctl cmd/exec/main.go
 	@echo "Building mac cli binary...";
-	@export ${CGO_LDFLAGS} && GOOS=darwin go build -tags ${GO_BUILD_TAGS} -o direkcli-darwin cmd/direkcli/main.go
+	@export ${CGO_LDFLAGS} && GOOS=darwin go build -tags ${GO_BUILD_TAGS} -o direktivctl-darwin cmd/exec/main.go
+	@echo "Building mac cli arm64 binary...";
+	@export ${CGO_LDFLAGS} && GOOS=darwin GOARCH=arm64 go build -tags ${GO_BUILD_TAGS} -o direktivctl-darwin-arm64 cmd/exec/main.go
 	@echo "Building linux cli binary...";
-	@export ${CGO_LDFLAGS} && GOOS=windows go build -tags ${GO_BUILD_TAGS} -o direkcli-windows.exe cmd/direkcli/main.go
+	@export ${CGO_LDFLAGS} && GOOS=windows go build -tags ${GO_BUILD_TAGS} -o direktivctl-windows.exe cmd/exec/main.go
 
 # Utility Rules
 
@@ -361,7 +348,6 @@ upgrade: push # Pushes all images and reboots flow, function, and api pods
 .PHONY: dependencies
 dependencies: # installs tools 
 	go install github.com/google/go-licenses@latest
-	cd build/lint && docker build -t direktiv-linter .
 
 
 .PHONY: license-check 
@@ -377,12 +363,4 @@ unittest: # Runs all Go unit tests. Or, you can run a specific set of unit tests
 
 .PHONY: lint 
 lint: # Runs very strict linting on the project.
-	golangci-lint run --tests --issues-exit-code=1 --skip-dirs="ent/" --skip-files=".pb.go" -E asciicheck -E containedctx -E decorder -E dupword -E errchkjson -E errname -E errorlint -E exportloopref -E goconst -E godot -E gofmt -E goprintffuncname -E loggercheck -E misspell -E nilerr -E noctx -E nosprintfhostport -E unconvert -E usestdlibvars
-	# -E gosec
-	# -E revive
-	# -E contextcheck -E goerr113 -E godox -E interfacebloat -E tagliatelle -E unparam -E varnamelen -E wrapcheck
-
-.PHONY: lint-docker
-lint-docker: # Runs very strict linting on the project.
-	docker run -v `pwd`:/direktiv direktiv-linter 
-
+	docker run --rm -v `pwd`:/app -w /app golangci/golangci-lint golangci-lint run -v
