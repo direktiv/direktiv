@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react";
 
 import Button from "./index";
-import { VscAccount } from "react-icons/vsc";
+import { VscZoomIn } from "react-icons/vsc";
 
 const meta = {
   title: "Design System/Button",
@@ -12,9 +12,18 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  render: (args) => <Button {...args}>Button</Button>,
+  render: (args) => <Button {...args}>{args.children}</Button>,
   args: {},
   argTypes: {
+    children: {
+      description: "Button text",
+      control: {
+        type: "text",
+        defaultValue: "Button",
+      },
+      defaultValue: "Button",
+      type: { name: "string", required: false },
+    },
     size: {
       description: "Button size",
       control: "select",
@@ -49,6 +58,11 @@ export const Default: Story = {
     },
     loading: {
       description: "Button in loading state",
+      control: "boolean",
+      type: { name: "boolean", required: false },
+    },
+    circle: {
+      description: "Round button",
       control: "boolean",
       type: { name: "boolean", required: false },
     },
@@ -158,7 +172,24 @@ export const Loading = () => (
 export const WithIcon = () => (
   <div className="flex flex-wrap gap-5">
     <Button color="primary" className="gap-5">
-      Loading <VscAccount />
+      <VscZoomIn /> Loading
+    </Button>
+  </div>
+);
+
+export const CircleButton = () => (
+  <div className="flex flex-wrap gap-5">
+    <Button size="lg" color="primary" active circle>
+      <VscZoomIn />{" "}
+    </Button>
+    <Button outline circle>
+      <VscZoomIn />{" "}
+    </Button>
+    <Button size="sm" color="accent" circle>
+      <VscZoomIn />
+    </Button>
+    <Button size="xs" outline color="secondary" circle>
+      <VscZoomIn />
     </Button>
   </div>
 );
