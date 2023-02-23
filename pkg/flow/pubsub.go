@@ -185,6 +185,13 @@ func (pubsub *pubsub) registerFunction(name string, fn func(*PubsubUpdate)) {
 
 }
 
+func (srv *server) PublishToCluster(payload string) {
+	srv.pubsub.publish(&PubsubUpdate{
+		Handler: database.PubsubNotifyFunction,
+		Key:     payload,
+	})
+}
+
 func (pubsub *pubsub) dispatcher() {
 
 	for {
@@ -494,6 +501,13 @@ func (pubsub *pubsub) Subscribe(id ...string) *subscription {
 func pubsubNotify(key string) *PubsubUpdate {
 	return &PubsubUpdate{
 		Handler: pubsubNotifyFunction,
+		Key:     key,
+	}
+}
+
+func pubsubCacheNotify(key string) *PubsubUpdate {
+	return &PubsubUpdate{
+		Handler: database.PubsubNotifyFunction,
 		Key:     key,
 	}
 }

@@ -84,17 +84,14 @@ func (db *CachedDatabase) storeNamespaceInCache(ctx context.Context, ns *Namespa
 
 }
 
-func (db *CachedDatabase) invalidateCachedNamespace(ctx context.Context, ns *Namespace) {
+func (db *CachedDatabase) invalidateCachedNamespace(ctx context.Context, id uuid.UUID, recursive bool) {
 
-	key := fmt.Sprintf("nsid:%s", ns.ID.String())
-
-	db.cache.Delete(ctx, key)
-
-}
-
-func (db *CachedDatabase) recursivelyInvalidateCachedNamespace(ctx context.Context, ns *Namespace) {
-
-	db.cache.Invalidate(ctx, store.WithInvalidateTags([]string{ns.ID.String()}))
+	if recursive {
+		db.cache.Invalidate(ctx, store.WithInvalidateTags([]string{id.String()}))
+	} else {
+		key := fmt.Sprintf("nsid:%s", id.String())
+		db.cache.Delete(ctx, key)
+	}
 
 }
 
@@ -140,9 +137,13 @@ func (db *CachedDatabase) storeInodeInCache(ctx context.Context, ino *Inode) {
 
 }
 
-func (db *CachedDatabase) invalidateCachedInode(ctx context.Context, ino *Inode) {
+func (db *CachedDatabase) invalidateCachedInode(ctx context.Context, id uuid.UUID, recursive bool) {
 
-	key := fmt.Sprintf("inoid:%s", ino.ID)
+	if recursive {
+		panic("TODO")
+	}
+
+	key := fmt.Sprintf("inoid:%s", id)
 
 	db.cache.Delete(ctx, key)
 
@@ -190,9 +191,13 @@ func (db *CachedDatabase) storeWorkflowInCache(ctx context.Context, wf *Workflow
 
 }
 
-func (db *CachedDatabase) invalidateCachedWorkflow(ctx context.Context, wf *Workflow) {
+func (db *CachedDatabase) invalidateCachedWorkflow(ctx context.Context, id uuid.UUID, recursive bool) {
 
-	key := fmt.Sprintf("wfid:%s", wf.ID)
+	if recursive {
+		panic("TODO")
+	}
+
+	key := fmt.Sprintf("wfid:%s", id)
 
 	db.cache.Delete(ctx, key)
 

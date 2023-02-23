@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"strings"
@@ -17,22 +18,70 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-type CachedDatabase struct {
-	sugar  *zap.SugaredLogger
-	source Database
-	cache  *cache.Cache[[]byte]
+const (
+	PubsubNotifyFunction = "cache"
+)
+
+type Notifier interface {
+	PublishToCluster(string)
 }
 
-func NewCachedDatabase(sugar *zap.SugaredLogger, source Database) *CachedDatabase {
+type notification struct {
+	Operation string
+	ID        uuid.UUID
+	Recursive bool
+}
+
+func (n *notification) Marshal() string {
+	data, err := json.Marshal(n)
+	if err != nil {
+		panic(err)
+	}
+	return string(data)
+}
+
+type CachedDatabase struct {
+	sugar    *zap.SugaredLogger
+	source   Database
+	cache    *cache.Cache[[]byte]
+	notifier Notifier
+}
+
+func NewCachedDatabase(sugar *zap.SugaredLogger, source Database, notifier Notifier) *CachedDatabase {
 	db := &CachedDatabase{
-		sugar:  sugar,
-		source: source,
+		sugar:    sugar,
+		source:   source,
+		notifier: notifier,
 	}
 	gocacheClient := gocache.New(5*time.Minute, 10*time.Minute)
 	gocacheStore := gocache_store.NewGoCache(gocacheClient)
 	db.cache = cache.New[[]byte](gocacheStore)
 	db.sugar.Warnf("Initializing cache.")
 	return db
+}
+
+func (db *CachedDatabase) HandleNotification(s string) {
+
+	notification := new(notification)
+
+	err := json.Unmarshal([]byte(s), &notification)
+	if err != nil {
+		db.sugar.Error(err)
+		return
+	}
+
+	switch notification.Operation {
+	case "invalidate-namespace":
+		db.invalidateCachedNamespace(context.Background(), notification.ID, notification.Recursive)
+	case "invalidate-inode":
+		db.invalidateCachedNamespace(context.Background(), notification.ID, notification.Recursive)
+	case "invalidate-workflow":
+		db.invalidateCachedWorkflow(context.Background(), notification.ID, notification.Recursive)
+	default:
+		db.sugar.Error(err)
+		return
+	}
+
 }
 
 func (db *CachedDatabase) Close() error {
@@ -100,11 +149,13 @@ func (db *CachedDatabase) NamespaceByName(ctx context.Context, tx Transaction, c
 
 func (db *CachedDatabase) InvalidateNamespace(ctx context.Context, cached *CacheData, recursive bool) {
 
-	if recursive {
-		db.recursivelyInvalidateCachedNamespace(ctx, cached.Namespace)
-	} else {
-		db.invalidateCachedNamespace(ctx, cached.Namespace)
-	}
+	db.notifier.PublishToCluster((&notification{
+		Operation: "invalidate-namespace",
+		ID:        cached.Namespace.ID,
+		Recursive: recursive,
+	}).Marshal())
+
+	db.invalidateCachedNamespace(ctx, cached.Namespace.ID, recursive)
 
 }
 
@@ -202,11 +253,13 @@ func (db *CachedDatabase) InodeByPath(ctx context.Context, tx Transaction, cache
 
 func (db *CachedDatabase) InvalidateInode(ctx context.Context, cached *CacheData, recursive bool) {
 
-	if recursive {
-		panic("TODO")
-	} else {
-		db.invalidateCachedInode(ctx, cached.Inode())
-	}
+	db.notifier.PublishToCluster((&notification{
+		Operation: "invalidate-inode",
+		ID:        cached.Inode().ID,
+		Recursive: recursive,
+	}).Marshal())
+
+	db.invalidateCachedInode(ctx, cached.Inode().ID, recursive)
 
 }
 
@@ -299,11 +352,13 @@ func (db *CachedDatabase) Workflow(ctx context.Context, tx Transaction, cached *
 
 func (db *CachedDatabase) InvalidateWorkflow(ctx context.Context, cached *CacheData, recursive bool) {
 
-	if recursive {
-		panic("TODO")
-	} else {
-		db.invalidateCachedWorkflow(ctx, cached.Workflow)
-	}
+	db.notifier.PublishToCluster((&notification{
+		Operation: "invalidate-workflow",
+		ID:        cached.Workflow.ID,
+		Recursive: recursive,
+	}).Marshal())
+
+	db.invalidateCachedWorkflow(ctx, cached.Workflow.ID, recursive)
 
 }
 

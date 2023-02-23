@@ -143,7 +143,7 @@ func (srv *server) start(ctx context.Context) error {
 	}
 	srv.edb = edb
 
-	srv.database = database.NewCachedDatabase(srv.sugar, edb)
+	srv.database = database.NewCachedDatabase(srv.sugar, edb, srv)
 	defer srv.cleanup(srv.database.Close)
 
 	srv.startLogWorkers(1)
@@ -386,7 +386,19 @@ func (srv *server) notifyHostname(hostname, msg string) error {
 
 }
 
+func (server *server) CacheNotify(req *PubsubUpdate) {
+
+	if server.ID.String() == req.Sender {
+		return
+	}
+
+	server.database.HandleNotification(req.Key)
+
+}
+
 func (srv *server) registerFunctions() {
+
+	srv.pubsub.registerFunction(database.PubsubNotifyFunction, srv.CacheNotify)
 
 	srv.pubsub.registerFunction(pubsubNotifyFunction, srv.pubsub.Notify)
 	srv.pubsub.registerFunction(pubsubDisconnectFunction, srv.pubsub.Disconnect)
