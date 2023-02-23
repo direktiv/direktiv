@@ -94,12 +94,9 @@ func (db *CachedDatabase) Tx(ctx context.Context) (Transaction, error) {
 
 func (db *CachedDatabase) Namespace(ctx context.Context, tx Transaction, cached *CacheData, id uuid.UUID) error {
 
-	var cacheHit = false
-
 	ns := db.lookupNamespaceByID(ctx, id)
 
 	if ns != nil {
-		cacheHit = true
 		cached.Namespace = ns
 		return nil
 	}
@@ -111,9 +108,7 @@ func (db *CachedDatabase) Namespace(ctx context.Context, tx Transaction, cached 
 
 	cached.Namespace = ns
 
-	if !cacheHit {
-		db.storeNamespaceInCache(ctx, cached.Namespace)
-	}
+	db.storeNamespaceInCache(ctx, cached.Namespace)
 
 	return nil
 
@@ -122,12 +117,10 @@ func (db *CachedDatabase) Namespace(ctx context.Context, tx Transaction, cached 
 func (db *CachedDatabase) NamespaceByName(ctx context.Context, tx Transaction, cached *CacheData, name string) error {
 
 	var err error
-	var cacheHit = false
 
 	ns := db.lookupNamespaceByName(ctx, name)
 
 	if ns != nil {
-		cacheHit = true
 		cached.Namespace = ns
 		return nil
 	} else {
@@ -139,9 +132,7 @@ func (db *CachedDatabase) NamespaceByName(ctx context.Context, tx Transaction, c
 
 	cached.Namespace = ns
 
-	if !cacheHit {
-		db.storeNamespaceInCache(ctx, cached.Namespace)
-	}
+	db.storeNamespaceInCache(ctx, cached.Namespace)
 
 	return nil
 

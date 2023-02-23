@@ -21,6 +21,9 @@ import (
 func (flow *flow) traverseToWorkflowAnnotation(ctx context.Context, tx database.Transaction, namespace, path, key string) (*database.CacheData, *database.Annotation, error) {
 
 	cached, err := flow.traverseToWorkflow(ctx, tx, namespace, path)
+	if err != nil {
+		return nil, nil, err
+	}
 
 	annotation, err := flow.database.WorkflowAnnotation(ctx, tx, cached.Workflow.ID, key)
 	if err != nil {

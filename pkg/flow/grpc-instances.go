@@ -357,7 +357,7 @@ func (flow *flow) StartWorkflow(ctx context.Context, req *grpc.StartWorkflowRequ
 	args.Path = req.GetPath()
 	args.Ref = req.GetRef()
 	args.Input = req.GetInput()
-	args.Caller = "api"
+	args.Caller = apiCaller
 
 	im, err := flow.engine.NewInstance(ctx, args)
 	if err != nil {
@@ -508,7 +508,7 @@ func (flow *flow) AwaitWorkflow(req *grpc.AwaitWorkflowRequest, srv grpc.Flow_Aw
 	args.Path = req.GetPath()
 	args.Ref = req.GetRef()
 	args.Input = req.GetInput()
-	args.Caller = "api"
+	args.Caller = apiCaller
 
 	im, err := flow.engine.NewInstance(ctx, args)
 	if err != nil {
@@ -516,9 +516,7 @@ func (flow *flow) AwaitWorkflow(req *grpc.AwaitWorkflowRequest, srv grpc.Flow_Aw
 		return err
 	}
 
-	var sub *subscription
-
-	sub = flow.pubsub.SubscribeInstance(im.cached)
+	sub := flow.pubsub.SubscribeInstance(im.cached)
 	defer flow.cleanup(sub.Close)
 
 	flow.engine.queue(im)

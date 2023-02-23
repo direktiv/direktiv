@@ -176,8 +176,7 @@ func (srv *server) logToNamespace(ctx context.Context, t time.Time, cached *data
 		_ = recover()
 	}()
 
-	var cd database.CacheData // We do this to zero some fields without modifying the argument.
-	cd = *cached
+	cd := *cached // We do this to zero some fields without modifying the argument.
 	cd.Workflow = nil
 	cd.Instance = nil
 
@@ -196,8 +195,7 @@ func (srv *server) logToWorkflow(ctx context.Context, t time.Time, cached *datab
 		_ = recover()
 	}()
 
-	var cd database.CacheData // We do this to zero some fields without modifying the argument.
-	cd = *cached
+	cd := *cached // We do this to zero some fields without modifying the argument.
 	cd.Workflow = nil
 
 	srv.logQueue <- &logMessage{

@@ -74,6 +74,10 @@ type subflowCaller struct {
 	As         string
 }
 
+const (
+	apiCaller = "api"
+)
+
 func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*instanceMemory, error) {
 
 	tx, err := engine.database.Tx(ctx)
@@ -98,7 +102,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 	}
 
 	if len(wf.GetStartDefinition().GetEvents()) > 0 {
-		if strings.ToLower(args.Caller) == "api" {
+		if strings.ToLower(args.Caller) == apiCaller {
 			return nil, derrors.NewUncatchableError("direktiv.workflow.invoke", "cannot manually invoke event-based workflow")
 		}
 		if strings.HasPrefix(args.Caller, "instance") {

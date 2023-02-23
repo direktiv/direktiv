@@ -28,7 +28,7 @@ import (
 	entwf "github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 )
 
-// TODO: un-export EntClients
+// TODO: un-export EntClients.
 type EntClients struct {
 	Namespace         *ent.NamespaceClient
 	Inode             *ent.InodeClient
@@ -49,7 +49,7 @@ type EntClients struct {
 	InstanceRuntime   *ent.InstanceRuntimeClient
 }
 
-// TODO: delete
+// TODO: delete.
 func (db *Database) Clients(tx database.Transaction) *EntClients {
 	return db.clients(tx)
 }

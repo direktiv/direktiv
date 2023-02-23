@@ -244,24 +244,6 @@ resend:
 
 }
 
-type lookupInodeFromParentArgs struct {
-	pino *database.Inode
-	name string
-}
-
-func (flow *flow) lookupInodeFromParent(ctx context.Context, tx database.Transaction, args *lookupInodeFromParentArgs) (*ent.Inode, error) {
-
-	clients := flow.edb.Clients(tx)
-
-	ino, err := clients.Inode.Query().Where(entino.HasParentWith(entino.ID(args.pino.ID))).Where(entino.NameEQ(args.name)).Only(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	return ino, nil
-
-}
-
 type createDirectoryArgs struct {
 	pcached *database.CacheData
 	path    string
@@ -536,7 +518,7 @@ func (flow *flow) RenameNode(ctx context.Context, req *grpc.RenameNodeRequest) (
 	}
 	cached.ParentInode().UpdatedAt = x.UpdatedAt
 
-	x, err = clients.Inode.UpdateOneID(cached.Inode().ID).SetName(base).SetParentID(pcached.Inode().ID).Save(ctx)
+	_, err = clients.Inode.UpdateOneID(cached.Inode().ID).SetName(base).SetParentID(pcached.Inode().ID).Save(ctx)
 	if err != nil {
 		return nil, err
 	}

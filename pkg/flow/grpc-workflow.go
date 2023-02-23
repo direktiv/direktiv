@@ -49,11 +49,6 @@ func (srv *server) reverseTraverseToWorkflow(ctx context.Context, tx database.Tr
 
 }
 
-type lookupRefAndRevArgs struct {
-	wf        *database.Workflow
-	reference string
-}
-
 func (srv *server) traverseToRef(ctx context.Context, tx database.Transaction, namespace, path, reference string) (*database.CacheData, error) {
 
 	if reference == "" {

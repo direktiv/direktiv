@@ -257,7 +257,7 @@ func (flow *flow) WorkflowLogsParcels(req *grpc.WorkflowLogsRequest, srv grpc.Fl
 		return err
 	}
 
-	flow.database.Workflow(ctx, nil, cached, cached.Inode().Workflow)
+	err = flow.database.Workflow(ctx, nil, cached, cached.Inode().Workflow)
 	if err != nil {
 		return err
 	}

@@ -89,7 +89,7 @@ func initPubSub(log *zap.SugaredLogger, notifier notifier, database string) (*pu
 	pubsub := new(pubsub)
 	pubsub.id = uuid.New()
 	pubsub.log = log
-	pubsub.buffer = make([]*PubsubUpdate, 1024, 1024)
+	pubsub.buffer = make([]*PubsubUpdate, 1024)
 
 	pubsub.hostname, err = os.Hostname()
 	if err != nil {
@@ -190,45 +190,6 @@ func (srv *server) PublishToCluster(payload string) {
 		Handler: database.PubsubNotifyFunction,
 		Key:     payload,
 	})
-}
-
-func (pubsub *pubsub) dispatcher() {
-
-	for {
-
-		req, more := <-pubsub.queue
-		if !more {
-			return
-		}
-
-		b, err := json.Marshal(req)
-		if err != nil {
-			panic(err)
-		}
-
-		handler, exists := pubsub.handlers[req.Handler]
-		if !exists {
-			pubsub.log.Errorf("unexpected notification type on database listener: %v\n", err)
-		} else {
-			go handler(req)
-		}
-
-		if req.Hostname == "" {
-			x := *req
-			x.Sender = ""
-			go pubsub.Notify(&x)
-			err = pubsub.notifier.notifyCluster(string(b))
-		} else {
-			err = pubsub.notifier.notifyHostname(req.Hostname, string(b))
-		}
-
-		if err != nil {
-			pubsub.log.Errorf("pubsub error: %v\n", err)
-			os.Exit(1)
-		}
-
-	}
-
 }
 
 func (pubsub *pubsub) Notify(req *PubsubUpdate) {
@@ -347,7 +308,7 @@ func (pubsub *pubsub) periodicFlush() {
 func (pubsub *pubsub) flush() {
 
 	slice := pubsub.buffer[:pubsub.bufferIdx]
-	clusterMessages := make([]string, pubsub.bufferIdx, pubsub.bufferIdx)
+	clusterMessages := make([]string, pubsub.bufferIdx)
 	messageIndex := 0
 	pubsub.bufferIdx = 0
 
@@ -501,13 +462,6 @@ func (pubsub *pubsub) Subscribe(id ...string) *subscription {
 func pubsubNotify(key string) *PubsubUpdate {
 	return &PubsubUpdate{
 		Handler: pubsubNotifyFunction,
-		Key:     key,
-	}
-}
-
-func pubsubCacheNotify(key string) *PubsubUpdate {
-	return &PubsubUpdate{
-		Handler: database.PubsubNotifyFunction,
 		Key:     key,
 	}
 }

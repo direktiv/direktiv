@@ -503,6 +503,9 @@ func (flow *flow) UnlockMirror(ctx context.Context, req *grpc.UnlockMirrorReques
 		Inode:    ino,
 		ReadOnly: &readonly,
 	})
+	if err != nil {
+		return nil, err
+	}
 
 	updatedInodes = append(updatedInodes, x)
 
@@ -665,7 +668,7 @@ func (flow *flow) MirrorInfoStream(req *grpc.MirrorInfoRequest, srv grpc.Flow_Mi
 	phash := ""
 	nhash := ""
 
-	cached, mirror, err := flow.traverseToMirror(ctx, nil, req.GetNamespace(), req.GetPath())
+	cached, _, err := flow.traverseToMirror(ctx, nil, req.GetNamespace(), req.GetPath())
 	if err != nil {
 		return err
 	}
@@ -676,6 +679,8 @@ func (flow *flow) MirrorInfoStream(req *grpc.MirrorInfoRequest, srv grpc.Flow_Mi
 
 	sub := flow.pubsub.SubscribeMirror(cached)
 	defer flow.cleanup(sub.Close)
+
+	var mirror *database.Mirror
 
 resend:
 

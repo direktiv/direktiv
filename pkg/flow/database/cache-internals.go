@@ -87,10 +87,18 @@ func (db *CachedDatabase) storeNamespaceInCache(ctx context.Context, ns *Namespa
 func (db *CachedDatabase) invalidateCachedNamespace(ctx context.Context, id uuid.UUID, recursive bool) {
 
 	if recursive {
-		db.cache.Invalidate(ctx, store.WithInvalidateTags([]string{id.String()}))
+		err := db.cache.Invalidate(ctx, store.WithInvalidateTags([]string{id.String()}))
+		if err != nil {
+			db.sugar.Error(err)
+			return
+		}
 	} else {
 		key := fmt.Sprintf("nsid:%s", id.String())
-		db.cache.Delete(ctx, key)
+		err := db.cache.Delete(ctx, key)
+		if err != nil {
+			db.sugar.Error(err)
+			return
+		}
 	}
 
 }
@@ -145,7 +153,11 @@ func (db *CachedDatabase) invalidateCachedInode(ctx context.Context, id uuid.UUI
 
 	key := fmt.Sprintf("inoid:%s", id)
 
-	db.cache.Delete(ctx, key)
+	err := db.cache.Delete(ctx, key)
+	if err != nil {
+		db.sugar.Error(err)
+		return
+	}
 
 }
 
@@ -199,7 +211,11 @@ func (db *CachedDatabase) invalidateCachedWorkflow(ctx context.Context, id uuid.
 
 	key := fmt.Sprintf("wfid:%s", id)
 
-	db.cache.Delete(ctx, key)
+	err := db.cache.Delete(ctx, key)
+	if err != nil {
+		db.sugar.Error(err)
+		return
+	}
 
 }
 

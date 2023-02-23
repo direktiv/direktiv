@@ -146,7 +146,7 @@ func entRevision(rev *ent.Revision) *database.Revision {
 
 }
 
-// TODO: delete this
+// TODO: delete this.
 func EntInstance(inst *ent.Instance) *database.Instance {
 	return entInstance(inst)
 }
@@ -189,7 +189,7 @@ func entInstance(inst *ent.Instance) *database.Instance {
 
 }
 
-// TODO: delete this
+// TODO: delete this.
 func EntInstanceRuntime(rt *ent.InstanceRuntime) *database.InstanceRuntime {
 	return entInstanceRuntime(rt)
 }
