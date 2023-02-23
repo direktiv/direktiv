@@ -89,4 +89,13 @@ module.exports = {
     // this is the default in typescript and we want to enforce it in JavaScript as well
     "prefer-const": "error",
   },
+  overrides: [
+    {
+      // allow require statements for commonjs modules
+      files: ["*.cjs", "*.cts"],
+      rules: {
+        "@typescript-eslint/no-var-requires": "off",
+      },
+    },
+  ],
 };
