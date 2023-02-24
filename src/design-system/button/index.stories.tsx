@@ -79,9 +79,9 @@ export const Default: Story = {
 export const ButtonSizes = () => {
   return (
     <div className="flex flex-wrap gap-5">
-      <Button size="xs">XS Button</Button>
-      <Button size="sm">SM Button</Button>
-      <Button>Normal Button</Button>
+      <Button size="xs">xs Button</Button>
+      <Button size="sm">sm Button</Button>
+      <Button>Button</Button>
       <Button size="lg">lg Button</Button>
     </div>
   );
