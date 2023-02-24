@@ -14,9 +14,6 @@ FULL_VERSION := $(shell v='$${RELEASE}$${RELEASE:+-}${GIT_HASH}${GIT_DIRTY}'; ec
 GIT_TAG = $(shell git describe --tags --abbrev=0)
 DOCKER_CLONE_REPO = "docker.io/direktiv"
 
-# set to .all to build from .all docker images
-DOCKER_BASE := ""
-
 # Set HELM_CONFIG value if environment variable is not set.
 HELM_CONFIG ?= "scripts/dev.yaml"
 
@@ -40,11 +37,10 @@ help: ## Prints usage information.
 	@echo ""
 	@echo "Everything should work out-of-the-box. Just use 'make cluster'."
 	@echo ""
-	@echo 'If you need to tweak things, make a copy of scripts/dev.yaml and set your $$HELM_CONFIG environment variable to point to it. Ensure that $$DOCKER_REPO matches the registry in your $$HELM_CONFIG file, and that each 'image' in the config file references that same registry. $$DOCKER_BASE can be used to change the dockerfile base target.'
+	@echo 'If you need to tweak things, make a copy of scripts/dev.yaml and set your $$HELM_CONFIG environment variable to point to it. Ensure that $$DOCKER_REPO matches the registry in your $$HELM_CONFIG file, and that each 'image' in the config file references that same registry.'
 	@echo ""
 	@echo "\033[36mVariables\033[0m"
 	@printf "  %-16s %s\n" '$$DOCKER_REPO' "${DOCKER_REPO}"
-	@printf "  %-16s %s\n" '$$DOCKER_BASE' "${DOCKER_BASE}"
 	@printf "  %-16s %s\n" '$$HELM_CONFIG' "${HELM_CONFIG}"
 	@printf "  %-16s %s\n" '$$REGEX' "${REGEX}"
 	@printf "  %-16s %s\n" '$$RELEASE' "${RELEASE}"
@@ -215,7 +211,7 @@ scan-%: push-%
 
 .PHONY: image-%
 image-%: binaries
-	DOCKER_BUILDKIT=1 docker build --build-arg RELEASE_VERSION=${FULL_VERSION} -t direktiv-$* -f build/docker/$*/Dockerfile${DOCKER_BASE} .
+	DOCKER_BUILDKIT=1 docker build --build-arg RELEASE_VERSION=${FULL_VERSION} -t direktiv-$* -f build/docker/$*/Dockerfile .
 	@echo "Make $@: SUCCESS"
 
 .PHONY: push-%
