@@ -40,6 +40,7 @@
     "jest-watch-typeahead": "^2.2.2",
     "js-yaml": "^4.1.0",
     "json-to-pretty-yaml": "^1.2.2",
+    "lucide-react": "^0.115.0",
     "monaco": "^1.201704190613.0",
     "postcss": "^8.4.21",
     "postcss-loader": "^7.0.2",
