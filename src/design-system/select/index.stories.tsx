@@ -1,6 +1,14 @@
 import type { Meta, StoryObj } from "@storybook/react";
-
-import Select from "./index";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectSeparator,
+  SelectTrigger,
+  SelectValue,
+} from "./index";
 
 const meta = {
   title: "Design System/Select",
@@ -11,32 +19,44 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  render: ({ ...args }) => {
+  render: () => {
     return (
-      <Select {...args}>
-        <option value="1">Option 1</option>
-        <option value="1">Option 2</option>
-        <option value="1">Option 3</option>
+      <Select>
+        <SelectTrigger className="w-[180px]">
+          <SelectValue placeholder="Select a fruit" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectGroup>
+            <SelectLabel>Fruits</SelectLabel>
+            <SelectItem value="apple">Apple</SelectItem>
+            <SelectItem value="banana">Banana</SelectItem>
+            <SelectItem value="blueberry">Blueberry</SelectItem>
+            <SelectItem value="grapes">Grapes</SelectItem>
+            <SelectItem value="pineapple">Pineapple</SelectItem>
+          </SelectGroup>
+          <SelectSeparator />
+          <SelectGroup>
+            <SelectLabel>Vegetables</SelectLabel>
+            <SelectItem value="aubergine">Aubergine</SelectItem>
+            <SelectItem value="broccoli">Broccoli</SelectItem>
+            <SelectItem value="carrot" disabled>
+              Carrot
+            </SelectItem>
+            <SelectItem value="courgette">Courgette</SelectItem>
+            <SelectItem value="leek">Leek</SelectItem>
+          </SelectGroup>
+          <SelectSeparator />
+          <SelectGroup>
+            <SelectLabel>Meat</SelectLabel>
+            <SelectItem value="beef">Beef</SelectItem>
+            <SelectItem value="chicken">Chicken</SelectItem>
+            <SelectItem value="lamb">Lamb</SelectItem>
+            <SelectItem value="pork">Pork</SelectItem>
+          </SelectGroup>
+        </SelectContent>
       </Select>
     );
   },
   args: {},
-  argTypes: {
-    size: {
-      description: "Select size",
-      control: "select",
-      options: ["xs", "md", "lg"],
-      type: { name: "string", required: false },
-    },
-    border: {
-      description: "with border",
-      control: "boolean",
-      type: { name: "boolean", required: false },
-    },
-    ghost: {
-      description: "almost transparent background",
-      control: "boolean",
-      type: { name: "boolean", required: false },
-    },
-  },
+  argTypes: {},
 };
