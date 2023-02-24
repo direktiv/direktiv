@@ -3,6 +3,8 @@ import * as SelectPrimitive from "@radix-ui/react-select";
 import { RxCheck, RxChevronDown } from "react-icons/rx";
 import clsx from "clsx";
 
+// this component is mostly copied from https://ui.shadcn.com/docs/primitives/select
+
 const Select = SelectPrimitive.Root;
 
 const SelectGroup = SelectPrimitive.Group;
@@ -11,18 +13,28 @@ const SelectValue = SelectPrimitive.Value;
 
 const SelectTrigger = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Trigger>,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger>
->(({ className, children, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger> & {
+    size?: "xs" | "sm" | "lg";
+    loading?: boolean;
+    block?: boolean;
+  }
+>(({ className, size, loading, block, children, ...props }, ref) => (
   <SelectPrimitive.Trigger
     ref={ref}
     className={clsx(
-      "flex h-10 w-full items-center justify-between rounded-md border border-slate-300 bg-transparent py-2 px-3 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:text-slate-50 dark:focus:ring-slate-400 dark:focus:ring-offset-slate-900",
+      "btn gap-2",
+      "btn-outline",
+      size === "lg" && "btn-lg",
+      size === "sm" && "btn-sm",
+      size === "xs" && "btn-xs",
+      loading && "loading",
+      block && "btn-block",
       className
     )}
     {...props}
   >
     {children}
-    <RxChevronDown className="h-4 w-4 opacity-50" />
+    <RxChevronDown />
   </SelectPrimitive.Trigger>
 ));
 SelectTrigger.displayName = SelectPrimitive.Trigger.displayName;
