@@ -26,7 +26,6 @@ var (
 
 // Evaluate evaluates the data against the query provided and returns the result.
 func Evaluate(data, query interface{}) ([]interface{}, error) {
-
 	if query == nil {
 		var out []interface{}
 		out = append(out, data)
@@ -34,11 +33,9 @@ func Evaluate(data, query interface{}) ([]interface{}, error) {
 	}
 
 	return recursiveEvaluate(data, query)
-
 }
 
 func recursiveEvaluate(data, query interface{}) ([]interface{}, error) {
-
 	var out []interface{}
 
 	if query == nil {
@@ -63,7 +60,6 @@ func recursiveEvaluate(data, query interface{}) ([]interface{}, error) {
 	out = append(out, query)
 
 	return out, nil
-
 }
 
 const (
@@ -75,7 +71,6 @@ const (
 )
 
 func JqState(l *lexer.L) lexer.StateFunc {
-
 	src := make([]string, 3)
 	var jdxJ int
 
@@ -167,7 +162,6 @@ func JqState(l *lexer.L) lexer.StateFunc {
 }
 
 func recurseIntoString(data interface{}, s string) ([]interface{}, error) {
-
 	out := make([]interface{}, 0)
 
 	if TrimWhitespaceOnQueryStrings {
@@ -274,12 +268,11 @@ func recurseIntoString(data interface{}, s string) ([]interface{}, error) {
 	out = make([]interface{}, 1)
 	out[0] = s
 	return out, nil
-
 }
 
 func recurseIntoMap(data interface{}, m map[string]interface{}) ([]interface{}, error) {
 	var out []interface{}
-	var results = make(map[string]interface{})
+	results := make(map[string]interface{})
 	var keys []string
 	for k := range m {
 		keys = append(keys, k)
@@ -305,7 +298,7 @@ func recurseIntoMap(data interface{}, m map[string]interface{}) ([]interface{}, 
 
 func recurseIntoArray(data interface{}, q []interface{}) ([]interface{}, error) {
 	var out []interface{}
-	var array = make([]interface{}, 0)
+	array := make([]interface{}, 0)
 	for i := range q {
 		x, err := recursiveEvaluate(data, q[i])
 		if err != nil {
@@ -324,7 +317,6 @@ func recurseIntoArray(data interface{}, q []interface{}) ([]interface{}, error) 
 }
 
 func jq(input interface{}, command string) ([]interface{}, error) {
-
 	data, err := json.Marshal(input)
 	if err != nil {
 		return nil, err
@@ -364,5 +356,4 @@ func jq(input interface{}, command string) ([]interface{}, error) {
 	}
 
 	return output, nil
-
 }

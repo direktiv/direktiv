@@ -33,7 +33,6 @@ var nodeCmd = &cobra.Command{
 		}
 
 		print(resp)
-
 	},
 }
 
@@ -41,7 +40,6 @@ var directoryCmd = &cobra.Command{
 	Use:  "directory NAMESPACE PATH",
 	Args: cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
-
 		namespace := args[0]
 		path := args[1]
 
@@ -97,7 +95,6 @@ var directoryCmd = &cobra.Command{
 			print(resp)
 
 		}
-
 	},
 }
 
@@ -105,7 +102,6 @@ var createDirectoryCmd = &cobra.Command{
 	Use:  "create-directory NAMESPACE PATH",
 	Args: cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
-
 		namespace := args[0]
 		path := args[1]
 
@@ -124,7 +120,6 @@ var createDirectoryCmd = &cobra.Command{
 		}
 
 		print(resp)
-
 	},
 }
 
@@ -132,7 +127,6 @@ var deleteNodeCmd = &cobra.Command{
 	Use:  "delete-node NAMESPACE PATH",
 	Args: cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
-
 		namespace := args[0]
 		path := args[1]
 
@@ -151,7 +145,6 @@ var deleteNodeCmd = &cobra.Command{
 		}
 
 		print(resp)
-
 	},
 }
 
@@ -159,7 +152,6 @@ var renameNodeCmd = &cobra.Command{
 	Use:  "rename-node NAMESPACE OLDPATH NEWPATH",
 	Args: cobra.ExactArgs(3),
 	Run: func(cmd *cobra.Command, args []string) {
-
 		namespace := args[0]
 		oldpath := args[1]
 		newpath := args[2]
@@ -180,6 +172,5 @@ var renameNodeCmd = &cobra.Command{
 		}
 
 		print(resp)
-
 	},
 }

@@ -27,7 +27,6 @@ type flow struct {
 }
 
 func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
-
 	var err error
 
 	flow := &flow{server: srv}
@@ -114,11 +113,9 @@ func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
 	}()
 
 	return flow, nil
-
 }
 
 func (flow *flow) kickExpiredInstances() {
-
 	ctx := context.Background()
 
 	t := time.Now().Add(-1 * time.Minute)
@@ -148,22 +145,18 @@ func (flow *flow) kickExpiredInstances() {
 		flow.engine.retryWakeup(data)
 
 	}
-
 }
 
 func (flow *flow) Run() error {
-
 	err := flow.srv.Serve(flow.listener)
 	if err != nil {
 		return err
 	}
 
 	return nil
-
 }
 
 func (flow *flow) JQ(ctx context.Context, req *grpc.JQRequest) (*grpc.JQResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	var input interface{}
@@ -204,5 +197,4 @@ func (flow *flow) JQ(ctx context.Context, req *grpc.JQRequest) (*grpc.JQResponse
 	resp.Results = strs
 
 	return &resp, nil
-
 }

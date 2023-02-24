@@ -29,7 +29,6 @@ func (srv *server) startLogWorkers(n int) {
 }
 
 func (srv *server) logWorker() {
-
 	defer srv.logWorkersWG.Done()
 
 	for {
@@ -52,7 +51,6 @@ func (srv *server) logWorker() {
 		}
 
 	}
-
 }
 
 func (srv *server) closeLogWorkers() {
@@ -61,7 +59,6 @@ func (srv *server) closeLogWorkers() {
 }
 
 func (srv *server) workerLogToServer(l *logMessage) {
-
 	util.Trace(l.ctx, l.msg)
 
 	clients := srv.edb.Clients(nil)
@@ -78,11 +75,9 @@ func (srv *server) workerLogToServer(l *logMessage) {
 	srv.sugar.Infow(l.msg, "trace", tid)
 
 	srv.pubsub.NotifyServerLogs()
-
 }
 
 func (srv *server) workerLogToNamespace(l *logMessage) {
-
 	util.Trace(l.ctx, l.msg)
 
 	clients := srv.edb.Clients(nil)
@@ -99,11 +94,9 @@ func (srv *server) workerLogToNamespace(l *logMessage) {
 	srv.sugar.Infow(l.msg, "trace", tid, "namespace", l.cached.Namespace.Name, "namespace-id", l.cached.Namespace.ID.String())
 
 	srv.pubsub.NotifyNamespaceLogs(l.cached.Namespace)
-
 }
 
 func (srv *server) workerLogToWorkflow(l *logMessage) {
-
 	util.Trace(l.ctx, l.msg)
 
 	clients := srv.edb.Clients(nil)
@@ -120,11 +113,9 @@ func (srv *server) workerLogToWorkflow(l *logMessage) {
 	srv.sugar.Infow(l.msg, "trace", tid, "namespace", l.cached.Namespace.Name, "namespace-id", l.cached.Namespace.ID.String(), "workflow-id", l.cached.Workflow.ID.String(), "workflow", GetInodePath(l.cached.Path()))
 
 	srv.pubsub.NotifyWorkflowLogs(l.cached.Workflow)
-
 }
 
 func (srv *server) workerLogToInstance(l *logMessage) {
-
 	util.Trace(l.ctx, l.msg)
 
 	clients := srv.edb.Clients(nil)
@@ -153,11 +144,9 @@ func (srv *server) workerLogToInstance(l *logMessage) {
 	srv.sugar.Infow(l.msg, "trace", tid, "namespace", nsname, "namespace-id", nsid, "workflow-id", wfid, "workflow", GetInodePath(l.cached.Instance.As), "instance", l.cached.Instance.ID.String())
 
 	srv.pubsub.NotifyInstanceLogs(l.cached.Instance)
-
 }
 
 func (srv *server) logToServer(ctx context.Context, t time.Time, msg string, a ...interface{}) {
-
 	defer func() {
 		_ = recover()
 	}()
@@ -167,11 +156,9 @@ func (srv *server) logToServer(ctx context.Context, t time.Time, msg string, a .
 		t:   t,
 		msg: fmt.Sprintf(msg, a...),
 	}
-
 }
 
 func (srv *server) logToNamespace(ctx context.Context, t time.Time, cached *database.CacheData, msg string, a ...interface{}) {
-
 	defer func() {
 		_ = recover()
 	}()
@@ -186,11 +173,9 @@ func (srv *server) logToNamespace(ctx context.Context, t time.Time, cached *data
 		msg:    fmt.Sprintf(msg, a...),
 		cached: &cd,
 	}
-
 }
 
 func (srv *server) logToWorkflow(ctx context.Context, t time.Time, cached *database.CacheData, msg string, a ...interface{}) {
-
 	defer func() {
 		_ = recover()
 	}()
@@ -204,21 +189,17 @@ func (srv *server) logToWorkflow(ctx context.Context, t time.Time, cached *datab
 		msg:    fmt.Sprintf(msg, a...),
 		cached: &cd,
 	}
-
 }
 
 // log To instance with string interpolation.
 func (srv *server) logToInstance(ctx context.Context, t time.Time, cached *database.CacheData, msg string, a ...interface{}) {
-
 	msg = fmt.Sprintf(msg, a...)
 
 	srv.logToInstanceRaw(ctx, t, cached, msg)
-
 }
 
 // log To instance with raw string.
 func (srv *server) logToInstanceRaw(ctx context.Context, t time.Time, cached *database.CacheData, msg string) {
-
 	defer func() {
 		_ = recover()
 	}()
@@ -229,11 +210,9 @@ func (srv *server) logToInstanceRaw(ctx context.Context, t time.Time, cached *da
 		msg:    msg,
 		cached: cached,
 	}
-
 }
 
 func (engine *engine) UserLog(ctx context.Context, im *instanceMemory, msg string, a ...interface{}) {
-
 	engine.logToInstance(ctx, time.Now(), im.cached, msg, a...)
 
 	s := fmt.Sprintf(msg, a...)
@@ -256,16 +235,13 @@ func (engine *engine) UserLog(ctx context.Context, im *instanceMemory, msg strin
 			return
 		}
 	}
-
 }
 
 func (engine *engine) logRunState(ctx context.Context, im *instanceMemory, wakedata []byte, err error) {
-
 	engine.sugar.Debugf("Running state logic -- %s:%v (%s) (%v)", im.ID().String(), im.Step(), im.logic.GetID(), time.Now())
 	if im.GetMemory() == nil && len(wakedata) == 0 && err == nil {
 		engine.logToInstance(ctx, time.Now(), im.cached, "Running state logic (step:%v) -- %s", im.Step(), im.logic.GetID())
 	}
-
 }
 
 func this() string {
@@ -286,7 +262,6 @@ func parent() string {
 }
 
 func (srv *server) logToMirrorActivity(ctx context.Context, t time.Time, ns *database.Namespace, mirror *database.Mirror, act *database.MirrorActivity, msg string, a ...interface{}) {
-
 	msg = fmt.Sprintf(msg, a...)
 
 	util.Trace(ctx, msg)
@@ -305,5 +280,4 @@ func (srv *server) logToMirrorActivity(ctx context.Context, t time.Time, ns *dat
 	srv.sugar.Infow(msg, "trace", tid, "namespace", ns.Name, "namespace-id", ns.ID.String(), "mirror-id", mirror.ID.String())
 
 	srv.pubsub.NotifyMirrorActivityLogs(act)
-
 }

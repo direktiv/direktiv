@@ -19,7 +19,6 @@ import (
 )
 
 func (flow *flow) traverseToWorkflowAnnotation(ctx context.Context, tx database.Transaction, namespace, path, key string) (*database.CacheData, *database.Annotation, error) {
-
 	cached, err := flow.traverseToWorkflow(ctx, tx, namespace, path)
 	if err != nil {
 		return nil, nil, err
@@ -31,11 +30,9 @@ func (flow *flow) traverseToWorkflowAnnotation(ctx context.Context, tx database.
 	}
 
 	return cached, annotation, nil
-
 }
 
 func (flow *flow) WorkflowAnnotation(ctx context.Context, req *grpc.WorkflowAnnotationRequest) (*grpc.WorkflowAnnotationResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	cached, annotation, err := flow.traverseToWorkflowAnnotation(ctx, nil, req.GetNamespace(), req.GetPath(), req.GetKey())
@@ -61,11 +58,9 @@ func (flow *flow) WorkflowAnnotation(ctx context.Context, req *grpc.WorkflowAnno
 	resp.Data = annotation.Data
 
 	return &resp, nil
-
 }
 
 func (flow *flow) WorkflowAnnotationParcels(req *grpc.WorkflowAnnotationRequest, srv grpc.Flow_WorkflowAnnotationParcelsServer) error {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
@@ -123,11 +118,9 @@ func (flow *flow) WorkflowAnnotationParcels(req *grpc.WorkflowAnnotationRequest,
 		}
 
 	}
-
 }
 
 func (flow *flow) WorkflowAnnotations(ctx context.Context, req *grpc.WorkflowAnnotationsRequest) (*grpc.WorkflowAnnotationsResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	cached, err := flow.traverseToWorkflow(ctx, nil, req.GetNamespace(), req.GetPath())
@@ -155,11 +148,9 @@ func (flow *flow) WorkflowAnnotations(ctx context.Context, req *grpc.WorkflowAnn
 	}
 
 	return resp, nil
-
 }
 
 func (flow *flow) WorkflowAnnotationsStream(req *grpc.WorkflowAnnotationsRequest, srv grpc.Flow_WorkflowAnnotationsStreamServer) error {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
@@ -210,11 +201,9 @@ resend:
 	}
 
 	goto resend
-
 }
 
 func (flow *flow) SetWorkflowAnnotation(ctx context.Context, req *grpc.SetWorkflowAnnotationRequest) (*grpc.SetWorkflowAnnotationResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	tx, err := flow.database.Tx(ctx)
@@ -263,11 +252,9 @@ func (flow *flow) SetWorkflowAnnotation(ctx context.Context, req *grpc.SetWorkfl
 	resp.MimeType = annotation.MimeType
 
 	return &resp, nil
-
 }
 
 func (flow *flow) SetWorkflowAnnotationParcels(srv grpc.Flow_SetWorkflowAnnotationParcelsServer) error {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
@@ -375,11 +362,9 @@ func (flow *flow) SetWorkflowAnnotationParcels(srv grpc.Flow_SetWorkflowAnnotati
 	}
 
 	return nil
-
 }
 
 func (flow *flow) DeleteWorkflowAnnotation(ctx context.Context, req *grpc.DeleteWorkflowAnnotationRequest) (*emptypb.Empty, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	tx, err := flow.database.Tx(ctx)
@@ -411,11 +396,9 @@ func (flow *flow) DeleteWorkflowAnnotation(ctx context.Context, req *grpc.Delete
 	var resp emptypb.Empty
 
 	return &resp, nil
-
 }
 
 func (flow *flow) RenameWorkflowAnnotation(ctx context.Context, req *grpc.RenameWorkflowAnnotationRequest) (*grpc.RenameWorkflowAnnotationResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	tx, err := flow.database.Tx(ctx)
@@ -457,5 +440,4 @@ func (flow *flow) RenameWorkflowAnnotation(ctx context.Context, req *grpc.Rename
 	resp.MimeType = annotation.MimeType
 
 	return &resp, nil
-
 }

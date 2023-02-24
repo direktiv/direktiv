@@ -73,8 +73,8 @@ type functionWorkflow struct {
 }
 
 func (engine *engine) isScopedKnativeFunction(client igrpc.FunctionsServiceClient,
-	serviceName string) bool {
-
+	serviceName string,
+) bool {
 	// search annotations
 	a := make(map[string]string)
 	a[functions.ServiceKnativeHeaderName] = serviceName
@@ -84,7 +84,6 @@ func (engine *engine) isScopedKnativeFunction(client igrpc.FunctionsServiceClien
 	_, err := client.GetFunction(context.Background(), &igrpc.GetFunctionRequest{
 		ServiceName: &serviceName,
 	})
-
 	if err != nil {
 		engine.sugar.Errorf("can not get knative service: %v", err)
 		return false
@@ -94,8 +93,8 @@ func (engine *engine) isScopedKnativeFunction(client igrpc.FunctionsServiceClien
 }
 
 func reconstructScopedKnativeFunction(client igrpc.FunctionsServiceClient,
-	serviceName string) error {
-
+	serviceName string,
+) error {
 	cr := igrpc.ReconstructFunctionRequest{
 		Name: &serviceName,
 	}
@@ -105,7 +104,6 @@ func reconstructScopedKnativeFunction(client igrpc.FunctionsServiceClient,
 }
 
 func (engine *engine) isKnativeFunction(client igrpc.FunctionsServiceClient, ar *functionRequest) bool {
-
 	// search annotations
 	a := make(map[string]string)
 	a[functions.ServiceHeaderName] = functions.SanitizeLabel(ar.Container.ID)
@@ -117,7 +115,6 @@ func (engine *engine) isKnativeFunction(client igrpc.FunctionsServiceClient, ar 
 	l, err := client.ListFunctions(context.Background(), &igrpc.ListFunctionsRequest{
 		Annotations: a,
 	})
-
 	if err != nil {
 		engine.sugar.Errorf("can not list knative service: %v", err)
 		return false
@@ -128,12 +125,11 @@ func (engine *engine) isKnativeFunction(client igrpc.FunctionsServiceClient, ar 
 	}
 
 	return false
-
 }
 
 func createKnativeFunction(client igrpc.FunctionsServiceClient,
-	ir *functionRequest) error {
-
+	ir *functionRequest,
+) error {
 	sz := int32(ir.Container.Size)
 	scale := int32(ir.Container.Scale)
 
@@ -155,5 +151,4 @@ func createKnativeFunction(client igrpc.FunctionsServiceClient,
 	_, err := client.CreateFunction(context.Background(), &cr)
 
 	return err
-
 }

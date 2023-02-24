@@ -10,7 +10,6 @@ import (
 )
 
 func (engine *engine) SetInstanceFailed(ctx context.Context, im *instanceMemory, err error) error {
-
 	var status, code, message string
 	status = util.InstanceStatusFailed
 	code = ErrCodeInternal
@@ -43,11 +42,9 @@ func (engine *engine) SetInstanceFailed(ctx context.Context, im *instanceMemory,
 	im.instanceUpdater = updater
 
 	return nil
-
 }
 
 func (engine *engine) InstanceRaise(ctx context.Context, im *instanceMemory, cerr *derrors.CatchableError) error {
-
 	if im.ErrorCode() == "" {
 
 		updater := im.getInstanceUpdater()
@@ -62,5 +59,4 @@ func (engine *engine) InstanceRaise(ctx context.Context, im *instanceMemory, cer
 	}
 
 	return nil
-
 }

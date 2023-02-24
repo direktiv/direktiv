@@ -25,7 +25,6 @@ type parallelLogic struct {
 
 // Parallel initializes the logic for executing a 'parallel' state in a Direktiv workflow instance.
 func Parallel(instance Instance, state model.State) (Logic, error) {
-
 	parallel, ok := state.(*model.ParallelState)
 	if !ok {
 		return nil, derrors.NewInternalError(errors.New("bad state object"))
@@ -36,13 +35,11 @@ func Parallel(instance Instance, state model.State) (Logic, error) {
 	sl.ParallelState = parallel
 
 	return sl, nil
-
 }
 
 // Deadline overwrites the default underlying Deadline function provided by Instance because
 // Parallel is a multi-step state.
 func (logic *parallelLogic) Deadline(ctx context.Context) time.Time {
-
 	d, err := duration.ParseISO8601(logic.Timeout)
 	if err != nil {
 		if logic.Timeout != "" {
@@ -54,7 +51,6 @@ func (logic *parallelLogic) Deadline(ctx context.Context) time.Time {
 	t := d.Shift(time.Now().Add(DefaultLongDeadline))
 
 	return t
-
 }
 
 // Run implements the Run function for the Logic interface.
@@ -66,7 +62,6 @@ func (logic *parallelLogic) Deadline(ctx context.Context) time.Time {
 // timeout. If the action times out or fails, the action logic may attempt to retry it, which
 // means that the number of times this logic can run may vary.
 func (logic *parallelLogic) Run(ctx context.Context, wakedata []byte) (*Transition, error) {
-
 	// first schedule
 	if len(wakedata) == 0 {
 
@@ -109,11 +104,9 @@ func (logic *parallelLogic) Run(ctx context.Context, wakedata []byte) (*Transiti
 	}
 
 	return logic.processActionResults(ctx, children, &results)
-
 }
 
 func (logic *parallelLogic) scheduleFirstActions(ctx context.Context) error {
-
 	children := make([]*ChildInfo, 0)
 
 	for i := range logic.Actions {
@@ -137,11 +130,9 @@ func (logic *parallelLogic) scheduleFirstActions(ctx context.Context) error {
 	}
 
 	return nil
-
 }
 
 func (logic *parallelLogic) scheduleAction(ctx context.Context, action *model.ActionDefinition, attempt int) (*ChildInfo, error) {
-
 	input, files, err := generateActionInput(ctx, &generateActionInputArgs{
 		Instance: logic.Instance,
 		Source:   logic.GetInstanceData(),
@@ -181,11 +172,9 @@ func (logic *parallelLogic) scheduleAction(ctx context.Context, action *model.Ac
 	}
 
 	return child, nil
-
 }
 
 func (logic *parallelLogic) scheduleRetryAction(ctx context.Context, retry *actionRetryInfo) error {
-
 	logic.Log(ctx, "Retrying...")
 
 	action := &logic.Actions[retry.Idx]
@@ -209,11 +198,9 @@ func (logic *parallelLogic) scheduleRetryAction(ctx context.Context, retry *acti
 	}
 
 	return nil
-
 }
 
 func (logic *parallelLogic) processActionResults(ctx context.Context, children []ChildInfo, results *actionResultPayload) (*Transition, error) {
-
 	var err error
 
 	var found bool
@@ -388,5 +375,4 @@ func (logic *parallelLogic) processActionResults(ctx context.Context, children [
 		Transform: logic.Transform,
 		NextState: logic.Transition,
 	}, nil
-
 }

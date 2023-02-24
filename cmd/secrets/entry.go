@@ -10,7 +10,6 @@ import (
 )
 
 func RunApplication() {
-
 	backend := "db"
 
 	srv, err := secrets.NewServer(backend)
@@ -30,5 +29,4 @@ func RunApplication() {
 	}()
 
 	<-srv.Lifeline()
-
 }

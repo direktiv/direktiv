@@ -19,7 +19,6 @@ import (
 )
 
 func (srv *server) getInstance(ctx context.Context, tx database.Transaction, namespace, instanceID string) (*database.CacheData, error) {
-
 	id, err := uuid.Parse(instanceID)
 	if err != nil {
 		return nil, err
@@ -37,11 +36,9 @@ func (srv *server) getInstance(ctx context.Context, tx database.Transaction, nam
 	}
 
 	return cached, nil
-
 }
 
 func (internal *internal) getInstance(ctx context.Context, tx database.Transaction, instanceID string) (*database.CacheData, error) {
-
 	id, err := uuid.Parse(instanceID)
 	if err != nil {
 		return nil, err
@@ -55,11 +52,9 @@ func (internal *internal) getInstance(ctx context.Context, tx database.Transacti
 	}
 
 	return cached, nil
-
 }
 
 func (srv *server) getInstanceRuntime(ctx context.Context, tx database.Transaction, namespace, instanceID string) (*database.CacheData, *database.InstanceRuntime, error) {
-
 	cached, err := srv.getInstance(ctx, tx, namespace, instanceID)
 	if err != nil {
 		return nil, nil, err
@@ -71,11 +66,9 @@ func (srv *server) getInstanceRuntime(ctx context.Context, tx database.Transacti
 	}
 
 	return cached, rt, nil
-
 }
 
 func (flow *flow) InstanceInput(ctx context.Context, req *grpc.InstanceInputRequest) (*grpc.InstanceInputResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	cached, rt, err := flow.getInstanceRuntime(ctx, nil, req.GetNamespace(), req.GetInstance())
@@ -102,11 +95,9 @@ func (flow *flow) InstanceInput(ctx context.Context, req *grpc.InstanceInputRequ
 	resp.Namespace = cached.Namespace.Name
 
 	return &resp, nil
-
 }
 
 func (flow *flow) InstanceOutput(ctx context.Context, req *grpc.InstanceOutputRequest) (*grpc.InstanceOutputResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	cached, rt, err := flow.getInstanceRuntime(ctx, nil, req.GetNamespace(), req.GetInstance())
@@ -133,11 +124,9 @@ func (flow *flow) InstanceOutput(ctx context.Context, req *grpc.InstanceOutputRe
 	resp.Namespace = cached.Namespace.Name
 
 	return &resp, nil
-
 }
 
 func (flow *flow) InstanceMetadata(ctx context.Context, req *grpc.InstanceMetadataRequest) (*grpc.InstanceMetadataResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	cached, rt, err := flow.getInstanceRuntime(ctx, nil, req.GetNamespace(), req.GetInstance())
@@ -156,11 +145,9 @@ func (flow *flow) InstanceMetadata(ctx context.Context, req *grpc.InstanceMetada
 	resp.Namespace = cached.Namespace.Name
 
 	return &resp, nil
-
 }
 
 func (flow *flow) Instances(ctx context.Context, req *grpc.InstancesRequest) (*grpc.InstancesResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	cached := new(database.CacheData)
@@ -190,11 +177,9 @@ func (flow *flow) Instances(ctx context.Context, req *grpc.InstancesRequest) (*g
 	}
 
 	return resp, nil
-
 }
 
 func (flow *flow) InstancesStream(req *grpc.InstancesRequest, srv grpc.Flow_InstancesStreamServer) error {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
@@ -247,11 +232,9 @@ resend:
 	}
 
 	goto resend
-
 }
 
 func (flow *flow) Instance(ctx context.Context, req *grpc.InstanceRequest) (*grpc.InstanceResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	cached, rt, err := flow.getInstanceRuntime(ctx, nil, req.GetNamespace(), req.GetInstance())
@@ -283,11 +266,9 @@ func (flow *flow) Instance(ctx context.Context, req *grpc.InstanceRequest) (*grp
 	resp.Workflow = rwf
 
 	return &resp, nil
-
 }
 
 func (flow *flow) InstanceStream(req *grpc.InstanceRequest, srv grpc.Flow_InstanceStreamServer) error {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
@@ -345,11 +326,9 @@ resend:
 	}
 
 	goto resend
-
 }
 
 func (flow *flow) StartWorkflow(ctx context.Context, req *grpc.StartWorkflowRequest) (*grpc.StartWorkflowResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	args := new(newInstanceArgs)
@@ -375,11 +354,9 @@ func (flow *flow) StartWorkflow(ctx context.Context, req *grpc.StartWorkflowRequ
 	resp.Instance = im.ID().String()
 
 	return &resp, nil
-
 }
 
 func (flow *flow) ReleaseInstance(ctx context.Context, req *grpc.ReleaseInstanceRequest) (*grpc.ReleaseInstanceResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	im, err := flow.engine.getInstanceMemory(ctx, nil, req.GetInstance())
@@ -403,7 +380,6 @@ func (flow *flow) ReleaseInstance(ctx context.Context, req *grpc.ReleaseInstance
 	resp.Instance = im.ID().String()
 
 	return &resp, nil
-
 }
 
 var instancesOrderings = []*orderingInfo{
@@ -479,7 +455,6 @@ var instancesFilters = map[*filteringInfo]func(query *ent.InstanceQuery, v strin
 }
 
 func (flow *flow) CancelInstance(ctx context.Context, req *grpc.CancelInstanceRequest) (*emptypb.Empty, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	cached, err := flow.getInstance(ctx, nil, req.GetNamespace(), req.GetInstance())
@@ -492,11 +467,9 @@ func (flow *flow) CancelInstance(ctx context.Context, req *grpc.CancelInstanceRe
 	var resp emptypb.Empty
 
 	return &resp, nil
-
 }
 
 func (flow *flow) AwaitWorkflow(req *grpc.AwaitWorkflowRequest, srv grpc.Flow_AwaitWorkflowServer) error {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
@@ -579,5 +552,4 @@ resend:
 	}
 
 	goto resend
-
 }

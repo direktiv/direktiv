@@ -32,7 +32,6 @@ type flowHandler struct {
 }
 
 func newFlowHandler(logger *zap.SugaredLogger, router *mux.Router, conf *util.Config) (*flowHandler, error) {
-
 	flowAddr := fmt.Sprintf("%s:6666", conf.FlowService)
 	logger.Infof("connecting to flow %s", flowAddr)
 
@@ -59,11 +58,9 @@ func newFlowHandler(logger *zap.SugaredLogger, router *mux.Router, conf *util.Co
 	h.initRoutes(router)
 
 	return h, nil
-
 }
 
 func (h *flowHandler) initRoutes(r *mux.Router) {
-
 	// swagger:operation GET /api/namespaces Namespaces getNamespaces
 	// ---
 	// description: |
@@ -1851,7 +1848,6 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     schema:
 	//       "$ref": '#/definitions/ErrorResponse'
 	pathHandlerPair(r, RN_GetNode, "", h.GetNode, h.GetNodeSSE)
-
 }
 
 func (h *flowHandler) EventListeners(w http.ResponseWriter, r *http.Request) {
@@ -1898,7 +1894,6 @@ func (h *flowHandler) EventListenersSSE(w http.ResponseWriter, r *http.Request) 
 
 	ch := make(chan interface{}, 1)
 	defer func() {
-
 		_ = resp.CloseSend()
 
 		for {
@@ -1907,11 +1902,9 @@ func (h *flowHandler) EventListenersSSE(w http.ResponseWriter, r *http.Request) 
 				return
 			}
 		}
-
 	}()
 
 	go func() {
-
 		defer close(ch)
 
 		for {
@@ -1925,7 +1918,6 @@ func (h *flowHandler) EventListenersSSE(w http.ResponseWriter, r *http.Request) 
 			ch <- x
 
 		}
-
 	}()
 
 	sse(w, ch)
@@ -1975,7 +1967,6 @@ func (h *flowHandler) EventHistorySSE(w http.ResponseWriter, r *http.Request) {
 
 	ch := make(chan interface{}, 1)
 	defer func() {
-
 		_ = resp.CloseSend()
 
 		for {
@@ -1984,11 +1975,9 @@ func (h *flowHandler) EventHistorySSE(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
-
 	}()
 
 	go func() {
-
 		defer close(ch)
 
 		for {
@@ -2002,14 +1991,12 @@ func (h *flowHandler) EventHistorySSE(w http.ResponseWriter, r *http.Request) {
 			ch <- x
 
 		}
-
 	}()
 
 	sse(w, ch)
 }
 
 func (h *flowHandler) Namespaces(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -2026,11 +2013,9 @@ func (h *flowHandler) Namespaces(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.client.Namespaces(ctx, in)
 	respond(w, resp, err)
-
 }
 
 func (h *flowHandler) NamespacesSSE(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -2054,7 +2039,6 @@ func (h *flowHandler) NamespacesSSE(w http.ResponseWriter, r *http.Request) {
 	ch := make(chan interface{}, 1)
 
 	defer func() {
-
 		_ = resp.CloseSend()
 
 		for {
@@ -2063,11 +2047,9 @@ func (h *flowHandler) NamespacesSSE(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
-
 	}()
 
 	go func() {
-
 		defer close(ch)
 
 		for {
@@ -2081,15 +2063,12 @@ func (h *flowHandler) NamespacesSSE(w http.ResponseWriter, r *http.Request) {
 			ch <- x
 
 		}
-
 	}()
 
 	sse(w, ch)
-
 }
 
 func (h *flowHandler) CreateNamespace(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -2124,11 +2103,9 @@ func (h *flowHandler) CreateNamespace(w http.ResponseWriter, r *http.Request) {
 		respond(w, resp, err)
 		return
 	}
-
 }
 
 func (h *flowHandler) UpdateMirror(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -2156,11 +2133,9 @@ func (h *flowHandler) UpdateMirror(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.client.UpdateMirrorSettings(ctx, in)
 	respond(w, resp, err)
-
 }
 
 func (h *flowHandler) SetNamespaceConfig(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -2189,7 +2164,6 @@ func (h *flowHandler) SetNamespaceConfig(w http.ResponseWriter, r *http.Request)
 }
 
 func (h *flowHandler) GetNamespaceConfig(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -2211,7 +2185,6 @@ func (h *flowHandler) GetNamespaceConfig(w http.ResponseWriter, r *http.Request)
 }
 
 func (h *flowHandler) DeleteNamespace(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -2229,11 +2202,9 @@ func (h *flowHandler) DeleteNamespace(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.client.DeleteNamespace(ctx, in)
 	respond(w, resp, err)
-
 }
 
 func (h *flowHandler) ServerLogs(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -2250,11 +2221,9 @@ func (h *flowHandler) ServerLogs(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.client.ServerLogs(ctx, in)
 	respond(w, resp, err)
-
 }
 
 func (h *flowHandler) ServerLogsSSE(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -2278,7 +2247,6 @@ func (h *flowHandler) ServerLogsSSE(w http.ResponseWriter, r *http.Request) {
 	ch := make(chan interface{}, 1)
 
 	defer func() {
-
 		_ = resp.CloseSend()
 
 		for {
@@ -2287,11 +2255,9 @@ func (h *flowHandler) ServerLogsSSE(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
-
 	}()
 
 	go func() {
-
 		defer close(ch)
 
 		for {
@@ -2305,15 +2271,12 @@ func (h *flowHandler) ServerLogsSSE(w http.ResponseWriter, r *http.Request) {
 			ch <- x
 
 		}
-
 	}()
 
 	sse(w, ch)
-
 }
 
 func (h *flowHandler) NamespaceLogs(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -2332,11 +2295,9 @@ func (h *flowHandler) NamespaceLogs(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.client.NamespaceLogs(ctx, in)
 	respond(w, resp, err)
-
 }
 
 func (h *flowHandler) NamespaceLogsSSE(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -2362,7 +2323,6 @@ func (h *flowHandler) NamespaceLogsSSE(w http.ResponseWriter, r *http.Request) {
 	ch := make(chan interface{}, 1)
 
 	defer func() {
-
 		_ = resp.CloseSend()
 
 		for {
@@ -2371,11 +2331,9 @@ func (h *flowHandler) NamespaceLogsSSE(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
-
 	}()
 
 	go func() {
-
 		defer close(ch)
 
 		for {
@@ -2389,15 +2347,12 @@ func (h *flowHandler) NamespaceLogsSSE(w http.ResponseWriter, r *http.Request) {
 			ch <- x
 
 		}
-
 	}()
 
 	sse(w, ch)
-
 }
 
 func (h *flowHandler) WorkflowLogs(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -2418,11 +2373,9 @@ func (h *flowHandler) WorkflowLogs(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.client.WorkflowLogs(ctx, in)
 	respond(w, resp, err)
-
 }
 
 func (h *flowHandler) WorkflowLogsSSE(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -2450,7 +2403,6 @@ func (h *flowHandler) WorkflowLogsSSE(w http.ResponseWriter, r *http.Request) {
 	ch := make(chan interface{}, 1)
 
 	defer func() {
-
 		_ = resp.CloseSend()
 
 		for {
@@ -2459,11 +2411,9 @@ func (h *flowHandler) WorkflowLogsSSE(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
-
 	}()
 
 	go func() {
-
 		defer close(ch)
 
 		for {
@@ -2477,15 +2427,12 @@ func (h *flowHandler) WorkflowLogsSSE(w http.ResponseWriter, r *http.Request) {
 			ch <- x
 
 		}
-
 	}()
 
 	sse(w, ch)
-
 }
 
 func (h *flowHandler) InstanceLogs(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -2506,11 +2453,9 @@ func (h *flowHandler) InstanceLogs(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.client.InstanceLogs(ctx, in)
 	respond(w, resp, err)
-
 }
 
 func (h *flowHandler) InstanceLogsSSE(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -2538,7 +2483,6 @@ func (h *flowHandler) InstanceLogsSSE(w http.ResponseWriter, r *http.Request) {
 	ch := make(chan interface{}, 1)
 
 	defer func() {
-
 		_ = resp.CloseSend()
 
 		for {
@@ -2547,11 +2491,9 @@ func (h *flowHandler) InstanceLogsSSE(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
-
 	}()
 
 	go func() {
-
 		defer close(ch)
 
 		for {
@@ -2565,15 +2507,12 @@ func (h *flowHandler) InstanceLogsSSE(w http.ResponseWriter, r *http.Request) {
 			ch <- x
 
 		}
-
 	}()
 
 	sse(w, ch)
-
 }
 
 func (h *flowHandler) MirrorActivityLogs(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -2594,11 +2533,9 @@ func (h *flowHandler) MirrorActivityLogs(w http.ResponseWriter, r *http.Request)
 
 	resp, err := h.client.MirrorActivityLogs(ctx, in)
 	respond(w, resp, err)
-
 }
 
 func (h *flowHandler) MirrorActivityLogsSSE(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -2626,7 +2563,6 @@ func (h *flowHandler) MirrorActivityLogsSSE(w http.ResponseWriter, r *http.Reque
 	ch := make(chan interface{}, 1)
 
 	defer func() {
-
 		_ = resp.CloseSend()
 
 		for {
@@ -2635,11 +2571,9 @@ func (h *flowHandler) MirrorActivityLogsSSE(w http.ResponseWriter, r *http.Reque
 				return
 			}
 		}
-
 	}()
 
 	go func() {
-
 		defer close(ch)
 
 		for {
@@ -2653,15 +2587,12 @@ func (h *flowHandler) MirrorActivityLogsSSE(w http.ResponseWriter, r *http.Reque
 			ch <- x
 
 		}
-
 	}()
 
 	sse(w, ch)
-
 }
 
 func (h *flowHandler) GetNode(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("method: %s\nuri: %s\n", r.Method, r.URL.String())
 	h.logger.Debugf("Handling request: %s", this())
 
@@ -2720,11 +2651,9 @@ workflow:
 	})
 
 	respond(w, resp, err)
-
 }
 
 func (h *flowHandler) GetNodeSSE(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -2777,7 +2706,6 @@ directory:
 	ch = make(chan interface{}, 1)
 
 	defer func() {
-
 		_ = dirc.CloseSend()
 
 		for {
@@ -2786,11 +2714,9 @@ directory:
 				return
 			}
 		}
-
 	}()
 
 	go func() {
-
 		defer close(ch)
 
 		for {
@@ -2804,7 +2730,6 @@ directory:
 			ch <- x
 
 		}
-
 	}()
 
 	sse(w, ch)
@@ -2825,7 +2750,6 @@ workflow:
 	ch = make(chan interface{}, 1)
 
 	defer func() {
-
 		_ = wfc.CloseSend()
 
 		for {
@@ -2834,11 +2758,9 @@ workflow:
 				return
 			}
 		}
-
 	}()
 
 	go func() {
-
 		defer close(ch)
 
 		for {
@@ -2852,15 +2774,12 @@ workflow:
 			ch <- x
 
 		}
-
 	}()
 
 	sse(w, ch)
-
 }
 
 func (h *flowHandler) CreateDirectory(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -2898,11 +2817,9 @@ func (h *flowHandler) CreateDirectory(w http.ResponseWriter, r *http.Request) {
 		respond(w, resp, err)
 		return
 	}
-
 }
 
 func (h *flowHandler) CreateWorkflow(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -2923,11 +2840,9 @@ func (h *flowHandler) CreateWorkflow(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.client.CreateWorkflow(ctx, in)
 	respond(w, resp, err)
-
 }
 
 func (h *flowHandler) UpdateWorkflow(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -2948,11 +2863,9 @@ func (h *flowHandler) UpdateWorkflow(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.client.UpdateWorkflow(ctx, in)
 	respond(w, resp, err)
-
 }
 
 func (h *flowHandler) SaveWorkflow(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -2966,11 +2879,9 @@ func (h *flowHandler) SaveWorkflow(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.client.SaveHead(ctx, in)
 	respond(w, resp, err)
-
 }
 
 func (h *flowHandler) DiscardWorkflow(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -2984,7 +2895,6 @@ func (h *flowHandler) DiscardWorkflow(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.client.DiscardHead(ctx, in)
 	respond(w, resp, err)
-
 }
 
 func (h *flowHandler) LockMirror(w http.ResponseWriter, r *http.Request) {
@@ -3047,7 +2957,6 @@ func (h *flowHandler) SyncMirror(w http.ResponseWriter, r *http.Request) {
 		respond(w, resp, err)
 		return
 	}
-
 }
 
 func (h *flowHandler) RenameNode(w http.ResponseWriter, r *http.Request) {
@@ -3078,7 +2987,6 @@ func (h *flowHandler) RenameNode(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) DeleteNode(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -3095,11 +3003,9 @@ func (h *flowHandler) DeleteNode(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.client.DeleteNode(ctx, in)
 	respond(w, resp, err)
-
 }
 
 func (h *flowHandler) GetTags(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -3120,11 +3026,9 @@ func (h *flowHandler) GetTags(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.client.Tags(ctx, in)
 	respond(w, resp, err)
-
 }
 
 func (h *flowHandler) GetTagsSSE(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -3152,7 +3056,6 @@ func (h *flowHandler) GetTagsSSE(w http.ResponseWriter, r *http.Request) {
 	ch := make(chan interface{}, 1)
 
 	defer func() {
-
 		_ = resp.CloseSend()
 
 		for {
@@ -3161,11 +3064,9 @@ func (h *flowHandler) GetTagsSSE(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
-
 	}()
 
 	go func() {
-
 		defer close(ch)
 
 		for {
@@ -3179,15 +3080,12 @@ func (h *flowHandler) GetTagsSSE(w http.ResponseWriter, r *http.Request) {
 			ch <- x
 
 		}
-
 	}()
 
 	sse(w, ch)
-
 }
 
 func (h *flowHandler) GetRefs(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -3208,11 +3106,9 @@ func (h *flowHandler) GetRefs(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.client.Refs(ctx, in)
 	respond(w, resp, err)
-
 }
 
 func (h *flowHandler) GetRefsSSE(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -3240,7 +3136,6 @@ func (h *flowHandler) GetRefsSSE(w http.ResponseWriter, r *http.Request) {
 	ch := make(chan interface{}, 1)
 
 	defer func() {
-
 		_ = resp.CloseSend()
 
 		for {
@@ -3249,11 +3144,9 @@ func (h *flowHandler) GetRefsSSE(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
-
 	}()
 
 	go func() {
-
 		defer close(ch)
 
 		for {
@@ -3267,15 +3160,12 @@ func (h *flowHandler) GetRefsSSE(w http.ResponseWriter, r *http.Request) {
 			ch <- x
 
 		}
-
 	}()
 
 	sse(w, ch)
-
 }
 
 func (h *flowHandler) GetRevisions(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -3296,11 +3186,9 @@ func (h *flowHandler) GetRevisions(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.client.Revisions(ctx, in)
 	respond(w, resp, err)
-
 }
 
 func (h *flowHandler) GetRevisionsSSE(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -3328,7 +3216,6 @@ func (h *flowHandler) GetRevisionsSSE(w http.ResponseWriter, r *http.Request) {
 	ch := make(chan interface{}, 1)
 
 	defer func() {
-
 		_ = resp.CloseSend()
 
 		for {
@@ -3337,11 +3224,9 @@ func (h *flowHandler) GetRevisionsSSE(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
-
 	}()
 
 	go func() {
-
 		defer close(ch)
 
 		for {
@@ -3355,15 +3240,12 @@ func (h *flowHandler) GetRevisionsSSE(w http.ResponseWriter, r *http.Request) {
 			ch <- x
 
 		}
-
 	}()
 
 	sse(w, ch)
-
 }
 
 func (h *flowHandler) DeleteRevision(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -3378,7 +3260,6 @@ func (h *flowHandler) DeleteRevision(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.client.DeleteRevision(ctx, in)
 	respond(w, resp, err)
-
 }
 
 func (h *flowHandler) CreateNodeAttributes(w http.ResponseWriter, r *http.Request) {
@@ -3426,7 +3307,6 @@ func (h *flowHandler) DeleteNodeAttributes(w http.ResponseWriter, r *http.Reques
 }
 
 func (h *flowHandler) Tag(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -3448,11 +3328,9 @@ func (h *flowHandler) Tag(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.client.Tag(ctx, in)
 	respond(w, resp, err)
-
 }
 
 func (h *flowHandler) Untag(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -3467,11 +3345,9 @@ func (h *flowHandler) Untag(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.client.Untag(ctx, in)
 	respond(w, resp, err)
-
 }
 
 func (h *flowHandler) Retag(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -3493,11 +3369,9 @@ func (h *flowHandler) Retag(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.client.Retag(ctx, in)
 	respond(w, resp, err)
-
 }
 
 func (h *flowHandler) ValidateRef(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -3512,11 +3386,9 @@ func (h *flowHandler) ValidateRef(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.client.ValidateRef(ctx, in)
 	respond(w, resp, err)
-
 }
 
 func (h *flowHandler) ValidateRouter(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -3530,11 +3402,9 @@ func (h *flowHandler) ValidateRouter(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.client.ValidateRouter(ctx, in)
 	respond(w, resp, err)
-
 }
 
 func (h *flowHandler) EditRouter(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -3554,11 +3424,9 @@ func (h *flowHandler) EditRouter(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.client.EditRouter(ctx, in)
 	respond(w, resp, err)
-
 }
 
 func (h *flowHandler) Router(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -3572,11 +3440,9 @@ func (h *flowHandler) Router(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.client.Router(ctx, in)
 	respond(w, resp, err)
-
 }
 
 func (h *flowHandler) RouterSSE(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -3597,7 +3463,6 @@ func (h *flowHandler) RouterSSE(w http.ResponseWriter, r *http.Request) {
 	ch := make(chan interface{}, 1)
 
 	defer func() {
-
 		_ = resp.CloseSend()
 
 		for {
@@ -3606,11 +3471,9 @@ func (h *flowHandler) RouterSSE(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
-
 	}()
 
 	go func() {
-
 		defer close(ch)
 
 		for {
@@ -3624,15 +3487,12 @@ func (h *flowHandler) RouterSSE(w http.ResponseWriter, r *http.Request) {
 			ch <- x
 
 		}
-
 	}()
 
 	sse(w, ch)
-
 }
 
 func (h *flowHandler) MirrorInfo(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -3653,11 +3513,9 @@ func (h *flowHandler) MirrorInfo(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.client.MirrorInfo(ctx, in)
 	respond(w, resp, err)
-
 }
 
 func (h *flowHandler) MirrorInfoSSE(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -3685,7 +3543,6 @@ func (h *flowHandler) MirrorInfoSSE(w http.ResponseWriter, r *http.Request) {
 	ch := make(chan interface{}, 1)
 
 	defer func() {
-
 		_ = resp.CloseSend()
 
 		for {
@@ -3694,11 +3551,9 @@ func (h *flowHandler) MirrorInfoSSE(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
-
 	}()
 
 	go func() {
-
 		defer close(ch)
 
 		for {
@@ -3712,15 +3567,12 @@ func (h *flowHandler) MirrorInfoSSE(w http.ResponseWriter, r *http.Request) {
 			ch <- x
 
 		}
-
 	}()
 
 	sse(w, ch)
-
 }
 
 func (h *flowHandler) Secrets(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -3761,11 +3613,9 @@ func (h *flowHandler) Secrets(w http.ResponseWriter, r *http.Request) {
 		resp, err := h.client.Secrets(ctx, in)
 		respond(w, resp, err)
 	}
-
 }
 
 func (h *flowHandler) SecretsSSE(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -3793,7 +3643,6 @@ func (h *flowHandler) SecretsSSE(w http.ResponseWriter, r *http.Request) {
 	ch := make(chan interface{}, 1)
 
 	defer func() {
-
 		_ = resp.CloseSend()
 
 		for {
@@ -3802,11 +3651,9 @@ func (h *flowHandler) SecretsSSE(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
-
 	}()
 
 	go func() {
-
 		defer close(ch)
 
 		for {
@@ -3820,15 +3667,12 @@ func (h *flowHandler) SecretsSSE(w http.ResponseWriter, r *http.Request) {
 			ch <- x
 
 		}
-
 	}()
 
 	sse(w, ch)
-
 }
 
 func (h *flowHandler) SetSecret(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -3849,11 +3693,9 @@ func (h *flowHandler) SetSecret(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.client.SetSecret(ctx, in)
 	respond(w, resp, err)
-
 }
 
 func (h *flowHandler) OverwriteSecret(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -3873,11 +3715,9 @@ func (h *flowHandler) OverwriteSecret(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.client.UpdateSecret(ctx, in)
 	respond(w, resp, err)
-
 }
 
 func (h *flowHandler) DeleteSecret(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -3890,11 +3730,9 @@ func (h *flowHandler) DeleteSecret(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.client.DeleteSecret(ctx, in)
 	respond(w, resp, err)
-
 }
 
 func (h *flowHandler) DeleteSecretsFolder(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -3907,11 +3745,9 @@ func (h *flowHandler) DeleteSecretsFolder(w http.ResponseWriter, r *http.Request
 
 	resp, err := h.client.DeleteSecretsFolder(ctx, in)
 	respond(w, resp, err)
-
 }
 
 func (h *flowHandler) CreateSecretsFolder(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -3925,11 +3761,9 @@ func (h *flowHandler) CreateSecretsFolder(w http.ResponseWriter, r *http.Request
 
 	resp, err := h.client.CreateSecretsFolder(ctx, in)
 	respond(w, resp, err)
-
 }
 
 func (h *flowHandler) Instance(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -3943,11 +3777,9 @@ func (h *flowHandler) Instance(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.client.Instance(ctx, in)
 	respond(w, resp, err)
-
 }
 
 func (h *flowHandler) InstanceSSE(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -3968,7 +3800,6 @@ func (h *flowHandler) InstanceSSE(w http.ResponseWriter, r *http.Request) {
 	ch := make(chan interface{}, 1)
 
 	defer func() {
-
 		_ = resp.CloseSend()
 
 		for {
@@ -3977,11 +3808,9 @@ func (h *flowHandler) InstanceSSE(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
-
 	}()
 
 	go func() {
-
 		defer close(ch)
 
 		for {
@@ -3995,15 +3824,12 @@ func (h *flowHandler) InstanceSSE(w http.ResponseWriter, r *http.Request) {
 			ch <- x
 
 		}
-
 	}()
 
 	sse(w, ch)
-
 }
 
 func (h *flowHandler) Instances(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -4022,11 +3848,9 @@ func (h *flowHandler) Instances(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.client.Instances(ctx, in)
 	respond(w, resp, err)
-
 }
 
 func (h *flowHandler) InstancesSSE(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -4052,7 +3876,6 @@ func (h *flowHandler) InstancesSSE(w http.ResponseWriter, r *http.Request) {
 	ch := make(chan interface{}, 1)
 
 	defer func() {
-
 		_ = resp.CloseSend()
 
 		for {
@@ -4061,11 +3884,9 @@ func (h *flowHandler) InstancesSSE(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
-
 	}()
 
 	go func() {
-
 		defer close(ch)
 
 		for {
@@ -4079,15 +3900,12 @@ func (h *flowHandler) InstancesSSE(w http.ResponseWriter, r *http.Request) {
 			ch <- x
 
 		}
-
 	}()
 
 	sse(w, ch)
-
 }
 
 func (h *flowHandler) InstanceInput(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -4101,11 +3919,9 @@ func (h *flowHandler) InstanceInput(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.client.InstanceInput(ctx, in)
 	respond(w, resp, err)
-
 }
 
 func (h *flowHandler) InstanceOutput(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -4119,11 +3935,9 @@ func (h *flowHandler) InstanceOutput(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.client.InstanceOutput(ctx, in)
 	respond(w, resp, err)
-
 }
 
 func (h *flowHandler) InstanceMetadata(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -4137,11 +3951,9 @@ func (h *flowHandler) InstanceMetadata(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.client.InstanceMetadata(ctx, in)
 	respond(w, resp, err)
-
 }
 
 func (h *flowHandler) InstanceCancel(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -4155,11 +3967,9 @@ func (h *flowHandler) InstanceCancel(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.client.CancelInstance(ctx, in)
 	respond(w, resp, err)
-
 }
 
 func (h *flowHandler) MirrorActivityCancel(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -4173,11 +3983,9 @@ func (h *flowHandler) MirrorActivityCancel(w http.ResponseWriter, r *http.Reques
 
 	resp, err := h.client.CancelMirrorActivity(ctx, in)
 	respond(w, resp, err)
-
 }
 
 func (h *flowHandler) ExecuteWorkflow(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -4199,11 +4007,9 @@ func (h *flowHandler) ExecuteWorkflow(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.client.StartWorkflow(ctx, in)
 	respond(w, resp, err)
-
 }
 
 func (h *flowHandler) WaitWorkflow(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -4319,7 +4125,6 @@ func (h *flowHandler) WaitWorkflow(w http.ResponseWriter, r *http.Request) {
 			rawo, _ := strconv.ParseBool(r.URL.Query().Get("raw-output"))
 
 			if rawo {
-
 				if x == nil {
 					data = make([]byte, 0)
 				} else if str, ok := x.(string); ok {
@@ -4329,7 +4134,6 @@ func (h *flowHandler) WaitWorkflow(w http.ResponseWriter, r *http.Request) {
 						data = b64
 					}
 				}
-
 			}
 
 			w.Header().Set("Content-Length", fmt.Sprintf("%v", len(data)))
@@ -4364,11 +4168,9 @@ func (h *flowHandler) WaitWorkflow(w http.ResponseWriter, r *http.Request) {
 		}
 
 	}
-
 }
 
 func ToGRPCCloudEvents(r *http.Request) ([]cloudevents.Event, error) {
-
 	var events []cloudevents.Event
 	ct := r.Header.Get("Content-type")
 	oct := ct
@@ -4495,11 +4297,9 @@ generic:
 	events = append(events, event)
 
 	return events, nil
-
 }
 
 func (h *flowHandler) doBroadcast(w http.ResponseWriter, r *http.Request, filter string) {
-
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
 
@@ -4543,27 +4343,21 @@ func (h *flowHandler) doBroadcast(w http.ResponseWriter, r *http.Request, filter
 		}
 
 	}
-
 }
 
 func (h *flowHandler) BroadcastCloudevent(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	h.doBroadcast(w, r, "")
-
 }
 
 func (h *flowHandler) BroadcastCloudeventFilter(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	h.doBroadcast(w, r, mux.Vars(r)["filter"])
-
 }
 
 func (h *flowHandler) CreateBroadcastCloudeventFilter(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -4576,7 +4370,7 @@ func (h *flowHandler) CreateBroadcastCloudeventFilter(w http.ResponseWriter, r *
 		return
 	}
 
-	//CREATE FILTER
+	// CREATE FILTER
 	in := new(grpc.CreateCloudEventFilterRequest)
 	in.Namespace = namespace
 	in.Filtername = filterName
@@ -4587,11 +4381,9 @@ func (h *flowHandler) CreateBroadcastCloudeventFilter(w http.ResponseWriter, r *
 		return
 	}
 	respond(w, resp, err)
-
 }
 
 func (h *flowHandler) DeleteBroadcastCloudeventFilter(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -4608,11 +4400,9 @@ func (h *flowHandler) DeleteBroadcastCloudeventFilter(w http.ResponseWriter, r *
 		return
 	}
 	respond(w, resp, err)
-
 }
 
 func (h *flowHandler) UpdateBroadcastCloudeventFilter(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -4632,7 +4422,7 @@ func (h *flowHandler) UpdateBroadcastCloudeventFilter(w http.ResponseWriter, r *
 		return
 	}
 
-	//DELETE Filter
+	// DELETE Filter
 	inDelete := new(grpc.DeleteCloudEventFilterRequest)
 	inDelete.Namespace = namespace
 	inDelete.FilterName = filterName
@@ -4642,7 +4432,7 @@ func (h *flowHandler) UpdateBroadcastCloudeventFilter(w http.ResponseWriter, r *
 		return
 	}
 
-	//CREATE FILTER
+	// CREATE FILTER
 	inAdd := new(grpc.CreateCloudEventFilterRequest)
 	inAdd.Namespace = namespace
 	inAdd.Filtername = filterName
@@ -4654,11 +4444,9 @@ func (h *flowHandler) UpdateBroadcastCloudeventFilter(w http.ResponseWriter, r *
 	}
 
 	respond(w, respCreate, errCreate)
-
 }
 
 func (h *flowHandler) GetCloudeventFilterList(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -4671,11 +4459,9 @@ func (h *flowHandler) GetCloudeventFilterList(w http.ResponseWriter, r *http.Req
 	resp, err := h.client.GetCloudEventFilters(ctx, in)
 
 	respond(w, resp, err)
-
 }
 
 func (h *flowHandler) GetCloudEventFilter(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -4695,11 +4481,9 @@ func (h *flowHandler) GetCloudEventFilter(w http.ResponseWriter, r *http.Request
 	resp.Filtername = filterName
 
 	respond(w, resp, err)
-
 }
 
 func (h *flowHandler) ReplayEvent(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -4713,11 +4497,9 @@ func (h *flowHandler) ReplayEvent(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.client.ReplayEvent(ctx, in)
 	respond(w, resp, err)
-
 }
 
 func (h *flowHandler) JQ(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -4732,11 +4514,9 @@ func (h *flowHandler) JQ(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.client.JQ(ctx, in)
 	respond(w, resp, err)
-
 }
 
 func (h *flowHandler) NamespaceVariables(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -4755,11 +4535,9 @@ func (h *flowHandler) NamespaceVariables(w http.ResponseWriter, r *http.Request)
 
 	resp, err := h.client.NamespaceVariables(ctx, in)
 	respond(w, resp, err)
-
 }
 
 func (h *flowHandler) NamespaceVariablesSSE(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -4785,7 +4563,6 @@ func (h *flowHandler) NamespaceVariablesSSE(w http.ResponseWriter, r *http.Reque
 	ch := make(chan interface{}, 1)
 
 	defer func() {
-
 		_ = resp.CloseSend()
 
 		for {
@@ -4794,11 +4571,9 @@ func (h *flowHandler) NamespaceVariablesSSE(w http.ResponseWriter, r *http.Reque
 				return
 			}
 		}
-
 	}()
 
 	go func() {
-
 		defer close(ch)
 
 		for {
@@ -4812,15 +4587,12 @@ func (h *flowHandler) NamespaceVariablesSSE(w http.ResponseWriter, r *http.Reque
 			ch <- x
 
 		}
-
 	}()
 
 	sse(w, ch)
-
 }
 
 func (h *flowHandler) NamespaceVariable(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -4865,11 +4637,9 @@ func (h *flowHandler) NamespaceVariable(w http.ResponseWriter, r *http.Request) 
 		}
 
 	}
-
 }
 
 func (h *flowHandler) SetNamespaceVariable(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -4948,11 +4718,9 @@ func (h *flowHandler) SetNamespaceVariable(w http.ResponseWriter, r *http.Reques
 
 	resp, err := client.CloseAndRecv()
 	respond(w, resp, err)
-
 }
 
 func (h *flowHandler) DeleteNamespaceVariable(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -4966,11 +4734,9 @@ func (h *flowHandler) DeleteNamespaceVariable(w http.ResponseWriter, r *http.Req
 
 	resp, err := h.client.DeleteNamespaceVariable(ctx, in)
 	respond(w, resp, err)
-
 }
 
 func (h *flowHandler) InstanceVariables(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -4991,11 +4757,9 @@ func (h *flowHandler) InstanceVariables(w http.ResponseWriter, r *http.Request) 
 
 	resp, err := h.client.InstanceVariables(ctx, in)
 	respond(w, resp, err)
-
 }
 
 func (h *flowHandler) InstanceVariablesSSE(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -5023,7 +4787,6 @@ func (h *flowHandler) InstanceVariablesSSE(w http.ResponseWriter, r *http.Reques
 	ch := make(chan interface{}, 1)
 
 	defer func() {
-
 		_ = resp.CloseSend()
 
 		for {
@@ -5032,11 +4795,9 @@ func (h *flowHandler) InstanceVariablesSSE(w http.ResponseWriter, r *http.Reques
 				return
 			}
 		}
-
 	}()
 
 	go func() {
-
 		defer close(ch)
 
 		for {
@@ -5050,15 +4811,12 @@ func (h *flowHandler) InstanceVariablesSSE(w http.ResponseWriter, r *http.Reques
 			ch <- x
 
 		}
-
 	}()
 
 	sse(w, ch)
-
 }
 
 func (h *flowHandler) InstanceVariable(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -5105,11 +4863,9 @@ func (h *flowHandler) InstanceVariable(w http.ResponseWriter, r *http.Request) {
 		}
 
 	}
-
 }
 
 func (h *flowHandler) SetInstanceVariable(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -5187,11 +4943,9 @@ func (h *flowHandler) SetInstanceVariable(w http.ResponseWriter, r *http.Request
 
 	resp, err := client.CloseAndRecv()
 	respond(w, resp, err)
-
 }
 
 func (h *flowHandler) DeleteInstanceVariable(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -5207,11 +4961,9 @@ func (h *flowHandler) DeleteInstanceVariable(w http.ResponseWriter, r *http.Requ
 
 	resp, err := h.client.DeleteInstanceVariable(ctx, in)
 	respond(w, resp, err)
-
 }
 
 func (h *flowHandler) WorkflowVariables(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -5232,11 +4984,9 @@ func (h *flowHandler) WorkflowVariables(w http.ResponseWriter, r *http.Request) 
 
 	resp, err := h.client.WorkflowVariables(ctx, in)
 	respond(w, resp, err)
-
 }
 
 func (h *flowHandler) WorkflowVariablesSSE(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -5264,7 +5014,6 @@ func (h *flowHandler) WorkflowVariablesSSE(w http.ResponseWriter, r *http.Reques
 	ch := make(chan interface{}, 1)
 
 	defer func() {
-
 		_ = resp.CloseSend()
 
 		for {
@@ -5273,11 +5022,9 @@ func (h *flowHandler) WorkflowVariablesSSE(w http.ResponseWriter, r *http.Reques
 				return
 			}
 		}
-
 	}()
 
 	go func() {
-
 		defer close(ch)
 
 		for {
@@ -5291,15 +5038,12 @@ func (h *flowHandler) WorkflowVariablesSSE(w http.ResponseWriter, r *http.Reques
 			ch <- x
 
 		}
-
 	}()
 
 	sse(w, ch)
-
 }
 
 func (h *flowHandler) WorkflowVariable(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -5346,11 +5090,9 @@ func (h *flowHandler) WorkflowVariable(w http.ResponseWriter, r *http.Request) {
 		}
 
 	}
-
 }
 
 func (h *flowHandler) SetWorkflowVariable(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -5428,11 +5170,9 @@ func (h *flowHandler) SetWorkflowVariable(w http.ResponseWriter, r *http.Request
 
 	resp, err := client.CloseAndRecv()
 	respond(w, resp, err)
-
 }
 
 func (h *flowHandler) DeleteWorkflowVariable(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -5448,11 +5188,9 @@ func (h *flowHandler) DeleteWorkflowVariable(w http.ResponseWriter, r *http.Requ
 
 	resp, err := h.client.DeleteWorkflowVariable(ctx, in)
 	respond(w, resp, err)
-
 }
 
 func (h *flowHandler) SetWorkflowEventLogging(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -5472,11 +5210,9 @@ func (h *flowHandler) SetWorkflowEventLogging(w http.ResponseWriter, r *http.Req
 
 	resp, err := h.client.SetWorkflowEventLogging(ctx, in)
 	respond(w, resp, err)
-
 }
 
 func (h *flowHandler) ToggleWorkflow(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -5496,5 +5232,4 @@ func (h *flowHandler) ToggleWorkflow(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.client.ToggleWorkflow(ctx, in)
 	respond(w, resp, err)
-
 }

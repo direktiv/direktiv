@@ -7,7 +7,6 @@ import (
 )
 
 func (engine *engine) scheduleTimeout(im *instanceMemory, oldController string, t time.Time, soft bool) {
-
 	var err error
 	deadline := t
 
@@ -45,7 +44,6 @@ func (engine *engine) scheduleTimeout(im *instanceMemory, oldController string, 
 	if err != nil {
 		engine.sugar.Error(err)
 	}
-
 }
 
 func (engine *engine) ScheduleHardTimeout(im *instanceMemory, oldController string, t time.Time) {
@@ -73,7 +71,6 @@ func (engine *engine) softCancelInstance(instanceId string, code, message string
 }
 
 func (engine *engine) timeoutHandler(input []byte) {
-
 	args := new(timeoutArgs)
 	err := json.Unmarshal(input, args)
 	if err != nil {
@@ -86,5 +83,4 @@ func (engine *engine) timeoutHandler(input []byte) {
 	} else {
 		engine.hardCancelInstance(args.InstanceId, ErrCodeHardTimeout, "workflow timed out")
 	}
-
 }

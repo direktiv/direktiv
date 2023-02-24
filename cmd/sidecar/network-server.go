@@ -23,7 +23,6 @@ type NetworkServer struct {
 }
 
 func waitForUserContainer() {
-
 	ticker := time.NewTicker(250 * time.Millisecond)
 
 	go func() {
@@ -45,7 +44,6 @@ func waitForUserContainer() {
 
 // Start starts the network server for the sidecar.
 func (srv *NetworkServer) Start() {
-
 	waitForUserContainer()
 
 	srv.router = mux.NewRouter()
@@ -67,18 +65,14 @@ func (srv *NetworkServer) Start() {
 
 	go srv.run()
 	go srv.wait()
-
 }
 
 func (srv *NetworkServer) cancel(w http.ResponseWriter, r *http.Request) {
-
 	srv.local.cancelActiveRequest(context.Background(),
 		r.Header.Get(actionIDHeader))
-
 }
 
 func (srv *NetworkServer) wait() {
-
 	defer srv.server.Close()
 	defer srv.end()
 
@@ -97,11 +91,9 @@ func (srv *NetworkServer) wait() {
 	}
 
 	log.Debug("Network-facing server shut down successfully.")
-
 }
 
 func (srv *NetworkServer) run() {
-
 	log.Infof("Starting network-facing HTTP server on %s.", srv.server.Addr)
 
 	err := srv.server.ListenAndServe()
@@ -110,11 +102,9 @@ func (srv *NetworkServer) run() {
 		Shutdown(ERROR)
 		return
 	}
-
 }
 
 func (srv *NetworkServer) functions(w http.ResponseWriter, r *http.Request) {
-
 	req := &inboundRequest{
 		w:   w,
 		r:   r,
@@ -131,10 +121,9 @@ func (srv *NetworkServer) functions(w http.ResponseWriter, r *http.Request) {
 		} else {
 			_ = req.r.Body.Close()
 		}
-
 	}(req)
 
-	var waiting = true
+	waiting := true
 	for waiting {
 		select {
 		case srv.local.queue <- req:
@@ -155,5 +144,4 @@ func (srv *NetworkServer) functions(w http.ResponseWriter, r *http.Request) {
 			log.Infof("Request '%s' hasn't returned yet.", id)
 		}
 	}
-
 }

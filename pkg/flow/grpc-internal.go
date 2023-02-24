@@ -21,7 +21,6 @@ type internal struct {
 }
 
 func initInternalServer(ctx context.Context, srv *server) (*internal, error) {
-
 	var err error
 
 	internal := &internal{server: srv}
@@ -44,22 +43,18 @@ func initInternalServer(ctx context.Context, srv *server) (*internal, error) {
 	}()
 
 	return internal, nil
-
 }
 
 func (internal *internal) Run() error {
-
 	err := internal.srv.Serve(internal.listener)
 	if err != nil {
 		return err
 	}
 
 	return nil
-
 }
 
 func (internal *internal) ReportActionResults(ctx context.Context, req *grpc.ReportActionResultsRequest) (*emptypb.Empty, error) {
-
 	internal.sugar.Debugf("Handling gRPC request: %s", this())
 
 	payload := &actionResultPayload{
@@ -90,11 +85,9 @@ func (internal *internal) ReportActionResults(ctx context.Context, req *grpc.Rep
 	var resp emptypb.Empty
 
 	return &resp, nil
-
 }
 
 func (internal *internal) ActionLog(ctx context.Context, req *grpc.ActionLogRequest) (*emptypb.Empty, error) {
-
 	internal.sugar.Debugf("Handling gRPC request: %s", this())
 
 	t := time.Now()
@@ -112,5 +105,4 @@ func (internal *internal) ActionLog(ctx context.Context, req *grpc.ActionLogRequ
 	var resp emptypb.Empty
 
 	return &resp, nil
-
 }

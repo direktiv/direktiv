@@ -20,7 +20,6 @@ type errorLogic struct {
 
 // Error initializes the logic for executing an 'error' state in a Direktiv workflow instance.
 func Error(instance Instance, state model.State) (Logic, error) {
-
 	noop, ok := state.(*model.ErrorState)
 	if !ok {
 		return nil, derrors.NewInternalError(errors.New("bad state object"))
@@ -31,7 +30,6 @@ func Error(instance Instance, state model.State) (Logic, error) {
 	sl.ErrorState = noop
 
 	return sl, nil
-
 }
 
 // Run implements the Run function for the Logic interface.
@@ -41,7 +39,6 @@ func Error(instance Instance, state model.State) (Logic, error) {
 // continue to transition, usually to perform some form of cleanup or reverting of the activies
 // undertaken by the workflow so far. The logic only needs to be scheduled in once.
 func (logic *errorLogic) Run(ctx context.Context, wakedata []byte) (*Transition, error) {
-
 	err := scheduleOnce(logic, wakedata)
 	if err != nil {
 		return nil, err
@@ -81,5 +78,4 @@ func (logic *errorLogic) Run(ctx context.Context, wakedata []byte) (*Transition,
 		Transform: logic.Transform,
 		NextState: logic.Transition,
 	}, nil
-
 }

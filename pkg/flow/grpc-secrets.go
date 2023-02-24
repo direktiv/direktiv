@@ -11,7 +11,6 @@ import (
 )
 
 func (flow *flow) Secrets(ctx context.Context, req *grpc.SecretsRequest) (*grpc.SecretsResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	cached := new(database.CacheData)
@@ -62,11 +61,9 @@ func (flow *flow) Secrets(ctx context.Context, req *grpc.SecretsRequest) (*grpc.
 	}
 
 	return &resp, nil
-
 }
 
 func (flow *flow) SecretsStream(req *grpc.SecretsRequest, srv grpc.Flow_SecretsStreamServer) error {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
@@ -114,7 +111,7 @@ resend:
 		return err
 	}
 
-	var resp = new(grpc.SecretsResponse)
+	resp := new(grpc.SecretsResponse)
 
 	resp.Namespace = cached.Namespace.Name
 	resp.Secrets = new(grpc.Secrets)
@@ -140,11 +137,9 @@ resend:
 	}
 
 	goto resend
-
 }
 
 func (flow *flow) SearchSecret(ctx context.Context, req *grpc.SearchSecretRequest) (*grpc.SearchSecretResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	cached := new(database.CacheData)
@@ -195,11 +190,9 @@ func (flow *flow) SearchSecret(ctx context.Context, req *grpc.SearchSecretReques
 	}
 
 	return &resp, nil
-
 }
 
 func (flow *flow) SetSecret(ctx context.Context, req *grpc.SetSecretRequest) (*grpc.SetSecretResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	cached := new(database.CacheData)
@@ -232,11 +225,9 @@ func (flow *flow) SetSecret(ctx context.Context, req *grpc.SetSecretRequest) (*g
 	resp.Key = req.GetKey()
 
 	return &resp, nil
-
 }
 
 func (flow *flow) CreateSecretsFolder(ctx context.Context, req *grpc.CreateSecretsFolderRequest) (*grpc.CreateSecretsFolderResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	cached := new(database.CacheData)
@@ -268,11 +259,9 @@ func (flow *flow) CreateSecretsFolder(ctx context.Context, req *grpc.CreateSecre
 	resp.Key = req.GetKey()
 
 	return &resp, nil
-
 }
 
 func (flow *flow) DeleteSecret(ctx context.Context, req *grpc.DeleteSecretRequest) (*emptypb.Empty, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	cached := new(database.CacheData)
@@ -301,11 +290,9 @@ func (flow *flow) DeleteSecret(ctx context.Context, req *grpc.DeleteSecretReques
 	var resp emptypb.Empty
 
 	return &resp, nil
-
 }
 
 func (flow *flow) DeleteSecretsFolder(ctx context.Context, req *grpc.DeleteSecretsFolderRequest) (*emptypb.Empty, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	cached := new(database.CacheData)
@@ -334,11 +321,9 @@ func (flow *flow) DeleteSecretsFolder(ctx context.Context, req *grpc.DeleteSecre
 	var resp emptypb.Empty
 
 	return &resp, nil
-
 }
 
 func (flow *flow) UpdateSecret(ctx context.Context, req *grpc.UpdateSecretRequest) (*grpc.UpdateSecretResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	cached := new(database.CacheData)
@@ -371,5 +356,4 @@ func (flow *flow) UpdateSecret(ctx context.Context, req *grpc.UpdateSecretReques
 	resp.Key = req.GetKey()
 
 	return &resp, nil
-
 }

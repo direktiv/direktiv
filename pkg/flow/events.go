@@ -58,13 +58,11 @@ type CacheObject struct {
 var eventFilterCache = &CacheObject{}
 
 func initEvents(srv *server) (*events, error) {
-
 	events := new(events)
 
 	events.server = srv
 
 	return events, nil
-
 }
 
 func (events *events) Close() error {
@@ -72,9 +70,7 @@ func (events *events) Close() error {
 }
 
 func matchesExtensions(eventMap, extensions map[string]interface{}) bool {
-
 	for k, f := range eventMap {
-
 		if strings.HasPrefix(k, filterPrefix) {
 			kt := strings.TrimPrefix(k, filterPrefix)
 
@@ -96,11 +92,9 @@ func matchesExtensions(eventMap, extensions map[string]interface{}) bool {
 	}
 
 	return true
-
 }
 
 func (events *events) sendEvent(data []byte) {
-
 	n := strings.SplitN(string(data), "/", 2)
 
 	if len(n) != 2 {
@@ -129,13 +123,11 @@ func (events *events) sendEvent(data []byte) {
 		events.sugar.Errorf("can not flush delayed event: %v", err)
 		return
 	}
-
 }
 
 var syncMtx sync.Mutex
 
 func (events *events) syncEventDelays() {
-
 	syncMtx.Lock()
 	defer syncMtx.Unlock()
 
@@ -186,11 +178,9 @@ func (events *events) syncEventDelays() {
 		break
 
 	}
-
 }
 
 func (events *events) flushEvent(ctx context.Context, eventID string, ns *database.Namespace, rearm bool) error {
-
 	tx, err := events.database.Tx(ctx)
 	if err != nil {
 		return err
@@ -219,11 +209,9 @@ func (events *events) flushEvent(ctx context.Context, eventID string, ns *databa
 	}
 
 	return nil
-
 }
 
 func (events *events) handleEventLoopLogic(ctx context.Context, rows *sql.Rows, ce *cloudevents.Event) {
-
 	var (
 		id                                uuid.UUID
 		count                             int
@@ -294,9 +282,7 @@ func (events *events) handleEventLoopLogic(ctx context.Context, rows *sql.Rows, 
 	var retEvents []*cloudevents.Event
 
 	if count == 1 {
-
 		retEvents = append(retEvents, ce)
-
 	} else {
 
 		var eventMapAll []map[string]interface{}
@@ -344,7 +330,6 @@ func (events *events) handleEventLoopLogic(ctx context.Context, rows *sql.Rows, 
 				retEvents = append(retEvents, ce)
 
 			}
-
 		}
 
 		if needsUpdate {
@@ -360,11 +345,8 @@ func (events *events) handleEventLoopLogic(ctx context.Context, rows *sql.Rows, 
 
 	// if single or multiple added events we fire
 	if len(retEvents) > 0 {
-
 		if len(signature) == 0 {
-
 			go events.engine.EventsInvoke(wf, retEvents...)
-
 		} else {
 
 			id, err := uuid.Parse(wf)
@@ -390,13 +372,10 @@ func (events *events) handleEventLoopLogic(ctx context.Context, rows *sql.Rows, 
 			go events.engine.wakeEventsWaiter(signature, retEvents)
 
 		}
-
 	}
-
 }
 
 func (events *events) handleEvent(ns *database.Namespace, ce *cloudevents.Event) error {
-
 	db := events.edb.DB()
 	//
 
@@ -427,11 +406,9 @@ func (events *events) handleEvent(ns *database.Namespace, ce *cloudevents.Event)
 	metricsCloudEventsCaptured.WithLabelValues(ns.Name, ce.Type(), ce.Source(), ns.Name).Inc()
 
 	return nil
-
 }
 
 func eventToBytes(cevent cloudevents.Event) ([]byte, error) {
-
 	var ev bytes.Buffer
 
 	enc := gob.NewEncoder(&ev)
@@ -441,11 +418,9 @@ func eventToBytes(cevent cloudevents.Event) ([]byte, error) {
 	}
 
 	return ev.Bytes(), nil
-
 }
 
 func bytesToEvent(b []byte) (*cloudevents.Event, error) {
-
 	ev := new(cloudevents.Event)
 
 	enc := gob.NewDecoder(bytes.NewReader(b))
@@ -468,7 +443,6 @@ var eventListenersOrderings = []*orderingInfo{
 var eventListenersFilters = map[*filteringInfo]func(query *ent.EventsQuery, v string) (*ent.EventsQuery, error){}
 
 func (flow *flow) EventListeners(ctx context.Context, req *grpc.EventListenersRequest) (*grpc.EventListenersResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	cached := new(database.CacheData)
@@ -561,11 +535,9 @@ func (flow *flow) EventListeners(ctx context.Context, req *grpc.EventListenersRe
 	}
 
 	return resp, nil
-
 }
 
 func (flow *flow) EventListenersStream(req *grpc.EventListenersRequest, srv grpc.Flow_EventListenersStreamServer) error {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
@@ -682,11 +654,9 @@ resend:
 	}
 
 	goto resend
-
 }
 
 func (flow *flow) BroadcastCloudevent(ctx context.Context, in *grpc.BroadcastCloudeventRequest) (*emptypb.Empty, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	namespace := in.GetNamespace()
@@ -736,11 +706,9 @@ func (flow *flow) BroadcastCloudevent(ctx context.Context, in *grpc.BroadcastClo
 	var resp emptypb.Empty
 
 	return &resp, nil
-
 }
 
 func (flow *flow) HistoricalEvent(ctx context.Context, in *grpc.HistoricalEventRequest) (*grpc.HistoricalEventResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	eid := in.GetId()
@@ -771,7 +739,6 @@ func (flow *flow) HistoricalEvent(ctx context.Context, in *grpc.HistoricalEventR
 	resp.Cloudevent = []byte(cevent.Event.String())
 
 	return &resp, nil
-
 }
 
 var cloudeventsOrderings = []*orderingInfo{
@@ -790,7 +757,6 @@ var cloudeventsOrderings = []*orderingInfo{
 var cloudeventsFilters = map[*filteringInfo]func(query *ent.CloudEventsQuery, v string) (*ent.CloudEventsQuery, error){}
 
 func (flow *flow) EventHistory(ctx context.Context, req *grpc.EventHistoryRequest) (*grpc.EventHistoryResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	cached := new(database.CacheData)
@@ -828,11 +794,9 @@ func (flow *flow) EventHistory(ctx context.Context, req *grpc.EventHistoryReques
 	}
 
 	return resp, nil
-
 }
 
 func (flow *flow) EventHistoryStream(req *grpc.EventHistoryRequest, srv grpc.Flow_EventHistoryStreamServer) error {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
@@ -893,11 +857,9 @@ resend:
 	}
 
 	goto resend
-
 }
 
 func (flow *flow) ReplayEvent(ctx context.Context, req *grpc.ReplayEventRequest) (*emptypb.Empty, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	cached := new(database.CacheData)
@@ -924,11 +886,9 @@ func (flow *flow) ReplayEvent(ctx context.Context, req *grpc.ReplayEventRequest)
 	var resp emptypb.Empty
 
 	return &resp, nil
-
 }
 
 func (events *events) ReplayCloudevent(ctx context.Context, cached *database.CacheData, cevent *ent.CloudEvents) error {
-
 	event := cevent.Event
 
 	events.logToNamespace(ctx, time.Now(), cached, "Replaying event: %s (%s / %s)", event.ID(), event.Type(), event.Source())
@@ -945,11 +905,9 @@ func (events *events) ReplayCloudevent(ctx context.Context, cached *database.Cac
 	}
 
 	return nil
-
 }
 
 func (events *events) BroadcastCloudevent(ctx context.Context, cached *database.CacheData, event *cloudevents.Event, timer int64) error {
-
 	events.logToNamespace(ctx, time.Now(), cached, "Event received: %s (%s / %s)", event.ID(), event.Type(), event.Source())
 
 	metricsCloudEventsReceived.WithLabelValues(cached.Namespace.Name, event.Type(), event.Source(), cached.Namespace.Name).Inc()
@@ -969,11 +927,9 @@ func (events *events) BroadcastCloudevent(ctx context.Context, cached *database.
 			return err
 		}
 	} else {
-
 		// if we have a delay we need to update event delay
 		// sending nil as server id so all instances calling it
 		events.pubsub.UpdateEventDelays()
-
 	}
 
 	// if eventing is configured, event goes to knative event service
@@ -983,15 +939,12 @@ func (events *events) BroadcastCloudevent(ctx context.Context, cached *database.
 	}
 
 	return nil
-
 }
 
 const pubsubUpdateEventDelays = "updateEventDelays"
 
 func (events *events) updateEventDelaysHandler(req *PubsubUpdate) {
-
 	events.syncEventDelays()
-
 }
 
 type eventsWaiterSignature struct {
@@ -1000,7 +953,6 @@ type eventsWaiterSignature struct {
 }
 
 func (events *events) listenForEvents(ctx context.Context, im *instanceMemory, ceds []*model.ConsumeEventDefinition, all bool) error {
-
 	signature, err := json.Marshal(&eventsWaiterSignature{
 		InstanceID: im.cached.Instance.ID.String(),
 		Step:       im.Step(),
@@ -1042,11 +994,9 @@ func (events *events) listenForEvents(ctx context.Context, im *instanceMemory, c
 	events.logToInstance(ctx, time.Now(), im.cached, "Registered to receive events.")
 
 	return nil
-
 }
 
 func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloudEventFilterRequest) (*emptypb.Empty, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	resp := new(emptypb.Empty)
@@ -1090,7 +1040,7 @@ func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloud
 		return resp, err
 	}
 
-	//create js runtime
+	// create js runtime
 	vm := goja.New()
 	time.AfterFunc(1*time.Second, func() {
 		vm.Interrupt("block event filter")
@@ -1151,11 +1101,9 @@ func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloud
 	resp, err = flow.BroadcastCloudevent(ctx, br)
 
 	return resp, err
-
 }
 
 func (flow *flow) DeleteCloudEventFilter(ctx context.Context, in *grpc.DeleteCloudEventFilterRequest) (*emptypb.Empty, error) {
-
 	var resp emptypb.Empty
 
 	namespace := in.GetNamespace()
@@ -1196,11 +1144,12 @@ func (flow *flow) DeleteCloudEventFilter(ctx context.Context, in *grpc.DeleteClo
 	})
 
 	return &resp, err
-
 }
 
-const deleteFilterCache = "deleteFilterCache"
-const deleteFilterCacheNamespace = "deleteFilterCacheNamespace"
+const (
+	deleteFilterCache          = "deleteFilterCache"
+	deleteFilterCacheNamespace = "deleteFilterCacheNamespace"
+)
 
 func (flow *flow) deleteCache(req *PubsubUpdate) {
 	flow.sugar.Debugf("deleting filter cache key: %v\n", req.Key)
@@ -1208,9 +1157,7 @@ func (flow *flow) deleteCache(req *PubsubUpdate) {
 }
 
 func deleteCacheNamespaceSync(delkey string) {
-
 	eventFilterCache.value.Range(func(key, value any) bool {
-
 		if strings.HasPrefix(key.(string), fmt.Sprintf("%s-", delkey)) {
 			eventFilterCache.value.Delete(key.(string))
 		}
@@ -1225,7 +1172,6 @@ func (flow *flow) deleteCacheNamespace(req *PubsubUpdate) {
 }
 
 func (flow *flow) CreateCloudEventFilter(ctx context.Context, in *grpc.CreateCloudEventFilterRequest) (*emptypb.Empty, error) {
-
 	var resp emptypb.Empty
 
 	namespace := in.GetNamespace()
@@ -1234,7 +1180,7 @@ func (flow *flow) CreateCloudEventFilter(ctx context.Context, in *grpc.CreateClo
 
 	fullScript := fmt.Sprintf("function filter() {\n %s \n}", script)
 
-	//compiling js code is needed
+	// compiling js code is needed
 	_, err := goja.Compile("filter", fullScript, false)
 	if err != nil {
 		err = status.Error(codes.FailedPrecondition, err.Error()) // precondition -> executable js script
@@ -1270,11 +1216,9 @@ func (flow *flow) CreateCloudEventFilter(ctx context.Context, in *grpc.CreateClo
 	eventFilterCache.put(key, script)
 
 	return &resp, err
-
 }
 
 func (flow *flow) GetCloudEventFilters(ctx context.Context, in *grpc.GetCloudEventFiltersRequest) (*grpc.GetCloudEventFiltersResponse, error) {
-
 	var ls []*grpc.GetCloudEventFiltersResponse_EventFilter
 	resp := new(grpc.GetCloudEventFiltersResponse)
 
@@ -1295,7 +1239,7 @@ func (flow *flow) GetCloudEventFilters(ctx context.Context, in *grpc.GetCloudEve
 	}
 
 	for _, s := range dbs {
-		var name = s.Name
+		name := s.Name
 		ls = append(ls, &grpc.GetCloudEventFiltersResponse_EventFilter{
 			Name: name,
 		})
@@ -1304,11 +1248,9 @@ func (flow *flow) GetCloudEventFilters(ctx context.Context, in *grpc.GetCloudEve
 
 	resp.EventFilter = ls
 	return resp, err
-
 }
 
 func (flow *flow) GetCloudEventFilterScript(ctx context.Context, in *grpc.GetCloudEventFilterScriptRequest) (*grpc.GetCloudEventFilterScriptResponse, error) {
-
 	resp := new(grpc.GetCloudEventFilterScriptResponse)
 
 	namespace := in.GetNamespace()

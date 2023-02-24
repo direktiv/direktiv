@@ -40,7 +40,6 @@ type engine struct {
 }
 
 func initEngine(srv *server) (*engine, error) {
-
 	engine := new(engine)
 
 	engine.server = srv
@@ -48,13 +47,10 @@ func initEngine(srv *server) (*engine, error) {
 	engine.cancellers = make(map[string]func())
 
 	return engine, nil
-
 }
 
 func (engine *engine) Close() error {
-
 	return nil
-
 }
 
 type newInstanceArgs struct {
@@ -79,7 +75,6 @@ const (
 )
 
 func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*instanceMemory, error) {
-
 	tx, err := engine.database.Tx(ctx)
 	if err != nil {
 		return nil, err
@@ -212,11 +207,9 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 	}
 
 	return im, nil
-
 }
 
 func (engine *engine) start(im *instanceMemory) {
-
 	ctx, err := engine.InstanceLock(im, defaultLockWait)
 	if err != nil {
 		engine.sugar.Error(err)
@@ -234,11 +227,9 @@ func (engine *engine) start(im *instanceMemory) {
 	start := workflow.GetStartState()
 
 	engine.Transition(ctx, im, start.GetID(), 0)
-
 }
 
 func (engine *engine) loadStateLogic(im *instanceMemory, stateID string) error {
-
 	workflow, err := im.Model()
 	if err != nil {
 		return err
@@ -256,11 +247,9 @@ func (engine *engine) loadStateLogic(im *instanceMemory, stateID string) error {
 	}
 
 	return nil
-
 }
 
 func (engine *engine) Transition(ctx context.Context, im *instanceMemory, nextState string, attempt int) {
-
 	workflow, err := im.Model()
 	if err != nil {
 		engine.CrashInstance(ctx, im, err)
@@ -362,11 +351,9 @@ func (engine *engine) Transition(ctx context.Context, im *instanceMemory, nextSt
 	engine.ScheduleSoftTimeout(im, oldController, deadline)
 
 	engine.runState(ctx, im, nil, nil)
-
 }
 
 func (engine *engine) CrashInstance(ctx context.Context, im *instanceMemory, err error) {
-
 	cerr := new(derrors.CatchableError)
 	uerr := new(derrors.UncatchableError)
 
@@ -396,21 +383,17 @@ func (engine *engine) CrashInstance(ctx context.Context, im *instanceMemory, err
 	}
 
 	engine.TerminateInstance(ctx, im)
-
 }
 
 func (engine *engine) setEndAt(im *instanceMemory) {
-
 	t := time.Now()
 	updater := im.getInstanceUpdater()
 	updater = updater.SetEndAt(t)
 	im.cached.Instance.EndAt = t
 	im.instanceUpdater = updater
-
 }
 
 func (engine *engine) TerminateInstance(ctx context.Context, im *instanceMemory) {
-
 	engine.setEndAt(im)
 
 	err := im.flushUpdates(ctx)
@@ -426,11 +409,9 @@ func (engine *engine) TerminateInstance(ctx context.Context, im *instanceMemory)
 	engine.metricsCompleteInstance(ctx, im)
 	engine.FreeInstanceMemory(im)
 	engine.WakeInstanceCaller(ctx, im)
-
 }
 
 func (engine *engine) runState(ctx context.Context, im *instanceMemory, wakedata []byte, err error) {
-
 	defer func() {
 		e := im.flushUpdates(ctx)
 		if e != nil {
@@ -559,11 +540,9 @@ failure:
 	}
 
 	engine.CrashInstance(ctx, im, err)
-
 }
 
 func (engine *engine) transformState(ctx context.Context, im *instanceMemory, transition *states.Transition) error {
-
 	if transition == nil || transition.Transform == nil {
 		return nil
 	}
@@ -582,11 +561,9 @@ func (engine *engine) transformState(ctx context.Context, im *instanceMemory, tr
 	im.data = x
 
 	return nil
-
 }
 
 func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, transition *states.Transition, errCode string) {
-
 	e := im.flushUpdates(ctx)
 	if e != nil {
 		engine.sugar.Errorf("Failed to flush updates: %v", e)
@@ -639,11 +616,9 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 	}
 
 	engine.TerminateInstance(ctx, im)
-
 }
 
 func (engine *engine) subflowInvoke(ctx context.Context, caller *subflowCaller, cached *database.CacheData, name string, input []byte) (*instanceMemory, error) {
-
 	var err error
 
 	elems := strings.SplitN(name, ":", 2)
@@ -701,7 +676,6 @@ func (engine *engine) subflowInvoke(ctx context.Context, caller *subflowCaller, 
 	traceSubflowInvoke(ctx, args.Path, im.ID().String())
 
 	return im, nil
-
 }
 
 type retryMessage struct {
@@ -714,7 +688,6 @@ type retryMessage struct {
 const retryWakeupFunction = "retryWakeup"
 
 func (engine *engine) scheduleRetry(id, state string, step int, t time.Time, data []byte) error {
-
 	data, err := json.Marshal(&retryMessage{
 		InstanceID: id,
 		// State:      state,
@@ -740,11 +713,9 @@ func (engine *engine) scheduleRetry(id, state string, step int, t time.Time, dat
 	}
 
 	return nil
-
 }
 
 func (engine *engine) retryWakeup(data []byte) {
-
 	msg := new(retryMessage)
 
 	err := json.Unmarshal(data, msg)
@@ -764,7 +735,6 @@ func (engine *engine) retryWakeup(data []byte) {
 	engine.sugar.Debugf("Handling retry wakeup: %s", this())
 
 	go engine.runState(ctx, im, msg.Data, nil)
-
 }
 
 type actionResultPayload struct {
@@ -782,7 +752,6 @@ type actionResultMessage struct {
 }
 
 func (engine *engine) doActionRequest(ctx context.Context, ar *functionRequest) error {
-
 	if ar.Workflow.Timeout == 0 {
 		ar.Workflow.Timeout = 5 * 60 // 5 mins default, knative's default
 	}
@@ -807,15 +776,12 @@ func (engine *engine) doActionRequest(ctx context.Context, ar *functionRequest) 
 	}
 
 	return nil
-
 }
 
 func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
-	ar *functionRequest) {
-
-	var (
-		err error
-	)
+	ar *functionRequest,
+) {
+	var err error
 
 	tr := engine.createTransport()
 
@@ -885,9 +851,7 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 		Transport: tr,
 	}
 
-	var (
-		resp *http.Response
-	)
+	var resp *http.Response
 
 	// potentially dns error for a brand new service
 	// we just loop and see if we can recreate the service
@@ -957,7 +921,6 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 	}
 
 	engine.sugar.Debugf("function request done")
-
 }
 
 func (engine *engine) reportError(ar *functionRequest, err error) {
@@ -979,7 +942,6 @@ func (engine *engine) reportError(ar *functionRequest, err error) {
 }
 
 func (engine *engine) createTransport() *http.Transport {
-
 	tr := &http.Transport{
 		Proxy: http.ProxyFromEnvironment,
 		DialContext: (&net.Dialer{
@@ -995,11 +957,9 @@ func (engine *engine) createTransport() *http.Transport {
 	}
 
 	return tr
-
 }
 
 func (engine *engine) wakeEventsWaiter(signature []byte, events []*cloudevents.Event) {
-
 	sig := new(eventsWaiterSignature)
 	err := json.Unmarshal(signature, sig)
 	if err != nil {
@@ -1032,11 +992,9 @@ func (engine *engine) wakeEventsWaiter(signature []byte, events []*cloudevents.E
 	defer cleanup()
 
 	engine.runState(ctx, im, wakedata, nil)
-
 }
 
 func (engine *engine) EventsInvoke(workflowID string, events ...*cloudevents.Event) {
-
 	ctx := context.Background()
 
 	id, err := uuid.Parse(workflowID)
@@ -1084,11 +1042,9 @@ func (engine *engine) EventsInvoke(workflowID string, events ...*cloudevents.Eve
 	}
 
 	engine.queue(im)
-
 }
 
 func (engine *engine) SetMemory(ctx context.Context, im *instanceMemory, x interface{}) error {
-
 	im.setMemory(x)
 
 	data, err := json.Marshal(x)
@@ -1103,18 +1059,15 @@ func (engine *engine) SetMemory(ctx context.Context, im *instanceMemory, x inter
 	im.runtimeUpdater = updater
 
 	return nil
-
 }
 
 const latest = "latest"
 
 func rollback(tx database.Transaction) {
-
 	err := tx.Rollback()
 	if err != nil && !strings.Contains(err.Error(), "already been") {
 		fmt.Fprintf(os.Stderr, "failed to rollback transaction: %v\n", err)
 	}
-
 }
 
 // GetInodePath returns the exact path to a inode.

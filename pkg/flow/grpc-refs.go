@@ -17,7 +17,6 @@ import (
 )
 
 func loadSource(rev *database.Revision) (*model.Workflow, error) {
-
 	workflow := new(model.Workflow)
 
 	err := workflow.Load(rev.Source)
@@ -26,7 +25,6 @@ func loadSource(rev *database.Revision) (*model.Workflow, error) {
 	}
 
 	return workflow, nil
-
 }
 
 var refsOrderings = []*orderingInfo{
@@ -52,7 +50,6 @@ var refsFilters = map[*filteringInfo]func(query *ent.RefQuery, v string) (*ent.R
 }
 
 func (flow *flow) Tags(ctx context.Context, req *grpc.TagsRequest) (*grpc.TagsResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	cached, err := flow.traverseToWorkflow(ctx, nil, req.GetNamespace(), req.GetPath())
@@ -87,11 +84,9 @@ func (flow *flow) Tags(ctx context.Context, req *grpc.TagsRequest) (*grpc.TagsRe
 	resp.Node.Parent = cached.Dir()
 
 	return resp, nil
-
 }
 
 func (flow *flow) TagsStream(req *grpc.TagsRequest, srv grpc.Flow_TagsStreamServer) error {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
@@ -149,11 +144,9 @@ resend:
 	}
 
 	goto resend
-
 }
 
 func (flow *flow) Refs(ctx context.Context, req *grpc.RefsRequest) (*grpc.RefsResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	cached, err := flow.traverseToWorkflow(ctx, nil, req.GetNamespace(), req.GetPath())
@@ -188,11 +181,9 @@ func (flow *flow) Refs(ctx context.Context, req *grpc.RefsRequest) (*grpc.RefsRe
 	resp.Node.Parent = cached.Dir()
 
 	return resp, nil
-
 }
 
 func (flow *flow) RefsStream(req *grpc.RefsRequest, srv grpc.Flow_RefsStreamServer) error {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
@@ -250,11 +241,9 @@ resend:
 	}
 
 	goto resend
-
 }
 
 func (flow *flow) Tag(ctx context.Context, req *grpc.TagRequest) (*emptypb.Empty, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	tx, err := flow.database.Tx(ctx)
@@ -286,11 +275,9 @@ func (flow *flow) Tag(ctx context.Context, req *grpc.TagRequest) (*emptypb.Empty
 	var resp emptypb.Empty
 
 	return &resp, nil
-
 }
 
 func (flow *flow) Untag(ctx context.Context, req *grpc.UntagRequest) (*emptypb.Empty, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	tx, err := flow.database.Tx(ctx)
@@ -310,7 +297,6 @@ func (flow *flow) Untag(ctx context.Context, req *grpc.UntagRequest) (*emptypb.E
 
 	err = flow.configureRouter(ctx, tx, cached, rcfBreaking,
 		func() error {
-
 			clients := flow.edb.Clients(tx)
 			err = clients.Ref.DeleteOneID(cached.Ref.ID).Exec(ctx)
 			if err != nil {
@@ -318,7 +304,6 @@ func (flow *flow) Untag(ctx context.Context, req *grpc.UntagRequest) (*emptypb.E
 			}
 
 			return nil
-
 		},
 		tx.Commit,
 	)
@@ -332,11 +317,9 @@ func (flow *flow) Untag(ctx context.Context, req *grpc.UntagRequest) (*emptypb.E
 	var resp emptypb.Empty
 
 	return &resp, nil
-
 }
 
 func (flow *flow) Retag(ctx context.Context, req *grpc.RetagRequest) (*emptypb.Empty, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	tx, err := flow.database.Tx(ctx)
@@ -367,7 +350,6 @@ func (flow *flow) Retag(ctx context.Context, req *grpc.RetagRequest) (*emptypb.E
 
 	err = flow.configureRouter(ctx, tx, cached, rcfBreaking,
 		func() error {
-
 			clients := flow.edb.Clients(tx)
 			err = clients.Ref.UpdateOneID(dt.Ref.ID).SetRevisionID(cached.Revision.ID).Exec(ctx)
 			if err != nil {
@@ -375,7 +357,6 @@ func (flow *flow) Retag(ctx context.Context, req *grpc.RetagRequest) (*emptypb.E
 			}
 
 			return nil
-
 		},
 		tx.Commit,
 	)
@@ -391,11 +372,9 @@ respond:
 	var resp emptypb.Empty
 
 	return &resp, nil
-
 }
 
 func (flow *flow) ValidateRef(ctx context.Context, req *grpc.ValidateRefRequest) (*grpc.ValidateRefResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	cached, err := flow.traverseToRef(ctx, nil, req.GetNamespace(), req.GetPath(), req.GetRef())
@@ -415,5 +394,4 @@ func (flow *flow) ValidateRef(ctx context.Context, req *grpc.ValidateRefRequest)
 	resp.Compiles = err != nil
 
 	return &resp, nil
-
 }

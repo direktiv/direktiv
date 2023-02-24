@@ -1,6 +1,6 @@
 run:
   timeout: 5m
-  go: latest
+  go: 1.19.3
   issues-exit-code: 1
   tests: true
   skip-dirs: ["ent/"]
@@ -21,7 +21,6 @@ linters:
     - nosnakecase
     - scopelint
 
-    - gofumpt
     - nilnil
     - nlreturn
     - nonamedreturns
@@ -61,7 +60,6 @@ linters:
     - rowserrcheck
     - gocyclo
     - nakedret
-    - goimports
 
   presets:
     - bugs

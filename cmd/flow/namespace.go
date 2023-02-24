@@ -9,7 +9,6 @@ var namespaceCmd = &cobra.Command{
 	Use:  "namespace NAME",
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-
 		c, closer, err := client()
 		if err != nil {
 			exit(err)
@@ -24,7 +23,6 @@ var namespaceCmd = &cobra.Command{
 		}
 
 		print(resp)
-
 	},
 }
 
@@ -36,7 +34,6 @@ var namespacesCmd = &cobra.Command{
 	Use:  "namespaces",
 	Args: cobra.ExactArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
-
 		c, closer, err := client()
 		if err != nil {
 			exit(err)
@@ -87,7 +84,6 @@ var namespacesCmd = &cobra.Command{
 			print(resp)
 
 		}
-
 	},
 }
 
@@ -95,7 +91,6 @@ var createNamespaceCmd = &cobra.Command{
 	Use:  "create-namespace NAME",
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-
 		c, closer, err := client()
 		if err != nil {
 			exit(err)
@@ -110,7 +105,6 @@ var createNamespaceCmd = &cobra.Command{
 		}
 
 		print(resp)
-
 	},
 }
 
@@ -118,7 +112,6 @@ var deleteNamespaceCmd = &cobra.Command{
 	Use:  "delete-namespace NAME",
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-
 		c, closer, err := client()
 		if err != nil {
 			exit(err)
@@ -133,7 +126,6 @@ var deleteNamespaceCmd = &cobra.Command{
 		}
 
 		print(resp)
-
 	},
 }
 
@@ -141,7 +133,6 @@ var renameNamespaceCmd = &cobra.Command{
 	Use:  "rename-namespace OLDNAME NEWNAME",
 	Args: cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
-
 		c, closer, err := client()
 		if err != nil {
 			exit(err)
@@ -157,7 +148,6 @@ var renameNamespaceCmd = &cobra.Command{
 		}
 
 		print(resp)
-
 	},
 }
 
@@ -165,7 +155,6 @@ var annotationSetNamespaceCmd = &cobra.Command{
 	Use:  "annotation-set-namespace NAMESPACE KEY VALUE",
 	Args: cobra.ExactArgs(3),
 	Run: func(cmd *cobra.Command, args []string) {
-
 		c, closer, err := client()
 		if err != nil {
 			exit(err)
@@ -182,7 +171,6 @@ var annotationSetNamespaceCmd = &cobra.Command{
 		}
 
 		print(resp)
-
 	},
 }
 
@@ -190,7 +178,6 @@ var annotationGetNamespaceCmd = &cobra.Command{
 	Use:  "annotation-get-namespace NAMESPACE KEY",
 	Args: cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
-
 		c, closer, err := client()
 		if err != nil {
 			exit(err)
@@ -206,7 +193,6 @@ var annotationGetNamespaceCmd = &cobra.Command{
 		}
 
 		print(resp)
-
 	},
 }
 
@@ -214,7 +200,6 @@ var annotationListNamespaceCmd = &cobra.Command{
 	Use:  "annotation-list-namespace NAMESPACE",
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-
 		c, closer, err := client()
 		if err != nil {
 			exit(err)
@@ -229,7 +214,6 @@ var annotationListNamespaceCmd = &cobra.Command{
 		}
 
 		print(resp)
-
 	},
 }
 
@@ -237,7 +221,6 @@ var annotationRenameNamespaceCmd = &cobra.Command{
 	Use:  "annotation-rename-namespace NAMESPACE OLDKEY NEWKEY",
 	Args: cobra.ExactArgs(3),
 	Run: func(cmd *cobra.Command, args []string) {
-
 		c, closer, err := client()
 		if err != nil {
 			exit(err)
@@ -254,7 +237,6 @@ var annotationRenameNamespaceCmd = &cobra.Command{
 		}
 
 		print(resp)
-
 	},
 }
 
@@ -262,7 +244,6 @@ var annotationDeleteNamespaceCmd = &cobra.Command{
 	Use:  "annotation-delete-namespace NAMESPACE KEY",
 	Args: cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
-
 		c, closer, err := client()
 		if err != nil {
 			exit(err)
@@ -278,6 +259,5 @@ var annotationDeleteNamespaceCmd = &cobra.Command{
 		}
 
 		print(resp)
-
 	},
 }

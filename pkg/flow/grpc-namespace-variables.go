@@ -22,7 +22,6 @@ import (
 )
 
 func (srv *server) getNamespaceVariable(ctx context.Context, tx database.Transaction, cached *database.CacheData, key string, load bool) (*database.VarRef, *database.VarData, error) {
-
 	vref, err := srv.database.NamespaceVariable(ctx, tx, cached.Namespace.ID, key)
 	if err != nil {
 		return nil, nil, err
@@ -34,11 +33,9 @@ func (srv *server) getNamespaceVariable(ctx context.Context, tx database.Transac
 	}
 
 	return vref, vdata, nil
-
 }
 
 func (srv *server) traverseToNamespaceVariable(ctx context.Context, tx database.Transaction, namespace, key string, load bool) (*database.CacheData, *database.VarRef, *database.VarData, error) {
-
 	cached := new(database.CacheData)
 
 	err := srv.database.NamespaceByName(ctx, tx, cached, namespace)
@@ -52,11 +49,9 @@ func (srv *server) traverseToNamespaceVariable(ctx context.Context, tx database.
 	}
 
 	return cached, vref, vdata, nil
-
 }
 
 func (flow *flow) NamespaceVariable(ctx context.Context, req *grpc.NamespaceVariableRequest) (*grpc.NamespaceVariableResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	cached, vref, vdata, err := flow.traverseToNamespaceVariable(ctx, nil, req.GetNamespace(), req.GetKey(), true)
@@ -81,11 +76,9 @@ func (flow *flow) NamespaceVariable(ctx context.Context, req *grpc.NamespaceVari
 	resp.Data = vdata.Data
 
 	return &resp, nil
-
 }
 
 func (internal *internal) NamespaceVariableParcels(req *grpc.VariableInternalRequest, srv grpc.Internal_NamespaceVariableParcelsServer) error {
-
 	internal.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
@@ -155,11 +148,9 @@ func (internal *internal) NamespaceVariableParcels(req *grpc.VariableInternalReq
 		}
 
 	}
-
 }
 
 func (flow *flow) NamespaceVariableParcels(req *grpc.NamespaceVariableRequest, srv grpc.Flow_NamespaceVariableParcelsServer) error {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
@@ -216,7 +207,6 @@ func (flow *flow) NamespaceVariableParcels(req *grpc.NamespaceVariableRequest, s
 		}
 
 	}
-
 }
 
 var variablesOrderings = []*orderingInfo{
@@ -237,7 +227,6 @@ var variablesFilters = map[*filteringInfo]func(query *ent.VarRefQuery, v string)
 }
 
 func (flow *flow) NamespaceVariables(ctx context.Context, req *grpc.NamespaceVariablesRequest) (*grpc.NamespaceVariablesResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	cached := new(database.CacheData)
@@ -285,11 +274,9 @@ func (flow *flow) NamespaceVariables(ctx context.Context, req *grpc.NamespaceVar
 	}
 
 	return resp, nil
-
 }
 
 func (flow *flow) NamespaceVariablesStream(req *grpc.NamespaceVariablesRequest, srv grpc.Flow_NamespaceVariablesStreamServer) error {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
@@ -360,11 +347,9 @@ resend:
 	}
 
 	goto resend
-
 }
 
 func (flow *flow) SetNamespaceVariable(ctx context.Context, req *grpc.SetNamespaceVariableRequest) (*grpc.SetNamespaceVariableResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	tx, err := flow.database.Tx(ctx)
@@ -414,11 +399,9 @@ func (flow *flow) SetNamespaceVariable(ctx context.Context, req *grpc.SetNamespa
 	resp.MimeType = vdata.MimeType
 
 	return &resp, nil
-
 }
 
 func (internal *internal) SetNamespaceVariableParcels(srv grpc.Internal_SetNamespaceVariableParcelsServer) error {
-
 	internal.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
@@ -523,11 +506,9 @@ func (internal *internal) SetNamespaceVariableParcels(srv grpc.Internal_SetNames
 	}
 
 	return nil
-
 }
 
 func (flow *flow) SetNamespaceVariableParcels(srv grpc.Flow_SetNamespaceVariableParcelsServer) error {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
@@ -636,11 +617,9 @@ func (flow *flow) SetNamespaceVariableParcels(srv grpc.Flow_SetNamespaceVariable
 	}
 
 	return nil
-
 }
 
 func (flow *flow) DeleteNamespaceVariable(ctx context.Context, req *grpc.DeleteNamespaceVariableRequest) (*emptypb.Empty, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	tx, err := flow.database.Tx(ctx)
@@ -691,11 +670,9 @@ func (flow *flow) DeleteNamespaceVariable(ctx context.Context, req *grpc.DeleteN
 	var resp emptypb.Empty
 
 	return &resp, nil
-
 }
 
 func (flow *flow) RenameNamespaceVariable(ctx context.Context, req *grpc.RenameNamespaceVariableRequest) (*grpc.RenameNamespaceVariableResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	tx, err := flow.database.Tx(ctx)
@@ -737,5 +714,4 @@ func (flow *flow) RenameNamespaceVariable(ctx context.Context, req *grpc.RenameN
 	resp.MimeType = vdata.MimeType
 
 	return &resp, nil
-
 }

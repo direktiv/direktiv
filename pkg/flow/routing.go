@@ -30,7 +30,6 @@ type muxStart struct {
 }
 
 func newMuxStart(workflow *model.Workflow) *muxStart {
-
 	ms := new(muxStart)
 
 	def := workflow.GetStartDefinition()
@@ -53,11 +52,9 @@ func newMuxStart(workflow *model.Workflow) *muxStart {
 	}
 
 	return ms
-
 }
 
 func (ms *muxStart) Hash() string {
-
 	if ms == nil {
 		ms = new(muxStart)
 		ms.Enabled = true
@@ -65,11 +62,9 @@ func (ms *muxStart) Hash() string {
 	}
 
 	return checksum(ms)
-
 }
 
 func (srv *server) validateRouter(ctx context.Context, tx database.Transaction, cached *database.CacheData) (*muxStart, error, error) {
-
 	if len(cached.Workflow.Routes) == 0 {
 
 		// latest
@@ -103,7 +98,6 @@ func (srv *server) validateRouter(ctx context.Context, tx database.Transaction, 
 		return ms, nil, nil
 
 	} else {
-
 		for i := range cached.Workflow.Routes {
 
 			route := cached.Workflow.Routes[i]
@@ -114,7 +108,6 @@ func (srv *server) validateRouter(ctx context.Context, tx database.Transaction, 
 			}
 
 		}
-
 	}
 
 	var startHash string
@@ -152,24 +145,19 @@ func (srv *server) validateRouter(ctx context.Context, tx database.Transaction, 
 	}
 
 	return ms, nil, nil
-
 }
 
 func (engine *engine) mux(ctx context.Context, tx database.Transaction, namespace, path, ref string) (*database.CacheData, error) {
-
 	cached, err := engine.traverseToWorkflow(ctx, tx, namespace, path)
 	if err != nil {
 		return nil, fmt.Errorf("workflow multiplexer failed to resolve workflow: %w", err)
 	}
 
 	if ref == "" {
-
 		// use router to select version
 
 		if len(cached.Workflow.Routes) == 0 {
-
 			ref = latest
-
 		} else {
 
 			weight := 0
@@ -200,7 +188,6 @@ func (engine *engine) mux(ctx context.Context, tx database.Transaction, namespac
 			cached.Ref = route.Ref
 
 		}
-
 	}
 
 	if cached.Ref == nil {
@@ -219,7 +206,6 @@ func (engine *engine) mux(ctx context.Context, tx database.Transaction, namespac
 	}
 
 	return cached, nil
-
 }
 
 const (
@@ -234,7 +220,6 @@ func hasFlag(flags, flag int) bool {
 }
 
 func (flow *flow) configureRouter(ctx context.Context, tx database.Transaction, cached *database.CacheData, flags int, changer, commit func() error) error {
-
 	var err error
 	var muxErr1 error
 	var ms1 *muxStart
@@ -259,13 +244,11 @@ func (flow *flow) configureRouter(ctx context.Context, tx database.Transaction, 
 	}
 
 	if muxErr2 != nil {
-
 		if hasFlag(flags, rcfNoValidate) && len(cached.Workflow.Routes) <= 1 {
 			// no need to do anything here?
 		} else if muxErr1 == nil || !hasFlag(flags, rcfBreaking) {
 			return muxErr2
 		}
-
 	}
 
 	if ms2 == nil {
@@ -292,28 +275,22 @@ func (flow *flow) configureRouter(ctx context.Context, tx database.Transaction, 
 	}
 
 	return nil
-
 }
 
 func (flow *flow) preCommitRouterConfiguration(ctx context.Context, tx database.Transaction, cached *database.CacheData, ms *muxStart) error {
-
 	err := flow.events.processWorkflowEvents(ctx, tx, cached, ms)
 	if err != nil {
 		return err
 	}
 
 	return nil
-
 }
 
 func (flow *flow) postCommitRouterConfiguration(id string, ms *muxStart) {
-
 	flow.pubsub.ConfigureRouterCron(id, ms.Cron, ms.Enabled)
-
 }
 
 func (flow *flow) configureRouterHandler(req *PubsubUpdate) {
-
 	msg := new(configureRouterMessage)
 
 	err := unmarshal(req.Key, msg)
@@ -333,11 +310,9 @@ func (flow *flow) configureRouterHandler(req *PubsubUpdate) {
 			return
 		}
 	}
-
 }
 
 func (flow *flow) cronHandler(data []byte) {
-
 	id, err := uuid.Parse(string(data))
 	if err != nil {
 		flow.sugar.Error(err)
@@ -394,5 +369,4 @@ func (flow *flow) cronHandler(data []byte) {
 	}
 
 	flow.engine.queue(im)
-
 }

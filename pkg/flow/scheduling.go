@@ -10,7 +10,6 @@ import (
 )
 
 func (engine *engine) InstanceYield(im *instanceMemory) {
-
 	engine.sugar.Debugf("Instance going to sleep: %s", im.ID().String())
 
 	e := im.flushUpdates(context.Background())
@@ -23,11 +22,9 @@ func (engine *engine) InstanceYield(im *instanceMemory) {
 	if im.lock != nil {
 		engine.InstanceUnlock(im)
 	}
-
 }
 
 func (engine *engine) WakeInstanceCaller(ctx context.Context, im *instanceMemory) {
-
 	caller := engine.InstanceCaller(ctx, im)
 
 	if caller != nil {
@@ -62,11 +59,12 @@ func (engine *engine) WakeInstanceCaller(ctx context.Context, im *instanceMemory
 		}
 
 	}
-
 }
 
-const sleepWakeupFunction = "sleepWakeup"
-const sleepWakedata = "sleep"
+const (
+	sleepWakeupFunction = "sleepWakeup"
+	sleepWakedata       = "sleep"
+)
 
 type sleepMessage struct {
 	InstanceID string
@@ -75,7 +73,6 @@ type sleepMessage struct {
 }
 
 func (engine *engine) InstanceSleep(ctx context.Context, im *instanceMemory, state string, t time.Time) error {
-
 	data, err := json.Marshal(&sleepMessage{
 		InstanceID: im.ID().String(),
 		State:      state,
@@ -91,11 +88,9 @@ func (engine *engine) InstanceSleep(ctx context.Context, im *instanceMemory, sta
 	}
 
 	return nil
-
 }
 
 func (engine *engine) sleepWakeup(data []byte) {
-
 	msg := new(sleepMessage)
 
 	err := json.Unmarshal(data, msg)
@@ -111,11 +106,9 @@ func (engine *engine) sleepWakeup(data []byte) {
 	}
 
 	go engine.runState(ctx, im, []byte(sleepWakedata), nil)
-
 }
 
 func (engine *engine) queue(im *instanceMemory) {
-
 	namespace := im.cached.Namespace.Name
 	workflow := GetInodePath(im.cached.Instance.As)
 
@@ -123,5 +116,4 @@ func (engine *engine) queue(im *instanceMemory) {
 	metricsWfPending.WithLabelValues(namespace, workflow, namespace).Inc()
 
 	go engine.start(im)
-
 }

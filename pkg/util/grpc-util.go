@@ -17,7 +17,6 @@ const maxSize = 134217728
 
 // GetEndpointTLS creates a grpc client.
 func GetEndpointTLS(service string) (*grpc.ClientConn, error) {
-
 	var additionalCallOptions []grpc.CallOption
 	additionalCallOptions = append(additionalCallOptions, grpc.MaxCallSendMsgSize(maxSize))
 	additionalCallOptions = append(additionalCallOptions, grpc.MaxCallRecvMsgSize(maxSize),
@@ -35,12 +34,10 @@ func GetEndpointTLS(service string) (*grpc.ClientConn, error) {
 	}
 
 	return conn, nil
-
 }
 
 // GrpcStart starts a grpc server.
 func GrpcStart(server **grpc.Server, name, bind string, register func(srv *grpc.Server)) error {
-
 	listener, err := net.Listen("tcp", bind)
 	if err != nil {
 		return fmt.Errorf("failed to start tcp listener: %w", err)
@@ -62,11 +59,9 @@ func GrpcStart(server **grpc.Server, name, bind string, register func(srv *grpc.
 	}()
 
 	return nil
-
 }
 
 func GrpcServerOptions(unaryInterceptor grpc.UnaryServerInterceptor, streamInterceptor grpc.StreamServerInterceptor) []grpc.ServerOption {
-
 	var additionalServerOptions []grpc.ServerOption
 	additionalServerOptions = append(additionalServerOptions, grpc.MaxSendMsgSize(maxSize))
 	additionalServerOptions = append(additionalServerOptions, grpc.MaxRecvMsgSize(maxSize))
@@ -105,7 +100,6 @@ func GrpcServerOptions(unaryInterceptor grpc.UnaryServerInterceptor, streamInter
 	}
 
 	return additionalServerOptions
-
 }
 
 // SanitizeAsField removes initial slash if one exists and returns the new value.

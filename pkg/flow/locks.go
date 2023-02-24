@@ -21,7 +21,6 @@ type locks struct {
 }
 
 func initLocks(conn string) (*locks, error) {
-
 	var err error
 
 	locks := new(locks)
@@ -37,11 +36,9 @@ func initLocks(conn string) (*locks, error) {
 	locks.db.SetMaxIdleConns(10)
 
 	return locks, nil
-
 }
 
 func (locks *locks) Close() error {
-
 	if locks.db != nil {
 
 		err := locks.db.Close()
@@ -56,11 +53,9 @@ func (locks *locks) Close() error {
 	}
 
 	return nil
-
 }
 
 func (locks *locks) lockDB(id uint64, wait int) (*sql.Conn, error) {
-
 	var (
 		err  error
 		conn *sql.Conn
@@ -95,11 +90,9 @@ func (locks *locks) lockDB(id uint64, wait int) (*sql.Conn, error) {
 	}
 
 	return conn, err
-
 }
 
 func (locks *locks) unlockDB(id uint64, conn *sql.Conn) (err error) {
-
 	defer func() {
 		err = conn.Close()
 		if err != nil {
@@ -115,11 +108,9 @@ func (locks *locks) unlockDB(id uint64, conn *sql.Conn) (err error) {
 	}
 
 	return err
-
 }
 
 func (engine *engine) lock(key string, timeout time.Duration) (context.Context, *sql.Conn, error) {
-
 	hash, err := hashstructure.Hash(key, hashstructure.FormatV2, nil)
 	if err != nil {
 		return nil, nil, derrors.NewInternalError(err)
@@ -162,11 +153,9 @@ func (engine *engine) lock(key string, timeout time.Duration) (context.Context, 
 	engine.cancellersLock.Unlock()
 
 	return ctx, conn, nil
-
 }
 
 func (engine *engine) InstanceLock(im *instanceMemory, timeout time.Duration) (context.Context, error) {
-
 	key := im.ID().String()
 
 	ctx, conn, err := engine.lock(key, timeout)
@@ -177,11 +166,9 @@ func (engine *engine) InstanceLock(im *instanceMemory, timeout time.Duration) (c
 	im.lock = conn
 
 	return ctx, nil
-
 }
 
 func (engine *engine) unlock(key string, conn *sql.Conn) {
-
 	hash, err := hashstructure.Hash(key, hashstructure.FormatV2, nil)
 	if err != nil {
 		panic(err)
@@ -199,16 +186,13 @@ func (engine *engine) unlock(key string, conn *sql.Conn) {
 		engine.sugar.Error(err)
 		return
 	}
-
 }
 
 func (engine *engine) InstanceUnlock(im *instanceMemory) {
-
 	if im.lock == nil {
 		return
 	}
 
 	engine.unlock(im.ID().String(), im.lock)
 	im.lock = nil
-
 }

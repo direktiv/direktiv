@@ -15,7 +15,6 @@ import (
 )
 
 func RunApplication() {
-
 	log.Printf("Checking database for schema updates...")
 
 	// get db connection
@@ -144,7 +143,6 @@ func RunApplication() {
 		log.Printf("error running sql: %v", err)
 		os.Exit(1)
 	}
-
 }
 
 type generationUpgrader struct {
@@ -159,7 +157,6 @@ func updateGeneration_0_7_1(db *sql.Tx) error {
 }
 
 func updateGeneration_0_6_0(db *sql.Tx) error {
-
 	sqls := []string{
 		fmt.Sprintf("ALTER TABLE refs ADD COLUMN created_at timestamp NOT NULL DEFAULT '%v';", time.Now().UTC().Format("2006-01-02T15:04:05-0700")),
 		fmt.Sprintf("ALTER TABLE events ADD COLUMN created_at timestamp NOT NULL DEFAULT '%v';", time.Now().UTC().Format("2006-01-02T15:04:05-0700")),
@@ -202,5 +199,4 @@ func updateGeneration_0_6_0(db *sql.Tx) error {
 	}
 
 	return nil
-
 }

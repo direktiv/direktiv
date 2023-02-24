@@ -21,7 +21,6 @@ var logger *zap.SugaredLogger
 
 // NewServer creates a new secrets server.
 func NewServer(backend string) (*Server, error) {
-
 	var err error
 
 	logger, err = dlog.ApplicationLogger("secrets")
@@ -49,12 +48,10 @@ func NewServer(backend string) (*Server, error) {
 	}
 
 	return srv, nil
-
 }
 
 // Run starts the secrets server.
 func (s *Server) Run() {
-
 	logger.Infof("starting secret server")
 
 	err := util.GrpcStart(&s.grpc, "secrets", "127.0.0.1:2610", func(srv *grpc.Server) {
@@ -63,33 +60,25 @@ func (s *Server) Run() {
 	if err != nil {
 		logger.Errorf("Failed to start secrets server: %v.", err)
 	}
-
 }
 
 // Stop stops the server gracefully.
 func (s *Server) Stop() {
-
 	go func() {
-
 		logger.Infof("stopping secret server")
 		s.lifeLine <- true
-
 	}()
 }
 
 // Kill kills the server.
 func (s *Server) Kill() {
-
 	go func() {
-
 		defer func() {
 			_ = recover()
 		}()
 
 		s.lifeLine <- true
-
 	}()
-
 }
 
 // Lifeline interface impl.
@@ -99,7 +88,6 @@ func (s *Server) Lifeline() chan bool {
 
 // StoreSecret stores secrets in backends.
 func (s *Server) StoreSecret(ctx context.Context, in *secretsgrpc.SecretsStoreRequest) (*emptypb.Empty, error) {
-
 	var resp emptypb.Empty
 
 	if isFolder(in.GetName()) {
@@ -121,7 +109,7 @@ func (s *Server) StoreSecret(ctx context.Context, in *secretsgrpc.SecretsStoreRe
 		return &resp, err
 	}
 
-	if strings.Contains(n, "/") { //if is not a folder but contains / means is a secret inside a folder
+	if strings.Contains(n, "/") { // if is not a folder but contains / means is a secret inside a folder
 		highestFolderPath := filepath.Dir(n) + "/"
 		splittedPath := strings.SplitAfter(highestFolderPath, "/")
 		splittedPath = splittedPath[:len(splittedPath)-1] // delete last elem cause is empty
@@ -138,12 +126,10 @@ func (s *Server) StoreSecret(ctx context.Context, in *secretsgrpc.SecretsStoreRe
 	}
 
 	return &resp, err
-
 }
 
 // RetrieveSecret retrieves secret from backend.
 func (s *Server) RetrieveSecret(ctx context.Context, in *secretsgrpc.SecretsRetrieveRequest) (*secretsgrpc.SecretsRetrieveResponse, error) {
-
 	var resp secretsgrpc.SecretsRetrieveResponse
 
 	if isFolder(in.GetName()) {
@@ -164,7 +150,6 @@ func (s *Server) RetrieveSecret(ctx context.Context, in *secretsgrpc.SecretsRetr
 
 // GetSecrets returns secrets for one namespace in specific folder.
 func (s *Server) GetSecrets(ctx context.Context, in *secretsgrpc.GetSecretsRequest) (*secretsgrpc.GetSecretsResponse, error) {
-
 	var (
 		resp secretsgrpc.GetSecretsResponse
 		ls   []*secretsgrpc.GetSecretsResponse_Secret
@@ -188,7 +173,7 @@ func (s *Server) GetSecrets(ctx context.Context, in *secretsgrpc.GetSecretsReque
 	}
 
 	for _, n := range names {
-		var name = n
+		name := n
 		ls = append(ls, &secretsgrpc.GetSecretsResponse_Secret{
 			Name: &name,
 		})
@@ -197,12 +182,10 @@ func (s *Server) GetSecrets(ctx context.Context, in *secretsgrpc.GetSecretsReque
 	resp.Secrets = ls
 
 	return &resp, nil
-
 }
 
 // DeleteSecret deletes single secret from backend.
 func (s *Server) DeleteSecret(ctx context.Context, in *secretsgrpc.SecretsDeleteRequest) (*emptypb.Empty, error) {
-
 	var resp emptypb.Empty
 
 	if isFolder(in.GetName()) {
@@ -218,15 +201,12 @@ func (s *Server) DeleteSecret(ctx context.Context, in *secretsgrpc.SecretsDelete
 
 // DeleteNamespaceSecrets deletes secrets for a namespace.
 func (s *Server) DeleteNamespaceSecrets(ctx context.Context, in *secretsgrpc.DeleteNamespaceSecretsRequest) (*emptypb.Empty, error) {
-
 	var resp emptypb.Empty
 	return &resp, s.handler.RemoveNamespaceSecrets(in.GetNamespace())
-
 }
 
 // CreateFolder stores folders and create all missing folders in the path.
 func (s *Server) CreateSecretsFolder(ctx context.Context, in *secretsgrpc.CreateSecretsFolderRequest) (*emptypb.Empty, error) {
-
 	var resp emptypb.Empty
 
 	if !isFolder(in.GetName()) {
@@ -240,7 +220,6 @@ func (s *Server) CreateSecretsFolder(ctx context.Context, in *secretsgrpc.Create
 
 	emptyData := []byte{}
 	err := s.handler.AddSecret(in.GetNamespace(), n, emptyData, false)
-
 	if err != nil {
 		return &resp, fmt.Errorf("folder already exists")
 	}
@@ -257,12 +236,10 @@ func (s *Server) CreateSecretsFolder(ctx context.Context, in *secretsgrpc.Create
 	}
 
 	return &resp, err
-
 }
 
 // DeleteFolder deletes folder from backend.
 func (s *Server) DeleteSecretsFolder(ctx context.Context, in *secretsgrpc.DeleteSecretsFolderRequest) (*emptypb.Empty, error) {
-
 	var resp emptypb.Empty
 
 	if !isFolder(in.GetName()) {
@@ -277,7 +254,6 @@ func (s *Server) DeleteSecretsFolder(ctx context.Context, in *secretsgrpc.Delete
 }
 
 func (s *Server) SearchSecret(ctx context.Context, in *secretsgrpc.SearchSecretRequest) (*secretsgrpc.SearchSecretResponse, error) {
-
 	var (
 		resp secretsgrpc.SearchSecretResponse
 		ls   []*secretsgrpc.SearchSecretResponse_Secret
@@ -297,7 +273,7 @@ func (s *Server) SearchSecret(ctx context.Context, in *secretsgrpc.SearchSecretR
 	}
 
 	for _, n := range names {
-		var name = n
+		name := n
 		ls = append(ls, &secretsgrpc.SearchSecretResponse_Secret{
 			Name: &name,
 		})
@@ -306,12 +282,10 @@ func (s *Server) SearchSecret(ctx context.Context, in *secretsgrpc.SearchSecretR
 	resp.Secrets = ls
 
 	return &resp, nil
-
 }
 
 // StoreSecret stores secrets in backends.
 func (s *Server) UpdateSecret(ctx context.Context, in *secretsgrpc.UpdateSecretRequest) (*emptypb.Empty, error) {
-
 	var resp emptypb.Empty
 
 	if isFolder(in.GetName()) {
@@ -334,7 +308,6 @@ func (s *Server) UpdateSecret(ctx context.Context, in *secretsgrpc.UpdateSecretR
 	}
 
 	return &resp, err
-
 }
 
 // IsFolder Checks if name is folder.

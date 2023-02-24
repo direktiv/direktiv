@@ -29,7 +29,6 @@ type actions struct {
 }
 
 func initActionsServer(ctx context.Context, srv *server) (*actions, error) {
-
 	var err error
 
 	actions := &actions{server: srv}
@@ -59,22 +58,18 @@ func initActionsServer(ctx context.Context, srv *server) (*actions, error) {
 	}()
 
 	return actions, nil
-
 }
 
 func (actions *actions) Run() error {
-
 	err := actions.srv.Serve(actions.listener)
 	if err != nil {
 		return err
 	}
 
 	return nil
-
 }
 
 func (actions *actions) SetNamespaceRegistry(ctx context.Context, req *grpc.SetNamespaceRegistryRequest) (*emptypb.Empty, error) {
-
 	actions.sugar.Debugf("Handling gRPC request: %s", this())
 
 	cached := new(database.CacheData)
@@ -95,11 +90,9 @@ func (actions *actions) SetNamespaceRegistry(ctx context.Context, req *grpc.SetN
 	var resp emptypb.Empty
 
 	return &resp, nil
-
 }
 
 func (actions *actions) DeleteNamespaceRegistry(ctx context.Context, req *grpc.DeleteNamespaceRegistryRequest) (*emptypb.Empty, error) {
-
 	actions.sugar.Debugf("Handling gRPC request: %s", this())
 
 	cached := new(database.CacheData)
@@ -122,7 +115,6 @@ func (actions *actions) DeleteNamespaceRegistry(ctx context.Context, req *grpc.D
 	var resp emptypb.Empty
 
 	return &resp, nil
-
 }
 
 type cpdRegistries struct {
@@ -130,13 +122,11 @@ type cpdRegistries struct {
 }
 
 func newCustomPaginationDataRegistries() *cpdRegistries {
-
 	cpd := new(cpdRegistries)
 
 	cpd.list = make([]string, 0)
 
 	return cpd
-
 }
 
 func (cpds *cpdRegistries) Total() int {
@@ -154,7 +144,6 @@ func (cpds *cpdRegistries) Value(idx int) map[string]interface{} {
 }
 
 func (cpds *cpdRegistries) Filter(filter *grpc.PageFilter) error {
-
 	if filter == nil {
 		return nil
 	}
@@ -182,11 +171,9 @@ func (cpds *cpdRegistries) Filter(filter *grpc.PageFilter) error {
 	cpds.list = secrets
 
 	return nil
-
 }
 
 func (cpds *cpdRegistries) Order(order *grpc.PageOrder) error {
-
 	if order.GetField() != "" && order.GetField() != util.PaginationKeyName {
 		return fmt.Errorf("invalid order field: %s", order.GetField())
 	}
@@ -204,7 +191,6 @@ func (cpds *cpdRegistries) Order(order *grpc.PageOrder) error {
 	}
 
 	return nil
-
 }
 
 func (cpds *cpdRegistries) Add(name string) {
@@ -212,7 +198,6 @@ func (cpds *cpdRegistries) Add(name string) {
 }
 
 func (actions *actions) NamespaceRegistries(ctx context.Context, req *grpc.NamespaceRegistriesRequest) (*grpc.NamespaceRegistriesResponse, error) {
-
 	actions.sugar.Debugf("Handling gRPC request: %s", this())
 
 	cached := new(database.CacheData)
@@ -257,11 +242,9 @@ func (actions *actions) NamespaceRegistries(ctx context.Context, req *grpc.Names
 	}
 
 	return &resp, nil
-
 }
 
 func (actions *actions) NamespaceRegistriesStream(req *grpc.NamespaceRegistriesRequest, srv grpc.Actions_NamespaceRegistriesStreamServer) error {
-
 	actions.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
@@ -330,11 +313,9 @@ resend:
 	}
 
 	goto resend
-
 }
 
 func (actions *actions) CancelWorkflowInstance(svn, actionID string) error {
-
 	actions.sugar.Debugf("Handling gRPC request: %s", this())
 
 	req := &igrpc.CancelWorkflowRequest{

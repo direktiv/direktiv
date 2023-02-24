@@ -8,8 +8,10 @@ import (
 	"github.com/direktiv/direktiv/pkg/util"
 )
 
-const DefaultVarMimeType = "application/json"
-const RegexVarMimeType = `\w+\/[-+.\w]+`
+const (
+	DefaultVarMimeType = "application/json"
+	RegexVarMimeType   = `\w+\/[-+.\w]+`
+)
 
 type SetterState struct {
 	StateCommon `yaml:",inline"`
@@ -26,7 +28,6 @@ type SetterDefinition struct {
 }
 
 func (o *SetterDefinition) UnmarshalJSON(data []byte) error {
-
 	type SetterDefinitionAlias SetterDefinition
 
 	var s SetterDefinitionAlias
@@ -48,11 +49,9 @@ func (o *SetterDefinition) UnmarshalJSON(data []byte) error {
 	o.MimeType = s.MimeType
 
 	return nil
-
 }
 
 func (o *SetterDefinition) UnmarshalYAML(unmarshal func(interface{}) error) error {
-
 	var s interface{}
 
 	err := unmarshal(&s)
@@ -73,7 +72,6 @@ func (o *SetterDefinition) UnmarshalYAML(unmarshal func(interface{}) error) erro
 }
 
 func (o *SetterDefinition) Validate() error {
-
 	switch o.Scope {
 	case util.VarScopeInstance:
 	case util.VarScopeWorkflow:
@@ -92,7 +90,6 @@ func (o *SetterDefinition) Validate() error {
 	}
 
 	return nil
-
 }
 
 func (o *SetterState) GetID() string {

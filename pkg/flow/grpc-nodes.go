@@ -55,7 +55,6 @@ var inodesFilters = map[*filteringInfo]func(query *ent.InodeQuery, v string) (*e
 }
 
 func (srv *server) traverseToInode(ctx context.Context, tx database.Transaction, namespace, path string) (*database.CacheData, error) {
-
 	cached := new(database.CacheData)
 
 	err := srv.database.NamespaceByName(ctx, tx, cached, namespace)
@@ -69,11 +68,9 @@ func (srv *server) traverseToInode(ctx context.Context, tx database.Transaction,
 	}
 
 	return cached, nil
-
 }
 
 func (flow *flow) Node(ctx context.Context, req *grpc.NodeRequest) (*grpc.NodeResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	var err error
@@ -100,11 +97,9 @@ func (flow *flow) Node(ctx context.Context, req *grpc.NodeRequest) (*grpc.NodeRe
 	}
 
 	return &resp, nil
-
 }
 
 func (flow *flow) Directory(ctx context.Context, req *grpc.DirectoryRequest) (*grpc.DirectoryResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	cached, err := flow.traverseToInode(ctx, nil, req.GetNamespace(), req.GetPath())
@@ -159,11 +154,9 @@ func (flow *flow) Directory(ctx context.Context, req *grpc.DirectoryRequest) (*g
 	}
 
 	return resp, nil
-
 }
 
 func (flow *flow) DirectoryStream(req *grpc.DirectoryRequest, srv grpc.Flow_DirectoryStreamServer) error {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
@@ -241,7 +234,6 @@ resend:
 	}
 
 	goto resend
-
 }
 
 type createDirectoryArgs struct {
@@ -251,7 +243,6 @@ type createDirectoryArgs struct {
 }
 
 func (flow *flow) createDirectory(ctx context.Context, tx database.Transaction, args *createDirectoryArgs) (*database.Inode, error) {
-
 	dir, base := filepath.Split(args.path)
 
 	if args.pcached.Inode().ReadOnly && !args.super {
@@ -281,11 +272,9 @@ func (flow *flow) createDirectory(ctx context.Context, tx database.Transaction, 
 	}
 
 	return ino, nil
-
 }
 
 func (flow *flow) CreateDirectory(ctx context.Context, req *grpc.CreateDirectoryRequest) (*grpc.CreateDirectoryResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	tx, err := flow.database.Tx(ctx)
@@ -346,7 +335,6 @@ func (flow *flow) CreateDirectory(ctx context.Context, req *grpc.CreateDirectory
 	resp.Node.Path = path
 
 	return &resp, nil
-
 }
 
 type deleteNodeArgs struct {
@@ -356,7 +344,6 @@ type deleteNodeArgs struct {
 }
 
 func (flow *flow) deleteNode(ctx context.Context, tx database.Transaction, args *deleteNodeArgs) error {
-
 	if args.cached.Inode().Name == "" {
 		return status.Error(codes.InvalidArgument, "cannot delete root node")
 	}
@@ -422,11 +409,9 @@ func (flow *flow) deleteNode(ctx context.Context, tx database.Transaction, args 
 	args.cached.Inodes = args.cached.Inodes[:len(args.cached.Inodes)-1]
 
 	return nil
-
 }
 
 func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (*emptypb.Empty, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	tx, err := flow.database.Tx(ctx)
@@ -464,11 +449,9 @@ respond:
 	var resp emptypb.Empty
 
 	return &resp, nil
-
 }
 
 func (flow *flow) RenameNode(ctx context.Context, req *grpc.RenameNodeRequest) (*grpc.RenameNodeResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	tx, err := flow.database.Tx(ctx)
@@ -559,11 +542,9 @@ func (flow *flow) RenameNode(ctx context.Context, req *grpc.RenameNodeRequest) (
 	resp.Node.Path = path
 
 	return &resp, nil
-
 }
 
 func (flow *flow) CreateNodeAttributes(ctx context.Context, req *grpc.CreateNodeAttributesRequest) (*emptypb.Empty, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	tx, err := flow.database.Tx(ctx)
@@ -610,11 +591,9 @@ func (flow *flow) CreateNodeAttributes(ctx context.Context, req *grpc.CreateNode
 	var resp emptypb.Empty
 
 	return &resp, nil
-
 }
 
 func (flow *flow) DeleteNodeAttributes(ctx context.Context, req *grpc.DeleteNodeAttributesRequest) (*emptypb.Empty, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	tx, err := flow.database.Tx(ctx)
@@ -661,5 +640,4 @@ func (flow *flow) DeleteNodeAttributes(ctx context.Context, req *grpc.DeleteNode
 	var resp emptypb.Empty
 
 	return &resp, nil
-
 }
