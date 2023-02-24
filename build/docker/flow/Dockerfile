@@ -17,11 +17,9 @@ RUN --mount=type=cache,target=/root/.cache/go-build cd src && \
     go build -ldflags "-X github.com/direktiv/direktiv/pkg/version.Version=$FULL_VERSION" -o /direktiv cmd/direktiv/*.go;
 
 FROM ubuntu:22.04
+USER nonroot:nonroot
 
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 COPY --from=builder /direktiv /bin/direktiv
 
-ENV DIREKTIV_APP=flow
-EXPOSE 6666
-EXPOSE 7777
 CMD ["/bin/direktiv"]
