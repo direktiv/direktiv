@@ -30,6 +30,8 @@ type instanceMemory struct {
 	eventQueue []string
 
 	invTags map[string]string
+	o       string
+	i       int
 }
 
 func (im *instanceMemory) ID() uuid.UUID {
@@ -191,6 +193,14 @@ func (im *instanceMemory) instance() *ent.Instance {
 	return im.in
 }
 
+func (im *instanceMemory) orginator() string {
+	return im.in.Edges.Orginator.ID.String()
+	//return im.o
+}
+func (im *instanceMemory) iterator() int {
+	return im.i
+}
+
 func (engine *engine) getInstanceMemory(ctx context.Context, inc *ent.InstanceClient, id string) (*instanceMemory, error) {
 
 	uid, err := uuid.Parse(id)
@@ -198,7 +208,7 @@ func (engine *engine) getInstanceMemory(ctx context.Context, inc *ent.InstanceCl
 		return nil, err
 	}
 
-	in, err := inc.Query().Where(entinst.IDEQ(uid)).WithNamespace().WithWorkflow().WithRevision().WithRuntime().Only(ctx)
+	in, err := inc.Query().Where(entinst.IDEQ(uid)).WithOrginator().WithNamespace().WithWorkflow().WithRevision().WithRuntime().Only(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -206,6 +216,15 @@ func (engine *engine) getInstanceMemory(ctx context.Context, inc *ent.InstanceCl
 	im := new(instanceMemory)
 	im.engine = engine
 	im.in = in
+
+	if in.Edges.Orginator == nil {
+		err = &derrors.NotFoundError{
+			Label: "orignator not found",
+		}
+
+		engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", err.Error()))
+		return nil, err
+	}
 
 	if in.Edges.Namespace == nil {
 		err = &derrors.NotFoundError{

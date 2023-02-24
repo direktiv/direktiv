@@ -224,6 +224,7 @@ var (
 		{Name: "error_code", Type: field.TypeString, Nullable: true},
 		{Name: "error_message", Type: field.TypeString, Nullable: true},
 		{Name: "invoker", Type: field.TypeString, Nullable: true},
+		{Name: "instance_ins", Type: field.TypeUUID, Nullable: true},
 		{Name: "namespace_instances", Type: field.TypeUUID},
 		{Name: "revision_instances", Type: field.TypeUUID, Nullable: true},
 		{Name: "workflow_instances", Type: field.TypeUUID, Nullable: true},
@@ -235,20 +236,26 @@ var (
 		PrimaryKey: []*schema.Column{InstancesColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "instances_namespaces_instances",
+				Symbol:     "instances_instances_ins",
 				Columns:    []*schema.Column{InstancesColumns[9]},
+				RefColumns: []*schema.Column{InstancesColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "instances_namespaces_instances",
+				Columns:    []*schema.Column{InstancesColumns[10]},
 				RefColumns: []*schema.Column{NamespacesColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "instances_revisions_instances",
-				Columns:    []*schema.Column{InstancesColumns[10]},
+				Columns:    []*schema.Column{InstancesColumns[11]},
 				RefColumns: []*schema.Column{RevisionsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "instances_workflows_instances",
-				Columns:    []*schema.Column{InstancesColumns[11]},
+				Columns:    []*schema.Column{InstancesColumns[12]},
 				RefColumns: []*schema.Column{WorkflowsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -681,9 +688,10 @@ func init() {
 	EventsWaitsTable.ForeignKeys[0].RefTable = EventsTable
 	InodesTable.ForeignKeys[0].RefTable = InodesTable
 	InodesTable.ForeignKeys[1].RefTable = NamespacesTable
-	InstancesTable.ForeignKeys[0].RefTable = NamespacesTable
-	InstancesTable.ForeignKeys[1].RefTable = RevisionsTable
-	InstancesTable.ForeignKeys[2].RefTable = WorkflowsTable
+	InstancesTable.ForeignKeys[0].RefTable = InstancesTable
+	InstancesTable.ForeignKeys[1].RefTable = NamespacesTable
+	InstancesTable.ForeignKeys[2].RefTable = RevisionsTable
+	InstancesTable.ForeignKeys[3].RefTable = WorkflowsTable
 	InstanceRuntimesTable.ForeignKeys[0].RefTable = InstancesTable
 	InstanceRuntimesTable.ForeignKeys[1].RefTable = InstancesTable
 	LogMsgsTable.ForeignKeys[0].RefTable = InstancesTable

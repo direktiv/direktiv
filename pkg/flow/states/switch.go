@@ -39,7 +39,7 @@ func Switch(instance Instance, state model.State) (Logic, error) {
 // The 'switch' evaluates one or more conditions against the instance data to determine which
 // transform and which transition to use. The logic only needs to be scheduled in once. The
 // most likely way for the logic to fail is a JQ error against the instance data.
-func (logic *switchLogic) Run(ctx context.Context, wakedata []byte) (*Transition, error) {
+func (logic *switchLogic) Run(ctx context.Context, wakedata []byte, o string, i int) (*Transition, error) {
 
 	err := scheduleOnce(logic, wakedata)
 	if err != nil {

@@ -33,7 +33,7 @@ func TestErrorGood(t *testing.T) {
 		return
 	}
 
-	transition, err := logic.Run(ctx, instance.getWakedata())
+	transition, err := logic.Run(ctx, instance.getWakedata(), "", 0)
 	if err != nil {
 		t.Error(err)
 		return
@@ -114,7 +114,7 @@ func TestErrorBadMemory(t *testing.T) {
 		return
 	}
 
-	transition, err := logic.Run(ctx, instance.getWakedata())
+	transition, err := logic.Run(ctx, instance.getWakedata(), "", 0)
 
 	if instance.dt() > 200*time.Millisecond {
 		t.Error(errors.New("ran longer than acceptable"))
@@ -148,7 +148,7 @@ func TestErrorBadWakedata(t *testing.T) {
 		return
 	}
 
-	transition, err := logic.Run(ctx, marshal("bad"))
+	transition, err := logic.Run(ctx, marshal("bad"), "", 0)
 
 	if instance.dt() > 200*time.Millisecond {
 		t.Error(errors.New("ran longer than acceptable"))

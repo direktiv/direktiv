@@ -4521,6 +4521,11 @@ type InstanceMutation struct {
 	clearedworkflow       bool
 	revision              *uuid.UUID
 	clearedrevision       bool
+	orginator             *uuid.UUID
+	clearedorginator      bool
+	ins                   map[uuid.UUID]struct{}
+	removedins            map[uuid.UUID]struct{}
+	clearedins            bool
 	logs                  map[uuid.UUID]struct{}
 	removedlogs           map[uuid.UUID]struct{}
 	clearedlogs           bool
@@ -5104,6 +5109,99 @@ func (m *InstanceMutation) ResetRevision() {
 	m.clearedrevision = false
 }
 
+// SetOrginatorID sets the "orginator" edge to the Instance entity by id.
+func (m *InstanceMutation) SetOrginatorID(id uuid.UUID) {
+	m.orginator = &id
+}
+
+// ClearOrginator clears the "orginator" edge to the Instance entity.
+func (m *InstanceMutation) ClearOrginator() {
+	m.clearedorginator = true
+}
+
+// OrginatorCleared reports if the "orginator" edge to the Instance entity was cleared.
+func (m *InstanceMutation) OrginatorCleared() bool {
+	return m.clearedorginator
+}
+
+// OrginatorID returns the "orginator" edge ID in the mutation.
+func (m *InstanceMutation) OrginatorID() (id uuid.UUID, exists bool) {
+	if m.orginator != nil {
+		return *m.orginator, true
+	}
+	return
+}
+
+// OrginatorIDs returns the "orginator" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// OrginatorID instead. It exists only for internal usage by the builders.
+func (m *InstanceMutation) OrginatorIDs() (ids []uuid.UUID) {
+	if id := m.orginator; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetOrginator resets all changes to the "orginator" edge.
+func (m *InstanceMutation) ResetOrginator() {
+	m.orginator = nil
+	m.clearedorginator = false
+}
+
+// AddInIDs adds the "ins" edge to the Instance entity by ids.
+func (m *InstanceMutation) AddInIDs(ids ...uuid.UUID) {
+	if m.ins == nil {
+		m.ins = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.ins[ids[i]] = struct{}{}
+	}
+}
+
+// ClearIns clears the "ins" edge to the Instance entity.
+func (m *InstanceMutation) ClearIns() {
+	m.clearedins = true
+}
+
+// InsCleared reports if the "ins" edge to the Instance entity was cleared.
+func (m *InstanceMutation) InsCleared() bool {
+	return m.clearedins
+}
+
+// RemoveInIDs removes the "ins" edge to the Instance entity by IDs.
+func (m *InstanceMutation) RemoveInIDs(ids ...uuid.UUID) {
+	if m.removedins == nil {
+		m.removedins = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.ins, ids[i])
+		m.removedins[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedIns returns the removed IDs of the "ins" edge to the Instance entity.
+func (m *InstanceMutation) RemovedInsIDs() (ids []uuid.UUID) {
+	for id := range m.removedins {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// InsIDs returns the "ins" edge IDs in the mutation.
+func (m *InstanceMutation) InsIDs() (ids []uuid.UUID) {
+	for id := range m.ins {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetIns resets all changes to the "ins" edge.
+func (m *InstanceMutation) ResetIns() {
+	m.ins = nil
+	m.clearedins = false
+	m.removedins = nil
+}
+
 // AddLogIDs adds the "logs" edge to the LogMsg entity by ids.
 func (m *InstanceMutation) AddLogIDs(ids ...uuid.UUID) {
 	if m.logs == nil {
@@ -5677,7 +5775,7 @@ func (m *InstanceMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *InstanceMutation) AddedEdges() []string {
-	edges := make([]string, 0, 9)
+	edges := make([]string, 0, 11)
 	if m.namespace != nil {
 		edges = append(edges, instance.EdgeNamespace)
 	}
@@ -5686,6 +5784,12 @@ func (m *InstanceMutation) AddedEdges() []string {
 	}
 	if m.revision != nil {
 		edges = append(edges, instance.EdgeRevision)
+	}
+	if m.orginator != nil {
+		edges = append(edges, instance.EdgeOrginator)
+	}
+	if m.ins != nil {
+		edges = append(edges, instance.EdgeIns)
 	}
 	if m.logs != nil {
 		edges = append(edges, instance.EdgeLogs)
@@ -5724,6 +5828,16 @@ func (m *InstanceMutation) AddedIDs(name string) []ent.Value {
 		if id := m.revision; id != nil {
 			return []ent.Value{*id}
 		}
+	case instance.EdgeOrginator:
+		if id := m.orginator; id != nil {
+			return []ent.Value{*id}
+		}
+	case instance.EdgeIns:
+		ids := make([]ent.Value, 0, len(m.ins))
+		for id := range m.ins {
+			ids = append(ids, id)
+		}
+		return ids
 	case instance.EdgeLogs:
 		ids := make([]ent.Value, 0, len(m.logs))
 		for id := range m.logs {
@@ -5764,7 +5878,10 @@ func (m *InstanceMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *InstanceMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 9)
+	edges := make([]string, 0, 11)
+	if m.removedins != nil {
+		edges = append(edges, instance.EdgeIns)
+	}
 	if m.removedlogs != nil {
 		edges = append(edges, instance.EdgeLogs)
 	}
@@ -5787,6 +5904,12 @@ func (m *InstanceMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *InstanceMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
+	case instance.EdgeIns:
+		ids := make([]ent.Value, 0, len(m.removedins))
+		for id := range m.removedins {
+			ids = append(ids, id)
+		}
+		return ids
 	case instance.EdgeLogs:
 		ids := make([]ent.Value, 0, len(m.removedlogs))
 		for id := range m.removedlogs {
@@ -5823,7 +5946,7 @@ func (m *InstanceMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *InstanceMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 9)
+	edges := make([]string, 0, 11)
 	if m.clearednamespace {
 		edges = append(edges, instance.EdgeNamespace)
 	}
@@ -5832,6 +5955,12 @@ func (m *InstanceMutation) ClearedEdges() []string {
 	}
 	if m.clearedrevision {
 		edges = append(edges, instance.EdgeRevision)
+	}
+	if m.clearedorginator {
+		edges = append(edges, instance.EdgeOrginator)
+	}
+	if m.clearedins {
+		edges = append(edges, instance.EdgeIns)
 	}
 	if m.clearedlogs {
 		edges = append(edges, instance.EdgeLogs)
@@ -5864,6 +5993,10 @@ func (m *InstanceMutation) EdgeCleared(name string) bool {
 		return m.clearedworkflow
 	case instance.EdgeRevision:
 		return m.clearedrevision
+	case instance.EdgeOrginator:
+		return m.clearedorginator
+	case instance.EdgeIns:
+		return m.clearedins
 	case instance.EdgeLogs:
 		return m.clearedlogs
 	case instance.EdgeVars:
@@ -5893,6 +6026,9 @@ func (m *InstanceMutation) ClearEdge(name string) error {
 	case instance.EdgeRevision:
 		m.ClearRevision()
 		return nil
+	case instance.EdgeOrginator:
+		m.ClearOrginator()
+		return nil
 	case instance.EdgeRuntime:
 		m.ClearRuntime()
 		return nil
@@ -5912,6 +6048,12 @@ func (m *InstanceMutation) ResetEdge(name string) error {
 		return nil
 	case instance.EdgeRevision:
 		m.ResetRevision()
+		return nil
+	case instance.EdgeOrginator:
+		m.ResetOrginator()
+		return nil
+	case instance.EdgeIns:
+		m.ResetIns()
 		return nil
 	case instance.EdgeLogs:
 		m.ResetLogs()

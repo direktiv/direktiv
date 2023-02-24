@@ -30,7 +30,10 @@ func (flow *flow) InstanceInput(ctx context.Context, req *grpc.InstanceInputRequ
 	if err != nil {
 		return nil, err
 	}
-
+	err = atob(d.in.Edges.Orginator, &resp.Instance.Originator)
+	if err != nil {
+		return nil, err
+	}
 	m := make(map[string]interface{})
 	err = json.Unmarshal(d.in.Edges.Runtime.Input, &m)
 	if err != nil {
@@ -38,7 +41,7 @@ func (flow *flow) InstanceInput(ctx context.Context, req *grpc.InstanceInputRequ
 	}
 	delete(m, "private")
 	input := marshal(m)
-
+	//resp.Instance.Originator = d.in.Edges.Orginator.ID.String()
 	resp.Data = []byte(input)
 	resp.Namespace = d.namespace()
 
@@ -63,6 +66,10 @@ func (flow *flow) InstanceOutput(ctx context.Context, req *grpc.InstanceOutputRe
 	if err != nil {
 		return nil, err
 	}
+	err = atob(d.in.Edges.Orginator, &resp.Instance.Originator)
+	if err != nil {
+		return nil, err
+	}
 
 	m := make(map[string]interface{})
 	err = json.Unmarshal([]byte(d.in.Edges.Runtime.Output), &m)
@@ -74,6 +81,7 @@ func (flow *flow) InstanceOutput(ctx context.Context, req *grpc.InstanceOutputRe
 
 	resp.Data = []byte(output)
 	resp.Namespace = d.namespace()
+	//resp.Instance.Originator = d.in.Edges.Orginator.ID.String()
 
 	return &resp, nil
 
@@ -96,9 +104,14 @@ func (flow *flow) InstanceMetadata(ctx context.Context, req *grpc.InstanceMetada
 	if err != nil {
 		return nil, err
 	}
+	err = atob(d.in.Edges.Orginator, &resp.Instance.Originator)
+	if err != nil {
+		return nil, err
+	}
 
 	resp.Data = []byte(d.in.Edges.Runtime.Metadata)
 	resp.Namespace = d.namespace()
+	//resp.Instance.Originator = d.in.Edges.Orginator.ID.String()
 
 	return &resp, nil
 
@@ -113,13 +126,16 @@ func (flow *flow) Instances(ctx context.Context, req *grpc.InstancesRequest) (*g
 		return nil, err
 	}
 
-	query := ns.QueryInstances()
+	query := ns.QueryInstances().WithOrginator()
 
 	results, pi, err := paginate[*ent.InstanceQuery, *ent.Instance](ctx, req.Pagination, query, instancesOrderings, instancesFilters)
 	if err != nil {
 		return nil, err
 	}
-
+	originators := make([]*ent.Instance, len(results))
+	for i, v := range results {
+		originators[i] = v.Edges.Orginator
+	}
 	resp := new(grpc.InstancesResponse)
 	resp.Namespace = ns.Name
 	resp.Instances = new(grpc.Instances)
@@ -128,6 +144,12 @@ func (flow *flow) Instances(ctx context.Context, req *grpc.InstancesRequest) (*g
 	err = atob(results, &resp.Instances.Results)
 	if err != nil {
 		return nil, err
+	}
+	for i := 0; i < len(resp.Instances.Results); i++ {
+		err = atob(originators[i], &resp.Instances.Results[i].Originator)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return resp, nil
@@ -152,13 +174,16 @@ func (flow *flow) InstancesStream(req *grpc.InstancesRequest, srv grpc.Flow_Inst
 
 resend:
 
-	query := ns.QueryInstances()
+	query := ns.QueryInstances().WithOrginator()
 
 	results, pi, err := paginate[*ent.InstanceQuery, *ent.Instance](ctx, req.Pagination, query, instancesOrderings, instancesFilters)
 	if err != nil {
 		return err
 	}
-
+	originators := make([]*ent.Instance, len(results))
+	for i, v := range results {
+		originators[i] = v.Edges.Orginator
+	}
 	resp := new(grpc.InstancesResponse)
 	resp.Namespace = ns.Name
 	resp.Instances = new(grpc.Instances)
@@ -168,7 +193,9 @@ resend:
 	if err != nil {
 		return err
 	}
-
+	// for i := 0; i < len(resp.Instances.Results); i++ {
+	// 	resp.Instances.Results[i].Originator = originators[i].ID.String()
+	// }
 	nhash = checksum(resp)
 	if nhash != phash {
 		err = srv.Send(resp)
@@ -224,7 +251,7 @@ func (flow *flow) Instance(ctx context.Context, req *grpc.InstanceRequest) (*grp
 	}
 
 	resp.Namespace = d.namespace()
-
+	//resp.Instance.Originator = d.in.Edges.Orginator
 	rwf := new(grpc.InstanceWorkflow)
 	rwf.Name = d.base
 	rwf.Parent = d.dir
@@ -285,6 +312,7 @@ resend:
 		}
 	}
 
+	//resp.Instance.Originator = d.in.Edges.Orginator.ID.String()
 	resp.Namespace = d.namespace()
 
 	rwf := new(grpc.InstanceWorkflow)
@@ -330,7 +358,6 @@ func (flow *flow) StartWorkflow(ctx context.Context, req *grpc.StartWorkflowRequ
 		flow.sugar.Debugf("Error returned to gRPC request %s: %v", this(), err)
 		return nil, err
 	}
-
 	if !req.GetHold() {
 		flow.engine.queue(im)
 	}

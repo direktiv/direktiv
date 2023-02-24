@@ -48,7 +48,7 @@ type Logic interface {
 	ErrorDefinitions() []model.ErrorDefinition
 	GetMemory() interface{}
 	Deadline(ctx context.Context) time.Time
-	Run(ctx context.Context, wakedata []byte) (*Transition, error)
+	Run(ctx context.Context, wakedata []byte, o string, i int) (*Transition, error)
 	LivingChildren(ctx context.Context) []ChildInfo
 }
 

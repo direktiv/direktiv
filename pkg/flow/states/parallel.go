@@ -65,8 +65,8 @@ func (logic *parallelLogic) Deadline(ctx context.Context) time.Time {
 // should be in response to the action's completion. But it could also be because of the
 // timeout. If the action times out or fails, the action logic may attempt to retry it, which
 // means that the number of times this logic can run may vary.
-func (logic *parallelLogic) Run(ctx context.Context, wakedata []byte) (*Transition, error) {
-
+func (logic *parallelLogic) Run(ctx context.Context, wakedata []byte, o string, i int) (*Transition, error) {
+	//TODO: Iterator
 	// first schedule
 	if len(wakedata) == 0 {
 
@@ -75,7 +75,7 @@ func (logic *parallelLogic) Run(ctx context.Context, wakedata []byte) (*Transiti
 			return nil, err
 		}
 
-		err = logic.scheduleFirstActions(ctx)
+		err = logic.scheduleFirstActions(ctx, o)
 		if err != nil {
 			return nil, err
 		}
@@ -112,7 +112,7 @@ func (logic *parallelLogic) Run(ctx context.Context, wakedata []byte) (*Transiti
 
 }
 
-func (logic *parallelLogic) scheduleFirstActions(ctx context.Context) error {
+func (logic *parallelLogic) scheduleFirstActions(ctx context.Context, o string) error {
 
 	children := make([]*ChildInfo, 0)
 
@@ -120,7 +120,7 @@ func (logic *parallelLogic) scheduleFirstActions(ctx context.Context) error {
 
 		action := &logic.Actions[i]
 
-		child, err := logic.scheduleAction(ctx, action, 0)
+		child, err := logic.scheduleAction(ctx, action, 0, o, i)
 		if err != nil {
 			return err
 		}
@@ -140,7 +140,7 @@ func (logic *parallelLogic) scheduleFirstActions(ctx context.Context) error {
 
 }
 
-func (logic *parallelLogic) scheduleAction(ctx context.Context, action *model.ActionDefinition, attempt int) (*ChildInfo, error) {
+func (logic *parallelLogic) scheduleAction(ctx context.Context, action *model.ActionDefinition, attempt int, o string, i int) (*ChildInfo, error) {
 
 	input, files, err := generateActionInput(ctx, &generateActionInputArgs{
 		Instance: logic.Instance,
@@ -168,13 +168,15 @@ func (logic *parallelLogic) scheduleAction(ctx context.Context, action *model.Ac
 	}
 
 	child, err := invokeAction(ctx, invokeActionArgs{
-		instance: logic.Instance,
-		async:    false,
-		fn:       fn,
-		input:    input,
-		timeout:  wfto,
-		files:    files,
-		attempt:  attempt,
+		instance:   logic.Instance,
+		async:      false,
+		fn:         fn,
+		input:      input,
+		timeout:    wfto,
+		files:      files,
+		attempt:    attempt,
+		originator: o,
+		iterator:   i,
 	})
 	if err != nil {
 		return nil, err
@@ -190,7 +192,7 @@ func (logic *parallelLogic) scheduleRetryAction(ctx context.Context, retry *acti
 
 	action := &logic.Actions[retry.Idx]
 
-	child, err := logic.scheduleAction(ctx, action, retry.Children[retry.Idx].Attempts)
+	child, err := logic.scheduleAction(ctx, action, retry.Children[retry.Idx].Attempts, retry.Originator, retry.Idx)
 	if err != nil {
 		return err
 	}
@@ -247,6 +249,8 @@ func (logic *parallelLogic) processActionResults(ctx context.Context, children [
 	tags := make(map[string]string)
 	tags["i"] = fmt.Sprint(idx)
 	tags["actionID"] = results.ActionID
+	tags["iterator"] = fmt.Sprint(results.Iterator)
+	tags["originator"] = results.Originator
 	if results.ActionID != id {
 		return nil, derrors.NewInternalError(errors.New("incorrect child action ID"))
 	}

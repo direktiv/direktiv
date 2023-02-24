@@ -3,6 +3,7 @@ package flow
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net"
 	"time"
 
@@ -64,6 +65,8 @@ func (internal *internal) ReportActionResults(ctx context.Context, req *grpc.Rep
 
 	payload := &actionResultPayload{
 		ActionID:     req.GetActionId(),
+		Originator:   req.GetOriginator(),
+		Iterator:     int(req.GetIterator()),
 		ErrorCode:    req.GetErrorCode(),
 		ErrorMessage: req.GetErrorMessage(),
 		Output:       req.GetOutput(),
@@ -84,7 +87,8 @@ func (internal *internal) ReportActionResults(ctx context.Context, req *grpc.Rep
 	internal.sugar.Debugf("Handling report action results: %s", this())
 
 	traceActionResult(ctx2, payload)
-
+	im.o = req.GetOriginator()
+	im.i = int(req.GetIterator())
 	go internal.engine.runState(ctx2, im, wakedata, nil)
 
 	var resp emptypb.Empty
@@ -108,8 +112,10 @@ func (internal *internal) ActionLog(ctx context.Context, req *grpc.ActionLogRequ
 	}
 	tags := d.tags()
 	tags["actionID"] = req.ActionID
+	tags["originator"] = req.Originator
+	tags["iterator"] = fmt.Sprint(req.Iterator)
 	for _, msg := range req.GetMsg() {
-		internal.logToInstanceRaw(ctx, t, d.in, tags, msg)
+		internal.logToInstanceRaw(ctx, t, d.in.Edges.Orginator, tags, msg)
 		//internal.logToInstanceRaw(ctx, t, d, msg)
 	}
 

@@ -40,7 +40,7 @@ func Error(instance Instance, state model.State) (Logic, error) {
 // The 'error' state does not necessarily indicate the end of the workflow. The instance may
 // continue to transition, usually to perform some form of cleanup or reverting of the activies
 // undertaken by the workflow so far. The logic only needs to be scheduled in once.
-func (logic *errorLogic) Run(ctx context.Context, wakedata []byte) (*Transition, error) {
+func (logic *errorLogic) Run(ctx context.Context, wakedata []byte, o string, i int) (*Transition, error) {
 
 	err := scheduleOnce(logic, wakedata)
 	if err != nil {

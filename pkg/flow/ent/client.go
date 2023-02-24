@@ -1202,6 +1202,38 @@ func (c *InstanceClient) QueryRevision(i *Instance) *RevisionQuery {
 	return query
 }
 
+// QueryOrginator queries the orginator edge of a Instance.
+func (c *InstanceClient) QueryOrginator(i *Instance) *InstanceQuery {
+	query := &InstanceQuery{config: c.config}
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := i.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(instance.Table, instance.FieldID, id),
+			sqlgraph.To(instance.Table, instance.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, instance.OrginatorTable, instance.OrginatorColumn),
+		)
+		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryIns queries the ins edge of a Instance.
+func (c *InstanceClient) QueryIns(i *Instance) *InstanceQuery {
+	query := &InstanceQuery{config: c.config}
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := i.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(instance.Table, instance.FieldID, id),
+			sqlgraph.To(instance.Table, instance.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, instance.InsTable, instance.InsColumn),
+		)
+		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryLogs queries the logs edge of a Instance.
 func (c *InstanceClient) QueryLogs(i *Instance) *LogMsgQuery {
 	query := &LogMsgQuery{config: c.config}

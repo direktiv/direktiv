@@ -183,6 +183,8 @@ func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
 		InstanceId: req.instanceId,
 		Msg:        []string{msg},
 		ActionID:   req.actionId,
+		Originator: req.originator,
+		Iterator:   int32(req.iterator),
 	})
 	if err != nil {
 		log.Errorf("Failed to forward log to diretiv: %v.", err)
@@ -381,6 +383,8 @@ func (srv *LocalServer) run() {
 type functionRequest struct {
 	actionId   string
 	instanceId string
+	originator string
+	iterator   int
 	namespace  string
 	step       int
 	deadline   time.Time

@@ -179,6 +179,32 @@ func (iu *InstanceUpdate) SetRevision(r *Revision) *InstanceUpdate {
 	return iu.SetRevisionID(r.ID)
 }
 
+// SetOrginatorID sets the "orginator" edge to the Instance entity by ID.
+func (iu *InstanceUpdate) SetOrginatorID(id uuid.UUID) *InstanceUpdate {
+	iu.mutation.SetOrginatorID(id)
+	return iu
+}
+
+// SetOrginator sets the "orginator" edge to the Instance entity.
+func (iu *InstanceUpdate) SetOrginator(i *Instance) *InstanceUpdate {
+	return iu.SetOrginatorID(i.ID)
+}
+
+// AddInIDs adds the "ins" edge to the Instance entity by IDs.
+func (iu *InstanceUpdate) AddInIDs(ids ...uuid.UUID) *InstanceUpdate {
+	iu.mutation.AddInIDs(ids...)
+	return iu
+}
+
+// AddIns adds the "ins" edges to the Instance entity.
+func (iu *InstanceUpdate) AddIns(i ...*Instance) *InstanceUpdate {
+	ids := make([]uuid.UUID, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return iu.AddInIDs(ids...)
+}
+
 // AddLogIDs adds the "logs" edge to the LogMsg entity by IDs.
 func (iu *InstanceUpdate) AddLogIDs(ids ...uuid.UUID) *InstanceUpdate {
 	iu.mutation.AddLogIDs(ids...)
@@ -286,6 +312,33 @@ func (iu *InstanceUpdate) ClearWorkflow() *InstanceUpdate {
 func (iu *InstanceUpdate) ClearRevision() *InstanceUpdate {
 	iu.mutation.ClearRevision()
 	return iu
+}
+
+// ClearOrginator clears the "orginator" edge to the Instance entity.
+func (iu *InstanceUpdate) ClearOrginator() *InstanceUpdate {
+	iu.mutation.ClearOrginator()
+	return iu
+}
+
+// ClearIns clears all "ins" edges to the Instance entity.
+func (iu *InstanceUpdate) ClearIns() *InstanceUpdate {
+	iu.mutation.ClearIns()
+	return iu
+}
+
+// RemoveInIDs removes the "ins" edge to Instance entities by IDs.
+func (iu *InstanceUpdate) RemoveInIDs(ids ...uuid.UUID) *InstanceUpdate {
+	iu.mutation.RemoveInIDs(ids...)
+	return iu
+}
+
+// RemoveIns removes "ins" edges to Instance entities.
+func (iu *InstanceUpdate) RemoveIns(i ...*Instance) *InstanceUpdate {
+	ids := make([]uuid.UUID, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return iu.RemoveInIDs(ids...)
 }
 
 // ClearLogs clears all "logs" edges to the LogMsg entity.
@@ -473,6 +526,9 @@ func (iu *InstanceUpdate) check() error {
 	if _, ok := iu.mutation.NamespaceID(); iu.mutation.NamespaceCleared() && !ok {
 		return errors.New(`ent: clearing a required unique edge "Instance.namespace"`)
 	}
+	if _, ok := iu.mutation.OrginatorID(); iu.mutation.OrginatorCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "Instance.orginator"`)
+	}
 	if _, ok := iu.mutation.RuntimeID(); iu.mutation.RuntimeCleared() && !ok {
 		return errors.New(`ent: clearing a required unique edge "Instance.runtime"`)
 	}
@@ -630,6 +686,95 @@ func (iu *InstanceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: revision.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if iu.mutation.OrginatorCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   instance.OrginatorTable,
+			Columns: []string{instance.OrginatorColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: instance.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := iu.mutation.OrginatorIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   instance.OrginatorTable,
+			Columns: []string{instance.OrginatorColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: instance.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if iu.mutation.InsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   instance.InsTable,
+			Columns: []string{instance.InsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: instance.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := iu.mutation.RemovedInsIDs(); len(nodes) > 0 && !iu.mutation.InsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   instance.InsTable,
+			Columns: []string{instance.InsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: instance.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := iu.mutation.InsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   instance.InsTable,
+			Columns: []string{instance.InsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: instance.FieldID,
 				},
 			},
 		}
@@ -1105,6 +1250,32 @@ func (iuo *InstanceUpdateOne) SetRevision(r *Revision) *InstanceUpdateOne {
 	return iuo.SetRevisionID(r.ID)
 }
 
+// SetOrginatorID sets the "orginator" edge to the Instance entity by ID.
+func (iuo *InstanceUpdateOne) SetOrginatorID(id uuid.UUID) *InstanceUpdateOne {
+	iuo.mutation.SetOrginatorID(id)
+	return iuo
+}
+
+// SetOrginator sets the "orginator" edge to the Instance entity.
+func (iuo *InstanceUpdateOne) SetOrginator(i *Instance) *InstanceUpdateOne {
+	return iuo.SetOrginatorID(i.ID)
+}
+
+// AddInIDs adds the "ins" edge to the Instance entity by IDs.
+func (iuo *InstanceUpdateOne) AddInIDs(ids ...uuid.UUID) *InstanceUpdateOne {
+	iuo.mutation.AddInIDs(ids...)
+	return iuo
+}
+
+// AddIns adds the "ins" edges to the Instance entity.
+func (iuo *InstanceUpdateOne) AddIns(i ...*Instance) *InstanceUpdateOne {
+	ids := make([]uuid.UUID, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return iuo.AddInIDs(ids...)
+}
+
 // AddLogIDs adds the "logs" edge to the LogMsg entity by IDs.
 func (iuo *InstanceUpdateOne) AddLogIDs(ids ...uuid.UUID) *InstanceUpdateOne {
 	iuo.mutation.AddLogIDs(ids...)
@@ -1212,6 +1383,33 @@ func (iuo *InstanceUpdateOne) ClearWorkflow() *InstanceUpdateOne {
 func (iuo *InstanceUpdateOne) ClearRevision() *InstanceUpdateOne {
 	iuo.mutation.ClearRevision()
 	return iuo
+}
+
+// ClearOrginator clears the "orginator" edge to the Instance entity.
+func (iuo *InstanceUpdateOne) ClearOrginator() *InstanceUpdateOne {
+	iuo.mutation.ClearOrginator()
+	return iuo
+}
+
+// ClearIns clears all "ins" edges to the Instance entity.
+func (iuo *InstanceUpdateOne) ClearIns() *InstanceUpdateOne {
+	iuo.mutation.ClearIns()
+	return iuo
+}
+
+// RemoveInIDs removes the "ins" edge to Instance entities by IDs.
+func (iuo *InstanceUpdateOne) RemoveInIDs(ids ...uuid.UUID) *InstanceUpdateOne {
+	iuo.mutation.RemoveInIDs(ids...)
+	return iuo
+}
+
+// RemoveIns removes "ins" edges to Instance entities.
+func (iuo *InstanceUpdateOne) RemoveIns(i ...*Instance) *InstanceUpdateOne {
+	ids := make([]uuid.UUID, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return iuo.RemoveInIDs(ids...)
 }
 
 // ClearLogs clears all "logs" edges to the LogMsg entity.
@@ -1412,6 +1610,9 @@ func (iuo *InstanceUpdateOne) check() error {
 	if _, ok := iuo.mutation.NamespaceID(); iuo.mutation.NamespaceCleared() && !ok {
 		return errors.New(`ent: clearing a required unique edge "Instance.namespace"`)
 	}
+	if _, ok := iuo.mutation.OrginatorID(); iuo.mutation.OrginatorCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "Instance.orginator"`)
+	}
 	if _, ok := iuo.mutation.RuntimeID(); iuo.mutation.RuntimeCleared() && !ok {
 		return errors.New(`ent: clearing a required unique edge "Instance.runtime"`)
 	}
@@ -1586,6 +1787,95 @@ func (iuo *InstanceUpdateOne) sqlSave(ctx context.Context) (_node *Instance, err
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: revision.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if iuo.mutation.OrginatorCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   instance.OrginatorTable,
+			Columns: []string{instance.OrginatorColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: instance.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := iuo.mutation.OrginatorIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   instance.OrginatorTable,
+			Columns: []string{instance.OrginatorColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: instance.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if iuo.mutation.InsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   instance.InsTable,
+			Columns: []string{instance.InsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: instance.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := iuo.mutation.RemovedInsIDs(); len(nodes) > 0 && !iuo.mutation.InsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   instance.InsTable,
+			Columns: []string{instance.InsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: instance.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := iuo.mutation.InsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   instance.InsTable,
+			Columns: []string{instance.InsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: instance.FieldID,
 				},
 			},
 		}

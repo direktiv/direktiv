@@ -37,6 +37,8 @@ type InstanceQuery struct {
 	withNamespace      *NamespaceQuery
 	withWorkflow       *WorkflowQuery
 	withRevision       *RevisionQuery
+	withOrginator      *InstanceQuery
+	withIns            *InstanceQuery
 	withLogs           *LogMsgQuery
 	withVars           *VarRefQuery
 	withRuntime        *InstanceRuntimeQuery
@@ -140,6 +142,50 @@ func (iq *InstanceQuery) QueryRevision() *RevisionQuery {
 			sqlgraph.From(instance.Table, instance.FieldID, selector),
 			sqlgraph.To(revision.Table, revision.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, instance.RevisionTable, instance.RevisionColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryOrginator chains the current query on the "orginator" edge.
+func (iq *InstanceQuery) QueryOrginator() *InstanceQuery {
+	query := &InstanceQuery{config: iq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := iq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := iq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(instance.Table, instance.FieldID, selector),
+			sqlgraph.To(instance.Table, instance.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, instance.OrginatorTable, instance.OrginatorColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryIns chains the current query on the "ins" edge.
+func (iq *InstanceQuery) QueryIns() *InstanceQuery {
+	query := &InstanceQuery{config: iq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := iq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := iq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(instance.Table, instance.FieldID, selector),
+			sqlgraph.To(instance.Table, instance.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, instance.InsTable, instance.InsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
 		return fromU, nil
@@ -463,6 +509,8 @@ func (iq *InstanceQuery) Clone() *InstanceQuery {
 		withNamespace:      iq.withNamespace.Clone(),
 		withWorkflow:       iq.withWorkflow.Clone(),
 		withRevision:       iq.withRevision.Clone(),
+		withOrginator:      iq.withOrginator.Clone(),
+		withIns:            iq.withIns.Clone(),
 		withLogs:           iq.withLogs.Clone(),
 		withVars:           iq.withVars.Clone(),
 		withRuntime:        iq.withRuntime.Clone(),
@@ -506,6 +554,28 @@ func (iq *InstanceQuery) WithRevision(opts ...func(*RevisionQuery)) *InstanceQue
 		opt(query)
 	}
 	iq.withRevision = query
+	return iq
+}
+
+// WithOrginator tells the query-builder to eager-load the nodes that are connected to
+// the "orginator" edge. The optional arguments are used to configure the query builder of the edge.
+func (iq *InstanceQuery) WithOrginator(opts ...func(*InstanceQuery)) *InstanceQuery {
+	query := &InstanceQuery{config: iq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	iq.withOrginator = query
+	return iq
+}
+
+// WithIns tells the query-builder to eager-load the nodes that are connected to
+// the "ins" edge. The optional arguments are used to configure the query builder of the edge.
+func (iq *InstanceQuery) WithIns(opts ...func(*InstanceQuery)) *InstanceQuery {
+	query := &InstanceQuery{config: iq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	iq.withIns = query
 	return iq
 }
 
@@ -649,10 +719,12 @@ func (iq *InstanceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Ins
 		nodes       = []*Instance{}
 		withFKs     = iq.withFKs
 		_spec       = iq.querySpec()
-		loadedTypes = [9]bool{
+		loadedTypes = [11]bool{
 			iq.withNamespace != nil,
 			iq.withWorkflow != nil,
 			iq.withRevision != nil,
+			iq.withOrginator != nil,
+			iq.withIns != nil,
 			iq.withLogs != nil,
 			iq.withVars != nil,
 			iq.withRuntime != nil,
@@ -661,7 +733,7 @@ func (iq *InstanceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Ins
 			iq.withAnnotations != nil,
 		}
 	)
-	if iq.withNamespace != nil || iq.withWorkflow != nil || iq.withRevision != nil {
+	if iq.withNamespace != nil || iq.withWorkflow != nil || iq.withRevision != nil || iq.withOrginator != nil {
 		withFKs = true
 	}
 	if withFKs {
@@ -703,6 +775,19 @@ func (iq *InstanceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Ins
 	if query := iq.withRevision; query != nil {
 		if err := iq.loadRevision(ctx, query, nodes, nil,
 			func(n *Instance, e *Revision) { n.Edges.Revision = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := iq.withOrginator; query != nil {
+		if err := iq.loadOrginator(ctx, query, nodes, nil,
+			func(n *Instance, e *Instance) { n.Edges.Orginator = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := iq.withIns; query != nil {
+		if err := iq.loadIns(ctx, query, nodes,
+			func(n *Instance) { n.Edges.Ins = []*Instance{} },
+			func(n *Instance, e *Instance) { n.Edges.Ins = append(n.Edges.Ins, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -834,6 +919,66 @@ func (iq *InstanceQuery) loadRevision(ctx context.Context, query *RevisionQuery,
 		for i := range nodes {
 			assign(nodes[i], n)
 		}
+	}
+	return nil
+}
+func (iq *InstanceQuery) loadOrginator(ctx context.Context, query *InstanceQuery, nodes []*Instance, init func(*Instance), assign func(*Instance, *Instance)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Instance)
+	for i := range nodes {
+		if nodes[i].instance_ins == nil {
+			continue
+		}
+		fk := *nodes[i].instance_ins
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	query.Where(instance.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "instance_ins" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (iq *InstanceQuery) loadIns(ctx context.Context, query *InstanceQuery, nodes []*Instance, init func(*Instance), assign func(*Instance, *Instance)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Instance)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.InValues(instance.InsColumn, fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.instance_ins
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "instance_ins" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "instance_ins" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
 	}
 	return nil
 }

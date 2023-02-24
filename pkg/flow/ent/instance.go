@@ -40,6 +40,7 @@ type Instance struct {
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the InstanceQuery when eager-loading is set.
 	Edges               InstanceEdges `json:"edges"`
+	instance_ins        *uuid.UUID
 	namespace_instances *uuid.UUID
 	revision_instances  *uuid.UUID
 	workflow_instances  *uuid.UUID
@@ -53,6 +54,10 @@ type InstanceEdges struct {
 	Workflow *Workflow `json:"workflow,omitempty"`
 	// Revision holds the value of the revision edge.
 	Revision *Revision `json:"revision,omitempty"`
+	// Orginator holds the value of the orginator edge.
+	Orginator *Instance `json:"orginator,omitempty"`
+	// Ins holds the value of the ins edge.
+	Ins []*Instance `json:"ins,omitempty"`
 	// Logs holds the value of the logs edge.
 	Logs []*LogMsg `json:"logs,omitempty"`
 	// Vars holds the value of the vars edge.
@@ -67,7 +72,7 @@ type InstanceEdges struct {
 	Annotations []*Annotation `json:"annotations,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [9]bool
+	loadedTypes [11]bool
 }
 
 // NamespaceOrErr returns the Namespace value or an error if the edge
@@ -109,10 +114,32 @@ func (e InstanceEdges) RevisionOrErr() (*Revision, error) {
 	return nil, &NotLoadedError{edge: "revision"}
 }
 
+// OrginatorOrErr returns the Orginator value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e InstanceEdges) OrginatorOrErr() (*Instance, error) {
+	if e.loadedTypes[3] {
+		if e.Orginator == nil {
+			// Edge was loaded but was not found.
+			return nil, &NotFoundError{label: instance.Label}
+		}
+		return e.Orginator, nil
+	}
+	return nil, &NotLoadedError{edge: "orginator"}
+}
+
+// InsOrErr returns the Ins value or an error if the edge
+// was not loaded in eager-loading.
+func (e InstanceEdges) InsOrErr() ([]*Instance, error) {
+	if e.loadedTypes[4] {
+		return e.Ins, nil
+	}
+	return nil, &NotLoadedError{edge: "ins"}
+}
+
 // LogsOrErr returns the Logs value or an error if the edge
 // was not loaded in eager-loading.
 func (e InstanceEdges) LogsOrErr() ([]*LogMsg, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[5] {
 		return e.Logs, nil
 	}
 	return nil, &NotLoadedError{edge: "logs"}
@@ -121,7 +148,7 @@ func (e InstanceEdges) LogsOrErr() ([]*LogMsg, error) {
 // VarsOrErr returns the Vars value or an error if the edge
 // was not loaded in eager-loading.
 func (e InstanceEdges) VarsOrErr() ([]*VarRef, error) {
-	if e.loadedTypes[4] {
+	if e.loadedTypes[6] {
 		return e.Vars, nil
 	}
 	return nil, &NotLoadedError{edge: "vars"}
@@ -130,7 +157,7 @@ func (e InstanceEdges) VarsOrErr() ([]*VarRef, error) {
 // RuntimeOrErr returns the Runtime value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e InstanceEdges) RuntimeOrErr() (*InstanceRuntime, error) {
-	if e.loadedTypes[5] {
+	if e.loadedTypes[7] {
 		if e.Runtime == nil {
 			// Edge was loaded but was not found.
 			return nil, &NotFoundError{label: instanceruntime.Label}
@@ -143,7 +170,7 @@ func (e InstanceEdges) RuntimeOrErr() (*InstanceRuntime, error) {
 // ChildrenOrErr returns the Children value or an error if the edge
 // was not loaded in eager-loading.
 func (e InstanceEdges) ChildrenOrErr() ([]*InstanceRuntime, error) {
-	if e.loadedTypes[6] {
+	if e.loadedTypes[8] {
 		return e.Children, nil
 	}
 	return nil, &NotLoadedError{edge: "children"}
@@ -152,7 +179,7 @@ func (e InstanceEdges) ChildrenOrErr() ([]*InstanceRuntime, error) {
 // EventlistenersOrErr returns the Eventlisteners value or an error if the edge
 // was not loaded in eager-loading.
 func (e InstanceEdges) EventlistenersOrErr() ([]*Events, error) {
-	if e.loadedTypes[7] {
+	if e.loadedTypes[9] {
 		return e.Eventlisteners, nil
 	}
 	return nil, &NotLoadedError{edge: "eventlisteners"}
@@ -161,7 +188,7 @@ func (e InstanceEdges) EventlistenersOrErr() ([]*Events, error) {
 // AnnotationsOrErr returns the Annotations value or an error if the edge
 // was not loaded in eager-loading.
 func (e InstanceEdges) AnnotationsOrErr() ([]*Annotation, error) {
-	if e.loadedTypes[8] {
+	if e.loadedTypes[10] {
 		return e.Annotations, nil
 	}
 	return nil, &NotLoadedError{edge: "annotations"}
@@ -178,11 +205,13 @@ func (*Instance) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullTime)
 		case instance.FieldID:
 			values[i] = new(uuid.UUID)
-		case instance.ForeignKeys[0]: // namespace_instances
+		case instance.ForeignKeys[0]: // instance_ins
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case instance.ForeignKeys[1]: // revision_instances
+		case instance.ForeignKeys[1]: // namespace_instances
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case instance.ForeignKeys[2]: // workflow_instances
+		case instance.ForeignKeys[2]: // revision_instances
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
+		case instance.ForeignKeys[3]: // workflow_instances
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Instance", columns[i])
@@ -255,19 +284,26 @@ func (i *Instance) assignValues(columns []string, values []any) error {
 			}
 		case instance.ForeignKeys[0]:
 			if value, ok := values[j].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field instance_ins", values[j])
+			} else if value.Valid {
+				i.instance_ins = new(uuid.UUID)
+				*i.instance_ins = *value.S.(*uuid.UUID)
+			}
+		case instance.ForeignKeys[1]:
+			if value, ok := values[j].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field namespace_instances", values[j])
 			} else if value.Valid {
 				i.namespace_instances = new(uuid.UUID)
 				*i.namespace_instances = *value.S.(*uuid.UUID)
 			}
-		case instance.ForeignKeys[1]:
+		case instance.ForeignKeys[2]:
 			if value, ok := values[j].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field revision_instances", values[j])
 			} else if value.Valid {
 				i.revision_instances = new(uuid.UUID)
 				*i.revision_instances = *value.S.(*uuid.UUID)
 			}
-		case instance.ForeignKeys[2]:
+		case instance.ForeignKeys[3]:
 			if value, ok := values[j].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field workflow_instances", values[j])
 			} else if value.Valid {
@@ -292,6 +328,16 @@ func (i *Instance) QueryWorkflow() *WorkflowQuery {
 // QueryRevision queries the "revision" edge of the Instance entity.
 func (i *Instance) QueryRevision() *RevisionQuery {
 	return (&InstanceClient{config: i.config}).QueryRevision(i)
+}
+
+// QueryOrginator queries the "orginator" edge of the Instance entity.
+func (i *Instance) QueryOrginator() *InstanceQuery {
+	return (&InstanceClient{config: i.config}).QueryOrginator(i)
+}
+
+// QueryIns queries the "ins" edge of the Instance entity.
+func (i *Instance) QueryIns() *InstanceQuery {
+	return (&InstanceClient{config: i.config}).QueryIns(i)
 }
 
 // QueryLogs queries the "logs" edge of the Instance entity.

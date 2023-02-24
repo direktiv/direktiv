@@ -35,6 +35,10 @@ const (
 	EdgeWorkflow = "workflow"
 	// EdgeRevision holds the string denoting the revision edge name in mutations.
 	EdgeRevision = "revision"
+	// EdgeOrginator holds the string denoting the orginator edge name in mutations.
+	EdgeOrginator = "orginator"
+	// EdgeIns holds the string denoting the ins edge name in mutations.
+	EdgeIns = "ins"
 	// EdgeLogs holds the string denoting the logs edge name in mutations.
 	EdgeLogs = "logs"
 	// EdgeVars holds the string denoting the vars edge name in mutations.
@@ -70,6 +74,14 @@ const (
 	RevisionInverseTable = "revisions"
 	// RevisionColumn is the table column denoting the revision relation/edge.
 	RevisionColumn = "revision_instances"
+	// OrginatorTable is the table that holds the orginator relation/edge.
+	OrginatorTable = "instances"
+	// OrginatorColumn is the table column denoting the orginator relation/edge.
+	OrginatorColumn = "instance_ins"
+	// InsTable is the table that holds the ins relation/edge.
+	InsTable = "instances"
+	// InsColumn is the table column denoting the ins relation/edge.
+	InsColumn = "instance_ins"
 	// LogsTable is the table that holds the logs relation/edge.
 	LogsTable = "log_msgs"
 	// LogsInverseTable is the table name for the LogMsg entity.
@@ -130,6 +142,7 @@ var Columns = []string{
 // ForeignKeys holds the SQL foreign-keys that are owned by the "instances"
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
+	"instance_ins",
 	"namespace_instances",
 	"revision_instances",
 	"workflow_instances",

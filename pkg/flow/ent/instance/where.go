@@ -965,6 +965,62 @@ func HasRevisionWith(preds ...predicate.Revision) predicate.Instance {
 	})
 }
 
+// HasOrginator applies the HasEdge predicate on the "orginator" edge.
+func HasOrginator() predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(OrginatorTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, OrginatorTable, OrginatorColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasOrginatorWith applies the HasEdge predicate on the "orginator" edge with a given conditions (other predicates).
+func HasOrginatorWith(preds ...predicate.Instance) predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, OrginatorTable, OrginatorColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasIns applies the HasEdge predicate on the "ins" edge.
+func HasIns() predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(InsTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, InsTable, InsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasInsWith applies the HasEdge predicate on the "ins" edge with a given conditions (other predicates).
+func HasInsWith(preds ...predicate.Instance) predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, InsTable, InsColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasLogs applies the HasEdge predicate on the "logs" edge.
 func HasLogs() predicate.Instance {
 	return predicate.Instance(func(s *sql.Selector) {

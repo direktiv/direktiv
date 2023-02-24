@@ -50,7 +50,7 @@ func (logic *consumeEventLogic) Deadline(ctx context.Context) time.Time {
 
 }
 
-func (logic *consumeEventLogic) Run(ctx context.Context, wakedata []byte) (*Transition, error) {
+func (logic *consumeEventLogic) Run(ctx context.Context, wakedata []byte, o string, i int) (*Transition, error) {
 
 	first, err := scheduleTwice(logic, wakedata)
 	if err != nil {

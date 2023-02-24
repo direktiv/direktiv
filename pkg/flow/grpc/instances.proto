@@ -24,6 +24,18 @@ message Instance {
 	string errorCode = 6;
 	string errorMessage = 7;
 	string invoker = 8;
+	Originator originator = 9;
+}
+
+message Originator {
+	google.protobuf.Timestamp created_at = 1;
+	google.protobuf.Timestamp updated_at = 2;
+	string id = 3;
+	string as = 4;
+	string status = 5;
+	string errorCode = 6;
+	string errorMessage = 7;
+	string invoker = 8;
 }
 
 message Instances {

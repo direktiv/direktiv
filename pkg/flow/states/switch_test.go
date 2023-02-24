@@ -41,7 +41,7 @@ func TestSwitchGood001(t *testing.T) {
 		return
 	}
 
-	transition, err := logic.Run(ctx, instance.getWakedata())
+	transition, err := logic.Run(ctx, instance.getWakedata(), "", 0)
 	if err != nil {
 		t.Error(err)
 		return
@@ -107,7 +107,7 @@ func TestSwitchGood002(t *testing.T) {
 		return
 	}
 
-	transition, err := logic.Run(ctx, instance.getWakedata())
+	transition, err := logic.Run(ctx, instance.getWakedata(), "", 0)
 	if err != nil {
 		t.Error(err)
 		return
@@ -180,7 +180,7 @@ func TestSwitchBadMemory(t *testing.T) {
 		return
 	}
 
-	transition, err := logic.Run(ctx, instance.getWakedata())
+	transition, err := logic.Run(ctx, instance.getWakedata(), "", 0)
 
 	if instance.dt() > 200*time.Millisecond {
 		t.Error(errors.New("ran longer than acceptable"))
@@ -214,7 +214,7 @@ func TestSwitchBadWakedata(t *testing.T) {
 		return
 	}
 
-	transition, err := logic.Run(ctx, marshal("bad"))
+	transition, err := logic.Run(ctx, marshal("bad"), "", 0)
 
 	if instance.dt() > 200*time.Millisecond {
 		t.Error(errors.New("ran longer than acceptable"))

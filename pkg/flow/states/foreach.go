@@ -65,8 +65,8 @@ func (logic *forEachLogic) Deadline(ctx context.Context) time.Time {
 // should be in response to the action's completion. But it could also be because of the
 // timeout. If the action times out or fails, the action logic may attempt to retry it, which
 // means that the number of times this logic can run may vary.
-func (logic *forEachLogic) Run(ctx context.Context, wakedata []byte) (*Transition, error) {
-
+func (logic *forEachLogic) Run(ctx context.Context, wakedata []byte, o string, i int) (*Transition, error) {
+	//TODO:
 	// first schedule
 	if len(wakedata) == 0 {
 
@@ -75,7 +75,7 @@ func (logic *forEachLogic) Run(ctx context.Context, wakedata []byte) (*Transitio
 			return nil, err
 		}
 
-		transition, err := logic.scheduleFirstActions(ctx)
+		transition, err := logic.scheduleFirstActions(ctx, o)
 		if err != nil {
 			return nil, err
 		}
@@ -112,7 +112,7 @@ func (logic *forEachLogic) Run(ctx context.Context, wakedata []byte) (*Transitio
 
 }
 
-func (logic *forEachLogic) scheduleFirstActions(ctx context.Context) (*Transition, error) {
+func (logic *forEachLogic) scheduleFirstActions(ctx context.Context, o string) (*Transition, error) {
 
 	x, err := jqOne(logic.GetInstanceData(), logic.Array)
 	if err != nil {
@@ -136,8 +136,8 @@ func (logic *forEachLogic) scheduleFirstActions(ctx context.Context) (*Transitio
 
 	children := make([]*ChildInfo, 0)
 
-	for _, inputSource := range array {
-		child, err := logic.scheduleAction(ctx, inputSource, 0)
+	for i, inputSource := range array {
+		child, err := logic.scheduleAction(ctx, inputSource, 0, o, i)
 		if err != nil {
 			return nil, err
 		}
@@ -153,15 +153,17 @@ func (logic *forEachLogic) scheduleFirstActions(ctx context.Context) (*Transitio
 
 }
 
-func (logic *forEachLogic) scheduleAction(ctx context.Context, inputSource interface{}, attempt int) (*ChildInfo, error) {
+func (logic *forEachLogic) scheduleAction(ctx context.Context, inputSource interface{}, attempt int, o string, i int) (*ChildInfo, error) {
 
 	action := logic.Action
 
 	input, files, err := generateActionInput(ctx, &generateActionInputArgs{
-		Instance: logic.Instance,
-		Source:   inputSource,
-		Action:   action,
-		Files:    action.Files,
+		Instance:  logic.Instance,
+		Source:    inputSource,
+		Action:    action,
+		Files:     action.Files,
+		Orginator: o,
+		Iterator:  i,
 	})
 	if err != nil {
 		return nil, err
@@ -183,13 +185,15 @@ func (logic *forEachLogic) scheduleAction(ctx context.Context, inputSource inter
 	}
 
 	child, err := invokeAction(ctx, invokeActionArgs{
-		instance: logic.Instance,
-		async:    false,
-		fn:       fn,
-		input:    input,
-		timeout:  wfto,
-		files:    files,
-		attempt:  attempt,
+		instance:   logic.Instance,
+		async:      false,
+		fn:         fn,
+		input:      input,
+		timeout:    wfto,
+		files:      files,
+		attempt:    attempt,
+		originator: o,
+		iterator:   i,
 	})
 	if err != nil {
 		return nil, err
@@ -216,7 +220,7 @@ func (logic *forEachLogic) scheduleRetryAction(ctx context.Context, retry *actio
 		return derrors.NewCatchableError(ErrCodeNotArray, "jq produced non-array output")
 	}
 
-	child, err := logic.scheduleAction(ctx, array[retry.Idx], retry.Children[retry.Idx].Attempts)
+	child, err := logic.scheduleAction(ctx, array[retry.Idx], retry.Children[retry.Idx].Attempts, retry.Originator, retry.Idx)
 	if err != nil {
 		return err
 	}
@@ -273,6 +277,8 @@ func (logic *forEachLogic) processActionResults(ctx context.Context, children []
 	tags := make(map[string]string)
 	tags["i"] = fmt.Sprint(idx)
 	tags["actionID"] = results.ActionID
+	tags["iterator"] = fmt.Sprint(results.Iterator)
+	tags["originator"] = results.Originator
 	if results.ActionID != id {
 		return nil, derrors.NewInternalError(errors.New("incorrect child action ID"))
 	}

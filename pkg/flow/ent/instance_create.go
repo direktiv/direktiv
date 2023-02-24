@@ -191,6 +191,32 @@ func (ic *InstanceCreate) SetRevision(r *Revision) *InstanceCreate {
 	return ic.SetRevisionID(r.ID)
 }
 
+// SetOrginatorID sets the "orginator" edge to the Instance entity by ID.
+func (ic *InstanceCreate) SetOrginatorID(id uuid.UUID) *InstanceCreate {
+	ic.mutation.SetOrginatorID(id)
+	return ic
+}
+
+// SetOrginator sets the "orginator" edge to the Instance entity.
+func (ic *InstanceCreate) SetOrginator(i *Instance) *InstanceCreate {
+	return ic.SetOrginatorID(i.ID)
+}
+
+// AddInIDs adds the "ins" edge to the Instance entity by IDs.
+func (ic *InstanceCreate) AddInIDs(ids ...uuid.UUID) *InstanceCreate {
+	ic.mutation.AddInIDs(ids...)
+	return ic
+}
+
+// AddIns adds the "ins" edges to the Instance entity.
+func (ic *InstanceCreate) AddIns(i ...*Instance) *InstanceCreate {
+	ids := make([]uuid.UUID, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return ic.AddInIDs(ids...)
+}
+
 // AddLogIDs adds the "logs" edge to the LogMsg entity by IDs.
 func (ic *InstanceCreate) AddLogIDs(ids ...uuid.UUID) *InstanceCreate {
 	ic.mutation.AddLogIDs(ids...)
@@ -385,6 +411,9 @@ func (ic *InstanceCreate) check() error {
 	if _, ok := ic.mutation.NamespaceID(); !ok {
 		return &ValidationError{Name: "namespace", err: errors.New(`ent: missing required edge "Instance.namespace"`)}
 	}
+	if _, ok := ic.mutation.OrginatorID(); !ok {
+		return &ValidationError{Name: "orginator", err: errors.New(`ent: missing required edge "Instance.orginator"`)}
+	}
 	if _, ok := ic.mutation.RuntimeID(); !ok {
 		return &ValidationError{Name: "runtime", err: errors.New(`ent: missing required edge "Instance.runtime"`)}
 	}
@@ -515,6 +544,45 @@ func (ic *InstanceCreate) createSpec() (*Instance, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.revision_instances = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := ic.mutation.OrginatorIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   instance.OrginatorTable,
+			Columns: []string{instance.OrginatorColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: instance.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.instance_ins = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := ic.mutation.InsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   instance.InsTable,
+			Columns: []string{instance.InsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: instance.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := ic.mutation.LogsIDs(); len(nodes) > 0 {

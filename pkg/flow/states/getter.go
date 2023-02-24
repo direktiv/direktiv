@@ -37,7 +37,7 @@ func Getter(instance Instance, state model.State) (Logic, error) {
 
 }
 
-func (logic *getterLogic) Run(ctx context.Context, wakedata []byte) (*Transition, error) {
+func (logic *getterLogic) Run(ctx context.Context, wakedata []byte, o string, i int) (*Transition, error) {
 
 	err := scheduleOnce(logic, wakedata)
 	if err != nil {

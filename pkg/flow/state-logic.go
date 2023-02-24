@@ -39,5 +39,5 @@ type stateLogic interface {
 	ErrorDefinitions() []model.ErrorDefinition
 
 	Deadline(ctx context.Context) time.Time
-	Run(ctx context.Context, wakedata []byte) (transition *states.Transition, err error)
+	Run(ctx context.Context, wakedata []byte, o string, i int) (transition *states.Transition, err error)
 }

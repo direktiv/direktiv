@@ -10,18 +10,19 @@ import (
 
 // headers for flow->container communication.
 const (
-	DirektivActionIDHeader    = "Direktiv-ActionID"
-	DirektivInstanceIDHeader  = "Direktiv-InstanceID"
-	DirektivExchangeKeyHeader = "Direktiv-ExchangeKey"
-	DirektivPingAddrHeader    = "Direktiv-PingAddr"
-	DirektivDeadlineHeader    = "Direktiv-Deadline"
-	DirektivTimeoutHeader     = "Direktiv-Timeout"
-	DirektivStepHeader        = "Direktiv-Step"
-	DirektivResponseHeader    = "Direktiv-Response"
-	DirektivNamespaceHeader   = "Direktiv-Namespace"
-	DirektivSourceHeader      = "Direktiv-Source"
-	DirektivFileHeader        = "Direktiv-Files"
-
+	DirektivActionIDHeader     = "Direktiv-ActionID"
+	DirektivInstanceIDHeader   = "Direktiv-InstanceID"
+	DirektivExchangeKeyHeader  = "Direktiv-ExchangeKey"
+	DirektivPingAddrHeader     = "Direktiv-PingAddr"
+	DirektivDeadlineHeader     = "Direktiv-Deadline"
+	DirektivTimeoutHeader      = "Direktiv-Timeout"
+	DirektivStepHeader         = "Direktiv-Step"
+	DirektivResponseHeader     = "Direktiv-Response"
+	DirektivNamespaceHeader    = "Direktiv-Namespace"
+	DirektivSourceHeader       = "Direktiv-Source"
+	DirektivFileHeader         = "Direktiv-Files"
+	DirektivOriginatorIDHeader = "Direktiv-Originator"
+	DirektivIteratorHeader     = "Direktiv-Iterator"
 	DirektivErrorCodeHeader    = "Direktiv-ErrorCode"
 	DirektivErrorMessageHeader = "Direktiv-ErrorMessage"
 )
@@ -43,10 +44,11 @@ type ServiceResponse struct {
 }
 
 type functionRequest struct {
-	ActionID string
-
-	Workflow  functionWorkflow
-	Container functionContainer
+	ActionID   string
+	Originator string
+	Iterator   int
+	Workflow   functionWorkflow
+	Container  functionContainer
 }
 
 type functionContainer struct {

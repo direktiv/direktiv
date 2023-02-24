@@ -45,6 +45,8 @@ type CreateChildArgs struct {
 	Timeout    int
 	Async      bool
 	Files      []model.FunctionFileDefinition
+	Orginator  string
+	Iterator   int
 }
 
 type ChildInfo struct {

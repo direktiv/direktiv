@@ -40,7 +40,7 @@ func Noop(instance Instance, state model.State) (Logic, error) {
 // Therefore, this logic should schedule in just once. And the only ways it might fail is
 // if it performs unnecessary validation on its arguments and finds them somehow broken.
 // Like if either the 'wakedata' or the instance memory is non-nil.
-func (logic *noopLogic) Run(ctx context.Context, wakedata []byte) (*Transition, error) {
+func (logic *noopLogic) Run(ctx context.Context, wakedata []byte, o string, i int) (*Transition, error) {
 
 	err := scheduleOnce(logic, wakedata)
 	if err != nil {

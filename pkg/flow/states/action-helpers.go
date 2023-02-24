@@ -15,12 +15,15 @@ import (
 )
 
 type actionRetryInfo struct {
-	Children []ChildInfo
-	Idx      int
+	Children   []ChildInfo
+	Idx        int
+	Originator string
 }
 
 type actionResultPayload struct {
 	ActionID     string
+	Originator   string
+	Iterator     int
 	ErrorCode    string
 	ErrorMessage string
 	Output       []byte
@@ -118,10 +121,12 @@ func scheduleRetry(ctx context.Context, instance Instance, children []ChildInfo,
 }
 
 type generateActionInputArgs struct {
-	Instance Instance
-	Source   interface{}
-	Action   *model.ActionDefinition
-	Files    []model.FunctionFileDefinition
+	Instance  Instance
+	Source    interface{}
+	Action    *model.ActionDefinition
+	Files     []model.FunctionFileDefinition
+	Orginator string
+	Iterator  int
 }
 
 func generateActionInput(ctx context.Context, args *generateActionInputArgs) ([]byte, []model.FunctionFileDefinition, error) {
@@ -247,13 +252,15 @@ func addSecrets(ctx context.Context, instance Instance, m map[string]interface{}
 }
 
 type invokeActionArgs struct {
-	instance Instance
-	async    bool
-	fn       model.FunctionDefinition
-	input    []byte
-	attempt  int
-	timeout  int
-	files    []model.FunctionFileDefinition
+	instance   Instance
+	async      bool
+	fn         model.FunctionDefinition
+	input      []byte
+	attempt    int
+	timeout    int
+	files      []model.FunctionFileDefinition
+	originator string
+	iterator   int
 }
 
 func invokeAction(ctx context.Context, args invokeActionArgs) (*ChildInfo, error) {
@@ -264,6 +271,8 @@ func invokeAction(ctx context.Context, args invokeActionArgs) (*ChildInfo, error
 		Timeout:    args.timeout,
 		Async:      args.async,
 		Files:      args.files,
+		Orginator:  args.originator,
+		Iterator:   args.iterator,
 	})
 	if err != nil {
 		return nil, err

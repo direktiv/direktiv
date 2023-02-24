@@ -551,9 +551,17 @@ func (srv *server) getInstance(ctx context.Context, nsc *ent.NamespaceClient, na
 	if load {
 		query = query.WithRuntime()
 	}
-	in, err := query.Only(ctx)
+	in, err := query.WithOrginator().Only(ctx)
 	if err != nil {
 		srv.sugar.Debugf("%s failed to query instance: %v", parent(), err)
+		return nil, err
+	}
+
+	if in.Edges.Orginator == nil {
+		err = &derrors.NotFoundError{
+			Label: "instance originator not found",
+		}
+		srv.sugar.Debugf("%s failed to query instance runtime: %v", parent(), err)
 		return nil, err
 	}
 
@@ -674,9 +682,16 @@ func (internal *internal) getInstance(ctx context.Context, inc *ent.InstanceClie
 	if load {
 		query = query.WithRuntime()
 	}
-	in, err := query.Only(ctx)
+	in, err := query.WithOrginator().Only(ctx)
 	if err != nil {
 		internal.sugar.Debugf("%s failed to query instance: %v", parent(), err)
+		return nil, err
+	}
+	if in.Edges.Orginator == nil {
+		err = &derrors.NotFoundError{
+			Label: "instance originator not found",
+		}
+		internal.sugar.Debugf("%s failed to query instance runtime: %v", parent(), err)
 		return nil, err
 	}
 

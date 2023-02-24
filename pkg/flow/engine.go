@@ -17,6 +17,7 @@ import (
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/google/uuid"
 	"github.com/senseyeio/duration"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -33,6 +34,8 @@ import (
 	entvardata "github.com/direktiv/direktiv/pkg/flow/ent/vardata"
 	entvar "github.com/direktiv/direktiv/pkg/flow/ent/varref"
 )
+
+const Api = "Api"
 
 type engine struct {
 	*server
@@ -62,6 +65,8 @@ type newInstanceArgs struct {
 	Namespace  string
 	Path       string
 	Ref        string
+	Originator string
+	Iterator   int
 	Input      []byte
 	Caller     string
 	CallerData string
@@ -70,6 +75,8 @@ type newInstanceArgs struct {
 
 type subflowCaller struct {
 	InstanceID string
+	Originator string
+	Iterator   int
 	State      string
 	Step       int
 	Depth      int
@@ -102,7 +109,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 	}
 
 	if len(wf.GetStartDefinition().GetEvents()) > 0 {
-		if strings.ToLower(args.Caller) == "api" {
+		if strings.ToLower(args.Caller) == Api {
 			return nil, derrors.NewUncatchableError("direktiv.workflow.invoke", "cannot manually invoke event-based workflow")
 		}
 		if strings.HasPrefix(args.Caller, "instance") {
@@ -125,12 +132,27 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 	if err != nil {
 		return nil, err
 	}
-
-	in, err := inc.Create().SetNamespace(d.ns()).SetWorkflow(d.wf).SetRevision(d.rev()).SetRuntime(rt).SetStatus(util.InstanceStatusPending).SetInvoker(args.Caller).SetAs(util.SanitizeAsField(as)).Save(ctx)
+	uid := uuid.New()
+	inb := inc.Create().SetID(uid).SetNamespace(d.ns()).SetWorkflow(d.wf).SetRevision(d.rev()).SetRuntime(rt).SetStatus(util.InstanceStatusPending).SetInvoker(args.Caller).SetAs(util.SanitizeAsField(as))
+	if args.Caller != Api {
+		uid, err = uuid.Parse(args.Originator)
+		if err != nil {
+			return nil, err
+		}
+	}
+	inb.SetOrginatorID(uid)
+	in, err := inb.Save(ctx)
 	if err != nil {
 		return nil, err
 	}
-
+	if args.Caller == Api {
+		in.Edges.Orginator = in
+	} else {
+		in.Edges.Orginator, err = inc.QueryOrginator(in).Only(ctx)
+		if err != nil {
+			return nil, err
+		}
+	}
 	err = tx.Commit()
 	if err != nil {
 		return nil, err
@@ -146,7 +168,18 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 	im := new(instanceMemory)
 	im.engine = engine
 	im.in = in
-
+	im.o = args.Originator
+	im.i = args.Iterator
+	if args.Caller == Api {
+		im.o = im.in.ID.String()
+	}
+	if in.Edges.Orginator == nil {
+		err = &derrors.NotFoundError{
+			Label: "instance originator not found",
+		}
+		engine.sugar.Debugf("%s failed to query instance runtime: %v", parent(), err)
+		return nil, err
+	}
 	err = json.Unmarshal([]byte(im.in.Edges.Runtime.Data), &im.data)
 	if err != nil {
 		return nil, err
@@ -451,7 +484,7 @@ func (engine *engine) runState(ctx context.Context, im *instanceMemory, wakedata
 
 	}
 
-	transition, err = im.logic.Run(ctx, wakedata)
+	transition, err = im.logic.Run(ctx, wakedata, im.orginator(), im.iterator())
 	if err != nil {
 		goto failure
 	}
@@ -629,6 +662,8 @@ func (engine *engine) subflowInvoke(ctx context.Context, caller *subflowCaller, 
 	args.Input = input
 	args.Caller = fmt.Sprintf("instance:%v", caller.InstanceID)
 	args.CallerTags = caller.Tags
+	args.Originator = caller.Originator
+	args.Iterator = caller.Iterator
 	var threadVars []*ent.VarRef
 
 	callerData, err := json.Marshal(caller)
@@ -659,7 +694,6 @@ func (engine *engine) subflowInvoke(ctx context.Context, caller *subflowCaller, 
 	if err != nil {
 		return nil, err
 	}
-
 	for _, tv := range threadVars {
 		vd, err := tv.QueryVardata().Select(entvardata.FieldID).Only(ctx)
 		if err != nil {
@@ -735,13 +769,16 @@ func (engine *engine) retryWakeup(data []byte) {
 	engine.logToInstance(ctx, time.Now(), im, "Waking up to retry.")
 
 	engine.sugar.Debugf("Handling retry wakeup: %s", this())
-
+	// im.o = msg.
+	// im.i = msg.
 	go engine.runState(ctx, im, msg.Data, nil)
 
 }
 
 type actionResultPayload struct {
 	ActionID     string
+	Originator   string
+	Iterator     int
 	ErrorCode    string
 	ErrorMessage string
 	Output       []byte
@@ -749,6 +786,8 @@ type actionResultPayload struct {
 
 type actionResultMessage struct {
 	InstanceID string
+	Originator string
+	Iterator   int
 	State      string
 	Step       int
 	Payload    actionResultPayload
@@ -766,9 +805,14 @@ func (engine *engine) doActionRequest(ctx context.Context, ar *functionRequest) 
 			InstanceId: ar.Workflow.InstanceID,
 			Msg:        []string{fmt.Sprintf("Warning: Action timeout '%v' is longer than max allowed duariton '%v'", actionTimeout, engine.conf.GetFunctionsTimeout())},
 			ActionID:   ar.ActionID,
+			Originator: ar.Originator,
+			Iterator:   int32(ar.Iterator),
 		})
 		if err != nil {
 			engine.sugar.Errorf("Failed to log: %v.", err)
+		}
+		if ar.Originator == "" {
+			panic("empty")
 		}
 	}
 
@@ -837,11 +881,12 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 		engine.reportError(ar, err)
 		return
 	}
-
 	// add headers
 	req.Header.Add(DirektivDeadlineHeader, deadline.Format(time.RFC3339))
 	req.Header.Add(DirektivNamespaceHeader, ar.Workflow.NamespaceName)
 	req.Header.Add(DirektivActionIDHeader, ar.ActionID)
+	req.Header.Add(DirektivOriginatorIDHeader, ar.Originator)
+	req.Header.Add(DirektivIteratorHeader, fmt.Sprint(ar.Iterator))
 	req.Header.Add(DirektivInstanceIDHeader, ar.Workflow.InstanceID)
 	req.Header.Add(DirektivStepHeader, fmt.Sprintf("%d",
 		int64(ar.Workflow.Step)))
@@ -941,6 +986,8 @@ func (engine *engine) reportError(ar *functionRequest, err error) {
 	step := int32(ar.Workflow.Step)
 	r := &grpc.ReportActionResultsRequest{
 		InstanceId:   ar.Workflow.InstanceID,
+		Originator:   ar.Originator,
+		Iterator:     int32(ar.Iterator),
 		Step:         step,
 		ActionId:     ar.ActionID,
 		ErrorCode:    ec,
@@ -1045,7 +1092,9 @@ func (engine *engine) EventsInvoke(workflowID string, events ...*cloudevents.Eve
 	args.Input = input
 	args.Caller = "cloudevent"
 	args.CallerTags = d.tags()
+	//args.Originator =
 	im, err := engine.NewInstance(ctx, args)
+	//TODO:
 	if err != nil {
 		engine.sugar.Error(err)
 		return

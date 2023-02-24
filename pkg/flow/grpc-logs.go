@@ -5,6 +5,8 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entlog "github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
+	entlogtag "github.com/direktiv/direktiv/pkg/flow/ent/logtag"
+
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 )
 
@@ -16,7 +18,14 @@ var logsOrderings = []*orderingInfo{
 	},
 }
 
-var logsFilters = map[*filteringInfo]func(query *ent.LogMsgQuery, v string) (*ent.LogMsgQuery, error){}
+var logsFilters = map[*filteringInfo]func(query *ent.LogMsgQuery, v string) (*ent.LogMsgQuery, error){
+	{
+		field: "tags",
+		ftype: "logtag",
+	}: func(query *ent.LogMsgQuery, v string) (*ent.LogMsgQuery, error) {
+		return query.Where(entlog.HasLogtagWith(entlogtag.Value(v))), nil
+	},
+}
 
 func (flow *flow) ServerLogs(ctx context.Context, req *grpc.ServerLogsRequest) (*grpc.ServerLogsResponse, error) {
 

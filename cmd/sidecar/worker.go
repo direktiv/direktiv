@@ -619,6 +619,8 @@ func (worker *inboundWorker) respondToFlow(ctx context.Context, ir *functionRequ
 	_, err := worker.srv.flow.ReportActionResults(ctx, &grpc.ReportActionResultsRequest{
 		InstanceId:   ir.instanceId,
 		Step:         step,
+		Originator:   ir.originator,
+		Iterator:     int32(ir.iterator),
 		ActionId:     ir.actionId,
 		Output:       out.data,
 		ErrorCode:    out.errCode,
@@ -771,9 +773,10 @@ func (worker *inboundWorker) validateFunctionRequest(req *inboundRequest) *funct
 
 	var step string
 	var deadline string
+	var iterator string
 
-	var headers = []string{actionIDHeader, "Direktiv-InstanceID", "Direktiv-Namespace", "Direktiv-Step", "Direktiv-Deadline"}
-	var ptrs = []*string{&ir.actionId, &ir.instanceId, &ir.namespace, &step, &deadline}
+	var headers = []string{actionIDHeader, "Direktiv-InstanceID", "Direktiv-Namespace", "Direktiv-Step", "Direktiv-Deadline", "Direktiv-Originator", "Direktiv-Iterator"}
+	var ptrs = []*string{&ir.actionId, &ir.instanceId, &ir.namespace, &step, &deadline, &ir.originator, &iterator}
 
 	for i := 0; i < len(headers); i++ {
 		if !worker.getRequiredStringHeader(req, ptrs[i], headers[i]) {
@@ -782,6 +785,10 @@ func (worker *inboundWorker) validateFunctionRequest(req *inboundRequest) *funct
 	}
 
 	if !worker.validateUintHeader(req, &ir.step, "Direktiv-Step", step) {
+		return nil
+	}
+
+	if !worker.validateUintHeader(req, &ir.iterator, "Direktiv-Iterator", iterator) {
 		return nil
 	}
 

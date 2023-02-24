@@ -373,6 +373,8 @@ func (im *instanceMemory) CreateChild(ctx context.Context, args states.CreateChi
 		caller.Step = im.Step()
 		caller.As = im.in.As
 		caller.Tags = im.tags()
+		caller.Originator = im.orginator()
+		caller.Iterator = im.iterator()
 
 		sfim, err := im.engine.subflowInvoke(ctx, caller, im.in.Edges.Namespace, args.Definition.(*model.SubflowFunctionDefinition).Workflow, args.Input)
 		if err != nil {
@@ -429,6 +431,8 @@ func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory,
 
 	ar := new(functionRequest)
 	ar.ActionID = uid.String()
+	ar.Originator = im.orginator()
+	ar.Iterator = im.iterator() // TODO
 	// ar.Workflow.Name = wli.wf.Name
 	ar.Workflow.WorkflowID = wf.ID.String()
 	ar.Workflow.Timeout = timeout

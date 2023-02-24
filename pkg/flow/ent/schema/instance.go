@@ -36,6 +36,7 @@ func (Instance) Edges() []ent.Edge {
 		edge.From("namespace", Namespace.Type).Ref("instances").Required().Unique().Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
 		edge.From("workflow", Workflow.Type).Ref("instances").Unique().Annotations(entsql.Annotation{OnDelete: entsql.SetNull}),
 		edge.From("revision", Revision.Type).Ref("instances").Unique().Annotations(entsql.Annotation{OnDelete: entsql.SetNull}),
+		edge.To("ins", Instance.Type).From("orginator").Required().Unique(),
 		edge.To("logs", LogMsg.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
 		edge.To("vars", VarRef.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
 		edge.To("runtime", InstanceRuntime.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}).Unique().Required(),

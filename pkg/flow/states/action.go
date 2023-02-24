@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"time"
 
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
@@ -68,7 +69,7 @@ func (logic *actionLogic) Deadline(ctx context.Context) time.Time {
 // should be in response to the action's completion. But it could also be because of the
 // timeout. If the action times out or fails, the action logic may attempt to retry it, which
 // means that the number of times this logic can run may vary.
-func (logic *actionLogic) Run(ctx context.Context, wakedata []byte) (*Transition, error) {
+func (logic *actionLogic) Run(ctx context.Context, wakedata []byte, o string, i int) (*Transition, error) {
 
 	// first schedule
 	if len(wakedata) == 0 {
@@ -78,7 +79,7 @@ func (logic *actionLogic) Run(ctx context.Context, wakedata []byte) (*Transition
 			return nil, err
 		}
 
-		err = logic.scheduleFirstAction(ctx)
+		err = logic.scheduleFirstAction(ctx, o, i)
 		if err != nil {
 			return nil, err
 		}
@@ -106,7 +107,7 @@ func (logic *actionLogic) Run(ctx context.Context, wakedata []byte) (*Transition
 	dec.DisallowUnknownFields()
 	err = dec.Decode(&retry)
 	if err == nil {
-		return nil, logic.scheduleRetryAction(ctx, &retry)
+		return nil, logic.scheduleRetryAction(ctx, &retry, o, i)
 	}
 
 	// if we make it here, we've surely received action results
@@ -122,19 +123,21 @@ func (logic *actionLogic) Run(ctx context.Context, wakedata []byte) (*Transition
 
 }
 
-func (logic *actionLogic) scheduleFirstAction(ctx context.Context) error {
+func (logic *actionLogic) scheduleFirstAction(ctx context.Context, o string, i int) error {
 
-	return logic.scheduleAction(ctx, 0)
+	return logic.scheduleAction(ctx, 0, o, i)
 
 }
 
-func (logic *actionLogic) scheduleAction(ctx context.Context, attempt int) error {
+func (logic *actionLogic) scheduleAction(ctx context.Context, attempt int, o string, i int) error {
 
 	input, files, err := generateActionInput(ctx, &generateActionInputArgs{
-		Instance: logic.Instance,
-		Source:   logic.GetInstanceData(),
-		Action:   logic.Action,
-		Files:    logic.Action.Files,
+		Instance:  logic.Instance,
+		Source:    logic.GetInstanceData(),
+		Action:    logic.Action,
+		Files:     logic.Action.Files,
+		Orginator: o,
+		Iterator:  i,
 	})
 	if err != nil {
 		return err
@@ -156,13 +159,15 @@ func (logic *actionLogic) scheduleAction(ctx context.Context, attempt int) error
 	}
 
 	child, err := invokeAction(ctx, invokeActionArgs{
-		instance: logic.Instance,
-		async:    logic.Async,
-		fn:       fn,
-		input:    input,
-		timeout:  wfto,
-		files:    files,
-		attempt:  attempt,
+		instance:   logic.Instance,
+		async:      logic.Async,
+		fn:         fn,
+		input:      input,
+		timeout:    wfto,
+		files:      files,
+		attempt:    attempt,
+		originator: o,
+		iterator:   i,
 	})
 	if err != nil {
 		return err
@@ -187,11 +192,11 @@ func (logic *actionLogic) scheduleAction(ctx context.Context, attempt int) error
 
 }
 
-func (logic *actionLogic) scheduleRetryAction(ctx context.Context, retry *actionRetryInfo) error {
+func (logic *actionLogic) scheduleRetryAction(ctx context.Context, retry *actionRetryInfo, o string, i int) error {
 
 	logic.Log(ctx, "Retrying...")
 
-	err := logic.scheduleAction(ctx, retry.Children[retry.Idx].Attempts)
+	err := logic.scheduleAction(ctx, retry.Children[retry.Idx].Attempts, o, i)
 	if err != nil {
 		return err
 	}
@@ -211,6 +216,8 @@ func (logic *actionLogic) processActionResults(ctx context.Context, children []C
 	tags := make(map[string]string)
 	tags["i"] = "0"
 	tags["actionID"] = results.ActionID
+	tags["orginator"] = results.Originator
+	tags["iterator"] = fmt.Sprint(results.Iterator)
 	if results.ActionID != id {
 		return nil, derrors.NewInternalError(errors.New("incorrect child action ID"))
 	}

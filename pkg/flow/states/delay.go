@@ -61,7 +61,7 @@ func (logic *delayLogic) Deadline(ctx context.Context) time.Time {
 //
 // In every other way, the 'delay' state is equivalent to the 'noop' state. It should only fail
 // if performs unnecessary validation on its arguments and finds them broken.
-func (logic *delayLogic) Run(ctx context.Context, wakedata []byte) (*Transition, error) {
+func (logic *delayLogic) Run(ctx context.Context, wakedata []byte, o string, i int) (*Transition, error) {
 
 	first, err := scheduleTwiceConst(logic, wakedata, `""`)
 	if err != nil {
