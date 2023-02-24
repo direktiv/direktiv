@@ -61,31 +61,26 @@ export const Default = () => (
           </div>
         </nav>
       </div>
-      <div className="flex flex-shrink-0 border-t border-gray-200 p-4">
-        <div className="group w-full rounded-md bg-gray-100 px-3.5 py-2 text-left text-sm font-medium text-gray-700">
-          <span className="flex w-full items-center justify-between">
-            <span className="flex min-w-0 items-center justify-between space-x-3">
-              <div className="avatar placeholder">
-                <div className="bg-neutral-focus text-neutral-content rounded-full w-10">
-                  <span className="text-3xl">A</span>
-                </div>
-              </div>
-              <span className="flex min-w-0 flex-1 flex-col">
-                <span className="truncate text-sm font-medium text-gray-900">
-                  admin
-                </span>
-                <span className="truncate text-sm text-gray-400">
-                  Version #78c688e
-                </span>
-              </span>
+
+      <div className="flex flex-shrink-0 border-t border-gray-200 p-2 group w-full rounded-md bg-gray-100 py-2 text-left text-sm font-medium text-gray-700">
+        <span className="flex w-full min-w-0 items-center justify-between space-x-3">
+          <div className="avatar placeholder">
+            <div className="bg-neutral-focus text-neutral-content rounded-full w-10">
+              <span className="text-3xl">A</span>
+            </div>
+          </div>
+          <span className="flex min-w-0 flex-1 flex-col">
+            <span className="truncate text-sm font-medium text-gray-900">
+              admin
+            </span>
+            <span className="truncate text-sm text-gray-400">
+              Version: 78c688e
             </span>
           </span>
-        </div>
-      </div>
-      <div className="flex flex-shrink-0 border-t border-gray-200 p-4">
-        <Button color="ghost" block className="gap-2 justify-start">
-          <LogOut /> Logout
-        </Button>
+          <Button color="link">
+            <LogOut />
+          </Button>
+        </span>
       </div>
     </div>
   </div>
