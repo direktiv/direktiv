@@ -9,11 +9,6 @@ import Button from "../button";
 
 export default {
   title: "Design System/Compositions/Form",
-  parameters: {
-    docs: {
-      page: null,
-    },
-  },
 };
 
 export const Default = () => (
