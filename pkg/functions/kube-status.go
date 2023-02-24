@@ -22,7 +22,6 @@ const (
 )
 
 func (is *functionsServer) WatchFunctions(in *igrpc.WatchFunctionsRequest, out igrpc.FunctionsService_WatchFunctionsServer) error {
-
 	cs, err := fetchServiceAPI()
 	if err != nil {
 		return fmt.Errorf("could not create fetch client: %w", err)
@@ -42,7 +41,6 @@ func (is *functionsServer) WatchFunctions(in *igrpc.WatchFunctionsRequest, out i
 		logger.Debugf("function watcher channel has closed, attempting to restart")
 		time.Sleep(5 * time.Second)
 	}
-
 }
 
 func (is *functionsServer) watcherFunctions(cs *versioned.Clientset, labels string, out igrpc.FunctionsService_WatchFunctionsServer) (bool, error) {
@@ -88,11 +86,9 @@ func (is *functionsServer) watcherFunctions(cs *versioned.Clientset, labels stri
 			return true, nil
 		}
 	}
-
 }
 
 func (is *functionsServer) WatchRevisions(in *igrpc.WatchRevisionsRequest, out igrpc.FunctionsService_WatchRevisionsServer) error {
-
 	var revisionFilter string
 
 	if in.GetServiceName() == "" {
@@ -126,11 +122,9 @@ func (is *functionsServer) WatchRevisions(in *igrpc.WatchRevisionsRequest, out i
 		logger.Debugf("revision watcher channel has closed, attempting to restart")
 		time.Sleep(5 * time.Second)
 	}
-
 }
 
 func (is *functionsServer) watcherRevisions(cs *versioned.Clientset, labels string, revisionFilter string, out igrpc.FunctionsService_WatchRevisionsServer) (bool, error) {
-
 	timeout := int64(watcherTimeout.Seconds())
 
 	watch, err := cs.ServingV1().Revisions(functionsConfig.Namespace).Watch(context.Background(), metav1.ListOptions{
@@ -214,11 +208,9 @@ func (is *functionsServer) watcherRevisions(cs *versioned.Clientset, labels stri
 			return true, nil
 		}
 	}
-
 }
 
 func (is *functionsServer) WatchPods(in *igrpc.WatchPodsRequest, out igrpc.FunctionsService_WatchPodsServer) error {
-
 	if in.GetServiceName() == "" {
 		return fmt.Errorf("service name can not be nil")
 	}
@@ -298,11 +290,9 @@ func (is *functionsServer) watcherPods(cs *kubernetes.Clientset, labels string, 
 			return true, nil
 		}
 	}
-
 }
 
 func (is *functionsServer) WatchLogs(in *igrpc.WatchLogsRequest, out igrpc.FunctionsService_WatchLogsServer) error {
-
 	if in.GetPodName() == "" {
 		return fmt.Errorf("pod name can not be nil")
 	}

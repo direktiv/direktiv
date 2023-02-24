@@ -22,7 +22,6 @@ func (err *CatchableError) Error() string {
 }
 
 func WrapCatchableError(msg string, err error) error {
-
 	cerr := new(CatchableError)
 
 	if errors.As(err, &cerr) {
@@ -33,5 +32,4 @@ func WrapCatchableError(msg string, err error) error {
 	} else {
 		return err
 	}
-
 }

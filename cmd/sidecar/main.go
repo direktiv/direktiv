@@ -13,7 +13,6 @@ import (
 var log *zap.SugaredLogger
 
 func RunApplication() {
-
 	var err error
 
 	log, err = dlog.ApplicationLogger("sidecar")
@@ -54,7 +53,6 @@ func RunApplication() {
 		log.Errorf("Exiting with exit status: %d.", code)
 		os.Exit(code)
 	}
-
 }
 
 const (

@@ -6,7 +6,6 @@ import (
 )
 
 func (db *Database) entNamespace(ns *ent.Namespace) *database.Namespace {
-
 	if ns == nil {
 		return nil
 	}
@@ -19,11 +18,9 @@ func (db *Database) entNamespace(ns *ent.Namespace) *database.Namespace {
 		Name:      ns.Name,
 		Root:      ns.Edges.Inodes[0].ID,
 	}
-
 }
 
 func entInode(ino *ent.Inode) *database.Inode {
-
 	if ino == nil {
 		return nil
 	}
@@ -62,11 +59,9 @@ func entInode(ino *ent.Inode) *database.Inode {
 	}
 
 	return x
-
 }
 
 func entWorkflow(wf *ent.Workflow) *database.Workflow {
-
 	if wf == nil {
 		return nil
 	}
@@ -105,11 +100,9 @@ func entWorkflow(wf *ent.Workflow) *database.Workflow {
 		Revisions:   revisions,
 		Routes:      routes,
 	}
-
 }
 
 func entRef(ref *ent.Ref) *database.Ref {
-
 	if ref == nil {
 		return nil
 	}
@@ -126,11 +119,9 @@ func entRef(ref *ent.Ref) *database.Ref {
 	}
 
 	return x
-
 }
 
 func entRevision(rev *ent.Revision) *database.Revision {
-
 	if rev == nil {
 		return nil
 	}
@@ -143,7 +134,6 @@ func entRevision(rev *ent.Revision) *database.Revision {
 		Metadata:  rev.Metadata,
 		Workflow:  rev.Edges.Workflow.ID,
 	}
-
 }
 
 // TODO: delete this.
@@ -152,7 +142,6 @@ func EntInstance(inst *ent.Instance) *database.Instance {
 }
 
 func entInstance(inst *ent.Instance) *database.Instance {
-
 	if inst == nil {
 		return nil
 	}
@@ -186,7 +175,6 @@ func entInstance(inst *ent.Instance) *database.Instance {
 	}
 
 	return x
-
 }
 
 // TODO: delete this.
@@ -195,7 +183,6 @@ func EntInstanceRuntime(rt *ent.InstanceRuntime) *database.InstanceRuntime {
 }
 
 func entInstanceRuntime(rt *ent.InstanceRuntime) *database.InstanceRuntime {
-
 	if rt == nil {
 		return nil
 	}
@@ -222,11 +209,9 @@ func entInstanceRuntime(rt *ent.InstanceRuntime) *database.InstanceRuntime {
 	}
 
 	return x
-
 }
 
 func (db *Database) entAnnotation(annotation *ent.Annotation) *database.Annotation {
-
 	if annotation == nil {
 		return nil
 	}
@@ -241,11 +226,9 @@ func (db *Database) entAnnotation(annotation *ent.Annotation) *database.Annotati
 		Data:      annotation.Data,
 		MimeType:  annotation.MimeType,
 	}
-
 }
 
 func (db *Database) entVarRef(vref *ent.VarRef) *database.VarRef {
-
 	if vref == nil {
 		return nil
 	}
@@ -256,11 +239,9 @@ func (db *Database) entVarRef(vref *ent.VarRef) *database.VarRef {
 		Behaviour: vref.Behaviour,
 		VarData:   vref.Edges.Vardata.ID,
 	}
-
 }
 
 func (db *Database) entVarData(v *ent.VarData) *database.VarData {
-
 	if v == nil {
 		return nil
 	}
@@ -274,11 +255,9 @@ func (db *Database) entVarData(v *ent.VarData) *database.VarData {
 		Data:      v.Data,
 		MimeType:  v.MimeType,
 	}
-
 }
 
 func entMirror(v *ent.Mirror) *database.Mirror {
-
 	if v == nil {
 		return nil
 	}
@@ -296,11 +275,9 @@ func entMirror(v *ent.Mirror) *database.Mirror {
 		UpdatedAt:  v.UpdatedAt,
 		Inode:      v.Edges.Inode.ID,
 	}
-
 }
 
 func entMirrorActivity(v *ent.MirrorActivity) *database.MirrorActivity {
-
 	if v == nil {
 		return nil
 	}
@@ -317,5 +294,4 @@ func entMirrorActivity(v *ent.MirrorActivity) *database.MirrorActivity {
 		Mirror:     v.Edges.Mirror.ID,
 		Namespace:  v.Edges.Namespace.ID,
 	}
-
 }

@@ -35,7 +35,6 @@ type timers struct {
 }
 
 func initTimers(pubsub *pubsub) (*timers, error) {
-
 	timers := new(timers)
 	timers.fns = make(map[string]func([]byte))
 	timers.cron = cron.New()
@@ -52,15 +51,12 @@ func initTimers(pubsub *pubsub) (*timers, error) {
 	go timers.cron.Start()
 
 	return timers, nil
-
 }
 
 func (timers *timers) Close() error {
-
 	timers.stopTimers()
 
 	return nil
-
 }
 
 type timer struct {
@@ -83,7 +79,6 @@ type timer struct {
 
 // stopTimers stops crons and one-shots.
 func (timers *timers) stopTimers() {
-
 	ctx := timers.cron.Stop()
 	<-ctx.Done()
 
@@ -92,11 +87,9 @@ func (timers *timers) stopTimers() {
 	for _, timer := range timers.timers {
 		timers.disableTimer(timer)
 	}
-
 }
 
 func (timers *timers) prepDisableTimer(timer *timer) string {
-
 	switch timer.timerType {
 
 	case timerTypeOneShot:
@@ -114,20 +107,16 @@ func (timers *timers) prepDisableTimer(timer *timer) string {
 	}
 
 	return timer.name
-
 }
 
 // must be locked before calling.
 func (timers *timers) disableTimer(timer *timer) {
-
 	name := timers.prepDisableTimer(timer)
 
 	delete(timers.timers, name)
-
 }
 
 func (timers *timers) executeFunction(timer *timer) {
-
 	timer.fn(timer.data)
 
 	if timer.timerType == timerTypeOneShot {
@@ -138,11 +127,9 @@ func (timers *timers) executeFunction(timer *timer) {
 		timers.disableTimer(timer)
 
 	}
-
 }
 
 func (timers *timers) newTimer(name, fn string, data []byte, time *time.Time, pattern string) (*timer, error) {
-
 	timers.mtx.Lock()
 	defer timers.mtx.Unlock()
 
@@ -167,12 +154,10 @@ func (timers *timers) newTimer(name, fn string, data []byte, time *time.Time, pa
 	timers.timers[name] = timer
 
 	return timer, nil
-
 }
 
 // registerFunction adds functions which can be executed by one-shots or crons.
 func (timers *timers) registerFunction(name string, fn func([]byte)) {
-
 	timers.mtx.Lock()
 	defer timers.mtx.Unlock()
 
@@ -181,11 +166,9 @@ func (timers *timers) registerFunction(name string, fn func([]byte)) {
 	}
 
 	timers.fns[name] = fn
-
 }
 
 func (timers *timers) addCron(name, fn, pattern string, data []byte) error {
-
 	timers.deleteCronForWorkflow(name)
 	name = fmt.Sprintf("cron:%s", name)
 
@@ -219,11 +202,9 @@ func (timers *timers) addCron(name, fn, pattern string, data []byte) error {
 	timers.timers[name] = t
 
 	return nil
-
 }
 
 func (timers *timers) addOneShot(name, fn string, timeos time.Time, data []byte) error {
-
 	utc := timeos.UTC()
 
 	t, err := timers.newTimer(name, fn, data, &utc, "")
@@ -237,7 +218,6 @@ func (timers *timers) addOneShot(name, fn string, timeos time.Time, data []byte)
 	}
 
 	err = func(timer *timer, duration time.Duration) error {
-
 		clock := time.AfterFunc(duration, func() {
 			timers.executeFunction(timer)
 		})
@@ -245,30 +225,23 @@ func (timers *timers) addOneShot(name, fn string, timeos time.Time, data []byte)
 		timer.oneshot.timer = clock
 
 		return nil
-
 	}(t, duration)
 	if err != nil {
 		return err
 	}
 
 	return nil
-
 }
 
 func (timers *timers) deleteTimersForInstance(name string) {
-
 	timers.pubsub.ClusterDeleteInstanceTimers(name)
-
 }
 
 func (timers *timers) deleteTimersForActivity(name string) {
-
 	timers.pubsub.ClusterDeleteActivityTimers(name)
-
 }
 
 func (timers *timers) deleteTimersForInstanceNoBroadcast(name string) {
-
 	var keys []string
 
 	timers.mtx.Lock()
@@ -295,11 +268,9 @@ func (timers *timers) deleteTimersForInstanceNoBroadcast(name string) {
 	for _, key := range keys {
 		delete(timers.timers, key)
 	}
-
 }
 
 func (timers *timers) deleteTimersForActivityNoBroadcast(name string) {
-
 	var keys []string
 
 	timers.mtx.Lock()
@@ -326,28 +297,21 @@ func (timers *timers) deleteTimersForActivityNoBroadcast(name string) {
 	for _, key := range keys {
 		delete(timers.timers, key)
 	}
-
 }
 
 func (timers *timers) deleteInstanceTimersHandler(req *PubsubUpdate) {
-
 	timers.deleteTimersForInstanceNoBroadcast(req.Key)
-
 }
 
 func (timers *timers) deleteActivityTimersHandler(req *PubsubUpdate) {
-
 	timers.deleteTimersForActivityNoBroadcast(req.Key)
-
 }
 
 func (timers *timers) deleteTimerHandler(req *PubsubUpdate) {
 	timers.deleteTimerByName("", timers.pubsub.hostname, req.Key)
-
 }
 
 func (timers *timers) deleteTimerByName(oldController, newController, name string) {
-
 	if oldController != newController && oldController != "" {
 
 		// send delete to specific server
@@ -374,7 +338,6 @@ func (timers *timers) deleteTimerByName(oldController, newController, name strin
 	if newController == "" {
 		timers.pubsub.ClusterDeleteTimer(name)
 	}
-
 }
 
 func (timers *timers) deleteCronForWorkflow(id string) {

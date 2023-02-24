@@ -20,7 +20,6 @@ var branchModeStrings = []string{
 }
 
 func ParseBranchMode(s string) (BranchMode, error) {
-
 	if s == "" {
 		return 0, fmt.Errorf("mode must be one of %v", branchModeStrings)
 	}
@@ -32,7 +31,6 @@ func ParseBranchMode(s string) (BranchMode, error) {
 	}
 
 	return 0, fmt.Errorf("unknown mode '%s' (must be one of %v)", s, branchModeStrings)
-
 }
 
 func (a BranchMode) String() string {
@@ -44,7 +42,6 @@ func (a BranchMode) MarshalJSON() ([]byte, error) {
 }
 
 func (a *BranchMode) UnmarshalJSON(data []byte) error {
-
 	var s string
 
 	err := json.Unmarshal(data, &s)
@@ -60,7 +57,6 @@ func (a *BranchMode) UnmarshalJSON(data []byte) error {
 	*a = x
 
 	return nil
-
 }
 
 func (a BranchMode) MarshalYAML() (interface{}, error) {
@@ -68,7 +64,6 @@ func (a BranchMode) MarshalYAML() (interface{}, error) {
 }
 
 func (a *BranchMode) UnmarshalYAML(unmarshal func(interface{}) error) error {
-
 	var s string
 
 	err := unmarshal(&s)
@@ -84,7 +79,6 @@ func (a *BranchMode) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	*a = x
 
 	return nil
-
 }
 
 // -------------- Size --------------
@@ -105,7 +99,6 @@ var sizeStrings = []string{
 }
 
 func ParseSize(s string) (Size, error) {
-
 	if s == "" {
 		return 0, fmt.Errorf("size must be one of %v", sizeStrings)
 	}
@@ -117,7 +110,6 @@ func ParseSize(s string) (Size, error) {
 	}
 
 	return 0, fmt.Errorf("unknown size '%s' (must be one of %v)", s, sizeStrings)
-
 }
 
 func (a Size) String() string {
@@ -129,7 +121,6 @@ func (a Size) MarshalJSON() ([]byte, error) {
 }
 
 func (a *Size) UnmarshalJSON(data []byte) error {
-
 	var s string
 
 	err := json.Unmarshal(data, &s)
@@ -145,7 +136,6 @@ func (a *Size) UnmarshalJSON(data []byte) error {
 	*a = x
 
 	return nil
-
 }
 
 func (a Size) MarshalYAML() (interface{}, error) {
@@ -153,7 +143,6 @@ func (a Size) MarshalYAML() (interface{}, error) {
 }
 
 func (a *Size) UnmarshalYAML(unmarshal func(interface{}) error) error {
-
 	var s string
 
 	err := unmarshal(&s)
@@ -169,7 +158,6 @@ func (a *Size) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	*a = x
 
 	return nil
-
 }
 
 // -------------- State Types --------------
@@ -213,7 +201,6 @@ var stateTypeStrings = []string{
 }
 
 func ParseStateType(s string) (StateType, error) {
-
 	if s == "" {
 		return 0, fmt.Errorf("type must be one of %v", stateTypeStrings)
 	}
@@ -233,7 +220,6 @@ func ParseStateType(s string) (StateType, error) {
 	}
 
 	return 0, fmt.Errorf("unknown type '%s' (must be one of %v)", s, stateTypeStrings)
-
 }
 
 func (a StateType) String() string {
@@ -245,7 +231,6 @@ func (a StateType) MarshalJSON() ([]byte, error) {
 }
 
 func (a *StateType) UnmarshalJSON(data []byte) error {
-
 	var s string
 
 	err := json.Unmarshal(data, &s)
@@ -261,7 +246,6 @@ func (a *StateType) UnmarshalJSON(data []byte) error {
 	*a = x
 
 	return nil
-
 }
 
 func (a StateType) MarshalYAML() (interface{}, error) {
@@ -269,7 +253,6 @@ func (a StateType) MarshalYAML() (interface{}, error) {
 }
 
 func (a *StateType) UnmarshalYAML(unmarshal func(interface{}) error) error {
-
 	var s string
 
 	err := unmarshal(&s)
@@ -285,7 +268,6 @@ func (a *StateType) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	*a = x
 
 	return nil
-
 }
 
 // -------------- Start Types --------------
@@ -309,7 +291,6 @@ var startTypeStrings = []string{
 }
 
 func ParseStartType(s string) (StartType, error) {
-
 	if s == "" {
 		return 0, fmt.Errorf("type must be one of %v", startTypeStrings)
 	}
@@ -321,7 +302,6 @@ func ParseStartType(s string) (StartType, error) {
 	}
 
 	return 0, fmt.Errorf("unknown type '%s' (must be one of %v)", s, startTypeStrings)
-
 }
 
 func (a StartType) String() string {
@@ -333,7 +313,6 @@ func (a StartType) MarshalJSON() ([]byte, error) {
 }
 
 func (a *StartType) UnmarshalJSON(data []byte) error {
-
 	var s string
 
 	err := json.Unmarshal(data, &s)
@@ -349,7 +328,6 @@ func (a *StartType) UnmarshalJSON(data []byte) error {
 	*a = x
 
 	return nil
-
 }
 
 func (a StartType) MarshalYAML() (interface{}, error) {
@@ -357,7 +335,6 @@ func (a StartType) MarshalYAML() (interface{}, error) {
 }
 
 func (a *StartType) UnmarshalYAML(unmarshal func(interface{}) error) error {
-
 	var s string
 
 	err := unmarshal(&s)
@@ -373,5 +350,4 @@ func (a *StartType) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	*a = x
 
 	return nil
-
 }

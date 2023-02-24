@@ -13,7 +13,6 @@ var eventListenersCmd = &cobra.Command{
 	Use:  "event-listeners NAMESPACE",
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-
 		namespace := args[0]
 
 		c, closer, err := client()
@@ -67,6 +66,5 @@ var eventListenersCmd = &cobra.Command{
 			print(resp)
 
 		}
-
 	},
 }

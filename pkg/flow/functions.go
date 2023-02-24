@@ -11,7 +11,6 @@ import (
 )
 
 func (flow *flow) functionsHeartbeat() {
-
 	ctx := context.Background()
 
 	clients := flow.edb.Clients(nil)
@@ -32,7 +31,7 @@ func (flow *flow) functionsHeartbeat() {
 
 		for _, wf := range wfs {
 
-			var tuples = make([]*functions.HeartbeatTuple, 0)
+			tuples := make([]*functions.HeartbeatTuple, 0)
 			checksums := make(map[string]bool)
 
 			cached := new(database.CacheData)
@@ -104,13 +103,11 @@ func (flow *flow) functionsHeartbeat() {
 		}
 
 	}
-
 }
 
 const heartbeatMessageLimit = 4096 // some evidence that we could get away with a limit of 8000, so I've set it here to be safe
 
 func (flow *flow) flushHeartbeatTuples(tuples []*functions.HeartbeatTuple) {
-
 	l := len(tuples)
 
 	if l == 0 {
@@ -151,5 +148,4 @@ func (flow *flow) flushHeartbeatTuples(tuples []*functions.HeartbeatTuple) {
 		return
 
 	}
-
 }

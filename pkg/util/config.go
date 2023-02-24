@@ -25,7 +25,6 @@ type Config struct {
 
 // ReadConfig reads direktiv config file.
 func ReadConfig(file string) (*Config, error) {
-
 	c := new(Config)
 
 	/* #nosec */
@@ -40,13 +39,10 @@ func ReadConfig(file string) (*Config, error) {
 	}
 
 	return c, nil
-
 }
 
 func (cfg *Config) GetTelemetryBackendAddr() string {
-
 	return cfg.OpenTelemetryBackend
-
 }
 
 func (cfg *Config) GetFunctionsTimeout() time.Duration {

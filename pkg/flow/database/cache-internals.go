@@ -11,7 +11,6 @@ import (
 )
 
 func (db *CachedDatabase) lookupNamespaceByID(ctx context.Context, id uuid.UUID) *Namespace {
-
 	key := fmt.Sprintf("nsid:%s", id)
 
 	data, err := db.cache.Get(ctx, key)
@@ -32,11 +31,9 @@ func (db *CachedDatabase) lookupNamespaceByID(ctx context.Context, id uuid.UUID)
 	}
 
 	return ns
-
 }
 
 func (db *CachedDatabase) lookupNamespaceByName(ctx context.Context, name string) *Namespace {
-
 	key := fmt.Sprintf("ns:%s", name)
 
 	data, err := db.cache.Get(ctx, key)
@@ -57,11 +54,9 @@ func (db *CachedDatabase) lookupNamespaceByName(ctx context.Context, name string
 	}
 
 	return ns
-
 }
 
 func (db *CachedDatabase) storeNamespaceInCache(ctx context.Context, ns *Namespace) {
-
 	data, err := json.Marshal(ns)
 	if err != nil {
 		db.sugar.Warnf("Namespace cache marshal error: %v", err)
@@ -81,11 +76,9 @@ func (db *CachedDatabase) storeNamespaceInCache(ctx context.Context, ns *Namespa
 		db.sugar.Warnf("Namespace cache store error: %v", err)
 		return
 	}
-
 }
 
 func (db *CachedDatabase) invalidateCachedNamespace(ctx context.Context, id uuid.UUID, recursive bool) {
-
 	if recursive {
 		err := db.cache.Invalidate(ctx, store.WithInvalidateTags([]string{id.String()}))
 		if err != nil {
@@ -100,11 +93,9 @@ func (db *CachedDatabase) invalidateCachedNamespace(ctx context.Context, id uuid
 			return
 		}
 	}
-
 }
 
 func (db *CachedDatabase) lookupInodeByID(ctx context.Context, id uuid.UUID) *Inode {
-
 	key := fmt.Sprintf("inoid:%s", id)
 
 	data, err := db.cache.Get(ctx, key)
@@ -125,11 +116,9 @@ func (db *CachedDatabase) lookupInodeByID(ctx context.Context, id uuid.UUID) *In
 	}
 
 	return ns
-
 }
 
 func (db *CachedDatabase) storeInodeInCache(ctx context.Context, ino *Inode) {
-
 	data, err := json.Marshal(ino)
 	if err != nil {
 		db.sugar.Warnf("Inode cache marshal error: %v", err)
@@ -142,11 +131,9 @@ func (db *CachedDatabase) storeInodeInCache(ctx context.Context, ino *Inode) {
 		db.sugar.Warnf("Inode cache store error: %v", err)
 		return
 	}
-
 }
 
 func (db *CachedDatabase) invalidateCachedInode(ctx context.Context, id uuid.UUID, recursive bool) {
-
 	if recursive {
 		panic("TODO")
 	}
@@ -158,11 +145,9 @@ func (db *CachedDatabase) invalidateCachedInode(ctx context.Context, id uuid.UUI
 		db.sugar.Error(err)
 		return
 	}
-
 }
 
 func (db *CachedDatabase) lookupWorkflowByID(ctx context.Context, id uuid.UUID) *Workflow {
-
 	key := fmt.Sprintf("wfid:%s", id)
 
 	data, err := db.cache.Get(ctx, key)
@@ -183,11 +168,9 @@ func (db *CachedDatabase) lookupWorkflowByID(ctx context.Context, id uuid.UUID) 
 	}
 
 	return wf
-
 }
 
 func (db *CachedDatabase) storeWorkflowInCache(ctx context.Context, wf *Workflow) {
-
 	data, err := json.Marshal(wf)
 	if err != nil {
 		db.sugar.Warnf("Workflow cache marshal error: %v", err)
@@ -200,11 +183,9 @@ func (db *CachedDatabase) storeWorkflowInCache(ctx context.Context, wf *Workflow
 		db.sugar.Warnf("Workflow cache store error: %v", err)
 		return
 	}
-
 }
 
 func (db *CachedDatabase) invalidateCachedWorkflow(ctx context.Context, id uuid.UUID, recursive bool) {
-
 	if recursive {
 		panic("TODO")
 	}
@@ -216,11 +197,9 @@ func (db *CachedDatabase) invalidateCachedWorkflow(ctx context.Context, id uuid.
 		db.sugar.Error(err)
 		return
 	}
-
 }
 
 func (db *CachedDatabase) lookupInstanceByID(ctx context.Context, id uuid.UUID) *Instance {
-
 	key := fmt.Sprintf("instid:%s", id)
 
 	data, err := db.cache.Get(ctx, key)
@@ -241,11 +220,9 @@ func (db *CachedDatabase) lookupInstanceByID(ctx context.Context, id uuid.UUID) 
 	}
 
 	return inst
-
 }
 
 func (db *CachedDatabase) storeInstanceInCache(ctx context.Context, inst *Instance) {
-
 	data, err := json.Marshal(inst)
 	if err != nil {
 		db.sugar.Warnf("Instance cache marshal error: %v", err)
@@ -258,11 +235,9 @@ func (db *CachedDatabase) storeInstanceInCache(ctx context.Context, inst *Instan
 		db.sugar.Warnf("Instance cache store error: %v", err)
 		return
 	}
-
 }
 
 func (db *CachedDatabase) lookupRevisionByID(ctx context.Context, id uuid.UUID) *Revision {
-
 	key := fmt.Sprintf("revid:%s", id)
 
 	data, err := db.cache.Get(ctx, key)
@@ -283,11 +258,9 @@ func (db *CachedDatabase) lookupRevisionByID(ctx context.Context, id uuid.UUID) 
 	}
 
 	return rev
-
 }
 
 func (db *CachedDatabase) storeRevisionInCache(ctx context.Context, rev *Revision) {
-
 	data, err := json.Marshal(rev)
 	if err != nil {
 		db.sugar.Warnf("Revision cache marshal error: %v", err)
@@ -300,5 +273,4 @@ func (db *CachedDatabase) storeRevisionInCache(ctx context.Context, rev *Revisio
 		db.sugar.Warnf("Revision cache store error: %v", err)
 		return
 	}
-
 }

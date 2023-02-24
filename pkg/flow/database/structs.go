@@ -32,7 +32,6 @@ type Inode struct {
 }
 
 func (ino *Inode) addChild(child *Inode) {
-
 	x := &Inode{
 		ID:           child.ID,
 		Name:         child.Name,
@@ -49,7 +48,6 @@ func (ino *Inode) addChild(child *Inode) {
 	}
 
 	ino.Children = append(ino.Children[:idx], append([]*Inode{x}, ino.Children[idx:]...)...)
-
 }
 
 type CreateInodeArgs struct {

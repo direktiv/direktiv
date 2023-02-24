@@ -32,8 +32,7 @@ func (im *instanceMemory) BroadcastCloudevent(ctx context.Context, event *cloude
 }
 
 func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.VariableSelector) ([]states.Variable, error) {
-
-	var x = make([]states.Variable, 0)
+	x := make([]states.Variable, 0)
 
 	clients := im.engine.edb.Clients(im.tx)
 
@@ -89,9 +88,7 @@ func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.Variab
 			data = make([]byte, 0)
 
 		} else if ref == nil {
-
 			data = make([]byte, 0)
-
 		} else {
 
 			if ref.Edges.Vardata == nil {
@@ -117,11 +114,9 @@ func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.Variab
 	}
 
 	return x, nil
-
 }
 
 func (im *instanceMemory) ListenForEvents(ctx context.Context, events []*model.ConsumeEventDefinition, all bool) error {
-
 	err := im.engine.events.deleteInstanceEventListeners(ctx, nil, im.cached)
 	if err != nil {
 		return err
@@ -133,23 +128,17 @@ func (im *instanceMemory) ListenForEvents(ctx context.Context, events []*model.C
 	}
 
 	return nil
-
 }
 
 func (im *instanceMemory) Log(ctx context.Context, a string, x ...interface{}) {
-
 	im.engine.logToInstance(ctx, time.Now(), im.cached, a, x...)
-
 }
 
 func (im *instanceMemory) Raise(ctx context.Context, err *derrors.CatchableError) error {
-
 	return im.engine.InstanceRaise(ctx, im, err)
-
 }
 
 func (im *instanceMemory) RetrieveSecret(ctx context.Context, secret string) (string, error) {
-
 	var resp *secretsgrpc.SecretsRetrieveResponse
 
 	ns := im.cached.Namespace.ID.String()
@@ -167,11 +156,9 @@ func (im *instanceMemory) RetrieveSecret(ctx context.Context, secret string) (st
 	}
 
 	return string(resp.GetData()), nil
-
 }
 
 func (im *instanceMemory) SetVariables(ctx context.Context, vars []states.VariableSetter) error {
-
 	tx, err := im.engine.database.Tx(ctx)
 	if err != nil {
 		return err
@@ -258,13 +245,10 @@ func (im *instanceMemory) SetVariables(ctx context.Context, vars []states.Variab
 	}
 
 	return nil
-
 }
 
 func (im *instanceMemory) Sleep(ctx context.Context, d time.Duration, x interface{}) error {
-
 	return im.ScheduleRetry(ctx, d, im.logic.GetID(), x)
-
 }
 
 func (im *instanceMemory) GetInstanceData() interface{} {
@@ -296,7 +280,6 @@ func (im *instanceMemory) LivingChildren(ctx context.Context) []states.ChildInfo
 }
 
 func (im *instanceMemory) ScheduleRetry(ctx context.Context, d time.Duration, stateID string, x interface{}) error {
-
 	data, err := json.Marshal(x)
 	if err != nil {
 		return err
@@ -310,11 +293,9 @@ func (im *instanceMemory) ScheduleRetry(ctx context.Context, d time.Duration, st
 	}
 
 	return nil
-
 }
 
 func (im *instanceMemory) CreateChild(ctx context.Context, args states.CreateChildArgs) (states.Child, error) {
-
 	var ci states.ChildInfo
 
 	if args.Definition.GetType() == model.SubflowFunctionType {
@@ -366,13 +347,12 @@ func (im *instanceMemory) CreateChild(ctx context.Context, args states.CreateChi
 		engine: im.engine,
 		ar:     ar,
 	}, nil
-
 }
 
 func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory, stateId string, timeout int,
 	fn model.FunctionDefinition, inputData []byte,
-	uid uuid.UUID, async bool, files []model.FunctionFileDefinition) (*functionRequest, error) {
-
+	uid uuid.UUID, async bool, files []model.FunctionFileDefinition,
+) (*functionRequest, error) {
 	ar := new(functionRequest)
 	ar.ActionID = uid.String()
 	ar.Workflow.WorkflowID = im.cached.Workflow.ID.String()
@@ -449,7 +429,6 @@ func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory,
 	}
 
 	return ar, nil
-
 }
 
 type subflowHandle struct {

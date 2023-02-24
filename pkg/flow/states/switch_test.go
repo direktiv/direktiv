@@ -10,7 +10,6 @@ import (
 )
 
 func TestSwitchGood001(t *testing.T) {
-
 	ctx := context.Background()
 
 	instance := newTesterInstance()
@@ -72,11 +71,9 @@ func TestSwitchGood001(t *testing.T) {
 		t.Error(errors.New("state did more than it should"))
 		return
 	}
-
 }
 
 func TestSwitchGood002(t *testing.T) {
-
 	ctx := context.Background()
 
 	instance := newTesterInstance()
@@ -138,11 +135,9 @@ func TestSwitchGood002(t *testing.T) {
 		t.Error(errors.New("state did more than it should"))
 		return
 	}
-
 }
 
 func TestSwitchBadState(t *testing.T) {
-
 	instance := newTesterInstance()
 
 	state := new(model.NoopState)
@@ -153,11 +148,9 @@ func TestSwitchBadState(t *testing.T) {
 		t.Error(errors.New("should have failed with wrong state type"))
 		return
 	}
-
 }
 
 func TestSwitchBadMemory(t *testing.T) {
-
 	ctx := context.Background()
 
 	instance := newTesterInstance()
@@ -196,11 +189,9 @@ func TestSwitchBadMemory(t *testing.T) {
 		t.Error(errors.New("expected an error"))
 		return
 	}
-
 }
 
 func TestSwitchBadWakedata(t *testing.T) {
-
 	ctx := context.Background()
 
 	instance := newTesterInstance()
@@ -230,5 +221,4 @@ func TestSwitchBadWakedata(t *testing.T) {
 		t.Error(errors.New("expected an error"))
 		return
 	}
-
 }

@@ -35,11 +35,12 @@ type ConfigFile struct {
 	path           string
 }
 
-var config ConfigFile
-var Globbers []glob.Glob
+var (
+	config   ConfigFile
+	Globbers []glob.Glob
+)
 
 func loadConfig(cmd *cobra.Command) {
-
 	chdir, err := cmd.Flags().GetString("directory")
 	if err != nil {
 		Fail("error loading 'directory' flag: %v", err)
@@ -86,9 +87,7 @@ func loadConfig(cmd *cobra.Command) {
 		}
 
 	} else if len(config.Profiles) > 0 {
-
 		cp = &(config.Profiles[0])
-
 	}
 
 	if path != "" {
@@ -112,11 +111,9 @@ func loadConfig(cmd *cobra.Command) {
 		}
 
 	}
-
 }
 
 func findConfig() string {
-
 	dir, err := filepath.Abs(".")
 	if err != nil {
 		Fail("Failed to locate place in filesystem: %v\n", err)
@@ -154,45 +151,35 @@ func findConfig() string {
 	}
 
 	return ""
-
 }
 
 func getAddr() string {
-
 	addr := viper.GetString("addr")
 	if addr == "" {
 		Fail("addr undefined: ensure it is set as a flag, environment variable, or in the config file")
 	}
 
 	return addr
-
 }
 
 func GetNamespace() string {
-
 	namespace := viper.GetString("namespace")
 	if namespace == "" {
 		Fail("namespace undefined: ensure it is set as a flag, environment variable, or in the config file")
 	}
 
 	return namespace
-
 }
 
 func getInsecure() bool {
-
 	return viper.GetBool("insecure")
-
 }
 
 func GetTLSConfig() *tls.Config {
-
 	return &tls.Config{InsecureSkipVerify: getInsecure()} //nolint:gosec
-
 }
 
 func GetAuth() string {
-
 	return viper.GetString("auth")
 }
 
@@ -205,7 +192,6 @@ func AddSSEAuthHeaders(client *sse.Client) {
 }
 
 func GetRelativePath(configPath, targpath string) string {
-
 	var err error
 
 	if !filepath.IsAbs(configPath) {
@@ -234,11 +220,9 @@ func GetRelativePath(configPath, targpath string) string {
 	path = strings.Trim(path, "/")
 
 	return path
-
 }
 
 func GetPath(targpath string) string {
-
 	path := viper.GetString("path")
 
 	if path != "" {
@@ -252,11 +236,9 @@ func GetPath(targpath string) string {
 	configPath := GetConfigPath()
 
 	return GetRelativePath(configPath, targpath)
-
 }
 
 func GetConfigPath() string {
-
 	if config.path != "" {
 
 		path := config.path
@@ -267,5 +249,4 @@ func GetConfigPath() string {
 	}
 
 	return "."
-
 }

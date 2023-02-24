@@ -35,7 +35,6 @@ toggle-lock . --addr http://192.168.1.1 --namespace admin --writable
 toggle-lock path/to/git/subfolder --namespace admin`,
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-
 		r, err := cmd.Flags().GetBool("recursive")
 		if err != nil {
 			root.Fail("could not access recursive flag: %v", err)
@@ -64,12 +63,10 @@ toggle-lock path/to/git/subfolder --namespace admin`,
 			}
 
 		}
-
 	},
 }
 
 func getImpactedFiles(start string, filesAllowed, recursive bool) ([]string, error) {
-
 	pathsToUpdate := make([]string, 0)
 
 	pathStat, err := os.Stat(start)
@@ -95,7 +92,6 @@ func getImpactedFiles(start string, filesAllowed, recursive bool) ([]string, err
 
 					return nil
 				})
-
 			if err != nil {
 				return pathsToUpdate, fmt.Errorf("recursive search could not access path: %w", err)
 			}
@@ -114,7 +110,6 @@ func getImpactedFiles(start string, filesAllowed, recursive bool) ([]string, err
 }
 
 func switchGitStatus(url string, writable bool) error {
-
 	url = strings.TrimSuffix(url, "/")
 	isReadOnly, err := getNodeReadOnly(url)
 	if err != nil {
@@ -171,12 +166,13 @@ func switchGitStatus(url string, writable bool) error {
 	}
 
 	return nil
-
 }
 
-var ErrNotFound = errors.New("resource was not found")
-var ErrNodeIsReadOnly = errors.New("resource is read-only")
-var ErrNotGit = errors.New("resource is not a git folder")
+var (
+	ErrNotFound       = errors.New("resource was not found")
+	ErrNodeIsReadOnly = errors.New("resource is read-only")
+	ErrNotGit         = errors.New("resource is not a git folder")
+)
 
 type node struct {
 	Namespace string `json:"namespace"`
@@ -196,7 +192,6 @@ type node struct {
 
 // getNodeReadOnly : Returns if node at path is read only.
 func getNodeReadOnly(url string) (bool, error) {
-
 	req, err := http.NewRequestWithContext(
 		context.Background(),
 		http.MethodGet,
@@ -268,7 +263,6 @@ Will update the helloworld workflow and set the remote workflow variable 'data.j
 `,
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-
 		pathsToUpdate, err := getImpactedFiles(args[0], true, true)
 		if err != nil {
 			root.Fail("could not calculate impacted files: %v", err)
@@ -318,7 +312,6 @@ Will update the helloworld workflow and set the remote workflow variable 'data.j
 			}
 
 		}
-
 	},
 }
 
@@ -347,7 +340,6 @@ func updateLocalVars(wf, path string) error {
 }
 
 func setRemoteWorkflowVariable(wf string, varName string, varPath string) error {
-
 	varData, err := root.SafeLoadFile(varPath)
 	if err != nil {
 		return fmt.Errorf("failed to load variable file: %w", err)
@@ -411,7 +403,6 @@ func getLocalWorkflowVariables(absPath string) ([]string, error) {
 }
 
 func updateRemoteWorkflow(path string, localPath string) error {
-
 	root.Printlog("updating namespace: '%s' workflow: '%s'\n", root.GetNamespace(), path)
 
 	isReadOnly, err := getClosestNodeReadOnly(path)
@@ -444,14 +435,12 @@ func updateRemoteWorkflow(path string, localPath string) error {
 	}
 
 	doRequest := func(updateURL, methodIn string, dataIn []byte) (int, string, error) {
-
 		req, err := http.NewRequestWithContext(
 			context.Background(),
 			methodIn,
 			updateURL,
 			bytes.NewReader(dataIn),
 		)
-
 		if err != nil {
 			return 0, "", fmt.Errorf("failed to create request file: %w", err)
 		}
@@ -470,7 +459,6 @@ func updateRemoteWorkflow(path string, localPath string) error {
 		}
 
 		return resp.StatusCode, string(respBody), nil
-
 	}
 
 	// code, err := doRequest(urlUpdate, http.MethodPut)
@@ -496,7 +484,6 @@ func updateRemoteWorkflow(path string, localPath string) error {
 }
 
 func recurseMkdirParent(path string) error {
-
 	dirs := strings.Split(filepath.Dir(path), "/")
 
 	for i := range dirs {
@@ -535,13 +522,11 @@ func recurseMkdirParent(path string) error {
 	}
 
 	return nil
-
 }
 
 // getClosestNodeReadOnly : Recursively searches upwards to find closest
 // existing node and returns whether it is read only.
 func getClosestNodeReadOnly(path string) (bool, error) {
-
 	if !strings.HasPrefix(path, "/") {
 		path = "/" + path
 	}
@@ -737,7 +722,7 @@ Will update the helloworld workflow and set the remote workflow variable 'data.j
 
 		output, err := getOutput(urlOutput)
 		if outputFlag != "" {
-			err = os.WriteFile(outputFlag, output, 0600)
+			err = os.WriteFile(outputFlag, output, 0o600)
 			if err != nil {
 				log.Fatalf("Failed to write output file: %v\n", err)
 			}
@@ -811,7 +796,6 @@ func executeWorkflow(url string) (executeResponse, error) {
 
 	err = json.Unmarshal(body, &instanceDetails)
 	return instanceDetails, err
-
 }
 
 type instanceOutput struct {
@@ -874,7 +858,6 @@ func getOutput(url string) ([]byte, error) {
 
 	outputStr, err := base64.StdEncoding.DecodeString(output.Data)
 	return outputStr, err
-
 }
 
 func init() {

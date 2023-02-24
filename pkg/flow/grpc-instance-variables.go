@@ -24,7 +24,6 @@ import (
 )
 
 func (srv *server) getInstanceVariable(ctx context.Context, tx database.Transaction, cached *database.CacheData, key string, load bool) (*database.VarRef, *database.VarData, error) {
-
 	vref, err := srv.database.InstanceVariable(ctx, tx, cached.Instance.ID, key)
 	if err != nil {
 		return nil, nil, err
@@ -36,11 +35,9 @@ func (srv *server) getInstanceVariable(ctx context.Context, tx database.Transact
 	}
 
 	return vref, vdata, nil
-
 }
 
 func (srv *server) getThreadVariable(ctx context.Context, tx database.Transaction, cached *database.CacheData, key string, load bool) (*database.VarRef, *database.VarData, error) {
-
 	vref, err := srv.database.ThreadVariable(ctx, tx, cached.Instance.ID, key)
 	if err != nil {
 		return nil, nil, err
@@ -52,11 +49,9 @@ func (srv *server) getThreadVariable(ctx context.Context, tx database.Transactio
 	}
 
 	return vref, vdata, nil
-
 }
 
 func (srv *server) traverseToInstanceVariable(ctx context.Context, tx database.Transaction, namespace, instance, key string, load bool) (*database.CacheData, *database.VarRef, *database.VarData, error) {
-
 	id, err := uuid.Parse(instance)
 	if err != nil {
 		return nil, nil, nil, err
@@ -79,11 +74,9 @@ func (srv *server) traverseToInstanceVariable(ctx context.Context, tx database.T
 	}
 
 	return cached, vref, vdata, nil
-
 }
 
 func (flow *flow) InstanceVariable(ctx context.Context, req *grpc.InstanceVariableRequest) (*grpc.InstanceVariableResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	cached, vref, vdata, err := flow.traverseToInstanceVariable(ctx, nil, req.GetNamespace(), req.GetInstance(), req.GetKey(), true)
@@ -109,11 +102,9 @@ func (flow *flow) InstanceVariable(ctx context.Context, req *grpc.InstanceVariab
 	resp.Data = vdata.Data
 
 	return &resp, nil
-
 }
 
 func (internal *internal) InstanceVariableParcels(req *grpc.VariableInternalRequest, srv grpc.Internal_InstanceVariableParcelsServer) error {
-
 	internal.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
@@ -197,11 +188,9 @@ func (internal *internal) InstanceVariableParcels(req *grpc.VariableInternalRequ
 		}
 
 	}
-
 }
 
 func (internal *internal) ThreadVariableParcels(req *grpc.VariableInternalRequest, srv grpc.Internal_ThreadVariableParcelsServer) error {
-
 	internal.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
@@ -278,11 +267,9 @@ func (internal *internal) ThreadVariableParcels(req *grpc.VariableInternalReques
 		}
 
 	}
-
 }
 
 func (flow *flow) InstanceVariableParcels(req *grpc.InstanceVariableRequest, srv grpc.Flow_InstanceVariableParcelsServer) error {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
@@ -333,11 +320,9 @@ func (flow *flow) InstanceVariableParcels(req *grpc.InstanceVariableRequest, srv
 		}
 
 	}
-
 }
 
 func (flow *flow) InstanceVariables(ctx context.Context, req *grpc.InstanceVariablesRequest) (*grpc.InstanceVariablesResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	cached, err := flow.getInstance(ctx, nil, req.GetNamespace(), req.GetInstance())
@@ -384,11 +369,9 @@ func (flow *flow) InstanceVariables(ctx context.Context, req *grpc.InstanceVaria
 	}
 
 	return resp, nil
-
 }
 
 func (flow *flow) InstanceVariablesStream(req *grpc.InstanceVariablesRequest, srv grpc.Flow_InstanceVariablesStreamServer) error {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
@@ -458,11 +441,9 @@ resend:
 	}
 
 	goto resend
-
 }
 
 func (flow *flow) SetInstanceVariable(ctx context.Context, req *grpc.SetInstanceVariableRequest) (*grpc.SetInstanceVariableResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	tx, err := flow.database.Tx(ctx)
@@ -495,7 +476,6 @@ func (flow *flow) SetInstanceVariable(ctx context.Context, req *grpc.SetInstance
 		flow.logToInstance(ctx, time.Now(), cached, "Created instance variable '%s'.", key)
 	} else {
 		flow.logToInstance(ctx, time.Now(), cached, "Updated instance variable '%s'.", key)
-
 	}
 	flow.pubsub.NotifyInstanceVariables(cached.Instance)
 
@@ -511,11 +491,9 @@ func (flow *flow) SetInstanceVariable(ctx context.Context, req *grpc.SetInstance
 	resp.MimeType = vdata.MimeType
 
 	return &resp, nil
-
 }
 
 func (internal *internal) SetThreadVariableParcels(srv grpc.Internal_SetThreadVariableParcelsServer) error {
-
 	internal.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
@@ -622,11 +600,9 @@ func (internal *internal) SetThreadVariableParcels(srv grpc.Internal_SetThreadVa
 	}
 
 	return nil
-
 }
 
 func (internal *internal) SetInstanceVariableParcels(srv grpc.Internal_SetInstanceVariableParcelsServer) error {
-
 	internal.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
@@ -733,11 +709,9 @@ func (internal *internal) SetInstanceVariableParcels(srv grpc.Internal_SetInstan
 	}
 
 	return nil
-
 }
 
 func (flow *flow) SetInstanceVariableParcels(srv grpc.Flow_SetInstanceVariableParcelsServer) error {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
@@ -846,11 +820,9 @@ func (flow *flow) SetInstanceVariableParcels(srv grpc.Flow_SetInstanceVariablePa
 	}
 
 	return nil
-
 }
 
 func (flow *flow) DeleteInstanceVariable(ctx context.Context, req *grpc.DeleteInstanceVariableRequest) (*emptypb.Empty, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	tx, err := flow.database.Tx(ctx)
@@ -901,11 +873,9 @@ func (flow *flow) DeleteInstanceVariable(ctx context.Context, req *grpc.DeleteIn
 	var resp emptypb.Empty
 
 	return &resp, nil
-
 }
 
 func (flow *flow) RenameInstanceVariable(ctx context.Context, req *grpc.RenameInstanceVariableRequest) (*grpc.RenameInstanceVariableResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	tx, err := flow.database.Tx(ctx)
@@ -947,5 +917,4 @@ func (flow *flow) RenameInstanceVariable(ctx context.Context, req *grpc.RenameIn
 	resp.MimeType = vdata.MimeType
 
 	return &resp, nil
-
 }

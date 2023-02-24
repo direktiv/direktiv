@@ -45,7 +45,6 @@ func dbTrace(ctx context.Context) *Carrier {
 }
 
 func traceAddWorkflowInstance(ctx context.Context, im *instanceMemory) {
-
 	span := trace.SpanFromContext(ctx)
 
 	span.SetAttributes(
@@ -78,11 +77,9 @@ func traceAddWorkflowInstance(ctx context.Context, im *instanceMemory) {
 			Value: attribute.StringValue(im.cached.Instance.As),
 		},
 	)
-
 }
 
 func traceFullAddWorkflowInstance(ctx context.Context, im *instanceMemory) (context.Context, error) {
-
 	traceAddWorkflowInstance(ctx, im)
 	tp := otel.GetTracerProvider()
 	tr := tp.Tracer("direktiv/flow")
@@ -99,7 +96,6 @@ func traceFullAddWorkflowInstance(ctx context.Context, im *instanceMemory) (cont
 	im.runtimeUpdater = updater
 
 	return ctx, nil
-
 }
 
 func traceStateError(ctx context.Context, err error) {
@@ -109,7 +105,6 @@ func traceStateError(ctx context.Context, err error) {
 }
 
 func traceSubflowInvoke(ctx context.Context, name, child string) {
-
 	span := trace.SpanFromContext(ctx)
 
 	span.SetAttributes(
@@ -120,11 +115,9 @@ func traceSubflowInvoke(ctx context.Context, name, child string) {
 	)
 
 	span.AddEvent(fmt.Sprintf("Calling subflow: %s (%s)", name, child))
-
 }
 
 func traceStateGenericBegin(ctx context.Context, im *instanceMemory) (context.Context, func(), error) {
-
 	tp := otel.GetTracerProvider()
 	tr := tp.Tracer("direktiv/flow")
 	prop := otel.GetTextMapPropagator()
@@ -153,11 +146,9 @@ func traceStateGenericBegin(ctx context.Context, im *instanceMemory) (context.Co
 	}
 
 	return ctx, finish, nil
-
 }
 
 func traceStateGenericLogicThread(ctx context.Context, im *instanceMemory) (context.Context, func(), error) {
-
 	tp := otel.GetTracerProvider()
 	tr := tp.Tracer("direktiv/flow")
 	prop := otel.GetTextMapPropagator()
@@ -178,11 +169,9 @@ func traceStateGenericLogicThread(ctx context.Context, im *instanceMemory) (cont
 	}
 
 	return ctx, finish, nil
-
 }
 
 func traceActionResult(ctx context.Context, results *actionResultPayload) {
-
 	span := trace.SpanFromContext(ctx)
 	span.SetAttributes(
 		attribute.KeyValue{
@@ -190,5 +179,4 @@ func traceActionResult(ctx context.Context, results *actionResultPayload) {
 			Value: attribute.StringValue(results.ActionID),
 		},
 	)
-
 }

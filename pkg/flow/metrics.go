@@ -125,14 +125,11 @@ var (
 )
 
 func reportStateEnd(namespace, workflow, state string, t time.Time) {
-
 	ms := time.Since(t).Milliseconds()
 	metricsWfStateDuration.WithLabelValues(namespace, GetInodePath(workflow), state, namespace).Observe(float64(ms))
-
 }
 
 func setupPrometheusEndpoint() error {
-
 	prometheus.MustRegister(metricsWfInvoked)
 	prometheus.MustRegister(metricsWfSuccess)
 	prometheus.MustRegister(metricsWfFail)
@@ -158,13 +155,11 @@ func setupPrometheusEndpoint() error {
 	}
 
 	return nil
-
 }
 
 // WorkflowMetrics - Gets the Workflow metrics of a given Workflow Revision Ref
 // if ref is not set in the request, it will be automatically be set to latest.
 func (flow *flow) WorkflowMetrics(ctx context.Context, req *grpc.WorkflowMetricsRequest) (*grpc.WorkflowMetricsResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	cached, err := flow.traverseToRef(ctx, nil, req.GetNamespace(), req.GetPath(), req.GetRef())
@@ -255,7 +250,6 @@ func (flow *flow) WorkflowMetrics(ctx context.Context, req *grpc.WorkflowMetrics
 }
 
 func (engine *engine) metricsCompleteState(ctx context.Context, im *instanceMemory, nextState, errCode string, retrying bool) {
-
 	workflow := GetInodePath(im.cached.Instance.As)
 
 	reportStateEnd(im.cached.Namespace.Name, workflow, im.logic.GetID(), im.runtime.StateBeginTime)
@@ -299,11 +293,9 @@ func (engine *engine) metricsCompleteState(ctx context.Context, im *instanceMemo
 	if err != nil {
 		engine.sugar.Error(err)
 	}
-
 }
 
 func (engine *engine) metricsCompleteInstance(ctx context.Context, im *instanceMemory) {
-
 	t := im.StateBeginTime()
 	namespace := im.cached.Namespace.Name
 	workflow := GetInodePath(im.cached.Instance.As)
@@ -329,5 +321,4 @@ func (engine *engine) metricsCompleteInstance(ctx context.Context, im *instanceM
 		ms := now.Sub(t).Milliseconds()
 		metricsWfDuration.WithLabelValues(namespace, workflow, namespace).Observe(float64(ms))
 	}
-
 }

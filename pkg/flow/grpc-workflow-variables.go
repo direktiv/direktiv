@@ -27,7 +27,6 @@ import (
 )
 
 func (srv *server) getWorkflowVariable(ctx context.Context, tx database.Transaction, cached *database.CacheData, key string, load bool) (*database.VarRef, *database.VarData, error) {
-
 	vref, err := srv.database.WorkflowVariable(ctx, tx, cached.Workflow.ID, key)
 	if err != nil {
 		return nil, nil, err
@@ -39,11 +38,9 @@ func (srv *server) getWorkflowVariable(ctx context.Context, tx database.Transact
 	}
 
 	return vref, vdata, nil
-
 }
 
 func (srv *server) traverseToWorkflowVariable(ctx context.Context, tx database.Transaction, namespace, path, key string, load bool) (*database.CacheData, *database.VarRef, *database.VarData, error) {
-
 	cached, err := srv.traverseToWorkflow(ctx, tx, namespace, path)
 	if err != nil {
 		return nil, nil, nil, err
@@ -55,11 +52,9 @@ func (srv *server) traverseToWorkflowVariable(ctx context.Context, tx database.T
 	}
 
 	return cached, vref, vdata, nil
-
 }
 
 func (flow *flow) WorkflowVariable(ctx context.Context, req *grpc.WorkflowVariableRequest) (*grpc.WorkflowVariableResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	cached, vref, vdata, err := flow.traverseToWorkflowVariable(ctx, nil, req.GetNamespace(), req.GetPath(), req.GetKey(), true)
@@ -85,11 +80,9 @@ func (flow *flow) WorkflowVariable(ctx context.Context, req *grpc.WorkflowVariab
 	resp.Data = vdata.Data
 
 	return &resp, nil
-
 }
 
 func (internal *internal) WorkflowVariableParcels(req *grpc.VariableInternalRequest, srv grpc.Internal_WorkflowVariableParcelsServer) error {
-
 	internal.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
@@ -159,11 +152,9 @@ func (internal *internal) WorkflowVariableParcels(req *grpc.VariableInternalRequ
 		}
 
 	}
-
 }
 
 func (flow *flow) WorkflowVariableParcels(req *grpc.WorkflowVariableRequest, srv grpc.Flow_WorkflowVariableParcelsServer) error {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
@@ -221,11 +212,9 @@ func (flow *flow) WorkflowVariableParcels(req *grpc.WorkflowVariableRequest, srv
 		}
 
 	}
-
 }
 
 func (flow *flow) WorkflowVariables(ctx context.Context, req *grpc.WorkflowVariablesRequest) (*grpc.WorkflowVariablesResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	cached, err := flow.traverseToWorkflow(ctx, nil, req.GetNamespace(), req.GetPath())
@@ -272,11 +261,9 @@ func (flow *flow) WorkflowVariables(ctx context.Context, req *grpc.WorkflowVaria
 	}
 
 	return resp, nil
-
 }
 
 func (flow *flow) WorkflowVariablesStream(req *grpc.WorkflowVariablesRequest, srv grpc.Flow_WorkflowVariablesStreamServer) error {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
@@ -346,7 +333,6 @@ resend:
 	}
 
 	goto resend
-
 }
 
 type varQuerier interface {
@@ -381,7 +367,6 @@ func (x *entInstanceVarQuerier) QueryVars() *ent.VarRefQuery {
 }
 
 func (flow *flow) SetVariable(ctx context.Context, tx database.Transaction, q varQuerier, key string, data []byte, vMimeType string, thread bool) (*ent.VarData, bool, error) {
-
 	hash, err := computeHash(data)
 	if err != nil {
 		flow.sugar.Error(err)
@@ -498,7 +483,6 @@ func (flow *flow) SetVariable(ctx context.Context, tx database.Transaction, q va
 }
 
 func (flow *flow) DeleteVariable(ctx context.Context, tx database.Transaction, q varQuerier, key string, data []byte, vMimeType string, thread bool) (*ent.VarData, bool, error) {
-
 	var err error
 	var vdata *ent.VarData
 	var newVar bool
@@ -564,7 +548,6 @@ func (flow *flow) DeleteVariable(ctx context.Context, tx database.Transaction, q
 }
 
 func (flow *flow) SetWorkflowVariable(ctx context.Context, req *grpc.SetWorkflowVariableRequest) (*grpc.SetWorkflowVariableResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	tx, err := flow.database.Tx(ctx)
@@ -613,11 +596,9 @@ func (flow *flow) SetWorkflowVariable(ctx context.Context, req *grpc.SetWorkflow
 	resp.MimeType = vdata.MimeType
 
 	return &resp, nil
-
 }
 
 func (internal *internal) SetWorkflowVariableParcels(srv grpc.Internal_SetWorkflowVariableParcelsServer) error {
-
 	internal.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
@@ -722,11 +703,9 @@ func (internal *internal) SetWorkflowVariableParcels(srv grpc.Internal_SetWorkfl
 	}
 
 	return nil
-
 }
 
 func (flow *flow) SetWorkflowVariableParcels(srv grpc.Flow_SetWorkflowVariableParcelsServer) error {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
@@ -834,11 +813,9 @@ func (flow *flow) SetWorkflowVariableParcels(srv grpc.Flow_SetWorkflowVariablePa
 	}
 
 	return nil
-
 }
 
 func (flow *flow) DeleteWorkflowVariable(ctx context.Context, req *grpc.DeleteWorkflowVariableRequest) (*emptypb.Empty, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	tx, err := flow.database.Tx(ctx)
@@ -889,11 +866,9 @@ func (flow *flow) DeleteWorkflowVariable(ctx context.Context, req *grpc.DeleteWo
 	var resp emptypb.Empty
 
 	return &resp, nil
-
 }
 
 func (flow *flow) RenameWorkflowVariable(ctx context.Context, req *grpc.RenameWorkflowVariableRequest) (*grpc.RenameWorkflowVariableResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	tx, err := flow.database.Tx(ctx)
@@ -935,5 +910,4 @@ func (flow *flow) RenameWorkflowVariable(ctx context.Context, req *grpc.RenameWo
 	resp.MimeType = vdata.MimeType
 
 	return &resp, nil
-
 }

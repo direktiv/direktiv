@@ -11,11 +11,9 @@ const (
 	DBSecretType SecretType = "db"
 )
 
-var (
-	secretHandlers = map[SecretType]SecretsHandlerInstantiator{
-		DBSecretType: setupDB,
-	}
-)
+var secretHandlers = map[SecretType]SecretsHandlerInstantiator{
+	DBSecretType: setupDB,
+}
 
 type SecretsHandlerInstantiator func() (SecretsHandler, error)
 

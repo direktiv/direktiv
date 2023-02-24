@@ -27,7 +27,6 @@ type actionResultPayload struct {
 }
 
 func isRetryable(code string, patterns []string) bool {
-
 	for _, pattern := range patterns {
 		// NOTE: this error should be checked in model validation
 
@@ -42,11 +41,9 @@ func isRetryable(code string, patterns []string) bool {
 	}
 
 	return false
-
 }
 
 func retryDelay(attempt int, delay string, multiplier float64) time.Duration {
-
 	d := time.Second * 5
 	if x, err := duration.ParseISO8601(delay); err == nil {
 		t0 := time.Now()
@@ -61,11 +58,9 @@ func retryDelay(attempt int, delay string, multiplier float64) time.Duration {
 	}
 
 	return d
-
 }
 
 func preprocessRetry(retry *model.RetryDefinition, attempt int, err error) (time.Duration, error) {
-
 	var d time.Duration
 
 	if retry == nil {
@@ -88,11 +83,9 @@ func preprocessRetry(retry *model.RetryDefinition, attempt int, err error) (time
 	d = retryDelay(attempt, retry.Delay, retry.Multiplier)
 
 	return d, nil
-
 }
 
 func scheduleRetry(ctx context.Context, instance Instance, children []ChildInfo, idx int, d time.Duration) error {
-
 	var err error
 
 	children[idx].Attempts++
@@ -114,7 +107,6 @@ func scheduleRetry(ctx context.Context, instance Instance, children []ChildInfo,
 	}
 
 	return nil
-
 }
 
 type generateActionInputArgs struct {
@@ -125,7 +117,6 @@ type generateActionInputArgs struct {
 }
 
 func generateActionInput(ctx context.Context, args *generateActionInputArgs) ([]byte, []model.FunctionFileDefinition, error) {
-
 	var err error
 	var input interface{}
 
@@ -218,11 +209,9 @@ func generateActionInput(ctx context.Context, args *generateActionInputArgs) ([]
 	}
 
 	return inputData, files, nil
-
 }
 
 func addSecrets(ctx context.Context, instance Instance, m map[string]interface{}, secrets ...string) (map[string]interface{}, error) {
-
 	if len(secrets) > 0 {
 
 		s := make(map[string]string)
@@ -243,7 +232,6 @@ func addSecrets(ctx context.Context, instance Instance, m map[string]interface{}
 	}
 
 	return m, nil
-
 }
 
 type invokeActionArgs struct {
@@ -257,7 +245,6 @@ type invokeActionArgs struct {
 }
 
 func invokeAction(ctx context.Context, args invokeActionArgs) (*ChildInfo, error) {
-
 	child, err := args.instance.CreateChild(ctx, CreateChildArgs{
 		Definition: args.fn,
 		Input:      args.input,
@@ -284,11 +271,9 @@ func invokeAction(ctx context.Context, args invokeActionArgs) (*ChildInfo, error
 		Attempts:    args.attempt,
 		ServiceName: ci.ServiceName,
 	}, nil
-
 }
 
 func ISO8601StringtoSecs(timeout string) (int, error) {
-
 	// default 15 mins timeout
 	wfto := 15 * 60
 
@@ -305,5 +290,4 @@ func ISO8601StringtoSecs(timeout string) (int, error) {
 	}
 
 	return wfto, nil
-
 }

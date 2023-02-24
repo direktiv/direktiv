@@ -16,7 +16,6 @@ type secrets struct {
 }
 
 func initSecrets() (*secrets, error) {
-
 	secrets := new(secrets)
 
 	var err error
@@ -29,11 +28,9 @@ func initSecrets() (*secrets, error) {
 	secrets.client = secretsgrpc.NewSecretsServiceClient(secrets.conn)
 
 	return secrets, nil
-
 }
 
 func (secrets *secrets) Close() error {
-
 	if secrets.conn != nil {
 
 		err := secrets.conn.Close()
@@ -46,20 +43,16 @@ func (secrets *secrets) Close() error {
 	}
 
 	return nil
-
 }
 
 func (srv *server) deleteNamespaceSecrets(ns *database.Namespace) {
-
 	err := srv.secrets.deleteNamespaceSecrets(ns)
 	if err != nil {
 		srv.sugar.Error(err)
 	}
-
 }
 
 func (secrets *secrets) deleteNamespaceSecrets(ns *database.Namespace) error {
-
 	namespace := ns.ID.String()
 
 	request := &secretsgrpc.DeleteNamespaceSecretsRequest{
@@ -72,5 +65,4 @@ func (secrets *secrets) deleteNamespaceSecrets(ns *database.Namespace) error {
 	}
 
 	return nil
-
 }

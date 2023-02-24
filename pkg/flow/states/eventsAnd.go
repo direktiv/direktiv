@@ -23,7 +23,6 @@ type eventsAndLogic struct {
 }
 
 func EventsAnd(instance Instance, state model.State) (Logic, error) {
-
 	eventsAnd, ok := state.(*model.EventsAndState)
 	if !ok {
 		return nil, derrors.NewInternalError(errors.New("bad state object"))
@@ -34,11 +33,9 @@ func EventsAnd(instance Instance, state model.State) (Logic, error) {
 	sl.EventsAndState = eventsAnd
 
 	return sl, nil
-
 }
 
 func (logic *eventsAndLogic) Deadline(ctx context.Context) time.Time {
-
 	d, err := duration.ParseISO8601(logic.Timeout)
 	if err != nil {
 		logic.Log(ctx, "failed to parse duration: %v", err)
@@ -48,11 +45,9 @@ func (logic *eventsAndLogic) Deadline(ctx context.Context) time.Time {
 	t := d.Shift(time.Now().Add(DefaultShortDeadline))
 
 	return t
-
 }
 
 func (logic *eventsAndLogic) Run(ctx context.Context, wakedata []byte) (*Transition, error) {
-
 	first, err := scheduleTwice(logic, wakedata)
 	if err != nil {
 		return nil, err
@@ -129,5 +124,4 @@ func (logic *eventsAndLogic) Run(ctx context.Context, wakedata []byte) (*Transit
 		Transform: logic.Transform,
 		NextState: logic.Transition,
 	}, nil
-
 }

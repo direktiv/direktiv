@@ -1,9 +1,8 @@
 package model
 
 import (
-	"fmt"
-
 	"errors"
+	"fmt"
 )
 
 type ActionState struct {

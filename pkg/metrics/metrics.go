@@ -19,7 +19,6 @@ type Client struct {
 
 // NewClient ..
 func NewClient() (*Client, error) {
-
 	db, err := ent.Open("postgres", os.Getenv(util.DBConn))
 	if err != nil {
 		return nil, err
@@ -40,7 +39,6 @@ func NewClient() (*Client, error) {
 
 // InsertRecord inserts a metric record into the database.
 func (c *Client) InsertRecord(args *InsertRecordArgs) error {
-
 	wf := strings.Split(args.Workflow, ":")[0]
 
 	r := c.db.Metrics.Create()
@@ -63,7 +61,6 @@ func (c *Client) InsertRecord(args *InsertRecordArgs) error {
 
 // GetMetrics returns the metrics from the database.
 func (c *Client) GetMetrics(args *GetMetricsArgs) (*Dataset, error) {
-
 	ctx := context.Background()
 
 	records, err := c.db.Metrics.Query().Where(
@@ -82,7 +79,6 @@ func (c *Client) GetMetrics(args *GetMetricsArgs) (*Dataset, error) {
 }
 
 func generateDataset(records []*ent.Metrics) (*Dataset, error) {
-
 	out := new(Dataset)
 
 	// range through all records and sort by state
@@ -123,7 +119,6 @@ func generateDataset(records []*ent.Metrics) (*Dataset, error) {
 }
 
 func sortRecord(m map[string]*StateData, instances map[string]int, v *ent.Metrics) {
-
 	if _, ok := m[v.State]; !ok {
 		m[v.State] = &StateData{
 			Name: v.State,
@@ -181,7 +176,6 @@ func sortRecord(m map[string]*StateData, instances map[string]int, v *ent.Metric
 	handleFailRecord(&r, s)
 
 	m[v.State] = s
-
 }
 
 func handleSuccessRecord(r *record, s *StateData) {
@@ -203,7 +197,6 @@ func handleSuccessRecord(r *record, s *StateData) {
 }
 
 func handleFailRecord(r *record, s *StateData) {
-
 	if r.didSucceed() {
 		return
 	}
@@ -222,7 +215,6 @@ func handleFailRecord(r *record, s *StateData) {
 	} else {
 		s.TotalFailures++
 	}
-
 }
 
 type finaliseStateRecordValuesArgs struct {
@@ -234,7 +226,6 @@ type finaliseStateRecordValuesArgs struct {
 }
 
 func finaliseStateRecordValues(args *finaliseStateRecordValuesArgs) {
-
 	for k, s := range args.states {
 
 		thisState := s
@@ -271,5 +262,4 @@ func finaliseStateRecordValues(args *finaliseStateRecordValuesArgs) {
 		args.states[k] = thisState
 		args.out.States = append(args.out.States, *thisState)
 	}
-
 }

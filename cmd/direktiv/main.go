@@ -2,14 +2,15 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"os"
+
 	"github.com/direktiv/direktiv/cmd/api"
 	"github.com/direktiv/direktiv/cmd/flow"
 	flow_dbinit "github.com/direktiv/direktiv/cmd/flow-dbinit"
 	"github.com/direktiv/direktiv/cmd/functions"
 	"github.com/direktiv/direktiv/cmd/secrets"
 	"github.com/direktiv/direktiv/cmd/sidecar"
-	"log"
-	"os"
 )
 
 func main() {

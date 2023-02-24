@@ -74,7 +74,6 @@ func (o *ConsumeEventDefinition) Validate() error {
 	}
 
 	return nil
-
 }
 
 // ProduceEventDefinition defines what a produce event is.
@@ -96,7 +95,6 @@ func (o *ProduceEventDefinition) Validate() error {
 	}
 
 	return nil
-
 }
 
 // StateCommon defines the common attributes of a state.

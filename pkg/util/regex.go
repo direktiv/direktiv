@@ -27,15 +27,18 @@ const RefRegexPattern = `^` + RefRegexFragment + `$`
 
 var RefRegex = regexp.MustCompile(RefRegexPattern)
 
-const RegexPattern = NameRegexPattern
-const VarRegexPattern = VarNameRegexPattern
+const (
+	RegexPattern    = NameRegexPattern
+	VarRegexPattern = VarNameRegexPattern
+)
 
-var reg *regexp.Regexp
-var varreg *regexp.Regexp
-var varSNameAndSFName *regexp.Regexp
+var (
+	reg               *regexp.Regexp
+	varreg            *regexp.Regexp
+	varSNameAndSFName *regexp.Regexp
+)
 
 func init() {
-
 	var err error
 	reg, err = regexp.Compile(RegexPattern)
 	if err != nil {
@@ -51,7 +54,6 @@ func init() {
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-
 }
 
 // MatchesRegex responds true if the provided string matches the

@@ -171,7 +171,6 @@ func (o *Workflow) unmFunction(state interface{}, fIndex int) error {
 }
 
 func (o *Workflow) validate() error {
-
 	if len(o.States) == 0 {
 		return errors.New("workflow has no defined states")
 	}
@@ -294,7 +293,6 @@ func (o *Workflow) GetFunctions() []FunctionDefinition {
 
 // GetFunction: Returns the function definition.
 func (o *Workflow) GetFunction(id string) (FunctionDefinition, error) {
-
 	for i, fn := range o.Functions {
 		if fn.GetID() == id {
 			return o.Functions[i], nil
@@ -302,12 +300,10 @@ func (o *Workflow) GetFunction(id string) (FunctionDefinition, error) {
 	}
 
 	return nil, fmt.Errorf("function '%s' not defined", id)
-
 }
 
 // UnmarshalYAML unmarshals the workflow YAMl.
 func (o *Workflow) UnmarshalYAML(unmarshal func(interface{}) error) error {
-
 	m := make(map[string]interface{})
 	err := unmarshal(&m)
 	if err != nil {
@@ -320,12 +316,10 @@ func (o *Workflow) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	}
 
 	return nil
-
 }
 
 // Load unmarshals the data and validates it.
 func (o *Workflow) Load(data []byte) error {
-
 	err := yaml.Unmarshal(data, o)
 	if err != nil {
 		return err
@@ -337,12 +331,10 @@ func (o *Workflow) Load(data []byte) error {
 	}
 
 	return nil
-
 }
 
 // GetStartState returns the start state of a workflow.
 func (o *Workflow) GetStartState() State {
-
 	if o.Start == nil || o.Start.GetState() == "" {
 		return o.States[0]
 	}
@@ -354,7 +346,6 @@ func (o *Workflow) GetStartState() State {
 	}
 
 	panic(errors.New("cannot resolve start state"))
-
 }
 
 // VariableReference - Workflow variable referenced in getter or setter.

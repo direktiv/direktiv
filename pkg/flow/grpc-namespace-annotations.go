@@ -43,7 +43,6 @@ var annotationsFilters = map[*filteringInfo]func(query *ent.AnnotationQuery, v s
 }
 
 func (flow *flow) traverseToNamespaceAnnotation(ctx context.Context, tx database.Transaction, namespace, key string) (*database.CacheData, *database.Annotation, error) {
-
 	cached := new(database.CacheData)
 
 	err := flow.database.NamespaceByName(ctx, tx, cached, namespace)
@@ -57,11 +56,9 @@ func (flow *flow) traverseToNamespaceAnnotation(ctx context.Context, tx database
 	}
 
 	return cached, annotation, nil
-
 }
 
 func (flow *flow) NamespaceAnnotation(ctx context.Context, req *grpc.NamespaceAnnotationRequest) (*grpc.NamespaceAnnotationResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	cached, annotation, err := flow.traverseToNamespaceAnnotation(ctx, nil, req.GetNamespace(), req.GetKey())
@@ -86,11 +83,9 @@ func (flow *flow) NamespaceAnnotation(ctx context.Context, req *grpc.NamespaceAn
 	resp.Data = annotation.Data
 
 	return &resp, nil
-
 }
 
 func (flow *flow) NamespaceAnnotationParcels(req *grpc.NamespaceAnnotationRequest, srv grpc.Flow_NamespaceAnnotationParcelsServer) error {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
@@ -147,11 +142,9 @@ func (flow *flow) NamespaceAnnotationParcels(req *grpc.NamespaceAnnotationReques
 		}
 
 	}
-
 }
 
 func (flow *flow) NamespaceAnnotations(ctx context.Context, req *grpc.NamespaceAnnotationsRequest) (*grpc.NamespaceAnnotationsResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	cached := new(database.CacheData)
@@ -181,11 +174,9 @@ func (flow *flow) NamespaceAnnotations(ctx context.Context, req *grpc.NamespaceA
 	}
 
 	return resp, nil
-
 }
 
 func (flow *flow) NamespaceAnnotationsStream(req *grpc.NamespaceAnnotationsRequest, srv grpc.Flow_NamespaceAnnotationsStreamServer) error {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
@@ -238,11 +229,9 @@ resend:
 	}
 
 	goto resend
-
 }
 
 func (flow *flow) SetNamespaceAnnotation(ctx context.Context, req *grpc.SetNamespaceAnnotationRequest) (*grpc.SetNamespaceAnnotationResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	tx, err := flow.database.Tx(ctx)
@@ -292,7 +281,6 @@ func (flow *flow) SetNamespaceAnnotation(ctx context.Context, req *grpc.SetNames
 	resp.MimeType = annotation.MimeType
 
 	return &resp, nil
-
 }
 
 type annotationQuerier interface {
@@ -336,7 +324,6 @@ func (x *entInstanceAnnotationQuerier) QueryAnnotations() *ent.AnnotationQuery {
 }
 
 func (flow *flow) SetAnnotation(ctx context.Context, tx database.Transaction, q annotationQuerier, key string, mimetype string, data []byte) (*ent.Annotation, bool, error) {
-
 	hash, err := computeHash(data)
 	if err != nil {
 		flow.sugar.Error(err)
@@ -391,11 +378,9 @@ func (flow *flow) SetAnnotation(ctx context.Context, tx database.Transaction, q 
 	}
 
 	return annotation, newAnnotation, err
-
 }
 
 func (flow *flow) SetNamespaceAnnotationParcels(srv grpc.Flow_SetNamespaceAnnotationParcelsServer) error {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
@@ -503,11 +488,9 @@ func (flow *flow) SetNamespaceAnnotationParcels(srv grpc.Flow_SetNamespaceAnnota
 	}
 
 	return nil
-
 }
 
 func (flow *flow) DeleteNamespaceAnnotation(ctx context.Context, req *grpc.DeleteNamespaceAnnotationRequest) (*emptypb.Empty, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	tx, err := flow.database.Tx(ctx)
@@ -539,11 +522,9 @@ func (flow *flow) DeleteNamespaceAnnotation(ctx context.Context, req *grpc.Delet
 	var resp emptypb.Empty
 
 	return &resp, nil
-
 }
 
 func (flow *flow) RenameNamespaceAnnotation(ctx context.Context, req *grpc.RenameNamespaceAnnotationRequest) (*grpc.RenameNamespaceAnnotationResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	tx, err := flow.database.Tx(ctx)
@@ -585,5 +566,4 @@ func (flow *flow) RenameNamespaceAnnotation(ctx context.Context, req *grpc.Renam
 	resp.MimeType = annotation.MimeType
 
 	return &resp, nil
-
 }

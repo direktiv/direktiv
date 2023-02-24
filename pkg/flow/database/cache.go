@@ -61,7 +61,6 @@ func NewCachedDatabase(sugar *zap.SugaredLogger, source Database, notifier Notif
 }
 
 func (db *CachedDatabase) HandleNotification(s string) {
-
 	notification := new(notification)
 
 	err := json.Unmarshal([]byte(s), &notification)
@@ -81,7 +80,6 @@ func (db *CachedDatabase) HandleNotification(s string) {
 		db.sugar.Error(err)
 		return
 	}
-
 }
 
 func (db *CachedDatabase) Close() error {
@@ -93,7 +91,6 @@ func (db *CachedDatabase) Tx(ctx context.Context) (Transaction, error) {
 }
 
 func (db *CachedDatabase) Namespace(ctx context.Context, tx Transaction, cached *CacheData, id uuid.UUID) error {
-
 	ns := db.lookupNamespaceByID(ctx, id)
 
 	if ns != nil {
@@ -111,11 +108,9 @@ func (db *CachedDatabase) Namespace(ctx context.Context, tx Transaction, cached 
 	db.storeNamespaceInCache(ctx, cached.Namespace)
 
 	return nil
-
 }
 
 func (db *CachedDatabase) NamespaceByName(ctx context.Context, tx Transaction, cached *CacheData, name string) error {
-
 	var err error
 
 	ns := db.lookupNamespaceByName(ctx, name)
@@ -135,11 +130,9 @@ func (db *CachedDatabase) NamespaceByName(ctx context.Context, tx Transaction, c
 	db.storeNamespaceInCache(ctx, cached.Namespace)
 
 	return nil
-
 }
 
 func (db *CachedDatabase) InvalidateNamespace(ctx context.Context, cached *CacheData, recursive bool) {
-
 	db.notifier.PublishToCluster((&notification{
 		Operation: "invalidate-namespace",
 		ID:        cached.Namespace.ID,
@@ -147,14 +140,12 @@ func (db *CachedDatabase) InvalidateNamespace(ctx context.Context, cached *Cache
 	}).Marshal())
 
 	db.invalidateCachedNamespace(ctx, cached.Namespace.ID, recursive)
-
 }
 
 func (db *CachedDatabase) Inode(ctx context.Context, tx Transaction, cached *CacheData, id uuid.UUID) error {
-
 	var err error
 
-	var cacheHit = true
+	cacheHit := true
 
 	ino := db.lookupInodeByID(ctx, id)
 
@@ -188,11 +179,9 @@ func (db *CachedDatabase) Inode(ctx context.Context, tx Transaction, cached *Cac
 	}
 
 	return nil
-
 }
 
 func (db *CachedDatabase) InodeByPath(ctx context.Context, tx Transaction, cached *CacheData, path string) error {
-
 	if cached.Namespace == nil {
 		panic("this function should not be called unless the namespace has already been resolved")
 	}
@@ -239,11 +228,9 @@ func (db *CachedDatabase) InodeByPath(ctx context.Context, tx Transaction, cache
 	}
 
 	return nil
-
 }
 
 func (db *CachedDatabase) InvalidateInode(ctx context.Context, cached *CacheData, recursive bool) {
-
 	db.notifier.PublishToCluster((&notification{
 		Operation: "invalidate-inode",
 		ID:        cached.Inode().ID,
@@ -251,11 +238,9 @@ func (db *CachedDatabase) InvalidateInode(ctx context.Context, cached *CacheData
 	}).Marshal())
 
 	db.invalidateCachedInode(ctx, cached.Inode().ID, recursive)
-
 }
 
 func (db *CachedDatabase) CreateDirectoryInode(ctx context.Context, tx Transaction, args *CreateDirectoryInodeArgs) (*Inode, error) {
-
 	if args.Parent.Type != util.InodeTypeDirectory {
 		return nil, status.Error(codes.AlreadyExists, "parent node is not a directory")
 	}
@@ -300,7 +285,6 @@ func (db *CachedDatabase) CreateDirectoryInode(ctx context.Context, tx Transacti
 	// TODO: add to cache and cache invalidate anything relevant
 
 	return ino, nil
-
 }
 
 func (db *CachedDatabase) UpdateInode(ctx context.Context, tx Transaction, args *UpdateInodeArgs) (*Inode, error) {
@@ -309,10 +293,9 @@ func (db *CachedDatabase) UpdateInode(ctx context.Context, tx Transaction, args 
 }
 
 func (db *CachedDatabase) Workflow(ctx context.Context, tx Transaction, cached *CacheData, id uuid.UUID) error {
-
 	var err error
 
-	var cacheHit = true
+	cacheHit := true
 
 	wf := db.lookupWorkflowByID(ctx, id)
 
@@ -338,11 +321,9 @@ func (db *CachedDatabase) Workflow(ctx context.Context, tx Transaction, cached *
 	}
 
 	return nil
-
 }
 
 func (db *CachedDatabase) InvalidateWorkflow(ctx context.Context, cached *CacheData, recursive bool) {
-
 	db.notifier.PublishToCluster((&notification{
 		Operation: "invalidate-workflow",
 		ID:        cached.Workflow.ID,
@@ -350,11 +331,9 @@ func (db *CachedDatabase) InvalidateWorkflow(ctx context.Context, cached *CacheD
 	}).Marshal())
 
 	db.invalidateCachedWorkflow(ctx, cached.Workflow.ID, recursive)
-
 }
 
 func (db *CachedDatabase) CreateCompleteWorkflow(ctx context.Context, tx Transaction, args *CreateCompleteWorkflowArgs) (*CacheData, error) {
-
 	if args.Parent.Inode().Type != util.InodeTypeDirectory {
 		return nil, status.Error(codes.AlreadyExists, "parent node is not a directory")
 	}
@@ -434,7 +413,6 @@ func (db *CachedDatabase) CreateCompleteWorkflow(ctx context.Context, tx Transac
 	// TODO: add to cache and cache invalidate anything relevant
 
 	return cached, nil
-
 }
 
 func (db *CachedDatabase) UpdateWorkflow(ctx context.Context, tx Transaction, args *UpdateWorkflowArgs) (*Workflow, error) {
@@ -443,10 +421,9 @@ func (db *CachedDatabase) UpdateWorkflow(ctx context.Context, tx Transaction, ar
 }
 
 func (db *CachedDatabase) Revision(ctx context.Context, tx Transaction, cached *CacheData, id uuid.UUID) error {
-
 	var err error
 
-	var cacheHit = true
+	cacheHit := true
 
 	rev := db.lookupRevisionByID(ctx, id)
 
@@ -472,7 +449,6 @@ func (db *CachedDatabase) Revision(ctx context.Context, tx Transaction, cached *
 	}
 
 	return nil
-
 }
 
 func (db *CachedDatabase) CreateRevision(ctx context.Context, tx Transaction, args *CreateRevisionArgs) (*Revision, error) {
@@ -481,10 +457,9 @@ func (db *CachedDatabase) CreateRevision(ctx context.Context, tx Transaction, ar
 }
 
 func (db *CachedDatabase) Instance(ctx context.Context, tx Transaction, cached *CacheData, id uuid.UUID) error {
-
 	var err error
 
-	var cacheHit = true
+	cacheHit := true
 
 	inst := db.lookupInstanceByID(ctx, id)
 
@@ -517,15 +492,12 @@ func (db *CachedDatabase) Instance(ctx context.Context, tx Transaction, cached *
 	}
 
 	return nil
-
 }
 
 func (db *CachedDatabase) FlushInstance(ctx context.Context, inst *Instance) error {
-
 	db.storeInstanceInCache(ctx, inst)
 
 	return nil
-
 }
 
 func (db *CachedDatabase) InstanceRuntime(ctx context.Context, tx Transaction, id uuid.UUID) (*InstanceRuntime, error) {

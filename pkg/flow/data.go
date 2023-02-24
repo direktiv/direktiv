@@ -17,7 +17,6 @@ import (
 )
 
 func checksum(x interface{}) string {
-
 	data, err := json.Marshal(x)
 	if err != nil {
 		panic(err)
@@ -29,7 +28,6 @@ func checksum(x interface{}) string {
 	}
 
 	return hash
-
 }
 
 func computeHash(data []byte) (string, error) {
@@ -42,29 +40,24 @@ func computeHash(data []byte) (string, error) {
 }
 
 func marshal(x interface{}) string {
-
 	data, err := json.MarshalIndent(x, "", "  ")
 	if err != nil {
 		panic(err)
 	}
 
 	return string(data)
-
 }
 
 func unmarshal(data string, x interface{}) error {
-
 	err := json.Unmarshal([]byte(data), x)
 	if err != nil {
 		return err
 	}
 
 	return nil
-
 }
 
 func unmarshalInstanceInputData(input []byte) interface{} {
-
 	var inputData, stateData interface{}
 
 	err := json.Unmarshal(input, &inputData)
@@ -81,11 +74,9 @@ func unmarshalInstanceInputData(input []byte) interface{} {
 	}
 
 	return stateData
-
 }
 
 func marshalInstanceInputData(input []byte) string {
-
 	x := unmarshalInstanceInputData(input)
 
 	data, err := json.Marshal(x)
@@ -94,11 +85,9 @@ func marshalInstanceInputData(input []byte) string {
 	}
 
 	return string(data)
-
 }
 
 func atobMapBuilder(t reflect.Type, v reflect.Value) interface{} {
-
 	m := make(map[string]interface{})
 
 	iter := v.MapRange()
@@ -125,11 +114,9 @@ func atobMapBuilder(t reflect.Type, v reflect.Value) interface{} {
 	}
 
 	return x
-
 }
 
 func atobStructBuilder(t reflect.Type, v reflect.Value) interface{} {
-
 	m := make(map[string]interface{})
 
 	for i := 0; i < v.NumField(); i++ {
@@ -168,11 +155,9 @@ func atobStructBuilder(t reflect.Type, v reflect.Value) interface{} {
 	}
 
 	return x
-
 }
 
 func atobSliceBuilder(t reflect.Type, v reflect.Value) interface{} {
-
 	s := make([]interface{}, v.Len())
 
 	for i := 0; i < v.Len(); i++ {
@@ -191,11 +176,9 @@ func atobSliceBuilder(t reflect.Type, v reflect.Value) interface{} {
 	}
 
 	return s
-
 }
 
 func atobBuilder(a interface{}) interface{} {
-
 	v := reflect.ValueOf(a)
 
 deref:
@@ -230,11 +213,9 @@ deref:
 			return x
 		}
 	}
-
 }
 
 func atob(a, b interface{}) error {
-
 	m := atobBuilder(a)
 
 	data, err := json.Marshal(m)
@@ -248,11 +229,9 @@ func atob(a, b interface{}) error {
 	}
 
 	return nil
-
 }
 
 func (srv *server) initJQ() {
-
 	jqer.StringQueryRequiresWrappings = true
 	jqer.TrimWhitespaceOnQueryStrings = true
 
@@ -260,7 +239,6 @@ func (srv *server) initJQ() {
 	jqer.WrappingBegin = "jq"
 	jqer.WrappingIncrement = "("
 	jqer.WrappingDecrement = ")"
-
 }
 
 func jq(input interface{}, command interface{}) ([]interface{}, error) {
@@ -272,7 +250,6 @@ func jq(input interface{}, command interface{}) ([]interface{}, error) {
 }
 
 func jqOne(input interface{}, command interface{}) (interface{}, error) {
-
 	output, err := jq(input, command)
 	if err != nil {
 		return nil, err
@@ -283,11 +260,9 @@ func jqOne(input interface{}, command interface{}) (interface{}, error) {
 	}
 
 	return output[0], nil
-
 }
 
 func jqObject(input interface{}, command interface{}) (map[string]interface{}, error) {
-
 	x, err := jqOne(input, command)
 	if err != nil {
 		return nil, err
@@ -299,5 +274,4 @@ func jqObject(input interface{}, command interface{}) (map[string]interface{}, e
 	}
 
 	return m, nil
-
 }

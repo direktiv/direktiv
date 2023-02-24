@@ -16,7 +16,6 @@ func (err *NotFoundError) Error() string {
 }
 
 func IsNotFound(err error) bool {
-
 	if ent.IsNotFound(err) {
 		return true
 	}
@@ -27,5 +26,4 @@ func IsNotFound(err error) bool {
 
 	nferr := new(NotFoundError)
 	return errors.As(err, &nferr)
-
 }

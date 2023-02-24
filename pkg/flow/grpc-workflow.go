@@ -16,7 +16,6 @@ import (
 )
 
 func (srv *server) traverseToWorkflow(ctx context.Context, tx database.Transaction, namespace, path string) (*database.CacheData, error) {
-
 	cached, err := srv.traverseToInode(ctx, tx, namespace, path)
 	if err != nil {
 		return nil, err
@@ -28,11 +27,9 @@ func (srv *server) traverseToWorkflow(ctx context.Context, tx database.Transacti
 	}
 
 	return cached, nil
-
 }
 
 func (srv *server) reverseTraverseToWorkflow(ctx context.Context, tx database.Transaction, workflow string) (*database.CacheData, error) {
-
 	id, err := uuid.Parse(workflow)
 	if err != nil {
 		return nil, err
@@ -46,11 +43,9 @@ func (srv *server) reverseTraverseToWorkflow(ctx context.Context, tx database.Tr
 	}
 
 	return cached, nil
-
 }
 
 func (srv *server) traverseToRef(ctx context.Context, tx database.Transaction, namespace, path, reference string) (*database.CacheData, error) {
-
 	if reference == "" {
 		reference = latest
 	}
@@ -79,11 +74,9 @@ func (srv *server) traverseToRef(ctx context.Context, tx database.Transaction, n
 	}
 
 	return cached, nil
-
 }
 
 func (flow *flow) ResolveWorkflowUID(ctx context.Context, req *grpc.ResolveWorkflowUIDRequest) (*grpc.WorkflowResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	id, err := uuid.Parse(req.GetId())
@@ -114,11 +107,9 @@ func (flow *flow) ResolveWorkflowUID(ctx context.Context, req *grpc.ResolveWorkf
 	resp.Oid = cached.Workflow.ID.String()
 
 	return &resp, nil
-
 }
 
 func (flow *flow) Workflow(ctx context.Context, req *grpc.WorkflowRequest) (*grpc.WorkflowResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	cached, err := flow.traverseToRef(ctx, nil, req.GetNamespace(), req.GetPath(), req.GetRef())
@@ -151,11 +142,9 @@ func (flow *flow) Workflow(ctx context.Context, req *grpc.WorkflowRequest) (*grp
 	resp.Revision.Name = cached.Revision.ID.String()
 
 	return &resp, nil
-
 }
 
 func (flow *flow) WorkflowStream(req *grpc.WorkflowRequest, srv grpc.Flow_WorkflowStreamServer) error {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
@@ -216,7 +205,6 @@ resend:
 	}
 
 	goto resend
-
 }
 
 type createWorkflowArgs struct {
@@ -229,7 +217,6 @@ type createWorkflowArgs struct {
 }
 
 func (flow *flow) createWorkflow(ctx context.Context, tx database.Transaction, args *createWorkflowArgs) (*database.Workflow, *database.Inode, error) {
-
 	if !args.super && args.pino.ReadOnly {
 		return nil, nil, errors.New("cannot write into read-only directory")
 	}
@@ -272,7 +259,7 @@ func (flow *flow) createWorkflow(ctx context.Context, tx database.Transaction, a
 		func() error {
 			return nil
 		},
-		//tx.Commit,
+		// tx.Commit,
 	)
 	if err != nil {
 		return nil, nil, err
@@ -297,11 +284,9 @@ func (flow *flow) createWorkflow(ctx context.Context, tx database.Transaction, a
 	}
 
 	return cached.Workflow, cached.Inode(), nil
-
 }
 
 func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRequest) (*grpc.CreateWorkflowResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	data := req.GetSource()
@@ -451,7 +436,6 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 	}
 
 	return &resp, nil
-
 }
 
 type updateWorkflowArgs struct {
@@ -463,7 +447,6 @@ type updateWorkflowArgs struct {
 }
 
 func (flow *flow) updateWorkflow(ctx context.Context, tx database.Transaction, args *updateWorkflowArgs) (*database.Revision, error) {
-
 	data := args.data
 
 	hash, err := computeHash(data)
@@ -510,7 +493,6 @@ func (flow *flow) updateWorkflow(ctx context.Context, tx database.Transaction, a
 
 	err = flow.configureRouter(ctx, tx, args.cached, flags,
 		func() error {
-
 			rev, err = flow.database.CreateRevision(ctx, tx, &database.CreateRevisionArgs{
 				Workflow: args.cached.Workflow.ID,
 				Hash:     hash,
@@ -542,7 +524,6 @@ func (flow *flow) updateWorkflow(ctx context.Context, tx database.Transaction, a
 			}
 
 			return nil
-
 		},
 		func() error { return nil },
 	)
@@ -568,11 +549,9 @@ func (flow *flow) updateWorkflow(ctx context.Context, tx database.Transaction, a
 	}
 
 	return rev, nil
-
 }
 
 func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRequest) (*grpc.UpdateWorkflowResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	tx, err := flow.database.Tx(ctx)
@@ -627,11 +606,9 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 	}
 
 	return &resp, nil
-
 }
 
 func (flow *flow) SaveHead(ctx context.Context, req *grpc.SaveHeadRequest) (*grpc.SaveHeadResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	tx, err := flow.database.Tx(ctx)
@@ -713,11 +690,9 @@ respond:
 	resp.Revision.Name = cached.Revision.ID.String()
 
 	return &resp, nil
-
 }
 
 func (flow *flow) DiscardHead(ctx context.Context, req *grpc.DiscardHeadRequest) (*grpc.DiscardHeadResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	tx, err := flow.database.Tx(ctx)
@@ -741,7 +716,6 @@ func (flow *flow) DiscardHead(ctx context.Context, req *grpc.DiscardHeadRequest)
 
 	err = flow.configureRouter(ctx, tx, cached, rcfBreaking,
 		func() error {
-
 			err = clients.Ref.UpdateOneID(cached.Ref.ID).SetRevisionID(cached.Workflow.Revisions[1].ID).Exec(ctx)
 			if err != nil {
 				return err
@@ -758,7 +732,6 @@ func (flow *flow) DiscardHead(ctx context.Context, req *grpc.DiscardHeadRequest)
 			}
 
 			return nil
-
 		},
 		tx.Commit,
 	)
@@ -798,11 +771,9 @@ respond:
 	resp.Revision.Name = cached.Revision.ID.String()
 
 	return &resp, nil
-
 }
 
 func (flow *flow) ToggleWorkflow(ctx context.Context, req *grpc.ToggleWorkflowRequest) (*emptypb.Empty, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	tx, err := flow.database.Tx(ctx)
@@ -863,11 +834,9 @@ func (flow *flow) ToggleWorkflow(ctx context.Context, req *grpc.ToggleWorkflowRe
 	flow.pubsub.NotifyWorkflow(cached.Workflow)
 
 	return &resp, nil
-
 }
 
 func (flow *flow) SetWorkflowEventLogging(ctx context.Context, req *grpc.SetWorkflowEventLoggingRequest) (*emptypb.Empty, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	tx, err := flow.database.Tx(ctx)
@@ -900,5 +869,4 @@ func (flow *flow) SetWorkflowEventLogging(ctx context.Context, req *grpc.SetWork
 	var resp emptypb.Empty
 
 	return &resp, nil
-
 }

@@ -40,7 +40,6 @@ type syncer struct {
 }
 
 func initSyncer(srv *server) (*syncer, error) {
-
 	syncer := new(syncer)
 
 	syncer.server = srv
@@ -48,17 +47,13 @@ func initSyncer(srv *server) (*syncer, error) {
 	syncer.cancellers = make(map[string]func())
 
 	return syncer, nil
-
 }
 
 func (syncer *syncer) Close() error {
-
 	return nil
-
 }
 
 func (srv *server) reverseTraverseToMirror(ctx context.Context, tx database.Transaction, id string) (*database.CacheData, *database.Mirror, error) {
-
 	uid, err := uuid.Parse(id)
 	if err != nil {
 		srv.sugar.Debugf("%s failed to parse mirror UUID: %v", parent(), err)
@@ -80,13 +75,11 @@ func (srv *server) reverseTraverseToMirror(ctx context.Context, tx database.Tran
 	}
 
 	return cached, mirror, nil
-
 }
 
 // Timeouts
 
 func (syncer *syncer) scheduleTimeout(activityId string, oldController string, t time.Time) {
-
 	var err error
 	deadline := t
 
@@ -111,7 +104,6 @@ func (syncer *syncer) scheduleTimeout(activityId string, oldController string, t
 	if err != nil {
 		syncer.sugar.Error(err)
 	}
-
 }
 
 func (syncer *syncer) ScheduleTimeout(activityId, oldController string, t time.Time) {
@@ -125,7 +117,6 @@ type syncerTimeoutArgs struct {
 const syncerTimeoutFunction = "syncerTimeoutFunction"
 
 func (syncer *syncer) cancelActivity(activityId, code, message string) {
-
 	cached, mirror, activity, err := syncer.loadActivityMemory(activityId)
 	if err != nil {
 		syncer.sugar.Error(err)
@@ -133,11 +124,9 @@ func (syncer *syncer) cancelActivity(activityId, code, message string) {
 	}
 
 	syncer.fail(cached, mirror, activity, errors.New(code))
-
 }
 
 func (syncer *syncer) timeoutHandler(input []byte) {
-
 	args := new(syncerTimeoutArgs)
 	err := json.Unmarshal(input, args)
 	if err != nil {
@@ -146,22 +135,18 @@ func (syncer *syncer) timeoutHandler(input []byte) {
 	}
 
 	syncer.cancelActivity(args.ActivityId, ErrCodeSoftTimeout, "syncer activity timed out")
-
 }
 
 // Pollers
 
 func (srv *server) syncerCronPoller() {
-
 	for {
 		srv.syncerCronPoll()
 		time.Sleep(time.Minute * 15)
 	}
-
 }
 
 func (srv *server) syncerCronPoll() {
-
 	ctx := context.Background()
 
 	ids, err := srv.database.Mirrors(ctx, nil)
@@ -181,11 +166,9 @@ func (srv *server) syncerCronPoll() {
 		srv.syncerCronPollerMirror(mirror)
 
 	}
-
 }
 
 func (srv *server) syncerCronPollerMirror(mir *database.Mirror) {
-
 	if mir.Cron != "" {
 		srv.timers.deleteCronForSyncer(mir.ID.String())
 
@@ -198,11 +181,9 @@ func (srv *server) syncerCronPollerMirror(mir *database.Mirror) {
 		srv.sugar.Debugf("Loaded syncer cron: %s", mir.ID.String())
 
 	}
-
 }
 
 func (syncer *syncer) cronHandler(data []byte) {
-
 	id := string(data)
 
 	ctx, conn, err := syncer.lock(id, defaultLockWait)
@@ -260,13 +241,11 @@ func (syncer *syncer) cronHandler(data []byte) {
 		syncer.sugar.Error(err)
 		return
 	}
-
 }
 
 // locks
 
 func (syncer *syncer) lock(key string, timeout time.Duration) (context.Context, *sql.Conn, error) {
-
 	hash, err := hashstructure.Hash(key, hashstructure.FormatV2, nil)
 	if err != nil {
 		return nil, nil, derrors.NewInternalError(err)
@@ -285,11 +264,9 @@ func (syncer *syncer) lock(key string, timeout time.Duration) (context.Context, 
 	syncer.cancellersLock.Unlock()
 
 	return ctx, conn, nil
-
 }
 
 func (syncer *syncer) unlock(key string, conn *sql.Conn) {
-
 	hash, err := hashstructure.Hash(key, hashstructure.FormatV2, nil)
 	if err != nil {
 		panic(err)
@@ -307,11 +284,9 @@ func (syncer *syncer) unlock(key string, conn *sql.Conn) {
 		syncer.sugar.Error(err)
 		return
 	}
-
 }
 
 func (syncer *syncer) kickExpiredActivities() {
-
 	ctx := context.Background()
 
 	t := time.Now().Add(-1 * time.Minute)
@@ -327,17 +302,13 @@ func (syncer *syncer) kickExpiredActivities() {
 	}
 
 	for _, act := range list {
-
 		syncer.cancelActivity(act.ID.String(), "timeouts.deadline.exceeded", "Activity failed to terminate before deadline.")
-
 	}
-
 }
 
 // activity memory
 
 func (syncer *syncer) loadActivityMemory(id string) (*database.CacheData, *database.Mirror, *database.MirrorActivity, error) {
-
 	ctx := context.Background()
 
 	uid, err := uuid.Parse(id)
@@ -363,7 +334,6 @@ func (syncer *syncer) loadActivityMemory(id string) (*database.CacheData, *datab
 	}
 
 	return cached, mir, act, nil
-
 }
 
 // activity
@@ -376,7 +346,6 @@ type newMirrorActivityArgs struct {
 }
 
 func (syncer *syncer) beginActivity(tx database.Transaction, args *newMirrorActivityArgs) (*database.CacheData, *database.Mirror, *database.MirrorActivity, error) {
-
 	var err error
 	var ctx context.Context
 
@@ -453,11 +422,9 @@ func (syncer *syncer) beginActivity(tx database.Transaction, args *newMirrorActi
 	syncer.scheduleTimeout(activity.ID.String(), activity.Controller, deadline)
 
 	return cached, mirror, activity, nil
-
 }
 
 func (syncer *syncer) NewActivity(tx database.Transaction, args *newMirrorActivityArgs) error {
-
 	syncer.sugar.Debugf("Handling mirror activity: %s", this())
 
 	cached, mirror, activity, err := syncer.beginActivity(tx, args)
@@ -468,11 +435,9 @@ func (syncer *syncer) NewActivity(tx database.Transaction, args *newMirrorActivi
 	go syncer.execute(cached, mirror, activity)
 
 	return nil
-
 }
 
 func (syncer *syncer) execute(cached *database.CacheData, mirror *database.Mirror, activity *database.MirrorActivity) {
-
 	var err error
 
 	defer func() {
@@ -516,11 +481,9 @@ func (syncer *syncer) execute(cached *database.CacheData, mirror *database.Mirro
 	if err != nil {
 		return
 	}
-
 }
 
 func (syncer *syncer) fail(cached *database.CacheData, mirror *database.Mirror, activity *database.MirrorActivity, e error) {
-
 	if e == nil {
 		return
 	}
@@ -570,11 +533,9 @@ func (syncer *syncer) fail(cached *database.CacheData, mirror *database.Mirror, 
 	syncer.logToMirrorActivity(ctx, time.Now(), cached.Namespace, mirror, activity, "Mirror activity '%s' failed: %v", act.Type, e)
 
 	syncer.timers.deleteTimersForActivity(activity.ID.String())
-
 }
 
 func (syncer *syncer) success(cached *database.CacheData, mirror *database.Mirror, activity *database.MirrorActivity) error {
-
 	ctx, conn, err := syncer.lock(mirror.ID.String(), defaultLockWait)
 	if err != nil {
 		return err
@@ -615,17 +576,13 @@ func (syncer *syncer) success(cached *database.CacheData, mirror *database.Mirro
 	syncer.timers.deleteTimersForActivity(activity.ID.String())
 
 	return nil
-
 }
 
 func (syncer *syncer) initMirror(ctx context.Context, cached *database.CacheData, mirror *database.Mirror, activity *database.MirrorActivity) error {
-
 	return syncer.hardSync(ctx, cached, mirror, activity)
-
 }
 
 func (syncer *syncer) tarGzDir(path string) ([]byte, error) {
-
 	tf, err := os.CreateTemp("", "outtar")
 	if err != nil {
 		return nil, err
@@ -638,16 +595,13 @@ func (syncer *syncer) tarGzDir(path string) ([]byte, error) {
 	}
 
 	return os.ReadFile(tf.Name())
-
 }
 
 func tarGzDir(src string, buf io.Writer) error {
-
 	zr := gzip.NewWriter(buf)
 	tw := tar.NewWriter(zr)
 
 	err := filepath.Walk(src, func(file string, fi os.FileInfo, err error) error {
-
 		if err != nil {
 			return err
 		}
@@ -680,7 +634,6 @@ func tarGzDir(src string, buf io.Writer) error {
 		}
 		return nil
 	})
-
 	if err != nil {
 		return err
 	}
@@ -697,7 +650,6 @@ func tarGzDir(src string, buf io.Writer) error {
 }
 
 func (syncer *syncer) hardSync(ctx context.Context, cached *database.CacheData, mirror *database.Mirror, activity *database.MirrorActivity) error {
-
 	lr, err := loadRepository(ctx, &repositorySettings{
 		UUID:       mirror.ID,
 		URL:        mirror.URL,
@@ -737,7 +689,6 @@ func (syncer *syncer) hardSync(ctx context.Context, cached *database.CacheData, 
 
 	var recurser func(parent *database.Inode, path string) error
 	recurser = func(parent *database.Inode, path string) error {
-
 		for _, child := range parent.Children {
 
 			rcached := new(database.CacheData)
@@ -819,7 +770,6 @@ func (syncer *syncer) hardSync(ctx context.Context, cached *database.CacheData, 
 		}
 
 		return nil
-
 	}
 
 	err = recurser(cached.Inode(), ".")
@@ -828,7 +778,6 @@ func (syncer *syncer) hardSync(ctx context.Context, cached *database.CacheData, 
 	}
 
 	err = modelWalk(model.root, ".", func(path string, n *mirrorNode, err error) error {
-
 		if path == "." {
 			return nil
 		}
@@ -973,7 +922,6 @@ func (syncer *syncer) hardSync(ctx context.Context, cached *database.CacheData, 
 		}
 
 		return nil
-
 	})
 	if err != nil {
 		return err
@@ -987,7 +935,6 @@ func (syncer *syncer) hardSync(ctx context.Context, cached *database.CacheData, 
 	syncer.flow.database.InvalidateNamespace(ctx, cached, true)
 
 	return nil
-
 }
 
 type repositorySettings struct {
@@ -1007,7 +954,6 @@ type localRepository struct {
 }
 
 func loadRepository(ctx context.Context, repo *repositorySettings) (*localRepository, error) {
-
 	repository := new(localRepository)
 	repository.repo = repo
 	repository.path = filepath.Join(os.TempDir(), repo.UUID.String())
@@ -1020,7 +966,6 @@ func loadRepository(ctx context.Context, repo *repositorySettings) (*localReposi
 	}
 
 	return repository, nil
-
 }
 
 func (repository *localRepository) Cleanup() {
@@ -1028,7 +973,6 @@ func (repository *localRepository) Cleanup() {
 }
 
 func (repository *localRepository) clone(ctx context.Context) error {
-
 	uri := repository.repo.URL
 	prefix := "https://"
 
@@ -1058,7 +1002,6 @@ func (repository *localRepository) clone(ctx context.Context) error {
 	}
 
 	r, err := git.PlainClone(repository.path, false, cloneOptions)
-
 	if err != nil {
 		return err
 	}
@@ -1089,7 +1032,6 @@ type mirrorModel struct {
 }
 
 func (model *mirrorModel) lookup(path string) (*mirrorNode, error) {
-
 	path = strings.Trim(path, "/")
 
 	if path == "." || path == "" {
@@ -1115,11 +1057,9 @@ func (model *mirrorModel) lookup(path string) (*mirrorNode, error) {
 	}
 
 	return nil, os.ErrNotExist
-
 }
 
 func (model *mirrorModel) addDirectoryNode(path string) error {
-
 	dir, base := filepath.Split(path)
 
 	node, err := model.lookup(dir)
@@ -1139,11 +1079,9 @@ func (model *mirrorModel) addDirectoryNode(path string) error {
 	})
 
 	return nil
-
 }
 
 func (model *mirrorModel) addWorkflowNode(path string) error {
-
 	dir, base := filepath.Split(path)
 
 	node, err := model.lookup(dir)
@@ -1178,11 +1116,9 @@ func (model *mirrorModel) addWorkflowNode(path string) error {
 	})
 
 	return nil
-
 }
 
 func (model *mirrorModel) addWorkflowVariableNode(path string, isDir bool) error {
-
 	dir, base := filepath.Split(path)
 
 	node, err := model.lookup(dir)
@@ -1203,11 +1139,9 @@ func (model *mirrorModel) addWorkflowVariableNode(path string, isDir bool) error
 	})
 
 	return nil
-
 }
 
 func (model *mirrorModel) addNamespaceVariableNode(path string, isDir bool) error {
-
 	dir, base := filepath.Split(path)
 
 	node, err := model.lookup(dir)
@@ -1228,15 +1162,12 @@ func (model *mirrorModel) addNamespaceVariableNode(path string, isDir bool) erro
 	})
 
 	return nil
-
 }
 
 func (model *mirrorModel) finalize() error {
-
 	var recurse func(node *mirrorNode) bool
 
 	recurse = func(node *mirrorNode) bool {
-
 		if node.ntype != mntDir {
 			return true
 		}
@@ -1252,13 +1183,11 @@ func (model *mirrorModel) finalize() error {
 
 		node.children = children
 		return len(node.children) > 0
-
 	}
 
 	recurse(model.root)
 
 	return nil
-
 }
 
 // var (
@@ -1283,7 +1212,6 @@ func (model *mirrorModel) finalize() error {
 // }
 
 func modelWalk(node *mirrorNode, path string, fn func(path string, n *mirrorNode, err error) error) error {
-
 	err := fn(path, node, nil)
 	if errors.Is(err, filepath.SkipDir) {
 		return nil
@@ -1301,11 +1229,9 @@ func modelWalk(node *mirrorNode, path string, fn func(path string, n *mirrorNode
 	}
 
 	return nil
-
 }
 
 func buildModel(ctx context.Context, repo *localRepository) (*mirrorModel, error) {
-
 	model := new(mirrorModel)
 	model.root = &mirrorNode{
 		parent:   model.root,
@@ -1339,7 +1265,6 @@ func buildModel(ctx context.Context, repo *localRepository) (*mirrorModel, error
 	}
 
 	err = filepath.WalkDir(repo.path, func(path string, d fs.DirEntry, err error) error {
-
 		if err != nil {
 			return err
 		}
@@ -1416,7 +1341,6 @@ func buildModel(ctx context.Context, repo *localRepository) (*mirrorModel, error
 		}
 
 		return nil
-
 	})
 	if err != nil {
 		return nil, err
@@ -1430,5 +1354,4 @@ func buildModel(ctx context.Context, repo *localRepository) (*mirrorModel, error
 	// model.dump()
 
 	return model, nil
-
 }

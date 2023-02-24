@@ -13,7 +13,6 @@ var eventHistoryCmd = &cobra.Command{
 	Use:  "event-history NAMESPACE",
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-
 		namespace := args[0]
 
 		c, closer, err := client()
@@ -67,7 +66,6 @@ var eventHistoryCmd = &cobra.Command{
 			print(resp)
 
 		}
-
 	},
 }
 
@@ -75,7 +73,6 @@ var eventReplayCmd = &cobra.Command{
 	Use:  "replay-event NAMESPACE ID",
 	Args: cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
-
 		namespace := args[0]
 		id := args[1]
 
@@ -96,6 +93,5 @@ var eventReplayCmd = &cobra.Command{
 		}
 
 		print(resp)
-
 	},
 }

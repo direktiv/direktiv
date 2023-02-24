@@ -45,5 +45,4 @@ func (o *ReusableFunctionDefinition) Validate() error {
 	}
 
 	return nil
-
 }

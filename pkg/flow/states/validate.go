@@ -21,7 +21,6 @@ type validateLogic struct {
 }
 
 func Validate(instance Instance, state model.State) (Logic, error) {
-
 	validate, ok := state.(*model.ValidateState)
 	if !ok {
 		return nil, derrors.NewInternalError(errors.New("bad state object"))
@@ -32,11 +31,9 @@ func Validate(instance Instance, state model.State) (Logic, error) {
 	sl.ValidateState = validate
 
 	return sl, nil
-
 }
 
 func (logic *validateLogic) Run(ctx context.Context, wakedata []byte) (*Transition, error) {
-
 	err := scheduleOnce(logic, wakedata)
 	if err != nil {
 		return nil, err
@@ -82,5 +79,4 @@ func (logic *validateLogic) Run(ctx context.Context, wakedata []byte) (*Transiti
 		Transform: logic.Transform,
 		NextState: logic.Transition,
 	}, nil
-
 }

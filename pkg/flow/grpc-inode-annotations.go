@@ -18,7 +18,6 @@ import (
 )
 
 func (flow *flow) traverseToInodeAnnotation(ctx context.Context, tx database.Transaction, namespace, path, key string) (*database.CacheData, *database.Annotation, error) {
-
 	cached := new(database.CacheData)
 
 	err := flow.database.NamespaceByName(ctx, tx, cached, namespace)
@@ -37,11 +36,9 @@ func (flow *flow) traverseToInodeAnnotation(ctx context.Context, tx database.Tra
 	}
 
 	return cached, annotation, nil
-
 }
 
 func (flow *flow) NodeAnnotation(ctx context.Context, req *grpc.NodeAnnotationRequest) (*grpc.NodeAnnotationResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	cached, annotation, err := flow.traverseToInodeAnnotation(ctx, nil, req.GetNamespace(), req.GetPath(), req.GetKey())
@@ -67,11 +64,9 @@ func (flow *flow) NodeAnnotation(ctx context.Context, req *grpc.NodeAnnotationRe
 	resp.Data = annotation.Data
 
 	return &resp, nil
-
 }
 
 func (flow *flow) NodeAnnotationParcels(req *grpc.NodeAnnotationRequest, srv grpc.Flow_NodeAnnotationParcelsServer) error {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
@@ -129,11 +124,9 @@ func (flow *flow) NodeAnnotationParcels(req *grpc.NodeAnnotationRequest, srv grp
 		}
 
 	}
-
 }
 
 func (flow *flow) NodeAnnotations(ctx context.Context, req *grpc.NodeAnnotationsRequest) (*grpc.NodeAnnotationsResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	cached, err := flow.traverseToInode(ctx, nil, req.GetNamespace(), req.GetPath())
@@ -161,11 +154,9 @@ func (flow *flow) NodeAnnotations(ctx context.Context, req *grpc.NodeAnnotations
 	}
 
 	return resp, nil
-
 }
 
 func (flow *flow) NodeAnnotationsStream(req *grpc.NodeAnnotationsRequest, srv grpc.Flow_NodeAnnotationsStreamServer) error {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
@@ -216,11 +207,9 @@ resend:
 	}
 
 	goto resend
-
 }
 
 func (flow *flow) SetNodeAnnotation(ctx context.Context, req *grpc.SetNodeAnnotationRequest) (*grpc.SetNodeAnnotationResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	tx, err := flow.database.Tx(ctx)
@@ -262,11 +251,9 @@ func (flow *flow) SetNodeAnnotation(ctx context.Context, req *grpc.SetNodeAnnota
 	resp.MimeType = annotation.MimeType
 
 	return &resp, nil
-
 }
 
 func (flow *flow) SetNodeAnnotationParcels(srv grpc.Flow_SetNodeAnnotationParcelsServer) error {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
@@ -367,11 +354,9 @@ func (flow *flow) SetNodeAnnotationParcels(srv grpc.Flow_SetNodeAnnotationParcel
 	}
 
 	return nil
-
 }
 
 func (flow *flow) DeleteNodeAnnotation(ctx context.Context, req *grpc.DeleteNodeAnnotationRequest) (*emptypb.Empty, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	tx, err := flow.database.Tx(ctx)
@@ -402,11 +387,9 @@ func (flow *flow) DeleteNodeAnnotation(ctx context.Context, req *grpc.DeleteNode
 	var resp emptypb.Empty
 
 	return &resp, nil
-
 }
 
 func (flow *flow) RenameNodeAnnotation(ctx context.Context, req *grpc.RenameNodeAnnotationRequest) (*grpc.RenameNodeAnnotationResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	tx, err := flow.database.Tx(ctx)
@@ -445,5 +428,4 @@ func (flow *flow) RenameNodeAnnotation(ctx context.Context, req *grpc.RenameNode
 	resp.MimeType = anno.MimeType
 
 	return &resp, nil
-
 }

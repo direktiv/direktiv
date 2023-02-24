@@ -25,18 +25,15 @@ func wrap(err error, s string) error {
 }
 
 func jq(input interface{}, command interface{}) ([]interface{}, error) {
-
 	out, err := jqer.Evaluate(input, command)
 	if err != nil {
 		return nil, derrors.NewCatchableError(ErrCodeJQBadQuery, "failed to evaluate jq/js: %v", err)
 	}
 
 	return out, nil
-
 }
 
 func jqOne(input interface{}, command interface{}) (interface{}, error) {
-
 	output, err := jq(input, command)
 	if err != nil {
 		return nil, err
@@ -51,11 +48,9 @@ func jqOne(input interface{}, command interface{}) (interface{}, error) {
 	}
 
 	return output[0], nil
-
 }
 
 func jqObject(input interface{}, command interface{}) (map[string]interface{}, error) {
-
 	x, err := jqOne(input, command)
 	if err != nil {
 		return nil, err
@@ -67,11 +62,9 @@ func jqObject(input interface{}, command interface{}) (map[string]interface{}, e
 	}
 
 	return m, nil
-
 }
 
 func jqString(input interface{}, command interface{}) (string, error) {
-
 	x, err := jqOne(input, command)
 	if err != nil {
 		return "", err
@@ -83,11 +76,9 @@ func jqString(input interface{}, command interface{}) (string, error) {
 	}
 
 	return s, nil
-
 }
 
 func truth(x interface{}) bool {
-
 	var success bool
 
 	if x != nil {
@@ -121,5 +112,4 @@ func truth(x interface{}) bool {
 	}
 
 	return success
-
 }

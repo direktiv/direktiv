@@ -38,29 +38,24 @@ type instanceMemory struct {
 }
 
 func (im *instanceMemory) getInstanceUpdater() *ent.InstanceUpdateOne {
-
 	if im.instanceUpdater == nil {
 		clients := im.engine.edb.Clients(im.tx)
 		im.instanceUpdater = clients.Instance.UpdateOneID(im.cached.Instance.ID)
 	}
 
 	return im.instanceUpdater
-
 }
 
 func (im *instanceMemory) getRuntimeUpdater() *ent.InstanceRuntimeUpdateOne {
-
 	if im.runtimeUpdater == nil {
 		clients := im.engine.edb.Clients(im.tx)
 		im.runtimeUpdater = clients.InstanceRuntime.UpdateOneID(im.runtime.ID)
 	}
 
 	return im.runtimeUpdater
-
 }
 
 func (im *instanceMemory) flushUpdates(ctx context.Context) error {
-
 	var changes bool
 
 	if im.runtimeUpdater != nil {
@@ -110,23 +105,17 @@ func (im *instanceMemory) flushUpdates(ctx context.Context) error {
 	}
 
 	return nil
-
 }
 
 func (im *instanceMemory) ID() uuid.UUID {
-
 	return im.cached.Instance.ID
-
 }
 
 func (im *instanceMemory) Controller() string {
-
 	return im.runtime.Controller
-
 }
 
 func (im *instanceMemory) Model() (*model.Workflow, error) {
-
 	data := im.cached.Revision.Source
 
 	workflow := new(model.Workflow)
@@ -137,7 +126,6 @@ func (im *instanceMemory) Model() (*model.Workflow, error) {
 	}
 
 	return workflow, nil
-
 }
 
 func (im *instanceMemory) Step() int {
@@ -153,24 +141,20 @@ func (im *instanceMemory) Flow() []string {
 }
 
 func (im *instanceMemory) MarshalData() string {
-
 	data, err := json.Marshal(im.data)
 	if err != nil {
 		panic(err)
 	}
 
 	return string(data)
-
 }
 
 func (im *instanceMemory) MarshalOutput() string {
-
 	if im.Status() == "complete" {
 		return im.MarshalData()
 	}
 
 	return ""
-
 }
 
 func (im *instanceMemory) setMemory(x interface{}) {
@@ -182,18 +166,15 @@ func (im *instanceMemory) GetMemory() interface{} {
 }
 
 func (im *instanceMemory) MarshalMemory() string {
-
 	data, err := json.Marshal(im.memory)
 	if err != nil {
 		panic(err)
 	}
 
 	return string(data)
-
 }
 
 func (im *instanceMemory) UnmarshalMemory(x interface{}) error {
-
 	if im.memory == nil {
 		return nil
 	}
@@ -209,7 +190,6 @@ func (im *instanceMemory) UnmarshalMemory(x interface{}) error {
 	}
 
 	return nil
-
 }
 
 func (im *instanceMemory) ErrorCode() string {
@@ -225,7 +205,6 @@ func (im *instanceMemory) StateBeginTime() time.Time {
 }
 
 func (im *instanceMemory) StoreData(key string, val interface{}) error {
-
 	m, ok := im.data.(map[string]interface{})
 	if !ok {
 		return derrors.NewInternalError(errors.New("unable to store data because state data isn't a valid JSON object"))
@@ -234,11 +213,9 @@ func (im *instanceMemory) StoreData(key string, val interface{}) error {
 	m[key] = val
 
 	return nil
-
 }
 
 func (engine *engine) getInstanceMemory(ctx context.Context, tx database.Transaction, id string) (*instanceMemory, error) {
-
 	uid, err := uuid.Parse(id)
 	if err != nil {
 		return nil, err
@@ -289,11 +266,9 @@ func (engine *engine) getInstanceMemory(ctx context.Context, tx database.Transac
 	}
 
 	return im, nil
-
 }
 
 func (engine *engine) loadInstanceMemory(id string, step int) (context.Context, *instanceMemory, error) {
-
 	ctx, conn, err := engine.lock(id, defaultLockWait)
 	if err != nil {
 		return nil, nil, err
@@ -318,11 +293,9 @@ func (engine *engine) loadInstanceMemory(id string, step int) (context.Context, 
 	}
 
 	return ctx, im, nil
-
 }
 
 func (engine *engine) InstanceCaller(ctx context.Context, im *instanceMemory) *subflowCaller {
-
 	var err error
 
 	str := im.runtime.CallerData
@@ -338,20 +311,16 @@ func (engine *engine) InstanceCaller(ctx context.Context, im *instanceMemory) *s
 	}
 
 	return output
-
 }
 
 func (engine *engine) StoreMetadata(ctx context.Context, im *instanceMemory, data string) {
-
 	updater := im.getRuntimeUpdater()
 	updater = updater.SetMetadata(data)
 	im.runtime.Metadata = data
 	im.runtimeUpdater = updater
-
 }
 
 func (engine *engine) FreeInstanceMemory(im *instanceMemory) {
-
 	engine.freeResources(im)
 
 	if im.lock != nil {
@@ -366,11 +335,9 @@ func (engine *engine) FreeInstanceMemory(im *instanceMemory) {
 	if err != nil {
 		engine.sugar.Error(err)
 	}
-
 }
 
 func (engine *engine) freeResources(im *instanceMemory) {
-
 	ctx := context.Background()
 
 	for i := range im.eventQueue {
@@ -387,5 +354,4 @@ func (engine *engine) freeResources(im *instanceMemory) {
 	// workflow = rec.Edges.Workflow.ID.String()
 	// instance = rec.InstanceID
 	// we.server.variableStorage.DeleteAllInScope(context.Background(), namespace, workflow, instance)
-
 }

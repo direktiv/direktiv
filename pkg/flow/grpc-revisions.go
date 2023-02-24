@@ -15,7 +15,6 @@ import (
 )
 
 func (flow *flow) Revisions(ctx context.Context, req *grpc.RevisionsRequest) (*grpc.RevisionsResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	cached, err := flow.traverseToWorkflow(ctx, nil, req.GetNamespace(), req.GetPath())
@@ -50,11 +49,9 @@ func (flow *flow) Revisions(ctx context.Context, req *grpc.RevisionsRequest) (*g
 	resp.Node.Parent = cached.Dir()
 
 	return resp, nil
-
 }
 
 func (flow *flow) RevisionsStream(req *grpc.RevisionsRequest, srv grpc.Flow_RevisionsStreamServer) error {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
@@ -112,11 +109,9 @@ resend:
 	}
 
 	goto resend
-
 }
 
 func (flow *flow) DeleteRevision(ctx context.Context, req *grpc.DeleteRevisionRequest) (*emptypb.Empty, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	tx, err := flow.database.Tx(ctx)
@@ -150,14 +145,12 @@ func (flow *flow) DeleteRevision(ctx context.Context, req *grpc.DeleteRevisionRe
 	if len(xrefs) == 1 && xrefs[0].Name == "latest" {
 		err = flow.configureRouter(ctx, tx, cached, rcfBreaking,
 			func() error {
-
 				err := clients.Ref.DeleteOneID(cached.Ref.ID).Exec(ctx)
 				if err != nil {
 					return err
 				}
 
 				return nil
-
 			},
 			tx.Commit,
 		)
@@ -167,14 +160,12 @@ func (flow *flow) DeleteRevision(ctx context.Context, req *grpc.DeleteRevisionRe
 	} else {
 		err = flow.configureRouter(ctx, tx, cached, rcfBreaking,
 			func() error {
-
 				err := clients.Revision.DeleteOneID(cached.Revision.ID).Exec(ctx)
 				if err != nil {
 					return err
 				}
 
 				return nil
-
 			},
 			tx.Commit,
 		)
@@ -189,5 +180,4 @@ func (flow *flow) DeleteRevision(ctx context.Context, req *grpc.DeleteRevisionRe
 	var resp emptypb.Empty
 
 	return &resp, nil
-
 }

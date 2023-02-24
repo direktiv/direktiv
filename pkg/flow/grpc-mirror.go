@@ -23,7 +23,6 @@ import (
 )
 
 func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNamespaceMirrorRequest) (*grpc.CreateNamespaceResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	tx, err := flow.database.Tx(ctx)
@@ -101,11 +100,9 @@ respond:
 	}
 
 	return &resp, nil
-
 }
 
 func (flow *flow) CreateDirectoryMirror(ctx context.Context, req *grpc.CreateDirectoryMirrorRequest) (*grpc.CreateDirectoryResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	tx, err := flow.database.Tx(ctx)
@@ -198,11 +195,9 @@ func (flow *flow) CreateDirectoryMirror(ctx context.Context, req *grpc.CreateDir
 	}
 
 	return &resp, nil
-
 }
 
 func (srv *server) getMirror(ctx context.Context, tx database.Transaction, ino *database.Inode) (*database.Mirror, error) {
-
 	if ino.ExtendedType != util.InodeTypeGit {
 		srv.sugar.Debugf("%s inode isn't a git mirror", parent())
 		return nil, ErrNotMirror
@@ -215,11 +210,9 @@ func (srv *server) getMirror(ctx context.Context, tx database.Transaction, ino *
 	}
 
 	return mir, nil
-
 }
 
 func (srv *server) traverseToMirror(ctx context.Context, tx database.Transaction, namespace, path string) (*database.CacheData, *database.Mirror, error) {
-
 	cached, err := srv.traverseToInode(ctx, tx, namespace, path)
 	if err != nil {
 		srv.sugar.Debugf("%s failed to resolve mirror's inode: %v", parent(), err)
@@ -232,11 +225,9 @@ func (srv *server) traverseToMirror(ctx context.Context, tx database.Transaction
 	}
 
 	return cached, mir, nil
-
 }
 
 func (flow *flow) UpdateMirrorSettings(ctx context.Context, req *grpc.UpdateMirrorSettingsRequest) (*emptypb.Empty, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	tx, err := flow.database.Tx(ctx)
@@ -298,11 +289,9 @@ func (flow *flow) UpdateMirrorSettings(ctx context.Context, req *grpc.UpdateMirr
 	var resp emptypb.Empty
 
 	return &resp, nil
-
 }
 
 func (flow *flow) LockMirror(ctx context.Context, req *grpc.LockMirrorRequest) (*emptypb.Empty, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	tx, err := flow.database.Tx(ctx)
@@ -325,7 +314,6 @@ func (flow *flow) LockMirror(ctx context.Context, req *grpc.LockMirrorRequest) (
 
 	var recurser func(ino *database.Inode) error
 	recurser = func(ino *database.Inode) error {
-
 		for _, child := range ino.Children {
 			if ino.ExtendedType == util.InodeTypeGit {
 				continue
@@ -378,7 +366,6 @@ func (flow *flow) LockMirror(ctx context.Context, req *grpc.LockMirrorRequest) (
 		}
 
 		return nil
-
 	}
 
 	readonly := false
@@ -414,11 +401,9 @@ func (flow *flow) LockMirror(ctx context.Context, req *grpc.LockMirrorRequest) (
 	var resp emptypb.Empty
 
 	return &resp, nil
-
 }
 
 func (flow *flow) UnlockMirror(ctx context.Context, req *grpc.UnlockMirrorRequest) (*emptypb.Empty, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	tx, err := flow.database.Tx(ctx)
@@ -441,7 +426,6 @@ func (flow *flow) UnlockMirror(ctx context.Context, req *grpc.UnlockMirrorReques
 
 	var recurser func(ino *database.Inode) error
 	recurser = func(ino *database.Inode) error {
-
 		for _, child := range ino.Children {
 			if ino.ExtendedType == util.InodeTypeGit {
 				continue
@@ -494,7 +478,6 @@ func (flow *flow) UnlockMirror(ctx context.Context, req *grpc.UnlockMirrorReques
 		}
 
 		return nil
-
 	}
 
 	readonly := false
@@ -530,11 +513,9 @@ func (flow *flow) UnlockMirror(ctx context.Context, req *grpc.UnlockMirrorReques
 	var resp emptypb.Empty
 
 	return &resp, nil
-
 }
 
 func (flow *flow) SoftSyncMirror(ctx context.Context, req *grpc.SoftSyncMirrorRequest) (*emptypb.Empty, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	tx, err := flow.database.Tx(ctx)
@@ -561,11 +542,9 @@ func (flow *flow) SoftSyncMirror(ctx context.Context, req *grpc.SoftSyncMirrorRe
 	var resp emptypb.Empty
 
 	return &resp, nil
-
 }
 
 func (flow *flow) HardSyncMirror(ctx context.Context, req *grpc.HardSyncMirrorRequest) (*emptypb.Empty, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	tx, err := flow.database.Tx(ctx)
@@ -592,7 +571,6 @@ func (flow *flow) HardSyncMirror(ctx context.Context, req *grpc.HardSyncMirrorRe
 	var resp emptypb.Empty
 
 	return &resp, nil
-
 }
 
 var mirrorActivitiesOrderings = []*orderingInfo{
@@ -606,7 +584,6 @@ var mirrorActivitiesOrderings = []*orderingInfo{
 var mirrorActivitiesFilters = map[*filteringInfo]func(query *ent.MirrorActivityQuery, v string) (*ent.MirrorActivityQuery, error){}
 
 func (flow *flow) MirrorInfo(ctx context.Context, req *grpc.MirrorInfoRequest) (*grpc.MirrorInfoResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	tx, err := flow.database.Tx(ctx)
@@ -657,11 +634,9 @@ func (flow *flow) MirrorInfo(ctx context.Context, req *grpc.MirrorInfoRequest) (
 	}
 
 	return resp, nil
-
 }
 
 func (flow *flow) MirrorInfoStream(req *grpc.MirrorInfoRequest, srv grpc.Flow_MirrorInfoStreamServer) error {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
@@ -746,11 +721,9 @@ resend:
 	}
 
 	goto resend
-
 }
 
 func (srv *server) getMirrorActivity(ctx context.Context, tx database.Transaction, namespace, activity string) (*database.CacheData, *database.MirrorActivity, error) {
-
 	id, err := uuid.Parse(activity)
 	if err != nil {
 		srv.sugar.Debugf("%s failed to parse UUID: %v", parent(), err)
@@ -776,11 +749,9 @@ func (srv *server) getMirrorActivity(ctx context.Context, tx database.Transactio
 	}
 
 	return cached, act, nil
-
 }
 
 func (flow *flow) MirrorActivityLogs(ctx context.Context, req *grpc.MirrorActivityLogsRequest) (*grpc.MirrorActivityLogsResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	cached, activity, err := flow.getMirrorActivity(ctx, nil, req.GetNamespace(), req.GetActivity())
@@ -808,11 +779,9 @@ func (flow *flow) MirrorActivityLogs(ctx context.Context, req *grpc.MirrorActivi
 	}
 
 	return resp, nil
-
 }
 
 func (flow *flow) MirrorActivityLogsParcels(req *grpc.MirrorActivityLogsRequest, srv grpc.Flow_MirrorActivityLogsParcelsServer) error {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
@@ -867,11 +836,9 @@ resend:
 	}
 
 	goto resend
-
 }
 
 func (flow *flow) CancelMirrorActivity(ctx context.Context, req *grpc.CancelMirrorActivityRequest) (*emptypb.Empty, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	tx, err := flow.database.Tx(ctx)
@@ -885,5 +852,4 @@ func (flow *flow) CancelMirrorActivity(ctx context.Context, req *grpc.CancelMirr
 	var resp emptypb.Empty
 
 	return &resp, nil
-
 }
