@@ -15,7 +15,6 @@ const {
   redDark,
   blackA,
 } = require("@radix-ui/colors");
-
 const defaultTheme = require("tailwindcss/defaultTheme");
 
 module.exports = {
@@ -28,6 +27,8 @@ module.exports = {
     extend: {
       colors: {
         ...blackA,
+        gray,
+        grayDark,
       },
       keyframes: {
         overlayShow: {
