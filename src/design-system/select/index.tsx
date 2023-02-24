@@ -17,13 +17,14 @@ const SelectTrigger = React.forwardRef<
     size?: "xs" | "sm" | "lg";
     loading?: boolean;
     block?: boolean;
+    ghost?: boolean;
   }
->(({ className, size, loading, block, children, ...props }, ref) => (
+>(({ className, size, loading, block, ghost, children, ...props }, ref) => (
   <SelectPrimitive.Trigger
     ref={ref}
     className={clsx(
-      "btn gap-2",
-      "btn-outline",
+      "btn gap-2 btn-ghost",
+      !ghost && "border-base-content bg-base-100 border-opacity-20",
       size === "lg" && "btn-lg",
       size === "sm" && "btn-sm",
       size === "xs" && "btn-xs",

@@ -9,6 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./index";
+import Button from "../button";
 
 const meta = {
   title: "Design System/Select",
@@ -58,23 +59,28 @@ export const Default: Story = {
     );
   },
   args: {},
+  tags: ["autodocs"],
   argTypes: {
     size: {
-      description: "Button size",
+      description: "select size",
       control: "select",
       options: ["xs", "sm", "lg"],
       type: { name: "string", required: false },
     },
     loading: {
-      description: "Button in loading state",
+      description: "select in loading state",
       control: "boolean",
       type: { name: "boolean", required: false },
     },
-
     block: {
-      description: "make button full width",
+      description: "make select full width",
       control: "boolean",
       type: { name: "boolean", required: false },
+    },
+    asChild: {
+      table: {
+        disable: true,
+      },
     },
   },
 };
@@ -138,6 +144,20 @@ export const LoadingState = () => {
   );
 };
 
+export const Ghost = () => (
+  <div className="bg-base-300">
+    <Select>
+      <SelectTrigger ghost>
+        <SelectValue placeholder="ghost select" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="1">Item 1</SelectItem>
+        <SelectItem value="2">Item 2</SelectItem>
+        <SelectItem value="3">Item 3</SelectItem>
+      </SelectContent>
+    </Select>
+  </div>
+);
 export const Block = () => (
   <Select>
     <SelectTrigger block>
