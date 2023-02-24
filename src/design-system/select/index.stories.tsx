@@ -12,17 +12,17 @@ import {
 
 const meta = {
   title: "Design System/Select",
-  component: Select,
-} satisfies Meta<typeof Select>;
+  component: SelectTrigger,
+} satisfies Meta<typeof SelectTrigger>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  render: () => {
+  render: (args) => {
     return (
       <Select>
-        <SelectTrigger className="w-[180px]">
+        <SelectTrigger {...args}>
           <SelectValue placeholder="Select a fruit" />
         </SelectTrigger>
         <SelectContent>
@@ -58,5 +58,23 @@ export const Default: Story = {
     );
   },
   args: {},
-  argTypes: {},
+  argTypes: {
+    size: {
+      description: "Button size",
+      control: "select",
+      options: ["xs", "sm", "lg"],
+      type: { name: "string", required: false },
+    },
+    loading: {
+      description: "Button in loading state",
+      control: "boolean",
+      type: { name: "boolean", required: false },
+    },
+
+    block: {
+      description: "make button full width",
+      control: "boolean",
+      type: { name: "boolean", required: false },
+    },
+  },
 };
