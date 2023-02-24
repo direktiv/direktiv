@@ -323,6 +323,11 @@ func proxyEnvs(withGrpc bool, envs map[string]string) []corev1.EnvVar {
 		})
 	}
 
+	proxyEnvs = append(proxyEnvs, corev1.EnvVar{
+		Name:  "DIREKTIV_APP",
+		Value: "sidecar",
+	})
+
 	return proxyEnvs
 }
 
