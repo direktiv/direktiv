@@ -68,7 +68,7 @@ const SelectLabel = React.forwardRef<
   <SelectPrimitive.Label
     ref={ref}
     className={clsx(
-      "py-1.5 pr-2 pl-8 text-sm font-semibold text-gray-gray8 dark:text-grayDark-gray8",
+      "py-1.5 pr-2 pl-8 text-sm font-medium text-gray-gray8 dark:text-grayDark-gray8",
       className
     )}
     {...props}
@@ -83,7 +83,7 @@ const SelectItem = React.forwardRef<
   <SelectPrimitive.Item
     ref={ref}
     className={clsx(
-      "relative flex cursor-default select-none items-center rounded-sm py-1.5 pr-2 pl-8 text-sm font-medium outline-none focus:bg-slate-100 data-[disabled]:pointer-events-none data-[disabled]:opacity-50 dark:focus:bg-slate-700",
+      "relative flex cursor-default select-none items-center rounded-sm py-1.5 pr-2 pl-8 text-sm font-medium outline-none     focus:bg-base-300 data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       className
     )}
     {...props}
@@ -105,10 +105,7 @@ const SelectSeparator = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <SelectPrimitive.Separator
     ref={ref}
-    className={clsx(
-      "-mx-1 my-1 h-px bg-slate-100 dark:bg-slate-700",
-      className
-    )}
+    className={clsx("-mx-1 my-1 h-px bg-base-300", className)}
     {...props}
   />
 ));
