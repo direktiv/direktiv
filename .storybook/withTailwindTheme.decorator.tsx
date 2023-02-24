@@ -8,10 +8,7 @@ export default (Story, context) => {
 
   useEffect(() => {
     const htmlTag = document.documentElement;
-
     // Set the "data-theme" attribute on the iFrame html tag
-
-    console.log("🚀", theme);
     htmlTag.setAttribute("data-theme", theme || DEFAULT_THEME);
   }, [theme]);
 
