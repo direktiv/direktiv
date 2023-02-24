@@ -3,6 +3,12 @@
 @tailwind components;
 @tailwind utilities;
 
+/* overwrite daisyui */
+
+/* no uppercase buttons */
+.btn {
+  @apply normal-case;
+}
 /* fix daisyui outline buttons with state colors */
 .btn-outline.btn-info {
   @apply border-info-content text-info-content;
