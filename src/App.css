@@ -9,6 +9,7 @@
 .btn {
   @apply normal-case;
 }
+
 /* fix daisyui outline buttons with state colors */
 .btn-outline.btn-info {
   @apply border-info-content text-info-content;
@@ -24,6 +25,29 @@
 
 .btn-outline.btn-error {
   @apply border-error-content text-error-content;
+}
+
+/* make normal and large variants a bit smaller */
+.btn,
+.input,
+.btn-md,
+.input-md {
+  @apply h-9 min-h-8; /* default is h-12 min-h-12 */
+}
+
+.btn-xs,
+.input-xs {
+  @apply h-6 min-h-6; /* keeps the original */
+}
+
+.btn-sm,
+.input-sm {
+  @apply h-8 min-h-8; /* keeps the original */
+}
+
+.btn-lg,
+.input-lg {
+  @apply h-11 min-h-8; /* default is h-16 min-h-16 */
 }
 
 @font-face {
