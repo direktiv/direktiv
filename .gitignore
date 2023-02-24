@@ -55,12 +55,7 @@ issuer.*
 /build/docker/*
 !*build/docker/flow-dbinit
 !*build/docker/all
-!*build/docker/functions
-!*build/docker/secrets
-!*build/docker/flow
-!*build/docker/sidecar
-!*build/docker/api
-!*build/docker/functions
+!*build/docker/direktiv
 /build/docker/sidecar/sidecar
 *build/docker/functions/functions
 build/docker/all/kubernetes
