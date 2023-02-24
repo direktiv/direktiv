@@ -1,16 +1,18 @@
 import {
+  Box,
   Bug,
   Calendar,
   FolderTree,
-  Laptop,
   Layers,
   LogOut,
+  Network,
   Settings,
+  Users,
 } from "lucide-react";
 
+import Button from "../button";
 import Logo from "./Logo";
 import clsx from "clsx";
-import Button from "../button";
 
 export default {
   title: "Design System/Compositions/App Shell",
@@ -19,10 +21,15 @@ export default {
 const navigation = [
   { name: "Explorer", href: "#", icon: FolderTree, current: true },
   { name: "Monitoring", href: "#", icon: Bug, current: false },
-  { name: "Instances", href: "#", icon: Laptop, current: false },
+  { name: "Instances", href: "#", icon: Box, current: false },
   { name: "Events", href: "#", icon: Calendar, current: false },
   { name: "Services", href: "#", icon: Layers, current: false },
   { name: "Settings", href: "#", icon: Settings, current: false },
+];
+
+const enterprise = [
+  { name: "Gateway", href: "#", icon: Network, current: false },
+  { name: "Permissions", href: "#", icon: Users, current: false },
 ];
 
 export const Default = () => (
@@ -32,9 +39,36 @@ export const Default = () => (
         <Logo className="h-8 w-auto" />
       </div>
       <div className="mt-5 flex h-0 flex-1 flex-col overflow-y-auto pt-1">
-        <nav className="mt-6 px-3">
+        <nav className="mt-6 px-3 space-y-3">
           <div className="space-y-1">
             {navigation.map((item) => (
+              <a
+                key={item.name}
+                href={item.href}
+                className={clsx(
+                  item.current
+                    ? "bg-gray-200 text-gray-900"
+                    : "text-gray-700 hover:text-gray-900 hover:bg-gray-50",
+                  "group flex items-center px-2 py-2 text-sm font-medium rounded-md"
+                )}
+                aria-current={item.current ? "page" : undefined}
+              >
+                <item.icon
+                  className={clsx(
+                    item.current
+                      ? "text-gray-500"
+                      : "text-gray-400 group-hover:text-gray-500",
+                    "mr-3 flex-shrink-0 h-6 w-6"
+                  )}
+                  aria-hidden="true"
+                />
+                {item.name}
+              </a>
+            ))}
+          </div>
+          <div className="divider"></div>
+          <div className="space-y-1">
+            {enterprise.map((item) => (
               <a
                 key={item.name}
                 href={item.href}
@@ -77,7 +111,7 @@ export const Default = () => (
               Version: 78c688e
             </span>
           </span>
-          <Button color="link">
+          <Button color="link" className="text-grayDark-gray9">
             <LogOut />
           </Button>
         </span>
