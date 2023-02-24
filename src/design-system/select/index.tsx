@@ -23,7 +23,7 @@ const SelectTrigger = React.forwardRef<
   <SelectPrimitive.Trigger
     ref={ref}
     className={clsx(
-      "btn gap-2 btn-ghost",
+      "btn gap-2 btn-ghost justify-between",
       !ghost && "border-base-content bg-base-100 border-opacity-20",
       size === "lg" && "btn-lg",
       size === "sm" && "btn-sm",
