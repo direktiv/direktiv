@@ -161,6 +161,7 @@ func (flow *flow) Namespaces(ctx context.Context, req *grpc.NamespacesRequest) (
 	return resp, nil
 }
 
+// TODO DOC: Why NamespacesStream() is necessary? Isn't Namespaces() enough?
 func (flow *flow) NamespacesStream(req *grpc.NamespacesRequest, srv grpc.Flow_NamespacesStreamServer) error {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
