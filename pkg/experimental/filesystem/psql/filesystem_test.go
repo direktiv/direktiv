@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/direktiv/direktiv/pkg/experimental/filesystem"
 	"github.com/direktiv/direktiv/pkg/experimental/filesystem/psql"
-	"gorm.io/driver/sqlite"
+	"github.com/glebarez/sqlite"
 	"gorm.io/gorm"
 	"testing"
 )

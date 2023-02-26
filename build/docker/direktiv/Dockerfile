@@ -14,9 +14,9 @@ COPY .git .git
 RUN --mount=type=cache,target=/root/.cache/go-build cd src && \
     export GIT_HASH=`git rev-parse --short HEAD` && \
     export FULL_VERSION="${RELEASE:-$GIT_HASH}"; echo "${v%.*}" && \
-    CGO_ENABLED=false go build -ldflags "-X github.com/direktiv/direktiv/pkg/version.Version=$FULL_VERSION" -o /direktiv cmd/direktiv/*.go;
+    CGO_ENABLED=false go build -tags osusergo,netgo -ldflags "-X github.com/direktiv/direktiv/pkg/version.Version=$FULL_VERSION" -o /direktiv cmd/direktiv/*.go;
 
-FROM gcr.io/distroless/base-debian11
+FROM gcr.io/distroless/static
 USER nonroot:nonroot
 
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
