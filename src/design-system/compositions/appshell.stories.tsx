@@ -34,7 +34,7 @@ const enterprise = [
 
 export const Default = () => (
   <div className="min-h-full">
-    <div className="lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col lg:border-r lg:border-gray-200 lg:pt-5 lg:pb-4">
+    <div className="lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col lg:border-r lg:border-gray-200 lg:pt-5">
       <div className="px-6">
         <Logo className="h-8 w-auto" />
       </div>
@@ -95,7 +95,7 @@ export const Default = () => (
           </div>
         </nav>
       </div>
-      <div className="flex flex-shrink-0 border-t border-gray-200 p-2 group w-full rounded-md py-2 text-left text-sm font-medium text-gray-700">
+      <div className="flex flex-shrink-0 border-t border-gray-200 p-2 group w-full rounded-md py-5 text-left text-sm font-medium text-gray-700">
         <span className="flex w-full min-w-0 items-center justify-between space-x-3">
           <div className="avatar placeholder">
             <div className="bg-neutral-focus text-neutral-content rounded-full w-10">
