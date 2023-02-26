@@ -164,48 +164,27 @@ func (flow *flow) Namespaces(ctx context.Context, req *grpc.NamespacesRequest) (
 // TODO DOC: Why NamespacesStream() is necessary? Isn't Namespaces() enough?
 func (flow *flow) NamespacesStream(req *grpc.NamespacesRequest, srv grpc.Flow_NamespacesStreamServer) error {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
-
 	ctx := srv.Context()
-	phash := ""
-	nhash := ""
 
-	sub := flow.pubsub.SubscribeNamespaces()
-	defer flow.cleanup(sub.Close)
-
-resend:
-
-	clients := flow.edb.Clients(nil)
-
-	query := clients.Namespace.Query()
-
-	results, pi, err := paginate[*ent.NamespaceQuery, *ent.Namespace](ctx, req.Pagination, query, namespacesOrderings, namespacesFilters)
+	list, err := flow.fs.GetAllNamespaces(ctx)
 	if err != nil {
 		return err
 	}
 
 	resp := new(grpc.NamespacesResponse)
-	resp.PageInfo = pi
+	for _, item := range list {
+		resp.Results = append(resp.Results, &grpc.Namespace{
+			Name: item.GetName(),
+			Oid:  item.GetName(),
+		})
+	}
 
-	err = atob(results, &resp.Results)
+	err = srv.Send(resp)
 	if err != nil {
 		return err
 	}
 
-	nhash = checksum(resp)
-	if nhash != phash {
-		err = srv.Send(resp)
-		if err != nil {
-			return err
-		}
-	}
-	phash = nhash
-
-	more := sub.Wait(ctx)
-	if !more {
-		return nil
-	}
-
-	goto resend
+	return nil
 }
 
 func (flow *flow) CreateNamespace(ctx context.Context, req *grpc.CreateNamespaceRequest) (*grpc.CreateNamespaceResponse, error) {

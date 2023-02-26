@@ -4,6 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/direktiv/direktiv/pkg/experimental/filesystem"
+	"github.com/direktiv/direktiv/pkg/experimental/filesystem/psql"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 	"os"
 	"sync"
 	"time"
@@ -45,6 +49,8 @@ type server struct {
 	events   *events
 	vars     *vars
 	actions  *actions
+
+	fs filesystem.Filesystem
 
 	metrics *metrics.Client
 
@@ -150,6 +156,27 @@ func (srv *server) start(ctx context.Context) error {
 		return err
 	}
 	defer srv.cleanup(srv.pubsub.Close)
+
+	db1, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	if err != nil {
+		return err
+	}
+	err = db1.AutoMigrate(&psql.Namespace{}, &psql.File{})
+	if err != nil {
+		return err
+	}
+
+	srv.fs = psql.NewSqlFilesystem(db1)
+
+	ns1, err := srv.fs.CreateNamespace(ctx, "my_ns_1")
+	ns1.CreateFile(ctx, "/file1.text", "text", []byte("content1"))
+	ns1.CreateFile(ctx, "/file2.text", "text", []byte("content2"))
+	ns1.CreateFile(ctx, "/dir1", "directory", nil)
+	ns1.CreateFile(ctx, "/dir1/file3.text", "text", []byte("content3"))
+
+	srv.fs.CreateNamespace(ctx, "my_ns_2")
+	srv.fs.CreateNamespace(ctx, "my_ns_3")
+	srv.fs.CreateNamespace(ctx, "my_ns_4")
 
 	srv.sugar.Debug("Initializing timers.")
 
