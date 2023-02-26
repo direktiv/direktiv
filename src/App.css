@@ -50,6 +50,12 @@
   @apply h-11 min-h-8; /* default is h-16 min-h-16 */
 }
 
+/* make divider 1px height */
+.divider:after,
+.divider:before {
+  @apply h-px;
+}
+
 @font-face {
   font-family: "Inter";
   font-style: normal;
