@@ -41,9 +41,10 @@ const Button: FC<ButtonProps> = ({
     className={clsx(
       className,
       "btn gap-2",
-      size === "lg" && "btn-lg",
-      size === "sm" && "btn-sm",
-      size === "xs" && "btn-xs",
+      size === "lg" && "btn-lg gap-3 [&>svg]:h-6",
+      !size && "gap-2 [&>svg]:h-6",
+      size === "sm" && "btn-sm gap-1 [&>svg]:h-5",
+      size === "xs" && "btn-xs gap-0.5 [&>svg]:h-4",
       color === "primary" && "btn-primary",
       color === "secondary" && "btn-secondary",
       color === "accent" && "btn-accent",
