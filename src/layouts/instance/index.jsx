@@ -435,8 +435,10 @@ function InstanceLogs(props) {
     instanceID,
     apiKey
   );
+
   const [wordWrap, setWordWrap] = useState(false);
   const [follow, setFollow] = useState(true);
+  const [verbose, setVerbose] = useState(true);
 
   return (
     <>
@@ -469,6 +471,8 @@ function InstanceLogs(props) {
             <LogFooterButtons
               setFollow={setFollow}
               follow={follow}
+              setVerbose={setVerbose}
+              verbose={verbose}
               wordWrap={wordWrap}
               setWordWrap={setWordWrap}
               data={data}

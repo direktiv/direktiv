@@ -10,6 +10,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { TbBug, TbBugOff } from "react-icons/tb";
 import {
   VscCopy,
   VscEye,
@@ -281,6 +282,8 @@ export function createClipboardData(data: Array<LogItem> | null) {
 interface LogFooterButtonsProps {
   follow: boolean;
   setFollow: React.Dispatch<React.SetStateAction<boolean>>;
+  verbose: boolean;
+  setVerbose: React.Dispatch<React.SetStateAction<boolean>>;
   wordWrap: boolean;
   setWordWrap: React.Dispatch<React.SetStateAction<boolean>>;
   data: Array<LogItem> | null;
@@ -290,6 +293,8 @@ interface LogFooterButtonsProps {
 export function LogFooterButtons({
   follow,
   setFollow,
+  verbose,
+  setVerbose,
   wordWrap,
   setWordWrap,
   data,
