@@ -132,10 +132,10 @@ export const Default = () => (
                   <li>
                     <a className="gap-2">
                       <Home className="h-4 w-auto" />
-                      My Namespace
+                      My-namespace
                     </a>
                     &nbsp;
-                    <Button size="xs" color="ghost">
+                    <Button size="xs" color="ghost" circle>
                       <ChevronsUpDown className="h-4 w-auto" />
                     </Button>
                   </li>
