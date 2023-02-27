@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react";
+import { MoreHorizontal, MoreVertical, ZoomIn } from "lucide-react";
 import Button from "./index";
-import { ZoomIn } from "lucide-react";
 
 const meta = {
   title: "Design System/Button",
@@ -175,10 +175,49 @@ export const Loading = () => (
 );
 
 export const WithIcon = () => (
-  <div className="flex flex-wrap gap-5">
-    <Button color="primary">
-      <ZoomIn /> with icon
-    </Button>
+  <div className="space-y-5">
+    <div className="flex gap-5">
+      <Button size="xs">
+        <ZoomIn /> xs Button
+      </Button>
+      <Button size="sm">
+        <ZoomIn /> sm Button
+      </Button>
+      <Button>
+        <ZoomIn /> Button
+      </Button>
+      <Button size="lg">
+        <ZoomIn /> lg Button
+      </Button>
+    </div>
+    <div className="flex gap-5">
+      <Button size="xs">
+        <MoreHorizontal /> xs Button
+      </Button>
+      <Button size="sm">
+        <MoreHorizontal /> sm Button
+      </Button>
+      <Button>
+        <MoreHorizontal /> Button
+      </Button>
+      <Button size="lg">
+        <MoreHorizontal /> lg Button
+      </Button>
+    </div>
+    <div className="flex gap-5">
+      <Button size="xs">
+        <MoreVertical /> xs Button
+      </Button>
+      <Button size="sm">
+        <MoreVertical /> sm Button
+      </Button>
+      <Button>
+        <MoreVertical /> Button
+      </Button>
+      <Button size="lg">
+        <MoreVertical /> lg Button
+      </Button>
+    </div>
   </div>
 );
 
