@@ -40,7 +40,7 @@ const Button: FC<ButtonProps> = ({
   <button
     className={clsx(
       className,
-      "btn",
+      "btn gap-2",
       size === "lg" && "btn-lg",
       size === "sm" && "btn-sm",
       size === "xs" && "btn-xs",
