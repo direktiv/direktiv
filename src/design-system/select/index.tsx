@@ -1,6 +1,8 @@
 import * as React from "react";
 import * as SelectPrimitive from "@radix-ui/react-select";
+
 import { RxCheck, RxChevronDown } from "react-icons/rx";
+
 import clsx from "clsx";
 
 // this component is mostly copied from https://ui.shadcn.com/docs/primitives/select
