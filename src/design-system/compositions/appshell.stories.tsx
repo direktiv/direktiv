@@ -12,6 +12,7 @@ import {
   Network,
   Play,
   Settings,
+  Settings2,
   Users,
 } from "lucide-react";
 
@@ -124,7 +125,7 @@ export const Default = () => (
     </div>
     <div className="flex flex-col lg:pl-64">
       <main className="flex-1">
-        <div className="border-b border-gray-200 px-4 py-4 sm:flex sm:items-center sm:justify-between sm:px-6 lg:px-8">
+        <div className="border-b border-gray-200 px-4 py-4 sm:flex sm:items-center sm:justify-between">
           <div className="min-w-0 flex-1">
             <h1 className="text-lg font-medium leading-6 text-gray-900 sm:truncate">
               <div className="text-sm breadcrumbs">
@@ -160,6 +161,11 @@ export const Default = () => (
                 </ul>
               </div>
             </h1>
+          </div>
+          <div className="mt-4 flex sm:mt-0 sm:ml-4">
+            <Button color="ghost" className="px-1">
+              <Settings2 className="w-5 h-auto" />
+            </Button>
           </div>
         </div>
       </main>
