@@ -4514,6 +4514,8 @@ type InstanceMutation struct {
 	errorCode             *string
 	errorMessage          *string
 	invoker               *string
+	parents               *[]string
+	appendparents         []string
 	clearedFields         map[string]struct{}
 	namespace             *uuid.UUID
 	clearednamespace      bool
@@ -4990,6 +4992,71 @@ func (m *InstanceMutation) InvokerCleared() bool {
 func (m *InstanceMutation) ResetInvoker() {
 	m.invoker = nil
 	delete(m.clearedFields, instance.FieldInvoker)
+}
+
+// SetParents sets the "parents" field.
+func (m *InstanceMutation) SetParents(s []string) {
+	m.parents = &s
+	m.appendparents = nil
+}
+
+// Parents returns the value of the "parents" field in the mutation.
+func (m *InstanceMutation) Parents() (r []string, exists bool) {
+	v := m.parents
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldParents returns the old "parents" field's value of the Instance entity.
+// If the Instance object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InstanceMutation) OldParents(ctx context.Context) (v []string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldParents is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldParents requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldParents: %w", err)
+	}
+	return oldValue.Parents, nil
+}
+
+// AppendParents adds s to the "parents" field.
+func (m *InstanceMutation) AppendParents(s []string) {
+	m.appendparents = append(m.appendparents, s...)
+}
+
+// AppendedParents returns the list of values that were appended to the "parents" field in this mutation.
+func (m *InstanceMutation) AppendedParents() ([]string, bool) {
+	if len(m.appendparents) == 0 {
+		return nil, false
+	}
+	return m.appendparents, true
+}
+
+// ClearParents clears the value of the "parents" field.
+func (m *InstanceMutation) ClearParents() {
+	m.parents = nil
+	m.appendparents = nil
+	m.clearedFields[instance.FieldParents] = struct{}{}
+}
+
+// ParentsCleared returns if the "parents" field was cleared in this mutation.
+func (m *InstanceMutation) ParentsCleared() bool {
+	_, ok := m.clearedFields[instance.FieldParents]
+	return ok
+}
+
+// ResetParents resets all changes to the "parents" field.
+func (m *InstanceMutation) ResetParents() {
+	m.parents = nil
+	m.appendparents = nil
+	delete(m.clearedFields, instance.FieldParents)
 }
 
 // SetNamespaceID sets the "namespace" edge to the Namespace entity by id.
@@ -5530,7 +5597,7 @@ func (m *InstanceMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *InstanceMutation) Fields() []string {
-	fields := make([]string, 0, 8)
+	fields := make([]string, 0, 9)
 	if m.created_at != nil {
 		fields = append(fields, instance.FieldCreatedAt)
 	}
@@ -5554,6 +5621,9 @@ func (m *InstanceMutation) Fields() []string {
 	}
 	if m.invoker != nil {
 		fields = append(fields, instance.FieldInvoker)
+	}
+	if m.parents != nil {
+		fields = append(fields, instance.FieldParents)
 	}
 	return fields
 }
@@ -5579,6 +5649,8 @@ func (m *InstanceMutation) Field(name string) (ent.Value, bool) {
 		return m.ErrorMessage()
 	case instance.FieldInvoker:
 		return m.Invoker()
+	case instance.FieldParents:
+		return m.Parents()
 	}
 	return nil, false
 }
@@ -5604,6 +5676,8 @@ func (m *InstanceMutation) OldField(ctx context.Context, name string) (ent.Value
 		return m.OldErrorMessage(ctx)
 	case instance.FieldInvoker:
 		return m.OldInvoker(ctx)
+	case instance.FieldParents:
+		return m.OldParents(ctx)
 	}
 	return nil, fmt.Errorf("unknown Instance field %s", name)
 }
@@ -5669,6 +5743,13 @@ func (m *InstanceMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetInvoker(v)
 		return nil
+	case instance.FieldParents:
+		v, ok := value.([]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetParents(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Instance field %s", name)
 }
@@ -5711,6 +5792,9 @@ func (m *InstanceMutation) ClearedFields() []string {
 	if m.FieldCleared(instance.FieldInvoker) {
 		fields = append(fields, instance.FieldInvoker)
 	}
+	if m.FieldCleared(instance.FieldParents) {
+		fields = append(fields, instance.FieldParents)
+	}
 	return fields
 }
 
@@ -5736,6 +5820,9 @@ func (m *InstanceMutation) ClearField(name string) error {
 		return nil
 	case instance.FieldInvoker:
 		m.ClearInvoker()
+		return nil
+	case instance.FieldParents:
+		m.ClearParents()
 		return nil
 	}
 	return fmt.Errorf("unknown Instance nullable field %s", name)
@@ -5768,6 +5855,9 @@ func (m *InstanceMutation) ResetField(name string) error {
 		return nil
 	case instance.FieldInvoker:
 		m.ResetInvoker()
+		return nil
+	case instance.FieldParents:
+		m.ResetParents()
 		return nil
 	}
 	return fmt.Errorf("unknown Instance field %s", name)

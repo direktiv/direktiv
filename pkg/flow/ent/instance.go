@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -37,6 +38,8 @@ type Instance struct {
 	ErrorMessage string `json:"errorMessage,omitempty"`
 	// Invoker holds the value of the "invoker" field.
 	Invoker string `json:"invoker,omitempty"`
+	// Parents holds the value of the "parents" field.
+	Parents []string `json:"parents,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the InstanceQuery when eager-loading is set.
 	Edges               InstanceEdges `json:"edges"`
@@ -199,6 +202,8 @@ func (*Instance) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case instance.FieldParents:
+			values[i] = new([]byte)
 		case instance.FieldStatus, instance.FieldAs, instance.FieldErrorCode, instance.FieldErrorMessage, instance.FieldInvoker:
 			values[i] = new(sql.NullString)
 		case instance.FieldCreatedAt, instance.FieldUpdatedAt, instance.FieldEndAt:
@@ -281,6 +286,14 @@ func (i *Instance) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field invoker", values[j])
 			} else if value.Valid {
 				i.Invoker = value.String
+			}
+		case instance.FieldParents:
+			if value, ok := values[j].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field parents", values[j])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &i.Parents); err != nil {
+					return fmt.Errorf("unmarshal field parents: %w", err)
+				}
 			}
 		case instance.ForeignKeys[0]:
 			if value, ok := values[j].(*sql.NullScanner); !ok {
@@ -416,6 +429,9 @@ func (i *Instance) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("invoker=")
 	builder.WriteString(i.Invoker)
+	builder.WriteString(", ")
+	builder.WriteString("parents=")
+	builder.WriteString(fmt.Sprintf("%v", i.Parents))
 	builder.WriteByte(')')
 	return builder.String()
 }

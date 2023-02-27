@@ -31,11 +31,12 @@ import (
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/util"
 
+	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	entvardata "github.com/direktiv/direktiv/pkg/flow/ent/vardata"
 	entvar "github.com/direktiv/direktiv/pkg/flow/ent/varref"
 )
 
-const Api = "Api"
+const Api = "api"
 
 type engine struct {
 	*server
@@ -132,6 +133,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 	if err != nil {
 		return nil, err
 	}
+	parents := []string{}
 	uid := uuid.New()
 	inb := inc.Create().SetID(uid).SetNamespace(d.ns()).SetWorkflow(d.wf).SetRevision(d.rev()).SetRuntime(rt).SetStatus(util.InstanceStatusPending).SetInvoker(args.Caller).SetAs(util.SanitizeAsField(as))
 	if args.Caller != Api {
@@ -139,8 +141,24 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 		if err != nil {
 			return nil, err
 		}
+		invoker := args.Caller
+		caller := strings.Split(args.Caller, ":")
+		if strings.HasPrefix(args.Caller, "instance") {
+			invoker = caller[1]
+		}
+		callerUID, err := uuid.Parse(invoker)
+		if err != nil {
+			return nil, err
+		}
+		entCaller, err := inc.Query().Where(entinst.IDEQ(callerUID)).Only(ctx)
+		if err != nil {
+			return nil, err
+		}
+		parents = entCaller.Parents
+		parents = append(parents, invoker)
 	}
 	inb.SetOrginatorID(uid)
+	inb.SetParents(parents)
 	in, err := inb.Save(ctx)
 	if err != nil {
 		return nil, err
@@ -660,7 +678,7 @@ func (engine *engine) subflowInvoke(ctx context.Context, caller *subflowCaller, 
 	}
 
 	args.Input = input
-	args.Caller = fmt.Sprintf("instance:%v", caller.InstanceID)
+	args.Caller = caller.InstanceID
 	args.CallerTags = caller.Tags
 	args.Originator = caller.Originator
 	args.Iterator = caller.Iterator

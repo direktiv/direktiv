@@ -881,6 +881,20 @@ func InvokerContainsFold(v string) predicate.Instance {
 	})
 }
 
+// ParentsIsNil applies the IsNil predicate on the "parents" field.
+func ParentsIsNil() predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldParents)))
+	})
+}
+
+// ParentsNotNil applies the NotNil predicate on the "parents" field.
+func ParentsNotNil() predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldParents)))
+	})
+}
+
 // HasNamespace applies the HasEdge predicate on the "namespace" edge.
 func HasNamespace() predicate.Instance {
 	return predicate.Instance(func(s *sql.Selector) {

@@ -10,6 +10,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/dialect/sql/sqljson"
 	"entgo.io/ent/schema/field"
 	"github.com/direktiv/direktiv/pkg/flow/ent/annotation"
 	"github.com/direktiv/direktiv/pkg/flow/ent/events"
@@ -127,6 +128,24 @@ func (iu *InstanceUpdate) SetNillableInvoker(s *string) *InstanceUpdate {
 // ClearInvoker clears the value of the "invoker" field.
 func (iu *InstanceUpdate) ClearInvoker() *InstanceUpdate {
 	iu.mutation.ClearInvoker()
+	return iu
+}
+
+// SetParents sets the "parents" field.
+func (iu *InstanceUpdate) SetParents(s []string) *InstanceUpdate {
+	iu.mutation.SetParents(s)
+	return iu
+}
+
+// AppendParents appends s to the "parents" field.
+func (iu *InstanceUpdate) AppendParents(s []string) *InstanceUpdate {
+	iu.mutation.AppendParents(s)
+	return iu
+}
+
+// ClearParents clears the value of the "parents" field.
+func (iu *InstanceUpdate) ClearParents() *InstanceUpdate {
+	iu.mutation.ClearParents()
 	return iu
 }
 
@@ -588,6 +607,17 @@ func (iu *InstanceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if iu.mutation.InvokerCleared() {
 		_spec.ClearField(instance.FieldInvoker, field.TypeString)
+	}
+	if value, ok := iu.mutation.Parents(); ok {
+		_spec.SetField(instance.FieldParents, field.TypeJSON, value)
+	}
+	if value, ok := iu.mutation.AppendedParents(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, instance.FieldParents, value)
+		})
+	}
+	if iu.mutation.ParentsCleared() {
+		_spec.ClearField(instance.FieldParents, field.TypeJSON)
 	}
 	if iu.mutation.NamespaceCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -1201,6 +1231,24 @@ func (iuo *InstanceUpdateOne) ClearInvoker() *InstanceUpdateOne {
 	return iuo
 }
 
+// SetParents sets the "parents" field.
+func (iuo *InstanceUpdateOne) SetParents(s []string) *InstanceUpdateOne {
+	iuo.mutation.SetParents(s)
+	return iuo
+}
+
+// AppendParents appends s to the "parents" field.
+func (iuo *InstanceUpdateOne) AppendParents(s []string) *InstanceUpdateOne {
+	iuo.mutation.AppendParents(s)
+	return iuo
+}
+
+// ClearParents clears the value of the "parents" field.
+func (iuo *InstanceUpdateOne) ClearParents() *InstanceUpdateOne {
+	iuo.mutation.ClearParents()
+	return iuo
+}
+
 // SetNamespaceID sets the "namespace" edge to the Namespace entity by ID.
 func (iuo *InstanceUpdateOne) SetNamespaceID(id uuid.UUID) *InstanceUpdateOne {
 	iuo.mutation.SetNamespaceID(id)
@@ -1689,6 +1737,17 @@ func (iuo *InstanceUpdateOne) sqlSave(ctx context.Context) (_node *Instance, err
 	}
 	if iuo.mutation.InvokerCleared() {
 		_spec.ClearField(instance.FieldInvoker, field.TypeString)
+	}
+	if value, ok := iuo.mutation.Parents(); ok {
+		_spec.SetField(instance.FieldParents, field.TypeJSON, value)
+	}
+	if value, ok := iuo.mutation.AppendedParents(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, instance.FieldParents, value)
+		})
+	}
+	if iuo.mutation.ParentsCleared() {
+		_spec.ClearField(instance.FieldParents, field.TypeJSON)
 	}
 	if iuo.mutation.NamespaceCleared() {
 		edge := &sqlgraph.EdgeSpec{

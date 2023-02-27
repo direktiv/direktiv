@@ -115,7 +115,7 @@ func (internal *internal) ActionLog(ctx context.Context, req *grpc.ActionLogRequ
 	tags["originator"] = req.Originator
 	tags["iterator"] = fmt.Sprint(req.Iterator)
 	for _, msg := range req.GetMsg() {
-		internal.logToInstanceRaw(ctx, t, d.in.Edges.Orginator, tags, msg)
+		internal.logToInstanceRaw(ctx, t, d.in, tags, msg)
 		//internal.logToInstanceRaw(ctx, t, d, msg)
 	}
 

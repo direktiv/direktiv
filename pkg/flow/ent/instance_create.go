@@ -128,6 +128,12 @@ func (ic *InstanceCreate) SetNillableInvoker(s *string) *InstanceCreate {
 	return ic
 }
 
+// SetParents sets the "parents" field.
+func (ic *InstanceCreate) SetParents(s []string) *InstanceCreate {
+	ic.mutation.SetParents(s)
+	return ic
+}
+
 // SetID sets the "id" field.
 func (ic *InstanceCreate) SetID(u uuid.UUID) *InstanceCreate {
 	ic.mutation.SetID(u)
@@ -485,6 +491,10 @@ func (ic *InstanceCreate) createSpec() (*Instance, *sqlgraph.CreateSpec) {
 	if value, ok := ic.mutation.Invoker(); ok {
 		_spec.SetField(instance.FieldInvoker, field.TypeString, value)
 		_node.Invoker = value
+	}
+	if value, ok := ic.mutation.Parents(); ok {
+		_spec.SetField(instance.FieldParents, field.TypeJSON, value)
+		_node.Parents = value
 	}
 	if nodes := ic.mutation.NamespaceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -847,6 +857,24 @@ func (u *InstanceUpsert) ClearInvoker() *InstanceUpsert {
 	return u
 }
 
+// SetParents sets the "parents" field.
+func (u *InstanceUpsert) SetParents(v []string) *InstanceUpsert {
+	u.Set(instance.FieldParents, v)
+	return u
+}
+
+// UpdateParents sets the "parents" field to the value that was provided on create.
+func (u *InstanceUpsert) UpdateParents() *InstanceUpsert {
+	u.SetExcluded(instance.FieldParents)
+	return u
+}
+
+// ClearParents clears the value of the "parents" field.
+func (u *InstanceUpsert) ClearParents() *InstanceUpsert {
+	u.SetNull(instance.FieldParents)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -1010,6 +1038,27 @@ func (u *InstanceUpsertOne) UpdateInvoker() *InstanceUpsertOne {
 func (u *InstanceUpsertOne) ClearInvoker() *InstanceUpsertOne {
 	return u.Update(func(s *InstanceUpsert) {
 		s.ClearInvoker()
+	})
+}
+
+// SetParents sets the "parents" field.
+func (u *InstanceUpsertOne) SetParents(v []string) *InstanceUpsertOne {
+	return u.Update(func(s *InstanceUpsert) {
+		s.SetParents(v)
+	})
+}
+
+// UpdateParents sets the "parents" field to the value that was provided on create.
+func (u *InstanceUpsertOne) UpdateParents() *InstanceUpsertOne {
+	return u.Update(func(s *InstanceUpsert) {
+		s.UpdateParents()
+	})
+}
+
+// ClearParents clears the value of the "parents" field.
+func (u *InstanceUpsertOne) ClearParents() *InstanceUpsertOne {
+	return u.Update(func(s *InstanceUpsert) {
+		s.ClearParents()
 	})
 }
 
@@ -1339,6 +1388,27 @@ func (u *InstanceUpsertBulk) UpdateInvoker() *InstanceUpsertBulk {
 func (u *InstanceUpsertBulk) ClearInvoker() *InstanceUpsertBulk {
 	return u.Update(func(s *InstanceUpsert) {
 		s.ClearInvoker()
+	})
+}
+
+// SetParents sets the "parents" field.
+func (u *InstanceUpsertBulk) SetParents(v []string) *InstanceUpsertBulk {
+	return u.Update(func(s *InstanceUpsert) {
+		s.SetParents(v)
+	})
+}
+
+// UpdateParents sets the "parents" field to the value that was provided on create.
+func (u *InstanceUpsertBulk) UpdateParents() *InstanceUpsertBulk {
+	return u.Update(func(s *InstanceUpsert) {
+		s.UpdateParents()
+	})
+}
+
+// ClearParents clears the value of the "parents" field.
+func (u *InstanceUpsertBulk) ClearParents() *InstanceUpsertBulk {
+	return u.Update(func(s *InstanceUpsert) {
+		s.ClearParents()
 	})
 }
 
