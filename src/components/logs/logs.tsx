@@ -56,6 +56,15 @@ export interface LogsProps {
 export interface LogItem {
   t: string;
   msg: string;
+  tags: {
+    name: string; // f.e. "somepath/to/someworkflow"
+    state?: string; // f.e. "name-of-the-state"
+    step?: string; // f.e. "1"
+    actionID?: string; // f.e. "7487004e-78cf-4f02-8b61-d8e51ed46b14"
+    iterator?: string; // f.e. "0"
+    originator?: string; // f.e. "7487004e-78cf-4f02-8b61-d8e51ed46b14"
+    i?: string; // f.e. "0"
+  };
 }
 
 export const DynamicListContext = createContext<
