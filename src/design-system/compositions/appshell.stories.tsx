@@ -2,17 +2,21 @@ import {
   Box,
   Bug,
   Calendar,
+  ChevronsUpDown,
   FolderOpen,
   FolderTree,
-  GitBranch,
+  Github,
+  Home,
   Layers,
   LogOut,
   Network,
+  Play,
   Settings,
   Users,
 } from "lucide-react";
 
 import Button from "../button";
+import { ButtonColors } from "../button/index.stories";
 import Logo from "./Logo";
 import clsx from "clsx";
 
@@ -126,17 +130,32 @@ export const Default = () => (
               <div className="text-sm breadcrumbs">
                 <ul>
                   <li>
-                    <a>
-                      <GitBranch />
-                      Home
+                    <a className="gap-2">
+                      <Home className="h-4 w-auto" />
+                      My Namespace
+                    </a>
+                    &nbsp;
+                    <Button size="xs" color="ghost">
+                      <ChevronsUpDown className="h-4 w-auto" />
+                    </Button>
+                  </li>
+                  <li>
+                    <a className="gap-2">
+                      <Github className="h-4 w-auto" />
+                      Example Mirror
                     </a>
                   </li>
                   <li>
-                    <a>Documents</a>
+                    <a className="gap-2">
+                      <FolderOpen className="h-4 w-auto" />
+                      Folder
+                    </a>
                   </li>
                   <li>
-                    <FolderOpen />
-                    Add Document
+                    <a className="gap-2">
+                      <Play className="h-4 w-auto" />
+                      workflow.yml
+                    </a>
                   </li>
                 </ul>
               </div>
