@@ -13,6 +13,7 @@ import {
   User,
   UserPlus,
   Users,
+  ChevronDown,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -44,7 +45,9 @@ export const Default: Story = {
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button>Open</Button>
+          <Button>
+            Open <ChevronDown />
+          </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-56">
           <DropdownMenuLabel>My Account</DropdownMenuLabel>
