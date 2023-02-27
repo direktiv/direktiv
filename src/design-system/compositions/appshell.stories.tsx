@@ -17,7 +17,6 @@ import {
 } from "lucide-react";
 
 import Button from "../button";
-import { ButtonColors } from "../button/index.stories";
 import Logo from "./Logo";
 import clsx from "clsx";
 
