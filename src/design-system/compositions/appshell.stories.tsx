@@ -2,14 +2,14 @@ import {
   Box,
   Bug,
   Calendar,
+  FolderOpen,
   FolderTree,
+  GitBranch,
   Layers,
   LogOut,
   Network,
   Settings,
   Users,
-  GitBranch,
-  FolderOpen,
 } from "lucide-react";
 
 import Button from "../button";
