@@ -136,7 +136,7 @@ export const Default = () => (
                     </a>
                     &nbsp;
                     <Button size="xs" color="ghost" circle>
-                      <ChevronsUpDown className="h-4 w-auto" />
+                      <ChevronsUpDown />
                     </Button>
                   </li>
                   <li>
