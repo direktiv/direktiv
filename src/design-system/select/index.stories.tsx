@@ -9,7 +9,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./index";
-import Button from "../button";
 
 const meta = {
   title: "Design System/Select",
@@ -145,7 +144,7 @@ export const LoadingState = () => {
 };
 
 export const Ghost = () => (
-  <div className="bg-base-300">
+  <div className="bg-base-300 p-10">
     <Select>
       <SelectTrigger ghost>
         <SelectValue placeholder="ghost select" />
