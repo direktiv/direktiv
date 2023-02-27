@@ -41,6 +41,10 @@ export interface LogsProps {
    */
   autoScroll: boolean;
   /**
+   * Show verbose logs
+   */
+  verbose: boolean;
+  /**
    * React Set State for autoscroll. This is used for setting autoScroll to false when user scrolls up.
    */
   setAutoScroll?: React.Dispatch<React.SetStateAction<boolean>>;
@@ -80,6 +84,7 @@ function Logs({
   logItems,
   wordWrap = false,
   autoScroll = false,
+  verbose = false,
   setAutoScroll,
   overrideLoadingMsg,
   overrideNoDataMsg,
@@ -188,7 +193,12 @@ function Logs({
                     overscanCount={4}
                   >
                     {({ ...props }) => (
-                      <ListRow {...props} width={width} wordWrap={wordWrap} />
+                      <ListRow
+                        {...props}
+                        width={width}
+                        wordWrap={wordWrap}
+                        verbose={verbose}
+                      />
                     )}
                   </VariableSizeList>
                 )}
@@ -213,6 +223,7 @@ interface ListRowProps {
   data: LogItem[];
   style: CSSProperties;
   wordWrap?: boolean;
+  verbose: boolean;
 }
 
 const innerElementType = forwardRef(({ style, ...rest }: any, ref) => (
@@ -227,7 +238,14 @@ const innerElementType = forwardRef(({ style, ...rest }: any, ref) => (
 ));
 innerElementType.displayName = "innerElementType";
 
-const ListRow = ({ index, width, data, style, wordWrap }: ListRowProps) => {
+const ListRow = ({
+  index,
+  width,
+  data,
+  style,
+  wordWrap,
+  verbose,
+}: ListRowProps) => {
   const { setSize } = useContext(DynamicListContext);
   const rowRoot = useRef<null | HTMLDivElement>(null);
 
@@ -237,6 +255,7 @@ const ListRow = ({ index, width, data, style, wordWrap }: ListRowProps) => {
     }
   }, [index, setSize, width]);
 
+  const { name, state } = data[index].tags;
   return (
     <div
       style={{
@@ -246,10 +265,12 @@ const ListRow = ({ index, width, data, style, wordWrap }: ListRowProps) => {
     >
       <div className="log-row" ref={rowRoot}>
         <span className={wordWrap ? "word-wrap" : "whole-word"}>
-          <span key={`log-timestamp-${index}`} className="timestamp">
+          <span className="timestamp">
             [{dayjs.utc(data[index].t).local().format("HH:mm:ss.SSS")}
             {`] `}
           </span>
+          {name && verbose && <span className="tag-name">{name} </span>}
+          {state && verbose && <span className="tag-state">{state} </span>}
           {data[index].msg.match(/.{1,50}/g)?.map((mtkMsg, mtkIdx) => {
             return (
               <span key={`log-msg-${mtkIdx}`} className="msg">
@@ -315,6 +336,27 @@ export function LogFooterButtons({
       >
         <FlexBox center row gap="sm">
           <VscCopy /> Copy <span className="hide-1000">to Clipboard</span>
+        </FlexBox>
+      </Button>
+      <Button
+        color="terminal"
+        variant="contained"
+        onClick={() => {
+          setVerbose((old) => !old);
+        }}
+      >
+        <FlexBox center row gap="sm">
+          {verbose ? (
+            <>
+              <TbBugOff />
+              Disable verbose logs
+            </>
+          ) : (
+            <>
+              <TbBug />
+              Enable verbose logs
+            </>
+          )}
         </FlexBox>
       </Button>
       {follow !== undefined && setFollow !== undefined ? (

@@ -448,6 +448,7 @@ function InstanceLogs(props) {
             logItems={data}
             wordWrap={wordWrap}
             autoScroll={follow}
+            verbose={verbose}
             setAutoScroll={setFollow}
           />
         </FlexBox>
