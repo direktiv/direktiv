@@ -337,27 +337,29 @@ export function LogFooterButtons({
         <FlexBox center row gap="sm">
           <VscCopy /> Copy <span className="hide-1000">to Clipboard</span>
         </FlexBox>
-      </Button>
-      <Button
-        color="terminal"
-        variant="contained"
-        onClick={() => {
-          setVerbose((old) => !old);
-        }}
-      >
-        <FlexBox center row gap="sm">
-          {verbose ? (
-            <>
-              <TbBugOff />
-              Disable verbose logs
-            </>
-          ) : (
-            <>
-              <TbBug />
-              Enable verbose logs
-            </>
-          )}
-        </FlexBox>
+        {verbose !== undefined && (
+          <Button
+            color="terminal"
+            variant="contained"
+            onClick={() => {
+              setVerbose((old) => !old);
+            }}
+          >
+            <FlexBox center row gap="sm">
+              {verbose ? (
+                <>
+                  <TbBugOff />
+                  Disable verbose logs
+                </>
+              ) : (
+                <>
+                  <TbBug />
+                  Enable verbose logs
+                </>
+              )}
+            </FlexBox>
+          </Button>
+        )}
       </Button>
       {follow !== undefined && setFollow !== undefined ? (
         <Button
