@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import Button from "./index";
-import { VscZoomIn } from "react-icons/vsc";
+import { ZoomIn } from "lucide-react";
 
 const meta = {
   title: "Design System/Button",
@@ -176,8 +176,8 @@ export const Loading = () => (
 
 export const WithIcon = () => (
   <div className="flex flex-wrap gap-5">
-    <Button color="primary" className="gap-2">
-      <VscZoomIn /> with icon
+    <Button color="primary">
+      <ZoomIn /> with icon
     </Button>
   </div>
 );
@@ -185,16 +185,16 @@ export const WithIcon = () => (
 export const CircleButton = () => (
   <div className="flex flex-wrap gap-5">
     <Button size="lg" color="primary" active circle>
-      <VscZoomIn />{" "}
+      <ZoomIn />
     </Button>
     <Button outline circle>
-      <VscZoomIn />{" "}
+      <ZoomIn />
     </Button>
     <Button size="sm" color="accent" circle>
-      <VscZoomIn />
+      <ZoomIn />
     </Button>
     <Button size="xs" outline color="secondary" circle>
-      <VscZoomIn />
+      <ZoomIn />
     </Button>
   </div>
 );
