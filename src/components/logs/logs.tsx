@@ -43,7 +43,7 @@ export interface LogsProps {
   /**
    * Show verbose logs
    */
-  verbose: boolean;
+  verbose?: boolean;
   /**
    * React Set State for autoscroll. This is used for setting autoScroll to false when user scrolls up.
    */
@@ -84,7 +84,7 @@ function Logs({
   logItems,
   wordWrap = false,
   autoScroll = false,
-  verbose = false,
+  verbose,
   setAutoScroll,
   overrideLoadingMsg,
   overrideNoDataMsg,
@@ -223,7 +223,7 @@ interface ListRowProps {
   data: LogItem[];
   style: CSSProperties;
   wordWrap?: boolean;
-  verbose: boolean;
+  verbose?: boolean;
 }
 
 const innerElementType = forwardRef(({ style, ...rest }: any, ref) => (
