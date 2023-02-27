@@ -1,4 +1,3 @@
-import type { Meta, StoryObj } from "@storybook/react";
 import {
   Cloud,
   CreditCard,
@@ -15,7 +14,6 @@ import {
   UserPlus,
   Users,
 } from "lucide-react";
-import Button from "../button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,6 +28,8 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "./index";
+import type { Meta, StoryObj } from "@storybook/react";
+import Button from "../button";
 
 const meta = {
   title: "Design System/Dropdown",
@@ -40,11 +40,11 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  render: ({ children, ...args }) => {
+  render: ({ children: _children, ..._args }) => {
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <button>Open</button>
+          <Button>Open</Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-56">
           <DropdownMenuLabel>My Account</DropdownMenuLabel>
