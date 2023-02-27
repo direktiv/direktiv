@@ -1,7 +1,8 @@
 import React, { FC } from "react";
+
 import clsx from "clsx";
 
-const Button: FC<{
+export type ButtonProps = {
   size?: "xs" | "sm" | "lg";
   color?:
     | "primary"
@@ -19,8 +20,11 @@ const Button: FC<{
   circle?: boolean;
   block?: boolean;
   className?: string;
+  forwaredRef?: React.ForwardedRef<HTMLButtonElement>;
   children?: React.ReactNode;
-}> = ({
+};
+
+const Button: FC<ButtonProps> = ({
   size,
   color,
   outline,
@@ -30,6 +34,7 @@ const Button: FC<{
   block,
   className,
   children,
+  forwaredRef,
   ...props
 }) => (
   <button
@@ -54,10 +59,17 @@ const Button: FC<{
       circle && "btn-circle",
       block && "btn-block"
     )}
+    ref={forwaredRef}
     {...props}
   >
     {children}
   </button>
 );
 
-export default Button;
+const ButtonWithForwaredRef = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ ...props }, ref) => <Button forwaredRef={ref} {...props} />
+);
+
+ButtonWithForwaredRef.displayName = "Button";
+
+export default ButtonWithForwaredRef;
