@@ -33,5 +33,12 @@
 }
 
 .log-window .timestamp {
-  color: rgb(181, 181, 181);
+  color: hsla(0, 0%, 100%, 0.386);
+}
+
+.log-window .tag-name {
+  color: hsla(0, 0%, 100%, 0.446);
+}
+.log-window .tag-state {
+  color: hsla(0, 0%, 100%, 0.592);
 }
