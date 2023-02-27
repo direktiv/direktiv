@@ -280,6 +280,21 @@ func (iu *InstanceUpdate) AddChildren(i ...*InstanceRuntime) *InstanceUpdate {
 	return iu.AddChildIDs(ids...)
 }
 
+// AddLognIDs adds the "logn" edge to the LogMsg entity by IDs.
+func (iu *InstanceUpdate) AddLognIDs(ids ...uuid.UUID) *InstanceUpdate {
+	iu.mutation.AddLognIDs(ids...)
+	return iu
+}
+
+// AddLogn adds the "logn" edges to the LogMsg entity.
+func (iu *InstanceUpdate) AddLogn(l ...*LogMsg) *InstanceUpdate {
+	ids := make([]uuid.UUID, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
+	}
+	return iu.AddLognIDs(ids...)
+}
+
 // AddEventlistenerIDs adds the "eventlisteners" edge to the Events entity by IDs.
 func (iu *InstanceUpdate) AddEventlistenerIDs(ids ...uuid.UUID) *InstanceUpdate {
 	iu.mutation.AddEventlistenerIDs(ids...)
@@ -427,6 +442,27 @@ func (iu *InstanceUpdate) RemoveChildren(i ...*InstanceRuntime) *InstanceUpdate 
 		ids[j] = i[j].ID
 	}
 	return iu.RemoveChildIDs(ids...)
+}
+
+// ClearLogn clears all "logn" edges to the LogMsg entity.
+func (iu *InstanceUpdate) ClearLogn() *InstanceUpdate {
+	iu.mutation.ClearLogn()
+	return iu
+}
+
+// RemoveLognIDs removes the "logn" edge to LogMsg entities by IDs.
+func (iu *InstanceUpdate) RemoveLognIDs(ids ...uuid.UUID) *InstanceUpdate {
+	iu.mutation.RemoveLognIDs(ids...)
+	return iu
+}
+
+// RemoveLogn removes "logn" edges to LogMsg entities.
+func (iu *InstanceUpdate) RemoveLogn(l ...*LogMsg) *InstanceUpdate {
+	ids := make([]uuid.UUID, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
+	}
+	return iu.RemoveLognIDs(ids...)
 }
 
 // ClearEventlisteners clears all "eventlisteners" edges to the Events entity.
@@ -1010,6 +1046,60 @@ func (iu *InstanceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if iu.mutation.LognCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   instance.LognTable,
+			Columns: instance.LognPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: logmsg.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := iu.mutation.RemovedLognIDs(); len(nodes) > 0 && !iu.mutation.LognCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   instance.LognTable,
+			Columns: instance.LognPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: logmsg.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := iu.mutation.LognIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   instance.LognTable,
+			Columns: instance.LognPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: logmsg.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if iu.mutation.EventlistenersCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -1380,6 +1470,21 @@ func (iuo *InstanceUpdateOne) AddChildren(i ...*InstanceRuntime) *InstanceUpdate
 	return iuo.AddChildIDs(ids...)
 }
 
+// AddLognIDs adds the "logn" edge to the LogMsg entity by IDs.
+func (iuo *InstanceUpdateOne) AddLognIDs(ids ...uuid.UUID) *InstanceUpdateOne {
+	iuo.mutation.AddLognIDs(ids...)
+	return iuo
+}
+
+// AddLogn adds the "logn" edges to the LogMsg entity.
+func (iuo *InstanceUpdateOne) AddLogn(l ...*LogMsg) *InstanceUpdateOne {
+	ids := make([]uuid.UUID, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
+	}
+	return iuo.AddLognIDs(ids...)
+}
+
 // AddEventlistenerIDs adds the "eventlisteners" edge to the Events entity by IDs.
 func (iuo *InstanceUpdateOne) AddEventlistenerIDs(ids ...uuid.UUID) *InstanceUpdateOne {
 	iuo.mutation.AddEventlistenerIDs(ids...)
@@ -1527,6 +1632,27 @@ func (iuo *InstanceUpdateOne) RemoveChildren(i ...*InstanceRuntime) *InstanceUpd
 		ids[j] = i[j].ID
 	}
 	return iuo.RemoveChildIDs(ids...)
+}
+
+// ClearLogn clears all "logn" edges to the LogMsg entity.
+func (iuo *InstanceUpdateOne) ClearLogn() *InstanceUpdateOne {
+	iuo.mutation.ClearLogn()
+	return iuo
+}
+
+// RemoveLognIDs removes the "logn" edge to LogMsg entities by IDs.
+func (iuo *InstanceUpdateOne) RemoveLognIDs(ids ...uuid.UUID) *InstanceUpdateOne {
+	iuo.mutation.RemoveLognIDs(ids...)
+	return iuo
+}
+
+// RemoveLogn removes "logn" edges to LogMsg entities.
+func (iuo *InstanceUpdateOne) RemoveLogn(l ...*LogMsg) *InstanceUpdateOne {
+	ids := make([]uuid.UUID, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
+	}
+	return iuo.RemoveLognIDs(ids...)
 }
 
 // ClearEventlisteners clears all "eventlisteners" edges to the Events entity.
@@ -2132,6 +2258,60 @@ func (iuo *InstanceUpdateOne) sqlSave(ctx context.Context) (_node *Instance, err
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: instanceruntime.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if iuo.mutation.LognCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   instance.LognTable,
+			Columns: instance.LognPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: logmsg.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := iuo.mutation.RemovedLognIDs(); len(nodes) > 0 && !iuo.mutation.LognCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   instance.LognTable,
+			Columns: instance.LognPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: logmsg.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := iuo.mutation.LognIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   instance.LognTable,
+			Columns: instance.LognPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: logmsg.FieldID,
 				},
 			},
 		}

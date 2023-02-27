@@ -399,6 +399,34 @@ func HasLogtagWith(preds ...predicate.LogTag) predicate.LogMsg {
 	})
 }
 
+// HasInsn applies the HasEdge predicate on the "insn" edge.
+func HasInsn() predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(InsnTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, InsnTable, InsnPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasInsnWith applies the HasEdge predicate on the "insn" edge with a given conditions (other predicates).
+func HasInsnWith(preds ...predicate.Instance) predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(InsnInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, InsnTable, InsnPrimaryKey...),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.LogMsg) predicate.LogMsg {
 	return predicate.LogMsg(func(s *sql.Selector) {

@@ -1298,6 +1298,22 @@ func (c *InstanceClient) QueryChildren(i *Instance) *InstanceRuntimeQuery {
 	return query
 }
 
+// QueryLogn queries the logn edge of a Instance.
+func (c *InstanceClient) QueryLogn(i *Instance) *LogMsgQuery {
+	query := &LogMsgQuery{config: c.config}
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := i.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(instance.Table, instance.FieldID, id),
+			sqlgraph.To(logmsg.Table, logmsg.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, instance.LognTable, instance.LognPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryEventlisteners queries the eventlisteners edge of a Instance.
 func (c *InstanceClient) QueryEventlisteners(i *Instance) *EventsQuery {
 	query := &EventsQuery{config: c.config}
@@ -1615,6 +1631,22 @@ func (c *LogMsgClient) QueryLogtag(lm *LogMsg) *LogTagQuery {
 			sqlgraph.From(logmsg.Table, logmsg.FieldID, id),
 			sqlgraph.To(logtag.Table, logtag.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, logmsg.LogtagTable, logmsg.LogtagColumn),
+		)
+		fromV = sqlgraph.Neighbors(lm.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryInsn queries the insn edge of a LogMsg.
+func (c *LogMsgClient) QueryInsn(lm *LogMsg) *InstanceQuery {
+	query := &InstanceQuery{config: c.config}
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := lm.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(logmsg.Table, logmsg.FieldID, id),
+			sqlgraph.To(instance.Table, instance.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, logmsg.InsnTable, logmsg.InsnPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(lm.driver.Dialect(), step)
 		return fromV, nil

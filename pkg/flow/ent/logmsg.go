@@ -46,9 +46,11 @@ type LogMsgEdges struct {
 	Activity *MirrorActivity `json:"activity,omitempty"`
 	// Logtag holds the value of the logtag edge.
 	Logtag []*LogTag `json:"logtag,omitempty"`
+	// Insn holds the value of the insn edge.
+	Insn []*Instance `json:"insn,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [5]bool
+	loadedTypes [6]bool
 }
 
 // NamespaceOrErr returns the Namespace value or an error if the edge
@@ -110,6 +112,15 @@ func (e LogMsgEdges) LogtagOrErr() ([]*LogTag, error) {
 		return e.Logtag, nil
 	}
 	return nil, &NotLoadedError{edge: "logtag"}
+}
+
+// InsnOrErr returns the Insn value or an error if the edge
+// was not loaded in eager-loading.
+func (e LogMsgEdges) InsnOrErr() ([]*Instance, error) {
+	if e.loadedTypes[5] {
+		return e.Insn, nil
+	}
+	return nil, &NotLoadedError{edge: "insn"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -220,6 +231,11 @@ func (lm *LogMsg) QueryActivity() *MirrorActivityQuery {
 // QueryLogtag queries the "logtag" edge of the LogMsg entity.
 func (lm *LogMsg) QueryLogtag() *LogTagQuery {
 	return (&LogMsgClient{config: lm.config}).QueryLogtag(lm)
+}
+
+// QueryInsn queries the "insn" edge of the LogMsg entity.
+func (lm *LogMsg) QueryInsn() *InstanceQuery {
+	return (&LogMsgClient{config: lm.config}).QueryInsn(lm)
 }
 
 // Update returns a builder for updating this LogMsg.

@@ -30,5 +30,6 @@ func (LogMsg) Edges() []ent.Edge {
 		edge.From("instance", Instance.Type).Ref("logs").Unique().Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
 		edge.From("activity", MirrorActivity.Type).Ref("logs").Unique().Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
 		edge.To("logtag", LogTag.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
+		edge.From("insn", Instance.Type).Ref("logn"),
 	}
 }

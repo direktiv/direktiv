@@ -4539,6 +4539,9 @@ type InstanceMutation struct {
 	children              map[uuid.UUID]struct{}
 	removedchildren       map[uuid.UUID]struct{}
 	clearedchildren       bool
+	logn                  map[uuid.UUID]struct{}
+	removedlogn           map[uuid.UUID]struct{}
+	clearedlogn           bool
 	eventlisteners        map[uuid.UUID]struct{}
 	removedeventlisteners map[uuid.UUID]struct{}
 	clearedeventlisteners bool
@@ -5470,6 +5473,60 @@ func (m *InstanceMutation) ResetChildren() {
 	m.removedchildren = nil
 }
 
+// AddLognIDs adds the "logn" edge to the LogMsg entity by ids.
+func (m *InstanceMutation) AddLognIDs(ids ...uuid.UUID) {
+	if m.logn == nil {
+		m.logn = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.logn[ids[i]] = struct{}{}
+	}
+}
+
+// ClearLogn clears the "logn" edge to the LogMsg entity.
+func (m *InstanceMutation) ClearLogn() {
+	m.clearedlogn = true
+}
+
+// LognCleared reports if the "logn" edge to the LogMsg entity was cleared.
+func (m *InstanceMutation) LognCleared() bool {
+	return m.clearedlogn
+}
+
+// RemoveLognIDs removes the "logn" edge to the LogMsg entity by IDs.
+func (m *InstanceMutation) RemoveLognIDs(ids ...uuid.UUID) {
+	if m.removedlogn == nil {
+		m.removedlogn = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.logn, ids[i])
+		m.removedlogn[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedLogn returns the removed IDs of the "logn" edge to the LogMsg entity.
+func (m *InstanceMutation) RemovedLognIDs() (ids []uuid.UUID) {
+	for id := range m.removedlogn {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// LognIDs returns the "logn" edge IDs in the mutation.
+func (m *InstanceMutation) LognIDs() (ids []uuid.UUID) {
+	for id := range m.logn {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetLogn resets all changes to the "logn" edge.
+func (m *InstanceMutation) ResetLogn() {
+	m.logn = nil
+	m.clearedlogn = false
+	m.removedlogn = nil
+}
+
 // AddEventlistenerIDs adds the "eventlisteners" edge to the Events entity by ids.
 func (m *InstanceMutation) AddEventlistenerIDs(ids ...uuid.UUID) {
 	if m.eventlisteners == nil {
@@ -5865,7 +5922,7 @@ func (m *InstanceMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *InstanceMutation) AddedEdges() []string {
-	edges := make([]string, 0, 11)
+	edges := make([]string, 0, 12)
 	if m.namespace != nil {
 		edges = append(edges, instance.EdgeNamespace)
 	}
@@ -5892,6 +5949,9 @@ func (m *InstanceMutation) AddedEdges() []string {
 	}
 	if m.children != nil {
 		edges = append(edges, instance.EdgeChildren)
+	}
+	if m.logn != nil {
+		edges = append(edges, instance.EdgeLogn)
 	}
 	if m.eventlisteners != nil {
 		edges = append(edges, instance.EdgeEventlisteners)
@@ -5950,6 +6010,12 @@ func (m *InstanceMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case instance.EdgeLogn:
+		ids := make([]ent.Value, 0, len(m.logn))
+		for id := range m.logn {
+			ids = append(ids, id)
+		}
+		return ids
 	case instance.EdgeEventlisteners:
 		ids := make([]ent.Value, 0, len(m.eventlisteners))
 		for id := range m.eventlisteners {
@@ -5968,7 +6034,7 @@ func (m *InstanceMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *InstanceMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 11)
+	edges := make([]string, 0, 12)
 	if m.removedins != nil {
 		edges = append(edges, instance.EdgeIns)
 	}
@@ -5980,6 +6046,9 @@ func (m *InstanceMutation) RemovedEdges() []string {
 	}
 	if m.removedchildren != nil {
 		edges = append(edges, instance.EdgeChildren)
+	}
+	if m.removedlogn != nil {
+		edges = append(edges, instance.EdgeLogn)
 	}
 	if m.removedeventlisteners != nil {
 		edges = append(edges, instance.EdgeEventlisteners)
@@ -6018,6 +6087,12 @@ func (m *InstanceMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case instance.EdgeLogn:
+		ids := make([]ent.Value, 0, len(m.removedlogn))
+		for id := range m.removedlogn {
+			ids = append(ids, id)
+		}
+		return ids
 	case instance.EdgeEventlisteners:
 		ids := make([]ent.Value, 0, len(m.removedeventlisteners))
 		for id := range m.removedeventlisteners {
@@ -6036,7 +6111,7 @@ func (m *InstanceMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *InstanceMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 11)
+	edges := make([]string, 0, 12)
 	if m.clearednamespace {
 		edges = append(edges, instance.EdgeNamespace)
 	}
@@ -6063,6 +6138,9 @@ func (m *InstanceMutation) ClearedEdges() []string {
 	}
 	if m.clearedchildren {
 		edges = append(edges, instance.EdgeChildren)
+	}
+	if m.clearedlogn {
+		edges = append(edges, instance.EdgeLogn)
 	}
 	if m.clearedeventlisteners {
 		edges = append(edges, instance.EdgeEventlisteners)
@@ -6095,6 +6173,8 @@ func (m *InstanceMutation) EdgeCleared(name string) bool {
 		return m.clearedruntime
 	case instance.EdgeChildren:
 		return m.clearedchildren
+	case instance.EdgeLogn:
+		return m.clearedlogn
 	case instance.EdgeEventlisteners:
 		return m.clearedeventlisteners
 	case instance.EdgeAnnotations:
@@ -6156,6 +6236,9 @@ func (m *InstanceMutation) ResetEdge(name string) error {
 		return nil
 	case instance.EdgeChildren:
 		m.ResetChildren()
+		return nil
+	case instance.EdgeLogn:
+		m.ResetLogn()
 		return nil
 	case instance.EdgeEventlisteners:
 		m.ResetEventlisteners()
@@ -7544,6 +7627,9 @@ type LogMsgMutation struct {
 	logtag           map[uuid.UUID]struct{}
 	removedlogtag    map[uuid.UUID]struct{}
 	clearedlogtag    bool
+	insn             map[uuid.UUID]struct{}
+	removedinsn      map[uuid.UUID]struct{}
+	clearedinsn      bool
 	done             bool
 	oldValue         func(context.Context) (*LogMsg, error)
 	predicates       []predicate.LogMsg
@@ -7935,6 +8021,60 @@ func (m *LogMsgMutation) ResetLogtag() {
 	m.removedlogtag = nil
 }
 
+// AddInsnIDs adds the "insn" edge to the Instance entity by ids.
+func (m *LogMsgMutation) AddInsnIDs(ids ...uuid.UUID) {
+	if m.insn == nil {
+		m.insn = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.insn[ids[i]] = struct{}{}
+	}
+}
+
+// ClearInsn clears the "insn" edge to the Instance entity.
+func (m *LogMsgMutation) ClearInsn() {
+	m.clearedinsn = true
+}
+
+// InsnCleared reports if the "insn" edge to the Instance entity was cleared.
+func (m *LogMsgMutation) InsnCleared() bool {
+	return m.clearedinsn
+}
+
+// RemoveInsnIDs removes the "insn" edge to the Instance entity by IDs.
+func (m *LogMsgMutation) RemoveInsnIDs(ids ...uuid.UUID) {
+	if m.removedinsn == nil {
+		m.removedinsn = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.insn, ids[i])
+		m.removedinsn[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedInsn returns the removed IDs of the "insn" edge to the Instance entity.
+func (m *LogMsgMutation) RemovedInsnIDs() (ids []uuid.UUID) {
+	for id := range m.removedinsn {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// InsnIDs returns the "insn" edge IDs in the mutation.
+func (m *LogMsgMutation) InsnIDs() (ids []uuid.UUID) {
+	for id := range m.insn {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetInsn resets all changes to the "insn" edge.
+func (m *LogMsgMutation) ResetInsn() {
+	m.insn = nil
+	m.clearedinsn = false
+	m.removedinsn = nil
+}
+
 // Where appends a list predicates to the LogMsgMutation builder.
 func (m *LogMsgMutation) Where(ps ...predicate.LogMsg) {
 	m.predicates = append(m.predicates, ps...)
@@ -8070,7 +8210,7 @@ func (m *LogMsgMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *LogMsgMutation) AddedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
 	if m.namespace != nil {
 		edges = append(edges, logmsg.EdgeNamespace)
 	}
@@ -8085,6 +8225,9 @@ func (m *LogMsgMutation) AddedEdges() []string {
 	}
 	if m.logtag != nil {
 		edges = append(edges, logmsg.EdgeLogtag)
+	}
+	if m.insn != nil {
+		edges = append(edges, logmsg.EdgeInsn)
 	}
 	return edges
 }
@@ -8115,15 +8258,24 @@ func (m *LogMsgMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case logmsg.EdgeInsn:
+		ids := make([]ent.Value, 0, len(m.insn))
+		for id := range m.insn {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *LogMsgMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
 	if m.removedlogtag != nil {
 		edges = append(edges, logmsg.EdgeLogtag)
+	}
+	if m.removedinsn != nil {
+		edges = append(edges, logmsg.EdgeInsn)
 	}
 	return edges
 }
@@ -8138,13 +8290,19 @@ func (m *LogMsgMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case logmsg.EdgeInsn:
+		ids := make([]ent.Value, 0, len(m.removedinsn))
+		for id := range m.removedinsn {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *LogMsgMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
 	if m.clearednamespace {
 		edges = append(edges, logmsg.EdgeNamespace)
 	}
@@ -8159,6 +8317,9 @@ func (m *LogMsgMutation) ClearedEdges() []string {
 	}
 	if m.clearedlogtag {
 		edges = append(edges, logmsg.EdgeLogtag)
+	}
+	if m.clearedinsn {
+		edges = append(edges, logmsg.EdgeInsn)
 	}
 	return edges
 }
@@ -8177,6 +8338,8 @@ func (m *LogMsgMutation) EdgeCleared(name string) bool {
 		return m.clearedactivity
 	case logmsg.EdgeLogtag:
 		return m.clearedlogtag
+	case logmsg.EdgeInsn:
+		return m.clearedinsn
 	}
 	return false
 }
@@ -8219,6 +8382,9 @@ func (m *LogMsgMutation) ResetEdge(name string) error {
 		return nil
 	case logmsg.EdgeLogtag:
 		m.ResetLogtag()
+		return nil
+	case logmsg.EdgeInsn:
+		m.ResetInsn()
 		return nil
 	}
 	return fmt.Errorf("unknown LogMsg edge %s", name)

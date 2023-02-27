@@ -25,6 +25,8 @@ const (
 	EdgeActivity = "activity"
 	// EdgeLogtag holds the string denoting the logtag edge name in mutations.
 	EdgeLogtag = "logtag"
+	// EdgeInsn holds the string denoting the insn edge name in mutations.
+	EdgeInsn = "insn"
 	// Table holds the table name of the logmsg in the database.
 	Table = "log_msgs"
 	// NamespaceTable is the table that holds the namespace relation/edge.
@@ -62,6 +64,11 @@ const (
 	LogtagInverseTable = "log_tags"
 	// LogtagColumn is the table column denoting the logtag relation/edge.
 	LogtagColumn = "log_msg_logtag"
+	// InsnTable is the table that holds the insn relation/edge. The primary key declared below.
+	InsnTable = "instance_logn"
+	// InsnInverseTable is the table name for the Instance entity.
+	// It exists in this package in order to avoid circular dependency with the "instance" package.
+	InsnInverseTable = "instances"
 )
 
 // Columns holds all SQL columns for logmsg fields.
@@ -79,6 +86,12 @@ var ForeignKeys = []string{
 	"namespace_logs",
 	"workflow_logs",
 }
+
+var (
+	// InsnPrimaryKey and InsnColumn2 are the table columns denoting the
+	// primary key for the insn relation (M2M).
+	InsnPrimaryKey = []string{"instance_id", "log_msg_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {

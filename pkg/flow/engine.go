@@ -136,6 +136,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 	parents := []string{}
 	uid := uuid.New()
 	inb := inc.Create().SetID(uid).SetNamespace(d.ns()).SetWorkflow(d.wf).SetRevision(d.rev()).SetRuntime(rt).SetStatus(util.InstanceStatusPending).SetInvoker(args.Caller).SetAs(util.SanitizeAsField(as))
+	parents = append(parents, uid.String())
 	if args.Caller != Api {
 		uid, err = uuid.Parse(args.Originator)
 		if err != nil {
@@ -154,8 +155,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 		if err != nil {
 			return nil, err
 		}
-		parents = entCaller.Parents
-		parents = append(parents, invoker)
+		parents = append(parents, entCaller.Parents...)
 	}
 	inb.SetOrginatorID(uid)
 	inb.SetParents(parents)

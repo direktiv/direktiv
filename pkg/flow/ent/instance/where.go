@@ -1147,6 +1147,34 @@ func HasChildrenWith(preds ...predicate.InstanceRuntime) predicate.Instance {
 	})
 }
 
+// HasLogn applies the HasEdge predicate on the "logn" edge.
+func HasLogn() predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(LognTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, LognTable, LognPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasLognWith applies the HasEdge predicate on the "logn" edge with a given conditions (other predicates).
+func HasLognWith(preds ...predicate.LogMsg) predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(LognInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, LognTable, LognPrimaryKey...),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasEventlisteners applies the HasEdge predicate on the "eventlisteners" edge.
 func HasEventlisteners() predicate.Instance {
 	return predicate.Instance(func(s *sql.Selector) {

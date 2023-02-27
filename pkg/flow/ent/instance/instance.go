@@ -49,6 +49,8 @@ const (
 	EdgeRuntime = "runtime"
 	// EdgeChildren holds the string denoting the children edge name in mutations.
 	EdgeChildren = "children"
+	// EdgeLogn holds the string denoting the logn edge name in mutations.
+	EdgeLogn = "logn"
 	// EdgeEventlisteners holds the string denoting the eventlisteners edge name in mutations.
 	EdgeEventlisteners = "eventlisteners"
 	// EdgeAnnotations holds the string denoting the annotations edge name in mutations.
@@ -112,6 +114,11 @@ const (
 	ChildrenInverseTable = "instance_runtimes"
 	// ChildrenColumn is the table column denoting the children relation/edge.
 	ChildrenColumn = "instance_children"
+	// LognTable is the table that holds the logn relation/edge. The primary key declared below.
+	LognTable = "instance_logn"
+	// LognInverseTable is the table name for the LogMsg entity.
+	// It exists in this package in order to avoid circular dependency with the "logmsg" package.
+	LognInverseTable = "log_msgs"
 	// EventlistenersTable is the table that holds the eventlisteners relation/edge.
 	EventlistenersTable = "events"
 	// EventlistenersInverseTable is the table name for the Events entity.
@@ -150,6 +157,12 @@ var ForeignKeys = []string{
 	"revision_instances",
 	"workflow_instances",
 }
+
+var (
+	// LognPrimaryKey and LognColumn2 are the table columns denoting the
+	// primary key for the logn relation (M2M).
+	LognPrimaryKey = []string{"instance_id", "log_msg_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {

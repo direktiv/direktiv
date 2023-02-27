@@ -146,6 +146,21 @@ func (lmc *LogMsgCreate) AddLogtag(l ...*LogTag) *LogMsgCreate {
 	return lmc.AddLogtagIDs(ids...)
 }
 
+// AddInsnIDs adds the "insn" edge to the Instance entity by IDs.
+func (lmc *LogMsgCreate) AddInsnIDs(ids ...uuid.UUID) *LogMsgCreate {
+	lmc.mutation.AddInsnIDs(ids...)
+	return lmc
+}
+
+// AddInsn adds the "insn" edges to the Instance entity.
+func (lmc *LogMsgCreate) AddInsn(i ...*Instance) *LogMsgCreate {
+	ids := make([]uuid.UUID, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return lmc.AddInsnIDs(ids...)
+}
+
 // Mutation returns the LogMsgMutation object of the builder.
 func (lmc *LogMsgCreate) Mutation() *LogMsgMutation {
 	return lmc.mutation
@@ -373,6 +388,25 @@ func (lmc *LogMsgCreate) createSpec() (*LogMsg, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: logtag.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := lmc.mutation.InsnIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   logmsg.InsnTable,
+			Columns: logmsg.InsnPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: instance.FieldID,
 				},
 			},
 		}

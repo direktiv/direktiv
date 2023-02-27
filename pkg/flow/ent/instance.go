@@ -69,13 +69,15 @@ type InstanceEdges struct {
 	Runtime *InstanceRuntime `json:"runtime,omitempty"`
 	// Children holds the value of the children edge.
 	Children []*InstanceRuntime `json:"children,omitempty"`
+	// Logn holds the value of the logn edge.
+	Logn []*LogMsg `json:"logn,omitempty"`
 	// Eventlisteners holds the value of the eventlisteners edge.
 	Eventlisteners []*Events `json:"eventlisteners,omitempty"`
 	// Annotations holds the value of the annotations edge.
 	Annotations []*Annotation `json:"annotations,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [11]bool
+	loadedTypes [12]bool
 }
 
 // NamespaceOrErr returns the Namespace value or an error if the edge
@@ -179,10 +181,19 @@ func (e InstanceEdges) ChildrenOrErr() ([]*InstanceRuntime, error) {
 	return nil, &NotLoadedError{edge: "children"}
 }
 
+// LognOrErr returns the Logn value or an error if the edge
+// was not loaded in eager-loading.
+func (e InstanceEdges) LognOrErr() ([]*LogMsg, error) {
+	if e.loadedTypes[9] {
+		return e.Logn, nil
+	}
+	return nil, &NotLoadedError{edge: "logn"}
+}
+
 // EventlistenersOrErr returns the Eventlisteners value or an error if the edge
 // was not loaded in eager-loading.
 func (e InstanceEdges) EventlistenersOrErr() ([]*Events, error) {
-	if e.loadedTypes[9] {
+	if e.loadedTypes[10] {
 		return e.Eventlisteners, nil
 	}
 	return nil, &NotLoadedError{edge: "eventlisteners"}
@@ -191,7 +202,7 @@ func (e InstanceEdges) EventlistenersOrErr() ([]*Events, error) {
 // AnnotationsOrErr returns the Annotations value or an error if the edge
 // was not loaded in eager-loading.
 func (e InstanceEdges) AnnotationsOrErr() ([]*Annotation, error) {
-	if e.loadedTypes[10] {
+	if e.loadedTypes[11] {
 		return e.Annotations, nil
 	}
 	return nil, &NotLoadedError{edge: "annotations"}
@@ -371,6 +382,11 @@ func (i *Instance) QueryRuntime() *InstanceRuntimeQuery {
 // QueryChildren queries the "children" edge of the Instance entity.
 func (i *Instance) QueryChildren() *InstanceRuntimeQuery {
 	return (&InstanceClient{config: i.config}).QueryChildren(i)
+}
+
+// QueryLogn queries the "logn" edge of the Instance entity.
+func (i *Instance) QueryLogn() *LogMsgQuery {
+	return (&InstanceClient{config: i.config}).QueryLogn(i)
 }
 
 // QueryEventlisteners queries the "eventlisteners" edge of the Instance entity.

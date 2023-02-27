@@ -651,6 +651,31 @@ var (
 			},
 		},
 	}
+	// InstanceLognColumns holds the columns for the "instance_logn" table.
+	InstanceLognColumns = []*schema.Column{
+		{Name: "instance_id", Type: field.TypeUUID},
+		{Name: "log_msg_id", Type: field.TypeUUID},
+	}
+	// InstanceLognTable holds the schema information for the "instance_logn" table.
+	InstanceLognTable = &schema.Table{
+		Name:       "instance_logn",
+		Columns:    InstanceLognColumns,
+		PrimaryKey: []*schema.Column{InstanceLognColumns[0], InstanceLognColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "instance_logn_instance_id",
+				Columns:    []*schema.Column{InstanceLognColumns[0]},
+				RefColumns: []*schema.Column{InstancesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "instance_logn_log_msg_id",
+				Columns:    []*schema.Column{InstanceLognColumns[1]},
+				RefColumns: []*schema.Column{LogMsgsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		AnnotationsTable,
@@ -673,6 +698,7 @@ var (
 		VarDataTable,
 		VarRefsTable,
 		WorkflowsTable,
+		InstanceLognTable,
 	}
 )
 
@@ -716,4 +742,6 @@ func init() {
 	VarRefsTable.ForeignKeys[3].RefTable = WorkflowsTable
 	WorkflowsTable.ForeignKeys[0].RefTable = InodesTable
 	WorkflowsTable.ForeignKeys[1].RefTable = NamespacesTable
+	InstanceLognTable.ForeignKeys[0].RefTable = InstancesTable
+	InstanceLognTable.ForeignKeys[1].RefTable = LogMsgsTable
 }

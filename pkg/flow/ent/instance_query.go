@@ -43,6 +43,7 @@ type InstanceQuery struct {
 	withVars           *VarRefQuery
 	withRuntime        *InstanceRuntimeQuery
 	withChildren       *InstanceRuntimeQuery
+	withLogn           *LogMsgQuery
 	withEventlisteners *EventsQuery
 	withAnnotations    *AnnotationQuery
 	withFKs            bool
@@ -274,6 +275,28 @@ func (iq *InstanceQuery) QueryChildren() *InstanceRuntimeQuery {
 			sqlgraph.From(instance.Table, instance.FieldID, selector),
 			sqlgraph.To(instanceruntime.Table, instanceruntime.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, instance.ChildrenTable, instance.ChildrenColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryLogn chains the current query on the "logn" edge.
+func (iq *InstanceQuery) QueryLogn() *LogMsgQuery {
+	query := &LogMsgQuery{config: iq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := iq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := iq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(instance.Table, instance.FieldID, selector),
+			sqlgraph.To(logmsg.Table, logmsg.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, instance.LognTable, instance.LognPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
 		return fromU, nil
@@ -515,6 +538,7 @@ func (iq *InstanceQuery) Clone() *InstanceQuery {
 		withVars:           iq.withVars.Clone(),
 		withRuntime:        iq.withRuntime.Clone(),
 		withChildren:       iq.withChildren.Clone(),
+		withLogn:           iq.withLogn.Clone(),
 		withEventlisteners: iq.withEventlisteners.Clone(),
 		withAnnotations:    iq.withAnnotations.Clone(),
 		// clone intermediate query.
@@ -623,6 +647,17 @@ func (iq *InstanceQuery) WithChildren(opts ...func(*InstanceRuntimeQuery)) *Inst
 	return iq
 }
 
+// WithLogn tells the query-builder to eager-load the nodes that are connected to
+// the "logn" edge. The optional arguments are used to configure the query builder of the edge.
+func (iq *InstanceQuery) WithLogn(opts ...func(*LogMsgQuery)) *InstanceQuery {
+	query := &LogMsgQuery{config: iq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	iq.withLogn = query
+	return iq
+}
+
 // WithEventlisteners tells the query-builder to eager-load the nodes that are connected to
 // the "eventlisteners" edge. The optional arguments are used to configure the query builder of the edge.
 func (iq *InstanceQuery) WithEventlisteners(opts ...func(*EventsQuery)) *InstanceQuery {
@@ -719,7 +754,7 @@ func (iq *InstanceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Ins
 		nodes       = []*Instance{}
 		withFKs     = iq.withFKs
 		_spec       = iq.querySpec()
-		loadedTypes = [11]bool{
+		loadedTypes = [12]bool{
 			iq.withNamespace != nil,
 			iq.withWorkflow != nil,
 			iq.withRevision != nil,
@@ -729,6 +764,7 @@ func (iq *InstanceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Ins
 			iq.withVars != nil,
 			iq.withRuntime != nil,
 			iq.withChildren != nil,
+			iq.withLogn != nil,
 			iq.withEventlisteners != nil,
 			iq.withAnnotations != nil,
 		}
@@ -815,6 +851,13 @@ func (iq *InstanceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Ins
 		if err := iq.loadChildren(ctx, query, nodes,
 			func(n *Instance) { n.Edges.Children = []*InstanceRuntime{} },
 			func(n *Instance, e *InstanceRuntime) { n.Edges.Children = append(n.Edges.Children, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := iq.withLogn; query != nil {
+		if err := iq.loadLogn(ctx, query, nodes,
+			func(n *Instance) { n.Edges.Logn = []*LogMsg{} },
+			func(n *Instance, e *LogMsg) { n.Edges.Logn = append(n.Edges.Logn, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -1100,6 +1143,64 @@ func (iq *InstanceQuery) loadChildren(ctx context.Context, query *InstanceRuntim
 			return fmt.Errorf(`unexpected foreign-key "instance_children" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
+	}
+	return nil
+}
+func (iq *InstanceQuery) loadLogn(ctx context.Context, query *LogMsgQuery, nodes []*Instance, init func(*Instance), assign func(*Instance, *LogMsg)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[uuid.UUID]*Instance)
+	nids := make(map[uuid.UUID]map[*Instance]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(instance.LognTable)
+		s.Join(joinT).On(s.C(logmsg.FieldID), joinT.C(instance.LognPrimaryKey[1]))
+		s.Where(sql.InValues(joinT.C(instance.LognPrimaryKey[0]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(instance.LognPrimaryKey[0]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	neighbors, err := query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+		assign := spec.Assign
+		values := spec.ScanValues
+		spec.ScanValues = func(columns []string) ([]any, error) {
+			values, err := values(columns[1:])
+			if err != nil {
+				return nil, err
+			}
+			return append([]any{new(uuid.UUID)}, values...), nil
+		}
+		spec.Assign = func(columns []string, values []any) error {
+			outValue := *values[0].(*uuid.UUID)
+			inValue := *values[1].(*uuid.UUID)
+			if nids[inValue] == nil {
+				nids[inValue] = map[*Instance]struct{}{byID[outValue]: {}}
+				return assign(columns[1:], values[1:])
+			}
+			nids[inValue][byID[outValue]] = struct{}{}
+			return nil
+		}
+	})
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "logn" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
 	}
 	return nil
 }

@@ -36,6 +36,7 @@ type LogMsgQuery struct {
 	withInstance  *InstanceQuery
 	withActivity  *MirrorActivityQuery
 	withLogtag    *LogTagQuery
+	withInsn      *InstanceQuery
 	withFKs       bool
 	modifiers     []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
@@ -177,6 +178,28 @@ func (lmq *LogMsgQuery) QueryLogtag() *LogTagQuery {
 			sqlgraph.From(logmsg.Table, logmsg.FieldID, selector),
 			sqlgraph.To(logtag.Table, logtag.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, logmsg.LogtagTable, logmsg.LogtagColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(lmq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryInsn chains the current query on the "insn" edge.
+func (lmq *LogMsgQuery) QueryInsn() *InstanceQuery {
+	query := &InstanceQuery{config: lmq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := lmq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := lmq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(logmsg.Table, logmsg.FieldID, selector),
+			sqlgraph.To(instance.Table, instance.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, logmsg.InsnTable, logmsg.InsnPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(lmq.driver.Dialect(), step)
 		return fromU, nil
@@ -370,6 +393,7 @@ func (lmq *LogMsgQuery) Clone() *LogMsgQuery {
 		withInstance:  lmq.withInstance.Clone(),
 		withActivity:  lmq.withActivity.Clone(),
 		withLogtag:    lmq.withLogtag.Clone(),
+		withInsn:      lmq.withInsn.Clone(),
 		// clone intermediate query.
 		sql:    lmq.sql.Clone(),
 		path:   lmq.path,
@@ -429,6 +453,17 @@ func (lmq *LogMsgQuery) WithLogtag(opts ...func(*LogTagQuery)) *LogMsgQuery {
 		opt(query)
 	}
 	lmq.withLogtag = query
+	return lmq
+}
+
+// WithInsn tells the query-builder to eager-load the nodes that are connected to
+// the "insn" edge. The optional arguments are used to configure the query builder of the edge.
+func (lmq *LogMsgQuery) WithInsn(opts ...func(*InstanceQuery)) *LogMsgQuery {
+	query := &InstanceQuery{config: lmq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	lmq.withInsn = query
 	return lmq
 }
 
@@ -506,12 +541,13 @@ func (lmq *LogMsgQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*LogM
 		nodes       = []*LogMsg{}
 		withFKs     = lmq.withFKs
 		_spec       = lmq.querySpec()
-		loadedTypes = [5]bool{
+		loadedTypes = [6]bool{
 			lmq.withNamespace != nil,
 			lmq.withWorkflow != nil,
 			lmq.withInstance != nil,
 			lmq.withActivity != nil,
 			lmq.withLogtag != nil,
+			lmq.withInsn != nil,
 		}
 	)
 	if lmq.withNamespace != nil || lmq.withWorkflow != nil || lmq.withInstance != nil || lmq.withActivity != nil {
@@ -569,6 +605,13 @@ func (lmq *LogMsgQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*LogM
 		if err := lmq.loadLogtag(ctx, query, nodes,
 			func(n *LogMsg) { n.Edges.Logtag = []*LogTag{} },
 			func(n *LogMsg, e *LogTag) { n.Edges.Logtag = append(n.Edges.Logtag, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := lmq.withInsn; query != nil {
+		if err := lmq.loadInsn(ctx, query, nodes,
+			func(n *LogMsg) { n.Edges.Insn = []*Instance{} },
+			func(n *LogMsg, e *Instance) { n.Edges.Insn = append(n.Edges.Insn, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -719,6 +762,64 @@ func (lmq *LogMsgQuery) loadLogtag(ctx context.Context, query *LogTagQuery, node
 			return fmt.Errorf(`unexpected foreign-key "log_msg_logtag" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
+	}
+	return nil
+}
+func (lmq *LogMsgQuery) loadInsn(ctx context.Context, query *InstanceQuery, nodes []*LogMsg, init func(*LogMsg), assign func(*LogMsg, *Instance)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[uuid.UUID]*LogMsg)
+	nids := make(map[uuid.UUID]map[*LogMsg]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(logmsg.InsnTable)
+		s.Join(joinT).On(s.C(instance.FieldID), joinT.C(logmsg.InsnPrimaryKey[0]))
+		s.Where(sql.InValues(joinT.C(logmsg.InsnPrimaryKey[1]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(logmsg.InsnPrimaryKey[1]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	neighbors, err := query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+		assign := spec.Assign
+		values := spec.ScanValues
+		spec.ScanValues = func(columns []string) ([]any, error) {
+			values, err := values(columns[1:])
+			if err != nil {
+				return nil, err
+			}
+			return append([]any{new(uuid.UUID)}, values...), nil
+		}
+		spec.Assign = func(columns []string, values []any) error {
+			outValue := *values[0].(*uuid.UUID)
+			inValue := *values[1].(*uuid.UUID)
+			if nids[inValue] == nil {
+				nids[inValue] = map[*LogMsg]struct{}{byID[outValue]: {}}
+				return assign(columns[1:], values[1:])
+			}
+			nids[inValue][byID[outValue]] = struct{}{}
+			return nil
+		}
+	})
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "insn" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
 	}
 	return nil
 }

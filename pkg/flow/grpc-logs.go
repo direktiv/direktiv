@@ -336,8 +336,14 @@ func (flow *flow) InstanceLogs(ctx context.Context, req *grpc.InstanceLogsReques
 	if err != nil {
 		return nil, err
 	}
-
-	query := d.in.QueryLogs().WithLogtag()
+	// uuids :=
+	// for _, v := range d.in.Parents {
+	// uid, err := uuid.Parse(v)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	query := flow.db.Instance.QueryLogn(d.in).WithLogtag()
+	//query := d.in.QueryLogs().WithLogtag()
 	results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
 	if err != nil {
 		return nil, err
@@ -384,8 +390,8 @@ func (flow *flow) InstanceLogsParcels(req *grpc.InstanceLogsRequest, srv grpc.Fl
 
 resend:
 
-	query := d.in.QueryLogs().WithLogtag()
-
+	//query := d.in.QueryLogs().WithLogtag()
+	query := flow.db.Instance.QueryLogn(d.in).WithLogtag()
 	results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
 	if err != nil {
 		return err

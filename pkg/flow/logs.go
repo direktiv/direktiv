@@ -365,6 +365,15 @@ func (srv *server) storeLogMsg(l *logMessage) error {
 	lc := tx.LogMsg.Create().SetMsg(l.msg).SetT(l.t)
 	if l.in != nil {
 		lc.SetInstance(l.in)
+		uuids := []uuid.UUID{}
+		for _, id := range l.in.Parents {
+			uid, err := uuid.Parse(id)
+			if err != nil {
+				return fmt.Errorf("failed reading uuid: %w", err)
+			}
+			uuids = append(uuids, uid)
+		}
+		lc = lc.AddInsnIDs(uuids...)
 	}
 	if l.ns != nil {
 		lc.SetNamespace(l.ns)

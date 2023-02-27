@@ -138,6 +138,21 @@ func (lmu *LogMsgUpdate) AddLogtag(l ...*LogTag) *LogMsgUpdate {
 	return lmu.AddLogtagIDs(ids...)
 }
 
+// AddInsnIDs adds the "insn" edge to the Instance entity by IDs.
+func (lmu *LogMsgUpdate) AddInsnIDs(ids ...uuid.UUID) *LogMsgUpdate {
+	lmu.mutation.AddInsnIDs(ids...)
+	return lmu
+}
+
+// AddInsn adds the "insn" edges to the Instance entity.
+func (lmu *LogMsgUpdate) AddInsn(i ...*Instance) *LogMsgUpdate {
+	ids := make([]uuid.UUID, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return lmu.AddInsnIDs(ids...)
+}
+
 // Mutation returns the LogMsgMutation object of the builder.
 func (lmu *LogMsgUpdate) Mutation() *LogMsgMutation {
 	return lmu.mutation
@@ -186,6 +201,27 @@ func (lmu *LogMsgUpdate) RemoveLogtag(l ...*LogTag) *LogMsgUpdate {
 		ids[i] = l[i].ID
 	}
 	return lmu.RemoveLogtagIDs(ids...)
+}
+
+// ClearInsn clears all "insn" edges to the Instance entity.
+func (lmu *LogMsgUpdate) ClearInsn() *LogMsgUpdate {
+	lmu.mutation.ClearInsn()
+	return lmu
+}
+
+// RemoveInsnIDs removes the "insn" edge to Instance entities by IDs.
+func (lmu *LogMsgUpdate) RemoveInsnIDs(ids ...uuid.UUID) *LogMsgUpdate {
+	lmu.mutation.RemoveInsnIDs(ids...)
+	return lmu
+}
+
+// RemoveInsn removes "insn" edges to Instance entities.
+func (lmu *LogMsgUpdate) RemoveInsn(i ...*Instance) *LogMsgUpdate {
+	ids := make([]uuid.UUID, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return lmu.RemoveInsnIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -466,6 +502,60 @@ func (lmu *LogMsgUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if lmu.mutation.InsnCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   logmsg.InsnTable,
+			Columns: logmsg.InsnPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: instance.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := lmu.mutation.RemovedInsnIDs(); len(nodes) > 0 && !lmu.mutation.InsnCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   logmsg.InsnTable,
+			Columns: logmsg.InsnPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: instance.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := lmu.mutation.InsnIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   logmsg.InsnTable,
+			Columns: logmsg.InsnPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: instance.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	_spec.AddModifiers(lmu.modifiers...)
 	if n, err = sqlgraph.UpdateNodes(ctx, lmu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -590,6 +680,21 @@ func (lmuo *LogMsgUpdateOne) AddLogtag(l ...*LogTag) *LogMsgUpdateOne {
 	return lmuo.AddLogtagIDs(ids...)
 }
 
+// AddInsnIDs adds the "insn" edge to the Instance entity by IDs.
+func (lmuo *LogMsgUpdateOne) AddInsnIDs(ids ...uuid.UUID) *LogMsgUpdateOne {
+	lmuo.mutation.AddInsnIDs(ids...)
+	return lmuo
+}
+
+// AddInsn adds the "insn" edges to the Instance entity.
+func (lmuo *LogMsgUpdateOne) AddInsn(i ...*Instance) *LogMsgUpdateOne {
+	ids := make([]uuid.UUID, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return lmuo.AddInsnIDs(ids...)
+}
+
 // Mutation returns the LogMsgMutation object of the builder.
 func (lmuo *LogMsgUpdateOne) Mutation() *LogMsgMutation {
 	return lmuo.mutation
@@ -638,6 +743,27 @@ func (lmuo *LogMsgUpdateOne) RemoveLogtag(l ...*LogTag) *LogMsgUpdateOne {
 		ids[i] = l[i].ID
 	}
 	return lmuo.RemoveLogtagIDs(ids...)
+}
+
+// ClearInsn clears all "insn" edges to the Instance entity.
+func (lmuo *LogMsgUpdateOne) ClearInsn() *LogMsgUpdateOne {
+	lmuo.mutation.ClearInsn()
+	return lmuo
+}
+
+// RemoveInsnIDs removes the "insn" edge to Instance entities by IDs.
+func (lmuo *LogMsgUpdateOne) RemoveInsnIDs(ids ...uuid.UUID) *LogMsgUpdateOne {
+	lmuo.mutation.RemoveInsnIDs(ids...)
+	return lmuo
+}
+
+// RemoveInsn removes "insn" edges to Instance entities.
+func (lmuo *LogMsgUpdateOne) RemoveInsn(i ...*Instance) *LogMsgUpdateOne {
+	ids := make([]uuid.UUID, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return lmuo.RemoveInsnIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -940,6 +1066,60 @@ func (lmuo *LogMsgUpdateOne) sqlSave(ctx context.Context) (_node *LogMsg, err er
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: logtag.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if lmuo.mutation.InsnCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   logmsg.InsnTable,
+			Columns: logmsg.InsnPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: instance.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := lmuo.mutation.RemovedInsnIDs(); len(nodes) > 0 && !lmuo.mutation.InsnCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   logmsg.InsnTable,
+			Columns: logmsg.InsnPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: instance.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := lmuo.mutation.InsnIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   logmsg.InsnTable,
+			Columns: logmsg.InsnPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: instance.FieldID,
 				},
 			},
 		}

@@ -61,6 +61,7 @@ else
   echo "not using ca-cert"
   helm install -n knative-serving --create-namespace knative-serving direktiv/knative-instance
 fi
+helm install -n knative-serving --create-namespace knative-serving direktiv/knative-instance
 
 kubectl delete --all -n postgres persistentvolumeclaims
 kubectl delete --all -n default persistentvolumeclaims

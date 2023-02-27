@@ -279,6 +279,21 @@ func (ic *InstanceCreate) AddChildren(i ...*InstanceRuntime) *InstanceCreate {
 	return ic.AddChildIDs(ids...)
 }
 
+// AddLognIDs adds the "logn" edge to the LogMsg entity by IDs.
+func (ic *InstanceCreate) AddLognIDs(ids ...uuid.UUID) *InstanceCreate {
+	ic.mutation.AddLognIDs(ids...)
+	return ic
+}
+
+// AddLogn adds the "logn" edges to the LogMsg entity.
+func (ic *InstanceCreate) AddLogn(l ...*LogMsg) *InstanceCreate {
+	ids := make([]uuid.UUID, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
+	}
+	return ic.AddLognIDs(ids...)
+}
+
 // AddEventlistenerIDs adds the "eventlisteners" edge to the Events entity by IDs.
 func (ic *InstanceCreate) AddEventlistenerIDs(ids ...uuid.UUID) *InstanceCreate {
 	ic.mutation.AddEventlistenerIDs(ids...)
@@ -663,6 +678,25 @@ func (ic *InstanceCreate) createSpec() (*Instance, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: instanceruntime.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := ic.mutation.LognIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   instance.LognTable,
+			Columns: instance.LognPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: logmsg.FieldID,
 				},
 			},
 		}
