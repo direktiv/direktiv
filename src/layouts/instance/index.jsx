@@ -248,7 +248,7 @@ function InstancePage(props) {
                         }`}
                       >
                         <Button color="info" variant="outlined">
-                          <span className="hide-600">View</span> Workflow
+                          <span className="hide-600">View&nbsp;</span>Workflow
                         </Button>
                       </Link>
                     )}
