@@ -182,28 +182,33 @@ func (im *instanceMemory) SetVariables(ctx context.Context, vars []states.Variab
 			fallthrough
 
 		case "instance":
-			q, err = clients.Instance.Get(ctx, im.cached.Instance.ID)
-			if err != nil {
-				return err
+
+			q = &entInstanceVarQuerier{
+				clients: clients,
+				cached:  im.cached,
 			}
 
 		case "thread":
-			q, err = clients.Instance.Get(ctx, im.cached.Instance.ID)
-			if err != nil {
-				return err
+
+			q = &entInstanceVarQuerier{
+				clients: clients,
+				cached:  im.cached,
 			}
+
 			thread = true
 
 		case "workflow":
-			q, err = clients.Workflow.Get(ctx, im.cached.Workflow.ID)
-			if err != nil {
-				return err
+
+			q = &entWorkflowVarQuerier{
+				clients: clients,
+				cached:  im.cached,
 			}
 
 		case "namespace":
-			q, err = clients.Namespace.Get(ctx, im.cached.Namespace.ID)
-			if err != nil {
-				return err
+
+			q = &entNamespaceVarQuerier{
+				clients: clients,
+				cached:  im.cached,
 			}
 
 		default:

@@ -465,12 +465,12 @@ func (flow *flow) SetVariable(ctx context.Context, tx database.Transaction, q va
 		cached = v.cached
 	case *entWorkflowVarQuerier:
 		broadcastInput.Scope = BroadcastEventScopeWorkflow
-		broadcastInput.WorkflowPath = cached.Path()
 		cached = v.cached
+		broadcastInput.WorkflowPath = cached.Path()
 	case *entInstanceVarQuerier:
 		broadcastInput.Scope = BroadcastEventScopeInstance
-		broadcastInput.InstanceID = v.cached.Instance.ID.String()
 		cached = v.cached
+		broadcastInput.InstanceID = v.cached.Instance.ID.String()
 	}
 
 	if newVar {
