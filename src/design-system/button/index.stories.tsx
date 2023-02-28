@@ -228,12 +228,12 @@ export const Loading = () => {
   }, [isLoading]);
 
   return (
-    <div className="space-x-2">
+    <div className="flex space-x-2">
       <Button outline loading>
         Loading
       </Button>
       <Button
-        className="w-[200px]"
+        className="w-[300px]"
         loading={isLoading}
         color="primary"
         active
@@ -241,13 +241,10 @@ export const Loading = () => {
           setIsLoading((old) => !old);
         }}
       >
-        {isLoading ? "I'm loading..." : "click me do start loading"}
+        {isLoading
+          ? "I'm loading and deactivated..."
+          : "click me do start loading"}
       </Button>
-      <button className="loading btn"></button>
-
-      <button className="btn">1</button>
-      <button className="loading btn btn-sm">1</button>
-      <button className="btn btn-sm">1</button>
     </div>
   );
 };
