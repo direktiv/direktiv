@@ -374,7 +374,8 @@ func (im *instanceMemory) CreateChild(ctx context.Context, args states.CreateChi
 		caller.As = im.in.As
 		caller.Tags = im.tags()
 		caller.Originator = im.orginator()
-		caller.Iterator = im.iterator()
+		caller.Iterator = args.Iterator
+		im.i = args.Iterator
 
 		sfim, err := im.engine.subflowInvoke(ctx, caller, im.in.Edges.Namespace, args.Definition.(*model.SubflowFunctionDefinition).Workflow, args.Input)
 		if err != nil {

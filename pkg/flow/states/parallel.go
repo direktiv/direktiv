@@ -247,10 +247,10 @@ func (logic *parallelLogic) processActionResults(ctx context.Context, children [
 	id := sd.ID
 
 	tags := make(map[string]string)
-	tags["i"] = fmt.Sprint(idx)
-	tags["actionID"] = results.ActionID
+	//tags["i"] = fmt.Sprint(idx)
+	//tags["actionID"] = results.ActionID
 	tags["iterator"] = fmt.Sprint(results.Iterator)
-	tags["originator"] = results.Originator
+	//tags["originator"] = results.Originator
 	if results.ActionID != id {
 		return nil, derrors.NewInternalError(errors.New("incorrect child action ID"))
 	}

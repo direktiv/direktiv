@@ -181,6 +181,7 @@ func (im *instanceMemory) tags() map[string]string {
 		}
 	}
 	tag["step"] = fmt.Sprint(im.Step())
+	tag["iterator"] = fmt.Sprint(im.i)
 	if im.logic == nil {
 		return tag
 	}

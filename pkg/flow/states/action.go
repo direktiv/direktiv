@@ -214,8 +214,8 @@ func (logic *actionLogic) processActionResults(ctx context.Context, children []C
 	id := sd.ID
 
 	tags := make(map[string]string)
-	tags["i"] = "0"
-	tags["actionID"] = results.ActionID
+	//tags["i"] = "0"
+	//tags["actionID"] = results.ActionID
 	tags["orginator"] = results.Originator
 	tags["iterator"] = fmt.Sprint(results.Iterator)
 	if results.ActionID != id {
