@@ -1,8 +1,8 @@
-import React, { FC } from "react";
+import React, { ButtonHTMLAttributes, FC } from "react";
 
 import clsx from "clsx";
 
-export type ButtonProps = {
+export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   size?: "xs" | "sm" | "lg";
   color?:
     | "primary"
