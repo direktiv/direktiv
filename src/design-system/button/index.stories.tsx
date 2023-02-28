@@ -199,7 +199,7 @@ export const Group = () => (
           <ZoomIn />
           Button 1
         </Button>
-        <Button color="sec">
+        <Button>
           <ZoomOut />
           Button 2
         </Button>
