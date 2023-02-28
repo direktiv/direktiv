@@ -532,7 +532,7 @@ func (db *CachedDatabase) ThreadVariables(ctx context.Context, tx Transaction, i
 
 func (db *CachedDatabase) NamespaceVariable(ctx context.Context, tx Transaction, nsID uuid.UUID, key string) (*VarRef, error) {
 	// NOTE: not bothering to cache this right now
-	return db.source.InstanceVariableRef(ctx, tx, nsID, key)
+	return db.source.NamespaceVariableRef(ctx, tx, nsID, key)
 }
 
 func (db *CachedDatabase) WorkflowVariable(ctx context.Context, tx Transaction, wfID uuid.UUID, key string) (*VarRef, error) {
