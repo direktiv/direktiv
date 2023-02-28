@@ -2,9 +2,9 @@ import type { Meta, StoryObj } from "@storybook/react";
 import {
   MoreHorizontal,
   MoreVertical,
+  Search,
   ZoomIn,
   ZoomOut,
-  Search,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import Button from "./index";
