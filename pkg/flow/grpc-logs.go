@@ -2,12 +2,15 @@ package flow
 
 import (
 	"context"
+	"errors"
+	"strings"
 
 	"github.com/direktiv/direktiv/pkg/flow/ent"
+	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	entlog "github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
 	entlogtag "github.com/direktiv/direktiv/pkg/flow/ent/logtag"
-
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/google/uuid"
 )
 
 var logsOrderings = []*orderingInfo{
@@ -20,10 +23,32 @@ var logsOrderings = []*orderingInfo{
 
 var logsFilters = map[*filteringInfo]func(query *ent.LogMsgQuery, v string) (*ent.LogMsgQuery, error){
 	{
-		field: "tags",
-		ftype: "logtag",
+		field: "ID",
+		ftype: "MATCH",
 	}: func(query *ent.LogMsgQuery, v string) (*ent.LogMsgQuery, error) {
-		return query.Where(entlog.HasLogtagWith(entlogtag.Value(v))), nil
+		id, err := uuid.Parse(v)
+		if err != nil {
+			return nil, err
+		}
+		return query.Where(entlog.HasInstanceWith(entinst.IDEQ(id))).WithLogtag(), nil
+	},
+	{
+		field: "STATE",
+		ftype: "MATCH",
+	}: func(query *ent.LogMsgQuery, v string) (*ent.LogMsgQuery, error) {
+		return query.Where(entlog.HasLogtagWith(entlogtag.And(entlogtag.Type("state"), entlogtag.Value(v)))), nil
+	},
+	{
+		field: "QUERY",
+		ftype: "MATCH",
+	}: func(query *ent.LogMsgQuery, v string) (*ent.LogMsgQuery, error) {
+		values := strings.Split(v, "::")
+		if len(values) != 3 {
+			return nil, errors.New("wrong argument number use iterator::wfname::state")
+		}
+		query = query.Where(entlog.HasLogtagWith(entlogtag.And(entlogtag.Type("iterator"), entlogtag.Value(values[0]))))
+		query = query.Where(entlog.HasLogtagWith(entlogtag.And(entlogtag.Type("name"), entlogtag.Value(values[1]))))
+		return query.Where(entlog.HasLogtagWith(entlogtag.And(entlogtag.Type("state"), entlogtag.Value(values[2])))), nil
 	},
 }
 
