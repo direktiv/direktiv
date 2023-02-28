@@ -1,5 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { MoreHorizontal, MoreVertical, ZoomIn } from "lucide-react";
+import {
+  MoreHorizontal,
+  MoreVertical,
+  ZoomIn,
+  ZoomOut,
+  Search,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import Button from "./index";
 
@@ -169,6 +175,43 @@ export const Outline = () => (
   </div>
 );
 
+export const Group = () => (
+  <>
+    <div className="mb-5">
+      <div className="btn-group ">
+        <Button color="primary">
+          <ZoomIn />
+          Button 1
+        </Button>
+        <Button>
+          <ZoomOut />
+          Button 2
+        </Button>
+        <Button>
+          <Search />
+          Button 3
+        </Button>
+      </div>
+    </div>
+    <div>
+      <div className="btn-group btn-group-vertical">
+        <Button color="primary">
+          <ZoomIn />
+          Button 1
+        </Button>
+        <Button color="sec">
+          <ZoomOut />
+          Button 2
+        </Button>
+        <Button>
+          <Search />
+          Button 3
+        </Button>
+      </div>
+    </div>
+  </>
+);
+
 export const Loading = () => {
   const [isLoading, setIsLoading] = useState(false);
   useEffect(() => {
@@ -186,19 +229,25 @@ export const Loading = () => {
 
   return (
     <div className="space-x-2">
+      <Button outline loading>
+        Loading
+      </Button>
       <Button
-        className="w-80"
-        outline
+        className="w-[200px]"
         loading={isLoading}
+        color="primary"
+        active
         onClick={() => {
           setIsLoading((old) => !old);
         }}
       >
         {isLoading ? "I'm loading..." : "click me do start loading"}
       </Button>
-      <Button outline loading>
-        Loading
-      </Button>
+      <button className="loading btn"></button>
+
+      <button className="btn">1</button>
+      <button className="loading btn btn-sm">1</button>
+      <button className="btn btn-sm">1</button>
     </div>
   );
 };
