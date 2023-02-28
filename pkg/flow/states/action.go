@@ -89,7 +89,7 @@ func (logic *actionLogic) Run(ctx context.Context, wakedata []byte) (*Transition
 
 	}
 
-	var children []ChildInfo
+	var children []*ChildInfo
 	err := logic.UnmarshalMemory(&children)
 	if err != nil {
 		return nil, derrors.NewInternalError(err)
@@ -188,7 +188,7 @@ func (logic *actionLogic) scheduleRetryAction(ctx context.Context, retry *action
 	return nil
 }
 
-func (logic *actionLogic) processActionResults(ctx context.Context, children []ChildInfo, results *actionResultPayload) (*Transition, error) {
+func (logic *actionLogic) processActionResults(ctx context.Context, children []*ChildInfo, results *actionResultPayload) (*Transition, error) {
 	var err error
 
 	sd := children[0]
