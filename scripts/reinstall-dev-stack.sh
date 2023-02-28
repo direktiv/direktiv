@@ -74,7 +74,7 @@ api:
 
 functions:
   namespace: direktiv-services-direktiv
-  image: "functions"
+  image: "direktiv"
   tag: "latest"
   sidecar: "sidecar"
   initPodImage: "init-pod"
