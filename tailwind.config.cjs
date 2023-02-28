@@ -32,7 +32,7 @@ const colorPrimary = {
 
 module.exports = {
   content: ["./src/**/*.{js,ts,jsx,tsx}"],
-  plugins: [require("daisyui")],
+  plugins: [require("daisyui"), require("tailwindcss-animate")],
   darkMode: ["class", '[data-theme="dark"]'],
   theme: {
     fontFamily: {
