@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { MoreHorizontal, MoreVertical, ZoomIn } from "lucide-react";
+import { useEffect, useState } from "react";
 import Button from "./index";
 
 const meta = {
@@ -168,11 +169,39 @@ export const Outline = () => (
   </div>
 );
 
-export const Loading = () => (
-  <Button outline loading>
-    Loading
-  </Button>
-);
+export const Loading = () => {
+  const [isLoading, setIsLoading] = useState(false);
+  useEffect(() => {
+    let timeout: NodeJS.Timeout;
+    if (isLoading) {
+      timeout = setTimeout((): void => {
+        setIsLoading(false);
+      }, 2000);
+    }
+
+    return () => {
+      clearTimeout(timeout);
+    };
+  }, [isLoading]);
+
+  return (
+    <div className="space-x-2">
+      <Button
+        className="w-80"
+        outline
+        loading={isLoading}
+        onClick={() => {
+          setIsLoading((old) => !old);
+        }}
+      >
+        {isLoading ? "I'm loading..." : "click me do start loading"}
+      </Button>
+      <Button outline loading>
+        Loading
+      </Button>
+    </div>
+  );
+};
 
 export const WithIcon = () => (
   <div className="space-y-5">
