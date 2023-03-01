@@ -285,7 +285,7 @@ const ListRow = ({
             </span>
           )}
           {name && verbose && <span className="tag-name">{name}</span>}
-          {state && verbose && <span className="tag-state">/{state} </span>}
+          {state && verbose && <span className="tag-state">/{state}</span>}{" "}
           {data[index].msg.match(/.{1,50}/g)?.map((mtkMsg, mtkIdx) => {
             return (
               <span key={`log-msg-${mtkIdx}`} className="msg">
