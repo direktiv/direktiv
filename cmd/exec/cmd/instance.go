@@ -77,7 +77,7 @@ func GetLogs(cmd *cobra.Command, instance string, query string) (urlOutput strin
 		TLSClientConfig: GetTLSConfig(),
 	}
 	Printlog("-------INSTANCE LOGS-------")
-	Printlog(urlLogs)
+	Printlog(urlLogs) //TODO: "bad request" can be returned
 	AddSSEAuthHeaders(clientLogs)
 
 	logsChannel := make(chan *sse.Event)

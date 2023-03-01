@@ -2,13 +2,26 @@ package logs
 
 import (
 	root "github.com/direktiv/direktiv/cmd/exec/cmd"
+	"github.com/google/uuid"
 	"github.com/spf13/cobra"
 )
 
 var logsCmd = &cobra.Command{
 	Use:   "logs",
-	Short: "Prints logs for a instance",
+	Short: "Prints the logs for a instance and all child instances",
+	Long: `Prints the logs for a instance and all child instances. The process will continue priting logs until the Instance is stopped.
+
+EXAMPLE: logs --addr http://192.168.1.1 --namespace admin --instance 9b0e45b5-5e7e-4006-93e7-6764e8379e98
+Use the additional flags to can to retrieve and watch logs from a specific instance whithout Child instances. 
+EXAMPLE: logs --addr http://192.168.1.1 --namespace admin --instance 9b0e45b5-5e7e-4006-93e7-6764e8379e98 --filter ID --type MATCH 9b0e45b5-5e7e-4006-93e7-6764e8379e98
+It is also possible to watch logs of a specific iteration workflow and state-id by providing the values as arguments
+EXAMPLE: logs --addr http://192.168.1.1 --namespace admin -instance 9b0e45b5-5e7e-4006-93e7-6764e8379e98 --filter QUERY --type MATCH 2 getwf getter
+`,
 	Run: func(cmd *cobra.Command, args []string) {
+		_, err := uuid.Parse(instance)
+		if err != nil {
+			cmd.PrintErrln("instance id should be formated as 9b0e45b5-5e7e-4006-93e7-6764e8379e98")
+		}
 		var fq root.FilterQueryInstance
 		fq.Payload = args
 		fq.Filter = filter
@@ -22,8 +35,6 @@ var logsCmd = &cobra.Command{
 }
 
 var (
-	// outputFlag     string
-	// execNoPushFlag bool
 	filterTyp string
 	filter    string
 	instance  string
@@ -31,7 +42,7 @@ var (
 
 func init() {
 	root.RootCmd.AddCommand(logsCmd)
-	logsCmd.Flags().StringVarP(&instance, "instance id", "i", "", "Id of the instance for which to grab the logs.")
-	logsCmd.Flags().StringVarP(&filter, "filter id", "f", "", "Id of the filter.")
+	logsCmd.Flags().StringVarP(&instance, "instance", "i", "", "Id of the instance for which to grab the logs.")
+	logsCmd.Flags().StringVarP(&filter, "filter", "f", "", "Id of the filter.")
 	logsCmd.Flags().StringVar(&filterTyp, "type", "", "Type of the filter.")
 }
