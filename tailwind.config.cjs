@@ -37,6 +37,7 @@ module.exports = {
   theme: {
     fontFamily: {
       sans: ["Inter", ...defaultTheme.fontFamily.sans],
+      mono: ["RobotoMono", ...defaultTheme.fontFamily.mono],
     },
     extend: {
       colors: {
