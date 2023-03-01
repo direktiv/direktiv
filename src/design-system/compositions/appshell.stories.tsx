@@ -11,10 +11,20 @@ import {
   LogOut,
   Network,
   Play,
+  PlusCircle,
   Settings,
   Settings2,
   Users,
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "../dropdown";
 
 import Button from "../button";
 import Logo from "./Logo";
@@ -135,9 +145,31 @@ export const Default = () => (
                       My-namespace
                     </a>
                     &nbsp;
-                    <Button size="xs" color="ghost" circle>
-                      <ChevronsUpDown />
-                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button size="xs" color="ghost" circle>
+                          <ChevronsUpDown />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className="w-56">
+                        <DropdownMenuLabel>Namespaces</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuCheckboxItem checked>
+                          My-namespace
+                        </DropdownMenuCheckboxItem>
+                        <DropdownMenuCheckboxItem>
+                          second-namespace
+                        </DropdownMenuCheckboxItem>
+                        <DropdownMenuCheckboxItem>
+                          another-namespace
+                        </DropdownMenuCheckboxItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem>
+                          <PlusCircle className="mr-2 h-4 w-4" />
+                          <span>Create new namespace</span>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </li>
                   <li>
                     <a className="gap-2">
