@@ -63,12 +63,22 @@ export interface LogItem {
   msg: string;
   tags: {
     name: string; // f.e. "somepath/to/someworkflow"
-    state?: string; // f.e. "name-of-the-state"
-    step?: string; // f.e. "1"
-    actionID?: string; // f.e. "7487004e-78cf-4f02-8b61-d8e51ed46b14"
-    iterator?: string; // f.e. "0"
-    originator?: string; // f.e. "7487004e-78cf-4f02-8b61-d8e51ed46b14"
-    i?: string; // f.e. "0"
+    iterator: string; // f.e. "2"
+    step: string; // f.e. "1"
+    // always there, except on the first step
+    state?: string; // f.e. "getter"
+    type?: string; // f.e. "action"
+    /**
+     * other tags that can appear, depending on the log entry
+     *
+     * tags": {
+     *   "inv-iterator": "2",
+     *   "inv-name": "sub",
+     *   "inv-state": "b",
+     *   "inv-step": "2",
+     *   "inv-type": "foreach",
+     * }
+     */
   };
 }
 
