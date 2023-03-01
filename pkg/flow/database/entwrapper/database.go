@@ -28,6 +28,12 @@ import (
 	entwf "github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 )
 
+type ctxKey string
+
+const (
+	ctxKeyTx = ctxKey("entwrapperCtxTxKey")
+)
+
 // TODO: un-export EntClients.
 type EntClients struct {
 	Namespace         *ent.NamespaceClient
@@ -50,12 +56,14 @@ type EntClients struct {
 }
 
 // TODO: delete.
-func (db *Database) Clients(tx database.Transaction) *EntClients {
-	return db.clients(tx)
+func (db *Database) Clients(ctx context.Context) *EntClients {
+	return db.clients(ctx)
 }
 
-func (db *Database) clients(tx database.Transaction) *EntClients {
-	if tx == nil {
+func (db *Database) clients(ctx context.Context) *EntClients {
+	a := ctx.Value(ctxKeyTx)
+
+	if a == nil {
 		return &EntClients{
 			Namespace:         db.client.Namespace,
 			Inode:             db.client.Inode,
@@ -77,7 +85,7 @@ func (db *Database) clients(tx database.Transaction) *EntClients {
 		}
 	}
 
-	x := tx.(*ent.Tx)
+	x := a.(*ent.Tx)
 
 	return &EntClients{
 		Namespace:         x.Namespace,
@@ -172,16 +180,27 @@ func (db *Database) Close() error {
 	return db.client.Close()
 }
 
-func (db *Database) Tx(ctx context.Context) (database.Transaction, error) {
-	return db.client.Tx(ctx)
+func (db *Database) AddTxToCtx(ctx context.Context, tx database.Transaction) context.Context {
+	return context.WithValue(ctx, ctxKeyTx, tx)
+}
+
+func (db *Database) Tx(ctx context.Context) (context.Context, database.Transaction, error) {
+	tx, err := db.client.Tx(ctx)
+	if err != nil {
+		return ctx, nil, err
+	}
+
+	ctx = db.AddTxToCtx(ctx, tx)
+
+	return ctx, tx, nil
 }
 
 func (db *Database) DB() *sql.DB {
 	return db.client.DB()
 }
 
-func (db *Database) Namespace(ctx context.Context, tx database.Transaction, id uuid.UUID) (*database.Namespace, error) {
-	clients := db.clients(tx)
+func (db *Database) Namespace(ctx context.Context, id uuid.UUID) (*database.Namespace, error) {
+	clients := db.clients(ctx)
 
 	ns, err := clients.Namespace.Query().Where(entns.ID(id)).WithInodes(func(q *ent.InodeQuery) {
 		q.Where(entino.NameIsNil()).Select(entino.FieldID)
@@ -194,8 +213,8 @@ func (db *Database) Namespace(ctx context.Context, tx database.Transaction, id u
 	return db.entNamespace(ns), nil
 }
 
-func (db *Database) NamespaceByName(ctx context.Context, tx database.Transaction, name string) (*database.Namespace, error) {
-	clients := db.clients(tx)
+func (db *Database) NamespaceByName(ctx context.Context, name string) (*database.Namespace, error) {
+	clients := db.clients(ctx)
 
 	ns, err := clients.Namespace.Query().Where(entns.Name(name)).WithInodes(func(q *ent.InodeQuery) {
 		q.Where(entino.NameIsNil()).Select(entino.FieldID)
@@ -208,8 +227,8 @@ func (db *Database) NamespaceByName(ctx context.Context, tx database.Transaction
 	return db.entNamespace(ns), nil
 }
 
-func (db *Database) Inode(ctx context.Context, tx database.Transaction, id uuid.UUID) (*database.Inode, error) {
-	clients := db.clients(tx)
+func (db *Database) Inode(ctx context.Context, id uuid.UUID) (*database.Inode, error) {
+	clients := db.clients(ctx)
 
 	ino, err := clients.Inode.Query().Where(entino.ID(id)).WithChildren(func(q *ent.InodeQuery) {
 		q.Order(ent.Asc(entino.FieldName)).Select(entino.FieldID, entino.FieldName, entino.FieldType, entino.FieldExtendedType)
@@ -230,8 +249,8 @@ func (db *Database) Inode(ctx context.Context, tx database.Transaction, id uuid.
 	return entInode(ino), nil
 }
 
-func (db *Database) CreateInode(ctx context.Context, tx database.Transaction, args *database.CreateInodeArgs) (*database.Inode, error) {
-	clients := db.clients(tx)
+func (db *Database) CreateInode(ctx context.Context, args *database.CreateInodeArgs) (*database.Inode, error) {
+	clients := db.clients(ctx)
 
 	ino, err := clients.Inode.Create().
 		SetName(args.Name).
@@ -260,8 +279,8 @@ func (db *Database) CreateInode(ctx context.Context, tx database.Transaction, ar
 	return entInode(ino), nil
 }
 
-func (db *Database) UpdateInode(ctx context.Context, tx database.Transaction, args *database.UpdateInodeArgs) (*database.Inode, error) {
-	clients := db.clients(tx)
+func (db *Database) UpdateInode(ctx context.Context, args *database.UpdateInodeArgs) (*database.Inode, error) {
+	clients := db.clients(ctx)
 
 	query := clients.Inode.UpdateOneID(args.Inode.ID).SetUpdatedAt(time.Now())
 
@@ -301,8 +320,8 @@ func (db *Database) UpdateInode(ctx context.Context, tx database.Transaction, ar
 	return x, nil
 }
 
-func (db *Database) Workflow(ctx context.Context, tx database.Transaction, id uuid.UUID) (*database.Workflow, error) {
-	clients := db.clients(tx)
+func (db *Database) Workflow(ctx context.Context, id uuid.UUID) (*database.Workflow, error) {
+	clients := db.clients(ctx)
 
 	wf, err := clients.Workflow.Query().Where(entwf.ID(id)).WithInode(func(q *ent.InodeQuery) {
 		q.Select(entino.FieldID)
@@ -329,8 +348,8 @@ func (db *Database) Workflow(ctx context.Context, tx database.Transaction, id uu
 	return entWorkflow(wf), nil
 }
 
-func (db *Database) CreateWorkflow(ctx context.Context, tx database.Transaction, args *database.CreateWorkflowArgs) (*database.Workflow, error) {
-	clients := db.clients(tx)
+func (db *Database) CreateWorkflow(ctx context.Context, args *database.CreateWorkflowArgs) (*database.Workflow, error) {
+	clients := db.clients(ctx)
 
 	wf, err := clients.Workflow.Create().
 		SetInodeID(args.Inode.ID).
@@ -353,8 +372,8 @@ func (db *Database) CreateWorkflow(ctx context.Context, tx database.Transaction,
 	return entWorkflow(wf), nil
 }
 
-func (db *Database) UpdateWorkflow(ctx context.Context, tx database.Transaction, args *database.UpdateWorkflowArgs) (*database.Workflow, error) {
-	clients := db.clients(tx)
+func (db *Database) UpdateWorkflow(ctx context.Context, args *database.UpdateWorkflowArgs) (*database.Workflow, error) {
+	clients := db.clients(ctx)
 
 	query := clients.Workflow.UpdateOneID(args.ID).SetUpdatedAt(time.Now())
 
@@ -371,8 +390,8 @@ func (db *Database) UpdateWorkflow(ctx context.Context, tx database.Transaction,
 	return entWorkflow(wf), nil
 }
 
-func (db *Database) CreateRef(ctx context.Context, tx database.Transaction, args *database.CreateRefArgs) (*database.Ref, error) {
-	clients := db.clients(tx)
+func (db *Database) CreateRef(ctx context.Context, args *database.CreateRefArgs) (*database.Ref, error) {
+	clients := db.clients(ctx)
 
 	ref, err := clients.Ref.Create().
 		SetImmutable(args.Immutable).
@@ -396,8 +415,8 @@ func (db *Database) CreateRef(ctx context.Context, tx database.Transaction, args
 	return entRef(ref), nil
 }
 
-func (db *Database) Revision(ctx context.Context, tx database.Transaction, id uuid.UUID) (*database.Revision, error) {
-	clients := db.clients(tx)
+func (db *Database) Revision(ctx context.Context, id uuid.UUID) (*database.Revision, error) {
+	clients := db.clients(ctx)
 
 	rev, err := clients.Revision.Query().Where(entrev.ID(id)).WithWorkflow(func(q *ent.WorkflowQuery) {
 		q.Select(entwf.FieldID)
@@ -410,8 +429,8 @@ func (db *Database) Revision(ctx context.Context, tx database.Transaction, id uu
 	return entRevision(rev), nil
 }
 
-func (db *Database) CreateRevision(ctx context.Context, tx database.Transaction, args *database.CreateRevisionArgs) (*database.Revision, error) {
-	clients := db.clients(tx)
+func (db *Database) CreateRevision(ctx context.Context, args *database.CreateRevisionArgs) (*database.Revision, error) {
+	clients := db.clients(ctx)
 
 	rev, err := clients.Revision.Create().
 		SetHash(args.Hash).
@@ -430,8 +449,8 @@ func (db *Database) CreateRevision(ctx context.Context, tx database.Transaction,
 	return entRevision(rev), nil
 }
 
-func (db *Database) Instance(ctx context.Context, tx database.Transaction, id uuid.UUID) (*database.Instance, error) {
-	clients := db.clients(tx)
+func (db *Database) Instance(ctx context.Context, id uuid.UUID) (*database.Instance, error) {
+	clients := db.clients(ctx)
 
 	inst, err := clients.Instance.Query().Where(entinst.ID(id)).WithNamespace(func(q *ent.NamespaceQuery) {
 		q.Select(entns.FieldID)
@@ -450,8 +469,8 @@ func (db *Database) Instance(ctx context.Context, tx database.Transaction, id uu
 	return entInstance(inst), nil
 }
 
-func (db *Database) InstanceRuntime(ctx context.Context, tx database.Transaction, id uuid.UUID) (*database.InstanceRuntime, error) {
-	clients := db.clients(tx)
+func (db *Database) InstanceRuntime(ctx context.Context, id uuid.UUID) (*database.InstanceRuntime, error) {
+	clients := db.clients(ctx)
 
 	rt, err := clients.InstanceRuntime.Query().Where(entrt.ID(id)).WithCaller(func(q *ent.InstanceQuery) {
 		q.Select(entinst.FieldID)
@@ -464,8 +483,8 @@ func (db *Database) InstanceRuntime(ctx context.Context, tx database.Transaction
 	return entInstanceRuntime(rt), nil
 }
 
-func (db *Database) NamespaceAnnotation(ctx context.Context, tx database.Transaction, nsID uuid.UUID, key string) (*database.Annotation, error) {
-	clients := db.clients(tx)
+func (db *Database) NamespaceAnnotation(ctx context.Context, nsID uuid.UUID, key string) (*database.Annotation, error) {
+	clients := db.clients(ctx)
 
 	annotation, err := clients.Annotation.Query().Where(entnote.HasNamespaceWith(entns.ID(nsID)), entnote.Name(key)).Only(ctx)
 	if err != nil {
@@ -476,8 +495,8 @@ func (db *Database) NamespaceAnnotation(ctx context.Context, tx database.Transac
 	return db.entAnnotation(annotation), nil
 }
 
-func (db *Database) InodeAnnotation(ctx context.Context, tx database.Transaction, inodeID uuid.UUID, key string) (*database.Annotation, error) {
-	clients := db.clients(tx)
+func (db *Database) InodeAnnotation(ctx context.Context, inodeID uuid.UUID, key string) (*database.Annotation, error) {
+	clients := db.clients(ctx)
 
 	annotation, err := clients.Annotation.Query().Where(entnote.HasInodeWith(entino.ID(inodeID)), entnote.Name(key)).Only(ctx)
 	if err != nil {
@@ -488,8 +507,8 @@ func (db *Database) InodeAnnotation(ctx context.Context, tx database.Transaction
 	return db.entAnnotation(annotation), nil
 }
 
-func (db *Database) WorkflowAnnotation(ctx context.Context, tx database.Transaction, wfID uuid.UUID, key string) (*database.Annotation, error) {
-	clients := db.clients(tx)
+func (db *Database) WorkflowAnnotation(ctx context.Context, wfID uuid.UUID, key string) (*database.Annotation, error) {
+	clients := db.clients(ctx)
 
 	annotation, err := clients.Annotation.Query().Where(entnote.HasWorkflowWith(entwf.ID(wfID)), entnote.Name(key)).Only(ctx)
 	if err != nil {
@@ -500,8 +519,8 @@ func (db *Database) WorkflowAnnotation(ctx context.Context, tx database.Transact
 	return db.entAnnotation(annotation), nil
 }
 
-func (db *Database) InstanceAnnotation(ctx context.Context, tx database.Transaction, instID uuid.UUID, key string) (*database.Annotation, error) {
-	clients := db.clients(tx)
+func (db *Database) InstanceAnnotation(ctx context.Context, instID uuid.UUID, key string) (*database.Annotation, error) {
+	clients := db.clients(ctx)
 
 	annotation, err := clients.Annotation.Query().Where(entnote.HasInstanceWith(entinst.ID(instID)), entnote.Name(key)).Only(ctx)
 	if err != nil {
@@ -512,8 +531,8 @@ func (db *Database) InstanceAnnotation(ctx context.Context, tx database.Transact
 	return db.entAnnotation(annotation), nil
 }
 
-func (db *Database) ThreadVariables(ctx context.Context, tx database.Transaction, instID uuid.UUID) ([]*database.VarRef, error) {
-	clients := db.clients(tx)
+func (db *Database) ThreadVariables(ctx context.Context, instID uuid.UUID) ([]*database.VarRef, error) {
+	clients := db.clients(ctx)
 
 	varrefs, err := clients.VarRef.Query().Where(entvar.HasInstanceWith(entinst.ID(instID)), entvar.BehaviourEQ("thread")).WithVardata(func(q *ent.VarDataQuery) {
 		q.Select(entvardata.FieldID)
@@ -532,8 +551,8 @@ func (db *Database) ThreadVariables(ctx context.Context, tx database.Transaction
 	return x, nil
 }
 
-func (db *Database) NamespaceVariableRef(ctx context.Context, tx database.Transaction, nsID uuid.UUID, key string) (*database.VarRef, error) {
-	clients := db.clients(tx)
+func (db *Database) NamespaceVariableRef(ctx context.Context, nsID uuid.UUID, key string) (*database.VarRef, error) {
+	clients := db.clients(ctx)
 
 	varref, err := clients.VarRef.Query().Where(entvar.HasNamespaceWith(entns.ID(nsID)), entvar.NameEQ(key)).WithVardata(func(q *ent.VarDataQuery) {
 		q.Select(entvardata.FieldID)
@@ -546,8 +565,8 @@ func (db *Database) NamespaceVariableRef(ctx context.Context, tx database.Transa
 	return db.entVarRef(varref), nil
 }
 
-func (db *Database) WorkflowVariableRef(ctx context.Context, tx database.Transaction, wfID uuid.UUID, key string) (*database.VarRef, error) {
-	clients := db.clients(tx)
+func (db *Database) WorkflowVariableRef(ctx context.Context, wfID uuid.UUID, key string) (*database.VarRef, error) {
+	clients := db.clients(ctx)
 
 	varref, err := clients.VarRef.Query().Where(entvar.HasWorkflowWith(entwf.ID(wfID)), entvar.NameEQ(key)).WithVardata(func(q *ent.VarDataQuery) {
 		q.Select(entvardata.FieldID)
@@ -560,8 +579,8 @@ func (db *Database) WorkflowVariableRef(ctx context.Context, tx database.Transac
 	return db.entVarRef(varref), nil
 }
 
-func (db *Database) InstanceVariableRef(ctx context.Context, tx database.Transaction, instID uuid.UUID, key string) (*database.VarRef, error) {
-	clients := db.clients(tx)
+func (db *Database) InstanceVariableRef(ctx context.Context, instID uuid.UUID, key string) (*database.VarRef, error) {
+	clients := db.clients(ctx)
 
 	varref, err := clients.VarRef.Query().Where(entvar.HasInstanceWith(entinst.ID(instID)), entvar.BehaviourNEQ("thread"), entvar.NameEQ(key)).WithVardata(func(q *ent.VarDataQuery) {
 		q.Select(entvardata.FieldID)
@@ -574,8 +593,8 @@ func (db *Database) InstanceVariableRef(ctx context.Context, tx database.Transac
 	return db.entVarRef(varref), nil
 }
 
-func (db *Database) ThreadVariableRef(ctx context.Context, tx database.Transaction, instID uuid.UUID, key string) (*database.VarRef, error) {
-	clients := db.clients(tx)
+func (db *Database) ThreadVariableRef(ctx context.Context, instID uuid.UUID, key string) (*database.VarRef, error) {
+	clients := db.clients(ctx)
 
 	varref, err := clients.VarRef.Query().Where(entvar.HasInstanceWith(entinst.ID(instID)), entvar.BehaviourEQ("thread"), entvar.NameEQ(key)).WithVardata(func(q *ent.VarDataQuery) {
 		q.Select(entvardata.FieldID)
@@ -588,11 +607,11 @@ func (db *Database) ThreadVariableRef(ctx context.Context, tx database.Transacti
 	return db.entVarRef(varref), nil
 }
 
-func (db *Database) VariableData(ctx context.Context, tx database.Transaction, id uuid.UUID, load bool) (*database.VarData, error) {
+func (db *Database) VariableData(ctx context.Context, id uuid.UUID, load bool) (*database.VarData, error) {
 	var err error
 	var vardata *ent.VarData
 
-	clients := db.clients(tx)
+	clients := db.clients(ctx)
 
 	if load {
 		vardata, err = clients.VarData.Get(ctx, id)
@@ -621,8 +640,8 @@ func (db *Database) VariableData(ctx context.Context, tx database.Transaction, i
 	return x, err
 }
 
-func (db *Database) Mirror(ctx context.Context, tx database.Transaction, id uuid.UUID) (*database.Mirror, error) {
-	clients := db.clients(tx)
+func (db *Database) Mirror(ctx context.Context, id uuid.UUID) (*database.Mirror, error) {
+	clients := db.clients(ctx)
 
 	mir, err := clients.Mirror.Query().Where(entmir.ID(id)).WithInode().Only(ctx)
 	if err != nil {
@@ -632,8 +651,8 @@ func (db *Database) Mirror(ctx context.Context, tx database.Transaction, id uuid
 	return entMirror(mir), nil
 }
 
-func (db *Database) Mirrors(ctx context.Context, tx database.Transaction) ([]uuid.UUID, error) {
-	clients := db.clients(tx)
+func (db *Database) Mirrors(ctx context.Context) ([]uuid.UUID, error) {
+	clients := db.clients(ctx)
 
 	ids := make([]uuid.UUID, 0)
 
@@ -649,8 +668,8 @@ func (db *Database) Mirrors(ctx context.Context, tx database.Transaction) ([]uui
 	return ids, nil
 }
 
-func (db *Database) MirrorActivity(ctx context.Context, tx database.Transaction, id uuid.UUID) (*database.MirrorActivity, error) {
-	clients := db.clients(tx)
+func (db *Database) MirrorActivity(ctx context.Context, id uuid.UUID) (*database.MirrorActivity, error) {
+	clients := db.clients(ctx)
 
 	act, err := clients.MirrorActivity.Query().Where(entmiract.ID(id)).WithNamespace().WithMirror().Only(ctx)
 	if err != nil {
@@ -660,8 +679,8 @@ func (db *Database) MirrorActivity(ctx context.Context, tx database.Transaction,
 	return entMirrorActivity(act), nil
 }
 
-func (db *Database) CreateMirrorActivity(ctx context.Context, tx database.Transaction, args *database.CreateMirrorActivityArgs) (*database.MirrorActivity, error) {
-	clients := db.clients(tx)
+func (db *Database) CreateMirrorActivity(ctx context.Context, args *database.CreateMirrorActivityArgs) (*database.MirrorActivity, error) {
+	clients := db.clients(ctx)
 
 	act, err := clients.MirrorActivity.Create().
 		SetType(args.Type).

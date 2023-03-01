@@ -42,15 +42,15 @@ var annotationsFilters = map[*filteringInfo]func(query *ent.AnnotationQuery, v s
 	},
 }
 
-func (flow *flow) traverseToNamespaceAnnotation(ctx context.Context, tx database.Transaction, namespace, key string) (*database.CacheData, *database.Annotation, error) {
+func (flow *flow) traverseToNamespaceAnnotation(ctx context.Context, namespace, key string) (*database.CacheData, *database.Annotation, error) {
 	cached := new(database.CacheData)
 
-	err := flow.database.NamespaceByName(ctx, tx, cached, namespace)
+	err := flow.database.NamespaceByName(ctx, cached, namespace)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	annotation, err := flow.database.NamespaceAnnotation(ctx, tx, cached.Namespace.ID, key)
+	annotation, err := flow.database.NamespaceAnnotation(ctx, cached.Namespace.ID, key)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -61,7 +61,7 @@ func (flow *flow) traverseToNamespaceAnnotation(ctx context.Context, tx database
 func (flow *flow) NamespaceAnnotation(ctx context.Context, req *grpc.NamespaceAnnotationRequest) (*grpc.NamespaceAnnotationResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	cached, annotation, err := flow.traverseToNamespaceAnnotation(ctx, nil, req.GetNamespace(), req.GetKey())
+	cached, annotation, err := flow.traverseToNamespaceAnnotation(ctx, req.GetNamespace(), req.GetKey())
 	if err != nil {
 		return nil, err
 	}
@@ -90,7 +90,7 @@ func (flow *flow) NamespaceAnnotationParcels(req *grpc.NamespaceAnnotationReques
 
 	ctx := srv.Context()
 
-	cached, annotation, err := flow.traverseToNamespaceAnnotation(ctx, nil, req.GetNamespace(), req.GetKey())
+	cached, annotation, err := flow.traverseToNamespaceAnnotation(ctx, req.GetNamespace(), req.GetKey())
 	if err != nil {
 		return err
 	}
@@ -149,12 +149,12 @@ func (flow *flow) NamespaceAnnotations(ctx context.Context, req *grpc.NamespaceA
 
 	cached := new(database.CacheData)
 
-	err := flow.database.NamespaceByName(ctx, nil, cached, req.GetNamespace())
+	err := flow.database.NamespaceByName(ctx, cached, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
 
-	clients := flow.edb.Clients(nil)
+	clients := flow.edb.Clients(ctx)
 
 	query := clients.Annotation.Query().Where(entnote.HasNamespaceWith(entns.ID(cached.Namespace.ID)))
 
@@ -185,7 +185,7 @@ func (flow *flow) NamespaceAnnotationsStream(req *grpc.NamespaceAnnotationsReque
 
 	cached := new(database.CacheData)
 
-	err := flow.database.NamespaceByName(ctx, nil, cached, req.GetNamespace())
+	err := flow.database.NamespaceByName(ctx, cached, req.GetNamespace())
 	if err != nil {
 		return err
 	}
@@ -195,7 +195,7 @@ func (flow *flow) NamespaceAnnotationsStream(req *grpc.NamespaceAnnotationsReque
 
 resend:
 
-	clients := flow.edb.Clients(nil)
+	clients := flow.edb.Clients(ctx)
 
 	query := clients.Annotation.Query().Where(entnote.HasNamespaceWith(entns.ID(cached.Namespace.ID)))
 
@@ -234,7 +234,7 @@ resend:
 func (flow *flow) SetNamespaceAnnotation(ctx context.Context, req *grpc.SetNamespaceAnnotationRequest) (*grpc.SetNamespaceAnnotationResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tx, err := flow.database.Tx(ctx)
+	tctx, tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -242,7 +242,7 @@ func (flow *flow) SetNamespaceAnnotation(ctx context.Context, req *grpc.SetNames
 
 	cached := new(database.CacheData)
 
-	err = flow.database.NamespaceByName(ctx, tx, cached, req.GetNamespace())
+	err = flow.database.NamespaceByName(tctx, cached, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
@@ -252,7 +252,7 @@ func (flow *flow) SetNamespaceAnnotation(ctx context.Context, req *grpc.SetNames
 	key := req.GetKey()
 
 	var newAnnotation bool
-	annotation, newAnnotation, err = flow.SetAnnotation(ctx, tx, &entNamespaceAnnotationQuerier{cached: cached, clients: flow.edb.Clients(tx)}, key, req.GetMimeType(), req.GetData())
+	annotation, newAnnotation, err = flow.SetAnnotation(tctx, &entNamespaceAnnotationQuerier{cached: cached, clients: flow.edb.Clients(tctx)}, key, req.GetMimeType(), req.GetData())
 	if err != nil {
 		return nil, err
 	}
@@ -323,7 +323,7 @@ func (x *entInstanceAnnotationQuerier) QueryAnnotations() *ent.AnnotationQuery {
 	return x.clients.Annotation.Query().Where(entnote.HasInstanceWith(entinst.ID(x.cached.Instance.ID)))
 }
 
-func (flow *flow) SetAnnotation(ctx context.Context, tx database.Transaction, q annotationQuerier, key string, mimetype string, data []byte) (*ent.Annotation, bool, error) {
+func (flow *flow) SetAnnotation(ctx context.Context, q annotationQuerier, key string, mimetype string, data []byte) (*ent.Annotation, bool, error) {
 	hash, err := computeHash(data)
 	if err != nil {
 		flow.sugar.Error(err)
@@ -344,7 +344,7 @@ func (flow *flow) SetAnnotation(ctx context.Context, tx database.Transaction, q 
 			return nil, false, err
 		}
 
-		clients := flow.edb.Clients(tx)
+		clients := flow.edb.Clients(ctx)
 
 		query := clients.Annotation.Create().SetSize(len(data)).SetHash(hash).SetData(data).SetName(key).SetMimeType(mimetype)
 
@@ -438,7 +438,7 @@ func (flow *flow) SetNamespaceAnnotationParcels(srv grpc.Flow_SetNamespaceAnnota
 		return errors.New("received more data than expected")
 	}
 
-	tx, err := flow.database.Tx(ctx)
+	tctx, tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return err
 	}
@@ -446,7 +446,7 @@ func (flow *flow) SetNamespaceAnnotationParcels(srv grpc.Flow_SetNamespaceAnnota
 
 	cached := new(database.CacheData)
 
-	err = flow.database.NamespaceByName(ctx, tx, cached, namespace)
+	err = flow.database.NamespaceByName(tctx, cached, namespace)
 	if err != nil {
 		return err
 	}
@@ -454,7 +454,7 @@ func (flow *flow) SetNamespaceAnnotationParcels(srv grpc.Flow_SetNamespaceAnnota
 	var annotation *ent.Annotation
 
 	var newAnnotation bool
-	annotation, newAnnotation, err = flow.SetAnnotation(ctx, tx, &entNamespaceAnnotationQuerier{cached: cached, clients: flow.edb.Clients(tx)}, key, req.GetMimeType(), buf.Bytes())
+	annotation, newAnnotation, err = flow.SetAnnotation(tctx, &entNamespaceAnnotationQuerier{cached: cached, clients: flow.edb.Clients(tctx)}, key, req.GetMimeType(), buf.Bytes())
 	if err != nil {
 		return err
 	}
@@ -493,20 +493,20 @@ func (flow *flow) SetNamespaceAnnotationParcels(srv grpc.Flow_SetNamespaceAnnota
 func (flow *flow) DeleteNamespaceAnnotation(ctx context.Context, req *grpc.DeleteNamespaceAnnotationRequest) (*emptypb.Empty, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tx, err := flow.database.Tx(ctx)
+	tctx, tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer rollback(tx)
 
-	cached, annotation, err := flow.traverseToNamespaceAnnotation(ctx, tx, req.GetNamespace(), req.GetKey())
+	cached, annotation, err := flow.traverseToNamespaceAnnotation(tctx, req.GetNamespace(), req.GetKey())
 	if err != nil {
 		return nil, err
 	}
 
-	clients := flow.edb.Clients(tx)
+	clients := flow.edb.Clients(tctx)
 
-	err = clients.Annotation.DeleteOneID(annotation.ID).Exec(ctx)
+	err = clients.Annotation.DeleteOneID(annotation.ID).Exec(tctx)
 	if err != nil {
 		return nil, err
 	}
@@ -527,20 +527,20 @@ func (flow *flow) DeleteNamespaceAnnotation(ctx context.Context, req *grpc.Delet
 func (flow *flow) RenameNamespaceAnnotation(ctx context.Context, req *grpc.RenameNamespaceAnnotationRequest) (*grpc.RenameNamespaceAnnotationResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tx, err := flow.database.Tx(ctx)
+	tctx, tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer rollback(tx)
 
-	cached, annotation, err := flow.traverseToNamespaceAnnotation(ctx, tx, req.GetNamespace(), req.GetOld())
+	cached, annotation, err := flow.traverseToNamespaceAnnotation(tctx, req.GetNamespace(), req.GetOld())
 	if err != nil {
 		return nil, err
 	}
 
-	clients := flow.edb.Clients(tx)
+	clients := flow.edb.Clients(tctx)
 
-	x, err := clients.Annotation.UpdateOneID(annotation.ID).SetName(req.GetNew()).Save(ctx)
+	x, err := clients.Annotation.UpdateOneID(annotation.ID).SetName(req.GetNew()).Save(tctx)
 	if err != nil {
 		return nil, err
 	}

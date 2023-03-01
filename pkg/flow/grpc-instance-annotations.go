@@ -21,7 +21,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func (flow *flow) traverseToInstanceAnnotation(ctx context.Context, tx database.Transaction, namespace, instance, key string) (*database.CacheData, *database.Annotation, error) {
+func (flow *flow) traverseToInstanceAnnotation(ctx context.Context, namespace, instance, key string) (*database.CacheData, *database.Annotation, error) {
 	id, err := uuid.Parse(instance)
 	if err != nil {
 		return nil, nil, err
@@ -29,7 +29,7 @@ func (flow *flow) traverseToInstanceAnnotation(ctx context.Context, tx database.
 
 	cached := new(database.CacheData)
 
-	err = flow.database.Instance(ctx, tx, cached, id)
+	err = flow.database.Instance(ctx, cached, id)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -38,7 +38,7 @@ func (flow *flow) traverseToInstanceAnnotation(ctx context.Context, tx database.
 		return nil, nil, os.ErrNotExist
 	}
 
-	annotation, err := flow.database.InstanceAnnotation(ctx, tx, cached.Instance.ID, key)
+	annotation, err := flow.database.InstanceAnnotation(ctx, cached.Instance.ID, key)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -49,7 +49,7 @@ func (flow *flow) traverseToInstanceAnnotation(ctx context.Context, tx database.
 func (flow *flow) InstanceAnnotation(ctx context.Context, req *grpc.InstanceAnnotationRequest) (*grpc.InstanceAnnotationResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	cached, annotation, err := flow.traverseToInstanceAnnotation(ctx, nil, req.GetNamespace(), req.GetInstance(), req.GetKey())
+	cached, annotation, err := flow.traverseToInstanceAnnotation(ctx, req.GetNamespace(), req.GetInstance(), req.GetKey())
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +79,7 @@ func (flow *flow) InstanceAnnotationParcels(req *grpc.InstanceAnnotationRequest,
 
 	ctx := srv.Context()
 
-	cached, annotation, err := flow.traverseToInstanceAnnotation(ctx, nil, req.GetNamespace(), req.GetInstance(), req.GetKey())
+	cached, annotation, err := flow.traverseToInstanceAnnotation(ctx, req.GetNamespace(), req.GetInstance(), req.GetKey())
 	if err != nil {
 		return err
 	}
@@ -130,12 +130,12 @@ func (flow *flow) InstanceAnnotationParcels(req *grpc.InstanceAnnotationRequest,
 func (flow *flow) InstanceAnnotations(ctx context.Context, req *grpc.InstanceAnnotationsRequest) (*grpc.InstanceAnnotationsResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	cached, err := flow.getInstance(ctx, nil, req.GetNamespace(), req.GetInstance())
+	cached, err := flow.getInstance(ctx, req.GetNamespace(), req.GetInstance())
 	if err != nil {
 		return nil, err
 	}
 
-	clients := flow.edb.Clients(nil)
+	clients := flow.edb.Clients(ctx)
 
 	query := clients.Annotation.Query().Where(entnote.HasInstanceWith(entinst.ID(cached.Instance.ID)))
 
@@ -164,7 +164,7 @@ func (flow *flow) InstanceAnnotationsStream(req *grpc.InstanceAnnotationsRequest
 	phash := ""
 	nhash := ""
 
-	cached, err := flow.getInstance(ctx, nil, req.GetNamespace(), req.GetInstance())
+	cached, err := flow.getInstance(ctx, req.GetNamespace(), req.GetInstance())
 	if err != nil {
 		return err
 	}
@@ -174,7 +174,7 @@ func (flow *flow) InstanceAnnotationsStream(req *grpc.InstanceAnnotationsRequest
 
 resend:
 
-	clients := flow.edb.Clients(nil)
+	clients := flow.edb.Clients(ctx)
 
 	query := clients.Annotation.Query().Where(entnote.HasInstanceWith(entinst.ID(cached.Instance.ID)))
 
@@ -213,7 +213,7 @@ resend:
 func (flow *flow) SetInstanceAnnotation(ctx context.Context, req *grpc.SetInstanceAnnotationRequest) (*grpc.SetInstanceAnnotationResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tx, err := flow.database.Tx(ctx)
+	tctx, tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -221,7 +221,7 @@ func (flow *flow) SetInstanceAnnotation(ctx context.Context, req *grpc.SetInstan
 
 	key := req.GetKey()
 
-	cached, err := flow.getInstance(ctx, tx, req.GetNamespace(), req.GetInstance())
+	cached, err := flow.getInstance(tctx, req.GetNamespace(), req.GetInstance())
 	if err != nil {
 		return nil, err
 	}
@@ -229,7 +229,7 @@ func (flow *flow) SetInstanceAnnotation(ctx context.Context, req *grpc.SetInstan
 	var annotation *ent.Annotation
 	var newVar bool
 
-	annotation, newVar, err = flow.SetAnnotation(ctx, tx, &entInstanceAnnotationQuerier{clients: flow.edb.Clients(tx), cached: cached}, key, req.GetMimeType(), req.GetData())
+	annotation, newVar, err = flow.SetAnnotation(tctx, &entInstanceAnnotationQuerier{clients: flow.edb.Clients(tctx), cached: cached}, key, req.GetMimeType(), req.GetData())
 	if err != nil {
 		return nil, err
 	}
@@ -319,13 +319,13 @@ func (flow *flow) SetInstanceAnnotationParcels(srv grpc.Flow_SetInstanceAnnotati
 		return errors.New("received more data than expected")
 	}
 
-	tx, err := flow.database.Tx(ctx)
+	tctx, tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return err
 	}
 	defer rollback(tx)
 
-	cached, err := flow.getInstance(ctx, tx, namespace, instance)
+	cached, err := flow.getInstance(tctx, namespace, instance)
 	if err != nil {
 		return err
 	}
@@ -333,7 +333,7 @@ func (flow *flow) SetInstanceAnnotationParcels(srv grpc.Flow_SetInstanceAnnotati
 	var annotation *ent.Annotation
 	var newVar bool
 
-	annotation, newVar, err = flow.SetAnnotation(ctx, tx, &entInstanceAnnotationQuerier{clients: flow.edb.Clients(tx), cached: cached}, key, req.GetMimeType(), req.GetData())
+	annotation, newVar, err = flow.SetAnnotation(tctx, &entInstanceAnnotationQuerier{clients: flow.edb.Clients(tctx), cached: cached}, key, req.GetMimeType(), req.GetData())
 	if err != nil {
 		return err
 	}
@@ -373,18 +373,18 @@ func (flow *flow) SetInstanceAnnotationParcels(srv grpc.Flow_SetInstanceAnnotati
 func (flow *flow) DeleteInstanceAnnotation(ctx context.Context, req *grpc.DeleteInstanceAnnotationRequest) (*emptypb.Empty, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tx, err := flow.database.Tx(ctx)
+	tctx, tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer rollback(tx)
 
-	cached, annotation, err := flow.traverseToInstanceAnnotation(ctx, tx, req.GetNamespace(), req.GetInstance(), req.GetKey())
+	cached, annotation, err := flow.traverseToInstanceAnnotation(tctx, req.GetNamespace(), req.GetInstance(), req.GetKey())
 	if err != nil {
 		return nil, err
 	}
 
-	clients := flow.edb.Clients(tx)
+	clients := flow.edb.Clients(tctx)
 
 	err = clients.Annotation.DeleteOneID(annotation.ID).Exec(ctx)
 	if err != nil {
@@ -407,20 +407,20 @@ func (flow *flow) DeleteInstanceAnnotation(ctx context.Context, req *grpc.Delete
 func (flow *flow) RenameInstanceAnnotation(ctx context.Context, req *grpc.RenameInstanceAnnotationRequest) (*grpc.RenameInstanceAnnotationResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tx, err := flow.database.Tx(ctx)
+	tctx, tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer rollback(tx)
 
-	cached, annotation, err := flow.traverseToInstanceAnnotation(ctx, tx, req.GetNamespace(), req.GetInstance(), req.GetOld())
+	cached, annotation, err := flow.traverseToInstanceAnnotation(tctx, req.GetNamespace(), req.GetInstance(), req.GetOld())
 	if err != nil {
 		return nil, err
 	}
 
-	clients := flow.edb.Clients(tx)
+	clients := flow.edb.Clients(tctx)
 
-	anno, err := clients.Annotation.UpdateOneID(annotation.ID).SetName(req.GetNew()).Save(ctx)
+	anno, err := clients.Annotation.UpdateOneID(annotation.ID).SetName(req.GetNew()).Save(tctx)
 	if err != nil {
 		return nil, err
 	}

@@ -13,7 +13,7 @@ import (
 func (flow *flow) functionsHeartbeat() {
 	ctx := context.Background()
 
-	clients := flow.edb.Clients(nil)
+	clients := flow.edb.Clients(ctx)
 
 	nss, err := clients.Namespace.Query().All(ctx)
 	if err != nil {
@@ -35,7 +35,7 @@ func (flow *flow) functionsHeartbeat() {
 			checksums := make(map[string]bool)
 
 			cached := new(database.CacheData)
-			err = flow.database.Workflow(ctx, nil, cached, wf.ID)
+			err = flow.database.Workflow(ctx, cached, wf.ID)
 			if err != nil {
 				flow.sugar.Error(err)
 				continue

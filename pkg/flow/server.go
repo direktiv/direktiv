@@ -417,7 +417,7 @@ func (srv *server) cronPoller() {
 func (srv *server) cronPoll() {
 	ctx := context.Background()
 
-	clients := srv.edb.Clients(nil)
+	clients := srv.edb.Clients(ctx)
 
 	wfs, err := clients.Workflow.Query().All(ctx)
 	if err != nil {
@@ -426,18 +426,18 @@ func (srv *server) cronPoll() {
 	}
 
 	for _, wf := range wfs {
-		cached, err := srv.reverseTraverseToWorkflow(ctx, nil, wf.ID.String())
+		cached, err := srv.reverseTraverseToWorkflow(ctx, wf.ID.String())
 		if err != nil {
 			srv.sugar.Error(err)
 			continue
 		}
 
-		srv.cronPollerWorkflow(ctx, nil, cached)
+		srv.cronPollerWorkflow(ctx, cached)
 	}
 }
 
-func (srv *server) cronPollerWorkflow(ctx context.Context, tx database.Transaction, cached *database.CacheData) {
-	ms, muxErr, err := srv.validateRouter(ctx, tx, cached)
+func (srv *server) cronPollerWorkflow(ctx context.Context, cached *database.CacheData) {
+	ms, muxErr, err := srv.validateRouter(ctx, cached)
 	if err != nil || muxErr != nil {
 		return
 	}

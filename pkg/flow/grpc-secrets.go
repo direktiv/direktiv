@@ -15,7 +15,7 @@ func (flow *flow) Secrets(ctx context.Context, req *grpc.SecretsRequest) (*grpc.
 
 	cached := new(database.CacheData)
 
-	err := flow.database.NamespaceByName(ctx, nil, cached, req.GetNamespace())
+	err := flow.database.NamespaceByName(ctx, cached, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
@@ -72,7 +72,7 @@ func (flow *flow) SecretsStream(req *grpc.SecretsRequest, srv grpc.Flow_SecretsS
 
 	cached := new(database.CacheData)
 
-	err := flow.database.NamespaceByName(ctx, nil, cached, req.GetNamespace())
+	err := flow.database.NamespaceByName(ctx, cached, req.GetNamespace())
 	if err != nil {
 		return err
 	}
@@ -144,7 +144,7 @@ func (flow *flow) SearchSecret(ctx context.Context, req *grpc.SearchSecretReques
 
 	cached := new(database.CacheData)
 
-	err := flow.database.NamespaceByName(ctx, nil, cached, req.GetNamespace())
+	err := flow.database.NamespaceByName(ctx, cached, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
@@ -197,7 +197,7 @@ func (flow *flow) SetSecret(ctx context.Context, req *grpc.SetSecretRequest) (*g
 
 	cached := new(database.CacheData)
 
-	err := flow.database.NamespaceByName(ctx, nil, cached, req.GetNamespace())
+	err := flow.database.NamespaceByName(ctx, cached, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
@@ -232,7 +232,7 @@ func (flow *flow) CreateSecretsFolder(ctx context.Context, req *grpc.CreateSecre
 
 	cached := new(database.CacheData)
 
-	err := flow.database.NamespaceByName(ctx, nil, cached, req.GetNamespace())
+	err := flow.database.NamespaceByName(ctx, cached, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
@@ -266,7 +266,7 @@ func (flow *flow) DeleteSecret(ctx context.Context, req *grpc.DeleteSecretReques
 
 	cached := new(database.CacheData)
 
-	err := flow.database.NamespaceByName(ctx, nil, cached, req.GetNamespace())
+	err := flow.database.NamespaceByName(ctx, cached, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
@@ -297,7 +297,7 @@ func (flow *flow) DeleteSecretsFolder(ctx context.Context, req *grpc.DeleteSecre
 
 	cached := new(database.CacheData)
 
-	err := flow.database.NamespaceByName(ctx, nil, cached, req.GetNamespace())
+	err := flow.database.NamespaceByName(ctx, cached, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
@@ -328,7 +328,7 @@ func (flow *flow) UpdateSecret(ctx context.Context, req *grpc.UpdateSecretReques
 
 	cached := new(database.CacheData)
 
-	err := flow.database.NamespaceByName(ctx, nil, cached, req.GetNamespace())
+	err := flow.database.NamespaceByName(ctx, cached, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}

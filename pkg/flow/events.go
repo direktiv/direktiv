@@ -112,7 +112,7 @@ func (events *events) sendEvent(data []byte) {
 
 	cached := new(database.CacheData)
 
-	err = events.database.Namespace(ctx, nil, cached, id)
+	err = events.database.Namespace(ctx, cached, id)
 	if err != nil {
 		events.sugar.Error(err)
 		return
@@ -145,7 +145,7 @@ func (events *events) syncEventDelays() {
 	ctx := context.Background()
 
 	for {
-		e, err := events.getEarliestEvent(ctx, nil)
+		e, err := events.getEarliestEvent(ctx)
 		if err != nil {
 			if derrors.IsNotFound(err) {
 				return
@@ -156,7 +156,7 @@ func (events *events) syncEventDelays() {
 		}
 
 		cached := new(database.CacheData)
-		err = events.database.Namespace(ctx, nil, cached, e.Edges.Namespace.ID)
+		err = events.database.Namespace(ctx, cached, e.Edges.Namespace.ID)
 		if err != nil {
 			return
 		}
@@ -181,13 +181,13 @@ func (events *events) syncEventDelays() {
 }
 
 func (events *events) flushEvent(ctx context.Context, eventID string, ns *database.Namespace, rearm bool) error {
-	tx, err := events.database.Tx(ctx)
+	tctx, tx, err := events.database.Tx(ctx)
 	if err != nil {
 		return err
 	}
 	defer rollback(tx)
 
-	e, err := events.markEventAsProcessed(ctx, tx, eventID)
+	e, err := events.markEventAsProcessed(tctx, eventID)
 	if err != nil {
 		return err
 	}
@@ -333,8 +333,7 @@ func (events *events) handleEventLoopLogic(ctx context.Context, rows *sql.Rows, 
 		}
 
 		if needsUpdate {
-			err = events.updateInstanceEventListener(ctx, nil, id,
-				eventMapAll)
+			err = events.updateInstanceEventListener(ctx, id, eventMapAll)
 			if err != nil {
 				events.sugar.Errorf("can not update multi event: %v", err)
 			}
@@ -357,13 +356,13 @@ func (events *events) handleEventLoopLogic(ctx context.Context, rows *sql.Rows, 
 
 			cached := new(database.CacheData)
 
-			err = events.database.Workflow(ctx, nil, cached, id)
+			err = events.database.Workflow(ctx, cached, id)
 			if err != nil {
 				events.engine.sugar.Error(err)
 				return
 			}
 
-			err = events.deleteEventListeners(ctx, nil, cached, id)
+			err = events.deleteEventListeners(ctx, cached, id)
 			if err != nil {
 				events.engine.sugar.Error(err)
 				return
@@ -447,12 +446,12 @@ func (flow *flow) EventListeners(ctx context.Context, req *grpc.EventListenersRe
 
 	cached := new(database.CacheData)
 
-	err := flow.database.NamespaceByName(ctx, nil, cached, req.GetNamespace())
+	err := flow.database.NamespaceByName(ctx, cached, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
 
-	clients := flow.edb.Clients(nil)
+	clients := flow.edb.Clients(ctx)
 	query := clients.Events.Query().Where(entevents.HasNamespaceWith(entns.ID(cached.Namespace.ID)))
 
 	results, pi, err := paginate[*ent.EventsQuery, *ent.Events](ctx, req.Pagination, query, eventListenersOrderings, eventListenersFilters)
@@ -486,7 +485,7 @@ func (flow *flow) EventListeners(ctx context.Context, req *grpc.EventListenersRe
 		path, exists := m[wf.ID.String()]
 		if !exists {
 			cached.Reset()
-			err = flow.database.Workflow(ctx, nil, cached, wf.ID)
+			err = flow.database.Workflow(ctx, cached, wf.ID)
 			if err != nil {
 				return nil, err
 			}
@@ -546,7 +545,7 @@ func (flow *flow) EventListenersStream(req *grpc.EventListenersRequest, srv grpc
 
 	cached := new(database.CacheData)
 
-	err := flow.database.NamespaceByName(ctx, nil, cached, req.GetNamespace())
+	err := flow.database.NamespaceByName(ctx, cached, req.GetNamespace())
 	if err != nil {
 		return err
 	}
@@ -554,7 +553,7 @@ func (flow *flow) EventListenersStream(req *grpc.EventListenersRequest, srv grpc
 	sub := flow.pubsub.SubscribeEventListeners(cached.Namespace)
 	defer flow.cleanup(sub.Close)
 
-	clients := flow.edb.Clients(nil)
+	clients := flow.edb.Clients(ctx)
 
 resend:
 
@@ -591,7 +590,7 @@ resend:
 		path, exists := m[wf.ID.String()]
 		if !exists {
 			cached.Reset()
-			err = flow.database.Workflow(ctx, nil, cached, wf.ID)
+			err = flow.database.Workflow(ctx, cached, wf.ID)
 			if err != nil {
 				return err
 			}
@@ -691,7 +690,7 @@ func (flow *flow) BroadcastCloudevent(ctx context.Context, in *grpc.BroadcastClo
 
 	cached := new(database.CacheData)
 
-	err = flow.database.NamespaceByName(ctx, nil, cached, namespace)
+	err = flow.database.NamespaceByName(ctx, cached, namespace)
 	if err != nil {
 		return nil, err
 	}
@@ -715,12 +714,12 @@ func (flow *flow) HistoricalEvent(ctx context.Context, in *grpc.HistoricalEventR
 
 	cached := new(database.CacheData)
 
-	err := flow.database.NamespaceByName(ctx, nil, cached, in.GetNamespace())
+	err := flow.database.NamespaceByName(ctx, cached, in.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
 
-	clients := flow.edb.Clients(nil)
+	clients := flow.edb.Clients(ctx)
 
 	cevent, err := clients.CloudEvents.Query().Where(cevents.HasNamespaceWith(entns.ID(cached.Namespace.ID))).Where(cevents.EventIdEQ(eid)).Only(ctx)
 	if err != nil {
@@ -761,12 +760,12 @@ func (flow *flow) EventHistory(ctx context.Context, req *grpc.EventHistoryReques
 
 	cached := new(database.CacheData)
 
-	err := flow.database.NamespaceByName(ctx, nil, cached, req.GetNamespace())
+	err := flow.database.NamespaceByName(ctx, cached, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
 
-	clients := flow.edb.Clients(nil)
+	clients := flow.edb.Clients(ctx)
 
 	query := clients.CloudEvents.Query().Where(cevents.HasNamespaceWith(entns.ID(cached.Namespace.ID)))
 
@@ -805,7 +804,7 @@ func (flow *flow) EventHistoryStream(req *grpc.EventHistoryRequest, srv grpc.Flo
 
 	cached := new(database.CacheData)
 
-	err := flow.database.NamespaceByName(ctx, nil, cached, req.GetNamespace())
+	err := flow.database.NamespaceByName(ctx, cached, req.GetNamespace())
 	if err != nil {
 		return err
 	}
@@ -815,7 +814,7 @@ func (flow *flow) EventHistoryStream(req *grpc.EventHistoryRequest, srv grpc.Flo
 
 resend:
 
-	clients := flow.edb.Clients(nil)
+	clients := flow.edb.Clients(ctx)
 
 	query := clients.CloudEvents.Query().Where(cevents.HasNamespaceWith(entns.ID(cached.Namespace.ID)))
 
@@ -864,14 +863,14 @@ func (flow *flow) ReplayEvent(ctx context.Context, req *grpc.ReplayEventRequest)
 
 	cached := new(database.CacheData)
 
-	err := flow.database.NamespaceByName(ctx, nil, cached, req.GetNamespace())
+	err := flow.database.NamespaceByName(ctx, cached, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
 
 	eid := req.GetId()
 
-	clients := flow.edb.Clients(nil)
+	clients := flow.edb.Clients(ctx)
 
 	cevent, err := clients.CloudEvents.Query().Where(cevents.HasNamespaceWith(entns.ID(cached.Namespace.ID))).Where(cevents.EventIdEQ(eid)).Only(ctx)
 	if err != nil {
@@ -913,7 +912,7 @@ func (events *events) BroadcastCloudevent(ctx context.Context, cached *database.
 	metricsCloudEventsReceived.WithLabelValues(cached.Namespace.Name, event.Type(), event.Source(), cached.Namespace.Name).Inc()
 
 	// add event to db
-	err := events.addEvent(ctx, nil, event, cached.Namespace, timer)
+	err := events.addEvent(ctx, event, cached.Namespace, timer)
 	if err != nil {
 		return err
 	}
@@ -986,7 +985,7 @@ func (events *events) listenForEvents(ctx context.Context, im *instanceMemory, c
 
 	}
 
-	err = events.addInstanceEventListener(ctx, nil, im.cached, transformedEvents, signature, all)
+	err = events.addInstanceEventListener(ctx, im.cached, transformedEvents, signature, all)
 	if err != nil {
 		return err
 	}
@@ -1011,7 +1010,7 @@ func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloud
 
 	cached := new(database.CacheData)
 
-	err := flow.database.NamespaceByName(ctx, nil, cached, namespace)
+	err := flow.database.NamespaceByName(ctx, cached, namespace)
 	if err != nil {
 		return nil, err
 	}
@@ -1020,7 +1019,7 @@ func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloud
 		script = fmt.Sprintf("function filter() {\n %s \n}", jsCode)
 	} else {
 
-		clients := flow.edb.Clients(nil)
+		clients := flow.edb.Clients(ctx)
 
 		ceventfilter, err := clients.CloudEventFilters.Query().Where(enteventsfilter.HasNamespaceWith(entns.ID(cached.Namespace.ID))).Where(enteventsfilter.NameEQ(filterName)).Only(ctx)
 		if err != nil {
@@ -1111,12 +1110,12 @@ func (flow *flow) DeleteCloudEventFilter(ctx context.Context, in *grpc.DeleteClo
 
 	cached := new(database.CacheData)
 
-	err := flow.database.NamespaceByName(ctx, nil, cached, namespace)
+	err := flow.database.NamespaceByName(ctx, cached, namespace)
 	if err != nil {
 		return nil, err
 	}
 
-	clients := flow.edb.Clients(nil)
+	clients := flow.edb.Clients(ctx)
 
 	_, err = clients.CloudEventFilters.Query().Where(enteventsfilter.HasNamespaceWith(entns.ID(cached.Namespace.ID))).Where(enteventsfilter.NameEQ(filterName)).Only(ctx)
 	if err != nil {
@@ -1189,12 +1188,12 @@ func (flow *flow) CreateCloudEventFilter(ctx context.Context, in *grpc.CreateClo
 
 	cached := new(database.CacheData)
 
-	err = flow.database.NamespaceByName(ctx, nil, cached, namespace)
+	err = flow.database.NamespaceByName(ctx, cached, namespace)
 	if err != nil {
 		return nil, err
 	}
 
-	clients := flow.edb.Clients(nil)
+	clients := flow.edb.Clients(ctx)
 
 	k, err := clients.CloudEventFilters.Query().Where(enteventsfilter.HasNamespaceWith(entns.ID(cached.Namespace.ID))).Where(enteventsfilter.NameEQ(filterName)).Count(ctx)
 	if err != nil {
@@ -1226,12 +1225,12 @@ func (flow *flow) GetCloudEventFilters(ctx context.Context, in *grpc.GetCloudEve
 
 	cached := new(database.CacheData)
 
-	err := flow.database.NamespaceByName(ctx, nil, cached, namespace)
+	err := flow.database.NamespaceByName(ctx, cached, namespace)
 	if err != nil {
 		return nil, err
 	}
 
-	clients := flow.edb.Clients(nil)
+	clients := flow.edb.Clients(ctx)
 
 	dbs, err := clients.CloudEventFilters.Query().Where(enteventsfilter.HasNamespaceWith(entns.ID(cached.Namespace.ID))).All(ctx)
 	if err != nil {
@@ -1258,12 +1257,12 @@ func (flow *flow) GetCloudEventFilterScript(ctx context.Context, in *grpc.GetClo
 
 	cached := new(database.CacheData)
 
-	err := flow.database.NamespaceByName(ctx, nil, cached, namespace)
+	err := flow.database.NamespaceByName(ctx, cached, namespace)
 	if err != nil {
 		return nil, err
 	}
 
-	clients := flow.edb.Clients(nil)
+	clients := flow.edb.Clients(ctx)
 
 	script, err := clients.CloudEventFilters.Query().Where(enteventsfilter.HasNamespaceWith(entns.ID(cached.Namespace.ID))).Where(enteventsfilter.NameEQ(filterName)).Only(ctx)
 	if err != nil {

@@ -32,14 +32,14 @@ type instanceMemory struct {
 	instanceUpdater *ent.InstanceUpdateOne
 	runtimeUpdater  *ent.InstanceRuntimeUpdateOne
 
-	tx      database.Transaction
+	// tx      database.Transaction
 	cached  *database.CacheData
 	runtime *database.InstanceRuntime
 }
 
 func (im *instanceMemory) getInstanceUpdater() *ent.InstanceUpdateOne {
 	if im.instanceUpdater == nil {
-		clients := im.engine.edb.Clients(im.tx)
+		clients := im.engine.edb.Clients(context.Background())
 		im.instanceUpdater = clients.Instance.UpdateOneID(im.cached.Instance.ID)
 	}
 
@@ -48,7 +48,7 @@ func (im *instanceMemory) getInstanceUpdater() *ent.InstanceUpdateOne {
 
 func (im *instanceMemory) getRuntimeUpdater() *ent.InstanceRuntimeUpdateOne {
 	if im.runtimeUpdater == nil {
-		clients := im.engine.edb.Clients(im.tx)
+		clients := im.engine.edb.Clients(context.Background())
 		im.runtimeUpdater = clients.InstanceRuntime.UpdateOneID(im.runtime.ID)
 	}
 
@@ -215,19 +215,19 @@ func (im *instanceMemory) StoreData(key string, val interface{}) error {
 	return nil
 }
 
-func (engine *engine) getInstanceMemory(ctx context.Context, tx database.Transaction, id string) (*instanceMemory, error) {
+func (engine *engine) getInstanceMemory(ctx context.Context, id string) (*instanceMemory, error) {
 	uid, err := uuid.Parse(id)
 	if err != nil {
 		return nil, err
 	}
 
 	cached := new(database.CacheData)
-	err = engine.database.Instance(ctx, tx, cached, uid)
+	err = engine.database.Instance(ctx, cached, uid)
 	if err != nil {
 		return nil, err
 	}
 
-	rt, err := engine.database.InstanceRuntime(ctx, tx, cached.Instance.Runtime)
+	rt, err := engine.database.InstanceRuntime(ctx, cached.Instance.Runtime)
 	if err != nil {
 		return nil, err
 	}
@@ -274,7 +274,7 @@ func (engine *engine) loadInstanceMemory(id string, step int) (context.Context, 
 		return nil, nil, err
 	}
 
-	im, err := engine.getInstanceMemory(ctx, nil, id)
+	im, err := engine.getInstanceMemory(ctx, id)
 	if err != nil {
 		engine.unlock(id, conn)
 		return nil, nil, err
@@ -331,7 +331,7 @@ func (engine *engine) FreeInstanceMemory(im *instanceMemory) {
 
 	ctx := context.Background()
 
-	err := engine.events.deleteInstanceEventListeners(ctx, nil, im.cached)
+	err := engine.events.deleteInstanceEventListeners(ctx, im.cached)
 	if err != nil {
 		engine.sugar.Error(err)
 	}

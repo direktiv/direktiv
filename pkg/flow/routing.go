@@ -64,7 +64,7 @@ func (ms *muxStart) Hash() string {
 	return checksum(ms)
 }
 
-func (srv *server) validateRouter(ctx context.Context, tx database.Transaction, cached *database.CacheData) (*muxStart, error, error) {
+func (srv *server) validateRouter(ctx context.Context, cached *database.CacheData) (*muxStart, error, error) {
 	if len(cached.Workflow.Routes) == 0 {
 
 		// latest
@@ -82,7 +82,7 @@ func (srv *server) validateRouter(ctx context.Context, tx database.Transaction, 
 
 		cached.Ref = ref
 
-		err := srv.database.Revision(ctx, tx, cached, cached.Ref.Revision)
+		err := srv.database.Revision(ctx, cached, cached.Ref.Revision)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -119,7 +119,7 @@ func (srv *server) validateRouter(ctx context.Context, tx database.Transaction, 
 
 		cached.Ref = route.Ref
 
-		err := srv.database.Revision(ctx, tx, cached, cached.Ref.Revision)
+		err := srv.database.Revision(ctx, cached, cached.Ref.Revision)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -147,8 +147,8 @@ func (srv *server) validateRouter(ctx context.Context, tx database.Transaction, 
 	return ms, nil, nil
 }
 
-func (engine *engine) mux(ctx context.Context, tx database.Transaction, namespace, path, ref string) (*database.CacheData, error) {
-	cached, err := engine.traverseToWorkflow(ctx, tx, namespace, path)
+func (engine *engine) mux(ctx context.Context, namespace, path, ref string) (*database.CacheData, error) {
+	cached, err := engine.traverseToWorkflow(ctx, namespace, path)
 	if err != nil {
 		return nil, fmt.Errorf("workflow multiplexer failed to resolve workflow: %w", err)
 	}
@@ -200,7 +200,7 @@ func (engine *engine) mux(ctx context.Context, tx database.Transaction, namespac
 		}
 	}
 
-	err = engine.database.Revision(ctx, tx, cached, cached.Ref.Revision)
+	err = engine.database.Revision(ctx, cached, cached.Ref.Revision)
 	if err != nil {
 		return nil, fmt.Errorf("workflow multiplexer failed to resolve workflow revision matching ref '%s' (UUID: %s): %w", cached.Ref.Name, cached.Ref.Revision, err)
 	}
@@ -219,7 +219,7 @@ func hasFlag(flags, flag int) bool {
 	return flags&flag != 0
 }
 
-func (flow *flow) configureRouter(ctx context.Context, tx database.Transaction, cached *database.CacheData, flags int, changer, commit func() error) error {
+func (flow *flow) configureRouter(ctx context.Context, cached *database.CacheData, flags int, changer, commit func() error) error {
 	var err error
 	var muxErr1 error
 	var ms1 *muxStart
@@ -227,7 +227,7 @@ func (flow *flow) configureRouter(ctx context.Context, tx database.Transaction, 
 	if !hasFlag(flags, rcfNoPriors) {
 		// NOTE: we check router valid before deleting because there's no sense failing the
 		// operation for resulting in an invalid router if the router was already invalid.
-		ms1, muxErr1, err = flow.validateRouter(ctx, tx, cached)
+		ms1, muxErr1, err = flow.validateRouter(ctx, cached)
 		if err != nil {
 			return err
 		}
@@ -238,7 +238,7 @@ func (flow *flow) configureRouter(ctx context.Context, tx database.Transaction, 
 		return err
 	}
 
-	ms2, muxErr2, err := flow.validateRouter(ctx, tx, cached)
+	ms2, muxErr2, err := flow.validateRouter(ctx, cached)
 	if err != nil {
 		return err
 	}
@@ -258,7 +258,7 @@ func (flow *flow) configureRouter(ctx context.Context, tx database.Transaction, 
 	mustReconfigureRouter := ms1.Hash() != ms2.Hash() || hasFlag(flags, rcfNoPriors)
 
 	if mustReconfigureRouter {
-		err = flow.preCommitRouterConfiguration(ctx, tx, cached, ms2)
+		err = flow.preCommitRouterConfiguration(ctx, cached, ms2)
 		if err != nil {
 			return err
 		}
@@ -277,8 +277,8 @@ func (flow *flow) configureRouter(ctx context.Context, tx database.Transaction, 
 	return nil
 }
 
-func (flow *flow) preCommitRouterConfiguration(ctx context.Context, tx database.Transaction, cached *database.CacheData, ms *muxStart) error {
-	err := flow.events.processWorkflowEvents(ctx, tx, cached, ms)
+func (flow *flow) preCommitRouterConfiguration(ctx context.Context, cached *database.CacheData, ms *muxStart) error {
+	err := flow.events.processWorkflowEvents(ctx, cached, ms)
 	if err != nil {
 		return err
 	}
@@ -327,7 +327,7 @@ func (flow *flow) cronHandler(data []byte) {
 	defer flow.engine.unlock(id.String(), conn)
 
 	cached := new(database.CacheData)
-	err = flow.database.Workflow(ctx, nil, cached, id)
+	err = flow.database.Workflow(ctx, cached, id)
 	if err != nil {
 
 		if derrors.IsNotFound(err) {
@@ -341,7 +341,7 @@ func (flow *flow) cronHandler(data []byte) {
 
 	}
 
-	clients := flow.edb.Clients(nil)
+	clients := flow.edb.Clients(ctx)
 
 	k, err := clients.Instance.Query().Where(entinst.HasWorkflowWith(entwf.ID(cached.Workflow.ID))).Where(entinst.CreatedAtGT(time.Now().Add(-time.Second*30)), entinst.HasRuntimeWith(entirt.CallerData(util.CallerCron))).Count(ctx)
 	if err != nil {
