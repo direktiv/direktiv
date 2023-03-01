@@ -265,7 +265,7 @@ const ListRow = ({
     }
   }, [index, setSize, width]);
 
-  const { name, state } = data[index].tags;
+  const { name, state, step, iterator, type } = data[index].tags;
   return (
     <div
       style={{
@@ -279,8 +279,13 @@ const ListRow = ({
             [{dayjs.utc(data[index].t).local().format("HH:mm:ss.SSS")}
             {`] `}
           </span>
-          {name && verbose && <span className="tag-name">{name} </span>}
-          {state && verbose && <span className="tag-state">{state} </span>}
+          {step && iterator && verbose && (
+            <span className="tag-name">
+              ({step}/{iterator}){" "}
+            </span>
+          )}
+          {name && verbose && <span className="tag-name">{name}</span>}
+          {state && verbose && <span className="tag-state">/{state} </span>}
           {data[index].msg.match(/.{1,50}/g)?.map((mtkMsg, mtkIdx) => {
             return (
               <span key={`log-msg-${mtkIdx}`} className="msg">
