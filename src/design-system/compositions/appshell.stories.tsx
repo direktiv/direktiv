@@ -6,12 +6,15 @@ import {
   CurlyBraces,
   FolderOpen,
   FolderTree,
+  GitCommit,
+  GitMerge,
   Github,
   Home,
   Layers,
   LogOut,
   Moon,
   Network,
+  PieChart,
   Play,
   PlusCircle,
   Settings,
@@ -44,6 +47,7 @@ import { useEffect, useState } from "react";
 
 import Button from "../button";
 import { RxChevronDown } from "react-icons/rx";
+import clsx from "clsx";
 
 export default {
   title: "Design System/Compositions/App Shell",
@@ -58,6 +62,13 @@ const navigation = [
   { name: "Gateway", href: "#", icon: Network, current: false },
   { name: "Permissions", href: "#", icon: Users, current: false },
   { name: "Services", href: "#", icon: Layers, current: false },
+  { name: "Settings", href: "#", icon: Settings, current: false },
+];
+
+const tabs = [
+  { name: "Overview", href: "#", icon: PieChart, current: true },
+  { name: "Active Revisions", href: "#", icon: GitCommit, current: false },
+  { name: "Revisions", href: "#", icon: GitMerge, current: false },
   { name: "Settings", href: "#", icon: Settings, current: false },
 ];
 
@@ -229,7 +240,7 @@ export const Default = () => {
           </MainTopRight>
         </MainTopBar>
         <MainContent>
-          <div className="flex ">
+          {/* <div className="flex ">
             <div className="tabs">
               <a className="tab tab-bordered tab-active">Overview</a>
               <a className="tab tab-bordered">Revisions</a>
@@ -239,6 +250,40 @@ export const Default = () => {
             <Button color="primary" className="ml-auto">
               wdede
             </Button>
+          </div> */}
+
+          <div className="p-5 space-y-5 border-b bg-base-200 border-gray-gray5 dark:border-grayDark-gray5 pb-5 sm:pb-0">
+            <div className="md:flex md:items-center md:justify-between ">
+              <h3 className="flex font-mono font-bold mono items-center  gap-x-2 text-primary500">
+                <Play className="h-5" />
+                workflow.yml
+              </h3>
+              <div className="mt-3 flex gap-3 md:mt-0">
+                <Button color="primary" size="sm">
+                  Actions <RxChevronDown />
+                </Button>
+              </div>
+            </div>
+            <div>
+              <nav className="-mb-px flex space-x-8">
+                {tabs.map((tab) => (
+                  <a
+                    key={tab.name}
+                    href={tab.href}
+                    className={clsx(
+                      tab.current
+                        ? "border-primary500 text-primary500"
+                        : "border-transparent text-gray-gray11 hover:border-gray-gray8 hover:text-gray-gray12 dark:hover:border-grayDark-gray8 dark:hover:text-grayDark-gray12",
+                      "flex items-center gap-x-2 whitespace-nowrap border-b-2 px-1 pb-4 text-sm font-medium"
+                    )}
+                    aria-current={tab.current ? "page" : undefined}
+                  >
+                    <tab.icon aria-hidden="true" className="h-4 w-auto" />{" "}
+                    {tab.name}
+                  </a>
+                ))}
+              </nav>
+            </div>
           </div>
         </MainContent>
       </Main>
