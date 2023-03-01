@@ -276,7 +276,7 @@ const ListRow = ({
       <div className="log-row" ref={rowRoot}>
         <span className={wordWrap ? "word-wrap" : "whole-word"}>
           <span className="timestamp">
-            [{dayjs.utc(data[index].t).local().format("HH:mm:ss.SSS")}
+            [{dayjs.utc(data[index].t).local().format("HH:mm:ss")}
             {`] `}
           </span>
           {step && iterator && verbose && (
