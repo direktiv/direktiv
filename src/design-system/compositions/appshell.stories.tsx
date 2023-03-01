@@ -32,6 +32,7 @@ import clsx from "clsx";
 
 export default {
   title: "Design System/Compositions/App Shell",
+  parameters: { layout: "fullscreen" },
 };
 
 const navigation = [
