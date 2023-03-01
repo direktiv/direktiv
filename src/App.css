@@ -56,6 +56,11 @@
   @apply h-px;
 }
 
+body {
+  @apply h-full;
+  @apply bg-base-100;
+}
+
 @font-face {
   font-family: "Inter";
   font-style: normal;
