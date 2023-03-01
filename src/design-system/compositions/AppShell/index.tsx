@@ -6,9 +6,9 @@ export const Root: FC = ({ children }) => (
 );
 
 export const Sidebar: FC<{ version: string }> = ({ children, version }) => (
-  <div className="lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col lg:border-r lg:border-gray-gray5 dark:lg:border-grayDark-gray5 lg:pt-5">
-    <div className="px-6">
-      <Logo className="h-8 w-auto" />
+  <div className="lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col lg:border-r lg:border-gray-gray5 dark:lg:border-grayDark-gray5">
+    <div className="border-b border-gray-gray5 dark:border-grayDark-gray5 px-6 py-5">
+      <Logo className="h-8 w-auto border-1 border-gray-800" />
     </div>
     <div className="mt-5 flex h-0 flex-1 flex-col overflow-y-auto pt-1">
       {children}
@@ -35,7 +35,7 @@ export const Main: FC = ({ children }) => (
 );
 
 export const MainTopBar: FC = ({ children }) => (
-  <div className="border-b border-gray-gray5 dark:border-grayDark-gray5 px-4 py-4 sm:flex sm:items-center sm:justify-between">
+  <div className="border-b border-gray-gray5 dark:border-grayDark-gray5 p-4 sm:flex sm:items-center sm:justify-between">
     {children}
   </div>
 );
