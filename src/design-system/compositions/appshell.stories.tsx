@@ -8,6 +8,7 @@ import {
   Github,
   Home,
   Layers,
+  LogOut,
   Moon,
   Network,
   Play,
@@ -37,6 +38,7 @@ import {
 import { useEffect, useState } from "react";
 
 import Button from "../button";
+import { RxChevronDown } from "react-icons/rx";
 
 export default {
   title: "Design System/Compositions/App Shell",
@@ -161,6 +163,29 @@ export const Default = () => {
                 <Moon className="w-5 h-auto" />
               )}
             </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <div
+                  className="avatar placeholder items-center gap-1"
+                  role="button"
+                >
+                  <div className="bg-primary500 text-neutral-content rounded-full w-7 h-7">
+                    <span className="text-xs">Ad</span>
+                  </div>
+                  <RxChevronDown />
+                </div>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56">
+                <DropdownMenuLabel>
+                  You are logged in as admin
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Logout</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </MainTopRight>
         </MainTopBar>
       </Main>

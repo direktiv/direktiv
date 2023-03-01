@@ -59,5 +59,5 @@ export const MainTopLeft: FC = ({ children }) => (
 );
 
 export const MainTopRight: FC = ({ children }) => (
-  <div className="mt-4 flex sm:mt-0 sm:ml-4">{children}</div>
+  <div className="mt-4 space-x-3 flex sm:mt-0 sm:ml-4">{children}</div>
 );
