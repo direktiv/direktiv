@@ -86,6 +86,8 @@ service Flow {
 
 	rpc StartWorkflow (StartWorkflowRequest) returns (StartWorkflowResponse) {}
 	rpc RunWorkflow (RunWorkflowRequest) returns (stream RunWorkflowResponse) {}
+	rpc AwaitWorkflow (AwaitWorkflowRequest) returns (stream AwaitWorkflowResponse) {}
+
 	rpc CancelInstance (CancelInstanceRequest) returns (google.protobuf.Empty) {}
 	rpc BroadcastCloudevent (BroadcastCloudeventRequest) returns (google.protobuf.Empty) {}
 

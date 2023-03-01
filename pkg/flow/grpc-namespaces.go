@@ -5,7 +5,9 @@ import (
 	"errors"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
+	entino "github.com/direktiv/direktiv/pkg/flow/ent/inode"
 	entns "github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
@@ -34,40 +36,38 @@ var namespacesFilters = map[*filteringInfo]func(query *ent.NamespaceQuery, v str
 }
 
 func (flow *flow) ResolveNamespaceUID(ctx context.Context, req *grpc.ResolveNamespaceUIDRequest) (*grpc.NamespaceResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
-
-	nsc := flow.db.Namespace
 
 	id, err := uuid.Parse(req.GetId())
 	if err != nil {
 		return nil, err
 	}
 
-	ns, err := nsc.Get(ctx, id)
+	cached := new(database.CacheData)
+
+	err = flow.database.Namespace(ctx, cached, id)
 	if err != nil {
 		return nil, err
 	}
 
 	var resp grpc.NamespaceResponse
 
-	err = atob(ns, &resp.Namespace)
+	err = atob(cached.Namespace, &resp.Namespace)
 	if err != nil {
 		return nil, err
 	}
 
-	resp.Namespace.Oid = ns.ID.String()
+	resp.Namespace.Oid = cached.Namespace.ID.String()
 
 	return &resp, nil
-
 }
 
 func (flow *flow) SetNamespaceConfig(ctx context.Context, req *grpc.SetNamespaceConfigRequest) (*grpc.SetNamespaceConfigResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	nsc := flow.db.Namespace
-	ns, err := flow.getNamespace(ctx, nsc, req.GetName())
+	cached := new(database.CacheData)
+
+	err := flow.database.NamespaceByName(ctx, cached, req.GetName())
 	if err != nil {
 		return nil, err
 	}
@@ -79,69 +79,71 @@ func (flow *flow) SetNamespaceConfig(ctx context.Context, req *grpc.SetNamespace
 
 	var newCfgData string
 
-	data, err := patchCfg.mergeIntoNamespaceConfig([]byte(ns.Config))
+	data, err := patchCfg.mergeIntoNamespaceConfig([]byte(cached.Namespace.Config))
 	if err != nil {
 		return nil, err
 	}
 	newCfgData = string(data)
 
-	_, err = nsc.UpdateOneID(ns.ID).SetConfig(newCfgData).Save(ctx)
+	clients := flow.edb.Clients(ctx)
+
+	_, err = clients.Namespace.UpdateOneID(cached.Namespace.ID).SetConfig(newCfgData).Save(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	var resp grpc.SetNamespaceConfigResponse
 	resp.Config = newCfgData
-	resp.Name = ns.Name
+	resp.Name = cached.Namespace.Name
 
 	return &resp, nil
 }
 
 func (flow *flow) GetNamespaceConfig(ctx context.Context, req *grpc.GetNamespaceConfigRequest) (*grpc.GetNamespaceConfigResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	nsc := flow.db.Namespace
-	ns, err := flow.getNamespace(ctx, nsc, req.GetName())
+	cached := new(database.CacheData)
+
+	err := flow.database.NamespaceByName(ctx, cached, req.GetName())
 	if err != nil {
 		return nil, err
 	}
 
 	var resp grpc.GetNamespaceConfigResponse
-	resp.Config = ns.Config
-	resp.Name = ns.Name
+	resp.Config = cached.Namespace.Config
+	resp.Name = cached.Namespace.Name
 
 	return &resp, nil
 }
 
 func (flow *flow) Namespace(ctx context.Context, req *grpc.NamespaceRequest) (*grpc.NamespaceResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	nsc := flow.db.Namespace
-	ns, err := flow.getNamespace(ctx, nsc, req.GetName())
+	cached := new(database.CacheData)
+
+	err := flow.database.NamespaceByName(ctx, cached, req.GetName())
 	if err != nil {
 		return nil, err
 	}
 
 	var resp grpc.NamespaceResponse
 
-	err = atob(ns, &resp.Namespace)
+	err = atob(cached.Namespace, &resp.Namespace)
 	if err != nil {
 		return nil, err
 	}
 
-	resp.Namespace.Oid = ns.ID.String()
+	resp.Namespace.Oid = cached.Namespace.ID.String()
 
 	return &resp, nil
-
 }
 
 func (flow *flow) Namespaces(ctx context.Context, req *grpc.NamespacesRequest) (*grpc.NamespacesResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	query := flow.db.Namespace.Query()
+	clients := flow.edb.Clients(ctx)
+
+	query := clients.Namespace.Query()
 
 	results, pi, err := paginate[*ent.NamespaceQuery, *ent.Namespace](ctx, req.Pagination, query, namespacesOrderings, namespacesFilters)
 	if err != nil {
@@ -157,11 +159,9 @@ func (flow *flow) Namespaces(ctx context.Context, req *grpc.NamespacesRequest) (
 	}
 
 	return resp, nil
-
 }
 
 func (flow *flow) NamespacesStream(req *grpc.NamespacesRequest, srv grpc.Flow_NamespacesStreamServer) error {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
@@ -173,7 +173,9 @@ func (flow *flow) NamespacesStream(req *grpc.NamespacesRequest, srv grpc.Flow_Na
 
 resend:
 
-	query := flow.db.Namespace.Query()
+	clients := flow.edb.Clients(ctx)
+
+	query := clients.Namespace.Query()
 
 	results, pi, err := paginate[*ent.NamespaceQuery, *ent.Namespace](ctx, req.Pagination, query, namespacesOrderings, namespacesFilters)
 	if err != nil {
@@ -203,25 +205,27 @@ resend:
 	}
 
 	goto resend
-
 }
 
 func (flow *flow) CreateNamespace(ctx context.Context, req *grpc.CreateNamespaceRequest) (*grpc.CreateNamespaceResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tx, err := flow.db.Tx(ctx)
+	tctx, tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer rollback(tx)
 
-	nsc := tx.Namespace
-	inoc := tx.Inode
-	var ns *ent.Namespace
+	var x *ent.Namespace
+	var y *ent.Inode
+
+	cached := new(database.CacheData)
+
+	clients := flow.edb.Clients(tctx)
 
 	if req.GetIdempotent() {
-		ns, err = flow.getNamespace(ctx, nsc, req.GetName())
+
+		err = flow.database.NamespaceByName(tctx, cached, req.GetName())
 		if err == nil {
 			rollback(tx)
 			goto respond
@@ -229,52 +233,63 @@ func (flow *flow) CreateNamespace(ctx context.Context, req *grpc.CreateNamespace
 		if !derrors.IsNotFound(err) {
 			return nil, err
 		}
+
 	}
 
-	ns, err = nsc.Create().SetName(req.GetName()).Save(ctx)
+	x, err = clients.Namespace.Create().SetName(req.GetName()).Save(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = inoc.Create().SetNillableName(nil).SetType(util.InodeTypeDirectory).SetNamespace(ns).Save(ctx)
+	cached.Namespace = &database.Namespace{
+		ID:        x.ID,
+		CreatedAt: x.CreatedAt,
+		UpdatedAt: x.UpdatedAt,
+		Config:    x.Config,
+		Name:      x.Name,
+		// Root: ,
+	}
+
+	y, err = clients.Inode.Create().SetNillableName(nil).SetType(util.InodeTypeDirectory).SetNamespaceID(cached.Namespace.ID).Save(ctx)
 	if err != nil {
 		return nil, err
 	}
+
+	cached.Namespace.Root = y.ID
 
 	err = tx.Commit()
 	if err != nil {
 		return nil, err
 	}
 
-	flow.logToServer(ctx, time.Now(), "Created namespace '%s'.", ns.Name)
+	flow.logToServer(ctx, time.Now(), "Created namespace '%s'.", cached.Namespace.Name)
 	flow.pubsub.NotifyNamespaces()
 
 respond:
 
 	var resp grpc.CreateNamespaceResponse
 
-	err = atob(ns, &resp.Namespace)
+	err = atob(cached.Namespace, &resp.Namespace)
 	if err != nil {
 		return nil, err
 	}
 
 	return &resp, nil
-
 }
 
 func (flow *flow) DeleteNamespace(ctx context.Context, req *grpc.DeleteNamespaceRequest) (*emptypb.Empty, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 	var resp emptypb.Empty
 
-	tx, err := flow.db.Tx(ctx)
+	tctx, tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer rollback(tx)
 
-	nsc := tx.Namespace
-	ns, err := nsc.Query().Where(entns.NameEQ(req.GetName())).Only(ctx)
+	cached := new(database.CacheData)
+
+	err = flow.database.NamespaceByName(tctx, cached, req.GetName())
 	if err != nil {
 		if derrors.IsNotFound(err) && req.GetIdempotent() {
 			rollback(tx)
@@ -283,8 +298,10 @@ func (flow *flow) DeleteNamespace(ctx context.Context, req *grpc.DeleteNamespace
 		return nil, err
 	}
 
+	clients := flow.edb.Clients(tctx)
+
 	if !req.GetRecursive() {
-		k, err := ns.QueryInodes().Count(ctx)
+		k, err := clients.Inode.Query().Where(entino.HasNamespaceWith(entns.ID(cached.Namespace.ID))).Count(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -293,7 +310,7 @@ func (flow *flow) DeleteNamespace(ctx context.Context, req *grpc.DeleteNamespace
 		}
 	}
 
-	err = nsc.DeleteOne(ns).Exec(ctx)
+	err = clients.Namespace.DeleteOneID(cached.Namespace.ID).Exec(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -303,11 +320,13 @@ func (flow *flow) DeleteNamespace(ctx context.Context, req *grpc.DeleteNamespace
 		return nil, err
 	}
 
-	flow.deleteNamespaceSecrets(ns)
+	flow.database.InvalidateNamespace(ctx, cached, true)
 
-	flow.logToServer(ctx, time.Now(), "Deleted namespace '%s'.", ns.Name)
+	flow.deleteNamespaceSecrets(cached.Namespace)
+
+	flow.logToServer(ctx, time.Now(), "Deleted namespace '%s'.", cached.Namespace.Name)
 	flow.pubsub.NotifyNamespaces()
-	flow.pubsub.CloseNamespace(ns)
+	flow.pubsub.CloseNamespace(cached.Namespace)
 
 	// delete all knative services
 	annotations := make(map[string]string)
@@ -318,54 +337,57 @@ func (flow *flow) DeleteNamespace(ctx context.Context, req *grpc.DeleteNamespace
 	_, err = flow.actions.client.DeleteFunctions(ctx, &lfr)
 
 	// delete filter cache
-	deleteCacheNamespaceSync(ns.Name)
+	deleteCacheNamespaceSync(cached.Namespace.Name)
 	flow.server.pubsub.publish(&PubsubUpdate{
 		Handler: deleteFilterCacheNamespace,
-		Key:     ns.Name,
+		Key:     cached.Namespace.Name,
 	})
 
 	return &resp, err
-
 }
 
 func (flow *flow) RenameNamespace(ctx context.Context, req *grpc.RenameNamespaceRequest) (*grpc.RenameNamespaceResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tx, err := flow.db.Tx(ctx)
+	tctx, tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer rollback(tx)
 
-	nsc := tx.Namespace
-	ns, err := nsc.Query().Where(entns.NameEQ(req.GetOld())).Only(ctx)
+	cached := new(database.CacheData)
+	err = flow.database.NamespaceByName(tctx, cached, req.GetOld())
 	if err != nil {
 		return nil, err
 	}
 
-	ns, err = ns.Update().SetName(req.GetNew()).Save(ctx)
+	clients := flow.edb.Clients(tctx)
+
+	x, err := clients.Namespace.UpdateOneID(cached.Namespace.ID).SetName(req.GetNew()).Save(tctx)
 	if err != nil {
 		return nil, err
 	}
+
+	cached.Namespace.Name = x.Name
 
 	err = tx.Commit()
 	if err != nil {
 		return nil, err
 	}
 
+	flow.database.InvalidateNamespace(ctx, cached, true)
+
 	flow.logToServer(ctx, time.Now(), "Renamed namespace from '%s' to '%s'.", req.GetOld(), req.GetNew())
-	flow.logToNamespace(ctx, time.Now(), ns, "Renamed namespace from '%s' to '%s'.", req.GetOld(), req.GetNew())
+	flow.logToNamespace(ctx, time.Now(), cached, "Renamed namespace from '%s' to '%s'.", req.GetOld(), req.GetNew())
 	flow.pubsub.NotifyNamespaces()
-	flow.pubsub.CloseNamespace(ns)
+	flow.pubsub.CloseNamespace(cached.Namespace)
 
 	var resp grpc.RenameNamespaceResponse
 
-	err = atob(ns, &resp.Namespace)
+	err = atob(cached.Namespace, &resp.Namespace)
 	if err != nil {
 		return nil, err
 	}
 
 	return &resp, nil
-
 }

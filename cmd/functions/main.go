@@ -1,4 +1,4 @@
-package main
+package functions
 
 import (
 	"errors"
@@ -12,8 +12,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/functions"
 )
 
-func main() {
-
+func RunApplication() {
 	// start health check
 	go startHealthHandler()
 
@@ -33,11 +32,9 @@ func main() {
 	}
 
 	functions.StopServer()
-
 }
 
 func startHealthHandler() {
-
 	http.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "")
 	})
@@ -48,5 +45,4 @@ func startHealthHandler() {
 			log.Fatalf("Server error: %v.", err)
 		}
 	}
-
 }

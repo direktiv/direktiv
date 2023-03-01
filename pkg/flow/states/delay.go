@@ -22,7 +22,6 @@ type delayLogic struct {
 
 // Delay initializes the logic for executing a 'delay' state in a Direktiv workflow instance.
 func Delay(instance Instance, state model.State) (Logic, error) {
-
 	delay, ok := state.(*model.DelayState)
 	if !ok {
 		return nil, derrors.NewInternalError(errors.New("bad state object"))
@@ -33,13 +32,11 @@ func Delay(instance Instance, state model.State) (Logic, error) {
 	sl.DelayState = delay
 
 	return sl, nil
-
 }
 
 // Deadline overwrites the default underlying Deadline function provided by Instance because
 // Delay is a multi-step state.
 func (logic *delayLogic) Deadline(ctx context.Context) time.Time {
-
 	d, err := duration.ParseISO8601(logic.Duration)
 	if err != nil {
 		logic.Log(ctx, "failed to parse duration: %v", err)
@@ -49,7 +46,6 @@ func (logic *delayLogic) Deadline(ctx context.Context) time.Time {
 	t := d.Shift(time.Now().Add(DefaultShortDeadline))
 
 	return t
-
 }
 
 // Run implements the Run function for the Logic interface.
@@ -62,7 +58,6 @@ func (logic *delayLogic) Deadline(ctx context.Context) time.Time {
 // In every other way, the 'delay' state is equivalent to the 'noop' state. It should only fail
 // if performs unnecessary validation on its arguments and finds them broken.
 func (logic *delayLogic) Run(ctx context.Context, wakedata []byte) (*Transition, error) {
-
 	first, err := scheduleTwiceConst(logic, wakedata, `""`)
 	if err != nil {
 		return nil, err
@@ -95,5 +90,4 @@ func (logic *delayLogic) Run(ctx context.Context, wakedata []byte) (*Transition,
 		Transform: logic.Transform,
 		NextState: logic.Transition,
 	}, nil
-
 }

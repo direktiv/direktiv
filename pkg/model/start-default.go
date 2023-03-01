@@ -9,7 +9,6 @@ func (o *DefaultStart) GetEvents() []StartEventDefinition {
 }
 
 func (o *DefaultStart) Validate() error {
-
 	if o == nil {
 		return nil
 	}
@@ -19,5 +18,4 @@ func (o *DefaultStart) Validate() error {
 	}
 
 	return nil
-
 }

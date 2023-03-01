@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/direktiv/direktiv/pkg/flow/ent"
+	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/google/uuid"
 )
 
@@ -49,11 +49,11 @@ type broadcastWorkflowInput struct {
 	Live   bool
 }
 
-func (flow *flow) BroadcastWorkflow(ctx context.Context, eventType string, input broadcastWorkflowInput, ns *ent.Namespace) error {
+func (flow *flow) BroadcastWorkflow(ctx context.Context, eventType string, input broadcastWorkflowInput, cached *database.CacheData) error {
 	// BROADCAST EVENT
 
 	target := fmt.Sprintf("%s.%s", BroadcastEventPrefixWorkflow, eventType)
-	cfg, err := loadNSConfig([]byte(ns.Config))
+	cfg, err := loadNSConfig([]byte(cached.Namespace.Config))
 	if err != nil {
 		return fmt.Errorf("failed to load namespace config: %w", err)
 	}
@@ -73,7 +73,7 @@ func (flow *flow) BroadcastWorkflow(ctx context.Context, eventType string, input
 		return fmt.Errorf("failed to create CloudEvent: %w", err)
 	}
 
-	return flow.events.BroadcastCloudevent(ctx, ns, &event, 60)
+	return flow.events.BroadcastCloudevent(ctx, cached, &event, 60)
 }
 
 type broadcastDirectoryInput struct {
@@ -81,10 +81,10 @@ type broadcastDirectoryInput struct {
 	Parent string
 }
 
-func (flow *flow) BroadcastDirectory(ctx context.Context, eventType string, input broadcastDirectoryInput, ns *ent.Namespace) error {
+func (flow *flow) BroadcastDirectory(ctx context.Context, eventType string, input broadcastDirectoryInput, cached *database.CacheData) error {
 	// BROADCAST EVENT
 	target := fmt.Sprintf("%s.%s", BroadcastEventPrefixDirectory, eventType)
-	cfg, err := loadNSConfig([]byte(ns.Config))
+	cfg, err := loadNSConfig([]byte(cached.Namespace.Config))
 	if err != nil {
 		return fmt.Errorf("failed to load namespace config: %w", err)
 	}
@@ -104,7 +104,7 @@ func (flow *flow) BroadcastDirectory(ctx context.Context, eventType string, inpu
 		return fmt.Errorf("failed to create CloudEvent: %w", err)
 	}
 
-	return flow.events.BroadcastCloudevent(ctx, ns, &event, 60)
+	return flow.events.BroadcastCloudevent(ctx, cached, &event, 60)
 }
 
 type broadcastVariableInput struct {
@@ -115,10 +115,10 @@ type broadcastVariableInput struct {
 	Scope        string
 }
 
-func (flow *flow) BroadcastVariable(ctx context.Context, eventType string, eventScope string, input broadcastVariableInput, ns *ent.Namespace) error {
+func (flow *flow) BroadcastVariable(ctx context.Context, eventType string, eventScope string, input broadcastVariableInput, cached *database.CacheData) error {
 	// BROADCAST EVENT
 	target := fmt.Sprintf("%s.%s.%s", eventScope, BroadcastEventPrefixVariable, eventType)
-	cfg, err := loadNSConfig([]byte(ns.Config))
+	cfg, err := loadNSConfig([]byte(cached.Namespace.Config))
 	if err != nil {
 		return fmt.Errorf("failed to load namespace config: %w", err)
 	}
@@ -138,7 +138,7 @@ func (flow *flow) BroadcastVariable(ctx context.Context, eventType string, event
 		return fmt.Errorf("failed to create CloudEvent: %w", err)
 	}
 
-	return flow.events.BroadcastCloudevent(ctx, ns, &event, 60)
+	return flow.events.BroadcastCloudevent(ctx, cached, &event, 60)
 }
 
 type broadcastInstanceInput struct {
@@ -147,10 +147,10 @@ type broadcastInstanceInput struct {
 	Caller       string
 }
 
-func (flow *flow) BroadcastInstance(eventType string, ctx context.Context, input broadcastInstanceInput, ns *ent.Namespace) error {
+func (flow *flow) BroadcastInstance(eventType string, ctx context.Context, input broadcastInstanceInput, cached *database.CacheData) error {
 	// BROADCAST EVENT
 	target := fmt.Sprintf("%s.%s", BroadcastEventPrefixInstance, eventType)
-	cfg, err := loadNSConfig([]byte(ns.Config))
+	cfg, err := loadNSConfig([]byte(cached.Namespace.Config))
 	if err != nil {
 		return fmt.Errorf("failed to load namespace config: %w", err)
 	}
@@ -170,5 +170,5 @@ func (flow *flow) BroadcastInstance(eventType string, ctx context.Context, input
 		return fmt.Errorf("failed to create CloudEvent: %w", err)
 	}
 
-	return flow.events.BroadcastCloudevent(ctx, ns, &event, 60)
+	return flow.events.BroadcastCloudevent(ctx, cached, &event, 60)
 }

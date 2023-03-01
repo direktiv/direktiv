@@ -20,7 +20,6 @@ type switchLogic struct {
 
 // Switch initializes the logic for executing a 'switch' state in a Direktiv workflow instance.
 func Switch(instance Instance, state model.State) (Logic, error) {
-
 	s, ok := state.(*model.SwitchState)
 	if !ok {
 		return nil, derrors.NewInternalError(errors.New("bad state object"))
@@ -31,7 +30,6 @@ func Switch(instance Instance, state model.State) (Logic, error) {
 	sl.SwitchState = s
 
 	return sl, nil
-
 }
 
 // Run implements the Run function for the Logic interface.
@@ -40,7 +38,6 @@ func Switch(instance Instance, state model.State) (Logic, error) {
 // transform and which transition to use. The logic only needs to be scheduled in once. The
 // most likely way for the logic to fail is a JQ error against the instance data.
 func (logic *switchLogic) Run(ctx context.Context, wakedata []byte) (*Transition, error) {
-
 	err := scheduleOnce(logic, wakedata)
 	if err != nil {
 		return nil, err
@@ -73,5 +70,4 @@ func (logic *switchLogic) Run(ctx context.Context, wakedata []byte) (*Transition
 		Transform: logic.DefaultTransform,
 		NextState: logic.DefaultTransition,
 	}, nil
-
 }

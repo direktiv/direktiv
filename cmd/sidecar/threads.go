@@ -1,4 +1,4 @@
-package main
+package sidecar
 
 import (
 	"sync"
@@ -30,7 +30,6 @@ func (t *Threads) Wait() {
 
 // Register adds a new channel to the threads.
 func (t *Threads) Register(stopper chan *time.Time) func() {
-
 	t.lock.Lock()
 	defer t.lock.Unlock()
 
@@ -44,7 +43,6 @@ func (t *Threads) Register(stopper chan *time.Time) func() {
 	t.counter++
 
 	return func() {
-
 		t.lock.Lock()
 		defer t.lock.Unlock()
 
@@ -53,14 +51,11 @@ func (t *Threads) Register(stopper chan *time.Time) func() {
 		if t.counter == 0 {
 			close(t.finished)
 		}
-
 	}
-
 }
 
 // Stop stops a thread.
 func (t *Threads) Stop(st *time.Time, code int) {
-
 	t.lock.Lock()
 
 	if t.code != 0 {
@@ -80,7 +75,6 @@ func (t *Threads) Stop(st *time.Time, code int) {
 		stopper <- t.stopped
 		close(stopper)
 	}
-
 }
 
 // ExitStatus returns the exit status of a code.

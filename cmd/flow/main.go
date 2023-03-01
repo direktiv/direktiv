@@ -1,4 +1,4 @@
-package main
+package flow
 
 import (
 	"context"
@@ -37,12 +37,9 @@ var (
 	filein string
 )
 
-var (
-	logger *zap.SugaredLogger
-)
+var logger *zap.SugaredLogger
 
-func main() {
-
+func RunApplication() {
 	var err error
 
 	logger, err = dlog.ApplicationLogger("flow")
@@ -110,7 +107,6 @@ func main() {
 	if err != nil {
 		exit(err)
 	}
-
 }
 
 func addPaginationFlags(cmd *cobra.Command) {
@@ -125,18 +121,15 @@ func addPaginationFlags(cmd *cobra.Command) {
 }
 
 func client() (grpc.FlowClient, io.Closer, error) {
-
 	conn, err := libgrpc.Dial(addr, libgrpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, nil, err
 	}
 
 	return grpc.NewFlowClient(conn), conn, nil
-
 }
 
 func print(x interface{}) {
-
 	data, err := protojson.MarshalOptions{
 		Multiline:       true,
 		EmitUnpopulated: true,
@@ -148,23 +141,19 @@ func print(x interface{}) {
 	s := string(data)
 
 	fmt.Fprintf(os.Stdout, "%s\n", s)
-
 }
 
 func exit(err error) {
-
 	desc := status.Convert(err)
 
 	logger.Error(desc)
 
 	os.Exit(1)
-
 }
 
 var rootCmd = &cobra.Command{
 	Use: "flow",
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-
 	},
 }
 
@@ -172,7 +161,6 @@ var serverCmd = &cobra.Command{
 	Use:  "server CONFIG_FILE",
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-
 		defer shutdown()
 
 		ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
@@ -187,16 +175,13 @@ var serverCmd = &cobra.Command{
 		if err != nil {
 			exit(err)
 		}
-
 	},
 }
 
 func shutdown() {
-
 	// just in case, stop DNS server
 	pv, err := os.ReadFile("/proc/version")
 	if err == nil {
-
 		// this is a direktiv machine, so we press poweroff
 		if strings.Contains(string(pv), "#direktiv") {
 
@@ -207,7 +192,5 @@ func shutdown() {
 			}
 
 		}
-
 	}
-
 }

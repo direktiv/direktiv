@@ -1,4 +1,4 @@
-package main
+package sidecar
 
 import (
 	"bytes"
@@ -35,7 +35,6 @@ type LocalServer struct {
 }
 
 func (srv *LocalServer) initFlow() error {
-
 	conn, err := util.GetEndpointTLS(fmt.Sprintf("%s:7777",
 		os.Getenv(util.DirektivFlowEndpoint)))
 	if err != nil {
@@ -45,11 +44,9 @@ func (srv *LocalServer) initFlow() error {
 	srv.flow = grpc.NewInternalClient(conn)
 
 	return nil
-
 }
 
 func (srv *LocalServer) Start() {
-
 	err := srv.initFlow()
 	if err != nil {
 		log.Errorf("Localhost server unable to connect to flow: %v", err)
@@ -86,11 +83,9 @@ func (srv *LocalServer) Start() {
 
 	go srv.run()
 	go srv.wait()
-
 }
 
 func (srv *LocalServer) wait() {
-
 	defer srv.server.Close()
 	defer srv.end()
 
@@ -118,11 +113,9 @@ func (srv *LocalServer) wait() {
 	}
 
 	log.Debug("Primary localhost server thread shut down successfully.")
-
 }
 
 func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
-
 	actionId := r.URL.Query().Get("aid")
 
 	srv.requestsLock.Lock()
@@ -169,9 +162,7 @@ func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
 		msg = string(data)
 
 	} else {
-
 		msg = r.URL.Query().Get("log")
-
 	}
 
 	if len(msg) == 0 {
@@ -188,11 +179,9 @@ func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Debugf("Log handler for '%s' posted %d bytes.", actionId, len(msg))
-
 }
 
 func (srv *LocalServer) varHandler(w http.ResponseWriter, r *http.Request) {
-
 	actionId := r.URL.Query().Get("aid")
 
 	srv.requestsLock.Lock()
@@ -254,7 +243,6 @@ func (srv *LocalServer) varHandler(w http.ResponseWriter, r *http.Request) {
 		reportError(code, errors.New(http.StatusText(code)))
 		return
 	}
-
 }
 
 type activeRequest struct {
@@ -264,7 +252,6 @@ type activeRequest struct {
 }
 
 func (srv *LocalServer) registerActiveRequest(ir *functionRequest, ctx context.Context, cancel func()) {
-
 	srv.requestsLock.Lock()
 
 	srv.requests[ir.actionId] = &activeRequest{
@@ -276,11 +263,9 @@ func (srv *LocalServer) registerActiveRequest(ir *functionRequest, ctx context.C
 	srv.requestsLock.Unlock()
 
 	log.Infof("Serving '%s'.", ir.actionId)
-
 }
 
 func (srv *LocalServer) deregisterActiveRequest(actionId string) {
-
 	srv.requestsLock.Lock()
 
 	delete(srv.requests, actionId)
@@ -288,11 +273,9 @@ func (srv *LocalServer) deregisterActiveRequest(actionId string) {
 	srv.requestsLock.Unlock()
 
 	log.Debugf("Request deregistered '%s'.", actionId)
-
 }
 
 func (srv *LocalServer) cancelActiveRequest(ctx context.Context, actionId string) {
-
 	srv.requestsLock.Lock()
 	req := srv.requests[actionId]
 	srv.requestsLock.Unlock()
@@ -311,11 +294,9 @@ func (srv *LocalServer) cancelActiveRequest(ctx context.Context, actionId string
 		log.Warnf("Request '%s' failed to cancel punctually.", actionId)
 		req.cancel()
 	}
-
 }
 
 func (srv *LocalServer) sendCancelToService(ctx context.Context, ir *functionRequest) {
-
 	url := "http://localhost:8080"
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodDelete, url, nil)
@@ -336,7 +317,6 @@ func (srv *LocalServer) sendCancelToService(ctx context.Context, ir *functionReq
 	if resp.StatusCode != http.StatusOK {
 		log.Warnf("Service responded to cancel request for '%s' with %v.", ir.actionId, resp.StatusCode)
 	}
-
 }
 
 type inboundRequest struct {
@@ -346,7 +326,6 @@ type inboundRequest struct {
 }
 
 func (srv *LocalServer) drainRequest(req *inboundRequest) {
-
 	_ = req.r.Body.Close()
 
 	code := http.StatusServiceUnavailable
@@ -361,11 +340,9 @@ func (srv *LocalServer) drainRequest(req *inboundRequest) {
 	}()
 
 	close(req.end)
-
 }
 
 func (srv *LocalServer) run() {
-
 	log.Infof("Starting localhost HTTP server on %s.", srv.server.Addr)
 
 	err := srv.server.ListenAndServe()
@@ -374,7 +351,6 @@ func (srv *LocalServer) run() {
 		Shutdown(ERROR)
 		return
 	}
-
 }
 
 type functionRequest struct {
@@ -406,7 +382,6 @@ type varClientMsg interface {
 }
 
 func (srv *LocalServer) requestVar(ctx context.Context, ir *functionRequest, scope, key string) (client varClient, recv func() (varClientMsg, error), err error) {
-
 	switch scope {
 
 	case util.VarScopeNamespace:
@@ -450,7 +425,6 @@ func (srv *LocalServer) requestVar(ctx context.Context, ir *functionRequest, sco
 	}
 
 	return
-
 }
 
 type varSetClient interface {
@@ -465,7 +439,6 @@ type varSetClientMsg struct {
 }
 
 func (srv *LocalServer) setVar(ctx context.Context, ir *functionRequest, totalSize int64, r io.Reader, scope, key, vMimeType string) error {
-
 	var err error
 	var client varSetClient
 	var send func(*varSetClientMsg) error
@@ -585,18 +558,16 @@ func (srv *LocalServer) setVar(ctx context.Context, ir *functionRequest, totalSi
 	}
 
 	return nil
-
 }
 
 func (srv *LocalServer) getVar(ctx context.Context, ir *functionRequest, w io.Writer, setTotalSize func(x int64), scope, key string) error {
-
 	client, recv, err := srv.requestVar(ctx, ir, scope, key)
 	if err != nil {
 		return err
 	}
 
 	var received int64
-	var noEOF = true
+	noEOF := true
 	for noEOF {
 		msg, err := recv()
 		if errors.Is(err, io.EOF) {
@@ -639,5 +610,4 @@ func (srv *LocalServer) getVar(ctx context.Context, ir *functionRequest, w io.Wr
 	}
 
 	return nil
-
 }

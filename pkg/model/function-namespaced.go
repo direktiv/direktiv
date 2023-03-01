@@ -43,5 +43,4 @@ func (o *NamespacedFunctionDefinition) Validate() error {
 	}
 
 	return nil
-
 }

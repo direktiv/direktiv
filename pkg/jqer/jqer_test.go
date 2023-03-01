@@ -13,7 +13,6 @@ const data1 = `{
 }`
 
 func Test001(t *testing.T) {
-
 	var data interface{}
 	err := json.Unmarshal([]byte(data1), &data)
 	if err != nil {
@@ -35,11 +34,9 @@ func Test001(t *testing.T) {
 	}
 
 	t.Logf("%+v", results)
-
 }
 
 func Test002(t *testing.T) {
-
 	var data interface{}
 	err := json.Unmarshal([]byte(data1), &data)
 	if err != nil {
@@ -61,11 +58,9 @@ func Test002(t *testing.T) {
 	}
 
 	t.Logf("%+v", results)
-
 }
 
 func Test003(t *testing.T) {
-
 	var data interface{}
 	err := json.Unmarshal([]byte(data1), &data)
 	if err != nil {
@@ -87,11 +82,9 @@ func Test003(t *testing.T) {
 	}
 
 	t.Logf("%+v", results)
-
 }
 
 func Test004(t *testing.T) {
-
 	StringQueryRequiresWrappings = true
 	TrimWhitespaceOnQueryStrings = true
 	defer func() {
@@ -120,11 +113,9 @@ func Test004(t *testing.T) {
 	}
 
 	t.Logf("%+v", results)
-
 }
 
 func Test005(t *testing.T) {
-
 	StringQueryRequiresWrappings = true
 	TrimWhitespaceOnQueryStrings = true
 	SearchInStrings = true
@@ -161,11 +152,9 @@ func Test005(t *testing.T) {
 	}
 
 	t.Logf("%+v", results)
-
 }
 
 func Test006(t *testing.T) {
-
 	StringQueryRequiresWrappings = true
 	TrimWhitespaceOnQueryStrings = true
 	SearchInStrings = true
@@ -202,11 +191,9 @@ func Test006(t *testing.T) {
 	}
 
 	t.Logf("%+v", results)
-
 }
 
 func Test007(t *testing.T) {
-
 	StringQueryRequiresWrappings = true
 	TrimWhitespaceOnQueryStrings = true
 	SearchInStrings = true
@@ -243,5 +230,4 @@ func Test007(t *testing.T) {
 	}
 
 	t.Logf("%+v", results)
-
 }

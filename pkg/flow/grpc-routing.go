@@ -2,7 +2,9 @@ package flow
 
 import (
 	"context"
+	"os"
 
+	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entmux "github.com/direktiv/direktiv/pkg/flow/ent/route"
 	entwf "github.com/direktiv/direktiv/pkg/flow/ent/workflow"
@@ -10,90 +12,75 @@ import (
 )
 
 func (flow *flow) Router(ctx context.Context, req *grpc.RouterRequest) (*grpc.RouterResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	nsc := flow.db.Namespace
-	d, err := flow.traverseToWorkflow(ctx, nsc, req.GetNamespace(), req.GetPath())
-	if err != nil {
-		return nil, err
-	}
-
-	routes, err := d.wf.QueryRoutes().Order(ent.Desc(entmux.FieldWeight)).WithRef().All(ctx)
+	cached, err := flow.traverseToWorkflow(ctx, req.GetNamespace(), req.GetPath())
 	if err != nil {
 		return nil, err
 	}
 
 	var resp grpc.RouterResponse
 
-	err = atob(d.ino, &resp.Node)
+	err = atob(cached.Inode(), &resp.Node)
 	if err != nil {
 		return nil, err
 	}
 
-	resp.Namespace = d.namespace()
-	resp.Node.Parent = d.dir
-	resp.Node.Path = d.path
-	resp.Live = d.wf.Live
+	resp.Namespace = cached.Namespace.Name
+	resp.Node.Parent = cached.Dir()
+	resp.Node.Path = cached.Path()
+	resp.Live = cached.Workflow.Live
 
-	err = atob(routes, &resp.Routes)
+	err = atob(cached.Workflow.Routes, &resp.Routes)
 	if err != nil {
 		return nil, err
 	}
 
-	for i := range routes {
-		route := routes[i]
-		resp.Routes[i].Ref = route.Edges.Ref.Name
+	for i := range cached.Workflow.Routes {
+		route := cached.Workflow.Routes[i]
+		resp.Routes[i].Ref = route.Ref.Name
 	}
 
 	return &resp, nil
-
 }
 
 func (flow *flow) RouterStream(req *grpc.RouterRequest, srv grpc.Flow_RouterStreamServer) error {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
 	phash := ""
 	nhash := ""
 
-	nsc := flow.db.Namespace
-	d, err := flow.traverseToWorkflow(ctx, nsc, req.GetNamespace(), req.GetPath())
+	cached, err := flow.traverseToWorkflow(ctx, req.GetNamespace(), req.GetPath())
 	if err != nil {
 		return err
 	}
 
-	sub := flow.pubsub.SubscribeWorkflow(d.wf)
+	sub := flow.pubsub.SubscribeWorkflow(cached)
 	defer flow.cleanup(sub.Close)
 
 resend:
 
-	routes, err := d.wf.QueryRoutes().Order(ent.Desc(entmux.FieldWeight)).WithRef().All(ctx)
-	if err != nil {
-		return err
-	}
-
 	resp := new(grpc.RouterResponse)
 
-	err = atob(d.ino, &resp.Node)
+	err = atob(cached.Inode(), &resp.Node)
 	if err != nil {
 		return err
 	}
 
-	resp.Namespace = d.namespace()
-	resp.Node.Parent = d.dir
-	resp.Node.Path = d.path
-	resp.Live = d.wf.Live
+	resp.Namespace = cached.Namespace.Name
+	resp.Node.Parent = cached.Dir()
+	resp.Node.Path = cached.Path()
+	resp.Live = cached.Workflow.Live
 
-	err = atob(routes, &resp.Routes)
+	err = atob(cached.Workflow.Routes, &resp.Routes)
 	if err != nil {
 		return err
 	}
 
-	for i := range routes {
-		route := routes[i]
-		resp.Routes[i].Ref = route.Edges.Ref.Name
+	for i := range cached.Workflow.Routes {
+		route := cached.Workflow.Routes[i]
+		resp.Routes[i].Ref = route.Ref.Name
 	}
 
 	nhash = checksum(resp)
@@ -111,37 +98,29 @@ resend:
 	}
 
 	goto resend
-
 }
 
 func (flow *flow) EditRouter(ctx context.Context, req *grpc.EditRouterRequest) (*grpc.EditRouterResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tx, err := flow.db.Tx(ctx)
+	tctx, tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer rollback(tx)
 
-	nsc := tx.Namespace
-	d, err := flow.traverseToWorkflow(ctx, nsc, req.GetNamespace(), req.GetPath())
+	cached, err := flow.traverseToWorkflow(tctx, req.GetNamespace(), req.GetPath())
 	if err != nil {
 		return nil, err
 	}
 
 	var routes []*ent.Route
 
-	err = flow.configureRouter(ctx, tx.Events, &d.wf, rcfBreaking,
+	clients := flow.edb.Clients(tctx)
+
+	err = flow.configureRouter(tctx, cached, rcfBreaking,
 		func() error {
-
-			muxc := tx.Route
-			_, err = muxc.Delete().Where(entmux.HasWorkflowWith(entwf.ID(d.wf.ID))).Exec(ctx)
-			if err != nil {
-				return err
-			}
-
-			routes, err = d.wf.QueryRoutes().Order(ent.Desc(entmux.FieldWeight)).All(ctx)
+			_, err = clients.Route.Delete().Where(entmux.HasWorkflowWith(entwf.ID(cached.Workflow.ID))).Exec(tctx)
 			if err != nil {
 				return err
 			}
@@ -155,32 +134,34 @@ func (flow *flow) EditRouter(ctx context.Context, req *grpc.EditRouterRequest) (
 					continue
 				}
 
-				ref, err := flow.getRef(ctx, d.wf, route.Ref)
-				if err != nil {
-					return err
+				var ref *database.Ref
+
+				for idx := range cached.Workflow.Refs {
+					if cached.Workflow.Refs[idx].Name == route.Ref {
+						ref = cached.Workflow.Refs[idx]
+						break
+					}
 				}
 
-				err = muxc.Create().SetWorkflow(d.wf).SetWeight(int(route.Weight)).SetRef(ref).Exec(ctx)
+				if ref == nil {
+					return os.ErrNotExist
+				}
+
+				err = clients.Route.Create().SetWorkflowID(cached.Workflow.ID).SetWeight(int(route.Weight)).SetRefID(ref.ID).Exec(tctx)
 				if err != nil {
 					return err
 				}
 
 			}
 
-			routes, err = d.wf.QueryRoutes().Order(ent.Desc(entmux.FieldWeight)).WithRef().All(ctx)
-			if err != nil {
-				return err
-			}
-
-			if d.wf.Live != req.GetLive() {
-				err = d.wf.Update().SetLive(req.GetLive()).Exec(ctx)
+			if cached.Workflow.Live != req.GetLive() {
+				err = clients.Workflow.UpdateOneID(cached.Workflow.ID).SetLive(req.GetLive()).Exec(tctx)
 				if err != nil {
 					return err
 				}
 			}
 
 			return nil
-
 		},
 		tx.Commit,
 	)
@@ -190,14 +171,14 @@ func (flow *flow) EditRouter(ctx context.Context, req *grpc.EditRouterRequest) (
 
 	var resp grpc.EditRouterResponse
 
-	err = atob(d.ino, &resp.Node)
+	err = atob(cached.Inode(), &resp.Node)
 	if err != nil {
 		return nil, err
 	}
 
-	resp.Namespace = d.namespace()
-	resp.Node.Parent = d.dir
-	resp.Node.Path = d.path
+	resp.Namespace = cached.Namespace.Name
+	resp.Node.Parent = cached.Dir()
+	resp.Node.Path = cached.Path()
 	resp.Live = req.GetLive()
 
 	err = atob(routes, &resp.Routes)
@@ -210,31 +191,27 @@ func (flow *flow) EditRouter(ctx context.Context, req *grpc.EditRouterRequest) (
 		resp.Routes[i].Ref = route.Edges.Ref.Name
 	}
 	return &resp, nil
-
 }
 
 func (flow *flow) ValidateRouter(ctx context.Context, req *grpc.ValidateRouterRequest) (*grpc.ValidateRouterResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	nsc := flow.db.Namespace
-	d, err := flow.traverseToWorkflow(ctx, nsc, req.GetNamespace(), req.GetPath())
+	cached, err := flow.traverseToWorkflow(ctx, req.GetNamespace(), req.GetPath())
 	if err != nil {
 		return nil, err
 	}
 
-	_, verr, err := validateRouter(ctx, d.wf)
+	_, verr, err := flow.validateRouter(ctx, cached)
 	if err != nil {
 		return nil, err
 	}
 
 	var resp grpc.ValidateRouterResponse
 
-	resp.Namespace = d.namespace()
-	resp.Path = d.path
+	resp.Namespace = cached.Namespace.Name
+	resp.Path = cached.Path()
 	resp.Invalid = verr != nil
 	resp.Reason = verr.Error()
 
 	return &resp, nil
-
 }

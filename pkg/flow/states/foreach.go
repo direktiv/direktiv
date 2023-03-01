@@ -25,7 +25,6 @@ type forEachLogic struct {
 
 // ForEach initializes the logic for executing an 'action' state in a Direktiv workflow instance.
 func ForEach(instance Instance, state model.State) (Logic, error) {
-
 	forEach, ok := state.(*model.ForEachState)
 	if !ok {
 		return nil, derrors.NewInternalError(errors.New("bad state object"))
@@ -36,13 +35,11 @@ func ForEach(instance Instance, state model.State) (Logic, error) {
 	sl.ForEachState = forEach
 
 	return sl, nil
-
 }
 
 // Deadline overwrites the default underlying Deadline function provided by Instance because
 // Action is a multi-step state.
 func (logic *forEachLogic) Deadline(ctx context.Context) time.Time {
-
 	d, err := duration.ParseISO8601(logic.Timeout)
 	if err != nil {
 		if logic.Timeout != "" {
@@ -54,7 +51,6 @@ func (logic *forEachLogic) Deadline(ctx context.Context) time.Time {
 	t := d.Shift(time.Now().Add(DefaultLongDeadline))
 
 	return t
-
 }
 
 // Run implements the Run function for the Logic interface.
@@ -66,7 +62,6 @@ func (logic *forEachLogic) Deadline(ctx context.Context) time.Time {
 // timeout. If the action times out or fails, the action logic may attempt to retry it, which
 // means that the number of times this logic can run may vary.
 func (logic *forEachLogic) Run(ctx context.Context, wakedata []byte) (*Transition, error) {
-
 	// first schedule
 	if len(wakedata) == 0 {
 
@@ -109,11 +104,9 @@ func (logic *forEachLogic) Run(ctx context.Context, wakedata []byte) (*Transitio
 	}
 
 	return logic.processActionResults(ctx, children, &results)
-
 }
 
 func (logic *forEachLogic) scheduleFirstActions(ctx context.Context) (*Transition, error) {
-
 	x, err := jqOne(logic.GetInstanceData(), logic.Array)
 	if err != nil {
 		return nil, err
@@ -150,11 +143,9 @@ func (logic *forEachLogic) scheduleFirstActions(ctx context.Context) (*Transitio
 	}
 
 	return nil, nil
-
 }
 
 func (logic *forEachLogic) scheduleAction(ctx context.Context, inputSource interface{}, attempt int) (*ChildInfo, error) {
-
 	action := logic.Action
 
 	input, files, err := generateActionInput(ctx, &generateActionInputArgs{
@@ -196,11 +187,9 @@ func (logic *forEachLogic) scheduleAction(ctx context.Context, inputSource inter
 	}
 
 	return child, nil
-
 }
 
 func (logic *forEachLogic) scheduleRetryAction(ctx context.Context, retry *actionRetryInfo) error {
-
 	logic.Log(ctx, "Retrying...")
 
 	x, err := jqOne(logic.GetInstanceData(), logic.Array)
@@ -233,11 +222,9 @@ func (logic *forEachLogic) scheduleRetryAction(ctx context.Context, retry *actio
 	}
 
 	return nil
-
 }
 
 func (logic *forEachLogic) processActionResults(ctx context.Context, children []ChildInfo, results *actionResultPayload) (*Transition, error) {
-
 	var err error
 
 	var found bool
@@ -338,5 +325,4 @@ func (logic *forEachLogic) processActionResults(ctx context.Context, children []
 	}
 
 	return nil, nil
-
 }

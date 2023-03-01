@@ -1,4 +1,4 @@
-package main
+package secrets
 
 import (
 	"log"
@@ -9,8 +9,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/secrets"
 )
 
-func main() {
-
+func RunApplication() {
 	backend := "db"
 
 	srv, err := secrets.NewServer(backend)
@@ -30,5 +29,4 @@ func main() {
 	}()
 
 	<-srv.Lifeline()
-
 }

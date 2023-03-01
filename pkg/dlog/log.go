@@ -12,28 +12,23 @@ import (
 
 // ApplicationLogger returns logger for applications.
 func ApplicationLogger(component string) (*zap.SugaredLogger, error) {
-
 	appLogger, err := customLogger()
 	if err != nil {
 		return nil, err
 	}
 	return appLogger.With(zap.String("component", component), zap.String("build", version.Version)).Sugar(), nil
-
 }
 
 // FunctionsLogger returns logger for functions.
 func FunctionsLogger() (*zap.SugaredLogger, error) {
-
 	fnLogger, err := customLogger()
 	if err != nil {
 		return nil, err
 	}
 	return fnLogger.With(zap.String("component", "function")).Sugar(), nil
-
 }
 
 func customLogger() (*zap.Logger, error) {
-
 	l, _ := strconv.ParseBool(os.Getenv(util.DirektivDebug))
 
 	inLvl := zapcore.InfoLevel
@@ -66,5 +61,4 @@ func customLogger() (*zap.Logger, error) {
 	}
 
 	return zap.New(core, zap.AddCaller()), nil
-
 }

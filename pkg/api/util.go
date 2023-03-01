@@ -34,7 +34,6 @@ func handlerPair(r *mux.Router, name, path string, handler, sseHandler func(http
 }
 
 func pathHandler(r *mux.Router, method, name, op string, handler func(http.ResponseWriter, *http.Request)) {
-
 	root := "/namespaces/{ns}/tree"
 	path := root + "/{path:.*}"
 
@@ -45,11 +44,9 @@ func pathHandler(r *mux.Router, method, name, op string, handler func(http.Respo
 		r1.Queries("op", op)
 		r2.Queries("op", op)
 	}
-
 }
 
 func pathHandlerSSE(r *mux.Router, name, op string, handler func(http.ResponseWriter, *http.Request)) {
-
 	root := "/namespaces/{ns}/tree"
 	path := root + "/{path:.*}"
 
@@ -60,7 +57,6 @@ func pathHandlerSSE(r *mux.Router, name, op string, handler func(http.ResponseWr
 		r1.Queries("op", op)
 		r2.Queries("op", op)
 	}
-
 }
 
 func pathHandlerPair(r *mux.Router, name, op string, handler, sseHandler func(http.ResponseWriter, *http.Request)) {
@@ -69,7 +65,6 @@ func pathHandlerPair(r *mux.Router, name, op string, handler, sseHandler func(ht
 }
 
 func loadRawBody(r *http.Request) ([]byte, error) {
-
 	limit := int64(1024 * 1024 * 32)
 
 	if r.ContentLength > 0 {
@@ -87,11 +82,9 @@ func loadRawBody(r *http.Request) ([]byte, error) {
 	}
 
 	return data, nil
-
 }
 
 func getInt32(r *http.Request, key string) (int32, error) {
-
 	s := r.URL.Query().Get(key)
 	if s == "" {
 		return 0, nil
@@ -103,11 +96,9 @@ func getInt32(r *http.Request, key string) (int32, error) {
 	}
 
 	return int32(n), nil
-
 }
 
 func pagination(r *http.Request) (*grpc.Pagination, error) {
-
 	limit, err := getInt32(r, "limit")
 	if err != nil {
 		return nil, err
@@ -189,7 +180,6 @@ func pagination(r *http.Request) (*grpc.Pagination, error) {
 	}
 
 	return p, nil
-
 }
 
 func badRequest(w http.ResponseWriter, err error) {
@@ -199,7 +189,6 @@ func badRequest(w http.ResponseWriter, err error) {
 }
 
 func respondStruct(w http.ResponseWriter, resp interface{}, code int, err error) {
-
 	w.WriteHeader(code)
 
 	if err != nil {
@@ -213,7 +202,6 @@ func respondStruct(w http.ResponseWriter, resp interface{}, code int, err error)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
 }
 
 // OkBody is an arbitrary placeholder response that represents an ok response body
@@ -240,7 +228,6 @@ func (e *ErrorBody) StatusCode() int {
 }
 
 func respond(w http.ResponseWriter, resp interface{}, err error) {
-
 	if err != nil {
 
 		code := ConvertGRPCStatusCodeToHTTPCode(status.Code(err))
@@ -279,11 +266,9 @@ func respond(w http.ResponseWriter, resp interface{}, err error) {
 nodata:
 
 	return
-
 }
 
 func respondJSON(w http.ResponseWriter, resp interface{}, err error) {
-
 	if err != nil {
 
 		code := ConvertGRPCStatusCodeToHTTPCode(status.Code(err))
@@ -308,11 +293,9 @@ func respondJSON(w http.ResponseWriter, resp interface{}, err error) {
 nodata:
 
 	return
-
 }
 
 func marshal(w io.Writer, x interface{}, multiline bool) {
-
 	data, err := protojson.MarshalOptions{
 		Multiline:       multiline,
 		EmitUnpopulated: true,
@@ -324,11 +307,9 @@ func marshal(w io.Writer, x interface{}, multiline bool) {
 	s := string(data)
 
 	fmt.Fprintf(w, "%s", s)
-
 }
 
 func marshalJSON(w io.Writer, x interface{}, multiline bool) {
-
 	data, err := json.Marshal(x)
 	if err != nil {
 		panic(err)
@@ -337,11 +318,9 @@ func marshalJSON(w io.Writer, x interface{}, multiline bool) {
 	s := string(data)
 
 	fmt.Fprintf(w, "%s", s)
-
 }
 
 func unmarshalBody(r *http.Request, x interface{}) error {
-
 	limit := int64(1024 * 1024 * 32)
 
 	if r.ContentLength > 0 {
@@ -360,28 +339,23 @@ func unmarshalBody(r *http.Request, x interface{}) error {
 	}
 
 	return nil
-
 }
 
 func pathAndRef(r *http.Request) (string, string) {
-
 	path := mux.Vars(r)["path"]
 	ref := r.URL.Query().Get("ref")
 	return path, ref
-
 }
 
 // SSE Util functions
 
 func sse(w http.ResponseWriter, ch <-chan interface{}) {
-
 	flusher, err := sseSetup(w)
 	if err != nil {
 		return
 	}
 
 	for {
-
 		select {
 
 		case x, more := <-ch:
@@ -409,13 +383,10 @@ func sse(w http.ResponseWriter, ch <-chan interface{}) {
 			}
 
 		}
-
 	}
-
 }
 
 func sseError(w http.ResponseWriter, flusher http.Flusher, err error) {
-
 	eo := GenerateErrObject(err)
 
 	b, err := json.Marshal(eo)
@@ -429,11 +400,9 @@ func sseError(w http.ResponseWriter, flusher http.Flusher, err error) {
 	}
 
 	flusher.Flush()
-
 }
 
 func sseSetup(w http.ResponseWriter) (http.Flusher, error) {
-
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 	w.Header().Set("Content-Type", "text/event-stream")
@@ -447,32 +416,26 @@ func sseSetup(w http.ResponseWriter) (http.Flusher, error) {
 	}
 
 	return flusher, nil
-
 }
 
 func sseWriteJSON(w http.ResponseWriter, flusher http.Flusher, data interface{}) error {
-
 	buf := new(bytes.Buffer)
 
 	marshal(buf, data, false)
 
 	return sseWrite(w, flusher, buf.Bytes())
-
 }
 
 func sseWrite(w http.ResponseWriter, flusher http.Flusher, data []byte) error {
-
 	_, err := io.Copy(w, strings.NewReader(fmt.Sprintf("data: %s\n\n", string(data))))
 	if err != nil {
 		return err
 	}
 	flusher.Flush()
 	return nil
-
 }
 
 func sseHeartbeat(w http.ResponseWriter, flusher http.Flusher) error {
-
 	_, err := w.Write([]byte(fmt.Sprintf("data: %s\n\n", "")))
 	if err != nil {
 		return err
@@ -480,7 +443,6 @@ func sseHeartbeat(w http.ResponseWriter, flusher http.Flusher) error {
 
 	flusher.Flush()
 	return nil
-
 }
 
 // Swagger Param Wrappers
@@ -513,7 +475,6 @@ func sseHeartbeat(w http.ResponseWriter, flusher http.Flusher) error {
 
 // swagger:parameters getWorkflowLogs getNamespaces serverLogs namespaceLogs instanceLogs getInstanceList getWorkflowLogs
 type PaginationQuery struct {
-
 	// field to order by
 	//
 	// in: query
@@ -558,7 +519,6 @@ type telemetryHandler struct {
 }
 
 func (h *telemetryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-
 	ctx := r.Context()
 
 	span := trace.SpanFromContext(ctx)
@@ -615,16 +575,13 @@ func (h *telemetryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	h.srv.logger.Infow("Handling request", annotations...)
 
 	h.next.ServeHTTP(w, r)
-
 }
 
 func (s *Server) logMiddleware(h http.Handler) http.Handler {
-
 	return &telemetryHandler{
 		srv:  s,
 		next: h,
 	}
-
 }
 
 // readSingularFromQueryOrBody : Reads a single key passed in params from

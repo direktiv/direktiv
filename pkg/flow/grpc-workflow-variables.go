@@ -7,10 +7,16 @@ import (
 	"io"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/flow/database"
+	"github.com/direktiv/direktiv/pkg/flow/database/entwrapper"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
+	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
+	entns "github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/vardata"
 	entvardata "github.com/direktiv/direktiv/pkg/flow/ent/vardata"
 	"github.com/direktiv/direktiv/pkg/flow/ent/varref"
+	entvar "github.com/direktiv/direktiv/pkg/flow/ent/varref"
+	entwf "github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/gabriel-vasile/mimetype"
@@ -20,91 +26,105 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func (flow *flow) WorkflowVariable(ctx context.Context, req *grpc.WorkflowVariableRequest) (*grpc.WorkflowVariableResponse, error) {
+func (srv *server) getWorkflowVariable(ctx context.Context, cached *database.CacheData, key string, load bool) (*database.VarRef, *database.VarData, error) {
+	vref, err := srv.database.WorkflowVariable(ctx, cached.Workflow.ID, key)
+	if err != nil {
+		return nil, nil, err
+	}
 
+	vdata, err := srv.database.VariableData(ctx, vref.VarData, load)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return vref, vdata, nil
+}
+
+func (srv *server) traverseToWorkflowVariable(ctx context.Context, namespace, path, key string, load bool) (*database.CacheData, *database.VarRef, *database.VarData, error) {
+	cached, err := srv.traverseToWorkflow(ctx, namespace, path)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	vref, vdata, err := srv.getWorkflowVariable(ctx, cached, key, load)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	return cached, vref, vdata, nil
+}
+
+func (flow *flow) WorkflowVariable(ctx context.Context, req *grpc.WorkflowVariableRequest) (*grpc.WorkflowVariableResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	nsc := flow.db.Namespace
-
-	d, err := flow.traverseToWorkflowVariable(ctx, nsc, req.GetNamespace(), req.GetPath(), req.GetKey(), true)
+	cached, vref, vdata, err := flow.traverseToWorkflowVariable(ctx, req.GetNamespace(), req.GetPath(), req.GetKey(), true)
 	if err != nil {
 		return nil, err
 	}
 
 	var resp grpc.WorkflowVariableResponse
 
-	resp.Namespace = d.ns().Name
-	resp.Path = d.path
-	resp.Key = d.vref.Name
-	resp.CreatedAt = timestamppb.New(d.vdata.CreatedAt)
-	resp.UpdatedAt = timestamppb.New(d.vdata.UpdatedAt)
-	resp.Checksum = d.vdata.Hash
-	resp.TotalSize = int64(d.vdata.Size)
-	resp.MimeType = d.vdata.MimeType
+	resp.Namespace = cached.Namespace.Name
+	resp.Path = cached.Path()
+	resp.Key = vref.Name
+	resp.CreatedAt = timestamppb.New(vdata.CreatedAt)
+	resp.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
+	resp.Checksum = vdata.Hash
+	resp.TotalSize = int64(vdata.Size)
+	resp.MimeType = vdata.MimeType
 
 	if resp.TotalSize > parcelSize {
 		return nil, status.Error(codes.ResourceExhausted, "variable too large to return without using the parcelling API")
 	}
 
-	resp.Data = d.vdata.Data
+	resp.Data = vdata.Data
 
 	return &resp, nil
-
 }
 
 func (internal *internal) WorkflowVariableParcels(req *grpc.VariableInternalRequest, srv grpc.Internal_WorkflowVariableParcelsServer) error {
-
 	internal.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
 
-	nsc := internal.db.Namespace
-	inc := internal.db.Instance
-
-	id, err := internal.getInstance(ctx, inc, req.GetInstance(), false)
+	cached, err := internal.getInstance(ctx, req.GetInstance())
 	if err != nil {
 		return err
 	}
 
-	id.nodeData, err = internal.reverseTraverseToInode(ctx, internal.db.Inode, id.in.Edges.Workflow.Edges.Inode.ID.String())
-	if err != nil {
-		return err
-	}
-
-	d, err := internal.traverseToWorkflowVariable(ctx, nsc, id.namespace(), id.path, req.GetKey(), true)
+	vref, vdata, err := internal.getWorkflowVariable(ctx, cached, req.GetKey(), true)
 	if err != nil && !derrors.IsNotFound(err) {
 		return err
 	}
 
 	if derrors.IsNotFound(err) {
-		d = new(wfvarData)
-		d.vref = new(ent.VarRef)
-		d.vref.Name = req.GetKey()
-		d.vdata = new(ent.VarData)
+		vref = new(database.VarRef)
+		vref.Name = req.GetKey()
+		vdata = new(database.VarData)
 		t := time.Now()
-		d.vdata.Data = make([]byte, 0)
-		hash, err := computeHash(d.vdata.Data)
+		vdata.Data = make([]byte, 0)
+		hash, err := computeHash(vdata.Data)
 		if err != nil {
 			internal.sugar.Error(err)
 		}
-		d.vdata.CreatedAt = t
-		d.vdata.UpdatedAt = t
-		d.vdata.Hash = hash
-		d.vdata.Size = 0
+		vdata.CreatedAt = t
+		vdata.UpdatedAt = t
+		vdata.Hash = hash
+		vdata.Size = 0
 	}
 
-	rdr := bytes.NewReader(d.vdata.Data)
+	rdr := bytes.NewReader(vdata.Data)
 
 	for {
 
 		resp := new(grpc.VariableInternalResponse)
 
-		resp.Key = d.vref.Name
-		resp.CreatedAt = timestamppb.New(d.vdata.CreatedAt)
-		resp.UpdatedAt = timestamppb.New(d.vdata.UpdatedAt)
-		resp.Checksum = d.vdata.Hash
-		resp.TotalSize = int64(d.vdata.Size)
-		resp.MimeType = d.vdata.MimeType
+		resp.Key = vref.Name
+		resp.CreatedAt = timestamppb.New(vdata.CreatedAt)
+		resp.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
+		resp.Checksum = vdata.Hash
+		resp.TotalSize = int64(vdata.Size)
+		resp.MimeType = vdata.MimeType
 
 		buf := new(bytes.Buffer)
 		k, err := io.CopyN(buf, rdr, parcelSize)
@@ -132,36 +152,32 @@ func (internal *internal) WorkflowVariableParcels(req *grpc.VariableInternalRequ
 		}
 
 	}
-
 }
 
 func (flow *flow) WorkflowVariableParcels(req *grpc.WorkflowVariableRequest, srv grpc.Flow_WorkflowVariableParcelsServer) error {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
 
-	nsc := flow.db.Namespace
-
-	d, err := flow.traverseToWorkflowVariable(ctx, nsc, req.GetNamespace(), req.GetPath(), req.GetKey(), true)
+	cached, vref, vdata, err := flow.traverseToWorkflowVariable(ctx, req.GetNamespace(), req.GetPath(), req.GetKey(), true)
 	if err != nil {
 		return err
 	}
 
-	rdr := bytes.NewReader(d.vdata.Data)
+	rdr := bytes.NewReader(vdata.Data)
 
 	for {
 
 		resp := new(grpc.WorkflowVariableResponse)
 
-		resp.Namespace = d.ns().Name
-		resp.Path = d.path
-		resp.Key = d.vref.Name
-		resp.CreatedAt = timestamppb.New(d.vdata.CreatedAt)
-		resp.UpdatedAt = timestamppb.New(d.vdata.UpdatedAt)
-		resp.Checksum = d.vdata.Hash
-		resp.TotalSize = int64(d.vdata.Size)
-		resp.MimeType = d.vdata.MimeType
+		resp.Namespace = cached.Namespace.Name
+		resp.Path = cached.Path()
+		resp.Key = vref.Name
+		resp.CreatedAt = timestamppb.New(vdata.CreatedAt)
+		resp.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
+		resp.Checksum = vdata.Hash
+		resp.TotalSize = int64(vdata.Size)
+		resp.MimeType = vdata.MimeType
 
 		buf := new(bytes.Buffer)
 		k, err := io.CopyN(buf, rdr, parcelSize)
@@ -196,19 +212,19 @@ func (flow *flow) WorkflowVariableParcels(req *grpc.WorkflowVariableRequest, srv
 		}
 
 	}
-
 }
 
 func (flow *flow) WorkflowVariables(ctx context.Context, req *grpc.WorkflowVariablesRequest) (*grpc.WorkflowVariablesResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	d, err := flow.traverseToWorkflow(ctx, flow.db.Namespace, req.GetNamespace(), req.GetPath())
+	cached, err := flow.traverseToWorkflow(ctx, req.GetNamespace(), req.GetPath())
 	if err != nil {
 		return nil, err
 	}
 
-	query := d.wf.QueryVars()
+	clients := flow.edb.Clients(ctx)
+
+	query := clients.VarRef.Query().Where(entvar.HasWorkflowWith(entwf.ID(cached.Workflow.ID)))
 
 	results, pi, err := paginate[*ent.VarRefQuery, *ent.VarRef](ctx, req.Pagination, query, variablesOrderings, variablesFilters)
 	if err != nil {
@@ -216,8 +232,8 @@ func (flow *flow) WorkflowVariables(ctx context.Context, req *grpc.WorkflowVaria
 	}
 
 	resp := new(grpc.WorkflowVariablesResponse)
-	resp.Namespace = d.namespace()
-	resp.Path = d.path
+	resp.Namespace = cached.Namespace.Name
+	resp.Path = cached.Path()
 	resp.Variables = new(grpc.Variables)
 	resp.Variables.PageInfo = pi
 
@@ -245,28 +261,28 @@ func (flow *flow) WorkflowVariables(ctx context.Context, req *grpc.WorkflowVaria
 	}
 
 	return resp, nil
-
 }
 
 func (flow *flow) WorkflowVariablesStream(req *grpc.WorkflowVariablesRequest, srv grpc.Flow_WorkflowVariablesStreamServer) error {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
 	phash := ""
 	nhash := ""
 
-	d, err := flow.traverseToWorkflow(ctx, flow.db.Namespace, req.GetNamespace(), req.GetPath())
+	cached, err := flow.traverseToWorkflow(ctx, req.GetNamespace(), req.GetPath())
 	if err != nil {
 		return err
 	}
 
-	sub := flow.pubsub.SubscribeWorkflowVariables(d.wf)
+	sub := flow.pubsub.SubscribeWorkflowVariables(cached)
 	defer flow.cleanup(sub.Close)
 
 resend:
 
-	query := d.wf.QueryVars()
+	clients := flow.edb.Clients(ctx)
+
+	query := clients.VarRef.Query().Where(entvar.HasWorkflowWith(entwf.ID(cached.Workflow.ID)))
 
 	results, pi, err := paginate[*ent.VarRefQuery, *ent.VarRef](ctx, req.Pagination, query, variablesOrderings, variablesFilters)
 	if err != nil {
@@ -274,8 +290,8 @@ resend:
 	}
 
 	resp := new(grpc.WorkflowVariablesResponse)
-	resp.Namespace = d.namespace()
-	resp.Path = d.path
+	resp.Namespace = cached.Namespace.Name
+	resp.Path = cached.Path()
 	resp.Variables = new(grpc.Variables)
 	resp.Variables.PageInfo = pi
 
@@ -317,15 +333,40 @@ resend:
 	}
 
 	goto resend
-
 }
 
 type varQuerier interface {
 	QueryVars() *ent.VarRefQuery
 }
 
-func (flow *flow) SetVariable(ctx context.Context, vrefc *ent.VarRefClient, vdatac *ent.VarDataClient, q varQuerier, key string, data []byte, vMimeType string, thread bool) (*ent.VarData, bool, error) {
+type entNamespaceVarQuerier struct {
+	clients *entwrapper.EntClients
+	cached  *database.CacheData
+}
 
+func (x *entNamespaceVarQuerier) QueryVars() *ent.VarRefQuery {
+	return x.clients.VarRef.Query().Where(entvar.HasNamespaceWith(entns.ID(x.cached.Namespace.ID)))
+}
+
+type entWorkflowVarQuerier struct {
+	clients *entwrapper.EntClients
+	cached  *database.CacheData
+}
+
+func (x *entWorkflowVarQuerier) QueryVars() *ent.VarRefQuery {
+	return x.clients.VarRef.Query().Where(entvar.HasWorkflowWith(entwf.ID(x.cached.Workflow.ID)))
+}
+
+type entInstanceVarQuerier struct {
+	clients *entwrapper.EntClients
+	cached  *database.CacheData
+}
+
+func (x *entInstanceVarQuerier) QueryVars() *ent.VarRefQuery {
+	return x.clients.VarRef.Query().Where(entvar.HasInstanceWith(entinst.ID(x.cached.Instance.ID)))
+}
+
+func (flow *flow) SetVariable(ctx context.Context, q varQuerier, key string, data []byte, vMimeType string, thread bool) (*ent.VarData, bool, error) {
 	hash, err := computeHash(data)
 	if err != nil {
 		flow.sugar.Error(err)
@@ -342,13 +383,17 @@ func (flow *flow) SetVariable(ctx context.Context, vrefc *ent.VarRefClient, vdat
 		vref, err = q.QueryVars().Where(varref.NameEQ(key), varref.BehaviourIsNil()).Only(ctx)
 	}
 
+	clients := flow.edb.Clients(ctx)
+
+	var cached *database.CacheData
+
 	if err != nil {
 
 		if !derrors.IsNotFound(err) {
 			return nil, false, err
 		}
 
-		vdataBuilder := vdatac.Create().SetSize(len(data)).SetHash(hash)
+		vdataBuilder := clients.VarData.Create().SetSize(len(data)).SetHash(hash)
 		// set mime type if provided
 		if vMimeType != "" {
 			vdataBuilder.SetMimeType(vMimeType)
@@ -363,15 +408,18 @@ func (flow *flow) SetVariable(ctx context.Context, vrefc *ent.VarRefClient, vdat
 			return nil, false, err
 		}
 
-		query := vrefc.Create().SetVardata(vdata).SetName(key)
+		query := clients.VarRef.Create().SetVardata(vdata).SetName(key)
 
 		switch v := q.(type) {
-		case *ent.Namespace:
-			query = query.SetNamespace(v)
-		case *ent.Workflow:
-			query = query.SetWorkflow(v)
-		case *ent.Instance:
-			query = query.SetInstance(v)
+		case *entNamespaceVarQuerier:
+			cached = v.cached
+			query = query.SetNamespaceID(v.cached.Namespace.ID)
+		case *entWorkflowVarQuerier:
+			cached = v.cached
+			query = query.SetWorkflowID(v.cached.Workflow.ID)
+		case *entInstanceVarQuerier:
+			cached = v.cached
+			query = query.SetInstanceID(v.cached.Instance.ID)
 			if thread {
 				query = query.SetBehaviour("thread")
 			}
@@ -407,43 +455,34 @@ func (flow *flow) SetVariable(ctx context.Context, vrefc *ent.VarRefClient, vdat
 	}
 
 	// Broadcast Event
-	ns := new(ent.Namespace)
 	broadcastInput := broadcastVariableInput{
 		Key:       key,
 		TotalSize: int64(vdata.Size),
 	}
 	switch v := q.(type) {
-	case *ent.Namespace:
+	case *entNamespaceVarQuerier:
 		broadcastInput.Scope = BroadcastEventScopeNamespace
-		ns = v
-	case *ent.Workflow:
+		cached = v.cached
+	case *entWorkflowVarQuerier:
 		broadcastInput.Scope = BroadcastEventScopeWorkflow
-		d, tErr := flow.reverseTraverseToWorkflow(ctx, v.ID.String())
-		if tErr != nil {
-			return nil, false, err
-		}
-		broadcastInput.WorkflowPath = d.path
-		ns = d.ns()
-	case *ent.Instance:
+		cached = v.cached
+		broadcastInput.WorkflowPath = cached.Path()
+	case *entInstanceVarQuerier:
 		broadcastInput.Scope = BroadcastEventScopeInstance
-		ns, err = v.Namespace(ctx)
-		if err != nil {
-			return nil, false, err
-		}
-		broadcastInput.InstanceID = v.ID.String()
+		cached = v.cached
+		broadcastInput.InstanceID = v.cached.Instance.ID.String()
 	}
 
 	if newVar {
-		err = flow.BroadcastVariable(ctx, BroadcastEventTypeCreate, broadcastInput.Scope, broadcastInput, ns)
+		err = flow.BroadcastVariable(ctx, BroadcastEventTypeCreate, broadcastInput.Scope, broadcastInput, cached)
 	} else {
-		err = flow.BroadcastVariable(ctx, BroadcastEventTypeUpdate, broadcastInput.Scope, broadcastInput, ns)
+		err = flow.BroadcastVariable(ctx, BroadcastEventTypeUpdate, broadcastInput.Scope, broadcastInput, cached)
 	}
 
 	return vdata, newVar, err
 }
 
-func (flow *flow) DeleteVariable(ctx context.Context, vrefc *ent.VarRefClient, vdatac *ent.VarDataClient, q varQuerier, key string, data []byte, vMimeType string, thread bool) (*ent.VarData, bool, error) {
-
+func (flow *flow) DeleteVariable(ctx context.Context, q varQuerier, key string, data []byte, vMimeType string, thread bool) (*ent.VarData, bool, error) {
 	var err error
 	var vdata *ent.VarData
 	var newVar bool
@@ -460,11 +499,13 @@ func (flow *flow) DeleteVariable(ctx context.Context, vrefc *ent.VarRefClient, v
 		return nil, false, err
 	}
 
+	clients := flow.edb.Clients(ctx)
+
 	vdata, err = vref.QueryVardata().Select(vardata.FieldID).Only(ctx)
 	if err != nil {
 		return nil, false, err
 	}
-	_, err = vrefc.Delete().Where(varref.NameEQ(key)).Exec(ctx)
+	_, err = clients.VarRef.Delete().Where(varref.NameEQ(key)).Exec(ctx)
 	if err != nil {
 		return nil, false, err
 	}
@@ -475,59 +516,47 @@ func (flow *flow) DeleteVariable(ctx context.Context, vrefc *ent.VarRefClient, v
 	}
 
 	if k == 0 {
-		err = vdatac.DeleteOne(vdata).Exec(ctx)
+		err = clients.VarData.DeleteOne(vdata).Exec(ctx)
 		if err != nil {
 			return nil, false, err
 		}
 	}
 
 	// Broadcast Event
-	ns := new(ent.Namespace)
+	var cached *database.CacheData
 	broadcastInput := broadcastVariableInput{
 		Key:       key,
 		TotalSize: int64(vdata.Size),
 	}
 	switch v := q.(type) {
-	case *ent.Namespace:
+	case *entNamespaceVarQuerier:
 		broadcastInput.Scope = BroadcastEventScopeNamespace
-		ns = v
-	case *ent.Workflow:
+		cached = v.cached
+	case *entWorkflowVarQuerier:
 		broadcastInput.Scope = BroadcastEventScopeWorkflow
-		d, tErr := flow.reverseTraverseToWorkflow(ctx, v.ID.String())
-		if tErr != nil {
-			return nil, false, err
-		}
-		broadcastInput.WorkflowPath = d.path
-		ns = d.ns()
-	case *ent.Instance:
+		cached = v.cached
+		broadcastInput.WorkflowPath = cached.Path()
+	case *entInstanceVarQuerier:
 		broadcastInput.Scope = BroadcastEventScopeInstance
-		ns, err = v.Namespace(ctx)
-		if err != nil {
-			return nil, false, err
-		}
-		broadcastInput.InstanceID = v.ID.String()
+		broadcastInput.InstanceID = v.cached.Instance.ID.String()
+		cached = v.cached
 	}
 
-	err = flow.BroadcastVariable(ctx, BroadcastEventTypeDelete, broadcastInput.Scope, broadcastInput, ns)
+	err = flow.BroadcastVariable(ctx, BroadcastEventTypeDelete, broadcastInput.Scope, broadcastInput, cached)
 
 	return vdata, newVar, err
 }
 
 func (flow *flow) SetWorkflowVariable(ctx context.Context, req *grpc.SetWorkflowVariableRequest) (*grpc.SetWorkflowVariableResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tx, err := flow.db.Tx(ctx)
+	tctx, tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer rollback(tx)
 
-	nsc := tx.Namespace
-	vrefc := tx.VarRef
-	vdatac := tx.VarData
-
-	d, err := flow.traverseToWorkflow(ctx, nsc, req.GetNamespace(), req.GetPath())
+	cached, err := flow.traverseToWorkflow(tctx, req.GetNamespace(), req.GetPath())
 	if err != nil {
 		return nil, err
 	}
@@ -537,7 +566,7 @@ func (flow *flow) SetWorkflowVariable(ctx context.Context, req *grpc.SetWorkflow
 	key := req.GetKey()
 
 	var newVar bool
-	vdata, newVar, err = flow.SetVariable(ctx, vrefc, vdatac, d.wf, key, req.GetData(), req.GetMimeType(), false)
+	vdata, newVar, err = flow.SetVariable(tctx, &entWorkflowVarQuerier{clients: flow.edb.Clients(tctx), cached: cached}, key, req.GetData(), req.GetMimeType(), false)
 	if err != nil {
 		return nil, err
 	}
@@ -548,17 +577,17 @@ func (flow *flow) SetWorkflowVariable(ctx context.Context, req *grpc.SetWorkflow
 	}
 
 	if newVar {
-		flow.logToWorkflow(ctx, time.Now(), d, "Created workflow variable '%s'.", key)
+		flow.logToWorkflow(ctx, time.Now(), cached, "Created workflow variable '%s'.", key)
 	} else {
-		flow.logToWorkflow(ctx, time.Now(), d, "Updated workflow variable '%s'.", key)
+		flow.logToWorkflow(ctx, time.Now(), cached, "Updated workflow variable '%s'.", key)
 	}
 
-	flow.pubsub.NotifyWorkflowVariables(d.wf)
+	flow.pubsub.NotifyWorkflowVariables(cached.Workflow)
 
 	var resp grpc.SetWorkflowVariableResponse
 
-	resp.Namespace = d.ns().Name
-	resp.Path = d.path
+	resp.Namespace = cached.Namespace.Name
+	resp.Path = cached.Path()
 	resp.Key = key
 	resp.CreatedAt = timestamppb.New(vdata.CreatedAt)
 	resp.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
@@ -567,11 +596,9 @@ func (flow *flow) SetWorkflowVariable(ctx context.Context, req *grpc.SetWorkflow
 	resp.MimeType = vdata.MimeType
 
 	return &resp, nil
-
 }
 
 func (internal *internal) SetWorkflowVariableParcels(srv grpc.Internal_SetWorkflowVariableParcelsServer) error {
-
 	internal.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
@@ -581,21 +608,12 @@ func (internal *internal) SetWorkflowVariableParcels(srv grpc.Internal_SetWorkfl
 		return err
 	}
 
-	inc := internal.db.Instance
-
-	id, err := internal.getInstance(ctx, inc, req.GetInstance(), false)
-	if err != nil {
-		return err
-	}
-
-	id.nodeData, err = internal.reverseTraverseToInode(ctx, internal.db.Inode, id.in.Edges.Workflow.Edges.Inode.ID.String())
+	cached, err := internal.getInstance(ctx, req.GetInstance())
 	if err != nil {
 		return err
 	}
 
 	mimeType := req.GetMimeType()
-	namespace := id.namespace()
-	path := id.path
 	key := req.GetKey()
 
 	totalSize := int(req.GetTotalSize())
@@ -643,25 +661,16 @@ func (internal *internal) SetWorkflowVariableParcels(srv grpc.Internal_SetWorkfl
 		return errors.New("received more data than expected")
 	}
 
-	tx, err := internal.db.Tx(ctx)
+	tctx, tx, err := internal.database.Tx(ctx)
 	if err != nil {
 		return err
 	}
 	defer rollback(tx)
 
-	nsc := tx.Namespace
-	vrefc := tx.VarRef
-	vdatac := tx.VarData
-
-	d, err := internal.traverseToWorkflow(ctx, nsc, namespace, path)
-	if err != nil {
-		return err
-	}
-
 	var vdata *ent.VarData
 
 	var newVar bool
-	vdata, newVar, err = internal.flow.SetVariable(ctx, vrefc, vdatac, d.wf, key, buf.Bytes(), mimeType, false)
+	vdata, newVar, err = internal.flow.SetVariable(tctx, &entWorkflowVarQuerier{clients: internal.edb.Clients(tctx), cached: cached}, key, buf.Bytes(), mimeType, false)
 	if err != nil {
 		return err
 	}
@@ -672,12 +681,12 @@ func (internal *internal) SetWorkflowVariableParcels(srv grpc.Internal_SetWorkfl
 	}
 
 	if newVar {
-		internal.logToWorkflow(ctx, time.Now(), d, "Created workflow variable '%s'.", key)
+		internal.logToWorkflow(ctx, time.Now(), cached, "Created workflow variable '%s'.", key)
 	} else {
-		internal.logToWorkflow(ctx, time.Now(), d, "Updated workflow variable '%s'.", key)
+		internal.logToWorkflow(ctx, time.Now(), cached, "Updated workflow variable '%s'.", key)
 	}
 
-	internal.pubsub.NotifyWorkflowVariables(d.wf)
+	internal.pubsub.NotifyWorkflowVariables(cached.Workflow)
 
 	var resp grpc.SetVariableInternalResponse
 
@@ -694,11 +703,9 @@ func (internal *internal) SetWorkflowVariableParcels(srv grpc.Internal_SetWorkfl
 	}
 
 	return nil
-
 }
 
 func (flow *flow) SetWorkflowVariableParcels(srv grpc.Flow_SetWorkflowVariableParcelsServer) error {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
@@ -758,17 +765,13 @@ func (flow *flow) SetWorkflowVariableParcels(srv grpc.Flow_SetWorkflowVariablePa
 		return errors.New("received more data than expected")
 	}
 
-	tx, err := flow.db.Tx(ctx)
+	tctx, tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return err
 	}
 	defer rollback(tx)
 
-	nsc := tx.Namespace
-	vrefc := tx.VarRef
-	vdatac := tx.VarData
-
-	d, err := flow.traverseToWorkflow(ctx, nsc, namespace, path)
+	cached, err := flow.traverseToWorkflow(tctx, namespace, path)
 	if err != nil {
 		return err
 	}
@@ -776,7 +779,7 @@ func (flow *flow) SetWorkflowVariableParcels(srv grpc.Flow_SetWorkflowVariablePa
 	var vdata *ent.VarData
 
 	var newVar bool
-	vdata, newVar, err = flow.SetVariable(ctx, vrefc, vdatac, d.wf, key, buf.Bytes(), mimeType, false)
+	vdata, newVar, err = flow.SetVariable(tctx, &entWorkflowVarQuerier{clients: flow.edb.Clients(tctx), cached: cached}, key, buf.Bytes(), mimeType, false)
 	if err != nil {
 		return err
 	}
@@ -787,17 +790,17 @@ func (flow *flow) SetWorkflowVariableParcels(srv grpc.Flow_SetWorkflowVariablePa
 	}
 
 	if newVar {
-		flow.logToWorkflow(ctx, time.Now(), d, "Created workflow variable '%s'.", key)
+		flow.logToWorkflow(ctx, time.Now(), cached, "Created workflow variable '%s'.", key)
 	} else {
-		flow.logToWorkflow(ctx, time.Now(), d, "Updated workflow variable '%s'.", key)
+		flow.logToWorkflow(ctx, time.Now(), cached, "Updated workflow variable '%s'.", key)
 	}
 
-	flow.pubsub.NotifyWorkflowVariables(d.wf)
+	flow.pubsub.NotifyWorkflowVariables(cached.Workflow)
 
 	var resp grpc.SetWorkflowVariableResponse
 
-	resp.Namespace = d.ns().Name
-	resp.Path = d.path
+	resp.Namespace = cached.Namespace.Name
+	resp.Path = cached.Path()
 	resp.Key = key
 	resp.CreatedAt = timestamppb.New(vdata.CreatedAt)
 	resp.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
@@ -810,41 +813,31 @@ func (flow *flow) SetWorkflowVariableParcels(srv grpc.Flow_SetWorkflowVariablePa
 	}
 
 	return nil
-
 }
 
 func (flow *flow) DeleteWorkflowVariable(ctx context.Context, req *grpc.DeleteWorkflowVariableRequest) (*emptypb.Empty, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tx, err := flow.db.Tx(ctx)
+	tctx, tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer rollback(tx)
 
-	nsc := tx.Namespace
-
-	d, err := flow.traverseToWorkflowVariable(ctx, nsc, req.GetNamespace(), req.GetPath(), req.GetKey(), false)
+	cached, vref, vdata, err := flow.traverseToWorkflowVariable(tctx, req.GetNamespace(), req.GetPath(), req.GetKey(), false)
 	if err != nil {
 		return nil, err
 	}
 
-	vrefc := tx.VarRef
-	vdatac := tx.VarData
+	clients := flow.edb.Clients(tctx)
 
-	err = vrefc.DeleteOne(d.vref).Exec(ctx)
+	err = clients.VarRef.DeleteOneID(vref.ID).Exec(tctx)
 	if err != nil {
 		return nil, err
 	}
 
-	k, err := d.vdata.QueryVarrefs().Count(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	if k == 0 {
-		err = vdatac.DeleteOne(d.vdata).Exec(ctx)
+	if vdata.RefCount == 0 {
+		err = clients.VarData.DeleteOneID(vdata.ID).Exec(tctx)
 		if err != nil {
 			return nil, err
 		}
@@ -855,17 +848,17 @@ func (flow *flow) DeleteWorkflowVariable(ctx context.Context, req *grpc.DeleteWo
 		return nil, err
 	}
 
-	flow.logToWorkflow(ctx, time.Now(), d.wfData, "Deleted workflow variable '%s'.", d.vref.Name)
-	flow.pubsub.NotifyWorkflowVariables(d.wf)
+	flow.logToWorkflow(ctx, time.Now(), cached, "Deleted workflow variable '%s'.", vref.Name)
+	flow.pubsub.NotifyWorkflowVariables(cached.Workflow)
 
 	// Broadcast Event
 	broadcastInput := broadcastVariableInput{
 		WorkflowPath: req.GetPath(),
 		Key:          req.GetKey(),
-		TotalSize:    int64(d.vdata.Size),
+		TotalSize:    int64(vdata.Size),
 		Scope:        BroadcastEventScopeWorkflow,
 	}
-	err = flow.BroadcastVariable(ctx, BroadcastEventTypeDelete, BroadcastEventScopeNamespace, broadcastInput, d.ns())
+	err = flow.BroadcastVariable(ctx, BroadcastEventTypeDelete, BroadcastEventScopeNamespace, broadcastInput, cached)
 	if err != nil {
 		return nil, err
 	}
@@ -873,48 +866,48 @@ func (flow *flow) DeleteWorkflowVariable(ctx context.Context, req *grpc.DeleteWo
 	var resp emptypb.Empty
 
 	return &resp, nil
-
 }
 
 func (flow *flow) RenameWorkflowVariable(ctx context.Context, req *grpc.RenameWorkflowVariableRequest) (*grpc.RenameWorkflowVariableResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tx, err := flow.db.Tx(ctx)
+	tctx, tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer rollback(tx)
 
-	nsc := tx.Namespace
-	d, err := flow.traverseToWorkflowVariable(ctx, nsc, req.GetNamespace(), req.GetPath(), req.GetOld(), false)
+	cached, vref, vdata, err := flow.traverseToWorkflowVariable(tctx, req.GetNamespace(), req.GetPath(), req.GetOld(), false)
 	if err != nil {
 		return nil, err
 	}
 
-	vref, err := d.vref.Update().SetName(req.GetNew()).Save(ctx)
+	clients := flow.edb.Clients(tctx)
+
+	x, err := clients.VarRef.UpdateOneID(vref.ID).SetName(req.GetNew()).Save(tctx)
 	if err != nil {
 		return nil, err
 	}
+
+	vref.Name = x.Name
 
 	err = tx.Commit()
 	if err != nil {
 		return nil, err
 	}
 
-	flow.logToWorkflow(ctx, time.Now(), d.wfData, "Renamed workflow variable from '%s' to '%s'.", req.GetOld(), req.GetNew())
-	flow.pubsub.NotifyWorkflowVariables(d.wf)
+	flow.logToWorkflow(ctx, time.Now(), cached, "Renamed workflow variable from '%s' to '%s'.", req.GetOld(), req.GetNew())
+	flow.pubsub.NotifyWorkflowVariables(cached.Workflow)
 
 	var resp grpc.RenameWorkflowVariableResponse
 
-	resp.Checksum = d.vdata.Hash
-	resp.CreatedAt = timestamppb.New(d.vdata.CreatedAt)
+	resp.Checksum = vdata.Hash
+	resp.CreatedAt = timestamppb.New(vdata.CreatedAt)
 	resp.Key = vref.Name
-	resp.Namespace = d.ns().Name
-	resp.TotalSize = int64(d.vdata.Size)
-	resp.UpdatedAt = timestamppb.New(d.vdata.UpdatedAt)
-	resp.MimeType = d.vdata.MimeType
+	resp.Namespace = cached.Namespace.Name
+	resp.TotalSize = int64(vdata.Size)
+	resp.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
+	resp.MimeType = vdata.MimeType
 
 	return &resp, nil
-
 }

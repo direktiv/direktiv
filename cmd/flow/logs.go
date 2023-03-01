@@ -1,4 +1,4 @@
-package main
+package flow
 
 import (
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
@@ -13,7 +13,6 @@ var serverLogsCmd = &cobra.Command{
 	Use:  "server-logs",
 	Args: cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
-
 		c, closer, err := client()
 		if err != nil {
 			exit(err)
@@ -64,7 +63,6 @@ var serverLogsCmd = &cobra.Command{
 			print(resp)
 
 		}
-
 	},
 }
 
@@ -72,7 +70,6 @@ var namespaceLogsCmd = &cobra.Command{
 	Use:  "namespace-logs NAMESPACE",
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-
 		namespace := args[0]
 
 		c, closer, err := client()
@@ -126,7 +123,6 @@ var namespaceLogsCmd = &cobra.Command{
 			print(resp)
 
 		}
-
 	},
 }
 
@@ -134,7 +130,6 @@ var workflowLogsCmd = &cobra.Command{
 	Use:  "workflow-logs NAMESPACE PATH",
 	Args: cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
-
 		namespace := args[0]
 		path := args[1]
 
@@ -190,7 +185,6 @@ var workflowLogsCmd = &cobra.Command{
 			print(resp)
 
 		}
-
 	},
 }
 
@@ -198,7 +192,6 @@ var instanceLogsCmd = &cobra.Command{
 	Use:  "instance-logs NAMESPACE INSTANCE",
 	Args: cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
-
 		namespace := args[0]
 		instance := args[1]
 
@@ -254,6 +247,5 @@ var instanceLogsCmd = &cobra.Command{
 			print(resp)
 
 		}
-
 	},
 }

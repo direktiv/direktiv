@@ -75,7 +75,6 @@ type subConfig struct {
 }
 
 func configWatcher() {
-
 	cs, err := getClientSet()
 	if err != nil {
 		fmt.Printf("could not create fetch client: %v", err)
@@ -93,11 +92,9 @@ func configWatcher() {
 		logger.Debugf("function watcher channel has closed, attempting to restart")
 		time.Sleep(5 * time.Second)
 	}
-
 }
 
 func watchConfigChanges(cs *kubernetes.Clientset) (bool, error) {
-
 	logger.Info("start watching configuration")
 
 	ns := os.Getenv(util.DirektivNamespace)
@@ -122,11 +119,9 @@ func watchConfigChanges(cs *kubernetes.Clientset) (bool, error) {
 			return false, nil
 		}
 	}
-
 }
 
 func updateConfig(data []byte, c *config) {
-
 	err := yaml.Unmarshal(data, c)
 	if err != nil {
 		logger.Fatalf("can not unmarshal config file: %v", err)
@@ -143,11 +138,9 @@ func updateConfig(data []byte, c *config) {
 	c.extraVolumes = sc.ExtraVolumes
 	c.extraContainers = sc.ExtraContainers
 	c.knativeAffinity = sc.KnativeAffinity
-
 }
 
 func readConfig(path string, c *config) {
-
 	logger.Debugf("reading config %s", path)
 	file, err := os.Open(path)
 	if err != nil {
@@ -170,5 +163,4 @@ func readConfig(path string, c *config) {
 	}
 
 	updateConfig(buf, &functionsConfig)
-
 }

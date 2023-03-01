@@ -24,7 +24,6 @@ type actionLogic struct {
 
 // Action initializes the logic for executing an 'action' state in a Direktiv workflow instance.
 func Action(instance Instance, state model.State) (Logic, error) {
-
 	action, ok := state.(*model.ActionState)
 	if !ok {
 		return nil, derrors.NewInternalError(errors.New("bad state object"))
@@ -35,13 +34,11 @@ func Action(instance Instance, state model.State) (Logic, error) {
 	sl.ActionState = action
 
 	return sl, nil
-
 }
 
 // Deadline overwrites the default underlying Deadline function provided by Instance because
 // Action is a multi-step state.
 func (logic *actionLogic) Deadline(ctx context.Context) time.Time {
-
 	if logic.Async {
 		return time.Now().Add(DefaultShortDeadline)
 	}
@@ -57,7 +54,6 @@ func (logic *actionLogic) Deadline(ctx context.Context) time.Time {
 	t := d.Shift(time.Now().Add(DefaultLongDeadline))
 
 	return t
-
 }
 
 // Run implements the Run function for the Logic interface.
@@ -69,7 +65,6 @@ func (logic *actionLogic) Deadline(ctx context.Context) time.Time {
 // timeout. If the action times out or fails, the action logic may attempt to retry it, which
 // means that the number of times this logic can run may vary.
 func (logic *actionLogic) Run(ctx context.Context, wakedata []byte) (*Transition, error) {
-
 	// first schedule
 	if len(wakedata) == 0 {
 
@@ -119,17 +114,13 @@ func (logic *actionLogic) Run(ctx context.Context, wakedata []byte) (*Transition
 	}
 
 	return logic.processActionResults(ctx, children, &results)
-
 }
 
 func (logic *actionLogic) scheduleFirstAction(ctx context.Context) error {
-
 	return logic.scheduleAction(ctx, 0)
-
 }
 
 func (logic *actionLogic) scheduleAction(ctx context.Context, attempt int) error {
-
 	input, files, err := generateActionInput(ctx, &generateActionInputArgs{
 		Instance: logic.Instance,
 		Source:   logic.GetInstanceData(),
@@ -184,11 +175,9 @@ func (logic *actionLogic) scheduleAction(ctx context.Context, attempt int) error
 	}
 
 	return nil
-
 }
 
 func (logic *actionLogic) scheduleRetryAction(ctx context.Context, retry *actionRetryInfo) error {
-
 	logic.Log(ctx, "Retrying...")
 
 	err := logic.scheduleAction(ctx, retry.Children[retry.Idx].Attempts)
@@ -197,11 +186,9 @@ func (logic *actionLogic) scheduleRetryAction(ctx context.Context, retry *action
 	}
 
 	return nil
-
 }
 
 func (logic *actionLogic) processActionResults(ctx context.Context, children []ChildInfo, results *actionResultPayload) (*Transition, error) {
-
 	var err error
 
 	sd := children[0]
@@ -251,5 +238,4 @@ func (logic *actionLogic) processActionResults(ctx context.Context, children []C
 		Transform: logic.Transform,
 		NextState: logic.Transition,
 	}, nil
-
 }

@@ -12,6 +12,7 @@ import (
 	"github.com/cloudevents/sdk-go/v2/binding"
 	protocol "github.com/cloudevents/sdk-go/v2/protocol/http"
 	"github.com/direktiv/direktiv/pkg/dlog"
+	"github.com/direktiv/direktiv/pkg/flow/database"
 	igrpc "github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/gorilla/mux"
@@ -41,7 +42,6 @@ type client struct {
 var publishLogger *zap.SugaredLogger
 
 func newEventReceiver(events *events, flow *flow) (*eventReceiver, error) {
-
 	logger, err := dlog.ApplicationLogger("eventing")
 	if err != nil {
 		return nil, err
@@ -56,12 +56,12 @@ func newEventReceiver(events *events, flow *flow) (*eventReceiver, error) {
 		events: events,
 		flow:   flow,
 	}, nil
-
 }
 
-func (rcv *eventReceiver) sendToNamespace(ns string, r *http.Request) error {
+func (rcv *eventReceiver) sendToNamespace(name string, r *http.Request) error {
+	ctx := context.Background()
 
-	rcv.logger.Debugf("event for namespace %s", ns)
+	rcv.logger.Debugf("event for namespace %s", name)
 
 	m := protocol.NewMessageFromHttpRequest(r)
 	ev, err := binding.ToEvent(context.Background(), m)
@@ -69,7 +69,9 @@ func (rcv *eventReceiver) sendToNamespace(ns string, r *http.Request) error {
 		return err
 	}
 
-	namespace, err := rcv.flow.getNamespace(context.Background(), rcv.flow.db.Namespace, ns)
+	cached := new(database.CacheData)
+
+	err = rcv.flow.database.NamespaceByName(ctx, cached, name)
 	if err != nil {
 		rcv.logger.Errorf("error getting namespace: %s", err.Error())
 		return err
@@ -77,12 +79,10 @@ func (rcv *eventReceiver) sendToNamespace(ns string, r *http.Request) error {
 
 	c := context.WithValue(context.Background(), EventingCtxKeySource, "eventing")
 
-	return rcv.events.BroadcastCloudevent(c, namespace, ev, 0)
-
+	return rcv.events.BroadcastCloudevent(c, cached, ev, 0)
 }
 
 func (rcv *eventReceiver) NamespaceHandler(w http.ResponseWriter, r *http.Request) {
-
 	rcv.logger.Debugf("namespace knative event")
 
 	ns := mux.Vars(r)["ns"]
@@ -94,13 +94,12 @@ func (rcv *eventReceiver) NamespaceHandler(w http.ResponseWriter, r *http.Reques
 	}
 
 	w.WriteHeader(http.StatusAccepted)
-
 }
 
 func (rcv *eventReceiver) MultiNamespaceHandler(w http.ResponseWriter, r *http.Request) {
+	clients := rcv.events.edb.Clients(context.Background())
 
-	nsc := rcv.flow.db.Namespace
-	nss, err := nsc.Query().All(context.Background())
+	nss, err := clients.Namespace.Query().All(context.Background())
 	if err != nil {
 		rcv.logger.Errorf("can not get namespaces: %s", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
@@ -113,11 +112,9 @@ func (rcv *eventReceiver) MultiNamespaceHandler(w http.ResponseWriter, r *http.R
 			rcv.logger.Errorf("error sending event: %s", err.Error())
 		}
 	}
-
 }
 
 func PublishKnativeEvent(ce *cloudevents.Event) {
-
 	var errorClients []string
 
 	knativeClients.Range(func(k, v interface{}) bool {
@@ -145,11 +142,9 @@ func PublishKnativeEvent(ce *cloudevents.Event) {
 	for _, id := range errorClients {
 		knativeClients.Delete(id)
 	}
-
 }
 
 func (rcv *eventReceiver) RequestEvents(req *igrpc.EventingRequest, stream igrpc.Eventing_RequestEventsServer) error {
-
 	rcv.logger.Infof("client connected: %v", req.GetUuid())
 
 	knativeClients.Store(req.GetUuid(), client{stream: stream})
@@ -161,11 +156,9 @@ func (rcv *eventReceiver) RequestEvents(req *igrpc.EventingRequest, stream igrpc
 	rcv.logger.Infof("client %s has disconnected", req.GetUuid())
 	knativeClients.Delete(req.GetUuid())
 	return nil
-
 }
 
 func (rcv *eventReceiver) startGRPC() {
-
 	rcv.logger.Infof("Starting eventing gRPC server.")
 
 	var grpcServer *grpc.Server
@@ -178,11 +171,9 @@ func (rcv *eventReceiver) startGRPC() {
 	if err != nil {
 		rcv.logger.Errorf("Failed to start gRPC server: %v.", err)
 	}
-
 }
 
 func (rcv *eventReceiver) Start() {
-
 	r := mux.NewRouter()
 	r.HandleFunc("/{ns}", rcv.NamespaceHandler).Methods(http.MethodPost)
 	r.HandleFunc("/", rcv.MultiNamespaceHandler).Methods(http.MethodPost)
@@ -197,5 +188,4 @@ func (rcv *eventReceiver) Start() {
 			rcv.logger.Errorf("Failed to start HTTP server: %v.", err)
 		}
 	}
-
 }

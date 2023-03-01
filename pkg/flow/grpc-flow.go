@@ -27,7 +27,6 @@ type flow struct {
 }
 
 func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
-
 	var err error
 
 	flow := &flow{server: srv}
@@ -44,6 +43,8 @@ func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
 	grpc.RegisterFlowServer(flow.srv, flow)
 	reflection.Register(flow.srv)
 
+	clients := flow.edb.Clients(ctx)
+
 	go func() {
 		<-ctx.Done()
 		flow.srv.Stop()
@@ -56,12 +57,12 @@ func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
 		for {
 			<-time.After(time.Hour)
 			t := time.Now().Add(time.Hour * -24)
-			_, err := flow.db.Instance.Delete().Where(entinst.EndAtLT(t)).Exec(ctx)
+			_, err := clients.Instance.Delete().Where(entinst.EndAtLT(t)).Exec(ctx)
 			if err != nil {
 				flow.sugar.Error(fmt.Errorf("failed to cleanup old instances: %w", err))
 			}
 
-			_, err = flow.db.VarData.Delete().Where(entvardata.Not(entvardata.HasVarrefs())).Exec(ctx)
+			_, err = clients.VarData.Delete().Where(entvardata.Not(entvardata.HasVarrefs())).Exec(ctx)
 			if err != nil {
 				flow.sugar.Error(fmt.Errorf("failed to cleanup old variables: %w", err))
 			}
@@ -75,7 +76,7 @@ func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
 		for {
 			<-time.After(time.Hour)
 			t := time.Now().Add(time.Hour * -24)
-			_, err := flow.db.LogMsg.Delete().Where(entlog.TLT(t)).Exec(ctx)
+			_, err := clients.LogMsg.Delete().Where(entlog.TLT(t)).Exec(ctx)
 			if err != nil {
 				flow.sugar.Error(fmt.Errorf("failed to cleanup old logs: %w", err))
 			}
@@ -112,16 +113,16 @@ func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
 	}()
 
 	return flow, nil
-
 }
 
 func (flow *flow) kickExpiredInstances() {
-
 	ctx := context.Background()
 
 	t := time.Now().Add(-1 * time.Minute)
 
-	list, err := flow.db.InstanceRuntime.Query().
+	clients := flow.edb.Clients(ctx)
+
+	list, err := clients.InstanceRuntime.Query().
 		Select(entirt.FieldID, entirt.FieldFlow, entirt.FieldDeadline).
 		Where(entirt.DeadlineLT(t), entirt.HasInstanceWith(entinst.StatusEQ(util.InstanceStatusPending))).
 		WithInstance().
@@ -144,22 +145,18 @@ func (flow *flow) kickExpiredInstances() {
 		flow.engine.retryWakeup(data)
 
 	}
-
 }
 
 func (flow *flow) Run() error {
-
 	err := flow.srv.Serve(flow.listener)
 	if err != nil {
 		return err
 	}
 
 	return nil
-
 }
 
 func (flow *flow) JQ(ctx context.Context, req *grpc.JQRequest) (*grpc.JQResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	var input interface{}
@@ -200,5 +197,4 @@ func (flow *flow) JQ(ctx context.Context, req *grpc.JQRequest) (*grpc.JQResponse
 	resp.Results = strs
 
 	return &resp, nil
-
 }

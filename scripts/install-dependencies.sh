@@ -1,6 +1,5 @@
 #!/bin/bash
 
-LIB_GIT=/usr/local/lib/libgit2.so.1.3
 DIR=$(pwd)
 
 if ! command -v apt-get &> /dev/null
@@ -11,43 +10,6 @@ fi
 
 # Ask user for permissions
 sudo -v
-
-# Installing libgit2
-if [ -e ${LIB_GIT} ]
-then
-    echo "- libgit2 is installed - SKIPPING"
-else
-    libgit_dir=$(mktemp -d -t libgit2-XXXXXXXXXX)
-    echo "- libgit2 is not installed - INSTALLING"
-    echo "- WORKING DIRECTORY: ${libgit_dir}"
-    cd ${libgit_dir}
-    sudo apt-get install git cmake build-essential -y
-    sudo apt-get install pkg-config libssl-dev python3 zlib1g-dev libssh2-1-dev libssh2-1 -y
-    sudo apt-get install libmbedtls-dev -y 
-    sudo apt-get install libpcre3 libpcre3-dev -y
-    sudo apt-get install wget -y
-
-    git clone https://github.com/libgit2/libgit2.git
-    cd libgit2
-    git checkout v1.3.0
-    mkdir build
-    cd build
-
-    wget https://www.libssh2.org/download/libssh2-1.10.0.tar.gz
-    tar -xvzf libssh2-1.10.0.tar.gz
-
-    mkdir libssh2-1.10.0/bin
-    cd libssh2-1.10.0/bin
-    cmake .. -DENABLE_ZLIB_COMPRESSION=ON -DBUILD_SHARED_LIBS=ON
-    sudo cmake --build . --target install
-
-    cd -
-    cmake .. -DUSE_SSH=ON
-    sudo cmake --build . --target install
-    cd ${DIR}
-fi
-
-
 
 # Install protobuff
 if command -v protoc-gen-go &> /dev/null

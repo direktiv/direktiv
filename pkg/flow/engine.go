@@ -12,16 +12,18 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"strings"
 	"sync"
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/google/uuid"
 	"github.com/senseyeio/duration"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/direktiv/direktiv/pkg/flow/ent"
+	"github.com/direktiv/direktiv/pkg/flow/database"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/flow/states"
@@ -29,9 +31,6 @@ import (
 	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/util"
-
-	entvardata "github.com/direktiv/direktiv/pkg/flow/ent/vardata"
-	entvar "github.com/direktiv/direktiv/pkg/flow/ent/varref"
 )
 
 type engine struct {
@@ -41,7 +40,6 @@ type engine struct {
 }
 
 func initEngine(srv *server) (*engine, error) {
-
 	engine := new(engine)
 
 	engine.server = srv
@@ -49,13 +47,10 @@ func initEngine(srv *server) (*engine, error) {
 	engine.cancellers = make(map[string]func())
 
 	return engine, nil
-
 }
 
 func (engine *engine) Close() error {
-
 	return nil
-
 }
 
 type newInstanceArgs struct {
@@ -68,25 +63,27 @@ type newInstanceArgs struct {
 }
 
 type subflowCaller struct {
-	InstanceID string
+	InstanceID uuid.UUID
 	State      string
 	Step       int
 	Depth      int
 	As         string
 }
 
-func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*instanceMemory, error) {
+const (
+	apiCaller = "api"
+)
 
-	tx, err := engine.db.Tx(ctx)
+func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*instanceMemory, error) {
+	tctx, tx, err := engine.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer rollback(tx)
 
-	nsc := tx.Namespace
-
-	d, err := engine.mux(ctx, nsc, args.Namespace, args.Path, args.Ref)
+	cached, err := engine.mux(tctx, args.Namespace, args.Path, args.Ref)
 	if err != nil {
+		engine.sugar.Debugf("Failed to create new instance: %v", err)
 		if derrors.IsNotFound(err) {
 			return nil, derrors.NewUncatchableError("direktiv.workflow.notfound", "workflow not found: %v", err.Error())
 		}
@@ -94,22 +91,19 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 	}
 
 	var wf model.Workflow
-	err = wf.Load(d.rev().Source)
+	err = wf.Load(cached.Revision.Source)
 	if err != nil {
 		return nil, derrors.NewUncatchableError("direktiv.workflow.invalid", "cannot parse workflow '%s': %v", args.Path, err)
 	}
 
 	if len(wf.GetStartDefinition().GetEvents()) > 0 {
-		if strings.ToLower(args.Caller) == "api" {
+		if strings.ToLower(args.Caller) == apiCaller {
 			return nil, derrors.NewUncatchableError("direktiv.workflow.invoke", "cannot manually invoke event-based workflow")
 		}
 		if strings.HasPrefix(args.Caller, "instance") {
 			return nil, derrors.NewUncatchableError("direktiv.workflow.invoke", "cannot invoke event-based workflow as a subflow")
 		}
 	}
-
-	inc := tx.Instance
-	rtc := tx.InstanceRuntime
 
 	as := args.Path
 	if args.Ref != "" {
@@ -118,13 +112,14 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 
 	data := marshalInstanceInputData(args.Input)
 
-	// SetFlow()
-	rt, err := rtc.Create().SetInput(args.Input).SetData(data).SetMemory("null").SetCallerData(args.CallerData).Save(ctx)
+	clients := engine.edb.Clients(tctx)
+
+	rt, err := clients.InstanceRuntime.Create().SetInput(args.Input).SetData(data).SetMemory("null").SetCallerData(args.CallerData).Save(tctx)
 	if err != nil {
 		return nil, err
 	}
 
-	in, err := inc.Create().SetNamespace(d.ns()).SetWorkflow(d.wf).SetRevision(d.rev()).SetRuntime(rt).SetStatus(util.InstanceStatusPending).SetInvoker(args.Caller).SetAs(util.SanitizeAsField(as)).Save(ctx)
+	inst, err := clients.Instance.Create().SetNamespaceID(cached.Namespace.ID).SetWorkflowID(cached.Workflow.ID).SetRevisionID(cached.Revision.ID).SetRuntime(rt).SetStatus(util.InstanceStatusPending).SetInvoker(args.Caller).SetAs(util.SanitizeAsField(as)).Save(tctx)
 	if err != nil {
 		return nil, err
 	}
@@ -134,39 +129,71 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 		return nil, err
 	}
 
-	in.Edges.Namespace = d.ns()
-	in.Edges.Revision = d.rev()
-	in.Edges.Runtime = rt
-	in.Edges.Workflow = d.wf
+	runtime := &database.InstanceRuntime{
+		ID:              rt.ID,
+		Input:           rt.Input,
+		Data:            rt.Data,
+		Controller:      rt.Controller,
+		Memory:          rt.Memory,
+		Flow:            rt.Flow,
+		Output:          rt.Output,
+		StateBeginTime:  rt.StateBeginTime,
+		Deadline:        rt.Deadline,
+		Attempts:        rt.Attempts,
+		CallerData:      rt.CallerData,
+		InstanceContext: rt.InstanceContext,
+		StateContext:    rt.StateContext,
+		Metadata:        rt.Metadata,
+	}
 
-	rt.Edges.Instance = in
+	cached.Instance = &database.Instance{
+		ID:           inst.ID,
+		CreatedAt:    inst.CreatedAt,
+		UpdatedAt:    inst.UpdatedAt,
+		EndAt:        inst.EndAt,
+		Status:       inst.Status,
+		As:           inst.As,
+		ErrorCode:    inst.ErrorCode,
+		ErrorMessage: inst.ErrorMessage,
+		Invoker:      inst.Invoker,
+		Namespace:    cached.Namespace.ID,
+		Workflow:     cached.Workflow.ID,
+		Revision:     cached.Revision.ID,
+		Runtime:      runtime.ID,
+	}
 
 	im := new(instanceMemory)
 	im.engine = engine
-	im.in = in
+	im.cached = cached
+	im.runtime = runtime
 
-	err = json.Unmarshal([]byte(im.in.Edges.Runtime.Data), &im.data)
+	err = im.engine.database.FlushInstance(ctx, im.cached.Instance)
 	if err != nil {
 		return nil, err
 	}
 
-	err = json.Unmarshal([]byte(im.in.Edges.Runtime.Memory), &im.memory)
+	err = json.Unmarshal([]byte(im.runtime.Data), &im.data)
 	if err != nil {
 		return nil, err
 	}
 
-	im.Unwrap()
+	err = json.Unmarshal([]byte(im.runtime.Memory), &im.memory)
+	if err != nil {
+		return nil, err
+	}
 
-	ctx, err = traceFullAddWorkflowInstance(ctx, d, im)
+	// im.tx = nil
+
+	ctx, err = traceFullAddWorkflowInstance(ctx, im)
 	if err != nil {
 		return nil, err
 	}
 
 	t := time.Now()
-	engine.pubsub.NotifyInstances(d.ns())
-	engine.logToNamespace(ctx, t, d.ns(), "Workflow '%s' has been triggered by %s.", args.Path, args.Caller)
-	engine.logToWorkflow(ctx, t, d.wfData, "Instance '%s' created by %s.", im.ID().String(), args.Caller)
-	engine.logToInstance(ctx, t, in, "Preparing workflow triggered by %s.", args.Caller)
+	engine.pubsub.NotifyInstances(cached.Namespace)
+	engine.logToNamespace(ctx, t, im.cached, "Workflow '%s' has been triggered by %s.", args.Path, args.Caller)
+	engine.logToWorkflow(ctx, t, im.cached, "Instance '%s' created by %s. (%v)", im.ID().String(), args.Caller, time.Now())
+	engine.logToInstance(ctx, t, im.cached, "Preparing workflow triggered by %s.", args.Caller)
 
 	// Broadcast Event
 	err = engine.flow.BroadcastInstance(BroadcastEventTypeInstanceStarted, ctx,
@@ -174,17 +201,15 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 			WorkflowPath: args.Path,
 			InstanceID:   im.ID().String(),
 			Caller:       args.Caller,
-		}, d.ns())
+		}, cached)
 	if err != nil {
 		return nil, err
 	}
 
 	return im, nil
-
 }
 
 func (engine *engine) start(im *instanceMemory) {
-
 	ctx, err := engine.InstanceLock(im, defaultLockWait)
 	if err != nil {
 		engine.sugar.Error(err)
@@ -202,11 +227,9 @@ func (engine *engine) start(im *instanceMemory) {
 	start := workflow.GetStartState()
 
 	engine.Transition(ctx, im, start.GetID(), 0)
-
 }
 
 func (engine *engine) loadStateLogic(im *instanceMemory, stateID string) error {
-
 	workflow, err := im.Model()
 	if err != nil {
 		return err
@@ -224,11 +247,9 @@ func (engine *engine) loadStateLogic(im *instanceMemory, stateID string) error {
 	}
 
 	return nil
-
 }
 
 func (engine *engine) Transition(ctx context.Context, im *instanceMemory, nextState string, attempt int) {
-
 	workflow, err := im.Model()
 	if err != nil {
 		engine.CrashInstance(ctx, im, err)
@@ -288,9 +309,6 @@ func (engine *engine) Transition(ctx context.Context, im *instanceMemory, nextSt
 	flow := append(im.Flow(), nextState)
 	deadline := im.logic.Deadline(ctx)
 
-	rt := im.in.Edges.Runtime
-	edges := rt.Edges
-
 	err = engine.SetMemory(ctx, im, nil)
 	if err != nil {
 		engine.CrashInstance(ctx, im, err)
@@ -304,45 +322,51 @@ func (engine *engine) Transition(ctx context.Context, im *instanceMemory, nextSt
 	}
 	defer cleanup()
 
-	rt, err = rt.Update().
-		SetFlow(flow).
+	t := time.Now()
+	data := im.MarshalData()
+	memory := im.MarshalMemory()
+	updater := im.getRuntimeUpdater()
+	updater = updater.SetFlow(flow).
 		SetController(engine.pubsub.hostname).
 		SetAttempts(attempt).
 		SetDeadline(deadline).
-		SetStateBeginTime(time.Now()).
-		SetData(im.MarshalData()).
-		SetMemory(im.MarshalMemory()).
-		Save(ctx)
+		SetStateBeginTime(t).
+		SetData(data).
+		SetMemory(memory)
+	im.runtime.Flow = flow
+	im.runtime.Controller = engine.pubsub.hostname
+	im.runtime.Attempts = attempt
+	im.runtime.Deadline = deadline
+	im.runtime.StateBeginTime = t
+	im.runtime.Data = data
+	im.runtime.Memory = memory
+	im.runtimeUpdater = updater
+
+	err = im.flushUpdates(ctx)
 	if err != nil {
-		engine.CrashInstance(ctx, im, err)
+		engine.sugar.Errorf("Failed to update database record: %v", err)
 		return
 	}
-
-	engine.pubsub.NotifyInstance(im.in)
-
-	rt.Edges = edges
-	im.in.Edges.Runtime = rt
 
 	engine.ScheduleSoftTimeout(im, oldController, deadline)
 
 	engine.runState(ctx, im, nil, nil)
-
 }
 
 func (engine *engine) CrashInstance(ctx context.Context, im *instanceMemory, err error) {
-
 	cerr := new(derrors.CatchableError)
 	uerr := new(derrors.UncatchableError)
 
 	if errors.As(err, &cerr) {
 		engine.sugar.Errorf("Instance failed with error '%s': %v", cerr.Code, err)
-		engine.logToInstance(ctx, time.Now(), im.in, "Instance failed with error '%s': %s", cerr.Code, err.Error())
+		engine.logToInstance(ctx, time.Now(), im.cached, "Instance failed with error '%s': %s", cerr.Code, err.Error())
 	} else if errors.As(err, &uerr) && uerr.Code != "" {
 		engine.sugar.Errorf("Instance failed with uncatchable error '%s': %v", uerr.Code, err)
-		engine.logToInstance(ctx, time.Now(), im.in, "Instance failed with uncatchable error '%s': %s", uerr.Code, err.Error())
+		engine.logToInstance(ctx, time.Now(), im.cached, "Instance failed with uncatchable error '%s': %s", uerr.Code, err.Error())
 	} else {
-		engine.sugar.Errorf("Instance failed with uncatchable error: %v", err)
-		engine.logToInstance(ctx, time.Now(), im.in, "Instance failed with uncatchable error: %s", err.Error())
+		_, file, line, _ := runtime.Caller(1)
+		engine.sugar.Errorf("Instance failed with uncatchable error (thrown by %s:%d): %v", file, line, err)
+		engine.logToInstance(ctx, time.Now(), im.cached, "Instance failed with uncatchable error: %s", err.Error())
 	}
 
 	err = engine.SetInstanceFailed(ctx, im, err)
@@ -350,51 +374,50 @@ func (engine *engine) CrashInstance(ctx context.Context, im *instanceMemory, err
 		engine.sugar.Error(err)
 	}
 
-	if ns, err := im.in.Namespace(ctx); err == nil {
-		broadcastErr := engine.flow.BroadcastInstance(BroadcastEventTypeInstanceFailed, ctx, broadcastInstanceInput{
-			WorkflowPath: GetInodePath(im.in.As),
-			InstanceID:   im.in.ID.String(),
-		}, ns)
-		if broadcastErr != nil {
-			engine.sugar.Errorf("Failed to broadcast: %v", broadcastErr)
-		}
-	} else {
-		engine.sugar.Errorf("Failed to start broadcast: %v", err)
+	broadcastErr := engine.flow.BroadcastInstance(BroadcastEventTypeInstanceFailed, ctx, broadcastInstanceInput{
+		WorkflowPath: GetInodePath(im.cached.Instance.As),
+		InstanceID:   im.cached.Instance.ID.String(),
+	}, im.cached)
+	if broadcastErr != nil {
+		engine.sugar.Errorf("Failed to broadcast: %v", broadcastErr)
 	}
 
 	engine.TerminateInstance(ctx, im)
-
 }
 
 func (engine *engine) setEndAt(im *instanceMemory) {
-
-	ctx := context.Background()
-
-	in, err := im.in.Update().SetEndAt(time.Now()).Save(ctx)
-	if err != nil {
-		engine.sugar.Error(err)
-		return
-	}
-
-	in.Edges = im.in.Edges
-	im.in = in
-
+	t := time.Now()
+	updater := im.getInstanceUpdater()
+	updater = updater.SetEndAt(t)
+	im.cached.Instance.EndAt = t
+	im.instanceUpdater = updater
 }
 
 func (engine *engine) TerminateInstance(ctx context.Context, im *instanceMemory) {
-
 	engine.setEndAt(im)
+
+	err := im.flushUpdates(ctx)
+	if err != nil {
+		engine.sugar.Errorf("Failed to update database record: %v", err)
+		return
+	}
 
 	if im.logic != nil {
 		engine.metricsCompleteState(ctx, im, "", im.ErrorCode(), false)
 	}
+
 	engine.metricsCompleteInstance(ctx, im)
 	engine.FreeInstanceMemory(im)
 	engine.WakeInstanceCaller(ctx, im)
-
 }
 
 func (engine *engine) runState(ctx context.Context, im *instanceMemory, wakedata []byte, err error) {
+	defer func() {
+		e := im.flushUpdates(ctx)
+		if e != nil {
+			err = e
+		}
+	}()
 
 	engine.logRunState(ctx, im, wakedata, err)
 
@@ -491,13 +514,13 @@ failure:
 
 			matched, regErr := regexp.MatchString(errRegex, cerr.Code)
 			if regErr != nil {
-				engine.logToInstance(ctx, t, im.in, "Error catching regex failed to compile: %v", regErr)
+				engine.logToInstance(ctx, t, im.cached, "Error catching regex failed to compile: %v", regErr)
 			}
 
 			if matched {
 
-				engine.logToInstance(ctx, t, im.in, "State failed with error '%s': %s", cerr.Code, cerr.Message)
-				engine.logToInstance(ctx, t, im.in, "Error caught by error definition %d: %s", i, catch.Error)
+				engine.logToInstance(ctx, t, im.cached, "State failed with error '%s': %s", cerr.Code, cerr.Message)
+				engine.logToInstance(ctx, t, im.cached, "Error caught by error definition %d: %s", i, catch.Error)
 
 				transition = &states.Transition{
 					Transform: "",
@@ -517,11 +540,9 @@ failure:
 	}
 
 	engine.CrashInstance(ctx, im, err)
-
 }
 
 func (engine *engine) transformState(ctx context.Context, im *instanceMemory, transition *states.Transition) error {
-
 	if transition == nil || transition.Transform == nil {
 		return nil
 	}
@@ -530,7 +551,7 @@ func (engine *engine) transformState(ctx context.Context, im *instanceMemory, tr
 		return nil
 	}
 
-	engine.logToInstance(ctx, time.Now(), im.in, "Transforming state data.")
+	engine.logToInstance(ctx, time.Now(), im.cached, "Transforming state data.")
 
 	x, err := jqObject(im.data, transition.Transform)
 	if err != nil {
@@ -540,10 +561,13 @@ func (engine *engine) transformState(ctx context.Context, im *instanceMemory, tr
 	im.data = x
 
 	return nil
-
 }
 
 func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, transition *states.Transition, errCode string) {
+	e := im.flushUpdates(ctx)
+	if e != nil {
+		engine.sugar.Errorf("Failed to flush updates: %v", e)
+	}
 
 	if transition == nil {
 		engine.InstanceYield(im)
@@ -553,7 +577,7 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 	if transition.NextState != "" {
 		engine.metricsCompleteState(ctx, im, transition.NextState, errCode, false)
 		engine.sugar.Debugf("Instance transitioning to next state: %s -> %s", im.ID().String(), transition.NextState)
-		engine.logToInstance(ctx, time.Now(), im.in, "Transitioning to next state: %s (%d).", transition.NextState, im.Step()+1)
+		engine.logToInstance(ctx, time.Now(), im.cached, "Transitioning to next state: %s (%d).", transition.NextState, im.Step()+1)
 		go engine.Transition(ctx, im, transition.NextState, 0)
 		return
 	}
@@ -562,62 +586,45 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 	if im.ErrorCode() != "" {
 		status = util.InstanceStatusFailed
 		engine.sugar.Debugf("Instance failed: %s", im.ID().String())
-		engine.logToInstance(ctx, time.Now(), im.in, "Workflow failed with error '%s': %s", im.ErrorCode(), im.in.ErrorMessage)
+		engine.logToInstance(ctx, time.Now(), im.cached, "Workflow failed with error '%s': %s", im.ErrorCode(), im.cached.Instance.ErrorMessage)
 	}
 
 	engine.sugar.Debugf("Instance terminated: %s", im.ID().String())
 
-	var err error
+	rtUpdater := im.getRuntimeUpdater()
+	output := im.MarshalData()
+	rtUpdater = rtUpdater.SetOutput(output)
+	im.runtime.Output = output
+	im.runtimeUpdater = rtUpdater
 
-	rt := im.in.Edges.Runtime
-	rte := rt.Edges
-	rt, err = rt.Update().SetOutput(im.MarshalData()).Save(ctx)
-	if err != nil {
-		engine.CrashInstance(ctx, im, err)
-		return
-	}
-	rt.Edges = rte
-	im.in.Edges.Runtime = rt
+	updater := im.getInstanceUpdater()
+	updater = updater.SetStatus(status)
+	im.cached.Instance.Status = status
+	im.instanceUpdater = updater
 
-	in := im.in
-	ine := in.Edges
-	in, err = in.Update().SetStatus(status).Save(ctx)
-	if err != nil {
-		engine.CrashInstance(ctx, im, err)
-		return
-	}
-	in.Edges = ine
-	im.in = in
+	// engine.pubsub.NotifyInstance(im.cached.Instance)
 
-	engine.pubsub.NotifyInstance(im.in)
+	engine.logToInstance(ctx, time.Now(), im.cached, "Workflow completed. (%v)", time.Now())
 
-	engine.logToInstance(ctx, time.Now(), im.in, "Workflow completed.")
-
-	if ns, err := im.in.Namespace(ctx); err == nil {
-		engine.pubsub.NotifyInstances(ns)
-		broadcastErr := engine.flow.BroadcastInstance(BroadcastEventTypeInstanceSuccess, ctx, broadcastInstanceInput{
-			WorkflowPath: GetInodePath(im.in.As),
-			InstanceID:   im.in.ID.String(),
-		}, ns)
-		if broadcastErr != nil {
-			engine.sugar.Errorf("Failed to broadcast: %v", broadcastErr)
-		}
-	} else {
-		engine.sugar.Errorf("Failed to start broadcast: %v", err)
+	engine.pubsub.NotifyInstances(im.cached.Namespace)
+	broadcastErr := engine.flow.BroadcastInstance(BroadcastEventTypeInstanceSuccess, ctx, broadcastInstanceInput{
+		WorkflowPath: GetInodePath(im.cached.Instance.As),
+		InstanceID:   im.cached.Instance.ID.String(),
+	}, im.cached)
+	if broadcastErr != nil {
+		engine.sugar.Errorf("Failed to broadcast: %v", broadcastErr)
 	}
 
 	engine.TerminateInstance(ctx, im)
-
 }
 
-func (engine *engine) subflowInvoke(ctx context.Context, caller *subflowCaller, ns *ent.Namespace, name string, input []byte) (*instanceMemory, error) {
-
+func (engine *engine) subflowInvoke(ctx context.Context, caller *subflowCaller, cached *database.CacheData, name string, input []byte) (*instanceMemory, error) {
 	var err error
 
 	elems := strings.SplitN(name, ":", 2)
 
 	args := new(newInstanceArgs)
-	args.Namespace = ns.Name
+	args.Namespace = cached.Namespace.Name
 	args.Path = elems[0]
 	if len(elems) == 2 {
 		args.Ref = elems[1]
@@ -626,20 +633,20 @@ func (engine *engine) subflowInvoke(ctx context.Context, caller *subflowCaller, 
 	args.Input = input
 	args.Caller = fmt.Sprintf("instance:%v", caller.InstanceID)
 
-	var threadVars []*ent.VarRef
-
 	callerData, err := json.Marshal(caller)
 	if err != nil {
 		return nil, derrors.NewInternalError(err)
 	}
+
 	args.CallerData = string(callerData)
 
-	parent, err := engine.getInstance(ctx, engine.db.Namespace, ns.Name, caller.InstanceID, false)
+	pcached := new(database.CacheData)
+	err = engine.database.Instance(ctx, pcached, caller.InstanceID)
 	if err != nil {
 		return nil, derrors.NewInternalError(err)
 	}
 
-	threadVars, err = parent.in.QueryVars().Where(entvar.BehaviourEQ("thread")).All(ctx)
+	threadVars, err := engine.database.ThreadVariables(ctx, pcached.Instance.ID)
 	if err != nil {
 		return nil, derrors.NewInternalError(err)
 	}
@@ -657,12 +664,10 @@ func (engine *engine) subflowInvoke(ctx context.Context, caller *subflowCaller, 
 		return nil, err
 	}
 
+	clients := engine.edb.Clients(context.Background())
+
 	for _, tv := range threadVars {
-		vd, err := tv.QueryVardata().Select(entvardata.FieldID).Only(ctx)
-		if err != nil {
-			return nil, derrors.NewInternalError(err)
-		}
-		err = engine.db.VarRef.Create().SetBehaviour("thread").SetInstance(im.in).SetName(tv.Name).SetVardataID(vd.ID).Exec(ctx)
+		err = clients.VarRef.Create().SetBehaviour("thread").SetInstanceID(im.cached.Instance.ID).SetName(tv.Name).SetVardataID(tv.VarData).Exec(ctx)
 		if err != nil {
 			return nil, derrors.NewInternalError(err)
 		}
@@ -671,7 +676,6 @@ func (engine *engine) subflowInvoke(ctx context.Context, caller *subflowCaller, 
 	traceSubflowInvoke(ctx, args.Path, im.ID().String())
 
 	return im, nil
-
 }
 
 type retryMessage struct {
@@ -684,7 +688,6 @@ type retryMessage struct {
 const retryWakeupFunction = "retryWakeup"
 
 func (engine *engine) scheduleRetry(id, state string, step int, t time.Time, data []byte) error {
-
 	data, err := json.Marshal(&retryMessage{
 		InstanceID: id,
 		// State:      state,
@@ -710,11 +713,9 @@ func (engine *engine) scheduleRetry(id, state string, step int, t time.Time, dat
 	}
 
 	return nil
-
 }
 
 func (engine *engine) retryWakeup(data []byte) {
-
 	msg := new(retryMessage)
 
 	err := json.Unmarshal(data, msg)
@@ -729,12 +730,11 @@ func (engine *engine) retryWakeup(data []byte) {
 		return
 	}
 
-	engine.logToInstance(ctx, time.Now(), im.in, "Waking up to retry.")
+	engine.logToInstance(ctx, time.Now(), im.cached, "Waking up to retry.")
 
 	engine.sugar.Debugf("Handling retry wakeup: %s", this())
 
 	go engine.runState(ctx, im, msg.Data, nil)
-
 }
 
 type actionResultPayload struct {
@@ -752,7 +752,6 @@ type actionResultMessage struct {
 }
 
 func (engine *engine) doActionRequest(ctx context.Context, ar *functionRequest) error {
-
 	if ar.Workflow.Timeout == 0 {
 		ar.Workflow.Timeout = 5 * 60 // 5 mins default, knative's default
 	}
@@ -777,15 +776,12 @@ func (engine *engine) doActionRequest(ctx context.Context, ar *functionRequest) 
 	}
 
 	return nil
-
 }
 
 func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
-	ar *functionRequest) {
-
-	var (
-		err error
-	)
+	ar *functionRequest,
+) {
+	var err error
 
 	tr := engine.createTransport()
 
@@ -855,9 +851,7 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 		Transport: tr,
 	}
 
-	var (
-		resp *http.Response
-	)
+	var resp *http.Response
 
 	// potentially dns error for a brand new service
 	// we just loop and see if we can recreate the service
@@ -927,7 +921,6 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 	}
 
 	engine.sugar.Debugf("function request done")
-
 }
 
 func (engine *engine) reportError(ar *functionRequest, err error) {
@@ -949,7 +942,6 @@ func (engine *engine) reportError(ar *functionRequest, err error) {
 }
 
 func (engine *engine) createTransport() *http.Transport {
-
 	tr := &http.Transport{
 		Proxy: http.ProxyFromEnvironment,
 		DialContext: (&net.Dialer{
@@ -965,11 +957,9 @@ func (engine *engine) createTransport() *http.Transport {
 	}
 
 	return tr
-
 }
 
 func (engine *engine) wakeEventsWaiter(signature []byte, events []*cloudevents.Event) {
-
 	sig := new(eventsWaiterSignature)
 	err := json.Unmarshal(signature, sig)
 	if err != nil {
@@ -1002,14 +992,19 @@ func (engine *engine) wakeEventsWaiter(signature []byte, events []*cloudevents.E
 	defer cleanup()
 
 	engine.runState(ctx, im, wakedata, nil)
-
 }
 
 func (engine *engine) EventsInvoke(workflowID string, events ...*cloudevents.Event) {
-
 	ctx := context.Background()
 
-	d, err := engine.reverseTraverseToWorkflow(ctx, workflowID)
+	id, err := uuid.Parse(workflowID)
+	if err != nil {
+		engine.sugar.Error(err)
+		return
+	}
+
+	cached := new(database.CacheData)
+	err = engine.database.Workflow(ctx, cached, id)
 	if err != nil {
 		engine.sugar.Error(err)
 		return
@@ -1034,8 +1029,8 @@ func (engine *engine) EventsInvoke(workflowID string, events ...*cloudevents.Eve
 	}
 
 	args := new(newInstanceArgs)
-	args.Namespace = d.namespace()
-	args.Path = d.path
+	args.Namespace = cached.Namespace.Name
+	args.Path = cached.Path()
 
 	args.Input = input
 	args.Caller = "cloudevent"
@@ -1047,5 +1042,40 @@ func (engine *engine) EventsInvoke(workflowID string, events ...*cloudevents.Eve
 	}
 
 	engine.queue(im)
+}
 
+func (engine *engine) SetMemory(ctx context.Context, im *instanceMemory, x interface{}) error {
+	im.setMemory(x)
+
+	data, err := json.Marshal(x)
+	if err != nil {
+		panic(err)
+	}
+	s := string(data)
+
+	updater := im.getRuntimeUpdater()
+	updater = updater.SetMemory(s)
+	im.runtime.Memory = s
+	im.runtimeUpdater = updater
+
+	return nil
+}
+
+const latest = "latest"
+
+func rollback(tx database.Transaction) {
+	err := tx.Rollback()
+	if err != nil && !strings.Contains(err.Error(), "already been") {
+		fmt.Fprintf(os.Stderr, "failed to rollback transaction: %v\n", err)
+	}
+}
+
+// GetInodePath returns the exact path to a inode.
+func GetInodePath(path string) string {
+	path = strings.TrimSuffix(path, "/")
+	if !strings.HasPrefix(path, "/") {
+		return "/" + path
+	}
+	path = filepath.Clean(path)
+	return path
 }

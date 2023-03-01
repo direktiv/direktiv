@@ -1,4 +1,4 @@
-package main
+package sidecar
 
 import (
 	"archive/tar"
@@ -31,7 +31,6 @@ type inboundWorker struct {
 }
 
 func (worker *inboundWorker) Cancel() {
-
 	worker.lock.Lock()
 
 	if worker.cancel != nil {
@@ -40,11 +39,9 @@ func (worker *inboundWorker) Cancel() {
 	}
 
 	worker.lock.Unlock()
-
 }
 
 func (worker *inboundWorker) run() {
-
 	log.Debugf("Starting worker %d.", worker.id)
 
 	for {
@@ -71,18 +68,15 @@ func (worker *inboundWorker) run() {
 	}
 
 	log.Debugf("Worker %d shut down.", worker.id)
-
 }
 
 func (worker *inboundWorker) fileReader(ctx context.Context, ir *functionRequest, f *functionFiles, pw *io.PipeWriter) error {
-
 	err := worker.srv.getVar(ctx, ir, pw, nil, f.Scope, f.Key)
 	if err != nil {
 		return err
 	}
 
 	return nil
-
 }
 
 type outcome struct {
@@ -92,7 +86,6 @@ type outcome struct {
 }
 
 func (worker *inboundWorker) doFunctionRequest(ctx context.Context, ir *functionRequest) (*outcome, error) {
-
 	log.Debugf("Forwarding request '%s' to service.", ir.actionId)
 
 	url := "http://localhost:8080"
@@ -136,11 +129,9 @@ func (worker *inboundWorker) doFunctionRequest(ctx context.Context, ir *function
 	}
 
 	return out, nil
-
 }
 
 func (worker *inboundWorker) prepOneFunctionFiles(ctx context.Context, ir *functionRequest, f *functionFiles) error {
-
 	pr, pw := io.Pipe()
 
 	go func() {
@@ -161,13 +152,11 @@ func (worker *inboundWorker) prepOneFunctionFiles(ctx context.Context, ir *funct
 	_ = pr.Close()
 
 	return nil
-
 }
 
 func untarFile(tr *tar.Reader, path string) error {
-
 	pdir, _ := filepath.Split(path)
-	err := os.MkdirAll(pdir, 0750)
+	err := os.MkdirAll(pdir, 0o750)
 	if err != nil {
 		return err
 	}
@@ -190,12 +179,10 @@ func untarFile(tr *tar.Reader, path string) error {
 	}
 
 	return nil
-
 }
 
 func untar(dst string, r io.Reader) error {
-
-	err := os.MkdirAll(dst, 0750)
+	err := os.MkdirAll(dst, 0o750)
 	if err != nil {
 		return err
 	}
@@ -226,7 +213,7 @@ func untar(dst string, r io.Reader) error {
 				return err
 			}
 		} else if hdr.Typeflag == tar.TypeDir {
-			err = os.MkdirAll(path, 0750)
+			err = os.MkdirAll(path, 0o750)
 			if err != nil {
 				return err
 			}
@@ -237,11 +224,9 @@ func untar(dst string, r io.Reader) error {
 	}
 
 	return nil
-
 }
 
 func writeFile(dst string, r io.Reader) error {
-
 	f, err := os.Create(dst)
 	if err != nil {
 		return err
@@ -260,7 +245,6 @@ func writeFile(dst string, r io.Reader) error {
 	}
 
 	return nil
-
 }
 
 type WrapperReader struct {
@@ -275,7 +259,6 @@ func (wr *WrapperReader) Read(p []byte) (n int, err error) {
 }
 
 func (worker *inboundWorker) writeFile(ftype, dst string, pr io.Reader) error {
-
 	var err error
 
 	// wrap reader to detect empty tar/gz and DON'T error if the variable
@@ -319,7 +302,7 @@ func (worker *inboundWorker) writeFile(ftype, dst string, pr io.Reader) error {
 		gr, err := gzip.NewReader(pr)
 		if err != nil {
 			if wr.offset == 0 {
-				err = os.MkdirAll(dst, 0750)
+				err = os.MkdirAll(dst, 0o750)
 				if err != nil {
 					if !errors.Is(err, os.ErrExist) {
 						return err
@@ -345,11 +328,9 @@ func (worker *inboundWorker) writeFile(ftype, dst string, pr io.Reader) error {
 	}
 
 	return nil
-
 }
 
 func (worker *inboundWorker) fileWriter(ctx context.Context, ir *functionRequest, f *functionFiles, pr *io.PipeReader) error {
-
 	dir := worker.functionDir(ir)
 	dst := f.Key
 	if f.As != "" {
@@ -358,7 +339,7 @@ func (worker *inboundWorker) fileWriter(ctx context.Context, ir *functionRequest
 	dst = filepath.Join(dir, dst)
 	dir, _ = filepath.Split(dst)
 
-	err := os.MkdirAll(dir, 0750)
+	err := os.MkdirAll(dir, 0o750)
 	if err != nil {
 		return err
 	}
@@ -369,7 +350,6 @@ func (worker *inboundWorker) fileWriter(ctx context.Context, ir *functionRequest
 	}
 
 	return nil
-
 }
 
 func (worker *inboundWorker) functionDir(ir *functionRequest) string {
@@ -385,21 +365,18 @@ func (worker *inboundWorker) cleanupFunctionRequest(ir *functionRequest) {
 }
 
 func (worker *inboundWorker) prepFunctionRequest(ctx context.Context, ir *functionRequest) error {
-
 	err := worker.prepFunctionFiles(ctx, ir)
 	if err != nil {
 		return fmt.Errorf("failed to prepare functions files: %w", err)
 	}
 
 	return nil
-
 }
 
 func (worker *inboundWorker) prepFunctionFiles(ctx context.Context, ir *functionRequest) error {
-
 	dir := worker.functionDir(ir)
 
-	err := os.MkdirAll(dir, 0750)
+	err := os.MkdirAll(dir, 0o750)
 	if err != nil {
 		return err
 	}
@@ -413,18 +390,16 @@ func (worker *inboundWorker) prepFunctionFiles(ctx context.Context, ir *function
 
 	subDirs := []string{util.VarScopeNamespace, util.VarScopeWorkflow, util.VarScopeInstance}
 	for _, d := range subDirs {
-		err := os.MkdirAll(path.Join(dir, fmt.Sprintf("out/%s", d)), 0777)
+		err := os.MkdirAll(path.Join(dir, fmt.Sprintf("out/%s", d)), 0o777)
 		if err != nil {
 			return fmt.Errorf("failed to prepare function output dirs: %w", err)
 		}
 	}
 
 	return nil
-
 }
 
 func (worker *inboundWorker) handleFunctionRequest(req *inboundRequest) {
-
 	defer func() {
 		close(req.end)
 	}()
@@ -476,11 +451,9 @@ func (worker *inboundWorker) handleFunctionRequest(req *inboundRequest) {
 	}
 
 	worker.respondToFlow(rctx, ir, out)
-
 }
 
 func (worker *inboundWorker) setOutVariables(ctx context.Context, ir *functionRequest) error {
-
 	subDirs := []string{util.VarScopeNamespace, util.VarScopeWorkflow, util.VarScopeInstance}
 	for _, d := range subDirs {
 
@@ -558,12 +531,10 @@ func (worker *inboundWorker) setOutVariables(ctx context.Context, ir *functionRe
 }
 
 func tarGzDir(src string, buf io.Writer) error {
-
 	zr := gzip.NewWriter(buf)
 	tw := tar.NewWriter(zr)
 
 	err := filepath.Walk(src, func(file string, fi os.FileInfo, err error) error {
-
 		if err != nil {
 			return err
 		}
@@ -596,7 +567,6 @@ func tarGzDir(src string, buf io.Writer) error {
 		}
 		return nil
 	})
-
 	if err != nil {
 		return err
 	}
@@ -613,7 +583,6 @@ func tarGzDir(src string, buf io.Writer) error {
 }
 
 func (worker *inboundWorker) respondToFlow(ctx context.Context, ir *functionRequest, out *outcome) {
-
 	step := int32(ir.step)
 
 	_, err := worker.srv.flow.ReportActionResults(ctx, &grpc.ReportActionResultsRequest{
@@ -624,7 +593,6 @@ func (worker *inboundWorker) respondToFlow(ctx context.Context, ir *functionRequ
 		ErrorCode:    out.errCode,
 		ErrorMessage: out.errMsg,
 	})
-
 	if err != nil {
 		log.Errorf("Failed to report results for request '%s': %v.", ir.actionId, err)
 		return
@@ -637,21 +605,17 @@ func (worker *inboundWorker) respondToFlow(ctx context.Context, ir *functionRequ
 	} else {
 		log.Infof("Request '%s' completed successfully.", ir.actionId)
 	}
-
 }
 
 func (worker *inboundWorker) reportSidecarError(ir *functionRequest, err error) {
-
 	ctx := context.Background()
 
 	worker.respondToFlow(ctx, ir, &outcome{
 		errMsg: err.Error(),
 	})
-
 }
 
 func (worker *inboundWorker) reportValidationError(req *inboundRequest, code int, err error) {
-
 	id := req.r.Header.Get(actionIDHeader)
 
 	msg := err.Error()
@@ -659,11 +623,9 @@ func (worker *inboundWorker) reportValidationError(req *inboundRequest, code int
 	http.Error(req.w, msg, code)
 
 	log.Warnf("Request '%s' returned %v due to failed validation: %v.", id, code, err)
-
 }
 
 func (worker *inboundWorker) getRequiredStringHeader(req *inboundRequest, x *string, hdr string) bool {
-
 	s := req.r.Header.Get(hdr)
 	*x = s
 	if s == "" {
@@ -672,11 +634,9 @@ func (worker *inboundWorker) getRequiredStringHeader(req *inboundRequest, x *str
 	}
 
 	return true
-
 }
 
 func (worker *inboundWorker) validateUintHeader(req *inboundRequest, x *int, hdr, s string) bool {
-
 	var err error
 
 	*x, err = strconv.Atoi(s)
@@ -690,11 +650,9 @@ func (worker *inboundWorker) validateUintHeader(req *inboundRequest, x *int, hdr
 	}
 
 	return true
-
 }
 
 func (worker *inboundWorker) validateTimeHeader(req *inboundRequest, x *time.Time, hdr, s string) bool {
-
 	var err error
 
 	*x, err = time.Parse(time.RFC3339, s)
@@ -704,11 +662,9 @@ func (worker *inboundWorker) validateTimeHeader(req *inboundRequest, x *time.Tim
 	}
 
 	return true
-
 }
 
 func (worker *inboundWorker) loadBody(req *inboundRequest, data *[]byte) bool {
-
 	cap := int64(134217728) // 4 MiB (cahnged to API value)
 	if req.r.ContentLength == 0 {
 		code := http.StatusLengthRequired
@@ -733,11 +689,9 @@ func (worker *inboundWorker) loadBody(req *inboundRequest, data *[]byte) bool {
 	}
 
 	return true
-
 }
 
 func (worker *inboundWorker) validateFilesHeaders(req *inboundRequest, ifiles *[]*functionFiles) bool {
-
 	hdr := "Direktiv-Files"
 	strs := req.r.Header.Values(hdr)
 	for i, s := range strs {
@@ -762,18 +716,16 @@ func (worker *inboundWorker) validateFilesHeaders(req *inboundRequest, ifiles *[
 	}
 
 	return true
-
 }
 
 func (worker *inboundWorker) validateFunctionRequest(req *inboundRequest) *functionRequest {
-
 	ir := new(functionRequest)
 
 	var step string
 	var deadline string
 
-	var headers = []string{actionIDHeader, "Direktiv-InstanceID", "Direktiv-Namespace", "Direktiv-Step", "Direktiv-Deadline"}
-	var ptrs = []*string{&ir.actionId, &ir.instanceId, &ir.namespace, &step, &deadline}
+	headers := []string{actionIDHeader, "Direktiv-InstanceID", "Direktiv-Namespace", "Direktiv-Step", "Direktiv-Deadline"}
+	ptrs := []*string{&ir.actionId, &ir.instanceId, &ir.namespace, &step, &deadline}
 
 	for i := 0; i < len(headers); i++ {
 		if !worker.getRequiredStringHeader(req, ptrs[i], headers[i]) {
@@ -798,5 +750,4 @@ func (worker *inboundWorker) validateFunctionRequest(req *inboundRequest) *funct
 	}
 
 	return ir
-
 }

@@ -11,7 +11,6 @@ import (
 )
 
 func (engine *engine) Children(ctx context.Context, im *instanceMemory) ([]states.ChildInfo, error) {
-
 	var err error
 
 	var children []states.ChildInfo
@@ -21,12 +20,10 @@ func (engine *engine) Children(ctx context.Context, im *instanceMemory) ([]state
 	}
 
 	return children, nil
-
 }
 
 func (engine *engine) LivingChildren(ctx context.Context, im *instanceMemory) []stateChild {
-
-	var living = make([]stateChild, 0)
+	living := make([]stateChild, 0)
 
 	children, err := engine.Children(ctx, im)
 	if err != nil {
@@ -46,11 +43,9 @@ func (engine *engine) LivingChildren(ctx context.Context, im *instanceMemory) []
 	}
 
 	return living
-
 }
 
 func (engine *engine) CancelInstanceChildren(ctx context.Context, im *instanceMemory) {
-
 	children := engine.LivingChildren(ctx, im)
 
 	for _, child := range children {
@@ -70,11 +65,9 @@ func (engine *engine) CancelInstanceChildren(ctx context.Context, im *instanceMe
 			engine.sugar.Errorf("unrecognized child type: %s", child.Type)
 		}
 	}
-
 }
 
 func (engine *engine) cancelInstance(id, code, message string, soft bool) {
-
 	engine.cancelRunning(id)
 
 	ctx, im, err := engine.loadInstanceMemory(id, -1)
@@ -83,7 +76,7 @@ func (engine *engine) cancelInstance(id, code, message string, soft bool) {
 		return
 	}
 
-	if im.in.Status != util.InstanceStatusPending {
+	if im.cached.Instance.Status != util.InstanceStatusPending {
 		return
 	}
 
@@ -96,11 +89,9 @@ func (engine *engine) cancelInstance(id, code, message string, soft bool) {
 	engine.sugar.Debugf("Handling cancel instance: %s", this())
 
 	go engine.runState(ctx, im, nil, err)
-
 }
 
 func (engine *engine) finishCancelWorkflow(req *PubsubUpdate) {
-
 	args := make([]interface{}, 0)
 
 	err := json.Unmarshal([]byte(req.Key), &args)
@@ -143,12 +134,10 @@ func (engine *engine) finishCancelWorkflow(req *PubsubUpdate) {
 bad:
 
 	engine.sugar.Error(errors.New("bad input to workflow cancel pubsub"))
-
 }
 
 func (engine *engine) cancelRunning(id string) {
-
-	im, err := engine.getInstanceMemory(context.Background(), engine.db.Instance, id)
+	im, err := engine.getInstanceMemory(context.Background(), id)
 	if err == nil {
 		engine.timers.deleteTimerByName(im.Controller(), engine.pubsub.hostname, id)
 	}
@@ -159,5 +148,4 @@ func (engine *engine) cancelRunning(id string) {
 		cancel()
 	}
 	engine.cancellersLock.Unlock()
-
 }

@@ -23,7 +23,6 @@ type setterLogic struct {
 }
 
 func Setter(instance Instance, state model.State) (Logic, error) {
-
 	setter, ok := state.(*model.SetterState)
 	if !ok {
 		return nil, derrors.NewInternalError(errors.New("bad state object"))
@@ -34,23 +33,21 @@ func Setter(instance Instance, state model.State) (Logic, error) {
 	sl.SetterState = setter
 
 	return sl, nil
-
 }
 
 func (logic *setterLogic) Run(ctx context.Context, wakedata []byte) (*Transition, error) {
-
 	err := scheduleOnce(logic, wakedata)
 	if err != nil {
 		return nil, err
 	}
 
-	var setters = make([]VariableSetter, 0)
+	setters := make([]VariableSetter, 0)
 
 	for idx, v := range logic.Variables {
 
 		var x interface{}
-		var key = ""
-		var mimeType = ""
+		key := ""
+		mimeType := ""
 
 		x, err = jqOne(logic.GetInstanceData(), v.Key)
 		if err != nil {
@@ -126,5 +123,4 @@ func (logic *setterLogic) Run(ctx context.Context, wakedata []byte) (*Transition
 		Transform: logic.Transform,
 		NextState: logic.Transition,
 	}, nil
-
 }

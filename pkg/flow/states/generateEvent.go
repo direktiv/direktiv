@@ -23,7 +23,6 @@ type generateEventLogic struct {
 }
 
 func GenerateEvent(instance Instance, state model.State) (Logic, error) {
-
 	generateEvent, ok := state.(*model.GenerateEventState)
 	if !ok {
 		return nil, derrors.NewInternalError(errors.New("bad state object"))
@@ -34,11 +33,9 @@ func GenerateEvent(instance Instance, state model.State) (Logic, error) {
 	sl.GenerateEventState = generateEvent
 
 	return sl, nil
-
 }
 
 func (logic *generateEventLogic) Run(ctx context.Context, wakedata []byte) (*Transition, error) {
-
 	err := scheduleOnce(logic, wakedata)
 	if err != nil {
 		return nil, err
@@ -123,5 +120,4 @@ func (logic *generateEventLogic) Run(ctx context.Context, wakedata []byte) (*Tra
 		Transform: logic.Transform,
 		NextState: logic.Transition,
 	}, nil
-
 }

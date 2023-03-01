@@ -1,4 +1,4 @@
-package main
+package flow
 
 import (
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
@@ -13,7 +13,6 @@ var secretsCmd = &cobra.Command{
 	Use:  "secrets NAMESPACE",
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-
 		namespace := args[0]
 
 		c, closer, err := client()
@@ -67,7 +66,6 @@ var secretsCmd = &cobra.Command{
 			print(resp)
 
 		}
-
 	},
 }
 
@@ -81,7 +79,6 @@ var setSecretCmd = &cobra.Command{
 	Use:  "set-secret NAMESPACE KEY",
 	Args: cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
-
 		namespace := args[0]
 		key := args[1]
 
@@ -106,7 +103,6 @@ var setSecretCmd = &cobra.Command{
 		}
 
 		print(resp)
-
 	},
 }
 
@@ -114,7 +110,6 @@ var deleteSecretCmd = &cobra.Command{
 	Use:  "delete-secret NAMESPACE KEY",
 	Args: cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
-
 		namespace := args[0]
 		key := args[1]
 
@@ -133,6 +128,5 @@ var deleteSecretCmd = &cobra.Command{
 		}
 
 		print(resp)
-
 	},
 }

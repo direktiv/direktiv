@@ -10,9 +10,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-var (
-	UrlPrefix string
-)
+var UrlPrefix string
 
 func init() {
 	RootCmd.PersistentFlags().StringP("profile", "P", "", "Select the named profile from the loaded multi-profile configuration file.")
@@ -46,7 +44,6 @@ var RootCmd = &cobra.Command{
 }
 
 func cmdPrepareSharedValues() {
-
 	// Load Config From flags / config
 	addr := getAddr()
 	namespace := GetNamespace()
@@ -58,5 +55,4 @@ func cmdPrepareSharedValues() {
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = GetTLSConfig()
 
 	UrlPrefix = fmt.Sprintf("%s/api/namespaces/%s", strings.Trim(addr, "/"), strings.Trim(namespace, "/"))
-
 }

@@ -16,14 +16,19 @@ import (
 	"sync"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/flow/ent"
+	"github.com/go-git/go-git/v5/plumbing"
+	gitSSH "github.com/go-git/go-git/v5/plumbing/transport/ssh"
+	"golang.org/x/crypto/ssh"
+
+	"github.com/direktiv/direktiv/pkg/flow/database"
+	entmir "github.com/direktiv/direktiv/pkg/flow/ent/mirror"
 	entact "github.com/direktiv/direktiv/pkg/flow/ent/mirroractivity"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/project"
 	"github.com/direktiv/direktiv/pkg/util"
+	git "github.com/go-git/go-git/v5"
 	"github.com/gobwas/glob"
 	"github.com/google/uuid"
-	git "github.com/libgit2/git2go/v33"
 	"github.com/mitchellh/hashstructure/v2"
 	"gopkg.in/yaml.v3"
 )
@@ -35,7 +40,6 @@ type syncer struct {
 }
 
 func initSyncer(srv *server) (*syncer, error) {
-
 	syncer := new(syncer)
 
 	syncer.server = srv
@@ -43,56 +47,39 @@ func initSyncer(srv *server) (*syncer, error) {
 	syncer.cancellers = make(map[string]func())
 
 	return syncer, nil
-
 }
 
 func (syncer *syncer) Close() error {
-
 	return nil
-
 }
 
-func (srv *server) reverseTraverseToMirror(ctx context.Context, inoc *ent.InodeClient, mirc *ent.MirrorClient, id string) (*mirData, error) {
-
+func (srv *server) reverseTraverseToMirror(ctx context.Context, id string) (*database.CacheData, *database.Mirror, error) {
 	uid, err := uuid.Parse(id)
 	if err != nil {
 		srv.sugar.Debugf("%s failed to parse mirror UUID: %v", parent(), err)
-		return nil, err
+		return nil, nil, err
 	}
 
-	mir, err := mirc.Get(ctx, uid)
+	mirror, err := srv.database.Mirror(ctx, uid)
 	if err != nil {
 		srv.sugar.Debugf("%s failed to query mirror: %v", parent(), err)
-		return nil, err
+		return nil, nil, err
 	}
 
-	ino, err := mir.Inode(ctx)
-	if err != nil {
-		srv.sugar.Debugf("%s failed to query mirror's inode: %v", parent(), err)
-		return nil, err
-	}
+	cached := new(database.CacheData)
 
-	nd, err := srv.reverseTraverseToInode(ctx, inoc, ino.ID.String())
+	err = srv.database.Inode(ctx, cached, mirror.Inode)
 	if err != nil {
 		srv.sugar.Debugf("%s failed to resolve inode's parent(s): %v", parent(), err)
-		return nil, err
+		return nil, nil, err
 	}
 
-	mir.Edges.Inode = nd.ino
-	mir.Edges.Namespace = nd.ino.Edges.Namespace
-
-	d := new(mirData)
-	d.mir = mir
-	d.nodeData = nd
-
-	return d, nil
-
+	return cached, mirror, nil
 }
 
 // Timeouts
 
 func (syncer *syncer) scheduleTimeout(activityId string, oldController string, t time.Time) {
-
 	var err error
 	deadline := t
 
@@ -117,7 +104,6 @@ func (syncer *syncer) scheduleTimeout(activityId string, oldController string, t
 	if err != nil {
 		syncer.sugar.Error(err)
 	}
-
 }
 
 func (syncer *syncer) ScheduleTimeout(activityId, oldController string, t time.Time) {
@@ -131,19 +117,16 @@ type syncerTimeoutArgs struct {
 const syncerTimeoutFunction = "syncerTimeoutFunction"
 
 func (syncer *syncer) cancelActivity(activityId, code, message string) {
-
-	am, err := syncer.loadActivityMemory(activityId)
+	cached, mirror, activity, err := syncer.loadActivityMemory(activityId)
 	if err != nil {
 		syncer.sugar.Error(err)
 		return
 	}
 
-	syncer.fail(am, errors.New(code))
-
+	syncer.fail(cached, mirror, activity, errors.New(code))
 }
 
 func (syncer *syncer) timeoutHandler(input []byte) {
-
 	args := new(syncerTimeoutArgs)
 	err := json.Unmarshal(input, args)
 	if err != nil {
@@ -152,38 +135,40 @@ func (syncer *syncer) timeoutHandler(input []byte) {
 	}
 
 	syncer.cancelActivity(args.ActivityId, ErrCodeSoftTimeout, "syncer activity timed out")
-
 }
 
 // Pollers
 
 func (srv *server) syncerCronPoller() {
-
 	for {
 		srv.syncerCronPoll()
 		time.Sleep(time.Minute * 15)
 	}
-
 }
 
 func (srv *server) syncerCronPoll() {
-
 	ctx := context.Background()
 
-	mirs, err := srv.db.Mirror.Query().All(ctx)
+	ids, err := srv.database.Mirrors(ctx)
 	if err != nil {
 		srv.sugar.Error(err)
 		return
 	}
 
-	for _, mir := range mirs {
-		srv.syncerCronPollerMirror(mir)
-	}
+	for _, id := range ids {
 
+		mirror, err := srv.database.Mirror(ctx, id)
+		if err != nil {
+			srv.sugar.Error(err)
+			return
+		}
+
+		srv.syncerCronPollerMirror(mirror)
+
+	}
 }
 
-func (srv *server) syncerCronPollerMirror(mir *ent.Mirror) {
-
+func (srv *server) syncerCronPollerMirror(mir *database.Mirror) {
 	if mir.Cron != "" {
 		srv.timers.deleteCronForSyncer(mir.ID.String())
 
@@ -196,11 +181,9 @@ func (srv *server) syncerCronPollerMirror(mir *ent.Mirror) {
 		srv.sugar.Debugf("Loaded syncer cron: %s", mir.ID.String())
 
 	}
-
 }
 
 func (syncer *syncer) cronHandler(data []byte) {
-
 	id := string(data)
 
 	ctx, conn, err := syncer.lock(id, defaultLockWait)
@@ -210,7 +193,7 @@ func (syncer *syncer) cronHandler(data []byte) {
 	}
 	defer syncer.unlock(id, conn)
 
-	d, err := syncer.reverseTraverseToMirror(ctx, syncer.db.Inode, syncer.db.Mirror, id)
+	cached, mirror, err := syncer.reverseTraverseToMirror(ctx, id)
 	if err != nil {
 
 		if derrors.IsNotFound(err) {
@@ -224,7 +207,9 @@ func (syncer *syncer) cronHandler(data []byte) {
 
 	}
 
-	k, err := d.mir.QueryActivities().Where(entact.CreatedAtGT(time.Now().Add(-time.Second*30)), entact.TypeEQ(util.MirrorActivityTypeCronSync)).Count(ctx)
+	clients := syncer.edb.Clients(ctx)
+
+	k, err := clients.MirrorActivity.Query().Where(entact.HasMirrorWith(entmir.ID(mirror.ID))).Where(entact.CreatedAtGT(time.Now().Add(-time.Second*30)), entact.TypeEQ(util.MirrorActivityTypeCronSync)).Count(ctx)
 	if err != nil {
 		syncer.sugar.Error(err)
 		return
@@ -236,15 +221,15 @@ func (syncer *syncer) cronHandler(data []byte) {
 	}
 
 	args := new(newInstanceArgs)
-	args.Namespace = d.namespace()
-	args.Path = d.path
+	args.Namespace = cached.Namespace.Name
+	args.Path = cached.Path()
 	args.Ref = ""
 	args.Input = nil
 	args.Caller = util.CallerCron
 	args.CallerData = util.CallerCron
 
 	err = syncer.NewActivity(nil, &newMirrorActivityArgs{
-		MirrorID: d.mir.ID.String(),
+		MirrorID: mirror.ID.String(),
 		Type:     util.MirrorActivityTypeCronSync,
 		LockCtx:  ctx,
 		LockConn: conn,
@@ -256,13 +241,11 @@ func (syncer *syncer) cronHandler(data []byte) {
 		syncer.sugar.Error(err)
 		return
 	}
-
 }
 
 // locks
 
 func (syncer *syncer) lock(key string, timeout time.Duration) (context.Context, *sql.Conn, error) {
-
 	hash, err := hashstructure.Hash(key, hashstructure.FormatV2, nil)
 	if err != nil {
 		return nil, nil, derrors.NewInternalError(err)
@@ -281,11 +264,9 @@ func (syncer *syncer) lock(key string, timeout time.Duration) (context.Context, 
 	syncer.cancellersLock.Unlock()
 
 	return ctx, conn, nil
-
 }
 
 func (syncer *syncer) unlock(key string, conn *sql.Conn) {
-
 	hash, err := hashstructure.Hash(key, hashstructure.FormatV2, nil)
 	if err != nil {
 		panic(err)
@@ -303,16 +284,16 @@ func (syncer *syncer) unlock(key string, conn *sql.Conn) {
 		syncer.sugar.Error(err)
 		return
 	}
-
 }
 
 func (syncer *syncer) kickExpiredActivities() {
-
 	ctx := context.Background()
 
 	t := time.Now().Add(-1 * time.Minute)
 
-	list, err := syncer.db.MirrorActivity.Query().
+	clients := syncer.edb.Clients(ctx)
+
+	list, err := clients.MirrorActivity.Query().
 		Where(entact.DeadlineLT(t), entact.StatusIn(util.MirrorActivityStatusExecuting, util.MirrorActivityStatusPending)).
 		All(ctx)
 	if err != nil {
@@ -321,63 +302,38 @@ func (syncer *syncer) kickExpiredActivities() {
 	}
 
 	for _, act := range list {
-
 		syncer.cancelActivity(act.ID.String(), "timeouts.deadline.exceeded", "Activity failed to terminate before deadline.")
-
 	}
-
 }
 
 // activity memory
 
-type activityMemory struct {
-	act *ent.MirrorActivity
-	mir *ent.Mirror
-	ino *ent.Inode
-	ns  *ent.Namespace
-}
-
-func (syncer *syncer) loadActivityMemory(id string) (*activityMemory, error) {
-
+func (syncer *syncer) loadActivityMemory(id string) (*database.CacheData, *database.Mirror, *database.MirrorActivity, error) {
 	ctx := context.Background()
 
 	uid, err := uuid.Parse(id)
 	if err != nil {
-		return nil, err
+		return nil, nil, nil, err
 	}
 
-	act, err := syncer.db.MirrorActivity.Get(ctx, uid)
+	act, err := syncer.database.MirrorActivity(ctx, uid)
 	if err != nil {
-		return nil, err
+		return nil, nil, nil, err
 	}
 
-	mir, err := act.QueryMirror().WithNamespace().WithInode().Only(ctx)
+	mir, err := syncer.database.Mirror(ctx, act.Mirror)
 	if err != nil {
-		return nil, err
+		return nil, nil, nil, err
 	}
 
-	ino, err := mir.QueryInode().Only(ctx)
+	cached := new(database.CacheData)
+
+	err = syncer.database.Inode(ctx, cached, mir.Inode)
 	if err != nil {
-		return nil, err
+		return nil, nil, nil, err
 	}
 
-	am := new(activityMemory)
-	am.act = act
-	am.mir = mir
-	am.ino = ino
-	ino.Edges.Namespace = mir.Edges.Namespace
-	act.Edges.Namespace = mir.Edges.Namespace
-	act.Edges.Mirror = am.mir
-	am.ns = act.Edges.Namespace
-
-	return am, nil
-
-}
-
-func (am *activityMemory) ID() uuid.UUID {
-
-	return am.act.ID
-
+	return cached, mir, act, nil
 }
 
 // activity
@@ -389,8 +345,7 @@ type newMirrorActivityArgs struct {
 	LockConn *sql.Conn
 }
 
-func (syncer *syncer) beginActivity(tx *ent.Tx, args *newMirrorActivityArgs) (*activityMemory, error) {
-
+func (syncer *syncer) beginActivity(tx database.Transaction, args *newMirrorActivityArgs) (*database.CacheData, *database.Mirror, *database.MirrorActivity, error) {
 	var err error
 	var ctx context.Context
 
@@ -400,171 +355,158 @@ func (syncer *syncer) beginActivity(tx *ent.Tx, args *newMirrorActivityArgs) (*a
 		var conn *sql.Conn
 		ctx, conn, err = syncer.lock(args.MirrorID, defaultLockWait)
 		if err != nil {
-			return nil, err
+			return nil, nil, nil, err
 		}
 		defer syncer.unlock(args.MirrorID, conn)
 	}
 
 	if tx == nil {
-		tx, err = syncer.db.Tx(ctx)
+		ctx, tx, err = syncer.database.Tx(ctx)
 		if err != nil {
-			return nil, err
+			return nil, nil, nil, err
 		}
 		defer rollback(tx)
+	} else {
+		ctx = syncer.database.AddTxToCtx(ctx, tx)
 	}
 
-	d, err := syncer.reverseTraverseToMirror(ctx, tx.Inode, tx.Mirror, args.MirrorID)
+	cached, mirror, err := syncer.reverseTraverseToMirror(ctx, args.MirrorID)
 	if err != nil {
-		return nil, err
+		return nil, nil, nil, err
 	}
 
-	unfinishedActivities, err := d.mir.QueryActivities().Where(entact.StatusIn(util.MirrorActivityStatusPending, util.MirrorActivityStatusExecuting)).Count(ctx)
+	clients := syncer.edb.Clients(ctx)
+
+	unfinishedActivities, err := clients.MirrorActivity.Query().Where(entact.HasMirrorWith(entmir.ID(mirror.ID))).Where(entact.StatusIn(util.MirrorActivityStatusPending, util.MirrorActivityStatusExecuting)).Count(ctx)
 	if err != nil {
-		return nil, err
+		return nil, nil, nil, err
 	}
 
 	if unfinishedActivities > 0 {
-		return nil, errors.New("mirror operations are already underway")
+		return nil, nil, nil, errors.New("mirror operations are already underway")
 	}
 
-	if !d.ino.ReadOnly {
+	if !cached.Inode().ReadOnly {
 		switch args.Type {
 		case util.MirrorActivityTypeLocked:
 		default:
-			return nil, ErrMirrorLocked
+			return nil, nil, nil, ErrMirrorLocked
 		}
 	}
 
 	deadline := time.Now().Add(time.Minute * 20)
 
-	act, err := tx.MirrorActivity.Create().
-		SetType(args.Type).
-		SetStatus(util.MirrorActivityStatusPending).
-		SetEndAt(time.Now()).
-		SetMirror(d.mir).
-		SetNamespace(d.ns()).
-		SetController(syncer.pubsub.hostname).
-		SetDeadline(deadline).
-		Save(ctx)
+	activity, err := syncer.database.CreateMirrorActivity(ctx, &database.CreateMirrorActivityArgs{
+		Type:       args.Type,
+		Status:     util.MirrorActivityStatusPending,
+		EndAt:      time.Now(),
+		Mirror:     mirror.ID,
+		Namespace:  cached.Namespace.ID,
+		Controller: syncer.pubsub.hostname,
+		Deadline:   deadline,
+	})
 	if err != nil {
-		return nil, err
+		return nil, nil, nil, err
 	}
 
 	err = tx.Commit()
 	if err != nil {
-		return nil, err
+		return nil, nil, nil, err
 	}
 
-	act.Edges.Mirror = d.mir
-	act.Edges.Namespace = d.ns()
+	syncer.logToNamespace(ctx, time.Now(), cached, "Commenced new mirror activity '%s' on mirror: %s", args.Type, cached.Path())
 
-	am := new(activityMemory)
-	am.act = act
-	am.mir = d.mir
-	am.ino = d.ino
-	act.Edges.Mirror = am.mir
-	act.Edges.Namespace = d.ns()
-	am.ns = d.ns()
+	syncer.pubsub.NotifyMirror(cached.Inode())
 
-	syncer.logToNamespace(ctx, time.Now(), d.ns(), "Commenced new mirror activity '%s' on mirror: %s", args.Type, d.path)
-
-	syncer.pubsub.NotifyMirror(d.ino)
-
-	syncer.logToMirrorActivity(ctx, time.Now(), act, "Commenced new mirror activity '%s' on mirror: %s", args.Type, d.path)
+	syncer.logToMirrorActivity(ctx, time.Now(), cached.Namespace, mirror, activity, "Commenced new mirror activity '%s' on mirror: %s", args.Type, cached.Path())
 
 	// schedule timeouts
-	syncer.scheduleTimeout(am.act.ID.String(), am.act.Controller, deadline)
+	syncer.scheduleTimeout(activity.ID.String(), activity.Controller, deadline)
 
-	return am, nil
-
+	return cached, mirror, activity, nil
 }
 
-func (syncer *syncer) NewActivity(tx *ent.Tx, args *newMirrorActivityArgs) error {
-
+func (syncer *syncer) NewActivity(tx database.Transaction, args *newMirrorActivityArgs) error {
 	syncer.sugar.Debugf("Handling mirror activity: %s", this())
 
-	am, err := syncer.beginActivity(tx, args)
+	cached, mirror, activity, err := syncer.beginActivity(tx, args)
 	if err != nil {
 		return err
 	}
 
-	go syncer.execute(am)
+	go syncer.execute(cached, mirror, activity)
 
 	return nil
-
 }
 
-func (syncer *syncer) execute(am *activityMemory) {
-
+func (syncer *syncer) execute(cached *database.CacheData, mirror *database.Mirror, activity *database.MirrorActivity) {
 	var err error
 
 	defer func() {
-		syncer.fail(am, err)
+		syncer.fail(cached, mirror, activity, err)
 	}()
 
 	ctx := context.Background()
 
-	switch am.act.Type {
+	switch activity.Type {
 	case util.MirrorActivityTypeInit:
-		err = syncer.initMirror(ctx, am)
+		err = syncer.initMirror(ctx, cached, mirror, activity)
 		if err != nil {
 			return
 		}
 	case util.MirrorActivityTypeLocked: // NOTE: intentionally left empty
 	case util.MirrorActivityTypeUnlocked: // NOTE: intentionally left empty
 	case util.MirrorActivityTypeReconfigure:
-		err = syncer.hardSync(ctx, am)
+		err = syncer.hardSync(ctx, cached, mirror, activity)
 		if err != nil {
 			return
 		}
 
 		// in case of cron
-		syncer.server.syncerCronPollerMirror(am.mir)
+		syncer.server.syncerCronPollerMirror(mirror)
 
 	case util.MirrorActivityTypeCronSync:
-		err = syncer.hardSync(ctx, am)
+		err = syncer.hardSync(ctx, cached, mirror, activity)
 		if err != nil {
 			return
 		}
 	case util.MirrorActivityTypeSync:
-		err = syncer.hardSync(ctx, am)
+		err = syncer.hardSync(ctx, cached, mirror, activity)
 		if err != nil {
 			return
 		}
 	default:
-		syncer.logToMirrorActivity(ctx, time.Now(), am.act, "Unrecognized syncer activity type.")
+		syncer.logToMirrorActivity(ctx, time.Now(), cached.Namespace, mirror, activity, "Unrecognized syncer activity type.")
 	}
 
-	err = syncer.success(am)
+	err = syncer.success(cached, mirror, activity)
 	if err != nil {
 		return
 	}
-
 }
 
-func (syncer *syncer) fail(am *activityMemory, e error) {
-
+func (syncer *syncer) fail(cached *database.CacheData, mirror *database.Mirror, activity *database.MirrorActivity, e error) {
 	if e == nil {
 		return
 	}
 
-	ctx, conn, err := syncer.lock(am.act.Edges.Mirror.ID.String(), defaultLockWait)
+	ctx, conn, err := syncer.lock(mirror.ID.String(), defaultLockWait)
 	if err != nil {
 		syncer.sugar.Error(err)
 		return
 	}
-	defer syncer.unlock(am.act.Edges.Mirror.ID.String(), conn)
+	defer syncer.unlock(mirror.ID.String(), conn)
 
-	tx, err := syncer.db.Tx(ctx)
+	tctx, tx, err := syncer.database.Tx(ctx)
 	if err != nil {
 		syncer.sugar.Error(err)
 		return
 	}
 	defer rollback(tx)
 
-	edges := am.act.Edges
+	clients := syncer.edb.Clients(tctx)
 
-	act, err := tx.MirrorActivity.Get(ctx, am.act.ID)
+	act, err := clients.MirrorActivity.Get(ctx, activity.ID)
 	if err != nil {
 		syncer.sugar.Error(err)
 		return
@@ -582,39 +524,35 @@ func (syncer *syncer) fail(am *activityMemory, e error) {
 		return
 	}
 
-	act.Edges = edges
-
 	err = tx.Commit()
 	if err != nil {
 		syncer.sugar.Error(err)
 		return
 	}
 
-	syncer.pubsub.NotifyMirror(am.ino)
+	syncer.pubsub.NotifyMirror(cached.Inode())
 
-	syncer.logToMirrorActivity(ctx, time.Now(), act, "Mirror activity '%s' failed: %v", act.Type, e)
+	syncer.logToMirrorActivity(ctx, time.Now(), cached.Namespace, mirror, activity, "Mirror activity '%s' failed: %v", act.Type, e)
 
-	syncer.timers.deleteTimersForActivity(am.ID().String())
-
+	syncer.timers.deleteTimersForActivity(activity.ID.String())
 }
 
-func (syncer *syncer) success(am *activityMemory) error {
-
-	ctx, conn, err := syncer.lock(am.act.Edges.Mirror.ID.String(), defaultLockWait)
+func (syncer *syncer) success(cached *database.CacheData, mirror *database.Mirror, activity *database.MirrorActivity) error {
+	ctx, conn, err := syncer.lock(mirror.ID.String(), defaultLockWait)
 	if err != nil {
 		return err
 	}
-	defer syncer.unlock(am.act.Edges.Mirror.ID.String(), conn)
+	defer syncer.unlock(mirror.ID.String(), conn)
 
-	tx, err := syncer.db.Tx(ctx)
+	tctx, tx, err := syncer.database.Tx(ctx)
 	if err != nil {
 		return err
 	}
 	defer rollback(tx)
 
-	edges := am.act.Edges
+	clients := syncer.edb.Clients(tctx)
 
-	act, err := tx.MirrorActivity.Get(ctx, am.act.ID)
+	act, err := clients.MirrorActivity.Get(ctx, activity.ID)
 	if err != nil {
 		return err
 	}
@@ -628,31 +566,25 @@ func (syncer *syncer) success(am *activityMemory) error {
 		return err
 	}
 
-	act.Edges = edges
-
 	err = tx.Commit()
 	if err != nil {
 		return err
 	}
 
-	syncer.pubsub.NotifyMirror(am.ino)
+	syncer.pubsub.NotifyMirror(cached.Inode())
 
-	syncer.logToMirrorActivity(ctx, time.Now(), act, "Completed mirror activity '%s'.", act.Type)
+	syncer.logToMirrorActivity(ctx, time.Now(), cached.Namespace, mirror, activity, "Completed mirror activity '%s'.", act.Type)
 
-	syncer.timers.deleteTimersForActivity(am.ID().String())
+	syncer.timers.deleteTimersForActivity(activity.ID.String())
 
 	return nil
-
 }
 
-func (syncer *syncer) initMirror(ctx context.Context, am *activityMemory) error {
-
-	return syncer.hardSync(ctx, am)
-
+func (syncer *syncer) initMirror(ctx context.Context, cached *database.CacheData, mirror *database.Mirror, activity *database.MirrorActivity) error {
+	return syncer.hardSync(ctx, cached, mirror, activity)
 }
 
 func (syncer *syncer) tarGzDir(path string) ([]byte, error) {
-
 	tf, err := os.CreateTemp("", "outtar")
 	if err != nil {
 		return nil, err
@@ -665,16 +597,13 @@ func (syncer *syncer) tarGzDir(path string) ([]byte, error) {
 	}
 
 	return os.ReadFile(tf.Name())
-
 }
 
 func tarGzDir(src string, buf io.Writer) error {
-
 	zr := gzip.NewWriter(buf)
 	tw := tar.NewWriter(zr)
 
 	err := filepath.Walk(src, func(file string, fi os.FileInfo, err error) error {
-
 		if err != nil {
 			return err
 		}
@@ -707,7 +636,6 @@ func tarGzDir(src string, buf io.Writer) error {
 		}
 		return nil
 	})
-
 	if err != nil {
 		return err
 	}
@@ -723,59 +651,58 @@ func tarGzDir(src string, buf io.Writer) error {
 	return nil
 }
 
-func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
-
+func (syncer *syncer) hardSync(ctx context.Context, cached *database.CacheData, mirror *database.Mirror, activity *database.MirrorActivity) error {
 	lr, err := loadRepository(ctx, &repositorySettings{
-		UUID:       am.mir.ID,
-		URL:        am.mir.URL,
-		Branch:     am.mir.Ref,
-		Passphrase: am.mir.Passphrase,
-		PrivateKey: am.mir.PrivateKey,
-		PublicKey:  am.mir.PublicKey,
+		UUID:       mirror.ID,
+		URL:        mirror.URL,
+		Branch:     mirror.Ref,
+		Passphrase: mirror.Passphrase,
+		PrivateKey: mirror.PrivateKey,
+		PublicKey:  mirror.PublicKey,
 	})
 	if err != nil {
 		return err
 	}
 	defer lr.Cleanup()
 
-	// lr.lastCommit = opts.LastCommit
-
 	model, err := buildModel(ctx, lr)
 	if err != nil {
 		return err
 	}
 
-	tx, err := syncer.db.Tx(ctx)
+	tctx, tx, err := syncer.database.Tx(ctx)
 	if err != nil {
 		return err
 	}
 	defer rollback(tx)
 
-	md, err := syncer.reverseTraverseToMirror(ctx, tx.Inode, tx.Mirror, am.mir.ID.String())
+	cached, mirror, err = syncer.reverseTraverseToMirror(tctx, mirror.ID.String())
 	if err != nil {
 		return err
 	}
 
-	cache := make(map[string]*ent.Inode)
-	trueroot := filepath.Join(md.path, ".")
+	cache := make(map[string]*database.Inode)
+	trueroot := filepath.Join(cached.Path(), ".")
 	if trueroot == "/" {
-		cache[trueroot] = md.ino
+		cache[trueroot] = cached.Inode()
 	} else {
-		cache[trueroot+"/"] = md.ino
+		cache[trueroot+"/"] = cached.Inode()
 	}
 
-	var recurser func(parent *ent.Inode, path string) error
-	recurser = func(parent *ent.Inode, path string) error {
+	var recurser func(parent *database.Inode, path string) error
+	recurser = func(parent *database.Inode, path string) error {
+		for _, child := range parent.Children {
 
-		children, err := parent.Children(ctx)
-		if err != nil {
-			return err
-		}
+			rcached := new(database.CacheData)
 
-		for _, child := range children {
+			err = syncer.database.Inode(tctx, rcached, child.ID)
+			if err != nil {
+				return err
+			}
+
+			child = rcached.Inode()
 
 			cpath := filepath.Join(path, child.Name)
-			actualpath := filepath.Join(trueroot, cpath)
 
 			if child.Type == util.InodeTypeDirectory && child.ExtendedType == util.InodeTypeGit {
 
@@ -787,12 +714,8 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 					return err
 				}
 
-				err = syncer.flow.deleteNode(ctx, &deleteNodeArgs{
-					inoc:      tx.Inode,
-					ns:        md.ns(),
-					pino:      parent,
-					ino:       child,
-					path:      actualpath,
+				err = syncer.flow.deleteNode(tctx, &deleteNodeArgs{
+					cached:    cached,
 					super:     true,
 					recursive: true,
 				})
@@ -802,7 +725,7 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 
 			} else if child.Type == util.InodeTypeDirectory {
 
-				err = recurser(child, cpath)
+				err = recurser((child), cpath)
 				if err != nil {
 					return err
 				}
@@ -814,12 +737,8 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 
 				if errors.Is(err, os.ErrNotExist) || mn.ntype != mntDir {
 
-					err = syncer.flow.deleteNode(ctx, &deleteNodeArgs{
-						inoc:      tx.Inode,
-						ns:        md.ns(),
-						pino:      parent,
-						ino:       child,
-						path:      actualpath,
+					err = syncer.flow.deleteNode(tctx, &deleteNodeArgs{
+						cached:    cached,
 						super:     true,
 						recursive: true,
 					})
@@ -837,12 +756,8 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 
 				if errors.Is(err, os.ErrNotExist) || mn.ntype != mntWorkflow {
 
-					err = syncer.flow.deleteNode(ctx, &deleteNodeArgs{
-						inoc:      tx.Inode,
-						ns:        md.ns(),
-						pino:      parent,
-						ino:       child,
-						path:      actualpath,
+					err = syncer.flow.deleteNode(tctx, &deleteNodeArgs{
+						cached:    cached,
 						super:     true,
 						recursive: true,
 					})
@@ -857,32 +772,35 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 		}
 
 		return nil
-
 	}
 
-	err = recurser(md.ino, ".")
+	err = recurser(cached.Inode(), ".")
 	if err != nil {
 		return err
 	}
 
 	err = modelWalk(model.root, ".", func(path string, n *mirrorNode, err error) error {
-
 		if path == "." {
 			return nil
 		}
 
-		truepath := filepath.Join(md.path, path)
+		truepath := filepath.Join(cached.Path(), path)
 		dir, _ := filepath.Split(truepath)
 
 		switch n.ntype {
 		case mntDir:
 
-			ino, err := syncer.flow.createDirectory(ctx, &createDirectoryArgs{
-				inoc:  tx.Inode,
-				ns:    md.ns(),
-				pino:  cache[dir],
-				path:  truepath,
-				super: true,
+			pino := cache[dir]
+			pcached := new(database.CacheData)
+			err := syncer.database.Inode(tctx, pcached, pino.ID)
+			if err != nil {
+				return err
+			}
+
+			ino, err := syncer.flow.createDirectory(tctx, &createDirectoryArgs{
+				pcached: pcached,
+				path:    truepath,
+				super:   true,
 			})
 			if ino == nil {
 				return err
@@ -897,14 +815,8 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 				return err
 			}
 
-			wf, err := syncer.flow.createWorkflow(ctx, &createWorkflowArgs{
-				inoc: tx.Inode,
-				wfc:  tx.Workflow,
-				revc: tx.Revision,
-				refc: tx.Ref,
-				evc:  tx.Events,
-
-				ns:         md.ns(),
+			wf, ino, err := syncer.flow.createWorkflow(tctx, &createWorkflowArgs{
+				ns:         cached.Namespace,
 				pino:       cache[dir],
 				path:       truepath,
 				super:      true,
@@ -915,12 +827,15 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 				return err
 			}
 			if errors.Is(err, os.ErrExist) {
-				_, err = syncer.flow.updateWorkflow(ctx, &updateWorkflowArgs{
-					revc:       tx.Revision,
-					eventc:     tx.Events,
-					ns:         md.ns(),
-					ino:        wf.Edges.Inode,
-					wf:         wf,
+
+				ucached := new(database.CacheData)
+				err = syncer.database.Workflow(tctx, ucached, wf.ID)
+				if err != nil {
+					return err
+				}
+
+				_, err = syncer.flow.updateWorkflow(tctx, &updateWorkflowArgs{
+					cached:     ucached,
 					path:       truepath,
 					super:      true,
 					data:       data,
@@ -929,9 +844,11 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 				if err != nil {
 					return err
 				}
-			}
 
-			cache[truepath+"/"] = wf.Edges.Inode
+				cache[truepath] = ucached.Inode()
+			} else {
+				cache[truepath] = ino
+			}
 
 		case mntNamespaceVar:
 
@@ -952,7 +869,7 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 			_, base := filepath.Split(path)
 			trimmed := strings.TrimPrefix(base, "var.")
 
-			_, _, err = syncer.flow.SetVariable(ctx, tx.VarRef, tx.VarData, md.ns(), trimmed, data, "", false)
+			_, _, err = syncer.flow.SetVariable(tctx, &entNamespaceVarQuerier{cached: cached, clients: syncer.edb.Clients(tctx)}, trimmed, data, "", false)
 			if err != nil {
 				return err
 			}
@@ -983,20 +900,21 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 			trimmed := x[1]
 			_, base := filepath.Split(x[0])
 
-			pino := cache[dir]
-			wf, err := syncer.flow.lookupWorkflowFromParent(ctx, &lookupWorkflowFromParentArgs{
-				pino: pino,
-				name: base,
-			})
-			if err != nil {
+			child := cache[dir+base]
+
+			if child == nil || child.Type != util.InodeTypeWorkflow {
 				if derrors.IsNotFound(err) {
-					syncer.logToMirrorActivity(ctx, time.Now(), am.act, "Found something that looks like a workflow variable with no matching workflow: "+path)
+					syncer.logToMirrorActivity(tctx, time.Now(), cached.Namespace, mirror, activity, "Found something that looks like a workflow variable with no matching workflow: "+cached.Path())
 					return nil
 				}
+			}
+
+			wcached, err := syncer.flow.reverseTraverseToWorkflow(tctx, child.Workflow.String())
+			if err != nil {
 				return err
 			}
 
-			_, _, err = syncer.flow.SetVariable(ctx, tx.VarRef, tx.VarData, wf, trimmed, data, "", false)
+			_, _, err = syncer.flow.SetVariable(tctx, &entWorkflowVarQuerier{cached: wcached, clients: syncer.edb.Clients(tctx)}, trimmed, data, "", false)
 			if err != nil {
 				return err
 			}
@@ -1006,7 +924,6 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 		}
 
 		return nil
-
 	})
 	if err != nil {
 		return err
@@ -1017,8 +934,9 @@ func (syncer *syncer) hardSync(ctx context.Context, am *activityMemory) error {
 		return err
 	}
 
-	return nil
+	syncer.flow.database.InvalidateNamespace(ctx, cached, true)
 
+	return nil
 }
 
 type repositorySettings struct {
@@ -1035,11 +953,9 @@ type localRepository struct {
 	path          string
 	repo          *repositorySettings
 	gitRepository *git.Repository
-	lastCommit    string
 }
 
 func loadRepository(ctx context.Context, repo *repositorySettings) (*localRepository, error) {
-
 	repository := new(localRepository)
 	repository.repo = repo
 	repository.path = filepath.Join(os.TempDir(), repo.UUID.String())
@@ -1052,52 +968,42 @@ func loadRepository(ctx context.Context, repo *repositorySettings) (*localReposi
 	}
 
 	return repository, nil
-
 }
 
 func (repository *localRepository) Cleanup() {
-	repository.gitRepository.Free()
 	_ = os.RemoveAll(repository.path)
 }
 
 func (repository *localRepository) clone(ctx context.Context) error {
-
-	checkoutOpts := git.CheckoutOptions{
-		Strategy: git.CheckoutForce,
-	}
-
-	fetchOpts := git.FetchOptions{
-		RemoteCallbacks: git.RemoteCallbacks{
-			CertificateCheckCallback: func(cert *git.Certificate, valid bool, hostname string) error { return nil },
-			CredentialsCallback: func(url string, username_from_url string, allowed_types git.CredentialType) (*git.Credential, error) {
-				cred, err := git.NewCredentialSSHKeyFromMemory(username_from_url, repository.repo.PublicKey, repository.repo.PrivateKey, repository.repo.Passphrase)
-				if err != nil {
-					fmt.Println(err)
-					return nil, err
-				}
-				return cred, err
-			},
-		},
-		ProxyOptions: git.ProxyOptions{
-			Type: git.ProxyTypeAuto,
-		},
-	}
-
 	uri := repository.repo.URL
 	prefix := "https://"
 
+	cloneOptions := &git.CloneOptions{
+		URL:           uri,
+		Progress:      os.Stdout,
+		ReferenceName: plumbing.NewBranchReferenceName(repository.repo.Branch),
+	}
+
+	// https with access token case. Put passphrase inside the git url.
 	if strings.HasPrefix(uri, prefix) && len(repository.repo.Passphrase) > 0 {
 		if !strings.Contains(uri, "@") {
 			uri = fmt.Sprintf("%s%s@", prefix, repository.repo.Passphrase) + strings.TrimPrefix(uri, prefix)
 		}
 	}
 
-	r, err := git.Clone(uri, repository.path, &git.CloneOptions{
-		CheckoutOptions: checkoutOpts,
-		FetchOptions:    fetchOpts,
-		CheckoutBranch:  repository.repo.Branch,
-	})
+	// ssh case. Configure cloneOptions.Auth field.
+	if !strings.HasPrefix(uri, prefix) {
+		publicKeys, err := gitSSH.NewPublicKeys("git", []byte(repository.repo.PrivateKey), repository.repo.Passphrase)
+		if err != nil {
+			return err
+		}
+		publicKeys.HostKeyCallbackHelper = gitSSH.HostKeyCallbackHelper{
+			HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+		}
+		cloneOptions.Auth = publicKeys
+	}
 
+	r, err := git.PlainClone(repository.path, false, cloneOptions)
 	if err != nil {
 		return err
 	}
@@ -1105,7 +1011,6 @@ func (repository *localRepository) clone(ctx context.Context) error {
 	repository.gitRepository = r
 
 	return nil
-
 }
 
 const (
@@ -1120,7 +1025,6 @@ type mirrorNode struct {
 	children  []*mirrorNode
 	ntype     string
 	name      string
-	change    string
 	extension string
 	isDir     bool
 }
@@ -1130,7 +1034,6 @@ type mirrorModel struct {
 }
 
 func (model *mirrorModel) lookup(path string) (*mirrorNode, error) {
-
 	path = strings.Trim(path, "/")
 
 	if path == "." || path == "" {
@@ -1156,11 +1059,9 @@ func (model *mirrorModel) lookup(path string) (*mirrorNode, error) {
 	}
 
 	return nil, os.ErrNotExist
-
 }
 
 func (model *mirrorModel) addDirectoryNode(path string) error {
-
 	dir, base := filepath.Split(path)
 
 	node, err := model.lookup(dir)
@@ -1180,11 +1081,9 @@ func (model *mirrorModel) addDirectoryNode(path string) error {
 	})
 
 	return nil
-
 }
 
 func (model *mirrorModel) addWorkflowNode(path string) error {
-
 	dir, base := filepath.Split(path)
 
 	node, err := model.lookup(dir)
@@ -1219,11 +1118,9 @@ func (model *mirrorModel) addWorkflowNode(path string) error {
 	})
 
 	return nil
-
 }
 
 func (model *mirrorModel) addWorkflowVariableNode(path string, isDir bool) error {
-
 	dir, base := filepath.Split(path)
 
 	node, err := model.lookup(dir)
@@ -1244,11 +1141,9 @@ func (model *mirrorModel) addWorkflowVariableNode(path string, isDir bool) error
 	})
 
 	return nil
-
 }
 
 func (model *mirrorModel) addNamespaceVariableNode(path string, isDir bool) error {
-
 	dir, base := filepath.Split(path)
 
 	node, err := model.lookup(dir)
@@ -1269,15 +1164,12 @@ func (model *mirrorModel) addNamespaceVariableNode(path string, isDir bool) erro
 	})
 
 	return nil
-
 }
 
 func (model *mirrorModel) finalize() error {
-
 	var recurse func(node *mirrorNode) bool
 
 	recurse = func(node *mirrorNode) bool {
-
 		if node.ntype != mntDir {
 			return true
 		}
@@ -1293,13 +1185,11 @@ func (model *mirrorModel) finalize() error {
 
 		node.children = children
 		return len(node.children) > 0
-
 	}
 
 	recurse(model.root)
 
 	return nil
-
 }
 
 // var (
@@ -1324,7 +1214,6 @@ func (model *mirrorModel) finalize() error {
 // }
 
 func modelWalk(node *mirrorNode, path string, fn func(path string, n *mirrorNode, err error) error) error {
-
 	err := fn(path, node, nil)
 	if errors.Is(err, filepath.SkipDir) {
 		return nil
@@ -1342,132 +1231,9 @@ func modelWalk(node *mirrorNode, path string, fn func(path string, n *mirrorNode
 	}
 
 	return nil
-
-}
-
-func (model *mirrorModel) diff(repo *localRepository) error {
-
-	var oldid *git.Oid
-
-	oldref, err := repo.gitRepository.References.Lookup(repo.lastCommit)
-	if err != nil {
-
-		oldid, err = git.NewOid(repo.lastCommit)
-		if err != nil {
-			return err
-		}
-
-	} else {
-
-		defer oldref.Free()
-		oldid = oldref.Target()
-
-		if oldid == nil {
-			href, err := repo.gitRepository.Head()
-			if err != nil {
-				return err
-			}
-			defer href.Free()
-			oldid = href.Target()
-		}
-
-	}
-
-	oldcommit, err := repo.gitRepository.LookupCommit(oldid)
-	if err != nil {
-		return err
-	}
-	defer oldcommit.Free()
-
-	oldtree, err := oldcommit.Tree()
-	if err != nil {
-		return err
-	}
-	defer oldtree.Free()
-
-	href, err := repo.gitRepository.Head()
-	if err != nil {
-		return err
-	}
-	defer href.Free()
-	newid := href.Target()
-
-	newcommit, err := repo.gitRepository.LookupCommit(newid)
-	if err != nil {
-		return err
-	}
-	defer newcommit.Free()
-
-	newtree, err := newcommit.Tree()
-	if err != nil {
-		return err
-	}
-	defer newtree.Free()
-
-	opts, err := git.DefaultDiffOptions()
-	if err != nil {
-		return err
-	}
-
-	diff, err := repo.gitRepository.DiffTreeToTree(oldtree, newtree, &opts)
-	if err != nil {
-		return err
-	}
-	defer func() {
-		_ = diff.Free()
-	}()
-
-	dopts, err := git.DefaultDiffFindOptions()
-	if err != nil {
-		return err
-	}
-
-	err = diff.FindSimilar(&dopts)
-	if err != nil {
-		return err
-	}
-
-	err = diff.ForEach(func(delta git.DiffDelta, progress float64) (git.DiffForEachHunkCallback, error) {
-
-		node, err := model.lookup(delta.NewFile.Path)
-		if errors.Is(err, os.ErrNotExist) {
-			return func(x git.DiffHunk) (git.DiffForEachLineCallback, error) {
-				return func(x git.DiffLine) error {
-					return nil
-				}, nil
-			}, nil
-		}
-		if err != nil {
-			return nil, err
-		}
-
-		switch delta.Status {
-		case git.DeltaAdded:
-			node.change = "added"
-		case git.DeltaModified:
-			node.change = "changed"
-		case git.DeltaRenamed:
-			node.change = fmt.Sprintf("renamed from '%s'", delta.OldFile.Path)
-		default:
-			node.change = delta.Status.String()
-		}
-
-		return func(x git.DiffHunk) (git.DiffForEachLineCallback, error) {
-			return func(x git.DiffLine) error {
-				return nil
-			}, nil
-		}, nil
-	}, git.DiffDetailFiles)
-	if err != nil {
-		return err
-	}
-
-	return nil
-
 }
 
 func buildModel(ctx context.Context, repo *localRepository) (*mirrorModel, error) {
-
 	model := new(mirrorModel)
 	model.root = &mirrorNode{
 		parent:   model.root,
@@ -1501,7 +1267,6 @@ func buildModel(ctx context.Context, repo *localRepository) (*mirrorModel, error
 	}
 
 	err = filepath.WalkDir(repo.path, func(path string, d fs.DirEntry, err error) error {
-
 		if err != nil {
 			return err
 		}
@@ -1578,7 +1343,6 @@ func buildModel(ctx context.Context, repo *localRepository) (*mirrorModel, error
 		}
 
 		return nil
-
 	})
 	if err != nil {
 		return nil, err
@@ -1589,15 +1353,7 @@ func buildModel(ctx context.Context, repo *localRepository) (*mirrorModel, error
 		return nil, err
 	}
 
-	if repo.lastCommit != "" {
-		err = model.diff(repo)
-		if err != nil {
-			return nil, err
-		}
-	}
-
 	// model.dump()
 
 	return model, nil
-
 }

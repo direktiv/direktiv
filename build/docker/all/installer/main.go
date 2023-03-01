@@ -24,7 +24,6 @@ import (
 )
 
 func waitForUp() {
-
 	// first wait for the kubeconfig file
 	log.Println("waiting for k3s kubeconfig")
 	for {
@@ -74,11 +73,9 @@ func waitForUp() {
 	}
 
 	log.Println("k3s up")
-
 }
 
 func main() {
-
 	log.Println("all-in-one version of direktiv")
 
 	go func() {
@@ -92,7 +89,6 @@ func main() {
 
 	// if that file exists, the installation has already happened
 	_, err := os.Stat("/.service")
-
 	if err != nil {
 
 		installKnative()
@@ -186,11 +182,9 @@ func main() {
 	fmt.Println("direktiv ready at http://localhost:8080 or http://<HOST-IP>:8080")
 
 	select {}
-
 }
 
 func addNamespace() error {
-
 	fmt.Println("adding namespace from git")
 
 	ns := make(map[string]string)
@@ -237,7 +231,6 @@ func addNamespace() error {
 	defer respSync.Body.Close()
 
 	return nil
-
 }
 
 func runDB() {
@@ -247,7 +240,6 @@ func runDB() {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Run()
-
 }
 
 type byName []v1.Pod
@@ -257,10 +249,9 @@ func (a byName) Less(i, j int) bool { return a[i].GetName() < a[j].GetName() }
 func (a byName) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 
 func runHelm() {
-
 	fmt.Println("deploying direktiv")
 
-	f, err := os.OpenFile("/debug.yaml", os.O_APPEND|os.O_WRONLY, 0600)
+	f, err := os.OpenFile("/debug.yaml", os.O_APPEND|os.O_WRONLY, 0o600)
 	if err != nil {
 		panic(err)
 	}
@@ -289,11 +280,9 @@ func runHelm() {
 	cmd.Dir = "/direktiv-charts/charts/direktiv"
 	cmd.Env = []string{"KUBECONFIG=/etc/rancher/k3s/k3s.yaml"}
 	cmd.Run()
-
 }
 
 func runRegistry() {
-
 	log.Println("installing docker repository")
 	log.Printf("applying registry.yaml\n")
 
@@ -301,11 +290,9 @@ func runRegistry() {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Run()
-
 }
 
 func addProxy(f *os.File) {
-
 	log.Printf("adding proxy settings to file: %v\n", f.Name())
 	if os.Getenv("HTTPS_PROXY") != "" || os.Getenv("HTTP_PROXY") != "" {
 		log.Println("http proxy set")
@@ -323,7 +310,6 @@ func addProxy(f *os.File) {
 }
 
 func installKnative() {
-
 	log.Printf("running knative helm\n")
 
 	f, err := os.Create("/tmp/knative.yaml")
@@ -373,11 +359,9 @@ func installKnative() {
 		cmd.Run()
 
 	}
-
 }
 
 func startingK3s() error {
-
 	log.Println("starting k3s now")
 	cmd := exec.Command("/usr/local/bin/k3s", "server", "--kube-proxy-arg=conntrack-max-per-core=0",
 		"--disable", "traefik", "--write-kubeconfig-mode=644", "--snapshotter", "native")
@@ -397,11 +381,9 @@ func startingK3s() error {
 	}
 
 	return cmd.Run()
-
 }
 
 func isGCP() bool {
-
 	data, err := ioutil.ReadFile("/sys/class/dmi/id/product_name")
 	if err != nil {
 		return false
@@ -413,5 +395,4 @@ func isGCP() bool {
 	}
 
 	return false
-
 }

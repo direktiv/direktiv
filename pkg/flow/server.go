@@ -14,7 +14,8 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/direktiv/direktiv/pkg/dlog"
-	"github.com/direktiv/direktiv/pkg/flow/ent"
+	"github.com/direktiv/direktiv/pkg/flow/database"
+	"github.com/direktiv/direktiv/pkg/flow/database/entwrapper"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/metrics"
 	"github.com/direktiv/direktiv/pkg/util"
@@ -32,7 +33,7 @@ type server struct {
 	fnLogger *zap.SugaredLogger
 	conf     *util.Config
 
-	db       *ent.Client
+	// db       *ent.Client
 	pubsub   *pubsub
 	locks    *locks
 	timers   *timers
@@ -49,10 +50,12 @@ type server struct {
 
 	logQueue     chan *logMessage
 	logWorkersWG sync.WaitGroup
+
+	edb      *entwrapper.Database // TODO: remove
+	database *database.CachedDatabase
 }
 
 func Run(ctx context.Context, logger *zap.SugaredLogger, conf *util.Config) error {
-
 	srv, err := newServer(logger, conf)
 	if err != nil {
 		return err
@@ -64,11 +67,9 @@ func Run(ctx context.Context, logger *zap.SugaredLogger, conf *util.Config) erro
 	}
 
 	return nil
-
 }
 
 func newServer(logger *zap.SugaredLogger, conf *util.Config) (*server, error) {
-
 	var err error
 
 	srv := new(server)
@@ -87,11 +88,9 @@ func newServer(logger *zap.SugaredLogger, conf *util.Config) (*server, error) {
 	srv.initJQ()
 
 	return srv, nil
-
 }
 
 func (srv *server) start(ctx context.Context) error {
-
 	var err error
 
 	srv.sugar.Debug("Initializing telemetry.")
@@ -127,11 +126,20 @@ func (srv *server) start(ctx context.Context) error {
 
 	srv.sugar.Debug("Initializing database.")
 
-	srv.db, err = initDatabase(ctx, db)
+	// srv.db, err = initDatabase(ctx, db)
+	// if err != nil {
+	// 	return err
+	// }
+	// defer srv.cleanup(srv.db.Close)
+
+	edb, err := entwrapper.New(ctx, srv.sugar, db)
 	if err != nil {
 		return err
 	}
-	defer srv.cleanup(srv.db.Close)
+	srv.edb = edb
+
+	srv.database = database.NewCachedDatabase(srv.sugar, edb, srv)
+	defer srv.cleanup(srv.database.Close)
 
 	srv.startLogWorkers(1)
 
@@ -301,23 +309,19 @@ func (srv *server) start(ctx context.Context) error {
 	}
 
 	return nil
-
 }
 
 func (srv *server) cleanup(closer func() error) {
-
 	err := closer()
 	if err != nil {
 		srv.sugar.Error(err)
 	}
-
 }
 
 func (srv *server) notifyCluster(msg string) error {
-
 	ctx := context.Background()
 
-	conn, err := srv.db.DB().Conn(ctx)
+	conn, err := srv.edb.DB().Conn(ctx)
 	if err != nil {
 		return err
 	}
@@ -339,14 +343,12 @@ func (srv *server) notifyCluster(msg string) error {
 	}
 
 	return nil
-
 }
 
 func (srv *server) notifyHostname(hostname, msg string) error {
-
 	ctx := context.Background()
 
-	conn, err := srv.db.DB().Conn(ctx)
+	conn, err := srv.edb.DB().Conn(ctx)
 	if err != nil {
 		return err
 	}
@@ -370,10 +372,18 @@ func (srv *server) notifyHostname(hostname, msg string) error {
 	}
 
 	return nil
+}
 
+func (server *server) CacheNotify(req *PubsubUpdate) {
+	if server.ID.String() == req.Sender {
+		return
+	}
+
+	server.database.HandleNotification(req.Key)
 }
 
 func (srv *server) registerFunctions() {
+	srv.pubsub.registerFunction(database.PubsubNotifyFunction, srv.CacheNotify)
 
 	srv.pubsub.registerFunction(pubsubNotifyFunction, srv.pubsub.Notify)
 	srv.pubsub.registerFunction(pubsubDisconnectFunction, srv.pubsub.Disconnect)
@@ -395,58 +405,57 @@ func (srv *server) registerFunctions() {
 
 	srv.pubsub.registerFunction(deleteFilterCache, srv.flow.deleteCache)
 	srv.pubsub.registerFunction(deleteFilterCacheNamespace, srv.flow.deleteCacheNamespace)
-
 }
 
 func (srv *server) cronPoller() {
-
 	for {
 		srv.cronPoll()
 		time.Sleep(time.Minute * 15)
 	}
-
 }
 
 func (srv *server) cronPoll() {
-
 	ctx := context.Background()
 
-	wfs, err := srv.db.Workflow.Query().All(ctx)
+	clients := srv.edb.Clients(ctx)
+
+	wfs, err := clients.Workflow.Query().All(ctx)
 	if err != nil {
 		srv.sugar.Error(err)
 		return
 	}
 
 	for _, wf := range wfs {
-		srv.cronPollerWorkflow(wf)
-	}
+		cached, err := srv.reverseTraverseToWorkflow(ctx, wf.ID.String())
+		if err != nil {
+			srv.sugar.Error(err)
+			continue
+		}
 
+		srv.cronPollerWorkflow(ctx, cached)
+	}
 }
 
-func (srv *server) cronPollerWorkflow(wf *ent.Workflow) {
-
-	ctx := context.Background()
-
-	ms, muxErr, err := validateRouter(ctx, wf)
+func (srv *server) cronPollerWorkflow(ctx context.Context, cached *database.CacheData) {
+	ms, muxErr, err := srv.validateRouter(ctx, cached)
 	if err != nil || muxErr != nil {
 		return
 	}
 
 	if !ms.Enabled || ms.Cron != "" {
-		srv.timers.deleteCronForWorkflow(wf.ID.String())
+		srv.timers.deleteCronForWorkflow(cached.Workflow.ID.String())
 	}
 
 	if ms.Cron != "" && ms.Enabled {
-		err = srv.timers.addCron(wf.ID.String(), wfCron, ms.Cron, []byte(wf.ID.String()))
+		err = srv.timers.addCron(cached.Workflow.ID.String(), wfCron, ms.Cron, []byte(cached.Workflow.ID.String()))
 		if err != nil {
 			srv.sugar.Error(err)
 			return
 		}
 
-		srv.sugar.Debugf("Loaded cron: %s", wf.ID.String())
+		srv.sugar.Debugf("Loaded cron: %s", cached.Workflow.ID.String())
 
 	}
-
 }
 
 func unaryInterceptor(ctx context.Context, req interface{}, info *libgrpc.UnaryServerInfo, handler libgrpc.UnaryHandler) (resp interface{}, err error) {

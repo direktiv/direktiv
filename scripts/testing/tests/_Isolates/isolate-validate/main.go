@@ -6,12 +6,11 @@ package main
 
 import (
 	"bytes"
-	"os"
-
 	"encoding/gob"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"os"
 )
 
 const code = "com.%s.error"
@@ -33,11 +32,9 @@ type variable struct {
 }
 
 // output for the requester container
-type output struct {
-}
+type output struct{}
 
 func Log(msg string) {
-
 	fmt.Println(msg)
 
 	if logf == nil {
@@ -45,13 +42,11 @@ func Log(msg string) {
 	}
 
 	fmt.Fprintln(logf, msg)
-
 }
 
 var hasFailed bool
 
 func Error(code, msg string) {
-
 	Log(fmt.Sprintf("ERROR: %s; %s", code, msg))
 
 	if hasFailed {
@@ -67,20 +62,17 @@ func Error(code, msg string) {
 
 	data, _ := json.Marshal(m)
 
-	err := ioutil.WriteFile("/direktiv-data/error.json", data, 0755)
+	err := ioutil.WriteFile("/direktiv-data/error.json", data, 0o755)
 	if err != nil {
 		Error("", err.Error())
 	}
-
 }
 
 func Respond(data []byte) {
-
-	err := ioutil.WriteFile("/direktiv-data/output.json", data, 0755)
+	err := ioutil.WriteFile("/direktiv-data/output.json", data, 0o755)
 	if err != nil {
 		Error("", err.Error())
 	}
-
 }
 
 func GetBytes(key interface{}) ([]byte, error) {
@@ -94,7 +86,6 @@ func GetBytes(key interface{}) ([]byte, error) {
 }
 
 func Request(input []byte) {
-
 	obj := new(isolateInput)
 	err := json.Unmarshal(input, obj)
 	if err != nil {
@@ -126,7 +117,7 @@ func Request(input []byte) {
 		Log(fmt.Sprintf("validating %s", v.Key))
 		path := fmt.Sprintf("/direktiv-data/vars/out/%s/%s", v.Scope, v.Key)
 
-		err = ioutil.WriteFile(path, []byte(v.Value), 0644)
+		err = ioutil.WriteFile(path, []byte(v.Value), 0o644)
 		if err != nil {
 			Error(fmt.Sprintf(code, "bad-write"), err.Error())
 			return
@@ -139,7 +130,6 @@ func Request(input []byte) {
 var logf *os.File
 
 func initialize() error {
-
 	var err error
 
 	logf, err = os.Create("/direktiv-data/out.log")
@@ -148,11 +138,9 @@ func initialize() error {
 	}
 
 	return nil
-
 }
 
 func cleanup() {
-
 	if logf != nil {
 		logf.Close()
 	}
@@ -161,11 +149,9 @@ func cleanup() {
 	if err == nil {
 		f.Close()
 	}
-
 }
 
 func main() {
-
 	err := initialize()
 	if err != nil {
 		Error("", err.Error())
@@ -183,5 +169,4 @@ func main() {
 	Log(fmt.Sprintf("INPUT: %s\n", input))
 
 	Request(input)
-
 }

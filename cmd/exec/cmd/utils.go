@@ -11,12 +11,9 @@ import (
 	"strings"
 )
 
-var (
-	maxSize int64 = 1073741824
-)
+var maxSize int64 = 1073741824
 
 func ProjectFolder() (string, error) {
-
 	pd, err := os.Getwd()
 	if err != nil {
 		return "", err
@@ -27,7 +24,6 @@ func ProjectFolder() (string, error) {
 	}
 
 	return pd, nil
-
 }
 
 func Fail(s string, x ...interface{}) {

@@ -8,17 +8,14 @@ import (
 )
 
 func noMemory(logic Logic) error {
-
 	if logic.GetMemory() != nil {
 		return derrors.NewInternalError(errors.New("got unexpected savedata"))
 	}
 
 	return nil
-
 }
 
 func scheduleOnce(logic Logic, wakedata []byte) error {
-
 	err := noMemory(logic)
 	if err != nil {
 		return err
@@ -29,11 +26,9 @@ func scheduleOnce(logic Logic, wakedata []byte) error {
 	}
 
 	return nil
-
 }
 
 func scheduleTwice(logic Logic, wakedata []byte) (bool, error) {
-
 	err := noMemory(logic)
 	if err != nil {
 		return false, err
@@ -44,11 +39,9 @@ func scheduleTwice(logic Logic, wakedata []byte) (bool, error) {
 	}
 
 	return false, nil
-
 }
 
 func scheduleTwiceConst(logic Logic, wakedata []byte, expect string) (bool, error) {
-
 	err := noMemory(logic)
 	if err != nil {
 		return false, err
@@ -64,5 +57,4 @@ func scheduleTwiceConst(logic Logic, wakedata []byte, expect string) (bool, erro
 	}
 
 	return false, nil
-
 }

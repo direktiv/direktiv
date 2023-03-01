@@ -55,7 +55,6 @@ type functionsServer struct {
 
 // StartServer starts functions grpc server.
 func StartServer(echan chan error) {
-
 	var err error
 
 	logger, err = dlog.ApplicationLogger("functions")
@@ -118,7 +117,6 @@ func StartServer(echan chan error) {
 	}
 
 	go func(l *pq.Listener) {
-
 		defer func() {
 			err := l.UnlistenAll()
 			logger.Errorf("Failed to deregister listeners: %v.", err)
@@ -150,7 +148,6 @@ func StartServer(echan chan error) {
 			}
 
 		}
-
 	}(listener)
 
 	err = fServer.reconstructServices(context.Background())
@@ -159,7 +156,6 @@ func StartServer(echan chan error) {
 	}
 
 	select {}
-
 }
 
 // StopServer is stopping server gracefully.
@@ -179,7 +175,6 @@ type HeartbeatTuple struct {
 }
 
 func (fServer *functionsServer) heartbeat(tuples []*HeartbeatTuple) {
-
 	logger.Debugf("workflow functions heartbeat received.")
 
 	ctx := context.Background()
@@ -232,11 +227,9 @@ func (fServer *functionsServer) heartbeat(tuples []*HeartbeatTuple) {
 		}
 
 	}
-
 }
 
 func (fServer *functionsServer) reusableGC() {
-
 	ticker := time.NewTicker(time.Minute * 5)
 
 	for {
@@ -250,17 +243,14 @@ func (fServer *functionsServer) reusableGC() {
 		fServer.reusableCacheLock.Lock()
 
 		for k, tuple := range fServer.reusableCache {
-
 			if tuple.t.Before(cutoff) {
 				go fServer.reusableFree(k)
 			}
-
 		}
 
 		fServer.reusableCacheLock.Unlock()
 
 	}
-
 }
 
 type cacheTuple struct {
@@ -269,7 +259,6 @@ type cacheTuple struct {
 }
 
 func (ct *cacheTuple) Add(name string) {
-
 	ct.t = time.Now()
 
 	sort.Strings(ct.names)
@@ -281,11 +270,9 @@ func (ct *cacheTuple) Add(name string) {
 	}
 
 	ct.names = append(ct.names, name)
-
 }
 
 func (fServer *functionsServer) reusableFree(k string) {
-
 	fServer.reusableCacheLock.Lock()
 
 	x, exists := fServer.reusableCache[k]
@@ -324,11 +311,9 @@ func (fServer *functionsServer) reusableFree(k string) {
 		}
 
 	}
-
 }
 
 func (fServer *functionsServer) orphansGC() {
-
 	ticker := time.NewTicker(time.Minute * 2)
 
 	for {
@@ -384,7 +369,6 @@ func (fServer *functionsServer) orphansGC() {
 		}
 
 	}
-
 }
 
 func (is *functionsServer) Build(ctx context.Context, in *emptypb.Empty) (*igrpc.BuildResponse, error) {

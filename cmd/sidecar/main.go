@@ -1,4 +1,4 @@
-package main
+package sidecar
 
 import (
 	"fmt"
@@ -12,8 +12,7 @@ import (
 
 var log *zap.SugaredLogger
 
-func main() {
-
+func RunApplication() {
 	var err error
 
 	log, err = dlog.ApplicationLogger("sidecar")
@@ -54,7 +53,6 @@ func main() {
 		log.Errorf("Exiting with exit status: %d.", code)
 		os.Exit(code)
 	}
-
 }
 
 const (

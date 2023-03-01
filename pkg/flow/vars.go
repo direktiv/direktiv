@@ -21,7 +21,6 @@ type vars struct {
 }
 
 func initVarsServer(ctx context.Context, srv *server) (*vars, error) {
-
 	var err error
 
 	vars := new(vars)
@@ -45,7 +44,6 @@ func initVarsServer(ctx context.Context, srv *server) (*vars, error) {
 	}
 
 	go func() {
-
 		defer func() {
 			_ = recover()
 		}()
@@ -56,15 +54,12 @@ func initVarsServer(ctx context.Context, srv *server) (*vars, error) {
 		if err != nil {
 			vars.sugar.Error(err)
 		}
-
 	}()
 
 	return vars, nil
-
 }
 
 func (vars *vars) Close() error {
-
 	err := vars.http.Close()
 	if err != nil {
 		if !errors.Is(err, http.ErrServerClosed) {
@@ -80,11 +75,9 @@ func (vars *vars) Close() error {
 	}
 
 	return nil
-
 }
 
 func (vars *vars) Run() error {
-
 	err := vars.http.Serve(vars.listener)
 	if err != nil {
 		if err != http.ErrServerClosed {
@@ -93,11 +86,9 @@ func (vars *vars) Run() error {
 	}
 
 	return nil
-
 }
 
 func (vars *vars) nsHandler(w http.ResponseWriter, r *http.Request) {
-
 	vars.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := r.Context()
@@ -154,11 +145,9 @@ func (vars *vars) nsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 
 	}
-
 }
 
 func (vars *vars) wfHandler(w http.ResponseWriter, r *http.Request) {
-
 	vars.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := r.Context()
@@ -218,11 +207,9 @@ func (vars *vars) wfHandler(w http.ResponseWriter, r *http.Request) {
 		return
 
 	}
-
 }
 
 func (vars *vars) inHandler(w http.ResponseWriter, r *http.Request) {
-
 	vars.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := r.Context()
@@ -282,5 +269,4 @@ func (vars *vars) inHandler(w http.ResponseWriter, r *http.Request) {
 		return
 
 	}
-
 }

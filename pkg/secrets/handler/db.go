@@ -35,7 +35,6 @@ type dbHandler struct {
 var logger *zap.SugaredLogger
 
 func setupDB() (SecretsHandler, error) {
-
 	var err error
 
 	dbEnv := os.Getenv(secretsConn)
@@ -72,7 +71,6 @@ func setupDB() (SecretsHandler, error) {
 }
 
 func (db *dbHandler) AddSecret(namespace, name string, secret []byte, ignoreError bool) error {
-
 	logger.Infof("adding secret %s", name)
 
 	bs, _ := db.db.NamespaceSecret.
@@ -88,7 +86,6 @@ func (db *dbHandler) AddSecret(namespace, name string, secret []byte, ignoreErro
 		return nil
 	}
 	if bs != nil {
-
 		return fmt.Errorf("secret already exists")
 	}
 
@@ -112,11 +109,9 @@ func (db *dbHandler) AddSecret(namespace, name string, secret []byte, ignoreErro
 		return err
 	}
 	return err
-
 }
 
 func (db *dbHandler) UpdateSecret(namespace, name string, secret []byte) error {
-
 	logger.Infof("adding secret %s", name)
 
 	bs, err := db.db.NamespaceSecret.
@@ -149,11 +144,9 @@ func (db *dbHandler) UpdateSecret(namespace, name string, secret []byte) error {
 	}
 
 	return err
-
 }
 
 func (db *dbHandler) GetSecret(namespace, name string) ([]byte, error) {
-
 	bs, err := db.db.NamespaceSecret.
 		Query().
 		Where(
@@ -162,7 +155,6 @@ func (db *dbHandler) GetSecret(namespace, name string) ([]byte, error) {
 				namespacesecret.NameEQ(name),
 			)).
 		Only(context.Background())
-
 	if err != nil {
 		if ent.IsNotFound(err) {
 			return nil, status.Errorf(codes.NotFound, "secret '%s' not found", name)
@@ -171,11 +163,9 @@ func (db *dbHandler) GetSecret(namespace, name string) ([]byte, error) {
 	}
 
 	return decryptData([]byte(db.key), bs.Secret)
-
 }
 
 func (db *dbHandler) GetSecrets(namespace string, name string) ([]string, error) {
-
 	var names []string
 	name = strings.TrimPrefix(name, "/")
 
@@ -187,7 +177,6 @@ func (db *dbHandler) GetSecrets(namespace string, name string) ([]string, error)
 				namespacesecret.NameHasPrefix(name),
 			)).
 		All(context.Background())
-
 	if err != nil {
 		return nil, err
 	}
@@ -206,11 +195,9 @@ func (db *dbHandler) GetSecrets(namespace string, name string) ([]string, error)
 	}
 
 	return names, nil
-
 }
 
 func (db *dbHandler) SearchForName(namespace string, name string) ([]string, error) {
-
 	var names []string
 	name = strings.TrimPrefix(name, "/")
 
@@ -222,23 +209,19 @@ func (db *dbHandler) SearchForName(namespace string, name string) ([]string, err
 				namespacesecret.NameContains(name),
 			)).
 		All(context.Background())
-
 	if err != nil {
 		return nil, err
 	}
 
 	for _, s := range dbs {
 		names = append(names, s.Name)
-
 	}
 
 	return names, nil
-
 }
 
 func (db *dbHandler) RemoveSecret(namespace, name string) error {
-
-	//check if secret is already existing
+	// check if secret is already existing
 	_, err := db.GetSecret(namespace, name)
 	if err != nil {
 		return err
@@ -272,7 +255,6 @@ func (db *dbHandler) RemoveFolder(namespace, name string) error {
 }
 
 func (db *dbHandler) RemoveNamespaceSecrets(namespace string) error {
-
 	_, err := db.db.NamespaceSecret.
 		Delete().
 		Where(
@@ -282,11 +264,9 @@ func (db *dbHandler) RemoveNamespaceSecrets(namespace string) error {
 		Exec(context.Background())
 
 	return err
-
 }
 
 func encryptData(key, data []byte) ([]byte, error) {
-
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, err
@@ -304,11 +284,9 @@ func encryptData(key, data []byte) ([]byte, error) {
 	}
 
 	return gcm.Seal(nonce, nonce, data, nil), nil
-
 }
 
 func decryptData(key, data []byte) ([]byte, error) {
-
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, err
@@ -322,5 +300,4 @@ func decryptData(key, data []byte) ([]byte, error) {
 	nonce := data[:gcm.NonceSize()]
 	data = data[gcm.NonceSize():]
 	return gcm.Open(nil, nonce, data, nil)
-
 }

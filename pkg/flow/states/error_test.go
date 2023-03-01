@@ -10,7 +10,6 @@ import (
 )
 
 func TestErrorGood(t *testing.T) {
-
 	ctx := context.Background()
 
 	instance := newTesterInstance()
@@ -72,11 +71,9 @@ func TestErrorGood(t *testing.T) {
 		t.Error(errors.New("didn't raise any errors"))
 		return
 	}
-
 }
 
 func TestErrorBadState(t *testing.T) {
-
 	instance := newTesterInstance()
 
 	state := new(model.NoopState)
@@ -87,11 +84,9 @@ func TestErrorBadState(t *testing.T) {
 		t.Error(errors.New("should have failed with wrong state type"))
 		return
 	}
-
 }
 
 func TestErrorBadMemory(t *testing.T) {
-
 	ctx := context.Background()
 
 	instance := newTesterInstance()
@@ -130,11 +125,9 @@ func TestErrorBadMemory(t *testing.T) {
 		t.Error(errors.New("expected an error"))
 		return
 	}
-
 }
 
 func TestErrorBadWakedata(t *testing.T) {
-
 	ctx := context.Background()
 
 	instance := newTesterInstance()
@@ -164,5 +157,4 @@ func TestErrorBadWakedata(t *testing.T) {
 		t.Error(errors.New("expected an error"))
 		return
 	}
-
 }

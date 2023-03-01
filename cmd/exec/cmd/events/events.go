@@ -58,12 +58,10 @@ var sendEventCmd = &cobra.Command{
 		}
 
 		cmd.PrintErrln("successfully triggered event: " + event)
-
 	},
 }
 
 func executeEvent(url string, args []string) (string, error) {
-
 	event := cloudevents.NewEvent()
 
 	// read event file in if provided
@@ -177,7 +175,6 @@ func executeEvent(url string, args []string) (string, error) {
 	}
 
 	return string(b), err
-
 }
 
 var setFilterCmd = &cobra.Command{
@@ -185,7 +182,6 @@ var setFilterCmd = &cobra.Command{
 	Short: "Define an event filter.",
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-
 		filterName := args[0]
 
 		var (
@@ -228,12 +224,10 @@ var setFilterCmd = &cobra.Command{
 		}
 
 		cmd.PrintErrln("successfully created cloud event filter: " + filterName)
-
 	},
 }
 
 func executeCreateCloudEventFilter(filterName string, data io.Reader, method string) error {
-
 	if filterName == "" {
 		return errors.New("filter name not set")
 	}
@@ -270,7 +264,6 @@ func executeCreateCloudEventFilter(filterName string, data io.Reader, method str
 	}
 
 	return nil
-
 }
 
 type listFiltersResp struct {
@@ -284,7 +277,6 @@ var listFilterCmd = &cobra.Command{
 	Short: "List event filters for namespace.",
 	Args:  cobra.ExactArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
-
 		resp, err := executeListCloudEventFilter()
 		if err != nil {
 			root.Fail("can not fetch event filter: %v\n", err)
@@ -299,12 +291,10 @@ var listFilterCmd = &cobra.Command{
 		for i := range eventfilter.EventFilter {
 			root.Printlog(eventfilter.EventFilter[i].Name)
 		}
-
 	},
 }
 
 func executeListCloudEventFilter() ([]byte, error) {
-
 	var err error
 
 	url := fmt.Sprintf("%s/eventfilter", root.UrlPrefix)
@@ -340,7 +330,6 @@ func executeListCloudEventFilter() ([]byte, error) {
 	}
 
 	return body, err
-
 }
 
 var deleteFilterCmd = &cobra.Command{
@@ -348,7 +337,6 @@ var deleteFilterCmd = &cobra.Command{
 	Short: "Delete an event filter.",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-
 		filterName := args[0]
 
 		err := executeDeleteCloudEventFilter(filterName)
@@ -357,12 +345,10 @@ var deleteFilterCmd = &cobra.Command{
 		}
 
 		root.Printlog("successfully deleted cloud event filter: " + filterName)
-
 	},
 }
 
 func executeDeleteCloudEventFilter(filterName string) error {
-
 	var err error
 
 	if filterName == "" {
@@ -403,7 +389,6 @@ func executeDeleteCloudEventFilter(filterName string) error {
 	}
 
 	return err
-
 }
 
 type getFilterResp struct {
@@ -416,7 +401,6 @@ var getFilterCmd = &cobra.Command{
 	Short: "Get an event filter.",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-
 		filterName := args[0]
 
 		resp, err := executeGetCloudEventFilter(filterName)
@@ -432,12 +416,10 @@ var getFilterCmd = &cobra.Command{
 
 		root.Printlog("filtername: %s", eventfilter.Filtername)
 		root.Printlog("script: %s", eventfilter.JsCode)
-
 	},
 }
 
 func executeGetCloudEventFilter(filterName string) ([]byte, error) {
-
 	var err error
 
 	if filterName == "" {
@@ -480,7 +462,6 @@ func executeGetCloudEventFilter(filterName string) ([]byte, error) {
 
 	body, err := io.ReadAll(resp.Body)
 	return body, err
-
 }
 
 func init() {

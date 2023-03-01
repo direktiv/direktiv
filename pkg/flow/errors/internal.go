@@ -14,7 +14,6 @@ type InternalError struct {
 }
 
 func NewInternalError(err error) error {
-
 	ierr := new(InternalError)
 	uerr := new(UncatchableError)
 	cerr := new(CatchableError)

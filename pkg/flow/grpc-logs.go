@@ -3,8 +3,12 @@ package flow
 import (
 	"context"
 
+	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
+	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	entlog "github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
+	entns "github.com/direktiv/direktiv/pkg/flow/ent/namespace"
+	entwf "github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 )
 
@@ -19,10 +23,11 @@ var logsOrderings = []*orderingInfo{
 var logsFilters = map[*filteringInfo]func(query *ent.LogMsgQuery, v string) (*ent.LogMsgQuery, error){}
 
 func (flow *flow) ServerLogs(ctx context.Context, req *grpc.ServerLogsRequest) (*grpc.ServerLogsResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	query := flow.db.LogMsg.Query()
+	clients := flow.edb.Clients(ctx)
+
+	query := clients.LogMsg.Query()
 	query = query.Where(entlog.Not(entlog.HasNamespace()), entlog.Not(entlog.HasWorkflow()))
 
 	results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
@@ -39,11 +44,9 @@ func (flow *flow) ServerLogs(ctx context.Context, req *grpc.ServerLogsRequest) (
 	}
 
 	return resp, nil
-
 }
 
 func (flow *flow) ServerLogsParcels(req *grpc.ServerLogsRequest, srv grpc.Flow_ServerLogsParcelsServer) error {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
@@ -55,7 +58,8 @@ func (flow *flow) ServerLogsParcels(req *grpc.ServerLogsRequest, srv grpc.Flow_S
 
 resend:
 
-	query := flow.db.LogMsg.Query()
+	clients := flow.edb.Clients(ctx)
+	query := clients.LogMsg.Query()
 	query = query.Where(entlog.Not(entlog.HasNamespace()), entlog.Not(entlog.HasWorkflow()))
 
 	results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
@@ -90,19 +94,21 @@ resend:
 	}
 
 	goto resend
-
 }
 
 func (flow *flow) NamespaceLogs(ctx context.Context, req *grpc.NamespaceLogsRequest) (*grpc.NamespaceLogsResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	ns, err := flow.getNamespace(ctx, flow.db.Namespace, req.GetNamespace())
+	cached := new(database.CacheData)
+
+	err := flow.database.NamespaceByName(ctx, cached, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
 
-	query := ns.QueryLogs()
+	clients := flow.edb.Clients(ctx)
+
+	query := clients.LogMsg.Query().Where(entlog.HasNamespaceWith(entns.ID(cached.Namespace.ID)))
 
 	results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
 	if err != nil {
@@ -110,7 +116,7 @@ func (flow *flow) NamespaceLogs(ctx context.Context, req *grpc.NamespaceLogsRequ
 	}
 
 	resp := new(grpc.NamespaceLogsResponse)
-	resp.Namespace = ns.Name
+	resp.Namespace = cached.Namespace.Name
 	resp.PageInfo = pi
 
 	err = atob(results, &resp.Results)
@@ -119,28 +125,30 @@ func (flow *flow) NamespaceLogs(ctx context.Context, req *grpc.NamespaceLogsRequ
 	}
 
 	return resp, nil
-
 }
 
 func (flow *flow) NamespaceLogsParcels(req *grpc.NamespaceLogsRequest, srv grpc.Flow_NamespaceLogsParcelsServer) error {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
 
 	var tailing bool
 
-	ns, err := flow.getNamespace(ctx, flow.db.Namespace, req.GetNamespace())
+	cached := new(database.CacheData)
+
+	err := flow.database.NamespaceByName(ctx, cached, req.GetNamespace())
 	if err != nil {
 		return err
 	}
 
-	sub := flow.pubsub.SubscribeNamespaceLogs(ns)
+	sub := flow.pubsub.SubscribeNamespaceLogs(cached.Namespace)
 	defer flow.cleanup(sub.Close)
+
+	clients := flow.edb.Clients(ctx)
 
 resend:
 
-	query := ns.QueryLogs()
+	query := clients.LogMsg.Query().Where(entlog.HasNamespaceWith(entns.ID(cached.Namespace.ID)))
 
 	results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
 	if err != nil {
@@ -148,7 +156,7 @@ resend:
 	}
 
 	resp := new(grpc.NamespaceLogsResponse)
-	resp.Namespace = ns.Name
+	resp.Namespace = cached.Namespace.Name
 	resp.PageInfo = pi
 
 	err = atob(results, &resp.Results)
@@ -175,19 +183,31 @@ resend:
 	}
 
 	goto resend
-
 }
 
 func (flow *flow) WorkflowLogs(ctx context.Context, req *grpc.WorkflowLogsRequest) (*grpc.WorkflowLogsResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	d, err := flow.traverseToWorkflow(ctx, flow.db.Namespace, req.GetNamespace(), req.GetPath())
+	cached := new(database.CacheData)
+
+	err := flow.database.NamespaceByName(ctx, cached, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
 
-	query := d.wf.QueryLogs()
+	err = flow.database.InodeByPath(ctx, cached, req.GetPath())
+	if err != nil {
+		return nil, err
+	}
+
+	err = flow.database.Workflow(ctx, cached, cached.Inode().Workflow)
+	if err != nil {
+		return nil, err
+	}
+
+	clients := flow.edb.Clients(ctx)
+
+	query := clients.LogMsg.Query().Where(entlog.HasWorkflowWith(entwf.ID(cached.Workflow.ID)))
 
 	results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
 	if err != nil {
@@ -195,8 +215,8 @@ func (flow *flow) WorkflowLogs(ctx context.Context, req *grpc.WorkflowLogsReques
 	}
 
 	resp := new(grpc.WorkflowLogsResponse)
-	resp.Namespace = d.namespace()
-	resp.Path = d.path
+	resp.Namespace = cached.Namespace.Name
+	resp.Path = cached.Path()
 	resp.PageInfo = pi
 
 	err = atob(results, &resp.Results)
@@ -205,28 +225,40 @@ func (flow *flow) WorkflowLogs(ctx context.Context, req *grpc.WorkflowLogsReques
 	}
 
 	return resp, nil
-
 }
 
 func (flow *flow) WorkflowLogsParcels(req *grpc.WorkflowLogsRequest, srv grpc.Flow_WorkflowLogsParcelsServer) error {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
 
 	var tailing bool
 
-	d, err := flow.traverseToWorkflow(ctx, flow.db.Namespace, req.GetNamespace(), req.GetPath())
+	cached := new(database.CacheData)
+
+	err := flow.database.NamespaceByName(ctx, cached, req.GetNamespace())
 	if err != nil {
 		return err
 	}
 
-	sub := flow.pubsub.SubscribeWorkflowLogs(d.wf)
+	err = flow.database.InodeByPath(ctx, cached, req.GetPath())
+	if err != nil {
+		return err
+	}
+
+	err = flow.database.Workflow(ctx, cached, cached.Inode().Workflow)
+	if err != nil {
+		return err
+	}
+
+	sub := flow.pubsub.SubscribeWorkflowLogs(cached)
 	defer flow.cleanup(sub.Close)
 
 resend:
 
-	query := d.wf.QueryLogs()
+	clients := flow.edb.Clients(ctx)
+
+	query := clients.LogMsg.Query().Where(entlog.HasWorkflowWith(entwf.ID(cached.Workflow.ID)))
 
 	results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
 	if err != nil {
@@ -234,8 +266,8 @@ resend:
 	}
 
 	resp := new(grpc.WorkflowLogsResponse)
-	resp.Namespace = d.namespace()
-	resp.Path = d.path
+	resp.Namespace = cached.Namespace.Name
+	resp.Path = cached.Path()
 	resp.PageInfo = pi
 
 	err = atob(results, &resp.Results)
@@ -262,19 +294,19 @@ resend:
 	}
 
 	goto resend
-
 }
 
 func (flow *flow) InstanceLogs(ctx context.Context, req *grpc.InstanceLogsRequest) (*grpc.InstanceLogsResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	d, err := flow.getInstance(ctx, flow.db.Namespace, req.GetNamespace(), req.GetInstance(), false)
+	cached, err := flow.getInstance(ctx, req.GetNamespace(), req.GetInstance())
 	if err != nil {
 		return nil, err
 	}
 
-	query := d.in.QueryLogs()
+	clients := flow.edb.Clients(ctx)
+
+	query := clients.LogMsg.Query().Where(entlog.HasInstanceWith(entinst.ID(cached.Instance.ID)))
 
 	results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
 	if err != nil {
@@ -282,8 +314,8 @@ func (flow *flow) InstanceLogs(ctx context.Context, req *grpc.InstanceLogsReques
 	}
 
 	resp := new(grpc.InstanceLogsResponse)
-	resp.Namespace = d.namespace()
-	resp.Instance = d.in.ID.String()
+	resp.Namespace = cached.Namespace.Name
+	resp.Instance = cached.Instance.ID.String()
 	resp.PageInfo = pi
 
 	err = atob(results, &resp.Results)
@@ -292,28 +324,28 @@ func (flow *flow) InstanceLogs(ctx context.Context, req *grpc.InstanceLogsReques
 	}
 
 	return resp, nil
-
 }
 
 func (flow *flow) InstanceLogsParcels(req *grpc.InstanceLogsRequest, srv grpc.Flow_InstanceLogsParcelsServer) error {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
 
 	var tailing bool
 
-	d, err := flow.getInstance(ctx, flow.db.Namespace, req.GetNamespace(), req.GetInstance(), false)
+	cached, err := flow.getInstance(ctx, req.GetNamespace(), req.GetInstance())
 	if err != nil {
 		return err
 	}
 
-	sub := flow.pubsub.SubscribeInstanceLogs(d.in)
+	sub := flow.pubsub.SubscribeInstanceLogs(cached)
 	defer flow.cleanup(sub.Close)
 
 resend:
 
-	query := d.in.QueryLogs()
+	clients := flow.edb.Clients(ctx)
+
+	query := clients.LogMsg.Query().Where(entlog.HasInstanceWith(entinst.ID(cached.Instance.ID)))
 
 	results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
 	if err != nil {
@@ -321,8 +353,8 @@ resend:
 	}
 
 	resp := new(grpc.InstanceLogsResponse)
-	resp.Namespace = d.namespace()
-	resp.Instance = d.in.ID.String()
+	resp.Namespace = cached.Namespace.Name
+	resp.Instance = cached.Instance.ID.String()
 	resp.PageInfo = pi
 
 	err = atob(results, &resp.Results)
@@ -349,5 +381,4 @@ resend:
 	}
 
 	goto resend
-
 }

@@ -47,7 +47,6 @@ func getClientSet() (*kubernetes.Clientset, error) {
 }
 
 func kubernetesDeleteRegistry(ctx context.Context, name, namespace string) error {
-
 	logger.Debugf("deleting registry %s (%s)", name, namespace)
 
 	clientset, err := getClientSet()
@@ -74,7 +73,6 @@ func kubernetesDeleteRegistry(ctx context.Context, name, namespace string) error
 }
 
 func listRegistriesNames(namespace string) []string {
-
 	logger.Debugf("getting registries for namespace %s", namespace)
 	var registries []string
 
@@ -99,7 +97,6 @@ func listRegistriesNames(namespace string) []string {
 	logger.Debugf("registries for namespace: %+v", registries)
 
 	return registries
-
 }
 
 func (is *functionsServer) DeleteRegistry(ctx context.Context, in *igrpc.DeleteRegistryRequest) (*emptypb.Empty, error) {
@@ -108,7 +105,6 @@ func (is *functionsServer) DeleteRegistry(ctx context.Context, in *igrpc.DeleteR
 }
 
 func (is *functionsServer) StoreRegistry(ctx context.Context, in *igrpc.StoreRegistryRequest) (*emptypb.Empty, error) {
-
 	// create secret data, needs to be attached to service account
 	userToken := strings.SplitN(string(in.Data), ":", 2)
 	if len(userToken) != 2 {
@@ -161,11 +157,9 @@ func (is *functionsServer) StoreRegistry(ctx context.Context, in *igrpc.StoreReg
 		&sa, metav1.CreateOptions{})
 
 	return &empty, err
-
 }
 
 func (is *functionsServer) GetRegistries(ctx context.Context, in *igrpc.GetRegistriesRequest) (*igrpc.GetRegistriesResponse, error) {
-
 	resp := &igrpc.GetRegistriesResponse{
 		Registries: []*igrpc.Registry{},
 	}
@@ -194,11 +188,9 @@ func (is *functionsServer) GetRegistries(ctx context.Context, in *igrpc.GetRegis
 	}
 
 	return resp, nil
-
 }
 
 func obfuscateUser(user string) string {
-
 	switch len(user) {
 	case 1, 2, 3:
 		user = fmt.Sprintf("%s***", string(user[0]))
@@ -209,7 +201,6 @@ func obfuscateUser(user string) string {
 	}
 
 	return user
-
 }
 
 func prepareNewRegistrySecret(name, url, authConfig string) v1.Secret {

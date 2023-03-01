@@ -23,7 +23,6 @@ type getterLogic struct {
 }
 
 func Getter(instance Instance, state model.State) (Logic, error) {
-
 	getter, ok := state.(*model.GetterState)
 	if !ok {
 		return nil, derrors.NewInternalError(errors.New("bad state object"))
@@ -34,11 +33,9 @@ func Getter(instance Instance, state model.State) (Logic, error) {
 	sl.GetterState = getter
 
 	return sl, nil
-
 }
 
 func (logic *getterLogic) Run(ctx context.Context, wakedata []byte) (*Transition, error) {
-
 	err := scheduleOnce(logic, wakedata)
 	if err != nil {
 		return nil, err
@@ -51,7 +48,7 @@ func (logic *getterLogic) Run(ctx context.Context, wakedata []byte) (*Transition
 
 	for idx, v := range logic.Variables {
 
-		var key = ""
+		key := ""
 		var selector VariableSelector
 
 		x, err := jqOne(logic.GetInstanceData(), v.Key)
@@ -152,11 +149,9 @@ func (logic *getterLogic) Run(ctx context.Context, wakedata []byte) (*Transition
 		Transform: logic.Transform,
 		NextState: logic.Transition,
 	}, nil
-
 }
 
 func valueForSystem(key string, instance Instance) (interface{}, error) {
-
 	var ret interface{}
 
 	switch key {
@@ -171,5 +166,4 @@ func valueForSystem(key string, instance Instance) (interface{}, error) {
 	}
 
 	return ret, nil
-
 }

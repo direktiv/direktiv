@@ -1,4 +1,4 @@
-package main
+package flow
 
 import (
 	"bytes"
@@ -15,7 +15,6 @@ var workflowCmd = &cobra.Command{
 	Use:  "workflow NAMESPACE PATH [REF]",
 	Args: cobra.RangeArgs(2, 3),
 	Run: func(cmd *cobra.Command, args []string) {
-
 		namespace := args[0]
 		path := args[1]
 		ref := "latest"
@@ -63,12 +62,10 @@ var workflowCmd = &cobra.Command{
 			print(resp)
 
 		}
-
 	},
 }
 
 func loadSource() ([]byte, error) {
-
 	if stdin && filein != "" {
 		return nil, errors.New("--stdin & --input flags are mutually exclusive")
 	}
@@ -92,7 +89,6 @@ func loadSource() ([]byte, error) {
 	}
 
 	return data, nil
-
 }
 
 func init() {
@@ -165,7 +161,6 @@ var createWorkflowCmd = &cobra.Command{
 	Use:  "create-workflow NAMESPACE PATH",
 	Args: cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
-
 		namespace := args[0]
 		path := args[1]
 
@@ -190,7 +185,6 @@ var createWorkflowCmd = &cobra.Command{
 		}
 
 		print(resp)
-
 	},
 }
 
@@ -204,7 +198,6 @@ var updateWorkflowCmd = &cobra.Command{
 	Use:  "update-workflow NAMESPACE PATH",
 	Args: cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
-
 		namespace := args[0]
 		path := args[1]
 
@@ -229,7 +222,6 @@ var updateWorkflowCmd = &cobra.Command{
 		}
 
 		print(resp)
-
 	},
 }
 
@@ -237,7 +229,6 @@ var saveHeadCmd = &cobra.Command{
 	Use:  "save-head NAMESPACE PATH",
 	Args: cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
-
 		namespace := args[0]
 		path := args[1]
 
@@ -256,7 +247,6 @@ var saveHeadCmd = &cobra.Command{
 		}
 
 		print(resp)
-
 	},
 }
 
@@ -264,7 +254,6 @@ var discardHeadCmd = &cobra.Command{
 	Use:  "discard-head NAMESPACE PATH",
 	Args: cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
-
 		namespace := args[0]
 		path := args[1]
 
@@ -283,7 +272,6 @@ var discardHeadCmd = &cobra.Command{
 		}
 
 		print(resp)
-
 	},
 }
 
@@ -296,7 +284,6 @@ var tagsCmd = &cobra.Command{
 	Use:  "tags NAMESPACE PATH",
 	Args: cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
-
 		namespace := args[0]
 		path := args[1]
 
@@ -352,7 +339,6 @@ var tagsCmd = &cobra.Command{
 			print(resp)
 
 		}
-
 	},
 }
 
@@ -360,7 +346,6 @@ var refsCmd = &cobra.Command{
 	Use:  "refs NAMESPACE PATH",
 	Args: cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
-
 		namespace := args[0]
 		path := args[1]
 
@@ -416,7 +401,6 @@ var refsCmd = &cobra.Command{
 			print(resp)
 
 		}
-
 	},
 }
 
@@ -424,7 +408,6 @@ var revisionsCmd = &cobra.Command{
 	Use:  "revisions NAMESPACE PATH",
 	Args: cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
-
 		namespace := args[0]
 		path := args[1]
 
@@ -480,6 +463,5 @@ var revisionsCmd = &cobra.Command{
 			print(resp)
 
 		}
-
 	},
 }
