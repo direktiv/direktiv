@@ -82,6 +82,16 @@ body {
     U+FE2E-FE2F;
 }
 
+@font-face {
+  font-family: "RobotoMono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("fonts/RobotoMono-Medium.ttf") format("ttf");
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F,
+    U+FE2E-FE2F;
+}
+
 :root {
   --theme-background: #e5e5e5;
   --theme-grey-light-blue: #8797ad;
