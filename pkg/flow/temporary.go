@@ -34,7 +34,7 @@ func (im *instanceMemory) BroadcastCloudevent(ctx context.Context, event *cloude
 func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.VariableSelector) ([]states.Variable, error) {
 	x := make([]states.Variable, 0)
 
-	clients := im.engine.edb.Clients(im.tx)
+	clients := im.engine.edb.Clients(ctx)
 
 	for _, selector := range vars {
 
@@ -117,7 +117,7 @@ func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.Variab
 }
 
 func (im *instanceMemory) ListenForEvents(ctx context.Context, events []*model.ConsumeEventDefinition, all bool) error {
-	err := im.engine.events.deleteInstanceEventListeners(ctx, nil, im.cached)
+	err := im.engine.events.deleteInstanceEventListeners(ctx, im.cached)
 	if err != nil {
 		return err
 	}
@@ -159,13 +159,13 @@ func (im *instanceMemory) RetrieveSecret(ctx context.Context, secret string) (st
 }
 
 func (im *instanceMemory) SetVariables(ctx context.Context, vars []states.VariableSetter) error {
-	tx, err := im.engine.database.Tx(ctx)
+	tctx, tx, err := im.engine.database.Tx(ctx)
 	if err != nil {
 		return err
 	}
 	defer rollback(tx)
 
-	clients := im.engine.edb.Clients(tx)
+	clients := im.engine.edb.Clients(tctx)
 
 	for idx := range vars {
 
@@ -220,7 +220,7 @@ func (im *instanceMemory) SetVariables(ctx context.Context, vars []states.Variab
 		d := string(v.Data)
 
 		if len(d) == 0 {
-			_, _, err = im.engine.flow.DeleteVariable(ctx, tx, q, v.Key, v.Data, v.MIMEType, thread)
+			_, _, err = im.engine.flow.DeleteVariable(tctx, q, v.Key, v.Data, v.MIMEType, thread)
 			if err != nil {
 				return err
 			}
@@ -229,14 +229,14 @@ func (im *instanceMemory) SetVariables(ctx context.Context, vars []states.Variab
 		}
 
 		if !(v.MIMEType == "text/plain; charset=utf-8" || v.MIMEType == "text/plain" || v.MIMEType == "application/octet-stream") && (d == "{}" || d == "[]" || d == "0" || d == `""` || d == "null") {
-			_, _, err = im.engine.flow.DeleteVariable(ctx, tx, q, v.Key, v.Data, v.MIMEType, thread)
+			_, _, err = im.engine.flow.DeleteVariable(tctx, q, v.Key, v.Data, v.MIMEType, thread)
 			if err != nil {
 				return err
 			}
 			continue
 
 		} else {
-			_, _, err = im.engine.flow.SetVariable(ctx, tx, q, v.Key, v.Data, v.MIMEType, thread)
+			_, _, err = im.engine.flow.SetVariable(tctx, q, v.Key, v.Data, v.MIMEType, thread)
 			if err != nil {
 				return err
 			}

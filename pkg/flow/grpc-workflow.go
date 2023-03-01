@@ -15,13 +15,13 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-func (srv *server) traverseToWorkflow(ctx context.Context, tx database.Transaction, namespace, path string) (*database.CacheData, error) {
-	cached, err := srv.traverseToInode(ctx, tx, namespace, path)
+func (srv *server) traverseToWorkflow(ctx context.Context, namespace, path string) (*database.CacheData, error) {
+	cached, err := srv.traverseToInode(ctx, namespace, path)
 	if err != nil {
 		return nil, err
 	}
 
-	err = srv.database.Workflow(ctx, tx, cached, cached.Inode().Workflow)
+	err = srv.database.Workflow(ctx, cached, cached.Inode().Workflow)
 	if err != nil {
 		return nil, err
 	}
@@ -29,7 +29,7 @@ func (srv *server) traverseToWorkflow(ctx context.Context, tx database.Transacti
 	return cached, nil
 }
 
-func (srv *server) reverseTraverseToWorkflow(ctx context.Context, tx database.Transaction, workflow string) (*database.CacheData, error) {
+func (srv *server) reverseTraverseToWorkflow(ctx context.Context, workflow string) (*database.CacheData, error) {
 	id, err := uuid.Parse(workflow)
 	if err != nil {
 		return nil, err
@@ -37,7 +37,7 @@ func (srv *server) reverseTraverseToWorkflow(ctx context.Context, tx database.Tr
 
 	cached := new(database.CacheData)
 
-	err = srv.database.Workflow(ctx, tx, cached, id)
+	err = srv.database.Workflow(ctx, cached, id)
 	if err != nil {
 		return nil, err
 	}
@@ -45,12 +45,12 @@ func (srv *server) reverseTraverseToWorkflow(ctx context.Context, tx database.Tr
 	return cached, nil
 }
 
-func (srv *server) traverseToRef(ctx context.Context, tx database.Transaction, namespace, path, reference string) (*database.CacheData, error) {
+func (srv *server) traverseToRef(ctx context.Context, namespace, path, reference string) (*database.CacheData, error) {
 	if reference == "" {
 		reference = latest
 	}
 
-	cached, err := srv.traverseToWorkflow(ctx, tx, namespace, path)
+	cached, err := srv.traverseToWorkflow(ctx, namespace, path)
 	if err != nil {
 		srv.sugar.Debugf("%s failed to resolve workflow: %v", parent(), err)
 		return nil, err
@@ -68,7 +68,7 @@ func (srv *server) traverseToRef(ctx context.Context, tx database.Transaction, n
 
 	cached.Ref = ref
 
-	err = srv.database.Revision(ctx, tx, cached, ref.Revision)
+	err = srv.database.Revision(ctx, cached, ref.Revision)
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +85,7 @@ func (flow *flow) ResolveWorkflowUID(ctx context.Context, req *grpc.ResolveWorkf
 	}
 
 	cached := new(database.CacheData)
-	err = flow.database.Workflow(ctx, nil, cached, id)
+	err = flow.database.Workflow(ctx, cached, id)
 	if err != nil {
 		return nil, err
 	}
@@ -112,7 +112,7 @@ func (flow *flow) ResolveWorkflowUID(ctx context.Context, req *grpc.ResolveWorkf
 func (flow *flow) Workflow(ctx context.Context, req *grpc.WorkflowRequest) (*grpc.WorkflowResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	cached, err := flow.traverseToRef(ctx, nil, req.GetNamespace(), req.GetPath(), req.GetRef())
+	cached, err := flow.traverseToRef(ctx, req.GetNamespace(), req.GetPath(), req.GetRef())
 	if err != nil {
 		return nil, err
 	}
@@ -151,7 +151,7 @@ func (flow *flow) WorkflowStream(req *grpc.WorkflowRequest, srv grpc.Flow_Workfl
 	phash := ""
 	nhash := ""
 
-	cached, err := flow.traverseToRef(ctx, nil, req.GetNamespace(), req.GetPath(), req.GetRef())
+	cached, err := flow.traverseToRef(ctx, req.GetNamespace(), req.GetPath(), req.GetRef())
 	if err != nil {
 		return err
 	}
@@ -199,7 +199,7 @@ resend:
 		return nil
 	}
 
-	cached, err = flow.traverseToRef(ctx, nil, cached.Namespace.Name, cached.Path(), req.GetRef())
+	cached, err = flow.traverseToRef(ctx, cached.Namespace.Name, cached.Path(), req.GetRef())
 	if err != nil {
 		return err
 	}
@@ -216,7 +216,7 @@ type createWorkflowArgs struct {
 	noValidate bool
 }
 
-func (flow *flow) createWorkflow(ctx context.Context, tx database.Transaction, args *createWorkflowArgs) (*database.Workflow, *database.Inode, error) {
+func (flow *flow) createWorkflow(ctx context.Context, args *createWorkflowArgs) (*database.Workflow, *database.Inode, error) {
 	if !args.super && args.pino.ReadOnly {
 		return nil, nil, errors.New("cannot write into read-only directory")
 	}
@@ -230,12 +230,12 @@ func (flow *flow) createWorkflow(ctx context.Context, tx database.Transaction, a
 
 	pcached := new(database.CacheData)
 
-	err = flow.database.Inode(ctx, tx, pcached, args.pino.ID)
+	err = flow.database.Inode(ctx, pcached, args.pino.ID)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	cached, err := flow.database.CreateCompleteWorkflow(ctx, tx, &database.CreateCompleteWorkflowArgs{
+	cached, err := flow.database.CreateCompleteWorkflow(ctx, &database.CreateCompleteWorkflowArgs{
 		Name:     base,
 		ReadOnly: args.pino.ReadOnly,
 		Parent:   pcached,
@@ -252,7 +252,7 @@ func (flow *flow) createWorkflow(ctx context.Context, tx database.Transaction, a
 		flags |= rcfNoValidate
 	}
 
-	err = flow.configureRouter(ctx, tx, cached, flags,
+	err = flow.configureRouter(ctx, cached, flags,
 		func() error {
 			return nil
 		},
@@ -296,7 +296,7 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 		return nil, err
 	}
 
-	tx, err := flow.database.Tx(ctx)
+	tctx, tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -306,7 +306,7 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 	path := GetInodePath(req.GetPath())
 	dir, base := filepath.Split(path)
 
-	cached, err := flow.traverseToInode(ctx, tx, req.GetNamespace(), dir)
+	cached, err := flow.traverseToInode(tctx, req.GetNamespace(), dir)
 	if err != nil {
 		return nil, err
 	}
@@ -319,29 +319,29 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 		return nil, errors.New("cannot write into read-only directory")
 	}
 
-	clients := flow.edb.Clients(tx)
+	clients := flow.edb.Clients(tctx)
 
-	ino, err := clients.Inode.Create().SetName(base).SetNamespaceID(cached.Namespace.ID).SetParentID(cached.Inode().ID).SetType(util.InodeTypeWorkflow).Save(ctx)
+	ino, err := clients.Inode.Create().SetName(base).SetNamespaceID(cached.Namespace.ID).SetParentID(cached.Inode().ID).SetType(util.InodeTypeWorkflow).Save(tctx)
 	if err != nil {
 		return nil, err
 	}
 
-	wf, err := clients.Workflow.Create().SetInodeID(ino.ID).SetNamespaceID(cached.Namespace.ID).Save(ctx)
+	wf, err := clients.Workflow.Create().SetInodeID(ino.ID).SetNamespaceID(cached.Namespace.ID).Save(tctx)
 	if err != nil {
 		return nil, err
 	}
 
-	rev, err := clients.Revision.Create().SetHash(hash).SetSource(data).SetWorkflow(wf).SetMetadata(make(map[string]interface{})).Save(ctx)
+	rev, err := clients.Revision.Create().SetHash(hash).SetSource(data).SetWorkflow(wf).SetMetadata(make(map[string]interface{})).Save(tctx)
 	if err != nil {
 		return nil, err
 	}
 
-	ref, err := clients.Ref.Create().SetImmutable(false).SetName(latest).SetWorkflow(wf).SetRevision(rev).Save(ctx)
+	ref, err := clients.Ref.Create().SetImmutable(false).SetName(latest).SetWorkflow(wf).SetRevision(rev).Save(tctx)
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = clients.Inode.UpdateOneID(cached.Inode().ID).SetUpdatedAt(time.Now()).Save(ctx)
+	_, err = clients.Inode.UpdateOneID(cached.Inode().ID).SetUpdatedAt(time.Now()).Save(tctx)
 	if err != nil {
 		return nil, err
 	}
@@ -381,7 +381,7 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 		}},
 	}
 
-	err = flow.configureRouter(ctx, tx, cached, rcfNoPriors,
+	err = flow.configureRouter(tctx, cached, rcfNoPriors,
 		func() error {
 			return nil
 		},
@@ -446,7 +446,7 @@ type updateWorkflowArgs struct {
 	noValidate bool
 }
 
-func (flow *flow) updateWorkflow(ctx context.Context, tx database.Transaction, args *updateWorkflowArgs) (*database.Revision, error) {
+func (flow *flow) updateWorkflow(ctx context.Context, args *updateWorkflowArgs) (*database.Revision, error) {
 	data := args.data
 
 	hash, err := computeHash(data)
@@ -470,7 +470,7 @@ func (flow *flow) updateWorkflow(ctx context.Context, tx database.Transaction, a
 
 	args.cached.Ref = ref
 
-	err = flow.database.Revision(ctx, tx, args.cached, ref.Revision)
+	err = flow.database.Revision(ctx, args.cached, ref.Revision)
 	if err != nil {
 		return nil, err
 	}
@@ -491,16 +491,16 @@ func (flow *flow) updateWorkflow(ctx context.Context, tx database.Transaction, a
 		flags |= rcfNoValidate
 	}
 
-	err = flow.configureRouter(ctx, tx, args.cached, flags,
+	err = flow.configureRouter(ctx, args.cached, flags,
 		func() error {
-			rev, err = flow.database.CreateRevision(ctx, tx, &database.CreateRevisionArgs{
+			rev, err = flow.database.CreateRevision(ctx, &database.CreateRevisionArgs{
 				Workflow: args.cached.Workflow.ID,
 				Hash:     hash,
 				Source:   data,
 				Metadata: make(map[string]interface{}),
 			})
 
-			clients := flow.edb.Clients(tx)
+			clients := flow.edb.Clients(ctx)
 
 			// change latest tag
 			err = clients.Ref.UpdateOneID(ref.ID).SetRevisionID(rev.ID).Exec(ctx)
@@ -554,18 +554,18 @@ func (flow *flow) updateWorkflow(ctx context.Context, tx database.Transaction, a
 func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRequest) (*grpc.UpdateWorkflowResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tx, err := flow.database.Tx(ctx)
+	tctx, tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer rollback(tx)
 
-	cached, err := flow.traverseToWorkflow(ctx, tx, req.GetNamespace(), req.GetPath())
+	cached, err := flow.traverseToWorkflow(tctx, req.GetNamespace(), req.GetPath())
 	if err != nil {
 		return nil, err
 	}
 
-	rev, err := flow.updateWorkflow(ctx, tx, &updateWorkflowArgs{
+	rev, err := flow.updateWorkflow(tctx, &updateWorkflowArgs{
 		cached: cached,
 		path:   cached.Path(),
 		data:   req.GetSource(),
@@ -611,18 +611,18 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 func (flow *flow) SaveHead(ctx context.Context, req *grpc.SaveHeadRequest) (*grpc.SaveHeadResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tx, err := flow.database.Tx(ctx)
+	tctx, tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer rollback(tx)
 
-	cached, err := flow.traverseToRef(ctx, tx, req.GetNamespace(), req.GetPath(), "")
+	cached, err := flow.traverseToRef(tctx, req.GetNamespace(), req.GetPath(), "")
 	if err != nil {
 		return nil, err
 	}
 
-	clients := flow.edb.Clients(tx)
+	clients := flow.edb.Clients(tctx)
 
 	k, err := clients.Ref.Query().Where(entref.HasRevisionWith(entrev.ID(cached.Revision.ID))).Count(ctx)
 	if err != nil {
@@ -695,18 +695,18 @@ respond:
 func (flow *flow) DiscardHead(ctx context.Context, req *grpc.DiscardHeadRequest) (*grpc.DiscardHeadResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tx, err := flow.database.Tx(ctx)
+	tctx, tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer rollback(tx)
 
-	cached, err := flow.traverseToRef(ctx, tx, req.GetNamespace(), req.GetPath(), "")
+	cached, err := flow.traverseToRef(tctx, req.GetNamespace(), req.GetPath(), "")
 	if err != nil {
 		return nil, err
 	}
 
-	clients := flow.edb.Clients(tx)
+	clients := flow.edb.Clients(tctx)
 
 	if len(cached.Workflow.Revisions) == 1 || len(cached.Workflow.Refs) > 1 {
 		// already saved, or not discardable, gracefully back out
@@ -714,19 +714,19 @@ func (flow *flow) DiscardHead(ctx context.Context, req *grpc.DiscardHeadRequest)
 		goto respond
 	}
 
-	err = flow.configureRouter(ctx, tx, cached, rcfBreaking,
+	err = flow.configureRouter(tctx, cached, rcfBreaking,
 		func() error {
-			err = clients.Ref.UpdateOneID(cached.Ref.ID).SetRevisionID(cached.Workflow.Revisions[1].ID).Exec(ctx)
+			err = clients.Ref.UpdateOneID(cached.Ref.ID).SetRevisionID(cached.Workflow.Revisions[1].ID).Exec(tctx)
 			if err != nil {
 				return err
 			}
 
-			err = clients.Revision.DeleteOneID(cached.Revision.ID).Exec(ctx)
+			err = clients.Revision.DeleteOneID(cached.Revision.ID).Exec(tctx)
 			if err != nil {
 				return err
 			}
 
-			err = flow.database.Revision(ctx, tx, cached, cached.Workflow.Revisions[1].ID)
+			err = flow.database.Revision(tctx, cached, cached.Workflow.Revisions[1].ID)
 			if err != nil {
 				return err
 			}
@@ -776,13 +776,13 @@ respond:
 func (flow *flow) ToggleWorkflow(ctx context.Context, req *grpc.ToggleWorkflowRequest) (*emptypb.Empty, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tx, err := flow.database.Tx(ctx)
+	tctx, tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer rollback(tx)
 
-	cached, err := flow.traverseToWorkflow(ctx, tx, req.GetNamespace(), req.GetPath())
+	cached, err := flow.traverseToWorkflow(tctx, req.GetNamespace(), req.GetPath())
 	if err != nil {
 		return nil, err
 	}
@@ -794,11 +794,11 @@ func (flow *flow) ToggleWorkflow(ctx context.Context, req *grpc.ToggleWorkflowRe
 		return &resp, nil
 	}
 
-	clients := flow.edb.Clients(tx)
+	clients := flow.edb.Clients(tctx)
 
-	err = flow.configureRouter(ctx, tx, cached, rcfBreaking,
+	err = flow.configureRouter(tctx, cached, rcfBreaking,
 		func() error {
-			wf, err := clients.Workflow.UpdateOneID(cached.Workflow.ID).SetLive(req.GetLive()).Save(ctx)
+			wf, err := clients.Workflow.UpdateOneID(cached.Workflow.ID).SetLive(req.GetLive()).Save(tctx)
 			if err != nil {
 				return err
 			}
@@ -839,20 +839,20 @@ func (flow *flow) ToggleWorkflow(ctx context.Context, req *grpc.ToggleWorkflowRe
 func (flow *flow) SetWorkflowEventLogging(ctx context.Context, req *grpc.SetWorkflowEventLoggingRequest) (*emptypb.Empty, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tx, err := flow.database.Tx(ctx)
+	tctx, tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer rollback(tx)
 
-	cached, err := flow.traverseToWorkflow(ctx, tx, req.GetNamespace(), req.GetPath())
+	cached, err := flow.traverseToWorkflow(tctx, req.GetNamespace(), req.GetPath())
 	if err != nil {
 		return nil, err
 	}
 
-	clients := flow.edb.Clients(tx)
+	clients := flow.edb.Clients(tctx)
 
-	_, err = clients.Workflow.UpdateOneID(cached.Workflow.ID).SetLogToEvents(req.GetLogger()).Save(ctx)
+	_, err = clients.Workflow.UpdateOneID(cached.Workflow.ID).SetLogToEvents(req.GetLogger()).Save(tctx)
 	if err != nil {
 		return nil, err
 	}

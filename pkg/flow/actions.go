@@ -74,7 +74,7 @@ func (actions *actions) SetNamespaceRegistry(ctx context.Context, req *grpc.SetN
 
 	cached := new(database.CacheData)
 
-	err := actions.database.NamespaceByName(ctx, nil, cached, req.GetNamespace())
+	err := actions.database.NamespaceByName(ctx, cached, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
@@ -97,7 +97,7 @@ func (actions *actions) DeleteNamespaceRegistry(ctx context.Context, req *grpc.D
 
 	cached := new(database.CacheData)
 
-	err := actions.database.NamespaceByName(ctx, nil, cached, req.GetNamespace())
+	err := actions.database.NamespaceByName(ctx, cached, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
@@ -202,7 +202,7 @@ func (actions *actions) NamespaceRegistries(ctx context.Context, req *grpc.Names
 
 	cached := new(database.CacheData)
 
-	err := actions.database.NamespaceByName(ctx, nil, cached, req.GetNamespace())
+	err := actions.database.NamespaceByName(ctx, cached, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
@@ -253,7 +253,7 @@ func (actions *actions) NamespaceRegistriesStream(req *grpc.NamespaceRegistriesR
 
 	cached := new(database.CacheData)
 
-	err := actions.database.NamespaceByName(ctx, nil, cached, req.GetNamespace())
+	err := actions.database.NamespaceByName(ctx, cached, req.GetNamespace())
 	if err != nil {
 		return err
 	}

@@ -54,15 +54,15 @@ var inodesFilters = map[*filteringInfo]func(query *ent.InodeQuery, v string) (*e
 	},
 }
 
-func (srv *server) traverseToInode(ctx context.Context, tx database.Transaction, namespace, path string) (*database.CacheData, error) {
+func (srv *server) traverseToInode(ctx context.Context, namespace, path string) (*database.CacheData, error) {
 	cached := new(database.CacheData)
 
-	err := srv.database.NamespaceByName(ctx, tx, cached, namespace)
+	err := srv.database.NamespaceByName(ctx, cached, namespace)
 	if err != nil {
 		return nil, err
 	}
 
-	err = srv.database.InodeByPath(ctx, tx, cached, path)
+	err = srv.database.InodeByPath(ctx, cached, path)
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +76,7 @@ func (flow *flow) Node(ctx context.Context, req *grpc.NodeRequest) (*grpc.NodeRe
 	var err error
 	var resp grpc.NodeResponse
 
-	cached, err := flow.traverseToInode(ctx, nil, req.GetNamespace(), req.GetPath())
+	cached, err := flow.traverseToInode(ctx, req.GetNamespace(), req.GetPath())
 	if err != nil {
 		flow.sugar.Debugf("gRPC %s handler failed to traverse to (namespace/inode) %s/%s : %v", this(), req.GetNamespace(), req.GetPath(), err)
 		return nil, err
@@ -102,7 +102,7 @@ func (flow *flow) Node(ctx context.Context, req *grpc.NodeRequest) (*grpc.NodeRe
 func (flow *flow) Directory(ctx context.Context, req *grpc.DirectoryRequest) (*grpc.DirectoryResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	cached, err := flow.traverseToInode(ctx, nil, req.GetNamespace(), req.GetPath())
+	cached, err := flow.traverseToInode(ctx, req.GetNamespace(), req.GetPath())
 	if err != nil {
 		return nil, err
 	}
@@ -111,7 +111,7 @@ func (flow *flow) Directory(ctx context.Context, req *grpc.DirectoryRequest) (*g
 		return nil, ErrNotDir
 	}
 
-	clients := flow.edb.Clients(nil)
+	clients := flow.edb.Clients(ctx)
 
 	query := clients.Inode.Query().Where(entino.HasParentWith(entino.ID(cached.Inode().ID)))
 
@@ -163,7 +163,7 @@ func (flow *flow) DirectoryStream(req *grpc.DirectoryRequest, srv grpc.Flow_Dire
 	phash := ""
 	nhash := ""
 
-	cached, err := flow.traverseToInode(ctx, nil, req.GetNamespace(), req.GetPath())
+	cached, err := flow.traverseToInode(ctx, req.GetNamespace(), req.GetPath())
 	if err != nil {
 		return err
 	}
@@ -177,7 +177,7 @@ func (flow *flow) DirectoryStream(req *grpc.DirectoryRequest, srv grpc.Flow_Dire
 
 resend:
 
-	clients := flow.edb.Clients(nil)
+	clients := flow.edb.Clients(ctx)
 
 	query := clients.Inode.Query().Where(entino.HasParentWith(entino.ID(cached.Inode().ID)))
 
@@ -242,14 +242,14 @@ type createDirectoryArgs struct {
 	super   bool
 }
 
-func (flow *flow) createDirectory(ctx context.Context, tx database.Transaction, args *createDirectoryArgs) (*database.Inode, error) {
+func (flow *flow) createDirectory(ctx context.Context, args *createDirectoryArgs) (*database.Inode, error) {
 	dir, base := filepath.Split(args.path)
 
 	if args.pcached.Inode().ReadOnly && !args.super {
 		return nil, errors.New("cannot write into read-only directory")
 	}
 
-	ino, err := flow.database.CreateDirectoryInode(ctx, tx, &database.CreateDirectoryInodeArgs{
+	ino, err := flow.database.CreateDirectoryInode(ctx, &database.CreateDirectoryInodeArgs{
 		Name:     base,
 		ReadOnly: args.pcached.Inode().ReadOnly,
 		Parent:   args.pcached.Inode(),
@@ -277,7 +277,7 @@ func (flow *flow) createDirectory(ctx context.Context, tx database.Transaction, 
 func (flow *flow) CreateDirectory(ctx context.Context, req *grpc.CreateDirectoryRequest) (*grpc.CreateDirectoryResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tx, err := flow.database.Tx(ctx)
+	tctx, tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -292,17 +292,17 @@ func (flow *flow) CreateDirectory(ctx context.Context, req *grpc.CreateDirectory
 
 	cached := new(database.CacheData)
 
-	err = flow.database.NamespaceByName(ctx, tx, cached, req.GetNamespace())
+	err = flow.database.NamespaceByName(tctx, cached, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
 
-	err = flow.database.InodeByPath(ctx, tx, cached, dir)
+	err = flow.database.InodeByPath(tctx, cached, dir)
 	if err != nil {
 		return nil, err
 	}
 
-	ino, err := flow.createDirectory(ctx, tx, &createDirectoryArgs{
+	ino, err := flow.createDirectory(tctx, &createDirectoryArgs{
 		pcached: cached,
 		path:    path,
 	})
@@ -343,7 +343,7 @@ type deleteNodeArgs struct {
 	recursive bool
 }
 
-func (flow *flow) deleteNode(ctx context.Context, tx database.Transaction, args *deleteNodeArgs) error {
+func (flow *flow) deleteNode(ctx context.Context, args *deleteNodeArgs) error {
 	if args.cached.Inode().Name == "" {
 		return status.Error(codes.InvalidArgument, "cannot delete root node")
 	}
@@ -358,7 +358,7 @@ func (flow *flow) deleteNode(ctx context.Context, tx database.Transaction, args 
 		}
 	}
 
-	clients := flow.edb.Clients(tx)
+	clients := flow.edb.Clients(ctx)
 
 	err := clients.Inode.DeleteOneID(args.cached.Inode().ID).Exec(ctx)
 	if err != nil {
@@ -414,13 +414,13 @@ func (flow *flow) deleteNode(ctx context.Context, tx database.Transaction, args 
 func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (*emptypb.Empty, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tx, err := flow.database.Tx(ctx)
+	tctx, tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer rollback(tx)
 
-	cached, err := flow.traverseToInode(ctx, tx, req.GetNamespace(), req.GetPath())
+	cached, err := flow.traverseToInode(tctx, req.GetNamespace(), req.GetPath())
 	if err != nil {
 		if derrors.IsNotFound(err) && req.GetIdempotent() {
 			rollback(tx)
@@ -429,7 +429,7 @@ func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (
 		return nil, err
 	}
 
-	err = flow.deleteNode(ctx, tx, &deleteNodeArgs{
+	err = flow.deleteNode(tctx, &deleteNodeArgs{
 		cached:    cached,
 		recursive: req.GetRecursive(),
 	})
@@ -454,13 +454,13 @@ respond:
 func (flow *flow) RenameNode(ctx context.Context, req *grpc.RenameNodeRequest) (*grpc.RenameNodeResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tx, err := flow.database.Tx(ctx)
+	tctx, tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer rollback(tx)
 
-	cached, err := flow.traverseToInode(ctx, tx, req.GetNamespace(), req.GetOld())
+	cached, err := flow.traverseToInode(tctx, req.GetNamespace(), req.GetOld())
 	if err != nil {
 		return nil, err
 	}
@@ -484,7 +484,7 @@ func (flow *flow) RenameNode(ctx context.Context, req *grpc.RenameNodeRequest) (
 
 	dir, base := filepath.Split(path)
 
-	pcached, err := flow.traverseToInode(ctx, tx, req.GetNamespace(), dir)
+	pcached, err := flow.traverseToInode(tctx, req.GetNamespace(), dir)
 	if err != nil {
 		return nil, err
 	}
@@ -493,20 +493,20 @@ func (flow *flow) RenameNode(ctx context.Context, req *grpc.RenameNodeRequest) (
 		return nil, errors.New("cannot write into read-only directory")
 	}
 
-	clients := flow.edb.Clients(tx)
+	clients := flow.edb.Clients(tctx)
 
-	x, err := clients.Inode.UpdateOneID(cached.ParentInode().ID).SetUpdatedAt(time.Now()).Save(ctx)
+	x, err := clients.Inode.UpdateOneID(cached.ParentInode().ID).SetUpdatedAt(time.Now()).Save(tctx)
 	if err != nil {
 		return nil, err
 	}
 	cached.ParentInode().UpdatedAt = x.UpdatedAt
 
-	_, err = clients.Inode.UpdateOneID(cached.Inode().ID).SetName(base).SetParentID(pcached.Inode().ID).Save(ctx)
+	_, err = clients.Inode.UpdateOneID(cached.Inode().ID).SetName(base).SetParentID(pcached.Inode().ID).Save(tctx)
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = clients.Inode.UpdateOneID(pcached.Inode().ID).SetUpdatedAt(time.Now()).Save(ctx)
+	_, err = clients.Inode.UpdateOneID(pcached.Inode().ID).SetUpdatedAt(time.Now()).Save(tctx)
 	if err != nil {
 		return nil, err
 	}
@@ -547,13 +547,13 @@ func (flow *flow) RenameNode(ctx context.Context, req *grpc.RenameNodeRequest) (
 func (flow *flow) CreateNodeAttributes(ctx context.Context, req *grpc.CreateNodeAttributesRequest) (*emptypb.Empty, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tx, err := flow.database.Tx(ctx)
+	tctx, tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer rollback(tx)
 
-	cached, err := flow.traverseToInode(ctx, tx, req.GetNamespace(), req.GetPath())
+	cached, err := flow.traverseToInode(tctx, req.GetNamespace(), req.GetPath())
 	if err != nil {
 		return nil, err
 	}
@@ -576,9 +576,9 @@ func (flow *flow) CreateNodeAttributes(ctx context.Context, req *grpc.CreateNode
 
 	sort.Strings(attrs)
 
-	clients := flow.edb.Clients(tx)
+	clients := flow.edb.Clients(tctx)
 
-	_, err = clients.Inode.UpdateOneID(cached.Inode().ID).SetAttributes(attrs).Save(ctx)
+	_, err = clients.Inode.UpdateOneID(cached.Inode().ID).SetAttributes(attrs).Save(tctx)
 	if err != nil {
 		return nil, err
 	}
@@ -596,13 +596,13 @@ func (flow *flow) CreateNodeAttributes(ctx context.Context, req *grpc.CreateNode
 func (flow *flow) DeleteNodeAttributes(ctx context.Context, req *grpc.DeleteNodeAttributesRequest) (*emptypb.Empty, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tx, err := flow.database.Tx(ctx)
+	tctx, tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer rollback(tx)
 
-	cached, err := flow.traverseToInode(ctx, tx, req.GetNamespace(), req.GetPath())
+	cached, err := flow.traverseToInode(tctx, req.GetNamespace(), req.GetPath())
 	if err != nil {
 		return nil, err
 	}
@@ -625,9 +625,9 @@ func (flow *flow) DeleteNodeAttributes(ctx context.Context, req *grpc.DeleteNode
 
 	sort.Strings(attrs)
 
-	clients := flow.edb.Clients(tx)
+	clients := flow.edb.Clients(tctx)
 
-	_, err = clients.Inode.UpdateOneID(cached.Inode().ID).SetAttributes(attrs).Save(ctx)
+	_, err = clients.Inode.UpdateOneID(cached.Inode().ID).SetAttributes(attrs).Save(tctx)
 	if err != nil {
 		return nil, err
 	}

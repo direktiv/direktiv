@@ -14,7 +14,7 @@ import (
 func (flow *flow) Router(ctx context.Context, req *grpc.RouterRequest) (*grpc.RouterResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	cached, err := flow.traverseToWorkflow(ctx, nil, req.GetNamespace(), req.GetPath())
+	cached, err := flow.traverseToWorkflow(ctx, req.GetNamespace(), req.GetPath())
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +51,7 @@ func (flow *flow) RouterStream(req *grpc.RouterRequest, srv grpc.Flow_RouterStre
 	phash := ""
 	nhash := ""
 
-	cached, err := flow.traverseToWorkflow(ctx, nil, req.GetNamespace(), req.GetPath())
+	cached, err := flow.traverseToWorkflow(ctx, req.GetNamespace(), req.GetPath())
 	if err != nil {
 		return err
 	}
@@ -103,24 +103,24 @@ resend:
 func (flow *flow) EditRouter(ctx context.Context, req *grpc.EditRouterRequest) (*grpc.EditRouterResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tx, err := flow.database.Tx(ctx)
+	tctx, tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer rollback(tx)
 
-	cached, err := flow.traverseToWorkflow(ctx, tx, req.GetNamespace(), req.GetPath())
+	cached, err := flow.traverseToWorkflow(tctx, req.GetNamespace(), req.GetPath())
 	if err != nil {
 		return nil, err
 	}
 
 	var routes []*ent.Route
 
-	clients := flow.edb.Clients(tx)
+	clients := flow.edb.Clients(tctx)
 
-	err = flow.configureRouter(ctx, tx, cached, rcfBreaking,
+	err = flow.configureRouter(tctx, cached, rcfBreaking,
 		func() error {
-			_, err = clients.Route.Delete().Where(entmux.HasWorkflowWith(entwf.ID(cached.Workflow.ID))).Exec(ctx)
+			_, err = clients.Route.Delete().Where(entmux.HasWorkflowWith(entwf.ID(cached.Workflow.ID))).Exec(tctx)
 			if err != nil {
 				return err
 			}
@@ -147,7 +147,7 @@ func (flow *flow) EditRouter(ctx context.Context, req *grpc.EditRouterRequest) (
 					return os.ErrNotExist
 				}
 
-				err = clients.Route.Create().SetWorkflowID(cached.Workflow.ID).SetWeight(int(route.Weight)).SetRefID(ref.ID).Exec(ctx)
+				err = clients.Route.Create().SetWorkflowID(cached.Workflow.ID).SetWeight(int(route.Weight)).SetRefID(ref.ID).Exec(tctx)
 				if err != nil {
 					return err
 				}
@@ -155,7 +155,7 @@ func (flow *flow) EditRouter(ctx context.Context, req *grpc.EditRouterRequest) (
 			}
 
 			if cached.Workflow.Live != req.GetLive() {
-				err = clients.Workflow.UpdateOneID(cached.Workflow.ID).SetLive(req.GetLive()).Exec(ctx)
+				err = clients.Workflow.UpdateOneID(cached.Workflow.ID).SetLive(req.GetLive()).Exec(tctx)
 				if err != nil {
 					return err
 				}
@@ -196,12 +196,12 @@ func (flow *flow) EditRouter(ctx context.Context, req *grpc.EditRouterRequest) (
 func (flow *flow) ValidateRouter(ctx context.Context, req *grpc.ValidateRouterRequest) (*grpc.ValidateRouterResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	cached, err := flow.traverseToWorkflow(ctx, nil, req.GetNamespace(), req.GetPath())
+	cached, err := flow.traverseToWorkflow(ctx, req.GetNamespace(), req.GetPath())
 	if err != nil {
 		return nil, err
 	}
 
-	_, verr, err := flow.validateRouter(ctx, nil, cached)
+	_, verr, err := flow.validateRouter(ctx, cached)
 	if err != nil {
 		return nil, err
 	}

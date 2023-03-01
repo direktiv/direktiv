@@ -137,7 +137,7 @@ bad:
 }
 
 func (engine *engine) cancelRunning(id string) {
-	im, err := engine.getInstanceMemory(context.Background(), nil, id)
+	im, err := engine.getInstanceMemory(context.Background(), id)
 	if err == nil {
 		engine.timers.deleteTimerByName(im.Controller(), engine.pubsub.hostname, id)
 	}

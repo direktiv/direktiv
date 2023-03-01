@@ -71,7 +71,7 @@ func (rcv *eventReceiver) sendToNamespace(name string, r *http.Request) error {
 
 	cached := new(database.CacheData)
 
-	err = rcv.flow.database.NamespaceByName(ctx, nil, cached, name)
+	err = rcv.flow.database.NamespaceByName(ctx, cached, name)
 	if err != nil {
 		rcv.logger.Errorf("error getting namespace: %s", err.Error())
 		return err
@@ -97,7 +97,7 @@ func (rcv *eventReceiver) NamespaceHandler(w http.ResponseWriter, r *http.Reques
 }
 
 func (rcv *eventReceiver) MultiNamespaceHandler(w http.ResponseWriter, r *http.Request) {
-	clients := rcv.events.edb.Clients(nil)
+	clients := rcv.events.edb.Clients(context.Background())
 
 	nss, err := clients.Namespace.Query().All(context.Background())
 	if err != nil {
