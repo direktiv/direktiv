@@ -30,7 +30,7 @@ export const SidebarNavigationItem: FC<{ href: string; active?: boolean }> = ({
     className={clsx(
       active
         ? "bg-primary50 dark:bg-primary700 text-gray-gray12 dark:text-grayDark-gray12"
-        : "text-gray-gray10 dark:text-grayDark-gray10 hover:bg-gray-gray2 dark:hover:bg-grayDark-gray2",
+        : "text-gray-gray11 dark:text-grayDark-gray11 hover:bg-gray-gray2 dark:hover:bg-grayDark-gray2",
       "group flex items-center px-2 py-2 text-sm font-medium rounded-md [&>svg]:mr-3 [&>svg]:group"
     )}
   >
