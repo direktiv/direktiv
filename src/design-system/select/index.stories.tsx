@@ -76,6 +76,11 @@ export const Default: Story = {
       control: "boolean",
       type: { name: "boolean", required: false },
     },
+    ghost: {
+      description: "ghost select",
+      control: "boolean",
+      type: { name: "boolean", required: false },
+    },
     asChild: {
       table: {
         disable: true,
