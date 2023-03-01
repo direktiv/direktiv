@@ -3,6 +3,7 @@ import {
   Bug,
   Calendar,
   ChevronsUpDown,
+  CurlyBraces,
   FolderOpen,
   FolderTree,
   Github,
@@ -14,7 +15,10 @@ import {
   Play,
   PlusCircle,
   Settings,
+  Settings2,
+  Slack,
   Sun,
+  Terminal,
   Users,
 } from "lucide-react";
 import {
@@ -28,6 +32,7 @@ import {
 } from "../dropdown";
 import {
   Main,
+  MainContent,
   MainTopBar,
   MainTopLeft,
   MainTopRight,
@@ -153,16 +158,51 @@ export const Default = () => {
             <Button
               color="ghost"
               className="px-1"
-              onClick={() =>
-                setTheme((old) => (old === "light" ? "dark" : "light"))
-              }
-            >
-              {theme === "dark" ? (
-                <Sun className="w-5 h-auto" />
-              ) : (
-                <Moon className="w-5 h-auto" />
-              )}
-            </Button>
+              // onClick={() =>
+              //   setTheme((old) => (old === "light" ? "dark" : "light"))
+              // }
+            ></Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button color="ghost" className="px-1">
+                  <Settings2 />
+                  <RxChevronDown />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56">
+                <DropdownMenuLabel>Appearance</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() =>
+                    setTheme((old) => (old === "light" ? "dark" : "light"))
+                  }
+                >
+                  {theme === "dark" ? (
+                    <>
+                      <Sun className="mr-2 h-4 w-4" />
+                      switch to Light mode
+                    </>
+                  ) : (
+                    <>
+                      <Moon className="mr-2 h-4 w-4" />
+                      switch to dark mode
+                    </>
+                  )}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel>Help</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>
+                  <Terminal className="mr-2 h-4 w-4" /> Show API Commands
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <CurlyBraces className="mr-2 h-4 w-4" /> Open JQ Playground
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <Slack className="mr-2 h-4 w-4" /> Support Channel on Slack
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <div
@@ -188,6 +228,19 @@ export const Default = () => {
             </DropdownMenu>
           </MainTopRight>
         </MainTopBar>
+        <MainContent>
+          <div className="flex ">
+            <div className="tabs">
+              <a className="tab tab-bordered tab-active">Overview</a>
+              <a className="tab tab-bordered">Revisions</a>
+              <a className="tab tab-bordered">Active Revision</a>
+              <a className="tab tab-bordered">Settings</a>
+            </div>
+            <Button color="primary" className="ml-auto">
+              wdede
+            </Button>
+          </div>
+        </MainContent>
       </Main>
     </Root>
   );
