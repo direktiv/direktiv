@@ -56,12 +56,12 @@ pullPolicy: Always
 debug: "true"
 
 secrets:
-  image: "secrets"
+  image: "direktiv"
   tag: "latest"
 
 flow:
-  image: "flow"
-  dbimage: "flow-dbinit"
+  image: "direktiv"
+  dbimage: "direktiv"
   tag: "latest"
 
 ui:
@@ -69,12 +69,12 @@ ui:
   tag: "latest"
 
 api:
-  image: "api"
+  image: "direktiv"
   tag: "latest"
 
 functions:
   namespace: direktiv-services-direktiv
-  image: "functions"
+  image: "direktiv"
   tag: "latest"
   sidecar: "sidecar"
   initPodImage: "init-pod"

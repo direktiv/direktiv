@@ -14,24 +14,18 @@ FULL_VERSION := $(shell v='$${RELEASE}$${RELEASE:+-}${GIT_HASH}${GIT_DIRTY}'; ec
 GIT_TAG = $(shell git describe --tags --abbrev=0)
 DOCKER_CLONE_REPO = "docker.io/direktiv"
 
-# set to .all to build from .all docker images
-DOCKER_BASE := ""
-
 # Set HELM_CONFIG value if environment variable is not set.
 HELM_CONFIG ?= "scripts/dev.yaml"
 
 
 .SECONDARY:
 
-# Clones all images from DOCKER_CLONE_REPO and pushes them to DOCKER_REPO
-.PHONY: clone-images
-clone-images: clone-api clone-flow clone-secrets clone-sidecar clone-functions clone-flow-dbinit clone-ui
-
-.PHONY: clone-%
-clone-%:
-	@docker pull ${DOCKER_CLONE_REPO}/$*:${GIT_TAG}
-	@docker tag ${DOCKER_CLONE_REPO}/$*:${GIT_TAG} ${DOCKER_REPO}/$*${RELEASE_TAG}
-	@docker push ${DOCKER_REPO}/$*${RELEASE_TAG}
+# Clones direktiv image from DOCKER_CLONE_REPO and pushes them to DOCKER_REPO
+.PHONY: clone
+clone:
+	@docker pull ${DOCKER_CLONE_REPO}/direktiv:${GIT_TAG}
+	@docker tag ${DOCKER_CLONE_REPO}/direktiv:${GIT_TAG} ${DOCKER_REPO}/direktiv${RELEASE_TAG}
+	@docker push ${DOCKER_REPO}/direktiv${RELEASE_TAG}
 	@echo "Clone $@${RELEASE_TAG}: SUCCESS"
 
 .PHONY: help
@@ -40,11 +34,10 @@ help: ## Prints usage information.
 	@echo ""
 	@echo "Everything should work out-of-the-box. Just use 'make cluster'."
 	@echo ""
-	@echo 'If you need to tweak things, make a copy of scripts/dev.yaml and set your $$HELM_CONFIG environment variable to point to it. Ensure that $$DOCKER_REPO matches the registry in your $$HELM_CONFIG file, and that each 'image' in the config file references that same registry. $$DOCKER_BASE can be used to change the dockerfile base target.'
+	@echo 'If you need to tweak things, make a copy of scripts/dev.yaml and set your $$HELM_CONFIG environment variable to point to it. Ensure that $$DOCKER_REPO matches the registry in your $$HELM_CONFIG file, and that each 'image' in the config file references that same registry.'
 	@echo ""
 	@echo "\033[36mVariables\033[0m"
 	@printf "  %-16s %s\n" '$$DOCKER_REPO' "${DOCKER_REPO}"
-	@printf "  %-16s %s\n" '$$DOCKER_BASE' "${DOCKER_BASE}"
 	@printf "  %-16s %s\n" '$$HELM_CONFIG' "${HELM_CONFIG}"
 	@printf "  %-16s %s\n" '$$REGEX' "${REGEX}"
 	@printf "  %-16s %s\n" '$$RELEASE' "${RELEASE}"
@@ -55,8 +48,8 @@ help: ## Prints usage information.
 	@echo "\033[36mTargets\033[0m"
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-16s %s\n", $$1, $$2}'
 
-.PHONY: binaries
-binaries: ## Builds all Direktiv binaries. Useful only to check that code compiles.
+.PHONY: binary
+binary: ## Builds all Direktiv binaries. Useful only to check that code compiles.
 	go build -o /dev/null cmd/direktiv/*.go
 
 .PHONY: clean
@@ -67,17 +60,6 @@ clean: ## Deletes all build artifacts and tears down existing cluster.
 	kubectl wait --for=delete namespace/direktiv-services-direktiv --timeout=60s
 	kubectl delete --all ksvc -n direktiv-services-direktiv
 	kubectl delete --all jobs -n direktiv-services-direktiv
-
-.PHONY: images
-images: image-api image-flow image-secrets image-sidecar image-functions image-flow-dbinit
-
-.PHONY: scan
-scan: ## Builds and scans all Docker images
-scan: scan-api scan-flow scan-secrets scan-sidecar scan-functions
-
-.PHONY: push
-push: ## Builds all Docker images and pushes them to $DOCKER_REPO.
-push: push-api push-flow push-secrets push-sidecar push-functions push-flow-dbinit
 
 .PHONY: helm-reinstall
 helm-reinstall: ## Re-installes direktiv without pushing images
@@ -209,19 +191,21 @@ protoc: protoc-flow protoc-health protoc-secrets protoc-functions
 
 # Patterns
 
-.PHONY: scan-%
-scan-%: push-%
-	trivy image --exit-code 1 localhost:5000/$*
+.PHONY: scan
+scan: ## Builds and scans all Docker images
+scan: push
+	trivy image --exit-code 1 localhost:5000/direktiv
 
-.PHONY: image-%
-image-%: binaries
-	DOCKER_BUILDKIT=1 docker build --build-arg RELEASE_VERSION=${FULL_VERSION} -t direktiv-$* -f build/docker/$*/Dockerfile${DOCKER_BASE} .
+.PHONY: image
+image:
+	DOCKER_BUILDKIT=1 docker build --build-arg RELEASE_VERSION=${FULL_VERSION} -t direktiv -f build/docker/direktiv/Dockerfile .
 	@echo "Make $@: SUCCESS"
 
-.PHONY: push-%
-push-%: image-%
-	@docker tag direktiv-$* ${DOCKER_REPO}/$*${RELEASE_TAG}
-	@docker push ${DOCKER_REPO}/$*${RELEASE_TAG}
+.PHONY: push
+push: ## Builds all Docker images and pushes them to $DOCKER_REPO.
+push: image
+	@docker tag direktiv ${DOCKER_REPO}/direktiv${RELEASE_TAG}
+	@docker push ${DOCKER_REPO}/direktiv${RELEASE_TAG}
 	@echo "Make $@${RELEASE_TAG}: SUCCESS"
 
 # UI
