@@ -17,11 +17,14 @@ import {
 } from "lucide-react";
 import {
   DropdownMenu,
+  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuPortal,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuShortcut,
   DropdownMenuSub,
@@ -29,8 +32,9 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "./index";
-import type { Meta, StoryObj } from "@storybook/react";
 import Button from "../button";
+import type { Meta } from "@storybook/react";
+import { useState } from "react";
 
 const meta = {
   title: "Design System/Dropdown",
@@ -38,15 +42,14 @@ const meta = {
 } satisfies Meta<typeof DropdownMenu>;
 
 export default meta;
-type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {
-  render: ({ children: _children, ..._args }) => {
-    return (
+export const LoadingState = () => {
+  return (
+    <div className="flex justify-center">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button>
-            Open <ChevronDown />
+            Open Dropdown <ChevronDown />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-56">
@@ -130,10 +133,74 @@ export const Default: Story = {
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-    );
-  },
-  args: {
-    // children: "Button",
-  },
-  argTypes: {},
+    </div>
+  );
+};
+export const WithRadioButtons = () => {
+  const [position, setPosition] = useState("one");
+
+  return (
+    <div className="flex justify-center">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button>
+            Radio Buttons <ChevronDown />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-56">
+          <DropdownMenuLabel>Choose Option</DropdownMenuLabel>
+          <DropdownMenuRadioGroup value={position} onValueChange={setPosition}>
+            <DropdownMenuRadioItem value="one">
+              Option One
+            </DropdownMenuRadioItem>
+            <DropdownMenuRadioItem value="two">
+              Option Two
+            </DropdownMenuRadioItem>
+            <DropdownMenuRadioItem value="three">
+              Option Three
+            </DropdownMenuRadioItem>
+          </DropdownMenuRadioGroup>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  );
+};
+export const WithCheckboxes = () => {
+  const [featureOne, setFeatureOne] = useState(true);
+  const [featureTwo, setFeatureTwo] = useState(false);
+  const [featureThree, setFeatureThree] = useState(false);
+
+  return (
+    <div className="flex justify-center">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button>
+            Checkboxes <ChevronDown />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-56">
+          <DropdownMenuLabel>Choose Feature</DropdownMenuLabel>
+          <DropdownMenuCheckboxItem
+            checked={featureOne}
+            onCheckedChange={setFeatureOne}
+          >
+            Feature One
+          </DropdownMenuCheckboxItem>
+          <DropdownMenuCheckboxItem
+            checked={featureTwo}
+            onCheckedChange={setFeatureTwo}
+            disabled
+          >
+            Feature Two
+          </DropdownMenuCheckboxItem>
+          <DropdownMenuCheckboxItem
+            checked={featureThree}
+            onCheckedChange={setFeatureThree}
+          >
+            Feature Three
+          </DropdownMenuCheckboxItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  );
 };
