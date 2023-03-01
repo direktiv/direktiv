@@ -41,7 +41,6 @@ func (flow *flow) InstanceInput(ctx context.Context, req *grpc.InstanceInputRequ
 	}
 	delete(m, "private")
 	input := marshal(m)
-	//resp.Instance.Originator = d.in.Edges.Orginator.ID.String()
 	resp.Data = []byte(input)
 	resp.Namespace = d.namespace()
 
@@ -81,7 +80,6 @@ func (flow *flow) InstanceOutput(ctx context.Context, req *grpc.InstanceOutputRe
 
 	resp.Data = []byte(output)
 	resp.Namespace = d.namespace()
-	//resp.Instance.Originator = d.in.Edges.Orginator.ID.String()
 
 	return &resp, nil
 
@@ -111,7 +109,6 @@ func (flow *flow) InstanceMetadata(ctx context.Context, req *grpc.InstanceMetada
 
 	resp.Data = []byte(d.in.Edges.Runtime.Metadata)
 	resp.Namespace = d.namespace()
-	//resp.Instance.Originator = d.in.Edges.Orginator.ID.String()
 
 	return &resp, nil
 
@@ -193,9 +190,6 @@ resend:
 	if err != nil {
 		return err
 	}
-	// for i := 0; i < len(resp.Instances.Results); i++ {
-	// 	resp.Instances.Results[i].Originator = originators[i].ID.String()
-	// }
 	nhash = checksum(resp)
 	if nhash != phash {
 		err = srv.Send(resp)
@@ -251,7 +245,6 @@ func (flow *flow) Instance(ctx context.Context, req *grpc.InstanceRequest) (*grp
 	}
 
 	resp.Namespace = d.namespace()
-	//resp.Instance.Originator = d.in.Edges.Orginator
 	rwf := new(grpc.InstanceWorkflow)
 	rwf.Name = d.base
 	rwf.Parent = d.dir
@@ -312,7 +305,6 @@ resend:
 		}
 	}
 
-	//resp.Instance.Originator = d.in.Edges.Orginator.ID.String()
 	resp.Namespace = d.namespace()
 
 	rwf := new(grpc.InstanceWorkflow)

@@ -105,7 +105,6 @@ func (internal *internal) ActionLog(ctx context.Context, req *grpc.ActionLogRequ
 
 	inc := internal.db.Instance
 
-	//d, err := internal.getInstance(ctx, inc, req.GetInstanceId(), false)
 	d, err := internal.engine.getInstanceMemory(ctx, inc, req.GetInstanceId())
 	if err != nil {
 		internal.sugar.Error(err)
@@ -116,10 +115,8 @@ func (internal *internal) ActionLog(ctx context.Context, req *grpc.ActionLogRequ
 	//tags["actionID"] = req.ActionID
 	//tags["originator"] = req.Originator
 	tags["iterator"] = fmt.Sprint(req.Iterator)
-	//tags["state"] = fmt.Sprint(d.)
 	for _, msg := range req.GetMsg() {
 		internal.logToInstanceRaw(ctx, t, d.in, tags, msg)
-		//internal.logToInstanceRaw(ctx, t, d, msg)
 	}
 
 	var resp emptypb.Empty
