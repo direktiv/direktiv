@@ -6,6 +6,7 @@ import (
 	root "github.com/direktiv/direktiv/cmd/exec/cmd"
 	_ "github.com/direktiv/direktiv/cmd/exec/cmd/events"
 	_ "github.com/direktiv/direktiv/cmd/exec/cmd/info"
+	_ "github.com/direktiv/direktiv/cmd/exec/cmd/logs"
 	_ "github.com/direktiv/direktiv/cmd/exec/cmd/workflows"
 )
 
