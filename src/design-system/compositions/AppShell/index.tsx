@@ -31,8 +31,7 @@ export const SidebarNavigationItem: FC<{ href: string; active?: boolean }> = ({
       active
         ? "bg-primary50 dark:bg-primary700 text-gray-gray12 dark:text-grayDark-gray12"
         : "text-gray-gray10 dark:text-grayDark-gray10 hover:bg-gray-gray2 dark:hover:bg-grayDark-gray2",
-      "group flex items-center px-2 py-2 text-sm font-medium rounded-md",
-      "[&>svg]:mr-3"
+      "group flex items-center px-2 py-2 text-sm font-medium rounded-md [&>svg]:mr-3 [&>svg]:group"
     )}
   >
     {children}
@@ -49,4 +48,16 @@ export const MainTopBar: FC = ({ children }) => (
   <div className="border-b border-gray-gray5 dark:border-grayDark-gray5 p-4 sm:flex sm:items-center sm:justify-between">
     {children}
   </div>
+);
+
+export const MainTopLeft: FC = ({ children }) => (
+  <div className="min-w-0 flex-1">
+    <h1 className="text-lg font-medium leading-6 text-gray-gray12 dark:text-grayDark-gray12 sm:truncate">
+      {children}
+    </h1>
+  </div>
+);
+
+export const MainTopRight: FC = ({ children }) => (
+  <div className="mt-4 flex sm:mt-0 sm:ml-4">{children}</div>
 );
