@@ -58,6 +58,16 @@ export const Default = () => {
   const [theme, setTheme] = useState<"light" | "dark" | undefined>();
 
   useEffect(() => {
+    const html = document.documentElement;
+    const theme = html.getAttribute("data-theme");
+    if (theme === "dark") {
+      setTheme("dark");
+    } else {
+      setTheme("light");
+    }
+  }, []);
+
+  useEffect(() => {
     if (theme === "dark") {
       document.documentElement.setAttribute("data-theme", "dark");
     } else {
@@ -67,7 +77,6 @@ export const Default = () => {
 
   return (
     <Root>
-      {theme}
       <Sidebar version="Version: 78c688e">
         {navigation.map((item) => (
           <SidebarNavigationItem
