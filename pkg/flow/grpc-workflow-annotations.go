@@ -228,9 +228,9 @@ func (flow *flow) SetWorkflowAnnotation(ctx context.Context, req *grpc.SetWorkfl
 	}
 
 	if newVar {
-		flow.tagLogToWorkflow(ctx, time.Now(), d, "Created workflow annotation '%s'.", key)
+		flow.logWithTagsToWorkflow(ctx, time.Now(), d, "Created workflow annotation '%s'.", key)
 	} else {
-		flow.tagLogToWorkflow(ctx, time.Now(), d, "Updated workflow annotation '%s'.", key)
+		flow.logWithTagsToWorkflow(ctx, time.Now(), d, "Updated workflow annotation '%s'.", key)
 	}
 
 	flow.pubsub.NotifyWorkflowAnnotations(d.wf)
@@ -338,9 +338,9 @@ func (flow *flow) SetWorkflowAnnotationParcels(srv grpc.Flow_SetWorkflowAnnotati
 	}
 
 	if newVar {
-		flow.tagLogToWorkflow(ctx, time.Now(), d, "Created workflow annotation '%s'.", key)
+		flow.logWithTagsToWorkflow(ctx, time.Now(), d, "Created workflow annotation '%s'.", key)
 	} else {
-		flow.tagLogToWorkflow(ctx, time.Now(), d, "Updated workflow annotation '%s'.", key)
+		flow.logWithTagsToWorkflow(ctx, time.Now(), d, "Updated workflow annotation '%s'.", key)
 	}
 
 	flow.pubsub.NotifyWorkflowAnnotations(d.wf)
@@ -394,7 +394,7 @@ func (flow *flow) DeleteWorkflowAnnotation(ctx context.Context, req *grpc.Delete
 		return nil, err
 	}
 
-	flow.tagLogToWorkflow(ctx, time.Now(), d, "Deleted workflow annotation '%s'.", d.annotation.Name)
+	flow.logWithTagsToWorkflow(ctx, time.Now(), d, "Deleted workflow annotation '%s'.", d.annotation.Name)
 	flow.pubsub.NotifyWorkflowAnnotations(d.wf)
 
 	var resp emptypb.Empty
@@ -429,7 +429,7 @@ func (flow *flow) RenameWorkflowAnnotation(ctx context.Context, req *grpc.Rename
 		return nil, err
 	}
 
-	flow.tagLogToWorkflow(ctx, time.Now(), d, "Renamed workflow annotation from '%s' to '%s'.", req.GetOld(), req.GetNew())
+	flow.logWithTagsToWorkflow(ctx, time.Now(), d, "Renamed workflow annotation from '%s' to '%s'.", req.GetOld(), req.GetNew())
 	flow.pubsub.NotifyWorkflowAnnotations(d.wf)
 
 	var resp grpc.RenameWorkflowAnnotationResponse

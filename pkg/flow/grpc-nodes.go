@@ -577,7 +577,7 @@ func (flow *flow) RenameNode(ctx context.Context, req *grpc.RenameNodeRequest) (
 		return nil, err
 	}
 
-	flow.tagLogToNamespace(ctx, time.Now(), d, "Renamed %s from '%s' to '%s'.", d.ino.Type, req.GetOld(), req.GetNew())
+	flow.logWithTagsToNamespace(ctx, time.Now(), d, "Renamed %s from '%s' to '%s'.", d.ino.Type, req.GetOld(), req.GetNew())
 	flow.pubsub.NotifyInode(oldpd.ino)
 	flow.pubsub.NotifyInode(pd.ino)
 	flow.pubsub.CloseInode(d.ino)

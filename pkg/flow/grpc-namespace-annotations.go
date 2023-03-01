@@ -471,7 +471,7 @@ func (flow *flow) DeleteNamespaceAnnotation(ctx context.Context, req *grpc.Delet
 		return nil, err
 	}
 
-	flow.tagLogToNamespace(ctx, time.Now(), d, "Deleted namespace annotation '%s'.", d.annotation.Name)
+	flow.logWithTagsToNamespace(ctx, time.Now(), d, "Deleted namespace annotation '%s'.", d.annotation.Name)
 	flow.pubsub.NotifyNamespaceAnnotations(d.ns())
 
 	var resp emptypb.Empty
@@ -506,7 +506,7 @@ func (flow *flow) RenameNamespaceAnnotation(ctx context.Context, req *grpc.Renam
 		return nil, err
 	}
 
-	flow.tagLogToNamespace(ctx, time.Now(), d, "Renamed namespace annotation from '%s' to '%s'.", req.GetOld(), req.GetNew())
+	flow.logWithTagsToNamespace(ctx, time.Now(), d, "Renamed namespace annotation from '%s' to '%s'.", req.GetOld(), req.GetNew())
 	flow.pubsub.NotifyNamespaceAnnotations(d.ns())
 
 	var resp grpc.RenameNamespaceAnnotationResponse

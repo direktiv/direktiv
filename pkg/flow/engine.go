@@ -217,8 +217,8 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 
 	t := time.Now()
 	engine.pubsub.NotifyInstances(d.ns())
-	engine.tagLogToNamespace(ctx, t, d, "Workflow '%s' has been triggered by %s.", args.Path, args.Caller)
-	engine.tagLogToWorkflow(ctx, t, d, "Instance '%s' created by %s.", im.ID().String(), args.Caller)
+	engine.logWithTagsToNamespace(ctx, t, d, "Workflow '%s' has been triggered by %s.", args.Path, args.Caller)
+	engine.logWithTagsToWorkflow(ctx, t, d, "Instance '%s' created by %s.", im.ID().String(), args.Caller)
 	im.invTags = args.CallerTags
 	engine.logToInstance(ctx, t, im, "Preparing workflow triggered by %s.", args.Caller) //
 
@@ -678,7 +678,7 @@ func (engine *engine) subflowInvoke(ctx context.Context, caller *subflowCaller, 
 	}
 
 	args.Input = input
-	args.Caller = caller.InstanceID
+	args.Caller = fmt.Sprintf("instance:%s", caller.InstanceID)
 	args.CallerTags = caller.Tags
 	args.Originator = caller.Originator
 	args.Iterator = caller.Iterator

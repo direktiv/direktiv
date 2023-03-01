@@ -661,7 +661,7 @@ func (flow *flow) DeleteNamespaceVariable(ctx context.Context, req *grpc.DeleteN
 		return nil, err
 	}
 
-	flow.tagLogToNamespace(ctx, time.Now(), d, "Deleted namespace variable '%s'.", d.vref.Name)
+	flow.logWithTagsToNamespace(ctx, time.Now(), d, "Deleted namespace variable '%s'.", d.vref.Name)
 	flow.pubsub.NotifyNamespaceVariables(d.ns())
 
 	// Broadcast Event
@@ -708,7 +708,7 @@ func (flow *flow) RenameNamespaceVariable(ctx context.Context, req *grpc.RenameN
 		return nil, err
 	}
 
-	flow.tagLogToNamespace(ctx, time.Now(), d, "Renamed namespace variable from '%s' to '%s'.", req.GetOld(), req.GetNew())
+	flow.logWithTagsToNamespace(ctx, time.Now(), d, "Renamed namespace variable from '%s' to '%s'.", req.GetOld(), req.GetNew())
 	flow.pubsub.NotifyNamespaceVariables(d.ns())
 
 	var resp grpc.RenameNamespaceVariableResponse

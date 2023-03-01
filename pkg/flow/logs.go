@@ -200,7 +200,7 @@ func (srv *server) logToServer(ctx context.Context, t time.Time, msg string, a .
 
 }
 
-func (srv *server) tagLogToNamespace(ctx context.Context, t time.Time, tn taggedNamespace, msg string, a ...interface{}) {
+func (srv *server) logWithTagsToNamespace(ctx context.Context, t time.Time, tn taggedNamespace, msg string, a ...interface{}) {
 
 	defer func() {
 		_ = recover()
@@ -231,7 +231,7 @@ func (srv *server) logToNamespace(ctx context.Context, t time.Time, ns *ent.Name
 
 }
 
-func (srv *server) tagLogToWorkflow(ctx context.Context, t time.Time, td taggedWfData, msg string, a ...interface{}) {
+func (srv *server) logWithTagsToWorkflow(ctx context.Context, t time.Time, td taggedWfData, msg string, a ...interface{}) {
 
 	defer func() {
 		_ = recover()

@@ -178,7 +178,7 @@ func (flow *flow) DeleteRevision(ctx context.Context, req *grpc.DeleteRevisionRe
 		}
 	}
 
-	flow.tagLogToWorkflow(ctx, time.Now(), d, "Deleted workflow revision: %s.", d.rev().ID.String())
+	flow.logWithTagsToWorkflow(ctx, time.Now(), d, "Deleted workflow revision: %s.", d.rev().ID.String())
 	flow.pubsub.NotifyWorkflow(d.wf)
 
 	var resp emptypb.Empty

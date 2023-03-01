@@ -466,7 +466,7 @@ func (syncer *syncer) beginActivity(tx *ent.Tx, args *newMirrorActivityArgs) (*a
 	act.Edges.Namespace = d.ns()
 	am.ns = d.ns()
 
-	syncer.tagLogToNamespace(ctx, time.Now(), d, "Commenced new mirror activity '%s' on mirror: %s", args.Type, d.path)
+	syncer.logWithTagsToNamespace(ctx, time.Now(), d, "Commenced new mirror activity '%s' on mirror: %s", args.Type, d.path)
 
 	syncer.pubsub.NotifyMirror(d.ino)
 
