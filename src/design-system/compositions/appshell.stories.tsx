@@ -24,10 +24,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../dropdown";
-import { Main, MainTopBar, Root, Sidebar } from "./AppShell";
+import {
+  Main,
+  MainTopBar,
+  Root,
+  Sidebar,
+  SidebarNavigationItem,
+} from "./AppShell";
 
 import Button from "../button";
-import clsx from "clsx";
 
 export default {
   title: "Design System/Compositions/App Shell",
@@ -39,73 +44,25 @@ const navigation = [
   { name: "Monitoring", href: "#", icon: Bug, current: false },
   { name: "Instances", href: "#", icon: Box, current: false },
   { name: "Events", href: "#", icon: Calendar, current: false },
-  { name: "Services", href: "#", icon: Layers, current: false },
-  { name: "Settings", href: "#", icon: Settings, current: false },
-];
-
-const enterprise = [
   { name: "Gateway", href: "#", icon: Network, current: false },
   { name: "Permissions", href: "#", icon: Users, current: false },
+  { name: "Services", href: "#", icon: Layers, current: false },
+  { name: "Settings", href: "#", icon: Settings, current: false },
 ];
 
 export const Default = () => (
   <Root>
     <Sidebar version="Version: 78c688e">
-      <nav className="mt-6 px-3 space-y-3">
-        <div className="space-y-1">
-          {navigation.map((item) => (
-            <a
-              key={item.name}
-              href={item.href}
-              className={clsx(
-                item.current
-                  ? "bg-primary50 text-gray-900"
-                  : "text-gray-700 hover:text-gray-900 hover:bg-gray-50",
-                "group flex items-center px-2 py-2 text-sm font-medium rounded-md"
-              )}
-              aria-current={item.current ? "page" : undefined}
-            >
-              <item.icon
-                className={clsx(
-                  item.current
-                    ? "text-gray-500"
-                    : "text-gray-400 group-hover:text-gray-500",
-                  "mr-3 flex-shrink-0 h-6 w-6"
-                )}
-                aria-hidden="true"
-              />
-              {item.name}
-            </a>
-          ))}
-        </div>
-        <div className="divider"></div>
-        <div className="space-y-1">
-          {enterprise.map((item) => (
-            <a
-              key={item.name}
-              href={item.href}
-              className={clsx(
-                item.current
-                  ? "bg-gray-200 text-gray-900"
-                  : "text-gray-700 hover:text-gray-900 hover:bg-gray-50",
-                "group flex items-center px-2 py-2 text-sm font-medium rounded-md"
-              )}
-              aria-current={item.current ? "page" : undefined}
-            >
-              <item.icon
-                className={clsx(
-                  item.current
-                    ? "text-gray-500"
-                    : "text-gray-400 group-hover:text-gray-500",
-                  "mr-3 flex-shrink-0 h-6 w-6"
-                )}
-                aria-hidden="true"
-              />
-              {item.name}
-            </a>
-          ))}
-        </div>
-      </nav>
+      {navigation.map((item) => (
+        <SidebarNavigationItem
+          key={item.name}
+          href={item.href}
+          active={item.current}
+        >
+          <item.icon aria-hidden="true" />
+          {item.name}
+        </SidebarNavigationItem>
+      ))}
     </Sidebar>
     <Main>
       <MainTopBar>
