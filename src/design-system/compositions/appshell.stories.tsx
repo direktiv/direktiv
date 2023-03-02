@@ -216,6 +216,7 @@ export const Default = () => {
             </DropdownMenu>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
+                {/* MAKE THIS A BUTTON */}
                 <div
                   className="avatar placeholder items-center gap-1"
                   role="button"
@@ -254,7 +255,7 @@ export const Default = () => {
 
           <div className="p-5 space-y-5 border-b bg-base-200 border-gray-gray5 dark:border-grayDark-gray5 pb-5 sm:pb-0">
             <div className="md:flex md:items-center md:justify-between ">
-              <h3 className="flex font-mono font-bold mono items-center  gap-x-2 text-primary500">
+              <h3 className="flex font-bold items-center  gap-x-2 text-primary500">
                 <Play className="h-5" />
                 workflow.yml
               </h3>
