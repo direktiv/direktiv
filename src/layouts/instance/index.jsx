@@ -428,8 +428,8 @@ function InstanceLogs(props) {
     paddingStyle = { padding: "0px" };
   }
 
-  const [filterState, setFilterState] = useState("validate");
-  const [filterName, setFilterName] = useState("devweekdemo/image/image");
+  const [filterState, setFilterState] = useState("check-format");
+  const [filterName, setFilterName] = useState("devweekdemo/news");
   const [filterIterator, setFilterIterator] = useState("0");
   const [isFilterActive, setIsFilterActive] = useState(false);
   const [filterParams, setFilterParams] = useState([]);
