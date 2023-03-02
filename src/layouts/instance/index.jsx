@@ -511,36 +511,45 @@ function InstanceLogs(props) {
               >
                 update filter
               </Button>
-              <input
-                placeholder="iterator"
-                type="number"
-                value={filterIterator}
-                disabled={!isFilterActive}
-                onChange={(e) => setFilterIterator(e.target.value)}
-                style={{
-                  width: "50px",
-                }}
-              />
-              <input
-                placeholder="name"
-                type="text"
-                value={filterName}
-                disabled={!isFilterActive}
-                onChange={(e) => setFilterName(e.target.value)}
-                style={{
-                  width: "200px",
-                }}
-              />
-              <input
-                placeholder="state"
-                type="text"
-                value={filterState}
-                disabled={!isFilterActive}
-                onChange={(e) => setFilterState(e.target.value)}
-                style={{
-                  width: "100px",
-                }}
-              />
+              <label>
+                state{" "}
+                <input
+                  placeholder="state"
+                  type="text"
+                  value={filterState}
+                  disabled={!isFilterActive}
+                  onChange={(e) => setFilterState(e.target.value)}
+                  style={{
+                    width: "100px",
+                  }}
+                />
+              </label>
+              <label>
+                name{" "}
+                <input
+                  placeholder="name"
+                  type="text"
+                  value={filterName}
+                  disabled={!isFilterActive}
+                  onChange={(e) => setFilterName(e.target.value)}
+                  style={{
+                    width: "200px",
+                  }}
+                />
+              </label>
+              <label>
+                iterator{" "}
+                <input
+                  placeholder="iterator"
+                  type="number"
+                  value={filterIterator}
+                  disabled={!isFilterActive}
+                  onChange={(e) => setFilterIterator(e.target.value)}
+                  style={{
+                    width: "50px",
+                  }}
+                />
+              </label>
               <label
                 style={{
                   display: "flex",
