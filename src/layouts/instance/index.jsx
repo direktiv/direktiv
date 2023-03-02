@@ -503,7 +503,12 @@ function InstanceLogs(props) {
                 alignItems: "center",
               }}
             >
-              <Button color="terminal" variant="contained" type="submit">
+              <Button
+                color="terminal"
+                variant="contained"
+                type="submit"
+                disabled={!isFilterActive}
+              >
                 update filter
               </Button>
               <input
