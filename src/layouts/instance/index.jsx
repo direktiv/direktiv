@@ -436,8 +436,6 @@ function InstanceLogs(props) {
     apiKey
   );
 
-  console.log("🚀", data);
-
   const [wordWrap, setWordWrap] = useState(false);
   const [follow, setFollow] = useState(true);
   const [verbose, setVerbose] = useState(true);
