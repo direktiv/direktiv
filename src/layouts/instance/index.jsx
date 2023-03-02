@@ -436,9 +436,15 @@ function InstanceLogs(props) {
     apiKey
   );
 
+  console.log("🚀", data);
+
   const [wordWrap, setWordWrap] = useState(false);
   const [follow, setFollow] = useState(true);
   const [verbose, setVerbose] = useState(true);
+
+  const [state, setState] = useState("validate");
+  const [name, setName] = useState("devweekdemo/image/image");
+  const [iterator, setIterator] = useState("0");
 
   return (
     <>
@@ -453,7 +459,7 @@ function InstanceLogs(props) {
           />
         </FlexBox>
         <div
-          className="logs-footer"
+          className="logs-footer logs-footer--two-lines"
           style={{
             alignItems: "center",
             borderRadius: " 0px 0px 8px 8px",
@@ -465,7 +471,47 @@ function InstanceLogs(props) {
             style={{
               width: "100%",
               flexDirection: "row-reverse",
-              height: "100%",
+              height: "50%",
+              alignItems: "center",
+            }}
+          >
+            <Button color="terminal" variant="contained">
+              filter logs
+            </Button>
+            <input
+              placeholder="iterator"
+              type="number"
+              value={iterator}
+              onChange={(e) => setIterator(e.target.value)}
+              style={{
+                width: "50px",
+              }}
+            />
+            <input
+              placeholder="name"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              style={{
+                width: "200px",
+              }}
+            />
+            <input
+              placeholder="state"
+              type="text"
+              value={state}
+              onChange={(e) => setState(e.target.value)}
+              style={{
+                width: "100px",
+              }}
+            />
+          </FlexBox>
+          <FlexBox
+            gap
+            style={{
+              width: "100%",
+              flexDirection: "row-reverse",
+              height: "50%",
               alignItems: "center",
             }}
           >
