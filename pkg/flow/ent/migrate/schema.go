@@ -509,7 +509,7 @@ var (
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "url", Type: field.TypeString},
-		{Name: "name", Type: field.TypeString, Unique: true},
+		{Name: "name", Type: field.TypeString},
 		{Name: "data", Type: field.TypeString},
 		{Name: "namespace_services", Type: field.TypeUUID},
 	}
