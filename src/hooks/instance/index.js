@@ -129,6 +129,7 @@ export const useDirektivInstanceLogs = (
       if (newQueryString !== queryString) {
         setQueryString(newQueryString);
         CloseEventSource(eventSource.current);
+        setData(null);
         eventSource.current = null;
       }
     }
