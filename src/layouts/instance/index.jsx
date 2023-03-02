@@ -428,21 +428,35 @@ function InstanceLogs(props) {
     paddingStyle = { padding: "0px" };
   }
 
+  const [filterState, setFilterState] = useState("validate");
+  const [filterName, setFilterName] = useState("devweekdemo/image/image");
+  const [filterIterator, setFilterIterator] = useState("0");
+  const [isFilterActive, setIsFilterActive] = useState(false);
+  const [filterParams, setFilterParams] = useState([]);
   const { data } = useInstanceLogs(
     Config.url,
     true,
     namespace,
     instanceID,
-    apiKey
+    apiKey,
+    ...filterParams
   );
+
+  const applyFilter = () => {
+    setFilterParams([
+      "filter.field=QUERY",
+      "filter.type=MATCH",
+      `filter.val=${filterIterator}::${filterName}::${filterState}`,
+    ]);
+  };
+
+  const disableFilter = () => {
+    setFilterParams([]);
+  };
 
   const [wordWrap, setWordWrap] = useState(false);
   const [follow, setFollow] = useState(true);
   const [verbose, setVerbose] = useState(true);
-
-  const [state, setState] = useState("validate");
-  const [name, setName] = useState("devweekdemo/image/image");
-  const [iterator, setIterator] = useState("0");
 
   return (
     <>
@@ -464,46 +478,76 @@ function InstanceLogs(props) {
             overflow: "hidden",
           }}
         >
-          <FlexBox
-            gap
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              applyFilter();
+            }}
             style={{
-              width: "100%",
-              flexDirection: "row-reverse",
-              height: "50%",
-              alignItems: "center",
+              all: "unset",
             }}
           >
-            <Button color="terminal" variant="contained">
-              filter logs
-            </Button>
-            <input
-              placeholder="iterator"
-              type="number"
-              value={iterator}
-              onChange={(e) => setIterator(e.target.value)}
+            <FlexBox
+              gap
               style={{
-                width: "50px",
+                width: "100%",
+                flexDirection: "row-reverse",
+                height: "50%",
+                alignItems: "center",
               }}
-            />
-            <input
-              placeholder="name"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              style={{
-                width: "200px",
-              }}
-            />
-            <input
-              placeholder="state"
-              type="text"
-              value={state}
-              onChange={(e) => setState(e.target.value)}
-              style={{
-                width: "100px",
-              }}
-            />
-          </FlexBox>
+            >
+              <Button color="terminal" variant="contained" type="submit">
+                update filter
+              </Button>
+              <input
+                placeholder="iterator"
+                type="number"
+                value={filterIterator}
+                disabled={!isFilterActive}
+                onChange={(e) => setFilterIterator(e.target.value)}
+                style={{
+                  width: "50px",
+                }}
+              />
+              <input
+                placeholder="name"
+                type="text"
+                value={filterName}
+                disabled={!isFilterActive}
+                onChange={(e) => setFilterName(e.target.value)}
+                style={{
+                  width: "200px",
+                }}
+              />
+              <input
+                placeholder="state"
+                type="text"
+                value={filterState}
+                disabled={!isFilterActive}
+                onChange={(e) => setFilterState(e.target.value)}
+                style={{
+                  width: "100px",
+                }}
+              />
+              <label
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
+                use filter
+                <input
+                  type="checkbox"
+                  checked={isFilterActive}
+                  onChange={(e) => {
+                    const { checked } = e.target;
+                    setIsFilterActive(checked);
+                    checked ? applyFilter() : disableFilter();
+                  }}
+                />
+              </label>
+            </FlexBox>
+          </form>
           <FlexBox
             gap
             style={{
