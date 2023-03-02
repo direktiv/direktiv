@@ -341,6 +341,12 @@ select:focus-visible {
   box-shadow: rgb(252, 253, 254) 0px 0px 3px 0px;
 }
 
+.logs-footer--two-lines {
+  max-height: 80px;
+  min-height: 80px;
+  height: 80px !important;
+}
+
 /* 
 html:not(img):not(video) { 
   filter: invert(0.95) hue-rotate(180deg);
@@ -417,4 +423,10 @@ html .editor-footer {
   overflow: hidden !important;
   width: 0px !important;
   max-width: 0px !important;
+}
+
+.logs-footer input {
+  width: auto;
+  height: 24px;
+  font-size: 0.8rem;
 }
