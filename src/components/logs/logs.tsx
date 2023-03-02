@@ -265,7 +265,7 @@ const ListRow = ({
     }
   }, [index, setSize, width]);
 
-  const { name, state, step, iterator, type } = data[index].tags;
+  const { name, state, step, iterator } = data[index].tags;
   return (
     <div
       style={{
