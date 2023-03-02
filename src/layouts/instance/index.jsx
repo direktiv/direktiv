@@ -468,6 +468,13 @@ function InstanceLogs(props) {
             autoScroll={follow}
             verbose={verbose}
             setAutoScroll={setFollow}
+            filterControls={{
+              setFilterState,
+              setFilterName,
+              setFilterIterator,
+              setIsFilterActive,
+              setFilterParams,
+            }}
           />
         </FlexBox>
         <div

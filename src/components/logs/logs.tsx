@@ -24,6 +24,7 @@ import {
 import AutoSizer from "react-virtualized-auto-sizer";
 import Button from "../button";
 import FlexBox from "../flexbox";
+import Tippy from "@tippyjs/react";
 import { VariableSizeList } from "react-window";
 import { copyTextToClipboard } from "../../util";
 import dayjs from "dayjs";
@@ -56,6 +57,14 @@ export interface LogsProps {
    * Message to display when logItems is undefined
    */
   overrideLoadingMsg?: string;
+
+  filterControls?: {
+    setFilterState: React.Dispatch<React.SetStateAction<string>>;
+    setFilterName: React.Dispatch<React.SetStateAction<string>>;
+    setFilterIterator: React.Dispatch<React.SetStateAction<string>>;
+    setIsFilterActive: React.Dispatch<React.SetStateAction<boolean>>;
+    setFilterParams: React.Dispatch<React.SetStateAction<string[]>>;
+  };
 }
 
 export interface LogItem {
@@ -98,6 +107,7 @@ function Logs({
   setAutoScroll,
   overrideLoadingMsg,
   overrideNoDataMsg,
+  filterControls,
 }: LogsProps) {
   const listRef = useRef<VariableSizeList | null>(null);
 
@@ -208,6 +218,7 @@ function Logs({
                         width={width}
                         wordWrap={wordWrap}
                         verbose={verbose}
+                        filterControls={filterControls}
                       />
                     )}
                   </VariableSizeList>
@@ -234,6 +245,13 @@ interface ListRowProps {
   style: CSSProperties;
   wordWrap?: boolean;
   verbose?: boolean;
+  filterControls?: {
+    setFilterState: React.Dispatch<React.SetStateAction<string>>;
+    setFilterName: React.Dispatch<React.SetStateAction<string>>;
+    setFilterIterator: React.Dispatch<React.SetStateAction<string>>;
+    setIsFilterActive: React.Dispatch<React.SetStateAction<boolean>>;
+    setFilterParams: React.Dispatch<React.SetStateAction<string[]>>;
+  };
 }
 
 const innerElementType = forwardRef(({ style, ...rest }: any, ref) => (
@@ -255,6 +273,7 @@ const ListRow = ({
   style,
   wordWrap,
   verbose,
+  filterControls,
 }: ListRowProps) => {
   const { setSize } = useContext(DynamicListContext);
   const rowRoot = useRef<null | HTMLDivElement>(null);
@@ -279,13 +298,41 @@ const ListRow = ({
             [{dayjs.utc(data[index].t).local().format("HH:mm:ss")}
             {`] `}
           </span>
-          {step && iterator && verbose && (
-            <span className="tag-name">
-              ({step}/{iterator}){" "}
-            </span>
-          )}
-          {name && verbose && <span className="tag-name">{name}</span>}
-          {state && verbose && <span className="tag-state">/{state}</span>}{" "}
+          {verbose ? (
+            <Tippy
+              content="filter logs by this tag"
+              trigger="mouseenter focus"
+              delay={100}
+              zIndex={10}
+            >
+              <span
+                role="button"
+                style={{ cursor: "pointer" }}
+                onClick={() => {
+                  if (name && state && step && iterator) {
+                    filterControls?.setFilterState(state);
+                    filterControls?.setFilterIterator(iterator);
+                    filterControls?.setFilterName(name);
+                    filterControls?.setIsFilterActive(true);
+                    filterControls?.setFilterParams([
+                      "filter.field=QUERY",
+                      "filter.type=MATCH",
+                      `filter.val=${iterator}::${name}::${state}`,
+                    ]);
+                  }
+                }}
+              >
+                {step && iterator && (
+                  <span className="tag-name">
+                    ({step}/{iterator}){" "}
+                  </span>
+                )}
+                {name && <span className="tag-name">{name}</span>}
+                {state && <span className="tag-state">/{state}</span>}{" "}
+              </span>
+            </Tippy>
+          ) : null}
+
           {data[index].msg.match(/.{1,50}/g)?.map((mtkMsg, mtkIdx) => {
             return (
               <span key={`log-msg-${mtkIdx}`} className="msg">
