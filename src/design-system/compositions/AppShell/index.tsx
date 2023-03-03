@@ -50,7 +50,7 @@ export const Main: FC = ({ children }) => (
 );
 
 export const MainTopBar: FC = ({ children }) => (
-  <div className="border-b border-gray-gray5 dark:border-grayDark-gray5 p-4 sm:flex sm:items-center sm:justify-between">
+  <div className="border-b border-gray-gray5 dark:border-grayDark-gray5 p-4 flex items-center justify-between">
     {children}
   </div>
 );
