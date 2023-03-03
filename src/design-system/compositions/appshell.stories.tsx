@@ -246,7 +246,7 @@ export const Default = () => {
             </Button>
           </div> */}
 
-          <div className="p-5 pb-0 space-y-5 border-b bg-base-200 border-gray-gray5 dark:border-grayDark-gray5 pb-5">
+          <div className="p-5 pb-0 space-y-5 border-b bg-base-200 border-gray-gray5 dark:border-grayDark-gray5">
             <div className="flex-col max-sm:space-y-4 sm:flex-row flex sm:items-center sm:justify-between ">
               <h3 className="flex font-bold items-center gap-x-2 text-primary500">
                 <Play className="h-5" />
