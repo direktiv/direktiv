@@ -160,11 +160,13 @@ a:active {
   max-width: 0px;
 }
 
+/*
 .border {
   box-sizing: border-box;
   border: solid 1px var(--theme-subtle-border);
   border-radius: var(--theme-border-radius);
 }
+
 
 .shadow {
   background: var(--theme-shadow-background);
@@ -176,6 +178,7 @@ a:active {
   cursor: unset !important;
   filter: grayscale(100%) !important;
 }
+*/
 
 .disabled-no-filter {
   pointer-events: none !important;
