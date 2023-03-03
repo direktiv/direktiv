@@ -456,7 +456,7 @@ function InstanceLogs(props) {
 
   const [wordWrap, setWordWrap] = useState(false);
   const [follow, setFollow] = useState(true);
-  const [verbose, setVerbose] = useState(true);
+  const [verbose, setVerbose] = useState(false);
 
   return (
     <>
