@@ -166,13 +166,6 @@ export const Default = () => {
             </div>
           </MainTopLeft>
           <MainTopRight>
-            <Button
-              color="ghost"
-              className="px-1"
-              // onClick={() =>
-              //   setTheme((old) => (old === "light" ? "dark" : "light"))
-              // }
-            ></Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button color="ghost" className="px-1">
