@@ -341,11 +341,12 @@ tr {
 
   width: 100%;
   height: auto;
-} */
+} 
 
 .hidden {
   visibility: hidden;
 }
+*/
 
 .editor-drawer {
   position: absolute;
