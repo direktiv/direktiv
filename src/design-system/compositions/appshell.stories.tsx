@@ -246,17 +246,15 @@ export const Default = () => {
             </Button>
           </div> */}
 
-          <div className="p-5 space-y-5 border-b bg-base-200 border-gray-gray5 dark:border-grayDark-gray5 pb-5 sm:pb-0">
-            <div className="md:flex md:items-center md:justify-between ">
-              <h3 className="flex font-bold items-center  gap-x-2 text-primary500">
+          <div className="p-5 pb-0 space-y-5 border-b bg-base-200 border-gray-gray5 dark:border-grayDark-gray5 pb-5">
+            <div className="flex-col max-sm:space-y-4 sm:flex-row flex sm:items-center sm:justify-between ">
+              <h3 className="flex font-bold items-center gap-x-2 text-primary500">
                 <Play className="h-5" />
                 workflow.yml
               </h3>
-              <div className="mt-3 flex gap-3 md:mt-0">
-                <Button color="primary" size="sm">
-                  Actions <RxChevronDown />
-                </Button>
-              </div>
+              <Button color="primary" size="sm">
+                Actions <RxChevronDown />
+              </Button>
             </div>
             <div>
               <nav className="-mb-px flex space-x-8">
