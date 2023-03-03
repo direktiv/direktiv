@@ -234,18 +234,6 @@ export const Default = () => {
           </MainTopRight>
         </MainTopBar>
         <MainContent>
-          {/* <div className="flex ">
-            <div className="tabs">
-              <a className="tab tab-bordered tab-active">Overview</a>
-              <a className="tab tab-bordered">Revisions</a>
-              <a className="tab tab-bordered">Active Revision</a>
-              <a className="tab tab-bordered">Settings</a>
-            </div>
-            <Button color="primary" className="ml-auto">
-              wdede
-            </Button>
-          </div> */}
-
           <div className="p-5 pb-0 space-y-5 border-b bg-base-200 border-gray-gray5 dark:border-grayDark-gray5">
             <div className="flex-col max-sm:space-y-4 sm:flex-row flex sm:items-center sm:justify-between ">
               <h3 className="flex font-bold items-center gap-x-2 text-primary500">
