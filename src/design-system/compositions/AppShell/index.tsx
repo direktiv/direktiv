@@ -7,7 +7,7 @@ export const Root: FC = ({ children }) => (
 );
 
 export const Sidebar: FC<{ version: string }> = ({ children, version }) => (
-  <div className="lg:fixed lg:inset-y-0 lg:flex lg:w-52 lg:flex-col lg:border-r lg:border-gray-gray5 dark:lg:border-grayDark-gray5">
+  <div className="hidden lg:fixed lg:flex lg:w-52 lg:flex-col lg:border-r lg:border-gray-gray5 dark:lg:border-grayDark-gray5">
     <div className="border-b border-gray-gray5 dark:border-grayDark-gray5 px-6 py-5">
       <Logo className="h-8 w-auto border-1 border-gray-800" />
     </div>
