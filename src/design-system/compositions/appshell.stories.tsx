@@ -216,16 +216,16 @@ export const Default = () => {
             </DropdownMenu>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                {/* MAKE THIS A BUTTON */}
-                <div
-                  className="avatar placeholder items-center gap-1"
+                <Button
+                  color="ghost"
+                  className="px-1 avatar placeholder items-center gap-1"
                   role="button"
                 >
                   <div className="bg-primary500 text-neutral-content rounded-full w-7 h-7">
                     <span className="text-xs">Ad</span>
                   </div>
                   <RxChevronDown />
-                </div>
+                </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56">
                 <DropdownMenuLabel>
