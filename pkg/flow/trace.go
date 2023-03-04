@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
@@ -88,7 +89,7 @@ func traceFullAddWorkflowInstance(ctx context.Context, im *instanceMemory) (cont
 	traceAddWorkflowInstance(ctx, im)
 
 	x := dbTrace(ctx)
-	s := marshal(x)
+	s := bytedata.Marshal(x)
 
 	updater := im.getRuntimeUpdater()
 	updater = updater.SetInstanceContext(s)
@@ -124,7 +125,7 @@ func traceStateGenericBegin(ctx context.Context, im *instanceMemory) (context.Co
 	var span trace.Span
 
 	carrier := new(Carrier)
-	err := unmarshal(im.runtime.InstanceContext, carrier)
+	err := bytedata.Unmarshal(im.runtime.InstanceContext, carrier)
 	if err != nil {
 		return ctx, nil, err
 	}
@@ -134,7 +135,7 @@ func traceStateGenericBegin(ctx context.Context, im *instanceMemory) (context.Co
 	ctx, span = tr.Start(ctx, im.logic.GetType().String(), trace.WithSpanKind(trace.SpanKindInternal))
 
 	x := dbTrace(ctx)
-	s := marshal(x)
+	s := bytedata.Marshal(x)
 
 	updater := im.getRuntimeUpdater()
 	updater = updater.SetStateContext(s)
@@ -155,7 +156,7 @@ func traceStateGenericLogicThread(ctx context.Context, im *instanceMemory) (cont
 	var span trace.Span
 
 	carrier := new(Carrier)
-	err := unmarshal(im.runtime.StateContext, carrier)
+	err := bytedata.Unmarshal(im.runtime.StateContext, carrier)
 	if err != nil {
 		return nil, nil, err
 	}

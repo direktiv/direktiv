@@ -23,6 +23,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
@@ -110,7 +111,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 		as += ":" + args.Ref
 	}
 
-	data := marshalInstanceInputData(args.Input)
+	data := bytedata.MarshalInstanceInputData(args.Input)
 
 	clients := engine.edb.Clients(tctx)
 

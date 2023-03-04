@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/database/entwrapper"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
@@ -168,7 +169,7 @@ func (flow *flow) NamespaceAnnotations(ctx context.Context, req *grpc.NamespaceA
 	resp.Annotations = new(grpc.Annotations)
 	resp.Annotations.PageInfo = pi
 
-	err = atob(results, &resp.Annotations.Results)
+	err = bytedata.Atob(results, &resp.Annotations.Results)
 	if err != nil {
 		return nil, err
 	}
@@ -209,12 +210,12 @@ resend:
 	resp.Annotations = new(grpc.Annotations)
 	resp.Annotations.PageInfo = pi
 
-	err = atob(results, &resp.Annotations.Results)
+	err = bytedata.Atob(results, &resp.Annotations.Results)
 	if err != nil {
 		return err
 	}
 
-	nhash = checksum(resp)
+	nhash = bytedata.Checksum(resp)
 	if nhash != phash {
 		err = srv.Send(resp)
 		if err != nil {
@@ -324,7 +325,7 @@ func (x *entInstanceAnnotationQuerier) QueryAnnotations() *ent.AnnotationQuery {
 }
 
 func (flow *flow) SetAnnotation(ctx context.Context, q annotationQuerier, key string, mimetype string, data []byte) (*ent.Annotation, bool, error) {
-	hash, err := computeHash(data)
+	hash, err := bytedata.ComputeHash(data)
 	if err != nil {
 		flow.sugar.Error(err)
 	}

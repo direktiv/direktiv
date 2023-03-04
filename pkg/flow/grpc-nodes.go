@@ -11,6 +11,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entino "github.com/direktiv/direktiv/pkg/flow/ent/inode"
@@ -82,7 +83,7 @@ func (flow *flow) Node(ctx context.Context, req *grpc.NodeRequest) (*grpc.NodeRe
 		return nil, err
 	}
 
-	err = atob(cached.Inode(), &resp.Node)
+	err = bytedata.Atob(cached.Inode(), &resp.Node)
 	if err != nil {
 		flow.sugar.Debugf("gRPC %s handler failed to traverse to marshal response: %v", this(), err)
 		return nil, err
@@ -125,12 +126,12 @@ func (flow *flow) Directory(ctx context.Context, req *grpc.DirectoryRequest) (*g
 	resp.Children = new(grpc.DirectoryChildren)
 	resp.Children.PageInfo = pi
 
-	err = atob(results, &resp.Children.Results)
+	err = bytedata.Atob(results, &resp.Children.Results)
 	if err != nil {
 		return nil, err
 	}
 
-	err = atob(cached.Inode(), &resp.Node)
+	err = bytedata.Atob(cached.Inode(), &resp.Node)
 	if err != nil {
 		return nil, err
 	}
@@ -191,12 +192,12 @@ resend:
 	resp.Children = new(grpc.DirectoryChildren)
 	resp.Children.PageInfo = pi
 
-	err = atob(results, &resp.Children.Results)
+	err = bytedata.Atob(results, &resp.Children.Results)
 	if err != nil {
 		return err
 	}
 
-	err = atob(cached.Inode(), &resp.Node)
+	err = bytedata.Atob(cached.Inode(), &resp.Node)
 	if err != nil {
 		return err
 	}
@@ -219,7 +220,7 @@ resend:
 
 	}
 
-	nhash = checksum(resp)
+	nhash = bytedata.Checksum(resp)
 	if nhash != phash {
 		err = srv.Send(resp)
 		if err != nil {
@@ -319,7 +320,7 @@ func (flow *flow) CreateDirectory(ctx context.Context, req *grpc.CreateDirectory
 
 	var resp grpc.CreateDirectoryResponse
 
-	err = atob(ino, &resp.Node)
+	err = bytedata.Atob(ino, &resp.Node)
 	if err != nil {
 		return nil, err
 	}
@@ -526,7 +527,7 @@ func (flow *flow) RenameNode(ctx context.Context, req *grpc.RenameNodeRequest) (
 
 	var resp grpc.RenameNodeResponse
 
-	err = atob(cached.Inode(), &resp.Node)
+	err = bytedata.Atob(cached.Inode(), &resp.Node)
 	if err != nil {
 		return nil, err
 	}

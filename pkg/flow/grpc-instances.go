@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
@@ -78,7 +79,7 @@ func (flow *flow) InstanceInput(ctx context.Context, req *grpc.InstanceInputRequ
 
 	var resp grpc.InstanceInputResponse
 
-	err = atob(cached.Instance, &resp.Instance)
+	err = bytedata.Atob(cached.Instance, &resp.Instance)
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +90,7 @@ func (flow *flow) InstanceInput(ctx context.Context, req *grpc.InstanceInputRequ
 		return nil, err
 	}
 	delete(m, "private")
-	input := marshal(m)
+	input := bytedata.Marshal(m)
 
 	resp.Data = []byte(input)
 	resp.Namespace = cached.Namespace.Name
@@ -107,7 +108,7 @@ func (flow *flow) InstanceOutput(ctx context.Context, req *grpc.InstanceOutputRe
 
 	var resp grpc.InstanceOutputResponse
 
-	err = atob(cached.Instance, &resp.Instance)
+	err = bytedata.Atob(cached.Instance, &resp.Instance)
 	if err != nil {
 		return nil, err
 	}
@@ -118,7 +119,7 @@ func (flow *flow) InstanceOutput(ctx context.Context, req *grpc.InstanceOutputRe
 		return nil, err
 	}
 	delete(m, "private")
-	output := marshal(m)
+	output := bytedata.Marshal(m)
 
 	resp.Data = []byte(output)
 	resp.Namespace = cached.Namespace.Name
@@ -136,7 +137,7 @@ func (flow *flow) InstanceMetadata(ctx context.Context, req *grpc.InstanceMetada
 
 	var resp grpc.InstanceMetadataResponse
 
-	err = atob(cached.Instance, &resp.Instance)
+	err = bytedata.Atob(cached.Instance, &resp.Instance)
 	if err != nil {
 		return nil, err
 	}
@@ -171,7 +172,7 @@ func (flow *flow) Instances(ctx context.Context, req *grpc.InstancesRequest) (*g
 	resp.Instances = new(grpc.Instances)
 	resp.Instances.PageInfo = pi
 
-	err = atob(results, &resp.Instances.Results)
+	err = bytedata.Atob(results, &resp.Instances.Results)
 	if err != nil {
 		return nil, err
 	}
@@ -212,12 +213,12 @@ resend:
 	resp.Instances = new(grpc.Instances)
 	resp.Instances.PageInfo = pi
 
-	err = atob(results, &resp.Instances.Results)
+	err = bytedata.Atob(results, &resp.Instances.Results)
 	if err != nil {
 		return err
 	}
 
-	nhash = checksum(resp)
+	nhash = bytedata.Checksum(resp)
 	if nhash != phash {
 		err = srv.Send(resp)
 		if err != nil {
@@ -244,7 +245,7 @@ func (flow *flow) Instance(ctx context.Context, req *grpc.InstanceRequest) (*grp
 
 	var resp grpc.InstanceResponse
 
-	err = atob(cached.Instance, &resp.Instance)
+	err = bytedata.Atob(cached.Instance, &resp.Instance)
 	if err != nil {
 		return nil, err
 	}
@@ -292,7 +293,7 @@ resend:
 
 	resp := new(grpc.InstanceResponse)
 
-	err = atob(cached.Instance, &resp.Instance)
+	err = bytedata.Atob(cached.Instance, &resp.Instance)
 	if err != nil {
 		return err
 	}
@@ -311,7 +312,7 @@ resend:
 	}
 	resp.Workflow = rwf
 
-	nhash = checksum(resp)
+	nhash = bytedata.Checksum(resp)
 	if nhash != phash {
 		err = srv.Send(resp)
 		if err != nil {
@@ -512,7 +513,7 @@ resend:
 
 	resp := new(grpc.AwaitWorkflowResponse)
 
-	err = atob(cached.Instance, &resp.Instance)
+	err = bytedata.Atob(cached.Instance, &resp.Instance)
 	if err != nil {
 		return err
 	}
@@ -533,7 +534,7 @@ resend:
 		resp.Data = []byte(runtime.Output)
 	}
 
-	nhash = checksum(resp)
+	nhash = bytedata.Checksum(resp)
 	if nhash != phash {
 		err = srv.Send(resp)
 		if err != nil {

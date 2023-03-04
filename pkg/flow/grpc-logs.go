@@ -3,6 +3,7 @@ package flow
 import (
 	"context"
 
+	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
@@ -38,7 +39,7 @@ func (flow *flow) ServerLogs(ctx context.Context, req *grpc.ServerLogsRequest) (
 	resp := new(grpc.ServerLogsResponse)
 	resp.PageInfo = pi
 
-	err = atob(results, &resp.Results)
+	err = bytedata.Atob(results, &resp.Results)
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +71,7 @@ resend:
 	resp := new(grpc.ServerLogsResponse)
 	resp.PageInfo = pi
 
-	err = atob(results, &resp.Results)
+	err = bytedata.Atob(results, &resp.Results)
 	if err != nil {
 		return err
 	}
@@ -119,7 +120,7 @@ func (flow *flow) NamespaceLogs(ctx context.Context, req *grpc.NamespaceLogsRequ
 	resp.Namespace = cached.Namespace.Name
 	resp.PageInfo = pi
 
-	err = atob(results, &resp.Results)
+	err = bytedata.Atob(results, &resp.Results)
 	if err != nil {
 		return nil, err
 	}
@@ -159,7 +160,7 @@ resend:
 	resp.Namespace = cached.Namespace.Name
 	resp.PageInfo = pi
 
-	err = atob(results, &resp.Results)
+	err = bytedata.Atob(results, &resp.Results)
 	if err != nil {
 		return err
 	}
@@ -219,7 +220,7 @@ func (flow *flow) WorkflowLogs(ctx context.Context, req *grpc.WorkflowLogsReques
 	resp.Path = cached.Path()
 	resp.PageInfo = pi
 
-	err = atob(results, &resp.Results)
+	err = bytedata.Atob(results, &resp.Results)
 	if err != nil {
 		return nil, err
 	}
@@ -270,7 +271,7 @@ resend:
 	resp.Path = cached.Path()
 	resp.PageInfo = pi
 
-	err = atob(results, &resp.Results)
+	err = bytedata.Atob(results, &resp.Results)
 	if err != nil {
 		return err
 	}
@@ -318,7 +319,7 @@ func (flow *flow) InstanceLogs(ctx context.Context, req *grpc.InstanceLogsReques
 	resp.Instance = cached.Instance.ID.String()
 	resp.PageInfo = pi
 
-	err = atob(results, &resp.Results)
+	err = bytedata.Atob(results, &resp.Results)
 	if err != nil {
 		return nil, err
 	}
@@ -357,7 +358,7 @@ resend:
 	resp.Instance = cached.Instance.ID.String()
 	resp.PageInfo = pi
 
-	err = atob(results, &resp.Results)
+	err = bytedata.Atob(results, &resp.Results)
 	if err != nil {
 		return err
 	}

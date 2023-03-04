@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 
+	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entmux "github.com/direktiv/direktiv/pkg/flow/ent/route"
@@ -21,7 +22,7 @@ func (flow *flow) Router(ctx context.Context, req *grpc.RouterRequest) (*grpc.Ro
 
 	var resp grpc.RouterResponse
 
-	err = atob(cached.Inode(), &resp.Node)
+	err = bytedata.Atob(cached.Inode(), &resp.Node)
 	if err != nil {
 		return nil, err
 	}
@@ -31,7 +32,7 @@ func (flow *flow) Router(ctx context.Context, req *grpc.RouterRequest) (*grpc.Ro
 	resp.Node.Path = cached.Path()
 	resp.Live = cached.Workflow.Live
 
-	err = atob(cached.Workflow.Routes, &resp.Routes)
+	err = bytedata.Atob(cached.Workflow.Routes, &resp.Routes)
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +64,7 @@ resend:
 
 	resp := new(grpc.RouterResponse)
 
-	err = atob(cached.Inode(), &resp.Node)
+	err = bytedata.Atob(cached.Inode(), &resp.Node)
 	if err != nil {
 		return err
 	}
@@ -73,7 +74,7 @@ resend:
 	resp.Node.Path = cached.Path()
 	resp.Live = cached.Workflow.Live
 
-	err = atob(cached.Workflow.Routes, &resp.Routes)
+	err = bytedata.Atob(cached.Workflow.Routes, &resp.Routes)
 	if err != nil {
 		return err
 	}
@@ -83,7 +84,7 @@ resend:
 		resp.Routes[i].Ref = route.Ref.Name
 	}
 
-	nhash = checksum(resp)
+	nhash = bytedata.Checksum(resp)
 	if nhash != phash {
 		err = srv.Send(resp)
 		if err != nil {
@@ -171,7 +172,7 @@ func (flow *flow) EditRouter(ctx context.Context, req *grpc.EditRouterRequest) (
 
 	var resp grpc.EditRouterResponse
 
-	err = atob(cached.Inode(), &resp.Node)
+	err = bytedata.Atob(cached.Inode(), &resp.Node)
 	if err != nil {
 		return nil, err
 	}
@@ -181,7 +182,7 @@ func (flow *flow) EditRouter(ctx context.Context, req *grpc.EditRouterRequest) (
 	resp.Node.Path = cached.Path()
 	resp.Live = req.GetLive()
 
-	err = atob(routes, &resp.Routes)
+	err = bytedata.Atob(routes, &resp.Routes)
 	if err != nil {
 		return nil, err
 	}

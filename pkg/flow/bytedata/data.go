@@ -1,4 +1,4 @@
-package flow
+package bytedata
 
 import (
 	"bytes"
@@ -11,18 +11,16 @@ import (
 	"strings"
 	"time"
 
-	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
-	"github.com/direktiv/direktiv/pkg/jqer"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func checksum(x interface{}) string {
+func Checksum(x interface{}) string {
 	data, err := json.Marshal(x)
 	if err != nil {
 		panic(err)
 	}
 
-	hash, err := computeHash(data)
+	hash, err := ComputeHash(data)
 	if err != nil {
 		panic(err)
 	}
@@ -30,7 +28,7 @@ func checksum(x interface{}) string {
 	return hash
 }
 
-func computeHash(data []byte) (string, error) {
+func ComputeHash(data []byte) (string, error) {
 	hasher := sha256.New()
 	_, err := io.Copy(hasher, bytes.NewReader(data))
 	if err != nil {
@@ -39,7 +37,7 @@ func computeHash(data []byte) (string, error) {
 	return hex.EncodeToString(hasher.Sum(nil)), nil
 }
 
-func marshal(x interface{}) string {
+func Marshal(x interface{}) string {
 	data, err := json.MarshalIndent(x, "", "  ")
 	if err != nil {
 		panic(err)
@@ -48,7 +46,7 @@ func marshal(x interface{}) string {
 	return string(data)
 }
 
-func unmarshal(data string, x interface{}) error {
+func Unmarshal(data string, x interface{}) error {
 	err := json.Unmarshal([]byte(data), x)
 	if err != nil {
 		return err
@@ -57,7 +55,7 @@ func unmarshal(data string, x interface{}) error {
 	return nil
 }
 
-func unmarshalInstanceInputData(input []byte) interface{} {
+func UnmarshalInstanceInputData(input []byte) interface{} {
 	var inputData, stateData interface{}
 
 	err := json.Unmarshal(input, &inputData)
@@ -76,8 +74,8 @@ func unmarshalInstanceInputData(input []byte) interface{} {
 	return stateData
 }
 
-func marshalInstanceInputData(input []byte) string {
-	x := unmarshalInstanceInputData(input)
+func MarshalInstanceInputData(input []byte) string {
+	x := UnmarshalInstanceInputData(input)
 
 	data, err := json.Marshal(x)
 	if err != nil {
@@ -215,7 +213,7 @@ deref:
 	}
 }
 
-func atob(a, b interface{}) error {
+func Atob(a, b interface{}) error {
 	m := atobBuilder(a)
 
 	data, err := json.Marshal(m)
@@ -229,49 +227,4 @@ func atob(a, b interface{}) error {
 	}
 
 	return nil
-}
-
-func (srv *server) initJQ() {
-	jqer.StringQueryRequiresWrappings = true
-	jqer.TrimWhitespaceOnQueryStrings = true
-
-	jqer.SearchInStrings = true
-	jqer.WrappingBegin = "jq"
-	jqer.WrappingIncrement = "("
-	jqer.WrappingDecrement = ")"
-}
-
-func jq(input interface{}, command interface{}) ([]interface{}, error) {
-	out, err := jqer.Evaluate(input, command)
-	if err != nil {
-		return nil, derrors.NewCatchableError(ErrCodeJQBadQuery, "failed to evaluate jq/js: %v", err)
-	}
-	return out, nil
-}
-
-func jqOne(input interface{}, command interface{}) (interface{}, error) {
-	output, err := jq(input, command)
-	if err != nil {
-		return nil, err
-	}
-
-	if len(output) != 1 {
-		return nil, derrors.NewCatchableError(ErrCodeJQNotObject, "the `jq` or `js` command produced multiple outputs")
-	}
-
-	return output[0], nil
-}
-
-func jqObject(input interface{}, command interface{}) (map[string]interface{}, error) {
-	x, err := jqOne(input, command)
-	if err != nil {
-		return nil, err
-	}
-
-	m, ok := x.(map[string]interface{})
-	if !ok {
-		return nil, derrors.NewCatchableError(ErrCodeJQNotObject, "the `jq` or `js` command produced a non-object output")
-	}
-
-	return m, nil
 }

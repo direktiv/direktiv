@@ -9,6 +9,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
@@ -821,7 +822,7 @@ func (pubsub *pubsub) ConfigureRouterCron(id, cron string, enabled bool) {
 		Enabled: enabled,
 	}
 
-	key := marshal(msg)
+	key := bytedata.Marshal(msg)
 
 	pubsub.publish(&PubsubUpdate{
 		Handler: pubsubConfigureRouterFunction,

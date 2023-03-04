@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/functions"
 	"github.com/direktiv/direktiv/pkg/model"
@@ -87,7 +88,7 @@ func (flow *flow) functionsHeartbeat() {
 						FunctionDefinition: def,
 					}
 
-					csum := checksum(tuple)
+					csum := bytedata.Checksum(tuple)
 
 					if _, exists := checksums[csum]; !exists {
 						checksums[csum] = true
@@ -114,7 +115,7 @@ func (flow *flow) flushHeartbeatTuples(tuples []*functions.HeartbeatTuple) {
 		return
 	}
 
-	msg := marshal(tuples)
+	msg := bytedata.Marshal(tuples)
 
 	if len(msg) > heartbeatMessageLimit {
 
