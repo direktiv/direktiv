@@ -4,19 +4,22 @@ import Logo from "./Logo";
 import { Menu } from "lucide-react";
 import clsx from "clsx";
 
-export const Root: FC = ({ children }) => {
-  const drawerButton = (
-    <label
-      htmlFor="my-drawer"
-      role="button"
-      className="lg:hidden px-1 justify-self-start"
-    >
-      <Menu />
-    </label>
-  );
+export const Root: {
+  ({
+    children,
+  }: {
+    children: (props: {
+      drawerLabelProps: React.HTMLProps<HTMLLabelElement>;
+    }) => JSX.Element;
+  }): JSX.Element;
+} = ({ children }) => {
+  const drawerLabelProps = {
+    htmlFor: "my-drawer",
+  };
 
   const drawerMenu = (
     <ul className="menu p-4 w-80 bg-base-100 text-base-content">
+      <label className="btn btn-ghost btn-sm"></label>
       <li>
         <a>Sidebar Item 1</a>
       </li>
@@ -29,10 +32,7 @@ export const Root: FC = ({ children }) => {
     <div className="min-h-full">
       <div className="drawer">
         <input id="my-drawer" type="checkbox" className="drawer-toggle" />
-        <div className="drawer-content">
-          {drawerButton}
-          {children}
-        </div>
+        <div className="drawer-content">{children({ drawerLabelProps })}</div>
         <div className="drawer-side">
           <label htmlFor="my-drawer" className="drawer-overlay"></label>
           {drawerMenu}
