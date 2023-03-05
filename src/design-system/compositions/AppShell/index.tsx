@@ -1,6 +1,7 @@
 import Button from "../../button";
 import { FC } from "react";
 import Logo from "./Logo";
+import LogoNoText from "./LogoNoText";
 import { Menu } from "lucide-react";
 import clsx from "clsx";
 
@@ -46,7 +47,8 @@ export const Sidebar: FC<{ version: string }> = ({ children, version }) => (
       <Button color="ghost" className="lg:hidden px-1 justify-self-start">
         <Menu />
       </Button>
-      <Logo className="h-8 justify-self-center w-auto border-1 border-gray-800" />
+      <LogoNoText className="lg:hidden h-8 w-auto justify-self-center" />
+      <Logo className="hidden lg:block h-8 w-auto" />
     </div>
     <div className="hidden lg:block flex-1 overflow-y-auto">
       <nav className="mt-5 px-3 space-y-1">{children}</nav>
