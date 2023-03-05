@@ -33,15 +33,9 @@ export const DrawerButton: {
 export const DrawerMenu: FC = ({ children }) => (
   <div className="drawer-side">
     <label htmlFor="my-drawer" className="drawer-overlay"></label>
-    <ul className="menu p-4 w-80 bg-base-100 text-base-content">
-      <label className="btn btn-ghost btn-sm"></label>
+    <ul className="menu p-4 w-52 bg-base-100 text-base-content">
+      <Logo className="h-8 mb-5 mt-1 justify-self-center w-auto border-1 border-gray-800" />
       {children}
-      <li>
-        <a>Sidebar Item 1</a>
-      </li>
-      <li>
-        <a>Sidebar Item 2</a>
-      </li>
     </ul>
   </div>
 );
@@ -52,7 +46,7 @@ export const Sidebar: FC<{ version: string }> = ({ children, version }) => (
       <Button color="ghost" className="lg:hidden px-1 justify-self-start">
         <Menu />
       </Button>
-      <Logo className="h-8 justify-self-center  w-auto border-1 border-gray-800" />
+      <Logo className="h-8 justify-self-center w-auto border-1 border-gray-800" />
     </div>
     <div className="hidden lg:block flex-1 overflow-y-auto">
       <nav className="mt-5 px-3 space-y-1">{children}</nav>

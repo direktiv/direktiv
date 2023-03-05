@@ -293,7 +293,18 @@ export const Default = () => {
             </>
           )}
         </DrawerButton>
-        <DrawerMenu>12</DrawerMenu>
+        <DrawerMenu>
+          {navigation.map((item) => (
+            <SidebarNavigationItem
+              key={item.name}
+              href={item.href}
+              active={item.current}
+            >
+              <item.icon aria-hidden="true" />
+              {item.name}
+            </SidebarNavigationItem>
+          ))}
+        </DrawerMenu>
       </DrawerRoot>
     </Root>
   );
