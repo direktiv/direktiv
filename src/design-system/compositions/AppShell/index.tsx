@@ -83,13 +83,13 @@ export const Main: FC = ({ children }) => (
   </div>
 );
 
-export const MainTopBar: FC = ({ children }) => (
+export const MainTopBarRoot: FC = ({ children }) => (
   <div className="border-b border-gray-gray5 dark:border-grayDark-gray5 p-4 flex items-center justify-between">
     {children}
   </div>
 );
 
-export const MainTopLeft: FC = ({ children }) => (
+export const MainTopBarLeft: FC = ({ children }) => (
   <div className="min-w-0 flex-1">
     <h1 className="text-lg font-medium leading-6 text-gray-gray12 dark:text-grayDark-gray12 sm:truncate">
       {children}
@@ -97,7 +97,7 @@ export const MainTopLeft: FC = ({ children }) => (
   </div>
 );
 
-export const MainTopRight: FC = ({ children }) => (
+export const MainTopBarRight: FC = ({ children }) => (
   <div className="mt-4 space-x-3 flex sm:mt-0 sm:ml-4">{children}</div>
 );
 
