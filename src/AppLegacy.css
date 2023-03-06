@@ -1,96 +1,4 @@
 @charset "UTF-8";
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-/* overwrite daisyui */
-
-/* no uppercase buttons */
-.btn {
-  @apply normal-case;
-}
-
-/* fix daisyui outline buttons with state colors */
-.btn-outline.btn-info {
-  @apply border-info-content text-info-content;
-}
-
-.btn-outline.btn-success {
-  @apply border-success-content text-success-content;
-}
-
-.btn-outline.btn-warning {
-  @apply border-warning-content text-warning-content;
-}
-
-.btn-outline.btn-error {
-  @apply border-error-content text-error-content;
-}
-
-/* make normal and large variants a bit smaller */
-.btn,
-.input,
-.btn-md,
-.input-md {
-  @apply h-9 min-h-8; /* default is h-12 min-h-12 */
-}
-
-.btn-xs,
-.input-xs {
-  @apply h-6 min-h-6; /* keeps the original */
-}
-
-.btn-sm,
-.input-sm {
-  @apply h-8 min-h-8; /* keeps the original */
-}
-
-.btn-lg,
-.input-lg {
-  @apply h-11 min-h-8; /* default is h-16 min-h-16 */
-}
-
-/* make divider 1px height */
-.divider:after,
-.divider:before {
-  @apply h-px;
-}
-
-body {
-  @apply h-full;
-  @apply bg-base-100;
-}
-
-@font-face {
-  font-family: "Inter";
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url("fonts/Inter.ttf") format("ttf");
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
-    U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215,
-    U+FEFF, U+FFFD;
-}
-
-@font-face {
-  font-family: "Inter";
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url("fonts/Inter-Medium.ttf") format("ttf");
-  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F,
-    U+FE2E-FE2F;
-}
-
-@font-face {
-  font-family: "RobotoMono";
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url("fonts/RobotoMono-Medium.ttf") format("ttf");
-  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F,
-    U+FE2E-FE2F;
-}
 
 :root {
   --theme-background: #e5e5e5;
@@ -120,23 +28,42 @@ body {
   --theme-border-radius: 4px;
 }
 
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+    monospace;
+}
+
+@font-face {
+  font-family: "Inter";
+  src: url(./fonts/Inter-Regular.ttf);
+}
+
 .opaque {
   background-color: white;
 }
 
-/* a,
+a,
 a:hover,
 a:visited,
 a:active {
   color: inherit;
   text-decoration: none;
-} */
+}
 
 .grey-text {
   color: var(--theme-dark-gray-text);
 }
 
-/* body {
+body {
   color: var(--theme-dark-text);
   background-color: #f8f8f9;
 
@@ -149,9 +76,9 @@ a:active {
   text-align: left;
 
   max-height: 100vh;
+  /* min-width: 800px; */
   overflow-x: auto;
-} 
-*/
+}
 
 #overlay-helper {
   height: 0px;
@@ -160,17 +87,10 @@ a:active {
   max-width: 0px;
 }
 
-/*
 .border {
   box-sizing: border-box;
   border: solid 1px var(--theme-subtle-border);
   border-radius: var(--theme-border-radius);
-}
-
-
-.shadow {
-  background: var(--theme-shadow-background);
-  box-shadow: var(--theme-shadow-box-shadow);
 }
 
 .disabled {
@@ -178,7 +98,6 @@ a:active {
   cursor: unset !important;
   filter: grayscale(100%) !important;
 }
-*/
 
 .disabled-no-filter {
   pointer-events: none !important;
@@ -205,7 +124,7 @@ a:active {
   cursor: pointer !important;
 }
 
-/* input {
+input {
   font-family: var(--font-family);
   min-width: 0px;
   width: 100%;
@@ -230,7 +149,7 @@ textarea {
 input:focus-visible,
 textarea:focus-visible {
   outline: solid 1px var(--theme-brand-blue);
-} */
+}
 
 /* Switch CSS */
 .switch {
@@ -276,7 +195,7 @@ input:checked + .slider-broadcast {
   border-radius: 50%;
 }
 
-/* input:checked + .slider-broadcast:before {
+input:checked + .slider-broadcast:before {
   background-color: white;
   -webkit-transform: translateX(14px);
   -ms-transform: translateX(14px);
@@ -292,7 +211,7 @@ table {
 tr {
   padding-left: 8px;
   padding-right: 8px;
-} */
+}
 
 .left-align {
   text-align: left;
@@ -333,7 +252,7 @@ tr {
     border: 3px solid #ffffff;
   } */
 
-/* select {
+select {
   line-height: 48px;
   height: 48px;
   background-color: white;
@@ -344,12 +263,11 @@ tr {
 
   width: 100%;
   height: auto;
-} 
+}
 
 .hidden {
   visibility: hidden;
 }
-*/
 
 .editor-drawer {
   position: absolute;
@@ -388,9 +306,9 @@ tr {
   height: 36px;
 }
 
-/* select:focus-visible {
+select:focus-visible {
   outline: none;
-} */
+}
 
 .container-alert {
   display: flex;
