@@ -35,7 +35,9 @@ export const DrawerMenu: FC = ({ children }) => (
   <div className="drawer-side">
     <label htmlFor="my-drawer" className="drawer-overlay"></label>
     <nav className="menu p-4 w-52 bg-base-100 text-base-content">
-      <Logo className="h-8 w-auto mb-5 mt-1 justify-self-center" />
+      <div className="px-2">
+        <Logo className="h-8 w-auto mb-5 mt-1" />
+      </div>
       {children}
     </nav>
   </div>
