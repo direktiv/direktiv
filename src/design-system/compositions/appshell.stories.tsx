@@ -26,7 +26,7 @@ import {
   Users,
 } from "lucide-react";
 import {
-  DrawerButton,
+  DrawerContent,
   DrawerMenu,
   DrawerRoot,
   Main,
@@ -100,7 +100,7 @@ export const Default = () => {
   return (
     <Root>
       <DrawerRoot>
-        <DrawerButton>
+        <DrawerContent>
           {({ drawerLabelProps }) => (
             <>
               <label
@@ -292,7 +292,7 @@ export const Default = () => {
               </Main>
             </>
           )}
-        </DrawerButton>
+        </DrawerContent>
         <DrawerMenu>
           {navigation.map((item) => (
             <SidebarNavigationItem

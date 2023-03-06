@@ -16,7 +16,7 @@ export const DrawerRoot: FC = ({ children }) => (
   </div>
 );
 
-export const DrawerButton: {
+export const DrawerContent: {
   ({
     children,
   }: {
