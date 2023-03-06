@@ -39,8 +39,6 @@ export const apiFactory =
     schema: z.ZodSchema<TSchema>;
   }): (({ apiKey, params }: ApiParams<TParams>) => Promise<TSchema>) =>
   async ({ apiKey, params }): Promise<TSchema> => {
-    console.log("🚀", params);
-
     const res = await fetch(path, {
       method,
       headers: {
