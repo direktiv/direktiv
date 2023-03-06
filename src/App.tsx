@@ -13,8 +13,13 @@ const queryClient = new QueryClient();
 function App() {
   const { data: version } = useQuery({
     queryKey: ["version"],
-    queryFn: () => getVersion({ apiKey: "password" }),
-    // networkMode: "always",
+    queryFn: () =>
+      getVersion({
+        apiKey: "password",
+        params: undefined,
+      }),
+    networkMode: "always",
+    staleTime: Infinity,
   });
 
   return <div>{version?.api}</div>;
