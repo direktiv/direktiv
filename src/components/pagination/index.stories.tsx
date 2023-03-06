@@ -1,4 +1,4 @@
-import "../../App.css";
+import "../../AppLegacy.css";
 
 import type { ComponentMeta, ComponentStory } from "@storybook/react";
 import Pagination, { PageInfo, usePageHandler } from "./index";

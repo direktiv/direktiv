@@ -1,4 +1,4 @@
-import "../../App.css";
+import "../../AppLegacy.css";
 
 import FlexBox from "../flexbox";
 import WorkflowDiagram from "./index";

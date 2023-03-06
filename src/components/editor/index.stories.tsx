@@ -1,4 +1,4 @@
-import "../../App.css";
+import "../../AppLegacy.css";
 import "./style.css";
 
 import type { ComponentMeta, ComponentStory } from "@storybook/react";

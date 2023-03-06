@@ -1,4 +1,4 @@
-import "../../App.css";
+import "../../AppLegacy.css";
 import "./style.css";
 
 import FlexBox from "../flexbox";
