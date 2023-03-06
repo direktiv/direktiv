@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const getApiHeaders = (apiKey: string) => ({
+const getApiHeaders = (apiKey: string) => ({
   "direktiv-token": apiKey,
 });
 
@@ -42,7 +42,7 @@ export const apiFactory =
     const res = await fetch(path, {
       method,
       headers: {
-        "direktiv-token": `${apiKey}`,
+        ...getApiHeaders(apiKey),
       },
       ...(params ? { body: JSON.stringify(params) } : {}),
     });
