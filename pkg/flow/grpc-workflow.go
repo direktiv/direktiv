@@ -642,7 +642,7 @@ func (flow *flow) SaveHead(ctx context.Context, req *grpc.SaveHeadRequest) (*grp
 	if len(metadata) != 0 {
 		obj := make(map[string]interface{})
 
-		err := json.Unmarshal([]byte(metadata), &obj)
+		err := json.Unmarshal(metadata, &obj)
 		if err != nil {
 			return nil, err
 		}
