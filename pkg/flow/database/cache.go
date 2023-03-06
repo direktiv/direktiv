@@ -41,10 +41,11 @@ func (n *notification) Marshal() string {
 }
 
 type CachedDatabase struct {
-	sugar    *zap.SugaredLogger
-	source   Database
-	cache    *cache.Cache[[]byte]
-	notifier Notifier
+	sugar          *zap.SugaredLogger
+	source         Database
+	cache          *cache.Cache[[]byte]
+	notifier       Notifier
+	cachingEnabled bool
 }
 
 func NewCachedDatabase(sugar *zap.SugaredLogger, source Database, notifier Notifier) *CachedDatabase {
@@ -500,7 +501,6 @@ func (db *CachedDatabase) Instance(ctx context.Context, cached *CacheData, id uu
 
 func (db *CachedDatabase) FlushInstance(ctx context.Context, inst *Instance) error {
 	db.storeInstanceInCache(ctx, inst)
-
 	return nil
 }
 

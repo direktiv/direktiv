@@ -118,9 +118,11 @@ func (srv *server) workerLogToWorkflow(l *logMessage) {
 func (srv *server) workerLogToInstance(l *logMessage) {
 	util.Trace(l.ctx, l.msg)
 
-	clients := srv.edb.Clients(context.Background())
+	ctx := context.Background() // logs are often queued and stored after their originating requests have ended.
 
-	_, err := clients.LogMsg.Create().SetMsg(l.msg).SetInstanceID(l.cached.Instance.ID).SetT(l.t).Save(l.ctx)
+	clients := srv.edb.Clients(ctx)
+
+	_, err := clients.LogMsg.Create().SetMsg(l.msg).SetInstanceID(l.cached.Instance.ID).SetT(l.t).Save(ctx)
 	if err != nil {
 		srv.sugar.Error(err)
 		return
