@@ -236,7 +236,7 @@ func (actions *actions) NamespaceRegistries(ctx context.Context, req *grpc.Names
 	resp.Registries = new(grpc.Registries)
 	resp.Registries.PageInfo = new(grpc.PageInfo)
 
-	err = bytedata.Atob(cx, &resp.Registries)
+	err = bytedata.ConvertDataForOutput(cx, &resp.Registries)
 	if err != nil {
 		return nil, err
 	}
@@ -293,7 +293,7 @@ resend:
 	resp.Registries = new(grpc.Registries)
 	resp.Registries.PageInfo = new(grpc.PageInfo)
 
-	err = bytedata.Atob(cx, &resp.Registries)
+	err = bytedata.ConvertDataForOutput(cx, &resp.Registries)
 	if err != nil {
 		return err
 	}

@@ -3,7 +3,6 @@ package bytedata
 import (
 	"bytes"
 	"crypto/sha256"
-	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
 	"io"
@@ -14,6 +13,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
+// Checksum is a shortcut to calculate a hash for any given input by first marshalling it to json.
 func Checksum(x interface{}) string {
 	data, err := json.Marshal(x)
 	if err != nil {
@@ -28,6 +28,7 @@ func Checksum(x interface{}) string {
 	return hash
 }
 
+// ComputeHash is a shortcut to calculate a hash for a byte slice.
 func ComputeHash(data []byte) (string, error) {
 	hasher := sha256.New()
 	_, err := io.Copy(hasher, bytes.NewReader(data))
@@ -37,6 +38,7 @@ func ComputeHash(data []byte) (string, error) {
 	return hex.EncodeToString(hasher.Sum(nil)), nil
 }
 
+// Marshal is a shortcut to marshal any given input to json with our preferred indentation settings.
 func Marshal(x interface{}) string {
 	data, err := json.MarshalIndent(x, "", "  ")
 	if err != nil {
@@ -46,46 +48,7 @@ func Marshal(x interface{}) string {
 	return string(data)
 }
 
-func Unmarshal(data string, x interface{}) error {
-	err := json.Unmarshal([]byte(data), x)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func UnmarshalInstanceInputData(input []byte) interface{} {
-	var inputData, stateData interface{}
-
-	err := json.Unmarshal(input, &inputData)
-	if err != nil {
-		inputData = base64.StdEncoding.EncodeToString(input)
-	}
-
-	if _, ok := inputData.(map[string]interface{}); ok {
-		stateData = inputData
-	} else {
-		stateData = map[string]interface{}{
-			"input": inputData,
-		}
-	}
-
-	return stateData
-}
-
-func MarshalInstanceInputData(input []byte) string {
-	x := UnmarshalInstanceInputData(input)
-
-	data, err := json.Marshal(x)
-	if err != nil {
-		panic(err)
-	}
-
-	return string(data)
-}
-
-func atobMapBuilder(t reflect.Type, v reflect.Value) interface{} {
+func convertDataForOutputMapBuilder(t reflect.Type, v reflect.Value) interface{} {
 	m := make(map[string]interface{})
 
 	iter := v.MapRange()
@@ -108,13 +71,13 @@ func atobMapBuilder(t reflect.Type, v reflect.Value) interface{} {
 	x := make(map[string]interface{})
 
 	for k, v := range m {
-		x[k] = atobBuilder(v)
+		x[k] = convertDataForOutputBuilder(v)
 	}
 
 	return x
 }
 
-func atobStructBuilder(t reflect.Type, v reflect.Value) interface{} {
+func convertDataForOutputStructBuilder(t reflect.Type, v reflect.Value) interface{} {
 	m := make(map[string]interface{})
 
 	for i := 0; i < v.NumField(); i++ {
@@ -149,13 +112,13 @@ func atobStructBuilder(t reflect.Type, v reflect.Value) interface{} {
 	x := make(map[string]interface{})
 
 	for k, v := range m {
-		x[k] = atobBuilder(v)
+		x[k] = convertDataForOutputBuilder(v)
 	}
 
 	return x
 }
 
-func atobSliceBuilder(t reflect.Type, v reflect.Value) interface{} {
+func convertDataForOutputSliceBuilder(t reflect.Type, v reflect.Value) interface{} {
 	s := make([]interface{}, v.Len())
 
 	for i := 0; i < v.Len(); i++ {
@@ -170,13 +133,13 @@ func atobSliceBuilder(t reflect.Type, v reflect.Value) interface{} {
 	}
 
 	for idx, v := range s {
-		s[idx] = atobBuilder(v)
+		s[idx] = convertDataForOutputBuilder(v)
 	}
 
 	return s
 }
 
-func atobBuilder(a interface{}) interface{} {
+func convertDataForOutputBuilder(a interface{}) interface{} {
 	v := reflect.ValueOf(a)
 
 deref:
@@ -191,7 +154,7 @@ deref:
 		v = v.Elem()
 		goto deref
 	case reflect.Slice:
-		return atobSliceBuilder(t, v)
+		return convertDataForOutputSliceBuilder(t, v)
 	case reflect.Struct:
 		fallthrough
 	case reflect.Map:
@@ -200,9 +163,9 @@ deref:
 		case time.Time:
 			return timestamppb.New(y)
 		case map[string]interface{}:
-			return atobMapBuilder(t, v)
+			return convertDataForOutputMapBuilder(t, v)
 		default:
-			return atobStructBuilder(t, v)
+			return convertDataForOutputStructBuilder(t, v)
 		}
 	default:
 		x := v.Interface()
@@ -213,8 +176,9 @@ deref:
 	}
 }
 
-func Atob(a, b interface{}) error {
-	m := atobBuilder(a)
+// ConvertDataForOutput converts data from the form returned by the database layer to a form that more closely matches our gRPC APIs output structs.
+func ConvertDataForOutput(a, b interface{}) error {
+	m := convertDataForOutputBuilder(a)
 
 	data, err := json.Marshal(m)
 	if err != nil {

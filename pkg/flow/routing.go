@@ -3,6 +3,7 @@ package flow
 import (
 	"context"
 	"crypto/rand"
+	"encoding/json"
 	"fmt"
 	"math/big"
 	"os"
@@ -294,7 +295,7 @@ func (flow *flow) postCommitRouterConfiguration(id string, ms *muxStart) {
 func (flow *flow) configureRouterHandler(req *PubsubUpdate) {
 	msg := new(configureRouterMessage)
 
-	err := bytedata.Unmarshal(req.Key, msg)
+	err := json.Unmarshal([]byte(req.Key), msg)
 	if err != nil {
 		flow.sugar.Error(err)
 		return

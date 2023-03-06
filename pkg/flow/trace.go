@@ -2,6 +2,7 @@ package flow
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
@@ -125,7 +126,8 @@ func traceStateGenericBegin(ctx context.Context, im *instanceMemory) (context.Co
 	var span trace.Span
 
 	carrier := new(Carrier)
-	err := bytedata.Unmarshal(im.runtime.InstanceContext, carrier)
+
+	err := json.Unmarshal([]byte(im.runtime.InstanceContext), carrier)
 	if err != nil {
 		return ctx, nil, err
 	}
@@ -156,7 +158,7 @@ func traceStateGenericLogicThread(ctx context.Context, im *instanceMemory) (cont
 	var span trace.Span
 
 	carrier := new(Carrier)
-	err := bytedata.Unmarshal(im.runtime.StateContext, carrier)
+	err := json.Unmarshal([]byte(im.runtime.StateContext), carrier)
 	if err != nil {
 		return nil, nil, err
 	}

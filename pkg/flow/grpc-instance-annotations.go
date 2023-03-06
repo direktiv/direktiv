@@ -150,7 +150,7 @@ func (flow *flow) InstanceAnnotations(ctx context.Context, req *grpc.InstanceAnn
 	resp.Annotations = new(grpc.Annotations)
 	resp.Annotations.PageInfo = pi
 
-	err = bytedata.Atob(results, &resp.Annotations.Results)
+	err = bytedata.ConvertDataForOutput(results, &resp.Annotations.Results)
 	if err != nil {
 		return nil, err
 	}
@@ -189,7 +189,7 @@ resend:
 	resp.Annotations = new(grpc.Annotations)
 	resp.Annotations.PageInfo = pi
 
-	err = bytedata.Atob(results, &resp.Annotations.Results)
+	err = bytedata.ConvertDataForOutput(results, &resp.Annotations.Results)
 	if err != nil {
 		return err
 	}

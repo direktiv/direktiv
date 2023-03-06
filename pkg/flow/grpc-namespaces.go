@@ -53,7 +53,7 @@ func (flow *flow) ResolveNamespaceUID(ctx context.Context, req *grpc.ResolveName
 
 	var resp grpc.NamespaceResponse
 
-	err = bytedata.Atob(cached.Namespace, &resp.Namespace)
+	err = bytedata.ConvertDataForOutput(cached.Namespace, &resp.Namespace)
 	if err != nil {
 		return nil, err
 	}
@@ -129,7 +129,7 @@ func (flow *flow) Namespace(ctx context.Context, req *grpc.NamespaceRequest) (*g
 
 	var resp grpc.NamespaceResponse
 
-	err = bytedata.Atob(cached.Namespace, &resp.Namespace)
+	err = bytedata.ConvertDataForOutput(cached.Namespace, &resp.Namespace)
 	if err != nil {
 		return nil, err
 	}
@@ -154,7 +154,7 @@ func (flow *flow) Namespaces(ctx context.Context, req *grpc.NamespacesRequest) (
 	resp := new(grpc.NamespacesResponse)
 	resp.PageInfo = pi
 
-	err = bytedata.Atob(results, &resp.Results)
+	err = bytedata.ConvertDataForOutput(results, &resp.Results)
 	if err != nil {
 		return nil, err
 	}
@@ -186,7 +186,7 @@ resend:
 	resp := new(grpc.NamespacesResponse)
 	resp.PageInfo = pi
 
-	err = bytedata.Atob(results, &resp.Results)
+	err = bytedata.ConvertDataForOutput(results, &resp.Results)
 	if err != nil {
 		return err
 	}
@@ -270,7 +270,7 @@ respond:
 
 	var resp grpc.CreateNamespaceResponse
 
-	err = bytedata.Atob(cached.Namespace, &resp.Namespace)
+	err = bytedata.ConvertDataForOutput(cached.Namespace, &resp.Namespace)
 	if err != nil {
 		return nil, err
 	}
@@ -385,7 +385,7 @@ func (flow *flow) RenameNamespace(ctx context.Context, req *grpc.RenameNamespace
 
 	var resp grpc.RenameNamespaceResponse
 
-	err = bytedata.Atob(cached.Namespace, &resp.Namespace)
+	err = bytedata.ConvertDataForOutput(cached.Namespace, &resp.Namespace)
 	if err != nil {
 		return nil, err
 	}

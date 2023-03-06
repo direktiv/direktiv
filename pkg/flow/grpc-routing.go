@@ -22,7 +22,7 @@ func (flow *flow) Router(ctx context.Context, req *grpc.RouterRequest) (*grpc.Ro
 
 	var resp grpc.RouterResponse
 
-	err = bytedata.Atob(cached.Inode(), &resp.Node)
+	err = bytedata.ConvertDataForOutput(cached.Inode(), &resp.Node)
 	if err != nil {
 		return nil, err
 	}
@@ -32,7 +32,7 @@ func (flow *flow) Router(ctx context.Context, req *grpc.RouterRequest) (*grpc.Ro
 	resp.Node.Path = cached.Path()
 	resp.Live = cached.Workflow.Live
 
-	err = bytedata.Atob(cached.Workflow.Routes, &resp.Routes)
+	err = bytedata.ConvertDataForOutput(cached.Workflow.Routes, &resp.Routes)
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +64,7 @@ resend:
 
 	resp := new(grpc.RouterResponse)
 
-	err = bytedata.Atob(cached.Inode(), &resp.Node)
+	err = bytedata.ConvertDataForOutput(cached.Inode(), &resp.Node)
 	if err != nil {
 		return err
 	}
@@ -74,7 +74,7 @@ resend:
 	resp.Node.Path = cached.Path()
 	resp.Live = cached.Workflow.Live
 
-	err = bytedata.Atob(cached.Workflow.Routes, &resp.Routes)
+	err = bytedata.ConvertDataForOutput(cached.Workflow.Routes, &resp.Routes)
 	if err != nil {
 		return err
 	}
@@ -172,7 +172,7 @@ func (flow *flow) EditRouter(ctx context.Context, req *grpc.EditRouterRequest) (
 
 	var resp grpc.EditRouterResponse
 
-	err = bytedata.Atob(cached.Inode(), &resp.Node)
+	err = bytedata.ConvertDataForOutput(cached.Inode(), &resp.Node)
 	if err != nil {
 		return nil, err
 	}
@@ -182,7 +182,7 @@ func (flow *flow) EditRouter(ctx context.Context, req *grpc.EditRouterRequest) (
 	resp.Node.Path = cached.Path()
 	resp.Live = req.GetLive()
 
-	err = bytedata.Atob(routes, &resp.Routes)
+	err = bytedata.ConvertDataForOutput(routes, &resp.Routes)
 	if err != nil {
 		return nil, err
 	}

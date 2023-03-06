@@ -464,7 +464,7 @@ func (flow *flow) EventListeners(ctx context.Context, req *grpc.EventListenersRe
 	resp.Namespace = cached.Namespace.Name
 	resp.PageInfo = pi
 
-	err = bytedata.Atob(results, &resp.Results)
+	err = bytedata.ConvertDataForOutput(results, &resp.Results)
 	if err != nil {
 		return nil, err
 	}
@@ -569,7 +569,7 @@ resend:
 	resp.Namespace = cached.Namespace.Name
 	resp.PageInfo = pi
 
-	err = bytedata.Atob(results, &resp.Results)
+	err = bytedata.ConvertDataForOutput(results, &resp.Results)
 	if err != nil {
 		return err
 	}

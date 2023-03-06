@@ -56,7 +56,7 @@ func (flow *flow) Secrets(ctx context.Context, req *grpc.SecretsRequest) (*grpc.
 	resp.Secrets = new(grpc.Secrets)
 	resp.Secrets.PageInfo = new(grpc.PageInfo)
 
-	err = bytedata.Atob(cx, &resp.Secrets)
+	err = bytedata.ConvertDataForOutput(cx, &resp.Secrets)
 	if err != nil {
 		return nil, err
 	}
@@ -118,7 +118,7 @@ resend:
 	resp.Secrets = new(grpc.Secrets)
 	resp.Secrets.PageInfo = new(grpc.PageInfo)
 
-	err = bytedata.Atob(cx, &resp.Secrets)
+	err = bytedata.ConvertDataForOutput(cx, &resp.Secrets)
 	if err != nil {
 		return err
 	}
@@ -185,7 +185,7 @@ func (flow *flow) SearchSecret(ctx context.Context, req *grpc.SearchSecretReques
 	resp.Secrets = new(grpc.Secrets)
 	resp.Secrets.PageInfo = new(grpc.PageInfo)
 
-	err = bytedata.Atob(cx, &resp.Secrets)
+	err = bytedata.ConvertDataForOutput(cx, &resp.Secrets)
 	if err != nil {
 		return nil, err
 	}

@@ -95,7 +95,7 @@ respond:
 
 	var resp grpc.CreateNamespaceResponse
 
-	err = bytedata.Atob(ns, &resp.Namespace)
+	err = bytedata.ConvertDataForOutput(ns, &resp.Namespace)
 	if err != nil {
 		return nil, err
 	}
@@ -173,7 +173,7 @@ func (flow *flow) CreateDirectoryMirror(ctx context.Context, req *grpc.CreateDir
 
 	var resp grpc.CreateDirectoryResponse
 
-	err = bytedata.Atob(ino, &resp.Node)
+	err = bytedata.ConvertDataForOutput(ino, &resp.Node)
 	if err != nil {
 		return nil, err
 	}
@@ -617,12 +617,12 @@ func (flow *flow) MirrorInfo(ctx context.Context, req *grpc.MirrorInfoRequest) (
 	resp.Activities = new(grpc.MirrorActivities)
 	resp.Activities.PageInfo = pi
 
-	err = bytedata.Atob(results, &resp.Activities.Results)
+	err = bytedata.ConvertDataForOutput(results, &resp.Activities.Results)
 	if err != nil {
 		return nil, err
 	}
 
-	err = bytedata.Atob(mirror, &resp.Info)
+	err = bytedata.ConvertDataForOutput(mirror, &resp.Info)
 	if err != nil {
 		return nil, err
 	}
@@ -690,12 +690,12 @@ resend:
 	resp.Activities = new(grpc.MirrorActivities)
 	resp.Activities.PageInfo = pi
 
-	err = bytedata.Atob(results, &resp.Activities.Results)
+	err = bytedata.ConvertDataForOutput(results, &resp.Activities.Results)
 	if err != nil {
 		return err
 	}
 
-	err = bytedata.Atob(mirror, &resp.Info)
+	err = bytedata.ConvertDataForOutput(mirror, &resp.Info)
 	if err != nil {
 		return err
 	}
@@ -774,7 +774,7 @@ func (flow *flow) MirrorActivityLogs(ctx context.Context, req *grpc.MirrorActivi
 	resp.Activity = activity.ID.String()
 	resp.PageInfo = pi
 
-	err = bytedata.Atob(results, &resp.Results)
+	err = bytedata.ConvertDataForOutput(results, &resp.Results)
 	if err != nil {
 		return nil, err
 	}
@@ -813,7 +813,7 @@ resend:
 	resp.Activity = activity.ID.String()
 	resp.PageInfo = pi
 
-	err = bytedata.Atob(results, &resp.Results)
+	err = bytedata.ConvertDataForOutput(results, &resp.Results)
 	if err != nil {
 		return err
 	}

@@ -346,7 +346,7 @@ func (flow *flow) InstanceVariables(ctx context.Context, req *grpc.InstanceVaria
 	resp.Variables = new(grpc.Variables)
 	resp.Variables.PageInfo = pi
 
-	err = bytedata.Atob(results, &resp.Variables.Results)
+	err = bytedata.ConvertDataForOutput(results, &resp.Variables.Results)
 	if err != nil {
 		return nil, err
 	}
@@ -404,7 +404,7 @@ resend:
 	resp.Variables = new(grpc.Variables)
 	resp.Variables.PageInfo = pi
 
-	err = bytedata.Atob(results, &resp.Variables.Results)
+	err = bytedata.ConvertDataForOutput(results, &resp.Variables.Results)
 	if err != nil {
 		return err
 	}

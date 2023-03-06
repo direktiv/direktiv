@@ -83,7 +83,7 @@ func (flow *flow) Node(ctx context.Context, req *grpc.NodeRequest) (*grpc.NodeRe
 		return nil, err
 	}
 
-	err = bytedata.Atob(cached.Inode(), &resp.Node)
+	err = bytedata.ConvertDataForOutput(cached.Inode(), &resp.Node)
 	if err != nil {
 		flow.sugar.Debugf("gRPC %s handler failed to traverse to marshal response: %v", this(), err)
 		return nil, err
@@ -126,12 +126,12 @@ func (flow *flow) Directory(ctx context.Context, req *grpc.DirectoryRequest) (*g
 	resp.Children = new(grpc.DirectoryChildren)
 	resp.Children.PageInfo = pi
 
-	err = bytedata.Atob(results, &resp.Children.Results)
+	err = bytedata.ConvertDataForOutput(results, &resp.Children.Results)
 	if err != nil {
 		return nil, err
 	}
 
-	err = bytedata.Atob(cached.Inode(), &resp.Node)
+	err = bytedata.ConvertDataForOutput(cached.Inode(), &resp.Node)
 	if err != nil {
 		return nil, err
 	}
@@ -192,12 +192,12 @@ resend:
 	resp.Children = new(grpc.DirectoryChildren)
 	resp.Children.PageInfo = pi
 
-	err = bytedata.Atob(results, &resp.Children.Results)
+	err = bytedata.ConvertDataForOutput(results, &resp.Children.Results)
 	if err != nil {
 		return err
 	}
 
-	err = bytedata.Atob(cached.Inode(), &resp.Node)
+	err = bytedata.ConvertDataForOutput(cached.Inode(), &resp.Node)
 	if err != nil {
 		return err
 	}
@@ -320,7 +320,7 @@ func (flow *flow) CreateDirectory(ctx context.Context, req *grpc.CreateDirectory
 
 	var resp grpc.CreateDirectoryResponse
 
-	err = bytedata.Atob(ino, &resp.Node)
+	err = bytedata.ConvertDataForOutput(ino, &resp.Node)
 	if err != nil {
 		return nil, err
 	}
@@ -527,7 +527,7 @@ func (flow *flow) RenameNode(ctx context.Context, req *grpc.RenameNodeRequest) (
 
 	var resp grpc.RenameNodeResponse
 
-	err = bytedata.Atob(cached.Inode(), &resp.Node)
+	err = bytedata.ConvertDataForOutput(cached.Inode(), &resp.Node)
 	if err != nil {
 		return nil, err
 	}

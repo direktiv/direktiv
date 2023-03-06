@@ -79,7 +79,7 @@ func (flow *flow) InstanceInput(ctx context.Context, req *grpc.InstanceInputRequ
 
 	var resp grpc.InstanceInputResponse
 
-	err = bytedata.Atob(cached.Instance, &resp.Instance)
+	err = bytedata.ConvertDataForOutput(cached.Instance, &resp.Instance)
 	if err != nil {
 		return nil, err
 	}
@@ -108,7 +108,7 @@ func (flow *flow) InstanceOutput(ctx context.Context, req *grpc.InstanceOutputRe
 
 	var resp grpc.InstanceOutputResponse
 
-	err = bytedata.Atob(cached.Instance, &resp.Instance)
+	err = bytedata.ConvertDataForOutput(cached.Instance, &resp.Instance)
 	if err != nil {
 		return nil, err
 	}
@@ -137,7 +137,7 @@ func (flow *flow) InstanceMetadata(ctx context.Context, req *grpc.InstanceMetada
 
 	var resp grpc.InstanceMetadataResponse
 
-	err = bytedata.Atob(cached.Instance, &resp.Instance)
+	err = bytedata.ConvertDataForOutput(cached.Instance, &resp.Instance)
 	if err != nil {
 		return nil, err
 	}
@@ -172,7 +172,7 @@ func (flow *flow) Instances(ctx context.Context, req *grpc.InstancesRequest) (*g
 	resp.Instances = new(grpc.Instances)
 	resp.Instances.PageInfo = pi
 
-	err = bytedata.Atob(results, &resp.Instances.Results)
+	err = bytedata.ConvertDataForOutput(results, &resp.Instances.Results)
 	if err != nil {
 		return nil, err
 	}
@@ -213,7 +213,7 @@ resend:
 	resp.Instances = new(grpc.Instances)
 	resp.Instances.PageInfo = pi
 
-	err = bytedata.Atob(results, &resp.Instances.Results)
+	err = bytedata.ConvertDataForOutput(results, &resp.Instances.Results)
 	if err != nil {
 		return err
 	}
@@ -245,7 +245,7 @@ func (flow *flow) Instance(ctx context.Context, req *grpc.InstanceRequest) (*grp
 
 	var resp grpc.InstanceResponse
 
-	err = bytedata.Atob(cached.Instance, &resp.Instance)
+	err = bytedata.ConvertDataForOutput(cached.Instance, &resp.Instance)
 	if err != nil {
 		return nil, err
 	}
@@ -293,7 +293,7 @@ resend:
 
 	resp := new(grpc.InstanceResponse)
 
-	err = bytedata.Atob(cached.Instance, &resp.Instance)
+	err = bytedata.ConvertDataForOutput(cached.Instance, &resp.Instance)
 	if err != nil {
 		return err
 	}
@@ -513,7 +513,7 @@ resend:
 
 	resp := new(grpc.AwaitWorkflowResponse)
 
-	err = bytedata.Atob(cached.Instance, &resp.Instance)
+	err = bytedata.ConvertDataForOutput(cached.Instance, &resp.Instance)
 	if err != nil {
 		return err
 	}
