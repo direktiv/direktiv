@@ -23,8 +23,7 @@ export function apiFactory<T>({
 
     if (res.ok) {
       try {
-        const data = await res.json();
-        return schema.parse(data);
+        return schema.parse(await res.json());
       } catch (error) {
         return Promise.reject(
           `could not format response for ${method} ${path}`
