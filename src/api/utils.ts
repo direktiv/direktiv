@@ -5,16 +5,22 @@ export const getApiHeaders = (apiKey: string) => ({
 });
 
 export const apiFactory =
-  <T>({
+  <TParams extends object, TSchema>({
     path,
     method,
     schema,
   }: {
     path: string;
     method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
-    schema: z.ZodSchema<T>;
-  }): (({ apiKey }: { apiKey: string }) => Promise<T>) =>
-  async ({ apiKey }: { apiKey: string }): Promise<T> => {
+    schema: z.ZodSchema<TSchema>;
+  }): (({
+    apiKey,
+    params,
+  }: {
+    apiKey: string;
+    params: TParams;
+  }) => Promise<TSchema>) =>
+  async ({ apiKey }: { apiKey: string }): Promise<TSchema> => {
     const res = await fetch(path, {
       method,
       headers: {
