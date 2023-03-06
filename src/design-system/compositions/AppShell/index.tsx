@@ -1,8 +1,6 @@
-import Button from "../../button";
 import { FC } from "react";
 import Logo from "./Logo";
 import LogoNoText from "./LogoNoText";
-import { Menu } from "lucide-react";
 import clsx from "clsx";
 
 export const Root: FC = ({ children }) => (
@@ -45,19 +43,23 @@ export const DrawerMenu: FC = ({ children }) => (
 
 export const Sidebar: FC<{ version: string }> = ({ children, version }) => (
   <div className="lg:fixed lg:inset-y-0 lg:flex lg:w-52 lg:flex-col lg:border-r lg:border-gray-gray5 dark:lg:border-grayDark-gray5">
-    <div className="grid max-lg:space-x-5 max-lg:grid-cols-3 items-center lg:block border-b border-gray-gray5 dark:border-grayDark-gray5 px-6 py-5">
-      <Button color="ghost" className="lg:hidden px-1 justify-self-start">
-        <Menu />
-      </Button>
-      <LogoNoText className="sm:hidden h-8 w-auto justify-self-center" />
-      <Logo className="hidden sm:block h-8 w-auto" />
-    </div>
-    <div className="hidden lg:block flex-1 overflow-y-auto">
-      <nav className="mt-5 px-3 space-y-1">{children}</nav>
-    </div>
+    {children}
     <div className="hidden lg:block flex-shrink-0 p-5 text-left text-sm text-gray-gray8 dark:text-grayDark-gray8">
       {version}
     </div>
+  </div>
+);
+
+export const SidebarMenu: FC = ({ children }) => (
+  <div className="hidden lg:block flex-1 overflow-y-auto">
+    <nav className="mt-5 px-3 space-y-1">{children}</nav>
+  </div>
+);
+export const SidebarLogo: FC = ({ children }) => (
+  <div className="grid max-lg:space-x-5 max-lg:grid-cols-3 items-center lg:block border-b border-gray-gray5 dark:border-grayDark-gray5 px-6 py-5">
+    {children}
+    <LogoNoText className="sm:hidden h-8 w-auto justify-self-center" />
+    <Logo className="hidden sm:block h-8 w-auto" />
   </div>
 );
 

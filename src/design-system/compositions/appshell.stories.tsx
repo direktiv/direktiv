@@ -36,6 +36,8 @@ import {
   MainTopBarRoot,
   Root,
   Sidebar,
+  SidebarLogo,
+  SidebarMenu,
   SidebarNavigationItem,
 } from "./AppShell";
 import {
@@ -103,24 +105,28 @@ export const Default = () => {
         <DrawerContent>
           {({ drawerLabelProps }) => (
             <>
-              <label
-                {...drawerLabelProps}
-                className="lg:hidden px-1 justify-self-start"
-                role="button"
-              >
-                <Menu />
-              </label>
               <Sidebar version="Version: 78c688e">
-                {navigation.map((item) => (
-                  <SidebarNavigationItem
-                    key={item.name}
-                    href={item.href}
-                    active={item.current}
+                <SidebarLogo>
+                  <label
+                    {...drawerLabelProps}
+                    className="lg:hidden px-1 justify-self-start"
+                    role="button"
                   >
-                    <item.icon aria-hidden="true" />
-                    {item.name}
-                  </SidebarNavigationItem>
-                ))}
+                    <Menu />
+                  </label>
+                </SidebarLogo>
+                <SidebarMenu>
+                  {navigation.map((item) => (
+                    <SidebarNavigationItem
+                      key={item.name}
+                      href={item.href}
+                      active={item.current}
+                    >
+                      <item.icon aria-hidden="true" />
+                      {item.name}
+                    </SidebarNavigationItem>
+                  ))}
+                </SidebarMenu>
               </Sidebar>
               <Main>
                 <MainTopBarRoot>
