@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	secretsgrpc "github.com/direktiv/direktiv/pkg/secrets/grpc"
@@ -55,7 +56,7 @@ func (flow *flow) Secrets(ctx context.Context, req *grpc.SecretsRequest) (*grpc.
 	resp.Secrets = new(grpc.Secrets)
 	resp.Secrets.PageInfo = new(grpc.PageInfo)
 
-	err = atob(cx, &resp.Secrets)
+	err = bytedata.ConvertDataForOutput(cx, &resp.Secrets)
 	if err != nil {
 		return nil, err
 	}
@@ -117,12 +118,12 @@ resend:
 	resp.Secrets = new(grpc.Secrets)
 	resp.Secrets.PageInfo = new(grpc.PageInfo)
 
-	err = atob(cx, &resp.Secrets)
+	err = bytedata.ConvertDataForOutput(cx, &resp.Secrets)
 	if err != nil {
 		return err
 	}
 
-	nhash = checksum(resp)
+	nhash = bytedata.Checksum(resp)
 	if nhash != phash {
 		err = srv.Send(resp)
 		if err != nil {
@@ -184,7 +185,7 @@ func (flow *flow) SearchSecret(ctx context.Context, req *grpc.SearchSecretReques
 	resp.Secrets = new(grpc.Secrets)
 	resp.Secrets.PageInfo = new(grpc.PageInfo)
 
-	err = atob(cx, &resp.Secrets)
+	err = bytedata.ConvertDataForOutput(cx, &resp.Secrets)
 	if err != nil {
 		return nil, err
 	}

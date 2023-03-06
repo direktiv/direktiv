@@ -6,6 +6,7 @@ import (
 	"errors"
 	"io"
 
+	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entnote "github.com/direktiv/direktiv/pkg/flow/ent/annotation"
@@ -148,7 +149,7 @@ func (flow *flow) NodeAnnotations(ctx context.Context, req *grpc.NodeAnnotations
 	resp.Annotations = new(grpc.Annotations)
 	resp.Annotations.PageInfo = pi
 
-	err = atob(results, &resp.Annotations.Results)
+	err = bytedata.ConvertDataForOutput(results, &resp.Annotations.Results)
 	if err != nil {
 		return nil, err
 	}
@@ -187,12 +188,12 @@ resend:
 	resp.Annotations = new(grpc.Annotations)
 	resp.Annotations.PageInfo = pi
 
-	err = atob(results, &resp.Annotations.Results)
+	err = bytedata.ConvertDataForOutput(results, &resp.Annotations.Results)
 	if err != nil {
 		return err
 	}
 
-	nhash = checksum(resp)
+	nhash = bytedata.Checksum(resp)
 	if nhash != phash {
 		err = srv.Send(resp)
 		if err != nil {

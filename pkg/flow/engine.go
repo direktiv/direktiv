@@ -74,6 +74,36 @@ const (
 	apiCaller = "api"
 )
 
+func unmarshalInstanceInputData(input []byte) interface{} {
+	var inputData, stateData interface{}
+
+	err := json.Unmarshal(input, &inputData)
+	if err != nil {
+		inputData = base64.StdEncoding.EncodeToString(input)
+	}
+
+	if _, ok := inputData.(map[string]interface{}); ok {
+		stateData = inputData
+	} else {
+		stateData = map[string]interface{}{
+			"input": inputData,
+		}
+	}
+
+	return stateData
+}
+
+func marshalInstanceInputData(input []byte) string {
+	x := unmarshalInstanceInputData(input)
+
+	data, err := json.Marshal(x)
+	if err != nil {
+		panic(err)
+	}
+
+	return string(data)
+}
+
 func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*instanceMemory, error) {
 	tctx, tx, err := engine.database.Tx(ctx)
 	if err != nil {

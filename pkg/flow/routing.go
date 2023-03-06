@@ -3,6 +3,7 @@ package flow
 import (
 	"context"
 	"crypto/rand"
+	"encoding/json"
 	"fmt"
 	"math/big"
 	"os"
@@ -11,6 +12,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	entirt "github.com/direktiv/direktiv/pkg/flow/ent/instanceruntime"
@@ -61,7 +63,7 @@ func (ms *muxStart) Hash() string {
 		ms.Type = model.StartTypeDefault.String()
 	}
 
-	return checksum(ms)
+	return bytedata.Checksum(ms)
 }
 
 func (srv *server) validateRouter(ctx context.Context, cached *database.CacheData) (*muxStart, error, error) {
@@ -293,7 +295,7 @@ func (flow *flow) postCommitRouterConfiguration(id string, ms *muxStart) {
 func (flow *flow) configureRouterHandler(req *PubsubUpdate) {
 	msg := new(configureRouterMessage)
 
-	err := unmarshal(req.Key, msg)
+	err := json.Unmarshal([]byte(req.Key), msg)
 	if err != nil {
 		flow.sugar.Error(err)
 		return

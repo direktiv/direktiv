@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
@@ -94,7 +95,7 @@ respond:
 
 	var resp grpc.CreateNamespaceResponse
 
-	err = atob(ns, &resp.Namespace)
+	err = bytedata.ConvertDataForOutput(ns, &resp.Namespace)
 	if err != nil {
 		return nil, err
 	}
@@ -172,7 +173,7 @@ func (flow *flow) CreateDirectoryMirror(ctx context.Context, req *grpc.CreateDir
 
 	var resp grpc.CreateDirectoryResponse
 
-	err = atob(ino, &resp.Node)
+	err = bytedata.ConvertDataForOutput(ino, &resp.Node)
 	if err != nil {
 		return nil, err
 	}
@@ -616,12 +617,12 @@ func (flow *flow) MirrorInfo(ctx context.Context, req *grpc.MirrorInfoRequest) (
 	resp.Activities = new(grpc.MirrorActivities)
 	resp.Activities.PageInfo = pi
 
-	err = atob(results, &resp.Activities.Results)
+	err = bytedata.ConvertDataForOutput(results, &resp.Activities.Results)
 	if err != nil {
 		return nil, err
 	}
 
-	err = atob(mirror, &resp.Info)
+	err = bytedata.ConvertDataForOutput(mirror, &resp.Info)
 	if err != nil {
 		return nil, err
 	}
@@ -689,12 +690,12 @@ resend:
 	resp.Activities = new(grpc.MirrorActivities)
 	resp.Activities.PageInfo = pi
 
-	err = atob(results, &resp.Activities.Results)
+	err = bytedata.ConvertDataForOutput(results, &resp.Activities.Results)
 	if err != nil {
 		return err
 	}
 
-	err = atob(mirror, &resp.Info)
+	err = bytedata.ConvertDataForOutput(mirror, &resp.Info)
 	if err != nil {
 		return err
 	}
@@ -706,7 +707,7 @@ resend:
 		resp.Info.PrivateKey = "-"
 	}
 
-	nhash = checksum(resp)
+	nhash = bytedata.Checksum(resp)
 	if nhash != phash {
 		err = srv.Send(resp)
 		if err != nil {
@@ -773,7 +774,7 @@ func (flow *flow) MirrorActivityLogs(ctx context.Context, req *grpc.MirrorActivi
 	resp.Activity = activity.ID.String()
 	resp.PageInfo = pi
 
-	err = atob(results, &resp.Results)
+	err = bytedata.ConvertDataForOutput(results, &resp.Results)
 	if err != nil {
 		return nil, err
 	}
@@ -812,7 +813,7 @@ resend:
 	resp.Activity = activity.ID.String()
 	resp.PageInfo = pi
 
-	err = atob(results, &resp.Results)
+	err = bytedata.ConvertDataForOutput(results, &resp.Results)
 	if err != nil {
 		return err
 	}

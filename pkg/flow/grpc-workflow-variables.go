@@ -7,6 +7,7 @@ import (
 	"io"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/database/entwrapper"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
@@ -103,7 +104,7 @@ func (internal *internal) WorkflowVariableParcels(req *grpc.VariableInternalRequ
 		vdata = new(database.VarData)
 		t := time.Now()
 		vdata.Data = make([]byte, 0)
-		hash, err := computeHash(vdata.Data)
+		hash, err := bytedata.ComputeHash(vdata.Data)
 		if err != nil {
 			internal.sugar.Error(err)
 		}
@@ -237,7 +238,7 @@ func (flow *flow) WorkflowVariables(ctx context.Context, req *grpc.WorkflowVaria
 	resp.Variables = new(grpc.Variables)
 	resp.Variables.PageInfo = pi
 
-	err = atob(results, &resp.Variables.Results)
+	err = bytedata.ConvertDataForOutput(results, &resp.Variables.Results)
 	if err != nil {
 		return nil, err
 	}
@@ -295,7 +296,7 @@ resend:
 	resp.Variables = new(grpc.Variables)
 	resp.Variables.PageInfo = pi
 
-	err = atob(results, &resp.Variables.Results)
+	err = bytedata.ConvertDataForOutput(results, &resp.Variables.Results)
 	if err != nil {
 		return err
 	}
@@ -318,7 +319,7 @@ resend:
 
 	}
 
-	nhash = checksum(resp)
+	nhash = bytedata.Checksum(resp)
 	if nhash != phash {
 		err = srv.Send(resp)
 		if err != nil {
@@ -367,7 +368,7 @@ func (x *entInstanceVarQuerier) QueryVars() *ent.VarRefQuery {
 }
 
 func (flow *flow) SetVariable(ctx context.Context, q varQuerier, key string, data []byte, vMimeType string, thread bool) (*ent.VarData, bool, error) {
-	hash, err := computeHash(data)
+	hash, err := bytedata.ComputeHash(data)
 	if err != nil {
 		flow.sugar.Error(err)
 	}

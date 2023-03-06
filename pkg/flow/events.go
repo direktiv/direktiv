@@ -16,6 +16,7 @@ import (
 	"github.com/dop251/goja"
 
 	"github.com/cloudevents/sdk-go/v2/event"
+	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
@@ -463,7 +464,7 @@ func (flow *flow) EventListeners(ctx context.Context, req *grpc.EventListenersRe
 	resp.Namespace = cached.Namespace.Name
 	resp.PageInfo = pi
 
-	err = atob(results, &resp.Results)
+	err = bytedata.ConvertDataForOutput(results, &resp.Results)
 	if err != nil {
 		return nil, err
 	}
@@ -568,7 +569,7 @@ resend:
 	resp.Namespace = cached.Namespace.Name
 	resp.PageInfo = pi
 
-	err = atob(results, &resp.Results)
+	err = bytedata.ConvertDataForOutput(results, &resp.Results)
 	if err != nil {
 		return err
 	}
@@ -638,7 +639,7 @@ resend:
 
 	}
 
-	nhash = checksum(resp)
+	nhash = bytedata.Checksum(resp)
 	if nhash != phash {
 		err = srv.Send(resp)
 		if err != nil {
@@ -841,7 +842,7 @@ resend:
 
 	}
 
-	nhash = checksum(resp)
+	nhash = bytedata.Checksum(resp)
 	if nhash != phash {
 		err = srv.Send(resp)
 		if err != nil {

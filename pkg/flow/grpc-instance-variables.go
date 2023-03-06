@@ -11,6 +11,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
@@ -132,7 +133,7 @@ func (internal *internal) InstanceVariableParcels(req *grpc.VariableInternalRequ
 		vdata = new(database.VarData)
 		t := time.Now()
 		vdata.Data = make([]byte, 0)
-		hash, err := computeHash(vdata.Data)
+		hash, err := bytedata.ComputeHash(vdata.Data)
 		if err != nil {
 			internal.sugar.Error(err)
 		}
@@ -218,7 +219,7 @@ func (internal *internal) ThreadVariableParcels(req *grpc.VariableInternalReques
 		vdata = new(database.VarData)
 		t := time.Now()
 		vdata.Data = make([]byte, 0)
-		hash, err := computeHash(vdata.Data)
+		hash, err := bytedata.ComputeHash(vdata.Data)
 		if err != nil {
 			internal.sugar.Error(err)
 		}
@@ -345,7 +346,7 @@ func (flow *flow) InstanceVariables(ctx context.Context, req *grpc.InstanceVaria
 	resp.Variables = new(grpc.Variables)
 	resp.Variables.PageInfo = pi
 
-	err = atob(results, &resp.Variables.Results)
+	err = bytedata.ConvertDataForOutput(results, &resp.Variables.Results)
 	if err != nil {
 		return nil, err
 	}
@@ -403,7 +404,7 @@ resend:
 	resp.Variables = new(grpc.Variables)
 	resp.Variables.PageInfo = pi
 
-	err = atob(results, &resp.Variables.Results)
+	err = bytedata.ConvertDataForOutput(results, &resp.Variables.Results)
 	if err != nil {
 		return err
 	}
@@ -426,7 +427,7 @@ resend:
 
 	}
 
-	nhash = checksum(resp)
+	nhash = bytedata.Checksum(resp)
 	if nhash != phash {
 		err = srv.Send(resp)
 		if err != nil {

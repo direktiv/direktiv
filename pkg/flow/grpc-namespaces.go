@@ -5,6 +5,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entino "github.com/direktiv/direktiv/pkg/flow/ent/inode"
@@ -52,7 +53,7 @@ func (flow *flow) ResolveNamespaceUID(ctx context.Context, req *grpc.ResolveName
 
 	var resp grpc.NamespaceResponse
 
-	err = atob(cached.Namespace, &resp.Namespace)
+	err = bytedata.ConvertDataForOutput(cached.Namespace, &resp.Namespace)
 	if err != nil {
 		return nil, err
 	}
@@ -128,7 +129,7 @@ func (flow *flow) Namespace(ctx context.Context, req *grpc.NamespaceRequest) (*g
 
 	var resp grpc.NamespaceResponse
 
-	err = atob(cached.Namespace, &resp.Namespace)
+	err = bytedata.ConvertDataForOutput(cached.Namespace, &resp.Namespace)
 	if err != nil {
 		return nil, err
 	}
@@ -153,7 +154,7 @@ func (flow *flow) Namespaces(ctx context.Context, req *grpc.NamespacesRequest) (
 	resp := new(grpc.NamespacesResponse)
 	resp.PageInfo = pi
 
-	err = atob(results, &resp.Results)
+	err = bytedata.ConvertDataForOutput(results, &resp.Results)
 	if err != nil {
 		return nil, err
 	}
@@ -185,12 +186,12 @@ resend:
 	resp := new(grpc.NamespacesResponse)
 	resp.PageInfo = pi
 
-	err = atob(results, &resp.Results)
+	err = bytedata.ConvertDataForOutput(results, &resp.Results)
 	if err != nil {
 		return err
 	}
 
-	nhash = checksum(resp)
+	nhash = bytedata.Checksum(resp)
 	if nhash != phash {
 		err = srv.Send(resp)
 		if err != nil {
@@ -269,7 +270,7 @@ respond:
 
 	var resp grpc.CreateNamespaceResponse
 
-	err = atob(cached.Namespace, &resp.Namespace)
+	err = bytedata.ConvertDataForOutput(cached.Namespace, &resp.Namespace)
 	if err != nil {
 		return nil, err
 	}
@@ -384,7 +385,7 @@ func (flow *flow) RenameNamespace(ctx context.Context, req *grpc.RenameNamespace
 
 	var resp grpc.RenameNamespaceResponse
 
-	err = atob(cached.Namespace, &resp.Namespace)
+	err = bytedata.ConvertDataForOutput(cached.Namespace, &resp.Namespace)
 	if err != nil {
 		return nil, err
 	}

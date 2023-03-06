@@ -2,10 +2,12 @@ package flow
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"path/filepath"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	entref "github.com/direktiv/direktiv/pkg/flow/ent/ref"
 	entrev "github.com/direktiv/direktiv/pkg/flow/ent/revision"
@@ -92,7 +94,7 @@ func (flow *flow) ResolveWorkflowUID(ctx context.Context, req *grpc.ResolveWorkf
 
 	var resp grpc.WorkflowResponse
 
-	err = atob(cached.Inode(), &resp.Node)
+	err = bytedata.ConvertDataForOutput(cached.Inode(), &resp.Node)
 	if err != nil {
 		return nil, err
 	}
@@ -119,7 +121,7 @@ func (flow *flow) Workflow(ctx context.Context, req *grpc.WorkflowRequest) (*grp
 
 	var resp grpc.WorkflowResponse
 
-	err = atob(cached.Inode(), &resp.Node)
+	err = bytedata.ConvertDataForOutput(cached.Inode(), &resp.Node)
 	if err != nil {
 		return nil, err
 	}
@@ -134,7 +136,7 @@ func (flow *flow) Workflow(ctx context.Context, req *grpc.WorkflowRequest) (*grp
 	resp.EventLogging = cached.Workflow.LogToEvents
 	resp.Oid = cached.Workflow.ID.String()
 
-	err = atob(cached.Revision, &resp.Revision)
+	err = bytedata.ConvertDataForOutput(cached.Revision, &resp.Revision)
 	if err != nil {
 		return nil, err
 	}
@@ -163,7 +165,7 @@ resend:
 
 	resp := new(grpc.WorkflowResponse)
 
-	err = atob(cached.Inode(), &resp.Node)
+	err = bytedata.ConvertDataForOutput(cached.Inode(), &resp.Node)
 	if err != nil {
 		return err
 	}
@@ -178,14 +180,14 @@ resend:
 	resp.Oid = cached.Workflow.ID.String()
 	resp.EventLogging = cached.Workflow.LogToEvents
 
-	err = atob(cached.Revision, &resp.Revision)
+	err = bytedata.ConvertDataForOutput(cached.Revision, &resp.Revision)
 	if err != nil {
 		return err
 	}
 
 	resp.Revision.Name = cached.Revision.ID.String()
 
-	nhash = checksum(resp)
+	nhash = bytedata.Checksum(resp)
 	if nhash != phash {
 		err = srv.Send(resp)
 		if err != nil {
@@ -221,7 +223,7 @@ func (flow *flow) createWorkflow(ctx context.Context, args *createWorkflowArgs) 
 		return nil, nil, errors.New("cannot write into read-only directory")
 	}
 
-	hash, err := computeHash(args.data)
+	hash, err := bytedata.ComputeHash(args.data)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -291,7 +293,7 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 
 	data := req.GetSource()
 
-	hash, err := computeHash(data)
+	hash, err := bytedata.ComputeHash(data)
 	if err != nil {
 		return nil, err
 	}
@@ -403,7 +405,7 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 
 	var resp grpc.CreateWorkflowResponse
 
-	err = atob(ino, &resp.Node)
+	err = bytedata.ConvertDataForOutput(ino, &resp.Node)
 	if err != nil {
 		return nil, err
 	}
@@ -416,7 +418,7 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 	resp.Node.Parent = dir
 	resp.Node.Path = path
 
-	err = atob(rev, &resp.Revision)
+	err = bytedata.ConvertDataForOutput(rev, &resp.Revision)
 	if err != nil {
 		return nil, err
 	}
@@ -449,7 +451,7 @@ type updateWorkflowArgs struct {
 func (flow *flow) updateWorkflow(ctx context.Context, args *updateWorkflowArgs) (*database.Revision, error) {
 	data := args.data
 
-	hash, err := computeHash(data)
+	hash, err := bytedata.ComputeHash(data)
 	if err != nil {
 		return nil, err
 	}
@@ -583,7 +585,7 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 
 	var resp grpc.UpdateWorkflowResponse
 
-	err = atob(cached.Inode(), &resp.Node)
+	err = bytedata.ConvertDataForOutput(cached.Inode(), &resp.Node)
 	if err != nil {
 		return nil, err
 	}
@@ -596,7 +598,7 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 	resp.Node.Parent = cached.Dir()
 	resp.Node.Path = cached.Path()
 
-	err = atob(rev, &resp.Revision)
+	err = bytedata.ConvertDataForOutput(rev, &resp.Revision)
 	if err != nil {
 		return nil, err
 	}
@@ -639,7 +641,8 @@ func (flow *flow) SaveHead(ctx context.Context, req *grpc.SaveHeadRequest) (*grp
 
 	if len(metadata) != 0 {
 		obj := make(map[string]interface{})
-		err := unmarshal(string(metadata), &obj)
+
+		err := json.Unmarshal(metadata, &obj)
 		if err != nil {
 			return nil, err
 		}
@@ -669,7 +672,7 @@ respond:
 
 	var resp grpc.SaveHeadResponse
 
-	err = atob(cached.Inode(), &resp.Node)
+	err = bytedata.ConvertDataForOutput(cached.Inode(), &resp.Node)
 	if err != nil {
 		return nil, err
 	}
@@ -682,7 +685,7 @@ respond:
 	resp.Node.Parent = cached.Dir()
 	resp.Node.Path = cached.Path()
 
-	err = atob(cached.Revision, &resp.Revision)
+	err = bytedata.ConvertDataForOutput(cached.Revision, &resp.Revision)
 	if err != nil {
 		return nil, err
 	}
@@ -750,7 +753,7 @@ respond:
 
 	var resp grpc.DiscardHeadResponse
 
-	err = atob(cached.Inode(), &resp.Node)
+	err = bytedata.ConvertDataForOutput(cached.Inode(), &resp.Node)
 	if err != nil {
 		return nil, err
 	}
@@ -763,7 +766,7 @@ respond:
 	resp.Node.Parent = cached.Dir()
 	resp.Node.Path = cached.Path()
 
-	err = atob(cached.Revision, &resp.Revision)
+	err = bytedata.ConvertDataForOutput(cached.Revision, &resp.Revision)
 	if err != nil {
 		return nil, err
 	}

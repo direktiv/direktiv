@@ -7,6 +7,7 @@ import (
 
 	"google.golang.org/protobuf/types/known/emptypb"
 
+	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entref "github.com/direktiv/direktiv/pkg/flow/ent/ref"
@@ -70,12 +71,12 @@ func (flow *flow) Tags(ctx context.Context, req *grpc.TagsRequest) (*grpc.TagsRe
 	resp.Namespace = cached.Namespace.Name
 	resp.PageInfo = pi
 
-	err = atob(results, &resp.Results)
+	err = bytedata.ConvertDataForOutput(results, &resp.Results)
 	if err != nil {
 		return nil, err
 	}
 
-	err = atob(cached.Inode(), &resp.Node)
+	err = bytedata.ConvertDataForOutput(cached.Inode(), &resp.Node)
 	if err != nil {
 		return nil, err
 	}
@@ -116,12 +117,12 @@ resend:
 	resp.Namespace = cached.Namespace.Name
 	resp.PageInfo = pi
 
-	err = atob(results, &resp.Results)
+	err = bytedata.ConvertDataForOutput(results, &resp.Results)
 	if err != nil {
 		return err
 	}
 
-	err = atob(cached.Inode(), &resp.Node)
+	err = bytedata.ConvertDataForOutput(cached.Inode(), &resp.Node)
 	if err != nil {
 		return err
 	}
@@ -129,7 +130,7 @@ resend:
 	resp.Node.Path = cached.Path()
 	resp.Node.Parent = cached.Dir()
 
-	nhash = checksum(resp)
+	nhash = bytedata.Checksum(resp)
 	if nhash != phash {
 		err = srv.Send(resp)
 		if err != nil {
@@ -167,12 +168,12 @@ func (flow *flow) Refs(ctx context.Context, req *grpc.RefsRequest) (*grpc.RefsRe
 	resp.Namespace = cached.Namespace.Name
 	resp.PageInfo = pi
 
-	err = atob(results, &resp.Results)
+	err = bytedata.ConvertDataForOutput(results, &resp.Results)
 	if err != nil {
 		return nil, err
 	}
 
-	err = atob(cached.Inode(), &resp.Node)
+	err = bytedata.ConvertDataForOutput(cached.Inode(), &resp.Node)
 	if err != nil {
 		return nil, err
 	}
@@ -213,12 +214,12 @@ resend:
 	resp.Namespace = cached.Namespace.Name
 	resp.PageInfo = pi
 
-	err = atob(results, &resp.Results)
+	err = bytedata.ConvertDataForOutput(results, &resp.Results)
 	if err != nil {
 		return err
 	}
 
-	err = atob(cached.Inode(), &resp.Node)
+	err = bytedata.ConvertDataForOutput(cached.Inode(), &resp.Node)
 	if err != nil {
 		return err
 	}
@@ -226,7 +227,7 @@ resend:
 	resp.Node.Path = cached.Path()
 	resp.Node.Parent = cached.Dir()
 
-	nhash = checksum(resp)
+	nhash = bytedata.Checksum(resp)
 	if nhash != phash {
 		err = srv.Send(resp)
 		if err != nil {
