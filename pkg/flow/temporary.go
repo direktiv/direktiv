@@ -280,7 +280,7 @@ func (im *instanceMemory) Deadline(ctx context.Context) time.Time {
 	return time.Now().Add(states.DefaultShortDeadline)
 }
 
-func (im *instanceMemory) LivingChildren(ctx context.Context) []states.ChildInfo {
+func (im *instanceMemory) LivingChildren(ctx context.Context) []*states.ChildInfo {
 	return nil
 }
 
