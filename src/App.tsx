@@ -10,22 +10,20 @@ import { getVersion } from "./api/version";
 
 const queryClient = new QueryClient();
 
-function App2() {
-  const { isLoading, data: version } = useQuery({
+function App() {
+  const { data: version } = useQuery({
     queryKey: ["version"],
     queryFn: () => getVersion({ apiKey: "password" }),
-    networkMode: "always",
+    // networkMode: "always",
   });
 
-  console.log("🚀", version);
-
-  return <div>1{version}2</div>;
+  return <div>{version?.api}</div>;
 }
 
-const App = () => (
+const AppWithQueryProvider = () => (
   <QueryClientProvider client={queryClient}>
-    <App2 />
+    <App />
   </QueryClientProvider>
 );
 
-export default App;
+export default AppWithQueryProvider;
