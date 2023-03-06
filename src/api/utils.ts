@@ -4,16 +4,17 @@ export const getApiHeaders = (apiKey: string) => ({
   "direktiv-token": apiKey,
 });
 
-export function apiFactory<T>({
-  path,
-  method,
-  schema,
-}: {
-  path: string;
-  method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
-  schema: z.ZodSchema<T>;
-}): ({ apiKey }: { apiKey: string }) => Promise<T> {
-  return async ({ apiKey }: { apiKey: string }): Promise<T> => {
+export const apiFactory =
+  <T>({
+    path,
+    method,
+    schema,
+  }: {
+    path: string;
+    method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
+    schema: z.ZodSchema<T>;
+  }): (({ apiKey }: { apiKey: string }) => Promise<T>) =>
+  async ({ apiKey }: { apiKey: string }): Promise<T> => {
     const res = await fetch(path, {
       method,
       headers: {
@@ -32,4 +33,3 @@ export function apiFactory<T>({
     }
     return Promise.reject(`error ${res.status} for ${method} ${path}`);
   };
-}
