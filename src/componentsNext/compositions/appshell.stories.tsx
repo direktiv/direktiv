@@ -56,7 +56,7 @@ import { RxChevronDown } from "react-icons/rx";
 import clsx from "clsx";
 
 export default {
-  title: "Design System/Compositions/App Shell",
+  title: "Components (next)/Compositions/App Shell",
   parameters: { layout: "fullscreen" },
 };
 

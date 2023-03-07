@@ -5,10 +5,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../select";
+
 import Button from "../button";
 
 export default {
-  title: "Design System/Compositions/Form",
+  title: "Components (next)/Compositions/Form",
 };
 
 export const Default = () => (

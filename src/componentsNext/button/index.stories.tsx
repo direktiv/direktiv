@@ -10,7 +10,7 @@ import { useEffect, useState } from "react";
 import Button from "./index";
 
 const meta = {
-  title: "Design System/Button",
+  title: "Components (next)/Button",
   component: Button,
 } satisfies Meta<typeof Button>;
 
