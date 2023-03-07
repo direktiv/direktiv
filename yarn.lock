@@ -3273,6 +3273,11 @@
     "@svgr/hast-util-to-babel-ast" "^6.5.1"
     svg-parser "^2.0.4"
 
+"@tanstack/eslint-plugin-query@^4.26.2":
+  version "4.26.2"
+  resolved "https://registry.yarnpkg.com/@tanstack/eslint-plugin-query/-/eslint-plugin-query-4.26.2.tgz#4d8adbe6bf382b24572e6f60e81a3f32982058e2"
+  integrity sha512-ugAvl6Is+bUMLt9BlAnXK6Wi7UnGV+4RwJ2W1ToFoucPvUb2Uf+ADU38JkHaNsI/TFgE3+kePhKh0zzDBhkw0Q==
+
 "@tanstack/query-core@4.26.0":
   version "4.26.0"
   resolved "https://registry.yarnpkg.com/@tanstack/query-core/-/query-core-4.26.0.tgz#fc65c8c117e72baead3a82a1f272a4ec210c7650"

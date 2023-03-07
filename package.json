@@ -106,6 +106,7 @@
     "@storybook/react": "^7.0.0-beta.53",
     "@storybook/react-vite": "^7.0.0-beta.53",
     "@storybook/testing-library": "^0.0.14-next.1",
+    "@tanstack/eslint-plugin-query": "^4.26.2",
     "@testing-library/react-hooks": "^8.0.1",
     "@types/drawflow": "^0.0.4",
     "@types/react-virtualized": "^9.21.21",
