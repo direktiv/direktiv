@@ -4512,6 +4512,7 @@ type InstanceMutation struct {
 	errorCode             *string
 	errorMessage          *string
 	invoker               *string
+	callpath              *string
 	clearedFields         map[string]struct{}
 	namespace             *uuid.UUID
 	clearednamespace      bool
@@ -4985,6 +4986,55 @@ func (m *InstanceMutation) ResetInvoker() {
 	delete(m.clearedFields, instance.FieldInvoker)
 }
 
+// SetCallpath sets the "callpath" field.
+func (m *InstanceMutation) SetCallpath(s string) {
+	m.callpath = &s
+}
+
+// Callpath returns the value of the "callpath" field in the mutation.
+func (m *InstanceMutation) Callpath() (r string, exists bool) {
+	v := m.callpath
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCallpath returns the old "callpath" field's value of the Instance entity.
+// If the Instance object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InstanceMutation) OldCallpath(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCallpath is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCallpath requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCallpath: %w", err)
+	}
+	return oldValue.Callpath, nil
+}
+
+// ClearCallpath clears the value of the "callpath" field.
+func (m *InstanceMutation) ClearCallpath() {
+	m.callpath = nil
+	m.clearedFields[instance.FieldCallpath] = struct{}{}
+}
+
+// CallpathCleared returns if the "callpath" field was cleared in this mutation.
+func (m *InstanceMutation) CallpathCleared() bool {
+	_, ok := m.clearedFields[instance.FieldCallpath]
+	return ok
+}
+
+// ResetCallpath resets all changes to the "callpath" field.
+func (m *InstanceMutation) ResetCallpath() {
+	m.callpath = nil
+	delete(m.clearedFields, instance.FieldCallpath)
+}
+
 // SetNamespaceID sets the "namespace" edge to the Namespace entity by id.
 func (m *InstanceMutation) SetNamespaceID(id uuid.UUID) {
 	m.namespace = &id
@@ -5430,7 +5480,7 @@ func (m *InstanceMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *InstanceMutation) Fields() []string {
-	fields := make([]string, 0, 8)
+	fields := make([]string, 0, 9)
 	if m.created_at != nil {
 		fields = append(fields, instance.FieldCreatedAt)
 	}
@@ -5454,6 +5504,9 @@ func (m *InstanceMutation) Fields() []string {
 	}
 	if m.invoker != nil {
 		fields = append(fields, instance.FieldInvoker)
+	}
+	if m.callpath != nil {
+		fields = append(fields, instance.FieldCallpath)
 	}
 	return fields
 }
@@ -5479,6 +5532,8 @@ func (m *InstanceMutation) Field(name string) (ent.Value, bool) {
 		return m.ErrorMessage()
 	case instance.FieldInvoker:
 		return m.Invoker()
+	case instance.FieldCallpath:
+		return m.Callpath()
 	}
 	return nil, false
 }
@@ -5504,6 +5559,8 @@ func (m *InstanceMutation) OldField(ctx context.Context, name string) (ent.Value
 		return m.OldErrorMessage(ctx)
 	case instance.FieldInvoker:
 		return m.OldInvoker(ctx)
+	case instance.FieldCallpath:
+		return m.OldCallpath(ctx)
 	}
 	return nil, fmt.Errorf("unknown Instance field %s", name)
 }
@@ -5569,6 +5626,13 @@ func (m *InstanceMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetInvoker(v)
 		return nil
+	case instance.FieldCallpath:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCallpath(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Instance field %s", name)
 }
@@ -5611,6 +5675,9 @@ func (m *InstanceMutation) ClearedFields() []string {
 	if m.FieldCleared(instance.FieldInvoker) {
 		fields = append(fields, instance.FieldInvoker)
 	}
+	if m.FieldCleared(instance.FieldCallpath) {
+		fields = append(fields, instance.FieldCallpath)
+	}
 	return fields
 }
 
@@ -5636,6 +5703,9 @@ func (m *InstanceMutation) ClearField(name string) error {
 		return nil
 	case instance.FieldInvoker:
 		m.ClearInvoker()
+		return nil
+	case instance.FieldCallpath:
+		m.ClearCallpath()
 		return nil
 	}
 	return fmt.Errorf("unknown Instance nullable field %s", name)
@@ -5668,6 +5738,9 @@ func (m *InstanceMutation) ResetField(name string) error {
 		return nil
 	case instance.FieldInvoker:
 		m.ResetInvoker()
+		return nil
+	case instance.FieldCallpath:
+		m.ResetCallpath()
 		return nil
 	}
 	return fmt.Errorf("unknown Instance field %s", name)
@@ -7298,6 +7371,8 @@ type LogMsgMutation struct {
 	id               *uuid.UUID
 	t                *time.Time
 	msg              *string
+	root             *string
+	callpath         *string
 	clearedFields    map[string]struct{}
 	namespace        *uuid.UUID
 	clearednamespace bool
@@ -7488,6 +7563,78 @@ func (m *LogMsgMutation) ResetMsg() {
 	m.msg = nil
 }
 
+// SetRoot sets the "root" field.
+func (m *LogMsgMutation) SetRoot(s string) {
+	m.root = &s
+}
+
+// Root returns the value of the "root" field in the mutation.
+func (m *LogMsgMutation) Root() (r string, exists bool) {
+	v := m.root
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRoot returns the old "root" field's value of the LogMsg entity.
+// If the LogMsg object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LogMsgMutation) OldRoot(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRoot is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRoot requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRoot: %w", err)
+	}
+	return oldValue.Root, nil
+}
+
+// ResetRoot resets all changes to the "root" field.
+func (m *LogMsgMutation) ResetRoot() {
+	m.root = nil
+}
+
+// SetCallpath sets the "callpath" field.
+func (m *LogMsgMutation) SetCallpath(s string) {
+	m.callpath = &s
+}
+
+// Callpath returns the value of the "callpath" field in the mutation.
+func (m *LogMsgMutation) Callpath() (r string, exists bool) {
+	v := m.callpath
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCallpath returns the old "callpath" field's value of the LogMsg entity.
+// If the LogMsg object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LogMsgMutation) OldCallpath(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCallpath is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCallpath requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCallpath: %w", err)
+	}
+	return oldValue.Callpath, nil
+}
+
+// ResetCallpath resets all changes to the "callpath" field.
+func (m *LogMsgMutation) ResetCallpath() {
+	m.callpath = nil
+}
+
 // SetNamespaceID sets the "namespace" edge to the Namespace entity by id.
 func (m *LogMsgMutation) SetNamespaceID(id uuid.UUID) {
 	m.namespace = &id
@@ -7663,12 +7810,18 @@ func (m *LogMsgMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *LogMsgMutation) Fields() []string {
-	fields := make([]string, 0, 2)
+	fields := make([]string, 0, 4)
 	if m.t != nil {
 		fields = append(fields, logmsg.FieldT)
 	}
 	if m.msg != nil {
 		fields = append(fields, logmsg.FieldMsg)
+	}
+	if m.root != nil {
+		fields = append(fields, logmsg.FieldRoot)
+	}
+	if m.callpath != nil {
+		fields = append(fields, logmsg.FieldCallpath)
 	}
 	return fields
 }
@@ -7682,6 +7835,10 @@ func (m *LogMsgMutation) Field(name string) (ent.Value, bool) {
 		return m.T()
 	case logmsg.FieldMsg:
 		return m.Msg()
+	case logmsg.FieldRoot:
+		return m.Root()
+	case logmsg.FieldCallpath:
+		return m.Callpath()
 	}
 	return nil, false
 }
@@ -7695,6 +7852,10 @@ func (m *LogMsgMutation) OldField(ctx context.Context, name string) (ent.Value, 
 		return m.OldT(ctx)
 	case logmsg.FieldMsg:
 		return m.OldMsg(ctx)
+	case logmsg.FieldRoot:
+		return m.OldRoot(ctx)
+	case logmsg.FieldCallpath:
+		return m.OldCallpath(ctx)
 	}
 	return nil, fmt.Errorf("unknown LogMsg field %s", name)
 }
@@ -7717,6 +7878,20 @@ func (m *LogMsgMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetMsg(v)
+		return nil
+	case logmsg.FieldRoot:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRoot(v)
+		return nil
+	case logmsg.FieldCallpath:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCallpath(v)
 		return nil
 	}
 	return fmt.Errorf("unknown LogMsg field %s", name)
@@ -7772,6 +7947,12 @@ func (m *LogMsgMutation) ResetField(name string) error {
 		return nil
 	case logmsg.FieldMsg:
 		m.ResetMsg()
+		return nil
+	case logmsg.FieldRoot:
+		m.ResetRoot()
+		return nil
+	case logmsg.FieldCallpath:
+		m.ResetCallpath()
 		return nil
 	}
 	return fmt.Errorf("unknown LogMsg field %s", name)

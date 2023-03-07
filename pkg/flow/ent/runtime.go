@@ -150,6 +150,14 @@ func init() {
 	instanceruntime.DefaultID = instanceruntimeDescID.Default.(func() uuid.UUID)
 	logmsgFields := schema.LogMsg{}.Fields()
 	_ = logmsgFields
+	// logmsgDescRoot is the schema descriptor for root field.
+	logmsgDescRoot := logmsgFields[3].Descriptor()
+	// logmsg.DefaultRoot holds the default value on creation for the root field.
+	logmsg.DefaultRoot = logmsgDescRoot.Default.(string)
+	// logmsgDescCallpath is the schema descriptor for callpath field.
+	logmsgDescCallpath := logmsgFields[4].Descriptor()
+	// logmsg.DefaultCallpath holds the default value on creation for the callpath field.
+	logmsg.DefaultCallpath = logmsgDescCallpath.Default.(string)
 	// logmsgDescID is the schema descriptor for id field.
 	logmsgDescID := logmsgFields[0].Descriptor()
 	// logmsg.DefaultID holds the default value on creation for the id field.

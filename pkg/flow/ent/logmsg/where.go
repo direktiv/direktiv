@@ -96,6 +96,20 @@ func Msg(v string) predicate.LogMsg {
 	})
 }
 
+// Root applies equality check predicate on the "root" field. It's identical to RootEQ.
+func Root(v string) predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldRoot), v))
+	})
+}
+
+// Callpath applies equality check predicate on the "callpath" field. It's identical to CallpathEQ.
+func Callpath(v string) predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldCallpath), v))
+	})
+}
+
 // TEQ applies the EQ predicate on the "t" field.
 func TEQ(v time.Time) predicate.LogMsg {
 	return predicate.LogMsg(func(s *sql.Selector) {
@@ -256,6 +270,204 @@ func MsgEqualFold(v string) predicate.LogMsg {
 func MsgContainsFold(v string) predicate.LogMsg {
 	return predicate.LogMsg(func(s *sql.Selector) {
 		s.Where(sql.ContainsFold(s.C(FieldMsg), v))
+	})
+}
+
+// RootEQ applies the EQ predicate on the "root" field.
+func RootEQ(v string) predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldRoot), v))
+	})
+}
+
+// RootNEQ applies the NEQ predicate on the "root" field.
+func RootNEQ(v string) predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldRoot), v))
+	})
+}
+
+// RootIn applies the In predicate on the "root" field.
+func RootIn(vs ...string) predicate.LogMsg {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.In(s.C(FieldRoot), v...))
+	})
+}
+
+// RootNotIn applies the NotIn predicate on the "root" field.
+func RootNotIn(vs ...string) predicate.LogMsg {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.NotIn(s.C(FieldRoot), v...))
+	})
+}
+
+// RootGT applies the GT predicate on the "root" field.
+func RootGT(v string) predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldRoot), v))
+	})
+}
+
+// RootGTE applies the GTE predicate on the "root" field.
+func RootGTE(v string) predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldRoot), v))
+	})
+}
+
+// RootLT applies the LT predicate on the "root" field.
+func RootLT(v string) predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldRoot), v))
+	})
+}
+
+// RootLTE applies the LTE predicate on the "root" field.
+func RootLTE(v string) predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldRoot), v))
+	})
+}
+
+// RootContains applies the Contains predicate on the "root" field.
+func RootContains(v string) predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldRoot), v))
+	})
+}
+
+// RootHasPrefix applies the HasPrefix predicate on the "root" field.
+func RootHasPrefix(v string) predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldRoot), v))
+	})
+}
+
+// RootHasSuffix applies the HasSuffix predicate on the "root" field.
+func RootHasSuffix(v string) predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldRoot), v))
+	})
+}
+
+// RootEqualFold applies the EqualFold predicate on the "root" field.
+func RootEqualFold(v string) predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldRoot), v))
+	})
+}
+
+// RootContainsFold applies the ContainsFold predicate on the "root" field.
+func RootContainsFold(v string) predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldRoot), v))
+	})
+}
+
+// CallpathEQ applies the EQ predicate on the "callpath" field.
+func CallpathEQ(v string) predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldCallpath), v))
+	})
+}
+
+// CallpathNEQ applies the NEQ predicate on the "callpath" field.
+func CallpathNEQ(v string) predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldCallpath), v))
+	})
+}
+
+// CallpathIn applies the In predicate on the "callpath" field.
+func CallpathIn(vs ...string) predicate.LogMsg {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.In(s.C(FieldCallpath), v...))
+	})
+}
+
+// CallpathNotIn applies the NotIn predicate on the "callpath" field.
+func CallpathNotIn(vs ...string) predicate.LogMsg {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.NotIn(s.C(FieldCallpath), v...))
+	})
+}
+
+// CallpathGT applies the GT predicate on the "callpath" field.
+func CallpathGT(v string) predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldCallpath), v))
+	})
+}
+
+// CallpathGTE applies the GTE predicate on the "callpath" field.
+func CallpathGTE(v string) predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldCallpath), v))
+	})
+}
+
+// CallpathLT applies the LT predicate on the "callpath" field.
+func CallpathLT(v string) predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldCallpath), v))
+	})
+}
+
+// CallpathLTE applies the LTE predicate on the "callpath" field.
+func CallpathLTE(v string) predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldCallpath), v))
+	})
+}
+
+// CallpathContains applies the Contains predicate on the "callpath" field.
+func CallpathContains(v string) predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldCallpath), v))
+	})
+}
+
+// CallpathHasPrefix applies the HasPrefix predicate on the "callpath" field.
+func CallpathHasPrefix(v string) predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldCallpath), v))
+	})
+}
+
+// CallpathHasSuffix applies the HasSuffix predicate on the "callpath" field.
+func CallpathHasSuffix(v string) predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldCallpath), v))
+	})
+}
+
+// CallpathEqualFold applies the EqualFold predicate on the "callpath" field.
+func CallpathEqualFold(v string) predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldCallpath), v))
+	})
+}
+
+// CallpathContainsFold applies the ContainsFold predicate on the "callpath" field.
+func CallpathContainsFold(v string) predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldCallpath), v))
 	})
 }
 

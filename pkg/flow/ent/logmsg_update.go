@@ -46,6 +46,34 @@ func (lmu *LogMsgUpdate) SetMsg(s string) *LogMsgUpdate {
 	return lmu
 }
 
+// SetRoot sets the "root" field.
+func (lmu *LogMsgUpdate) SetRoot(s string) *LogMsgUpdate {
+	lmu.mutation.SetRoot(s)
+	return lmu
+}
+
+// SetNillableRoot sets the "root" field if the given value is not nil.
+func (lmu *LogMsgUpdate) SetNillableRoot(s *string) *LogMsgUpdate {
+	if s != nil {
+		lmu.SetRoot(*s)
+	}
+	return lmu
+}
+
+// SetCallpath sets the "callpath" field.
+func (lmu *LogMsgUpdate) SetCallpath(s string) *LogMsgUpdate {
+	lmu.mutation.SetCallpath(s)
+	return lmu
+}
+
+// SetNillableCallpath sets the "callpath" field if the given value is not nil.
+func (lmu *LogMsgUpdate) SetNillableCallpath(s *string) *LogMsgUpdate {
+	if s != nil {
+		lmu.SetCallpath(*s)
+	}
+	return lmu
+}
+
 // SetNamespaceID sets the "namespace" edge to the Namespace entity by ID.
 func (lmu *LogMsgUpdate) SetNamespaceID(id uuid.UUID) *LogMsgUpdate {
 	lmu.mutation.SetNamespaceID(id)
@@ -235,6 +263,12 @@ func (lmu *LogMsgUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := lmu.mutation.Msg(); ok {
 		_spec.SetField(logmsg.FieldMsg, field.TypeString, value)
 	}
+	if value, ok := lmu.mutation.Root(); ok {
+		_spec.SetField(logmsg.FieldRoot, field.TypeString, value)
+	}
+	if value, ok := lmu.mutation.Callpath(); ok {
+		_spec.SetField(logmsg.FieldCallpath, field.TypeString, value)
+	}
 	if lmu.mutation.NamespaceCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -405,6 +439,34 @@ func (lmuo *LogMsgUpdateOne) SetT(t time.Time) *LogMsgUpdateOne {
 // SetMsg sets the "msg" field.
 func (lmuo *LogMsgUpdateOne) SetMsg(s string) *LogMsgUpdateOne {
 	lmuo.mutation.SetMsg(s)
+	return lmuo
+}
+
+// SetRoot sets the "root" field.
+func (lmuo *LogMsgUpdateOne) SetRoot(s string) *LogMsgUpdateOne {
+	lmuo.mutation.SetRoot(s)
+	return lmuo
+}
+
+// SetNillableRoot sets the "root" field if the given value is not nil.
+func (lmuo *LogMsgUpdateOne) SetNillableRoot(s *string) *LogMsgUpdateOne {
+	if s != nil {
+		lmuo.SetRoot(*s)
+	}
+	return lmuo
+}
+
+// SetCallpath sets the "callpath" field.
+func (lmuo *LogMsgUpdateOne) SetCallpath(s string) *LogMsgUpdateOne {
+	lmuo.mutation.SetCallpath(s)
+	return lmuo
+}
+
+// SetNillableCallpath sets the "callpath" field if the given value is not nil.
+func (lmuo *LogMsgUpdateOne) SetNillableCallpath(s *string) *LogMsgUpdateOne {
+	if s != nil {
+		lmuo.SetCallpath(*s)
+	}
 	return lmuo
 }
 
@@ -626,6 +688,12 @@ func (lmuo *LogMsgUpdateOne) sqlSave(ctx context.Context) (_node *LogMsg, err er
 	}
 	if value, ok := lmuo.mutation.Msg(); ok {
 		_spec.SetField(logmsg.FieldMsg, field.TypeString, value)
+	}
+	if value, ok := lmuo.mutation.Root(); ok {
+		_spec.SetField(logmsg.FieldRoot, field.TypeString, value)
+	}
+	if value, ok := lmuo.mutation.Callpath(); ok {
+		_spec.SetField(logmsg.FieldCallpath, field.TypeString, value)
 	}
 	if lmuo.mutation.NamespaceCleared() {
 		edge := &sqlgraph.EdgeSpec{

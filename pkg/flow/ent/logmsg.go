@@ -25,6 +25,10 @@ type LogMsg struct {
 	T time.Time `json:"t,omitempty"`
 	// Msg holds the value of the "msg" field.
 	Msg string `json:"msg,omitempty"`
+	// Root holds the value of the "root" field.
+	Root string `json:"root,omitempty"`
+	// Callpath holds the value of the "callpath" field.
+	Callpath string `json:"callpath,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the LogMsgQuery when eager-loading is set.
 	Edges                LogMsgEdges `json:"edges"`
@@ -106,7 +110,7 @@ func (*LogMsg) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case logmsg.FieldMsg:
+		case logmsg.FieldMsg, logmsg.FieldRoot, logmsg.FieldCallpath:
 			values[i] = new(sql.NullString)
 		case logmsg.FieldT:
 			values[i] = new(sql.NullTime)
@@ -152,6 +156,18 @@ func (lm *LogMsg) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field msg", values[i])
 			} else if value.Valid {
 				lm.Msg = value.String
+			}
+		case logmsg.FieldRoot:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field root", values[i])
+			} else if value.Valid {
+				lm.Root = value.String
+			}
+		case logmsg.FieldCallpath:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field callpath", values[i])
+			} else if value.Valid {
+				lm.Callpath = value.String
 			}
 		case logmsg.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
@@ -234,6 +250,12 @@ func (lm *LogMsg) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("msg=")
 	builder.WriteString(lm.Msg)
+	builder.WriteString(", ")
+	builder.WriteString("root=")
+	builder.WriteString(lm.Root)
+	builder.WriteString(", ")
+	builder.WriteString("callpath=")
+	builder.WriteString(lm.Callpath)
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -2,11 +2,12 @@ package flow
 
 import (
 	"context"
+	"errors"
+	"strings"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
-	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	entlog "github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
 	entns "github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	entwf "github.com/direktiv/direktiv/pkg/flow/ent/workflow"
@@ -306,8 +307,22 @@ func (flow *flow) InstanceLogs(ctx context.Context, req *grpc.InstanceLogsReques
 	}
 
 	clients := flow.edb.Clients(ctx)
+	// its important to append the intanceID to the callpath since we don't do it when creating the database entry
+	prefix := cached.Instance.CallPath + "/instance:" + cached.Instance.ID.String()
+	root, err := extractRoot(prefix)
+	if err != nil {
+		return nil, err
+	}
+	caller, err := extractCaller(prefix)
+	if err != nil {
+		return nil, err
+	}
+	callerIsRoot := caller == cached.Instance.Invoker
 
-	query := clients.LogMsg.Query().Where(entlog.HasInstanceWith(entinst.ID(cached.Instance.ID)))
+	query := clients.LogMsg.Query().Where(entlog.RootEQ(root))
+	if !callerIsRoot {
+		query = clients.LogMsg.Query().Where(entlog.And(entlog.RootEQ(root), entlog.CallpathHasPrefix(prefix)))
+	}
 
 	results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
 	if err != nil {
@@ -341,13 +356,25 @@ func (flow *flow) InstanceLogsParcels(req *grpc.InstanceLogsRequest, srv grpc.Fl
 
 	sub := flow.pubsub.SubscribeInstanceLogs(cached)
 	defer flow.cleanup(sub.Close)
+	// its important to append the intanceID to the callpath since we don't do it when creating the database entry.
+	prefix := cached.Instance.CallPath + "/instance:" + cached.Instance.ID.String()
+	caller, err := extractCaller(prefix)
+	if err != nil {
+		return err
+	}
+	callerIsRoot := caller == cached.Instance.Invoker
+	root, err := extractRoot(prefix)
+	if err != nil {
+		return err
+	}
 
 resend:
 
 	clients := flow.edb.Clients(ctx)
-
-	query := clients.LogMsg.Query().Where(entlog.HasInstanceWith(entinst.ID(cached.Instance.ID)))
-
+	query := clients.LogMsg.Query().Where(entlog.RootEQ(root))
+	if !callerIsRoot {
+		query = clients.LogMsg.Query().Where(entlog.And(entlog.RootEQ(root), entlog.CallpathHasPrefix(prefix)))
+	}
 	results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
 	if err != nil {
 		return err
@@ -382,4 +409,18 @@ resend:
 	}
 
 	goto resend
+}
+
+// extracts the caller from a instance-callpath-string.
+// the callpath is expected to be formated like: /<caller>/instance:<id_a>/instance:<id_b>/...
+// <caller> is the method used to invoke the root instance like api, cron, event.
+func extractCaller(callpath string) (string, error) {
+	path := strings.Split(callpath, "/")
+	caller := ""
+	if len(path) > 1 && path[1] != "" {
+		caller += path[1]
+	} else {
+		return "", errors.New("could not extract caller from callpath")
+	}
+	return caller, nil
 }

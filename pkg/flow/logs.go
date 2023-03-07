@@ -2,6 +2,7 @@ package flow
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"runtime"
 	"strings"
@@ -122,7 +123,13 @@ func (srv *server) workerLogToInstance(l *logMessage) {
 
 	clients := srv.edb.Clients(ctx)
 
-	_, err := clients.LogMsg.Create().SetMsg(l.msg).SetInstanceID(l.cached.Instance.ID).SetT(l.t).Save(ctx)
+	callpath := l.cached.Instance.CallPath + "/instance:" + l.cached.Instance.ID.String()
+	rootInstance, err := extractRoot(callpath)
+	if err != nil {
+		srv.sugar.Error(err)
+		return
+	}
+	_, err = clients.LogMsg.Create().SetMsg(l.msg).SetInstanceID(l.cached.Instance.ID).SetT(l.t).SetRoot(rootInstance).SetCallpath(callpath).Save(ctx)
 	if err != nil {
 		srv.sugar.Error(err)
 		return
@@ -146,6 +153,20 @@ func (srv *server) workerLogToInstance(l *logMessage) {
 	srv.sugar.Infow(l.msg, "trace", tid, "namespace", nsname, "namespace-id", nsid, "workflow-id", wfid, "workflow", GetInodePath(l.cached.Instance.As), "instance", l.cached.Instance.ID.String())
 
 	srv.pubsub.NotifyInstanceLogs(l.cached.Instance)
+}
+
+// extracts the root from a callpath,
+// the callpath is expected to be formated like: /<caller>/instance:<root_id>/instance:<other_is>/...
+// requires the callpath to contain a root_id.
+func extractRoot(callpath string) (string, error) {
+	path := strings.Split(callpath, "/")
+	if len(path) < 3 {
+		return "", errors.New("Instance Callpath is malformed")
+	}
+	if strings.HasPrefix(path[2], "instance") {
+		return strings.Split(path[2], ":")[1], nil
+	}
+	return "", errors.New("Instance Callpath is malformed")
 }
 
 func (srv *server) logToServer(ctx context.Context, t time.Time, msg string, a ...interface{}) {

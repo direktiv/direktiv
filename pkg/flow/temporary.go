@@ -310,7 +310,7 @@ func (im *instanceMemory) CreateChild(ctx context.Context, args states.CreateChi
 		caller.State = im.logic.GetID()
 		caller.Step = im.Step()
 		caller.As = im.cached.Instance.As
-
+		caller.CallPath = im.cached.Instance.CallPath
 		sfim, err := im.engine.subflowInvoke(ctx, caller, im.cached, args.Definition.(*model.SubflowFunctionDefinition).Workflow, args.Input)
 		if err != nil {
 			return nil, err

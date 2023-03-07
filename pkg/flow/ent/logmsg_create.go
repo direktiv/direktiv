@@ -40,6 +40,34 @@ func (lmc *LogMsgCreate) SetMsg(s string) *LogMsgCreate {
 	return lmc
 }
 
+// SetRoot sets the "root" field.
+func (lmc *LogMsgCreate) SetRoot(s string) *LogMsgCreate {
+	lmc.mutation.SetRoot(s)
+	return lmc
+}
+
+// SetNillableRoot sets the "root" field if the given value is not nil.
+func (lmc *LogMsgCreate) SetNillableRoot(s *string) *LogMsgCreate {
+	if s != nil {
+		lmc.SetRoot(*s)
+	}
+	return lmc
+}
+
+// SetCallpath sets the "callpath" field.
+func (lmc *LogMsgCreate) SetCallpath(s string) *LogMsgCreate {
+	lmc.mutation.SetCallpath(s)
+	return lmc
+}
+
+// SetNillableCallpath sets the "callpath" field if the given value is not nil.
+func (lmc *LogMsgCreate) SetNillableCallpath(s *string) *LogMsgCreate {
+	if s != nil {
+		lmc.SetCallpath(*s)
+	}
+	return lmc
+}
+
 // SetID sets the "id" field.
 func (lmc *LogMsgCreate) SetID(u uuid.UUID) *LogMsgCreate {
 	lmc.mutation.SetID(u)
@@ -207,6 +235,14 @@ func (lmc *LogMsgCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (lmc *LogMsgCreate) defaults() {
+	if _, ok := lmc.mutation.Root(); !ok {
+		v := logmsg.DefaultRoot
+		lmc.mutation.SetRoot(v)
+	}
+	if _, ok := lmc.mutation.Callpath(); !ok {
+		v := logmsg.DefaultCallpath
+		lmc.mutation.SetCallpath(v)
+	}
 	if _, ok := lmc.mutation.ID(); !ok {
 		v := logmsg.DefaultID()
 		lmc.mutation.SetID(v)
@@ -220,6 +256,12 @@ func (lmc *LogMsgCreate) check() error {
 	}
 	if _, ok := lmc.mutation.Msg(); !ok {
 		return &ValidationError{Name: "msg", err: errors.New(`ent: missing required field "LogMsg.msg"`)}
+	}
+	if _, ok := lmc.mutation.Root(); !ok {
+		return &ValidationError{Name: "root", err: errors.New(`ent: missing required field "LogMsg.root"`)}
+	}
+	if _, ok := lmc.mutation.Callpath(); !ok {
+		return &ValidationError{Name: "callpath", err: errors.New(`ent: missing required field "LogMsg.callpath"`)}
 	}
 	return nil
 }
@@ -265,6 +307,14 @@ func (lmc *LogMsgCreate) createSpec() (*LogMsg, *sqlgraph.CreateSpec) {
 	if value, ok := lmc.mutation.Msg(); ok {
 		_spec.SetField(logmsg.FieldMsg, field.TypeString, value)
 		_node.Msg = value
+	}
+	if value, ok := lmc.mutation.Root(); ok {
+		_spec.SetField(logmsg.FieldRoot, field.TypeString, value)
+		_node.Root = value
+	}
+	if value, ok := lmc.mutation.Callpath(); ok {
+		_spec.SetField(logmsg.FieldCallpath, field.TypeString, value)
+		_node.Callpath = value
 	}
 	if nodes := lmc.mutation.NamespaceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -422,6 +472,30 @@ func (u *LogMsgUpsert) UpdateMsg() *LogMsgUpsert {
 	return u
 }
 
+// SetRoot sets the "root" field.
+func (u *LogMsgUpsert) SetRoot(v string) *LogMsgUpsert {
+	u.Set(logmsg.FieldRoot, v)
+	return u
+}
+
+// UpdateRoot sets the "root" field to the value that was provided on create.
+func (u *LogMsgUpsert) UpdateRoot() *LogMsgUpsert {
+	u.SetExcluded(logmsg.FieldRoot)
+	return u
+}
+
+// SetCallpath sets the "callpath" field.
+func (u *LogMsgUpsert) SetCallpath(v string) *LogMsgUpsert {
+	u.Set(logmsg.FieldCallpath, v)
+	return u
+}
+
+// UpdateCallpath sets the "callpath" field to the value that was provided on create.
+func (u *LogMsgUpsert) UpdateCallpath() *LogMsgUpsert {
+	u.SetExcluded(logmsg.FieldCallpath)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -495,6 +569,34 @@ func (u *LogMsgUpsertOne) SetMsg(v string) *LogMsgUpsertOne {
 func (u *LogMsgUpsertOne) UpdateMsg() *LogMsgUpsertOne {
 	return u.Update(func(s *LogMsgUpsert) {
 		s.UpdateMsg()
+	})
+}
+
+// SetRoot sets the "root" field.
+func (u *LogMsgUpsertOne) SetRoot(v string) *LogMsgUpsertOne {
+	return u.Update(func(s *LogMsgUpsert) {
+		s.SetRoot(v)
+	})
+}
+
+// UpdateRoot sets the "root" field to the value that was provided on create.
+func (u *LogMsgUpsertOne) UpdateRoot() *LogMsgUpsertOne {
+	return u.Update(func(s *LogMsgUpsert) {
+		s.UpdateRoot()
+	})
+}
+
+// SetCallpath sets the "callpath" field.
+func (u *LogMsgUpsertOne) SetCallpath(v string) *LogMsgUpsertOne {
+	return u.Update(func(s *LogMsgUpsert) {
+		s.SetCallpath(v)
+	})
+}
+
+// UpdateCallpath sets the "callpath" field to the value that was provided on create.
+func (u *LogMsgUpsertOne) UpdateCallpath() *LogMsgUpsertOne {
+	return u.Update(func(s *LogMsgUpsert) {
+		s.UpdateCallpath()
 	})
 }
 
@@ -734,6 +836,34 @@ func (u *LogMsgUpsertBulk) SetMsg(v string) *LogMsgUpsertBulk {
 func (u *LogMsgUpsertBulk) UpdateMsg() *LogMsgUpsertBulk {
 	return u.Update(func(s *LogMsgUpsert) {
 		s.UpdateMsg()
+	})
+}
+
+// SetRoot sets the "root" field.
+func (u *LogMsgUpsertBulk) SetRoot(v string) *LogMsgUpsertBulk {
+	return u.Update(func(s *LogMsgUpsert) {
+		s.SetRoot(v)
+	})
+}
+
+// UpdateRoot sets the "root" field to the value that was provided on create.
+func (u *LogMsgUpsertBulk) UpdateRoot() *LogMsgUpsertBulk {
+	return u.Update(func(s *LogMsgUpsert) {
+		s.UpdateRoot()
+	})
+}
+
+// SetCallpath sets the "callpath" field.
+func (u *LogMsgUpsertBulk) SetCallpath(v string) *LogMsgUpsertBulk {
+	return u.Update(func(s *LogMsgUpsert) {
+		s.SetCallpath(v)
+	})
+}
+
+// UpdateCallpath sets the "callpath" field to the value that was provided on create.
+func (u *LogMsgUpsertBulk) UpdateCallpath() *LogMsgUpsertBulk {
+	return u.Update(func(s *LogMsgUpsert) {
+		s.UpdateCallpath()
 	})
 }
 
