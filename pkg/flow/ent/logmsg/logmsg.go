@@ -15,10 +15,10 @@ const (
 	FieldT = "t"
 	// FieldMsg holds the string denoting the msg field in the database.
 	FieldMsg = "msg"
-	// FieldRoot holds the string denoting the root field in the database.
-	FieldRoot = "root"
-	// FieldCallpath holds the string denoting the callpath field in the database.
-	FieldCallpath = "callpath"
+	// FieldRootInstanceId holds the string denoting the rootinstanceid field in the database.
+	FieldRootInstanceId = "root_instance_id"
+	// FieldLogInstanceCallPath holds the string denoting the loginstancecallpath field in the database.
+	FieldLogInstanceCallPath = "log_instance_call_path"
 	// EdgeNamespace holds the string denoting the namespace edge name in mutations.
 	EdgeNamespace = "namespace"
 	// EdgeWorkflow holds the string denoting the workflow edge name in mutations.
@@ -64,8 +64,8 @@ var Columns = []string{
 	FieldID,
 	FieldT,
 	FieldMsg,
-	FieldRoot,
-	FieldCallpath,
+	FieldRootInstanceId,
+	FieldLogInstanceCallPath,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "log_msgs"
@@ -93,10 +93,10 @@ func ValidColumn(column string) bool {
 }
 
 var (
-	// DefaultRoot holds the default value on creation for the "root" field.
-	DefaultRoot string
-	// DefaultCallpath holds the default value on creation for the "callpath" field.
-	DefaultCallpath string
+	// DefaultRootInstanceId holds the default value on creation for the "rootInstanceId" field.
+	DefaultRootInstanceId string
+	// DefaultLogInstanceCallPath holds the default value on creation for the "logInstanceCallPath" field.
+	DefaultLogInstanceCallPath string
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )

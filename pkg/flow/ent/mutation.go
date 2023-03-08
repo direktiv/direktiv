@@ -7366,25 +7366,25 @@ func (m *InstanceRuntimeMutation) ResetEdge(name string) error {
 // LogMsgMutation represents an operation that mutates the LogMsg nodes in the graph.
 type LogMsgMutation struct {
 	config
-	op               Op
-	typ              string
-	id               *uuid.UUID
-	t                *time.Time
-	msg              *string
-	root             *string
-	callpath         *string
-	clearedFields    map[string]struct{}
-	namespace        *uuid.UUID
-	clearednamespace bool
-	workflow         *uuid.UUID
-	clearedworkflow  bool
-	instance         *uuid.UUID
-	clearedinstance  bool
-	activity         *uuid.UUID
-	clearedactivity  bool
-	done             bool
-	oldValue         func(context.Context) (*LogMsg, error)
-	predicates       []predicate.LogMsg
+	op                  Op
+	typ                 string
+	id                  *uuid.UUID
+	t                   *time.Time
+	msg                 *string
+	rootInstanceId      *string
+	logInstanceCallPath *string
+	clearedFields       map[string]struct{}
+	namespace           *uuid.UUID
+	clearednamespace    bool
+	workflow            *uuid.UUID
+	clearedworkflow     bool
+	instance            *uuid.UUID
+	clearedinstance     bool
+	activity            *uuid.UUID
+	clearedactivity     bool
+	done                bool
+	oldValue            func(context.Context) (*LogMsg, error)
+	predicates          []predicate.LogMsg
 }
 
 var _ ent.Mutation = (*LogMsgMutation)(nil)
@@ -7563,76 +7563,76 @@ func (m *LogMsgMutation) ResetMsg() {
 	m.msg = nil
 }
 
-// SetRoot sets the "root" field.
-func (m *LogMsgMutation) SetRoot(s string) {
-	m.root = &s
+// SetRootInstanceId sets the "rootInstanceId" field.
+func (m *LogMsgMutation) SetRootInstanceId(s string) {
+	m.rootInstanceId = &s
 }
 
-// Root returns the value of the "root" field in the mutation.
-func (m *LogMsgMutation) Root() (r string, exists bool) {
-	v := m.root
+// RootInstanceId returns the value of the "rootInstanceId" field in the mutation.
+func (m *LogMsgMutation) RootInstanceId() (r string, exists bool) {
+	v := m.rootInstanceId
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldRoot returns the old "root" field's value of the LogMsg entity.
+// OldRootInstanceId returns the old "rootInstanceId" field's value of the LogMsg entity.
 // If the LogMsg object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *LogMsgMutation) OldRoot(ctx context.Context) (v string, err error) {
+func (m *LogMsgMutation) OldRootInstanceId(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldRoot is only allowed on UpdateOne operations")
+		return v, errors.New("OldRootInstanceId is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldRoot requires an ID field in the mutation")
+		return v, errors.New("OldRootInstanceId requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldRoot: %w", err)
+		return v, fmt.Errorf("querying old value for OldRootInstanceId: %w", err)
 	}
-	return oldValue.Root, nil
+	return oldValue.RootInstanceId, nil
 }
 
-// ResetRoot resets all changes to the "root" field.
-func (m *LogMsgMutation) ResetRoot() {
-	m.root = nil
+// ResetRootInstanceId resets all changes to the "rootInstanceId" field.
+func (m *LogMsgMutation) ResetRootInstanceId() {
+	m.rootInstanceId = nil
 }
 
-// SetCallpath sets the "callpath" field.
-func (m *LogMsgMutation) SetCallpath(s string) {
-	m.callpath = &s
+// SetLogInstanceCallPath sets the "logInstanceCallPath" field.
+func (m *LogMsgMutation) SetLogInstanceCallPath(s string) {
+	m.logInstanceCallPath = &s
 }
 
-// Callpath returns the value of the "callpath" field in the mutation.
-func (m *LogMsgMutation) Callpath() (r string, exists bool) {
-	v := m.callpath
+// LogInstanceCallPath returns the value of the "logInstanceCallPath" field in the mutation.
+func (m *LogMsgMutation) LogInstanceCallPath() (r string, exists bool) {
+	v := m.logInstanceCallPath
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldCallpath returns the old "callpath" field's value of the LogMsg entity.
+// OldLogInstanceCallPath returns the old "logInstanceCallPath" field's value of the LogMsg entity.
 // If the LogMsg object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *LogMsgMutation) OldCallpath(ctx context.Context) (v string, err error) {
+func (m *LogMsgMutation) OldLogInstanceCallPath(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCallpath is only allowed on UpdateOne operations")
+		return v, errors.New("OldLogInstanceCallPath is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCallpath requires an ID field in the mutation")
+		return v, errors.New("OldLogInstanceCallPath requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCallpath: %w", err)
+		return v, fmt.Errorf("querying old value for OldLogInstanceCallPath: %w", err)
 	}
-	return oldValue.Callpath, nil
+	return oldValue.LogInstanceCallPath, nil
 }
 
-// ResetCallpath resets all changes to the "callpath" field.
-func (m *LogMsgMutation) ResetCallpath() {
-	m.callpath = nil
+// ResetLogInstanceCallPath resets all changes to the "logInstanceCallPath" field.
+func (m *LogMsgMutation) ResetLogInstanceCallPath() {
+	m.logInstanceCallPath = nil
 }
 
 // SetNamespaceID sets the "namespace" edge to the Namespace entity by id.
@@ -7817,11 +7817,11 @@ func (m *LogMsgMutation) Fields() []string {
 	if m.msg != nil {
 		fields = append(fields, logmsg.FieldMsg)
 	}
-	if m.root != nil {
-		fields = append(fields, logmsg.FieldRoot)
+	if m.rootInstanceId != nil {
+		fields = append(fields, logmsg.FieldRootInstanceId)
 	}
-	if m.callpath != nil {
-		fields = append(fields, logmsg.FieldCallpath)
+	if m.logInstanceCallPath != nil {
+		fields = append(fields, logmsg.FieldLogInstanceCallPath)
 	}
 	return fields
 }
@@ -7835,10 +7835,10 @@ func (m *LogMsgMutation) Field(name string) (ent.Value, bool) {
 		return m.T()
 	case logmsg.FieldMsg:
 		return m.Msg()
-	case logmsg.FieldRoot:
-		return m.Root()
-	case logmsg.FieldCallpath:
-		return m.Callpath()
+	case logmsg.FieldRootInstanceId:
+		return m.RootInstanceId()
+	case logmsg.FieldLogInstanceCallPath:
+		return m.LogInstanceCallPath()
 	}
 	return nil, false
 }
@@ -7852,10 +7852,10 @@ func (m *LogMsgMutation) OldField(ctx context.Context, name string) (ent.Value, 
 		return m.OldT(ctx)
 	case logmsg.FieldMsg:
 		return m.OldMsg(ctx)
-	case logmsg.FieldRoot:
-		return m.OldRoot(ctx)
-	case logmsg.FieldCallpath:
-		return m.OldCallpath(ctx)
+	case logmsg.FieldRootInstanceId:
+		return m.OldRootInstanceId(ctx)
+	case logmsg.FieldLogInstanceCallPath:
+		return m.OldLogInstanceCallPath(ctx)
 	}
 	return nil, fmt.Errorf("unknown LogMsg field %s", name)
 }
@@ -7879,19 +7879,19 @@ func (m *LogMsgMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetMsg(v)
 		return nil
-	case logmsg.FieldRoot:
+	case logmsg.FieldRootInstanceId:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetRoot(v)
+		m.SetRootInstanceId(v)
 		return nil
-	case logmsg.FieldCallpath:
+	case logmsg.FieldLogInstanceCallPath:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetCallpath(v)
+		m.SetLogInstanceCallPath(v)
 		return nil
 	}
 	return fmt.Errorf("unknown LogMsg field %s", name)
@@ -7948,11 +7948,11 @@ func (m *LogMsgMutation) ResetField(name string) error {
 	case logmsg.FieldMsg:
 		m.ResetMsg()
 		return nil
-	case logmsg.FieldRoot:
-		m.ResetRoot()
+	case logmsg.FieldRootInstanceId:
+		m.ResetRootInstanceId()
 		return nil
-	case logmsg.FieldCallpath:
-		m.ResetCallpath()
+	case logmsg.FieldLogInstanceCallPath:
+		m.ResetLogInstanceCallPath()
 		return nil
 	}
 	return fmt.Errorf("unknown LogMsg field %s", name)

@@ -19,8 +19,8 @@ func (LogMsg) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).Default(uuid.New).Immutable().StorageKey("oid").StructTag(`json:"-"`),
 		field.Time("t"),
 		field.String("msg"),
-		field.String("root").Default(""),
-		field.String("callpath").Default(""),
+		field.String("rootInstanceId").Default(""),
+		field.String("logInstanceCallPath").Default(""),
 	}
 }
 

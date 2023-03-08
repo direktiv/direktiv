@@ -123,13 +123,13 @@ func (srv *server) workerLogToInstance(l *logMessage) {
 
 	clients := srv.edb.Clients(ctx)
 
-	callpath := l.cached.Instance.CallPath + "/instance:" + l.cached.Instance.ID.String()
-	rootInstance, err := extractRoot(callpath)
+	callpath := appendInstanceID(l.cached.Instance.CallPath, l.cached.Instance.ID.String())
+	rootInstance, err := getRootinstanceID(callpath)
 	if err != nil {
 		srv.sugar.Error(err)
 		return
 	}
-	_, err = clients.LogMsg.Create().SetMsg(l.msg).SetInstanceID(l.cached.Instance.ID).SetT(l.t).SetRoot(rootInstance).SetCallpath(callpath).Save(ctx)
+	_, err = clients.LogMsg.Create().SetMsg(l.msg).SetInstanceID(l.cached.Instance.ID).SetT(l.t).SetRootInstanceId(rootInstance).SetLogInstanceCallPath(callpath).Save(ctx)
 	if err != nil {
 		srv.sugar.Error(err)
 		return
@@ -155,18 +155,28 @@ func (srv *server) workerLogToInstance(l *logMessage) {
 	srv.pubsub.NotifyInstanceLogs(l.cached.Instance)
 }
 
-// extracts the root from a callpath,
-// the callpath is expected to be formated like: /<caller>/instance:<root_id>/instance:<other_is>/...
-// requires the callpath to contain a root_id.
-func extractRoot(callpath string) (string, error) {
+// Extracts the rootInstanceID from a callpath.
+// Forexpl. /c1d87df6-56fb-4b03-a9e9-00e5122e4884/105cbf37-76b9-452a-b67d-5c9a8cd54ecc.
+// The callpath has to contain a rootInstanceID as first element. In this case the rootInstanceID would be
+// c1d87df6-56fb-4b03-a9e9-00e5122e4884.
+func getRootinstanceID(callpath string) (string, error) {
 	path := strings.Split(callpath, "/")
-	if len(path) < 3 {
+	if len(path) < 2 {
 		return "", errors.New("Instance Callpath is malformed")
 	}
-	if strings.HasPrefix(path[2], "instance") {
-		return strings.Split(path[2], ":")[1], nil
+	_, err := uuid.Parse(path[1])
+	if err != nil {
+		return "", err
 	}
-	return "", errors.New("Instance Callpath is malformed")
+	return path[1], nil
+}
+
+// Appends a InstanceID to the InstanceCallPath.
+func appendInstanceID(callpath, instanceID string) string {
+	if callpath == "/" {
+		return "/" + instanceID
+	}
+	return callpath + "/" + instanceID
 }
 
 func (srv *server) logToServer(ctx context.Context, t time.Time, msg string, a ...interface{}) {

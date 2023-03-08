@@ -46,30 +46,30 @@ func (lmu *LogMsgUpdate) SetMsg(s string) *LogMsgUpdate {
 	return lmu
 }
 
-// SetRoot sets the "root" field.
-func (lmu *LogMsgUpdate) SetRoot(s string) *LogMsgUpdate {
-	lmu.mutation.SetRoot(s)
+// SetRootInstanceId sets the "rootInstanceId" field.
+func (lmu *LogMsgUpdate) SetRootInstanceId(s string) *LogMsgUpdate {
+	lmu.mutation.SetRootInstanceId(s)
 	return lmu
 }
 
-// SetNillableRoot sets the "root" field if the given value is not nil.
-func (lmu *LogMsgUpdate) SetNillableRoot(s *string) *LogMsgUpdate {
+// SetNillableRootInstanceId sets the "rootInstanceId" field if the given value is not nil.
+func (lmu *LogMsgUpdate) SetNillableRootInstanceId(s *string) *LogMsgUpdate {
 	if s != nil {
-		lmu.SetRoot(*s)
+		lmu.SetRootInstanceId(*s)
 	}
 	return lmu
 }
 
-// SetCallpath sets the "callpath" field.
-func (lmu *LogMsgUpdate) SetCallpath(s string) *LogMsgUpdate {
-	lmu.mutation.SetCallpath(s)
+// SetLogInstanceCallPath sets the "logInstanceCallPath" field.
+func (lmu *LogMsgUpdate) SetLogInstanceCallPath(s string) *LogMsgUpdate {
+	lmu.mutation.SetLogInstanceCallPath(s)
 	return lmu
 }
 
-// SetNillableCallpath sets the "callpath" field if the given value is not nil.
-func (lmu *LogMsgUpdate) SetNillableCallpath(s *string) *LogMsgUpdate {
+// SetNillableLogInstanceCallPath sets the "logInstanceCallPath" field if the given value is not nil.
+func (lmu *LogMsgUpdate) SetNillableLogInstanceCallPath(s *string) *LogMsgUpdate {
 	if s != nil {
-		lmu.SetCallpath(*s)
+		lmu.SetLogInstanceCallPath(*s)
 	}
 	return lmu
 }
@@ -263,11 +263,11 @@ func (lmu *LogMsgUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := lmu.mutation.Msg(); ok {
 		_spec.SetField(logmsg.FieldMsg, field.TypeString, value)
 	}
-	if value, ok := lmu.mutation.Root(); ok {
-		_spec.SetField(logmsg.FieldRoot, field.TypeString, value)
+	if value, ok := lmu.mutation.RootInstanceId(); ok {
+		_spec.SetField(logmsg.FieldRootInstanceId, field.TypeString, value)
 	}
-	if value, ok := lmu.mutation.Callpath(); ok {
-		_spec.SetField(logmsg.FieldCallpath, field.TypeString, value)
+	if value, ok := lmu.mutation.LogInstanceCallPath(); ok {
+		_spec.SetField(logmsg.FieldLogInstanceCallPath, field.TypeString, value)
 	}
 	if lmu.mutation.NamespaceCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -442,30 +442,30 @@ func (lmuo *LogMsgUpdateOne) SetMsg(s string) *LogMsgUpdateOne {
 	return lmuo
 }
 
-// SetRoot sets the "root" field.
-func (lmuo *LogMsgUpdateOne) SetRoot(s string) *LogMsgUpdateOne {
-	lmuo.mutation.SetRoot(s)
+// SetRootInstanceId sets the "rootInstanceId" field.
+func (lmuo *LogMsgUpdateOne) SetRootInstanceId(s string) *LogMsgUpdateOne {
+	lmuo.mutation.SetRootInstanceId(s)
 	return lmuo
 }
 
-// SetNillableRoot sets the "root" field if the given value is not nil.
-func (lmuo *LogMsgUpdateOne) SetNillableRoot(s *string) *LogMsgUpdateOne {
+// SetNillableRootInstanceId sets the "rootInstanceId" field if the given value is not nil.
+func (lmuo *LogMsgUpdateOne) SetNillableRootInstanceId(s *string) *LogMsgUpdateOne {
 	if s != nil {
-		lmuo.SetRoot(*s)
+		lmuo.SetRootInstanceId(*s)
 	}
 	return lmuo
 }
 
-// SetCallpath sets the "callpath" field.
-func (lmuo *LogMsgUpdateOne) SetCallpath(s string) *LogMsgUpdateOne {
-	lmuo.mutation.SetCallpath(s)
+// SetLogInstanceCallPath sets the "logInstanceCallPath" field.
+func (lmuo *LogMsgUpdateOne) SetLogInstanceCallPath(s string) *LogMsgUpdateOne {
+	lmuo.mutation.SetLogInstanceCallPath(s)
 	return lmuo
 }
 
-// SetNillableCallpath sets the "callpath" field if the given value is not nil.
-func (lmuo *LogMsgUpdateOne) SetNillableCallpath(s *string) *LogMsgUpdateOne {
+// SetNillableLogInstanceCallPath sets the "logInstanceCallPath" field if the given value is not nil.
+func (lmuo *LogMsgUpdateOne) SetNillableLogInstanceCallPath(s *string) *LogMsgUpdateOne {
 	if s != nil {
-		lmuo.SetCallpath(*s)
+		lmuo.SetLogInstanceCallPath(*s)
 	}
 	return lmuo
 }
@@ -689,11 +689,11 @@ func (lmuo *LogMsgUpdateOne) sqlSave(ctx context.Context) (_node *LogMsg, err er
 	if value, ok := lmuo.mutation.Msg(); ok {
 		_spec.SetField(logmsg.FieldMsg, field.TypeString, value)
 	}
-	if value, ok := lmuo.mutation.Root(); ok {
-		_spec.SetField(logmsg.FieldRoot, field.TypeString, value)
+	if value, ok := lmuo.mutation.RootInstanceId(); ok {
+		_spec.SetField(logmsg.FieldRootInstanceId, field.TypeString, value)
 	}
-	if value, ok := lmuo.mutation.Callpath(); ok {
-		_spec.SetField(logmsg.FieldCallpath, field.TypeString, value)
+	if value, ok := lmuo.mutation.LogInstanceCallPath(); ok {
+		_spec.SetField(logmsg.FieldLogInstanceCallPath, field.TypeString, value)
 	}
 	if lmuo.mutation.NamespaceCleared() {
 		edge := &sqlgraph.EdgeSpec{

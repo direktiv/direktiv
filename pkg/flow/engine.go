@@ -141,7 +141,11 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 	if args.Ref != "" {
 		as += ":" + args.Ref
 	}
-	callpath := args.CallPath + "/" + args.Caller
+	callerInstanceID := ""
+	if strings.HasPrefix(args.Caller, "instance:") {
+		callerInstanceID = strings.Split(args.Caller, ":")[1]
+	}
+	callpath := appendInstanceID(args.CallPath, callerInstanceID)
 	data := marshalInstanceInputData(args.Input)
 
 	clients := engine.edb.Clients(tctx)
