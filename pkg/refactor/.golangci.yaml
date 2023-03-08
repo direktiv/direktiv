@@ -1,0 +1,43 @@
+run:
+  timeout: 5m
+  go: 1.19.3
+  issues-exit-code: 1
+  tests: true
+  skip-dirs: ["ent/"]
+  skip-files: [".pb.go"]
+
+linters:
+  disable:
+    - exhaustruct
+    - wsl
+    - prealloc
+    - lll
+    - varnamelen
+    - paralleltest
+    - wrapcheck
+    - nolintlint
+
+  presets:
+    - bugs
+    - comment
+    - complexity
+    - error
+    - format
+    - import
+    - metalinter
+    - module
+    - performance
+    - sql
+    - style
+    - test
+    - unused
+
+
+issues:
+  exclude-rules:
+      text: "do not define dynamic errors, use wrapped static errors instead:"
+      linters:
+        - goerr113
+
+
+# golangci-lint run --config  ./pkg/refactor/.golangci.yaml  ./pkg/refactor/...
