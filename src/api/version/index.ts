@@ -11,20 +11,19 @@ const getVersion = apiFactory({
 
 const fetchVersions = async ({
   queryKey: [{ apiKey }],
-}: QueryFunctionContext<ReturnType<(typeof versionKeys)["list"]>>) =>
+}: QueryFunctionContext<ReturnType<(typeof versionKeys)["all"]>>) =>
   getVersion({
     apiKey: apiKey,
     params: undefined,
   });
 
 const versionKeys = {
-  all: [{ scope: "versions" }] as const,
-  list: (apiKey: string) => [{ ...versionKeys.all[0], apiKey }] as const,
+  all: (apiKey: string) => [{ scope: "versions", apiKey }] as const,
 };
 
 export const useVersion = () =>
   useQuery({
-    queryKey: versionKeys.list("password"),
+    queryKey: versionKeys.all("password"),
     queryFn: fetchVersions,
     networkMode: "always",
     staleTime: Infinity,
