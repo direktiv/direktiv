@@ -5,6 +5,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entino "github.com/direktiv/direktiv/pkg/flow/ent/inode"
@@ -45,14 +46,14 @@ func (flow *flow) ResolveNamespaceUID(ctx context.Context, req *grpc.ResolveName
 
 	cached := new(database.CacheData)
 
-	err = flow.database.Namespace(ctx, nil, cached, id)
+	err = flow.database.Namespace(ctx, cached, id)
 	if err != nil {
 		return nil, err
 	}
 
 	var resp grpc.NamespaceResponse
 
-	err = atob(cached.Namespace, &resp.Namespace)
+	err = bytedata.ConvertDataForOutput(cached.Namespace, &resp.Namespace)
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +68,7 @@ func (flow *flow) SetNamespaceConfig(ctx context.Context, req *grpc.SetNamespace
 
 	cached := new(database.CacheData)
 
-	err := flow.database.NamespaceByName(ctx, nil, cached, req.GetName())
+	err := flow.database.NamespaceByName(ctx, cached, req.GetName())
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +86,7 @@ func (flow *flow) SetNamespaceConfig(ctx context.Context, req *grpc.SetNamespace
 	}
 	newCfgData = string(data)
 
-	clients := flow.edb.Clients(nil)
+	clients := flow.edb.Clients(ctx)
 
 	_, err = clients.Namespace.UpdateOneID(cached.Namespace.ID).SetConfig(newCfgData).Save(ctx)
 	if err != nil {
@@ -104,7 +105,7 @@ func (flow *flow) GetNamespaceConfig(ctx context.Context, req *grpc.GetNamespace
 
 	cached := new(database.CacheData)
 
-	err := flow.database.NamespaceByName(ctx, nil, cached, req.GetName())
+	err := flow.database.NamespaceByName(ctx, cached, req.GetName())
 	if err != nil {
 		return nil, err
 	}
@@ -121,14 +122,14 @@ func (flow *flow) Namespace(ctx context.Context, req *grpc.NamespaceRequest) (*g
 
 	cached := new(database.CacheData)
 
-	err := flow.database.NamespaceByName(ctx, nil, cached, req.GetName())
+	err := flow.database.NamespaceByName(ctx, cached, req.GetName())
 	if err != nil {
 		return nil, err
 	}
 
 	var resp grpc.NamespaceResponse
 
-	err = atob(cached.Namespace, &resp.Namespace)
+	err = bytedata.ConvertDataForOutput(cached.Namespace, &resp.Namespace)
 	if err != nil {
 		return nil, err
 	}
@@ -141,7 +142,7 @@ func (flow *flow) Namespace(ctx context.Context, req *grpc.NamespaceRequest) (*g
 func (flow *flow) Namespaces(ctx context.Context, req *grpc.NamespacesRequest) (*grpc.NamespacesResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	clients := flow.edb.Clients(nil)
+	clients := flow.edb.Clients(ctx)
 
 	query := clients.Namespace.Query()
 
@@ -153,7 +154,7 @@ func (flow *flow) Namespaces(ctx context.Context, req *grpc.NamespacesRequest) (
 	resp := new(grpc.NamespacesResponse)
 	resp.PageInfo = pi
 
-	err = atob(results, &resp.Results)
+	err = bytedata.ConvertDataForOutput(results, &resp.Results)
 	if err != nil {
 		return nil, err
 	}
@@ -210,7 +211,7 @@ resend:
 func (flow *flow) CreateNamespace(ctx context.Context, req *grpc.CreateNamespaceRequest) (*grpc.CreateNamespaceResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tx, err := flow.database.Tx(ctx)
+	tctx, tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -221,11 +222,11 @@ func (flow *flow) CreateNamespace(ctx context.Context, req *grpc.CreateNamespace
 
 	cached := new(database.CacheData)
 
-	clients := flow.edb.Clients(tx)
+	clients := flow.edb.Clients(tctx)
 
 	if req.GetIdempotent() {
 
-		err = flow.database.NamespaceByName(ctx, tx, cached, req.GetName())
+		err = flow.database.NamespaceByName(tctx, cached, req.GetName())
 		if err == nil {
 			rollback(tx)
 			goto respond
@@ -269,7 +270,7 @@ respond:
 
 	var resp grpc.CreateNamespaceResponse
 
-	err = atob(cached.Namespace, &resp.Namespace)
+	err = bytedata.ConvertDataForOutput(cached.Namespace, &resp.Namespace)
 	if err != nil {
 		return nil, err
 	}
@@ -281,7 +282,7 @@ func (flow *flow) DeleteNamespace(ctx context.Context, req *grpc.DeleteNamespace
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 	var resp emptypb.Empty
 
-	tx, err := flow.database.Tx(ctx)
+	tctx, tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -289,7 +290,7 @@ func (flow *flow) DeleteNamespace(ctx context.Context, req *grpc.DeleteNamespace
 
 	cached := new(database.CacheData)
 
-	err = flow.database.NamespaceByName(ctx, tx, cached, req.GetName())
+	err = flow.database.NamespaceByName(tctx, cached, req.GetName())
 	if err != nil {
 		if derrors.IsNotFound(err) && req.GetIdempotent() {
 			rollback(tx)
@@ -298,7 +299,7 @@ func (flow *flow) DeleteNamespace(ctx context.Context, req *grpc.DeleteNamespace
 		return nil, err
 	}
 
-	clients := flow.edb.Clients(tx)
+	clients := flow.edb.Clients(tctx)
 
 	if !req.GetRecursive() {
 		k, err := clients.Inode.Query().Where(entino.HasNamespaceWith(entns.ID(cached.Namespace.ID))).Count(ctx)
@@ -349,21 +350,21 @@ func (flow *flow) DeleteNamespace(ctx context.Context, req *grpc.DeleteNamespace
 func (flow *flow) RenameNamespace(ctx context.Context, req *grpc.RenameNamespaceRequest) (*grpc.RenameNamespaceResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tx, err := flow.database.Tx(ctx)
+	tctx, tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer rollback(tx)
 
 	cached := new(database.CacheData)
-	err = flow.database.NamespaceByName(ctx, tx, cached, req.GetOld())
+	err = flow.database.NamespaceByName(tctx, cached, req.GetOld())
 	if err != nil {
 		return nil, err
 	}
 
-	clients := flow.edb.Clients(tx)
+	clients := flow.edb.Clients(tctx)
 
-	x, err := clients.Namespace.UpdateOneID(cached.Namespace.ID).SetName(req.GetNew()).Save(ctx)
+	x, err := clients.Namespace.UpdateOneID(cached.Namespace.ID).SetName(req.GetNew()).Save(tctx)
 	if err != nil {
 		return nil, err
 	}
@@ -384,7 +385,7 @@ func (flow *flow) RenameNamespace(ctx context.Context, req *grpc.RenameNamespace
 
 	var resp grpc.RenameNamespaceResponse
 
-	err = atob(cached.Namespace, &resp.Namespace)
+	err = bytedata.ConvertDataForOutput(cached.Namespace, &resp.Namespace)
 	if err != nil {
 		return nil, err
 	}

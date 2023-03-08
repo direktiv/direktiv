@@ -157,6 +157,7 @@ func (srv *server) start(ctx context.Context) error {
 	}
 	defer srv.cleanup(srv.pubsub.Close)
 
+	// TODO: Remove debug code.
 	db1, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 	if err != nil {
 		return err

@@ -102,3 +102,5 @@ direktivctl-darwin
 direktivctl-darwin-arm64
 direktivctl-windows
 direktivctl
+
+*node_modules
