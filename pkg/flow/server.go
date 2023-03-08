@@ -8,20 +8,20 @@ import (
 	"sync"
 	"time"
 
-	"github.com/google/uuid"
-	"go.uber.org/zap"
-	libgrpc "google.golang.org/grpc"
-	"google.golang.org/protobuf/types/known/emptypb"
-
 	"github.com/direktiv/direktiv/pkg/dlog"
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/database/entwrapper"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/metrics"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/direktiv/direktiv/pkg/version"
+	"github.com/google/uuid"
 	"github.com/lib/pq"
 	_ "github.com/lib/pq" // postgres for ent
+	"go.uber.org/zap"
+	libgrpc "google.golang.org/grpc"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 const parcelSize = 0x100000
@@ -34,7 +34,7 @@ type server struct {
 	conf     *util.Config
 
 	// db       *ent.Client
-	pubsub   *pubsub
+	pubsub   *pubsub.Pubsub
 	locks    *locks
 	timers   *timers
 	engine   *engine
@@ -145,7 +145,7 @@ func (srv *server) start(ctx context.Context) error {
 
 	srv.sugar.Debug("Initializing pub-sub.")
 
-	srv.pubsub, err = initPubSub(srv.sugar, srv, db)
+	srv.pubsub, err = pubsub.InitPubSub(srv.sugar, srv, db)
 	if err != nil {
 		return err
 	}
@@ -318,7 +318,7 @@ func (srv *server) cleanup(closer func() error) {
 	}
 }
 
-func (srv *server) notifyCluster(msg string) error {
+func (srv *server) NotifyCluster(msg string) error {
 	ctx := context.Background()
 
 	conn, err := srv.edb.DB().Conn(ctx)
@@ -327,7 +327,7 @@ func (srv *server) notifyCluster(msg string) error {
 	}
 	defer conn.Close()
 
-	_, err = conn.ExecContext(ctx, "SELECT pg_notify($1, $2)", flowSync, msg)
+	_, err = conn.ExecContext(ctx, "SELECT pg_notify($1, $2)", pubsub.FlowSync, msg)
 
 	perr := new(pq.Error)
 
@@ -345,7 +345,7 @@ func (srv *server) notifyCluster(msg string) error {
 	return nil
 }
 
-func (srv *server) notifyHostname(hostname, msg string) error {
+func (srv *server) NotifyHostname(hostname, msg string) error {
 	ctx := context.Background()
 
 	conn, err := srv.edb.DB().Conn(ctx)
@@ -374,7 +374,14 @@ func (srv *server) notifyHostname(hostname, msg string) error {
 	return nil
 }
 
-func (server *server) CacheNotify(req *PubsubUpdate) {
+func (srv *server) PublishToCluster(payload string) {
+	srv.pubsub.Publish(&pubsub.PubsubUpdate{
+		Handler: database.PubsubNotifyFunction,
+		Key:     payload,
+	})
+}
+
+func (server *server) CacheNotify(req *pubsub.PubsubUpdate) {
 	if server.ID.String() == req.Sender {
 		return
 	}
@@ -383,15 +390,15 @@ func (server *server) CacheNotify(req *PubsubUpdate) {
 }
 
 func (srv *server) registerFunctions() {
-	srv.pubsub.registerFunction(database.PubsubNotifyFunction, srv.CacheNotify)
+	srv.pubsub.RegisterFunction(database.PubsubNotifyFunction, srv.CacheNotify)
 
-	srv.pubsub.registerFunction(pubsubNotifyFunction, srv.pubsub.Notify)
-	srv.pubsub.registerFunction(pubsubDisconnectFunction, srv.pubsub.Disconnect)
-	srv.pubsub.registerFunction(pubsubDeleteTimerFunction, srv.timers.deleteTimerHandler)
-	srv.pubsub.registerFunction(pubsubDeleteInstanceTimersFunction, srv.timers.deleteInstanceTimersHandler)
-	srv.pubsub.registerFunction(pubsubCancelWorkflowFunction, srv.engine.finishCancelWorkflow)
-	srv.pubsub.registerFunction(pubsubConfigureRouterFunction, srv.flow.configureRouterHandler)
-	srv.pubsub.registerFunction(pubsubUpdateEventDelays, srv.events.updateEventDelaysHandler)
+	srv.pubsub.RegisterFunction(pubsub.PubsubNotifyFunction, srv.pubsub.Notify)
+	srv.pubsub.RegisterFunction(pubsub.PubsubDisconnectFunction, srv.pubsub.Disconnect)
+	srv.pubsub.RegisterFunction(pubsub.PubsubDeleteTimerFunction, srv.timers.deleteTimerHandler)
+	srv.pubsub.RegisterFunction(pubsub.PubsubDeleteInstanceTimersFunction, srv.timers.deleteInstanceTimersHandler)
+	srv.pubsub.RegisterFunction(pubsub.PubsubCancelWorkflowFunction, srv.engine.finishCancelWorkflow)
+	srv.pubsub.RegisterFunction(pubsub.PubsubConfigureRouterFunction, srv.flow.configureRouterHandler)
+	srv.pubsub.RegisterFunction(pubsub.PubsubUpdateEventDelays, srv.events.updateEventDelaysHandler)
 
 	srv.timers.registerFunction(timeoutFunction, srv.engine.timeoutHandler)
 	srv.timers.registerFunction(sleepWakeupFunction, srv.engine.sleepWakeup)
@@ -399,12 +406,12 @@ func (srv *server) registerFunctions() {
 	srv.timers.registerFunction(sendEventFunction, srv.events.sendEvent)
 	srv.timers.registerFunction(retryWakeupFunction, srv.flow.engine.retryWakeup)
 
-	srv.pubsub.registerFunction(pubsubDeleteActivityTimersFunction, srv.timers.deleteActivityTimersHandler)
+	srv.pubsub.RegisterFunction(pubsub.PubsubDeleteActivityTimersFunction, srv.timers.deleteActivityTimersHandler)
 	srv.timers.registerFunction(syncerTimeoutFunction, srv.syncer.timeoutHandler)
 	srv.timers.registerFunction(syncerCron, srv.syncer.cronHandler)
 
-	srv.pubsub.registerFunction(deleteFilterCache, srv.flow.deleteCache)
-	srv.pubsub.registerFunction(deleteFilterCacheNamespace, srv.flow.deleteCacheNamespace)
+	srv.pubsub.RegisterFunction(deleteFilterCache, srv.flow.deleteCache)
+	srv.pubsub.RegisterFunction(deleteFilterCacheNamespace, srv.flow.deleteCacheNamespace)
 }
 
 func (srv *server) cronPoller() {

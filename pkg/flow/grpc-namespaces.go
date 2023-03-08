@@ -12,6 +12,7 @@ import (
 	entns "github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/functions"
 	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
 	"github.com/direktiv/direktiv/pkg/util"
@@ -339,7 +340,7 @@ func (flow *flow) DeleteNamespace(ctx context.Context, req *grpc.DeleteNamespace
 
 	// delete filter cache
 	deleteCacheNamespaceSync(cached.Namespace.Name)
-	flow.server.pubsub.publish(&PubsubUpdate{
+	flow.server.pubsub.Publish(&pubsub.PubsubUpdate{
 		Handler: deleteFilterCacheNamespace,
 		Key:     cached.Namespace.Name,
 	})

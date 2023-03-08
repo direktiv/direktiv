@@ -20,6 +20,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
+	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 
 	enteventsfilter "github.com/direktiv/direktiv/pkg/flow/ent/cloudeventfilters"
 	cevents "github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
@@ -941,9 +942,7 @@ func (events *events) BroadcastCloudevent(ctx context.Context, cached *database.
 	return nil
 }
 
-const pubsubUpdateEventDelays = "updateEventDelays"
-
-func (events *events) updateEventDelaysHandler(req *PubsubUpdate) {
+func (events *events) updateEventDelaysHandler(req *pubsub.PubsubUpdate) {
 	events.syncEventDelays()
 }
 
@@ -1138,7 +1137,7 @@ func (flow *flow) DeleteCloudEventFilter(ctx context.Context, in *grpc.DeleteClo
 
 	key := fmt.Sprintf("%s-%s", namespace, filterName)
 	eventFilterCache.delete(key)
-	flow.server.pubsub.publish(&PubsubUpdate{
+	flow.server.pubsub.Publish(&pubsub.PubsubUpdate{
 		Handler: deleteFilterCache,
 		Key:     key,
 	})
@@ -1151,7 +1150,7 @@ const (
 	deleteFilterCacheNamespace = "deleteFilterCacheNamespace"
 )
 
-func (flow *flow) deleteCache(req *PubsubUpdate) {
+func (flow *flow) deleteCache(req *pubsub.PubsubUpdate) {
 	flow.sugar.Debugf("deleting filter cache key: %v\n", req.Key)
 	eventFilterCache.delete(req.Key)
 }
@@ -1166,7 +1165,7 @@ func deleteCacheNamespaceSync(delkey string) {
 	})
 }
 
-func (flow *flow) deleteCacheNamespace(req *PubsubUpdate) {
+func (flow *flow) deleteCacheNamespace(req *pubsub.PubsubUpdate) {
 	flow.sugar.Debugf("deleting filter cache for namespace: %v\n", req.Key)
 	deleteCacheNamespaceSync(req.Key)
 }

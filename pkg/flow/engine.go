@@ -357,14 +357,14 @@ func (engine *engine) Transition(ctx context.Context, im *instanceMemory, nextSt
 	memory := im.MarshalMemory()
 	updater := im.getRuntimeUpdater()
 	updater = updater.SetFlow(flow).
-		SetController(engine.pubsub.hostname).
+		SetController(engine.pubsub.Hostname).
 		SetAttempts(attempt).
 		SetDeadline(deadline).
 		SetStateBeginTime(t).
 		SetData(data).
 		SetMemory(memory)
 	im.runtime.Flow = flow
-	im.runtime.Controller = engine.pubsub.hostname
+	im.runtime.Controller = engine.pubsub.Hostname
 	im.runtime.Attempts = attempt
 	im.runtime.Deadline = deadline
 	im.runtime.StateBeginTime = t

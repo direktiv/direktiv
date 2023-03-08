@@ -7,6 +7,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/robfig/cron/v3"
 )
 
@@ -30,11 +31,11 @@ type timers struct {
 	cron     *cron.Cron
 	fns      map[string]func([]byte)
 	timers   map[string]*timer
-	pubsub   *pubsub
+	pubsub   *pubsub.Pubsub
 	hostname string
 }
 
-func initTimers(pubsub *pubsub) (*timers, error) {
+func initTimers(pubsub *pubsub.Pubsub) (*timers, error) {
 	timers := new(timers)
 	timers.fns = make(map[string]func([]byte))
 	timers.cron = cron.New()
@@ -172,7 +173,7 @@ func (timers *timers) addCron(name, fn, pattern string, data []byte) error {
 	timers.deleteCronForWorkflow(name)
 	name = fmt.Sprintf("cron:%s", name)
 
-	timers.pubsub.log.Debugf("Adding cron %s: %s", name, pattern)
+	timers.pubsub.Log.Debugf("Adding cron %s: %s", name, pattern)
 
 	// check if cron pattern matches
 	c := cron.NewParser(cron.Minute | cron.Hour | cron.Dom |
@@ -299,16 +300,16 @@ func (timers *timers) deleteTimersForActivityNoBroadcast(name string) {
 	}
 }
 
-func (timers *timers) deleteInstanceTimersHandler(req *PubsubUpdate) {
+func (timers *timers) deleteInstanceTimersHandler(req *pubsub.PubsubUpdate) {
 	timers.deleteTimersForInstanceNoBroadcast(req.Key)
 }
 
-func (timers *timers) deleteActivityTimersHandler(req *PubsubUpdate) {
+func (timers *timers) deleteActivityTimersHandler(req *pubsub.PubsubUpdate) {
 	timers.deleteTimersForActivityNoBroadcast(req.Key)
 }
 
-func (timers *timers) deleteTimerHandler(req *PubsubUpdate) {
-	timers.deleteTimerByName("", timers.pubsub.hostname, req.Key)
+func (timers *timers) deleteTimerHandler(req *pubsub.PubsubUpdate) {
+	timers.deleteTimerByName("", timers.pubsub.Hostname, req.Key)
 }
 
 func (timers *timers) deleteTimerByName(oldController, newController, name string) {
