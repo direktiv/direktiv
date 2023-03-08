@@ -3,7 +3,7 @@ package psql
 import (
 	"context"
 	"fmt"
-	"github.com/direktiv/direktiv/pkg/experimental/filesystem"
+	"github.com/direktiv/direktiv/pkg/vnext/filesystem"
 	"gorm.io/gorm"
 	"path/filepath"
 	"strings"

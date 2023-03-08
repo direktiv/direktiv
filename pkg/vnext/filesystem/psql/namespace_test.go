@@ -2,7 +2,7 @@ package psql_test
 
 import (
 	"context"
-	"github.com/direktiv/direktiv/pkg/experimental/filesystem"
+	"github.com/direktiv/direktiv/pkg/vnext/filesystem"
 	"testing"
 )
 

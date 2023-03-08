@@ -2,8 +2,8 @@ package psql_test
 
 import (
 	"context"
-	"github.com/direktiv/direktiv/pkg/experimental/filesystem"
-	"github.com/direktiv/direktiv/pkg/experimental/filesystem/psql"
+	"github.com/direktiv/direktiv/pkg/vnext/filesystem"
+	"github.com/direktiv/direktiv/pkg/vnext/filesystem/psql"
 	"github.com/glebarez/sqlite"
 	"gorm.io/gorm"
 	"testing"
