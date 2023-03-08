@@ -22,21 +22,19 @@ fi
 
 cd $dir/direktiv-charts/charts/knative-instance && helm dependency update $dir/direktiv-charts/charts/knative-instance
 
-kubectl apply -f https://github.com/knative/operator/releases/download/knative-v1.8.1/operator.yaml 
+kubectl apply -f https://github.com/knative/operator/releases/download/knative-v1.9.2/operator.yaml
 kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=knative-operator
 
 # knative
 kubectl create namespace knative-serving
-#kubectl annotate ns knative-serving linkerd.io/inject=enabled
 
-echo "not using ca-cert"
-helm install -n knative-serving knative-serving direktiv/knative-instance
+helm install -n knative-serving knative-serving $dir/direktiv-charts/charts/knative-instance
 
+echo "delete persistent volume claims"
 kubectl delete --all -n postgres persistentvolumeclaims
 kubectl delete --all -n default persistentvolumeclaims
 
-cd  $dir/direktiv-charts/charts/direktiv && helm dependency update $dir/direktiv-charts/charts/direktiv
-
+cd $dir/direktiv-charts/charts/direktiv && helm dependency update $dir/direktiv-charts/charts/direktiv
 
 # install postgres
 helm repo add bitnami https://charts.bitnami.com/bitnami
@@ -76,7 +74,7 @@ functions:
   namespace: direktiv-services-direktiv
   image: "direktiv"
   tag: "latest"
-  sidecar: "sidecar"
+  sidecar: "direktiv"
   initPodImage: "init-pod"
 EOF
 fi

@@ -1,10 +1,30 @@
 #!/bin/bash
 
-kubectl apply -f https://github.com/knative/eventing/releases/download/v0.26.1/eventing-crds.yaml
-kubectl apply -f https://github.com/knative/eventing/releases/download/v0.26.1/eventing-core.yaml
-kubectl apply -f https://github.com/knative/eventing/releases/download/v0.26.1/mt-channel-broker.yaml
-kubectl apply -f https://github.com/knative/eventing/releases/download/v0.26.1/in-memory-channel.yaml
-
+cat <<-EOF | kubectl apply -f -
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: knative-eventing
+---
+apiVersion: operator.knative.dev/v1beta1
+kind: KnativeEventing
+metadata:
+  name: knative-eventing
+  namespace: knative-eventing
+spec:
+  config:
+    default-ch-webhook:
+      default-ch-config: |
+        clusterDefault:
+          apiVersion: messaging.knative.dev/v1
+          kind: InMemoryChannel
+          spec:
+            delivery:
+              backoffDelay: PT0.5S
+              backoffPolicy: exponential
+EOF
+ 
 echo "waiting for ready"
 kubectl wait --for=condition=ready pod -l app=mt-broker-controller -n knative-eventing
 

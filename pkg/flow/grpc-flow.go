@@ -43,7 +43,7 @@ func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
 	grpc.RegisterFlowServer(flow.srv, flow)
 	reflection.Register(flow.srv)
 
-	clients := flow.edb.Clients(nil)
+	clients := flow.edb.Clients(ctx)
 
 	go func() {
 		<-ctx.Done()
@@ -120,7 +120,7 @@ func (flow *flow) kickExpiredInstances() {
 
 	t := time.Now().Add(-1 * time.Minute)
 
-	clients := flow.edb.Clients(nil)
+	clients := flow.edb.Clients(ctx)
 
 	list, err := clients.InstanceRuntime.Query().
 		Select(entirt.FieldID, entirt.FieldFlow, entirt.FieldDeadline).

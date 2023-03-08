@@ -106,7 +106,7 @@ functions:
   namespace: direktiv-services-direktiv
   image: "direktiv"
   tag: "latest"
-  sidecar: "sidecar"
+  sidecar: "direktiv"
   initPodImage: "init-pod"
 EOF
 fi

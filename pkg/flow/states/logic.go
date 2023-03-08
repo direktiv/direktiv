@@ -45,7 +45,7 @@ type Logic interface {
 	GetMemory() interface{}
 	Deadline(ctx context.Context) time.Time
 	Run(ctx context.Context, wakedata []byte) (*Transition, error)
-	LivingChildren(ctx context.Context) []ChildInfo
+	LivingChildren(ctx context.Context) []*ChildInfo
 }
 
 type Transition struct {

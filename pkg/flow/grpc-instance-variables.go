@@ -11,6 +11,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
@@ -23,27 +24,13 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func (srv *server) getInstanceVariable(ctx context.Context, tx database.Transaction, cached *database.CacheData, key string, load bool) (*database.VarRef, *database.VarData, error) {
-	vref, err := srv.database.InstanceVariable(ctx, tx, cached.Instance.ID, key)
+func (srv *server) getInstanceVariable(ctx context.Context, cached *database.CacheData, key string, load bool) (*database.VarRef, *database.VarData, error) {
+	vref, err := srv.database.InstanceVariable(ctx, cached.Instance.ID, key)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	vdata, err := srv.database.VariableData(ctx, tx, vref.VarData, load)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return vref, vdata, nil
-}
-
-func (srv *server) getThreadVariable(ctx context.Context, tx database.Transaction, cached *database.CacheData, key string, load bool) (*database.VarRef, *database.VarData, error) {
-	vref, err := srv.database.ThreadVariable(ctx, tx, cached.Instance.ID, key)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	vdata, err := srv.database.VariableData(ctx, tx, vref.VarData, load)
+	vdata, err := srv.database.VariableData(ctx, vref.VarData, load)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -51,7 +38,21 @@ func (srv *server) getThreadVariable(ctx context.Context, tx database.Transactio
 	return vref, vdata, nil
 }
 
-func (srv *server) traverseToInstanceVariable(ctx context.Context, tx database.Transaction, namespace, instance, key string, load bool) (*database.CacheData, *database.VarRef, *database.VarData, error) {
+func (srv *server) getThreadVariable(ctx context.Context, cached *database.CacheData, key string, load bool) (*database.VarRef, *database.VarData, error) {
+	vref, err := srv.database.ThreadVariable(ctx, cached.Instance.ID, key)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	vdata, err := srv.database.VariableData(ctx, vref.VarData, load)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return vref, vdata, nil
+}
+
+func (srv *server) traverseToInstanceVariable(ctx context.Context, namespace, instance, key string, load bool) (*database.CacheData, *database.VarRef, *database.VarData, error) {
 	id, err := uuid.Parse(instance)
 	if err != nil {
 		return nil, nil, nil, err
@@ -59,7 +60,7 @@ func (srv *server) traverseToInstanceVariable(ctx context.Context, tx database.T
 
 	cached := new(database.CacheData)
 
-	err = srv.database.Instance(ctx, tx, cached, id)
+	err = srv.database.Instance(ctx, cached, id)
 	if err != nil {
 		return nil, nil, nil, err
 	}
@@ -68,7 +69,7 @@ func (srv *server) traverseToInstanceVariable(ctx context.Context, tx database.T
 		return nil, nil, nil, os.ErrNotExist
 	}
 
-	vref, vdata, err := srv.getInstanceVariable(ctx, tx, cached, key, load)
+	vref, vdata, err := srv.getInstanceVariable(ctx, cached, key, load)
 	if err != nil {
 		return nil, nil, nil, err
 	}
@@ -79,7 +80,7 @@ func (srv *server) traverseToInstanceVariable(ctx context.Context, tx database.T
 func (flow *flow) InstanceVariable(ctx context.Context, req *grpc.InstanceVariableRequest) (*grpc.InstanceVariableResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	cached, vref, vdata, err := flow.traverseToInstanceVariable(ctx, nil, req.GetNamespace(), req.GetInstance(), req.GetKey(), true)
+	cached, vref, vdata, err := flow.traverseToInstanceVariable(ctx, req.GetNamespace(), req.GetInstance(), req.GetKey(), true)
 	if err != nil {
 		return nil, err
 	}
@@ -116,12 +117,12 @@ func (internal *internal) InstanceVariableParcels(req *grpc.VariableInternalRequ
 
 	cached := new(database.CacheData)
 
-	err = internal.database.Instance(ctx, nil, cached, instID)
+	err = internal.database.Instance(ctx, cached, instID)
 	if err != nil {
 		return err
 	}
 
-	vref, vdata, err := internal.getInstanceVariable(ctx, nil, cached, req.GetKey(), true)
+	vref, vdata, err := internal.getInstanceVariable(ctx, cached, req.GetKey(), true)
 	if err != nil && !derrors.IsNotFound(err) {
 		return err
 	}
@@ -132,7 +133,7 @@ func (internal *internal) InstanceVariableParcels(req *grpc.VariableInternalRequ
 		vdata = new(database.VarData)
 		t := time.Now()
 		vdata.Data = make([]byte, 0)
-		hash, err := computeHash(vdata.Data)
+		hash, err := bytedata.ComputeHash(vdata.Data)
 		if err != nil {
 			internal.sugar.Error(err)
 		}
@@ -202,12 +203,12 @@ func (internal *internal) ThreadVariableParcels(req *grpc.VariableInternalReques
 
 	cached := new(database.CacheData)
 
-	err = internal.database.Instance(ctx, nil, cached, instID)
+	err = internal.database.Instance(ctx, cached, instID)
 	if err != nil {
 		return err
 	}
 
-	vref, vdata, err := internal.getThreadVariable(ctx, nil, cached, req.GetKey(), true)
+	vref, vdata, err := internal.getThreadVariable(ctx, cached, req.GetKey(), true)
 	if err != nil && !derrors.IsNotFound(err) {
 		return err
 	}
@@ -218,7 +219,7 @@ func (internal *internal) ThreadVariableParcels(req *grpc.VariableInternalReques
 		vdata = new(database.VarData)
 		t := time.Now()
 		vdata.Data = make([]byte, 0)
-		hash, err := computeHash(vdata.Data)
+		hash, err := bytedata.ComputeHash(vdata.Data)
 		if err != nil {
 			internal.sugar.Error(err)
 		}
@@ -274,7 +275,7 @@ func (flow *flow) InstanceVariableParcels(req *grpc.InstanceVariableRequest, srv
 
 	ctx := srv.Context()
 
-	cached, vref, vdata, err := flow.traverseToInstanceVariable(ctx, nil, req.GetNamespace(), req.GetInstance(), req.GetKey(), true)
+	cached, vref, vdata, err := flow.traverseToInstanceVariable(ctx, req.GetNamespace(), req.GetInstance(), req.GetKey(), true)
 	if err != nil {
 		return err
 	}
@@ -325,12 +326,12 @@ func (flow *flow) InstanceVariableParcels(req *grpc.InstanceVariableRequest, srv
 func (flow *flow) InstanceVariables(ctx context.Context, req *grpc.InstanceVariablesRequest) (*grpc.InstanceVariablesResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	cached, err := flow.getInstance(ctx, nil, req.GetNamespace(), req.GetInstance())
+	cached, err := flow.getInstance(ctx, req.GetNamespace(), req.GetInstance())
 	if err != nil {
 		return nil, err
 	}
 
-	clients := flow.edb.Clients(nil)
+	clients := flow.edb.Clients(ctx)
 
 	query := clients.VarRef.Query().Where(entvar.HasInstanceWith(entinst.ID(cached.Instance.ID)))
 
@@ -345,7 +346,7 @@ func (flow *flow) InstanceVariables(ctx context.Context, req *grpc.InstanceVaria
 	resp.Variables = new(grpc.Variables)
 	resp.Variables.PageInfo = pi
 
-	err = atob(results, &resp.Variables.Results)
+	err = bytedata.ConvertDataForOutput(results, &resp.Variables.Results)
 	if err != nil {
 		return nil, err
 	}
@@ -378,7 +379,7 @@ func (flow *flow) InstanceVariablesStream(req *grpc.InstanceVariablesRequest, sr
 	phash := ""
 	nhash := ""
 
-	cached, err := flow.getInstance(ctx, nil, req.GetNamespace(), req.GetInstance())
+	cached, err := flow.getInstance(ctx, req.GetNamespace(), req.GetInstance())
 	if err != nil {
 		return err
 	}
@@ -388,7 +389,7 @@ func (flow *flow) InstanceVariablesStream(req *grpc.InstanceVariablesRequest, sr
 
 resend:
 
-	clients := flow.edb.Clients(nil)
+	clients := flow.edb.Clients(ctx)
 
 	query := clients.VarRef.Query().Where(entvar.HasInstanceWith(entinst.ID(cached.Instance.ID)))
 
@@ -403,7 +404,7 @@ resend:
 	resp.Variables = new(grpc.Variables)
 	resp.Variables.PageInfo = pi
 
-	err = atob(results, &resp.Variables.Results)
+	err = bytedata.ConvertDataForOutput(results, &resp.Variables.Results)
 	if err != nil {
 		return err
 	}
@@ -426,7 +427,7 @@ resend:
 
 	}
 
-	nhash = checksum(resp)
+	nhash = bytedata.Checksum(resp)
 	if nhash != phash {
 		err = srv.Send(resp)
 		if err != nil {
@@ -446,7 +447,7 @@ resend:
 func (flow *flow) SetInstanceVariable(ctx context.Context, req *grpc.SetInstanceVariableRequest) (*grpc.SetInstanceVariableResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tx, err := flow.database.Tx(ctx)
+	tctx, tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -454,7 +455,7 @@ func (flow *flow) SetInstanceVariable(ctx context.Context, req *grpc.SetInstance
 
 	key := req.GetKey()
 
-	cached, err := flow.getInstance(ctx, tx, req.GetNamespace(), req.GetInstance())
+	cached, err := flow.getInstance(tctx, req.GetNamespace(), req.GetInstance())
 	if err != nil {
 		return nil, err
 	}
@@ -462,7 +463,7 @@ func (flow *flow) SetInstanceVariable(ctx context.Context, req *grpc.SetInstance
 	var vdata *ent.VarData
 	var newVar bool
 
-	vdata, newVar, err = flow.SetVariable(ctx, tx, &entInstanceVarQuerier{clients: flow.edb.Clients(tx), cached: cached}, key, req.GetData(), req.GetMimeType(), false)
+	vdata, newVar, err = flow.SetVariable(tctx, &entInstanceVarQuerier{clients: flow.edb.Clients(tctx), cached: cached}, key, req.GetData(), req.GetMimeType(), false)
 	if err != nil {
 		return nil, err
 	}
@@ -552,13 +553,13 @@ func (internal *internal) SetThreadVariableParcels(srv grpc.Internal_SetThreadVa
 		return errors.New("received more data than expected")
 	}
 
-	tx, err := internal.database.Tx(ctx)
+	tctx, tx, err := internal.database.Tx(ctx)
 	if err != nil {
 		return err
 	}
 	defer rollback(tx)
 
-	cached, err := internal.getInstance(ctx, tx, instance)
+	cached, err := internal.getInstance(tctx, instance)
 	if err != nil {
 		return err
 	}
@@ -566,7 +567,7 @@ func (internal *internal) SetThreadVariableParcels(srv grpc.Internal_SetThreadVa
 	var vdata *ent.VarData
 	var newVar bool
 
-	vdata, newVar, err = internal.flow.SetVariable(ctx, tx, &entInstanceVarQuerier{clients: internal.edb.Clients(tx), cached: cached}, key, buf.Bytes(), mimeType, true)
+	vdata, newVar, err = internal.flow.SetVariable(tctx, &entInstanceVarQuerier{clients: internal.edb.Clients(tctx), cached: cached}, key, buf.Bytes(), mimeType, true)
 	if err != nil {
 		return err
 	}
@@ -661,13 +662,13 @@ func (internal *internal) SetInstanceVariableParcels(srv grpc.Internal_SetInstan
 		return errors.New("received more data than expected")
 	}
 
-	tx, err := internal.database.Tx(ctx)
+	tctx, tx, err := internal.database.Tx(ctx)
 	if err != nil {
 		return err
 	}
 	defer rollback(tx)
 
-	cached, err := internal.getInstance(ctx, tx, instance)
+	cached, err := internal.getInstance(tctx, instance)
 	if err != nil {
 		return err
 	}
@@ -675,7 +676,7 @@ func (internal *internal) SetInstanceVariableParcels(srv grpc.Internal_SetInstan
 	var vdata *ent.VarData
 	var newVar bool
 
-	vdata, newVar, err = internal.flow.SetVariable(ctx, tx, &entInstanceVarQuerier{clients: internal.edb.Clients(tx), cached: cached}, key, buf.Bytes(), mimeType, false)
+	vdata, newVar, err = internal.flow.SetVariable(tctx, &entInstanceVarQuerier{clients: internal.edb.Clients(tctx), cached: cached}, key, buf.Bytes(), mimeType, false)
 	if err != nil {
 		return err
 	}
@@ -771,13 +772,13 @@ func (flow *flow) SetInstanceVariableParcels(srv grpc.Flow_SetInstanceVariablePa
 		return errors.New("received more data than expected")
 	}
 
-	tx, err := flow.database.Tx(ctx)
+	tctx, tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return err
 	}
 	defer rollback(tx)
 
-	cached, err := flow.getInstance(ctx, tx, namespace, instance)
+	cached, err := flow.getInstance(tctx, namespace, instance)
 	if err != nil {
 		return err
 	}
@@ -785,7 +786,7 @@ func (flow *flow) SetInstanceVariableParcels(srv grpc.Flow_SetInstanceVariablePa
 	var vdata *ent.VarData
 	var newVar bool
 
-	vdata, newVar, err = flow.SetVariable(ctx, tx, &entInstanceVarQuerier{clients: flow.edb.Clients(tx), cached: cached}, key, req.GetData(), mimeType, false)
+	vdata, newVar, err = flow.SetVariable(tctx, &entInstanceVarQuerier{clients: flow.edb.Clients(tctx), cached: cached}, key, req.GetData(), mimeType, false)
 	if err != nil {
 		return err
 	}
@@ -825,18 +826,18 @@ func (flow *flow) SetInstanceVariableParcels(srv grpc.Flow_SetInstanceVariablePa
 func (flow *flow) DeleteInstanceVariable(ctx context.Context, req *grpc.DeleteInstanceVariableRequest) (*emptypb.Empty, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tx, err := flow.database.Tx(ctx)
+	tctx, tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer rollback(tx)
 
-	cached, vref, vdata, err := flow.traverseToInstanceVariable(ctx, tx, req.GetNamespace(), req.GetInstance(), req.GetKey(), false)
+	cached, vref, vdata, err := flow.traverseToInstanceVariable(tctx, req.GetNamespace(), req.GetInstance(), req.GetKey(), false)
 	if err != nil {
 		return nil, err
 	}
 
-	clients := flow.edb.Clients(tx)
+	clients := flow.edb.Clients(tctx)
 
 	err = clients.VarRef.DeleteOneID(vref.ID).Exec(ctx)
 	if err != nil {
@@ -878,20 +879,20 @@ func (flow *flow) DeleteInstanceVariable(ctx context.Context, req *grpc.DeleteIn
 func (flow *flow) RenameInstanceVariable(ctx context.Context, req *grpc.RenameInstanceVariableRequest) (*grpc.RenameInstanceVariableResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tx, err := flow.database.Tx(ctx)
+	tctx, tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer rollback(tx)
 
-	cached, vref, vdata, err := flow.traverseToInstanceVariable(ctx, tx, req.GetNamespace(), req.GetInstance(), req.GetOld(), false)
+	cached, vref, vdata, err := flow.traverseToInstanceVariable(tctx, req.GetNamespace(), req.GetInstance(), req.GetOld(), false)
 	if err != nil {
 		return nil, err
 	}
 
-	clients := flow.edb.Clients(tx)
+	clients := flow.edb.Clients(tctx)
 
-	x, err := clients.VarRef.UpdateOneID(vref.ID).SetName(req.GetNew()).Save(ctx)
+	x, err := clients.VarRef.UpdateOneID(vref.ID).SetName(req.GetNew()).Save(tctx)
 	if err != nil {
 		return nil, err
 	}

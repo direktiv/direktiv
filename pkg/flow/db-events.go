@@ -17,8 +17,8 @@ import (
 	"github.com/google/uuid"
 )
 
-func (events *events) markEventAsProcessed(ctx context.Context, tx database.Transaction, eventID string) (*cloudevents.Event, error) {
-	clients := events.edb.Clients(tx)
+func (events *events) markEventAsProcessed(ctx context.Context, eventID string) (*cloudevents.Event, error) {
+	clients := events.edb.Clients(ctx)
 
 	e, err := clients.CloudEvents.Query().Where(entcev.EventId(eventID)).Only(ctx)
 	if err != nil {
@@ -39,8 +39,8 @@ func (events *events) markEventAsProcessed(ctx context.Context, tx database.Tran
 	return &ev, nil
 }
 
-func (events *events) getEarliestEvent(ctx context.Context, tx database.Transaction) (*ent.CloudEvents, error) {
-	clients := events.edb.Clients(tx)
+func (events *events) getEarliestEvent(ctx context.Context) (*ent.CloudEvents, error) {
+	clients := events.edb.Clients(ctx)
 
 	e, err := clients.CloudEvents.Query().
 		Where(entcev.Processed(false)).
@@ -54,14 +54,14 @@ func (events *events) getEarliestEvent(ctx context.Context, tx database.Transact
 	return e, nil
 }
 
-func (events *events) addEvent(ctx context.Context, tx database.Transaction, eventin *cloudevents.Event, ns *database.Namespace, delay int64) error {
+func (events *events) addEvent(ctx context.Context, eventin *cloudevents.Event, ns *database.Namespace, delay int64) error {
 	t := time.Now().Unix() + delay
 
 	processed := (delay == 0)
 
 	ev := *eventin
 
-	clients := events.edb.Clients(tx)
+	clients := events.edb.Clients(ctx)
 
 	_, err := clients.CloudEvents.
 		Create().
@@ -78,8 +78,8 @@ func (events *events) addEvent(ctx context.Context, tx database.Transaction, eve
 	return nil
 }
 
-func (events *events) deleteEventListeners(ctx context.Context, tx database.Transaction, cached *database.CacheData, id uuid.UUID) error {
-	clients := events.edb.Clients(tx)
+func (events *events) deleteEventListeners(ctx context.Context, cached *database.CacheData, id uuid.UUID) error {
+	clients := events.edb.Clients(ctx)
 
 	_, err := clients.Events.Delete().Where(entev.IDEQ(id)).Exec(ctx)
 	if err != nil {
@@ -91,8 +91,8 @@ func (events *events) deleteEventListeners(ctx context.Context, tx database.Tran
 	return nil
 }
 
-func (events *events) deleteWorkflowEventListeners(ctx context.Context, tx database.Transaction, cached *database.CacheData) error {
-	clients := events.edb.Clients(tx)
+func (events *events) deleteWorkflowEventListeners(ctx context.Context, cached *database.CacheData) error {
+	clients := events.edb.Clients(ctx)
 
 	_, err := clients.Events.Delete().Where(entev.HasWorkflowWith(entwf.ID(cached.Workflow.ID))).Exec(ctx)
 	if err != nil {
@@ -104,8 +104,8 @@ func (events *events) deleteWorkflowEventListeners(ctx context.Context, tx datab
 	return nil
 }
 
-func (events *events) deleteInstanceEventListeners(ctx context.Context, tx database.Transaction, cached *database.CacheData) error {
-	clients := events.edb.Clients(tx)
+func (events *events) deleteInstanceEventListeners(ctx context.Context, cached *database.CacheData) error {
+	clients := events.edb.Clients(ctx)
 
 	_, err := clients.Events.
 		Delete().
@@ -121,8 +121,8 @@ func (events *events) deleteInstanceEventListeners(ctx context.Context, tx datab
 }
 
 // called by add workflow, adds event listeners if required.
-func (events *events) processWorkflowEvents(ctx context.Context, tx database.Transaction, cached *database.CacheData, ms *muxStart) error {
-	err := events.deleteWorkflowEventListeners(ctx, tx, cached)
+func (events *events) processWorkflowEvents(ctx context.Context, cached *database.CacheData, ms *muxStart) error {
+	err := events.deleteWorkflowEventListeners(ctx, cached)
 	if err != nil {
 		return err
 	}
@@ -153,7 +153,7 @@ func (events *events) processWorkflowEvents(ctx context.Context, tx database.Tra
 			count = len(ms.Events)
 		}
 
-		clients := events.edb.Clients(tx)
+		clients := events.edb.Clients(ctx)
 
 		_, err = clients.Events.Create().
 			SetNamespaceID(cached.Namespace.ID).
@@ -174,18 +174,15 @@ func (events *events) processWorkflowEvents(ctx context.Context, tx database.Tra
 	return nil
 }
 
-func (events *events) updateInstanceEventListener(ctx context.Context, tx database.Transaction, id uuid.UUID, ev []map[string]interface{}) error {
-	clients := events.edb.Clients(tx)
+func (events *events) updateInstanceEventListener(ctx context.Context, id uuid.UUID, ev []map[string]interface{}) error {
+	clients := events.edb.Clients(ctx)
 
 	_, err := clients.Events.UpdateOneID(id).SetEvents(ev).Save(ctx)
 	return err
 }
 
 // called from workflow instances to create event listeners.
-func (events *events) addInstanceEventListener(ctx context.Context, tx database.Transaction,
-	cached *database.CacheData, sevents []*model.ConsumeEventDefinition, signature []byte, all bool,
-) error {
-	// add
+func (events *events) addInstanceEventListener(ctx context.Context, cached *database.CacheData, sevents []*model.ConsumeEventDefinition, signature []byte, all bool) error {
 	var ev []map[string]interface{}
 	for i, e := range sevents {
 		em := make(map[string]interface{})
@@ -208,7 +205,7 @@ func (events *events) addInstanceEventListener(ctx context.Context, tx database.
 		count = len(sevents)
 	}
 
-	clients := events.edb.Clients(tx)
+	clients := events.edb.Clients(ctx)
 
 	_, err := clients.Events.Create().
 		SetNamespaceID(cached.Namespace.ID).

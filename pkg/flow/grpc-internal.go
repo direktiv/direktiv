@@ -92,7 +92,7 @@ func (internal *internal) ActionLog(ctx context.Context, req *grpc.ActionLogRequ
 
 	t := time.Now()
 
-	cached, err := internal.getInstance(ctx, nil, req.GetInstanceId())
+	cached, err := internal.getInstance(ctx, req.GetInstanceId())
 	if err != nil {
 		internal.sugar.Error(err)
 		return nil, err

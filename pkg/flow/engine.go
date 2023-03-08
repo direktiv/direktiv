@@ -74,14 +74,44 @@ const (
 	apiCaller = "api"
 )
 
+func unmarshalInstanceInputData(input []byte) interface{} {
+	var inputData, stateData interface{}
+
+	err := json.Unmarshal(input, &inputData)
+	if err != nil {
+		inputData = base64.StdEncoding.EncodeToString(input)
+	}
+
+	if _, ok := inputData.(map[string]interface{}); ok {
+		stateData = inputData
+	} else {
+		stateData = map[string]interface{}{
+			"input": inputData,
+		}
+	}
+
+	return stateData
+}
+
+func marshalInstanceInputData(input []byte) string {
+	x := unmarshalInstanceInputData(input)
+
+	data, err := json.Marshal(x)
+	if err != nil {
+		panic(err)
+	}
+
+	return string(data)
+}
+
 func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*instanceMemory, error) {
-	tx, err := engine.database.Tx(ctx)
+	tctx, tx, err := engine.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer rollback(tx)
 
-	cached, err := engine.mux(ctx, tx, args.Namespace, args.Path, args.Ref)
+	cached, err := engine.mux(tctx, args.Namespace, args.Path, args.Ref)
 	if err != nil {
 		engine.sugar.Debugf("Failed to create new instance: %v", err)
 		if derrors.IsNotFound(err) {
@@ -112,14 +142,14 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 
 	data := marshalInstanceInputData(args.Input)
 
-	clients := engine.edb.Clients(tx)
+	clients := engine.edb.Clients(tctx)
 
-	rt, err := clients.InstanceRuntime.Create().SetInput(args.Input).SetData(data).SetMemory("null").SetCallerData(args.CallerData).Save(ctx)
+	rt, err := clients.InstanceRuntime.Create().SetInput(args.Input).SetData(data).SetMemory("null").SetCallerData(args.CallerData).Save(tctx)
 	if err != nil {
 		return nil, err
 	}
 
-	inst, err := clients.Instance.Create().SetNamespaceID(cached.Namespace.ID).SetWorkflowID(cached.Workflow.ID).SetRevisionID(cached.Revision.ID).SetRuntime(rt).SetStatus(util.InstanceStatusPending).SetInvoker(args.Caller).SetAs(util.SanitizeAsField(as)).Save(ctx)
+	inst, err := clients.Instance.Create().SetNamespaceID(cached.Namespace.ID).SetWorkflowID(cached.Workflow.ID).SetRevisionID(cached.Revision.ID).SetRuntime(rt).SetStatus(util.InstanceStatusPending).SetInvoker(args.Caller).SetAs(util.SanitizeAsField(as)).Save(tctx)
 	if err != nil {
 		return nil, err
 	}
@@ -182,7 +212,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 		return nil, err
 	}
 
-	im.tx = nil
+	// im.tx = nil
 
 	ctx, err = traceFullAddWorkflowInstance(ctx, im)
 	if err != nil {
@@ -641,12 +671,12 @@ func (engine *engine) subflowInvoke(ctx context.Context, caller *subflowCaller, 
 	args.CallerData = string(callerData)
 
 	pcached := new(database.CacheData)
-	err = engine.database.Instance(ctx, nil, pcached, caller.InstanceID)
+	err = engine.database.Instance(ctx, pcached, caller.InstanceID)
 	if err != nil {
 		return nil, derrors.NewInternalError(err)
 	}
 
-	threadVars, err := engine.database.ThreadVariables(ctx, nil, pcached.Instance.ID)
+	threadVars, err := engine.database.ThreadVariables(ctx, pcached.Instance.ID)
 	if err != nil {
 		return nil, derrors.NewInternalError(err)
 	}
@@ -664,7 +694,7 @@ func (engine *engine) subflowInvoke(ctx context.Context, caller *subflowCaller, 
 		return nil, err
 	}
 
-	clients := engine.edb.Clients(nil)
+	clients := engine.edb.Clients(context.Background())
 
 	for _, tv := range threadVars {
 		err = clients.VarRef.Create().SetBehaviour("thread").SetInstanceID(im.cached.Instance.ID).SetName(tv.Name).SetVardataID(tv.VarData).Exec(ctx)
@@ -1004,7 +1034,7 @@ func (engine *engine) EventsInvoke(workflowID string, events ...*cloudevents.Eve
 	}
 
 	cached := new(database.CacheData)
-	err = engine.database.Workflow(ctx, nil, cached, id)
+	err = engine.database.Workflow(ctx, cached, id)
 	if err != nil {
 		engine.sugar.Error(err)
 		return

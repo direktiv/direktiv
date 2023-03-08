@@ -14,6 +14,10 @@ import (
 	"github.com/senseyeio/duration"
 )
 
+const (
+	foreachMaxThreads = 3
+)
+
 func init() {
 	RegisterState(model.StateTypeForEach, ForEach)
 }
@@ -79,7 +83,7 @@ func (logic *forEachLogic) Run(ctx context.Context, wakedata []byte) (*Transitio
 
 	}
 
-	var children []ChildInfo
+	var children []*ChildInfo
 	err := logic.UnmarshalMemory(&children)
 	if err != nil {
 		return nil, derrors.NewInternalError(err)
@@ -129,12 +133,16 @@ func (logic *forEachLogic) scheduleFirstActions(ctx context.Context) (*Transitio
 
 	children := make([]*ChildInfo, 0)
 
-	for _, inputSource := range array {
-		child, err := logic.scheduleAction(ctx, inputSource, 0)
-		if err != nil {
-			return nil, err
+	for idx, inputSource := range array {
+		if idx < foreachMaxThreads {
+			child, err := logic.scheduleAction(ctx, inputSource, 0)
+			if err != nil {
+				return nil, err
+			}
+			children = append(children, child)
+		} else {
+			children = append(children, nil)
 		}
-		children = append(children, child)
 	}
 
 	err = logic.SetMemory(ctx, children)
@@ -224,7 +232,7 @@ func (logic *forEachLogic) scheduleRetryAction(ctx context.Context, retry *actio
 	return nil
 }
 
-func (logic *forEachLogic) processActionResults(ctx context.Context, children []ChildInfo, results *actionResultPayload) (*Transition, error) {
+func (logic *forEachLogic) processActionResults(ctx context.Context, children []*ChildInfo, results *actionResultPayload) (*Transition, error) {
 	var err error
 
 	var found bool
@@ -232,6 +240,10 @@ func (logic *forEachLogic) processActionResults(ctx context.Context, children []
 	var completed int
 
 	for i, lid := range children {
+
+		if lid == nil {
+			continue
+		}
 
 		if lid.ID == results.ActionID {
 			found = true
@@ -317,6 +329,35 @@ func (logic *forEachLogic) processActionResults(ctx context.Context, children []
 			NextState: logic.Transition,
 		}, nil
 
+	}
+
+	idx = -1
+	var ci *ChildInfo
+	for i, child := range children {
+		if child == nil {
+			idx = i
+
+			x, err := jqOne(logic.GetInstanceData(), logic.Array)
+			if err != nil {
+				return nil, err
+			}
+
+			var array []interface{}
+			array, ok := x.([]interface{})
+			if !ok {
+				return nil, derrors.NewCatchableError(ErrCodeNotArray, "jq produced non-array output")
+			}
+
+			ci, err = logic.scheduleAction(ctx, array[idx], 0)
+			if err != nil {
+				return nil, err
+			}
+
+			break
+		}
+	}
+	if idx >= 0 {
+		children[idx] = ci
 	}
 
 	err = logic.SetMemory(ctx, children)

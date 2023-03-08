@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/functions"
 	"github.com/direktiv/direktiv/pkg/model"
@@ -13,7 +14,7 @@ import (
 func (flow *flow) functionsHeartbeat() {
 	ctx := context.Background()
 
-	clients := flow.edb.Clients(nil)
+	clients := flow.edb.Clients(ctx)
 
 	nss, err := clients.Namespace.Query().All(ctx)
 	if err != nil {
@@ -35,7 +36,7 @@ func (flow *flow) functionsHeartbeat() {
 			checksums := make(map[string]bool)
 
 			cached := new(database.CacheData)
-			err = flow.database.Workflow(ctx, nil, cached, wf.ID)
+			err = flow.database.Workflow(ctx, cached, wf.ID)
 			if err != nil {
 				flow.sugar.Error(err)
 				continue
@@ -87,7 +88,7 @@ func (flow *flow) functionsHeartbeat() {
 						FunctionDefinition: def,
 					}
 
-					csum := checksum(tuple)
+					csum := bytedata.Checksum(tuple)
 
 					if _, exists := checksums[csum]; !exists {
 						checksums[csum] = true
@@ -114,7 +115,7 @@ func (flow *flow) flushHeartbeatTuples(tuples []*functions.HeartbeatTuple) {
 		return
 	}
 
-	msg := marshal(tuples)
+	msg := bytedata.Marshal(tuples)
 
 	if len(msg) > heartbeatMessageLimit {
 

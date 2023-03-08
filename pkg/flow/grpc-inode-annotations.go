@@ -6,6 +6,7 @@ import (
 	"errors"
 	"io"
 
+	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entnote "github.com/direktiv/direktiv/pkg/flow/ent/annotation"
@@ -17,20 +18,20 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func (flow *flow) traverseToInodeAnnotation(ctx context.Context, tx database.Transaction, namespace, path, key string) (*database.CacheData, *database.Annotation, error) {
+func (flow *flow) traverseToInodeAnnotation(ctx context.Context, namespace, path, key string) (*database.CacheData, *database.Annotation, error) {
 	cached := new(database.CacheData)
 
-	err := flow.database.NamespaceByName(ctx, tx, cached, namespace)
+	err := flow.database.NamespaceByName(ctx, cached, namespace)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	err = flow.database.InodeByPath(ctx, tx, cached, path)
+	err = flow.database.InodeByPath(ctx, cached, path)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	annotation, err := flow.database.InodeAnnotation(ctx, tx, cached.Inode().ID, key)
+	annotation, err := flow.database.InodeAnnotation(ctx, cached.Inode().ID, key)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -41,7 +42,7 @@ func (flow *flow) traverseToInodeAnnotation(ctx context.Context, tx database.Tra
 func (flow *flow) NodeAnnotation(ctx context.Context, req *grpc.NodeAnnotationRequest) (*grpc.NodeAnnotationResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	cached, annotation, err := flow.traverseToInodeAnnotation(ctx, nil, req.GetNamespace(), req.GetPath(), req.GetKey())
+	cached, annotation, err := flow.traverseToInodeAnnotation(ctx, req.GetNamespace(), req.GetPath(), req.GetKey())
 	if err != nil {
 		return nil, err
 	}
@@ -71,7 +72,7 @@ func (flow *flow) NodeAnnotationParcels(req *grpc.NodeAnnotationRequest, srv grp
 
 	ctx := srv.Context()
 
-	cached, annotation, err := flow.traverseToInodeAnnotation(ctx, nil, req.GetNamespace(), req.GetPath(), req.GetKey())
+	cached, annotation, err := flow.traverseToInodeAnnotation(ctx, req.GetNamespace(), req.GetPath(), req.GetKey())
 	if err != nil {
 		return err
 	}
@@ -129,12 +130,12 @@ func (flow *flow) NodeAnnotationParcels(req *grpc.NodeAnnotationRequest, srv grp
 func (flow *flow) NodeAnnotations(ctx context.Context, req *grpc.NodeAnnotationsRequest) (*grpc.NodeAnnotationsResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	cached, err := flow.traverseToInode(ctx, nil, req.GetNamespace(), req.GetPath())
+	cached, err := flow.traverseToInode(ctx, req.GetNamespace(), req.GetPath())
 	if err != nil {
 		return nil, err
 	}
 
-	clients := flow.edb.Clients(nil)
+	clients := flow.edb.Clients(ctx)
 
 	query := clients.Annotation.Query().Where(entnote.HasInodeWith(entino.ID(cached.Inode().ID)))
 
@@ -148,7 +149,7 @@ func (flow *flow) NodeAnnotations(ctx context.Context, req *grpc.NodeAnnotations
 	resp.Annotations = new(grpc.Annotations)
 	resp.Annotations.PageInfo = pi
 
-	err = atob(results, &resp.Annotations.Results)
+	err = bytedata.ConvertDataForOutput(results, &resp.Annotations.Results)
 	if err != nil {
 		return nil, err
 	}
@@ -163,7 +164,7 @@ func (flow *flow) NodeAnnotationsStream(req *grpc.NodeAnnotationsRequest, srv gr
 	phash := ""
 	nhash := ""
 
-	cached, err := flow.traverseToInode(ctx, nil, req.GetNamespace(), req.GetPath())
+	cached, err := flow.traverseToInode(ctx, req.GetNamespace(), req.GetPath())
 	if err != nil {
 		return err
 	}
@@ -173,7 +174,7 @@ func (flow *flow) NodeAnnotationsStream(req *grpc.NodeAnnotationsRequest, srv gr
 
 resend:
 
-	clients := flow.edb.Clients(nil)
+	clients := flow.edb.Clients(ctx)
 
 	query := clients.Annotation.Query().Where(entnote.HasInodeWith(entino.ID(cached.Inode().ID)))
 
@@ -187,12 +188,12 @@ resend:
 	resp.Annotations = new(grpc.Annotations)
 	resp.Annotations.PageInfo = pi
 
-	err = atob(results, &resp.Annotations.Results)
+	err = bytedata.ConvertDataForOutput(results, &resp.Annotations.Results)
 	if err != nil {
 		return err
 	}
 
-	nhash = checksum(resp)
+	nhash = bytedata.Checksum(resp)
 	if nhash != phash {
 		err = srv.Send(resp)
 		if err != nil {
@@ -212,13 +213,13 @@ resend:
 func (flow *flow) SetNodeAnnotation(ctx context.Context, req *grpc.SetNodeAnnotationRequest) (*grpc.SetNodeAnnotationResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tx, err := flow.database.Tx(ctx)
+	tctx, tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer rollback(tx)
 
-	cached, err := flow.traverseToInode(ctx, tx, req.GetNamespace(), req.GetPath())
+	cached, err := flow.traverseToInode(tctx, req.GetNamespace(), req.GetPath())
 	if err != nil {
 		return nil, err
 	}
@@ -227,7 +228,7 @@ func (flow *flow) SetNodeAnnotation(ctx context.Context, req *grpc.SetNodeAnnota
 
 	key := req.GetKey()
 
-	annotation, _, err = flow.SetAnnotation(ctx, tx, &entInodeAnnotationQuerier{clients: flow.edb.Clients(tx), cached: cached}, key, req.GetMimeType(), req.GetData())
+	annotation, _, err = flow.SetAnnotation(tctx, &entInodeAnnotationQuerier{clients: flow.edb.Clients(tctx), cached: cached}, key, req.GetMimeType(), req.GetData())
 	if err != nil {
 		return nil, err
 	}
@@ -312,20 +313,20 @@ func (flow *flow) SetNodeAnnotationParcels(srv grpc.Flow_SetNodeAnnotationParcel
 		return errors.New("received more data than expected")
 	}
 
-	tx, err := flow.database.Tx(ctx)
+	tctx, tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return err
 	}
 	defer rollback(tx)
 
-	cached, err := flow.traverseToInode(ctx, tx, namespace, path)
+	cached, err := flow.traverseToInode(tctx, namespace, path)
 	if err != nil {
 		return err
 	}
 
 	var annotation *ent.Annotation
 
-	annotation, _, err = flow.SetAnnotation(ctx, tx, &entInodeAnnotationQuerier{clients: flow.edb.Clients(tx), cached: cached}, key, req.GetMimeType(), buf.Bytes())
+	annotation, _, err = flow.SetAnnotation(tctx, &entInodeAnnotationQuerier{clients: flow.edb.Clients(tctx), cached: cached}, key, req.GetMimeType(), buf.Bytes())
 	if err != nil {
 		return err
 	}
@@ -359,20 +360,20 @@ func (flow *flow) SetNodeAnnotationParcels(srv grpc.Flow_SetNodeAnnotationParcel
 func (flow *flow) DeleteNodeAnnotation(ctx context.Context, req *grpc.DeleteNodeAnnotationRequest) (*emptypb.Empty, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tx, err := flow.database.Tx(ctx)
+	tctx, tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer rollback(tx)
 
-	cached, annotation, err := flow.traverseToInodeAnnotation(ctx, tx, req.GetNamespace(), req.GetPath(), req.GetKey())
+	cached, annotation, err := flow.traverseToInodeAnnotation(tctx, req.GetNamespace(), req.GetPath(), req.GetKey())
 	if err != nil {
 		return nil, err
 	}
 
-	clients := flow.edb.Clients(tx)
+	clients := flow.edb.Clients(tctx)
 
-	err = clients.Annotation.DeleteOneID(annotation.ID).Exec(ctx)
+	err = clients.Annotation.DeleteOneID(annotation.ID).Exec(tctx)
 	if err != nil {
 		return nil, err
 	}
@@ -392,20 +393,20 @@ func (flow *flow) DeleteNodeAnnotation(ctx context.Context, req *grpc.DeleteNode
 func (flow *flow) RenameNodeAnnotation(ctx context.Context, req *grpc.RenameNodeAnnotationRequest) (*grpc.RenameNodeAnnotationResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tx, err := flow.database.Tx(ctx)
+	tctx, tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer rollback(tx)
 
-	cached, annotation, err := flow.traverseToInodeAnnotation(ctx, tx, req.GetNamespace(), req.GetPath(), req.GetOld())
+	cached, annotation, err := flow.traverseToInodeAnnotation(tctx, req.GetNamespace(), req.GetPath(), req.GetOld())
 	if err != nil {
 		return nil, err
 	}
 
-	clients := flow.edb.Clients(tx)
+	clients := flow.edb.Clients(tctx)
 
-	anno, err := clients.Annotation.UpdateOneID(annotation.ID).SetName(req.GetNew()).Save(ctx)
+	anno, err := clients.Annotation.UpdateOneID(annotation.ID).SetName(req.GetNew()).Save(tctx)
 	if err != nil {
 		return nil, err
 	}

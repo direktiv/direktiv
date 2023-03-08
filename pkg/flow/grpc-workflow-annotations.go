@@ -7,6 +7,7 @@ import (
 	"io"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entnote "github.com/direktiv/direktiv/pkg/flow/ent/annotation"
@@ -18,13 +19,13 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func (flow *flow) traverseToWorkflowAnnotation(ctx context.Context, tx database.Transaction, namespace, path, key string) (*database.CacheData, *database.Annotation, error) {
-	cached, err := flow.traverseToWorkflow(ctx, tx, namespace, path)
+func (flow *flow) traverseToWorkflowAnnotation(ctx context.Context, namespace, path, key string) (*database.CacheData, *database.Annotation, error) {
+	cached, err := flow.traverseToWorkflow(ctx, namespace, path)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	annotation, err := flow.database.WorkflowAnnotation(ctx, tx, cached.Workflow.ID, key)
+	annotation, err := flow.database.WorkflowAnnotation(ctx, cached.Workflow.ID, key)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -35,7 +36,7 @@ func (flow *flow) traverseToWorkflowAnnotation(ctx context.Context, tx database.
 func (flow *flow) WorkflowAnnotation(ctx context.Context, req *grpc.WorkflowAnnotationRequest) (*grpc.WorkflowAnnotationResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	cached, annotation, err := flow.traverseToWorkflowAnnotation(ctx, nil, req.GetNamespace(), req.GetPath(), req.GetKey())
+	cached, annotation, err := flow.traverseToWorkflowAnnotation(ctx, req.GetNamespace(), req.GetPath(), req.GetKey())
 	if err != nil {
 		return nil, err
 	}
@@ -65,7 +66,7 @@ func (flow *flow) WorkflowAnnotationParcels(req *grpc.WorkflowAnnotationRequest,
 
 	ctx := srv.Context()
 
-	cached, annotation, err := flow.traverseToWorkflowAnnotation(ctx, nil, req.GetNamespace(), req.GetPath(), req.GetKey())
+	cached, annotation, err := flow.traverseToWorkflowAnnotation(ctx, req.GetNamespace(), req.GetPath(), req.GetKey())
 	if err != nil {
 		return err
 	}
@@ -123,12 +124,12 @@ func (flow *flow) WorkflowAnnotationParcels(req *grpc.WorkflowAnnotationRequest,
 func (flow *flow) WorkflowAnnotations(ctx context.Context, req *grpc.WorkflowAnnotationsRequest) (*grpc.WorkflowAnnotationsResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	cached, err := flow.traverseToWorkflow(ctx, nil, req.GetNamespace(), req.GetPath())
+	cached, err := flow.traverseToWorkflow(ctx, req.GetNamespace(), req.GetPath())
 	if err != nil {
 		return nil, err
 	}
 
-	clients := flow.edb.Clients(nil)
+	clients := flow.edb.Clients(ctx)
 
 	query := clients.Annotation.Query().Where(entnote.HasWorkflowWith(entwf.ID(cached.Workflow.ID)))
 
@@ -142,7 +143,7 @@ func (flow *flow) WorkflowAnnotations(ctx context.Context, req *grpc.WorkflowAnn
 	resp.Annotations = new(grpc.Annotations)
 	resp.Annotations.PageInfo = pi
 
-	err = atob(results, &resp.Annotations.Results)
+	err = bytedata.ConvertDataForOutput(results, &resp.Annotations.Results)
 	if err != nil {
 		return nil, err
 	}
@@ -157,7 +158,7 @@ func (flow *flow) WorkflowAnnotationsStream(req *grpc.WorkflowAnnotationsRequest
 	phash := ""
 	nhash := ""
 
-	cached, err := flow.traverseToWorkflow(ctx, nil, req.GetNamespace(), req.GetPath())
+	cached, err := flow.traverseToWorkflow(ctx, req.GetNamespace(), req.GetPath())
 	if err != nil {
 		return err
 	}
@@ -167,7 +168,7 @@ func (flow *flow) WorkflowAnnotationsStream(req *grpc.WorkflowAnnotationsRequest
 
 resend:
 
-	clients := flow.edb.Clients(nil)
+	clients := flow.edb.Clients(ctx)
 
 	query := clients.Annotation.Query().Where(entnote.HasWorkflowWith(entwf.ID(cached.Workflow.ID)))
 
@@ -181,12 +182,12 @@ resend:
 	resp.Annotations = new(grpc.Annotations)
 	resp.Annotations.PageInfo = pi
 
-	err = atob(results, &resp.Annotations.Results)
+	err = bytedata.ConvertDataForOutput(results, &resp.Annotations.Results)
 	if err != nil {
 		return err
 	}
 
-	nhash = checksum(resp)
+	nhash = bytedata.Checksum(resp)
 	if nhash != phash {
 		err = srv.Send(resp)
 		if err != nil {
@@ -206,13 +207,13 @@ resend:
 func (flow *flow) SetWorkflowAnnotation(ctx context.Context, req *grpc.SetWorkflowAnnotationRequest) (*grpc.SetWorkflowAnnotationResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tx, err := flow.database.Tx(ctx)
+	tctx, tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer rollback(tx)
 
-	cached, err := flow.traverseToWorkflow(ctx, tx, req.GetNamespace(), req.GetPath())
+	cached, err := flow.traverseToWorkflow(tctx, req.GetNamespace(), req.GetPath())
 	if err != nil {
 		return nil, err
 	}
@@ -222,7 +223,7 @@ func (flow *flow) SetWorkflowAnnotation(ctx context.Context, req *grpc.SetWorkfl
 	key := req.GetKey()
 
 	var newVar bool
-	annotation, newVar, err = flow.SetAnnotation(ctx, tx, &entWorkflowAnnotationQuerier{clients: flow.edb.Clients(tx), cached: cached}, key, req.GetMimeType(), req.GetData())
+	annotation, newVar, err = flow.SetAnnotation(tctx, &entWorkflowAnnotationQuerier{clients: flow.edb.Clients(tctx), cached: cached}, key, req.GetMimeType(), req.GetData())
 	if err != nil {
 		return nil, err
 	}
@@ -313,13 +314,13 @@ func (flow *flow) SetWorkflowAnnotationParcels(srv grpc.Flow_SetWorkflowAnnotati
 		return errors.New("received more data than expected")
 	}
 
-	tx, err := flow.database.Tx(ctx)
+	tctx, tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return err
 	}
 	defer rollback(tx)
 
-	cached, err := flow.traverseToWorkflow(ctx, tx, namespace, path)
+	cached, err := flow.traverseToWorkflow(tctx, namespace, path)
 	if err != nil {
 		return err
 	}
@@ -327,7 +328,7 @@ func (flow *flow) SetWorkflowAnnotationParcels(srv grpc.Flow_SetWorkflowAnnotati
 	var annotation *ent.Annotation
 
 	var newVar bool
-	annotation, newVar, err = flow.SetAnnotation(ctx, tx, &entWorkflowAnnotationQuerier{clients: flow.edb.Clients(tx), cached: cached}, key, req.GetMimeType(), buf.Bytes())
+	annotation, newVar, err = flow.SetAnnotation(tctx, &entWorkflowAnnotationQuerier{clients: flow.edb.Clients(tctx), cached: cached}, key, req.GetMimeType(), buf.Bytes())
 	if err != nil {
 		return err
 	}
@@ -367,18 +368,18 @@ func (flow *flow) SetWorkflowAnnotationParcels(srv grpc.Flow_SetWorkflowAnnotati
 func (flow *flow) DeleteWorkflowAnnotation(ctx context.Context, req *grpc.DeleteWorkflowAnnotationRequest) (*emptypb.Empty, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tx, err := flow.database.Tx(ctx)
+	tctx, tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer rollback(tx)
 
-	cached, annotation, err := flow.traverseToWorkflowAnnotation(ctx, tx, req.GetNamespace(), req.GetPath(), req.GetKey())
+	cached, annotation, err := flow.traverseToWorkflowAnnotation(tctx, req.GetNamespace(), req.GetPath(), req.GetKey())
 	if err != nil {
 		return nil, err
 	}
 
-	clients := flow.edb.Clients(tx)
+	clients := flow.edb.Clients(tctx)
 
 	err = clients.Annotation.DeleteOneID(annotation.ID).Exec(ctx)
 	if err != nil {
@@ -401,18 +402,18 @@ func (flow *flow) DeleteWorkflowAnnotation(ctx context.Context, req *grpc.Delete
 func (flow *flow) RenameWorkflowAnnotation(ctx context.Context, req *grpc.RenameWorkflowAnnotationRequest) (*grpc.RenameWorkflowAnnotationResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tx, err := flow.database.Tx(ctx)
+	tctx, tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer rollback(tx)
 
-	cached, annotation, err := flow.traverseToWorkflowAnnotation(ctx, tx, req.GetNamespace(), req.GetPath(), req.GetOld())
+	cached, annotation, err := flow.traverseToWorkflowAnnotation(tctx, req.GetNamespace(), req.GetPath(), req.GetOld())
 	if err != nil {
 		return nil, err
 	}
 
-	clients := flow.edb.Clients(tx)
+	clients := flow.edb.Clients(tctx)
 
 	x, err := clients.Annotation.UpdateOneID(annotation.ID).SetName(req.GetNew()).Save(ctx)
 	if err != nil {

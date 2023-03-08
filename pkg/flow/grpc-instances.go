@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
@@ -18,7 +19,7 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-func (srv *server) getInstance(ctx context.Context, tx database.Transaction, namespace, instanceID string) (*database.CacheData, error) {
+func (srv *server) getInstance(ctx context.Context, namespace, instanceID string) (*database.CacheData, error) {
 	id, err := uuid.Parse(instanceID)
 	if err != nil {
 		return nil, err
@@ -26,7 +27,7 @@ func (srv *server) getInstance(ctx context.Context, tx database.Transaction, nam
 
 	cached := new(database.CacheData)
 
-	err = srv.database.Instance(ctx, nil, cached, id)
+	err = srv.database.Instance(ctx, cached, id)
 	if err != nil {
 		return nil, err
 	}
@@ -38,7 +39,7 @@ func (srv *server) getInstance(ctx context.Context, tx database.Transaction, nam
 	return cached, nil
 }
 
-func (internal *internal) getInstance(ctx context.Context, tx database.Transaction, instanceID string) (*database.CacheData, error) {
+func (internal *internal) getInstance(ctx context.Context, instanceID string) (*database.CacheData, error) {
 	id, err := uuid.Parse(instanceID)
 	if err != nil {
 		return nil, err
@@ -46,7 +47,7 @@ func (internal *internal) getInstance(ctx context.Context, tx database.Transacti
 
 	cached := new(database.CacheData)
 
-	err = internal.database.Instance(ctx, nil, cached, id)
+	err = internal.database.Instance(ctx, cached, id)
 	if err != nil {
 		return nil, err
 	}
@@ -54,13 +55,13 @@ func (internal *internal) getInstance(ctx context.Context, tx database.Transacti
 	return cached, nil
 }
 
-func (srv *server) getInstanceRuntime(ctx context.Context, tx database.Transaction, namespace, instanceID string) (*database.CacheData, *database.InstanceRuntime, error) {
-	cached, err := srv.getInstance(ctx, tx, namespace, instanceID)
+func (srv *server) getInstanceRuntime(ctx context.Context, namespace, instanceID string) (*database.CacheData, *database.InstanceRuntime, error) {
+	cached, err := srv.getInstance(ctx, namespace, instanceID)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	rt, err := srv.database.InstanceRuntime(ctx, tx, cached.Instance.Runtime)
+	rt, err := srv.database.InstanceRuntime(ctx, cached.Instance.Runtime)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -71,14 +72,14 @@ func (srv *server) getInstanceRuntime(ctx context.Context, tx database.Transacti
 func (flow *flow) InstanceInput(ctx context.Context, req *grpc.InstanceInputRequest) (*grpc.InstanceInputResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	cached, rt, err := flow.getInstanceRuntime(ctx, nil, req.GetNamespace(), req.GetInstance())
+	cached, rt, err := flow.getInstanceRuntime(ctx, req.GetNamespace(), req.GetInstance())
 	if err != nil {
 		return nil, err
 	}
 
 	var resp grpc.InstanceInputResponse
 
-	err = atob(cached.Instance, &resp.Instance)
+	err = bytedata.ConvertDataForOutput(cached.Instance, &resp.Instance)
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +90,7 @@ func (flow *flow) InstanceInput(ctx context.Context, req *grpc.InstanceInputRequ
 		return nil, err
 	}
 	delete(m, "private")
-	input := marshal(m)
+	input := bytedata.Marshal(m)
 
 	resp.Data = []byte(input)
 	resp.Namespace = cached.Namespace.Name
@@ -100,14 +101,14 @@ func (flow *flow) InstanceInput(ctx context.Context, req *grpc.InstanceInputRequ
 func (flow *flow) InstanceOutput(ctx context.Context, req *grpc.InstanceOutputRequest) (*grpc.InstanceOutputResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	cached, rt, err := flow.getInstanceRuntime(ctx, nil, req.GetNamespace(), req.GetInstance())
+	cached, rt, err := flow.getInstanceRuntime(ctx, req.GetNamespace(), req.GetInstance())
 	if err != nil {
 		return nil, err
 	}
 
 	var resp grpc.InstanceOutputResponse
 
-	err = atob(cached.Instance, &resp.Instance)
+	err = bytedata.ConvertDataForOutput(cached.Instance, &resp.Instance)
 	if err != nil {
 		return nil, err
 	}
@@ -118,7 +119,7 @@ func (flow *flow) InstanceOutput(ctx context.Context, req *grpc.InstanceOutputRe
 		return nil, err
 	}
 	delete(m, "private")
-	output := marshal(m)
+	output := bytedata.Marshal(m)
 
 	resp.Data = []byte(output)
 	resp.Namespace = cached.Namespace.Name
@@ -129,14 +130,14 @@ func (flow *flow) InstanceOutput(ctx context.Context, req *grpc.InstanceOutputRe
 func (flow *flow) InstanceMetadata(ctx context.Context, req *grpc.InstanceMetadataRequest) (*grpc.InstanceMetadataResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	cached, rt, err := flow.getInstanceRuntime(ctx, nil, req.GetNamespace(), req.GetInstance())
+	cached, rt, err := flow.getInstanceRuntime(ctx, req.GetNamespace(), req.GetInstance())
 	if err != nil {
 		return nil, err
 	}
 
 	var resp grpc.InstanceMetadataResponse
 
-	err = atob(cached.Instance, &resp.Instance)
+	err = bytedata.ConvertDataForOutput(cached.Instance, &resp.Instance)
 	if err != nil {
 		return nil, err
 	}
@@ -152,12 +153,12 @@ func (flow *flow) Instances(ctx context.Context, req *grpc.InstancesRequest) (*g
 
 	cached := new(database.CacheData)
 
-	err := flow.database.NamespaceByName(ctx, nil, cached, req.GetNamespace())
+	err := flow.database.NamespaceByName(ctx, cached, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
 
-	clients := flow.edb.Clients(nil)
+	clients := flow.edb.Clients(ctx)
 
 	query := clients.Instance.Query().Where(entinst.HasNamespaceWith(entns.ID(cached.Namespace.ID)))
 
@@ -171,7 +172,7 @@ func (flow *flow) Instances(ctx context.Context, req *grpc.InstancesRequest) (*g
 	resp.Instances = new(grpc.Instances)
 	resp.Instances.PageInfo = pi
 
-	err = atob(results, &resp.Instances.Results)
+	err = bytedata.ConvertDataForOutput(results, &resp.Instances.Results)
 	if err != nil {
 		return nil, err
 	}
@@ -188,7 +189,7 @@ func (flow *flow) InstancesStream(req *grpc.InstancesRequest, srv grpc.Flow_Inst
 
 	cached := new(database.CacheData)
 
-	err := flow.database.NamespaceByName(ctx, nil, cached, req.GetNamespace())
+	err := flow.database.NamespaceByName(ctx, cached, req.GetNamespace())
 	if err != nil {
 		return err
 	}
@@ -198,7 +199,7 @@ func (flow *flow) InstancesStream(req *grpc.InstancesRequest, srv grpc.Flow_Inst
 
 resend:
 
-	clients := flow.edb.Clients(nil)
+	clients := flow.edb.Clients(ctx)
 
 	query := clients.Instance.Query().Where(entinst.HasNamespaceWith(entns.ID(cached.Namespace.ID)))
 
@@ -212,12 +213,12 @@ resend:
 	resp.Instances = new(grpc.Instances)
 	resp.Instances.PageInfo = pi
 
-	err = atob(results, &resp.Instances.Results)
+	err = bytedata.ConvertDataForOutput(results, &resp.Instances.Results)
 	if err != nil {
 		return err
 	}
 
-	nhash = checksum(resp)
+	nhash = bytedata.Checksum(resp)
 	if nhash != phash {
 		err = srv.Send(resp)
 		if err != nil {
@@ -237,14 +238,14 @@ resend:
 func (flow *flow) Instance(ctx context.Context, req *grpc.InstanceRequest) (*grpc.InstanceResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	cached, rt, err := flow.getInstanceRuntime(ctx, nil, req.GetNamespace(), req.GetInstance())
+	cached, rt, err := flow.getInstanceRuntime(ctx, req.GetNamespace(), req.GetInstance())
 	if err != nil {
 		return nil, err
 	}
 
 	var resp grpc.InstanceResponse
 
-	err = atob(cached.Instance, &resp.Instance)
+	err = bytedata.ConvertDataForOutput(cached.Instance, &resp.Instance)
 	if err != nil {
 		return nil, err
 	}
@@ -279,7 +280,7 @@ func (flow *flow) InstanceStream(req *grpc.InstanceRequest, srv grpc.Flow_Instan
 
 resend:
 
-	cached, rt, err := flow.getInstanceRuntime(ctx, nil, req.GetNamespace(), req.GetInstance())
+	cached, rt, err := flow.getInstanceRuntime(ctx, req.GetNamespace(), req.GetInstance())
 	if err != nil {
 		return err
 	}
@@ -292,7 +293,7 @@ resend:
 
 	resp := new(grpc.InstanceResponse)
 
-	err = atob(cached.Instance, &resp.Instance)
+	err = bytedata.ConvertDataForOutput(cached.Instance, &resp.Instance)
 	if err != nil {
 		return err
 	}
@@ -311,7 +312,7 @@ resend:
 	}
 	resp.Workflow = rwf
 
-	nhash = checksum(resp)
+	nhash = bytedata.Checksum(resp)
 	if nhash != phash {
 		err = srv.Send(resp)
 		if err != nil {
@@ -359,7 +360,7 @@ func (flow *flow) StartWorkflow(ctx context.Context, req *grpc.StartWorkflowRequ
 func (flow *flow) ReleaseInstance(ctx context.Context, req *grpc.ReleaseInstanceRequest) (*grpc.ReleaseInstanceResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	im, err := flow.engine.getInstanceMemory(ctx, nil, req.GetInstance())
+	im, err := flow.engine.getInstanceMemory(ctx, req.GetInstance())
 	if err != nil {
 		return nil, err
 	}
@@ -457,7 +458,7 @@ var instancesFilters = map[*filteringInfo]func(query *ent.InstanceQuery, v strin
 func (flow *flow) CancelInstance(ctx context.Context, req *grpc.CancelInstanceRequest) (*emptypb.Empty, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	cached, err := flow.getInstance(ctx, nil, req.GetNamespace(), req.GetInstance())
+	cached, err := flow.getInstance(ctx, req.GetNamespace(), req.GetInstance())
 	if err != nil {
 		return nil, err
 	}
@@ -499,20 +500,20 @@ func (flow *flow) AwaitWorkflow(req *grpc.AwaitWorkflowRequest, srv grpc.Flow_Aw
 resend:
 
 	if cached == nil {
-		cached, err = flow.getInstance(ctx, nil, req.GetNamespace(), im.cached.Instance.ID.String())
+		cached, err = flow.getInstance(ctx, req.GetNamespace(), im.cached.Instance.ID.String())
 		if err != nil {
 			return err
 		}
 	}
 
-	err = flow.database.Instance(ctx, nil, cached, cached.Instance.ID)
+	err = flow.database.Instance(ctx, cached, cached.Instance.ID)
 	if err != nil {
 		return err
 	}
 
 	resp := new(grpc.AwaitWorkflowResponse)
 
-	err = atob(cached.Instance, &resp.Instance)
+	err = bytedata.ConvertDataForOutput(cached.Instance, &resp.Instance)
 	if err != nil {
 		return err
 	}
@@ -526,14 +527,14 @@ resend:
 	resp.Workflow = rwf
 
 	if cached.Instance.Status == util.InstanceStatusComplete {
-		runtime, err := flow.database.InstanceRuntime(ctx, nil, cached.Instance.Runtime)
+		runtime, err := flow.database.InstanceRuntime(ctx, cached.Instance.Runtime)
 		if err != nil {
 			return err
 		}
 		resp.Data = []byte(runtime.Output)
 	}
 
-	nhash = checksum(resp)
+	nhash = bytedata.Checksum(resp)
 	if nhash != phash {
 		err = srv.Send(resp)
 		if err != nil {

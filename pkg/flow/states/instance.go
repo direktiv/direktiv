@@ -30,7 +30,7 @@ type Instance interface {
 	CreateChild(ctx context.Context, args CreateChildArgs) (Child, error)
 
 	Deadline(ctx context.Context) time.Time
-	LivingChildren(ctx context.Context) []ChildInfo
+	LivingChildren(ctx context.Context) []*ChildInfo
 }
 
 type Child interface {

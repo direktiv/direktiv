@@ -92,6 +92,9 @@ func RunApplication() {
 	}, generationUpgrader{
 		version: "0.7.1",
 		logic:   updateGeneration_0_7_1,
+	}, generationUpgrader{
+		version: "0.7.3",
+		logic:   updateGeneration_0_7_3,
 	})
 
 	for _, upgrader := range upgraders {
@@ -148,6 +151,12 @@ func RunApplication() {
 type generationUpgrader struct {
 	version string
 	logic   func(tx *sql.Tx) error
+}
+
+func updateGeneration_0_7_3(db *sql.Tx) error {
+	// old is id, name, data, new one has namespace
+	_, err := db.Exec("DROP INDEX services_name_key")
+	return err
 }
 
 func updateGeneration_0_7_1(db *sql.Tx) error {

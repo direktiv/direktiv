@@ -10,10 +10,10 @@ import (
 	"github.com/direktiv/direktiv/pkg/util"
 )
 
-func (engine *engine) Children(ctx context.Context, im *instanceMemory) ([]states.ChildInfo, error) {
+func (engine *engine) Children(ctx context.Context, im *instanceMemory) ([]*states.ChildInfo, error) {
 	var err error
 
-	var children []states.ChildInfo
+	var children []*states.ChildInfo
 	err = im.UnmarshalMemory(&children)
 	if err != nil {
 		return nil, err
@@ -32,6 +32,9 @@ func (engine *engine) LivingChildren(ctx context.Context, im *instanceMemory) []
 	}
 
 	for _, logic := range children {
+		if logic == nil {
+			continue
+		}
 		if logic.Complete {
 			continue
 		}
@@ -137,7 +140,7 @@ bad:
 }
 
 func (engine *engine) cancelRunning(id string) {
-	im, err := engine.getInstanceMemory(context.Background(), nil, id)
+	im, err := engine.getInstanceMemory(context.Background(), id)
 	if err == nil {
 		engine.timers.deleteTimerByName(im.Controller(), engine.pubsub.hostname, id)
 	}

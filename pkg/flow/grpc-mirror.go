@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
@@ -25,7 +26,7 @@ import (
 func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNamespaceMirrorRequest) (*grpc.CreateNamespaceResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tx, err := flow.database.Tx(ctx)
+	tctx, tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -35,7 +36,7 @@ func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNam
 	var mir *ent.Mirror
 	var ns *ent.Namespace
 
-	clients := flow.edb.Clients(tx)
+	clients := flow.edb.Clients(tctx)
 
 	settings := req.GetSettings()
 
@@ -43,7 +44,7 @@ func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNam
 
 		cached := new(database.CacheData)
 
-		err = flow.database.NamespaceByName(ctx, tx, cached, req.GetName())
+		err = flow.database.NamespaceByName(tctx, cached, req.GetName())
 		if err != nil {
 			rollback(tx)
 			goto respond
@@ -53,12 +54,12 @@ func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNam
 		}
 	}
 
-	ns, err = clients.Namespace.Create().SetName(req.GetName()).Save(ctx)
+	ns, err = clients.Namespace.Create().SetName(req.GetName()).Save(tctx)
 	if err != nil {
 		return nil, err
 	}
 
-	ino, err = clients.Inode.Create().SetNillableName(nil).SetType(util.InodeTypeDirectory).SetExtendedType(util.InodeTypeGit).SetReadOnly(true).SetNamespaceID(ns.ID).Save(ctx)
+	ino, err = clients.Inode.Create().SetNillableName(nil).SetType(util.InodeTypeDirectory).SetExtendedType(util.InodeTypeGit).SetReadOnly(true).SetNamespaceID(ns.ID).Save(tctx)
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +75,7 @@ func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNam
 		SetNillableLastSync(nil).
 		SetInode(ino).
 		SetNamespaceID(ns.ID).
-		Save(ctx)
+		Save(tctx)
 	if err != nil {
 		return nil, err
 	}
@@ -94,7 +95,7 @@ respond:
 
 	var resp grpc.CreateNamespaceResponse
 
-	err = atob(ns, &resp.Namespace)
+	err = bytedata.ConvertDataForOutput(ns, &resp.Namespace)
 	if err != nil {
 		return nil, err
 	}
@@ -105,7 +106,7 @@ respond:
 func (flow *flow) CreateDirectoryMirror(ctx context.Context, req *grpc.CreateDirectoryMirrorRequest) (*grpc.CreateDirectoryResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tx, err := flow.database.Tx(ctx)
+	tctx, tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -120,7 +121,7 @@ func (flow *flow) CreateDirectoryMirror(ctx context.Context, req *grpc.CreateDir
 		return nil, status.Error(codes.AlreadyExists, "root directory already exists")
 	}
 
-	cached, err := flow.traverseToInode(ctx, tx, namespace, dir)
+	cached, err := flow.traverseToInode(tctx, namespace, dir)
 	if err != nil {
 		return nil, err
 	}
@@ -136,9 +137,9 @@ func (flow *flow) CreateDirectoryMirror(ctx context.Context, req *grpc.CreateDir
 	settings := req.GetSettings()
 	var mir *ent.Mirror
 
-	clients := flow.edb.Clients(tx)
+	clients := flow.edb.Clients(tctx)
 
-	ino, err := clients.Inode.Create().SetName(base).SetNamespaceID(cached.Namespace.ID).SetParentID(cached.Inode().ID).SetType(util.InodeTypeDirectory).SetExtendedType(util.InodeTypeGit).SetReadOnly(true).Save(ctx)
+	ino, err := clients.Inode.Create().SetName(base).SetNamespaceID(cached.Namespace.ID).SetParentID(cached.Inode().ID).SetType(util.InodeTypeDirectory).SetExtendedType(util.InodeTypeGit).SetReadOnly(true).Save(tctx)
 	if err != nil {
 		return nil, err
 	}
@@ -154,7 +155,7 @@ func (flow *flow) CreateDirectoryMirror(ctx context.Context, req *grpc.CreateDir
 		SetNillableLastSync(nil).
 		SetInode(ino).
 		SetNamespaceID(cached.Namespace.ID).
-		Save(ctx)
+		Save(tctx)
 	if err != nil {
 		return nil, err
 	}
@@ -172,7 +173,7 @@ func (flow *flow) CreateDirectoryMirror(ctx context.Context, req *grpc.CreateDir
 
 	var resp grpc.CreateDirectoryResponse
 
-	err = atob(ino, &resp.Node)
+	err = bytedata.ConvertDataForOutput(ino, &resp.Node)
 	if err != nil {
 		return nil, err
 	}
@@ -197,13 +198,13 @@ func (flow *flow) CreateDirectoryMirror(ctx context.Context, req *grpc.CreateDir
 	return &resp, nil
 }
 
-func (srv *server) getMirror(ctx context.Context, tx database.Transaction, ino *database.Inode) (*database.Mirror, error) {
+func (srv *server) getMirror(ctx context.Context, ino *database.Inode) (*database.Mirror, error) {
 	if ino.ExtendedType != util.InodeTypeGit {
 		srv.sugar.Debugf("%s inode isn't a git mirror", parent())
 		return nil, ErrNotMirror
 	}
 
-	mir, err := srv.database.Mirror(ctx, tx, ino.Mirror)
+	mir, err := srv.database.Mirror(ctx, ino.Mirror)
 	if err != nil {
 		srv.sugar.Debugf("%s failed to query inode's mirror: %v", parent(), err)
 		return nil, err
@@ -212,14 +213,14 @@ func (srv *server) getMirror(ctx context.Context, tx database.Transaction, ino *
 	return mir, nil
 }
 
-func (srv *server) traverseToMirror(ctx context.Context, tx database.Transaction, namespace, path string) (*database.CacheData, *database.Mirror, error) {
-	cached, err := srv.traverseToInode(ctx, tx, namespace, path)
+func (srv *server) traverseToMirror(ctx context.Context, namespace, path string) (*database.CacheData, *database.Mirror, error) {
+	cached, err := srv.traverseToInode(ctx, namespace, path)
 	if err != nil {
 		srv.sugar.Debugf("%s failed to resolve mirror's inode: %v", parent(), err)
 		return nil, nil, err
 	}
 
-	mir, err := srv.getMirror(ctx, tx, cached.Inode())
+	mir, err := srv.getMirror(ctx, cached.Inode())
 	if err != nil {
 		return nil, nil, err
 	}
@@ -230,20 +231,20 @@ func (srv *server) traverseToMirror(ctx context.Context, tx database.Transaction
 func (flow *flow) UpdateMirrorSettings(ctx context.Context, req *grpc.UpdateMirrorSettingsRequest) (*emptypb.Empty, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tx, err := flow.database.Tx(ctx)
+	tctx, tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer rollback(tx)
 
-	cached, mirror, err := flow.traverseToMirror(ctx, tx, req.GetNamespace(), req.GetPath())
+	cached, mirror, err := flow.traverseToMirror(tctx, req.GetNamespace(), req.GetPath())
 	if err != nil {
 		return nil, err
 	}
 
 	settings := req.GetSettings()
 
-	clients := flow.edb.Clients(tx)
+	clients := flow.edb.Clients(tctx)
 
 	updater := clients.Mirror.UpdateOneID(mirror.ID)
 
@@ -294,13 +295,13 @@ func (flow *flow) UpdateMirrorSettings(ctx context.Context, req *grpc.UpdateMirr
 func (flow *flow) LockMirror(ctx context.Context, req *grpc.LockMirrorRequest) (*emptypb.Empty, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tx, err := flow.database.Tx(ctx)
+	tctx, tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer rollback(tx)
 
-	cached, mirror, err := flow.traverseToMirror(ctx, tx, req.GetNamespace(), req.GetPath())
+	cached, mirror, err := flow.traverseToMirror(tctx, req.GetNamespace(), req.GetPath())
 	if err != nil {
 		return nil, err
 	}
@@ -321,7 +322,7 @@ func (flow *flow) LockMirror(ctx context.Context, req *grpc.LockMirrorRequest) (
 
 			readonly := false
 
-			ino, err = flow.database.UpdateInode(ctx, tx, &database.UpdateInodeArgs{
+			ino, err = flow.database.UpdateInode(tctx, &database.UpdateInodeArgs{
 				Inode:    child,
 				ReadOnly: &readonly,
 			})
@@ -340,19 +341,19 @@ func (flow *flow) LockMirror(ctx context.Context, req *grpc.LockMirrorRequest) (
 
 				cached := new(database.CacheData)
 
-				err = flow.database.Inode(ctx, tx, cached, ino.ID)
+				err = flow.database.Inode(tctx, cached, ino.ID)
 				if err != nil {
 					return err
 				}
 
-				err = flow.database.Workflow(ctx, tx, cached, cached.Inode().Workflow)
+				err = flow.database.Workflow(tctx, cached, cached.Inode().Workflow)
 				if err != nil {
 					return err
 				}
 
 				readonly := false
 
-				_, err = flow.database.UpdateWorkflow(ctx, tx, &database.UpdateWorkflowArgs{
+				_, err = flow.database.UpdateWorkflow(tctx, &database.UpdateWorkflowArgs{
 					ID:       cached.Workflow.ID,
 					ReadOnly: &readonly,
 				})
@@ -370,7 +371,7 @@ func (flow *flow) LockMirror(ctx context.Context, req *grpc.LockMirrorRequest) (
 
 	readonly := false
 
-	ino, err = flow.database.UpdateInode(ctx, tx, &database.UpdateInodeArgs{
+	ino, err = flow.database.UpdateInode(tctx, &database.UpdateInodeArgs{
 		Inode:    ino,
 		ReadOnly: &readonly,
 	})
@@ -406,13 +407,13 @@ func (flow *flow) LockMirror(ctx context.Context, req *grpc.LockMirrorRequest) (
 func (flow *flow) UnlockMirror(ctx context.Context, req *grpc.UnlockMirrorRequest) (*emptypb.Empty, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tx, err := flow.database.Tx(ctx)
+	tctx, tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer rollback(tx)
 
-	cached, mirror, err := flow.traverseToMirror(ctx, tx, req.GetNamespace(), req.GetPath())
+	cached, mirror, err := flow.traverseToMirror(tctx, req.GetNamespace(), req.GetPath())
 	if err != nil {
 		return nil, err
 	}
@@ -433,7 +434,7 @@ func (flow *flow) UnlockMirror(ctx context.Context, req *grpc.UnlockMirrorReques
 
 			readonly := false
 
-			ino, err := flow.database.UpdateInode(ctx, tx, &database.UpdateInodeArgs{
+			ino, err := flow.database.UpdateInode(tctx, &database.UpdateInodeArgs{
 				Inode:    child,
 				ReadOnly: &readonly,
 			})
@@ -452,19 +453,19 @@ func (flow *flow) UnlockMirror(ctx context.Context, req *grpc.UnlockMirrorReques
 
 				cached := new(database.CacheData)
 
-				err = flow.database.Inode(ctx, tx, cached, ino.ID)
+				err = flow.database.Inode(tctx, cached, ino.ID)
 				if err != nil {
 					return err
 				}
 
-				err = flow.database.Workflow(ctx, tx, cached, cached.Inode().Workflow)
+				err = flow.database.Workflow(tctx, cached, cached.Inode().Workflow)
 				if err != nil {
 					return err
 				}
 
 				readonly := false
 
-				_, err = flow.database.UpdateWorkflow(ctx, tx, &database.UpdateWorkflowArgs{
+				_, err = flow.database.UpdateWorkflow(tctx, &database.UpdateWorkflowArgs{
 					ID:       cached.Workflow.ID,
 					ReadOnly: &readonly,
 				})
@@ -482,7 +483,7 @@ func (flow *flow) UnlockMirror(ctx context.Context, req *grpc.UnlockMirrorReques
 
 	readonly := false
 
-	x, err := flow.database.UpdateInode(ctx, tx, &database.UpdateInodeArgs{
+	x, err := flow.database.UpdateInode(tctx, &database.UpdateInodeArgs{
 		Inode:    ino,
 		ReadOnly: &readonly,
 	})
@@ -518,13 +519,13 @@ func (flow *flow) UnlockMirror(ctx context.Context, req *grpc.UnlockMirrorReques
 func (flow *flow) SoftSyncMirror(ctx context.Context, req *grpc.SoftSyncMirrorRequest) (*emptypb.Empty, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tx, err := flow.database.Tx(ctx)
+	tctx, tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer rollback(tx)
 
-	cached, mirror, err := flow.traverseToMirror(ctx, tx, req.GetNamespace(), req.GetPath())
+	cached, mirror, err := flow.traverseToMirror(tctx, req.GetNamespace(), req.GetPath())
 	if err != nil {
 		return nil, err
 	}
@@ -547,13 +548,13 @@ func (flow *flow) SoftSyncMirror(ctx context.Context, req *grpc.SoftSyncMirrorRe
 func (flow *flow) HardSyncMirror(ctx context.Context, req *grpc.HardSyncMirrorRequest) (*emptypb.Empty, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tx, err := flow.database.Tx(ctx)
+	tctx, tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer rollback(tx)
 
-	cached, mirror, err := flow.traverseToMirror(ctx, tx, req.GetNamespace(), req.GetPath())
+	cached, mirror, err := flow.traverseToMirror(tctx, req.GetNamespace(), req.GetPath())
 	if err != nil {
 		return nil, err
 	}
@@ -586,18 +587,18 @@ var mirrorActivitiesFilters = map[*filteringInfo]func(query *ent.MirrorActivityQ
 func (flow *flow) MirrorInfo(ctx context.Context, req *grpc.MirrorInfoRequest) (*grpc.MirrorInfoResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tx, err := flow.database.Tx(ctx)
+	tctx, tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer rollback(tx)
 
-	cached, mirror, err := flow.traverseToMirror(ctx, tx, req.GetNamespace(), req.GetPath())
+	cached, mirror, err := flow.traverseToMirror(tctx, req.GetNamespace(), req.GetPath())
 	if err != nil {
 		return nil, err
 	}
 
-	clients := flow.edb.Clients(tx)
+	clients := flow.edb.Clients(tctx)
 
 	query := clients.MirrorActivity.Query().Where(entmiract.HasMirrorWith(entmir.ID(mirror.ID)))
 
@@ -616,12 +617,12 @@ func (flow *flow) MirrorInfo(ctx context.Context, req *grpc.MirrorInfoRequest) (
 	resp.Activities = new(grpc.MirrorActivities)
 	resp.Activities.PageInfo = pi
 
-	err = atob(results, &resp.Activities.Results)
+	err = bytedata.ConvertDataForOutput(results, &resp.Activities.Results)
 	if err != nil {
 		return nil, err
 	}
 
-	err = atob(mirror, &resp.Info)
+	err = bytedata.ConvertDataForOutput(mirror, &resp.Info)
 	if err != nil {
 		return nil, err
 	}
@@ -643,7 +644,7 @@ func (flow *flow) MirrorInfoStream(req *grpc.MirrorInfoRequest, srv grpc.Flow_Mi
 	phash := ""
 	nhash := ""
 
-	cached, _, err := flow.traverseToMirror(ctx, nil, req.GetNamespace(), req.GetPath())
+	cached, _, err := flow.traverseToMirror(ctx, req.GetNamespace(), req.GetPath())
 	if err != nil {
 		return err
 	}
@@ -659,22 +660,22 @@ func (flow *flow) MirrorInfoStream(req *grpc.MirrorInfoRequest, srv grpc.Flow_Mi
 
 resend:
 
-	tx, err := flow.database.Tx(ctx)
+	tctx, tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return err
 	}
 	defer rollback(tx)
 
-	cached, mirror, err = flow.traverseToMirror(ctx, tx, req.GetNamespace(), cached.Path())
+	cached, mirror, err = flow.traverseToMirror(tctx, req.GetNamespace(), cached.Path())
 	if err != nil {
 		return err
 	}
 
-	clients := flow.edb.Clients(tx)
+	clients := flow.edb.Clients(tctx)
 
 	query := clients.MirrorActivity.Query().Where(entmiract.HasMirrorWith(entmir.ID(mirror.ID)))
 
-	results, pi, err := paginate[*ent.MirrorActivityQuery, *ent.MirrorActivity](ctx, req.Pagination, query, mirrorActivitiesOrderings, mirrorActivitiesFilters)
+	results, pi, err := paginate[*ent.MirrorActivityQuery, *ent.MirrorActivity](tctx, req.Pagination, query, mirrorActivitiesOrderings, mirrorActivitiesFilters)
 	if err != nil {
 		return err
 	}
@@ -689,12 +690,12 @@ resend:
 	resp.Activities = new(grpc.MirrorActivities)
 	resp.Activities.PageInfo = pi
 
-	err = atob(results, &resp.Activities.Results)
+	err = bytedata.ConvertDataForOutput(results, &resp.Activities.Results)
 	if err != nil {
 		return err
 	}
 
-	err = atob(mirror, &resp.Info)
+	err = bytedata.ConvertDataForOutput(mirror, &resp.Info)
 	if err != nil {
 		return err
 	}
@@ -706,7 +707,7 @@ resend:
 		resp.Info.PrivateKey = "-"
 	}
 
-	nhash = checksum(resp)
+	nhash = bytedata.Checksum(resp)
 	if nhash != phash {
 		err = srv.Send(resp)
 		if err != nil {
@@ -723,7 +724,7 @@ resend:
 	goto resend
 }
 
-func (srv *server) getMirrorActivity(ctx context.Context, tx database.Transaction, namespace, activity string) (*database.CacheData, *database.MirrorActivity, error) {
+func (srv *server) getMirrorActivity(ctx context.Context, namespace, activity string) (*database.CacheData, *database.MirrorActivity, error) {
 	id, err := uuid.Parse(activity)
 	if err != nil {
 		srv.sugar.Debugf("%s failed to parse UUID: %v", parent(), err)
@@ -732,13 +733,13 @@ func (srv *server) getMirrorActivity(ctx context.Context, tx database.Transactio
 
 	cached := new(database.CacheData)
 
-	err = srv.database.NamespaceByName(ctx, tx, cached, namespace)
+	err = srv.database.NamespaceByName(ctx, cached, namespace)
 	if err != nil {
 		srv.sugar.Debugf("%s failed to resolve namespace: %v", parent(), err)
 		return nil, nil, err
 	}
 
-	act, err := srv.database.MirrorActivity(ctx, tx, id)
+	act, err := srv.database.MirrorActivity(ctx, id)
 	if err != nil {
 		srv.sugar.Debugf("%s failed to query instance: %v", parent(), err)
 		return nil, nil, err
@@ -754,12 +755,12 @@ func (srv *server) getMirrorActivity(ctx context.Context, tx database.Transactio
 func (flow *flow) MirrorActivityLogs(ctx context.Context, req *grpc.MirrorActivityLogsRequest) (*grpc.MirrorActivityLogsResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	cached, activity, err := flow.getMirrorActivity(ctx, nil, req.GetNamespace(), req.GetActivity())
+	cached, activity, err := flow.getMirrorActivity(ctx, req.GetNamespace(), req.GetActivity())
 	if err != nil {
 		return nil, err
 	}
 
-	clients := flow.edb.Clients(nil)
+	clients := flow.edb.Clients(ctx)
 
 	query := clients.LogMsg.Query().Where(entlog.HasActivityWith(entmiract.ID(activity.ID)))
 
@@ -773,7 +774,7 @@ func (flow *flow) MirrorActivityLogs(ctx context.Context, req *grpc.MirrorActivi
 	resp.Activity = activity.ID.String()
 	resp.PageInfo = pi
 
-	err = atob(results, &resp.Results)
+	err = bytedata.ConvertDataForOutput(results, &resp.Results)
 	if err != nil {
 		return nil, err
 	}
@@ -788,7 +789,7 @@ func (flow *flow) MirrorActivityLogsParcels(req *grpc.MirrorActivityLogsRequest,
 
 	var tailing bool
 
-	cached, activity, err := flow.getMirrorActivity(ctx, nil, req.GetNamespace(), req.GetActivity())
+	cached, activity, err := flow.getMirrorActivity(ctx, req.GetNamespace(), req.GetActivity())
 	if err != nil {
 		return err
 	}
@@ -798,7 +799,7 @@ func (flow *flow) MirrorActivityLogsParcels(req *grpc.MirrorActivityLogsRequest,
 
 resend:
 
-	clients := flow.edb.Clients(nil)
+	clients := flow.edb.Clients(ctx)
 
 	query := clients.LogMsg.Query().Where(entlog.HasActivityWith(entmiract.ID(activity.ID)))
 
@@ -812,7 +813,7 @@ resend:
 	resp.Activity = activity.ID.String()
 	resp.PageInfo = pi
 
-	err = atob(results, &resp.Results)
+	err = bytedata.ConvertDataForOutput(results, &resp.Results)
 	if err != nil {
 		return err
 	}
@@ -840,12 +841,6 @@ resend:
 
 func (flow *flow) CancelMirrorActivity(ctx context.Context, req *grpc.CancelMirrorActivityRequest) (*emptypb.Empty, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
-
-	tx, err := flow.database.Tx(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer rollback(tx)
 
 	flow.syncer.cancelActivity(req.GetActivity(), "cancel.api", "cancelled by api request")
 

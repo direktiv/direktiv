@@ -61,7 +61,7 @@ func (srv *server) closeLogWorkers() {
 func (srv *server) workerLogToServer(l *logMessage) {
 	util.Trace(l.ctx, l.msg)
 
-	clients := srv.edb.Clients(nil)
+	clients := srv.edb.Clients(context.Background())
 
 	_, err := clients.LogMsg.Create().SetMsg(l.msg).SetT(l.t).Save(context.Background())
 	if err != nil {
@@ -80,7 +80,7 @@ func (srv *server) workerLogToServer(l *logMessage) {
 func (srv *server) workerLogToNamespace(l *logMessage) {
 	util.Trace(l.ctx, l.msg)
 
-	clients := srv.edb.Clients(nil)
+	clients := srv.edb.Clients(context.Background())
 
 	_, err := clients.LogMsg.Create().SetMsg(l.msg).SetNamespaceID(l.cached.Namespace.ID).SetT(l.t).Save(l.ctx)
 	if err != nil {
@@ -99,7 +99,7 @@ func (srv *server) workerLogToNamespace(l *logMessage) {
 func (srv *server) workerLogToWorkflow(l *logMessage) {
 	util.Trace(l.ctx, l.msg)
 
-	clients := srv.edb.Clients(nil)
+	clients := srv.edb.Clients(context.Background())
 
 	_, err := clients.LogMsg.Create().SetMsg(l.msg).SetWorkflowID(l.cached.Workflow.ID).SetT(l.t).Save(l.ctx)
 	if err != nil {
@@ -118,9 +118,11 @@ func (srv *server) workerLogToWorkflow(l *logMessage) {
 func (srv *server) workerLogToInstance(l *logMessage) {
 	util.Trace(l.ctx, l.msg)
 
-	clients := srv.edb.Clients(nil)
+	ctx := context.Background() // logs are often queued and stored after their originating requests have ended.
 
-	_, err := clients.LogMsg.Create().SetMsg(l.msg).SetInstanceID(l.cached.Instance.ID).SetT(l.t).Save(l.ctx)
+	clients := srv.edb.Clients(ctx)
+
+	_, err := clients.LogMsg.Create().SetMsg(l.msg).SetInstanceID(l.cached.Instance.ID).SetT(l.t).Save(ctx)
 	if err != nil {
 		srv.sugar.Error(err)
 		return
@@ -266,7 +268,7 @@ func (srv *server) logToMirrorActivity(ctx context.Context, t time.Time, ns *dat
 
 	util.Trace(ctx, msg)
 
-	clients := srv.edb.Clients(nil)
+	clients := srv.edb.Clients(ctx)
 
 	_, err := clients.LogMsg.Create().SetMsg(msg).SetActivityID(act.ID).SetT(t).Save(ctx)
 	if err != nil {

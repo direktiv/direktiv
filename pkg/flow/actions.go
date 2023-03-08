@@ -8,14 +8,14 @@ import (
 	"strings"
 	"time"
 
-	libgrpc "google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
-	"google.golang.org/protobuf/types/known/emptypb"
-
+	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
 	"github.com/direktiv/direktiv/pkg/util"
+	libgrpc "google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type actions struct {
@@ -74,7 +74,7 @@ func (actions *actions) SetNamespaceRegistry(ctx context.Context, req *grpc.SetN
 
 	cached := new(database.CacheData)
 
-	err := actions.database.NamespaceByName(ctx, nil, cached, req.GetNamespace())
+	err := actions.database.NamespaceByName(ctx, cached, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
@@ -97,7 +97,7 @@ func (actions *actions) DeleteNamespaceRegistry(ctx context.Context, req *grpc.D
 
 	cached := new(database.CacheData)
 
-	err := actions.database.NamespaceByName(ctx, nil, cached, req.GetNamespace())
+	err := actions.database.NamespaceByName(ctx, cached, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
@@ -202,7 +202,7 @@ func (actions *actions) NamespaceRegistries(ctx context.Context, req *grpc.Names
 
 	cached := new(database.CacheData)
 
-	err := actions.database.NamespaceByName(ctx, nil, cached, req.GetNamespace())
+	err := actions.database.NamespaceByName(ctx, cached, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
@@ -236,7 +236,7 @@ func (actions *actions) NamespaceRegistries(ctx context.Context, req *grpc.Names
 	resp.Registries = new(grpc.Registries)
 	resp.Registries.PageInfo = new(grpc.PageInfo)
 
-	err = atob(cx, &resp.Registries)
+	err = bytedata.ConvertDataForOutput(cx, &resp.Registries)
 	if err != nil {
 		return nil, err
 	}
@@ -253,7 +253,7 @@ func (actions *actions) NamespaceRegistriesStream(req *grpc.NamespaceRegistriesR
 
 	cached := new(database.CacheData)
 
-	err := actions.database.NamespaceByName(ctx, nil, cached, req.GetNamespace())
+	err := actions.database.NamespaceByName(ctx, cached, req.GetNamespace())
 	if err != nil {
 		return err
 	}
@@ -293,12 +293,12 @@ resend:
 	resp.Registries = new(grpc.Registries)
 	resp.Registries.PageInfo = new(grpc.PageInfo)
 
-	err = atob(cx, &resp.Registries)
+	err = bytedata.ConvertDataForOutput(cx, &resp.Registries)
 	if err != nil {
 		return err
 	}
 
-	nhash = checksum(resp)
+	nhash = bytedata.Checksum(resp)
 	if nhash != phash {
 		err = srv.Send(resp)
 		if err != nil {
