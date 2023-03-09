@@ -1,6 +1,7 @@
 package core
 
 import (
+	"context"
 	"time"
 
 	"github.com/google/uuid"
@@ -16,6 +17,6 @@ type Namespace interface {
 
 // NamespaceStore responsible for fetching namespace from datastore.
 type NamespaceStore interface {
-	GetNamespace(id uuid.UUID) (Namespace, error)
-	GetNamespaceByName(name string) (Namespace, error)
+	GetNamespace(ctx context.Context, id uuid.UUID) (Namespace, error)
+	GetNamespaceByName(ctx context.Context, name string) (Namespace, error)
 }
