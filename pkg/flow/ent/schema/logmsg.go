@@ -19,7 +19,7 @@ func (LogMsg) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).Default(uuid.New).Immutable().StorageKey("oid").StructTag(`json:"-"`),
 		field.Time("t"),
 		field.String("msg"),
-		field.String("rootInstanceId").Default(""),
+		field.String("rootInstanceId").Default(""), // NOTE: this field is redundant, but it allows us to improve query performance.
 		field.String("logInstanceCallPath").Default(""),
 	}
 }
