@@ -1,27 +1,15 @@
 import "./App.css";
 
-import {
-  QueryClient,
-  QueryClientProvider,
-  useQuery,
-} from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-import { getNamespaces } from "./api/namespaces";
+import { useNamespaces } from "./api/namespaces";
 import { useVersion } from "./api/version";
 
 const queryClient = new QueryClient();
 
 function App() {
   const { data: version } = useVersion();
-  const { data: namespaces } = useQuery({
-    queryKey: ["namespaces"],
-    queryFn: () =>
-      getNamespaces({
-        apiKey: "password",
-        params: undefined,
-      }),
-    networkMode: "always",
-  });
+  const { data: namespaces } = useNamespaces();
 
   return (
     <div>
