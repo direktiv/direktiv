@@ -9,8 +9,10 @@ import (
 	"github.com/direktiv/direktiv/pkg/util"
 )
 
-var pathRegexPattern = `^[/](` + util.NameRegexFragment + `[\/]?)*$`
-var pathRegex = regexp.MustCompile(pathRegexPattern)
+var (
+	pathRegexPattern = `^[/](` + util.NameRegexFragment + `[\/]?)*$`
+	pathRegex        = regexp.MustCompile(pathRegexPattern)
+)
 
 // SanitizePath standardizes and sanitized the path, and validates it against naming requirements.
 func SanitizePath(path string) (string, error) {

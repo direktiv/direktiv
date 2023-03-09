@@ -81,9 +81,6 @@ func (r *Root) CreateFile(ctx context.Context, path string, typ filestore.FileTy
 
 //nolint:ireturn
 func (r *Root) GetFile(ctx context.Context, path string, opts *filestore.GetFileOpts) (filestore.File, error) {
-	if opts == nil {
-		opts = &filestore.GetFileOpts{}
-	}
 	f := &File{}
 	path = filepath.Clean(path)
 
