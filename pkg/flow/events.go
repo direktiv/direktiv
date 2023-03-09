@@ -892,7 +892,7 @@ func (flow *flow) ReplayEvent(ctx context.Context, req *grpc.ReplayEventRequest)
 func (events *events) ReplayCloudevent(ctx context.Context, cached *database.CacheData, cevent *ent.CloudEvents) error {
 	event := cevent.Event
 
-	events.logger.LogToNamespace(ctx, time.Now(), cached, "Replaying event: %s (%s / %s)", event.ID(), event.Type(), event.Source())
+	events.logger.Infof(time.Now(), cached.Namespace.ID, cached.GetAttributes("namespace"), "Replaying event: %s (%s / %s)", event.ID(), event.Type(), event.Source())
 
 	err := events.handleEvent(cached.Namespace, &event)
 	if err != nil {
@@ -909,7 +909,7 @@ func (events *events) ReplayCloudevent(ctx context.Context, cached *database.Cac
 }
 
 func (events *events) BroadcastCloudevent(ctx context.Context, cached *database.CacheData, event *cloudevents.Event, timer int64) error {
-	events.logger.LogToNamespace(ctx, time.Now(), cached, "Event received: %s (%s / %s)", event.ID(), event.Type(), event.Source())
+	events.logger.Infof(time.Now(), cached.Namespace.ID, cached.GetAttributes("namespace"), "Event received: %s (%s / %s)", event.ID(), event.Type(), event.Source())
 
 	metricsCloudEventsReceived.WithLabelValues(cached.Namespace.Name, event.Type(), event.Source(), cached.Namespace.Name).Inc()
 
@@ -990,7 +990,7 @@ func (events *events) listenForEvents(ctx context.Context, im *instanceMemory, c
 		return err
 	}
 
-	events.logger.LogToInstance(ctx, time.Now(), im.cached, "Registered to receive events.")
+	events.logger.Infof(time.Now(), im.GetInstanceID(), im.GetAttributes(), "Registered to receive events.")
 
 	return nil
 }
@@ -1052,7 +1052,7 @@ func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloud
 
 	// add logging function
 	err = vm.Set("nslog", func(txt interface{}) {
-		flow.logger.LogToNamespace(ctx, time.Now(), cached, fmt.Sprintf("%v", txt))
+		flow.logger.Infof(time.Now(), cached.Namespace.ID, cached.GetAttributes("namespace"), fmt.Sprintf("%v", txt))
 	})
 	if err != nil {
 		return resp, fmt.Errorf("failed to initialize js runtime: %w", err)
@@ -1060,19 +1060,19 @@ func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloud
 
 	_, err = vm.RunString(script)
 	if err != nil {
-		flow.logger.LogToNamespace(ctx, time.Now(), cached, "CloudEvent filter '%s' produced an error (1): %v", filterName, err)
+		flow.logger.Errorf(time.Now(), cached.Namespace.ID, cached.GetAttributes("namespace"), "CloudEvent filter '%s' produced an error (1): %v", filterName, err)
 		return resp, err
 	}
 
 	f, ok := goja.AssertFunction(vm.Get("filter"))
 	if !ok {
-		flow.logger.LogToNamespace(ctx, time.Now(), cached, "cloudEvent filter '%s' error: %v", filterName, err)
+		flow.logger.Errorf(time.Now(), cached.Namespace.ID, cached.GetAttributes("namespace"), "cloudEvent filter '%s' error: %v", filterName, err)
 		return resp, err
 	}
 
 	newEventMap, err := f(goja.Undefined())
 	if err != nil {
-		flow.logger.LogToNamespace(ctx, time.Now(), cached, "CloudEvent filter '%s' produced an error (2): %v", filterName, err)
+		flow.logger.Errorf(time.Now(), cached.Namespace.ID, cached.GetAttributes("namespace"), "CloudEvent filter '%s' produced an error (2): %v", filterName, err)
 		return resp, err
 	}
 
@@ -1085,7 +1085,7 @@ func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloud
 
 	newBytesEvent, err := json.Marshal(newEventMap)
 	if err != nil {
-		flow.logger.LogToNamespace(ctx, time.Now(), cached, "CloudEvent filter '%s' produced an error (3): %v", filterName, err)
+		flow.logger.Errorf(time.Now(), cached.Namespace.ID, cached.GetAttributes("namespace"), "CloudEvent filter '%s' produced an error (3): %v", filterName, err)
 		return resp, err
 	}
 

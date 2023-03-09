@@ -168,7 +168,7 @@ func (flow *flow) CreateDirectoryMirror(ctx context.Context, req *grpc.CreateDir
 		return nil, err
 	}
 
-	flow.logger.LogToNamespace(ctx, time.Now(), cached, "Created directory as git mirror '%s'.", path)
+	flow.logger.Infof(time.Now(), cached.Namespace.ID, cached.GetAttributes("namespace"), "Created directory as git mirror '%s'.", path)
 	flow.pubsub.NotifyInode(cached.Inode())
 
 	var resp grpc.CreateDirectoryResponse

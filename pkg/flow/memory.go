@@ -215,6 +215,15 @@ func (im *instanceMemory) StoreData(key string, val interface{}) error {
 	return nil
 }
 
+func (im *instanceMemory) GetAttributes() map[string]string {
+	tags := im.cached.GetAttributes("instance")
+	if im.logic != nil {
+		tags["state-id"] = im.logic.GetID()
+		tags["state-type"] = im.logic.GetType().String()
+	}
+	return tags
+}
+
 func (engine *engine) getInstanceMemory(ctx context.Context, id string) (*instanceMemory, error) {
 	uid, err := uuid.Parse(id)
 	if err != nil {

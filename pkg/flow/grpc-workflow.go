@@ -270,7 +270,7 @@ func (flow *flow) createWorkflow(ctx context.Context, args *createWorkflowArgs) 
 	metricsWf.WithLabelValues(cached.Namespace.Name, cached.Namespace.Name).Inc()
 	metricsWfUpdated.WithLabelValues(cached.Namespace.Name, args.path, cached.Namespace.Name).Inc()
 
-	flow.logger.LogToNamespace(ctx, time.Now(), cached, "Created workflow '%s'.", args.path)
+	flow.logger.Infof(time.Now(), cached.Namespace.ID, cached.GetAttributes("namespace"), "Created workflow '%s'.", args.path)
 	flow.pubsub.NotifyInode(cached.Inode())
 
 	err = flow.BroadcastWorkflow(ctx, BroadcastEventTypeCreate,
@@ -400,7 +400,7 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 	metricsWf.WithLabelValues(cached.Namespace.Name, cached.Namespace.Name).Inc()
 	metricsWfUpdated.WithLabelValues(cached.Namespace.Name, path, cached.Namespace.Name).Inc()
 
-	flow.logger.LogToNamespace(ctx, time.Now(), cached, "Created workflow '%s'.", path)
+	flow.logger.Infof(time.Now(), cached.Namespace.ID, cached.GetAttributes("namespace"), "Created workflow '%s'.", path)
 	flow.pubsub.NotifyInode(cached.Inode())
 
 	var resp grpc.CreateWorkflowResponse
@@ -535,7 +535,7 @@ func (flow *flow) updateWorkflow(ctx context.Context, args *updateWorkflowArgs) 
 
 	metricsWfUpdated.WithLabelValues(args.cached.Namespace.Name, args.cached.Path(), args.cached.Namespace.Name).Inc()
 
-	flow.logger.LogToWorkflow(ctx, time.Now(), args.cached, "Updated workflow.")
+	flow.logger.Infof(time.Now(), args.cached.Workflow.ID, args.cached.GetAttributes("workflow"), "Updated workflow.")
 	flow.pubsub.NotifyWorkflow(args.cached.Workflow)
 
 	err = flow.BroadcastWorkflow(ctx, BroadcastEventTypeUpdate,
@@ -665,7 +665,7 @@ func (flow *flow) SaveHead(ctx context.Context, req *grpc.SaveHeadRequest) (*grp
 
 	flow.database.InvalidateWorkflow(ctx, cached, false)
 
-	flow.logger.LogToWorkflow(ctx, time.Now(), cached, "Saved workflow: %s.", cached.Revision.ID.String())
+	flow.logger.Infof(time.Now(), cached.Workflow.ID, cached.GetAttributes("workflow"), "Saved workflow: %s.", cached.Revision.ID.String())
 	flow.pubsub.NotifyWorkflow(cached.Workflow)
 
 respond:
@@ -746,7 +746,7 @@ func (flow *flow) DiscardHead(ctx context.Context, req *grpc.DiscardHeadRequest)
 
 	metricsWfUpdated.WithLabelValues(cached.Namespace.Name, cached.Path(), cached.Namespace.Name).Inc()
 
-	flow.logger.LogToWorkflow(ctx, time.Now(), cached, "Discard unsaved changes to workflow.")
+	flow.logger.Infof(time.Now(), cached.Workflow.ID, cached.GetAttributes("workflow"), "Discard unsaved changes to workflow.")
 	flow.pubsub.NotifyWorkflow(cached.Workflow)
 
 respond:
@@ -833,7 +833,7 @@ func (flow *flow) ToggleWorkflow(ctx context.Context, req *grpc.ToggleWorkflowRe
 		return nil, err
 	}
 
-	flow.logger.LogToWorkflow(ctx, time.Now(), cached, "Workflow is now %s", live)
+	flow.logger.Infof(time.Now(), cached.Workflow.ID, cached.GetAttributes("workflow"), "Workflow is now %s", live)
 	flow.pubsub.NotifyWorkflow(cached.Workflow)
 
 	return &resp, nil
@@ -867,7 +867,7 @@ func (flow *flow) SetWorkflowEventLogging(ctx context.Context, req *grpc.SetWork
 
 	flow.database.InvalidateWorkflow(ctx, cached, false)
 
-	flow.logger.LogToWorkflow(ctx, time.Now(), cached, "Workflow now logging to cloudevents: %s", req.GetLogger())
+	flow.logger.Infof(time.Now(), cached.Workflow.ID, cached.GetAttributes("workflow"), "Workflow now logging to cloudevents: %s", req.GetLogger())
 	flow.pubsub.NotifyWorkflow(cached.Workflow)
 	var resp emptypb.Empty
 

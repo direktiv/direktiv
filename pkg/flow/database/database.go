@@ -96,3 +96,46 @@ func (cached *CacheData) Inode() *Inode {
 func (cached *CacheData) ParentInode() *Inode {
 	return cached.Inodes[len(cached.Inodes)-2]
 }
+
+func (cached *CacheData) GetAttributes(recipientType string) map[string]string {
+	tags := make(map[string]string)
+	tags["recipientType"] = recipientType
+	switch recipientType {
+	case "instance":
+		if cached.Instance != nil {
+			tags["instance-id"] = cached.Instance.ID.String()
+			tags["invoker"] = cached.Instance.Invoker
+			tags["callpath"] = cached.Instance.CallPath
+		}
+		fallthrough
+	case "workflow":
+		if cached.Workflow != nil {
+			tags["workflow-id"] = cached.Workflow.ID.String()
+			tags["workflow"] = GetInodePath(cached.Instance.As)
+		}
+		fallthrough
+	case "namespace":
+		if cached.Namespace != nil {
+			tags["namespace"] = cached.Namespace.Name
+			tags["namespace-id"] = cached.Namespace.ID.String()
+		}
+	}
+	return tags
+}
+
+func (cached *CacheData) GetAttributesMirror(m *Mirror) map[string]string {
+	tags := cached.GetAttributes("namespace")
+	tags["mirror-id"] = m.ID.String()
+	tags["recipientType"] = "mirror"
+	return tags
+}
+
+// GetInodePath returns the path without the first slash.
+func GetInodePath(path string) string {
+	path = strings.TrimSuffix(path, "/")
+	if !strings.HasPrefix(path, "/") {
+		return "/" + path
+	}
+	path = filepath.Clean(path)
+	return path
+}

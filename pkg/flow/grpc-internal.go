@@ -99,7 +99,7 @@ func (internal *internal) ActionLog(ctx context.Context, req *grpc.ActionLogRequ
 	}
 
 	for _, msg := range req.GetMsg() {
-		internal.logger.LogToInstanceRaw(ctx, t, cached, msg)
+		internal.logger.Info(t, cached.Instance.ID, cached.GetAttributes("instance"), msg)
 	}
 
 	var resp emptypb.Empty

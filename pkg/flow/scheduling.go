@@ -29,7 +29,7 @@ func (engine *engine) WakeInstanceCaller(ctx context.Context, im *instanceMemory
 
 	if caller != nil {
 
-		engine.logger.LogToInstance(ctx, time.Now(), im.cached, "Reporting results to calling workflow.")
+		engine.logger.Infof(time.Now(), im.GetInstanceID(), im.GetAttributes(), "Reporting results to calling workflow.")
 
 		msg := &actionResultMessage{
 			InstanceID: caller.InstanceID.String(),

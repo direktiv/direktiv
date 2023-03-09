@@ -142,7 +142,7 @@ func (flow *flow) NamespaceLogsParcels(req *grpc.NamespaceLogsRequest, srv grpc.
 		return err
 	}
 
-	sub := flow.pubsub.SubscribeNamespaceLogs(cached.Namespace)
+	sub := flow.pubsub.SubscribeNamespaceLogs(&cached.Namespace.ID)
 	defer flow.cleanup(sub.Close)
 
 	clients := flow.edb.Clients(ctx)

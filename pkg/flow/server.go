@@ -488,7 +488,7 @@ func (flow *flow) Build(ctx context.Context, in *emptypb.Empty) (*grpc.BuildResp
 }
 
 func (engine *engine) UserLog(ctx context.Context, im *instanceMemory, msg string, a ...interface{}) {
-	engine.logger.LogToInstance(ctx, time.Now(), im.cached, msg, a...)
+	engine.logger.Infof(time.Now(), im.GetInstanceID(), im.GetAttributes(), msg, a...)
 
 	s := fmt.Sprintf(msg, a...)
 
@@ -515,7 +515,7 @@ func (engine *engine) UserLog(ctx context.Context, im *instanceMemory, msg strin
 func (engine *engine) logRunState(ctx context.Context, im *instanceMemory, wakedata []byte, err error) {
 	engine.sugar.Debugf("Running state logic -- %s:%v (%s) (%v)", im.ID().String(), im.Step(), im.logic.GetID(), time.Now())
 	if im.GetMemory() == nil && len(wakedata) == 0 && err == nil {
-		engine.logger.LogToInstance(ctx, time.Now(), im.cached, "Running state logic (step:%v) -- %s", im.Step(), im.logic.GetID())
+		engine.logger.Infof(time.Now(), im.GetInstanceID(), im.GetAttributes(), "Running state logic (step:%v) -- %s", im.Step(), im.logic.GetID())
 	}
 }
 

@@ -382,9 +382,9 @@ func (flow *flow) SetNamespaceVariable(ctx context.Context, req *grpc.SetNamespa
 	}
 
 	if newVar {
-		flow.logger.LogToNamespace(ctx, time.Now(), cached, "Created namespace variable '%s'.", key)
+		flow.logger.Infof(time.Now(), cached.Namespace.ID, cached.GetAttributes("namespace"), "Created namespace variable '%s'.", key)
 	} else {
-		flow.logger.LogToNamespace(ctx, time.Now(), cached, "Updated namespace variable '%s'.", key)
+		flow.logger.Infof(time.Now(), cached.Namespace.ID, cached.GetAttributes("namespace"), "Updated namespace variable '%s'.", key)
 	}
 
 	flow.pubsub.NotifyNamespaceVariables(cached.Namespace)
@@ -485,9 +485,9 @@ func (internal *internal) SetNamespaceVariableParcels(srv grpc.Internal_SetNames
 	}
 
 	if newVar {
-		internal.logger.LogToNamespace(ctx, time.Now(), cached, "Created namespace variable '%s'.", key)
+		internal.logger.Infof(time.Now(), cached.Namespace.ID, cached.GetAttributes("namespace"), "Created namespace variable '%s'.", key)
 	} else {
-		internal.logger.LogToNamespace(ctx, time.Now(), cached, "Updated namespace variable '%s'.", key)
+		internal.logger.Infof(time.Now(), cached.Namespace.ID, cached.GetAttributes("namespace"), "Updated namespace variable '%s'.", key)
 	}
 
 	internal.pubsub.NotifyNamespaceVariables(cached.Namespace)
@@ -595,9 +595,9 @@ func (flow *flow) SetNamespaceVariableParcels(srv grpc.Flow_SetNamespaceVariable
 	}
 
 	if newVar {
-		flow.logger.LogToNamespace(ctx, time.Now(), cached, "Created namespace variable '%s'.", key)
+		flow.logger.Infof(time.Now(), cached.Namespace.ID, cached.GetAttributes("namespace"), "Created namespace variable '%s'.", key)
 	} else {
-		flow.logger.LogToNamespace(ctx, time.Now(), cached, "Updated namespace variable '%s'.", key)
+		flow.logger.Infof(time.Now(), cached.Namespace.ID, cached.GetAttributes("namespace"), "Updated namespace variable '%s'.", key)
 	}
 
 	flow.pubsub.NotifyNamespaceVariables(cached.Namespace)
@@ -653,7 +653,7 @@ func (flow *flow) DeleteNamespaceVariable(ctx context.Context, req *grpc.DeleteN
 		return nil, err
 	}
 
-	flow.logger.LogToNamespace(ctx, time.Now(), cached, "Deleted namespace variable '%s'.", vref.Name)
+	flow.logger.Infof(time.Now(), cached.Namespace.ID, cached.GetAttributes("namespace"), "Deleted namespace variable '%s'.", vref.Name)
 	flow.pubsub.NotifyNamespaceVariables(cached.Namespace)
 
 	// Broadcast Event
@@ -701,7 +701,7 @@ func (flow *flow) RenameNamespaceVariable(ctx context.Context, req *grpc.RenameN
 		return nil, err
 	}
 
-	flow.logger.LogToNamespace(ctx, time.Now(), cached, "Renamed namespace variable from '%s' to '%s'.", req.GetOld(), req.GetNew())
+	flow.logger.Infof(time.Now(), cached.Namespace.ID, cached.GetAttributes("namespace"), "Renamed namespace variable from '%s' to '%s'.", req.GetOld(), req.GetNew())
 	flow.pubsub.NotifyNamespaceVariables(cached.Namespace)
 
 	var resp grpc.RenameNamespaceVariableResponse

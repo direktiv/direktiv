@@ -131,7 +131,7 @@ func (im *instanceMemory) ListenForEvents(ctx context.Context, events []*model.C
 }
 
 func (im *instanceMemory) Log(ctx context.Context, a string, x ...interface{}) {
-	im.engine.logger.LogToInstance(ctx, time.Now(), im.cached, a, x...)
+	im.engine.logger.Infof(time.Now(), im.GetInstanceID(), im.GetAttributes(), a, x...)
 }
 
 func (im *instanceMemory) Raise(ctx context.Context, err *derrors.CatchableError) error {
