@@ -18,6 +18,7 @@ import (
 	entirt "github.com/direktiv/direktiv/pkg/flow/ent/instanceruntime"
 	entwf "github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
+	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
@@ -292,8 +293,8 @@ func (flow *flow) postCommitRouterConfiguration(id string, ms *muxStart) {
 	flow.pubsub.ConfigureRouterCron(id, ms.Cron, ms.Enabled)
 }
 
-func (flow *flow) configureRouterHandler(req *PubsubUpdate) {
-	msg := new(configureRouterMessage)
+func (flow *flow) configureRouterHandler(req *pubsub.PubsubUpdate) {
+	msg := new(pubsub.ConfigureRouterMessage)
 
 	err := json.Unmarshal([]byte(req.Key), msg)
 	if err != nil {

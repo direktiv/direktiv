@@ -87,7 +87,7 @@ func (syncer *syncer) scheduleTimeout(activityId string, oldController string, t
 
 	// cancel existing timeouts
 
-	syncer.timers.deleteTimerByName(oldController, syncer.pubsub.hostname, id)
+	syncer.timers.deleteTimerByName(oldController, syncer.pubsub.Hostname, id)
 
 	// schedule timeout
 
@@ -402,7 +402,7 @@ func (syncer *syncer) beginActivity(tx database.Transaction, args *newMirrorActi
 		EndAt:      time.Now(),
 		Mirror:     mirror.ID,
 		Namespace:  cached.Namespace.ID,
-		Controller: syncer.pubsub.hostname,
+		Controller: syncer.pubsub.Hostname,
 		Deadline:   deadline,
 	})
 	if err != nil {
@@ -518,7 +518,7 @@ func (syncer *syncer) fail(cached *database.CacheData, mirror *database.Mirror, 
 		return
 	}
 
-	act, err = act.Update().SetController(syncer.pubsub.hostname).SetEndAt(time.Now()).SetStatus(util.MirrorActivityStatusFailed).Save(ctx)
+	act, err = act.Update().SetController(syncer.pubsub.Hostname).SetEndAt(time.Now()).SetStatus(util.MirrorActivityStatusFailed).Save(ctx)
 	if err != nil {
 		syncer.sugar.Error(err)
 		return
@@ -561,7 +561,7 @@ func (syncer *syncer) success(cached *database.CacheData, mirror *database.Mirro
 		return errors.New("activity somehow already done")
 	}
 
-	act, err = act.Update().SetController(syncer.pubsub.hostname).SetEndAt(time.Now()).SetStatus(util.MirrorActivityStatusComplete).Save(ctx)
+	act, err = act.Update().SetController(syncer.pubsub.Hostname).SetEndAt(time.Now()).SetStatus(util.MirrorActivityStatusComplete).Save(ctx)
 	if err != nil {
 		return err
 	}
