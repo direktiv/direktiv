@@ -1,6 +1,5 @@
 import App from "./App";
 import AppLegacy from "./AppLegacy";
-
 import React from "react";
 import ReactDOM from "react-dom";
 
