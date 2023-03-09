@@ -156,6 +156,7 @@ func entInstance(inst *ent.Instance) *database.Instance {
 		ErrorCode:    inst.ErrorCode,
 		ErrorMessage: inst.ErrorMessage,
 		Invoker:      inst.Invoker,
+		CallPath:     inst.Callpath,
 	}
 
 	if inst.Edges.Namespace != nil {

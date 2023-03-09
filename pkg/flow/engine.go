@@ -60,6 +60,7 @@ type newInstanceArgs struct {
 	Input      []byte
 	Caller     string
 	CallerData string
+	CallPath   string
 }
 
 type subflowCaller struct {
@@ -68,6 +69,7 @@ type subflowCaller struct {
 	Step       int
 	Depth      int
 	As         string
+	CallPath   string
 }
 
 const (
@@ -139,7 +141,11 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 	if args.Ref != "" {
 		as += ":" + args.Ref
 	}
-
+	callerInstanceID := ""
+	if strings.HasPrefix(args.Caller, "instance:") {
+		callerInstanceID = strings.Split(args.Caller, ":")[1]
+	}
+	callpath := appendInstanceID(args.CallPath, callerInstanceID)
 	data := marshalInstanceInputData(args.Input)
 
 	clients := engine.edb.Clients(tctx)
@@ -149,7 +155,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 		return nil, err
 	}
 
-	inst, err := clients.Instance.Create().SetNamespaceID(cached.Namespace.ID).SetWorkflowID(cached.Workflow.ID).SetRevisionID(cached.Revision.ID).SetRuntime(rt).SetStatus(util.InstanceStatusPending).SetInvoker(args.Caller).SetAs(util.SanitizeAsField(as)).Save(tctx)
+	inst, err := clients.Instance.Create().SetNamespaceID(cached.Namespace.ID).SetWorkflowID(cached.Workflow.ID).SetRevisionID(cached.Revision.ID).SetRuntime(rt).SetStatus(util.InstanceStatusPending).SetInvoker(args.Caller).SetAs(util.SanitizeAsField(as)).SetCallpath(callpath).Save(tctx)
 	if err != nil {
 		return nil, err
 	}
@@ -190,6 +196,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 		Workflow:     cached.Workflow.ID,
 		Revision:     cached.Revision.ID,
 		Runtime:      runtime.ID,
+		CallPath:     inst.Callpath,
 	}
 
 	im := new(instanceMemory)
@@ -662,7 +669,7 @@ func (engine *engine) subflowInvoke(ctx context.Context, caller *subflowCaller, 
 
 	args.Input = input
 	args.Caller = fmt.Sprintf("instance:%v", caller.InstanceID)
-
+	args.CallPath = caller.CallPath
 	callerData, err := json.Marshal(caller)
 	if err != nil {
 		return nil, derrors.NewInternalError(err)

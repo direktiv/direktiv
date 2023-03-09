@@ -40,6 +40,34 @@ func (lmc *LogMsgCreate) SetMsg(s string) *LogMsgCreate {
 	return lmc
 }
 
+// SetRootInstanceId sets the "rootInstanceId" field.
+func (lmc *LogMsgCreate) SetRootInstanceId(s string) *LogMsgCreate {
+	lmc.mutation.SetRootInstanceId(s)
+	return lmc
+}
+
+// SetNillableRootInstanceId sets the "rootInstanceId" field if the given value is not nil.
+func (lmc *LogMsgCreate) SetNillableRootInstanceId(s *string) *LogMsgCreate {
+	if s != nil {
+		lmc.SetRootInstanceId(*s)
+	}
+	return lmc
+}
+
+// SetLogInstanceCallPath sets the "logInstanceCallPath" field.
+func (lmc *LogMsgCreate) SetLogInstanceCallPath(s string) *LogMsgCreate {
+	lmc.mutation.SetLogInstanceCallPath(s)
+	return lmc
+}
+
+// SetNillableLogInstanceCallPath sets the "logInstanceCallPath" field if the given value is not nil.
+func (lmc *LogMsgCreate) SetNillableLogInstanceCallPath(s *string) *LogMsgCreate {
+	if s != nil {
+		lmc.SetLogInstanceCallPath(*s)
+	}
+	return lmc
+}
+
 // SetID sets the "id" field.
 func (lmc *LogMsgCreate) SetID(u uuid.UUID) *LogMsgCreate {
 	lmc.mutation.SetID(u)
@@ -207,6 +235,14 @@ func (lmc *LogMsgCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (lmc *LogMsgCreate) defaults() {
+	if _, ok := lmc.mutation.RootInstanceId(); !ok {
+		v := logmsg.DefaultRootInstanceId
+		lmc.mutation.SetRootInstanceId(v)
+	}
+	if _, ok := lmc.mutation.LogInstanceCallPath(); !ok {
+		v := logmsg.DefaultLogInstanceCallPath
+		lmc.mutation.SetLogInstanceCallPath(v)
+	}
 	if _, ok := lmc.mutation.ID(); !ok {
 		v := logmsg.DefaultID()
 		lmc.mutation.SetID(v)
@@ -220,6 +256,12 @@ func (lmc *LogMsgCreate) check() error {
 	}
 	if _, ok := lmc.mutation.Msg(); !ok {
 		return &ValidationError{Name: "msg", err: errors.New(`ent: missing required field "LogMsg.msg"`)}
+	}
+	if _, ok := lmc.mutation.RootInstanceId(); !ok {
+		return &ValidationError{Name: "rootInstanceId", err: errors.New(`ent: missing required field "LogMsg.rootInstanceId"`)}
+	}
+	if _, ok := lmc.mutation.LogInstanceCallPath(); !ok {
+		return &ValidationError{Name: "logInstanceCallPath", err: errors.New(`ent: missing required field "LogMsg.logInstanceCallPath"`)}
 	}
 	return nil
 }
@@ -265,6 +307,14 @@ func (lmc *LogMsgCreate) createSpec() (*LogMsg, *sqlgraph.CreateSpec) {
 	if value, ok := lmc.mutation.Msg(); ok {
 		_spec.SetField(logmsg.FieldMsg, field.TypeString, value)
 		_node.Msg = value
+	}
+	if value, ok := lmc.mutation.RootInstanceId(); ok {
+		_spec.SetField(logmsg.FieldRootInstanceId, field.TypeString, value)
+		_node.RootInstanceId = value
+	}
+	if value, ok := lmc.mutation.LogInstanceCallPath(); ok {
+		_spec.SetField(logmsg.FieldLogInstanceCallPath, field.TypeString, value)
+		_node.LogInstanceCallPath = value
 	}
 	if nodes := lmc.mutation.NamespaceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -422,6 +472,30 @@ func (u *LogMsgUpsert) UpdateMsg() *LogMsgUpsert {
 	return u
 }
 
+// SetRootInstanceId sets the "rootInstanceId" field.
+func (u *LogMsgUpsert) SetRootInstanceId(v string) *LogMsgUpsert {
+	u.Set(logmsg.FieldRootInstanceId, v)
+	return u
+}
+
+// UpdateRootInstanceId sets the "rootInstanceId" field to the value that was provided on create.
+func (u *LogMsgUpsert) UpdateRootInstanceId() *LogMsgUpsert {
+	u.SetExcluded(logmsg.FieldRootInstanceId)
+	return u
+}
+
+// SetLogInstanceCallPath sets the "logInstanceCallPath" field.
+func (u *LogMsgUpsert) SetLogInstanceCallPath(v string) *LogMsgUpsert {
+	u.Set(logmsg.FieldLogInstanceCallPath, v)
+	return u
+}
+
+// UpdateLogInstanceCallPath sets the "logInstanceCallPath" field to the value that was provided on create.
+func (u *LogMsgUpsert) UpdateLogInstanceCallPath() *LogMsgUpsert {
+	u.SetExcluded(logmsg.FieldLogInstanceCallPath)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -495,6 +569,34 @@ func (u *LogMsgUpsertOne) SetMsg(v string) *LogMsgUpsertOne {
 func (u *LogMsgUpsertOne) UpdateMsg() *LogMsgUpsertOne {
 	return u.Update(func(s *LogMsgUpsert) {
 		s.UpdateMsg()
+	})
+}
+
+// SetRootInstanceId sets the "rootInstanceId" field.
+func (u *LogMsgUpsertOne) SetRootInstanceId(v string) *LogMsgUpsertOne {
+	return u.Update(func(s *LogMsgUpsert) {
+		s.SetRootInstanceId(v)
+	})
+}
+
+// UpdateRootInstanceId sets the "rootInstanceId" field to the value that was provided on create.
+func (u *LogMsgUpsertOne) UpdateRootInstanceId() *LogMsgUpsertOne {
+	return u.Update(func(s *LogMsgUpsert) {
+		s.UpdateRootInstanceId()
+	})
+}
+
+// SetLogInstanceCallPath sets the "logInstanceCallPath" field.
+func (u *LogMsgUpsertOne) SetLogInstanceCallPath(v string) *LogMsgUpsertOne {
+	return u.Update(func(s *LogMsgUpsert) {
+		s.SetLogInstanceCallPath(v)
+	})
+}
+
+// UpdateLogInstanceCallPath sets the "logInstanceCallPath" field to the value that was provided on create.
+func (u *LogMsgUpsertOne) UpdateLogInstanceCallPath() *LogMsgUpsertOne {
+	return u.Update(func(s *LogMsgUpsert) {
+		s.UpdateLogInstanceCallPath()
 	})
 }
 
@@ -734,6 +836,34 @@ func (u *LogMsgUpsertBulk) SetMsg(v string) *LogMsgUpsertBulk {
 func (u *LogMsgUpsertBulk) UpdateMsg() *LogMsgUpsertBulk {
 	return u.Update(func(s *LogMsgUpsert) {
 		s.UpdateMsg()
+	})
+}
+
+// SetRootInstanceId sets the "rootInstanceId" field.
+func (u *LogMsgUpsertBulk) SetRootInstanceId(v string) *LogMsgUpsertBulk {
+	return u.Update(func(s *LogMsgUpsert) {
+		s.SetRootInstanceId(v)
+	})
+}
+
+// UpdateRootInstanceId sets the "rootInstanceId" field to the value that was provided on create.
+func (u *LogMsgUpsertBulk) UpdateRootInstanceId() *LogMsgUpsertBulk {
+	return u.Update(func(s *LogMsgUpsert) {
+		s.UpdateRootInstanceId()
+	})
+}
+
+// SetLogInstanceCallPath sets the "logInstanceCallPath" field.
+func (u *LogMsgUpsertBulk) SetLogInstanceCallPath(v string) *LogMsgUpsertBulk {
+	return u.Update(func(s *LogMsgUpsert) {
+		s.SetLogInstanceCallPath(v)
+	})
+}
+
+// UpdateLogInstanceCallPath sets the "logInstanceCallPath" field to the value that was provided on create.
+func (u *LogMsgUpsertBulk) UpdateLogInstanceCallPath() *LogMsgUpsertBulk {
+	return u.Update(func(s *LogMsgUpsert) {
+		s.UpdateLogInstanceCallPath()
 	})
 }
 

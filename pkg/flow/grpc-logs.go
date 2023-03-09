@@ -6,7 +6,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
-	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	entlog "github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
 	entns "github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	entwf "github.com/direktiv/direktiv/pkg/flow/ent/workflow"
@@ -306,8 +305,18 @@ func (flow *flow) InstanceLogs(ctx context.Context, req *grpc.InstanceLogsReques
 	}
 
 	clients := flow.edb.Clients(ctx)
+	// its important to append the intanceID to the callpath since we don't do it when creating the database entry
+	prefix := appendInstanceID(cached.Instance.CallPath, cached.Instance.ID.String())
+	root, err := getRootinstanceID(prefix)
+	if err != nil {
+		return nil, err
+	}
+	callerIsRoot := root == cached.Instance.Invoker
 
-	query := clients.LogMsg.Query().Where(entlog.HasInstanceWith(entinst.ID(cached.Instance.ID)))
+	query := clients.LogMsg.Query().Where(entlog.RootInstanceId(root))
+	if !callerIsRoot {
+		query = clients.LogMsg.Query().Where(entlog.And(entlog.RootInstanceIdEQ(root), entlog.LogInstanceCallPathHasPrefix(prefix)))
+	}
 
 	results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
 	if err != nil {
@@ -341,13 +350,21 @@ func (flow *flow) InstanceLogsParcels(req *grpc.InstanceLogsRequest, srv grpc.Fl
 
 	sub := flow.pubsub.SubscribeInstanceLogs(cached)
 	defer flow.cleanup(sub.Close)
+	// its important to append the intanceID to the callpath since we don't do it when creating the database entry.
+	prefix := appendInstanceID(cached.Instance.CallPath, cached.Instance.ID.String())
+	root, err := getRootinstanceID(prefix)
+	callerIsRoot := root == cached.Instance.ID.String()
+	if err != nil {
+		return err
+	}
 
 resend:
 
 	clients := flow.edb.Clients(ctx)
-
-	query := clients.LogMsg.Query().Where(entlog.HasInstanceWith(entinst.ID(cached.Instance.ID)))
-
+	query := clients.LogMsg.Query().Where(entlog.RootInstanceIdEQ(root))
+	if !callerIsRoot {
+		query = clients.LogMsg.Query().Where(entlog.And(entlog.RootInstanceIdEQ(root), entlog.LogInstanceCallPathHasPrefix(prefix)))
+	}
 	results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
 	if err != nil {
 		return err
