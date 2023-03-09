@@ -1,3 +1,5 @@
+import "cross-fetch/polyfill";
+
 import { FC, PropsWithChildren } from "react";
 import {
   QueryClient,
@@ -13,7 +15,7 @@ import {
   test,
   vi,
 } from "vitest";
-import { render, renderHook, screen, waitFor } from "@testing-library/react";
+import { renderHook, waitFor } from "@testing-library/react";
 
 import { apiFactory } from "../utils";
 import { rest } from "msw";
@@ -30,13 +32,10 @@ const queryClient = new QueryClient({
     // eslint-disable-next-line no-console
     log: console.log,
     warn: console.warn,
-    error: () => null,
+    error: console.error,
+    // error: () => null,
   },
 });
-
-const useCustomHook = () => {
-  return useQuery({ queryKey: ["customHook"], queryFn: () => "Hello" });
-};
 
 const wrapper: FC<PropsWithChildren> = ({ children }) => (
   <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
@@ -63,7 +62,7 @@ afterEach(() => {
   testApi.resetHandlers();
 });
 
-const myApi = apiFactory({
+const getSome = apiFactory({
   path: "/some",
   method: "GET",
   schema: z.object({
@@ -71,16 +70,16 @@ const myApi = apiFactory({
   }),
 });
 
+const useCustomHook = () => {
+  return useQuery({
+    queryKey: ["customHook"],
+    queryFn: () => getSome({ apiKey: "123", params: null }),
+  });
+};
+
 describe("processApiResponse", () => {
   test("handles success and forwards optional additional payload", async () => {
     const { result } = renderHook(() => useCustomHook(), { wrapper });
-
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-
-    // render(<div>hi there...</div>);
-
-    screen.debug();
-
-    expect(1).toBe(1);
   });
 });
