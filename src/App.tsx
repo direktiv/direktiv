@@ -1,16 +1,17 @@
 import "./App.css";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useApiKeyState, useThemeState } from "./util/store";
+import { useApiActions, useApiKey } from "./util/store/apiKey";
 
 import { useNamespaces } from "./api/namespaces";
+import { useThemeState } from "./util/store";
 import { useVersion } from "./api/version";
 
 const queryClient = new QueryClient();
 
 function App() {
-  const apiKey = useApiKeyState((state) => state.apiKey);
-  const setApiKey = useApiKeyState((state) => state.actions.setApiKey);
+  const apiKey = useApiKey();
+  const { setApiKey } = useApiActions();
   const theme = useThemeState((state) => state.theme);
   const setTheme = useThemeState((state) => state.actions.setTheme);
   const { data: version, isLoading: isVersionLoading } = useVersion();
