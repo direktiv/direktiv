@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useApiActions, useApiKey } from "./util/store/apiKey";
 import { useTheme, useThemeActions } from "./util/store/theme";
 
+import { useEffect } from "react";
 import { useNamespaces } from "./api/namespaces";
 import { useVersion } from "./api/version";
 
@@ -17,6 +18,13 @@ function App() {
 
   const { data: version, isLoading: isVersionLoading } = useVersion();
   const { data: namespaces, isLoading: isLoadingNamespaces } = useNamespaces();
+
+  useEffect(() => {
+    if (theme) {
+      const bodyTag = document.querySelector("body");
+      bodyTag?.setAttribute("data-theme", theme);
+    }
+  }, [theme]);
 
   return (
     <div className="flex flex-col space-y-5 p-10">
