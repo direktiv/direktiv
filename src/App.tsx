@@ -1,8 +1,8 @@
 import "./App.css";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useApiKeyState, useThemeState } from "./util/store";
 
-import { useApiKeyState } from "./util/store";
 import { useNamespaces } from "./api/namespaces";
 import { useVersion } from "./api/version";
 
@@ -11,11 +11,29 @@ const queryClient = new QueryClient();
 function App() {
   const apiKey = useApiKeyState((state) => state.apiKey);
   const setApiKey = useApiKeyState((state) => state.setApiKey);
+  const theme = useThemeState((state) => state.theme);
+  const setTheme = useThemeState((state) => state.setTheme);
   const { data: version, isLoading: isVersionLoading } = useVersion();
   const { data: namespaces, isLoading: isLoadingNamespaces } = useNamespaces();
 
   return (
-    <div className="flex flex-col space-y-5">
+    <div className="flex flex-col space-y-5 p-10">
+      <div>
+        <h1>
+          theme <span className="font-bold">{theme}</span>
+        </h1>
+        <div className="flex space-x-5">
+          <button className="btn btn-primary" onClick={() => setTheme("dark")}>
+            darkmode
+          </button>
+          <button className="btn btn-primary" onClick={() => setTheme("light")}>
+            lightmode
+          </button>
+          <button className="btn btn-error" onClick={() => setTheme(null)}>
+            reset theme
+          </button>
+        </div>
+      </div>
       <div>
         <h1>
           api key is <span className="font-bold">{apiKey}</span>
