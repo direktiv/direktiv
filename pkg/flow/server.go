@@ -46,8 +46,6 @@ type server struct {
 	vars     *vars
 	actions  *actions
 
-	fs any
-
 	metrics *metrics.Client
 
 	logQueue     chan *logMessage
@@ -153,28 +151,6 @@ func (srv *server) start(ctx context.Context) error {
 	}
 	defer srv.cleanup(srv.pubsub.Close)
 
-	// TODO: Remove debug code.
-	//db1, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
-	//if err != nil {
-	//	return err
-	//}
-	//err = db1.AutoMigrate(&psql.Namespace{}, &psql.File{})
-	//if err != nil {
-	//	return err
-	//}
-	//
-	//srv.fs = psql.NewSQLFilesystem(db1)
-	//
-	//ns1, err := srv.fs.CreateNamespace(ctx, "my_ns_1")
-	//ns1.CreateFile(ctx, "/file1.text", "text", bytes.NewReader([]byte("content1")))
-	//ns1.CreateFile(ctx, "/file2.text", "text", bytes.NewReader([]byte("content2")))
-	//ns1.CreateFile(ctx, "/dir1", "directory", nil)
-	//ns1.CreateFile(ctx, "/dir1/file3.text", "text", bytes.NewReader([]byte("content3")))
-	//
-	//srv.fs.CreateNamespace(ctx, "my_ns_2")
-	//srv.fs.CreateNamespace(ctx, "my_ns_3")
-	//srv.fs.CreateNamespace(ctx, "my_ns_4")
-	//
 	srv.sugar.Debug("Initializing timers.")
 
 	srv.timers, err = initTimers(srv.pubsub)
