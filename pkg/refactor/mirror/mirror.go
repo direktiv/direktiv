@@ -38,32 +38,31 @@ func ExecuteMirroringProcess(
 ) error {
 	// function starts here:
 
-	distDir, err := os.MkdirTemp("", "direktiv_mirrors")
+	dstDir, err := os.MkdirTemp("", "direktiv_mirrors")
 	if err != nil {
-		return fmt.Errorf("create mirror dist_directory, err: %w", err)
+		return fmt.Errorf("create mirror dst_directory, err: %w", err)
 	}
 	defer func() {
-		err := os.RemoveAll(distDir)
+		err := os.RemoveAll(dstDir)
 		if err != nil {
 			lg.Errorf("cleaning mirror dist_directory err: %w", err)
 		}
 	}()
 
-	err = source.PullInPath(settings, distDir)
+	err = source.PullInPath(settings, dstDir)
 	if err != nil {
 		return fmt.Errorf("mirror pull, err: %w", err)
 	}
 
-	lg.Debugw("mirror fetched", "dist_directory", distDir)
+	lg.Debugw("mirror fetched", "dist_directory", dstDir)
 
-	err = filepath.WalkDir(distDir, func(path string, d fs.DirEntry, err error) error {
+	err = filepath.WalkDir(dstDir, func(path string, d fs.DirEntry, err error) error {
 		lg = lg.With("path", path, "is_dir", d.IsDir())
 
 		if err != nil {
 			return fmt.Errorf("mirror file walk, err: %w", err)
 		}
 
-		//nolint
 		var fileReader io.ReadCloser = nil
 		if !d.IsDir() {
 			data, err := os.ReadFile(path)
@@ -76,9 +75,9 @@ func ExecuteMirroringProcess(
 
 		// create file(or dir) in directive file store.
 		if d.IsDir() {
-			_, err = direktivRoot.CreateFile(ctx, strings.TrimPrefix(path, distDir), filestore.FileTypeDirectory, nil)
+			_, err = direktivRoot.CreateFile(ctx, strings.TrimPrefix(path, dstDir), filestore.FileTypeDirectory, nil)
 		} else {
-			_, err = direktivRoot.CreateFile(ctx, strings.TrimPrefix(path, distDir), filestore.FileTypeFile, fileReader)
+			_, err = direktivRoot.CreateFile(ctx, strings.TrimPrefix(path, dstDir), filestore.FileTypeFile, fileReader)
 		}
 
 		if err != nil {
@@ -94,7 +93,7 @@ func ExecuteMirroringProcess(
 	}
 
 	lg.Infow("mirror saved successfully",
-		"direktiv_root_id", direktivRoot.GetID(), "dist_directory", distDir)
+		"direktiv_root_id", direktivRoot.GetID(), "dist_directory", dstDir)
 
 	return nil
 }

@@ -29,7 +29,7 @@ type File struct {
 	db *gorm.DB
 }
 
-var _ filestore.File = &File{}
+var _ filestore.File = &File{} // Ensures File struct conforms to filestore.File interface.
 
 func (f *File) GetID() uuid.UUID {
 	return f.ID
@@ -59,7 +59,7 @@ func (f *File) GetName() string {
 	return filepath.Base(f.Path)
 }
 
-func (f *File) Delete(ctx context.Context, forceDelete bool) error {
+func (f *File) Delete(ctx context.Context, force bool) error {
 	res := f.db.WithContext(ctx).Delete(&File{}, f.ID)
 	if res.Error != nil {
 		return res.Error

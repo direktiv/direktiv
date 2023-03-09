@@ -24,7 +24,7 @@ type Root struct {
 	db *gorm.DB
 }
 
-var _ filestore.Root = &Root{}
+var _ filestore.Root = &Root{} // Ensures Root struct conforms to filestore.Root interface.
 
 type RootList []*Root
 
@@ -46,21 +46,23 @@ func (r *Root) Delete(ctx context.Context) error {
 
 //nolint:ireturn
 func (r *Root) CreateFile(ctx context.Context, path string, typ filestore.FileType, dataReader io.Reader) (filestore.File, error) {
-	path = filepath.Clean(path)
-	depth := strings.Count(path, "/")
-	if path == "/" {
-		depth = 0
+	path, err := filestore.SanitizePath(path)
+	if err != nil {
+		return nil, fmt.Errorf("create validation error, %w", err)
 	}
 
 	var data []byte
 	if dataReader != nil {
-		data, _ = io.ReadAll(dataReader)
+		data, err = io.ReadAll(dataReader)
+		if err != nil {
+			return nil, fmt.Errorf("create io error, %w", err)
+		}
 	}
 
 	f := &File{
 		ID:     uuid.New(),
 		Path:   path,
-		Depth:  depth,
+		Depth:  filestore.ParseDepth(path),
 		Data:   data,
 		Typ:    typ,
 		RootID: r.ID,
@@ -78,7 +80,10 @@ func (r *Root) CreateFile(ctx context.Context, path string, typ filestore.FileTy
 }
 
 //nolint:ireturn
-func (r *Root) GetFile(ctx context.Context, path string) (filestore.File, error) {
+func (r *Root) GetFile(ctx context.Context, path string, opts *filestore.GetFileOpts) (filestore.File, error) {
+	if opts == nil {
+		opts = &filestore.GetFileOpts{}
+	}
 	f := &File{}
 	path = filepath.Clean(path)
 
@@ -91,22 +96,27 @@ func (r *Root) GetFile(ctx context.Context, path string) (filestore.File, error)
 	return f, nil
 }
 
-// nolint:ireturn
+func addTrailingSlash(path string) string {
+	if !strings.HasSuffix(path, "/") {
+		return path + "/"
+	}
+	return path
+}
+
+//nolint:ireturn
 func (r *Root) ListPath(ctx context.Context, path string) ([]filestore.File, error) {
 	var list []File
-
-	path = filepath.Clean(path)
-	depth := strings.Count(path, "/")
-	if path == "/" {
-		depth = 0
+	path, err := filestore.SanitizePath(path)
+	if err != nil {
+		return nil, fmt.Errorf("create error, %w", err)
 	}
 
 	res := r.db.WithContext(ctx).
 		// Don't include file 'data' in the query. File data can be retrieved with file.GetData().
 		Select("id", "path", "depth", "root_id", "created_at", "updated_at").
 		Where("root_id", r.ID).
-		Where("depth", depth+1).
-		Where("path LIKE ?", path+"%", path).
+		Where("depth", filestore.ParseDepth(path)+1).
+		Where("path LIKE ?", addTrailingSlash(path)+"%"). // trailing slash necessary otherwise "/a" will receive children for both "/a" and "/abc".
 		Find(&list)
 
 	if res.Error != nil {

@@ -14,7 +14,7 @@ type SQLFilestore struct {
 	db *gorm.DB
 }
 
-var _ filestore.Root = &Root{}
+var _ filestore.Root = &Root{} // Ensures Root struct conforms to filestore.Root interface.
 
 func NewSQLFilestore(db *gorm.DB) *SQLFilestore {
 	return &SQLFilestore{
@@ -36,7 +36,6 @@ func NewMockFilestore() (*SQLFilestore, error) {
 	return fs, nil
 }
 
-//nolint:ireturn
 func (s *SQLFilestore) CreateRoot(ctx context.Context, id uuid.UUID) (filestore.Root, error) {
 	n := &Root{ID: id}
 	res := s.db.WithContext(ctx).Create(n)
@@ -80,4 +79,4 @@ func (s *SQLFilestore) GetAllRoots(ctx context.Context) ([]filestore.Root, error
 	return ns, nil
 }
 
-var _ filestore.Filestore = &SQLFilestore{}
+var _ filestore.Filestore = &SQLFilestore{} // Ensures SQLFilestore struct conforms to filestore.Filestore interface.

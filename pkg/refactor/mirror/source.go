@@ -9,12 +9,11 @@ type MockedSource struct {
 	Paths map[string]string
 }
 
-var _ Source = &MockedSource{}
+var _ Source = &MockedSource{} // Ensures MockedSource struct conforms to Source interface.
 
-func (m MockedSource) PullInPath(mirrorSettings Settings, distDirectory string) error {
+func (m MockedSource) PullInPath(settings Settings, dst string) error {
 	for k, v := range m.Paths {
-		//nolint
-		if err := os.WriteFile(distDirectory+k, []byte(v), 0o644); err != nil {
+		if err := os.WriteFile(dst+k, []byte(v), 0o644); err != nil {
 			return err
 		}
 	}

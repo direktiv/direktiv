@@ -55,7 +55,7 @@ func assertRootCorrectFileCreation(t *testing.T, ns filestore.Root, path string,
 	if string(createdData) != string(data) {
 		t.Errorf("unexpected GetPath(), got: >%s<, want: >%s<", createdData, data)
 	}
-	file, err = ns.GetFile(context.Background(), path)
+	file, err = ns.GetFile(context.Background(), path, nil)
 	if err != nil {
 		t.Errorf("unexpected GetFile() error: %v", err)
 	}

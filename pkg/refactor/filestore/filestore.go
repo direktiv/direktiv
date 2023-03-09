@@ -28,7 +28,7 @@ type File interface {
 
 	GetData(ctx context.Context) (io.ReadCloser, error)
 
-	Delete(ctx context.Context, forceDelete bool) error
+	Delete(ctx context.Context, force bool) error
 }
 
 type Filestore interface {
@@ -38,9 +38,13 @@ type Filestore interface {
 	GetAllRoots(ctx context.Context) ([]Root, error)
 }
 
+type GetFileOpts struct {
+	EagerLoad bool
+}
+
 type Root interface {
 	GetID() uuid.UUID
-	GetFile(ctx context.Context, path string) (File, error)
+	GetFile(ctx context.Context, path string, opts *GetFileOpts) (File, error)
 
 	CreateFile(ctx context.Context, path string, typ FileType, dataReader io.Reader) (File, error)
 
