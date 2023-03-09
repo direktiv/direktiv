@@ -1,6 +1,7 @@
 import type { QueryFunctionContext } from "@tanstack/react-query";
 import { VersionSchema } from "./schema";
 import { apiFactory } from "../utils";
+import { useGlobalStore } from "../../util/store";
 import { useQuery } from "@tanstack/react-query";
 
 const getVersion = apiFactory({
@@ -21,10 +22,12 @@ const versionKeys = {
   all: (apiKey: string) => [{ scope: "versions", apiKey }] as const,
 };
 
-export const useVersion = () =>
-  useQuery({
-    queryKey: versionKeys.all("password"),
+export const useVersion = () => {
+  const apiKey = useGlobalStore((state) => state.apiKey);
+  return useQuery({
+    queryKey: versionKeys.all(apiKey || "no-api-key"),
     queryFn: fetchVersions,
     networkMode: "always",
     staleTime: Infinity,
   });
+};

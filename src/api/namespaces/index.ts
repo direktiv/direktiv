@@ -1,6 +1,7 @@
 import { NamespaceListSchema } from "./schema";
 import type { QueryFunctionContext } from "@tanstack/react-query";
 import { apiFactory } from "../utils";
+import { useGlobalStore } from "../../util/store";
 import { useQuery } from "@tanstack/react-query";
 
 export const getNamespaces = apiFactory({
@@ -21,10 +22,12 @@ const namespaceKeys = {
   all: (apiKey: string) => [{ scope: "namespaces", apiKey }] as const,
 };
 
-export const useNamespaces = () =>
-  useQuery({
-    queryKey: namespaceKeys.all("password"),
+export const useNamespaces = () => {
+  const apiKey = useGlobalStore((state) => state.apiKey);
+  return useQuery({
+    queryKey: namespaceKeys.all(apiKey || "no-api-key"),
     queryFn: fetchNamespaces,
     networkMode: "always",
     staleTime: Infinity,
   });
+};
