@@ -7371,8 +7371,10 @@ type LogMsgMutation struct {
 	id                  *uuid.UUID
 	t                   *time.Time
 	msg                 *string
+	level               *string
 	rootInstanceId      *string
 	logInstanceCallPath *string
+	tags                *map[string]string
 	clearedFields       map[string]struct{}
 	namespace           *uuid.UUID
 	clearednamespace    bool
@@ -7563,6 +7565,42 @@ func (m *LogMsgMutation) ResetMsg() {
 	m.msg = nil
 }
 
+// SetLevel sets the "level" field.
+func (m *LogMsgMutation) SetLevel(s string) {
+	m.level = &s
+}
+
+// Level returns the value of the "level" field in the mutation.
+func (m *LogMsgMutation) Level() (r string, exists bool) {
+	v := m.level
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLevel returns the old "level" field's value of the LogMsg entity.
+// If the LogMsg object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LogMsgMutation) OldLevel(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLevel is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLevel requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLevel: %w", err)
+	}
+	return oldValue.Level, nil
+}
+
+// ResetLevel resets all changes to the "level" field.
+func (m *LogMsgMutation) ResetLevel() {
+	m.level = nil
+}
+
 // SetRootInstanceId sets the "rootInstanceId" field.
 func (m *LogMsgMutation) SetRootInstanceId(s string) {
 	m.rootInstanceId = &s
@@ -7633,6 +7671,55 @@ func (m *LogMsgMutation) OldLogInstanceCallPath(ctx context.Context) (v string, 
 // ResetLogInstanceCallPath resets all changes to the "logInstanceCallPath" field.
 func (m *LogMsgMutation) ResetLogInstanceCallPath() {
 	m.logInstanceCallPath = nil
+}
+
+// SetTags sets the "tags" field.
+func (m *LogMsgMutation) SetTags(value map[string]string) {
+	m.tags = &value
+}
+
+// Tags returns the value of the "tags" field in the mutation.
+func (m *LogMsgMutation) Tags() (r map[string]string, exists bool) {
+	v := m.tags
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTags returns the old "tags" field's value of the LogMsg entity.
+// If the LogMsg object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LogMsgMutation) OldTags(ctx context.Context) (v map[string]string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTags is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTags requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTags: %w", err)
+	}
+	return oldValue.Tags, nil
+}
+
+// ClearTags clears the value of the "tags" field.
+func (m *LogMsgMutation) ClearTags() {
+	m.tags = nil
+	m.clearedFields[logmsg.FieldTags] = struct{}{}
+}
+
+// TagsCleared returns if the "tags" field was cleared in this mutation.
+func (m *LogMsgMutation) TagsCleared() bool {
+	_, ok := m.clearedFields[logmsg.FieldTags]
+	return ok
+}
+
+// ResetTags resets all changes to the "tags" field.
+func (m *LogMsgMutation) ResetTags() {
+	m.tags = nil
+	delete(m.clearedFields, logmsg.FieldTags)
 }
 
 // SetNamespaceID sets the "namespace" edge to the Namespace entity by id.
@@ -7810,18 +7897,24 @@ func (m *LogMsgMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *LogMsgMutation) Fields() []string {
-	fields := make([]string, 0, 4)
+	fields := make([]string, 0, 6)
 	if m.t != nil {
 		fields = append(fields, logmsg.FieldT)
 	}
 	if m.msg != nil {
 		fields = append(fields, logmsg.FieldMsg)
 	}
+	if m.level != nil {
+		fields = append(fields, logmsg.FieldLevel)
+	}
 	if m.rootInstanceId != nil {
 		fields = append(fields, logmsg.FieldRootInstanceId)
 	}
 	if m.logInstanceCallPath != nil {
 		fields = append(fields, logmsg.FieldLogInstanceCallPath)
+	}
+	if m.tags != nil {
+		fields = append(fields, logmsg.FieldTags)
 	}
 	return fields
 }
@@ -7835,10 +7928,14 @@ func (m *LogMsgMutation) Field(name string) (ent.Value, bool) {
 		return m.T()
 	case logmsg.FieldMsg:
 		return m.Msg()
+	case logmsg.FieldLevel:
+		return m.Level()
 	case logmsg.FieldRootInstanceId:
 		return m.RootInstanceId()
 	case logmsg.FieldLogInstanceCallPath:
 		return m.LogInstanceCallPath()
+	case logmsg.FieldTags:
+		return m.Tags()
 	}
 	return nil, false
 }
@@ -7852,10 +7949,14 @@ func (m *LogMsgMutation) OldField(ctx context.Context, name string) (ent.Value, 
 		return m.OldT(ctx)
 	case logmsg.FieldMsg:
 		return m.OldMsg(ctx)
+	case logmsg.FieldLevel:
+		return m.OldLevel(ctx)
 	case logmsg.FieldRootInstanceId:
 		return m.OldRootInstanceId(ctx)
 	case logmsg.FieldLogInstanceCallPath:
 		return m.OldLogInstanceCallPath(ctx)
+	case logmsg.FieldTags:
+		return m.OldTags(ctx)
 	}
 	return nil, fmt.Errorf("unknown LogMsg field %s", name)
 }
@@ -7879,6 +7980,13 @@ func (m *LogMsgMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetMsg(v)
 		return nil
+	case logmsg.FieldLevel:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLevel(v)
+		return nil
 	case logmsg.FieldRootInstanceId:
 		v, ok := value.(string)
 		if !ok {
@@ -7892,6 +8000,13 @@ func (m *LogMsgMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetLogInstanceCallPath(v)
+		return nil
+	case logmsg.FieldTags:
+		v, ok := value.(map[string]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTags(v)
 		return nil
 	}
 	return fmt.Errorf("unknown LogMsg field %s", name)
@@ -7922,7 +8037,11 @@ func (m *LogMsgMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *LogMsgMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(logmsg.FieldTags) {
+		fields = append(fields, logmsg.FieldTags)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -7935,6 +8054,11 @@ func (m *LogMsgMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *LogMsgMutation) ClearField(name string) error {
+	switch name {
+	case logmsg.FieldTags:
+		m.ClearTags()
+		return nil
+	}
 	return fmt.Errorf("unknown LogMsg nullable field %s", name)
 }
 
@@ -7948,11 +8072,17 @@ func (m *LogMsgMutation) ResetField(name string) error {
 	case logmsg.FieldMsg:
 		m.ResetMsg()
 		return nil
+	case logmsg.FieldLevel:
+		m.ResetLevel()
+		return nil
 	case logmsg.FieldRootInstanceId:
 		m.ResetRootInstanceId()
 		return nil
 	case logmsg.FieldLogInstanceCallPath:
 		m.ResetLogInstanceCallPath()
+		return nil
+	case logmsg.FieldTags:
+		m.ResetTags()
 		return nil
 	}
 	return fmt.Errorf("unknown LogMsg field %s", name)

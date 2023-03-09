@@ -629,7 +629,7 @@ func (pubsub *Pubsub) workflowLogs(wf *uuid.UUID) string {
 func (pubsub *Pubsub) SubscribeWorkflowLogs(cached *database.CacheData) *Subscription {
 	keys := pubsub.walkInodeKeys(cached)
 
-	keys = append(keys, cached.Workflow.ID.String(), pubsub.workflowLogs((*uuid.UUID)(&cached.Workflow.ID)))
+	keys = append(keys, cached.Workflow.ID.String(), pubsub.workflowLogs(&cached.Workflow.ID))
 
 	return pubsub.Subscribe(keys...)
 }

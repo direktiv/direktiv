@@ -56,7 +56,8 @@ func (logger *Logger) logWorker() {
 		if !more {
 			return
 		}
-		logger.SendLogMsg(l)
+		_ = logger.SendLogMsgToDB(l)
+
 	}
 }
 
@@ -149,29 +150,27 @@ func (logger *Logger) sendToWorker(t time.Time, recipientID uuid.UUID, tags map[
 func (logger *Logger) telemetry(ctx context.Context, msg string, tags map[string]string) {
 	span := trace.SpanFromContext(ctx)
 	tid := span.SpanContext().TraceID()
+	tags["trace"] = tid.String()
 	if tags == nil {
 		logger.sugar.Infow(msg, "trace", tid)
 	} else {
-		switch tags["level"] {
+		switch tags["level"] { //TODO: the linter compliaints if the argument nummber is not odd
 		case "info":
-			logger.sugar.Infow(msg, "trace", tid, tags)
+			logger.sugar.Infow(msg, "trace", tid, "tags", tags)
 		case "debug":
-			logger.sugar.Debugw(msg, "trace", tid, tags)
+			logger.sugar.Debugw(msg, "trace", tid, "tags", tags)
 		case "error":
-			logger.sugar.Errorw(msg, "trace", tid, tags)
+			logger.sugar.Errorw(msg, "trace", tid, "tags", tags)
 		case "panic":
-			logger.sugar.DPanicw(msg, "trace", tid, tags)
+			logger.sugar.DPanicw(msg, "trace", tid, "tags", tags)
 		}
 	}
 }
 
-func (logger *Logger) SendLogMsg(l *logMessage) error {
-
+func (logger *Logger) SendLogMsgToDB(l *logMessage) error {
 	ctx := context.Background() // logs are often queued and stored after their originating requests have ended.
-
 	clients := logger.edb.Clients(ctx)
-
-	lc := clients.LogMsg.Create().SetMsg(l.msg).SetT(l.t)
+	lc := clients.LogMsg.Create().SetMsg(l.msg).SetT(l.t).SetLevel(l.level).SetTags(l.tags)
 
 	switch l.tags["recipientType"] {
 	case "server":
@@ -182,10 +181,10 @@ func (logger *Logger) SendLogMsg(l *logMessage) error {
 			return err
 		}
 		lc.SetInstanceID(l.recipientID).SetRootInstanceId(rootInstance).SetLogInstanceCallPath(callpath)
-	case "workflow":
-		lc.SetWorkflowID(l.recipientID)
 	case "namespace":
 		lc.SetNamespaceID(l.recipientID)
+	case "workflow":
+		lc.SetWorkflowID(l.recipientID)
 	case "mirror":
 		lc.SetActivityID(l.recipientID)
 	default:
