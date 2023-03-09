@@ -3,14 +3,18 @@ import { persist } from "zustand/middleware";
 
 interface ApiKeyState {
   apiKey: string | null;
-  setApiKey: (apiKey: ApiKeyState["apiKey"]) => void;
+  actions: {
+    setApiKey: (apiKey: ApiKeyState["apiKey"]) => void;
+  };
 }
 
 export const useApiKeyState = create<ApiKeyState>()(
   persist(
     (set) => ({
       apiKey: null,
-      setApiKey: (newApiKey) => set(() => ({ apiKey: newApiKey })),
+      actions: {
+        setApiKey: (newApiKey) => set(() => ({ apiKey: newApiKey })),
+      },
     }),
     {
       name: "directiv-store",
@@ -20,14 +24,18 @@ export const useApiKeyState = create<ApiKeyState>()(
 
 interface ThemeState {
   theme: "light" | "dark" | null;
-  setTheme: (theme: ThemeState["theme"]) => void;
+  actions: {
+    setTheme: (theme: ThemeState["theme"]) => void;
+  };
 }
 
 export const useThemeState = create<ThemeState>()(
   persist(
     (set) => ({
       theme: null,
-      setTheme: (newTheme) => set(() => ({ theme: newTheme })),
+      actions: {
+        setTheme: (newTheme) => set(() => ({ theme: newTheme })),
+      },
     }),
     {
       name: "directiv-store",

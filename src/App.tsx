@@ -10,9 +10,9 @@ const queryClient = new QueryClient();
 
 function App() {
   const apiKey = useApiKeyState((state) => state.apiKey);
-  const setApiKey = useApiKeyState((state) => state.setApiKey);
+  const setApiKey = useApiKeyState((state) => state.actions.setApiKey);
   const theme = useThemeState((state) => state.theme);
-  const setTheme = useThemeState((state) => state.setTheme);
+  const setTheme = useThemeState((state) => state.actions.setTheme);
   const { data: version, isLoading: isVersionLoading } = useVersion();
   const { data: namespaces, isLoading: isLoadingNamespaces } = useNamespaces();
 
