@@ -17,3 +17,20 @@ export const useApiKeyState = create<ApiKeyState>()(
     }
   )
 );
+
+interface ThemeState {
+  theme: "light" | "dark" | null;
+  setTheme: (theme: ThemeState["theme"]) => void;
+}
+
+export const useThemeState = create<ThemeState>()(
+  persist(
+    (set) => ({
+      theme: null,
+      setTheme: (newTheme) => set(() => ({ theme: newTheme })),
+    }),
+    {
+      name: "directiv-store",
+    }
+  )
+);
