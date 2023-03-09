@@ -20,10 +20,11 @@ function App() {
   const { data: namespaces, isLoading: isLoadingNamespaces } = useNamespaces();
 
   useEffect(() => {
-    if (theme) {
-      const bodyTag = document.querySelector("body");
-      bodyTag?.setAttribute("data-theme", theme);
-    }
+    let applyTheme = window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "dark"
+      : "light";
+    if (theme) applyTheme = theme;
+    document.querySelector("html")?.setAttribute("data-theme", applyTheme);
   }, [theme]);
 
   return (
