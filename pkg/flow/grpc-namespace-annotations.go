@@ -264,9 +264,9 @@ func (flow *flow) SetNamespaceAnnotation(ctx context.Context, req *grpc.SetNames
 	}
 
 	if newAnnotation {
-		flow.logToNamespace(ctx, time.Now(), cached, "Created namespace annotation '%s'.", key)
+		flow.logger.LogToNamespace(ctx, time.Now(), cached, "Created namespace annotation '%s'.", key)
 	} else {
-		flow.logToNamespace(ctx, time.Now(), cached, "Updated namespace annotation '%s'.", key)
+		flow.logger.LogToNamespace(ctx, time.Now(), cached, "Updated namespace annotation '%s'.", key)
 	}
 
 	flow.pubsub.NotifyNamespaceAnnotations(cached.Namespace)
@@ -466,9 +466,9 @@ func (flow *flow) SetNamespaceAnnotationParcels(srv grpc.Flow_SetNamespaceAnnota
 	}
 
 	if newAnnotation {
-		flow.logToNamespace(ctx, time.Now(), cached, "Created namespace annotation '%s'.", key)
+		flow.logger.LogToNamespace(ctx, time.Now(), cached, "Created namespace annotation '%s'.", key)
 	} else {
-		flow.logToNamespace(ctx, time.Now(), cached, "Updated namespace annotation '%s'.", key)
+		flow.logger.LogToNamespace(ctx, time.Now(), cached, "Updated namespace annotation '%s'.", key)
 	}
 
 	flow.pubsub.NotifyNamespaceAnnotations(cached.Namespace)
@@ -517,7 +517,7 @@ func (flow *flow) DeleteNamespaceAnnotation(ctx context.Context, req *grpc.Delet
 		return nil, err
 	}
 
-	flow.logToNamespace(ctx, time.Now(), cached, "Deleted namespace annotation '%s'.", annotation.Name)
+	flow.logger.LogToNamespace(ctx, time.Now(), cached, "Deleted namespace annotation '%s'.", annotation.Name)
 	flow.pubsub.NotifyNamespaceAnnotations(cached.Namespace)
 
 	var resp emptypb.Empty
@@ -553,7 +553,7 @@ func (flow *flow) RenameNamespaceAnnotation(ctx context.Context, req *grpc.Renam
 		return nil, err
 	}
 
-	flow.logToNamespace(ctx, time.Now(), cached, "Renamed namespace annotation from '%s' to '%s'.", req.GetOld(), req.GetNew())
+	flow.logger.LogToNamespace(ctx, time.Now(), cached, "Renamed namespace annotation from '%s' to '%s'.", req.GetOld(), req.GetNew())
 	flow.pubsub.NotifyNamespaceAnnotations(cached.Namespace)
 
 	var resp grpc.RenameNamespaceAnnotationResponse

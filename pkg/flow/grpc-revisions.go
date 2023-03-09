@@ -175,7 +175,7 @@ func (flow *flow) DeleteRevision(ctx context.Context, req *grpc.DeleteRevisionRe
 		}
 	}
 
-	flow.logToWorkflow(ctx, time.Now(), cached, "Deleted workflow revision: %s.", cached.Revision.ID.String())
+	flow.logger.LogToWorkflow(ctx, time.Now(), cached, "Deleted workflow revision: %s.", cached.Revision.ID.String())
 	flow.pubsub.NotifyWorkflow(cached.Workflow)
 
 	var resp emptypb.Empty

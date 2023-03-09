@@ -10,6 +10,7 @@ import (
 	entns "github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	entwf "github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/flow/internallogger"
 )
 
 var logsOrderings = []*orderingInfo{
@@ -306,8 +307,8 @@ func (flow *flow) InstanceLogs(ctx context.Context, req *grpc.InstanceLogsReques
 
 	clients := flow.edb.Clients(ctx)
 	// its important to append the intanceID to the callpath since we don't do it when creating the database entry
-	prefix := appendInstanceID(cached.Instance.CallPath, cached.Instance.ID.String())
-	root, err := getRootinstanceID(prefix)
+	prefix := internallogger.AppendInstanceID(cached.Instance.CallPath, cached.Instance.ID.String())
+	root, err := internallogger.GetRootinstanceID(prefix)
 	if err != nil {
 		return nil, err
 	}
@@ -351,8 +352,8 @@ func (flow *flow) InstanceLogsParcels(req *grpc.InstanceLogsRequest, srv grpc.Fl
 	sub := flow.pubsub.SubscribeInstanceLogs(cached)
 	defer flow.cleanup(sub.Close)
 	// its important to append the intanceID to the callpath since we don't do it when creating the database entry.
-	prefix := appendInstanceID(cached.Instance.CallPath, cached.Instance.ID.String())
-	root, err := getRootinstanceID(prefix)
+	prefix := internallogger.AppendInstanceID(cached.Instance.CallPath, cached.Instance.ID.String())
+	root, err := internallogger.GetRootinstanceID(prefix)
 	callerIsRoot := root == cached.Instance.ID.String()
 	if err != nil {
 		return err

@@ -1,19 +1,36 @@
-package flow
+package internallogger
 
 import (
 	"context"
 	"errors"
 	"fmt"
-	"runtime"
 	"strings"
+	"sync"
 	"time"
 
-	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/direktiv/direktiv/pkg/flow/database"
+	"github.com/direktiv/direktiv/pkg/flow/database/entwrapper"
+	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
 	"go.opentelemetry.io/otel/trace"
+	"go.uber.org/zap"
 )
+
+type Logger struct {
+	logQueue     chan *logMessage
+	logWorkersWG sync.WaitGroup
+	sugar        *zap.SugaredLogger
+	edb          *entwrapper.Database // TODO: remove
+	pubsub       *pubsub.Pubsub
+}
+
+func InitLogger() *Logger {
+	logQueue := make(chan *logMessage, 1000)
+	return &Logger{
+		logQueue: logQueue,
+	}
+}
 
 type logMessage struct {
 	ctx    context.Context //nolint:containedctx
@@ -22,31 +39,34 @@ type logMessage struct {
 	cached *database.CacheData
 }
 
-func (srv *server) startLogWorkers(n int) {
-	srv.logWorkersWG.Add(n)
+func (logger *Logger) StartLogWorkers(n int, db *entwrapper.Database, pubsub *pubsub.Pubsub, sugar *zap.SugaredLogger) {
+	logger.edb = db
+	logger.pubsub = pubsub
+	logger.sugar = sugar
+	logger.logWorkersWG.Add(n)
 	for i := 0; i < n; i++ {
-		go srv.logWorker()
+		go logger.logWorker()
 	}
 }
 
-func (srv *server) logWorker() {
-	defer srv.logWorkersWG.Done()
+func (logger *Logger) logWorker() {
+	defer logger.logWorkersWG.Done()
 
 	for {
 
-		l, more := <-srv.logQueue
+		l, more := <-logger.logQueue
 		if !more {
 			return
 		}
 
 		if l.cached == nil {
-			srv.workerLogToServer(l)
+			logger.workerLogToServer(l)
 		} else if l.cached.Instance != nil {
-			srv.workerLogToInstance(l)
+			logger.workerLogToInstance(l)
 		} else if l.cached.Workflow != nil {
-			srv.workerLogToWorkflow(l)
+			logger.workerLogToWorkflow(l)
 		} else if l.cached.Namespace != nil {
-			srv.workerLogToNamespace(l)
+			logger.workerLogToNamespace(l)
 		} else {
 			panic("how?")
 		}
@@ -54,84 +74,84 @@ func (srv *server) logWorker() {
 	}
 }
 
-func (srv *server) closeLogWorkers() {
-	close(srv.logQueue)
-	srv.logWorkersWG.Wait()
+func (logger *Logger) CloseLogWorkers() {
+	close(logger.logQueue)
+	logger.logWorkersWG.Wait()
 }
 
-func (srv *server) workerLogToServer(l *logMessage) {
+func (logger *Logger) workerLogToServer(l *logMessage) {
 	util.Trace(l.ctx, l.msg)
 
-	clients := srv.edb.Clients(context.Background())
+	clients := logger.edb.Clients(context.Background())
 
 	_, err := clients.LogMsg.Create().SetMsg(l.msg).SetT(l.t).Save(context.Background())
 	if err != nil {
-		srv.sugar.Error(err)
+		logger.sugar.Error(err)
 		return
 	}
 
 	span := trace.SpanFromContext(l.ctx)
 	tid := span.SpanContext().TraceID()
 
-	srv.sugar.Infow(l.msg, "trace", tid)
+	logger.sugar.Infow(l.msg, "trace", tid)
 
-	srv.pubsub.NotifyServerLogs()
+	logger.pubsub.NotifyServerLogs()
 }
 
-func (srv *server) workerLogToNamespace(l *logMessage) {
+func (logger *Logger) workerLogToNamespace(l *logMessage) {
 	util.Trace(l.ctx, l.msg)
 
-	clients := srv.edb.Clients(context.Background())
+	clients := logger.edb.Clients(context.Background())
 
 	_, err := clients.LogMsg.Create().SetMsg(l.msg).SetNamespaceID(l.cached.Namespace.ID).SetT(l.t).Save(l.ctx)
 	if err != nil {
-		srv.sugar.Error(err)
+		logger.sugar.Error(err)
 		return
 	}
 
 	span := trace.SpanFromContext(l.ctx)
 	tid := span.SpanContext().TraceID()
 
-	srv.sugar.Infow(l.msg, "trace", tid, "namespace", l.cached.Namespace.Name, "namespace-id", l.cached.Namespace.ID.String())
+	logger.sugar.Infow(l.msg, "trace", tid, "namespace", l.cached.Namespace.Name, "namespace-id", l.cached.Namespace.ID.String())
 
-	srv.pubsub.NotifyNamespaceLogs(l.cached.Namespace)
+	logger.pubsub.NotifyNamespaceLogs(l.cached.Namespace)
 }
 
-func (srv *server) workerLogToWorkflow(l *logMessage) {
+func (logger *Logger) workerLogToWorkflow(l *logMessage) {
 	util.Trace(l.ctx, l.msg)
 
-	clients := srv.edb.Clients(context.Background())
+	clients := logger.edb.Clients(context.Background())
 
 	_, err := clients.LogMsg.Create().SetMsg(l.msg).SetWorkflowID(l.cached.Workflow.ID).SetT(l.t).Save(l.ctx)
 	if err != nil {
-		srv.sugar.Error(err)
+		logger.sugar.Error(err)
 		return
 	}
 
 	span := trace.SpanFromContext(l.ctx)
 	tid := span.SpanContext().TraceID()
 
-	srv.sugar.Infow(l.msg, "trace", tid, "namespace", l.cached.Namespace.Name, "namespace-id", l.cached.Namespace.ID.String(), "workflow-id", l.cached.Workflow.ID.String(), "workflow", GetInodePath(l.cached.Path()))
+	logger.sugar.Infow(l.msg, "trace", tid, "namespace", l.cached.Namespace.Name, "namespace-id", l.cached.Namespace.ID.String(), "workflow-id", l.cached.Workflow.ID.String() /*"workflow", GetInodePath(l.cached.Path())*/)
 
-	srv.pubsub.NotifyWorkflowLogs(l.cached.Workflow)
+	logger.pubsub.NotifyWorkflowLogs(l.cached.Workflow)
 }
 
-func (srv *server) workerLogToInstance(l *logMessage) {
+func (logger *Logger) workerLogToInstance(l *logMessage) {
 	util.Trace(l.ctx, l.msg)
 
 	ctx := context.Background() // logs are often queued and stored after their originating requests have ended.
 
-	clients := srv.edb.Clients(ctx)
+	clients := logger.edb.Clients(ctx)
 
-	callpath := appendInstanceID(l.cached.Instance.CallPath, l.cached.Instance.ID.String())
-	rootInstance, err := getRootinstanceID(callpath)
+	callpath := AppendInstanceID(l.cached.Instance.CallPath, l.cached.Instance.ID.String())
+	rootInstance, err := GetRootinstanceID(callpath)
 	if err != nil {
-		srv.sugar.Error(err)
+		logger.sugar.Error(err)
 		return
 	}
 	_, err = clients.LogMsg.Create().SetMsg(l.msg).SetInstanceID(l.cached.Instance.ID).SetT(l.t).SetRootInstanceId(rootInstance).SetLogInstanceCallPath(callpath).Save(ctx)
 	if err != nil {
-		srv.sugar.Error(err)
+		logger.sugar.Error(err)
 		return
 	}
 
@@ -150,16 +170,16 @@ func (srv *server) workerLogToInstance(l *logMessage) {
 		wfid = l.cached.Workflow.ID.String()
 	}
 
-	srv.sugar.Infow(l.msg, "trace", tid, "namespace", nsname, "namespace-id", nsid, "workflow-id", wfid, "workflow", GetInodePath(l.cached.Instance.As), "instance", l.cached.Instance.ID.String())
+	logger.sugar.Infow(l.msg, "trace", tid, "namespace", nsname, "namespace-id", nsid, "workflow-id", wfid, "workflow" /*GetInodePath(l.cached.Instance.As),*/, "instance", l.cached.Instance.ID.String())
 
-	srv.pubsub.NotifyInstanceLogs(l.cached.Instance)
+	logger.pubsub.NotifyInstanceLogs(l.cached.Instance)
 }
 
 // Extracts the rootInstanceID from a callpath.
 // Forexpl. /c1d87df6-56fb-4b03-a9e9-00e5122e4884/105cbf37-76b9-452a-b67d-5c9a8cd54ecc.
 // The callpath has to contain a rootInstanceID as first element. In this case the rootInstanceID would be
 // c1d87df6-56fb-4b03-a9e9-00e5122e4884.
-func getRootinstanceID(callpath string) (string, error) {
+func GetRootinstanceID(callpath string) (string, error) {
 	path := strings.Split(callpath, "/")
 	if len(path) < 2 {
 		return "", errors.New("Instance Callpath is malformed")
@@ -172,26 +192,26 @@ func getRootinstanceID(callpath string) (string, error) {
 }
 
 // Appends a InstanceID to the InstanceCallPath.
-func appendInstanceID(callpath, instanceID string) string {
+func AppendInstanceID(callpath, instanceID string) string {
 	if callpath == "/" {
 		return "/" + instanceID
 	}
 	return callpath + "/" + instanceID
 }
 
-func (srv *server) logToServer(ctx context.Context, t time.Time, msg string, a ...interface{}) {
+func (logger *Logger) LogToServer(ctx context.Context, t time.Time, msg string, a ...interface{}) {
 	defer func() {
 		_ = recover()
 	}()
 
-	srv.logQueue <- &logMessage{
+	logger.logQueue <- &logMessage{
 		ctx: ctx,
 		t:   t,
 		msg: fmt.Sprintf(msg, a...),
 	}
 }
 
-func (srv *server) logToNamespace(ctx context.Context, t time.Time, cached *database.CacheData, msg string, a ...interface{}) {
+func (logger *Logger) LogToNamespace(ctx context.Context, t time.Time, cached *database.CacheData, msg string, a ...interface{}) {
 	defer func() {
 		_ = recover()
 	}()
@@ -200,7 +220,7 @@ func (srv *server) logToNamespace(ctx context.Context, t time.Time, cached *data
 	cd.Workflow = nil
 	cd.Instance = nil
 
-	srv.logQueue <- &logMessage{
+	logger.logQueue <- &logMessage{
 		ctx:    ctx,
 		t:      t,
 		msg:    fmt.Sprintf(msg, a...),
@@ -208,7 +228,7 @@ func (srv *server) logToNamespace(ctx context.Context, t time.Time, cached *data
 	}
 }
 
-func (srv *server) logToWorkflow(ctx context.Context, t time.Time, cached *database.CacheData, msg string, a ...interface{}) {
+func (logger *Logger) LogToWorkflow(ctx context.Context, t time.Time, cached *database.CacheData, msg string, a ...interface{}) {
 	defer func() {
 		_ = recover()
 	}()
@@ -216,7 +236,7 @@ func (srv *server) logToWorkflow(ctx context.Context, t time.Time, cached *datab
 	cd := *cached // We do this to zero some fields without modifying the argument.
 	cd.Workflow = nil
 
-	srv.logQueue <- &logMessage{
+	logger.logQueue <- &logMessage{
 		ctx:    ctx,
 		t:      t,
 		msg:    fmt.Sprintf(msg, a...),
@@ -225,19 +245,19 @@ func (srv *server) logToWorkflow(ctx context.Context, t time.Time, cached *datab
 }
 
 // log To instance with string interpolation.
-func (srv *server) logToInstance(ctx context.Context, t time.Time, cached *database.CacheData, msg string, a ...interface{}) {
+func (logger *Logger) LogToInstance(ctx context.Context, t time.Time, cached *database.CacheData, msg string, a ...interface{}) {
 	msg = fmt.Sprintf(msg, a...)
 
-	srv.logToInstanceRaw(ctx, t, cached, msg)
+	logger.LogToInstanceRaw(ctx, t, cached, msg)
 }
 
 // log To instance with raw string.
-func (srv *server) logToInstanceRaw(ctx context.Context, t time.Time, cached *database.CacheData, msg string) {
+func (logger *Logger) LogToInstanceRaw(ctx context.Context, t time.Time, cached *database.CacheData, msg string) {
 	defer func() {
 		_ = recover()
 	}()
 
-	srv.logQueue <- &logMessage{
+	logger.logQueue <- &logMessage{
 		ctx:    ctx,
 		t:      t,
 		msg:    msg,
@@ -245,72 +265,23 @@ func (srv *server) logToInstanceRaw(ctx context.Context, t time.Time, cached *da
 	}
 }
 
-func (engine *engine) UserLog(ctx context.Context, im *instanceMemory, msg string, a ...interface{}) {
-	engine.logToInstance(ctx, time.Now(), im.cached, msg, a...)
-
-	s := fmt.Sprintf(msg, a...)
-
-	if attr := im.cached.Workflow.LogToEvents; attr != "" {
-		event := cloudevents.NewEvent()
-		event.SetID(uuid.New().String())
-		event.SetSource(im.cached.Workflow.ID.String())
-		event.SetType("direktiv.instanceLog")
-		event.SetExtension("logger", attr)
-		event.SetDataContentType("application/json")
-		err := event.SetData("application/json", s)
-		if err != nil {
-			engine.sugar.Errorf("Failed to create CloudEvent: %v.", err)
-		}
-
-		err = engine.events.BroadcastCloudevent(ctx, im.cached, &event, 0)
-		if err != nil {
-			engine.sugar.Errorf("Failed to broadcast CloudEvent: %v.", err)
-			return
-		}
-	}
-}
-
-func (engine *engine) logRunState(ctx context.Context, im *instanceMemory, wakedata []byte, err error) {
-	engine.sugar.Debugf("Running state logic -- %s:%v (%s) (%v)", im.ID().String(), im.Step(), im.logic.GetID(), time.Now())
-	if im.GetMemory() == nil && len(wakedata) == 0 && err == nil {
-		engine.logToInstance(ctx, time.Now(), im.cached, "Running state logic (step:%v) -- %s", im.Step(), im.logic.GetID())
-	}
-}
-
-func this() string {
-	pc, _, _, _ := runtime.Caller(1)
-	fn := runtime.FuncForPC(pc)
-	elems := strings.Split(fn.Name(), ".")
-	return elems[len(elems)-1]
-}
-
-func parent() string {
-	pc, _, _, ok := runtime.Caller(2)
-	if !ok {
-		return ""
-	}
-	fn := runtime.FuncForPC(pc)
-	elems := strings.Split(fn.Name(), ".")
-	return elems[len(elems)-1]
-}
-
-func (srv *server) logToMirrorActivity(ctx context.Context, t time.Time, ns *database.Namespace, mirror *database.Mirror, act *database.MirrorActivity, msg string, a ...interface{}) {
+func (logger *Logger) LogToMirrorActivity(ctx context.Context, t time.Time, ns *database.Namespace, mirror *database.Mirror, act *database.MirrorActivity, msg string, a ...interface{}) {
 	msg = fmt.Sprintf(msg, a...)
 
 	util.Trace(ctx, msg)
 
-	clients := srv.edb.Clients(ctx)
+	clients := logger.edb.Clients(ctx)
 
 	_, err := clients.LogMsg.Create().SetMsg(msg).SetActivityID(act.ID).SetT(t).Save(ctx)
 	if err != nil {
-		srv.sugar.Error(err)
+		logger.sugar.Error(err)
 		return
 	}
 
 	span := trace.SpanFromContext(ctx)
 	tid := span.SpanContext().TraceID()
 
-	srv.sugar.Infow(msg, "trace", tid, "namespace", ns.Name, "namespace-id", ns.ID.String(), "mirror-id", mirror.ID.String())
+	logger.sugar.Infow(msg, "trace", tid, "namespace", ns.Name, "namespace-id", ns.ID.String(), "mirror-id", mirror.ID.String())
 
-	srv.pubsub.NotifyMirrorActivityLogs(act)
+	logger.pubsub.NotifyMirrorActivityLogs(act)
 }

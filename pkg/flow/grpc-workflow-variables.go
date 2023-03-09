@@ -578,9 +578,9 @@ func (flow *flow) SetWorkflowVariable(ctx context.Context, req *grpc.SetWorkflow
 	}
 
 	if newVar {
-		flow.logToWorkflow(ctx, time.Now(), cached, "Created workflow variable '%s'.", key)
+		flow.logger.LogToWorkflow(ctx, time.Now(), cached, "Created workflow variable '%s'.", key)
 	} else {
-		flow.logToWorkflow(ctx, time.Now(), cached, "Updated workflow variable '%s'.", key)
+		flow.logger.LogToWorkflow(ctx, time.Now(), cached, "Updated workflow variable '%s'.", key)
 	}
 
 	flow.pubsub.NotifyWorkflowVariables(cached.Workflow)
@@ -682,9 +682,9 @@ func (internal *internal) SetWorkflowVariableParcels(srv grpc.Internal_SetWorkfl
 	}
 
 	if newVar {
-		internal.logToWorkflow(ctx, time.Now(), cached, "Created workflow variable '%s'.", key)
+		internal.logger.LogToWorkflow(ctx, time.Now(), cached, "Created workflow variable '%s'.", key)
 	} else {
-		internal.logToWorkflow(ctx, time.Now(), cached, "Updated workflow variable '%s'.", key)
+		internal.logger.LogToWorkflow(ctx, time.Now(), cached, "Updated workflow variable '%s'.", key)
 	}
 
 	internal.pubsub.NotifyWorkflowVariables(cached.Workflow)
@@ -791,9 +791,9 @@ func (flow *flow) SetWorkflowVariableParcels(srv grpc.Flow_SetWorkflowVariablePa
 	}
 
 	if newVar {
-		flow.logToWorkflow(ctx, time.Now(), cached, "Created workflow variable '%s'.", key)
+		flow.logger.LogToWorkflow(ctx, time.Now(), cached, "Created workflow variable '%s'.", key)
 	} else {
-		flow.logToWorkflow(ctx, time.Now(), cached, "Updated workflow variable '%s'.", key)
+		flow.logger.LogToWorkflow(ctx, time.Now(), cached, "Updated workflow variable '%s'.", key)
 	}
 
 	flow.pubsub.NotifyWorkflowVariables(cached.Workflow)
@@ -849,7 +849,7 @@ func (flow *flow) DeleteWorkflowVariable(ctx context.Context, req *grpc.DeleteWo
 		return nil, err
 	}
 
-	flow.logToWorkflow(ctx, time.Now(), cached, "Deleted workflow variable '%s'.", vref.Name)
+	flow.logger.LogToWorkflow(ctx, time.Now(), cached, "Deleted workflow variable '%s'.", vref.Name)
 	flow.pubsub.NotifyWorkflowVariables(cached.Workflow)
 
 	// Broadcast Event
@@ -897,7 +897,7 @@ func (flow *flow) RenameWorkflowVariable(ctx context.Context, req *grpc.RenameWo
 		return nil, err
 	}
 
-	flow.logToWorkflow(ctx, time.Now(), cached, "Renamed workflow variable from '%s' to '%s'.", req.GetOld(), req.GetNew())
+	flow.logger.LogToWorkflow(ctx, time.Now(), cached, "Renamed workflow variable from '%s' to '%s'.", req.GetOld(), req.GetNew())
 	flow.pubsub.NotifyWorkflowVariables(cached.Workflow)
 
 	var resp grpc.RenameWorkflowVariableResponse

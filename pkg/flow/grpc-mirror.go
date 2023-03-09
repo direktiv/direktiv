@@ -88,7 +88,7 @@ func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNam
 		return nil, err
 	}
 
-	flow.logToServer(ctx, time.Now(), "Created namespace as git mirror '%s'.", ns.Name)
+	flow.logger.LogToServer(ctx, time.Now(), "Created namespace as git mirror '%s'.", ns.Name)
 	flow.pubsub.NotifyNamespaces()
 
 respond:
@@ -168,7 +168,7 @@ func (flow *flow) CreateDirectoryMirror(ctx context.Context, req *grpc.CreateDir
 		return nil, err
 	}
 
-	flow.logToNamespace(ctx, time.Now(), cached, "Created directory as git mirror '%s'.", path)
+	flow.logger.LogToNamespace(ctx, time.Now(), cached, "Created directory as git mirror '%s'.", path)
 	flow.pubsub.NotifyInode(cached.Inode())
 
 	var resp grpc.CreateDirectoryResponse

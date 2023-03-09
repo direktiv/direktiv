@@ -474,9 +474,9 @@ func (flow *flow) SetInstanceVariable(ctx context.Context, req *grpc.SetInstance
 	}
 
 	if newVar {
-		flow.logToInstance(ctx, time.Now(), cached, "Created instance variable '%s'.", key)
+		flow.logger.LogToInstance(ctx, time.Now(), cached, "Created instance variable '%s'.", key)
 	} else {
-		flow.logToInstance(ctx, time.Now(), cached, "Updated instance variable '%s'.", key)
+		flow.logger.LogToInstance(ctx, time.Now(), cached, "Updated instance variable '%s'.", key)
 	}
 	flow.pubsub.NotifyInstanceVariables(cached.Instance)
 
@@ -578,9 +578,9 @@ func (internal *internal) SetThreadVariableParcels(srv grpc.Internal_SetThreadVa
 	}
 
 	if newVar {
-		internal.logToInstance(ctx, time.Now(), cached, "Created thread variable '%s'.", key)
+		internal.logger.LogToInstance(ctx, time.Now(), cached, "Created thread variable '%s'.", key)
 	} else {
-		internal.logToInstance(ctx, time.Now(), cached, "Updated thread variable '%s'.", key)
+		internal.logger.LogToInstance(ctx, time.Now(), cached, "Updated thread variable '%s'.", key)
 	}
 
 	internal.pubsub.NotifyInstanceVariables(cached.Instance) // what do we do about this for thread variables?
@@ -687,9 +687,9 @@ func (internal *internal) SetInstanceVariableParcels(srv grpc.Internal_SetInstan
 	}
 
 	if newVar {
-		internal.logToInstance(ctx, time.Now(), cached, "Created instance variable '%s'.", key)
+		internal.logger.LogToInstance(ctx, time.Now(), cached, "Created instance variable '%s'.", key)
 	} else {
-		internal.logToInstance(ctx, time.Now(), cached, "Updated instance variable '%s'.", key)
+		internal.logger.LogToInstance(ctx, time.Now(), cached, "Updated instance variable '%s'.", key)
 	}
 
 	internal.pubsub.NotifyInstanceVariables(cached.Instance)
@@ -797,9 +797,9 @@ func (flow *flow) SetInstanceVariableParcels(srv grpc.Flow_SetInstanceVariablePa
 	}
 
 	if newVar {
-		flow.logToInstance(ctx, time.Now(), cached, "Created instance variable '%s'.", key)
+		flow.logger.LogToInstance(ctx, time.Now(), cached, "Created instance variable '%s'.", key)
 	} else {
-		flow.logToInstance(ctx, time.Now(), cached, "Updated instance variable '%s'.", key)
+		flow.logger.LogToInstance(ctx, time.Now(), cached, "Updated instance variable '%s'.", key)
 	}
 
 	flow.pubsub.NotifyInstanceVariables(cached.Instance)
@@ -856,7 +856,7 @@ func (flow *flow) DeleteInstanceVariable(ctx context.Context, req *grpc.DeleteIn
 		return nil, err
 	}
 
-	flow.logToInstance(ctx, time.Now(), cached, "Deleted instance variable '%s'.", vref.Name)
+	flow.logger.LogToInstance(ctx, time.Now(), cached, "Deleted instance variable '%s'.", vref.Name)
 	flow.pubsub.NotifyInstanceVariables(cached.Instance)
 
 	// Broadcast Event
@@ -904,7 +904,7 @@ func (flow *flow) RenameInstanceVariable(ctx context.Context, req *grpc.RenameIn
 		return nil, err
 	}
 
-	flow.logToInstance(ctx, time.Now(), cached, "Renamed instance variable from '%s' to '%s'.", req.GetOld(), req.GetNew())
+	flow.logger.LogToInstance(ctx, time.Now(), cached, "Renamed instance variable from '%s' to '%s'.", req.GetOld(), req.GetNew())
 	flow.pubsub.NotifyInstanceVariables(cached.Instance)
 
 	var resp grpc.RenameInstanceVariableResponse

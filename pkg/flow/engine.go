@@ -26,6 +26,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/direktiv/direktiv/pkg/flow/states"
 	"github.com/direktiv/direktiv/pkg/functions"
 	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
@@ -145,7 +146,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 	if strings.HasPrefix(args.Caller, "instance:") {
 		callerInstanceID = strings.Split(args.Caller, ":")[1]
 	}
-	callpath := appendInstanceID(args.CallPath, callerInstanceID)
+	callpath := internallogger.AppendInstanceID(args.CallPath, callerInstanceID)
 	data := marshalInstanceInputData(args.Input)
 
 	clients := engine.edb.Clients(tctx)
@@ -228,9 +229,9 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 
 	t := time.Now()
 	engine.pubsub.NotifyInstances(cached.Namespace)
-	engine.logToNamespace(ctx, t, im.cached, "Workflow '%s' has been triggered by %s.", args.Path, args.Caller)
-	engine.logToWorkflow(ctx, t, im.cached, "Instance '%s' created by %s. (%v)", im.ID().String(), args.Caller, time.Now())
-	engine.logToInstance(ctx, t, im.cached, "Preparing workflow triggered by %s.", args.Caller)
+	engine.logger.LogToNamespace(ctx, t, im.cached, "Workflow '%s' has been triggered by %s.", args.Path, args.Caller)
+	engine.logger.LogToWorkflow(ctx, t, im.cached, "Instance '%s' created by %s. (%v)", im.ID().String(), args.Caller, time.Now())
+	engine.logger.LogToInstance(ctx, t, im.cached, "Preparing workflow triggered by %s.", args.Caller)
 
 	// Broadcast Event
 	err = engine.flow.BroadcastInstance(BroadcastEventTypeInstanceStarted, ctx,
@@ -396,14 +397,14 @@ func (engine *engine) CrashInstance(ctx context.Context, im *instanceMemory, err
 
 	if errors.As(err, &cerr) {
 		engine.sugar.Errorf("Instance failed with error '%s': %v", cerr.Code, err)
-		engine.logToInstance(ctx, time.Now(), im.cached, "Instance failed with error '%s': %s", cerr.Code, err.Error())
+		engine.logger.LogToInstance(ctx, time.Now(), im.cached, "Instance failed with error '%s': %s", cerr.Code, err.Error())
 	} else if errors.As(err, &uerr) && uerr.Code != "" {
 		engine.sugar.Errorf("Instance failed with uncatchable error '%s': %v", uerr.Code, err)
-		engine.logToInstance(ctx, time.Now(), im.cached, "Instance failed with uncatchable error '%s': %s", uerr.Code, err.Error())
+		engine.logger.LogToInstance(ctx, time.Now(), im.cached, "Instance failed with uncatchable error '%s': %s", uerr.Code, err.Error())
 	} else {
 		_, file, line, _ := runtime.Caller(1)
 		engine.sugar.Errorf("Instance failed with uncatchable error (thrown by %s:%d): %v", file, line, err)
-		engine.logToInstance(ctx, time.Now(), im.cached, "Instance failed with uncatchable error: %s", err.Error())
+		engine.logger.LogToInstance(ctx, time.Now(), im.cached, "Instance failed with uncatchable error: %s", err.Error())
 	}
 
 	err = engine.SetInstanceFailed(ctx, im, err)
@@ -551,13 +552,13 @@ failure:
 
 			matched, regErr := regexp.MatchString(errRegex, cerr.Code)
 			if regErr != nil {
-				engine.logToInstance(ctx, t, im.cached, "Error catching regex failed to compile: %v", regErr)
+				engine.logger.LogToInstance(ctx, t, im.cached, "Error catching regex failed to compile: %v", regErr)
 			}
 
 			if matched {
 
-				engine.logToInstance(ctx, t, im.cached, "State failed with error '%s': %s", cerr.Code, cerr.Message)
-				engine.logToInstance(ctx, t, im.cached, "Error caught by error definition %d: %s", i, catch.Error)
+				engine.logger.LogToInstance(ctx, t, im.cached, "State failed with error '%s': %s", cerr.Code, cerr.Message)
+				engine.logger.LogToInstance(ctx, t, im.cached, "Error caught by error definition %d: %s", i, catch.Error)
 
 				transition = &states.Transition{
 					Transform: "",
@@ -588,7 +589,7 @@ func (engine *engine) transformState(ctx context.Context, im *instanceMemory, tr
 		return nil
 	}
 
-	engine.logToInstance(ctx, time.Now(), im.cached, "Transforming state data.")
+	engine.logger.LogToInstance(ctx, time.Now(), im.cached, "Transforming state data.")
 
 	x, err := jqObject(im.data, transition.Transform)
 	if err != nil {
@@ -614,7 +615,7 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 	if transition.NextState != "" {
 		engine.metricsCompleteState(ctx, im, transition.NextState, errCode, false)
 		engine.sugar.Debugf("Instance transitioning to next state: %s -> %s", im.ID().String(), transition.NextState)
-		engine.logToInstance(ctx, time.Now(), im.cached, "Transitioning to next state: %s (%d).", transition.NextState, im.Step()+1)
+		engine.logger.LogToInstance(ctx, time.Now(), im.cached, "Transitioning to next state: %s (%d).", transition.NextState, im.Step()+1)
 		go engine.Transition(ctx, im, transition.NextState, 0)
 		return
 	}
@@ -623,7 +624,7 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 	if im.ErrorCode() != "" {
 		status = util.InstanceStatusFailed
 		engine.sugar.Debugf("Instance failed: %s", im.ID().String())
-		engine.logToInstance(ctx, time.Now(), im.cached, "Workflow failed with error '%s': %s", im.ErrorCode(), im.cached.Instance.ErrorMessage)
+		engine.logger.LogToInstance(ctx, time.Now(), im.cached, "Workflow failed with error '%s': %s", im.ErrorCode(), im.cached.Instance.ErrorMessage)
 	}
 
 	engine.sugar.Debugf("Instance terminated: %s", im.ID().String())
@@ -641,7 +642,7 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 
 	// engine.pubsub.NotifyInstance(im.cached.Instance)
 
-	engine.logToInstance(ctx, time.Now(), im.cached, "Workflow completed. (%v)", time.Now())
+	engine.logger.LogToInstance(ctx, time.Now(), im.cached, "Workflow completed. (%v)", time.Now())
 
 	engine.pubsub.NotifyInstances(im.cached.Namespace)
 	broadcastErr := engine.flow.BroadcastInstance(BroadcastEventTypeInstanceSuccess, ctx, broadcastInstanceInput{
@@ -767,7 +768,7 @@ func (engine *engine) retryWakeup(data []byte) {
 		return
 	}
 
-	engine.logToInstance(ctx, time.Now(), im.cached, "Waking up to retry.")
+	engine.logger.LogToInstance(ctx, time.Now(), im.cached, "Waking up to retry.")
 
 	engine.sugar.Debugf("Handling retry wakeup: %s", this())
 

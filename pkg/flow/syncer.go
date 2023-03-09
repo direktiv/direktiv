@@ -414,11 +414,11 @@ func (syncer *syncer) beginActivity(tx database.Transaction, args *newMirrorActi
 		return nil, nil, nil, err
 	}
 
-	syncer.logToNamespace(ctx, time.Now(), cached, "Commenced new mirror activity '%s' on mirror: %s", args.Type, cached.Path())
+	syncer.logger.LogToNamespace(ctx, time.Now(), cached, "Commenced new mirror activity '%s' on mirror: %s", args.Type, cached.Path())
 
 	syncer.pubsub.NotifyMirror(cached.Inode())
 
-	syncer.logToMirrorActivity(ctx, time.Now(), cached.Namespace, mirror, activity, "Commenced new mirror activity '%s' on mirror: %s", args.Type, cached.Path())
+	syncer.logger.LogToMirrorActivity(ctx, time.Now(), cached.Namespace, mirror, activity, "Commenced new mirror activity '%s' on mirror: %s", args.Type, cached.Path())
 
 	// schedule timeouts
 	syncer.scheduleTimeout(activity.ID.String(), activity.Controller, deadline)
@@ -476,7 +476,7 @@ func (syncer *syncer) execute(cached *database.CacheData, mirror *database.Mirro
 			return
 		}
 	default:
-		syncer.logToMirrorActivity(ctx, time.Now(), cached.Namespace, mirror, activity, "Unrecognized syncer activity type.")
+		syncer.logger.LogToMirrorActivity(ctx, time.Now(), cached.Namespace, mirror, activity, "Unrecognized syncer activity type.")
 	}
 
 	err = syncer.success(cached, mirror, activity)
@@ -532,7 +532,7 @@ func (syncer *syncer) fail(cached *database.CacheData, mirror *database.Mirror, 
 
 	syncer.pubsub.NotifyMirror(cached.Inode())
 
-	syncer.logToMirrorActivity(ctx, time.Now(), cached.Namespace, mirror, activity, "Mirror activity '%s' failed: %v", act.Type, e)
+	syncer.logger.LogToMirrorActivity(ctx, time.Now(), cached.Namespace, mirror, activity, "Mirror activity '%s' failed: %v", act.Type, e)
 
 	syncer.timers.deleteTimersForActivity(activity.ID.String())
 }
@@ -573,7 +573,7 @@ func (syncer *syncer) success(cached *database.CacheData, mirror *database.Mirro
 
 	syncer.pubsub.NotifyMirror(cached.Inode())
 
-	syncer.logToMirrorActivity(ctx, time.Now(), cached.Namespace, mirror, activity, "Completed mirror activity '%s'.", act.Type)
+	syncer.logger.LogToMirrorActivity(ctx, time.Now(), cached.Namespace, mirror, activity, "Completed mirror activity '%s'.", act.Type)
 
 	syncer.timers.deleteTimersForActivity(activity.ID.String())
 
@@ -904,7 +904,7 @@ func (syncer *syncer) hardSync(ctx context.Context, cached *database.CacheData, 
 
 			if child == nil || child.Type != util.InodeTypeWorkflow {
 				if derrors.IsNotFound(err) {
-					syncer.logToMirrorActivity(tctx, time.Now(), cached.Namespace, mirror, activity, "Found something that looks like a workflow variable with no matching workflow: "+cached.Path())
+					syncer.logger.LogToMirrorActivity(tctx, time.Now(), cached.Namespace, mirror, activity, "Found something that looks like a workflow variable with no matching workflow: "+cached.Path())
 					return nil
 				}
 			}
