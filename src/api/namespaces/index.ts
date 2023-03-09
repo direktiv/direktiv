@@ -1,7 +1,7 @@
 import { NamespaceListSchema } from "./schema";
 import type { QueryFunctionContext } from "@tanstack/react-query";
 import { apiFactory } from "../utils";
-import { useGlobalStore } from "../../util/store";
+import { useApiKeyState } from "../../util/store";
 import { useQuery } from "@tanstack/react-query";
 
 export const getNamespaces = apiFactory({
@@ -23,7 +23,7 @@ const namespaceKeys = {
 };
 
 export const useNamespaces = () => {
-  const apiKey = useGlobalStore((state) => state.apiKey);
+  const apiKey = useApiKeyState((state) => state.apiKey);
   return useQuery({
     queryKey: namespaceKeys.all(apiKey || "no-api-key"),
     queryFn: fetchNamespaces,

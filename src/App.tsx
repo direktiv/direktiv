@@ -2,15 +2,15 @@ import "./App.css";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-import { useGlobalStore } from "./util/store";
+import { useApiKeyState } from "./util/store";
 import { useNamespaces } from "./api/namespaces";
 import { useVersion } from "./api/version";
 
 const queryClient = new QueryClient();
 
 function App() {
-  const apiKey = useGlobalStore((state) => state.apiKey);
-  const setApiKey = useGlobalStore((state) => state.setApiKey);
+  const apiKey = useApiKeyState((state) => state.apiKey);
+  const setApiKey = useApiKeyState((state) => state.setApiKey);
   const { data: version, isLoading: isVersionLoading } = useVersion();
   const { data: namespaces, isLoading: isLoadingNamespaces } = useNamespaces();
 

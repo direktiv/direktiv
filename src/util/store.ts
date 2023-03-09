@@ -1,12 +1,12 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-interface GlobalState {
+interface ApiKeyState {
   apiKey: string | null;
-  setApiKey: (apiKey: GlobalState["apiKey"]) => void;
+  setApiKey: (apiKey: ApiKeyState["apiKey"]) => void;
 }
 
-export const useGlobalStore = create<GlobalState>()(
+export const useApiKeyState = create<ApiKeyState>()(
   persist(
     (set) => ({
       apiKey: null,
