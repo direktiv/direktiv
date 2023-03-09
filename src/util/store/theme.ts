@@ -17,7 +17,20 @@ export const useThemeState = create<ThemeState>()(
       },
     }),
     {
-      name: "directiv-store",
+      name: "directiv-store-theme",
+      partialize: (state) => ({
+        theme: state.theme, // pick all fields to persistend, and don't persist actions
+      }),
     }
   )
 );
+
+export const useTheme = () =>
+  useThemeState((state) => {
+    return state.theme;
+  });
+
+export const useThemeActions = () =>
+  useThemeState((state) => {
+    return state.actions;
+  });

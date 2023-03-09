@@ -2,9 +2,9 @@ import "./App.css";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useApiActions, useApiKey } from "./util/store/apiKey";
+import { useTheme, useThemeActions } from "./util/store/theme";
 
 import { useNamespaces } from "./api/namespaces";
-import { useThemeState } from "./util/store";
 import { useVersion } from "./api/version";
 
 const queryClient = new QueryClient();
@@ -12,8 +12,9 @@ const queryClient = new QueryClient();
 function App() {
   const apiKey = useApiKey();
   const { setApiKey } = useApiActions();
-  const theme = useThemeState((state) => state.theme);
-  const setTheme = useThemeState((state) => state.actions.setTheme);
+  const theme = useTheme();
+  const { setTheme } = useThemeActions();
+
   const { data: version, isLoading: isVersionLoading } = useVersion();
   const { data: namespaces, isLoading: isLoadingNamespaces } = useNamespaces();
 
