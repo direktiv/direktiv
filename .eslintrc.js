@@ -80,6 +80,11 @@ module.exports = {
 
     // allow custom tailwind classes to enable working with daisyui
     "tailwindcss/no-custom-classname": "off",
+    // there seems to be a missmatch between the order
+    // of the classes from the linting rule vs the prettier plugin
+    // since prettier is part of the dev environment, we can disable
+    // the rule
+    "tailwindcss/classnames-order": "off",
 
     // console logs are fine in development, but eslint can help us
     // remember to remove them. console.error and console.warn are
