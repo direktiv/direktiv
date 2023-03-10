@@ -11,7 +11,7 @@ export type AvatarProps = HTMLAttributes<HTMLDivElement> & {
 };
 
 const Avatar: FC<AvatarProps> = ({
-  size="lg",
+  size = "lg",
   className,
   children,
   src,
