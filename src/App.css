@@ -32,22 +32,22 @@
 .input,
 .btn-md,
 .input-md {
-  @apply h-9 min-h-8; /* default is h-12 min-h-12 */
+  @apply min-h-8 h-9; /* default is h-12 min-h-12 */
 }
 
 .btn-xs,
 .input-xs {
-  @apply h-6 min-h-6; /* keeps the original */
+  @apply min-h-6 h-6; /* keeps the original */
 }
 
 .btn-sm,
 .input-sm {
-  @apply h-8 min-h-8; /* keeps the original */
+  @apply min-h-8 h-8; /* keeps the original */
 }
 
 .btn-lg,
 .input-lg {
-  @apply h-11 min-h-8; /* default is h-16 min-h-16 */
+  @apply min-h-8 h-11; /* default is h-16 min-h-16 */
 }
 
 /* make divider 1px height */
