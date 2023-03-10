@@ -10,7 +10,9 @@ import "pkg/flow/grpc/pagination.proto";
 
 message Log {
 	google.protobuf.Timestamp t = 1;
+	string level = 2;
 	string msg = 3;
+	map<string,string> tags = 4;
 }
 
 message ServerLogsRequest {

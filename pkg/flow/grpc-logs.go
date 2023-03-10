@@ -39,7 +39,7 @@ func (flow *flow) ServerLogs(ctx context.Context, req *grpc.ServerLogsRequest) (
 	resp := new(grpc.ServerLogsResponse)
 	resp.PageInfo = pi
 
-	err = bytedata.ConvertDataForOutput(results, &resp.Results)
+	resp.Results, err = bytedata.ConvertLogMsgForOutput(results)
 	if err != nil {
 		return nil, err
 	}
@@ -71,7 +71,7 @@ resend:
 	resp := new(grpc.ServerLogsResponse)
 	resp.PageInfo = pi
 
-	err = bytedata.ConvertDataForOutput(results, &resp.Results)
+	resp.Results, err = bytedata.ConvertLogMsgForOutput(results)
 	if err != nil {
 		return err
 	}
@@ -120,7 +120,7 @@ func (flow *flow) NamespaceLogs(ctx context.Context, req *grpc.NamespaceLogsRequ
 	resp.Namespace = cached.Namespace.Name
 	resp.PageInfo = pi
 
-	err = bytedata.ConvertDataForOutput(results, &resp.Results)
+	resp.Results, err = bytedata.ConvertLogMsgForOutput(results)
 	if err != nil {
 		return nil, err
 	}
@@ -160,7 +160,7 @@ resend:
 	resp.Namespace = cached.Namespace.Name
 	resp.PageInfo = pi
 
-	err = bytedata.ConvertDataForOutput(results, &resp.Results)
+	resp.Results, err = bytedata.ConvertLogMsgForOutput(results)
 	if err != nil {
 		return err
 	}
@@ -220,7 +220,7 @@ func (flow *flow) WorkflowLogs(ctx context.Context, req *grpc.WorkflowLogsReques
 	resp.Path = cached.Path()
 	resp.PageInfo = pi
 
-	err = bytedata.ConvertDataForOutput(results, &resp.Results)
+	resp.Results, err = bytedata.ConvertLogMsgForOutput(results)
 	if err != nil {
 		return nil, err
 	}
@@ -271,7 +271,7 @@ resend:
 	resp.Path = cached.Path()
 	resp.PageInfo = pi
 
-	err = bytedata.ConvertDataForOutput(results, &resp.Results)
+	resp.Results, err = bytedata.ConvertLogMsgForOutput(results)
 	if err != nil {
 		return err
 	}
@@ -328,8 +328,7 @@ func (flow *flow) InstanceLogs(ctx context.Context, req *grpc.InstanceLogsReques
 	resp.Namespace = cached.Namespace.Name
 	resp.Instance = cached.Instance.ID.String()
 	resp.PageInfo = pi
-
-	err = bytedata.ConvertDataForOutput(results, &resp.Results)
+	resp.Results, err = bytedata.ConvertLogMsgForOutput(results)
 	if err != nil {
 		return nil, err
 	}
@@ -376,7 +375,7 @@ resend:
 	resp.Instance = cached.Instance.ID.String()
 	resp.PageInfo = pi
 
-	err = bytedata.ConvertDataForOutput(results, &resp.Results)
+	resp.Results, err = bytedata.ConvertLogMsgForOutput(results)
 	if err != nil {
 		return err
 	}
