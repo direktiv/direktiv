@@ -1,4 +1,15 @@
 import { Link, Outlet } from "react-router-dom";
+import {
+  Main,
+  MainContent,
+  MainTopBarLeft,
+  MainTopBarRight,
+  MainTopBarRoot,
+  Root,
+  Sidebar,
+  SidebarLogo,
+  SidebarMenu,
+} from "../componentsNext/compositions/AppShell";
 import { useApiActions, useApiKey } from "../util/store/apiKey";
 import { useTheme, useThemeActions } from "../util/store/theme";
 
@@ -24,58 +35,78 @@ const Layout = () => {
   }, [theme]);
 
   return (
-    <div className="flex flex-col space-y-5 p-10">
-      <div>
-        <h1>
-          theme <span className="font-bold">{theme}</span>
-        </h1>
-        <div className="flex space-x-5">
-          <button className="btn-primary btn" onClick={() => setTheme("dark")}>
-            darkmode
-          </button>
-          <button className="btn-primary btn" onClick={() => setTheme("light")}>
-            lightmode
-          </button>
-          <button className="btn-error btn" onClick={() => setTheme(null)}>
-            reset theme
-          </button>
+    <Root>
+      {/* <div className="flex flex-col space-y-5 p-10">
+        <div>
+          <h1>
+            theme <span className="font-bold">{theme}</span>
+          </h1>
+          <div className="flex space-x-5">
+            <button
+              className="btn-primary btn"
+              onClick={() => setTheme("dark")}
+            >
+              darkmode
+            </button>
+            <button
+              className="btn-primary btn"
+              onClick={() => setTheme("light")}
+            >
+              lightmode
+            </button>
+            <button className="btn-error btn" onClick={() => setTheme(null)}>
+              reset theme
+            </button>
+          </div>
         </div>
-      </div>
-      <div>
-        <h1>
-          api key is <span className="font-bold">{apiKey}</span>
-        </h1>
-        <div className="flex space-x-5">
-          <button
-            className="btn-primary btn"
-            onClick={() => setApiKey("password")}
-          >
-            set Api key to password
-          </button>
-          <button className="btn-error btn" onClick={() => setApiKey(null)}>
-            reset api key
-          </button>
+        <div>
+          <h1>
+            api key is <span className="font-bold">{apiKey}</span>
+          </h1>
+          <div className="flex space-x-5">
+            <button
+              className="btn-primary btn"
+              onClick={() => setApiKey("password")}
+            >
+              set Api key to password
+            </button>
+            <button className="btn-error btn" onClick={() => setApiKey(null)}>
+              reset api key
+            </button>
+          </div>
         </div>
-      </div>
-      <div>
-        <h1 className="font-bold">Version</h1>
-        {isVersionLoading ? "Loading version...." : version?.api}
-      </div>
-      <div>
-        <h1 className="font-bold">namespaces</h1>
-        {isLoadingNamespaces
-          ? "Loading namespaces"
-          : namespaces?.results.map((namespace) => (
-              <div key={namespace.name}>{namespace.name}</div>
-            ))}
-      </div>
-      <div>
-        <Link to="/">Start</Link> <Link to="/about">About</Link>
-      </div>
-      <div>
-        <Outlet />
-      </div>
-    </div>
+        <div>
+          <h1 className="font-bold">Version</h1>
+          {isVersionLoading ? "Loading version...." : version?.api}
+        </div>
+        <div>
+          <h1 className="font-bold">namespaces</h1>
+          {isLoadingNamespaces
+            ? "Loading namespaces"
+            : namespaces?.results.map((namespace) => (
+                <div key={namespace.name}>{namespace.name}</div>
+              ))}
+        </div>
+        <div>
+          <Link to="/">Start</Link> <Link to="/about">About</Link>
+        </div>
+        <div>
+          <Outlet />
+        </div>
+      </div> */}
+
+      <Sidebar version={version?.api ?? ""}>
+        <SidebarLogo /> {/* add drawer here */}
+        <SidebarMenu />
+      </Sidebar>
+      <Main>
+        <MainTopBarRoot>
+          <MainTopBarLeft>1</MainTopBarLeft>
+          <MainTopBarRight>2</MainTopBarRight>
+        </MainTopBarRoot>
+        <MainContent>121</MainContent>
+      </Main>
+    </Root>
   );
 };
 
