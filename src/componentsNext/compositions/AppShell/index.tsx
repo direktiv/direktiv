@@ -1,7 +1,6 @@
 import { FC, PropsWithChildren } from "react";
 
-import Logo from "./Logo";
-import LogoNoText from "./LogoNoText";
+import Logo from "./../../Logo";
 import clsx from "clsx";
 
 export const Root: FC<PropsWithChildren> = ({ children }) => (
@@ -62,7 +61,7 @@ export const SidebarMenu: FC<PropsWithChildren> = ({ children }) => (
 export const SidebarLogo: FC<PropsWithChildren> = ({ children }) => (
   <div className="grid items-center border-b border-gray-gray5 px-6 py-5 dark:border-grayDark-gray5 max-lg:grid-cols-3 max-lg:space-x-5 lg:block">
     {children}
-    <LogoNoText className="h-8 w-auto justify-self-center sm:hidden" />
+    <Logo iconOnly className="h-8 w-auto justify-self-center sm:hidden" />
     <Logo className="hidden h-8 w-auto sm:block" />
   </div>
 );
