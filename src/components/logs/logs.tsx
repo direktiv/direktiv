@@ -24,6 +24,7 @@ import AutoSizer from "react-virtualized-auto-sizer";
 import Button from "../button";
 import FlexBox from "../flexbox";
 import { VariableSizeList } from "react-window";
+// @ts-ignore 🚧 ignore since this component will be removed after redesign
 import { copyTextToClipboard } from "../../util";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";

@@ -3,6 +3,7 @@ import "./style.css";
 import { Link, useSearchParams } from "react-router-dom";
 
 import FlexBox from "../flexbox";
+// @ts-ignore 🚧 ignore since this component will be removed after redesign
 import { GenerateRandomKey } from "../../util";
 import React from "react";
 import useBreadcrumbs from "use-react-router-breadcrumbs";
