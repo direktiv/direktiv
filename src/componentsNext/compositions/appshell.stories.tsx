@@ -29,15 +29,6 @@ import {
   DrawerContent,
   DrawerMenu,
   DrawerRoot,
-  Main,
-  MainContent,
-  MainTopBarLeft,
-  MainTopBarRight,
-  MainTopBarRoot,
-  Root,
-  Sidebar,
-  SidebarLogo,
-  SidebarMenu,
   SidebarNavigationItem,
 } from "./AppShell";
 import {
@@ -49,6 +40,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../Dropdown";
+import {
+  Main,
+  MainContent,
+  MainTop,
+  MainTopLeft,
+  MainTopRight,
+  Root,
+  Sidebar,
+  SidebarMain,
+  SidebarTop,
+} from "../Appshell";
 import { useEffect, useState } from "react";
 
 import Button from "../Button";
@@ -106,7 +108,7 @@ export const Default = () => {
           {({ drawerLabelProps }) => (
             <>
               <Sidebar version="Version: 78c688e">
-                <SidebarLogo>
+                <SidebarTop>
                   <label
                     {...drawerLabelProps}
                     className="justify-self-start px-1 lg:hidden"
@@ -114,8 +116,8 @@ export const Default = () => {
                   >
                     <Menu />
                   </label>
-                </SidebarLogo>
-                <SidebarMenu>
+                </SidebarTop>
+                <SidebarMain>
                   {navigation.map((item) => (
                     <SidebarNavigationItem
                       key={item.name}
@@ -126,11 +128,11 @@ export const Default = () => {
                       {item.name}
                     </SidebarNavigationItem>
                   ))}
-                </SidebarMenu>
+                </SidebarMain>
               </Sidebar>
               <Main>
-                <MainTopBarRoot>
-                  <MainTopBarLeft>
+                <MainTop>
+                  <MainTopLeft>
                     <div className="breadcrumbs text-sm">
                       <ul>
                         <li>
@@ -185,8 +187,8 @@ export const Default = () => {
                         </li>
                       </ul>
                     </div>
-                  </MainTopBarLeft>
-                  <MainTopBarRight>
+                  </MainTopLeft>
+                  <MainTopRight>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button color="ghost" className="px-1">
@@ -257,8 +259,8 @@ export const Default = () => {
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
-                  </MainTopBarRight>
-                </MainTopBarRoot>
+                  </MainTopRight>
+                </MainTop>
                 <MainContent>
                   <div className="space-y-5 border-b border-gray-gray5 bg-base-200 p-5 pb-0 dark:border-grayDark-gray5">
                     <div className="flex flex-col max-sm:space-y-4 sm:flex-row sm:items-center sm:justify-between ">
