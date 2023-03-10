@@ -35,6 +35,8 @@ type instanceMemory struct {
 	// tx      database.Transaction
 	cached  *database.CacheData
 	runtime *database.InstanceRuntime
+
+	tags map[string]string
 }
 
 func (im *instanceMemory) getInstanceUpdater() *ent.InstanceUpdateOne {
@@ -217,6 +219,9 @@ func (im *instanceMemory) StoreData(key string, val interface{}) error {
 
 func (im *instanceMemory) GetAttributes() map[string]string {
 	tags := im.cached.GetAttributes("instance")
+	for k, v := range im.tags {
+		tags[k] = v
+	}
 	if im.logic != nil {
 		tags["state-id"] = im.logic.GetID()
 		tags["state-type"] = im.logic.GetType().String()

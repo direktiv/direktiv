@@ -874,7 +874,8 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 	req.Header.Add(DirektivInstanceIDHeader, ar.Workflow.InstanceID)
 	req.Header.Add(DirektivStepHeader, fmt.Sprintf("%d",
 		int64(ar.Workflow.Step)))
-
+	req.Header.Add(DirektivIteratorHeader, fmt.Sprintf("%d",
+		int64(ar.Iterator)))
 	for i := range ar.Container.Files {
 		f := &ar.Container.Files[i]
 		data, err := json.Marshal(f)
@@ -971,6 +972,7 @@ func (engine *engine) reportError(ar *functionRequest, err error) {
 		ActionId:     ar.ActionID,
 		ErrorCode:    ec,
 		ErrorMessage: em,
+		Iterator:     int32(ar.Iterator),
 	}
 
 	_, err = engine.internal.ReportActionResults(context.Background(), r)

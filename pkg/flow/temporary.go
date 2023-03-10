@@ -130,8 +130,24 @@ func (im *instanceMemory) ListenForEvents(ctx context.Context, events []*model.C
 	return nil
 }
 
-func (im *instanceMemory) Log(ctx context.Context, a string, x ...interface{}) {
-	im.engine.logger.Infof(time.Now(), im.GetInstanceID(), im.GetAttributes(), a, x...)
+func (im *instanceMemory) SendToLogger(ctx context.Context, level string, a string, x ...interface{}) {
+	switch level {
+	case "info":
+		im.engine.logger.Infof(time.Now(), im.GetInstanceID(), im.GetAttributes(), a, x...)
+	case "debug":
+		im.engine.logger.Debugf(time.Now(), im.GetInstanceID(), im.GetAttributes(), a, x...)
+	case "error":
+		im.engine.logger.Errorf(time.Now(), im.GetInstanceID(), im.GetAttributes(), a, x...)
+	case "panic":
+		im.engine.logger.Panicf(time.Now(), im.GetInstanceID(), im.GetAttributes(), a, x...)
+	}
+}
+
+func (im *instanceMemory) AddAttribute(tag, value string) {
+	if im.tags == nil {
+		im.tags = make(map[string]string)
+	}
+	im.tags[tag] = value
 }
 
 func (im *instanceMemory) Raise(ctx context.Context, err *derrors.CatchableError) error {
@@ -337,7 +353,7 @@ func (im *instanceMemory) CreateChild(ctx context.Context, args states.CreateChi
 
 	uid := uuid.New()
 
-	ar, err := im.engine.newIsolateRequest(ctx, im, im.logic.GetID(), args.Timeout, args.Definition, args.Input, uid, args.Async, args.Files)
+	ar, err := im.engine.newIsolateRequest(ctx, im, im.logic.GetID(), args.Timeout, args.Definition, args.Input, uid, args.Async, args.Files, args.Iterator)
 	if err != nil {
 		return nil, err
 	}
@@ -356,7 +372,7 @@ func (im *instanceMemory) CreateChild(ctx context.Context, args states.CreateChi
 
 func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory, stateId string, timeout int,
 	fn model.FunctionDefinition, inputData []byte,
-	uid uuid.UUID, async bool, files []model.FunctionFileDefinition,
+	uid uuid.UUID, async bool, files []model.FunctionFileDefinition, iterator int,
 ) (*functionRequest, error) {
 	ar := new(functionRequest)
 	ar.ActionID = uid.String()
@@ -365,7 +381,7 @@ func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory,
 	ar.Workflow.Revision = im.cached.Revision.Hash
 	ar.Workflow.NamespaceName = im.cached.Namespace.Name
 	ar.Workflow.Path = im.cached.Instance.As
-
+	ar.Iterator = iterator
 	if !async {
 		ar.Workflow.InstanceID = im.ID().String()
 		ar.Workflow.NamespaceID = im.cached.Namespace.ID.String()

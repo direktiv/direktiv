@@ -148,7 +148,11 @@ func (instance *testerInstance) LivingChildren(ctx context.Context) []*ChildInfo
 	return nil
 }
 
-func (instance *testerInstance) Log(ctx context.Context, a string, x ...interface{}) {
+func (instance *testerInstance) SendToLogger(ctx context.Context, level, a string, x ...interface{}) {
+}
+
+func (instance *testerInstance) AddAttribute(tag, value string) {
+
 }
 
 func (instance *testerInstance) PrimeDelayedEvent(events cloudevents.Event) {

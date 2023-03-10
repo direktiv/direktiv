@@ -46,7 +46,7 @@ func (logic *actionLogic) Deadline(ctx context.Context) time.Time {
 	d, err := duration.ParseISO8601(logic.Timeout)
 	if err != nil {
 		if logic.Timeout != "" {
-			logic.Log(ctx, "failed to parse timeout: %v", err)
+			logic.SendToLogger(ctx, "error", "failed to parse timeout: %v", err)
 		}
 		return time.Now().Add(DefaultLongDeadline)
 	}
@@ -163,7 +163,7 @@ func (logic *actionLogic) scheduleAction(ctx context.Context, attempt int) error
 		return nil
 	}
 
-	logic.Log(ctx, "Sleeping until child '%s' returns (%s).", child.ID, fn.GetID())
+	logic.SendToLogger(ctx, "error", "Sleeping until child '%s' returns (%s).", child.ID, fn.GetID())
 
 	var children []*ChildInfo
 
@@ -178,7 +178,7 @@ func (logic *actionLogic) scheduleAction(ctx context.Context, attempt int) error
 }
 
 func (logic *actionLogic) scheduleRetryAction(ctx context.Context, retry *actionRetryInfo) error {
-	logic.Log(ctx, "Retrying...")
+	logic.SendToLogger(ctx, "info", "Retrying...")
 
 	err := logic.scheduleAction(ctx, retry.Children[retry.Idx].Attempts)
 	if err != nil {
@@ -199,11 +199,11 @@ func (logic *actionLogic) processActionResults(ctx context.Context, children []*
 		return nil, derrors.NewInternalError(errors.New("incorrect child action ID"))
 	}
 
-	logic.Log(ctx, "Child '%s' returned.", id)
+	logic.SendToLogger(ctx, "info", "Child '%s' returned.", id)
 
 	if results.ErrorCode != "" {
 
-		logic.Log(ctx, "Action raised catchable error '%s': %s.", results.ErrorCode, results.ErrorMessage)
+		logic.SendToLogger(ctx, "error", "Action raised catchable error '%s': %s.", results.ErrorCode, results.ErrorMessage)
 
 		err = derrors.NewCatchableError(results.ErrorCode, results.ErrorMessage)
 		d, err := preprocessRetry(logic.Action.Retries, sd.Attempts, err)
@@ -211,14 +211,14 @@ func (logic *actionLogic) processActionResults(ctx context.Context, children []*
 			return nil, err
 		}
 
-		logic.Log(ctx, "Scheduling retry attempt in: %v.", d)
+		logic.SendToLogger(ctx, "info", "Scheduling retry attempt in: %v.", d)
 
 		return nil, scheduleRetry(ctx, logic.Instance, children, 0, d)
 
 	}
 
 	if results.ErrorMessage != "" {
-		logic.Log(ctx, "Action crashed due to an internal error: %v", results.ErrorMessage)
+		logic.SendToLogger(ctx, "error", "Action crashed due to an internal error: %v", results.ErrorMessage)
 		return nil, derrors.NewInternalError(errors.New(results.ErrorMessage))
 	}
 

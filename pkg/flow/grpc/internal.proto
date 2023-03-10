@@ -13,6 +13,7 @@ message ReportActionResultsRequest {
 	string errorCode = 4;
 	string errorMessage = 5;
 	bytes output = 6;
+	int32 Iterator = 7;
 }
 
 message SetNamespaceConfigRequest {
@@ -36,7 +37,8 @@ message GetNamespaceConfigResponse {
 
 message ActionLogRequest {
 	string instanceId = 1;
-	repeated string msg = 2;
+	int32 Iterator = 2;
+	repeated string msg = 3;
 }
 
 message VariableInternalRequest {

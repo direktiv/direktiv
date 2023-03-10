@@ -12,6 +12,7 @@ import (
 )
 
 const actionIDHeader = "Direktiv-ActionID"
+const IteratorHeader = "Direktiv-Iterator"
 
 // NetworkServer defines a network server object.
 type NetworkServer struct {

@@ -53,7 +53,7 @@ func (logic *switchLogic) Run(ctx context.Context, wakedata []byte) (*Transition
 
 		if truth(x) {
 
-			logic.Log(ctx, "Switch condition %d succeeded", i)
+			logic.SendToLogger(ctx, "info", "Switch condition %d succeeded", i)
 
 			return &Transition{
 				Transform: condition.Transform,
@@ -64,7 +64,7 @@ func (logic *switchLogic) Run(ctx context.Context, wakedata []byte) (*Transition
 
 	}
 
-	logic.Log(ctx, "No switch conditions succeeded")
+	logic.SendToLogger(ctx, "info", "No switch conditions succeeded")
 
 	return &Transition{
 		Transform: logic.DefaultTransform,

@@ -68,7 +68,7 @@ func (logic *generateEventLogic) Run(ctx context.Context, wakedata []byte) (*Tra
 			err = event.SetData(ctype, data)
 		}
 		if err != nil {
-			logic.Log(ctx, "Unable to set event data: %v", err)
+			logic.SendToLogger(ctx, "error", "Unable to set event data: %v", err)
 		}
 
 	}
@@ -77,7 +77,7 @@ func (logic *generateEventLogic) Run(ctx context.Context, wakedata []byte) (*Tra
 
 		err = event.SetData("application/json", x)
 		if err != nil {
-			logic.Log(ctx, "Unable to set event data: %v", err)
+			logic.SendToLogger(ctx, "error", "Unable to set event data: %v", err)
 		}
 
 	}
@@ -89,16 +89,16 @@ func (logic *generateEventLogic) Run(ctx context.Context, wakedata []byte) (*Tra
 			return nil, derrors.NewUncatchableError("direktiv.event.jq", "failed to process event context key '%s': %v", k, err)
 		}
 
-		logic.Log(ctx, "Adding context %v: %v", k, x)
+		logic.SendToLogger(ctx, "info", "Adding context %v: %v", k, x)
 
 		err = event.Context.SetExtension(k, x)
 		if err != nil {
-			logic.Log(ctx, "Unable to set event extension: %v", err)
+			logic.SendToLogger(ctx, "error", "Unable to set event extension: %v", err)
 		}
 
 	}
 
-	logic.Log(ctx, "Broadcasting event: %s.", event.ID())
+	logic.SendToLogger(ctx, "info", "Broadcasting event: %s.", event.ID())
 
 	var dd int64
 

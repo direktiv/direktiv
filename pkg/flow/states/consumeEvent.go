@@ -37,7 +37,7 @@ func ConsumeEvent(instance Instance, state model.State) (Logic, error) {
 func (logic *consumeEventLogic) Deadline(ctx context.Context) time.Time {
 	d, err := duration.ParseISO8601(logic.Timeout)
 	if err != nil {
-		logic.Log(ctx, "failed to parse duration: %v", err)
+		logic.SendToLogger(ctx, "error", "failed to parse duration: %v", err)
 		return time.Now().Add(DefaultLongDeadline)
 	}
 

@@ -3,6 +3,7 @@ package flow
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net"
 	"time"
 
@@ -98,8 +99,20 @@ func (internal *internal) ActionLog(ctx context.Context, req *grpc.ActionLogRequ
 		return nil, err
 	}
 
+	rt, err := internal.edb.InstanceRuntime(ctx, cached.Instance.Runtime)
+	if err != nil {
+		return nil, err
+	}
+
+	flow := rt.Flow
+	stateID := flow[len(flow)-1]
+
+	tags := cached.GetAttributes("instance")
+	tags["loop-index"] = fmt.Sprintf("%d", req.Iterator)
+	tags["state-id"] = stateID
+	tags["state-type"] = "action"
 	for _, msg := range req.GetMsg() {
-		internal.logger.Info(t, cached.Instance.ID, cached.GetAttributes("instance"), msg)
+		internal.logger.Info(t, cached.Instance.ID, tags, msg)
 	}
 
 	var resp emptypb.Empty

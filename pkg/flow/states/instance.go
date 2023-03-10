@@ -22,7 +22,8 @@ type Instance interface {
 	GetVariables(ctx context.Context, vars []VariableSelector) ([]Variable, error)
 	Sleep(ctx context.Context, d time.Duration, x interface{}) error
 	Raise(ctx context.Context, err *derrors.CatchableError) error
-	Log(ctx context.Context, a string, x ...interface{})
+	SendToLogger(ctx context.Context, level, a string, x ...interface{})
+	AddAttribute(tag, value string)
 	SetVariables(ctx context.Context, vars []VariableSetter) error
 	BroadcastCloudevent(ctx context.Context, event *cloudevents.Event, dd int64) error
 	ListenForEvents(ctx context.Context, events []*model.ConsumeEventDefinition, all bool) error
@@ -44,6 +45,7 @@ type CreateChildArgs struct {
 	Timeout    int
 	Async      bool
 	Files      []model.FunctionFileDefinition
+	Iterator   int
 }
 
 type ChildInfo struct {

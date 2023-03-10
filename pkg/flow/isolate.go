@@ -17,6 +17,7 @@ const (
 	DirektivDeadlineHeader    = "Direktiv-Deadline"
 	DirektivTimeoutHeader     = "Direktiv-Timeout"
 	DirektivStepHeader        = "Direktiv-Step"
+	DirektivIteratorHeader    = "Direktiv-Iterator"
 	DirektivResponseHeader    = "Direktiv-Response"
 	DirektivNamespaceHeader   = "Direktiv-Namespace"
 	DirektivSourceHeader      = "Direktiv-Source"
@@ -43,8 +44,8 @@ type ServiceResponse struct {
 }
 
 type functionRequest struct {
-	ActionID string
-
+	ActionID  string
+	Iterator  int
 	Workflow  functionWorkflow
 	Container functionContainer
 }
