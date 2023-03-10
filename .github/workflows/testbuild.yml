@@ -1,0 +1,21 @@
+name: Make test build
+on:
+  push:
+    branches:
+      - feature/**
+jobs:
+  build:
+    name: Make test build 
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v3
+      - name: run linter, typecheck, prettier and make testbuild
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      - run: npm install -g yarn
+      - run: yarn install  --production --frozen-lockfile
+      # build will automatically run prebuild
+      - run: yarn build
