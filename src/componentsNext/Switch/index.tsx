@@ -5,7 +5,7 @@ import * as SwitchPrimitives from "@radix-ui/react-switch";
 
 import clsx from "clsx";
 
-const Toggle = React.forwardRef<
+const Switch = React.forwardRef<
   React.ElementRef<typeof SwitchPrimitives.Root>,
   React.ComponentPropsWithoutRef<typeof SwitchPrimitives.Root>
 >(({ className, ...props }, ref) => (
@@ -19,11 +19,11 @@ const Toggle = React.forwardRef<
   >
     <SwitchPrimitives.Thumb
       className={clsx(
-        "pointer-events-none block h-5 w-5 rounded-full bg-white shadow-lg ring-0 transition-transform data-[state=unchecked]:translate-x-0 data-[state=checked]:translate-x-5"
+        "pointer-events-none block h-5 w-5 rounded-full bg-base-100 shadow-lg ring-0 transition-transform data-[state=unchecked]:translate-x-0 data-[state=checked]:translate-x-5"
       )}
     />
   </SwitchPrimitives.Root>
 ));
-Toggle.displayName = SwitchPrimitives.Root.displayName;
+Switch.displayName = SwitchPrimitives.Root.displayName;
 
-export { Toggle };
+export { Switch };
