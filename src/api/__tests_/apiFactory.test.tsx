@@ -19,8 +19,8 @@ import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 
 const API_KEY = "THIS-IS-MY-API-KEY";
-const apiEndpoint = "/my-api";
-const apiEndpoint404 = "/404";
+const apiEndpoint = "http://localhost/my-api";
+const apiEndpoint404 = "http://localhost/404";
 
 const testApi = setupServer(
   rest.get(apiEndpoint, (req, res, ctx) =>
@@ -103,7 +103,7 @@ describe("processApiResponse", () => {
       expect(result.current.isSuccess).toBe(false);
       expect(result.current.status).toBe("error");
       expect(errorMock.mock.calls[0][0]).toMatchInlineSnapshot(
-        '"error 401 for GET /my-api"'
+        '"error 401 for GET http://localhost/my-api"'
       );
     });
   });
@@ -124,7 +124,7 @@ describe("processApiResponse", () => {
       expect(result.current.isSuccess).toBe(false);
       expect(result.current.status).toBe("error");
       expect(errorMock.mock.calls[0][0]).toMatchInlineSnapshot(
-        '"could not format response for GET /my-api"'
+        '"could not format response for GET http://localhost/my-api"'
       );
     });
   });
@@ -145,7 +145,7 @@ describe("processApiResponse", () => {
       expect(result.current.isSuccess).toBe(false);
       expect(result.current.status).toBe("error");
       expect(errorMock.mock.calls[0][0]).toMatchInlineSnapshot(
-        '"error 404 for GET /404"'
+        '"error 404 for GET http://localhost/404"'
       );
     });
   });
