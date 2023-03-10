@@ -4,9 +4,9 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../select";
+} from "../_select";
 
-import Button from "../button";
+import Button from "../_button";
 
 export default {
   title: "Components (next)/Compositions/Form",

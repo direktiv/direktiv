@@ -32,7 +32,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "./index";
-import Button from "../button";
+import Button from "../_button";
 import type { Meta } from "@storybook/react";
 import { useState } from "react";
 
