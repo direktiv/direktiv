@@ -111,7 +111,7 @@ func (cached *CacheData) GetAttributes(recipientType string) map[string]string {
 	case "workflow":
 		if cached.Workflow != nil {
 			tags["workflow-id"] = cached.Workflow.ID.String()
-			tags["workflow"] = GetInodePath(cached.Instance.As)
+			tags["workflow"] = GetWorkflow(cached.Instance.As)
 		}
 		fallthrough
 	case "namespace":
@@ -130,12 +130,6 @@ func (cached *CacheData) GetAttributesMirror(m *Mirror) map[string]string {
 	return tags
 }
 
-// GetInodePath returns the path without the first slash.
-func GetInodePath(path string) string {
-	path = strings.TrimSuffix(path, "/")
-	if !strings.HasPrefix(path, "/") {
-		return "/" + path
-	}
-	path = filepath.Clean(path)
-	return path
+func GetWorkflow(path string) string {
+	return strings.Split(path, ":")[0]
 }
