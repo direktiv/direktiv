@@ -79,10 +79,11 @@
     "test": "vitest",
     "storybook": "NODE_OPTIONS=--openssl-legacy-provider storybook dev -p 6006 -s public",
     "storybook:build": "storybook build -s public",
+    "check": "run-s check:*",
     "check:lint": "eslint src --ext .js,.jsx,.ts,.tsx",
     "check:types": "tsc --tsBuildInfoFile .tsbuildinfo --incremental",
-    "check": "run-s check:*",
     "check:prettier": "prettier --check './src/**/*.{js,jsx,ts,tsx,json,scss}'",
+    "check:test": "vitest run",
     "prettier": "prettier --write './src/**/*.{js,jsx,ts,tsx,json,scss}'"
   },
   "resolutions": {
