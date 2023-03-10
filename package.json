@@ -104,6 +104,10 @@
       "last 1 safari version"
     ]
   },
+  "engines": {
+    "npm": "8",
+    "node": "18"
+  },
   "devDependencies": {
     "@faker-js/faker": "^7.3.0",
     "@storybook/addon-actions": "^7.0.0-beta.53",
