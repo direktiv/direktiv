@@ -83,7 +83,7 @@
     "check:lint": "eslint src --ext .js,.jsx,.ts,.tsx",
     "check:types": "tsc --tsBuildInfoFile .tsbuildinfo --incremental",
     "check:prettier": "prettier --check './src/**/*.{js,jsx,ts,tsx,json,scss}'",
-    "check:test": "vitest run",
+    "check:test": "vitest run --reporter json",
     "prettier": "prettier --write './src/**/*.{js,jsx,ts,tsx,json,scss}'"
   },
   "resolutions": {
