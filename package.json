@@ -75,14 +75,15 @@
   "scripts": {
     "start": "vite",
     "build": "vite build",
+    "prebuild": "yarn run check",
     "test": "vitest",
-    "analyze": "craco build",
     "storybook": "NODE_OPTIONS=--openssl-legacy-provider storybook dev -p 6006 -s public",
-    "build-storybook": "storybook build -s public",
+    "storybook:build": "storybook build -s public",
     "check:lint": "eslint src --ext .js,.jsx,.ts,.tsx",
     "check:types": "tsc --tsBuildInfoFile .tsbuildinfo --incremental",
-    "check:all": "yarn run check:lint && yarn run check:types",
-    "prettier": "prettier --write ./src/"
+    "check": "run-s check:*",
+    "check:prettier": "prettier --check './src/**/*.{js,jsx,ts,tsx,json,scss}'",
+    "prettier": "prettier --write './src/**/*.{js,jsx,ts,tsx,json,scss}'"
   },
   "resolutions": {
     "babel-loader": "8.1.0",
