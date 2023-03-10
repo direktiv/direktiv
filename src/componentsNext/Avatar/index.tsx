@@ -31,7 +31,7 @@ const Avatar: FC<AvatarProps> = ({
       )}
     >
       {placeholder ? (
-        <span className="text-3xl">{placeholder || "AB"}</span>
+        <span className="text-3xl">{placeholder}</span>
       ) : (
         <img
           src={
