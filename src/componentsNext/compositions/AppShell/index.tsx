@@ -48,7 +48,7 @@ export const Sidebar: FC<PropsWithChildren<{ version: string }>> = ({
 }) => (
   <div className="lg:fixed lg:inset-y-0 lg:flex lg:w-52 lg:flex-col lg:border-r lg:border-gray-gray5 dark:lg:border-grayDark-gray5">
     {children}
-    <div className="hidden flex-shrink-0 p-5 text-left text-sm text-gray-gray8 dark:text-grayDark-gray8 lg:block">
+    <div className="hidden shrink-0 p-5 text-left text-sm text-gray-gray8 dark:text-grayDark-gray8 lg:block">
       {version}
     </div>
   </div>

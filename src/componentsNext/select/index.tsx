@@ -26,7 +26,7 @@ const SelectTrigger = React.forwardRef<
     ref={ref}
     className={clsx(
       "btn-ghost btn justify-between gap-2",
-      !ghost && "border-base-content border-opacity-20 bg-base-100",
+      !ghost && "border-base-content bg-base-100",
       size === "lg" && "btn-lg",
       size === "sm" && "btn-sm",
       size === "xs" && "btn-xs",
@@ -86,7 +86,7 @@ const SelectItem = React.forwardRef<
   <SelectPrimitive.Item
     ref={ref}
     className={clsx(
-      "relative flex cursor-default select-none items-center rounded-sm py-1.5 pr-2 pl-8 text-sm font-medium outline-none     focus:bg-base-300 data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      "relative flex cursor-default select-none items-center rounded-sm py-1.5 pr-2 pl-8 text-sm font-medium outline-none focus:bg-base-300   data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       className
     )}
     {...props}
