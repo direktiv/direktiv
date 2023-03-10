@@ -11,7 +11,7 @@ export type AvatarProps = HTMLAttributes<HTMLDivElement> & {
 };
 
 const Avatar: FC<AvatarProps> = ({
-  size,
+  size="lg",
   className,
   children,
   src,
@@ -22,7 +22,7 @@ const Avatar: FC<AvatarProps> = ({
     <div
       className={clsx(
         className,
-        "w-24 rounded-full",
+        "rounded-full",
         size === "xlg" && "w-32",
         size === "lg" && "w-24",
         size === "sm" && "w-16",
