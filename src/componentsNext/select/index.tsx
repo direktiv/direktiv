@@ -24,9 +24,11 @@ const SelectTrigger = React.forwardRef<
 >(({ className, size, loading, block, ghost, children, ...props }, ref) => (
   <SelectPrimitive.Trigger
     ref={ref}
+    // border-opacity-20 will be deprecated in tailwind 3 but daisyui is still on tailwind 2
+    // eslint-disable-next-line tailwindcss/migration-from-tailwind-2
     className={clsx(
       "btn-ghost btn justify-between gap-2",
-      !ghost && "border-base-content bg-base-100",
+      !ghost && "border-base-content border-opacity-20 bg-base-100",
       size === "lg" && "btn-lg",
       size === "sm" && "btn-sm",
       size === "xs" && "btn-xs",
