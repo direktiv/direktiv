@@ -30,13 +30,13 @@ const Layout = () => {
           theme <span className="font-bold">{theme}</span>
         </h1>
         <div className="flex space-x-5">
-          <button className="btn btn-primary" onClick={() => setTheme("dark")}>
+          <button className="btn-primary btn" onClick={() => setTheme("dark")}>
             darkmode
           </button>
-          <button className="btn btn-primary" onClick={() => setTheme("light")}>
+          <button className="btn-primary btn" onClick={() => setTheme("light")}>
             lightmode
           </button>
-          <button className="btn btn-error" onClick={() => setTheme(null)}>
+          <button className="btn-error btn" onClick={() => setTheme(null)}>
             reset theme
           </button>
         </div>
@@ -47,12 +47,12 @@ const Layout = () => {
         </h1>
         <div className="flex space-x-5">
           <button
-            className="btn btn-primary"
+            className="btn-primary btn"
             onClick={() => setApiKey("password")}
           >
             set Api key to password
           </button>
-          <button className="btn btn-error" onClick={() => setApiKey(null)}>
+          <button className="btn-error btn" onClick={() => setApiKey(null)}>
             reset api key
           </button>
         </div>

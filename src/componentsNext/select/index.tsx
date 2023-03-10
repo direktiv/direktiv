@@ -25,8 +25,8 @@ const SelectTrigger = React.forwardRef<
   <SelectPrimitive.Trigger
     ref={ref}
     className={clsx(
-      "btn gap-2 btn-ghost justify-between",
-      !ghost && "border-base-content bg-base-100 border-opacity-20",
+      "btn-ghost btn justify-between gap-2",
+      !ghost && "border-base-content border-opacity-20 bg-base-100",
       size === "lg" && "btn-lg",
       size === "sm" && "btn-sm",
       size === "xs" && "btn-xs",
@@ -50,7 +50,7 @@ const SelectContent = React.forwardRef<
     <SelectPrimitive.Content
       ref={ref}
       className={clsx(
-        "card card-bordered border-base-300 bg-base-100 shadow-md",
+        "card-bordered card border-base-300 bg-base-100 shadow-md",
         className
       )}
       {...props}

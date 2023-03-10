@@ -68,7 +68,7 @@ function NavBar(props) {
           <FlexBox className="navbar-logo">
             <img alt="logo" src={Logo} />
           </FlexBox>
-          <div className="navbar-panel shadow col">
+          <div className="navbar-panel col shadow">
             <FlexBox>
               <NamespaceSelector
                 pathname={pathname}
@@ -93,7 +93,7 @@ function NavBar(props) {
             />
           </div>
 
-          <div className="navbar-panel shadow col">
+          <div className="navbar-panel col shadow">
             <GlobalNavItems namespace={namespace} />
           </div>
 

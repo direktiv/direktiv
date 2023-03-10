@@ -13,19 +13,19 @@ export default {
 };
 
 export const Default = () => (
-  <div className="card bg-base-100 shadow-md p-6">
+  <div className="card bg-base-100 p-6 shadow-md">
     <div className="mt-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
-      <div className="sm:col-span-4 form-control">
+      <div className="form-control sm:col-span-4">
         <label className="label">
           <span className="label-text">Some text input</span>
         </label>
         <input
           type="text"
           placeholder="text"
-          className="input input-bordered w-full"
+          className="input-bordered input w-full"
         />
       </div>
-      <div className="sm:col-span-2 form-control">
+      <div className="form-control sm:col-span-2">
         <label className="label">
           <span className="label-text">Another text input</span>
           <span className="label-text-alt">required</span>
@@ -33,22 +33,22 @@ export const Default = () => (
         <input
           type="text"
           placeholder="text"
-          className="input input-bordered w-full"
+          className="input-bordered input w-full"
         />
       </div>
-      <div className="sm:col-span-4 form-control">
-        <div className="sm:col-span-4 form-control">
+      <div className="form-control sm:col-span-4">
+        <div className="form-control sm:col-span-4">
           <label className="label">
             <span className="label-text">Some text input</span>
           </label>
           <input
             type="text"
             placeholder="text"
-            className="input input-bordered w-full"
+            className="input-bordered input w-full"
           />
         </div>
       </div>
-      <div className="sm:col-span-2 form-control">
+      <div className="form-control sm:col-span-2">
         <label className="label">
           <span className="label-text">Select something</span>
         </label>
@@ -63,7 +63,7 @@ export const Default = () => (
           </SelectContent>
         </Select>
       </div>
-      <div className="sm:col-span-full flex flex-row-reverse gap-5">
+      <div className="flex flex-row-reverse gap-5 sm:col-span-full">
         <Button color="primary">Submit</Button>
         <Button color="ghost">Cancel</Button>
       </div>

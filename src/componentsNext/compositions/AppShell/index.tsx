@@ -33,9 +33,9 @@ export const DrawerContent: {
 export const DrawerMenu: FC<PropsWithChildren> = ({ children }) => (
   <div className="drawer-side">
     <label htmlFor="my-drawer" className="drawer-overlay"></label>
-    <nav className="menu p-4 w-52 bg-base-100 text-base-content">
+    <nav className="menu w-52 bg-base-100 p-4 text-base-content">
       <div className="px-2">
-        <Logo className="h-8 w-auto mb-5 mt-1" />
+        <Logo className="mb-5 mt-1 h-8 w-auto" />
       </div>
       {children}
     </nav>
@@ -48,22 +48,22 @@ export const Sidebar: FC<PropsWithChildren<{ version: string }>> = ({
 }) => (
   <div className="lg:fixed lg:inset-y-0 lg:flex lg:w-52 lg:flex-col lg:border-r lg:border-gray-gray5 dark:lg:border-grayDark-gray5">
     {children}
-    <div className="hidden lg:block flex-shrink-0 p-5 text-left text-sm text-gray-gray8 dark:text-grayDark-gray8">
+    <div className="hidden flex-shrink-0 p-5 text-left text-sm text-gray-gray8 dark:text-grayDark-gray8 lg:block">
       {version}
     </div>
   </div>
 );
 
 export const SidebarMenu: FC<PropsWithChildren> = ({ children }) => (
-  <div className="hidden lg:block flex-1 overflow-y-auto">
-    <nav className="mt-5 px-3 space-y-1">{children}</nav>
+  <div className="hidden flex-1 overflow-y-auto lg:block">
+    <nav className="mt-5 space-y-1 px-3">{children}</nav>
   </div>
 );
 export const SidebarLogo: FC<PropsWithChildren> = ({ children }) => (
-  <div className="grid max-lg:space-x-5 max-lg:grid-cols-3 items-center lg:block border-b border-gray-gray5 dark:border-grayDark-gray5 px-6 py-5">
+  <div className="grid items-center border-b border-gray-gray5 px-6 py-5 dark:border-grayDark-gray5 max-lg:grid-cols-3 max-lg:space-x-5 lg:block">
     {children}
-    <LogoNoText className="sm:hidden h-8 w-auto justify-self-center" />
-    <Logo className="hidden sm:block h-8 w-auto" />
+    <LogoNoText className="h-8 w-auto justify-self-center sm:hidden" />
+    <Logo className="hidden h-8 w-auto sm:block" />
   </div>
 );
 
@@ -74,9 +74,9 @@ export const SidebarNavigationItem: FC<
     href={href}
     className={clsx(
       active
-        ? "bg-primary50 dark:bg-primary700 text-gray-gray12 dark:text-grayDark-gray12"
-        : "text-gray-gray11 dark:text-grayDark-gray11 hover:bg-gray-gray2 dark:hover:bg-grayDark-gray2",
-      "group flex items-center p-2 text-sm font-medium rounded-md [&>svg]:mr-3 [&>svg]:group"
+        ? "bg-primary50 text-gray-gray12 dark:bg-primary700 dark:text-grayDark-gray12"
+        : "text-gray-gray11 hover:bg-gray-gray2 dark:text-grayDark-gray11 dark:hover:bg-grayDark-gray2",
+      "[&>svg]:group group flex items-center rounded-md p-2 text-sm font-medium [&>svg]:mr-3"
     )}
   >
     {children}
@@ -90,7 +90,7 @@ export const Main: FC<PropsWithChildren> = ({ children }) => (
 );
 
 export const MainTopBarRoot: FC<PropsWithChildren> = ({ children }) => (
-  <div className="border-b border-gray-gray5 dark:border-grayDark-gray5 p-4 flex items-center justify-between">
+  <div className="flex items-center justify-between border-b border-gray-gray5 p-4 dark:border-grayDark-gray5">
     {children}
   </div>
 );
@@ -104,7 +104,7 @@ export const MainTopBarLeft: FC<PropsWithChildren> = ({ children }) => (
 );
 
 export const MainTopBarRight: FC<PropsWithChildren> = ({ children }) => (
-  <div className="mt-4 space-x-3 flex sm:mt-0 sm:ml-4">{children}</div>
+  <div className="mt-4 flex space-x-3 sm:mt-0 sm:ml-4">{children}</div>
 );
 
 export const MainContent: FC<PropsWithChildren> = ({ children }) => (

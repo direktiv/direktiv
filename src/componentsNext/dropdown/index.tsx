@@ -46,7 +46,7 @@ const DropdownMenuSubContent = React.forwardRef<
   <DropdownMenuPrimitive.SubContent
     ref={ref}
     className={clsx(
-      "card card-bordered border-base-300 bg-base-100 shadow-md p-1 z-50 min-w-[8rem] overflow-hidden",
+      "card-bordered card z-50 min-w-[8rem] overflow-hidden border-base-300 bg-base-100 p-1 shadow-md",
       className
     )}
     {...props}
@@ -64,8 +64,8 @@ const DropdownMenuContent = React.forwardRef<
       ref={ref}
       sideOffset={sideOffset}
       className={clsx(
-        "z-50 min-w-[8rem] overflow-hidden animate-in data-[side=right]:slide-in-from-left-2 data-[side=left]:slide-in-from-right-2 data-[side=bottom]:slide-in-from-top-2 data-[side=top] :slide-in-from-bottom-2",
-        "card card-bordered border-base-300 bg-base-100 shadow-md p-1",
+        "data-[side=top] :slide-in-from-bottom-2 z-50 min-w-[8rem] overflow-hidden animate-in data-[side=right]:slide-in-from-left-2 data-[side=left]:slide-in-from-right-2 data-[side=bottom]:slide-in-from-top-2",
+        "card-bordered card border-base-300 bg-base-100 p-1 shadow-md",
         className
       )}
       {...props}

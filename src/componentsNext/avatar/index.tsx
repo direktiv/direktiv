@@ -22,7 +22,7 @@ const Avatar: FC<AvatarProps> = ({
     <div
       className={clsx(
         className,
-        "rounded-full w-24",
+        "w-24 rounded-full",
         size === "xlg" && "w-32",
         size === "lg" && "w-24",
         size === "sm" && "w-16",

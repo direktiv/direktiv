@@ -109,7 +109,7 @@ export const Default = () => {
                 <SidebarLogo>
                   <label
                     {...drawerLabelProps}
-                    className="lg:hidden px-1 justify-self-start"
+                    className="justify-self-start px-1 lg:hidden"
                     role="button"
                   >
                     <Menu />
@@ -131,7 +131,7 @@ export const Default = () => {
               <Main>
                 <MainTopBarRoot>
                   <MainTopBarLeft>
-                    <div className="text-sm breadcrumbs">
+                    <div className="breadcrumbs text-sm">
                       <ul>
                         <li>
                           <a className="gap-2">
@@ -237,10 +237,10 @@ export const Default = () => {
                       <DropdownMenuTrigger asChild>
                         <Button
                           color="ghost"
-                          className="px-1 avatar placeholder items-center gap-1"
+                          className="placeholder avatar items-center gap-1 px-1"
                           role="button"
                         >
-                          <div className="bg-primary500 text-neutral-content rounded-full w-7 h-7">
+                          <div className="h-7 w-7 rounded-full bg-primary500 text-neutral-content">
                             <span className="text-xs">Ad</span>
                           </div>
                           <RxChevronDown />
@@ -260,9 +260,9 @@ export const Default = () => {
                   </MainTopBarRight>
                 </MainTopBarRoot>
                 <MainContent>
-                  <div className="p-5 pb-0 space-y-5 border-b bg-base-200 border-gray-gray5 dark:border-grayDark-gray5">
-                    <div className="flex-col max-sm:space-y-4 sm:flex-row flex sm:items-center sm:justify-between ">
-                      <h3 className="flex font-bold items-center gap-x-2 text-primary500">
+                  <div className="space-y-5 border-b border-gray-gray5 bg-base-200 p-5 pb-0 dark:border-grayDark-gray5">
+                    <div className="flex flex-col max-sm:space-y-4 sm:flex-row sm:items-center sm:justify-between ">
+                      <h3 className="flex items-center gap-x-2 font-bold text-primary500">
                         <Play className="h-5" />
                         workflow.yml
                       </h3>
