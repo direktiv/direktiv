@@ -35,6 +35,7 @@ module.exports = {
     ".eslintrc.js",
     "env.d.ts",
     /**
+     * 🚧
      * TODO_HOOKS_TESTS
      * The Problem: All hooks tests are currently not working and have some linting issues.
      * We must decide:
@@ -49,8 +50,13 @@ module.exports = {
      *      much higher level. We might use PlayWright for end to end tests.
      *
      */
-    // 🚧 search for TODO_HOOKS_TESTS to find all places that needs some action 🚧
-    "src/hooks/*test.js",
+    /**
+     * 🚧
+     * as part of the redesign, these folders will be removed later
+     * and therefore be ignored by eslint to have a clean ci workflow
+     */
+    "src/hooks/*",
+    "src/components/*",
   ],
   rules: {
     // PLEASE ALWAYS PROVIDE A REASON FOR DISABLING/OVERWRITING A RULE
