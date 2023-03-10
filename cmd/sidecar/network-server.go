@@ -11,8 +11,10 @@ import (
 	"github.com/gorilla/mux"
 )
 
-const actionIDHeader = "Direktiv-ActionID"
-const IteratorHeader = "Direktiv-Iterator"
+const (
+	actionIDHeader = "Direktiv-ActionID"
+	IteratorHeader = "Direktiv-Iterator"
+)
 
 // NetworkServer defines a network server object.
 type NetworkServer struct {

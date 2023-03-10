@@ -152,7 +152,6 @@ func (instance *testerInstance) SendToLogger(ctx context.Context, level, a strin
 }
 
 func (instance *testerInstance) AddAttribute(tag, value string) {
-
 }
 
 func (instance *testerInstance) PrimeDelayedEvent(events cloudevents.Event) {

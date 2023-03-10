@@ -150,19 +150,23 @@ func (logger *Logger) sendToWorker(t time.Time, recipientID uuid.UUID, tags map[
 func (logger *Logger) telemetry(ctx context.Context, msg string, tags map[string]string) {
 	span := trace.SpanFromContext(ctx)
 	tid := span.SpanContext().TraceID()
-	tags["trace"] = tid.String()
 	if tags == nil {
 		logger.sugar.Infow(msg, "trace", tid)
 	} else {
-		switch tags["level"] { //TODO: the linter compliaints if the argument nummber is not odd
+		ar := make([]interface{}, 0, len(tags)*2+1)
+		for k, v := range tags {
+			ar = append(ar, k, v)
+		}
+		ar = append(ar, "trace", tid)
+		switch tags["level"] {
 		case "info":
-			logger.sugar.Infow(msg, "trace", tid, "tags", tags)
+			logger.sugar.Infow(msg, ar...)
 		case "debug":
-			logger.sugar.Debugw(msg, "trace", tid, "tags", tags)
+			logger.sugar.Debugw(msg, ar...)
 		case "error":
-			logger.sugar.Errorw(msg, "trace", tid, "tags", tags)
+			logger.sugar.Errorw(msg, ar...)
 		case "panic":
-			logger.sugar.DPanicw(msg, "trace", tid, "tags", tags)
+			logger.sugar.DPanicw(msg, ar...)
 		}
 	}
 }
