@@ -25,12 +25,7 @@ import {
   Terminal,
   Users,
 } from "lucide-react";
-import {
-  DrawerContent,
-  DrawerMenu,
-  DrawerRoot,
-  SidebarNavigationItem,
-} from "./AppShell";
+import { DrawerContent, DrawerMenu, DrawerRoot } from "./AppShell";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -54,6 +49,7 @@ import {
 import { useEffect, useState } from "react";
 
 import Button from "../Button";
+import { NavigationLink } from "../NavigationLink";
 import { RxChevronDown } from "react-icons/rx";
 import clsx from "clsx";
 
@@ -119,14 +115,14 @@ export const Default = () => {
                 </SidebarTop>
                 <SidebarMain>
                   {navigation.map((item) => (
-                    <SidebarNavigationItem
+                    <NavigationLink
                       key={item.name}
                       href={item.href}
                       active={item.current}
                     >
                       <item.icon aria-hidden="true" />
                       {item.name}
-                    </SidebarNavigationItem>
+                    </NavigationLink>
                   ))}
                 </SidebarMain>
               </Sidebar>
@@ -303,14 +299,14 @@ export const Default = () => {
         </DrawerContent>
         <DrawerMenu>
           {navigation.map((item) => (
-            <SidebarNavigationItem
+            <NavigationLink
               key={item.name}
               href={item.href}
               active={item.current}
             >
               <item.icon aria-hidden="true" />
               {item.name}
-            </SidebarNavigationItem>
+            </NavigationLink>
           ))}
         </DrawerMenu>
       </DrawerRoot>
