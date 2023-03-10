@@ -8,6 +8,7 @@ module.exports = {
     "plugin:react-hooks/recommended",
     "plugin:storybook/recommended",
     "plugin:@tanstack/eslint-plugin-query/recommended",
+    "plugin:tailwindcss/recommended",
     // This disables the formatting rules in ESLint that Prettier is going to be responsible for handling.
     // Make sure it's always the last config, so it gets the chance to override other configs.
     "eslint-config-prettier",
@@ -76,6 +77,9 @@ module.exports = {
 
     // It's save to import React when using vite
     "react/react-in-jsx-scope": "off",
+
+    // allow custom tailwind classes to enable working with daisyui
+    "tailwindcss/no-custom-classname": "off",
 
     // console logs are fine in development, but eslint can help us
     // remember to remove them. console.error and console.warn are
