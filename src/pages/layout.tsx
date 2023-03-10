@@ -2,14 +2,14 @@ import { Link, Outlet } from "react-router-dom";
 import {
   Main,
   MainContent,
-  MainTopBarLeft,
-  MainTopBarRight,
-  MainTopBarRoot,
+  MainTop,
+  MainTopLeft,
+  MainTopRight,
   Root,
   Sidebar,
-  SidebarLogo,
-  SidebarMenu,
-} from "../componentsNext/compositions/AppShell";
+  SidebarMain,
+  SidebarTop,
+} from "../componentsNext/Appshell";
 import { useApiActions, useApiKey } from "../util/store/apiKey";
 import { useTheme, useThemeActions } from "../util/store/theme";
 
@@ -36,7 +36,7 @@ const Layout = () => {
 
   return (
     <Root>
-      {/* <div className="flex flex-col space-y-5 p-10">
+      <div className="flex flex-col space-y-5 p-10">
         <div>
           <h1>
             theme <span className="font-bold">{theme}</span>
@@ -93,17 +93,17 @@ const Layout = () => {
         <div>
           <Outlet />
         </div>
-      </div> */}
+      </div>
 
       <Sidebar version={version?.api ?? ""}>
-        <SidebarLogo /> {/* add drawer here */}
-        <SidebarMenu />
+        <SidebarTop /> {/* add drawer here */}
+        <SidebarMain />
       </Sidebar>
       <Main>
-        <MainTopBarRoot>
-          <MainTopBarLeft>1</MainTopBarLeft>
-          <MainTopBarRight>2</MainTopBarRight>
-        </MainTopBarRoot>
+        <MainTop>
+          <MainTopLeft>1</MainTopLeft>
+          <MainTopRight>2</MainTopRight>
+        </MainTop>
         <MainContent>121</MainContent>
       </Main>
     </Root>
