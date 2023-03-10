@@ -25,7 +25,7 @@ import {
   Terminal,
   Users,
 } from "lucide-react";
-import { DrawerContent, DrawerMenu, DrawerRoot } from "./AppShell";
+import { DrawerContent, DrawerMenu, DrawerRoot } from "../Drawer";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
