@@ -55,22 +55,24 @@ func (engine *engine) Close() error {
 }
 
 type newInstanceArgs struct {
-	Namespace  string
-	Path       string
-	Ref        string
-	Input      []byte
-	Caller     string
-	CallerData string
-	CallPath   string
+	Namespace   string
+	Path        string
+	Ref         string
+	Input       []byte
+	Caller      string
+	CallerData  string
+	CallPath    string
+	CallerState string
 }
 
 type subflowCaller struct {
-	InstanceID uuid.UUID
-	State      string
-	Step       int
-	Depth      int
-	As         string
-	CallPath   string
+	InstanceID  uuid.UUID
+	State       string
+	Step        int
+	Depth       int
+	As          string
+	CallPath    string
+	CallerState string
 }
 
 const (
@@ -156,7 +158,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 		return nil, err
 	}
 
-	inst, err := clients.Instance.Create().SetNamespaceID(cached.Namespace.ID).SetWorkflowID(cached.Workflow.ID).SetRevisionID(cached.Revision.ID).SetRuntime(rt).SetStatus(util.InstanceStatusPending).SetInvoker(args.Caller).SetAs(util.SanitizeAsField(as)).SetCallpath(callpath).Save(tctx)
+	inst, err := clients.Instance.Create().SetNamespaceID(cached.Namespace.ID).SetWorkflowID(cached.Workflow.ID).SetRevisionID(cached.Revision.ID).SetRuntime(rt).SetStatus(util.InstanceStatusPending).SetInvoker(args.Caller).SetAs(util.SanitizeAsField(as)).SetCallpath(callpath).SetInvokerState(args.CallerState).Save(tctx)
 	if err != nil {
 		return nil, err
 	}
@@ -198,6 +200,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 		Revision:     cached.Revision.ID,
 		Runtime:      runtime.ID,
 		CallPath:     inst.Callpath,
+		InvokerState: inst.InvokerState,
 	}
 
 	im := new(instanceMemory)
@@ -677,7 +680,7 @@ func (engine *engine) subflowInvoke(ctx context.Context, caller *subflowCaller, 
 	}
 
 	args.CallerData = string(callerData)
-
+	args.CallerState = caller.CallerState
 	pcached := new(database.CacheData)
 	err = engine.database.Instance(ctx, pcached, caller.InstanceID)
 	if err != nil {

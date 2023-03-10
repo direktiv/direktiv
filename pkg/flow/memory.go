@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/database"
@@ -226,7 +227,22 @@ func (im *instanceMemory) GetAttributes() map[string]string {
 		tags["state-id"] = im.logic.GetID()
 		tags["state-type"] = im.logic.GetType().String()
 	}
+	a := strings.Split(im.cached.Instance.InvokerState, ":")
+	if len(a) >= 1 && a[0] != "" {
+		tags["invoker-workflow"] = a[0]
+	}
+	if len(a) > 1 {
+		tags["invoker-state-id"] = a[1]
+	}
 	return tags
+}
+
+func (im *instanceMemory) GetState() string {
+	tags := im.cached.GetAttributes("instance")
+	if im.logic != nil {
+		return fmt.Sprintf("%s:%s", tags["workflow"], im.logic.GetID())
+	}
+	return tags["workflow"]
 }
 
 func (engine *engine) getInstanceMemory(ctx context.Context, id string) (*instanceMemory, error) {

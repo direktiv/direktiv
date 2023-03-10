@@ -27,6 +27,7 @@ func (Instance) Fields() []ent.Field {
 		field.String("errorCode").Optional(),
 		field.String("errorMessage").Optional(),
 		field.String("invoker").Optional(),
+		field.String("invokerState").Optional(),
 		field.String("callpath").Optional(),
 	}
 }

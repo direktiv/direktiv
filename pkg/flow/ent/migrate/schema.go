@@ -224,6 +224,7 @@ var (
 		{Name: "error_code", Type: field.TypeString, Nullable: true},
 		{Name: "error_message", Type: field.TypeString, Nullable: true},
 		{Name: "invoker", Type: field.TypeString, Nullable: true},
+		{Name: "invoker_state", Type: field.TypeString, Nullable: true},
 		{Name: "callpath", Type: field.TypeString, Nullable: true},
 		{Name: "namespace_instances", Type: field.TypeUUID},
 		{Name: "revision_instances", Type: field.TypeUUID, Nullable: true},
@@ -237,19 +238,19 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "instances_namespaces_instances",
-				Columns:    []*schema.Column{InstancesColumns[10]},
+				Columns:    []*schema.Column{InstancesColumns[11]},
 				RefColumns: []*schema.Column{NamespacesColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "instances_revisions_instances",
-				Columns:    []*schema.Column{InstancesColumns[11]},
+				Columns:    []*schema.Column{InstancesColumns[12]},
 				RefColumns: []*schema.Column{RevisionsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "instances_workflows_instances",
-				Columns:    []*schema.Column{InstancesColumns[12]},
+				Columns:    []*schema.Column{InstancesColumns[13]},
 				RefColumns: []*schema.Column{WorkflowsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
