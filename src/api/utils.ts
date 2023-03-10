@@ -39,18 +39,13 @@ export const apiFactory =
     schema: z.ZodSchema<TSchema>;
   }): (({ apiKey, params }: ApiParams<TParams>) => Promise<TSchema>) =>
   async ({ apiKey, params }): Promise<TSchema> => {
-    let res: Response | undefined;
-    try {
-      res = await fetch(path, {
-        method,
-        headers: {
-          ...(apiKey ? getAuthHeader(apiKey) : {}),
-        },
-        ...(params ? { body: JSON.stringify(params) } : {}),
-      });
-    } catch (error) {
-      return Promise.reject(`could not fetch ${method} ${path}`);
-    }
+    const res = await fetch(path, {
+      method,
+      headers: {
+        ...(apiKey ? getAuthHeader(apiKey) : {}),
+      },
+      ...(params ? { body: JSON.stringify(params) } : {}),
+    });
 
     if (res.ok) {
       try {
