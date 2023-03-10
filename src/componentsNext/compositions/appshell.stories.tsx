@@ -48,10 +48,10 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "../dropdown";
+} from "../Dropdown";
 import { useEffect, useState } from "react";
 
-import Button from "../_button";
+import Button from "../Button";
 import { RxChevronDown } from "react-icons/rx";
 import clsx from "clsx";
 
