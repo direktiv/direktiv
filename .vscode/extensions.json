@@ -2,6 +2,7 @@
   "recommendations": [
     "dbaeumer.vscode-eslint",
     "esbenp.prettier-vscode",
-    "amatiasq.sort-imports"
+    "amatiasq.sort-imports",
+    "bradlc.vscode-tailwindcss"
   ]
 }
