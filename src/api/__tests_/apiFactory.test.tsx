@@ -129,7 +129,7 @@ describe("processApiResponse", () => {
     });
   });
 
-  test.only("api path does not exist", async () => {
+  test("api path does not exist", async () => {
     const useCallWithApiKey = (onError: (err: unknown) => void) =>
       useQuery({
         queryKey: ["getmyapikey", API_KEY],
