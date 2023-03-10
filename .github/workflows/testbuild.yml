@@ -16,6 +16,6 @@ jobs:
         with:
           node-version: 16
       - run: npm install -g yarn
-      - run: yarn install  --production --frozen-lockfile
+      - run: yarn install
       # build will automatically run prebuild
       - run: yarn build
