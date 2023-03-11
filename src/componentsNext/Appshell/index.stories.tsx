@@ -25,21 +25,7 @@ import {
   Terminal,
   Users,
 } from "lucide-react";
-import {
-  DrawerContent,
-  DrawerMenu,
-  DrawerRoot,
-  Main,
-  MainContent,
-  MainTopBarLeft,
-  MainTopBarRight,
-  MainTopBarRoot,
-  Root,
-  Sidebar,
-  SidebarLogo,
-  SidebarMenu,
-  SidebarNavigationItem,
-} from "./AppShell";
+import { DrawerContent, DrawerMenu, DrawerRoot } from "../Drawer";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -49,14 +35,26 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../Dropdown";
+import {
+  Main,
+  MainContent,
+  MainTop,
+  MainTopLeft,
+  MainTopRight,
+  Root,
+  Sidebar,
+  SidebarMain,
+  SidebarTop,
+} from "./index";
 import { useEffect, useState } from "react";
 
 import Button from "../Button";
+import { NavigationLink } from "../NavigationLink";
 import { RxChevronDown } from "react-icons/rx";
 import clsx from "clsx";
 
 export default {
-  title: "Components (next)/Compositions/App Shell",
+  title: "Components (next)/AppShell",
   parameters: { layout: "fullscreen" },
 };
 
@@ -78,7 +76,27 @@ const tabs = [
   { name: "Settings", href: "#", icon: Settings, current: false },
 ];
 
-export const Default = () => {
+export const Default = () => (
+  <Root>
+    <Sidebar version="version">
+      <SidebarTop>
+        <div className="lg:hidden">Burger Menu Button</div>
+      </SidebarTop>
+      <SidebarMain>Sidebar</SidebarMain>
+    </Sidebar>
+    <Main>
+      <MainTop>
+        <MainTopLeft>Top Left</MainTopLeft>
+        <MainTopRight>Top Right</MainTopRight>
+      </MainTop>
+      <MainContent>
+        <div className="p-10">Main Content</div>
+      </MainContent>
+    </Main>
+  </Root>
+);
+
+export const MoreDetailedShell = () => {
   const [theme, setTheme] = useState<"light" | "dark" | undefined>();
 
   useEffect(() => {
@@ -98,7 +116,6 @@ export const Default = () => {
       document.documentElement.setAttribute("data-theme", "light");
     }
   }, [theme]);
-
   return (
     <Root>
       <DrawerRoot>
@@ -106,7 +123,7 @@ export const Default = () => {
           {({ drawerLabelProps }) => (
             <>
               <Sidebar version="Version: 78c688e">
-                <SidebarLogo>
+                <SidebarTop>
                   <label
                     {...drawerLabelProps}
                     className="justify-self-start px-1 lg:hidden"
@@ -114,23 +131,23 @@ export const Default = () => {
                   >
                     <Menu />
                   </label>
-                </SidebarLogo>
-                <SidebarMenu>
+                </SidebarTop>
+                <SidebarMain>
                   {navigation.map((item) => (
-                    <SidebarNavigationItem
+                    <NavigationLink
                       key={item.name}
                       href={item.href}
                       active={item.current}
                     >
                       <item.icon aria-hidden="true" />
                       {item.name}
-                    </SidebarNavigationItem>
+                    </NavigationLink>
                   ))}
-                </SidebarMenu>
+                </SidebarMain>
               </Sidebar>
               <Main>
-                <MainTopBarRoot>
-                  <MainTopBarLeft>
+                <MainTop>
+                  <MainTopLeft>
                     <div className="breadcrumbs text-sm">
                       <ul>
                         <li>
@@ -185,8 +202,8 @@ export const Default = () => {
                         </li>
                       </ul>
                     </div>
-                  </MainTopBarLeft>
-                  <MainTopBarRight>
+                  </MainTopLeft>
+                  <MainTopRight>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button color="ghost" className="px-1">
@@ -257,8 +274,8 @@ export const Default = () => {
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
-                  </MainTopBarRight>
-                </MainTopBarRoot>
+                  </MainTopRight>
+                </MainTop>
                 <MainContent>
                   <div className="space-y-5 border-b border-gray-gray5 bg-base-200 p-5 pb-0 dark:border-grayDark-gray5">
                     <div className="flex flex-col max-sm:space-y-4 sm:flex-row sm:items-center sm:justify-between ">
@@ -301,14 +318,14 @@ export const Default = () => {
         </DrawerContent>
         <DrawerMenu>
           {navigation.map((item) => (
-            <SidebarNavigationItem
+            <NavigationLink
               key={item.name}
               href={item.href}
               active={item.current}
             >
               <item.icon aria-hidden="true" />
               {item.name}
-            </SidebarNavigationItem>
+            </NavigationLink>
           ))}
         </DrawerMenu>
       </DrawerRoot>
