@@ -78,7 +78,6 @@ func (s *SQLFilestore) CreateRoot(id uuid.UUID) (filestore.Root, error) {
 	if res.RowsAffected != 1 {
 		return nil, fmt.Errorf("unexpedted gorm create count, got: %d, want: %d", res.RowsAffected, 1)
 	}
-	n.db = s.db
 
 	return n, nil
 }
@@ -89,7 +88,6 @@ func (s *SQLFilestore) GetRoot(id uuid.UUID) (filestore.Root, error) {
 	if res.Error != nil {
 		return nil, res.Error
 	}
-	n.db = s.db
 
 	return n, nil
 }
@@ -104,7 +102,6 @@ func (s *SQLFilestore) GetAllRoots() ([]filestore.Root, error) {
 
 	var ns []filestore.Root
 	for i := range list {
-		list[i].db = s.db
 		ns = append(ns, &list[i])
 	}
 

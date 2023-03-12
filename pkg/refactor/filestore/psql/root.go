@@ -5,7 +5,6 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 )
 
 type Root struct {
@@ -15,8 +14,6 @@ type Root struct {
 
 	CreatedAt time.Time
 	UpdatedAt time.Time
-
-	db *gorm.DB
 }
 
 var _ filestore.Root = &Root{} // Ensures Root struct conforms to filestore.Root interface.

@@ -6,7 +6,6 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 )
 
 type File struct {
@@ -21,8 +20,6 @@ type File struct {
 
 	CreatedAt time.Time
 	UpdatedAt time.Time
-
-	db *gorm.DB
 }
 
 var _ filestore.File = &File{} // Ensures File struct conforms to filestore.File interface.

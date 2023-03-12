@@ -55,7 +55,6 @@ func (q *RootQuery) CreateFile(path string, typ filestore.FileType, dataReader i
 		Depth:  filestore.ParseDepth(path),
 		Typ:    typ,
 		RootID: q.root.GetID(),
-		db:     q.db,
 	}
 
 	res := q.db.WithContext(q.ctx).Create(f)
@@ -108,7 +107,6 @@ func (q *RootQuery) GetFile(path string, opts *filestore.GetFileOpts) (filestore
 	if res.Error != nil {
 		return nil, res.Error
 	}
-	f.db = q.db
 
 	return f, nil
 }
@@ -134,7 +132,6 @@ func (q *RootQuery) ReadDirectory(path string) ([]filestore.File, error) {
 	}
 	var files []filestore.File
 	for i := range list {
-		list[i].db = q.db
 		files = append(files, &list[i])
 	}
 
