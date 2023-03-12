@@ -11,14 +11,46 @@ import (
 )
 
 type SQLFilestore struct {
-	db *gorm.DB
+	db  *gorm.DB
+	ctx context.Context
 }
 
-var _ filestore.Root = &Root{} // Ensures Root struct conforms to filestore.Root interface.
+func (s *SQLFilestore) ForRoot(root filestore.Root) filestore.RootQuery {
+	return &RootQuery{
+		root: root,
+		db:   s.db,
+		ctx:  s.ctx,
+	}
+}
+
+func (s *SQLFilestore) ForFile(file filestore.File) filestore.FileQuery {
+	return &FileQuery{
+		file: file,
+		db:   s.db,
+		ctx:  s.ctx,
+	}
+}
+
+func (s *SQLFilestore) ForRevision(revision filestore.Revision) filestore.RevisionQuery {
+	return &RevisionQuery{
+		rev: revision,
+		db:  s.db,
+		ctx: s.ctx,
+	}
+}
+
+func (s *SQLFilestore) WithContext(ctx context.Context) filestore.Filestore {
+	s.ctx = ctx
+
+	return s
+}
+
+var _ filestore.Filestore = &SQLFilestore{} // Ensures SQLFilestore struct conforms to filestore.Filestore interface.
 
 func NewSQLFilestore(db *gorm.DB) *SQLFilestore {
 	return &SQLFilestore{
-		db: db,
+		db:  db,
+		ctx: context.Background(),
 	}
 }
 
@@ -27,7 +59,7 @@ func NewMockFilestore() (*SQLFilestore, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = db.AutoMigrate(&Root{}, &File{})
+	err = db.AutoMigrate(&Root{}, &File{}, &Revision{})
 	if err != nil {
 		return nil, err
 	}
@@ -36,9 +68,9 @@ func NewMockFilestore() (*SQLFilestore, error) {
 	return fs, nil
 }
 
-func (s *SQLFilestore) CreateRoot(ctx context.Context, id uuid.UUID) (filestore.Root, error) {
+func (s *SQLFilestore) CreateRoot(id uuid.UUID) (filestore.Root, error) {
 	n := &Root{ID: id}
-	res := s.db.WithContext(ctx).Create(n)
+	res := s.db.WithContext(s.ctx).Create(n)
 	if res.Error != nil {
 		return nil, res.Error
 	}
@@ -50,10 +82,9 @@ func (s *SQLFilestore) CreateRoot(ctx context.Context, id uuid.UUID) (filestore.
 	return n, nil
 }
 
-//nolint:ireturn
-func (s *SQLFilestore) GetRoot(ctx context.Context, id uuid.UUID) (filestore.Root, error) {
+func (s *SQLFilestore) GetRoot(id uuid.UUID) (filestore.Root, error) {
 	n := &Root{ID: id}
-	res := s.db.WithContext(ctx).First(n)
+	res := s.db.WithContext(s.ctx).First(n)
 	if res.Error != nil {
 		return nil, res.Error
 	}
@@ -63,9 +94,9 @@ func (s *SQLFilestore) GetRoot(ctx context.Context, id uuid.UUID) (filestore.Roo
 }
 
 //nolint:ireturn
-func (s *SQLFilestore) GetAllRoots(ctx context.Context) ([]filestore.Root, error) {
+func (s *SQLFilestore) GetAllRoots() ([]filestore.Root, error) {
 	var list []Root
-	res := s.db.WithContext(ctx).Find(&list)
+	res := s.db.WithContext(s.ctx).Find(&list)
 	if res.Error != nil {
 		return nil, res.Error
 	}
@@ -78,5 +109,3 @@ func (s *SQLFilestore) GetAllRoots(ctx context.Context) ([]filestore.Root, error
 
 	return ns, nil
 }
-
-var _ filestore.Filestore = &SQLFilestore{} // Ensures SQLFilestore struct conforms to filestore.Filestore interface.

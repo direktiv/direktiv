@@ -33,6 +33,7 @@ type Source interface {
 // filestore.
 func ExecuteMirroringProcess(
 	ctx context.Context, lg *zap.SugaredLogger,
+	fStore filestore.Filestore,
 	direktivRoot filestore.Root,
 	source Source, settings Settings,
 ) error {
@@ -63,7 +64,7 @@ func ExecuteMirroringProcess(
 			return fmt.Errorf("mirror file walk, err: %w", err)
 		}
 
-		var fileReader io.ReadCloser = nil
+		var fileReader io.ReadCloser
 		if !d.IsDir() {
 			data, err := os.ReadFile(path)
 			if err != nil {
@@ -75,9 +76,15 @@ func ExecuteMirroringProcess(
 
 		// create file(or dir) in directive file store.
 		if d.IsDir() {
-			_, err = direktivRoot.CreateFile(ctx, strings.TrimPrefix(path, dstDir), filestore.FileTypeDirectory, nil)
+			_, err = fStore.
+				WithContext(ctx).
+				ForRoot(direktivRoot).
+				CreateFile(strings.TrimPrefix(path, dstDir), filestore.FileTypeDirectory, nil)
 		} else {
-			_, err = direktivRoot.CreateFile(ctx, strings.TrimPrefix(path, dstDir), filestore.FileTypeFile, fileReader)
+			_, err = fStore.
+				WithContext(ctx).
+				ForRoot(direktivRoot).
+				CreateFile(strings.TrimPrefix(path, dstDir), filestore.FileTypeFile, fileReader)
 		}
 
 		if err != nil {

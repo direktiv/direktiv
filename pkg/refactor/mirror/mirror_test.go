@@ -17,7 +17,7 @@ func TestExecuteMirroringProcess(t *testing.T) {
 		t.Fatalf("unepxected NewMockFilestore() error = %v", err)
 	}
 
-	direktivRoot, err := fs.CreateRoot(context.Background(), uuid.New())
+	direktivRoot, err := fs.CreateRoot(uuid.New())
 	if err != nil {
 		t.Fatalf("unepxected GetRoot() error = %v", err)
 	}
@@ -31,22 +31,22 @@ func TestExecuteMirroringProcess(t *testing.T) {
 	}
 
 	err = mirror.ExecuteMirroringProcess(context.Background(), zap.NewNop().Sugar(),
-		direktivRoot, source, mirror.Settings{})
+		fs, direktivRoot, source, mirror.Settings{})
 	if err != nil {
 		t.Fatalf("unepxected ExecuteMirroringProcess() error = %v", err)
 	}
 
-	assertRootFilesInPath(t, direktivRoot, "/",
+	assertRootFilesInPath(t, fs, direktivRoot, "/",
 		"/file1.text",
 		"/file2.text",
 		"/file3.text",
 	)
 }
 
-func assertRootFilesInPath(t *testing.T, root filestore.Root, searchPath string, paths ...string) {
+func assertRootFilesInPath(t *testing.T, fs filestore.Filestore, root filestore.Root, searchPath string, paths ...string) {
 	t.Helper()
 
-	files, err := root.ListPath(context.Background(), searchPath)
+	files, err := fs.ForRoot(root).ListPath(searchPath)
 	if err != nil {
 		t.Errorf("unepxected ListPath() error = %v", err)
 	}

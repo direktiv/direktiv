@@ -2,7 +2,6 @@ package psql_test
 
 import (
 	"bytes"
-	"context"
 	"io"
 	"testing"
 
@@ -16,7 +15,7 @@ func TestRoot_CreateFile(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unepxected NewMockFilestore() error = %v", err)
 	}
-	root, err := fs.CreateRoot(context.Background(), uuid.UUID{})
+	root, err := fs.CreateRoot(uuid.UUID{})
 	if err != nil {
 		t.Fatalf("unepxected CreateRoot() error = %v", err)
 	}
@@ -32,15 +31,15 @@ func TestRoot_CreateFile(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run("valid", func(t *testing.T) {
-			assertRootCorrectFileCreation(t, root, tt.path, tt.typ, []byte(tt.payload))
+			assertRootCorrectFileCreation(t, fs, root, tt.path, tt.typ, []byte(tt.payload))
 		})
 	}
 }
 
-func assertRootCorrectFileCreation(t *testing.T, ns filestore.Root, path string, typ string, data []byte) {
+func assertRootCorrectFileCreation(t *testing.T, fs filestore.Filestore, root filestore.Root, path string, typ string, data []byte) {
 	t.Helper()
 
-	file, err := ns.CreateFile(context.Background(), path, filestore.FileType(typ), bytes.NewReader(data))
+	file, err := fs.ForRoot(root).CreateFile(path, filestore.FileType(typ), bytes.NewReader(data))
 	if err != nil {
 		t.Errorf("unexpected CreateFile() error: %v", err)
 	}
@@ -50,12 +49,16 @@ func assertRootCorrectFileCreation(t *testing.T, ns filestore.Root, path string,
 	if file.GetPath() != path {
 		t.Errorf("unexpected GetPath(), got: >%s<, want: >%s<", file.GetPath(), path)
 	}
-	reader, _ := file.GetData(context.Background())
-	createdData, _ := io.ReadAll(reader)
-	if string(createdData) != string(data) {
-		t.Errorf("unexpected GetPath(), got: >%s<, want: >%s<", createdData, data)
+
+	if typ != "directory" {
+		reader, _ := fs.ForFile(file).GetData()
+		createdData, _ := io.ReadAll(reader)
+		if string(createdData) != string(data) {
+			t.Errorf("unexpected GetPath(), got: >%s<, want: >%s<", createdData, data)
+		}
 	}
-	file, err = ns.GetFile(context.Background(), path, nil)
+
+	file, err = fs.ForRoot(root).GetFile(path, nil)
 	if err != nil {
 		t.Errorf("unexpected GetFile() error: %v", err)
 	}
@@ -72,17 +75,17 @@ func TestRoot_CorrectListPath(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unepxected NewMockFilestore() error = %v", err)
 	}
-	root, err := fs.CreateRoot(context.Background(), uuid.New())
+	root, err := fs.CreateRoot(uuid.New())
 	if err != nil {
 		t.Fatalf("unepxected CreateRoot() error = %v", err)
 	}
 
 	// Test root directory:
 	{
-		assertRootCorrectFileCreation(t, root, "/file1.text", "text", []byte("content1"))
-		assertRootCorrectFileCreation(t, root, "/file2.text", "text", []byte("content2"))
+		assertRootCorrectFileCreation(t, fs, root, "/file1.text", "text", []byte("content1"))
+		assertRootCorrectFileCreation(t, fs, root, "/file2.text", "text", []byte("content2"))
 
-		assertRootFilesInPath(t, root, "/",
+		assertRootFilesInPath(t, fs, root, "/",
 			"/file1.text",
 			"/file2.text",
 		)
@@ -90,15 +93,15 @@ func TestRoot_CorrectListPath(t *testing.T) {
 
 	// Add /dir1 directory:
 	{
-		assertRootCorrectFileCreation(t, root, "/dir1", "directory", nil)
-		assertRootCorrectFileCreation(t, root, "/dir1/file3.text", "text", []byte("content3"))
-		assertRootCorrectFileCreation(t, root, "/dir1/file4.text", "text", []byte("content4"))
+		assertRootCorrectFileCreation(t, fs, root, "/dir1", "directory", nil)
+		assertRootCorrectFileCreation(t, fs, root, "/dir1/file3.text", "text", []byte("content3"))
+		assertRootCorrectFileCreation(t, fs, root, "/dir1/file4.text", "text", []byte("content4"))
 
-		assertRootFilesInPath(t, root, "/dir1",
+		assertRootFilesInPath(t, fs, root, "/dir1",
 			"/dir1/file3.text",
 			"/dir1/file4.text",
 		)
-		assertRootFilesInPath(t, root, "/",
+		assertRootFilesInPath(t, fs, root, "/",
 			"/file1.text",
 			"/file2.text",
 			"/dir1",
@@ -107,20 +110,20 @@ func TestRoot_CorrectListPath(t *testing.T) {
 
 	// Add /dir1/dir2 directory:
 	{
-		assertRootCorrectFileCreation(t, root, "/dir1/dir2", "directory", nil)
-		assertRootCorrectFileCreation(t, root, "/dir1/dir2/file5.text", "text", []byte("content5"))
-		assertRootCorrectFileCreation(t, root, "/dir1/dir2/file6.text", "text", []byte("content6"))
+		assertRootCorrectFileCreation(t, fs, root, "/dir1/dir2", "directory", nil)
+		assertRootCorrectFileCreation(t, fs, root, "/dir1/dir2/file5.text", "text", []byte("content5"))
+		assertRootCorrectFileCreation(t, fs, root, "/dir1/dir2/file6.text", "text", []byte("content6"))
 
-		assertRootFilesInPath(t, root, "/dir1/dir2",
+		assertRootFilesInPath(t, fs, root, "/dir1/dir2",
 			"/dir1/dir2/file5.text",
 			"/dir1/dir2/file6.text",
 		)
-		assertRootFilesInPath(t, root, "/dir1",
+		assertRootFilesInPath(t, fs, root, "/dir1",
 			"/dir1/file3.text",
 			"/dir1/file4.text",
 			"/dir1/dir2",
 		)
-		assertRootFilesInPath(t, root, "/",
+		assertRootFilesInPath(t, fs, root, "/",
 			"/file1.text",
 			"/file2.text",
 			"/dir1",
@@ -128,10 +131,10 @@ func TestRoot_CorrectListPath(t *testing.T) {
 	}
 }
 
-func assertRootFilesInPath(t *testing.T, root filestore.Root, searchPath string, paths ...string) {
+func assertRootFilesInPath(t *testing.T, fs filestore.Filestore, root filestore.Root, searchPath string, paths ...string) {
 	t.Helper()
 
-	files, err := root.ListPath(context.Background(), searchPath)
+	files, err := fs.ForRoot(root).ListPath(searchPath)
 	if err != nil {
 		t.Errorf("unepxected ListPath() error = %v", err)
 	}

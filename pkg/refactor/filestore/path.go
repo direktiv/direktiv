@@ -14,6 +14,7 @@ var (
 	pathRegex        = regexp.MustCompile(pathRegexPattern)
 )
 
+// TODO: add tests.
 // SanitizePath standardizes and sanitized the path, and validates it against naming requirements.
 func SanitizePath(path string) (string, error) {
 	path = filepath.Clean(path)
@@ -21,9 +22,11 @@ func SanitizePath(path string) (string, error) {
 	if !pathRegex.MatchString(path) {
 		return "", errors.New("path failed to match regex: " + pathRegexPattern)
 	}
+
 	return path, nil
 }
 
+// TODO: add tests.
 // ParseDepth reads the path and returns the depth value. Use SanitizePath first, because if an error happens here the function may produce invalid results!
 func ParseDepth(path string) int {
 	depth := strings.Count(path, "/")

@@ -2,7 +2,9 @@ package filestore
 
 import (
 	"context"
+	"errors"
 	"io"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -12,30 +14,26 @@ import (
 // 'Root' interface provide all the methods needed to create direktiv namespace files and directories.
 // Via 'filestore.Manager' the caller manages the roots, and 'filestore.Root' the caller manages files and directories.
 
-type FileType string
-
-const (
-	FileTypeDirectory FileType = "directory"
-	FileTypeWorkflow  FileType = "workflow"
-	FileTypeFile      FileType = "file"
+var (
+	ErrFileIsNotDirectory = errors.New("ErrFileIsNotDirectory")
+	ErrNotFound           = errors.New("ErrNotFound")
 )
 
-type File interface {
-	GetID() uuid.UUID
-	GetPath() string
-	GetName() string
-	GetType() FileType
-
-	GetData(ctx context.Context) (io.ReadCloser, error)
-
-	Delete(ctx context.Context, force bool) error
+type Timestamps interface {
+	GetCreatedAt() time.Time
+	GetUpdatedAt() time.Time
 }
 
 type Filestore interface {
-	CreateRoot(ctx context.Context, id uuid.UUID) (Root, error)
+	CreateRoot(id uuid.UUID) (Root, error)
 
-	GetRoot(ctx context.Context, id uuid.UUID) (Root, error)
-	GetAllRoots(ctx context.Context) ([]Root, error)
+	GetRoot(id uuid.UUID) (Root, error)
+	GetAllRoots() ([]Root, error)
+
+	ForRoot(root Root) RootQuery
+	ForFile(file File) FileQuery
+	ForRevision(revision Revision) RevisionQuery
+	WithContext(ctx context.Context) Filestore
 }
 
 type GetFileOpts struct {
@@ -44,10 +42,13 @@ type GetFileOpts struct {
 
 type Root interface {
 	GetID() uuid.UUID
-	GetFile(ctx context.Context, path string, opts *GetFileOpts) (File, error)
 
-	CreateFile(ctx context.Context, path string, typ FileType, dataReader io.Reader) (File, error)
+	Timestamps
+}
 
-	ListPath(ctx context.Context, path string) ([]File, error)
-	Delete(ctx context.Context) error
+type RootQuery interface {
+	GetFile(path string, opts *GetFileOpts) (File, error)
+	CreateFile(path string, typ FileType, dataReader io.Reader) (File, error)
+	ListPath(path string) ([]File, error)
+	Delete() error
 }

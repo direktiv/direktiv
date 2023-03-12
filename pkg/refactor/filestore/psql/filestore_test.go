@@ -1,7 +1,6 @@
 package psql_test
 
 import (
-	"context"
 	"testing"
 
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
@@ -12,7 +11,7 @@ import (
 func assertFilestoreCorrectRootCreation(t *testing.T, fs filestore.Filestore, id uuid.UUID) {
 	t.Helper()
 
-	root, err := fs.CreateRoot(context.Background(), id)
+	root, err := fs.CreateRoot(id)
 	if err != nil {
 		t.Errorf("unexpected CreateRoot() error: %v", err)
 	}
@@ -22,7 +21,7 @@ func assertFilestoreCorrectRootCreation(t *testing.T, fs filestore.Filestore, id
 	if root.GetID() != id {
 		t.Errorf("unexpected GetID(), got: >%s<, want: >%s<", root.GetID(), id)
 	}
-	root, err = fs.GetRoot(context.Background(), id)
+	root, err = fs.GetRoot(id)
 	if err != nil {
 		t.Errorf("unexpected GetRoot() error: %v", err)
 	}
@@ -37,7 +36,7 @@ func assertFilestoreCorrectRootCreation(t *testing.T, fs filestore.Filestore, id
 func assertFilestoreHasRoot(t *testing.T, fs filestore.Filestore, ids ...uuid.UUID) {
 	t.Helper()
 
-	all, err := fs.GetAllRoots(context.Background())
+	all, err := fs.GetAllRoots()
 	if err != nil {
 		t.Errorf("unexpected GetAllRoots() error: %v", err)
 	}
@@ -56,11 +55,11 @@ func assertFilestoreCorrectRootDeletion(t *testing.T, fs filestore.Filestore, id
 	t.Helper()
 
 	for i := range ids {
-		ns, err := fs.GetRoot(context.Background(), ids[i])
+		root, err := fs.GetRoot(ids[i])
 		if err != nil {
 			t.Errorf("unexpected GetRoot() error: %v", err)
 		}
-		err = ns.Delete(context.Background())
+		err = fs.ForRoot(root).Delete()
 		if err != nil {
 			t.Errorf("unexpected Delete() error: %v", err)
 		}
