@@ -11,7 +11,8 @@ import (
 )
 
 type SQLFilestore struct {
-	db  *gorm.DB
+	db *gorm.DB
+	//nolint:containedctx
 	ctx context.Context
 }
 

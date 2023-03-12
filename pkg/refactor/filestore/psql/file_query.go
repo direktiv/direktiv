@@ -14,7 +14,8 @@ import (
 type FileQuery struct {
 	file filestore.File
 	db   *gorm.DB
-	ctx  context.Context
+	//nolint:containedctx
+	ctx context.Context
 }
 
 var _ filestore.FileQuery = &FileQuery{}
