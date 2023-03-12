@@ -113,7 +113,7 @@ func (q *RootQuery) GetFile(path string, opts *filestore.GetFileOpts) (filestore
 }
 
 //nolint:ireturn
-func (q *RootQuery) ListPath(path string) ([]filestore.File, error) {
+func (q *RootQuery) ReadDirectory(path string) ([]filestore.File, error) {
 	var list []File
 	path, err := filestore.SanitizePath(path)
 	if err != nil {

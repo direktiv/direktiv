@@ -70,7 +70,7 @@ func assertRootCorrectFileCreation(t *testing.T, fs filestore.Filestore, root fi
 	}
 }
 
-func TestRoot_CorrectListPath(t *testing.T) {
+func TestRoot_CorrectReadDirectory(t *testing.T) {
 	fs, err := psql.NewMockFilestore()
 	if err != nil {
 		t.Fatalf("unepxected NewMockFilestore() error = %v", err)
@@ -134,12 +134,12 @@ func TestRoot_CorrectListPath(t *testing.T) {
 func assertRootFilesInPath(t *testing.T, fs filestore.Filestore, root filestore.Root, searchPath string, paths ...string) {
 	t.Helper()
 
-	files, err := fs.ForRoot(root).ListPath(searchPath)
+	files, err := fs.ForRoot(root).ReadDirectory(searchPath)
 	if err != nil {
-		t.Errorf("unepxected ListPath() error = %v", err)
+		t.Errorf("unepxected ReadDirectory() error = %v", err)
 	}
 	if len(files) != len(paths) {
-		t.Errorf("unexpected ListPath() length, got: %d, want: %d", len(files), len(paths))
+		t.Errorf("unexpected ReadDirectory() length, got: %d, want: %d", len(files), len(paths))
 	}
 
 	for i := range paths {

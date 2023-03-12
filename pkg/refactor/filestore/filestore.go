@@ -49,6 +49,6 @@ type Root interface {
 type RootQuery interface {
 	GetFile(path string, opts *GetFileOpts) (File, error)
 	CreateFile(path string, typ FileType, dataReader io.Reader) (File, error)
-	ListPath(path string) ([]File, error)
+	ReadDirectory(path string) ([]File, error)
 	Delete() error
 }
