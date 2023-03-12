@@ -23,7 +23,8 @@ func addTrailingSlash(path string) string {
 type RootQuery struct {
 	root filestore.Root
 	db   *gorm.DB
-	ctx  context.Context
+	//nolint:containedctx
+	ctx context.Context
 }
 
 var _ filestore.RootQuery = &RootQuery{} // Ensures RootQuery struct conforms to filestore.RootQuery interface.

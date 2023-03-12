@@ -13,6 +13,7 @@ import (
 type RevisionQuery struct {
 	rev filestore.Revision
 	db  *gorm.DB
+	//nolint:containedctx
 	ctx context.Context
 }
 
