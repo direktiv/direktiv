@@ -23,14 +23,12 @@ func addTrailingSlash(path string) string {
 type RootQuery struct {
 	root filestore.Root
 	db   *gorm.DB
-	//nolint:containedctx
-	ctx context.Context
 }
 
 var _ filestore.RootQuery = &RootQuery{} // Ensures RootQuery struct conforms to filestore.RootQuery interface.
 
-func (q *RootQuery) Delete() error {
-	res := q.db.WithContext(q.ctx).Delete(&Root{ID: q.root.GetID()})
+func (q *RootQuery) Delete(ctx context.Context) error {
+	res := q.db.WithContext(ctx).Delete(&Root{ID: q.root.GetID()})
 	if res.Error != nil {
 		return res.Error
 	}
@@ -42,7 +40,7 @@ func (q *RootQuery) Delete() error {
 }
 
 //nolint:ireturn
-func (q *RootQuery) CreateFile(path string, typ filestore.FileType, dataReader io.Reader) (filestore.File, error) {
+func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.FileType, dataReader io.Reader) (filestore.File, error) {
 	path, err := filestore.SanitizePath(path)
 	if err != nil {
 		return nil, fmt.Errorf("create validation error, %w", err)
@@ -57,7 +55,7 @@ func (q *RootQuery) CreateFile(path string, typ filestore.FileType, dataReader i
 		RootID: q.root.GetID(),
 	}
 
-	res := q.db.WithContext(q.ctx).Create(f)
+	res := q.db.WithContext(ctx).Create(f)
 	if res.Error != nil {
 		return nil, res.Error
 	}
@@ -87,7 +85,7 @@ func (q *RootQuery) CreateFile(path string, typ filestore.FileType, dataReader i
 
 		Data: data,
 	}
-	res = q.db.WithContext(q.ctx).Create(rev)
+	res = q.db.WithContext(ctx).Create(rev)
 	if res.Error != nil {
 		return nil, res.Error
 	}
@@ -99,11 +97,11 @@ func (q *RootQuery) CreateFile(path string, typ filestore.FileType, dataReader i
 }
 
 //nolint:ireturn
-func (q *RootQuery) GetFile(path string, opts *filestore.GetFileOpts) (filestore.File, error) {
+func (q *RootQuery) GetFile(ctx context.Context, path string, opts *filestore.GetFileOpts) (filestore.File, error) {
 	f := &File{}
 	path = filepath.Clean(path)
 
-	res := q.db.WithContext(q.ctx).Where("root_id", q.root.GetID()).Where("path = ?", path).First(f)
+	res := q.db.WithContext(ctx).Where("root_id", q.root.GetID()).Where("path = ?", path).First(f)
 	if res.Error != nil {
 		return nil, res.Error
 	}
@@ -112,14 +110,14 @@ func (q *RootQuery) GetFile(path string, opts *filestore.GetFileOpts) (filestore
 }
 
 //nolint:ireturn
-func (q *RootQuery) ReadDirectory(path string) ([]filestore.File, error) {
+func (q *RootQuery) ReadDirectory(ctx context.Context, path string) ([]filestore.File, error) {
 	var list []File
 	path, err := filestore.SanitizePath(path)
 	if err != nil {
 		return nil, fmt.Errorf("create error, %w", err)
 	}
 
-	res := q.db.WithContext(q.ctx).
+	res := q.db.WithContext(ctx).
 		// Don't include file 'data' in the query. File data can be retrieved with file.GetData().
 		Select("id", "path", "depth", "root_id", "created_at", "updated_at").
 		Where("root_id", q.root.GetID()).

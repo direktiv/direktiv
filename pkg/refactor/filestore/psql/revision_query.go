@@ -13,14 +13,12 @@ import (
 type RevisionQuery struct {
 	rev filestore.Revision
 	db  *gorm.DB
-	//nolint:containedctx
-	ctx context.Context
 }
 
 var _ filestore.RevisionQuery = &RevisionQuery{}
 
-func (q *RevisionQuery) Delete(force bool) error {
-	res := q.db.WithContext(q.ctx).Delete(&Revision{}, q.rev.GetID())
+func (q *RevisionQuery) Delete(ctx context.Context, force bool) error {
+	res := q.db.WithContext(ctx).Delete(&Revision{}, q.rev.GetID())
 	if res.Error != nil {
 		return res.Error
 	}
@@ -31,9 +29,9 @@ func (q *RevisionQuery) Delete(force bool) error {
 	return nil
 }
 
-func (q *RevisionQuery) GetData() (io.ReadCloser, error) {
+func (q *RevisionQuery) GetData(ctx context.Context) (io.ReadCloser, error) {
 	rev := &Revision{ID: q.rev.GetID()}
-	res := q.db.WithContext(q.ctx).First(rev)
+	res := q.db.WithContext(ctx).First(rev)
 	if res.Error != nil {
 		return nil, res.Error
 	}
@@ -43,9 +41,9 @@ func (q *RevisionQuery) GetData() (io.ReadCloser, error) {
 	return readCloser, nil
 }
 
-func (q *RevisionQuery) SetTags(tags filestore.RevisionTags) (filestore.Revision, error) {
+func (q *RevisionQuery) SetTags(ctx context.Context, tags filestore.RevisionTags) (filestore.Revision, error) {
 	rev := &Revision{ID: q.rev.GetID()}
-	res := q.db.WithContext(q.ctx).Update("tags", tags.String()).First(rev)
+	res := q.db.WithContext(ctx).Update("tags", tags.String()).First(rev)
 	if res.Error != nil {
 		return nil, res.Error
 	}
@@ -53,9 +51,9 @@ func (q *RevisionQuery) SetTags(tags filestore.RevisionTags) (filestore.Revision
 	return rev, nil
 }
 
-func (q *RevisionQuery) SetCurrent() (filestore.Revision, error) {
+func (q *RevisionQuery) SetCurrent(ctx context.Context) (filestore.Revision, error) {
 	// set current revisions 'is_current' flag to false.
-	res := q.db.WithContext(q.ctx).
+	res := q.db.WithContext(ctx).
 		Model(&Revision{}).
 		Where("file_id", q.rev.GetFileID()).
 		Where("is_current", true).
@@ -69,7 +67,7 @@ func (q *RevisionQuery) SetCurrent() (filestore.Revision, error) {
 
 	// set revision 'is_current' flag to true by id.
 	rev := &Revision{ID: q.rev.GetID()}
-	res = q.db.WithContext(q.ctx).Update("is_current", true).First(rev)
+	res = q.db.WithContext(ctx).Update("is_current", true).First(rev)
 	if res.Error != nil {
 		return nil, res.Error
 	}

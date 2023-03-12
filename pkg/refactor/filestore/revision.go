@@ -1,6 +1,7 @@
 package filestore
 
 import (
+	"context"
 	"io"
 	"strings"
 
@@ -31,8 +32,8 @@ type Revision interface {
 }
 
 type RevisionQuery interface {
-	GetData() (io.ReadCloser, error)
-	SetCurrent() (Revision, error)
-	SetTags(tags RevisionTags) (Revision, error)
-	Delete(force bool) error
+	GetData(ctx context.Context) (io.ReadCloser, error)
+	SetCurrent(ctx context.Context) (Revision, error)
+	SetTags(ctx context.Context, tags RevisionTags) (Revision, error)
+	Delete(ctx context.Context, force bool) error
 }

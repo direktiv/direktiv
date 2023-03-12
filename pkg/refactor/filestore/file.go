@@ -1,6 +1,7 @@
 package filestore
 
 import (
+	"context"
 	"io"
 
 	"github.com/google/uuid"
@@ -24,8 +25,8 @@ type File interface {
 }
 
 type FileQuery interface {
-	GetData() (io.ReadCloser, error)
-	GetCurrentRevision() (Revision, error)
-	CreateRevision(tags RevisionTags) (Revision, error)
-	Delete(force bool) error
+	GetData(ctx context.Context) (io.ReadCloser, error)
+	GetCurrentRevision(ctx context.Context) (Revision, error)
+	CreateRevision(ctx context.Context, tags RevisionTags) (Revision, error)
+	Delete(ctx context.Context, force bool) error
 }

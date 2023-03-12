@@ -14,14 +14,12 @@ import (
 type FileQuery struct {
 	file filestore.File
 	db   *gorm.DB
-	//nolint:containedctx
-	ctx context.Context
 }
 
 var _ filestore.FileQuery = &FileQuery{}
 
-func (q *FileQuery) Delete(force bool) error {
-	res := q.db.WithContext(q.ctx).Delete(&File{}, q.file.GetID())
+func (q *FileQuery) Delete(ctx context.Context, force bool) error {
+	res := q.db.WithContext(ctx).Delete(&File{}, q.file.GetID())
 	if res.Error != nil {
 		return res.Error
 	}
@@ -32,12 +30,12 @@ func (q *FileQuery) Delete(force bool) error {
 	return nil
 }
 
-func (q *FileQuery) GetData() (io.ReadCloser, error) {
+func (q *FileQuery) GetData(ctx context.Context) (io.ReadCloser, error) {
 	if q.file.GetType() == filestore.FileTypeDirectory {
 		return nil, filestore.ErrFileIsNotDirectory
 	}
 	rev := &Revision{FileID: q.file.GetID()}
-	res := q.db.WithContext(q.ctx).
+	res := q.db.WithContext(ctx).
 		Where("file_id", q.file.GetID()).
 		Where("is_current", true).
 		First(rev)
@@ -50,13 +48,13 @@ func (q *FileQuery) GetData() (io.ReadCloser, error) {
 	return readCloser, nil
 }
 
-func (q *FileQuery) GetCurrentRevision() (filestore.Revision, error) {
+func (q *FileQuery) GetCurrentRevision(ctx context.Context) (filestore.Revision, error) {
 	if q.file.GetType() == filestore.FileTypeDirectory {
 		return nil, filestore.ErrFileIsNotDirectory
 	}
 
 	rev := &Revision{FileID: q.file.GetID()}
-	res := q.db.WithContext(q.ctx).
+	res := q.db.WithContext(ctx).
 		Where("file_id", q.file.GetID()).
 		Where("is_current", true).
 		First(rev)
@@ -67,13 +65,13 @@ func (q *FileQuery) GetCurrentRevision() (filestore.Revision, error) {
 	return rev, nil
 }
 
-func (q *FileQuery) CreateRevision(tags filestore.RevisionTags) (filestore.Revision, error) {
+func (q *FileQuery) CreateRevision(ctx context.Context, tags filestore.RevisionTags) (filestore.Revision, error) {
 	if q.file.GetType() == filestore.FileTypeDirectory {
 		return nil, filestore.ErrFileIsNotDirectory
 	}
 
 	// read file data to copy it to a new revision that we will create.
-	dataReader, err := q.GetData()
+	dataReader, err := q.GetData(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -83,7 +81,7 @@ func (q *FileQuery) CreateRevision(tags filestore.RevisionTags) (filestore.Revis
 	}
 
 	// set current revisions 'is_current' flag to false.
-	res := q.db.WithContext(q.ctx).
+	res := q.db.WithContext(ctx).
 		Model(&Revision{}).
 		Where("file_id", q.file.GetID()).
 		Where("is_current", true).
@@ -105,7 +103,7 @@ func (q *FileQuery) CreateRevision(tags filestore.RevisionTags) (filestore.Revis
 
 		Data: data,
 	}
-	res = q.db.WithContext(q.ctx).Create(newRev)
+	res = q.db.WithContext(ctx).Create(newRev)
 	if res.Error != nil {
 		return nil, res.Error
 	}

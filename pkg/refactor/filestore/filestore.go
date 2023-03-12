@@ -24,16 +24,15 @@ type Timestamps interface {
 	GetUpdatedAt() time.Time
 }
 
-type Filestore interface {
-	CreateRoot(id uuid.UUID) (Root, error)
+type FileStore interface {
+	CreateRoot(ctx context.Context, id uuid.UUID) (Root, error)
 
-	GetRoot(id uuid.UUID) (Root, error)
-	GetAllRoots() ([]Root, error)
+	GetRoot(ctx context.Context, id uuid.UUID) (Root, error)
+	GetAllRoots(ctx context.Context) ([]Root, error)
 
 	ForRoot(root Root) RootQuery
 	ForFile(file File) FileQuery
 	ForRevision(revision Revision) RevisionQuery
-	WithContext(ctx context.Context) Filestore
 }
 
 type GetFileOpts struct {
@@ -47,8 +46,8 @@ type Root interface {
 }
 
 type RootQuery interface {
-	GetFile(path string, opts *GetFileOpts) (File, error)
-	CreateFile(path string, typ FileType, dataReader io.Reader) (File, error)
-	ReadDirectory(path string) ([]File, error)
-	Delete() error
+	GetFile(ctx context.Context, path string, opts *GetFileOpts) (File, error)
+	CreateFile(ctx context.Context, path string, typ FileType, dataReader io.Reader) (File, error)
+	ReadDirectory(ctx context.Context, path string) ([]File, error)
+	Delete(ctx context.Context) error
 }

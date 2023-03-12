@@ -1,6 +1,7 @@
 package psql_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
@@ -8,10 +9,10 @@ import (
 	"github.com/google/uuid"
 )
 
-func assertFilestoreCorrectRootCreation(t *testing.T, fs filestore.Filestore, id uuid.UUID) {
+func assertFileStoreCorrectRootCreation(t *testing.T, fs filestore.FileStore, id uuid.UUID) {
 	t.Helper()
 
-	root, err := fs.CreateRoot(id)
+	root, err := fs.CreateRoot(context.Background(), id)
 	if err != nil {
 		t.Errorf("unexpected CreateRoot() error: %v", err)
 	}
@@ -21,7 +22,7 @@ func assertFilestoreCorrectRootCreation(t *testing.T, fs filestore.Filestore, id
 	if root.GetID() != id {
 		t.Errorf("unexpected GetID(), got: >%s<, want: >%s<", root.GetID(), id)
 	}
-	root, err = fs.GetRoot(id)
+	root, err = fs.GetRoot(context.Background(), id)
 	if err != nil {
 		t.Errorf("unexpected GetRoot() error: %v", err)
 	}
@@ -33,10 +34,10 @@ func assertFilestoreCorrectRootCreation(t *testing.T, fs filestore.Filestore, id
 	}
 }
 
-func assertFilestoreHasRoot(t *testing.T, fs filestore.Filestore, ids ...uuid.UUID) {
+func assertFileStoreHasRoot(t *testing.T, fs filestore.FileStore, ids ...uuid.UUID) {
 	t.Helper()
 
-	all, err := fs.GetAllRoots()
+	all, err := fs.GetAllRoots(context.Background())
 	if err != nil {
 		t.Errorf("unexpected GetAllRoots() error: %v", err)
 	}
@@ -51,25 +52,25 @@ func assertFilestoreHasRoot(t *testing.T, fs filestore.Filestore, ids ...uuid.UU
 	}
 }
 
-func assertFilestoreCorrectRootDeletion(t *testing.T, fs filestore.Filestore, ids ...uuid.UUID) {
+func assertFileStoreCorrectRootDeletion(t *testing.T, fs filestore.FileStore, ids ...uuid.UUID) {
 	t.Helper()
 
 	for i := range ids {
-		root, err := fs.GetRoot(ids[i])
+		root, err := fs.GetRoot(context.Background(), ids[i])
 		if err != nil {
 			t.Errorf("unexpected GetRoot() error: %v", err)
 		}
-		err = fs.ForRoot(root).Delete()
+		err = fs.ForRoot(root).Delete(context.Background())
 		if err != nil {
 			t.Errorf("unexpected Delete() error: %v", err)
 		}
 	}
 }
 
-func Test_sqlFilestore_CreateRoot(t *testing.T) {
-	fs, err := psql.NewMockFilestore()
+func Test_sqlFileStore_CreateRoot(t *testing.T) {
+	fs, err := psql.NewMockFileStore()
 	if err != nil {
-		t.Fatalf("unepxected NewMockFilestore() error = %v", err)
+		t.Fatalf("unepxected NewMockFileStore() error = %v", err)
 	}
 
 	tests := []struct {
@@ -82,13 +83,13 @@ func Test_sqlFilestore_CreateRoot(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assertFilestoreCorrectRootCreation(t, fs, tt.id)
+			assertFileStoreCorrectRootCreation(t, fs, tt.id)
 		})
 	}
 }
 
-func Test_sqlFilestore_ListingAfterCreate(t *testing.T) {
-	fs, err := psql.NewMockFilestore()
+func Test_sqlFileStore_ListingAfterCreate(t *testing.T) {
+	fs, err := psql.NewMockFileStore()
 	if err != nil {
 		t.Fatalf("create mock filestore: %s", err)
 	}
@@ -98,30 +99,30 @@ func Test_sqlFilestore_ListingAfterCreate(t *testing.T) {
 	myRoot3 := uuid.New()
 
 	// assert correct empty list.
-	assertFilestoreHasRoot(t, fs)
+	assertFileStoreHasRoot(t, fs)
 
 	// create two roots:
-	assertFilestoreCorrectRootCreation(t, fs, myRoot1)
-	assertFilestoreCorrectRootCreation(t, fs, myRoot2)
+	assertFileStoreCorrectRootCreation(t, fs, myRoot1)
+	assertFileStoreCorrectRootCreation(t, fs, myRoot2)
 
 	// assert existence.
-	assertFilestoreHasRoot(t, fs, myRoot1, myRoot2)
+	assertFileStoreHasRoot(t, fs, myRoot1, myRoot2)
 
 	// add a third one:
-	assertFilestoreCorrectRootCreation(t, fs, myRoot3)
+	assertFileStoreCorrectRootCreation(t, fs, myRoot3)
 
 	// assert existence:
-	assertFilestoreHasRoot(t, fs, myRoot1, myRoot2, myRoot3)
+	assertFileStoreHasRoot(t, fs, myRoot1, myRoot2, myRoot3)
 
 	// delete one:
-	assertFilestoreCorrectRootDeletion(t, fs, myRoot2)
+	assertFileStoreCorrectRootDeletion(t, fs, myRoot2)
 
 	// assert correct list:
-	assertFilestoreHasRoot(t, fs, myRoot1, myRoot3)
+	assertFileStoreHasRoot(t, fs, myRoot1, myRoot3)
 
 	// delete all:
-	assertFilestoreCorrectRootDeletion(t, fs, myRoot1, myRoot3)
+	assertFileStoreCorrectRootDeletion(t, fs, myRoot1, myRoot3)
 
 	// assert correct empty list.
-	assertFilestoreHasRoot(t, fs)
+	assertFileStoreHasRoot(t, fs)
 }

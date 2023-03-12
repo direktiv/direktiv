@@ -12,12 +12,12 @@ import (
 )
 
 func TestExecuteMirroringProcess(t *testing.T) {
-	fs, err := psql.NewMockFilestore()
+	fs, err := psql.NewMockFileStore()
 	if err != nil {
 		t.Fatalf("unepxected NewMockFilestore() error = %v", err)
 	}
 
-	direktivRoot, err := fs.CreateRoot(uuid.New())
+	direktivRoot, err := fs.CreateRoot(context.Background(), uuid.New())
 	if err != nil {
 		t.Fatalf("unepxected GetRoot() error = %v", err)
 	}
@@ -43,10 +43,10 @@ func TestExecuteMirroringProcess(t *testing.T) {
 	)
 }
 
-func assertRootFilesInPath(t *testing.T, fs filestore.Filestore, root filestore.Root, searchPath string, paths ...string) {
+func assertRootFilesInPath(t *testing.T, fs filestore.FileStore, root filestore.Root, searchPath string, paths ...string) {
 	t.Helper()
 
-	files, err := fs.ForRoot(root).ReadDirectory(searchPath)
+	files, err := fs.ForRoot(root).ReadDirectory(context.Background(), searchPath)
 	if err != nil {
 		t.Errorf("unepxected ReadDirectory() error = %v", err)
 	}

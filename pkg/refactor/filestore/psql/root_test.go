@@ -2,6 +2,7 @@ package psql_test
 
 import (
 	"bytes"
+	"context"
 	"io"
 	"testing"
 
@@ -11,11 +12,11 @@ import (
 )
 
 func TestRoot_CreateFile(t *testing.T) {
-	fs, err := psql.NewMockFilestore()
+	fs, err := psql.NewMockFileStore()
 	if err != nil {
-		t.Fatalf("unepxected NewMockFilestore() error = %v", err)
+		t.Fatalf("unepxected NewMockFileStore() error = %v", err)
 	}
-	root, err := fs.CreateRoot(uuid.UUID{})
+	root, err := fs.CreateRoot(context.Background(), uuid.UUID{})
 	if err != nil {
 		t.Fatalf("unepxected CreateRoot() error = %v", err)
 	}
@@ -36,10 +37,10 @@ func TestRoot_CreateFile(t *testing.T) {
 	}
 }
 
-func assertRootCorrectFileCreation(t *testing.T, fs filestore.Filestore, root filestore.Root, path string, typ string, data []byte) {
+func assertRootCorrectFileCreation(t *testing.T, fs filestore.FileStore, root filestore.Root, path string, typ string, data []byte) {
 	t.Helper()
 
-	file, err := fs.ForRoot(root).CreateFile(path, filestore.FileType(typ), bytes.NewReader(data))
+	file, err := fs.ForRoot(root).CreateFile(context.Background(), path, filestore.FileType(typ), bytes.NewReader(data))
 	if err != nil {
 		t.Errorf("unexpected CreateFile() error: %v", err)
 	}
@@ -51,14 +52,14 @@ func assertRootCorrectFileCreation(t *testing.T, fs filestore.Filestore, root fi
 	}
 
 	if typ != "directory" {
-		reader, _ := fs.ForFile(file).GetData()
+		reader, _ := fs.ForFile(file).GetData(context.Background())
 		createdData, _ := io.ReadAll(reader)
 		if string(createdData) != string(data) {
 			t.Errorf("unexpected GetPath(), got: >%s<, want: >%s<", createdData, data)
 		}
 	}
 
-	file, err = fs.ForRoot(root).GetFile(path, nil)
+	file, err = fs.ForRoot(root).GetFile(context.Background(), path, nil)
 	if err != nil {
 		t.Errorf("unexpected GetFile() error: %v", err)
 	}
@@ -71,11 +72,11 @@ func assertRootCorrectFileCreation(t *testing.T, fs filestore.Filestore, root fi
 }
 
 func TestRoot_CorrectReadDirectory(t *testing.T) {
-	fs, err := psql.NewMockFilestore()
+	fs, err := psql.NewMockFileStore()
 	if err != nil {
-		t.Fatalf("unepxected NewMockFilestore() error = %v", err)
+		t.Fatalf("unepxected NewMockFileStore() error = %v", err)
 	}
-	root, err := fs.CreateRoot(uuid.New())
+	root, err := fs.CreateRoot(context.Background(), uuid.New())
 	if err != nil {
 		t.Fatalf("unepxected CreateRoot() error = %v", err)
 	}
@@ -131,10 +132,10 @@ func TestRoot_CorrectReadDirectory(t *testing.T) {
 	}
 }
 
-func assertRootFilesInPath(t *testing.T, fs filestore.Filestore, root filestore.Root, searchPath string, paths ...string) {
+func assertRootFilesInPath(t *testing.T, fs filestore.FileStore, root filestore.Root, searchPath string, paths ...string) {
 	t.Helper()
 
-	files, err := fs.ForRoot(root).ReadDirectory(searchPath)
+	files, err := fs.ForRoot(root).ReadDirectory(context.Background(), searchPath)
 	if err != nil {
 		t.Errorf("unepxected ReadDirectory() error = %v", err)
 	}

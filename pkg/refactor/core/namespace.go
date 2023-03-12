@@ -8,15 +8,18 @@ import (
 )
 
 // Namespace represent a core domain object of direktiv.
-type Namespace interface {
-	GetID() uuid.UUID
-	GetName() string
-	CreatedAt() time.Time
-	UpdatedAt() time.Time
+type Namespace struct {
+	ID   uuid.UUID
+	Name string
+
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 // NamespaceStore responsible for fetching namespace from datastore.
 type NamespaceStore interface {
-	GetNamespace(ctx context.Context, id uuid.UUID) (Namespace, error)
-	GetNamespaceByName(ctx context.Context, name string) (Namespace, error)
+	Create(ctx context.Context, namespace *Namespace) error
+	Get(ctx context.Context, id uuid.UUID) (*Namespace, error)
+	GetByName(ctx context.Context, name string) (*Namespace, error)
+	Delete(ctx context.Context, name string) error
 }
