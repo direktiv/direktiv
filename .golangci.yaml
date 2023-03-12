@@ -8,58 +8,17 @@ run:
 
 linters:
   disable:
-    - wrapcheck
-    - varnamelen
-    - exhaustivestruct
     - exhaustruct
-    - golint
     - wsl
-    - funlen
-    - paralleltest
-    - forbidigo
-    - cyclop
-    - nosnakecase
-    - scopelint
-
-    - nilnil
-    - nlreturn
-    - nonamedreturns
-    - stylecheck
-    - tagliatelle
-    - wastedassign
-    - goerr113
-    - gomnd
-    - testpackage
-    - gochecknoglobals
-    - bodyclose
-    - asasalint
-    - whitespace
-    - predeclared
-    - musttag
-    - maintidx
-    - ireturn
-    - interfacebloat
-    - forcetypeassert
-    - exhaustive
-    - contextcheck
-    - unparam
-    - revive
-    - promlinter
     - prealloc
-    - nestif
-    - makezero
-    - dogsled
-    - dupl
-    - gci
-    - gochecknoinits
-    - gocognit
-    - godox
-    - gosec
     - lll
-    - gocritic
-    - rowserrcheck
-    - gocyclo
-    - nakedret
+    - varnamelen
+    - paralleltest
+    - wrapcheck
+    - nolintlint
+    - ireturn
+    - funlen
+    - musttag
 
   presets:
     - bugs
@@ -75,3 +34,60 @@ linters:
     - style
     - test
     - unused
+
+issues:
+  exclude-rules:
+    - path: '(pkg|cmd)\/(refactor|version|dlog|model|sidecar|secrets|exec|util|jqer|functions|flow|api|flow-dbinit|metrics)\/.*'
+      linters:
+      - wrapcheck
+      - varnamelen
+      - exhaustivestruct
+      - exhaustruct
+      - golint
+      - wsl
+      - funlen
+      - paralleltest
+      - forbidigo
+      - cyclop
+      - nosnakecase
+      - scopelint
+
+      - nilnil
+      - nlreturn
+      - nonamedreturns
+      - stylecheck
+      - tagliatelle
+      - wastedassign
+      - goerr113
+      - gomnd
+      - testpackage
+      - gochecknoglobals
+      - bodyclose
+      - asasalint
+      - whitespace
+      - predeclared
+      - musttag
+      - maintidx
+      - ireturn
+      - interfacebloat
+      - forcetypeassert
+      - exhaustive
+      - contextcheck
+      - unparam
+      - revive
+      - promlinter
+      - prealloc
+      - nestif
+      - makezero
+      - dogsled
+      - dupl
+      - gci
+      - gochecknoinits
+      - gocognit
+      - godox
+      - gosec
+      - lll
+      - gocritic
+      - rowserrcheck
+      - gocyclo
+      - nakedret
