@@ -10,7 +10,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { TbBug, TbBugOff } from "react-icons/tb";
+import { TbBug, TbBugOff, TbFilter, TbFilterOff } from "react-icons/tb";
 import {
   VscCopy,
   VscEye,
@@ -365,12 +365,14 @@ export function createClipboardData(data: Array<LogItem> | null) {
 interface LogFooterButtonsProps {
   follow: boolean;
   setFollow: React.Dispatch<React.SetStateAction<boolean>>;
-  verbose: boolean;
-  setVerbose: React.Dispatch<React.SetStateAction<boolean>>;
-  wordWrap: boolean;
-  setWordWrap: React.Dispatch<React.SetStateAction<boolean>>;
+  verbose?: boolean;
+  setVerbose?: React.Dispatch<React.SetStateAction<boolean>>;
+  filter?: boolean;
+  setFilter?: React.Dispatch<React.SetStateAction<boolean>>;
+  wordWrap?: boolean;
+  setWordWrap?: React.Dispatch<React.SetStateAction<boolean>>;
   data: Array<LogItem> | null;
-  clipData: string;
+  clipData?: string;
 }
 
 export function LogFooterButtons({
@@ -378,6 +380,8 @@ export function LogFooterButtons({
   setFollow,
   verbose,
   setVerbose,
+  filter,
+  setFilter,
   wordWrap,
   setWordWrap,
   data,
@@ -400,7 +404,30 @@ export function LogFooterButtons({
           <VscCopy /> Copy <span className="hide-1000">to Clipboard</span>
         </FlexBox>
       </Button>
-      {verbose !== undefined && (
+      {filter !== undefined && setFilter && (
+        <Button
+          color="terminal"
+          variant="contained"
+          onClick={() => {
+            setFilter((old) => !old);
+          }}
+        >
+          <FlexBox center row gap="sm">
+            {filter ? (
+              <>
+                <TbFilterOff />
+                Set filter
+              </>
+            ) : (
+              <>
+                <TbFilter />
+                disable filter
+              </>
+            )}
+          </FlexBox>
+        </Button>
+      )}
+      {verbose !== undefined && setVerbose && (
         <Button
           color="terminal"
           variant="contained"
