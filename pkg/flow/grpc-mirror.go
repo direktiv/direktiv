@@ -764,7 +764,7 @@ func (flow *flow) MirrorActivityLogs(ctx context.Context, req *grpc.MirrorActivi
 
 	query := clients.LogMsg.Query().Where(entlog.HasActivityWith(entmiract.ID(activity.ID)))
 
-	results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
+	results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logEntFilters)
 	if err != nil {
 		return nil, err
 	}
@@ -803,7 +803,7 @@ resend:
 
 	query := clients.LogMsg.Query().Where(entlog.HasActivityWith(entmiract.ID(activity.ID)))
 
-	results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
+	results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logEntFilters)
 	if err != nil {
 		return err
 	}
