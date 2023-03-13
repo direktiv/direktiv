@@ -416,12 +416,12 @@ export function LogFooterButtons({
             {filter ? (
               <>
                 <TbFilterOff />
-                Set filter
+                Disable filter
               </>
             ) : (
               <>
                 <TbFilter />
-                disable filter
+                Filter Logs
               </>
             )}
           </FlexBox>
