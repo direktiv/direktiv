@@ -457,6 +457,7 @@ function InstanceLogs(props) {
   const [wordWrap, setWordWrap] = useState(false);
   const [follow, setFollow] = useState(true);
   const [verbose, setVerbose] = useState(false);
+  const [filter, setFilter] = useState(false);
 
   return (
     <>
@@ -583,7 +584,8 @@ function InstanceLogs(props) {
               follow={follow}
               setVerbose={setVerbose}
               verbose={verbose}
-              wordWrap={wordWrap}
+              setFilter={setFilter}
+              filter={filter}
               setWordWrap={setWordWrap}
               data={data}
             />
