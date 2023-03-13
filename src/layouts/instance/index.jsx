@@ -479,7 +479,7 @@ function InstanceLogs(props) {
           />
         </FlexBox>
         <div
-          className="logs-footer logs-footer--two-lines"
+          className={`logs-footer ${filter && "logs-footer--two-lines"}`}
           style={{
             alignItems: "center",
             borderRadius: " 0px 0px 8px 8px",
@@ -502,6 +502,7 @@ function InstanceLogs(props) {
                 flexDirection: "row-reverse",
                 height: "50%",
                 alignItems: "center",
+                ...(filter === false && { display: "none" }),
               }}
             >
               <Button
@@ -575,7 +576,7 @@ function InstanceLogs(props) {
             style={{
               width: "100%",
               flexDirection: "row-reverse",
-              height: "50%",
+              ...(filter ? { height: "50%" } : { height: "100%" }),
               alignItems: "center",
             }}
           >
