@@ -412,6 +412,12 @@ resend:
 		return err
 	}
 
+	filters := req.Pagination.Filter
+	for _, v := range filters {
+		results = queryJSON(v, results)
+		pi.Total = int32(len(results))
+	}
+
 	resp := new(grpc.InstanceLogsResponse)
 	resp.Namespace = cached.Namespace.Name
 	resp.Instance = cached.Instance.ID.String()
