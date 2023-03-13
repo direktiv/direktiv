@@ -428,9 +428,9 @@ function InstanceLogs(props) {
     paddingStyle = { padding: "0px" };
   }
 
-  const [filterState, setFilterState] = useState("check-format");
-  const [filterName, setFilterName] = useState("devweekdemo/news");
-  const [filterIterator, setFilterIterator] = useState("0");
+  const [filterWorkflow, setFilterWorkflow] = useState("devweekdemo/news");
+  const [filterStateId, setFilterStateId] = useState("check-format");
+  const [filterLoopIndex, setFilterLoopIndex] = useState("0");
   const [isFilterActive, setIsFilterActive] = useState(false);
   const [filterParams, setFilterParams] = useState([]);
   const { data } = useInstanceLogs(
@@ -446,7 +446,7 @@ function InstanceLogs(props) {
     setFilterParams([
       "filter.field=QUERY",
       "filter.type=MATCH",
-      `filter.val=${filterIterator}::${filterName}::${filterState}`,
+      `filter.val=${filterWorkflow}::${filterStateId}::${filterLoopIndex}`,
     ]);
   };
 
@@ -458,6 +458,11 @@ function InstanceLogs(props) {
   const [follow, setFollow] = useState(true);
   const [verbose, setVerbose] = useState(false);
   const [showFilterBar, setShowFilterbar] = useState(false);
+  useEffect(() => {
+    if (isFilterActive === true) {
+      setShowFilterbar(true);
+    }
+  }, [isFilterActive, showFilterBar]);
 
   return (
     <>
@@ -470,9 +475,9 @@ function InstanceLogs(props) {
             verbose={verbose}
             setAutoScroll={setFollow}
             filterControls={{
-              setFilterState,
-              setFilterName,
-              setFilterIterator,
+              setFilterWorkflow,
+              setFilterStateId,
+              setFilterLoopIndex,
               setIsFilterActive,
               setFilterParams,
             }}
@@ -518,9 +523,9 @@ function InstanceLogs(props) {
                 <input
                   placeholder="state"
                   type="text"
-                  value={filterState}
+                  value={filterStateId}
                   disabled={!isFilterActive}
-                  onChange={(e) => setFilterState(e.target.value)}
+                  onChange={(e) => setFilterStateId(e.target.value)}
                   style={{
                     width: "100px",
                   }}
@@ -531,9 +536,9 @@ function InstanceLogs(props) {
                 <input
                   placeholder="name"
                   type="text"
-                  value={filterName}
+                  value={filterWorkflow}
                   disabled={!isFilterActive}
-                  onChange={(e) => setFilterName(e.target.value)}
+                  onChange={(e) => setFilterWorkflow(e.target.value)}
                   style={{
                     width: "200px",
                   }}
@@ -544,9 +549,9 @@ function InstanceLogs(props) {
                 <input
                   placeholder="iterator"
                   type="number"
-                  value={filterIterator}
+                  value={filterLoopIndex}
                   disabled={!isFilterActive}
-                  onChange={(e) => setFilterIterator(e.target.value)}
+                  onChange={(e) => setFilterLoopIndex(e.target.value)}
                   style={{
                     width: "50px",
                   }}

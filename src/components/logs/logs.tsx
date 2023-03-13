@@ -31,6 +31,15 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 
 dayjs.extend(utc);
+
+type FilterControls = {
+  setFilterWorkflow: React.Dispatch<React.SetStateAction<string>>;
+  setFilterStateId: React.Dispatch<React.SetStateAction<string>>;
+  setFilterLoopIndex: React.Dispatch<React.SetStateAction<string>>;
+  setIsFilterActive: React.Dispatch<React.SetStateAction<boolean>>;
+  setFilterParams: React.Dispatch<React.SetStateAction<string[]>>;
+};
+
 export interface LogsProps {
   logItems?: LogItem[];
   /**
@@ -58,36 +67,18 @@ export interface LogsProps {
    */
   overrideLoadingMsg?: string;
 
-  filterControls?: {
-    setFilterState: React.Dispatch<React.SetStateAction<string>>;
-    setFilterName: React.Dispatch<React.SetStateAction<string>>;
-    setFilterIterator: React.Dispatch<React.SetStateAction<string>>;
-    setIsFilterActive: React.Dispatch<React.SetStateAction<boolean>>;
-    setFilterParams: React.Dispatch<React.SetStateAction<string[]>>;
-  };
+  filterControls?: FilterControls;
 }
 
 export interface LogItem {
   t: string;
+  level: "debug" | "info" | "error" | "panic";
   msg: string;
   tags: {
-    name: string; // f.e. "somepath/to/someworkflow"
-    iterator: string; // f.e. "2"
-    step: string; // f.e. "1"
+    workflow: string; // f.e. "somepath/to/someworkflow"
+    "loop-index": string; // f.e. "1"
     // always there, except on the first step
-    state?: string; // f.e. "getter"
-    type?: string; // f.e. "action"
-    /**
-     * other tags that can appear, depending on the log entry
-     *
-     * tags": {
-     *   "inv-iterator": "2",
-     *   "inv-name": "sub",
-     *   "inv-state": "b",
-     *   "inv-step": "2",
-     *   "inv-type": "foreach",
-     * }
-     */
+    "state-id"?: string; // f.e. "getter"
   };
 }
 
@@ -245,13 +236,7 @@ interface ListRowProps {
   style: CSSProperties;
   wordWrap?: boolean;
   verbose?: boolean;
-  filterControls?: {
-    setFilterState: React.Dispatch<React.SetStateAction<string>>;
-    setFilterName: React.Dispatch<React.SetStateAction<string>>;
-    setFilterIterator: React.Dispatch<React.SetStateAction<string>>;
-    setIsFilterActive: React.Dispatch<React.SetStateAction<boolean>>;
-    setFilterParams: React.Dispatch<React.SetStateAction<string[]>>;
-  };
+  filterControls?: FilterControls;
 }
 
 const innerElementType = forwardRef(({ style, ...rest }: any, ref) => (
@@ -284,7 +269,12 @@ const ListRow = ({
     }
   }, [index, setSize, width]);
 
-  const { name, state, step, iterator } = data[index].tags;
+  const {
+    workflow,
+    "state-id": stateId,
+    "loop-index": loopIndex,
+  } = data[index].tags;
+
   return (
     <div
       style={{
@@ -309,26 +299,22 @@ const ListRow = ({
                 role="button"
                 style={{ cursor: "pointer" }}
                 onClick={() => {
-                  if (name && state && step && iterator) {
-                    filterControls?.setFilterState(state);
-                    filterControls?.setFilterIterator(iterator);
-                    filterControls?.setFilterName(name);
-                    filterControls?.setIsFilterActive(true);
-                    filterControls?.setFilterParams([
-                      "filter.field=QUERY",
-                      "filter.type=MATCH",
-                      `filter.val=${iterator}::${name}::${state}`,
-                    ]);
-                  }
+                  filterControls?.setFilterWorkflow(workflow ?? "");
+                  filterControls?.setFilterStateId(stateId ?? "");
+                  filterControls?.setFilterLoopIndex(loopIndex ?? "");
+                  filterControls?.setIsFilterActive(true);
+                  filterControls?.setFilterParams([
+                    "filter.field=QUERY",
+                    "filter.type=MATCH",
+                    `filter.val=${workflow ?? ""}::${stateId ?? ""}::${
+                      loopIndex ?? ""
+                    }`,
+                  ]);
                 }}
               >
-                {step && iterator && (
-                  <span className="tag-name">
-                    ({step}/{iterator}){" "}
-                  </span>
-                )}
-                {name && <span className="tag-name">{name}</span>}
-                {state && <span className="tag-state">/{state}</span>}{" "}
+                {loopIndex && <span className="tag-name">({loopIndex}) </span>}
+                {workflow && <span className="tag-name">{workflow}</span>}
+                {stateId && <span className="tag-state">/{stateId}</span>}{" "}
               </span>
             </Tippy>
           ) : null}
