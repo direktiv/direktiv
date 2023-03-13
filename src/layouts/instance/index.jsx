@@ -428,9 +428,9 @@ function InstanceLogs(props) {
     paddingStyle = { padding: "0px" };
   }
 
-  const [filterWorkflow, setFilterWorkflow] = useState("devweekdemo/news");
-  const [filterStateId, setFilterStateId] = useState("check-format");
-  const [filterLoopIndex, setFilterLoopIndex] = useState("0");
+  const [filterWorkflow, setFilterWorkflow] = useState("");
+  const [filterStateId, setFilterStateId] = useState("");
+  const [filterLoopIndex, setFilterLoopIndex] = useState("");
   const [isFilterActive, setIsFilterActive] = useState(false);
   const [filterParams, setFilterParams] = useState([]);
   const { data } = useInstanceLogs(
