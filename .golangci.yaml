@@ -37,7 +37,7 @@ linters:
 
 issues:
   exclude-rules:
-    - path: '(pkg|cmd)\/(refactor|version|dlog|model|sidecar|secrets|exec|util|jqer|functions|flow|api|flow-dbinit|metrics)\/.*'
+    - path: '(pkg|cmd)\/(version|dlog|model|sidecar|secrets|exec|util|jqer|functions|flow|api|flow-dbinit|metrics)\/.*'
       linters:
       - wrapcheck
       - varnamelen
