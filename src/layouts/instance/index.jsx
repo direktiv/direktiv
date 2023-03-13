@@ -457,7 +457,7 @@ function InstanceLogs(props) {
   const [wordWrap, setWordWrap] = useState(false);
   const [follow, setFollow] = useState(true);
   const [verbose, setVerbose] = useState(false);
-  const [filter, setFilter] = useState(false);
+  const [showFilterBar, setShowFilterbar] = useState(false);
 
   return (
     <>
@@ -479,7 +479,7 @@ function InstanceLogs(props) {
           />
         </FlexBox>
         <div
-          className={`logs-footer ${filter && "logs-footer--two-lines"}`}
+          className={`logs-footer ${showFilterBar && "logs-footer--two-lines"}`}
           style={{
             alignItems: "center",
             borderRadius: " 0px 0px 8px 8px",
@@ -502,7 +502,7 @@ function InstanceLogs(props) {
                 flexDirection: "row-reverse",
                 height: "50%",
                 alignItems: "center",
-                ...(filter === false && { display: "none" }),
+                ...(showFilterBar === false && { display: "none" }),
               }}
             >
               <Button
@@ -576,7 +576,7 @@ function InstanceLogs(props) {
             style={{
               width: "100%",
               flexDirection: "row-reverse",
-              ...(filter ? { height: "50%" } : { height: "100%" }),
+              ...(showFilterBar ? { height: "50%" } : { height: "100%" }),
               alignItems: "center",
             }}
           >
@@ -585,8 +585,8 @@ function InstanceLogs(props) {
               follow={follow}
               setVerbose={setVerbose}
               verbose={verbose}
-              setFilter={setFilter}
-              filter={filter}
+              setFilter={setShowFilterbar}
+              filter={showFilterBar}
               setWordWrap={setWordWrap}
               data={data}
             />
