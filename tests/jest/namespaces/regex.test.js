@@ -16,14 +16,14 @@ describe('Test namespace regex constraints', () => {
         ]
         for (let i = 0; i < names.length; i++) {
             var name = names[i]
-            await request(common.config.getDirektivHost()).delete(`/api/namespaces/${name}`)
+            await request(common.config.getDirektivHost()).delete(`/api/namespaces/${name}?recursive=true`)
             const res = await request(common.config.getDirektivHost()).put(`/api/namespaces/${name}`)
-            request(common.config.getDirektivHost()).delete(`/api/namespaces/${name}`)
+            await request(common.config.getDirektivHost()).delete(`/api/namespaces/${name}?recursive=true`)
             expect(res.statusCode).toEqual(200)
             expect(res.body).toMatchObject(createNamespaceResponse)
             expect(res.body.namespace.name).toBe(name)
         }
-    }, 10000)
+    })
 
     it(`should fail to create namespaces with various invalid names`, async () => {
         const names = [
@@ -49,5 +49,5 @@ describe('Test namespace regex constraints', () => {
             const res = await request(common.config.getDirektivHost()).put(`/api/namespaces/${name}`)
             expect(res.statusCode).toEqual(406)
         }
-    }, 10000)
+    })
 })
