@@ -6,4 +6,12 @@ export default {
             return "http://localhost:80"
         }
     },
+    getAuthHeader : (authToken, isEnterprice = false) => {
+        if (!authToken) {
+            return {};
+        }
+        return isEnterprice
+            ? { Authorization: `Bearer ${authToken}` }
+            : { "direktiv-token": authToken };
+    }
 }
