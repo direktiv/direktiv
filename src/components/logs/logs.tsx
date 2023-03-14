@@ -20,13 +20,13 @@ import {
   VscWholeWord,
   VscWordWrap,
 } from "react-icons/vsc";
+import { copyTextToClipboard, createLogFilter } from "../../util";
 
 import AutoSizer from "react-virtualized-auto-sizer";
 import Button from "../button";
 import FlexBox from "../flexbox";
 import Tippy from "@tippyjs/react";
 import { VariableSizeList } from "react-window";
-import { copyTextToClipboard } from "../../util";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 
@@ -305,13 +305,14 @@ const ListRow = ({
                   filterControls?.setFilterLoopIndex(loopIndex ?? "");
                   filterControls?.setIsFilterActive(true);
                   filterControls?.setShowFilterbar(true);
-                  filterControls?.setFilterParams([
-                    "filter.field=QUERY",
-                    "filter.type=MATCH",
-                    `filter.val=${workflow ?? ""}::${stateId ?? ""}::${
-                      loopIndex ?? ""
-                    }`,
-                  ]);
+
+                  filterControls?.setFilterParams(
+                    createLogFilter({
+                      workflow: workflow ?? "",
+                      stateId: stateId ?? "",
+                      loopIndex: loopIndex ?? "",
+                    })
+                  );
                 }}
               >
                 {loopIndex && <span className="tag-name">({loopIndex}) </span>}

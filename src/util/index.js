@@ -116,3 +116,11 @@ export function useOutsideCallback(ref, callback, callbackDelay) {
     };
   }, [ref, callback, callbackDelay]);
 }
+
+export const createLogFilter = ({ workflow, stateId, loopIndex }) => {
+  const query = `${workflow}::${stateId}::${loopIndex}`;
+  if (query === "::::") {
+    return [];
+  }
+  return ["filter.field=QUERY", "filter.type=MATCH", `filter.val=${query}`];
+};

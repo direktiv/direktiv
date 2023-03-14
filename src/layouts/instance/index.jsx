@@ -7,7 +7,7 @@ import {
   RunningState,
   SuccessState,
 } from "../instances";
-import { Config, GenerateRandomKey } from "../../util";
+import { Config, GenerateRandomKey, createLogFilter } from "../../util";
 import ContentPanel, {
   ContentPanelBody,
   ContentPanelTitle,
@@ -443,11 +443,13 @@ function InstanceLogs(props) {
   );
 
   const applyFilter = () => {
-    setFilterParams([
-      "filter.field=QUERY",
-      "filter.type=MATCH",
-      `filter.val=${filterWorkflow}::${filterStateId}::${filterLoopIndex}`,
-    ]);
+    setFilterParams(
+      createLogFilter({
+        workflow: filterWorkflow,
+        stateId: filterStateId,
+        loopIndex: filterLoopIndex,
+      })
+    );
   };
 
   const disableFilter = () => {
