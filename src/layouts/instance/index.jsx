@@ -617,36 +617,6 @@ function InstanceLogs(props) {
                   }}
                 />
               </label>
-              {/* <label>
-                iterator{" "}
-                <input
-                  placeholder="iterator"
-                  type="number"
-                  value={filterLoopIndex}
-                  disabled={!isFilterActive}
-                  onChange={(e) => setFilterLoopIndex(e.target.value)}
-                  style={{
-                    width: "50px",
-                  }}
-                />
-              </label> */}
-              {/* <label
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                }}
-              >
-                use filter
-                <input
-                  type="checkbox"
-                  checked={isFilterActive}
-                  onChange={(e) => {
-                    const { checked } = e.target;
-                    setIsFilterActive(checked);
-                    checked ? applyFilter() : disableFilter();
-                  }}
-                />
-              </label> */}
             </FlexBox>
           </form>
           <FlexBox
