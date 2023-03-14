@@ -87,8 +87,7 @@ func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNam
 	if err != nil {
 		return nil, err
 	}
-
-	flow.logger.LogToServer(ctx, time.Now(), "Created namespace as git mirror '%s'.", ns.Name)
+	flow.logger.Infof(ctx, time.Now(), flow.ID, flow.GetAttributes(), "Created namespace as git mirror '%s'.", ns.Name)
 	flow.pubsub.NotifyNamespaces()
 
 respond:

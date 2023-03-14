@@ -91,17 +91,6 @@ func AppendInstanceID(callpath, instanceID string) string {
 	return callpath + "/" + instanceID
 }
 
-func (logger *Logger) LogToServer(ctx context.Context, t time.Time, msg string, a ...interface{}) {
-	defer func() {
-		_ = recover()
-	}()
-
-	logger.logQueue <- &logMessage{
-		t:   t,
-		msg: fmt.Sprintf(msg, a...),
-	}
-}
-
 func (logger *Logger) Debug(ctx context.Context, t time.Time, recipientID uuid.UUID, tags map[string]string, msg string) {
 	logger.sendToWorker(ctx, t, recipientID, tags, "debug", msg)
 }

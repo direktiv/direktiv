@@ -264,7 +264,7 @@ func (flow *flow) CreateNamespace(ctx context.Context, req *grpc.CreateNamespace
 		return nil, err
 	}
 
-	flow.logger.LogToServer(ctx, time.Now(), "Created namespace '%s'.", cached.Namespace.Name)
+	flow.logger.Infof(ctx, time.Now(), flow.ID, flow.GetAttributes(), "Created namespace '%s'.", cached.Namespace.Name)
 	flow.pubsub.NotifyNamespaces()
 
 respond:
@@ -326,7 +326,7 @@ func (flow *flow) DeleteNamespace(ctx context.Context, req *grpc.DeleteNamespace
 
 	flow.deleteNamespaceSecrets(cached.Namespace)
 
-	flow.logger.LogToServer(ctx, time.Now(), "Deleted namespace '%s'.", cached.Namespace.Name)
+	flow.logger.Infof(ctx, time.Now(), flow.ID, flow.GetAttributes(), "Deleted namespace '%s'.", cached.Namespace.Name)
 	flow.pubsub.NotifyNamespaces()
 	flow.pubsub.CloseNamespace(cached.Namespace)
 
@@ -379,7 +379,7 @@ func (flow *flow) RenameNamespace(ctx context.Context, req *grpc.RenameNamespace
 
 	flow.database.InvalidateNamespace(ctx, cached, true)
 
-	flow.logger.LogToServer(ctx, time.Now(), "Renamed namespace from '%s' to '%s'.", req.GetOld(), req.GetNew())
+	flow.logger.Infof(ctx, time.Now(), flow.ID, flow.GetAttributes(), "Renamed namespace from '%s' to '%s'.", req.GetOld(), req.GetNew())
 	flow.logger.Infof(ctx, time.Now(), cached.Namespace.ID, cached.GetAttributes("namespace"), "Renamed namespace from '%s' to '%s'.", req.GetOld(), req.GetNew())
 	flow.pubsub.NotifyNamespaces()
 	flow.pubsub.CloseNamespace(cached.Namespace)
