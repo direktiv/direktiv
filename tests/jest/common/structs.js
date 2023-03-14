@@ -20,4 +20,17 @@ const namespaceObject = {
     updatedAt: expect.stringMatching(regex.timestampRegex),
 }
 
-export default { errorResponse, pageInfoObject, namespaceObject }
+const nodeObject = {
+    name: expect.stringMatching(regex.nodeNameRegex),
+    path: expect.stringMatching(regex.pathRegex),
+    parent: expect.stringMatching(regex.pathRegex),
+    type: expect.stringMatching(regex.nodeTypeRegex),
+    expandedType: expect.stringMatching(regex.nodeExtendedTypeRegex),
+    readOnly: expect.anything(),
+    attributes: expect.anything(),
+    oid: "",
+    createdAt: expect.stringMatching(regex.timestampRegex),
+    updatedAt: expect.stringMatching(regex.timestampRegex),
+}
+
+export default { errorResponse, pageInfoObject, namespaceObject, nodeObject }

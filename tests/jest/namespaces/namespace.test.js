@@ -20,7 +20,8 @@ const listNamespacesResponse = {
 // TODO: test SSE
 // TODO: test bad method
 // TODO: test namespace logs 
-// TODO: test server logs
+// TODO: test namespace config
+// TODO: test namespace annotations
 
 describe('Test basic namespace operations', () => {
     it(`should create, get, and delete a namespace`, async () => {
@@ -297,5 +298,20 @@ describe('Test basic namespace operations', () => {
             var name = names[i]
             await request(common.config.getDirektivHost()).delete(`/api/namespaces/${name}?recursive=true`)
         }
+    })
+
+    it(`should check for server logs on basic namespace operations`, async () => {
+        const name = "nslogstest"
+        await request(common.config.getDirektivHost()).delete(`/api/namespaces/${name}?recursive=true`)
+        const createResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${name}`)
+        const deleteResponse = await request(common.config.getDirektivHost()).delete(`/api/namespaces/${name}`)
+        request(common.config.getDirektivHost()).delete(`/api/namespaces/${name}?recursive=true`)
+        expect(createResponse.statusCode).toEqual(200)
+        expect(deleteResponse.statusCode).toEqual(200)
+
+        var logsResponse = await request(common.config.getDirektivHost()).get(`/api/logs?order.field=TIMESTAMP&order.direction=DESC&limit=2`)
+        expect(logsResponse.statusCode).toEqual(200)
+        expect(logsResponse.body.results).toEqual(expect.arrayContaining([{t: expect.anything(), msg: `Created namespace '${name}'.`}]))
+        expect(logsResponse.body.results).toEqual(expect.arrayContaining([{t: expect.anything(), msg: `Deleted namespace '${name}'.`}]))
     })
 })
