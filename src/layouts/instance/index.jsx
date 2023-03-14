@@ -573,6 +573,7 @@ function InstanceLogs(props) {
               >
                 <div>
                   <Button
+                    tabIndex="3"
                     color="terminal"
                     variant="contained"
                     type="submit"
@@ -585,6 +586,7 @@ function InstanceLogs(props) {
               <label>
                 state name{" "}
                 <input
+                  tabIndex="2"
                   placeholder={
                     example
                       ? `f.e. ${example?.tags?.["state-id"]}`
@@ -601,6 +603,7 @@ function InstanceLogs(props) {
               <label>
                 workflow name{" "}
                 <input
+                  tabIndex="1"
                   placeholder={
                     example
                       ? `f.e. ${example?.tags?.workflow}`
