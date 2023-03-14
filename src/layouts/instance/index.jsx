@@ -471,7 +471,7 @@ function InstanceLogs(props) {
 
   const displayValidationMsg = useCallback(() => {
     if (filterWorkflow === "" && filterStateId === "") {
-      return "please enter a workflow and a state name";
+      return null;
     }
 
     if (filterWorkflow === "") {
