@@ -5,6 +5,12 @@ const errorResponse = {
     message: expect.anything(),
 }
 
+const unauthorizedResponse = {
+    message: "Unauthorized",
+    status: 401,
+    type: "error",
+};
+
 const pageInfoObject = {
     order: expect.anything(),
     filter: expect.anything(),
@@ -33,4 +39,4 @@ const nodeObject = {
     updatedAt: expect.stringMatching(regex.timestampRegex),
 }
 
-export default { errorResponse, pageInfoObject, namespaceObject, nodeObject }
+export default { errorResponse, pageInfoObject, namespaceObject, nodeObject, unauthorizedResponse }
