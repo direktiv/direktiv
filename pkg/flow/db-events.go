@@ -12,15 +12,16 @@ import (
 	entcev "github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
 	entev "github.com/direktiv/direktiv/pkg/flow/ent/events"
 	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
+	entns "github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	entwf "github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/google/uuid"
 )
 
-func (events *events) markEventAsProcessed(ctx context.Context, eventID string) (*cloudevents.Event, error) {
+func (events *events) markEventAsProcessed(ctx context.Context, ns *database.Namespace, eventID string) (*cloudevents.Event, error) {
 	clients := events.edb.Clients(ctx)
 
-	e, err := clients.CloudEvents.Query().Where(entcev.EventId(eventID)).Only(ctx)
+	e, err := clients.CloudEvents.Query().Where(entcev.HasNamespaceWith(entns.ID(ns.ID)), entcev.EventId(eventID)).Only(ctx)
 	if err != nil {
 		return nil, err
 	}
