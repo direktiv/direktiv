@@ -380,7 +380,7 @@ func (flow *flow) RenameNamespace(ctx context.Context, req *grpc.RenameNamespace
 	flow.database.InvalidateNamespace(ctx, cached, true)
 
 	flow.logger.LogToServer(ctx, time.Now(), "Renamed namespace from '%s' to '%s'.", req.GetOld(), req.GetNew())
-	flow.logger.Infof(time.Now(), cached.Namespace.ID, cached.GetAttributes("namespace"), "Renamed namespace from '%s' to '%s'.", req.GetOld(), req.GetNew())
+	flow.logger.Infof(ctx, time.Now(), cached.Namespace.ID, cached.GetAttributes("namespace"), "Renamed namespace from '%s' to '%s'.", req.GetOld(), req.GetNew())
 	flow.pubsub.NotifyNamespaces()
 	flow.pubsub.CloseNamespace(cached.Namespace)
 

@@ -130,6 +130,13 @@ func (cached *CacheData) GetAttributesMirror(m *Mirror) map[string]string {
 	return tags
 }
 
+func (cached *CacheData) SentLogs(m *Mirror) map[string]string {
+	tags := cached.GetAttributes("namespace")
+	tags["mirror-id"] = m.ID.String()
+	tags["recipientType"] = "mirror"
+	return tags
+}
+
 func GetWorkflow(path string) string {
 	return strings.Split(path, ":")[0]
 }
