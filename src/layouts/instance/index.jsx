@@ -458,11 +458,6 @@ function InstanceLogs(props) {
   const [follow, setFollow] = useState(true);
   const [verbose, setVerbose] = useState(false);
   const [showFilterBar, setShowFilterbar] = useState(false);
-  useEffect(() => {
-    if (isFilterActive === true) {
-      setShowFilterbar(true);
-    }
-  }, [isFilterActive, showFilterBar]);
 
   return (
     <>
@@ -480,6 +475,7 @@ function InstanceLogs(props) {
               setFilterLoopIndex,
               setIsFilterActive,
               setFilterParams,
+              setShowFilterbar,
             }}
           />
         </FlexBox>

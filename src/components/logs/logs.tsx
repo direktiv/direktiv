@@ -38,6 +38,7 @@ type FilterControls = {
   setFilterLoopIndex: React.Dispatch<React.SetStateAction<string>>;
   setIsFilterActive: React.Dispatch<React.SetStateAction<boolean>>;
   setFilterParams: React.Dispatch<React.SetStateAction<string[]>>;
+  setShowFilterbar: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 export interface LogsProps {
@@ -303,6 +304,7 @@ const ListRow = ({
                   filterControls?.setFilterStateId(stateId ?? "");
                   filterControls?.setFilterLoopIndex(loopIndex ?? "");
                   filterControls?.setIsFilterActive(true);
+                  filterControls?.setShowFilterbar(true);
                   filterControls?.setFilterParams([
                     "filter.field=QUERY",
                     "filter.type=MATCH",
