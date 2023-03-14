@@ -74,7 +74,7 @@ func (logger *Logger) CloseLogWorkers() {
 func GetRootinstanceID(callpath string) (string, error) {
 	path := strings.Split(callpath, "/")
 	if len(path) < 2 {
-		return "", errors.New("Instance Callpath is malformed")
+		return "", errors.New("instance Callpath is malformed")
 	}
 	_, err := uuid.Parse(path[1])
 	if err != nil {
