@@ -12,10 +12,17 @@ export default {
    * onMessageMock: a jest mock function that will be called when a message
    * is received. The mock function will be called with the JSON parsed message
    *
-   * onErrorMock: a jest mock function that will be called when an error is received
+   * onErrorMock: a jest mock function that will be called when an error is 
+   * received
    *
    * CURRENT LIMITATION:
-   * this sse will only call the mock function when the first message or error is received
+   * this sse will only call the mock function when the first message or error is 
+   * received this can be changed in the future if needed. The general problem is, 
+   * that we don't want to block the jest process very long. We might add some 
+   * parameter to the direktivSSE configures how many messages we want to receive 
+   * before we close the connection again. We might also do something in between 
+   * two messages. We can extend this feature when we have the first very specific 
+   * use case.
    */
   direktivSSE: ({
     path, // f.e. http://localhost:8080/api/namespaces/my-namespace/logs
