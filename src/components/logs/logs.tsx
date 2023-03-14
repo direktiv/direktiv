@@ -342,9 +342,22 @@ export function createClipboardData(data: Array<LogItem> | null) {
   let clipboardData = "";
 
   data.forEach((item) => {
-    clipboardData += `[${dayjs.utc(item.t).local().format("HH:mm:ss.SSS")}] ${
-      item.msg
-    }\n`;
+    const {
+      workflow,
+      "state-id": stateId,
+      "loop-index": loopIndex,
+    } = item?.tags ?? {};
+
+    const tags = [];
+
+    loopIndex && tags.push(`(${loopIndex}) `);
+    workflow && tags.push(workflow);
+    stateId && tags.push(`/${stateId}`);
+
+    clipboardData += `[${dayjs
+      .utc(item.t)
+      .local()
+      .format("HH:mm:ss.SSS")}] ${tags.join("")} ${item.msg}\n`;
   });
 
   return clipboardData;
