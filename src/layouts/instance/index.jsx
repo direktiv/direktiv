@@ -30,6 +30,7 @@ import Button from "../../components/button";
 import DirektivEditor from "../../components/editor";
 import FlexBox from "../../components/flexbox";
 import Loader from "../../components/loader";
+import { Tooltip } from "@mui/material";
 import WorkflowDiagram from "../../components/diagram";
 import { useApiKey } from "../../util/apiKeyProvider";
 import { useParams } from "react-router";
@@ -442,6 +443,10 @@ function InstanceLogs(props) {
     ...filterParams
   );
 
+  const example = data?.find(
+    (x) => x?.tags && !!x?.tags?.workflow && !!x?.tags?.["state-id"]
+  );
+
   const applyFilter = () => {
     setFilterParams(
       createLogFilter({
@@ -462,6 +467,7 @@ function InstanceLogs(props) {
   const [follow, setFollow] = useState(true);
   const [verbose, setVerbose] = useState(false);
   const [showFilterBar, setShowFilterbar] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(false);
 
   const displayValidationMsg = useCallback(() => {
     if (filterWorkflow === "" && filterStateId === "") {
@@ -553,18 +559,37 @@ function InstanceLogs(props) {
                 ...(showFilterBar === false && { display: "none" }),
               }}
             >
-              <Button
-                color="terminal"
-                variant="contained"
-                type="submit"
-                disabled={buttonDisabled}
+              <Tooltip
+                title={displayValidationMsg()}
+                placement="top"
+                arrow
+                open={displayValidationMsg() && showTooltip ? true : false}
+                onMouseEnter={() => {
+                  setShowTooltip(true);
+                }}
+                onMouseLeave={() => {
+                  setShowTooltip(false);
+                }}
               >
-                Update Filter
-              </Button>
+                <div>
+                  <Button
+                    color="terminal"
+                    variant="contained"
+                    type="submit"
+                    disabled={buttonDisabled}
+                  >
+                    Update Filter
+                  </Button>
+                </div>
+              </Tooltip>
               <label>
-                state{" "}
+                state name{" "}
                 <input
-                  placeholder="state"
+                  placeholder={
+                    example
+                      ? `f.e. ${example?.tags?.["state-id"]}`
+                      : "state name"
+                  }
                   type="text"
                   value={filterStateId}
                   onChange={(e) => setFilterStateId(e.target.value)}
@@ -574,9 +599,13 @@ function InstanceLogs(props) {
                 />
               </label>
               <label>
-                name{" "}
+                workflow name{" "}
                 <input
-                  placeholder="name"
+                  placeholder={
+                    example
+                      ? `f.e. ${example?.tags?.workflow}`
+                      : "workflow name"
+                  }
                   type="text"
                   value={filterWorkflow}
                   onChange={(e) => setFilterWorkflow(e.target.value)}
@@ -615,8 +644,6 @@ function InstanceLogs(props) {
                   }}
                 />
               </label> */}
-
-              {displayValidationMsg()}
             </FlexBox>
           </form>
           <FlexBox
