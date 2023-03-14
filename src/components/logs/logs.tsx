@@ -275,6 +275,8 @@ const ListRow = ({
     "loop-index": loopIndex,
   } = data[index].tags;
 
+  const isError = ["error", "panic"].includes(data[index].level);
+
   return (
     <div
       style={{
@@ -282,7 +284,7 @@ const ListRow = ({
         top: `${parseFloat(style.top as string)}px`,
       }}
     >
-      <div className="log-row" ref={rowRoot}>
+      <div className={`log-row ${isError && "log-row--error"}`} ref={rowRoot}>
         <span className={wordWrap ? "word-wrap" : "whole-word"}>
           <span className="timestamp">
             [{dayjs.utc(data[index].t).local().format("HH:mm:ss")}
