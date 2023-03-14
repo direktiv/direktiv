@@ -36,7 +36,6 @@ type FilterControls = {
   setFilterWorkflow: React.Dispatch<React.SetStateAction<string>>;
   setFilterStateId: React.Dispatch<React.SetStateAction<string>>;
   setFilterLoopIndex: React.Dispatch<React.SetStateAction<string>>;
-  setIsFilterActive: React.Dispatch<React.SetStateAction<boolean>>;
   setFilterParams: React.Dispatch<React.SetStateAction<string[]>>;
   setShowFilterbar: React.Dispatch<React.SetStateAction<boolean>>;
 };
@@ -303,9 +302,7 @@ const ListRow = ({
                   filterControls?.setFilterWorkflow(workflow ?? "");
                   filterControls?.setFilterStateId(stateId ?? "");
                   filterControls?.setFilterLoopIndex(loopIndex ?? "");
-                  filterControls?.setIsFilterActive(true);
                   filterControls?.setShowFilterbar(true);
-
                   filterControls?.setFilterParams(
                     createLogFilter({
                       workflow: workflow ?? "",
@@ -398,14 +395,14 @@ export function LogFooterButtons({
           color="terminal"
           variant="contained"
           onClick={() => {
-            setFilter((old) => !old);
+            setFilter(!filter);
           }}
         >
           <FlexBox center row gap="sm">
             {filter ? (
               <>
                 <TbFilterOff />
-                Disable filter
+                Disable Filter
               </>
             ) : (
               <>

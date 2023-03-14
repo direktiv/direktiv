@@ -431,7 +431,7 @@ function InstanceLogs(props) {
   const [filterWorkflow, setFilterWorkflow] = useState("");
   const [filterStateId, setFilterStateId] = useState("");
   const [filterLoopIndex, setFilterLoopIndex] = useState("");
-  const [isFilterActive, setIsFilterActive] = useState(false);
+  const [buttonDisabled, setButtonDisabled] = useState(true);
   const [filterParams, setFilterParams] = useState([]);
   const { data } = useInstanceLogs(
     Config.url,
@@ -453,6 +453,8 @@ function InstanceLogs(props) {
   };
 
   const disableFilter = () => {
+    setFilterWorkflow("");
+    setFilterStateId("");
     setFilterParams([]);
   };
 
@@ -460,6 +462,50 @@ function InstanceLogs(props) {
   const [follow, setFollow] = useState(true);
   const [verbose, setVerbose] = useState(false);
   const [showFilterBar, setShowFilterbar] = useState(false);
+
+  const displayValidationMsg = useCallback(() => {
+    if (filterWorkflow === "" && filterStateId === "") {
+      return "please enter a workflow and a state name";
+    }
+
+    if (filterWorkflow === "") {
+      return "please enter a workflow name";
+    }
+
+    if (filterStateId === "") {
+      return "please enter a state name";
+    }
+
+    return null;
+  }, [filterStateId, filterWorkflow]);
+
+  useEffect(() => {
+    if (displayValidationMsg() !== null) {
+      setButtonDisabled(true);
+      return;
+    }
+
+    const generateParams = JSON.stringify(
+      createLogFilter({
+        workflow: filterWorkflow,
+        stateId: filterStateId,
+        loopIndex: filterLoopIndex,
+      })
+    );
+
+    if (generateParams === JSON.stringify(filterParams)) {
+      setButtonDisabled(true);
+      return;
+    }
+
+    setButtonDisabled(false);
+  }, [
+    displayValidationMsg,
+    filterLoopIndex,
+    filterParams,
+    filterStateId,
+    filterWorkflow,
+  ]);
 
   return (
     <>
@@ -475,7 +521,6 @@ function InstanceLogs(props) {
               setFilterWorkflow,
               setFilterStateId,
               setFilterLoopIndex,
-              setIsFilterActive,
               setFilterParams,
               setShowFilterbar,
             }}
@@ -512,9 +557,9 @@ function InstanceLogs(props) {
                 color="terminal"
                 variant="contained"
                 type="submit"
-                disabled={!isFilterActive}
+                disabled={buttonDisabled}
               >
-                update filter
+                Update Filter
               </Button>
               <label>
                 state{" "}
@@ -522,7 +567,6 @@ function InstanceLogs(props) {
                   placeholder="state"
                   type="text"
                   value={filterStateId}
-                  disabled={!isFilterActive}
                   onChange={(e) => setFilterStateId(e.target.value)}
                   style={{
                     width: "100px",
@@ -535,14 +579,13 @@ function InstanceLogs(props) {
                   placeholder="name"
                   type="text"
                   value={filterWorkflow}
-                  disabled={!isFilterActive}
                   onChange={(e) => setFilterWorkflow(e.target.value)}
                   style={{
                     width: "200px",
                   }}
                 />
               </label>
-              <label>
+              {/* <label>
                 iterator{" "}
                 <input
                   placeholder="iterator"
@@ -554,8 +597,8 @@ function InstanceLogs(props) {
                     width: "50px",
                   }}
                 />
-              </label>
-              <label
+              </label> */}
+              {/* <label
                 style={{
                   display: "flex",
                   alignItems: "center",
@@ -571,7 +614,9 @@ function InstanceLogs(props) {
                     checked ? applyFilter() : disableFilter();
                   }}
                 />
-              </label>
+              </label> */}
+
+              {displayValidationMsg()}
             </FlexBox>
           </form>
           <FlexBox
@@ -588,7 +633,14 @@ function InstanceLogs(props) {
               follow={follow}
               setVerbose={setVerbose}
               verbose={verbose}
-              setFilter={setShowFilterbar}
+              setFilter={(val) => {
+                if (val === true) {
+                  setShowFilterbar(true);
+                } else {
+                  disableFilter();
+                  setShowFilterbar(false);
+                }
+              }}
               filter={showFilterBar}
               setWordWrap={setWordWrap}
               data={data}
