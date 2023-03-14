@@ -261,6 +261,7 @@ func (flow *flow) CreateNamespace(ctx context.Context, req *grpc.CreateNamespace
 
 	err = tx.Commit()
 	if err != nil {
+		flow.logger.Errorf(ctx, time.Now(), flow.ID, flow.GetAttributes(), "Failed to create namespace '%s'.", cached.Namespace.Name)
 		return nil, err
 	}
 
@@ -374,6 +375,7 @@ func (flow *flow) RenameNamespace(ctx context.Context, req *grpc.RenameNamespace
 
 	err = tx.Commit()
 	if err != nil {
+		flow.logger.Infof(ctx, time.Now(), flow.ID, flow.GetAttributes(), "Could not rename namespace '%s'.", cached.Namespace.Name)
 		return nil, err
 	}
 

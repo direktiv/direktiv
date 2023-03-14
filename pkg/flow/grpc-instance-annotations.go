@@ -397,7 +397,7 @@ func (flow *flow) DeleteInstanceAnnotation(ctx context.Context, req *grpc.Delete
 		return nil, err
 	}
 
-	flow.logger.Errorf(ctx, time.Now(), cached.Instance.ID, cached.GetAttributes("instance"), "Deleted instance annotation '%s'.", annotation.Name)
+	flow.logger.Infof(ctx, time.Now(), cached.Instance.ID, cached.GetAttributes("instance"), "Deleted instance annotation '%s'.", annotation.Name)
 	flow.pubsub.NotifyInstanceAnnotations(cached.Instance)
 
 	var resp emptypb.Empty

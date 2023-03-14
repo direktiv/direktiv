@@ -543,6 +543,7 @@ func (flow *flow) RenameNamespaceAnnotation(ctx context.Context, req *grpc.Renam
 
 	x, err := clients.Annotation.UpdateOneID(annotation.ID).SetName(req.GetNew()).Save(tctx)
 	if err != nil {
+		flow.logger.Errorf(ctx, time.Now(), flow.ID, flow.GetAttributes(), "Failed to rename a namespace annotation '%s'.", req.GetOld())
 		return nil, err
 	}
 
