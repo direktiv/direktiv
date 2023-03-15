@@ -31,15 +31,9 @@ const TextInput: FC<TextInputProps> = ({
     className={clsx(
       className,
       "input max-w-xs",
-      // size === "md" && "input-md",
-      // size === "sm" && "input-sm",
-      // size === "xs" && "input-xs",
-      // size === "xs" && "input-xs",
-
       size === "lg" && "input-lg",
       size === "sm" && "input-sm",
       size === "xs" && "input-xs",
-
       variant === "primary" && "input-primary",
       variant === "secondary" && "input-secondary",
       variant === "accent" && "input-accent",
