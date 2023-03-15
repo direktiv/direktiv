@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 
 import type { RouteObject } from "react-router-dom";
+import SettiongsPage from "../../pages/Settings";
 
 type Page = {
   name: string;
@@ -91,7 +92,7 @@ export const pages: Record<string, Page> = {
     createHref: () => "settings",
     route: {
       path: "settings",
-      element: <div>Settings</div>,
+      element: <SettiongsPage />,
     },
   },
 } as const;
