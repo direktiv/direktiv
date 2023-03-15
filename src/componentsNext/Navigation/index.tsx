@@ -5,9 +5,9 @@ import { pages } from "../../util/router/pages";
 
 const Navigation: FC = () => (
   <>
-    {Object.values(pages).map((item) => (
+    {Object.entries(pages).map(([key, item]) => (
       <NavLink
-        key={item.name}
+        key={key}
         to={item.route.path ?? "#"}
         className={({ isActive }) => createClassNames(isActive)}
       >
