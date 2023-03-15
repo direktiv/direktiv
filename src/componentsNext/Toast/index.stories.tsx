@@ -38,7 +38,7 @@ export const Default: Story = {
     variant: {
       description: "select variant",
       control: "select",
-      options: ["default", "info", "success", "warning", "error"],
+      options: ["info", "success", "warning", "error"],
       type: { name: "string", required: false },
     },
   },
@@ -46,11 +46,12 @@ export const Default: Story = {
 
 export const ToastVariants = () => {
   const { toast } = useToast();
+
   const defContent = {
     title: "Scheduled: Catch up",
     description: "Friday, February 10, 2023 at 5:57 PM",
   };
-  const customToast = (variant: ToastVariantsType) => {
+  const customToast = (variant?: ToastVariantsType) => {
     toast({
       ...defContent,
       variant,
@@ -93,7 +94,7 @@ export const ToastVariants = () => {
       </Button>
       <Button
         onClick={() => {
-          customToast("default");
+          customToast();
         }}
       >
         Show Default Toast
