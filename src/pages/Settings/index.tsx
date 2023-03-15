@@ -1,7 +1,7 @@
-import { FC, useEffect } from "react";
 import { useApiActions, useApiKey } from "../../util/store/apiKey";
 import { useTheme, useThemeActions } from "../../util/store/theme";
 
+import { FC } from "react";
 import { useNamespaces } from "../../api/namespaces";
 import { useVersion } from "../../api/version";
 
@@ -13,14 +13,6 @@ const SettiongsPage: FC = () => {
 
   const { data: version, isLoading: isVersionLoading } = useVersion();
   const { data: namespaces, isLoading: isLoadingNamespaces } = useNamespaces();
-
-  useEffect(() => {
-    let applyTheme = window.matchMedia("(prefers-color-scheme: dark)").matches
-      ? "dark"
-      : "light";
-    if (theme) applyTheme = theme;
-    document.querySelector("html")?.setAttribute("data-theme", applyTheme);
-  }, [theme]);
 
   return (
     <>
