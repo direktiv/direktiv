@@ -8,13 +8,13 @@ export type TextInputProps = HTMLAttributes<HTMLDivElement> & {
     | "primary"
     | "secondary"
     | "accent"
+    | "ghost"
     | "success"
     | "warning"
     | "error"
     | "info";
-  size?: "xs" | "sm" | "md" | "lg";
+  size?: "xs" | "sm" | "lg";
   block?: boolean;
-  ghost?: boolean;
   forwaredRef?: React.ForwardedRef<HTMLDivElement>;
   children?: React.ReactNode;
 };
@@ -22,9 +22,8 @@ export type TextInputProps = HTMLAttributes<HTMLDivElement> & {
 const TextInput: FC<TextInputProps> = ({
   className,
   variant,
-  size = "lg",
+  size,
   block = false,
-  ghost = false,
   ...props
 }) => (
   <input
@@ -32,11 +31,15 @@ const TextInput: FC<TextInputProps> = ({
     className={clsx(
       className,
       "input max-w-xs",
-      ghost ? "input-ghost" : "input-bordered",
+      // size === "md" && "input-md",
+      // size === "sm" && "input-sm",
+      // size === "xs" && "input-xs",
+      // size === "xs" && "input-xs",
+
       size === "lg" && "input-lg",
-      size === "md" && "input-md",
       size === "sm" && "input-sm",
       size === "xs" && "input-xs",
+
       variant === "primary" && "input-primary",
       variant === "secondary" && "input-secondary",
       variant === "accent" && "input-accent",
@@ -44,6 +47,7 @@ const TextInput: FC<TextInputProps> = ({
       variant === "success" && "input-success",
       variant === "warning" && "input-warning",
       variant === "error" && "input-error",
+      variant === "ghost" ? "input-ghost" : "input-bordered",
       block && "w-full"
     )}
     {...props}

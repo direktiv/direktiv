@@ -27,6 +27,7 @@ export const Default: Story = {
         "primary",
         "secondary",
         "info",
+        "ghost",
         "success",
         "warning",
         "error",
@@ -39,11 +40,6 @@ export const Default: Story = {
       control: "boolean",
       type: { name: "boolean", required: false },
     },
-    ghost: {
-      description: "ghost select",
-      control: "boolean",
-      type: { name: "boolean", required: false },
-    },
   },
 };
 
@@ -52,20 +48,28 @@ export const SelectSizes = () => {
     <div className="flex flex-wrap gap-5">
       <TextInput placeholder="size xs" size="xs" />
       <TextInput placeholder="size sm" size="sm" />
-      <TextInput placeholder="size md" size="md" />
+      <TextInput placeholder="default" />
       <TextInput placeholder="size lg" size="lg" />
     </div>
   );
 };
-
-export const Ghost = () => (
-  <div className="flex bg-base-300">
-    <TextInput placeholder="ghost input" ghost />
-  </div>
-);
+export const Variants = () => {
+  return (
+    <div className="flex flex-col gap-5">
+      <TextInput placeholder="default" />
+      <TextInput placeholder="variant primary" variant="primary" />
+      <TextInput placeholder="variant secondary" variant="secondary" />
+      <TextInput placeholder="variant accent" variant="accent" />
+      <TextInput placeholder="variant ghost" variant="ghost" />
+      <TextInput placeholder="variant info" variant="info" />
+      <TextInput placeholder="variant success" variant="success" />
+      <TextInput placeholder="variant error" variant="error" />
+    </div>
+  );
+};
 
 export const Block = () => (
-  <div className=" p-10">
+  <div className="p-10">
     <TextInput block />
   </div>
 );
