@@ -1,3 +1,8 @@
+import {
+  DrawerContent,
+  DrawerMenu,
+  DrawerRoot,
+} from "../componentsNext/Drawer";
 import { Link, Outlet } from "react-router-dom";
 import {
   Main,
@@ -13,6 +18,7 @@ import {
 import { useApiActions, useApiKey } from "../util/store/apiKey";
 import { useTheme, useThemeActions } from "../util/store/theme";
 
+import { Menu } from "lucide-react";
 import { useEffect } from "react";
 import { useNamespaces } from "../api/namespaces";
 import { useVersion } from "../api/version";
@@ -36,82 +42,99 @@ const Layout = () => {
 
   return (
     <Root>
-      <Sidebar version={version?.api ?? ""}>
-        <SidebarTop /> {/* add drawer here */}
-        <SidebarMain />
-      </Sidebar>
-      <Main>
-        <MainTop>
-          <MainTopLeft>1</MainTopLeft>
-          <MainTopRight>2</MainTopRight>
-        </MainTop>
-        <MainContent>
-          <div className="flex flex-col space-y-5 p-10">
-            <div>
-              <h1>
-                theme <span className="font-bold">{theme}</span>
-              </h1>
-              <div className="flex space-x-5">
-                <button
-                  className="btn-primary btn"
-                  onClick={() => setTheme("dark")}
-                >
-                  darkmode
-                </button>
-                <button
-                  className="btn-primary btn"
-                  onClick={() => setTheme("light")}
-                >
-                  lightmode
-                </button>
-                <button
-                  className="btn-error btn"
-                  onClick={() => setTheme(null)}
-                >
-                  reset theme
-                </button>
-              </div>
-            </div>
-            <div>
-              <h1>
-                api key is <span className="font-bold">{apiKey}</span>
-              </h1>
-              <div className="flex space-x-5">
-                <button
-                  className="btn-primary btn"
-                  onClick={() => setApiKey("password")}
-                >
-                  set Api key to password
-                </button>
-                <button
-                  className="btn-error btn"
-                  onClick={() => setApiKey(null)}
-                >
-                  reset api key
-                </button>
-              </div>
-            </div>
-            <div>
-              <h1 className="font-bold">Version</h1>
-              {isVersionLoading ? "Loading version...." : version?.api}
-            </div>
-            <div>
-              <h1 className="font-bold">namespaces</h1>
-              {isLoadingNamespaces
-                ? "Loading namespaces"
-                : namespaces?.results.map((namespace) => (
-                    <div key={namespace.name}>{namespace.name}</div>
-                  ))}
-            </div>
-            <div>
-              <Link to="/">Start</Link> <Link to="/about">About</Link>
-            </div>
-            <div>
-              <Outlet />
-            </div>
-          </div>
-        </MainContent>
-      </Main>
+      <DrawerRoot>
+        <DrawerContent>
+          {({ drawerLabelProps }) => (
+            <>
+              <Sidebar version={version?.api ?? ""}>
+                <SidebarTop>
+                  <label
+                    {...drawerLabelProps}
+                    className="justify-self-start px-1 lg:hidden"
+                    role="button"
+                  >
+                    <Menu />
+                  </label>
+                </SidebarTop>
+                <SidebarMain />
+              </Sidebar>
+              <Main>
+                <MainTop>
+                  <MainTopLeft>1</MainTopLeft>
+                  <MainTopRight>2</MainTopRight>
+                </MainTop>
+                <MainContent>
+                  <div className="flex flex-col space-y-5 p-10">
+                    <div>
+                      <h1>
+                        theme <span className="font-bold">{theme}</span>
+                      </h1>
+                      <div className="flex space-x-5">
+                        <button
+                          className="btn-primary btn"
+                          onClick={() => setTheme("dark")}
+                        >
+                          darkmode
+                        </button>
+                        <button
+                          className="btn-primary btn"
+                          onClick={() => setTheme("light")}
+                        >
+                          lightmode
+                        </button>
+                        <button
+                          className="btn-error btn"
+                          onClick={() => setTheme(null)}
+                        >
+                          reset theme
+                        </button>
+                      </div>
+                    </div>
+                    <div>
+                      <h1>
+                        api key is <span className="font-bold">{apiKey}</span>
+                      </h1>
+                      <div className="flex space-x-5">
+                        <button
+                          className="btn-primary btn"
+                          onClick={() => setApiKey("password")}
+                        >
+                          set Api key to password
+                        </button>
+                        <button
+                          className="btn-error btn"
+                          onClick={() => setApiKey(null)}
+                        >
+                          reset api key
+                        </button>
+                      </div>
+                    </div>
+                    <div>
+                      <h1 className="font-bold">Version</h1>
+                      {isVersionLoading ? "Loading version...." : version?.api}
+                    </div>
+                    <div>
+                      <h1 className="font-bold">namespaces</h1>
+                      {isLoadingNamespaces
+                        ? "Loading namespaces"
+                        : namespaces?.results.map((namespace) => (
+                            <div key={namespace.name}>{namespace.name}</div>
+                          ))}
+                    </div>
+                    <div>
+                      <Link to="/">Start</Link> <Link to="/about">About</Link>
+                    </div>
+                    <div>
+                      <Outlet />
+                    </div>
+                  </div>
+                </MainContent>
+              </Main>
+            </>
+          )}
+        </DrawerContent>
+        <DrawerMenu>Menu</DrawerMenu>
+      </DrawerRoot>
     </Root>
   );
 };
