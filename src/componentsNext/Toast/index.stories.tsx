@@ -35,6 +35,11 @@ export const Default: Story = {
   render: ({ ...args }) => <StoryComponent {...args} />,
   tags: ["autodocs"],
   argTypes: {
+    asChild: {
+      table: {
+        disable: true,
+      },
+    },
     variant: {
       description: "select variant",
       control: "select",
