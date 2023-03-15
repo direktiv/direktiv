@@ -10,9 +10,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  render: (args) => {
-    return <TextInput placeholder="default" {...args} />;
-  },
+  render: (args) => <TextInput placeholder="default" {...args} />,
   args: {},
   tags: ["autodocs"],
   argTypes: {

@@ -18,9 +18,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  render: ({ children, ...args }) => {
-    return <Button {...args}>{children}</Button>;
-  },
+  render: ({ children, ...args }) => <Button {...args}>{children}</Button>,
   args: {
     children: "Button",
   },
