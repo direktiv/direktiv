@@ -1,35 +1,20 @@
-import {
-  Box,
-  Bug,
-  Calendar,
-  FolderTree,
-  Layers,
-  Network,
-  Settings,
-  Users,
-} from "lucide-react";
-
 import { FC } from "react";
+import { NavLink } from "react-router-dom";
 import { NavigationLink } from "../NavigationLink";
-
-export const navigation = [
-  { name: "Explorer", href: "#", icon: FolderTree, current: true },
-  { name: "Monitoring", href: "#", icon: Bug, current: false },
-  { name: "Instances", href: "#", icon: Box, current: false },
-  { name: "Events", href: "#", icon: Calendar, current: false },
-  { name: "Gateway", href: "#", icon: Network, current: false },
-  { name: "Permissions", href: "#", icon: Users, current: false },
-  { name: "Services", href: "#", icon: Layers, current: false },
-  { name: "Settings", href: "#", icon: Settings, current: false },
-];
+import { pages } from "../../util/router/pages";
 
 const Navigation: FC = () => (
   <>
-    {navigation.map((item) => (
-      <NavigationLink key={item.name} href={item.href} active={item.current}>
-        <item.icon aria-hidden="true" />
-        {item.name}
-      </NavigationLink>
+    {Object.values(pages).map((item) => (
+      <>
+        <NavLink key={item.name} to={item.route.path ?? "#"}>
+          {item.name} <br />
+        </NavLink>
+        <NavigationLink key={item.name} href={item.href} active={item.current}>
+          <item.icon aria-hidden="true" />
+          {item.name}
+        </NavigationLink>
+      </>
     ))}
   </>
 );
