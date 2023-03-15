@@ -19,6 +19,7 @@ import { useApiActions, useApiKey } from "../util/store/apiKey";
 import { useTheme, useThemeActions } from "../util/store/theme";
 
 import { Menu } from "lucide-react";
+import Navigation from "../componentsNext/Navigation";
 import { useEffect } from "react";
 import { useNamespaces } from "../api/namespaces";
 import { useVersion } from "../api/version";
@@ -56,7 +57,9 @@ const Layout = () => {
                     <Menu />
                   </label>
                 </SidebarTop>
-                <SidebarMain />
+                <SidebarMain>
+                  <Navigation />
+                </SidebarMain>
               </Sidebar>
               <Main>
                 <MainTop>
@@ -133,7 +136,9 @@ const Layout = () => {
             </>
           )}
         </DrawerContent>
-        <DrawerMenu>Menu</DrawerMenu>
+        <DrawerMenu>
+          <Navigation />
+        </DrawerMenu>
       </DrawerRoot>
     </Root>
   );
