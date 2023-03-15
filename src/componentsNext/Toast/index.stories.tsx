@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { Toast, ToastVariantsType, Toaster, useToast } from "./index";
-import Button from "../../components/button";
+import Button from "../Button";
 import { FC } from "react";
 
 const meta = {
