@@ -189,7 +189,7 @@ func (events *events) flushEvent(ctx context.Context, eventID string, ns *databa
 	}
 	defer rollback(tx)
 
-	e, err := events.markEventAsProcessed(tctx, eventID)
+	e, err := events.markEventAsProcessed(tctx, ns, eventID)
 	if err != nil {
 		return err
 	}
