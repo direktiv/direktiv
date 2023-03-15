@@ -25,12 +25,6 @@ export const useThemeState = create<ThemeState>()(
   )
 );
 
-export const useTheme = () =>
-  useThemeState((state) => {
-    return state.theme;
-  });
+export const useTheme = () => useThemeState((state) => state.theme);
 
-export const useThemeActions = () =>
-  useThemeState((state) => {
-    return state.actions;
-  });
+export const useThemeActions = () => useThemeState((state) => state.actions);
