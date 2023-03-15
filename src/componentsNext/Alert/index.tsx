@@ -14,7 +14,7 @@ const Alert: FC<AlertProps> = ({ variant, className, text }) => (
   <div
     className={clsx(
       className,
-      "alert shadow-lg",
+      "alert shadow-sm",
       variant === "info" && "alert-info",
       variant === "error" && "alert-error",
       variant === "success" && "alert-success",
