@@ -106,12 +106,12 @@ func (cached *CacheData) GetAttributes(recipientType string) map[string]string {
 			tags["instance-id"] = cached.Instance.ID.String()
 			tags["invoker"] = cached.Instance.Invoker
 			tags["callpath"] = cached.Instance.CallPath
+			tags["workflow"] = GetWorkflow(cached.Instance.As)
 		}
 		fallthrough
 	case "workflow":
 		if cached.Workflow != nil {
 			tags["workflow-id"] = cached.Workflow.ID.String()
-			tags["workflow"] = GetWorkflow(cached.Instance.As)
 		}
 		fallthrough
 	case "namespace":
