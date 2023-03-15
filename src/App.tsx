@@ -1,24 +1,31 @@
 import "./App.css";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useTheme, useThemeActions } from "./util/store/theme";
 
 import { RouterProvider } from "react-router-dom";
 import { router } from "./util/router";
 import { useEffect } from "react";
-import { useTheme } from "./util/store/theme";
 
 const queryClient = new QueryClient();
 
 const App = () => {
   const theme = useTheme();
+  const { setSystemTheme } = useThemeActions();
+
   useEffect(() => {
-    let applyTheme = window.matchMedia("(prefers-color-scheme: dark)").matches
+    const systemTheme: typeof theme = window.matchMedia(
+      "(prefers-color-scheme: dark)"
+    ).matches
       ? "dark"
       : "light";
+    setSystemTheme(systemTheme);
 
-    if (theme) applyTheme = theme;
-    document.querySelector("html")?.setAttribute("data-theme", applyTheme);
-  }, [theme]);
+    // apply theme from local storage or system theme
+    document
+      .querySelector("html")
+      ?.setAttribute("data-theme", theme ?? systemTheme);
+  }, [setSystemTheme, theme]);
 
   return (
     <QueryClientProvider client={queryClient}>
