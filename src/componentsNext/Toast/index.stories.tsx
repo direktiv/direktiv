@@ -51,54 +51,59 @@ export const ToastVariants = () => {
     title: "Scheduled: Catch up",
     description: "Friday, February 10, 2023 at 5:57 PM",
   };
+
   const customToast = (variant?: ToastVariantsType) => {
     toast({
       ...defContent,
       variant,
     });
   };
-  return (
-    <div className="flex flex-wrap gap-5">
-      <Button
-        color="error"
-        onClick={() => {
-          customToast("error");
-        }}
-      >
-        Show Error Toast
-      </Button>
-      <Button
-        color="success"
-        onClick={() => {
-          customToast("success");
-        }}
-      >
-        Show Info Toast
-      </Button>
 
-      <Button
-        color="warning"
-        onClick={() => {
-          customToast("warning");
-        }}
-      >
-        Show Warning Toast
-      </Button>
-      <Button
-        color="info"
-        onClick={() => {
-          customToast("info");
-        }}
-      >
-        Show Info Toast
-      </Button>
-      <Button
-        onClick={() => {
-          customToast();
-        }}
-      >
-        Show Default Toast
-      </Button>
-    </div>
+  return (
+    <>
+      <div className="flex flex-wrap gap-5">
+        <Button
+          color="error"
+          onClick={() => {
+            customToast("error");
+          }}
+        >
+          Show Error Toast 1
+        </Button>
+        <Button
+          color="success"
+          onClick={() => {
+            customToast("success");
+          }}
+        >
+          Show Info Toast
+        </Button>
+
+        <Button
+          color="warning"
+          onClick={() => {
+            customToast("warning");
+          }}
+        >
+          Show Warning Toast
+        </Button>
+        <Button
+          color="info"
+          onClick={() => {
+            customToast("info");
+          }}
+        >
+          Show Info Toast
+        </Button>
+        <Button
+          onClick={() => {
+            customToast();
+          }}
+        >
+          Show Default Toast
+        </Button>
+      </div>
+      <Toaster />
+    </>
   );
 };
