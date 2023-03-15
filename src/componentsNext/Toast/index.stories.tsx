@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { Toast, ToastVariantsType, Toaster, useToast } from "./index";
 import Button from "../../components/button";
+import { FC } from "react";
 
 const meta = {
   title: "Components (next)/Toast",
@@ -10,27 +11,28 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+const StoryComponent: FC<Toast> = ({ ...args }) => {
+  const { toast } = useToast();
+  return (
+    <>
+      <Toaster />
+      <Button
+        onClick={() => {
+          toast({
+            title: "Scheduled: Catch up",
+            description: "Friday, February 10, 2023 at 5:57 PM",
+            variant: args.variant,
+          });
+        }}
+      >
+        Show Toast
+      </Button>
+    </>
+  );
+};
+
 export const Default: Story = {
-  render: ({ ...args }) => {
-    //eslint-disable-next-line
-    const { toast } = useToast();
-    return (
-      <>
-        <Toaster {...args} />
-        <Button
-          onClick={() => {
-            toast({
-              title: "Scheduled: Catch up",
-              description: "Friday, February 10, 2023 at 5:57 PM",
-              variant: args.variant,
-            });
-          }}
-        >
-          Show Toast
-        </Button>
-      </>
-    );
-  },
+  render: ({ ...args }) => <StoryComponent {...args} />,
   tags: ["autodocs"],
   argTypes: {
     variant: {
