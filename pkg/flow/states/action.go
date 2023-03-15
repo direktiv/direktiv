@@ -163,7 +163,7 @@ func (logic *actionLogic) scheduleAction(ctx context.Context, attempt int) error
 		return nil
 	}
 
-	logic.SendToLogger(ctx, "error", "Sleeping until child '%s' returns (%s).", child.ID, fn.GetID())
+	logic.SendToLogger(ctx, "info", "Sleeping until child '%s' returns (%s).", child.ID, fn.GetID())
 
 	var children []*ChildInfo
 

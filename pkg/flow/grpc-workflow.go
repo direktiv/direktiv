@@ -54,6 +54,7 @@ func (srv *server) traverseToRef(ctx context.Context, namespace, path, reference
 
 	cached, err := srv.traverseToWorkflow(ctx, namespace, path)
 	if err != nil {
+		srv.logger.Errorf(ctx, time.Now(), srv.ID, srv.flow.GetAttributes(), "failed to resolve workflow: %v", err)
 		srv.sugar.Debugf("%s failed to resolve workflow: %v", parent(), err)
 		return nil, err
 	}
@@ -89,6 +90,7 @@ func (flow *flow) ResolveWorkflowUID(ctx context.Context, req *grpc.ResolveWorkf
 	cached := new(database.CacheData)
 	err = flow.database.Workflow(ctx, cached, id)
 	if err != nil {
+		flow.logger.Errorf(ctx, time.Now(), flow.ID, flow.flow.GetAttributes(), "Failed to resolve workflow: %s", req.Id)
 		return nil, err
 	}
 
@@ -220,6 +222,7 @@ type createWorkflowArgs struct {
 
 func (flow *flow) createWorkflow(ctx context.Context, args *createWorkflowArgs) (*database.Workflow, *database.Inode, error) {
 	if !args.super && args.pino.ReadOnly {
+		flow.logger.Errorf(ctx, time.Now(), flow.ID, flow.GetAttributes(), "Can not create workflow in a read-only directory.")
 		return nil, nil, errors.New("cannot write into read-only directory")
 	}
 
@@ -234,6 +237,7 @@ func (flow *flow) createWorkflow(ctx context.Context, args *createWorkflowArgs) 
 
 	err = flow.database.Inode(ctx, pcached, args.pino.ID)
 	if err != nil {
+		flow.logger.Errorf(ctx, time.Now(), flow.ID, flow.GetAttributes(), "Failed to create workflow.")
 		return nil, nil, err
 	}
 
@@ -246,6 +250,7 @@ func (flow *flow) createWorkflow(ctx context.Context, args *createWorkflowArgs) 
 		Metadata: make(map[string]interface{}),
 	})
 	if err != nil {
+		flow.logger.Errorf(ctx, time.Now(), cached.Namespace.ID, cached.GetAttributes("namespace"), "Failed to create workflow.")
 		return nil, nil, err
 	}
 
@@ -264,13 +269,14 @@ func (flow *flow) createWorkflow(ctx context.Context, args *createWorkflowArgs) 
 		// tx.Commit,
 	)
 	if err != nil {
+		flow.logger.Errorf(ctx, time.Now(), cached.Namespace.ID, cached.GetAttributes("namespace"), "Failed to create workflow.")
 		return nil, nil, err
 	}
 
 	metricsWf.WithLabelValues(cached.Namespace.Name, cached.Namespace.Name).Inc()
 	metricsWfUpdated.WithLabelValues(cached.Namespace.Name, args.path, cached.Namespace.Name).Inc()
 
-	flow.logger.Infof(time.Now(), cached.Namespace.ID, cached.GetAttributes("namespace"), "Created workflow '%s'.", args.path)
+	flow.logger.Infof(ctx, time.Now(), cached.Namespace.ID, cached.GetAttributes("namespace"), "Created workflow '%s'.", args.path)
 	flow.pubsub.NotifyInode(cached.Inode())
 
 	err = flow.BroadcastWorkflow(ctx, BroadcastEventTypeCreate,
@@ -310,14 +316,17 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 
 	cached, err := flow.traverseToInode(tctx, req.GetNamespace(), dir)
 	if err != nil {
+		flow.logger.Errorf(ctx, time.Now(), flow.ID, flow.GetAttributes(), "Failed to create Workflow. Unable to resolve namespace %s.", req.Namespace)
 		return nil, err
 	}
 
 	if cached.Inode().Type != util.InodeTypeDirectory {
+		flow.logger.Errorf(ctx, time.Now(), flow.ID, flow.GetAttributes(), "Failed to create Workflow. Parent inode is not a directory")
 		return nil, errors.New("parent inode is not a directory")
 	}
 
 	if cached.Inode().ReadOnly {
+		flow.logger.Errorf(ctx, time.Now(), flow.ID, flow.GetAttributes(), "Failed to create Workflow. Cannot write into read-only directory")
 		return nil, errors.New("cannot write into read-only directory")
 	}
 
@@ -325,26 +334,31 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 
 	ino, err := clients.Inode.Create().SetName(base).SetNamespaceID(cached.Namespace.ID).SetParentID(cached.Inode().ID).SetType(util.InodeTypeWorkflow).Save(tctx)
 	if err != nil {
+		flow.logger.Errorf(ctx, time.Now(), flow.ID, flow.GetAttributes(), "Failed to create Workflow. Unable to store directory to db.")
 		return nil, err
 	}
 
 	wf, err := clients.Workflow.Create().SetInodeID(ino.ID).SetNamespaceID(cached.Namespace.ID).Save(tctx)
 	if err != nil {
+		flow.logger.Errorf(ctx, time.Now(), flow.ID, flow.GetAttributes(), "Failed to create Workflow. Unable to store workflow to db.")
 		return nil, err
 	}
 
 	rev, err := clients.Revision.Create().SetHash(hash).SetSource(data).SetWorkflow(wf).SetMetadata(make(map[string]interface{})).Save(tctx)
 	if err != nil {
+		flow.logger.Errorf(ctx, time.Now(), flow.ID, flow.GetAttributes(), "Failed to create Workflow. Unable to store revision to db.")
 		return nil, err
 	}
 
 	ref, err := clients.Ref.Create().SetImmutable(false).SetName(latest).SetWorkflow(wf).SetRevision(rev).Save(tctx)
 	if err != nil {
+		flow.logger.Errorf(ctx, time.Now(), flow.ID, flow.GetAttributes(), "Failed to create Workflow. Unable to store reference to db.")
 		return nil, err
 	}
 
 	_, err = clients.Inode.UpdateOneID(cached.Inode().ID).SetUpdatedAt(time.Now()).Save(tctx)
 	if err != nil {
+		flow.logger.Errorf(ctx, time.Now(), flow.ID, flow.GetAttributes(), "Failed to create Workflow. Unable to store workflow to db.")
 		return nil, err
 	}
 
@@ -390,6 +404,7 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 		tx.Commit,
 	)
 	if err != nil {
+		flow.logger.Errorf(ctx, time.Now(), cached.Namespace.ID, cached.GetAttributes("namespace"), "Failed to create Workflow. Failed to create workflow.")
 		return nil, err
 	}
 
@@ -400,7 +415,7 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 	metricsWf.WithLabelValues(cached.Namespace.Name, cached.Namespace.Name).Inc()
 	metricsWfUpdated.WithLabelValues(cached.Namespace.Name, path, cached.Namespace.Name).Inc()
 
-	flow.logger.Infof(time.Now(), cached.Namespace.ID, cached.GetAttributes("namespace"), "Created workflow '%s'.", path)
+	flow.logger.Infof(ctx, time.Now(), cached.Namespace.ID, cached.GetAttributes("namespace"), "Created workflow '%s'.", path)
 	flow.pubsub.NotifyInode(cached.Inode())
 
 	var resp grpc.CreateWorkflowResponse
@@ -457,6 +472,7 @@ func (flow *flow) updateWorkflow(ctx context.Context, args *updateWorkflowArgs) 
 	}
 
 	if !args.super && args.cached.Inode().ReadOnly {
+		flow.logger.Errorf(ctx, time.Now(), flow.ID, flow.GetAttributes(), "Failed to update Workflow. Cannot write into read-only directory")
 		return nil, errors.New("cannot write into read-only directory")
 	}
 
@@ -474,6 +490,7 @@ func (flow *flow) updateWorkflow(ctx context.Context, args *updateWorkflowArgs) 
 
 	err = flow.database.Revision(ctx, args.cached, ref.Revision)
 	if err != nil {
+		flow.logger.Errorf(ctx, time.Now(), flow.ID, flow.GetAttributes(), "Failed to update Workflow. Unable store the revision for the workflow to db. %s", ref.Revision)
 		return nil, err
 	}
 
@@ -530,12 +547,13 @@ func (flow *flow) updateWorkflow(ctx context.Context, args *updateWorkflowArgs) 
 		func() error { return nil },
 	)
 	if err != nil {
+		flow.logger.Errorf(ctx, time.Now(), args.cached.Workflow.ID, args.cached.GetAttributes("workflow"), "Failed to update Workflow.")
 		return nil, err
 	}
 
 	metricsWfUpdated.WithLabelValues(args.cached.Namespace.Name, args.cached.Path(), args.cached.Namespace.Name).Inc()
 
-	flow.logger.Infof(time.Now(), args.cached.Workflow.ID, args.cached.GetAttributes("workflow"), "Updated workflow.")
+	flow.logger.Infof(ctx, time.Now(), args.cached.Workflow.ID, args.cached.GetAttributes("workflow"), "Updated workflow.")
 	flow.pubsub.NotifyWorkflow(args.cached.Workflow)
 
 	err = flow.BroadcastWorkflow(ctx, BroadcastEventTypeUpdate,
@@ -628,6 +646,7 @@ func (flow *flow) SaveHead(ctx context.Context, req *grpc.SaveHeadRequest) (*grp
 
 	k, err := clients.Ref.Query().Where(entref.HasRevisionWith(entrev.ID(cached.Revision.ID))).Count(ctx)
 	if err != nil {
+		flow.logger.Errorf(ctx, time.Now(), cached.Workflow.ID, cached.GetAttributes("workflow"), "Failed to resolve revision %s.", cached.Revision.ID.String())
 		return nil, err
 	}
 
@@ -655,6 +674,7 @@ func (flow *flow) SaveHead(ctx context.Context, req *grpc.SaveHeadRequest) (*grp
 
 	err = clients.Ref.Create().SetImmutable(true).SetName(cached.Revision.ID.String()).SetRevisionID(cached.Revision.ID).SetWorkflowID(cached.Workflow.ID).Exec(ctx)
 	if err != nil {
+		flow.logger.Errorf(ctx, time.Now(), cached.Workflow.ID, cached.GetAttributes("workflow"), "Failed to store workflow '%s'.", cached.Workflow.ID)
 		return nil, err
 	}
 
@@ -665,7 +685,7 @@ func (flow *flow) SaveHead(ctx context.Context, req *grpc.SaveHeadRequest) (*grp
 
 	flow.database.InvalidateWorkflow(ctx, cached, false)
 
-	flow.logger.Infof(time.Now(), cached.Workflow.ID, cached.GetAttributes("workflow"), "Saved workflow: %s.", cached.Revision.ID.String())
+	flow.logger.Infof(ctx, time.Now(), cached.Workflow.ID, cached.GetAttributes("workflow"), "Saved workflow: %s.", cached.Revision.ID.String())
 	flow.pubsub.NotifyWorkflow(cached.Workflow)
 
 respond:
@@ -739,6 +759,7 @@ func (flow *flow) DiscardHead(ctx context.Context, req *grpc.DiscardHeadRequest)
 		tx.Commit,
 	)
 	if err != nil {
+		flow.logger.Errorf(ctx, time.Now(), flow.ID, flow.GetAttributes(), "Failed to discard unsaved changes to workflow, %v", err)
 		return nil, err
 	}
 
@@ -746,7 +767,7 @@ func (flow *flow) DiscardHead(ctx context.Context, req *grpc.DiscardHeadRequest)
 
 	metricsWfUpdated.WithLabelValues(cached.Namespace.Name, cached.Path(), cached.Namespace.Name).Inc()
 
-	flow.logger.Infof(time.Now(), cached.Workflow.ID, cached.GetAttributes("workflow"), "Discard unsaved changes to workflow.")
+	flow.logger.Infof(ctx, time.Now(), cached.Workflow.ID, cached.GetAttributes("workflow"), "Discard unsaved changes to workflow.")
 	flow.pubsub.NotifyWorkflow(cached.Workflow)
 
 respond:
@@ -787,6 +808,7 @@ func (flow *flow) ToggleWorkflow(ctx context.Context, req *grpc.ToggleWorkflowRe
 
 	cached, err := flow.traverseToWorkflow(tctx, req.GetNamespace(), req.GetPath())
 	if err != nil {
+		flow.logger.Errorf(ctx, time.Now(), flow.ID, flow.GetAttributes(), "Failed to resolve namespace '%s'.", req.GetNamespace())
 		return nil, err
 	}
 
@@ -811,6 +833,7 @@ func (flow *flow) ToggleWorkflow(ctx context.Context, req *grpc.ToggleWorkflowRe
 		tx.Commit,
 	)
 	if err != nil {
+		flow.logger.Errorf(ctx, time.Now(), cached.Workflow.ID, cached.GetAttributes("workflow"), "Failed to enable workflow.")
 		return nil, err
 	}
 
@@ -830,10 +853,11 @@ func (flow *flow) ToggleWorkflow(ctx context.Context, req *grpc.ToggleWorkflowRe
 		}, cached)
 
 	if err != nil {
+		flow.logger.Errorf(ctx, time.Now(), cached.Workflow.ID, cached.GetAttributes("workflow"), "Failed to enable workflow failed")
 		return nil, err
 	}
 
-	flow.logger.Infof(time.Now(), cached.Workflow.ID, cached.GetAttributes("workflow"), "Workflow is now %s", live)
+	flow.logger.Infof(ctx, time.Now(), cached.Workflow.ID, cached.GetAttributes("workflow"), "Workflow is now %s", live)
 	flow.pubsub.NotifyWorkflow(cached.Workflow)
 
 	return &resp, nil
@@ -850,6 +874,7 @@ func (flow *flow) SetWorkflowEventLogging(ctx context.Context, req *grpc.SetWork
 
 	cached, err := flow.traverseToWorkflow(tctx, req.GetNamespace(), req.GetPath())
 	if err != nil {
+		flow.logger.Errorf(ctx, time.Now(), flow.ID, flow.GetAttributes(), "Failed to resolve namespace: %s", req.GetNamespace())
 		return nil, err
 	}
 
@@ -857,17 +882,19 @@ func (flow *flow) SetWorkflowEventLogging(ctx context.Context, req *grpc.SetWork
 
 	_, err = clients.Workflow.UpdateOneID(cached.Workflow.ID).SetLogToEvents(req.GetLogger()).Save(tctx)
 	if err != nil {
+		flow.logger.Errorf(ctx, time.Now(), cached.Workflow.ID, cached.GetAttributes("workflow"), "Failed to log cloudevents to workflow.")
 		return nil, err
 	}
 
 	err = tx.Commit()
 	if err != nil {
+		flow.logger.Errorf(ctx, time.Now(), cached.Workflow.ID, cached.GetAttributes("workflow"), "Failed to log cloudevents to workflow.")
 		return nil, err
 	}
 
 	flow.database.InvalidateWorkflow(ctx, cached, false)
 
-	flow.logger.Infof(time.Now(), cached.Workflow.ID, cached.GetAttributes("workflow"), "Workflow now logging to cloudevents: %s", req.GetLogger())
+	flow.logger.Infof(ctx, time.Now(), cached.Workflow.ID, cached.GetAttributes("workflow"), "Workflow now logging to cloudevents: %s", req.GetLogger())
 	flow.pubsub.NotifyWorkflow(cached.Workflow)
 	var resp emptypb.Empty
 

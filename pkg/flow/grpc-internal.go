@@ -112,7 +112,7 @@ func (internal *internal) ActionLog(ctx context.Context, req *grpc.ActionLogRequ
 	tags["state-id"] = stateID
 	tags["state-type"] = "action"
 	for _, msg := range req.GetMsg() {
-		internal.logger.Info(t, cached.Instance.ID, tags, msg)
+		internal.logger.Info(ctx, t, cached.Instance.ID, tags, msg)
 	}
 
 	var resp emptypb.Empty

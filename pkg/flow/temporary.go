@@ -133,13 +133,13 @@ func (im *instanceMemory) ListenForEvents(ctx context.Context, events []*model.C
 func (im *instanceMemory) SendToLogger(ctx context.Context, level string, a string, x ...interface{}) {
 	switch level {
 	case "info":
-		im.engine.logger.Infof(time.Now(), im.GetInstanceID(), im.GetAttributes(), a, x...)
+		im.engine.logger.Infof(ctx, time.Now(), im.GetInstanceID(), im.GetAttributes(), a, x...)
 	case "debug":
-		im.engine.logger.Debugf(time.Now(), im.GetInstanceID(), im.GetAttributes(), a, x...)
+		im.engine.logger.Debugf(ctx, time.Now(), im.GetInstanceID(), im.GetAttributes(), a, x...)
 	case "error":
-		im.engine.logger.Errorf(time.Now(), im.GetInstanceID(), im.GetAttributes(), a, x...)
+		im.engine.logger.Errorf(ctx, time.Now(), im.GetInstanceID(), im.GetAttributes(), a, x...)
 	case "panic":
-		im.engine.logger.Panicf(time.Now(), im.GetInstanceID(), im.GetAttributes(), a, x...)
+		im.engine.logger.Panicf(ctx, time.Now(), im.GetInstanceID(), im.GetAttributes(), a, x...)
 	}
 }
 

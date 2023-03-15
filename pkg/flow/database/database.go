@@ -106,12 +106,12 @@ func (cached *CacheData) GetAttributes(recipientType string) map[string]string {
 			tags["instance-id"] = cached.Instance.ID.String()
 			tags["invoker"] = cached.Instance.Invoker
 			tags["callpath"] = cached.Instance.CallPath
+			tags["workflow"] = GetWorkflow(cached.Instance.As)
 		}
 		fallthrough
 	case "workflow":
 		if cached.Workflow != nil {
 			tags["workflow-id"] = cached.Workflow.ID.String()
-			tags["workflow"] = GetWorkflow(cached.Instance.As)
 		}
 		fallthrough
 	case "namespace":
@@ -124,6 +124,13 @@ func (cached *CacheData) GetAttributes(recipientType string) map[string]string {
 }
 
 func (cached *CacheData) GetAttributesMirror(m *Mirror) map[string]string {
+	tags := cached.GetAttributes("namespace")
+	tags["mirror-id"] = m.ID.String()
+	tags["recipientType"] = "mirror"
+	return tags
+}
+
+func (cached *CacheData) SentLogs(m *Mirror) map[string]string {
 	tags := cached.GetAttributes("namespace")
 	tags["mirror-id"] = m.ID.String()
 	tags["recipientType"] = "mirror"

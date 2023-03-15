@@ -73,7 +73,7 @@ func (logger *Logger) CloseLogWorkers() {
 func GetRootinstanceID(callpath string) (string, error) {
 	path := strings.Split(callpath, "/")
 	if len(path) < 2 {
-		return "", errors.New("Instance Callpath is malformed")
+		return "", errors.New("instance Callpath is malformed")
 	}
 	_, err := uuid.Parse(path[1])
 	if err != nil {
@@ -90,46 +90,43 @@ func AppendInstanceID(callpath, instanceID string) string {
 	return callpath + "/" + instanceID
 }
 
-func (logger *Logger) LogToServer(ctx context.Context, t time.Time, msg string, a ...interface{}) {
-	defer func() {
-		_ = recover()
-	}()
-
-	logger.logQueue <- &logMessage{
-		t:   t,
-		msg: fmt.Sprintf(msg, a...),
-	}
-}
-
-func (logger *Logger) Debug(t time.Time, recipientID uuid.UUID, tags map[string]string, msg string) {
+func (logger *Logger) Debug(ctx context.Context, t time.Time, recipientID uuid.UUID, tags map[string]string, msg string) {
+	logger.Telemetry(ctx, msg, tags)
 	logger.sendToWorker(t, recipientID, tags, "debug", msg)
 }
 
-func (logger *Logger) Debugf(t time.Time, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
+func (logger *Logger) Debugf(ctx context.Context, t time.Time, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
+	logger.Telemetry(ctx, msg, tags)
 	logger.sendToWorker(t, recipientID, tags, "debug", fmt.Sprintf(msg, a...))
 }
 
-func (logger *Logger) Info(t time.Time, recipientID uuid.UUID, tags map[string]string, msg string) {
+func (logger *Logger) Info(ctx context.Context, t time.Time, recipientID uuid.UUID, tags map[string]string, msg string) {
+	logger.Telemetry(ctx, msg, tags)
 	logger.sendToWorker(t, recipientID, tags, "info", msg)
 }
 
-func (logger *Logger) Infof(t time.Time, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
+func (logger *Logger) Infof(ctx context.Context, t time.Time, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
+	logger.Telemetry(ctx, msg, tags)
 	logger.sendToWorker(t, recipientID, tags, "info", fmt.Sprintf(msg, a...))
 }
 
-func (logger *Logger) Error(t time.Time, recipientID uuid.UUID, tags map[string]string, msg string) {
+func (logger *Logger) Error(ctx context.Context, t time.Time, recipientID uuid.UUID, tags map[string]string, msg string) {
+	logger.Telemetry(ctx, msg, tags)
 	logger.sendToWorker(t, recipientID, tags, "error", msg)
 }
 
-func (logger *Logger) Errorf(t time.Time, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
+func (logger *Logger) Errorf(ctx context.Context, t time.Time, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
+	logger.Telemetry(ctx, msg, tags)
 	logger.sendToWorker(t, recipientID, tags, "error", fmt.Sprintf(msg, a...))
 }
 
-func (logger *Logger) Panic(t time.Time, recipientID uuid.UUID, tags map[string]string, msg string) {
+func (logger *Logger) Panic(ctx context.Context, t time.Time, recipientID uuid.UUID, tags map[string]string, msg string) {
+	logger.Telemetry(ctx, msg, tags)
 	logger.sendToWorker(t, recipientID, tags, "panic", msg)
 }
 
-func (logger *Logger) Panicf(t time.Time, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
+func (logger *Logger) Panicf(ctx context.Context, t time.Time, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
+	logger.Telemetry(ctx, msg, tags)
 	logger.sendToWorker(t, recipientID, tags, "panic", fmt.Sprintf(msg, a...))
 }
 
@@ -147,7 +144,7 @@ func (logger *Logger) sendToWorker(t time.Time, recipientID uuid.UUID, tags map[
 	}
 }
 
-func (logger *Logger) telemetry(ctx context.Context, msg string, tags map[string]string) {
+func (logger *Logger) Telemetry(ctx context.Context, msg string, tags map[string]string) {
 	span := trace.SpanFromContext(ctx)
 	tid := span.SpanContext().TraceID()
 	if tags == nil {
@@ -200,7 +197,6 @@ func (logger *Logger) SendLogMsgToDB(l *logMessage) error {
 		logger.sugar.Panicf("error storing logmsg", err)
 		return err
 	}
-	logger.telemetry(ctx, l.msg, l.tags)
 	logger.pubsub.NotifyLogs(l.recipientID, l.tags["recipientType"])
 	return nil
 }

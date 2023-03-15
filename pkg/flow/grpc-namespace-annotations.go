@@ -264,9 +264,9 @@ func (flow *flow) SetNamespaceAnnotation(ctx context.Context, req *grpc.SetNames
 	}
 
 	if newAnnotation {
-		flow.logger.Infof(time.Now(), cached.Namespace.ID, cached.GetAttributes("namespace"), "Created namespace annotation '%s'.", key)
+		flow.logger.Infof(ctx, time.Now(), cached.Namespace.ID, cached.GetAttributes("namespace"), "Created namespace annotation '%s'.", key)
 	} else {
-		flow.logger.Infof(time.Now(), cached.Namespace.ID, cached.GetAttributes("namespace"), "Updated namespace annotation '%s'.", key)
+		flow.logger.Infof(ctx, time.Now(), cached.Namespace.ID, cached.GetAttributes("namespace"), "Updated namespace annotation '%s'.", key)
 	}
 
 	flow.pubsub.NotifyNamespaceAnnotations(cached.Namespace)
@@ -466,9 +466,9 @@ func (flow *flow) SetNamespaceAnnotationParcels(srv grpc.Flow_SetNamespaceAnnota
 	}
 
 	if newAnnotation {
-		flow.logger.Infof(time.Now(), cached.Namespace.ID, cached.GetAttributes("namespace"), "Created namespace annotation '%s'.", key)
+		flow.logger.Infof(ctx, time.Now(), cached.Namespace.ID, cached.GetAttributes("namespace"), "Created namespace annotation '%s'.", key)
 	} else {
-		flow.logger.Infof(time.Now(), cached.Namespace.ID, cached.GetAttributes("namespace"), "Updated namespace annotation '%s'.", key)
+		flow.logger.Infof(ctx, time.Now(), cached.Namespace.ID, cached.GetAttributes("namespace"), "Updated namespace annotation '%s'.", key)
 	}
 
 	flow.pubsub.NotifyNamespaceAnnotations(cached.Namespace)
@@ -517,7 +517,7 @@ func (flow *flow) DeleteNamespaceAnnotation(ctx context.Context, req *grpc.Delet
 		return nil, err
 	}
 
-	flow.logger.Infof(time.Now(), cached.Namespace.ID, cached.GetAttributes("namespace"), "Deleted namespace annotation '%s'.", annotation.Name)
+	flow.logger.Infof(ctx, time.Now(), cached.Namespace.ID, cached.GetAttributes("namespace"), "Deleted namespace annotation '%s'.", annotation.Name)
 	flow.pubsub.NotifyNamespaceAnnotations(cached.Namespace)
 
 	var resp emptypb.Empty
@@ -543,6 +543,7 @@ func (flow *flow) RenameNamespaceAnnotation(ctx context.Context, req *grpc.Renam
 
 	x, err := clients.Annotation.UpdateOneID(annotation.ID).SetName(req.GetNew()).Save(tctx)
 	if err != nil {
+		flow.logger.Errorf(ctx, time.Now(), flow.ID, flow.GetAttributes(), "Failed to rename a namespace annotation '%s'.", req.GetOld())
 		return nil, err
 	}
 
@@ -553,7 +554,7 @@ func (flow *flow) RenameNamespaceAnnotation(ctx context.Context, req *grpc.Renam
 		return nil, err
 	}
 
-	flow.logger.Infof(time.Now(), cached.Namespace.ID, cached.GetAttributes("namespace"), "Renamed namespace annotation from '%s' to '%s'.", req.GetOld(), req.GetNew())
+	flow.logger.Infof(ctx, time.Now(), cached.Namespace.ID, cached.GetAttributes("namespace"), "Renamed namespace annotation from '%s' to '%s'.", req.GetOld(), req.GetNew())
 	flow.pubsub.NotifyNamespaceAnnotations(cached.Namespace)
 
 	var resp grpc.RenameNamespaceAnnotationResponse

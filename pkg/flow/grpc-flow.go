@@ -198,3 +198,9 @@ func (flow *flow) JQ(ctx context.Context, req *grpc.JQRequest) (*grpc.JQResponse
 
 	return &resp, nil
 }
+
+func (flow *flow) GetAttributes() map[string]string {
+	tags := make(map[string]string)
+	tags["recipientType"] = "server"
+	return tags
+}
