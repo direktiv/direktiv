@@ -1,4 +1,5 @@
 import { useApiActions, useApiKey } from "../../util/store/apiKey";
+import { useNamespace, useNamespaceActions } from "../../util/store/namespace";
 import { useTheme, useThemeActions } from "../../util/store/theme";
 
 import { FC } from "react";
@@ -10,13 +11,16 @@ const SettiongsPage: FC = () => {
   const { setApiKey } = useApiActions();
   const theme = useTheme();
   const { setTheme } = useThemeActions();
+  const { setNamespace } = useNamespaceActions();
+
+  const selectedNamespace = useNamespace();
 
   const { data: version, isLoading: isVersionLoading } = useVersion();
   const { data: namespaces, isLoading: isLoadingNamespaces } = useNamespaces();
 
   return (
     <>
-      <div>
+      <div className="card w-max bg-base-100 p-4 shadow-md">
         <h1>
           theme <span className="font-bold">{theme}</span>
         </h1>
@@ -32,7 +36,17 @@ const SettiongsPage: FC = () => {
           </button>
         </div>
       </div>
-      <div>
+      <div className="card w-max bg-base-100 p-4 shadow-md">
+        <h1>
+          namespace <span className="font-bold">{selectedNamespace}</span>
+        </h1>
+        <div className="flex space-x-5">
+          <button className="btn-error btn" onClick={() => setNamespace(null)}>
+            reset namespace
+          </button>
+        </div>
+      </div>
+      <div className="card w-max bg-base-100 p-4 shadow-md">
         <h1>
           api key is <span className="font-bold">{apiKey}</span>
         </h1>
