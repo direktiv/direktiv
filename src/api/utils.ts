@@ -56,6 +56,7 @@ export const apiFactory =
       try {
         return schema.parse(await res.json());
       } catch (error) {
+        console.error(error);
         return Promise.reject(
           `could not format response for ${method} ${path(pathParams)}`
         );
