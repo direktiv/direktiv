@@ -42,18 +42,18 @@ export const pages: DefaultPageSetup & ExplorerPageSetup = {
     name: "Explorer",
     icon: FolderTree,
     createHref: (params) =>
-      `explorer${params?.directory ? `/${params.directory}` : ""}`,
+      `/explorer${params?.directory ? `/${params.directory}` : ""}`,
     route: {
-      path: "explorer/:directory?",
+      path: "/explorer/:directory?",
       element: <ExplorerPageSetup />,
     },
   },
   monitoring: {
     name: "Monitoring",
     icon: Bug,
-    createHref: () => "monitoring",
+    createHref: () => "/monitoring",
     route: {
-      path: "monitoring",
+      path: "/monitoring",
       element: <div>Monitoring</div>,
     },
   },
@@ -61,36 +61,36 @@ export const pages: DefaultPageSetup & ExplorerPageSetup = {
   instances: {
     name: "Instances",
     icon: Box,
-    createHref: () => "instances",
+    createHref: () => "/instances",
     route: {
-      path: "instances",
+      path: "/instances",
       element: <div>Instances</div>,
     },
   },
   events: {
     name: "Events",
     icon: Calendar,
-    createHref: () => "events",
+    createHref: () => "/events",
     route: {
-      path: "events",
+      path: "/events",
       element: <div>Events</div>,
     },
   },
   gateway: {
     name: "Gateway",
     icon: Network,
-    createHref: () => "gateway",
+    createHref: () => "/gateway",
     route: {
-      path: "gateway",
+      path: "/gateway",
       element: <div>Gateway</div>,
     },
   },
   permissions: {
     name: "Permissions",
     icon: Users,
-    createHref: () => "permissions",
+    createHref: () => "/permissions",
     route: {
-      path: "permissions",
+      path: "/permissions",
       element: <div>Permissions</div>,
     },
   },
@@ -106,9 +106,9 @@ export const pages: DefaultPageSetup & ExplorerPageSetup = {
   settings: {
     name: "Settings",
     icon: Settings,
-    createHref: () => "settings",
+    createHref: () => "/settings",
     route: {
-      path: "settings",
+      path: "/settings",
       element: <SettiongsPage />,
     },
   },
