@@ -6,7 +6,7 @@ import { useNamespace } from "../../util/store/namespace";
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from "../../componentsNext/Toast";
 
-export const getNamespaces = apiFactory({
+export const getTree = apiFactory({
   pathFn: ({ namespace }: { namespace: string }) =>
     `/api/namespaces/${namespace}/tree`,
   method: "GET",
@@ -16,7 +16,7 @@ export const getNamespaces = apiFactory({
 const fetchTree = async ({
   queryKey: [{ apiKey, namespace }],
 }: QueryFunctionContext<ReturnType<(typeof namespaceKeys)["all"]>>) =>
-  getNamespaces({
+  getTree({
     apiKey: apiKey,
     params: undefined,
     pathParams: {
