@@ -4,6 +4,7 @@ import { apiFactory } from "../utils";
 import { useApiKey } from "../../util/store/apiKey";
 import { useNamespace } from "../../util/store/namespace";
 import { useQuery } from "@tanstack/react-query";
+import { useToast } from "../../componentsNext/Toast";
 
 export const getNamespaces = apiFactory({
   pathFn: ({ namespace }: { namespace: string }) =>
@@ -31,6 +32,7 @@ const namespaceKeys = {
 export const useTree = () => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
+  const { toast } = useToast();
 
   return useQuery({
     queryKey: namespaceKeys.all(
@@ -39,5 +41,12 @@ export const useTree = () => {
     ),
     queryFn: fetchTree,
     enabled: !!namespace,
+    onError: () => {
+      toast({
+        title: "An error occurred",
+        description: "could not fetch tree 😢",
+        variant: "error",
+      });
+    },
   });
 };
