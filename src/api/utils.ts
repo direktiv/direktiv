@@ -23,23 +23,28 @@ const getAuthHeader = (apiKey: string) => ({
  * lose typesafety when some api enpoints have required params
  *
  */
-type ApiParams<TParams> = {
+type ApiParams<TParams, TPathParams> = {
   apiKey: string;
   params: TParams extends undefined ? undefined : TParams;
+  pathParams: TPathParams extends undefined ? undefined : TPathParams;
 };
 
 export const apiFactory =
-  <TSchema, TParams>({
-    path,
+  <TSchema, TParams, TPathParams>({
+    pathFn: path,
     method,
     schema,
   }: {
-    path: string;
+    pathFn: (pathParams: TPathParams) => string;
     method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
     schema: z.ZodSchema<TSchema>;
-  }): (({ apiKey, params }: ApiParams<TParams>) => Promise<TSchema>) =>
-  async ({ apiKey, params }): Promise<TSchema> => {
-    const res = await fetch(path, {
+  }): (({
+    apiKey,
+    params,
+    pathParams,
+  }: ApiParams<TParams, TPathParams>) => Promise<TSchema>) =>
+  async ({ apiKey, params, pathParams }): Promise<TSchema> => {
+    const res = await fetch(path(pathParams), {
       method,
       headers: {
         ...(apiKey ? getAuthHeader(apiKey) : {}),
@@ -52,9 +57,9 @@ export const apiFactory =
         return schema.parse(await res.json());
       } catch (error) {
         return Promise.reject(
-          `could not format response for ${method} ${path}`
+          `could not format response for ${method} ${path()}`
         );
       }
     }
-    return Promise.reject(`error ${res.status} for ${method} ${path}`);
+    return Promise.reject(`error ${res.status} for ${method} ${path()}`);
   };

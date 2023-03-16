@@ -9,6 +9,7 @@ import {
   Users,
 } from "lucide-react";
 
+import ExplorerPage from "../../pages/Explorer";
 import type { RouteObject } from "react-router-dom";
 import SettiongsPage from "../../pages/Settings";
 
@@ -28,7 +29,7 @@ export const pages: Record<string, Page> = {
     createHref: () => "explorer",
     route: {
       path: "explorer",
-      element: <div>Explorer</div>,
+      element: <ExplorerPage />,
     },
   },
   monitoring: {
