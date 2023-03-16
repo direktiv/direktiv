@@ -26,7 +26,7 @@ const versionKeys = {
 export const useVersion = () => {
   const apiKey = useApiKey();
   return useQuery({
-    queryKey: versionKeys.all(apiKey || "no-api-key"),
+    queryKey: versionKeys.all(apiKey ?? "no-api-key"),
     queryFn: fetchVersions,
     staleTime: Infinity,
   });

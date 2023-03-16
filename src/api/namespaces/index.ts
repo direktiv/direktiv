@@ -26,7 +26,7 @@ const namespaceKeys = {
 export const useNamespaces = () => {
   const apiKey = useApiKey();
   return useQuery({
-    queryKey: namespaceKeys.all(apiKey || "no-api-key"),
+    queryKey: namespaceKeys.all(apiKey ?? "no-api-key"),
     queryFn: fetchNamespaces,
     staleTime: Infinity,
   });

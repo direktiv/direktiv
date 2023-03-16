@@ -36,8 +36,8 @@ export const useTree = () => {
 
   return useQuery({
     queryKey: namespaceKeys.all(
-      apiKey || "no-api-key",
-      namespace || "no-namespace"
+      apiKey ?? "no-api-key",
+      namespace ?? "no-namespace",
     ),
     queryFn: fetchTree,
     enabled: !!namespace,
