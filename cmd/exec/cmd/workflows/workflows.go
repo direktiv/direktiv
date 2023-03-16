@@ -16,7 +16,6 @@ import (
 	"time"
 
 	root "github.com/direktiv/direktiv/cmd/exec/cmd"
-	"github.com/r3labs/sse"
 	"github.com/spf13/cobra"
 )
 
@@ -29,7 +28,6 @@ var setReadonlyCmd = &cobra.Command{
 	Use:   "toggle-lock DIR_PATH",
 	Short: "Sets local directory to readonly or writable in Direktiv server.",
 	Long: `Sets local directory to readonly or writable in Direktiv server.
-
 EXAMPLE:
 toggle-lock . --addr http://192.168.1.1 --namespace admin --writable
 toggle-lock path/to/git/subfolder --namespace admin`,
@@ -250,9 +248,7 @@ var pushCmd = &cobra.Command{
 	Short: "Pushes local workflow or dir to remote direktiv server. This process will update your latest remote resource to your local WORKFLOW_PATH|DIR_PATH file",
 	Long: `"Pushes local workflow or dir to remote direktiv server. This process will update your latest remote resource to your local WORKFLOW_PATH|DIR_PATH file.
 Pushing local directory cannot be used with config flag. Config must be found automatically to determine folder structure.
-
 EXAMPLE: push helloworld.yaml --addr http://192.168.1.1 --namespace admin
-
 Variables will also be uploaded if they are prefixed with your local workflow name
 EXAMPLE:
   dir: /pwd
@@ -553,48 +549,11 @@ var (
 	input          string
 )
 
-type logResponse struct {
-	PageInfo struct {
-		TotalCount int `json:"total"`
-		Limit      int `json:"limit"`
-		Offset     int `json:"offset"`
-	} `json:"pageInfo"`
-	Results []struct {
-		T   time.Time `json:"t"`
-		Msg string    `json:"msg"`
-	} `json:"results"`
-	Namespace string `json:"namespace"`
-	Instance  string `json:"instance"`
-}
-
-type instanceResponse struct {
-	Namespace string `json:"namespace"`
-	Instance  struct {
-		CreatedAt    time.Time `json:"createdAt"`
-		UpdatedAt    time.Time `json:"updatedAt"`
-		ID           string    `json:"id"`
-		As           string    `json:"as"`
-		Status       string    `json:"status"`
-		ErrorCode    string    `json:"errorCode"`
-		ErrorMessage string    `json:"errorMessage"`
-	} `json:"instance"`
-	InvokedBy string   `json:"invokedBy"`
-	Flow      []string `json:"flow"`
-	Workflow  struct {
-		Path     string `json:"path"`
-		Name     string `json:"name"`
-		Parent   string `json:"parent"`
-		Revision string `json:"revision"`
-	} `json:"workflow"`
-}
-
 var execCmd = &cobra.Command{
 	Use:   "exec WORKFLOW_PATH",
 	Short: "Remotely execute direktiv workflows with local files. This process will update your latest remote workflow to your local WORKFLOW_PATH file",
 	Long: `Remotely execute direktiv workflows with local files. This process will update your latest remote workflow to your local WORKFLOW_PATH file.
-
 EXAMPLE: exec helloworld.yaml --addr http://192.168.1.1 --namespace admin --path helloworld
-
 Variables will also be uploaded if they are prefixed with your local workflow name
 EXAMPLE:
   dir: /pwd
@@ -605,8 +564,6 @@ Will update the helloworld workflow and set the remote workflow variable 'data.j
 `,
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		instanceStatus := "pending"
-
 		relativeDir := root.GetConfigPath()
 		path := root.GetRelativePath(relativeDir, args[0])
 		path = root.GetPath(path)
@@ -626,105 +583,22 @@ Will update the helloworld workflow and set the remote workflow variable 'data.j
 		if err != nil {
 			fmt.Printf("can not update variables: %s\n", err.Error())
 		}
-
 		urlExecute := fmt.Sprintf("%s/tree/%s?op=execute&ref=latest", root.UrlPrefix, strings.TrimPrefix(path, "/"))
 		instanceDetails, err := executeWorkflow(urlExecute)
 		if err != nil {
 			log.Fatalf("Failed to execute workflow: %v\n", err)
 		}
-
 		root.Printlog("Successfully Executed Instance: %s\n", instanceDetails.Instance)
-		root.Printlog("-------INSTANCE LOGS-------")
-		urlLogs := fmt.Sprintf("%s/instances/%s/logs", root.UrlPrefix, instanceDetails.Instance)
-		clientLogs := sse.NewClient(urlLogs)
-		clientLogs.Connection.Transport = &http.Transport{
-			TLSClientConfig: root.GetTLSConfig(),
-		}
-
-		root.AddSSEAuthHeaders(clientLogs)
-
-		logsChannel := make(chan *sse.Event)
-		err = clientLogs.SubscribeChan("messages", logsChannel)
-		if err != nil {
-			log.Fatalf("Failed to subscribe to messages channel: %v\n", err)
-		}
-
-		// Get Logs
-		go func() {
-			for {
-				msg := <-logsChannel
-				if msg == nil {
-					break
-				}
-
-				// Skip heartbeat
-				if len(msg.Data) == 0 {
-					continue
-				}
-
-				var logResp logResponse
-				err = json.Unmarshal(msg.Data, &logResp)
-				if err != nil {
-					log.Fatalln(err)
-				}
-
-				if len(logResp.Results) > 0 {
-					for _, edge := range logResp.Results {
-						cmd.PrintErrf("%v: %s\n", edge.T.In(time.Local).Format("02 Jan 06 15:04 MST"), edge.Msg)
-					}
-				}
-			}
-		}()
-
-		urlInstance := fmt.Sprintf("%s/instances/%s", root.UrlPrefix, instanceDetails.Instance)
-		clientInstance := sse.NewClient(urlInstance)
-		clientInstance.Connection.Transport = &http.Transport{
-			TLSClientConfig: root.GetTLSConfig(),
-		}
-
-		root.AddSSEAuthHeaders(clientInstance)
-
-		channelInstance := make(chan *sse.Event)
-		err = clientInstance.SubscribeChan("messages", channelInstance)
-		if err != nil {
-			root.Fail("Failed to subscribe to messages channel: %v", err)
-		}
-
-		for {
-			msg := <-channelInstance
-			if msg == nil {
-				break
-			}
-
-			// Skip heartbeat
-			if len(msg.Data) == 0 {
-				continue
-			}
-
-			var instanceResp instanceResponse
-			err = json.Unmarshal(msg.Data, &instanceResp)
-			if err != nil {
-				log.Fatalf("Failed to read instance response: %v\n", err)
-			}
-
-			if instanceResp.Instance.Status != instanceStatus {
-				time.Sleep(500 * time.Millisecond)
-				instanceStatus = instanceResp.Instance.Status
-				clientLogs.Unsubscribe(logsChannel)
-				clientInstance.Unsubscribe(channelInstance)
-				break
-
-			}
-		}
-
-		root.Printlog("instance completed with status: %s\n", instanceStatus)
-		urlOutput := fmt.Sprintf("%s/instances/%s/output", root.UrlPrefix, instanceDetails.Instance)
-
+		urlOutput := root.GetLogs(cmd, instanceDetails.Instance, "")
 		output, err := getOutput(urlOutput)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
 		if outputFlag != "" {
-			err = os.WriteFile(outputFlag, output, 0o600)
+			err := os.WriteFile(outputFlag, output, 0o600)
 			if err != nil {
-				log.Fatalf("Failed to write output file: %v\n", err)
+				log.Fatalf("failed to write output file: %v\n", err)
 			}
 		} else {
 			cmd.PrintErrln("------INSTANCE OUTPUT------")
@@ -743,14 +617,14 @@ func executeWorkflow(url string) (executeResponse, error) {
 	// Read input data from flag file
 	inputData, err := root.SafeLoadFile(input)
 	if err != nil {
-		return instanceDetails, fmt.Errorf("Failed to load input file: %w", err)
+		return instanceDetails, fmt.Errorf("failed to load input file: %w", err)
 	}
 
 	// If inputData is empty attempt to read from stdin
 	if inputData.Len() == 0 {
 		inputData, err = root.SafeLoadStdIn()
 		if err != nil {
-			return instanceDetails, fmt.Errorf("Failed to load stdin: %w", err)
+			return instanceDetails, fmt.Errorf("failed to load stdin: %w", err)
 		}
 	}
 
