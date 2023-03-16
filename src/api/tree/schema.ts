@@ -18,7 +18,7 @@ export const TreeListSchema = z.object({
   namespace: z.string(),
   node: NodeSchema,
   children: z.object({
-    pageinfo: PageinfoSchema,
+    pageInfo: PageinfoSchema,
     results: z.array(NodeSchema),
   }),
 });
