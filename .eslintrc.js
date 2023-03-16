@@ -72,6 +72,11 @@ module.exports = {
     // nested ternary operators are hard to read and should be avoided
     "no-nested-ternary": "error",
 
+    // prefer arrow functions over function declarations, this is more for consistency
+    // than for right or wrong. Also VSCode can automatically convert them when using
+    // comman + .
+    "arrow-body-style": "error",
+
     // simpe rule to avoid unnecessary curly braces
     "react/jsx-curly-brace-presence": "error",
 

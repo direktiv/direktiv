@@ -43,8 +43,7 @@ const meta = {
 
 export default meta;
 
-export const LoadingState = () => {
-  return (
+export const LoadingState = () => (
     <div className="flex justify-center">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
@@ -135,7 +134,6 @@ export const LoadingState = () => {
       </DropdownMenu>
     </div>
   );
-};
 export const WithRadioButtons = () => {
   const [position, setPosition] = useState("one");
 

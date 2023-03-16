@@ -10,9 +10,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  render: ({ ...args }) => {
-    return <Avatar {...args} />;
-  },
+  render: ({ ...args }) => <Avatar {...args} />,
   argTypes: {
     size: {
       description: "Avatar Size",
@@ -39,8 +37,7 @@ export const Default: Story = {
   },
 };
 
-export const AvatarSizes = () => {
-  return (
+export const AvatarSizes = () => (
     <div>
       <Avatar size="xs"></Avatar>
       <Avatar size="sm"></Avatar>
@@ -48,12 +45,9 @@ export const AvatarSizes = () => {
       <Avatar size="xlg"></Avatar>
     </div>
   );
-};
 
-export const AvatarPlaceholder = () => {
-  return (
+export const AvatarPlaceholder = () => (
     <div>
       <Avatar size="xlg" placeholder="CD"></Avatar>
     </div>
   );
-};

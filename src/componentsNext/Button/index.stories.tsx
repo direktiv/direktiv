@@ -81,8 +81,7 @@ export const Default: Story = {
   },
 };
 
-export const ButtonSizes = () => {
-  return (
+export const ButtonSizes = () => (
     <div className="flex flex-wrap gap-5">
       <Button size="xs">xs Button</Button>
       <Button size="sm">sm Button</Button>
@@ -90,7 +89,6 @@ export const ButtonSizes = () => {
       <Button size="lg">lg Button</Button>
     </div>
   );
-};
 
 export const ButtonColors = () => (
   <div className="flex flex-wrap gap-5">

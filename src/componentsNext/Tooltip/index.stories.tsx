@@ -15,8 +15,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  render: () => {
-    return (
+  render: () => (
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger>Hover</TooltipTrigger>
@@ -25,7 +24,6 @@ export const Default: Story = {
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
-    );
-  },
+    ),
   argTypes: {},
 };

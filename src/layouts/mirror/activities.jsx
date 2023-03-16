@@ -75,8 +75,7 @@ export default function ActivityTable(props) {
                 {activities !== null ? (
                   <>
                     <>
-                      {activities.map((obj) => {
-                        return (
+                      {activities.map((obj) => (
                           <ActivityRow
                             key={GenerateRandomKey()}
                             namespace={namespace}
@@ -103,8 +102,7 @@ export default function ActivityTable(props) {
                             cancelActivity={cancelActivity}
                             setErrorMsg={setErrorMsg}
                           />
-                        );
-                      })}
+                        ))}
                     </>
                   </>
                 ) : (

@@ -86,8 +86,7 @@ export default function WorkflowPod(props) {
                         paddingLeft: "10px",
                       }}
                     >
-                      {pods.map((obj, i) => {
-                        return (
+                      {pods.map((obj, i) => (
                           <li
                             key={i}
                             style={{
@@ -99,8 +98,7 @@ export default function WorkflowPod(props) {
                             <ServiceStatus status={obj.status} />
                             {obj.name}
                           </li>
-                        );
-                      })}
+                        ))}
                     </ul>
                   </div>
                 ) : null}

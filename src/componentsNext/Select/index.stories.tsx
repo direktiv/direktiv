@@ -87,8 +87,7 @@ export const Default: Story = {
   },
 };
 
-export const SelectSizes = () => {
-  return (
+export const SelectSizes = () => (
     <div className="flex flex-wrap gap-5">
       <Select>
         <SelectTrigger size="xs">
@@ -132,10 +131,8 @@ export const SelectSizes = () => {
       </Select>
     </div>
   );
-};
 
-export const LoadingState = () => {
-  return (
+export const LoadingState = () => (
     <div className="flex flex-wrap gap-5">
       <Select>
         <SelectTrigger loading>
@@ -144,7 +141,6 @@ export const LoadingState = () => {
       </Select>
     </div>
   );
-};
 
 export const Ghost = () => (
   <div className="bg-base-300 p-10">

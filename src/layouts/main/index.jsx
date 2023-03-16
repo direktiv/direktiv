@@ -203,15 +203,13 @@ function NamespaceNavigation(props) {
               element={<EventsPageWrapper namespace={namespace} />}
             />
 
-            {extraRoutes.map((obj) => {
-              return (
+            {extraRoutes.map((obj) => (
                 <Route
                   path={obj.route}
                   key={obj.route}
                   element={obj.element(namespace)}
                 />
-              );
-            })}
+              ))}
 
             {/* non-namespace routes */}
             <Route path="/jq" element={<JQPlayground />} />

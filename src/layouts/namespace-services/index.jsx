@@ -230,9 +230,7 @@ function NamespaceServices(props) {
             keyDownActions={[
               {
                 code: "Enter",
-                fn: async () => {
-                  return true;
-                },
+                fn: async () => true,
                 closeModal: true,
               },
             ]}

@@ -423,8 +423,7 @@ export function Registries(props) {
           </FlexBox>
         ) : (
           <>
-            {registries.map((obj) => {
-              return (
+            {registries.map((obj) => (
                 <FlexBox key={obj.name} className="secret-tuple">
                   <FlexBox className="key">
                     {obj.name}{" "}
@@ -473,8 +472,7 @@ export function Registries(props) {
                     </Modal>
                   </FlexBox>
                 </FlexBox>
-              );
-            })}
+              ))}
           </>
         )}
       </FlexBox>

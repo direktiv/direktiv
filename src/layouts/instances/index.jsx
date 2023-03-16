@@ -335,8 +335,7 @@ export function InstancesTable(props) {
                 {data !== null ? (
                   <>
                     <>
-                      {data.map((obj) => {
-                        return (
+                      {data.map((obj) => (
                           <InstanceRow
                             mini={mini}
                             key={GenerateRandomKey()}
@@ -362,8 +361,7 @@ export function InstancesTable(props) {
                               .local()
                               .format("HH:mm a")}
                           />
-                        );
-                      })}
+                        ))}
                     </>
                   </>
                 ) : (

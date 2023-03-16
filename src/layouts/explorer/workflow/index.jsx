@@ -1367,8 +1367,7 @@ function WorkflowServices(props) {
         ) : (
           ""
         )}
-        {data.map((obj) => {
-          return (
+        {data.map((obj) => (
             <Service
               key={`key-${obj.info.revision}`}
               allowRedeploy={true}
@@ -1383,8 +1382,7 @@ function WorkflowServices(props) {
               conditions={obj.conditions}
               deleteService={deleteWorkflowService}
             />
-          );
-        })}
+          ))}
       </FlexBox>
     </ContentPanelBody>
   );

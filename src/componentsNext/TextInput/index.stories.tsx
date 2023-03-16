@@ -43,8 +43,7 @@ export const Default: Story = {
   },
 };
 
-export const SelectSizes = () => {
-  return (
+export const SelectSizes = () => (
     <div className="flex flex-wrap gap-5">
       <TextInput placeholder="size xs" size="xs" />
       <TextInput placeholder="size sm" size="sm" />
@@ -52,9 +51,7 @@ export const SelectSizes = () => {
       <TextInput placeholder="size lg" size="lg" />
     </div>
   );
-};
-export const Variants = () => {
-  return (
+export const Variants = () => (
     <div className="flex flex-col gap-5">
       <TextInput placeholder="default" />
       <TextInput placeholder="variant primary" variant="primary" />
@@ -66,6 +63,5 @@ export const Variants = () => {
       <TextInput placeholder="variant error" variant="error" />
     </div>
   );
-};
 
 export const Block = () => <TextInput block />;

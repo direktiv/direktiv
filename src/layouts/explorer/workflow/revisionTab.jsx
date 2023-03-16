@@ -580,8 +580,7 @@ export function RevisionSelectorTab(props) {
             </FlexBox>
           </ContentPanelTitle>
           <ContentPanelBody style={{ flexDirection: "column" }}>
-            {revisions.map((obj) => {
-              return (
+            {revisions.map((obj) => (
                 <FlexBox
                   key={GenerateRandomKey()}
                   gap
@@ -811,8 +810,7 @@ export function RevisionSelectorTab(props) {
                     </FlexBox>
                   </div>
                 </FlexBox>
-              );
-            })}
+              ))}
           </ContentPanelBody>
         </ContentPanel>
       </div>
