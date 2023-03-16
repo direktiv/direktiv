@@ -30,7 +30,7 @@ const TextInput: FC<TextInputProps> = ({
     type="text"
     className={clsx(
       className,
-      "input max-w-xs",
+      "input",
       size === "lg" && "input-lg",
       size === "sm" && "input-sm",
       size === "xs" && "input-xs",

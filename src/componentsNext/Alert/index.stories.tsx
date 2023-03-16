@@ -39,4 +39,4 @@ export const AlertVariants = () => (
     <Alert variant="error" text="error alert text here" />
     <Alert variant="default" text="default alert text here" />
   </div>
-)
+);

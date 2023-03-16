@@ -69,7 +69,7 @@ export const Variants = () => {
 };
 
 export const Block = () => (
-  <div className="p-10">
+  <div className="flex">
     <TextInput block />
   </div>
 );

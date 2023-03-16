@@ -20,4 +20,4 @@ export const Default: Story = {
   },
 };
 
-export const DisabledSwitch = () => <Switch disabled />
+export const DisabledSwitch = () => <Switch disabled />;
