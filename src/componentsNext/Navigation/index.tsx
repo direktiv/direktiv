@@ -8,7 +8,7 @@ const Navigation: FC = () => (
     {Object.entries(pages).map(([key, item]) => (
       <NavLink
         key={key}
-        to={item.route.path ?? "#"}
+        to={item.createHref()}
         className={({ isActive }) => createClassNames(isActive)}
       >
         <item.icon aria-hidden="true" /> {item.name}
