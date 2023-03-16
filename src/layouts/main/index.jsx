@@ -204,12 +204,12 @@ function NamespaceNavigation(props) {
             />
 
             {extraRoutes.map((obj) => (
-                <Route
-                  path={obj.route}
-                  key={obj.route}
-                  element={obj.element(namespace)}
-                />
-              ))}
+              <Route
+                path={obj.route}
+                key={obj.route}
+                element={obj.element(namespace)}
+              />
+            ))}
 
             {/* non-namespace routes */}
             <Route path="/jq" element={<JQPlayground />} />

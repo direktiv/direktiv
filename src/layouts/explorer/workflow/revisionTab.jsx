@@ -581,97 +581,159 @@ export function RevisionSelectorTab(props) {
           </ContentPanelTitle>
           <ContentPanelBody style={{ flexDirection: "column" }}>
             {revisions.map((obj) => (
+              <FlexBox
+                key={GenerateRandomKey()}
+                gap
+                wrap
+                style={{
+                  alignItems: "center",
+                }}
+              >
                 <FlexBox
-                  key={GenerateRandomKey()}
-                  gap
                   wrap
+                  gap
                   style={{
-                    alignItems: "center",
+                    flex: "4",
+                    minWidth: "300px",
                   }}
                 >
-                  <FlexBox
-                    wrap
-                    gap
-                    style={{
-                      flex: "4",
-                      minWidth: "300px",
-                    }}
-                  >
-                    <div>
-                      <FlexBox className="col revision-label-tuple">
-                        <div>ID</div>
-                        <div>{obj.name}</div>
-                      </FlexBox>
-                    </div>
-                  </FlexBox>
-                  <RevertTrafficAmount
-                    revisionName={obj.name}
-                    routes={router.routes}
-                  />
-                  <div
-                    style={
-                      obj.name === "latest" ? { visibility: "hidden" } : null
-                    }
-                  >
-                    <FlexBox gap>
-                      {tags !== null && tags[obj.name] ? (
-                        <Modal
-                          modalStyle={{ width: "400px" }}
-                          escapeToCancel
-                          style={{
-                            flexDirection: "row-reverse",
-                          }}
-                          title="Remove a Tag"
-                          button={
-                            <HiOutlineTrash
-                              className="red-text"
-                              style={{ fontSize: "16px" }}
-                            />
-                          }
-                          actionButtons={[
-                            {
-                              label: "Remove",
+                  <div>
+                    <FlexBox className="col revision-label-tuple">
+                      <div>ID</div>
+                      <div>{obj.name}</div>
+                    </FlexBox>
+                  </div>
+                </FlexBox>
+                <RevertTrafficAmount
+                  revisionName={obj.name}
+                  routes={router.routes}
+                />
+                <div
+                  style={
+                    obj.name === "latest" ? { visibility: "hidden" } : null
+                  }
+                >
+                  <FlexBox gap>
+                    {tags !== null && tags[obj.name] ? (
+                      <Modal
+                        modalStyle={{ width: "400px" }}
+                        escapeToCancel
+                        style={{
+                          flexDirection: "row-reverse",
+                        }}
+                        title="Remove a Tag"
+                        button={
+                          <HiOutlineTrash
+                            className="red-text"
+                            style={{ fontSize: "16px" }}
+                          />
+                        }
+                        actionButtons={[
+                          {
+                            label: "Remove",
 
-                              onClick: async () => {
-                                await removeTag(obj.name);
-                                const tagsResp = await getTags();
-                                const revResp = await getRevisions();
-                                setRevisions(revResp.results);
-                                updateTags(tagsResp.results);
-                              },
+                            onClick: async () => {
+                              await removeTag(obj.name);
+                              const tagsResp = await getTags();
+                              const revResp = await getRevisions();
+                              setRevisions(revResp.results);
+                              updateTags(tagsResp.results);
+                            },
 
-                              buttonProps: {
-                                variant: "contained",
-                                color: "error",
-                              },
-                              closesModal: true,
+                            buttonProps: {
+                              variant: "contained",
+                              color: "error",
                             },
-                            {
-                              label: "Cancel",
-                              closesModal: true,
-                            },
-                          ]}
-                        >
-                          <FlexBox col gap>
-                            <FlexBox>
-                              Are you sure you want to remove the tag &apos;
-                              {obj.name}&apos;?
-                            </FlexBox>
+                            closesModal: true,
+                          },
+                          {
+                            label: "Cancel",
+                            closesModal: true,
+                          },
+                        ]}
+                      >
+                        <FlexBox col gap>
+                          <FlexBox>
+                            Are you sure you want to remove the tag &apos;
+                            {obj.name}&apos;?
                           </FlexBox>
-                        </Modal>
-                      ) : (
+                        </FlexBox>
+                      </Modal>
+                    ) : (
+                      <Modal
+                        escapeToCancel
+                        style={{
+                          flexDirection: "row-reverse",
+                        }}
+                        modalStyle={{ width: "400px" }}
+                        title="Delete a revision"
+                        button={
+                          <HiOutlineTrash
+                            className="red-text"
+                            style={{ fontSize: "16px" }}
+                          />
+                        }
+                        buttonProps={{
+                          color: "info",
+                          disableShadows: true,
+                        }}
+                        actionButtons={[
+                          {
+                            label: "Delete",
+
+                            onClick: async () => {
+                              await deleteRevision(obj.name);
+                              const x = await getRevisions();
+                              setRevisions(x.results);
+                              setRouter(await getWorkflowRouter());
+                            },
+
+                            buttonProps: {
+                              variant: "contained",
+                              color: "error",
+                            },
+                            closesModal: true,
+                          },
+                          {
+                            label: "Cancel",
+                            closesModal: true,
+                          },
+                        ]}
+                      >
+                        <FlexBox col gap>
+                          <FlexBox>
+                            Are you sure you want to delete &apos;{obj.name}
+                            &apos;?
+                            <br />
+                            This action cannot be undone.
+                          </FlexBox>
+                        </FlexBox>
+                      </Modal>
+                    )}
+                    {obj.name !== "latest" ? (
+                      <>
+                        <TagRevisionBtn
+                          tagWorkflow={tagWorkflow}
+                          obj={obj}
+                          setRevisions={setRevisions}
+                          getRevisions={getRevisions}
+                          isTag={tags !== null && tags[obj.name]}
+                          updateTags={updateTags}
+                          getTags={getTags}
+                        />
                         <Modal
                           escapeToCancel
                           style={{
                             flexDirection: "row-reverse",
                           }}
                           modalStyle={{ width: "400px" }}
-                          title="Delete a revision"
+                          title={`Revert to ${obj.name}`}
                           button={
-                            <HiOutlineTrash
-                              className="red-text"
-                              style={{ fontSize: "16px" }}
-                            />
+                            <>
+                              <VscDebugStepBack className="show-700" />
+                              <span className="hide-700">Revert </span>
+                              <span className="hide-900">To</span>
+                            </>
                           }
                           buttonProps={{
                             color: "info",
@@ -679,13 +741,20 @@ export function RevisionSelectorTab(props) {
                           }}
                           actionButtons={[
                             {
-                              label: "Delete",
+                              label: "Revert",
 
                               onClick: async () => {
-                                await deleteRevision(obj.name);
-                                const x = await getRevisions();
-                                setRevisions(x.results);
-                                setRouter(await getWorkflowRouter());
+                                const data = await getWorkflowRevisionData(
+                                  obj.name
+                                );
+                                await updateWorkflow(
+                                  atob(data.revision.source)
+                                );
+                                navigate(
+                                  `/n/${namespace}/explorer/${filepath.substring(
+                                    1
+                                  )}?tab=2`
+                                );
                               },
 
                               buttonProps: {
@@ -702,115 +771,46 @@ export function RevisionSelectorTab(props) {
                         >
                           <FlexBox col gap>
                             <FlexBox>
-                              Are you sure you want to delete &apos;{obj.name}
-                              &apos;?
-                              <br />
-                              This action cannot be undone.
+                              Are you sure you want to revert to &apos;
+                              {obj.name}&apos;?
                             </FlexBox>
                           </FlexBox>
                         </Modal>
-                      )}
-                      {obj.name !== "latest" ? (
-                        <>
-                          <TagRevisionBtn
-                            tagWorkflow={tagWorkflow}
-                            obj={obj}
-                            setRevisions={setRevisions}
-                            getRevisions={getRevisions}
-                            isTag={tags !== null && tags[obj.name]}
-                            updateTags={updateTags}
-                            getTags={getTags}
-                          />
-                          <Modal
-                            escapeToCancel
-                            style={{
-                              flexDirection: "row-reverse",
-                            }}
-                            modalStyle={{ width: "400px" }}
-                            title={`Revert to ${obj.name}`}
-                            button={
-                              <>
-                                <VscDebugStepBack className="show-700" />
-                                <span className="hide-700">Revert </span>
-                                <span className="hide-900">To</span>
-                              </>
-                            }
-                            buttonProps={{
-                              color: "info",
-                              disableShadows: true,
-                            }}
-                            actionButtons={[
-                              {
-                                label: "Revert",
-
-                                onClick: async () => {
-                                  const data = await getWorkflowRevisionData(
-                                    obj.name
-                                  );
-                                  await updateWorkflow(
-                                    atob(data.revision.source)
-                                  );
-                                  navigate(
-                                    `/n/${namespace}/explorer/${filepath.substring(
-                                      1
-                                    )}?tab=2`
-                                  );
-                                },
-
-                                buttonProps: {
-                                  variant: "contained",
-                                  color: "error",
-                                },
-                                closesModal: true,
-                              },
-                              {
-                                label: "Cancel",
-                                closesModal: true,
-                              },
-                            ]}
-                          >
-                            <FlexBox col gap>
-                              <FlexBox>
-                                Are you sure you want to revert to &apos;
-                                {obj.name}&apos;?
-                              </FlexBox>
-                            </FlexBox>
-                          </Modal>
-                          <Button
-                            color="info"
-                            variant="outlined"
-                            disableShadows
-                            onClick={() => {
-                              setSearchParams({ tab: 1, revision: obj.name });
-                            }}
-                          >
+                        <Button
+                          color="info"
+                          variant="outlined"
+                          disableShadows
+                          onClick={() => {
+                            setSearchParams({ tab: 1, revision: obj.name });
+                          }}
+                        >
+                          Open <span className="hide-900">Revision</span>
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        {/* Hidden buttons to retain same spacing on latest */}
+                        <div style={{ visibility: "hidden" }}>
+                          <Button color="info" variant="outlined">
+                            Tag
+                          </Button>
+                        </div>
+                        <div style={{ visibility: "hidden" }}>
+                          <Button color="info" variant="outlined">
+                            Revert <span className="hide-900">To</span>
+                          </Button>
+                        </div>
+                        <div>
+                          <Button color="info" variant="outlined">
                             Open <span className="hide-900">Revision</span>
                           </Button>
-                        </>
-                      ) : (
-                        <>
-                          {/* Hidden buttons to retain same spacing on latest */}
-                          <div style={{ visibility: "hidden" }}>
-                            <Button color="info" variant="outlined">
-                              Tag
-                            </Button>
-                          </div>
-                          <div style={{ visibility: "hidden" }}>
-                            <Button color="info" variant="outlined">
-                              Revert <span className="hide-900">To</span>
-                            </Button>
-                          </div>
-                          <div>
-                            <Button color="info" variant="outlined">
-                              Open <span className="hide-900">Revision</span>
-                            </Button>
-                          </div>
-                        </>
-                      )}
-                    </FlexBox>
-                  </div>
-                </FlexBox>
-              ))}
+                        </div>
+                      </>
+                    )}
+                  </FlexBox>
+                </div>
+              </FlexBox>
+            ))}
           </ContentPanelBody>
         </ContentPanel>
       </div>

@@ -424,55 +424,55 @@ export function Registries(props) {
         ) : (
           <>
             {registries.map((obj) => (
-                <FlexBox key={obj.name} className="secret-tuple">
-                  <FlexBox className="key">
-                    {obj.name}{" "}
-                    <span className="muted-text" style={{ marginLeft: "8px" }}>
-                      ({obj.user})
-                    </span>
-                  </FlexBox>
-                  <FlexBox className="val"></FlexBox>
-                  <FlexBox className="val"></FlexBox>
-                  <FlexBox className="actions">
-                    <Modal
-                      escapeToCancel
-                      modalStyle={{ width: "400px" }}
-                      style={{
-                        flexDirection: "row-reverse",
-                        marginRight: "8px",
-                      }}
-                      title="Remove registry"
-                      titleIcon={<VscTrash />}
-                      button={<SecretsDeleteButton />}
-                      actionButtons={[
-                        {
-                          label: "Delete",
-
-                          onClick: async () => {
-                            await deleteRegistry(obj.name);
-                            await getRegistries();
-                          },
-                          buttonProps: { variant: "contained", color: "error" },
-                          closesModal: true,
-                        },
-                        {
-                          label: "Cancel",
-                          closesModal: true,
-                        },
-                      ]}
-                    >
-                      <FlexBox col gap>
-                        <FlexBox>
-                          Are you sure you want to remove &apos;{obj.name}
-                          &apos;?
-                          <br />
-                          This action cannot be undone.
-                        </FlexBox>
-                      </FlexBox>
-                    </Modal>
-                  </FlexBox>
+              <FlexBox key={obj.name} className="secret-tuple">
+                <FlexBox className="key">
+                  {obj.name}{" "}
+                  <span className="muted-text" style={{ marginLeft: "8px" }}>
+                    ({obj.user})
+                  </span>
                 </FlexBox>
-              ))}
+                <FlexBox className="val"></FlexBox>
+                <FlexBox className="val"></FlexBox>
+                <FlexBox className="actions">
+                  <Modal
+                    escapeToCancel
+                    modalStyle={{ width: "400px" }}
+                    style={{
+                      flexDirection: "row-reverse",
+                      marginRight: "8px",
+                    }}
+                    title="Remove registry"
+                    titleIcon={<VscTrash />}
+                    button={<SecretsDeleteButton />}
+                    actionButtons={[
+                      {
+                        label: "Delete",
+
+                        onClick: async () => {
+                          await deleteRegistry(obj.name);
+                          await getRegistries();
+                        },
+                        buttonProps: { variant: "contained", color: "error" },
+                        closesModal: true,
+                      },
+                      {
+                        label: "Cancel",
+                        closesModal: true,
+                      },
+                    ]}
+                  >
+                    <FlexBox col gap>
+                      <FlexBox>
+                        Are you sure you want to remove &apos;{obj.name}
+                        &apos;?
+                        <br />
+                        This action cannot be undone.
+                      </FlexBox>
+                    </FlexBox>
+                  </Modal>
+                </FlexBox>
+              </FlexBox>
+            ))}
           </>
         )}
       </FlexBox>

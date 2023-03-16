@@ -87,18 +87,18 @@ export default function WorkflowPod(props) {
                       }}
                     >
                       {pods.map((obj, i) => (
-                          <li
-                            key={i}
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "5px",
-                            }}
-                          >
-                            <ServiceStatus status={obj.status} />
-                            {obj.name}
-                          </li>
-                        ))}
+                        <li
+                          key={i}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "5px",
+                          }}
+                        >
+                          <ServiceStatus status={obj.status} />
+                          {obj.name}
+                        </li>
+                      ))}
                     </ul>
                   </div>
                 ) : null}

@@ -172,14 +172,14 @@ const DropdownMenuShortcut = ({
   className,
   ...props
 }: React.HTMLAttributes<HTMLSpanElement>) => (
-    <span
-      className={clsx(
-        "ml-auto text-xs tracking-widest text-gray-gray8 dark:text-grayDark-gray8",
-        className
-      )}
-      {...props}
-    />
-  );
+  <span
+    className={clsx(
+      "ml-auto text-xs tracking-widest text-gray-gray8 dark:text-grayDark-gray8",
+      className
+    )}
+    {...props}
+  />
+);
 DropdownMenuShortcut.displayName = "DropdownMenuShortcut";
 
 export {

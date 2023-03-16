@@ -16,14 +16,14 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   render: () => (
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger>Hover</TooltipTrigger>
-          <TooltipContent>
-            <p>Add to library</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    ),
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger>Hover</TooltipTrigger>
+        <TooltipContent>
+          <p>Add to library</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  ),
   argTypes: {},
 };

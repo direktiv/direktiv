@@ -76,33 +76,33 @@ export default function ActivityTable(props) {
                   <>
                     <>
                       {activities.map((obj) => (
-                          <ActivityRow
-                            key={GenerateRandomKey()}
-                            namespace={namespace}
-                            state={obj.status}
-                            id={obj.id}
-                            type={obj.type}
-                            startedDate={dayjs
-                              .utc(obj.createdAt)
-                              .local()
-                              .format("DD MMM YY")}
-                            startedTime={dayjs
-                              .utc(obj.createdAt)
-                              .local()
-                              .format("HH:mm a")}
-                            finishedDate={dayjs
-                              .utc(obj.updatedAt)
-                              .local()
-                              .format("DD MMM YY")}
-                            finishedTime={dayjs
-                              .utc(obj.updatedAt)
-                              .local()
-                              .format("HH:mm a")}
-                            setActivity={setActivity}
-                            cancelActivity={cancelActivity}
-                            setErrorMsg={setErrorMsg}
-                          />
-                        ))}
+                        <ActivityRow
+                          key={GenerateRandomKey()}
+                          namespace={namespace}
+                          state={obj.status}
+                          id={obj.id}
+                          type={obj.type}
+                          startedDate={dayjs
+                            .utc(obj.createdAt)
+                            .local()
+                            .format("DD MMM YY")}
+                          startedTime={dayjs
+                            .utc(obj.createdAt)
+                            .local()
+                            .format("HH:mm a")}
+                          finishedDate={dayjs
+                            .utc(obj.updatedAt)
+                            .local()
+                            .format("DD MMM YY")}
+                          finishedTime={dayjs
+                            .utc(obj.updatedAt)
+                            .local()
+                            .format("HH:mm a")}
+                          setActivity={setActivity}
+                          cancelActivity={cancelActivity}
+                          setErrorMsg={setErrorMsg}
+                        />
+                      ))}
                     </>
                   </>
                 ) : (

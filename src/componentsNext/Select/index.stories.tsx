@@ -88,59 +88,59 @@ export const Default: Story = {
 };
 
 export const SelectSizes = () => (
-    <div className="flex flex-wrap gap-5">
-      <Select>
-        <SelectTrigger size="xs">
-          <SelectValue placeholder="select" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="1">Item 1</SelectItem>
-          <SelectItem value="2">Item 2</SelectItem>
-          <SelectItem value="3">Item 3</SelectItem>
-        </SelectContent>
-      </Select>
-      <Select>
-        <SelectTrigger size="sm">
-          <SelectValue placeholder="select" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="1">Item 1</SelectItem>
-          <SelectItem value="2">Item 2</SelectItem>
-          <SelectItem value="3">Item 3</SelectItem>
-        </SelectContent>
-      </Select>
-      <Select>
-        <SelectTrigger>
-          <SelectValue placeholder="select" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="1">Item 1</SelectItem>
-          <SelectItem value="2">Item 2</SelectItem>
-          <SelectItem value="3">Item 3</SelectItem>
-        </SelectContent>
-      </Select>
-      <Select>
-        <SelectTrigger size="lg">
-          <SelectValue placeholder="select" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="1">Item 1</SelectItem>
-          <SelectItem value="2">Item 2</SelectItem>
-          <SelectItem value="3">Item 3</SelectItem>
-        </SelectContent>
-      </Select>
-    </div>
-  );
+  <div className="flex flex-wrap gap-5">
+    <Select>
+      <SelectTrigger size="xs">
+        <SelectValue placeholder="select" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="1">Item 1</SelectItem>
+        <SelectItem value="2">Item 2</SelectItem>
+        <SelectItem value="3">Item 3</SelectItem>
+      </SelectContent>
+    </Select>
+    <Select>
+      <SelectTrigger size="sm">
+        <SelectValue placeholder="select" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="1">Item 1</SelectItem>
+        <SelectItem value="2">Item 2</SelectItem>
+        <SelectItem value="3">Item 3</SelectItem>
+      </SelectContent>
+    </Select>
+    <Select>
+      <SelectTrigger>
+        <SelectValue placeholder="select" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="1">Item 1</SelectItem>
+        <SelectItem value="2">Item 2</SelectItem>
+        <SelectItem value="3">Item 3</SelectItem>
+      </SelectContent>
+    </Select>
+    <Select>
+      <SelectTrigger size="lg">
+        <SelectValue placeholder="select" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="1">Item 1</SelectItem>
+        <SelectItem value="2">Item 2</SelectItem>
+        <SelectItem value="3">Item 3</SelectItem>
+      </SelectContent>
+    </Select>
+  </div>
+);
 
 export const LoadingState = () => (
-    <div className="flex flex-wrap gap-5">
-      <Select>
-        <SelectTrigger loading>
-          <SelectValue placeholder="loading..." />
-        </SelectTrigger>
-      </Select>
-    </div>
-  );
+  <div className="flex flex-wrap gap-5">
+    <Select>
+      <SelectTrigger loading>
+        <SelectValue placeholder="loading..." />
+      </SelectTrigger>
+    </Select>
+  </div>
+);
 
 export const Ghost = () => (
   <div className="bg-base-300 p-10">

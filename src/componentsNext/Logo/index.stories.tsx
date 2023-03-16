@@ -26,16 +26,16 @@ export const Default: Story = {
 };
 
 export const WithOrWithoutLogo = () => (
-    <div className="flex space-x-5">
-      <Logo />
-      <Logo iconOnly />
-    </div>
-  );
+  <div className="flex space-x-5">
+    <Logo />
+    <Logo iconOnly />
+  </div>
+);
 
 export const PassClassnames = () => (
-    <div className="flex space-x-5">
-      <Logo className="w-20" />
-      <Logo className="w-24" />
-      <Logo />
-    </div>
-  );
+  <div className="flex space-x-5">
+    <Logo className="w-20" />
+    <Logo className="w-24" />
+    <Logo />
+  </div>
+);

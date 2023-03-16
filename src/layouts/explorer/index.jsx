@@ -322,11 +322,14 @@ function ExplorerList(props) {
   }, [setBreadcrumbChildren]);
 
   // Unmount cleanup breadcrumb children
-  useEffect(() => () => {
+  useEffect(
+    () => () => {
       if (setBreadcrumbChildrenRef.current) {
         setBreadcrumbChildrenRef.current(null);
       }
-    }, []);
+    },
+    []
+  );
 
   // Reset pagination queries when searching
   useEffect(() => {

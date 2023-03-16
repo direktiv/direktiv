@@ -38,16 +38,16 @@ export const Default: Story = {
 };
 
 export const AvatarSizes = () => (
-    <div>
-      <Avatar size="xs"></Avatar>
-      <Avatar size="sm"></Avatar>
-      <Avatar size="lg"></Avatar>
-      <Avatar size="xlg"></Avatar>
-    </div>
-  );
+  <div>
+    <Avatar size="xs"></Avatar>
+    <Avatar size="sm"></Avatar>
+    <Avatar size="lg"></Avatar>
+    <Avatar size="xlg"></Avatar>
+  </div>
+);
 
 export const AvatarPlaceholder = () => (
-    <div>
-      <Avatar size="xlg" placeholder="CD"></Avatar>
-    </div>
-  );
+  <div>
+    <Avatar size="xlg" placeholder="CD"></Avatar>
+  </div>
+);

@@ -251,11 +251,14 @@ export default function MirrorPage(props) {
   }, [setBreadcrumbChildren, setLock, sync]);
 
   // Unmount cleanup breadcrumb children
-  useEffect(() => () => {
+  useEffect(
+    () => () => {
       if (setBreadcrumbChildrenRef.current) {
         setBreadcrumbChildrenRef.current(null);
       }
-    }, []);
+    },
+    []
+  );
 
   if (!namespace) {
     return null;
