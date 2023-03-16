@@ -6,7 +6,8 @@ import { useNamespace } from "../../util/store/namespace";
 import { useQuery } from "@tanstack/react-query";
 
 export const getNamespaces = apiFactory({
-  pathFn: ({ namespace }: { namespace: string }) => `/api/${namespace}/tree`,
+  pathFn: ({ namespace }: { namespace: string }) =>
+    `/api/namespaces/${namespace}/tree`,
   method: "GET",
   schema: TreeListSchema,
 });
