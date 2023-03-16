@@ -3,7 +3,7 @@ import React, { FC, HTMLAttributes } from "react";
 import clsx from "clsx";
 
 export type AlertProps = HTMLAttributes<HTMLDivElement> & {
-  variant?: "info" | "success" | "warning" | "error";
+  variant?: "info" | "success" | "warning" | "error" | "default";
   text?: string;
   className?: string;
   forwaredRef?: React.ForwardedRef<HTMLDivElement>;
