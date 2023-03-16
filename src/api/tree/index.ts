@@ -7,29 +7,39 @@ import { useQuery } from "@tanstack/react-query";
 import { useToast } from "../../componentsNext/Toast";
 
 const getTree = apiFactory({
-  pathFn: ({ namespace }: { namespace: string }) =>
-    `/api/namespaces/${namespace}/tree`,
+  pathFn: ({
+    namespace,
+    directory,
+  }: {
+    namespace: string;
+    directory?: string;
+  }) => `/api/namespaces/${namespace}/tree${directory ? `/${directory}` : ""}`,
   method: "GET",
   schema: TreeListSchema,
 });
 
 const fetchTree = async ({
-  queryKey: [{ apiKey, namespace }],
+  queryKey: [{ apiKey, namespace, directory }],
 }: QueryFunctionContext<ReturnType<(typeof namespaceKeys)["all"]>>) =>
   getTree({
     apiKey: apiKey,
     params: undefined,
     pathParams: {
       namespace,
+      directory,
     },
   });
 
 const namespaceKeys = {
-  all: (apiKey: string, namespace: string) =>
-    [{ scope: "tree", apiKey, namespace }] as const,
+  all: (apiKey: string, namespace: string, directory: string) =>
+    [{ scope: "tree", apiKey, namespace, directory }] as const,
 };
 
-export const useTree = () => {
+export const useTree = ({
+  directory,
+}: {
+  directory?: string;
+} = {}) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
   const { toast } = useToast();
@@ -38,6 +48,7 @@ export const useTree = () => {
     queryKey: namespaceKeys.all(
       apiKey ?? "no-api-key",
       namespace ?? "no-namespace",
+      directory ?? ""
     ),
     queryFn: fetchTree,
     enabled: !!namespace,
