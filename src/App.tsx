@@ -8,7 +8,13 @@ import { Toaster } from "./componentsNext/Toast";
 import { router } from "./util/router";
 import { useEffect } from "react";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: false,
+    },
+  },
+});
 
 const App = () => {
   const theme = useTheme();
