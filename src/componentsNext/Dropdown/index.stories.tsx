@@ -5,6 +5,7 @@ import {
   Github,
   Keyboard,
   LifeBuoy,
+  Loader2,
   LogOut,
   Mail,
   MessageSquare,
@@ -123,6 +124,11 @@ export const LoadingState = () => (
         <DropdownMenuItem disabled>
           <Cloud className="mr-2 h-4 w-4" />
           <span>API</span>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem disabled>
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          loading...
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem>
