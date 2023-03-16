@@ -3,14 +3,12 @@ import React, { FC, HTMLAttributes } from "react";
 import clsx from "clsx";
 
 export type AlertProps = HTMLAttributes<HTMLDivElement> & {
-  variant?: "info" | "success" | "warning" | "error" | "default";
-  text?: string;
-  className?: string;
+  variant?: "info" | "success" | "warning" | "error";
   forwaredRef?: React.ForwardedRef<HTMLDivElement>;
   children?: React.ReactNode;
 };
 
-const Alert: FC<AlertProps> = ({ variant, className, text }) => (
+const Alert: FC<AlertProps> = ({ variant, className, children }) => (
   <div
     className={clsx(
       className,
@@ -35,7 +33,7 @@ const Alert: FC<AlertProps> = ({ variant, className, text }) => (
           d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
         ></path>
       </svg>
-      <span>{text}</span>
+      <span>{children}</span>
     </div>
   </div>
 );
