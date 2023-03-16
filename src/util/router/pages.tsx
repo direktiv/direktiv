@@ -9,27 +9,43 @@ import {
   Users,
 } from "lucide-react";
 
-import ExplorerPage from "../../pages/Explorer";
+import ExplorerPageSetup from "../../pages/Explorer";
 import type { RouteObject } from "react-router-dom";
 import SettiongsPage from "../../pages/Settings";
 
-type Page = {
+interface PageBase {
   name: string;
-  // any is okay here, because every page must implement this function depdening on its params
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  createHref: (...params: any) => string;
   icon: React.FC<React.SVGProps<SVGSVGElement>>;
   route: RouteObject;
-};
+}
 
-export const pages: Record<string, Page> = {
+type KeysWithNoPathParams =
+  | "monitoring"
+  | "instances"
+  | "events"
+  | "gateway"
+  | "permissions"
+  | "services"
+  | "settings";
+
+type DefaultPageSetup = Record<
+  KeysWithNoPathParams,
+  PageBase & { createHref: () => string }
+>;
+type ExplorerPageSetup = Record<
+  "explorer",
+  PageBase & { createHref: (params?: { directory: string }) => string }
+>;
+
+export const pages: DefaultPageSetup & ExplorerPageSetup = {
   explorer: {
     name: "Explorer",
     icon: FolderTree,
-    createHref: () => "explorer",
+    createHref: (params) =>
+      `explorer${params?.directory ? `/${params.directory}` : ""}`,
     route: {
-      path: "explorer",
-      element: <ExplorerPage />,
+      path: "explorer/:directory?",
+      element: <ExplorerPageSetup />,
     },
   },
   monitoring: {
@@ -96,4 +112,4 @@ export const pages: Record<string, Page> = {
       element: <SettiongsPage />,
     },
   },
-} as const;
+};
