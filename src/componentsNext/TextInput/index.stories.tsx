@@ -68,8 +68,4 @@ export const Variants = () => {
   );
 };
 
-export const Block = () => (
-  <div className="flex">
-    <TextInput block />
-  </div>
-);
+export const Block = () => <TextInput block />;
