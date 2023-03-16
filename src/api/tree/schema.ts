@@ -7,7 +7,7 @@ const NodeSchema = z.object({
   name: z.string(),
   path: z.string(),
   parent: z.string(),
-  type: z.string(), // this must be an enum (possible values: directory, ???)
+  type: z.enum(["directory", "workflow"]), // this must be an enum (possible values: directory, ???)
   attributes: z.array(z.string()), // must be specified more
   oid: z.string(),
   readOnly: z.boolean(),
