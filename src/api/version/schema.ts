@@ -5,5 +5,3 @@ export const VersionSchema = z.object({
   flow: z.string(),
   functions: z.string(),
 });
-
-export type Version = z.infer<typeof VersionSchema>;

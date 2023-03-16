@@ -17,6 +17,3 @@ export const NamespaceListSchema = z.object({
   }),
   results: z.array(NamespaceSchema),
 });
-
-export type NamespaceList = z.infer<typeof NamespaceListSchema>;
-export type Namespace = z.infer<typeof NamespaceSchema>;
