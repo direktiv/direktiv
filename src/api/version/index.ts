@@ -16,6 +16,7 @@ const fetchVersions = async ({
   getVersion({
     apiKey: apiKey,
     params: undefined,
+    pathParams: undefined,
   });
 
 const versionKeys = {

@@ -26,7 +26,7 @@ const getAuthHeader = (apiKey: string) => ({
 type ApiParams<TParams, TPathParams> = {
   apiKey: string;
   params: TParams extends undefined ? undefined : TParams;
-  pathParams: TPathParams extends undefined ? undefined : TPathParams;
+  pathParams: TPathParams;
 };
 
 export const apiFactory =
@@ -57,9 +57,11 @@ export const apiFactory =
         return schema.parse(await res.json());
       } catch (error) {
         return Promise.reject(
-          `could not format response for ${method} ${path()}`
+          `could not format response for ${method} ${path(pathParams)}`
         );
       }
     }
-    return Promise.reject(`error ${res.status} for ${method} ${path()}`);
+    return Promise.reject(
+      `error ${res.status} for ${method} ${path(pathParams)}`
+    );
   };

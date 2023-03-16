@@ -81,7 +81,8 @@ const api404 = apiFactory({
 });
 
 const getMyWithDynamicSegment = apiFactory({
-  pathFn: ({ segment }) => `http://localhost/${segment}/my-api`,
+  pathFn: ({ segment }: { segment: string }) =>
+    `http://localhost/${segment}/my-api`,
   method: "GET",
   schema: z.object({
     response: z.string(),
@@ -93,7 +94,12 @@ describe("processApiResponse", () => {
     const useCallWithApiKey = () =>
       useQuery({
         queryKey: ["getmyapikey", API_KEY],
-        queryFn: () => getMyApi({ apiKey: API_KEY, params: null }),
+        queryFn: () =>
+          getMyApi({
+            apiKey: API_KEY,
+            params: undefined,
+            pathParams: undefined,
+          }),
       });
 
     const { result } = renderHook(() => useCallWithApiKey(), {
@@ -109,7 +115,12 @@ describe("processApiResponse", () => {
     const useCallWithOutApiKey = (onError: (err: unknown) => void) =>
       useQuery({
         queryKey: ["getmyapikey", "wrong-api-key"],
-        queryFn: () => getMyApi({ apiKey: "wrong-api-key", params: null }),
+        queryFn: () =>
+          getMyApi({
+            apiKey: "wrong-api-key",
+            params: undefined,
+            pathParams: undefined,
+          }),
         onError,
       });
 
@@ -130,7 +141,12 @@ describe("processApiResponse", () => {
     const useCallWithApiKey = (onError: (err: unknown) => void) =>
       useQuery({
         queryKey: ["getmyapikey", API_KEY],
-        queryFn: () => getMyApiWrongSchema({ apiKey: API_KEY, params: null }),
+        queryFn: () =>
+          getMyApiWrongSchema({
+            apiKey: API_KEY,
+            params: undefined,
+            pathParams: undefined,
+          }),
         onError,
       });
 
@@ -151,7 +167,8 @@ describe("processApiResponse", () => {
     const useCallWithApiKey = (onError: (err: unknown) => void) =>
       useQuery({
         queryKey: ["getmyapikey", API_KEY],
-        queryFn: () => api404({ apiKey: API_KEY, params: null }),
+        queryFn: () =>
+          api404({ apiKey: API_KEY, params: undefined, pathParams: undefined }),
         onError,
       });
 
@@ -169,7 +186,7 @@ describe("processApiResponse", () => {
   });
 
   test("api with dynamic segment", async () => {
-    const useCallWithApiKey = (pathParams) =>
+    const useCallWithApiKey = (pathParams: { segment: string }) =>
       useQuery({
         queryKey: ["getmyapikey", API_KEY, pathParams],
         queryFn: () =>
