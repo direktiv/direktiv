@@ -1,3 +1,4 @@
+import { PageinfoSchema } from "../schema";
 import { z } from "zod";
 
 export const NamespaceSchema = z.object({
@@ -8,12 +9,6 @@ export const NamespaceSchema = z.object({
 });
 
 export const NamespaceListSchema = z.object({
-  pageInfo: z.object({
-    order: z.array(z.string()),
-    filter: z.array(z.string()),
-    limit: z.number(),
-    offset: z.number(),
-    total: z.number(),
-  }),
+  pageInfo: PageinfoSchema,
   results: z.array(NamespaceSchema),
 });
