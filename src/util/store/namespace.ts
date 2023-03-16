@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 interface NamespaceState {
   namespace: string | null;
@@ -7,12 +8,23 @@ interface NamespaceState {
   };
 }
 
-const useNamespaceState = create<NamespaceState>((set) => ({
-  namespace: null,
-  actions: {
-    setNamespace: (newNamespace) => set(() => ({ namespace: newNamespace })),
-  },
-}));
+const useNamespaceState = create<NamespaceState>()(
+  persist(
+    (set) => ({
+      namespace: null,
+      actions: {
+        setNamespace: (newNamespace) =>
+          set(() => ({ namespace: newNamespace })),
+      },
+    }),
+    {
+      name: "directiv-store-namespace",
+      partialize: (state) => ({
+        namespace: state.namespace, // pick all fields to persistend, and don't persist actions
+      }),
+    }
+  )
+);
 
 export const useNamespace = () => useNamespaceState((state) => state.namespace);
 export const useNamespaceActions = () =>
