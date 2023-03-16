@@ -89,7 +89,7 @@ func (logic *generateEventLogic) Run(ctx context.Context, wakedata []byte) (*Tra
 			return nil, derrors.NewUncatchableError("direktiv.event.jq", "failed to process event context key '%s': %v", k, err)
 		}
 
-		logic.SendToLogger(ctx, "info", "Adding context %v: %v", k, x)
+		logic.SendToLogger(ctx, "debug", "Adding context %v: %v", k, x)
 
 		err = event.Context.SetExtension(k, x)
 		if err != nil {
@@ -98,7 +98,7 @@ func (logic *generateEventLogic) Run(ctx context.Context, wakedata []byte) (*Tra
 
 	}
 
-	logic.SendToLogger(ctx, "info", "Broadcasting event: %s.", event.ID())
+	logic.SendToLogger(ctx, "info", "Broadcasting event type:%s/source:%s to this namespace.", event.Type(), event.Source())
 
 	var dd int64
 

@@ -604,10 +604,11 @@ func (engine *engine) transformState(ctx context.Context, im *instanceMemory, tr
 		return nil
 	}
 
-	engine.logger.Infof(ctx, time.Now(), im.GetInstanceID(), im.GetAttributes(), "Transforming state data.")
+	engine.logger.Debug(ctx, time.Now(), im.GetInstanceID(), im.GetAttributes(), "Transforming state data.")
 
 	x, err := jqObject(im.data, transition.Transform)
 	if err != nil {
+		engine.logger.Errorf(ctx, time.Now(), im.GetInstanceID(), im.GetAttributes(), "unable to apply transform: %v", err)
 		return derrors.WrapCatchableError("unable to apply transform: %v", err)
 	}
 
@@ -630,8 +631,8 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 	if transition.NextState != "" {
 		engine.metricsCompleteState(ctx, im, transition.NextState, errCode, false)
 		engine.sugar.Debugf("Instance transitioning to next state: %s -> %s", im.ID().String(), transition.NextState)
-		engine.logger.Infof(ctx, time.Now(), im.GetInstanceID(), im.GetAttributes(), "Transitioning to next state: %s (%d).", transition.NextState, im.Step()+1)
-		engine.logger.Infof(ctx, time.Now(), im.cached.Namespace.ID, im.cached.GetAttributes("namespace"), "Workflow %s is transitioning to next state: %s (%d).", database.GetWorkflow(im.cached.Instance.As), transition.NextState, im.Step()+1)
+		engine.logger.Debugf(ctx, time.Now(), im.GetInstanceID(), im.GetAttributes(), "Transitioning to next state: %s (%d).", transition.NextState, im.Step()+1)
+		engine.logger.Debugf(ctx, time.Now(), im.cached.Namespace.ID, im.cached.GetAttributes("namespace"), "Workflow %s is transitioning to next state: %s (%d).", database.GetWorkflow(im.cached.Instance.As), transition.NextState, im.Step()+1)
 		go engine.Transition(ctx, im, transition.NextState, 0)
 		return
 	}
