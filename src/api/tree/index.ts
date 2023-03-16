@@ -2,6 +2,7 @@ import type { QueryFunctionContext } from "@tanstack/react-query";
 import { TreeListSchema } from "./schema";
 import { apiFactory } from "../utils";
 import { useApiKey } from "../../util/store/apiKey";
+import { useNamespace } from "../../util/store/namespace";
 import { useQuery } from "@tanstack/react-query";
 
 export const getNamespaces = apiFactory({
@@ -28,7 +29,7 @@ const namespaceKeys = {
 
 export const useTree = () => {
   const apiKey = useApiKey();
-  const namespace = "my-namespace"; // todo: add namespace to zustand store
+  const namespace = useNamespace();
 
   return useQuery({
     queryKey: namespaceKeys.all(
@@ -37,5 +38,6 @@ export const useTree = () => {
     ),
     queryFn: fetchTree,
     networkMode: "always",
+    enabled: !!namespace,
   });
 };
