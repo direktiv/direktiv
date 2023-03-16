@@ -122,8 +122,10 @@ func (engine *engine) isKnativeFunction(client igrpc.FunctionsServiceClient, ar 
 	}
 
 	if len(l.Functions) > 0 {
+		engine.sugar.Debugf("found functions")
 		return true
 	}
+	engine.sugar.Debugf("no functions found")
 
 	return false
 }

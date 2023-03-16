@@ -409,15 +409,18 @@ func (engine *engine) CrashInstance(ctx context.Context, im *instanceMemory, err
 		engine.sugar.Errorf("Instance failed with error '%s': %v", cerr.Code, err)
 		engine.logger.Errorf(ctx, time.Now(), im.GetInstanceID(), im.GetAttributes(), "Instance failed with error '%s': %s", cerr.Code, err.Error())
 		engine.logger.Errorf(ctx, time.Now(), im.cached.Instance.Workflow, im.cached.GetAttributes("workflow"), "Instance failed with error '%s': %s", cerr.Code, err.Error())
+		engine.logger.Errorf(ctx, time.Now(), im.cached.Instance.Namespace, im.cached.GetAttributes("namespace"), "Instance with uncatchable error '%s': %s", cerr.Code, err.Error())
 	} else if errors.As(err, &uerr) && uerr.Code != "" {
 		engine.sugar.Errorf("Instance failed with uncatchable error '%s': %v", uerr.Code, err)
 		engine.logger.Errorf(ctx, time.Now(), im.GetInstanceID(), im.GetAttributes(), "Instance failed with uncatchable error '%s': %s", uerr.Code, err.Error())
 		engine.logger.Errorf(ctx, time.Now(), im.cached.Instance.Workflow, im.cached.GetAttributes("workflow"), "Instance with uncatchable error '%s': %s", cerr.Code, err.Error())
+		engine.logger.Errorf(ctx, time.Now(), im.cached.Instance.Namespace, im.cached.GetAttributes("namespace"), "Instance with uncatchable error '%s': %s", cerr.Code, err.Error())
 	} else {
 		_, file, line, _ := runtime.Caller(1)
 		engine.sugar.Errorf("Instance failed with uncatchable error (thrown by %s:%d): %v", file, line, err)
 		engine.logger.Errorf(ctx, time.Now(), im.GetInstanceID(), im.GetAttributes(), "Instance failed with uncatchable error: %s", err.Error())
 		engine.logger.Errorf(ctx, time.Now(), im.cached.Instance.Workflow, im.cached.GetAttributes("workflow"), "Instance with uncatchable error '%s': %s", cerr.Code, err.Error())
+		engine.logger.Errorf(ctx, time.Now(), im.cached.Instance.Namespace, im.cached.GetAttributes("namespace"), "Instance with uncatchable error '%s': %s", cerr.Code, err.Error())
 	}
 
 	err = engine.SetInstanceFailed(ctx, im, err)
@@ -636,7 +639,6 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 		go engine.Transition(ctx, im, transition.NextState, 0)
 		return
 	}
-
 	status := util.InstanceStatusComplete
 	if im.ErrorCode() != "" {
 		status = util.InstanceStatusFailed
@@ -865,14 +867,15 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 			Size:          &size,
 			Envs:          make(map[string]string),
 		})
-		if err != nil {
+		if err != nil { // is this always nil?
 			engine.sugar.Errorf("can not create service name: %v", err)
 			engine.reportError(ar, err)
 		}
 	}
 
 	addr := fmt.Sprintf("http://%s.%s", svn, ns)
-	engine.sugar.Debugf("function request: %v", addr)
+	engine.sugar.Debugf("function request for image %s name %s addr %v:", ar.Container.Image, ar.Container.ID, addr)
+	engine.logger.Debugf(ctx, time.Now(), engine.flow.ID, engine.flow.GetAttributes(), "function request for image %s name %s", ar.Container.Image, ar.Container.ID)
 
 	deadline := time.Now().Add(time.Duration(ar.Workflow.Timeout) * time.Second)
 	rctx, cancel := context.WithDeadline(context.Background(), deadline)
@@ -917,7 +920,7 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 	// one minute wait max
 	cleanup := util.TraceHTTPRequest(ctx, req)
 	defer cleanup()
-	for i := 0; i < 180; i++ {
+	for i := 0; i < 180; i++ { // this is forever
 		engine.sugar.Debugf("functions request (%d): %v", i, addr)
 		resp, err = client.Do(req)
 		if err != nil {
@@ -925,18 +928,23 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 				engine.sugar.Debugf("context error in knative call")
 				return
 			}
-			engine.sugar.Debugf("error in request: %v", err)
+			engine.sugar.Debugf("function request for %s %s returned an error: %v", ar.Container.Image, ar.Container.ID, err)
+			engine.logger.Debugf(ctx, time.Now(), engine.flow.ID, engine.flow.GetAttributes(), "function request for image %s name %s returned an error: %v", ar.Container.Image, ar.Container.ID, err)
 			dnsErr := new(net.DNSError)
 			if errors.As(err, &dnsErr) {
 
 				// recreate if the service does not exist
 				if ar.Container.Type == model.ReusableContainerFunctionType &&
 					!engine.isKnativeFunction(engine.actions.client, ar) {
+					engine.sugar.Debugf("creating KnativeFunction %s %s", ar.Container.Image, ar.Container.ID)
 					err := createKnativeFunction(engine.actions.client, ar)
 					if err != nil && !strings.Contains(err.Error(), "already exists") {
 						engine.sugar.Errorf("can not create knative function: %v", err)
 						engine.reportError(ar, err)
 						return
+					}
+					if err != nil {
+						engine.sugar.Debugf("failed creating KnativeFunction with image %s name %s, container %s %s with error: %v", ar.Workflow.WorkflowID, ar.Workflow.Revision, ar.Container.Image, ar.Container.ID, err)
 					}
 				}
 
@@ -948,7 +956,7 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 					if err != nil {
 						if stErr, ok := status.FromError(err); ok && stErr.Code() == codes.NotFound {
 							engine.sugar.Errorf("knative function: '%s' does not exist", ar.Container.Service)
-							engine.reportError(ar, fmt.Errorf("knative function: '%s' does not exist", ar.Container.Service))
+							engine.reportError(ar, fmt.Errorf("knative function: '%s' does not exist, image %s name %s", ar.Container.Service, ar.Container.Image, ar.Container.ID))
 							return
 						}
 
@@ -957,7 +965,12 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 						return
 					}
 				}
-
+				if i > 18 && ar.Container.Type == model.ReusableContainerFunctionType {
+					err := fmt.Errorf("reusable container image %s is probably missing", ar.Container.Image)
+					engine.sugar.Errorf("reuasable knative function is missing: %v", err)
+					engine.reportError(ar, err)
+					return
+				}
 				time.Sleep(1000 * time.Millisecond)
 				continue
 			}
@@ -965,11 +978,13 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 			time.Sleep(1000 * time.Millisecond)
 
 		} else {
+			engine.sugar.Debugf("successfully created funtion with image %s name %s", ar.Container.Image, ar.Container.ID, err)
 			break
 		}
 	}
 
 	if err != nil {
+		err := errors.New(fmt.Sprintf("failed creating funtion with image %s name %s with error: %v", ar.Container.Image, ar.Container.ID, err))
 		engine.reportError(ar, err)
 		return
 	}
