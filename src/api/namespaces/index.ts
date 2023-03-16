@@ -28,7 +28,6 @@ export const useNamespaces = () => {
   return useQuery({
     queryKey: namespaceKeys.all(apiKey || "no-api-key"),
     queryFn: fetchNamespaces,
-    networkMode: "always",
     staleTime: Infinity,
   });
 };

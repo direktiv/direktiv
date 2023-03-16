@@ -28,7 +28,6 @@ export const useVersion = () => {
   return useQuery({
     queryKey: versionKeys.all(apiKey || "no-api-key"),
     queryFn: fetchVersions,
-    networkMode: "always",
     staleTime: Infinity,
   });
 };

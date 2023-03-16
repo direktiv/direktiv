@@ -38,7 +38,6 @@ export const useTree = () => {
       namespace || "no-namespace"
     ),
     queryFn: fetchTree,
-    networkMode: "always",
     enabled: !!namespace,
   });
 };
