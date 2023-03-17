@@ -3,6 +3,7 @@ package filestore
 import (
 	"context"
 	"io"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -15,18 +16,23 @@ const (
 	FileTypeFile      FileType = "file"
 )
 
-type File interface {
-	GetID() uuid.UUID
-	GetPath() string
-	GetName() string
-	GetType() FileType
+type File struct {
+	ID    uuid.UUID
+	Path  string
+	Depth int
+	Typ   FileType
 
-	Timestamps
+	Revisions []Revision `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+
+	RootID uuid.UUID
+
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 type FileQuery interface {
 	GetData(ctx context.Context) (io.ReadCloser, error)
-	GetCurrentRevision(ctx context.Context) (Revision, error)
-	CreateRevision(ctx context.Context, tags RevisionTags) (Revision, error)
+	GetCurrentRevision(ctx context.Context) (*Revision, error)
+	CreateRevision(ctx context.Context, tags RevisionTags) (*Revision, error)
 	Delete(ctx context.Context, force bool) error
 }

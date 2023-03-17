@@ -30,7 +30,7 @@ type Source interface {
 func ExecuteMirroringProcess(
 	ctx context.Context, lg *zap.SugaredLogger,
 	fStore filestore.FileStore,
-	direktivRoot filestore.Root,
+	direktivRoot *filestore.Root,
 	source Source, settings Settings,
 ) error {
 	// function starts here:
@@ -94,7 +94,7 @@ func ExecuteMirroringProcess(
 	}
 
 	lg.Infow("mirror saved successfully",
-		"direktiv_root_id", direktivRoot.GetID(), "dist_directory", dstDir)
+		"direktiv_root_id", direktivRoot.ID, "dist_directory", dstDir)
 
 	return nil
 }

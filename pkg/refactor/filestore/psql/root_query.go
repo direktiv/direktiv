@@ -21,14 +21,14 @@ func addTrailingSlash(path string) string {
 }
 
 type RootQuery struct {
-	root filestore.Root
+	root *filestore.Root
 	db   *gorm.DB
 }
 
 var _ filestore.RootQuery = &RootQuery{} // Ensures RootQuery struct conforms to filestore.RootQuery interface.
 
 func (q *RootQuery) Delete(ctx context.Context) error {
-	res := q.db.WithContext(ctx).Delete(&Root{ID: q.root.GetID()})
+	res := q.db.WithContext(ctx).Delete(&filestore.Root{ID: q.root.ID})
 	if res.Error != nil {
 		return res.Error
 	}
@@ -40,19 +40,19 @@ func (q *RootQuery) Delete(ctx context.Context) error {
 }
 
 //nolint:ireturn
-func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.FileType, dataReader io.Reader) (filestore.File, error) {
+func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.FileType, dataReader io.Reader) (*filestore.File, error) {
 	path, err := filestore.SanitizePath(path)
 	if err != nil {
 		return nil, fmt.Errorf("create validation error, %w", err)
 	}
 
 	// first, we need to create a file entry for this new file.
-	f := &File{
+	f := &filestore.File{
 		ID:     uuid.New(),
 		Path:   path,
 		Depth:  filestore.ParseDepth(path),
 		Typ:    typ,
-		RootID: q.root.GetID(),
+		RootID: q.root.ID,
 	}
 
 	res := q.db.WithContext(ctx).Create(f)
@@ -76,7 +76,7 @@ func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.F
 		}
 	}
 
-	rev := &Revision{
+	rev := &filestore.Revision{
 		ID:   uuid.New(),
 		Tags: "",
 
@@ -97,11 +97,11 @@ func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.F
 }
 
 //nolint:ireturn
-func (q *RootQuery) GetFile(ctx context.Context, path string, opts *filestore.GetFileOpts) (filestore.File, error) {
-	f := &File{}
+func (q *RootQuery) GetFile(ctx context.Context, path string, opts *filestore.GetFileOpts) (*filestore.File, error) {
+	f := &filestore.File{}
 	path = filepath.Clean(path)
 
-	res := q.db.WithContext(ctx).Where("root_id", q.root.GetID()).Where("path = ?", path).First(f)
+	res := q.db.WithContext(ctx).Where("root_id", q.root.ID).Where("path = ?", path).First(f)
 	if res.Error != nil {
 		return nil, res.Error
 	}
@@ -110,8 +110,8 @@ func (q *RootQuery) GetFile(ctx context.Context, path string, opts *filestore.Ge
 }
 
 //nolint:ireturn
-func (q *RootQuery) ReadDirectory(ctx context.Context, path string) ([]filestore.File, error) {
-	var list []File
+func (q *RootQuery) ReadDirectory(ctx context.Context, path string) ([]*filestore.File, error) {
+	var list []filestore.File
 	path, err := filestore.SanitizePath(path)
 	if err != nil {
 		return nil, fmt.Errorf("create error, %w", err)
@@ -120,7 +120,7 @@ func (q *RootQuery) ReadDirectory(ctx context.Context, path string) ([]filestore
 	res := q.db.WithContext(ctx).
 		// Don't include file 'data' in the query. File data can be retrieved with file.GetData().
 		Select("id", "path", "depth", "root_id", "created_at", "updated_at").
-		Where("root_id", q.root.GetID()).
+		Where("root_id", q.root.ID).
 		Where("depth", filestore.ParseDepth(path)+1).
 		Where("path LIKE ?", addTrailingSlash(path)+"%"). // trailing slash necessary otherwise "/a" will receive children for both "/a" and "/abc".
 		Find(&list)
@@ -128,7 +128,7 @@ func (q *RootQuery) ReadDirectory(ctx context.Context, path string) ([]filestore
 	if res.Error != nil {
 		return nil, res.Error
 	}
-	var files []filestore.File
+	var files []*filestore.File
 	for i := range list {
 		files = append(files, &list[i])
 	}

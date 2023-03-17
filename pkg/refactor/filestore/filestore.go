@@ -25,29 +25,32 @@ type Timestamps interface {
 }
 
 type FileStore interface {
-	CreateRoot(ctx context.Context, id uuid.UUID) (Root, error)
+	CreateRoot(ctx context.Context, id uuid.UUID) (*Root, error)
 
-	GetRoot(ctx context.Context, id uuid.UUID) (Root, error)
-	GetAllRoots(ctx context.Context) ([]Root, error)
+	GetRoot(ctx context.Context, id uuid.UUID) (*Root, error)
+	GetAllRoots(ctx context.Context) ([]*Root, error)
 
-	ForRoot(root Root) RootQuery
-	ForFile(file File) FileQuery
-	ForRevision(revision Revision) RevisionQuery
+	ForRoot(root *Root) RootQuery
+	ForFile(file *File) FileQuery
+	ForRevision(revision *Revision) RevisionQuery
 }
 
 type GetFileOpts struct {
 	EagerLoad bool
 }
 
-type Root interface {
-	GetID() uuid.UUID
+type Root struct {
+	ID uuid.UUID
 
-	Timestamps
+	Files []File `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 type RootQuery interface {
-	GetFile(ctx context.Context, path string, opts *GetFileOpts) (File, error)
-	CreateFile(ctx context.Context, path string, typ FileType, dataReader io.Reader) (File, error)
-	ReadDirectory(ctx context.Context, path string) ([]File, error)
+	GetFile(ctx context.Context, path string, opts *GetFileOpts) (*File, error)
+	CreateFile(ctx context.Context, path string, typ FileType, dataReader io.Reader) (*File, error)
+	ReadDirectory(ctx context.Context, path string) ([]*File, error)
 	Delete(ctx context.Context) error
 }

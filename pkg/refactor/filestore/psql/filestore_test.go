@@ -19,18 +19,18 @@ func assertFileStoreCorrectRootCreation(t *testing.T, fs filestore.FileStore, id
 	if root == nil {
 		t.Errorf("unexpected nil root CreateRoot()")
 	}
-	if root.GetID() != id {
-		t.Errorf("unexpected GetID(), got: >%s<, want: >%s<", root.GetID(), id)
+	if root.ID != id {
+		t.Errorf("unexpected root.ID, got: >%s<, want: >%s<", root.ID, id)
 	}
 	root, err = fs.GetRoot(context.Background(), id)
 	if err != nil {
-		t.Errorf("unexpected GetRoot() error: %v", err)
+		t.Errorf("unexpected root.ID error: %v", err)
 	}
 	if root == nil {
 		t.Errorf("unexpected nil namepace")
 	}
-	if root.GetID() != id {
-		t.Errorf("unexpected second GetID(), got: >%s<, want: >%s<", root.GetID(), id)
+	if root.ID != id {
+		t.Errorf("unexpected second root.ID, got: >%s<, want: >%s<", root.ID, id)
 	}
 }
 
@@ -46,8 +46,8 @@ func assertFileStoreHasRoot(t *testing.T, fs filestore.FileStore, ids ...uuid.UU
 	}
 
 	for i := range ids {
-		if all[i].GetID() != ids[i] {
-			t.Errorf("unexpected all[%d].GetName() , got: >%s<, want: >%s<", i, all[i].GetID(), ids[i])
+		if all[i].ID != ids[i] {
+			t.Errorf("unexpected all[%d].ID , got: >%s<, want: >%s<", i, all[i].ID, ids[i])
 		}
 	}
 }

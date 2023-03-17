@@ -37,7 +37,7 @@ func TestRoot_CreateFile(t *testing.T) {
 	}
 }
 
-func assertRootCorrectFileCreation(t *testing.T, fs filestore.FileStore, root filestore.Root, path string, typ string, data []byte) {
+func assertRootCorrectFileCreation(t *testing.T, fs filestore.FileStore, root *filestore.Root, path string, typ string, data []byte) {
 	t.Helper()
 
 	file, err := fs.ForRoot(root).CreateFile(context.Background(), path, filestore.FileType(typ), bytes.NewReader(data))
@@ -47,8 +47,8 @@ func assertRootCorrectFileCreation(t *testing.T, fs filestore.FileStore, root fi
 	if file == nil {
 		t.Errorf("unexpected nil file CreateFile()")
 	}
-	if file.GetPath() != path {
-		t.Errorf("unexpected GetPath(), got: >%s<, want: >%s<", file.GetPath(), path)
+	if file.Path != path {
+		t.Errorf("unexpected file.Path, got: >%s<, want: >%s<", file.Path, path)
 	}
 
 	if typ != "directory" {
@@ -66,8 +66,8 @@ func assertRootCorrectFileCreation(t *testing.T, fs filestore.FileStore, root fi
 	if file == nil {
 		t.Errorf("unexpected nil file GetFile()")
 	}
-	if file.GetPath() != path {
-		t.Errorf("unexpected GetPath(), got: >%s<, want: >%s<", file.GetPath(), path)
+	if file.Path != path {
+		t.Errorf("unexpected file.Path, got: >%s<, want: >%s<", file.Path, path)
 	}
 }
 
@@ -132,7 +132,7 @@ func TestRoot_CorrectReadDirectory(t *testing.T) {
 	}
 }
 
-func assertRootFilesInPath(t *testing.T, fs filestore.FileStore, root filestore.Root, searchPath string, paths ...string) {
+func assertRootFilesInPath(t *testing.T, fs filestore.FileStore, root *filestore.Root, searchPath string, paths ...string) {
 	t.Helper()
 
 	files, err := fs.ForRoot(root).ReadDirectory(context.Background(), searchPath)
@@ -144,8 +144,8 @@ func assertRootFilesInPath(t *testing.T, fs filestore.FileStore, root filestore.
 	}
 
 	for i := range paths {
-		if files[i].GetPath() != paths[i] {
-			t.Errorf("unexpected files[%d].GetPath() , got: >%s<, want: >%s<", i, files[i].GetPath(), paths[i])
+		if files[i].Path != paths[i] {
+			t.Errorf("unexpected files[%d].Path , got: >%s<, want: >%s<", i, files[i].Path, paths[i])
 		}
 	}
 }

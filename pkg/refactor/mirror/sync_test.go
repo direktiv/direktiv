@@ -43,7 +43,7 @@ func TestExecuteMirroringProcess(t *testing.T) {
 	)
 }
 
-func assertRootFilesInPath(t *testing.T, fs filestore.FileStore, root filestore.Root, searchPath string, paths ...string) {
+func assertRootFilesInPath(t *testing.T, fs filestore.FileStore, root *filestore.Root, searchPath string, paths ...string) {
 	t.Helper()
 
 	files, err := fs.ForRoot(root).ReadDirectory(context.Background(), searchPath)
@@ -55,8 +55,8 @@ func assertRootFilesInPath(t *testing.T, fs filestore.FileStore, root filestore.
 	}
 
 	for i := range paths {
-		if files[i].GetPath() != paths[i] {
-			t.Errorf("unexpected files[%d].GetPath() , got: >%s<, want: >%s<", i, files[i].GetPath(), paths[i])
+		if files[i].Path != paths[i] {
+			t.Errorf("unexpected files[%d].Path , got: >%s<, want: >%s<", i, files[i].Path, paths[i])
 		}
 	}
 }
