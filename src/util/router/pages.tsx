@@ -12,6 +12,7 @@ import {
 import ExplorerPage from "../../pages/namespace/Explorer";
 import type { RouteObject } from "react-router-dom";
 import SettiongsPage from "../../pages/namespace/Settings";
+import WorkflowPage from "../../pages/namespace/Workflow";
 import { useParams } from "react-router-dom";
 
 interface PageBase {
@@ -84,7 +85,7 @@ export const pages: DefaultPageSetup & ExplorerPageSetup & WorkflowPageSetup = {
     },
     route: {
       path: "workflow/*",
-      element: <div>Workflow</div>,
+      element: <WorkflowPage />,
     },
   },
   monitoring: {
