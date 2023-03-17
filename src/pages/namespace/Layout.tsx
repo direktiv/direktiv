@@ -22,14 +22,16 @@ import {
 } from "../../componentsNext/Drawer";
 import {
   DropdownMenu,
-  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../../componentsNext/Dropdown";
-import { Link, Outlet } from "react-router-dom";
+import { FC, Fragment } from "react";
+import { Link, Outlet, useNavigate } from "react-router-dom";
 import {
   Main,
   MainContent,
@@ -41,15 +43,14 @@ import {
   SidebarMain,
   SidebarTop,
 } from "../../componentsNext/Appshell";
+import { useNamespace, useNamespaceActions } from "../../util/store/namespace";
 import { useTheme, useThemeActions } from "../../util/store/theme";
 
 import Button from "../../componentsNext/Button";
-import { FC } from "react";
 import Navigation from "../../componentsNext/Navigation";
 import { RxChevronDown } from "react-icons/rx";
 import clsx from "clsx";
 import { pages } from "../../util/router/pages";
-import { useNamespace } from "../../util/store/namespace";
 import { useNamespaces } from "../../api/namespaces";
 import { useTree } from "../../api/tree";
 import { useVersion } from "../../api/version";
@@ -65,7 +66,7 @@ const BreadcrumbComponent: FC<{ path: string }> = ({ path }) => {
 
   if (!namespace) return null;
 
-  let Icon = Loader2;
+  let Icon = FolderOpen;
 
   if (data?.node.type === "directory") {
     Icon = FolderOpen;
@@ -81,10 +82,7 @@ const BreadcrumbComponent: FC<{ path: string }> = ({ path }) => {
         to={pages.explorer.createHref({ namespace, directory: path })}
         className="gap-2"
       >
-        <Icon
-          aria-hidden="true"
-          className={clsx(isLoading && "animate-spin")}
-        />
+        <Icon aria-hidden="true" className={clsx(isLoading && "invisible")} />
         {segments.slice(-1)}
       </Link>
     </Breadcrumb>
@@ -97,12 +95,19 @@ const Layout = () => {
 
   const { data: availableNamespaces, isLoading } = useNamespaces();
   const namespace = useNamespace();
+  const { setNamespace } = useNamespaceActions();
+  const navigate = useNavigate();
 
   const theme = useTheme();
 
   if (!namespace) return null;
 
   const { directory } = pages.explorer.useParams();
+
+  const onNameSpaceChange = (namespace: string) => {
+    setNamespace(namespace);
+    navigate(pages.explorer.createHref({ namespace }));
+  };
 
   return (
     <Root>
@@ -146,14 +151,20 @@ const Layout = () => {
                           <DropdownMenuContent className="w-56">
                             <DropdownMenuLabel>Namespaces</DropdownMenuLabel>
                             <DropdownMenuSeparator />
-                            {availableNamespaces?.results.map((ns) => (
-                              <DropdownMenuCheckboxItem
-                                key={ns.name}
-                                checked={namespace === ns.name}
-                              >
-                                {ns.name}
-                              </DropdownMenuCheckboxItem>
-                            ))}
+                            <DropdownMenuRadioGroup
+                              value={namespace}
+                              onValueChange={onNameSpaceChange}
+                            >
+                              {availableNamespaces?.results.map((ns) => (
+                                <DropdownMenuRadioItem
+                                  key={ns.name}
+                                  value={ns.name}
+                                  textValue={ns.name}
+                                >
+                                  {ns.name}
+                                </DropdownMenuRadioItem>
+                              ))}
+                            </DropdownMenuRadioGroup>
                             {isLoading && (
                               <DropdownMenuItem disabled>
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
