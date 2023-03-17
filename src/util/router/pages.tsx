@@ -9,9 +9,9 @@ import {
   Users,
 } from "lucide-react";
 
-import ExplorerPageSetup from "../../pages/Explorer";
+import ExplorerPageSetup from "../../pages/namespace/Explorer";
 import type { RouteObject } from "react-router-dom";
-import SettiongsPage from "../../pages/Settings";
+import SettiongsPage from "../../pages/namespace/Settings";
 import { useParams } from "react-router-dom";
 
 interface PageBase {
@@ -52,7 +52,7 @@ export const pages: DefaultPageSetup & ExplorerPageSetup = {
       return { directory: directory };
     },
     route: {
-      path: "/explorer/*",
+      path: "explorer/*",
       element: <ExplorerPageSetup />,
     },
   },
@@ -61,7 +61,7 @@ export const pages: DefaultPageSetup & ExplorerPageSetup = {
     icon: Bug,
     createHref: () => "/monitoring",
     route: {
-      path: "/monitoring",
+      path: "monitoring",
       element: <div>Monitoring</div>,
     },
   },
@@ -71,7 +71,7 @@ export const pages: DefaultPageSetup & ExplorerPageSetup = {
     icon: Box,
     createHref: () => "/instances",
     route: {
-      path: "/instances",
+      path: "instances",
       element: <div>Instances</div>,
     },
   },
@@ -80,7 +80,7 @@ export const pages: DefaultPageSetup & ExplorerPageSetup = {
     icon: Calendar,
     createHref: () => "/events",
     route: {
-      path: "/events",
+      path: "events",
       element: <div>Events</div>,
     },
   },
@@ -89,7 +89,7 @@ export const pages: DefaultPageSetup & ExplorerPageSetup = {
     icon: Network,
     createHref: () => "/gateway",
     route: {
-      path: "/gateway",
+      path: "gateway",
       element: <div>Gateway</div>,
     },
   },
@@ -98,7 +98,7 @@ export const pages: DefaultPageSetup & ExplorerPageSetup = {
     icon: Users,
     createHref: () => "/permissions",
     route: {
-      path: "/permissions",
+      path: "permissions",
       element: <div>Permissions</div>,
     },
   },
@@ -116,7 +116,7 @@ export const pages: DefaultPageSetup & ExplorerPageSetup = {
     icon: Settings,
     createHref: () => "/settings",
     route: {
-      path: "/settings",
+      path: "settings",
       element: <SettiongsPage />,
     },
   },

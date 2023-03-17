@@ -1,10 +1,13 @@
-import { useApiActions, useApiKey } from "../../util/store/apiKey";
-import { useNamespace, useNamespaceActions } from "../../util/store/namespace";
-import { useTheme, useThemeActions } from "../../util/store/theme";
+import { useApiActions, useApiKey } from "../../../util/store/apiKey";
+import {
+  useNamespace,
+  useNamespaceActions,
+} from "../../../util/store/namespace";
+import { useTheme, useThemeActions } from "../../../util/store/theme";
 
 import { FC } from "react";
-import { useNamespaces } from "../../api/namespaces";
-import { useVersion } from "../../api/version";
+import { useNamespaces } from "../../../api/namespaces";
+import { useVersion } from "../../../api/version";
 
 const SettiongsPage: FC = () => {
   const apiKey = useApiKey();

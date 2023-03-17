@@ -1,13 +1,16 @@
 import { FolderOpen, FolderUp, Play } from "lucide-react";
-import { useNamespace, useNamespaceActions } from "../../util/store/namespace";
+import {
+  useNamespace,
+  useNamespaceActions,
+} from "../../../util/store/namespace";
 
-import Button from "../../componentsNext/Button";
+import Button from "../../../componentsNext/Button";
 import { FC } from "react";
 import { Link } from "react-router-dom";
 import moment from "moment";
-import { pages } from "../../util/router/pages";
-import { useNamespaces } from "../../api/namespaces";
-import { useTree } from "../../api/tree";
+import { pages } from "../../../util/router/pages";
+import { useNamespaces } from "../../../api/namespaces";
+import { useTree } from "../../../api/tree";
 
 const ExplorerPage: FC = () => {
   const { data: namespaces } = useNamespaces();

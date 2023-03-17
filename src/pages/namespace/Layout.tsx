@@ -1,4 +1,4 @@
-import { Breadcrumb, BreadcrumbRoot } from "../componentsNext/Breadcump";
+import { Breadcrumb, BreadcrumbRoot } from "../../componentsNext/Breadcump";
 import {
   ChevronsUpDown,
   CurlyBraces,
@@ -20,7 +20,7 @@ import {
   DrawerContent,
   DrawerMenu,
   DrawerRoot,
-} from "../componentsNext/Drawer";
+} from "../../componentsNext/Drawer";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -29,7 +29,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "../componentsNext/Dropdown";
+} from "../../componentsNext/Dropdown";
 import { Link, Outlet } from "react-router-dom";
 import {
   Main,
@@ -41,16 +41,16 @@ import {
   Sidebar,
   SidebarMain,
   SidebarTop,
-} from "../componentsNext/Appshell";
-import { useTheme, useThemeActions } from "../util/store/theme";
+} from "../../componentsNext/Appshell";
+import { useTheme, useThemeActions } from "../../util/store/theme";
 
-import Button from "../componentsNext/Button";
-import Navigation from "../componentsNext/Navigation";
+import Button from "../../componentsNext/Button";
+import Navigation from "../../componentsNext/Navigation";
 import { RxChevronDown } from "react-icons/rx";
-import { pages } from "../util/router/pages";
-import { useNamespace } from "../util/store/namespace";
-import { useNamespaces } from "../api/namespaces";
-import { useVersion } from "../api/version";
+import { pages } from "../../util/router/pages";
+import { useNamespace } from "../../util/store/namespace";
+import { useNamespaces } from "../../api/namespaces";
+import { useVersion } from "../../api/version";
 
 const Layout = () => {
   const { data: version } = useVersion();
@@ -60,6 +60,7 @@ const Layout = () => {
   const activeNamespace = useNamespace();
 
   const theme = useTheme();
+
   return (
     <Root>
       <DrawerRoot>
