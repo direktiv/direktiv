@@ -4,6 +4,7 @@ import { useNamespace, useNamespaceActions } from "../../util/store/namespace";
 import Button from "../../componentsNext/Button";
 import { FC } from "react";
 import { Link } from "react-router-dom";
+import moment from "moment";
 import { pages } from "../../util/router/pages";
 import { useNamespaces } from "../../api/namespaces";
 import { useTree } from "../../api/tree";
@@ -61,14 +62,20 @@ const ExplorerPage: FC = () => {
                 className="flex items-center space-x-3"
               >
                 <FolderOpen />
-                <span>{file.name}</span>
+                <span className="flex-1">{file.name}</span>
+                <span className="text-gray-gray8 dark:text-grayDark-gray8">
+                  {moment(file.updatedAt).fromNow()}
+                </span>
               </Link>
             )}
 
             {file.type === "workflow" && (
               <div className="flex items-center space-x-3">
                 <Play />
-                <span>{file.name}</span>
+                <span className="flex-1">{file.name}</span>
+                <span className="text-gray-gray8 dark:text-grayDark-gray8">
+                  {moment(file.updatedAt).fromNow()}
+                </span>
               </div>
             )}
           </div>
