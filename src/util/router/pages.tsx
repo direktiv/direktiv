@@ -9,7 +9,7 @@ import {
   Users,
 } from "lucide-react";
 
-import ExplorerPageSetup from "../../pages/namespace/Explorer";
+import ExplorerPage from "../../pages/namespace/Explorer";
 import type { RouteObject } from "react-router-dom";
 import SettiongsPage from "../../pages/namespace/Settings";
 import { useParams } from "react-router-dom";
@@ -53,7 +53,7 @@ export const pages: DefaultPageSetup & ExplorerPageSetup = {
     },
     route: {
       path: "explorer/*",
-      element: <ExplorerPageSetup />,
+      element: <ExplorerPage />,
     },
   },
   monitoring: {
