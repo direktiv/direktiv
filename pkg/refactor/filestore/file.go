@@ -22,8 +22,6 @@ type File struct {
 	Depth int
 	Typ   FileType
 
-	Revisions []Revision `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-
 	RootID uuid.UUID
 
 	CreatedAt time.Time

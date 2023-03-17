@@ -48,7 +48,17 @@ func NewMockFileStore() (*SQLFileStore, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = db.AutoMigrate(&filestore.Root{}, &filestore.File{}, &filestore.Revision{})
+
+	type File struct {
+		filestore.File
+		Revisions []filestore.Revision `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	}
+	type Root struct {
+		filestore.Root
+		Files []File `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	}
+
+	err = db.AutoMigrate(&Root{}, &File{}, &filestore.Revision{})
 	if err != nil {
 		return nil, err
 	}

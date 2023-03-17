@@ -42,8 +42,6 @@ type GetFileOpts struct {
 type Root struct {
 	ID uuid.UUID
 
-	Files []File `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
