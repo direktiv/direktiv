@@ -5,12 +5,12 @@ import { pages } from "./pages";
 
 export const router = createBrowserRouter([
   {
+    path: "/",
+    element: <OnboardingPage />,
+  },
+  {
     path: "/:namespace",
     element: <NamespaceLayout />,
     children: Object.values(pages).map((page) => page.route),
-  },
-  {
-    path: "/",
-    element: <OnboardingPage />,
   },
 ]);
