@@ -15,8 +15,8 @@ import SettiongsPage from "../../pages/namespace/Settings";
 import { useParams } from "react-router-dom";
 
 interface PageBase {
-  name: string;
-  icon: React.FC<React.SVGProps<SVGSVGElement>>;
+  name?: string;
+  icon?: React.FC<React.SVGProps<SVGSVGElement>>;
   route: RouteObject;
 }
 
@@ -33,6 +33,7 @@ type DefaultPageSetup = Record<
   KeysWithNoPathParams,
   PageBase & { createHref: (params: { namespace: string }) => string }
 >;
+
 type ExplorerPageSetup = Record<
   "explorer",
   PageBase & {
@@ -44,14 +45,27 @@ type ExplorerPageSetup = Record<
   }
 >;
 
-export const pages: DefaultPageSetup & ExplorerPageSetup = {
+type WorkflowPageSetup = Record<
+  "workflow",
+  PageBase & {
+    createHref: (params: { namespace: string; file?: string }) => string;
+    useParams: () => {
+      namespace: string | undefined;
+      file: string | undefined;
+    };
+  }
+>;
+
+// these are the direct child pages that live in the /:namespace folder
+// the main goal of this abstraction is to make the router as typesafe as
+// possible and to globally manage and change the url structure
+// entries with no name and icon will not be rendered in the navigation
+export const pages: DefaultPageSetup & ExplorerPageSetup & WorkflowPageSetup = {
   explorer: {
     name: "Explorer",
     icon: FolderTree,
     createHref: (params) =>
-      `/${params.namespace}/explorer${
-        params?.directory ? `/${params.directory}` : "/"
-      }`,
+      `/${params.namespace}/explorer${`/${params.directory ?? ""}`}`,
     useParams: () => {
       const { "*": directory, namespace } = useParams();
       return { namespace, directory };
@@ -59,6 +73,18 @@ export const pages: DefaultPageSetup & ExplorerPageSetup = {
     route: {
       path: "explorer/*",
       element: <ExplorerPage />,
+    },
+  },
+  workflow: {
+    createHref: (params) =>
+      `/${params.namespace}/workflow/${params.file ?? ""}`,
+    useParams: () => {
+      const { "*": file, namespace } = useParams();
+      return { namespace, file };
+    },
+    route: {
+      path: "workflow/*",
+      element: <div>Workflow</div>,
     },
   },
   monitoring: {
@@ -70,7 +96,6 @@ export const pages: DefaultPageSetup & ExplorerPageSetup = {
       element: <div>Monitoring</div>,
     },
   },
-
   instances: {
     name: "Instances",
     icon: Box,
@@ -125,4 +150,4 @@ export const pages: DefaultPageSetup & ExplorerPageSetup = {
       element: <SettiongsPage />,
     },
   },
-};
+} as const;

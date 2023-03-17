@@ -9,16 +9,21 @@ const Navigation: FC = () => {
   if (!namespace) return null;
   return (
     <>
-      {Object.entries(pages).map(([key, item]) => (
-        <NavLink
-          key={key}
-          to={item.createHref({ namespace })}
-          className={({ isActive }) => createClassNames(isActive)}
-          end={false}
-        >
-          <item.icon aria-hidden="true" /> {item.name}
-        </NavLink>
-      ))}
+      {Object.entries(pages)
+        .filter(([, item]) => !!item.icon || !!item.name)
+        .map(([key, item]) => {
+          if (!item.icon || !item.name) return null;
+          return (
+            <NavLink
+              key={key}
+              to={item.createHref({ namespace })}
+              className={({ isActive }) => createClassNames(isActive)}
+              end={false}
+            >
+              <item.icon aria-hidden="true" /> {item.name}
+            </NavLink>
+          );
+        })}
     </>
   );
 };

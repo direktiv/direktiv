@@ -22,7 +22,7 @@ const ExplorerPage: FC = () => {
         {directory && (
           <Link
             to={pages.explorer.createHref({
-              namespace: namespace,
+              namespace,
               directory: directory.split("/").slice(0, -1).join("/"),
             })}
             className="flex items-center space-x-3"
@@ -42,9 +42,12 @@ const ExplorerPage: FC = () => {
 
           const linkTarget =
             file.expandedType === "workflow"
-              ? "#"
+              ? pages.workflow.createHref({
+                  namespace,
+                  file: directory ? `${directory}/${file.name}` : file.name,
+                })
               : pages.explorer.createHref({
-                  namespace: namespace,
+                  namespace,
                   directory: directory
                     ? `${directory}/${file.name}`
                     : file.name,
