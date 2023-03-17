@@ -81,12 +81,14 @@ const BreadcrumbComponent: FC<{ path: string }> = ({ path }) => {
     Icon = Play;
   }
 
+  const link =
+    data?.node.expandedType === "workflow"
+      ? pages.workflow.createHref({ namespace, file: path })
+      : pages.explorer.createHref({ namespace, directory: path });
+
   return (
     <Breadcrumb>
-      <Link
-        to={pages.explorer.createHref({ namespace, directory: path })}
-        className="gap-2"
-      >
+      <Link to={link} className="gap-2">
         <Icon aria-hidden="true" className={clsx(isLoading && "invisible")} />
         {segments.slice(-1)}
       </Link>
