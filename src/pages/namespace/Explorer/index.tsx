@@ -1,4 +1,4 @@
-import { FolderOpen, FolderUp, Play } from "lucide-react";
+import { FolderOpen, FolderUp, Github, Play } from "lucide-react";
 
 import { FC } from "react";
 import { Link } from "react-router-dom";
@@ -31,37 +31,37 @@ const ExplorerPage: FC = () => {
             <span>..</span>
           </Link>
         )}
-        {data?.children.results.map((file) => (
-          <div key={file.name}>
-            {file.type === "directory" && (
-              <Link
-                to={pages.explorer.createHref({
+        {data?.children?.results.map((file) => {
+          let Icon = FolderOpen;
+          if (file.expandedType === "workflow") {
+            Icon = Play;
+          }
+          if (file.expandedType === "git") {
+            Icon = Github;
+          }
+
+          const linkTarget =
+            file.expandedType === "workflow"
+              ? "#"
+              : pages.explorer.createHref({
                   namespace: namespace,
                   directory: directory
                     ? `${directory}/${file.name}`
                     : file.name,
-                })}
-                className="flex items-center space-x-3"
-              >
-                <FolderOpen />
+                });
+
+          return (
+            <div key={file.name}>
+              <Link to={linkTarget} className="flex items-center space-x-3">
+                <Icon />
                 <span className="flex-1">{file.name}</span>
                 <span className="text-gray-gray8 dark:text-grayDark-gray8">
                   {moment(file.updatedAt).fromNow()}
                 </span>
               </Link>
-            )}
-
-            {file.type === "workflow" && (
-              <div className="flex items-center space-x-3">
-                <Play />
-                <span className="flex-1">{file.name}</span>
-                <span className="text-gray-gray8 dark:text-grayDark-gray8">
-                  {moment(file.updatedAt).fromNow()}
-                </span>
-              </div>
-            )}
-          </div>
-        ))}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
