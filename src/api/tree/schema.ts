@@ -7,11 +7,11 @@ const NodeSchema = z.object({
   name: z.string(),
   path: z.string(),
   parent: z.string(),
-  type: z.enum(["directory", "workflow"]), // this must be an enum (possible values: directory, ???)
-  attributes: z.array(z.string()), // must be specified more
+  type: z.enum(["directory", "workflow"]),
+  attributes: z.array(z.string()), // must be more specified
   oid: z.string(),
   readOnly: z.boolean(),
-  expandedType: z.string(), // this must be an enum (possible values: git, workflow, directory, ???)
+  expandedType: z.enum(["directory", "workflow", "git"]),
 });
 
 export const TreeListSchema = z.object({
