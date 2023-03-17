@@ -978,13 +978,13 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 			time.Sleep(1000 * time.Millisecond)
 
 		} else {
-			engine.sugar.Debugf("successfully created funtion with image %s name %s", ar.Container.Image, ar.Container.ID, err)
+			engine.sugar.Debugf("successfully created function with image %s name %s", ar.Container.Image, ar.Container.ID, err)
 			break
 		}
 	}
 
 	if err != nil {
-		err := errors.New(fmt.Sprintf("failed creating funtion with image %s name %s with error: %v", ar.Container.Image, ar.Container.ID, err))
+		err := fmt.Errorf("failed creating function with image %s name %s with error: %w", ar.Container.Image, ar.Container.ID, err)
 		engine.reportError(ar, err)
 		return
 	}
