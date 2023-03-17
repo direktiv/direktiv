@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { useNamespace, useNamespaceActions } from "../util/store/namespace";
 
 import Logo from "../componentsNext/Logo";
+import { pages } from "../util/router/pages";
 import { useNamespaces } from "../api/namespaces";
 import { useNavigate } from "react-router-dom";
 
@@ -16,13 +17,20 @@ const Layout = () => {
     if (availableNamespaces && availableNamespaces?.results?.length > 1) {
       // if there is a prefered namespace in localStorage, redirect to it
       if (
+        activeNamespace &&
         availableNamespaces.results.some((ns) => ns.name === activeNamespace)
       ) {
-        navigate("/" + activeNamespace);
+        navigate(pages.explorer.createHref({ namespace: activeNamespace }));
+        return;
       }
       // otherwise, redirect to the first namespace and store it in localStorage
       setNamespace(availableNamespaces.results[0].name);
-      navigate("/" + availableNamespaces.results[0].name);
+      navigate(
+        pages.explorer.createHref({
+          namespace: availableNamespaces.results[0].name,
+        })
+      );
+      return;
     }
   }, [activeNamespace, availableNamespaces, navigate, setNamespace]);
 

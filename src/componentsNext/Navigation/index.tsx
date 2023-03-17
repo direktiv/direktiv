@@ -2,19 +2,25 @@ import { FC } from "react";
 import { NavLink } from "react-router-dom";
 import { createClassNames } from "../NavigationLink";
 import { pages } from "../../util/router/pages";
+import { useNamespace } from "../../util/store/namespace";
 
-const Navigation: FC = () => (
-  <>
-    {Object.entries(pages).map(([key, item]) => (
-      <NavLink
-        key={key}
-        to={item.createHref()}
-        className={({ isActive }) => createClassNames(isActive)}
-      >
-        <item.icon aria-hidden="true" /> {item.name}
-      </NavLink>
-    ))}
-  </>
-);
+const Navigation: FC = () => {
+  const namespace = useNamespace();
+  if (!namespace) return null;
+  return (
+    <>
+      {Object.entries(pages).map(([key, item]) => (
+        <NavLink
+          key={key}
+          to={item.createHref({ namespace })}
+          className={({ isActive }) => createClassNames(isActive)}
+          end={false}
+        >
+          <item.icon aria-hidden="true" /> {item.name}
+        </NavLink>
+      ))}
+    </>
+  );
+};
 
 export default Navigation;

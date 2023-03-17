@@ -57,10 +57,11 @@ const Layout = () => {
   const { setTheme } = useThemeActions();
 
   const { data: availableNamespaces, isLoading } = useNamespaces();
-  const activeNamespace = useNamespace();
+  const namespace = useNamespace();
 
   const theme = useTheme();
 
+  if (!namespace) return null;
   return (
     <Root>
       <DrawerRoot>
@@ -87,11 +88,11 @@ const Layout = () => {
                     <BreadcrumbRoot>
                       <Breadcrumb>
                         <Link
-                          to={pages.explorer.createHref()}
+                          to={pages.explorer.createHref({ namespace })}
                           className="gap-2"
                         >
                           <Home />
-                          {activeNamespace}
+                          {namespace}
                         </Link>
                         &nbsp;
                         <DropdownMenu>
@@ -103,12 +104,12 @@ const Layout = () => {
                           <DropdownMenuContent className="w-56">
                             <DropdownMenuLabel>Namespaces</DropdownMenuLabel>
                             <DropdownMenuSeparator />
-                            {availableNamespaces?.results.map((namespace) => (
+                            {availableNamespaces?.results.map((ns) => (
                               <DropdownMenuCheckboxItem
-                                key={namespace.name}
-                                checked={activeNamespace === namespace.name}
+                                key={ns.name}
+                                checked={namespace === ns.name}
                               >
-                                {namespace.name}
+                                {ns.name}
                               </DropdownMenuCheckboxItem>
                             ))}
                             {isLoading && (

@@ -31,13 +31,16 @@ type KeysWithNoPathParams =
 
 type DefaultPageSetup = Record<
   KeysWithNoPathParams,
-  PageBase & { createHref: () => string }
+  PageBase & { createHref: (params: { namespace: string }) => string }
 >;
 type ExplorerPageSetup = Record<
   "explorer",
   PageBase & {
-    createHref: (params?: { directory: string }) => string;
-    useParams: () => { directory: string | undefined };
+    createHref: (params: { namespace: string; directory?: string }) => string;
+    useParams: () => {
+      namespace: string | undefined;
+      directory: string | undefined;
+    };
   }
 >;
 
@@ -46,10 +49,12 @@ export const pages: DefaultPageSetup & ExplorerPageSetup = {
     name: "Explorer",
     icon: FolderTree,
     createHref: (params) =>
-      `/explorer${params?.directory ? `/${params.directory}` : ""}`,
+      `/${params.namespace}/explorer${
+        params?.directory ? `/${params.directory}` : "/"
+      }`,
     useParams: () => {
-      const { "*": directory } = useParams();
-      return { directory: directory };
+      const { "*": directory, namespace } = useParams();
+      return { namespace, directory };
     },
     route: {
       path: "explorer/*",
@@ -59,7 +64,7 @@ export const pages: DefaultPageSetup & ExplorerPageSetup = {
   monitoring: {
     name: "Monitoring",
     icon: Bug,
-    createHref: () => "/monitoring",
+    createHref: (params) => `/${params.namespace}/monitoring`,
     route: {
       path: "monitoring",
       element: <div>Monitoring</div>,
@@ -69,7 +74,7 @@ export const pages: DefaultPageSetup & ExplorerPageSetup = {
   instances: {
     name: "Instances",
     icon: Box,
-    createHref: () => "/instances",
+    createHref: (params) => `/${params.namespace}/instances`,
     route: {
       path: "instances",
       element: <div>Instances</div>,
@@ -78,7 +83,7 @@ export const pages: DefaultPageSetup & ExplorerPageSetup = {
   events: {
     name: "Events",
     icon: Calendar,
-    createHref: () => "/events",
+    createHref: (params) => `/${params.namespace}/events`,
     route: {
       path: "events",
       element: <div>Events</div>,
@@ -87,7 +92,7 @@ export const pages: DefaultPageSetup & ExplorerPageSetup = {
   gateway: {
     name: "Gateway",
     icon: Network,
-    createHref: () => "/gateway",
+    createHref: (params) => `/${params.namespace}/gateway`,
     route: {
       path: "gateway",
       element: <div>Gateway</div>,
@@ -96,7 +101,7 @@ export const pages: DefaultPageSetup & ExplorerPageSetup = {
   permissions: {
     name: "Permissions",
     icon: Users,
-    createHref: () => "/permissions",
+    createHref: (params) => `/${params.namespace}/permissions`,
     route: {
       path: "permissions",
       element: <div>Permissions</div>,
@@ -105,7 +110,7 @@ export const pages: DefaultPageSetup & ExplorerPageSetup = {
   services: {
     name: "Services",
     icon: Layers,
-    createHref: () => "services",
+    createHref: (params) => `/${params.namespace}/services`,
     route: {
       path: "services",
       element: <div>Services</div>,
@@ -114,7 +119,7 @@ export const pages: DefaultPageSetup & ExplorerPageSetup = {
   settings: {
     name: "Settings",
     icon: Settings,
-    createHref: () => "/settings",
+    createHref: (params) => `/${params.namespace}/settings`,
     route: {
       path: "settings",
       element: <SettiongsPage />,

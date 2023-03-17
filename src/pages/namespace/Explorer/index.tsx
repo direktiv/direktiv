@@ -14,7 +14,7 @@ import { useTree } from "../../../api/tree";
 
 const ExplorerPage: FC = () => {
   const { data: namespaces } = useNamespaces();
-  const selectedNamespace = useNamespace();
+  const namespace = useNamespace();
   const { setNamespace } = useNamespaceActions();
   const { directory } = pages.explorer.useParams();
 
@@ -22,21 +22,25 @@ const ExplorerPage: FC = () => {
     directory,
   });
 
+  if (!namespace) return null;
   return (
     <div>
       <h1>Explorer {directory}</h1>
+      <Link to={pages.explorer.createHref({ namespace })}>
+        Home to {pages.explorer.createHref({ namespace })}
+      </Link>
       <div className="py-5 font-bold">Namespaces</div>
       <div className="flex flex-col space-y-5 ">
-        {namespaces?.results.map((namespace) => (
+        {namespaces?.results.map((ns) => (
           <Button
-            key={namespace.name}
+            key={ns.name}
             onClick={() => {
-              setNamespace(namespace.name);
+              setNamespace(ns.name);
             }}
             color="primary"
             size="sm"
           >
-            {selectedNamespace === namespace.name && "✅"} {namespace.name}
+            {namespace === ns.name && "✅"} {ns.name}
           </Button>
         ))}
       </div>
@@ -45,6 +49,7 @@ const ExplorerPage: FC = () => {
         {directory && (
           <Link
             to={pages.explorer.createHref({
+              namespace: namespace,
               directory: directory.split("/").slice(0, -1).join("/"),
             })}
             className="flex items-center space-x-3"
@@ -58,6 +63,7 @@ const ExplorerPage: FC = () => {
             {file.type === "directory" && (
               <Link
                 to={pages.explorer.createHref({
+                  namespace: namespace,
                   directory: directory
                     ? `${directory}/${file.name}`
                     : file.name,
