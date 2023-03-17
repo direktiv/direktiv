@@ -1,21 +1,14 @@
 import { FolderOpen, FolderUp, Play } from "lucide-react";
-import {
-  useNamespace,
-  useNamespaceActions,
-} from "../../../util/store/namespace";
 
-import Button from "../../../componentsNext/Button";
 import { FC } from "react";
 import { Link } from "react-router-dom";
 import moment from "moment";
 import { pages } from "../../../util/router/pages";
-import { useNamespaces } from "../../../api/namespaces";
+import { useNamespace } from "../../../util/store/namespace";
 import { useTree } from "../../../api/tree";
 
 const ExplorerPage: FC = () => {
-  const { data: namespaces } = useNamespaces();
   const namespace = useNamespace();
-  const { setNamespace } = useNamespaceActions();
   const { directory } = pages.explorer.useParams();
 
   const { data } = useTree({
@@ -25,26 +18,6 @@ const ExplorerPage: FC = () => {
   if (!namespace) return null;
   return (
     <div>
-      <h1>Explorer {directory}</h1>
-      <Link to={pages.explorer.createHref({ namespace })}>
-        Home to {pages.explorer.createHref({ namespace })}
-      </Link>
-      <div className="py-5 font-bold">Namespaces</div>
-      <div className="flex flex-col space-y-5 ">
-        {namespaces?.results.map((ns) => (
-          <Button
-            key={ns.name}
-            onClick={() => {
-              setNamespace(ns.name);
-            }}
-            color="primary"
-            size="sm"
-          >
-            {namespace === ns.name && "✅"} {ns.name}
-          </Button>
-        ))}
-      </div>
-      <div className="py-5 font-bold">Files</div>
       <div className="flex flex-col space-y-5 ">
         {directory && (
           <Link
