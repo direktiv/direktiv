@@ -17,7 +17,7 @@ const ExplorerPage: FC = () => {
 
   if (!namespace) return null;
   return (
-    <div>
+    <div className="flex flex-col space-y-5 p-10">
       <div className="flex flex-col space-y-5 ">
         {directory && (
           <Link

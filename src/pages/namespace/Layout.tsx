@@ -271,9 +271,7 @@ const Layout = () => {
                   </MainTopRight>
                 </MainTop>
                 <MainContent>
-                  <div className="flex flex-col space-y-5 p-10">
-                    <Outlet />
-                  </div>
+                  <Outlet />
                 </MainContent>
               </Main>
             </>
