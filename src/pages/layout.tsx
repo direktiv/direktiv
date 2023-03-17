@@ -30,6 +30,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../componentsNext/Dropdown";
+import { Link, Outlet } from "react-router-dom";
 import {
   Main,
   MainContent,
@@ -45,8 +46,8 @@ import { useTheme, useThemeActions } from "../util/store/theme";
 
 import Button from "../componentsNext/Button";
 import Navigation from "../componentsNext/Navigation";
-import { Outlet } from "react-router-dom";
 import { RxChevronDown } from "react-icons/rx";
+import { pages } from "../util/router/pages";
 import { useNamespace } from "../util/store/namespace";
 import { useNamespaces } from "../api/namespaces";
 import { useVersion } from "../api/version";
@@ -84,10 +85,13 @@ const Layout = () => {
                   <MainTopLeft>
                     <BreadcrumbRoot>
                       <Breadcrumb>
-                        <a className="gap-2">
-                          <Home className="h-4 w-auto" />
-                          My-namespace
-                        </a>
+                        <Link
+                          to={pages.explorer.createHref()}
+                          className="gap-2"
+                        >
+                          <Home />
+                          {activeNamespace}
+                        </Link>
                         &nbsp;
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
