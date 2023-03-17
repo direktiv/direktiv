@@ -5,6 +5,7 @@ import {
   FolderOpen,
   Github,
   Home,
+  Loader2,
   LogOut,
   Menu,
   Moon,
@@ -46,11 +47,17 @@ import Button from "../componentsNext/Button";
 import Navigation from "../componentsNext/Navigation";
 import { Outlet } from "react-router-dom";
 import { RxChevronDown } from "react-icons/rx";
+import { useNamespace } from "../util/store/namespace";
+import { useNamespaces } from "../api/namespaces";
 import { useVersion } from "../api/version";
 
 const Layout = () => {
   const { data: version } = useVersion();
   const { setTheme } = useThemeActions();
+
+  const { data: availableNamespaces, isLoading } = useNamespaces();
+  const activeNamespace = useNamespace();
+
   const theme = useTheme();
   return (
     <Root>
@@ -91,15 +98,20 @@ const Layout = () => {
                           <DropdownMenuContent className="w-56">
                             <DropdownMenuLabel>Namespaces</DropdownMenuLabel>
                             <DropdownMenuSeparator />
-                            <DropdownMenuCheckboxItem checked>
-                              My-namespace
-                            </DropdownMenuCheckboxItem>
-                            <DropdownMenuCheckboxItem>
-                              second-namespace
-                            </DropdownMenuCheckboxItem>
-                            <DropdownMenuCheckboxItem>
-                              another-namespace
-                            </DropdownMenuCheckboxItem>
+                            {availableNamespaces?.results.map((namespace) => (
+                              <DropdownMenuCheckboxItem
+                                key={namespace.name}
+                                checked={activeNamespace === namespace.name}
+                              >
+                                {namespace.name}
+                              </DropdownMenuCheckboxItem>
+                            ))}
+                            {isLoading && (
+                              <DropdownMenuItem disabled>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                loading...
+                              </DropdownMenuItem>
+                            )}
                             <DropdownMenuSeparator />
                             <DropdownMenuItem>
                               <PlusCircle className="mr-2 h-4 w-4" />
