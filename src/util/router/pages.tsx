@@ -94,7 +94,7 @@ export const pages: DefaultPageSetup & ExplorerPageSetup & WorkflowPageSetup = {
     createHref: (params) => `/${params.namespace}/monitoring`,
     route: {
       path: "monitoring",
-      element: <div>Monitoring</div>,
+      element: <div className="flex flex-col space-y-5 p-10">Monitoring</div>,
     },
   },
   instances: {
@@ -103,7 +103,7 @@ export const pages: DefaultPageSetup & ExplorerPageSetup & WorkflowPageSetup = {
     createHref: (params) => `/${params.namespace}/instances`,
     route: {
       path: "instances",
-      element: <div>Instances</div>,
+      element: <div className="flex flex-col space-y-5 p-10">Instances</div>,
     },
   },
   events: {
@@ -112,7 +112,7 @@ export const pages: DefaultPageSetup & ExplorerPageSetup & WorkflowPageSetup = {
     createHref: (params) => `/${params.namespace}/events`,
     route: {
       path: "events",
-      element: <div>Events</div>,
+      element: <div className="flex flex-col space-y-5 p-10">Events</div>,
     },
   },
   gateway: {
@@ -121,7 +121,7 @@ export const pages: DefaultPageSetup & ExplorerPageSetup & WorkflowPageSetup = {
     createHref: (params) => `/${params.namespace}/gateway`,
     route: {
       path: "gateway",
-      element: <div>Gateway</div>,
+      element: <div className="flex flex-col space-y-5 p-10">Gateway</div>,
     },
   },
   permissions: {
@@ -130,7 +130,7 @@ export const pages: DefaultPageSetup & ExplorerPageSetup & WorkflowPageSetup = {
     createHref: (params) => `/${params.namespace}/permissions`,
     route: {
       path: "permissions",
-      element: <div>Permissions</div>,
+      element: <div className="flex flex-col space-y-5 p-10">Permissions</div>,
     },
   },
   services: {
@@ -139,7 +139,7 @@ export const pages: DefaultPageSetup & ExplorerPageSetup & WorkflowPageSetup = {
     createHref: (params) => `/${params.namespace}/services`,
     route: {
       path: "services",
-      element: <div>Services</div>,
+      element: <div className="flex flex-col space-y-5 p-10">Services</div>,
     },
   },
   settings: {

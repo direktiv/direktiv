@@ -22,7 +22,7 @@ const SettiongsPage: FC = () => {
   const { data: namespaces, isLoading: isLoadingNamespaces } = useNamespaces();
 
   return (
-    <>
+    <div className="flex flex-col space-y-5 p-10">
       <div className="card w-max bg-base-100 p-4 shadow-md">
         <h1>
           theme <span className="font-bold">{theme}</span>
@@ -79,7 +79,7 @@ const SettiongsPage: FC = () => {
       </div>
 
       <div></div>
-    </>
+    </div>
   );
 };
 
