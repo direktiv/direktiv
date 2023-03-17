@@ -1,3 +1,4 @@
+import { Breadcrumb, BreadcrumbRoot } from "../componentsNext/Breadcump";
 import {
   ChevronsUpDown,
   CurlyBraces,
@@ -74,60 +75,58 @@ const Layout = () => {
               <Main>
                 <MainTop>
                   <MainTopLeft>
-                    <div className="breadcrumbs text-sm">
-                      <ul>
-                        <li>
-                          <a className="gap-2">
-                            <Home className="h-4 w-auto" />
-                            My-namespace
-                          </a>
-                          &nbsp;
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button size="xs" color="ghost" circle>
-                                <ChevronsUpDown />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent className="w-56">
-                              <DropdownMenuLabel>Namespaces</DropdownMenuLabel>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuCheckboxItem checked>
-                                My-namespace
-                              </DropdownMenuCheckboxItem>
-                              <DropdownMenuCheckboxItem>
-                                second-namespace
-                              </DropdownMenuCheckboxItem>
-                              <DropdownMenuCheckboxItem>
-                                another-namespace
-                              </DropdownMenuCheckboxItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem>
-                                <PlusCircle className="mr-2 h-4 w-4" />
-                                <span>Create new namespace</span>
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </li>
-                        <li>
-                          <a className="gap-2">
-                            <Github className="h-4 w-auto" />
-                            Example Mirror
-                          </a>
-                        </li>
-                        <li>
-                          <a className="gap-2">
-                            <FolderOpen className="h-4 w-auto" />
-                            Folder
-                          </a>
-                        </li>
-                        <li>
-                          <a className="gap-2">
-                            <Play className="h-4 w-auto" />
-                            workflow.yml
-                          </a>
-                        </li>
-                      </ul>
-                    </div>
+                    <BreadcrumbRoot>
+                      <Breadcrumb>
+                        <a className="gap-2">
+                          <Home className="h-4 w-auto" />
+                          My-namespace
+                        </a>
+                        &nbsp;
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button size="xs" color="ghost" circle>
+                              <ChevronsUpDown />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent className="w-56">
+                            <DropdownMenuLabel>Namespaces</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuCheckboxItem checked>
+                              My-namespace
+                            </DropdownMenuCheckboxItem>
+                            <DropdownMenuCheckboxItem>
+                              second-namespace
+                            </DropdownMenuCheckboxItem>
+                            <DropdownMenuCheckboxItem>
+                              another-namespace
+                            </DropdownMenuCheckboxItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem>
+                              <PlusCircle className="mr-2 h-4 w-4" />
+                              <span>Create new namespace</span>
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </Breadcrumb>
+                      <Breadcrumb>
+                        <a className="gap-2">
+                          <Github className="h-4 w-auto" />
+                          Example Mirror
+                        </a>
+                      </Breadcrumb>
+                      <Breadcrumb>
+                        <a className="gap-2">
+                          <FolderOpen className="h-4 w-auto" />
+                          Folder
+                        </a>
+                      </Breadcrumb>
+                      <Breadcrumb>
+                        <a className="gap-2">
+                          <Play className="h-4 w-auto" />
+                          workflow.yml
+                        </a>
+                      </Breadcrumb>
+                    </BreadcrumbRoot>
                   </MainTopLeft>
                   <MainTopRight>
                     <DropdownMenu>
