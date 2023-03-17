@@ -3,6 +3,7 @@ import {
   ChevronsUpDown,
   CurlyBraces,
   FolderOpen,
+  Github,
   Home,
   Loader2,
   LogOut,
@@ -68,11 +69,15 @@ const BreadcrumbComponent: FC<{ path: string }> = ({ path }) => {
 
   let Icon = FolderOpen;
 
-  if (data?.node.type === "directory") {
+  if (data?.node.expandedType === "git") {
+    Icon = Github;
+  }
+
+  if (data?.node.expandedType === "directory") {
     Icon = FolderOpen;
   }
 
-  if (data?.node.type === "workflow") {
+  if (data?.node.expandedType === "workflow") {
     Icon = Play;
   }
 
