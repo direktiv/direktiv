@@ -3,7 +3,6 @@ package psql
 import (
 	"bytes"
 	"context"
-	"crypto/sha256"
 	"fmt"
 	"io"
 
@@ -12,8 +11,9 @@ import (
 )
 
 type RevisionQuery struct {
-	rev *filestore.Revision
-	db  *gorm.DB
+	rev          *filestore.Revision
+	checksumFunc filestore.CalculateChecksumFunc
+	db           *gorm.DB
 }
 
 var _ filestore.RevisionQuery = &RevisionQuery{}
@@ -49,11 +49,9 @@ func (q *RevisionQuery) SetData(ctx context.Context, dataReader io.Reader) (*fil
 	if err != nil {
 		return nil, err
 	}
-	checksum := sha256.Sum256(data)
-
 	res := q.db.WithContext(ctx).
 		Update("data", data).
-		Update("checksum", string(checksum[:])).
+		Update("checksum", string(q.checksumFunc(data))).
 		First(rev)
 	if res.Error != nil {
 		return nil, res.Error

@@ -2,6 +2,7 @@ package filestore
 
 import (
 	"context"
+	"crypto/sha256"
 	"errors"
 	"io"
 	"time"
@@ -42,4 +43,14 @@ type RootQuery interface {
 	CreateFile(ctx context.Context, path string, typ FileType, dataReader io.Reader) (*File, error)
 	ReadDirectory(ctx context.Context, path string) ([]*File, error)
 	Delete(ctx context.Context) error
+	CalculateChecksumsMap(ctx context.Context, path string) (map[string]string, error)
 }
+
+type CalculateChecksumFunc func([]byte) []byte
+
+var Sha256CalculateChecksum CalculateChecksumFunc = func(data []byte) []byte {
+	res := sha256.Sum256(data)
+	return res[:]
+}
+
+var DefaultCalculateChecksum = Sha256CalculateChecksum

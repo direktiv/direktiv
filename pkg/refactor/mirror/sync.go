@@ -53,6 +53,11 @@ func ExecuteMirroringProcess(
 
 	lg.Debugw("mirror fetched", "dist_directory", dstDir)
 
+	currentChecksumsMap, err := fStore.ForRoot(direktivRoot).CalculateChecksumsMap(ctx, "/")
+	if err != nil {
+		return fmt.Errorf("calculate current checksum map, err: %w", err)
+	}
+
 	err = filepath.WalkDir(dstDir, func(path string, d fs.DirEntry, err error) error {
 		lg = lg.With("path", path, "is_dir", d.IsDir())
 
@@ -60,25 +65,39 @@ func ExecuteMirroringProcess(
 			return fmt.Errorf("mirror file walk, err: %w", err)
 		}
 
-		var fileReader io.ReadCloser
-		if !d.IsDir() {
-			data, err := os.ReadFile(path)
-			if err != nil {
-				return fmt.Errorf("mirror file walk, read os file, err: %w", err)
-			}
-			fileReader = io.NopCloser(bytes.NewReader(data))
-			defer fileReader.Close()
+		relativePath := strings.TrimPrefix(path, dstDir)
+
+		if relativePath == "" || relativePath == "/" {
+			return nil
 		}
 
-		// create file(or dir) in directive file store.
-		if d.IsDir() {
+		defer delete(currentChecksumsMap, relativePath)
+
+		var fileReader io.Reader
+		var checksum string
+		if !d.IsDir() {
+			var err error
+			data, err := os.ReadFile(path)
+			if err != nil {
+				return fmt.Errorf("mirror file walk, open os file, err: %w", err)
+			}
+			checksum = string(filestore.DefaultCalculateChecksum(data))
+			fileReader = bytes.NewReader(data)
+		}
+
+		fileChecksum, doesPathExists := currentChecksumsMap[relativePath]
+		isDifferentChecksum := checksum != fileChecksum
+
+		// create dir in directive file store.
+		if d.IsDir() && !doesPathExists {
 			_, err = fStore.
 				ForRoot(direktivRoot).
-				CreateFile(ctx, strings.TrimPrefix(path, dstDir), filestore.FileTypeDirectory, nil)
-		} else {
+				CreateFile(ctx, relativePath, filestore.FileTypeDirectory, nil)
+		}
+		if !d.IsDir() && isDifferentChecksum {
 			_, err = fStore.
 				ForRoot(direktivRoot).
-				CreateFile(ctx, strings.TrimPrefix(path, dstDir), filestore.FileTypeFile, fileReader)
+				CreateFile(ctx, relativePath, filestore.FileTypeFile, fileReader)
 		}
 
 		if err != nil {

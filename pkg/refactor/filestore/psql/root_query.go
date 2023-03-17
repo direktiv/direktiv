@@ -2,7 +2,6 @@ package psql
 
 import (
 	"context"
-	"crypto/sha256"
 	"fmt"
 	"io"
 	"path/filepath"
@@ -22,8 +21,9 @@ func addTrailingSlash(path string) string {
 }
 
 type RootQuery struct {
-	root *filestore.Root
-	db   *gorm.DB
+	root         *filestore.Root
+	checksumFunc filestore.CalculateChecksumFunc
+	db           *gorm.DB
 }
 
 var _ filestore.RootQuery = &RootQuery{} // Ensures RootQuery struct conforms to filestore.RootQuery interface.
@@ -70,13 +70,10 @@ func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.F
 
 	// second, now we need to create a revision entry for this new file.
 	var data []byte
-	var checksum [32]byte
 	data, err = io.ReadAll(dataReader)
 	if err != nil {
 		return nil, fmt.Errorf("create io error, %w", err)
 	}
-	checksum = sha256.Sum256(data)
-
 	rev := &filestore.Revision{
 		ID:   uuid.New(),
 		Tags: "",
@@ -85,7 +82,7 @@ func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.F
 		IsCurrent: true,
 
 		Data:     data,
-		Checksum: string(checksum[:]),
+		Checksum: string(q.checksumFunc(data)),
 	}
 	res = q.db.WithContext(ctx).Create(rev)
 	if res.Error != nil {
@@ -136,4 +133,41 @@ func (q *RootQuery) ReadDirectory(ctx context.Context, path string) ([]*filestor
 	}
 
 	return files, nil
+}
+
+//nolint:ireturn
+func (q *RootQuery) CalculateChecksumsMap(ctx context.Context, path string) (map[string]string, error) {
+	path, err := filestore.SanitizePath(path)
+	if err != nil {
+		return nil, err
+	}
+
+	type Result struct {
+		Path     string
+		Typ      string
+		Checksum string
+	}
+
+	var resultList []Result
+
+	res := q.db.WithContext(ctx).
+		// Don't include file 'data' in the query. File data can be retrieved with file.GetData().
+		Raw(`SELECT f.path, f.typ, r.checksum 
+				 FROM files AS f 
+				     LEFT JOIN revisions r 
+				         ON r.file_id = f.id AND r.is_current = true 
+				 WHERE f.depth = ? AND path LIKE ?`,
+			filestore.ParseDepth(path)+1, addTrailingSlash(path)+"%").Scan(&resultList)
+
+	if res.Error != nil {
+		return nil, res.Error
+	}
+
+	result := make(map[string]string)
+
+	for _, item := range resultList {
+		result[item.Path] = item.Checksum
+	}
+
+	return result, nil
 }

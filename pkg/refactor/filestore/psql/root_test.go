@@ -3,7 +3,9 @@ package psql_test
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"io"
+	"reflect"
 	"testing"
 
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
@@ -132,6 +134,71 @@ func TestRoot_CorrectReadDirectory(t *testing.T) {
 	}
 }
 
+func TestRoot_CalculateChecksumDirectory(t *testing.T) {
+	fs, err := psql.NewMockFileStore()
+	if err != nil {
+		t.Fatalf("unepxected NewMockFileStore() error = %v", err)
+	}
+	root, err := fs.CreateRoot(context.Background(), uuid.New())
+	if err != nil {
+		t.Fatalf("unepxected CreateRoot() error = %v", err)
+	}
+
+	filestore.DefaultCalculateChecksum = func(data []byte) []byte {
+		return []byte(fmt.Sprintf("---%s---", data))
+	}
+
+	// Test root directory:
+	{
+		assertRootCorrectFileCreation(t, fs, root, "/file1.text", "text", []byte("content1"))
+		assertRootCorrectFileCreation(t, fs, root, "/file2.text", "text", []byte("content2"))
+
+		assertChecksumsInPath(t, fs, root, "/",
+			"/file1.text", "---content1---",
+			"/file2.text", "---content2---",
+		)
+	}
+
+	// Add /dir1 directory:
+	{
+		assertRootCorrectFileCreation(t, fs, root, "/dir1", "directory", nil)
+		assertRootCorrectFileCreation(t, fs, root, "/dir1/file3.text", "text", []byte("content3"))
+		assertRootCorrectFileCreation(t, fs, root, "/dir1/file4.text", "text", []byte("content4"))
+
+		assertChecksumsInPath(t, fs, root, "/dir1",
+			"/dir1/file3.text", "---content3---",
+			"/dir1/file4.text", "---content4---",
+		)
+		assertChecksumsInPath(t, fs, root, "/",
+			"/file1.text", "---content1---",
+			"/file2.text", "---content2---",
+			"/dir1", "",
+		)
+	}
+
+	// Add /dir1/dir2 directory:
+	{
+		assertRootCorrectFileCreation(t, fs, root, "/dir1/dir2", "directory", nil)
+		assertRootCorrectFileCreation(t, fs, root, "/dir1/dir2/file5.text", "text", []byte("content5"))
+		assertRootCorrectFileCreation(t, fs, root, "/dir1/dir2/file6.text", "text", []byte("content6"))
+
+		assertChecksumsInPath(t, fs, root, "/dir1/dir2",
+			"/dir1/dir2/file5.text", "---content5---",
+			"/dir1/dir2/file6.text", "---content6---",
+		)
+		assertChecksumsInPath(t, fs, root, "/dir1",
+			"/dir1/file3.text", "---content3---",
+			"/dir1/file4.text", "---content4---",
+			"/dir1/dir2", "",
+		)
+		assertChecksumsInPath(t, fs, root, "/",
+			"/file1.text", "---content1---",
+			"/file2.text", "---content2---",
+			"/dir1", "",
+		)
+	}
+}
+
 func assertRootFilesInPath(t *testing.T, fs filestore.FileStore, root *filestore.Root, searchPath string, paths ...string) {
 	t.Helper()
 
@@ -147,5 +214,27 @@ func assertRootFilesInPath(t *testing.T, fs filestore.FileStore, root *filestore
 		if files[i].Path != paths[i] {
 			t.Errorf("unexpected files[%d].Path , got: >%s<, want: >%s<", i, files[i].Path, paths[i])
 		}
+	}
+}
+
+func assertChecksumsInPath(t *testing.T, fs filestore.FileStore, root *filestore.Root, searchPath string, paths ...string) {
+	t.Helper()
+
+	checksumsMap, err := fs.ForRoot(root).CalculateChecksumsMap(context.Background(), searchPath)
+	if err != nil {
+		t.Errorf("unepxected CalculateChecksumsMap() error = %v", err)
+	}
+	if len(checksumsMap)*2 != len(paths) {
+		t.Errorf("unexpected CalculateChecksumsMap() length, got: %d, want: %d", len(checksumsMap), len(paths)/2)
+	}
+
+	wantChecksumsMap := make(map[string]string)
+
+	for i := 0; i < len(paths)-1; i = i + 2 {
+		wantChecksumsMap[paths[i]] = paths[i+1]
+	}
+
+	if !reflect.DeepEqual(checksumsMap, wantChecksumsMap) {
+		t.Errorf("unexpected CalculateChecksumsMap() result, got: %v, want: %v", checksumsMap, wantChecksumsMap)
 	}
 }

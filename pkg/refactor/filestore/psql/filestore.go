@@ -16,8 +16,9 @@ type SQLFileStore struct {
 
 func (s *SQLFileStore) ForRoot(root *filestore.Root) filestore.RootQuery {
 	return &RootQuery{
-		root: root,
-		db:   s.db,
+		root:         root,
+		db:           s.db,
+		checksumFunc: filestore.DefaultCalculateChecksum,
 	}
 }
 
@@ -30,8 +31,9 @@ func (s *SQLFileStore) ForFile(file *filestore.File) filestore.FileQuery {
 
 func (s *SQLFileStore) ForRevision(revision *filestore.Revision) filestore.RevisionQuery {
 	return &RevisionQuery{
-		rev: revision,
-		db:  s.db,
+		rev:          revision,
+		db:           s.db,
+		checksumFunc: filestore.DefaultCalculateChecksum,
 	}
 }
 
