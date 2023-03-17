@@ -3,6 +3,7 @@ package psql
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
 	"fmt"
 	"io"
 
@@ -39,6 +40,26 @@ func (q *RevisionQuery) GetData(ctx context.Context) (io.ReadCloser, error) {
 	readCloser := io.NopCloser(reader)
 
 	return readCloser, nil
+}
+
+func (q *RevisionQuery) SetData(ctx context.Context, dataReader io.Reader) (*filestore.Revision, error) {
+	rev := &filestore.Revision{ID: q.rev.ID}
+
+	data, err := io.ReadAll(dataReader)
+	if err != nil {
+		return nil, err
+	}
+	checksum := sha256.Sum256(data)
+
+	res := q.db.WithContext(ctx).
+		Update("data", data).
+		Update("checksum", string(checksum[:])).
+		First(rev)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+
+	return rev, nil
 }
 
 func (q *RevisionQuery) SetTags(ctx context.Context, tags filestore.RevisionTags) (*filestore.Revision, error) {

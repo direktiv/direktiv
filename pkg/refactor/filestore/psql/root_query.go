@@ -2,6 +2,7 @@ package psql
 
 import (
 	"context"
+	"crypto/sha256"
 	"fmt"
 	"io"
 	"path/filepath"
@@ -69,12 +70,12 @@ func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.F
 
 	// second, now we need to create a revision entry for this new file.
 	var data []byte
-	if dataReader != nil {
-		data, err = io.ReadAll(dataReader)
-		if err != nil {
-			return nil, fmt.Errorf("create io error, %w", err)
-		}
+	var checksum [32]byte
+	data, err = io.ReadAll(dataReader)
+	if err != nil {
+		return nil, fmt.Errorf("create io error, %w", err)
 	}
+	checksum = sha256.Sum256(data)
 
 	rev := &filestore.Revision{
 		ID:   uuid.New(),
@@ -83,7 +84,8 @@ func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.F
 		FileID:    f.ID,
 		IsCurrent: true,
 
-		Data: data,
+		Data:     data,
+		Checksum: string(checksum[:]),
 	}
 	res = q.db.WithContext(ctx).Create(rev)
 	if res.Error != nil {
@@ -97,7 +99,7 @@ func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.F
 }
 
 //nolint:ireturn
-func (q *RootQuery) GetFile(ctx context.Context, path string, opts *filestore.GetFileOpts) (*filestore.File, error) {
+func (q *RootQuery) GetFile(ctx context.Context, path string) (*filestore.File, error) {
 	f := &filestore.File{}
 	path = filepath.Clean(path)
 

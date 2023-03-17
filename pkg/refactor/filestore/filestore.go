@@ -19,11 +19,6 @@ var (
 	ErrNotFound           = errors.New("ErrNotFound")
 )
 
-type Timestamps interface {
-	GetCreatedAt() time.Time
-	GetUpdatedAt() time.Time
-}
-
 type FileStore interface {
 	CreateRoot(ctx context.Context, id uuid.UUID) (*Root, error)
 
@@ -35,10 +30,6 @@ type FileStore interface {
 	ForRevision(revision *Revision) RevisionQuery
 }
 
-type GetFileOpts struct {
-	EagerLoad bool
-}
-
 type Root struct {
 	ID uuid.UUID
 
@@ -47,7 +38,7 @@ type Root struct {
 }
 
 type RootQuery interface {
-	GetFile(ctx context.Context, path string, opts *GetFileOpts) (*File, error)
+	GetFile(ctx context.Context, path string) (*File, error)
 	CreateFile(ctx context.Context, path string, typ FileType, dataReader io.Reader) (*File, error)
 	ReadDirectory(ctx context.Context, path string) ([]*File, error)
 	Delete(ctx context.Context) error

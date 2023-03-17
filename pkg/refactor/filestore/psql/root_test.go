@@ -59,7 +59,7 @@ func assertRootCorrectFileCreation(t *testing.T, fs filestore.FileStore, root *f
 		}
 	}
 
-	file, err = fs.ForRoot(root).GetFile(context.Background(), path, nil)
+	file, err = fs.ForRoot(root).GetFile(context.Background(), path)
 	if err != nil {
 		t.Errorf("unexpected GetFile() error: %v", err)
 	}
