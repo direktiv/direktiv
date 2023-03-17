@@ -12,6 +12,7 @@ import {
 import ExplorerPageSetup from "../../pages/Explorer";
 import type { RouteObject } from "react-router-dom";
 import SettiongsPage from "../../pages/Settings";
+import { useParams } from "react-router-dom";
 
 interface PageBase {
   name: string;
@@ -34,7 +35,10 @@ type DefaultPageSetup = Record<
 >;
 type ExplorerPageSetup = Record<
   "explorer",
-  PageBase & { createHref: (params?: { directory: string }) => string }
+  PageBase & {
+    createHref: (params?: { directory: string }) => string;
+    useParams: () => { directory: string | undefined };
+  }
 >;
 
 export const pages: DefaultPageSetup & ExplorerPageSetup = {
@@ -43,8 +47,12 @@ export const pages: DefaultPageSetup & ExplorerPageSetup = {
     icon: FolderTree,
     createHref: (params) =>
       `/explorer${params?.directory ? `/${params.directory}` : ""}`,
+    useParams: () => {
+      const { "*": directory } = useParams();
+      return { directory: directory };
+    },
     route: {
-      path: "/explorer/:directory?",
+      path: "/explorer/*",
       element: <ExplorerPageSetup />,
     },
   },

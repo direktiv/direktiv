@@ -1,9 +1,9 @@
 import { FolderOpen, FolderUp, Play } from "lucide-react";
-import { Link, useParams } from "react-router-dom";
 import { useNamespace, useNamespaceActions } from "../../util/store/namespace";
 
 import Button from "../../componentsNext/Button";
 import { FC } from "react";
+import { Link } from "react-router-dom";
 import { pages } from "../../util/router/pages";
 import { useNamespaces } from "../../api/namespaces";
 import { useTree } from "../../api/tree";
@@ -12,8 +12,8 @@ const ExplorerPage: FC = () => {
   const { data: namespaces } = useNamespaces();
   const selectedNamespace = useNamespace();
   const { setNamespace } = useNamespaceActions();
+  const { directory } = pages.explorer.useParams();
 
-  const { directory } = useParams();
   const { data } = useTree({
     directory,
   });
