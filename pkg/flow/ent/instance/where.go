@@ -138,6 +138,13 @@ func Invoker(v string) predicate.Instance {
 	})
 }
 
+// Callpath applies equality check predicate on the "callpath" field. It's identical to CallpathEQ.
+func Callpath(v string) predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldCallpath), v))
+	})
+}
+
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
 func CreatedAtEQ(v time.Time) predicate.Instance {
 	return predicate.Instance(func(s *sql.Selector) {
@@ -878,6 +885,119 @@ func InvokerEqualFold(v string) predicate.Instance {
 func InvokerContainsFold(v string) predicate.Instance {
 	return predicate.Instance(func(s *sql.Selector) {
 		s.Where(sql.ContainsFold(s.C(FieldInvoker), v))
+	})
+}
+
+// CallpathEQ applies the EQ predicate on the "callpath" field.
+func CallpathEQ(v string) predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldCallpath), v))
+	})
+}
+
+// CallpathNEQ applies the NEQ predicate on the "callpath" field.
+func CallpathNEQ(v string) predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldCallpath), v))
+	})
+}
+
+// CallpathIn applies the In predicate on the "callpath" field.
+func CallpathIn(vs ...string) predicate.Instance {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.In(s.C(FieldCallpath), v...))
+	})
+}
+
+// CallpathNotIn applies the NotIn predicate on the "callpath" field.
+func CallpathNotIn(vs ...string) predicate.Instance {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.NotIn(s.C(FieldCallpath), v...))
+	})
+}
+
+// CallpathGT applies the GT predicate on the "callpath" field.
+func CallpathGT(v string) predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldCallpath), v))
+	})
+}
+
+// CallpathGTE applies the GTE predicate on the "callpath" field.
+func CallpathGTE(v string) predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldCallpath), v))
+	})
+}
+
+// CallpathLT applies the LT predicate on the "callpath" field.
+func CallpathLT(v string) predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldCallpath), v))
+	})
+}
+
+// CallpathLTE applies the LTE predicate on the "callpath" field.
+func CallpathLTE(v string) predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldCallpath), v))
+	})
+}
+
+// CallpathContains applies the Contains predicate on the "callpath" field.
+func CallpathContains(v string) predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldCallpath), v))
+	})
+}
+
+// CallpathHasPrefix applies the HasPrefix predicate on the "callpath" field.
+func CallpathHasPrefix(v string) predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldCallpath), v))
+	})
+}
+
+// CallpathHasSuffix applies the HasSuffix predicate on the "callpath" field.
+func CallpathHasSuffix(v string) predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldCallpath), v))
+	})
+}
+
+// CallpathIsNil applies the IsNil predicate on the "callpath" field.
+func CallpathIsNil() predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldCallpath)))
+	})
+}
+
+// CallpathNotNil applies the NotNil predicate on the "callpath" field.
+func CallpathNotNil() predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldCallpath)))
+	})
+}
+
+// CallpathEqualFold applies the EqualFold predicate on the "callpath" field.
+func CallpathEqualFold(v string) predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldCallpath), v))
+	})
+}
+
+// CallpathContainsFold applies the ContainsFold predicate on the "callpath" field.
+func CallpathContainsFold(v string) predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldCallpath), v))
 	})
 }
 

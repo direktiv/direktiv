@@ -2,6 +2,7 @@ package flow
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"runtime"
 	"strings"
@@ -122,7 +123,13 @@ func (srv *server) workerLogToInstance(l *logMessage) {
 
 	clients := srv.edb.Clients(ctx)
 
-	_, err := clients.LogMsg.Create().SetMsg(l.msg).SetInstanceID(l.cached.Instance.ID).SetT(l.t).Save(ctx)
+	callpath := appendInstanceID(l.cached.Instance.CallPath, l.cached.Instance.ID.String())
+	rootInstance, err := getRootinstanceID(callpath)
+	if err != nil {
+		srv.sugar.Error(err)
+		return
+	}
+	_, err = clients.LogMsg.Create().SetMsg(l.msg).SetInstanceID(l.cached.Instance.ID).SetT(l.t).SetRootInstanceId(rootInstance).SetLogInstanceCallPath(callpath).Save(ctx)
 	if err != nil {
 		srv.sugar.Error(err)
 		return
@@ -146,6 +153,30 @@ func (srv *server) workerLogToInstance(l *logMessage) {
 	srv.sugar.Infow(l.msg, "trace", tid, "namespace", nsname, "namespace-id", nsid, "workflow-id", wfid, "workflow", GetInodePath(l.cached.Instance.As), "instance", l.cached.Instance.ID.String())
 
 	srv.pubsub.NotifyInstanceLogs(l.cached.Instance)
+}
+
+// Extracts the rootInstanceID from a callpath.
+// Forexpl. /c1d87df6-56fb-4b03-a9e9-00e5122e4884/105cbf37-76b9-452a-b67d-5c9a8cd54ecc.
+// The callpath has to contain a rootInstanceID as first element. In this case the rootInstanceID would be
+// c1d87df6-56fb-4b03-a9e9-00e5122e4884.
+func getRootinstanceID(callpath string) (string, error) {
+	path := strings.Split(callpath, "/")
+	if len(path) < 2 {
+		return "", errors.New("Instance Callpath is malformed")
+	}
+	_, err := uuid.Parse(path[1])
+	if err != nil {
+		return "", err
+	}
+	return path[1], nil
+}
+
+// Appends a InstanceID to the InstanceCallPath.
+func appendInstanceID(callpath, instanceID string) string {
+	if callpath == "/" {
+		return "/" + instanceID
+	}
+	return callpath + "/" + instanceID
 }
 
 func (srv *server) logToServer(ctx context.Context, t time.Time, msg string, a ...interface{}) {

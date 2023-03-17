@@ -25,6 +25,10 @@ type LogMsg struct {
 	T time.Time `json:"t,omitempty"`
 	// Msg holds the value of the "msg" field.
 	Msg string `json:"msg,omitempty"`
+	// RootInstanceId holds the value of the "rootInstanceId" field.
+	RootInstanceId string `json:"rootInstanceId,omitempty"`
+	// LogInstanceCallPath holds the value of the "logInstanceCallPath" field.
+	LogInstanceCallPath string `json:"logInstanceCallPath,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the LogMsgQuery when eager-loading is set.
 	Edges                LogMsgEdges `json:"edges"`
@@ -106,7 +110,7 @@ func (*LogMsg) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case logmsg.FieldMsg:
+		case logmsg.FieldMsg, logmsg.FieldRootInstanceId, logmsg.FieldLogInstanceCallPath:
 			values[i] = new(sql.NullString)
 		case logmsg.FieldT:
 			values[i] = new(sql.NullTime)
@@ -152,6 +156,18 @@ func (lm *LogMsg) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field msg", values[i])
 			} else if value.Valid {
 				lm.Msg = value.String
+			}
+		case logmsg.FieldRootInstanceId:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field rootInstanceId", values[i])
+			} else if value.Valid {
+				lm.RootInstanceId = value.String
+			}
+		case logmsg.FieldLogInstanceCallPath:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field logInstanceCallPath", values[i])
+			} else if value.Valid {
+				lm.LogInstanceCallPath = value.String
 			}
 		case logmsg.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
@@ -234,6 +250,12 @@ func (lm *LogMsg) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("msg=")
 	builder.WriteString(lm.Msg)
+	builder.WriteString(", ")
+	builder.WriteString("rootInstanceId=")
+	builder.WriteString(lm.RootInstanceId)
+	builder.WriteString(", ")
+	builder.WriteString("logInstanceCallPath=")
+	builder.WriteString(lm.LogInstanceCallPath)
 	builder.WriteByte(')')
 	return builder.String()
 }

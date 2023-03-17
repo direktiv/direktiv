@@ -14,6 +14,7 @@ import (
 	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	entns "github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -276,7 +277,7 @@ func (flow *flow) InstanceStream(req *grpc.InstanceRequest, srv grpc.Flow_Instan
 	phash := ""
 	nhash := ""
 
-	var sub *subscription
+	var sub *pubsub.Subscription
 
 resend:
 

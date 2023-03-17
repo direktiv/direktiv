@@ -24,8 +24,8 @@ func (engine *engine) scheduleTimeout(im *instanceMemory, oldController string, 
 
 	// cancel existing timeouts
 
-	engine.timers.deleteTimerByName(oldController, engine.pubsub.hostname, oldId)
-	engine.timers.deleteTimerByName(oldController, engine.pubsub.hostname, id)
+	engine.timers.deleteTimerByName(oldController, engine.pubsub.Hostname, oldId)
+	engine.timers.deleteTimerByName(oldController, engine.pubsub.Hostname, id)
 
 	// schedule timeout
 

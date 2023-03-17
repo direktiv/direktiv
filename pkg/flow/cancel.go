@@ -6,6 +6,7 @@ import (
 	"errors"
 
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
+	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/flow/states"
 	"github.com/direktiv/direktiv/pkg/util"
 )
@@ -94,7 +95,7 @@ func (engine *engine) cancelInstance(id, code, message string, soft bool) {
 	go engine.runState(ctx, im, nil, err)
 }
 
-func (engine *engine) finishCancelWorkflow(req *PubsubUpdate) {
+func (engine *engine) finishCancelWorkflow(req *pubsub.PubsubUpdate) {
 	args := make([]interface{}, 0)
 
 	err := json.Unmarshal([]byte(req.Key), &args)
@@ -142,7 +143,7 @@ bad:
 func (engine *engine) cancelRunning(id string) {
 	im, err := engine.getInstanceMemory(context.Background(), id)
 	if err == nil {
-		engine.timers.deleteTimerByName(im.Controller(), engine.pubsub.hostname, id)
+		engine.timers.deleteTimerByName(im.Controller(), engine.pubsub.Hostname, id)
 	}
 
 	engine.cancellersLock.Lock()

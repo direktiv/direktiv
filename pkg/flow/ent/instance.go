@@ -37,6 +37,8 @@ type Instance struct {
 	ErrorMessage string `json:"errorMessage,omitempty"`
 	// Invoker holds the value of the "invoker" field.
 	Invoker string `json:"invoker,omitempty"`
+	// Callpath holds the value of the "callpath" field.
+	Callpath string `json:"callpath,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the InstanceQuery when eager-loading is set.
 	Edges               InstanceEdges `json:"edges"`
@@ -172,7 +174,7 @@ func (*Instance) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case instance.FieldStatus, instance.FieldAs, instance.FieldErrorCode, instance.FieldErrorMessage, instance.FieldInvoker:
+		case instance.FieldStatus, instance.FieldAs, instance.FieldErrorCode, instance.FieldErrorMessage, instance.FieldInvoker, instance.FieldCallpath:
 			values[i] = new(sql.NullString)
 		case instance.FieldCreatedAt, instance.FieldUpdatedAt, instance.FieldEndAt:
 			values[i] = new(sql.NullTime)
@@ -252,6 +254,12 @@ func (i *Instance) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field invoker", values[j])
 			} else if value.Valid {
 				i.Invoker = value.String
+			}
+		case instance.FieldCallpath:
+			if value, ok := values[j].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field callpath", values[j])
+			} else if value.Valid {
+				i.Callpath = value.String
 			}
 		case instance.ForeignKeys[0]:
 			if value, ok := values[j].(*sql.NullScanner); !ok {
@@ -370,6 +378,9 @@ func (i *Instance) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("invoker=")
 	builder.WriteString(i.Invoker)
+	builder.WriteString(", ")
+	builder.WriteString("callpath=")
+	builder.WriteString(i.Callpath)
 	builder.WriteByte(')')
 	return builder.String()
 }

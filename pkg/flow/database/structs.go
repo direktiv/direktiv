@@ -156,6 +156,7 @@ type Instance struct {
 	Workflow     uuid.UUID `json:"workflow,omitempty"`
 	Revision     uuid.UUID `json:"revision,omitempty"`
 	Runtime      uuid.UUID `json:"runtime,omitempty"`
+	CallPath     string    `json:"callpath,omitempty"`
 }
 
 type InstanceRuntime struct {
