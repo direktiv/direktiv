@@ -3,7 +3,6 @@ import {
   ChevronsUpDown,
   CurlyBraces,
   FolderOpen,
-  Github,
   Home,
   Loader2,
   LogOut,
@@ -45,12 +44,52 @@ import {
 import { useTheme, useThemeActions } from "../../util/store/theme";
 
 import Button from "../../componentsNext/Button";
+import { FC } from "react";
 import Navigation from "../../componentsNext/Navigation";
 import { RxChevronDown } from "react-icons/rx";
+import clsx from "clsx";
 import { pages } from "../../util/router/pages";
 import { useNamespace } from "../../util/store/namespace";
 import { useNamespaces } from "../../api/namespaces";
+import { useTree } from "../../api/tree";
 import { useVersion } from "../../api/version";
+
+const BreadcrumbComponent: FC<{ path: string }> = ({ path }) => {
+  // split path string in to chunks, using the last / as the separator
+  const segments = path.split("/");
+  const namespace = useNamespace();
+
+  const { data, isLoading } = useTree({
+    directory: path,
+  });
+
+  if (!namespace) return null;
+
+  let Icon = Loader2;
+
+  if (data?.node.type === "directory") {
+    Icon = FolderOpen;
+  }
+
+  if (data?.node.type === "workflow") {
+    Icon = Play;
+  }
+
+  return (
+    <Breadcrumb>
+      <Link
+        to={pages.explorer.createHref({ namespace, directory: path })}
+        className="gap-2"
+      >
+        <Icon
+          aria-hidden="true"
+          className={clsx(isLoading && "animate-spin")}
+        />
+        {segments.slice(-1)}
+      </Link>
+    </Breadcrumb>
+  );
+};
 
 const Layout = () => {
   const { data: version } = useVersion();
@@ -62,6 +101,9 @@ const Layout = () => {
   const theme = useTheme();
 
   if (!namespace) return null;
+
+  const { directory } = pages.explorer.useParams();
+
   return (
     <Root>
       <DrawerRoot>
@@ -126,24 +168,19 @@ const Layout = () => {
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </Breadcrumb>
-                      <Breadcrumb>
-                        <a className="gap-2">
-                          <Github className="h-4 w-auto" />
-                          Example Mirror
-                        </a>
-                      </Breadcrumb>
-                      <Breadcrumb>
-                        <a className="gap-2">
-                          <FolderOpen className="h-4 w-auto" />
-                          Folder
-                        </a>
-                      </Breadcrumb>
-                      <Breadcrumb>
-                        <a className="gap-2">
-                          <Play className="h-4 w-auto" />
-                          workflow.yml
-                        </a>
-                      </Breadcrumb>
+                      {/* TODO: extract this into a util and write some tests */}
+                      {directory &&
+                        directory?.split("/").map((segment, index, srcArr) => {
+                          const absolutePath = srcArr
+                            .slice(0, index + 1)
+                            .join("/");
+                          return (
+                            <BreadcrumbComponent
+                              key={absolutePath}
+                              path={absolutePath}
+                            />
+                          );
+                        })}
                     </BreadcrumbRoot>
                   </MainTopLeft>
                   <MainTopRight>
