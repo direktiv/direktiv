@@ -239,7 +239,7 @@ export const Loading = () => {
       >
         {isLoading
           ? "I'm loading and deactivated..."
-          : "click me do start loading"}
+          : "click me to start loading"}
       </Button>
     </div>
   );
