@@ -34,7 +34,6 @@ func ExecuteMirroringProcess(
 	source Source, settings Settings,
 ) error {
 	// function starts here:
-
 	dstDir, err := os.MkdirTemp("", "direktiv_mirrors")
 	if err != nil {
 		return fmt.Errorf("create mirror dst_directory, err: %w", err)
@@ -53,6 +52,15 @@ func ExecuteMirroringProcess(
 
 	lg.Debugw("mirror fetched", "dist_directory", dstDir)
 
+	return ExecuteMirroringProcessFromDirectory(ctx, lg, fStore, direktivRoot, dstDir)
+}
+
+func ExecuteMirroringProcessFromDirectory(
+	ctx context.Context, lg *zap.SugaredLogger,
+	fStore filestore.FileStore,
+	direktivRoot *filestore.Root,
+	dstDir string,
+) error {
 	currentChecksumsMap, err := fStore.ForRoot(direktivRoot).CalculateChecksumsMap(ctx, "/")
 	if err != nil {
 		return fmt.Errorf("calculate current checksum map, err: %w", err)
