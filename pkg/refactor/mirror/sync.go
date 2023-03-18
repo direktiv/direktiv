@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/direktiv/direktiv/pkg/refactor/ignorefile"
 	"io"
 	"io/fs"
 	"os"
@@ -31,6 +32,7 @@ func ExecuteMirroringProcess(
 	ctx context.Context, lg *zap.SugaredLogger,
 	fStore filestore.FileStore,
 	direktivRoot *filestore.Root,
+	ignoreMatcher ignorefile.Matcher,
 	source Source, settings Settings,
 ) error {
 	// function starts here:
@@ -52,13 +54,14 @@ func ExecuteMirroringProcess(
 
 	lg.Debugw("mirror fetched", "dist_directory", dstDir)
 
-	return ExecuteMirroringProcessFromDirectory(ctx, lg, fStore, direktivRoot, dstDir)
+	return ExecuteMirroringProcessFromDirectory(ctx, lg, fStore, direktivRoot, ignoreMatcher, dstDir)
 }
 
 func ExecuteMirroringProcessFromDirectory(
 	ctx context.Context, lg *zap.SugaredLogger,
 	fStore filestore.FileStore,
 	direktivRoot *filestore.Root,
+	ignoreMatcher ignorefile.Matcher,
 	dstDir string,
 ) error {
 	currentChecksumsMap, err := fStore.ForRoot(direktivRoot).CalculateChecksumsMap(ctx, "/")
@@ -75,7 +78,7 @@ func ExecuteMirroringProcessFromDirectory(
 
 		relativePath := strings.TrimPrefix(path, dstDir)
 
-		if relativePath == "" || relativePath == "/" {
+		if ignoreMatcher.MatchPath(relativePath) {
 			return nil
 		}
 

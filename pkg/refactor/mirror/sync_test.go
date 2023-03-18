@@ -2,6 +2,7 @@ package mirror_test
 
 import (
 	"context"
+	"github.com/direktiv/direktiv/pkg/refactor/ignorefile"
 	"testing"
 
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
@@ -31,7 +32,7 @@ func TestExecuteMirroringProcess(t *testing.T) {
 	}
 
 	err = mirror.ExecuteMirroringProcess(context.Background(), zap.NewNop().Sugar(),
-		fs, direktivRoot, source, mirror.Settings{})
+		fs, direktivRoot, &ignorefile.NopMatcher{}, source, mirror.Settings{})
 	if err != nil {
 		t.Fatalf("unepxected ExecuteMirroringProcess() error = %v", err)
 	}
