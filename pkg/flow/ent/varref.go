@@ -11,7 +11,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/vardata"
 	"github.com/direktiv/direktiv/pkg/flow/ent/varref"
-	"github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 	"github.com/google/uuid"
 )
 
@@ -30,7 +29,6 @@ type VarRef struct {
 	instance_vars    *uuid.UUID
 	namespace_vars   *uuid.UUID
 	var_data_varrefs *uuid.UUID
-	workflow_vars    *uuid.UUID
 }
 
 // VarRefEdges holds the relations/edges for other nodes in the graph.
@@ -39,13 +37,11 @@ type VarRefEdges struct {
 	Vardata *VarData `json:"vardata,omitempty"`
 	// Namespace holds the value of the namespace edge.
 	Namespace *Namespace `json:"namespace,omitempty"`
-	// Workflow holds the value of the workflow edge.
-	Workflow *Workflow `json:"workflow,omitempty"`
 	// Instance holds the value of the instance edge.
 	Instance *Instance `json:"instance,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [3]bool
 }
 
 // VardataOrErr returns the Vardata value or an error if the edge
@@ -74,23 +70,10 @@ func (e VarRefEdges) NamespaceOrErr() (*Namespace, error) {
 	return nil, &NotLoadedError{edge: "namespace"}
 }
 
-// WorkflowOrErr returns the Workflow value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e VarRefEdges) WorkflowOrErr() (*Workflow, error) {
-	if e.loadedTypes[2] {
-		if e.Workflow == nil {
-			// Edge was loaded but was not found.
-			return nil, &NotFoundError{label: workflow.Label}
-		}
-		return e.Workflow, nil
-	}
-	return nil, &NotLoadedError{edge: "workflow"}
-}
-
 // InstanceOrErr returns the Instance value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e VarRefEdges) InstanceOrErr() (*Instance, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[2] {
 		if e.Instance == nil {
 			// Edge was loaded but was not found.
 			return nil, &NotFoundError{label: instance.Label}
@@ -114,8 +97,6 @@ func (*VarRef) scanValues(columns []string) ([]any, error) {
 		case varref.ForeignKeys[1]: // namespace_vars
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case varref.ForeignKeys[2]: // var_data_varrefs
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case varref.ForeignKeys[3]: // workflow_vars
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type VarRef", columns[i])
@@ -171,13 +152,6 @@ func (vr *VarRef) assignValues(columns []string, values []any) error {
 				vr.var_data_varrefs = new(uuid.UUID)
 				*vr.var_data_varrefs = *value.S.(*uuid.UUID)
 			}
-		case varref.ForeignKeys[3]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field workflow_vars", values[i])
-			} else if value.Valid {
-				vr.workflow_vars = new(uuid.UUID)
-				*vr.workflow_vars = *value.S.(*uuid.UUID)
-			}
 		}
 	}
 	return nil
@@ -191,11 +165,6 @@ func (vr *VarRef) QueryVardata() *VarDataQuery {
 // QueryNamespace queries the "namespace" edge of the VarRef entity.
 func (vr *VarRef) QueryNamespace() *NamespaceQuery {
 	return (&VarRefClient{config: vr.config}).QueryNamespace(vr)
-}
-
-// QueryWorkflow queries the "workflow" edge of the VarRef entity.
-func (vr *VarRef) QueryWorkflow() *WorkflowQuery {
-	return (&VarRefClient{config: vr.config}).QueryWorkflow(vr)
 }
 
 // QueryInstance queries the "instance" edge of the VarRef entity.

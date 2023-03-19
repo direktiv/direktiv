@@ -499,34 +499,6 @@ func HasNamespaceWith(preds ...predicate.Namespace) predicate.LogMsg {
 	})
 }
 
-// HasWorkflow applies the HasEdge predicate on the "workflow" edge.
-func HasWorkflow() predicate.LogMsg {
-	return predicate.LogMsg(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(WorkflowTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, WorkflowTable, WorkflowColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasWorkflowWith applies the HasEdge predicate on the "workflow" edge with a given conditions (other predicates).
-func HasWorkflowWith(preds ...predicate.Workflow) predicate.LogMsg {
-	return predicate.LogMsg(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(WorkflowInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, WorkflowTable, WorkflowColumn),
-		)
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // HasInstance applies the HasEdge predicate on the "instance" edge.
 func HasInstance() predicate.LogMsg {
 	return predicate.LogMsg(func(s *sql.Selector) {
@@ -546,34 +518,6 @@ func HasInstanceWith(preds ...predicate.Instance) predicate.LogMsg {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(InstanceInverseTable, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, InstanceTable, InstanceColumn),
-		)
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasActivity applies the HasEdge predicate on the "activity" edge.
-func HasActivity() predicate.LogMsg {
-	return predicate.LogMsg(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(ActivityTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, ActivityTable, ActivityColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasActivityWith applies the HasEdge predicate on the "activity" edge with a given conditions (other predicates).
-func HasActivityWith(preds ...predicate.MirrorActivity) predicate.LogMsg {
-	return predicate.LogMsg(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(ActivityInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, ActivityTable, ActivityColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

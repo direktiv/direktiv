@@ -31,7 +31,6 @@ func (Events) Fields() []ent.Field {
 // Edges of the Events.
 func (Events) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("workflow", Workflow.Type).Ref("wfevents").Unique().Required(),
 		edge.To("wfeventswait", EventsWait.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
 		edge.From("instance", Instance.Type).Ref("eventlisteners").Unique(),
 		edge.From("namespace", Namespace.Type).Unique().Required().Ref("namespacelisteners"),

@@ -380,34 +380,6 @@ func UpdatedAtLTE(v time.Time) predicate.Events {
 	})
 }
 
-// HasWorkflow applies the HasEdge predicate on the "workflow" edge.
-func HasWorkflow() predicate.Events {
-	return predicate.Events(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(WorkflowTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, WorkflowTable, WorkflowColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasWorkflowWith applies the HasEdge predicate on the "workflow" edge with a given conditions (other predicates).
-func HasWorkflowWith(preds ...predicate.Workflow) predicate.Events {
-	return predicate.Events(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(WorkflowInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, WorkflowTable, WorkflowColumn),
-		)
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // HasWfeventswait applies the HasEdge predicate on the "wfeventswait" edge.
 func HasWfeventswait() predicate.Events {
 	return predicate.Events(func(s *sql.Selector) {

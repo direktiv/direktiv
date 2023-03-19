@@ -12,11 +12,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/direktiv/direktiv/pkg/flow/ent/annotation"
-	"github.com/direktiv/direktiv/pkg/flow/ent/inode"
-	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/predicate"
-	"github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 	"github.com/google/uuid"
 )
 
@@ -30,9 +27,6 @@ type AnnotationQuery struct {
 	fields        []string
 	predicates    []predicate.Annotation
 	withNamespace *NamespaceQuery
-	withWorkflow  *WorkflowQuery
-	withInstance  *InstanceQuery
-	withInode     *InodeQuery
 	withFKs       bool
 	modifiers     []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
@@ -86,72 +80,6 @@ func (aq *AnnotationQuery) QueryNamespace() *NamespaceQuery {
 			sqlgraph.From(annotation.Table, annotation.FieldID, selector),
 			sqlgraph.To(namespace.Table, namespace.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, annotation.NamespaceTable, annotation.NamespaceColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(aq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryWorkflow chains the current query on the "workflow" edge.
-func (aq *AnnotationQuery) QueryWorkflow() *WorkflowQuery {
-	query := &WorkflowQuery{config: aq.config}
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := aq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := aq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(annotation.Table, annotation.FieldID, selector),
-			sqlgraph.To(workflow.Table, workflow.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, annotation.WorkflowTable, annotation.WorkflowColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(aq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryInstance chains the current query on the "instance" edge.
-func (aq *AnnotationQuery) QueryInstance() *InstanceQuery {
-	query := &InstanceQuery{config: aq.config}
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := aq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := aq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(annotation.Table, annotation.FieldID, selector),
-			sqlgraph.To(instance.Table, instance.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, annotation.InstanceTable, annotation.InstanceColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(aq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryInode chains the current query on the "inode" edge.
-func (aq *AnnotationQuery) QueryInode() *InodeQuery {
-	query := &InodeQuery{config: aq.config}
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := aq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := aq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(annotation.Table, annotation.FieldID, selector),
-			sqlgraph.To(inode.Table, inode.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, annotation.InodeTable, annotation.InodeColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(aq.driver.Dialect(), step)
 		return fromU, nil
@@ -341,9 +269,6 @@ func (aq *AnnotationQuery) Clone() *AnnotationQuery {
 		order:         append([]OrderFunc{}, aq.order...),
 		predicates:    append([]predicate.Annotation{}, aq.predicates...),
 		withNamespace: aq.withNamespace.Clone(),
-		withWorkflow:  aq.withWorkflow.Clone(),
-		withInstance:  aq.withInstance.Clone(),
-		withInode:     aq.withInode.Clone(),
 		// clone intermediate query.
 		sql:    aq.sql.Clone(),
 		path:   aq.path,
@@ -359,39 +284,6 @@ func (aq *AnnotationQuery) WithNamespace(opts ...func(*NamespaceQuery)) *Annotat
 		opt(query)
 	}
 	aq.withNamespace = query
-	return aq
-}
-
-// WithWorkflow tells the query-builder to eager-load the nodes that are connected to
-// the "workflow" edge. The optional arguments are used to configure the query builder of the edge.
-func (aq *AnnotationQuery) WithWorkflow(opts ...func(*WorkflowQuery)) *AnnotationQuery {
-	query := &WorkflowQuery{config: aq.config}
-	for _, opt := range opts {
-		opt(query)
-	}
-	aq.withWorkflow = query
-	return aq
-}
-
-// WithInstance tells the query-builder to eager-load the nodes that are connected to
-// the "instance" edge. The optional arguments are used to configure the query builder of the edge.
-func (aq *AnnotationQuery) WithInstance(opts ...func(*InstanceQuery)) *AnnotationQuery {
-	query := &InstanceQuery{config: aq.config}
-	for _, opt := range opts {
-		opt(query)
-	}
-	aq.withInstance = query
-	return aq
-}
-
-// WithInode tells the query-builder to eager-load the nodes that are connected to
-// the "inode" edge. The optional arguments are used to configure the query builder of the edge.
-func (aq *AnnotationQuery) WithInode(opts ...func(*InodeQuery)) *AnnotationQuery {
-	query := &InodeQuery{config: aq.config}
-	for _, opt := range opts {
-		opt(query)
-	}
-	aq.withInode = query
 	return aq
 }
 
@@ -469,14 +361,11 @@ func (aq *AnnotationQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*A
 		nodes       = []*Annotation{}
 		withFKs     = aq.withFKs
 		_spec       = aq.querySpec()
-		loadedTypes = [4]bool{
+		loadedTypes = [1]bool{
 			aq.withNamespace != nil,
-			aq.withWorkflow != nil,
-			aq.withInstance != nil,
-			aq.withInode != nil,
 		}
 	)
-	if aq.withNamespace != nil || aq.withWorkflow != nil || aq.withInstance != nil || aq.withInode != nil {
+	if aq.withNamespace != nil {
 		withFKs = true
 	}
 	if withFKs {
@@ -509,24 +398,6 @@ func (aq *AnnotationQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*A
 			return nil, err
 		}
 	}
-	if query := aq.withWorkflow; query != nil {
-		if err := aq.loadWorkflow(ctx, query, nodes, nil,
-			func(n *Annotation, e *Workflow) { n.Edges.Workflow = e }); err != nil {
-			return nil, err
-		}
-	}
-	if query := aq.withInstance; query != nil {
-		if err := aq.loadInstance(ctx, query, nodes, nil,
-			func(n *Annotation, e *Instance) { n.Edges.Instance = e }); err != nil {
-			return nil, err
-		}
-	}
-	if query := aq.withInode; query != nil {
-		if err := aq.loadInode(ctx, query, nodes, nil,
-			func(n *Annotation, e *Inode) { n.Edges.Inode = e }); err != nil {
-			return nil, err
-		}
-	}
 	return nodes, nil
 }
 
@@ -552,93 +423,6 @@ func (aq *AnnotationQuery) loadNamespace(ctx context.Context, query *NamespaceQu
 		nodes, ok := nodeids[n.ID]
 		if !ok {
 			return fmt.Errorf(`unexpected foreign-key "namespace_annotations" returned %v`, n.ID)
-		}
-		for i := range nodes {
-			assign(nodes[i], n)
-		}
-	}
-	return nil
-}
-func (aq *AnnotationQuery) loadWorkflow(ctx context.Context, query *WorkflowQuery, nodes []*Annotation, init func(*Annotation), assign func(*Annotation, *Workflow)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*Annotation)
-	for i := range nodes {
-		if nodes[i].workflow_annotations == nil {
-			continue
-		}
-		fk := *nodes[i].workflow_annotations
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
-		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
-	}
-	query.Where(workflow.IDIn(ids...))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "workflow_annotations" returned %v`, n.ID)
-		}
-		for i := range nodes {
-			assign(nodes[i], n)
-		}
-	}
-	return nil
-}
-func (aq *AnnotationQuery) loadInstance(ctx context.Context, query *InstanceQuery, nodes []*Annotation, init func(*Annotation), assign func(*Annotation, *Instance)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*Annotation)
-	for i := range nodes {
-		if nodes[i].instance_annotations == nil {
-			continue
-		}
-		fk := *nodes[i].instance_annotations
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
-		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
-	}
-	query.Where(instance.IDIn(ids...))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "instance_annotations" returned %v`, n.ID)
-		}
-		for i := range nodes {
-			assign(nodes[i], n)
-		}
-	}
-	return nil
-}
-func (aq *AnnotationQuery) loadInode(ctx context.Context, query *InodeQuery, nodes []*Annotation, init func(*Annotation), assign func(*Annotation, *Inode)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*Annotation)
-	for i := range nodes {
-		if nodes[i].inode_annotations == nil {
-			continue
-		}
-		fk := *nodes[i].inode_annotations
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
-		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
-	}
-	query.Where(inode.IDIn(ids...))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "inode_annotations" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)

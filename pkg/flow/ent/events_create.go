@@ -16,7 +16,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/eventswait"
 	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
-	"github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 	"github.com/google/uuid"
 )
 
@@ -92,17 +91,6 @@ func (ec *EventsCreate) SetNillableID(u *uuid.UUID) *EventsCreate {
 		ec.SetID(*u)
 	}
 	return ec
-}
-
-// SetWorkflowID sets the "workflow" edge to the Workflow entity by ID.
-func (ec *EventsCreate) SetWorkflowID(id uuid.UUID) *EventsCreate {
-	ec.mutation.SetWorkflowID(id)
-	return ec
-}
-
-// SetWorkflow sets the "workflow" edge to the Workflow entity.
-func (ec *EventsCreate) SetWorkflow(w *Workflow) *EventsCreate {
-	return ec.SetWorkflowID(w.ID)
 }
 
 // AddWfeventswaitIDs adds the "wfeventswait" edge to the EventsWait entity by IDs.
@@ -258,9 +246,6 @@ func (ec *EventsCreate) check() error {
 	if _, ok := ec.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Events.updated_at"`)}
 	}
-	if _, ok := ec.mutation.WorkflowID(); !ok {
-		return &ValidationError{Name: "workflow", err: errors.New(`ent: missing required edge "Events.workflow"`)}
-	}
 	if _, ok := ec.mutation.NamespaceID(); !ok {
 		return &ValidationError{Name: "namespace", err: errors.New(`ent: missing required edge "Events.namespace"`)}
 	}
@@ -324,26 +309,6 @@ func (ec *EventsCreate) createSpec() (*Events, *sqlgraph.CreateSpec) {
 	if value, ok := ec.mutation.UpdatedAt(); ok {
 		_spec.SetField(events.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
-	}
-	if nodes := ec.mutation.WorkflowIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   events.WorkflowTable,
-			Columns: []string{events.WorkflowColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: workflow.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.workflow_wfevents = &nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := ec.mutation.WfeventswaitIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

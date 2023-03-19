@@ -9,10 +9,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/direktiv/direktiv/pkg/flow/ent/annotation"
-	"github.com/direktiv/direktiv/pkg/flow/ent/inode"
-	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
-	"github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 	"github.com/google/uuid"
 )
 
@@ -38,25 +35,17 @@ type Annotation struct {
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the AnnotationQuery when eager-loading is set.
 	Edges                 AnnotationEdges `json:"edges"`
-	inode_annotations     *uuid.UUID
 	instance_annotations  *uuid.UUID
 	namespace_annotations *uuid.UUID
-	workflow_annotations  *uuid.UUID
 }
 
 // AnnotationEdges holds the relations/edges for other nodes in the graph.
 type AnnotationEdges struct {
 	// Namespace holds the value of the namespace edge.
 	Namespace *Namespace `json:"namespace,omitempty"`
-	// Workflow holds the value of the workflow edge.
-	Workflow *Workflow `json:"workflow,omitempty"`
-	// Instance holds the value of the instance edge.
-	Instance *Instance `json:"instance,omitempty"`
-	// Inode holds the value of the inode edge.
-	Inode *Inode `json:"inode,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [1]bool
 }
 
 // NamespaceOrErr returns the Namespace value or an error if the edge
@@ -70,45 +59,6 @@ func (e AnnotationEdges) NamespaceOrErr() (*Namespace, error) {
 		return e.Namespace, nil
 	}
 	return nil, &NotLoadedError{edge: "namespace"}
-}
-
-// WorkflowOrErr returns the Workflow value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e AnnotationEdges) WorkflowOrErr() (*Workflow, error) {
-	if e.loadedTypes[1] {
-		if e.Workflow == nil {
-			// Edge was loaded but was not found.
-			return nil, &NotFoundError{label: workflow.Label}
-		}
-		return e.Workflow, nil
-	}
-	return nil, &NotLoadedError{edge: "workflow"}
-}
-
-// InstanceOrErr returns the Instance value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e AnnotationEdges) InstanceOrErr() (*Instance, error) {
-	if e.loadedTypes[2] {
-		if e.Instance == nil {
-			// Edge was loaded but was not found.
-			return nil, &NotFoundError{label: instance.Label}
-		}
-		return e.Instance, nil
-	}
-	return nil, &NotLoadedError{edge: "instance"}
-}
-
-// InodeOrErr returns the Inode value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e AnnotationEdges) InodeOrErr() (*Inode, error) {
-	if e.loadedTypes[3] {
-		if e.Inode == nil {
-			// Edge was loaded but was not found.
-			return nil, &NotFoundError{label: inode.Label}
-		}
-		return e.Inode, nil
-	}
-	return nil, &NotLoadedError{edge: "inode"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -126,13 +76,9 @@ func (*Annotation) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullTime)
 		case annotation.FieldID:
 			values[i] = new(uuid.UUID)
-		case annotation.ForeignKeys[0]: // inode_annotations
+		case annotation.ForeignKeys[0]: // instance_annotations
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case annotation.ForeignKeys[1]: // instance_annotations
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case annotation.ForeignKeys[2]: // namespace_annotations
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case annotation.ForeignKeys[3]: // workflow_annotations
+		case annotation.ForeignKeys[1]: // namespace_annotations
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Annotation", columns[i])
@@ -199,31 +145,17 @@ func (a *Annotation) assignValues(columns []string, values []any) error {
 			}
 		case annotation.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field inode_annotations", values[i])
-			} else if value.Valid {
-				a.inode_annotations = new(uuid.UUID)
-				*a.inode_annotations = *value.S.(*uuid.UUID)
-			}
-		case annotation.ForeignKeys[1]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field instance_annotations", values[i])
 			} else if value.Valid {
 				a.instance_annotations = new(uuid.UUID)
 				*a.instance_annotations = *value.S.(*uuid.UUID)
 			}
-		case annotation.ForeignKeys[2]:
+		case annotation.ForeignKeys[1]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field namespace_annotations", values[i])
 			} else if value.Valid {
 				a.namespace_annotations = new(uuid.UUID)
 				*a.namespace_annotations = *value.S.(*uuid.UUID)
-			}
-		case annotation.ForeignKeys[3]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field workflow_annotations", values[i])
-			} else if value.Valid {
-				a.workflow_annotations = new(uuid.UUID)
-				*a.workflow_annotations = *value.S.(*uuid.UUID)
 			}
 		}
 	}
@@ -233,21 +165,6 @@ func (a *Annotation) assignValues(columns []string, values []any) error {
 // QueryNamespace queries the "namespace" edge of the Annotation entity.
 func (a *Annotation) QueryNamespace() *NamespaceQuery {
 	return (&AnnotationClient{config: a.config}).QueryNamespace(a)
-}
-
-// QueryWorkflow queries the "workflow" edge of the Annotation entity.
-func (a *Annotation) QueryWorkflow() *WorkflowQuery {
-	return (&AnnotationClient{config: a.config}).QueryWorkflow(a)
-}
-
-// QueryInstance queries the "instance" edge of the Annotation entity.
-func (a *Annotation) QueryInstance() *InstanceQuery {
-	return (&AnnotationClient{config: a.config}).QueryInstance(a)
-}
-
-// QueryInode queries the "inode" edge of the Annotation entity.
-func (a *Annotation) QueryInode() *InodeQuery {
-	return (&AnnotationClient{config: a.config}).QueryInode(a)
 }
 
 // Update returns a builder for updating this Annotation.

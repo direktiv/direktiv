@@ -15,7 +15,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/vardata"
 	"github.com/direktiv/direktiv/pkg/flow/ent/varref"
-	"github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 	"github.com/google/uuid"
 )
 
@@ -97,25 +96,6 @@ func (vrc *VarRefCreate) SetNillableNamespaceID(id *uuid.UUID) *VarRefCreate {
 // SetNamespace sets the "namespace" edge to the Namespace entity.
 func (vrc *VarRefCreate) SetNamespace(n *Namespace) *VarRefCreate {
 	return vrc.SetNamespaceID(n.ID)
-}
-
-// SetWorkflowID sets the "workflow" edge to the Workflow entity by ID.
-func (vrc *VarRefCreate) SetWorkflowID(id uuid.UUID) *VarRefCreate {
-	vrc.mutation.SetWorkflowID(id)
-	return vrc
-}
-
-// SetNillableWorkflowID sets the "workflow" edge to the Workflow entity by ID if the given value is not nil.
-func (vrc *VarRefCreate) SetNillableWorkflowID(id *uuid.UUID) *VarRefCreate {
-	if id != nil {
-		vrc = vrc.SetWorkflowID(*id)
-	}
-	return vrc
-}
-
-// SetWorkflow sets the "workflow" edge to the Workflow entity.
-func (vrc *VarRefCreate) SetWorkflow(w *Workflow) *VarRefCreate {
-	return vrc.SetWorkflowID(w.ID)
 }
 
 // SetInstanceID sets the "instance" edge to the Instance entity by ID.
@@ -313,26 +293,6 @@ func (vrc *VarRefCreate) createSpec() (*VarRef, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.namespace_vars = &nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := vrc.mutation.WorkflowIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   varref.WorkflowTable,
-			Columns: []string{varref.WorkflowColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: workflow.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.workflow_vars = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := vrc.mutation.InstanceIDs(); len(nodes) > 0 {

@@ -13,10 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/direktiv/direktiv/pkg/flow/ent/annotation"
-	"github.com/direktiv/direktiv/pkg/flow/ent/inode"
-	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
-	"github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 	"github.com/google/uuid"
 )
 
@@ -117,63 +114,6 @@ func (ac *AnnotationCreate) SetNillableNamespaceID(id *uuid.UUID) *AnnotationCre
 // SetNamespace sets the "namespace" edge to the Namespace entity.
 func (ac *AnnotationCreate) SetNamespace(n *Namespace) *AnnotationCreate {
 	return ac.SetNamespaceID(n.ID)
-}
-
-// SetWorkflowID sets the "workflow" edge to the Workflow entity by ID.
-func (ac *AnnotationCreate) SetWorkflowID(id uuid.UUID) *AnnotationCreate {
-	ac.mutation.SetWorkflowID(id)
-	return ac
-}
-
-// SetNillableWorkflowID sets the "workflow" edge to the Workflow entity by ID if the given value is not nil.
-func (ac *AnnotationCreate) SetNillableWorkflowID(id *uuid.UUID) *AnnotationCreate {
-	if id != nil {
-		ac = ac.SetWorkflowID(*id)
-	}
-	return ac
-}
-
-// SetWorkflow sets the "workflow" edge to the Workflow entity.
-func (ac *AnnotationCreate) SetWorkflow(w *Workflow) *AnnotationCreate {
-	return ac.SetWorkflowID(w.ID)
-}
-
-// SetInstanceID sets the "instance" edge to the Instance entity by ID.
-func (ac *AnnotationCreate) SetInstanceID(id uuid.UUID) *AnnotationCreate {
-	ac.mutation.SetInstanceID(id)
-	return ac
-}
-
-// SetNillableInstanceID sets the "instance" edge to the Instance entity by ID if the given value is not nil.
-func (ac *AnnotationCreate) SetNillableInstanceID(id *uuid.UUID) *AnnotationCreate {
-	if id != nil {
-		ac = ac.SetInstanceID(*id)
-	}
-	return ac
-}
-
-// SetInstance sets the "instance" edge to the Instance entity.
-func (ac *AnnotationCreate) SetInstance(i *Instance) *AnnotationCreate {
-	return ac.SetInstanceID(i.ID)
-}
-
-// SetInodeID sets the "inode" edge to the Inode entity by ID.
-func (ac *AnnotationCreate) SetInodeID(id uuid.UUID) *AnnotationCreate {
-	ac.mutation.SetInodeID(id)
-	return ac
-}
-
-// SetNillableInodeID sets the "inode" edge to the Inode entity by ID if the given value is not nil.
-func (ac *AnnotationCreate) SetNillableInodeID(id *uuid.UUID) *AnnotationCreate {
-	if id != nil {
-		ac = ac.SetInodeID(*id)
-	}
-	return ac
-}
-
-// SetInode sets the "inode" edge to the Inode entity.
-func (ac *AnnotationCreate) SetInode(i *Inode) *AnnotationCreate {
-	return ac.SetInodeID(i.ID)
 }
 
 // Mutation returns the AnnotationMutation object of the builder.
@@ -378,66 +318,6 @@ func (ac *AnnotationCreate) createSpec() (*Annotation, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.namespace_annotations = &nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := ac.mutation.WorkflowIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   annotation.WorkflowTable,
-			Columns: []string{annotation.WorkflowColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: workflow.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.workflow_annotations = &nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := ac.mutation.InstanceIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   annotation.InstanceTable,
-			Columns: []string{annotation.InstanceColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: instance.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.instance_annotations = &nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := ac.mutation.InodeIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   annotation.InodeTable,
-			Columns: []string{annotation.InodeColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: inode.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.inode_annotations = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

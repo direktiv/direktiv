@@ -12,7 +12,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/events"
 	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
-	"github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 	"github.com/google/uuid"
 )
 
@@ -38,13 +37,10 @@ type Events struct {
 	Edges                        EventsEdges `json:"edges"`
 	instance_eventlisteners      *uuid.UUID
 	namespace_namespacelisteners *uuid.UUID
-	workflow_wfevents            *uuid.UUID
 }
 
 // EventsEdges holds the relations/edges for other nodes in the graph.
 type EventsEdges struct {
-	// Workflow holds the value of the workflow edge.
-	Workflow *Workflow `json:"workflow,omitempty"`
 	// Wfeventswait holds the value of the wfeventswait edge.
 	Wfeventswait []*EventsWait `json:"wfeventswait,omitempty"`
 	// Instance holds the value of the instance edge.
@@ -53,26 +49,13 @@ type EventsEdges struct {
 	Namespace *Namespace `json:"namespace,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
-}
-
-// WorkflowOrErr returns the Workflow value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e EventsEdges) WorkflowOrErr() (*Workflow, error) {
-	if e.loadedTypes[0] {
-		if e.Workflow == nil {
-			// Edge was loaded but was not found.
-			return nil, &NotFoundError{label: workflow.Label}
-		}
-		return e.Workflow, nil
-	}
-	return nil, &NotLoadedError{edge: "workflow"}
+	loadedTypes [3]bool
 }
 
 // WfeventswaitOrErr returns the Wfeventswait value or an error if the edge
 // was not loaded in eager-loading.
 func (e EventsEdges) WfeventswaitOrErr() ([]*EventsWait, error) {
-	if e.loadedTypes[1] {
+	if e.loadedTypes[0] {
 		return e.Wfeventswait, nil
 	}
 	return nil, &NotLoadedError{edge: "wfeventswait"}
@@ -81,7 +64,7 @@ func (e EventsEdges) WfeventswaitOrErr() ([]*EventsWait, error) {
 // InstanceOrErr returns the Instance value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e EventsEdges) InstanceOrErr() (*Instance, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[1] {
 		if e.Instance == nil {
 			// Edge was loaded but was not found.
 			return nil, &NotFoundError{label: instance.Label}
@@ -94,7 +77,7 @@ func (e EventsEdges) InstanceOrErr() (*Instance, error) {
 // NamespaceOrErr returns the Namespace value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e EventsEdges) NamespaceOrErr() (*Namespace, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[2] {
 		if e.Namespace == nil {
 			// Edge was loaded but was not found.
 			return nil, &NotFoundError{label: namespace.Label}
@@ -120,8 +103,6 @@ func (*Events) scanValues(columns []string) ([]any, error) {
 		case events.ForeignKeys[0]: // instance_eventlisteners
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case events.ForeignKeys[1]: // namespace_namespacelisteners
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case events.ForeignKeys[2]: // workflow_wfevents
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Events", columns[i])
@@ -198,21 +179,9 @@ func (e *Events) assignValues(columns []string, values []any) error {
 				e.namespace_namespacelisteners = new(uuid.UUID)
 				*e.namespace_namespacelisteners = *value.S.(*uuid.UUID)
 			}
-		case events.ForeignKeys[2]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field workflow_wfevents", values[i])
-			} else if value.Valid {
-				e.workflow_wfevents = new(uuid.UUID)
-				*e.workflow_wfevents = *value.S.(*uuid.UUID)
-			}
 		}
 	}
 	return nil
-}
-
-// QueryWorkflow queries the "workflow" edge of the Events entity.
-func (e *Events) QueryWorkflow() *WorkflowQuery {
-	return (&EventsClient{config: e.config}).QueryWorkflow(e)
 }
 
 // QueryWfeventswait queries the "wfeventswait" edge of the Events entity.

@@ -18,9 +18,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/predicate"
-	"github.com/direktiv/direktiv/pkg/flow/ent/revision"
 	"github.com/direktiv/direktiv/pkg/flow/ent/varref"
-	"github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 	"github.com/google/uuid"
 )
 
@@ -161,44 +159,6 @@ func (iu *InstanceUpdate) SetNamespace(n *Namespace) *InstanceUpdate {
 	return iu.SetNamespaceID(n.ID)
 }
 
-// SetWorkflowID sets the "workflow" edge to the Workflow entity by ID.
-func (iu *InstanceUpdate) SetWorkflowID(id uuid.UUID) *InstanceUpdate {
-	iu.mutation.SetWorkflowID(id)
-	return iu
-}
-
-// SetNillableWorkflowID sets the "workflow" edge to the Workflow entity by ID if the given value is not nil.
-func (iu *InstanceUpdate) SetNillableWorkflowID(id *uuid.UUID) *InstanceUpdate {
-	if id != nil {
-		iu = iu.SetWorkflowID(*id)
-	}
-	return iu
-}
-
-// SetWorkflow sets the "workflow" edge to the Workflow entity.
-func (iu *InstanceUpdate) SetWorkflow(w *Workflow) *InstanceUpdate {
-	return iu.SetWorkflowID(w.ID)
-}
-
-// SetRevisionID sets the "revision" edge to the Revision entity by ID.
-func (iu *InstanceUpdate) SetRevisionID(id uuid.UUID) *InstanceUpdate {
-	iu.mutation.SetRevisionID(id)
-	return iu
-}
-
-// SetNillableRevisionID sets the "revision" edge to the Revision entity by ID if the given value is not nil.
-func (iu *InstanceUpdate) SetNillableRevisionID(id *uuid.UUID) *InstanceUpdate {
-	if id != nil {
-		iu = iu.SetRevisionID(*id)
-	}
-	return iu
-}
-
-// SetRevision sets the "revision" edge to the Revision entity.
-func (iu *InstanceUpdate) SetRevision(r *Revision) *InstanceUpdate {
-	return iu.SetRevisionID(r.ID)
-}
-
 // AddLogIDs adds the "logs" edge to the LogMsg entity by IDs.
 func (iu *InstanceUpdate) AddLogIDs(ids ...uuid.UUID) *InstanceUpdate {
 	iu.mutation.AddLogIDs(ids...)
@@ -293,18 +253,6 @@ func (iu *InstanceUpdate) Mutation() *InstanceMutation {
 // ClearNamespace clears the "namespace" edge to the Namespace entity.
 func (iu *InstanceUpdate) ClearNamespace() *InstanceUpdate {
 	iu.mutation.ClearNamespace()
-	return iu
-}
-
-// ClearWorkflow clears the "workflow" edge to the Workflow entity.
-func (iu *InstanceUpdate) ClearWorkflow() *InstanceUpdate {
-	iu.mutation.ClearWorkflow()
-	return iu
-}
-
-// ClearRevision clears the "revision" edge to the Revision entity.
-func (iu *InstanceUpdate) ClearRevision() *InstanceUpdate {
-	iu.mutation.ClearRevision()
 	return iu
 }
 
@@ -586,76 +534,6 @@ func (iu *InstanceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: namespace.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if iu.mutation.WorkflowCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   instance.WorkflowTable,
-			Columns: []string{instance.WorkflowColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: workflow.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := iu.mutation.WorkflowIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   instance.WorkflowTable,
-			Columns: []string{instance.WorkflowColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: workflow.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if iu.mutation.RevisionCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   instance.RevisionTable,
-			Columns: []string{instance.RevisionColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: revision.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := iu.mutation.RevisionIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   instance.RevisionTable,
-			Columns: []string{instance.RevisionColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: revision.FieldID,
 				},
 			},
 		}
@@ -1113,44 +991,6 @@ func (iuo *InstanceUpdateOne) SetNamespace(n *Namespace) *InstanceUpdateOne {
 	return iuo.SetNamespaceID(n.ID)
 }
 
-// SetWorkflowID sets the "workflow" edge to the Workflow entity by ID.
-func (iuo *InstanceUpdateOne) SetWorkflowID(id uuid.UUID) *InstanceUpdateOne {
-	iuo.mutation.SetWorkflowID(id)
-	return iuo
-}
-
-// SetNillableWorkflowID sets the "workflow" edge to the Workflow entity by ID if the given value is not nil.
-func (iuo *InstanceUpdateOne) SetNillableWorkflowID(id *uuid.UUID) *InstanceUpdateOne {
-	if id != nil {
-		iuo = iuo.SetWorkflowID(*id)
-	}
-	return iuo
-}
-
-// SetWorkflow sets the "workflow" edge to the Workflow entity.
-func (iuo *InstanceUpdateOne) SetWorkflow(w *Workflow) *InstanceUpdateOne {
-	return iuo.SetWorkflowID(w.ID)
-}
-
-// SetRevisionID sets the "revision" edge to the Revision entity by ID.
-func (iuo *InstanceUpdateOne) SetRevisionID(id uuid.UUID) *InstanceUpdateOne {
-	iuo.mutation.SetRevisionID(id)
-	return iuo
-}
-
-// SetNillableRevisionID sets the "revision" edge to the Revision entity by ID if the given value is not nil.
-func (iuo *InstanceUpdateOne) SetNillableRevisionID(id *uuid.UUID) *InstanceUpdateOne {
-	if id != nil {
-		iuo = iuo.SetRevisionID(*id)
-	}
-	return iuo
-}
-
-// SetRevision sets the "revision" edge to the Revision entity.
-func (iuo *InstanceUpdateOne) SetRevision(r *Revision) *InstanceUpdateOne {
-	return iuo.SetRevisionID(r.ID)
-}
-
 // AddLogIDs adds the "logs" edge to the LogMsg entity by IDs.
 func (iuo *InstanceUpdateOne) AddLogIDs(ids ...uuid.UUID) *InstanceUpdateOne {
 	iuo.mutation.AddLogIDs(ids...)
@@ -1245,18 +1085,6 @@ func (iuo *InstanceUpdateOne) Mutation() *InstanceMutation {
 // ClearNamespace clears the "namespace" edge to the Namespace entity.
 func (iuo *InstanceUpdateOne) ClearNamespace() *InstanceUpdateOne {
 	iuo.mutation.ClearNamespace()
-	return iuo
-}
-
-// ClearWorkflow clears the "workflow" edge to the Workflow entity.
-func (iuo *InstanceUpdateOne) ClearWorkflow() *InstanceUpdateOne {
-	iuo.mutation.ClearWorkflow()
-	return iuo
-}
-
-// ClearRevision clears the "revision" edge to the Revision entity.
-func (iuo *InstanceUpdateOne) ClearRevision() *InstanceUpdateOne {
-	iuo.mutation.ClearRevision()
 	return iuo
 }
 
@@ -1568,76 +1396,6 @@ func (iuo *InstanceUpdateOne) sqlSave(ctx context.Context) (_node *Instance, err
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: namespace.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if iuo.mutation.WorkflowCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   instance.WorkflowTable,
-			Columns: []string{instance.WorkflowColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: workflow.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := iuo.mutation.WorkflowIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   instance.WorkflowTable,
-			Columns: []string{instance.WorkflowColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: workflow.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if iuo.mutation.RevisionCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   instance.RevisionTable,
-			Columns: []string{instance.RevisionColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: revision.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := iuo.mutation.RevisionIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   instance.RevisionTable,
-			Columns: []string{instance.RevisionColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: revision.FieldID,
 				},
 			},
 		}

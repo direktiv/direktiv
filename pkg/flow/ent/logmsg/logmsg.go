@@ -21,12 +21,8 @@ const (
 	FieldLogInstanceCallPath = "log_instance_call_path"
 	// EdgeNamespace holds the string denoting the namespace edge name in mutations.
 	EdgeNamespace = "namespace"
-	// EdgeWorkflow holds the string denoting the workflow edge name in mutations.
-	EdgeWorkflow = "workflow"
 	// EdgeInstance holds the string denoting the instance edge name in mutations.
 	EdgeInstance = "instance"
-	// EdgeActivity holds the string denoting the activity edge name in mutations.
-	EdgeActivity = "activity"
 	// Table holds the table name of the logmsg in the database.
 	Table = "log_msgs"
 	// NamespaceTable is the table that holds the namespace relation/edge.
@@ -36,13 +32,6 @@ const (
 	NamespaceInverseTable = "namespaces"
 	// NamespaceColumn is the table column denoting the namespace relation/edge.
 	NamespaceColumn = "namespace_logs"
-	// WorkflowTable is the table that holds the workflow relation/edge.
-	WorkflowTable = "log_msgs"
-	// WorkflowInverseTable is the table name for the Workflow entity.
-	// It exists in this package in order to avoid circular dependency with the "workflow" package.
-	WorkflowInverseTable = "workflows"
-	// WorkflowColumn is the table column denoting the workflow relation/edge.
-	WorkflowColumn = "workflow_logs"
 	// InstanceTable is the table that holds the instance relation/edge.
 	InstanceTable = "log_msgs"
 	// InstanceInverseTable is the table name for the Instance entity.
@@ -50,13 +39,6 @@ const (
 	InstanceInverseTable = "instances"
 	// InstanceColumn is the table column denoting the instance relation/edge.
 	InstanceColumn = "instance_logs"
-	// ActivityTable is the table that holds the activity relation/edge.
-	ActivityTable = "log_msgs"
-	// ActivityInverseTable is the table name for the MirrorActivity entity.
-	// It exists in this package in order to avoid circular dependency with the "mirroractivity" package.
-	ActivityInverseTable = "mirror_activities"
-	// ActivityColumn is the table column denoting the activity relation/edge.
-	ActivityColumn = "mirror_activity_logs"
 )
 
 // Columns holds all SQL columns for logmsg fields.
@@ -72,9 +54,7 @@ var Columns = []string{
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
 	"instance_logs",
-	"mirror_activity_logs",
 	"namespace_logs",
-	"workflow_logs",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).

@@ -28,8 +28,6 @@ func (LogMsg) Fields() []ent.Field {
 func (LogMsg) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("namespace", Namespace.Type).Ref("logs").Unique().Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
-		edge.From("workflow", Workflow.Type).Ref("logs").Unique().Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
 		edge.From("instance", Instance.Type).Ref("logs").Unique().Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
-		edge.From("activity", MirrorActivity.Type).Ref("logs").Unique().Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
 	}
 }

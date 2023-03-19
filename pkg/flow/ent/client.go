@@ -16,20 +16,13 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
 	"github.com/direktiv/direktiv/pkg/flow/ent/events"
 	"github.com/direktiv/direktiv/pkg/flow/ent/eventswait"
-	"github.com/direktiv/direktiv/pkg/flow/ent/inode"
 	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	"github.com/direktiv/direktiv/pkg/flow/ent/instanceruntime"
 	"github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
-	"github.com/direktiv/direktiv/pkg/flow/ent/mirror"
-	"github.com/direktiv/direktiv/pkg/flow/ent/mirroractivity"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
-	"github.com/direktiv/direktiv/pkg/flow/ent/ref"
-	"github.com/direktiv/direktiv/pkg/flow/ent/revision"
-	"github.com/direktiv/direktiv/pkg/flow/ent/route"
 	"github.com/direktiv/direktiv/pkg/flow/ent/services"
 	"github.com/direktiv/direktiv/pkg/flow/ent/vardata"
 	"github.com/direktiv/direktiv/pkg/flow/ent/varref"
-	"github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
@@ -51,34 +44,20 @@ type Client struct {
 	Events *EventsClient
 	// EventsWait is the client for interacting with the EventsWait builders.
 	EventsWait *EventsWaitClient
-	// Inode is the client for interacting with the Inode builders.
-	Inode *InodeClient
 	// Instance is the client for interacting with the Instance builders.
 	Instance *InstanceClient
 	// InstanceRuntime is the client for interacting with the InstanceRuntime builders.
 	InstanceRuntime *InstanceRuntimeClient
 	// LogMsg is the client for interacting with the LogMsg builders.
 	LogMsg *LogMsgClient
-	// Mirror is the client for interacting with the Mirror builders.
-	Mirror *MirrorClient
-	// MirrorActivity is the client for interacting with the MirrorActivity builders.
-	MirrorActivity *MirrorActivityClient
 	// Namespace is the client for interacting with the Namespace builders.
 	Namespace *NamespaceClient
-	// Ref is the client for interacting with the Ref builders.
-	Ref *RefClient
-	// Revision is the client for interacting with the Revision builders.
-	Revision *RevisionClient
-	// Route is the client for interacting with the Route builders.
-	Route *RouteClient
 	// Services is the client for interacting with the Services builders.
 	Services *ServicesClient
 	// VarData is the client for interacting with the VarData builders.
 	VarData *VarDataClient
 	// VarRef is the client for interacting with the VarRef builders.
 	VarRef *VarRefClient
-	// Workflow is the client for interacting with the Workflow builders.
-	Workflow *WorkflowClient
 }
 
 // NewClient creates a new client configured with the given options.
@@ -97,20 +76,13 @@ func (c *Client) init() {
 	c.CloudEvents = NewCloudEventsClient(c.config)
 	c.Events = NewEventsClient(c.config)
 	c.EventsWait = NewEventsWaitClient(c.config)
-	c.Inode = NewInodeClient(c.config)
 	c.Instance = NewInstanceClient(c.config)
 	c.InstanceRuntime = NewInstanceRuntimeClient(c.config)
 	c.LogMsg = NewLogMsgClient(c.config)
-	c.Mirror = NewMirrorClient(c.config)
-	c.MirrorActivity = NewMirrorActivityClient(c.config)
 	c.Namespace = NewNamespaceClient(c.config)
-	c.Ref = NewRefClient(c.config)
-	c.Revision = NewRevisionClient(c.config)
-	c.Route = NewRouteClient(c.config)
 	c.Services = NewServicesClient(c.config)
 	c.VarData = NewVarDataClient(c.config)
 	c.VarRef = NewVarRefClient(c.config)
-	c.Workflow = NewWorkflowClient(c.config)
 }
 
 // Open opens a database/sql.DB specified by the driver name and
@@ -149,20 +121,13 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		CloudEvents:       NewCloudEventsClient(cfg),
 		Events:            NewEventsClient(cfg),
 		EventsWait:        NewEventsWaitClient(cfg),
-		Inode:             NewInodeClient(cfg),
 		Instance:          NewInstanceClient(cfg),
 		InstanceRuntime:   NewInstanceRuntimeClient(cfg),
 		LogMsg:            NewLogMsgClient(cfg),
-		Mirror:            NewMirrorClient(cfg),
-		MirrorActivity:    NewMirrorActivityClient(cfg),
 		Namespace:         NewNamespaceClient(cfg),
-		Ref:               NewRefClient(cfg),
-		Revision:          NewRevisionClient(cfg),
-		Route:             NewRouteClient(cfg),
 		Services:          NewServicesClient(cfg),
 		VarData:           NewVarDataClient(cfg),
 		VarRef:            NewVarRefClient(cfg),
-		Workflow:          NewWorkflowClient(cfg),
 	}, nil
 }
 
@@ -187,20 +152,13 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		CloudEvents:       NewCloudEventsClient(cfg),
 		Events:            NewEventsClient(cfg),
 		EventsWait:        NewEventsWaitClient(cfg),
-		Inode:             NewInodeClient(cfg),
 		Instance:          NewInstanceClient(cfg),
 		InstanceRuntime:   NewInstanceRuntimeClient(cfg),
 		LogMsg:            NewLogMsgClient(cfg),
-		Mirror:            NewMirrorClient(cfg),
-		MirrorActivity:    NewMirrorActivityClient(cfg),
 		Namespace:         NewNamespaceClient(cfg),
-		Ref:               NewRefClient(cfg),
-		Revision:          NewRevisionClient(cfg),
-		Route:             NewRouteClient(cfg),
 		Services:          NewServicesClient(cfg),
 		VarData:           NewVarDataClient(cfg),
 		VarRef:            NewVarRefClient(cfg),
-		Workflow:          NewWorkflowClient(cfg),
 	}, nil
 }
 
@@ -234,20 +192,13 @@ func (c *Client) Use(hooks ...Hook) {
 	c.CloudEvents.Use(hooks...)
 	c.Events.Use(hooks...)
 	c.EventsWait.Use(hooks...)
-	c.Inode.Use(hooks...)
 	c.Instance.Use(hooks...)
 	c.InstanceRuntime.Use(hooks...)
 	c.LogMsg.Use(hooks...)
-	c.Mirror.Use(hooks...)
-	c.MirrorActivity.Use(hooks...)
 	c.Namespace.Use(hooks...)
-	c.Ref.Use(hooks...)
-	c.Revision.Use(hooks...)
-	c.Route.Use(hooks...)
 	c.Services.Use(hooks...)
 	c.VarData.Use(hooks...)
 	c.VarRef.Use(hooks...)
-	c.Workflow.Use(hooks...)
 }
 
 // AnnotationClient is a client for the Annotation schema.
@@ -344,54 +295,6 @@ func (c *AnnotationClient) QueryNamespace(a *Annotation) *NamespaceQuery {
 			sqlgraph.From(annotation.Table, annotation.FieldID, id),
 			sqlgraph.To(namespace.Table, namespace.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, annotation.NamespaceTable, annotation.NamespaceColumn),
-		)
-		fromV = sqlgraph.Neighbors(a.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryWorkflow queries the workflow edge of a Annotation.
-func (c *AnnotationClient) QueryWorkflow(a *Annotation) *WorkflowQuery {
-	query := &WorkflowQuery{config: c.config}
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := a.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(annotation.Table, annotation.FieldID, id),
-			sqlgraph.To(workflow.Table, workflow.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, annotation.WorkflowTable, annotation.WorkflowColumn),
-		)
-		fromV = sqlgraph.Neighbors(a.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryInstance queries the instance edge of a Annotation.
-func (c *AnnotationClient) QueryInstance(a *Annotation) *InstanceQuery {
-	query := &InstanceQuery{config: c.config}
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := a.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(annotation.Table, annotation.FieldID, id),
-			sqlgraph.To(instance.Table, instance.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, annotation.InstanceTable, annotation.InstanceColumn),
-		)
-		fromV = sqlgraph.Neighbors(a.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryInode queries the inode edge of a Annotation.
-func (c *AnnotationClient) QueryInode(a *Annotation) *InodeQuery {
-	query := &InodeQuery{config: c.config}
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := a.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(annotation.Table, annotation.FieldID, id),
-			sqlgraph.To(inode.Table, inode.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, annotation.InodeTable, annotation.InodeColumn),
 		)
 		fromV = sqlgraph.Neighbors(a.driver.Dialect(), step)
 		return fromV, nil
@@ -701,22 +604,6 @@ func (c *EventsClient) GetX(ctx context.Context, id uuid.UUID) *Events {
 	return obj
 }
 
-// QueryWorkflow queries the workflow edge of a Events.
-func (c *EventsClient) QueryWorkflow(e *Events) *WorkflowQuery {
-	query := &WorkflowQuery{config: c.config}
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := e.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(events.Table, events.FieldID, id),
-			sqlgraph.To(workflow.Table, workflow.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, events.WorkflowTable, events.WorkflowColumn),
-		)
-		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryWfeventswait queries the wfeventswait edge of a Events.
 func (c *EventsClient) QueryWfeventswait(e *Events) *EventsWaitQuery {
 	query := &EventsWaitQuery{config: c.config}
@@ -876,192 +763,6 @@ func (c *EventsWaitClient) Hooks() []Hook {
 	return c.hooks.EventsWait
 }
 
-// InodeClient is a client for the Inode schema.
-type InodeClient struct {
-	config
-}
-
-// NewInodeClient returns a client for the Inode from the given config.
-func NewInodeClient(c config) *InodeClient {
-	return &InodeClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `inode.Hooks(f(g(h())))`.
-func (c *InodeClient) Use(hooks ...Hook) {
-	c.hooks.Inode = append(c.hooks.Inode, hooks...)
-}
-
-// Create returns a builder for creating a Inode entity.
-func (c *InodeClient) Create() *InodeCreate {
-	mutation := newInodeMutation(c.config, OpCreate)
-	return &InodeCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of Inode entities.
-func (c *InodeClient) CreateBulk(builders ...*InodeCreate) *InodeCreateBulk {
-	return &InodeCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for Inode.
-func (c *InodeClient) Update() *InodeUpdate {
-	mutation := newInodeMutation(c.config, OpUpdate)
-	return &InodeUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *InodeClient) UpdateOne(i *Inode) *InodeUpdateOne {
-	mutation := newInodeMutation(c.config, OpUpdateOne, withInode(i))
-	return &InodeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *InodeClient) UpdateOneID(id uuid.UUID) *InodeUpdateOne {
-	mutation := newInodeMutation(c.config, OpUpdateOne, withInodeID(id))
-	return &InodeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for Inode.
-func (c *InodeClient) Delete() *InodeDelete {
-	mutation := newInodeMutation(c.config, OpDelete)
-	return &InodeDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *InodeClient) DeleteOne(i *Inode) *InodeDeleteOne {
-	return c.DeleteOneID(i.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *InodeClient) DeleteOneID(id uuid.UUID) *InodeDeleteOne {
-	builder := c.Delete().Where(inode.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &InodeDeleteOne{builder}
-}
-
-// Query returns a query builder for Inode.
-func (c *InodeClient) Query() *InodeQuery {
-	return &InodeQuery{
-		config: c.config,
-	}
-}
-
-// Get returns a Inode entity by its id.
-func (c *InodeClient) Get(ctx context.Context, id uuid.UUID) (*Inode, error) {
-	return c.Query().Where(inode.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *InodeClient) GetX(ctx context.Context, id uuid.UUID) *Inode {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryNamespace queries the namespace edge of a Inode.
-func (c *InodeClient) QueryNamespace(i *Inode) *NamespaceQuery {
-	query := &NamespaceQuery{config: c.config}
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := i.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(inode.Table, inode.FieldID, id),
-			sqlgraph.To(namespace.Table, namespace.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, inode.NamespaceTable, inode.NamespaceColumn),
-		)
-		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryChildren queries the children edge of a Inode.
-func (c *InodeClient) QueryChildren(i *Inode) *InodeQuery {
-	query := &InodeQuery{config: c.config}
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := i.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(inode.Table, inode.FieldID, id),
-			sqlgraph.To(inode.Table, inode.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, inode.ChildrenTable, inode.ChildrenColumn),
-		)
-		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryParent queries the parent edge of a Inode.
-func (c *InodeClient) QueryParent(i *Inode) *InodeQuery {
-	query := &InodeQuery{config: c.config}
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := i.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(inode.Table, inode.FieldID, id),
-			sqlgraph.To(inode.Table, inode.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, inode.ParentTable, inode.ParentColumn),
-		)
-		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryWorkflow queries the workflow edge of a Inode.
-func (c *InodeClient) QueryWorkflow(i *Inode) *WorkflowQuery {
-	query := &WorkflowQuery{config: c.config}
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := i.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(inode.Table, inode.FieldID, id),
-			sqlgraph.To(workflow.Table, workflow.FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, false, inode.WorkflowTable, inode.WorkflowColumn),
-		)
-		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryMirror queries the mirror edge of a Inode.
-func (c *InodeClient) QueryMirror(i *Inode) *MirrorQuery {
-	query := &MirrorQuery{config: c.config}
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := i.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(inode.Table, inode.FieldID, id),
-			sqlgraph.To(mirror.Table, mirror.FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, false, inode.MirrorTable, inode.MirrorColumn),
-		)
-		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryAnnotations queries the annotations edge of a Inode.
-func (c *InodeClient) QueryAnnotations(i *Inode) *AnnotationQuery {
-	query := &AnnotationQuery{config: c.config}
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := i.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(inode.Table, inode.FieldID, id),
-			sqlgraph.To(annotation.Table, annotation.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, inode.AnnotationsTable, inode.AnnotationsColumn),
-		)
-		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *InodeClient) Hooks() []Hook {
-	return c.hooks.Inode
-}
-
 // InstanceClient is a client for the Instance schema.
 type InstanceClient struct {
 	config
@@ -1156,38 +857,6 @@ func (c *InstanceClient) QueryNamespace(i *Instance) *NamespaceQuery {
 			sqlgraph.From(instance.Table, instance.FieldID, id),
 			sqlgraph.To(namespace.Table, namespace.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, instance.NamespaceTable, instance.NamespaceColumn),
-		)
-		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryWorkflow queries the workflow edge of a Instance.
-func (c *InstanceClient) QueryWorkflow(i *Instance) *WorkflowQuery {
-	query := &WorkflowQuery{config: c.config}
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := i.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(instance.Table, instance.FieldID, id),
-			sqlgraph.To(workflow.Table, workflow.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, instance.WorkflowTable, instance.WorkflowColumn),
-		)
-		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryRevision queries the revision edge of a Instance.
-func (c *InstanceClient) QueryRevision(i *Instance) *RevisionQuery {
-	query := &RevisionQuery{config: c.config}
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := i.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(instance.Table, instance.FieldID, id),
-			sqlgraph.To(revision.Table, revision.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, instance.RevisionTable, instance.RevisionColumn),
 		)
 		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
 		return fromV, nil
@@ -1519,22 +1188,6 @@ func (c *LogMsgClient) QueryNamespace(lm *LogMsg) *NamespaceQuery {
 	return query
 }
 
-// QueryWorkflow queries the workflow edge of a LogMsg.
-func (c *LogMsgClient) QueryWorkflow(lm *LogMsg) *WorkflowQuery {
-	query := &WorkflowQuery{config: c.config}
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := lm.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(logmsg.Table, logmsg.FieldID, id),
-			sqlgraph.To(workflow.Table, workflow.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, logmsg.WorkflowTable, logmsg.WorkflowColumn),
-		)
-		fromV = sqlgraph.Neighbors(lm.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryInstance queries the instance edge of a LogMsg.
 func (c *LogMsgClient) QueryInstance(lm *LogMsg) *InstanceQuery {
 	query := &InstanceQuery{config: c.config}
@@ -1551,301 +1204,9 @@ func (c *LogMsgClient) QueryInstance(lm *LogMsg) *InstanceQuery {
 	return query
 }
 
-// QueryActivity queries the activity edge of a LogMsg.
-func (c *LogMsgClient) QueryActivity(lm *LogMsg) *MirrorActivityQuery {
-	query := &MirrorActivityQuery{config: c.config}
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := lm.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(logmsg.Table, logmsg.FieldID, id),
-			sqlgraph.To(mirroractivity.Table, mirroractivity.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, logmsg.ActivityTable, logmsg.ActivityColumn),
-		)
-		fromV = sqlgraph.Neighbors(lm.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // Hooks returns the client hooks.
 func (c *LogMsgClient) Hooks() []Hook {
 	return c.hooks.LogMsg
-}
-
-// MirrorClient is a client for the Mirror schema.
-type MirrorClient struct {
-	config
-}
-
-// NewMirrorClient returns a client for the Mirror from the given config.
-func NewMirrorClient(c config) *MirrorClient {
-	return &MirrorClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `mirror.Hooks(f(g(h())))`.
-func (c *MirrorClient) Use(hooks ...Hook) {
-	c.hooks.Mirror = append(c.hooks.Mirror, hooks...)
-}
-
-// Create returns a builder for creating a Mirror entity.
-func (c *MirrorClient) Create() *MirrorCreate {
-	mutation := newMirrorMutation(c.config, OpCreate)
-	return &MirrorCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of Mirror entities.
-func (c *MirrorClient) CreateBulk(builders ...*MirrorCreate) *MirrorCreateBulk {
-	return &MirrorCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for Mirror.
-func (c *MirrorClient) Update() *MirrorUpdate {
-	mutation := newMirrorMutation(c.config, OpUpdate)
-	return &MirrorUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *MirrorClient) UpdateOne(m *Mirror) *MirrorUpdateOne {
-	mutation := newMirrorMutation(c.config, OpUpdateOne, withMirror(m))
-	return &MirrorUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *MirrorClient) UpdateOneID(id uuid.UUID) *MirrorUpdateOne {
-	mutation := newMirrorMutation(c.config, OpUpdateOne, withMirrorID(id))
-	return &MirrorUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for Mirror.
-func (c *MirrorClient) Delete() *MirrorDelete {
-	mutation := newMirrorMutation(c.config, OpDelete)
-	return &MirrorDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *MirrorClient) DeleteOne(m *Mirror) *MirrorDeleteOne {
-	return c.DeleteOneID(m.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *MirrorClient) DeleteOneID(id uuid.UUID) *MirrorDeleteOne {
-	builder := c.Delete().Where(mirror.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &MirrorDeleteOne{builder}
-}
-
-// Query returns a query builder for Mirror.
-func (c *MirrorClient) Query() *MirrorQuery {
-	return &MirrorQuery{
-		config: c.config,
-	}
-}
-
-// Get returns a Mirror entity by its id.
-func (c *MirrorClient) Get(ctx context.Context, id uuid.UUID) (*Mirror, error) {
-	return c.Query().Where(mirror.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *MirrorClient) GetX(ctx context.Context, id uuid.UUID) *Mirror {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryNamespace queries the namespace edge of a Mirror.
-func (c *MirrorClient) QueryNamespace(m *Mirror) *NamespaceQuery {
-	query := &NamespaceQuery{config: c.config}
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(mirror.Table, mirror.FieldID, id),
-			sqlgraph.To(namespace.Table, namespace.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, mirror.NamespaceTable, mirror.NamespaceColumn),
-		)
-		fromV = sqlgraph.Neighbors(m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryInode queries the inode edge of a Mirror.
-func (c *MirrorClient) QueryInode(m *Mirror) *InodeQuery {
-	query := &InodeQuery{config: c.config}
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(mirror.Table, mirror.FieldID, id),
-			sqlgraph.To(inode.Table, inode.FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, true, mirror.InodeTable, mirror.InodeColumn),
-		)
-		fromV = sqlgraph.Neighbors(m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryActivities queries the activities edge of a Mirror.
-func (c *MirrorClient) QueryActivities(m *Mirror) *MirrorActivityQuery {
-	query := &MirrorActivityQuery{config: c.config}
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(mirror.Table, mirror.FieldID, id),
-			sqlgraph.To(mirroractivity.Table, mirroractivity.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, mirror.ActivitiesTable, mirror.ActivitiesColumn),
-		)
-		fromV = sqlgraph.Neighbors(m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *MirrorClient) Hooks() []Hook {
-	return c.hooks.Mirror
-}
-
-// MirrorActivityClient is a client for the MirrorActivity schema.
-type MirrorActivityClient struct {
-	config
-}
-
-// NewMirrorActivityClient returns a client for the MirrorActivity from the given config.
-func NewMirrorActivityClient(c config) *MirrorActivityClient {
-	return &MirrorActivityClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `mirroractivity.Hooks(f(g(h())))`.
-func (c *MirrorActivityClient) Use(hooks ...Hook) {
-	c.hooks.MirrorActivity = append(c.hooks.MirrorActivity, hooks...)
-}
-
-// Create returns a builder for creating a MirrorActivity entity.
-func (c *MirrorActivityClient) Create() *MirrorActivityCreate {
-	mutation := newMirrorActivityMutation(c.config, OpCreate)
-	return &MirrorActivityCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of MirrorActivity entities.
-func (c *MirrorActivityClient) CreateBulk(builders ...*MirrorActivityCreate) *MirrorActivityCreateBulk {
-	return &MirrorActivityCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for MirrorActivity.
-func (c *MirrorActivityClient) Update() *MirrorActivityUpdate {
-	mutation := newMirrorActivityMutation(c.config, OpUpdate)
-	return &MirrorActivityUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *MirrorActivityClient) UpdateOne(ma *MirrorActivity) *MirrorActivityUpdateOne {
-	mutation := newMirrorActivityMutation(c.config, OpUpdateOne, withMirrorActivity(ma))
-	return &MirrorActivityUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *MirrorActivityClient) UpdateOneID(id uuid.UUID) *MirrorActivityUpdateOne {
-	mutation := newMirrorActivityMutation(c.config, OpUpdateOne, withMirrorActivityID(id))
-	return &MirrorActivityUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for MirrorActivity.
-func (c *MirrorActivityClient) Delete() *MirrorActivityDelete {
-	mutation := newMirrorActivityMutation(c.config, OpDelete)
-	return &MirrorActivityDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *MirrorActivityClient) DeleteOne(ma *MirrorActivity) *MirrorActivityDeleteOne {
-	return c.DeleteOneID(ma.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *MirrorActivityClient) DeleteOneID(id uuid.UUID) *MirrorActivityDeleteOne {
-	builder := c.Delete().Where(mirroractivity.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &MirrorActivityDeleteOne{builder}
-}
-
-// Query returns a query builder for MirrorActivity.
-func (c *MirrorActivityClient) Query() *MirrorActivityQuery {
-	return &MirrorActivityQuery{
-		config: c.config,
-	}
-}
-
-// Get returns a MirrorActivity entity by its id.
-func (c *MirrorActivityClient) Get(ctx context.Context, id uuid.UUID) (*MirrorActivity, error) {
-	return c.Query().Where(mirroractivity.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *MirrorActivityClient) GetX(ctx context.Context, id uuid.UUID) *MirrorActivity {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryNamespace queries the namespace edge of a MirrorActivity.
-func (c *MirrorActivityClient) QueryNamespace(ma *MirrorActivity) *NamespaceQuery {
-	query := &NamespaceQuery{config: c.config}
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := ma.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(mirroractivity.Table, mirroractivity.FieldID, id),
-			sqlgraph.To(namespace.Table, namespace.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, mirroractivity.NamespaceTable, mirroractivity.NamespaceColumn),
-		)
-		fromV = sqlgraph.Neighbors(ma.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryMirror queries the mirror edge of a MirrorActivity.
-func (c *MirrorActivityClient) QueryMirror(ma *MirrorActivity) *MirrorQuery {
-	query := &MirrorQuery{config: c.config}
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := ma.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(mirroractivity.Table, mirroractivity.FieldID, id),
-			sqlgraph.To(mirror.Table, mirror.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, mirroractivity.MirrorTable, mirroractivity.MirrorColumn),
-		)
-		fromV = sqlgraph.Neighbors(ma.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryLogs queries the logs edge of a MirrorActivity.
-func (c *MirrorActivityClient) QueryLogs(ma *MirrorActivity) *LogMsgQuery {
-	query := &LogMsgQuery{config: c.config}
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := ma.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(mirroractivity.Table, mirroractivity.FieldID, id),
-			sqlgraph.To(logmsg.Table, logmsg.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, mirroractivity.LogsTable, mirroractivity.LogsColumn),
-		)
-		fromV = sqlgraph.Neighbors(ma.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *MirrorActivityClient) Hooks() []Hook {
-	return c.hooks.MirrorActivity
 }
 
 // NamespaceClient is a client for the Namespace schema.
@@ -1931,70 +1292,6 @@ func (c *NamespaceClient) GetX(ctx context.Context, id uuid.UUID) *Namespace {
 		panic(err)
 	}
 	return obj
-}
-
-// QueryInodes queries the inodes edge of a Namespace.
-func (c *NamespaceClient) QueryInodes(n *Namespace) *InodeQuery {
-	query := &InodeQuery{config: c.config}
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := n.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(namespace.Table, namespace.FieldID, id),
-			sqlgraph.To(inode.Table, inode.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, namespace.InodesTable, namespace.InodesColumn),
-		)
-		fromV = sqlgraph.Neighbors(n.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryWorkflows queries the workflows edge of a Namespace.
-func (c *NamespaceClient) QueryWorkflows(n *Namespace) *WorkflowQuery {
-	query := &WorkflowQuery{config: c.config}
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := n.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(namespace.Table, namespace.FieldID, id),
-			sqlgraph.To(workflow.Table, workflow.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, namespace.WorkflowsTable, namespace.WorkflowsColumn),
-		)
-		fromV = sqlgraph.Neighbors(n.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryMirrors queries the mirrors edge of a Namespace.
-func (c *NamespaceClient) QueryMirrors(n *Namespace) *MirrorQuery {
-	query := &MirrorQuery{config: c.config}
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := n.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(namespace.Table, namespace.FieldID, id),
-			sqlgraph.To(mirror.Table, mirror.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, namespace.MirrorsTable, namespace.MirrorsColumn),
-		)
-		fromV = sqlgraph.Neighbors(n.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryMirrorActivities queries the mirror_activities edge of a Namespace.
-func (c *NamespaceClient) QueryMirrorActivities(n *Namespace) *MirrorActivityQuery {
-	query := &MirrorActivityQuery{config: c.config}
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := n.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(namespace.Table, namespace.FieldID, id),
-			sqlgraph.To(mirroractivity.Table, mirroractivity.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, namespace.MirrorActivitiesTable, namespace.MirrorActivitiesColumn),
-		)
-		fromV = sqlgraph.Neighbors(n.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
 }
 
 // QueryInstances queries the instances edge of a Namespace.
@@ -2128,404 +1425,6 @@ func (c *NamespaceClient) QueryServices(n *Namespace) *ServicesQuery {
 // Hooks returns the client hooks.
 func (c *NamespaceClient) Hooks() []Hook {
 	return c.hooks.Namespace
-}
-
-// RefClient is a client for the Ref schema.
-type RefClient struct {
-	config
-}
-
-// NewRefClient returns a client for the Ref from the given config.
-func NewRefClient(c config) *RefClient {
-	return &RefClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `ref.Hooks(f(g(h())))`.
-func (c *RefClient) Use(hooks ...Hook) {
-	c.hooks.Ref = append(c.hooks.Ref, hooks...)
-}
-
-// Create returns a builder for creating a Ref entity.
-func (c *RefClient) Create() *RefCreate {
-	mutation := newRefMutation(c.config, OpCreate)
-	return &RefCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of Ref entities.
-func (c *RefClient) CreateBulk(builders ...*RefCreate) *RefCreateBulk {
-	return &RefCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for Ref.
-func (c *RefClient) Update() *RefUpdate {
-	mutation := newRefMutation(c.config, OpUpdate)
-	return &RefUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *RefClient) UpdateOne(r *Ref) *RefUpdateOne {
-	mutation := newRefMutation(c.config, OpUpdateOne, withRef(r))
-	return &RefUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *RefClient) UpdateOneID(id uuid.UUID) *RefUpdateOne {
-	mutation := newRefMutation(c.config, OpUpdateOne, withRefID(id))
-	return &RefUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for Ref.
-func (c *RefClient) Delete() *RefDelete {
-	mutation := newRefMutation(c.config, OpDelete)
-	return &RefDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *RefClient) DeleteOne(r *Ref) *RefDeleteOne {
-	return c.DeleteOneID(r.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *RefClient) DeleteOneID(id uuid.UUID) *RefDeleteOne {
-	builder := c.Delete().Where(ref.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &RefDeleteOne{builder}
-}
-
-// Query returns a query builder for Ref.
-func (c *RefClient) Query() *RefQuery {
-	return &RefQuery{
-		config: c.config,
-	}
-}
-
-// Get returns a Ref entity by its id.
-func (c *RefClient) Get(ctx context.Context, id uuid.UUID) (*Ref, error) {
-	return c.Query().Where(ref.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *RefClient) GetX(ctx context.Context, id uuid.UUID) *Ref {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryWorkflow queries the workflow edge of a Ref.
-func (c *RefClient) QueryWorkflow(r *Ref) *WorkflowQuery {
-	query := &WorkflowQuery{config: c.config}
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := r.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(ref.Table, ref.FieldID, id),
-			sqlgraph.To(workflow.Table, workflow.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, ref.WorkflowTable, ref.WorkflowColumn),
-		)
-		fromV = sqlgraph.Neighbors(r.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryRevision queries the revision edge of a Ref.
-func (c *RefClient) QueryRevision(r *Ref) *RevisionQuery {
-	query := &RevisionQuery{config: c.config}
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := r.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(ref.Table, ref.FieldID, id),
-			sqlgraph.To(revision.Table, revision.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, ref.RevisionTable, ref.RevisionColumn),
-		)
-		fromV = sqlgraph.Neighbors(r.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryRoutes queries the routes edge of a Ref.
-func (c *RefClient) QueryRoutes(r *Ref) *RouteQuery {
-	query := &RouteQuery{config: c.config}
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := r.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(ref.Table, ref.FieldID, id),
-			sqlgraph.To(route.Table, route.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, ref.RoutesTable, ref.RoutesColumn),
-		)
-		fromV = sqlgraph.Neighbors(r.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *RefClient) Hooks() []Hook {
-	return c.hooks.Ref
-}
-
-// RevisionClient is a client for the Revision schema.
-type RevisionClient struct {
-	config
-}
-
-// NewRevisionClient returns a client for the Revision from the given config.
-func NewRevisionClient(c config) *RevisionClient {
-	return &RevisionClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `revision.Hooks(f(g(h())))`.
-func (c *RevisionClient) Use(hooks ...Hook) {
-	c.hooks.Revision = append(c.hooks.Revision, hooks...)
-}
-
-// Create returns a builder for creating a Revision entity.
-func (c *RevisionClient) Create() *RevisionCreate {
-	mutation := newRevisionMutation(c.config, OpCreate)
-	return &RevisionCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of Revision entities.
-func (c *RevisionClient) CreateBulk(builders ...*RevisionCreate) *RevisionCreateBulk {
-	return &RevisionCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for Revision.
-func (c *RevisionClient) Update() *RevisionUpdate {
-	mutation := newRevisionMutation(c.config, OpUpdate)
-	return &RevisionUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *RevisionClient) UpdateOne(r *Revision) *RevisionUpdateOne {
-	mutation := newRevisionMutation(c.config, OpUpdateOne, withRevision(r))
-	return &RevisionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *RevisionClient) UpdateOneID(id uuid.UUID) *RevisionUpdateOne {
-	mutation := newRevisionMutation(c.config, OpUpdateOne, withRevisionID(id))
-	return &RevisionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for Revision.
-func (c *RevisionClient) Delete() *RevisionDelete {
-	mutation := newRevisionMutation(c.config, OpDelete)
-	return &RevisionDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *RevisionClient) DeleteOne(r *Revision) *RevisionDeleteOne {
-	return c.DeleteOneID(r.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *RevisionClient) DeleteOneID(id uuid.UUID) *RevisionDeleteOne {
-	builder := c.Delete().Where(revision.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &RevisionDeleteOne{builder}
-}
-
-// Query returns a query builder for Revision.
-func (c *RevisionClient) Query() *RevisionQuery {
-	return &RevisionQuery{
-		config: c.config,
-	}
-}
-
-// Get returns a Revision entity by its id.
-func (c *RevisionClient) Get(ctx context.Context, id uuid.UUID) (*Revision, error) {
-	return c.Query().Where(revision.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *RevisionClient) GetX(ctx context.Context, id uuid.UUID) *Revision {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryWorkflow queries the workflow edge of a Revision.
-func (c *RevisionClient) QueryWorkflow(r *Revision) *WorkflowQuery {
-	query := &WorkflowQuery{config: c.config}
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := r.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(revision.Table, revision.FieldID, id),
-			sqlgraph.To(workflow.Table, workflow.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, revision.WorkflowTable, revision.WorkflowColumn),
-		)
-		fromV = sqlgraph.Neighbors(r.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryRefs queries the refs edge of a Revision.
-func (c *RevisionClient) QueryRefs(r *Revision) *RefQuery {
-	query := &RefQuery{config: c.config}
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := r.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(revision.Table, revision.FieldID, id),
-			sqlgraph.To(ref.Table, ref.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, revision.RefsTable, revision.RefsColumn),
-		)
-		fromV = sqlgraph.Neighbors(r.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryInstances queries the instances edge of a Revision.
-func (c *RevisionClient) QueryInstances(r *Revision) *InstanceQuery {
-	query := &InstanceQuery{config: c.config}
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := r.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(revision.Table, revision.FieldID, id),
-			sqlgraph.To(instance.Table, instance.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, revision.InstancesTable, revision.InstancesColumn),
-		)
-		fromV = sqlgraph.Neighbors(r.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *RevisionClient) Hooks() []Hook {
-	return c.hooks.Revision
-}
-
-// RouteClient is a client for the Route schema.
-type RouteClient struct {
-	config
-}
-
-// NewRouteClient returns a client for the Route from the given config.
-func NewRouteClient(c config) *RouteClient {
-	return &RouteClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `route.Hooks(f(g(h())))`.
-func (c *RouteClient) Use(hooks ...Hook) {
-	c.hooks.Route = append(c.hooks.Route, hooks...)
-}
-
-// Create returns a builder for creating a Route entity.
-func (c *RouteClient) Create() *RouteCreate {
-	mutation := newRouteMutation(c.config, OpCreate)
-	return &RouteCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of Route entities.
-func (c *RouteClient) CreateBulk(builders ...*RouteCreate) *RouteCreateBulk {
-	return &RouteCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for Route.
-func (c *RouteClient) Update() *RouteUpdate {
-	mutation := newRouteMutation(c.config, OpUpdate)
-	return &RouteUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *RouteClient) UpdateOne(r *Route) *RouteUpdateOne {
-	mutation := newRouteMutation(c.config, OpUpdateOne, withRoute(r))
-	return &RouteUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *RouteClient) UpdateOneID(id uuid.UUID) *RouteUpdateOne {
-	mutation := newRouteMutation(c.config, OpUpdateOne, withRouteID(id))
-	return &RouteUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for Route.
-func (c *RouteClient) Delete() *RouteDelete {
-	mutation := newRouteMutation(c.config, OpDelete)
-	return &RouteDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *RouteClient) DeleteOne(r *Route) *RouteDeleteOne {
-	return c.DeleteOneID(r.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *RouteClient) DeleteOneID(id uuid.UUID) *RouteDeleteOne {
-	builder := c.Delete().Where(route.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &RouteDeleteOne{builder}
-}
-
-// Query returns a query builder for Route.
-func (c *RouteClient) Query() *RouteQuery {
-	return &RouteQuery{
-		config: c.config,
-	}
-}
-
-// Get returns a Route entity by its id.
-func (c *RouteClient) Get(ctx context.Context, id uuid.UUID) (*Route, error) {
-	return c.Query().Where(route.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *RouteClient) GetX(ctx context.Context, id uuid.UUID) *Route {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryWorkflow queries the workflow edge of a Route.
-func (c *RouteClient) QueryWorkflow(r *Route) *WorkflowQuery {
-	query := &WorkflowQuery{config: c.config}
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := r.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(route.Table, route.FieldID, id),
-			sqlgraph.To(workflow.Table, workflow.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, route.WorkflowTable, route.WorkflowColumn),
-		)
-		fromV = sqlgraph.Neighbors(r.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryRef queries the ref edge of a Route.
-func (c *RouteClient) QueryRef(r *Route) *RefQuery {
-	query := &RefQuery{config: c.config}
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := r.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(route.Table, route.FieldID, id),
-			sqlgraph.To(ref.Table, ref.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, route.RefTable, route.RefColumn),
-		)
-		fromV = sqlgraph.Neighbors(r.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *RouteClient) Hooks() []Hook {
-	return c.hooks.Route
 }
 
 // ServicesClient is a client for the Services schema.
@@ -2857,22 +1756,6 @@ func (c *VarRefClient) QueryNamespace(vr *VarRef) *NamespaceQuery {
 	return query
 }
 
-// QueryWorkflow queries the workflow edge of a VarRef.
-func (c *VarRefClient) QueryWorkflow(vr *VarRef) *WorkflowQuery {
-	query := &WorkflowQuery{config: c.config}
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := vr.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(varref.Table, varref.FieldID, id),
-			sqlgraph.To(workflow.Table, workflow.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, varref.WorkflowTable, varref.WorkflowColumn),
-		)
-		fromV = sqlgraph.Neighbors(vr.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryInstance queries the instance edge of a VarRef.
 func (c *VarRefClient) QueryInstance(vr *VarRef) *InstanceQuery {
 	query := &InstanceQuery{config: c.config}
@@ -2892,254 +1775,4 @@ func (c *VarRefClient) QueryInstance(vr *VarRef) *InstanceQuery {
 // Hooks returns the client hooks.
 func (c *VarRefClient) Hooks() []Hook {
 	return c.hooks.VarRef
-}
-
-// WorkflowClient is a client for the Workflow schema.
-type WorkflowClient struct {
-	config
-}
-
-// NewWorkflowClient returns a client for the Workflow from the given config.
-func NewWorkflowClient(c config) *WorkflowClient {
-	return &WorkflowClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `workflow.Hooks(f(g(h())))`.
-func (c *WorkflowClient) Use(hooks ...Hook) {
-	c.hooks.Workflow = append(c.hooks.Workflow, hooks...)
-}
-
-// Create returns a builder for creating a Workflow entity.
-func (c *WorkflowClient) Create() *WorkflowCreate {
-	mutation := newWorkflowMutation(c.config, OpCreate)
-	return &WorkflowCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of Workflow entities.
-func (c *WorkflowClient) CreateBulk(builders ...*WorkflowCreate) *WorkflowCreateBulk {
-	return &WorkflowCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for Workflow.
-func (c *WorkflowClient) Update() *WorkflowUpdate {
-	mutation := newWorkflowMutation(c.config, OpUpdate)
-	return &WorkflowUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *WorkflowClient) UpdateOne(w *Workflow) *WorkflowUpdateOne {
-	mutation := newWorkflowMutation(c.config, OpUpdateOne, withWorkflow(w))
-	return &WorkflowUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *WorkflowClient) UpdateOneID(id uuid.UUID) *WorkflowUpdateOne {
-	mutation := newWorkflowMutation(c.config, OpUpdateOne, withWorkflowID(id))
-	return &WorkflowUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for Workflow.
-func (c *WorkflowClient) Delete() *WorkflowDelete {
-	mutation := newWorkflowMutation(c.config, OpDelete)
-	return &WorkflowDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *WorkflowClient) DeleteOne(w *Workflow) *WorkflowDeleteOne {
-	return c.DeleteOneID(w.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *WorkflowClient) DeleteOneID(id uuid.UUID) *WorkflowDeleteOne {
-	builder := c.Delete().Where(workflow.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &WorkflowDeleteOne{builder}
-}
-
-// Query returns a query builder for Workflow.
-func (c *WorkflowClient) Query() *WorkflowQuery {
-	return &WorkflowQuery{
-		config: c.config,
-	}
-}
-
-// Get returns a Workflow entity by its id.
-func (c *WorkflowClient) Get(ctx context.Context, id uuid.UUID) (*Workflow, error) {
-	return c.Query().Where(workflow.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *WorkflowClient) GetX(ctx context.Context, id uuid.UUID) *Workflow {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryInode queries the inode edge of a Workflow.
-func (c *WorkflowClient) QueryInode(w *Workflow) *InodeQuery {
-	query := &InodeQuery{config: c.config}
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := w.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(workflow.Table, workflow.FieldID, id),
-			sqlgraph.To(inode.Table, inode.FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, true, workflow.InodeTable, workflow.InodeColumn),
-		)
-		fromV = sqlgraph.Neighbors(w.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryNamespace queries the namespace edge of a Workflow.
-func (c *WorkflowClient) QueryNamespace(w *Workflow) *NamespaceQuery {
-	query := &NamespaceQuery{config: c.config}
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := w.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(workflow.Table, workflow.FieldID, id),
-			sqlgraph.To(namespace.Table, namespace.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, workflow.NamespaceTable, workflow.NamespaceColumn),
-		)
-		fromV = sqlgraph.Neighbors(w.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryRevisions queries the revisions edge of a Workflow.
-func (c *WorkflowClient) QueryRevisions(w *Workflow) *RevisionQuery {
-	query := &RevisionQuery{config: c.config}
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := w.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(workflow.Table, workflow.FieldID, id),
-			sqlgraph.To(revision.Table, revision.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, workflow.RevisionsTable, workflow.RevisionsColumn),
-		)
-		fromV = sqlgraph.Neighbors(w.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryRefs queries the refs edge of a Workflow.
-func (c *WorkflowClient) QueryRefs(w *Workflow) *RefQuery {
-	query := &RefQuery{config: c.config}
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := w.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(workflow.Table, workflow.FieldID, id),
-			sqlgraph.To(ref.Table, ref.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, workflow.RefsTable, workflow.RefsColumn),
-		)
-		fromV = sqlgraph.Neighbors(w.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryInstances queries the instances edge of a Workflow.
-func (c *WorkflowClient) QueryInstances(w *Workflow) *InstanceQuery {
-	query := &InstanceQuery{config: c.config}
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := w.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(workflow.Table, workflow.FieldID, id),
-			sqlgraph.To(instance.Table, instance.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, workflow.InstancesTable, workflow.InstancesColumn),
-		)
-		fromV = sqlgraph.Neighbors(w.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryRoutes queries the routes edge of a Workflow.
-func (c *WorkflowClient) QueryRoutes(w *Workflow) *RouteQuery {
-	query := &RouteQuery{config: c.config}
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := w.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(workflow.Table, workflow.FieldID, id),
-			sqlgraph.To(route.Table, route.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, workflow.RoutesTable, workflow.RoutesColumn),
-		)
-		fromV = sqlgraph.Neighbors(w.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryLogs queries the logs edge of a Workflow.
-func (c *WorkflowClient) QueryLogs(w *Workflow) *LogMsgQuery {
-	query := &LogMsgQuery{config: c.config}
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := w.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(workflow.Table, workflow.FieldID, id),
-			sqlgraph.To(logmsg.Table, logmsg.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, workflow.LogsTable, workflow.LogsColumn),
-		)
-		fromV = sqlgraph.Neighbors(w.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryVars queries the vars edge of a Workflow.
-func (c *WorkflowClient) QueryVars(w *Workflow) *VarRefQuery {
-	query := &VarRefQuery{config: c.config}
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := w.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(workflow.Table, workflow.FieldID, id),
-			sqlgraph.To(varref.Table, varref.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, workflow.VarsTable, workflow.VarsColumn),
-		)
-		fromV = sqlgraph.Neighbors(w.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryWfevents queries the wfevents edge of a Workflow.
-func (c *WorkflowClient) QueryWfevents(w *Workflow) *EventsQuery {
-	query := &EventsQuery{config: c.config}
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := w.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(workflow.Table, workflow.FieldID, id),
-			sqlgraph.To(events.Table, events.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, workflow.WfeventsTable, workflow.WfeventsColumn),
-		)
-		fromV = sqlgraph.Neighbors(w.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryAnnotations queries the annotations edge of a Workflow.
-func (c *WorkflowClient) QueryAnnotations(w *Workflow) *AnnotationQuery {
-	query := &AnnotationQuery{config: c.config}
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := w.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(workflow.Table, workflow.FieldID, id),
-			sqlgraph.To(annotation.Table, annotation.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, workflow.AnnotationsTable, workflow.AnnotationsColumn),
-		)
-		fromV = sqlgraph.Neighbors(w.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *WorkflowClient) Hooks() []Hook {
-	return c.hooks.Workflow
 }

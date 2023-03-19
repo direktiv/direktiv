@@ -11,8 +11,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	"github.com/direktiv/direktiv/pkg/flow/ent/instanceruntime"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
-	"github.com/direktiv/direktiv/pkg/flow/ent/revision"
-	"github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 	"github.com/google/uuid"
 )
 
@@ -43,18 +41,12 @@ type Instance struct {
 	// The values are being populated by the InstanceQuery when eager-loading is set.
 	Edges               InstanceEdges `json:"edges"`
 	namespace_instances *uuid.UUID
-	revision_instances  *uuid.UUID
-	workflow_instances  *uuid.UUID
 }
 
 // InstanceEdges holds the relations/edges for other nodes in the graph.
 type InstanceEdges struct {
 	// Namespace holds the value of the namespace edge.
 	Namespace *Namespace `json:"namespace,omitempty"`
-	// Workflow holds the value of the workflow edge.
-	Workflow *Workflow `json:"workflow,omitempty"`
-	// Revision holds the value of the revision edge.
-	Revision *Revision `json:"revision,omitempty"`
 	// Logs holds the value of the logs edge.
 	Logs []*LogMsg `json:"logs,omitempty"`
 	// Vars holds the value of the vars edge.
@@ -69,7 +61,7 @@ type InstanceEdges struct {
 	Annotations []*Annotation `json:"annotations,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [9]bool
+	loadedTypes [7]bool
 }
 
 // NamespaceOrErr returns the Namespace value or an error if the edge
@@ -85,36 +77,10 @@ func (e InstanceEdges) NamespaceOrErr() (*Namespace, error) {
 	return nil, &NotLoadedError{edge: "namespace"}
 }
 
-// WorkflowOrErr returns the Workflow value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e InstanceEdges) WorkflowOrErr() (*Workflow, error) {
-	if e.loadedTypes[1] {
-		if e.Workflow == nil {
-			// Edge was loaded but was not found.
-			return nil, &NotFoundError{label: workflow.Label}
-		}
-		return e.Workflow, nil
-	}
-	return nil, &NotLoadedError{edge: "workflow"}
-}
-
-// RevisionOrErr returns the Revision value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e InstanceEdges) RevisionOrErr() (*Revision, error) {
-	if e.loadedTypes[2] {
-		if e.Revision == nil {
-			// Edge was loaded but was not found.
-			return nil, &NotFoundError{label: revision.Label}
-		}
-		return e.Revision, nil
-	}
-	return nil, &NotLoadedError{edge: "revision"}
-}
-
 // LogsOrErr returns the Logs value or an error if the edge
 // was not loaded in eager-loading.
 func (e InstanceEdges) LogsOrErr() ([]*LogMsg, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[1] {
 		return e.Logs, nil
 	}
 	return nil, &NotLoadedError{edge: "logs"}
@@ -123,7 +89,7 @@ func (e InstanceEdges) LogsOrErr() ([]*LogMsg, error) {
 // VarsOrErr returns the Vars value or an error if the edge
 // was not loaded in eager-loading.
 func (e InstanceEdges) VarsOrErr() ([]*VarRef, error) {
-	if e.loadedTypes[4] {
+	if e.loadedTypes[2] {
 		return e.Vars, nil
 	}
 	return nil, &NotLoadedError{edge: "vars"}
@@ -132,7 +98,7 @@ func (e InstanceEdges) VarsOrErr() ([]*VarRef, error) {
 // RuntimeOrErr returns the Runtime value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e InstanceEdges) RuntimeOrErr() (*InstanceRuntime, error) {
-	if e.loadedTypes[5] {
+	if e.loadedTypes[3] {
 		if e.Runtime == nil {
 			// Edge was loaded but was not found.
 			return nil, &NotFoundError{label: instanceruntime.Label}
@@ -145,7 +111,7 @@ func (e InstanceEdges) RuntimeOrErr() (*InstanceRuntime, error) {
 // ChildrenOrErr returns the Children value or an error if the edge
 // was not loaded in eager-loading.
 func (e InstanceEdges) ChildrenOrErr() ([]*InstanceRuntime, error) {
-	if e.loadedTypes[6] {
+	if e.loadedTypes[4] {
 		return e.Children, nil
 	}
 	return nil, &NotLoadedError{edge: "children"}
@@ -154,7 +120,7 @@ func (e InstanceEdges) ChildrenOrErr() ([]*InstanceRuntime, error) {
 // EventlistenersOrErr returns the Eventlisteners value or an error if the edge
 // was not loaded in eager-loading.
 func (e InstanceEdges) EventlistenersOrErr() ([]*Events, error) {
-	if e.loadedTypes[7] {
+	if e.loadedTypes[5] {
 		return e.Eventlisteners, nil
 	}
 	return nil, &NotLoadedError{edge: "eventlisteners"}
@@ -163,7 +129,7 @@ func (e InstanceEdges) EventlistenersOrErr() ([]*Events, error) {
 // AnnotationsOrErr returns the Annotations value or an error if the edge
 // was not loaded in eager-loading.
 func (e InstanceEdges) AnnotationsOrErr() ([]*Annotation, error) {
-	if e.loadedTypes[8] {
+	if e.loadedTypes[6] {
 		return e.Annotations, nil
 	}
 	return nil, &NotLoadedError{edge: "annotations"}
@@ -181,10 +147,6 @@ func (*Instance) scanValues(columns []string) ([]any, error) {
 		case instance.FieldID:
 			values[i] = new(uuid.UUID)
 		case instance.ForeignKeys[0]: // namespace_instances
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case instance.ForeignKeys[1]: // revision_instances
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case instance.ForeignKeys[2]: // workflow_instances
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Instance", columns[i])
@@ -268,20 +230,6 @@ func (i *Instance) assignValues(columns []string, values []any) error {
 				i.namespace_instances = new(uuid.UUID)
 				*i.namespace_instances = *value.S.(*uuid.UUID)
 			}
-		case instance.ForeignKeys[1]:
-			if value, ok := values[j].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field revision_instances", values[j])
-			} else if value.Valid {
-				i.revision_instances = new(uuid.UUID)
-				*i.revision_instances = *value.S.(*uuid.UUID)
-			}
-		case instance.ForeignKeys[2]:
-			if value, ok := values[j].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field workflow_instances", values[j])
-			} else if value.Valid {
-				i.workflow_instances = new(uuid.UUID)
-				*i.workflow_instances = *value.S.(*uuid.UUID)
-			}
 		}
 	}
 	return nil
@@ -290,16 +238,6 @@ func (i *Instance) assignValues(columns []string, values []any) error {
 // QueryNamespace queries the "namespace" edge of the Instance entity.
 func (i *Instance) QueryNamespace() *NamespaceQuery {
 	return (&InstanceClient{config: i.config}).QueryNamespace(i)
-}
-
-// QueryWorkflow queries the "workflow" edge of the Instance entity.
-func (i *Instance) QueryWorkflow() *WorkflowQuery {
-	return (&InstanceClient{config: i.config}).QueryWorkflow(i)
-}
-
-// QueryRevision queries the "revision" edge of the Instance entity.
-func (i *Instance) QueryRevision() *RevisionQuery {
-	return (&InstanceClient{config: i.config}).QueryRevision(i)
 }
 
 // QueryLogs queries the "logs" edge of the Instance entity.

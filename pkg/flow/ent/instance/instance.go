@@ -33,10 +33,6 @@ const (
 	FieldCallpath = "callpath"
 	// EdgeNamespace holds the string denoting the namespace edge name in mutations.
 	EdgeNamespace = "namespace"
-	// EdgeWorkflow holds the string denoting the workflow edge name in mutations.
-	EdgeWorkflow = "workflow"
-	// EdgeRevision holds the string denoting the revision edge name in mutations.
-	EdgeRevision = "revision"
 	// EdgeLogs holds the string denoting the logs edge name in mutations.
 	EdgeLogs = "logs"
 	// EdgeVars holds the string denoting the vars edge name in mutations.
@@ -58,20 +54,6 @@ const (
 	NamespaceInverseTable = "namespaces"
 	// NamespaceColumn is the table column denoting the namespace relation/edge.
 	NamespaceColumn = "namespace_instances"
-	// WorkflowTable is the table that holds the workflow relation/edge.
-	WorkflowTable = "instances"
-	// WorkflowInverseTable is the table name for the Workflow entity.
-	// It exists in this package in order to avoid circular dependency with the "workflow" package.
-	WorkflowInverseTable = "workflows"
-	// WorkflowColumn is the table column denoting the workflow relation/edge.
-	WorkflowColumn = "workflow_instances"
-	// RevisionTable is the table that holds the revision relation/edge.
-	RevisionTable = "instances"
-	// RevisionInverseTable is the table name for the Revision entity.
-	// It exists in this package in order to avoid circular dependency with the "revision" package.
-	RevisionInverseTable = "revisions"
-	// RevisionColumn is the table column denoting the revision relation/edge.
-	RevisionColumn = "revision_instances"
 	// LogsTable is the table that holds the logs relation/edge.
 	LogsTable = "log_msgs"
 	// LogsInverseTable is the table name for the LogMsg entity.
@@ -134,8 +116,6 @@ var Columns = []string{
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
 	"namespace_instances",
-	"revision_instances",
-	"workflow_instances",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).

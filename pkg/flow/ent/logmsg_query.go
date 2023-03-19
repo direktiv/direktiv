@@ -13,10 +13,8 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	"github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
-	"github.com/direktiv/direktiv/pkg/flow/ent/mirroractivity"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/predicate"
-	"github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 	"github.com/google/uuid"
 )
 
@@ -30,9 +28,7 @@ type LogMsgQuery struct {
 	fields        []string
 	predicates    []predicate.LogMsg
 	withNamespace *NamespaceQuery
-	withWorkflow  *WorkflowQuery
 	withInstance  *InstanceQuery
-	withActivity  *MirrorActivityQuery
 	withFKs       bool
 	modifiers     []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
@@ -93,28 +89,6 @@ func (lmq *LogMsgQuery) QueryNamespace() *NamespaceQuery {
 	return query
 }
 
-// QueryWorkflow chains the current query on the "workflow" edge.
-func (lmq *LogMsgQuery) QueryWorkflow() *WorkflowQuery {
-	query := &WorkflowQuery{config: lmq.config}
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := lmq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := lmq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(logmsg.Table, logmsg.FieldID, selector),
-			sqlgraph.To(workflow.Table, workflow.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, logmsg.WorkflowTable, logmsg.WorkflowColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(lmq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
 // QueryInstance chains the current query on the "instance" edge.
 func (lmq *LogMsgQuery) QueryInstance() *InstanceQuery {
 	query := &InstanceQuery{config: lmq.config}
@@ -130,28 +104,6 @@ func (lmq *LogMsgQuery) QueryInstance() *InstanceQuery {
 			sqlgraph.From(logmsg.Table, logmsg.FieldID, selector),
 			sqlgraph.To(instance.Table, instance.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, logmsg.InstanceTable, logmsg.InstanceColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(lmq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryActivity chains the current query on the "activity" edge.
-func (lmq *LogMsgQuery) QueryActivity() *MirrorActivityQuery {
-	query := &MirrorActivityQuery{config: lmq.config}
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := lmq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := lmq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(logmsg.Table, logmsg.FieldID, selector),
-			sqlgraph.To(mirroractivity.Table, mirroractivity.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, logmsg.ActivityTable, logmsg.ActivityColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(lmq.driver.Dialect(), step)
 		return fromU, nil
@@ -341,9 +293,7 @@ func (lmq *LogMsgQuery) Clone() *LogMsgQuery {
 		order:         append([]OrderFunc{}, lmq.order...),
 		predicates:    append([]predicate.LogMsg{}, lmq.predicates...),
 		withNamespace: lmq.withNamespace.Clone(),
-		withWorkflow:  lmq.withWorkflow.Clone(),
 		withInstance:  lmq.withInstance.Clone(),
-		withActivity:  lmq.withActivity.Clone(),
 		// clone intermediate query.
 		sql:    lmq.sql.Clone(),
 		path:   lmq.path,
@@ -362,17 +312,6 @@ func (lmq *LogMsgQuery) WithNamespace(opts ...func(*NamespaceQuery)) *LogMsgQuer
 	return lmq
 }
 
-// WithWorkflow tells the query-builder to eager-load the nodes that are connected to
-// the "workflow" edge. The optional arguments are used to configure the query builder of the edge.
-func (lmq *LogMsgQuery) WithWorkflow(opts ...func(*WorkflowQuery)) *LogMsgQuery {
-	query := &WorkflowQuery{config: lmq.config}
-	for _, opt := range opts {
-		opt(query)
-	}
-	lmq.withWorkflow = query
-	return lmq
-}
-
 // WithInstance tells the query-builder to eager-load the nodes that are connected to
 // the "instance" edge. The optional arguments are used to configure the query builder of the edge.
 func (lmq *LogMsgQuery) WithInstance(opts ...func(*InstanceQuery)) *LogMsgQuery {
@@ -381,17 +320,6 @@ func (lmq *LogMsgQuery) WithInstance(opts ...func(*InstanceQuery)) *LogMsgQuery 
 		opt(query)
 	}
 	lmq.withInstance = query
-	return lmq
-}
-
-// WithActivity tells the query-builder to eager-load the nodes that are connected to
-// the "activity" edge. The optional arguments are used to configure the query builder of the edge.
-func (lmq *LogMsgQuery) WithActivity(opts ...func(*MirrorActivityQuery)) *LogMsgQuery {
-	query := &MirrorActivityQuery{config: lmq.config}
-	for _, opt := range opts {
-		opt(query)
-	}
-	lmq.withActivity = query
 	return lmq
 }
 
@@ -469,14 +397,12 @@ func (lmq *LogMsgQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*LogM
 		nodes       = []*LogMsg{}
 		withFKs     = lmq.withFKs
 		_spec       = lmq.querySpec()
-		loadedTypes = [4]bool{
+		loadedTypes = [2]bool{
 			lmq.withNamespace != nil,
-			lmq.withWorkflow != nil,
 			lmq.withInstance != nil,
-			lmq.withActivity != nil,
 		}
 	)
-	if lmq.withNamespace != nil || lmq.withWorkflow != nil || lmq.withInstance != nil || lmq.withActivity != nil {
+	if lmq.withNamespace != nil || lmq.withInstance != nil {
 		withFKs = true
 	}
 	if withFKs {
@@ -509,21 +435,9 @@ func (lmq *LogMsgQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*LogM
 			return nil, err
 		}
 	}
-	if query := lmq.withWorkflow; query != nil {
-		if err := lmq.loadWorkflow(ctx, query, nodes, nil,
-			func(n *LogMsg, e *Workflow) { n.Edges.Workflow = e }); err != nil {
-			return nil, err
-		}
-	}
 	if query := lmq.withInstance; query != nil {
 		if err := lmq.loadInstance(ctx, query, nodes, nil,
 			func(n *LogMsg, e *Instance) { n.Edges.Instance = e }); err != nil {
-			return nil, err
-		}
-	}
-	if query := lmq.withActivity; query != nil {
-		if err := lmq.loadActivity(ctx, query, nodes, nil,
-			func(n *LogMsg, e *MirrorActivity) { n.Edges.Activity = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -559,35 +473,6 @@ func (lmq *LogMsgQuery) loadNamespace(ctx context.Context, query *NamespaceQuery
 	}
 	return nil
 }
-func (lmq *LogMsgQuery) loadWorkflow(ctx context.Context, query *WorkflowQuery, nodes []*LogMsg, init func(*LogMsg), assign func(*LogMsg, *Workflow)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*LogMsg)
-	for i := range nodes {
-		if nodes[i].workflow_logs == nil {
-			continue
-		}
-		fk := *nodes[i].workflow_logs
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
-		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
-	}
-	query.Where(workflow.IDIn(ids...))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "workflow_logs" returned %v`, n.ID)
-		}
-		for i := range nodes {
-			assign(nodes[i], n)
-		}
-	}
-	return nil
-}
 func (lmq *LogMsgQuery) loadInstance(ctx context.Context, query *InstanceQuery, nodes []*LogMsg, init func(*LogMsg), assign func(*LogMsg, *Instance)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*LogMsg)
@@ -610,35 +495,6 @@ func (lmq *LogMsgQuery) loadInstance(ctx context.Context, query *InstanceQuery, 
 		nodes, ok := nodeids[n.ID]
 		if !ok {
 			return fmt.Errorf(`unexpected foreign-key "instance_logs" returned %v`, n.ID)
-		}
-		for i := range nodes {
-			assign(nodes[i], n)
-		}
-	}
-	return nil
-}
-func (lmq *LogMsgQuery) loadActivity(ctx context.Context, query *MirrorActivityQuery, nodes []*LogMsg, init func(*LogMsg), assign func(*LogMsg, *MirrorActivity)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*LogMsg)
-	for i := range nodes {
-		if nodes[i].mirror_activity_logs == nil {
-			continue
-		}
-		fk := *nodes[i].mirror_activity_logs
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
-		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
-	}
-	query.Where(mirroractivity.IDIn(ids...))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "mirror_activity_logs" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
