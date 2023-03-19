@@ -20,32 +20,15 @@ type Database interface {
 
 	Namespace(ctx context.Context, id uuid.UUID) (*Namespace, error)
 	NamespaceByName(ctx context.Context, namespace string) (*Namespace, error)
-	Inode(ctx context.Context, id uuid.UUID) (*Inode, error)
-	Workflow(ctx context.Context, id uuid.UUID) (*Workflow, error)
-	Revision(ctx context.Context, id uuid.UUID) (*Revision, error)
 	Instance(ctx context.Context, id uuid.UUID) (*Instance, error)
 	InstanceRuntime(ctx context.Context, id uuid.UUID) (*InstanceRuntime, error)
 	NamespaceAnnotation(ctx context.Context, nsID uuid.UUID, key string) (*Annotation, error)
-	InodeAnnotation(ctx context.Context, inodeID uuid.UUID, key string) (*Annotation, error)
-	WorkflowAnnotation(ctx context.Context, wfID uuid.UUID, key string) (*Annotation, error)
-	InstanceAnnotation(ctx context.Context, instID uuid.UUID, key string) (*Annotation, error)
 	ThreadVariables(ctx context.Context, instID uuid.UUID) ([]*VarRef, error)
 	NamespaceVariableRef(ctx context.Context, nsID uuid.UUID, key string) (*VarRef, error)
 	WorkflowVariableRef(ctx context.Context, wfID uuid.UUID, key string) (*VarRef, error)
 	InstanceVariableRef(ctx context.Context, instID uuid.UUID, key string) (*VarRef, error)
 	ThreadVariableRef(ctx context.Context, instID uuid.UUID, key string) (*VarRef, error)
 	VariableData(ctx context.Context, id uuid.UUID, load bool) (*VarData, error)
-	Mirror(ctx context.Context, id uuid.UUID) (*Mirror, error)
-	Mirrors(ctx context.Context) ([]uuid.UUID, error)
-	MirrorActivity(ctx context.Context, id uuid.UUID) (*MirrorActivity, error)
-
-	CreateInode(ctx context.Context, args *CreateInodeArgs) (*Inode, error)
-	UpdateInode(ctx context.Context, args *UpdateInodeArgs) (*Inode, error)
-	CreateMirrorActivity(ctx context.Context, args *CreateMirrorActivityArgs) (*MirrorActivity, error)
-	CreateWorkflow(ctx context.Context, args *CreateWorkflowArgs) (*Workflow, error)
-	UpdateWorkflow(ctx context.Context, args *UpdateWorkflowArgs) (*Workflow, error)
-	CreateRevision(ctx context.Context, args *CreateRevisionArgs) (*Revision, error)
-	CreateRef(ctx context.Context, args *CreateRefArgs) (*Ref, error)
 }
 
 type CacheData struct {

@@ -98,22 +98,23 @@ func (srv *server) workerLogToNamespace(l *logMessage) {
 }
 
 func (srv *server) workerLogToWorkflow(l *logMessage) {
-	util.Trace(l.ctx, l.msg)
-
-	clients := srv.edb.Clients(context.Background())
-
-	_, err := clients.LogMsg.Create().SetMsg(l.msg).SetWorkflowID(l.cached.Workflow.ID).SetT(l.t).Save(l.ctx)
-	if err != nil {
-		srv.sugar.Error(err)
-		return
-	}
-
-	span := trace.SpanFromContext(l.ctx)
-	tid := span.SpanContext().TraceID()
-
-	srv.sugar.Infow(l.msg, "trace", tid, "namespace", l.cached.Namespace.Name, "namespace-id", l.cached.Namespace.ID.String(), "workflow-id", l.cached.Workflow.ID.String(), "workflow", GetInodePath(l.cached.Path()))
-
-	srv.pubsub.NotifyWorkflowLogs(l.cached.Workflow)
+	// TODO: yassir, need refactor.
+	//util.Trace(l.ctx, l.msg)
+	//
+	//clients := srv.edb.Clients(context.Background())
+	//
+	//_, err := clients.LogMsg.Create().SetMsg(l.msg).SetWorkflowID(l.cached.Workflow.ID).SetT(l.t).Save(l.ctx)
+	//if err != nil {
+	//	srv.sugar.Error(err)
+	//	return
+	//}
+	//
+	//span := trace.SpanFromContext(l.ctx)
+	//tid := span.SpanContext().TraceID()
+	//
+	//srv.sugar.Infow(l.msg, "trace", tid, "namespace", l.cached.Namespace.Name, "namespace-id", l.cached.Namespace.ID.String(), "workflow-id", l.cached.Workflow.ID.String(), "workflow", GetInodePath(l.cached.Path()))
+	//
+	//srv.pubsub.NotifyWorkflowLogs(l.cached.Workflow)
 }
 
 func (srv *server) workerLogToInstance(l *logMessage) {
@@ -295,22 +296,23 @@ func parent() string {
 }
 
 func (srv *server) logToMirrorActivity(ctx context.Context, t time.Time, ns *database.Namespace, mirror *database.Mirror, act *database.MirrorActivity, msg string, a ...interface{}) {
-	msg = fmt.Sprintf(msg, a...)
-
-	util.Trace(ctx, msg)
-
-	clients := srv.edb.Clients(ctx)
-
-	_, err := clients.LogMsg.Create().SetMsg(msg).SetActivityID(act.ID).SetT(t).Save(ctx)
-	if err != nil {
-		srv.sugar.Error(err)
-		return
-	}
-
-	span := trace.SpanFromContext(ctx)
-	tid := span.SpanContext().TraceID()
-
-	srv.sugar.Infow(msg, "trace", tid, "namespace", ns.Name, "namespace-id", ns.ID.String(), "mirror-id", mirror.ID.String())
-
-	srv.pubsub.NotifyMirrorActivityLogs(act)
+	// TODO: yassir, need refactor.
+	//msg = fmt.Sprintf(msg, a...)
+	//
+	//util.Trace(ctx, msg)
+	//
+	//clients := srv.edb.Clients(ctx)
+	//
+	//_, err := clients.LogMsg.Create().SetMsg(msg).SetActivityID(act.ID).SetT(t).Save(ctx)
+	//if err != nil {
+	//	srv.sugar.Error(err)
+	//	return
+	//}
+	//
+	//span := trace.SpanFromContext(ctx)
+	//tid := span.SpanContext().TraceID()
+	//
+	//srv.sugar.Infow(msg, "trace", tid, "namespace", ns.Name, "namespace-id", ns.ID.String(), "mirror-id", mirror.ID.String())
+	//
+	//srv.pubsub.NotifyMirrorActivityLogs(act)
 }

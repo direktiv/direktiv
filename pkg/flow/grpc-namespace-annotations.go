@@ -5,7 +5,6 @@ import (
 	"context"
 	"errors"
 	"io"
-	"net/http"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
@@ -13,11 +12,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/database/entwrapper"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entnote "github.com/direktiv/direktiv/pkg/flow/ent/annotation"
-	entino "github.com/direktiv/direktiv/pkg/flow/ent/inode"
-	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	entns "github.com/direktiv/direktiv/pkg/flow/ent/namespace"
-	entwf "github.com/direktiv/direktiv/pkg/flow/ent/workflow"
-	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/util"
 	"google.golang.org/grpc/codes"
@@ -303,7 +298,9 @@ type entInodeAnnotationQuerier struct {
 }
 
 func (x *entInodeAnnotationQuerier) QueryAnnotations() *ent.AnnotationQuery {
-	return x.clients.Annotation.Query().Where(entnote.HasInodeWith(entino.ID(x.cached.Inode().ID)))
+	// TODO: yassir, need refactor.
+	return nil
+	//return x.clients.Annotation.Query().Where(entnote.HasInodeWith(entino.ID(x.cached.Inode().ID)))
 }
 
 type entWorkflowAnnotationQuerier struct {
@@ -312,7 +309,9 @@ type entWorkflowAnnotationQuerier struct {
 }
 
 func (x *entWorkflowAnnotationQuerier) QueryAnnotations() *ent.AnnotationQuery {
-	return x.clients.Annotation.Query().Where(entnote.HasWorkflowWith(entwf.ID(x.cached.Workflow.ID)))
+	// TODO: yassir, need refactor.
+	return nil
+	//return x.clients.Annotation.Query().Where(entnote.HasWorkflowWith(entwf.ID(x.cached.Workflow.ID)))
 }
 
 type entInstanceAnnotationQuerier struct {
@@ -321,64 +320,68 @@ type entInstanceAnnotationQuerier struct {
 }
 
 func (x *entInstanceAnnotationQuerier) QueryAnnotations() *ent.AnnotationQuery {
-	return x.clients.Annotation.Query().Where(entnote.HasInstanceWith(entinst.ID(x.cached.Instance.ID)))
+	// TODO: yassir, need refactor.
+	return nil
+	//	return x.clients.Annotation.Query().Where(entnote.HasInstanceWith(entinst.ID(x.cached.Instance.ID)))
 }
 
 func (flow *flow) SetAnnotation(ctx context.Context, q annotationQuerier, key string, mimetype string, data []byte) (*ent.Annotation, bool, error) {
-	hash, err := bytedata.ComputeHash(data)
-	if err != nil {
-		flow.sugar.Error(err)
-	}
-
-	if mimetype == "" {
-		mimetype = http.DetectContentType(data)
-	}
-
-	var annotation *ent.Annotation
-	var newAnnotation bool
-
-	annotation, err = q.QueryAnnotations().Where(entnote.NameEQ(key)).Only(ctx)
-
-	if err != nil {
-
-		if !derrors.IsNotFound(err) {
-			return nil, false, err
-		}
-
-		clients := flow.edb.Clients(ctx)
-
-		query := clients.Annotation.Create().SetSize(len(data)).SetHash(hash).SetData(data).SetName(key).SetMimeType(mimetype)
-
-		switch v := q.(type) {
-		case *ent.Namespace:
-			query = query.SetNamespace(v)
-		case *ent.Workflow:
-			query = query.SetWorkflow(v)
-		case *ent.Instance:
-			query = query.SetInstance(v)
-		default:
-			panic(errors.New("bad querier"))
-		}
-
-		annotation, err = query.Save(ctx)
-		if err != nil {
-			return nil, false, err
-		}
-
-		newAnnotation = true
-
-	} else {
-
-		query := annotation.Update().SetSize(len(data)).SetHash(hash).SetData(data).SetMimeType(mimetype)
-
-		annotation, err = query.Save(ctx)
-		if err != nil {
-			return nil, false, err
-		}
-
-	}
-
-	return annotation, newAnnotation, err
+	// TODO: yassir, need refactor.
+	return nil, false, nil
+	//hash, err := bytedata.ComputeHash(data)
+	//if err != nil {
+	//	flow.sugar.Error(err)
+	//}
+	//
+	//if mimetype == "" {
+	//	mimetype = http.DetectContentType(data)
+	//}
+	//
+	//var annotation *ent.Annotation
+	//var newAnnotation bool
+	//
+	//annotation, err = q.QueryAnnotations().Where(entnote.NameEQ(key)).Only(ctx)
+	//
+	//if err != nil {
+	//
+	//	if !derrors.IsNotFound(err) {
+	//		return nil, false, err
+	//	}
+	//
+	//	clients := flow.edb.Clients(ctx)
+	//
+	//	query := clients.Annotation.Create().SetSize(len(data)).SetHash(hash).SetData(data).SetName(key).SetMimeType(mimetype)
+	//
+	//	switch v := q.(type) {
+	//	case *ent.Namespace:
+	//		query = query.SetNamespace(v)
+	//	case *ent.Workflow:
+	//		query = query.SetWorkflow(v)
+	//	case *ent.Instance:
+	//		query = query.SetInstance(v)
+	//	default:
+	//		panic(errors.New("bad querier"))
+	//	}
+	//
+	//	annotation, err = query.Save(ctx)
+	//	if err != nil {
+	//		return nil, false, err
+	//	}
+	//
+	//	newAnnotation = true
+	//
+	//} else {
+	//
+	//	query := annotation.Update().SetSize(len(data)).SetHash(hash).SetData(data).SetMimeType(mimetype)
+	//
+	//	annotation, err = query.Save(ctx)
+	//	if err != nil {
+	//		return nil, false, err
+	//	}
+	//
+	//}
+	//
+	//return annotation, newAnnotation, err
 }
 
 func (flow *flow) SetNamespaceAnnotationParcels(srv grpc.Flow_SetNamespaceAnnotationParcelsServer) error {

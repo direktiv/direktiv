@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/database"
-	"github.com/direktiv/direktiv/pkg/flow/database/entwrapper"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/model"
@@ -56,55 +55,57 @@ func (im *instanceMemory) getRuntimeUpdater() *ent.InstanceRuntimeUpdateOne {
 }
 
 func (im *instanceMemory) flushUpdates(ctx context.Context) error {
-	var changes bool
-
-	if im.runtimeUpdater != nil {
-
-		changes = true
-
-		updater := im.runtimeUpdater
-		im.runtimeUpdater = nil
-
-		rt, err := updater.Save(ctx)
-		if err != nil {
-			return err
-		}
-
-		im.runtime = entwrapper.EntInstanceRuntime(rt)
-
-	}
-
-	if im.instanceUpdater != nil {
-
-		changes = true
-
-		updater := im.instanceUpdater
-		im.instanceUpdater = nil
-
-		in, err := updater.Save(ctx)
-		if err != nil {
-			return err
-		}
-
-		im.cached.Instance = entwrapper.EntInstance(in)
-		im.cached.Instance.Namespace = im.cached.Namespace.ID
-		im.cached.Instance.Workflow = im.cached.Workflow.ID
-		im.cached.Instance.Revision = im.cached.Revision.ID
-		im.cached.Instance.Runtime = im.runtime.ID
-
-		err = im.engine.database.FlushInstance(ctx, im.cached.Instance)
-		if err != nil {
-			return err
-		}
-
-	}
-
-	if changes {
-		im.engine.pubsub.NotifyInstance(im.cached.Instance)
-		im.engine.pubsub.NotifyInstances(im.cached.Namespace)
-	}
-
+	// TODO: yassir, need refactor.
 	return nil
+	//var changes bool
+	//
+	//if im.runtimeUpdater != nil {
+	//
+	//	changes = true
+	//
+	//	updater := im.runtimeUpdater
+	//	im.runtimeUpdater = nil
+	//
+	//	rt, err := updater.Save(ctx)
+	//	if err != nil {
+	//		return err
+	//	}
+	//
+	//	im.runtime = entwrapper.EntInstanceRuntime(rt)
+	//
+	//}
+	//
+	//if im.instanceUpdater != nil {
+	//
+	//	changes = true
+	//
+	//	updater := im.instanceUpdater
+	//	im.instanceUpdater = nil
+	//
+	//	in, err := updater.Save(ctx)
+	//	if err != nil {
+	//		return err
+	//	}
+	//
+	//	im.cached.Instance = entwrapper.EntInstance(in)
+	//	im.cached.Instance.Namespace = im.cached.Namespace.ID
+	//	im.cached.Instance.Workflow = im.cached.Workflow.ID
+	//	im.cached.Instance.Revision = im.cached.Revision.ID
+	//	im.cached.Instance.Runtime = im.runtime.ID
+	//
+	//	err = im.engine.database.FlushInstance(ctx, im.cached.Instance)
+	//	if err != nil {
+	//		return err
+	//	}
+	//
+	//}
+	//
+	//if changes {
+	//	im.engine.pubsub.NotifyInstance(im.cached.Instance)
+	//	im.engine.pubsub.NotifyInstances(im.cached.Namespace)
+	//}
+	//
+	//return nil
 }
 
 func (im *instanceMemory) ID() uuid.UUID {

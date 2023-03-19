@@ -1,5 +1,7 @@
 package flow
 
+/*// TODO: yassir, need refactor.
+
 import (
 	"context"
 	"errors"
@@ -848,3 +850,4 @@ func (flow *flow) CancelMirrorActivity(ctx context.Context, req *grpc.CancelMirr
 
 	return &resp, nil
 }
+*/

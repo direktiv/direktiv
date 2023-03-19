@@ -2,13 +2,11 @@ package flow
 
 import (
 	"context"
-	"errors"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
-	entino "github.com/direktiv/direktiv/pkg/flow/ent/inode"
 	entns "github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
@@ -210,73 +208,75 @@ resend:
 }
 
 func (flow *flow) CreateNamespace(ctx context.Context, req *grpc.CreateNamespaceRequest) (*grpc.CreateNamespaceResponse, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
-
-	tctx, tx, err := flow.database.Tx(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer rollback(tx)
-
-	var x *ent.Namespace
-	var y *ent.Inode
-
-	cached := new(database.CacheData)
-
-	clients := flow.edb.Clients(tctx)
-
-	if req.GetIdempotent() {
-
-		err = flow.database.NamespaceByName(tctx, cached, req.GetName())
-		if err == nil {
-			rollback(tx)
-			goto respond
-		}
-		if !derrors.IsNotFound(err) {
-			return nil, err
-		}
-
-	}
-
-	x, err = clients.Namespace.Create().SetName(req.GetName()).Save(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	cached.Namespace = &database.Namespace{
-		ID:        x.ID,
-		CreatedAt: x.CreatedAt,
-		UpdatedAt: x.UpdatedAt,
-		Config:    x.Config,
-		Name:      x.Name,
-		// Root: ,
-	}
-
-	y, err = clients.Inode.Create().SetNillableName(nil).SetType(util.InodeTypeDirectory).SetNamespaceID(cached.Namespace.ID).Save(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	cached.Namespace.Root = y.ID
-
-	err = tx.Commit()
-	if err != nil {
-		return nil, err
-	}
-
-	flow.logToServer(ctx, time.Now(), "Created namespace '%s'.", cached.Namespace.Name)
-	flow.pubsub.NotifyNamespaces()
-
-respond:
-
-	var resp grpc.CreateNamespaceResponse
-
-	err = bytedata.ConvertDataForOutput(cached.Namespace, &resp.Namespace)
-	if err != nil {
-		return nil, err
-	}
-
-	return &resp, nil
+	// TODO: yassir, need refactor.
+	return nil, nil
+	//	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	//
+	//	tctx, tx, err := flow.database.Tx(ctx)
+	//	if err != nil {
+	//		return nil, err
+	//	}
+	//	defer rollback(tx)
+	//
+	//	var x *ent.Namespace
+	//	var y *ent.Inode
+	//
+	//	cached := new(database.CacheData)
+	//
+	//	clients := flow.edb.Clients(tctx)
+	//
+	//	if req.GetIdempotent() {
+	//
+	//		err = flow.database.NamespaceByName(tctx, cached, req.GetName())
+	//		if err == nil {
+	//			rollback(tx)
+	//			goto respond
+	//		}
+	//		if !derrors.IsNotFound(err) {
+	//			return nil, err
+	//		}
+	//
+	//	}
+	//
+	//	x, err = clients.Namespace.Create().SetName(req.GetName()).Save(ctx)
+	//	if err != nil {
+	//		return nil, err
+	//	}
+	//
+	//	cached.Namespace = &database.Namespace{
+	//		ID:        x.ID,
+	//		CreatedAt: x.CreatedAt,
+	//		UpdatedAt: x.UpdatedAt,
+	//		Config:    x.Config,
+	//		Name:      x.Name,
+	//		// Root: ,
+	//	}
+	//
+	//	y, err = clients.Inode.Create().SetNillableName(nil).SetType(util.InodeTypeDirectory).SetNamespaceID(cached.Namespace.ID).Save(ctx)
+	//	if err != nil {
+	//		return nil, err
+	//	}
+	//
+	//	cached.Namespace.Root = y.ID
+	//
+	//	err = tx.Commit()
+	//	if err != nil {
+	//		return nil, err
+	//	}
+	//
+	//	flow.logToServer(ctx, time.Now(), "Created namespace '%s'.", cached.Namespace.Name)
+	//	flow.pubsub.NotifyNamespaces()
+	//
+	//respond:
+	//
+	//	var resp grpc.CreateNamespaceResponse
+	//
+	//	err = bytedata.ConvertDataForOutput(cached.Namespace, &resp.Namespace)
+	//	if err != nil {
+	//		return nil, err
+	//	}
+	//
+	//	return &resp, nil
 }
 
 func (flow *flow) DeleteNamespace(ctx context.Context, req *grpc.DeleteNamespaceRequest) (*emptypb.Empty, error) {
@@ -303,13 +303,14 @@ func (flow *flow) DeleteNamespace(ctx context.Context, req *grpc.DeleteNamespace
 	clients := flow.edb.Clients(tctx)
 
 	if !req.GetRecursive() {
-		k, err := clients.Inode.Query().Where(entino.HasNamespaceWith(entns.ID(cached.Namespace.ID))).Count(ctx)
-		if err != nil {
-			return nil, err
-		}
-		if k != 1 { // root dir
-			return nil, errors.New("refusing to delete non-empty namespace without explicit recursive argument")
-		}
+		// TODO: yassir, need refactor.
+		//k, err := clients.Inode.Query().Where(entino.HasNamespaceWith(entns.ID(cached.Namespace.ID))).Count(ctx)
+		//if err != nil {
+		//	return nil, err
+		//}
+		//if k != 1 { // root dir
+		//  return nil, errors.New("refusing to delete non-empty namespace without explicit recursive argument")
+		//}
 	}
 
 	err = clients.Namespace.DeleteOneID(cached.Namespace.ID).Exec(ctx)

@@ -1,5 +1,7 @@
+// TODO: yassir, need refactor.
 package flow
 
+/*
 import (
 	"context"
 	"encoding/json"
@@ -873,3 +875,4 @@ func (flow *flow) SetWorkflowEventLogging(ctx context.Context, req *grpc.SetWork
 
 	return &resp, nil
 }
+*/

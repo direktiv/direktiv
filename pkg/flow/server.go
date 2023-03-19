@@ -34,11 +34,12 @@ type server struct {
 	conf     *util.Config
 
 	// db       *ent.Client
-	pubsub   *pubsub.Pubsub
-	locks    *locks
-	timers   *timers
-	engine   *engine
-	syncer   *syncer
+	pubsub *pubsub.Pubsub
+	locks  *locks
+	timers *timers
+	engine *engine
+	// TODO: yassir, need refactor.
+	//syncer   *syncer
 	secrets  *secrets
 	flow     *flow
 	internal *internal
@@ -182,11 +183,12 @@ func (srv *server) start(ctx context.Context) error {
 
 	srv.sugar.Debug("Initializing syncer.")
 
-	srv.syncer, err = initSyncer(srv)
-	if err != nil {
-		return err
-	}
-	defer srv.cleanup(srv.syncer.Close)
+	// TODO: yassir, need refactor.
+	//srv.syncer, err = initSyncer(srv)
+	//if err != nil {
+	//	return err
+	//}
+	//defer srv.cleanup(srv.syncer.Close)
 
 	var lock sync.Mutex
 	var wg sync.WaitGroup
@@ -240,7 +242,8 @@ func (srv *server) start(ctx context.Context) error {
 	srv.registerFunctions()
 
 	go srv.cronPoller()
-	go srv.syncerCronPoller()
+	// TODO: yassir, need refactor.
+	//go srv.syncerCronPoller()
 
 	go func() {
 		defer wg.Done()
@@ -397,18 +400,22 @@ func (srv *server) registerFunctions() {
 	srv.pubsub.RegisterFunction(pubsub.PubsubDeleteTimerFunction, srv.timers.deleteTimerHandler)
 	srv.pubsub.RegisterFunction(pubsub.PubsubDeleteInstanceTimersFunction, srv.timers.deleteInstanceTimersHandler)
 	srv.pubsub.RegisterFunction(pubsub.PubsubCancelWorkflowFunction, srv.engine.finishCancelWorkflow)
-	srv.pubsub.RegisterFunction(pubsub.PubsubConfigureRouterFunction, srv.flow.configureRouterHandler)
+	// TODO: yassir, need refactor.
+	//srv.pubsub.RegisterFunction(pubsub.PubsubConfigureRouterFunction, srv.flow.configureRouterHandler)
 	srv.pubsub.RegisterFunction(pubsub.PubsubUpdateEventDelays, srv.events.updateEventDelaysHandler)
 
 	srv.timers.registerFunction(timeoutFunction, srv.engine.timeoutHandler)
 	srv.timers.registerFunction(sleepWakeupFunction, srv.engine.sleepWakeup)
-	srv.timers.registerFunction(wfCron, srv.flow.cronHandler)
+	// TODO: yassir, need refactor.
+	//srv.timers.registerFunction(wfCron, srv.flow.cronHandler)
 	srv.timers.registerFunction(sendEventFunction, srv.events.sendEvent)
 	srv.timers.registerFunction(retryWakeupFunction, srv.flow.engine.retryWakeup)
 
 	srv.pubsub.RegisterFunction(pubsub.PubsubDeleteActivityTimersFunction, srv.timers.deleteActivityTimersHandler)
-	srv.timers.registerFunction(syncerTimeoutFunction, srv.syncer.timeoutHandler)
-	srv.timers.registerFunction(syncerCron, srv.syncer.cronHandler)
+	// TODO: yassir, need refactor.
+	//srv.timers.registerFunction(syncerTimeoutFunction, srv.syncer.timeoutHandler)
+	// TODO: yassir, need refactor.
+	//srv.timers.registerFunction(syncerCron, srv.syncer.cronHandler)
 
 	srv.pubsub.RegisterFunction(deleteFilterCache, srv.flow.deleteCache)
 	srv.pubsub.RegisterFunction(deleteFilterCacheNamespace, srv.flow.deleteCacheNamespace)
@@ -422,47 +429,49 @@ func (srv *server) cronPoller() {
 }
 
 func (srv *server) cronPoll() {
-	ctx := context.Background()
-
-	clients := srv.edb.Clients(ctx)
-
-	wfs, err := clients.Workflow.Query().All(ctx)
-	if err != nil {
-		srv.sugar.Error(err)
-		return
-	}
-
-	for _, wf := range wfs {
-		cached, err := srv.reverseTraverseToWorkflow(ctx, wf.ID.String())
-		if err != nil {
-			srv.sugar.Error(err)
-			continue
-		}
-
-		srv.cronPollerWorkflow(ctx, cached)
-	}
+	// TODO: yassir, need refactor.
+	//ctx := context.Background()
+	//
+	//clients := srv.edb.Clients(ctx)
+	//
+	//wfs, err := clients.Workflow.Query().All(ctx)
+	//if err != nil {
+	//	srv.sugar.Error(err)
+	//	return
+	//}
+	//
+	//for _, wf := range wfs {
+	//	cached, err := srv.reverseTraverseToWorkflow(ctx, wf.ID.String())
+	//	if err != nil {
+	//		srv.sugar.Error(err)
+	//		continue
+	//	}
+	//
+	//	srv.cronPollerWorkflow(ctx, cached)
+	//}
 }
 
 func (srv *server) cronPollerWorkflow(ctx context.Context, cached *database.CacheData) {
-	ms, muxErr, err := srv.validateRouter(ctx, cached)
-	if err != nil || muxErr != nil {
-		return
-	}
-
-	if !ms.Enabled || ms.Cron != "" {
-		srv.timers.deleteCronForWorkflow(cached.Workflow.ID.String())
-	}
-
-	if ms.Cron != "" && ms.Enabled {
-		err = srv.timers.addCron(cached.Workflow.ID.String(), wfCron, ms.Cron, []byte(cached.Workflow.ID.String()))
-		if err != nil {
-			srv.sugar.Error(err)
-			return
-		}
-
-		srv.sugar.Debugf("Loaded cron: %s", cached.Workflow.ID.String())
-
-	}
+	// TODO: yassir, need refactor.
+	//ms, muxErr, err := srv.validateRouter(ctx, cached)
+	//if err != nil || muxErr != nil {
+	//	return
+	//}
+	//
+	//if !ms.Enabled || ms.Cron != "" {
+	//	srv.timers.deleteCronForWorkflow(cached.Workflow.ID.String())
+	//}
+	//
+	//if ms.Cron != "" && ms.Enabled {
+	//	err = srv.timers.addCron(cached.Workflow.ID.String(), wfCron, ms.Cron, []byte(cached.Workflow.ID.String()))
+	//	if err != nil {
+	//		srv.sugar.Error(err)
+	//		return
+	//	}
+	//
+	//	srv.sugar.Debugf("Loaded cron: %s", cached.Workflow.ID.String())
+	//
+	//}
 }
 
 func unaryInterceptor(ctx context.Context, req interface{}, info *libgrpc.UnaryServerInfo, handler libgrpc.UnaryHandler) (resp interface{}, err error) {

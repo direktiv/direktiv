@@ -107,143 +107,145 @@ func marshalInstanceInputData(input []byte) string {
 }
 
 func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*instanceMemory, error) {
-	tctx, tx, err := engine.database.Tx(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer rollback(tx)
-
-	cached, err := engine.mux(tctx, args.Namespace, args.Path, args.Ref)
-	if err != nil {
-		engine.sugar.Debugf("Failed to create new instance: %v", err)
-		if derrors.IsNotFound(err) {
-			return nil, derrors.NewUncatchableError("direktiv.workflow.notfound", "workflow not found: %v", err.Error())
-		}
-		return nil, err
-	}
-
-	var wf model.Workflow
-	err = wf.Load(cached.Revision.Source)
-	if err != nil {
-		return nil, derrors.NewUncatchableError("direktiv.workflow.invalid", "cannot parse workflow '%s': %v", args.Path, err)
-	}
-
-	if len(wf.GetStartDefinition().GetEvents()) > 0 {
-		if strings.ToLower(args.Caller) == apiCaller {
-			return nil, derrors.NewUncatchableError("direktiv.workflow.invoke", "cannot manually invoke event-based workflow")
-		}
-		if strings.HasPrefix(args.Caller, "instance") {
-			return nil, derrors.NewUncatchableError("direktiv.workflow.invoke", "cannot invoke event-based workflow as a subflow")
-		}
-	}
-
-	as := args.Path
-	if args.Ref != "" {
-		as += ":" + args.Ref
-	}
-	callerInstanceID := ""
-	if strings.HasPrefix(args.Caller, "instance:") {
-		callerInstanceID = strings.Split(args.Caller, ":")[1]
-	}
-	callpath := appendInstanceID(args.CallPath, callerInstanceID)
-	data := marshalInstanceInputData(args.Input)
-
-	clients := engine.edb.Clients(tctx)
-
-	rt, err := clients.InstanceRuntime.Create().SetInput(args.Input).SetData(data).SetMemory("null").SetCallerData(args.CallerData).Save(tctx)
-	if err != nil {
-		return nil, err
-	}
-
-	inst, err := clients.Instance.Create().SetNamespaceID(cached.Namespace.ID).SetWorkflowID(cached.Workflow.ID).SetRevisionID(cached.Revision.ID).SetRuntime(rt).SetStatus(util.InstanceStatusPending).SetInvoker(args.Caller).SetAs(util.SanitizeAsField(as)).SetCallpath(callpath).Save(tctx)
-	if err != nil {
-		return nil, err
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		return nil, err
-	}
-
-	runtime := &database.InstanceRuntime{
-		ID:              rt.ID,
-		Input:           rt.Input,
-		Data:            rt.Data,
-		Controller:      rt.Controller,
-		Memory:          rt.Memory,
-		Flow:            rt.Flow,
-		Output:          rt.Output,
-		StateBeginTime:  rt.StateBeginTime,
-		Deadline:        rt.Deadline,
-		Attempts:        rt.Attempts,
-		CallerData:      rt.CallerData,
-		InstanceContext: rt.InstanceContext,
-		StateContext:    rt.StateContext,
-		Metadata:        rt.Metadata,
-	}
-
-	cached.Instance = &database.Instance{
-		ID:           inst.ID,
-		CreatedAt:    inst.CreatedAt,
-		UpdatedAt:    inst.UpdatedAt,
-		EndAt:        inst.EndAt,
-		Status:       inst.Status,
-		As:           inst.As,
-		ErrorCode:    inst.ErrorCode,
-		ErrorMessage: inst.ErrorMessage,
-		Invoker:      inst.Invoker,
-		Namespace:    cached.Namespace.ID,
-		Workflow:     cached.Workflow.ID,
-		Revision:     cached.Revision.ID,
-		Runtime:      runtime.ID,
-		CallPath:     inst.Callpath,
-	}
-
-	im := new(instanceMemory)
-	im.engine = engine
-	im.cached = cached
-	im.runtime = runtime
-
-	err = im.engine.database.FlushInstance(ctx, im.cached.Instance)
-	if err != nil {
-		return nil, err
-	}
-
-	err = json.Unmarshal([]byte(im.runtime.Data), &im.data)
-	if err != nil {
-		return nil, err
-	}
-
-	err = json.Unmarshal([]byte(im.runtime.Memory), &im.memory)
-	if err != nil {
-		return nil, err
-	}
-
-	// im.tx = nil
-
-	ctx, err = traceFullAddWorkflowInstance(ctx, im)
-	if err != nil {
-		return nil, err
-	}
-
-	t := time.Now()
-	engine.pubsub.NotifyInstances(cached.Namespace)
-	engine.logToNamespace(ctx, t, im.cached, "Workflow '%s' has been triggered by %s.", args.Path, args.Caller)
-	engine.logToWorkflow(ctx, t, im.cached, "Instance '%s' created by %s. (%v)", im.ID().String(), args.Caller, time.Now())
-	engine.logToInstance(ctx, t, im.cached, "Preparing workflow triggered by %s.", args.Caller)
-
-	// Broadcast Event
-	err = engine.flow.BroadcastInstance(BroadcastEventTypeInstanceStarted, ctx,
-		broadcastInstanceInput{
-			WorkflowPath: args.Path,
-			InstanceID:   im.ID().String(),
-			Caller:       args.Caller,
-		}, cached)
-	if err != nil {
-		return nil, err
-	}
-
-	return im, nil
+	//TODO: yassir, need refactor.
+	return nil, nil
+	//tctx, tx, err := engine.database.Tx(ctx)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//defer rollback(tx)
+	//
+	//cached, err := engine.mux(tctx, args.Namespace, args.Path, args.Ref)
+	//if err != nil {
+	//	engine.sugar.Debugf("Failed to create new instance: %v", err)
+	//	if derrors.IsNotFound(err) {
+	//		return nil, derrors.NewUncatchableError("direktiv.workflow.notfound", "workflow not found: %v", err.Error())
+	//	}
+	//	return nil, err
+	//}
+	//
+	//var wf model.Workflow
+	//err = wf.Load(cached.Revision.Source)
+	//if err != nil {
+	//	return nil, derrors.NewUncatchableError("direktiv.workflow.invalid", "cannot parse workflow '%s': %v", args.Path, err)
+	//}
+	//
+	//if len(wf.GetStartDefinition().GetEvents()) > 0 {
+	//	if strings.ToLower(args.Caller) == apiCaller {
+	//		return nil, derrors.NewUncatchableError("direktiv.workflow.invoke", "cannot manually invoke event-based workflow")
+	//	}
+	//	if strings.HasPrefix(args.Caller, "instance") {
+	//		return nil, derrors.NewUncatchableError("direktiv.workflow.invoke", "cannot invoke event-based workflow as a subflow")
+	//	}
+	//}
+	//
+	//as := args.Path
+	//if args.Ref != "" {
+	//	as += ":" + args.Ref
+	//}
+	//callerInstanceID := ""
+	//if strings.HasPrefix(args.Caller, "instance:") {
+	//	callerInstanceID = strings.Split(args.Caller, ":")[1]
+	//}
+	//callpath := appendInstanceID(args.CallPath, callerInstanceID)
+	//data := marshalInstanceInputData(args.Input)
+	//
+	//clients := engine.edb.Clients(tctx)
+	//
+	//rt, err := clients.InstanceRuntime.Create().SetInput(args.Input).SetData(data).SetMemory("null").SetCallerData(args.CallerData).Save(tctx)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//
+	//inst, err := clients.Instance.Create().SetNamespaceID(cached.Namespace.ID).SetWorkflowID(cached.Workflow.ID).SetRevisionID(cached.Revision.ID).SetRuntime(rt).SetStatus(util.InstanceStatusPending).SetInvoker(args.Caller).SetAs(util.SanitizeAsField(as)).SetCallpath(callpath).Save(tctx)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//
+	//err = tx.Commit()
+	//if err != nil {
+	//	return nil, err
+	//}
+	//
+	//runtime := &database.InstanceRuntime{
+	//	ID:              rt.ID,
+	//	Input:           rt.Input,
+	//	Data:            rt.Data,
+	//	Controller:      rt.Controller,
+	//	Memory:          rt.Memory,
+	//	Flow:            rt.Flow,
+	//	Output:          rt.Output,
+	//	StateBeginTime:  rt.StateBeginTime,
+	//	Deadline:        rt.Deadline,
+	//	Attempts:        rt.Attempts,
+	//	CallerData:      rt.CallerData,
+	//	InstanceContext: rt.InstanceContext,
+	//	StateContext:    rt.StateContext,
+	//	Metadata:        rt.Metadata,
+	//}
+	//
+	//cached.Instance = &database.Instance{
+	//	ID:           inst.ID,
+	//	CreatedAt:    inst.CreatedAt,
+	//	UpdatedAt:    inst.UpdatedAt,
+	//	EndAt:        inst.EndAt,
+	//	Status:       inst.Status,
+	//	As:           inst.As,
+	//	ErrorCode:    inst.ErrorCode,
+	//	ErrorMessage: inst.ErrorMessage,
+	//	Invoker:      inst.Invoker,
+	//	Namespace:    cached.Namespace.ID,
+	//	Workflow:     cached.Workflow.ID,
+	//	Revision:     cached.Revision.ID,
+	//	Runtime:      runtime.ID,
+	//	CallPath:     inst.Callpath,
+	//}
+	//
+	//im := new(instanceMemory)
+	//im.engine = engine
+	//im.cached = cached
+	//im.runtime = runtime
+	//
+	//err = im.engine.database.FlushInstance(ctx, im.cached.Instance)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//
+	//err = json.Unmarshal([]byte(im.runtime.Data), &im.data)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//
+	//err = json.Unmarshal([]byte(im.runtime.Memory), &im.memory)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//
+	//// im.tx = nil
+	//
+	//ctx, err = traceFullAddWorkflowInstance(ctx, im)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//
+	//t := time.Now()
+	//engine.pubsub.NotifyInstances(cached.Namespace)
+	//engine.logToNamespace(ctx, t, im.cached, "Workflow '%s' has been triggered by %s.", args.Path, args.Caller)
+	//engine.logToWorkflow(ctx, t, im.cached, "Instance '%s' created by %s. (%v)", im.ID().String(), args.Caller, time.Now())
+	//engine.logToInstance(ctx, t, im.cached, "Preparing workflow triggered by %s.", args.Caller)
+	//
+	//// Broadcast Event
+	//err = engine.flow.BroadcastInstance(BroadcastEventTypeInstanceStarted, ctx,
+	//	broadcastInstanceInput{
+	//		WorkflowPath: args.Path,
+	//		InstanceID:   im.ID().String(),
+	//		Caller:       args.Caller,
+	//	}, cached)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//
+	//return im, nil
 }
 
 func (engine *engine) start(im *instanceMemory) {
@@ -1034,18 +1036,20 @@ func (engine *engine) wakeEventsWaiter(signature []byte, events []*cloudevents.E
 func (engine *engine) EventsInvoke(workflowID string, events ...*cloudevents.Event) {
 	ctx := context.Background()
 
-	id, err := uuid.Parse(workflowID)
+	// TODO: yassir, need refactor.
+	_, err := uuid.Parse(workflowID)
 	if err != nil {
 		engine.sugar.Error(err)
 		return
 	}
 
 	cached := new(database.CacheData)
-	err = engine.database.Workflow(ctx, cached, id)
-	if err != nil {
-		engine.sugar.Error(err)
-		return
-	}
+	// TODO: yassir, need refactor.
+	//err = engine.database.Workflow(ctx, cached, id)
+	//if err != nil {
+	//	engine.sugar.Error(err)
+	//	return
+	//}
 
 	var input []byte
 	m := make(map[string]interface{})
