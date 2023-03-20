@@ -22,7 +22,7 @@ type Instance interface {
 	GetVariables(ctx context.Context, vars []VariableSelector) ([]Variable, error)
 	Sleep(ctx context.Context, d time.Duration, x interface{}) error
 	Raise(ctx context.Context, err *derrors.CatchableError) error
-	SendToLogger(ctx context.Context, level, a string, x ...interface{})
+	Log(ctx context.Context, level, a string, x ...interface{})
 	AddAttribute(tag, value string)
 	SetVariables(ctx context.Context, vars []VariableSetter) error
 	BroadcastCloudevent(ctx context.Context, event *cloudevents.Event, dd int64) error

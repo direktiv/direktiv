@@ -2,7 +2,6 @@ package flow
 
 import (
 	"context"
-	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
@@ -217,7 +216,7 @@ func (flow *flow) SetSecret(ctx context.Context, req *grpc.SetSecretRequest) (*g
 		return nil, err
 	}
 
-	flow.logger.Infof(ctx, time.Now(), cached.Namespace.ID, cached.GetAttributes("namespace"), "Created namespace secret '%s'.", req.GetKey())
+	flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes("namespace"), "Created namespace secret '%s'.", req.GetKey())
 	flow.pubsub.NotifyNamespaceSecrets(cached.Namespace)
 
 	var resp grpc.SetSecretResponse
@@ -251,7 +250,7 @@ func (flow *flow) CreateSecretsFolder(ctx context.Context, req *grpc.CreateSecre
 		return nil, err
 	}
 
-	flow.logger.Infof(ctx, time.Now(), cached.Namespace.ID, cached.GetAttributes("namespace"), "Created secrets folder '%s'.", req.GetKey())
+	flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes("namespace"), "Created secrets folder '%s'.", req.GetKey())
 	flow.pubsub.NotifyNamespaceSecrets(cached.Namespace)
 
 	var resp grpc.CreateSecretsFolderResponse
@@ -285,7 +284,7 @@ func (flow *flow) DeleteSecret(ctx context.Context, req *grpc.DeleteSecretReques
 		return nil, err
 	}
 
-	flow.logger.Infof(ctx, time.Now(), cached.Namespace.ID, cached.GetAttributes("namespace"), "Deleted namespace secret '%s'.", req.GetKey())
+	flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes("namespace"), "Deleted namespace secret '%s'.", req.GetKey())
 	flow.pubsub.NotifyNamespaceSecrets(cached.Namespace)
 
 	var resp emptypb.Empty
@@ -316,7 +315,7 @@ func (flow *flow) DeleteSecretsFolder(ctx context.Context, req *grpc.DeleteSecre
 		return nil, err
 	}
 
-	flow.logger.Infof(ctx, time.Now(), cached.Namespace.ID, cached.GetAttributes("namespace"), "Deleted namespace folder '%s'.", req.GetKey())
+	flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes("namespace"), "Deleted namespace folder '%s'.", req.GetKey())
 	flow.pubsub.NotifyNamespaceSecrets(cached.Namespace)
 
 	var resp emptypb.Empty
@@ -348,7 +347,7 @@ func (flow *flow) UpdateSecret(ctx context.Context, req *grpc.UpdateSecretReques
 		return nil, err
 	}
 
-	flow.logger.Infof(ctx, time.Now(), cached.Namespace.ID, cached.GetAttributes("namespace"), "Updated namespace secret '%s'.", req.GetKey())
+	flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes("namespace"), "Updated namespace secret '%s'.", req.GetKey())
 	flow.pubsub.NotifyNamespaceSecrets(cached.Namespace)
 
 	var resp grpc.UpdateSecretResponse

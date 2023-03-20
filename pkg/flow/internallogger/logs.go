@@ -90,53 +90,53 @@ func AppendInstanceID(callpath, instanceID string) string {
 	return callpath + "/" + instanceID
 }
 
-func (logger *Logger) Debug(ctx context.Context, t time.Time, recipientID uuid.UUID, tags map[string]string, msg string) {
+func (logger *Logger) Debug(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string) {
 	logger.Telemetry(ctx, msg, tags)
-	logger.sendToWorker(t, recipientID, tags, "debug", msg)
+	logger.sendToWorker(recipientID, tags, "debug", msg)
 }
 
-func (logger *Logger) Debugf(ctx context.Context, t time.Time, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
+func (logger *Logger) Debugf(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
 	logger.Telemetry(ctx, msg, tags)
-	logger.sendToWorker(t, recipientID, tags, "debug", fmt.Sprintf(msg, a...))
+	logger.sendToWorker(recipientID, tags, "debug", fmt.Sprintf(msg, a...))
 }
 
-func (logger *Logger) Info(ctx context.Context, t time.Time, recipientID uuid.UUID, tags map[string]string, msg string) {
+func (logger *Logger) Info(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string) {
 	logger.Telemetry(ctx, msg, tags)
-	logger.sendToWorker(t, recipientID, tags, "info", msg)
+	logger.sendToWorker(recipientID, tags, "info", msg)
 }
 
-func (logger *Logger) Infof(ctx context.Context, t time.Time, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
+func (logger *Logger) Infof(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
 	logger.Telemetry(ctx, msg, tags)
-	logger.sendToWorker(t, recipientID, tags, "info", fmt.Sprintf(msg, a...))
+	logger.sendToWorker(recipientID, tags, "info", fmt.Sprintf(msg, a...))
 }
 
-func (logger *Logger) Error(ctx context.Context, t time.Time, recipientID uuid.UUID, tags map[string]string, msg string) {
+func (logger *Logger) Error(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string) {
 	logger.Telemetry(ctx, msg, tags)
-	logger.sendToWorker(t, recipientID, tags, "error", msg)
+	logger.sendToWorker(recipientID, tags, "error", msg)
 }
 
-func (logger *Logger) Errorf(ctx context.Context, t time.Time, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
+func (logger *Logger) Errorf(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
 	logger.Telemetry(ctx, msg, tags)
-	logger.sendToWorker(t, recipientID, tags, "error", fmt.Sprintf(msg, a...))
+	logger.sendToWorker(recipientID, tags, "error", fmt.Sprintf(msg, a...))
 }
 
-func (logger *Logger) Panic(ctx context.Context, t time.Time, recipientID uuid.UUID, tags map[string]string, msg string) {
+func (logger *Logger) Panic(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string) {
 	logger.Telemetry(ctx, msg, tags)
-	logger.sendToWorker(t, recipientID, tags, "panic", msg)
+	logger.sendToWorker(recipientID, tags, "panic", msg)
 }
 
-func (logger *Logger) Panicf(ctx context.Context, t time.Time, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
+func (logger *Logger) Panicf(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
 	logger.Telemetry(ctx, msg, tags)
-	logger.sendToWorker(t, recipientID, tags, "panic", fmt.Sprintf(msg, a...))
+	logger.sendToWorker(recipientID, tags, "panic", fmt.Sprintf(msg, a...))
 }
 
-func (logger *Logger) sendToWorker(t time.Time, recipientID uuid.UUID, tags map[string]string, level string, msg string) {
+func (logger *Logger) sendToWorker(recipientID uuid.UUID, tags map[string]string, level string, msg string) {
 	defer func() {
 		_ = recover()
 	}()
 
 	logger.logQueue <- &logMessage{
-		t:           t,
+		t:           time.Now(),
 		msg:         msg,
 		tags:        tags,
 		level:       level,

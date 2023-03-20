@@ -7,6 +7,7 @@ import (
 
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/util"
 )
 
 func init() {
@@ -53,7 +54,7 @@ func (logic *switchLogic) Run(ctx context.Context, wakedata []byte) (*Transition
 
 		if truth(x) {
 
-			logic.SendToLogger(ctx, "info", "Switch condition %d succeeded", i)
+			logic.Log(ctx, util.Info, "Switch condition %d succeeded", i)
 
 			return &Transition{
 				Transform: condition.Transform,
@@ -64,7 +65,7 @@ func (logic *switchLogic) Run(ctx context.Context, wakedata []byte) (*Transition
 
 	}
 
-	logic.SendToLogger(ctx, "info", "No switch conditions succeeded")
+	logic.Log(ctx, util.Info, "No switch conditions succeeded")
 
 	return &Transition{
 		Transform: logic.DefaultTransform,

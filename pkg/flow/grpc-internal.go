@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net"
 	"strings"
-	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/util"
@@ -92,8 +91,6 @@ func (internal *internal) ReportActionResults(ctx context.Context, req *grpc.Rep
 func (internal *internal) ActionLog(ctx context.Context, req *grpc.ActionLogRequest) (*emptypb.Empty, error) {
 	internal.sugar.Debugf("Handling gRPC request: %s", this())
 
-	t := time.Now()
-
 	cached, err := internal.getInstance(ctx, req.GetInstanceId())
 	if err != nil {
 		internal.sugar.Error(err)
@@ -114,7 +111,7 @@ func (internal *internal) ActionLog(ctx context.Context, req *grpc.ActionLogRequ
 	tags["state-type"] = "action"
 	for _, msg := range req.GetMsg() {
 		res := truncateLogsMsg(msg, 1024)
-		internal.logger.Info(ctx, t, cached.Instance.ID, tags, res)
+		internal.logger.Info(ctx, cached.Instance.ID, tags, res)
 	}
 
 	var resp emptypb.Empty

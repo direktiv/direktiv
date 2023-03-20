@@ -130,16 +130,16 @@ func (im *instanceMemory) ListenForEvents(ctx context.Context, events []*model.C
 	return nil
 }
 
-func (im *instanceMemory) SendToLogger(ctx context.Context, level string, a string, x ...interface{}) {
+func (im *instanceMemory) Log(ctx context.Context, level string, a string, x ...interface{}) {
 	switch level {
-	case "info":
-		im.engine.logger.Infof(ctx, time.Now(), im.GetInstanceID(), im.GetAttributes(), a, x...)
-	case "debug":
-		im.engine.logger.Debugf(ctx, time.Now(), im.GetInstanceID(), im.GetAttributes(), a, x...)
-	case "error":
-		im.engine.logger.Errorf(ctx, time.Now(), im.GetInstanceID(), im.GetAttributes(), a, x...)
-	case "panic":
-		im.engine.logger.Panicf(ctx, time.Now(), im.GetInstanceID(), im.GetAttributes(), a, x...)
+	case util.Info:
+		im.engine.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), a, x...)
+	case util.Debug:
+		im.engine.logger.Debugf(ctx, im.GetInstanceID(), im.GetAttributes(), a, x...)
+	case util.Error:
+		im.engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), a, x...)
+	case util.Panic:
+		im.engine.logger.Panicf(ctx, im.GetInstanceID(), im.GetAttributes(), a, x...)
 	}
 }
 

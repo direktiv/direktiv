@@ -8,6 +8,7 @@ import (
 
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/senseyeio/duration"
 )
 
@@ -39,7 +40,7 @@ func Delay(instance Instance, state model.State) (Logic, error) {
 func (logic *delayLogic) Deadline(ctx context.Context) time.Time {
 	d, err := duration.ParseISO8601(logic.Duration)
 	if err != nil {
-		logic.SendToLogger(ctx, "error", "failed to parse duration: %v", err)
+		logic.Log(ctx, util.Error, "failed to parse duration: %v", err)
 		return time.Now().Add(DefaultShortDeadline)
 	}
 
@@ -84,7 +85,7 @@ func (logic *delayLogic) Run(ctx context.Context, wakedata []byte) (*Transition,
 
 	}
 
-	logic.SendToLogger(ctx, "info", "Waking up from sleep.")
+	logic.Log(ctx, util.Info, "Waking up from sleep.")
 
 	return &Transition{
 		Transform: logic.Transform,

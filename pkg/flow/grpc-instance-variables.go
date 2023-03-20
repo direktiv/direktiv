@@ -62,7 +62,7 @@ func (srv *server) traverseToInstanceVariable(ctx context.Context, namespace, in
 
 	err = srv.database.Instance(ctx, cached, id)
 	if err != nil {
-		srv.logger.Errorf(ctx, time.Now(), srv.ID, srv.flow.GetAttributes(), "Failed to resolve instance %s", instance)
+		srv.logger.Errorf(ctx, srv.ID, srv.flow.GetAttributes(), "Failed to resolve instance %s", instance)
 		return nil, nil, nil, err
 	}
 
@@ -72,7 +72,7 @@ func (srv *server) traverseToInstanceVariable(ctx context.Context, namespace, in
 
 	vref, vdata, err := srv.getInstanceVariable(ctx, cached, key, load)
 	if err != nil {
-		srv.logger.Errorf(ctx, time.Now(), srv.ID, srv.flow.GetAttributes(), "Failed to resolve variable")
+		srv.logger.Errorf(ctx, srv.ID, srv.flow.GetAttributes(), "Failed to resolve variable")
 		return nil, nil, nil, err
 	}
 
@@ -459,7 +459,7 @@ func (flow *flow) SetInstanceVariable(ctx context.Context, req *grpc.SetInstance
 
 	cached, err := flow.getInstance(tctx, req.GetNamespace(), req.GetInstance())
 	if err != nil {
-		flow.logger.Errorf(ctx, time.Now(), flow.ID, flow.GetAttributes(), "Failed to resolve instance '%s'.", req.GetInstance())
+		flow.logger.Errorf(ctx, flow.ID, flow.GetAttributes(), "Failed to resolve instance '%s'.", req.GetInstance())
 		return nil, err
 	}
 
@@ -468,7 +468,7 @@ func (flow *flow) SetInstanceVariable(ctx context.Context, req *grpc.SetInstance
 
 	vdata, newVar, err = flow.SetVariable(tctx, &entInstanceVarQuerier{clients: flow.edb.Clients(tctx), cached: cached}, key, req.GetData(), req.GetMimeType(), false)
 	if err != nil {
-		flow.logger.Errorf(ctx, time.Now(), cached.Instance.ID, cached.GetAttributes("instance"), "Could not create / change instance variable.")
+		flow.logger.Errorf(ctx, cached.Instance.ID, cached.GetAttributes("instance"), "Could not create / change instance variable.")
 		return nil, err
 	}
 
@@ -478,9 +478,9 @@ func (flow *flow) SetInstanceVariable(ctx context.Context, req *grpc.SetInstance
 	}
 
 	if newVar {
-		flow.logger.Infof(ctx, time.Now(), cached.Instance.ID, cached.GetAttributes("instance"), "Created instance variable '%s'.", key)
+		flow.logger.Infof(ctx, cached.Instance.ID, cached.GetAttributes("instance"), "Created instance variable '%s'.", key)
 	} else {
-		flow.logger.Infof(ctx, time.Now(), cached.Instance.ID, cached.GetAttributes("instance"), "Updated instance variable '%s'.", key)
+		flow.logger.Infof(ctx, cached.Instance.ID, cached.GetAttributes("instance"), "Updated instance variable '%s'.", key)
 	}
 	flow.pubsub.NotifyInstanceVariables(cached.Instance)
 
@@ -573,20 +573,20 @@ func (internal *internal) SetThreadVariableParcels(srv grpc.Internal_SetThreadVa
 
 	vdata, newVar, err = internal.flow.SetVariable(tctx, &entInstanceVarQuerier{clients: internal.edb.Clients(tctx), cached: cached}, key, buf.Bytes(), mimeType, true)
 	if err != nil {
-		internal.logger.Errorf(ctx, time.Now(), cached.Instance.ID, cached.GetAttributes("instance"), "Could not create / change thread variable")
+		internal.logger.Errorf(ctx, cached.Instance.ID, cached.GetAttributes("instance"), "Could not create / change thread variable")
 		return err
 	}
 
 	err = tx.Commit()
 	if err != nil {
-		internal.logger.Errorf(ctx, time.Now(), cached.Instance.ID, cached.GetAttributes("instance"), "Could not create / change thread variable '%s'.", key)
+		internal.logger.Errorf(ctx, cached.Instance.ID, cached.GetAttributes("instance"), "Could not create / change thread variable '%s'.", key)
 		return err
 	}
 
 	if newVar {
-		internal.logger.Infof(ctx, time.Now(), cached.Instance.ID, cached.GetAttributes("instance"), "Created thread variable '%s'.", key)
+		internal.logger.Infof(ctx, cached.Instance.ID, cached.GetAttributes("instance"), "Created thread variable '%s'.", key)
 	} else {
-		internal.logger.Infof(ctx, time.Now(), cached.Instance.ID, cached.GetAttributes("instance"), "Updated thread variable '%s'.", key)
+		internal.logger.Infof(ctx, cached.Instance.ID, cached.GetAttributes("instance"), "Updated thread variable '%s'.", key)
 	}
 
 	internal.pubsub.NotifyInstanceVariables(cached.Instance) // what do we do about this for thread variables?
@@ -676,7 +676,7 @@ func (internal *internal) SetInstanceVariableParcels(srv grpc.Internal_SetInstan
 
 	cached, err := internal.getInstance(tctx, instance)
 	if err != nil {
-		internal.logger.Errorf(ctx, time.Now(), internal.ID, internal.flow.GetAttributes(), "Failed to resolve instance %s", req.GetInstance())
+		internal.logger.Errorf(ctx, internal.ID, internal.flow.GetAttributes(), "Failed to resolve instance %s", req.GetInstance())
 		return err
 	}
 
@@ -685,7 +685,7 @@ func (internal *internal) SetInstanceVariableParcels(srv grpc.Internal_SetInstan
 
 	vdata, newVar, err = internal.flow.SetVariable(tctx, &entInstanceVarQuerier{clients: internal.edb.Clients(tctx), cached: cached}, key, buf.Bytes(), mimeType, false)
 	if err != nil {
-		internal.logger.Errorf(ctx, time.Now(), cached.Instance.ID, cached.GetAttributes("instance"), "Could not create or update instance variable '%s'.", key)
+		internal.logger.Errorf(ctx, cached.Instance.ID, cached.GetAttributes("instance"), "Could not create or update instance variable '%s'.", key)
 		return err
 	}
 
@@ -695,9 +695,9 @@ func (internal *internal) SetInstanceVariableParcels(srv grpc.Internal_SetInstan
 	}
 
 	if newVar {
-		internal.logger.Infof(ctx, time.Now(), cached.Instance.ID, cached.GetAttributes("instance"), "Created instance variable '%s'.", key)
+		internal.logger.Infof(ctx, cached.Instance.ID, cached.GetAttributes("instance"), "Created instance variable '%s'.", key)
 	} else {
-		internal.logger.Infof(ctx, time.Now(), cached.Instance.ID, cached.GetAttributes("instance"), "Updated instance variable '%s'.", key)
+		internal.logger.Infof(ctx, cached.Instance.ID, cached.GetAttributes("instance"), "Updated instance variable '%s'.", key)
 	}
 
 	internal.pubsub.NotifyInstanceVariables(cached.Instance)
@@ -788,7 +788,7 @@ func (flow *flow) SetInstanceVariableParcels(srv grpc.Flow_SetInstanceVariablePa
 
 	cached, err := flow.getInstance(tctx, namespace, instance)
 	if err != nil {
-		flow.logger.Errorf(ctx, time.Now(), flow.ID, flow.GetAttributes(), "Failed to resolve instance %s", req.GetInstance())
+		flow.logger.Errorf(ctx, flow.ID, flow.GetAttributes(), "Failed to resolve instance %s", req.GetInstance())
 		return err
 	}
 
@@ -797,7 +797,7 @@ func (flow *flow) SetInstanceVariableParcels(srv grpc.Flow_SetInstanceVariablePa
 
 	vdata, newVar, err = flow.SetVariable(tctx, &entInstanceVarQuerier{clients: flow.edb.Clients(tctx), cached: cached}, key, req.GetData(), mimeType, false)
 	if err != nil {
-		flow.logger.Errorf(ctx, time.Now(), cached.Instance.ID, cached.GetAttributes("instance"), "Could not create / change instance variable '%s'.", key)
+		flow.logger.Errorf(ctx, cached.Instance.ID, cached.GetAttributes("instance"), "Could not create / change instance variable '%s'.", key)
 		return err
 	}
 
@@ -807,9 +807,9 @@ func (flow *flow) SetInstanceVariableParcels(srv grpc.Flow_SetInstanceVariablePa
 	}
 
 	if newVar {
-		flow.logger.Infof(ctx, time.Now(), cached.Instance.ID, cached.GetAttributes("instance"), "Created instance variable '%s'.", key)
+		flow.logger.Infof(ctx, cached.Instance.ID, cached.GetAttributes("instance"), "Created instance variable '%s'.", key)
 	} else {
-		flow.logger.Infof(ctx, time.Now(), cached.Instance.ID, cached.GetAttributes("instance"), "Updated instance variable '%s'.", key)
+		flow.logger.Infof(ctx, cached.Instance.ID, cached.GetAttributes("instance"), "Updated instance variable '%s'.", key)
 	}
 
 	flow.pubsub.NotifyInstanceVariables(cached.Instance)
@@ -851,14 +851,14 @@ func (flow *flow) DeleteInstanceVariable(ctx context.Context, req *grpc.DeleteIn
 
 	err = clients.VarRef.DeleteOneID(vref.ID).Exec(ctx)
 	if err != nil {
-		flow.logger.Errorf(ctx, time.Now(), cached.Instance.ID, cached.GetAttributes("instance"), "Failed to delete instance variable ID '%s'.", vref.Name)
+		flow.logger.Errorf(ctx, cached.Instance.ID, cached.GetAttributes("instance"), "Failed to delete instance variable ID '%s'.", vref.Name)
 		return nil, err
 	}
 
 	if vdata.RefCount == 0 {
 		err = clients.VarData.DeleteOneID(vdata.ID).Exec(ctx)
 		if err != nil {
-			flow.logger.Errorf(ctx, time.Now(), cached.Instance.ID, cached.GetAttributes("instance"), "Failed tp delete instance variable data '%s'.", vref.Name)
+			flow.logger.Errorf(ctx, cached.Instance.ID, cached.GetAttributes("instance"), "Failed tp delete instance variable data '%s'.", vref.Name)
 			return nil, err
 		}
 	}
@@ -868,7 +868,7 @@ func (flow *flow) DeleteInstanceVariable(ctx context.Context, req *grpc.DeleteIn
 		return nil, err
 	}
 
-	flow.logger.Infof(ctx, time.Now(), cached.Instance.ID, cached.GetAttributes("instance"), "Deleted instance variable '%s'.", vref.Name)
+	flow.logger.Infof(ctx, cached.Instance.ID, cached.GetAttributes("instance"), "Deleted instance variable '%s'.", vref.Name)
 	flow.pubsub.NotifyInstanceVariables(cached.Instance)
 
 	// Broadcast Event
@@ -906,7 +906,7 @@ func (flow *flow) RenameInstanceVariable(ctx context.Context, req *grpc.RenameIn
 
 	x, err := clients.VarRef.UpdateOneID(vref.ID).SetName(req.GetNew()).Save(tctx)
 	if err != nil {
-		flow.logger.Errorf(ctx, time.Now(), cached.Instance.ID, cached.GetAttributes("instance"), "Failed to store new instance variable name")
+		flow.logger.Errorf(ctx, cached.Instance.ID, cached.GetAttributes("instance"), "Failed to store new instance variable name")
 		return nil, err
 	}
 
@@ -917,7 +917,7 @@ func (flow *flow) RenameInstanceVariable(ctx context.Context, req *grpc.RenameIn
 		return nil, err
 	}
 
-	flow.logger.Infof(ctx, time.Now(), cached.Instance.ID, cached.GetAttributes("instance"), "Renamed instance variable from '%s' to '%s'.", req.GetOld(), req.GetNew())
+	flow.logger.Infof(ctx, cached.Instance.ID, cached.GetAttributes("instance"), "Renamed instance variable from '%s' to '%s'.", req.GetOld(), req.GetNew())
 	flow.pubsub.NotifyInstanceVariables(cached.Instance)
 
 	var resp grpc.RenameInstanceVariableResponse

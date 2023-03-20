@@ -11,6 +11,7 @@ import (
 
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/senseyeio/duration"
 )
 
@@ -47,7 +48,7 @@ func (logic *actionLogic) Deadline(ctx context.Context) time.Time {
 	d, err := duration.ParseISO8601(logic.Timeout)
 	if err != nil {
 		if logic.Timeout != "" {
-			logic.SendToLogger(ctx, "error", "failed to parse timeout: %v for %s", err, logic.label())
+			logic.Log(ctx, util.Error, "failed to parse timeout: %v for %s", err, logic.label())
 			return time.Now().Add(DefaultLongDeadline)
 		}
 	}
@@ -164,7 +165,7 @@ func (logic *actionLogic) scheduleAction(ctx context.Context, attempt int) error
 		return nil
 	}
 
-	logic.SendToLogger(ctx, "info", "Sleeping until function %s returns (%s).", logic.label(), child.ID)
+	logic.Log(ctx, util.Info, "Sleeping until function %s returns (%s).", logic.label(), child.ID)
 
 	var children []*ChildInfo
 
@@ -179,7 +180,7 @@ func (logic *actionLogic) scheduleAction(ctx context.Context, attempt int) error
 }
 
 func (logic *actionLogic) scheduleRetryAction(ctx context.Context, retry *actionRetryInfo) error {
-	logic.SendToLogger(ctx, "info", "Retrying %s...", logic.label())
+	logic.Log(ctx, util.Info, "Retrying %s...", logic.label())
 
 	err := logic.scheduleAction(ctx, retry.Children[retry.Idx].Attempts)
 	if err != nil {
@@ -199,10 +200,10 @@ func (logic *actionLogic) processActionResults(ctx context.Context, children []*
 	if results.ActionID != id {
 		return nil, derrors.NewInternalError(errors.New("incorrect child action ID"))
 	}
-	logic.SendToLogger(ctx, "info", "Function %s returned, id: %s.", logic.label(), id)
+	logic.Log(ctx, util.Info, "Function %s returned, id: %s.", logic.label(), id)
 
 	if results.ErrorCode != "" {
-		logic.SendToLogger(ctx, "error", "Action %s raised catchable error '%s': %s.", logic.label(), results.ErrorCode, results.ErrorMessage)
+		logic.Log(ctx, util.Error, "Action %s raised catchable error '%s': %s.", logic.label(), results.ErrorCode, results.ErrorMessage)
 
 		err = derrors.NewCatchableError(results.ErrorCode, results.ErrorMessage)
 		d, err := preprocessRetry(logic.Action.Retries, sd.Attempts, err)
@@ -210,14 +211,14 @@ func (logic *actionLogic) processActionResults(ctx context.Context, children []*
 			return nil, err
 		}
 
-		logic.SendToLogger(ctx, "info", "Scheduling retry attempt in: %v for action %s", d, logic.label())
+		logic.Log(ctx, util.Info, "Scheduling retry attempt in: %v for action %s", d, logic.label())
 
 		return nil, scheduleRetry(ctx, logic.Instance, children, 0, d)
 
 	}
 
 	if results.ErrorMessage != "" {
-		logic.SendToLogger(ctx, "error", "Action %s crashed due to an internal error: %v", logic.label(), results.ErrorMessage)
+		logic.Log(ctx, util.Error, "Action %s crashed due to an internal error: %v", logic.label(), results.ErrorMessage)
 		return nil, derrors.NewInternalError(errors.New(results.ErrorMessage))
 	}
 

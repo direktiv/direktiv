@@ -11,6 +11,7 @@ import (
 
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/senseyeio/duration"
 )
 
@@ -47,7 +48,7 @@ func (logic *forEachLogic) Deadline(ctx context.Context) time.Time {
 	d, err := duration.ParseISO8601(logic.Timeout)
 	if err != nil {
 		if logic.Timeout != "" {
-			logic.SendToLogger(ctx, "error", "failed to parse timeout: %v", err)
+			logic.Log(ctx, util.Error, "failed to parse timeout: %v", err)
 		}
 		return time.Now().Add(DefaultLongDeadline)
 	}
@@ -129,7 +130,7 @@ func (logic *forEachLogic) scheduleFirstActions(ctx context.Context) (*Transitio
 		}, nil
 	}
 
-	logic.SendToLogger(ctx, "info", "Generated %d objects to loop over.", len(array))
+	logic.Log(ctx, util.Info, "Generated %d objects to loop over.", len(array))
 
 	children := make([]*ChildInfo, 0)
 
@@ -199,7 +200,7 @@ func (logic *forEachLogic) scheduleAction(ctx context.Context, inputSource inter
 }
 
 func (logic *forEachLogic) scheduleRetryAction(ctx context.Context, retry *actionRetryInfo) error {
-	logic.SendToLogger(ctx, "info", "Retrying...")
+	logic.Log(ctx, util.Info, "Retrying...")
 
 	x, err := jqOne(logic.GetInstanceData(), logic.Array)
 	if err != nil {
@@ -272,11 +273,11 @@ func (logic *forEachLogic) processActionResults(ctx context.Context, children []
 		return nil, derrors.NewInternalError(errors.New("incorrect child action ID"))
 	}
 	logic.AddAttribute("loop-index", fmt.Sprintf("%d", idx))
-	logic.SendToLogger(ctx, "info", "Child '%s' returned.", id)
+	logic.Log(ctx, util.Info, "Child '%s' returned.", id)
 
 	if results.ErrorCode != "" {
 
-		logic.SendToLogger(ctx, "error", "[%v] Action raised catchable error '%s': %s.", idx, results.ErrorCode, results.ErrorMessage)
+		logic.Log(ctx, util.Error, "[%v] Action raised catchable error '%s': %s.", idx, results.ErrorCode, results.ErrorMessage)
 
 		err = derrors.NewCatchableError(results.ErrorCode, results.ErrorMessage)
 		d, err := preprocessRetry(logic.Action.Retries, sd.Attempts, err)
@@ -284,20 +285,20 @@ func (logic *forEachLogic) processActionResults(ctx context.Context, children []
 			return nil, err
 		}
 
-		logic.SendToLogger(ctx, "info", "[%v] Scheduling retry attempt in: %v.", idx, d)
+		logic.Log(ctx, util.Info, "[%v] Scheduling retry attempt in: %v.", idx, d)
 
 		return nil, scheduleRetry(ctx, logic.Instance, children, idx, d)
 
 	}
 
 	if results.ErrorMessage != "" {
-		logic.SendToLogger(ctx, "error", "Action crashed due to an internal error: %v", results.ErrorMessage)
+		logic.Log(ctx, util.Error, "Action crashed due to an internal error: %v", results.ErrorMessage)
 		return nil, derrors.NewInternalError(errors.New(results.ErrorMessage))
 	}
 
 	children[idx].Complete = true
 	completed++
-	logic.SendToLogger(ctx, "info", "[%v] Action returned. (%d/%d)", idx, completed, len(children))
+	logic.Log(ctx, util.Info, "[%v] Action returned. (%d/%d)", idx, completed, len(children))
 
 	var x interface{}
 
