@@ -9,7 +9,11 @@ module.exports = {
         prop.parent ? !/node_modules/.test(prop.parent.fileName) : true,
     },
   },
-  stories: ["../src/**/*.mdx", "../src/**/*.stories.@(js|jsx|ts|tsx)"],
+  stories: [
+    "../src/**/*.mdx",
+    "../src/componentsNext/**/*.stories.@(js|jsx|ts|tsx)",
+  ],
+
   addons: [
     "@storybook/addon-essentials",
     "@storybook/addon-interactions",
