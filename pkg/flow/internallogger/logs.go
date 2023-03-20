@@ -19,7 +19,7 @@ type Logger struct {
 	logQueue     chan *logMessage
 	logWorkersWG sync.WaitGroup
 	sugar        *zap.SugaredLogger
-	edb          *entwrapper.Database // TODO: remove
+	edb          *entwrapper.Database
 	pubsub       LogNotify
 }
 
