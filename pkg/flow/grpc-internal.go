@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
+	"strings"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
@@ -112,10 +113,26 @@ func (internal *internal) ActionLog(ctx context.Context, req *grpc.ActionLogRequ
 	tags["state-id"] = stateID
 	tags["state-type"] = "action"
 	for _, msg := range req.GetMsg() {
-		internal.logger.Info(ctx, t, cached.Instance.ID, tags, msg)
+		res := truncateLogsMsg(msg, 1024)
+		internal.logger.Info(ctx, t, cached.Instance.ID, tags, res)
 	}
 
 	var resp emptypb.Empty
 
 	return &resp, nil
+}
+
+func truncateLogsMsg(msg string,
+	length int,
+) string {
+	res := ""
+	m := strings.Split(msg, "/n")
+	for _, v := range m {
+		if len(v) > length {
+			res += msg[:length] + "/n"
+		} else {
+			res += msg
+		}
+	}
+	return res
 }
