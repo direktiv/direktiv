@@ -13,7 +13,10 @@ import (
 	"go.uber.org/zap"
 )
 
-var sugar *zap.SugaredLogger
+var (
+	sugar                    *zap.SugaredLogger
+	_notifyLogsTriggeredWith notifyLogsTriggeredWith
+)
 
 func databaseWrapper() (entwrapper.Database, error) {
 	client, err := ent.Open(dialect.SQLite, "file:ent?mode=memory&cache=shared&_fk=1")
@@ -57,9 +60,24 @@ func TestStoringLogMsg(t *testing.T) {
 	if logs[0].Msg != "test" {
 		t.Errorf("expected logmsg to be 'test; got '%s'", logs[0])
 	}
+	if _notifyLogsTriggeredWith.Id != recipent {
+		t.Errorf("expected NotifyLogs to called with recipent %s; got '%s'", recipent, _notifyLogsTriggeredWith.Id)
+	}
+	if _notifyLogsTriggeredWith.RecipientType != "server" {
+		t.Errorf("expected NotifyLogs to called with recipentType %s; got '%s'", "server", _notifyLogsTriggeredWith.RecipientType)
+	}
 }
 
 type LogNotifyMock struct{}
 
 func (ln *LogNotifyMock) NotifyLogs(recipientID uuid.UUID, recipientType string) {
+	_notifyLogsTriggeredWith = notifyLogsTriggeredWith{
+		recipientID,
+		recipientType,
+	}
+}
+
+type notifyLogsTriggeredWith struct {
+	Id            uuid.UUID
+	RecipientType string
 }
