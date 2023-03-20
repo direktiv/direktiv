@@ -24,6 +24,7 @@ require (
 	github.com/jinzhu/copier v0.2.4
 	github.com/lib/pq v1.10.7
 	github.com/mattn/go-shellwords v1.0.12
+	github.com/mattn/go-sqlite3 v1.14.16
 	github.com/mitchellh/hashstructure/v2 v2.0.1
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/prometheus/client_golang v1.14.0

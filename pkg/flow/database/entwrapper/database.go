@@ -65,23 +65,23 @@ func (db *Database) clients(ctx context.Context) *EntClients {
 
 	if a == nil {
 		return &EntClients{
-			Namespace:         db.client.Namespace,
-			Inode:             db.client.Inode,
-			Annotation:        db.client.Annotation,
-			Events:            db.client.Events,
-			CloudEvents:       db.client.CloudEvents,
-			CloudEventFilters: db.client.CloudEventFilters,
-			Route:             db.client.Route,
-			Ref:               db.client.Ref,
-			Revision:          db.client.Revision,
-			VarRef:            db.client.VarRef,
-			VarData:           db.client.VarData,
-			Instance:          db.client.Instance,
-			Workflow:          db.client.Workflow,
-			LogMsg:            db.client.LogMsg,
-			Mirror:            db.client.Mirror,
-			MirrorActivity:    db.client.MirrorActivity,
-			InstanceRuntime:   db.client.InstanceRuntime,
+			Namespace:         db.Client.Namespace,
+			Inode:             db.Client.Inode,
+			Annotation:        db.Client.Annotation,
+			Events:            db.Client.Events,
+			CloudEvents:       db.Client.CloudEvents,
+			CloudEventFilters: db.Client.CloudEventFilters,
+			Route:             db.Client.Route,
+			Ref:               db.Client.Ref,
+			Revision:          db.Client.Revision,
+			VarRef:            db.Client.VarRef,
+			VarData:           db.Client.VarData,
+			Instance:          db.Client.Instance,
+			Workflow:          db.Client.Workflow,
+			LogMsg:            db.Client.LogMsg,
+			Mirror:            db.Client.Mirror,
+			MirrorActivity:    db.Client.MirrorActivity,
+			InstanceRuntime:   db.Client.InstanceRuntime,
 		}
 	}
 
@@ -109,8 +109,8 @@ func (db *Database) clients(ctx context.Context) *EntClients {
 }
 
 type Database struct {
-	sugar  *zap.SugaredLogger
-	client *ent.Client
+	Sugar  *zap.SugaredLogger
+	Client *ent.Client
 }
 
 func New(ctx context.Context, sugar *zap.SugaredLogger, addr string) (*Database, error) {
@@ -171,13 +171,13 @@ func New(ctx context.Context, sugar *zap.SugaredLogger, addr string) (*Database,
 	}
 
 	return &Database{
-		sugar:  sugar,
-		client: db,
+		Sugar:  sugar,
+		Client: db,
 	}, nil
 }
 
 func (db *Database) Close() error {
-	return db.client.Close()
+	return db.Client.Close()
 }
 
 func (db *Database) AddTxToCtx(ctx context.Context, tx database.Transaction) context.Context {
@@ -185,7 +185,7 @@ func (db *Database) AddTxToCtx(ctx context.Context, tx database.Transaction) con
 }
 
 func (db *Database) Tx(ctx context.Context) (context.Context, database.Transaction, error) {
-	tx, err := db.client.Tx(ctx)
+	tx, err := db.Client.Tx(ctx)
 	if err != nil {
 		return ctx, nil, err
 	}
@@ -196,7 +196,7 @@ func (db *Database) Tx(ctx context.Context) (context.Context, database.Transacti
 }
 
 func (db *Database) DB() *sql.DB {
-	return db.client.DB()
+	return db.Client.DB()
 }
 
 func (db *Database) Namespace(ctx context.Context, id uuid.UUID) (*database.Namespace, error) {
@@ -206,7 +206,7 @@ func (db *Database) Namespace(ctx context.Context, id uuid.UUID) (*database.Name
 		q.Where(entino.NameIsNil()).Select(entino.FieldID)
 	}).Only(ctx)
 	if err != nil {
-		db.sugar.Debugf("%s failed to resolve namespace: %v", parent(), err)
+		db.Sugar.Debugf("%s failed to resolve namespace: %v", parent(), err)
 		return nil, err
 	}
 
@@ -220,7 +220,7 @@ func (db *Database) NamespaceByName(ctx context.Context, name string) (*database
 		q.Where(entino.NameIsNil()).Select(entino.FieldID)
 	}).Only(ctx)
 	if err != nil {
-		db.sugar.Debugf("%s failed to resolve namespace: %v", parent(), err)
+		db.Sugar.Debugf("%s failed to resolve namespace: %v", parent(), err)
 		return nil, err
 	}
 
@@ -242,7 +242,7 @@ func (db *Database) Inode(ctx context.Context, id uuid.UUID) (*database.Inode, e
 		q.Select(entmir.FieldID)
 	}).Only(ctx)
 	if err != nil {
-		db.sugar.Debugf("%s failed to resolve inode: %v", parent(), err)
+		db.Sugar.Debugf("%s failed to resolve inode: %v", parent(), err)
 		return nil, err
 	}
 
@@ -265,7 +265,7 @@ func (db *Database) CreateInode(ctx context.Context, args *database.CreateInodeA
 		if strings.Contains(err.Error(), "duplicate key value violates unique constraint") {
 			return nil, os.ErrExist
 		}
-		db.sugar.Debugf("%s failed to create inode: %v", parent(), err)
+		db.Sugar.Debugf("%s failed to create inode: %v", parent(), err)
 		return nil, err
 	}
 
@@ -302,7 +302,7 @@ func (db *Database) UpdateInode(ctx context.Context, args *database.UpdateInodeA
 
 	ino, err := query.Save(ctx)
 	if err != nil {
-		db.sugar.Debugf("%s failed to update inode: %v", parent(), err)
+		db.Sugar.Debugf("%s failed to update inode: %v", parent(), err)
 		return nil, err
 	}
 
@@ -341,7 +341,7 @@ func (db *Database) Workflow(ctx context.Context, id uuid.UUID) (*database.Workf
 		})
 	}).Order(ent.Desc(entroute.FieldID)).Only(ctx)
 	if err != nil {
-		db.sugar.Debugf("%s failed to resolve workflow: %v", parent(), err)
+		db.Sugar.Debugf("%s failed to resolve workflow: %v", parent(), err)
 		return nil, err
 	}
 
@@ -357,7 +357,7 @@ func (db *Database) CreateWorkflow(ctx context.Context, args *database.CreateWor
 		SetReadOnly(args.Inode.ReadOnly).
 		Save(ctx)
 	if err != nil {
-		db.sugar.Debugf("%s failed to create workflow: %v", parent(), err)
+		db.Sugar.Debugf("%s failed to create workflow: %v", parent(), err)
 		return nil, err
 	}
 
@@ -383,7 +383,7 @@ func (db *Database) UpdateWorkflow(ctx context.Context, args *database.UpdateWor
 
 	wf, err := query.Save(ctx)
 	if err != nil {
-		db.sugar.Debugf("%s failed to update workflow: %v", parent(), err)
+		db.Sugar.Debugf("%s failed to update workflow: %v", parent(), err)
 		return nil, err
 	}
 
@@ -400,7 +400,7 @@ func (db *Database) CreateRef(ctx context.Context, args *database.CreateRefArgs)
 		SetRevisionID(args.Revision).
 		Save(ctx)
 	if err != nil {
-		db.sugar.Debugf("%s failed to create ref: %v", parent(), err)
+		db.Sugar.Debugf("%s failed to create ref: %v", parent(), err)
 		return nil, err
 	}
 
@@ -422,7 +422,7 @@ func (db *Database) Revision(ctx context.Context, id uuid.UUID) (*database.Revis
 		q.Select(entwf.FieldID)
 	}).Only(ctx)
 	if err != nil {
-		db.sugar.Debugf("%s failed to resolve revision '%s': %v", parent(), id, err)
+		db.Sugar.Debugf("%s failed to resolve revision '%s': %v", parent(), id, err)
 		return nil, err
 	}
 
@@ -462,7 +462,7 @@ func (db *Database) Instance(ctx context.Context, id uuid.UUID) (*database.Insta
 		q.Select(entrt.FieldID)
 	}).Only(ctx)
 	if err != nil {
-		db.sugar.Debugf("%s failed to resolve instance: %v", parent(), err)
+		db.Sugar.Debugf("%s failed to resolve instance: %v", parent(), err)
 		return nil, err
 	}
 
@@ -476,7 +476,7 @@ func (db *Database) InstanceRuntime(ctx context.Context, id uuid.UUID) (*databas
 		q.Select(entinst.FieldID)
 	}).Only(ctx)
 	if err != nil {
-		db.sugar.Debugf("%s failed to resolve instance runtime data: %v", parent(), err)
+		db.Sugar.Debugf("%s failed to resolve instance runtime data: %v", parent(), err)
 		return nil, err
 	}
 
@@ -488,7 +488,7 @@ func (db *Database) NamespaceAnnotation(ctx context.Context, nsID uuid.UUID, key
 
 	annotation, err := clients.Annotation.Query().Where(entnote.HasNamespaceWith(entns.ID(nsID)), entnote.Name(key)).Only(ctx)
 	if err != nil {
-		db.sugar.Debugf("%s failed to resolve namespace annotation: %v", parent(), err)
+		db.Sugar.Debugf("%s failed to resolve namespace annotation: %v", parent(), err)
 		return nil, err
 	}
 
@@ -500,7 +500,7 @@ func (db *Database) InodeAnnotation(ctx context.Context, inodeID uuid.UUID, key 
 
 	annotation, err := clients.Annotation.Query().Where(entnote.HasInodeWith(entino.ID(inodeID)), entnote.Name(key)).Only(ctx)
 	if err != nil {
-		db.sugar.Debugf("%s failed to resolve inode annotation: %v", parent(), err)
+		db.Sugar.Debugf("%s failed to resolve inode annotation: %v", parent(), err)
 		return nil, err
 	}
 
@@ -512,7 +512,7 @@ func (db *Database) WorkflowAnnotation(ctx context.Context, wfID uuid.UUID, key 
 
 	annotation, err := clients.Annotation.Query().Where(entnote.HasWorkflowWith(entwf.ID(wfID)), entnote.Name(key)).Only(ctx)
 	if err != nil {
-		db.sugar.Debugf("%s failed to resolve workflow annotation: %v", parent(), err)
+		db.Sugar.Debugf("%s failed to resolve workflow annotation: %v", parent(), err)
 		return nil, err
 	}
 
@@ -524,7 +524,7 @@ func (db *Database) InstanceAnnotation(ctx context.Context, instID uuid.UUID, ke
 
 	annotation, err := clients.Annotation.Query().Where(entnote.HasInstanceWith(entinst.ID(instID)), entnote.Name(key)).Only(ctx)
 	if err != nil {
-		db.sugar.Debugf("%s failed to resolve instance annotation: %v", parent(), err)
+		db.Sugar.Debugf("%s failed to resolve instance annotation: %v", parent(), err)
 		return nil, err
 	}
 
@@ -538,7 +538,7 @@ func (db *Database) ThreadVariables(ctx context.Context, instID uuid.UUID) ([]*d
 		q.Select(entvardata.FieldID)
 	}).All(ctx)
 	if err != nil {
-		db.sugar.Debugf("%s failed to resolve instance thread variables: %v", parent(), err)
+		db.Sugar.Debugf("%s failed to resolve instance thread variables: %v", parent(), err)
 		return nil, err
 	}
 
@@ -558,7 +558,7 @@ func (db *Database) NamespaceVariableRef(ctx context.Context, nsID uuid.UUID, ke
 		q.Select(entvardata.FieldID)
 	}).Only(ctx)
 	if err != nil {
-		db.sugar.Debugf("%s failed to resolve namespace variable: %v", parent(), err)
+		db.Sugar.Debugf("%s failed to resolve namespace variable: %v", parent(), err)
 		return nil, err
 	}
 
@@ -572,7 +572,7 @@ func (db *Database) WorkflowVariableRef(ctx context.Context, wfID uuid.UUID, key
 		q.Select(entvardata.FieldID)
 	}).Only(ctx)
 	if err != nil {
-		db.sugar.Debugf("%s failed to resolve workflow variable: %v", parent(), err)
+		db.Sugar.Debugf("%s failed to resolve workflow variable: %v", parent(), err)
 		return nil, err
 	}
 
@@ -586,7 +586,7 @@ func (db *Database) InstanceVariableRef(ctx context.Context, instID uuid.UUID, k
 		q.Select(entvardata.FieldID)
 	}).Only(ctx)
 	if err != nil {
-		db.sugar.Debugf("%s failed to resolve instance variable: %v", parent(), err)
+		db.Sugar.Debugf("%s failed to resolve instance variable: %v", parent(), err)
 		return nil, err
 	}
 
@@ -600,7 +600,7 @@ func (db *Database) ThreadVariableRef(ctx context.Context, instID uuid.UUID, key
 		q.Select(entvardata.FieldID)
 	}).Only(ctx)
 	if err != nil {
-		db.sugar.Debugf("%s failed to resolve thread variable: %v", parent(), err)
+		db.Sugar.Debugf("%s failed to resolve thread variable: %v", parent(), err)
 		return nil, err
 	}
 
@@ -616,13 +616,13 @@ func (db *Database) VariableData(ctx context.Context, id uuid.UUID, load bool) (
 	if load {
 		vardata, err = clients.VarData.Get(ctx, id)
 		if err != nil {
-			db.sugar.Debugf("%s failed to resolve variable data: %v", parent(), err)
+			db.Sugar.Debugf("%s failed to resolve variable data: %v", parent(), err)
 			return nil, err
 		}
 	} else {
 		vardata, err = clients.VarData.Query().Where(entvardata.ID(id)).Select(entvardata.FieldID, entvardata.FieldCreatedAt, entvardata.FieldUpdatedAt, entvardata.FieldSize, entvardata.FieldHash, entvardata.FieldMimeType).Only(ctx)
 		if err != nil {
-			db.sugar.Debugf("%s failed to resolve variable data: %v", parent(), err)
+			db.Sugar.Debugf("%s failed to resolve variable data: %v", parent(), err)
 			return nil, err
 		}
 	}
@@ -631,7 +631,7 @@ func (db *Database) VariableData(ctx context.Context, id uuid.UUID, load bool) (
 
 	k, err := clients.VarRef.Query().Where(entvar.HasVardataWith(entvardata.ID(vardata.ID))).Count(ctx)
 	if err != nil {
-		db.sugar.Debugf("%s failed to count variable references: %v", parent(), err)
+		db.Sugar.Debugf("%s failed to count variable references: %v", parent(), err)
 		return nil, err
 	}
 

@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/database/entwrapper"
-	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/google/uuid"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
@@ -20,7 +19,11 @@ type Logger struct {
 	logWorkersWG sync.WaitGroup
 	sugar        *zap.SugaredLogger
 	edb          *entwrapper.Database // TODO: remove
-	pubsub       *pubsub.Pubsub
+	pubsub       LogNotify
+}
+
+type LogNotify interface {
+	NotifyLogs(recipientID uuid.UUID, recipientType string)
 }
 
 func InitLogger() *Logger {
@@ -38,7 +41,7 @@ type logMessage struct {
 	tags        map[string]string
 }
 
-func (logger *Logger) StartLogWorkers(n int, db *entwrapper.Database, pubsub *pubsub.Pubsub, sugar *zap.SugaredLogger) {
+func (logger *Logger) StartLogWorkers(n int, db *entwrapper.Database, pubsub LogNotify, sugar *zap.SugaredLogger) {
 	logger.edb = db
 	logger.pubsub = pubsub
 	logger.sugar = sugar
@@ -190,7 +193,7 @@ func (logger *Logger) SendLogMsgToDB(l *logMessage) error {
 		lc.SetActivityID(l.recipientID)
 	default:
 		logger.sugar.Panicf("recipientType was not set", l.msg, l.tags)
-		panic("how?")
+		return fmt.Errorf("recipientType was not set %s %v", l.msg, l.tags)
 	}
 	_, err := lc.Save(ctx)
 	if err != nil {

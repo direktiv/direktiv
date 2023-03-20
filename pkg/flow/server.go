@@ -148,7 +148,6 @@ func (srv *server) start(ctx context.Context) error {
 		return err
 	}
 	defer srv.cleanup(srv.pubsub.Close)
-
 	srv.logger.StartLogWorkers(1, srv.edb, srv.pubsub, srv.sugar)
 
 	srv.sugar.Debug("Initializing timers.")
