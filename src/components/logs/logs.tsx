@@ -177,7 +177,7 @@ function Logs({
       onWheel={() => {
         disableAutoScroll(true);
       }}
-      onMouseDown={() => {
+      onClick={() => {
         disableAutoScroll(true);
       }}
     >
