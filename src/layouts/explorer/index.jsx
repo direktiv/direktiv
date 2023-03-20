@@ -214,7 +214,7 @@ function ExplorerList(props) {
 
   const [orderFieldKey, setOrderFieldKey] = useState(orderFieldKeys[0]);
 
-  const [streamNodes, setStreamNodes] = useState(true);
+  const [streamNodes, setStreamNodes] = useState(false);
   const [queryParams, setQueryParams] = useState([]);
 
   const pageHandler = usePageHandler(PAGE_SIZE);
@@ -271,7 +271,7 @@ function ExplorerList(props) {
   });
 
   useEffect(() => {
-    setStreamNodes(true);
+    setStreamNodes(false);
   }, [path]);
 
   useEffect(() => {

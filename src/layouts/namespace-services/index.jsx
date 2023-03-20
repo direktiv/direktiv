@@ -175,7 +175,7 @@ function NamespaceServices(props) {
     getNamespaceServices,
     createNamespaceService,
     deleteNamespaceService,
-  } = useNamespaceServices(Config.url, true, namespace, apiKey);
+  } = useNamespaceServices(Config.url, false, namespace, apiKey);
 
   useEffect(() => {
     async function getcfg() {
