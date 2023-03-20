@@ -10,7 +10,7 @@ module.exports = {
     },
   },
   stories: [
-    "../src/**/*.mdx",
+    "../src/componentsNext/**/*.mdx",
     "../src/componentsNext/**/*.stories.@(js|jsx|ts|tsx)",
   ],
 
