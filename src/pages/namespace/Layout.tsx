@@ -101,7 +101,7 @@ const TopRightComponent: FC<{ className?: string }> = ({ className }) => {
   const { setTheme } = useThemeActions();
   const theme = useTheme();
   return (
-    <div className={clsx("flex", className)}>
+    <div className={clsx("flex space-x-2", className)}>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button color="ghost" className="px-1">

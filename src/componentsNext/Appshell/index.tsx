@@ -1,7 +1,5 @@
 import { FC, PropsWithChildren } from "react";
 
-import Logo from "../Logo";
-
 export const Root: FC<PropsWithChildren> = ({ children }) => (
   <div className="min-h-full">{children}</div>
 );
