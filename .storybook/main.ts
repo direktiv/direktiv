@@ -26,13 +26,20 @@ module.exports = {
   docs: {
     autodocs: true,
   },
-  async viteFinal(config) {
+  async viteFinal(config, { configType }) {
+    const devConfig =
+      configType === "DEVELOPMENT"
+        ? {
+            define: {
+              ...config.define,
+              global: "window",
+            },
+          }
+        : {};
+
     return {
       ...config,
-      define: {
-        ...config.define,
-        global: "window",
-      },
+      ...devConfig,
     };
   },
 };
