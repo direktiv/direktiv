@@ -17,10 +17,7 @@ import (
 	"go.uber.org/zap/zaptest/observer"
 )
 
-var (
-	sugar                    *zap.SugaredLogger
-	_notifyLogsTriggeredWith notifyLogsTriggeredWith
-)
+var _notifyLogsTriggeredWith notifyLogsTriggeredWith
 
 func databaseWrapper() (entwrapper.Database, error) {
 	client, err := ent.Open(dialect.SQLite, "file:ent?mode=memory&cache=shared&_fk=1")
@@ -32,11 +29,18 @@ func databaseWrapper() (entwrapper.Database, error) {
 	if err := client.Schema.Create(ctx); err != nil {
 		return entwrapper.Database{}, err
 	}
+	sugar := zap.S()
 	entw := entwrapper.Database{
 		Client: client,
 		Sugar:  sugar,
 	}
 	return entw, nil
+}
+
+func observedLogger() (*zap.SugaredLogger, *observer.ObservedLogs) {
+	observed, telemetrylogs := observer.New(zapcore.DebugLevel)
+	sugar := zap.New(observed).Sugar()
+	return sugar, telemetrylogs
 }
 
 func TestStoringLogMsg(t *testing.T) {
@@ -46,48 +50,77 @@ func TestStoringLogMsg(t *testing.T) {
 	}
 	defer entw.Close()
 
-	sugar = zap.S()
+	sugar, telemetrylogs := observedLogger()
 	logger := InitLogger()
 	logger.StartLogWorkers(1, &entw, &LogNotifyMock{}, sugar)
 	tags := make(map[string]string)
-	tags["recipientType"] = "server"
+	tags["recipientType"] = util.Server
+	tags["testTag"] = util.Server
 	recipent := uuid.New()
-	logger.Infof(context.Background(), recipent, tags, "test")
+	msg := "test2"
+	logger.Infof(context.Background(), recipent, tags, msg)
+
 	logger.CloseLogWorkers()
-	logs, err := entw.Client.LogMsg.Query().Where(entlog.LevelEQ("info")).All(context.Background())
+	logs, err := entw.Client.LogMsg.Query().Where(entlog.LevelEQ(util.Info)).All(context.Background())
 	if err != nil {
 		t.Errorf("query logmsg failed %v", err)
+		return
 	}
 	if len(logs) != 1 {
 		t.Errorf("expected to get 1 log-msg; got %d", len(logs))
+		return
 	}
-	if logs[0].Msg != "test" {
+	if logs[0].Msg != msg {
 		t.Errorf("expected logmsg to be 'test; got '%s'", logs[0])
 	}
 	if _notifyLogsTriggeredWith.Id != recipent {
 		t.Errorf("expected NotifyLogs to called with recipent %s; got '%s'", recipent, _notifyLogsTriggeredWith.Id)
 	}
-	if _notifyLogsTriggeredWith.RecipientType != "server" {
-		t.Errorf("expected NotifyLogs to called with recipentType %s; got '%s'", "server", _notifyLogsTriggeredWith.RecipientType)
+	if _notifyLogsTriggeredWith.RecipientType != util.Server {
+		t.Errorf("expected NotifyLogs to called with recipentType %s; got '%s'", util.Server, _notifyLogsTriggeredWith.RecipientType)
 	}
-}
-
-func TestTelemetry(t *testing.T) {
-	observed, telemetrylogs := observer.New(zapcore.InfoLevel)
-	sugar = zap.New(observed).Sugar()
-	logger := InitLogger()
-	logger.sugar = sugar
-
-	tags := make(map[string]string)
-	tags["recipientType"] = "server"
-	logger.Telemetry(context.Background(), "test", nil)
-	logger.CloseLogWorkers()
 	if len(telemetrylogs.All()) < 1 {
 		t.Errorf("len of telemetry logs wrong")
 		return
 	}
-	if telemetrylogs.All()[0].Message != "test" {
-		t.Errorf("wrong logmsg want 'test'; got '%s'", telemetrylogs.All()[0].Message)
+	if telemetrylogs.All()[0].Message != msg {
+		t.Errorf("wrong logmsg want '%s'; got '%s'", msg, telemetrylogs.All()[0].Message)
+	}
+}
+
+func TestTelemetry(t *testing.T) {
+	sugar, telemetrylogs := observedLogger()
+	logger := InitLogger()
+	logger.sugar = sugar
+
+	tags := make(map[string]string)
+	tags["recipientType"] = util.Server
+	msg := "test3"
+	logger.Telemetry(context.Background(), util.Info, nil, msg)
+	if len(telemetrylogs.All()) < 1 {
+		t.Errorf("len of telemetry logs wrong")
+		return
+	}
+	if telemetrylogs.All()[0].Message != msg {
+		t.Errorf("wrong logmsg want '%s'; got '%s'", msg, telemetrylogs.All()[0].Message)
+	}
+}
+
+func TestTelemetryWithTags(t *testing.T) {
+	sugar, telemetrylogs := observedLogger()
+	logger := InitLogger()
+	logger.sugar = sugar
+
+	tags := make(map[string]string)
+	tags["recipientType"] = util.Server
+	msg := "test4"
+	logger.Telemetry(context.Background(), util.Info, tags, msg)
+	if len(telemetrylogs.All()) < 1 {
+		t.Errorf("len of telemetry logs wrong")
+		return
+	}
+	if telemetrylogs.All()[0].Message != msg {
+		t.Errorf("wrong logmsg want '%s'; got '%s'", msg, telemetrylogs.All()[0].Message)
 	}
 }
 
@@ -98,14 +131,19 @@ func TestSendLogMsgToDB(t *testing.T) {
 	}
 	defer entw.Close()
 
-	sugar = zap.S()
+	sugar, telemetrylogs := observedLogger()
 	logger := InitLogger()
 	logger.StartLogWorkers(1, &entw, &LogNotifyMock{}, sugar)
+
 	tags := make(map[string]string)
-	tags["recipientType"] = "server"
+	tags["recipientType"] = util.Server
 	recipent := uuid.New()
-	logger.SendLogMsgToDB(&logMessage{time.Now(), "test", util.Info, recipent, tags})
-	logs, err := entw.Client.LogMsg.Query().Where(entlog.LevelEQ("info")).All(context.Background())
+	msg := "test1"
+	err = logger.SendLogMsgToDB(&logMessage{time.Now(), msg, util.Info, recipent, tags})
+	if err != nil {
+		t.Errorf("database trancaction failed %v", err)
+	}
+	logs, err := entw.Client.LogMsg.Query().Where(entlog.LevelEQ(util.Info)).All(context.Background())
 	if err != nil {
 		t.Errorf("query logmsg failed %v", err)
 	}
@@ -113,14 +151,24 @@ func TestSendLogMsgToDB(t *testing.T) {
 		t.Errorf("expected to get 1 log-msg; got %d", len(logs))
 		return
 	}
-	if logs[0].Msg != "test" {
-		t.Errorf("expected logmsg to be 'test; got '%s'", logs[0])
+	if logs[0].Msg != msg {
+		t.Errorf("expected logmsg to be '%s'; got '%s'", msg, logs[0])
 	}
 	if _notifyLogsTriggeredWith.Id != recipent {
 		t.Errorf("expected NotifyLogs to called with recipent %s; got '%s'", recipent, _notifyLogsTriggeredWith.Id)
 	}
-	if _notifyLogsTriggeredWith.RecipientType != "server" {
-		t.Errorf("expected NotifyLogs to called with recipentType %s; got '%s'", "server", _notifyLogsTriggeredWith.RecipientType)
+	if _notifyLogsTriggeredWith.RecipientType != util.Server {
+		t.Errorf("expected NotifyLogs to called with recipentType %s; got '%s'", util.Server, _notifyLogsTriggeredWith.RecipientType)
+	}
+	if len(telemetrylogs.All()) > 0 {
+		t.Errorf("its not excpected to log telemetry logs in this method")
+		return
+	}
+	if _notifyLogsTriggeredWith.Id != recipent {
+		t.Errorf("expected NotifyLogs to called with recipent %s; got '%s'", recipent, _notifyLogsTriggeredWith.Id)
+	}
+	if _notifyLogsTriggeredWith.RecipientType != util.Server {
+		t.Errorf("expected NotifyLogs to called with recipentType %s; got '%s'", util.Server, _notifyLogsTriggeredWith.RecipientType)
 	}
 }
 

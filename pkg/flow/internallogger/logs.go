@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/database/entwrapper"
+	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
@@ -94,43 +95,43 @@ func AppendInstanceID(callpath, instanceID string) string {
 }
 
 func (logger *Logger) Debug(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string) {
-	logger.Telemetry(ctx, msg, tags)
-	logger.sendToWorker(recipientID, tags, "debug", msg)
+	logger.Telemetry(ctx, util.Debug, tags, msg)
+	logger.sendToWorker(recipientID, tags, util.Debug, msg)
 }
 
 func (logger *Logger) Debugf(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
-	logger.Telemetry(ctx, msg, tags)
-	logger.sendToWorker(recipientID, tags, "debug", fmt.Sprintf(msg, a...))
+	logger.Telemetry(ctx, util.Debug, tags, msg)
+	logger.sendToWorker(recipientID, tags, util.Debug, fmt.Sprintf(msg, a...))
 }
 
 func (logger *Logger) Info(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string) {
-	logger.Telemetry(ctx, msg, tags)
-	logger.sendToWorker(recipientID, tags, "info", msg)
+	logger.Telemetry(ctx, util.Info, tags, msg)
+	logger.sendToWorker(recipientID, tags, util.Info, msg)
 }
 
 func (logger *Logger) Infof(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
-	logger.Telemetry(ctx, msg, tags)
-	logger.sendToWorker(recipientID, tags, "info", fmt.Sprintf(msg, a...))
+	logger.Telemetry(ctx, util.Info, tags, msg)
+	logger.sendToWorker(recipientID, tags, util.Info, fmt.Sprintf(msg, a...))
 }
 
 func (logger *Logger) Error(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string) {
-	logger.Telemetry(ctx, msg, tags)
-	logger.sendToWorker(recipientID, tags, "error", msg)
+	logger.Telemetry(ctx, util.Error, tags, msg)
+	logger.sendToWorker(recipientID, tags, util.Error, msg)
 }
 
 func (logger *Logger) Errorf(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
-	logger.Telemetry(ctx, msg, tags)
-	logger.sendToWorker(recipientID, tags, "error", fmt.Sprintf(msg, a...))
+	logger.Telemetry(ctx, util.Error, tags, msg)
+	logger.sendToWorker(recipientID, tags, util.Error, fmt.Sprintf(msg, a...))
 }
 
 func (logger *Logger) Panic(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string) {
-	logger.Telemetry(ctx, msg, tags)
-	logger.sendToWorker(recipientID, tags, "panic", msg)
+	logger.Telemetry(ctx, util.Panic, tags, msg)
+	logger.sendToWorker(recipientID, tags, util.Panic, msg)
 }
 
 func (logger *Logger) Panicf(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
-	logger.Telemetry(ctx, msg, tags)
-	logger.sendToWorker(recipientID, tags, "panic", fmt.Sprintf(msg, a...))
+	logger.Telemetry(ctx, util.Panic, tags, msg)
+	logger.sendToWorker(recipientID, tags, util.Panic, fmt.Sprintf(msg, a...))
 }
 
 func (logger *Logger) sendToWorker(recipientID uuid.UUID, tags map[string]string, level string, msg string) {
@@ -147,26 +148,31 @@ func (logger *Logger) sendToWorker(recipientID uuid.UUID, tags map[string]string
 	}
 }
 
-func (logger *Logger) Telemetry(ctx context.Context, msg string, tags map[string]string) {
+func (logger *Logger) Telemetry(ctx context.Context, level string, tags map[string]string, msg string) {
 	span := trace.SpanFromContext(ctx)
 	tid := span.SpanContext().TraceID()
-	if tags == nil {
+	if len(tags) == 0 {
 		logger.sugar.Infow(msg, "trace", tid)
 	} else {
-		ar := make([]interface{}, 0, len(tags)*2+1)
+		ar := make([]interface{}, len(tags)*2)
+		i := 0
 		for k, v := range tags {
-			ar = append(ar, k, v)
+			ar[i] = k
+			ar[i+1] = v
+			i = i + 2
 		}
 		ar = append(ar, "trace", tid)
-		switch tags["level"] {
-		case "info":
+		switch level {
+		case util.Info:
 			logger.sugar.Infow(msg, ar...)
-		case "debug":
+		case util.Debug:
 			logger.sugar.Debugw(msg, ar...)
-		case "error":
+		case util.Error:
 			logger.sugar.Errorw(msg, ar...)
-		case "panic":
-			logger.sugar.DPanicw(msg, ar...)
+		case util.Panic:
+			logger.sugar.Panicw(msg, ar...)
+		default:
+			logger.sugar.Debugw(msg, ar...) // this should never happen
 		}
 	}
 }
@@ -177,19 +183,19 @@ func (logger *Logger) SendLogMsgToDB(l *logMessage) error {
 	lc := clients.LogMsg.Create().SetMsg(l.msg).SetT(l.t).SetLevel(l.level).SetTags(l.tags)
 
 	switch l.tags["recipientType"] {
-	case "server":
-	case "instance":
+	case util.Server:
+	case util.Instance:
 		callpath := AppendInstanceID(l.tags["callpath"], l.recipientID.String())
 		rootInstance, err := GetRootinstanceID(callpath)
 		if err != nil {
 			return err
 		}
 		lc.SetInstanceID(l.recipientID).SetRootInstanceId(rootInstance).SetLogInstanceCallPath(callpath)
-	case "namespace":
+	case util.Namespace:
 		lc.SetNamespaceID(l.recipientID)
-	case "workflow":
+	case util.Workflow:
 		lc.SetWorkflowID(l.recipientID)
-	case "mirror":
+	case util.Mirror:
 		lc.SetActivityID(l.recipientID)
 	default:
 		logger.sugar.Panicf("recipientType was not set", l.msg, l.tags)
