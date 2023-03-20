@@ -24,3 +24,5 @@ export const TreeListSchema = z.object({
     })
     .optional(),
 });
+
+export type NodeSchemaType = z.infer<typeof NodeSchema>;
