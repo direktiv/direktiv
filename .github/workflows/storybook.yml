@@ -1,0 +1,19 @@
+name: 'Publish Storybook to Chromatic'
+
+on:
+  push:
+    branches:
+      - featurePLEASECHANGEME/**
+
+jobs:
+  test:
+    # Operating System
+    runs-on: ubuntu-latest
+    # Job steps
+    steps:
+      - uses: actions/checkout@v3
+      - run: yarn
+      - uses: chromaui/action@v1
+        with:
+          projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
