@@ -1,0 +1,16 @@
+{
+  "dependencies": {
+    "@babel/core": "^7.21.0",
+    "@babel/preset-env": "^7.20.2",
+    "babel-jest": "^29.4.3",
+    "eventsource": "^2.0.2",
+    "jest": "^29.4.3",
+    "jest-watch-typeahead": "^2.2.2",
+    "supertest": "^6.3.3"
+  },
+  "scripts": {
+    "run-tests": "npx jest --runInBand",
+    "run-tests-watch": "npx jest --watch --runInBand",
+    "all": "npm install && npm run run-tests"
+  }
+}
