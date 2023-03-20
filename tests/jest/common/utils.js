@@ -1,6 +1,7 @@
 import EventSource from "eventsource";
 import config from "./config";
 
+// TEST
 export default {
   /**
    * This function returns a an object with a the following properties:
