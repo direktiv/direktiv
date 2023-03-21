@@ -904,6 +904,7 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 	// one minute wait max
 	cleanup := util.TraceHTTPRequest(ctx, req)
 	defer cleanup()
+	errorReusableContainerMissingRepoted := false
 	for i := 0; i < 180; i++ {
 		engine.sugar.Debugf("functions request (%d): %v", i, addr)
 		resp, err = client.Do(req)
@@ -945,11 +946,11 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 						return
 					}
 				}
-				if i > 18 && ar.Container.Type == model.ReusableContainerFunctionType {
+				if errorReusableContainerMissingRepoted && i > 18 && ar.Container.Type == model.ReusableContainerFunctionType {
 					err := fmt.Errorf("reusable container image %s is probably missing", ar.Container.Image)
 					engine.sugar.Errorf("reusable knative function is missing: %v", err)
 					engine.reportError(ar, err)
-					return
+					errorReusableContainerMissingRepoted = true
 				}
 				time.Sleep(1000 * time.Millisecond)
 				continue
