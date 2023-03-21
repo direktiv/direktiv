@@ -417,7 +417,6 @@ func (engine *engine) CrashInstance(ctx context.Context, im *instanceMemory, err
 
 	err = engine.SetInstanceFailed(ctx, im, err)
 	if err != nil {
-		engine.logger.Errorf(ctx, im.cached.Instance.Workflow, im.cached.GetAttributes(recipient.Workflow), "Failed to attach instance %s to mark it as failed", im.GetInstanceID())
 		engine.sugar.Error(err)
 	}
 
