@@ -13,7 +13,6 @@ require (
 	github.com/eko/gocache/store/go_cache/v4 v4.1.2
 	github.com/emicklei/go-restful/v3 v3.8.0
 	github.com/gabriel-vasile/mimetype v1.3.1
-	github.com/glebarez/go-sqlite v1.20.3
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/gobwas/glob v0.2.3
 	github.com/golang/protobuf v1.5.2
@@ -27,6 +26,7 @@ require (
 	github.com/mattn/go-shellwords v1.0.12
 	github.com/mitchellh/hashstructure/v2 v2.0.1
 	github.com/patrickmn/go-cache v2.1.0+incompatible
+	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.14.0
 	github.com/qri-io/jsonschema v0.2.0
 	github.com/r3labs/sse v0.0.0-20210224172625-26fe804710bc
@@ -54,6 +54,7 @@ require (
 	k8s.io/client-go v0.24.2
 	knative.dev/pkg v0.0.0-20220524202603-19adf798efb8
 	knative.dev/serving v0.32.0
+	modernc.org/sqlite v1.20.3
 	sigs.k8s.io/yaml v1.3.0
 )
 
@@ -89,7 +90,7 @@ require (
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/mock v1.6.0 // indirect
 	github.com/google/gnostic v0.6.9 // indirect
-	github.com/google/go-cmp v0.5.8 // indirect
+	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/google/go-containerregistry v0.8.1-0.20220414143355-892d7a808387 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.7.0 // indirect
@@ -102,6 +103,7 @@ require (
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
+	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
 	github.com/kevinburke/ssh_config v0.0.0-20201106050909-4977a11b4351 // indirect
 	github.com/magiconair/properties v1.8.5 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
@@ -116,7 +118,6 @@ require (
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.0.3-0.20220114050600-8b9d41f48198 // indirect
 	github.com/pelletier/go-toml v1.9.4 // indirect
-	github.com/pkg/errors v0.9.1 // indirect
 	github.com/prometheus/client_model v0.3.0 // indirect
 	github.com/prometheus/common v0.37.0 // indirect
 	github.com/prometheus/procfs v0.8.0 // indirect
@@ -156,10 +157,15 @@ require (
 	k8s.io/kube-openapi v0.0.0-20220627174259-011e075b9cb8 // indirect
 	k8s.io/utils v0.0.0-20220706174534-f6158b442e7c // indirect
 	knative.dev/networking v0.0.0-20220524205304-22d1b933cf73 // indirect
+	lukechampine.com/uint128 v1.2.0 // indirect
+	modernc.org/cc/v3 v3.40.0 // indirect
+	modernc.org/ccgo/v3 v3.16.13 // indirect
 	modernc.org/libc v1.22.2 // indirect
 	modernc.org/mathutil v1.5.0 // indirect
 	modernc.org/memory v1.5.0 // indirect
-	modernc.org/sqlite v1.20.3 // indirect
+	modernc.org/opt v0.1.3 // indirect
+	modernc.org/strutil v1.1.3 // indirect
+	modernc.org/token v1.0.1 // indirect
 	sigs.k8s.io/json v0.0.0-20220525155127-227cbc7cc124 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.1 // indirect
 )
