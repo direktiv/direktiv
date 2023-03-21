@@ -1,17 +1,16 @@
 import ContentPanel, {ContentPanelBody, ContentPanelTitle, ContentPanelTitleIcon} from '../../../components/content-panel';
 import React, { useState } from 'react';
-import ContentPanel, {ContentPanelTitle, ContentPanelTitleIcon, ContentPanelBody } from '../../../components/content-panel';
-import Modal  from '../../../components/modal';
-import FlexBox from '../../../components/flexbox';
-import {SecretsDeleteButton} from '../secrets-panel';
-import Alert from '../../../components/alert';
-import { useRegistries } from 'direktiv-react-hooks';
-import { Config } from '../../../util';
-import HelpIcon from '../../../components/help';
 import { VscServer, VscTrash } from 'react-icons/vsc';
 
+import Alert from '../../../components/alert';
+import { Config } from '../../../util';
+import FlexBox from '../../../components/flexbox';
+import HelpIcon from '../../../components/help';
+import Modal  from '../../../components/modal';
+import {SecretsDeleteButton} from '../secrets-panel';
 import { VscAdd } from 'react-icons/vsc';
 import { useApiKey } from '../../../util/apiKeyProvider';
+import { useRegistries } from 'direktiv-react-hooks';
 
 //  apiKeyHeaders : Returns header object with "direktiv-token" set to apiKey if key has a valid value.
 //  An empty object is returned otherwise
