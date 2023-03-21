@@ -175,7 +175,7 @@ function NamespaceServices(props) {
     getNamespaceServices,
     createNamespaceService,
     deleteNamespaceService,
-  } = useNamespaceServices(Config.url, true, namespace, apiKey);
+  } = useNamespaceServices(Config.url, false, namespace, apiKey);
 
   useEffect(() => {
     async function getcfg() {
@@ -248,6 +248,7 @@ function NamespaceServices(props) {
                     parseInt(size),
                     cmd
                   );
+                  await getNamespaceServices();
                 },
 
                 buttonProps: { variant: "contained", color: "primary" },
@@ -312,6 +313,7 @@ function NamespaceServices(props) {
                     name={obj.info.name}
                     status={obj.status}
                     image={obj.info.image}
+                    getNamespaceServices={getNamespaceServices}
                   />
                 ))}
               </>
@@ -336,6 +338,7 @@ export function Service(props) {
     dontDelete,
     traffic,
     latest,
+    getNamespaceServices,
   } = props;
   return (
     <div className="col" style={{ minWidth: "300px" }}>
@@ -404,6 +407,7 @@ export function Service(props) {
                         } else {
                           await deleteService(name);
                         }
+                        await getNamespaceServices();
                       },
                       buttonProps: { variant: "contained", color: "error" },
                       closesModal: true,
@@ -473,6 +477,7 @@ export function Service(props) {
 
                     onClick: async () => {
                       await deleteService(name, revision);
+                      await getNamespaceServices();
                     },
 
                     buttonProps: { variant: "contained", color: "primary" },
