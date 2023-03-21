@@ -220,6 +220,9 @@ function ExplorerList(props) {
   const pageHandler = usePageHandler(PAGE_SIZE);
   const goToFirstPage = pageHandler.goToFirstPage;
 
+  const [ts, setTs] = useState(Date.now());
+  const refetch = () => setTs(Date.now());
+
   const {
     data,
     err,
@@ -240,7 +243,8 @@ function ExplorerList(props) {
     `order.field=${orderFieldDictionary[orderFieldKey]}`,
     `filter.field=NAME`,
     `filter.val=${search}`,
-    `filter.type=CONTAINS`
+    `filter.type=CONTAINS`,
+    `timestamp=${ts}`
   );
 
   const [wfData, setWfData] = useState(templates["noop"].data);
@@ -432,6 +436,7 @@ function ExplorerList(props) {
                             "workflow",
                             wfData
                           );
+                          refetch();
                           if (result.node && result.namespace) {
                             navigate(
                               `/n/${
@@ -460,6 +465,7 @@ function ExplorerList(props) {
                         fn: async () => {
                           if (name.trim()) {
                             await createNode(name, "workflow", wfData);
+                            refetch();
                           } else {
                             throw new Error("Please fill in name");
                           }
@@ -564,6 +570,7 @@ function ExplorerList(props) {
                         onClick: async () => {
                           if (tabIndex === 0) {
                             await createNode(name, "directory");
+                            refetch();
                           } else {
                             const processesMirrorSettings = JSON.parse(
                               JSON.stringify(mirrorSettings)
@@ -584,6 +591,7 @@ function ExplorerList(props) {
                               name,
                               processesMirrorSettings
                             );
+                            refetch();
                           }
                         },
 
@@ -610,6 +618,7 @@ function ExplorerList(props) {
                           } else {
                             await createMirrorNode(name, mirrorSettings);
                           }
+                          refetch();
                         },
                         closeModal: true,
                       },
@@ -1016,6 +1025,7 @@ function ExplorerList(props) {
                                   key={GenerateRandomKey("explorer-item-")}
                                   name={obj.name}
                                   resetQueryParams={resetQueryParams}
+                                  refetch={refetch}
                                 />
                               );
                             } else if (obj.type === "workflow") {
@@ -1027,6 +1037,7 @@ function ExplorerList(props) {
                                   path={obj.path}
                                   key={GenerateRandomKey("explorer-item-")}
                                   name={obj.name}
+                                  refetch={refetch}
                                 />
                               );
                             }
@@ -1066,6 +1077,7 @@ function DirListItem(props) {
     resetQueryParams,
     className,
     isGit,
+    refetch,
   } = props;
 
   const navigate = useNavigate();
@@ -1180,6 +1192,7 @@ function DirListItem(props) {
                         const p = path.split("/", -1);
                         const pLast = p[p.length - 1];
                         await deleteNode(pLast, recursiveDelete);
+                        refetch();
                       },
                       buttonProps: { variant: "contained", color: "error" },
                       closesModal: true,
@@ -1221,7 +1234,7 @@ function DirListItem(props) {
 }
 
 function WorkflowListItem(props) {
-  const { name, path, deleteNode, renameNode, namespace } = props;
+  const { name, path, deleteNode, renameNode, namespace, refetch } = props;
 
   const navigate = useNavigate();
   const [renameValue, setRenameValue] = useState(path);
@@ -1329,6 +1342,7 @@ function WorkflowListItem(props) {
                         const p = path.split("/", -1);
                         const pLast = p[p.length - 1];
                         await deleteNode(pLast, false);
+                        refetch();
                       },
                       buttonProps: { variant: "contained", color: "error" },
                       closesModal: true,
