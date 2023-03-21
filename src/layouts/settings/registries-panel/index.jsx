@@ -12,6 +12,7 @@ import FlexBox from "../../../components/flexbox";
 import HelpIcon from "../../../components/help";
 import Modal from "../../../components/modal";
 import { SecretsDeleteButton } from "../secrets-panel";
+import { apiKeyHeaders } from "../../../hooks/util";
 import { useApiKey } from "../../../util/apiKeyProvider";
 import { useRegistries } from "../../../hooks";
 
@@ -161,7 +162,7 @@ function RegistriesPanel(props) {
                   if (!filledOut)
                     throw new Error("all fields must be filled out");
                   setTestConnLoading(true);
-                  const resp = await TestRegistry(url, username, token);
+                  const resp = await TestRegistry(url, username, token, apiKey);
                   if (resp.success) {
                     setTestConnLoading(false);
                     setSuccessFeedback(true);
@@ -234,7 +235,7 @@ function RegistriesPanel(props) {
 
 export default RegistriesPanel;
 
-export async function TestRegistry(url, username, token) {
+export async function TestRegistry(url, username, token, apiKey) {
   try {
     const resp = await fetch(`${Config.url}functions/registries/test`, {
       method: "POST",
@@ -243,6 +244,8 @@ export async function TestRegistry(url, username, token) {
         password: token,
         url,
       }),
+
+      headers: apiKeyHeaders(apiKey),
     });
 
     // if response is ok the the connection is valid
