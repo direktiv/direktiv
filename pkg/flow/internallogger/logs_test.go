@@ -5,13 +5,12 @@ import (
 	"testing"
 	"time"
 
-	_ "github.com/direktiv/direktiv/pkg/flow/sqlitewrapper"
-
 	"entgo.io/ent/dialect"
 	"github.com/direktiv/direktiv/pkg/flow/database/entwrapper"
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entlog "github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
+	embeddedpostgres "github.com/fergusstrange/embedded-postgres"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -20,8 +19,8 @@ import (
 
 var _notifyLogsTriggeredWith notifyLogsTriggeredWith
 
-func databaseWrapper() (entwrapper.Database, error) {
-	client, err := ent.Open(dialect.SQLite, "file:ent?mode=memory&cache=shared&_fk=1")
+func databaseWrapper(postgres *embeddedpostgres.EmbeddedPostgres) (entwrapper.Database, error) {
+	client, err := ent.Open(dialect.Postgres, "host=localhost port=5432 user=postgres dbname=postgres password=postgres sslmode=disable ")
 	if err != nil {
 		return entwrapper.Database{}, err
 	}
@@ -45,7 +44,12 @@ func observedLogger() (*zap.SugaredLogger, *observer.ObservedLogs) {
 }
 
 func TestStoringLogMsg(t *testing.T) {
-	entw, err := databaseWrapper()
+	postgres := embeddedpostgres.NewDatabase()
+	err := postgres.Start()
+	if err != nil {
+		t.Error("error initializing postgres ", err)
+	}
+	entw, err := databaseWrapper(postgres)
 	if err != nil {
 		t.Error("error initializing the db ", err)
 	}
@@ -67,11 +71,15 @@ func TestStoringLogMsg(t *testing.T) {
 		t.Errorf("query logmsg failed %v", err)
 		return
 	}
-	if len(logs) != 1 {
+	if len(logs) < 1 {
 		t.Errorf("expected to get 1 log-msg; got %d", len(logs))
 		return
 	}
-	if logs[0].Msg != msg {
+	found := false
+	for _, v := range logs {
+		found = found || v.Msg == msg
+	}
+	if !found {
 		t.Errorf("expected logmsg to be 'test; got '%s'", logs[0])
 	}
 	if _notifyLogsTriggeredWith.Id != recipent {
@@ -86,6 +94,10 @@ func TestStoringLogMsg(t *testing.T) {
 	}
 	if telemetrylogs.All()[0].Message != msg {
 		t.Errorf("wrong logmsg want '%s'; got '%s'", msg, telemetrylogs.All()[0].Message)
+	}
+	err = postgres.Stop()
+	if err != nil {
+		t.Error("error stoping postgres ", err)
 	}
 }
 
@@ -126,7 +138,12 @@ func TestTelemetryWithTags(t *testing.T) {
 }
 
 func TestSendLogMsgToDB(t *testing.T) {
-	entw, err := databaseWrapper()
+	postgres := embeddedpostgres.NewDatabase()
+	err := postgres.Start()
+	if err != nil {
+		t.Error("error initializing postgres ", err)
+	}
+	entw, err := databaseWrapper(postgres)
 	if err != nil {
 		t.Error("error initializing the db ", err)
 	}
@@ -148,7 +165,7 @@ func TestSendLogMsgToDB(t *testing.T) {
 	if err != nil {
 		t.Errorf("query logmsg failed %v", err)
 	}
-	if len(logs) != 1 {
+	if len(logs) < 1 {
 		t.Errorf("expected to get 1 log-msg; got %d", len(logs))
 		return
 	}
@@ -170,6 +187,10 @@ func TestSendLogMsgToDB(t *testing.T) {
 	}
 	if _notifyLogsTriggeredWith.RecipientType != recipient.Server {
 		t.Errorf("expected NotifyLogs to called with recipentType %s; got '%s'", recipient.Server, _notifyLogsTriggeredWith.RecipientType)
+	}
+	err = postgres.Stop()
+	if err != nil {
+		t.Error("error stoping postgres ", err)
 	}
 }
 

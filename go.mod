@@ -12,6 +12,7 @@ require (
 	github.com/eko/gocache/lib/v4 v4.1.2
 	github.com/eko/gocache/store/go_cache/v4 v4.1.2
 	github.com/emicklei/go-restful/v3 v3.8.0
+	github.com/fergusstrange/embedded-postgres v1.21.0
 	github.com/gabriel-vasile/mimetype v1.3.1
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/gobwas/glob v0.2.3
@@ -26,7 +27,6 @@ require (
 	github.com/mattn/go-shellwords v1.0.12
 	github.com/mitchellh/hashstructure/v2 v2.0.1
 	github.com/patrickmn/go-cache v2.1.0+incompatible
-	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.14.0
 	github.com/qri-io/jsonschema v0.2.0
 	github.com/r3labs/sse v0.0.0-20210224172625-26fe804710bc
@@ -54,7 +54,6 @@ require (
 	k8s.io/client-go v0.24.2
 	knative.dev/pkg v0.0.0-20220524202603-19adf798efb8
 	knative.dev/serving v0.32.0
-	modernc.org/sqlite v1.20.3
 	sigs.k8s.io/yaml v1.3.0
 )
 
@@ -73,7 +72,6 @@ require (
 	github.com/dlclark/regexp2 v1.4.1-0.20201116162257-a2a8dda75c91 // indirect
 	github.com/docker/distribution v2.8.0+incompatible // indirect
 	github.com/docker/libtrust v0.0.0-20160708172513-aabc10ec26b7 // indirect
-	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/emirpasic/gods v1.12.0 // indirect
 	github.com/evanphx/json-patch v5.6.0+incompatible // indirect
 	github.com/evanphx/json-patch/v5 v5.6.0 // indirect
@@ -103,11 +101,9 @@ require (
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
 	github.com/kevinburke/ssh_config v0.0.0-20201106050909-4977a11b4351 // indirect
 	github.com/magiconair/properties v1.8.5 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
-	github.com/mattn/go-isatty v0.0.17 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182affec369 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/go-wordwrap v1.0.1 // indirect
@@ -118,11 +114,11 @@ require (
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.0.3-0.20220114050600-8b9d41f48198 // indirect
 	github.com/pelletier/go-toml v1.9.4 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
 	github.com/prometheus/client_model v0.3.0 // indirect
 	github.com/prometheus/common v0.37.0 // indirect
 	github.com/prometheus/procfs v0.8.0 // indirect
 	github.com/qri-io/jsonpointer v0.1.1 // indirect
-	github.com/remyoudompheng/bigfft v0.0.0-20230126093431-47fa9a501578 // indirect
 	github.com/sergi/go-diff v1.2.0 // indirect
 	github.com/sirupsen/logrus v1.8.1 // indirect
 	github.com/spf13/afero v1.6.0 // indirect
@@ -133,6 +129,7 @@ require (
 	github.com/xanzy/ssh-agent v0.3.0 // indirect
 	github.com/xeipuuv/gojsonpointer v0.0.0-20180127040702-4e3ac2762d5f // indirect
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
+	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
 	github.com/zclconf/go-cty v1.10.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/internal/retry v1.8.0 // indirect
 	go.opentelemetry.io/proto/otlp v0.18.0 // indirect
@@ -157,15 +154,6 @@ require (
 	k8s.io/kube-openapi v0.0.0-20220627174259-011e075b9cb8 // indirect
 	k8s.io/utils v0.0.0-20220706174534-f6158b442e7c // indirect
 	knative.dev/networking v0.0.0-20220524205304-22d1b933cf73 // indirect
-	lukechampine.com/uint128 v1.2.0 // indirect
-	modernc.org/cc/v3 v3.40.0 // indirect
-	modernc.org/ccgo/v3 v3.16.13 // indirect
-	modernc.org/libc v1.22.2 // indirect
-	modernc.org/mathutil v1.5.0 // indirect
-	modernc.org/memory v1.5.0 // indirect
-	modernc.org/opt v0.1.3 // indirect
-	modernc.org/strutil v1.1.3 // indirect
-	modernc.org/token v1.0.1 // indirect
 	sigs.k8s.io/json v0.0.0-20220525155127-227cbc7cc124 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.1 // indirect
 )
