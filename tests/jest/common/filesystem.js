@@ -1,6 +1,14 @@
 import regex from "./regex.js"
 
 const nodeTypeDirectory = 'directory'
-const extendedNodeTypeDirectory = 'directory'
+const nodeTypeWorkflow = 'workflow'
 
-export default { nodeTypeDirectory, extendedNodeTypeDirectory }
+const extendedNodeTypeDirectory = 'directory'
+const extendedNodeTypeWorkflow = 'workflow'
+
+export default { 
+    nodeTypeDirectory, 
+    nodeTypeWorkflow, 
+    extendedNodeTypeDirectory, 
+    extendedNodeTypeWorkflow,
+}
