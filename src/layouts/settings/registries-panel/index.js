@@ -12,6 +12,15 @@ import { VscAdd } from 'react-icons/vsc';
 import { useApiKey } from '../../../util/apiKeyProvider';
 import { useRegistries } from 'direktiv-react-hooks';
 
+//  isValueValid : Checks if value is not undefined and not null
+export const isValueValid = (value) => {
+    if (typeof value !== "undefined" && value !== null) {
+        return true
+    } else {
+        return false
+    }
+}
+
 //  apiKeyHeaders : Returns header object with "direktiv-token" set to apiKey if key has a valid value.
 //  An empty object is returned otherwise
 export const apiKeyHeaders = (apiKey) => {
