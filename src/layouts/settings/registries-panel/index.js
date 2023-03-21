@@ -1,8 +1,5 @@
+import ContentPanel, {ContentPanelBody, ContentPanelTitle, ContentPanelTitleIcon} from '../../../components/content-panel';
 import React, { useState } from 'react';
-import ContentPanel, {ContentPanelTitle, ContentPanelTitleIcon, ContentPanelBody } from '../../../components/content-panel';
-import Modal  from '../../../components/modal';
-import FlexBox from '../../../components/flexbox';
-import {SecretsDeleteButton} from '../secrets-panel';
 import Alert from '../../../components/alert';
 import { useRegistries } from 'direktiv-react-hooks';
 import { Config } from '../../../util';
@@ -12,7 +9,22 @@ import { VscServer, VscTrash } from 'react-icons/vsc';
 import { VscAdd } from 'react-icons/vsc';
 import { useApiKey } from '../../../util/apiKeyProvider';
 
-
+//  apiKeyHeaders : Returns header object with "direktiv-token" set to apiKey if key has a valid value.
+//  An empty object is returned otherwise
+export const apiKeyHeaders = (apiKey) => {
+    if (isValueValid(apiKey)) {
+        const isBearer = apiKey.length > 200;
+        if (isBearer) {
+          return {
+            Authorization: `Bearer ${apiKey}`,
+          };
+        }
+        return {
+          "direktiv-token": apiKey,
+        };
+    }
+    return {}
+}
 function RegistriesPanel(props){
 
     const {namespace} = props
@@ -159,7 +171,7 @@ function RegistriesPanel(props){
                                     }
                                     if(!filledOut) throw new Error("all fields must be filled out")
                                     setTestConnLoading(true)
-                                    let resp = await TestRegistry(url, username, token)
+                                    let resp = await TestRegistry(url, username, token, apiKey)
                                     if (resp.success) {
                                         setTestConnLoading(false)
                                         setSuccessFeedback(true)
@@ -213,11 +225,12 @@ function RegistriesPanel(props){
 
 export default RegistriesPanel;
 
-export async function TestRegistry(url, username, token) {
+export async function TestRegistry(url, username, token, apiKey) {
 
     try {
         let resp = await fetch(`${Config.url}functions/registries/test`, {
             method: "POST",
+            headers: apiKeyHeaders(apiKey),
             body: JSON.stringify({
                 username,
                 password: token,
