@@ -1,6 +1,7 @@
 import type { QueryFunctionContext } from "@tanstack/react-query";
 import { TreeListSchema } from "./schema";
 import { apiFactory } from "../utils";
+import { sortFoldersFirst } from "./utils";
 import { useApiKey } from "../../util/store/apiKey";
 import { useNamespace } from "../../util/store/namespace";
 import { useQuery } from "@tanstack/react-query";
@@ -51,6 +52,19 @@ export const useTree = ({
       directory ?? ""
     ),
     queryFn: fetchTree,
+    select(data) {
+      if (data?.children?.results) {
+        return {
+          ...data,
+          children: {
+            ...data.children,
+            results: data.children.results.sort(sortFoldersFirst),
+          },
+        };
+      }
+      return data;
+    },
+
     enabled: !!namespace,
     onError: () => {
       toast({

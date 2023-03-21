@@ -9,7 +9,11 @@ module.exports = {
         prop.parent ? !/node_modules/.test(prop.parent.fileName) : true,
     },
   },
-  stories: ["../src/**/*.mdx", "../src/**/*.stories.@(js|jsx|ts|tsx)"],
+  stories: [
+    "../src/componentsNext/**/*.mdx",
+    "../src/componentsNext/**/*.stories.@(js|jsx|ts|tsx)",
+  ],
+
   addons: [
     "@storybook/addon-essentials",
     "@storybook/addon-interactions",
@@ -22,13 +26,20 @@ module.exports = {
   docs: {
     autodocs: true,
   },
-  async viteFinal(config) {
+  async viteFinal(config, { configType }) {
+    const devConfig =
+      configType === "DEVELOPMENT"
+        ? {
+            define: {
+              ...config.define,
+              global: "window",
+            },
+          }
+        : {};
+
     return {
       ...config,
-      define: {
-        ...config.define,
-        global: "window",
-      },
+      ...devConfig,
     };
   },
 };

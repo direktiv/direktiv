@@ -36,6 +36,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../Dropdown";
+import { FC, useEffect, useState } from "react";
 import {
   Main,
   MainContent,
@@ -47,9 +48,9 @@ import {
   SidebarMain,
   SidebarTop,
 } from "./index";
-import { useEffect, useState } from "react";
 
 import Button from "../Button";
+import Logo from "../Logo";
 import { NavigationLink } from "../NavigationLink";
 import { RxChevronDown } from "react-icons/rx";
 import clsx from "clsx";
@@ -97,6 +98,74 @@ export const Default = () => (
   </Root>
 );
 
+const TopRightComponent: FC<{
+  className?: string;
+  theme: "light" | "dark" | undefined;
+  onThemeChange: () => void;
+}> = ({ className, theme, onThemeChange }) => (
+  <div className={clsx("flex space-x-2", className)}>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button color="ghost" className="px-1">
+          <Settings2 />
+          <RxChevronDown />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-56">
+        <DropdownMenuLabel>Appearance</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={onThemeChange}>
+          {theme === "dark" ? (
+            <>
+              <Sun className="mr-2 h-4 w-4" />
+              switch to Light mode
+            </>
+          ) : (
+            <>
+              <Moon className="mr-2 h-4 w-4" />
+              switch to dark mode
+            </>
+          )}
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuLabel>Help</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem>
+          <Terminal className="mr-2 h-4 w-4" /> Show API Commands
+        </DropdownMenuItem>
+        <DropdownMenuItem>
+          <CurlyBraces className="mr-2 h-4 w-4" /> Open JQ Playground
+        </DropdownMenuItem>
+        <DropdownMenuItem>
+          <Slack className="mr-2 h-4 w-4" /> Support Channel on Slack
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          color="ghost"
+          className="placeholder avatar items-center gap-1 px-1"
+          role="button"
+        >
+          <div className="h-7 w-7 rounded-full bg-primary500 text-neutral-content">
+            <span className="text-xs">Ad</span>
+          </div>
+          <RxChevronDown />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-56">
+        <DropdownMenuLabel>You are logged in as admin</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem>
+          <LogOut className="mr-2 h-4 w-4" />
+          <span>Logout</span>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  </div>
+);
+
 export const MoreDetailedShell = () => {
   const [theme, setTheme] = useState<"light" | "dark" | undefined>();
 
@@ -132,6 +201,20 @@ export const MoreDetailedShell = () => {
                   >
                     <Menu />
                   </label>
+                  <Logo
+                    iconOnly
+                    className="h-8 w-auto justify-self-center sm:hidden"
+                  />
+                  <Logo className="hidden h-8 w-auto justify-self-center sm:block" />
+                  <TopRightComponent
+                    className="justify-self-end lg:hidden"
+                    theme={theme}
+                    onThemeChange={() => {
+                      setTheme((theme) =>
+                        theme === "dark" ? "light" : "dark"
+                      );
+                    }}
+                  />
                 </SidebarTop>
                 <SidebarMain>
                   {navigation.map((item) => (
@@ -203,76 +286,15 @@ export const MoreDetailedShell = () => {
                     </BreadcrumbRoot>
                   </MainTopLeft>
                   <MainTopRight>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button color="ghost" className="px-1">
-                          <Settings2 />
-                          <RxChevronDown />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent className="w-56">
-                        <DropdownMenuLabel>Appearance</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          onClick={() =>
-                            setTheme((old) =>
-                              old === "light" ? "dark" : "light"
-                            )
-                          }
-                        >
-                          {theme === "dark" ? (
-                            <>
-                              <Sun className="mr-2 h-4 w-4" />
-                              switch to Light mode
-                            </>
-                          ) : (
-                            <>
-                              <Moon className="mr-2 h-4 w-4" />
-                              switch to dark mode
-                            </>
-                          )}
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuLabel>Help</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem>
-                          <Terminal className="mr-2 h-4 w-4" /> Show API
-                          Commands
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <CurlyBraces className="mr-2 h-4 w-4" /> Open JQ
-                          Playground
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Slack className="mr-2 h-4 w-4" /> Support Channel on
-                          Slack
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          color="ghost"
-                          className="placeholder avatar items-center gap-1 px-1"
-                          role="button"
-                        >
-                          <div className="h-7 w-7 rounded-full bg-primary500 text-neutral-content">
-                            <span className="text-xs">Ad</span>
-                          </div>
-                          <RxChevronDown />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent className="w-56">
-                        <DropdownMenuLabel>
-                          You are logged in as admin
-                        </DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem>
-                          <LogOut className="mr-2 h-4 w-4" />
-                          <span>Logout</span>
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    <TopRightComponent
+                      className="max-lg:hidden"
+                      theme={theme}
+                      onThemeChange={() => {
+                        setTheme((theme) =>
+                          theme === "dark" ? "light" : "dark"
+                        );
+                      }}
+                    />
                   </MainTopRight>
                 </MainTop>
                 <MainContent>

@@ -1,7 +1,5 @@
 import { FC, PropsWithChildren } from "react";
 
-import Logo from "../Logo";
-
 export const Root: FC<PropsWithChildren> = ({ children }) => (
   <div className="min-h-full">{children}</div>
 );
@@ -19,10 +17,8 @@ export const Sidebar: FC<PropsWithChildren<{ version: string }>> = ({
 );
 
 export const SidebarTop: FC<PropsWithChildren> = ({ children }) => (
-  <div className="grid items-center border-b border-gray-gray5 px-6 py-5 dark:border-grayDark-gray5 max-lg:grid-cols-3 max-lg:space-x-5 lg:block">
+  <div className="grid grid-cols-3 items-center border-b border-gray-gray5 px-6 py-5 dark:border-grayDark-gray5 lg:block lg:space-x-0">
     {children}
-    <Logo iconOnly className="h-8 w-auto justify-self-center sm:hidden" />
-    <Logo className="hidden h-8 w-auto sm:block" />
   </div>
 );
 
