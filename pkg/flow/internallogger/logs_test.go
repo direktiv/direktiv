@@ -5,13 +5,14 @@ import (
 	"testing"
 	"time"
 
+	_ "github.com/direktiv/direktiv/pkg/flow/sqlitewrapper"
+
 	"entgo.io/ent/dialect"
 	"github.com/direktiv/direktiv/pkg/flow/database/entwrapper"
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entlog "github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
 	"github.com/google/uuid"
-	_ "github.com/mattn/go-sqlite3"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"go.uber.org/zap/zaptest/observer"
