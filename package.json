@@ -117,7 +117,6 @@
     "@storybook/addon-actions": "^7.0.0-beta.53",
     "@storybook/addon-essentials": "^7.0.0-beta.53",
     "@storybook/addon-interactions": "^7.0.0-beta.53",
-    "@storybook/builder-vite": "^7.0.0-rc.5",
     "@storybook/node-logger": "^7.0.0-beta.53",
     "@storybook/react": "^7.0.0-beta.53",
     "@storybook/react-vite": "^7.0.0-beta.53",
