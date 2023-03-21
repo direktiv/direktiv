@@ -525,6 +525,28 @@ func (flow *flow) updateWorkflow(ctx context.Context, args *updateWorkflowArgs) 
 				}
 			}
 
+			args.cached.Workflow = nil
+
+			err = flow.database.Workflow(ctx, args.cached, args.cached.Inode().Workflow)
+			if err != nil {
+				return err
+			}
+
+			for i := range args.cached.Workflow.Refs {
+				x := args.cached.Workflow.Refs[i]
+				if x.Name == latest {
+					ref = x
+					break
+				}
+			}
+
+			args.cached.Ref = ref
+
+			err = flow.database.Revision(ctx, args.cached, ref.Revision)
+			if err != nil {
+				return err
+			}
+
 			return nil
 		},
 		func() error { return nil },
