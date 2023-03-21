@@ -24,6 +24,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	"github.com/direktiv/direktiv/pkg/flow/database"
+	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/flow/internallogger"
@@ -129,17 +130,17 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 	var wf model.Workflow
 	err = wf.Load(cached.Revision.Source)
 	if err != nil {
-		engine.logger.Panicf(ctx, cached.Namespace.ID, cached.GetAttributes("namespace"), "Cannot parse workflow source %s", args.Path)
+		engine.logger.Panicf(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Cannot parse workflow source %s", args.Path)
 		return nil, derrors.NewUncatchableError("direktiv.workflow.invalid", "cannot parse workflow '%s': %v", args.Path, err)
 	}
 
 	if len(wf.GetStartDefinition().GetEvents()) > 0 {
 		if strings.ToLower(args.Caller) == apiCaller {
-			engine.logger.Errorf(ctx, cached.Namespace.ID, cached.GetAttributes("namespace"), "Cannot manually invoke event-based workflow %s", args.Path)
+			engine.logger.Errorf(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Cannot manually invoke event-based workflow %s", args.Path)
 			return nil, derrors.NewUncatchableError("direktiv.workflow.invoke", "cannot manually invoke event-based workflow")
 		}
 		if strings.HasPrefix(args.Caller, "instance") {
-			engine.logger.Errorf(ctx, cached.Namespace.ID, cached.GetAttributes("namespace"), "Cannot invoke event-based workflow %s as a subflow", args.Path)
+			engine.logger.Errorf(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Cannot invoke event-based workflow %s as a subflow", args.Path)
 			return nil, derrors.NewUncatchableError("direktiv.workflow.invoke", "cannot invoke event-based workflow as a subflow")
 		}
 	}
@@ -235,8 +236,8 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 	}
 
 	engine.pubsub.NotifyInstances(cached.Namespace)
-	engine.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes("namespace"), "Workflow '%s' has been triggered by %s.", args.Path, args.Caller)
-	engine.logger.Infof(ctx, im.cached.Workflow.ID, im.cached.GetAttributes("workflow"), "Instance '%s' created by %s.", im.ID().String(), args.Caller)
+	engine.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Workflow '%s' has been triggered by %s.", args.Path, args.Caller)
+	engine.logger.Infof(ctx, im.cached.Workflow.ID, im.cached.GetAttributes(recipient.Workflow), "Instance '%s' created by %s.", im.ID().String(), args.Caller)
 	engine.logger.Debugf(ctx, im.cached.Instance.ID, im.GetAttributes(), "Preparing workflow triggered by %s.", args.Caller)
 
 	// Broadcast Event
@@ -261,14 +262,14 @@ func (engine *engine) start(im *instanceMemory) {
 	}
 
 	engine.sugar.Debugf("Starting workflow %v", im.ID().String())
-	engine.logger.Infof(ctx, im.cached.Namespace.ID, im.cached.GetAttributes("namespace"), "Starting workflow %v", database.GetWorkflow(im.cached.Instance.As))
-	engine.logger.Infof(ctx, im.cached.Workflow.ID, im.cached.GetAttributes("workflow"), "Starting workflow %v", database.GetWorkflow(im.cached.Instance.As))
+	engine.logger.Infof(ctx, im.cached.Namespace.ID, im.cached.GetAttributes(recipient.Namespace), "Starting workflow %v", database.GetWorkflow(im.cached.Instance.As))
+	engine.logger.Infof(ctx, im.cached.Workflow.ID, im.cached.GetAttributes(recipient.Workflow), "Starting workflow %v", database.GetWorkflow(im.cached.Instance.As))
 	engine.logger.Debugf(ctx, im.cached.Instance.ID, im.GetAttributes(), "Starting workflow %v.", database.GetWorkflow(im.cached.Instance.As))
 
 	workflow, err := im.Model()
 	if err != nil {
 		engine.CrashInstance(ctx, im, derrors.NewUncatchableError(ErrCodeWorkflowUnparsable, "failed to parse workflow YAML: %v", err))
-		engine.logger.Errorf(ctx, im.cached.Namespace.ID, im.cached.GetAttributes("namespace"), "failed to parse workflow YAML")
+		engine.logger.Errorf(ctx, im.cached.Namespace.ID, im.cached.GetAttributes(recipient.Namespace), "failed to parse workflow YAML")
 		return
 	}
 
@@ -416,7 +417,7 @@ func (engine *engine) CrashInstance(ctx context.Context, im *instanceMemory, err
 
 	err = engine.SetInstanceFailed(ctx, im, err)
 	if err != nil {
-		engine.logger.Errorf(ctx, im.cached.Instance.Workflow, im.cached.GetAttributes("workflow"), "Failed to attach instance %s to mark it as failed", im.GetInstanceID())
+		engine.logger.Errorf(ctx, im.cached.Instance.Workflow, im.cached.GetAttributes(recipient.Workflow), "Failed to attach instance %s to mark it as failed", im.GetInstanceID())
 		engine.sugar.Error(err)
 	}
 
@@ -599,7 +600,6 @@ func (engine *engine) transformState(ctx context.Context, im *instanceMemory, tr
 
 	x, err := jqObject(im.data, transition.Transform)
 	if err != nil {
-		engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), "unable to apply transform: %v", err)
 		return derrors.WrapCatchableError("unable to apply transform: %v", err)
 	}
 
@@ -623,7 +623,7 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 		engine.metricsCompleteState(ctx, im, transition.NextState, errCode, false)
 		engine.sugar.Debugf("Instance transitioning to next state: %s -> %s", im.ID().String(), transition.NextState)
 		engine.logger.Debugf(ctx, im.GetInstanceID(), im.GetAttributes(), "Transitioning to next state: %s (%d).", transition.NextState, im.Step()+1)
-		engine.logger.Debugf(ctx, im.cached.Namespace.ID, im.cached.GetAttributes("namespace"), "Workflow %s is transitioning to next state: %s (%d).", database.GetWorkflow(im.cached.Instance.As), transition.NextState, im.Step()+1)
+		engine.logger.Debugf(ctx, im.cached.Namespace.ID, im.cached.GetAttributes(recipient.Namespace), "Workflow %s is transitioning to next state: %s (%d).", database.GetWorkflow(im.cached.Instance.As), transition.NextState, im.Step()+1)
 		go engine.Transition(ctx, im, transition.NextState, 0)
 		return
 	}
@@ -631,8 +631,7 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 	if im.ErrorCode() != "" {
 		status = util.InstanceStatusFailed
 		engine.sugar.Debugf("Instance failed: %s", im.ID().String())
-		engine.logger.Errorf(ctx, im.cached.Namespace.ID, im.cached.GetAttributes("namespace"), "Workflow failed with error '%s': %s", im.ErrorCode(), im.cached.Instance.ErrorMessage)
-		engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), "Workflow failed with error '%s': %s", im.ErrorCode(), im.cached.Instance.ErrorMessage)
+		engine.logger.Errorf(ctx, im.cached.Namespace.ID, im.cached.GetAttributes(recipient.Namespace), "Workflow failed with error '%s': %s", im.ErrorCode(), im.cached.Instance.ErrorMessage)
 	}
 
 	engine.sugar.Debugf("Instance terminated: %s", im.ID().String())
@@ -651,8 +650,7 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 	// engine.pubsub.NotifyInstance(im.cached.Instance)
 
 	engine.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), "Workflow %s completed.", database.GetWorkflow(im.cached.Instance.As))
-	engine.logger.Infof(ctx, im.cached.Instance.Workflow, im.cached.GetAttributes("workflow"), "Workflow %s completed.", database.GetWorkflow(im.cached.Instance.As))
-	engine.logger.Infof(ctx, im.cached.Namespace.ID, im.cached.GetAttributes("namespace"), "Workflow %s completed.", database.GetWorkflow(im.cached.Instance.As))
+	engine.logger.Infof(ctx, im.cached.Namespace.ID, im.cached.GetAttributes(recipient.Namespace), "Workflow %s completed.", database.GetWorkflow(im.cached.Instance.As))
 
 	engine.pubsub.NotifyInstances(im.cached.Namespace)
 	broadcastErr := engine.flow.BroadcastInstance(BroadcastEventTypeInstanceSuccess, ctx, broadcastInstanceInput{
@@ -855,7 +853,7 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 			Size:          &size,
 			Envs:          make(map[string]string),
 		})
-		if err != nil { // is this always nil?
+		if err != nil {
 			engine.sugar.Errorf("can not create service name: %v", err)
 			engine.reportError(ar, err)
 		}
@@ -908,7 +906,7 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 	// one minute wait max
 	cleanup := util.TraceHTTPRequest(ctx, req)
 	defer cleanup()
-	for i := 0; i < 180; i++ { // this is forever
+	for i := 0; i < 180; i++ {
 		engine.sugar.Debugf("functions request (%d): %v", i, addr)
 		resp, err = client.Do(req)
 		if err != nil {
@@ -916,7 +914,6 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 				engine.sugar.Debugf("context error in knative call")
 				return
 			}
-			engine.sugar.Debugf("function request for %s %s returned an error: %v", ar.Container.Image, ar.Container.ID, err)
 			engine.logger.Debugf(ctx, engine.flow.ID, engine.flow.GetAttributes(), "function request for image %s name %s returned an error: %v", ar.Container.Image, ar.Container.ID, err)
 			dnsErr := new(net.DNSError)
 			if errors.As(err, &dnsErr) {
@@ -930,9 +927,6 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 						engine.sugar.Errorf("can not create knative function: %v", err)
 						engine.reportError(ar, err)
 						return
-					}
-					if err != nil {
-						engine.sugar.Debugf("failed creating KnativeFunction with image %s name %s, container %s %s with error: %v", ar.Workflow.WorkflowID, ar.Workflow.Revision, ar.Container.Image, ar.Container.ID, err)
 					}
 				}
 
@@ -1127,8 +1121,7 @@ func (engine *engine) SetMemory(ctx context.Context, im *instanceMemory, x inter
 func (engine *engine) reportInstanceCrashed(ctx context.Context, im *instanceMemory, typ, code string, err error) {
 	engine.sugar.Errorf("Instance failed with %s error '%s': %v", typ, code, err)
 	engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), "Instance failed with %s error '%s': %s", typ, code, err.Error())
-	engine.logger.Errorf(ctx, im.cached.Instance.Workflow, im.cached.GetAttributes("workflow"), "Instance %s failed with %s error '%s': %s", typ, im.GetInstanceID(), code, err.Error())
-	engine.logger.Errorf(ctx, im.cached.Instance.Namespace, im.cached.GetAttributes("namespace"), "Workflow failed %s Instance %s crashed with %s error '%s': %s", database.GetWorkflow(im.cached.Instance.As), im.GetInstanceID(), typ, code, err.Error())
+	engine.logger.Errorf(ctx, im.cached.Instance.Namespace, im.cached.GetAttributes(recipient.Namespace), "Workflow failed %s Instance %s crashed with %s error '%s': %s", database.GetWorkflow(im.cached.Instance.As), im.GetInstanceID(), typ, code, err.Error())
 }
 
 const latest = "latest"

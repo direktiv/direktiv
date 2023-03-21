@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/database/entwrapper"
-	"github.com/direktiv/direktiv/pkg/util"
+	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/google/uuid"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
@@ -24,7 +24,7 @@ type Logger struct {
 }
 
 type LogNotify interface {
-	NotifyLogs(recipientID uuid.UUID, recipientType string)
+	NotifyLogs(recipientID uuid.UUID, recipientType recipient.RecipientType)
 }
 
 func InitLogger() *Logger {
@@ -37,7 +37,7 @@ func InitLogger() *Logger {
 type logMessage struct {
 	t           time.Time
 	msg         string
-	level       string
+	level       Level
 	recipientID uuid.UUID
 	tags        map[string]string
 }
@@ -95,46 +95,46 @@ func AppendInstanceID(callpath, instanceID string) string {
 }
 
 func (logger *Logger) Debug(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string) {
-	logger.Telemetry(ctx, util.Debug, tags, msg)
-	logger.sendToWorker(recipientID, tags, util.Debug, msg)
+	logger.Telemetry(ctx, Debug, tags, msg)
+	logger.sendToWorker(recipientID, tags, Debug, msg)
 }
 
 func (logger *Logger) Debugf(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
-	logger.Telemetry(ctx, util.Debug, tags, msg)
-	logger.sendToWorker(recipientID, tags, util.Debug, fmt.Sprintf(msg, a...))
+	logger.Telemetry(ctx, Debug, tags, msg)
+	logger.sendToWorker(recipientID, tags, Debug, fmt.Sprintf(msg, a...))
 }
 
 func (logger *Logger) Info(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string) {
-	logger.Telemetry(ctx, util.Info, tags, msg)
-	logger.sendToWorker(recipientID, tags, util.Info, msg)
+	logger.Telemetry(ctx, Info, tags, msg)
+	logger.sendToWorker(recipientID, tags, Info, msg)
 }
 
 func (logger *Logger) Infof(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
-	logger.Telemetry(ctx, util.Info, tags, msg)
-	logger.sendToWorker(recipientID, tags, util.Info, fmt.Sprintf(msg, a...))
+	logger.Telemetry(ctx, Info, tags, msg)
+	logger.sendToWorker(recipientID, tags, Info, fmt.Sprintf(msg, a...))
 }
 
 func (logger *Logger) Error(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string) {
-	logger.Telemetry(ctx, util.Error, tags, msg)
-	logger.sendToWorker(recipientID, tags, util.Error, msg)
+	logger.Telemetry(ctx, Error, tags, msg)
+	logger.sendToWorker(recipientID, tags, Error, msg)
 }
 
 func (logger *Logger) Errorf(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
-	logger.Telemetry(ctx, util.Error, tags, msg)
-	logger.sendToWorker(recipientID, tags, util.Error, fmt.Sprintf(msg, a...))
+	logger.Telemetry(ctx, Error, tags, msg)
+	logger.sendToWorker(recipientID, tags, Error, fmt.Sprintf(msg, a...))
 }
 
 func (logger *Logger) Panic(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string) {
-	logger.Telemetry(ctx, util.Panic, tags, msg)
-	logger.sendToWorker(recipientID, tags, util.Panic, msg)
+	logger.Telemetry(ctx, Panic, tags, msg)
+	logger.sendToWorker(recipientID, tags, Panic, msg)
 }
 
 func (logger *Logger) Panicf(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
-	logger.Telemetry(ctx, util.Panic, tags, msg)
-	logger.sendToWorker(recipientID, tags, util.Panic, fmt.Sprintf(msg, a...))
+	logger.Telemetry(ctx, Panic, tags, msg)
+	logger.sendToWorker(recipientID, tags, Panic, fmt.Sprintf(msg, a...))
 }
 
-func (logger *Logger) sendToWorker(recipientID uuid.UUID, tags map[string]string, level string, msg string) {
+func (logger *Logger) sendToWorker(recipientID uuid.UUID, tags map[string]string, level Level, msg string) {
 	defer func() {
 		_ = recover()
 	}()
@@ -148,7 +148,7 @@ func (logger *Logger) sendToWorker(recipientID uuid.UUID, tags map[string]string
 	}
 }
 
-func (logger *Logger) Telemetry(ctx context.Context, level string, tags map[string]string, msg string) {
+func (logger *Logger) Telemetry(ctx context.Context, level Level, tags map[string]string, msg string) {
 	span := trace.SpanFromContext(ctx)
 	tid := span.SpanContext().TraceID()
 	if len(tags) == 0 {
@@ -163,13 +163,13 @@ func (logger *Logger) Telemetry(ctx context.Context, level string, tags map[stri
 		}
 		ar = append(ar, "trace", tid)
 		switch level {
-		case util.Info:
+		case Info:
 			logger.sugar.Infow(msg, ar...)
-		case util.Debug:
+		case Debug:
 			logger.sugar.Debugw(msg, ar...)
-		case util.Error:
+		case Error:
 			logger.sugar.Errorw(msg, ar...)
-		case util.Panic:
+		case Panic:
 			logger.sugar.Panicw(msg, ar...)
 		default:
 			logger.sugar.Debugw(msg, ar...) // this should never happen
@@ -180,22 +180,26 @@ func (logger *Logger) Telemetry(ctx context.Context, level string, tags map[stri
 func (logger *Logger) SendLogMsgToDB(l *logMessage) error {
 	ctx := context.Background() // logs are often queued and stored after their originating requests have ended.
 	clients := logger.edb.Clients(ctx)
-	lc := clients.LogMsg.Create().SetMsg(l.msg).SetT(l.t).SetLevel(l.level).SetTags(l.tags)
+	lc := clients.LogMsg.Create().SetMsg(l.msg).SetT(l.t).SetLevel(string(l.level)).SetTags(l.tags)
 
-	switch l.tags["recipientType"] {
-	case util.Server:
-	case util.Instance:
+	recipientType, ok := recipient.Convert(l.tags["recipientType"])
+	if !ok {
+		return fmt.Errorf("unexpected recipientType %s", recipientType)
+	}
+	switch recipientType {
+	case recipient.Server:
+	case recipient.Instance:
 		callpath := AppendInstanceID(l.tags["callpath"], l.recipientID.String())
 		rootInstance, err := GetRootinstanceID(callpath)
 		if err != nil {
 			return err
 		}
 		lc.SetInstanceID(l.recipientID).SetRootInstanceId(rootInstance).SetLogInstanceCallPath(callpath)
-	case util.Namespace:
+	case recipient.Namespace:
 		lc.SetNamespaceID(l.recipientID)
-	case util.Workflow:
+	case recipient.Workflow:
 		lc.SetWorkflowID(l.recipientID)
-	case util.Mirror:
+	case recipient.Mirror:
 		lc.SetActivityID(l.recipientID)
 	default:
 		logger.sugar.Panicf("recipientType was not set", l.msg, l.tags)
@@ -206,6 +210,6 @@ func (logger *Logger) SendLogMsgToDB(l *logMessage) error {
 		logger.sugar.Panicf("error storing logmsg", err)
 		return err
 	}
-	logger.pubsub.NotifyLogs(l.recipientID, l.tags["recipientType"])
+	logger.pubsub.NotifyLogs(l.recipientID, recipientType)
 	return nil
 }

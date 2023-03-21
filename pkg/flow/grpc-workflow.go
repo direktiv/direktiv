@@ -9,6 +9,7 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
+	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	entref "github.com/direktiv/direktiv/pkg/flow/ent/ref"
 	entrev "github.com/direktiv/direktiv/pkg/flow/ent/revision"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
@@ -54,8 +55,7 @@ func (srv *server) traverseToRef(ctx context.Context, namespace, path, reference
 
 	cached, err := srv.traverseToWorkflow(ctx, namespace, path)
 	if err != nil {
-		srv.logger.Errorf(ctx, srv.ID, srv.flow.GetAttributes(), "failed to resolve workflow: %v", err)
-		srv.sugar.Debugf("%s failed to resolve workflow: %v", parent(), err)
+		srv.logger.Errorf(ctx, srv.ID, srv.flow.GetAttributes(), "%s failed to resolve workflow: %v", parent(), err)
 		return nil, err
 	}
 
@@ -250,7 +250,7 @@ func (flow *flow) createWorkflow(ctx context.Context, args *createWorkflowArgs) 
 		Metadata: make(map[string]interface{}),
 	})
 	if err != nil {
-		flow.logger.Errorf(ctx, cached.Namespace.ID, cached.GetAttributes("namespace"), "Failed to create workflow.")
+		flow.logger.Errorf(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Failed to create workflow.")
 		return nil, nil, err
 	}
 
@@ -269,14 +269,14 @@ func (flow *flow) createWorkflow(ctx context.Context, args *createWorkflowArgs) 
 		// tx.Commit,
 	)
 	if err != nil {
-		flow.logger.Errorf(ctx, cached.Namespace.ID, cached.GetAttributes("namespace"), "Failed to create workflow.")
+		flow.logger.Errorf(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Failed to create workflow.")
 		return nil, nil, err
 	}
 
 	metricsWf.WithLabelValues(cached.Namespace.Name, cached.Namespace.Name).Inc()
 	metricsWfUpdated.WithLabelValues(cached.Namespace.Name, args.path, cached.Namespace.Name).Inc()
 
-	flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes("namespace"), "Created workflow '%s'.", args.path)
+	flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Created workflow '%s'.", args.path)
 	flow.pubsub.NotifyInode(cached.Inode())
 
 	err = flow.BroadcastWorkflow(ctx, BroadcastEventTypeCreate,
@@ -404,7 +404,7 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 		tx.Commit,
 	)
 	if err != nil {
-		flow.logger.Errorf(ctx, cached.Namespace.ID, cached.GetAttributes("namespace"), "Failed to create Workflow. Failed to create workflow.")
+		flow.logger.Errorf(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Failed to create Workflow. Failed to create workflow.")
 		return nil, err
 	}
 
@@ -415,7 +415,7 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 	metricsWf.WithLabelValues(cached.Namespace.Name, cached.Namespace.Name).Inc()
 	metricsWfUpdated.WithLabelValues(cached.Namespace.Name, path, cached.Namespace.Name).Inc()
 
-	flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes("namespace"), "Created workflow '%s'.", path)
+	flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Created workflow '%s'.", path)
 	flow.pubsub.NotifyInode(cached.Inode())
 
 	var resp grpc.CreateWorkflowResponse
@@ -547,13 +547,13 @@ func (flow *flow) updateWorkflow(ctx context.Context, args *updateWorkflowArgs) 
 		func() error { return nil },
 	)
 	if err != nil {
-		flow.logger.Errorf(ctx, args.cached.Workflow.ID, args.cached.GetAttributes("workflow"), "Failed to update Workflow.")
+		flow.logger.Errorf(ctx, args.cached.Workflow.ID, args.cached.GetAttributes(recipient.Workflow), "Failed to update Workflow.")
 		return nil, err
 	}
 
 	metricsWfUpdated.WithLabelValues(args.cached.Namespace.Name, args.cached.Path(), args.cached.Namespace.Name).Inc()
 
-	flow.logger.Infof(ctx, args.cached.Workflow.ID, args.cached.GetAttributes("workflow"), "Updated workflow.")
+	flow.logger.Infof(ctx, args.cached.Workflow.ID, args.cached.GetAttributes(recipient.Workflow), "Updated workflow.")
 	flow.pubsub.NotifyWorkflow(args.cached.Workflow)
 
 	err = flow.BroadcastWorkflow(ctx, BroadcastEventTypeUpdate,
@@ -646,7 +646,7 @@ func (flow *flow) SaveHead(ctx context.Context, req *grpc.SaveHeadRequest) (*grp
 
 	k, err := clients.Ref.Query().Where(entref.HasRevisionWith(entrev.ID(cached.Revision.ID))).Count(ctx)
 	if err != nil {
-		flow.logger.Errorf(ctx, cached.Workflow.ID, cached.GetAttributes("workflow"), "Failed to resolve revision %s.", cached.Revision.ID.String())
+		flow.logger.Errorf(ctx, cached.Workflow.ID, cached.GetAttributes(recipient.Workflow), "Failed to resolve revision %s.", cached.Revision.ID.String())
 		return nil, err
 	}
 
@@ -674,7 +674,7 @@ func (flow *flow) SaveHead(ctx context.Context, req *grpc.SaveHeadRequest) (*grp
 
 	err = clients.Ref.Create().SetImmutable(true).SetName(cached.Revision.ID.String()).SetRevisionID(cached.Revision.ID).SetWorkflowID(cached.Workflow.ID).Exec(ctx)
 	if err != nil {
-		flow.logger.Errorf(ctx, cached.Workflow.ID, cached.GetAttributes("workflow"), "Failed to store workflow '%s'.", cached.Workflow.ID)
+		flow.logger.Errorf(ctx, cached.Workflow.ID, cached.GetAttributes(recipient.Workflow), "Failed to store workflow '%s'.", cached.Workflow.ID)
 		return nil, err
 	}
 
@@ -685,7 +685,7 @@ func (flow *flow) SaveHead(ctx context.Context, req *grpc.SaveHeadRequest) (*grp
 
 	flow.database.InvalidateWorkflow(ctx, cached, false)
 
-	flow.logger.Infof(ctx, cached.Workflow.ID, cached.GetAttributes("workflow"), "Saved workflow: %s.", cached.Revision.ID.String())
+	flow.logger.Infof(ctx, cached.Workflow.ID, cached.GetAttributes(recipient.Workflow), "Saved workflow: %s.", cached.Revision.ID.String())
 	flow.pubsub.NotifyWorkflow(cached.Workflow)
 
 respond:
@@ -767,7 +767,7 @@ func (flow *flow) DiscardHead(ctx context.Context, req *grpc.DiscardHeadRequest)
 
 	metricsWfUpdated.WithLabelValues(cached.Namespace.Name, cached.Path(), cached.Namespace.Name).Inc()
 
-	flow.logger.Infof(ctx, cached.Workflow.ID, cached.GetAttributes("workflow"), "Discard unsaved changes to workflow.")
+	flow.logger.Infof(ctx, cached.Workflow.ID, cached.GetAttributes(recipient.Workflow), "Discard unsaved changes to workflow.")
 	flow.pubsub.NotifyWorkflow(cached.Workflow)
 
 respond:
@@ -833,7 +833,7 @@ func (flow *flow) ToggleWorkflow(ctx context.Context, req *grpc.ToggleWorkflowRe
 		tx.Commit,
 	)
 	if err != nil {
-		flow.logger.Errorf(ctx, cached.Workflow.ID, cached.GetAttributes("workflow"), "Failed to enable workflow.")
+		flow.logger.Errorf(ctx, cached.Workflow.ID, cached.GetAttributes(recipient.Workflow), "Failed to enable workflow.")
 		return nil, err
 	}
 
@@ -853,11 +853,11 @@ func (flow *flow) ToggleWorkflow(ctx context.Context, req *grpc.ToggleWorkflowRe
 		}, cached)
 
 	if err != nil {
-		flow.logger.Errorf(ctx, cached.Workflow.ID, cached.GetAttributes("workflow"), "Failed to enable workflow failed")
+		flow.logger.Errorf(ctx, cached.Workflow.ID, cached.GetAttributes(recipient.Workflow), "Failed to enable workflow failed")
 		return nil, err
 	}
 
-	flow.logger.Infof(ctx, cached.Workflow.ID, cached.GetAttributes("workflow"), "Workflow is now %s", live)
+	flow.logger.Infof(ctx, cached.Workflow.ID, cached.GetAttributes(recipient.Workflow), "Workflow is now %s", live)
 	flow.pubsub.NotifyWorkflow(cached.Workflow)
 
 	return &resp, nil
@@ -882,19 +882,19 @@ func (flow *flow) SetWorkflowEventLogging(ctx context.Context, req *grpc.SetWork
 
 	_, err = clients.Workflow.UpdateOneID(cached.Workflow.ID).SetLogToEvents(req.GetLogger()).Save(tctx)
 	if err != nil {
-		flow.logger.Errorf(ctx, cached.Workflow.ID, cached.GetAttributes("workflow"), "Failed to log cloudevents to workflow.")
+		flow.logger.Errorf(ctx, cached.Workflow.ID, cached.GetAttributes(recipient.Workflow), "Failed to log cloudevents to workflow.")
 		return nil, err
 	}
 
 	err = tx.Commit()
 	if err != nil {
-		flow.logger.Errorf(ctx, cached.Workflow.ID, cached.GetAttributes("workflow"), "Failed to log cloudevents to workflow.")
+		flow.logger.Errorf(ctx, cached.Workflow.ID, cached.GetAttributes(recipient.Workflow), "Failed to log cloudevents to workflow.")
 		return nil, err
 	}
 
 	flow.database.InvalidateWorkflow(ctx, cached, false)
 
-	flow.logger.Infof(ctx, cached.Workflow.ID, cached.GetAttributes("workflow"), "Workflow now logging to cloudevents: %s", req.GetLogger())
+	flow.logger.Infof(ctx, cached.Workflow.ID, cached.GetAttributes(recipient.Workflow), "Workflow now logging to cloudevents: %s", req.GetLogger())
 	flow.pubsub.NotifyWorkflow(cached.Workflow)
 	var resp emptypb.Empty
 

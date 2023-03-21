@@ -6,6 +6,7 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
+	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entino "github.com/direktiv/direktiv/pkg/flow/ent/inode"
 	entns "github.com/direktiv/direktiv/pkg/flow/ent/namespace"
@@ -381,7 +382,7 @@ func (flow *flow) RenameNamespace(ctx context.Context, req *grpc.RenameNamespace
 	flow.database.InvalidateNamespace(ctx, cached, true)
 
 	flow.logger.Infof(ctx, flow.ID, flow.GetAttributes(), "Renamed namespace from '%s' to '%s'.", req.GetOld(), req.GetNew())
-	flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes("namespace"), "Renamed namespace from '%s' to '%s'.", req.GetOld(), req.GetNew())
+	flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Renamed namespace from '%s' to '%s'.", req.GetOld(), req.GetNew())
 	flow.pubsub.NotifyNamespaces()
 	flow.pubsub.CloseNamespace(cached.Namespace)
 

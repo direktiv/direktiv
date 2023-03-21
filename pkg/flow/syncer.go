@@ -21,6 +21,7 @@ import (
 	"golang.org/x/crypto/ssh"
 
 	"github.com/direktiv/direktiv/pkg/flow/database"
+	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	entmir "github.com/direktiv/direktiv/pkg/flow/ent/mirror"
 	entact "github.com/direktiv/direktiv/pkg/flow/ent/mirroractivity"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
@@ -414,7 +415,7 @@ func (syncer *syncer) beginActivity(tx database.Transaction, args *newMirrorActi
 		return nil, nil, nil, err
 	}
 
-	syncer.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes("namespace"), "Commenced new mirror activity '%s' on mirror: %s", args.Type, cached.Path())
+	syncer.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Commenced new mirror activity '%s' on mirror: %s", args.Type, cached.Path())
 
 	syncer.pubsub.NotifyMirror(cached.Inode())
 

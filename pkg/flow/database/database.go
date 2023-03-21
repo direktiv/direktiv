@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/google/uuid"
 )
 
@@ -97,41 +98,36 @@ func (cached *CacheData) ParentInode() *Inode {
 	return cached.Inodes[len(cached.Inodes)-2]
 }
 
-func (cached *CacheData) GetAttributes(recipientType string) map[string]string {
+func (cached *CacheData) GetAttributes(recipientType recipient.RecipientType) map[string]string {
 	tags := make(map[string]string)
-	tags["recipientType"] = recipientType
-	switch recipientType {
-	case "instance":
-		if cached.Instance != nil {
-			tags["instance-id"] = cached.Instance.ID.String()
-			tags["invoker"] = cached.Instance.Invoker
-			tags["callpath"] = cached.Instance.CallPath
-			tags["workflow"] = GetWorkflow(cached.Instance.As)
-		}
-		fallthrough
-	case "workflow":
-		if cached.Workflow != nil {
-			tags["workflow-id"] = cached.Workflow.ID.String()
-		}
-		fallthrough
-	case "namespace":
-		if cached.Namespace != nil {
-			tags["namespace"] = cached.Namespace.Name
-			tags["namespace-id"] = cached.Namespace.ID.String()
-		}
+	tags["recipientType"] = string(recipientType)
+	if cached.Instance != nil {
+		tags["instance-id"] = cached.Instance.ID.String()
+		tags["invoker"] = cached.Instance.Invoker
+		tags["callpath"] = cached.Instance.CallPath
+		tags["workflow"] = GetWorkflow(cached.Instance.As)
+	}
+
+	if cached.Workflow != nil {
+		tags["workflow-id"] = cached.Workflow.ID.String()
+	}
+
+	if cached.Namespace != nil {
+		tags["namespace"] = cached.Namespace.Name
+		tags["namespace-id"] = cached.Namespace.ID.String()
 	}
 	return tags
 }
 
 func (cached *CacheData) GetAttributesMirror(m *Mirror) map[string]string {
-	tags := cached.GetAttributes("namespace")
+	tags := cached.GetAttributes(recipient.Namespace)
 	tags["mirror-id"] = m.ID.String()
 	tags["recipientType"] = "mirror"
 	return tags
 }
 
 func (cached *CacheData) SentLogs(m *Mirror) map[string]string {
-	tags := cached.GetAttributes("namespace")
+	tags := cached.GetAttributes(recipient.Namespace)
 	tags["mirror-id"] = m.ID.String()
 	tags["recipientType"] = "mirror"
 	return tags

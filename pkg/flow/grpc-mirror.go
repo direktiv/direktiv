@@ -8,6 +8,7 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
+	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
@@ -168,7 +169,7 @@ func (flow *flow) CreateDirectoryMirror(ctx context.Context, req *grpc.CreateDir
 		return nil, err
 	}
 
-	flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes("namespace"), "Created directory as git mirror '%s'.", path)
+	flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Created directory as git mirror '%s'.", path)
 	flow.pubsub.NotifyInode(cached.Inode())
 
 	var resp grpc.CreateDirectoryResponse

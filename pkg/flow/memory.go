@@ -11,6 +11,7 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/database/entwrapper"
+	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/model"
@@ -219,7 +220,7 @@ func (im *instanceMemory) StoreData(key string, val interface{}) error {
 }
 
 func (im *instanceMemory) GetAttributes() map[string]string {
-	tags := im.cached.GetAttributes("instance")
+	tags := im.cached.GetAttributes(recipient.Instance)
 	for k, v := range im.tags {
 		tags[k] = v
 	}
@@ -238,7 +239,7 @@ func (im *instanceMemory) GetAttributes() map[string]string {
 }
 
 func (im *instanceMemory) GetState() string {
-	tags := im.cached.GetAttributes("instance")
+	tags := im.cached.GetAttributes(recipient.Instance)
 	if im.logic != nil {
 		return fmt.Sprintf("%s:%s", tags["workflow"], im.logic.GetID())
 	}

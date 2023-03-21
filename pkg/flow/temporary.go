@@ -14,6 +14,7 @@ import (
 	entvar "github.com/direktiv/direktiv/pkg/flow/ent/varref"
 	entwf "github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
+	log "github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/direktiv/direktiv/pkg/flow/states"
 	"github.com/direktiv/direktiv/pkg/functions"
 	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
@@ -130,15 +131,15 @@ func (im *instanceMemory) ListenForEvents(ctx context.Context, events []*model.C
 	return nil
 }
 
-func (im *instanceMemory) Log(ctx context.Context, level string, a string, x ...interface{}) {
+func (im *instanceMemory) Log(ctx context.Context, level log.Level, a string, x ...interface{}) {
 	switch level {
-	case util.Info:
+	case log.Info:
 		im.engine.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), a, x...)
-	case util.Debug:
+	case log.Debug:
 		im.engine.logger.Debugf(ctx, im.GetInstanceID(), im.GetAttributes(), a, x...)
-	case util.Error:
+	case log.Error:
 		im.engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), a, x...)
-	case util.Panic:
+	case log.Panic:
 		im.engine.logger.Panicf(ctx, im.GetInstanceID(), im.GetAttributes(), a, x...)
 	}
 }

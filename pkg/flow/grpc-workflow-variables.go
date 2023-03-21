@@ -10,6 +10,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/database/entwrapper"
+	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	entns "github.com/direktiv/direktiv/pkg/flow/ent/namespace"
@@ -578,9 +579,9 @@ func (flow *flow) SetWorkflowVariable(ctx context.Context, req *grpc.SetWorkflow
 	}
 
 	if newVar {
-		flow.logger.Infof(ctx, cached.Workflow.ID, cached.GetAttributes("workflow"), "Created workflow variable '%s'.", key)
+		flow.logger.Infof(ctx, cached.Workflow.ID, cached.GetAttributes(recipient.Workflow), "Created workflow variable '%s'.", key)
 	} else {
-		flow.logger.Infof(ctx, cached.Workflow.ID, cached.GetAttributes("workflow"), "Updated workflow variable '%s'.", key)
+		flow.logger.Infof(ctx, cached.Workflow.ID, cached.GetAttributes(recipient.Workflow), "Updated workflow variable '%s'.", key)
 	}
 
 	flow.pubsub.NotifyWorkflowVariables(cached.Workflow)
@@ -682,9 +683,9 @@ func (internal *internal) SetWorkflowVariableParcels(srv grpc.Internal_SetWorkfl
 	}
 
 	if newVar {
-		internal.logger.Infof(ctx, cached.Workflow.ID, cached.GetAttributes("workflow"), "Created workflow variable '%s'.", key)
+		internal.logger.Infof(ctx, cached.Workflow.ID, cached.GetAttributes(recipient.Workflow), "Created workflow variable '%s'.", key)
 	} else {
-		internal.logger.Infof(ctx, cached.Workflow.ID, cached.GetAttributes("workflow"), "Updated workflow variable '%s'.", key)
+		internal.logger.Infof(ctx, cached.Workflow.ID, cached.GetAttributes(recipient.Workflow), "Updated workflow variable '%s'.", key)
 	}
 
 	internal.pubsub.NotifyWorkflowVariables(cached.Workflow)
@@ -791,9 +792,9 @@ func (flow *flow) SetWorkflowVariableParcels(srv grpc.Flow_SetWorkflowVariablePa
 	}
 
 	if newVar {
-		flow.logger.Infof(ctx, cached.Workflow.ID, cached.GetAttributes("workflow"), "Created workflow variable '%s'.", key)
+		flow.logger.Infof(ctx, cached.Workflow.ID, cached.GetAttributes(recipient.Workflow), "Created workflow variable '%s'.", key)
 	} else {
-		flow.logger.Infof(ctx, cached.Workflow.ID, cached.GetAttributes("workflow"), "Updated workflow variable '%s'.", key)
+		flow.logger.Infof(ctx, cached.Workflow.ID, cached.GetAttributes(recipient.Workflow), "Updated workflow variable '%s'.", key)
 	}
 
 	flow.pubsub.NotifyWorkflowVariables(cached.Workflow)
@@ -849,7 +850,7 @@ func (flow *flow) DeleteWorkflowVariable(ctx context.Context, req *grpc.DeleteWo
 		return nil, err
 	}
 
-	flow.logger.Infof(ctx, cached.Workflow.ID, cached.GetAttributes("workflow"), "Deleted workflow variable '%s'.", vref.Name)
+	flow.logger.Infof(ctx, cached.Workflow.ID, cached.GetAttributes(recipient.Workflow), "Deleted workflow variable '%s'.", vref.Name)
 	flow.pubsub.NotifyWorkflowVariables(cached.Workflow)
 
 	// Broadcast Event
@@ -897,7 +898,7 @@ func (flow *flow) RenameWorkflowVariable(ctx context.Context, req *grpc.RenameWo
 		return nil, err
 	}
 
-	flow.logger.Infof(ctx, cached.Workflow.ID, cached.GetAttributes("workflow"), "Renamed workflow variable from '%s' to '%s'.", req.GetOld(), req.GetNew())
+	flow.logger.Infof(ctx, cached.Workflow.ID, cached.GetAttributes(recipient.Workflow), "Renamed workflow variable from '%s' to '%s'.", req.GetOld(), req.GetNew())
 	flow.pubsub.NotifyWorkflowVariables(cached.Workflow)
 
 	var resp grpc.RenameWorkflowVariableResponse

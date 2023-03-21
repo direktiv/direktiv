@@ -7,6 +7,7 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
+	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entref "github.com/direktiv/direktiv/pkg/flow/ent/ref"
 	entrev "github.com/direktiv/direktiv/pkg/flow/ent/revision"
@@ -174,7 +175,7 @@ func (flow *flow) DeleteRevision(ctx context.Context, req *grpc.DeleteRevisionRe
 		}
 	}
 
-	flow.logger.Infof(ctx, cached.Workflow.ID, cached.GetAttributes("workflow"), "Deleted workflow revision: %s.", cached.Revision.ID.String())
+	flow.logger.Infof(ctx, cached.Workflow.ID, cached.GetAttributes(recipient.Workflow), "Deleted workflow revision: %s.", cached.Revision.ID.String())
 	flow.pubsub.NotifyWorkflow(cached.Workflow)
 
 	var resp emptypb.Empty

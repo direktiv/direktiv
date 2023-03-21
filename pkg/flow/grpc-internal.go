@@ -7,6 +7,7 @@ import (
 	"net"
 	"strings"
 
+	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/util"
 	libgrpc "google.golang.org/grpc"
@@ -105,7 +106,7 @@ func (internal *internal) ActionLog(ctx context.Context, req *grpc.ActionLogRequ
 	flow := rt.Flow
 	stateID := flow[len(flow)-1]
 
-	tags := cached.GetAttributes("instance")
+	tags := cached.GetAttributes(recipient.Instance)
 	tags["loop-index"] = fmt.Sprintf("%d", req.Iterator)
 	tags["state-id"] = stateID
 	tags["state-type"] = "action"
