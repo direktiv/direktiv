@@ -1,5 +1,9 @@
 import ContentPanel, {ContentPanelBody, ContentPanelTitle, ContentPanelTitleIcon} from '../../../components/content-panel';
 import React, { useState } from 'react';
+import ContentPanel, {ContentPanelTitle, ContentPanelTitleIcon, ContentPanelBody } from '../../../components/content-panel';
+import Modal  from '../../../components/modal';
+import FlexBox from '../../../components/flexbox';
+import {SecretsDeleteButton} from '../secrets-panel';
 import Alert from '../../../components/alert';
 import { useRegistries } from 'direktiv-react-hooks';
 import { Config } from '../../../util';
