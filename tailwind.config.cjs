@@ -14,6 +14,7 @@ const {
   red,
   redDark,
   blackA,
+  whiteA,
 } = require("@radix-ui/colors");
 const defaultTheme = require("tailwindcss/defaultTheme");
 
@@ -53,6 +54,20 @@ module.exports = {
           10: blackA.blackA10,
           11: blackA.blackA11,
           12: blackA.blackA12,
+        },
+        "white-alpha": {
+          1: whiteA.whiteA1,
+          2: whiteA.whiteA2,
+          3: whiteA.whiteA3,
+          4: whiteA.whiteA4,
+          5: whiteA.whiteA5,
+          6: whiteA.whiteA6,
+          7: whiteA.whiteA7,
+          8: whiteA.whiteA8,
+          9: whiteA.whiteA9,
+          10: whiteA.whiteA10,
+          11: whiteA.whiteA11,
+          12: whiteA.whiteA12,
         },
         gray: {
           1: gray.gray1,

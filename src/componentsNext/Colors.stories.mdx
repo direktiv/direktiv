@@ -1,6 +1,7 @@
 import { Meta, ColorPalette, ColorItem } from "@storybook/addon-docs";
 import {
   blackA,
+  whiteA,
   gray,
   grayDark,
   red,
@@ -25,46 +26,7 @@ From every color, tailwind will provide its color classes. So a color named `pri
 
 These colors are defined in the `tailwind.config.cjs` under `themes.extend.colors`. These colors are not aware of the applied theme and it must always be decided which color to use depending on the theme.
 
-## colors, useable in dark and light mode
-
-<ColorPalette>
-  <ColorItem
-    title="primary"
-    subtitle="primary brand color"
-    colors={{
-      "primary-50": "#EEEFFF",
-      "primary-100": "#CBD1FF",
-      "primary-200": "#A9B2FF",
-      "primary-300": "#8793FF",
-      "primary-400": "#6473FF",
-      "primary-500": "#5364FF",
-      "primary-600": "#4554DF",
-      "primary-700": "#323C99",
-      "primary-800": "#212866",
-      "primary-900": "#4D5469",
-    }}
-  />
-  <ColorItem
-    title="black-alpha"
-    subtitle="Shades of black with alpha channel"
-    colors={{
-      "black-alpha-1": blackA.blackA1,
-      "black-alpha-2": blackA.blackA2,
-      "black-alpha-3": blackA.blackA3,
-      "black-alpha-4": blackA.blackA4,
-      "black-alpha-5": blackA.blackA5,
-      "black-alpha-6": blackA.blackA6,
-      "black-alpha-7": blackA.blackA7,
-      "black-alpha-8": blackA.blackA8,
-      "black-alpha-9": blackA.blackA9,
-      "black-alpha-10": blackA.blackA10,
-      "black-alpha-11": blackA.blackA11,
-      "black-alpha-12": blackA.blackA12,
-    }}
-  />
-</ColorPalette>
-
-## colors, dependend on the theme
+## colors in light and dark mode
 
 These colors are all on a scale of 1 to 12 and are taken from [radix colors](https://www.radix-ui.com/docs/colors/palette-composition/understanding-the-scale)
 
@@ -109,11 +71,43 @@ Each of these palettes are bound to light or dark mode. When using them, always 
       "gray-dark-12": grayDark.gray12,
     }}
   />
-</ColorPalette>
+  <ColorItem
+    title="black-alpha"
+    subtitle="Shades of black with alpha channel"
+    colors={{
+      "black-alpha-1": blackA.blackA1,
+      "black-alpha-2": blackA.blackA2,
+      "black-alpha-3": blackA.blackA3,
+      "black-alpha-4": blackA.blackA4,
+      "black-alpha-5": blackA.blackA5,
+      "black-alpha-6": blackA.blackA6,
+      "black-alpha-7": blackA.blackA7,
+      "black-alpha-8": blackA.blackA8,
+      "black-alpha-9": blackA.blackA9,
+      "black-alpha-10": blackA.blackA10,
+      "black-alpha-11": blackA.blackA11,
+      "black-alpha-12": blackA.blackA12,
+    }}
+  />
+  <ColorItem
+    title="white-alpha"
+    subtitle="Shades of white with alpha channel"
+    colors={{
+      "white-alpha-1": whiteA.whiteA1,
+      "white-alpha-2": whiteA.whiteA2,
+      "white-alpha-3": whiteA.whiteA3,
+      "white-alpha-4": whiteA.whiteA4,
+      "white-alpha-5": whiteA.whiteA5,
+      "white-alpha-6": whiteA.whiteA6,
+      "white-alpha-7": whiteA.whiteA7,
+      "white-alpha-8": whiteA.whiteA8,
+      "white-alpha-9": whiteA.whiteA9,
+      "white-alpha-10": whiteA.whiteA10,
+      "white-alpha-11": whiteA.whiteA11,
+      "white-alpha-12": whiteA.whiteA12,
+    }}
+  />
 
-### success
-
-<ColorPalette>
   <ColorItem
     title="success"
     subtitle="Shades of green, only for light mode."
@@ -150,11 +144,6 @@ Each of these palettes are bound to light or dark mode. When using them, always 
       "success-dark-12": greenDark.green12,
     }}
   />
-</ColorPalette>
-
-### danger
-
-<ColorPalette>
   <ColorItem
     title="danger"
     subtitle="Shades of red, only for light mode."
@@ -191,11 +180,6 @@ Each of these palettes are bound to light or dark mode. When using them, always 
       "danger-dark-12": redDark.red12,
     }}
   />
-</ColorPalette>
-
-### info
-
-<ColorPalette>
   <ColorItem
     title="info"
     subtitle="Shades of blue, only for light mode."
@@ -232,11 +216,6 @@ Each of these palettes are bound to light or dark mode. When using them, always 
       "info-dark-12": blueDark.blue12,
     }}
   />
-</ColorPalette>
-
-### warning
-
-<ColorPalette>
   <ColorItem
     title="warning"
     subtitle="Shades of yellow, only for light mode."
@@ -280,6 +259,29 @@ In this example, we apply a gray background in light and darkmode with the inten
 ```jsx
 <div className="fill-gray-12 dark:fill-gray-dark-12"></div>
 ```
+
+## primary color
+
+This is a special color reflecting the directiv brand color. It was developed by an agency and projected on a scale from 50 to 900. This color has no predefined rules for dark an light mode. The specific value must always be picked based on esthetics.
+
+<ColorPalette>
+  <ColorItem
+    title="primary"
+    subtitle="primary brand color"
+    colors={{
+      "primary-50": "#EEEFFF",
+      "primary-100": "#CBD1FF",
+      "primary-200": "#A9B2FF",
+      "primary-300": "#8793FF",
+      "primary-400": "#6473FF",
+      "primary-500": "#5364FF",
+      "primary-600": "#4554DF",
+      "primary-700": "#323C99",
+      "primary-800": "#212866",
+      "primary-900": "#4D5469",
+    }}
+  />
+</ColorPalette>
 
 ### Slate - Gray Color Mapping
 
