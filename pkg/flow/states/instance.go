@@ -30,7 +30,7 @@ type Instance interface {
 	ListenForEvents(ctx context.Context, events []*model.ConsumeEventDefinition, all bool) error
 	RetrieveSecret(ctx context.Context, secret string) (string, error)
 	CreateChild(ctx context.Context, args CreateChildArgs) (Child, error)
-
+	Iterator() (int, bool)
 	Deadline(ctx context.Context) time.Time
 	LivingChildren(ctx context.Context) []*ChildInfo
 }

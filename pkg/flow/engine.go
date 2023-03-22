@@ -64,6 +64,7 @@ type newInstanceArgs struct {
 	CallerData  string
 	CallPath    string
 	CallerState string
+	Iterator    string
 }
 
 type subflowCaller struct {
@@ -74,6 +75,7 @@ type subflowCaller struct {
 	As          string
 	CallPath    string
 	CallerState string
+	Iterator    string
 }
 
 const (
@@ -234,6 +236,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 	if err != nil {
 		return nil, err
 	}
+	im.AddAttribute("loop-index", args.Iterator)
 
 	engine.pubsub.NotifyInstances(cached.Namespace)
 	engine.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Workflow '%s' has been triggered by %s.", args.Path, args.Caller)
@@ -250,7 +253,6 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 	if err != nil {
 		return nil, err
 	}
-
 	return im, nil
 }
 
@@ -673,7 +675,7 @@ func (engine *engine) subflowInvoke(ctx context.Context, caller *subflowCaller, 
 	if len(elems) == 2 {
 		args.Ref = elems[1]
 	}
-
+	args.Iterator = caller.Iterator
 	args.Input = input
 	args.Caller = fmt.Sprintf("instance:%v", caller.InstanceID)
 	args.CallPath = caller.CallPath
@@ -707,7 +709,6 @@ func (engine *engine) subflowInvoke(ctx context.Context, caller *subflowCaller, 
 	if err != nil {
 		return nil, err
 	}
-
 	clients := engine.edb.Clients(context.Background())
 
 	for _, tv := range threadVars {
@@ -716,7 +717,7 @@ func (engine *engine) subflowInvoke(ctx context.Context, caller *subflowCaller, 
 			return nil, derrors.NewInternalError(err)
 		}
 	}
-
+	im.AddAttribute("loop-index", caller.Iterator)
 	traceSubflowInvoke(ctx, args.Path, im.ID().String())
 
 	return im, nil
