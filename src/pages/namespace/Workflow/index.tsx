@@ -18,7 +18,7 @@ const WorkflowPage: FC = () => (
         <Play className="h-5" />
         workflow.yml
       </h3>
-      <Button variant="primary" size="sm">
+      <Button variant="primary">
         Actions <RxChevronDown />
       </Button>
     </div>
