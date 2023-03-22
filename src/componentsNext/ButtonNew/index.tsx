@@ -8,6 +8,7 @@ type ButtonProps = {
   size?: "sm" | "lg";
   loading?: boolean;
   circle?: boolean;
+  block?: boolean;
 };
 
 const Button = React.forwardRef<
@@ -15,7 +16,17 @@ const Button = React.forwardRef<
   React.ButtonHTMLAttributes<HTMLButtonElement> & ButtonProps
 >(
   (
-    { className, variant, size, circle, children, disabled, loading, ...props },
+    {
+      className,
+      variant,
+      size,
+      circle,
+      children,
+      disabled,
+      block,
+      loading,
+      ...props
+    },
     ref
   ) => (
     <button
@@ -34,10 +45,11 @@ const Button = React.forwardRef<
         variant === "link" &&
           "bg-transparent text-slate-900 underline-offset-4 hover:bg-transparent hover:underline dark:bg-transparent dark:text-slate-100 dark:hover:bg-transparent",
         size === "sm" && "h-7 gap-1 px-3 [&>svg]:h-4",
+        !size && "h-9 gap-2 py-2 px-4 [&>svg]:h-5",
         size === "lg" && "h-11 gap-3 px-6 [&>svg]:h-6",
         circle && "rounded-full",
         !circle && "rounded-md",
-
+        block && "w-full",
         className
       )}
       disabled={disabled || loading}
