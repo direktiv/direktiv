@@ -1,76 +1,89 @@
-import React, { ButtonHTMLAttributes, FC } from "react";
+import * as React from "react";
 
+import { Loader2 } from "lucide-react";
 import clsx from "clsx";
 
-export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
-  size?: "xs" | "sm" | "lg";
-  color?:
-    | "primary"
-    | "secondary"
-    | "accent"
-    | "ghost"
-    | "link"
-    | "info"
-    | "success"
-    | "warning"
-    | "error";
-  outline?: boolean;
-  active?: boolean;
+type ButtonProps = {
+  variant?: "destructive" | "outline" | "primary" | "ghost" | "link";
+  size?: "sm" | "lg";
   loading?: boolean;
   circle?: boolean;
   block?: boolean;
-  className?: string;
-  forwaredRef?: React.ForwardedRef<HTMLButtonElement>;
-  children?: React.ReactNode;
+  icon?: boolean;
 };
 
-const Button: FC<ButtonProps> = ({
-  size,
-  color,
-  outline,
-  active,
-  loading,
-  circle,
-  block,
-  className,
-  children,
-  forwaredRef,
-  ...props
-}) => (
-  <button
-    className={clsx(
+const Button = React.forwardRef<
+  HTMLButtonElement,
+  React.ButtonHTMLAttributes<HTMLButtonElement> & ButtonProps
+>(
+  (
+    {
       className,
-      "btn gap-2",
-      size === "lg" && "btn-lg gap-3 [&>svg]:h-6",
-      !size && "gap-2 [&>svg]:h-5",
-      size === "sm" && "btn-sm gap-1 [&>svg]:h-4",
-      size === "xs" && "btn-xs gap-0.5 [&>svg]:h-3",
-      color === "primary" && "btn-primary",
-      color === "secondary" && "btn-secondary",
-      color === "accent" && "btn-accent",
-      color === "ghost" && "btn-ghost",
-      color === "link" && "btn-link",
-      color === "info" && "btn-info",
-      color === "success" && "btn-success",
-      color === "warning" && "btn-warning",
-      color === "error" && "btn-error",
-      active && "btn-active",
-      outline && "btn-outline",
-      loading && "loading",
-      circle && "btn-circle",
-      block && "btn-block"
-    )}
-    ref={forwaredRef}
-    {...props}
-  >
-    {children}
-  </button>
+      variant,
+      size,
+      circle,
+      children,
+      disabled,
+      block,
+      loading,
+      icon,
+      ...props
+    },
+    ref
+  ) => (
+    <button
+      className={clsx(
+        className,
+        "inline-flex items-center justify-center text-sm font-medium transition-colors",
+        "focus:outline-none focus:ring-2 focus:ring-gray-4 focus:ring-offset-2",
+        "active:scale-95",
+        "disabled:pointer-events-none disabled:opacity-50",
+        "dark:focus:ring-gray-dark-4",
+        !variant && [
+          "bg-gray-12 text-gray-1",
+          "dark:bg-gray-dark-12 dark:text-gray-dark-1",
+        ],
+        variant === "destructive" && [
+          "bg-danger-10 text-gray-1 hover:bg-danger-11",
+          "dark:bg-danger-dark-10 dark:text-gray-dark-1 dark:hover:bg-danger-dark-11",
+        ],
+        variant === "outline" && [
+          "border border-gray-4 bg-transparent hover:bg-gray-2",
+          "dark:border-gray-dark-4 dark:hover:bg-gray-dark-2",
+        ],
+        variant === "primary" && [
+          "bg-primary-500  text-gray-1 hover:bg-primary-600",
+          "dark:text-gray-dark-1",
+        ],
+        variant === "ghost" && [
+          "bg-transparent hover:bg-gray-3 data-[state=open]:bg-transparent",
+          "hover:bg-gray-3",
+          "bg:hover:bg-gray-dark-3",
+        ],
+        variant === "link" && [
+          "bg-transparent text-gray-12 underline-offset-4 hover:bg-transparent hover:underline",
+          "dark:text-gray-dark-12",
+        ],
+        size === "sm" && "h-6 gap-1  [&>svg]:h-4",
+        !size && "h-9 gap-2 py-2 [&>svg]:h-5",
+        size === "lg" && "h-11 gap-3 [&>svg]:h-6",
+        icon && "px-2",
+        !icon && size === "sm" && "px-3",
+        !icon && !size && "px-4",
+        !icon && size === "lg" && "px-6",
+        circle && "rounded-full",
+        !circle && "rounded-md",
+        block && "w-full"
+      )}
+      disabled={disabled || loading}
+      ref={ref}
+      {...props}
+    >
+      {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+      {children}
+    </button>
+  )
 );
+Button.displayName = "Button";
 
-const ButtonWithForwaredRef = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ ...props }, ref) => <Button forwaredRef={ref} {...props} />
-);
-
-ButtonWithForwaredRef.displayName = "Button";
-
-export default ButtonWithForwaredRef;
+export default Button;

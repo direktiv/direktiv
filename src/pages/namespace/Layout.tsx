@@ -47,7 +47,7 @@ import {
 import { useNamespace, useNamespaceActions } from "../../util/store/namespace";
 import { useTheme, useThemeActions } from "../../util/store/theme";
 
-import Button from "../../componentsNext/ButtonNew";
+import Button from "../../componentsNext/Button";
 import Logo from "../../componentsNext/Logo";
 import Navigation from "../../componentsNext/Navigation";
 import { RxChevronDown } from "react-icons/rx";

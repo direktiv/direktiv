@@ -49,7 +49,7 @@ import {
   SidebarTop,
 } from "./index";
 
-import Button from "../ButtonNew";
+import Button from "../Button";
 import Logo from "../Logo";
 import { NavigationLink } from "../NavigationLink";
 import { RxChevronDown } from "react-icons/rx";

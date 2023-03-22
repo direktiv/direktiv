@@ -6,7 +6,7 @@ import {
   SelectValue,
 } from "../Select";
 
-import Button from "../ButtonNew";
+import Button from "../Button";
 
 export default {
   title: "Components (next)/Compositions/Form",

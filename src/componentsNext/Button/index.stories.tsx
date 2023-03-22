@@ -1,11 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import {
-  MoreHorizontal,
-  MoreVertical,
-  Search,
-  ZoomIn,
-  ZoomOut,
-} from "lucide-react";
+import { MoreHorizontal, MoreVertical, ZoomIn } from "lucide-react";
 import { useEffect, useState } from "react";
 import Button from "./index";
 
@@ -31,45 +25,25 @@ export const Default: Story = {
       },
       type: { name: "string", required: false },
     },
+    variant: {
+      description: "Button variant",
+      control: "select",
+      options: ["destructive", "outline", "primary", "ghost", "link"],
+      type: { name: "string", required: false },
+    },
     size: {
       description: "Button size",
       control: "select",
-      options: ["xs", "sm", "lg"],
+      options: ["sm", "lg"],
       type: { name: "string", required: false },
-    },
-    color: {
-      description: "Button color",
-      control: "select",
-      options: [
-        "primary",
-        "secondary",
-        "accent",
-        "ghost",
-        "link",
-        "info",
-        "success",
-        "warning",
-        "error",
-      ],
-      type: { name: "string", required: false },
-    },
-    outline: {
-      description: "button with outline",
-      control: "boolean",
-      type: { name: "boolean", required: false },
-    },
-    active: {
-      description: "button in active state",
-      control: "boolean",
-      type: { name: "boolean", required: false },
     },
     loading: {
-      description: "Button in loading state",
+      description: "button in loading state",
       control: "boolean",
       type: { name: "boolean", required: false },
     },
     circle: {
-      description: "round variation of a button",
+      description: "circle button",
       control: "boolean",
       type: { name: "boolean", required: false },
     },
@@ -81,131 +55,154 @@ export const Default: Story = {
   },
 };
 
+export const ButtonVariants = () => (
+  <div className="flex flex-wrap gap-5">
+    <Button>Default Button</Button>
+    <Button variant="primary">Primary Button</Button>
+    <Button variant="outline">Outline Button</Button>
+    <Button variant="ghost">Ghost Button</Button>
+    <Button variant="link">Link Button</Button>
+    <Button variant="destructive">Destructive Button</Button>
+  </div>
+);
+
+export const DisabledButtonVariants = () => (
+  <div className="flex flex-wrap gap-5">
+    <Button disabled>Default Button</Button>
+    <Button variant="primary" disabled>
+      Primary Button
+    </Button>
+    <Button variant="outline" disabled>
+      Outline Button
+    </Button>
+    <Button variant="ghost" disabled>
+      Ghost Button
+    </Button>
+    <Button variant="link" disabled>
+      Link Button
+    </Button>
+    <Button variant="destructive" disabled>
+      Destructive Button
+    </Button>
+  </div>
+);
+
 export const ButtonSizes = () => (
   <div className="flex flex-wrap gap-5">
-    <Button size="xs">xs Button</Button>
-    <Button size="sm">sm Button</Button>
-    <Button>Button</Button>
-    <Button size="lg">lg Button</Button>
+    <Button size="sm">Small Button</Button>
+    <Button>Default Button</Button>
+    <Button size="lg">Large Button</Button>
   </div>
 );
 
-export const ButtonColors = () => (
-  <div className="flex flex-wrap gap-5">
-    <Button>Default</Button>
-    <Button color="primary">Primary</Button>
-    <Button color="secondary">Secondary</Button>
-    <Button color="accent">Accent</Button>
-    <Button color="ghost">Ghost</Button>
-    <Button color="link">Link</Button>
-    <Button color="info">Info</Button>
-    <Button color="success">Success</Button>
-    <Button color="warning">Warning</Button>
-    <Button color="error">Error</Button>
-  </div>
-);
-
-export const ActiveButtonColors = () => (
-  <div className="flex flex-wrap gap-5">
-    <Button active>Default</Button>
-    <Button active color="primary">
-      Primary
-    </Button>
-    <Button active color="secondary">
-      Secondary
-    </Button>
-    <Button active color="accent">
-      Accent
-    </Button>
-    <Button active color="ghost">
-      Ghost
-    </Button>
-    <Button active color="link">
-      Link
-    </Button>
-    <Button active color="info">
-      Info
-    </Button>
-    <Button active color="success">
-      Success
-    </Button>
-    <Button active color="warning">
-      Warning
-    </Button>
-    <Button active color="error">
-      Error
-    </Button>
-  </div>
-);
-
-export const Outline = () => (
-  <div className="flex flex-wrap gap-5">
-    <Button outline>Default</Button>
-    <Button outline color="primary">
-      Primary
-    </Button>
-    <Button outline color="secondary">
-      Secondary
-    </Button>
-    <Button outline color="accent">
-      Accent
-    </Button>
-    <Button outline color="ghost">
-      Ghost
-    </Button>
-    <Button outline color="link">
-      Link
-    </Button>
-    <Button outline color="info">
-      Info
-    </Button>
-    <Button outline color="success">
-      Success
-    </Button>
-    <Button outline color="warning">
-      Warning
-    </Button>
-    <Button outline color="error">
-      Error
-    </Button>
-  </div>
-);
-
-export const Group = () => (
-  <>
-    <div className="mb-5">
-      <div className="btn-group ">
-        <Button color="primary">
-          <ZoomIn />
-          Button 1
-        </Button>
-        <Button>
-          <ZoomOut />
-          Button 2
-        </Button>
-        <Button>
-          <Search />
-          Button 3
-        </Button>
-      </div>
+export const WithIcon = () => (
+  <div className="space-y-5">
+    <div className="flex gap-5">
+      <Button size="sm">
+        <ZoomIn /> sm Button
+      </Button>
+      <Button>
+        <ZoomIn /> Button
+      </Button>
+      <Button size="lg">
+        <ZoomIn /> lg Button
+      </Button>
     </div>
-    <div>
-      <div className="btn-group btn-group-vertical">
-        <Button color="primary">
-          <ZoomIn />
-          Button 1
-        </Button>
-        <Button>
-          <ZoomOut />
-          Button 2
-        </Button>
-        <Button>
-          <Search />
-          Button 3
-        </Button>
-      </div>
+    <div className="flex gap-5">
+      <Button size="sm">
+        <MoreHorizontal /> sm Button
+      </Button>
+      <Button>
+        <MoreHorizontal /> Button
+      </Button>
+      <Button size="lg">
+        <MoreHorizontal /> lg Button
+      </Button>
     </div>
-  </>
+    <div className="flex gap-5">
+      <Button size="sm">
+        <MoreVertical /> sm Button
+      </Button>
+      <Button>
+        <MoreVertical /> Button
+      </Button>
+      <Button size="lg">
+        <MoreVertical /> lg Button
+      </Button>
+    </div>
+  </div>
+);
+
+export const Icon = () => (
+  <div className="space-y-5">
+    <div className="flex gap-5">
+      <Button size="sm" icon>
+        <ZoomIn />
+      </Button>
+      <Button icon>
+        <ZoomIn />
+      </Button>
+      <Button size="lg" icon>
+        <ZoomIn />
+      </Button>
+    </div>
+    <div className="flex gap-5">
+      <Button size="sm" icon>
+        <MoreHorizontal />
+      </Button>
+      <Button icon>
+        <MoreHorizontal />
+      </Button>
+      <Button size="lg" icon>
+        <MoreHorizontal />
+      </Button>
+    </div>
+    <div className="flex gap-5">
+      <Button size="sm" icon>
+        <MoreVertical />
+      </Button>
+      <Button icon>
+        <MoreVertical />
+      </Button>
+      <Button size="lg" icon>
+        <MoreVertical />
+      </Button>
+    </div>
+
+    <div className="flex gap-5">
+      <Button size="sm" icon variant="ghost">
+        <ZoomIn />
+      </Button>
+      <Button icon variant="ghost">
+        <ZoomIn />
+      </Button>
+      <Button size="lg" icon variant="ghost">
+        <ZoomIn />
+      </Button>
+    </div>
+    <div className="flex gap-5">
+      <Button size="sm" icon variant="ghost">
+        <MoreHorizontal />
+      </Button>
+      <Button icon variant="ghost">
+        <MoreHorizontal />
+      </Button>
+      <Button size="lg" icon variant="ghost">
+        <MoreHorizontal />
+      </Button>
+    </div>
+    <div className="flex gap-5">
+      <Button size="sm" icon variant="ghost">
+        <MoreVertical />
+      </Button>
+      <Button icon variant="ghost">
+        <MoreVertical />
+      </Button>
+      <Button size="lg" icon variant="ghost">
+        <MoreVertical />
+      </Button>
+    </div>
+  </div>
 );
 
 export const Loading = () => {
@@ -225,14 +222,10 @@ export const Loading = () => {
 
   return (
     <div className="flex space-x-2">
-      <Button outline loading>
-        Loading
-      </Button>
+      <Button loading>Loading</Button>
       <Button
         className="w-[300px]"
         loading={isLoading}
-        color="primary"
-        active
         onClick={() => {
           setIsLoading((old) => !old);
         }}
@@ -245,67 +238,28 @@ export const Loading = () => {
   );
 };
 
-export const WithIcon = () => (
-  <div className="space-y-5">
-    <div className="flex gap-5">
-      <Button size="xs">
-        <ZoomIn /> xs Button
-      </Button>
-      <Button size="sm">
-        <ZoomIn /> sm Button
-      </Button>
-      <Button>
-        <ZoomIn /> Button
-      </Button>
-      <Button size="lg">
-        <ZoomIn /> lg Button
-      </Button>
-    </div>
-    <div className="flex gap-5">
-      <Button size="xs">
-        <MoreHorizontal /> xs Button
-      </Button>
-      <Button size="sm">
-        <MoreHorizontal /> sm Button
-      </Button>
-      <Button>
-        <MoreHorizontal /> Button
-      </Button>
-      <Button size="lg">
-        <MoreHorizontal /> lg Button
-      </Button>
-    </div>
-    <div className="flex gap-5">
-      <Button size="xs">
-        <MoreVertical /> xs Button
-      </Button>
-      <Button size="sm">
-        <MoreVertical /> sm Button
-      </Button>
-      <Button>
-        <MoreVertical /> Button
-      </Button>
-      <Button size="lg">
-        <MoreVertical /> lg Button
-      </Button>
-    </div>
-  </div>
-);
-
 export const CircleButton = () => (
-  <div className="flex flex-wrap gap-5">
-    <Button size="lg" color="primary" active circle>
-      <ZoomIn />
-    </Button>
-    <Button outline circle>
-      <ZoomIn />
-    </Button>
-    <Button size="sm" color="accent" circle>
-      <ZoomIn />
-    </Button>
-    <Button size="xs" outline color="secondary" circle>
-      <ZoomIn />
-    </Button>
+  <div className="space-y-5">
+    <div className="flex flex-wrap gap-5">
+      <Button size="sm" circle icon>
+        <ZoomIn />
+      </Button>
+      <Button circle icon>
+        <ZoomIn />
+      </Button>
+      <Button size="lg" circle icon>
+        <ZoomIn />
+      </Button>
+    </div>
+    <div className="flex flex-wrap gap-5">
+      <Button size="sm" circle>
+        small circle
+      </Button>
+      <Button circle>circle</Button>
+      <Button size="lg" circle>
+        large circle
+      </Button>
+    </div>
   </div>
 );
 

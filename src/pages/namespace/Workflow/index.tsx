@@ -1,6 +1,6 @@
 import { GitCommit, GitMerge, PieChart, Play, Settings } from "lucide-react";
 
-import Button from "../../../componentsNext/ButtonNew";
+import Button from "../../../componentsNext/Button";
 import { FC } from "react";
 import { RxChevronDown } from "react-icons/rx";
 import clsx from "clsx";
