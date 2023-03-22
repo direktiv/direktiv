@@ -58,6 +58,10 @@ func entInode(ino *ent.Inode) *database.Inode {
 		x.Workflow = ino.Edges.Workflow.ID
 	}
 
+	if ino.Edges.Mirror != nil {
+		x.Mirror = ino.Edges.Mirror.ID
+	}
+
 	return x
 }
 

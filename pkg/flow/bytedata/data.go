@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"io"
 	"reflect"
 	"strings"
@@ -164,9 +165,12 @@ deref:
 		switch y := x.(type) {
 		case time.Time:
 			return timestamppb.New(y)
+		case map[string]string:
+			return convertDataForOutputMapBuilder(t, v)
 		case map[string]interface{}:
 			return convertDataForOutputMapBuilder(t, v)
 		default:
+			fmt.Println(reflect.TypeOf(y))
 			return convertDataForOutputStructBuilder(t, v)
 		}
 	default:
