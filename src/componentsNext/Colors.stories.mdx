@@ -62,6 +62,12 @@ These colors are defined in the `tailwind.config.cjs` under `themes.extend.color
 
 ## colors, dependend on the theme
 
+These colors are all on a scale of 1 to 12 and are taken from [radix colors](https://www.radix-ui.com/docs/colors/palette-composition/understanding-the-scale)
+
+Each of these palettes are bound to light or dark mode. When using them, always pick poth colors from the same column unless you have a good reason.
+
+### gray
+
 <ColorPalette>
   <ColorItem
     title="gray"
@@ -82,7 +88,7 @@ These colors are defined in the `tailwind.config.cjs` under `themes.extend.color
     }}
   />
   <ColorItem
-    title="grayDark"
+    title="gray-dark"
     subtitle="Shades of gray, only for dark mode"
     colors={{
       "gray-dark-1": grayDark.gray1,
@@ -100,8 +106,6 @@ These colors are defined in the `tailwind.config.cjs` under `themes.extend.color
     }}
   />
 </ColorPalette>
-
-Each of these palettes are bound to light or dark mode. When using them, always pick poth colors from the same column unless you have a good reason.
 
 In this example, we apply a gray background in light and darkmode with the intensity of `12`.
 
