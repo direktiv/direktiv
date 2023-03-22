@@ -53,7 +53,7 @@ const Checkbox = React.forwardRef<
           props.size === "sm" && "h-3 w-3",
           props.size === "xs" && "h-2 w-2",
           (props.variant === "secondary" || props.variant === undefined) &&
-            "stroke-blackA7"
+            "stroke-black-alpha-700"
         )}
       />
     </CheckboxPrimitive.Indicator>

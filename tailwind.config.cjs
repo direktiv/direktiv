@@ -28,7 +28,6 @@ module.exports = {
     },
     extend: {
       colors: {
-        ...blackA,
         primary: {
           50: "#EEEFFF",
           100: "#CBD1FF",
@@ -40,6 +39,18 @@ module.exports = {
           700: "#323C99",
           800: "#212866",
           900: "#4D5469",
+        },
+        "black-alpha": {
+          50: blackA.blackA1,
+          100: blackA.blackA2,
+          200: blackA.blackA3,
+          300: blackA.blackA4,
+          400: blackA.blackA5,
+          500: blackA.blackA6,
+          600: blackA.blackA7,
+          700: blackA.blackA8,
+          800: blackA.blackA9,
+          900: blackA.blackA10,
         },
         gray,
         grayDark,
