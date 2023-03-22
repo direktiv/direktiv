@@ -34,7 +34,7 @@ export const Default: Story = {
     size: {
       description: "Button size",
       control: "select",
-      options: ["xs", "sm", "lg"],
+      options: ["sm", "lg"],
       type: { name: "string", required: false },
     },
     loading: {
@@ -61,9 +61,29 @@ export const ButtonVariants = () => (
   </div>
 );
 
+export const DisabledButtonVariants = () => (
+  <div className="flex flex-wrap gap-5">
+    <Button disabled>Default Button</Button>
+    <Button variant="primary" disabled>
+      Primary Button
+    </Button>
+    <Button variant="outline" disabled>
+      Outline Button
+    </Button>
+    <Button variant="ghost" disabled>
+      Ghost Button
+    </Button>
+    <Button variant="link" disabled>
+      Link Button
+    </Button>
+    <Button variant="destructive" disabled>
+      Destructive Button
+    </Button>
+  </div>
+);
+
 export const ButtonSizes = () => (
   <div className="flex flex-wrap gap-5">
-    <Button size="xs">Extra Small Button</Button>
     <Button size="sm">Small Button</Button>
     <Button>Default Button</Button>
     <Button size="lg">Large Button</Button>
@@ -73,9 +93,6 @@ export const ButtonSizes = () => (
 export const WithIcon = () => (
   <div className="space-y-5">
     <div className="flex gap-5">
-      <Button size="xs">
-        <ZoomIn /> xs Button
-      </Button>
       <Button size="sm">
         <ZoomIn /> sm Button
       </Button>
@@ -87,9 +104,6 @@ export const WithIcon = () => (
       </Button>
     </div>
     <div className="flex gap-5">
-      <Button size="xs">
-        <MoreHorizontal /> xs Button
-      </Button>
       <Button size="sm">
         <MoreHorizontal /> sm Button
       </Button>
@@ -101,9 +115,6 @@ export const WithIcon = () => (
       </Button>
     </div>
     <div className="flex gap-5">
-      <Button size="xs">
-        <MoreVertical /> xs Button
-      </Button>
       <Button size="sm">
         <MoreVertical /> sm Button
       </Button>
@@ -152,9 +163,6 @@ export const Loading = () => {
 
 export const CircleButton = () => (
   <div className="flex flex-wrap gap-5">
-    <Button size="xs" circle>
-      <ZoomIn />
-    </Button>
     <Button size="sm" circle>
       <ZoomIn />
     </Button>
