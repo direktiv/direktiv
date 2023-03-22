@@ -21,15 +21,7 @@ All colors we use are explicitly configured in `tailwind.config.cjs` and should 
 
 We kept them though to make any tailwind snippet we might use (like from tailwindui.com) still copy and pasteable. But we should always adjust the colors afterwards.
 
-From every color, tailwind will provide its color classes. So a color named `blue` can be used as `text-blue`, `bg-blue`, `border-blue` etc.
-
-# daisy ui colors
-
-These colors are defined in the `tailwind.config.cjs` under `daisyui.themes.THEMENAME.`
-
-daisy ui colors are special as they are aware of its applied theme. So the color `base-100` is a bright white color in the light mode theme, and a very dark color in the darkmode theme. You can find all color names on [daisyui.com/docs/colors](https://daisyui.com/docs/colors/)
-
-# tailwind colors
+From every color, tailwind will provide its color classes. So a color named `primary-500` can be used as `text-primary-500`, `bg-primary-500`, `border-primary-500` etc.
 
 These colors are defined in the `tailwind.config.cjs` under `themes.extend.colors`. These colors are not aware of the applied theme and it must always be decided which color to use depending on the theme.
 
