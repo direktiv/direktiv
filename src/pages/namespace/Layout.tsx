@@ -47,7 +47,7 @@ import {
 import { useNamespace, useNamespaceActions } from "../../util/store/namespace";
 import { useTheme, useThemeActions } from "../../util/store/theme";
 
-import Button from "../../componentsNext/Button";
+import Button from "../../componentsNext/ButtonNew";
 import Logo from "../../componentsNext/Logo";
 import Navigation from "../../componentsNext/Navigation";
 import { RxChevronDown } from "react-icons/rx";
@@ -104,7 +104,7 @@ const TopRightComponent: FC<{ className?: string }> = ({ className }) => {
     <div className={clsx("flex space-x-2", className)}>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button color="ghost" className="px-1">
+          <Button variant="ghost" size="sm">
             <Settings2 />
             <RxChevronDown />
           </Button>
@@ -144,8 +144,9 @@ const TopRightComponent: FC<{ className?: string }> = ({ className }) => {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
-            color="ghost"
-            className="placeholder avatar items-center gap-1 px-1"
+            variant="ghost"
+            className="placeholder avatar items-center"
+            size="sm"
             role="button"
           >
             <div className="h-7 w-7 rounded-full bg-primary-500 text-neutral-content">
@@ -225,7 +226,7 @@ const Layout = () => {
                         &nbsp;
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button size="xs" color="ghost" circle>
+                            <Button size="sm" variant="ghost" circle>
                               <ChevronsUpDown />
                             </Button>
                           </DropdownMenuTrigger>

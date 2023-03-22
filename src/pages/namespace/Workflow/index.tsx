@@ -1,6 +1,6 @@
 import { GitCommit, GitMerge, PieChart, Play, Settings } from "lucide-react";
 
-import Button from "../../../componentsNext/Button";
+import Button from "../../../componentsNext/ButtonNew";
 import { FC } from "react";
 import { RxChevronDown } from "react-icons/rx";
 import clsx from "clsx";
@@ -18,7 +18,7 @@ const WorkflowPage: FC = () => (
         <Play className="h-5" />
         workflow.yml
       </h3>
-      <Button color="primary" size="sm">
+      <Button variant="primary" size="sm">
         Actions <RxChevronDown />
       </Button>
     </div>
