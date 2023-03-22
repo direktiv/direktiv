@@ -9,6 +9,7 @@ type ButtonProps = {
   loading?: boolean;
   circle?: boolean;
   block?: boolean;
+  icon?: boolean;
 };
 
 const Button = React.forwardRef<
@@ -25,12 +26,14 @@ const Button = React.forwardRef<
       disabled,
       block,
       loading,
+      icon,
       ...props
     },
     ref
   ) => (
     <button
       className={clsx(
+        className,
         "inline-flex items-center justify-center text-sm font-medium transition-colors",
         "focus:outline-none focus:ring-2 focus:ring-gray-4 focus:ring-offset-2",
         "active:scale-95",
@@ -61,13 +64,16 @@ const Button = React.forwardRef<
           "bg-transparent text-gray-12 underline-offset-4 hover:bg-transparent hover:underline",
           "dark:text-gray-dark-12",
         ],
-        size === "sm" && "h-6 gap-1 px-3 [&>svg]:h-4",
-        !size && "h-9 gap-2 py-2 px-4 [&>svg]:h-5",
-        size === "lg" && "h-11 gap-3 px-6 [&>svg]:h-6",
+        size === "sm" && "h-6 gap-1  [&>svg]:h-4",
+        !size && "h-9 gap-2 py-2 [&>svg]:h-5",
+        size === "lg" && "h-11 gap-3 [&>svg]:h-6",
+        icon && "px-2",
+        !icon && size === "sm" && "px-3",
+        !icon && !size && "px-4",
+        !icon && size === "lg" && "px-6",
         circle && "rounded-full",
         !circle && "rounded-md",
-        block && "w-full",
-        className
+        block && "w-full"
       )}
       disabled={disabled || loading}
       ref={ref}

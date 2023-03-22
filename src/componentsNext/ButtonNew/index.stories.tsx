@@ -133,6 +133,78 @@ export const WithIcon = () => (
   </div>
 );
 
+export const Icon = () => (
+  <div className="space-y-5">
+    <div className="flex gap-5">
+      <Button size="sm" icon>
+        <ZoomIn />
+      </Button>
+      <Button icon>
+        <ZoomIn />
+      </Button>
+      <Button size="lg" icon>
+        <ZoomIn />
+      </Button>
+    </div>
+    <div className="flex gap-5">
+      <Button size="sm" icon>
+        <MoreHorizontal />
+      </Button>
+      <Button icon>
+        <MoreHorizontal />
+      </Button>
+      <Button size="lg" icon>
+        <MoreHorizontal />
+      </Button>
+    </div>
+    <div className="flex gap-5">
+      <Button size="sm" icon>
+        <MoreVertical />
+      </Button>
+      <Button icon>
+        <MoreVertical />
+      </Button>
+      <Button size="lg" icon>
+        <MoreVertical />
+      </Button>
+    </div>
+
+    <div className="flex gap-5">
+      <Button size="sm" icon variant="ghost">
+        <ZoomIn />
+      </Button>
+      <Button icon variant="ghost">
+        <ZoomIn />
+      </Button>
+      <Button size="lg" icon variant="ghost">
+        <ZoomIn />
+      </Button>
+    </div>
+    <div className="flex gap-5">
+      <Button size="sm" icon variant="ghost">
+        <MoreHorizontal />
+      </Button>
+      <Button icon variant="ghost">
+        <MoreHorizontal />
+      </Button>
+      <Button size="lg" icon variant="ghost">
+        <MoreHorizontal />
+      </Button>
+    </div>
+    <div className="flex gap-5">
+      <Button size="sm" icon variant="ghost">
+        <MoreVertical />
+      </Button>
+      <Button icon variant="ghost">
+        <MoreVertical />
+      </Button>
+      <Button size="lg" icon variant="ghost">
+        <MoreVertical />
+      </Button>
+    </div>
+  </div>
+);
+
 export const Loading = () => {
   const [isLoading, setIsLoading] = useState(false);
   useEffect(() => {
@@ -167,16 +239,27 @@ export const Loading = () => {
 };
 
 export const CircleButton = () => (
-  <div className="flex flex-wrap gap-5">
-    <Button size="sm" circle>
-      <ZoomIn />
-    </Button>
-    <Button circle>
-      <ZoomIn />
-    </Button>
-    <Button size="lg" circle>
-      <ZoomIn />
-    </Button>
+  <div className="space-y-5">
+    <div className="flex flex-wrap gap-5">
+      <Button size="sm" circle icon>
+        <ZoomIn />
+      </Button>
+      <Button circle icon>
+        <ZoomIn />
+      </Button>
+      <Button size="lg" circle icon>
+        <ZoomIn />
+      </Button>
+    </div>
+    <div className="flex flex-wrap gap-5">
+      <Button size="sm" circle>
+        small circle
+      </Button>
+      <Button circle>circle</Button>
+      <Button size="lg" circle>
+        large circle
+      </Button>
+    </div>
   </div>
 );
 
