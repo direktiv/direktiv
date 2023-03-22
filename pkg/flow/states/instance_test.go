@@ -156,6 +156,10 @@ func (instance *testerInstance) Log(ctx context.Context, level log.Level, a stri
 func (instance *testerInstance) AddAttribute(tag, value string) {
 }
 
+func (instance *testerInstance) Iterator() (int, bool) {
+	return 0, false
+}
+
 func (instance *testerInstance) PrimeDelayedEvent(events cloudevents.Event) {
 	instance.trace()
 }

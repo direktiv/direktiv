@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
@@ -149,6 +150,18 @@ func (im *instanceMemory) AddAttribute(tag, value string) {
 		im.tags = make(map[string]string)
 	}
 	im.tags[tag] = value
+}
+
+func (im *instanceMemory) Iterator() (int, bool) {
+	if im.tags == nil {
+		return 0, false
+	}
+	val, ok := im.tags["loop-index"]
+	iterator, err := strconv.Atoi(val)
+	if err != nil {
+		return 0, false
+	}
+	return iterator, ok
 }
 
 func (im *instanceMemory) Raise(ctx context.Context, err *derrors.CatchableError) error {
@@ -329,6 +342,7 @@ func (im *instanceMemory) CreateChild(ctx context.Context, args states.CreateChi
 		caller.As = im.cached.Instance.As
 		caller.CallPath = im.cached.Instance.CallPath
 		caller.CallerState = im.GetState()
+		caller.Iterator = fmt.Sprintf("%d", args.Iterator)
 		sfim, err := im.engine.subflowInvoke(ctx, caller, im.cached, args.Definition.(*model.SubflowFunctionDefinition).Workflow, args.Input)
 		if err != nil {
 			return nil, err
