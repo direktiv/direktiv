@@ -1,5 +1,13 @@
 import { Meta, ColorPalette, ColorItem } from "@storybook/addon-docs";
-import { blackA, gray, grayDark, red, redDark } from "@radix-ui/colors";
+import {
+  blackA,
+  gray,
+  grayDark,
+  red,
+  redDark,
+  blue,
+  blueDark,
+} from "@radix-ui/colors";
 
 <Meta title="Components (next)/Colors" />
 
@@ -144,6 +152,47 @@ Each of these palettes are bound to light or dark mode. When using them, always 
       "danger-dark-10": redDark.red10,
       "danger-dark-11": redDark.red11,
       "danger-dark-12": redDark.red12,
+    }}
+  />
+</ColorPalette>
+
+### info
+
+<ColorPalette>
+  <ColorItem
+    title="info"
+    subtitle="Shades of blue, only for light mode."
+    colors={{
+      "info-1": blue.blue1,
+      "info-2": blue.blue2,
+      "info-3": blue.blue3,
+      "info-4": blue.blue4,
+      "info-5": blue.blue5,
+      "info-6": blue.blue6,
+      "info-7": blue.blue7,
+      "info-8": blue.blue8,
+      "info-9": blue.blue9,
+      "info-10": blue.blue10,
+      "info-11": blue.blue11,
+      "info-12": blue.blue12,
+    }}
+  />
+  <ColorItem
+    title="info-dark"
+    subtitle="Shades of blue, only for dark mode."
+    colors={{
+      "info-dark-1": blueDark.blue1,
+      "info-dark-2": blueDark.blue2,
+      "info-dark-3": blueDark.blue3,
+      "info-dark-4": blueDark.blue4,
+      "info-dark-5": blueDark.blue5,
+      "info-dark-6": blueDark.blue6,
+      "info-dark-7": blueDark.blue7,
+      "info-dark-8": blueDark.blue8,
+      "info-dark-9": blueDark.blue9,
+      "info-dark-10": blueDark.blue10,
+      "info-dark-11": blueDark.blue11,
+      "info-dark-12": blueDark.blue12,
     }}
   />
 </ColorPalette>
