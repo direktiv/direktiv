@@ -14,7 +14,7 @@ const tabs = [
 const WorkflowPage: FC = () => (
   <div className="space-y-5 border-b border-gray-gray5 bg-base-200 p-5 pb-0 dark:border-grayDark-gray5">
     <div className="flex flex-col max-sm:space-y-4 sm:flex-row sm:items-center sm:justify-between ">
-      <h3 className="flex items-center gap-x-2 font-bold text-primary500">
+      <h3 className="flex items-center gap-x-2 font-bold text-primary-500">
         <Play className="h-5" />
         workflow.yml
       </h3>
@@ -30,7 +30,7 @@ const WorkflowPage: FC = () => (
             href={tab.href}
             className={clsx(
               tab.current
-                ? "border-primary500 text-primary500"
+                ? "border-primary-500 text-primary-500"
                 : "border-transparent text-gray-gray11 hover:border-gray-gray8 hover:text-gray-gray12 dark:hover:border-grayDark-gray8 dark:hover:text-grayDark-gray12",
               "flex items-center gap-x-2 whitespace-nowrap border-b-2 px-1 pb-4 text-sm font-medium"
             )}

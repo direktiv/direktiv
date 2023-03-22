@@ -31,7 +31,7 @@ const Checkbox = React.forwardRef<
       (props.size === "md" || props.size === undefined) && "h-4 w-4",
       props.size === "sm" && "h-3 w-3",
       props.size === "xs" && "h-2 w-2",
-      props.variant === "primary" && "bg-primary500",
+      props.variant === "primary" && "bg-primary-500",
       props.variant === "primary" && "bg-secondary",
       props.variant === "accent" && "bg-accent",
       props.variant === "warning" && "bg-warning",

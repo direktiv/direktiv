@@ -17,19 +17,6 @@ const {
 } = require("@radix-ui/colors");
 const defaultTheme = require("tailwindcss/defaultTheme");
 
-const colorPrimary = {
-  primary50: "#EEEFFF",
-  primary100: "#CBD1FF",
-  primary200: "#A9B2FF",
-  primary300: "#8793FF",
-  primary400: "#6473FF",
-  primary500: "#5364FF",
-  primary600: "#4554DF",
-  primary700: "#323C99",
-  primary800: "#212866",
-  primary900: "#4D5469",
-};
-
 module.exports = {
   content: ["./src/**/*.{js,ts,jsx,tsx}"],
   plugins: [require("daisyui"), require("tailwindcss-animate")],
@@ -42,7 +29,18 @@ module.exports = {
     extend: {
       colors: {
         ...blackA,
-        ...colorPrimary,
+        primary: {
+          50: "#EEEFFF",
+          100: "#CBD1FF",
+          200: "#A9B2FF",
+          300: "#8793FF",
+          400: "#6473FF",
+          500: "#5364FF",
+          600: "#4554DF",
+          700: "#323C99",
+          800: "#212866",
+          900: "#4D5469",
+        },
         gray,
         grayDark,
       },
@@ -67,7 +65,7 @@ module.exports = {
       {
         light: {
           "color-scheme": "light",
-          primary: colorPrimary.primary500,
+          primary: "#5364FF",
           "primary-content": gray.gray1,
           secondary: pink.pink9,
           "secondary-content": gray.gray1,
@@ -97,7 +95,7 @@ module.exports = {
       {
         dark: {
           "color-scheme": "dark",
-          primary: colorPrimary.primary500,
+          primary: "#5364FF",
           "primary-content": grayDark.gray1,
           secondary: pinkDark.pink9,
           "secondary-content": grayDark.gray1,

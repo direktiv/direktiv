@@ -148,7 +148,7 @@ const TopRightComponent: FC<{ className?: string }> = ({ className }) => {
             className="placeholder avatar items-center gap-1 px-1"
             role="button"
           >
-            <div className="h-7 w-7 rounded-full bg-primary500 text-neutral-content">
+            <div className="h-7 w-7 rounded-full bg-primary-500 text-neutral-content">
               <span className="text-xs">Ad</span>
             </div>
             <RxChevronDown />
