@@ -26,7 +26,7 @@ const Checkbox = React.forwardRef<
   <CheckboxPrimitive.Root
     ref={ref}
     className={clsx(
-      "peer shrink-0 rounded-sm border border-gray-gray4 focus:outline-none focus:ring-2 focus:ring-gray-gray7 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-gray10 dark:text-gray-gray1 dark:focus:ring-gray-gray7 dark:focus:ring-offset-gray-gray12",
+      "peer shrink-0 rounded-sm border border-gray-4 focus:outline-none focus:ring-2 focus:ring-gray-7 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-10 dark:text-gray-1 dark:focus:ring-gray-7 dark:focus:ring-offset-gray-12",
       props.size === "lg" && "h-5 w-5",
       (props.size === "md" || props.size === undefined) && "h-4 w-4",
       props.size === "sm" && "h-3 w-3",

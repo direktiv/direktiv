@@ -5,8 +5,8 @@ import clsx from "clsx";
 export const createClassNames = (active: boolean) =>
   clsx(
     active
-      ? "bg-primary-50 text-gray-gray12 dark:bg-primary-700 dark:text-grayDark-gray12"
-      : "text-gray-gray11 hover:bg-gray-gray2 dark:text-grayDark-gray11 dark:hover:bg-grayDark-gray2",
+      ? "bg-primary-50 text-gray-12 dark:bg-primary-700 dark:text-gray-dark-12"
+      : "text-gray-11 hover:bg-gray-2 dark:text-gray-dark-11 dark:hover:bg-gray-dark-2",
     "[&>svg]:group group flex items-center rounded-md p-2 text-sm font-medium [&>svg]:mr-3"
   );
 

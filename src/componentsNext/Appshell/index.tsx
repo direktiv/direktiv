@@ -8,16 +8,16 @@ export const Sidebar: FC<PropsWithChildren<{ version: string }>> = ({
   children,
   version,
 }) => (
-  <div className="lg:fixed lg:inset-y-0 lg:flex lg:w-52 lg:flex-col lg:border-r lg:border-gray-gray5 dark:lg:border-grayDark-gray5">
+  <div className="lg:fixed lg:inset-y-0 lg:flex lg:w-52 lg:flex-col lg:border-r lg:border-gray-5 dark:lg:border-gray-dark-5">
     {children}
-    <div className="hidden shrink-0 p-5 text-left text-sm text-gray-gray8 dark:text-grayDark-gray8 lg:block">
+    <div className="hidden shrink-0 p-5 text-left text-sm text-gray-8 dark:text-gray-dark-8 lg:block">
       {version}
     </div>
   </div>
 );
 
 export const SidebarTop: FC<PropsWithChildren> = ({ children }) => (
-  <div className="grid grid-cols-3 items-center border-b border-gray-gray5 px-6 py-5 dark:border-grayDark-gray5 lg:block lg:space-x-0">
+  <div className="grid grid-cols-3 items-center border-b border-gray-5 px-6 py-5 dark:border-gray-dark-5 lg:block lg:space-x-0">
     {children}
   </div>
 );
@@ -35,14 +35,14 @@ export const Main: FC<PropsWithChildren> = ({ children }) => (
 );
 
 export const MainTop: FC<PropsWithChildren> = ({ children }) => (
-  <div className="flex items-center justify-between border-b border-gray-gray5 p-4 dark:border-grayDark-gray5">
+  <div className="flex items-center justify-between border-b border-gray-5 p-4 dark:border-gray-dark-5">
     {children}
   </div>
 );
 
 export const MainTopLeft: FC<PropsWithChildren> = ({ children }) => (
   <div className="min-w-0 flex-1">
-    <h1 className="leading-6 text-gray-gray12 dark:text-grayDark-gray12 sm:truncate">
+    <h1 className="leading-6 text-gray-12 dark:text-gray-dark-12 sm:truncate">
       {children}
     </h1>
   </div>

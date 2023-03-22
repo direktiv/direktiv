@@ -58,7 +58,7 @@ const ExplorerPage: FC = () => {
               <Link to={linkTarget} className="flex items-center space-x-3">
                 <Icon />
                 <span className="flex-1">{file.name}</span>
-                <span className="text-gray-gray8 dark:text-grayDark-gray8">
+                <span className="text-gray-8 dark:text-gray-dark-8">
                   {moment(file.updatedAt).fromNow()}
                 </span>
               </Link>

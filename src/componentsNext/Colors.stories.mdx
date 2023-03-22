@@ -25,7 +25,7 @@ These colors are defined in the `tailwind.config.cjs` under `themes.extend.color
 
 <ColorPalette>
   <ColorItem
-    title="colorPrimary "
+    title="primary"
     subtitle="primary brand color"
     colors={{
       "primary-50": "#EEEFFF",
@@ -41,10 +41,21 @@ These colors are defined in the `tailwind.config.cjs` under `themes.extend.color
     }}
   />
   <ColorItem
-    title="blackA"
+    title="black-alpha"
     subtitle="Shades of black with alpha channel"
     colors={{
-      ...blackA,
+      "black-alpha-1": blackA.blackA1,
+      "black-alpha-2": blackA.blackA2,
+      "black-alpha-3": blackA.blackA3,
+      "black-alpha-4": blackA.blackA4,
+      "black-alpha-5": blackA.blackA5,
+      "black-alpha-6": blackA.blackA6,
+      "black-alpha-7": blackA.blackA7,
+      "black-alpha-8": blackA.blackA8,
+      "black-alpha-9": blackA.blackA9,
+      "black-alpha-10": blackA.blackA10,
+      "black-alpha-11": blackA.blackA11,
+      "black-alpha-12": blackA.blackA12,
     }}
   />
 </ColorPalette>
@@ -56,14 +67,36 @@ These colors are defined in the `tailwind.config.cjs` under `themes.extend.color
     title="gray"
     subtitle="Shades of gray, only for light mode."
     colors={{
-      ...gray,
+      "gray-1": gray.gray1,
+      "gray-2": gray.gray2,
+      "gray-3": gray.gray3,
+      "gray-4": gray.gray4,
+      "gray-5": gray.gray5,
+      "gray-6": gray.gray6,
+      "gray-7": gray.gray7,
+      "gray-8": gray.gray8,
+      "gray-9": gray.gray9,
+      "gray-10": gray.gray10,
+      "gray-11": gray.gray11,
+      "gray-12": gray.gray12,
     }}
   />
   <ColorItem
     title="grayDark"
     subtitle="Shades of gray, only for dark mode"
     colors={{
-      ...grayDark,
+      "gray-dark-1": grayDark.gray1,
+      "gray-dark-2": grayDark.gray2,
+      "gray-dark-3": grayDark.gray3,
+      "gray-dark-4": grayDark.gray4,
+      "gray-dark-5": grayDark.gray5,
+      "gray-dark-6": grayDark.gray6,
+      "gray-dark-7": grayDark.gray7,
+      "gray-dark-8": grayDark.gray8,
+      "gray-dark-9": grayDark.gray9,
+      "gray-dark-10": grayDark.gray10,
+      "gray-dark-11": grayDark.gray11,
+      "gray-dark-12": grayDark.gray12,
     }}
   />
 </ColorPalette>
@@ -73,17 +106,16 @@ Each of these palettes are bound to light or dark mode. When using them, always 
 In this example, we apply a gray background in light and darkmode with the intensity of `12`.
 
 ```jsx
-<div className="fill-gray-gray12 dark:fill-grayDark-gray12"></div>
+<div className="fill-gray-12 dark:fill-gray-dark-12"></div>
 ```
 
 ### Slate - Gray Color Mapping
 
-This is an overview of how the slate color palette translates to our gray color palette.
+This is an overview of how the light mode slate color palette translates to our gray color palette.
 
 <ColorPalette>
   <ColorItem
     title="slate"
-    subtitle="Shades of slate, only for light mode."
     colors={{
       "slat-e50": "#F8FAFC",
       "slate-100": "#F1F5F9",
@@ -97,20 +129,20 @@ This is an overview of how the slate color palette translates to our gray color 
       "slate-900": "#0F1D2A",
     }}
   />
+
   <ColorItem
     title="gray"
-    subtitle="Shades of gray, only for light mode"
     colors={{
-      gray1: gray.gray1,
-      gray2: gray.gray2,
-      gray3: gray.gray3,
-      gray4: gray.gray4,
-      gray7: gray.gray7,
-      gray8: gray.gray8,
-      gray9: gray.gray9,
-      gray10: gray.gray10,
-      gray11: gray.gray11,
-      gray12: gray.gray12,
+      "gray-1": gray.gray1,
+      "gray-2": gray.gray2,
+      "gray-3": gray.gray3,
+      "gray-4": gray.gray4,
+      "gray-7": gray.gray7,
+      "gray-8": gray.gray8,
+      "gray-9": gray.gray9,
+      "gray-10": gray.gray10,
+      "gray-11": gray.gray11,
+      "gray-12": gray.gray12,
     }}
   />
 </ColorPalette>

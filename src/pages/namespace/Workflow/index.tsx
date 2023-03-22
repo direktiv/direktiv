@@ -12,7 +12,7 @@ const tabs = [
   { name: "Settings", href: "#", icon: Settings, current: false },
 ];
 const WorkflowPage: FC = () => (
-  <div className="space-y-5 border-b border-gray-gray5 bg-base-200 p-5 pb-0 dark:border-grayDark-gray5">
+  <div className="space-y-5 border-b border-gray-5 bg-base-200 p-5 pb-0 dark:border-gray-dark-5">
     <div className="flex flex-col max-sm:space-y-4 sm:flex-row sm:items-center sm:justify-between ">
       <h3 className="flex items-center gap-x-2 font-bold text-primary-500">
         <Play className="h-5" />
@@ -31,7 +31,7 @@ const WorkflowPage: FC = () => (
             className={clsx(
               tab.current
                 ? "border-primary-500 text-primary-500"
-                : "border-transparent text-gray-gray11 hover:border-gray-gray8 hover:text-gray-gray12 dark:hover:border-grayDark-gray8 dark:hover:text-grayDark-gray12",
+                : "border-transparent text-gray-11 hover:border-gray-8 hover:text-gray-12 dark:hover:border-gray-dark-8 dark:hover:text-gray-dark-12",
               "flex items-center gap-x-2 whitespace-nowrap border-b-2 px-1 pb-4 text-sm font-medium"
             )}
             aria-current={tab.current ? "page" : undefined}

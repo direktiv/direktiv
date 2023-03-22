@@ -30,12 +30,12 @@ const Toast = React.forwardRef<
   }
 >(({ className, variant, ...props }, ref) => {
   const toastVariants = clsx(
-    "data-[swipe=move]:transition-none grow-1 group relative pointer-events-auto flex w-full items-center justify-between space-x-4 overflow-hidden rounded-md border p-6 pr-8 shadow-sm transition-all data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[swipe=cancel]:translate-x-0 data-[swipe=end]:translate-x-[var(--radix-toast-swipe-end-x)] data-[state=open]:animate-in data-[state=closed]:animate-out data-[swipe=end]:animate-out data-[state=closed]:fade-out-80 data-[state=open]:slide-in-from-top-full data-[state=open]:sm:slide-in-from-bottom-full mt-4 data-[state=closed]:slide-out-to-right-full dark:border-gray-gray10 last:mt-0 sm:last:mt-4",
-    !variant && "bg-white border-gray-gray3",
+    "data-[swipe=move]:transition-none grow-1 group relative pointer-events-auto flex w-full items-center justify-between space-x-4 overflow-hidden rounded-md border p-6 pr-8 shadow-sm transition-all data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[swipe=cancel]:translate-x-0 data-[swipe=end]:translate-x-[var(--radix-toast-swipe-end-x)] data-[state=open]:animate-in data-[state=closed]:animate-out data-[swipe=end]:animate-out data-[state=closed]:fade-out-80 data-[state=open]:slide-in-from-top-full data-[state=open]:sm:slide-in-from-bottom-full mt-4 data-[state=closed]:slide-out-to-right-full dark:border-gray-10 last:mt-0 sm:last:mt-4",
+    !variant && "bg-white border-gray-3",
     variant === "error" && "group destructive bg-error",
-    variant === "success" && "bg-success border-gray-gray3",
-    variant === "info" && "bg-info border-gray-gray3",
-    variant === "warning" && "bg-warning border-gray-gray3"
+    variant === "success" && "bg-success border-gray-3",
+    variant === "info" && "bg-info border-gray-3",
+    variant === "warning" && "bg-warning border-gray-3"
   );
   return (
     <ToastPrimitives.Root
@@ -54,7 +54,7 @@ const ToastAction = React.forwardRef<
   <ToastPrimitives.Action
     ref={ref}
     className={clsx(
-      "inline-flex h-8 shrink-0 items-center justify-center rounded-md border border-gray-gray3 bg-transparent px-3 text-sm font-medium transition-colors hover:bg-gray-gray2 focus:outline-none focus:ring-2 focus:ring-gray-gray7 focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 group-[.destructive]:border-red-100 group-[.destructive]:hover:border-gray-gray1 group-[.destructive]:hover:bg-red-100 group-[.destructive]:hover:text-red-600 group-[.destructive]:focus:ring-red-400 group-[.destructive]:focus:ring-offset-red-600 dark:border-gray-gray10 dark:text-gray-gray2 dark:hover:bg-gray-gray10 dark:hover:text-gray-gray2 dark:focus:ring-gray-gray7 dark:focus:ring-offset-gray-gray12 dark:data-[state=open]:bg-gray-gray11",
+      "inline-flex h-8 shrink-0 items-center justify-center rounded-md border border-gray-3 bg-transparent px-3 text-sm font-medium transition-colors hover:bg-gray-2 focus:outline-none focus:ring-2 focus:ring-gray-7 focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 group-[.destructive]:border-red-100 group-[.destructive]:hover:border-gray-1 group-[.destructive]:hover:bg-red-100 group-[.destructive]:hover:text-red-600 group-[.destructive]:focus:ring-red-400 group-[.destructive]:focus:ring-offset-red-600 dark:border-gray-10 dark:text-gray-2 dark:hover:bg-gray-10 dark:hover:text-gray-2 dark:focus:ring-gray-7 dark:focus:ring-offset-gray-12 dark:data-[state=open]:bg-gray-11",
       className
     )}
     {...props}
@@ -69,7 +69,7 @@ const ToastClose = React.forwardRef<
   <ToastPrimitives.Close
     ref={ref}
     className={clsx(
-      "absolute top-2 right-2 rounded-md p-1 text-gray-gray8 opacity-0 transition-opacity hover:text-gray-gray12 focus:opacity-100 focus:outline-none focus:ring-2 group-hover:opacity-100 group-[.destructive]:text-red-300 group-[.destructive]:hover:text-red-50 group-[.destructive]:focus:ring-red-400 group-[.destructive]:focus:ring-offset-red-600 dark:hover:text-gray-gray1",
+      "absolute top-2 right-2 rounded-md p-1 text-gray-8 opacity-0 transition-opacity hover:text-gray-12 focus:opacity-100 focus:outline-none focus:ring-2 group-hover:opacity-100 group-[.destructive]:text-red-300 group-[.destructive]:hover:text-red-50 group-[.destructive]:focus:ring-red-400 group-[.destructive]:focus:ring-offset-red-600 dark:hover:text-gray-1",
       className
     )}
     toast-close=""
