@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { Toast, ToastVariantsType, Toaster, useToast } from "./index";
-import Button from "../Button";
+import Button from "../ButtonNew";
 import { FC } from "react";
 
 const meta = {
@@ -68,7 +68,6 @@ export const ToastVariants = () => {
     <>
       <div className="flex flex-wrap gap-5">
         <Button
-          color="error"
           onClick={() => {
             customToast("error");
           }}
@@ -76,7 +75,6 @@ export const ToastVariants = () => {
           Show Error Toast 1
         </Button>
         <Button
-          color="success"
           onClick={() => {
             customToast("success");
           }}
@@ -85,7 +83,6 @@ export const ToastVariants = () => {
         </Button>
 
         <Button
-          color="warning"
           onClick={() => {
             customToast("warning");
           }}
@@ -93,7 +90,6 @@ export const ToastVariants = () => {
           Show Warning Toast
         </Button>
         <Button
-          color="info"
           onClick={() => {
             customToast("info");
           }}

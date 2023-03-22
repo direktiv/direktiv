@@ -6,7 +6,7 @@ import {
   SelectValue,
 } from "../Select";
 
-import Button from "../Button";
+import Button from "../ButtonNew";
 
 export default {
   title: "Components (next)/Compositions/Form",
@@ -64,8 +64,8 @@ export const Default = () => (
         </Select>
       </div>
       <div className="flex flex-row-reverse gap-5 sm:col-span-full">
-        <Button color="primary">Submit</Button>
-        <Button color="ghost">Cancel</Button>
+        <Button variant="primary">Submit</Button>
+        <Button variant="ghost">Cancel</Button>
       </div>
     </div>
   </div>

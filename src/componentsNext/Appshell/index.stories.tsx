@@ -49,7 +49,7 @@ import {
   SidebarTop,
 } from "./index";
 
-import Button from "../Button";
+import Button from "../ButtonNew";
 import Logo from "../Logo";
 import { NavigationLink } from "../NavigationLink";
 import { RxChevronDown } from "react-icons/rx";
@@ -106,7 +106,7 @@ const TopRightComponent: FC<{
   <div className={clsx("flex space-x-2", className)}>
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button color="ghost" className="px-1">
+        <Button variant="ghost" icon>
           <Settings2 />
           <RxChevronDown />
         </Button>
@@ -144,9 +144,10 @@ const TopRightComponent: FC<{
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
-          color="ghost"
-          className="placeholder avatar items-center gap-1 px-1"
+          variant="ghost"
+          className="placeholder avatar"
           role="button"
+          icon
         >
           <div className="h-7 w-7 rounded-full bg-primary-500 text-neutral-content">
             <span className="text-xs">Ad</span>
@@ -241,7 +242,7 @@ export const MoreDetailedShell = () => {
                         &nbsp;
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button size="xs" color="ghost" circle>
+                            <Button size="sm" variant="ghost" circle icon>
                               <ChevronsUpDown />
                             </Button>
                           </DropdownMenuTrigger>
