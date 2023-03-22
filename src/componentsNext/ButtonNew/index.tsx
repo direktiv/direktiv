@@ -1,5 +1,6 @@
 import * as React from "react";
 
+import { Loader2 } from "lucide-react";
 import clsx from "clsx";
 
 // const buttonVariants = clsx(
@@ -42,10 +43,10 @@ type ButtonProps = {
 const Button = React.forwardRef<
   HTMLButtonElement,
   React.ButtonHTMLAttributes<HTMLButtonElement> & ButtonProps
->(({ className, variant, size, ...props }, ref) => (
+>(({ className, variant, size, circle, children, loading, ...props }, ref) => (
   <button
     className={clsx(
-      "inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 active:scale-95 disabled:pointer-events-none     disabled:opacity-50 data-[state=open]:bg-slate-100 dark:hover:bg-slate-800 dark:hover:text-slate-100 dark:focus:ring-slate-400 dark:focus:ring-offset-slate-900 dark:data-[state=open]:bg-slate-800",
+      "inline-flex items-center justify-center text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 active:scale-95 disabled:pointer-events-none disabled:opacity-50 data-[state=open]:bg-slate-100 dark:hover:bg-slate-800 dark:hover:text-slate-100 dark:focus:ring-slate-400 dark:focus:ring-offset-slate-900 dark:data-[state=open]:bg-slate-800",
       !variant &&
         "bg-slate-900 text-white hover:bg-slate-700 dark:bg-slate-50 dark:text-slate-900",
       variant === "destructive" &&
@@ -58,15 +59,21 @@ const Button = React.forwardRef<
         "bg-transparent hover:bg-slate-100 data-[state=open]:bg-transparent dark:text-slate-100 dark:hover:bg-slate-800 dark:hover:text-slate-100 dark:data-[state=open]:bg-transparent",
       variant === "link" &&
         "bg-transparent text-slate-900 underline-offset-4 hover:bg-transparent hover:underline dark:bg-transparent dark:text-slate-100 dark:hover:bg-transparent",
-      size === "xs" && "h-8 rounded-md px-2",
-      size === "sm" && "h-9 rounded-md px-2",
-      !size && "h-10 py-2 px-4",
-      size === "lg" && "h-11 rounded-md px-8",
+      size === "xs" && "h-8 gap-1 px-2 [&>svg]:h-3",
+      size === "sm" && "h-9 gap-1 px-2 [&>svg]:h-4",
+      !size && "h-10 gap-2 py-2 px-4 [&>svg]:h-5",
+      size === "lg" && "h-11 gap-3 px-6 [&>svg]:h-6",
+      circle && "rounded-full",
+      !circle && "rounded-md",
+
       className
     )}
     ref={ref}
     {...props}
-  />
+  >
+    {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+    {children}
+  </button>
 ));
 Button.displayName = "Button";
 
