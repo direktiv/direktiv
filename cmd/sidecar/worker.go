@@ -96,6 +96,7 @@ func (worker *inboundWorker) doFunctionRequest(ctx context.Context, ir *function
 	}
 
 	req.Header.Set(actionIDHeader, ir.actionId)
+	req.Header.Set(IteratorHeader, fmt.Sprintf("%d", ir.iterator))
 	req.Header.Set("Direktiv-TempDir", worker.functionDir(ir))
 	req.Header.Set("Content-Type", "application/json")
 
@@ -589,6 +590,7 @@ func (worker *inboundWorker) respondToFlow(ctx context.Context, ir *functionRequ
 		InstanceId:   ir.instanceId,
 		Step:         step,
 		ActionId:     ir.actionId,
+		Iterator:     int32(ir.iterator),
 		Output:       out.data,
 		ErrorCode:    out.errCode,
 		ErrorMessage: out.errMsg,
@@ -599,9 +601,9 @@ func (worker *inboundWorker) respondToFlow(ctx context.Context, ir *functionRequ
 	}
 
 	if out.errCode != "" {
-		log.Infof("Request '%s' failed with catchable error '%s': %s.", ir.actionId, out.errCode, out.errMsg)
+		log.Errorf("Request '%s' failed with catchable error '%s': %s.", ir.actionId, out.errCode, out.errMsg)
 	} else if out.errMsg != "" {
-		log.Infof("Request '%s' failed with uncatchable service error: %s.", ir.actionId, out.errMsg)
+		log.Errorf("Request '%s' failed with uncatchable service error: %s.", ir.actionId, out.errMsg)
 	} else {
 		log.Infof("Request '%s' completed successfully.", ir.actionId)
 	}
@@ -723,9 +725,10 @@ func (worker *inboundWorker) validateFunctionRequest(req *inboundRequest) *funct
 
 	var step string
 	var deadline string
+	var it string
 
-	headers := []string{actionIDHeader, "Direktiv-InstanceID", "Direktiv-Namespace", "Direktiv-Step", "Direktiv-Deadline"}
-	ptrs := []*string{&ir.actionId, &ir.instanceId, &ir.namespace, &step, &deadline}
+	headers := []string{actionIDHeader, "Direktiv-InstanceID", "Direktiv-Namespace", "Direktiv-Step", "Direktiv-Iterator", "Direktiv-Deadline"}
+	ptrs := []*string{&ir.actionId, &ir.instanceId, &ir.namespace, &step, &it, &deadline}
 
 	for i := 0; i < len(headers); i++ {
 		if !worker.getRequiredStringHeader(req, ptrs[i], headers[i]) {
@@ -734,6 +737,10 @@ func (worker *inboundWorker) validateFunctionRequest(req *inboundRequest) *funct
 	}
 
 	if !worker.validateUintHeader(req, &ir.step, "Direktiv-Step", step) {
+		return nil
+	}
+
+	if !worker.validateUintHeader(req, &ir.iterator, "Direktiv-Iterator", it) {
 		return nil
 	}
 

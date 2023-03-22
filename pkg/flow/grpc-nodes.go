@@ -13,6 +13,7 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
+	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entino "github.com/direktiv/direktiv/pkg/flow/ent/inode"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
@@ -259,7 +260,7 @@ func (flow *flow) createDirectory(ctx context.Context, args *createDirectoryArgs
 		return nil, err
 	}
 
-	flow.logToNamespace(ctx, time.Now(), args.pcached, "Created directory '%s'.", args.path)
+	flow.logger.Infof(ctx, args.pcached.Namespace.ID, args.pcached.GetAttributes("namespace"), "Created directory '%s'.", args.path)
 	flow.pubsub.NotifyInode(args.pcached.Inode())
 
 	// Broadcast
@@ -403,7 +404,7 @@ func (flow *flow) deleteNode(ctx context.Context, args *deleteNodeArgs) error {
 
 	}
 
-	flow.logToNamespace(ctx, time.Now(), args.cached, "Deleted %s '%s'.", args.cached.Inode().Type, args.cached.Path())
+	flow.logger.Infof(ctx, args.cached.Namespace.ID, args.cached.GetAttributes(recipient.Namespace), "Deleted %s '%s'.", args.cached.Inode().Type, args.cached.Path())
 	flow.pubsub.NotifyInode(args.cached.ParentInode())
 	flow.pubsub.CloseInode(args.cached.Inode())
 
@@ -520,7 +521,7 @@ func (flow *flow) RenameNode(ctx context.Context, req *grpc.RenameNodeRequest) (
 	flow.database.InvalidateInode(ctx, cached.Parent(), false)
 	flow.database.InvalidateInode(ctx, pcached, false)
 
-	flow.logToNamespace(ctx, time.Now(), cached, "Renamed %s from '%s' to '%s'.", cached.Inode().Type, req.GetOld(), req.GetNew())
+	flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Renamed %s from '%s' to '%s'.", cached.Inode().Type, req.GetOld(), req.GetNew())
 	flow.pubsub.NotifyInode(cached.ParentInode())
 	flow.pubsub.NotifyInode(pcached.Inode())
 	flow.pubsub.CloseInode(cached.Inode())

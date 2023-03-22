@@ -10,6 +10,7 @@ import (
 	"time"
 
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
+	log "github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/senseyeio/duration"
 )
@@ -47,7 +48,7 @@ func (logic *forEachLogic) Deadline(ctx context.Context) time.Time {
 	d, err := duration.ParseISO8601(logic.Timeout)
 	if err != nil {
 		if logic.Timeout != "" {
-			logic.Log(ctx, "failed to parse timeout: %v", err)
+			logic.Log(ctx, log.Error, "failed to parse timeout: %v", err)
 		}
 		return time.Now().Add(DefaultLongDeadline)
 	}
@@ -129,13 +130,13 @@ func (logic *forEachLogic) scheduleFirstActions(ctx context.Context) (*Transitio
 		}, nil
 	}
 
-	logic.Log(ctx, "Generated %d objects to loop over.", len(array))
+	logic.Log(ctx, log.Info, "Generated %d objects to loop over.", len(array))
 
 	children := make([]*ChildInfo, 0)
 
 	for idx, inputSource := range array {
 		if idx < foreachMaxThreads {
-			child, err := logic.scheduleAction(ctx, inputSource, 0)
+			child, err := logic.scheduleAction(ctx, inputSource, 0, idx)
 			if err != nil {
 				return nil, err
 			}
@@ -153,7 +154,7 @@ func (logic *forEachLogic) scheduleFirstActions(ctx context.Context) (*Transitio
 	return nil, nil
 }
 
-func (logic *forEachLogic) scheduleAction(ctx context.Context, inputSource interface{}, attempt int) (*ChildInfo, error) {
+func (logic *forEachLogic) scheduleAction(ctx context.Context, inputSource interface{}, attempt, iterator int) (*ChildInfo, error) {
 	action := logic.Action
 
 	input, files, err := generateActionInput(ctx, &generateActionInputArgs{
@@ -189,6 +190,7 @@ func (logic *forEachLogic) scheduleAction(ctx context.Context, inputSource inter
 		timeout:  wfto,
 		files:    files,
 		attempt:  attempt,
+		iterator: iterator,
 	})
 	if err != nil {
 		return nil, err
@@ -198,7 +200,7 @@ func (logic *forEachLogic) scheduleAction(ctx context.Context, inputSource inter
 }
 
 func (logic *forEachLogic) scheduleRetryAction(ctx context.Context, retry *actionRetryInfo) error {
-	logic.Log(ctx, "Retrying...")
+	logic.Log(ctx, log.Info, "Retrying...")
 
 	x, err := jqOne(logic.GetInstanceData(), logic.Array)
 	if err != nil {
@@ -211,7 +213,7 @@ func (logic *forEachLogic) scheduleRetryAction(ctx context.Context, retry *actio
 		return derrors.NewCatchableError(ErrCodeNotArray, "jq produced non-array output")
 	}
 
-	child, err := logic.scheduleAction(ctx, array[retry.Idx], retry.Children[retry.Idx].Attempts)
+	child, err := logic.scheduleAction(ctx, array[retry.Idx], retry.Children[retry.Idx].Attempts, retry.Iterator)
 	if err != nil {
 		return err
 	}
@@ -270,12 +272,12 @@ func (logic *forEachLogic) processActionResults(ctx context.Context, children []
 	if results.ActionID != id {
 		return nil, derrors.NewInternalError(errors.New("incorrect child action ID"))
 	}
-
-	logic.Log(ctx, "Child '%s' returned.", id)
+	logic.AddAttribute("loop-index", fmt.Sprintf("%d", idx))
+	logic.Log(ctx, log.Info, "Child '%s' returned.", id)
 
 	if results.ErrorCode != "" {
 
-		logic.Log(ctx, "[%v] Action raised catchable error '%s': %s.", idx, results.ErrorCode, results.ErrorMessage)
+		logic.Log(ctx, log.Error, "[%v] Action raised catchable error '%s': %s.", idx, results.ErrorCode, results.ErrorMessage)
 
 		err = derrors.NewCatchableError(results.ErrorCode, results.ErrorMessage)
 		d, err := preprocessRetry(logic.Action.Retries, sd.Attempts, err)
@@ -283,20 +285,20 @@ func (logic *forEachLogic) processActionResults(ctx context.Context, children []
 			return nil, err
 		}
 
-		logic.Log(ctx, "[%v] Scheduling retry attempt in: %v.", idx, d)
+		logic.Log(ctx, log.Info, "[%v] Scheduling retry attempt in: %v.", idx, d)
 
 		return nil, scheduleRetry(ctx, logic.Instance, children, idx, d)
 
 	}
 
 	if results.ErrorMessage != "" {
-		logic.Log(ctx, "Action crashed due to an internal error: %v", results.ErrorMessage)
+		logic.Log(ctx, log.Error, "Action crashed due to an internal error: %v", results.ErrorMessage)
 		return nil, derrors.NewInternalError(errors.New(results.ErrorMessage))
 	}
 
 	children[idx].Complete = true
 	completed++
-	logic.Log(ctx, "[%v] Action returned. (%d/%d)", idx, completed, len(children))
+	logic.Log(ctx, log.Info, "[%v] Action returned. (%d/%d)", idx, completed, len(children))
 
 	var x interface{}
 
@@ -348,7 +350,7 @@ func (logic *forEachLogic) processActionResults(ctx context.Context, children []
 				return nil, derrors.NewCatchableError(ErrCodeNotArray, "jq produced non-array output")
 			}
 
-			ci, err = logic.scheduleAction(ctx, array[idx], 0)
+			ci, err = logic.scheduleAction(ctx, array[idx], 0, idx)
 			if err != nil {
 				return nil, err
 			}

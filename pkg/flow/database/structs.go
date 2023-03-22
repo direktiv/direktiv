@@ -157,6 +157,7 @@ type Instance struct {
 	Revision     uuid.UUID `json:"revision,omitempty"`
 	Runtime      uuid.UUID `json:"runtime,omitempty"`
 	CallPath     string    `json:"callpath,omitempty"`
+	InvokerState string    `json:"invokerState,omitempty"`
 }
 
 type InstanceRuntime struct {

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/util"
 )
@@ -17,6 +18,8 @@ func (engine *engine) SetInstanceFailed(ctx context.Context, im *instanceMemory,
 	uerr := new(derrors.UncatchableError)
 	cerr := new(derrors.CatchableError)
 	ierr := new(derrors.InternalError)
+	engine.logger.Errorf(ctx, im.cached.Namespace.ID, im.cached.GetAttributes(recipient.Namespace), "Workflow %s canceled due to instance %s failed", im.cached.Instance.As, im.GetInstanceID())
+	engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), "Workflow %s canceled due to instance %s failed", im.cached.Instance.As, im.GetInstanceID())
 
 	if errors.As(err, &uerr) {
 		code = uerr.Code
@@ -40,7 +43,6 @@ func (engine *engine) SetInstanceFailed(ctx context.Context, im *instanceMemory,
 	im.cached.Instance.ErrorCode = code
 	im.cached.Instance.ErrorMessage = message
 	im.instanceUpdater = updater
-
 	return nil
 }
 

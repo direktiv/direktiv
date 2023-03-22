@@ -14,6 +14,7 @@ import (
 	entvar "github.com/direktiv/direktiv/pkg/flow/ent/varref"
 	entwf "github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
+	log "github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/direktiv/direktiv/pkg/flow/states"
 	"github.com/direktiv/direktiv/pkg/functions"
 	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
@@ -130,8 +131,24 @@ func (im *instanceMemory) ListenForEvents(ctx context.Context, events []*model.C
 	return nil
 }
 
-func (im *instanceMemory) Log(ctx context.Context, a string, x ...interface{}) {
-	im.engine.logToInstance(ctx, time.Now(), im.cached, a, x...)
+func (im *instanceMemory) Log(ctx context.Context, level log.Level, a string, x ...interface{}) {
+	switch level {
+	case log.Info:
+		im.engine.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), a, x...)
+	case log.Debug:
+		im.engine.logger.Debugf(ctx, im.GetInstanceID(), im.GetAttributes(), a, x...)
+	case log.Error:
+		im.engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), a, x...)
+	case log.Panic:
+		im.engine.logger.Panicf(ctx, im.GetInstanceID(), im.GetAttributes(), a, x...)
+	}
+}
+
+func (im *instanceMemory) AddAttribute(tag, value string) {
+	if im.tags == nil {
+		im.tags = make(map[string]string)
+	}
+	im.tags[tag] = value
 }
 
 func (im *instanceMemory) Raise(ctx context.Context, err *derrors.CatchableError) error {
@@ -311,6 +328,7 @@ func (im *instanceMemory) CreateChild(ctx context.Context, args states.CreateChi
 		caller.Step = im.Step()
 		caller.As = im.cached.Instance.As
 		caller.CallPath = im.cached.Instance.CallPath
+		caller.CallerState = im.GetState()
 		sfim, err := im.engine.subflowInvoke(ctx, caller, im.cached, args.Definition.(*model.SubflowFunctionDefinition).Workflow, args.Input)
 		if err != nil {
 			return nil, err
@@ -337,7 +355,7 @@ func (im *instanceMemory) CreateChild(ctx context.Context, args states.CreateChi
 
 	uid := uuid.New()
 
-	ar, err := im.engine.newIsolateRequest(ctx, im, im.logic.GetID(), args.Timeout, args.Definition, args.Input, uid, args.Async, args.Files)
+	ar, err := im.engine.newIsolateRequest(ctx, im, im.logic.GetID(), args.Timeout, args.Definition, args.Input, uid, args.Async, args.Files, args.Iterator)
 	if err != nil {
 		return nil, err
 	}
@@ -356,7 +374,7 @@ func (im *instanceMemory) CreateChild(ctx context.Context, args states.CreateChi
 
 func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory, stateId string, timeout int,
 	fn model.FunctionDefinition, inputData []byte,
-	uid uuid.UUID, async bool, files []model.FunctionFileDefinition,
+	uid uuid.UUID, async bool, files []model.FunctionFileDefinition, iterator int,
 ) (*functionRequest, error) {
 	ar := new(functionRequest)
 	ar.ActionID = uid.String()
@@ -365,7 +383,7 @@ func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory,
 	ar.Workflow.Revision = im.cached.Revision.Hash
 	ar.Workflow.NamespaceName = im.cached.Namespace.Name
 	ar.Workflow.Path = im.cached.Instance.As
-
+	ar.Iterator = iterator
 	if !async {
 		ar.Workflow.InstanceID = im.ID().String()
 		ar.Workflow.NamespaceID = im.cached.Namespace.ID.String()

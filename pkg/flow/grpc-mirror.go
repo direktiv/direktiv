@@ -5,10 +5,10 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
-	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
+	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
@@ -85,10 +85,10 @@ func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNam
 		Type:     util.MirrorActivityTypeInit,
 	})
 	if err != nil {
+		flow.logger.Errorf(ctx, flow.ID, flow.GetAttributes(), "failed to create git mirror %v", err)
 		return nil, err
 	}
-
-	flow.logToServer(ctx, time.Now(), "Created namespace as git mirror '%s'.", ns.Name)
+	flow.logger.Infof(ctx, flow.ID, flow.GetAttributes(), "Created namespace as git mirror '%s'.", ns.Name)
 	flow.pubsub.NotifyNamespaces()
 
 respond:
@@ -165,10 +165,11 @@ func (flow *flow) CreateDirectoryMirror(ctx context.Context, req *grpc.CreateDir
 		Type:     util.MirrorActivityTypeInit,
 	})
 	if err != nil {
+		flow.logger.Errorf(ctx, flow.ID, flow.GetAttributes(), "Failed to create directory as git mirror %s", path)
 		return nil, err
 	}
 
-	flow.logToNamespace(ctx, time.Now(), cached, "Created directory as git mirror '%s'.", path)
+	flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Created directory as git mirror '%s'.", path)
 	flow.pubsub.NotifyInode(cached.Inode())
 
 	var resp grpc.CreateDirectoryResponse
@@ -841,7 +842,7 @@ resend:
 
 func (flow *flow) CancelMirrorActivity(ctx context.Context, req *grpc.CancelMirrorActivityRequest) (*emptypb.Empty, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
-
+	flow.logger.Debugf(ctx, flow.ID, flow.GetAttributes(), "cancelled by api request")
 	flow.syncer.cancelActivity(req.GetActivity(), "cancel.api", "cancelled by api request")
 
 	var resp emptypb.Empty

@@ -138,6 +138,13 @@ func Invoker(v string) predicate.Instance {
 	})
 }
 
+// InvokerState applies equality check predicate on the "invokerState" field. It's identical to InvokerStateEQ.
+func InvokerState(v string) predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldInvokerState), v))
+	})
+}
+
 // Callpath applies equality check predicate on the "callpath" field. It's identical to CallpathEQ.
 func Callpath(v string) predicate.Instance {
 	return predicate.Instance(func(s *sql.Selector) {
@@ -885,6 +892,119 @@ func InvokerEqualFold(v string) predicate.Instance {
 func InvokerContainsFold(v string) predicate.Instance {
 	return predicate.Instance(func(s *sql.Selector) {
 		s.Where(sql.ContainsFold(s.C(FieldInvoker), v))
+	})
+}
+
+// InvokerStateEQ applies the EQ predicate on the "invokerState" field.
+func InvokerStateEQ(v string) predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldInvokerState), v))
+	})
+}
+
+// InvokerStateNEQ applies the NEQ predicate on the "invokerState" field.
+func InvokerStateNEQ(v string) predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldInvokerState), v))
+	})
+}
+
+// InvokerStateIn applies the In predicate on the "invokerState" field.
+func InvokerStateIn(vs ...string) predicate.Instance {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.In(s.C(FieldInvokerState), v...))
+	})
+}
+
+// InvokerStateNotIn applies the NotIn predicate on the "invokerState" field.
+func InvokerStateNotIn(vs ...string) predicate.Instance {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.NotIn(s.C(FieldInvokerState), v...))
+	})
+}
+
+// InvokerStateGT applies the GT predicate on the "invokerState" field.
+func InvokerStateGT(v string) predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldInvokerState), v))
+	})
+}
+
+// InvokerStateGTE applies the GTE predicate on the "invokerState" field.
+func InvokerStateGTE(v string) predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldInvokerState), v))
+	})
+}
+
+// InvokerStateLT applies the LT predicate on the "invokerState" field.
+func InvokerStateLT(v string) predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldInvokerState), v))
+	})
+}
+
+// InvokerStateLTE applies the LTE predicate on the "invokerState" field.
+func InvokerStateLTE(v string) predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldInvokerState), v))
+	})
+}
+
+// InvokerStateContains applies the Contains predicate on the "invokerState" field.
+func InvokerStateContains(v string) predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldInvokerState), v))
+	})
+}
+
+// InvokerStateHasPrefix applies the HasPrefix predicate on the "invokerState" field.
+func InvokerStateHasPrefix(v string) predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldInvokerState), v))
+	})
+}
+
+// InvokerStateHasSuffix applies the HasSuffix predicate on the "invokerState" field.
+func InvokerStateHasSuffix(v string) predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldInvokerState), v))
+	})
+}
+
+// InvokerStateIsNil applies the IsNil predicate on the "invokerState" field.
+func InvokerStateIsNil() predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldInvokerState)))
+	})
+}
+
+// InvokerStateNotNil applies the NotNil predicate on the "invokerState" field.
+func InvokerStateNotNil() predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldInvokerState)))
+	})
+}
+
+// InvokerStateEqualFold applies the EqualFold predicate on the "invokerState" field.
+func InvokerStateEqualFold(v string) predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldInvokerState), v))
+	})
+}
+
+// InvokerStateContainsFold applies the ContainsFold predicate on the "invokerState" field.
+func InvokerStateContainsFold(v string) predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldInvokerState), v))
 	})
 }
 

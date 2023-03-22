@@ -18,6 +18,7 @@ import (
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
+	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
@@ -892,7 +893,7 @@ func (flow *flow) ReplayEvent(ctx context.Context, req *grpc.ReplayEventRequest)
 func (events *events) ReplayCloudevent(ctx context.Context, cached *database.CacheData, cevent *ent.CloudEvents) error {
 	event := cevent.Event
 
-	events.logToNamespace(ctx, time.Now(), cached, "Replaying event: %s (%s / %s)", event.ID(), event.Type(), event.Source())
+	events.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Replaying event: %s (%s / %s)", event.ID(), event.Type(), event.Source())
 
 	err := events.handleEvent(cached.Namespace, &event)
 	if err != nil {
@@ -909,7 +910,7 @@ func (events *events) ReplayCloudevent(ctx context.Context, cached *database.Cac
 }
 
 func (events *events) BroadcastCloudevent(ctx context.Context, cached *database.CacheData, event *cloudevents.Event, timer int64) error {
-	events.logToNamespace(ctx, time.Now(), cached, "Event received: %s (%s / %s)", event.ID(), event.Type(), event.Source())
+	events.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Event received: %s (%s / %s)", event.ID(), event.Type(), event.Source())
 
 	metricsCloudEventsReceived.WithLabelValues(cached.Namespace.Name, event.Type(), event.Source(), cached.Namespace.Name).Inc()
 
@@ -990,7 +991,7 @@ func (events *events) listenForEvents(ctx context.Context, im *instanceMemory, c
 		return err
 	}
 
-	events.logToInstance(ctx, time.Now(), im.cached, "Registered to receive events.")
+	events.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), "Registered to receive events.")
 
 	return nil
 }
@@ -1052,7 +1053,7 @@ func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloud
 
 	// add logging function
 	err = vm.Set("nslog", func(txt interface{}) {
-		flow.logToNamespace(ctx, time.Now(), cached, fmt.Sprintf("%v", txt))
+		flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), fmt.Sprintf("%v", txt))
 	})
 	if err != nil {
 		return resp, fmt.Errorf("failed to initialize js runtime: %w", err)
@@ -1060,19 +1061,19 @@ func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloud
 
 	_, err = vm.RunString(script)
 	if err != nil {
-		flow.logToNamespace(ctx, time.Now(), cached, "CloudEvent filter '%s' produced an error (1): %v", filterName, err)
+		flow.logger.Errorf(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "CloudEvent filter '%s' produced an error (1): %v", filterName, err)
 		return resp, err
 	}
 
 	f, ok := goja.AssertFunction(vm.Get("filter"))
 	if !ok {
-		flow.logToNamespace(ctx, time.Now(), cached, "cloudEvent filter '%s' error: %v", filterName, err)
+		flow.logger.Errorf(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "cloudEvent filter '%s' error: %v", filterName, err)
 		return resp, err
 	}
 
 	newEventMap, err := f(goja.Undefined())
 	if err != nil {
-		flow.logToNamespace(ctx, time.Now(), cached, "CloudEvent filter '%s' produced an error (2): %v", filterName, err)
+		flow.logger.Errorf(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "CloudEvent filter '%s' produced an error (2): %v", filterName, err)
 		return resp, err
 	}
 
@@ -1085,7 +1086,7 @@ func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloud
 
 	newBytesEvent, err := json.Marshal(newEventMap)
 	if err != nil {
-		flow.logToNamespace(ctx, time.Now(), cached, "CloudEvent filter '%s' produced an error (3): %v", filterName, err)
+		flow.logger.Errorf(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "CloudEvent filter '%s' produced an error (3): %v", filterName, err)
 		return resp, err
 	}
 

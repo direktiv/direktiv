@@ -3,9 +3,11 @@ package flow
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net"
-	"time"
+	"strings"
 
+	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/util"
 	libgrpc "google.golang.org/grpc"
@@ -90,19 +92,45 @@ func (internal *internal) ReportActionResults(ctx context.Context, req *grpc.Rep
 func (internal *internal) ActionLog(ctx context.Context, req *grpc.ActionLogRequest) (*emptypb.Empty, error) {
 	internal.sugar.Debugf("Handling gRPC request: %s", this())
 
-	t := time.Now()
-
 	cached, err := internal.getInstance(ctx, req.GetInstanceId())
 	if err != nil {
 		internal.sugar.Error(err)
 		return nil, err
 	}
 
+	rt, err := internal.edb.InstanceRuntime(ctx, cached.Instance.Runtime)
+	if err != nil {
+		return nil, err
+	}
+
+	flow := rt.Flow
+	stateID := flow[len(flow)-1]
+
+	tags := cached.GetAttributes(recipient.Instance)
+	tags["loop-index"] = fmt.Sprintf("%d", req.Iterator)
+	tags["state-id"] = stateID
+	tags["state-type"] = "action"
 	for _, msg := range req.GetMsg() {
-		internal.logToInstanceRaw(ctx, t, cached, msg)
+		res := truncateLogsMsg(msg, 1024)
+		internal.logger.Info(ctx, cached.Instance.ID, tags, res)
 	}
 
 	var resp emptypb.Empty
 
 	return &resp, nil
+}
+
+func truncateLogsMsg(msg string,
+	length int,
+) string {
+	res := ""
+	m := strings.Split(msg, "\n")
+	for _, v := range m {
+		if len(v) > length {
+			res += msg[:length] + "\n"
+		} else {
+			res += msg
+		}
+	}
+	return res
 }

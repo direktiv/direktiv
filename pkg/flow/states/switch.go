@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
+	log "github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/direktiv/direktiv/pkg/model"
 )
 
@@ -53,7 +54,7 @@ func (logic *switchLogic) Run(ctx context.Context, wakedata []byte) (*Transition
 
 		if truth(x) {
 
-			logic.Log(ctx, "Switch condition %d succeeded", i)
+			logic.Log(ctx, log.Info, "Switch condition %d succeeded", i)
 
 			return &Transition{
 				Transform: condition.Transform,
@@ -64,7 +65,7 @@ func (logic *switchLogic) Run(ctx context.Context, wakedata []byte) (*Transition
 
 	}
 
-	logic.Log(ctx, "No switch conditions succeeded")
+	logic.Log(ctx, log.Info, "No switch conditions succeeded")
 
 	return &Transition{
 		Transform: logic.DefaultTransform,

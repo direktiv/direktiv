@@ -343,6 +343,7 @@ func (flow *flow) StartWorkflow(ctx context.Context, req *grpc.StartWorkflowRequ
 	im, err := flow.engine.NewInstance(ctx, args)
 	if err != nil {
 		flow.sugar.Debugf("Error returned to gRPC request %s: %v", this(), err)
+		flow.logger.Errorf(ctx, flow.ID, flow.GetAttributes(), "Failed starting a Workflow")
 		return nil, err
 	}
 
@@ -461,6 +462,7 @@ func (flow *flow) CancelInstance(ctx context.Context, req *grpc.CancelInstanceRe
 
 	cached, err := flow.getInstance(ctx, req.GetNamespace(), req.GetInstance())
 	if err != nil {
+		flow.logger.Errorf(ctx, flow.ID, flow.GetAttributes(), "Failed to resolve instance %s", req.GetInstance())
 		return nil, err
 	}
 
@@ -487,6 +489,7 @@ func (flow *flow) AwaitWorkflow(req *grpc.AwaitWorkflowRequest, srv grpc.Flow_Aw
 
 	im, err := flow.engine.NewInstance(ctx, args)
 	if err != nil {
+		flow.logger.Errorf(ctx, flow.ID, flow.GetAttributes(), "Failed to create a instance")
 		flow.sugar.Debugf("Error returned to gRPC request %s: %v", this(), err)
 		return err
 	}

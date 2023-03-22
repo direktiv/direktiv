@@ -3,10 +3,10 @@ package flow
 import (
 	"context"
 	"errors"
-	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
+	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entino "github.com/direktiv/direktiv/pkg/flow/ent/inode"
 	entns "github.com/direktiv/direktiv/pkg/flow/ent/namespace"
@@ -261,10 +261,11 @@ func (flow *flow) CreateNamespace(ctx context.Context, req *grpc.CreateNamespace
 
 	err = tx.Commit()
 	if err != nil {
+		flow.logger.Errorf(ctx, flow.ID, flow.GetAttributes(), "Failed to create namespace '%s'.", cached.Namespace.Name)
 		return nil, err
 	}
 
-	flow.logToServer(ctx, time.Now(), "Created namespace '%s'.", cached.Namespace.Name)
+	flow.logger.Infof(ctx, flow.ID, flow.GetAttributes(), "Created namespace '%s'.", cached.Namespace.Name)
 	flow.pubsub.NotifyNamespaces()
 
 respond:
@@ -326,7 +327,7 @@ func (flow *flow) DeleteNamespace(ctx context.Context, req *grpc.DeleteNamespace
 
 	flow.deleteNamespaceSecrets(cached.Namespace)
 
-	flow.logToServer(ctx, time.Now(), "Deleted namespace '%s'.", cached.Namespace.Name)
+	flow.logger.Infof(ctx, flow.ID, flow.GetAttributes(), "Deleted namespace '%s'.", cached.Namespace.Name)
 	flow.pubsub.NotifyNamespaces()
 	flow.pubsub.CloseNamespace(cached.Namespace)
 
@@ -374,13 +375,14 @@ func (flow *flow) RenameNamespace(ctx context.Context, req *grpc.RenameNamespace
 
 	err = tx.Commit()
 	if err != nil {
+		flow.logger.Infof(ctx, flow.ID, flow.GetAttributes(), "Could not rename namespace '%s'.", cached.Namespace.Name)
 		return nil, err
 	}
 
 	flow.database.InvalidateNamespace(ctx, cached, true)
 
-	flow.logToServer(ctx, time.Now(), "Renamed namespace from '%s' to '%s'.", req.GetOld(), req.GetNew())
-	flow.logToNamespace(ctx, time.Now(), cached, "Renamed namespace from '%s' to '%s'.", req.GetOld(), req.GetNew())
+	flow.logger.Infof(ctx, flow.ID, flow.GetAttributes(), "Renamed namespace from '%s' to '%s'.", req.GetOld(), req.GetNew())
+	flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Renamed namespace from '%s' to '%s'.", req.GetOld(), req.GetNew())
 	flow.pubsub.NotifyNamespaces()
 	flow.pubsub.CloseNamespace(cached.Namespace)
 

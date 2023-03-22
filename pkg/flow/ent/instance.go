@@ -37,6 +37,8 @@ type Instance struct {
 	ErrorMessage string `json:"errorMessage,omitempty"`
 	// Invoker holds the value of the "invoker" field.
 	Invoker string `json:"invoker,omitempty"`
+	// InvokerState holds the value of the "invokerState" field.
+	InvokerState string `json:"invokerState,omitempty"`
 	// Callpath holds the value of the "callpath" field.
 	Callpath string `json:"callpath,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -174,7 +176,7 @@ func (*Instance) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case instance.FieldStatus, instance.FieldAs, instance.FieldErrorCode, instance.FieldErrorMessage, instance.FieldInvoker, instance.FieldCallpath:
+		case instance.FieldStatus, instance.FieldAs, instance.FieldErrorCode, instance.FieldErrorMessage, instance.FieldInvoker, instance.FieldInvokerState, instance.FieldCallpath:
 			values[i] = new(sql.NullString)
 		case instance.FieldCreatedAt, instance.FieldUpdatedAt, instance.FieldEndAt:
 			values[i] = new(sql.NullTime)
@@ -254,6 +256,12 @@ func (i *Instance) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field invoker", values[j])
 			} else if value.Valid {
 				i.Invoker = value.String
+			}
+		case instance.FieldInvokerState:
+			if value, ok := values[j].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field invokerState", values[j])
+			} else if value.Valid {
+				i.InvokerState = value.String
 			}
 		case instance.FieldCallpath:
 			if value, ok := values[j].(*sql.NullString); !ok {
@@ -378,6 +386,9 @@ func (i *Instance) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("invoker=")
 	builder.WriteString(i.Invoker)
+	builder.WriteString(", ")
+	builder.WriteString("invokerState=")
+	builder.WriteString(i.InvokerState)
 	builder.WriteString(", ")
 	builder.WriteString("callpath=")
 	builder.WriteString(i.Callpath)

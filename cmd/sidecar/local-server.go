@@ -173,6 +173,7 @@ func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
 	_, err := srv.flow.ActionLog(req.ctx, &grpc.ActionLogRequest{
 		InstanceId: req.instanceId,
 		Msg:        []string{msg},
+		Iterator:   int32(req.iterator),
 	})
 	if err != nil {
 		log.Errorf("Failed to forward log to diretiv: %v.", err)
@@ -361,6 +362,7 @@ type functionRequest struct {
 	deadline   time.Time
 	input      []byte
 	files      []*functionFiles
+	iterator   int
 }
 
 type functionFiles struct {

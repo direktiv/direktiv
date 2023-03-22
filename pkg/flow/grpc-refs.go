@@ -3,12 +3,12 @@ package flow
 import (
 	"context"
 	"errors"
-	"time"
 
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
+	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entref "github.com/direktiv/direktiv/pkg/flow/ent/ref"
 	entwf "github.com/direktiv/direktiv/pkg/flow/ent/workflow"
@@ -270,7 +270,7 @@ func (flow *flow) Tag(ctx context.Context, req *grpc.TagRequest) (*emptypb.Empty
 		return nil, err
 	}
 
-	flow.logToWorkflow(ctx, time.Now(), cached, "Tagged workflow: %s -> %s.", req.GetTag(), cached.Revision.ID.String())
+	flow.logger.Infof(ctx, cached.Workflow.ID, cached.GetAttributes(recipient.Workflow), "Tagged workflow: %s -> %s.", req.GetTag(), cached.Revision.ID.String())
 	flow.pubsub.NotifyWorkflow(cached.Workflow)
 
 	var resp emptypb.Empty
@@ -312,7 +312,7 @@ func (flow *flow) Untag(ctx context.Context, req *grpc.UntagRequest) (*emptypb.E
 		return nil, err
 	}
 
-	flow.logToWorkflow(ctx, time.Now(), cached, "Deleted workflow tag: %s.", req.GetTag())
+	flow.logger.Infof(ctx, cached.Workflow.ID, cached.GetAttributes(recipient.Workflow), "Deleted workflow tag: %s.", req.GetTag())
 	flow.pubsub.NotifyWorkflow(cached.Workflow)
 
 	var resp emptypb.Empty
@@ -365,7 +365,7 @@ func (flow *flow) Retag(ctx context.Context, req *grpc.RetagRequest) (*emptypb.E
 		return nil, err
 	}
 
-	flow.logToWorkflow(ctx, time.Now(), cached, "Changed workflow tag: %s -> %s.", req.GetTag(), cached.Revision.ID.String())
+	flow.logger.Infof(ctx, cached.Workflow.ID, cached.GetAttributes(recipient.Workflow), "Changed workflow tag: %s -> %s.", req.GetTag(), cached.Revision.ID.String())
 	flow.pubsub.NotifyWorkflow(cached.Workflow)
 
 respond:

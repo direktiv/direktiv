@@ -2,14 +2,18 @@ package flow
 
 import (
 	"context"
+	"strings"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
+	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	entlog "github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
 	entns "github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	entwf "github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/flow/internallogger"
+	"github.com/google/uuid"
 )
 
 var logsOrderings = []*orderingInfo{
@@ -20,7 +24,40 @@ var logsOrderings = []*orderingInfo{
 	},
 }
 
-var logsFilters = map[*filteringInfo]func(query *ent.LogMsgQuery, v string) (*ent.LogMsgQuery, error){}
+var logsFilters = map[*filteringInfo]func(query *ent.LogMsgQuery, v string) (*ent.LogMsgQuery, error){
+	{
+		field: "ID",
+		ftype: "MATCH",
+	}: func(query *ent.LogMsgQuery, v string) (*ent.LogMsgQuery, error) {
+		id, err := uuid.Parse(v)
+		if err != nil {
+			return nil, err
+		}
+		return query.Where(entlog.HasInstanceWith(entinst.IDEQ(id))), nil
+	},
+	{
+		field: "LEVEL",
+		ftype: "MATCH",
+	}: func(query *ent.LogMsgQuery, v string) (*ent.LogMsgQuery, error) {
+		return query.Where(entlog.LevelEQ(v)), nil
+	},
+	{
+		field: "LEVEL",
+		ftype: "STARTING",
+	}: func(query *ent.LogMsgQuery, v string) (*ent.LogMsgQuery, error) {
+		levels := []string{"debug", "info", "error", "panic"}
+		switch v {
+		case "debug":
+		case "info":
+			levels = levels[1:]
+		case "error":
+			levels = levels[2:]
+		case "panic":
+			levels = levels[3:]
+		}
+		return query.Where(entlog.LevelIn(levels...)), nil
+	},
+}
 
 func (flow *flow) ServerLogs(ctx context.Context, req *grpc.ServerLogsRequest) (*grpc.ServerLogsResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
@@ -38,7 +75,7 @@ func (flow *flow) ServerLogs(ctx context.Context, req *grpc.ServerLogsRequest) (
 	resp := new(grpc.ServerLogsResponse)
 	resp.PageInfo = pi
 
-	err = bytedata.ConvertDataForOutput(results, &resp.Results)
+	resp.Results, err = bytedata.ConvertLogMsgForOutput(results)
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +107,7 @@ resend:
 	resp := new(grpc.ServerLogsResponse)
 	resp.PageInfo = pi
 
-	err = bytedata.ConvertDataForOutput(results, &resp.Results)
+	resp.Results, err = bytedata.ConvertLogMsgForOutput(results)
 	if err != nil {
 		return err
 	}
@@ -119,7 +156,7 @@ func (flow *flow) NamespaceLogs(ctx context.Context, req *grpc.NamespaceLogsRequ
 	resp.Namespace = cached.Namespace.Name
 	resp.PageInfo = pi
 
-	err = bytedata.ConvertDataForOutput(results, &resp.Results)
+	resp.Results, err = bytedata.ConvertLogMsgForOutput(results)
 	if err != nil {
 		return nil, err
 	}
@@ -141,7 +178,7 @@ func (flow *flow) NamespaceLogsParcels(req *grpc.NamespaceLogsRequest, srv grpc.
 		return err
 	}
 
-	sub := flow.pubsub.SubscribeNamespaceLogs(cached.Namespace)
+	sub := flow.pubsub.SubscribeNamespaceLogs(&cached.Namespace.ID)
 	defer flow.cleanup(sub.Close)
 
 	clients := flow.edb.Clients(ctx)
@@ -159,7 +196,7 @@ resend:
 	resp.Namespace = cached.Namespace.Name
 	resp.PageInfo = pi
 
-	err = bytedata.ConvertDataForOutput(results, &resp.Results)
+	resp.Results, err = bytedata.ConvertLogMsgForOutput(results)
 	if err != nil {
 		return err
 	}
@@ -219,7 +256,7 @@ func (flow *flow) WorkflowLogs(ctx context.Context, req *grpc.WorkflowLogsReques
 	resp.Path = cached.Path()
 	resp.PageInfo = pi
 
-	err = bytedata.ConvertDataForOutput(results, &resp.Results)
+	resp.Results, err = bytedata.ConvertLogMsgForOutput(results)
 	if err != nil {
 		return nil, err
 	}
@@ -270,7 +307,7 @@ resend:
 	resp.Path = cached.Path()
 	resp.PageInfo = pi
 
-	err = bytedata.ConvertDataForOutput(results, &resp.Results)
+	resp.Results, err = bytedata.ConvertLogMsgForOutput(results)
 	if err != nil {
 		return err
 	}
@@ -306,8 +343,8 @@ func (flow *flow) InstanceLogs(ctx context.Context, req *grpc.InstanceLogsReques
 
 	clients := flow.edb.Clients(ctx)
 	// its important to append the intanceID to the callpath since we don't do it when creating the database entry
-	prefix := appendInstanceID(cached.Instance.CallPath, cached.Instance.ID.String())
-	root, err := getRootinstanceID(prefix)
+	prefix := internallogger.AppendInstanceID(cached.Instance.CallPath, cached.Instance.ID.String())
+	root, err := internallogger.GetRootinstanceID(prefix)
 	if err != nil {
 		return nil, err
 	}
@@ -323,12 +360,17 @@ func (flow *flow) InstanceLogs(ctx context.Context, req *grpc.InstanceLogsReques
 		return nil, err
 	}
 
+	filters := req.Pagination.Filter
+	for _, v := range filters {
+		results = queryJSON(v, results)
+		pi.Total = int32(len(results))
+	}
+
 	resp := new(grpc.InstanceLogsResponse)
 	resp.Namespace = cached.Namespace.Name
 	resp.Instance = cached.Instance.ID.String()
 	resp.PageInfo = pi
-
-	err = bytedata.ConvertDataForOutput(results, &resp.Results)
+	resp.Results, err = bytedata.ConvertLogMsgForOutput(results)
 	if err != nil {
 		return nil, err
 	}
@@ -351,8 +393,8 @@ func (flow *flow) InstanceLogsParcels(req *grpc.InstanceLogsRequest, srv grpc.Fl
 	sub := flow.pubsub.SubscribeInstanceLogs(cached)
 	defer flow.cleanup(sub.Close)
 	// its important to append the intanceID to the callpath since we don't do it when creating the database entry.
-	prefix := appendInstanceID(cached.Instance.CallPath, cached.Instance.ID.String())
-	root, err := getRootinstanceID(prefix)
+	prefix := internallogger.AppendInstanceID(cached.Instance.CallPath, cached.Instance.ID.String())
+	root, err := internallogger.GetRootinstanceID(prefix)
 	callerIsRoot := root == cached.Instance.ID.String()
 	if err != nil {
 		return err
@@ -370,12 +412,18 @@ resend:
 		return err
 	}
 
+	filters := req.Pagination.Filter
+	for _, v := range filters {
+		results = queryJSON(v, results)
+		pi.Total = int32(len(results))
+	}
+
 	resp := new(grpc.InstanceLogsResponse)
 	resp.Namespace = cached.Namespace.Name
 	resp.Instance = cached.Instance.ID.String()
 	resp.PageInfo = pi
 
-	err = bytedata.ConvertDataForOutput(results, &resp.Results)
+	resp.Results, err = bytedata.ConvertLogMsgForOutput(results)
 	if err != nil {
 		return err
 	}
@@ -399,4 +447,35 @@ resend:
 	}
 
 	goto resend
+}
+
+func queryJSON(filter *grpc.PageFilter, results []*ent.LogMsg) []*ent.LogMsg {
+	res := results
+	if filter.Field == "QUERY" && filter.Type == "MATCH" {
+		res = queryMatchState(filter.Val, results)
+	}
+	return res
+}
+
+func queryMatchState(q string, in []*ent.LogMsg) []*ent.LogMsg {
+	values := strings.Split(q, "::")
+	state := ""
+	workflow := ""
+	iterator := ""
+	if len(values) >= 2 {
+		workflow = values[0]
+		state = values[1]
+	}
+	if len(values) > 2 {
+		iterator = values[2]
+	}
+	res := make([]*ent.LogMsg, 0)
+	for _, v := range in {
+		if v.Tags["state-id"] == state &&
+			v.Tags["workflow"] == workflow &&
+			v.Tags["loop-index"] == iterator {
+			res = append(res, v)
+		}
+	}
+	return res
 }
