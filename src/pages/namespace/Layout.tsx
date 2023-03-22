@@ -104,7 +104,7 @@ const TopRightComponent: FC<{ className?: string }> = ({ className }) => {
     <div className={clsx("flex space-x-2", className)}>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="sm">
+          <Button variant="ghost" icon>
             <Settings2 />
             <RxChevronDown />
           </Button>
@@ -145,9 +145,9 @@ const TopRightComponent: FC<{ className?: string }> = ({ className }) => {
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
-            className="placeholder avatar items-center"
-            size="sm"
+            className="placeholder avatar items-center px-1"
             role="button"
+            icon
           >
             <div className="h-7 w-7 rounded-full bg-primary-500 text-neutral-content">
               <span className="text-xs">Ad</span>
