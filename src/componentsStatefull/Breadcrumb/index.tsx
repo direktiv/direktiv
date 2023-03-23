@@ -31,13 +31,32 @@ import { pages } from "../../util/router/pages";
 import { useNamespaces } from "../../api/namespaces";
 import { useTree } from "../../api/tree";
 
-const BreadcrumbComponent: FC<{ path: string }> = ({ path }) => {
-  // split path string in to chunks, using the last / as the separator
-  const segments = path.split("/");
+export const analyzePath = (path?: string) => {
+  // convert undefined and empty path to null
+  let pathClean: string | null = path || null;
+
+  if (path === "/") {
+    pathClean = null;
+  }
+
+  const segments = pathClean?.split("/") ?? [];
+  return {
+    path: pathClean,
+    segments: segments.map((s, index, src) => ({
+      relative: s,
+      absolute: src.slice(0, index + 1).join("/"),
+    })),
+  };
+};
+
+const BreadcrumbSegment: FC<{ absolute: string; relative: string }> = ({
+  absolute,
+  relative,
+}) => {
   const namespace = useNamespace();
 
   const { data, isLoading } = useTree({
-    directory: path,
+    directory: absolute,
   });
 
   if (!namespace) return null;
@@ -58,14 +77,14 @@ const BreadcrumbComponent: FC<{ path: string }> = ({ path }) => {
 
   const link =
     data?.node.expandedType === "workflow"
-      ? pages.workflow.createHref({ namespace, file: path })
-      : pages.explorer.createHref({ namespace, directory: path });
+      ? pages.workflow.createHref({ namespace, file: absolute })
+      : pages.explorer.createHref({ namespace, directory: absolute });
 
   return (
     <BreadcrumbLink>
       <Link to={link} className="gap-2">
         <Icon aria-hidden="true" className={clsx(isLoading && "invisible")} />
-        {segments.slice(-1)}
+        {relative}
       </Link>
     </BreadcrumbLink>
   );
@@ -79,6 +98,8 @@ const Breadcrumb = () => {
   const navigate = useNavigate();
 
   if (!namespace) return null;
+
+  const path = analyzePath(directory);
 
   const onNameSpaceChange = (namespace: string) => {
     setNamespace(namespace);
@@ -129,12 +150,14 @@ const Breadcrumb = () => {
           </DropdownMenuContent>
         </DropdownMenu>
       </BreadcrumbLink>
-      {/* TODO: extract this into a util and write some tests */}
-      {directory &&
-        directory?.split("/").map((segment, index, srcArr) => {
-          const absolutePath = srcArr.slice(0, index + 1).join("/");
-          return <BreadcrumbComponent key={absolutePath} path={absolutePath} />;
-        })}
+
+      {path.segments.map((x) => (
+        <BreadcrumbSegment
+          key={x.absolute}
+          absolute={x.absolute}
+          relative={x.relative}
+        />
+      ))}
     </BreadcrumbRoot>
   );
 };
