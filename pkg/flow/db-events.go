@@ -123,6 +123,7 @@ func (events *events) deleteInstanceEventListeners(ctx context.Context, cached *
 
 // called by add workflow, adds event listeners if required.
 func (events *events) processWorkflowEvents(ctx context.Context, cached *database.CacheData, ms *muxStart) error {
+
 	err := events.deleteWorkflowEventListeners(ctx, cached)
 	if err != nil {
 		return err
