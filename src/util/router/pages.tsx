@@ -8,12 +8,13 @@ import {
   Settings,
   Users,
 } from "lucide-react";
+import { useMatches, useParams } from "react-router-dom";
 
 import ExplorerPage from "../../pages/namespace/Explorer";
 import type { RouteObject } from "react-router-dom";
 import SettiongsPage from "../../pages/namespace/Settings";
 import WorkflowPage from "../../pages/namespace/Workflow";
-import { useParams } from "react-router-dom";
+import { z } from "zod";
 
 interface PageBase {
   name?: string;
@@ -38,10 +39,10 @@ type DefaultPageSetup = Record<
 type ExplorerPageSetup = Record<
   "explorer",
   PageBase & {
-    createHref: (params: { namespace: string; directory?: string }) => string;
+    createHref: (params: { namespace: string; path?: string }) => string;
     useParams: () => {
       namespace: string | undefined;
-      directory: string | undefined;
+      path: string | undefined;
     };
   }
 >;
@@ -49,10 +50,10 @@ type ExplorerPageSetup = Record<
 type WorkflowPageSetup = Record<
   "workflow",
   PageBase & {
-    createHref: (params: { namespace: string; file?: string }) => string;
+    createHref: (params: { namespace: string; path?: string }) => string;
     useParams: () => {
       namespace: string | undefined;
-      file: string | undefined;
+      path: string | undefined;
     };
   }
 >;
@@ -66,26 +67,55 @@ export const pages: DefaultPageSetup & ExplorerPageSetup & WorkflowPageSetup = {
     name: "Explorer",
     icon: FolderTree,
     createHref: (params) =>
-      `/${params.namespace}/explorer${`/${params.directory ?? ""}`}`,
+      `/${params.namespace}/explorer${`/${params.path ?? ""}`}`,
     useParams: () => {
-      const { "*": directory, namespace } = useParams();
-      return { namespace, directory };
+      const { "*": path, namespace } = useParams();
+      const [, secondLevel] = useMatches(); // first level is namespace level
+      // explorer.useParams() can also be called on pages
+      // that are not the explorer page and some params
+      // might accidentally match as well. To prevent that
+      // we use the custom handle we injected in the route
+      const isExplorer = z
+        .object({
+          handle: z.object({
+            isExplorerPage: z.literal(true),
+          }),
+        })
+        .safeParse(secondLevel).success;
+      return {
+        path: isExplorer ? path : undefined,
+        namespace: isExplorer ? namespace : undefined,
+      };
     },
     route: {
       path: "explorer/*",
       element: <ExplorerPage />,
+      handle: { isExplorerPage: true },
     },
   },
   workflow: {
     createHref: (params) =>
-      `/${params.namespace}/workflow/${params.file ?? ""}`,
+      `/${params.namespace}/workflow/${params.path ?? ""}`,
     useParams: () => {
-      const { "*": file, namespace } = useParams();
-      return { namespace, file };
+      const { "*": path, namespace } = useParams();
+      const [, secondLevel] = useMatches();
+      const isWorkflowPage = z
+        .object({
+          handle: z.object({
+            isWorkflowPage: z.literal(true),
+          }),
+        })
+        .safeParse(secondLevel).success;
+
+      return {
+        path: isWorkflowPage ? path : undefined,
+        namespace: isWorkflowPage ? namespace : undefined,
+      };
     },
     route: {
       path: "workflow/*",
       element: <WorkflowPage />,
+      handle: { isWorkflowPage: true },
     },
   },
   monitoring: {

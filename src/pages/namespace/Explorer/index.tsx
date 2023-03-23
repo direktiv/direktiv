@@ -2,6 +2,7 @@ import { FolderOpen, FolderUp, Github, Play } from "lucide-react";
 
 import { FC } from "react";
 import { Link } from "react-router-dom";
+import { analyzePath } from "../../../util/router/utils";
 import moment from "moment";
 import { pages } from "../../../util/router/pages";
 import { useNamespace } from "../../../util/store/namespace";
@@ -9,21 +10,20 @@ import { useTree } from "../../../api/tree";
 
 const ExplorerPage: FC = () => {
   const namespace = useNamespace();
-  const { directory } = pages.explorer.useParams();
+  const { path } = pages.explorer.useParams();
 
-  const { data } = useTree({
-    directory,
-  });
+  const { data } = useTree({ path });
+  const { parent, isRoot } = analyzePath(path);
 
   if (!namespace) return null;
   return (
     <div className="flex flex-col space-y-5 p-10 text-sm">
       <div className="flex flex-col space-y-5 ">
-        {directory && (
+        {!isRoot && (
           <Link
             to={pages.explorer.createHref({
               namespace,
-              directory: directory.split("/").slice(0, -1).join("/"),
+              path: parent?.absolute,
             })}
             className="flex items-center space-x-3"
           >
@@ -44,13 +44,11 @@ const ExplorerPage: FC = () => {
             file.expandedType === "workflow"
               ? pages.workflow.createHref({
                   namespace,
-                  file: directory ? `${directory}/${file.name}` : file.name,
+                  path: path ? `${path}/${file.name}` : file.name,
                 })
               : pages.explorer.createHref({
                   namespace,
-                  directory: directory
-                    ? `${directory}/${file.name}`
-                    : file.name,
+                  path: path ? `${path}/${file.name}` : file.name,
                 });
 
           return (

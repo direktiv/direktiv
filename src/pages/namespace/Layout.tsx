@@ -1,16 +1,8 @@
-import { Breadcrumb, BreadcrumbRoot } from "../../componentsNext/Breadcump";
 import {
-  ChevronsUpDown,
   CurlyBraces,
-  FolderOpen,
-  Github,
-  Home,
-  Loader2,
   LogOut,
   Menu,
   Moon,
-  Play,
-  PlusCircle,
   Settings2,
   Slack,
   Sun,
@@ -26,13 +18,9 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../../componentsNext/Dropdown";
-import { FC, Fragment } from "react";
-import { Link, Outlet, useNavigate } from "react-router-dom";
 import {
   Main,
   MainContent,
@@ -44,59 +32,19 @@ import {
   SidebarMain,
   SidebarTop,
 } from "../../componentsNext/Appshell";
-import { useNamespace, useNamespaceActions } from "../../util/store/namespace";
 import { useTheme, useThemeActions } from "../../util/store/theme";
 
+import Breadcrumb from "../../componentsStatefull/Breadcrumb";
 import Button from "../../componentsNext/Button";
+import { FC } from "react";
 import Logo from "../../componentsNext/Logo";
 import Navigation from "../../componentsNext/Navigation";
+import { Outlet } from "react-router-dom";
 import { RxChevronDown } from "react-icons/rx";
 import clsx from "clsx";
-import { pages } from "../../util/router/pages";
-import { useNamespaces } from "../../api/namespaces";
-import { useTree } from "../../api/tree";
 import { useVersion } from "../../api/version";
 
-const BreadcrumbComponent: FC<{ path: string }> = ({ path }) => {
-  // split path string in to chunks, using the last / as the separator
-  const segments = path.split("/");
-  const namespace = useNamespace();
-
-  const { data, isLoading } = useTree({
-    directory: path,
-  });
-
-  if (!namespace) return null;
-
-  let Icon = FolderOpen;
-
-  if (data?.node.expandedType === "git") {
-    Icon = Github;
-  }
-
-  if (data?.node.expandedType === "directory") {
-    Icon = FolderOpen;
-  }
-
-  if (data?.node.expandedType === "workflow") {
-    Icon = Play;
-  }
-
-  const link =
-    data?.node.expandedType === "workflow"
-      ? pages.workflow.createHref({ namespace, file: path })
-      : pages.explorer.createHref({ namespace, directory: path });
-
-  return (
-    <Breadcrumb>
-      <Link to={link} className="gap-2">
-        <Icon aria-hidden="true" className={clsx(isLoading && "invisible")} />
-        {segments.slice(-1)}
-      </Link>
-    </Breadcrumb>
-  );
-};
-
+// TODO: move to own file
 const TopRightComponent: FC<{ className?: string }> = ({ className }) => {
   const { setTheme } = useThemeActions();
   const theme = useTheme();
@@ -171,20 +119,6 @@ const TopRightComponent: FC<{ className?: string }> = ({ className }) => {
 const Layout = () => {
   const { data: version } = useVersion();
 
-  const { data: availableNamespaces, isLoading } = useNamespaces();
-  const namespace = useNamespace();
-  const { setNamespace } = useNamespaceActions();
-  const navigate = useNavigate();
-
-  if (!namespace) return null;
-
-  const { directory } = pages.explorer.useParams();
-
-  const onNameSpaceChange = (namespace: string) => {
-    setNamespace(namespace);
-    navigate(pages.explorer.createHref({ namespace }));
-  };
-
   return (
     <Root>
       <DrawerRoot>
@@ -214,67 +148,7 @@ const Layout = () => {
               <Main>
                 <MainTop>
                   <MainTopLeft>
-                    <BreadcrumbRoot>
-                      <Breadcrumb>
-                        <Link
-                          to={pages.explorer.createHref({ namespace })}
-                          className="gap-2"
-                        >
-                          <Home />
-                          {namespace}
-                        </Link>
-                        &nbsp;
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button size="sm" variant="ghost" circle>
-                              <ChevronsUpDown />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent className="w-56">
-                            <DropdownMenuLabel>Namespaces</DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuRadioGroup
-                              value={namespace}
-                              onValueChange={onNameSpaceChange}
-                            >
-                              {availableNamespaces?.results.map((ns) => (
-                                <DropdownMenuRadioItem
-                                  key={ns.name}
-                                  value={ns.name}
-                                  textValue={ns.name}
-                                >
-                                  {ns.name}
-                                </DropdownMenuRadioItem>
-                              ))}
-                            </DropdownMenuRadioGroup>
-                            {isLoading && (
-                              <DropdownMenuItem disabled>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                loading...
-                              </DropdownMenuItem>
-                            )}
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem>
-                              <PlusCircle className="mr-2 h-4 w-4" />
-                              <span>Create new namespace</span>
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </Breadcrumb>
-                      {/* TODO: extract this into a util and write some tests */}
-                      {directory &&
-                        directory?.split("/").map((segment, index, srcArr) => {
-                          const absolutePath = srcArr
-                            .slice(0, index + 1)
-                            .join("/");
-                          return (
-                            <BreadcrumbComponent
-                              key={absolutePath}
-                              path={absolutePath}
-                            />
-                          );
-                        })}
-                    </BreadcrumbRoot>
+                    <Breadcrumb />
                   </MainTopLeft>
                   <MainTopRight>
                     <TopRightComponent className="max-lg:hidden" />
