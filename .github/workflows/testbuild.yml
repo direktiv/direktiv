@@ -1,8 +1,12 @@
 name: Make test build
 on:
   push:
-    branches:
-      - feature/**
+    branches-ignore:
+      - 'main'
+  pull_request:
+    branches-ignore:
+      - 'main'
+  
 jobs:
   build:
     name: Make test build 
