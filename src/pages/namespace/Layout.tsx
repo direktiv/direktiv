@@ -44,6 +44,7 @@ import { RxChevronDown } from "react-icons/rx";
 import clsx from "clsx";
 import { useVersion } from "../../api/version";
 
+// TODO: move to own file
 const TopRightComponent: FC<{ className?: string }> = ({ className }) => {
   const { setTheme } = useThemeActions();
   const theme = useTheme();
