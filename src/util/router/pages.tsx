@@ -38,10 +38,10 @@ type DefaultPageSetup = Record<
 type ExplorerPageSetup = Record<
   "explorer",
   PageBase & {
-    createHref: (params: { namespace: string; directory?: string }) => string;
+    createHref: (params: { namespace: string; path?: string }) => string;
     useParams: () => {
       namespace: string | undefined;
-      directory: string | undefined;
+      path: string | undefined;
     };
   }
 >;
@@ -49,10 +49,10 @@ type ExplorerPageSetup = Record<
 type WorkflowPageSetup = Record<
   "workflow",
   PageBase & {
-    createHref: (params: { namespace: string; file?: string }) => string;
+    createHref: (params: { namespace: string; path?: string }) => string;
     useParams: () => {
       namespace: string | undefined;
-      file: string | undefined;
+      path: string | undefined;
     };
   }
 >;
@@ -66,10 +66,10 @@ export const pages: DefaultPageSetup & ExplorerPageSetup & WorkflowPageSetup = {
     name: "Explorer",
     icon: FolderTree,
     createHref: (params) =>
-      `/${params.namespace}/explorer${`/${params.directory ?? ""}`}`,
+      `/${params.namespace}/explorer${`/${params.path ?? ""}`}`,
     useParams: () => {
-      const { "*": directory, namespace } = useParams();
-      return { namespace, directory };
+      const { "*": path, namespace } = useParams(); // problem, wildcard matches on every route
+      return { path, namespace };
     },
     route: {
       path: "explorer/*",
@@ -78,10 +78,10 @@ export const pages: DefaultPageSetup & ExplorerPageSetup & WorkflowPageSetup = {
   },
   workflow: {
     createHref: (params) =>
-      `/${params.namespace}/workflow/${params.file ?? ""}`,
+      `/${params.namespace}/workflow/${params.path ?? ""}`,
     useParams: () => {
-      const { "*": file, namespace } = useParams();
-      return { namespace, file };
+      const { "*": path, namespace } = useParams(); // problem, wildcard matches on every route
+      return { path, namespace };
     },
     route: {
       path: "workflow/*",

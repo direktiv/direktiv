@@ -5,7 +5,6 @@ import {
 import {
   ChevronsUpDown,
   FolderOpen,
-  Github,
   Home,
   Loader2,
   Play,
@@ -63,22 +62,14 @@ const BreadcrumbSegment: FC<{ absolute: string; relative: string }> = ({
 
   let Icon = FolderOpen;
 
-  if (data?.node.expandedType === "git") {
-    Icon = Github;
-  }
-
-  if (data?.node.expandedType === "directory") {
-    Icon = FolderOpen;
-  }
-
   if (data?.node.expandedType === "workflow") {
     Icon = Play;
   }
 
   const link =
     data?.node.expandedType === "workflow"
-      ? pages.workflow.createHref({ namespace, file: absolute })
-      : pages.explorer.createHref({ namespace, directory: absolute });
+      ? pages.workflow.createHref({ namespace, path: absolute })
+      : pages.explorer.createHref({ namespace, path: absolute });
 
   return (
     <BreadcrumbLink>
@@ -93,13 +84,16 @@ const BreadcrumbSegment: FC<{ absolute: string; relative: string }> = ({
 const Breadcrumb = () => {
   const namespace = useNamespace();
   const { data: availableNamespaces, isLoading } = useNamespaces();
-  const { directory } = pages.explorer.useParams();
+
+  const { path: pathParamsExplorer } = pages.explorer.useParams();
+  const { path: pathParamsWorkflow } = pages.workflow.useParams();
+
   const { setNamespace } = useNamespaceActions();
   const navigate = useNavigate();
 
   if (!namespace) return null;
 
-  const path = analyzePath(directory);
+  const path = analyzePath(pathParamsExplorer || pathParamsWorkflow);
 
   const onNameSpaceChange = (namespace: string) => {
     setNamespace(namespace);
