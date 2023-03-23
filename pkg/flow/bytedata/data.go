@@ -5,7 +5,6 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
-	"fmt"
 	"io"
 	"reflect"
 	"strings"
@@ -170,7 +169,6 @@ deref:
 		case map[string]interface{}:
 			return convertDataForOutputMapBuilder(t, v)
 		default:
-			fmt.Println(reflect.TypeOf(y))
 			return convertDataForOutputStructBuilder(t, v)
 		}
 	default:

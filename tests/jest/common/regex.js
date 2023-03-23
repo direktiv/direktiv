@@ -1,4 +1,4 @@
-const timestampRegex = `^2.*Z$`
+const timestampRegex = String.raw`^((?:(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2}:\d{2}(?:\.\d+)?))(Z|[\+-]\d{2}:\d{2})?)$`
 const namespaceRegex = String.raw`^(([a-z][a-z0-9_\-\.]*[a-z0-9])|([a-z]))$`
 const nodeNameRegex = String.raw`(^$)|(^(([a-z][a-z0-9_\-\.]*[a-z0-9])|([a-z]))$)`
 const pathRegex = String.raw`(^[\/]((([a-z][a-z0-9_\-\.]*[a-z0-9])|([a-z]))[\/]?)*$)`

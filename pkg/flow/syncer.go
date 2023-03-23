@@ -802,11 +802,18 @@ func (syncer *syncer) hardSync(ctx context.Context, cached *database.CacheData, 
 				path:    truepath,
 				super:   true,
 			})
-			if ino == nil {
-				return err
+			if err != nil {
+				if errors.Is(err, os.ErrExist) {
+					syncer.logger.Infof(ctx, activity.ID, cached.GetAttributesMirror(mirror), "Failed to create a directory because node already exists: "+truepath)
+					return nil
+				} else {
+					return err
+				}
 			}
 
-			cache[truepath+"/"] = ino
+			if ino != nil {
+				cache[truepath+"/"] = ino
+			}
 
 		case mntWorkflow:
 
@@ -815,7 +822,7 @@ func (syncer *syncer) hardSync(ctx context.Context, cached *database.CacheData, 
 				return err
 			}
 
-			wf, ino, err := syncer.flow.createWorkflow(tctx, &createWorkflowArgs{
+			_, ino, err := syncer.flow.createWorkflow(tctx, &createWorkflowArgs{
 				ns:         cached.Namespace,
 				pino:       cache[dir],
 				path:       truepath,
@@ -823,32 +830,46 @@ func (syncer *syncer) hardSync(ctx context.Context, cached *database.CacheData, 
 				data:       data,
 				noValidate: true,
 			})
-			if wf == nil {
-				return err
-			}
-			if errors.Is(err, os.ErrExist) {
+			if err != nil {
+				if errors.Is(err, os.ErrExist) {
 
-				ucached := new(database.CacheData)
-				err = syncer.database.Workflow(tctx, ucached, wf.ID)
-				if err != nil {
+					ucached := new(database.CacheData)
+					ucached.Namespace = cached.Namespace
+
+					err2 := syncer.database.InodeByPath(tctx, ucached, truepath)
+					if err != nil {
+						return err2
+					}
+
+					if ucached.Inode().Type != util.InodeTypeWorkflow {
+						syncer.logger.Infof(ctx, activity.ID, cached.GetAttributesMirror(mirror), "Failed to create a workflow because node already exists: "+truepath)
+						return nil
+					}
+
+					err = syncer.database.Workflow(tctx, ucached, ucached.Inode().Workflow)
+					if err != nil {
+						return err
+					}
+
+					_, err = syncer.flow.updateWorkflow(tctx, &updateWorkflowArgs{
+						cached:     ucached,
+						path:       truepath,
+						super:      true,
+						data:       data,
+						noValidate: true,
+					})
+					if err != nil {
+						return err
+					}
+
+					cache[truepath] = ucached.Inode()
+
+				} else {
 					return err
 				}
-
-				_, err = syncer.flow.updateWorkflow(tctx, &updateWorkflowArgs{
-					cached:     ucached,
-					path:       truepath,
-					super:      true,
-					data:       data,
-					noValidate: true,
-				})
-				if err != nil {
-					return err
-				}
-
-				cache[truepath] = ucached.Inode()
-			} else {
-				cache[truepath] = ino
 			}
+
+			cache[truepath] = ino
 
 		case mntNamespaceVar:
 
@@ -871,7 +892,8 @@ func (syncer *syncer) hardSync(ctx context.Context, cached *database.CacheData, 
 
 			_, _, err = syncer.flow.SetVariable(tctx, &entNamespaceVarQuerier{cached: cached, clients: syncer.edb.Clients(tctx)}, trimmed, data, "", false)
 			if err != nil {
-				return err
+				syncer.logger.Infof(ctx, activity.ID, cached.GetAttributesMirror(mirror), "Failed to create a namespace variable '%s': %v", trimmed, err)
+				return nil
 			}
 
 		case mntWorkflowVar:
@@ -916,7 +938,8 @@ func (syncer *syncer) hardSync(ctx context.Context, cached *database.CacheData, 
 
 			_, _, err = syncer.flow.SetVariable(tctx, &entWorkflowVarQuerier{cached: wcached, clients: syncer.edb.Clients(tctx)}, trimmed, data, "", false)
 			if err != nil {
-				return err
+				syncer.logger.Infof(ctx, activity.ID, cached.GetAttributesMirror(mirror), "Failed to create a workflow variable '%s' for workflow '%s': %v", trimmed, wcached.Path(), err)
+				return nil
 			}
 
 		default:

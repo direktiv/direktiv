@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"runtime/debug"
 	"strings"
 	"time"
 
@@ -222,6 +223,14 @@ func (db *Database) NamespaceByName(ctx context.Context, name string) (*database
 	if err != nil {
 		db.Sugar.Debugf("%s failed to resolve namespace: %v", parent(), err)
 		return nil, err
+	}
+
+	if len(ns.Edges.Inodes) == 0 {
+		// NOTE: I don't know how this can happen, but it can.
+		fmt.Println("============= DID WE FAIL TO CASCADE? =============")
+		debug.PrintStack()
+		fmt.Println("===================================================")
+		return nil, fmt.Errorf("namespace doesn't exist: %w", os.ErrNotExist)
 	}
 
 	return db.entNamespace(ns), nil
