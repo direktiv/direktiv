@@ -30,7 +30,7 @@ describe("analyzePath", () => {
     });
   });
 
-  test.only("some/path", () => {
+  test("some/path", () => {
     expect(analyzePath("some/path")).toEqual({
       path: "some/path",
       isRoot: false,
