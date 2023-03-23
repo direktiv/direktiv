@@ -462,32 +462,116 @@ func queryMatchState(q string, in []*ent.LogMsg) []*ent.LogMsg {
 	state := ""
 	workflow := ""
 	iterator := ""
-	if len(values) >= 2 {
+	if len(values) > 0 {
 		workflow = values[0]
+	}
+	if len(values) > 1 {
 		state = values[1]
 	}
 	if len(values) > 2 {
 		iterator = values[2]
 	}
-	res := make([]*ent.LogMsg, 0)
+	matchWf := make([]*ent.LogMsg, 0)
+	matchState := make([]*ent.LogMsg, 0)
+	matchIterator := make([]*ent.LogMsg, 0)
 	for _, v := range in {
+		if v.Tags["workflow"] == workflow {
+			matchWf = append(matchWf, v)
+		}
 		if v.Tags["state-id"] == state &&
 			v.Tags["workflow"] == workflow {
-			res = append(res, v)
+			matchState = append(matchState, v)
+		}
+		if v.Tags["state-id"] != "" && v.Tags["state-id"] == state &&
+			v.Tags["workflow"] == workflow &&
+			v.Tags["loop-index"] == iterator {
+			matchIterator = append(matchIterator, v)
+		}
+		if v.Tags["state-id"] == "" && v.Tags["workflow"] == workflow &&
+			v.Tags["loop-index"] == iterator {
+			matchIterator = append(matchIterator, v)
 		}
 	}
-	if iterator != "" {
-		return queryMatchIterrator(iterator, res)
+	if state == "" && iterator == "" {
+		return matchWf
 	}
-	return res
+	if iterator != "" {
+		if len(matchIterator) == 0 {
+			return matchIterator
+		}
+		callpath := internallogger.AppendInstanceID(matchIterator[0].Tags["callpath"], matchIterator[0].Tags["instance-id"])
+		childs := getAllChilds(callpath, in)
+		originInstance := filterByInstanceId(matchIterator[0].Tags["instance-id"], in)
+		subtree := append(originInstance, childs...)
+		res := filterByIterrator(iterator, subtree)
+		if nestedLoopHead := getNestedLoopHead(childs); nestedLoopHead != "" {
+			nestedLoop := filterByInstanceId(nestedLoopHead, subtree)
+			if len(nestedLoop) == 0 {
+				return res
+			}
+			callpath := internallogger.AppendInstanceID(nestedLoop[0].Tags["callpath"], nestedLoop[0].Tags["instance-id"])
+			nestedLoopChilds := getAllChilds(callpath, subtree)
+			nestedLoopSubtree := append(nestedLoop, nestedLoopChilds...)
+			res = append(res, nestedLoopChilds...)
+			res = append(res, nestedLoopSubtree...)
+			res = removeDuplicate(res)
+		}
+		return res
+	}
+	return matchState
 }
 
-func queryMatchIterrator(iterator string, in []*ent.LogMsg) []*ent.LogMsg {
+func filterByIterrator(iterator string, in []*ent.LogMsg) []*ent.LogMsg {
 	res := make([]*ent.LogMsg, 0)
+	if iterator == "" {
+		return res
+	}
 	for _, v := range in {
 		if v.Tags["loop-index"] == iterator {
 			res = append(res, v)
 		}
 	}
 	return res
+}
+
+func getNestedLoopHead(in []*ent.LogMsg) string {
+	for _, v := range in {
+		if v.Tags["state-type"] == "foreach" {
+			return v.Tags["instance-id"]
+		}
+	}
+	return ""
+}
+
+func getAllChilds(callpath string, in []*ent.LogMsg) []*ent.LogMsg {
+	res := make([]*ent.LogMsg, 0)
+	for _, v := range in {
+		if strings.HasPrefix(v.Tags["callpath"], callpath) {
+			res = append(res, v)
+		}
+	}
+	return res
+}
+
+func filterByInstanceId(instanceId string, in []*ent.LogMsg) []*ent.LogMsg {
+	res := make([]*ent.LogMsg, 0)
+	for _, v := range in {
+		if strings.HasPrefix(v.Tags["instance-id"], instanceId) {
+			res = append(res, v)
+		}
+	}
+	return res
+}
+
+// https://stackoverflow.com/questions/66643946/how-to-remove-duplicates-strings-or-int-from-slice-in-go
+func removeDuplicate(in []*ent.LogMsg) []*ent.LogMsg {
+	allKeys := make(map[*ent.LogMsg]bool)
+	list := []*ent.LogMsg{}
+	for _, item := range in {
+		if _, value := allKeys[item]; !value {
+			allKeys[item] = true
+			list = append(list, item)
+		}
+	}
+	return list
 }
