@@ -7,11 +7,16 @@ export const analyzePath = (path?: string) => {
   }
 
   const segments = pathClean?.split("/") ?? [];
+
+  const segmentsArr = segments.map((s, index, src) => ({
+    relative: s,
+    absolute: src.slice(0, index + 1).join("/"),
+  }));
+
   return {
     path: pathClean,
-    segments: segments.map((s, index, src) => ({
-      relative: s,
-      absolute: src.slice(0, index + 1).join("/"),
-    })),
+    isRoot: segments.length === 0,
+    parent: segmentsArr.length > 1 ? segmentsArr[segmentsArr.length - 2] : null,
+    segments: segmentsArr,
   };
 };

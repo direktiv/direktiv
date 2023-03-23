@@ -6,6 +6,8 @@ describe("analyzePath", () => {
   test("undefined", () => {
     expect(analyzePath()).toEqual({
       path: null,
+      isRoot: true,
+      parent: null,
       segments: [],
     });
   });
@@ -13,6 +15,8 @@ describe("analyzePath", () => {
   test("empyt string", () => {
     expect(analyzePath("")).toEqual({
       path: null,
+      isRoot: true,
+      parent: null,
       segments: [],
     });
   });
@@ -20,13 +24,20 @@ describe("analyzePath", () => {
   test("/", () => {
     expect(analyzePath("/")).toEqual({
       path: null,
+      isRoot: true,
+      parent: null,
       segments: [],
     });
   });
 
-  test("some/path", () => {
+  test.only("some/path", () => {
     expect(analyzePath("some/path")).toEqual({
       path: "some/path",
+      isRoot: false,
+      parent: {
+        relative: "some",
+        absolute: "some",
+      },
       segments: [
         {
           relative: "some",
@@ -43,6 +54,11 @@ describe("analyzePath", () => {
   test("some/nested/path", () => {
     expect(analyzePath("some/nested/path")).toEqual({
       path: "some/nested/path",
+      isRoot: false,
+      parent: {
+        relative: "nested",
+        absolute: "some/nested",
+      },
       segments: [
         {
           relative: "some",
