@@ -55,7 +55,7 @@ const BreadcrumbSegment: FC<{ absolute: string; relative: string }> = ({
   const namespace = useNamespace();
 
   const { data, isLoading } = useTree({
-    directory: absolute,
+    path: absolute,
   });
 
   if (!namespace) return null;

@@ -11,9 +11,7 @@ const ExplorerPage: FC = () => {
   const namespace = useNamespace();
   const { path } = pages.explorer.useParams();
 
-  const { data } = useTree({
-    directory: path,
-  });
+  const { data } = useTree({ path });
 
   if (!namespace) return null;
   return (
