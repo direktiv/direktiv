@@ -25,28 +25,11 @@ import { useNamespace, useNamespaceActions } from "../../util/store/namespace";
 
 import Button from "../../componentsNext/Button";
 import { FC } from "react";
+import { analyzePath } from "../../util/router/utils";
 import clsx from "clsx";
 import { pages } from "../../util/router/pages";
 import { useNamespaces } from "../../api/namespaces";
 import { useTree } from "../../api/tree";
-
-export const analyzePath = (path?: string) => {
-  // convert undefined and empty path to null
-  let pathClean: string | null = path || null;
-
-  if (path === "/") {
-    pathClean = null;
-  }
-
-  const segments = pathClean?.split("/") ?? [];
-  return {
-    path: pathClean,
-    segments: segments.map((s, index, src) => ({
-      relative: s,
-      absolute: src.slice(0, index + 1).join("/"),
-    })),
-  };
-};
 
 const BreadcrumbSegment: FC<{ absolute: string; relative: string }> = ({
   absolute,

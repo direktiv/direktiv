@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 
-import { analyzePath } from "../index";
+import { analyzePath } from "../utils";
 
 describe("analyzePath", () => {
   test("undefined", () => {
