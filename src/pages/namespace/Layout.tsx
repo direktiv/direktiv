@@ -34,6 +34,7 @@ import {
 } from "../../componentsNext/Appshell";
 import { useTheme, useThemeActions } from "../../util/store/theme";
 
+import Breadcrumb from "../../componentsStatefull/Breadcrumb";
 import Button from "../../componentsNext/Button";
 import { FC } from "react";
 import Logo from "../../componentsNext/Logo";
@@ -145,7 +146,9 @@ const Layout = () => {
               </Sidebar>
               <Main>
                 <MainTop>
-                  <MainTopLeft></MainTopLeft>
+                  <MainTopLeft>
+                    <Breadcrumb />
+                  </MainTopLeft>
                   <MainTopRight>
                     <TopRightComponent className="max-lg:hidden" />
                   </MainTopRight>
