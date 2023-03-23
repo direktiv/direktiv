@@ -20,7 +20,7 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@radix-ui/react-dropdown-menu";
+} from "../../componentsNext/Dropdown";
 import { Link, useNavigate } from "react-router-dom";
 import { useNamespace, useNamespaceActions } from "../../util/store/namespace";
 
