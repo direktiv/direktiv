@@ -100,8 +100,9 @@ func (logger *Logger) Debug(ctx context.Context, recipientID uuid.UUID, tags map
 }
 
 func (logger *Logger) Debugf(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
+	msg = fmt.Sprintf(msg, a...)
 	logger.Telemetry(ctx, Debug, tags, msg)
-	logger.sendToWorker(recipientID, tags, Debug, fmt.Sprintf(msg, a...))
+	logger.sendToWorker(recipientID, tags, Debug, msg)
 }
 
 func (logger *Logger) Info(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string) {
@@ -110,8 +111,9 @@ func (logger *Logger) Info(ctx context.Context, recipientID uuid.UUID, tags map[
 }
 
 func (logger *Logger) Infof(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
+	msg = fmt.Sprintf(msg, a...)
 	logger.Telemetry(ctx, Info, tags, msg)
-	logger.sendToWorker(recipientID, tags, Info, fmt.Sprintf(msg, a...))
+	logger.sendToWorker(recipientID, tags, Info, msg)
 }
 
 func (logger *Logger) Error(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string) {
@@ -120,8 +122,9 @@ func (logger *Logger) Error(ctx context.Context, recipientID uuid.UUID, tags map
 }
 
 func (logger *Logger) Errorf(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
+	msg = fmt.Sprintf(msg, a...)
 	logger.Telemetry(ctx, Error, tags, msg)
-	logger.sendToWorker(recipientID, tags, Error, fmt.Sprintf(msg, a...))
+	logger.sendToWorker(recipientID, tags, Error, msg)
 }
 
 func (logger *Logger) Panic(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string) {
@@ -130,8 +133,9 @@ func (logger *Logger) Panic(ctx context.Context, recipientID uuid.UUID, tags map
 }
 
 func (logger *Logger) Panicf(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
+	msg = fmt.Sprintf(msg, a...)
 	logger.Telemetry(ctx, Panic, tags, msg)
-	logger.sendToWorker(recipientID, tags, Panic, fmt.Sprintf(msg, a...))
+	logger.sendToWorker(recipientID, tags, Panic, msg)
 }
 
 func (logger *Logger) sendToWorker(recipientID uuid.UUID, tags map[string]string, level Level, msg string) {
