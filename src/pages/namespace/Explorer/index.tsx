@@ -2,6 +2,7 @@ import { FolderOpen, FolderUp, Github, Play } from "lucide-react";
 
 import { FC } from "react";
 import { Link } from "react-router-dom";
+import { analyzePath } from "../../../util/router/utils";
 import moment from "moment";
 import { pages } from "../../../util/router/pages";
 import { useNamespace } from "../../../util/store/namespace";
@@ -12,16 +13,17 @@ const ExplorerPage: FC = () => {
   const { path } = pages.explorer.useParams();
 
   const { data } = useTree({ path });
+  const { parent, isRoot } = analyzePath(path);
 
   if (!namespace) return null;
   return (
     <div className="flex flex-col space-y-5 p-10 text-sm">
       <div className="flex flex-col space-y-5 ">
-        {path && (
+        {!isRoot && (
           <Link
             to={pages.explorer.createHref({
               namespace,
-              path: path.split("/").slice(0, -1).join("/"),
+              path: parent?.absolute,
             })}
             className="flex items-center space-x-3"
           >
