@@ -1,4 +1,11 @@
-import { FolderOpen, FolderTree, FolderUp, Github, Play } from "lucide-react";
+import {
+  FolderOpen,
+  FolderTree,
+  FolderUp,
+  Github,
+  Play,
+  PlusCircle,
+} from "lucide-react";
 
 import Button from "../../../componentsNext/Button";
 import { FC } from "react";
@@ -26,9 +33,11 @@ const ExplorerPage: FC = () => {
           <FolderTree className="h-5" />
           {data?.node?.path}
         </h3>
-        <Button variant="primary">
-          Actions <RxChevronDown />
-        </Button>
+        <div className="flex space-x-3">
+          <Button variant="primary">
+            <PlusCircle /> New <RxChevronDown />
+          </Button>
+        </div>
       </div>
       <div className="flex flex-col space-y-5 ">
         {!isRoot && (
