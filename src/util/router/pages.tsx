@@ -66,8 +66,13 @@ export const pages: DefaultPageSetup & ExplorerPageSetup & WorkflowPageSetup = {
   explorer: {
     name: "Explorer",
     icon: FolderTree,
-    createHref: (params) =>
-      `/${params.namespace}/explorer${`/${params.path ?? ""}`}`,
+    createHref: (params) => {
+      let path = "";
+      if (params.path) {
+        path = params.path.startsWith("/") ? params.path : `/${params.path}`;
+      }
+      return `/${params.namespace}/explorer${path}`;
+    },
     useParams: () => {
       const { "*": path, namespace } = useParams();
       const [, secondLevel] = useMatches(); // first level is namespace level
@@ -94,8 +99,13 @@ export const pages: DefaultPageSetup & ExplorerPageSetup & WorkflowPageSetup = {
     },
   },
   workflow: {
-    createHref: (params) =>
-      `/${params.namespace}/workflow/${params.path ?? ""}`,
+    createHref: (params) => {
+      let path = "";
+      if (params.path) {
+        path = params.path.startsWith("/") ? params.path : `/${params.path}`;
+      }
+      return `/${params.namespace}/workflow${path}`;
+    },
     useParams: () => {
       const { "*": path, namespace } = useParams();
       const [, secondLevel] = useMatches();
