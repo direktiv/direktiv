@@ -44,11 +44,11 @@ const ExplorerPage: FC = () => {
             file.expandedType === "workflow"
               ? pages.workflow.createHref({
                   namespace,
-                  path: path ? `${path}/${file.name}` : file.name,
+                  path: file.path,
                 })
               : pages.explorer.createHref({
                   namespace,
-                  path: path ? `${path}/${file.name}` : file.name,
+                  path: file.path,
                 });
 
           return (
