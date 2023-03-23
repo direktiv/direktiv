@@ -250,7 +250,6 @@ func (flow *flow) createWorkflow(ctx context.Context, args *createWorkflowArgs) 
 		Metadata: make(map[string]interface{}),
 	})
 	if err != nil {
-		flow.logger.Errorf(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Failed to create workflow.")
 		return nil, nil, err
 	}
 
