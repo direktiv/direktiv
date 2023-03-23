@@ -1,5 +1,13 @@
 import {
-  FolderOpen,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "../../../componentsNext/Dropdown";
+import {
+  Folder,
   FolderTree,
   FolderUp,
   Github,
@@ -33,11 +41,26 @@ const ExplorerPage: FC = () => {
           <FolderTree className="h-5" />
           {data?.node?.path}
         </h3>
-        <div className="flex space-x-3">
-          <Button variant="primary">
-            <PlusCircle /> New <RxChevronDown />
-          </Button>
-        </div>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="primary">
+              <PlusCircle /> New <RxChevronDown />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-40">
+            <DropdownMenuLabel>Create</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>
+              <Play className="mr-2 h-4 w-4" />
+              <span>New Workflow</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <Folder className="mr-2 h-4 w-4" />
+              <span>New Directory</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
       <div className="flex flex-col space-y-5 ">
         {!isRoot && (
@@ -53,7 +76,7 @@ const ExplorerPage: FC = () => {
           </Link>
         )}
         {data?.children?.results.map((file) => {
-          let Icon = FolderOpen;
+          let Icon = Folder;
           if (file.expandedType === "workflow") {
             Icon = Play;
           }
