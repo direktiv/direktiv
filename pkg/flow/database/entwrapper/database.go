@@ -224,6 +224,11 @@ func (db *Database) NamespaceByName(ctx context.Context, name string) (*database
 		return nil, err
 	}
 
+	if len(ns.Edges.Inodes) > 0 {
+		// NOTE: I don't know how this can happen, but it can.
+		return nil, fmt.Errorf("namespace doesn't exist: %w", os.ErrNotExist)
+	}
+
 	return db.entNamespace(ns), nil
 }
 
