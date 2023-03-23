@@ -147,8 +147,7 @@ func (logic *actionLogic) scheduleAction(ctx context.Context, attempt int) error
 	if err != nil {
 		return derrors.NewInternalError(err)
 	}
-
-	child, err := invokeAction(ctx, invokeActionArgs{
+	args := invokeActionArgs{
 		instance: logic.Instance,
 		async:    logic.Async,
 		fn:       fn,
@@ -156,7 +155,12 @@ func (logic *actionLogic) scheduleAction(ctx context.Context, attempt int) error
 		timeout:  wfto,
 		files:    files,
 		attempt:  attempt,
-	})
+	}
+	iterator, ok := logic.Iterator()
+	if ok {
+		args.iterator = iterator
+	}
+	child, err := invokeAction(ctx, args)
 	if err != nil {
 		return err
 	}

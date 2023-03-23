@@ -472,8 +472,20 @@ func queryMatchState(q string, in []*ent.LogMsg) []*ent.LogMsg {
 	res := make([]*ent.LogMsg, 0)
 	for _, v := range in {
 		if v.Tags["state-id"] == state &&
-			v.Tags["workflow"] == workflow &&
-			v.Tags["loop-index"] == iterator {
+			v.Tags["workflow"] == workflow {
+			res = append(res, v)
+		}
+	}
+	if iterator != "" {
+		return queryMatchIterrator(iterator, res)
+	}
+	return res
+}
+
+func queryMatchIterrator(iterator string, in []*ent.LogMsg) []*ent.LogMsg {
+	res := make([]*ent.LogMsg, 0)
+	for _, v := range in {
+		if v.Tags["loop-index"] == iterator {
 			res = append(res, v)
 		}
 	}

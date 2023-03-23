@@ -116,6 +116,7 @@ type generateActionInputArgs struct {
 	Source   interface{}
 	Action   *model.ActionDefinition
 	Files    []model.FunctionFileDefinition
+	Iterator int
 }
 
 func generateActionInput(ctx context.Context, args *generateActionInputArgs) ([]byte, []model.FunctionFileDefinition, error) {
