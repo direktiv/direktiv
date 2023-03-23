@@ -892,7 +892,8 @@ func (syncer *syncer) hardSync(ctx context.Context, cached *database.CacheData, 
 
 			_, _, err = syncer.flow.SetVariable(tctx, &entNamespaceVarQuerier{cached: cached, clients: syncer.edb.Clients(tctx)}, trimmed, data, "", false)
 			if err != nil {
-				return err
+				syncer.logger.Infof(ctx, activity.ID, cached.GetAttributesMirror(mirror), "Failed to create a namespace variable '%s': %v", trimmed, err)
+				return nil
 			}
 
 		case mntWorkflowVar:
@@ -937,7 +938,8 @@ func (syncer *syncer) hardSync(ctx context.Context, cached *database.CacheData, 
 
 			_, _, err = syncer.flow.SetVariable(tctx, &entWorkflowVarQuerier{cached: wcached, clients: syncer.edb.Clients(tctx)}, trimmed, data, "", false)
 			if err != nil {
-				return err
+				syncer.logger.Infof(ctx, activity.ID, cached.GetAttributesMirror(mirror), "Failed to create a workflow variable '%s' for workflow '%s': %v", trimmed, wcached.Path(), err)
+				return nil
 			}
 
 		default:
