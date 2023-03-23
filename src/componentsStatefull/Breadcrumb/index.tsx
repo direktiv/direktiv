@@ -26,38 +26,30 @@ import { useNamespace, useNamespaceActions } from "../../util/store/namespace";
 import Button from "../../componentsNext/Button";
 import { FC } from "react";
 import { analyzePath } from "../../util/router/utils";
-import clsx from "clsx";
 import { pages } from "../../util/router/pages";
 import { useNamespaces } from "../../api/namespaces";
-import { useTree } from "../../api/tree";
 
-const BreadcrumbSegment: FC<{ absolute: string; relative: string }> = ({
-  absolute,
-  relative,
-}) => {
+const BreadcrumbSegment: FC<{
+  absolute: string;
+  relative: string;
+  isLast: boolean;
+}> = ({ absolute, relative, isLast }) => {
   const namespace = useNamespace();
-
-  const { data, isLoading } = useTree({
-    path: absolute,
-  });
-
   if (!namespace) return null;
 
-  let Icon = FolderOpen;
+  const { path: pathParamsWorkflow } = pages.workflow.useParams();
+  const isWorkflow = !!pathParamsWorkflow && isLast;
 
-  if (data?.node.expandedType === "workflow") {
-    Icon = Play;
-  }
+  const Icon = isWorkflow ? Play : FolderOpen;
 
-  const link =
-    data?.node.expandedType === "workflow"
-      ? pages.workflow.createHref({ namespace, path: absolute })
-      : pages.explorer.createHref({ namespace, path: absolute });
+  const link = isWorkflow
+    ? pages.workflow.createHref({ namespace, path: absolute })
+    : pages.explorer.createHref({ namespace, path: absolute });
 
   return (
     <BreadcrumbLink>
       <Link to={link} className="gap-2">
-        <Icon aria-hidden="true" className={clsx(isLoading && "invisible")} />
+        <Icon aria-hidden="true" />
         {relative}
       </Link>
     </BreadcrumbLink>
@@ -128,11 +120,12 @@ const Breadcrumb = () => {
         </DropdownMenu>
       </BreadcrumbLink>
 
-      {path.segments.map((x) => (
+      {path.segments.map((x, i) => (
         <BreadcrumbSegment
           key={x.absolute}
           absolute={x.absolute}
           relative={x.relative}
+          isLast={i === path.segments.length - 1}
         />
       ))}
     </BreadcrumbRoot>
