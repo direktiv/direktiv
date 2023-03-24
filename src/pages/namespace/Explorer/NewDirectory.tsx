@@ -1,9 +1,9 @@
 import * as Dialog from "@radix-ui/react-dialog";
 
+import { Folder, PlusCircle } from "lucide-react";
 import { SubmitHandler, useForm } from "react-hook-form";
 
 import Button from "../../../componentsNext/Button";
-import { Folder } from "lucide-react";
 import clsx from "clsx";
 import { useState } from "react";
 
@@ -60,6 +60,7 @@ const NewDirectory = () => {
             <Button variant="ghost">Cancel</Button>
           </Dialog.Close>
           <Button type="submit" disabled={!isDirty} loading={loading}>
+            {!loading && <PlusCircle />}
             Create
           </Button>
         </div>
