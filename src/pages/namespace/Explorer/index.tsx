@@ -1,3 +1,5 @@
+import * as Dialog from "@radix-ui/react-dialog";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,6 +22,7 @@ import { FC } from "react";
 import { Link } from "react-router-dom";
 import { RxChevronDown } from "react-icons/rx";
 import { analyzePath } from "../../../util/router/utils";
+import clsx from "clsx";
 import moment from "moment";
 import { pages } from "../../../util/router/pages";
 import { useNamespace } from "../../../util/store/namespace";
@@ -42,27 +45,77 @@ const ExplorerPage: FC = () => {
             <FolderTree className="h-5" />
             {data?.node?.path}
           </h3>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="primary">
-                <PlusCircle /> New <RxChevronDown />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-40">
-              <DropdownMenuLabel>Create</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <Play className="mr-2 h-4 w-4" />
-                <span>New Workflow</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Folder className="mr-2 h-4 w-4" />
-                <span>New Directory</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <Dialog.Root>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="primary">
+                  <PlusCircle /> New <RxChevronDown />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-40">
+                <DropdownMenuLabel>Create</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <Dialog.Trigger>
+                  <DropdownMenuItem>
+                    <FolderUp className="mr-2 h-4 w-4" />
+                    <span>New Directory</span>
+                  </DropdownMenuItem>
+                </Dialog.Trigger>
+                <DropdownMenuItem>
+                  <Play className="mr-2 h-4 w-4" />
+                  <span>New Workflow</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Dialog.Portal>
+              <div className="fixed inset-0 z-50 flex items-start justify-center sm:items-center">
+                <Dialog.Overlay
+                  className={clsx(
+                    "fixed inset-0 z-50 backdrop-blur-sm transition-all duration-100 data-[state=closed]:animate-out data-[state=open]:fade-in data-[state=closed]:fade-out",
+                    "bg-black-alpha-2",
+                    "dark:bg-white-alpha-2"
+                  )}
+                />
+                <Dialog.Content
+                  className={clsx(
+                    "fixed z-50 grid w-full gap-2 rounded-b-lg p-6 animate-in data-[state=open]:fade-in-90 data-[state=open]:slide-in-from-bottom-10 sm:max-w-[425px] sm:rounded-lg sm:zoom-in-90 data-[state=open]:sm:slide-in-from-bottom-0",
+                    "bg-base-100"
+                  )}
+                >
+                  <Dialog.Title className="text-mauve12 m-0 flex gap-2 text-[17px] font-medium">
+                    <Folder /> Create a new Folder
+                  </Dialog.Title>
+                  <Dialog.Description className="text-mauve11 mt-[10px] mb-5 text-[15px] leading-normal">
+                    Please enter the name of the new folder.
+                  </Dialog.Description>
+                  <fieldset className="mb-[15px] flex items-center gap-5">
+                    <label
+                      className="text-violet11 w-[90px] text-right text-[15px]"
+                      htmlFor="name"
+                    >
+                      Name
+                    </label>
+                    <input
+                      className="text-violet11 shadow-violet7 focus:shadow-violet8 inline-flex h-[35px] w-full flex-1 items-center justify-center rounded-[4px] px-[10px] text-[15px] leading-none shadow-[0_0_0_1px] outline-none focus:shadow-[0_0_0_2px]"
+                      id="name"
+                      defaultValue="Folder Name"
+                    />
+                  </fieldset>
+                  <div className="flex justify-end gap-2">
+                    <Dialog.Close asChild>
+                      <Button variant="ghost">Cancel</Button>
+                    </Dialog.Close>
+                    <Dialog.Close asChild>
+                      <Button>Create</Button>
+                    </Dialog.Close>
+                  </div>
+                </Dialog.Content>
+              </div>
+            </Dialog.Portal>
+          </Dialog.Root>
         </div>
       </div>
+
       <div className="flex flex-col space-y-5 p-5 text-sm">
         <div className="flex flex-col space-y-5 ">
           {!isRoot && (
