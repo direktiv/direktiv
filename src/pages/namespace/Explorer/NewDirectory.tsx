@@ -7,8 +7,7 @@ import clsx from "clsx";
 const NewDirectory = () => (
   <Dialog.Content
     className={clsx(
-      "fixed z-50 grid w-full gap-2 rounded-b-lg p-6 animate-in data-[state=open]:fade-in-90 data-[state=open]:slide-in-from-bottom-10 sm:max-w-[425px] sm:rounded-lg sm:zoom-in-90 data-[state=open]:sm:slide-in-from-bottom-0",
-      "bg-base-100"
+      "fixed z-50 grid w-full gap-2 rounded-b-lg bg-base-100 p-6 shadow-md animate-in data-[state=open]:fade-in-90 data-[state=open]:slide-in-from-bottom-10 sm:max-w-[425px] sm:rounded-lg sm:zoom-in-90 data-[state=open]:sm:slide-in-from-bottom-0"
     )}
   >
     <div className="text-mauve12 m-0 flex gap-2 text-[17px] font-medium">
