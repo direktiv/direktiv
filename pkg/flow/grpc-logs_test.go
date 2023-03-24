@@ -1,12 +1,16 @@
 package flow
 
 import (
+	"context"
 	_ "embed"
 	"encoding/json"
 	"strings"
 	"testing"
 
+	"github.com/direktiv/direktiv/pkg/flow/database/entwrapper"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
+	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/flow/mock"
 )
 
 //go:embed mockdata/entlog_loop.json
@@ -61,7 +65,7 @@ func assertQueryMatchState(t *testing.T, jsondump, wf, state, iterator string, r
 	if err != nil {
 		t.Error(err)
 	}
-	res := queryMatchState(wf+"::"+state+"::"+iterator, logmsgs)
+	res := filterMatchByWfStateIterator(wf+"::"+state+"::"+iterator, logmsgs)
 	if len(res) != resLen {
 		t.Errorf("len off; was %d, want %d", len(res), resLen)
 	}
@@ -78,7 +82,7 @@ func assertQueryMatchState(t *testing.T, jsondump, wf, state, iterator string, r
 			assertTagsFiltered(t, v.Tags, "loop-index", iterator)
 		}
 	}
-	resSecond := queryMatchState(wf+"::"+state+"::"+iterator, res)
+	resSecond := filterMatchByWfStateIterator(wf+"::"+state+"::"+iterator, res)
 	if len(res) != len(resSecond) {
 		t.Errorf("len off when runned second time; was first run %d, is %d, should %d", len(res), len(resSecond), resLen)
 	}
@@ -95,6 +99,81 @@ func TestGetChildByIterator(t *testing.T) {
 	child := filterByIterrator("2", logmsgs)
 	if child == nil {
 		t.Errorf("did not found")
+	}
+}
+
+func TestBuildInstanceLogResp(t *testing.T) {
+	jsondump := loopjson
+	ctx := context.Background()
+
+	db, err := mock.DatabaseWrapper()
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	defer db.StopDB()
+	logmsgs := make([]*ent.LogMsg, 0)
+	err = json.Unmarshal([]byte(jsondump), &logmsgs)
+	if err != nil {
+		t.Error(err)
+	}
+	in := make(map[string]*ent.LogMsg)
+	inLen := 0
+	for _, v := range logmsgs {
+		e, err := storeLogmsg(ctx, &db.Entw, v)
+		if err != nil {
+			t.Error(err)
+		}
+		in[e.Msg] = e
+		inLen++
+	}
+	query := buildInstanceLogsQuery(ctx, &db.Entw, "", "", false)
+	page := grpc.Pagination{}
+
+	logmsgs, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, &page, query, logsOrderings, logsFilters)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if len(logmsgs) != inLen {
+		t.Errorf("Missing Results len was %d should %d", len(logmsgs), inLen)
+	}
+	res, err := buildInstanceLogResp(ctx, logmsgs, pi, &page, "ns", "1a0d5909-223f-4f44-86d7-1833ab4d21c8")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if res.Instance != "1a0d5909-223f-4f44-86d7-1833ab4d21c8" {
+		t.Errorf("Responde with wrong instid got %s want %s", res.Instance, "1a0d5909-223f-4f44-86d7-1833ab4d21c8")
+	}
+	if res.Namespace != "ns" {
+		t.Errorf("Responde with wrong namespace got %s want %s", res.Namespace, "ns")
+	}
+	assertNoMissingLogs(t, res, in)
+	res, err = buildInstanceLogResp(ctx, logmsgs, pi, &page, "ns", "1a0d5909-223f-4f44-86d7-1833ab4d21c8")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if res.Instance != "1a0d5909-223f-4f44-86d7-1833ab4d21c8" {
+		t.Errorf("Response had with wrong instanceId got %s want %s", res.Instance, "1a0d5909-223f-4f44-86d7-1833ab4d21c8")
+	}
+	if res.Namespace != "ns" {
+		t.Errorf("Responde with wrong namespace got %s want %s", res.Namespace, "ns")
+	}
+	assertNoMissingLogs(t, res, in)
+}
+
+func assertNoMissingLogs(t *testing.T, res *grpc.InstanceLogsResponse, in map[string]*ent.LogMsg) {
+	t.Helper()
+	if len(res.Results) == 0 {
+		t.Errorf("missing results")
+	}
+	for _, l := range res.Results {
+		original, ok := in[l.Msg]
+		if !ok {
+			t.Errorf("missing log entry %s", original)
+		}
 	}
 }
 
@@ -159,4 +238,9 @@ func checkNestedLoop(in []*ent.LogMsg) bool {
 		}
 	}
 	return false
+}
+
+func storeLogmsg(ctx context.Context, entw *entwrapper.Database, l *ent.LogMsg) (*ent.LogMsg, error) {
+	clients := entw.Clients(ctx)
+	return clients.LogMsg.Create().SetMsg(l.Msg).SetT(l.T).SetLevel(l.Level).SetTags(l.Tags).SetRootInstanceId(l.RootInstanceId).SetLogInstanceCallPath(l.LogInstanceCallPath).Save(ctx)
 }
