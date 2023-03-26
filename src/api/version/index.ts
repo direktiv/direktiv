@@ -29,5 +29,6 @@ export const useVersion = () => {
     queryKey: versionKeys.all(apiKey ?? "no-api-key"),
     queryFn: fetchVersions,
     staleTime: Infinity,
+    networkMode: "always", // the default networkMode sometimes assumes that the client is offline
   });
 };
