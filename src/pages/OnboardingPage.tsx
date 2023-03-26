@@ -3,11 +3,11 @@ import { useNamespace, useNamespaceActions } from "../util/store/namespace";
 import Logo from "../componentsNext/Logo";
 import { pages } from "../util/router/pages";
 import { useEffect } from "react";
-import { useNamespaces } from "../api/namespaces";
+import { useListNamespaces } from "../api/namespaces/query/get";
 import { useNavigate } from "react-router-dom";
 
 const Layout = () => {
-  const { data: availableNamespaces, isFetched } = useNamespaces();
+  const { data: availableNamespaces, isFetched } = useListNamespaces();
   const activeNamespace = useNamespace();
   const { setNamespace } = useNamespaceActions();
 
