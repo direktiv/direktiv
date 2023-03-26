@@ -30,4 +30,5 @@ export const TreeFolderCreatedSchema = z.object({
   node: NodeSchema,
 });
 
+export type TreeListSchemaType = z.infer<typeof TreeListSchema>;
 export type NodeSchemaType = z.infer<typeof NodeSchema>;
