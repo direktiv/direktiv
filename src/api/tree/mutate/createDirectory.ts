@@ -46,14 +46,12 @@ export const useCreateDirectory = () => {
           path,
         },
       }),
-
     onSuccess(data, variables) {
       toast({
         title: "Directory created",
         description: `Directory ${variables.directory} was created in ${variables.path}`,
         variant: "success",
       });
-
       queryClient.setQueryData<TreeListSchemaType>(
         namespaceKeys.all(
           apiKey ?? defaultKeys.apiKey,
