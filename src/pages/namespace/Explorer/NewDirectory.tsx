@@ -5,7 +5,7 @@ import { SubmitHandler, useForm } from "react-hook-form";
 
 import Button from "../../../componentsNext/Button";
 import clsx from "clsx";
-import { useState } from "react";
+import { useCreateDirectory } from "../../../api/tree/mutate/createDirectory";
 
 // TODO: this must be infered from the api input type
 type FormInput = {
@@ -22,10 +22,10 @@ const NewDirectory = ({ path }: { path?: string }) => {
     defaultValues: {},
   });
 
-  const [loading, setLoading] = useState(false);
+  const { mutate, isLoading } = useCreateDirectory();
 
-  const onSubmit: SubmitHandler<FormInput> = () => {
-    setLoading(true);
+  const onSubmit: SubmitHandler<FormInput> = ({ name }) => {
+    mutate({ path, directory: name });
   };
 
   return (
@@ -59,8 +59,8 @@ const NewDirectory = ({ path }: { path?: string }) => {
           <Dialog.Close asChild>
             <Button variant="ghost">Cancel</Button>
           </Dialog.Close>
-          <Button type="submit" disabled={!isDirty} loading={loading}>
-            {!loading && <PlusCircle />}
+          <Button type="submit" disabled={!isDirty} loading={isLoading}>
+            {!isLoading && <PlusCircle />}
             Create
           </Button>
         </div>
