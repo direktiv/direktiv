@@ -55,7 +55,6 @@ export const useListDirectory = ({
       }
       return data;
     },
-
     enabled: !!namespace,
     onError: () => {
       toast({
