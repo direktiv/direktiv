@@ -12,7 +12,7 @@ type FormInput = {
   name: string;
 };
 
-const NewDirectory = () => {
+const NewDirectory = ({ path }: { path?: string }) => {
   const {
     register,
     handleSubmit,

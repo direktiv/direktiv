@@ -77,7 +77,7 @@ const ExplorerPage: FC = () => {
                     "dark:bg-white-alpha-2"
                   )}
                 />
-                <NewDirectory />
+                <NewDirectory path={data?.node?.path} />
               </div>
             </Dialog.Portal>
           </Dialog.Root>
