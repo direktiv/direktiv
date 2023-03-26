@@ -76,3 +76,7 @@ export const apiFactory =
       `error ${res.status} for ${method} ${path(pathParams)}`
     );
   };
+
+export const defaultKeys = {
+  apiKey: "no-api-key",
+};

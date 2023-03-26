@@ -1,7 +1,7 @@
+import { apiFactory, defaultKeys } from "../../utils";
 import { forceSlashIfPath, sortFoldersFirst } from "../utils";
 import type { QueryFunctionContext } from "@tanstack/react-query";
 import { TreeListSchema } from "../schema";
-import { apiFactory } from "../../utils";
 import { namespaceKeys } from "../";
 import { useApiKey } from "../../../util/store/apiKey";
 import { useNamespace } from "../../../util/store/namespace";
@@ -36,10 +36,14 @@ export const useListDirectory = ({
   const namespace = useNamespace();
   const { toast } = useToast();
 
+  if (!namespace) {
+    throw new Error("namespace is undefined");
+  }
+
   return useQuery({
     queryKey: namespaceKeys.all(
-      apiKey ?? "no-api-key",
-      namespace ?? "no-namespace",
+      apiKey ?? defaultKeys.apiKey,
+      namespace,
       path ?? ""
     ),
     queryFn: fetchTree,
