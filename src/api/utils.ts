@@ -31,8 +31,18 @@ type ApiParams<TParams, TPathParams> = {
 
 export const apiFactory =
   <TSchema, TParams, TPathParams>({
+    // the path to the api endpoint
     pathFn: path,
+    // the http method that should be used for the request
     method,
+    // the zod schema that the response should be parsed against. This will give
+    // us not only the typesafety of the response, it also validates the response
+    // at runtime. Runtime validation is important to catch unexpected responses
+    // fromt the api very early in the application lifecycle and give us confidence
+    // about the Typescript types. It comes with the downside that the app is more
+    // likely to show errors to the user instead of trying to handle them (which
+    // does not scale very well when the complexity of an app grows and leads to
+    // even worse user experience).
     schema,
   }: {
     pathFn: (pathParams: TPathParams) => string;
