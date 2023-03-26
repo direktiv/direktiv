@@ -12,7 +12,13 @@ type FormInput = {
   name: string;
 };
 
-const NewDirectory = ({ path }: { path?: string }) => {
+const NewDirectory = ({
+  path,
+  close,
+}: {
+  path?: string;
+  close: () => void;
+}) => {
   const {
     register,
     handleSubmit,
@@ -26,6 +32,7 @@ const NewDirectory = ({ path }: { path?: string }) => {
 
   const onSubmit: SubmitHandler<FormInput> = ({ name }) => {
     mutate({ path, directory: name });
+    close();
   };
 
   return (

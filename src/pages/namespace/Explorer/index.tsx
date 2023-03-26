@@ -8,6 +8,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../../../componentsNext/Dropdown";
+import { FC, useState } from "react";
 import {
   Folder,
   FolderTree,
@@ -18,7 +19,6 @@ import {
 } from "lucide-react";
 
 import Button from "../../../componentsNext/Button";
-import { FC } from "react";
 import { Link } from "react-router-dom";
 import NewDirectory from "./NewDirectory";
 import { RxChevronDown } from "react-icons/rx";
@@ -35,6 +35,7 @@ const ExplorerPage: FC = () => {
 
   const { data } = useListDirectory({ path });
   const { parent, isRoot } = analyzePath(path);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   if (!namespace) return null;
 
@@ -46,7 +47,7 @@ const ExplorerPage: FC = () => {
             <FolderTree className="h-5" />
             {data?.node?.path}
           </h3>
-          <Dialog.Root>
+          <Dialog.Root open={dialogOpen} onOpenChange={setDialogOpen}>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="primary">
@@ -77,7 +78,10 @@ const ExplorerPage: FC = () => {
                     "dark:bg-white-alpha-2"
                   )}
                 />
-                <NewDirectory path={data?.node?.path} />
+                <NewDirectory
+                  path={data?.node?.path}
+                  close={() => setDialogOpen(false)}
+                />
               </div>
             </Dialog.Portal>
           </Dialog.Root>
