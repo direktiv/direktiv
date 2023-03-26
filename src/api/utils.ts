@@ -24,7 +24,7 @@ const getAuthHeader = (apiKey: string) => ({
  *
  */
 type ApiParams<TParams, TPathParams> = {
-  apiKey: string;
+  apiKey?: string;
   params: TParams extends undefined ? undefined : TParams;
   pathParams: TPathParams;
 };
