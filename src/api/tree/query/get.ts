@@ -1,8 +1,8 @@
+import { forceSlashIfPath, sortFoldersFirst } from "../utils";
 import type { QueryFunctionContext } from "@tanstack/react-query";
 import { TreeListSchema } from "../schema";
 import { apiFactory } from "../../utils";
 import { namespaceKeys } from "../";
-import { sortFoldersFirst } from "../utils";
 import { useApiKey } from "../../../util/store/apiKey";
 import { useNamespace } from "../../../util/store/namespace";
 import { useQuery } from "@tanstack/react-query";
@@ -10,7 +10,7 @@ import { useToast } from "../../../componentsNext/Toast";
 
 const getTree = apiFactory({
   pathFn: ({ namespace, path }: { namespace: string; path?: string }) =>
-    `/api/namespaces/${namespace}/tree${path ? `/${path}` : ""}`,
+    `/api/namespaces/${namespace}/tree${forceSlashIfPath(path)}`,
   method: "GET",
   schema: TreeListSchema,
 });
