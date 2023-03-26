@@ -46,7 +46,7 @@ export const useCreateDirectory = () => {
     onError: () => {
       toast({
         title: "An error occurred",
-        description: "could not fetch tree 😢",
+        description: "could not create directory 😢",
         variant: "error",
       });
     },
