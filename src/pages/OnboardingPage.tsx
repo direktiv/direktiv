@@ -1,8 +1,8 @@
-import React, { useEffect } from "react";
 import { useNamespace, useNamespaceActions } from "../util/store/namespace";
 
 import Logo from "../componentsNext/Logo";
 import { pages } from "../util/router/pages";
+import { useEffect } from "react";
 import { useNamespaces } from "../api/namespaces";
 import { useNavigate } from "react-router-dom";
 
