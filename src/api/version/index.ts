@@ -28,7 +28,6 @@ export const useVersion = () => {
   return useQuery({
     queryKey: versionKeys.all(apiKey ?? "no-api-key"),
     queryFn: fetchVersions,
-    staleTime: Infinity,
-    networkMode: "always", // the default networkMode sometimes assumes that the client is offline
+    staleTime: Infinity, // the api version shouldn't change
   });
 };

@@ -26,6 +26,5 @@ export const useListNamespaces = () => {
     queryKey: namespaceKeys.all(apiKey ?? "no-api-key"),
     queryFn: fetchNamespaces,
     staleTime: Infinity,
-    networkMode: "always", // the default networkMode sometimes assumes that the client is offlinenetworkMode: "always",
   });
 };
