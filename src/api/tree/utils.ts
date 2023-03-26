@@ -1,5 +1,12 @@
 import { NodeSchemaType } from "./schema";
 
+export const forceSlashIfPath = (path?: string) => {
+  if (!path) {
+    return "";
+  }
+  return path.startsWith("/") ? path : `/${path}`;
+};
+
 export const sortFoldersFirst = (
   a: NodeSchemaType,
   b: NodeSchemaType
