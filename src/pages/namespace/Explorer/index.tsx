@@ -26,14 +26,14 @@ import { analyzePath } from "../../../util/router/utils";
 import clsx from "clsx";
 import moment from "moment";
 import { pages } from "../../../util/router/pages";
-import { useListDirectoy } from "../../../api/tree/query/get";
+import { useListDirectory } from "../../../api/tree/query/get";
 import { useNamespace } from "../../../util/store/namespace";
 
 const ExplorerPage: FC = () => {
   const namespace = useNamespace();
   const { path } = pages.explorer.useParams();
 
-  const { data } = useListDirectoy({ path });
+  const { data } = useListDirectory({ path });
   const { parent, isRoot } = analyzePath(path);
 
   if (!namespace) return null;
