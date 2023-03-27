@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 
 import Button from "../../../componentsNext/Button";
+import Delete from "./Delete";
 import ExplorerHeader from "./Header";
 import { FC } from "react";
 import { Link } from "react-router-dom";
@@ -127,7 +128,10 @@ const ExplorerPage: FC = () => {
                             "fixed z-50 grid w-full gap-2 rounded-b-lg bg-base-100 p-6 shadow-md animate-in data-[state=open]:fade-in-90 data-[state=open]:slide-in-from-bottom-10 sm:max-w-[425px] sm:rounded-lg sm:zoom-in-90 data-[state=open]:sm:slide-in-from-bottom-0"
                           )}
                         >
-                          DIALOG
+                          <Delete
+                            file={file}
+                            close={() => console.log("🚀 close")}
+                          />
                         </Dialog.Content>
                       </div>
                     </Dialog.Portal>

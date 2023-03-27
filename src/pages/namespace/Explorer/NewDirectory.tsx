@@ -64,7 +64,7 @@ const NewDirectory = ({
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      <div className="text-mauve12 m-0 flex gap-2 text-[17px] font-medium">
+      <div className="text-mauve12 m-0 flex items-center gap-2 text-[17px] font-medium ">
         <Folder /> Create a new Folder
       </div>
       <div className="text-mauve11 mt-[10px] mb-5 text-[15px] leading-normal">
