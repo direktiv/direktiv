@@ -129,7 +129,7 @@ const ExplorerPage: FC = () => {
                           )}
                         >
                           <Delete
-                            file={file}
+                            node={file}
                             close={() => console.log("🚀 close")}
                           />
                         </Dialog.Content>
