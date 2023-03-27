@@ -30,5 +30,9 @@ export const TreeFolderCreatedSchema = z.object({
   node: NodeSchema,
 });
 
+export const fileNameSchema = z
+  .string()
+  .regex(/^(([a-z][a-z0-9_\-.]*[a-z0-9])|([a-z]))$/);
+
 export type TreeListSchemaType = z.infer<typeof TreeListSchema>;
 export type NodeSchemaType = z.infer<typeof NodeSchema>;
