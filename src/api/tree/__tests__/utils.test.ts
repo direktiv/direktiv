@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest";
+import { forceSlashIfPath, sortFoldersFirst } from "../utils";
 
 import { NodeSchemaType } from "../schema";
-import { sortFoldersFirst } from "../utils";
 
 const itemTemplate: NodeSchemaType = {
   createdAt: "2023-03-13T13:39:05.832664Z",
@@ -35,5 +35,19 @@ describe("sortFoldersFirst", () => {
       "workflowB",
       "workflowC",
     ]);
+  });
+});
+
+describe("forceSlashIfPath", () => {
+  test("path -> /path", () => {
+    expect(forceSlashIfPath("path")).toBe("/path");
+  });
+
+  test("/path -> /path", () => {
+    expect(forceSlashIfPath("/path")).toBe("/path");
+  });
+
+  test("undefined -> empty string", () => {
+    expect(forceSlashIfPath()).toBe("");
   });
 });

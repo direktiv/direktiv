@@ -79,7 +79,7 @@ const Button = React.forwardRef<
       ref={ref}
       {...props}
     >
-      {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+      {loading && <Loader2 className="animate-spin" />}
       {children}
     </button>
   )

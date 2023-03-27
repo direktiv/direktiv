@@ -27,7 +27,7 @@ import Button from "../../componentsNext/Button";
 import { FC } from "react";
 import { analyzePath } from "../../util/router/utils";
 import { pages } from "../../util/router/pages";
-import { useNamespaces } from "../../api/namespaces";
+import { useListNamespaces } from "../../api/namespaces/query/get";
 
 const BreadcrumbSegment: FC<{
   absolute: string;
@@ -58,7 +58,7 @@ const BreadcrumbSegment: FC<{
 
 const Breadcrumb = () => {
   const namespace = useNamespace();
-  const { data: availableNamespaces, isLoading } = useNamespaces();
+  const { data: availableNamespaces, isLoading } = useListNamespaces();
 
   const { path: pathParamsExplorer } = pages.explorer.useParams();
   const { path: pathParamsWorkflow } = pages.workflow.useParams();

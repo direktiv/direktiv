@@ -12,6 +12,11 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: false,
+      networkMode: "always", // the default networkMode sometimes assumes that the client is offlinenetworkMode: "always",
+    },
+    mutations: {
+      retry: false,
+      networkMode: "always", // the default networkMode sometimes assumes that the client is offlinenetworkMode: "always",
     },
   },
 });

@@ -6,7 +6,7 @@ import {
 import { useTheme, useThemeActions } from "../../../util/store/theme";
 
 import { FC } from "react";
-import { useNamespaces } from "../../../api/namespaces";
+import { useListNamespaces } from "../../../api/namespaces/query/get";
 import { useVersion } from "../../../api/version";
 
 const SettiongsPage: FC = () => {
@@ -19,7 +19,8 @@ const SettiongsPage: FC = () => {
   const selectedNamespace = useNamespace();
 
   const { data: version, isLoading: isVersionLoading } = useVersion();
-  const { data: namespaces, isLoading: isLoadingNamespaces } = useNamespaces();
+  const { data: namespaces, isLoading: isLoadingNamespaces } =
+    useListNamespaces();
 
   return (
     <div className="flex flex-col space-y-5 p-10">

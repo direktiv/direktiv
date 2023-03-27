@@ -1607,6 +1607,11 @@
     "@floating-ui/dom" "^0.5.3"
     use-isomorphic-layout-effect "^1.1.1"
 
+"@hookform/resolvers@^3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@hookform/resolvers/-/resolvers-3.0.0.tgz#bb9346f1550a472a980af5b08e549366c788ff76"
+  integrity sha512-SQPefakODpyq25b/phHXDKCdRrEfPcCXV7B4nAa139wE1DxufYbbNAjeo0T04ZXBokRxZ+wD8iA1kkVMa3QwjQ==
+
 "@humanwhocodes/config-array@^0.11.8":
   version "0.11.8"
   resolved "https://registry.yarnpkg.com/@humanwhocodes/config-array/-/config-array-0.11.8.tgz#03595ac2075a4dc0f191cc2131de14fbd7d410b9"
@@ -2253,6 +2258,27 @@
   dependencies:
     "@babel/runtime" "^7.13.10"
 
+"@radix-ui/react-dialog@^1.0.3":
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/@radix-ui/react-dialog/-/react-dialog-1.0.3.tgz#a715bf30f35fcd80476c0a07fcc073c1968e6d3e"
+  integrity sha512-owNhq36kNPqC2/a+zJRioPg6HHnTn5B/sh/NjTY8r4W9g1L5VJlrzZIVcBr7R9Mg8iLjVmh6MGgMlfoVf/WO/A==
+  dependencies:
+    "@babel/runtime" "^7.13.10"
+    "@radix-ui/primitive" "1.0.0"
+    "@radix-ui/react-compose-refs" "1.0.0"
+    "@radix-ui/react-context" "1.0.0"
+    "@radix-ui/react-dismissable-layer" "1.0.3"
+    "@radix-ui/react-focus-guards" "1.0.0"
+    "@radix-ui/react-focus-scope" "1.0.2"
+    "@radix-ui/react-id" "1.0.0"
+    "@radix-ui/react-portal" "1.0.2"
+    "@radix-ui/react-presence" "1.0.0"
+    "@radix-ui/react-primitive" "1.0.2"
+    "@radix-ui/react-slot" "1.0.1"
+    "@radix-ui/react-use-controllable-state" "1.0.0"
+    aria-hidden "^1.1.1"
+    react-remove-scroll "2.5.5"
+
 "@radix-ui/react-direction@1.0.0":
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/@radix-ui/react-direction/-/react-direction-1.0.0.tgz#a2e0b552352459ecf96342c79949dd833c1e6e45"
@@ -2313,6 +2339,16 @@
     "@babel/runtime" "^7.13.10"
     "@radix-ui/react-compose-refs" "1.0.0"
     "@radix-ui/react-primitive" "1.0.1"
+    "@radix-ui/react-use-callback-ref" "1.0.0"
+
+"@radix-ui/react-focus-scope@1.0.2":
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/@radix-ui/react-focus-scope/-/react-focus-scope-1.0.2.tgz#5fe129cbdb5986d0a3ae16d14c473c243fe3bc79"
+  integrity sha512-spwXlNTfeIprt+kaEWE/qYuYT3ZAqJiAGjN/JgdvgVDTu8yc+HuX+WOWXrKliKnLnwck0F6JDkqIERncnih+4A==
+  dependencies:
+    "@babel/runtime" "^7.13.10"
+    "@radix-ui/react-compose-refs" "1.0.0"
+    "@radix-ui/react-primitive" "1.0.2"
     "@radix-ui/react-use-callback-ref" "1.0.0"
 
 "@radix-ui/react-id@1.0.0":
@@ -10729,6 +10765,11 @@ react-flow-renderer@^9.7.0:
     react-draggable "^4.4.4"
     react-redux "^7.2.6"
     redux "^4.1.2"
+
+react-hook-form@^7.43.7:
+  version "7.43.7"
+  resolved "https://registry.yarnpkg.com/react-hook-form/-/react-hook-form-7.43.7.tgz#88b8bc257635d706955e19c05254fb492fa77ad1"
+  integrity sha512-38yehQkQQ5uufaPKFScs7jhLE8n3+LG9H/BZfFAiBL2+7piDmw/BrdNJV4irzMaPnWZGhmGLHVICHXNVGIuXZg==
 
 react-icons@^4.7.1:
   version "4.7.1"
