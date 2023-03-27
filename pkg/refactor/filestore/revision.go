@@ -9,23 +9,29 @@ import (
 	"github.com/google/uuid"
 )
 
-type RevisionTags []string
+type RevisionTags string
 
-func (t RevisionTags) String() string {
-	if len(t) == 0 {
-		return ""
+func (tags RevisionTags) AddTag(tag string) RevisionTags {
+	tag = strings.TrimSpace(tag)
+	if strings.Contains(string(tags), tag) {
+		return tags
 	}
 
-	return strings.Join(t, ",")
+	return RevisionTags(string(tags) + "," + tag)
 }
 
-func ParseRevisionTags(tags string) RevisionTags {
-	return strings.Split(tags, ",")
+func (tags RevisionTags) RemoveTag(tag string) RevisionTags {
+	tag = strings.TrimSpace(tag)
+
+	newTags := strings.Replace(string(tags), ","+tag, "", 1)
+	newTags = strings.Replace(string(tags), tag+",", "", 1)
+
+	return RevisionTags(newTags)
 }
 
 type Revision struct {
 	ID        uuid.UUID
-	Tags      string
+	Tags      RevisionTags
 	IsCurrent bool
 	Data      []byte
 	Checksum  string

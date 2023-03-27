@@ -29,8 +29,8 @@ func TestRoot_CreateFile(t *testing.T) {
 		payload string
 	}{
 		{"/example.text", "text", "abcd"},
-		{"/example.text", "text", "abcd"},
-		{"/example.text", "text", "abcd"},
+		{"/example1.text", "text", "abcd"},
+		{"/example2.text", "text", "abcd"},
 	}
 	for _, tt := range tests {
 		t.Run("valid", func(t *testing.T) {
@@ -42,15 +42,15 @@ func TestRoot_CreateFile(t *testing.T) {
 func assertRootCorrectFileCreation(t *testing.T, fs filestore.FileStore, root *filestore.Root, path string, typ string, data []byte) {
 	t.Helper()
 
-	file, err := fs.ForRoot(root).CreateFile(context.Background(), path, filestore.FileType(typ), bytes.NewReader(data))
+	file, _, err := fs.ForRootID(root.ID).CreateFile(context.Background(), path, filestore.FileType(typ), bytes.NewReader(data))
 	if err != nil {
-		t.Errorf("unexpected CreateFile() error: %v", err)
+		t.Fatalf("unexpected CreateFile() error: %v", err)
 	}
 	if file == nil {
-		t.Errorf("unexpected nil file CreateFile()")
+		t.Fatalf("unexpected nil file CreateFile()")
 	}
 	if file.Path != path {
-		t.Errorf("unexpected file.Path, got: >%s<, want: >%s<", file.Path, path)
+		t.Fatalf("unexpected file.Path, got: >%s<, want: >%s<", file.Path, path)
 	}
 
 	if typ != "directory" {
@@ -61,7 +61,7 @@ func assertRootCorrectFileCreation(t *testing.T, fs filestore.FileStore, root *f
 		}
 	}
 
-	file, err = fs.ForRoot(root).GetFile(context.Background(), path)
+	file, err = fs.ForRootID(root.ID).GetFile(context.Background(), path)
 	if err != nil {
 		t.Errorf("unexpected GetFile() error: %v", err)
 	}
@@ -202,7 +202,7 @@ func TestRoot_CalculateChecksumDirectory(t *testing.T) {
 func assertRootFilesInPath(t *testing.T, fs filestore.FileStore, root *filestore.Root, searchPath string, paths ...string) {
 	t.Helper()
 
-	files, err := fs.ForRoot(root).ReadDirectory(context.Background(), searchPath)
+	files, err := fs.ForRootID(root.ID).ReadDirectory(context.Background(), searchPath)
 	if err != nil {
 		t.Errorf("unepxected ReadDirectory() error = %v", err)
 	}
@@ -220,7 +220,7 @@ func assertRootFilesInPath(t *testing.T, fs filestore.FileStore, root *filestore
 func assertChecksumsInPath(t *testing.T, fs filestore.FileStore, root *filestore.Root, searchPath string, paths ...string) {
 	t.Helper()
 
-	checksumsMap, err := fs.ForRoot(root).CalculateChecksumsMap(context.Background(), searchPath)
+	checksumsMap, err := fs.ForRootID(root.ID).CalculateChecksumsMap(context.Background(), searchPath)
 	if err != nil {
 		t.Errorf("unepxected CalculateChecksumsMap() error = %v", err)
 	}

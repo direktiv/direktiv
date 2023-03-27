@@ -14,9 +14,50 @@ type SQLFileStore struct {
 	db *gorm.DB
 }
 
-func (s *SQLFileStore) ForRoot(root *filestore.Root) filestore.RootQuery {
+func (s *SQLFileStore) Tx(ctx context.Context, fun func(ctx context.Context, fStore filestore.FileStore) error) error {
+	db := s.db.WithContext(ctx).Begin()
+	if db.Error != nil {
+		return db.Error
+	}
+	defer db.WithContext(ctx).Rollback()
+	newSqlStore := &SQLFileStore{
+		db: db,
+	}
+	if err := fun(ctx, newSqlStore); err != nil {
+		return err
+	}
+
+	return db.WithContext(ctx).Commit().Error
+}
+
+type TxSQLFileStore struct {
+	*SQLFileStore
+}
+
+func (t *TxSQLFileStore) Commit(ctx context.Context) error {
+	return t.db.WithContext(ctx).Commit().Error
+}
+
+func (t *TxSQLFileStore) Rollback(ctx context.Context) error {
+	return t.db.WithContext(ctx).Rollback().Error
+}
+
+func (s *SQLFileStore) Begin(ctx context.Context) (filestore.TxFileStore, error) {
+	db := s.db.WithContext(ctx).Begin()
+	if db.Error != nil {
+		return nil, db.Error
+	}
+
+	return &TxSQLFileStore{
+		SQLFileStore: &SQLFileStore{
+			db: db,
+		},
+	}, nil
+}
+
+func (s *SQLFileStore) ForRootID(rootID uuid.UUID) filestore.RootQuery {
 	return &RootQuery{
-		root:         root,
+		rootID:       rootID,
 		db:           s.db,
 		checksumFunc: filestore.DefaultCalculateChecksum,
 	}
@@ -39,10 +80,24 @@ func (s *SQLFileStore) ForRevision(revision *filestore.Revision) filestore.Revis
 
 var _ filestore.FileStore = &SQLFileStore{} // Ensures SQLFileStore struct conforms to filestore.FileStore interface.
 
-func NewSQLFileStore(db *gorm.DB) *SQLFileStore {
+func NewSQLFileStore(db *gorm.DB) (*SQLFileStore, error) {
+	type File struct {
+		filestore.File
+		Revisions []filestore.Revision `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	}
+	type Root struct {
+		filestore.Root
+		Files []File `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	}
+
+	err := db.AutoMigrate(&Root{}, &File{}, &filestore.Revision{})
+	if err != nil {
+		return nil, err
+	}
+
 	return &SQLFileStore{
 		db: db,
-	}
+	}, nil
 }
 
 func NewMockFileStore() (*SQLFileStore, error) {
@@ -64,9 +119,10 @@ func NewMockFileStore() (*SQLFileStore, error) {
 	if err != nil {
 		return nil, err
 	}
-	fs := NewSQLFileStore(db)
 
-	return fs, nil
+	return &SQLFileStore{
+		db: db,
+	}, nil
 }
 
 func (s *SQLFileStore) CreateRoot(ctx context.Context, id uuid.UUID) (*filestore.Root, error) {
@@ -77,16 +133,6 @@ func (s *SQLFileStore) CreateRoot(ctx context.Context, id uuid.UUID) (*filestore
 	}
 	if res.RowsAffected != 1 {
 		return nil, fmt.Errorf("unexpedted gorm create count, got: %d, want: %d", res.RowsAffected, 1)
-	}
-
-	return n, nil
-}
-
-func (s *SQLFileStore) GetRoot(ctx context.Context, id uuid.UUID) (*filestore.Root, error) {
-	n := &filestore.Root{ID: id}
-	res := s.db.WithContext(ctx).First(n)
-	if res.Error != nil {
-		return nil, res.Error
 	}
 
 	return n, nil

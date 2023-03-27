@@ -1,28 +1,12 @@
-// TODO: yassir, need refactor.
 package flow
 
-//
-//import (
-//	"context"
-//	"errors"
-//	"path/filepath"
-//	"sort"
-//	"strings"
-//	"time"
-//
-//	"google.golang.org/grpc/codes"
-//	"google.golang.org/grpc/status"
-//
-//	"github.com/direktiv/direktiv/pkg/flow/bytedata"
-//	"github.com/direktiv/direktiv/pkg/flow/database"
-//	"github.com/direktiv/direktiv/pkg/flow/ent"
-//	entino "github.com/direktiv/direktiv/pkg/flow/ent/inode"
-//	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
-//	"github.com/direktiv/direktiv/pkg/flow/grpc"
-//	"github.com/direktiv/direktiv/pkg/util"
-//	"google.golang.org/protobuf/types/known/emptypb"
-//)
-//
+import (
+	"context"
+	"github.com/direktiv/direktiv/pkg/flow/bytedata"
+	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/refactor/filestore"
+)
+
 //var inodesOrderings = []*orderingInfo{
 //	{
 //		db:           entino.FieldType,
@@ -73,272 +57,183 @@ package flow
 //	return cached, nil
 //}
 //
-//func (flow *flow) Node(ctx context.Context, req *grpc.NodeRequest) (*grpc.NodeResponse, error) {
-//	flow.sugar.Debugf("Handling gRPC request: %s", this())
+
+func (flow *flow) Node(ctx context.Context, req *grpc.NodeRequest) (*grpc.NodeResponse, error) {
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
+
+	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
+	if err != nil {
+		return nil, err
+	}
+	file, err := flow.fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
+	if err != nil {
+		return nil, err
+	}
+	resp := &grpc.NodeResponse{}
+	resp.Node = bytedata.ConvertFileToGrpcNode(file)
+	resp.Namespace = ns.Name
+
+	return resp, nil
+}
+
+func (flow *flow) Directory(ctx context.Context, req *grpc.DirectoryRequest) (*grpc.DirectoryResponse, error) {
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
+
+	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
+	if err != nil {
+		return nil, err
+	}
+	files, err := flow.fStore.ForRootID(ns.ID).ReadDirectory(ctx, req.GetPath())
+	if err != nil {
+		return nil, err
+	}
+
+	resp := new(grpc.DirectoryResponse)
+	resp.Namespace = ns.Name
+	resp.Children = new(grpc.DirectoryChildren)
+	resp.Children.PageInfo = new(grpc.PageInfo)
+
+	resp.Children.Results = bytedata.ConvertFilesListToGrpc(files, resp.Children.Results)
+
+	return resp, nil
+}
+
+//	func (flow *flow) DirectoryStream(req *grpc.DirectoryRequest, srv grpc.Flow_DirectoryStreamServer) error {
+//		flow.sugar.Debugf("Handling gRPC request: %s", this())
 //
-//	var err error
-//	var resp grpc.NodeResponse
+//		ctx := srv.Context()
+//		phash := ""
+//		nhash := ""
 //
-//	cached, err := flow.traverseToInode(ctx, req.GetNamespace(), req.GetPath())
-//	if err != nil {
-//		flow.sugar.Debugf("gRPC %s handler failed to traverse to (namespace/inode) %s/%s : %v", this(), req.GetNamespace(), req.GetPath(), err)
-//		return nil, err
-//	}
-//
-//	err = bytedata.ConvertDataForOutput(cached.Inode(), &resp.Node)
-//	if err != nil {
-//		flow.sugar.Debugf("gRPC %s handler failed to traverse to marshal response: %v", this(), err)
-//		return nil, err
-//	}
-//
-//	resp.Namespace = cached.Namespace.Name
-//	resp.Node.Path = cached.Path()
-//	resp.Node.Parent = cached.Dir()
-//
-//	if resp.Node.ExpandedType == "" {
-//		resp.Node.ExpandedType = resp.Node.Type
-//	}
-//
-//	return &resp, nil
-//}
-//
-//func (flow *flow) Directory(ctx context.Context, req *grpc.DirectoryRequest) (*grpc.DirectoryResponse, error) {
-//	flow.sugar.Debugf("Handling gRPC request: %s", this())
-//
-//	cached, err := flow.traverseToInode(ctx, req.GetNamespace(), req.GetPath())
-//	if err != nil {
-//		return nil, err
-//	}
-//
-//	if cached.Inode().Type != util.InodeTypeDirectory {
-//		return nil, ErrNotDir
-//	}
-//
-//	clients := flow.edb.Clients(ctx)
-//
-//	query := clients.Inode.Query().Where(entino.HasParentWith(entino.ID(cached.Inode().ID)))
-//
-//	results, pi, err := paginate[*ent.InodeQuery, *ent.Inode](ctx, req.Pagination, query, inodesOrderings, inodesFilters)
-//	if err != nil {
-//		return nil, err
-//	}
-//
-//	resp := new(grpc.DirectoryResponse)
-//	resp.Namespace = cached.Namespace.Name
-//	resp.Children = new(grpc.DirectoryChildren)
-//	resp.Children.PageInfo = pi
-//
-//	err = bytedata.ConvertDataForOutput(results, &resp.Children.Results)
-//	if err != nil {
-//		return nil, err
-//	}
-//
-//	err = bytedata.ConvertDataForOutput(cached.Inode(), &resp.Node)
-//	if err != nil {
-//		return nil, err
-//	}
-//
-//	if resp.Node.ExpandedType == "" {
-//		resp.Node.ExpandedType = resp.Node.Type
-//	}
-//
-//	resp.Node.Path = cached.Path()
-//	resp.Node.Parent = cached.Dir()
-//
-//	for idx := range resp.Children.Results {
-//		child := resp.Children.Results[idx]
-//		child.Parent = resp.Node.Path
-//		child.Path = filepath.Join(resp.Node.Path, child.Name)
-//
-//		if child.ExpandedType == "" {
-//			child.ExpandedType = child.Type
-//		}
-//
-//	}
-//
-//	return resp, nil
-//}
-//
-//func (flow *flow) DirectoryStream(req *grpc.DirectoryRequest, srv grpc.Flow_DirectoryStreamServer) error {
-//	flow.sugar.Debugf("Handling gRPC request: %s", this())
-//
-//	ctx := srv.Context()
-//	phash := ""
-//	nhash := ""
-//
-//	cached, err := flow.traverseToInode(ctx, req.GetNamespace(), req.GetPath())
-//	if err != nil {
-//		return err
-//	}
-//
-//	if cached.Inode().Type != util.InodeTypeDirectory {
-//		return ErrNotDir
-//	}
-//
-//	sub := flow.pubsub.SubscribeInode(cached)
-//	defer flow.cleanup(sub.Close)
-//
-//resend:
-//
-//	clients := flow.edb.Clients(ctx)
-//
-//	query := clients.Inode.Query().Where(entino.HasParentWith(entino.ID(cached.Inode().ID)))
-//
-//	results, pi, err := paginate[*ent.InodeQuery, *ent.Inode](ctx, req.Pagination, query, inodesOrderings, inodesFilters)
-//	if err != nil {
-//		return err
-//	}
-//
-//	resp := new(grpc.DirectoryResponse)
-//	resp.Namespace = cached.Namespace.Name
-//	resp.Children = new(grpc.DirectoryChildren)
-//	resp.Children.PageInfo = pi
-//
-//	err = bytedata.ConvertDataForOutput(results, &resp.Children.Results)
-//	if err != nil {
-//		return err
-//	}
-//
-//	err = bytedata.ConvertDataForOutput(cached.Inode(), &resp.Node)
-//	if err != nil {
-//		return err
-//	}
-//
-//	if resp.Node.ExpandedType == "" {
-//		resp.Node.ExpandedType = resp.Node.Type
-//	}
-//
-//	resp.Node.Path = cached.Path()
-//	resp.Node.Parent = cached.Dir()
-//
-//	for idx := range resp.Children.Results {
-//		child := resp.Children.Results[idx]
-//		child.Parent = resp.Node.Path
-//		child.Path = filepath.Join(resp.Node.Path, child.Name)
-//
-//		if child.ExpandedType == "" {
-//			child.ExpandedType = child.Type
-//		}
-//
-//	}
-//
-//	nhash = bytedata.Checksum(resp)
-//	if nhash != phash {
-//		err = srv.Send(resp)
+//		cached, err := flow.traverseToInode(ctx, req.GetNamespace(), req.GetPath())
 //		if err != nil {
 //			return err
 //		}
-//	}
-//	phash = nhash
 //
-//	more := sub.Wait(ctx)
-//	if !more {
-//		return nil
-//	}
+//		if cached.Inode().Type != util.InodeTypeDirectory {
+//			return ErrNotDir
+//		}
 //
-//	goto resend
-//}
+//		sub := flow.pubsub.SubscribeInode(cached)
+//		defer flow.cleanup(sub.Close)
 //
-//type createDirectoryArgs struct {
-//	pcached *database.CacheData
-//	path    string
-//	super   bool
-//}
+// resend:
 //
-//func (flow *flow) createDirectory(ctx context.Context, args *createDirectoryArgs) (*database.Inode, error) {
-//	dir, base := filepath.Split(args.path)
+//		clients := flow.edb.Clients(ctx)
 //
-//	if args.pcached.Inode().ReadOnly && !args.super {
-//		return nil, errors.New("cannot write into read-only directory")
-//	}
+//		query := clients.Inode.Query().Where(entino.HasParentWith(entino.ID(cached.Inode().ID)))
 //
-//	ino, err := flow.database.CreateDirectoryInode(ctx, &database.CreateDirectoryInodeArgs{
-//		Name:     base,
-//		ReadOnly: args.pcached.Inode().ReadOnly,
-//		Parent:   args.pcached.Inode(),
-//	})
-//	if err != nil {
-//		return nil, err
-//	}
+//		results, pi, err := paginate[*ent.InodeQuery, *ent.Inode](ctx, req.Pagination, query, inodesOrderings, inodesFilters)
+//		if err != nil {
+//			return err
+//		}
 //
-//	flow.logToNamespace(ctx, time.Now(), args.pcached, "Created directory '%s'.", args.path)
-//	flow.pubsub.NotifyInode(args.pcached.Inode())
+//		resp := new(grpc.DirectoryResponse)
+//		resp.Namespace = cached.Namespace.Name
+//		resp.Children = new(grpc.DirectoryChildren)
+//		resp.Children.PageInfo = pi
 //
-//	// Broadcast
-//	err = flow.BroadcastDirectory(ctx, BroadcastEventTypeCreate,
-//		broadcastDirectoryInput{
-//			Path:   args.path,
-//			Parent: dir,
-//		}, args.pcached)
-//	if err != nil {
-//		return nil, err
-//	}
+//		err = bytedata.ConvertDataForOutput(results, &resp.Children.Results)
+//		if err != nil {
+//			return err
+//		}
 //
-//	return ino, nil
-//}
+//		err = bytedata.ConvertDataForOutput(cached.Inode(), &resp.Node)
+//		if err != nil {
+//			return err
+//		}
 //
-//func (flow *flow) CreateDirectory(ctx context.Context, req *grpc.CreateDirectoryRequest) (*grpc.CreateDirectoryResponse, error) {
-//	flow.sugar.Debugf("Handling gRPC request: %s", this())
+//		if resp.Node.ExpandedType == "" {
+//			resp.Node.ExpandedType = resp.Node.Type
+//		}
 //
-//	tctx, tx, err := flow.database.Tx(ctx)
-//	if err != nil {
-//		return nil, err
-//	}
-//	defer rollback(tx)
+//		resp.Node.Path = cached.Path()
+//		resp.Node.Parent = cached.Dir()
 //
-//	path := GetInodePath(req.GetPath())
-//	dir, base := filepath.Split(path)
+//		for idx := range resp.Children.Results {
+//			child := resp.Children.Results[idx]
+//			child.Parent = resp.Node.Path
+//			child.Path = filepath.Join(resp.Node.Path, child.Name)
 //
-//	if base == "" || base == "/" {
-//		return nil, status.Error(codes.AlreadyExists, "root directory already exists")
-//	}
+//			if child.ExpandedType == "" {
+//				child.ExpandedType = child.Type
+//			}
 //
-//	cached := new(database.CacheData)
+//		}
 //
-//	err = flow.database.NamespaceByName(tctx, cached, req.GetNamespace())
-//	if err != nil {
-//		return nil, err
+//		nhash = bytedata.Checksum(resp)
+//		if nhash != phash {
+//			err = srv.Send(resp)
+//			if err != nil {
+//				return err
+//			}
+//		}
+//		phash = nhash
+//
+//		more := sub.Wait(ctx)
+//		if !more {
+//			return nil
+//		}
+//
+//		goto resend
 //	}
 //
-//	err = flow.database.InodeByPath(tctx, cached, dir)
-//	if err != nil {
-//		return nil, err
+//	type createDirectoryArgs struct {
+//		pcached *database.CacheData
+//		path    string
+//		super   bool
 //	}
 //
-//	ino, err := flow.createDirectory(tctx, &createDirectoryArgs{
-//		pcached: cached,
-//		path:    path,
-//	})
-//	if err != nil {
-//		return nil, err
+//	func (flow *flow) createDirectory(ctx context.Context, args *createDirectoryArgs) (*database.Inode, error) {
+//		dir, base := filepath.Split(args.path)
+//
+//		if args.pcached.Inode().ReadOnly && !args.super {
+//			return nil, errors.New("cannot write into read-only directory")
+//		}
+//
+//		ino, err := flow.database.CreateDirectoryInode(ctx, &database.CreateDirectoryInodeArgs{
+//			Name:     base,
+//			ReadOnly: args.pcached.Inode().ReadOnly,
+//			Parent:   args.pcached.Inode(),
+//		})
+//		if err != nil {
+//			return nil, err
+//		}
+//
+//		flow.logToNamespace(ctx, time.Now(), args.pcached, "Created directory '%s'.", args.path)
+//		flow.pubsub.NotifyInode(args.pcached.Inode())
+//
+//		// Broadcast
+//		err = flow.BroadcastDirectory(ctx, BroadcastEventTypeCreate,
+//			broadcastDirectoryInput{
+//				Path:   args.path,
+//				Parent: dir,
+//			}, args.pcached)
+//		if err != nil {
+//			return nil, err
+//		}
+//
+//		return ino, nil
 //	}
-//
-//	err = tx.Commit()
-//	if err != nil {
-//		return nil, err
-//	}
-//
-//	flow.database.InvalidateInode(ctx, cached, false)
-//
-//	var resp grpc.CreateDirectoryResponse
-//
-//	err = bytedata.ConvertDataForOutput(ino, &resp.Node)
-//	if err != nil {
-//		return nil, err
-//	}
-//
-//	if resp.Node.ExpandedType == "" {
-//		resp.Node.ExpandedType = resp.Node.Type
-//	}
-//
-//	resp.Node.ReadOnly = false
-//
-//	resp.Namespace = cached.Namespace.Name
-//	resp.Node.Parent = dir
-//	resp.Node.Path = path
-//
-//	return &resp, nil
-//}
+func (flow *flow) CreateDirectory(ctx context.Context, req *grpc.CreateDirectoryRequest) (*grpc.CreateDirectoryResponse, error) {
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
+
+	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
+	if err != nil {
+		return nil, err
+	}
+	_, _, err = flow.fStore.ForRootID(ns.ID).CreateFile(ctx, req.GetPath(), filestore.FileTypeDirectory, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp grpc.CreateDirectoryResponse
+
+	resp.Namespace = ns.Name
+
+	return &resp, nil
+}
+
 //
 //type deleteNodeArgs struct {
 //	cached    *database.CacheData

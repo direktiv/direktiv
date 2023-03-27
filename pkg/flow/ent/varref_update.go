@@ -72,6 +72,12 @@ func (vru *VarRefUpdate) ClearBehaviour() *VarRefUpdate {
 	return vru
 }
 
+// SetWorkflowID sets the "workflow_id" field.
+func (vru *VarRefUpdate) SetWorkflowID(u uuid.UUID) *VarRefUpdate {
+	vru.mutation.SetWorkflowID(u)
+	return vru
+}
+
 // SetVardataID sets the "vardata" edge to the VarData entity by ID.
 func (vru *VarRefUpdate) SetVardataID(id uuid.UUID) *VarRefUpdate {
 	vru.mutation.SetVardataID(id)
@@ -253,6 +259,9 @@ func (vru *VarRefUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if vru.mutation.BehaviourCleared() {
 		_spec.ClearField(varref.FieldBehaviour, field.TypeString)
 	}
+	if value, ok := vru.mutation.WorkflowID(); ok {
+		_spec.SetField(varref.FieldWorkflowID, field.TypeUUID, value)
+	}
 	if vru.mutation.VardataCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -416,6 +425,12 @@ func (vruo *VarRefUpdateOne) SetNillableBehaviour(s *string) *VarRefUpdateOne {
 // ClearBehaviour clears the value of the "behaviour" field.
 func (vruo *VarRefUpdateOne) ClearBehaviour() *VarRefUpdateOne {
 	vruo.mutation.ClearBehaviour()
+	return vruo
+}
+
+// SetWorkflowID sets the "workflow_id" field.
+func (vruo *VarRefUpdateOne) SetWorkflowID(u uuid.UUID) *VarRefUpdateOne {
+	vruo.mutation.SetWorkflowID(u)
 	return vruo
 }
 
@@ -629,6 +644,9 @@ func (vruo *VarRefUpdateOne) sqlSave(ctx context.Context) (_node *VarRef, err er
 	}
 	if vruo.mutation.BehaviourCleared() {
 		_spec.ClearField(varref.FieldBehaviour, field.TypeString)
+	}
+	if value, ok := vruo.mutation.WorkflowID(); ok {
+		_spec.SetField(varref.FieldWorkflowID, field.TypeUUID, value)
 	}
 	if vruo.mutation.VardataCleared() {
 		edge := &sqlgraph.EdgeSpec{

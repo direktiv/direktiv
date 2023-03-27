@@ -94,6 +94,13 @@ func Behaviour(v string) predicate.VarRef {
 	})
 }
 
+// WorkflowID applies equality check predicate on the "workflow_id" field. It's identical to WorkflowIDEQ.
+func WorkflowID(v uuid.UUID) predicate.VarRef {
+	return predicate.VarRef(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldWorkflowID), v))
+	})
+}
+
 // NameEQ applies the EQ predicate on the "name" field.
 func NameEQ(v string) predicate.VarRef {
 	return predicate.VarRef(func(s *sql.Selector) {
@@ -317,6 +324,70 @@ func BehaviourEqualFold(v string) predicate.VarRef {
 func BehaviourContainsFold(v string) predicate.VarRef {
 	return predicate.VarRef(func(s *sql.Selector) {
 		s.Where(sql.ContainsFold(s.C(FieldBehaviour), v))
+	})
+}
+
+// WorkflowIDEQ applies the EQ predicate on the "workflow_id" field.
+func WorkflowIDEQ(v uuid.UUID) predicate.VarRef {
+	return predicate.VarRef(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldWorkflowID), v))
+	})
+}
+
+// WorkflowIDNEQ applies the NEQ predicate on the "workflow_id" field.
+func WorkflowIDNEQ(v uuid.UUID) predicate.VarRef {
+	return predicate.VarRef(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldWorkflowID), v))
+	})
+}
+
+// WorkflowIDIn applies the In predicate on the "workflow_id" field.
+func WorkflowIDIn(vs ...uuid.UUID) predicate.VarRef {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.VarRef(func(s *sql.Selector) {
+		s.Where(sql.In(s.C(FieldWorkflowID), v...))
+	})
+}
+
+// WorkflowIDNotIn applies the NotIn predicate on the "workflow_id" field.
+func WorkflowIDNotIn(vs ...uuid.UUID) predicate.VarRef {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.VarRef(func(s *sql.Selector) {
+		s.Where(sql.NotIn(s.C(FieldWorkflowID), v...))
+	})
+}
+
+// WorkflowIDGT applies the GT predicate on the "workflow_id" field.
+func WorkflowIDGT(v uuid.UUID) predicate.VarRef {
+	return predicate.VarRef(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldWorkflowID), v))
+	})
+}
+
+// WorkflowIDGTE applies the GTE predicate on the "workflow_id" field.
+func WorkflowIDGTE(v uuid.UUID) predicate.VarRef {
+	return predicate.VarRef(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldWorkflowID), v))
+	})
+}
+
+// WorkflowIDLT applies the LT predicate on the "workflow_id" field.
+func WorkflowIDLT(v uuid.UUID) predicate.VarRef {
+	return predicate.VarRef(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldWorkflowID), v))
+	})
+}
+
+// WorkflowIDLTE applies the LTE predicate on the "workflow_id" field.
+func WorkflowIDLTE(v uuid.UUID) predicate.VarRef {
+	return predicate.VarRef(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldWorkflowID), v))
 	})
 }
 

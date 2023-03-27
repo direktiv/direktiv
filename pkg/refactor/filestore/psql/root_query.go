@@ -21,7 +21,7 @@ func addTrailingSlash(path string) string {
 }
 
 type RootQuery struct {
-	root         *filestore.Root
+	rootID       uuid.UUID
 	checksumFunc filestore.CalculateChecksumFunc
 	db           *gorm.DB
 }
@@ -29,7 +29,7 @@ type RootQuery struct {
 var _ filestore.RootQuery = &RootQuery{} // Ensures RootQuery struct conforms to filestore.RootQuery interface.
 
 func (q *RootQuery) Delete(ctx context.Context) error {
-	res := q.db.WithContext(ctx).Delete(&filestore.Root{ID: q.root.ID})
+	res := q.db.WithContext(ctx).Delete(&filestore.Root{ID: q.rootID})
 	if res.Error != nil {
 		return res.Error
 	}
@@ -41,10 +41,36 @@ func (q *RootQuery) Delete(ctx context.Context) error {
 }
 
 //nolint:ireturn
-func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.FileType, dataReader io.Reader) (*filestore.File, error) {
+func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.FileType, dataReader io.Reader) (*filestore.File, *filestore.Revision, error) {
 	path, err := filestore.SanitizePath(path)
 	if err != nil {
-		return nil, fmt.Errorf("create validation error, %w", err)
+		return nil, nil, filestore.ErrInvalidPathParameter
+	}
+
+	// check if root exists.
+	if err = q.checkRootExists(ctx); err != nil {
+		return nil, nil, err
+	}
+
+	count := 0
+	tx := q.db.Raw("SELECT count(id) FROM files WHERE root_id = ? AND path = ?", q.rootID, path).Scan(&count)
+	if tx.Error != nil {
+		return nil, nil, tx.Error
+	}
+	if count > 0 {
+		return nil, nil, filestore.ErrPathAlreadyExists
+	}
+
+	parentDir := filepath.Dir(path)
+	if parentDir != "/" {
+		count = 0
+		tx = q.db.Raw("SELECT count(id) FROM files WHERE root_id = ? AND typ = ? AND path = ?", q.rootID, filestore.FileTypeDirectory, parentDir).Scan(&count)
+		if tx.Error != nil {
+			return nil, nil, tx.Error
+		}
+		if count == 0 {
+			return nil, nil, filestore.ErrNoParentDirectory
+		}
 	}
 
 	// first, we need to create a file entry for this new file.
@@ -53,26 +79,26 @@ func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.F
 		Path:   path,
 		Depth:  filestore.ParseDepth(path),
 		Typ:    typ,
-		RootID: q.root.ID,
+		RootID: q.rootID,
 	}
 
 	res := q.db.WithContext(ctx).Create(f)
 	if res.Error != nil {
-		return nil, res.Error
+		return nil, nil, res.Error
 	}
 	if res.RowsAffected != 1 {
-		return nil, fmt.Errorf("unexpedted gorm create count, got: %d, want: %d", res.RowsAffected, 1)
+		return nil, nil, fmt.Errorf("unexpedted gorm create count, got: %d, want: %d", res.RowsAffected, 1)
 	}
 
 	if typ == filestore.FileTypeDirectory {
-		return f, nil
+		return f, nil, nil
 	}
 
 	// second, now we need to create a revision entry for this new file.
 	var data []byte
 	data, err = io.ReadAll(dataReader)
 	if err != nil {
-		return nil, fmt.Errorf("create io error, %w", err)
+		return nil, nil, fmt.Errorf("create io error, %w", err)
 	}
 	rev := &filestore.Revision{
 		ID:   uuid.New(),
@@ -86,21 +112,31 @@ func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.F
 	}
 	res = q.db.WithContext(ctx).Create(rev)
 	if res.Error != nil {
-		return nil, res.Error
+		return nil, nil, res.Error
 	}
 	if res.RowsAffected != 1 {
-		return nil, fmt.Errorf("unexpedted gorm create count, got: %d, want: %d", res.RowsAffected, 1)
+		return nil, nil, fmt.Errorf("unexpedted gorm create count, got: %d, want: %d", res.RowsAffected, 1)
 	}
 
-	return f, nil
+	return f, rev, nil
 }
 
 //nolint:ireturn
 func (q *RootQuery) GetFile(ctx context.Context, path string) (*filestore.File, error) {
+	path, err := filestore.SanitizePath(path)
+	if err != nil {
+		return nil, filestore.ErrInvalidPathParameter
+	}
+
+	// check if root exists.
+	if err = q.checkRootExists(ctx); err != nil {
+		return nil, err
+	}
+
 	f := &filestore.File{}
 	path = filepath.Clean(path)
 
-	res := q.db.WithContext(ctx).Where("root_id", q.root.ID).Where("path = ?", path).First(f)
+	res := q.db.WithContext(ctx).Where("root_id", q.rootID).Where("path = ?", path).First(f)
 	if res.Error != nil {
 		return nil, res.Error
 	}
@@ -113,13 +149,34 @@ func (q *RootQuery) ReadDirectory(ctx context.Context, path string) ([]*filestor
 	var list []filestore.File
 	path, err := filestore.SanitizePath(path)
 	if err != nil {
-		return nil, fmt.Errorf("create error, %w", err)
+		return nil, filestore.ErrInvalidPathParameter
+	}
+
+	// check if root exists.
+	if err = q.checkRootExists(ctx); err != nil {
+		return nil, err
+	}
+
+	if path == "" {
+		path = "/"
+	}
+
+	// check if path is a directory and exists.
+	if path != "/" {
+		count := 0
+		tx := q.db.Raw("SELECT count(id) FROM files WHERE root_id = ? AND typ = ? AND path = ?", q.rootID, filestore.FileTypeDirectory, path).Scan(&count)
+		if tx.Error != nil {
+			return nil, err
+		}
+		if count != 1 {
+			return nil, filestore.ErrPathIsNotDirectory
+		}
 	}
 
 	res := q.db.WithContext(ctx).
 		// Don't include file 'data' in the query. File data can be retrieved with file.GetData().
-		Select("id", "path", "depth", "root_id", "created_at", "updated_at").
-		Where("root_id", q.root.ID).
+		Select("id", "path", "depth", "typ", "root_id", "created_at", "updated_at").
+		Where("root_id", q.rootID).
 		Where("depth", filestore.ParseDepth(path)+1).
 		Where("path LIKE ?", addTrailingSlash(path)+"%"). // trailing slash necessary otherwise "/a" will receive children for both "/a" and "/abc".
 		Find(&list)
@@ -139,6 +196,11 @@ func (q *RootQuery) ReadDirectory(ctx context.Context, path string) ([]*filestor
 func (q *RootQuery) CalculateChecksumsMap(ctx context.Context, path string) (map[string]string, error) {
 	path, err := filestore.SanitizePath(path)
 	if err != nil {
+		return nil, filestore.ErrInvalidPathParameter
+	}
+
+	// check if root exists.
+	if err = q.checkRootExists(ctx); err != nil {
 		return nil, err
 	}
 
@@ -170,4 +232,13 @@ func (q *RootQuery) CalculateChecksumsMap(ctx context.Context, path string) (map
 	}
 
 	return result, nil
+}
+
+func (q *RootQuery) checkRootExists(ctx context.Context) error {
+	n := &filestore.Root{ID: q.rootID}
+	res := q.db.WithContext(ctx).First(n)
+	if res.Error != nil {
+		return res.Error
+	}
+	return nil
 }

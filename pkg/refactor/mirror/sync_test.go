@@ -47,7 +47,7 @@ func TestExecuteMirroringProcess(t *testing.T) {
 func assertRootFilesInPath(t *testing.T, fs filestore.FileStore, root *filestore.Root, searchPath string, paths ...string) {
 	t.Helper()
 
-	files, err := fs.ForRoot(root).ReadDirectory(context.Background(), searchPath)
+	files, err := fs.ForRootID(root.ID).ReadDirectory(context.Background(), searchPath)
 	if err != nil {
 		t.Errorf("unepxected ReadDirectory() error = %v", err)
 	}

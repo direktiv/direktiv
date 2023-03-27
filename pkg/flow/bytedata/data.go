@@ -5,7 +5,10 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"io"
+	"path/filepath"
 	"reflect"
 	"strings"
 	"time"
@@ -191,4 +194,110 @@ func ConvertDataForOutput(a, b interface{}) error {
 	}
 
 	return nil
+}
+
+func ConvertFilesListToGrpc(a []*filestore.File, b []*grpc.Node) []*grpc.Node {
+	for _, f := range a {
+		b = append(b, &grpc.Node{
+			CreatedAt:    timestamppb.New(f.CreatedAt),
+			UpdatedAt:    timestamppb.New(f.UpdatedAt),
+			Name:         filepath.Base(f.Path),
+			Path:         f.Path,
+			Parent:       filepath.Dir(f.Path),
+			Type:         string(f.Typ),
+			Attributes:   []string{},
+			Oid:          f.ID.String(),
+			ReadOnly:     true,
+			ExpandedType: "directory",
+		})
+	}
+
+	return b
+}
+
+func ConvertRevisionsListToGrpc(a []*filestore.Revision, b []*grpc.Ref) []*grpc.Ref {
+	for _, f := range a {
+		b = append(b, &grpc.Ref{
+			Name: f.ID.String(),
+		})
+	}
+
+	return b
+}
+
+func ConvertPathToToGrpc(a filestore.File, b *grpc.Node) error {
+	*b = grpc.Node{
+		CreatedAt:  timestamppb.New(a.CreatedAt),
+		UpdatedAt:  timestamppb.New(a.UpdatedAt),
+		Name:       filepath.Base(a.Path),
+		Path:       a.Path,
+		Parent:     a.Path,
+		Type:       string(a.Typ),
+		Attributes: []string{},
+		Oid:        a.ID.String(),
+		ReadOnly:   false,
+	}
+
+	return nil
+}
+
+func ConvertFileToGrpcNode(f *filestore.File) *grpc.Node {
+	return &grpc.Node{
+		CreatedAt:  timestamppb.New(f.CreatedAt),
+		UpdatedAt:  timestamppb.New(f.UpdatedAt),
+		Name:       filepath.Base(f.Path),
+		Path:       f.Path,
+		Parent:     filepath.Dir(f.Path),
+		Type:       string(f.Typ),
+		Attributes: []string{},
+		Oid:        f.ID.String(),
+		ReadOnly:   false,
+	}
+}
+
+func NewCreateWorkflowResponse(file *filestore.File, revision *filestore.Revision) *grpc.CreateWorkflowResponse {
+	res := &grpc.CreateWorkflowResponse{
+		Node: &grpc.Node{
+			CreatedAt:  timestamppb.New(file.CreatedAt),
+			UpdatedAt:  timestamppb.New(file.UpdatedAt),
+			Name:       filepath.Base(file.Path),
+			Path:       file.Path,
+			Parent:     filepath.Dir(file.Path),
+			Type:       string(file.Typ),
+			Attributes: []string{},
+			Oid:        file.ID.String(),
+			ReadOnly:   false,
+		},
+		Revision: &grpc.Revision{
+			CreatedAt: timestamppb.New(revision.CreatedAt),
+			Hash:      revision.Checksum,
+			Name:      revision.ID.String(),
+		},
+	}
+
+	return res
+}
+
+func NewWorkflowResponse(file *filestore.File, revision *filestore.Revision) *grpc.WorkflowResponse {
+	res := &grpc.WorkflowResponse{
+		Node: &grpc.Node{
+			CreatedAt:    timestamppb.New(file.CreatedAt),
+			UpdatedAt:    timestamppb.New(file.UpdatedAt),
+			Name:         filepath.Base(file.Path),
+			Path:         file.Path,
+			Parent:       filepath.Dir(file.Path),
+			Type:         string(file.Typ),
+			ExpandedType: string(file.Typ),
+			Attributes:   []string{},
+			Oid:          file.ID.String(),
+			ReadOnly:     false,
+		},
+		Revision: &grpc.Revision{
+			CreatedAt: timestamppb.New(revision.CreatedAt),
+			Hash:      revision.Checksum,
+			Name:      revision.ID.String(),
+		},
+	}
+
+	return res
 }

@@ -21,6 +21,8 @@ func (LogMsg) Fields() []ent.Field {
 		field.String("msg"),
 		field.String("rootInstanceId").Default(""), // NOTE: this field is redundant, but it allows us to improve query performance.
 		field.String("logInstanceCallPath").Default(""),
+		field.UUID("workflow_id", uuid.UUID{}).Nillable().StorageKey("workflow_id"),
+		field.UUID("mirror_activity_id", uuid.UUID{}).Nillable().StorageKey("mirror_activity_id"),
 	}
 }
 

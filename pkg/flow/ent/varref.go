@@ -23,6 +23,8 @@ type VarRef struct {
 	Name string `json:"name,omitempty"`
 	// Behaviour holds the value of the "behaviour" field.
 	Behaviour string `json:"behaviour,omitempty"`
+	// WorkflowID holds the value of the "workflow_id" field.
+	WorkflowID *uuid.UUID `json:"workflow_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the VarRefQuery when eager-loading is set.
 	Edges            VarRefEdges `json:"edges"`
@@ -88,6 +90,8 @@ func (*VarRef) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case varref.FieldWorkflowID:
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case varref.FieldName, varref.FieldBehaviour:
 			values[i] = new(sql.NullString)
 		case varref.FieldID:
@@ -130,6 +134,13 @@ func (vr *VarRef) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field behaviour", values[i])
 			} else if value.Valid {
 				vr.Behaviour = value.String
+			}
+		case varref.FieldWorkflowID:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field workflow_id", values[i])
+			} else if value.Valid {
+				vr.WorkflowID = new(uuid.UUID)
+				*vr.WorkflowID = *value.S.(*uuid.UUID)
 			}
 		case varref.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
@@ -200,6 +211,11 @@ func (vr *VarRef) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("behaviour=")
 	builder.WriteString(vr.Behaviour)
+	builder.WriteString(", ")
+	if v := vr.WorkflowID; v != nil {
+		builder.WriteString("workflow_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -64,7 +64,7 @@ func ExecuteMirroringProcessFromDirectory(
 	ignoreMatcher ignorefile.Matcher,
 	dstDir string,
 ) error {
-	currentChecksumsMap, err := fStore.ForRoot(direktivRoot).CalculateChecksumsMap(ctx, "/")
+	currentChecksumsMap, err := fStore.ForRootID(direktivRoot.ID).CalculateChecksumsMap(ctx, "/")
 	if err != nil {
 		return fmt.Errorf("calculate current checksum map, err: %w", err)
 	}
@@ -101,13 +101,13 @@ func ExecuteMirroringProcessFromDirectory(
 
 		// create dir in directive file store.
 		if d.IsDir() && !doesPathExists {
-			_, err = fStore.
-				ForRoot(direktivRoot).
+			_, _, err = fStore.
+				ForRootID(direktivRoot.ID).
 				CreateFile(ctx, relativePath, filestore.FileTypeDirectory, nil)
 		}
 		if !d.IsDir() && isDifferentChecksum {
-			_, err = fStore.
-				ForRoot(direktivRoot).
+			_, _, err = fStore.
+				ForRootID(direktivRoot.ID).
 				CreateFile(ctx, relativePath, filestore.FileTypeFile, fileReader)
 		}
 

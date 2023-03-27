@@ -16,6 +16,44 @@ type FileQuery struct {
 	db   *gorm.DB
 }
 
+func (q *FileQuery) GetRevisionByTag(ctx context.Context, tag string) (*filestore.Revision, error) {
+	if q.file.Typ == filestore.FileTypeDirectory {
+		return nil, filestore.ErrFileTypeIsDirectory
+	}
+
+	rev := &filestore.Revision{}
+	res := q.db.WithContext(ctx).
+		Where("file_id", q.file.ID).
+		Where("tags LIKE ?", "%"+tag+"%").
+		First(rev)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+
+	return rev, nil
+}
+
+func (q *FileQuery) GetRevision(ctx context.Context, id uuid.UUID) (*filestore.Revision, error) {
+	if q.file.Typ == filestore.FileTypeDirectory {
+		return nil, filestore.ErrFileTypeIsDirectory
+	}
+
+	rev := &filestore.Revision{ID: id}
+	res := q.db.WithContext(ctx).
+		First(rev)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+
+	return rev, nil
+}
+
+func (q *FileQuery) GetAllRevisions(ctx context.Context) ([]*filestore.Revision, error) {
+	//TODO implement me
+	//panic("implement me")
+	return nil, nil
+}
+
 var _ filestore.FileQuery = &FileQuery{}
 
 func (q *FileQuery) Delete(ctx context.Context, force bool) error {
@@ -32,9 +70,9 @@ func (q *FileQuery) Delete(ctx context.Context, force bool) error {
 
 func (q *FileQuery) GetData(ctx context.Context) (io.ReadCloser, error) {
 	if q.file.Typ == filestore.FileTypeDirectory {
-		return nil, filestore.ErrFileIsNotDirectory
+		return nil, filestore.ErrFileTypeIsDirectory
 	}
-	rev := &filestore.Revision{FileID: q.file.ID}
+	rev := &filestore.Revision{}
 	res := q.db.WithContext(ctx).
 		Where("file_id", q.file.ID).
 		Where("is_current", true).
@@ -50,10 +88,10 @@ func (q *FileQuery) GetData(ctx context.Context) (io.ReadCloser, error) {
 
 func (q *FileQuery) GetCurrentRevision(ctx context.Context) (*filestore.Revision, error) {
 	if q.file.Typ == filestore.FileTypeDirectory {
-		return nil, filestore.ErrFileIsNotDirectory
+		return nil, filestore.ErrFileTypeIsDirectory
 	}
 
-	rev := &filestore.Revision{FileID: q.file.ID}
+	rev := &filestore.Revision{}
 	res := q.db.WithContext(ctx).
 		Where("file_id", q.file.ID).
 		Where("is_current", true).
@@ -67,7 +105,7 @@ func (q *FileQuery) GetCurrentRevision(ctx context.Context) (*filestore.Revision
 
 func (q *FileQuery) CreateRevision(ctx context.Context, tags filestore.RevisionTags) (*filestore.Revision, error) {
 	if q.file.Typ == filestore.FileTypeDirectory {
-		return nil, filestore.ErrFileIsNotDirectory
+		return nil, filestore.ErrFileTypeIsDirectory
 	}
 
 	// read file data to copy it to a new revision that we will create.
@@ -96,7 +134,7 @@ func (q *FileQuery) CreateRevision(ctx context.Context, tags filestore.RevisionT
 	// create a new file revision by copying data.
 	newRev := &filestore.Revision{
 		ID:   uuid.New(),
-		Tags: tags.String(),
+		Tags: tags,
 
 		FileID:    q.file.ID,
 		IsCurrent: true,

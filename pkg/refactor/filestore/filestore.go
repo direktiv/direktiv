@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"errors"
+	"fmt"
 	"io"
 	"time"
 
@@ -16,19 +17,30 @@ import (
 // Via 'filestore.Manager' the caller manages the roots, and 'filestore.Root' the caller manages files and directories.
 
 var (
-	ErrFileIsNotDirectory = errors.New("ErrFileIsNotDirectory")
-	ErrNotFound           = errors.New("ErrNotFound")
+	ErrFileTypeIsDirectory  = errors.New("ErrFileTypeIsDirectory")
+	ErrNotFound             = errors.New("ErrNotFound")
+	ErrPathAlreadyExists    = errors.New("ErrPathAlreadyExists")
+	ErrPathIsNotDirectory   = errors.New("ErrPathIsNotDirectory")
+	ErrNoParentDirectory    = errors.New("ErrNoParentDirectory")
+	ErrInvalidPathParameter = errors.New("ErrInvalidPathParameter")
 )
 
 type FileStore interface {
 	CreateRoot(ctx context.Context, id uuid.UUID) (*Root, error)
-
-	GetRoot(ctx context.Context, id uuid.UUID) (*Root, error)
 	GetAllRoots(ctx context.Context) ([]*Root, error)
 
-	ForRoot(root *Root) RootQuery
+	ForRootID(rootID uuid.UUID) RootQuery
 	ForFile(file *File) FileQuery
 	ForRevision(revision *Revision) RevisionQuery
+	Begin(ctx context.Context) (TxFileStore, error)
+
+	Tx(ctx context.Context, fun func(ctx context.Context, fStore FileStore) error) error
+}
+
+type TxFileStore interface {
+	FileStore
+	Commit(ctx context.Context) error
+	Rollback(ctx context.Context) error
 }
 
 type Root struct {
@@ -40,7 +52,7 @@ type Root struct {
 
 type RootQuery interface {
 	GetFile(ctx context.Context, path string) (*File, error)
-	CreateFile(ctx context.Context, path string, typ FileType, dataReader io.Reader) (*File, error)
+	CreateFile(ctx context.Context, path string, typ FileType, dataReader io.Reader) (*File, *Revision, error)
 	ReadDirectory(ctx context.Context, path string) ([]*File, error)
 	Delete(ctx context.Context) error
 	CalculateChecksumsMap(ctx context.Context, path string) (map[string]string, error)
@@ -49,8 +61,8 @@ type RootQuery interface {
 type CalculateChecksumFunc func([]byte) []byte
 
 var Sha256CalculateChecksum CalculateChecksumFunc = func(data []byte) []byte {
-	res := sha256.Sum256(data)
-	return res[:]
+	res := fmt.Sprintf("%x", sha256.Sum256(data))
+	return []byte(res)
 }
 
 var DefaultCalculateChecksum = Sha256CalculateChecksum

@@ -22,16 +22,6 @@ func assertFileStoreCorrectRootCreation(t *testing.T, fs filestore.FileStore, id
 	if root.ID != id {
 		t.Errorf("unexpected root.ID, got: >%s<, want: >%s<", root.ID, id)
 	}
-	root, err = fs.GetRoot(context.Background(), id)
-	if err != nil {
-		t.Errorf("unexpected root.ID error: %v", err)
-	}
-	if root == nil {
-		t.Errorf("unexpected nil namepace")
-	}
-	if root.ID != id {
-		t.Errorf("unexpected second root.ID, got: >%s<, want: >%s<", root.ID, id)
-	}
 }
 
 func assertFileStoreHasRoot(t *testing.T, fs filestore.FileStore, ids ...uuid.UUID) {
@@ -56,11 +46,7 @@ func assertFileStoreCorrectRootDeletion(t *testing.T, fs filestore.FileStore, id
 	t.Helper()
 
 	for i := range ids {
-		root, err := fs.GetRoot(context.Background(), ids[i])
-		if err != nil {
-			t.Errorf("unexpected GetRoot() error: %v", err)
-		}
-		err = fs.ForRoot(root).Delete(context.Background())
+		err := fs.ForRootID(ids[i]).Delete(context.Background())
 		if err != nil {
 			t.Errorf("unexpected Delete() error: %v", err)
 		}

@@ -8928,6 +8928,7 @@ type VarRefMutation struct {
 	id               *uuid.UUID
 	name             *string
 	behaviour        *string
+	workflow_id      *uuid.UUID
 	clearedFields    map[string]struct{}
 	vardata          *uuid.UUID
 	clearedvardata   bool
@@ -9142,6 +9143,42 @@ func (m *VarRefMutation) ResetBehaviour() {
 	delete(m.clearedFields, varref.FieldBehaviour)
 }
 
+// SetWorkflowID sets the "workflow_id" field.
+func (m *VarRefMutation) SetWorkflowID(u uuid.UUID) {
+	m.workflow_id = &u
+}
+
+// WorkflowID returns the value of the "workflow_id" field in the mutation.
+func (m *VarRefMutation) WorkflowID() (r uuid.UUID, exists bool) {
+	v := m.workflow_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWorkflowID returns the old "workflow_id" field's value of the VarRef entity.
+// If the VarRef object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *VarRefMutation) OldWorkflowID(ctx context.Context) (v *uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldWorkflowID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldWorkflowID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWorkflowID: %w", err)
+	}
+	return oldValue.WorkflowID, nil
+}
+
+// ResetWorkflowID resets all changes to the "workflow_id" field.
+func (m *VarRefMutation) ResetWorkflowID() {
+	m.workflow_id = nil
+}
+
 // SetVardataID sets the "vardata" edge to the VarData entity by id.
 func (m *VarRefMutation) SetVardataID(id uuid.UUID) {
 	m.vardata = &id
@@ -9278,12 +9315,15 @@ func (m *VarRefMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *VarRefMutation) Fields() []string {
-	fields := make([]string, 0, 2)
+	fields := make([]string, 0, 3)
 	if m.name != nil {
 		fields = append(fields, varref.FieldName)
 	}
 	if m.behaviour != nil {
 		fields = append(fields, varref.FieldBehaviour)
+	}
+	if m.workflow_id != nil {
+		fields = append(fields, varref.FieldWorkflowID)
 	}
 	return fields
 }
@@ -9297,6 +9337,8 @@ func (m *VarRefMutation) Field(name string) (ent.Value, bool) {
 		return m.Name()
 	case varref.FieldBehaviour:
 		return m.Behaviour()
+	case varref.FieldWorkflowID:
+		return m.WorkflowID()
 	}
 	return nil, false
 }
@@ -9310,6 +9352,8 @@ func (m *VarRefMutation) OldField(ctx context.Context, name string) (ent.Value, 
 		return m.OldName(ctx)
 	case varref.FieldBehaviour:
 		return m.OldBehaviour(ctx)
+	case varref.FieldWorkflowID:
+		return m.OldWorkflowID(ctx)
 	}
 	return nil, fmt.Errorf("unknown VarRef field %s", name)
 }
@@ -9332,6 +9376,13 @@ func (m *VarRefMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetBehaviour(v)
+		return nil
+	case varref.FieldWorkflowID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWorkflowID(v)
 		return nil
 	}
 	return fmt.Errorf("unknown VarRef field %s", name)
@@ -9402,6 +9453,9 @@ func (m *VarRefMutation) ResetField(name string) error {
 		return nil
 	case varref.FieldBehaviour:
 		m.ResetBehaviour()
+		return nil
+	case varref.FieldWorkflowID:
+		m.ResetWorkflowID()
 		return nil
 	}
 	return fmt.Errorf("unknown VarRef field %s", name)

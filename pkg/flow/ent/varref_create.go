@@ -54,6 +54,12 @@ func (vrc *VarRefCreate) SetNillableBehaviour(s *string) *VarRefCreate {
 	return vrc
 }
 
+// SetWorkflowID sets the "workflow_id" field.
+func (vrc *VarRefCreate) SetWorkflowID(u uuid.UUID) *VarRefCreate {
+	vrc.mutation.SetWorkflowID(u)
+	return vrc
+}
+
 // SetID sets the "id" field.
 func (vrc *VarRefCreate) SetID(u uuid.UUID) *VarRefCreate {
 	vrc.mutation.SetID(u)
@@ -207,6 +213,9 @@ func (vrc *VarRefCreate) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "VarRef.name": %w`, err)}
 		}
 	}
+	if _, ok := vrc.mutation.WorkflowID(); !ok {
+		return &ValidationError{Name: "workflow_id", err: errors.New(`ent: missing required field "VarRef.workflow_id"`)}
+	}
 	if _, ok := vrc.mutation.VardataID(); !ok {
 		return &ValidationError{Name: "vardata", err: errors.New(`ent: missing required edge "VarRef.vardata"`)}
 	}
@@ -254,6 +263,10 @@ func (vrc *VarRefCreate) createSpec() (*VarRef, *sqlgraph.CreateSpec) {
 	if value, ok := vrc.mutation.Behaviour(); ok {
 		_spec.SetField(varref.FieldBehaviour, field.TypeString, value)
 		_node.Behaviour = value
+	}
+	if value, ok := vrc.mutation.WorkflowID(); ok {
+		_spec.SetField(varref.FieldWorkflowID, field.TypeUUID, value)
+		_node.WorkflowID = &value
 	}
 	if nodes := vrc.mutation.VardataIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -403,6 +416,18 @@ func (u *VarRefUpsert) ClearBehaviour() *VarRefUpsert {
 	return u
 }
 
+// SetWorkflowID sets the "workflow_id" field.
+func (u *VarRefUpsert) SetWorkflowID(v uuid.UUID) *VarRefUpsert {
+	u.Set(varref.FieldWorkflowID, v)
+	return u
+}
+
+// UpdateWorkflowID sets the "workflow_id" field to the value that was provided on create.
+func (u *VarRefUpsert) UpdateWorkflowID() *VarRefUpsert {
+	u.SetExcluded(varref.FieldWorkflowID)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -490,6 +515,20 @@ func (u *VarRefUpsertOne) UpdateBehaviour() *VarRefUpsertOne {
 func (u *VarRefUpsertOne) ClearBehaviour() *VarRefUpsertOne {
 	return u.Update(func(s *VarRefUpsert) {
 		s.ClearBehaviour()
+	})
+}
+
+// SetWorkflowID sets the "workflow_id" field.
+func (u *VarRefUpsertOne) SetWorkflowID(v uuid.UUID) *VarRefUpsertOne {
+	return u.Update(func(s *VarRefUpsert) {
+		s.SetWorkflowID(v)
+	})
+}
+
+// UpdateWorkflowID sets the "workflow_id" field to the value that was provided on create.
+func (u *VarRefUpsertOne) UpdateWorkflowID() *VarRefUpsertOne {
+	return u.Update(func(s *VarRefUpsert) {
+		s.UpdateWorkflowID()
 	})
 }
 
@@ -743,6 +782,20 @@ func (u *VarRefUpsertBulk) UpdateBehaviour() *VarRefUpsertBulk {
 func (u *VarRefUpsertBulk) ClearBehaviour() *VarRefUpsertBulk {
 	return u.Update(func(s *VarRefUpsert) {
 		s.ClearBehaviour()
+	})
+}
+
+// SetWorkflowID sets the "workflow_id" field.
+func (u *VarRefUpsertBulk) SetWorkflowID(v uuid.UUID) *VarRefUpsertBulk {
+	return u.Update(func(s *VarRefUpsert) {
+		s.SetWorkflowID(v)
+	})
+}
+
+// UpdateWorkflowID sets the "workflow_id" field to the value that was provided on create.
+func (u *VarRefUpsertBulk) UpdateWorkflowID() *VarRefUpsertBulk {
+	return u.Update(func(s *VarRefUpsert) {
+		s.UpdateWorkflowID()
 	})
 }
 

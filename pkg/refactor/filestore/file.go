@@ -31,6 +31,9 @@ type File struct {
 type FileQuery interface {
 	GetData(ctx context.Context) (io.ReadCloser, error)
 	GetCurrentRevision(ctx context.Context) (*Revision, error)
+	GetAllRevisions(ctx context.Context) ([]*Revision, error)
 	CreateRevision(ctx context.Context, tags RevisionTags) (*Revision, error)
 	Delete(ctx context.Context, force bool) error
+	GetRevision(ctx context.Context, id uuid.UUID) (*Revision, error)
+	GetRevisionByTag(ctx context.Context, tag string) (*Revision, error)
 }

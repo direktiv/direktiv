@@ -169,35 +169,27 @@ func (db *Database) DB() *sql.DB {
 }
 
 func (db *Database) Namespace(ctx context.Context, id uuid.UUID) (*database.Namespace, error) {
-	// TODO: yassir, need refactor.
-	return nil, nil
-	//clients := db.clients(ctx)
-	//
-	//ns, err := clients.Namespace.Query().Where(entns.ID(id)).WithInodes(func(q *ent.InodeQuery) {
-	//	q.Where(entino.NameIsNil()).Select(entino.FieldID)
-	//}).Only(ctx)
-	//if err != nil {
-	//	db.sugar.Debugf("%s failed to resolve namespace: %v", parent(), err)
-	//	return nil, err
-	//}
-	//
-	//return db.entNamespace(ns), nil
+	clients := db.clients(ctx)
+
+	ns, err := clients.Namespace.Query().Where(entns.ID(id)).Only(ctx)
+	if err != nil {
+		db.sugar.Debugf("%s failed to resolve namespace: %v", parent(), err)
+		return nil, err
+	}
+
+	return db.entNamespace(ns), nil
 }
 
 func (db *Database) NamespaceByName(ctx context.Context, name string) (*database.Namespace, error) {
-	// TODO: yassir, need refactor.
-	return nil, nil
-	//clients := db.clients(ctx)
-	//
-	//ns, err := clients.Namespace.Query().Where(entns.Name(name)).WithInodes(func(q *ent.InodeQuery) {
-	//	q.Where(entino.NameIsNil()).Select(entino.FieldID)
-	//}).Only(ctx)
-	//if err != nil {
-	//	db.sugar.Debugf("%s failed to resolve namespace: %v", parent(), err)
-	//	return nil, err
-	//}
-	//
-	//return db.entNamespace(ns), nil
+	clients := db.clients(ctx)
+
+	ns, err := clients.Namespace.Query().Where(entns.Name(name)).Only(ctx)
+	if err != nil {
+		db.sugar.Debugf("%s failed to resolve namespace: %v", parent(), err)
+		return nil, err
+	}
+
+	return db.entNamespace(ns), nil
 }
 
 func (db *Database) Instance(ctx context.Context, id uuid.UUID) (*database.Instance, error) {
@@ -297,19 +289,17 @@ func (db *Database) NamespaceVariableRef(ctx context.Context, nsID uuid.UUID, ke
 }
 
 func (db *Database) WorkflowVariableRef(ctx context.Context, wfID uuid.UUID, key string) (*database.VarRef, error) {
-	// TODO: yassir, need refactor.
-	return nil, nil
-	//clients := db.clients(ctx)
-	//
-	//varref, err := clients.VarRef.Query().Where(entvar.HasWorkflowWith(entwf.ID(wfID)), entvar.NameEQ(key)).WithVardata(func(q *ent.VarDataQuery) {
-	//	q.Select(entvardata.FieldID)
-	//}).Only(ctx)
-	//if err != nil {
-	//	db.sugar.Debugf("%s failed to resolve workflow variable: %v", parent(), err)
-	//	return nil, err
-	//}
-	//
-	//return db.entVarRef(varref), nil
+	clients := db.clients(ctx)
+
+	varref, err := clients.VarRef.Query().Where(entvar.WorkflowID(wfID), entvar.NameEQ(key)).WithVardata(func(q *ent.VarDataQuery) {
+		q.Select(entvardata.FieldID)
+	}).Only(ctx)
+	if err != nil {
+		db.sugar.Debugf("%s failed to resolve workflow variable: %v", parent(), err)
+		return nil, err
+	}
+
+	return db.entVarRef(varref), nil
 }
 
 func (db *Database) InstanceVariableRef(ctx context.Context, instID uuid.UUID, key string) (*database.VarRef, error) {

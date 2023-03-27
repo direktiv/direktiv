@@ -28,6 +28,8 @@ func (Instance) Fields() []ent.Field {
 		field.String("errorMessage").Optional(),
 		field.String("invoker").Optional(),
 		field.String("callpath").Optional(),
+		field.UUID("workflow_id", uuid.UUID{}).Nillable().StorageKey("workflow_id"),
+		field.UUID("revision_id", uuid.UUID{}).Nillable().StorageKey("revision_id"),
 	}
 }
 
