@@ -119,7 +119,6 @@ const Breadcrumb = () => {
           </DropdownMenuContent>
         </DropdownMenu>
       </BreadcrumbLink>
-
       {path.segments.map((x, i) => (
         <BreadcrumbSegment
           key={x.absolute}
