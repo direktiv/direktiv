@@ -316,7 +316,7 @@ wait-api: ## Wait for 'api' pod to be ready.
 	kubectl wait --for=condition=ready pod ${FLOW_POD}
 
 .PHONY: upgrade-%
-upgrade-%: push-% # Pushes new image deletes, reboots and tail new pod
+upgrade-%: push-% ## Pushes new image deletes, reboots and tail new pod
 	@echo "Upgrading $* pod"
 	@$(MAKE) reboot-$*
 	@$(MAKE) wait-$*
@@ -324,27 +324,30 @@ upgrade-%: push-% # Pushes new image deletes, reboots and tail new pod
 
 
 .PHONY: upgrade
-upgrade: push # Pushes all images and reboots flow, function, and api pods
+upgrade: push ## Pushes all images and reboots flow, function, and api pods
 	@$(MAKE) reboot-flow
 	@$(MAKE) reboot-api
 	@$(MAKE) reboot-functions
 
 .PHONY: dependencies
-dependencies: # installs tools 
+dependencies: ## installs tools 
 	go install github.com/google/go-licenses@latest
 
 
 .PHONY: license-check 
-license-check: # Scans dependencies looking for licenses.
+license-check: ## Scans dependencies looking for licenses.
 	go-licenses check --ignore=github.com/bbuck/go-lexer ./... --disallowed_types forbidden,unknown,restricted
 
 TEST_PACKAGES := $(shell find . -type f -name '*_test.go' | sed -e 's/^\.\///g' | sed -r 's|/[^/]+$$||'  |sort |uniq)
 UNITTEST_PACKAGES = $(shell echo ${TEST_PACKAGES} | sed 's/ /\n/g' | awk '{print "github.com/direktiv/direktiv/" $$0}')
 
 .PHONY: unittest
-unittest: # Runs all Go unit tests. Or, you can run a specific set of unit tests by defining TEST_PACKAGES relative to the root directory.
+unittest: ## Runs all Go unit tests. Or, you can run a specific set of unit tests by defining TEST_PACKAGES relative to the root directory.
 	go test -cover -timeout 3s ${UNITTEST_PACKAGES}
 
 .PHONY: lint 
-lint: # Runs very strict linting on the project.
+lint: ## Runs very strict linting on the project.
 	docker run --rm -v `pwd`:/app -w /app golangci/golangci-lint golangci-lint run -v
+
+test-jest: ## Runs jest end-to-end tests. DIREKTIV_HOST=128.0.0.1 make test-jest [JEST_PREFIX=/tests/jest/namespaces]
+	docker run -it --rm -v `pwd`/tests/jest:/tests/jest -e 'DIREKTIV_HOST=${DIREKTIV_HOST}' -e 'NODE_TLS_REJECT_UNAUTHORIZED=0' node:alpine npm --prefix "/tests/jest" run all -- ${JEST_PREFIX}
