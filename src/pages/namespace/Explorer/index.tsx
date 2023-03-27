@@ -64,7 +64,7 @@ const ExplorerPage: FC = () => {
               Icon = Github;
             }
 
-            let linkTarget =
+            const linkTarget =
               file.expandedType === "workflow"
                 ? pages.workflow.createHref({
                     namespace,
@@ -75,20 +75,24 @@ const ExplorerPage: FC = () => {
                     path: file.path,
                   });
 
-            linkTarget = "#";
-
             return (
               <div key={file.name}>
-                <Link to={linkTarget} className="flex items-center space-x-3">
+                <div className="flex items-center space-x-3">
                   <Icon className="h-5" />
-                  <span className="flex-1">{file.name}</span>
-                  <span className="text-gray-8 dark:text-gray-dark-8">
-                    {moment(file.updatedAt).fromNow()}
-                  </span>
+                  <Link to={linkTarget} className="flex flex-1">
+                    <span className="flex-1">{file.name}</span>
+                    <span className="text-gray-8 dark:text-gray-dark-8">
+                      {moment(file.updatedAt).fromNow()}
+                    </span>
+                  </Link>
                   <Dialog.Root>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => e.preventDefault()}
+                        >
                           <MoreVertical />
                         </Button>
                       </DropdownMenuTrigger>
@@ -128,7 +132,7 @@ const ExplorerPage: FC = () => {
                       </div>
                     </Dialog.Portal>
                   </Dialog.Root>
-                </Link>
+                </div>
               </div>
             );
           })}
