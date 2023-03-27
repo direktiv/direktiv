@@ -8,7 +8,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../../../componentsNext/Dropdown";
-import { FC, useState } from "react";
+import { FC, Fragment, useState } from "react";
 import {
   Folder,
   FolderTree,
@@ -29,12 +29,25 @@ import { pages } from "../../../util/router/pages";
 import { useListDirectory } from "../../../api/tree/query/get";
 import { useNamespace } from "../../../util/store/namespace";
 
+const BreadcrumbSegment: FC<{
+  absolute: string;
+  relative: string;
+  namespace: string;
+}> = ({ absolute, relative, namespace }) => (
+  <Link
+    to={pages.explorer.createHref({ namespace, path: absolute })}
+    className="hover:underline"
+  >
+    {relative}
+  </Link>
+);
+
 const ExplorerPage: FC = () => {
   const namespace = useNamespace();
   const { path } = pages.explorer.useParams();
 
   const { data } = useListDirectory({ path });
-  const { parent, isRoot } = analyzePath(path);
+  const { parent, isRoot, segments } = analyzePath(path);
   const [dialogOpen, setDialogOpen] = useState(false);
 
   if (!namespace) return null;
@@ -45,7 +58,27 @@ const ExplorerPage: FC = () => {
         <div className="flex flex-col max-sm:space-y-4 sm:flex-row sm:items-center sm:justify-between">
           <h3 className="flex items-center gap-x-2 font-bold text-primary-500">
             <FolderTree className="h-5" />
-            {data?.node?.path}
+            <div>
+              /&nbsp;
+              {segments
+                .map((x) => (
+                  <BreadcrumbSegment
+                    key={x.absolute}
+                    absolute={x.absolute}
+                    relative={x.relative}
+                    namespace={namespace}
+                  />
+                ))
+                // add / between segments
+                .reduce((prev, curr, i) => {
+                  if (i === 0) return [curr];
+                  return [
+                    ...prev,
+                    <Fragment key={`${curr.key}-separator`}> / </Fragment>,
+                    curr,
+                  ];
+                }, [] as JSX.Element[])}
+            </div>
           </h3>
           <Dialog.Root open={dialogOpen} onOpenChange={setDialogOpen}>
             <DropdownMenu>
