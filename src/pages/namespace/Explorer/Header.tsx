@@ -47,9 +47,14 @@ const ExplorerHeader: FC = () => {
     <div className="space-y-5 border-b border-gray-5 bg-base-200 p-5 dark:border-gray-dark-5">
       <div className="flex flex-col max-sm:space-y-4 sm:flex-row sm:items-center sm:justify-between">
         <h3 className="flex items-center gap-x-2 font-bold text-primary-500">
-          <FolderTree className="h-5" />
+          <Link
+            to={pages.explorer.createHref({ namespace })}
+            className="hover:underline"
+          >
+            <FolderTree className="h-5" />
+          </Link>
           <div>
-            /&nbsp;
+            / &nbsp;
             {segments
               .map((x) => (
                 <BreadcrumbSegment
