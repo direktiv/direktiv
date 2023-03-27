@@ -14,8 +14,11 @@ import {
   FolderTree,
   FolderUp,
   Github,
+  MoreVertical,
   Play,
   PlusCircle,
+  TextCursorInput,
+  Trash,
 } from "lucide-react";
 
 import Button from "../../../componentsNext/Button";
@@ -166,6 +169,29 @@ const ExplorerPage: FC = () => {
                   <span className="text-gray-8 dark:text-gray-dark-8">
                     {moment(file.updatedAt).fromNow()}
                   </span>
+                  <Dialog.Root>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost">
+                          <MoreVertical />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className="w-40">
+                        <DropdownMenuLabel>Edit</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <Dialog.Trigger>
+                          <DropdownMenuItem>
+                            <Trash className="mr-2 h-4 w-4" />
+                            <span>Delete</span>
+                          </DropdownMenuItem>
+                        </Dialog.Trigger>
+                        <DropdownMenuItem>
+                          <TextCursorInput className="mr-2 h-4 w-4" />
+                          <span>Rename</span>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </Dialog.Root>
                 </Link>
               </div>
             );
