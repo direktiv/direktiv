@@ -85,7 +85,7 @@ const ExplorerPage: FC = () => {
           </h3>
           <Dialog.Root open={dialogOpen} onOpenChange={setDialogOpen}>
             <DropdownMenu>
-              <DropdownMenuTrigger>
+              <DropdownMenuTrigger asChild>
                 <Button variant="primary">
                   <PlusCircle /> New <RxChevronDown />
                 </Button>
