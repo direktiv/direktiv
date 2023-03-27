@@ -80,6 +80,9 @@ const ExplorerPage: FC = () => {
                 />
                 <NewDirectory
                   path={data?.node?.path}
+                  unallowedNames={(data?.children?.results ?? []).map(
+                    (x) => x.name
+                  )}
                   close={() => setDialogOpen(false)}
                 />
               </div>

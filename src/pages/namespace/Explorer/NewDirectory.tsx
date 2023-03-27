@@ -15,9 +15,11 @@ type FormInput = {
 const NewDirectory = ({
   path,
   close,
+  unallowedNames,
 }: {
   path?: string;
   close: () => void;
+  unallowedNames: string[];
 }) => {
   const {
     register,
