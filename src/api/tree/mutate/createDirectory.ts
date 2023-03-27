@@ -23,7 +23,11 @@ const createDirectory = apiFactory({
   schema: TreeFolderCreatedSchema,
 });
 
-export const useCreateDirectory = () => {
+type ResolvedCreateDirectory = Awaited<ReturnType<typeof createDirectory>>;
+
+export const useCreateDirectory = ({
+  onSuccess,
+}: { onSuccess?: (data: ResolvedCreateDirectory) => void } = {}) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
   const { toast } = useToast();
@@ -50,6 +54,7 @@ export const useCreateDirectory = () => {
         description: `Directory ${variables.directory} was created in ${variables.path}`,
         variant: "success",
       });
+      onSuccess?.(data);
     },
     onError: () => {
       toast({

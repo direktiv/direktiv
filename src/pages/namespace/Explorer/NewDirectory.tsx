@@ -7,7 +7,10 @@ import Alert from "../../../componentsNext/Alert";
 import Button from "../../../componentsNext/Button";
 import clsx from "clsx";
 import { fileNameSchema } from "../../../api/tree/schema";
+import { pages } from "../../../util/router/pages";
 import { useCreateDirectory } from "../../../api/tree/mutate/createDirectory";
+import { useNamespace } from "../../../util/store/namespace";
+import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -24,6 +27,8 @@ const NewDirectory = ({
   close: () => void;
   unallowedNames: string[];
 }) => {
+  const namespace = useNamespace();
+  const navigate = useNavigate();
   const {
     register,
     handleSubmit,
@@ -40,11 +45,18 @@ const NewDirectory = ({
     ),
   });
 
-  const { mutate, isLoading } = useCreateDirectory();
+  const { mutate, isLoading } = useCreateDirectory({
+    onSuccess: (data) => {
+      namespace &&
+        navigate(
+          pages.explorer.createHref({ namespace, path: data.node.path })
+        );
+      close();
+    },
+  });
 
   const onSubmit: SubmitHandler<FormInput> = ({ name }) => {
     mutate({ path, directory: name });
-    close();
   };
 
   // you can not submit if the form has not changed or if there are any errors and you have already submitted the form
