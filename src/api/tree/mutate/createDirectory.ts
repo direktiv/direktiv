@@ -1,10 +1,8 @@
-import { TreeFolderCreatedSchema, TreeListSchemaType } from "../schema";
-import { apiFactory, defaultKeys } from "../../utils";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-
+import { TreeFolderCreatedSchema } from "../schema";
+import { apiFactory } from "../../utils";
 import { forceSlashIfPath } from "../utils";
-import { namespaceKeys } from "..";
 import { useApiKey } from "../../../util/store/apiKey";
+import { useMutation } from "@tanstack/react-query";
 import { useNamespace } from "../../../util/store/namespace";
 import { useToast } from "../../../componentsNext/Toast";
 
@@ -29,7 +27,6 @@ export const useCreateDirectory = () => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
   const { toast } = useToast();
-  const queryClient = useQueryClient();
 
   if (!namespace) {
     throw new Error("namespace is undefined");
@@ -52,35 +49,6 @@ export const useCreateDirectory = () => {
         description: `Directory ${variables.directory} was created in ${variables.path}`,
         variant: "success",
       });
-      queryClient.setQueryData<TreeListSchemaType>(
-        namespaceKeys.all(
-          apiKey ?? defaultKeys.apiKey,
-          namespace,
-          variables.path ?? ""
-        ),
-        (oldData) => {
-          const oldChildren = oldData?.children;
-          return {
-            ...oldData,
-            children: {
-              // may remove page info, since we will do all pagination locally anyways and this his hard to keep in sync
-              pageInfo: oldChildren?.pageInfo
-                ? {
-                    ...oldChildren?.pageInfo,
-                    total: oldChildren?.pageInfo.total + 1,
-                  }
-                : {
-                    filter: [],
-                    limit: 0,
-                    offset: 0,
-                    order: [],
-                    total: 1,
-                  },
-              results: [...(oldChildren?.results ?? []), data.node],
-            },
-          };
-        }
-      );
     },
     onError: () => {
       toast({
