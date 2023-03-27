@@ -101,13 +101,19 @@ const ExplorerHeader: FC = () => {
                   "dark:bg-white-alpha-2"
                 )}
               />
-              <NewDirectory
-                path={data?.node?.path}
-                unallowedNames={(data?.children?.results ?? []).map(
-                  (x) => x.name
+              <Dialog.Content
+                className={clsx(
+                  "fixed z-50 grid w-full gap-2 rounded-b-lg bg-base-100 p-6 shadow-md animate-in data-[state=open]:fade-in-90 data-[state=open]:slide-in-from-bottom-10 sm:max-w-[425px] sm:rounded-lg sm:zoom-in-90 data-[state=open]:sm:slide-in-from-bottom-0"
                 )}
-                close={() => setDialogOpen(false)}
-              />
+              >
+                <NewDirectory
+                  path={data?.node?.path}
+                  unallowedNames={(data?.children?.results ?? []).map(
+                    (x) => x.name
+                  )}
+                  close={() => setDialogOpen(false)}
+                />
+              </Dialog.Content>
             </div>
           </Dialog.Portal>
         </Dialog.Root>
