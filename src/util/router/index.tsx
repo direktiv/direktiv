@@ -12,5 +12,14 @@ export const router = createBrowserRouter([
     path: "/:namespace",
     element: <NamespaceLayout />,
     children: Object.values(pages).map((page) => page.route),
+    errorElement: (
+      <div className="flex h-screen">
+        <h1 className="m-auto text-center text-2xl font-bold">
+          😿
+          <br />
+          oh no, an error occurred
+        </h1>
+      </div>
+    ),
   },
 ]);
