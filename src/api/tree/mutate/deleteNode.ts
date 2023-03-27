@@ -43,7 +43,7 @@ export const useDeleteNode = ({
         title: `${
           variables.node.type === "workflow" ? "workflow" : "directory"
         } deleted`,
-        description: `${variables.node.parent} was deleted`,
+        description: `${variables.node.name} was deleted`,
         variant: "success",
       });
       onSuccess?.();
