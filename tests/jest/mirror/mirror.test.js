@@ -110,7 +110,7 @@ describe('Test behaviour specific to the root node', () => {
                 pageInfo: {
                     limit: 0,
                     offset: 0,
-                    total: 4,
+                    total: 5,
                     order: [],
                     filter: [],
                 },
@@ -154,6 +154,18 @@ describe('Test behaviour specific to the root node', () => {
                     {
                         name: "apple",
                         path: "/apple",
+                        parent: "/",
+                        type: common.filesystem.nodeTypeDirectory,
+                        attributes: [],
+                        oid: "",
+                        readOnly: true,
+                        expandedType: common.filesystem.extendedNodeTypeDirectory,
+                        createdAt: expect.stringMatching(common.regex.timestampRegex),
+                        updatedAt: expect.stringMatching(common.regex.timestampRegex),
+                    },
+                    {
+                        name: "banana",
+                        path: "/banana",
                         parent: "/",
                         type: common.filesystem.nodeTypeDirectory,
                         attributes: [],
@@ -244,6 +256,366 @@ describe('Test behaviour specific to the root node', () => {
             revision: {
                 createdAt: expect.stringMatching(common.regex.timestampRegex),
                 hash: "2a4f39df7002abc30c919d47a62b06c7a4b978a384a4ac2f93c18fb0f56adab6",
+                source: expect.stringMatching(common.regex.base64Regex),
+                name: expect.stringMatching(common.regex.uuidRegex),
+            },
+            eventLogging: ``,
+            oid: expect.stringMatching(common.regex.uuidRegex),
+        })
+    })
+
+    it(`should read the /apple node`, async () => {
+        const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/tree/apple`)
+        expect(req.statusCode).toEqual(200)
+        expect(req.body).toMatchObject({
+            namespace: namespaceName,
+            node: {
+                createdAt: expect.stringMatching(common.regex.timestampRegex),
+                updatedAt: expect.stringMatching(common.regex.timestampRegex),
+                name: `apple`,
+                path: `/apple`,
+                parent: `/`,
+                type: common.filesystem.nodeTypeDirectory,
+                expandedType: common.filesystem.extendedNodeTypeDirectory,
+                attributes: expect.anything(),
+                oid: '',
+                readOnly: true,
+            },
+            children: {
+                pageInfo: {
+                    order: [],
+                    filter: [],
+                    limit: 0,
+                    offset: 0,
+                    total: 0,
+                },
+                results: [],
+            },
+        })
+    })
+
+    it(`should read the /banana node`, async () => {
+        const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/tree/banana`)
+        expect(req.statusCode).toEqual(200)
+        expect(req.body).toMatchObject({
+            namespace: namespaceName,
+            node: {
+                createdAt: expect.stringMatching(common.regex.timestampRegex),
+                updatedAt: expect.stringMatching(common.regex.timestampRegex),
+                name: `banana`,
+                path: `/banana`,
+                parent: `/`,
+                type: common.filesystem.nodeTypeDirectory,
+                expandedType: common.filesystem.extendedNodeTypeDirectory,
+                attributes: expect.anything(),
+                oid: '',
+                readOnly: true,
+            },
+            children: {
+                pageInfo: {
+                    order: [],
+                    filter: [],
+                    limit: 0,
+                    offset: 0,
+                    total: 4,
+                },
+                results: expect.arrayContaining([
+                    {
+                        attributes: [],
+                        createdAt: expect.stringMatching(common.regex.timestampRegex),
+                        updatedAt: expect.stringMatching(common.regex.timestampRegex),
+                        type: common.filesystem.nodeTypeWorkflow,
+                        expandedType: common.filesystem.extendedNodeTypeWorkflow,
+                        name: "css",
+                        oid: "",
+                        parent: "/banana",
+                        path: "/banana/css",
+                        readOnly: true,
+                    },
+                    {
+                        attributes: [],
+                        createdAt: expect.stringMatching(common.regex.timestampRegex),
+                        updatedAt: expect.stringMatching(common.regex.timestampRegex),
+                        type: common.filesystem.nodeTypeWorkflow,
+                        expandedType: common.filesystem.extendedNodeTypeWorkflow,
+                        name: "page-1",
+                        oid: "",
+                        parent: "/banana",
+                        path: "/banana/page-1",
+                        readOnly: true,
+                    },
+                    {
+                        attributes: [],
+                        createdAt: expect.stringMatching(common.regex.timestampRegex),
+                        updatedAt: expect.stringMatching(common.regex.timestampRegex),
+                        type: common.filesystem.nodeTypeWorkflow,
+                        expandedType: common.filesystem.extendedNodeTypeWorkflow,
+                        name: "page-2",
+                        oid: "",
+                        parent: "/banana",
+                        path: "/banana/page-2",
+                        readOnly: true,
+                    },
+                    {
+                        attributes: [],
+                        createdAt: expect.stringMatching(common.regex.timestampRegex),
+                        updatedAt: expect.stringMatching(common.regex.timestampRegex),
+                        type: common.filesystem.nodeTypeDirectory,
+                        expandedType: common.filesystem.extendedNodeTypeDirectory,
+                        name: "util",
+                        oid: "",
+                        parent: "/banana",
+                        path: "/banana/util",
+                        readOnly: true,
+                    },
+                ]),
+            },
+        })
+    })
+
+    it(`should read the '/banana/css' workflow node`, async () => {
+        const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/tree/banana/css`)
+        expect(req.statusCode).toEqual(200)
+        expect(req.body).toMatchObject({
+            namespace: namespaceName,
+            node: {
+                createdAt: expect.stringMatching(common.regex.timestampRegex),
+                updatedAt: expect.stringMatching(common.regex.timestampRegex),
+                name: `css`,
+                path: `/banana/css`,
+                parent: `/banana`,
+                type: common.filesystem.nodeTypeWorkflow,
+                expandedType: common.filesystem.extendedNodeTypeWorkflow,
+                attributes: expect.anything(),
+                oid: '',
+                readOnly: true,
+            },
+            revision: {
+                createdAt: expect.stringMatching(common.regex.timestampRegex),
+                hash: "a600b303d59570902466822693a92a410bc0b5894f19e85af9b6cbf0d9f2a53b",
+                source: expect.stringMatching(common.regex.base64Regex),
+                name: expect.stringMatching(common.regex.uuidRegex),
+            },
+            eventLogging: ``,
+            oid: expect.stringMatching(common.regex.uuidRegex),
+        })
+    })
+
+    it(`should read the '/banana/page-1' workflow node`, async () => {
+        const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/tree/banana/page-1`)
+        expect(req.statusCode).toEqual(200)
+        expect(req.body).toMatchObject({
+            namespace: namespaceName,
+            node: {
+                createdAt: expect.stringMatching(common.regex.timestampRegex),
+                updatedAt: expect.stringMatching(common.regex.timestampRegex),
+                name: `page-1`,
+                path: `/banana/page-1`,
+                parent: `/banana`,
+                type: common.filesystem.nodeTypeWorkflow,
+                expandedType: common.filesystem.extendedNodeTypeWorkflow,
+                attributes: expect.anything(),
+                oid: '',
+                readOnly: true,
+            },
+            revision: {
+                createdAt: expect.stringMatching(common.regex.timestampRegex),
+                hash: "5595048ad23cdef4a0c10a36e7d9a335264e55182046ed213d5aacda0803812e",
+                source: expect.stringMatching(common.regex.base64Regex),
+                name: expect.stringMatching(common.regex.uuidRegex),
+            },
+            eventLogging: ``,
+            oid: expect.stringMatching(common.regex.uuidRegex),
+        })
+    })
+
+    it(`should read the workflow variables of '/banana/page-1'`, async () => {
+        const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/tree/banana/page-1?op=vars`)
+        expect(req.statusCode).toEqual(200)
+        expect(req.body).toMatchObject({
+            namespace: namespaceName,
+            path: `/banana/page-1`,
+            variables: {
+                pageInfo: {
+                    order: [],
+                    filter: [],
+                    limit: 0,
+                    offset: 0,
+                    total: 1,
+                },
+                results: [
+                    {
+                        mimeType: "",
+                        name: "page.html",
+                        size: "221",
+                        checksum: "34a74d3d189ac23449c5257b49852bd22ba67680f235f8b0753e0a9cdc36e978",
+                        createdAt: expect.stringMatching(common.regex.timestampRegex),
+                        updatedAt: expect.stringMatching(common.regex.timestampRegex),
+                    },
+                ],
+            }
+        })
+    })
+
+    it(`should read the '/banana/page-2' workflow node`, async () => {
+        const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/tree/banana/page-2`)
+        expect(req.statusCode).toEqual(200)
+        expect(req.body).toMatchObject({
+            namespace: namespaceName,
+            node: {
+                createdAt: expect.stringMatching(common.regex.timestampRegex),
+                updatedAt: expect.stringMatching(common.regex.timestampRegex),
+                name: `page-2`,
+                path: `/banana/page-2`,
+                parent: `/banana`,
+                type: common.filesystem.nodeTypeWorkflow,
+                expandedType: common.filesystem.extendedNodeTypeWorkflow,
+                attributes: expect.anything(),
+                oid: '',
+                readOnly: true,
+            },
+            revision: {
+                createdAt: expect.stringMatching(common.regex.timestampRegex),
+                hash: "5595048ad23cdef4a0c10a36e7d9a335264e55182046ed213d5aacda0803812e",
+                source: expect.stringMatching(common.regex.base64Regex),
+                name: expect.stringMatching(common.regex.uuidRegex),
+            },
+            eventLogging: ``,
+            oid: expect.stringMatching(common.regex.uuidRegex),
+        })
+    })
+
+    it(`should read the workflow variables of '/banana/page-2'`, async () => {
+        const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/tree/banana/page-2?op=vars`)
+        expect(req.statusCode).toEqual(200)
+        expect(req.body).toMatchObject({
+            namespace: namespaceName,
+            path: `/banana/page-2`,
+            variables: {
+                pageInfo: {
+                    order: [],
+                    filter: [],
+                    limit: 0,
+                    offset: 0,
+                    total: 1,
+                },
+                results: [
+                    {
+                        mimeType: "",
+                        name: "Page.HTML",
+                        size: "233",
+                        checksum: "d647f71a599f92f7b524e656aee789ec846cc937d76a28986070c1ffa55b112f",
+                        createdAt: expect.stringMatching(common.regex.timestampRegex),
+                        updatedAt: expect.stringMatching(common.regex.timestampRegex),
+                    },
+                ],
+            }
+        })
+    })
+
+    it(`should read the /banana/util node`, async () => {
+        const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/tree/banana/util`)
+        expect(req.statusCode).toEqual(200)
+        expect(req.body).toMatchObject({
+            namespace: namespaceName,
+            node: {
+                createdAt: expect.stringMatching(common.regex.timestampRegex),
+                updatedAt: expect.stringMatching(common.regex.timestampRegex),
+                name: `util`,
+                path: `/banana/util`,
+                parent: `/banana`,
+                type: common.filesystem.nodeTypeDirectory,
+                expandedType: common.filesystem.extendedNodeTypeDirectory,
+                attributes: expect.anything(),
+                oid: '',
+                readOnly: true,
+            },
+            children: {
+                pageInfo: {
+                    order: [],
+                    filter: [],
+                    limit: 0,
+                    offset: 0,
+                    total: 2,
+                },
+                results: expect.arrayContaining([
+                    {
+                        attributes: [],
+                        createdAt: expect.stringMatching(common.regex.timestampRegex),
+                        updatedAt: expect.stringMatching(common.regex.timestampRegex),
+                        type: common.filesystem.nodeTypeWorkflow,
+                        expandedType: common.filesystem.extendedNodeTypeWorkflow,
+                        name: "caller",
+                        oid: "",
+                        parent: "/banana/util",
+                        path: "/banana/util/caller",
+                        readOnly: true,
+                    },
+                    {
+                        attributes: [],
+                        createdAt: expect.stringMatching(common.regex.timestampRegex),
+                        updatedAt: expect.stringMatching(common.regex.timestampRegex),
+                        type: common.filesystem.nodeTypeWorkflow,
+                        expandedType: common.filesystem.extendedNodeTypeWorkflow,
+                        name: "curler",
+                        oid: "",
+                        parent: "/banana/util",
+                        path: "/banana/util/curler",
+                        readOnly: true,
+                    },
+                ]),
+            },
+        })
+    })
+
+    it(`should read the '/banana/util/caller' workflow node`, async () => {
+        const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/tree/banana/util/caller`)
+        expect(req.statusCode).toEqual(200)
+        expect(req.body).toMatchObject({
+            namespace: namespaceName,
+            node: {
+                createdAt: expect.stringMatching(common.regex.timestampRegex),
+                updatedAt: expect.stringMatching(common.regex.timestampRegex),
+                name: `caller`,
+                path: `/banana/util/caller`,
+                parent: `/banana/util`,
+                type: common.filesystem.nodeTypeWorkflow,
+                expandedType: common.filesystem.extendedNodeTypeWorkflow,
+                attributes: expect.anything(),
+                oid: '',
+                readOnly: true,
+            },
+            revision: {
+                createdAt: expect.stringMatching(common.regex.timestampRegex),
+                hash: "05729d2916b0cfff71291ca877600173520734f13da273859a9701b8efd10975",
+                source: expect.stringMatching(common.regex.base64Regex),
+                name: expect.stringMatching(common.regex.uuidRegex),
+            },
+            eventLogging: ``,
+            oid: expect.stringMatching(common.regex.uuidRegex),
+        })
+    })
+
+    it(`should read the '/banana/util/curler' workflow node`, async () => {
+        const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/tree/banana/util/curler`)
+        expect(req.statusCode).toEqual(200)
+        expect(req.body).toMatchObject({
+            namespace: namespaceName,
+            node: {
+                createdAt: expect.stringMatching(common.regex.timestampRegex),
+                updatedAt: expect.stringMatching(common.regex.timestampRegex),
+                name: `curler`,
+                path: `/banana/util/curler`,
+                parent: `/banana/util`,
+                type: common.filesystem.nodeTypeWorkflow,
+                expandedType: common.filesystem.extendedNodeTypeWorkflow,
+                attributes: expect.anything(),
+                oid: '',
+                readOnly: true,
+            },
+            revision: {
+                createdAt: expect.stringMatching(common.regex.timestampRegex),
+                hash: "ac0fea085b3889f7411ef777ed4d89af6d7f7a1ef787cbea37431ae086be1318",
                 source: expect.stringMatching(common.regex.base64Regex),
                 name: expect.stringMatching(common.regex.uuidRegex),
             },
@@ -444,6 +816,30 @@ describe('Test behaviour specific to the root node', () => {
         })
 
     })
+
+    it(`should invoke the '/banana/css' workflow`, async () => {
+        const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/tree/banana/css?op=wait`)
+        expect(req.statusCode).toEqual(200)
+        expect(req.body).toMatchObject({
+            "gamma.css": 'Ym9keSB7CiAgICBiYWNrZ3JvdW5kLWNvbG9yOiBwb3dkZXJibHVlOwogIH0KICBoMSB7CiAgICBjb2xvcjogYmx1ZTsKICB9CiAgcCB7CiAgICBjb2xvcjogcmVkOwogIH0KICAgIA==',
+        })
+    })
+
+    it(`should invoke the '/banana/page-1' workflow`, async () => {
+        const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/tree/banana/page-1?op=wait`)
+        expect(req.statusCode).toEqual(200)
+        expect(req.body).toMatchObject({
+            "page.html": 'PCFET0NUWVBFIGh0bWw+CjxodG1sPgo8aGVhZD4KICA8bGluayByZWw9InN0eWxlc2hlZXQiIGhyZWY9Ii4vY3NzP29wPXdhaXQmcmVmPWxhdGVzdCZyYXctb3V0cHV0PXRydWUmZmllbGQ9dmFyMy5jc3MmY3R5cGU9dGV4dC9jc3MiPgo8L2hlYWQ+Cjxib2R5PgoKPGgxPlRoaXMgaXMgYSBoZWFkaW5nPC9oMT4KPHA+VGhpcyBpcyBhIHBhcmFncmFwaC48L3A+Cgo8L2JvZHk+CjwvaHRtbD4=',
+        })
+    })
+
+    // TODO: find a way to enable this as an optional test, because it takes too long to run in most cases.
+    // it(`should invoke the '/banana/util/caller' workflow`, async () => {
+    //     const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/tree/banana/util/caller?op=wait`)
+    //     console.log(req.body)
+    //     expect(req.statusCode).toEqual(200)
+    //     expect(req.body.return.return.status).toEqual('200 OK')
+    // }, 30000)
 
     it(`should fail to delete a namespace because of a lack of a recursive param`, async () => {
         const req = await request(common.config.getDirektivHost()).delete(`/api/namespaces/${namespaceName}`)
