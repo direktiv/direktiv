@@ -29,13 +29,13 @@ func DatabaseWrapper() (databaseMock, error) {
 	}
 	client, err := ent.Open(dialect.Postgres, "host=localhost port=5432 user=postgres dbname=postgres password=postgres sslmode=disable ")
 	if err != nil {
-		dbm.Postgres.Stop()
+		_ = dbm.Postgres.Stop()
 		return dbm, err
 	}
 	ctx := context.Background()
 
 	if err := client.Schema.Create(ctx); err != nil {
-		dbm.Postgres.Stop()
+		_ = dbm.Postgres.Stop()
 		return dbm, err
 	}
 	sugar := zap.S()
