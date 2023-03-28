@@ -7,7 +7,7 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	entlog "github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
-	"github.com/direktiv/direktiv/pkg/flow/mock"
+	"github.com/direktiv/direktiv/pkg/flow/internal/mock"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"

@@ -10,7 +10,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/database/entwrapper"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
-	"github.com/direktiv/direktiv/pkg/flow/mock"
+	"github.com/direktiv/direktiv/pkg/flow/internal/mock"
 )
 
 //go:embed mockdata/entlog_loop.json
