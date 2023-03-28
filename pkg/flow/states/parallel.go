@@ -10,6 +10,7 @@ import (
 	"time"
 
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
+	log "github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/senseyeio/duration"
 )
@@ -43,7 +44,7 @@ func (logic *parallelLogic) Deadline(ctx context.Context) time.Time {
 	d, err := duration.ParseISO8601(logic.Timeout)
 	if err != nil {
 		if logic.Timeout != "" {
-			logic.Log(ctx, "failed to parse timeout: %v", err)
+			logic.Log(ctx, log.Error, "failed to parse timeout: %v", err)
 		}
 		return time.Now().Add(DefaultLongDeadline)
 	}
@@ -122,7 +123,7 @@ func (logic *parallelLogic) scheduleFirstActions(ctx context.Context) error {
 
 	}
 
-	logic.Log(ctx, "Sleeping until children return.")
+	logic.Log(ctx, log.Info, "Sleeping until children return.")
 
 	err := logic.SetMemory(ctx, children)
 	if err != nil {
@@ -175,7 +176,7 @@ func (logic *parallelLogic) scheduleAction(ctx context.Context, action *model.Ac
 }
 
 func (logic *parallelLogic) scheduleRetryAction(ctx context.Context, retry *actionRetryInfo) error {
-	logic.Log(ctx, "Retrying...")
+	logic.Log(ctx, log.Info, "Retrying...")
 
 	action := &logic.Actions[retry.Idx]
 
@@ -239,7 +240,7 @@ func (logic *parallelLogic) processActionResults(ctx context.Context, children [
 
 	if results.ErrorCode != "" {
 
-		logic.Log(ctx, "Action raised catchable error '%s': %s.", results.ErrorCode, results.ErrorMessage)
+		logic.Log(ctx, log.Error, "Action raised catchable error '%s': %s.", results.ErrorCode, results.ErrorMessage)
 
 		err = derrors.NewCatchableError(results.ErrorCode, results.ErrorMessage)
 		d, err := preprocessRetry(logic.Actions[idx].Retries, sd.Attempts, err)
@@ -247,14 +248,14 @@ func (logic *parallelLogic) processActionResults(ctx context.Context, children [
 			return nil, err
 		}
 
-		logic.Log(ctx, "Scheduling retry attempt in: %v.", d)
+		logic.Log(ctx, log.Info, "Scheduling retry attempt in: %v.", d)
 
 		return nil, scheduleRetry(ctx, logic.Instance, children, idx, d)
 
 	}
 
 	if results.ErrorMessage != "" {
-		logic.Log(ctx, "Action crashed due to an internal error: %v", results.ErrorMessage)
+		logic.Log(ctx, log.Error, "Action crashed due to an internal error: %v", results.ErrorMessage)
 		return nil, derrors.NewInternalError(errors.New(results.ErrorMessage))
 	}
 
@@ -275,7 +276,7 @@ func (logic *parallelLogic) processActionResults(ctx context.Context, children [
 
 		if results.ErrorCode != "" {
 
-			logic.Log(ctx, "Action raised catchable error '%s': %s.", results.ErrorCode, results.ErrorMessage)
+			logic.Log(ctx, log.Error, "Action raised catchable error '%s': %s.", results.ErrorCode, results.ErrorMessage)
 
 			err = derrors.NewCatchableError(results.ErrorCode, results.ErrorMessage)
 
@@ -284,7 +285,7 @@ func (logic *parallelLogic) processActionResults(ctx context.Context, children [
 				return nil, err
 			}
 
-			logic.Log(ctx, "Scheduling retry attempt in: %v.", d)
+			logic.Log(ctx, log.Info, "Scheduling retry attempt in: %v.", d)
 
 			err = scheduleRetry(ctx, logic.Instance, children, idx, d)
 			if err != nil {
@@ -304,7 +305,7 @@ func (logic *parallelLogic) processActionResults(ctx context.Context, children [
 			completed++
 		}
 
-		logic.Log(ctx, "Action returned. (%d/%d)", completed, len(children))
+		logic.Log(ctx, log.Info, "Action returned. (%d/%d)", completed, len(children))
 
 		if completed == len(children) {
 			ready = true
@@ -329,7 +330,7 @@ func (logic *parallelLogic) processActionResults(ctx context.Context, children [
 
 		} else if results.ErrorMessage != "" {
 
-			logic.Log(ctx, "Branch %d crashed due to an internal error: %s", idx, results.ErrorMessage)
+			logic.Log(ctx, log.Error, "Branch %d crashed due to an internal error: %s", idx, results.ErrorMessage)
 
 			err = derrors.NewInternalError(errors.New(results.ErrorMessage))
 			if err != nil {
@@ -345,7 +346,7 @@ func (logic *parallelLogic) processActionResults(ctx context.Context, children [
 		children[idx].Complete = true
 		completed++
 
-		logic.Log(ctx, "Action returned. (%d/%d)", completed, len(children))
+		logic.Log(ctx, log.Info, "Action returned. (%d/%d)", completed, len(children))
 
 		if !ready && completed == len(children) {
 			err = derrors.NewCatchableError(ErrCodeAllBranchesFailed, "all branches failed")

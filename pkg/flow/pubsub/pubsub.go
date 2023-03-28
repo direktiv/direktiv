@@ -11,6 +11,7 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
+	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 	"go.uber.org/zap"
@@ -445,8 +446,21 @@ func pubsubDisconnect(key string) *PubsubUpdate {
 	}
 }
 
-func (pubsub *Pubsub) NotifyServerLogs() {
-	pubsub.Publish(pubsubNotify(""))
+func (pubsub *Pubsub) NotifyLogs(recipientID uuid.UUID, recipientType recipient.RecipientType) {
+	switch recipientType {
+	case recipient.Server:
+		pubsub.Publish(pubsubNotify(""))
+	case recipient.Instance:
+		pubsub.Publish(pubsubNotify(pubsub.instanceLogs(&recipientID)))
+	case recipient.Workflow:
+		pubsub.Publish(pubsubNotify(pubsub.workflowLogs(&recipientID)))
+	case recipient.Namespace:
+		pubsub.Publish(pubsubNotify(pubsub.namespaceLogs(&recipientID)))
+	case recipient.Mirror:
+		pubsub.Publish(pubsubNotify(pubsub.activityLogs(&recipientID)))
+	default:
+		panic("how?")
+	}
 }
 
 func (pubsub *Pubsub) SubscribeServerLogs() *Subscription {
@@ -473,16 +487,12 @@ func (pubsub *Pubsub) CloseNamespace(ns *database.Namespace) {
 	pubsub.Publish(pubsubDisconnect(ns.ID.String()))
 }
 
-func (pubsub *Pubsub) namespaceLogs(ns *database.Namespace) string {
-	return fmt.Sprintf("nslog:%s", ns.ID.String())
+func (pubsub *Pubsub) namespaceLogs(ns *uuid.UUID) string {
+	return fmt.Sprintf("nslog:%s", ns.String())
 }
 
-func (pubsub *Pubsub) SubscribeNamespaceLogs(ns *database.Namespace) *Subscription {
-	return pubsub.Subscribe(ns.ID.String(), pubsub.namespaceLogs(ns))
-}
-
-func (pubsub *Pubsub) NotifyNamespaceLogs(ns *database.Namespace) {
-	pubsub.Publish(pubsubNotify(pubsub.namespaceLogs(ns)))
+func (pubsub *Pubsub) SubscribeNamespaceLogs(ns *uuid.UUID) *Subscription {
+	return pubsub.Subscribe(ns.String(), pubsub.namespaceLogs(ns))
 }
 
 func (pubsub *Pubsub) namespaceEventListeners(ns *database.Namespace) string {
@@ -613,18 +623,14 @@ func (pubsub *Pubsub) NotifyWorkflowAnnotations(wf *database.Workflow) {
 	pubsub.Publish(pubsubNotify(pubsub.workflowAnnotations(wf)))
 }
 
-func (pubsub *Pubsub) workflowLogs(wf *database.Workflow) string {
-	return fmt.Sprintf("wflogs:%s", wf.ID.String())
-}
-
-func (pubsub *Pubsub) NotifyWorkflowLogs(wf *database.Workflow) {
-	pubsub.Publish(pubsubNotify(pubsub.workflowLogs(wf)))
+func (pubsub *Pubsub) workflowLogs(wf *uuid.UUID) string {
+	return fmt.Sprintf("wflogs:%s", wf.String())
 }
 
 func (pubsub *Pubsub) SubscribeWorkflowLogs(cached *database.CacheData) *Subscription {
 	keys := pubsub.walkInodeKeys(cached)
 
-	keys = append(keys, cached.Workflow.ID.String(), pubsub.workflowLogs(cached.Workflow))
+	keys = append(keys, cached.Workflow.ID.String(), pubsub.workflowLogs(&cached.Workflow.ID))
 
 	return pubsub.Subscribe(keys...)
 }
@@ -697,36 +703,28 @@ func (pubsub *Pubsub) NotifyNamespaceRegistries(ns *database.Namespace) {
 	pubsub.Publish(pubsubNotify(pubsub.namespaceRegistries(ns)))
 }
 
-func (pubsub *Pubsub) instanceLogs(in *database.Instance) string {
-	return fmt.Sprintf("instlogs:%s", in.ID.String())
+func (pubsub *Pubsub) instanceLogs(in *uuid.UUID) string {
+	return fmt.Sprintf("instlogs:%s", in.String())
 }
 
 func (pubsub *Pubsub) SubscribeInstanceLogs(cached *database.CacheData) *Subscription {
 	keys := []string{}
 
-	keys = append(keys, cached.Namespace.ID.String(), pubsub.instanceLogs(cached.Instance))
+	keys = append(keys, cached.Namespace.ID.String(), pubsub.instanceLogs(&cached.Instance.ID))
 
 	return pubsub.Subscribe(keys...)
 }
 
-func (pubsub *Pubsub) NotifyInstanceLogs(in *database.Instance) {
-	pubsub.Publish(pubsubNotify(pubsub.instanceLogs(in)))
-}
-
-func (pubsub *Pubsub) activityLogs(act *database.MirrorActivity) string {
-	return fmt.Sprintf("mactlogs:%s", act.ID.String())
+func (pubsub *Pubsub) activityLogs(act *uuid.UUID) string {
+	return fmt.Sprintf("mactlogs:%s", act.String())
 }
 
 func (pubsub *Pubsub) SubscribeMirrorActivityLogs(ns *database.Namespace, act *database.MirrorActivity) *Subscription {
 	keys := []string{}
 
-	keys = append(keys, ns.ID.String(), pubsub.activityLogs(act))
+	keys = append(keys, ns.ID.String(), pubsub.activityLogs(&act.ID))
 
 	return pubsub.Subscribe(keys...)
-}
-
-func (pubsub *Pubsub) NotifyMirrorActivityLogs(act *database.MirrorActivity) {
-	pubsub.Publish(pubsubNotify(pubsub.activityLogs(act)))
 }
 
 func (pubsub *Pubsub) instanceVars(in *database.Instance) string {

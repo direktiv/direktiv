@@ -6,9 +6,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/database"
+	"github.com/direktiv/direktiv/pkg/flow/database/entwrapper"
+	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/model"
@@ -34,6 +37,8 @@ type instanceMemory struct {
 	// tx      database.Transaction
 	cached  *database.CacheData
 	runtime *database.InstanceRuntime
+
+	tags map[string]string
 }
 
 func (im *instanceMemory) getInstanceUpdater() *ent.InstanceUpdateOne {
@@ -55,57 +60,55 @@ func (im *instanceMemory) getRuntimeUpdater() *ent.InstanceRuntimeUpdateOne {
 }
 
 func (im *instanceMemory) flushUpdates(ctx context.Context) error {
-	// TODO: yassir, need refactor.
+	var changes bool
+
+	if im.runtimeUpdater != nil {
+
+		changes = true
+
+		updater := im.runtimeUpdater
+		im.runtimeUpdater = nil
+
+		rt, err := updater.Save(ctx)
+		if err != nil {
+			return err
+		}
+
+		im.runtime = entwrapper.EntInstanceRuntime(rt)
+
+	}
+
+	if im.instanceUpdater != nil {
+
+		changes = true
+
+		updater := im.instanceUpdater
+		im.instanceUpdater = nil
+
+		in, err := updater.Save(ctx)
+		if err != nil {
+			return err
+		}
+
+		im.cached.Instance = entwrapper.EntInstance(in)
+		im.cached.Instance.Namespace = im.cached.Namespace.ID
+		im.cached.Instance.Workflow = im.cached.Workflow.ID
+		im.cached.Instance.Revision = im.cached.Revision.ID
+		im.cached.Instance.Runtime = im.runtime.ID
+
+		err = im.engine.database.FlushInstance(ctx, im.cached.Instance)
+		if err != nil {
+			return err
+		}
+
+	}
+
+	if changes {
+		im.engine.pubsub.NotifyInstance(im.cached.Instance)
+		im.engine.pubsub.NotifyInstances(im.cached.Namespace)
+	}
+
 	return nil
-	//var changes bool
-	//
-	//if im.runtimeUpdater != nil {
-	//
-	//	changes = true
-	//
-	//	updater := im.runtimeUpdater
-	//	im.runtimeUpdater = nil
-	//
-	//	rt, err := updater.Save(ctx)
-	//	if err != nil {
-	//		return err
-	//	}
-	//
-	//	im.runtime = entwrapper.EntInstanceRuntime(rt)
-	//
-	//}
-	//
-	//if im.instanceUpdater != nil {
-	//
-	//	changes = true
-	//
-	//	updater := im.instanceUpdater
-	//	im.instanceUpdater = nil
-	//
-	//	in, err := updater.Save(ctx)
-	//	if err != nil {
-	//		return err
-	//	}
-	//
-	//	im.cached.Instance = entwrapper.EntInstance(in)
-	//	im.cached.Instance.Namespace = im.cached.Namespace.ID
-	//	im.cached.Instance.Workflow = im.cached.Workflow.ID
-	//	im.cached.Instance.Revision = im.cached.Revision.ID
-	//	im.cached.Instance.Runtime = im.runtime.ID
-	//
-	//	err = im.engine.database.FlushInstance(ctx, im.cached.Instance)
-	//	if err != nil {
-	//		return err
-	//	}
-	//
-	//}
-	//
-	//if changes {
-	//	im.engine.pubsub.NotifyInstance(im.cached.Instance)
-	//	im.engine.pubsub.NotifyInstances(im.cached.Namespace)
-	//}
-	//
-	//return nil
 }
 
 func (im *instanceMemory) ID() uuid.UUID {
@@ -214,6 +217,33 @@ func (im *instanceMemory) StoreData(key string, val interface{}) error {
 	m[key] = val
 
 	return nil
+}
+
+func (im *instanceMemory) GetAttributes() map[string]string {
+	tags := im.cached.GetAttributes(recipient.Instance)
+	for k, v := range im.tags {
+		tags[k] = v
+	}
+	if im.logic != nil {
+		tags["state-id"] = im.logic.GetID()
+		tags["state-type"] = im.logic.GetType().String()
+	}
+	a := strings.Split(im.cached.Instance.InvokerState, ":")
+	if len(a) >= 1 && a[0] != "" {
+		tags["invoker-workflow"] = a[0]
+	}
+	if len(a) > 1 {
+		tags["invoker-state-id"] = a[1]
+	}
+	return tags
+}
+
+func (im *instanceMemory) GetState() string {
+	tags := im.cached.GetAttributes(recipient.Instance)
+	if im.logic != nil {
+		return fmt.Sprintf("%s:%s", tags["workflow"], im.logic.GetID())
+	}
+	return tags["workflow"]
 }
 
 func (engine *engine) getInstanceMemory(ctx context.Context, id string) (*instanceMemory, error) {

@@ -15,10 +15,14 @@ const (
 	FieldT = "t"
 	// FieldMsg holds the string denoting the msg field in the database.
 	FieldMsg = "msg"
+	// FieldLevel holds the string denoting the level field in the database.
+	FieldLevel = "level"
 	// FieldRootInstanceId holds the string denoting the rootinstanceid field in the database.
 	FieldRootInstanceId = "root_instance_id"
 	// FieldLogInstanceCallPath holds the string denoting the loginstancecallpath field in the database.
 	FieldLogInstanceCallPath = "log_instance_call_path"
+	// FieldTags holds the string denoting the tags field in the database.
+	FieldTags = "tags"
 	// EdgeNamespace holds the string denoting the namespace edge name in mutations.
 	EdgeNamespace = "namespace"
 	// EdgeInstance holds the string denoting the instance edge name in mutations.
@@ -46,8 +50,10 @@ var Columns = []string{
 	FieldID,
 	FieldT,
 	FieldMsg,
+	FieldLevel,
 	FieldRootInstanceId,
 	FieldLogInstanceCallPath,
+	FieldTags,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "log_msgs"
@@ -73,6 +79,8 @@ func ValidColumn(column string) bool {
 }
 
 var (
+	// DefaultLevel holds the default value on creation for the "level" field.
+	DefaultLevel string
 	// DefaultRootInstanceId holds the default value on creation for the "rootInstanceId" field.
 	DefaultRootInstanceId string
 	// DefaultLogInstanceCallPath holds the default value on creation for the "logInstanceCallPath" field.

@@ -17,6 +17,7 @@ import (
 type actionRetryInfo struct {
 	Children []*ChildInfo
 	Idx      int
+	Iterator int
 }
 
 type actionResultPayload struct {
@@ -99,6 +100,7 @@ func scheduleRetry(ctx context.Context, instance Instance, children []*ChildInfo
 	retry := &actionRetryInfo{
 		Idx:      idx,
 		Children: children,
+		Iterator: idx,
 	}
 
 	err = instance.Sleep(ctx, d, retry)
@@ -114,6 +116,7 @@ type generateActionInputArgs struct {
 	Source   interface{}
 	Action   *model.ActionDefinition
 	Files    []model.FunctionFileDefinition
+	Iterator int
 }
 
 func generateActionInput(ctx context.Context, args *generateActionInputArgs) ([]byte, []model.FunctionFileDefinition, error) {
@@ -242,6 +245,7 @@ type invokeActionArgs struct {
 	attempt  int
 	timeout  int
 	files    []model.FunctionFileDefinition
+	iterator int
 }
 
 func invokeAction(ctx context.Context, args invokeActionArgs) (*ChildInfo, error) {
@@ -251,6 +255,7 @@ func invokeAction(ctx context.Context, args invokeActionArgs) (*ChildInfo, error
 		Timeout:    args.timeout,
 		Async:      args.async,
 		Files:      args.files,
+		Iterator:   args.iterator,
 	})
 	if err != nil {
 		return nil, err
@@ -261,7 +266,7 @@ func invokeAction(ctx context.Context, args invokeActionArgs) (*ChildInfo, error
 	ci := child.Info()
 
 	if args.async {
-		args.instance.Log(ctx, "Running child '%s' in fire-and-forget mode (async).", ci.ID)
+		args.instance.Log(ctx, "info", "Running child '%s' in fire-and-forget mode (async).", ci.ID)
 		return nil, nil
 	}
 

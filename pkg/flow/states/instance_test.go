@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 
+	log "github.com/direktiv/direktiv/pkg/flow/internallogger"
+
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/model"
@@ -148,7 +150,14 @@ func (instance *testerInstance) LivingChildren(ctx context.Context) []*ChildInfo
 	return nil
 }
 
-func (instance *testerInstance) Log(ctx context.Context, a string, x ...interface{}) {
+func (instance *testerInstance) Log(ctx context.Context, level log.Level, a string, x ...interface{}) {
+}
+
+func (instance *testerInstance) AddAttribute(tag, value string) {
+}
+
+func (instance *testerInstance) Iterator() (int, bool) {
+	return 0, false
 }
 
 func (instance *testerInstance) PrimeDelayedEvent(events cloudevents.Event) {

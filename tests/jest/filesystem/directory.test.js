@@ -44,8 +44,10 @@ describe('Test basic directory operations', () => {
         var createDirectoryResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${namespaceName}/tree/${subdirName}?op=create-directory`)
     
         expect(createDirectoryResponse.statusCode).toEqual(404)
-        expect(createDirectoryResponse.body.code).toEqual(404)
-        expect(createDirectoryResponse.body.message).toEqual(`namespace not found`)
+        expect(createDirectoryResponse.body).toMatchObject({
+            code: 404,
+            message: `namespace not found`,
+        })
     })
 
     it(`should create a namespace`, async () => {
@@ -77,8 +79,10 @@ describe('Test basic directory operations', () => {
         expect(createDirectoryResponse4.statusCode).toEqual(405)
 
         expect(createDirectoryResponse1.body).toEqual({}) // TODO: revisit
-        expect(createDirectoryResponse2.body.code).toEqual(404)
-        expect(createDirectoryResponse2.body.message).toEqual(`file does not exist`)
+        expect(createDirectoryResponse2.body).toMatchObject({
+            code: 404,
+            message: `file does not exist`,
+        })
     })
 
     it(`should create a sub-directory`, async () => {
@@ -158,7 +162,7 @@ describe('Test basic directory operations', () => {
         expect(deleteDirectoryResponse.body).toMatchObject({})
     })
 
-    it(`should fail to delete the a non-existant sub-directory`, async () => {
+    it(`should fail to delete a non-existant sub-directory`, async () => {
         var deleteDirectoryResponse = await request(common.config.getDirektivHost()).delete(`/api/namespaces/${namespaceName}/tree/${subdirName}?op=delete-node`)
         expect(deleteDirectoryResponse.statusCode).toEqual(404)
         expect(deleteDirectoryResponse.body).toMatchObject({})

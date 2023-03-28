@@ -5,14 +5,19 @@ import (
 	"context"
 	"errors"
 	"io"
-	"time"
+	"net/http"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/database/entwrapper"
+	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entnote "github.com/direktiv/direktiv/pkg/flow/ent/annotation"
+	entino "github.com/direktiv/direktiv/pkg/flow/ent/inode"
+	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	entns "github.com/direktiv/direktiv/pkg/flow/ent/namespace"
+	entwf "github.com/direktiv/direktiv/pkg/flow/ent/workflow"
+	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/util"
 	"google.golang.org/grpc/codes"
@@ -259,9 +264,9 @@ func (flow *flow) SetNamespaceAnnotation(ctx context.Context, req *grpc.SetNames
 	}
 
 	if newAnnotation {
-		flow.logToNamespace(ctx, time.Now(), cached, "Created namespace annotation '%s'.", key)
+		flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Created namespace annotation '%s'.", key)
 	} else {
-		flow.logToNamespace(ctx, time.Now(), cached, "Updated namespace annotation '%s'.", key)
+		flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Updated namespace annotation '%s'.", key)
 	}
 
 	flow.pubsub.NotifyNamespaceAnnotations(cached.Namespace)
@@ -298,9 +303,7 @@ type entInodeAnnotationQuerier struct {
 }
 
 func (x *entInodeAnnotationQuerier) QueryAnnotations() *ent.AnnotationQuery {
-	// TODO: yassir, need refactor.
-	return nil
-	//return x.clients.Annotation.Query().Where(entnote.HasInodeWith(entino.ID(x.cached.Inode().ID)))
+	return x.clients.Annotation.Query().Where(entnote.HasInodeWith(entino.ID(x.cached.Inode().ID)))
 }
 
 type entWorkflowAnnotationQuerier struct {
@@ -309,9 +312,7 @@ type entWorkflowAnnotationQuerier struct {
 }
 
 func (x *entWorkflowAnnotationQuerier) QueryAnnotations() *ent.AnnotationQuery {
-	// TODO: yassir, need refactor.
-	return nil
-	//return x.clients.Annotation.Query().Where(entnote.HasWorkflowWith(entwf.ID(x.cached.Workflow.ID)))
+	return x.clients.Annotation.Query().Where(entnote.HasWorkflowWith(entwf.ID(x.cached.Workflow.ID)))
 }
 
 type entInstanceAnnotationQuerier struct {
@@ -320,68 +321,64 @@ type entInstanceAnnotationQuerier struct {
 }
 
 func (x *entInstanceAnnotationQuerier) QueryAnnotations() *ent.AnnotationQuery {
-	// TODO: yassir, need refactor.
-	return nil
-	//	return x.clients.Annotation.Query().Where(entnote.HasInstanceWith(entinst.ID(x.cached.Instance.ID)))
+	return x.clients.Annotation.Query().Where(entnote.HasInstanceWith(entinst.ID(x.cached.Instance.ID)))
 }
 
 func (flow *flow) SetAnnotation(ctx context.Context, q annotationQuerier, key string, mimetype string, data []byte) (*ent.Annotation, bool, error) {
-	// TODO: yassir, need refactor.
-	return nil, false, nil
-	//hash, err := bytedata.ComputeHash(data)
-	//if err != nil {
-	//	flow.sugar.Error(err)
-	//}
-	//
-	//if mimetype == "" {
-	//	mimetype = http.DetectContentType(data)
-	//}
-	//
-	//var annotation *ent.Annotation
-	//var newAnnotation bool
-	//
-	//annotation, err = q.QueryAnnotations().Where(entnote.NameEQ(key)).Only(ctx)
-	//
-	//if err != nil {
-	//
-	//	if !derrors.IsNotFound(err) {
-	//		return nil, false, err
-	//	}
-	//
-	//	clients := flow.edb.Clients(ctx)
-	//
-	//	query := clients.Annotation.Create().SetSize(len(data)).SetHash(hash).SetData(data).SetName(key).SetMimeType(mimetype)
-	//
-	//	switch v := q.(type) {
-	//	case *ent.Namespace:
-	//		query = query.SetNamespace(v)
-	//	case *ent.Workflow:
-	//		query = query.SetWorkflow(v)
-	//	case *ent.Instance:
-	//		query = query.SetInstance(v)
-	//	default:
-	//		panic(errors.New("bad querier"))
-	//	}
-	//
-	//	annotation, err = query.Save(ctx)
-	//	if err != nil {
-	//		return nil, false, err
-	//	}
-	//
-	//	newAnnotation = true
-	//
-	//} else {
-	//
-	//	query := annotation.Update().SetSize(len(data)).SetHash(hash).SetData(data).SetMimeType(mimetype)
-	//
-	//	annotation, err = query.Save(ctx)
-	//	if err != nil {
-	//		return nil, false, err
-	//	}
-	//
-	//}
-	//
-	//return annotation, newAnnotation, err
+	hash, err := bytedata.ComputeHash(data)
+	if err != nil {
+		flow.sugar.Error(err)
+	}
+
+	if mimetype == "" {
+		mimetype = http.DetectContentType(data)
+	}
+
+	var annotation *ent.Annotation
+	var newAnnotation bool
+
+	annotation, err = q.QueryAnnotations().Where(entnote.NameEQ(key)).Only(ctx)
+
+	if err != nil {
+
+		if !derrors.IsNotFound(err) {
+			return nil, false, err
+		}
+
+		clients := flow.edb.Clients(ctx)
+
+		query := clients.Annotation.Create().SetSize(len(data)).SetHash(hash).SetData(data).SetName(key).SetMimeType(mimetype)
+
+		switch v := q.(type) {
+		case *ent.Namespace:
+			query = query.SetNamespace(v)
+		case *ent.Workflow:
+			query = query.SetWorkflow(v)
+		case *ent.Instance:
+			query = query.SetInstance(v)
+		default:
+			panic(errors.New("bad querier"))
+		}
+
+		annotation, err = query.Save(ctx)
+		if err != nil {
+			return nil, false, err
+		}
+
+		newAnnotation = true
+
+	} else {
+
+		query := annotation.Update().SetSize(len(data)).SetHash(hash).SetData(data).SetMimeType(mimetype)
+
+		annotation, err = query.Save(ctx)
+		if err != nil {
+			return nil, false, err
+		}
+
+	}
+
+	return annotation, newAnnotation, err
 }
 
 func (flow *flow) SetNamespaceAnnotationParcels(srv grpc.Flow_SetNamespaceAnnotationParcelsServer) error {
@@ -469,9 +466,9 @@ func (flow *flow) SetNamespaceAnnotationParcels(srv grpc.Flow_SetNamespaceAnnota
 	}
 
 	if newAnnotation {
-		flow.logToNamespace(ctx, time.Now(), cached, "Created namespace annotation '%s'.", key)
+		flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Created namespace annotation '%s'.", key)
 	} else {
-		flow.logToNamespace(ctx, time.Now(), cached, "Updated namespace annotation '%s'.", key)
+		flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Updated namespace annotation '%s'.", key)
 	}
 
 	flow.pubsub.NotifyNamespaceAnnotations(cached.Namespace)
@@ -520,7 +517,7 @@ func (flow *flow) DeleteNamespaceAnnotation(ctx context.Context, req *grpc.Delet
 		return nil, err
 	}
 
-	flow.logToNamespace(ctx, time.Now(), cached, "Deleted namespace annotation '%s'.", annotation.Name)
+	flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Deleted namespace annotation '%s'.", annotation.Name)
 	flow.pubsub.NotifyNamespaceAnnotations(cached.Namespace)
 
 	var resp emptypb.Empty
@@ -546,6 +543,7 @@ func (flow *flow) RenameNamespaceAnnotation(ctx context.Context, req *grpc.Renam
 
 	x, err := clients.Annotation.UpdateOneID(annotation.ID).SetName(req.GetNew()).Save(tctx)
 	if err != nil {
+		flow.logger.Errorf(ctx, flow.ID, flow.GetAttributes(), "Failed to rename a namespace annotation '%s'.", req.GetOld())
 		return nil, err
 	}
 
@@ -556,7 +554,7 @@ func (flow *flow) RenameNamespaceAnnotation(ctx context.Context, req *grpc.Renam
 		return nil, err
 	}
 
-	flow.logToNamespace(ctx, time.Now(), cached, "Renamed namespace annotation from '%s' to '%s'.", req.GetOld(), req.GetNew())
+	flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Renamed namespace annotation from '%s' to '%s'.", req.GetOld(), req.GetNew())
 	flow.pubsub.NotifyNamespaceAnnotations(cached.Namespace)
 
 	var resp grpc.RenameNamespaceAnnotationResponse

@@ -13,7 +13,7 @@ async function deleteAllNamespaces() {
 
     for (let i = 0; i < namespaces.length; i++) {
         var name = namespaces[i].name
-        await request(config.getDirektivHost()).delete(`/api/namespaces/${name}?recursive=true`)
+        var req = await request(config.getDirektivHost()).delete(`/api/namespaces/${name}?recursive=true`)
     }
 
     var listResponse = await request(config.getDirektivHost()).get(`/api/namespaces`)

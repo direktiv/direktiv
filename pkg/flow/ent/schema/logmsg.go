@@ -19,10 +19,10 @@ func (LogMsg) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).Default(uuid.New).Immutable().StorageKey("oid").StructTag(`json:"-"`),
 		field.Time("t"),
 		field.String("msg"),
+		field.String("level").Default("info"),
 		field.String("rootInstanceId").Default(""), // NOTE: this field is redundant, but it allows us to improve query performance.
 		field.String("logInstanceCallPath").Default(""),
-		field.UUID("workflow_id", uuid.UUID{}).Nillable().StorageKey("workflow_id"),
-		field.UUID("mirror_activity_id", uuid.UUID{}).Nillable().StorageKey("mirror_activity_id"),
+		field.JSON("tags", map[string]string{}).Optional(),
 	}
 }
 
@@ -30,6 +30,8 @@ func (LogMsg) Fields() []ent.Field {
 func (LogMsg) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("namespace", Namespace.Type).Ref("logs").Unique().Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
+		edge.From("workflow", Workflow.Type).Ref("logs").Unique().Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
 		edge.From("instance", Instance.Type).Ref("logs").Unique().Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
+		edge.From("activity", MirrorActivity.Type).Ref("logs").Unique().Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
 	}
 }

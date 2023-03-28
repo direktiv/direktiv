@@ -1,0 +1,1100 @@
+[
+    {
+      "t":  "2023-03-22T14:35:24.137954Z",
+      "level":  "debug",
+      "msg":  "Preparing workflow triggered by api.",
+      "tags":  {
+        "callpath":  "/",
+        "instance-id":  "c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "invoker":  "api",
+        "loop-index":  "",
+        "namespace":  "ns",
+        "namespace-id":  "1c3c7f7b-c2c3-4f84-8377-eab3c7b8c11d",
+        "recipientType":  "instance",
+        "workflow":  "looperlooper",
+        "workflow-id":  "ff4bf1cf-5533-4af2-961c-fd10e639950a"
+      }
+    },
+    {
+      "t":  "2023-03-22T14:35:24.138591Z",
+      "level":  "debug",
+      "msg":  "Starting workflow looperlooper.",
+      "tags":  {
+        "callpath":  "/",
+        "instance-id":  "c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "invoker":  "api",
+        "loop-index":  "",
+        "namespace":  "ns",
+        "namespace-id":  "1c3c7f7b-c2c3-4f84-8377-eab3c7b8c11d",
+        "recipientType":  "instance",
+        "workflow":  "looperlooper",
+        "workflow-id":  "ff4bf1cf-5533-4af2-961c-fd10e639950a"
+      }
+    },
+    {
+      "t":  "2023-03-22T14:35:24.141422Z",
+      "level":  "info",
+      "msg":  "Running state logic (step:1) -- data",
+      "tags":  {
+        "callpath":  "/",
+        "instance-id":  "c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "invoker":  "api",
+        "loop-index":  "",
+        "namespace":  "ns",
+        "namespace-id":  "1c3c7f7b-c2c3-4f84-8377-eab3c7b8c11d",
+        "recipientType":  "instance",
+        "state-id":  "data",
+        "state-type":  "noop",
+        "workflow":  "looperlooper",
+        "workflow-id":  "ff4bf1cf-5533-4af2-961c-fd10e639950a"
+      }
+    },
+    {
+      "t":  "2023-03-22T14:35:24.141479Z",
+      "level":  "debug",
+      "msg":  "Transforming state data.",
+      "tags":  {
+        "callpath":  "/",
+        "instance-id":  "c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "invoker":  "api",
+        "loop-index":  "",
+        "namespace":  "ns",
+        "namespace-id":  "1c3c7f7b-c2c3-4f84-8377-eab3c7b8c11d",
+        "recipientType":  "instance",
+        "state-id":  "data",
+        "state-type":  "noop",
+        "workflow":  "looperlooper",
+        "workflow-id":  "ff4bf1cf-5533-4af2-961c-fd10e639950a"
+      }
+    },
+    {
+      "t":  "2023-03-22T14:35:24.144615Z",
+      "level":  "debug",
+      "msg":  "Transitioning to next state: solve (2).",
+      "tags":  {
+        "callpath":  "/",
+        "instance-id":  "c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "invoker":  "api",
+        "loop-index":  "",
+        "namespace":  "ns",
+        "namespace-id":  "1c3c7f7b-c2c3-4f84-8377-eab3c7b8c11d",
+        "recipientType":  "instance",
+        "state-id":  "data",
+        "state-type":  "noop",
+        "workflow":  "looperlooper",
+        "workflow-id":  "ff4bf1cf-5533-4af2-961c-fd10e639950a"
+      }
+    },
+    {
+      "t":  "2023-03-22T14:35:24.156112Z",
+      "level":  "info",
+      "msg":  "Running state logic (step:2) -- solve",
+      "tags":  {
+        "callpath":  "/",
+        "instance-id":  "c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "invoker":  "api",
+        "loop-index":  "",
+        "namespace":  "ns",
+        "namespace-id":  "1c3c7f7b-c2c3-4f84-8377-eab3c7b8c11d",
+        "recipientType":  "instance",
+        "state-id":  "solve",
+        "state-type":  "foreach",
+        "workflow":  "looperlooper",
+        "workflow-id":  "ff4bf1cf-5533-4af2-961c-fd10e639950a"
+      }
+    },
+    {
+      "t":  "2023-03-22T14:35:24.156613Z",
+      "level":  "info",
+      "msg":  "Generated 4 objects to loop over.",
+      "tags":  {
+        "callpath":  "/",
+        "instance-id":  "c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "invoker":  "api",
+        "loop-index":  "",
+        "namespace":  "ns",
+        "namespace-id":  "1c3c7f7b-c2c3-4f84-8377-eab3c7b8c11d",
+        "recipientType":  "instance",
+        "state-id":  "solve",
+        "state-type":  "foreach",
+        "workflow":  "looperlooper",
+        "workflow-id":  "ff4bf1cf-5533-4af2-961c-fd10e639950a"
+      }
+    },
+    {
+      "t":  "2023-03-22T14:35:24.188642Z",
+      "level":  "debug",
+      "msg":  "Preparing workflow triggered by instance:c819bca0-1cf7-472e-b4af-9752e9f48fb3.",
+      "tags":  {
+        "callpath":  "/c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "instance-id":  "24419b61-b5d0-4916-8e81-c2c1252b0e3a",
+        "invoker":  "instance:c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "invoker-state-id":  "solve",
+        "invoker-workflow":  "looperlooper",
+        "loop-index":  "0",
+        "namespace":  "ns",
+        "namespace-id":  "1c3c7f7b-c2c3-4f84-8377-eab3c7b8c11d",
+        "recipientType":  "instance",
+        "workflow":  "looper",
+        "workflow-id":  "db150cf6-df0e-4732-b978-a58ced5442f8"
+      }
+    },
+    {
+      "t":  "2023-03-22T14:35:24.189110Z",
+      "level":  "debug",
+      "msg":  "Starting workflow looper.",
+      "tags":  {
+        "callpath":  "/c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "instance-id":  "24419b61-b5d0-4916-8e81-c2c1252b0e3a",
+        "invoker":  "instance:c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "invoker-state-id":  "solve",
+        "invoker-workflow":  "looperlooper",
+        "loop-index":  "0",
+        "namespace":  "ns",
+        "namespace-id":  "1c3c7f7b-c2c3-4f84-8377-eab3c7b8c11d",
+        "recipientType":  "instance",
+        "workflow":  "looper",
+        "workflow-id":  "db150cf6-df0e-4732-b978-a58ced5442f8"
+      }
+    },
+    {
+      "t":  "2023-03-22T14:35:24.191400Z",
+      "level":  "info",
+      "msg":  "Running state logic (step:1) -- getter",
+      "tags":  {
+        "callpath":  "/c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "instance-id":  "24419b61-b5d0-4916-8e81-c2c1252b0e3a",
+        "invoker":  "instance:c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "invoker-state-id":  "solve",
+        "invoker-workflow":  "looperlooper",
+        "loop-index":  "0",
+        "namespace":  "ns",
+        "namespace-id":  "1c3c7f7b-c2c3-4f84-8377-eab3c7b8c11d",
+        "recipientType":  "instance",
+        "state-id":  "getter",
+        "state-type":  "action",
+        "workflow":  "looper",
+        "workflow-id":  "db150cf6-df0e-4732-b978-a58ced5442f8"
+      }
+    },
+    {
+      "t":  "2023-03-22T14:35:24.191673Z",
+      "level":  "info",
+      "msg":  "Sleeping until function getter/action:get returns (841cf794-c60b-4017-905e-cd0d0839d8e5).",
+      "tags":  {
+        "callpath":  "/c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "instance-id":  "24419b61-b5d0-4916-8e81-c2c1252b0e3a",
+        "invoker":  "instance:c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "invoker-state-id":  "solve",
+        "invoker-workflow":  "looperlooper",
+        "loop-index":  "0",
+        "namespace":  "ns",
+        "namespace-id":  "1c3c7f7b-c2c3-4f84-8377-eab3c7b8c11d",
+        "recipientType":  "instance",
+        "state-id":  "getter",
+        "state-type":  "action",
+        "workflow":  "looper",
+        "workflow-id":  "db150cf6-df0e-4732-b978-a58ced5442f8"
+      }
+    },
+    {
+      "t":  "2023-03-22T14:35:24.202397Z",
+      "level":  "info",
+      "msg":  "Creating cookie jar",
+      "tags":  {
+        "callpath":  "/c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "instance-id":  "24419b61-b5d0-4916-8e81-c2c1252b0e3a",
+        "invoker":  "instance:c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "loop-index":  "0",
+        "namespace":  "ns",
+        "namespace-id":  "1c3c7f7b-c2c3-4f84-8377-eab3c7b8c11d",
+        "recipientType":  "instance",
+        "state-id":  "getter",
+        "state-type":  "action",
+        "workflow":  "looper",
+        "workflow-id":  "db150cf6-df0e-4732-b978-a58ced5442f8"
+      }
+    },
+    {
+      "t":  "2023-03-22T14:35:24.205315Z",
+      "level":  "debug",
+      "msg":  "Preparing workflow triggered by instance:c819bca0-1cf7-472e-b4af-9752e9f48fb3.",
+      "tags":  {
+        "callpath":  "/c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "instance-id":  "bc3246ce-b98c-4b41-af4e-6a3848de270b",
+        "invoker":  "instance:c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "invoker-state-id":  "solve",
+        "invoker-workflow":  "looperlooper",
+        "loop-index":  "1",
+        "namespace":  "ns",
+        "namespace-id":  "1c3c7f7b-c2c3-4f84-8377-eab3c7b8c11d",
+        "recipientType":  "instance",
+        "workflow":  "looper",
+        "workflow-id":  "db150cf6-df0e-4732-b978-a58ced5442f8"
+      }
+    },
+    {
+      "t":  "2023-03-22T14:35:24.205675Z",
+      "level":  "debug",
+      "msg":  "Starting workflow looper.",
+      "tags":  {
+        "callpath":  "/c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "instance-id":  "bc3246ce-b98c-4b41-af4e-6a3848de270b",
+        "invoker":  "instance:c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "invoker-state-id":  "solve",
+        "invoker-workflow":  "looperlooper",
+        "loop-index":  "1",
+        "namespace":  "ns",
+        "namespace-id":  "1c3c7f7b-c2c3-4f84-8377-eab3c7b8c11d",
+        "recipientType":  "instance",
+        "workflow":  "looper",
+        "workflow-id":  "db150cf6-df0e-4732-b978-a58ced5442f8"
+      }
+    },
+    {
+      "t":  "2023-03-22T14:35:24.213492Z",
+      "level":  "info",
+      "msg":  "Running state logic (step:1) -- getter",
+      "tags":  {
+        "callpath":  "/c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "instance-id":  "bc3246ce-b98c-4b41-af4e-6a3848de270b",
+        "invoker":  "instance:c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "invoker-state-id":  "solve",
+        "invoker-workflow":  "looperlooper",
+        "loop-index":  "1",
+        "namespace":  "ns",
+        "namespace-id":  "1c3c7f7b-c2c3-4f84-8377-eab3c7b8c11d",
+        "recipientType":  "instance",
+        "state-id":  "getter",
+        "state-type":  "action",
+        "workflow":  "looper",
+        "workflow-id":  "db150cf6-df0e-4732-b978-a58ced5442f8"
+      }
+    },
+    {
+      "t":  "2023-03-22T14:35:24.213808Z",
+      "level":  "info",
+      "msg":  "Sleeping until function getter/action:get returns (c8ad5214-936a-4ca4-98fc-b55ae8a5ce56).",
+      "tags":  {
+        "callpath":  "/c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "instance-id":  "bc3246ce-b98c-4b41-af4e-6a3848de270b",
+        "invoker":  "instance:c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "invoker-state-id":  "solve",
+        "invoker-workflow":  "looperlooper",
+        "loop-index":  "1",
+        "namespace":  "ns",
+        "namespace-id":  "1c3c7f7b-c2c3-4f84-8377-eab3c7b8c11d",
+        "recipientType":  "instance",
+        "state-id":  "getter",
+        "state-type":  "action",
+        "workflow":  "looper",
+        "workflow-id":  "db150cf6-df0e-4732-b978-a58ced5442f8"
+      }
+    },
+    {
+      "t":  "2023-03-22T14:35:24.215361Z",
+      "level":  "info",
+      "msg":  "Creating new request",
+      "tags":  {
+        "callpath":  "/c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "instance-id":  "24419b61-b5d0-4916-8e81-c2c1252b0e3a",
+        "invoker":  "instance:c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "loop-index":  "0",
+        "namespace":  "ns",
+        "namespace-id":  "1c3c7f7b-c2c3-4f84-8377-eab3c7b8c11d",
+        "recipientType":  "instance",
+        "state-id":  "getter",
+        "state-type":  "action",
+        "workflow":  "looper",
+        "workflow-id":  "db150cf6-df0e-4732-b978-a58ced5442f8"
+      }
+    },
+    {
+      "t":  "2023-03-22T14:35:24.227758Z",
+      "level":  "info",
+      "msg":  "Creating URL...",
+      "tags":  {
+        "callpath":  "/c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "instance-id":  "24419b61-b5d0-4916-8e81-c2c1252b0e3a",
+        "invoker":  "instance:c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "loop-index":  "0",
+        "namespace":  "ns",
+        "namespace-id":  "1c3c7f7b-c2c3-4f84-8377-eab3c7b8c11d",
+        "recipientType":  "instance",
+        "state-id":  "getter",
+        "state-type":  "action",
+        "workflow":  "looper",
+        "workflow-id":  "db150cf6-df0e-4732-b978-a58ced5442f8"
+      }
+    },
+    {
+      "t":  "2023-03-22T14:35:24.229224Z",
+      "level":  "info",
+      "msg":  "Creating cookie jar",
+      "tags":  {
+        "callpath":  "/c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "instance-id":  "bc3246ce-b98c-4b41-af4e-6a3848de270b",
+        "invoker":  "instance:c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "loop-index":  "0",
+        "namespace":  "ns",
+        "namespace-id":  "1c3c7f7b-c2c3-4f84-8377-eab3c7b8c11d",
+        "recipientType":  "instance",
+        "state-id":  "getter",
+        "state-type":  "action",
+        "workflow":  "looper",
+        "workflow-id":  "db150cf6-df0e-4732-b978-a58ced5442f8"
+      }
+    },
+    {
+      "t":  "2023-03-22T14:35:24.229686Z",
+      "level":  "debug",
+      "msg":  "Preparing workflow triggered by instance:c819bca0-1cf7-472e-b4af-9752e9f48fb3.",
+      "tags":  {
+        "callpath":  "/c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "instance-id":  "4f83a34b-bff0-49d3-95fe-4b7f412188f0",
+        "invoker":  "instance:c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "invoker-state-id":  "solve",
+        "invoker-workflow":  "looperlooper",
+        "loop-index":  "2",
+        "namespace":  "ns",
+        "namespace-id":  "1c3c7f7b-c2c3-4f84-8377-eab3c7b8c11d",
+        "recipientType":  "instance",
+        "workflow":  "looper",
+        "workflow-id":  "db150cf6-df0e-4732-b978-a58ced5442f8"
+      }
+    },
+    {
+      "t":  "2023-03-22T14:35:24.230375Z",
+      "level":  "debug",
+      "msg":  "Starting workflow looper.",
+      "tags":  {
+        "callpath":  "/c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "instance-id":  "4f83a34b-bff0-49d3-95fe-4b7f412188f0",
+        "invoker":  "instance:c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "invoker-state-id":  "solve",
+        "invoker-workflow":  "looperlooper",
+        "loop-index":  "2",
+        "namespace":  "ns",
+        "namespace-id":  "1c3c7f7b-c2c3-4f84-8377-eab3c7b8c11d",
+        "recipientType":  "instance",
+        "workflow":  "looper",
+        "workflow-id":  "db150cf6-df0e-4732-b978-a58ced5442f8"
+      }
+    },
+    {
+      "t":  "2023-03-22T14:35:24.241997Z",
+      "level":  "info",
+      "msg":  "Sending request...",
+      "tags":  {
+        "callpath":  "/c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "instance-id":  "24419b61-b5d0-4916-8e81-c2c1252b0e3a",
+        "invoker":  "instance:c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "loop-index":  "0",
+        "namespace":  "ns",
+        "namespace-id":  "1c3c7f7b-c2c3-4f84-8377-eab3c7b8c11d",
+        "recipientType":  "instance",
+        "state-id":  "getter",
+        "state-type":  "action",
+        "workflow":  "looper",
+        "workflow-id":  "db150cf6-df0e-4732-b978-a58ced5442f8"
+      }
+    },
+    {
+      "t":  "2023-03-22T14:35:24.242412Z",
+      "level":  "info",
+      "msg":  "Running state logic (step:1) -- getter",
+      "tags":  {
+        "callpath":  "/c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "instance-id":  "4f83a34b-bff0-49d3-95fe-4b7f412188f0",
+        "invoker":  "instance:c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "invoker-state-id":  "solve",
+        "invoker-workflow":  "looperlooper",
+        "loop-index":  "2",
+        "namespace":  "ns",
+        "namespace-id":  "1c3c7f7b-c2c3-4f84-8377-eab3c7b8c11d",
+        "recipientType":  "instance",
+        "state-id":  "getter",
+        "state-type":  "action",
+        "workflow":  "looper",
+        "workflow-id":  "db150cf6-df0e-4732-b978-a58ced5442f8"
+      }
+    },
+    {
+      "t":  "2023-03-22T14:35:24.242836Z",
+      "level":  "info",
+      "msg":  "Sleeping until function getter/action:get returns (50b11d0a-d957-4b1c-984a-8417ae571e84).",
+      "tags":  {
+        "callpath":  "/c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "instance-id":  "4f83a34b-bff0-49d3-95fe-4b7f412188f0",
+        "invoker":  "instance:c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "invoker-state-id":  "solve",
+        "invoker-workflow":  "looperlooper",
+        "loop-index":  "2",
+        "namespace":  "ns",
+        "namespace-id":  "1c3c7f7b-c2c3-4f84-8377-eab3c7b8c11d",
+        "recipientType":  "instance",
+        "state-id":  "getter",
+        "state-type":  "action",
+        "workflow":  "looper",
+        "workflow-id":  "db150cf6-df0e-4732-b978-a58ced5442f8"
+      }
+    },
+    {
+      "t":  "2023-03-22T14:35:24.249692Z",
+      "level":  "info",
+      "msg":  "Creating new request",
+      "tags":  {
+        "callpath":  "/c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "instance-id":  "bc3246ce-b98c-4b41-af4e-6a3848de270b",
+        "invoker":  "instance:c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "loop-index":  "0",
+        "namespace":  "ns",
+        "namespace-id":  "1c3c7f7b-c2c3-4f84-8377-eab3c7b8c11d",
+        "recipientType":  "instance",
+        "state-id":  "getter",
+        "state-type":  "action",
+        "workflow":  "looper",
+        "workflow-id":  "db150cf6-df0e-4732-b978-a58ced5442f8"
+      }
+    },
+    {
+      "t":  "2023-03-22T14:35:24.257315Z",
+      "level":  "info",
+      "msg":  "Creating cookie jar",
+      "tags":  {
+        "callpath":  "/c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "instance-id":  "4f83a34b-bff0-49d3-95fe-4b7f412188f0",
+        "invoker":  "instance:c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "loop-index":  "0",
+        "namespace":  "ns",
+        "namespace-id":  "1c3c7f7b-c2c3-4f84-8377-eab3c7b8c11d",
+        "recipientType":  "instance",
+        "state-id":  "getter",
+        "state-type":  "action",
+        "workflow":  "looper",
+        "workflow-id":  "db150cf6-df0e-4732-b978-a58ced5442f8"
+      }
+    },
+    {
+      "t":  "2023-03-22T14:35:24.258433Z",
+      "level":  "info",
+      "msg":  "Creating URL...",
+      "tags":  {
+        "callpath":  "/c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "instance-id":  "bc3246ce-b98c-4b41-af4e-6a3848de270b",
+        "invoker":  "instance:c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "loop-index":  "0",
+        "namespace":  "ns",
+        "namespace-id":  "1c3c7f7b-c2c3-4f84-8377-eab3c7b8c11d",
+        "recipientType":  "instance",
+        "state-id":  "getter",
+        "state-type":  "action",
+        "workflow":  "looper",
+        "workflow-id":  "db150cf6-df0e-4732-b978-a58ced5442f8"
+      }
+    },
+    {
+      "t":  "2023-03-22T14:35:24.265928Z",
+      "level":  "info",
+      "msg":  "Creating new request",
+      "tags":  {
+        "callpath":  "/c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "instance-id":  "4f83a34b-bff0-49d3-95fe-4b7f412188f0",
+        "invoker":  "instance:c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "loop-index":  "0",
+        "namespace":  "ns",
+        "namespace-id":  "1c3c7f7b-c2c3-4f84-8377-eab3c7b8c11d",
+        "recipientType":  "instance",
+        "state-id":  "getter",
+        "state-type":  "action",
+        "workflow":  "looper",
+        "workflow-id":  "db150cf6-df0e-4732-b978-a58ced5442f8"
+      }
+    },
+    {
+      "t":  "2023-03-22T14:35:24.268870Z",
+      "level":  "info",
+      "msg":  "Sending request...",
+      "tags":  {
+        "callpath":  "/c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "instance-id":  "bc3246ce-b98c-4b41-af4e-6a3848de270b",
+        "invoker":  "instance:c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "loop-index":  "0",
+        "namespace":  "ns",
+        "namespace-id":  "1c3c7f7b-c2c3-4f84-8377-eab3c7b8c11d",
+        "recipientType":  "instance",
+        "state-id":  "getter",
+        "state-type":  "action",
+        "workflow":  "looper",
+        "workflow-id":  "db150cf6-df0e-4732-b978-a58ced5442f8"
+      }
+    },
+    {
+      "t":  "2023-03-22T14:35:24.274353Z",
+      "level":  "info",
+      "msg":  "Creating URL...",
+      "tags":  {
+        "callpath":  "/c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "instance-id":  "4f83a34b-bff0-49d3-95fe-4b7f412188f0",
+        "invoker":  "instance:c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "loop-index":  "0",
+        "namespace":  "ns",
+        "namespace-id":  "1c3c7f7b-c2c3-4f84-8377-eab3c7b8c11d",
+        "recipientType":  "instance",
+        "state-id":  "getter",
+        "state-type":  "action",
+        "workflow":  "looper",
+        "workflow-id":  "db150cf6-df0e-4732-b978-a58ced5442f8"
+      }
+    },
+    {
+      "t":  "2023-03-22T14:35:24.282416Z",
+      "level":  "info",
+      "msg":  "Sending request...",
+      "tags":  {
+        "callpath":  "/c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "instance-id":  "4f83a34b-bff0-49d3-95fe-4b7f412188f0",
+        "invoker":  "instance:c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "loop-index":  "0",
+        "namespace":  "ns",
+        "namespace-id":  "1c3c7f7b-c2c3-4f84-8377-eab3c7b8c11d",
+        "recipientType":  "instance",
+        "state-id":  "getter",
+        "state-type":  "action",
+        "workflow":  "looper",
+        "workflow-id":  "db150cf6-df0e-4732-b978-a58ced5442f8"
+      }
+    },
+    {
+      "t":  "2023-03-22T14:35:24.303919Z",
+      "level":  "info",
+      "msg":  "child getter/action:get returned, id: 841cf794-c60b-4017-905e-cd0d0839d8e5.",
+      "tags":  {
+        "callpath":  "/c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "instance-id":  "24419b61-b5d0-4916-8e81-c2c1252b0e3a",
+        "invoker":  "instance:c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "namespace":  "ns",
+        "namespace-id":  "1c3c7f7b-c2c3-4f84-8377-eab3c7b8c11d",
+        "recipientType":  "instance",
+        "state-id":  "getter",
+        "state-type":  "action",
+        "workflow":  "looper",
+        "workflow-id":  "db150cf6-df0e-4732-b978-a58ced5442f8"
+      }
+    },
+    {
+      "t":  "2023-03-22T14:35:24.304096Z",
+      "level":  "info",
+      "msg":  "Workflow looper completed.",
+      "tags":  {
+        "callpath":  "/c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "instance-id":  "24419b61-b5d0-4916-8e81-c2c1252b0e3a",
+        "invoker":  "instance:c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "namespace":  "ns",
+        "namespace-id":  "1c3c7f7b-c2c3-4f84-8377-eab3c7b8c11d",
+        "recipientType":  "instance",
+        "state-id":  "getter",
+        "state-type":  "action",
+        "workflow":  "looper",
+        "workflow-id":  "db150cf6-df0e-4732-b978-a58ced5442f8"
+      }
+    },
+    {
+      "t":  "2023-03-22T14:35:24.311067Z",
+      "level":  "info",
+      "msg":  "Reporting results to calling workflow.",
+      "tags":  {
+        "callpath":  "/c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "instance-id":  "24419b61-b5d0-4916-8e81-c2c1252b0e3a",
+        "invoker":  "instance:c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "namespace":  "ns",
+        "namespace-id":  "1c3c7f7b-c2c3-4f84-8377-eab3c7b8c11d",
+        "recipientType":  "instance",
+        "state-id":  "getter",
+        "state-type":  "action",
+        "workflow":  "looper",
+        "workflow-id":  "db150cf6-df0e-4732-b978-a58ced5442f8"
+      }
+    },
+    {
+      "t":  "2023-03-22T14:35:24.321719Z",
+      "level":  "info",
+      "msg":  "Child '24419b61-b5d0-4916-8e81-c2c1252b0e3a' returned.",
+      "tags":  {
+        "callpath":  "/",
+        "instance-id":  "c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "invoker":  "api",
+        "loop-index":  "0",
+        "namespace":  "ns",
+        "namespace-id":  "1c3c7f7b-c2c3-4f84-8377-eab3c7b8c11d",
+        "recipientType":  "instance",
+        "state-id":  "solve",
+        "state-type":  "foreach",
+        "workflow":  "looperlooper",
+        "workflow-id":  "ff4bf1cf-5533-4af2-961c-fd10e639950a"
+      }
+    },
+    {
+      "t":  "2023-03-22T14:35:24.321817Z",
+      "level":  "info",
+      "msg":  "[0] Action returned. (1/4)",
+      "tags":  {
+        "callpath":  "/",
+        "instance-id":  "c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "invoker":  "api",
+        "loop-index":  "0",
+        "namespace":  "ns",
+        "namespace-id":  "1c3c7f7b-c2c3-4f84-8377-eab3c7b8c11d",
+        "recipientType":  "instance",
+        "state-id":  "solve",
+        "state-type":  "foreach",
+        "workflow":  "looperlooper",
+        "workflow-id":  "ff4bf1cf-5533-4af2-961c-fd10e639950a"
+      }
+    },
+    {
+      "t":  "2023-03-22T14:35:24.328113Z",
+      "level":  "info",
+      "msg":  "child getter/action:get returned, id: c8ad5214-936a-4ca4-98fc-b55ae8a5ce56.",
+      "tags":  {
+        "callpath":  "/c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "instance-id":  "bc3246ce-b98c-4b41-af4e-6a3848de270b",
+        "invoker":  "instance:c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "namespace":  "ns",
+        "namespace-id":  "1c3c7f7b-c2c3-4f84-8377-eab3c7b8c11d",
+        "recipientType":  "instance",
+        "state-id":  "getter",
+        "state-type":  "action",
+        "workflow":  "looper",
+        "workflow-id":  "db150cf6-df0e-4732-b978-a58ced5442f8"
+      }
+    },
+    {
+      "t":  "2023-03-22T14:35:24.328426Z",
+      "level":  "info",
+      "msg":  "Workflow looper completed.",
+      "tags":  {
+        "callpath":  "/c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "instance-id":  "bc3246ce-b98c-4b41-af4e-6a3848de270b",
+        "invoker":  "instance:c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "namespace":  "ns",
+        "namespace-id":  "1c3c7f7b-c2c3-4f84-8377-eab3c7b8c11d",
+        "recipientType":  "instance",
+        "state-id":  "getter",
+        "state-type":  "action",
+        "workflow":  "looper",
+        "workflow-id":  "db150cf6-df0e-4732-b978-a58ced5442f8"
+      }
+    },
+    {
+      "t":  "2023-03-22T14:35:24.336607Z",
+      "level":  "info",
+      "msg":  "Reporting results to calling workflow.",
+      "tags":  {
+        "callpath":  "/c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "instance-id":  "bc3246ce-b98c-4b41-af4e-6a3848de270b",
+        "invoker":  "instance:c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "namespace":  "ns",
+        "namespace-id":  "1c3c7f7b-c2c3-4f84-8377-eab3c7b8c11d",
+        "recipientType":  "instance",
+        "state-id":  "getter",
+        "state-type":  "action",
+        "workflow":  "looper",
+        "workflow-id":  "db150cf6-df0e-4732-b978-a58ced5442f8"
+      }
+    },
+    {
+      "t":  "2023-03-22T14:35:24.340658Z",
+      "level":  "info",
+      "msg":  "child getter/action:get returned, id: 50b11d0a-d957-4b1c-984a-8417ae571e84.",
+      "tags":  {
+        "callpath":  "/c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "instance-id":  "4f83a34b-bff0-49d3-95fe-4b7f412188f0",
+        "invoker":  "instance:c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "namespace":  "ns",
+        "namespace-id":  "1c3c7f7b-c2c3-4f84-8377-eab3c7b8c11d",
+        "recipientType":  "instance",
+        "state-id":  "getter",
+        "state-type":  "action",
+        "workflow":  "looper",
+        "workflow-id":  "db150cf6-df0e-4732-b978-a58ced5442f8"
+      }
+    },
+    {
+      "t":  "2023-03-22T14:35:24.340853Z",
+      "level":  "info",
+      "msg":  "Workflow looper completed.",
+      "tags":  {
+        "callpath":  "/c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "instance-id":  "4f83a34b-bff0-49d3-95fe-4b7f412188f0",
+        "invoker":  "instance:c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "namespace":  "ns",
+        "namespace-id":  "1c3c7f7b-c2c3-4f84-8377-eab3c7b8c11d",
+        "recipientType":  "instance",
+        "state-id":  "getter",
+        "state-type":  "action",
+        "workflow":  "looper",
+        "workflow-id":  "db150cf6-df0e-4732-b978-a58ced5442f8"
+      }
+    },
+    {
+      "t":  "2023-03-22T14:35:24.348078Z",
+      "level":  "debug",
+      "msg":  "Preparing workflow triggered by instance:c819bca0-1cf7-472e-b4af-9752e9f48fb3.",
+      "tags":  {
+        "callpath":  "/c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "instance-id":  "b409bfbc-012a-49c9-becd-9daec22e2c08",
+        "invoker":  "instance:c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "invoker-state-id":  "solve",
+        "invoker-workflow":  "looperlooper",
+        "loop-index":  "3",
+        "namespace":  "ns",
+        "namespace-id":  "1c3c7f7b-c2c3-4f84-8377-eab3c7b8c11d",
+        "recipientType":  "instance",
+        "workflow":  "looper",
+        "workflow-id":  "db150cf6-df0e-4732-b978-a58ced5442f8"
+      }
+    },
+    {
+      "t":  "2023-03-22T14:35:24.350091Z",
+      "level":  "debug",
+      "msg":  "Starting workflow looper.",
+      "tags":  {
+        "callpath":  "/c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "instance-id":  "b409bfbc-012a-49c9-becd-9daec22e2c08",
+        "invoker":  "instance:c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "invoker-state-id":  "solve",
+        "invoker-workflow":  "looperlooper",
+        "loop-index":  "3",
+        "namespace":  "ns",
+        "namespace-id":  "1c3c7f7b-c2c3-4f84-8377-eab3c7b8c11d",
+        "recipientType":  "instance",
+        "workflow":  "looper",
+        "workflow-id":  "db150cf6-df0e-4732-b978-a58ced5442f8"
+      }
+    },
+    {
+      "t":  "2023-03-22T14:35:24.351536Z",
+      "level":  "info",
+      "msg":  "Reporting results to calling workflow.",
+      "tags":  {
+        "callpath":  "/c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "instance-id":  "4f83a34b-bff0-49d3-95fe-4b7f412188f0",
+        "invoker":  "instance:c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "namespace":  "ns",
+        "namespace-id":  "1c3c7f7b-c2c3-4f84-8377-eab3c7b8c11d",
+        "recipientType":  "instance",
+        "state-id":  "getter",
+        "state-type":  "action",
+        "workflow":  "looper",
+        "workflow-id":  "db150cf6-df0e-4732-b978-a58ced5442f8"
+      }
+    },
+    {
+      "t":  "2023-03-22T14:35:24.353673Z",
+      "level":  "info",
+      "msg":  "Running state logic (step:1) -- getter",
+      "tags":  {
+        "callpath":  "/c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "instance-id":  "b409bfbc-012a-49c9-becd-9daec22e2c08",
+        "invoker":  "instance:c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "invoker-state-id":  "solve",
+        "invoker-workflow":  "looperlooper",
+        "loop-index":  "3",
+        "namespace":  "ns",
+        "namespace-id":  "1c3c7f7b-c2c3-4f84-8377-eab3c7b8c11d",
+        "recipientType":  "instance",
+        "state-id":  "getter",
+        "state-type":  "action",
+        "workflow":  "looper",
+        "workflow-id":  "db150cf6-df0e-4732-b978-a58ced5442f8"
+      }
+    },
+    {
+      "t":  "2023-03-22T14:35:24.354047Z",
+      "level":  "info",
+      "msg":  "Sleeping until function getter/action:get returns (56379553-c537-4501-88db-f5f9c4fec6ee).",
+      "tags":  {
+        "callpath":  "/c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "instance-id":  "b409bfbc-012a-49c9-becd-9daec22e2c08",
+        "invoker":  "instance:c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "invoker-state-id":  "solve",
+        "invoker-workflow":  "looperlooper",
+        "loop-index":  "3",
+        "namespace":  "ns",
+        "namespace-id":  "1c3c7f7b-c2c3-4f84-8377-eab3c7b8c11d",
+        "recipientType":  "instance",
+        "state-id":  "getter",
+        "state-type":  "action",
+        "workflow":  "looper",
+        "workflow-id":  "db150cf6-df0e-4732-b978-a58ced5442f8"
+      }
+    },
+    {
+      "t":  "2023-03-22T14:35:24.366Z",
+      "level":  "info",
+      "msg":  "Child 'bc3246ce-b98c-4b41-af4e-6a3848de270b' returned.",
+      "tags":  {
+        "callpath":  "/",
+        "instance-id":  "c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "invoker":  "api",
+        "loop-index":  "1",
+        "namespace":  "ns",
+        "namespace-id":  "1c3c7f7b-c2c3-4f84-8377-eab3c7b8c11d",
+        "recipientType":  "instance",
+        "state-id":  "solve",
+        "state-type":  "foreach",
+        "workflow":  "looperlooper",
+        "workflow-id":  "ff4bf1cf-5533-4af2-961c-fd10e639950a"
+      }
+    },
+    {
+      "t":  "2023-03-22T14:35:24.366021Z",
+      "level":  "info",
+      "msg":  "[1] Action returned. (2/4)",
+      "tags":  {
+        "callpath":  "/",
+        "instance-id":  "c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "invoker":  "api",
+        "loop-index":  "1",
+        "namespace":  "ns",
+        "namespace-id":  "1c3c7f7b-c2c3-4f84-8377-eab3c7b8c11d",
+        "recipientType":  "instance",
+        "state-id":  "solve",
+        "state-type":  "foreach",
+        "workflow":  "looperlooper",
+        "workflow-id":  "ff4bf1cf-5533-4af2-961c-fd10e639950a"
+      }
+    },
+    {
+      "t":  "2023-03-22T14:35:24.369194Z",
+      "level":  "info",
+      "msg":  "Creating cookie jar",
+      "tags":  {
+        "callpath":  "/c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "instance-id":  "b409bfbc-012a-49c9-becd-9daec22e2c08",
+        "invoker":  "instance:c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "loop-index":  "0",
+        "namespace":  "ns",
+        "namespace-id":  "1c3c7f7b-c2c3-4f84-8377-eab3c7b8c11d",
+        "recipientType":  "instance",
+        "state-id":  "getter",
+        "state-type":  "action",
+        "workflow":  "looper",
+        "workflow-id":  "db150cf6-df0e-4732-b978-a58ced5442f8"
+      }
+    },
+    {
+      "t":  "2023-03-22T14:35:24.377525Z",
+      "level":  "info",
+      "msg":  "Creating new request",
+      "tags":  {
+        "callpath":  "/c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "instance-id":  "b409bfbc-012a-49c9-becd-9daec22e2c08",
+        "invoker":  "instance:c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "loop-index":  "0",
+        "namespace":  "ns",
+        "namespace-id":  "1c3c7f7b-c2c3-4f84-8377-eab3c7b8c11d",
+        "recipientType":  "instance",
+        "state-id":  "getter",
+        "state-type":  "action",
+        "workflow":  "looper",
+        "workflow-id":  "db150cf6-df0e-4732-b978-a58ced5442f8"
+      }
+    },
+    {
+      "t":  "2023-03-22T14:35:24.378026Z",
+      "level":  "info",
+      "msg":  "Child '4f83a34b-bff0-49d3-95fe-4b7f412188f0' returned.",
+      "tags":  {
+        "callpath":  "/",
+        "instance-id":  "c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "invoker":  "api",
+        "loop-index":  "2",
+        "namespace":  "ns",
+        "namespace-id":  "1c3c7f7b-c2c3-4f84-8377-eab3c7b8c11d",
+        "recipientType":  "instance",
+        "state-id":  "solve",
+        "state-type":  "foreach",
+        "workflow":  "looperlooper",
+        "workflow-id":  "ff4bf1cf-5533-4af2-961c-fd10e639950a"
+      }
+    },
+    {
+      "t":  "2023-03-22T14:35:24.378040Z",
+      "level":  "info",
+      "msg":  "[2] Action returned. (3/4)",
+      "tags":  {
+        "callpath":  "/",
+        "instance-id":  "c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "invoker":  "api",
+        "loop-index":  "2",
+        "namespace":  "ns",
+        "namespace-id":  "1c3c7f7b-c2c3-4f84-8377-eab3c7b8c11d",
+        "recipientType":  "instance",
+        "state-id":  "solve",
+        "state-type":  "foreach",
+        "workflow":  "looperlooper",
+        "workflow-id":  "ff4bf1cf-5533-4af2-961c-fd10e639950a"
+      }
+    },
+    {
+      "t":  "2023-03-22T14:35:24.387503Z",
+      "level":  "info",
+      "msg":  "Creating URL...",
+      "tags":  {
+        "callpath":  "/c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "instance-id":  "b409bfbc-012a-49c9-becd-9daec22e2c08",
+        "invoker":  "instance:c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "loop-index":  "0",
+        "namespace":  "ns",
+        "namespace-id":  "1c3c7f7b-c2c3-4f84-8377-eab3c7b8c11d",
+        "recipientType":  "instance",
+        "state-id":  "getter",
+        "state-type":  "action",
+        "workflow":  "looper",
+        "workflow-id":  "db150cf6-df0e-4732-b978-a58ced5442f8"
+      }
+    },
+    {
+      "t":  "2023-03-22T14:35:24.394595Z",
+      "level":  "info",
+      "msg":  "Sending request...",
+      "tags":  {
+        "callpath":  "/c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "instance-id":  "b409bfbc-012a-49c9-becd-9daec22e2c08",
+        "invoker":  "instance:c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "loop-index":  "0",
+        "namespace":  "ns",
+        "namespace-id":  "1c3c7f7b-c2c3-4f84-8377-eab3c7b8c11d",
+        "recipientType":  "instance",
+        "state-id":  "getter",
+        "state-type":  "action",
+        "workflow":  "looper",
+        "workflow-id":  "db150cf6-df0e-4732-b978-a58ced5442f8"
+      }
+    },
+    {
+      "t":  "2023-03-22T14:35:24.453636Z",
+      "level":  "info",
+      "msg":  "child getter/action:get returned, id: 56379553-c537-4501-88db-f5f9c4fec6ee.",
+      "tags":  {
+        "callpath":  "/c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "instance-id":  "b409bfbc-012a-49c9-becd-9daec22e2c08",
+        "invoker":  "instance:c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "namespace":  "ns",
+        "namespace-id":  "1c3c7f7b-c2c3-4f84-8377-eab3c7b8c11d",
+        "recipientType":  "instance",
+        "state-id":  "getter",
+        "state-type":  "action",
+        "workflow":  "looper",
+        "workflow-id":  "db150cf6-df0e-4732-b978-a58ced5442f8"
+      }
+    },
+    {
+      "t":  "2023-03-22T14:35:24.453805Z",
+      "level":  "info",
+      "msg":  "Workflow looper completed.",
+      "tags":  {
+        "callpath":  "/c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "instance-id":  "b409bfbc-012a-49c9-becd-9daec22e2c08",
+        "invoker":  "instance:c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "namespace":  "ns",
+        "namespace-id":  "1c3c7f7b-c2c3-4f84-8377-eab3c7b8c11d",
+        "recipientType":  "instance",
+        "state-id":  "getter",
+        "state-type":  "action",
+        "workflow":  "looper",
+        "workflow-id":  "db150cf6-df0e-4732-b978-a58ced5442f8"
+      }
+    },
+    {
+      "t":  "2023-03-22T14:35:24.459762Z",
+      "level":  "info",
+      "msg":  "Reporting results to calling workflow.",
+      "tags":  {
+        "callpath":  "/c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "instance-id":  "b409bfbc-012a-49c9-becd-9daec22e2c08",
+        "invoker":  "instance:c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "namespace":  "ns",
+        "namespace-id":  "1c3c7f7b-c2c3-4f84-8377-eab3c7b8c11d",
+        "recipientType":  "instance",
+        "state-id":  "getter",
+        "state-type":  "action",
+        "workflow":  "looper",
+        "workflow-id":  "db150cf6-df0e-4732-b978-a58ced5442f8"
+      }
+    },
+    {
+      "t":  "2023-03-22T14:35:24.467039Z",
+      "level":  "info",
+      "msg":  "Child 'b409bfbc-012a-49c9-becd-9daec22e2c08' returned.",
+      "tags":  {
+        "callpath":  "/",
+        "instance-id":  "c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "invoker":  "api",
+        "loop-index":  "3",
+        "namespace":  "ns",
+        "namespace-id":  "1c3c7f7b-c2c3-4f84-8377-eab3c7b8c11d",
+        "recipientType":  "instance",
+        "state-id":  "solve",
+        "state-type":  "foreach",
+        "workflow":  "looperlooper",
+        "workflow-id":  "ff4bf1cf-5533-4af2-961c-fd10e639950a"
+      }
+    },
+    {
+      "t":  "2023-03-22T14:35:24.467084Z",
+      "level":  "info",
+      "msg":  "[3] Action returned. (4/4)",
+      "tags":  {
+        "callpath":  "/",
+        "instance-id":  "c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "invoker":  "api",
+        "loop-index":  "3",
+        "namespace":  "ns",
+        "namespace-id":  "1c3c7f7b-c2c3-4f84-8377-eab3c7b8c11d",
+        "recipientType":  "instance",
+        "state-id":  "solve",
+        "state-type":  "foreach",
+        "workflow":  "looperlooper",
+        "workflow-id":  "ff4bf1cf-5533-4af2-961c-fd10e639950a"
+      }
+    },
+    {
+      "t":  "2023-03-22T14:35:24.467127Z",
+      "level":  "debug",
+      "msg":  "Transforming state data.",
+      "tags":  {
+        "callpath":  "/",
+        "instance-id":  "c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "invoker":  "api",
+        "loop-index":  "3",
+        "namespace":  "ns",
+        "namespace-id":  "1c3c7f7b-c2c3-4f84-8377-eab3c7b8c11d",
+        "recipientType":  "instance",
+        "state-id":  "solve",
+        "state-type":  "foreach",
+        "workflow":  "looperlooper",
+        "workflow-id":  "ff4bf1cf-5533-4af2-961c-fd10e639950a"
+      }
+    },
+    {
+      "t":  "2023-03-22T14:35:24.467602Z",
+      "level":  "info",
+      "msg":  "Workflow looperlooper completed.",
+      "tags":  {
+        "callpath":  "/",
+        "instance-id":  "c819bca0-1cf7-472e-b4af-9752e9f48fb3",
+        "invoker":  "api",
+        "loop-index":  "3",
+        "namespace":  "ns",
+        "namespace-id":  "1c3c7f7b-c2c3-4f84-8377-eab3c7b8c11d",
+        "recipientType":  "instance",
+        "state-id":  "solve",
+        "state-type":  "foreach",
+        "workflow":  "looperlooper",
+        "workflow-id":  "ff4bf1cf-5533-4af2-961c-fd10e639950a"
+      }
+    }
+  ]

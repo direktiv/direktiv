@@ -29,6 +29,8 @@ const (
 	FieldErrorMessage = "error_message"
 	// FieldInvoker holds the string denoting the invoker field in the database.
 	FieldInvoker = "invoker"
+	// FieldInvokerState holds the string denoting the invokerstate field in the database.
+	FieldInvokerState = "invoker_state"
 	// FieldCallpath holds the string denoting the callpath field in the database.
 	FieldCallpath = "callpath"
 	// EdgeNamespace holds the string denoting the namespace edge name in mutations.
@@ -109,6 +111,7 @@ var Columns = []string{
 	FieldErrorCode,
 	FieldErrorMessage,
 	FieldInvoker,
+	FieldInvokerState,
 	FieldCallpath,
 }
 
