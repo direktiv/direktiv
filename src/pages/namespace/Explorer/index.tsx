@@ -1,5 +1,4 @@
-import * as Dialog from "@radix-ui/react-dialog";
-
+import { Dialog, DialogContent, DialogTrigger } from "../../../design/Dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,7 +23,6 @@ import ExplorerHeader from "./Header";
 import { FC } from "react";
 import { Link } from "react-router-dom";
 import { analyzePath } from "../../../util/router/utils";
-import clsx from "clsx";
 import moment from "moment";
 import { pages } from "../../../util/router/pages";
 import { useListDirectory } from "../../../api/tree/query/get";
@@ -86,7 +84,7 @@ const ExplorerPage: FC = () => {
                       {moment(file.updatedAt).fromNow()}
                     </span>
                   </Link>
-                  <Dialog.Root>
+                  <Dialog>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button
@@ -101,39 +99,24 @@ const ExplorerPage: FC = () => {
                       <DropdownMenuContent className="w-40">
                         <DropdownMenuLabel>Edit</DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        <Dialog.Trigger>
+                        <DialogTrigger>
                           <DropdownMenuItem>
                             <Trash className="mr-2 h-4 w-4" />
                             <span>Delete</span>
                           </DropdownMenuItem>
-                        </Dialog.Trigger>
-                        <Dialog.Trigger>
+                        </DialogTrigger>
+                        <DialogTrigger>
                           <DropdownMenuItem>
                             <TextCursorInput className="mr-2 h-4 w-4" />
                             <span>Rename</span>
                           </DropdownMenuItem>
-                        </Dialog.Trigger>
+                        </DialogTrigger>
                       </DropdownMenuContent>
                     </DropdownMenu>
-                    <Dialog.Portal>
-                      <div className="fixed inset-0 z-50 flex items-start justify-center sm:items-center">
-                        <Dialog.Overlay
-                          className={clsx(
-                            "fixed inset-0 z-50 backdrop-blur-sm transition-all duration-100 data-[state=closed]:animate-out data-[state=open]:fade-in data-[state=closed]:fade-out",
-                            "bg-black-alpha-2",
-                            "dark:bg-white-alpha-2"
-                          )}
-                        />
-                        <Dialog.Content
-                          className={clsx(
-                            "fixed z-50 grid w-full gap-2 rounded-b-lg bg-base-100 p-6 shadow-md animate-in data-[state=open]:fade-in-90 data-[state=open]:slide-in-from-bottom-10 sm:max-w-[425px] sm:rounded-lg sm:zoom-in-90 data-[state=open]:sm:slide-in-from-bottom-0"
-                          )}
-                        >
-                          <Delete node={file} close={() => null} />
-                        </Dialog.Content>
-                      </div>
-                    </Dialog.Portal>
-                  </Dialog.Root>
+                    <DialogContent>
+                      <Delete node={file} close={() => null} />
+                    </DialogContent>
+                  </Dialog>
                 </div>
               </div>
             );

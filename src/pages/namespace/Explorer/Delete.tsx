@@ -1,5 +1,10 @@
-import * as Dialog from "@radix-ui/react-dialog";
-
+import {
+  DialogClose,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../../../design/Dialog";
 import { PlusCircle, Trash } from "lucide-react";
 
 import Button from "../../../design/Button";
@@ -20,34 +25,35 @@ const Delete = ({
   });
 
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        mutate({ node });
-      }}
-    >
-      <div className="text-mauve12 m-0 flex items-center gap-2 text-[17px] font-medium">
-        <Trash /> Delete
-      </div>
-      <div className="text-mauve11 mt-[10px] mb-5 text-[15px] leading-normal">
+    <>
+      <DialogHeader>
+        <DialogTitle>
+          <Trash /> Delete
+        </DialogTitle>
+      </DialogHeader>
+      <div>
         Are you sure you want to delete <b>{node.name}</b>? This can not be
         undone.
+        {node.type === "directory" && (
+          <div>All content of this directoy will be deleted as well.</div>
+        )}
       </div>
-      {node.type === "directory" && (
-        <div className="text-mauve11 mt-[10px] mb-5 text-[15px] leading-normal">
-          All content of this directoy will be deleted as well
-        </div>
-      )}
-      <div className="flex justify-end gap-2">
-        <Dialog.Close asChild>
+      <DialogFooter>
+        <DialogClose asChild>
           <Button variant="ghost">Cancel</Button>
-        </Dialog.Close>
-        <Button type="submit" variant="destructive" loading={isLoading}>
-          {!isLoading && <PlusCircle />}
+        </DialogClose>
+        <Button
+          onClick={() => {
+            mutate({ node });
+          }}
+          variant="destructive"
+          loading={isLoading}
+        >
+          {!isLoading && <Trash />}
           Delete
         </Button>
-      </div>
-    </form>
+      </DialogFooter>
+    </>
   );
 };
 
