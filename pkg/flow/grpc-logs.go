@@ -487,7 +487,7 @@ func filterMatchByWfStateIterator(queryValue string, input []*ent.LogMsg) []*ent
 	}
 	if iterator != "" {
 		if len(matchIterator) == 0 {
-			return matchIterator
+			return make([]*ent.LogMsg, 0)
 		}
 		callpath := internallogger.AppendInstanceID(matchIterator[0].Tags["callpath"], matchIterator[0].Tags["instance-id"])
 		childs := getAllChilds(callpath, input)

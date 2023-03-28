@@ -22,6 +22,8 @@ var loopnestedjson string
 //go:embed mockdata/entlog_nestedLoop.json
 var loopnestedloopjson string
 
+const loopJsonValidInstanceID = "1a0d5909-223f-4f44-86d7-1833ab4d21c8"
+
 var expectedLoopnestedjsonWFLooperlooperSTATESolveIt2 = []string{
 	"Preparing workflow triggered by",
 	"Sleeping until",
@@ -56,6 +58,8 @@ func TestQueryMatchState(t *testing.T) {
 	assertLogmsgsPresent(t, res, expectedLoopnestedjsonWFLooperlooperSTATESolveIt2)
 	res = assertQueryMatchState(t, loopnestedloopjson, "looper", "solve", "0", 13)
 	assertsortedByTime(t, res)
+	res = assertQueryMatchState(t, loopjson, "test", "", "100", 0)
+	assertsortedByTime(t, res)
 }
 
 func assertQueryMatchState(t *testing.T, jsondump, wf, state, iterator string, resLen int) []*ent.LogMsg {
@@ -89,7 +93,7 @@ func assertQueryMatchState(t *testing.T, jsondump, wf, state, iterator string, r
 	return res
 }
 
-func TestGetChildByIterator(t *testing.T) {
+func TestFilterByIterrator(t *testing.T) {
 	logmsgs := make([]*ent.LogMsg, 0)
 	err := json.Unmarshal([]byte(loopnestedjson), &logmsgs)
 	if err != nil {
@@ -99,6 +103,36 @@ func TestGetChildByIterator(t *testing.T) {
 	child := filterByIterrator("2", logmsgs)
 	if child == nil {
 		t.Errorf("did not found")
+	}
+	res := filterByIterrator("", logmsgs)
+	if len(res) != 0 {
+		t.Errorf("calling filterByIterrator with empty iterator is a invalid operation and should result a empty slice")
+	}
+}
+
+func TestFilterLogmsg(t *testing.T) {
+	logmsgs := make([]*ent.LogMsg, 0)
+	err := json.Unmarshal([]byte(loopnestedjson), &logmsgs)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	res := filterLogmsg(&grpc.PageFilter{
+		Field: "TESTFIELD",
+		Type:  "TESTTYPE",
+	}, logmsgs)
+	ok := assertEquals(t, logmsgs, res)
+	if !ok {
+		t.Error("input slice should not be modified if Pagefilter does not match")
+	}
+	res = filterLogmsg(&grpc.PageFilter{
+		Field: "QUERY",
+		Type:  "MATCH",
+		Val:   "looperlooper::solve",
+	}, logmsgs)
+	equals := assertEquals(t, logmsgs, res)
+	if equals {
+		t.Error("input slice should have been filtered")
 	}
 }
 
@@ -138,30 +172,52 @@ func TestBuildInstanceLogResp(t *testing.T) {
 	if len(logmsgs) != inLen {
 		t.Errorf("Missing Results len was %d should %d", len(logmsgs), inLen)
 	}
-	res, err := buildInstanceLogResp(ctx, logmsgs, pi, &page, "ns", "1a0d5909-223f-4f44-86d7-1833ab4d21c8")
+	res, err := buildInstanceLogResp(ctx, logmsgs, pi, &page, "ns", loopJsonValidInstanceID)
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	if res.Instance != "1a0d5909-223f-4f44-86d7-1833ab4d21c8" {
-		t.Errorf("Responde with wrong instid got %s want %s", res.Instance, "1a0d5909-223f-4f44-86d7-1833ab4d21c8")
+	if res.Instance != loopJsonValidInstanceID {
+		t.Errorf("Responded with wrong instance-id got %s want %s", res.Instance, loopJsonValidInstanceID)
 	}
 	if res.Namespace != "ns" {
-		t.Errorf("Responde with wrong namespace got %s want %s", res.Namespace, "ns")
+		t.Errorf("Responded with wrong namespace got %s want %s", res.Namespace, "ns")
 	}
 	assertNoMissingLogs(t, res, in)
-	res, err = buildInstanceLogResp(ctx, logmsgs, pi, &page, "ns", "1a0d5909-223f-4f44-86d7-1833ab4d21c8")
+	res, err = buildInstanceLogResp(ctx, logmsgs, pi, &page, "ns", loopJsonValidInstanceID)
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	if res.Instance != "1a0d5909-223f-4f44-86d7-1833ab4d21c8" {
-		t.Errorf("Response had with wrong instanceId got %s want %s", res.Instance, "1a0d5909-223f-4f44-86d7-1833ab4d21c8")
+	if res.Instance != loopJsonValidInstanceID {
+		t.Errorf("Response had with wrong instance-Id got %s want %s", res.Instance, loopJsonValidInstanceID)
 	}
 	if res.Namespace != "ns" {
-		t.Errorf("Responde with wrong namespace got %s want %s", res.Namespace, "ns")
+		t.Errorf("Responded with wrong namespace got %s want %s", res.Namespace, "ns")
 	}
 	assertNoMissingLogs(t, res, in)
+	validFilter := &grpc.PageFilter{
+		Field: "QUERY",
+		Type:  "MATCH",
+		Val:   "looperlooper::solve",
+	}
+	filters := make([]*grpc.PageFilter, 0)
+	filters = append(filters, validFilter)
+	page.Filter = filters
+	res, err = buildInstanceLogResp(ctx, logmsgs, pi, &page, "ns", loopJsonValidInstanceID)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if res.Instance != loopJsonValidInstanceID {
+		t.Errorf("Response had with wrong instance-Id got %s want %s", res.Instance, loopJsonValidInstanceID)
+	}
+	if res.Namespace != "ns" {
+		t.Errorf("Responded with wrong namespace got %s want %s", res.Namespace, "ns")
+	}
+	if len(logmsgs) <= len(res.GetResults()) {
+		t.Error("Logs should be filtered")
+	}
 }
 
 func assertNoMissingLogs(t *testing.T, res *grpc.InstanceLogsResponse, in map[string]*ent.LogMsg) {
@@ -188,6 +244,19 @@ func assertLogmsgsContain(t *testing.T, msgs []*ent.LogMsg, expectedMsg []string
 			t.Errorf("logmsg %s was not expected", v.Msg)
 		}
 	}
+}
+
+func assertEquals(t *testing.T, a []*ent.LogMsg, b []*ent.LogMsg) bool {
+	t.Helper()
+	if len(a) != len(b) {
+		return false
+	}
+	for i, v := range a {
+		if v != b[i] {
+			return false
+		}
+	}
+	return true
 }
 
 func assertLogmsgsPresent(t *testing.T, msgs []*ent.LogMsg, expectedMsg []string) {
