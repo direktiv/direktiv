@@ -8,20 +8,21 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../../../componentsNext/Dropdown";
-import { FC, Fragment, useState } from "react";
 import {
   Folder,
-  FolderTree,
   FolderUp,
   Github,
+  MoreVertical,
   Play,
-  PlusCircle,
+  TextCursorInput,
+  Trash,
 } from "lucide-react";
 
 import Button from "../../../componentsNext/Button";
+import Delete from "./Delete";
+import ExplorerHeader from "./Header";
+import { FC } from "react";
 import { Link } from "react-router-dom";
-import NewDirectory from "./NewDirectory";
-import { RxChevronDown } from "react-icons/rx";
 import { analyzePath } from "../../../util/router/utils";
 import clsx from "clsx";
 import moment from "moment";
@@ -29,101 +30,18 @@ import { pages } from "../../../util/router/pages";
 import { useListDirectory } from "../../../api/tree/query/get";
 import { useNamespace } from "../../../util/store/namespace";
 
-const BreadcrumbSegment: FC<{
-  absolute: string;
-  relative: string;
-  namespace: string;
-}> = ({ absolute, relative, namespace }) => (
-  <Link
-    to={pages.explorer.createHref({ namespace, path: absolute })}
-    className="hover:underline"
-  >
-    {relative}
-  </Link>
-);
-
 const ExplorerPage: FC = () => {
   const namespace = useNamespace();
   const { path } = pages.explorer.useParams();
 
   const { data } = useListDirectory({ path });
-  const { parent, isRoot, segments } = analyzePath(path);
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const { parent, isRoot } = analyzePath(path);
 
   if (!namespace) return null;
 
   return (
     <div>
-      <div className="space-y-5 border-b border-gray-5 bg-base-200 p-5 dark:border-gray-dark-5">
-        <div className="flex flex-col max-sm:space-y-4 sm:flex-row sm:items-center sm:justify-between">
-          <h3 className="flex items-center gap-x-2 font-bold text-primary-500">
-            <FolderTree className="h-5" />
-            <div>
-              /&nbsp;
-              {segments
-                .map((x) => (
-                  <BreadcrumbSegment
-                    key={x.absolute}
-                    absolute={x.absolute}
-                    relative={x.relative}
-                    namespace={namespace}
-                  />
-                ))
-                // add / between segments
-                .reduce((prev, curr, i) => {
-                  if (i === 0) return [curr];
-                  return [
-                    ...prev,
-                    <Fragment key={`${curr.key}-separator`}> / </Fragment>,
-                    curr,
-                  ];
-                }, [] as JSX.Element[])}
-            </div>
-          </h3>
-          <Dialog.Root open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="primary">
-                  <PlusCircle /> New <RxChevronDown />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-40">
-                <DropdownMenuLabel>Create</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <Dialog.Trigger>
-                  <DropdownMenuItem>
-                    <Folder className="mr-2 h-4 w-4" />
-                    <span>New Directory</span>
-                  </DropdownMenuItem>
-                </Dialog.Trigger>
-                <DropdownMenuItem>
-                  <Play className="mr-2 h-4 w-4" />
-                  <span>New Workflow</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <Dialog.Portal>
-              <div className="fixed inset-0 z-50 flex items-start justify-center sm:items-center">
-                <Dialog.Overlay
-                  className={clsx(
-                    "fixed inset-0 z-50 backdrop-blur-sm transition-all duration-100 data-[state=closed]:animate-out data-[state=open]:fade-in data-[state=closed]:fade-out",
-                    "bg-black-alpha-2",
-                    "dark:bg-white-alpha-2"
-                  )}
-                />
-                <NewDirectory
-                  path={data?.node?.path}
-                  unallowedNames={(data?.children?.results ?? []).map(
-                    (x) => x.name
-                  )}
-                  close={() => setDialogOpen(false)}
-                />
-              </div>
-            </Dialog.Portal>
-          </Dialog.Root>
-        </div>
-      </div>
-
+      <ExplorerHeader />
       <div className="flex flex-col space-y-5 p-5 text-sm">
         <div className="flex flex-col space-y-5 ">
           {!isRoot && (
@@ -160,13 +78,62 @@ const ExplorerPage: FC = () => {
 
             return (
               <div key={file.name}>
-                <Link to={linkTarget} className="flex items-center space-x-3">
+                <div className="flex items-center space-x-3">
                   <Icon className="h-5" />
-                  <span className="flex-1">{file.name}</span>
-                  <span className="text-gray-8 dark:text-gray-dark-8">
-                    {moment(file.updatedAt).fromNow()}
-                  </span>
-                </Link>
+                  <Link to={linkTarget} className="flex flex-1">
+                    <span className="flex-1">{file.name}</span>
+                    <span className="text-gray-8 dark:text-gray-dark-8">
+                      {moment(file.updatedAt).fromNow()}
+                    </span>
+                  </Link>
+                  <Dialog.Root>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => e.preventDefault()}
+                        >
+                          <MoreVertical />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className="w-40">
+                        <DropdownMenuLabel>Edit</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <Dialog.Trigger>
+                          <DropdownMenuItem>
+                            <Trash className="mr-2 h-4 w-4" />
+                            <span>Delete</span>
+                          </DropdownMenuItem>
+                        </Dialog.Trigger>
+                        <Dialog.Trigger>
+                          <DropdownMenuItem>
+                            <TextCursorInput className="mr-2 h-4 w-4" />
+                            <span>Rename</span>
+                          </DropdownMenuItem>
+                        </Dialog.Trigger>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                    <Dialog.Portal>
+                      <div className="fixed inset-0 z-50 flex items-start justify-center sm:items-center">
+                        <Dialog.Overlay
+                          className={clsx(
+                            "fixed inset-0 z-50 backdrop-blur-sm transition-all duration-100 data-[state=closed]:animate-out data-[state=open]:fade-in data-[state=closed]:fade-out",
+                            "bg-black-alpha-2",
+                            "dark:bg-white-alpha-2"
+                          )}
+                        />
+                        <Dialog.Content
+                          className={clsx(
+                            "fixed z-50 grid w-full gap-2 rounded-b-lg bg-base-100 p-6 shadow-md animate-in data-[state=open]:fade-in-90 data-[state=open]:slide-in-from-bottom-10 sm:max-w-[425px] sm:rounded-lg sm:zoom-in-90 data-[state=open]:sm:slide-in-from-bottom-0"
+                          )}
+                        >
+                          <Delete node={file} close={() => null} />
+                        </Dialog.Content>
+                      </div>
+                    </Dialog.Portal>
+                  </Dialog.Root>
+                </div>
               </div>
             );
           })}

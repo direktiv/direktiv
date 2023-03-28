@@ -63,8 +63,15 @@ export const apiFactory =
     });
 
     if (res.ok) {
+      let jsonResult = null;
       try {
-        return schema.parse(await res.json());
+        jsonResult = await res.json();
+        // this is an expected error that does not need any extra handling
+        // eslint-disable-next-line no-empty
+      } catch (e) {}
+
+      try {
+        return schema.parse(jsonResult);
       } catch (error) {
         console.error(error);
         return Promise.reject(

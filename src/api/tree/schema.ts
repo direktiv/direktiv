@@ -30,6 +30,8 @@ export const TreeFolderCreatedSchema = z.object({
   node: NodeSchema,
 });
 
+export const TreeNodeDeletedSchema = z.null();
+
 export const fileNameSchema = z
   .string()
   .regex(/^(([a-z][a-z0-9_\-.]*[a-z0-9])|([a-z]))$/, {
