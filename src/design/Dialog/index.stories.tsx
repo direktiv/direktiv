@@ -10,7 +10,8 @@ import {
 import type { Meta, StoryObj } from "@storybook/react";
 import Button from "../Button";
 import { DialogClose } from "@radix-ui/react-dialog";
-import { Folder, Settings } from "lucide-react";
+import { Settings } from "lucide-react";
+import { useState } from "react";
 
 const meta = {
   title: "Components/Dialog",
@@ -74,3 +75,45 @@ export const WithButtonAsTrigger = () => (
     </DialogContent>
   </Dialog>
 );
+
+export const ControlledDialogWithForm = () => {
+  const [openDialog, setOpenDialog] = useState(false);
+  return (
+    <Dialog open={openDialog} onOpenChange={setOpenDialog}>
+      <DialogTrigger asChild>
+        <Button>Controlled dialog with a form</Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>
+            <Settings /> Dialog Title
+          </DialogTitle>
+          <DialogDescription>
+            In this example the dialogs open state is also controlled with the
+            submit of the form. Please note that the submit can also be outside
+            the form. This is helpful since the DialogContent should have
+            DialogHeader and DialogFooter as direct children.
+          </DialogDescription>
+        </DialogHeader>
+        <form onSubmit={() => setOpenDialog(false)}>
+          <fieldset className="flex items-center gap-5">
+            <label className="w-[90px] text-right text-[15px]" htmlFor="name">
+              Name
+            </label>
+            <input
+              className="inline-flex h-[35px] w-full flex-1 items-center justify-center rounded-[4px] px-[10px] text-[15px] leading-none shadow-[0_0_0_1px] outline-none focus:shadow-[0_0_0_2px]"
+              id="name"
+              placeholder="just submit this"
+            />
+          </fieldset>
+        </form>
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button variant="ghost">Cancel</Button>
+          </DialogClose>
+          <Button type="submit">This submit is outside the form</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
