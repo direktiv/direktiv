@@ -439,6 +439,7 @@ func filterLogmsg(filter *grpc.PageFilter, input []*ent.LogMsg) []*ent.LogMsg {
 // myworkflow or myworkflow:: or myworkflow::::
 // myworkflow::getter or myworkflow::getter::
 // myworkflow::getter::1
+// ::getter::
 // this method has two behaviors
 // 1. if loop-index is left empty:
 // when a logmsg from the input array has a matching pair of logtag values
@@ -469,7 +470,11 @@ func filterMatchByWfStateIterator(queryValue string, input []*ent.LogMsg) []*ent
 			matchWf = append(matchWf, v)
 		}
 		if v.Tags["state-id"] == state &&
-			v.Tags["workflow"] == workflow {
+			workflow != "" && v.Tags["workflow"] == workflow {
+			matchState = append(matchState, v)
+		}
+		if v.Tags["state-id"] == state &&
+			workflow == "" {
 			matchState = append(matchState, v)
 		}
 		if v.Tags["state-id"] != "" && v.Tags["state-id"] == state &&
@@ -484,6 +489,9 @@ func filterMatchByWfStateIterator(queryValue string, input []*ent.LogMsg) []*ent
 	}
 	if state == "" && iterator == "" {
 		return matchWf
+	}
+	if workflow == "" && iterator == "" {
+		return matchState
 	}
 	if iterator != "" {
 		if len(matchIterator) == 0 {
