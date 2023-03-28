@@ -1,14 +1,13 @@
 import {
   DialogClose,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "../../../design/Dialog";
-import { PlusCircle, Trash } from "lucide-react";
 
 import Button from "../../../design/Button";
 import { NodeSchemaType } from "../../../api/tree/schema";
+import { Trash } from "lucide-react";
 import { useDeleteNode } from "../../../api/tree/mutate/deleteNode";
 
 const Delete = ({
@@ -31,12 +30,11 @@ const Delete = ({
           <Trash /> Delete
         </DialogTitle>
       </DialogHeader>
-      <div>
+      <div className="my-6All content of this directoy will be deleted as well.">
         Are you sure you want to delete <b>{node.name}</b>? This can not be
-        undone.
-        {node.type === "directory" && (
-          <div>All content of this directoy will be deleted as well.</div>
-        )}
+        undone.&nbsp;
+        {node.type === "directory" &&
+          "All content of this directoy will be deleted as well."}
       </div>
       <DialogFooter>
         <DialogClose asChild>

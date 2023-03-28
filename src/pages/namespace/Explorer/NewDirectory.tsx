@@ -1,6 +1,5 @@
 import {
   DialogClose,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -81,14 +80,16 @@ const NewDirectory = ({
           <p>{errors.name.message}</p>
         </Alert>
       )}
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <fieldset className="flex items-center gap-5">
-          <label className="w-[90px] text-right text-[15px]" htmlFor="name">
-            Name
-          </label>
-          <Input id="name" placeholder="folder-name" {...register("name")} />
-        </fieldset>
-      </form>
+      <div className="my-6">
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <fieldset className="flex items-center gap-5">
+            <label className="w-[90px] text-right text-[15px]" htmlFor="name">
+              Name
+            </label>
+            <Input id="name" placeholder="folder-name" {...register("name")} />
+          </fieldset>
+        </form>
+      </div>
       <DialogFooter>
         <DialogClose asChild>
           <Button variant="ghost">Cancel</Button>
