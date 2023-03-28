@@ -10,6 +10,7 @@ import {
 import type { Meta, StoryObj } from "@storybook/react";
 import Button from "../Button";
 import { DialogClose } from "@radix-ui/react-dialog";
+import { Folder, Settings } from "lucide-react";
 
 const meta = {
   title: "Components/Dialog",
@@ -26,7 +27,10 @@ export const Default: Story = {
         <DialogTrigger>Open</DialogTrigger>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Dialog Title</DialogTitle>
+            <DialogTitle>
+              <Settings />
+              Dialog Title
+            </DialogTitle>
             <DialogDescription>
               This is a description of the dialog.
             </DialogDescription>
@@ -53,7 +57,9 @@ export const WithButtonAsTrigger = () => (
     </DialogTrigger>
     <DialogContent>
       <DialogHeader>
-        <DialogTitle>Dialog Title</DialogTitle>
+        <DialogTitle>
+          <Settings /> Dialog Title
+        </DialogTitle>
         <DialogDescription>
           This is a description of the dialog.
         </DialogDescription>
