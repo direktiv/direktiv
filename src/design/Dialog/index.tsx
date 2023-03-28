@@ -3,7 +3,6 @@
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import * as React from "react";
 
-import { X } from "lucide-react";
 import clsx from "clsx";
 
 const Dialog = DialogPrimitive.Root;
