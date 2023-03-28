@@ -3,7 +3,7 @@ import { Breadcrumb, BreadcrumbRoot } from "./index";
 import { Home } from "lucide-react";
 
 export default {
-  title: "Components (next)/Breadcrumb",
+  title: "Components/Breadcrumb",
 };
 
 export const Default = () => (

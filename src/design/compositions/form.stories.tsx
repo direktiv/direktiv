@@ -9,7 +9,7 @@ import {
 import Button from "../Button";
 
 export default {
-  title: "Components (next)/Compositions/Form",
+  title: "Components/Compositions/Form",
 };
 
 export const Default = () => (

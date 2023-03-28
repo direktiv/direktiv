@@ -11,7 +11,7 @@ import {
 } from "./index";
 
 const meta = {
-  title: "Components (next)/Select",
+  title: "Components/Select",
   component: SelectTrigger,
 } satisfies Meta<typeof SelectTrigger>;
 

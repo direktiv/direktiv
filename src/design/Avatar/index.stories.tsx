@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react";
 import Avatar from "./index";
 
 const meta = {
-  title: "Components (next)/Avatar",
+  title: "Components/Avatar",
   component: Avatar,
 } satisfies Meta<typeof Avatar>;
 

@@ -13,7 +13,7 @@ import { Meta, StoryObj } from "@storybook/react";
 import { NavigationLink } from "./index";
 
 const meta = {
-  title: "Components (next)/NavigationItem",
+  title: "Components/NavigationItem",
   component: NavigationLink,
 } satisfies Meta<typeof NavigationLink>;
 

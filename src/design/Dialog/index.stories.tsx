@@ -9,7 +9,7 @@ import {
 import type { Meta, StoryObj } from "@storybook/react";
 
 const meta = {
-  title: "Components (next)/Dialog",
+  title: "Components/Dialog",
   component: Dialog,
 } satisfies Meta<typeof Dialog>;
 

@@ -4,7 +4,7 @@ import Button from "../Button";
 import { FC } from "react";
 
 const meta = {
-  title: "Components (next)/Toast",
+  title: "Components/Toast",
   component: Toast,
 } satisfies Meta<typeof Toast>;
 

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Button from "./index";
 
 const meta = {
-  title: "Components (next)/Button",
+  title: "Components/Button",
   component: Button,
 } satisfies Meta<typeof Button>;
 

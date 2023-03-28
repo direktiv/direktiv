@@ -30,7 +30,7 @@ import {
 } from "../../design/Appshell";
 import { useTheme, useThemeActions } from "../../util/store/theme";
 
-import Breadcrumb from "../../componentsStatefull/Breadcrumb";
+import Breadcrumb from "../../componentsNext/Breadcrumb";
 import Button from "../../design/Button";
 import { FC } from "react";
 import Logo from "../../design/Logo";

@@ -38,7 +38,7 @@ import type { Meta } from "@storybook/react";
 import { useState } from "react";
 
 const meta = {
-  title: "Components (next)/Dropdown",
+  title: "Components/Dropdown",
   component: DropdownMenu,
 } satisfies Meta<typeof DropdownMenu>;
 

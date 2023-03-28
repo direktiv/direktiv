@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react";
 import { ScrollArea } from "./index";
 
 const meta = {
-  title: "Components (next)/ScrollArea",
+  title: "Components/ScrollArea",
   component: ScrollArea,
 } satisfies Meta<typeof ScrollArea>;
 

@@ -7,7 +7,7 @@ import {
 } from "./index";
 
 const meta = {
-  title: "Components (next)/Tooltip",
+  title: "Components/Tooltip",
   component: Tooltip,
 } satisfies Meta<typeof Tooltip>;
 

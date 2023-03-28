@@ -1,7 +1,7 @@
 import { DrawerContent, DrawerMenu, DrawerRoot } from "./index";
 
 export default {
-  title: "Components (next)/Drawer",
+  title: "Components/Drawer",
   parameters: { layout: "fullscreen" },
 };
 
