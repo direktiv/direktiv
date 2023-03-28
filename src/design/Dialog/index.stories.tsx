@@ -7,6 +7,7 @@ import {
   DialogTrigger,
 } from "./index";
 import type { Meta, StoryObj } from "@storybook/react";
+import Button from "../Button";
 
 const meta = {
   title: "Components/Dialog",
@@ -23,10 +24,9 @@ export const Default: Story = {
         <DialogTrigger>Open</DialogTrigger>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Are you sure absolutely sure?</DialogTitle>
+            <DialogTitle>Dialog Title</DialogTitle>
             <DialogDescription>
-              This action cannot be undone. This will permanently delete your
-              account and remove your data from our servers.
+              This is a description of the dialog.
             </DialogDescription>
           </DialogHeader>
         </DialogContent>
@@ -36,3 +36,19 @@ export const Default: Story = {
   tags: ["autodocs"],
   argTypes: {},
 };
+
+export const WithButtonAsTrigger = () => (
+  <Dialog>
+    <DialogTrigger asChild>
+      <Button>Use asChild to use your own button</Button>
+    </DialogTrigger>
+    <DialogContent>
+      <DialogHeader>
+        <DialogTitle>Dialog Title</DialogTitle>
+        <DialogDescription>
+          This is a description of the dialog.
+        </DialogDescription>
+      </DialogHeader>
+    </DialogContent>
+  </Dialog>
+);
