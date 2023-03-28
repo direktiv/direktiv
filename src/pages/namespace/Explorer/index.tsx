@@ -93,6 +93,7 @@ const ExplorerPage: FC = () => {
                           variant="ghost"
                           size="sm"
                           onClick={(e) => e.preventDefault()}
+                          icon
                         >
                           <MoreVertical />
                         </Button>
