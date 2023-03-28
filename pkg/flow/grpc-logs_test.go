@@ -10,7 +10,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/database/entwrapper"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
-	"github.com/direktiv/direktiv/pkg/flow/internal/mock"
+	"github.com/direktiv/direktiv/pkg/flow/internal/testutils"
 )
 
 //go:embed mockdata/entlog_loop.json
@@ -136,11 +136,50 @@ func TestFilterLogmsg(t *testing.T) {
 	}
 }
 
+func requestServerLogs(t *testing.T, flowSrv flow, req *grpc.ServerLogsRequest) *grpc.ServerLogsResponse {
+	t.Helper()
+
+	ctx := context.Background()
+
+	res, err := flowSrv.ServerLogs(ctx, req)
+	if err != nil {
+		t.Errorf("unexpected error %s", err)
+	}
+	return res
+}
+
+func TestWhiteboxTestServerLogs(t *testing.T) {
+	srv := server{}
+	flowSrv := flow{}
+
+	db, err := testutils.DatabaseWrapper()
+	defer db.StopDB()
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	srv.edb = &db.Entw
+	flowSrv.server = &srv
+	logs, logobserver := testutils.ObservedLogger()
+	srv.sugar = logs
+	reqSrvLogs := grpc.ServerLogsRequest{
+		Pagination: &grpc.Pagination{},
+	}
+	resSrvLogs := requestServerLogs(t, flowSrv, &reqSrvLogs)
+	if len(logobserver.All()) <= 0 {
+		t.Error("some logmsg should heve been printed")
+	}
+	if int(resSrvLogs.PageInfo.Limit) > len(resSrvLogs.Results) {
+		t.Errorf("got more results then specified in pageinfo")
+	}
+}
+
 func TestBuildInstanceLogResp(t *testing.T) {
 	jsondump := loopjson
 	ctx := context.Background()
 
-	db, err := mock.DatabaseWrapper()
+	db, err := testutils.DatabaseWrapper()
+	defer db.StopDB()
 	if err != nil {
 		t.Error(err)
 		return

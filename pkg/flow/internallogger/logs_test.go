@@ -7,29 +7,20 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	entlog "github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
-	"github.com/direktiv/direktiv/pkg/flow/internal/mock"
+	"github.com/direktiv/direktiv/pkg/flow/internal/testutils"
 	"github.com/google/uuid"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
-	"go.uber.org/zap/zaptest/observer"
 )
 
 var _notifyLogsTriggeredWith notifyLogsTriggeredWith
 
-func observedLogger() (*zap.SugaredLogger, *observer.ObservedLogs) {
-	observed, telemetrylogs := observer.New(zapcore.DebugLevel)
-	sugar := zap.New(observed).Sugar()
-	return sugar, telemetrylogs
-}
-
 func TestStoringLogMsg(t *testing.T) {
-	db, err := mock.DatabaseWrapper()
+	db, err := testutils.DatabaseWrapper()
+	defer db.StopDB()
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	defer db.StopDB()
-	sugar, telemetrylogs := observedLogger()
+	sugar, telemetrylogs := testutils.ObservedLogger()
 	logger := InitLogger()
 	logger.StartLogWorkers(1, &db.Entw, &LogNotifyMock{}, sugar)
 	tags := make(map[string]string)
@@ -72,7 +63,7 @@ func TestStoringLogMsg(t *testing.T) {
 }
 
 func TestTelemetry(t *testing.T) {
-	sugar, telemetrylogs := observedLogger()
+	sugar, telemetrylogs := testutils.ObservedLogger()
 	logger := InitLogger()
 	logger.sugar = sugar
 
@@ -90,7 +81,7 @@ func TestTelemetry(t *testing.T) {
 }
 
 func TestTelemetryWithTags(t *testing.T) {
-	sugar, telemetrylogs := observedLogger()
+	sugar, telemetrylogs := testutils.ObservedLogger()
 	logger := InitLogger()
 	logger.sugar = sugar
 
@@ -108,14 +99,15 @@ func TestTelemetryWithTags(t *testing.T) {
 }
 
 func TestSendLogMsgToDB(t *testing.T) {
-	db, err := mock.DatabaseWrapper()
+	db, err := testutils.DatabaseWrapper()
+	defer db.StopDB()
 	if err != nil {
 		t.Error(err)
 		return
 	}
 	defer db.StopDB()
 
-	sugar, telemetrylogs := observedLogger()
+	sugar, telemetrylogs := testutils.ObservedLogger()
 	logger := InitLogger()
 	logger.StartLogWorkers(1, &db.Entw, &LogNotifyMock{}, sugar)
 

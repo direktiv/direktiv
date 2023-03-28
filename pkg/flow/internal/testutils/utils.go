@@ -1,4 +1,4 @@
-package mock
+package testutils
 
 import (
 	"context"
@@ -9,6 +9,8 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	embeddedpostgres "github.com/fergusstrange/embedded-postgres"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
+	"go.uber.org/zap/zaptest/observer"
 )
 
 // databaseMock is meant to mock a entwrapper.Database for testing.
@@ -52,4 +54,10 @@ func (dbm databaseMock) StopDB() {
 			fmt.Sprintln(err)
 		}
 	}()
+}
+
+func ObservedLogger() (*zap.SugaredLogger, *observer.ObservedLogs) {
+	observed, telemetrylogs := observer.New(zapcore.DebugLevel)
+	sugar := zap.New(observed).Sugar()
+	return sugar, telemetrylogs
 }
