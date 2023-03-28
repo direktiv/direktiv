@@ -15,11 +15,11 @@ var _notifyLogsTriggeredWith notifyLogsTriggeredWith
 
 func TestStoringLogMsg(t *testing.T) {
 	db, err := testutils.DatabaseWrapper()
-	defer db.StopDB()
 	if err != nil {
 		t.Error(err)
 		return
 	}
+	defer db.StopDB()
 	sugar, telemetrylogs := testutils.ObservedLogger()
 	logger := InitLogger()
 	logger.StartLogWorkers(1, &db.Entw, &LogNotifyMock{}, sugar)
@@ -100,7 +100,6 @@ func TestTelemetryWithTags(t *testing.T) {
 
 func TestSendLogMsgToDB(t *testing.T) {
 	db, err := testutils.DatabaseWrapper()
-	defer db.StopDB()
 	if err != nil {
 		t.Error(err)
 		return

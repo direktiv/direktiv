@@ -153,11 +153,11 @@ func TestWhiteboxTestServerLogs(t *testing.T) {
 	flowSrv := flow{}
 
 	db, err := testutils.DatabaseWrapper()
-	defer db.StopDB()
 	if err != nil {
 		t.Error(err)
 		return
 	}
+	defer db.StopDB()
 	srv.edb = &db.Entw
 	flowSrv.server = &srv
 	logs, logobserver := testutils.ObservedLogger()
@@ -179,7 +179,6 @@ func TestBuildInstanceLogResp(t *testing.T) {
 	ctx := context.Background()
 
 	db, err := testutils.DatabaseWrapper()
-	defer db.StopDB()
 	if err != nil {
 		t.Error(err)
 		return
