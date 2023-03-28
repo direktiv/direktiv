@@ -73,9 +73,6 @@ const NewDirectory = ({
         <DialogTitle>
           <Folder /> Create a new Folder
         </DialogTitle>
-        <DialogDescription>
-          Please enter the name of the new folder.
-        </DialogDescription>
       </DialogHeader>
 
       {!!errors.name && (
