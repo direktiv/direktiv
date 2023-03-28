@@ -10,6 +10,8 @@ const Dialog = DialogPrimitive.Root;
 
 const DialogTrigger = DialogPrimitive.Trigger;
 
+const DialogClose = DialogPrimitive.Close;
+
 const DialogPortal = ({
   className,
   children,
@@ -47,14 +49,19 @@ const DialogContent = React.forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={clsx(
-        "fixed z-50 grid w-full gap-4 rounded-b-lg bg-white p-6 animate-in data-[state=open]:fade-in-90 data-[state=open]:slide-in-from-bottom-10 sm:max-w-lg sm:rounded-lg sm:zoom-in-90 data-[state=open]:sm:slide-in-from-bottom-0",
-        "dark:bg-gray-12",
+        "fixed z-50 grid w-full gap-4 rounded-b-lg bg-gray-1 p-6 animate-in data-[state=open]:fade-in-90 data-[state=open]:slide-in-from-bottom-10 sm:max-w-lg sm:rounded-lg sm:zoom-in-90 data-[state=open]:sm:slide-in-from-bottom-0",
+        "dark:bg-gray-dark-1",
         className
       )}
       {...props}
     >
       {children}
-      <DialogPrimitive.Close className="absolute top-4 right-4 rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-gray-7 focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-gray-2 dark:focus:ring-gray-7 dark:focus:ring-offset-gray-12 dark:data-[state=open]:bg-gray-11">
+      <DialogPrimitive.Close
+        className={clsx(
+          "absolute top-4 right-4 rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-gray-7 focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-gray-2",
+          "dark:focus:ring-gray-dark-7 dark:focus:ring-offset-gray-dark-12 dark:data-[state=open]:bg-gray-dark-11"
+        )}
+      >
         <X className="h-4 w-4" />
         <span className="sr-only">Close</span>
       </DialogPrimitive.Close>
@@ -99,7 +106,7 @@ const DialogTitle = React.forwardRef<
     ref={ref}
     className={clsx(
       "text-lg font-semibold text-gray-12",
-      "dark:text-gray-1",
+      "dark:text-gray-dark-12",
       className
     )}
     {...props}
@@ -113,7 +120,11 @@ const DialogDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Description
     ref={ref}
-    className={clsx("text-sm text-gray-8", "dark:text-gray-7", className)}
+    className={clsx(
+      "text-sm text-gray-10",
+      "dark:text-gray-dark-10",
+      className
+    )}
     {...props}
   />
 ));
@@ -122,6 +133,7 @@ DialogDescription.displayName = DialogPrimitive.Description.displayName;
 export {
   Dialog,
   DialogTrigger,
+  DialogClose,
   DialogContent,
   DialogHeader,
   DialogFooter,

@@ -2,12 +2,14 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "./index";
 import type { Meta, StoryObj } from "@storybook/react";
 import Button from "../Button";
+import { DialogClose } from "@radix-ui/react-dialog";
 
 const meta = {
   title: "Components/Dialog",
@@ -29,6 +31,13 @@ export const Default: Story = {
               This is a description of the dialog.
             </DialogDescription>
           </DialogHeader>
+          Content goes here
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="ghost">Cancel</Button>
+            </DialogClose>
+            <Button>Submit</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </>
@@ -49,6 +58,13 @@ export const WithButtonAsTrigger = () => (
           This is a description of the dialog.
         </DialogDescription>
       </DialogHeader>
+      Content goes here
+      <DialogFooter>
+        <DialogClose asChild>
+          <Button variant="ghost">Cancel</Button>
+        </DialogClose>
+        <Button>Submit</Button>
+      </DialogFooter>
     </DialogContent>
   </Dialog>
 );
