@@ -10,6 +10,7 @@ import { SubmitHandler, useForm } from "react-hook-form";
 
 import Alert from "../../../design/Alert";
 import Button from "../../../design/Button";
+import Input from "../../../design/Input";
 import { fileNameSchema } from "../../../api/tree/schema";
 import { pages } from "../../../util/router/pages";
 import { useCreateDirectory } from "../../../api/tree/mutate/createDirectory";
@@ -85,7 +86,7 @@ const NewDirectory = ({
           <label className="w-[90px] text-right text-[15px]" htmlFor="name">
             Name
           </label>
-          <input
+          <Input
             className="inline-flex h-[35px] w-full flex-1 items-center justify-center rounded-[4px] px-[10px] text-[15px] leading-none shadow-[0_0_0_1px] outline-none focus:shadow-[0_0_0_2px]"
             id="name"
             placeholder="folder-name"
