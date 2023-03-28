@@ -1,5 +1,10 @@
-import * as Dialog from "@radix-ui/react-dialog";
-
+import {
+  DialogClose,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../../../design/Dialog";
 import { Folder, PlusCircle } from "lucide-react";
 import { SubmitHandler, useForm } from "react-hook-form";
 
@@ -63,44 +68,44 @@ const NewDirectory = ({
   const disableSubmit = !isDirty || (isSubmitted && !isValid);
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <div className="text-mauve12 m-0 flex items-center gap-2 text-[17px] font-medium ">
-        <Folder /> Create a new Folder
-      </div>
-      <div className="text-mauve11 mt-[10px] mb-5 text-[15px] leading-normal">
-        Please enter the name of the new folder.
-      </div>
+    <>
+      <DialogHeader>
+        <DialogTitle>
+          <Folder /> Create a new Folder
+        </DialogTitle>
+        <DialogDescription>
+          Please enter the name of the new folder.
+        </DialogDescription>
+      </DialogHeader>
 
       {!!errors.name && (
         <Alert variant="error" className="mb-5">
           <p>{errors.name.message}</p>
         </Alert>
       )}
-
-      <fieldset className="mb-[15px] flex items-center gap-5">
-        <label
-          className="text-violet11 w-[90px] text-right text-[15px]"
-          htmlFor="name"
-        >
-          Name
-        </label>
-        <input
-          className="text-violet11 shadow-violet7 focus:shadow-violet8 inline-flex h-[35px] w-full flex-1 items-center justify-center rounded-[4px] px-[10px] text-[15px] leading-none shadow-[0_0_0_1px] outline-none focus:shadow-[0_0_0_2px]"
-          id="name"
-          placeholder="folder-name"
-          {...register("name")}
-        />
-      </fieldset>
-      <div className="flex justify-end gap-2">
-        <Dialog.Close asChild>
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <fieldset className="flex items-center gap-5">
+          <label className="w-[90px] text-right text-[15px]" htmlFor="name">
+            Name
+          </label>
+          <input
+            className="inline-flex h-[35px] w-full flex-1 items-center justify-center rounded-[4px] px-[10px] text-[15px] leading-none shadow-[0_0_0_1px] outline-none focus:shadow-[0_0_0_2px]"
+            id="name"
+            placeholder="folder-name"
+            {...register("name")}
+          />
+        </fieldset>
+      </form>
+      <DialogFooter>
+        <DialogClose asChild>
           <Button variant="ghost">Cancel</Button>
-        </Dialog.Close>
+        </DialogClose>
         <Button type="submit" disabled={disableSubmit} loading={isLoading}>
           {!isLoading && <PlusCircle />}
           Create
         </Button>
-      </div>
-    </form>
+      </DialogFooter>
+    </>
   );
 };
 
