@@ -7,7 +7,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "../../../componentsNext/Dropdown";
+} from "../../../design/Dropdown";
 import {
   Folder,
   FolderUp,
@@ -18,7 +18,7 @@ import {
   Trash,
 } from "lucide-react";
 
-import Button from "../../../componentsNext/Button";
+import Button from "../../../design/Button";
 import Delete from "./Delete";
 import ExplorerHeader from "./Header";
 import { FC } from "react";

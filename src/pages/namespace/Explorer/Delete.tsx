@@ -2,7 +2,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 
 import { PlusCircle, Trash } from "lucide-react";
 
-import Button from "../../../componentsNext/Button";
+import Button from "../../../design/Button";
 import { NodeSchemaType } from "../../../api/tree/schema";
 import { useDeleteNode } from "../../../api/tree/mutate/deleteNode";
 

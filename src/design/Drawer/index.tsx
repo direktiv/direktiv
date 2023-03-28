@@ -1,6 +1,6 @@
 import { FC, PropsWithChildren } from "react";
 
-import Logo from "./../Logo";
+import Logo from "../Logo";
 
 export const DrawerRoot: FC<PropsWithChildren> = ({ children }) => (
   <div className="drawer">

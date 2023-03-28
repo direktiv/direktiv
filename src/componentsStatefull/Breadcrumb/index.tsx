@@ -1,7 +1,7 @@
 import {
   Breadcrumb as BreadcrumbLink,
   BreadcrumbRoot,
-} from "../../componentsNext/Breadcump";
+} from "../../design/Breadcump";
 import {
   ChevronsUpDown,
   FolderOpen,
@@ -19,11 +19,11 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "../../componentsNext/Dropdown";
+} from "../../design/Dropdown";
 import { Link, useNavigate } from "react-router-dom";
 import { useNamespace, useNamespaceActions } from "../../util/store/namespace";
 
-import Button from "../../componentsNext/Button";
+import Button from "../../design/Button";
 import { FC } from "react";
 import { analyzePath } from "../../util/router/utils";
 import { pages } from "../../util/router/pages";

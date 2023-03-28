@@ -8,11 +8,7 @@ import {
   Sun,
   Terminal,
 } from "lucide-react";
-import {
-  DrawerContent,
-  DrawerMenu,
-  DrawerRoot,
-} from "../../componentsNext/Drawer";
+import { DrawerContent, DrawerMenu, DrawerRoot } from "../../design/Drawer";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,7 +16,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "../../componentsNext/Dropdown";
+} from "../../design/Dropdown";
 import {
   Main,
   MainContent,
@@ -31,14 +27,14 @@ import {
   Sidebar,
   SidebarMain,
   SidebarTop,
-} from "../../componentsNext/Appshell";
+} from "../../design/Appshell";
 import { useTheme, useThemeActions } from "../../util/store/theme";
 
 import Breadcrumb from "../../componentsStatefull/Breadcrumb";
-import Button from "../../componentsNext/Button";
+import Button from "../../design/Button";
 import { FC } from "react";
-import Logo from "../../componentsNext/Logo";
-import Navigation from "../../componentsNext/Navigation";
+import Logo from "../../design/Logo";
+import Navigation from "../../design/Navigation";
 import { Outlet } from "react-router-dom";
 import { RxChevronDown } from "react-icons/rx";
 import clsx from "clsx";

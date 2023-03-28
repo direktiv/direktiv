@@ -1,6 +1,6 @@
 import { useNamespace, useNamespaceActions } from "../util/store/namespace";
 
-import Logo from "../componentsNext/Logo";
+import Logo from "../design/Logo";
 import { pages } from "../util/router/pages";
 import { useEffect } from "react";
 import { useListNamespaces } from "../api/namespaces/query/get";

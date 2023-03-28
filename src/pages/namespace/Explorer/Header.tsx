@@ -7,11 +7,11 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "../../../componentsNext/Dropdown";
+} from "../../../design/Dropdown";
 import { FC, Fragment, useState } from "react";
 import { Folder, FolderTree, Play, PlusCircle } from "lucide-react";
 
-import Button from "../../../componentsNext/Button";
+import Button from "../../../design/Button";
 import { Link } from "react-router-dom";
 import NewDirectory from "./NewDirectory";
 import { RxChevronDown } from "react-icons/rx";

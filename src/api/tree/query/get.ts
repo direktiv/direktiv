@@ -6,7 +6,7 @@ import { namespaceKeys } from "../";
 import { useApiKey } from "../../../util/store/apiKey";
 import { useNamespace } from "../../../util/store/namespace";
 import { useQuery } from "@tanstack/react-query";
-import { useToast } from "../../../componentsNext/Toast";
+import { useToast } from "../../../design/Toast";
 
 const getTree = apiFactory({
   pathFn: ({ namespace, path }: { namespace: string; path?: string }) =>

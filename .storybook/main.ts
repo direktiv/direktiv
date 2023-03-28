@@ -10,8 +10,8 @@ module.exports = {
     },
   },
   stories: [
-    "../src/componentsNext/**/*.mdx",
-    "../src/componentsNext/**/*.stories.@(js|jsx|ts|tsx)",
+    "../src/design/**/*.mdx",
+    "../src/design/**/*.stories.@(js|jsx|ts|tsx)",
   ],
 
   addons: [
