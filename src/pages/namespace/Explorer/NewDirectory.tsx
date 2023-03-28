@@ -86,12 +86,7 @@ const NewDirectory = ({
           <label className="w-[90px] text-right text-[15px]" htmlFor="name">
             Name
           </label>
-          <Input
-            className="inline-flex h-[35px] w-full flex-1 items-center justify-center rounded-[4px] px-[10px] text-[15px] leading-none shadow-[0_0_0_1px] outline-none focus:shadow-[0_0_0_2px]"
-            id="name"
-            placeholder="folder-name"
-            {...register("name")}
-          />
+          <Input id="name" placeholder="folder-name" {...register("name")} />
         </fieldset>
       </form>
       <DialogFooter>
