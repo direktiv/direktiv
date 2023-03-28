@@ -56,15 +56,6 @@ const DialogContent = React.forwardRef<
       {...props}
     >
       {children}
-      <DialogPrimitive.Close
-        className={clsx(
-          "absolute top-4 right-4 rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-gray-7 focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-gray-2",
-          "dark:focus:ring-gray-dark-7 dark:focus:ring-offset-gray-dark-12 dark:data-[state=open]:bg-gray-dark-11"
-        )}
-      >
-        <X className="h-4 w-4" />
-        <span className="sr-only">Close</span>
-      </DialogPrimitive.Close>
     </DialogPrimitive.Content>
   </DialogPortal>
 ));
