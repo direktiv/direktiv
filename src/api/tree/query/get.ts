@@ -1,5 +1,6 @@
 import { apiFactory, defaultKeys } from "../../utils";
 import { forceSlashIfPath, sortFoldersFirst } from "../utils";
+
 import type { QueryFunctionContext } from "@tanstack/react-query";
 import { TreeListSchema } from "../schema";
 import { namespaceKeys } from "../";
@@ -63,7 +64,7 @@ export const useListDirectory = ({
     onError: () => {
       toast({
         title: "An error occurred",
-        description: "could not fetch tree 😢",
+        description: "could not fetch directory content 😢",
         variant: "error",
       });
     },
