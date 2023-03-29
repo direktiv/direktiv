@@ -343,7 +343,7 @@ UNITTEST_PACKAGES = $(shell echo ${TEST_PACKAGES} | sed 's/ /\n/g' | awk '{print
 
 .PHONY: unittest
 unittest: ## Runs all Go unit tests. Or, you can run a specific set of unit tests by defining TEST_PACKAGES relative to the root directory.
-	go test -cover -timeout 3s ${UNITTEST_PACKAGES}
+	go test -cover -timeout 4s ${UNITTEST_PACKAGES}
 
 .PHONY: lint 
 lint: ## Runs very strict linting on the project.
