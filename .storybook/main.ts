@@ -1,5 +1,3 @@
-import { mergeConfig } from "vite";
-
 module.exports = {
   typescript: {
     check: false,
