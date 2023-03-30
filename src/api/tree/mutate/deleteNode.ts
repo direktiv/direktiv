@@ -6,7 +6,6 @@ import {
 import { apiFactory, defaultKeys } from "../../utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { analyzePath } from "../../../util/router/utils";
 import { forceSlashIfPath } from "../utils";
 import { namespaceKeys } from "..";
 import { useApiKey } from "../../../util/store/apiKey";
@@ -52,15 +51,18 @@ export const useDeleteNode = ({
           variables.node.parent ?? ""
         ),
         (oldData) => {
+          if (!oldData) return undefined;
           const oldChildren = oldData?.children;
           return {
             ...oldData,
-            children: {
-              ...oldData?.children,
-              results: oldChildren?.results.filter(
-                (child) => child.name !== variables.node.name
-              ),
-            },
+            ...(oldChildren
+              ? {
+                  ...oldData?.children,
+                  results: oldChildren?.results.filter(
+                    (child) => child.name !== variables.node.name
+                  ),
+                }
+              : {}),
           };
         }
       );
