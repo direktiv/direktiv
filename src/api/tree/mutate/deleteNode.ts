@@ -57,10 +57,12 @@ export const useDeleteNode = ({
             ...oldData,
             ...(oldChildren
               ? {
-                  ...oldData?.children,
-                  results: oldChildren?.results.filter(
-                    (child) => child.name !== variables.node.name
-                  ),
+                  children: {
+                    ...oldChildren,
+                    results: oldChildren?.results.filter(
+                      (child) => child.name !== variables.node.name
+                    ),
+                  },
                 }
               : {}),
           };
