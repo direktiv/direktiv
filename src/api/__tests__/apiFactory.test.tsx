@@ -145,7 +145,7 @@ describe("processApiResponse", () => {
     });
   });
 
-  test.only("api response is empty but valid (result is null)", async () => {
+  test("api response is empty but valid (result is null)", async () => {
     const useCallWithEmptyResponse = () =>
       useQuery({
         queryKey: ["emptyresponse"],
