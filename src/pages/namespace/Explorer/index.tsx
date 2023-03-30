@@ -22,6 +22,7 @@ import Delete from "./Delete";
 import ExplorerHeader from "./Header";
 import { Link } from "react-router-dom";
 import { NodeSchemaType } from "../../../api/tree/schema";
+import Rename from "./Rename";
 import { analyzePath } from "../../../util/router/utils";
 import moment from "moment";
 import { pages } from "../../../util/router/pages";
@@ -33,12 +34,13 @@ const ExplorerPage: FC = () => {
   const { path } = pages.explorer.useParams();
   const { data } = useListDirectory({ path });
   const { parent, isRoot } = analyzePath(path);
-  const [deleteDialog, setDeleteDialog] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   // we only want to use one dialog component for the whole list,
   // so when the user clicks on the delete button in the list, we
   // set the pointer to that node for the dialog
   const [deleteNode, setDeleteNode] = useState<NodeSchemaType>();
+  const [renameNode, setRenameNode] = useState<NodeSchemaType>();
 
   if (!namespace) return null;
 
@@ -47,7 +49,16 @@ const ExplorerPage: FC = () => {
       <ExplorerHeader />
       <div className="flex flex-col space-y-5 p-5 text-sm">
         <div className="flex flex-col space-y-5 ">
-          <Dialog open={deleteDialog} onOpenChange={setDeleteDialog}>
+          <Dialog
+            open={dialogOpen}
+            onOpenChange={(isOpen) => {
+              if (isOpen === false) {
+                setDeleteNode(undefined);
+                setRenameNode(undefined);
+              }
+              setDialogOpen(isOpen);
+            }}
+          >
             {!isRoot && (
               <Link
                 to={pages.explorer.createHref({
@@ -108,7 +119,11 @@ const ExplorerPage: FC = () => {
                             <span>Delete</span>
                           </DropdownMenuItem>
                         </DialogTrigger>
-                        <DialogTrigger>
+                        <DialogTrigger
+                          onClick={() => {
+                            setRenameNode(file);
+                          }}
+                        >
                           <DropdownMenuItem>
                             <TextCursorInput className="mr-2 h-4 w-4" />
                             <span>Rename</span>
@@ -125,8 +140,15 @@ const ExplorerPage: FC = () => {
                 <Delete
                   node={deleteNode}
                   close={() => {
-                    setDeleteDialog(false);
-                    setDeleteNode(undefined);
+                    setDialogOpen(false);
+                  }}
+                />
+              )}
+              {renameNode && (
+                <Rename
+                  node={renameNode}
+                  close={() => {
+                    setDialogOpen(false);
                   }}
                 />
               )}

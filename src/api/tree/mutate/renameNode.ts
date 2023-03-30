@@ -4,9 +4,9 @@ import {
   TreeNodeRenameSchema,
 } from "../schema";
 import { apiFactory, defaultKeys } from "../../utils";
+import { forceSlashIfPath, removeSlashIfPath } from "../utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { forceSlashIfPath } from "../utils";
 import { treeKeys } from "..";
 import { useApiKey } from "../../../util/store/apiKey";
 import { useNamespace } from "../../../util/store/namespace";
@@ -36,22 +36,22 @@ export const useRenameNode = ({
   return useMutation({
     mutationFn: ({
       node,
-      newPath,
+      newName,
     }: {
       node: NodeSchemaType;
-      newPath: string;
+      newName: string;
     }) =>
       renameNode({
         apiKey: apiKey ?? undefined,
         params: {
-          new: newPath,
+          new: `${removeSlashIfPath(node.parent)}/${newName}`,
         },
         pathParams: {
           path: node.path,
           namespace: namespace,
         },
       }),
-    onSuccess(_, variables) {
+    onSuccess(data, variables) {
       queryClient.setQueryData<TreeListSchemaType>(
         treeKeys.all(
           apiKey ?? defaultKeys.apiKey,
@@ -67,9 +67,18 @@ export const useRenameNode = ({
               ? {
                   children: {
                     ...oldChildren,
-                    results: oldChildren?.results.filter(
-                      (child) => child.name !== variables.node.name
-                    ),
+                    results: oldChildren?.results.map((child) => {
+                      if (child.path === variables.node.path) {
+                        return {
+                          ...data.node,
+                          // there is a bug in the API where the returned data after a rename
+                          // don't update the name and updatedAt
+                          name: variables.newName,
+                          updatedAt: new Date().toISOString(),
+                        };
+                      }
+                      return child;
+                    }),
                   },
                 }
               : {}),
