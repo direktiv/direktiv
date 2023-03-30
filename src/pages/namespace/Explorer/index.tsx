@@ -11,7 +11,6 @@ import { FC, useState } from "react";
 import {
   Folder,
   FolderUp,
-  Github,
   MoreVertical,
   Play,
   TextCursorInput,
@@ -62,13 +61,7 @@ const ExplorerPage: FC = () => {
               </Link>
             )}
             {data?.children?.results.map((file) => {
-              let Icon = Folder;
-              if (file.expandedType === "workflow") {
-                Icon = Play;
-              }
-              if (file.expandedType === "git") {
-                Icon = Github;
-              }
+              const Icon = file.expandedType === "workflow" ? Play : Folder;
 
               const linkTarget =
                 file.expandedType === "workflow"
