@@ -1,6 +1,6 @@
 import { NodeSchemaType } from "./schema";
 
-export const forceSlashIfPath = (path?: string) => {
+export const forceLeadingSlash = (path?: string) => {
   if (!path) {
     return "";
   }

@@ -6,7 +6,7 @@ import {
 import { apiFactory, defaultKeys } from "../../utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { forceSlashIfPath } from "../utils";
+import { forceLeadingSlash } from "../utils";
 import { treeKeys } from "..";
 import { useApiKey } from "../../../util/store/apiKey";
 import { useNamespace } from "../../../util/store/namespace";
@@ -14,7 +14,7 @@ import { useToast } from "../../../design/Toast";
 
 const deleteNode = apiFactory({
   pathFn: ({ namespace, path }: { namespace: string; path: string }) =>
-    `/api/namespaces/${namespace}/tree${forceSlashIfPath(
+    `/api/namespaces/${namespace}/tree${forceLeadingSlash(
       path
     )}/?op=delete-node&recursive=true`,
   method: "DELETE",

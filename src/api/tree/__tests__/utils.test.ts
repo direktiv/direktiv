@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import {
-  forceSlashIfPath,
+  forceLeadingSlash,
   removeSlashIfPath,
   sortFoldersFirst,
 } from "../utils";
@@ -42,21 +42,21 @@ describe("sortFoldersFirst", () => {
   });
 });
 
-describe("forceSlashIfPath", () => {
+describe("forceLeadingSlash", () => {
   test("path -> /path", () => {
-    expect(forceSlashIfPath("path")).toBe("/path");
+    expect(forceLeadingSlash("path")).toBe("/path");
   });
 
   test("/path -> /path", () => {
-    expect(forceSlashIfPath("/path")).toBe("/path");
+    expect(forceLeadingSlash("/path")).toBe("/path");
   });
 
   test("empty string -> empty string", () => {
-    expect(forceSlashIfPath("")).toBe("");
+    expect(forceLeadingSlash("")).toBe("");
   });
 
   test("undefined -> empty string", () => {
-    expect(forceSlashIfPath()).toBe("");
+    expect(forceLeadingSlash()).toBe("");
   });
 });
 

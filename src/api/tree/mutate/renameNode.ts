@@ -4,7 +4,7 @@ import {
   TreeNodeRenameSchema,
 } from "../schema";
 import { apiFactory, defaultKeys } from "../../utils";
-import { forceSlashIfPath, removeSlashIfPath } from "../utils";
+import { forceLeadingSlash, removeSlashIfPath } from "../utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { treeKeys } from "..";
@@ -14,7 +14,7 @@ import { useToast } from "../../../design/Toast";
 
 const renameNode = apiFactory({
   pathFn: ({ namespace, path }: { namespace: string; path: string }) =>
-    `/api/namespaces/${namespace}/tree${forceSlashIfPath(
+    `/api/namespaces/${namespace}/tree${forceLeadingSlash(
       path
     )}/?op=rename-node`,
   method: "POST",
