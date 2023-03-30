@@ -80,6 +80,7 @@ export const WithButtonAsTrigger = () => (
 
 export const ControlledDialogWithForm = () => {
   const [openDialog, setOpenDialog] = useState(false);
+  const formId = "my-form";
   return (
     <Dialog open={openDialog} onOpenChange={setOpenDialog}>
       <DialogTrigger asChild>
@@ -92,13 +93,15 @@ export const ControlledDialogWithForm = () => {
           </DialogTitle>
           <DialogDescription>
             In this example the dialogs open state is also controlled with the
-            submit of the form. Please note that the submit can also be outside
-            the form. This is helpful since the DialogContent should have
-            DialogHeader and DialogFooter as direct children.
+            submit of the form. Please note that the submit can also be
+            triggered with a button outside the form. This is helpful since the
+            DialogContent should have DialogHeader and DialogFooter as direct
+            children. You must use the form attribute on the button to submit
+            and give it the id of the form you want to submit.
           </DialogDescription>
         </DialogHeader>
         <div className="my-3">
-          <form onSubmit={() => setOpenDialog(false)}>
+          <form id={formId} onSubmit={() => setOpenDialog(false)}>
             <fieldset className="flex items-center gap-5">
               <label className="w-[90px] text-right text-[15px]" htmlFor="name">
                 Name
@@ -115,7 +118,9 @@ export const ControlledDialogWithForm = () => {
           <DialogClose asChild>
             <Button variant="ghost">Cancel</Button>
           </DialogClose>
-          <Button type="submit">This submit is outside the form</Button>
+          <Button type="submit" form={formId}>
+            submit outside the form
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
