@@ -7,7 +7,7 @@ export const forceLeadingSlash = (path?: string) => {
   return path.startsWith("/") ? path : `/${path}`;
 };
 
-export const removeSlashIfPath = (path?: string) => {
+export const removeLeadingSlash = (path?: string) => {
   if (!path) {
     return "";
   }

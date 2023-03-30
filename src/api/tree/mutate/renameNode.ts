@@ -4,7 +4,7 @@ import {
   TreeNodeRenameSchema,
 } from "../schema";
 import { apiFactory, defaultKeys } from "../../utils";
-import { forceLeadingSlash, removeSlashIfPath } from "../utils";
+import { forceLeadingSlash, removeLeadingSlash } from "../utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { treeKeys } from "..";
@@ -44,7 +44,7 @@ export const useRenameNode = ({
       renameNode({
         apiKey: apiKey ?? undefined,
         params: {
-          new: `${removeSlashIfPath(node.parent)}/${newName}`,
+          new: `${removeLeadingSlash(node.parent)}/${newName}`,
         },
         pathParams: {
           path: node.path,

@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest";
 import {
   forceLeadingSlash,
-  removeSlashIfPath,
+  removeLeadingSlash,
   sortFoldersFirst,
 } from "../utils";
 
@@ -60,24 +60,24 @@ describe("forceLeadingSlash", () => {
   });
 });
 
-describe("removeSlashIfPath", () => {
+describe("removeLeadingSlash", () => {
   test("/path -> path", () => {
-    expect(removeSlashIfPath("/path")).toBe("path");
+    expect(removeLeadingSlash("/path")).toBe("path");
   });
 
   test("path -> path", () => {
-    expect(removeSlashIfPath("path")).toBe("path");
+    expect(removeLeadingSlash("path")).toBe("path");
   });
 
   test("/ -> empty string", () => {
-    expect(removeSlashIfPath("/")).toBe("");
+    expect(removeLeadingSlash("/")).toBe("");
   });
 
   test("empty string -> empty string", () => {
-    expect(removeSlashIfPath("")).toBe("");
+    expect(removeLeadingSlash("")).toBe("");
   });
 
   test("undefined -> empty string", () => {
-    expect(removeSlashIfPath()).toBe("");
+    expect(removeLeadingSlash()).toBe("");
   });
 });
