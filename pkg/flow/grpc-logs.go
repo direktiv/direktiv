@@ -6,6 +6,7 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
+	"github.com/direktiv/direktiv/pkg/flow/database/entwrapper"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	entlog "github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
@@ -341,8 +342,7 @@ func (flow *flow) InstanceLogs(ctx context.Context, req *grpc.InstanceLogsReques
 		return nil, err
 	}
 
-	clients := flow.edb.Clients(ctx)
-	// its important to append the intanceID to the callpath since we don't do it when creating the database entry
+	// its important to append the instanceID to the callpath since we don't do it when creating the database entry
 	prefix := internallogger.AppendInstanceID(cached.Instance.CallPath, cached.Instance.ID.String())
 	root, err := internallogger.GetRootinstanceID(prefix)
 	if err != nil {
@@ -350,30 +350,17 @@ func (flow *flow) InstanceLogs(ctx context.Context, req *grpc.InstanceLogsReques
 	}
 	callerIsRoot := root == cached.Instance.Invoker
 
-	query := clients.LogMsg.Query().Where(entlog.RootInstanceId(root))
-	if !callerIsRoot {
-		query = clients.LogMsg.Query().Where(entlog.And(entlog.RootInstanceIdEQ(root), entlog.LogInstanceCallPathHasPrefix(prefix)))
+	query := buildInstanceLogsQuery(ctx, flow.edb, root, prefix, callerIsRoot)
+	logmsgs, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
+	if err != nil {
+		return nil, err
 	}
-
-	results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
+	results, err := buildInstanceLogResp(ctx, logmsgs, pi, req.Pagination, req.Namespace, req.Instance)
 	if err != nil {
 		return nil, err
 	}
 
-	filters := req.Pagination.Filter
-	for _, v := range filters {
-		results = queryJSON(v, results)
-		pi.Total = int32(len(results))
-	}
-
-	resp := new(grpc.InstanceLogsResponse)
-	resp.Namespace = cached.Namespace.Name
-	resp.Instance = cached.Instance.ID.String()
-	resp.PageInfo = pi
-	resp.Results, err = bytedata.ConvertLogMsgForOutput(results)
-	if err != nil {
-		return nil, err
-	}
+	resp := results
 
 	return resp, nil
 }
@@ -402,31 +389,17 @@ func (flow *flow) InstanceLogsParcels(req *grpc.InstanceLogsRequest, srv grpc.Fl
 
 resend:
 
-	clients := flow.edb.Clients(ctx)
-	query := clients.LogMsg.Query().Where(entlog.RootInstanceIdEQ(root))
-	if !callerIsRoot {
-		query = clients.LogMsg.Query().Where(entlog.And(entlog.RootInstanceIdEQ(root), entlog.LogInstanceCallPathHasPrefix(prefix)))
+	query := buildInstanceLogsQuery(ctx, flow.edb, root, prefix, callerIsRoot)
+	logmsgs, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
+	if err != nil {
+		return err
 	}
-	results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
+	results, err := buildInstanceLogResp(ctx, logmsgs, pi, req.Pagination, req.Namespace, req.Instance)
 	if err != nil {
 		return err
 	}
 
-	filters := req.Pagination.Filter
-	for _, v := range filters {
-		results = queryJSON(v, results)
-		pi.Total = int32(len(results))
-	}
-
-	resp := new(grpc.InstanceLogsResponse)
-	resp.Namespace = cached.Namespace.Name
-	resp.Instance = cached.Instance.ID.String()
-	resp.PageInfo = pi
-
-	resp.Results, err = bytedata.ConvertLogMsgForOutput(results)
-	if err != nil {
-		return err
-	}
+	resp := results
 
 	if len(resp.Results) != 0 || !tailing {
 
@@ -437,7 +410,7 @@ resend:
 			return err
 		}
 
-		req.Pagination.Offset += int32(len(resp.Results))
+		req.Pagination.Offset += int32(len(logmsgs))
 
 	}
 
@@ -449,45 +422,194 @@ resend:
 	goto resend
 }
 
-func queryJSON(filter *grpc.PageFilter, results []*ent.LogMsg) []*ent.LogMsg {
-	res := results
+// filters the passed *ent.LogMsg if the given filter is supported if
+// the given filter is not supported returns the input unfiltered.
+func filterLogmsg(filter *grpc.PageFilter, input []*ent.LogMsg) []*ent.LogMsg {
+	res := input
 	if filter.Field == "QUERY" && filter.Type == "MATCH" {
-		res = queryMatchState(filter.Val, results)
+		res = filterMatchByWfStateIterator(filter.Val, input)
 	}
 	return res
 }
 
-func queryMatchState(q string, in []*ent.LogMsg) []*ent.LogMsg {
-	values := strings.Split(q, "::")
+// filters the input using the extracted values from the queryValue string.
+// queryValue should be formatted like <workflow>::<state-id>::<loop-index>
+// <state-id> and <indexId> is optional
+// examples for queryValue:
+// myworkflow or myworkflow:: or myworkflow::::
+// myworkflow::getter or myworkflow::getter::
+// myworkflow::getter::1
+// ::getter::
+// this method has two behaviors
+// 1. if loop-index is left empty:
+// when a logmsg from the input array has a matching pair of logtag values
+// with the extracted values it will be added to the results
+// 2: When the loop-index is provided:
+// the result will contain all logmsg marked with the given
+// loop-index starting the first match of the provided workflow and state-id
+// additionally, all logmsgs from nested loops and childs will be added to the results.
+func filterMatchByWfStateIterator(queryValue string, input []*ent.LogMsg) []*ent.LogMsg {
+	values := strings.Split(queryValue, "::")
 	state := ""
 	workflow := ""
 	iterator := ""
-	if len(values) >= 2 {
+	if len(values) > 0 {
 		workflow = values[0]
+	}
+	if len(values) > 1 {
 		state = values[1]
 	}
 	if len(values) > 2 {
 		iterator = values[2]
 	}
-	res := make([]*ent.LogMsg, 0)
-	for _, v := range in {
+	matchWf := make([]*ent.LogMsg, 0)
+	matchState := make([]*ent.LogMsg, 0)
+	matchIterator := make([]*ent.LogMsg, 0)
+	for _, v := range input {
+		if v.Tags["workflow"] == workflow {
+			matchWf = append(matchWf, v)
+		}
 		if v.Tags["state-id"] == state &&
-			v.Tags["workflow"] == workflow {
-			res = append(res, v)
+			workflow != "" && v.Tags["workflow"] == workflow {
+			matchState = append(matchState, v)
+		}
+		if v.Tags["state-id"] == state &&
+			workflow == "" {
+			matchState = append(matchState, v)
+		}
+		if v.Tags["state-id"] != "" && v.Tags["state-id"] == state &&
+			v.Tags["workflow"] == workflow &&
+			v.Tags["loop-index"] == iterator {
+			matchIterator = append(matchIterator, v)
+		}
+		if v.Tags["state-id"] == "" && v.Tags["workflow"] == workflow &&
+			v.Tags["loop-index"] == iterator {
+			matchIterator = append(matchIterator, v)
 		}
 	}
-	if iterator != "" {
-		return queryMatchIterrator(iterator, res)
+	if state == "" && iterator == "" {
+		return matchWf
 	}
-	return res
+	if workflow == "" && iterator == "" {
+		return matchState
+	}
+	if iterator != "" {
+		if len(matchIterator) == 0 {
+			return make([]*ent.LogMsg, 0)
+		}
+		callpath := internallogger.AppendInstanceID(matchIterator[0].Tags["callpath"], matchIterator[0].Tags["instance-id"])
+		childs := getAllChilds(callpath, input)
+		originInstance := filterByInstanceId(matchIterator[0].Tags["instance-id"], input)
+		subtree := append(originInstance, childs...)
+		res := filterByIterrator(iterator, subtree)
+		if nestedLoopHead := getNestedLoopHead(childs); nestedLoopHead != "" {
+			nestedLoop := filterByInstanceId(nestedLoopHead, subtree)
+			if len(nestedLoop) == 0 {
+				return res
+			}
+			callpath := internallogger.AppendInstanceID(nestedLoop[0].Tags["callpath"], nestedLoop[0].Tags["instance-id"])
+			nestedLoopChilds := getAllChilds(callpath, subtree)
+			nestedLoopSubtree := append(nestedLoop, nestedLoopChilds...)
+			res = append(res, nestedLoopChilds...)
+			res = append(res, nestedLoopSubtree...)
+			res = removeDuplicate(res)
+		}
+		return res
+	}
+	return matchState
 }
 
-func queryMatchIterrator(iterator string, in []*ent.LogMsg) []*ent.LogMsg {
+func filterByIterrator(iterator string, in []*ent.LogMsg) []*ent.LogMsg {
 	res := make([]*ent.LogMsg, 0)
+	if iterator == "" {
+		return res
+	}
 	for _, v := range in {
 		if v.Tags["loop-index"] == iterator {
 			res = append(res, v)
 		}
 	}
 	return res
+}
+
+func getNestedLoopHead(in []*ent.LogMsg) string {
+	for _, v := range in {
+		if v.Tags["state-type"] == "foreach" {
+			return v.Tags["instance-id"]
+		}
+	}
+	return ""
+}
+
+func getAllChilds(callpath string, in []*ent.LogMsg) []*ent.LogMsg {
+	res := make([]*ent.LogMsg, 0)
+	for _, v := range in {
+		if strings.HasPrefix(v.Tags["callpath"], callpath) {
+			res = append(res, v)
+		}
+	}
+	return res
+}
+
+func filterByInstanceId(instanceId string, in []*ent.LogMsg) []*ent.LogMsg {
+	res := make([]*ent.LogMsg, 0)
+	for _, v := range in {
+		if strings.HasPrefix(v.Tags["instance-id"], instanceId) {
+			res = append(res, v)
+		}
+	}
+	return res
+}
+
+// https://stackoverflow.com/questions/66643946/how-to-remove-duplicates-strings-or-int-from-slice-in-go
+func removeDuplicate(in []*ent.LogMsg) []*ent.LogMsg {
+	allKeys := make(map[*ent.LogMsg]bool)
+	list := []*ent.LogMsg{}
+	for _, item := range in {
+		if _, value := allKeys[item]; !value {
+			allKeys[item] = true
+			list = append(list, item)
+		}
+	}
+	return list
+}
+
+func buildInstanceLogResp(ctx context.Context,
+	in []*ent.LogMsg,
+	pi *grpc.PageInfo,
+	page *grpc.Pagination,
+	namespace string,
+	instance string,
+) (*grpc.InstanceLogsResponse, error) {
+	filters := page.Filter
+	results := in
+	for _, v := range filters {
+		results = filterLogmsg(v, in)
+		pi.Total = int32(len(results))
+	}
+
+	resp := new(grpc.InstanceLogsResponse)
+	resp.Namespace = namespace
+	resp.Instance = instance
+	resp.PageInfo = pi
+	var err error
+	resp.Results, err = bytedata.ConvertLogMsgForOutput(results)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
+func buildInstanceLogsQuery(ctx context.Context,
+	edb *entwrapper.Database,
+	root string,
+	prefix string,
+	callerIsRoot bool,
+) *ent.LogMsgQuery {
+	clients := edb.Clients(ctx)
+	query := clients.LogMsg.Query().Where(entlog.RootInstanceIdEQ(root))
+	if !callerIsRoot {
+		query = clients.LogMsg.Query().Where(entlog.And(entlog.RootInstanceIdEQ(root), entlog.LogInstanceCallPathHasPrefix(prefix)))
+	}
+	return query
 }
