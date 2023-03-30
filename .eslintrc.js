@@ -109,6 +109,7 @@ module.exports = {
     "react/prop-types": "off",
     // this is the default in typescript and we want to enforce it in JavaScript as well
     "prefer-const": "error",
+    "no-nested-ternary": "off"
   },
   overrides: [
     {
