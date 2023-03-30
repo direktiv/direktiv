@@ -47,7 +47,6 @@ export const useCreateDirectory = ({
           path,
         },
       }),
-
     onSuccess(data, variables) {
       toast({
         title: "Directory created",

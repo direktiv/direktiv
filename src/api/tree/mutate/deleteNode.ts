@@ -37,7 +37,6 @@ export const useDeleteNode = ({
           namespace: namespace,
         },
       }),
-
     onSuccess(_, variables) {
       toast({
         title: `${
