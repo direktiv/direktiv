@@ -47,7 +47,7 @@ const Rename = ({
           loading={isLoading}
         >
           {!isLoading && <TextCursorInput />}
-          Rename {node.parent}
+          Rename
         </Button>
       </DialogFooter>
     </>
