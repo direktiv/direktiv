@@ -76,12 +76,12 @@ const NewDirectory = ({
         </DialogTitle>
       </DialogHeader>
 
-      {!!errors.name && (
-        <Alert variant="error" className="mb-5">
-          <p>{errors.name.message}</p>
-        </Alert>
-      )}
       <div className="my-3">
+        {!!errors.name && (
+          <Alert variant="error" className="mb-5">
+            <p>{errors.name.message}</p>
+          </Alert>
+        )}
         <form id={formId} onSubmit={handleSubmit(onSubmit)}>
           <fieldset className="flex items-center gap-5">
             <label className="w-[90px] text-right text-[15px]" htmlFor="name">

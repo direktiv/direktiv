@@ -150,6 +150,9 @@ const ExplorerPage: FC = () => {
                   close={() => {
                     setDialogOpen(false);
                   }}
+                  unallowedNames={
+                    data?.children?.results.map((x) => x.name) || []
+                  }
                 />
               )}
             </DialogContent>
