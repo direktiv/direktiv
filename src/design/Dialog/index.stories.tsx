@@ -65,7 +65,9 @@ export const WithButtonAsTrigger = () => (
           This is a description of the dialog.
         </DialogDescription>
       </DialogHeader>
-      Content goes here
+      <div className="my-6">
+        Content goes here. A div with <strong>my-6</strong> is recommended.
+      </div>
       <DialogFooter>
         <DialogClose asChild>
           <Button variant="ghost">Cancel</Button>
@@ -95,18 +97,20 @@ export const ControlledDialogWithForm = () => {
             DialogHeader and DialogFooter as direct children.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={() => setOpenDialog(false)}>
-          <fieldset className="flex items-center gap-5">
-            <label className="w-[90px] text-right text-[15px]" htmlFor="name">
-              Name
-            </label>
-            <input
-              className="inline-flex h-[35px] w-full flex-1 items-center justify-center rounded-[4px] px-[10px] text-[15px] leading-none shadow-[0_0_0_1px] outline-none focus:shadow-[0_0_0_2px]"
-              id="name"
-              placeholder="just submit this"
-            />
-          </fieldset>
-        </form>
+        <div className="my-6">
+          <form onSubmit={() => setOpenDialog(false)}>
+            <fieldset className="flex items-center gap-5">
+              <label className="w-[90px] text-right text-[15px]" htmlFor="name">
+                Name
+              </label>
+              <input
+                className="inline-flex h-[35px] w-full flex-1 items-center justify-center rounded-[4px] px-[10px] text-[15px] leading-none shadow-[0_0_0_1px] outline-none focus:shadow-[0_0_0_2px]"
+                id="name"
+                placeholder="just submit this"
+              />
+            </fieldset>
+          </form>
+        </div>
         <DialogFooter>
           <DialogClose asChild>
             <Button variant="ghost">Cancel</Button>
