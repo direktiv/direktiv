@@ -29,6 +29,8 @@ const (
 	FieldMimeType = "mime_type"
 	// EdgeNamespace holds the string denoting the namespace edge name in mutations.
 	EdgeNamespace = "namespace"
+	// EdgeInstance holds the string denoting the instance edge name in mutations.
+	EdgeInstance = "instance"
 	// Table holds the table name of the annotation in the database.
 	Table = "annotations"
 	// NamespaceTable is the table that holds the namespace relation/edge.
@@ -38,6 +40,13 @@ const (
 	NamespaceInverseTable = "namespaces"
 	// NamespaceColumn is the table column denoting the namespace relation/edge.
 	NamespaceColumn = "namespace_annotations"
+	// InstanceTable is the table that holds the instance relation/edge.
+	InstanceTable = "annotations"
+	// InstanceInverseTable is the table name for the Instance entity.
+	// It exists in this package in order to avoid circular dependency with the "instance" package.
+	InstanceInverseTable = "instances"
+	// InstanceColumn is the table column denoting the instance relation/edge.
+	InstanceColumn = "instance_annotations"
 )
 
 // Columns holds all SQL columns for annotation fields.

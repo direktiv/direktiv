@@ -98,6 +98,18 @@ func (lmu *LogMsgUpdate) ClearTags() *LogMsgUpdate {
 	return lmu
 }
 
+// SetWorkflowID sets the "workflow_id" field.
+func (lmu *LogMsgUpdate) SetWorkflowID(u uuid.UUID) *LogMsgUpdate {
+	lmu.mutation.SetWorkflowID(u)
+	return lmu
+}
+
+// SetMirrorActivityID sets the "mirror_activity_id" field.
+func (lmu *LogMsgUpdate) SetMirrorActivityID(u uuid.UUID) *LogMsgUpdate {
+	lmu.mutation.SetMirrorActivityID(u)
+	return lmu
+}
+
 // SetNamespaceID sets the "namespace" edge to the Namespace entity by ID.
 func (lmu *LogMsgUpdate) SetNamespaceID(id uuid.UUID) *LogMsgUpdate {
 	lmu.mutation.SetNamespaceID(id)
@@ -251,6 +263,12 @@ func (lmu *LogMsgUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if lmu.mutation.TagsCleared() {
 		_spec.ClearField(logmsg.FieldTags, field.TypeJSON)
+	}
+	if value, ok := lmu.mutation.WorkflowID(); ok {
+		_spec.SetField(logmsg.FieldWorkflowID, field.TypeUUID, value)
+	}
+	if value, ok := lmu.mutation.MirrorActivityID(); ok {
+		_spec.SetField(logmsg.FieldMirrorActivityID, field.TypeUUID, value)
 	}
 	if lmu.mutation.NamespaceCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -406,6 +424,18 @@ func (lmuo *LogMsgUpdateOne) SetTags(m map[string]string) *LogMsgUpdateOne {
 // ClearTags clears the value of the "tags" field.
 func (lmuo *LogMsgUpdateOne) ClearTags() *LogMsgUpdateOne {
 	lmuo.mutation.ClearTags()
+	return lmuo
+}
+
+// SetWorkflowID sets the "workflow_id" field.
+func (lmuo *LogMsgUpdateOne) SetWorkflowID(u uuid.UUID) *LogMsgUpdateOne {
+	lmuo.mutation.SetWorkflowID(u)
+	return lmuo
+}
+
+// SetMirrorActivityID sets the "mirror_activity_id" field.
+func (lmuo *LogMsgUpdateOne) SetMirrorActivityID(u uuid.UUID) *LogMsgUpdateOne {
+	lmuo.mutation.SetMirrorActivityID(u)
 	return lmuo
 }
 
@@ -592,6 +622,12 @@ func (lmuo *LogMsgUpdateOne) sqlSave(ctx context.Context) (_node *LogMsg, err er
 	}
 	if lmuo.mutation.TagsCleared() {
 		_spec.ClearField(logmsg.FieldTags, field.TypeJSON)
+	}
+	if value, ok := lmuo.mutation.WorkflowID(); ok {
+		_spec.SetField(logmsg.FieldWorkflowID, field.TypeUUID, value)
+	}
+	if value, ok := lmuo.mutation.MirrorActivityID(); ok {
+		_spec.SetField(logmsg.FieldMirrorActivityID, field.TypeUUID, value)
 	}
 	if lmuo.mutation.NamespaceCleared() {
 		edge := &sqlgraph.EdgeSpec{

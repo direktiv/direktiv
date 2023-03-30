@@ -302,6 +302,22 @@ func (c *AnnotationClient) QueryNamespace(a *Annotation) *NamespaceQuery {
 	return query
 }
 
+// QueryInstance queries the instance edge of a Annotation.
+func (c *AnnotationClient) QueryInstance(a *Annotation) *InstanceQuery {
+	query := &InstanceQuery{config: c.config}
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := a.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(annotation.Table, annotation.FieldID, id),
+			sqlgraph.To(instance.Table, instance.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, annotation.InstanceTable, annotation.InstanceColumn),
+		)
+		fromV = sqlgraph.Neighbors(a.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *AnnotationClient) Hooks() []Hook {
 	return c.hooks.Annotation

@@ -25,6 +25,8 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
+	// FieldWorkflowID holds the string denoting the workflow_id field in the database.
+	FieldWorkflowID = "workflow_id"
 	// EdgeWfeventswait holds the string denoting the wfeventswait edge name in mutations.
 	EdgeWfeventswait = "wfeventswait"
 	// EdgeInstance holds the string denoting the instance edge name in mutations.
@@ -65,6 +67,7 @@ var Columns = []string{
 	FieldCount,
 	FieldCreatedAt,
 	FieldUpdatedAt,
+	FieldWorkflowID,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "events"

@@ -9,6 +9,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/direktiv/direktiv/pkg/flow/ent/annotation"
+	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/google/uuid"
 )
@@ -43,9 +44,11 @@ type Annotation struct {
 type AnnotationEdges struct {
 	// Namespace holds the value of the namespace edge.
 	Namespace *Namespace `json:"namespace,omitempty"`
+	// Instance holds the value of the instance edge.
+	Instance *Instance `json:"instance,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
 // NamespaceOrErr returns the Namespace value or an error if the edge
@@ -59,6 +62,19 @@ func (e AnnotationEdges) NamespaceOrErr() (*Namespace, error) {
 		return e.Namespace, nil
 	}
 	return nil, &NotLoadedError{edge: "namespace"}
+}
+
+// InstanceOrErr returns the Instance value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e AnnotationEdges) InstanceOrErr() (*Instance, error) {
+	if e.loadedTypes[1] {
+		if e.Instance == nil {
+			// Edge was loaded but was not found.
+			return nil, &NotFoundError{label: instance.Label}
+		}
+		return e.Instance, nil
+	}
+	return nil, &NotLoadedError{edge: "instance"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -165,6 +181,11 @@ func (a *Annotation) assignValues(columns []string, values []any) error {
 // QueryNamespace queries the "namespace" edge of the Annotation entity.
 func (a *Annotation) QueryNamespace() *NamespaceQuery {
 	return (&AnnotationClient{config: a.config}).QueryNamespace(a)
+}
+
+// QueryInstance queries the "instance" edge of the Annotation entity.
+func (a *Annotation) QueryInstance() *InstanceQuery {
+	return (&AnnotationClient{config: a.config}).QueryInstance(a)
 }
 
 // Update returns a builder for updating this Annotation.

@@ -23,6 +23,10 @@ const (
 	FieldLogInstanceCallPath = "log_instance_call_path"
 	// FieldTags holds the string denoting the tags field in the database.
 	FieldTags = "tags"
+	// FieldWorkflowID holds the string denoting the workflow_id field in the database.
+	FieldWorkflowID = "workflow_id"
+	// FieldMirrorActivityID holds the string denoting the mirror_activity_id field in the database.
+	FieldMirrorActivityID = "mirror_activity_id"
 	// EdgeNamespace holds the string denoting the namespace edge name in mutations.
 	EdgeNamespace = "namespace"
 	// EdgeInstance holds the string denoting the instance edge name in mutations.
@@ -54,6 +58,8 @@ var Columns = []string{
 	FieldRootInstanceId,
 	FieldLogInstanceCallPath,
 	FieldTags,
+	FieldWorkflowID,
+	FieldMirrorActivityID,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "log_msgs"

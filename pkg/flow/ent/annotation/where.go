@@ -712,6 +712,34 @@ func HasNamespaceWith(preds ...predicate.Namespace) predicate.Annotation {
 	})
 }
 
+// HasInstance applies the HasEdge predicate on the "instance" edge.
+func HasInstance() predicate.Annotation {
+	return predicate.Annotation(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(InstanceTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, InstanceTable, InstanceColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasInstanceWith applies the HasEdge predicate on the "instance" edge with a given conditions (other predicates).
+func HasInstanceWith(preds ...predicate.Instance) predicate.Annotation {
+	return predicate.Annotation(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(InstanceInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, InstanceTable, InstanceColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Annotation) predicate.Annotation {
 	return predicate.Annotation(func(s *sql.Selector) {

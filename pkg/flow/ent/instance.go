@@ -39,6 +39,10 @@ type Instance struct {
 	InvokerState string `json:"invokerState,omitempty"`
 	// Callpath holds the value of the "callpath" field.
 	Callpath string `json:"callpath,omitempty"`
+	// WorkflowID holds the value of the "workflow_id" field.
+	WorkflowID *uuid.UUID `json:"workflow_id,omitempty"`
+	// RevisionID holds the value of the "revision_id" field.
+	RevisionID *uuid.UUID `json:"revision_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the InstanceQuery when eager-loading is set.
 	Edges               InstanceEdges `json:"edges"`
@@ -142,6 +146,8 @@ func (*Instance) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case instance.FieldWorkflowID, instance.FieldRevisionID:
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case instance.FieldStatus, instance.FieldAs, instance.FieldErrorCode, instance.FieldErrorMessage, instance.FieldInvoker, instance.FieldInvokerState, instance.FieldCallpath:
 			values[i] = new(sql.NullString)
 		case instance.FieldCreatedAt, instance.FieldUpdatedAt, instance.FieldEndAt:
@@ -230,6 +236,20 @@ func (i *Instance) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field callpath", values[j])
 			} else if value.Valid {
 				i.Callpath = value.String
+			}
+		case instance.FieldWorkflowID:
+			if value, ok := values[j].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field workflow_id", values[j])
+			} else if value.Valid {
+				i.WorkflowID = new(uuid.UUID)
+				*i.WorkflowID = *value.S.(*uuid.UUID)
+			}
+		case instance.FieldRevisionID:
+			if value, ok := values[j].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field revision_id", values[j])
+			} else if value.Valid {
+				i.RevisionID = new(uuid.UUID)
+				*i.RevisionID = *value.S.(*uuid.UUID)
 			}
 		case instance.ForeignKeys[0]:
 			if value, ok := values[j].(*sql.NullScanner); !ok {
@@ -330,6 +350,16 @@ func (i *Instance) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("callpath=")
 	builder.WriteString(i.Callpath)
+	builder.WriteString(", ")
+	if v := i.WorkflowID; v != nil {
+		builder.WriteString("workflow_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := i.RevisionID; v != nil {
+		builder.WriteString("revision_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }

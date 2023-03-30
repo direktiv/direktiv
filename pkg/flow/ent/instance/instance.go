@@ -33,6 +33,10 @@ const (
 	FieldInvokerState = "invoker_state"
 	// FieldCallpath holds the string denoting the callpath field in the database.
 	FieldCallpath = "callpath"
+	// FieldWorkflowID holds the string denoting the workflow_id field in the database.
+	FieldWorkflowID = "workflow_id"
+	// FieldRevisionID holds the string denoting the revision_id field in the database.
+	FieldRevisionID = "revision_id"
 	// EdgeNamespace holds the string denoting the namespace edge name in mutations.
 	EdgeNamespace = "namespace"
 	// EdgeLogs holds the string denoting the logs edge name in mutations.
@@ -113,6 +117,8 @@ var Columns = []string{
 	FieldInvoker,
 	FieldInvokerState,
 	FieldCallpath,
+	FieldWorkflowID,
+	FieldRevisionID,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "instances"

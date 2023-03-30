@@ -32,6 +32,10 @@ type LogMsg struct {
 	LogInstanceCallPath string `json:"logInstanceCallPath,omitempty"`
 	// Tags holds the value of the "tags" field.
 	Tags map[string]string `json:"tags,omitempty"`
+	// WorkflowID holds the value of the "workflow_id" field.
+	WorkflowID *uuid.UUID `json:"workflow_id,omitempty"`
+	// MirrorActivityID holds the value of the "mirror_activity_id" field.
+	MirrorActivityID *uuid.UUID `json:"mirror_activity_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the LogMsgQuery when eager-loading is set.
 	Edges          LogMsgEdges `json:"edges"`
@@ -81,6 +85,8 @@ func (*LogMsg) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case logmsg.FieldWorkflowID, logmsg.FieldMirrorActivityID:
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case logmsg.FieldTags:
 			values[i] = new([]byte)
 		case logmsg.FieldMsg, logmsg.FieldLevel, logmsg.FieldRootInstanceId, logmsg.FieldLogInstanceCallPath:
@@ -152,6 +158,20 @@ func (lm *LogMsg) assignValues(columns []string, values []any) error {
 					return fmt.Errorf("unmarshal field tags: %w", err)
 				}
 			}
+		case logmsg.FieldWorkflowID:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field workflow_id", values[i])
+			} else if value.Valid {
+				lm.WorkflowID = new(uuid.UUID)
+				*lm.WorkflowID = *value.S.(*uuid.UUID)
+			}
+		case logmsg.FieldMirrorActivityID:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field mirror_activity_id", values[i])
+			} else if value.Valid {
+				lm.MirrorActivityID = new(uuid.UUID)
+				*lm.MirrorActivityID = *value.S.(*uuid.UUID)
+			}
 		case logmsg.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field instance_logs", values[i])
@@ -221,6 +241,16 @@ func (lm *LogMsg) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("tags=")
 	builder.WriteString(fmt.Sprintf("%v", lm.Tags))
+	builder.WriteString(", ")
+	if v := lm.WorkflowID; v != nil {
+		builder.WriteString("workflow_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := lm.MirrorActivityID; v != nil {
+		builder.WriteString("mirror_activity_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }

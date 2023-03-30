@@ -168,6 +168,18 @@ func (iu *InstanceUpdate) ClearCallpath() *InstanceUpdate {
 	return iu
 }
 
+// SetWorkflowID sets the "workflow_id" field.
+func (iu *InstanceUpdate) SetWorkflowID(u uuid.UUID) *InstanceUpdate {
+	iu.mutation.SetWorkflowID(u)
+	return iu
+}
+
+// SetRevisionID sets the "revision_id" field.
+func (iu *InstanceUpdate) SetRevisionID(u uuid.UUID) *InstanceUpdate {
+	iu.mutation.SetRevisionID(u)
+	return iu
+}
+
 // SetNamespaceID sets the "namespace" edge to the Namespace entity by ID.
 func (iu *InstanceUpdate) SetNamespaceID(id uuid.UUID) *InstanceUpdate {
 	iu.mutation.SetNamespaceID(id)
@@ -532,6 +544,12 @@ func (iu *InstanceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if iu.mutation.CallpathCleared() {
 		_spec.ClearField(instance.FieldCallpath, field.TypeString)
+	}
+	if value, ok := iu.mutation.WorkflowID(); ok {
+		_spec.SetField(instance.FieldWorkflowID, field.TypeUUID, value)
+	}
+	if value, ok := iu.mutation.RevisionID(); ok {
+		_spec.SetField(instance.FieldRevisionID, field.TypeUUID, value)
 	}
 	if iu.mutation.NamespaceCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -1026,6 +1044,18 @@ func (iuo *InstanceUpdateOne) ClearCallpath() *InstanceUpdateOne {
 	return iuo
 }
 
+// SetWorkflowID sets the "workflow_id" field.
+func (iuo *InstanceUpdateOne) SetWorkflowID(u uuid.UUID) *InstanceUpdateOne {
+	iuo.mutation.SetWorkflowID(u)
+	return iuo
+}
+
+// SetRevisionID sets the "revision_id" field.
+func (iuo *InstanceUpdateOne) SetRevisionID(u uuid.UUID) *InstanceUpdateOne {
+	iuo.mutation.SetRevisionID(u)
+	return iuo
+}
+
 // SetNamespaceID sets the "namespace" edge to the Namespace entity by ID.
 func (iuo *InstanceUpdateOne) SetNamespaceID(id uuid.UUID) *InstanceUpdateOne {
 	iuo.mutation.SetNamespaceID(id)
@@ -1420,6 +1450,12 @@ func (iuo *InstanceUpdateOne) sqlSave(ctx context.Context) (_node *Instance, err
 	}
 	if iuo.mutation.CallpathCleared() {
 		_spec.ClearField(instance.FieldCallpath, field.TypeString)
+	}
+	if value, ok := iuo.mutation.WorkflowID(); ok {
+		_spec.SetField(instance.FieldWorkflowID, field.TypeUUID, value)
+	}
+	if value, ok := iuo.mutation.RevisionID(); ok {
+		_spec.SetField(instance.FieldRevisionID, field.TypeUUID, value)
 	}
 	if iuo.mutation.NamespaceCleared() {
 		edge := &sqlgraph.EdgeSpec{

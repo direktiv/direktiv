@@ -79,6 +79,12 @@ func (ec *EventsCreate) SetNillableUpdatedAt(t *time.Time) *EventsCreate {
 	return ec
 }
 
+// SetWorkflowID sets the "workflow_id" field.
+func (ec *EventsCreate) SetWorkflowID(u uuid.UUID) *EventsCreate {
+	ec.mutation.SetWorkflowID(u)
+	return ec
+}
+
 // SetID sets the "id" field.
 func (ec *EventsCreate) SetID(u uuid.UUID) *EventsCreate {
 	ec.mutation.SetID(u)
@@ -246,6 +252,9 @@ func (ec *EventsCreate) check() error {
 	if _, ok := ec.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Events.updated_at"`)}
 	}
+	if _, ok := ec.mutation.WorkflowID(); !ok {
+		return &ValidationError{Name: "workflow_id", err: errors.New(`ent: missing required field "Events.workflow_id"`)}
+	}
 	if _, ok := ec.mutation.NamespaceID(); !ok {
 		return &ValidationError{Name: "namespace", err: errors.New(`ent: missing required edge "Events.namespace"`)}
 	}
@@ -309,6 +318,10 @@ func (ec *EventsCreate) createSpec() (*Events, *sqlgraph.CreateSpec) {
 	if value, ok := ec.mutation.UpdatedAt(); ok {
 		_spec.SetField(events.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
+	}
+	if value, ok := ec.mutation.WorkflowID(); ok {
+		_spec.SetField(events.FieldWorkflowID, field.TypeUUID, value)
+		_node.WorkflowID = &value
 	}
 	if nodes := ec.mutation.WfeventswaitIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -493,6 +506,18 @@ func (u *EventsUpsert) UpdateUpdatedAt() *EventsUpsert {
 	return u
 }
 
+// SetWorkflowID sets the "workflow_id" field.
+func (u *EventsUpsert) SetWorkflowID(v uuid.UUID) *EventsUpsert {
+	u.Set(events.FieldWorkflowID, v)
+	return u
+}
+
+// UpdateWorkflowID sets the "workflow_id" field to the value that was provided on create.
+func (u *EventsUpsert) UpdateWorkflowID() *EventsUpsert {
+	u.SetExcluded(events.FieldWorkflowID)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -625,6 +650,20 @@ func (u *EventsUpsertOne) SetUpdatedAt(v time.Time) *EventsUpsertOne {
 func (u *EventsUpsertOne) UpdateUpdatedAt() *EventsUpsertOne {
 	return u.Update(func(s *EventsUpsert) {
 		s.UpdateUpdatedAt()
+	})
+}
+
+// SetWorkflowID sets the "workflow_id" field.
+func (u *EventsUpsertOne) SetWorkflowID(v uuid.UUID) *EventsUpsertOne {
+	return u.Update(func(s *EventsUpsert) {
+		s.SetWorkflowID(v)
+	})
+}
+
+// UpdateWorkflowID sets the "workflow_id" field to the value that was provided on create.
+func (u *EventsUpsertOne) UpdateWorkflowID() *EventsUpsertOne {
+	return u.Update(func(s *EventsUpsert) {
+		s.UpdateWorkflowID()
 	})
 }
 
@@ -923,6 +962,20 @@ func (u *EventsUpsertBulk) SetUpdatedAt(v time.Time) *EventsUpsertBulk {
 func (u *EventsUpsertBulk) UpdateUpdatedAt() *EventsUpsertBulk {
 	return u.Update(func(s *EventsUpsert) {
 		s.UpdateUpdatedAt()
+	})
+}
+
+// SetWorkflowID sets the "workflow_id" field.
+func (u *EventsUpsertBulk) SetWorkflowID(v uuid.UUID) *EventsUpsertBulk {
+	return u.Update(func(s *EventsUpsert) {
+		s.SetWorkflowID(v)
+	})
+}
+
+// UpdateWorkflowID sets the "workflow_id" field to the value that was provided on create.
+func (u *EventsUpsertBulk) UpdateWorkflowID() *EventsUpsertBulk {
+	return u.Update(func(s *EventsUpsert) {
+		s.UpdateWorkflowID()
 	})
 }
 

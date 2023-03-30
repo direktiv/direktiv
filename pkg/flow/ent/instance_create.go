@@ -154,6 +154,18 @@ func (ic *InstanceCreate) SetNillableCallpath(s *string) *InstanceCreate {
 	return ic
 }
 
+// SetWorkflowID sets the "workflow_id" field.
+func (ic *InstanceCreate) SetWorkflowID(u uuid.UUID) *InstanceCreate {
+	ic.mutation.SetWorkflowID(u)
+	return ic
+}
+
+// SetRevisionID sets the "revision_id" field.
+func (ic *InstanceCreate) SetRevisionID(u uuid.UUID) *InstanceCreate {
+	ic.mutation.SetRevisionID(u)
+	return ic
+}
+
 // SetID sets the "id" field.
 func (ic *InstanceCreate) SetID(u uuid.UUID) *InstanceCreate {
 	ic.mutation.SetID(u)
@@ -370,6 +382,12 @@ func (ic *InstanceCreate) check() error {
 	if _, ok := ic.mutation.As(); !ok {
 		return &ValidationError{Name: "as", err: errors.New(`ent: missing required field "Instance.as"`)}
 	}
+	if _, ok := ic.mutation.WorkflowID(); !ok {
+		return &ValidationError{Name: "workflow_id", err: errors.New(`ent: missing required field "Instance.workflow_id"`)}
+	}
+	if _, ok := ic.mutation.RevisionID(); !ok {
+		return &ValidationError{Name: "revision_id", err: errors.New(`ent: missing required field "Instance.revision_id"`)}
+	}
 	if _, ok := ic.mutation.NamespaceID(); !ok {
 		return &ValidationError{Name: "namespace", err: errors.New(`ent: missing required edge "Instance.namespace"`)}
 	}
@@ -452,6 +470,14 @@ func (ic *InstanceCreate) createSpec() (*Instance, *sqlgraph.CreateSpec) {
 	if value, ok := ic.mutation.Callpath(); ok {
 		_spec.SetField(instance.FieldCallpath, field.TypeString, value)
 		_node.Callpath = value
+	}
+	if value, ok := ic.mutation.WorkflowID(); ok {
+		_spec.SetField(instance.FieldWorkflowID, field.TypeUUID, value)
+		_node.WorkflowID = &value
+	}
+	if value, ok := ic.mutation.RevisionID(); ok {
+		_spec.SetField(instance.FieldRevisionID, field.TypeUUID, value)
+		_node.RevisionID = &value
 	}
 	if nodes := ic.mutation.NamespaceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -771,6 +797,30 @@ func (u *InstanceUpsert) ClearCallpath() *InstanceUpsert {
 	return u
 }
 
+// SetWorkflowID sets the "workflow_id" field.
+func (u *InstanceUpsert) SetWorkflowID(v uuid.UUID) *InstanceUpsert {
+	u.Set(instance.FieldWorkflowID, v)
+	return u
+}
+
+// UpdateWorkflowID sets the "workflow_id" field to the value that was provided on create.
+func (u *InstanceUpsert) UpdateWorkflowID() *InstanceUpsert {
+	u.SetExcluded(instance.FieldWorkflowID)
+	return u
+}
+
+// SetRevisionID sets the "revision_id" field.
+func (u *InstanceUpsert) SetRevisionID(v uuid.UUID) *InstanceUpsert {
+	u.Set(instance.FieldRevisionID, v)
+	return u
+}
+
+// UpdateRevisionID sets the "revision_id" field to the value that was provided on create.
+func (u *InstanceUpsert) UpdateRevisionID() *InstanceUpsert {
+	u.SetExcluded(instance.FieldRevisionID)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -976,6 +1026,34 @@ func (u *InstanceUpsertOne) UpdateCallpath() *InstanceUpsertOne {
 func (u *InstanceUpsertOne) ClearCallpath() *InstanceUpsertOne {
 	return u.Update(func(s *InstanceUpsert) {
 		s.ClearCallpath()
+	})
+}
+
+// SetWorkflowID sets the "workflow_id" field.
+func (u *InstanceUpsertOne) SetWorkflowID(v uuid.UUID) *InstanceUpsertOne {
+	return u.Update(func(s *InstanceUpsert) {
+		s.SetWorkflowID(v)
+	})
+}
+
+// UpdateWorkflowID sets the "workflow_id" field to the value that was provided on create.
+func (u *InstanceUpsertOne) UpdateWorkflowID() *InstanceUpsertOne {
+	return u.Update(func(s *InstanceUpsert) {
+		s.UpdateWorkflowID()
+	})
+}
+
+// SetRevisionID sets the "revision_id" field.
+func (u *InstanceUpsertOne) SetRevisionID(v uuid.UUID) *InstanceUpsertOne {
+	return u.Update(func(s *InstanceUpsert) {
+		s.SetRevisionID(v)
+	})
+}
+
+// UpdateRevisionID sets the "revision_id" field to the value that was provided on create.
+func (u *InstanceUpsertOne) UpdateRevisionID() *InstanceUpsertOne {
+	return u.Update(func(s *InstanceUpsert) {
+		s.UpdateRevisionID()
 	})
 }
 
@@ -1347,6 +1425,34 @@ func (u *InstanceUpsertBulk) UpdateCallpath() *InstanceUpsertBulk {
 func (u *InstanceUpsertBulk) ClearCallpath() *InstanceUpsertBulk {
 	return u.Update(func(s *InstanceUpsert) {
 		s.ClearCallpath()
+	})
+}
+
+// SetWorkflowID sets the "workflow_id" field.
+func (u *InstanceUpsertBulk) SetWorkflowID(v uuid.UUID) *InstanceUpsertBulk {
+	return u.Update(func(s *InstanceUpsert) {
+		s.SetWorkflowID(v)
+	})
+}
+
+// UpdateWorkflowID sets the "workflow_id" field to the value that was provided on create.
+func (u *InstanceUpsertBulk) UpdateWorkflowID() *InstanceUpsertBulk {
+	return u.Update(func(s *InstanceUpsert) {
+		s.UpdateWorkflowID()
+	})
+}
+
+// SetRevisionID sets the "revision_id" field.
+func (u *InstanceUpsertBulk) SetRevisionID(v uuid.UUID) *InstanceUpsertBulk {
+	return u.Update(func(s *InstanceUpsert) {
+		s.SetRevisionID(v)
+	})
+}
+
+// UpdateRevisionID sets the "revision_id" field to the value that was provided on create.
+func (u *InstanceUpsertBulk) UpdateRevisionID() *InstanceUpsertBulk {
+	return u.Update(func(s *InstanceUpsert) {
+		s.UpdateRevisionID()
 	})
 }
 

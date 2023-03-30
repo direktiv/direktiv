@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/direktiv/direktiv/pkg/flow/ent/annotation"
+	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/google/uuid"
 )
@@ -114,6 +115,25 @@ func (ac *AnnotationCreate) SetNillableNamespaceID(id *uuid.UUID) *AnnotationCre
 // SetNamespace sets the "namespace" edge to the Namespace entity.
 func (ac *AnnotationCreate) SetNamespace(n *Namespace) *AnnotationCreate {
 	return ac.SetNamespaceID(n.ID)
+}
+
+// SetInstanceID sets the "instance" edge to the Instance entity by ID.
+func (ac *AnnotationCreate) SetInstanceID(id uuid.UUID) *AnnotationCreate {
+	ac.mutation.SetInstanceID(id)
+	return ac
+}
+
+// SetNillableInstanceID sets the "instance" edge to the Instance entity by ID if the given value is not nil.
+func (ac *AnnotationCreate) SetNillableInstanceID(id *uuid.UUID) *AnnotationCreate {
+	if id != nil {
+		ac = ac.SetInstanceID(*id)
+	}
+	return ac
+}
+
+// SetInstance sets the "instance" edge to the Instance entity.
+func (ac *AnnotationCreate) SetInstance(i *Instance) *AnnotationCreate {
+	return ac.SetInstanceID(i.ID)
 }
 
 // Mutation returns the AnnotationMutation object of the builder.
@@ -318,6 +338,26 @@ func (ac *AnnotationCreate) createSpec() (*Annotation, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.namespace_annotations = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := ac.mutation.InstanceIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   annotation.InstanceTable,
+			Columns: []string{annotation.InstanceColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: instance.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.instance_annotations = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

@@ -117,6 +117,20 @@ func LogInstanceCallPath(v string) predicate.LogMsg {
 	})
 }
 
+// WorkflowID applies equality check predicate on the "workflow_id" field. It's identical to WorkflowIDEQ.
+func WorkflowID(v uuid.UUID) predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldWorkflowID), v))
+	})
+}
+
+// MirrorActivityID applies equality check predicate on the "mirror_activity_id" field. It's identical to MirrorActivityIDEQ.
+func MirrorActivityID(v uuid.UUID) predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldMirrorActivityID), v))
+	})
+}
+
 // TEQ applies the EQ predicate on the "t" field.
 func TEQ(v time.Time) predicate.LogMsg {
 	return predicate.LogMsg(func(s *sql.Selector) {
@@ -588,6 +602,134 @@ func TagsIsNil() predicate.LogMsg {
 func TagsNotNil() predicate.LogMsg {
 	return predicate.LogMsg(func(s *sql.Selector) {
 		s.Where(sql.NotNull(s.C(FieldTags)))
+	})
+}
+
+// WorkflowIDEQ applies the EQ predicate on the "workflow_id" field.
+func WorkflowIDEQ(v uuid.UUID) predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldWorkflowID), v))
+	})
+}
+
+// WorkflowIDNEQ applies the NEQ predicate on the "workflow_id" field.
+func WorkflowIDNEQ(v uuid.UUID) predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldWorkflowID), v))
+	})
+}
+
+// WorkflowIDIn applies the In predicate on the "workflow_id" field.
+func WorkflowIDIn(vs ...uuid.UUID) predicate.LogMsg {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.In(s.C(FieldWorkflowID), v...))
+	})
+}
+
+// WorkflowIDNotIn applies the NotIn predicate on the "workflow_id" field.
+func WorkflowIDNotIn(vs ...uuid.UUID) predicate.LogMsg {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.NotIn(s.C(FieldWorkflowID), v...))
+	})
+}
+
+// WorkflowIDGT applies the GT predicate on the "workflow_id" field.
+func WorkflowIDGT(v uuid.UUID) predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldWorkflowID), v))
+	})
+}
+
+// WorkflowIDGTE applies the GTE predicate on the "workflow_id" field.
+func WorkflowIDGTE(v uuid.UUID) predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldWorkflowID), v))
+	})
+}
+
+// WorkflowIDLT applies the LT predicate on the "workflow_id" field.
+func WorkflowIDLT(v uuid.UUID) predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldWorkflowID), v))
+	})
+}
+
+// WorkflowIDLTE applies the LTE predicate on the "workflow_id" field.
+func WorkflowIDLTE(v uuid.UUID) predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldWorkflowID), v))
+	})
+}
+
+// MirrorActivityIDEQ applies the EQ predicate on the "mirror_activity_id" field.
+func MirrorActivityIDEQ(v uuid.UUID) predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldMirrorActivityID), v))
+	})
+}
+
+// MirrorActivityIDNEQ applies the NEQ predicate on the "mirror_activity_id" field.
+func MirrorActivityIDNEQ(v uuid.UUID) predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldMirrorActivityID), v))
+	})
+}
+
+// MirrorActivityIDIn applies the In predicate on the "mirror_activity_id" field.
+func MirrorActivityIDIn(vs ...uuid.UUID) predicate.LogMsg {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.In(s.C(FieldMirrorActivityID), v...))
+	})
+}
+
+// MirrorActivityIDNotIn applies the NotIn predicate on the "mirror_activity_id" field.
+func MirrorActivityIDNotIn(vs ...uuid.UUID) predicate.LogMsg {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.NotIn(s.C(FieldMirrorActivityID), v...))
+	})
+}
+
+// MirrorActivityIDGT applies the GT predicate on the "mirror_activity_id" field.
+func MirrorActivityIDGT(v uuid.UUID) predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldMirrorActivityID), v))
+	})
+}
+
+// MirrorActivityIDGTE applies the GTE predicate on the "mirror_activity_id" field.
+func MirrorActivityIDGTE(v uuid.UUID) predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldMirrorActivityID), v))
+	})
+}
+
+// MirrorActivityIDLT applies the LT predicate on the "mirror_activity_id" field.
+func MirrorActivityIDLT(v uuid.UUID) predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldMirrorActivityID), v))
+	})
+}
+
+// MirrorActivityIDLTE applies the LTE predicate on the "mirror_activity_id" field.
+func MirrorActivityIDLTE(v uuid.UUID) predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldMirrorActivityID), v))
 	})
 }
 

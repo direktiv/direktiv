@@ -89,6 +89,12 @@ func (eu *EventsUpdate) SetUpdatedAt(t time.Time) *EventsUpdate {
 	return eu
 }
 
+// SetWorkflowID sets the "workflow_id" field.
+func (eu *EventsUpdate) SetWorkflowID(u uuid.UUID) *EventsUpdate {
+	eu.mutation.SetWorkflowID(u)
+	return eu
+}
+
 // AddWfeventswaitIDs adds the "wfeventswait" edge to the EventsWait entity by IDs.
 func (eu *EventsUpdate) AddWfeventswaitIDs(ids ...uuid.UUID) *EventsUpdate {
 	eu.mutation.AddWfeventswaitIDs(ids...)
@@ -304,6 +310,9 @@ func (eu *EventsUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := eu.mutation.UpdatedAt(); ok {
 		_spec.SetField(events.FieldUpdatedAt, field.TypeTime, value)
 	}
+	if value, ok := eu.mutation.WorkflowID(); ok {
+		_spec.SetField(events.FieldWorkflowID, field.TypeUUID, value)
+	}
 	if eu.mutation.WfeventswaitCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -501,6 +510,12 @@ func (euo *EventsUpdateOne) AddCount(i int) *EventsUpdateOne {
 // SetUpdatedAt sets the "updated_at" field.
 func (euo *EventsUpdateOne) SetUpdatedAt(t time.Time) *EventsUpdateOne {
 	euo.mutation.SetUpdatedAt(t)
+	return euo
+}
+
+// SetWorkflowID sets the "workflow_id" field.
+func (euo *EventsUpdateOne) SetWorkflowID(u uuid.UUID) *EventsUpdateOne {
+	euo.mutation.SetWorkflowID(u)
 	return euo
 }
 
@@ -748,6 +763,9 @@ func (euo *EventsUpdateOne) sqlSave(ctx context.Context) (_node *Events, err err
 	}
 	if value, ok := euo.mutation.UpdatedAt(); ok {
 		_spec.SetField(events.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if value, ok := euo.mutation.WorkflowID(); ok {
+		_spec.SetField(events.FieldWorkflowID, field.TypeUUID, value)
 	}
 	if euo.mutation.WfeventswaitCleared() {
 		edge := &sqlgraph.EdgeSpec{

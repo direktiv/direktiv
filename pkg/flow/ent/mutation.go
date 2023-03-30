@@ -68,6 +68,8 @@ type AnnotationMutation struct {
 	clearedFields    map[string]struct{}
 	namespace        *uuid.UUID
 	clearednamespace bool
+	instance         *uuid.UUID
+	clearedinstance  bool
 	done             bool
 	oldValue         func(context.Context) (*Annotation, error)
 	predicates       []predicate.Annotation
@@ -488,6 +490,45 @@ func (m *AnnotationMutation) ResetNamespace() {
 	m.clearednamespace = false
 }
 
+// SetInstanceID sets the "instance" edge to the Instance entity by id.
+func (m *AnnotationMutation) SetInstanceID(id uuid.UUID) {
+	m.instance = &id
+}
+
+// ClearInstance clears the "instance" edge to the Instance entity.
+func (m *AnnotationMutation) ClearInstance() {
+	m.clearedinstance = true
+}
+
+// InstanceCleared reports if the "instance" edge to the Instance entity was cleared.
+func (m *AnnotationMutation) InstanceCleared() bool {
+	return m.clearedinstance
+}
+
+// InstanceID returns the "instance" edge ID in the mutation.
+func (m *AnnotationMutation) InstanceID() (id uuid.UUID, exists bool) {
+	if m.instance != nil {
+		return *m.instance, true
+	}
+	return
+}
+
+// InstanceIDs returns the "instance" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// InstanceID instead. It exists only for internal usage by the builders.
+func (m *AnnotationMutation) InstanceIDs() (ids []uuid.UUID) {
+	if id := m.instance; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetInstance resets all changes to the "instance" edge.
+func (m *AnnotationMutation) ResetInstance() {
+	m.instance = nil
+	m.clearedinstance = false
+}
+
 // Where appends a list predicates to the AnnotationMutation builder.
 func (m *AnnotationMutation) Where(ps ...predicate.Annotation) {
 	m.predicates = append(m.predicates, ps...)
@@ -723,9 +764,12 @@ func (m *AnnotationMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *AnnotationMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.namespace != nil {
 		edges = append(edges, annotation.EdgeNamespace)
+	}
+	if m.instance != nil {
+		edges = append(edges, annotation.EdgeInstance)
 	}
 	return edges
 }
@@ -738,13 +782,17 @@ func (m *AnnotationMutation) AddedIDs(name string) []ent.Value {
 		if id := m.namespace; id != nil {
 			return []ent.Value{*id}
 		}
+	case annotation.EdgeInstance:
+		if id := m.instance; id != nil {
+			return []ent.Value{*id}
+		}
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *AnnotationMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	return edges
 }
 
@@ -756,9 +804,12 @@ func (m *AnnotationMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *AnnotationMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.clearednamespace {
 		edges = append(edges, annotation.EdgeNamespace)
+	}
+	if m.clearedinstance {
+		edges = append(edges, annotation.EdgeInstance)
 	}
 	return edges
 }
@@ -769,6 +820,8 @@ func (m *AnnotationMutation) EdgeCleared(name string) bool {
 	switch name {
 	case annotation.EdgeNamespace:
 		return m.clearednamespace
+	case annotation.EdgeInstance:
+		return m.clearedinstance
 	}
 	return false
 }
@@ -780,6 +833,9 @@ func (m *AnnotationMutation) ClearEdge(name string) error {
 	case annotation.EdgeNamespace:
 		m.ClearNamespace()
 		return nil
+	case annotation.EdgeInstance:
+		m.ClearInstance()
+		return nil
 	}
 	return fmt.Errorf("unknown Annotation unique edge %s", name)
 }
@@ -790,6 +846,9 @@ func (m *AnnotationMutation) ResetEdge(name string) error {
 	switch name {
 	case annotation.EdgeNamespace:
 		m.ResetNamespace()
+		return nil
+	case annotation.EdgeInstance:
+		m.ResetInstance()
 		return nil
 	}
 	return fmt.Errorf("unknown Annotation edge %s", name)
@@ -1842,6 +1901,7 @@ type EventsMutation struct {
 	addcount            *int
 	created_at          *time.Time
 	updated_at          *time.Time
+	workflow_id         *uuid.UUID
 	clearedFields       map[string]struct{}
 	wfeventswait        map[uuid.UUID]struct{}
 	removedwfeventswait map[uuid.UUID]struct{}
@@ -2238,6 +2298,42 @@ func (m *EventsMutation) ResetUpdatedAt() {
 	m.updated_at = nil
 }
 
+// SetWorkflowID sets the "workflow_id" field.
+func (m *EventsMutation) SetWorkflowID(u uuid.UUID) {
+	m.workflow_id = &u
+}
+
+// WorkflowID returns the value of the "workflow_id" field in the mutation.
+func (m *EventsMutation) WorkflowID() (r uuid.UUID, exists bool) {
+	v := m.workflow_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWorkflowID returns the old "workflow_id" field's value of the Events entity.
+// If the Events object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EventsMutation) OldWorkflowID(ctx context.Context) (v *uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldWorkflowID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldWorkflowID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWorkflowID: %w", err)
+	}
+	return oldValue.WorkflowID, nil
+}
+
+// ResetWorkflowID resets all changes to the "workflow_id" field.
+func (m *EventsMutation) ResetWorkflowID() {
+	m.workflow_id = nil
+}
+
 // AddWfeventswaitIDs adds the "wfeventswait" edge to the EventsWait entity by ids.
 func (m *EventsMutation) AddWfeventswaitIDs(ids ...uuid.UUID) {
 	if m.wfeventswait == nil {
@@ -2389,7 +2485,7 @@ func (m *EventsMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *EventsMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 7)
 	if m.events != nil {
 		fields = append(fields, events.FieldEvents)
 	}
@@ -2407,6 +2503,9 @@ func (m *EventsMutation) Fields() []string {
 	}
 	if m.updated_at != nil {
 		fields = append(fields, events.FieldUpdatedAt)
+	}
+	if m.workflow_id != nil {
+		fields = append(fields, events.FieldWorkflowID)
 	}
 	return fields
 }
@@ -2428,6 +2527,8 @@ func (m *EventsMutation) Field(name string) (ent.Value, bool) {
 		return m.CreatedAt()
 	case events.FieldUpdatedAt:
 		return m.UpdatedAt()
+	case events.FieldWorkflowID:
+		return m.WorkflowID()
 	}
 	return nil, false
 }
@@ -2449,6 +2550,8 @@ func (m *EventsMutation) OldField(ctx context.Context, name string) (ent.Value, 
 		return m.OldCreatedAt(ctx)
 	case events.FieldUpdatedAt:
 		return m.OldUpdatedAt(ctx)
+	case events.FieldWorkflowID:
+		return m.OldWorkflowID(ctx)
 	}
 	return nil, fmt.Errorf("unknown Events field %s", name)
 }
@@ -2499,6 +2602,13 @@ func (m *EventsMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetUpdatedAt(v)
+		return nil
+	case events.FieldWorkflowID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWorkflowID(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Events field %s", name)
@@ -2590,6 +2700,9 @@ func (m *EventsMutation) ResetField(name string) error {
 		return nil
 	case events.FieldUpdatedAt:
 		m.ResetUpdatedAt()
+		return nil
+	case events.FieldWorkflowID:
+		m.ResetWorkflowID()
 		return nil
 	}
 	return fmt.Errorf("unknown Events field %s", name)
@@ -3115,6 +3228,8 @@ type InstanceMutation struct {
 	invoker               *string
 	invokerState          *string
 	callpath              *string
+	workflow_id           *uuid.UUID
+	revision_id           *uuid.UUID
 	clearedFields         map[string]struct{}
 	namespace             *uuid.UUID
 	clearednamespace      bool
@@ -3682,6 +3797,78 @@ func (m *InstanceMutation) ResetCallpath() {
 	delete(m.clearedFields, instance.FieldCallpath)
 }
 
+// SetWorkflowID sets the "workflow_id" field.
+func (m *InstanceMutation) SetWorkflowID(u uuid.UUID) {
+	m.workflow_id = &u
+}
+
+// WorkflowID returns the value of the "workflow_id" field in the mutation.
+func (m *InstanceMutation) WorkflowID() (r uuid.UUID, exists bool) {
+	v := m.workflow_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWorkflowID returns the old "workflow_id" field's value of the Instance entity.
+// If the Instance object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InstanceMutation) OldWorkflowID(ctx context.Context) (v *uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldWorkflowID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldWorkflowID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWorkflowID: %w", err)
+	}
+	return oldValue.WorkflowID, nil
+}
+
+// ResetWorkflowID resets all changes to the "workflow_id" field.
+func (m *InstanceMutation) ResetWorkflowID() {
+	m.workflow_id = nil
+}
+
+// SetRevisionID sets the "revision_id" field.
+func (m *InstanceMutation) SetRevisionID(u uuid.UUID) {
+	m.revision_id = &u
+}
+
+// RevisionID returns the value of the "revision_id" field in the mutation.
+func (m *InstanceMutation) RevisionID() (r uuid.UUID, exists bool) {
+	v := m.revision_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRevisionID returns the old "revision_id" field's value of the Instance entity.
+// If the Instance object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InstanceMutation) OldRevisionID(ctx context.Context) (v *uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRevisionID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRevisionID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRevisionID: %w", err)
+	}
+	return oldValue.RevisionID, nil
+}
+
+// ResetRevisionID resets all changes to the "revision_id" field.
+func (m *InstanceMutation) ResetRevisionID() {
+	m.revision_id = nil
+}
+
 // SetNamespaceID sets the "namespace" edge to the Namespace entity by id.
 func (m *InstanceMutation) SetNamespaceID(id uuid.UUID) {
 	m.namespace = &id
@@ -4049,7 +4236,7 @@ func (m *InstanceMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *InstanceMutation) Fields() []string {
-	fields := make([]string, 0, 10)
+	fields := make([]string, 0, 12)
 	if m.created_at != nil {
 		fields = append(fields, instance.FieldCreatedAt)
 	}
@@ -4080,6 +4267,12 @@ func (m *InstanceMutation) Fields() []string {
 	if m.callpath != nil {
 		fields = append(fields, instance.FieldCallpath)
 	}
+	if m.workflow_id != nil {
+		fields = append(fields, instance.FieldWorkflowID)
+	}
+	if m.revision_id != nil {
+		fields = append(fields, instance.FieldRevisionID)
+	}
 	return fields
 }
 
@@ -4108,6 +4301,10 @@ func (m *InstanceMutation) Field(name string) (ent.Value, bool) {
 		return m.InvokerState()
 	case instance.FieldCallpath:
 		return m.Callpath()
+	case instance.FieldWorkflowID:
+		return m.WorkflowID()
+	case instance.FieldRevisionID:
+		return m.RevisionID()
 	}
 	return nil, false
 }
@@ -4137,6 +4334,10 @@ func (m *InstanceMutation) OldField(ctx context.Context, name string) (ent.Value
 		return m.OldInvokerState(ctx)
 	case instance.FieldCallpath:
 		return m.OldCallpath(ctx)
+	case instance.FieldWorkflowID:
+		return m.OldWorkflowID(ctx)
+	case instance.FieldRevisionID:
+		return m.OldRevisionID(ctx)
 	}
 	return nil, fmt.Errorf("unknown Instance field %s", name)
 }
@@ -4215,6 +4416,20 @@ func (m *InstanceMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetCallpath(v)
+		return nil
+	case instance.FieldWorkflowID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWorkflowID(v)
+		return nil
+	case instance.FieldRevisionID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRevisionID(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Instance field %s", name)
@@ -4333,6 +4548,12 @@ func (m *InstanceMutation) ResetField(name string) error {
 		return nil
 	case instance.FieldCallpath:
 		m.ResetCallpath()
+		return nil
+	case instance.FieldWorkflowID:
+		m.ResetWorkflowID()
+		return nil
+	case instance.FieldRevisionID:
+		m.ResetRevisionID()
 		return nil
 	}
 	return fmt.Errorf("unknown Instance field %s", name)
@@ -5931,6 +6152,8 @@ type LogMsgMutation struct {
 	rootInstanceId      *string
 	logInstanceCallPath *string
 	tags                *map[string]string
+	workflow_id         *uuid.UUID
+	mirror_activity_id  *uuid.UUID
 	clearedFields       map[string]struct{}
 	namespace           *uuid.UUID
 	clearednamespace    bool
@@ -6274,6 +6497,78 @@ func (m *LogMsgMutation) ResetTags() {
 	delete(m.clearedFields, logmsg.FieldTags)
 }
 
+// SetWorkflowID sets the "workflow_id" field.
+func (m *LogMsgMutation) SetWorkflowID(u uuid.UUID) {
+	m.workflow_id = &u
+}
+
+// WorkflowID returns the value of the "workflow_id" field in the mutation.
+func (m *LogMsgMutation) WorkflowID() (r uuid.UUID, exists bool) {
+	v := m.workflow_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWorkflowID returns the old "workflow_id" field's value of the LogMsg entity.
+// If the LogMsg object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LogMsgMutation) OldWorkflowID(ctx context.Context) (v *uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldWorkflowID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldWorkflowID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWorkflowID: %w", err)
+	}
+	return oldValue.WorkflowID, nil
+}
+
+// ResetWorkflowID resets all changes to the "workflow_id" field.
+func (m *LogMsgMutation) ResetWorkflowID() {
+	m.workflow_id = nil
+}
+
+// SetMirrorActivityID sets the "mirror_activity_id" field.
+func (m *LogMsgMutation) SetMirrorActivityID(u uuid.UUID) {
+	m.mirror_activity_id = &u
+}
+
+// MirrorActivityID returns the value of the "mirror_activity_id" field in the mutation.
+func (m *LogMsgMutation) MirrorActivityID() (r uuid.UUID, exists bool) {
+	v := m.mirror_activity_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMirrorActivityID returns the old "mirror_activity_id" field's value of the LogMsg entity.
+// If the LogMsg object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LogMsgMutation) OldMirrorActivityID(ctx context.Context) (v *uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMirrorActivityID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMirrorActivityID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMirrorActivityID: %w", err)
+	}
+	return oldValue.MirrorActivityID, nil
+}
+
+// ResetMirrorActivityID resets all changes to the "mirror_activity_id" field.
+func (m *LogMsgMutation) ResetMirrorActivityID() {
+	m.mirror_activity_id = nil
+}
+
 // SetNamespaceID sets the "namespace" edge to the Namespace entity by id.
 func (m *LogMsgMutation) SetNamespaceID(id uuid.UUID) {
 	m.namespace = &id
@@ -6371,7 +6666,7 @@ func (m *LogMsgMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *LogMsgMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 8)
 	if m.t != nil {
 		fields = append(fields, logmsg.FieldT)
 	}
@@ -6389,6 +6684,12 @@ func (m *LogMsgMutation) Fields() []string {
 	}
 	if m.tags != nil {
 		fields = append(fields, logmsg.FieldTags)
+	}
+	if m.workflow_id != nil {
+		fields = append(fields, logmsg.FieldWorkflowID)
+	}
+	if m.mirror_activity_id != nil {
+		fields = append(fields, logmsg.FieldMirrorActivityID)
 	}
 	return fields
 }
@@ -6410,6 +6711,10 @@ func (m *LogMsgMutation) Field(name string) (ent.Value, bool) {
 		return m.LogInstanceCallPath()
 	case logmsg.FieldTags:
 		return m.Tags()
+	case logmsg.FieldWorkflowID:
+		return m.WorkflowID()
+	case logmsg.FieldMirrorActivityID:
+		return m.MirrorActivityID()
 	}
 	return nil, false
 }
@@ -6431,6 +6736,10 @@ func (m *LogMsgMutation) OldField(ctx context.Context, name string) (ent.Value, 
 		return m.OldLogInstanceCallPath(ctx)
 	case logmsg.FieldTags:
 		return m.OldTags(ctx)
+	case logmsg.FieldWorkflowID:
+		return m.OldWorkflowID(ctx)
+	case logmsg.FieldMirrorActivityID:
+		return m.OldMirrorActivityID(ctx)
 	}
 	return nil, fmt.Errorf("unknown LogMsg field %s", name)
 }
@@ -6481,6 +6790,20 @@ func (m *LogMsgMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetTags(v)
+		return nil
+	case logmsg.FieldWorkflowID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWorkflowID(v)
+		return nil
+	case logmsg.FieldMirrorActivityID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMirrorActivityID(v)
 		return nil
 	}
 	return fmt.Errorf("unknown LogMsg field %s", name)
@@ -6557,6 +6880,12 @@ func (m *LogMsgMutation) ResetField(name string) error {
 		return nil
 	case logmsg.FieldTags:
 		m.ResetTags()
+		return nil
+	case logmsg.FieldWorkflowID:
+		m.ResetWorkflowID()
+		return nil
+	case logmsg.FieldMirrorActivityID:
+		m.ResetMirrorActivityID()
 		return nil
 	}
 	return fmt.Errorf("unknown LogMsg field %s", name)
