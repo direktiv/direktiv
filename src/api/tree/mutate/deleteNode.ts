@@ -1,9 +1,15 @@
-import { NodeSchemaType, TreeNodeDeletedSchema } from "../schema";
+import {
+  NodeSchemaType,
+  TreeListSchemaType,
+  TreeNodeDeletedSchema,
+} from "../schema";
+import { apiFactory, defaultKeys } from "../../utils";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { apiFactory } from "../../utils";
+import { analyzePath } from "../../../util/router/utils";
 import { forceSlashIfPath } from "../utils";
+import { namespaceKeys } from "..";
 import { useApiKey } from "../../../util/store/apiKey";
-import { useMutation } from "@tanstack/react-query";
 import { useNamespace } from "../../../util/store/namespace";
 import { useToast } from "../../../design/Toast";
 
@@ -22,6 +28,7 @@ export const useDeleteNode = ({
   const apiKey = useApiKey();
   const namespace = useNamespace();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   if (!namespace) {
     throw new Error("namespace is undefined");
@@ -37,7 +44,26 @@ export const useDeleteNode = ({
           namespace: namespace,
         },
       }),
-    onSuccess(_, variables) {
+    onSuccess(data, variables) {
+      queryClient.setQueryData<TreeListSchemaType>(
+        namespaceKeys.all(
+          apiKey ?? defaultKeys.apiKey,
+          namespace,
+          variables.node.parent ?? ""
+        ),
+        (oldData) => {
+          const oldChildren = oldData?.children;
+          return {
+            ...oldData,
+            children: {
+              ...oldData?.children,
+              results: oldChildren?.results.filter(
+                (child) => child.name !== variables.node.name
+              ),
+            },
+          };
+        }
+      );
       toast({
         title: `${
           variables.node.type === "workflow" ? "workflow" : "directory"
