@@ -26,6 +26,19 @@ type RootQuery struct {
 	db           *gorm.DB
 }
 
+func (q *RootQuery) IsEmpty(ctx context.Context) (bool, error) {
+	// check if root exists.
+	if err := q.checkRootExists(ctx); err != nil {
+		return false, err
+	}
+	count := 0
+	tx := q.db.Raw("SELECT count(id) FROM files WHERE root_id = ?", q.rootID).Scan(&count)
+	if tx.Error != nil {
+		return false, tx.Error
+	}
+	return count == 0, nil
+}
+
 var _ filestore.RootQuery = &RootQuery{} // Ensures RootQuery struct conforms to filestore.RootQuery interface.
 
 func (q *RootQuery) Delete(ctx context.Context) error {

@@ -56,6 +56,7 @@ type RootQuery interface {
 	ReadDirectory(ctx context.Context, path string) ([]*File, error)
 	Delete(ctx context.Context) error
 	CalculateChecksumsMap(ctx context.Context, path string) (map[string]string, error)
+	IsEmpty(ctx context.Context) (bool, error)
 }
 
 type CalculateChecksumFunc func([]byte) []byte

@@ -2,6 +2,7 @@ package flow
 
 import (
 	"context"
+	"errors"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
@@ -240,7 +241,10 @@ func (flow *flow) CreateNamespace(ctx context.Context, req *grpc.CreateNamespace
 		return nil, err
 	}
 
-	// TODO, yassir, create root.
+	_, err = flow.fStore.CreateRoot(ctx, x.ID)
+	if err != nil {
+		return nil, err
+	}
 
 	flow.logger.Infof(ctx, flow.ID, flow.GetAttributes(), "Created namespace '%s'.", ns.Name)
 	flow.pubsub.NotifyNamespaces()
@@ -277,8 +281,13 @@ func (flow *flow) DeleteNamespace(ctx context.Context, req *grpc.DeleteNamespace
 
 	clients := flow.edb.Clients(ctx)
 
-	if false {
-		// check if force argument was set and empty root.
+	isEmpty, err := flow.fStore.ForRootID(ns.ID).IsEmpty(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if !req.GetRecursive() && !isEmpty {
+		return nil, errors.New("refusing to delete non-empty namespace without explicit recursive argument")
 	}
 
 	err = clients.Namespace.DeleteOneID(ns.ID).Exec(ctx)
@@ -286,9 +295,12 @@ func (flow *flow) DeleteNamespace(ctx context.Context, req *grpc.DeleteNamespace
 		return nil, err
 	}
 
-	// TODO, yassir, delete root.
-
 	err = tx.Commit()
+	if err != nil {
+		return nil, err
+	}
+
+	err = flow.fStore.ForRootID(ns.ID).Delete(ctx)
 	if err != nil {
 		return nil, err
 	}
