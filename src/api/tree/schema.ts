@@ -32,11 +32,16 @@ export const TreeFolderCreatedSchema = z.object({
 
 export const TreeNodeDeletedSchema = z.null();
 
+export const TreeNodeRenameSchema = z.object({
+  namespace: z.string(),
+  node: NodeSchema,
+});
+
 export const fileNameSchema = z
   .string()
   .regex(/^(([a-z][a-z0-9_\-.]*[a-z0-9])|([a-z]))$/, {
     message:
-      "Please use a folder name that starts with a lowercase letter, use - or _ instead of whitespaces.",
+      "Please use a name that only contains lowercase letters, use - or _ instead of whitespaces.",
   });
 
 export type TreeListSchemaType = z.infer<typeof TreeListSchema>;

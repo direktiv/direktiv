@@ -1,8 +1,8 @@
-import { forceSlashIfPath } from "./utils";
+import { forceLeadingSlash } from "./utils";
 
 export const treeKeys = {
   all: (apiKey: string, namespace: string, path: string) =>
     [
-      { scope: "tree", apiKey, namespace, path: forceSlashIfPath(path) },
+      { scope: "tree", apiKey, namespace, path: forceLeadingSlash(path) },
     ] as const,
 };

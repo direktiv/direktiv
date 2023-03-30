@@ -1,6 +1,6 @@
 import { TreeFolderCreatedSchema } from "../schema";
 import { apiFactory } from "../../utils";
-import { forceSlashIfPath } from "../utils";
+import { forceLeadingSlash } from "../utils";
 import { useApiKey } from "../../../util/store/apiKey";
 import { useMutation } from "@tanstack/react-query";
 import { useNamespace } from "../../../util/store/namespace";
@@ -16,7 +16,7 @@ const createDirectory = apiFactory({
     path?: string;
     directory: string;
   }) =>
-    `/api/namespaces/${namespace}/tree${forceSlashIfPath(
+    `/api/namespaces/${namespace}/tree${forceLeadingSlash(
       path
     )}/${directory}?op=create-directory`,
   method: "PUT",
