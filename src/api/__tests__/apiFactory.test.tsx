@@ -23,6 +23,7 @@ const apiEndpoint = "http://localhost/my-api";
 const apiEndpoint404 = "http://localhost/404";
 const apiEndpointWithDynamicSegment = "http://localhost/this-is-dynamic/my-api";
 const apiEndpointEmptyResponse = "http://localhost/empty-response";
+const apiEndpointTextResponse = "http://localhost/text-response";
 
 const testApi = setupServer(
   rest.get(apiEndpoint, (req, res, ctx) =>
@@ -44,7 +45,10 @@ const testApi = setupServer(
       : res(ctx.status(401))
   ),
   rest.get(apiEndpoint404, (_req, res, ctx) => res(ctx.status(404))),
-  rest.get(apiEndpointEmptyResponse, (_req, res, ctx) => res(ctx.status(204)))
+  rest.get(apiEndpointEmptyResponse, (_req, res, ctx) => res(ctx.status(204))),
+  rest.get(apiEndpointTextResponse, (_req, res, ctx) =>
+    res(ctx.text("this is a text response"))
+  )
 );
 
 beforeAll(() => {
@@ -78,6 +82,12 @@ const emptyResponse = apiFactory({
   pathFn: () => apiEndpointEmptyResponse,
   method: "GET",
   schema: z.null(),
+});
+
+const textResponse = apiFactory({
+  pathFn: () => apiEndpointTextResponse,
+  method: "GET",
+  schema: z.string(),
 });
 
 const api404 = apiFactory({
@@ -162,6 +172,26 @@ describe("processApiResponse", () => {
     await waitFor(() => {
       expect(result.current.isSuccess).toBe(true);
       expect(result.current.data).toBe(null);
+    });
+  });
+
+  test("api response is plain text", async () => {
+    const useCallWithTextResponse = () =>
+      useQuery({
+        queryKey: ["textResponse"],
+        queryFn: () =>
+          textResponse({
+            params: undefined,
+            pathParams: undefined,
+          }),
+      });
+
+    const { result } = renderHook(() => useCallWithTextResponse(), {
+      wrapper: UseQueryWrapper,
+    });
+    await waitFor(() => {
+      expect(result.current.isSuccess).toBe(true);
+      expect(result.current.data).toBe("this is a text response");
     });
   });
 

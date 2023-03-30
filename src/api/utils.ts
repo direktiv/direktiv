@@ -63,15 +63,18 @@ export const apiFactory =
     });
 
     if (res.ok) {
-      let jsonResult = null;
+      // if we can not evaluate the response, we have null as the default
+      let parsedResponse = null;
+      const textResult = await res.text();
       try {
-        jsonResult = await res.json();
-        // this is an expected error that does not need any extra handling
-        // eslint-disable-next-line no-empty
-      } catch (e) {}
-
+        // try to parse the response as json
+        parsedResponse = JSON.parse(textResult);
+      } catch (e) {
+        // We use the text response if its not an empt string
+        if (textResult !== "") parsedResponse = textResult;
+      }
       try {
-        return schema.parse(jsonResult);
+        return schema.parse(parsedResponse);
       } catch (error) {
         console.error(error);
         return Promise.reject(
