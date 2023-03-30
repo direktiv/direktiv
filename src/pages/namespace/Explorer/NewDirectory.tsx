@@ -67,6 +67,7 @@ const NewDirectory = ({
   // you have already submitted the form (errors will first show up after submit)
   const disableSubmit = !isDirty || (isSubmitted && !isValid);
 
+  const formId = `new-dir-${path}`;
   return (
     <>
       <DialogHeader>
@@ -81,7 +82,7 @@ const NewDirectory = ({
         </Alert>
       )}
       <div className="my-3">
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form id={formId} onSubmit={handleSubmit(onSubmit)}>
           <fieldset className="flex items-center gap-5">
             <label className="w-[90px] text-right text-[15px]" htmlFor="name">
               Name
@@ -94,7 +95,12 @@ const NewDirectory = ({
         <DialogClose asChild>
           <Button variant="ghost">Cancel</Button>
         </DialogClose>
-        <Button type="submit" disabled={disableSubmit} loading={isLoading}>
+        <Button
+          type="submit"
+          disabled={disableSubmit}
+          loading={isLoading}
+          form={formId}
+        >
           {!isLoading && <PlusCircle />}
           Create
         </Button>
