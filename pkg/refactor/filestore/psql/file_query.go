@@ -49,8 +49,8 @@ func (q *FileQuery) GetRevision(ctx context.Context, id uuid.UUID) (*filestore.R
 }
 
 func (q *FileQuery) GetAllRevisions(ctx context.Context) ([]*filestore.Revision, error) {
-	//TODO implement me
-	//panic("implement me")
+	// TODO implement me
+	// panic("implement me")
 	return nil, nil
 }
 

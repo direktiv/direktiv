@@ -7,11 +7,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"io"
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/binding"

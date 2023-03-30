@@ -3,6 +3,7 @@ package flow
 import (
 	"context"
 	"errors"
+
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/functions"
 	"github.com/lib/pq"

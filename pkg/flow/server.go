@@ -4,15 +4,16 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/direktiv/direktiv/pkg/refactor/filestore"
-	"github.com/direktiv/direktiv/pkg/refactor/filestore/psql"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
 	"os"
 	"runtime"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/direktiv/direktiv/pkg/refactor/filestore"
+	"github.com/direktiv/direktiv/pkg/refactor/filestore/psql"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/direktiv/direktiv/pkg/dlog"
@@ -149,8 +150,9 @@ func (srv *server) start(ctx context.Context) error {
 		DSN:                  db,
 		PreferSimpleProtocol: false, // disables implicit prepared statement usage
 	}), &gorm.Config{})
-
-	fmt.Printf(">>>>>>>>>>>> %s\n", util.DBConn)
+	if err != nil {
+		return err
+	}
 
 	srv.fStore, err = psql.NewSQLFileStore(gormDb)
 	if err != nil {
@@ -257,7 +259,7 @@ func (srv *server) start(ctx context.Context) error {
 
 	go srv.cronPoller()
 	// TODO: yassir, need refactor.
-	//go srv.syncerCronPoller()
+	// go srv.syncerCronPoller()
 
 	go func() {
 		defer wg.Done()
@@ -415,20 +417,20 @@ func (srv *server) registerFunctions() {
 	srv.pubsub.RegisterFunction(pubsub.PubsubDeleteInstanceTimersFunction, srv.timers.deleteInstanceTimersHandler)
 	srv.pubsub.RegisterFunction(pubsub.PubsubCancelWorkflowFunction, srv.engine.finishCancelWorkflow)
 	// TODO: yassir, need refactor.
-	//srv.pubsub.RegisterFunction(pubsub.PubsubConfigureRouterFunction, srv.flow.configureRouterHandler)
+	// srv.pubsub.RegisterFunction(pubsub.PubsubConfigureRouterFunction, srv.flow.configureRouterHandler)
 	srv.pubsub.RegisterFunction(pubsub.PubsubUpdateEventDelays, srv.events.updateEventDelaysHandler)
 
 	srv.timers.registerFunction(timeoutFunction, srv.engine.timeoutHandler)
 	srv.timers.registerFunction(sleepWakeupFunction, srv.engine.sleepWakeup)
 	// TODO: yassir, need refactor.
-	//srv.timers.registerFunction(wfCron, srv.flow.cronHandler)
+	// srv.timers.registerFunction(wfCron, srv.flow.cronHandler)
 	srv.timers.registerFunction(sendEventFunction, srv.events.sendEvent)
 	srv.timers.registerFunction(retryWakeupFunction, srv.flow.engine.retryWakeup)
 
 	srv.pubsub.RegisterFunction(pubsub.PubsubDeleteActivityTimersFunction, srv.timers.deleteActivityTimersHandler)
 	// TODO: yassir, need refactor.
-	//srv.timers.registerFunction(syncerTimeoutFunction, srv.syncer.timeoutHandler)
-	//srv.timers.registerFunction(syncerCron, srv.syncer.cronHandler)
+	// srv.timers.registerFunction(syncerTimeoutFunction, srv.syncer.timeoutHandler)
+	// srv.timers.registerFunction(syncerCron, srv.syncer.cronHandler)
 
 	srv.pubsub.RegisterFunction(deleteFilterCache, srv.flow.deleteCache)
 	srv.pubsub.RegisterFunction(deleteFilterCacheNamespace, srv.flow.deleteCacheNamespace)

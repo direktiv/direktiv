@@ -92,7 +92,7 @@ func (events *events) deleteEventListeners(ctx context.Context, cached *database
 }
 
 func (events *events) deleteWorkflowEventListeners(ctx context.Context, cached *database.CacheData) error {
-	//TODO: yassir, need refactor.
+	// TODO: yassir, need refactor.
 	return nil
 	//clients := events.edb.Clients(ctx)
 	//
@@ -213,8 +213,8 @@ func (events *events) addInstanceEventListener(ctx context.Context, cached *data
 
 	_, err := clients.Events.Create().
 		SetNamespaceID(cached.Namespace.ID).
-		//TODO: yassir, need refactor.
-		//SetWorkflowID(cached.Workflow.ID).
+		// TODO: yassir, need refactor.
+		// SetWorkflowID(cached.Workflow.ID).
 		SetInstanceID(cached.Instance.ID).
 		SetEvents(ev).
 		SetCorrelations([]string{}).

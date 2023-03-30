@@ -62,7 +62,7 @@ func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.Variab
 			// }
 
 			// TODO: yassir, refactor fix.
-			//ref, err = clients.VarRef.Query().Where(entvar.HasWorkflowWith(entwf.ID(im.cached.Workflow.ID))).Where(entvar.NameEQ(key)).WithVardata().Only(ctx)
+			// ref, err = clients.VarRef.Query().Where(entvar.HasWorkflowWith(entwf.ID(im.cached.Workflow.ID))).Where(entvar.NameEQ(key)).WithVardata().Only(ctx)
 
 		case util.VarScopeNamespace:
 

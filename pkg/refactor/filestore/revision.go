@@ -24,7 +24,7 @@ func (tags RevisionTags) RemoveTag(tag string) RevisionTags {
 	tag = strings.TrimSpace(tag)
 
 	newTags := strings.Replace(string(tags), ","+tag, "", 1)
-	newTags = strings.Replace(string(tags), tag+",", "", 1)
+	newTags = strings.Replace(newTags, tag+",", "", 1)
 
 	return RevisionTags(newTags)
 }

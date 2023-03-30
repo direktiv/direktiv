@@ -44,13 +44,16 @@ func assertRootCorrectFileCreation(t *testing.T, fs filestore.FileStore, root *f
 
 	file, _, err := fs.ForRootID(root.ID).CreateFile(context.Background(), path, filestore.FileType(typ), bytes.NewReader(data))
 	if err != nil {
-		t.Fatalf("unexpected CreateFile() error: %v", err)
+		t.Errorf("unexpected CreateFile() error: %v", err)
+		return
 	}
 	if file == nil {
-		t.Fatalf("unexpected nil file CreateFile()")
+		t.Errorf("unexpected nil file CreateFile()")
+		return
 	}
 	if file.Path != path {
-		t.Fatalf("unexpected file.Path, got: >%s<, want: >%s<", file.Path, path)
+		t.Errorf("unexpected file.Path, got: >%s<, want: >%s<", file.Path, path)
+		return
 	}
 
 	if typ != "directory" {
@@ -58,18 +61,22 @@ func assertRootCorrectFileCreation(t *testing.T, fs filestore.FileStore, root *f
 		createdData, _ := io.ReadAll(reader)
 		if string(createdData) != string(data) {
 			t.Errorf("unexpected GetPath(), got: >%s<, want: >%s<", createdData, data)
+			return
 		}
 	}
 
 	file, err = fs.ForRootID(root.ID).GetFile(context.Background(), path)
 	if err != nil {
 		t.Errorf("unexpected GetFile() error: %v", err)
+		return
 	}
 	if file == nil {
 		t.Errorf("unexpected nil file GetFile()")
+		return
 	}
 	if file.Path != path {
 		t.Errorf("unexpected file.Path, got: >%s<, want: >%s<", file.Path, path)
+		return
 	}
 }
 

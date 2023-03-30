@@ -2,8 +2,9 @@ package mirror_test
 
 import (
 	"context"
-	"github.com/direktiv/direktiv/pkg/refactor/ignorefile"
 	"testing"
+
+	"github.com/direktiv/direktiv/pkg/refactor/ignorefile"
 
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore/psql"

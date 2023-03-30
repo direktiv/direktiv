@@ -63,6 +63,7 @@ type CalculateChecksumFunc func([]byte) []byte
 
 var Sha256CalculateChecksum CalculateChecksumFunc = func(data []byte) []byte {
 	res := fmt.Sprintf("%x", sha256.Sum256(data))
+
 	return []byte(res)
 }
 

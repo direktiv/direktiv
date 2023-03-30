@@ -303,7 +303,7 @@ type entInodeAnnotationQuerier struct {
 func (x *entInodeAnnotationQuerier) QueryAnnotations() *ent.AnnotationQuery {
 	// TODO: yassir, need refactor.
 	return nil
-	//return x.clients.Annotation.Query().Where(entnote.HasInodeWith(entino.ID(x.cached.Inode().ID)))
+	// return x.clients.Annotation.Query().Where(entnote.HasInodeWith(entino.ID(x.cached.Inode().ID)))
 }
 
 type entWorkflowAnnotationQuerier struct {
@@ -314,7 +314,7 @@ type entWorkflowAnnotationQuerier struct {
 func (x *entWorkflowAnnotationQuerier) QueryAnnotations() *ent.AnnotationQuery {
 	// TODO: yassir, need refactor.
 	return nil
-	//return x.clients.Annotation.Query().Where(entnote.HasWorkflowWith(entwf.ID(x.cached.Workflow.ID)))
+	// return x.clients.Annotation.Query().Where(entnote.HasWorkflowWith(entwf.ID(x.cached.Workflow.ID)))
 }
 
 type entInstanceAnnotationQuerier struct {
@@ -356,7 +356,7 @@ func (flow *flow) SetAnnotation(ctx context.Context, q annotationQuerier, key st
 			query = query.SetNamespace(v)
 
 		// TODO: yassir, need refactor.
-		//case *ent.Workflow:
+		// case *ent.Workflow:
 		//	query = query.SetWorkflow(v)
 		case *ent.Instance:
 			query = query.SetInstance(v)

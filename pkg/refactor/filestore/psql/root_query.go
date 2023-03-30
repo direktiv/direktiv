@@ -36,6 +36,7 @@ func (q *RootQuery) IsEmpty(ctx context.Context) (bool, error) {
 	if tx.Error != nil {
 		return false, tx.Error
 	}
+
 	return count == 0, nil
 }
 
@@ -253,5 +254,6 @@ func (q *RootQuery) checkRootExists(ctx context.Context) error {
 	if res.Error != nil {
 		return res.Error
 	}
+
 	return nil
 }

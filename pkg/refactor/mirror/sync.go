@@ -4,12 +4,13 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/direktiv/direktiv/pkg/refactor/ignorefile"
 	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/direktiv/direktiv/pkg/refactor/ignorefile"
 
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"go.uber.org/zap"

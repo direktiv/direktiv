@@ -15,12 +15,15 @@ func assertFileStoreCorrectRootCreation(t *testing.T, fs filestore.FileStore, id
 	root, err := fs.CreateRoot(context.Background(), id)
 	if err != nil {
 		t.Errorf("unexpected CreateRoot() error: %v", err)
+		return
 	}
 	if root == nil {
 		t.Errorf("unexpected nil root CreateRoot()")
+		return
 	}
 	if root.ID != id {
 		t.Errorf("unexpected root.ID, got: >%s<, want: >%s<", root.ID, id)
+		return
 	}
 }
 
@@ -30,14 +33,17 @@ func assertFileStoreHasRoot(t *testing.T, fs filestore.FileStore, ids ...uuid.UU
 	all, err := fs.GetAllRoots(context.Background())
 	if err != nil {
 		t.Errorf("unexpected GetAllRoots() error: %v", err)
+		return
 	}
 	if len(all) != len(ids) {
 		t.Errorf("unexpected GetAllRoots() length, got: %d, want: %d", len(all), len(ids))
+		return
 	}
 
 	for i := range ids {
 		if all[i].ID != ids[i] {
 			t.Errorf("unexpected all[%d].ID , got: >%s<, want: >%s<", i, all[i].ID, ids[i])
+			return
 		}
 	}
 }

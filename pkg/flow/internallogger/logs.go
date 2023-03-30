@@ -204,7 +204,7 @@ func (logger *Logger) SendLogMsgToDB(l *logMessage) error {
 	case recipient.Workflow:
 		lc.SetWorkflowID(l.recipientID)
 	// TODO: yassir, need refactor.
-	//case recipient.Mirror:
+	// case recipient.Mirror:
 	//	lc.SetActivityID(l.recipientID)
 	default:
 		logger.sugar.Panicf("recipientType was not set", l.msg, l.tags)
