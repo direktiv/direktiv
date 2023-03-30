@@ -4,7 +4,11 @@ import {
   TreeNodeRenameSchema,
 } from "../schema";
 import { apiFactory, defaultKeys } from "../../utils";
-import { forceLeadingSlash, removeLeadingSlash } from "../utils";
+import {
+  forceLeadingSlash,
+  removeLeadingSlash,
+  removeTrailingSlash,
+} from "../utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { treeKeys } from "..";
@@ -71,9 +75,15 @@ export const useRenameNode = ({
                       if (child.path === variables.node.path) {
                         return {
                           ...data.node,
-                          // there is a bug in the API where the returned data after a rename
-                          // don't update the name and updatedAt
+                          // there is a bug in the API where the returned data after
+                          // a rename is wrong. The name and updatedAt are not updated
+                          // and the parent will have a trailing slash, which it does
+                          // not have in the original data from the tree list
                           name: variables.newName,
+                          parent:
+                            variables.node.parent === "/"
+                              ? "/"
+                              : removeTrailingSlash(variables.node.parent),
                           updatedAt: new Date().toISOString(),
                         };
                       }
