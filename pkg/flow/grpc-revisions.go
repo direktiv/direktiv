@@ -1,5 +1,9 @@
 package flow
 
+// TODO: yassir, refactoring needed.
+
+/*
+
 import (
 	"context"
 	"errors"
@@ -182,3 +186,4 @@ func (flow *flow) DeleteRevision(ctx context.Context, req *grpc.DeleteRevisionRe
 
 	return &resp, nil
 }
+*/

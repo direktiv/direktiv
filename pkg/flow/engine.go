@@ -27,7 +27,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
-	"github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/direktiv/direktiv/pkg/flow/states"
 	"github.com/direktiv/direktiv/pkg/functions"
 	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
@@ -113,7 +112,9 @@ func marshalInstanceInputData(input []byte) string {
 }
 
 func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*instanceMemory, error) {
-	tctx, tx, err := engine.database.Tx(ctx)
+	// TODO: yassir, need refactor.
+	return nil, nil
+	/*tctx, tx, err := engine.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -253,7 +254,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 	if err != nil {
 		return nil, err
 	}
-	return im, nil
+	return im, nil*/
 }
 
 func (engine *engine) start(im *instanceMemory) {
@@ -1052,7 +1053,9 @@ func (engine *engine) wakeEventsWaiter(signature []byte, events []*cloudevents.E
 }
 
 func (engine *engine) EventsInvoke(workflowID string, events ...*cloudevents.Event) {
-	ctx := context.Background()
+	// TODO: yassir, need refactor.
+	return
+	/*ctx := context.Background()
 
 	id, err := uuid.Parse(workflowID)
 	if err != nil {
@@ -1098,7 +1101,7 @@ func (engine *engine) EventsInvoke(workflowID string, events ...*cloudevents.Eve
 		return
 	}
 
-	engine.queue(im)
+	engine.queue(im)*/
 }
 
 func (engine *engine) SetMemory(ctx context.Context, im *instanceMemory, x interface{}) error {

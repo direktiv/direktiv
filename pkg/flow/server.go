@@ -42,7 +42,6 @@ type server struct {
 	locks    *locks
 	timers   *timers
 	engine   *engine
-	syncer   *syncer
 	secrets  *secrets
 	flow     *flow
 	internal *internal
@@ -181,11 +180,12 @@ func (srv *server) start(ctx context.Context) error {
 
 	srv.sugar.Debug("Initializing syncer.")
 
-	srv.syncer, err = initSyncer(srv)
-	if err != nil {
-		return err
-	}
-	defer srv.cleanup(srv.syncer.Close)
+	// TODO: yassir, need refactor.
+	//srv.syncer, err = initSyncer(srv)
+	//if err != nil {
+	//	return err
+	//}
+	//defer srv.cleanup(srv.syncer.Close)
 
 	var lock sync.Mutex
 	var wg sync.WaitGroup
@@ -239,7 +239,8 @@ func (srv *server) start(ctx context.Context) error {
 	srv.registerFunctions()
 
 	go srv.cronPoller()
-	go srv.syncerCronPoller()
+	// TODO: yassir, need refactor.
+	//go srv.syncerCronPoller()
 
 	go func() {
 		defer wg.Done()
@@ -396,18 +397,21 @@ func (srv *server) registerFunctions() {
 	srv.pubsub.RegisterFunction(pubsub.PubsubDeleteTimerFunction, srv.timers.deleteTimerHandler)
 	srv.pubsub.RegisterFunction(pubsub.PubsubDeleteInstanceTimersFunction, srv.timers.deleteInstanceTimersHandler)
 	srv.pubsub.RegisterFunction(pubsub.PubsubCancelWorkflowFunction, srv.engine.finishCancelWorkflow)
-	srv.pubsub.RegisterFunction(pubsub.PubsubConfigureRouterFunction, srv.flow.configureRouterHandler)
+	// TODO: yassir, need refactor.
+	//srv.pubsub.RegisterFunction(pubsub.PubsubConfigureRouterFunction, srv.flow.configureRouterHandler)
 	srv.pubsub.RegisterFunction(pubsub.PubsubUpdateEventDelays, srv.events.updateEventDelaysHandler)
 
 	srv.timers.registerFunction(timeoutFunction, srv.engine.timeoutHandler)
 	srv.timers.registerFunction(sleepWakeupFunction, srv.engine.sleepWakeup)
-	srv.timers.registerFunction(wfCron, srv.flow.cronHandler)
+	// TODO: yassir, need refactor.
+	//srv.timers.registerFunction(wfCron, srv.flow.cronHandler)
 	srv.timers.registerFunction(sendEventFunction, srv.events.sendEvent)
 	srv.timers.registerFunction(retryWakeupFunction, srv.flow.engine.retryWakeup)
 
 	srv.pubsub.RegisterFunction(pubsub.PubsubDeleteActivityTimersFunction, srv.timers.deleteActivityTimersHandler)
-	srv.timers.registerFunction(syncerTimeoutFunction, srv.syncer.timeoutHandler)
-	srv.timers.registerFunction(syncerCron, srv.syncer.cronHandler)
+	// TODO: yassir, need refactor.
+	//srv.timers.registerFunction(syncerTimeoutFunction, srv.syncer.timeoutHandler)
+	//srv.timers.registerFunction(syncerCron, srv.syncer.cronHandler)
 
 	srv.pubsub.RegisterFunction(deleteFilterCache, srv.flow.deleteCache)
 	srv.pubsub.RegisterFunction(deleteFilterCacheNamespace, srv.flow.deleteCacheNamespace)
@@ -421,7 +425,9 @@ func (srv *server) cronPoller() {
 }
 
 func (srv *server) cronPoll() {
-	ctx := context.Background()
+	// TODO: yassir, need refactor.
+	return
+	/*ctx := context.Background()
 
 	clients := srv.edb.Clients(ctx)
 
@@ -439,11 +445,13 @@ func (srv *server) cronPoll() {
 		}
 
 		srv.cronPollerWorkflow(ctx, cached)
-	}
+	}*/
 }
 
 func (srv *server) cronPollerWorkflow(ctx context.Context, cached *database.CacheData) {
-	ms, muxErr, err := srv.validateRouter(ctx, cached)
+	// TODO: yassir, need refactor.
+	return
+	/*ms, muxErr, err := srv.validateRouter(ctx, cached)
 	if err != nil || muxErr != nil {
 		return
 	}
@@ -461,7 +469,7 @@ func (srv *server) cronPollerWorkflow(ctx context.Context, cached *database.Cach
 
 		srv.sugar.Debugf("Loaded cron: %s", cached.Workflow.ID.String())
 
-	}
+	}*/
 }
 
 func unaryInterceptor(ctx context.Context, req interface{}, info *libgrpc.UnaryServerInfo, handler libgrpc.UnaryHandler) (resp interface{}, err error) {

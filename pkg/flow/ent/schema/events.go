@@ -25,6 +25,7 @@ func (Events) Fields() []ent.Field {
 		field.Int("count"),
 		field.Time("created_at").Default(time.Now).Immutable(),
 		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
+		// TODO: check out if Nillable is required here.
 		field.UUID("workflow_id", uuid.UUID{}).Nillable().StorageKey("workflow_id"),
 	}
 }

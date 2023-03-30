@@ -1,5 +1,9 @@
 package flow
 
+// TODO: yassir, refactoring needed.
+
+/*
+
 import (
 	"context"
 	"errors"
@@ -395,3 +399,4 @@ func (flow *flow) RenameNamespace(ctx context.Context, req *grpc.RenameNamespace
 
 	return &resp, nil
 }
+*/

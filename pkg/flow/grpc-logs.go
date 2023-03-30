@@ -1,5 +1,9 @@
 package flow
 
+// TODO: yassir, refactoring needed.
+
+/*
+
 import (
 	"context"
 	"strings"
@@ -613,3 +617,4 @@ func buildInstanceLogsQuery(ctx context.Context,
 	}
 	return query
 }
+*/

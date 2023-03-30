@@ -1,5 +1,9 @@
 package flow
 
+// TODO: yassir, refactoring needed.
+
+/*
+
 import (
 	"context"
 	"errors"
@@ -396,3 +400,4 @@ func (flow *flow) ValidateRef(ctx context.Context, req *grpc.ValidateRefRequest)
 
 	return &resp, nil
 }
+*/

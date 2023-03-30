@@ -29,7 +29,9 @@ func (Instance) Fields() []ent.Field {
 		field.String("invoker").Optional(),
 		field.String("invokerState").Optional(),
 		field.String("callpath").Optional(),
+		// TODO: check out if Nillable is required here.
 		field.UUID("workflow_id", uuid.UUID{}).Nillable().StorageKey("workflow_id"),
+		// TODO: check out if Nillable is required here.
 		field.UUID("revision_id", uuid.UUID{}).Nillable().StorageKey("revision_id"),
 	}
 }
