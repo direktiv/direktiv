@@ -65,8 +65,8 @@ export const WithButtonAsTrigger = () => (
           This is a description of the dialog.
         </DialogDescription>
       </DialogHeader>
-      <div className="my-6">
-        Content goes here. A div with <strong>my-6</strong> is recommended.
+      <div className="my-3">
+        Content goes here. A div with <strong>my-3</strong> is recommended.
       </div>
       <DialogFooter>
         <DialogClose asChild>
@@ -97,7 +97,7 @@ export const ControlledDialogWithForm = () => {
             DialogHeader and DialogFooter as direct children.
           </DialogDescription>
         </DialogHeader>
-        <div className="my-6">
+        <div className="my-3">
           <form onSubmit={() => setOpenDialog(false)}>
             <fieldset className="flex items-center gap-5">
               <label className="w-[90px] text-right text-[15px]" htmlFor="name">

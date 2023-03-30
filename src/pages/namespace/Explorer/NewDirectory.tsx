@@ -80,7 +80,7 @@ const NewDirectory = ({
           <p>{errors.name.message}</p>
         </Alert>
       )}
-      <div className="my-6">
+      <div className="my-3">
         <form onSubmit={handleSubmit(onSubmit)}>
           <fieldset className="flex items-center gap-5">
             <label className="w-[90px] text-right text-[15px]" htmlFor="name">
