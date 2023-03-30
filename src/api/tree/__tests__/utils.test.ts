@@ -2,6 +2,7 @@ import { describe, expect, test } from "vitest";
 import {
   forceLeadingSlash,
   removeLeadingSlash,
+  removeTrailingSlash,
   sortFoldersFirst,
 } from "../utils";
 
@@ -79,5 +80,27 @@ describe("removeLeadingSlash", () => {
 
   test("undefined -> empty string", () => {
     expect(removeLeadingSlash()).toBe("");
+  });
+});
+
+describe("removeTrailingSlash", () => {
+  test("path/ -> path", () => {
+    expect(removeTrailingSlash("path/")).toBe("path");
+  });
+
+  test("path -> path", () => {
+    expect(removeTrailingSlash("path")).toBe("path");
+  });
+
+  test("/ -> empty string", () => {
+    expect(removeTrailingSlash("/")).toBe("");
+  });
+
+  test("empty string -> empty string", () => {
+    expect(removeTrailingSlash("")).toBe("");
+  });
+
+  test("undefined -> empty string", () => {
+    expect(removeTrailingSlash()).toBe("");
   });
 });
