@@ -30,7 +30,7 @@ const Delete = ({
           <Trash /> Delete
         </DialogTitle>
       </DialogHeader>
-      <div className="my-6All content of this directoy will be deleted as well.">
+      <div className="my-6">
         Are you sure you want to delete <b>{node.name}</b>? This can not be
         undone.&nbsp;
         {node.type === "directory" &&
