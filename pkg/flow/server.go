@@ -4,6 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/direktiv/direktiv/pkg/refactor/filestore"
+	"github.com/direktiv/direktiv/pkg/refactor/filestore/psql"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 	"os"
 	"runtime"
 	"strings"
@@ -42,6 +46,7 @@ type server struct {
 	locks    *locks
 	timers   *timers
 	engine   *engine
+	fStore   filestore.FileStore
 	secrets  *secrets
 	flow     *flow
 	internal *internal
@@ -139,6 +144,18 @@ func (srv *server) start(ctx context.Context) error {
 
 	srv.database = database.NewCachedDatabase(srv.sugar, edb, srv)
 	defer srv.cleanup(srv.database.Close)
+
+	gormDb, err := gorm.Open(postgres.New(postgres.Config{
+		DSN:                  db,
+		PreferSimpleProtocol: false, // disables implicit prepared statement usage
+	}), &gorm.Config{})
+
+	fmt.Printf(">>>>>>>>>>>> %s\n", util.DBConn)
+
+	srv.fStore, err = psql.NewSQLFileStore(gormDb)
+	if err != nil {
+		return fmt.Errorf("creating filestore, err: %s", err)
+	}
 
 	srv.sugar.Debug("Initializing pub-sub.")
 
