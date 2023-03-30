@@ -1,4 +1,4 @@
-name: 'Publish Storybook to Chromatic '
+name: 'Publish Storybook to Chromatic'
 
 on:
   push:
