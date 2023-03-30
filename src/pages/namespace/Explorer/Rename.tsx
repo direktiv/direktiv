@@ -6,11 +6,11 @@ import {
 } from "../../../design/Dialog";
 import { NodeSchemaType, fileNameSchema } from "../../../api/tree/schema";
 import { SubmitHandler, useForm } from "react-hook-form";
-import { TextCursorInput, Trash } from "lucide-react";
 
 import Alert from "../../../design/Alert";
 import Button from "../../../design/Button";
 import Input from "../../../design/Input";
+import { TextCursorInput } from "lucide-react";
 import { useRenameNode } from "../../../api/tree/mutate/renameNode";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -66,7 +66,7 @@ const Rename = ({
     <>
       <DialogHeader>
         <DialogTitle>
-          <Trash /> Delete
+          <TextCursorInput /> Rename
         </DialogTitle>
       </DialogHeader>
       <div className="my-3">
