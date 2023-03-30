@@ -7,6 +7,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../../../design/Dropdown";
+import { FC, useState } from "react";
 import {
   Folder,
   FolderUp,
@@ -20,7 +21,6 @@ import {
 import Button from "../../../design/Button";
 import Delete from "./Delete";
 import ExplorerHeader from "./Header";
-import { FC } from "react";
 import { Link } from "react-router-dom";
 import { analyzePath } from "../../../util/router/utils";
 import moment from "moment";
@@ -31,9 +31,9 @@ import { useNamespace } from "../../../util/store/namespace";
 const ExplorerPage: FC = () => {
   const namespace = useNamespace();
   const { path } = pages.explorer.useParams();
-
   const { data } = useListDirectory({ path });
   const { parent, isRoot } = analyzePath(path);
+  const [deleteDialog, setDeleteDialog] = useState(false);
 
   if (!namespace) return null;
 
@@ -84,7 +84,7 @@ const ExplorerPage: FC = () => {
                       {moment(file.updatedAt).fromNow()}
                     </span>
                   </Link>
-                  <Dialog>
+                  <Dialog open={deleteDialog} onOpenChange={setDeleteDialog}>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button
@@ -114,7 +114,10 @@ const ExplorerPage: FC = () => {
                       </DropdownMenuContent>
                     </DropdownMenu>
                     <DialogContent>
-                      <Delete node={file} close={() => null} />
+                      <Delete
+                        node={file}
+                        close={() => setDeleteDialog(false)}
+                      />
                     </DialogContent>
                   </Dialog>
                 </div>
