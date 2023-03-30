@@ -359,11 +359,12 @@ func (events *events) handleEventLoopLogic(ctx context.Context, rows *sql.Rows, 
 
 			cached := new(database.CacheData)
 
-			err = events.database.Workflow(ctx, cached, id)
-			if err != nil {
-				events.engine.sugar.Error(err)
-				return
-			}
+			// TODO: yassir, need refactor.
+			//err = events.database.Workflow(ctx, cached, id)
+			//if err != nil {
+			//	events.engine.sugar.Error(err)
+			//	return
+			//}
 
 			err = events.deleteEventListeners(ctx, cached, id)
 			if err != nil {
@@ -445,217 +446,221 @@ var eventListenersOrderings = []*orderingInfo{
 var eventListenersFilters = map[*filteringInfo]func(query *ent.EventsQuery, v string) (*ent.EventsQuery, error){}
 
 func (flow *flow) EventListeners(ctx context.Context, req *grpc.EventListenersRequest) (*grpc.EventListenersResponse, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
-
-	cached := new(database.CacheData)
-
-	err := flow.database.NamespaceByName(ctx, cached, req.GetNamespace())
-	if err != nil {
-		return nil, err
-	}
-
-	clients := flow.edb.Clients(ctx)
-	query := clients.Events.Query().Where(entevents.HasNamespaceWith(entns.ID(cached.Namespace.ID)))
-
-	results, pi, err := paginate[*ent.EventsQuery, *ent.Events](ctx, req.Pagination, query, eventListenersOrderings, eventListenersFilters)
-	if err != nil {
-		return nil, err
-	}
-
-	resp := new(grpc.EventListenersResponse)
-	resp.Namespace = cached.Namespace.Name
-	resp.PageInfo = pi
-
-	err = bytedata.ConvertDataForOutput(results, &resp.Results)
-	if err != nil {
-		return nil, err
-	}
-
-	m := make(map[string]string)
-
-	for idx, result := range results {
-
-		in, _ := result.Instance(ctx)
-		if in != nil {
-			resp.Results[idx].Instance = in.ID.String()
-		}
-
-		wf, err := result.Workflow(ctx)
-		if err != nil {
-			return nil, err
-		}
-
-		path, exists := m[wf.ID.String()]
-		if !exists {
-			cached.Reset()
-			err = flow.database.Workflow(ctx, cached, wf.ID)
-			if err != nil {
-				return nil, err
-			}
-			path = cached.Path()
-			m[wf.ID.String()] = path
-		}
-
-		resp.Results[idx].Workflow = path
-
-		resp.Results[idx].Mode = "or"
-		if result.Count > 1 {
-			resp.Results[idx].Mode = "and"
-		}
-
-		edefs := make([]*grpc.EventDef, 0)
-		for _, ev := range result.Events {
-
-			var et string
-			if v, ok := ev["type"]; ok {
-				et, _ = v.(string)
-			}
-
-			delete(ev, "type")
-
-			filters := make(map[string]string)
-
-			for k, v := range ev {
-				if !strings.HasPrefix(k, "filter-") {
-					continue
-				}
-				k = strings.TrimPrefix(k, "filter-")
-				if s, ok := v.(string); ok {
-					filters[k] = s
-				}
-			}
-
-			edefs = append(edefs, &grpc.EventDef{
-				Type:    et,
-				Filters: filters,
-			})
-
-		}
-
-		resp.Results[idx].Events = edefs
-
-	}
-
-	return resp, nil
+	// TODO: yassir, need refactor.
+	return nil, nil
+	//flow.sugar.Debugf("Handling gRPC request: %s", this())
+	//
+	//cached := new(database.CacheData)
+	//
+	//err := flow.database.NamespaceByName(ctx, cached, req.GetNamespace())
+	//if err != nil {
+	//	return nil, err
+	//}
+	//
+	//clients := flow.edb.Clients(ctx)
+	//query := clients.Events.Query().Where(entevents.HasNamespaceWith(entns.ID(cached.Namespace.ID)))
+	//
+	//results, pi, err := paginate[*ent.EventsQuery, *ent.Events](ctx, req.Pagination, query, eventListenersOrderings, eventListenersFilters)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//
+	//resp := new(grpc.EventListenersResponse)
+	//resp.Namespace = cached.Namespace.Name
+	//resp.PageInfo = pi
+	//
+	//err = bytedata.ConvertDataForOutput(results, &resp.Results)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//
+	//m := make(map[string]string)
+	//
+	//for idx, result := range results {
+	//
+	//	in, _ := result.Instance(ctx)
+	//	if in != nil {
+	//		resp.Results[idx].Instance = in.ID.String()
+	//	}
+	//
+	//	wf, err := result.Workflow(ctx)
+	//	if err != nil {
+	//		return nil, err
+	//	}
+	//
+	//	path, exists := m[wf.ID.String()]
+	//	if !exists {
+	//		cached.Reset()
+	//		err = flow.database.Workflow(ctx, cached, wf.ID)
+	//		if err != nil {
+	//			return nil, err
+	//		}
+	//		path = cached.Path()
+	//		m[wf.ID.String()] = path
+	//	}
+	//
+	//	resp.Results[idx].Workflow = path
+	//
+	//	resp.Results[idx].Mode = "or"
+	//	if result.Count > 1 {
+	//		resp.Results[idx].Mode = "and"
+	//	}
+	//
+	//	edefs := make([]*grpc.EventDef, 0)
+	//	for _, ev := range result.Events {
+	//
+	//		var et string
+	//		if v, ok := ev["type"]; ok {
+	//			et, _ = v.(string)
+	//		}
+	//
+	//		delete(ev, "type")
+	//
+	//		filters := make(map[string]string)
+	//
+	//		for k, v := range ev {
+	//			if !strings.HasPrefix(k, "filter-") {
+	//				continue
+	//			}
+	//			k = strings.TrimPrefix(k, "filter-")
+	//			if s, ok := v.(string); ok {
+	//				filters[k] = s
+	//			}
+	//		}
+	//
+	//		edefs = append(edefs, &grpc.EventDef{
+	//			Type:    et,
+	//			Filters: filters,
+	//		})
+	//
+	//	}
+	//
+	//	resp.Results[idx].Events = edefs
+	//
+	//}
+	//
+	//return resp, nil
 }
 
 func (flow *flow) EventListenersStream(req *grpc.EventListenersRequest, srv grpc.Flow_EventListenersStreamServer) error {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
-
-	ctx := srv.Context()
-	phash := ""
-	nhash := ""
-
-	cached := new(database.CacheData)
-
-	err := flow.database.NamespaceByName(ctx, cached, req.GetNamespace())
-	if err != nil {
-		return err
-	}
-
-	sub := flow.pubsub.SubscribeEventListeners(cached.Namespace)
-	defer flow.cleanup(sub.Close)
-
-	clients := flow.edb.Clients(ctx)
-
-resend:
-
-	query := clients.Events.Query().Where(entevents.HasNamespaceWith(entns.ID(cached.Namespace.ID)))
-
-	results, pi, err := paginate[*ent.EventsQuery, *ent.Events](ctx, req.Pagination, query, eventListenersOrderings, eventListenersFilters)
-	if err != nil {
-		return err
-	}
-
-	resp := new(grpc.EventListenersResponse)
-	resp.Namespace = cached.Namespace.Name
-	resp.PageInfo = pi
-
-	err = bytedata.ConvertDataForOutput(results, &resp.Results)
-	if err != nil {
-		return err
-	}
-
-	m := make(map[string]string)
-
-	for idx, result := range results {
-
-		in, _ := result.Instance(ctx)
-		if in != nil {
-			resp.Results[idx].Instance = in.ID.String()
-		}
-
-		wf, err := result.Workflow(ctx)
-		if err != nil {
-			return err
-		}
-
-		path, exists := m[wf.ID.String()]
-		if !exists {
-			cached.Reset()
-			err = flow.database.Workflow(ctx, cached, wf.ID)
-			if err != nil {
-				return err
-			}
-			path = cached.Path()
-			m[wf.ID.String()] = path
-		}
-
-		resp.Results[idx].Workflow = path
-
-		resp.Results[idx].Mode = "or"
-		if result.Count > 1 {
-			resp.Results[idx].Mode = "and"
-		}
-
-		edefs := make([]*grpc.EventDef, 0)
-		for _, ev := range result.Events {
-
-			var et string
-			if v, ok := ev["type"]; ok {
-				et, _ = v.(string)
-			}
-
-			delete(ev, "type")
-
-			filters := make(map[string]string)
-
-			for k, v := range ev {
-				if !strings.HasPrefix(k, "filter-") {
-					continue
-				}
-				k = strings.TrimPrefix(k, "filter-")
-				if s, ok := v.(string); ok {
-					filters[k] = s
-				}
-			}
-
-			edefs = append(edefs, &grpc.EventDef{
-				Type:    et,
-				Filters: filters,
-			})
-
-		}
-
-		resp.Results[idx].Events = edefs
-
-	}
-
-	nhash = bytedata.Checksum(resp)
-	if nhash != phash {
-		err = srv.Send(resp)
-		if err != nil {
-			return err
-		}
-	}
-	phash = nhash
-
-	more := sub.Wait(ctx)
-	if !more {
-		return nil
-	}
-
-	goto resend
+	// TODO: yassir, need refactor.
+	return nil
+	//	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	//
+	//	ctx := srv.Context()
+	//	phash := ""
+	//	nhash := ""
+	//
+	//	cached := new(database.CacheData)
+	//
+	//	err := flow.database.NamespaceByName(ctx, cached, req.GetNamespace())
+	//	if err != nil {
+	//		return err
+	//	}
+	//
+	//	sub := flow.pubsub.SubscribeEventListeners(cached.Namespace)
+	//	defer flow.cleanup(sub.Close)
+	//
+	//	clients := flow.edb.Clients(ctx)
+	//
+	//resend:
+	//
+	//	query := clients.Events.Query().Where(entevents.HasNamespaceWith(entns.ID(cached.Namespace.ID)))
+	//
+	//	results, pi, err := paginate[*ent.EventsQuery, *ent.Events](ctx, req.Pagination, query, eventListenersOrderings, eventListenersFilters)
+	//	if err != nil {
+	//		return err
+	//	}
+	//
+	//	resp := new(grpc.EventListenersResponse)
+	//	resp.Namespace = cached.Namespace.Name
+	//	resp.PageInfo = pi
+	//
+	//	err = bytedata.ConvertDataForOutput(results, &resp.Results)
+	//	if err != nil {
+	//		return err
+	//	}
+	//
+	//	m := make(map[string]string)
+	//
+	//	for idx, result := range results {
+	//
+	//		in, _ := result.Instance(ctx)
+	//		if in != nil {
+	//			resp.Results[idx].Instance = in.ID.String()
+	//		}
+	//
+	//		wf, err := result.Workflow(ctx)
+	//		if err != nil {
+	//			return err
+	//		}
+	//
+	//		path, exists := m[wf.ID.String()]
+	//		if !exists {
+	//			cached.Reset()
+	//			err = flow.database.Workflow(ctx, cached, wf.ID)
+	//			if err != nil {
+	//				return err
+	//			}
+	//			path = cached.Path()
+	//			m[wf.ID.String()] = path
+	//		}
+	//
+	//		resp.Results[idx].Workflow = path
+	//
+	//		resp.Results[idx].Mode = "or"
+	//		if result.Count > 1 {
+	//			resp.Results[idx].Mode = "and"
+	//		}
+	//
+	//		edefs := make([]*grpc.EventDef, 0)
+	//		for _, ev := range result.Events {
+	//
+	//			var et string
+	//			if v, ok := ev["type"]; ok {
+	//				et, _ = v.(string)
+	//			}
+	//
+	//			delete(ev, "type")
+	//
+	//			filters := make(map[string]string)
+	//
+	//			for k, v := range ev {
+	//				if !strings.HasPrefix(k, "filter-") {
+	//					continue
+	//				}
+	//				k = strings.TrimPrefix(k, "filter-")
+	//				if s, ok := v.(string); ok {
+	//					filters[k] = s
+	//				}
+	//			}
+	//
+	//			edefs = append(edefs, &grpc.EventDef{
+	//				Type:    et,
+	//				Filters: filters,
+	//			})
+	//
+	//		}
+	//
+	//		resp.Results[idx].Events = edefs
+	//
+	//	}
+	//
+	//	nhash = bytedata.Checksum(resp)
+	//	if nhash != phash {
+	//		err = srv.Send(resp)
+	//		if err != nil {
+	//			return err
+	//		}
+	//	}
+	//	phash = nhash
+	//
+	//	more := sub.Wait(ctx)
+	//	if !more {
+	//		return nil
+	//	}
+	//
+	//	goto resend
 }
 
 func (flow *flow) BroadcastCloudevent(ctx context.Context, in *grpc.BroadcastCloudeventRequest) (*emptypb.Empty, error) {

@@ -1,4 +1,7 @@
+// TODO: yassir, need refactor.
 package flow
+
+/*
 
 import (
 	"context"
@@ -216,3 +219,4 @@ func (flow *flow) ValidateRouter(ctx context.Context, req *grpc.ValidateRouterRe
 
 	return &resp, nil
 }
+*/

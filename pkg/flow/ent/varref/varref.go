@@ -15,12 +15,12 @@ const (
 	FieldName = "name"
 	// FieldBehaviour holds the string denoting the behaviour field in the database.
 	FieldBehaviour = "behaviour"
+	// FieldWorkflowID holds the string denoting the workflow_id field in the database.
+	FieldWorkflowID = "workflow_id"
 	// EdgeVardata holds the string denoting the vardata edge name in mutations.
 	EdgeVardata = "vardata"
 	// EdgeNamespace holds the string denoting the namespace edge name in mutations.
 	EdgeNamespace = "namespace"
-	// EdgeWorkflow holds the string denoting the workflow edge name in mutations.
-	EdgeWorkflow = "workflow"
 	// EdgeInstance holds the string denoting the instance edge name in mutations.
 	EdgeInstance = "instance"
 	// Table holds the table name of the varref in the database.
@@ -39,13 +39,6 @@ const (
 	NamespaceInverseTable = "namespaces"
 	// NamespaceColumn is the table column denoting the namespace relation/edge.
 	NamespaceColumn = "namespace_vars"
-	// WorkflowTable is the table that holds the workflow relation/edge.
-	WorkflowTable = "var_refs"
-	// WorkflowInverseTable is the table name for the Workflow entity.
-	// It exists in this package in order to avoid circular dependency with the "workflow" package.
-	WorkflowInverseTable = "workflows"
-	// WorkflowColumn is the table column denoting the workflow relation/edge.
-	WorkflowColumn = "workflow_vars"
 	// InstanceTable is the table that holds the instance relation/edge.
 	InstanceTable = "var_refs"
 	// InstanceInverseTable is the table name for the Instance entity.
@@ -60,6 +53,7 @@ var Columns = []string{
 	FieldID,
 	FieldName,
 	FieldBehaviour,
+	FieldWorkflowID,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "var_refs"
@@ -68,7 +62,6 @@ var ForeignKeys = []string{
 	"instance_vars",
 	"namespace_vars",
 	"var_data_varrefs",
-	"workflow_vars",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).

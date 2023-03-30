@@ -13,10 +13,8 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entnote "github.com/direktiv/direktiv/pkg/flow/ent/annotation"
-	entino "github.com/direktiv/direktiv/pkg/flow/ent/inode"
 	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	entns "github.com/direktiv/direktiv/pkg/flow/ent/namespace"
-	entwf "github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/util"
@@ -303,7 +301,9 @@ type entInodeAnnotationQuerier struct {
 }
 
 func (x *entInodeAnnotationQuerier) QueryAnnotations() *ent.AnnotationQuery {
-	return x.clients.Annotation.Query().Where(entnote.HasInodeWith(entino.ID(x.cached.Inode().ID)))
+	// TODO: yassir, need refactor.
+	return nil
+	//return x.clients.Annotation.Query().Where(entnote.HasInodeWith(entino.ID(x.cached.Inode().ID)))
 }
 
 type entWorkflowAnnotationQuerier struct {
@@ -312,7 +312,9 @@ type entWorkflowAnnotationQuerier struct {
 }
 
 func (x *entWorkflowAnnotationQuerier) QueryAnnotations() *ent.AnnotationQuery {
-	return x.clients.Annotation.Query().Where(entnote.HasWorkflowWith(entwf.ID(x.cached.Workflow.ID)))
+	// TODO: yassir, need refactor.
+	return nil
+	//return x.clients.Annotation.Query().Where(entnote.HasWorkflowWith(entwf.ID(x.cached.Workflow.ID)))
 }
 
 type entInstanceAnnotationQuerier struct {
@@ -352,8 +354,10 @@ func (flow *flow) SetAnnotation(ctx context.Context, q annotationQuerier, key st
 		switch v := q.(type) {
 		case *ent.Namespace:
 			query = query.SetNamespace(v)
-		case *ent.Workflow:
-			query = query.SetWorkflow(v)
+
+		// TODO: yassir, need refactor.
+		//case *ent.Workflow:
+		//	query = query.SetWorkflow(v)
 		case *ent.Instance:
 			query = query.SetInstance(v)
 		default:

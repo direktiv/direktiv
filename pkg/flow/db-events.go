@@ -13,7 +13,6 @@ import (
 	entev "github.com/direktiv/direktiv/pkg/flow/ent/events"
 	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	entns "github.com/direktiv/direktiv/pkg/flow/ent/namespace"
-	entwf "github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/google/uuid"
 )
@@ -93,16 +92,18 @@ func (events *events) deleteEventListeners(ctx context.Context, cached *database
 }
 
 func (events *events) deleteWorkflowEventListeners(ctx context.Context, cached *database.CacheData) error {
-	clients := events.edb.Clients(ctx)
-
-	_, err := clients.Events.Delete().Where(entev.HasWorkflowWith(entwf.ID(cached.Workflow.ID))).Exec(ctx)
-	if err != nil {
-		return err
-	}
-
-	events.pubsub.NotifyEventListeners(cached.Namespace)
-
+	//TODO: yassir, need refactor.
 	return nil
+	//clients := events.edb.Clients(ctx)
+	//
+	//_, err := clients.Events.Delete().Where(entev.HasWorkflowWith(entwf.ID(cached.Workflow.ID))).Exec(ctx)
+	//if err != nil {
+	//	return err
+	//}
+	//
+	//events.pubsub.NotifyEventListeners(cached.Namespace)
+	//
+	//return nil
 }
 
 func (events *events) deleteInstanceEventListeners(ctx context.Context, cached *database.CacheData) error {
@@ -121,59 +122,61 @@ func (events *events) deleteInstanceEventListeners(ctx context.Context, cached *
 	return nil
 }
 
+// TODO: yassir, need refactor.
 // called by add workflow, adds event listeners if required.
-func (events *events) processWorkflowEvents(ctx context.Context, cached *database.CacheData, ms *muxStart) error {
-	err := events.deleteWorkflowEventListeners(ctx, cached)
-	if err != nil {
-		return err
-	}
-
-	if len(ms.Events) > 0 && ms.Enabled {
-
-		var ev []map[string]interface{}
-		for i, e := range ms.Events {
-			em := make(map[string]interface{})
-			em[eventTypeString] = e.Type
-
-			for kf, vf := range e.Context {
-				em[fmt.Sprintf("%s%s", filterPrefix, strings.ToLower(kf))] = vf
-			}
-
-			// these value are set when a matching event comes in
-			em["time"] = 0
-			em["value"] = ""
-			em["idx"] = i
-
-			ev = append(ev, em)
-		}
-
-		correlations := []string{}
-		count := 1
-
-		if ms.Type == model.StartTypeEventsAnd.String() {
-			count = len(ms.Events)
-		}
-
-		clients := events.edb.Clients(ctx)
-
-		_, err = clients.Events.Create().
-			SetNamespaceID(cached.Namespace.ID).
-			SetWorkflowID(cached.Workflow.ID).
-			SetEvents(ev).
-			SetCorrelations(correlations).
-			SetCount(count).
-			Save(ctx)
-
-		if err != nil {
-			return err
-		}
-
-	}
-
-	events.pubsub.NotifyEventListeners(cached.Namespace)
-
-	return nil
-}
+//func (events *events) processWorkflowEvents(ctx context.Context, cached *database.CacheData, ms *muxStart) error {
+//	return nil
+//err := events.deleteWorkflowEventListeners(ctx, cached)
+//if err != nil {
+//	return err
+//}
+//
+//if len(ms.Events) > 0 && ms.Enabled {
+//
+//	var ev []map[string]interface{}
+//	for i, e := range ms.Events {
+//		em := make(map[string]interface{})
+//		em[eventTypeString] = e.Type
+//
+//		for kf, vf := range e.Context {
+//			em[fmt.Sprintf("%s%s", filterPrefix, strings.ToLower(kf))] = vf
+//		}
+//
+//		// these value are set when a matching event comes in
+//		em["time"] = 0
+//		em["value"] = ""
+//		em["idx"] = i
+//
+//		ev = append(ev, em)
+//	}
+//
+//	correlations := []string{}
+//	count := 1
+//
+//	if ms.Type == model.StartTypeEventsAnd.String() {
+//		count = len(ms.Events)
+//	}
+//
+//	clients := events.edb.Clients(ctx)
+//
+//	_, err = clients.Events.Create().
+//		SetNamespaceID(cached.Namespace.ID).
+//		SetWorkflowID(cached.Workflow.ID).
+//		SetEvents(ev).
+//		SetCorrelations(correlations).
+//		SetCount(count).
+//		Save(ctx)
+//
+//	if err != nil {
+//		return err
+//	}
+//
+//}
+//
+//events.pubsub.NotifyEventListeners(cached.Namespace)
+//
+//return nil
+//}
 
 func (events *events) updateInstanceEventListener(ctx context.Context, id uuid.UUID, ev []map[string]interface{}) error {
 	clients := events.edb.Clients(ctx)
@@ -210,7 +213,8 @@ func (events *events) addInstanceEventListener(ctx context.Context, cached *data
 
 	_, err := clients.Events.Create().
 		SetNamespaceID(cached.Namespace.ID).
-		SetWorkflowID(cached.Workflow.ID).
+		//TODO: yassir, need refactor.
+		//SetWorkflowID(cached.Workflow.ID).
 		SetInstanceID(cached.Instance.ID).
 		SetEvents(ev).
 		SetCorrelations([]string{}).

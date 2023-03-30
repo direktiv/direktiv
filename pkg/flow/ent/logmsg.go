@@ -11,9 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	"github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
-	"github.com/direktiv/direktiv/pkg/flow/ent/mirroractivity"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
-	"github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 	"github.com/google/uuid"
 )
 
@@ -34,28 +32,26 @@ type LogMsg struct {
 	LogInstanceCallPath string `json:"logInstanceCallPath,omitempty"`
 	// Tags holds the value of the "tags" field.
 	Tags map[string]string `json:"tags,omitempty"`
+	// WorkflowID holds the value of the "workflow_id" field.
+	WorkflowID *uuid.UUID `json:"workflow_id,omitempty"`
+	// MirrorActivityID holds the value of the "mirror_activity_id" field.
+	MirrorActivityID *uuid.UUID `json:"mirror_activity_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the LogMsgQuery when eager-loading is set.
-	Edges                LogMsgEdges `json:"edges"`
-	instance_logs        *uuid.UUID
-	mirror_activity_logs *uuid.UUID
-	namespace_logs       *uuid.UUID
-	workflow_logs        *uuid.UUID
+	Edges          LogMsgEdges `json:"edges"`
+	instance_logs  *uuid.UUID
+	namespace_logs *uuid.UUID
 }
 
 // LogMsgEdges holds the relations/edges for other nodes in the graph.
 type LogMsgEdges struct {
 	// Namespace holds the value of the namespace edge.
 	Namespace *Namespace `json:"namespace,omitempty"`
-	// Workflow holds the value of the workflow edge.
-	Workflow *Workflow `json:"workflow,omitempty"`
 	// Instance holds the value of the instance edge.
 	Instance *Instance `json:"instance,omitempty"`
-	// Activity holds the value of the activity edge.
-	Activity *MirrorActivity `json:"activity,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [2]bool
 }
 
 // NamespaceOrErr returns the Namespace value or an error if the edge
@@ -71,23 +67,10 @@ func (e LogMsgEdges) NamespaceOrErr() (*Namespace, error) {
 	return nil, &NotLoadedError{edge: "namespace"}
 }
 
-// WorkflowOrErr returns the Workflow value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e LogMsgEdges) WorkflowOrErr() (*Workflow, error) {
-	if e.loadedTypes[1] {
-		if e.Workflow == nil {
-			// Edge was loaded but was not found.
-			return nil, &NotFoundError{label: workflow.Label}
-		}
-		return e.Workflow, nil
-	}
-	return nil, &NotLoadedError{edge: "workflow"}
-}
-
 // InstanceOrErr returns the Instance value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e LogMsgEdges) InstanceOrErr() (*Instance, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[1] {
 		if e.Instance == nil {
 			// Edge was loaded but was not found.
 			return nil, &NotFoundError{label: instance.Label}
@@ -97,24 +80,13 @@ func (e LogMsgEdges) InstanceOrErr() (*Instance, error) {
 	return nil, &NotLoadedError{edge: "instance"}
 }
 
-// ActivityOrErr returns the Activity value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e LogMsgEdges) ActivityOrErr() (*MirrorActivity, error) {
-	if e.loadedTypes[3] {
-		if e.Activity == nil {
-			// Edge was loaded but was not found.
-			return nil, &NotFoundError{label: mirroractivity.Label}
-		}
-		return e.Activity, nil
-	}
-	return nil, &NotLoadedError{edge: "activity"}
-}
-
 // scanValues returns the types for scanning values from sql.Rows.
 func (*LogMsg) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case logmsg.FieldWorkflowID, logmsg.FieldMirrorActivityID:
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case logmsg.FieldTags:
 			values[i] = new([]byte)
 		case logmsg.FieldMsg, logmsg.FieldLevel, logmsg.FieldRootInstanceId, logmsg.FieldLogInstanceCallPath:
@@ -125,11 +97,7 @@ func (*LogMsg) scanValues(columns []string) ([]any, error) {
 			values[i] = new(uuid.UUID)
 		case logmsg.ForeignKeys[0]: // instance_logs
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case logmsg.ForeignKeys[1]: // mirror_activity_logs
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case logmsg.ForeignKeys[2]: // namespace_logs
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case logmsg.ForeignKeys[3]: // workflow_logs
+		case logmsg.ForeignKeys[1]: // namespace_logs
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type LogMsg", columns[i])
@@ -190,6 +158,20 @@ func (lm *LogMsg) assignValues(columns []string, values []any) error {
 					return fmt.Errorf("unmarshal field tags: %w", err)
 				}
 			}
+		case logmsg.FieldWorkflowID:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field workflow_id", values[i])
+			} else if value.Valid {
+				lm.WorkflowID = new(uuid.UUID)
+				*lm.WorkflowID = *value.S.(*uuid.UUID)
+			}
+		case logmsg.FieldMirrorActivityID:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field mirror_activity_id", values[i])
+			} else if value.Valid {
+				lm.MirrorActivityID = new(uuid.UUID)
+				*lm.MirrorActivityID = *value.S.(*uuid.UUID)
+			}
 		case logmsg.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field instance_logs", values[i])
@@ -199,24 +181,10 @@ func (lm *LogMsg) assignValues(columns []string, values []any) error {
 			}
 		case logmsg.ForeignKeys[1]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field mirror_activity_logs", values[i])
-			} else if value.Valid {
-				lm.mirror_activity_logs = new(uuid.UUID)
-				*lm.mirror_activity_logs = *value.S.(*uuid.UUID)
-			}
-		case logmsg.ForeignKeys[2]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field namespace_logs", values[i])
 			} else if value.Valid {
 				lm.namespace_logs = new(uuid.UUID)
 				*lm.namespace_logs = *value.S.(*uuid.UUID)
-			}
-		case logmsg.ForeignKeys[3]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field workflow_logs", values[i])
-			} else if value.Valid {
-				lm.workflow_logs = new(uuid.UUID)
-				*lm.workflow_logs = *value.S.(*uuid.UUID)
 			}
 		}
 	}
@@ -228,19 +196,9 @@ func (lm *LogMsg) QueryNamespace() *NamespaceQuery {
 	return (&LogMsgClient{config: lm.config}).QueryNamespace(lm)
 }
 
-// QueryWorkflow queries the "workflow" edge of the LogMsg entity.
-func (lm *LogMsg) QueryWorkflow() *WorkflowQuery {
-	return (&LogMsgClient{config: lm.config}).QueryWorkflow(lm)
-}
-
 // QueryInstance queries the "instance" edge of the LogMsg entity.
 func (lm *LogMsg) QueryInstance() *InstanceQuery {
 	return (&LogMsgClient{config: lm.config}).QueryInstance(lm)
-}
-
-// QueryActivity queries the "activity" edge of the LogMsg entity.
-func (lm *LogMsg) QueryActivity() *MirrorActivityQuery {
-	return (&LogMsgClient{config: lm.config}).QueryActivity(lm)
 }
 
 // Update returns a builder for updating this LogMsg.
@@ -283,6 +241,16 @@ func (lm *LogMsg) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("tags=")
 	builder.WriteString(fmt.Sprintf("%v", lm.Tags))
+	builder.WriteString(", ")
+	if v := lm.WorkflowID; v != nil {
+		builder.WriteString("workflow_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := lm.MirrorActivityID; v != nil {
+		builder.WriteString("mirror_activity_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -152,6 +152,20 @@ func Callpath(v string) predicate.Instance {
 	})
 }
 
+// WorkflowID applies equality check predicate on the "workflow_id" field. It's identical to WorkflowIDEQ.
+func WorkflowID(v uuid.UUID) predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldWorkflowID), v))
+	})
+}
+
+// RevisionID applies equality check predicate on the "revision_id" field. It's identical to RevisionIDEQ.
+func RevisionID(v uuid.UUID) predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldRevisionID), v))
+	})
+}
+
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
 func CreatedAtEQ(v time.Time) predicate.Instance {
 	return predicate.Instance(func(s *sql.Selector) {
@@ -1121,6 +1135,134 @@ func CallpathContainsFold(v string) predicate.Instance {
 	})
 }
 
+// WorkflowIDEQ applies the EQ predicate on the "workflow_id" field.
+func WorkflowIDEQ(v uuid.UUID) predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldWorkflowID), v))
+	})
+}
+
+// WorkflowIDNEQ applies the NEQ predicate on the "workflow_id" field.
+func WorkflowIDNEQ(v uuid.UUID) predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldWorkflowID), v))
+	})
+}
+
+// WorkflowIDIn applies the In predicate on the "workflow_id" field.
+func WorkflowIDIn(vs ...uuid.UUID) predicate.Instance {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.In(s.C(FieldWorkflowID), v...))
+	})
+}
+
+// WorkflowIDNotIn applies the NotIn predicate on the "workflow_id" field.
+func WorkflowIDNotIn(vs ...uuid.UUID) predicate.Instance {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.NotIn(s.C(FieldWorkflowID), v...))
+	})
+}
+
+// WorkflowIDGT applies the GT predicate on the "workflow_id" field.
+func WorkflowIDGT(v uuid.UUID) predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldWorkflowID), v))
+	})
+}
+
+// WorkflowIDGTE applies the GTE predicate on the "workflow_id" field.
+func WorkflowIDGTE(v uuid.UUID) predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldWorkflowID), v))
+	})
+}
+
+// WorkflowIDLT applies the LT predicate on the "workflow_id" field.
+func WorkflowIDLT(v uuid.UUID) predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldWorkflowID), v))
+	})
+}
+
+// WorkflowIDLTE applies the LTE predicate on the "workflow_id" field.
+func WorkflowIDLTE(v uuid.UUID) predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldWorkflowID), v))
+	})
+}
+
+// RevisionIDEQ applies the EQ predicate on the "revision_id" field.
+func RevisionIDEQ(v uuid.UUID) predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldRevisionID), v))
+	})
+}
+
+// RevisionIDNEQ applies the NEQ predicate on the "revision_id" field.
+func RevisionIDNEQ(v uuid.UUID) predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldRevisionID), v))
+	})
+}
+
+// RevisionIDIn applies the In predicate on the "revision_id" field.
+func RevisionIDIn(vs ...uuid.UUID) predicate.Instance {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.In(s.C(FieldRevisionID), v...))
+	})
+}
+
+// RevisionIDNotIn applies the NotIn predicate on the "revision_id" field.
+func RevisionIDNotIn(vs ...uuid.UUID) predicate.Instance {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.NotIn(s.C(FieldRevisionID), v...))
+	})
+}
+
+// RevisionIDGT applies the GT predicate on the "revision_id" field.
+func RevisionIDGT(v uuid.UUID) predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldRevisionID), v))
+	})
+}
+
+// RevisionIDGTE applies the GTE predicate on the "revision_id" field.
+func RevisionIDGTE(v uuid.UUID) predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldRevisionID), v))
+	})
+}
+
+// RevisionIDLT applies the LT predicate on the "revision_id" field.
+func RevisionIDLT(v uuid.UUID) predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldRevisionID), v))
+	})
+}
+
+// RevisionIDLTE applies the LTE predicate on the "revision_id" field.
+func RevisionIDLTE(v uuid.UUID) predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldRevisionID), v))
+	})
+}
+
 // HasNamespace applies the HasEdge predicate on the "namespace" edge.
 func HasNamespace() predicate.Instance {
 	return predicate.Instance(func(s *sql.Selector) {
@@ -1140,62 +1282,6 @@ func HasNamespaceWith(preds ...predicate.Namespace) predicate.Instance {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(NamespaceInverseTable, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, NamespaceTable, NamespaceColumn),
-		)
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasWorkflow applies the HasEdge predicate on the "workflow" edge.
-func HasWorkflow() predicate.Instance {
-	return predicate.Instance(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(WorkflowTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, WorkflowTable, WorkflowColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasWorkflowWith applies the HasEdge predicate on the "workflow" edge with a given conditions (other predicates).
-func HasWorkflowWith(preds ...predicate.Workflow) predicate.Instance {
-	return predicate.Instance(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(WorkflowInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, WorkflowTable, WorkflowColumn),
-		)
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasRevision applies the HasEdge predicate on the "revision" edge.
-func HasRevision() predicate.Instance {
-	return predicate.Instance(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(RevisionTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, RevisionTable, RevisionColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasRevisionWith applies the HasEdge predicate on the "revision" edge with a given conditions (other predicates).
-func HasRevisionWith(preds ...predicate.Revision) predicate.Instance {
-	return predicate.Instance(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(RevisionInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, RevisionTable, RevisionColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

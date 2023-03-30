@@ -647,6 +647,10 @@ func (pubsub *Pubsub) NotifyWorkflow(wf *database.Workflow) {
 	pubsub.Publish(pubsubNotify(wf.ID.String()))
 }
 
+func (pubsub *Pubsub) NotifyWorkflowID(id uuid.UUID) {
+	pubsub.Publish(pubsubNotify(id.String()))
+}
+
 func (pubsub *Pubsub) CloseWorkflow(wf *database.Workflow) {
 	pubsub.Publish(pubsubDisconnect(wf.ID.String()))
 }

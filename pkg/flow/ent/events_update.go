@@ -17,7 +17,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/predicate"
-	"github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 	"github.com/google/uuid"
 )
 
@@ -90,15 +89,10 @@ func (eu *EventsUpdate) SetUpdatedAt(t time.Time) *EventsUpdate {
 	return eu
 }
 
-// SetWorkflowID sets the "workflow" edge to the Workflow entity by ID.
-func (eu *EventsUpdate) SetWorkflowID(id uuid.UUID) *EventsUpdate {
-	eu.mutation.SetWorkflowID(id)
+// SetWorkflowID sets the "workflow_id" field.
+func (eu *EventsUpdate) SetWorkflowID(u uuid.UUID) *EventsUpdate {
+	eu.mutation.SetWorkflowID(u)
 	return eu
-}
-
-// SetWorkflow sets the "workflow" edge to the Workflow entity.
-func (eu *EventsUpdate) SetWorkflow(w *Workflow) *EventsUpdate {
-	return eu.SetWorkflowID(w.ID)
 }
 
 // AddWfeventswaitIDs adds the "wfeventswait" edge to the EventsWait entity by IDs.
@@ -149,12 +143,6 @@ func (eu *EventsUpdate) SetNamespace(n *Namespace) *EventsUpdate {
 // Mutation returns the EventsMutation object of the builder.
 func (eu *EventsUpdate) Mutation() *EventsMutation {
 	return eu.mutation
-}
-
-// ClearWorkflow clears the "workflow" edge to the Workflow entity.
-func (eu *EventsUpdate) ClearWorkflow() *EventsUpdate {
-	eu.mutation.ClearWorkflow()
-	return eu
 }
 
 // ClearWfeventswait clears all "wfeventswait" edges to the EventsWait entity.
@@ -261,9 +249,6 @@ func (eu *EventsUpdate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (eu *EventsUpdate) check() error {
-	if _, ok := eu.mutation.WorkflowID(); eu.mutation.WorkflowCleared() && !ok {
-		return errors.New(`ent: clearing a required unique edge "Events.workflow"`)
-	}
 	if _, ok := eu.mutation.NamespaceID(); eu.mutation.NamespaceCleared() && !ok {
 		return errors.New(`ent: clearing a required unique edge "Events.namespace"`)
 	}
@@ -325,40 +310,8 @@ func (eu *EventsUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := eu.mutation.UpdatedAt(); ok {
 		_spec.SetField(events.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if eu.mutation.WorkflowCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   events.WorkflowTable,
-			Columns: []string{events.WorkflowColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: workflow.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := eu.mutation.WorkflowIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   events.WorkflowTable,
-			Columns: []string{events.WorkflowColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: workflow.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	if value, ok := eu.mutation.WorkflowID(); ok {
+		_spec.SetField(events.FieldWorkflowID, field.TypeUUID, value)
 	}
 	if eu.mutation.WfeventswaitCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -560,15 +513,10 @@ func (euo *EventsUpdateOne) SetUpdatedAt(t time.Time) *EventsUpdateOne {
 	return euo
 }
 
-// SetWorkflowID sets the "workflow" edge to the Workflow entity by ID.
-func (euo *EventsUpdateOne) SetWorkflowID(id uuid.UUID) *EventsUpdateOne {
-	euo.mutation.SetWorkflowID(id)
+// SetWorkflowID sets the "workflow_id" field.
+func (euo *EventsUpdateOne) SetWorkflowID(u uuid.UUID) *EventsUpdateOne {
+	euo.mutation.SetWorkflowID(u)
 	return euo
-}
-
-// SetWorkflow sets the "workflow" edge to the Workflow entity.
-func (euo *EventsUpdateOne) SetWorkflow(w *Workflow) *EventsUpdateOne {
-	return euo.SetWorkflowID(w.ID)
 }
 
 // AddWfeventswaitIDs adds the "wfeventswait" edge to the EventsWait entity by IDs.
@@ -619,12 +567,6 @@ func (euo *EventsUpdateOne) SetNamespace(n *Namespace) *EventsUpdateOne {
 // Mutation returns the EventsMutation object of the builder.
 func (euo *EventsUpdateOne) Mutation() *EventsMutation {
 	return euo.mutation
-}
-
-// ClearWorkflow clears the "workflow" edge to the Workflow entity.
-func (euo *EventsUpdateOne) ClearWorkflow() *EventsUpdateOne {
-	euo.mutation.ClearWorkflow()
-	return euo
 }
 
 // ClearWfeventswait clears all "wfeventswait" edges to the EventsWait entity.
@@ -744,9 +686,6 @@ func (euo *EventsUpdateOne) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (euo *EventsUpdateOne) check() error {
-	if _, ok := euo.mutation.WorkflowID(); euo.mutation.WorkflowCleared() && !ok {
-		return errors.New(`ent: clearing a required unique edge "Events.workflow"`)
-	}
 	if _, ok := euo.mutation.NamespaceID(); euo.mutation.NamespaceCleared() && !ok {
 		return errors.New(`ent: clearing a required unique edge "Events.namespace"`)
 	}
@@ -825,40 +764,8 @@ func (euo *EventsUpdateOne) sqlSave(ctx context.Context) (_node *Events, err err
 	if value, ok := euo.mutation.UpdatedAt(); ok {
 		_spec.SetField(events.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if euo.mutation.WorkflowCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   events.WorkflowTable,
-			Columns: []string{events.WorkflowColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: workflow.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := euo.mutation.WorkflowIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   events.WorkflowTable,
-			Columns: []string{events.WorkflowColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: workflow.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	if value, ok := euo.mutation.WorkflowID(); ok {
+		_spec.SetField(events.FieldWorkflowID, field.TypeUUID, value)
 	}
 	if euo.mutation.WfeventswaitCleared() {
 		edge := &sqlgraph.EdgeSpec{

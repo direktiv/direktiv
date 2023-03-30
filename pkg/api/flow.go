@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"io"
 	"net/http"
 	"strconv"
@@ -2604,52 +2605,33 @@ func (h *flowHandler) GetNode(w http.ResponseWriter, r *http.Request) {
 	var err error
 	var p *grpc.Pagination
 
-	if ref != "" {
-		goto workflow
-	}
-
 	p, err = pagination(r)
 	if err != nil {
 		badRequest(w, err)
 		return
 	}
 
-	{
-		node, err := h.client.Node(ctx, &grpc.NodeRequest{
-			Namespace: namespace,
-			Path:      path,
-		})
-		if err != nil {
-			respond(w, node, err)
-			return
-		}
-
-		switch node.Node.Type {
-		case "directory":
-			goto directory
-		case "workflow":
-			goto workflow
-		}
-	}
-
-directory:
-
 	resp, err = h.client.Directory(ctx, &grpc.DirectoryRequest{
 		Pagination: p,
 		Namespace:  namespace,
 		Path:       path,
 	})
-	respond(w, resp, err)
-	return
+	if err == nil {
+		respond(w, resp, err)
 
-workflow:
+		return
+	}
+	if !strings.Contains(err.Error(), filestore.ErrPathIsNotDirectory.Error()) {
+		respond(w, resp, err)
+
+		return
+	}
 
 	resp, err = h.client.Workflow(ctx, &grpc.WorkflowRequest{
 		Namespace: namespace,
 		Path:      path,
 		Ref:       ref,
 	})
-
 	respond(w, resp, err)
 }
 

@@ -103,4 +103,4 @@ direktivctl-darwin-arm64
 direktivctl-windows
 direktivctl
 
-tests/jest/node_modules
+*node_modules

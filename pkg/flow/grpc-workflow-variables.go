@@ -1,5 +1,7 @@
+// TODO: yassir, need refactor.
 package flow
 
+/*
 import (
 	"bytes"
 	"context"
@@ -913,3 +915,4 @@ func (flow *flow) RenameWorkflowVariable(ctx context.Context, req *grpc.RenameWo
 
 	return &resp, nil
 }
+*/

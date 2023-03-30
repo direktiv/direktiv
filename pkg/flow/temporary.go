@@ -13,7 +13,6 @@ import (
 	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	entns "github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	entvar "github.com/direktiv/direktiv/pkg/flow/ent/varref"
-	entwf "github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	log "github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/direktiv/direktiv/pkg/flow/states"
@@ -62,7 +61,8 @@ func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.Variab
 			// 	return nil, derrors.NewInternalError(err)
 			// }
 
-			ref, err = clients.VarRef.Query().Where(entvar.HasWorkflowWith(entwf.ID(im.cached.Workflow.ID))).Where(entvar.NameEQ(key)).WithVardata().Only(ctx)
+			// TODO: yassir, refactor fix.
+			//ref, err = clients.VarRef.Query().Where(entvar.HasWorkflowWith(entwf.ID(im.cached.Workflow.ID))).Where(entvar.NameEQ(key)).WithVardata().Only(ctx)
 
 		case util.VarScopeNamespace:
 
@@ -189,97 +189,99 @@ func (im *instanceMemory) RetrieveSecret(ctx context.Context, secret string) (st
 }
 
 func (im *instanceMemory) SetVariables(ctx context.Context, vars []states.VariableSetter) error {
-	tctx, tx, err := im.engine.database.Tx(ctx)
-	if err != nil {
-		return err
-	}
-	defer rollback(tx)
-
-	clients := im.engine.edb.Clients(tctx)
-
-	for idx := range vars {
-
-		v := vars[idx]
-
-		var q varQuerier
-
-		var thread bool
-
-		switch v.Scope {
-
-		case "":
-
-			fallthrough
-
-		case "instance":
-
-			q = &entInstanceVarQuerier{
-				clients: clients,
-				cached:  im.cached,
-			}
-
-		case "thread":
-
-			q = &entInstanceVarQuerier{
-				clients: clients,
-				cached:  im.cached,
-			}
-
-			thread = true
-
-		case "workflow":
-
-			q = &entWorkflowVarQuerier{
-				clients: clients,
-				cached:  im.cached,
-			}
-
-		case "namespace":
-
-			q = &entNamespaceVarQuerier{
-				clients: clients,
-				cached:  im.cached,
-			}
-
-		default:
-			return derrors.NewInternalError(errors.New("invalid scope"))
-		}
-
-		// if statements have to be same order
-
-		d := string(v.Data)
-
-		if len(d) == 0 {
-			_, _, err = im.engine.flow.DeleteVariable(tctx, q, v.Key, v.Data, v.MIMEType, thread)
-			if err != nil {
-				return err
-			}
-			continue
-
-		}
-
-		if !(v.MIMEType == "text/plain; charset=utf-8" || v.MIMEType == "text/plain" || v.MIMEType == "application/octet-stream") && (d == "{}" || d == "[]" || d == "0" || d == `""` || d == "null") {
-			_, _, err = im.engine.flow.DeleteVariable(tctx, q, v.Key, v.Data, v.MIMEType, thread)
-			if err != nil {
-				return err
-			}
-			continue
-
-		} else {
-			_, _, err = im.engine.flow.SetVariable(tctx, q, v.Key, v.Data, v.MIMEType, thread)
-			if err != nil {
-				return err
-			}
-		}
-
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		return err
-	}
-
+	// TODO: yassir, need refactor.
 	return nil
+	//tctx, tx, err := im.engine.database.Tx(ctx)
+	//if err != nil {
+	//	return err
+	//}
+	//defer rollback(tx)
+	//
+	//clients := im.engine.edb.Clients(tctx)
+	//
+	//for idx := range vars {
+	//
+	//	v := vars[idx]
+	//
+	//	var q varQuerier
+	//
+	//	var thread bool
+	//
+	//	switch v.Scope {
+	//
+	//	case "":
+	//
+	//		fallthrough
+	//
+	//	case "instance":
+	//
+	//		q = &entInstanceVarQuerier{
+	//			clients: clients,
+	//			cached:  im.cached,
+	//		}
+	//
+	//	case "thread":
+	//
+	//		q = &entInstanceVarQuerier{
+	//			clients: clients,
+	//			cached:  im.cached,
+	//		}
+	//
+	//		thread = true
+	//
+	//	case "workflow":
+	//
+	//		q = &entWorkflowVarQuerier{
+	//			clients: clients,
+	//			cached:  im.cached,
+	//		}
+	//
+	//	case "namespace":
+	//
+	//		q = &entNamespaceVarQuerier{
+	//			clients: clients,
+	//			cached:  im.cached,
+	//		}
+	//
+	//	default:
+	//		return derrors.NewInternalError(errors.New("invalid scope"))
+	//	}
+	//
+	//	// if statements have to be same order
+	//
+	//	d := string(v.Data)
+	//
+	//	if len(d) == 0 {
+	//		_, _, err = im.engine.flow.DeleteVariable(tctx, q, v.Key, v.Data, v.MIMEType, thread)
+	//		if err != nil {
+	//			return err
+	//		}
+	//		continue
+	//
+	//	}
+	//
+	//	if !(v.MIMEType == "text/plain; charset=utf-8" || v.MIMEType == "text/plain" || v.MIMEType == "application/octet-stream") && (d == "{}" || d == "[]" || d == "0" || d == `""` || d == "null") {
+	//		_, _, err = im.engine.flow.DeleteVariable(tctx, q, v.Key, v.Data, v.MIMEType, thread)
+	//		if err != nil {
+	//			return err
+	//		}
+	//		continue
+	//
+	//	} else {
+	//		_, _, err = im.engine.flow.SetVariable(tctx, q, v.Key, v.Data, v.MIMEType, thread)
+	//		if err != nil {
+	//			return err
+	//		}
+	//	}
+	//
+	//}
+	//
+	//err = tx.Commit()
+	//if err != nil {
+	//	return err
+	//}
+	//
+	//return nil
 }
 
 func (im *instanceMemory) Sleep(ctx context.Context, d time.Duration, x interface{}) error {

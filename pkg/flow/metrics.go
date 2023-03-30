@@ -160,93 +160,95 @@ func setupPrometheusEndpoint() error {
 // WorkflowMetrics - Gets the Workflow metrics of a given Workflow Revision Ref
 // if ref is not set in the request, it will be automatically be set to latest.
 func (flow *flow) WorkflowMetrics(ctx context.Context, req *grpc.WorkflowMetricsRequest) (*grpc.WorkflowMetricsResponse, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
-
-	cached, err := flow.traverseToRef(ctx, req.GetNamespace(), req.GetPath(), req.GetRef())
-	if err != nil {
-		return nil, err
-	}
-
-	resp, err := flow.metrics.GetMetrics(&metrics.GetMetricsArgs{
-		Namespace: cached.Namespace.Name,
-		Workflow:  cached.Path(),
-		Revision:  cached.Revision.ID.String(),
-		Since:     req.SinceTimestamp.AsTime(),
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	out := new(grpc.WorkflowMetricsResponse)
-	out.TotalInstancesRun = resp.TotalInstancesRun
-	out.TotalInstanceMilliseconds = resp.TotalInstanceMilliSeconds
-	out.SuccessfulExecutions = resp.SuccessfulExecutions
-	out.FailedExecutions = resp.FailedExecutions
-	out.SampleSize = resp.TotalInstancesRun
-	out.MeanInstanceMilliseconds = resp.MeanInstanceMilliSeconds
-
-	out.ErrorCodes = resp.ErrorCodes
-	out.ErrorCodesRepresentation = resp.ErrorCodesRepresentation
-
-	var sr, fr float32
-	sr = resp.SuccessRate
-	fr = resp.FailureRate
-
-	out.SuccessRate = sr
-	out.FailureRate = fr
-
-	states := make([]*grpc.State, 0)
-	for _, s := range resp.States {
-
-		thisState := s
-
-		is := new(grpc.State)
-		x := thisState.Name
-		is.Name = x
-
-		is.Invokers = thisState.Invokers
-		is.InvokersRepresentation = thisState.InvokersRepresentation
-
-		is.TotalExecutions = thisState.TotalExecutions
-		is.TotalMilliseconds = thisState.TotalMilliSeconds
-		is.TotalSuccesses = thisState.TotalSuccesses
-		is.TotalFailures = thisState.TotalFailures
-		is.TotalRetries = thisState.TotalRetries
-		is.Outcomes = &grpc.Outcomes{
-			Success:     thisState.Outcomes.EndStates.Success,
-			Failure:     thisState.Outcomes.EndStates.Failure,
-			Transitions: s.Outcomes.Transitions,
-		}
-
-		var fr, sr float32
-		sr = thisState.MeanOutcomes.EndStates.Success
-		fr = thisState.MeanOutcomes.EndStates.Failure
-
-		is.MeanOutcomes = &grpc.MeanOutcomes{
-			Success:     sr,
-			Failure:     fr,
-			Transitions: s.MeanOutcomes.Transitions,
-		}
-		is.MeanExecutionsPerInstance = thisState.MeanExecutionsPerInstance
-		is.MeanMillisecondsPerInstance = thisState.MeanMilliSecondsPerInstance
-
-		sr2 := thisState.SuccessRate
-		fr2 := thisState.FailureRate
-		ar := thisState.MeanRetries
-
-		is.SuccessRate = sr2
-		is.FailureRate = fr2
-		is.MeanRetries = ar
-
-		is.UnhandledErrors = thisState.UnhandledErrors
-		is.UnhandledErrorsRepresentation = thisState.UnhandledErrorsRepresentation
-
-		states = append(states, is)
-	}
-
-	out.States = states
-
-	return out, nil
+	// TODO: yassir, need refactor.
+	return new(grpc.WorkflowMetricsResponse), nil
+	//flow.sugar.Debugf("Handling gRPC request: %s", this())
+	//
+	//cached, err := flow.traverseToRef(ctx, req.GetNamespace(), req.GetPath(), req.GetRef())
+	//if err != nil {
+	//	return nil, err
+	//}
+	//
+	//resp, err := flow.metrics.GetMetrics(&metrics.GetMetricsArgs{
+	//	Namespace: cached.Namespace.Name,
+	//	Workflow:  cached.Path(),
+	//	Revision:  cached.Revision.ID.String(),
+	//	Since:     req.SinceTimestamp.AsTime(),
+	//})
+	//if err != nil {
+	//	return nil, err
+	//}
+	//
+	//out := new(grpc.WorkflowMetricsResponse)
+	//out.TotalInstancesRun = resp.TotalInstancesRun
+	//out.TotalInstanceMilliseconds = resp.TotalInstanceMilliSeconds
+	//out.SuccessfulExecutions = resp.SuccessfulExecutions
+	//out.FailedExecutions = resp.FailedExecutions
+	//out.SampleSize = resp.TotalInstancesRun
+	//out.MeanInstanceMilliseconds = resp.MeanInstanceMilliSeconds
+	//
+	//out.ErrorCodes = resp.ErrorCodes
+	//out.ErrorCodesRepresentation = resp.ErrorCodesRepresentation
+	//
+	//var sr, fr float32
+	//sr = resp.SuccessRate
+	//fr = resp.FailureRate
+	//
+	//out.SuccessRate = sr
+	//out.FailureRate = fr
+	//
+	//states := make([]*grpc.State, 0)
+	//for _, s := range resp.States {
+	//
+	//	thisState := s
+	//
+	//	is := new(grpc.State)
+	//	x := thisState.Name
+	//	is.Name = x
+	//
+	//	is.Invokers = thisState.Invokers
+	//	is.InvokersRepresentation = thisState.InvokersRepresentation
+	//
+	//	is.TotalExecutions = thisState.TotalExecutions
+	//	is.TotalMilliseconds = thisState.TotalMilliSeconds
+	//	is.TotalSuccesses = thisState.TotalSuccesses
+	//	is.TotalFailures = thisState.TotalFailures
+	//	is.TotalRetries = thisState.TotalRetries
+	//	is.Outcomes = &grpc.Outcomes{
+	//		Success:     thisState.Outcomes.EndStates.Success,
+	//		Failure:     thisState.Outcomes.EndStates.Failure,
+	//		Transitions: s.Outcomes.Transitions,
+	//	}
+	//
+	//	var fr, sr float32
+	//	sr = thisState.MeanOutcomes.EndStates.Success
+	//	fr = thisState.MeanOutcomes.EndStates.Failure
+	//
+	//	is.MeanOutcomes = &grpc.MeanOutcomes{
+	//		Success:     sr,
+	//		Failure:     fr,
+	//		Transitions: s.MeanOutcomes.Transitions,
+	//	}
+	//	is.MeanExecutionsPerInstance = thisState.MeanExecutionsPerInstance
+	//	is.MeanMillisecondsPerInstance = thisState.MeanMilliSecondsPerInstance
+	//
+	//	sr2 := thisState.SuccessRate
+	//	fr2 := thisState.FailureRate
+	//	ar := thisState.MeanRetries
+	//
+	//	is.SuccessRate = sr2
+	//	is.FailureRate = fr2
+	//	is.MeanRetries = ar
+	//
+	//	is.UnhandledErrors = thisState.UnhandledErrors
+	//	is.UnhandledErrorsRepresentation = thisState.UnhandledErrorsRepresentation
+	//
+	//	states = append(states, is)
+	//}
+	//
+	//out.States = states
+	//
+	//return out, nil
 }
 
 func (engine *engine) metricsCompleteState(ctx context.Context, im *instanceMemory, nextState, errCode string, retrying bool) {

@@ -1,5 +1,9 @@
 package flow
 
+// TODO: yassir, refactoring needed.
+
+/*
+
 import (
 	"context"
 	"errors"
@@ -643,3 +647,4 @@ func (flow *flow) DeleteNodeAttributes(ctx context.Context, req *grpc.DeleteNode
 
 	return &resp, nil
 }
+*/
