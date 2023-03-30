@@ -7,7 +7,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../../../design/Dropdown";
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import {
   Folder,
   FolderUp,
@@ -42,6 +42,13 @@ const ExplorerPage: FC = () => {
   const [deleteNode, setDeleteNode] = useState<NodeSchemaType>();
   const [renameNode, setRenameNode] = useState<NodeSchemaType>();
 
+  useEffect(() => {
+    if (dialogOpen === false) {
+      setDeleteNode(undefined);
+      setRenameNode(undefined);
+    }
+  }, [dialogOpen]);
+
   if (!namespace) return null;
 
   return (
@@ -49,16 +56,7 @@ const ExplorerPage: FC = () => {
       <ExplorerHeader />
       <div className="flex flex-col space-y-5 p-5 text-sm">
         <div className="flex flex-col space-y-5 ">
-          <Dialog
-            open={dialogOpen}
-            onOpenChange={(isOpen) => {
-              if (isOpen === false) {
-                setDeleteNode(undefined);
-                setRenameNode(undefined);
-              }
-              setDialogOpen(isOpen);
-            }}
-          >
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             {!isRoot && (
               <Link
                 to={pages.explorer.createHref({
