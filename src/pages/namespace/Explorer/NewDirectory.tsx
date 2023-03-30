@@ -72,7 +72,7 @@ const NewDirectory = ({
     <>
       <DialogHeader>
         <DialogTitle>
-          <Folder /> Create a new Folder
+          <Folder /> Create a new directory
         </DialogTitle>
       </DialogHeader>
 
