@@ -1,5 +1,9 @@
 import { describe, expect, test } from "vitest";
-import { forceSlashIfPath, sortFoldersFirst } from "../utils";
+import {
+  forceSlashIfPath,
+  removeSlashIfPath,
+  sortFoldersFirst,
+} from "../utils";
 
 import { NodeSchemaType } from "../schema";
 
@@ -47,7 +51,33 @@ describe("forceSlashIfPath", () => {
     expect(forceSlashIfPath("/path")).toBe("/path");
   });
 
+  test("empty string -> empty string", () => {
+    expect(forceSlashIfPath("")).toBe("");
+  });
+
   test("undefined -> empty string", () => {
     expect(forceSlashIfPath()).toBe("");
+  });
+});
+
+describe("removeSlashIfPath", () => {
+  test("/path -> path", () => {
+    expect(removeSlashIfPath("/path")).toBe("path");
+  });
+
+  test("path -> path", () => {
+    expect(removeSlashIfPath("path")).toBe("path");
+  });
+
+  test("/ -> empty string", () => {
+    expect(removeSlashIfPath("/")).toBe("");
+  });
+
+  test("empty string -> empty string", () => {
+    expect(removeSlashIfPath("")).toBe("");
+  });
+
+  test("undefined -> empty string", () => {
+    expect(removeSlashIfPath()).toBe("");
   });
 });
