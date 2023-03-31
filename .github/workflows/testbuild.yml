@@ -3,15 +3,10 @@ on:
   push:
     branches-ignore:
       - 'main'
-  pull_request:
-    branches-ignore:
-      - 'main'
-  
 jobs:
   build:
-    name: Make test build 
+    name: Make build and run testsuite
     runs-on: ubuntu-latest
-
     steps:
       - name: Check out Git repository
         uses: actions/checkout@v3
