@@ -95,8 +95,7 @@
     "check:types": "tsc --tsBuildInfoFile .tsbuildinfo --incremental",
     "check:prettier": "prettier --check './src/**/*.{js,jsx,ts,tsx,json,scss,css}'",
     "check:test": "vitest run",
-    "prettier": "prettier --write './src/**/*.{js,jsx,ts,tsx,json,scss,css}'",
-    "chromatic": "npx chromatic --build-script-name=storybook:build"
+    "prettier": "prettier --write './src/**/*.{js,jsx,ts,tsx,json,scss,css}'"
   },
   "resolutions": {
     "babel-loader": "8.1.0",
