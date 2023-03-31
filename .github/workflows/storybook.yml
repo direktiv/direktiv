@@ -14,8 +14,12 @@ jobs:
       - uses: actions/checkout@v3
         with: 
           fetch-depth: 0 # chromatic needs all commits
-      - name: Install dependencies
-        run: yarn
+      - name: install dependencies
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.13
+      - run: npm install -g yarn
+      - run: yarn install
       - name: publish to chromatic
         env:
           CHROMATIC_PROJECT_TOKEN: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
