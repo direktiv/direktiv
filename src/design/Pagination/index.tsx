@@ -12,7 +12,7 @@ export const Pagination: React.FC<PaginationProps> = ({
 }) => (
   <div
     className={clsx(
-      "flex border-t border-gray-2 bg-white px-4 py-3 sm:px-6 ",
+      "flex border-t border-gray-2 bg-gray-1 px-4 py-3 dark:border-gray-10 dark:bg-gray-dark-1 sm:px-6 ",
       align === "center" && "justify-center",
       align === "right" && "justify-end",
       align === "left" && "justify-start"
@@ -36,18 +36,13 @@ export interface PaginationLinkProps {
 export const PaginationLink = React.forwardRef<
   HTMLButtonElement,
   React.ButtonHTMLAttributes<HTMLButtonElement> & PaginationLinkProps
->(({ children, key, onClick, active, icon = false }, ref) => {
-  const inactiveClass =
-    "relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-3 hover:bg-gray-1 focus:z-20 focus:outline-offset-0 cursor-pointer dark:bg-gray-12 dark:text-gray-1";
-  const activeClass =
-    "relative z-10 inline-flex items-center bg-gray-12 px-4 py-2 text-sm font-semibold text-gray-1 focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 cursor-pointer dark:bg-gray-dark-12 dark:text-gray-dark-1";
-
-  return icon ? (
+>(({ children, key, onClick, active, icon = false }, ref) =>
+  icon ? (
     <button
       ref={ref}
       key={key}
       onClick={onClick}
-      className="relative inline-flex cursor-pointer items-center p-2 text-gray-4 ring-1 ring-inset ring-gray-3 hover:bg-gray-1 focus:z-20 focus:outline-offset-0 dark:bg-gray-12 dark:text-gray-1"
+      className="relative inline-flex cursor-pointer items-center p-2 text-gray-4 ring-1 ring-inset ring-gray-3 hover:bg-gray-1 focus:z-20 focus:outline-offset-0 dark:bg-gray-dark-1 dark:text-white dark:ring-gray-dark-3  dark:hover:bg-gray-dark-1"
     >
       {children}
     </button>
@@ -57,10 +52,16 @@ export const PaginationLink = React.forwardRef<
       key={key}
       onClick={onClick}
       aria-current="page"
-      className={active ? activeClass : inactiveClass}
+      className={clsx(
+        "relative inline-flex cursor-pointer items-center px-4 py-2 text-sm font-semibold focus:z-20",
+        active &&
+          "z-10 bg-gray-12 text-gray-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-1 dark:bg-gray-dark-12 dark:text-gray-dark-1  dark:focus-visible:outline-gray-dark-1",
+        !active &&
+          "text-gray-900 ring-1 ring-inset ring-gray-3 hover:bg-gray-1 focus:outline-offset-0 dark:bg-gray-12 dark:text-gray-1 dark:ring-gray-dark-3 dark:hover:bg-gray-dark-1"
+      )}
     >
       {children}
     </button>
-  );
-});
+  )
+);
 PaginationLink.displayName = "PaginationLink";
