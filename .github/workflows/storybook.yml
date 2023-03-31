@@ -11,16 +11,11 @@ jobs:
     runs-on: ubuntu-latest
     # Job steps
     steps:
-      - uses: actions/checkout@v3
-        with: 
-          fetch-depth: 0 # chromatic needs all commits
-      - name: install dependencies
-        uses: actions/setup-node@v3
+      - uses: actions/checkout@v1
+      - name: Install dependencies
+        run: yarn
+      - name: Publish to Chromatic
+        uses: chromaui/action@v1
         with:
-          node-version: 18.13
-      - run: npm install -g yarn
-      - run: yarn install
-      - name: publish to chromatic
-        env:
-          CHROMATIC_PROJECT_TOKEN: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
-        run: npx chromatic --build-script-name=storybook:build
+          projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
+          buildScriptName: storybook:build
