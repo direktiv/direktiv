@@ -1,27 +1,31 @@
 import {
   NodeSchemaType,
   TreeListSchemaType,
-  TreeNodeDeletedSchema,
+  TreeNodeRenameSchema,
 } from "../schema";
 import { apiFactory, defaultKeys } from "../../utils";
+import {
+  forceLeadingSlash,
+  removeLeadingSlash,
+  removeTrailingSlash,
+} from "../utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { forceLeadingSlash } from "../utils";
 import { treeKeys } from "..";
 import { useApiKey } from "../../../util/store/apiKey";
 import { useNamespace } from "../../../util/store/namespace";
 import { useToast } from "../../../design/Toast";
 
-const deleteNode = apiFactory({
+const renameNode = apiFactory({
   pathFn: ({ namespace, path }: { namespace: string; path: string }) =>
     `/api/namespaces/${namespace}/tree${forceLeadingSlash(
       path
-    )}/?op=delete-node&recursive=true`,
-  method: "DELETE",
-  schema: TreeNodeDeletedSchema,
+    )}/?op=rename-node`,
+  method: "POST",
+  schema: TreeNodeRenameSchema,
 });
 
-export const useDeleteNode = ({
+export const useRenameNode = ({
   onSuccess,
 }: { onSuccess?: () => void } = {}) => {
   const apiKey = useApiKey();
@@ -34,16 +38,24 @@ export const useDeleteNode = ({
   }
 
   return useMutation({
-    mutationFn: ({ node }: { node: NodeSchemaType }) =>
-      deleteNode({
+    mutationFn: ({
+      node,
+      newName,
+    }: {
+      node: NodeSchemaType;
+      newName: string;
+    }) =>
+      renameNode({
         apiKey: apiKey ?? undefined,
-        params: undefined,
+        params: {
+          new: `${removeLeadingSlash(node.parent)}/${newName}`,
+        },
         pathParams: {
           path: node.path,
           namespace: namespace,
         },
       }),
-    onSuccess(_, variables) {
+    onSuccess(data, variables) {
       queryClient.setQueryData<TreeListSchemaType>(
         treeKeys.all(
           apiKey ?? defaultKeys.apiKey,
@@ -59,9 +71,24 @@ export const useDeleteNode = ({
               ? {
                   children: {
                     ...oldChildren,
-                    results: oldChildren?.results.filter(
-                      (child) => child.name !== variables.node.name
-                    ),
+                    results: oldChildren?.results.map((child) => {
+                      if (child.path === variables.node.path) {
+                        return {
+                          ...data.node,
+                          // there is a bug in the API where the returned data after
+                          // a rename is wrong. The name and updatedAt are not updated
+                          // and the parent will have a trailing slash, which it does
+                          // not have in the original data from the tree list
+                          name: variables.newName,
+                          parent:
+                            variables.node.parent === "/"
+                              ? "/"
+                              : removeTrailingSlash(variables.node.parent),
+                          updatedAt: new Date().toISOString(),
+                        };
+                      }
+                      return child;
+                    }),
                   },
                 }
               : {}),
@@ -71,8 +98,8 @@ export const useDeleteNode = ({
       toast({
         title: `${
           variables.node.type === "workflow" ? "workflow" : "directory"
-        } deleted`,
-        description: `${variables.node.name} was deleted`,
+        } renamed`,
+        description: `${variables.node.name} was renamed`,
         variant: "success",
       });
       onSuccess?.();
@@ -80,7 +107,7 @@ export const useDeleteNode = ({
     onError: () => {
       toast({
         title: "An error occurred",
-        description: "could not delete 😢",
+        description: "could not rename 😢",
         variant: "error",
       });
     },

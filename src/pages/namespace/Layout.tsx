@@ -34,7 +34,7 @@ import Breadcrumb from "../../componentsNext/Breadcrumb";
 import Button from "../../design/Button";
 import { FC } from "react";
 import Logo from "../../design/Logo";
-import Navigation from "../../design/Navigation";
+import Navigation from "../../componentsNext/Navigation";
 import { Outlet } from "react-router-dom";
 import { RxChevronDown } from "react-icons/rx";
 import clsx from "clsx";

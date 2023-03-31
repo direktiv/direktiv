@@ -1,9 +1,9 @@
-import { ThemeProvider } from "@mui/material/styles";
-import withTailwindThemeDecorator from "./withTailwindTheme.decorator";
-import React from "react";
-import "../src/app.css";
+import "../src/App.css";
 
+import React from "react";
+import { ThemeProvider } from "@mui/material/styles";
 import theme from "../src/theme/style";
+import withTailwindThemeDecorator from "./withTailwindTheme.decorator";
 
 export const parameters = {
   actions: { argTypesRegex: "^on[A-Z].*" },

@@ -1,10 +1,24 @@
 import { NodeSchemaType } from "./schema";
 
-export const forceSlashIfPath = (path?: string) => {
+export const forceLeadingSlash = (path?: string) => {
   if (!path) {
     return "";
   }
   return path.startsWith("/") ? path : `/${path}`;
+};
+
+export const removeLeadingSlash = (path?: string) => {
+  if (!path) {
+    return "";
+  }
+  return path.startsWith("/") ? path.slice(1) : path;
+};
+
+export const removeTrailingSlash = (path?: string) => {
+  if (!path) {
+    return "";
+  }
+  return path.endsWith("/") ? path.slice(0, -1) : path;
 };
 
 export const sortFoldersFirst = (
