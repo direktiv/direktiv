@@ -22,6 +22,8 @@ const API_KEY = "THIS-IS-MY-API-KEY";
 const apiEndpoint = "http://localhost/my-api";
 const apiEndpoint404 = "http://localhost/404";
 const apiEndpointWithDynamicSegment = "http://localhost/this-is-dynamic/my-api";
+const apiEndpointEmptyResponse = "http://localhost/empty-response";
+const apiEndpointTextResponse = "http://localhost/text-response";
 
 const testApi = setupServer(
   rest.get(apiEndpoint, (req, res, ctx) =>
@@ -42,7 +44,11 @@ const testApi = setupServer(
         )
       : res(ctx.status(401))
   ),
-  rest.get(apiEndpoint404, (_req, res, ctx) => res(ctx.status(404)))
+  rest.get(apiEndpoint404, (_req, res, ctx) => res(ctx.status(404))),
+  rest.get(apiEndpointEmptyResponse, (_req, res, ctx) => res(ctx.status(204))),
+  rest.get(apiEndpointTextResponse, (_req, res, ctx) =>
+    res(ctx.text("this is a text response"))
+  )
 );
 
 beforeAll(() => {
@@ -70,6 +76,18 @@ const getMyApiWrongSchema = apiFactory({
   schema: z.object({
     response: z.number(), // this will fail, since the repsonse is a string
   }),
+});
+
+const emptyResponse = apiFactory({
+  pathFn: () => apiEndpointEmptyResponse,
+  method: "GET",
+  schema: z.null(),
+});
+
+const textResponse = apiFactory({
+  pathFn: () => apiEndpointTextResponse,
+  method: "GET",
+  schema: z.string(),
 });
 
 const api404 = apiFactory({
@@ -134,6 +152,46 @@ describe("processApiResponse", () => {
       expect(errorMock.mock.calls[0][0]).toMatchInlineSnapshot(
         '"error 401 for GET http://localhost/my-api"'
       );
+    });
+  });
+
+  test("api response is empty but valid (result is null)", async () => {
+    const useCallWithEmptyResponse = () =>
+      useQuery({
+        queryKey: ["emptyresponse"],
+        queryFn: () =>
+          emptyResponse({
+            params: undefined,
+            pathParams: undefined,
+          }),
+      });
+
+    const { result } = renderHook(() => useCallWithEmptyResponse(), {
+      wrapper: UseQueryWrapper,
+    });
+    await waitFor(() => {
+      expect(result.current.isSuccess).toBe(true);
+      expect(result.current.data).toBe(null);
+    });
+  });
+
+  test("api response is plain text", async () => {
+    const useCallWithTextResponse = () =>
+      useQuery({
+        queryKey: ["textResponse"],
+        queryFn: () =>
+          textResponse({
+            params: undefined,
+            pathParams: undefined,
+          }),
+      });
+
+    const { result } = renderHook(() => useCallWithTextResponse(), {
+      wrapper: UseQueryWrapper,
+    });
+    await waitFor(() => {
+      expect(result.current.isSuccess).toBe(true);
+      expect(result.current.data).toBe("this is a text response");
     });
   });
 

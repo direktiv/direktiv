@@ -2,8 +2,11 @@ name: 'Publish Storybook to Chromatic'
 
 on:
   push:
-    branches:
-      - featurePLEASECHANGEME/**
+    branches-ignore:
+      - 'main'
+  pull_request:
+    branches-ignore:
+      - 'main'
 
 jobs:
   test:
@@ -12,9 +15,10 @@ jobs:
     # Job steps
     steps:
       - uses: actions/checkout@v3
-      - run: yarn
-      - uses: chromaui/action@v1
+      - name: Install dependencies
+        run: yarn
+      - name: Publish to Chromatic
+        uses: chromaui/action@v1
         with:
           projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
-          token: ${{ secrets.GITHUB_TOKEN }}
           buildScriptName: storybook:build
