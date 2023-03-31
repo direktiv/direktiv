@@ -89,13 +89,14 @@
     "prebuild": "yarn run check",
     "test": "vitest",
     "storybook": "NODE_OPTIONS=--openssl-legacy-provider storybook dev -p 6006 -s public",
-    "build-storybook": "storybook build",
+    "storybook:build": "storybook build",
     "check": "run-s check:*",
     "check:lint": "eslint src --ext .js,.jsx,.ts,.tsx",
     "check:types": "tsc --tsBuildInfoFile .tsbuildinfo --incremental",
     "check:prettier": "prettier --check './src/**/*.{js,jsx,ts,tsx,json,scss,css}'",
     "check:test": "vitest run",
     "prettier": "prettier --write './src/**/*.{js,jsx,ts,tsx,json,scss,css}'",
+    "chromatic": "npx chromatic --build-script-name=storybook:build"
   },
   "resolutions": {
     "babel-loader": "8.1.0",
