@@ -47,6 +47,14 @@ const Button = React.forwardRef<
           "bg-danger-10 text-gray-1 hover:bg-danger-11",
           "dark:bg-danger-dark-10 dark:text-gray-dark-1 dark:hover:bg-danger-dark-11",
         ],
+        variant === "outline" && [
+          "border border-gray-4 bg-transparent hover:bg-gray-2",
+          "dark:border-gray-dark-4 dark:hover:bg-gray-dark-2",
+        ],
+        variant === "primary" && [
+          "bg-primary-500  text-gray-1 hover:bg-primary-600",
+          "dark:text-gray-dark-1",
+        ],
         variant === "ghost" && [
           "bg-transparent hover:bg-gray-3 data-[state=open]:bg-transparent",
           "hover:bg-gray-3",
