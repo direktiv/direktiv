@@ -1,20 +1,17 @@
 name: 'Publish Storybook to Chromatic'
-
 on:
   push:
     branches-ignore:
       - 'main'
-  pull_request:
-    branches-ignore:
-      - 'main'
-
 jobs:
-  test:
-    # Operating System
+  build:
+    name: Build and test design system
     runs-on: ubuntu-latest
     # Job steps
     steps:
       - uses: actions/checkout@v3
+        with: 
+          fetch-depth: 0 # chromatic needs all commits
       - name: Install dependencies
         run: yarn
       - name: Publish to Chromatic
