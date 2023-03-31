@@ -1,13 +1,11 @@
 name: 'Publish Storybook to Chromatic'
-
 on:
   push:
     branches-ignore:
       - 'main'
-
 jobs:
-  test:
-    # Operating System
+  build:
+    name: Build and test design system
     runs-on: ubuntu-latest
     # Job steps
     steps:
