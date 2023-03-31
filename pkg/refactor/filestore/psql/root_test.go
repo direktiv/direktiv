@@ -8,16 +8,20 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/direktiv/direktiv/pkg/refactor/utils"
+
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore/psql"
 	"github.com/google/uuid"
 )
 
 func TestRoot_CreateFile(t *testing.T) {
-	fs, err := psql.NewMockFileStore()
+	db, err := utils.NewMockGorm()
 	if err != nil {
-		t.Fatalf("unepxected NewMockFileStore() error = %v", err)
+		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}
+	fs := psql.NewSQLFileStore(db)
+
 	root, err := fs.CreateRoot(context.Background(), uuid.UUID{})
 	if err != nil {
 		t.Fatalf("unepxected CreateRoot() error = %v", err)
@@ -81,10 +85,12 @@ func assertRootCorrectFileCreation(t *testing.T, fs filestore.FileStore, root *f
 }
 
 func TestRoot_CorrectReadDirectory(t *testing.T) {
-	fs, err := psql.NewMockFileStore()
+	db, err := utils.NewMockGorm()
 	if err != nil {
-		t.Fatalf("unepxected NewMockFileStore() error = %v", err)
+		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}
+	fs := psql.NewSQLFileStore(db)
+
 	root, err := fs.CreateRoot(context.Background(), uuid.New())
 	if err != nil {
 		t.Fatalf("unepxected CreateRoot() error = %v", err)
@@ -142,10 +148,12 @@ func TestRoot_CorrectReadDirectory(t *testing.T) {
 }
 
 func TestRoot_CalculateChecksumDirectory(t *testing.T) {
-	fs, err := psql.NewMockFileStore()
+	db, err := utils.NewMockGorm()
 	if err != nil {
-		t.Fatalf("unepxected NewMockFileStore() error = %v", err)
+		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}
+	fs := psql.NewSQLFileStore(db)
+
 	root, err := fs.CreateRoot(context.Background(), uuid.New())
 	if err != nil {
 		t.Fatalf("unepxected CreateRoot() error = %v", err)

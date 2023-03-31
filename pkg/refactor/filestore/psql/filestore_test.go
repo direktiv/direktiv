@@ -4,6 +4,8 @@ import (
 	"context"
 	"testing"
 
+	"github.com/direktiv/direktiv/pkg/refactor/utils"
+
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore/psql"
 	"github.com/google/uuid"
@@ -60,10 +62,11 @@ func assertFileStoreCorrectRootDeletion(t *testing.T, fs filestore.FileStore, id
 }
 
 func Test_sqlFileStore_CreateRoot(t *testing.T) {
-	fs, err := psql.NewMockFileStore()
+	db, err := utils.NewMockGorm()
 	if err != nil {
-		t.Fatalf("unepxected NewMockFileStore() error = %v", err)
+		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}
+	fs := psql.NewSQLFileStore(db)
 
 	tests := []struct {
 		name string
@@ -81,10 +84,11 @@ func Test_sqlFileStore_CreateRoot(t *testing.T) {
 }
 
 func Test_sqlFileStore_ListingAfterCreate(t *testing.T) {
-	fs, err := psql.NewMockFileStore()
+	db, err := utils.NewMockGorm()
 	if err != nil {
-		t.Fatalf("create mock filestore: %s", err)
+		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}
+	fs := psql.NewSQLFileStore(db)
 
 	myRoot1 := uuid.New()
 	myRoot2 := uuid.New()

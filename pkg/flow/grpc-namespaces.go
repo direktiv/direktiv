@@ -281,7 +281,7 @@ func (flow *flow) DeleteNamespace(ctx context.Context, req *grpc.DeleteNamespace
 
 	clients := flow.edb.Clients(ctx)
 
-	isEmpty, err := flow.fStore.ForRootID(ns.ID).IsEmpty(ctx)
+	isEmpty, err := flow.fStore.ForRootID(ns.ID).IsEmptyDirectory(ctx, "/")
 	if err != nil {
 		return nil, err
 	}

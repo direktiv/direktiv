@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
-	"github.com/glebarez/sqlite"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -80,49 +79,10 @@ func (s *SQLFileStore) ForRevision(revision *filestore.Revision) filestore.Revis
 
 var _ filestore.FileStore = &SQLFileStore{} // Ensures SQLFileStore struct conforms to filestore.FileStore interface.
 
-func NewSQLFileStore(db *gorm.DB) (*SQLFileStore, error) {
-	type File struct {
-		filestore.File
-		Revisions []filestore.Revision `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	}
-	type Root struct {
-		filestore.Root
-		Files []File `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	}
-
-	err := db.AutoMigrate(&Root{}, &File{}, &filestore.Revision{})
-	if err != nil {
-		return nil, err
-	}
-
+func NewSQLFileStore(db *gorm.DB) *SQLFileStore {
 	return &SQLFileStore{
 		db: db,
-	}, nil
-}
-
-func NewMockFileStore() (*SQLFileStore, error) {
-	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
-	if err != nil {
-		return nil, err
 	}
-
-	type File struct {
-		filestore.File
-		Revisions []filestore.Revision `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	}
-	type Root struct {
-		filestore.Root
-		Files []File `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	}
-
-	err = db.AutoMigrate(&Root{}, &File{}, &filestore.Revision{})
-	if err != nil {
-		return nil, err
-	}
-
-	return &SQLFileStore{
-		db: db,
-	}, nil
 }
 
 func (s *SQLFileStore) CreateRoot(ctx context.Context, id uuid.UUID) (*filestore.Root, error) {

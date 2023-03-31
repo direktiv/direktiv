@@ -10,6 +10,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
+
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore/psql"
 	"gorm.io/driver/postgres"
@@ -43,11 +45,13 @@ type server struct {
 	conf     *util.Config
 
 	// db       *ent.Client
-	pubsub   *pubsub.Pubsub
-	locks    *locks
-	timers   *timers
-	engine   *engine
-	fStore   filestore.FileStore
+	pubsub    *pubsub.Pubsub
+	locks     *locks
+	timers    *timers
+	engine    *engine
+	fStore    filestore.FileStore
+	dataStore datastore.Store
+
 	secrets  *secrets
 	flow     *flow
 	internal *internal
@@ -151,13 +155,9 @@ func (srv *server) start(ctx context.Context) error {
 		PreferSimpleProtocol: false, // disables implicit prepared statement usage
 	}), &gorm.Config{})
 	if err != nil {
-		return err
-	}
-
-	srv.fStore, err = psql.NewSQLFileStore(gormDb)
-	if err != nil {
 		return fmt.Errorf("creating filestore, err: %s", err)
 	}
+	srv.fStore = psql.NewSQLFileStore(gormDb)
 
 	srv.sugar.Debug("Initializing pub-sub.")
 

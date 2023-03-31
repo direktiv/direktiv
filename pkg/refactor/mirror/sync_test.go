@@ -4,6 +4,8 @@ import (
 	"context"
 	"testing"
 
+	"github.com/direktiv/direktiv/pkg/refactor/utils"
+
 	"github.com/direktiv/direktiv/pkg/refactor/ignorefile"
 
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
@@ -14,10 +16,11 @@ import (
 )
 
 func TestExecuteMirroringProcess(t *testing.T) {
-	fs, err := psql.NewMockFileStore()
+	db, err := utils.NewMockGorm()
 	if err != nil {
-		t.Fatalf("unepxected NewMockFilestore() error = %v", err)
+		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}
+	fs := psql.NewSQLFileStore(db)
 
 	direktivRoot, err := fs.CreateRoot(context.Background(), uuid.New())
 	if err != nil {

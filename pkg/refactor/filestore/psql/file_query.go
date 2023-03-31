@@ -16,6 +16,11 @@ type FileQuery struct {
 	db   *gorm.DB
 }
 
+func (q *FileQuery) SetPath(ctx context.Context, path string) error {
+	// TODO implement me
+	panic("implement me")
+}
+
 func (q *FileQuery) GetRevisionByTag(ctx context.Context, tag string) (*filestore.Revision, error) {
 	if q.file.Typ == filestore.FileTypeDirectory {
 		return nil, filestore.ErrFileTypeIsDirectory

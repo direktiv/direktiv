@@ -36,4 +36,5 @@ type FileQuery interface {
 	Delete(ctx context.Context, force bool) error
 	GetRevision(ctx context.Context, id uuid.UUID) (*Revision, error)
 	GetRevisionByTag(ctx context.Context, tag string) (*Revision, error)
+	SetPath(ctx context.Context, path string) error
 }

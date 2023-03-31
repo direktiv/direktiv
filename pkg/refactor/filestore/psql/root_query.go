@@ -26,13 +26,18 @@ type RootQuery struct {
 	db           *gorm.DB
 }
 
-func (q *RootQuery) IsEmpty(ctx context.Context) (bool, error) {
+func (q *RootQuery) IsEmptyDirectory(ctx context.Context, path string) (bool, error) {
+	path, err := filestore.SanitizePath(path)
+	if err != nil {
+		return false, filestore.ErrInvalidPathParameter
+	}
+
 	// check if root exists.
 	if err := q.checkRootExists(ctx); err != nil {
 		return false, err
 	}
 	count := 0
-	tx := q.db.Raw("SELECT count(id) FROM files WHERE root_id = ?", q.rootID).Scan(&count)
+	tx := q.db.Raw("SELECT count(id) FROM files WHERE root_id = ? AND path LIKE ?", q.rootID, addTrailingSlash(path)+"%").Scan(&count)
 	if tx.Error != nil {
 		return false, tx.Error
 	}
