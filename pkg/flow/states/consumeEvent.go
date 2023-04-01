@@ -8,6 +8,7 @@ import (
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
+	log "github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/senseyeio/duration"
 )
@@ -22,7 +23,6 @@ type consumeEventLogic struct {
 }
 
 func ConsumeEvent(instance Instance, state model.State) (Logic, error) {
-
 	consumeEvent, ok := state.(*model.ConsumeEventState)
 	if !ok {
 		return nil, derrors.NewInternalError(errors.New("bad state object"))
@@ -33,25 +33,21 @@ func ConsumeEvent(instance Instance, state model.State) (Logic, error) {
 	sl.ConsumeEventState = consumeEvent
 
 	return sl, nil
-
 }
 
 func (logic *consumeEventLogic) Deadline(ctx context.Context) time.Time {
-
 	d, err := duration.ParseISO8601(logic.Timeout)
 	if err != nil {
-		logic.Log(ctx, "failed to parse duration: %v", err)
+		logic.Log(ctx, log.Error, "failed to parse duration: %v", err)
 		return time.Now().Add(DefaultLongDeadline)
 	}
 
 	t := d.Shift(time.Now().Add(DefaultShortDeadline))
 
 	return t
-
 }
 
 func (logic *consumeEventLogic) Run(ctx context.Context, wakedata []byte) (*Transition, error) {
-
 	first, err := scheduleTwice(logic, wakedata)
 	if err != nil {
 		return nil, err
@@ -115,5 +111,4 @@ func (logic *consumeEventLogic) Run(ctx context.Context, wakedata []byte) (*Tran
 		Transform: logic.Transform,
 		NextState: logic.Transition,
 	}, nil
-
 }

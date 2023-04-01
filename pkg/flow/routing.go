@@ -3,20 +3,25 @@ package flow
 import (
 	"context"
 	"crypto/rand"
+	"encoding/json"
 	"fmt"
 	"math/big"
+	"os"
 	"time"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/direktiv/direktiv/pkg/flow/ent"
+	"github.com/direktiv/direktiv/pkg/flow/bytedata"
+	"github.com/direktiv/direktiv/pkg/flow/database"
 	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	entirt "github.com/direktiv/direktiv/pkg/flow/ent/instanceruntime"
-	entref "github.com/direktiv/direktiv/pkg/flow/ent/ref"
+	entwf "github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
+	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/util"
+	"github.com/google/uuid"
 )
 
 type muxStart struct {
@@ -28,7 +33,6 @@ type muxStart struct {
 }
 
 func newMuxStart(workflow *model.Workflow) *muxStart {
-
 	ms := new(muxStart)
 
 	def := workflow.GetStartDefinition()
@@ -51,76 +55,62 @@ func newMuxStart(workflow *model.Workflow) *muxStart {
 	}
 
 	return ms
-
 }
 
 func (ms *muxStart) Hash() string {
-
 	if ms == nil {
 		ms = new(muxStart)
 		ms.Enabled = true
 		ms.Type = model.StartTypeDefault.String()
 	}
 
-	return checksum(ms)
-
+	return bytedata.Checksum(ms)
 }
 
-func validateRouter(ctx context.Context, wf *ent.Workflow) (*muxStart, error, error) {
-
-	routes, err := wf.QueryRoutes().WithRef(func(q *ent.RefQuery) {
-		q.WithRevision()
-	}).All(ctx)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	if len(routes) == 0 {
+func (srv *server) validateRouter(ctx context.Context, cached *database.CacheData) (*muxStart, error, error) {
+	if len(cached.Workflow.Routes) == 0 {
 
 		// latest
-		ref, err := wf.QueryRefs().Where(entref.NameEQ(latest)).WithRevision().Only(ctx)
+		var ref *database.Ref
+		for i := range cached.Workflow.Refs {
+			if cached.Workflow.Refs[i].Name == latest {
+				ref = cached.Workflow.Refs[i]
+				break
+			}
+		}
+
+		if ref == nil {
+			return nil, nil, os.ErrNotExist
+		}
+
+		cached.Ref = ref
+
+		err := srv.database.Revision(ctx, cached, cached.Ref.Revision)
 		if err != nil {
 			return nil, nil, err
 		}
 
-		if ref.Edges.Revision == nil {
-			err = &derrors.NotFoundError{
-				Label: "revision not found",
-			}
-			return nil, nil, err
-		}
-
-		workflow, err := loadSource(ref.Edges.Revision)
+		workflow, err := loadSource(cached.Revision)
 		if err != nil {
 			return nil, status.Error(codes.InvalidArgument, err.Error()), nil
 		}
 
 		ms := newMuxStart(workflow)
-		ms.Enabled = wf.Live
+		ms.Enabled = cached.Workflow.Live
 
 		return ms, nil, nil
 
 	} else {
+		for i := range cached.Workflow.Routes {
 
-		for i := range routes {
-
-			route := routes[i]
-			if route.Edges.Ref == nil {
-				err = &derrors.NotFoundError{
+			route := cached.Workflow.Routes[i]
+			if route.Ref == nil {
+				return nil, nil, &derrors.NotFoundError{
 					Label: "ref not found",
 				}
-				return nil, nil, err
-			}
-
-			if route.Edges.Ref.Edges.Revision == nil {
-				err = &derrors.NotFoundError{
-					Label: "revision not found",
-				}
-				return nil, nil, err
 			}
 
 		}
-
 	}
 
 	var startHash string
@@ -128,62 +118,54 @@ func validateRouter(ctx context.Context, wf *ent.Workflow) (*muxStart, error, er
 
 	var ms *muxStart
 
-	for _, route := range routes {
+	for _, route := range cached.Workflow.Routes {
 
-		workflow, err := loadSource(route.Edges.Ref.Edges.Revision)
+		cached.Ref = route.Ref
+
+		err := srv.database.Revision(ctx, cached, cached.Ref.Revision)
 		if err != nil {
-			return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("route to '%s' invalid because revision fails to compile: %v", route.Edges.Ref.Name, err)), nil
+			return nil, nil, err
+		}
+
+		workflow, err := loadSource(cached.Revision)
+		if err != nil {
+			return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("route to '%s' invalid because revision fails to compile: %v", route.Ref.Name, err)), nil
 		}
 
 		ms = newMuxStart(workflow)
-		ms.Enabled = wf.Live
+		ms.Enabled = cached.Workflow.Live
 
 		hash := ms.Hash() // checksum(workflow.Start)
 		if startHash == "" {
 			startHash = hash
-			startRef = route.Edges.Ref.Name
+			startRef = route.Ref.Name
 		} else {
 			if startHash != hash {
-				return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("incompatible start definitions between refs '%s' and '%s'", startRef, route.Edges.Ref.Name)), nil
+				return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("incompatible start definitions between refs '%s' and '%s'", startRef, route.Ref.Name)), nil
 			}
 		}
 
 	}
 
 	return ms, nil, nil
-
 }
 
-func (engine *engine) mux(ctx context.Context, nsc *ent.NamespaceClient, namespace, path, ref string) (*refData, error) {
-
-	wd, err := engine.traverseToWorkflow(ctx, nsc, namespace, path)
+func (engine *engine) mux(ctx context.Context, namespace, path, ref string) (*database.CacheData, error) {
+	cached, err := engine.traverseToWorkflow(ctx, namespace, path)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("workflow multiplexer failed to resolve workflow: %w", err)
 	}
 
-	d := new(refData)
-	d.wfData = wd
-
-	var query *ent.RefQuery
-
 	if ref == "" {
-
 		// use router to select version
 
-		routes, err := d.wf.QueryRoutes().All(ctx)
-		if err != nil {
-			return nil, err
-		}
-
-		if len(routes) == 0 {
-
+		if len(cached.Workflow.Routes) == 0 {
 			ref = latest
-
 		} else {
 
 			weight := 0
 
-			for _, route := range routes {
+			for _, route := range cached.Workflow.Routes {
 				weight += route.Weight
 			}
 
@@ -196,43 +178,37 @@ func (engine *engine) mux(ctx context.Context, nsc *ent.NamespaceClient, namespa
 
 			n = n % weight
 
-			var route *ent.Route
+			var route *database.Route
 
-			for idx := range routes {
-				route = routes[idx]
+			for idx := range cached.Workflow.Routes {
+				route = cached.Workflow.Routes[idx]
 				n -= route.Weight
 				if n < 0 {
 					break
 				}
 			}
 
-			query = route.QueryRef()
+			cached.Ref = route.Ref
 
 		}
-
 	}
 
-	if query == nil {
-		query = d.wf.QueryRefs().Where(entref.NameEQ(ref))
+	if cached.Ref == nil {
+		for idx := range cached.Workflow.Refs {
+			x := cached.Workflow.Refs[idx]
+			if x.Name == ref {
+				cached.Ref = x
+				break
+			}
+		}
 	}
 
-	d.ref, err = query.WithRevision().Only(ctx)
+	err = engine.database.Revision(ctx, cached, cached.Ref.Revision)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("workflow multiplexer failed to resolve workflow revision matching ref '%s' (UUID: %s): %w", cached.Ref.Name, cached.Ref.Revision, err)
 	}
 
-	if d.ref.Edges.Revision == nil {
-		err = &derrors.NotFoundError{
-			Label: "revision not found",
-		}
-		return nil, err
-	}
-
-	d.ref.Edges.Workflow = d.wf
-	d.ref.Edges.Revision.Edges.Workflow = d.wf
-
-	return d, nil
-
+	return cached, nil
 }
 
 const (
@@ -246,22 +222,15 @@ func hasFlag(flags, flag int) bool {
 	return flags&flag != 0
 }
 
-func (flow *flow) configureRouter(ctx context.Context, evc *ent.EventsClient, wf **ent.Workflow, flags int, changer, commit func() error) error {
-
+func (flow *flow) configureRouter(ctx context.Context, cached *database.CacheData, flags int, changer, commit func() error) error {
 	var err error
 	var muxErr1 error
 	var ms1 *muxStart
-	var existingRoutes int
 
 	if !hasFlag(flags, rcfNoPriors) {
 		// NOTE: we check router valid before deleting because there's no sense failing the
 		// operation for resulting in an invalid router if the router was already invalid.
-		ms1, muxErr1, err = validateRouter(ctx, *wf)
-		if err != nil {
-			return err
-		}
-
-		existingRoutes, err = (*wf).QueryRoutes().Count(ctx)
+		ms1, muxErr1, err = flow.validateRouter(ctx, cached)
 		if err != nil {
 			return err
 		}
@@ -272,19 +241,17 @@ func (flow *flow) configureRouter(ctx context.Context, evc *ent.EventsClient, wf
 		return err
 	}
 
-	ms2, muxErr2, err := validateRouter(ctx, *wf)
+	ms2, muxErr2, err := flow.validateRouter(ctx, cached)
 	if err != nil {
 		return err
 	}
 
 	if muxErr2 != nil {
-
-		if hasFlag(flags, rcfNoValidate) && existingRoutes <= 1 {
+		if hasFlag(flags, rcfNoValidate) && len(cached.Workflow.Routes) <= 1 {
 			// no need to do anything here?
 		} else if muxErr1 == nil || !hasFlag(flags, rcfBreaking) {
 			return muxErr2
 		}
-
 	}
 
 	if ms2 == nil {
@@ -294,7 +261,7 @@ func (flow *flow) configureRouter(ctx context.Context, evc *ent.EventsClient, wf
 	mustReconfigureRouter := ms1.Hash() != ms2.Hash() || hasFlag(flags, rcfNoPriors)
 
 	if mustReconfigureRouter {
-		err = flow.preCommitRouterConfiguration(ctx, evc, *wf, ms2)
+		err = flow.preCommitRouterConfiguration(ctx, cached, ms2)
 		if err != nil {
 			return err
 		}
@@ -307,35 +274,29 @@ func (flow *flow) configureRouter(ctx context.Context, evc *ent.EventsClient, wf
 	}
 
 	if mustReconfigureRouter {
-		flow.postCommitRouterConfiguration((*wf).ID.String(), ms2)
+		flow.postCommitRouterConfiguration(cached.Workflow.ID.String(), ms2)
 	}
 
 	return nil
-
 }
 
-func (flow *flow) preCommitRouterConfiguration(ctx context.Context, evc *ent.EventsClient, wf *ent.Workflow, ms *muxStart) error {
-
-	err := flow.events.processWorkflowEvents(ctx, evc, wf, ms)
+func (flow *flow) preCommitRouterConfiguration(ctx context.Context, cached *database.CacheData, ms *muxStart) error {
+	err := flow.events.processWorkflowEvents(ctx, cached, ms)
 	if err != nil {
 		return err
 	}
 
 	return nil
-
 }
 
 func (flow *flow) postCommitRouterConfiguration(id string, ms *muxStart) {
-
 	flow.pubsub.ConfigureRouterCron(id, ms.Cron, ms.Enabled)
-
 }
 
-func (flow *flow) configureRouterHandler(req *PubsubUpdate) {
+func (flow *flow) configureRouterHandler(req *pubsub.PubsubUpdate) {
+	msg := new(pubsub.ConfigureRouterMessage)
 
-	msg := new(configureRouterMessage)
-
-	err := unmarshal(req.Key, msg)
+	err := json.Unmarshal([]byte(req.Key), msg)
 	if err != nil {
 		flow.sugar.Error(err)
 		return
@@ -352,26 +313,29 @@ func (flow *flow) configureRouterHandler(req *PubsubUpdate) {
 			return
 		}
 	}
-
 }
 
 func (flow *flow) cronHandler(data []byte) {
-
-	id := string(data)
-
-	ctx, conn, err := flow.engine.lock(id, defaultLockWait)
+	id, err := uuid.Parse(string(data))
 	if err != nil {
 		flow.sugar.Error(err)
 		return
 	}
-	defer flow.engine.unlock(id, conn)
 
-	d, err := flow.reverseTraverseToWorkflow(ctx, id)
+	ctx, conn, err := flow.engine.lock(id.String(), defaultLockWait)
+	if err != nil {
+		flow.sugar.Error(err)
+		return
+	}
+	defer flow.engine.unlock(id.String(), conn)
+
+	cached := new(database.CacheData)
+	err = flow.database.Workflow(ctx, cached, id)
 	if err != nil {
 
 		if derrors.IsNotFound(err) {
 			flow.sugar.Infof("Cron failed to find workflow. Deleting cron.")
-			flow.timers.deleteCronForWorkflow(id)
+			flow.timers.deleteCronForWorkflow(id.String())
 			return
 		}
 
@@ -380,7 +344,9 @@ func (flow *flow) cronHandler(data []byte) {
 
 	}
 
-	k, err := d.wf.QueryInstances().Where(entinst.CreatedAtGT(time.Now().Add(-time.Second*30)), entinst.HasRuntimeWith(entirt.CallerData(util.CallerCron))).Count(ctx)
+	clients := flow.edb.Clients(ctx)
+
+	k, err := clients.Instance.Query().Where(entinst.HasWorkflowWith(entwf.ID(cached.Workflow.ID))).Where(entinst.CreatedAtGT(time.Now().Add(-time.Second*30)), entinst.HasRuntimeWith(entirt.CallerData(util.CallerCron))).Count(ctx)
 	if err != nil {
 		flow.sugar.Error(err)
 		return
@@ -392,8 +358,8 @@ func (flow *flow) cronHandler(data []byte) {
 	}
 
 	args := new(newInstanceArgs)
-	args.Namespace = d.namespace()
-	args.Path = d.path
+	args.Namespace = cached.Namespace.Name
+	args.Path = cached.Path()
 	args.Ref = ""
 	args.Input = nil
 	args.Caller = util.CallerCron
@@ -406,5 +372,4 @@ func (flow *flow) cronHandler(data []byte) {
 	}
 
 	flow.engine.queue(im)
-
 }

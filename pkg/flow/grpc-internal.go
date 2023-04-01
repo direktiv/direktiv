@@ -3,9 +3,11 @@ package flow
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net"
-	"time"
+	"strings"
 
+	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/util"
 	libgrpc "google.golang.org/grpc"
@@ -21,7 +23,6 @@ type internal struct {
 }
 
 func initInternalServer(ctx context.Context, srv *server) (*internal, error) {
-
 	var err error
 
 	internal := &internal{server: srv}
@@ -44,22 +45,18 @@ func initInternalServer(ctx context.Context, srv *server) (*internal, error) {
 	}()
 
 	return internal, nil
-
 }
 
 func (internal *internal) Run() error {
-
 	err := internal.srv.Serve(internal.listener)
 	if err != nil {
 		return err
 	}
 
 	return nil
-
 }
 
 func (internal *internal) ReportActionResults(ctx context.Context, req *grpc.ReportActionResultsRequest) (*emptypb.Empty, error) {
-
 	internal.sugar.Debugf("Handling gRPC request: %s", this())
 
 	payload := &actionResultPayload{
@@ -90,29 +87,50 @@ func (internal *internal) ReportActionResults(ctx context.Context, req *grpc.Rep
 	var resp emptypb.Empty
 
 	return &resp, nil
-
 }
 
 func (internal *internal) ActionLog(ctx context.Context, req *grpc.ActionLogRequest) (*emptypb.Empty, error) {
-
 	internal.sugar.Debugf("Handling gRPC request: %s", this())
 
-	t := time.Now()
-
-	inc := internal.db.Instance
-
-	d, err := internal.getInstance(ctx, inc, req.GetInstanceId(), false)
+	cached, err := internal.getInstance(ctx, req.GetInstanceId())
 	if err != nil {
 		internal.sugar.Error(err)
 		return nil, err
 	}
 
+	rt, err := internal.edb.InstanceRuntime(ctx, cached.Instance.Runtime)
+	if err != nil {
+		return nil, err
+	}
+
+	flow := rt.Flow
+	stateID := flow[len(flow)-1]
+
+	tags := cached.GetAttributes(recipient.Instance)
+	tags["loop-index"] = fmt.Sprintf("%d", req.Iterator)
+	tags["state-id"] = stateID
+	tags["state-type"] = "action"
 	for _, msg := range req.GetMsg() {
-		internal.logToInstanceRaw(ctx, t, d.in, msg)
+		res := truncateLogsMsg(msg, 1024)
+		internal.logger.Info(ctx, cached.Instance.ID, tags, res)
 	}
 
 	var resp emptypb.Empty
 
 	return &resp, nil
+}
 
+func truncateLogsMsg(msg string,
+	length int,
+) string {
+	res := ""
+	m := strings.Split(msg, "\n")
+	for _, v := range m {
+		if len(v) > length {
+			res += msg[:length] + "\n"
+		} else {
+			res += msg
+		}
+	}
+	return res
 }

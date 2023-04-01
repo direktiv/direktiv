@@ -8,6 +8,7 @@ import (
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
+	log "github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/senseyeio/duration"
 )
@@ -22,7 +23,6 @@ type eventsXorLogic struct {
 }
 
 func EventsXor(instance Instance, state model.State) (Logic, error) {
-
 	eventsXor, ok := state.(*model.EventsXorState)
 	if !ok {
 		return nil, derrors.NewInternalError(errors.New("bad state object"))
@@ -33,25 +33,21 @@ func EventsXor(instance Instance, state model.State) (Logic, error) {
 	sl.EventsXorState = eventsXor
 
 	return sl, nil
-
 }
 
 func (logic *eventsXorLogic) Deadline(ctx context.Context) time.Time {
-
 	d, err := duration.ParseISO8601(logic.Timeout)
 	if err != nil {
-		logic.Log(ctx, "failed to parse duration: %v", err)
+		logic.Log(ctx, log.Error, "failed to parse duration: %v", err)
 		return time.Now().Add(DefaultLongDeadline)
 	}
 
 	t := d.Shift(time.Now().Add(DefaultShortDeadline))
 
 	return t
-
 }
 
 func (logic *eventsXorLogic) Run(ctx context.Context, wakedata []byte) (*Transition, error) {
-
 	first, err := scheduleTwice(logic, wakedata)
 	if err != nil {
 		return nil, err
@@ -121,5 +117,4 @@ func (logic *eventsXorLogic) Run(ctx context.Context, wakedata []byte) (*Transit
 	}
 
 	return nil, derrors.NewInternalError(errors.New("got the wrong type of event back"))
-
 }

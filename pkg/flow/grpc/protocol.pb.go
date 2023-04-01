@@ -55,7 +55,7 @@ var file_pkg_flow_grpc_protocol_proto_rawDesc = []byte{
 	0x66, 0x6c, 0x6f, 0x77, 0x2f, 0x67, 0x72, 0x70, 0x63, 0x2f, 0x61, 0x6e, 0x6e, 0x6f, 0x74, 0x61,
 	0x74, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x1a, 0x70, 0x6b, 0x67,
 	0x2f, 0x66, 0x6c, 0x6f, 0x77, 0x2f, 0x67, 0x72, 0x70, 0x63, 0x2f, 0x6d, 0x69, 0x72, 0x72, 0x6f,
-	0x72, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x32, 0x84, 0x75, 0x0a, 0x04, 0x46, 0x6c, 0x6f, 0x77,
+	0x72, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x32, 0xe4, 0x75, 0x0a, 0x04, 0x46, 0x6c, 0x6f, 0x77,
 	0x12, 0x50, 0x0a, 0x09, 0x4e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x12, 0x1f, 0x2e,
 	0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x5f, 0x66, 0x6c, 0x6f, 0x77, 0x2e, 0x4e, 0x61,
 	0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x20,
@@ -361,6 +361,12 @@ var file_pkg_flow_grpc_protocol_proto_rawDesc = []byte{
 	0x5f, 0x66, 0x6c, 0x6f, 0x77, 0x2e, 0x52, 0x75, 0x6e, 0x57, 0x6f, 0x72, 0x6b, 0x66, 0x6c, 0x6f,
 	0x77, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x22, 0x2e, 0x64, 0x69, 0x72, 0x65, 0x6b,
 	0x74, 0x69, 0x76, 0x5f, 0x66, 0x6c, 0x6f, 0x77, 0x2e, 0x52, 0x75, 0x6e, 0x57, 0x6f, 0x72, 0x6b,
+	0x66, 0x6c, 0x6f, 0x77, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x30, 0x01,
+	0x12, 0x5e, 0x0a, 0x0d, 0x41, 0x77, 0x61, 0x69, 0x74, 0x57, 0x6f, 0x72, 0x6b, 0x66, 0x6c, 0x6f,
+	0x77, 0x12, 0x23, 0x2e, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x5f, 0x66, 0x6c, 0x6f,
+	0x77, 0x2e, 0x41, 0x77, 0x61, 0x69, 0x74, 0x57, 0x6f, 0x72, 0x6b, 0x66, 0x6c, 0x6f, 0x77, 0x52,
+	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x24, 0x2e, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69,
+	0x76, 0x5f, 0x66, 0x6c, 0x6f, 0x77, 0x2e, 0x41, 0x77, 0x61, 0x69, 0x74, 0x57, 0x6f, 0x72, 0x6b,
 	0x66, 0x6c, 0x6f, 0x77, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x30, 0x01,
 	0x12, 0x50, 0x0a, 0x0e, 0x43, 0x61, 0x6e, 0x63, 0x65, 0x6c, 0x49, 0x6e, 0x73, 0x74, 0x61, 0x6e,
 	0x63, 0x65, 0x12, 0x24, 0x2e, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x5f, 0x66, 0x6c,
@@ -1144,165 +1150,167 @@ var file_pkg_flow_grpc_protocol_proto_goTypes = []interface{}{
 	(*InstanceLogsRequest)(nil),               // 40: direktiv_flow.InstanceLogsRequest
 	(*StartWorkflowRequest)(nil),              // 41: direktiv_flow.StartWorkflowRequest
 	(*RunWorkflowRequest)(nil),                // 42: direktiv_flow.RunWorkflowRequest
-	(*CancelInstanceRequest)(nil),             // 43: direktiv_flow.CancelInstanceRequest
-	(*BroadcastCloudeventRequest)(nil),        // 44: direktiv_flow.BroadcastCloudeventRequest
-	(*ApplyCloudEventFilterRequest)(nil),      // 45: direktiv_flow.ApplyCloudEventFilterRequest
-	(*DeleteCloudEventFilterRequest)(nil),     // 46: direktiv_flow.DeleteCloudEventFilterRequest
-	(*CreateCloudEventFilterRequest)(nil),     // 47: direktiv_flow.CreateCloudEventFilterRequest
-	(*UpdateCloudEventFilterRequest)(nil),     // 48: direktiv_flow.UpdateCloudEventFilterRequest
-	(*GetCloudEventFilterScriptRequest)(nil),  // 49: direktiv_flow.GetCloudEventFilterScriptRequest
-	(*GetCloudEventFiltersRequest)(nil),       // 50: direktiv_flow.GetCloudEventFiltersRequest
-	(*NamespaceVariableRequest)(nil),          // 51: direktiv_flow.NamespaceVariableRequest
-	(*NamespaceVariablesRequest)(nil),         // 52: direktiv_flow.NamespaceVariablesRequest
-	(*SetNamespaceVariableRequest)(nil),       // 53: direktiv_flow.SetNamespaceVariableRequest
-	(*DeleteNamespaceVariableRequest)(nil),    // 54: direktiv_flow.DeleteNamespaceVariableRequest
-	(*RenameNamespaceVariableRequest)(nil),    // 55: direktiv_flow.RenameNamespaceVariableRequest
-	(*WorkflowVariableRequest)(nil),           // 56: direktiv_flow.WorkflowVariableRequest
-	(*WorkflowVariablesRequest)(nil),          // 57: direktiv_flow.WorkflowVariablesRequest
-	(*SetWorkflowVariableRequest)(nil),        // 58: direktiv_flow.SetWorkflowVariableRequest
-	(*DeleteWorkflowVariableRequest)(nil),     // 59: direktiv_flow.DeleteWorkflowVariableRequest
-	(*RenameWorkflowVariableRequest)(nil),     // 60: direktiv_flow.RenameWorkflowVariableRequest
-	(*InstanceVariableRequest)(nil),           // 61: direktiv_flow.InstanceVariableRequest
-	(*InstanceVariablesRequest)(nil),          // 62: direktiv_flow.InstanceVariablesRequest
-	(*SetInstanceVariableRequest)(nil),        // 63: direktiv_flow.SetInstanceVariableRequest
-	(*DeleteInstanceVariableRequest)(nil),     // 64: direktiv_flow.DeleteInstanceVariableRequest
-	(*RenameInstanceVariableRequest)(nil),     // 65: direktiv_flow.RenameInstanceVariableRequest
-	(*JQRequest)(nil),                         // 66: direktiv_flow.JQRequest
-	(*CreateNodeAttributesRequest)(nil),       // 67: direktiv_flow.CreateNodeAttributesRequest
-	(*DeleteNodeAttributesRequest)(nil),       // 68: direktiv_flow.DeleteNodeAttributesRequest
-	(*WorkflowMetricsRequest)(nil),            // 69: direktiv_flow.WorkflowMetricsRequest
-	(*EventListenersRequest)(nil),             // 70: direktiv_flow.EventListenersRequest
-	(*EventHistoryRequest)(nil),               // 71: direktiv_flow.EventHistoryRequest
-	(*HistoricalEventRequest)(nil),            // 72: direktiv_flow.HistoricalEventRequest
-	(*ReplayEventRequest)(nil),                // 73: direktiv_flow.ReplayEventRequest
-	(*ToggleWorkflowRequest)(nil),             // 74: direktiv_flow.ToggleWorkflowRequest
-	(*SetWorkflowEventLoggingRequest)(nil),    // 75: direktiv_flow.SetWorkflowEventLoggingRequest
-	(*ResolveNamespaceUIDRequest)(nil),        // 76: direktiv_flow.ResolveNamespaceUIDRequest
-	(*ResolveWorkflowUIDRequest)(nil),         // 77: direktiv_flow.ResolveWorkflowUIDRequest
-	(*SetNamespaceConfigRequest)(nil),         // 78: direktiv_flow.SetNamespaceConfigRequest
-	(*GetNamespaceConfigRequest)(nil),         // 79: direktiv_flow.GetNamespaceConfigRequest
-	(*emptypb.Empty)(nil),                     // 80: google.protobuf.Empty
-	(*InstanceMetadataRequest)(nil),           // 81: direktiv_flow.InstanceMetadataRequest
-	(*NamespaceAnnotationRequest)(nil),        // 82: direktiv_flow.NamespaceAnnotationRequest
-	(*NamespaceAnnotationsRequest)(nil),       // 83: direktiv_flow.NamespaceAnnotationsRequest
-	(*SetNamespaceAnnotationRequest)(nil),     // 84: direktiv_flow.SetNamespaceAnnotationRequest
-	(*DeleteNamespaceAnnotationRequest)(nil),  // 85: direktiv_flow.DeleteNamespaceAnnotationRequest
-	(*RenameNamespaceAnnotationRequest)(nil),  // 86: direktiv_flow.RenameNamespaceAnnotationRequest
-	(*WorkflowAnnotationRequest)(nil),         // 87: direktiv_flow.WorkflowAnnotationRequest
-	(*WorkflowAnnotationsRequest)(nil),        // 88: direktiv_flow.WorkflowAnnotationsRequest
-	(*SetWorkflowAnnotationRequest)(nil),      // 89: direktiv_flow.SetWorkflowAnnotationRequest
-	(*DeleteWorkflowAnnotationRequest)(nil),   // 90: direktiv_flow.DeleteWorkflowAnnotationRequest
-	(*RenameWorkflowAnnotationRequest)(nil),   // 91: direktiv_flow.RenameWorkflowAnnotationRequest
-	(*InstanceAnnotationRequest)(nil),         // 92: direktiv_flow.InstanceAnnotationRequest
-	(*InstanceAnnotationsRequest)(nil),        // 93: direktiv_flow.InstanceAnnotationsRequest
-	(*SetInstanceAnnotationRequest)(nil),      // 94: direktiv_flow.SetInstanceAnnotationRequest
-	(*DeleteInstanceAnnotationRequest)(nil),   // 95: direktiv_flow.DeleteInstanceAnnotationRequest
-	(*RenameInstanceAnnotationRequest)(nil),   // 96: direktiv_flow.RenameInstanceAnnotationRequest
-	(*ReleaseInstanceRequest)(nil),            // 97: direktiv_flow.ReleaseInstanceRequest
-	(*NodeAnnotationRequest)(nil),             // 98: direktiv_flow.NodeAnnotationRequest
-	(*NodeAnnotationsRequest)(nil),            // 99: direktiv_flow.NodeAnnotationsRequest
-	(*SetNodeAnnotationRequest)(nil),          // 100: direktiv_flow.SetNodeAnnotationRequest
-	(*DeleteNodeAnnotationRequest)(nil),       // 101: direktiv_flow.DeleteNodeAnnotationRequest
-	(*RenameNodeAnnotationRequest)(nil),       // 102: direktiv_flow.RenameNodeAnnotationRequest
-	(*CreateNamespaceMirrorRequest)(nil),      // 103: direktiv_flow.CreateNamespaceMirrorRequest
-	(*CreateDirectoryMirrorRequest)(nil),      // 104: direktiv_flow.CreateDirectoryMirrorRequest
-	(*UpdateMirrorSettingsRequest)(nil),       // 105: direktiv_flow.UpdateMirrorSettingsRequest
-	(*LockMirrorRequest)(nil),                 // 106: direktiv_flow.LockMirrorRequest
-	(*UnlockMirrorRequest)(nil),               // 107: direktiv_flow.UnlockMirrorRequest
-	(*SoftSyncMirrorRequest)(nil),             // 108: direktiv_flow.SoftSyncMirrorRequest
-	(*HardSyncMirrorRequest)(nil),             // 109: direktiv_flow.HardSyncMirrorRequest
-	(*MirrorInfoRequest)(nil),                 // 110: direktiv_flow.MirrorInfoRequest
-	(*MirrorActivityLogsRequest)(nil),         // 111: direktiv_flow.MirrorActivityLogsRequest
-	(*CancelMirrorActivityRequest)(nil),       // 112: direktiv_flow.CancelMirrorActivityRequest
-	(*ReportActionResultsRequest)(nil),        // 113: direktiv_flow.ReportActionResultsRequest
-	(*ActionLogRequest)(nil),                  // 114: direktiv_flow.ActionLogRequest
-	(*VariableInternalRequest)(nil),           // 115: direktiv_flow.VariableInternalRequest
-	(*SetVariableInternalRequest)(nil),        // 116: direktiv_flow.SetVariableInternalRequest
-	(*SetNamespaceRegistryRequest)(nil),       // 117: direktiv_flow.SetNamespaceRegistryRequest
-	(*DeleteNamespaceRegistryRequest)(nil),    // 118: direktiv_flow.DeleteNamespaceRegistryRequest
-	(*NamespaceRegistriesRequest)(nil),        // 119: direktiv_flow.NamespaceRegistriesRequest
-	(*EventingRequest)(nil),                   // 120: direktiv_flow.EventingRequest
-	(*NamespaceResponse)(nil),                 // 121: direktiv_flow.NamespaceResponse
-	(*NamespacesResponse)(nil),                // 122: direktiv_flow.NamespacesResponse
-	(*CreateNamespaceResponse)(nil),           // 123: direktiv_flow.CreateNamespaceResponse
-	(*RenameNamespaceResponse)(nil),           // 124: direktiv_flow.RenameNamespaceResponse
-	(*ServerLogsResponse)(nil),                // 125: direktiv_flow.ServerLogsResponse
-	(*NamespaceLogsResponse)(nil),             // 126: direktiv_flow.NamespaceLogsResponse
-	(*WorkflowLogsResponse)(nil),              // 127: direktiv_flow.WorkflowLogsResponse
-	(*DirectoryResponse)(nil),                 // 128: direktiv_flow.DirectoryResponse
-	(*CreateDirectoryResponse)(nil),           // 129: direktiv_flow.CreateDirectoryResponse
-	(*RenameNodeResponse)(nil),                // 130: direktiv_flow.RenameNodeResponse
-	(*NodeResponse)(nil),                      // 131: direktiv_flow.NodeResponse
-	(*WorkflowResponse)(nil),                  // 132: direktiv_flow.WorkflowResponse
-	(*CreateWorkflowResponse)(nil),            // 133: direktiv_flow.CreateWorkflowResponse
-	(*UpdateWorkflowResponse)(nil),            // 134: direktiv_flow.UpdateWorkflowResponse
-	(*SaveHeadResponse)(nil),                  // 135: direktiv_flow.SaveHeadResponse
-	(*DiscardHeadResponse)(nil),               // 136: direktiv_flow.DiscardHeadResponse
-	(*TagsResponse)(nil),                      // 137: direktiv_flow.TagsResponse
-	(*RefsResponse)(nil),                      // 138: direktiv_flow.RefsResponse
-	(*RevisionsResponse)(nil),                 // 139: direktiv_flow.RevisionsResponse
-	(*RouterResponse)(nil),                    // 140: direktiv_flow.RouterResponse
-	(*EditRouterResponse)(nil),                // 141: direktiv_flow.EditRouterResponse
-	(*ValidateRefResponse)(nil),               // 142: direktiv_flow.ValidateRefResponse
-	(*ValidateRouterResponse)(nil),            // 143: direktiv_flow.ValidateRouterResponse
-	(*SecretsResponse)(nil),                   // 144: direktiv_flow.SecretsResponse
-	(*SetSecretResponse)(nil),                 // 145: direktiv_flow.SetSecretResponse
-	(*CreateSecretsFolderResponse)(nil),       // 146: direktiv_flow.CreateSecretsFolderResponse
-	(*SearchSecretResponse)(nil),              // 147: direktiv_flow.SearchSecretResponse
-	(*UpdateSecretResponse)(nil),              // 148: direktiv_flow.UpdateSecretResponse
-	(*InstanceResponse)(nil),                  // 149: direktiv_flow.InstanceResponse
-	(*InstancesResponse)(nil),                 // 150: direktiv_flow.InstancesResponse
-	(*InstanceInputResponse)(nil),             // 151: direktiv_flow.InstanceInputResponse
-	(*InstanceOutputResponse)(nil),            // 152: direktiv_flow.InstanceOutputResponse
-	(*InstanceLogsResponse)(nil),              // 153: direktiv_flow.InstanceLogsResponse
-	(*StartWorkflowResponse)(nil),             // 154: direktiv_flow.StartWorkflowResponse
-	(*RunWorkflowResponse)(nil),               // 155: direktiv_flow.RunWorkflowResponse
-	(*GetCloudEventFilterScriptResponse)(nil), // 156: direktiv_flow.GetCloudEventFilterScriptResponse
-	(*GetCloudEventFiltersResponse)(nil),      // 157: direktiv_flow.GetCloudEventFiltersResponse
-	(*NamespaceVariableResponse)(nil),         // 158: direktiv_flow.NamespaceVariableResponse
-	(*NamespaceVariablesResponse)(nil),        // 159: direktiv_flow.NamespaceVariablesResponse
-	(*SetNamespaceVariableResponse)(nil),      // 160: direktiv_flow.SetNamespaceVariableResponse
-	(*RenameNamespaceVariableResponse)(nil),   // 161: direktiv_flow.RenameNamespaceVariableResponse
-	(*WorkflowVariableResponse)(nil),          // 162: direktiv_flow.WorkflowVariableResponse
-	(*WorkflowVariablesResponse)(nil),         // 163: direktiv_flow.WorkflowVariablesResponse
-	(*SetWorkflowVariableResponse)(nil),       // 164: direktiv_flow.SetWorkflowVariableResponse
-	(*RenameWorkflowVariableResponse)(nil),    // 165: direktiv_flow.RenameWorkflowVariableResponse
-	(*InstanceVariableResponse)(nil),          // 166: direktiv_flow.InstanceVariableResponse
-	(*InstanceVariablesResponse)(nil),         // 167: direktiv_flow.InstanceVariablesResponse
-	(*SetInstanceVariableResponse)(nil),       // 168: direktiv_flow.SetInstanceVariableResponse
-	(*RenameInstanceVariableResponse)(nil),    // 169: direktiv_flow.RenameInstanceVariableResponse
-	(*JQResponse)(nil),                        // 170: direktiv_flow.JQResponse
-	(*WorkflowMetricsResponse)(nil),           // 171: direktiv_flow.WorkflowMetricsResponse
-	(*EventListenersResponse)(nil),            // 172: direktiv_flow.EventListenersResponse
-	(*EventHistoryResponse)(nil),              // 173: direktiv_flow.EventHistoryResponse
-	(*HistoricalEventResponse)(nil),           // 174: direktiv_flow.HistoricalEventResponse
-	(*SetNamespaceConfigResponse)(nil),        // 175: direktiv_flow.SetNamespaceConfigResponse
-	(*GetNamespaceConfigResponse)(nil),        // 176: direktiv_flow.GetNamespaceConfigResponse
-	(*BuildResponse)(nil),                     // 177: direktiv_flow.BuildResponse
-	(*InstanceMetadataResponse)(nil),          // 178: direktiv_flow.InstanceMetadataResponse
-	(*NamespaceAnnotationResponse)(nil),       // 179: direktiv_flow.NamespaceAnnotationResponse
-	(*NamespaceAnnotationsResponse)(nil),      // 180: direktiv_flow.NamespaceAnnotationsResponse
-	(*SetNamespaceAnnotationResponse)(nil),    // 181: direktiv_flow.SetNamespaceAnnotationResponse
-	(*RenameNamespaceAnnotationResponse)(nil), // 182: direktiv_flow.RenameNamespaceAnnotationResponse
-	(*WorkflowAnnotationResponse)(nil),        // 183: direktiv_flow.WorkflowAnnotationResponse
-	(*WorkflowAnnotationsResponse)(nil),       // 184: direktiv_flow.WorkflowAnnotationsResponse
-	(*SetWorkflowAnnotationResponse)(nil),     // 185: direktiv_flow.SetWorkflowAnnotationResponse
-	(*RenameWorkflowAnnotationResponse)(nil),  // 186: direktiv_flow.RenameWorkflowAnnotationResponse
-	(*InstanceAnnotationResponse)(nil),        // 187: direktiv_flow.InstanceAnnotationResponse
-	(*InstanceAnnotationsResponse)(nil),       // 188: direktiv_flow.InstanceAnnotationsResponse
-	(*SetInstanceAnnotationResponse)(nil),     // 189: direktiv_flow.SetInstanceAnnotationResponse
-	(*RenameInstanceAnnotationResponse)(nil),  // 190: direktiv_flow.RenameInstanceAnnotationResponse
-	(*ReleaseInstanceResponse)(nil),           // 191: direktiv_flow.ReleaseInstanceResponse
-	(*NodeAnnotationResponse)(nil),            // 192: direktiv_flow.NodeAnnotationResponse
-	(*NodeAnnotationsResponse)(nil),           // 193: direktiv_flow.NodeAnnotationsResponse
-	(*SetNodeAnnotationResponse)(nil),         // 194: direktiv_flow.SetNodeAnnotationResponse
-	(*RenameNodeAnnotationResponse)(nil),      // 195: direktiv_flow.RenameNodeAnnotationResponse
-	(*MirrorInfoResponse)(nil),                // 196: direktiv_flow.MirrorInfoResponse
-	(*MirrorActivityLogsResponse)(nil),        // 197: direktiv_flow.MirrorActivityLogsResponse
-	(*VariableInternalResponse)(nil),          // 198: direktiv_flow.VariableInternalResponse
-	(*SetVariableInternalResponse)(nil),       // 199: direktiv_flow.SetVariableInternalResponse
-	(*NamespaceRegistriesResponse)(nil),       // 200: direktiv_flow.NamespaceRegistriesResponse
-	(*CloudEvent)(nil),                        // 201: direktiv_flow.CloudEvent
+	(*AwaitWorkflowRequest)(nil),              // 43: direktiv_flow.AwaitWorkflowRequest
+	(*CancelInstanceRequest)(nil),             // 44: direktiv_flow.CancelInstanceRequest
+	(*BroadcastCloudeventRequest)(nil),        // 45: direktiv_flow.BroadcastCloudeventRequest
+	(*ApplyCloudEventFilterRequest)(nil),      // 46: direktiv_flow.ApplyCloudEventFilterRequest
+	(*DeleteCloudEventFilterRequest)(nil),     // 47: direktiv_flow.DeleteCloudEventFilterRequest
+	(*CreateCloudEventFilterRequest)(nil),     // 48: direktiv_flow.CreateCloudEventFilterRequest
+	(*UpdateCloudEventFilterRequest)(nil),     // 49: direktiv_flow.UpdateCloudEventFilterRequest
+	(*GetCloudEventFilterScriptRequest)(nil),  // 50: direktiv_flow.GetCloudEventFilterScriptRequest
+	(*GetCloudEventFiltersRequest)(nil),       // 51: direktiv_flow.GetCloudEventFiltersRequest
+	(*NamespaceVariableRequest)(nil),          // 52: direktiv_flow.NamespaceVariableRequest
+	(*NamespaceVariablesRequest)(nil),         // 53: direktiv_flow.NamespaceVariablesRequest
+	(*SetNamespaceVariableRequest)(nil),       // 54: direktiv_flow.SetNamespaceVariableRequest
+	(*DeleteNamespaceVariableRequest)(nil),    // 55: direktiv_flow.DeleteNamespaceVariableRequest
+	(*RenameNamespaceVariableRequest)(nil),    // 56: direktiv_flow.RenameNamespaceVariableRequest
+	(*WorkflowVariableRequest)(nil),           // 57: direktiv_flow.WorkflowVariableRequest
+	(*WorkflowVariablesRequest)(nil),          // 58: direktiv_flow.WorkflowVariablesRequest
+	(*SetWorkflowVariableRequest)(nil),        // 59: direktiv_flow.SetWorkflowVariableRequest
+	(*DeleteWorkflowVariableRequest)(nil),     // 60: direktiv_flow.DeleteWorkflowVariableRequest
+	(*RenameWorkflowVariableRequest)(nil),     // 61: direktiv_flow.RenameWorkflowVariableRequest
+	(*InstanceVariableRequest)(nil),           // 62: direktiv_flow.InstanceVariableRequest
+	(*InstanceVariablesRequest)(nil),          // 63: direktiv_flow.InstanceVariablesRequest
+	(*SetInstanceVariableRequest)(nil),        // 64: direktiv_flow.SetInstanceVariableRequest
+	(*DeleteInstanceVariableRequest)(nil),     // 65: direktiv_flow.DeleteInstanceVariableRequest
+	(*RenameInstanceVariableRequest)(nil),     // 66: direktiv_flow.RenameInstanceVariableRequest
+	(*JQRequest)(nil),                         // 67: direktiv_flow.JQRequest
+	(*CreateNodeAttributesRequest)(nil),       // 68: direktiv_flow.CreateNodeAttributesRequest
+	(*DeleteNodeAttributesRequest)(nil),       // 69: direktiv_flow.DeleteNodeAttributesRequest
+	(*WorkflowMetricsRequest)(nil),            // 70: direktiv_flow.WorkflowMetricsRequest
+	(*EventListenersRequest)(nil),             // 71: direktiv_flow.EventListenersRequest
+	(*EventHistoryRequest)(nil),               // 72: direktiv_flow.EventHistoryRequest
+	(*HistoricalEventRequest)(nil),            // 73: direktiv_flow.HistoricalEventRequest
+	(*ReplayEventRequest)(nil),                // 74: direktiv_flow.ReplayEventRequest
+	(*ToggleWorkflowRequest)(nil),             // 75: direktiv_flow.ToggleWorkflowRequest
+	(*SetWorkflowEventLoggingRequest)(nil),    // 76: direktiv_flow.SetWorkflowEventLoggingRequest
+	(*ResolveNamespaceUIDRequest)(nil),        // 77: direktiv_flow.ResolveNamespaceUIDRequest
+	(*ResolveWorkflowUIDRequest)(nil),         // 78: direktiv_flow.ResolveWorkflowUIDRequest
+	(*SetNamespaceConfigRequest)(nil),         // 79: direktiv_flow.SetNamespaceConfigRequest
+	(*GetNamespaceConfigRequest)(nil),         // 80: direktiv_flow.GetNamespaceConfigRequest
+	(*emptypb.Empty)(nil),                     // 81: google.protobuf.Empty
+	(*InstanceMetadataRequest)(nil),           // 82: direktiv_flow.InstanceMetadataRequest
+	(*NamespaceAnnotationRequest)(nil),        // 83: direktiv_flow.NamespaceAnnotationRequest
+	(*NamespaceAnnotationsRequest)(nil),       // 84: direktiv_flow.NamespaceAnnotationsRequest
+	(*SetNamespaceAnnotationRequest)(nil),     // 85: direktiv_flow.SetNamespaceAnnotationRequest
+	(*DeleteNamespaceAnnotationRequest)(nil),  // 86: direktiv_flow.DeleteNamespaceAnnotationRequest
+	(*RenameNamespaceAnnotationRequest)(nil),  // 87: direktiv_flow.RenameNamespaceAnnotationRequest
+	(*WorkflowAnnotationRequest)(nil),         // 88: direktiv_flow.WorkflowAnnotationRequest
+	(*WorkflowAnnotationsRequest)(nil),        // 89: direktiv_flow.WorkflowAnnotationsRequest
+	(*SetWorkflowAnnotationRequest)(nil),      // 90: direktiv_flow.SetWorkflowAnnotationRequest
+	(*DeleteWorkflowAnnotationRequest)(nil),   // 91: direktiv_flow.DeleteWorkflowAnnotationRequest
+	(*RenameWorkflowAnnotationRequest)(nil),   // 92: direktiv_flow.RenameWorkflowAnnotationRequest
+	(*InstanceAnnotationRequest)(nil),         // 93: direktiv_flow.InstanceAnnotationRequest
+	(*InstanceAnnotationsRequest)(nil),        // 94: direktiv_flow.InstanceAnnotationsRequest
+	(*SetInstanceAnnotationRequest)(nil),      // 95: direktiv_flow.SetInstanceAnnotationRequest
+	(*DeleteInstanceAnnotationRequest)(nil),   // 96: direktiv_flow.DeleteInstanceAnnotationRequest
+	(*RenameInstanceAnnotationRequest)(nil),   // 97: direktiv_flow.RenameInstanceAnnotationRequest
+	(*ReleaseInstanceRequest)(nil),            // 98: direktiv_flow.ReleaseInstanceRequest
+	(*NodeAnnotationRequest)(nil),             // 99: direktiv_flow.NodeAnnotationRequest
+	(*NodeAnnotationsRequest)(nil),            // 100: direktiv_flow.NodeAnnotationsRequest
+	(*SetNodeAnnotationRequest)(nil),          // 101: direktiv_flow.SetNodeAnnotationRequest
+	(*DeleteNodeAnnotationRequest)(nil),       // 102: direktiv_flow.DeleteNodeAnnotationRequest
+	(*RenameNodeAnnotationRequest)(nil),       // 103: direktiv_flow.RenameNodeAnnotationRequest
+	(*CreateNamespaceMirrorRequest)(nil),      // 104: direktiv_flow.CreateNamespaceMirrorRequest
+	(*CreateDirectoryMirrorRequest)(nil),      // 105: direktiv_flow.CreateDirectoryMirrorRequest
+	(*UpdateMirrorSettingsRequest)(nil),       // 106: direktiv_flow.UpdateMirrorSettingsRequest
+	(*LockMirrorRequest)(nil),                 // 107: direktiv_flow.LockMirrorRequest
+	(*UnlockMirrorRequest)(nil),               // 108: direktiv_flow.UnlockMirrorRequest
+	(*SoftSyncMirrorRequest)(nil),             // 109: direktiv_flow.SoftSyncMirrorRequest
+	(*HardSyncMirrorRequest)(nil),             // 110: direktiv_flow.HardSyncMirrorRequest
+	(*MirrorInfoRequest)(nil),                 // 111: direktiv_flow.MirrorInfoRequest
+	(*MirrorActivityLogsRequest)(nil),         // 112: direktiv_flow.MirrorActivityLogsRequest
+	(*CancelMirrorActivityRequest)(nil),       // 113: direktiv_flow.CancelMirrorActivityRequest
+	(*ReportActionResultsRequest)(nil),        // 114: direktiv_flow.ReportActionResultsRequest
+	(*ActionLogRequest)(nil),                  // 115: direktiv_flow.ActionLogRequest
+	(*VariableInternalRequest)(nil),           // 116: direktiv_flow.VariableInternalRequest
+	(*SetVariableInternalRequest)(nil),        // 117: direktiv_flow.SetVariableInternalRequest
+	(*SetNamespaceRegistryRequest)(nil),       // 118: direktiv_flow.SetNamespaceRegistryRequest
+	(*DeleteNamespaceRegistryRequest)(nil),    // 119: direktiv_flow.DeleteNamespaceRegistryRequest
+	(*NamespaceRegistriesRequest)(nil),        // 120: direktiv_flow.NamespaceRegistriesRequest
+	(*EventingRequest)(nil),                   // 121: direktiv_flow.EventingRequest
+	(*NamespaceResponse)(nil),                 // 122: direktiv_flow.NamespaceResponse
+	(*NamespacesResponse)(nil),                // 123: direktiv_flow.NamespacesResponse
+	(*CreateNamespaceResponse)(nil),           // 124: direktiv_flow.CreateNamespaceResponse
+	(*RenameNamespaceResponse)(nil),           // 125: direktiv_flow.RenameNamespaceResponse
+	(*ServerLogsResponse)(nil),                // 126: direktiv_flow.ServerLogsResponse
+	(*NamespaceLogsResponse)(nil),             // 127: direktiv_flow.NamespaceLogsResponse
+	(*WorkflowLogsResponse)(nil),              // 128: direktiv_flow.WorkflowLogsResponse
+	(*DirectoryResponse)(nil),                 // 129: direktiv_flow.DirectoryResponse
+	(*CreateDirectoryResponse)(nil),           // 130: direktiv_flow.CreateDirectoryResponse
+	(*RenameNodeResponse)(nil),                // 131: direktiv_flow.RenameNodeResponse
+	(*NodeResponse)(nil),                      // 132: direktiv_flow.NodeResponse
+	(*WorkflowResponse)(nil),                  // 133: direktiv_flow.WorkflowResponse
+	(*CreateWorkflowResponse)(nil),            // 134: direktiv_flow.CreateWorkflowResponse
+	(*UpdateWorkflowResponse)(nil),            // 135: direktiv_flow.UpdateWorkflowResponse
+	(*SaveHeadResponse)(nil),                  // 136: direktiv_flow.SaveHeadResponse
+	(*DiscardHeadResponse)(nil),               // 137: direktiv_flow.DiscardHeadResponse
+	(*TagsResponse)(nil),                      // 138: direktiv_flow.TagsResponse
+	(*RefsResponse)(nil),                      // 139: direktiv_flow.RefsResponse
+	(*RevisionsResponse)(nil),                 // 140: direktiv_flow.RevisionsResponse
+	(*RouterResponse)(nil),                    // 141: direktiv_flow.RouterResponse
+	(*EditRouterResponse)(nil),                // 142: direktiv_flow.EditRouterResponse
+	(*ValidateRefResponse)(nil),               // 143: direktiv_flow.ValidateRefResponse
+	(*ValidateRouterResponse)(nil),            // 144: direktiv_flow.ValidateRouterResponse
+	(*SecretsResponse)(nil),                   // 145: direktiv_flow.SecretsResponse
+	(*SetSecretResponse)(nil),                 // 146: direktiv_flow.SetSecretResponse
+	(*CreateSecretsFolderResponse)(nil),       // 147: direktiv_flow.CreateSecretsFolderResponse
+	(*SearchSecretResponse)(nil),              // 148: direktiv_flow.SearchSecretResponse
+	(*UpdateSecretResponse)(nil),              // 149: direktiv_flow.UpdateSecretResponse
+	(*InstanceResponse)(nil),                  // 150: direktiv_flow.InstanceResponse
+	(*InstancesResponse)(nil),                 // 151: direktiv_flow.InstancesResponse
+	(*InstanceInputResponse)(nil),             // 152: direktiv_flow.InstanceInputResponse
+	(*InstanceOutputResponse)(nil),            // 153: direktiv_flow.InstanceOutputResponse
+	(*InstanceLogsResponse)(nil),              // 154: direktiv_flow.InstanceLogsResponse
+	(*StartWorkflowResponse)(nil),             // 155: direktiv_flow.StartWorkflowResponse
+	(*RunWorkflowResponse)(nil),               // 156: direktiv_flow.RunWorkflowResponse
+	(*AwaitWorkflowResponse)(nil),             // 157: direktiv_flow.AwaitWorkflowResponse
+	(*GetCloudEventFilterScriptResponse)(nil), // 158: direktiv_flow.GetCloudEventFilterScriptResponse
+	(*GetCloudEventFiltersResponse)(nil),      // 159: direktiv_flow.GetCloudEventFiltersResponse
+	(*NamespaceVariableResponse)(nil),         // 160: direktiv_flow.NamespaceVariableResponse
+	(*NamespaceVariablesResponse)(nil),        // 161: direktiv_flow.NamespaceVariablesResponse
+	(*SetNamespaceVariableResponse)(nil),      // 162: direktiv_flow.SetNamespaceVariableResponse
+	(*RenameNamespaceVariableResponse)(nil),   // 163: direktiv_flow.RenameNamespaceVariableResponse
+	(*WorkflowVariableResponse)(nil),          // 164: direktiv_flow.WorkflowVariableResponse
+	(*WorkflowVariablesResponse)(nil),         // 165: direktiv_flow.WorkflowVariablesResponse
+	(*SetWorkflowVariableResponse)(nil),       // 166: direktiv_flow.SetWorkflowVariableResponse
+	(*RenameWorkflowVariableResponse)(nil),    // 167: direktiv_flow.RenameWorkflowVariableResponse
+	(*InstanceVariableResponse)(nil),          // 168: direktiv_flow.InstanceVariableResponse
+	(*InstanceVariablesResponse)(nil),         // 169: direktiv_flow.InstanceVariablesResponse
+	(*SetInstanceVariableResponse)(nil),       // 170: direktiv_flow.SetInstanceVariableResponse
+	(*RenameInstanceVariableResponse)(nil),    // 171: direktiv_flow.RenameInstanceVariableResponse
+	(*JQResponse)(nil),                        // 172: direktiv_flow.JQResponse
+	(*WorkflowMetricsResponse)(nil),           // 173: direktiv_flow.WorkflowMetricsResponse
+	(*EventListenersResponse)(nil),            // 174: direktiv_flow.EventListenersResponse
+	(*EventHistoryResponse)(nil),              // 175: direktiv_flow.EventHistoryResponse
+	(*HistoricalEventResponse)(nil),           // 176: direktiv_flow.HistoricalEventResponse
+	(*SetNamespaceConfigResponse)(nil),        // 177: direktiv_flow.SetNamespaceConfigResponse
+	(*GetNamespaceConfigResponse)(nil),        // 178: direktiv_flow.GetNamespaceConfigResponse
+	(*BuildResponse)(nil),                     // 179: direktiv_flow.BuildResponse
+	(*InstanceMetadataResponse)(nil),          // 180: direktiv_flow.InstanceMetadataResponse
+	(*NamespaceAnnotationResponse)(nil),       // 181: direktiv_flow.NamespaceAnnotationResponse
+	(*NamespaceAnnotationsResponse)(nil),      // 182: direktiv_flow.NamespaceAnnotationsResponse
+	(*SetNamespaceAnnotationResponse)(nil),    // 183: direktiv_flow.SetNamespaceAnnotationResponse
+	(*RenameNamespaceAnnotationResponse)(nil), // 184: direktiv_flow.RenameNamespaceAnnotationResponse
+	(*WorkflowAnnotationResponse)(nil),        // 185: direktiv_flow.WorkflowAnnotationResponse
+	(*WorkflowAnnotationsResponse)(nil),       // 186: direktiv_flow.WorkflowAnnotationsResponse
+	(*SetWorkflowAnnotationResponse)(nil),     // 187: direktiv_flow.SetWorkflowAnnotationResponse
+	(*RenameWorkflowAnnotationResponse)(nil),  // 188: direktiv_flow.RenameWorkflowAnnotationResponse
+	(*InstanceAnnotationResponse)(nil),        // 189: direktiv_flow.InstanceAnnotationResponse
+	(*InstanceAnnotationsResponse)(nil),       // 190: direktiv_flow.InstanceAnnotationsResponse
+	(*SetInstanceAnnotationResponse)(nil),     // 191: direktiv_flow.SetInstanceAnnotationResponse
+	(*RenameInstanceAnnotationResponse)(nil),  // 192: direktiv_flow.RenameInstanceAnnotationResponse
+	(*ReleaseInstanceResponse)(nil),           // 193: direktiv_flow.ReleaseInstanceResponse
+	(*NodeAnnotationResponse)(nil),            // 194: direktiv_flow.NodeAnnotationResponse
+	(*NodeAnnotationsResponse)(nil),           // 195: direktiv_flow.NodeAnnotationsResponse
+	(*SetNodeAnnotationResponse)(nil),         // 196: direktiv_flow.SetNodeAnnotationResponse
+	(*RenameNodeAnnotationResponse)(nil),      // 197: direktiv_flow.RenameNodeAnnotationResponse
+	(*MirrorInfoResponse)(nil),                // 198: direktiv_flow.MirrorInfoResponse
+	(*MirrorActivityLogsResponse)(nil),        // 199: direktiv_flow.MirrorActivityLogsResponse
+	(*VariableInternalResponse)(nil),          // 200: direktiv_flow.VariableInternalResponse
+	(*SetVariableInternalResponse)(nil),       // 201: direktiv_flow.SetVariableInternalResponse
+	(*NamespaceRegistriesResponse)(nil),       // 202: direktiv_flow.NamespaceRegistriesResponse
+	(*CloudEvent)(nil),                        // 203: direktiv_flow.CloudEvent
 }
 var file_pkg_flow_grpc_protocol_proto_depIdxs = []int32{
 	0,   // 0: direktiv_flow.Flow.Namespace:input_type -> direktiv_flow.NamespaceRequest
@@ -1362,285 +1370,287 @@ var file_pkg_flow_grpc_protocol_proto_depIdxs = []int32{
 	40,  // 54: direktiv_flow.Flow.InstanceLogsParcels:input_type -> direktiv_flow.InstanceLogsRequest
 	41,  // 55: direktiv_flow.Flow.StartWorkflow:input_type -> direktiv_flow.StartWorkflowRequest
 	42,  // 56: direktiv_flow.Flow.RunWorkflow:input_type -> direktiv_flow.RunWorkflowRequest
-	43,  // 57: direktiv_flow.Flow.CancelInstance:input_type -> direktiv_flow.CancelInstanceRequest
-	44,  // 58: direktiv_flow.Flow.BroadcastCloudevent:input_type -> direktiv_flow.BroadcastCloudeventRequest
-	45,  // 59: direktiv_flow.Flow.ApplyCloudEventFilter:input_type -> direktiv_flow.ApplyCloudEventFilterRequest
-	46,  // 60: direktiv_flow.Flow.DeleteCloudEventFilter:input_type -> direktiv_flow.DeleteCloudEventFilterRequest
-	47,  // 61: direktiv_flow.Flow.CreateCloudEventFilter:input_type -> direktiv_flow.CreateCloudEventFilterRequest
-	48,  // 62: direktiv_flow.Flow.UpdateCloudEventFilter:input_type -> direktiv_flow.UpdateCloudEventFilterRequest
-	49,  // 63: direktiv_flow.Flow.GetCloudEventFilterScript:input_type -> direktiv_flow.GetCloudEventFilterScriptRequest
-	50,  // 64: direktiv_flow.Flow.GetCloudEventFilters:input_type -> direktiv_flow.GetCloudEventFiltersRequest
-	51,  // 65: direktiv_flow.Flow.NamespaceVariable:input_type -> direktiv_flow.NamespaceVariableRequest
-	51,  // 66: direktiv_flow.Flow.NamespaceVariableParcels:input_type -> direktiv_flow.NamespaceVariableRequest
-	52,  // 67: direktiv_flow.Flow.NamespaceVariables:input_type -> direktiv_flow.NamespaceVariablesRequest
-	52,  // 68: direktiv_flow.Flow.NamespaceVariablesStream:input_type -> direktiv_flow.NamespaceVariablesRequest
-	53,  // 69: direktiv_flow.Flow.SetNamespaceVariable:input_type -> direktiv_flow.SetNamespaceVariableRequest
-	53,  // 70: direktiv_flow.Flow.SetNamespaceVariableParcels:input_type -> direktiv_flow.SetNamespaceVariableRequest
-	54,  // 71: direktiv_flow.Flow.DeleteNamespaceVariable:input_type -> direktiv_flow.DeleteNamespaceVariableRequest
-	55,  // 72: direktiv_flow.Flow.RenameNamespaceVariable:input_type -> direktiv_flow.RenameNamespaceVariableRequest
-	56,  // 73: direktiv_flow.Flow.WorkflowVariable:input_type -> direktiv_flow.WorkflowVariableRequest
-	56,  // 74: direktiv_flow.Flow.WorkflowVariableParcels:input_type -> direktiv_flow.WorkflowVariableRequest
-	57,  // 75: direktiv_flow.Flow.WorkflowVariables:input_type -> direktiv_flow.WorkflowVariablesRequest
-	57,  // 76: direktiv_flow.Flow.WorkflowVariablesStream:input_type -> direktiv_flow.WorkflowVariablesRequest
-	58,  // 77: direktiv_flow.Flow.SetWorkflowVariable:input_type -> direktiv_flow.SetWorkflowVariableRequest
-	58,  // 78: direktiv_flow.Flow.SetWorkflowVariableParcels:input_type -> direktiv_flow.SetWorkflowVariableRequest
-	59,  // 79: direktiv_flow.Flow.DeleteWorkflowVariable:input_type -> direktiv_flow.DeleteWorkflowVariableRequest
-	60,  // 80: direktiv_flow.Flow.RenameWorkflowVariable:input_type -> direktiv_flow.RenameWorkflowVariableRequest
-	61,  // 81: direktiv_flow.Flow.InstanceVariable:input_type -> direktiv_flow.InstanceVariableRequest
-	61,  // 82: direktiv_flow.Flow.InstanceVariableParcels:input_type -> direktiv_flow.InstanceVariableRequest
-	62,  // 83: direktiv_flow.Flow.InstanceVariables:input_type -> direktiv_flow.InstanceVariablesRequest
-	62,  // 84: direktiv_flow.Flow.InstanceVariablesStream:input_type -> direktiv_flow.InstanceVariablesRequest
-	63,  // 85: direktiv_flow.Flow.SetInstanceVariable:input_type -> direktiv_flow.SetInstanceVariableRequest
-	63,  // 86: direktiv_flow.Flow.SetInstanceVariableParcels:input_type -> direktiv_flow.SetInstanceVariableRequest
-	64,  // 87: direktiv_flow.Flow.DeleteInstanceVariable:input_type -> direktiv_flow.DeleteInstanceVariableRequest
-	65,  // 88: direktiv_flow.Flow.RenameInstanceVariable:input_type -> direktiv_flow.RenameInstanceVariableRequest
-	66,  // 89: direktiv_flow.Flow.JQ:input_type -> direktiv_flow.JQRequest
-	67,  // 90: direktiv_flow.Flow.CreateNodeAttributes:input_type -> direktiv_flow.CreateNodeAttributesRequest
-	68,  // 91: direktiv_flow.Flow.DeleteNodeAttributes:input_type -> direktiv_flow.DeleteNodeAttributesRequest
-	69,  // 92: direktiv_flow.Flow.WorkflowMetrics:input_type -> direktiv_flow.WorkflowMetricsRequest
-	70,  // 93: direktiv_flow.Flow.EventListeners:input_type -> direktiv_flow.EventListenersRequest
-	70,  // 94: direktiv_flow.Flow.EventListenersStream:input_type -> direktiv_flow.EventListenersRequest
-	71,  // 95: direktiv_flow.Flow.EventHistory:input_type -> direktiv_flow.EventHistoryRequest
-	71,  // 96: direktiv_flow.Flow.EventHistoryStream:input_type -> direktiv_flow.EventHistoryRequest
-	72,  // 97: direktiv_flow.Flow.HistoricalEvent:input_type -> direktiv_flow.HistoricalEventRequest
-	73,  // 98: direktiv_flow.Flow.ReplayEvent:input_type -> direktiv_flow.ReplayEventRequest
-	74,  // 99: direktiv_flow.Flow.ToggleWorkflow:input_type -> direktiv_flow.ToggleWorkflowRequest
-	75,  // 100: direktiv_flow.Flow.SetWorkflowEventLogging:input_type -> direktiv_flow.SetWorkflowEventLoggingRequest
-	76,  // 101: direktiv_flow.Flow.ResolveNamespaceUID:input_type -> direktiv_flow.ResolveNamespaceUIDRequest
-	77,  // 102: direktiv_flow.Flow.ResolveWorkflowUID:input_type -> direktiv_flow.ResolveWorkflowUIDRequest
-	78,  // 103: direktiv_flow.Flow.SetNamespaceConfig:input_type -> direktiv_flow.SetNamespaceConfigRequest
-	79,  // 104: direktiv_flow.Flow.GetNamespaceConfig:input_type -> direktiv_flow.GetNamespaceConfigRequest
-	80,  // 105: direktiv_flow.Flow.Build:input_type -> google.protobuf.Empty
-	81,  // 106: direktiv_flow.Flow.InstanceMetadata:input_type -> direktiv_flow.InstanceMetadataRequest
-	82,  // 107: direktiv_flow.Flow.NamespaceAnnotation:input_type -> direktiv_flow.NamespaceAnnotationRequest
-	82,  // 108: direktiv_flow.Flow.NamespaceAnnotationParcels:input_type -> direktiv_flow.NamespaceAnnotationRequest
-	83,  // 109: direktiv_flow.Flow.NamespaceAnnotations:input_type -> direktiv_flow.NamespaceAnnotationsRequest
-	83,  // 110: direktiv_flow.Flow.NamespaceAnnotationsStream:input_type -> direktiv_flow.NamespaceAnnotationsRequest
-	84,  // 111: direktiv_flow.Flow.SetNamespaceAnnotation:input_type -> direktiv_flow.SetNamespaceAnnotationRequest
-	84,  // 112: direktiv_flow.Flow.SetNamespaceAnnotationParcels:input_type -> direktiv_flow.SetNamespaceAnnotationRequest
-	85,  // 113: direktiv_flow.Flow.DeleteNamespaceAnnotation:input_type -> direktiv_flow.DeleteNamespaceAnnotationRequest
-	86,  // 114: direktiv_flow.Flow.RenameNamespaceAnnotation:input_type -> direktiv_flow.RenameNamespaceAnnotationRequest
-	87,  // 115: direktiv_flow.Flow.WorkflowAnnotation:input_type -> direktiv_flow.WorkflowAnnotationRequest
-	87,  // 116: direktiv_flow.Flow.WorkflowAnnotationParcels:input_type -> direktiv_flow.WorkflowAnnotationRequest
-	88,  // 117: direktiv_flow.Flow.WorkflowAnnotations:input_type -> direktiv_flow.WorkflowAnnotationsRequest
-	88,  // 118: direktiv_flow.Flow.WorkflowAnnotationsStream:input_type -> direktiv_flow.WorkflowAnnotationsRequest
-	89,  // 119: direktiv_flow.Flow.SetWorkflowAnnotation:input_type -> direktiv_flow.SetWorkflowAnnotationRequest
-	89,  // 120: direktiv_flow.Flow.SetWorkflowAnnotationParcels:input_type -> direktiv_flow.SetWorkflowAnnotationRequest
-	90,  // 121: direktiv_flow.Flow.DeleteWorkflowAnnotation:input_type -> direktiv_flow.DeleteWorkflowAnnotationRequest
-	91,  // 122: direktiv_flow.Flow.RenameWorkflowAnnotation:input_type -> direktiv_flow.RenameWorkflowAnnotationRequest
-	92,  // 123: direktiv_flow.Flow.InstanceAnnotation:input_type -> direktiv_flow.InstanceAnnotationRequest
-	92,  // 124: direktiv_flow.Flow.InstanceAnnotationParcels:input_type -> direktiv_flow.InstanceAnnotationRequest
-	93,  // 125: direktiv_flow.Flow.InstanceAnnotations:input_type -> direktiv_flow.InstanceAnnotationsRequest
-	93,  // 126: direktiv_flow.Flow.InstanceAnnotationsStream:input_type -> direktiv_flow.InstanceAnnotationsRequest
-	94,  // 127: direktiv_flow.Flow.SetInstanceAnnotation:input_type -> direktiv_flow.SetInstanceAnnotationRequest
-	94,  // 128: direktiv_flow.Flow.SetInstanceAnnotationParcels:input_type -> direktiv_flow.SetInstanceAnnotationRequest
-	95,  // 129: direktiv_flow.Flow.DeleteInstanceAnnotation:input_type -> direktiv_flow.DeleteInstanceAnnotationRequest
-	96,  // 130: direktiv_flow.Flow.RenameInstanceAnnotation:input_type -> direktiv_flow.RenameInstanceAnnotationRequest
-	97,  // 131: direktiv_flow.Flow.ReleaseInstance:input_type -> direktiv_flow.ReleaseInstanceRequest
-	98,  // 132: direktiv_flow.Flow.NodeAnnotation:input_type -> direktiv_flow.NodeAnnotationRequest
-	98,  // 133: direktiv_flow.Flow.NodeAnnotationParcels:input_type -> direktiv_flow.NodeAnnotationRequest
-	99,  // 134: direktiv_flow.Flow.NodeAnnotations:input_type -> direktiv_flow.NodeAnnotationsRequest
-	99,  // 135: direktiv_flow.Flow.NodeAnnotationsStream:input_type -> direktiv_flow.NodeAnnotationsRequest
-	100, // 136: direktiv_flow.Flow.SetNodeAnnotation:input_type -> direktiv_flow.SetNodeAnnotationRequest
-	100, // 137: direktiv_flow.Flow.SetNodeAnnotationParcels:input_type -> direktiv_flow.SetNodeAnnotationRequest
-	101, // 138: direktiv_flow.Flow.DeleteNodeAnnotation:input_type -> direktiv_flow.DeleteNodeAnnotationRequest
-	102, // 139: direktiv_flow.Flow.RenameNodeAnnotation:input_type -> direktiv_flow.RenameNodeAnnotationRequest
-	103, // 140: direktiv_flow.Flow.CreateNamespaceMirror:input_type -> direktiv_flow.CreateNamespaceMirrorRequest
-	104, // 141: direktiv_flow.Flow.CreateDirectoryMirror:input_type -> direktiv_flow.CreateDirectoryMirrorRequest
-	105, // 142: direktiv_flow.Flow.UpdateMirrorSettings:input_type -> direktiv_flow.UpdateMirrorSettingsRequest
-	106, // 143: direktiv_flow.Flow.LockMirror:input_type -> direktiv_flow.LockMirrorRequest
-	107, // 144: direktiv_flow.Flow.UnlockMirror:input_type -> direktiv_flow.UnlockMirrorRequest
-	108, // 145: direktiv_flow.Flow.SoftSyncMirror:input_type -> direktiv_flow.SoftSyncMirrorRequest
-	109, // 146: direktiv_flow.Flow.HardSyncMirror:input_type -> direktiv_flow.HardSyncMirrorRequest
-	110, // 147: direktiv_flow.Flow.MirrorInfo:input_type -> direktiv_flow.MirrorInfoRequest
-	110, // 148: direktiv_flow.Flow.MirrorInfoStream:input_type -> direktiv_flow.MirrorInfoRequest
-	111, // 149: direktiv_flow.Flow.MirrorActivityLogs:input_type -> direktiv_flow.MirrorActivityLogsRequest
-	111, // 150: direktiv_flow.Flow.MirrorActivityLogsParcels:input_type -> direktiv_flow.MirrorActivityLogsRequest
-	112, // 151: direktiv_flow.Flow.CancelMirrorActivity:input_type -> direktiv_flow.CancelMirrorActivityRequest
-	113, // 152: direktiv_flow.Internal.ReportActionResults:input_type -> direktiv_flow.ReportActionResultsRequest
-	114, // 153: direktiv_flow.Internal.ActionLog:input_type -> direktiv_flow.ActionLogRequest
-	115, // 154: direktiv_flow.Internal.NamespaceVariableParcels:input_type -> direktiv_flow.VariableInternalRequest
-	116, // 155: direktiv_flow.Internal.SetNamespaceVariableParcels:input_type -> direktiv_flow.SetVariableInternalRequest
-	115, // 156: direktiv_flow.Internal.WorkflowVariableParcels:input_type -> direktiv_flow.VariableInternalRequest
-	116, // 157: direktiv_flow.Internal.SetWorkflowVariableParcels:input_type -> direktiv_flow.SetVariableInternalRequest
-	115, // 158: direktiv_flow.Internal.ThreadVariableParcels:input_type -> direktiv_flow.VariableInternalRequest
-	116, // 159: direktiv_flow.Internal.SetThreadVariableParcels:input_type -> direktiv_flow.SetVariableInternalRequest
-	115, // 160: direktiv_flow.Internal.InstanceVariableParcels:input_type -> direktiv_flow.VariableInternalRequest
-	116, // 161: direktiv_flow.Internal.SetInstanceVariableParcels:input_type -> direktiv_flow.SetVariableInternalRequest
-	117, // 162: direktiv_flow.Actions.SetNamespaceRegistry:input_type -> direktiv_flow.SetNamespaceRegistryRequest
-	118, // 163: direktiv_flow.Actions.DeleteNamespaceRegistry:input_type -> direktiv_flow.DeleteNamespaceRegistryRequest
-	119, // 164: direktiv_flow.Actions.NamespaceRegistries:input_type -> direktiv_flow.NamespaceRegistriesRequest
-	119, // 165: direktiv_flow.Actions.NamespaceRegistriesStream:input_type -> direktiv_flow.NamespaceRegistriesRequest
-	120, // 166: direktiv_flow.Eventing.RequestEvents:input_type -> direktiv_flow.EventingRequest
-	121, // 167: direktiv_flow.Flow.Namespace:output_type -> direktiv_flow.NamespaceResponse
-	122, // 168: direktiv_flow.Flow.Namespaces:output_type -> direktiv_flow.NamespacesResponse
-	122, // 169: direktiv_flow.Flow.NamespacesStream:output_type -> direktiv_flow.NamespacesResponse
-	123, // 170: direktiv_flow.Flow.CreateNamespace:output_type -> direktiv_flow.CreateNamespaceResponse
-	80,  // 171: direktiv_flow.Flow.DeleteNamespace:output_type -> google.protobuf.Empty
-	124, // 172: direktiv_flow.Flow.RenameNamespace:output_type -> direktiv_flow.RenameNamespaceResponse
-	125, // 173: direktiv_flow.Flow.ServerLogs:output_type -> direktiv_flow.ServerLogsResponse
-	125, // 174: direktiv_flow.Flow.ServerLogsParcels:output_type -> direktiv_flow.ServerLogsResponse
-	126, // 175: direktiv_flow.Flow.NamespaceLogs:output_type -> direktiv_flow.NamespaceLogsResponse
-	126, // 176: direktiv_flow.Flow.NamespaceLogsParcels:output_type -> direktiv_flow.NamespaceLogsResponse
-	127, // 177: direktiv_flow.Flow.WorkflowLogs:output_type -> direktiv_flow.WorkflowLogsResponse
-	127, // 178: direktiv_flow.Flow.WorkflowLogsParcels:output_type -> direktiv_flow.WorkflowLogsResponse
-	128, // 179: direktiv_flow.Flow.Directory:output_type -> direktiv_flow.DirectoryResponse
-	128, // 180: direktiv_flow.Flow.DirectoryStream:output_type -> direktiv_flow.DirectoryResponse
-	129, // 181: direktiv_flow.Flow.CreateDirectory:output_type -> direktiv_flow.CreateDirectoryResponse
-	80,  // 182: direktiv_flow.Flow.DeleteNode:output_type -> google.protobuf.Empty
-	130, // 183: direktiv_flow.Flow.RenameNode:output_type -> direktiv_flow.RenameNodeResponse
-	131, // 184: direktiv_flow.Flow.Node:output_type -> direktiv_flow.NodeResponse
-	132, // 185: direktiv_flow.Flow.Workflow:output_type -> direktiv_flow.WorkflowResponse
-	132, // 186: direktiv_flow.Flow.WorkflowStream:output_type -> direktiv_flow.WorkflowResponse
-	133, // 187: direktiv_flow.Flow.CreateWorkflow:output_type -> direktiv_flow.CreateWorkflowResponse
-	134, // 188: direktiv_flow.Flow.UpdateWorkflow:output_type -> direktiv_flow.UpdateWorkflowResponse
-	135, // 189: direktiv_flow.Flow.SaveHead:output_type -> direktiv_flow.SaveHeadResponse
-	136, // 190: direktiv_flow.Flow.DiscardHead:output_type -> direktiv_flow.DiscardHeadResponse
-	137, // 191: direktiv_flow.Flow.Tags:output_type -> direktiv_flow.TagsResponse
-	137, // 192: direktiv_flow.Flow.TagsStream:output_type -> direktiv_flow.TagsResponse
-	138, // 193: direktiv_flow.Flow.Refs:output_type -> direktiv_flow.RefsResponse
-	138, // 194: direktiv_flow.Flow.RefsStream:output_type -> direktiv_flow.RefsResponse
-	139, // 195: direktiv_flow.Flow.Revisions:output_type -> direktiv_flow.RevisionsResponse
-	139, // 196: direktiv_flow.Flow.RevisionsStream:output_type -> direktiv_flow.RevisionsResponse
-	80,  // 197: direktiv_flow.Flow.DeleteRevision:output_type -> google.protobuf.Empty
-	80,  // 198: direktiv_flow.Flow.Tag:output_type -> google.protobuf.Empty
-	80,  // 199: direktiv_flow.Flow.Untag:output_type -> google.protobuf.Empty
-	80,  // 200: direktiv_flow.Flow.Retag:output_type -> google.protobuf.Empty
-	140, // 201: direktiv_flow.Flow.Router:output_type -> direktiv_flow.RouterResponse
-	140, // 202: direktiv_flow.Flow.RouterStream:output_type -> direktiv_flow.RouterResponse
-	141, // 203: direktiv_flow.Flow.EditRouter:output_type -> direktiv_flow.EditRouterResponse
-	142, // 204: direktiv_flow.Flow.ValidateRef:output_type -> direktiv_flow.ValidateRefResponse
-	143, // 205: direktiv_flow.Flow.ValidateRouter:output_type -> direktiv_flow.ValidateRouterResponse
-	144, // 206: direktiv_flow.Flow.Secrets:output_type -> direktiv_flow.SecretsResponse
-	144, // 207: direktiv_flow.Flow.SecretsStream:output_type -> direktiv_flow.SecretsResponse
-	145, // 208: direktiv_flow.Flow.SetSecret:output_type -> direktiv_flow.SetSecretResponse
-	146, // 209: direktiv_flow.Flow.CreateSecretsFolder:output_type -> direktiv_flow.CreateSecretsFolderResponse
-	80,  // 210: direktiv_flow.Flow.DeleteSecret:output_type -> google.protobuf.Empty
-	80,  // 211: direktiv_flow.Flow.DeleteSecretsFolder:output_type -> google.protobuf.Empty
-	147, // 212: direktiv_flow.Flow.SearchSecret:output_type -> direktiv_flow.SearchSecretResponse
-	148, // 213: direktiv_flow.Flow.UpdateSecret:output_type -> direktiv_flow.UpdateSecretResponse
-	149, // 214: direktiv_flow.Flow.Instance:output_type -> direktiv_flow.InstanceResponse
-	149, // 215: direktiv_flow.Flow.InstanceStream:output_type -> direktiv_flow.InstanceResponse
-	150, // 216: direktiv_flow.Flow.Instances:output_type -> direktiv_flow.InstancesResponse
-	150, // 217: direktiv_flow.Flow.InstancesStream:output_type -> direktiv_flow.InstancesResponse
-	151, // 218: direktiv_flow.Flow.InstanceInput:output_type -> direktiv_flow.InstanceInputResponse
-	152, // 219: direktiv_flow.Flow.InstanceOutput:output_type -> direktiv_flow.InstanceOutputResponse
-	153, // 220: direktiv_flow.Flow.InstanceLogs:output_type -> direktiv_flow.InstanceLogsResponse
-	153, // 221: direktiv_flow.Flow.InstanceLogsParcels:output_type -> direktiv_flow.InstanceLogsResponse
-	154, // 222: direktiv_flow.Flow.StartWorkflow:output_type -> direktiv_flow.StartWorkflowResponse
-	155, // 223: direktiv_flow.Flow.RunWorkflow:output_type -> direktiv_flow.RunWorkflowResponse
-	80,  // 224: direktiv_flow.Flow.CancelInstance:output_type -> google.protobuf.Empty
-	80,  // 225: direktiv_flow.Flow.BroadcastCloudevent:output_type -> google.protobuf.Empty
-	80,  // 226: direktiv_flow.Flow.ApplyCloudEventFilter:output_type -> google.protobuf.Empty
-	80,  // 227: direktiv_flow.Flow.DeleteCloudEventFilter:output_type -> google.protobuf.Empty
-	80,  // 228: direktiv_flow.Flow.CreateCloudEventFilter:output_type -> google.protobuf.Empty
-	80,  // 229: direktiv_flow.Flow.UpdateCloudEventFilter:output_type -> google.protobuf.Empty
-	156, // 230: direktiv_flow.Flow.GetCloudEventFilterScript:output_type -> direktiv_flow.GetCloudEventFilterScriptResponse
-	157, // 231: direktiv_flow.Flow.GetCloudEventFilters:output_type -> direktiv_flow.GetCloudEventFiltersResponse
-	158, // 232: direktiv_flow.Flow.NamespaceVariable:output_type -> direktiv_flow.NamespaceVariableResponse
-	158, // 233: direktiv_flow.Flow.NamespaceVariableParcels:output_type -> direktiv_flow.NamespaceVariableResponse
-	159, // 234: direktiv_flow.Flow.NamespaceVariables:output_type -> direktiv_flow.NamespaceVariablesResponse
-	159, // 235: direktiv_flow.Flow.NamespaceVariablesStream:output_type -> direktiv_flow.NamespaceVariablesResponse
-	160, // 236: direktiv_flow.Flow.SetNamespaceVariable:output_type -> direktiv_flow.SetNamespaceVariableResponse
-	160, // 237: direktiv_flow.Flow.SetNamespaceVariableParcels:output_type -> direktiv_flow.SetNamespaceVariableResponse
-	80,  // 238: direktiv_flow.Flow.DeleteNamespaceVariable:output_type -> google.protobuf.Empty
-	161, // 239: direktiv_flow.Flow.RenameNamespaceVariable:output_type -> direktiv_flow.RenameNamespaceVariableResponse
-	162, // 240: direktiv_flow.Flow.WorkflowVariable:output_type -> direktiv_flow.WorkflowVariableResponse
-	162, // 241: direktiv_flow.Flow.WorkflowVariableParcels:output_type -> direktiv_flow.WorkflowVariableResponse
-	163, // 242: direktiv_flow.Flow.WorkflowVariables:output_type -> direktiv_flow.WorkflowVariablesResponse
-	163, // 243: direktiv_flow.Flow.WorkflowVariablesStream:output_type -> direktiv_flow.WorkflowVariablesResponse
-	164, // 244: direktiv_flow.Flow.SetWorkflowVariable:output_type -> direktiv_flow.SetWorkflowVariableResponse
-	164, // 245: direktiv_flow.Flow.SetWorkflowVariableParcels:output_type -> direktiv_flow.SetWorkflowVariableResponse
-	80,  // 246: direktiv_flow.Flow.DeleteWorkflowVariable:output_type -> google.protobuf.Empty
-	165, // 247: direktiv_flow.Flow.RenameWorkflowVariable:output_type -> direktiv_flow.RenameWorkflowVariableResponse
-	166, // 248: direktiv_flow.Flow.InstanceVariable:output_type -> direktiv_flow.InstanceVariableResponse
-	166, // 249: direktiv_flow.Flow.InstanceVariableParcels:output_type -> direktiv_flow.InstanceVariableResponse
-	167, // 250: direktiv_flow.Flow.InstanceVariables:output_type -> direktiv_flow.InstanceVariablesResponse
-	167, // 251: direktiv_flow.Flow.InstanceVariablesStream:output_type -> direktiv_flow.InstanceVariablesResponse
-	168, // 252: direktiv_flow.Flow.SetInstanceVariable:output_type -> direktiv_flow.SetInstanceVariableResponse
-	168, // 253: direktiv_flow.Flow.SetInstanceVariableParcels:output_type -> direktiv_flow.SetInstanceVariableResponse
-	80,  // 254: direktiv_flow.Flow.DeleteInstanceVariable:output_type -> google.protobuf.Empty
-	169, // 255: direktiv_flow.Flow.RenameInstanceVariable:output_type -> direktiv_flow.RenameInstanceVariableResponse
-	170, // 256: direktiv_flow.Flow.JQ:output_type -> direktiv_flow.JQResponse
-	80,  // 257: direktiv_flow.Flow.CreateNodeAttributes:output_type -> google.protobuf.Empty
-	80,  // 258: direktiv_flow.Flow.DeleteNodeAttributes:output_type -> google.protobuf.Empty
-	171, // 259: direktiv_flow.Flow.WorkflowMetrics:output_type -> direktiv_flow.WorkflowMetricsResponse
-	172, // 260: direktiv_flow.Flow.EventListeners:output_type -> direktiv_flow.EventListenersResponse
-	172, // 261: direktiv_flow.Flow.EventListenersStream:output_type -> direktiv_flow.EventListenersResponse
-	173, // 262: direktiv_flow.Flow.EventHistory:output_type -> direktiv_flow.EventHistoryResponse
-	173, // 263: direktiv_flow.Flow.EventHistoryStream:output_type -> direktiv_flow.EventHistoryResponse
-	174, // 264: direktiv_flow.Flow.HistoricalEvent:output_type -> direktiv_flow.HistoricalEventResponse
-	80,  // 265: direktiv_flow.Flow.ReplayEvent:output_type -> google.protobuf.Empty
-	80,  // 266: direktiv_flow.Flow.ToggleWorkflow:output_type -> google.protobuf.Empty
-	80,  // 267: direktiv_flow.Flow.SetWorkflowEventLogging:output_type -> google.protobuf.Empty
-	121, // 268: direktiv_flow.Flow.ResolveNamespaceUID:output_type -> direktiv_flow.NamespaceResponse
-	132, // 269: direktiv_flow.Flow.ResolveWorkflowUID:output_type -> direktiv_flow.WorkflowResponse
-	175, // 270: direktiv_flow.Flow.SetNamespaceConfig:output_type -> direktiv_flow.SetNamespaceConfigResponse
-	176, // 271: direktiv_flow.Flow.GetNamespaceConfig:output_type -> direktiv_flow.GetNamespaceConfigResponse
-	177, // 272: direktiv_flow.Flow.Build:output_type -> direktiv_flow.BuildResponse
-	178, // 273: direktiv_flow.Flow.InstanceMetadata:output_type -> direktiv_flow.InstanceMetadataResponse
-	179, // 274: direktiv_flow.Flow.NamespaceAnnotation:output_type -> direktiv_flow.NamespaceAnnotationResponse
-	179, // 275: direktiv_flow.Flow.NamespaceAnnotationParcels:output_type -> direktiv_flow.NamespaceAnnotationResponse
-	180, // 276: direktiv_flow.Flow.NamespaceAnnotations:output_type -> direktiv_flow.NamespaceAnnotationsResponse
-	180, // 277: direktiv_flow.Flow.NamespaceAnnotationsStream:output_type -> direktiv_flow.NamespaceAnnotationsResponse
-	181, // 278: direktiv_flow.Flow.SetNamespaceAnnotation:output_type -> direktiv_flow.SetNamespaceAnnotationResponse
-	181, // 279: direktiv_flow.Flow.SetNamespaceAnnotationParcels:output_type -> direktiv_flow.SetNamespaceAnnotationResponse
-	80,  // 280: direktiv_flow.Flow.DeleteNamespaceAnnotation:output_type -> google.protobuf.Empty
-	182, // 281: direktiv_flow.Flow.RenameNamespaceAnnotation:output_type -> direktiv_flow.RenameNamespaceAnnotationResponse
-	183, // 282: direktiv_flow.Flow.WorkflowAnnotation:output_type -> direktiv_flow.WorkflowAnnotationResponse
-	183, // 283: direktiv_flow.Flow.WorkflowAnnotationParcels:output_type -> direktiv_flow.WorkflowAnnotationResponse
-	184, // 284: direktiv_flow.Flow.WorkflowAnnotations:output_type -> direktiv_flow.WorkflowAnnotationsResponse
-	184, // 285: direktiv_flow.Flow.WorkflowAnnotationsStream:output_type -> direktiv_flow.WorkflowAnnotationsResponse
-	185, // 286: direktiv_flow.Flow.SetWorkflowAnnotation:output_type -> direktiv_flow.SetWorkflowAnnotationResponse
-	185, // 287: direktiv_flow.Flow.SetWorkflowAnnotationParcels:output_type -> direktiv_flow.SetWorkflowAnnotationResponse
-	80,  // 288: direktiv_flow.Flow.DeleteWorkflowAnnotation:output_type -> google.protobuf.Empty
-	186, // 289: direktiv_flow.Flow.RenameWorkflowAnnotation:output_type -> direktiv_flow.RenameWorkflowAnnotationResponse
-	187, // 290: direktiv_flow.Flow.InstanceAnnotation:output_type -> direktiv_flow.InstanceAnnotationResponse
-	187, // 291: direktiv_flow.Flow.InstanceAnnotationParcels:output_type -> direktiv_flow.InstanceAnnotationResponse
-	188, // 292: direktiv_flow.Flow.InstanceAnnotations:output_type -> direktiv_flow.InstanceAnnotationsResponse
-	188, // 293: direktiv_flow.Flow.InstanceAnnotationsStream:output_type -> direktiv_flow.InstanceAnnotationsResponse
-	189, // 294: direktiv_flow.Flow.SetInstanceAnnotation:output_type -> direktiv_flow.SetInstanceAnnotationResponse
-	189, // 295: direktiv_flow.Flow.SetInstanceAnnotationParcels:output_type -> direktiv_flow.SetInstanceAnnotationResponse
-	80,  // 296: direktiv_flow.Flow.DeleteInstanceAnnotation:output_type -> google.protobuf.Empty
-	190, // 297: direktiv_flow.Flow.RenameInstanceAnnotation:output_type -> direktiv_flow.RenameInstanceAnnotationResponse
-	191, // 298: direktiv_flow.Flow.ReleaseInstance:output_type -> direktiv_flow.ReleaseInstanceResponse
-	192, // 299: direktiv_flow.Flow.NodeAnnotation:output_type -> direktiv_flow.NodeAnnotationResponse
-	192, // 300: direktiv_flow.Flow.NodeAnnotationParcels:output_type -> direktiv_flow.NodeAnnotationResponse
-	193, // 301: direktiv_flow.Flow.NodeAnnotations:output_type -> direktiv_flow.NodeAnnotationsResponse
-	193, // 302: direktiv_flow.Flow.NodeAnnotationsStream:output_type -> direktiv_flow.NodeAnnotationsResponse
-	194, // 303: direktiv_flow.Flow.SetNodeAnnotation:output_type -> direktiv_flow.SetNodeAnnotationResponse
-	194, // 304: direktiv_flow.Flow.SetNodeAnnotationParcels:output_type -> direktiv_flow.SetNodeAnnotationResponse
-	80,  // 305: direktiv_flow.Flow.DeleteNodeAnnotation:output_type -> google.protobuf.Empty
-	195, // 306: direktiv_flow.Flow.RenameNodeAnnotation:output_type -> direktiv_flow.RenameNodeAnnotationResponse
-	123, // 307: direktiv_flow.Flow.CreateNamespaceMirror:output_type -> direktiv_flow.CreateNamespaceResponse
-	129, // 308: direktiv_flow.Flow.CreateDirectoryMirror:output_type -> direktiv_flow.CreateDirectoryResponse
-	80,  // 309: direktiv_flow.Flow.UpdateMirrorSettings:output_type -> google.protobuf.Empty
-	80,  // 310: direktiv_flow.Flow.LockMirror:output_type -> google.protobuf.Empty
-	80,  // 311: direktiv_flow.Flow.UnlockMirror:output_type -> google.protobuf.Empty
-	80,  // 312: direktiv_flow.Flow.SoftSyncMirror:output_type -> google.protobuf.Empty
-	80,  // 313: direktiv_flow.Flow.HardSyncMirror:output_type -> google.protobuf.Empty
-	196, // 314: direktiv_flow.Flow.MirrorInfo:output_type -> direktiv_flow.MirrorInfoResponse
-	196, // 315: direktiv_flow.Flow.MirrorInfoStream:output_type -> direktiv_flow.MirrorInfoResponse
-	197, // 316: direktiv_flow.Flow.MirrorActivityLogs:output_type -> direktiv_flow.MirrorActivityLogsResponse
-	197, // 317: direktiv_flow.Flow.MirrorActivityLogsParcels:output_type -> direktiv_flow.MirrorActivityLogsResponse
-	80,  // 318: direktiv_flow.Flow.CancelMirrorActivity:output_type -> google.protobuf.Empty
-	80,  // 319: direktiv_flow.Internal.ReportActionResults:output_type -> google.protobuf.Empty
-	80,  // 320: direktiv_flow.Internal.ActionLog:output_type -> google.protobuf.Empty
-	198, // 321: direktiv_flow.Internal.NamespaceVariableParcels:output_type -> direktiv_flow.VariableInternalResponse
-	199, // 322: direktiv_flow.Internal.SetNamespaceVariableParcels:output_type -> direktiv_flow.SetVariableInternalResponse
-	198, // 323: direktiv_flow.Internal.WorkflowVariableParcels:output_type -> direktiv_flow.VariableInternalResponse
-	199, // 324: direktiv_flow.Internal.SetWorkflowVariableParcels:output_type -> direktiv_flow.SetVariableInternalResponse
-	198, // 325: direktiv_flow.Internal.ThreadVariableParcels:output_type -> direktiv_flow.VariableInternalResponse
-	199, // 326: direktiv_flow.Internal.SetThreadVariableParcels:output_type -> direktiv_flow.SetVariableInternalResponse
-	198, // 327: direktiv_flow.Internal.InstanceVariableParcels:output_type -> direktiv_flow.VariableInternalResponse
-	199, // 328: direktiv_flow.Internal.SetInstanceVariableParcels:output_type -> direktiv_flow.SetVariableInternalResponse
-	80,  // 329: direktiv_flow.Actions.SetNamespaceRegistry:output_type -> google.protobuf.Empty
-	80,  // 330: direktiv_flow.Actions.DeleteNamespaceRegistry:output_type -> google.protobuf.Empty
-	200, // 331: direktiv_flow.Actions.NamespaceRegistries:output_type -> direktiv_flow.NamespaceRegistriesResponse
-	200, // 332: direktiv_flow.Actions.NamespaceRegistriesStream:output_type -> direktiv_flow.NamespaceRegistriesResponse
-	201, // 333: direktiv_flow.Eventing.RequestEvents:output_type -> direktiv_flow.CloudEvent
-	167, // [167:334] is the sub-list for method output_type
-	0,   // [0:167] is the sub-list for method input_type
+	43,  // 57: direktiv_flow.Flow.AwaitWorkflow:input_type -> direktiv_flow.AwaitWorkflowRequest
+	44,  // 58: direktiv_flow.Flow.CancelInstance:input_type -> direktiv_flow.CancelInstanceRequest
+	45,  // 59: direktiv_flow.Flow.BroadcastCloudevent:input_type -> direktiv_flow.BroadcastCloudeventRequest
+	46,  // 60: direktiv_flow.Flow.ApplyCloudEventFilter:input_type -> direktiv_flow.ApplyCloudEventFilterRequest
+	47,  // 61: direktiv_flow.Flow.DeleteCloudEventFilter:input_type -> direktiv_flow.DeleteCloudEventFilterRequest
+	48,  // 62: direktiv_flow.Flow.CreateCloudEventFilter:input_type -> direktiv_flow.CreateCloudEventFilterRequest
+	49,  // 63: direktiv_flow.Flow.UpdateCloudEventFilter:input_type -> direktiv_flow.UpdateCloudEventFilterRequest
+	50,  // 64: direktiv_flow.Flow.GetCloudEventFilterScript:input_type -> direktiv_flow.GetCloudEventFilterScriptRequest
+	51,  // 65: direktiv_flow.Flow.GetCloudEventFilters:input_type -> direktiv_flow.GetCloudEventFiltersRequest
+	52,  // 66: direktiv_flow.Flow.NamespaceVariable:input_type -> direktiv_flow.NamespaceVariableRequest
+	52,  // 67: direktiv_flow.Flow.NamespaceVariableParcels:input_type -> direktiv_flow.NamespaceVariableRequest
+	53,  // 68: direktiv_flow.Flow.NamespaceVariables:input_type -> direktiv_flow.NamespaceVariablesRequest
+	53,  // 69: direktiv_flow.Flow.NamespaceVariablesStream:input_type -> direktiv_flow.NamespaceVariablesRequest
+	54,  // 70: direktiv_flow.Flow.SetNamespaceVariable:input_type -> direktiv_flow.SetNamespaceVariableRequest
+	54,  // 71: direktiv_flow.Flow.SetNamespaceVariableParcels:input_type -> direktiv_flow.SetNamespaceVariableRequest
+	55,  // 72: direktiv_flow.Flow.DeleteNamespaceVariable:input_type -> direktiv_flow.DeleteNamespaceVariableRequest
+	56,  // 73: direktiv_flow.Flow.RenameNamespaceVariable:input_type -> direktiv_flow.RenameNamespaceVariableRequest
+	57,  // 74: direktiv_flow.Flow.WorkflowVariable:input_type -> direktiv_flow.WorkflowVariableRequest
+	57,  // 75: direktiv_flow.Flow.WorkflowVariableParcels:input_type -> direktiv_flow.WorkflowVariableRequest
+	58,  // 76: direktiv_flow.Flow.WorkflowVariables:input_type -> direktiv_flow.WorkflowVariablesRequest
+	58,  // 77: direktiv_flow.Flow.WorkflowVariablesStream:input_type -> direktiv_flow.WorkflowVariablesRequest
+	59,  // 78: direktiv_flow.Flow.SetWorkflowVariable:input_type -> direktiv_flow.SetWorkflowVariableRequest
+	59,  // 79: direktiv_flow.Flow.SetWorkflowVariableParcels:input_type -> direktiv_flow.SetWorkflowVariableRequest
+	60,  // 80: direktiv_flow.Flow.DeleteWorkflowVariable:input_type -> direktiv_flow.DeleteWorkflowVariableRequest
+	61,  // 81: direktiv_flow.Flow.RenameWorkflowVariable:input_type -> direktiv_flow.RenameWorkflowVariableRequest
+	62,  // 82: direktiv_flow.Flow.InstanceVariable:input_type -> direktiv_flow.InstanceVariableRequest
+	62,  // 83: direktiv_flow.Flow.InstanceVariableParcels:input_type -> direktiv_flow.InstanceVariableRequest
+	63,  // 84: direktiv_flow.Flow.InstanceVariables:input_type -> direktiv_flow.InstanceVariablesRequest
+	63,  // 85: direktiv_flow.Flow.InstanceVariablesStream:input_type -> direktiv_flow.InstanceVariablesRequest
+	64,  // 86: direktiv_flow.Flow.SetInstanceVariable:input_type -> direktiv_flow.SetInstanceVariableRequest
+	64,  // 87: direktiv_flow.Flow.SetInstanceVariableParcels:input_type -> direktiv_flow.SetInstanceVariableRequest
+	65,  // 88: direktiv_flow.Flow.DeleteInstanceVariable:input_type -> direktiv_flow.DeleteInstanceVariableRequest
+	66,  // 89: direktiv_flow.Flow.RenameInstanceVariable:input_type -> direktiv_flow.RenameInstanceVariableRequest
+	67,  // 90: direktiv_flow.Flow.JQ:input_type -> direktiv_flow.JQRequest
+	68,  // 91: direktiv_flow.Flow.CreateNodeAttributes:input_type -> direktiv_flow.CreateNodeAttributesRequest
+	69,  // 92: direktiv_flow.Flow.DeleteNodeAttributes:input_type -> direktiv_flow.DeleteNodeAttributesRequest
+	70,  // 93: direktiv_flow.Flow.WorkflowMetrics:input_type -> direktiv_flow.WorkflowMetricsRequest
+	71,  // 94: direktiv_flow.Flow.EventListeners:input_type -> direktiv_flow.EventListenersRequest
+	71,  // 95: direktiv_flow.Flow.EventListenersStream:input_type -> direktiv_flow.EventListenersRequest
+	72,  // 96: direktiv_flow.Flow.EventHistory:input_type -> direktiv_flow.EventHistoryRequest
+	72,  // 97: direktiv_flow.Flow.EventHistoryStream:input_type -> direktiv_flow.EventHistoryRequest
+	73,  // 98: direktiv_flow.Flow.HistoricalEvent:input_type -> direktiv_flow.HistoricalEventRequest
+	74,  // 99: direktiv_flow.Flow.ReplayEvent:input_type -> direktiv_flow.ReplayEventRequest
+	75,  // 100: direktiv_flow.Flow.ToggleWorkflow:input_type -> direktiv_flow.ToggleWorkflowRequest
+	76,  // 101: direktiv_flow.Flow.SetWorkflowEventLogging:input_type -> direktiv_flow.SetWorkflowEventLoggingRequest
+	77,  // 102: direktiv_flow.Flow.ResolveNamespaceUID:input_type -> direktiv_flow.ResolveNamespaceUIDRequest
+	78,  // 103: direktiv_flow.Flow.ResolveWorkflowUID:input_type -> direktiv_flow.ResolveWorkflowUIDRequest
+	79,  // 104: direktiv_flow.Flow.SetNamespaceConfig:input_type -> direktiv_flow.SetNamespaceConfigRequest
+	80,  // 105: direktiv_flow.Flow.GetNamespaceConfig:input_type -> direktiv_flow.GetNamespaceConfigRequest
+	81,  // 106: direktiv_flow.Flow.Build:input_type -> google.protobuf.Empty
+	82,  // 107: direktiv_flow.Flow.InstanceMetadata:input_type -> direktiv_flow.InstanceMetadataRequest
+	83,  // 108: direktiv_flow.Flow.NamespaceAnnotation:input_type -> direktiv_flow.NamespaceAnnotationRequest
+	83,  // 109: direktiv_flow.Flow.NamespaceAnnotationParcels:input_type -> direktiv_flow.NamespaceAnnotationRequest
+	84,  // 110: direktiv_flow.Flow.NamespaceAnnotations:input_type -> direktiv_flow.NamespaceAnnotationsRequest
+	84,  // 111: direktiv_flow.Flow.NamespaceAnnotationsStream:input_type -> direktiv_flow.NamespaceAnnotationsRequest
+	85,  // 112: direktiv_flow.Flow.SetNamespaceAnnotation:input_type -> direktiv_flow.SetNamespaceAnnotationRequest
+	85,  // 113: direktiv_flow.Flow.SetNamespaceAnnotationParcels:input_type -> direktiv_flow.SetNamespaceAnnotationRequest
+	86,  // 114: direktiv_flow.Flow.DeleteNamespaceAnnotation:input_type -> direktiv_flow.DeleteNamespaceAnnotationRequest
+	87,  // 115: direktiv_flow.Flow.RenameNamespaceAnnotation:input_type -> direktiv_flow.RenameNamespaceAnnotationRequest
+	88,  // 116: direktiv_flow.Flow.WorkflowAnnotation:input_type -> direktiv_flow.WorkflowAnnotationRequest
+	88,  // 117: direktiv_flow.Flow.WorkflowAnnotationParcels:input_type -> direktiv_flow.WorkflowAnnotationRequest
+	89,  // 118: direktiv_flow.Flow.WorkflowAnnotations:input_type -> direktiv_flow.WorkflowAnnotationsRequest
+	89,  // 119: direktiv_flow.Flow.WorkflowAnnotationsStream:input_type -> direktiv_flow.WorkflowAnnotationsRequest
+	90,  // 120: direktiv_flow.Flow.SetWorkflowAnnotation:input_type -> direktiv_flow.SetWorkflowAnnotationRequest
+	90,  // 121: direktiv_flow.Flow.SetWorkflowAnnotationParcels:input_type -> direktiv_flow.SetWorkflowAnnotationRequest
+	91,  // 122: direktiv_flow.Flow.DeleteWorkflowAnnotation:input_type -> direktiv_flow.DeleteWorkflowAnnotationRequest
+	92,  // 123: direktiv_flow.Flow.RenameWorkflowAnnotation:input_type -> direktiv_flow.RenameWorkflowAnnotationRequest
+	93,  // 124: direktiv_flow.Flow.InstanceAnnotation:input_type -> direktiv_flow.InstanceAnnotationRequest
+	93,  // 125: direktiv_flow.Flow.InstanceAnnotationParcels:input_type -> direktiv_flow.InstanceAnnotationRequest
+	94,  // 126: direktiv_flow.Flow.InstanceAnnotations:input_type -> direktiv_flow.InstanceAnnotationsRequest
+	94,  // 127: direktiv_flow.Flow.InstanceAnnotationsStream:input_type -> direktiv_flow.InstanceAnnotationsRequest
+	95,  // 128: direktiv_flow.Flow.SetInstanceAnnotation:input_type -> direktiv_flow.SetInstanceAnnotationRequest
+	95,  // 129: direktiv_flow.Flow.SetInstanceAnnotationParcels:input_type -> direktiv_flow.SetInstanceAnnotationRequest
+	96,  // 130: direktiv_flow.Flow.DeleteInstanceAnnotation:input_type -> direktiv_flow.DeleteInstanceAnnotationRequest
+	97,  // 131: direktiv_flow.Flow.RenameInstanceAnnotation:input_type -> direktiv_flow.RenameInstanceAnnotationRequest
+	98,  // 132: direktiv_flow.Flow.ReleaseInstance:input_type -> direktiv_flow.ReleaseInstanceRequest
+	99,  // 133: direktiv_flow.Flow.NodeAnnotation:input_type -> direktiv_flow.NodeAnnotationRequest
+	99,  // 134: direktiv_flow.Flow.NodeAnnotationParcels:input_type -> direktiv_flow.NodeAnnotationRequest
+	100, // 135: direktiv_flow.Flow.NodeAnnotations:input_type -> direktiv_flow.NodeAnnotationsRequest
+	100, // 136: direktiv_flow.Flow.NodeAnnotationsStream:input_type -> direktiv_flow.NodeAnnotationsRequest
+	101, // 137: direktiv_flow.Flow.SetNodeAnnotation:input_type -> direktiv_flow.SetNodeAnnotationRequest
+	101, // 138: direktiv_flow.Flow.SetNodeAnnotationParcels:input_type -> direktiv_flow.SetNodeAnnotationRequest
+	102, // 139: direktiv_flow.Flow.DeleteNodeAnnotation:input_type -> direktiv_flow.DeleteNodeAnnotationRequest
+	103, // 140: direktiv_flow.Flow.RenameNodeAnnotation:input_type -> direktiv_flow.RenameNodeAnnotationRequest
+	104, // 141: direktiv_flow.Flow.CreateNamespaceMirror:input_type -> direktiv_flow.CreateNamespaceMirrorRequest
+	105, // 142: direktiv_flow.Flow.CreateDirectoryMirror:input_type -> direktiv_flow.CreateDirectoryMirrorRequest
+	106, // 143: direktiv_flow.Flow.UpdateMirrorSettings:input_type -> direktiv_flow.UpdateMirrorSettingsRequest
+	107, // 144: direktiv_flow.Flow.LockMirror:input_type -> direktiv_flow.LockMirrorRequest
+	108, // 145: direktiv_flow.Flow.UnlockMirror:input_type -> direktiv_flow.UnlockMirrorRequest
+	109, // 146: direktiv_flow.Flow.SoftSyncMirror:input_type -> direktiv_flow.SoftSyncMirrorRequest
+	110, // 147: direktiv_flow.Flow.HardSyncMirror:input_type -> direktiv_flow.HardSyncMirrorRequest
+	111, // 148: direktiv_flow.Flow.MirrorInfo:input_type -> direktiv_flow.MirrorInfoRequest
+	111, // 149: direktiv_flow.Flow.MirrorInfoStream:input_type -> direktiv_flow.MirrorInfoRequest
+	112, // 150: direktiv_flow.Flow.MirrorActivityLogs:input_type -> direktiv_flow.MirrorActivityLogsRequest
+	112, // 151: direktiv_flow.Flow.MirrorActivityLogsParcels:input_type -> direktiv_flow.MirrorActivityLogsRequest
+	113, // 152: direktiv_flow.Flow.CancelMirrorActivity:input_type -> direktiv_flow.CancelMirrorActivityRequest
+	114, // 153: direktiv_flow.Internal.ReportActionResults:input_type -> direktiv_flow.ReportActionResultsRequest
+	115, // 154: direktiv_flow.Internal.ActionLog:input_type -> direktiv_flow.ActionLogRequest
+	116, // 155: direktiv_flow.Internal.NamespaceVariableParcels:input_type -> direktiv_flow.VariableInternalRequest
+	117, // 156: direktiv_flow.Internal.SetNamespaceVariableParcels:input_type -> direktiv_flow.SetVariableInternalRequest
+	116, // 157: direktiv_flow.Internal.WorkflowVariableParcels:input_type -> direktiv_flow.VariableInternalRequest
+	117, // 158: direktiv_flow.Internal.SetWorkflowVariableParcels:input_type -> direktiv_flow.SetVariableInternalRequest
+	116, // 159: direktiv_flow.Internal.ThreadVariableParcels:input_type -> direktiv_flow.VariableInternalRequest
+	117, // 160: direktiv_flow.Internal.SetThreadVariableParcels:input_type -> direktiv_flow.SetVariableInternalRequest
+	116, // 161: direktiv_flow.Internal.InstanceVariableParcels:input_type -> direktiv_flow.VariableInternalRequest
+	117, // 162: direktiv_flow.Internal.SetInstanceVariableParcels:input_type -> direktiv_flow.SetVariableInternalRequest
+	118, // 163: direktiv_flow.Actions.SetNamespaceRegistry:input_type -> direktiv_flow.SetNamespaceRegistryRequest
+	119, // 164: direktiv_flow.Actions.DeleteNamespaceRegistry:input_type -> direktiv_flow.DeleteNamespaceRegistryRequest
+	120, // 165: direktiv_flow.Actions.NamespaceRegistries:input_type -> direktiv_flow.NamespaceRegistriesRequest
+	120, // 166: direktiv_flow.Actions.NamespaceRegistriesStream:input_type -> direktiv_flow.NamespaceRegistriesRequest
+	121, // 167: direktiv_flow.Eventing.RequestEvents:input_type -> direktiv_flow.EventingRequest
+	122, // 168: direktiv_flow.Flow.Namespace:output_type -> direktiv_flow.NamespaceResponse
+	123, // 169: direktiv_flow.Flow.Namespaces:output_type -> direktiv_flow.NamespacesResponse
+	123, // 170: direktiv_flow.Flow.NamespacesStream:output_type -> direktiv_flow.NamespacesResponse
+	124, // 171: direktiv_flow.Flow.CreateNamespace:output_type -> direktiv_flow.CreateNamespaceResponse
+	81,  // 172: direktiv_flow.Flow.DeleteNamespace:output_type -> google.protobuf.Empty
+	125, // 173: direktiv_flow.Flow.RenameNamespace:output_type -> direktiv_flow.RenameNamespaceResponse
+	126, // 174: direktiv_flow.Flow.ServerLogs:output_type -> direktiv_flow.ServerLogsResponse
+	126, // 175: direktiv_flow.Flow.ServerLogsParcels:output_type -> direktiv_flow.ServerLogsResponse
+	127, // 176: direktiv_flow.Flow.NamespaceLogs:output_type -> direktiv_flow.NamespaceLogsResponse
+	127, // 177: direktiv_flow.Flow.NamespaceLogsParcels:output_type -> direktiv_flow.NamespaceLogsResponse
+	128, // 178: direktiv_flow.Flow.WorkflowLogs:output_type -> direktiv_flow.WorkflowLogsResponse
+	128, // 179: direktiv_flow.Flow.WorkflowLogsParcels:output_type -> direktiv_flow.WorkflowLogsResponse
+	129, // 180: direktiv_flow.Flow.Directory:output_type -> direktiv_flow.DirectoryResponse
+	129, // 181: direktiv_flow.Flow.DirectoryStream:output_type -> direktiv_flow.DirectoryResponse
+	130, // 182: direktiv_flow.Flow.CreateDirectory:output_type -> direktiv_flow.CreateDirectoryResponse
+	81,  // 183: direktiv_flow.Flow.DeleteNode:output_type -> google.protobuf.Empty
+	131, // 184: direktiv_flow.Flow.RenameNode:output_type -> direktiv_flow.RenameNodeResponse
+	132, // 185: direktiv_flow.Flow.Node:output_type -> direktiv_flow.NodeResponse
+	133, // 186: direktiv_flow.Flow.Workflow:output_type -> direktiv_flow.WorkflowResponse
+	133, // 187: direktiv_flow.Flow.WorkflowStream:output_type -> direktiv_flow.WorkflowResponse
+	134, // 188: direktiv_flow.Flow.CreateWorkflow:output_type -> direktiv_flow.CreateWorkflowResponse
+	135, // 189: direktiv_flow.Flow.UpdateWorkflow:output_type -> direktiv_flow.UpdateWorkflowResponse
+	136, // 190: direktiv_flow.Flow.SaveHead:output_type -> direktiv_flow.SaveHeadResponse
+	137, // 191: direktiv_flow.Flow.DiscardHead:output_type -> direktiv_flow.DiscardHeadResponse
+	138, // 192: direktiv_flow.Flow.Tags:output_type -> direktiv_flow.TagsResponse
+	138, // 193: direktiv_flow.Flow.TagsStream:output_type -> direktiv_flow.TagsResponse
+	139, // 194: direktiv_flow.Flow.Refs:output_type -> direktiv_flow.RefsResponse
+	139, // 195: direktiv_flow.Flow.RefsStream:output_type -> direktiv_flow.RefsResponse
+	140, // 196: direktiv_flow.Flow.Revisions:output_type -> direktiv_flow.RevisionsResponse
+	140, // 197: direktiv_flow.Flow.RevisionsStream:output_type -> direktiv_flow.RevisionsResponse
+	81,  // 198: direktiv_flow.Flow.DeleteRevision:output_type -> google.protobuf.Empty
+	81,  // 199: direktiv_flow.Flow.Tag:output_type -> google.protobuf.Empty
+	81,  // 200: direktiv_flow.Flow.Untag:output_type -> google.protobuf.Empty
+	81,  // 201: direktiv_flow.Flow.Retag:output_type -> google.protobuf.Empty
+	141, // 202: direktiv_flow.Flow.Router:output_type -> direktiv_flow.RouterResponse
+	141, // 203: direktiv_flow.Flow.RouterStream:output_type -> direktiv_flow.RouterResponse
+	142, // 204: direktiv_flow.Flow.EditRouter:output_type -> direktiv_flow.EditRouterResponse
+	143, // 205: direktiv_flow.Flow.ValidateRef:output_type -> direktiv_flow.ValidateRefResponse
+	144, // 206: direktiv_flow.Flow.ValidateRouter:output_type -> direktiv_flow.ValidateRouterResponse
+	145, // 207: direktiv_flow.Flow.Secrets:output_type -> direktiv_flow.SecretsResponse
+	145, // 208: direktiv_flow.Flow.SecretsStream:output_type -> direktiv_flow.SecretsResponse
+	146, // 209: direktiv_flow.Flow.SetSecret:output_type -> direktiv_flow.SetSecretResponse
+	147, // 210: direktiv_flow.Flow.CreateSecretsFolder:output_type -> direktiv_flow.CreateSecretsFolderResponse
+	81,  // 211: direktiv_flow.Flow.DeleteSecret:output_type -> google.protobuf.Empty
+	81,  // 212: direktiv_flow.Flow.DeleteSecretsFolder:output_type -> google.protobuf.Empty
+	148, // 213: direktiv_flow.Flow.SearchSecret:output_type -> direktiv_flow.SearchSecretResponse
+	149, // 214: direktiv_flow.Flow.UpdateSecret:output_type -> direktiv_flow.UpdateSecretResponse
+	150, // 215: direktiv_flow.Flow.Instance:output_type -> direktiv_flow.InstanceResponse
+	150, // 216: direktiv_flow.Flow.InstanceStream:output_type -> direktiv_flow.InstanceResponse
+	151, // 217: direktiv_flow.Flow.Instances:output_type -> direktiv_flow.InstancesResponse
+	151, // 218: direktiv_flow.Flow.InstancesStream:output_type -> direktiv_flow.InstancesResponse
+	152, // 219: direktiv_flow.Flow.InstanceInput:output_type -> direktiv_flow.InstanceInputResponse
+	153, // 220: direktiv_flow.Flow.InstanceOutput:output_type -> direktiv_flow.InstanceOutputResponse
+	154, // 221: direktiv_flow.Flow.InstanceLogs:output_type -> direktiv_flow.InstanceLogsResponse
+	154, // 222: direktiv_flow.Flow.InstanceLogsParcels:output_type -> direktiv_flow.InstanceLogsResponse
+	155, // 223: direktiv_flow.Flow.StartWorkflow:output_type -> direktiv_flow.StartWorkflowResponse
+	156, // 224: direktiv_flow.Flow.RunWorkflow:output_type -> direktiv_flow.RunWorkflowResponse
+	157, // 225: direktiv_flow.Flow.AwaitWorkflow:output_type -> direktiv_flow.AwaitWorkflowResponse
+	81,  // 226: direktiv_flow.Flow.CancelInstance:output_type -> google.protobuf.Empty
+	81,  // 227: direktiv_flow.Flow.BroadcastCloudevent:output_type -> google.protobuf.Empty
+	81,  // 228: direktiv_flow.Flow.ApplyCloudEventFilter:output_type -> google.protobuf.Empty
+	81,  // 229: direktiv_flow.Flow.DeleteCloudEventFilter:output_type -> google.protobuf.Empty
+	81,  // 230: direktiv_flow.Flow.CreateCloudEventFilter:output_type -> google.protobuf.Empty
+	81,  // 231: direktiv_flow.Flow.UpdateCloudEventFilter:output_type -> google.protobuf.Empty
+	158, // 232: direktiv_flow.Flow.GetCloudEventFilterScript:output_type -> direktiv_flow.GetCloudEventFilterScriptResponse
+	159, // 233: direktiv_flow.Flow.GetCloudEventFilters:output_type -> direktiv_flow.GetCloudEventFiltersResponse
+	160, // 234: direktiv_flow.Flow.NamespaceVariable:output_type -> direktiv_flow.NamespaceVariableResponse
+	160, // 235: direktiv_flow.Flow.NamespaceVariableParcels:output_type -> direktiv_flow.NamespaceVariableResponse
+	161, // 236: direktiv_flow.Flow.NamespaceVariables:output_type -> direktiv_flow.NamespaceVariablesResponse
+	161, // 237: direktiv_flow.Flow.NamespaceVariablesStream:output_type -> direktiv_flow.NamespaceVariablesResponse
+	162, // 238: direktiv_flow.Flow.SetNamespaceVariable:output_type -> direktiv_flow.SetNamespaceVariableResponse
+	162, // 239: direktiv_flow.Flow.SetNamespaceVariableParcels:output_type -> direktiv_flow.SetNamespaceVariableResponse
+	81,  // 240: direktiv_flow.Flow.DeleteNamespaceVariable:output_type -> google.protobuf.Empty
+	163, // 241: direktiv_flow.Flow.RenameNamespaceVariable:output_type -> direktiv_flow.RenameNamespaceVariableResponse
+	164, // 242: direktiv_flow.Flow.WorkflowVariable:output_type -> direktiv_flow.WorkflowVariableResponse
+	164, // 243: direktiv_flow.Flow.WorkflowVariableParcels:output_type -> direktiv_flow.WorkflowVariableResponse
+	165, // 244: direktiv_flow.Flow.WorkflowVariables:output_type -> direktiv_flow.WorkflowVariablesResponse
+	165, // 245: direktiv_flow.Flow.WorkflowVariablesStream:output_type -> direktiv_flow.WorkflowVariablesResponse
+	166, // 246: direktiv_flow.Flow.SetWorkflowVariable:output_type -> direktiv_flow.SetWorkflowVariableResponse
+	166, // 247: direktiv_flow.Flow.SetWorkflowVariableParcels:output_type -> direktiv_flow.SetWorkflowVariableResponse
+	81,  // 248: direktiv_flow.Flow.DeleteWorkflowVariable:output_type -> google.protobuf.Empty
+	167, // 249: direktiv_flow.Flow.RenameWorkflowVariable:output_type -> direktiv_flow.RenameWorkflowVariableResponse
+	168, // 250: direktiv_flow.Flow.InstanceVariable:output_type -> direktiv_flow.InstanceVariableResponse
+	168, // 251: direktiv_flow.Flow.InstanceVariableParcels:output_type -> direktiv_flow.InstanceVariableResponse
+	169, // 252: direktiv_flow.Flow.InstanceVariables:output_type -> direktiv_flow.InstanceVariablesResponse
+	169, // 253: direktiv_flow.Flow.InstanceVariablesStream:output_type -> direktiv_flow.InstanceVariablesResponse
+	170, // 254: direktiv_flow.Flow.SetInstanceVariable:output_type -> direktiv_flow.SetInstanceVariableResponse
+	170, // 255: direktiv_flow.Flow.SetInstanceVariableParcels:output_type -> direktiv_flow.SetInstanceVariableResponse
+	81,  // 256: direktiv_flow.Flow.DeleteInstanceVariable:output_type -> google.protobuf.Empty
+	171, // 257: direktiv_flow.Flow.RenameInstanceVariable:output_type -> direktiv_flow.RenameInstanceVariableResponse
+	172, // 258: direktiv_flow.Flow.JQ:output_type -> direktiv_flow.JQResponse
+	81,  // 259: direktiv_flow.Flow.CreateNodeAttributes:output_type -> google.protobuf.Empty
+	81,  // 260: direktiv_flow.Flow.DeleteNodeAttributes:output_type -> google.protobuf.Empty
+	173, // 261: direktiv_flow.Flow.WorkflowMetrics:output_type -> direktiv_flow.WorkflowMetricsResponse
+	174, // 262: direktiv_flow.Flow.EventListeners:output_type -> direktiv_flow.EventListenersResponse
+	174, // 263: direktiv_flow.Flow.EventListenersStream:output_type -> direktiv_flow.EventListenersResponse
+	175, // 264: direktiv_flow.Flow.EventHistory:output_type -> direktiv_flow.EventHistoryResponse
+	175, // 265: direktiv_flow.Flow.EventHistoryStream:output_type -> direktiv_flow.EventHistoryResponse
+	176, // 266: direktiv_flow.Flow.HistoricalEvent:output_type -> direktiv_flow.HistoricalEventResponse
+	81,  // 267: direktiv_flow.Flow.ReplayEvent:output_type -> google.protobuf.Empty
+	81,  // 268: direktiv_flow.Flow.ToggleWorkflow:output_type -> google.protobuf.Empty
+	81,  // 269: direktiv_flow.Flow.SetWorkflowEventLogging:output_type -> google.protobuf.Empty
+	122, // 270: direktiv_flow.Flow.ResolveNamespaceUID:output_type -> direktiv_flow.NamespaceResponse
+	133, // 271: direktiv_flow.Flow.ResolveWorkflowUID:output_type -> direktiv_flow.WorkflowResponse
+	177, // 272: direktiv_flow.Flow.SetNamespaceConfig:output_type -> direktiv_flow.SetNamespaceConfigResponse
+	178, // 273: direktiv_flow.Flow.GetNamespaceConfig:output_type -> direktiv_flow.GetNamespaceConfigResponse
+	179, // 274: direktiv_flow.Flow.Build:output_type -> direktiv_flow.BuildResponse
+	180, // 275: direktiv_flow.Flow.InstanceMetadata:output_type -> direktiv_flow.InstanceMetadataResponse
+	181, // 276: direktiv_flow.Flow.NamespaceAnnotation:output_type -> direktiv_flow.NamespaceAnnotationResponse
+	181, // 277: direktiv_flow.Flow.NamespaceAnnotationParcels:output_type -> direktiv_flow.NamespaceAnnotationResponse
+	182, // 278: direktiv_flow.Flow.NamespaceAnnotations:output_type -> direktiv_flow.NamespaceAnnotationsResponse
+	182, // 279: direktiv_flow.Flow.NamespaceAnnotationsStream:output_type -> direktiv_flow.NamespaceAnnotationsResponse
+	183, // 280: direktiv_flow.Flow.SetNamespaceAnnotation:output_type -> direktiv_flow.SetNamespaceAnnotationResponse
+	183, // 281: direktiv_flow.Flow.SetNamespaceAnnotationParcels:output_type -> direktiv_flow.SetNamespaceAnnotationResponse
+	81,  // 282: direktiv_flow.Flow.DeleteNamespaceAnnotation:output_type -> google.protobuf.Empty
+	184, // 283: direktiv_flow.Flow.RenameNamespaceAnnotation:output_type -> direktiv_flow.RenameNamespaceAnnotationResponse
+	185, // 284: direktiv_flow.Flow.WorkflowAnnotation:output_type -> direktiv_flow.WorkflowAnnotationResponse
+	185, // 285: direktiv_flow.Flow.WorkflowAnnotationParcels:output_type -> direktiv_flow.WorkflowAnnotationResponse
+	186, // 286: direktiv_flow.Flow.WorkflowAnnotations:output_type -> direktiv_flow.WorkflowAnnotationsResponse
+	186, // 287: direktiv_flow.Flow.WorkflowAnnotationsStream:output_type -> direktiv_flow.WorkflowAnnotationsResponse
+	187, // 288: direktiv_flow.Flow.SetWorkflowAnnotation:output_type -> direktiv_flow.SetWorkflowAnnotationResponse
+	187, // 289: direktiv_flow.Flow.SetWorkflowAnnotationParcels:output_type -> direktiv_flow.SetWorkflowAnnotationResponse
+	81,  // 290: direktiv_flow.Flow.DeleteWorkflowAnnotation:output_type -> google.protobuf.Empty
+	188, // 291: direktiv_flow.Flow.RenameWorkflowAnnotation:output_type -> direktiv_flow.RenameWorkflowAnnotationResponse
+	189, // 292: direktiv_flow.Flow.InstanceAnnotation:output_type -> direktiv_flow.InstanceAnnotationResponse
+	189, // 293: direktiv_flow.Flow.InstanceAnnotationParcels:output_type -> direktiv_flow.InstanceAnnotationResponse
+	190, // 294: direktiv_flow.Flow.InstanceAnnotations:output_type -> direktiv_flow.InstanceAnnotationsResponse
+	190, // 295: direktiv_flow.Flow.InstanceAnnotationsStream:output_type -> direktiv_flow.InstanceAnnotationsResponse
+	191, // 296: direktiv_flow.Flow.SetInstanceAnnotation:output_type -> direktiv_flow.SetInstanceAnnotationResponse
+	191, // 297: direktiv_flow.Flow.SetInstanceAnnotationParcels:output_type -> direktiv_flow.SetInstanceAnnotationResponse
+	81,  // 298: direktiv_flow.Flow.DeleteInstanceAnnotation:output_type -> google.protobuf.Empty
+	192, // 299: direktiv_flow.Flow.RenameInstanceAnnotation:output_type -> direktiv_flow.RenameInstanceAnnotationResponse
+	193, // 300: direktiv_flow.Flow.ReleaseInstance:output_type -> direktiv_flow.ReleaseInstanceResponse
+	194, // 301: direktiv_flow.Flow.NodeAnnotation:output_type -> direktiv_flow.NodeAnnotationResponse
+	194, // 302: direktiv_flow.Flow.NodeAnnotationParcels:output_type -> direktiv_flow.NodeAnnotationResponse
+	195, // 303: direktiv_flow.Flow.NodeAnnotations:output_type -> direktiv_flow.NodeAnnotationsResponse
+	195, // 304: direktiv_flow.Flow.NodeAnnotationsStream:output_type -> direktiv_flow.NodeAnnotationsResponse
+	196, // 305: direktiv_flow.Flow.SetNodeAnnotation:output_type -> direktiv_flow.SetNodeAnnotationResponse
+	196, // 306: direktiv_flow.Flow.SetNodeAnnotationParcels:output_type -> direktiv_flow.SetNodeAnnotationResponse
+	81,  // 307: direktiv_flow.Flow.DeleteNodeAnnotation:output_type -> google.protobuf.Empty
+	197, // 308: direktiv_flow.Flow.RenameNodeAnnotation:output_type -> direktiv_flow.RenameNodeAnnotationResponse
+	124, // 309: direktiv_flow.Flow.CreateNamespaceMirror:output_type -> direktiv_flow.CreateNamespaceResponse
+	130, // 310: direktiv_flow.Flow.CreateDirectoryMirror:output_type -> direktiv_flow.CreateDirectoryResponse
+	81,  // 311: direktiv_flow.Flow.UpdateMirrorSettings:output_type -> google.protobuf.Empty
+	81,  // 312: direktiv_flow.Flow.LockMirror:output_type -> google.protobuf.Empty
+	81,  // 313: direktiv_flow.Flow.UnlockMirror:output_type -> google.protobuf.Empty
+	81,  // 314: direktiv_flow.Flow.SoftSyncMirror:output_type -> google.protobuf.Empty
+	81,  // 315: direktiv_flow.Flow.HardSyncMirror:output_type -> google.protobuf.Empty
+	198, // 316: direktiv_flow.Flow.MirrorInfo:output_type -> direktiv_flow.MirrorInfoResponse
+	198, // 317: direktiv_flow.Flow.MirrorInfoStream:output_type -> direktiv_flow.MirrorInfoResponse
+	199, // 318: direktiv_flow.Flow.MirrorActivityLogs:output_type -> direktiv_flow.MirrorActivityLogsResponse
+	199, // 319: direktiv_flow.Flow.MirrorActivityLogsParcels:output_type -> direktiv_flow.MirrorActivityLogsResponse
+	81,  // 320: direktiv_flow.Flow.CancelMirrorActivity:output_type -> google.protobuf.Empty
+	81,  // 321: direktiv_flow.Internal.ReportActionResults:output_type -> google.protobuf.Empty
+	81,  // 322: direktiv_flow.Internal.ActionLog:output_type -> google.protobuf.Empty
+	200, // 323: direktiv_flow.Internal.NamespaceVariableParcels:output_type -> direktiv_flow.VariableInternalResponse
+	201, // 324: direktiv_flow.Internal.SetNamespaceVariableParcels:output_type -> direktiv_flow.SetVariableInternalResponse
+	200, // 325: direktiv_flow.Internal.WorkflowVariableParcels:output_type -> direktiv_flow.VariableInternalResponse
+	201, // 326: direktiv_flow.Internal.SetWorkflowVariableParcels:output_type -> direktiv_flow.SetVariableInternalResponse
+	200, // 327: direktiv_flow.Internal.ThreadVariableParcels:output_type -> direktiv_flow.VariableInternalResponse
+	201, // 328: direktiv_flow.Internal.SetThreadVariableParcels:output_type -> direktiv_flow.SetVariableInternalResponse
+	200, // 329: direktiv_flow.Internal.InstanceVariableParcels:output_type -> direktiv_flow.VariableInternalResponse
+	201, // 330: direktiv_flow.Internal.SetInstanceVariableParcels:output_type -> direktiv_flow.SetVariableInternalResponse
+	81,  // 331: direktiv_flow.Actions.SetNamespaceRegistry:output_type -> google.protobuf.Empty
+	81,  // 332: direktiv_flow.Actions.DeleteNamespaceRegistry:output_type -> google.protobuf.Empty
+	202, // 333: direktiv_flow.Actions.NamespaceRegistries:output_type -> direktiv_flow.NamespaceRegistriesResponse
+	202, // 334: direktiv_flow.Actions.NamespaceRegistriesStream:output_type -> direktiv_flow.NamespaceRegistriesResponse
+	203, // 335: direktiv_flow.Eventing.RequestEvents:output_type -> direktiv_flow.CloudEvent
+	168, // [168:336] is the sub-list for method output_type
+	0,   // [0:168] is the sub-list for method input_type
 	0,   // [0:0] is the sub-list for extension type_name
 	0,   // [0:0] is the sub-list for extension extendee
 	0,   // [0:0] is the sub-list for field type_name

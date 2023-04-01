@@ -16,7 +16,6 @@ var startWorkflowCmd = &cobra.Command{
 	Use:  "start-workflow NAMESPACE PATH [REF]",
 	Args: cobra.RangeArgs(2, 3),
 	Run: func(cmd *cobra.Command, args []string) {
-
 		source, err := loadSource()
 		if err != nil {
 			exit(err)
@@ -48,7 +47,6 @@ var startWorkflowCmd = &cobra.Command{
 		}
 
 		print(resp)
-
 	},
 }
 
@@ -60,7 +58,6 @@ var instancesCmd = &cobra.Command{
 	Use:  "instances NAMESPACE",
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-
 		namespace := args[0]
 
 		c, closer, err := client()
@@ -114,7 +111,6 @@ var instancesCmd = &cobra.Command{
 			print(resp)
 
 		}
-
 	},
 }
 
@@ -122,7 +118,6 @@ var instanceCmd = &cobra.Command{
 	Use:  "instance NAMESPACE INSTANCE",
 	Args: cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
-
 		namespace := args[0]
 		instance := args[1]
 
@@ -165,7 +160,6 @@ var instanceCmd = &cobra.Command{
 			print(resp)
 
 		}
-
 	},
 }
 
@@ -173,7 +167,6 @@ var instanceInputCmd = &cobra.Command{
 	Use:  "instance-input NAMESPACE INSTANCE",
 	Args: cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
-
 		namespace := args[0]
 		instance := args[1]
 
@@ -194,7 +187,6 @@ var instanceInputCmd = &cobra.Command{
 		}
 
 		print(resp)
-
 	},
 }
 
@@ -202,7 +194,6 @@ var instanceOutputCmd = &cobra.Command{
 	Use:  "instance-output NAMESPACE INSTANCE",
 	Args: cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
-
 		namespace := args[0]
 		instance := args[1]
 
@@ -223,6 +214,5 @@ var instanceOutputCmd = &cobra.Command{
 		}
 
 		print(resp)
-
 	},
 }

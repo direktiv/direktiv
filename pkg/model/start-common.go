@@ -12,13 +12,11 @@ type StartDefinition interface {
 }
 
 func (o *Workflow) GetStartDefinition() StartDefinition {
-
 	if o.Start != nil {
 		return o.Start
 	}
 
 	return &DefaultStart{}
-
 }
 
 type StartEventDefinition struct {
@@ -47,23 +45,19 @@ func (o *StartCommon) commonValidate() error {
 }
 
 func (o *StartCommon) GetType() StartType {
-
 	if o == nil {
 		return StartTypeDefault
 	}
 
 	return o.Type
-
 }
 
 func (o *StartCommon) GetState() string {
-
 	if o == nil {
 		return ""
 	}
 
 	return o.State
-
 }
 
 func getStartFromType(startType string) (StartDefinition, error) {

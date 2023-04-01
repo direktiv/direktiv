@@ -5,12 +5,17 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
+	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
+	entns "github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	entvar "github.com/direktiv/direktiv/pkg/flow/ent/varref"
+	entwf "github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
+	log "github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/direktiv/direktiv/pkg/flow/states"
 	"github.com/direktiv/direktiv/pkg/functions"
 	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
@@ -25,12 +30,13 @@ import (
 // TEMPORARY EVERYTHING
 
 func (im *instanceMemory) BroadcastCloudevent(ctx context.Context, event *cloudevents.Event, dd int64) error {
-	return im.engine.events.BroadcastCloudevent(ctx, im.in.Edges.Namespace, event, dd)
+	return im.engine.events.BroadcastCloudevent(ctx, im.cached, event, dd)
 }
 
 func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.VariableSelector) ([]states.Variable, error) {
+	x := make([]states.Variable, 0)
 
-	var x = make([]states.Variable, 0)
+	clients := im.engine.edb.Clients(ctx)
 
 	for _, selector := range vars {
 
@@ -43,44 +49,30 @@ func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.Variab
 		switch scope {
 
 		case util.VarScopeInstance:
-			ref, err = im.in.QueryVars().Where(entvar.NameEQ(key), entvar.BehaviourIsNil()).WithVardata().Only(ctx)
+			ref, err = clients.VarRef.Query().Where(entvar.HasInstanceWith(entinst.ID(im.cached.Instance.ID))).Where(entvar.NameEQ(key), entvar.BehaviourIsNil()).WithVardata().Only(ctx)
 
 		case util.VarScopeThread:
-			ref, err = im.in.QueryVars().Where(entvar.NameEQ(key), entvar.BehaviourEQ("thread")).WithVardata().Only(ctx)
+			ref, err = clients.VarRef.Query().Where(entvar.HasInstanceWith(entinst.ID(im.cached.Instance.ID))).Where(entvar.NameEQ(key), entvar.BehaviourEQ("thread")).WithVardata().Only(ctx)
 
 		case util.VarScopeWorkflow:
 
-			var wf *ent.Workflow
+			// // NOTE: this hack seems to be necessary for some reason...
+			// wf, err = im.engine.db.Workflow.Get(ctx, wf.ID)
+			// if err != nil {
+			// 	return nil, derrors.NewInternalError(err)
+			// }
 
-			wf, err = im.engine.InstanceWorkflow(ctx, im)
-			if err != nil {
-				return nil, derrors.NewInternalError(err)
-			}
-
-			// NOTE: this hack seems to be necessary for some reason...
-			wf, err = im.engine.db.Workflow.Get(ctx, wf.ID)
-			if err != nil {
-				return nil, derrors.NewInternalError(err)
-			}
-
-			ref, err = wf.QueryVars().Where(entvar.NameEQ(key)).WithVardata().Only(ctx)
+			ref, err = clients.VarRef.Query().Where(entvar.HasWorkflowWith(entwf.ID(im.cached.Workflow.ID))).Where(entvar.NameEQ(key)).WithVardata().Only(ctx)
 
 		case util.VarScopeNamespace:
 
-			var ns *ent.Namespace
+			// // NOTE: this hack seems to be necessary for some reason...
+			// ns, err = im.engine.db.Namespace.Get(ctx, ns.ID)
+			// if err != nil {
+			// 	return nil, derrors.NewInternalError(err)
+			// }
 
-			ns, err = im.engine.InstanceNamespace(ctx, im)
-			if err != nil {
-				return nil, derrors.NewInternalError(err)
-			}
-
-			// NOTE: this hack seems to be necessary for some reason...
-			ns, err = im.engine.db.Namespace.Get(ctx, ns.ID)
-			if err != nil {
-				return nil, derrors.NewInternalError(err)
-			}
-
-			ref, err = ns.QueryVars().Where(entvar.NameEQ(key)).WithVardata().Only(ctx)
+			ref, err = clients.VarRef.Query().Where(entvar.HasNamespaceWith(entns.ID(im.cached.Namespace.ID))).Where(entvar.NameEQ(key)).WithVardata().Only(ctx)
 
 		default:
 			return nil, derrors.NewInternalError(errors.New("invalid scope"))
@@ -98,9 +90,7 @@ func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.Variab
 			data = make([]byte, 0)
 
 		} else if ref == nil {
-
 			data = make([]byte, 0)
-
 		} else {
 
 			if ref.Edges.Vardata == nil {
@@ -126,12 +116,10 @@ func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.Variab
 	}
 
 	return x, nil
-
 }
 
 func (im *instanceMemory) ListenForEvents(ctx context.Context, events []*model.ConsumeEventDefinition, all bool) error {
-
-	err := im.engine.events.deleteInstanceEventListeners(ctx, im.in)
+	err := im.engine.events.deleteInstanceEventListeners(ctx, im.cached)
 	if err != nil {
 		return err
 	}
@@ -142,26 +130,48 @@ func (im *instanceMemory) ListenForEvents(ctx context.Context, events []*model.C
 	}
 
 	return nil
-
 }
 
-func (im *instanceMemory) Log(ctx context.Context, a string, x ...interface{}) {
+func (im *instanceMemory) Log(ctx context.Context, level log.Level, a string, x ...interface{}) {
+	switch level {
+	case log.Info:
+		im.engine.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), a, x...)
+	case log.Debug:
+		im.engine.logger.Debugf(ctx, im.GetInstanceID(), im.GetAttributes(), a, x...)
+	case log.Error:
+		im.engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), a, x...)
+	case log.Panic:
+		im.engine.logger.Panicf(ctx, im.GetInstanceID(), im.GetAttributes(), a, x...)
+	}
+}
 
-	im.engine.logToInstance(ctx, time.Now(), im.in, a, x...)
+func (im *instanceMemory) AddAttribute(tag, value string) {
+	if im.tags == nil {
+		im.tags = make(map[string]string)
+	}
+	im.tags[tag] = value
+}
 
+func (im *instanceMemory) Iterator() (int, bool) {
+	if im.tags == nil {
+		return 0, false
+	}
+	val, ok := im.tags["loop-index"]
+	iterator, err := strconv.Atoi(val)
+	if err != nil {
+		return 0, false
+	}
+	return iterator, ok
 }
 
 func (im *instanceMemory) Raise(ctx context.Context, err *derrors.CatchableError) error {
-
 	return im.engine.InstanceRaise(ctx, im, err)
-
 }
 
 func (im *instanceMemory) RetrieveSecret(ctx context.Context, secret string) (string, error) {
-
 	var resp *secretsgrpc.SecretsRetrieveResponse
 
-	ns := im.in.Edges.Namespace.ID.String()
+	ns := im.cached.Namespace.ID.String()
 
 	resp, err := im.engine.secrets.client.RetrieveSecret(ctx, &secretsgrpc.SecretsRetrieveRequest{
 		Namespace: &ns,
@@ -176,19 +186,16 @@ func (im *instanceMemory) RetrieveSecret(ctx context.Context, secret string) (st
 	}
 
 	return string(resp.GetData()), nil
-
 }
 
 func (im *instanceMemory) SetVariables(ctx context.Context, vars []states.VariableSetter) error {
-
-	tx, err := im.engine.db.Tx(ctx)
+	tctx, tx, err := im.engine.database.Tx(ctx)
 	if err != nil {
 		return err
 	}
 	defer rollback(tx)
 
-	vdatac := tx.VarData
-	vrefc := tx.VarRef
+	clients := im.engine.edb.Clients(tctx)
 
 	for idx := range vars {
 
@@ -205,38 +212,33 @@ func (im *instanceMemory) SetVariables(ctx context.Context, vars []states.Variab
 			fallthrough
 
 		case "instance":
-			q, err = tx.Instance.Get(ctx, im.in.ID)
-			if err != nil {
-				return err
+
+			q = &entInstanceVarQuerier{
+				clients: clients,
+				cached:  im.cached,
 			}
 
 		case "thread":
-			q, err = tx.Instance.Get(ctx, im.in.ID)
-			if err != nil {
-				return err
+
+			q = &entInstanceVarQuerier{
+				clients: clients,
+				cached:  im.cached,
 			}
+
 			thread = true
 
 		case "workflow":
-			wf, err := im.engine.InstanceWorkflow(ctx, im)
-			if err != nil {
-				return err
-			}
 
-			q, err = tx.Workflow.Get(ctx, wf.ID)
-			if err != nil {
-				return err
+			q = &entWorkflowVarQuerier{
+				clients: clients,
+				cached:  im.cached,
 			}
 
 		case "namespace":
-			ns, err := im.engine.InstanceNamespace(ctx, im)
-			if err != nil {
-				return err
-			}
 
-			q, err = tx.Namespace.Get(ctx, ns.ID)
-			if err != nil {
-				return err
+			q = &entNamespaceVarQuerier{
+				clients: clients,
+				cached:  im.cached,
 			}
 
 		default:
@@ -248,7 +250,7 @@ func (im *instanceMemory) SetVariables(ctx context.Context, vars []states.Variab
 		d := string(v.Data)
 
 		if len(d) == 0 {
-			_, _, err = im.engine.flow.DeleteVariable(ctx, vrefc, vdatac, q, v.Key, v.Data, v.MIMEType, thread)
+			_, _, err = im.engine.flow.DeleteVariable(tctx, q, v.Key, v.Data, v.MIMEType, thread)
 			if err != nil {
 				return err
 			}
@@ -257,14 +259,14 @@ func (im *instanceMemory) SetVariables(ctx context.Context, vars []states.Variab
 		}
 
 		if !(v.MIMEType == "text/plain; charset=utf-8" || v.MIMEType == "text/plain" || v.MIMEType == "application/octet-stream") && (d == "{}" || d == "[]" || d == "0" || d == `""` || d == "null") {
-			_, _, err = im.engine.flow.DeleteVariable(ctx, vrefc, vdatac, q, v.Key, v.Data, v.MIMEType, thread)
+			_, _, err = im.engine.flow.DeleteVariable(tctx, q, v.Key, v.Data, v.MIMEType, thread)
 			if err != nil {
 				return err
 			}
 			continue
 
 		} else {
-			_, _, err = im.engine.flow.SetVariable(ctx, vrefc, vdatac, q, v.Key, v.Data, v.MIMEType, thread)
+			_, _, err = im.engine.flow.SetVariable(tctx, q, v.Key, v.Data, v.MIMEType, thread)
 			if err != nil {
 				return err
 			}
@@ -278,13 +280,10 @@ func (im *instanceMemory) SetVariables(ctx context.Context, vars []states.Variab
 	}
 
 	return nil
-
 }
 
 func (im *instanceMemory) Sleep(ctx context.Context, d time.Duration, x interface{}) error {
-
 	return im.ScheduleRetry(ctx, d, im.logic.GetID(), x)
-
 }
 
 func (im *instanceMemory) GetInstanceData() interface{} {
@@ -296,7 +295,7 @@ func (im *instanceMemory) GetModel() (*model.Workflow, error) {
 }
 
 func (im *instanceMemory) GetInstanceID() uuid.UUID {
-	return im.in.ID
+	return im.cached.Instance.ID
 }
 
 func (im *instanceMemory) PrimeDelayedEvent(event cloudevents.Event) {
@@ -311,12 +310,11 @@ func (im *instanceMemory) Deadline(ctx context.Context) time.Time {
 	return time.Now().Add(states.DefaultShortDeadline)
 }
 
-func (im *instanceMemory) LivingChildren(ctx context.Context) []states.ChildInfo {
+func (im *instanceMemory) LivingChildren(ctx context.Context) []*states.ChildInfo {
 	return nil
 }
 
 func (im *instanceMemory) ScheduleRetry(ctx context.Context, d time.Duration, stateID string, x interface{}) error {
-
 	data, err := json.Marshal(x)
 	if err != nil {
 		return err
@@ -330,22 +328,22 @@ func (im *instanceMemory) ScheduleRetry(ctx context.Context, d time.Duration, st
 	}
 
 	return nil
-
 }
 
 func (im *instanceMemory) CreateChild(ctx context.Context, args states.CreateChildArgs) (states.Child, error) {
-
 	var ci states.ChildInfo
 
 	if args.Definition.GetType() == model.SubflowFunctionType {
 
 		caller := new(subflowCaller)
-		caller.InstanceID = im.ID().String()
+		caller.InstanceID = im.ID()
 		caller.State = im.logic.GetID()
 		caller.Step = im.Step()
-		caller.As = im.in.As
-
-		sfim, err := im.engine.subflowInvoke(ctx, caller, im.in.Edges.Namespace, args.Definition.(*model.SubflowFunctionDefinition).Workflow, args.Input)
+		caller.As = im.cached.Instance.As
+		caller.CallPath = im.cached.Instance.CallPath
+		caller.CallerState = im.GetState()
+		caller.Iterator = fmt.Sprintf("%d", args.Iterator)
+		sfim, err := im.engine.subflowInvoke(ctx, caller, im.cached, args.Definition.(*model.SubflowFunctionDefinition).Workflow, args.Input)
 		if err != nil {
 			return nil, err
 		}
@@ -371,7 +369,7 @@ func (im *instanceMemory) CreateChild(ctx context.Context, args states.CreateChi
 
 	uid := uuid.New()
 
-	ar, err := im.engine.newIsolateRequest(ctx, im, im.logic.GetID(), args.Timeout, args.Definition, args.Input, uid, args.Async, args.Files)
+	ar, err := im.engine.newIsolateRequest(ctx, im, im.logic.GetID(), args.Timeout, args.Definition, args.Input, uid, args.Async, args.Files, args.Iterator)
 	if err != nil {
 		return nil, err
 	}
@@ -386,30 +384,23 @@ func (im *instanceMemory) CreateChild(ctx context.Context, args states.CreateChi
 		engine: im.engine,
 		ar:     ar,
 	}, nil
-
 }
 
 func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory, stateId string, timeout int,
 	fn model.FunctionDefinition, inputData []byte,
-	uid uuid.UUID, async bool, files []model.FunctionFileDefinition) (*functionRequest, error) {
-
-	wf, err := engine.InstanceWorkflow(ctx, im)
-	if err != nil {
-		return nil, err
-	}
-
+	uid uuid.UUID, async bool, files []model.FunctionFileDefinition, iterator int,
+) (*functionRequest, error) {
 	ar := new(functionRequest)
 	ar.ActionID = uid.String()
-	// ar.Workflow.Name = wli.wf.Name
-	ar.Workflow.WorkflowID = wf.ID.String()
+	ar.Workflow.WorkflowID = im.cached.Workflow.ID.String()
 	ar.Workflow.Timeout = timeout
-	ar.Workflow.Revision = im.in.Edges.Revision.Hash
-	ar.Workflow.NamespaceName = im.in.Edges.Namespace.Name
-	ar.Workflow.Path = im.in.As
-
+	ar.Workflow.Revision = im.cached.Revision.Hash
+	ar.Workflow.NamespaceName = im.cached.Namespace.Name
+	ar.Workflow.Path = im.cached.Instance.As
+	ar.Iterator = iterator
 	if !async {
 		ar.Workflow.InstanceID = im.ID().String()
-		ar.Workflow.NamespaceID = im.in.Edges.Namespace.ID.String()
+		ar.Workflow.NamespaceID = im.cached.Namespace.ID.String()
 		ar.Workflow.State = stateId
 		ar.Workflow.Step = im.Step()
 	}
@@ -418,9 +409,9 @@ func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory,
 	ar.Container.Type = fnt
 	ar.Container.Data = inputData
 
-	wfID := im.in.Edges.Workflow.ID.String()
-	revID := im.in.Edges.Revision.Hash
-	nsID := im.in.Edges.Namespace.ID.String()
+	wfID := im.cached.Workflow.ID.String()
+	revID := im.cached.Revision.Hash
+	nsID := im.cached.Namespace.ID.String()
 
 	switch fnt {
 	case model.ReusableContainerFunctionType:
@@ -447,9 +438,6 @@ func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory,
 			MinScale:      &scale,
 			Size:          &size,
 		})
-		if err != nil {
-			panic(err)
-		}
 	case model.NamespacedKnativeFunctionType:
 		con := fn.(*model.NamespacedFunctionDefinition)
 		ar.Container.Files = files
@@ -478,7 +466,6 @@ func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory,
 	}
 
 	return ar, nil
-
 }
 
 type subflowHandle struct {

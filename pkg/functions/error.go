@@ -9,7 +9,6 @@ import (
 )
 
 func k8sToGRPCError(err error) error {
-
 	if errors.IsNotFound(err) {
 		return status.Error(codes.NotFound, "not found")
 	}

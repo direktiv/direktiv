@@ -55,8 +55,8 @@ type functionHandler struct {
 }
 
 func newFunctionHandler(srv *Server, logger *zap.SugaredLogger,
-	router *mux.Router, addr string) (*functionHandler, error) {
-
+	router *mux.Router, addr string,
+) (*functionHandler, error) {
 	funcAddr := fmt.Sprintf("%s:5555", addr)
 	logger.Infof("connecting to functions %s", funcAddr)
 
@@ -75,11 +75,9 @@ func newFunctionHandler(srv *Server, logger *zap.SugaredLogger,
 	fh.initRoutes(router)
 
 	return fh, err
-
 }
 
 func (h *functionHandler) initRoutes(r *mux.Router) {
-
 	// swagger:operation GET /api/logs/{pod} podLogs
 	// ---
 	// description: |
@@ -748,11 +746,9 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	//   '200':
 	//     "description": "successfully delete namespace registry"
 	r.HandleFunc("/registries/namespaces/{ns}", h.deleteRegistry).Methods(http.MethodDelete).Name(RN_DeleteRegistry)
-
 }
 
 func (h *functionHandler) deleteRegistry(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	// Get and Validate namespace exists
@@ -781,7 +777,6 @@ func (h *functionHandler) deleteRegistry(w http.ResponseWriter, r *http.Request)
 }
 
 func (h *functionHandler) createRegistry(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	// Get and Validate namespace exists
@@ -808,7 +803,6 @@ func (h *functionHandler) createRegistry(w http.ResponseWriter, r *http.Request)
 	})
 
 	respond(w, resp, err)
-
 }
 
 func (h *functionHandler) testRegistry(w http.ResponseWriter, r *http.Request) {
@@ -838,11 +832,9 @@ func (h *functionHandler) testRegistry(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		h.logger.Errorf("Failed to write response: %v.", err)
 	}
-
 }
 
 func (h *functionHandler) getRegistries(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	// Get and Validate namespace exists
@@ -863,7 +855,6 @@ func (h *functionHandler) getRegistries(w http.ResponseWriter, r *http.Request) 
 }
 
 func (h *functionHandler) listNamespaceServices(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -880,11 +871,9 @@ func (h *functionHandler) listNamespaceServices(w http.ResponseWriter, r *http.R
 	annotations[functions.ServiceHeaderNamespaceID] = resp.Namespace.GetOid()
 	annotations[functions.ServiceHeaderScope] = functions.PrefixNamespace
 	h.listServices(annotations, w, r)
-
 }
 
 func (h *functionHandler) listNamespaceServicesSSE(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -902,11 +891,9 @@ func (h *functionHandler) listNamespaceServicesSSE(w http.ResponseWriter, r *htt
 	annotations[functions.ServiceHeaderScope] = functions.PrefixNamespace
 
 	h.listServicesSSE(annotations, w, r)
-
 }
 
 func (h *functionHandler) listWorkflowServices(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -924,11 +911,9 @@ func (h *functionHandler) listWorkflowServices(w http.ResponseWriter, r *http.Re
 	annotations[functions.ServiceHeaderWorkflowID] = resp.GetOid()
 
 	h.listServices(annotations, w, r)
-
 }
 
 func (h *functionHandler) listWorkflowServicesSSE(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -946,11 +931,9 @@ func (h *functionHandler) listWorkflowServicesSSE(w http.ResponseWriter, r *http
 	annotations[functions.ServiceHeaderWorkflowID] = resp.GetOid()
 
 	h.listServicesSSE(annotations, w, r)
-
 }
 
 func (h *functionHandler) singleNamespaceServiceSSE(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	annotations := make(map[string]string)
@@ -958,19 +941,15 @@ func (h *functionHandler) singleNamespaceServiceSSE(w http.ResponseWriter, r *ht
 	annotations[functions.ServiceHeaderName] = mux.Vars(r)["svn"]
 
 	h.listServicesSSE(annotations, w, r)
-
 }
 
 func (h *functionHandler) singleWorkflowService(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	http.Error(w, "text/event-stream only", http.StatusBadRequest)
-
 }
 
 func (h *functionHandler) singleWorkflowServiceSSE(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -999,12 +978,11 @@ func (h *functionHandler) singleWorkflowServiceSSE(w http.ResponseWriter, r *htt
 	annotations[functions.ServiceKnativeHeaderName] = svc
 
 	h.listServicesSSE(annotations, w, r)
-
 }
 
 func (h *functionHandler) listServicesSSE(
-	annotations map[string]string, w http.ResponseWriter, r *http.Request) {
-
+	annotations map[string]string, w http.ResponseWriter, r *http.Request,
+) {
 	grpcReq := grpcfunc.WatchFunctionsRequest{
 		Annotations: annotations,
 	}
@@ -1018,7 +996,6 @@ func (h *functionHandler) listServicesSSE(
 	ch := make(chan interface{}, 1)
 
 	defer func() {
-
 		_ = client.CloseSend()
 
 		for {
@@ -1027,11 +1004,9 @@ func (h *functionHandler) listServicesSSE(
 				return
 			}
 		}
-
 	}()
 
 	go func() {
-
 		defer close(ch)
 
 		for {
@@ -1045,16 +1020,14 @@ func (h *functionHandler) listServicesSSE(
 			ch <- x
 
 		}
-
 	}()
 
 	sse(w, ch)
-
 }
 
 func (h *functionHandler) listServices(
-	annotations map[string]string, w http.ResponseWriter, r *http.Request) {
-
+	annotations map[string]string, w http.ResponseWriter, r *http.Request,
+) {
 	grpcReq := grpcfunc.ListFunctionsRequest{
 		Annotations: annotations,
 	}
@@ -1066,7 +1039,6 @@ func (h *functionHandler) listServices(
 // sse
 
 func (h *functionHandler) deleteWorkflowServices(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -1101,7 +1073,6 @@ func (h *functionHandler) deleteWorkflowServices(w http.ResponseWriter, r *http.
 }
 
 func (h *functionHandler) deleteNamespaceService(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	annotations := make(map[string]string)
@@ -1113,15 +1084,14 @@ func (h *functionHandler) deleteNamespaceService(w http.ResponseWriter, r *http.
 }
 
 func (h *functionHandler) deleteService(annotations map[string]string,
-	w http.ResponseWriter, r *http.Request) {
-
+	w http.ResponseWriter, r *http.Request,
+) {
 	grpcReq := grpcfunc.ListFunctionsRequest{
 		Annotations: annotations,
 	}
 
 	resp, err := h.client.DeleteFunctions(r.Context(), &grpcReq)
 	respond(w, resp, err)
-
 }
 
 type getFunctionResponse struct {
@@ -1147,7 +1117,6 @@ type getFunctionResponseRevision struct {
 }
 
 func (h *functionHandler) getNamespaceService(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	svcName := mux.Vars(r)["svn"]
@@ -1159,7 +1128,6 @@ func (h *functionHandler) getNamespaceService(w http.ResponseWriter, r *http.Req
 	})
 
 	h.getService(svn, w, r)
-
 }
 
 /*
@@ -1212,12 +1180,10 @@ func (h *functionHandler) getServiceSSE(annotations map[string]string,
 */
 
 func (h *functionHandler) getService(svn string, w http.ResponseWriter, r *http.Request) {
-
 	grpcReq := new(grpc.GetFunctionRequest)
 	grpcReq.ServiceName = &svn
 
 	resp, err := h.client.GetFunction(r.Context(), grpcReq)
-
 	if err != nil {
 		respond(w, resp, err)
 		return
@@ -1248,7 +1214,6 @@ func (h *functionHandler) getService(svn string, w http.ResponseWriter, r *http.
 	}
 
 	respondStruct(w, out, http.StatusOK, nil)
-
 }
 
 type createNamespaceServiceRequest struct {
@@ -1266,7 +1231,6 @@ type createNamespaceServiceRequest struct {
 }
 
 func (h *functionHandler) createNamespaceService(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -1293,11 +1257,9 @@ func (h *functionHandler) createNamespaceService(w http.ResponseWriter, r *http.
 	cr.NamespaceOID = resp.Namespace.GetOid()
 
 	h.createService(cr, r, w)
-
 }
 
 func (h *functionHandler) createService(cr createNamespaceServiceRequest, r *http.Request, w http.ResponseWriter) {
-
 	grpcReq := new(grpcfunc.CreateFunctionRequest)
 	grpcReq.Info = &grpc.BaseInfo{
 		Name:          &cr.Name,
@@ -1315,7 +1277,6 @@ func (h *functionHandler) createService(cr createNamespaceServiceRequest, r *htt
 	// returns an empty body
 	resp, err := h.client.CreateFunction(r.Context(), grpcReq)
 	respond(w, resp, err)
-
 }
 
 // UpdateServiceRequest update service request
@@ -1337,7 +1298,6 @@ type updateServiceRequest struct {
 }
 
 func (h *functionHandler) updateNamespaceService(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	svcName := mux.Vars(r)["svn"]
@@ -1346,7 +1306,6 @@ func (h *functionHandler) updateNamespaceService(w http.ResponseWriter, r *http.
 	resp, err := h.srv.FlowClient.Namespace(r.Context(), &igrpc.NamespaceRequest{
 		Name: nsName,
 	})
-
 	if err != nil {
 		respond(w, nil, err)
 		return
@@ -1360,7 +1319,6 @@ func (h *functionHandler) updateNamespaceService(w http.ResponseWriter, r *http.
 }
 
 func (h *functionHandler) updateService(svc, name string, ns *igrpc.Namespace, w http.ResponseWriter, r *http.Request) {
-
 	obj := new(updateServiceRequest)
 	err := json.NewDecoder(r.Body).Decode(obj)
 	if err != nil {
@@ -1387,11 +1345,9 @@ func (h *functionHandler) updateService(svc, name string, ns *igrpc.Namespace, w
 	// returns an empty body
 	resp, err := h.client.UpdateFunction(r.Context(), grpcReq)
 	respond(w, resp, err)
-
 }
 
 func (h *functionHandler) deleteNamespaceServiceRevision(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	svcName := mux.Vars(r)["svn"]
@@ -1407,15 +1363,14 @@ func (h *functionHandler) deleteNamespaceServiceRevision(w http.ResponseWriter, 
 }
 
 func (h *functionHandler) deleteRevision(rev string,
-	w http.ResponseWriter, r *http.Request) {
-
+	w http.ResponseWriter, r *http.Request,
+) {
 	grpcReq := &grpcfunc.DeleteRevisionRequest{
 		Revision: &rev,
 	}
 
 	resp, err := h.client.DeleteRevision(r.Context(), grpcReq)
 	respond(w, resp, err)
-
 }
 
 func (h *functionHandler) watchNamespaceRevision(w http.ResponseWriter, r *http.Request) {
@@ -1433,15 +1388,12 @@ func (h *functionHandler) watchNamespaceRevision(w http.ResponseWriter, r *http.
 }
 
 func (h *functionHandler) singleWorkflowServiceRevision(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	http.Error(w, "text/event-stream only", http.StatusBadRequest)
-
 }
 
 func (h *functionHandler) singleWorkflowServiceRevisionSSE(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -1471,11 +1423,9 @@ func (h *functionHandler) singleWorkflowServiceRevisionSSE(w http.ResponseWriter
 	svc := functions.AssembleWorkflowServiceName(resp.Oid, hash)
 
 	h.watchRevisions(svc, rev /*functions.PrefixWorkflow,*/, w, r)
-
 }
 
 func (h *functionHandler) watchNamespaceRevisions(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 	svcName := mux.Vars(r)["svn"]
 	nsName := mux.Vars(r)["ns"]
@@ -1489,15 +1439,12 @@ func (h *functionHandler) watchNamespaceRevisions(w http.ResponseWriter, r *http
 }
 
 func (h *functionHandler) singleWorkflowServiceRevisions(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	http.Error(w, "text/event-stream only", http.StatusBadRequest)
-
 }
 
 func (h *functionHandler) singleWorkflowServiceRevisionsSSE(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -1521,12 +1468,11 @@ func (h *functionHandler) singleWorkflowServiceRevisionsSSE(w http.ResponseWrite
 	svc := functions.AssembleWorkflowServiceName(resp.Oid, hash)
 
 	h.watchRevisions(svc, "" /*functions.PrefixWorkflow,*/, w, r)
-
 }
 
 func (h *functionHandler) watchRevisions(svc, rev /*, scope*/ string,
-	w http.ResponseWriter, r *http.Request) {
-
+	w http.ResponseWriter, r *http.Request,
+) {
 	if rev != "" {
 		rev = fmt.Sprintf("%s-%s", svc, rev)
 	}
@@ -1545,7 +1491,6 @@ func (h *functionHandler) watchRevisions(svc, rev /*, scope*/ string,
 	ch := make(chan interface{}, 1)
 
 	defer func() {
-
 		_ = client.CloseSend()
 
 		for {
@@ -1554,11 +1499,9 @@ func (h *functionHandler) watchRevisions(svc, rev /*, scope*/ string,
 				return
 			}
 		}
-
 	}()
 
 	go func() {
-
 		defer close(ch)
 
 		for {
@@ -1572,15 +1515,12 @@ func (h *functionHandler) watchRevisions(svc, rev /*, scope*/ string,
 			ch <- x
 
 		}
-
 	}()
 
 	sse(w, ch)
-
 }
 
 func (h *functionHandler) watchPodLogs(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	sn := mux.Vars(r)["pod"]
@@ -1596,7 +1536,6 @@ func (h *functionHandler) watchPodLogs(w http.ResponseWriter, r *http.Request) {
 	ch := make(chan interface{}, 1)
 
 	defer func() {
-
 		_ = client.CloseSend()
 
 		for {
@@ -1605,11 +1544,9 @@ func (h *functionHandler) watchPodLogs(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
-
 	}()
 
 	go func() {
-
 		defer close(ch)
 
 		for {
@@ -1623,15 +1560,12 @@ func (h *functionHandler) watchPodLogs(w http.ResponseWriter, r *http.Request) {
 			ch <- x
 
 		}
-
 	}()
 
 	sse(w, ch)
-
 }
 
 func (h *functionHandler) listNamespacePods(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -1658,11 +1592,9 @@ func (h *functionHandler) listNamespacePods(w http.ResponseWriter, r *http.Reque
 	annotations[functions.ServiceHeaderNamespaceName] = mux.Vars(r)["ns"]
 
 	h.listPods(annotations, w, r)
-
 }
 
 func (h *functionHandler) listWorkflowPods(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -1699,11 +1631,9 @@ func (h *functionHandler) listWorkflowPods(w http.ResponseWriter, r *http.Reques
 	annotations[functions.ServiceHeaderWorkflowID] = resp.Oid
 
 	h.listPods(annotations, w, r)
-
 }
 
 func (h *functionHandler) listNamespacePodsSSE(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	svcName := mux.Vars(r)["svn"]
@@ -1720,7 +1650,6 @@ func (h *functionHandler) listNamespacePodsSSE(w http.ResponseWriter, r *http.Re
 }
 
 func (h *functionHandler) listWorkflowPodsSSE(w http.ResponseWriter, r *http.Request) {
-
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
@@ -1752,12 +1681,11 @@ func (h *functionHandler) listWorkflowPodsSSE(w http.ResponseWriter, r *http.Req
 	knrev := fmt.Sprintf("%s-%s", svc, rev)
 
 	h.listPodsSSE(svc, knrev, w, r)
-
 }
 
 func (h *functionHandler) listPodsSSE(svc, rev string,
-	w http.ResponseWriter, r *http.Request) {
-
+	w http.ResponseWriter, r *http.Request,
+) {
 	grpcReq := &grpc.WatchPodsRequest{
 		ServiceName:  &svc,
 		RevisionName: &rev,
@@ -1771,7 +1699,6 @@ func (h *functionHandler) listPodsSSE(svc, rev string,
 	ch := make(chan interface{}, 1)
 
 	defer func() {
-
 		_ = client.CloseSend()
 
 		for {
@@ -1780,11 +1707,9 @@ func (h *functionHandler) listPodsSSE(svc, rev string,
 				return
 			}
 		}
-
 	}()
 
 	go func() {
-
 		defer close(ch)
 
 		for {
@@ -1798,15 +1723,14 @@ func (h *functionHandler) listPodsSSE(svc, rev string,
 			ch <- x
 
 		}
-
 	}()
 
 	sse(w, ch)
 }
 
 func (h *functionHandler) listPods(annotations map[string]string,
-	w http.ResponseWriter, r *http.Request) {
-
+	w http.ResponseWriter, r *http.Request,
+) {
 	grpcReq := grpc.ListPodsRequest{
 		Annotations: annotations,
 	}

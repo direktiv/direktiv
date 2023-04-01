@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
+	log "github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/xeipuuv/gojsonschema"
 )
@@ -21,7 +22,6 @@ type validateLogic struct {
 }
 
 func Validate(instance Instance, state model.State) (Logic, error) {
-
 	validate, ok := state.(*model.ValidateState)
 	if !ok {
 		return nil, derrors.NewInternalError(errors.New("bad state object"))
@@ -32,11 +32,9 @@ func Validate(instance Instance, state model.State) (Logic, error) {
 	sl.ValidateState = validate
 
 	return sl, nil
-
 }
 
 func (logic *validateLogic) Run(ctx context.Context, wakedata []byte) (*Transition, error) {
-
 	err := scheduleOnce(logic, wakedata)
 	if err != nil {
 		return nil, err
@@ -73,7 +71,7 @@ func (logic *validateLogic) Run(ctx context.Context, wakedata []byte) (*Transiti
 
 	if !result.Valid() {
 		for _, reason := range result.Errors() {
-			logic.Log(ctx, "Schema validation error: %s", reason.String())
+			logic.Log(ctx, log.Error, "Schema validation error: %s", reason.String())
 		}
 		return nil, derrors.NewCatchableError(ErrCodeFailedSchemaValidation, fmt.Sprintf("subject failed its JSONSchema validation: %v", err))
 	}
@@ -82,5 +80,4 @@ func (logic *validateLogic) Run(ctx context.Context, wakedata []byte) (*Transiti
 		Transform: logic.Transform,
 		NextState: logic.Transition,
 	}, nil
-
 }

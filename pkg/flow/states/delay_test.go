@@ -12,7 +12,6 @@ import (
 const d1s = "PT1S"
 
 func TestDelayGood001(t *testing.T) {
-
 	ctx := context.Background()
 
 	instance := newTesterInstance()
@@ -91,11 +90,9 @@ func TestDelayGood001(t *testing.T) {
 		t.Error(errors.New("didn't raise any errors"))
 		return
 	}
-
 }
 
 func TestDelayGood002(t *testing.T) {
-
 	ctx := context.Background()
 
 	instance := newTesterInstance()
@@ -174,11 +171,9 @@ func TestDelayGood002(t *testing.T) {
 		t.Error(errors.New("didn't raise any errors"))
 		return
 	}
-
 }
 
 func TestDelayBadState(t *testing.T) {
-
 	instance := newTesterInstance()
 
 	state := new(model.NoopState)
@@ -191,11 +186,9 @@ func TestDelayBadState(t *testing.T) {
 		t.Error(errors.New("should have failed with wrong state type"))
 		return
 	}
-
 }
 
 func TestDelayBadMemory(t *testing.T) {
-
 	ctx := context.Background()
 
 	instance := newTesterInstance()
@@ -243,11 +236,9 @@ func TestDelayBadMemory(t *testing.T) {
 		t.Error(errors.New("scheduled a delay despite failing"))
 		return
 	}
-
 }
 
 func TestDelayBadWakedata(t *testing.T) {
-
 	ctx := context.Background()
 
 	instance := newTesterInstance()
@@ -286,5 +277,4 @@ func TestDelayBadWakedata(t *testing.T) {
 		t.Error(errors.New("scheduled a delay despite failing"))
 		return
 	}
-
 }

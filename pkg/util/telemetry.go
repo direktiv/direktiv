@@ -25,8 +25,10 @@ var TelemetryMiddleware = func(h http.Handler) http.Handler {
 	return h
 }
 
-var telemetryUnaryServerInterceptor grpc.UnaryServerInterceptor
-var telemetryStreamServerInterceptor grpc.StreamServerInterceptor
+var (
+	telemetryUnaryServerInterceptor  grpc.UnaryServerInterceptor
+	telemetryStreamServerInterceptor grpc.StreamServerInterceptor
+)
 
 var globalGRPCDialOptions []grpc.DialOption
 
@@ -71,7 +73,6 @@ func (tmc *grpcMetadataTMC) Set(k, v string) {
 var instrumentationName string
 
 func InitTelemetry(conf *Config, svcName, imName string) (func(), error) {
-
 	instrumentationName = imName
 
 	var prop propagation.TextMapPropagator
@@ -112,7 +113,6 @@ func InitTelemetry(conf *Config, svcName, imName string) (func(), error) {
 	otel.SetTracerProvider(tp)
 
 	AddGlobalGRPCDialOption(grpc.WithUnaryInterceptor(func(ctx context.Context, method string, req, reply interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
-
 		tp := otel.GetTracerProvider()
 		tr := tp.Tracer(imName)
 
@@ -140,11 +140,9 @@ func InitTelemetry(conf *Config, svcName, imName string) (func(), error) {
 		}
 
 		return err
-
 	}))
 
 	AddGlobalGRPCDialOption(grpc.WithStreamInterceptor(func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, method string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
-
 		tp := otel.GetTracerProvider()
 		tr := tp.Tracer(imName)
 
@@ -172,11 +170,9 @@ func InitTelemetry(conf *Config, svcName, imName string) (func(), error) {
 		}
 
 		return cs, nil
-
 	}))
 
 	telemetryUnaryServerInterceptor = func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
-
 		prop := otel.GetTextMapPropagator()
 		requestMetadata, _ := metadata.FromIncomingContext(ctx)
 		metadataCopy := requestMetadata.Copy()
@@ -201,11 +197,9 @@ func InitTelemetry(conf *Config, svcName, imName string) (func(), error) {
 		}
 
 		return resp, err
-
 	}
 
 	telemetryStreamServerInterceptor = func(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
-
 		ctx := ss.Context()
 
 		prop := otel.GetTextMapPropagator()
@@ -232,7 +226,6 @@ func InitTelemetry(conf *Config, svcName, imName string) (func(), error) {
 		}
 
 		return err
-
 	}
 
 	TelemetryMiddleware = func(h http.Handler) http.Handler {
@@ -243,7 +236,6 @@ func InitTelemetry(conf *Config, svcName, imName string) (func(), error) {
 	}
 
 	return telemetryWaiter(tp, bsp), nil
-
 }
 
 type telemetryHandler struct {
@@ -252,7 +244,6 @@ type telemetryHandler struct {
 }
 
 func (h *telemetryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-
 	prop := otel.GetTextMapPropagator()
 	ctx := prop.Extract(r.Context(), &httpCarrier{
 		r: r,
@@ -266,13 +257,10 @@ func (h *telemetryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	subr := r.WithContext(ctx)
 
 	h.next.ServeHTTP(w, subr)
-
 }
 
 func telemetryWaiter(tp *sdktrace.TracerProvider, bsp sdktrace.SpanProcessor) func() {
-
 	return func() {
-
 		t := time.Now()
 
 		deadline := t.Add(25 * time.Second)
@@ -291,20 +279,16 @@ func telemetryWaiter(tp *sdktrace.TracerProvider, bsp sdktrace.SpanProcessor) fu
 			fmt.Printf("Failed to shutdown telemetry: %v\n", err)
 			return
 		}
-
 	}
-
 }
 
 func Trace(ctx context.Context, msg string) {
-
 	span := trace.SpanFromContext(ctx)
 	if span == nil {
 		return
 	}
 
 	span.AddEvent(msg)
-
 }
 
 type httpCarrier struct {
@@ -328,7 +312,6 @@ func (c *httpCarrier) Set(key, val string) {
 }
 
 func TraceHTTPRequest(ctx context.Context, r *http.Request) (cleanup func()) {
-
 	tp := otel.GetTracerProvider()
 	tr := tp.Tracer(instrumentationName)
 	ctx, span := tr.Start(ctx, "function", trace.WithSpanKind(trace.SpanKindClient))
@@ -339,7 +322,6 @@ func TraceHTTPRequest(ctx context.Context, r *http.Request) (cleanup func()) {
 	})
 
 	return func() { span.End() }
-
 }
 
 type GenericTelemetryCarrier struct {

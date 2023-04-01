@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 
+	log "github.com/direktiv/direktiv/pkg/flow/internallogger"
+
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/model"
@@ -27,7 +29,6 @@ type testerInstance struct {
 }
 
 func newTesterInstance() *testerInstance {
-
 	instance := new(testerInstance)
 
 	instance.tbuf = make([]string, 0)
@@ -37,7 +38,6 @@ func newTesterInstance() *testerInstance {
 	instance.delays = time.Millisecond * 0
 
 	return instance
-
 }
 
 func (instance *testerInstance) dt() time.Duration {
@@ -53,13 +53,11 @@ func (instance *testerInstance) getTrace() []string {
 }
 
 func (instance *testerInstance) getWakedata() []byte {
-
 	data := instance.wakedata
 
 	instance.wakedata = nil
 
 	return data
-
 }
 
 func (instance *testerInstance) resetTrace() {
@@ -67,7 +65,6 @@ func (instance *testerInstance) resetTrace() {
 }
 
 func (instance *testerInstance) trace() {
-
 	var fn string
 
 	pc, _, _, ok := runtime.Caller(1)
@@ -80,11 +77,9 @@ func (instance *testerInstance) trace() {
 	}
 
 	instance.tbuf = append(instance.tbuf, fn)
-
 }
 
 func (instance *testerInstance) getTraceExclude(excl ...string) []string {
-
 	x := instance.getTrace()
 
 	var trace []string
@@ -106,7 +101,6 @@ func (instance *testerInstance) getTraceExclude(excl ...string) []string {
 	}
 
 	return trace
-
 }
 
 func (instance *testerInstance) BroadcastCloudevent(ctx context.Context, evetn *cloudevents.Event, dd int64) error {
@@ -140,13 +134,11 @@ func (instance *testerInstance) GetModel() (*model.Workflow, error) {
 }
 
 func (instance *testerInstance) GetVariables(ctx context.Context, vars []VariableSelector) ([]Variable, error) {
-
 	instance.trace()
 
-	var variables = make([]Variable, len(vars))
+	variables := make([]Variable, len(vars))
 
 	return variables, nil
-
 }
 
 func (instance *testerInstance) ListenForEvents(ctx context.Context, events []*model.ConsumeEventDefinition, all bool) error {
@@ -154,12 +146,18 @@ func (instance *testerInstance) ListenForEvents(ctx context.Context, events []*m
 	return nil
 }
 
-func (instance *testerInstance) LivingChildren(ctx context.Context) []ChildInfo {
+func (instance *testerInstance) LivingChildren(ctx context.Context) []*ChildInfo {
 	return nil
 }
 
-func (instance *testerInstance) Log(ctx context.Context, a string, x ...interface{}) {
+func (instance *testerInstance) Log(ctx context.Context, level log.Level, a string, x ...interface{}) {
+}
 
+func (instance *testerInstance) AddAttribute(tag, value string) {
+}
+
+func (instance *testerInstance) Iterator() (int, bool) {
+	return 0, false
 }
 
 func (instance *testerInstance) PrimeDelayedEvent(events cloudevents.Event) {
@@ -188,7 +186,6 @@ func (instance *testerInstance) SetVariables(ctx context.Context, vars []Variabl
 }
 
 func (instance *testerInstance) Sleep(ctx context.Context, d time.Duration, x interface{}) error {
-
 	instance.trace()
 
 	instance.delays += d
@@ -209,7 +206,6 @@ func (instance *testerInstance) StoreData(key string, val interface{}) error {
 }
 
 func (instance *testerInstance) UnmarshalMemory(x interface{}) error {
-
 	instance.trace()
 
 	data, err := json.Marshal(instance.instanceMemory)
@@ -223,7 +219,6 @@ func (instance *testerInstance) UnmarshalMemory(x interface{}) error {
 	}
 
 	return nil
-
 }
 
 func marshal(x interface{}) []byte {

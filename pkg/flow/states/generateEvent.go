@@ -8,6 +8,7 @@ import (
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
+	log "github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/google/uuid"
 	"github.com/senseyeio/duration"
@@ -23,7 +24,6 @@ type generateEventLogic struct {
 }
 
 func GenerateEvent(instance Instance, state model.State) (Logic, error) {
-
 	generateEvent, ok := state.(*model.GenerateEventState)
 	if !ok {
 		return nil, derrors.NewInternalError(errors.New("bad state object"))
@@ -34,11 +34,9 @@ func GenerateEvent(instance Instance, state model.State) (Logic, error) {
 	sl.GenerateEventState = generateEvent
 
 	return sl, nil
-
 }
 
 func (logic *generateEventLogic) Run(ctx context.Context, wakedata []byte) (*Transition, error) {
-
 	err := scheduleOnce(logic, wakedata)
 	if err != nil {
 		return nil, err
@@ -71,7 +69,7 @@ func (logic *generateEventLogic) Run(ctx context.Context, wakedata []byte) (*Tra
 			err = event.SetData(ctype, data)
 		}
 		if err != nil {
-			logic.Log(ctx, "Unable to set event data: %v", err)
+			logic.Log(ctx, log.Error, "Unable to set event data: %v", err)
 		}
 
 	}
@@ -80,7 +78,7 @@ func (logic *generateEventLogic) Run(ctx context.Context, wakedata []byte) (*Tra
 
 		err = event.SetData("application/json", x)
 		if err != nil {
-			logic.Log(ctx, "Unable to set event data: %v", err)
+			logic.Log(ctx, log.Error, "Unable to set event data: %v", err)
 		}
 
 	}
@@ -92,16 +90,16 @@ func (logic *generateEventLogic) Run(ctx context.Context, wakedata []byte) (*Tra
 			return nil, derrors.NewUncatchableError("direktiv.event.jq", "failed to process event context key '%s': %v", k, err)
 		}
 
-		logic.Log(ctx, "Adding context %v: %v", k, x)
+		logic.Log(ctx, log.Debug, "Adding context %v: %v", k, x)
 
 		err = event.Context.SetExtension(k, x)
 		if err != nil {
-			logic.Log(ctx, "Unable to set event extension: %v", err)
+			logic.Log(ctx, log.Error, "Unable to set event extension: %v", err)
 		}
 
 	}
 
-	logic.Log(ctx, "Broadcasting event: %s.", event.ID())
+	logic.Log(ctx, log.Info, "Broadcasting event type:%s/source:%s to this namespace.", event.Type(), event.Source())
 
 	var dd int64
 
@@ -123,5 +121,4 @@ func (logic *generateEventLogic) Run(ctx context.Context, wakedata []byte) (*Tra
 		Transform: logic.Transform,
 		NextState: logic.Transition,
 	}, nil
-
 }

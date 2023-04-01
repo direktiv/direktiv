@@ -20,7 +20,6 @@ type pagination struct {
 }
 
 func getPagination(args *grpc.Pagination) (*pagination, error) {
-
 	p := new(pagination)
 	p.limit = int(args.GetLimit())
 	p.offset = int(args.GetOffset())
@@ -28,7 +27,6 @@ func getPagination(args *grpc.Pagination) (*pagination, error) {
 	p.filter = args.GetFilter()
 
 	return p, nil
-
 }
 
 func pageInfo(p *pagination, total int) *grpc.PageInfo {
@@ -46,13 +44,11 @@ type customPagination struct {
 }
 
 func newCustomPagination(cpd customPaginationData) *customPagination {
-
 	cp := new(customPagination)
 
 	cp.data = cpd
 
 	return cp
-
 }
 
 const (
@@ -69,7 +65,6 @@ type customPaginationData interface {
 }
 
 func (cp *customPagination) Paginate(req *pagination) (*cpdOutput, error) {
-
 	o := new(cpdOutput)
 
 	for _, f := range req.filter {
@@ -134,7 +129,6 @@ func (cp *customPagination) Paginate(req *pagination) (*cpdOutput, error) {
 	o.Results = list
 
 	return o, nil
-
 }
 
 type cpdOutput struct {
@@ -147,13 +141,11 @@ type cpdSecrets struct {
 }
 
 func newCustomPaginationDataSecrets() *cpdSecrets {
-
 	cpd := new(cpdSecrets)
 
 	cpd.list = make([]string, 0)
 
 	return cpd
-
 }
 
 func (cpds *cpdSecrets) Total() int {
@@ -171,7 +163,6 @@ func (cpds *cpdSecrets) Value(idx int) map[string]interface{} {
 }
 
 func (cpds *cpdSecrets) Filter(filter *grpc.PageFilter) error {
-
 	if filter == nil {
 		return nil
 	}
@@ -199,11 +190,9 @@ func (cpds *cpdSecrets) Filter(filter *grpc.PageFilter) error {
 	cpds.list = secrets
 
 	return nil
-
 }
 
 func (cpds *cpdSecrets) Order(order *grpc.PageOrder) error {
-
 	if order.GetField() != "" && order.GetField() != util.PaginationKeyName {
 		return fmt.Errorf("invalid order field: %s", order.GetField())
 	}
@@ -221,7 +210,6 @@ func (cpds *cpdSecrets) Order(order *grpc.PageOrder) error {
 	}
 
 	return nil
-
 }
 
 func (cpds *cpdSecrets) Add(name string) {
@@ -236,7 +224,6 @@ type orderingInfo struct {
 }
 
 func (p *pagination) orderings(orderings []*orderingInfo) []ent.OrderFunc {
-
 	var fns []ent.OrderFunc
 
 	for _, o := range p.order {
@@ -283,7 +270,6 @@ func (p *pagination) orderings(orderings []*orderingInfo) []ent.OrderFunc {
 	}
 
 	return fns
-
 }
 
 type filteringInfo struct {
@@ -300,7 +286,6 @@ type entQuery[T, X any] interface {
 }
 
 func entFilters[T, X any, Q entQuery[T, X]](p *pagination, filtersInfo map[*filteringInfo]func(query Q, v string) (Q, error)) []func(query Q) (Q, error) {
-
 	var filters []func(query Q) (Q, error)
 
 	for _, f := range p.filter {
@@ -325,7 +310,6 @@ func entFilters[T, X any, Q entQuery[T, X]](p *pagination, filtersInfo map[*filt
 	}
 
 	return filters
-
 }
 
 func paginate[T, X any, Q entQuery[T, X]](
@@ -333,8 +317,8 @@ func paginate[T, X any, Q entQuery[T, X]](
 	params *grpc.Pagination,
 	q Q,
 	o []*orderingInfo,
-	f map[*filteringInfo]func(Q, string) (Q, error)) ([]X, *grpc.PageInfo, error) {
-
+	f map[*filteringInfo]func(Q, string) (Q, error),
+) ([]X, *grpc.PageInfo, error) {
 	var err error
 
 	p, err := getPagination(params)
@@ -375,5 +359,4 @@ func paginate[T, X any, Q entQuery[T, X]](
 	}
 
 	return results, pageInfo(p, total), nil
-
 }

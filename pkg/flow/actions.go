@@ -8,13 +8,14 @@ import (
 	"strings"
 	"time"
 
-	libgrpc "google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
-	"google.golang.org/protobuf/types/known/emptypb"
-
+	"github.com/direktiv/direktiv/pkg/flow/bytedata"
+	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
 	"github.com/direktiv/direktiv/pkg/util"
+	libgrpc "google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type actions struct {
@@ -28,7 +29,6 @@ type actions struct {
 }
 
 func initActionsServer(ctx context.Context, srv *server) (*actions, error) {
-
 	var err error
 
 	actions := &actions{server: srv}
@@ -58,33 +58,29 @@ func initActionsServer(ctx context.Context, srv *server) (*actions, error) {
 	}()
 
 	return actions, nil
-
 }
 
 func (actions *actions) Run() error {
-
 	err := actions.srv.Serve(actions.listener)
 	if err != nil {
 		return err
 	}
 
 	return nil
-
 }
 
 func (actions *actions) SetNamespaceRegistry(ctx context.Context, req *grpc.SetNamespaceRegistryRequest) (*emptypb.Empty, error) {
-
 	actions.sugar.Debugf("Handling gRPC request: %s", this())
 
-	ns, err := actions.getNamespace(ctx, actions.db.Namespace, req.GetNamespace())
+	cached := new(database.CacheData)
+
+	err := actions.database.NamespaceByName(ctx, cached, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
 
-	namespace := ns.ID.String()
-
 	_, err = actions.client.StoreRegistry(ctx, &igrpc.StoreRegistryRequest{
-		Namespace: &namespace,
+		Namespace: &cached.Namespace.Name,
 		Data:      req.GetData(),
 	})
 	if err != nil {
@@ -94,23 +90,22 @@ func (actions *actions) SetNamespaceRegistry(ctx context.Context, req *grpc.SetN
 	var resp emptypb.Empty
 
 	return &resp, nil
-
 }
 
 func (actions *actions) DeleteNamespaceRegistry(ctx context.Context, req *grpc.DeleteNamespaceRegistryRequest) (*emptypb.Empty, error) {
-
 	actions.sugar.Debugf("Handling gRPC request: %s", this())
 
-	ns, err := actions.getNamespace(ctx, actions.db.Namespace, req.GetNamespace())
+	cached := new(database.CacheData)
+
+	err := actions.database.NamespaceByName(ctx, cached, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
 
-	namespace := ns.ID.String()
 	name := req.GetRegistry()
 
 	_, err = actions.client.DeleteRegistry(ctx, &igrpc.DeleteRegistryRequest{
-		Namespace: &namespace,
+		Namespace: &cached.Namespace.Name,
 		Name:      &name,
 	})
 	if err != nil {
@@ -120,7 +115,6 @@ func (actions *actions) DeleteNamespaceRegistry(ctx context.Context, req *grpc.D
 	var resp emptypb.Empty
 
 	return &resp, nil
-
 }
 
 type cpdRegistries struct {
@@ -128,13 +122,11 @@ type cpdRegistries struct {
 }
 
 func newCustomPaginationDataRegistries() *cpdRegistries {
-
 	cpd := new(cpdRegistries)
 
 	cpd.list = make([]string, 0)
 
 	return cpd
-
 }
 
 func (cpds *cpdRegistries) Total() int {
@@ -152,7 +144,6 @@ func (cpds *cpdRegistries) Value(idx int) map[string]interface{} {
 }
 
 func (cpds *cpdRegistries) Filter(filter *grpc.PageFilter) error {
-
 	if filter == nil {
 		return nil
 	}
@@ -180,11 +171,9 @@ func (cpds *cpdRegistries) Filter(filter *grpc.PageFilter) error {
 	cpds.list = secrets
 
 	return nil
-
 }
 
 func (cpds *cpdRegistries) Order(order *grpc.PageOrder) error {
-
 	if order.GetField() != "" && order.GetField() != util.PaginationKeyName {
 		return fmt.Errorf("invalid order field: %s", order.GetField())
 	}
@@ -202,7 +191,6 @@ func (cpds *cpdRegistries) Order(order *grpc.PageOrder) error {
 	}
 
 	return nil
-
 }
 
 func (cpds *cpdRegistries) Add(name string) {
@@ -210,15 +198,14 @@ func (cpds *cpdRegistries) Add(name string) {
 }
 
 func (actions *actions) NamespaceRegistries(ctx context.Context, req *grpc.NamespaceRegistriesRequest) (*grpc.NamespaceRegistriesResponse, error) {
-
 	actions.sugar.Debugf("Handling gRPC request: %s", this())
 
-	ns, err := actions.getNamespace(ctx, actions.db.Namespace, req.GetNamespace())
+	cached := new(database.CacheData)
+
+	err := actions.database.NamespaceByName(ctx, cached, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
-
-	namespace := ns.ID.String()
 
 	p, err := getPagination(req.Pagination)
 	if err != nil {
@@ -226,7 +213,7 @@ func (actions *actions) NamespaceRegistries(ctx context.Context, req *grpc.Names
 	}
 
 	response, err := actions.client.GetRegistries(ctx, &igrpc.GetRegistriesRequest{
-		Namespace: &namespace,
+		Namespace: &cached.Namespace.Name,
 	})
 	if err != nil {
 		return nil, err
@@ -245,44 +232,43 @@ func (actions *actions) NamespaceRegistries(ctx context.Context, req *grpc.Names
 
 	var resp grpc.NamespaceRegistriesResponse
 
-	resp.Namespace = ns.Name
+	resp.Namespace = cached.Namespace.Name
 	resp.Registries = new(grpc.Registries)
 	resp.Registries.PageInfo = new(grpc.PageInfo)
 
-	err = atob(cx, &resp.Registries)
+	err = bytedata.ConvertDataForOutput(cx, &resp.Registries)
 	if err != nil {
 		return nil, err
 	}
 
 	return &resp, nil
-
 }
 
 func (actions *actions) NamespaceRegistriesStream(req *grpc.NamespaceRegistriesRequest, srv grpc.Actions_NamespaceRegistriesStreamServer) error {
-
 	actions.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
 	phash := ""
 	nhash := ""
 
-	ns, err := actions.getNamespace(ctx, actions.db.Namespace, req.GetNamespace())
+	cached := new(database.CacheData)
+
+	err := actions.database.NamespaceByName(ctx, cached, req.GetNamespace())
 	if err != nil {
 		return err
 	}
-
-	namespace := ns.ID.String()
 
 	p, err := getPagination(req.Pagination)
 	if err != nil {
 		return err
 	}
 
-	sub := actions.pubsub.SubscribeNamespaceRegistries(ns)
+	sub := actions.pubsub.SubscribeNamespaceRegistries(cached.Namespace)
 	defer actions.cleanup(sub.Close)
 
 resend:
 
+	namespace := cached.Namespace.ID.String()
 	response, err := actions.client.GetRegistries(ctx, &igrpc.GetRegistriesRequest{
 		Namespace: &namespace,
 	})
@@ -303,16 +289,16 @@ resend:
 
 	resp := new(grpc.NamespaceRegistriesResponse)
 
-	resp.Namespace = ns.Name
+	resp.Namespace = cached.Namespace.Name
 	resp.Registries = new(grpc.Registries)
 	resp.Registries.PageInfo = new(grpc.PageInfo)
 
-	err = atob(cx, &resp.Registries)
+	err = bytedata.ConvertDataForOutput(cx, &resp.Registries)
 	if err != nil {
 		return err
 	}
 
-	nhash = checksum(resp)
+	nhash = bytedata.Checksum(resp)
 	if nhash != phash {
 		err = srv.Send(resp)
 		if err != nil {
@@ -327,11 +313,9 @@ resend:
 	}
 
 	goto resend
-
 }
 
 func (actions *actions) CancelWorkflowInstance(svn, actionID string) error {
-
 	actions.sugar.Debugf("Handling gRPC request: %s", this())
 
 	req := &igrpc.CancelWorkflowRequest{

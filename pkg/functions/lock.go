@@ -18,7 +18,6 @@ type locks struct {
 var locksmgr *locks
 
 func initLocks(conn string) error {
-
 	var err error
 
 	locks := new(locks)
@@ -36,11 +35,9 @@ func initLocks(conn string) error {
 	locksmgr = locks
 
 	return nil
-
 }
 
 func (locks *locks) Close() error {
-
 	if locks.db != nil {
 
 		err := locks.db.Close()
@@ -55,11 +52,9 @@ func (locks *locks) Close() error {
 	}
 
 	return nil
-
 }
 
 func (locks *locks) lockDB(id uint64, wait int) (*sql.Conn, error) {
-
 	var err error
 
 	ctx, cancel := context.WithTimeout(context.Background(),
@@ -83,14 +78,11 @@ func (locks *locks) lockDB(id uint64, wait int) (*sql.Conn, error) {
 	}
 
 	return conn, err
-
 }
 
 func (locks *locks) unlockDB(id uint64, conn *sql.Conn) error {
-
 	_, err := conn.ExecContext(context.Background(),
 		"SELECT pg_advisory_unlock($1)", int64(id))
-
 	if err != nil {
 		return fmt.Errorf("can not unlock lock %d: %w", id, err)
 	}
@@ -102,11 +94,9 @@ func (locks *locks) unlockDB(id uint64, conn *sql.Conn) error {
 	}
 
 	return nil
-
 }
 
 func (locks *locks) lock(key string, blocking bool) (*sql.Conn, error) {
-
 	hash, err := hashstructure.Hash(key, hashstructure.FormatV2, nil)
 	if err != nil {
 		return nil, err
@@ -124,11 +114,9 @@ func (locks *locks) lock(key string, blocking bool) (*sql.Conn, error) {
 	}
 
 	return conn, nil
-
 }
 
 func (locks *locks) unlock(key string, conn *sql.Conn) {
-
 	hash, err := hashstructure.Hash(key, hashstructure.FormatV2, nil)
 	if err != nil {
 		panic(err)
@@ -140,7 +128,6 @@ func (locks *locks) unlock(key string, conn *sql.Conn) {
 	if err != nil {
 		return
 	}
-
 }
 
 /*

@@ -40,6 +40,54 @@ func (lmc *LogMsgCreate) SetMsg(s string) *LogMsgCreate {
 	return lmc
 }
 
+// SetLevel sets the "level" field.
+func (lmc *LogMsgCreate) SetLevel(s string) *LogMsgCreate {
+	lmc.mutation.SetLevel(s)
+	return lmc
+}
+
+// SetNillableLevel sets the "level" field if the given value is not nil.
+func (lmc *LogMsgCreate) SetNillableLevel(s *string) *LogMsgCreate {
+	if s != nil {
+		lmc.SetLevel(*s)
+	}
+	return lmc
+}
+
+// SetRootInstanceId sets the "rootInstanceId" field.
+func (lmc *LogMsgCreate) SetRootInstanceId(s string) *LogMsgCreate {
+	lmc.mutation.SetRootInstanceId(s)
+	return lmc
+}
+
+// SetNillableRootInstanceId sets the "rootInstanceId" field if the given value is not nil.
+func (lmc *LogMsgCreate) SetNillableRootInstanceId(s *string) *LogMsgCreate {
+	if s != nil {
+		lmc.SetRootInstanceId(*s)
+	}
+	return lmc
+}
+
+// SetLogInstanceCallPath sets the "logInstanceCallPath" field.
+func (lmc *LogMsgCreate) SetLogInstanceCallPath(s string) *LogMsgCreate {
+	lmc.mutation.SetLogInstanceCallPath(s)
+	return lmc
+}
+
+// SetNillableLogInstanceCallPath sets the "logInstanceCallPath" field if the given value is not nil.
+func (lmc *LogMsgCreate) SetNillableLogInstanceCallPath(s *string) *LogMsgCreate {
+	if s != nil {
+		lmc.SetLogInstanceCallPath(*s)
+	}
+	return lmc
+}
+
+// SetTags sets the "tags" field.
+func (lmc *LogMsgCreate) SetTags(m map[string]string) *LogMsgCreate {
+	lmc.mutation.SetTags(m)
+	return lmc
+}
+
 // SetID sets the "id" field.
 func (lmc *LogMsgCreate) SetID(u uuid.UUID) *LogMsgCreate {
 	lmc.mutation.SetID(u)
@@ -207,6 +255,18 @@ func (lmc *LogMsgCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (lmc *LogMsgCreate) defaults() {
+	if _, ok := lmc.mutation.Level(); !ok {
+		v := logmsg.DefaultLevel
+		lmc.mutation.SetLevel(v)
+	}
+	if _, ok := lmc.mutation.RootInstanceId(); !ok {
+		v := logmsg.DefaultRootInstanceId
+		lmc.mutation.SetRootInstanceId(v)
+	}
+	if _, ok := lmc.mutation.LogInstanceCallPath(); !ok {
+		v := logmsg.DefaultLogInstanceCallPath
+		lmc.mutation.SetLogInstanceCallPath(v)
+	}
 	if _, ok := lmc.mutation.ID(); !ok {
 		v := logmsg.DefaultID()
 		lmc.mutation.SetID(v)
@@ -220,6 +280,15 @@ func (lmc *LogMsgCreate) check() error {
 	}
 	if _, ok := lmc.mutation.Msg(); !ok {
 		return &ValidationError{Name: "msg", err: errors.New(`ent: missing required field "LogMsg.msg"`)}
+	}
+	if _, ok := lmc.mutation.Level(); !ok {
+		return &ValidationError{Name: "level", err: errors.New(`ent: missing required field "LogMsg.level"`)}
+	}
+	if _, ok := lmc.mutation.RootInstanceId(); !ok {
+		return &ValidationError{Name: "rootInstanceId", err: errors.New(`ent: missing required field "LogMsg.rootInstanceId"`)}
+	}
+	if _, ok := lmc.mutation.LogInstanceCallPath(); !ok {
+		return &ValidationError{Name: "logInstanceCallPath", err: errors.New(`ent: missing required field "LogMsg.logInstanceCallPath"`)}
 	}
 	return nil
 }
@@ -265,6 +334,22 @@ func (lmc *LogMsgCreate) createSpec() (*LogMsg, *sqlgraph.CreateSpec) {
 	if value, ok := lmc.mutation.Msg(); ok {
 		_spec.SetField(logmsg.FieldMsg, field.TypeString, value)
 		_node.Msg = value
+	}
+	if value, ok := lmc.mutation.Level(); ok {
+		_spec.SetField(logmsg.FieldLevel, field.TypeString, value)
+		_node.Level = value
+	}
+	if value, ok := lmc.mutation.RootInstanceId(); ok {
+		_spec.SetField(logmsg.FieldRootInstanceId, field.TypeString, value)
+		_node.RootInstanceId = value
+	}
+	if value, ok := lmc.mutation.LogInstanceCallPath(); ok {
+		_spec.SetField(logmsg.FieldLogInstanceCallPath, field.TypeString, value)
+		_node.LogInstanceCallPath = value
+	}
+	if value, ok := lmc.mutation.Tags(); ok {
+		_spec.SetField(logmsg.FieldTags, field.TypeJSON, value)
+		_node.Tags = value
 	}
 	if nodes := lmc.mutation.NamespaceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -422,6 +507,60 @@ func (u *LogMsgUpsert) UpdateMsg() *LogMsgUpsert {
 	return u
 }
 
+// SetLevel sets the "level" field.
+func (u *LogMsgUpsert) SetLevel(v string) *LogMsgUpsert {
+	u.Set(logmsg.FieldLevel, v)
+	return u
+}
+
+// UpdateLevel sets the "level" field to the value that was provided on create.
+func (u *LogMsgUpsert) UpdateLevel() *LogMsgUpsert {
+	u.SetExcluded(logmsg.FieldLevel)
+	return u
+}
+
+// SetRootInstanceId sets the "rootInstanceId" field.
+func (u *LogMsgUpsert) SetRootInstanceId(v string) *LogMsgUpsert {
+	u.Set(logmsg.FieldRootInstanceId, v)
+	return u
+}
+
+// UpdateRootInstanceId sets the "rootInstanceId" field to the value that was provided on create.
+func (u *LogMsgUpsert) UpdateRootInstanceId() *LogMsgUpsert {
+	u.SetExcluded(logmsg.FieldRootInstanceId)
+	return u
+}
+
+// SetLogInstanceCallPath sets the "logInstanceCallPath" field.
+func (u *LogMsgUpsert) SetLogInstanceCallPath(v string) *LogMsgUpsert {
+	u.Set(logmsg.FieldLogInstanceCallPath, v)
+	return u
+}
+
+// UpdateLogInstanceCallPath sets the "logInstanceCallPath" field to the value that was provided on create.
+func (u *LogMsgUpsert) UpdateLogInstanceCallPath() *LogMsgUpsert {
+	u.SetExcluded(logmsg.FieldLogInstanceCallPath)
+	return u
+}
+
+// SetTags sets the "tags" field.
+func (u *LogMsgUpsert) SetTags(v map[string]string) *LogMsgUpsert {
+	u.Set(logmsg.FieldTags, v)
+	return u
+}
+
+// UpdateTags sets the "tags" field to the value that was provided on create.
+func (u *LogMsgUpsert) UpdateTags() *LogMsgUpsert {
+	u.SetExcluded(logmsg.FieldTags)
+	return u
+}
+
+// ClearTags clears the value of the "tags" field.
+func (u *LogMsgUpsert) ClearTags() *LogMsgUpsert {
+	u.SetNull(logmsg.FieldTags)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -495,6 +634,69 @@ func (u *LogMsgUpsertOne) SetMsg(v string) *LogMsgUpsertOne {
 func (u *LogMsgUpsertOne) UpdateMsg() *LogMsgUpsertOne {
 	return u.Update(func(s *LogMsgUpsert) {
 		s.UpdateMsg()
+	})
+}
+
+// SetLevel sets the "level" field.
+func (u *LogMsgUpsertOne) SetLevel(v string) *LogMsgUpsertOne {
+	return u.Update(func(s *LogMsgUpsert) {
+		s.SetLevel(v)
+	})
+}
+
+// UpdateLevel sets the "level" field to the value that was provided on create.
+func (u *LogMsgUpsertOne) UpdateLevel() *LogMsgUpsertOne {
+	return u.Update(func(s *LogMsgUpsert) {
+		s.UpdateLevel()
+	})
+}
+
+// SetRootInstanceId sets the "rootInstanceId" field.
+func (u *LogMsgUpsertOne) SetRootInstanceId(v string) *LogMsgUpsertOne {
+	return u.Update(func(s *LogMsgUpsert) {
+		s.SetRootInstanceId(v)
+	})
+}
+
+// UpdateRootInstanceId sets the "rootInstanceId" field to the value that was provided on create.
+func (u *LogMsgUpsertOne) UpdateRootInstanceId() *LogMsgUpsertOne {
+	return u.Update(func(s *LogMsgUpsert) {
+		s.UpdateRootInstanceId()
+	})
+}
+
+// SetLogInstanceCallPath sets the "logInstanceCallPath" field.
+func (u *LogMsgUpsertOne) SetLogInstanceCallPath(v string) *LogMsgUpsertOne {
+	return u.Update(func(s *LogMsgUpsert) {
+		s.SetLogInstanceCallPath(v)
+	})
+}
+
+// UpdateLogInstanceCallPath sets the "logInstanceCallPath" field to the value that was provided on create.
+func (u *LogMsgUpsertOne) UpdateLogInstanceCallPath() *LogMsgUpsertOne {
+	return u.Update(func(s *LogMsgUpsert) {
+		s.UpdateLogInstanceCallPath()
+	})
+}
+
+// SetTags sets the "tags" field.
+func (u *LogMsgUpsertOne) SetTags(v map[string]string) *LogMsgUpsertOne {
+	return u.Update(func(s *LogMsgUpsert) {
+		s.SetTags(v)
+	})
+}
+
+// UpdateTags sets the "tags" field to the value that was provided on create.
+func (u *LogMsgUpsertOne) UpdateTags() *LogMsgUpsertOne {
+	return u.Update(func(s *LogMsgUpsert) {
+		s.UpdateTags()
+	})
+}
+
+// ClearTags clears the value of the "tags" field.
+func (u *LogMsgUpsertOne) ClearTags() *LogMsgUpsertOne {
+	return u.Update(func(s *LogMsgUpsert) {
+		s.ClearTags()
 	})
 }
 
@@ -734,6 +936,69 @@ func (u *LogMsgUpsertBulk) SetMsg(v string) *LogMsgUpsertBulk {
 func (u *LogMsgUpsertBulk) UpdateMsg() *LogMsgUpsertBulk {
 	return u.Update(func(s *LogMsgUpsert) {
 		s.UpdateMsg()
+	})
+}
+
+// SetLevel sets the "level" field.
+func (u *LogMsgUpsertBulk) SetLevel(v string) *LogMsgUpsertBulk {
+	return u.Update(func(s *LogMsgUpsert) {
+		s.SetLevel(v)
+	})
+}
+
+// UpdateLevel sets the "level" field to the value that was provided on create.
+func (u *LogMsgUpsertBulk) UpdateLevel() *LogMsgUpsertBulk {
+	return u.Update(func(s *LogMsgUpsert) {
+		s.UpdateLevel()
+	})
+}
+
+// SetRootInstanceId sets the "rootInstanceId" field.
+func (u *LogMsgUpsertBulk) SetRootInstanceId(v string) *LogMsgUpsertBulk {
+	return u.Update(func(s *LogMsgUpsert) {
+		s.SetRootInstanceId(v)
+	})
+}
+
+// UpdateRootInstanceId sets the "rootInstanceId" field to the value that was provided on create.
+func (u *LogMsgUpsertBulk) UpdateRootInstanceId() *LogMsgUpsertBulk {
+	return u.Update(func(s *LogMsgUpsert) {
+		s.UpdateRootInstanceId()
+	})
+}
+
+// SetLogInstanceCallPath sets the "logInstanceCallPath" field.
+func (u *LogMsgUpsertBulk) SetLogInstanceCallPath(v string) *LogMsgUpsertBulk {
+	return u.Update(func(s *LogMsgUpsert) {
+		s.SetLogInstanceCallPath(v)
+	})
+}
+
+// UpdateLogInstanceCallPath sets the "logInstanceCallPath" field to the value that was provided on create.
+func (u *LogMsgUpsertBulk) UpdateLogInstanceCallPath() *LogMsgUpsertBulk {
+	return u.Update(func(s *LogMsgUpsert) {
+		s.UpdateLogInstanceCallPath()
+	})
+}
+
+// SetTags sets the "tags" field.
+func (u *LogMsgUpsertBulk) SetTags(v map[string]string) *LogMsgUpsertBulk {
+	return u.Update(func(s *LogMsgUpsert) {
+		s.SetTags(v)
+	})
+}
+
+// UpdateTags sets the "tags" field to the value that was provided on create.
+func (u *LogMsgUpsertBulk) UpdateTags() *LogMsgUpsertBulk {
+	return u.Update(func(s *LogMsgUpsert) {
+		s.UpdateTags()
+	})
+}
+
+// ClearTags clears the value of the "tags" field.
+func (u *LogMsgUpsertBulk) ClearTags() *LogMsgUpsertBulk {
+	return u.Update(func(s *LogMsgUpsert) {
+		s.ClearTags()
 	})
 }
 

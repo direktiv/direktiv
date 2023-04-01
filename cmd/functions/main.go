@@ -13,7 +13,6 @@ import (
 )
 
 func RunApplication() {
-
 	// start health check
 	go startHealthHandler()
 
@@ -33,11 +32,9 @@ func RunApplication() {
 	}
 
 	functions.StopServer()
-
 }
 
 func startHealthHandler() {
-
 	http.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "")
 	})
@@ -48,5 +45,4 @@ func startHealthHandler() {
 			log.Fatalf("Server error: %v.", err)
 		}
 	}
-
 }

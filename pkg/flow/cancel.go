@@ -6,27 +6,25 @@ import (
 	"errors"
 
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
+	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/flow/states"
 	"github.com/direktiv/direktiv/pkg/util"
 )
 
-func (engine *engine) Children(ctx context.Context, im *instanceMemory) ([]states.ChildInfo, error) {
-
+func (engine *engine) Children(ctx context.Context, im *instanceMemory) ([]*states.ChildInfo, error) {
 	var err error
 
-	var children []states.ChildInfo
+	var children []*states.ChildInfo
 	err = im.UnmarshalMemory(&children)
 	if err != nil {
 		return nil, err
 	}
 
 	return children, nil
-
 }
 
 func (engine *engine) LivingChildren(ctx context.Context, im *instanceMemory) []stateChild {
-
-	var living = make([]stateChild, 0)
+	living := make([]stateChild, 0)
 
 	children, err := engine.Children(ctx, im)
 	if err != nil {
@@ -35,6 +33,9 @@ func (engine *engine) LivingChildren(ctx context.Context, im *instanceMemory) []
 	}
 
 	for _, logic := range children {
+		if logic == nil {
+			continue
+		}
 		if logic.Complete {
 			continue
 		}
@@ -46,11 +47,9 @@ func (engine *engine) LivingChildren(ctx context.Context, im *instanceMemory) []
 	}
 
 	return living
-
 }
 
 func (engine *engine) CancelInstanceChildren(ctx context.Context, im *instanceMemory) {
-
 	children := engine.LivingChildren(ctx, im)
 
 	for _, child := range children {
@@ -70,11 +69,9 @@ func (engine *engine) CancelInstanceChildren(ctx context.Context, im *instanceMe
 			engine.sugar.Errorf("unrecognized child type: %s", child.Type)
 		}
 	}
-
 }
 
 func (engine *engine) cancelInstance(id, code, message string, soft bool) {
-
 	engine.cancelRunning(id)
 
 	ctx, im, err := engine.loadInstanceMemory(id, -1)
@@ -83,7 +80,7 @@ func (engine *engine) cancelInstance(id, code, message string, soft bool) {
 		return
 	}
 
-	if im.in.Status != util.InstanceStatusPending {
+	if im.cached.Instance.Status != util.InstanceStatusPending {
 		return
 	}
 
@@ -96,11 +93,9 @@ func (engine *engine) cancelInstance(id, code, message string, soft bool) {
 	engine.sugar.Debugf("Handling cancel instance: %s", this())
 
 	go engine.runState(ctx, im, nil, err)
-
 }
 
-func (engine *engine) finishCancelWorkflow(req *PubsubUpdate) {
-
+func (engine *engine) finishCancelWorkflow(req *pubsub.PubsubUpdate) {
 	args := make([]interface{}, 0)
 
 	err := json.Unmarshal([]byte(req.Key), &args)
@@ -143,14 +138,12 @@ func (engine *engine) finishCancelWorkflow(req *PubsubUpdate) {
 bad:
 
 	engine.sugar.Error(errors.New("bad input to workflow cancel pubsub"))
-
 }
 
 func (engine *engine) cancelRunning(id string) {
-
-	im, err := engine.getInstanceMemory(context.Background(), engine.db.Instance, id)
+	im, err := engine.getInstanceMemory(context.Background(), id)
 	if err == nil {
-		engine.timers.deleteTimerByName(im.Controller(), engine.pubsub.hostname, id)
+		engine.timers.deleteTimerByName(im.Controller(), engine.pubsub.Hostname, id)
 	}
 
 	engine.cancellersLock.Lock()
@@ -159,5 +152,4 @@ func (engine *engine) cancelRunning(id string) {
 		cancel()
 	}
 	engine.cancellersLock.Unlock()
-
 }

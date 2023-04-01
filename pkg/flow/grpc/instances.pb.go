@@ -1273,6 +1273,164 @@ func (x *RunWorkflowResponse) GetInstance() string {
 	return ""
 }
 
+type AwaitWorkflowRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Namespace string `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
+	Path      string `protobuf:"bytes,2,opt,name=path,proto3" json:"path,omitempty"`
+	Ref       string `protobuf:"bytes,3,opt,name=ref,proto3" json:"ref,omitempty"`
+	Input     []byte `protobuf:"bytes,4,opt,name=input,proto3" json:"input,omitempty"`
+}
+
+func (x *AwaitWorkflowRequest) Reset() {
+	*x = AwaitWorkflowRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_pkg_flow_grpc_instances_proto_msgTypes[20]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *AwaitWorkflowRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AwaitWorkflowRequest) ProtoMessage() {}
+
+func (x *AwaitWorkflowRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_pkg_flow_grpc_instances_proto_msgTypes[20]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AwaitWorkflowRequest.ProtoReflect.Descriptor instead.
+func (*AwaitWorkflowRequest) Descriptor() ([]byte, []int) {
+	return file_pkg_flow_grpc_instances_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *AwaitWorkflowRequest) GetNamespace() string {
+	if x != nil {
+		return x.Namespace
+	}
+	return ""
+}
+
+func (x *AwaitWorkflowRequest) GetPath() string {
+	if x != nil {
+		return x.Path
+	}
+	return ""
+}
+
+func (x *AwaitWorkflowRequest) GetRef() string {
+	if x != nil {
+		return x.Ref
+	}
+	return ""
+}
+
+func (x *AwaitWorkflowRequest) GetInput() []byte {
+	if x != nil {
+		return x.Input
+	}
+	return nil
+}
+
+type AwaitWorkflowResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Namespace string            `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
+	Instance  *Instance         `protobuf:"bytes,2,opt,name=instance,proto3" json:"instance,omitempty"`
+	InvokedBy string            `protobuf:"bytes,3,opt,name=invokedBy,proto3" json:"invokedBy,omitempty"`
+	Flow      []string          `protobuf:"bytes,4,rep,name=flow,proto3" json:"flow,omitempty"`
+	Workflow  *InstanceWorkflow `protobuf:"bytes,5,opt,name=workflow,proto3" json:"workflow,omitempty"`
+	Data      []byte            `protobuf:"bytes,6,opt,name=data,proto3" json:"data,omitempty"`
+}
+
+func (x *AwaitWorkflowResponse) Reset() {
+	*x = AwaitWorkflowResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_pkg_flow_grpc_instances_proto_msgTypes[21]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *AwaitWorkflowResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AwaitWorkflowResponse) ProtoMessage() {}
+
+func (x *AwaitWorkflowResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_pkg_flow_grpc_instances_proto_msgTypes[21]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AwaitWorkflowResponse.ProtoReflect.Descriptor instead.
+func (*AwaitWorkflowResponse) Descriptor() ([]byte, []int) {
+	return file_pkg_flow_grpc_instances_proto_rawDescGZIP(), []int{21}
+}
+
+func (x *AwaitWorkflowResponse) GetNamespace() string {
+	if x != nil {
+		return x.Namespace
+	}
+	return ""
+}
+
+func (x *AwaitWorkflowResponse) GetInstance() *Instance {
+	if x != nil {
+		return x.Instance
+	}
+	return nil
+}
+
+func (x *AwaitWorkflowResponse) GetInvokedBy() string {
+	if x != nil {
+		return x.InvokedBy
+	}
+	return ""
+}
+
+func (x *AwaitWorkflowResponse) GetFlow() []string {
+	if x != nil {
+		return x.Flow
+	}
+	return nil
+}
+
+func (x *AwaitWorkflowResponse) GetWorkflow() *InstanceWorkflow {
+	if x != nil {
+		return x.Workflow
+	}
+	return nil
+}
+
+func (x *AwaitWorkflowResponse) GetData() []byte {
+	if x != nil {
+		return x.Data
+	}
+	return nil
+}
+
 var File_pkg_flow_grpc_instances_proto protoreflect.FileDescriptor
 
 var file_pkg_flow_grpc_instances_proto_rawDesc = []byte{
@@ -1427,11 +1585,33 @@ var file_pkg_flow_grpc_instances_proto_rawDesc = []byte{
 	0x6e, 0x73, 0x65, 0x12, 0x1c, 0x0a, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65,
 	0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63,
 	0x65, 0x12, 0x1a, 0x0a, 0x08, 0x69, 0x6e, 0x73, 0x74, 0x61, 0x6e, 0x63, 0x65, 0x18, 0x02, 0x20,
-	0x01, 0x28, 0x09, 0x52, 0x08, 0x69, 0x6e, 0x73, 0x74, 0x61, 0x6e, 0x63, 0x65, 0x42, 0x2c, 0x5a,
-	0x2a, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x64, 0x69, 0x72, 0x65,
-	0x6b, 0x74, 0x69, 0x76, 0x2f, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x2f, 0x70, 0x6b,
-	0x67, 0x2f, 0x66, 0x6c, 0x6f, 0x77, 0x2f, 0x67, 0x72, 0x70, 0x63, 0x62, 0x06, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x33,
+	0x01, 0x28, 0x09, 0x52, 0x08, 0x69, 0x6e, 0x73, 0x74, 0x61, 0x6e, 0x63, 0x65, 0x22, 0x70, 0x0a,
+	0x14, 0x41, 0x77, 0x61, 0x69, 0x74, 0x57, 0x6f, 0x72, 0x6b, 0x66, 0x6c, 0x6f, 0x77, 0x52, 0x65,
+	0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1c, 0x0a, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61,
+	0x63, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70,
+	0x61, 0x63, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x70, 0x61, 0x74, 0x68, 0x18, 0x02, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x04, 0x70, 0x61, 0x74, 0x68, 0x12, 0x10, 0x0a, 0x03, 0x72, 0x65, 0x66, 0x18, 0x03,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x72, 0x65, 0x66, 0x12, 0x14, 0x0a, 0x05, 0x69, 0x6e, 0x70,
+	0x75, 0x74, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x05, 0x69, 0x6e, 0x70, 0x75, 0x74, 0x22,
+	0xed, 0x01, 0x0a, 0x15, 0x41, 0x77, 0x61, 0x69, 0x74, 0x57, 0x6f, 0x72, 0x6b, 0x66, 0x6c, 0x6f,
+	0x77, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x1c, 0x0a, 0x09, 0x6e, 0x61, 0x6d,
+	0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6e, 0x61,
+	0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x12, 0x33, 0x0a, 0x08, 0x69, 0x6e, 0x73, 0x74, 0x61,
+	0x6e, 0x63, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x17, 0x2e, 0x64, 0x69, 0x72, 0x65,
+	0x6b, 0x74, 0x69, 0x76, 0x5f, 0x66, 0x6c, 0x6f, 0x77, 0x2e, 0x49, 0x6e, 0x73, 0x74, 0x61, 0x6e,
+	0x63, 0x65, 0x52, 0x08, 0x69, 0x6e, 0x73, 0x74, 0x61, 0x6e, 0x63, 0x65, 0x12, 0x1c, 0x0a, 0x09,
+	0x69, 0x6e, 0x76, 0x6f, 0x6b, 0x65, 0x64, 0x42, 0x79, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52,
+	0x09, 0x69, 0x6e, 0x76, 0x6f, 0x6b, 0x65, 0x64, 0x42, 0x79, 0x12, 0x12, 0x0a, 0x04, 0x66, 0x6c,
+	0x6f, 0x77, 0x18, 0x04, 0x20, 0x03, 0x28, 0x09, 0x52, 0x04, 0x66, 0x6c, 0x6f, 0x77, 0x12, 0x3b,
+	0x0a, 0x08, 0x77, 0x6f, 0x72, 0x6b, 0x66, 0x6c, 0x6f, 0x77, 0x18, 0x05, 0x20, 0x01, 0x28, 0x0b,
+	0x32, 0x1f, 0x2e, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x5f, 0x66, 0x6c, 0x6f, 0x77,
+	0x2e, 0x49, 0x6e, 0x73, 0x74, 0x61, 0x6e, 0x63, 0x65, 0x57, 0x6f, 0x72, 0x6b, 0x66, 0x6c, 0x6f,
+	0x77, 0x52, 0x08, 0x77, 0x6f, 0x72, 0x6b, 0x66, 0x6c, 0x6f, 0x77, 0x12, 0x12, 0x0a, 0x04, 0x64,
+	0x61, 0x74, 0x61, 0x18, 0x06, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x04, 0x64, 0x61, 0x74, 0x61, 0x42,
+	0x2c, 0x5a, 0x2a, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x64, 0x69,
+	0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x2f, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x2f,
+	0x70, 0x6b, 0x67, 0x2f, 0x66, 0x6c, 0x6f, 0x77, 0x2f, 0x67, 0x72, 0x70, 0x63, 0x62, 0x06, 0x70,
+	0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -1446,7 +1626,7 @@ func file_pkg_flow_grpc_instances_proto_rawDescGZIP() []byte {
 	return file_pkg_flow_grpc_instances_proto_rawDescData
 }
 
-var file_pkg_flow_grpc_instances_proto_msgTypes = make([]protoimpl.MessageInfo, 20)
+var file_pkg_flow_grpc_instances_proto_msgTypes = make([]protoimpl.MessageInfo, 22)
 var file_pkg_flow_grpc_instances_proto_goTypes = []interface{}{
 	(*InstanceWorkflow)(nil),         // 0: direktiv_flow.InstanceWorkflow
 	(*Instance)(nil),                 // 1: direktiv_flow.Instance
@@ -1468,27 +1648,31 @@ var file_pkg_flow_grpc_instances_proto_goTypes = []interface{}{
 	(*ReleaseInstanceResponse)(nil),  // 17: direktiv_flow.ReleaseInstanceResponse
 	(*RunWorkflowRequest)(nil),       // 18: direktiv_flow.RunWorkflowRequest
 	(*RunWorkflowResponse)(nil),      // 19: direktiv_flow.RunWorkflowResponse
-	(*timestamppb.Timestamp)(nil),    // 20: google.protobuf.Timestamp
-	(*PageInfo)(nil),                 // 21: direktiv_flow.PageInfo
-	(*Pagination)(nil),               // 22: direktiv_flow.Pagination
+	(*AwaitWorkflowRequest)(nil),     // 20: direktiv_flow.AwaitWorkflowRequest
+	(*AwaitWorkflowResponse)(nil),    // 21: direktiv_flow.AwaitWorkflowResponse
+	(*timestamppb.Timestamp)(nil),    // 22: google.protobuf.Timestamp
+	(*PageInfo)(nil),                 // 23: direktiv_flow.PageInfo
+	(*Pagination)(nil),               // 24: direktiv_flow.Pagination
 }
 var file_pkg_flow_grpc_instances_proto_depIdxs = []int32{
-	20, // 0: direktiv_flow.Instance.created_at:type_name -> google.protobuf.Timestamp
-	20, // 1: direktiv_flow.Instance.updated_at:type_name -> google.protobuf.Timestamp
-	21, // 2: direktiv_flow.Instances.pageInfo:type_name -> direktiv_flow.PageInfo
+	22, // 0: direktiv_flow.Instance.created_at:type_name -> google.protobuf.Timestamp
+	22, // 1: direktiv_flow.Instance.updated_at:type_name -> google.protobuf.Timestamp
+	23, // 2: direktiv_flow.Instances.pageInfo:type_name -> direktiv_flow.PageInfo
 	1,  // 3: direktiv_flow.Instances.results:type_name -> direktiv_flow.Instance
 	1,  // 4: direktiv_flow.InstanceResponse.instance:type_name -> direktiv_flow.Instance
 	0,  // 5: direktiv_flow.InstanceResponse.workflow:type_name -> direktiv_flow.InstanceWorkflow
 	1,  // 6: direktiv_flow.InstanceInputResponse.instance:type_name -> direktiv_flow.Instance
 	1,  // 7: direktiv_flow.InstanceOutputResponse.instance:type_name -> direktiv_flow.Instance
 	1,  // 8: direktiv_flow.InstanceMetadataResponse.instance:type_name -> direktiv_flow.Instance
-	22, // 9: direktiv_flow.InstancesRequest.pagination:type_name -> direktiv_flow.Pagination
+	24, // 9: direktiv_flow.InstancesRequest.pagination:type_name -> direktiv_flow.Pagination
 	2,  // 10: direktiv_flow.InstancesResponse.instances:type_name -> direktiv_flow.Instances
-	11, // [11:11] is the sub-list for method output_type
-	11, // [11:11] is the sub-list for method input_type
-	11, // [11:11] is the sub-list for extension type_name
-	11, // [11:11] is the sub-list for extension extendee
-	0,  // [0:11] is the sub-list for field type_name
+	1,  // 11: direktiv_flow.AwaitWorkflowResponse.instance:type_name -> direktiv_flow.Instance
+	0,  // 12: direktiv_flow.AwaitWorkflowResponse.workflow:type_name -> direktiv_flow.InstanceWorkflow
+	13, // [13:13] is the sub-list for method output_type
+	13, // [13:13] is the sub-list for method input_type
+	13, // [13:13] is the sub-list for extension type_name
+	13, // [13:13] is the sub-list for extension extendee
+	0,  // [0:13] is the sub-list for field type_name
 }
 
 func init() { file_pkg_flow_grpc_instances_proto_init() }
@@ -1738,6 +1922,30 @@ func file_pkg_flow_grpc_instances_proto_init() {
 				return nil
 			}
 		}
+		file_pkg_flow_grpc_instances_proto_msgTypes[20].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*AwaitWorkflowRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_pkg_flow_grpc_instances_proto_msgTypes[21].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*AwaitWorkflowResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -1745,7 +1953,7 @@ func file_pkg_flow_grpc_instances_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_pkg_flow_grpc_instances_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   20,
+			NumMessages:   22,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

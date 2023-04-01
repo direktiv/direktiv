@@ -128,6 +128,34 @@ func (ic *InstanceCreate) SetNillableInvoker(s *string) *InstanceCreate {
 	return ic
 }
 
+// SetInvokerState sets the "invokerState" field.
+func (ic *InstanceCreate) SetInvokerState(s string) *InstanceCreate {
+	ic.mutation.SetInvokerState(s)
+	return ic
+}
+
+// SetNillableInvokerState sets the "invokerState" field if the given value is not nil.
+func (ic *InstanceCreate) SetNillableInvokerState(s *string) *InstanceCreate {
+	if s != nil {
+		ic.SetInvokerState(*s)
+	}
+	return ic
+}
+
+// SetCallpath sets the "callpath" field.
+func (ic *InstanceCreate) SetCallpath(s string) *InstanceCreate {
+	ic.mutation.SetCallpath(s)
+	return ic
+}
+
+// SetNillableCallpath sets the "callpath" field if the given value is not nil.
+func (ic *InstanceCreate) SetNillableCallpath(s *string) *InstanceCreate {
+	if s != nil {
+		ic.SetCallpath(*s)
+	}
+	return ic
+}
+
 // SetID sets the "id" field.
 func (ic *InstanceCreate) SetID(u uuid.UUID) *InstanceCreate {
 	ic.mutation.SetID(u)
@@ -457,6 +485,14 @@ func (ic *InstanceCreate) createSpec() (*Instance, *sqlgraph.CreateSpec) {
 		_spec.SetField(instance.FieldInvoker, field.TypeString, value)
 		_node.Invoker = value
 	}
+	if value, ok := ic.mutation.InvokerState(); ok {
+		_spec.SetField(instance.FieldInvokerState, field.TypeString, value)
+		_node.InvokerState = value
+	}
+	if value, ok := ic.mutation.Callpath(); ok {
+		_spec.SetField(instance.FieldCallpath, field.TypeString, value)
+		_node.Callpath = value
+	}
 	if nodes := ic.mutation.NamespaceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -779,6 +815,42 @@ func (u *InstanceUpsert) ClearInvoker() *InstanceUpsert {
 	return u
 }
 
+// SetInvokerState sets the "invokerState" field.
+func (u *InstanceUpsert) SetInvokerState(v string) *InstanceUpsert {
+	u.Set(instance.FieldInvokerState, v)
+	return u
+}
+
+// UpdateInvokerState sets the "invokerState" field to the value that was provided on create.
+func (u *InstanceUpsert) UpdateInvokerState() *InstanceUpsert {
+	u.SetExcluded(instance.FieldInvokerState)
+	return u
+}
+
+// ClearInvokerState clears the value of the "invokerState" field.
+func (u *InstanceUpsert) ClearInvokerState() *InstanceUpsert {
+	u.SetNull(instance.FieldInvokerState)
+	return u
+}
+
+// SetCallpath sets the "callpath" field.
+func (u *InstanceUpsert) SetCallpath(v string) *InstanceUpsert {
+	u.Set(instance.FieldCallpath, v)
+	return u
+}
+
+// UpdateCallpath sets the "callpath" field to the value that was provided on create.
+func (u *InstanceUpsert) UpdateCallpath() *InstanceUpsert {
+	u.SetExcluded(instance.FieldCallpath)
+	return u
+}
+
+// ClearCallpath clears the value of the "callpath" field.
+func (u *InstanceUpsert) ClearCallpath() *InstanceUpsert {
+	u.SetNull(instance.FieldCallpath)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -942,6 +1014,48 @@ func (u *InstanceUpsertOne) UpdateInvoker() *InstanceUpsertOne {
 func (u *InstanceUpsertOne) ClearInvoker() *InstanceUpsertOne {
 	return u.Update(func(s *InstanceUpsert) {
 		s.ClearInvoker()
+	})
+}
+
+// SetInvokerState sets the "invokerState" field.
+func (u *InstanceUpsertOne) SetInvokerState(v string) *InstanceUpsertOne {
+	return u.Update(func(s *InstanceUpsert) {
+		s.SetInvokerState(v)
+	})
+}
+
+// UpdateInvokerState sets the "invokerState" field to the value that was provided on create.
+func (u *InstanceUpsertOne) UpdateInvokerState() *InstanceUpsertOne {
+	return u.Update(func(s *InstanceUpsert) {
+		s.UpdateInvokerState()
+	})
+}
+
+// ClearInvokerState clears the value of the "invokerState" field.
+func (u *InstanceUpsertOne) ClearInvokerState() *InstanceUpsertOne {
+	return u.Update(func(s *InstanceUpsert) {
+		s.ClearInvokerState()
+	})
+}
+
+// SetCallpath sets the "callpath" field.
+func (u *InstanceUpsertOne) SetCallpath(v string) *InstanceUpsertOne {
+	return u.Update(func(s *InstanceUpsert) {
+		s.SetCallpath(v)
+	})
+}
+
+// UpdateCallpath sets the "callpath" field to the value that was provided on create.
+func (u *InstanceUpsertOne) UpdateCallpath() *InstanceUpsertOne {
+	return u.Update(func(s *InstanceUpsert) {
+		s.UpdateCallpath()
+	})
+}
+
+// ClearCallpath clears the value of the "callpath" field.
+func (u *InstanceUpsertOne) ClearCallpath() *InstanceUpsertOne {
+	return u.Update(func(s *InstanceUpsert) {
+		s.ClearCallpath()
 	})
 }
 
@@ -1271,6 +1385,48 @@ func (u *InstanceUpsertBulk) UpdateInvoker() *InstanceUpsertBulk {
 func (u *InstanceUpsertBulk) ClearInvoker() *InstanceUpsertBulk {
 	return u.Update(func(s *InstanceUpsert) {
 		s.ClearInvoker()
+	})
+}
+
+// SetInvokerState sets the "invokerState" field.
+func (u *InstanceUpsertBulk) SetInvokerState(v string) *InstanceUpsertBulk {
+	return u.Update(func(s *InstanceUpsert) {
+		s.SetInvokerState(v)
+	})
+}
+
+// UpdateInvokerState sets the "invokerState" field to the value that was provided on create.
+func (u *InstanceUpsertBulk) UpdateInvokerState() *InstanceUpsertBulk {
+	return u.Update(func(s *InstanceUpsert) {
+		s.UpdateInvokerState()
+	})
+}
+
+// ClearInvokerState clears the value of the "invokerState" field.
+func (u *InstanceUpsertBulk) ClearInvokerState() *InstanceUpsertBulk {
+	return u.Update(func(s *InstanceUpsert) {
+		s.ClearInvokerState()
+	})
+}
+
+// SetCallpath sets the "callpath" field.
+func (u *InstanceUpsertBulk) SetCallpath(v string) *InstanceUpsertBulk {
+	return u.Update(func(s *InstanceUpsert) {
+		s.SetCallpath(v)
+	})
+}
+
+// UpdateCallpath sets the "callpath" field to the value that was provided on create.
+func (u *InstanceUpsertBulk) UpdateCallpath() *InstanceUpsertBulk {
+	return u.Update(func(s *InstanceUpsert) {
+		s.UpdateCallpath()
+	})
+}
+
+// ClearCallpath clears the value of the "callpath" field.
+func (u *InstanceUpsertBulk) ClearCallpath() *InstanceUpsertBulk {
+	return u.Update(func(s *InstanceUpsert) {
+		s.ClearCallpath()
 	})
 }
 

@@ -4,16 +4,19 @@ import (
 	"context"
 	"errors"
 
+	"github.com/direktiv/direktiv/pkg/flow/bytedata"
+	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/functions"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/lib/pq"
 )
 
 func (flow *flow) functionsHeartbeat() {
-
 	ctx := context.Background()
 
-	nss, err := flow.db.Namespace.Query().All(ctx)
+	clients := flow.edb.Clients(ctx)
+
+	nss, err := clients.Namespace.Query().All(ctx)
 	if err != nil {
 		flow.sugar.Error(err)
 		return
@@ -29,16 +32,17 @@ func (flow *flow) functionsHeartbeat() {
 
 		for _, wf := range wfs {
 
-			var tuples = make([]*functions.HeartbeatTuple, 0)
+			tuples := make([]*functions.HeartbeatTuple, 0)
 			checksums := make(map[string]bool)
 
-			d, err := flow.reverseTraverseToWorkflow(ctx, wf.ID.String())
+			cached := new(database.CacheData)
+			err = flow.database.Workflow(ctx, cached, wf.ID)
 			if err != nil {
 				flow.sugar.Error(err)
 				continue
 			}
 
-			revs, err := wf.QueryRevisions().All(ctx)
+			revs, err := wf.QueryRevisions().WithWorkflow().All(ctx)
 			if err != nil {
 				flow.sugar.Error(err)
 				continue
@@ -46,7 +50,16 @@ func (flow *flow) functionsHeartbeat() {
 
 			for _, rev := range revs {
 
-				w, err := loadSource(rev)
+				x := &database.Revision{
+					ID:        rev.ID,
+					CreatedAt: rev.CreatedAt,
+					Hash:      rev.Hash,
+					Source:    rev.Source,
+					Metadata:  rev.Metadata,
+					Workflow:  rev.Edges.Workflow.ID,
+				}
+
+				w, err := loadSource(x)
 				if err != nil {
 					continue
 				}
@@ -69,13 +82,13 @@ func (flow *flow) functionsHeartbeat() {
 					tuple := &functions.HeartbeatTuple{
 						NamespaceName:      ns.Name,
 						NamespaceID:        ns.ID.String(),
-						WorkflowPath:       d.path,
-						WorkflowID:         wf.ID.String(),
+						WorkflowPath:       cached.Path(),
+						WorkflowID:         cached.Workflow.ID.String(),
 						Revision:           rev.Hash,
 						FunctionDefinition: def,
 					}
 
-					csum := checksum(tuple)
+					csum := bytedata.Checksum(tuple)
 
 					if _, exists := checksums[csum]; !exists {
 						checksums[csum] = true
@@ -91,20 +104,18 @@ func (flow *flow) functionsHeartbeat() {
 		}
 
 	}
-
 }
 
 const heartbeatMessageLimit = 4096 // some evidence that we could get away with a limit of 8000, so I've set it here to be safe
 
 func (flow *flow) flushHeartbeatTuples(tuples []*functions.HeartbeatTuple) {
-
 	l := len(tuples)
 
 	if l == 0 {
 		return
 	}
 
-	msg := marshal(tuples)
+	msg := bytedata.Marshal(tuples)
 
 	if len(msg) > heartbeatMessageLimit {
 
@@ -123,7 +134,7 @@ func (flow *flow) flushHeartbeatTuples(tuples []*functions.HeartbeatTuple) {
 
 	ctx := context.Background()
 
-	conn, err := flow.db.DB().Conn(ctx)
+	conn, err := flow.edb.DB().Conn(ctx)
 	if err != nil {
 		flow.sugar.Error(err)
 		return
@@ -138,5 +149,4 @@ func (flow *flow) flushHeartbeatTuples(tuples []*functions.HeartbeatTuple) {
 		return
 
 	}
-
 }

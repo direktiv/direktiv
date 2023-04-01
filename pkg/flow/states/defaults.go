@@ -2,5 +2,7 @@ package states
 
 import "time"
 
-const DefaultShortDeadline = time.Second * 5
-const DefaultLongDeadline = time.Minute * 15
+const (
+	DefaultShortDeadline = time.Second * 5
+	DefaultLongDeadline  = time.Minute * 15
+)

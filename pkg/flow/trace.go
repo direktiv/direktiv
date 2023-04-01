@@ -2,8 +2,10 @@ package flow
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
+	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
@@ -44,65 +46,58 @@ func dbTrace(ctx context.Context) *Carrier {
 	return carrier
 }
 
-func traceAddWorkflowInstance(ctx context.Context, d *refData, im *instanceMemory) {
-
+func traceAddWorkflowInstance(ctx context.Context, im *instanceMemory) {
 	span := trace.SpanFromContext(ctx)
 
 	span.SetAttributes(
 		attribute.KeyValue{
 			Key:   "namespace",
-			Value: attribute.StringValue(d.namespace()),
+			Value: attribute.StringValue(im.cached.Namespace.Name),
 		},
 		attribute.KeyValue{
 			Key:   "namespace-id",
-			Value: attribute.StringValue(d.ns().ID.String()),
+			Value: attribute.StringValue(im.cached.Namespace.ID.String()),
 		},
 		attribute.KeyValue{
 			Key:   "workflow",
-			Value: attribute.StringValue(d.path),
+			Value: attribute.StringValue(im.cached.Path()),
 		},
 		attribute.KeyValue{
 			Key:   "workflow-id",
-			Value: attribute.StringValue(d.wf.ID.String()),
+			Value: attribute.StringValue(im.cached.Workflow.ID.String()),
 		},
 		attribute.KeyValue{
 			Key:   "revision",
-			Value: attribute.StringValue(fmt.Sprintf("%v", d.rev().ID.String())),
+			Value: attribute.StringValue(fmt.Sprintf("%v", im.cached.Revision.ID.String())),
 		},
 		attribute.KeyValue{
 			Key:   "instance",
-			Value: attribute.StringValue(im.in.ID.String()),
+			Value: attribute.StringValue(im.cached.Instance.ID.String()),
 		},
 		attribute.KeyValue{
 			Key:   "as",
-			Value: attribute.StringValue(im.in.As),
+			Value: attribute.StringValue(im.cached.Instance.As),
 		},
 	)
-
 }
 
-func traceFullAddWorkflowInstance(ctx context.Context, d *refData, im *instanceMemory) (context.Context, error) {
-
-	traceAddWorkflowInstance(ctx, d, im)
+func traceFullAddWorkflowInstance(ctx context.Context, im *instanceMemory) (context.Context, error) {
+	traceAddWorkflowInstance(ctx, im)
 	tp := otel.GetTracerProvider()
 	tr := tp.Tracer("direktiv/flow")
 	ctx, span := tr.Start(ctx, "new-workflow-instance", trace.WithSpanKind(trace.SpanKindInternal))
 	defer span.End()
-	traceAddWorkflowInstance(ctx, d, im)
+	traceAddWorkflowInstance(ctx, im)
 
 	x := dbTrace(ctx)
-	s := marshal(x)
+	s := bytedata.Marshal(x)
 
-	rt, err := im.in.Edges.Runtime.Update().SetInstanceContext(s).Save(ctx)
-	if err != nil {
-
-		return nil, err
-	}
-	rt.Edges = im.in.Edges.Runtime.Edges
-	im.in.Edges.Runtime = rt
+	updater := im.getRuntimeUpdater()
+	updater = updater.SetInstanceContext(s)
+	im.runtime.InstanceContext = s
+	im.runtimeUpdater = updater
 
 	return ctx, nil
-
 }
 
 func traceStateError(ctx context.Context, err error) {
@@ -112,7 +107,6 @@ func traceStateError(ctx context.Context, err error) {
 }
 
 func traceSubflowInvoke(ctx context.Context, name, child string) {
-
 	span := trace.SpanFromContext(ctx)
 
 	span.SetAttributes(
@@ -123,18 +117,17 @@ func traceSubflowInvoke(ctx context.Context, name, child string) {
 	)
 
 	span.AddEvent(fmt.Sprintf("Calling subflow: %s (%s)", name, child))
-
 }
 
 func traceStateGenericBegin(ctx context.Context, im *instanceMemory) (context.Context, func(), error) {
-
 	tp := otel.GetTracerProvider()
 	tr := tp.Tracer("direktiv/flow")
 	prop := otel.GetTextMapPropagator()
 	var span trace.Span
 
 	carrier := new(Carrier)
-	err := unmarshal(im.in.Edges.Runtime.InstanceContext, carrier)
+
+	err := json.Unmarshal([]byte(im.runtime.InstanceContext), carrier)
 	if err != nil {
 		return ctx, nil, err
 	}
@@ -144,33 +137,28 @@ func traceStateGenericBegin(ctx context.Context, im *instanceMemory) (context.Co
 	ctx, span = tr.Start(ctx, im.logic.GetType().String(), trace.WithSpanKind(trace.SpanKindInternal))
 
 	x := dbTrace(ctx)
-	s := marshal(x)
+	s := bytedata.Marshal(x)
 
-	rt, err := im.in.Edges.Runtime.Update().SetStateContext(s).Save(ctx)
-	if err != nil {
-		span.End()
-		return ctx, nil, err
-	}
-	rt.Edges = im.in.Edges.Runtime.Edges
-	im.in.Edges.Runtime = rt
+	updater := im.getRuntimeUpdater()
+	updater = updater.SetStateContext(s)
+	im.runtime.StateContext = s
+	im.runtimeUpdater = updater
 
 	finish := func() {
 		span.End()
 	}
 
 	return ctx, finish, nil
-
 }
 
 func traceStateGenericLogicThread(ctx context.Context, im *instanceMemory) (context.Context, func(), error) {
-
 	tp := otel.GetTracerProvider()
 	tr := tp.Tracer("direktiv/flow")
 	prop := otel.GetTextMapPropagator()
 	var span trace.Span
 
 	carrier := new(Carrier)
-	err := unmarshal(im.in.Edges.Runtime.StateContext, carrier)
+	err := json.Unmarshal([]byte(im.runtime.StateContext), carrier)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -184,11 +172,9 @@ func traceStateGenericLogicThread(ctx context.Context, im *instanceMemory) (cont
 	}
 
 	return ctx, finish, nil
-
 }
 
 func traceActionResult(ctx context.Context, results *actionResultPayload) {
-
 	span := trace.SpanFromContext(ctx)
 	span.SetAttributes(
 		attribute.KeyValue{
@@ -196,5 +182,4 @@ func traceActionResult(ctx context.Context, results *actionResultPayload) {
 			Value: attribute.StringValue(results.ActionID),
 		},
 	)
-
 }

@@ -9,7 +9,6 @@ type record struct {
 }
 
 func (r *record) didSucceed() bool {
-
 	if r.r.ErrorCode == "" {
 		// state finished without error
 		return true

@@ -10,27 +10,29 @@ import (
 )
 
 func (engine *engine) InstanceYield(im *instanceMemory) {
-
 	engine.sugar.Debugf("Instance going to sleep: %s", im.ID().String())
+
+	e := im.flushUpdates(context.Background())
+	if e != nil {
+		engine.sugar.Errorf("Failed to flush updates: %v", e)
+	}
 
 	engine.freeResources(im)
 
 	if im.lock != nil {
 		engine.InstanceUnlock(im)
 	}
-
 }
 
 func (engine *engine) WakeInstanceCaller(ctx context.Context, im *instanceMemory) {
-
 	caller := engine.InstanceCaller(ctx, im)
 
 	if caller != nil {
 
-		engine.logToInstance(ctx, time.Now(), im.in, "Reporting results to calling workflow.")
+		engine.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), "Reporting results to calling workflow.")
 
 		msg := &actionResultMessage{
-			InstanceID: caller.InstanceID,
+			InstanceID: caller.InstanceID.String(),
 			State:      caller.State,
 			Step:       caller.Step,
 			Payload: actionResultPayload{
@@ -57,11 +59,12 @@ func (engine *engine) WakeInstanceCaller(ctx context.Context, im *instanceMemory
 		}
 
 	}
-
 }
 
-const sleepWakeupFunction = "sleepWakeup"
-const sleepWakedata = "sleep"
+const (
+	sleepWakeupFunction = "sleepWakeup"
+	sleepWakedata       = "sleep"
+)
 
 type sleepMessage struct {
 	InstanceID string
@@ -70,7 +73,6 @@ type sleepMessage struct {
 }
 
 func (engine *engine) InstanceSleep(ctx context.Context, im *instanceMemory, state string, t time.Time) error {
-
 	data, err := json.Marshal(&sleepMessage{
 		InstanceID: im.ID().String(),
 		State:      state,
@@ -86,11 +88,9 @@ func (engine *engine) InstanceSleep(ctx context.Context, im *instanceMemory, sta
 	}
 
 	return nil
-
 }
 
 func (engine *engine) sleepWakeup(data []byte) {
-
 	msg := new(sleepMessage)
 
 	err := json.Unmarshal(data, msg)
@@ -106,17 +106,14 @@ func (engine *engine) sleepWakeup(data []byte) {
 	}
 
 	go engine.runState(ctx, im, []byte(sleepWakedata), nil)
-
 }
 
 func (engine *engine) queue(im *instanceMemory) {
-
-	namespace := im.in.Edges.Namespace.Name
-	workflow := GetInodePath(im.in.As)
+	namespace := im.cached.Namespace.Name
+	workflow := GetInodePath(im.cached.Instance.As)
 
 	metricsWfInvoked.WithLabelValues(namespace, workflow, namespace).Inc()
 	metricsWfPending.WithLabelValues(namespace, workflow, namespace).Inc()
 
 	go engine.start(im)
-
 }

@@ -24,7 +24,7 @@ type Server struct {
 
 	config *util.Config
 
-	//handlers
+	// handlers
 	functionHandler *functionHandler
 	flowHandler     *flowHandler
 
@@ -47,7 +47,6 @@ func (mw *mw) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 // NewServer return new API server.
 func NewServer(l *zap.SugaredLogger) (*Server, error) {
-
 	logger = l
 	logger.Infof("starting api server")
 
@@ -112,11 +111,9 @@ func NewServer(l *zap.SugaredLogger) (*Server, error) {
 	s.prepareHelperRoutes()
 
 	return s, nil
-
 }
 
 func (s *Server) version(w http.ResponseWriter, r *http.Request) {
-
 	ctx := r.Context()
 
 	m := make(map[string]string)
@@ -133,7 +130,6 @@ func (s *Server) version(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respondJSON(w, m, nil)
-
 }
 
 // Start starts API server.
@@ -144,7 +140,6 @@ func (s *Server) Start() error {
 }
 
 func (s *Server) prepareHelperRoutes() {
-
 	// Options ..
 	s.router.HandleFunc("/{path:.*}", func(w http.ResponseWriter, r *http.Request) {
 		// https://github.com/cloudevents/spec/blob/v1.0/http-webhook.md#4-abuse-protection
@@ -155,5 +150,4 @@ func (s *Server) prepareHelperRoutes() {
 		w.Header().Add("Expires", "0")
 		w.WriteHeader(http.StatusOK)
 	}).Methods(http.MethodOptions).Name(RN_Preflight)
-
 }

@@ -49,7 +49,6 @@ const (
 )
 
 func createKnativeFunction(info *igrpc.BaseInfo) (*v1.Service, error) {
-
 	name, scope, hash := GenerateServiceName(info)
 
 	l, err := locksmgr.lock(name, false)
@@ -148,7 +147,6 @@ func trimRevisionSuffix(s string) string {
 }
 
 func generateServiceMeta(svn, scope, hash string, size int, info *igrpc.BaseInfo) metav1.ObjectMeta {
-
 	meta := metav1.ObjectMeta{
 		Name:        svn,
 		Namespace:   functionsConfig.Namespace,
@@ -178,7 +176,6 @@ func generateServiceMeta(svn, scope, hash string, size int, info *igrpc.BaseInfo
 }
 
 func generatePodMeta(svn, scope, hash string, size int, info *igrpc.BaseInfo) metav1.ObjectMeta {
-
 	metaSpec := metav1.ObjectMeta{
 		Namespace:   functionsConfig.Namespace,
 		Labels:      make(map[string]string),
@@ -209,12 +206,11 @@ func generatePodMeta(svn, scope, hash string, size int, info *igrpc.BaseInfo) me
 	metaSpec.Annotations[ServiceHeaderSize] = fmt.Sprintf("%d", size)
 
 	return metaSpec
-
 }
 
 func makeContainers(img, cmd string, size int,
-	envs map[string]string) ([]corev1.Container, error) {
-
+	envs map[string]string,
+) ([]corev1.Container, error) {
 	res, err := generateResourceLimits(size)
 	if err != nil {
 		logger.Errorf("can not parse requests limits")
@@ -272,11 +268,9 @@ func makeContainers(img, cmd string, size int,
 	c = append(c, functionsConfig.extraContainers...)
 
 	return c, nil
-
 }
 
 func proxyEnvs(withGrpc bool, envs map[string]string) []corev1.EnvVar {
-
 	proxyEnvs := []corev1.EnvVar{}
 	if len(functionsConfig.Proxy.HTTP) > 0 {
 		proxyEnvs = append(proxyEnvs, corev1.EnvVar{
@@ -329,11 +323,15 @@ func proxyEnvs(withGrpc bool, envs map[string]string) []corev1.EnvVar {
 		})
 	}
 
+	proxyEnvs = append(proxyEnvs, corev1.EnvVar{
+		Name:  "DIREKTIV_APP",
+		Value: "sidecar",
+	})
+
 	return proxyEnvs
 }
 
 func generateResourceLimits(size int) (corev1.ResourceRequirements, error) {
-
 	var (
 		m int
 		c string
@@ -397,5 +395,4 @@ func generateResourceLimits(size int) (corev1.ResourceRequirements, error) {
 		},
 		Limits: rl,
 	}, nil
-
 }

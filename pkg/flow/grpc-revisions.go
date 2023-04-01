@@ -3,26 +3,29 @@ package flow
 import (
 	"context"
 	"errors"
-	"time"
 
 	"google.golang.org/protobuf/types/known/emptypb"
 
+	"github.com/direktiv/direktiv/pkg/flow/bytedata"
+	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entref "github.com/direktiv/direktiv/pkg/flow/ent/ref"
+	entrev "github.com/direktiv/direktiv/pkg/flow/ent/revision"
+	entwf "github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 )
 
 func (flow *flow) Revisions(ctx context.Context, req *grpc.RevisionsRequest) (*grpc.RevisionsResponse, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	d, err := flow.traverseToWorkflow(ctx, flow.db.Namespace, req.GetNamespace(), req.GetPath())
+	cached, err := flow.traverseToWorkflow(ctx, req.GetNamespace(), req.GetPath())
 	if err != nil {
 		return nil, err
 	}
 
-	query := d.wf.QueryRefs()
-	query = query.Where(entref.Immutable(true))
+	clients := flow.edb.Clients(ctx)
+
+	query := clients.Ref.Query().Where(entref.HasWorkflowWith(entwf.ID(cached.Workflow.ID)), entref.Immutable(true))
 
 	results, pi, err := paginate[*ent.RefQuery, *ent.Ref](ctx, req.Pagination, query, refsOrderings, refsFilters)
 	if err != nil {
@@ -30,46 +33,45 @@ func (flow *flow) Revisions(ctx context.Context, req *grpc.RevisionsRequest) (*g
 	}
 
 	resp := new(grpc.RevisionsResponse)
-	resp.Namespace = d.namespace()
+	resp.Namespace = cached.Namespace.Name
 	resp.PageInfo = pi
 
-	err = atob(results, &resp.Results)
+	err = bytedata.ConvertDataForOutput(results, &resp.Results)
 	if err != nil {
 		return nil, err
 	}
 
-	err = atob(d.ino, &resp.Node)
+	err = bytedata.ConvertDataForOutput(cached.Inode(), &resp.Node)
 	if err != nil {
 		return nil, err
 	}
 
-	resp.Node.Path = d.path
-	resp.Node.Parent = d.dir
+	resp.Node.Path = cached.Path()
+	resp.Node.Parent = cached.Dir()
 
 	return resp, nil
-
 }
 
 func (flow *flow) RevisionsStream(req *grpc.RevisionsRequest, srv grpc.Flow_RevisionsStreamServer) error {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
 	phash := ""
 	nhash := ""
 
-	d, err := flow.traverseToWorkflow(ctx, flow.db.Namespace, req.GetNamespace(), req.GetPath())
+	cached, err := flow.traverseToWorkflow(ctx, req.GetNamespace(), req.GetPath())
 	if err != nil {
 		return err
 	}
 
-	sub := flow.pubsub.SubscribeWorkflow(d.wf)
+	sub := flow.pubsub.SubscribeWorkflow(cached)
 	defer flow.cleanup(sub.Close)
 
 resend:
 
-	query := d.wf.QueryRefs()
-	query = query.Where(entref.Immutable(true))
+	clients := flow.edb.Clients(ctx)
+
+	query := clients.Ref.Query().Where(entref.HasWorkflowWith(entwf.ID(cached.Workflow.ID)), entref.Immutable(true))
 
 	results, pi, err := paginate[*ent.RefQuery, *ent.Ref](ctx, req.Pagination, query, refsOrderings, refsFilters)
 	if err != nil {
@@ -77,23 +79,23 @@ resend:
 	}
 
 	resp := new(grpc.RevisionsResponse)
-	resp.Namespace = d.namespace()
+	resp.Namespace = cached.Namespace.Name
 	resp.PageInfo = pi
 
-	err = atob(results, &resp.Results)
+	err = bytedata.ConvertDataForOutput(results, &resp.Results)
 	if err != nil {
 		return err
 	}
 
-	err = atob(d.ino, &resp.Node)
+	err = bytedata.ConvertDataForOutput(cached.Inode(), &resp.Node)
 	if err != nil {
 		return err
 	}
 
-	resp.Node.Path = d.path
-	resp.Node.Parent = d.dir
+	resp.Node.Path = cached.Path()
+	resp.Node.Parent = cached.Dir()
 
-	nhash = checksum(resp)
+	nhash = bytedata.Checksum(resp)
 	if nhash != phash {
 		err = srv.Send(resp)
 		if err != nil {
@@ -108,30 +110,31 @@ resend:
 	}
 
 	goto resend
-
 }
 
 func (flow *flow) DeleteRevision(ctx context.Context, req *grpc.DeleteRevisionRequest) (*emptypb.Empty, error) {
-
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tx, err := flow.db.Tx(ctx)
+	tctx, tx, err := flow.database.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer rollback(tx)
 
-	nsc := tx.Namespace
-	d, err := flow.traverseToRef(ctx, nsc, req.GetNamespace(), req.GetPath(), req.GetRevision())
+	cached, err := flow.traverseToRef(tctx, req.GetNamespace(), req.GetPath(), req.GetRevision())
 	if err != nil {
 		return nil, err
 	}
 
-	if !d.ref.Immutable {
+	if !cached.Ref.Immutable {
 		return nil, errors.New("not a revision")
 	}
 
-	xrefs, err := d.rev().QueryRefs().Where(entref.ImmutableEQ(false)).All(ctx)
+	clients := flow.edb.Clients(tctx)
+
+	query := clients.Ref.Query().Where(entref.HasRevisionWith(entrev.ID(cached.Revision.ID)), entref.Immutable(false))
+
+	xrefs, err := query.All(tctx)
 	if err != nil {
 		return nil, err
 	}
@@ -141,17 +144,14 @@ func (flow *flow) DeleteRevision(ctx context.Context, req *grpc.DeleteRevisionRe
 	}
 
 	if len(xrefs) == 1 && xrefs[0].Name == "latest" {
-		err = flow.configureRouter(ctx, tx.Events, &d.wf, rcfBreaking,
+		err = flow.configureRouter(tctx, cached, rcfBreaking,
 			func() error {
-
-				refc := tx.Ref
-				err := refc.DeleteOne(d.ref).Exec(ctx)
+				err := clients.Ref.DeleteOneID(cached.Ref.ID).Exec(tctx)
 				if err != nil {
 					return err
 				}
 
 				return nil
-
 			},
 			tx.Commit,
 		)
@@ -159,17 +159,14 @@ func (flow *flow) DeleteRevision(ctx context.Context, req *grpc.DeleteRevisionRe
 			return nil, err
 		}
 	} else {
-		err = flow.configureRouter(ctx, tx.Events, &d.wf, rcfBreaking,
+		err = flow.configureRouter(tctx, cached, rcfBreaking,
 			func() error {
-
-				revc := tx.Revision
-				err := revc.DeleteOne(d.rev()).Exec(ctx)
+				err := clients.Revision.DeleteOneID(cached.Revision.ID).Exec(tctx)
 				if err != nil {
 					return err
 				}
 
 				return nil
-
 			},
 			tx.Commit,
 		)
@@ -178,11 +175,10 @@ func (flow *flow) DeleteRevision(ctx context.Context, req *grpc.DeleteRevisionRe
 		}
 	}
 
-	flow.logToWorkflow(ctx, time.Now(), d.wfData, "Deleted workflow revision: %s.", d.rev().ID.String())
-	flow.pubsub.NotifyWorkflow(d.wf)
+	flow.logger.Infof(ctx, cached.Workflow.ID, cached.GetAttributes(recipient.Workflow), "Deleted workflow revision: %s.", cached.Revision.ID.String())
+	flow.pubsub.NotifyWorkflow(cached.Workflow)
 
 	var resp emptypb.Empty
 
 	return &resp, nil
-
 }

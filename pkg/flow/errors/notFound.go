@@ -2,6 +2,7 @@ package errors
 
 import (
 	"errors"
+	"os"
 
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 )
@@ -15,12 +16,14 @@ func (err *NotFoundError) Error() string {
 }
 
 func IsNotFound(err error) bool {
-
 	if ent.IsNotFound(err) {
+		return true
+	}
+
+	if errors.Is(err, os.ErrNotExist) {
 		return true
 	}
 
 	nferr := new(NotFoundError)
 	return errors.As(err, &nferr)
-
 }

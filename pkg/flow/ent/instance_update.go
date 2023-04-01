@@ -130,6 +130,46 @@ func (iu *InstanceUpdate) ClearInvoker() *InstanceUpdate {
 	return iu
 }
 
+// SetInvokerState sets the "invokerState" field.
+func (iu *InstanceUpdate) SetInvokerState(s string) *InstanceUpdate {
+	iu.mutation.SetInvokerState(s)
+	return iu
+}
+
+// SetNillableInvokerState sets the "invokerState" field if the given value is not nil.
+func (iu *InstanceUpdate) SetNillableInvokerState(s *string) *InstanceUpdate {
+	if s != nil {
+		iu.SetInvokerState(*s)
+	}
+	return iu
+}
+
+// ClearInvokerState clears the value of the "invokerState" field.
+func (iu *InstanceUpdate) ClearInvokerState() *InstanceUpdate {
+	iu.mutation.ClearInvokerState()
+	return iu
+}
+
+// SetCallpath sets the "callpath" field.
+func (iu *InstanceUpdate) SetCallpath(s string) *InstanceUpdate {
+	iu.mutation.SetCallpath(s)
+	return iu
+}
+
+// SetNillableCallpath sets the "callpath" field if the given value is not nil.
+func (iu *InstanceUpdate) SetNillableCallpath(s *string) *InstanceUpdate {
+	if s != nil {
+		iu.SetCallpath(*s)
+	}
+	return iu
+}
+
+// ClearCallpath clears the value of the "callpath" field.
+func (iu *InstanceUpdate) ClearCallpath() *InstanceUpdate {
+	iu.mutation.ClearCallpath()
+	return iu
+}
+
 // SetNamespaceID sets the "namespace" edge to the Namespace entity by ID.
 func (iu *InstanceUpdate) SetNamespaceID(id uuid.UUID) *InstanceUpdate {
 	iu.mutation.SetNamespaceID(id)
@@ -532,6 +572,18 @@ func (iu *InstanceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if iu.mutation.InvokerCleared() {
 		_spec.ClearField(instance.FieldInvoker, field.TypeString)
+	}
+	if value, ok := iu.mutation.InvokerState(); ok {
+		_spec.SetField(instance.FieldInvokerState, field.TypeString, value)
+	}
+	if iu.mutation.InvokerStateCleared() {
+		_spec.ClearField(instance.FieldInvokerState, field.TypeString)
+	}
+	if value, ok := iu.mutation.Callpath(); ok {
+		_spec.SetField(instance.FieldCallpath, field.TypeString, value)
+	}
+	if iu.mutation.CallpathCleared() {
+		_spec.ClearField(instance.FieldCallpath, field.TypeString)
 	}
 	if iu.mutation.NamespaceCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -1056,6 +1108,46 @@ func (iuo *InstanceUpdateOne) ClearInvoker() *InstanceUpdateOne {
 	return iuo
 }
 
+// SetInvokerState sets the "invokerState" field.
+func (iuo *InstanceUpdateOne) SetInvokerState(s string) *InstanceUpdateOne {
+	iuo.mutation.SetInvokerState(s)
+	return iuo
+}
+
+// SetNillableInvokerState sets the "invokerState" field if the given value is not nil.
+func (iuo *InstanceUpdateOne) SetNillableInvokerState(s *string) *InstanceUpdateOne {
+	if s != nil {
+		iuo.SetInvokerState(*s)
+	}
+	return iuo
+}
+
+// ClearInvokerState clears the value of the "invokerState" field.
+func (iuo *InstanceUpdateOne) ClearInvokerState() *InstanceUpdateOne {
+	iuo.mutation.ClearInvokerState()
+	return iuo
+}
+
+// SetCallpath sets the "callpath" field.
+func (iuo *InstanceUpdateOne) SetCallpath(s string) *InstanceUpdateOne {
+	iuo.mutation.SetCallpath(s)
+	return iuo
+}
+
+// SetNillableCallpath sets the "callpath" field if the given value is not nil.
+func (iuo *InstanceUpdateOne) SetNillableCallpath(s *string) *InstanceUpdateOne {
+	if s != nil {
+		iuo.SetCallpath(*s)
+	}
+	return iuo
+}
+
+// ClearCallpath clears the value of the "callpath" field.
+func (iuo *InstanceUpdateOne) ClearCallpath() *InstanceUpdateOne {
+	iuo.mutation.ClearCallpath()
+	return iuo
+}
+
 // SetNamespaceID sets the "namespace" edge to the Namespace entity by ID.
 func (iuo *InstanceUpdateOne) SetNamespaceID(id uuid.UUID) *InstanceUpdateOne {
 	iuo.mutation.SetNamespaceID(id)
@@ -1488,6 +1580,18 @@ func (iuo *InstanceUpdateOne) sqlSave(ctx context.Context) (_node *Instance, err
 	}
 	if iuo.mutation.InvokerCleared() {
 		_spec.ClearField(instance.FieldInvoker, field.TypeString)
+	}
+	if value, ok := iuo.mutation.InvokerState(); ok {
+		_spec.SetField(instance.FieldInvokerState, field.TypeString, value)
+	}
+	if iuo.mutation.InvokerStateCleared() {
+		_spec.ClearField(instance.FieldInvokerState, field.TypeString)
+	}
+	if value, ok := iuo.mutation.Callpath(); ok {
+		_spec.SetField(instance.FieldCallpath, field.TypeString, value)
+	}
+	if iuo.mutation.CallpathCleared() {
+		_spec.ClearField(instance.FieldCallpath, field.TypeString)
 	}
 	if iuo.mutation.NamespaceCleared() {
 		edge := &sqlgraph.EdgeSpec{

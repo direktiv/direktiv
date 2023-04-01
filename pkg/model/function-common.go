@@ -25,7 +25,6 @@ func (a FunctionType) String() string {
 }
 
 func ParseFunctionType(s string) (FunctionType, error) {
-
 	if s == "" {
 		goto unknown
 	}
@@ -43,7 +42,6 @@ func ParseFunctionType(s string) (FunctionType, error) {
 unknown:
 
 	return FunctionType(0), fmt.Errorf("unrecognized function type (should be one of [%s]): %s", strings.Join(FunctionTypeStrings[1:], ", "), s)
-
 }
 
 func (a FunctionType) MarshalJSON() ([]byte, error) {
@@ -51,7 +49,6 @@ func (a FunctionType) MarshalJSON() ([]byte, error) {
 }
 
 func (a *FunctionType) UnmarshalJSON(data []byte) error {
-
 	var s string
 
 	err := json.Unmarshal(data, &s)
@@ -67,7 +64,6 @@ func (a *FunctionType) UnmarshalJSON(data []byte) error {
 	*a = x
 
 	return nil
-
 }
 
 func (a FunctionType) MarshalYAML() (interface{}, error) {
@@ -75,7 +71,6 @@ func (a FunctionType) MarshalYAML() (interface{}, error) {
 }
 
 func (a *FunctionType) UnmarshalYAML(unmarshal func(interface{}) error) error {
-
 	var s string
 
 	err := unmarshal(&s)
@@ -91,7 +86,6 @@ func (a *FunctionType) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	*a = x
 
 	return nil
-
 }
 
 type FunctionDefinition interface {
@@ -110,13 +104,11 @@ type FunctionFileDefinition struct {
 var ErrVarScope = errors.New(`bad scope (choose 'namespace', 'workflow', 'thread' or 'instance')`)
 
 func (o FunctionFileDefinition) Validate() error {
-
 	if o.Key == "" {
 		return errors.New("key required")
 	}
 
 	return nil
-
 }
 
 func getFunctionDefFromType(ftype string) (FunctionDefinition, error) {

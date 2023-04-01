@@ -16,7 +16,6 @@ const (
 )
 
 func validateLabel(name string) error {
-
 	matched, err := regexp.MatchString(regex, name)
 	if err != nil {
 		return err
@@ -27,11 +26,9 @@ func validateLabel(name string) error {
 	}
 
 	return nil
-
 }
 
 func serviceBaseInfo(s *v1.Service) *igrpc.BaseInfo {
-
 	var sz, scale int32
 	fmt.Sscan(s.Annotations[ServiceHeaderSize], &sz)
 	fmt.Sscan(s.Annotations[ServiceHeaderScale], &scale)
@@ -85,11 +82,9 @@ func statusFromCondition(conditions []apis.Condition) (string, []*igrpc.Conditio
 	}
 
 	return status, condList
-
 }
 
 func containerFromList(containers []corev1.Container) (string, string) {
-
 	var img, cmd string
 
 	for a := range containers {
@@ -106,7 +101,6 @@ func containerFromList(containers []corev1.Container) (string, string) {
 }
 
 func createVolumes() []corev1.Volume {
-
 	volumes := []corev1.Volume{
 		{
 			Name: "workdir",
@@ -119,5 +113,4 @@ func createVolumes() []corev1.Volume {
 	volumes = append(volumes, functionsConfig.extraVolumes...)
 
 	return volumes
-
 }

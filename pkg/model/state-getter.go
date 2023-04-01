@@ -24,7 +24,6 @@ type GetterDefinition struct {
 
 // Validate validates against the getter definition.
 func (o *GetterDefinition) Validate() error {
-
 	switch o.Scope {
 	case util.VarScopeInstance:
 	case util.VarScopeWorkflow:
@@ -40,7 +39,6 @@ func (o *GetterDefinition) Validate() error {
 	}
 
 	return nil
-
 }
 
 // GetID returns the ID of the getter state.

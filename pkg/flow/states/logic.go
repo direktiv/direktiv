@@ -11,7 +11,6 @@ import (
 var stateInitializers map[model.StateType]func(instance Instance, state model.State) (Logic, error)
 
 func RegisterState(st model.StateType, initializer func(instance Instance, state model.State) (Logic, error)) {
-
 	if stateInitializers == nil {
 		stateInitializers = make(map[model.StateType]func(instance Instance, state model.State) (Logic, error))
 	}
@@ -21,11 +20,9 @@ func RegisterState(st model.StateType, initializer func(instance Instance, state
 	}
 
 	stateInitializers[st] = initializer
-
 }
 
 func StateLogic(instance Instance, state model.State) (Logic, error) {
-
 	init, exists := stateInitializers[state.GetType()]
 	if !exists {
 		return nil, fmt.Errorf("cannot resolve state type: %s", state.GetType().String())
@@ -37,7 +34,6 @@ func StateLogic(instance Instance, state model.State) (Logic, error) {
 	}
 
 	return logic, nil
-
 }
 
 type Logic interface {
@@ -49,7 +45,7 @@ type Logic interface {
 	GetMemory() interface{}
 	Deadline(ctx context.Context) time.Time
 	Run(ctx context.Context, wakedata []byte) (*Transition, error)
-	LivingChildren(ctx context.Context) []ChildInfo
+	LivingChildren(ctx context.Context) []*ChildInfo
 }
 
 type Transition struct {
