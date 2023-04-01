@@ -2622,7 +2622,7 @@ func (h *flowHandler) GetNode(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
-	if !strings.Contains(err.Error(), filestore.ErrPathIsNotDirectory.Error()) {
+	if !strings.Contains(err.Error(), filestore.ErrNotFound.Error()) {
 		respond(w, resp, err)
 
 		return

@@ -23,6 +23,10 @@ func SanitizePath(path string) (string, error) {
 		return "", errors.New("path failed to match regex: " + pathRegexPattern)
 	}
 
+	if path == "" {
+		path = "/"
+	}
+
 	return path, nil
 }
 

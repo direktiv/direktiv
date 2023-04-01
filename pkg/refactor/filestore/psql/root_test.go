@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/direktiv/direktiv/pkg/refactor/utils"
@@ -38,12 +39,25 @@ func TestRoot_CreateFile(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run("valid", func(t *testing.T) {
-			assertRootCorrectFileCreation(t, fs, root, tt.path, tt.typ, []byte(tt.payload))
+			assertRootCorrectFileCreation(t, fs, root, tt.path)
 		})
 	}
 }
 
-func assertRootCorrectFileCreation(t *testing.T, fs filestore.FileStore, root *filestore.Root, path string, typ string, data []byte) {
+func assertRootCorrectFileCreation(t *testing.T, fs filestore.FileStore, root *filestore.Root, path string) {
+	t.Helper()
+
+	var data []byte = nil
+	typ := "directory"
+	if strings.Contains(path, ".text") {
+		data = []byte("some data")
+		typ = "text"
+	}
+
+	assertRootCorrectFileCreationWithContent(t, fs, root, path, typ, data)
+}
+
+func assertRootCorrectFileCreationWithContent(t *testing.T, fs filestore.FileStore, root *filestore.Root, path string, typ string, data []byte) {
 	t.Helper()
 
 	file, _, err := fs.ForRootID(root.ID).CreateFile(context.Background(), path, filestore.FileType(typ), bytes.NewReader(data))
@@ -98,8 +112,8 @@ func TestRoot_CorrectReadDirectory(t *testing.T) {
 
 	// Test root directory:
 	{
-		assertRootCorrectFileCreation(t, fs, root, "/file1.text", "text", []byte("content1"))
-		assertRootCorrectFileCreation(t, fs, root, "/file2.text", "text", []byte("content2"))
+		assertRootCorrectFileCreation(t, fs, root, "/file1.text")
+		assertRootCorrectFileCreation(t, fs, root, "/file2.text")
 
 		assertRootFilesInPath(t, fs, root, "/",
 			"/file1.text",
@@ -109,9 +123,9 @@ func TestRoot_CorrectReadDirectory(t *testing.T) {
 
 	// Add /dir1 directory:
 	{
-		assertRootCorrectFileCreation(t, fs, root, "/dir1", "directory", nil)
-		assertRootCorrectFileCreation(t, fs, root, "/dir1/file3.text", "text", []byte("content3"))
-		assertRootCorrectFileCreation(t, fs, root, "/dir1/file4.text", "text", []byte("content4"))
+		assertRootCorrectFileCreation(t, fs, root, "/dir1")
+		assertRootCorrectFileCreation(t, fs, root, "/dir1/file3.text")
+		assertRootCorrectFileCreation(t, fs, root, "/dir1/file4.text")
 
 		assertRootFilesInPath(t, fs, root, "/dir1",
 			"/dir1/file3.text",
@@ -126,9 +140,9 @@ func TestRoot_CorrectReadDirectory(t *testing.T) {
 
 	// Add /dir1/dir2 directory:
 	{
-		assertRootCorrectFileCreation(t, fs, root, "/dir1/dir2", "directory", nil)
-		assertRootCorrectFileCreation(t, fs, root, "/dir1/dir2/file5.text", "text", []byte("content5"))
-		assertRootCorrectFileCreation(t, fs, root, "/dir1/dir2/file6.text", "text", []byte("content6"))
+		assertRootCorrectFileCreation(t, fs, root, "/dir1/dir2")
+		assertRootCorrectFileCreation(t, fs, root, "/dir1/dir2/file5.text")
+		assertRootCorrectFileCreation(t, fs, root, "/dir1/dir2/file6.text")
 
 		assertRootFilesInPath(t, fs, root, "/dir1/dir2",
 			"/dir1/dir2/file5.text",
@@ -165,8 +179,8 @@ func TestRoot_CalculateChecksumDirectory(t *testing.T) {
 
 	// Test root directory:
 	{
-		assertRootCorrectFileCreation(t, fs, root, "/file1.text", "text", []byte("content1"))
-		assertRootCorrectFileCreation(t, fs, root, "/file2.text", "text", []byte("content2"))
+		assertRootCorrectFileCreationWithContent(t, fs, root, "/file1.text", "text", []byte("content1"))
+		assertRootCorrectFileCreationWithContent(t, fs, root, "/file2.text", "text", []byte("content2"))
 
 		assertChecksumsInPath(t, fs, root, "/",
 			"/file1.text", "---content1---",
@@ -176,9 +190,9 @@ func TestRoot_CalculateChecksumDirectory(t *testing.T) {
 
 	// Add /dir1 directory:
 	{
-		assertRootCorrectFileCreation(t, fs, root, "/dir1", "directory", nil)
-		assertRootCorrectFileCreation(t, fs, root, "/dir1/file3.text", "text", []byte("content3"))
-		assertRootCorrectFileCreation(t, fs, root, "/dir1/file4.text", "text", []byte("content4"))
+		assertRootCorrectFileCreationWithContent(t, fs, root, "/dir1", "directory", nil)
+		assertRootCorrectFileCreationWithContent(t, fs, root, "/dir1/file3.text", "text", []byte("content3"))
+		assertRootCorrectFileCreationWithContent(t, fs, root, "/dir1/file4.text", "text", []byte("content4"))
 
 		assertChecksumsInPath(t, fs, root, "/dir1",
 			"/dir1/file3.text", "---content3---",
@@ -193,9 +207,9 @@ func TestRoot_CalculateChecksumDirectory(t *testing.T) {
 
 	// Add /dir1/dir2 directory:
 	{
-		assertRootCorrectFileCreation(t, fs, root, "/dir1/dir2", "directory", nil)
-		assertRootCorrectFileCreation(t, fs, root, "/dir1/dir2/file5.text", "text", []byte("content5"))
-		assertRootCorrectFileCreation(t, fs, root, "/dir1/dir2/file6.text", "text", []byte("content6"))
+		assertRootCorrectFileCreationWithContent(t, fs, root, "/dir1/dir2", "directory", nil)
+		assertRootCorrectFileCreationWithContent(t, fs, root, "/dir1/dir2/file5.text", "text", []byte("content5"))
+		assertRootCorrectFileCreationWithContent(t, fs, root, "/dir1/dir2/file6.text", "text", []byte("content6"))
 
 		assertChecksumsInPath(t, fs, root, "/dir1/dir2",
 			"/dir1/dir2/file5.text", "---content5---",
@@ -220,14 +234,17 @@ func assertRootFilesInPath(t *testing.T, fs filestore.FileStore, root *filestore
 	files, err := fs.ForRootID(root.ID).ReadDirectory(context.Background(), searchPath)
 	if err != nil {
 		t.Errorf("unepxected ReadDirectory() error = %v", err)
+		return
 	}
 	if len(files) != len(paths) {
 		t.Errorf("unexpected ReadDirectory() length, got: %d, want: %d", len(files), len(paths))
+		return
 	}
 
 	for i := range paths {
 		if files[i].Path != paths[i] {
 			t.Errorf("unexpected files[%d].Path , got: >%s<, want: >%s<", i, files[i].Path, paths[i])
+			return
 		}
 	}
 }

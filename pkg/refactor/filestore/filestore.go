@@ -20,7 +20,6 @@ var (
 	ErrFileTypeIsDirectory  = errors.New("ErrFileTypeIsDirectory")
 	ErrNotFound             = errors.New("ErrNotFound")
 	ErrPathAlreadyExists    = errors.New("ErrPathAlreadyExists")
-	ErrPathIsNotDirectory   = errors.New("ErrPathIsNotDirectory")
 	ErrNoParentDirectory    = errors.New("ErrNoParentDirectory")
 	ErrInvalidPathParameter = errors.New("ErrInvalidPathParameter")
 )
@@ -57,6 +56,8 @@ type RootQuery interface {
 	Delete(ctx context.Context) error
 	CalculateChecksumsMap(ctx context.Context, path string) (map[string]string, error)
 	IsEmptyDirectory(ctx context.Context, path string) (bool, error)
+
+	ListAllPathsForTest(ctx context.Context) ([]string, error)
 }
 
 type CalculateChecksumFunc func([]byte) []byte

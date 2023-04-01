@@ -230,7 +230,6 @@ func (flow *flow) RenameNode(ctx context.Context, req *grpc.RenameNodeRequest) (
 		return nil, status.Error(codes.InvalidArgument, "cannot rename root node")
 	}
 
-	// TODO: check if file is dir or file and handle them solidly.
 	err = fStore.ForFile(file).SetPath(ctx, req.GetNew())
 	if err != nil {
 		return nil, err

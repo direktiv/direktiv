@@ -26,6 +26,23 @@ type RootQuery struct {
 	db           *gorm.DB
 }
 
+func (q *RootQuery) ListAllPathsForTest(ctx context.Context) ([]string, error) {
+	var list []string
+
+	// check if root exists.
+	if err := q.checkRootExists(ctx); err != nil {
+		return nil, err
+	}
+
+	res := q.db.WithContext(ctx).Model(&filestore.File{}).Select("path").Where("root_id", q.rootID).Find(&list)
+
+	if res.Error != nil {
+		return nil, res.Error
+	}
+
+	return list, nil
+}
+
 func (q *RootQuery) IsEmptyDirectory(ctx context.Context, path string) (bool, error) {
 	path, err := filestore.SanitizePath(path)
 	if err != nil {
@@ -176,10 +193,6 @@ func (q *RootQuery) ReadDirectory(ctx context.Context, path string) ([]*filestor
 		return nil, err
 	}
 
-	if path == "" {
-		path = "/"
-	}
-
 	// check if path is a directory and exists.
 	if path != "/" {
 		count := 0
@@ -188,7 +201,7 @@ func (q *RootQuery) ReadDirectory(ctx context.Context, path string) ([]*filestor
 			return nil, err
 		}
 		if count != 1 {
-			return nil, filestore.ErrPathIsNotDirectory
+			return nil, filestore.ErrNotFound
 		}
 	}
 
