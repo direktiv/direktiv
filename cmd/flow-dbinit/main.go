@@ -15,17 +15,18 @@ import (
 )
 
 func RunApplication() {
-	log.Printf("Checking database for schema updates...")
+	log.Printf("checking database for schema updates...\n")
 
-	// get db connection
+	// get db connection.
 	conn := os.Getenv(util.DBConn)
 	db, err := sql.Open("postgres", conn)
 	if err != nil {
-		panic(err)
+		log.Printf("open sql error: %v\n", err)
+		os.Exit(1)
 	}
 	defer db.Close()
 
-	// check database has been initialized
+	// check if database has been initialized.
 	qstr := `SELECT EXISTS (
 		SELECT FROM pg_catalog.pg_class c
 		JOIN   pg_catalog.pg_namespace n ON n.oid = c.relnamespace
@@ -37,119 +38,98 @@ func RunApplication() {
 	var initialized bool
 	err = row.Scan(&initialized)
 	if err != nil {
-		log.Printf("error running sql: %v", err)
+		log.Printf("sql error: %v\n", err)
+		os.Exit(1)
+	}
+	if !initialized {
+		log.Printf("database hasn't been initialized by ent automigrate.\n")
 		os.Exit(1)
 	}
 
-	if !initialized {
-		log.Printf("Database hasn't been initialized. Aborting.")
-		return
-	}
-
-	// initialize generation table if not exists
-	qstr = `CREATE TABLE IF NOT EXISTS db_generation (
-		generation VARCHAR
-	)`
+	// initialize generation table if not exists.
+	qstr = `CREATE TABLE IF NOT EXISTS db_generation (generation VARCHAR)`
 	_, err = db.Exec(qstr)
 	if err != nil {
-		log.Printf("error running sql: %v", err)
+		log.Printf("create db_generation table error: %v\n", err)
 		os.Exit(1)
 	}
 
-	// initialize upgrade transaction
+	// initialize upgrade transaction.
 	tx, err := db.Begin()
 	if err != nil {
-		log.Printf("error running sql: %v", err)
+		log.Printf("begin db transaction error: %v\n", err)
 		os.Exit(1)
 	}
 	defer func() {
 		err := tx.Rollback()
 		if !errors.Is(err, sql.ErrTxDone) {
-			log.Printf("error rolling back sql: %v", err)
+			log.Printf("rollback db transaction error: %v\n", err)
 		}
 	}()
 
-	row = tx.QueryRow(`SELECT generation FROM db_generation`)
-	var gen string
-	err = row.Scan(&gen)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			gen = "0.5.10"
-		} else {
-			log.Printf("error running sql: %v", err)
-			os.Exit(1)
-		}
+	row = tx.QueryRow(`SELECT generation FROM db_generation ORDER BY generation DESC LIMIT 1`)
+	var genString string
+	err = row.Scan(&genString)
+	if errors.Is(err, sql.ErrNoRows) {
+		genString = "0.5.10"
+	} else if err != nil {
+		log.Printf("selecting from db_generation error: %v\n", err)
+		os.Exit(1)
 	}
 
-	log.Printf("Current database generation: %v", gen)
+	dbGeneration, err := semver.NewVersion(genString)
+	if err != nil {
+		log.Printf("parsing generation from db error: %v\n", err)
+		os.Exit(1)
+	}
+	log.Printf("current database generation: %v\n", dbGeneration)
 
-	// perform upgrades
-	upgraders := make([]generationUpgrader, 0)
-
-	upgraders = append(upgraders, generationUpgrader{
-		version: "0.6.0",
-		logic:   updateGeneration_0_6_0,
-	}, generationUpgrader{
-		version: "0.7.1",
-		logic:   updateGeneration_0_7_1,
-	}, generationUpgrader{
-		version: "0.7.3",
-		logic:   updateGeneration_0_7_3,
-	})
+	upgraders := []generationUpgrader{
+		{
+			version: semver.MustParse("0.6.0"),
+			logic:   updateGeneration_0_6_0,
+		},
+		{
+			version: semver.MustParse("0.7.1"),
+			logic:   updateGeneration_0_7_1,
+		},
+		{
+			version: semver.MustParse("0.7.3"),
+			logic:   updateGeneration_0_7_3,
+		},
+		{
+			version: semver.MustParse("2.0.0"),
+			logic:   updateGeneration_2_0_0,
+		},
+	}
 
 	for _, upgrader := range upgraders {
-
 		// check if version needs upgrading
-		v1, err := semver.NewVersion(gen)
-		if err != nil {
-			log.Printf("error parsing generation: %v", err)
-			os.Exit(1)
-		}
-
-		v2, err := semver.NewVersion(upgrader.version)
-		if err != nil {
-			panic(err)
-		}
-
-		if !v2.GreaterThan(v1) {
+		if !upgrader.version.GreaterThan(dbGeneration) {
 			continue
 		}
-
-		// upgrade
-
-		log.Printf("Updating to generation %s\n", upgrader.version)
-
+		log.Printf("updating to generation %s\n", upgrader.version)
 		err = upgrader.logic(tx)
 		if err != nil {
-			log.Printf("error running sql: %v", err)
+			log.Printf("running upgrader version: %s, error: %v\n", upgrader.version, err)
 			os.Exit(1)
 		}
-
-		_, err = db.Exec(`DELETE FROM db_generation`)
-		if err != nil {
-			log.Printf("error running sql: %v", err)
-			os.Exit(1)
-		}
-
 		_, err = db.Exec(fmt.Sprintf(`INSERT INTO db_generation(generation) VALUES('%s')`, upgrader.version))
 		if err != nil {
-			log.Printf("error running sql: %v", err)
+			log.Printf("inserting in db_generation error: %v\n", err)
 			os.Exit(1)
 		}
-
-		log.Printf("Updating to generation %s finished\n", upgrader.version)
-
 	}
 
 	err = tx.Commit()
 	if err != nil {
-		log.Printf("error running sql: %v", err)
+		log.Printf("commiting db transaction error: %v\n", err)
 		os.Exit(1)
 	}
 }
 
 type generationUpgrader struct {
-	version string
+	version *semver.Version
 	logic   func(tx *sql.Tx) error
 }
 
@@ -208,4 +188,57 @@ func updateGeneration_0_6_0(db *sql.Tx) error {
 	}
 
 	return nil
+}
+
+func updateGeneration_2_0_0(db *sql.Tx) error {
+	// create the new filesystem tables.
+	_, err := db.Exec(`
+	 CREATE TABLE IF NOT EXISTS "roots"
+			(
+				"id" text,
+				"created_at" datetime,
+				"updated_at" datetime,
+				PRIMARY KEY ("id"),
+				CONSTRAINT "fk_namespaces_roots"
+				FOREIGN KEY ("id") REFERENCES "namespaces"("id") ON DELETE CASCADE ON UPDATE CASCADE
+				);
+	 CREATE TABLE IF NOT EXISTS "files"
+			(
+				"id" text,
+				"path" text,
+				"depth" integer,
+				"typ" text,
+				"root_id" text,
+				"created_at" datetime,
+				"updated_at" datetime,
+				PRIMARY KEY ("id"),
+				CONSTRAINT "fk_roots_files"
+				FOREIGN KEY ("root_id") REFERENCES "roots"("id") ON DELETE CASCADE ON UPDATE CASCADE
+				);
+	 CREATE TABLE IF NOT EXISTS "revisions"
+			(
+				"id" text,
+				"tags" text,
+				"is_current" numeric,
+				"data" blob,
+				"checksum" text,
+				"file_id" text,
+				"created_at" datetime,
+				"updated_at" datetime,
+				PRIMARY KEY ("id"),
+				CONSTRAINT "fk_files_revisions"
+				FOREIGN KEY ("file_id") REFERENCES "files"("id") ON DELETE CASCADE ON UPDATE CASCADE
+				);
+	 CREATE TABLE IF NOT EXISTS "file_attributes"
+			(
+				"file_id" text,
+				"value" text,
+				"created_at" datetime,
+				"updated_at" datetime,
+				PRIMARY KEY ("file_id"),
+				CONSTRAINT "fk_files_file_attributes"
+				FOREIGN KEY ("file_id") REFERENCES "files"("id") ON DELETE CASCADE ON UPDATE CASCADE
+				);
+`)
+	return err
 }

@@ -1,36 +1,76 @@
 package utils
 
 import (
-	"github.com/direktiv/direktiv/pkg/refactor/core"
-	"github.com/direktiv/direktiv/pkg/refactor/filestore"
+	"log"
+	"os"
+	"time"
+
 	"github.com/glebarez/sqlite"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 func NewMockGorm() (*gorm.DB, error) {
-	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{
+		Logger: logger.New(
+			log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
+			logger.Config{
+				SlowThreshold: time.Second,   // Slow SQL threshold
+				LogLevel:      logger.Silent, // Log level
+			},
+		),
+	})
 	if err != nil {
 		return nil, err
 	}
 
-	// filestore tables
-	type File struct {
-		filestore.File
-		Revisions []filestore.Revision `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	}
-	type Root struct {
-		filestore.Root
-		Files []File `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	}
-
-	err = db.AutoMigrate(&Root{}, &File{}, &filestore.Revision{})
-	if err != nil {
-		return nil, err
-	}
-
-	// datastore tables
-	err = db.AutoMigrate(&core.FileAttributes{})
-	if err != nil {
+	res := db.Exec(`
+	 CREATE TABLE IF NOT EXISTS "roots"
+			(
+				"id" text,
+				"created_at" datetime,
+				"updated_at" datetime,
+				PRIMARY KEY ("id")
+				);
+	 CREATE TABLE IF NOT EXISTS "files"
+			(
+				"id" text,
+				"path" text,
+				"depth" integer,
+				"typ" text,
+				"root_id" text,
+				"created_at" datetime,
+				"updated_at" datetime,
+				PRIMARY KEY ("id"),
+				CONSTRAINT "fk_roots_files"
+				FOREIGN KEY ("root_id") REFERENCES "roots"("id") ON DELETE CASCADE ON UPDATE CASCADE
+				);
+	 CREATE TABLE IF NOT EXISTS "revisions"
+			(
+				"id" text,
+				"tags" text,
+				"is_current" numeric,
+				"data" blob,
+				"checksum" text,
+				"file_id" text,
+				"created_at" datetime,
+				"updated_at" datetime,
+				PRIMARY KEY ("id"),
+				CONSTRAINT "fk_files_revisions"
+				FOREIGN KEY ("file_id") REFERENCES "files"("id") ON DELETE CASCADE ON UPDATE CASCADE
+				);
+	 CREATE TABLE IF NOT EXISTS "file_attributes"
+			(
+				"file_id" text,
+				"value" text,
+				"created_at" datetime,
+				"updated_at" datetime,
+				PRIMARY KEY ("file_id"),
+				CONSTRAINT "fk_files_file_attributes"
+				FOREIGN KEY ("file_id") REFERENCES "files"("id") ON DELETE CASCADE ON UPDATE CASCADE
+				);
+`)
+	if res.Error != nil {
 		return nil, err
 	}
 
