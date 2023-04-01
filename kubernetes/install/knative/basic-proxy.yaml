@@ -25,7 +25,7 @@ spec:
       - name: HTTPS_PROXY
         value: "http://192.168.56.1:3128"
       - name: NO_PROXY
-        value: "127.0.0.0/8,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,192.168.56.0/24,172.16.0.0/12"
+        value: "127.0.0.0/8,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,192.168.56.0/24,172.16.0.0/12,.svc,.default,.local,.cluster.local,localhost,.direktiv-services-direktiv"
   config:
     features:
       multi-container: "enabled"  
