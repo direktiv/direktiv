@@ -11,9 +11,10 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
-
+	"github.com/direktiv/direktiv/pkg/refactor/datastore/sql"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore/psql"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
@@ -45,12 +46,14 @@ type server struct {
 	conf     *util.Config
 
 	// db       *ent.Client
-	pubsub    *pubsub.Pubsub
-	locks     *locks
-	timers    *timers
-	engine    *engine
-	fStore    filestore.FileStore
-	dataStore datastore.Store
+	pubsub *pubsub.Pubsub
+	locks  *locks
+	timers *timers
+	engine *engine
+
+	gormDB *gorm.DB
+	// fStore    filestore.FileStore
+	// dataStore datastore.Store
 
 	secrets  *secrets
 	flow     *flow
@@ -150,14 +153,15 @@ func (srv *server) start(ctx context.Context) error {
 	srv.database = database.NewCachedDatabase(srv.sugar, edb, srv)
 	defer srv.cleanup(srv.database.Close)
 
-	gormDb, err := gorm.Open(postgres.New(postgres.Config{
+	srv.gormDB, err = gorm.Open(postgres.New(postgres.Config{
 		DSN:                  db,
 		PreferSimpleProtocol: false, // disables implicit prepared statement usage
 	}), &gorm.Config{})
 	if err != nil {
 		return fmt.Errorf("creating filestore, err: %s", err)
 	}
-	srv.fStore = psql.NewSQLFileStore(gormDb)
+	// srv.fStore = psql.NewSQLFileStore(srv.gormDB)
+	// srv.dataStore = sql.NewSQLStore(srv.gormDB)
 
 	srv.sugar.Debug("Initializing pub-sub.")
 
@@ -560,4 +564,33 @@ func parent() string {
 	fn := runtime.FuncForPC(pc)
 	elems := strings.Split(fn.Name(), ".")
 	return elems[len(elems)-1]
+}
+
+func (flow *flow) beginSqlTx(ctx context.Context) (filestore.FileStore, datastore.Store, func(ctx context.Context) error, func(ctx context.Context) error, error) {
+	res := flow.gormDB.WithContext(ctx).Begin()
+	if res.Error != nil {
+		return nil, nil, nil, nil, res.Error
+	}
+	rollbackFunc := func(ctx context.Context) error {
+		return res.WithContext(ctx).Rollback().Error
+	}
+	commitFunc := func(ctx context.Context) error {
+		return res.WithContext(ctx).Rollback().Error
+	}
+
+	return psql.NewSQLFileStore(flow.gormDB), sql.NewSQLStore(flow.gormDB), commitFunc, rollbackFunc, nil
+}
+
+func (flow *flow) runSqlTx(ctx context.Context, fun func(fStore filestore.FileStore, store datastore.Store) error) error {
+	fStore, store, commit, rollback, err := flow.beginSqlTx(ctx)
+	if err != nil {
+		return err
+	}
+	defer rollback(ctx)
+
+	if err := fun(fStore, store); err != nil {
+		return err
+	}
+
+	return commit(ctx)
 }

@@ -4,6 +4,9 @@ import (
 	"context"
 	"errors"
 
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
+	"github.com/direktiv/direktiv/pkg/refactor/filestore"
+
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
@@ -215,7 +218,13 @@ func (flow *flow) CreateNamespace(ctx context.Context, req *grpc.CreateNamespace
 	if req.GetIdempotent() {
 		ns, err = flow.edb.NamespaceByName(ctx, req.GetName())
 		if err == nil {
-			goto respond
+			var resp grpc.CreateNamespaceResponse
+			err = bytedata.ConvertDataForOutput(ns, &resp.Namespace)
+			if err != nil {
+				return nil, err
+			}
+
+			return &resp, nil
 		}
 		if !derrors.IsNotFound(err) {
 			return nil, err
@@ -241,15 +250,17 @@ func (flow *flow) CreateNamespace(ctx context.Context, req *grpc.CreateNamespace
 		return nil, err
 	}
 
-	_, err = flow.fStore.CreateRoot(ctx, x.ID)
+	var txErr error
+	err = flow.runSqlTx(ctx, func(fStore filestore.FileStore, store datastore.Store) error {
+		_, txErr = fStore.CreateRoot(ctx, x.ID)
+		return txErr
+	})
 	if err != nil {
 		return nil, err
 	}
 
 	flow.logger.Infof(ctx, flow.ID, flow.GetAttributes(), "Created namespace '%s'.", ns.Name)
 	flow.pubsub.NotifyNamespaces()
-
-respond:
 
 	var resp grpc.CreateNamespaceResponse
 
@@ -281,7 +292,12 @@ func (flow *flow) DeleteNamespace(ctx context.Context, req *grpc.DeleteNamespace
 
 	clients := flow.edb.Clients(ctx)
 
-	isEmpty, err := flow.fStore.ForRootID(ns.ID).IsEmptyDirectory(ctx, "/")
+	var isEmpty bool
+	var txErr error
+	err = flow.runSqlTx(ctx, func(fStore filestore.FileStore, store datastore.Store) error {
+		isEmpty, txErr = fStore.ForRootID(ns.ID).IsEmptyDirectory(ctx, "/")
+		return txErr
+	})
 	if err != nil {
 		return nil, err
 	}

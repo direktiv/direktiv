@@ -31,11 +31,11 @@ func (flow *flow) Workflow(ctx context.Context, req *grpc.WorkflowRequest) (*grp
 	if err != nil {
 		return nil, err
 	}
-	fStore, err := flow.fStore.Begin(ctx)
+	fStore, _, commit, rollback, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer fStore.Rollback(ctx)
+	defer rollback(ctx)
 
 	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {
@@ -53,7 +53,7 @@ func (flow *flow) Workflow(ctx context.Context, req *grpc.WorkflowRequest) (*grp
 	if err != nil {
 		return nil, err
 	}
-	if err = fStore.Commit(ctx); err != nil {
+	if err = commit(ctx); err != nil {
 		return nil, err
 	}
 
@@ -93,11 +93,11 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 	if err != nil {
 		return nil, err
 	}
-	fStore, err := flow.fStore.Begin(ctx)
+	fStore, _, commit, rollback, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer fStore.Rollback(ctx)
+	defer rollback(ctx)
 
 	file, revision, err := fStore.ForRootID(ns.ID).CreateFile(ctx, req.GetPath(), filestore.FileTypeWorkflow, bytes.NewReader(req.GetSource()))
 	if err != nil {
@@ -112,7 +112,7 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 		return nil, err
 	}
 
-	if err = fStore.Commit(ctx); err != nil {
+	if err = commit(ctx); err != nil {
 		return nil, err
 	}
 
@@ -151,11 +151,11 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 		return nil, err
 	}
 
-	fStore, err := flow.fStore.Begin(ctx)
+	fStore, _, commit, rollback, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer fStore.Rollback(ctx)
+	defer rollback(ctx)
 
 	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {
@@ -182,7 +182,7 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 		return nil, err
 	}
 
-	if err = fStore.Commit(ctx); err != nil {
+	if err = commit(ctx); err != nil {
 		return nil, err
 	}
 	// TODO: yassir, need fix here.

@@ -31,15 +31,6 @@ type FileStore interface {
 	ForRootID(rootID uuid.UUID) RootQuery
 	ForFile(file *File) FileQuery
 	ForRevision(revision *Revision) RevisionQuery
-	Begin(ctx context.Context) (TxFileStore, error)
-
-	Tx(ctx context.Context, fun func(ctx context.Context, fStore FileStore) error) error
-}
-
-type TxFileStore interface {
-	FileStore
-	Commit(ctx context.Context) error
-	Rollback(ctx context.Context) error
 }
 
 type Root struct {

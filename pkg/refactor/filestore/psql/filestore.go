@@ -13,47 +13,6 @@ type SQLFileStore struct {
 	db *gorm.DB
 }
 
-func (s *SQLFileStore) Tx(ctx context.Context, fun func(ctx context.Context, fStore filestore.FileStore) error) error {
-	db := s.db.WithContext(ctx).Begin()
-	if db.Error != nil {
-		return db.Error
-	}
-	defer db.WithContext(ctx).Rollback()
-	newSqlStore := &SQLFileStore{
-		db: db,
-	}
-	if err := fun(ctx, newSqlStore); err != nil {
-		return err
-	}
-
-	return db.WithContext(ctx).Commit().Error
-}
-
-type TxSQLFileStore struct {
-	*SQLFileStore
-}
-
-func (t *TxSQLFileStore) Commit(ctx context.Context) error {
-	return t.db.WithContext(ctx).Commit().Error
-}
-
-func (t *TxSQLFileStore) Rollback(ctx context.Context) error {
-	return t.db.WithContext(ctx).Rollback().Error
-}
-
-func (s *SQLFileStore) Begin(ctx context.Context) (filestore.TxFileStore, error) {
-	db := s.db.WithContext(ctx).Begin()
-	if db.Error != nil {
-		return nil, db.Error
-	}
-
-	return &TxSQLFileStore{
-		SQLFileStore: &SQLFileStore{
-			db: db,
-		},
-	}, nil
-}
-
 func (s *SQLFileStore) ForRootID(rootID uuid.UUID) filestore.RootQuery {
 	return &RootQuery{
 		rootID:       rootID,
@@ -79,7 +38,7 @@ func (s *SQLFileStore) ForRevision(revision *filestore.Revision) filestore.Revis
 
 var _ filestore.FileStore = &SQLFileStore{} // Ensures SQLFileStore struct conforms to filestore.FileStore interface.
 
-func NewSQLFileStore(db *gorm.DB) *SQLFileStore {
+func NewSQLFileStore(db *gorm.DB) filestore.FileStore {
 	return &SQLFileStore{
 		db: db,
 	}

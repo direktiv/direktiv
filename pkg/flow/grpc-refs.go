@@ -33,17 +33,17 @@ func (flow *flow) Tags(ctx context.Context, req *grpc.TagsRequest) (*grpc.TagsRe
 		return nil, err
 	}
 
-	fStore, err := flow.fStore.Begin(ctx)
+	fStore, _, commit, rollback, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer fStore.Rollback(ctx)
+	defer rollback(ctx)
 
-	file, err := flow.fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
+	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {
 		return nil, err
 	}
-	_, err = flow.fStore.ForFile(file).GetAllRevisions(ctx)
+	_, err = fStore.ForFile(file).GetAllRevisions(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +59,7 @@ func (flow *flow) Tags(ctx context.Context, req *grpc.TagsRequest) (*grpc.TagsRe
 		{Name: "rev2"},
 	}
 
-	if err = fStore.Commit(ctx); err != nil {
+	if err := commit(ctx); err != nil {
 		return nil, err
 	}
 	return resp, nil
@@ -92,17 +92,17 @@ func (flow *flow) Refs(ctx context.Context, req *grpc.RefsRequest) (*grpc.RefsRe
 		return nil, err
 	}
 
-	fStore, err := flow.fStore.Begin(ctx)
+	fStore, _, commit, rollback, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer fStore.Rollback(ctx)
+	defer rollback(ctx)
 
-	file, err := flow.fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
+	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {
 		return nil, err
 	}
-	_, err = flow.fStore.ForFile(file).GetAllRevisions(ctx)
+	_, err = fStore.ForFile(file).GetAllRevisions(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -118,7 +118,7 @@ func (flow *flow) Refs(ctx context.Context, req *grpc.RefsRequest) (*grpc.RefsRe
 		{Name: "rev2"},
 	}
 
-	if err = fStore.Commit(ctx); err != nil {
+	if err := commit(ctx); err != nil {
 		return nil, err
 	}
 	return resp, nil
@@ -150,11 +150,11 @@ func (flow *flow) Tag(ctx context.Context, req *grpc.TagRequest) (*emptypb.Empty
 	if err != nil {
 		return nil, err
 	}
-	fStore, err := flow.fStore.Begin(ctx)
+	fStore, _, commit, rollback, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer fStore.Rollback(ctx)
+	defer rollback(ctx)
 
 	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {
@@ -172,7 +172,7 @@ func (flow *flow) Tag(ctx context.Context, req *grpc.TagRequest) (*emptypb.Empty
 	if err != nil {
 		return nil, err
 	}
-	if err = fStore.Commit(ctx); err != nil {
+	if err = commit(ctx); err != nil {
 		return nil, err
 	}
 
@@ -192,11 +192,11 @@ func (flow *flow) Untag(ctx context.Context, req *grpc.UntagRequest) (*emptypb.E
 	if err != nil {
 		return nil, err
 	}
-	fStore, err := flow.fStore.Begin(ctx)
+	fStore, _, commit, rollback, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer fStore.Rollback(ctx)
+	defer rollback(ctx)
 
 	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {
@@ -210,7 +210,7 @@ func (flow *flow) Untag(ctx context.Context, req *grpc.UntagRequest) (*emptypb.E
 	if err != nil {
 		return nil, err
 	}
-	if err = fStore.Commit(ctx); err != nil {
+	if err = commit(ctx); err != nil {
 		return nil, err
 	}
 

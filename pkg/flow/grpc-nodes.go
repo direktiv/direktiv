@@ -4,6 +4,8 @@ import (
 	"context"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
+
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 
@@ -22,7 +24,13 @@ func (flow *flow) Node(ctx context.Context, req *grpc.NodeRequest) (*grpc.NodeRe
 	if err != nil {
 		return nil, err
 	}
-	file, err := flow.fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
+
+	var file *filestore.File
+	var txErr error
+	err = flow.runSqlTx(ctx, func(fStore filestore.FileStore, store datastore.Store) error {
+		file, txErr = fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
+		return txErr
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -40,7 +48,13 @@ func (flow *flow) Directory(ctx context.Context, req *grpc.DirectoryRequest) (*g
 	if err != nil {
 		return nil, err
 	}
-	files, err := flow.fStore.ForRootID(ns.ID).ReadDirectory(ctx, req.GetPath())
+
+	var files []*filestore.File
+	var txErr error
+	err = flow.runSqlTx(ctx, func(fStore filestore.FileStore, store datastore.Store) error {
+		files, txErr = fStore.ForRootID(ns.ID).ReadDirectory(ctx, req.GetPath())
+		return txErr
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -83,14 +97,14 @@ func (flow *flow) CreateDirectory(ctx context.Context, req *grpc.CreateDirectory
 	}
 
 	var file *filestore.File
-	err = flow.fStore.Tx(ctx, func(ctx context.Context, fStore filestore.FileStore) error {
-		file, _, err = flow.fStore.ForRootID(ns.ID).CreateFile(ctx, req.GetPath(), filestore.FileTypeDirectory, nil)
-		if err != nil {
-			return err
-		}
-		return nil
-	})
 
+	fStore, _, commit, rollback, err := flow.beginSqlTx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer rollback(ctx)
+
+	file, _, err = fStore.ForRootID(ns.ID).CreateFile(ctx, req.GetPath(), filestore.FileTypeDirectory, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -109,6 +123,10 @@ func (flow *flow) CreateDirectory(ctx context.Context, req *grpc.CreateDirectory
 	//	return nil, err
 	//}
 
+	if err := commit(ctx); err != nil {
+		return nil, err
+	}
+
 	var resp grpc.CreateDirectoryResponse
 
 	resp.Namespace = ns.Name
@@ -125,11 +143,11 @@ func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (
 		return nil, err
 	}
 
-	fStore, err := flow.fStore.Begin(ctx)
+	fStore, _, commit, rollback, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer fStore.Rollback(ctx)
+	defer rollback(ctx)
 
 	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 	if err == filestore.ErrNotFound && req.GetIdempotent() {
@@ -159,8 +177,7 @@ func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (
 		return nil, err
 	}
 
-	err = fStore.Commit(ctx)
-	if err != nil {
+	if err := commit(ctx); err != nil {
 		return nil, err
 	}
 
@@ -211,11 +228,11 @@ func (flow *flow) RenameNode(ctx context.Context, req *grpc.RenameNodeRequest) (
 		return nil, err
 	}
 
-	fStore, err := flow.fStore.Begin(ctx)
+	fStore, _, commit, rollback, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer fStore.Rollback(ctx)
+	defer rollback(ctx)
 
 	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetOld())
 	if err != nil {
@@ -232,8 +249,7 @@ func (flow *flow) RenameNode(ctx context.Context, req *grpc.RenameNodeRequest) (
 	}
 	// TODO: question if parent dir need to get updated_at change.
 
-	err = fStore.Commit(ctx)
-	if err != nil {
+	if err := commit(ctx); err != nil {
 		return nil, err
 	}
 
@@ -256,16 +272,16 @@ func (flow *flow) CreateNodeAttributes(ctx context.Context, req *grpc.CreateNode
 		return nil, err
 	}
 
-	file, err := flow.fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
+	fStore, store, commit, rollback, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
+	defer rollback(ctx)
 
-	store, err := flow.dataStore.Begin(ctx)
+	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {
 		return nil, err
 	}
-	defer store.Rollback(ctx)
 
 	attributes, err := store.FileAttributes().Get(ctx, file.ID)
 
@@ -292,8 +308,7 @@ func (flow *flow) CreateNodeAttributes(ctx context.Context, req *grpc.CreateNode
 		return nil, err
 	}
 
-	err = store.Commit(ctx)
-	if err != nil {
+	if err := commit(ctx); err != nil {
 		return nil, err
 	}
 	var resp emptypb.Empty
@@ -308,17 +323,16 @@ func (flow *flow) DeleteNodeAttributes(ctx context.Context, req *grpc.DeleteNode
 	if err != nil {
 		return nil, err
 	}
-
-	file, err := flow.fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
+	fStore, store, commit, rollback, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
+	defer rollback(ctx)
 
-	store, err := flow.dataStore.Begin(ctx)
+	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {
 		return nil, err
 	}
-	defer store.Rollback(ctx)
 
 	attributes, err := store.FileAttributes().Get(ctx, file.ID)
 
@@ -335,8 +349,7 @@ func (flow *flow) DeleteNodeAttributes(ctx context.Context, req *grpc.DeleteNode
 		return nil, err
 	}
 
-	err = store.Commit(ctx)
-	if err != nil {
+	if err := commit(ctx); err != nil {
 		return nil, err
 	}
 	var resp emptypb.Empty
