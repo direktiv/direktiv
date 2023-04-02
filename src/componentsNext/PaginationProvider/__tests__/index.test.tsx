@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest";
+import { render, screen } from "@testing-library/react";
 
 import PaginationProvider from "..";
-import { render } from "@testing-library/react";
 
 const items = [
   { id: 1, name: "Item 1" },
@@ -20,8 +20,8 @@ const items = [
 ];
 
 describe("Pagination Provider", () => {
-  test("should render", () => {
-    const { debug } = render(
+  test("should render with proper pagination logic", () => {
+    render(
       <PaginationProvider items={items}>
         {({
           currentItems,
@@ -39,16 +39,31 @@ describe("Pagination Provider", () => {
                 <li key={item.id}>{item.name}</li>
               ))}
             </ul>
-            <h1>Is first Page? {isFirstPage ? "yes" : "no"}</h1>
-            <h1>Is last Page? {isLastPage ? "yes" : "no"}</h1>
-            <button onClick={gotoFirstPage}>go to first page</button>
-            <button onClick={gotoPreviousPage}>go to previous Page</button>
-            {page}
-            <button onClick={gotoNextPage}>go to next page</button>
-            <button onClick={gotoLastPage}>go to last page</button>
+            <h1 data-testid="isFirstPage">
+              Is first Page? {isFirstPage ? "yes" : "no"}
+            </h1>
+            <h1 data-testid="isLastPage">
+              Is last Page? {isLastPage ? "yes" : "no"}
+            </h1>
+            <button data-testid="gotoFirstPage" onClick={gotoFirstPage}>
+              go to first page
+            </button>
+            <button data-testid="gotoPreviousPage" onClick={gotoPreviousPage}>
+              go to previous Page
+            </button>
+            <span data-testid="page">{page}</span>
+            <button data-testid="gotoNextPage" onClick={gotoNextPage}>
+              go to next page
+            </button>
+            <button data-testid="gotoLastPage" onClick={gotoLastPage}>
+              go to last page
+            </button>
           </div>
         )}
       </PaginationProvider>
     );
+
+    expect(screen.getByTestId("isFirstPage").textContent).toContain("yes");
+    expect(screen.getByTestId("isLastPage").textContent).toContain("no");
   });
 });
