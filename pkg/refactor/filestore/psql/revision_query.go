@@ -49,9 +49,16 @@ func (q *RevisionQuery) SetData(ctx context.Context, dataReader io.Reader) (*fil
 	if err != nil {
 		return nil, err
 	}
+	newChecksum := string(q.checksumFunc(data))
+
+	// if same checksum, do nothing, return the same revision.
+	if q.rev.Checksum == newChecksum {
+		return q.rev, err
+	}
+
 	res := q.db.WithContext(ctx).
 		Update("data", data).
-		Update("checksum", string(q.checksumFunc(data))).
+		Update("checksum", newChecksum).
 		First(rev)
 	if res.Error != nil {
 		return nil, res.Error
