@@ -33,7 +33,9 @@ func (flow *flow) Node(ctx context.Context, req *grpc.NodeRequest) (*grpc.NodeRe
 	return resp, nil
 }
 
-func (flow *flow) directory(ctx context.Context, req *grpc.DirectoryRequest) (*grpc.DirectoryResponse, error) {
+func (flow *flow) Directory(ctx context.Context, req *grpc.DirectoryRequest) (*grpc.DirectoryResponse, error) {
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
+
 	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
 	if err != nil {
 		return nil, err
@@ -53,17 +55,11 @@ func (flow *flow) directory(ctx context.Context, req *grpc.DirectoryRequest) (*g
 	return resp, nil
 }
 
-func (flow *flow) Directory(ctx context.Context, req *grpc.DirectoryRequest) (*grpc.DirectoryResponse, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
-
-	return flow.directory(ctx, req)
-}
-
 func (flow *flow) DirectoryStream(req *grpc.DirectoryRequest, srv grpc.Flow_DirectoryStreamServer) error {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 	ctx := srv.Context()
 
-	res, err := flow.directory(ctx, req)
+	res, err := flow.Directory(ctx, req)
 	if err != nil {
 		return err
 	}

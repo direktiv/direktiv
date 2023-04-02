@@ -300,10 +300,11 @@ func (flow *flow) DeleteNamespace(ctx context.Context, req *grpc.DeleteNamespace
 		return nil, err
 	}
 
-	err = flow.fStore.ForRootID(ns.ID).Delete(ctx)
-	if err != nil {
-		return nil, err
-	}
+	// TODO: yassir, test linking with the ent tables.
+	//err = flow.fStore.ForRootID(ns.ID).Delete(ctx)
+	//if err != nil {
+	//return nil, err
+	//}
 
 	flow.deleteNamespaceSecrets(ns)
 

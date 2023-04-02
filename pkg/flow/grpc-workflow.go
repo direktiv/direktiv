@@ -31,20 +31,29 @@ func (flow *flow) Workflow(ctx context.Context, req *grpc.WorkflowRequest) (*grp
 	if err != nil {
 		return nil, err
 	}
-	file, err := flow.fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
+	fStore, err := flow.fStore.Begin(ctx)
 	if err != nil {
 		return nil, err
 	}
-	revision, err := flow.fStore.ForFile(file).GetCurrentRevision(ctx)
+	defer fStore.Rollback(ctx)
+
+	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {
 		return nil, err
 	}
-	dataReader, err := flow.fStore.ForRevision(revision).GetData(ctx)
+	revision, err := fStore.ForFile(file).GetCurrentRevision(ctx)
+	if err != nil {
+		return nil, err
+	}
+	dataReader, err := fStore.ForRevision(revision).GetData(ctx)
 	if err != nil {
 		return nil, err
 	}
 	data, err := io.ReadAll(dataReader)
 	if err != nil {
+		return nil, err
+	}
+	if err = fStore.Commit(ctx); err != nil {
 		return nil, err
 	}
 
@@ -84,16 +93,26 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 	if err != nil {
 		return nil, err
 	}
-	file, revision, err := flow.fStore.ForRootID(ns.ID).CreateFile(ctx, req.GetPath(), filestore.FileTypeWorkflow, bytes.NewReader(req.GetSource()))
+	fStore, err := flow.fStore.Begin(ctx)
 	if err != nil {
 		return nil, err
 	}
-	dataReader, err := flow.fStore.ForRevision(revision).GetData(ctx)
+	defer fStore.Rollback(ctx)
+
+	file, revision, err := fStore.ForRootID(ns.ID).CreateFile(ctx, req.GetPath(), filestore.FileTypeWorkflow, bytes.NewReader(req.GetSource()))
+	if err != nil {
+		return nil, err
+	}
+	dataReader, err := fStore.ForRevision(revision).GetData(ctx)
 	if err != nil {
 		return nil, err
 	}
 	data, err := io.ReadAll(dataReader)
 	if err != nil {
+		return nil, err
+	}
+
+	if err = fStore.Commit(ctx); err != nil {
 		return nil, err
 	}
 
@@ -131,30 +150,41 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 	if err != nil {
 		return nil, err
 	}
-	file, err := flow.fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
+
+	fStore, err := flow.fStore.Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer fStore.Rollback(ctx)
+
+	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {
 		return nil, err
 	}
 	if file.Typ != filestore.FileTypeWorkflow {
 		return nil, status.Error(codes.InvalidArgument, "file type is not workflow")
 	}
-	revision, err := flow.fStore.ForFile(file).GetCurrentRevision(ctx)
+	revision, err := fStore.ForFile(file).GetCurrentRevision(ctx)
 	if err != nil {
 		return nil, err
 	}
-	revision, err = flow.fStore.ForRevision(revision).SetData(ctx, bytes.NewReader(req.GetSource()))
+	revision, err = fStore.ForRevision(revision).SetData(ctx, bytes.NewReader(req.GetSource()))
 	if err != nil {
 		return nil, err
 	}
-	dataReader, err := flow.fStore.ForRevision(revision).GetData(ctx)
+	dataReader, err := fStore.ForRevision(revision).GetData(ctx)
 	if err != nil {
 		return nil, err
 	}
+
 	data, err := io.ReadAll(dataReader)
 	if err != nil {
 		return nil, err
 	}
 
+	if err = fStore.Commit(ctx); err != nil {
+		return nil, err
+	}
 	// TODO: yassir, need fix here.
 	// metricsWfUpdated.WithLabelValues(args.cached.Namespace.Name, args.cached.Path(), args.cached.Namespace.Name).Inc()
 
