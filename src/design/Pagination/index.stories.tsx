@@ -1,12 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { Pagination, PaginationLink } from "./index";
 import React, { useState } from "react";
-import {
-  RxChevronLeft,
-  RxChevronRight,
-  RxDoubleArrowLeft,
-  RxDoubleArrowRight,
-} from "react-icons/rx";
 
 const meta = {
   title: "Components/Pagination",
@@ -24,13 +18,12 @@ const StoryComponent = ({ ...args }) => {
   return (
     <Pagination {...args}>
       <PaginationLink
-        icon
+        icon="left"
         onClick={() => {
           if (page > 1) setPage(page - 1);
         }}
-      >
-        <RxChevronLeft className="h-5 w-5" aria-hidden="true" />
-      </PaginationLink>
+      />
+
       {new Array(3).fill(0).map((prop, key) => (
         <PaginationLink
           key={`pg-lint-${key}`}
@@ -41,13 +34,11 @@ const StoryComponent = ({ ...args }) => {
         </PaginationLink>
       ))}
       <PaginationLink
-        icon
+        icon="right"
         onClick={() => {
           if (page < 3) setPage(page + 1);
         }}
-      >
-        <RxChevronRight className="h-5 w-5" aria-hidden="true" />
-      </PaginationLink>
+      />
     </Pagination>
   );
 };
@@ -71,22 +62,18 @@ export const NoPageButtons = () => {
   return (
     <Pagination align="center">
       <PaginationLink
-        icon
+        icon="left"
         onClick={() => {
           if (page > 1) setPage(page - 1);
         }}
-      >
-        <RxDoubleArrowLeft className="h-5 w-5" aria-hidden="true" />
-      </PaginationLink>
-      <PaginationLink active>{`PAGE ${page}`}</PaginationLink>
+      />
+      <PaginationLink>Page {page}</PaginationLink>
       <PaginationLink
-        icon
+        icon="right"
         onClick={() => {
           setPage(page + 1);
         }}
-      >
-        <RxDoubleArrowRight className="h-5 w-5" aria-hidden="true" />
-      </PaginationLink>
+      />
     </Pagination>
   );
 };
