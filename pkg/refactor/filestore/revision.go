@@ -44,7 +44,6 @@ type Revision struct {
 
 type RevisionQuery interface {
 	GetData(ctx context.Context) (io.ReadCloser, error)
-	SetData(ctx context.Context, dataReader io.Reader) (*Revision, error)
 	SetCurrent(ctx context.Context) (*Revision, error)
 	SetTags(ctx context.Context, tags RevisionTags) (*Revision, error)
 	Delete(ctx context.Context, force bool) error

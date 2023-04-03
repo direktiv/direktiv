@@ -11,9 +11,8 @@ import (
 )
 
 type RevisionQuery struct {
-	rev          *filestore.Revision
-	checksumFunc filestore.CalculateChecksumFunc
-	db           *gorm.DB
+	rev *filestore.Revision
+	db  *gorm.DB
 }
 
 var _ filestore.RevisionQuery = &RevisionQuery{}
@@ -40,31 +39,6 @@ func (q *RevisionQuery) GetData(ctx context.Context) (io.ReadCloser, error) {
 	readCloser := io.NopCloser(reader)
 
 	return readCloser, nil
-}
-
-func (q *RevisionQuery) SetData(ctx context.Context, dataReader io.Reader) (*filestore.Revision, error) {
-	rev := &filestore.Revision{ID: q.rev.ID}
-
-	data, err := io.ReadAll(dataReader)
-	if err != nil {
-		return nil, err
-	}
-	newChecksum := string(q.checksumFunc(data))
-
-	// if same checksum, do nothing, return the same revision.
-	if q.rev.Checksum == newChecksum {
-		return q.rev, err
-	}
-
-	res := q.db.WithContext(ctx).
-		Update("data", data).
-		Update("checksum", newChecksum).
-		First(rev)
-	if res.Error != nil {
-		return nil, res.Error
-	}
-
-	return rev, nil
 }
 
 func (q *RevisionQuery) SetTags(ctx context.Context, tags filestore.RevisionTags) (*filestore.Revision, error) {

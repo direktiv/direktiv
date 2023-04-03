@@ -13,7 +13,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func Test_sqlFileAttributesStore_SetAndGet(t *testing.T) {
+func Test_sqlFileAnnotationsStore_SetAndGet(t *testing.T) {
 	db, err := utils.NewMockGorm()
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
@@ -23,26 +23,30 @@ func Test_sqlFileAttributesStore_SetAndGet(t *testing.T) {
 
 	file := createFile(t, fs)
 
-	err = ds.FileAttributes().Set(context.Background(), &core.FileAttributes{
+	err = ds.FileAnnotations().Set(context.Background(), &core.FileAnnotations{
 		FileID: file.ID,
-		Value:  "some attributes",
+		Data:   core.FileAnnotationsData("some arbitrary data bytes"),
 	})
 	if err != nil {
 		t.Errorf("unexpected Set() error: %v", err)
+		return
 	}
 
-	attrs, err := ds.FileAttributes().Get(context.Background(), file.ID)
+	annotations, err := ds.FileAnnotations().Get(context.Background(), file.ID)
 	if err != nil {
 		t.Errorf("unexpected Get() error: %v", err)
+		return
 	}
 
-	if attrs.FileID != file.ID {
-		t.Errorf("unexpected Get().ID, got %s, want %s", attrs.FileID, file.ID)
+	if annotations.FileID != file.ID {
+		t.Errorf("unexpected Get().ID, got %s, want %s", annotations.FileID, file.ID)
+		return
 	}
 
-	wantValue := "some attributes"
-	if string(attrs.Value) != wantValue {
-		t.Errorf("unexpected Get().Value, want %s, got %s", wantValue, attrs.Value)
+	wantValue := "some arbitrary data bytes"
+	if string(annotations.Data) != wantValue {
+		t.Errorf("unexpected Get().Data, want %s, got %s", wantValue, annotations.Data)
+		return
 	}
 }
 

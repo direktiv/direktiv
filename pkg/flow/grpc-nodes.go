@@ -286,27 +286,20 @@ func (flow *flow) CreateNodeAttributes(ctx context.Context, req *grpc.CreateNode
 		return nil, err
 	}
 
-	attributes, err := store.FileAttributes().Get(ctx, file.ID)
+	annotations, err := store.FileAnnotations().Get(ctx, file.ID)
 
-	if err == core.ErrFileAttributesNotSet {
-		attributes = &core.FileAttributes{
+	if err == core.ErrFileAnnotationsNotSet {
+		annotations = &core.FileAnnotations{
 			FileID: file.ID,
-			Value:  core.NewFileAttributesValue(req.Attributes),
+			Data:   nil,
 		}
-		err := store.FileAttributes().Set(ctx, attributes)
-		if err != nil {
-			return nil, err
-		}
-		var resp emptypb.Empty
-
-		return &resp, nil
-	}
-
-	if err != nil {
+	} else if err != nil {
 		return nil, err
 	}
 
-	err = store.FileAttributes().Set(ctx, attributes.Add(req.Attributes))
+	annotations.Data = annotations.Data.AppendFileUserAttributes(req.GetAttributes())
+
+	err = store.FileAnnotations().Set(ctx, annotations)
 	if err != nil {
 		return nil, err
 	}
@@ -337,17 +330,17 @@ func (flow *flow) DeleteNodeAttributes(ctx context.Context, req *grpc.DeleteNode
 		return nil, err
 	}
 
-	attributes, err := store.FileAttributes().Get(ctx, file.ID)
+	annotations, err := store.FileAnnotations().Get(ctx, file.ID)
 
-	if err == core.ErrFileAttributesNotSet {
-		status.Error(codes.InvalidArgument, "file attributes are not set")
-	}
-
-	if err != nil {
+	if err == core.ErrFileAnnotationsNotSet {
+		return nil, status.Error(codes.InvalidArgument, "file annotations are not set")
+	} else if err != nil {
 		return nil, err
 	}
 
-	err = store.FileAttributes().Set(ctx, attributes.Remove(req.Attributes))
+	annotations.Data = annotations.Data.ReduceFileUserAttributes(req.GetAttributes())
+
+	err = store.FileAnnotations().Set(ctx, annotations)
 	if err != nil {
 		return nil, err
 	}

@@ -7,5 +7,5 @@ import (
 
 type Store interface {
 	Mirror() mirror.Store
-	FileAttributes() core.FileAttributesStore
+	FileAnnotations() core.FileAnnotationsStore
 }

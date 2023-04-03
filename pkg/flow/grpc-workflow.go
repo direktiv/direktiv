@@ -6,6 +6,8 @@ import (
 	"io"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/refactor/core"
+
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -149,6 +151,59 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 }
 
 func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRequest) (*grpc.UpdateWorkflowResponse, error) {
+	// This is being called by the frontend when a user changes a workflow via a UI and press save button.
+
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
+
+	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
+	if err != nil {
+		return nil, err
+	}
+
+	fStore, _, commit, rollback, err := flow.beginSqlTx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer rollback(ctx)
+
+	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
+	if err != nil {
+		return nil, err
+	}
+	if file.Typ != filestore.FileTypeWorkflow {
+		return nil, status.Error(codes.InvalidArgument, "file type is not workflow")
+	}
+
+	newRevision, err := fStore.ForFile(file).CreateRevision(ctx, "", bytes.NewReader(req.GetSource()))
+	if err != nil {
+		return nil, err
+	}
+	dataReader, err := fStore.ForRevision(newRevision).GetData(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	data, err := io.ReadAll(dataReader)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = commit(ctx); err != nil {
+		return nil, err
+	}
+	var resp grpc.UpdateWorkflowResponse
+
+	resp.Namespace = ns.Name
+	resp.Node = bytedata.ConvertFileToGrpcNode(file)
+	resp.Revision = bytedata.ConvertRevisionToGrpcRevision(newRevision)
+	resp.Revision.Source = data
+
+	return &resp, nil
+}
+
+func (flow *flow) SaveHead(ctx context.Context, req *grpc.SaveHeadRequest) (*grpc.SaveHeadResponse, error) {
+	// This is being called by the UI when a user clicks create revision button.
+
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
@@ -173,15 +228,14 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 	if err != nil {
 		return nil, err
 	}
-	revision, err = fStore.ForRevision(revision).SetData(ctx, bytes.NewReader(req.GetSource()))
-	if err != nil {
-		return nil, err
-	}
 	dataReader, err := fStore.ForRevision(revision).GetData(ctx)
 	if err != nil {
 		return nil, err
 	}
-
+	_, err = fStore.ForFile(file).CreateRevision(ctx, "", dataReader)
+	if err != nil {
+		return nil, err
+	}
 	data, err := io.ReadAll(dataReader)
 	if err != nil {
 		return nil, err
@@ -190,24 +244,8 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 	if err = commit(ctx); err != nil {
 		return nil, err
 	}
-	// TODO: yassir, need fix here.
-	// metricsWfUpdated.WithLabelValues(args.cached.Namespace.Name, args.cached.Path(), args.cached.Namespace.Name).Inc()
 
-	// flow.logger.Infof(ctx, args.cached.Workflow.ID, args.cached.GetAttributes(recipient.Workflow), "Updated workflow.")
-	// flow.pubsub.NotifyWorkflow(args.cached.Workflow)
-
-	//err = flow.BroadcastWorkflow(ctx, BroadcastEventTypeUpdate,
-	//	broadcastWorkflowInput{
-	//		Name:   args.cached.Inode().Name,
-	//		Path:   args.cached.Path(),
-	//		Parent: args.cached.Dir(),
-	//		Live:   args.cached.Workflow.Live,
-	//	}, args.cached)
-	//if err != nil {
-	//	return nil, err
-	//}
-
-	var resp grpc.UpdateWorkflowResponse
+	var resp grpc.SaveHeadResponse
 
 	resp.Namespace = ns.Name
 	resp.Node = bytedata.ConvertFileToGrpcNode(file)
@@ -217,20 +255,56 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 	return &resp, nil
 }
 
-func (flow *flow) SaveHead(ctx context.Context, req *grpc.SaveHeadRequest) (*grpc.SaveHeadResponse, error) {
-	// TODO: yassir, question this controller.
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
-
-	var resp grpc.SaveHeadResponse
-
-	return &resp, nil
-}
-
 func (flow *flow) DiscardHead(ctx context.Context, req *grpc.DiscardHeadRequest) (*grpc.DiscardHeadResponse, error) {
-	// TODO: yassir, question this controller.
+	// This is being called by the UI when a user clicks 'revert' button.
+
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
+
+	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
+	if err != nil {
+		return nil, err
+	}
+
+	fStore, _, commit, rollback, err := flow.beginSqlTx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer rollback(ctx)
+
+	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
+	if err != nil {
+		return nil, err
+	}
+	if file.Typ != filestore.FileTypeWorkflow {
+		return nil, status.Error(codes.InvalidArgument, "file type is not workflow")
+	}
+	revision, err := fStore.ForFile(file).GetCurrentRevision(ctx)
+	if err != nil {
+		return nil, err
+	}
+	dataReader, err := fStore.ForRevision(revision).GetData(ctx)
+	if err != nil {
+		return nil, err
+	}
+	//_, err = fStore.ForFile(file).RevertRevision(ctx, "")
+	//if err != nil {
+	//	return nil, err
+	//}
+	data, err := io.ReadAll(dataReader)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = commit(ctx); err != nil {
+		return nil, err
+	}
 
 	var resp grpc.DiscardHeadResponse
+
+	resp.Namespace = ns.Name
+	resp.Node = bytedata.ConvertFileToGrpcNode(file)
+	resp.Revision = bytedata.ConvertRevisionToGrpcRevision(revision)
+	resp.Revision.Source = data
 
 	return &resp, nil
 }
@@ -243,9 +317,45 @@ func (flow *flow) ToggleWorkflow(ctx context.Context, req *grpc.ToggleWorkflowRe
 }
 
 func (flow *flow) SetWorkflowEventLogging(ctx context.Context, req *grpc.SetWorkflowEventLoggingRequest) (*emptypb.Empty, error) {
-	// TODO: yassir, question this controller.
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
+	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
+	if err != nil {
+		return nil, err
+	}
+
+	fStore, store, commit, rollback, err := flow.beginSqlTx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer rollback(ctx)
+
+	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
+	if err != nil {
+		return nil, err
+	}
+
+	annotations, err := store.FileAnnotations().Get(ctx, file.ID)
+
+	if err == core.ErrFileAnnotationsNotSet {
+		annotations = &core.FileAnnotations{
+			FileID: file.ID,
+			Data:   nil,
+		}
+	} else if err != nil {
+		return nil, err
+	}
+
+	annotations.Data = annotations.Data.SetEntry("workflow_log_event_key", req.GetLogger())
+
+	err = store.FileAnnotations().Set(ctx, annotations)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := commit(ctx); err != nil {
+		return nil, err
+	}
 	var resp emptypb.Empty
 
 	return &resp, nil

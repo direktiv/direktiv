@@ -23,16 +23,16 @@ func (s *SQLFileStore) ForRootID(rootID uuid.UUID) filestore.RootQuery {
 
 func (s *SQLFileStore) ForFile(file *filestore.File) filestore.FileQuery {
 	return &FileQuery{
-		file: file,
-		db:   s.db,
+		file:         file,
+		checksumFunc: filestore.DefaultCalculateChecksum,
+		db:           s.db,
 	}
 }
 
 func (s *SQLFileStore) ForRevision(revision *filestore.Revision) filestore.RevisionQuery {
 	return &RevisionQuery{
-		rev:          revision,
-		db:           s.db,
-		checksumFunc: filestore.DefaultCalculateChecksum,
+		rev: revision,
+		db:  s.db,
 	}
 }
 

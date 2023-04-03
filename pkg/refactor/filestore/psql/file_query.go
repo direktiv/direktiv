@@ -13,8 +13,9 @@ import (
 )
 
 type FileQuery struct {
-	file *filestore.File
-	db   *gorm.DB
+	file         *filestore.File
+	checksumFunc filestore.CalculateChecksumFunc
+	db           *gorm.DB
 }
 
 func (q *FileQuery) setPathForFileType(ctx context.Context, path string) error {
@@ -179,27 +180,22 @@ func (q *FileQuery) GetCurrentRevision(ctx context.Context) (*filestore.Revision
 	return rev, nil
 }
 
-func (q *FileQuery) CreateRevision(ctx context.Context, tags filestore.RevisionTags) (*filestore.Revision, error) {
+func (q *FileQuery) CreateRevision(ctx context.Context, tags filestore.RevisionTags, dataReader io.Reader) (*filestore.Revision, error) {
 	if q.file.Typ == filestore.FileTypeDirectory {
 		return nil, filestore.ErrFileTypeIsDirectory
-	}
-
-	// read file data to copy it to a new revision that we will create.
-	dataReader, err := q.GetData(ctx)
-	if err != nil {
-		return nil, err
 	}
 	data, err := io.ReadAll(dataReader)
 	if err != nil {
 		return nil, err
 	}
+	newChecksum := string(q.checksumFunc(data))
 
 	// set current revisions 'is_current' flag to false.
 	res := q.db.WithContext(ctx).
 		Model(&filestore.Revision{}).
 		Where("file_id", q.file.ID).
-		Where("is_current", true).
-		Update("is_current", false)
+		Update("is_current", false).
+		Update("checksum", newChecksum)
 	if res.Error != nil {
 		return nil, res.Error
 	}
@@ -207,7 +203,7 @@ func (q *FileQuery) CreateRevision(ctx context.Context, tags filestore.RevisionT
 		return nil, fmt.Errorf("unexpedted gorm update count, got: %d, want: %d", res.RowsAffected, 1)
 	}
 
-	// create a new file revision by copying data.
+	// create a new file revision.
 	newRev := &filestore.Revision{
 		ID:   uuid.New(),
 		Tags: tags,

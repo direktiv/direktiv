@@ -25,8 +25,8 @@ func (s *sqlStore) Mirror() mirror.Store {
 	}
 }
 
-func (s *sqlStore) FileAttributes() core.FileAttributesStore {
-	return &sqlFileAttributesStore{
+func (s *sqlStore) FileAnnotations() core.FileAnnotationsStore {
+	return &sqlFileAnnotationsStore{
 		db: s.db,
 	}
 }

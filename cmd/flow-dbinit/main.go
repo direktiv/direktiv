@@ -229,14 +229,14 @@ func updateGeneration_2_0_0(db *sql.Tx) error {
 				CONSTRAINT "fk_files_revisions"
 				FOREIGN KEY ("file_id") REFERENCES "files"("id") ON DELETE CASCADE ON UPDATE CASCADE
 				);
-	 CREATE TABLE IF NOT EXISTS "file_attributes"
+	 CREATE TABLE IF NOT EXISTS "file_annotations"
 			(
 				"file_id" text,
-				"value" text,
+				"data" text,
 				"created_at" datetime,
 				"updated_at" datetime,
 				PRIMARY KEY ("file_id"),
-				CONSTRAINT "fk_files_file_attributes"
+				CONSTRAINT "fk_files_file_annotations"
 				FOREIGN KEY ("file_id") REFERENCES "files"("id") ON DELETE CASCADE ON UPDATE CASCADE
 				);
 `)
