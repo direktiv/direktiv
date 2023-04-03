@@ -75,19 +75,23 @@ func (flow *flow) DirectoryStream(req *grpc.DirectoryRequest, srv grpc.Flow_Dire
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 	ctx := srv.Context()
 
-	res, err := flow.Directory(ctx, req)
+	resp, err := flow.Directory(ctx, req)
 	if err != nil {
 		return err
 	}
-	err = srv.Send(res)
-	if err != nil {
-		return err
+	// mock streaming response.
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+		default:
+			err = srv.Send(resp)
+			if err != nil {
+				return err
+			}
+			time.Sleep(time.Second * 5)
+		}
 	}
-
-	// fake stream.
-	time.Sleep(time.Second * 10)
-
-	return nil
 }
 
 func (flow *flow) CreateDirectory(ctx context.Context, req *grpc.CreateDirectoryRequest) (*grpc.CreateDirectoryResponse, error) {

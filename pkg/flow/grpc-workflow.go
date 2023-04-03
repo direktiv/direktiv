@@ -76,14 +76,19 @@ func (flow *flow) WorkflowStream(req *grpc.WorkflowRequest, srv grpc.Flow_Workfl
 	if err != nil {
 		return err
 	}
-	err = srv.Send(resp)
-	if err != nil {
-		return err
+	// mock streaming response.
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+		default:
+			err = srv.Send(resp)
+			if err != nil {
+				return err
+			}
+			time.Sleep(time.Second * 5)
+		}
 	}
-	// fake streaming.
-	time.Sleep(time.Second * 10)
-
-	return nil
 }
 
 func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRequest) (*grpc.CreateWorkflowResponse, error) {

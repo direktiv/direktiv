@@ -74,14 +74,20 @@ func (flow *flow) TagsStream(req *grpc.TagsRequest, srv grpc.Flow_TagsStreamServ
 	if err != nil {
 		return err
 	}
-	err = srv.Send(resp)
-	if err != nil {
-		return err
-	}
-	// fake streaming.
-	time.Sleep(time.Second * 10)
 
-	return nil
+	// mock streaming response.
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+		default:
+			err = srv.Send(resp)
+			if err != nil {
+				return err
+			}
+			time.Sleep(time.Second * 5)
+		}
+	}
 }
 
 func (flow *flow) Refs(ctx context.Context, req *grpc.RefsRequest) (*grpc.RefsResponse, error) {
@@ -133,14 +139,20 @@ func (flow *flow) RefsStream(req *grpc.RefsRequest, srv grpc.Flow_RefsStreamServ
 	if err != nil {
 		return err
 	}
-	err = srv.Send(resp)
-	if err != nil {
-		return err
-	}
-	// fake streaming.
-	time.Sleep(time.Second * 10)
 
-	return nil
+	// mock streaming response.
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+		default:
+			err = srv.Send(resp)
+			if err != nil {
+				return err
+			}
+			time.Sleep(time.Second * 5)
+		}
+	}
 }
 
 func (flow *flow) Tag(ctx context.Context, req *grpc.TagRequest) (*emptypb.Empty, error) {

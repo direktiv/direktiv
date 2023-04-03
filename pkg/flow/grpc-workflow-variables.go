@@ -84,7 +84,6 @@ func (flow *flow) getWorkflowVariable(ctx context.Context, namespace, path, key 
 	}
 
 	return
-
 }
 
 func (flow *flow) WorkflowVariable(ctx context.Context, req *grpc.WorkflowVariableRequest) (*grpc.WorkflowVariableResponse, error) {
