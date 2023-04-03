@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 
+	otelObs "github.com/cloudevents/sdk-go/observability/opentelemetry/v2/client"
+	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -182,4 +184,29 @@ func traceActionResult(ctx context.Context, results *actionResultPayload) {
 			Value: attribute.StringValue(results.ActionID),
 		},
 	)
+}
+
+func TraceEmbeddedEventContext(ctx context.Context, event *event.Event) context.Context {
+	tp := otel.GetTracerProvider()
+	tr := tp.Tracer("direktiv/flow")
+
+	ctxEvent := otelObs.ExtractDistributedTracingExtension(ctx, *event)
+	links := trace.LinkFromContext(ctx)
+	opts := trace.WithLinks(links)
+	finalCtx, span := tr.Start(ctxEvent, "events-invoke", opts)
+	defer span.End()
+
+	return finalCtx
+}
+
+func TraceHandleEvent(event *event.Event) context.Context {
+	tp := otel.GetTracerProvider()
+	tr := tp.Tracer("direktiv/flow")
+	ctx := otelObs.ExtractDistributedTracingExtension(context.Background(), *event)
+
+	newCtx, span := tr.Start(ctx, "handle-event")
+	defer span.End()
+	otelObs.InjectDistributedTracingExtension(newCtx, *event)
+
+	return newCtx
 }

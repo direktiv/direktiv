@@ -12,6 +12,7 @@ import (
 	"sync"
 	"time"
 
+	otelObs "github.com/cloudevents/sdk-go/observability/opentelemetry/v2/client"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/dop251/goja"
 
@@ -378,6 +379,7 @@ func (events *events) handleEventLoopLogic(ctx context.Context, rows *sql.Rows, 
 }
 
 func (events *events) handleEvent(ns *database.Namespace, ce *cloudevents.Event) error {
+	ctx := TraceHandleEvent(ce)
 	db := events.edb.DB()
 	//
 
@@ -399,7 +401,7 @@ func (events *events) handleEvent(ns *database.Namespace, ce *cloudevents.Event)
 	}
 	defer rows.Close()
 
-	ctx := context.Background()
+	// ctx := context.Background()
 
 	for rows.Next() {
 		events.handleEventLoopLogic(ctx, rows, ce)
@@ -909,8 +911,10 @@ func (events *events) ReplayCloudevent(ctx context.Context, cached *database.Cac
 	return nil
 }
 
+// will broadcast event and inject given the tracecontext from ctx to the event. If the event already contains a tracecontext it will be replaced.
 func (events *events) BroadcastCloudevent(ctx context.Context, cached *database.CacheData, event *cloudevents.Event, timer int64) error {
 	events.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Event received: %s (%s / %s)", event.ID(), event.Type(), event.Source())
+	otelObs.InjectDistributedTracingExtension(ctx, *event)
 
 	metricsCloudEventsReceived.WithLabelValues(cached.Namespace.Name, event.Type(), event.Source(), cached.Namespace.Name).Inc()
 

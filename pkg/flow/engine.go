@@ -1053,6 +1053,17 @@ func (engine *engine) wakeEventsWaiter(signature []byte, events []*cloudevents.E
 
 func (engine *engine) EventsInvoke(workflowID string, events ...*cloudevents.Event) {
 	ctx := context.Background()
+	var input []byte
+	m := make(map[string]interface{})
+	for _, event := range events {
+
+		if event == nil {
+			continue
+		}
+		ctx = TraceEmbeddedEventContext(ctx, event)
+		m[event.Type()] = event
+
+	}
 
 	id, err := uuid.Parse(workflowID)
 	if err != nil {
@@ -1067,24 +1078,12 @@ func (engine *engine) EventsInvoke(workflowID string, events ...*cloudevents.Eve
 		return
 	}
 
-	var input []byte
-	m := make(map[string]interface{})
-	for _, event := range events {
-
-		if event == nil {
-			continue
-		}
-
-		m[event.Type()] = event
-
-	}
-
 	input, err = json.Marshal(m)
 	if err != nil {
 		engine.sugar.Errorf("Internal error on EventsInvoke: %v", err)
 		return
 	}
-
+	// ctx = traceStartInstanceFromEvents(ctx, withLinks)
 	args := new(newInstanceArgs)
 	args.Namespace = cached.Namespace.Name
 	args.Path = cached.Path()
