@@ -12,7 +12,7 @@ export const Pagination: React.FC<PaginationProps> = ({
 }) => (
   <div
     className={clsx(
-      "flex border-t border-gray-2 bg-gray-1 px-4 py-3 dark:border-gray-10 dark:bg-gray-dark-1 sm:px-6 ",
+      "flex border-t border-gray-2 bg-gray-1 px-4 py-3 dark:border-gray-dark-2 dark:bg-gray-dark-1 sm:px-6 ",
       align === "center" && "justify-center",
       align === "right" && "justify-end",
       align === "left" && "justify-start"
@@ -42,7 +42,7 @@ export const PaginationLink = React.forwardRef<
       ref={ref}
       key={key}
       onClick={onClick}
-      className="relative inline-flex cursor-pointer items-center p-2 text-gray-4 ring-1 ring-inset ring-gray-3 hover:bg-gray-1 focus:z-20 focus:outline-offset-0 dark:bg-gray-dark-1 dark:text-white dark:ring-gray-dark-3  dark:hover:bg-gray-dark-1"
+      className="relative inline-flex cursor-pointer items-center bg-gray-1 p-2  text-gray-4 ring-1 ring-inset ring-gray-3 hover:bg-gray-1 focus:z-20 focus:outline-offset-0 dark:bg-gray-dark-1 dark:text-gray-dark-4 dark:ring-gray-dark-3 dark:hover:bg-gray-dark-1"
     >
       {children}
     </button>
@@ -57,7 +57,7 @@ export const PaginationLink = React.forwardRef<
         active &&
           "z-10 bg-gray-12 text-gray-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-1 dark:bg-gray-dark-12 dark:text-gray-dark-1  dark:focus-visible:outline-gray-dark-1",
         !active &&
-          "text-gray-900 ring-1 ring-inset ring-gray-3 hover:bg-gray-1 focus:outline-offset-0 dark:bg-gray-12 dark:text-gray-1 dark:ring-gray-dark-3 dark:hover:bg-gray-dark-1"
+          "text-gray-12 ring-1 ring-inset ring-gray-3 hover:bg-gray-1 focus:outline-offset-0 dark:bg-gray-12 dark:text-gray-dark-12 dark:ring-gray-dark-3 dark:hover:bg-gray-dark-1"
       )}
     >
       {children}
