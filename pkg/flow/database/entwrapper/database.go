@@ -280,19 +280,17 @@ func (db *Database) NamespaceVariableRef(ctx context.Context, nsID uuid.UUID, ke
 }
 
 func (db *Database) WorkflowVariableRef(ctx context.Context, wfID uuid.UUID, key string) (*database.VarRef, error) {
-	// TODO: yassir, need refactor.
-	return nil, nil
-	//clients := db.clients(ctx)
-	//
-	//varref, err := clients.VarRef.Query().Where(entvar.HasWorkflowWith(entwf.ID(wfID)), entvar.NameEQ(key)).WithVardata(func(q *ent.VarDataQuery) {
-	//	q.Select(entvardata.FieldID)
-	//}).Only(ctx)
-	//if err != nil {
-	//	db.Sugar.Debugf("%s failed to resolve workflow variable: %v", parent(), err)
-	//	return nil, err
-	//}
-	//
-	//return db.entVarRef(varref), nil
+	clients := db.clients(ctx)
+
+	varref, err := clients.VarRef.Query().Where(entvar.WorkflowID(wfID), entvar.NameEQ(key)).WithVardata(func(q *ent.VarDataQuery) {
+		q.Select(entvardata.FieldID)
+	}).Only(ctx)
+	if err != nil {
+		db.Sugar.Debugf("%s failed to resolve workflow variable: %v", parent(), err)
+		return nil, err
+	}
+
+	return db.entVarRef(varref), nil
 }
 
 func (db *Database) InstanceVariableRef(ctx context.Context, instID uuid.UUID, key string) (*database.VarRef, error) {
