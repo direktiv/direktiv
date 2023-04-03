@@ -12,7 +12,7 @@ export const Pagination: React.FC<PaginationProps> = ({
 }) => (
   <div
     className={clsx(
-      "flex border-t border-gray-2 bg-gray-1 px-4 py-3 dark:border-gray-dark-2 dark:bg-gray-dark-1 sm:px-6 ",
+      "flex px-4 py-3 sm:px-6 ",
       align === "center" && "justify-center",
       align === "right" && "justify-end",
       align === "left" && "justify-start"
