@@ -29,7 +29,7 @@ import (
 // TEMPORARY EVERYTHING
 
 func (im *instanceMemory) BroadcastCloudevent(ctx context.Context, event *cloudevents.Event, dd int64) error {
-	return im.engine.events.BroadcastCloudevent(ctx, im.cached, event, dd)
+	return im.engine.events.BroadcastCloudevent(ctx, im.cached.Namespace, event, dd)
 }
 
 func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.VariableSelector) ([]states.Variable, error) {

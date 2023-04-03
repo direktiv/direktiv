@@ -73,7 +73,7 @@ func (flow *flow) BroadcastWorkflow(ctx context.Context, eventType string, input
 		return fmt.Errorf("failed to create CloudEvent: %w", err)
 	}
 
-	return flow.events.BroadcastCloudevent(ctx, cached, &event, 60)
+	return flow.events.BroadcastCloudevent(ctx, cached.Namespace, &event, 60)
 }
 
 type broadcastDirectoryInput struct {
@@ -104,7 +104,7 @@ func (flow *flow) BroadcastDirectory(ctx context.Context, eventType string, inpu
 		return fmt.Errorf("failed to create CloudEvent: %w", err)
 	}
 
-	return flow.events.BroadcastCloudevent(ctx, cached, &event, 60)
+	return flow.events.BroadcastCloudevent(ctx, cached.Namespace, &event, 60)
 }
 
 type broadcastVariableInput struct {
@@ -115,10 +115,10 @@ type broadcastVariableInput struct {
 	Scope        string
 }
 
-func (flow *flow) BroadcastVariable(ctx context.Context, eventType string, eventScope string, input broadcastVariableInput, cached *database.CacheData) error {
+func (flow *flow) BroadcastVariable(ctx context.Context, eventType string, eventScope string, input broadcastVariableInput, ns *database.Namespace) error {
 	// BROADCAST EVENT
 	target := fmt.Sprintf("%s.%s.%s", eventScope, BroadcastEventPrefixVariable, eventType)
-	cfg, err := loadNSConfig([]byte(cached.Namespace.Config))
+	cfg, err := loadNSConfig([]byte(ns.Config))
 	if err != nil {
 		return fmt.Errorf("failed to load namespace config: %w", err)
 	}
@@ -138,7 +138,7 @@ func (flow *flow) BroadcastVariable(ctx context.Context, eventType string, event
 		return fmt.Errorf("failed to create CloudEvent: %w", err)
 	}
 
-	return flow.events.BroadcastCloudevent(ctx, cached, &event, 60)
+	return flow.events.BroadcastCloudevent(ctx, ns, &event, 60)
 }
 
 type broadcastInstanceInput struct {
@@ -170,5 +170,5 @@ func (flow *flow) BroadcastInstance(eventType string, ctx context.Context, input
 		return fmt.Errorf("failed to create CloudEvent: %w", err)
 	}
 
-	return flow.events.BroadcastCloudevent(ctx, cached, &event, 60)
+	return flow.events.BroadcastCloudevent(ctx, cached.Namespace, &event, 60)
 }

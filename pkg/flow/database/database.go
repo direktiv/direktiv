@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
+	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/google/uuid"
 )
 
@@ -39,6 +40,7 @@ type CacheData struct {
 	Ref       *Ref
 	Revision  *Revision
 	Instance  *Instance
+	File      *filestore.File
 }
 
 func (cached *CacheData) Parent() *CacheData {
@@ -79,6 +81,22 @@ func (cached *CacheData) Inode() *Inode {
 
 func (cached *CacheData) ParentInode() *Inode {
 	return cached.Inodes[len(cached.Inodes)-2]
+}
+
+type HasAttributes interface {
+	GetAttributes() map[string]string
+}
+
+func GetAttributes(recipientType recipient.RecipientType, a ...HasAttributes) map[string]string {
+	m := make(map[string]string)
+	m["recipientType"] = string(recipientType)
+	for _, x := range a {
+		y := x.GetAttributes()
+		for k, v := range y {
+			m[k] = v
+		}
+	}
+	return m
 }
 
 func (cached *CacheData) GetAttributes(recipientType recipient.RecipientType) map[string]string {

@@ -534,7 +534,7 @@ func (engine *engine) UserLog(ctx context.Context, im *instanceMemory, msg strin
 			engine.sugar.Errorf("Failed to create CloudEvent: %v.", err)
 		}
 
-		err = engine.events.BroadcastCloudevent(ctx, im.cached, &event, 0)
+		err = engine.events.BroadcastCloudevent(ctx, im.cached.Namespace, &event, 0)
 		if err != nil {
 			engine.sugar.Errorf("Failed to broadcast CloudEvent: %v.", err)
 			return

@@ -352,9 +352,7 @@ resend:
 }
 
 func (flow *flow) SetNamespaceVariable(ctx context.Context, req *grpc.SetNamespaceVariableRequest) (*grpc.SetNamespaceVariableResponse, error) {
-	// TODO: yassir, need refactor.
-	return nil, nil
-	/*flow.sugar.Debugf("Handling gRPC request: %s", this())
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	tctx, tx, err := flow.database.Tx(ctx)
 	if err != nil {
@@ -402,7 +400,7 @@ func (flow *flow) SetNamespaceVariable(ctx context.Context, req *grpc.SetNamespa
 	resp.TotalSize = int64(vdata.Size)
 	resp.MimeType = vdata.MimeType
 
-	return &resp, nil*/
+	return &resp, nil
 }
 
 func (internal *internal) SetNamespaceVariableParcels(srv grpc.Internal_SetNamespaceVariableParcelsServer) error {
@@ -670,7 +668,7 @@ func (flow *flow) DeleteNamespaceVariable(ctx context.Context, req *grpc.DeleteN
 		TotalSize:    int64(vdata.Size),
 		Scope:        BroadcastEventScopeNamespace,
 	}
-	err = flow.BroadcastVariable(ctx, BroadcastEventTypeDelete, BroadcastEventScopeNamespace, broadcastInput, cached)
+	err = flow.BroadcastVariable(ctx, BroadcastEventTypeDelete, BroadcastEventScopeNamespace, broadcastInput, cached.Namespace)
 	if err != nil {
 		return nil, err
 	}

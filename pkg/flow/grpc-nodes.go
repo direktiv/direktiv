@@ -13,6 +13,8 @@ import (
 	"google.golang.org/grpc/status"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
+	"github.com/direktiv/direktiv/pkg/flow/database"
+	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
@@ -109,8 +111,7 @@ func (flow *flow) CreateDirectory(ctx context.Context, req *grpc.CreateDirectory
 		return nil, err
 	}
 
-	// TODO: alex, need fix here.
-	// flow.logger.Infof(ctx, ns.ID, args.pcached.GetAttributes("namespace"), "Created directory '%s'.", args.path)
+	flow.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Created directory '%s'.", file.Path)
 
 	// Broadcast
 	// TODO: yassir, need question here.
@@ -212,8 +213,7 @@ func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (
 	//
 	//}
 
-	// TODO: alex, need fix here.
-	// flow.logger.Infof(ctx, ns.ID, args.cached.GetAttributes(recipient.Namespace), "Deleted %s '%s'.", args.cached.Inode().Type, args.cached.Path())
+	flow.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Deleted %s '%s'.", file.Typ, file.Path)
 
 	var resp emptypb.Empty
 
@@ -253,8 +253,7 @@ func (flow *flow) RenameNode(ctx context.Context, req *grpc.RenameNodeRequest) (
 		return nil, err
 	}
 
-	// TODO: alex, need fix here.
-	// flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Renamed %s from '%s' to '%s'.", cached.Inode().Type, req.GetOld(), req.GetNew())
+	flow.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Renamed %s from '%s' to '%s'.", file.Typ, req.GetOld(), req.GetNew())
 
 	var resp grpc.RenameNodeResponse
 

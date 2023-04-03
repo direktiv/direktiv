@@ -591,20 +591,21 @@ func (pubsub *Pubsub) CloseMirror(ino *database.Inode) {
 	pubsub.Publish(pubsubDisconnect(pubsub.mirror(ino)))
 }
 
-func (pubsub *Pubsub) workflowVars(wf *database.Workflow) string {
-	return fmt.Sprintf("wfvars:%s", wf.ID.String())
+func (pubsub *Pubsub) workflowVars(id uuid.UUID) string {
+	return fmt.Sprintf("wfvars:%s", id.String())
 }
 
-func (pubsub *Pubsub) SubscribeWorkflowVariables(cached *database.CacheData) *Subscription {
-	keys := pubsub.walkInodeKeys(cached)
-
-	keys = append(keys, cached.Workflow.ID.String(), pubsub.workflowVars(cached.Workflow))
-
+func (pubsub *Pubsub) SubscribeWorkflowVariables(id uuid.UUID) *Subscription {
+	// TODO: alan, remove this if we're no longer interested in streaming it
+	// keys := pubsub.walkInodeKeys(cached)
+	// keys = append(keys, cached.Workflow.ID.String(), pubsub.workflowVars(cached.Workflow.ID))
+	keys := []string{pubsub.workflowVars(id)}
 	return pubsub.Subscribe(keys...)
 }
 
-func (pubsub *Pubsub) NotifyWorkflowVariables(wf *database.Workflow) {
-	pubsub.Publish(pubsubNotify(pubsub.workflowVars(wf)))
+func (pubsub *Pubsub) NotifyWorkflowVariables(id uuid.UUID) {
+	// TODO: alan, remove this if we're no longer interested in streaming it
+	pubsub.Publish(pubsubNotify(pubsub.workflowVars(id)))
 }
 
 func (pubsub *Pubsub) workflowAnnotations(wf *database.Workflow) string {

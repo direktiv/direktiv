@@ -705,7 +705,7 @@ func (flow *flow) BroadcastCloudevent(ctx context.Context, in *grpc.BroadcastClo
 
 	timer := in.GetTimer()
 
-	err = flow.events.BroadcastCloudevent(ctx, cached, event, timer)
+	err = flow.events.BroadcastCloudevent(ctx, cached.Namespace, event, timer)
 	if err != nil {
 		return nil, err
 	}
@@ -914,22 +914,22 @@ func (events *events) ReplayCloudevent(ctx context.Context, cached *database.Cac
 	return nil
 }
 
-func (events *events) BroadcastCloudevent(ctx context.Context, cached *database.CacheData, event *cloudevents.Event, timer int64) error {
-	events.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Event received: %s (%s / %s)", event.ID(), event.Type(), event.Source())
+func (events *events) BroadcastCloudevent(ctx context.Context, ns *database.Namespace, event *cloudevents.Event, timer int64) error {
+	events.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Event received: %s (%s / %s)", event.ID(), event.Type(), event.Source())
 
-	metricsCloudEventsReceived.WithLabelValues(cached.Namespace.Name, event.Type(), event.Source(), cached.Namespace.Name).Inc()
+	metricsCloudEventsReceived.WithLabelValues(ns.Name, event.Type(), event.Source(), ns.Name).Inc()
 
 	// add event to db
-	err := events.addEvent(ctx, event, cached.Namespace, timer)
+	err := events.addEvent(ctx, event, ns, timer)
 	if err != nil {
 		return err
 	}
 
-	events.pubsub.NotifyEvents(cached.Namespace)
+	events.pubsub.NotifyEvents(ns)
 
 	// handle event
 	if timer == 0 {
-		err = events.handleEvent(cached.Namespace, event)
+		err = events.handleEvent(ns, event)
 		if err != nil {
 			return err
 		}

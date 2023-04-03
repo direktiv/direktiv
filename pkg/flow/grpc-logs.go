@@ -1,5 +1,18 @@
 package flow
 
+import "github.com/direktiv/direktiv/pkg/refactor/filestore"
+
+type fileAttributes filestore.File
+
+func (f fileAttributes) GetAttributes() map[string]string {
+	m := make(map[string]string)
+	m["namespace-id"] = f.RootID.String()
+	if f.Typ == filestore.FileTypeWorkflow {
+		m["workflow-id"] = f.ID.String()
+	}
+	return m
+}
+
 // TODO: yassir, refactoring needed.
 
 /*
