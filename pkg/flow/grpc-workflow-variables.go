@@ -1,4 +1,3 @@
-// TODO: yassir, need refactor.
 package flow
 
 import (
