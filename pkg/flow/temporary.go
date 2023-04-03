@@ -61,8 +61,7 @@ func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.Variab
 			// 	return nil, derrors.NewInternalError(err)
 			// }
 
-			// TODO: yassir, refactor fix.
-			// ref, err = clients.VarRef.Query().Where(entvar.HasWorkflowWith(entwf.ID(im.cached.Workflow.ID))).Where(entvar.NameEQ(key)).WithVardata().Only(ctx)
+			ref, err = clients.VarRef.Query().Where(entvar.WorkflowID(im.cached.File.ID)).Where(entvar.NameEQ(key)).WithVardata().Only(ctx)
 
 		case util.VarScopeNamespace:
 
@@ -189,99 +188,98 @@ func (im *instanceMemory) RetrieveSecret(ctx context.Context, secret string) (st
 }
 
 func (im *instanceMemory) SetVariables(ctx context.Context, vars []states.VariableSetter) error {
-	// TODO: yassir, need refactor.
+	tctx, tx, err := im.engine.database.Tx(ctx)
+	if err != nil {
+		return err
+	}
+	defer rollback(tx)
+
+	clients := im.engine.edb.Clients(tctx)
+
+	for idx := range vars {
+
+		v := vars[idx]
+
+		var q varQuerier
+
+		var thread bool
+
+		switch v.Scope {
+
+		case "":
+
+			fallthrough
+
+		case "instance":
+
+			q = &entInstanceVarQuerier{
+				clients: clients,
+				cached:  im.cached,
+			}
+
+		case "thread":
+
+			q = &entInstanceVarQuerier{
+				clients: clients,
+				cached:  im.cached,
+			}
+
+			thread = true
+
+		case "workflow":
+
+			q = &entWorkflowVarQuerier{
+				clients: clients,
+				ns:      im.cached.Namespace,
+				f:       im.cached.File,
+			}
+
+		case "namespace":
+
+			q = &entNamespaceVarQuerier{
+				clients: clients,
+				cached:  im.cached,
+			}
+
+		default:
+			return derrors.NewInternalError(errors.New("invalid scope"))
+		}
+
+		// if statements have to be same order
+
+		d := string(v.Data)
+
+		if len(d) == 0 {
+			_, _, err = im.engine.flow.DeleteVariable(tctx, q, v.Key, v.Data, v.MIMEType, thread)
+			if err != nil {
+				return err
+			}
+			continue
+
+		}
+
+		if !(v.MIMEType == "text/plain; charset=utf-8" || v.MIMEType == "text/plain" || v.MIMEType == "application/octet-stream") && (d == "{}" || d == "[]" || d == "0" || d == `""` || d == "null") {
+			_, _, err = im.engine.flow.DeleteVariable(tctx, q, v.Key, v.Data, v.MIMEType, thread)
+			if err != nil {
+				return err
+			}
+			continue
+
+		} else {
+			_, _, err = im.engine.flow.SetVariable(tctx, q, v.Key, v.Data, v.MIMEType, thread)
+			if err != nil {
+				return err
+			}
+		}
+
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return err
+	}
+
 	return nil
-	//tctx, tx, err := im.engine.database.Tx(ctx)
-	//if err != nil {
-	//	return err
-	//}
-	//defer rollback(tx)
-	//
-	//clients := im.engine.edb.Clients(tctx)
-	//
-	//for idx := range vars {
-	//
-	//	v := vars[idx]
-	//
-	//	var q varQuerier
-	//
-	//	var thread bool
-	//
-	//	switch v.Scope {
-	//
-	//	case "":
-	//
-	//		fallthrough
-	//
-	//	case "instance":
-	//
-	//		q = &entInstanceVarQuerier{
-	//			clients: clients,
-	//			cached:  im.cached,
-	//		}
-	//
-	//	case "thread":
-	//
-	//		q = &entInstanceVarQuerier{
-	//			clients: clients,
-	//			cached:  im.cached,
-	//		}
-	//
-	//		thread = true
-	//
-	//	case "workflow":
-	//
-	//		q = &entWorkflowVarQuerier{
-	//			clients: clients,
-	//			cached:  im.cached,
-	//		}
-	//
-	//	case "namespace":
-	//
-	//		q = &entNamespaceVarQuerier{
-	//			clients: clients,
-	//			cached:  im.cached,
-	//		}
-	//
-	//	default:
-	//		return derrors.NewInternalError(errors.New("invalid scope"))
-	//	}
-	//
-	//	// if statements have to be same order
-	//
-	//	d := string(v.Data)
-	//
-	//	if len(d) == 0 {
-	//		_, _, err = im.engine.flow.DeleteVariable(tctx, q, v.Key, v.Data, v.MIMEType, thread)
-	//		if err != nil {
-	//			return err
-	//		}
-	//		continue
-	//
-	//	}
-	//
-	//	if !(v.MIMEType == "text/plain; charset=utf-8" || v.MIMEType == "text/plain" || v.MIMEType == "application/octet-stream") && (d == "{}" || d == "[]" || d == "0" || d == `""` || d == "null") {
-	//		_, _, err = im.engine.flow.DeleteVariable(tctx, q, v.Key, v.Data, v.MIMEType, thread)
-	//		if err != nil {
-	//			return err
-	//		}
-	//		continue
-	//
-	//	} else {
-	//		_, _, err = im.engine.flow.SetVariable(tctx, q, v.Key, v.Data, v.MIMEType, thread)
-	//		if err != nil {
-	//			return err
-	//		}
-	//	}
-	//
-	//}
-	//
-	//err = tx.Commit()
-	//if err != nil {
-	//	return err
-	//}
-	//
-	//return nil
 }
 
 func (im *instanceMemory) Sleep(ctx context.Context, d time.Duration, x interface{}) error {
