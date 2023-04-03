@@ -57,6 +57,36 @@ export const Default: Story = {
   },
 };
 
+export const DefaultAlign = () => (
+  <Pagination>
+    <PaginationLink icon="left" />
+    <PaginationLink>1</PaginationLink>
+    <PaginationLink active>2</PaginationLink>
+    <PaginationLink>3</PaginationLink>
+    <PaginationLink icon="right" />
+  </Pagination>
+);
+
+export const CenterPagination = () => (
+  <Pagination align="center">
+    <PaginationLink icon="left" />
+    <PaginationLink>1</PaginationLink>
+    <PaginationLink active>2</PaginationLink>
+    <PaginationLink>3</PaginationLink>
+    <PaginationLink icon="right" />
+  </Pagination>
+);
+
+export const LeftPagination = () => (
+  <Pagination align="left">
+    <PaginationLink icon="left" />
+    <PaginationLink>1</PaginationLink>
+    <PaginationLink active>2</PaginationLink>
+    <PaginationLink>3</PaginationLink>
+    <PaginationLink icon="right" />
+  </Pagination>
+);
+
 export const NoPageButtons = () => {
   const [page, setPage] = useState(100);
   return (

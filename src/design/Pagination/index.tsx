@@ -5,19 +5,16 @@ import clsx from "clsx";
 
 interface PaginationProps {
   children: React.ReactNode;
-  align?: "center" | "left" | "right";
+  align?: "center" | "left";
 }
 
-export const Pagination: React.FC<PaginationProps> = ({
-  children,
-  align = "right",
-}) => (
+export const Pagination: React.FC<PaginationProps> = ({ children, align }) => (
   <div
     className={clsx(
-      "flex px-4 py-3 sm:px-6 ",
+      "flex",
       align === "center" && "justify-center",
-      align === "right" && "justify-end",
-      align === "left" && "justify-start"
+      align === "left" && "justify-start",
+      !align && "justify-end"
     )}
   >
     <nav
