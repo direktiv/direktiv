@@ -628,11 +628,10 @@ func (pubsub *Pubsub) workflowLogs(wf *uuid.UUID) string {
 	return fmt.Sprintf("wflogs:%s", wf.String())
 }
 
-func (pubsub *Pubsub) SubscribeWorkflowLogs(cached *database.CacheData) *Subscription {
-	keys := pubsub.walkInodeKeys(cached)
-
-	keys = append(keys, cached.Workflow.ID.String(), pubsub.workflowLogs(&cached.Workflow.ID))
-
+func (pubsub *Pubsub) SubscribeWorkflowLogs(id uuid.UUID) *Subscription {
+	// keys := pubsub.walkInodeKeys(cached)
+	// keys = append(keys, cached.Workflow.ID.String(), pubsub.workflowLogs(&cached.Workflow.ID))
+	keys := []string{id.String()}
 	return pubsub.Subscribe(keys...)
 }
 

@@ -1,22 +1,5 @@
 package flow
 
-import "github.com/direktiv/direktiv/pkg/refactor/filestore"
-
-type fileAttributes filestore.File
-
-func (f fileAttributes) GetAttributes() map[string]string {
-	m := make(map[string]string)
-	m["namespace-id"] = f.RootID.String()
-	if f.Typ == filestore.FileTypeWorkflow {
-		m["workflow-id"] = f.ID.String()
-	}
-	return m
-}
-
-// TODO: yassir, refactoring needed.
-
-/*
-
 import (
 	"context"
 	"strings"
@@ -28,11 +11,22 @@ import (
 	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	entlog "github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
 	entns "github.com/direktiv/direktiv/pkg/flow/ent/namespace"
-	entwf "github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/flow/internallogger"
+	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/google/uuid"
 )
+
+type fileAttributes filestore.File
+
+func (f fileAttributes) GetAttributes() map[string]string {
+	m := make(map[string]string)
+	m["namespace-id"] = f.RootID.String()
+	if f.Typ == filestore.FileTypeWorkflow {
+		m["workflow-id"] = f.ID.String()
+	}
+	return m
+}
 
 var logsOrderings = []*orderingInfo{
 	{
@@ -83,7 +77,9 @@ func (flow *flow) ServerLogs(ctx context.Context, req *grpc.ServerLogsRequest) (
 	clients := flow.edb.Clients(ctx)
 
 	query := clients.LogMsg.Query()
-	query = query.Where(entlog.Not(entlog.HasNamespace()), entlog.Not(entlog.HasWorkflow()))
+
+	// TODO: alan, check if this workflow uid part actually works. Why doesn't ent let us query NotNil?
+	query = query.Where(entlog.Not(entlog.HasNamespace()), entlog.Not(entlog.WorkflowID(uuid.UUID{})))
 
 	results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
 	if err != nil {
@@ -115,7 +111,7 @@ resend:
 
 	clients := flow.edb.Clients(ctx)
 	query := clients.LogMsg.Query()
-	query = query.Where(entlog.Not(entlog.HasNamespace()), entlog.Not(entlog.HasWorkflow()))
+	query = query.Where(entlog.Not(entlog.HasNamespace()), entlog.Not(entlog.WorkflowID(uuid.UUID{})))
 
 	results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
 	if err != nil {
@@ -243,26 +239,14 @@ resend:
 func (flow *flow) WorkflowLogs(ctx context.Context, req *grpc.WorkflowLogsRequest) (*grpc.WorkflowLogsResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	cached := new(database.CacheData)
-
-	err := flow.database.NamespaceByName(ctx, cached, req.GetNamespace())
-	if err != nil {
-		return nil, err
-	}
-
-	err = flow.database.InodeByPath(ctx, cached, req.GetPath())
-	if err != nil {
-		return nil, err
-	}
-
-	err = flow.database.Workflow(ctx, cached, cached.Inode().Workflow)
+	ns, f, err := flow.getWorkflow(ctx, req.GetNamespace(), req.GetPath())
 	if err != nil {
 		return nil, err
 	}
 
 	clients := flow.edb.Clients(ctx)
 
-	query := clients.LogMsg.Query().Where(entlog.HasWorkflowWith(entwf.ID(cached.Workflow.ID)))
+	query := clients.LogMsg.Query().Where(entlog.WorkflowID(f.ID))
 
 	results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
 	if err != nil {
@@ -270,8 +254,8 @@ func (flow *flow) WorkflowLogs(ctx context.Context, req *grpc.WorkflowLogsReques
 	}
 
 	resp := new(grpc.WorkflowLogsResponse)
-	resp.Namespace = cached.Namespace.Name
-	resp.Path = cached.Path()
+	resp.Namespace = ns.Name
+	resp.Path = f.Path
 	resp.PageInfo = pi
 
 	resp.Results, err = bytedata.ConvertLogMsgForOutput(results)
@@ -289,31 +273,19 @@ func (flow *flow) WorkflowLogsParcels(req *grpc.WorkflowLogsRequest, srv grpc.Fl
 
 	var tailing bool
 
-	cached := new(database.CacheData)
-
-	err := flow.database.NamespaceByName(ctx, cached, req.GetNamespace())
+	ns, f, err := flow.getWorkflow(ctx, req.GetNamespace(), req.GetPath())
 	if err != nil {
 		return err
 	}
 
-	err = flow.database.InodeByPath(ctx, cached, req.GetPath())
-	if err != nil {
-		return err
-	}
-
-	err = flow.database.Workflow(ctx, cached, cached.Inode().Workflow)
-	if err != nil {
-		return err
-	}
-
-	sub := flow.pubsub.SubscribeWorkflowLogs(cached)
+	sub := flow.pubsub.SubscribeWorkflowLogs(f.ID)
 	defer flow.cleanup(sub.Close)
 
 resend:
 
 	clients := flow.edb.Clients(ctx)
 
-	query := clients.LogMsg.Query().Where(entlog.HasWorkflowWith(entwf.ID(cached.Workflow.ID)))
+	query := clients.LogMsg.Query().Where(entlog.WorkflowID(f.ID))
 
 	results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
 	if err != nil {
@@ -321,8 +293,8 @@ resend:
 	}
 
 	resp := new(grpc.WorkflowLogsResponse)
-	resp.Namespace = cached.Namespace.Name
-	resp.Path = cached.Path()
+	resp.Namespace = ns.Name
+	resp.Path = f.Path
 	resp.PageInfo = pi
 
 	resp.Results, err = bytedata.ConvertLogMsgForOutput(results)
@@ -630,4 +602,3 @@ func buildInstanceLogsQuery(ctx context.Context,
 	}
 	return query
 }
-*/
