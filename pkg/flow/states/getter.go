@@ -93,6 +93,9 @@ func (logic *getterLogic) Run(ctx context.Context, wakedata []byte) (*Transition
 		case util.VarScopeWorkflow:
 			fallthrough
 
+		case util.VarScopeFileSystem:
+			fallthrough
+
 		case util.VarScopeNamespace:
 			vars = append(vars, selector)
 			ptrs = append(ptrs, as)

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"strconv"
 	"time"
 
@@ -19,6 +20,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/functions"
 	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
 	"github.com/direktiv/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	secretsgrpc "github.com/direktiv/direktiv/pkg/secrets/grpc"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
@@ -73,6 +75,8 @@ func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.Variab
 
 			ref, err = clients.VarRef.Query().Where(entvar.HasNamespaceWith(entns.ID(im.cached.Namespace.ID))).Where(entvar.NameEQ(key)).WithVardata().Only(ctx)
 
+		case util.VarScopeFileSystem:
+			break
 		default:
 			return nil, derrors.NewInternalError(errors.New("invalid scope"))
 
@@ -87,6 +91,38 @@ func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.Variab
 			}
 
 			data = make([]byte, 0)
+
+		} else if ref == nil && scope == util.VarScopeFileSystem {
+
+			fStore, _, _, rollback, err := im.engine.flow.beginSqlTx(ctx)
+			if err != nil {
+				return nil, err
+			}
+			defer rollback(ctx)
+
+			file, err := fStore.ForRootID(im.cached.Namespace.ID).GetFile(ctx, key)
+			if errors.Is(err, filestore.ErrNotFound) {
+				data = make([]byte, 0)
+			} else if err != nil {
+				return nil, err
+			} else {
+				// TODO: alan, maybe need to enhance the GetData function to also return us some information like mime type, checksum, and size
+				rc, err := fStore.ForFile(file).GetData(ctx)
+				if err != nil {
+					return nil, err
+				}
+				defer func() { _ = rc.Close() }()
+				data, err = ioutil.ReadAll(rc)
+				if err != nil {
+					return nil, err
+				}
+				err = rc.Close()
+				if err != nil {
+					return nil, err
+				}
+			}
+
+			rollback(ctx)
 
 		} else if ref == nil {
 			data = make([]byte, 0)

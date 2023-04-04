@@ -197,6 +197,7 @@ func generateActionInput(ctx context.Context, args *generateActionInputArgs) ([]
 		case util.VarScopeWorkflow:
 		case util.VarScopeInstance:
 		case util.VarScopeThread:
+		case util.VarScopeFileSystem:
 		default:
 			return nil, nil, derrors.NewCatchableError(ErrCodeInvalidVariableScope, "invalid 'scope' for function file %d: %s", idx, file.Scope)
 		}
