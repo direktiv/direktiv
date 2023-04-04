@@ -7,11 +7,11 @@ const PaginationProvider = <TArrayItem,>({
 }: {
   children: (props: {
     currentItems: TArrayItem[];
-    gotoPage: (page: number) => void;
-    gotoFirstPage: () => void;
-    gotoLastPage: () => void;
-    gotoNextPage: () => void;
-    gotoPreviousPage: () => void;
+    goToPage: (page: number) => void;
+    goToFirstPage: () => void;
+    goToLastPage: () => void;
+    goToNextPage: () => void;
+    goToPreviousPage: () => void;
     isFirstPage: boolean;
     isLastPage: boolean;
     page: number;
@@ -32,14 +32,13 @@ const PaginationProvider = <TArrayItem,>({
   const sliceEnd = sliceStart + pageSize;
   const currentItems = items.slice(sliceStart, sliceEnd);
 
-  const gotoFirstPage = () => setPage(1);
-  const gotoLastPage = () => setPage(lastPage);
-  const gotoNextPage = () =>
+  const goToFirstPage = () => setPage(1);
+  const goToLastPage = () => setPage(lastPage);
+  const goToNextPage = () =>
     setPage((page) => (page < lastPage ? page + 1 : page));
-  const gotoPreviousPage = () =>
+  const goToPreviousPage = () =>
     setPage((page) => (page > firstPage ? page - 1 : page));
-
-  const gotoPage = (page: number) => {
+  const goToPage = (page: number) => {
     if (page >= firstPage && page <= lastPage) {
       setPage(page);
     }
@@ -47,14 +46,14 @@ const PaginationProvider = <TArrayItem,>({
 
   return children({
     currentItems,
-    gotoFirstPage,
-    gotoLastPage,
-    gotoNextPage,
-    gotoPreviousPage,
+    goToFirstPage,
+    goToLastPage,
+    goToNextPage,
+    goToPreviousPage,
     isFirstPage,
     isLastPage,
     page,
-    gotoPage,
+    goToPage,
     pages: [...Array(lastPage).keys()].map((x) => x + 1),
     pagesCount: lastPage,
   });

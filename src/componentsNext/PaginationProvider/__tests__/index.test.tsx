@@ -28,10 +28,10 @@ describe("Pagination Provider", () => {
       <PaginationProvider items={items} pageSize={4}>
         {({
           currentItems,
-          gotoFirstPage,
-          gotoLastPage,
-          gotoNextPage,
-          gotoPreviousPage,
+          goToFirstPage,
+          goToLastPage,
+          goToNextPage,
+          goToPreviousPage,
           isFirstPage,
           isLastPage,
           page,
@@ -52,17 +52,17 @@ describe("Pagination Provider", () => {
             <h1 data-testid="isLastPage">
               Is last Page? {isLastPage ? "yes" : "no"}
             </h1>
-            <button data-testid="gotoFirstPage" onClick={gotoFirstPage}>
+            <button data-testid="goToFirstPage" onClick={goToFirstPage}>
               go to first page
             </button>
-            <button data-testid="gotoPreviousPage" onClick={gotoPreviousPage}>
+            <button data-testid="goToPreviousPage" onClick={goToPreviousPage}>
               go to previous Page
             </button>
             <span data-testid="page">{page}</span>
-            <button data-testid="gotoNextPage" onClick={gotoNextPage}>
+            <button data-testid="goToNextPage" onClick={goToNextPage}>
               go to next page
             </button>
-            <button data-testid="gotoLastPage" onClick={gotoLastPage}>
+            <button data-testid="goToLastPage" onClick={goToLastPage}>
               go to last page
             </button>
           </div>
@@ -70,10 +70,10 @@ describe("Pagination Provider", () => {
       </PaginationProvider>
     );
 
-    const nextPageButton = screen.getByTestId("gotoNextPage");
-    const prevPageButton = screen.getByTestId("gotoPreviousPage");
-    const firstPageButton = screen.getByTestId("gotoFirstPage");
-    const lastPageButton = screen.getByTestId("gotoLastPage");
+    const nextPageButton = screen.getByTestId("goToNextPage");
+    const prevPageButton = screen.getByTestId("goToPreviousPage");
+    const firstPageButton = screen.getByTestId("goToFirstPage");
+    const lastPageButton = screen.getByTestId("goToLastPage");
 
     // page one by default
     expect(screen.getByTestId("isFirstPage").textContent).toContain("yes");
