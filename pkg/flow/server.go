@@ -575,13 +575,16 @@ func parent() string {
 	return elems[len(elems)-1]
 }
 
-func (flow *flow) beginSqlTx(ctx context.Context) (filestore.FileStore, datastore.Store, func(ctx context.Context) error, func(ctx context.Context) error, error) {
+func (flow *flow) beginSqlTx(ctx context.Context) (filestore.FileStore, datastore.Store, func(ctx context.Context) error, func(ctx context.Context), error) {
 	res := flow.gormDB.WithContext(ctx).Begin()
 	if res.Error != nil {
 		return nil, nil, nil, nil, res.Error
 	}
-	rollbackFunc := func(ctx context.Context) error {
-		return res.WithContext(ctx).Rollback().Error
+	rollbackFunc := func(ctx context.Context) {
+		err := res.WithContext(ctx).Rollback().Error
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "failed to rollback transaction: %v\n", err)
+		}
 	}
 	commitFunc := func(ctx context.Context) error {
 		return res.WithContext(ctx).Rollback().Error
