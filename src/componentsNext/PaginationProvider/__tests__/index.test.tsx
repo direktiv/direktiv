@@ -22,7 +22,7 @@ const items = [
 describe("Pagination Provider", () => {
   test("should render with proper pagination logic", () => {
     render(
-      <PaginationProvider items={items}>
+      <PaginationProvider items={items} pageSize={4}>
         {({
           currentItems,
           gotoFirstPage,
@@ -32,16 +32,18 @@ describe("Pagination Provider", () => {
           isFirstPage,
           isLastPage,
           page,
+          pages,
         }) => (
           <div>
-            <ul>
+            <ul data-testid="items-list">
               {currentItems.map((item) => (
-                <li key={item.id}>{item.name}</li>
+                <li key={item.id}>{item.id}</li>
               ))}
             </ul>
             <h1 data-testid="isFirstPage">
               Is first Page? {isFirstPage ? "yes" : "no"}
             </h1>
+            <h1 data-testid="pages">{pages} pages</h1>
             <h1 data-testid="isLastPage">
               Is last Page? {isLastPage ? "yes" : "no"}
             </h1>
@@ -63,7 +65,11 @@ describe("Pagination Provider", () => {
       </PaginationProvider>
     );
 
+    // page one by default
     expect(screen.getByTestId("isFirstPage").textContent).toContain("yes");
     expect(screen.getByTestId("isLastPage").textContent).toContain("no");
+    expect(screen.getByTestId("page").textContent).toBe("1");
+    expect(screen.getByTestId("pages").textContent).toBe("4 pages");
+    expect(screen.getByTestId("items-list").textContent).toBe("1234");
   });
 });
