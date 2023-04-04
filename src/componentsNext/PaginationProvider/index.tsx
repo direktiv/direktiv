@@ -39,7 +39,11 @@ const PaginationProvider = <TArrayItem,>({
   const gotoPreviousPage = () =>
     setPage((page) => (page > firstPage ? page - 1 : page));
 
-  const gotoPage = (page: number) => setPage(page);
+  const gotoPage = (page: number) => {
+    if (page >= firstPage && page <= lastPage) {
+      setPage(page);
+    }
+  };
 
   return children({
     currentItems,
