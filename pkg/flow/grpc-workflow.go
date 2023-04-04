@@ -125,24 +125,22 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 		return nil, err
 	}
 
-	// TODO: yassir, needs fix here.
-	//metricsWf.WithLabelValues(cached.Namespace.Name, cached.Namespace.Name).Inc()
-	//metricsWfUpdated.WithLabelValues(cached.Namespace.Name, path, cached.Namespace.Name).Inc()
+	metricsWf.WithLabelValues(ns.Name, ns.Name).Inc()
+	metricsWfUpdated.WithLabelValues(ns.Name, file.Path, ns.Name).Inc()
 
 	flow.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Created workflow '%s'.", file.Path)
 
-	// TODO: yassir, needs fix here.
-	//err = flow.BroadcastWorkflow(ctx, BroadcastEventTypeCreate,
-	//	broadcastWorkflowInput{
-	//		Name:   resp.Node.Name,
-	//		Path:   resp.Node.Path,
-	//		Parent: resp.Node.Parent,
-	//		Live:   true,
-	//	}, cached)
-	//
-	//if err != nil {
-	//	return nil, err
-	//}
+	err = flow.BroadcastWorkflow(ctx, BroadcastEventTypeCreate,
+		broadcastWorkflowInput{
+			Name:   file.Name(),
+			Path:   file.Path,
+			Parent: file.Dir(),
+			Live:   true,
+		}, ns)
+
+	if err != nil {
+		return nil, err
+	}
 
 	resp := &grpc.CreateWorkflowResponse{}
 	resp.Namespace = ns.Name

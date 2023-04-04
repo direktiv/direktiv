@@ -262,8 +262,6 @@ func (srv *server) start(ctx context.Context) error {
 	srv.registerFunctions()
 
 	go srv.cronPoller()
-	// TODO: yassir, need refactor.
-	// go srv.syncerCronPoller()
 
 	go func() {
 		defer wg.Done()
@@ -434,7 +432,6 @@ func (srv *server) registerFunctions() {
 	srv.pubsub.RegisterFunction(pubsub.PubsubDeleteActivityTimersFunction, srv.timers.deleteActivityTimersHandler)
 	// TODO: yassir, need refactor.
 	// srv.timers.registerFunction(syncerTimeoutFunction, srv.syncer.timeoutHandler)
-	// srv.timers.registerFunction(syncerCron, srv.syncer.cronHandler)
 
 	srv.pubsub.RegisterFunction(deleteFilterCache, srv.flow.deleteCache)
 	srv.pubsub.RegisterFunction(deleteFilterCacheNamespace, srv.flow.deleteCacheNamespace)

@@ -118,15 +118,14 @@ func (flow *flow) CreateDirectory(ctx context.Context, req *grpc.CreateDirectory
 	flow.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Created directory '%s'.", file.Path)
 
 	// Broadcast
-	// TODO: yassir, need question here.
-	//err = flow.BroadcastDirectory(ctx, BroadcastEventTypeCreate,
-	//	broadcastDirectoryInput{
-	//		Path:   req.GetPath(),
-	//		Parent: filepath.Dir(req.GetPath()),
-	//	}, args.pcached)
-	//if err != nil {
-	//	return nil, err
-	//}
+	err = flow.BroadcastDirectory(ctx, BroadcastEventTypeCreate,
+		broadcastDirectoryInput{
+			Path:   req.GetPath(),
+			Parent: file.Dir(),
+		}, ns)
+	if err != nil {
+		return nil, err
+	}
 
 	if err := commit(ctx); err != nil {
 		return nil, err
@@ -186,36 +185,34 @@ func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (
 		return nil, err
 	}
 
-	// TODO: yassir, need fix here.
-	//if file.Typ == filestore.FileTypeWorkflow {
-	//	metricsWf.WithLabelValues(args.cached.Namespace.Name, args.cached.Namespace.Name).Dec()
-	//	metricsWfUpdated.WithLabelValues(args.cached.Namespace.Name, args.cached.Path(), args.cached.Namespace.Name).Inc()
-	//
-	//	// Broadcast Event
-	//	err = flow.BroadcastWorkflow(ctx, BroadcastEventTypeDelete,
-	//		broadcastWorkflowInput{
-	//			Name:   args.cached.Inode().Name,
-	//			Path:   args.cached.Path(),
-	//			Parent: args.cached.Dir(),
-	//			Live:   false,
-	//		}, args.cached)
-	//
-	//	if err != nil {
-	//		return err
-	//	}
-	//} else {
-	//	// Broadcast Event
-	//	err = flow.BroadcastDirectory(ctx, BroadcastEventTypeDelete,
-	//		broadcastDirectoryInput{
-	//			Path:   args.cached.Path(),
-	//			Parent: args.cached.Dir(),
-	//		}, args.cached)
-	//
-	//	if err != nil {
-	//		return err
-	//	}
-	//
-	//}
+	if file.Typ == filestore.FileTypeWorkflow {
+		metricsWf.WithLabelValues(ns.Name, ns.Name).Dec()
+		metricsWfUpdated.WithLabelValues(ns.Name, file.Path, ns.Name).Inc()
+
+		// Broadcast Event
+		err = flow.BroadcastWorkflow(ctx, BroadcastEventTypeDelete,
+			broadcastWorkflowInput{
+				Name:   file.Name(),
+				Path:   file.Path,
+				Parent: file.Dir(),
+				Live:   false,
+			}, ns)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		// Broadcast Event
+		err = flow.BroadcastDirectory(ctx, BroadcastEventTypeDelete,
+			broadcastDirectoryInput{
+				Path:   file.Path,
+				Parent: file.Dir(),
+			}, ns)
+
+		if err != nil {
+			return nil, err
+		}
+
+	}
 
 	flow.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Deleted %s '%s'.", file.Typ, file.Path)
 

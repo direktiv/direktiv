@@ -590,7 +590,7 @@ func (flow *flow) DeleteVariable(ctx context.Context, q varQuerier, key string, 
 func (flow *flow) SetWorkflowVariable(ctx context.Context, req *grpc.SetWorkflowVariableRequest) (*grpc.SetWorkflowVariableResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	ns, f, err := flow.getWorkflow(ctx, req.GetNamespace(), req.GetPath())
+	ns, file, err := flow.getWorkflow(ctx, req.GetNamespace(), req.GetPath())
 	if err != nil {
 		return nil, err
 	}
@@ -606,7 +606,7 @@ func (flow *flow) SetWorkflowVariable(ctx context.Context, req *grpc.SetWorkflow
 	key := req.GetKey()
 
 	var newVar bool
-	vdata, newVar, err = flow.SetVariable(tctx, &entWorkflowVarQuerier{clients: flow.edb.Clients(tctx), ns: ns, f: f}, key, req.GetData(), req.GetMimeType(), false)
+	vdata, newVar, err = flow.SetVariable(tctx, &entWorkflowVarQuerier{clients: flow.edb.Clients(tctx), ns: ns, f: file}, key, req.GetData(), req.GetMimeType(), false)
 	if err != nil {
 		return nil, err
 	}
@@ -617,17 +617,17 @@ func (flow *flow) SetWorkflowVariable(ctx context.Context, req *grpc.SetWorkflow
 	}
 
 	if newVar {
-		flow.logger.Infof(ctx, f.ID, database.GetAttributes(recipient.Workflow, ns, fileAttributes(*f)), "Created workflow variable '%s'.", key)
+		flow.logger.Infof(ctx, file.ID, database.GetAttributes(recipient.Workflow, ns, fileAttributes(*file)), "Created workflow variable '%s'.", key)
 	} else {
-		flow.logger.Infof(ctx, f.ID, database.GetAttributes(recipient.Workflow, ns, fileAttributes(*f)), "Updated workflow variable '%s'.", key)
+		flow.logger.Infof(ctx, file.ID, database.GetAttributes(recipient.Workflow, ns, fileAttributes(*file)), "Updated workflow variable '%s'.", key)
 	}
 
-	flow.pubsub.NotifyWorkflowVariables(f.ID)
+	flow.pubsub.NotifyWorkflowVariables(file.ID)
 
 	var resp grpc.SetWorkflowVariableResponse
 
 	resp.Namespace = ns.Name
-	resp.Path = f.Path
+	resp.Path = file.Path
 	resp.Key = key
 	resp.CreatedAt = timestamppb.New(vdata.CreatedAt)
 	resp.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
@@ -803,7 +803,7 @@ func (flow *flow) SetWorkflowVariableParcels(srv grpc.Flow_SetWorkflowVariablePa
 		return errors.New("received more data than expected")
 	}
 
-	ns, f, err := flow.getWorkflow(ctx, req.GetNamespace(), req.GetPath())
+	ns, file, err := flow.getWorkflow(ctx, req.GetNamespace(), req.GetPath())
 	if err != nil {
 		return err
 	}
@@ -817,7 +817,7 @@ func (flow *flow) SetWorkflowVariableParcels(srv grpc.Flow_SetWorkflowVariablePa
 	var vdata *ent.VarData
 
 	var newVar bool
-	vdata, newVar, err = flow.SetVariable(tctx, &entWorkflowVarQuerier{clients: flow.edb.Clients(tctx), ns: ns, f: f}, key, buf.Bytes(), mimeType, false)
+	vdata, newVar, err = flow.SetVariable(tctx, &entWorkflowVarQuerier{clients: flow.edb.Clients(tctx), ns: ns, f: file}, key, buf.Bytes(), mimeType, false)
 	if err != nil {
 		return err
 	}
@@ -828,17 +828,17 @@ func (flow *flow) SetWorkflowVariableParcels(srv grpc.Flow_SetWorkflowVariablePa
 	}
 
 	if newVar {
-		flow.logger.Infof(ctx, f.ID, database.GetAttributes(recipient.Workflow, ns, fileAttributes(*f)), "Created workflow variable '%s'.", key)
+		flow.logger.Infof(ctx, file.ID, database.GetAttributes(recipient.Workflow, ns, fileAttributes(*file)), "Created workflow variable '%s'.", key)
 	} else {
-		flow.logger.Infof(ctx, f.ID, database.GetAttributes(recipient.Workflow, ns, fileAttributes(*f)), "Updated workflow variable '%s'.", key)
+		flow.logger.Infof(ctx, file.ID, database.GetAttributes(recipient.Workflow, ns, fileAttributes(*file)), "Updated workflow variable '%s'.", key)
 	}
 
-	flow.pubsub.NotifyWorkflowVariables(f.ID)
+	flow.pubsub.NotifyWorkflowVariables(file.ID)
 
 	var resp grpc.SetWorkflowVariableResponse
 
 	resp.Namespace = ns.Name
-	resp.Path = f.Path
+	resp.Path = file.Path
 	resp.Key = key
 	resp.CreatedAt = timestamppb.New(vdata.CreatedAt)
 	resp.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
@@ -856,7 +856,7 @@ func (flow *flow) SetWorkflowVariableParcels(srv grpc.Flow_SetWorkflowVariablePa
 func (flow *flow) DeleteWorkflowVariable(ctx context.Context, req *grpc.DeleteWorkflowVariableRequest) (*emptypb.Empty, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	ns, f, vref, vdata, err := flow.getWorkflowVariable(ctx, req.GetNamespace(), req.GetPath(), req.GetKey(), false)
+	ns, file, vref, vdata, err := flow.getWorkflowVariable(ctx, req.GetNamespace(), req.GetPath(), req.GetKey(), false)
 	if err != nil {
 		return nil, err
 	}
@@ -886,8 +886,8 @@ func (flow *flow) DeleteWorkflowVariable(ctx context.Context, req *grpc.DeleteWo
 		return nil, err
 	}
 
-	flow.logger.Infof(ctx, f.ID, database.GetAttributes(recipient.Workflow, ns, fileAttributes(*f)), "Deleted workflow variable '%s'.", vref.Name)
-	flow.pubsub.NotifyWorkflowVariables(f.ID)
+	flow.logger.Infof(ctx, file.ID, database.GetAttributes(recipient.Workflow, ns, fileAttributes(*file)), "Deleted workflow variable '%s'.", vref.Name)
+	flow.pubsub.NotifyWorkflowVariables(file.ID)
 
 	// Broadcast Event
 	broadcastInput := broadcastVariableInput{
@@ -909,7 +909,7 @@ func (flow *flow) DeleteWorkflowVariable(ctx context.Context, req *grpc.DeleteWo
 func (flow *flow) RenameWorkflowVariable(ctx context.Context, req *grpc.RenameWorkflowVariableRequest) (*grpc.RenameWorkflowVariableResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	ns, f, vref, vdata, err := flow.getWorkflowVariable(ctx, req.GetNamespace(), req.GetPath(), req.GetOld(), false)
+	ns, file, vref, vdata, err := flow.getWorkflowVariable(ctx, req.GetNamespace(), req.GetPath(), req.GetOld(), false)
 	if err != nil {
 		return nil, err
 	}
@@ -934,8 +934,8 @@ func (flow *flow) RenameWorkflowVariable(ctx context.Context, req *grpc.RenameWo
 		return nil, err
 	}
 
-	flow.logger.Infof(ctx, f.ID, database.GetAttributes(recipient.Workflow, ns, fileAttributes(*f)), "Renamed workflow variable from '%s' to '%s'.", req.GetOld(), req.GetNew())
-	flow.pubsub.NotifyWorkflowVariables(f.ID)
+	flow.logger.Infof(ctx, file.ID, database.GetAttributes(recipient.Workflow, ns, fileAttributes(*file)), "Renamed workflow variable from '%s' to '%s'.", req.GetOld(), req.GetNew())
+	flow.pubsub.NotifyWorkflowVariables(file.ID)
 
 	var resp grpc.RenameWorkflowVariableResponse
 

@@ -49,11 +49,11 @@ type broadcastWorkflowInput struct {
 	Live   bool
 }
 
-func (flow *flow) BroadcastWorkflow(ctx context.Context, eventType string, input broadcastWorkflowInput, cached *database.CacheData) error {
+func (flow *flow) BroadcastWorkflow(ctx context.Context, eventType string, input broadcastWorkflowInput, ns *database.Namespace) error {
 	// BROADCAST EVENT
 
 	target := fmt.Sprintf("%s.%s", BroadcastEventPrefixWorkflow, eventType)
-	cfg, err := loadNSConfig([]byte(cached.Namespace.Config))
+	cfg, err := loadNSConfig([]byte(ns.Config))
 	if err != nil {
 		return fmt.Errorf("failed to load namespace config: %w", err)
 	}
@@ -73,7 +73,7 @@ func (flow *flow) BroadcastWorkflow(ctx context.Context, eventType string, input
 		return fmt.Errorf("failed to create CloudEvent: %w", err)
 	}
 
-	return flow.events.BroadcastCloudevent(ctx, cached.Namespace, &event, 60)
+	return flow.events.BroadcastCloudevent(ctx, ns, &event, 60)
 }
 
 type broadcastDirectoryInput struct {
@@ -81,10 +81,10 @@ type broadcastDirectoryInput struct {
 	Parent string
 }
 
-func (flow *flow) BroadcastDirectory(ctx context.Context, eventType string, input broadcastDirectoryInput, cached *database.CacheData) error {
+func (flow *flow) BroadcastDirectory(ctx context.Context, eventType string, input broadcastDirectoryInput, ns *database.Namespace) error {
 	// BROADCAST EVENT
 	target := fmt.Sprintf("%s.%s", BroadcastEventPrefixDirectory, eventType)
-	cfg, err := loadNSConfig([]byte(cached.Namespace.Config))
+	cfg, err := loadNSConfig([]byte(ns.Config))
 	if err != nil {
 		return fmt.Errorf("failed to load namespace config: %w", err)
 	}
@@ -104,7 +104,7 @@ func (flow *flow) BroadcastDirectory(ctx context.Context, eventType string, inpu
 		return fmt.Errorf("failed to create CloudEvent: %w", err)
 	}
 
-	return flow.events.BroadcastCloudevent(ctx, cached.Namespace, &event, 60)
+	return flow.events.BroadcastCloudevent(ctx, ns, &event, 60)
 }
 
 type broadcastVariableInput struct {

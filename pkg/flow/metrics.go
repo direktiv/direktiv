@@ -162,7 +162,7 @@ func setupPrometheusEndpoint() error {
 func (flow *flow) WorkflowMetrics(ctx context.Context, req *grpc.WorkflowMetricsRequest) (*grpc.WorkflowMetricsResponse, error) {
 	// TODO: yassir, need refactor.
 	return new(grpc.WorkflowMetricsResponse), nil
-	//flow.sugar.Debugf("Handling gRPC request: %s", this())
+	// flow.sugar.Debugf("Handling gRPC request: %s", this())
 	//
 	//cached, err := flow.traverseToRef(ctx, req.GetNamespace(), req.GetPath(), req.GetRef())
 	//if err != nil {
