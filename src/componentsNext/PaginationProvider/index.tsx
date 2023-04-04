@@ -7,6 +7,7 @@ const PaginationProvider = <TArrayItem,>({
 }: {
   children: (props: {
     currentItems: TArrayItem[];
+    gotoPage: (page: number) => void;
     gotoFirstPage: () => void;
     gotoLastPage: () => void;
     gotoNextPage: () => void;
@@ -38,6 +39,8 @@ const PaginationProvider = <TArrayItem,>({
   const gotoPreviousPage = () =>
     setPage((page) => (page > firstPage ? page - 1 : page));
 
+  const gotoPage = (page: number) => setPage(page);
+
   return children({
     currentItems,
     gotoFirstPage,
@@ -47,6 +50,7 @@ const PaginationProvider = <TArrayItem,>({
     isFirstPage,
     isLastPage,
     page,
+    gotoPage,
     pages: [...Array(lastPage).keys()].map((x) => x + 1),
     pagesCount: lastPage,
   });
