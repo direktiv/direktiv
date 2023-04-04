@@ -103,6 +103,7 @@ type FunctionFileDefinition struct {
 
 var ErrVarScope = errors.New(`bad scope (choose 'namespace', 'workflow', 'thread', 'instance', 'system', or 'file')`)
 var ErrVarReadOnly = errors.New(`'file' scope variables cannot be written to from workflows'`)
+var ErrVarNotFile = errors.New("target is not a file")
 
 func (o FunctionFileDefinition) Validate() error {
 	if o.Key == "" {
