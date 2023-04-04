@@ -14,7 +14,8 @@ const PaginationProvider = <TArrayItem,>({
     isFirstPage: boolean;
     isLastPage: boolean;
     page: number;
-    pages: number;
+    pages: number[];
+    pagesCount: number;
   }) => JSX.Element;
   pageSize?: number;
   items: TArrayItem[];
@@ -46,7 +47,8 @@ const PaginationProvider = <TArrayItem,>({
     isFirstPage,
     isLastPage,
     page,
-    pages: lastPage,
+    pages: [...Array(lastPage).keys()].map((x) => x + 1),
+    pagesCount: lastPage,
   });
 };
 
