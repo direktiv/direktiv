@@ -3,6 +3,7 @@ package filestore
 import (
 	"context"
 	"io"
+	"path/filepath"
 	"time"
 
 	"github.com/google/uuid"
@@ -26,6 +27,14 @@ type File struct {
 
 	CreatedAt time.Time
 	UpdatedAt time.Time
+}
+
+func (file *File) Name() string {
+	return filepath.Base(file.Path)
+}
+
+func (file *File) Dir() string {
+	return filepath.Dir(file.Path)
 }
 
 type FileQuery interface {
