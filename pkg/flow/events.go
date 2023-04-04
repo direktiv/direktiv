@@ -996,16 +996,10 @@ func (events *events) listenForEvents(ctx context.Context, im *instanceMemory, c
 	return nil
 }
 
-func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloudEventFilterRequest) (*emptypb.Empty, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
-
-	resp := new(emptypb.Empty)
-
-	namespace := in.GetNamespace()
-	filterName := in.GetFilterName()
-	cloudevent := in.GetCloudevent()
+func (flow *flow) execFilter(ctx context.Context, namespace, filterName string, cloudevent []byte) ([]byte, error) {
 
 	var script string
+	var newBytesEvent []byte
 
 	key := fmt.Sprintf("%s-%s", namespace, filterName)
 
@@ -1013,7 +1007,7 @@ func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloud
 
 	err := flow.database.NamespaceByName(ctx, cached, namespace)
 	if err != nil {
-		return nil, err
+		return newBytesEvent, err
 	}
 
 	if jsCode, ok := eventFilterCache.get(key); ok {
@@ -1025,7 +1019,7 @@ func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloud
 		ceventfilter, err := clients.CloudEventFilters.Query().Where(enteventsfilter.HasNamespaceWith(entns.ID(cached.Namespace.ID))).Where(enteventsfilter.NameEQ(filterName)).Only(ctx)
 		if err != nil {
 			err = status.Error(codes.NotFound, fmt.Sprintf("cloudEvent filter %s does not exist", filterName))
-			return resp, err
+			return newBytesEvent, err
 		}
 
 		script = fmt.Sprintf("function filter() {\n %s \n}", ceventfilter.Jscode)
@@ -1037,7 +1031,7 @@ func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloud
 	var mapEvent map[string]interface{}
 	err = json.Unmarshal(cloudevent, &mapEvent)
 	if err != nil {
-		return resp, err
+		return newBytesEvent, err
 	}
 
 	// create js runtime
@@ -1048,7 +1042,7 @@ func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloud
 
 	err = vm.Set("event", mapEvent)
 	if err != nil {
-		return resp, fmt.Errorf("failed to initialize js runtime: %w", err)
+		return newBytesEvent, fmt.Errorf("failed to initialize js runtime: %w", err)
 	}
 
 	// add logging function
@@ -1056,45 +1050,78 @@ func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloud
 		flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), fmt.Sprintf("%v", txt))
 	})
 	if err != nil {
-		return resp, fmt.Errorf("failed to initialize js runtime: %w", err)
+		return newBytesEvent, fmt.Errorf("failed to initialize js runtime: %w", err)
 	}
 
 	_, err = vm.RunString(script)
 	if err != nil {
 		flow.logger.Errorf(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "CloudEvent filter '%s' produced an error (1): %v", filterName, err)
-		return resp, err
+		return newBytesEvent, err
 	}
 
 	f, ok := goja.AssertFunction(vm.Get("filter"))
 	if !ok {
 		flow.logger.Errorf(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "cloudEvent filter '%s' error: %v", filterName, err)
-		return resp, err
+		return newBytesEvent, err
 	}
 
 	newEventMap, err := f(goja.Undefined())
 	if err != nil {
 		flow.logger.Errorf(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "CloudEvent filter '%s' produced an error (2): %v", filterName, err)
-		return resp, err
+		return newBytesEvent, err
 	}
 
 	retValue := newEventMap.Export()
 
 	// event dropped
 	if retValue == nil {
-		return resp, nil
+		return newBytesEvent, nil
 	}
 
-	newBytesEvent, err := json.Marshal(newEventMap)
+	newBytesEvent, err = json.Marshal(newEventMap)
 	if err != nil {
 		flow.logger.Errorf(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "CloudEvent filter '%s' produced an error (3): %v", filterName, err)
+		return newBytesEvent, err
+	}
+
+	return newBytesEvent, nil
+
+}
+
+func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloudEventFilterRequest) (*emptypb.Empty, error) {
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
+
+	resp := new(emptypb.Empty)
+
+	namespace := in.GetNamespace()
+	filterName := in.GetFilterName()
+	cloudevent := in.GetCloudevent()
+
+	cached := new(database.CacheData)
+	err := flow.database.NamespaceByName(ctx, cached, namespace)
+	if err != nil {
+		return nil, err
+	}
+
+	b, err := flow.execFilter(ctx, namespace, filterName, cloudevent)
+	if err != nil {
+		flow.logger.Errorf(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace),
+			"executing filter failed: %s", err.Error())
 		return resp, err
 	}
 
-	flow.sugar.Debugf("event after script is %v", string(newBytesEvent))
+	// dropped event
+	if len(b) == 0 {
+		flow.logger.Debugf(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace),
+			"dropping event")
+		return resp, nil
+	}
+
+	flow.sugar.Debugf("event after script is %v", string(b))
 
 	br := &grpc.BroadcastCloudeventRequest{
 		Namespace:  namespace,
-		Cloudevent: newBytesEvent,
+		Cloudevent: b,
 		Timer:      0,
 	}
 
