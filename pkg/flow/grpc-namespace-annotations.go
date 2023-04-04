@@ -354,10 +354,6 @@ func (flow *flow) SetAnnotation(ctx context.Context, q annotationQuerier, key st
 		switch v := q.(type) {
 		case *ent.Namespace:
 			query = query.SetNamespace(v)
-
-		// TODO: yassir, need refactor.
-		// case *ent.Workflow:
-		//	query = query.SetWorkflow(v)
 		case *ent.Instance:
 			query = query.SetInstance(v)
 		default:
