@@ -38,25 +38,6 @@ type Inode struct {
 	Mirror       uuid.UUID `json:"mirror,omitempty"`
 }
 
-func (ino *Inode) addChild(child *Inode) {
-	x := &Inode{
-		ID:           child.ID,
-		Name:         child.Name,
-		Type:         child.Type,
-		ExtendedType: child.ExtendedType,
-	}
-
-	idx := 0
-	for i := range ino.Children {
-		if ino.Children[i].Name > x.Name {
-			idx = i
-			break
-		}
-	}
-
-	ino.Children = append(ino.Children[:idx], append([]*Inode{x}, ino.Children[idx:]...)...)
-}
-
 type CreateInodeArgs struct {
 	Name         string    `json:"name,omitempty"`
 	Type         string    `json:"type,omitempty"`

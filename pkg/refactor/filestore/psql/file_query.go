@@ -88,9 +88,8 @@ func (q *FileQuery) SetPath(ctx context.Context, path string) error {
 
 	if q.file.Typ == filestore.FileTypeDirectory {
 		return q.setPathForDirectoryType(ctx, path)
-	} else {
-		return q.setPathForFileType(ctx, path)
 	}
+	return q.setPathForFileType(ctx, path)
 }
 
 func (q *FileQuery) GetRevisionByTag(ctx context.Context, tag string) (*filestore.Revision, error) {

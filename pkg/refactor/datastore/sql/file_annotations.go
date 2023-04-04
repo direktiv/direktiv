@@ -2,6 +2,7 @@ package sql
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
@@ -16,7 +17,7 @@ type sqlFileAnnotationsStore struct {
 func (s *sqlFileAnnotationsStore) Get(ctx context.Context, fileID uuid.UUID) (*core.FileAnnotations, error) {
 	annotations := &core.FileAnnotations{FileID: fileID}
 	res := s.db.WithContext(ctx).First(annotations)
-	if res.Error == gorm.ErrRecordNotFound {
+	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 		return nil, core.ErrFileAnnotationsNotSet
 	}
 	if res.Error != nil {

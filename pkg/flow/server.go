@@ -158,7 +158,7 @@ func (srv *server) start(ctx context.Context) error {
 		PreferSimpleProtocol: false, // disables implicit prepared statement usage
 	}), &gorm.Config{})
 	if err != nil {
-		return fmt.Errorf("creating filestore, err: %s", err)
+		return fmt.Errorf("creating filestore, err: %w", err)
 	}
 	// srv.fStore = psql.NewSQLFileStore(srv.gormDB)
 	// srv.dataStore = sql.NewSQLStore(srv.gormDB)

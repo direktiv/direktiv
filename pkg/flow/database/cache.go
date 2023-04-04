@@ -69,8 +69,6 @@ func (db *CachedDatabase) HandleNotification(s string) {
 		db.invalidateCachedNamespace(context.Background(), notification.ID, notification.Recursive)
 	case "invalidate-inode":
 		db.invalidateCachedNamespace(context.Background(), notification.ID, notification.Recursive)
-	case "invalidate-workflow":
-		db.invalidateCachedWorkflow(context.Background(), notification.ID, notification.Recursive)
 	default:
 		db.sugar.Error(err)
 		return

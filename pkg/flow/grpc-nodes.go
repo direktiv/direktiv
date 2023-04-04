@@ -2,6 +2,7 @@ package flow
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
@@ -154,7 +155,7 @@ func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (
 	defer rollback(ctx)
 
 	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
-	if err == filestore.ErrNotFound && req.GetIdempotent() {
+	if errors.Is(err, filestore.ErrNotFound) && req.GetIdempotent() {
 		var resp emptypb.Empty
 
 		return &resp, nil
@@ -285,7 +286,7 @@ func (flow *flow) CreateNodeAttributes(ctx context.Context, req *grpc.CreateNode
 
 	annotations, err := store.FileAnnotations().Get(ctx, file.ID)
 
-	if err == core.ErrFileAnnotationsNotSet {
+	if errors.Is(err, core.ErrFileAnnotationsNotSet) {
 		annotations = &core.FileAnnotations{
 			FileID: file.ID,
 			Data:   nil,

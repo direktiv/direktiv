@@ -213,7 +213,7 @@ func (flow *flow) CreateNamespace(ctx context.Context, req *grpc.CreateNamespace
 	if err != nil {
 		return nil, err
 	}
-	defer tx.Rollback()
+	defer rollback(tx)
 
 	clients := flow.edb.Clients(ctx)
 
@@ -282,7 +282,7 @@ func (flow *flow) DeleteNamespace(ctx context.Context, req *grpc.DeleteNamespace
 	if err != nil {
 		return nil, err
 	}
-	defer tx.Rollback()
+	defer rollback(tx)
 
 	ns, err := flow.edb.NamespaceByName(ctx, req.GetName())
 	if err != nil {
@@ -356,7 +356,7 @@ func (flow *flow) RenameNamespace(ctx context.Context, req *grpc.RenameNamespace
 	if err != nil {
 		return nil, err
 	}
-	defer tx.Rollback()
+	defer rollback(tx)
 
 	ns, err := flow.edb.NamespaceByName(ctx, req.GetOld())
 	if err != nil {

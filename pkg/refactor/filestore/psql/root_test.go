@@ -47,7 +47,7 @@ func TestRoot_CreateFile(t *testing.T) {
 func assertRootCorrectFileCreation(t *testing.T, fs filestore.FileStore, root *filestore.Root, path string) {
 	t.Helper()
 
-	var data []byte = nil
+	var data []byte
 	typ := "directory"
 	if strings.Contains(path, ".text") {
 		data = []byte("some data")
@@ -262,7 +262,7 @@ func assertChecksumsInPath(t *testing.T, fs filestore.FileStore, root *filestore
 
 	wantChecksumsMap := make(map[string]string)
 
-	for i := 0; i < len(paths)-1; i = i + 2 {
+	for i := 0; i < len(paths)-1; i += 2 {
 		wantChecksumsMap[paths[i]] = paths[i+1]
 	}
 

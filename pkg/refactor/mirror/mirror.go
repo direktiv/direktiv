@@ -14,7 +14,7 @@ type Settings struct {
 	NamespaceID uuid.UUID
 
 	Typ           string
-	Url           string
+	URL           string
 	PublicKey     string
 	PrivateKey    string
 	DecryptionKey string

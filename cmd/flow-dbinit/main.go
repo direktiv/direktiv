@@ -123,7 +123,7 @@ func RunApplication() {
 
 	err = tx.Commit()
 	if err != nil {
-		log.Printf("commiting db transaction error: %v\n", err)
+		log.Printf("committing db transaction error: %v\n", err)
 		os.Exit(1)
 	}
 }

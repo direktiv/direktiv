@@ -13,7 +13,7 @@ var _ Source = &MockedSource{} // Ensures MockedSource struct conforms to Source
 
 func (m MockedSource) PullInPath(settings Settings, dst string) error {
 	for k, v := range m.Paths {
-		if err := os.WriteFile(dst+k, []byte(v), 0o644); err != nil {
+		if err := os.WriteFile(dst+k, []byte(v), 0o600); err != nil {
 			return err
 		}
 	}

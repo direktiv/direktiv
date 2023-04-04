@@ -1143,8 +1143,6 @@ func (engine *engine) reportInstanceCrashed(ctx context.Context, im *instanceMem
 	engine.logger.Errorf(ctx, im.cached.Instance.Namespace, im.cached.GetAttributes(recipient.Namespace), "Workflow failed %s Instance %s crashed with %s error '%s': %s", database.GetWorkflow(im.cached.Instance.As), im.GetInstanceID(), typ, code, err.Error())
 }
 
-const latest = "latest"
-
 func rollback(tx database.Transaction) {
 	err := tx.Rollback()
 	if err != nil && !strings.Contains(err.Error(), "already been") {
