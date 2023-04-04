@@ -156,19 +156,19 @@ func TestRoot_CorrectSetPath(t *testing.T) {
 func assertAllPathsInRoot(t *testing.T, fs filestore.FileStore, root *filestore.Root, wantPaths ...string) {
 	t.Helper()
 
-	gotPaths, err := fs.ForRootID(root.ID).ListAllPathsForTest(context.Background())
+	gotPaths, err := fs.ForRootID(root.ID).ListAllFiles(context.Background())
 	if err != nil {
-		t.Errorf("unepxected ListAllPathsForTest() error = %v", err)
+		t.Errorf("unexpected ListAllFiles() error = %v", err)
 		return
 	}
 	if len(gotPaths) != len(wantPaths) {
-		t.Errorf("unexpected ListAllPathsForTest() length, got: %d, want: %d", len(gotPaths), len(wantPaths))
+		t.Errorf("unexpected ListAllFiles() length, got: %d, want: %d", len(gotPaths), len(wantPaths))
 		return
 	}
 
 	for i := range gotPaths {
-		if gotPaths[i] != wantPaths[i] {
-			t.Errorf("unexpected gotPaths[%d] , got: >%s<, want: >%s<", i, gotPaths[i], wantPaths[i])
+		if gotPaths[i].Path != wantPaths[i] {
+			t.Errorf("unexpected gotPaths[%d] , got: >%s<, want: >%s<", i, gotPaths[i].Path, wantPaths[i])
 			return
 		}
 	}

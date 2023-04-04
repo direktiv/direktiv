@@ -26,15 +26,15 @@ type RootQuery struct {
 	db           *gorm.DB
 }
 
-func (q *RootQuery) ListAllPathsForTest(ctx context.Context) ([]string, error) {
-	var list []string
+func (q *RootQuery) ListAllFiles(ctx context.Context) ([]*filestore.File, error) {
+	var list []*filestore.File
 
 	// check if root exists.
 	if err := q.checkRootExists(ctx); err != nil {
 		return nil, err
 	}
 
-	res := q.db.WithContext(ctx).Model(&filestore.File{}).Select("path").Where("root_id", q.rootID).Find(&list)
+	res := q.db.WithContext(ctx).Model(&filestore.File{}).Where("root_id", q.rootID).Find(&list)
 
 	if res.Error != nil {
 		return nil, res.Error
