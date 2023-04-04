@@ -104,7 +104,6 @@ func (flow *flow) functionsHeartbeat() {
 			flow.flushHeartbeatTuples(tuples)
 		}
 	}
-
 }
 
 const heartbeatMessageLimit = 4096 // some evidence that we could get away with a limit of 8000, so I've set it here to be safe

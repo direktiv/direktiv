@@ -161,7 +161,6 @@ func (srv *server) validateRouter(ctx context.Context, cached *database.CacheDat
 */
 
 func (engine *engine) mux(ctx context.Context, namespace, path, ref string) (*database.CacheData, error) {
-
 	ns, err := engine.edb.NamespaceByName(ctx, namespace)
 	if err != nil {
 		return nil, err
