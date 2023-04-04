@@ -668,10 +668,10 @@ func (pubsub *Pubsub) activityLogs(act *uuid.UUID) string {
 	return fmt.Sprintf("mactlogs:%s", act.String())
 }
 
-func (pubsub *Pubsub) SubscribeMirrorActivityLogs(ns *database.Namespace, act *database.MirrorActivity) *Subscription {
+func (pubsub *Pubsub) SubscribeMirrorActivityLogs(namespaceID uuid.UUID, mirrorProcessID uuid.UUID) *Subscription {
 	keys := []string{}
 
-	keys = append(keys, ns.ID.String(), pubsub.activityLogs(&act.ID))
+	keys = append(keys, namespaceID.String(), pubsub.activityLogs(&mirrorProcessID))
 
 	return pubsub.Subscribe(keys...)
 }

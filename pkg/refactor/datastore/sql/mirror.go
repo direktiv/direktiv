@@ -12,33 +12,38 @@ type sqlMirrorStore struct {
 	db *gorm.DB
 }
 
-func (s sqlMirrorStore) CreateSettings(ctx context.Context, settings *mirror.Settings) error {
-	// TODO implement me
+func (s sqlMirrorStore) CreateConfig(ctx context.Context, config *mirror.Config) (*mirror.Config, error) {
+	//TODO implement me
 	panic("implement me")
 }
 
-func (s sqlMirrorStore) GetSetting(ctx context.Context, id uuid.UUID) (*mirror.Settings, error) {
-	// TODO implement me
+func (s sqlMirrorStore) UpdateConfig(ctx context.Context, config *mirror.Config) (*mirror.Config, error) {
+	//TODO implement me
 	panic("implement me")
 }
 
-func (s sqlMirrorStore) DeleteSetting(ctx context.Context, id uuid.UUID) error {
-	// TODO implement me
+func (s sqlMirrorStore) GetConfig(ctx context.Context, id uuid.UUID) (*mirror.Config, error) {
+	//TODO implement me
 	panic("implement me")
 }
 
-func (s sqlMirrorStore) CreateActivity(ctx context.Context, activity *mirror.Activity) error {
-	// TODO implement me
+func (s sqlMirrorStore) GetConfigByNamespace(ctx context.Context, namespace string) (*mirror.Config, error) {
+	//TODO implement me
 	panic("implement me")
 }
 
-func (s sqlMirrorStore) GetActivity(ctx context.Context, id uuid.UUID) (*mirror.Activity, error) {
-	// TODO implement me
+func (s sqlMirrorStore) CreateProcess(ctx context.Context, mirror *mirror.Process) (*mirror.Process, error) {
+	//TODO implement me
 	panic("implement me")
 }
 
-func (s sqlMirrorStore) DeleteActivity(ctx context.Context, id uuid.UUID) error {
-	// TODO implement me
+func (s sqlMirrorStore) GetProcess(ctx context.Context, id uuid.UUID) (*mirror.Process, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (s sqlMirrorStore) GetProcessesByConfig(ctx context.Context, configID uuid.UUID) ([]*mirror.Process, error) {
+	//TODO implement me
 	panic("implement me")
 }
 

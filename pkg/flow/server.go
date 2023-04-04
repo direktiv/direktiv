@@ -10,6 +10,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/refactor/mirror"
+
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore/sql"
@@ -54,6 +56,8 @@ type server struct {
 	gormDB *gorm.DB
 	// fStore    filestore.FileStore
 	// dataStore datastore.Store
+
+	mirrorManager mirror.Manager
 
 	secrets  *secrets
 	flow     *flow

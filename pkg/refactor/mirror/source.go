@@ -11,7 +11,7 @@ type MockedSource struct {
 
 var _ Source = &MockedSource{} // Ensures MockedSource struct conforms to Source interface.
 
-func (m MockedSource) PullInPath(settings Settings, dst string) error {
+func (m MockedSource) PullInPath(config Config, dst string) error {
 	for k, v := range m.Paths {
 		if err := os.WriteFile(dst+k, []byte(v), 0o600); err != nil {
 			return err

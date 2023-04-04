@@ -3,6 +3,8 @@ package bytedata
 import (
 	"path/filepath"
 
+	"github.com/direktiv/direktiv/pkg/refactor/mirror"
+
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -56,6 +58,38 @@ func ConvertRevisionsToGrpcRefList(list []*filestore.Revision) []*grpc.Ref {
 	var result []*grpc.Ref
 	for _, f := range list {
 		result = append(result, ConvertRevisionToGrpcRef(f))
+	}
+
+	return result
+}
+
+func ConvertMirrorConfigToGrpcMirrorInfo(config *mirror.Config) *grpc.MirrorInfo {
+	return &grpc.MirrorInfo{
+		Url: config.URL,
+		Ref: config.GitRef,
+		// Cron: ,
+		PublicKey: config.PublicKey,
+		CommitId:  config.GitCommitHash,
+		// LastSync: ,
+		PrivateKey: config.PrivateKey,
+		Passphrase: config.PrivateKeyPassphrase,
+	}
+}
+
+func ConvertMirrorProcessToGrpcMirrorActivity(mirror *mirror.Process) *grpc.MirrorActivityInfo {
+	return &grpc.MirrorActivityInfo{
+		Id:        mirror.ID.String(),
+		Type:      mirror.Typ,
+		Status:    mirror.Status,
+		CreatedAt: timestamppb.New(mirror.CreatedAt),
+		UpdatedAt: timestamppb.New(mirror.UpdatedAt),
+	}
+}
+
+func ConvertMirrorProcessesToGrpcMirrorActivityInfoList(list []*mirror.Process) []*grpc.MirrorActivityInfo {
+	var result []*grpc.MirrorActivityInfo
+	for _, f := range list {
+		result = append(result, ConvertMirrorProcessToGrpcMirrorActivity(f))
 	}
 
 	return result
