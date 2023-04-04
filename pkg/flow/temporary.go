@@ -108,7 +108,7 @@ func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.Variab
 			} else {
 				// TODO: alan, maybe need to enhance the GetData function to also return us some information like mime type, checksum, and size
 				if file.Typ != filestore.FileTypeFile {
-					return nil, ErrVarNotFile
+					return nil, model.ErrVarNotFile
 				}
 				rc, err := fStore.ForFile(file).GetData(ctx)
 				if err != nil {
