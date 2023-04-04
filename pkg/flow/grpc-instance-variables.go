@@ -1,8 +1,5 @@
 package flow
 
-// TODO: yassir, need refactor.
-/*
-
 import (
 	"bytes"
 	"context"
@@ -882,7 +879,7 @@ func (flow *flow) DeleteInstanceVariable(ctx context.Context, req *grpc.DeleteIn
 		TotalSize:  int64(vdata.Size),
 		Scope:      BroadcastEventScopeInstance,
 	}
-	err = flow.BroadcastVariable(ctx, BroadcastEventTypeDelete, BroadcastEventScopeInstance, broadcastInput, cached)
+	err = flow.BroadcastVariable(ctx, BroadcastEventTypeDelete, BroadcastEventScopeInstance, broadcastInput, cached.Namespace)
 	if err != nil {
 		return nil, err
 	}
@@ -936,4 +933,3 @@ func (flow *flow) RenameInstanceVariable(ctx context.Context, req *grpc.RenameIn
 
 	return &resp, nil
 }
-*/
