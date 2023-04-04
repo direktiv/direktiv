@@ -1,5 +1,12 @@
 import { Pagination, PaginationLink } from "../../design/Pagination";
 import React, { useState } from "react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../design/Select";
 
 import PaginationProvider from ".";
 
@@ -28,42 +35,76 @@ const persons: Person[] = [
   { id: 13, name: "Person 13" },
 ];
 
-export const Default = () => (
-  <PaginationProvider items={persons} pageSize={3}>
-    {({
-      currentItems,
-      gotoFirstPage,
-      gotoLastPage,
-      gotoNextPage,
-      gotoPreviousPage,
-      isFirstPage,
-      isLastPage,
-      page,
-      pagesCount,
-      gotoPage,
-      pages,
-    }) => (
-      <>
-        <div>
-          {currentItems.map((person) => (
-            <div key={person.id}>{person.name}</div>
-          ))}
-        </div>
+export const Default = () => {
+  const [pageSize, setPageSize] = useState(3);
+  return (
+    <div
+      className="flex flex-col items-center space-y-5 p-5
+    "
+    >
+      <PaginationProvider items={persons} pageSize={pageSize}>
+        {({
+          currentItems,
+          goToFirstPage,
+          goToLastPage,
+          goToPage,
+          goToNextPage,
+          goToPreviousPage,
+          isFirstPage,
+          isLastPage,
+          currentPage,
+          totalPages,
+          pagesList,
+        }) => (
+          <>
+            <div className="grid gap-y-2 rounded border p-5 text-center shadow-sm">
+              <div>is first page? {isFirstPage ? "👍" : "👎"}</div>
+              <div>is last page? {isLastPage ? "👍" : "👎"}</div>
+              <div>
+                page {currentPage} / {totalPages}
+              </div>
+              <div className="flex items-center space-x-3">
+                <span>page size</span>
+                <Select
+                  onValueChange={(value) => {
+                    setPageSize(parseInt(value));
+                    goToFirstPage();
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={pageSize} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="3">3</SelectItem>
+                    <SelectItem value="4">4</SelectItem>
+                    <SelectItem value="5">5</SelectItem>
+                    <SelectItem value="6">6</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
 
-        <Pagination align="center">
-          <PaginationLink icon="left" onClick={() => gotoPreviousPage()} />
-          {pages.map((p) => (
-            <PaginationLink
-              active={page === p}
-              key={`${p}`}
-              onClick={() => gotoPage(p)}
-            >
-              {p}
-            </PaginationLink>
-          ))}
-          <PaginationLink icon="right" onClick={() => gotoNextPage()} />
-        </Pagination>
-      </>
-    )}
-  </PaginationProvider>
-);
+            <div className="grid gap-y-2 rounded border p-5 text-center shadow-sm">
+              {currentItems.map((person) => (
+                <div key={person.id}>{person.name}</div>
+              ))}
+            </div>
+            <Pagination align="center">
+              <PaginationLink icon="left" onClick={() => goToPreviousPage()} />
+              {pagesList.map((p) => (
+                <PaginationLink
+                  active={currentPage === p}
+                  key={`${p}`}
+                  onClick={() => goToPage(p)}
+                >
+                  {p}
+                </PaginationLink>
+              ))}
+              <PaginationLink icon="right" onClick={() => goToNextPage()} />
+            </Pagination>
+          </>
+        )}
+      </PaginationProvider>
+    </div>
+  );
+};
