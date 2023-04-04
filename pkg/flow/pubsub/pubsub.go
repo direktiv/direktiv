@@ -519,35 +519,12 @@ func (pubsub *Pubsub) NotifyEvents(ns *database.Namespace) {
 	pubsub.Publish(pubsubNotify(pubsub.namespaceEvents(ns)))
 }
 
-// TODO: alan, remove this
-/*
-func (pubsub *Pubsub) walkInodeKeys(cached *database.CacheData) []string {
-	array := make([]string, 0)
-
-	for i := len(cached.Inodes) - 1; i >= 0; i-- {
-		x := cached.Inodes[i]
-		array = append(array, x.ID.String())
-	}
-
-	array = append(array, cached.Namespace.ID.String())
-
-	keys := make([]string, 0)
-	for i := len(array) - 1; i >= 0; i-- {
-		keys = append(keys, array[i])
-	}
-
-	return keys
-}
-*/
-
 func (pubsub *Pubsub) SubscribeInode(id uuid.UUID) *Subscription {
 	keys := []string{id.String()}
 	return pubsub.Subscribe(keys...)
 }
 
 func (pubsub *Pubsub) NotifyInode(ino *database.Inode) {
-	// pubsub.log.Debugf("PS Notify Inode: %s", ino.ID.String())
-
 	pubsub.Publish(pubsubNotify(ino.ID.String()))
 }
 
@@ -558,18 +535,6 @@ func (pubsub *Pubsub) CloseInode(ino *database.Inode) {
 func (pubsub *Pubsub) inodeAnnotations(ino *database.Inode) string {
 	return fmt.Sprintf("inonotes:%s", ino.ID.String())
 }
-
-// TODO: alan, remove this
-/*
-func (pubsub *Pubsub) SubscribeInodeAnnotations(cached *database.CacheData) *Subscription {
-	keys := pubsub.walkInodeKeys(cached)
-
-	ino := cached.Inodes[len(cached.Inodes)-1]
-	keys = append(keys, pubsub.inodeAnnotations(ino))
-
-	return pubsub.Subscribe(keys...)
-}
-*/
 
 func (pubsub *Pubsub) mirror(id uuid.UUID) string {
 	return fmt.Sprintf("mirror:%s", id.String())
@@ -597,32 +562,17 @@ func (pubsub *Pubsub) workflowVars(id uuid.UUID) string {
 }
 
 func (pubsub *Pubsub) SubscribeWorkflowVariables(id uuid.UUID) *Subscription {
-	// TODO: alan, remove this if we're no longer interested in streaming it
-	// keys := pubsub.walkInodeKeys(cached)
-	// keys = append(keys, cached.Workflow.ID.String(), pubsub.workflowVars(cached.Workflow.ID))
 	keys := []string{pubsub.workflowVars(id)}
 	return pubsub.Subscribe(keys...)
 }
 
 func (pubsub *Pubsub) NotifyWorkflowVariables(id uuid.UUID) {
-	// TODO: alan, remove this if we're no longer interested in streaming it
 	pubsub.Publish(pubsubNotify(pubsub.workflowVars(id)))
 }
 
 func (pubsub *Pubsub) workflowAnnotations(id uuid.UUID) string {
 	return fmt.Sprintf("wfnotes:%s", id.String())
 }
-
-// TODO: alan, remove this
-/*
-func (pubsub *Pubsub) SubscribeWorkflowAnnotations(cached *database.CacheData) *Subscription {
-	keys := pubsub.walkInodeKeys(cached)
-
-	keys = append(keys, cached.File.ID.String(), pubsub.workflowAnnotations(cached.File.ID))
-
-	return pubsub.Subscribe(keys...)
-}
-*/
 
 func (pubsub *Pubsub) NotifyWorkflowAnnotations(id uuid.UUID) {
 	pubsub.Publish(pubsubNotify(pubsub.workflowAnnotations(id)))

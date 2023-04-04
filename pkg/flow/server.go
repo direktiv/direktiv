@@ -532,7 +532,7 @@ func (flow *flow) Build(ctx context.Context, in *emptypb.Empty) (*grpc.BuildResp
 func (engine *engine) UserLog(ctx context.Context, im *instanceMemory, msg string, a ...interface{}) {
 	engine.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), msg, a...)
 
-	// TODO: alan, how are we going to reimplement this in a performant way?
+	// TODO: alan, we need to attach this boolean to the instance table
 	/*
 		s := fmt.Sprintf(msg, a...)
 
