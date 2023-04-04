@@ -166,6 +166,13 @@ func Metadata(v string) predicate.InstanceRuntime {
 	})
 }
 
+// LogToEvents applies equality check predicate on the "logToEvents" field. It's identical to LogToEventsEQ.
+func LogToEvents(v string) predicate.InstanceRuntime {
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldLogToEvents), v))
+	})
+}
+
 // InputEQ applies the EQ predicate on the "input" field.
 func InputEQ(v []byte) predicate.InstanceRuntime {
 	return predicate.InstanceRuntime(func(s *sql.Selector) {
@@ -1365,6 +1372,119 @@ func MetadataEqualFold(v string) predicate.InstanceRuntime {
 func MetadataContainsFold(v string) predicate.InstanceRuntime {
 	return predicate.InstanceRuntime(func(s *sql.Selector) {
 		s.Where(sql.ContainsFold(s.C(FieldMetadata), v))
+	})
+}
+
+// LogToEventsEQ applies the EQ predicate on the "logToEvents" field.
+func LogToEventsEQ(v string) predicate.InstanceRuntime {
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldLogToEvents), v))
+	})
+}
+
+// LogToEventsNEQ applies the NEQ predicate on the "logToEvents" field.
+func LogToEventsNEQ(v string) predicate.InstanceRuntime {
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldLogToEvents), v))
+	})
+}
+
+// LogToEventsIn applies the In predicate on the "logToEvents" field.
+func LogToEventsIn(vs ...string) predicate.InstanceRuntime {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		s.Where(sql.In(s.C(FieldLogToEvents), v...))
+	})
+}
+
+// LogToEventsNotIn applies the NotIn predicate on the "logToEvents" field.
+func LogToEventsNotIn(vs ...string) predicate.InstanceRuntime {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		s.Where(sql.NotIn(s.C(FieldLogToEvents), v...))
+	})
+}
+
+// LogToEventsGT applies the GT predicate on the "logToEvents" field.
+func LogToEventsGT(v string) predicate.InstanceRuntime {
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldLogToEvents), v))
+	})
+}
+
+// LogToEventsGTE applies the GTE predicate on the "logToEvents" field.
+func LogToEventsGTE(v string) predicate.InstanceRuntime {
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldLogToEvents), v))
+	})
+}
+
+// LogToEventsLT applies the LT predicate on the "logToEvents" field.
+func LogToEventsLT(v string) predicate.InstanceRuntime {
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldLogToEvents), v))
+	})
+}
+
+// LogToEventsLTE applies the LTE predicate on the "logToEvents" field.
+func LogToEventsLTE(v string) predicate.InstanceRuntime {
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldLogToEvents), v))
+	})
+}
+
+// LogToEventsContains applies the Contains predicate on the "logToEvents" field.
+func LogToEventsContains(v string) predicate.InstanceRuntime {
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldLogToEvents), v))
+	})
+}
+
+// LogToEventsHasPrefix applies the HasPrefix predicate on the "logToEvents" field.
+func LogToEventsHasPrefix(v string) predicate.InstanceRuntime {
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldLogToEvents), v))
+	})
+}
+
+// LogToEventsHasSuffix applies the HasSuffix predicate on the "logToEvents" field.
+func LogToEventsHasSuffix(v string) predicate.InstanceRuntime {
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldLogToEvents), v))
+	})
+}
+
+// LogToEventsIsNil applies the IsNil predicate on the "logToEvents" field.
+func LogToEventsIsNil() predicate.InstanceRuntime {
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldLogToEvents)))
+	})
+}
+
+// LogToEventsNotNil applies the NotNil predicate on the "logToEvents" field.
+func LogToEventsNotNil() predicate.InstanceRuntime {
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldLogToEvents)))
+	})
+}
+
+// LogToEventsEqualFold applies the EqualFold predicate on the "logToEvents" field.
+func LogToEventsEqualFold(v string) predicate.InstanceRuntime {
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldLogToEvents), v))
+	})
+}
+
+// LogToEventsContainsFold applies the ContainsFold predicate on the "logToEvents" field.
+func LogToEventsContainsFold(v string) predicate.InstanceRuntime {
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldLogToEvents), v))
 	})
 }
 

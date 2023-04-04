@@ -183,6 +183,7 @@ type InstanceRuntime struct {
 	StateContext    string    `json:"stateContext,omitempty"`
 	Metadata        string    `json:"metadata,omitempty"`
 	Caller          uuid.UUID `json:"caller,omitempty"`
+	LogToEvents     string    `json:"logToEvents,omitempty"`
 }
 
 type Annotation struct {

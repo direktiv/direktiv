@@ -4804,6 +4804,7 @@ type InstanceRuntimeMutation struct {
 	instanceContext *string
 	stateContext    *string
 	metadata        *string
+	logToEvents     *string
 	clearedFields   map[string]struct{}
 	instance        *uuid.UUID
 	clearedinstance bool
@@ -5566,6 +5567,55 @@ func (m *InstanceRuntimeMutation) ResetMetadata() {
 	delete(m.clearedFields, instanceruntime.FieldMetadata)
 }
 
+// SetLogToEvents sets the "logToEvents" field.
+func (m *InstanceRuntimeMutation) SetLogToEvents(s string) {
+	m.logToEvents = &s
+}
+
+// LogToEvents returns the value of the "logToEvents" field in the mutation.
+func (m *InstanceRuntimeMutation) LogToEvents() (r string, exists bool) {
+	v := m.logToEvents
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLogToEvents returns the old "logToEvents" field's value of the InstanceRuntime entity.
+// If the InstanceRuntime object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InstanceRuntimeMutation) OldLogToEvents(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLogToEvents is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLogToEvents requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLogToEvents: %w", err)
+	}
+	return oldValue.LogToEvents, nil
+}
+
+// ClearLogToEvents clears the value of the "logToEvents" field.
+func (m *InstanceRuntimeMutation) ClearLogToEvents() {
+	m.logToEvents = nil
+	m.clearedFields[instanceruntime.FieldLogToEvents] = struct{}{}
+}
+
+// LogToEventsCleared returns if the "logToEvents" field was cleared in this mutation.
+func (m *InstanceRuntimeMutation) LogToEventsCleared() bool {
+	_, ok := m.clearedFields[instanceruntime.FieldLogToEvents]
+	return ok
+}
+
+// ResetLogToEvents resets all changes to the "logToEvents" field.
+func (m *InstanceRuntimeMutation) ResetLogToEvents() {
+	m.logToEvents = nil
+	delete(m.clearedFields, instanceruntime.FieldLogToEvents)
+}
+
 // SetInstanceID sets the "instance" edge to the Instance entity by id.
 func (m *InstanceRuntimeMutation) SetInstanceID(id uuid.UUID) {
 	m.instance = &id
@@ -5663,7 +5713,7 @@ func (m *InstanceRuntimeMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *InstanceRuntimeMutation) Fields() []string {
-	fields := make([]string, 0, 13)
+	fields := make([]string, 0, 14)
 	if m.input != nil {
 		fields = append(fields, instanceruntime.FieldInput)
 	}
@@ -5703,6 +5753,9 @@ func (m *InstanceRuntimeMutation) Fields() []string {
 	if m.metadata != nil {
 		fields = append(fields, instanceruntime.FieldMetadata)
 	}
+	if m.logToEvents != nil {
+		fields = append(fields, instanceruntime.FieldLogToEvents)
+	}
 	return fields
 }
 
@@ -5737,6 +5790,8 @@ func (m *InstanceRuntimeMutation) Field(name string) (ent.Value, bool) {
 		return m.StateContext()
 	case instanceruntime.FieldMetadata:
 		return m.Metadata()
+	case instanceruntime.FieldLogToEvents:
+		return m.LogToEvents()
 	}
 	return nil, false
 }
@@ -5772,6 +5827,8 @@ func (m *InstanceRuntimeMutation) OldField(ctx context.Context, name string) (en
 		return m.OldStateContext(ctx)
 	case instanceruntime.FieldMetadata:
 		return m.OldMetadata(ctx)
+	case instanceruntime.FieldLogToEvents:
+		return m.OldLogToEvents(ctx)
 	}
 	return nil, fmt.Errorf("unknown InstanceRuntime field %s", name)
 }
@@ -5872,6 +5929,13 @@ func (m *InstanceRuntimeMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetMetadata(v)
 		return nil
+	case instanceruntime.FieldLogToEvents:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLogToEvents(v)
+		return nil
 	}
 	return fmt.Errorf("unknown InstanceRuntime field %s", name)
 }
@@ -5950,6 +6014,9 @@ func (m *InstanceRuntimeMutation) ClearedFields() []string {
 	if m.FieldCleared(instanceruntime.FieldMetadata) {
 		fields = append(fields, instanceruntime.FieldMetadata)
 	}
+	if m.FieldCleared(instanceruntime.FieldLogToEvents) {
+		fields = append(fields, instanceruntime.FieldLogToEvents)
+	}
 	return fields
 }
 
@@ -5997,6 +6064,9 @@ func (m *InstanceRuntimeMutation) ClearField(name string) error {
 	case instanceruntime.FieldMetadata:
 		m.ClearMetadata()
 		return nil
+	case instanceruntime.FieldLogToEvents:
+		m.ClearLogToEvents()
+		return nil
 	}
 	return fmt.Errorf("unknown InstanceRuntime nullable field %s", name)
 }
@@ -6043,6 +6113,9 @@ func (m *InstanceRuntimeMutation) ResetField(name string) error {
 		return nil
 	case instanceruntime.FieldMetadata:
 		m.ResetMetadata()
+		return nil
+	case instanceruntime.FieldLogToEvents:
+		m.ResetLogToEvents()
 		return nil
 	}
 	return fmt.Errorf("unknown InstanceRuntime field %s", name)

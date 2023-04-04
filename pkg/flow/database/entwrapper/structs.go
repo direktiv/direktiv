@@ -78,6 +78,7 @@ func entInstanceRuntime(rt *ent.InstanceRuntime) *database.InstanceRuntime {
 		InstanceContext: rt.InstanceContext,
 		StateContext:    rt.StateContext,
 		Metadata:        rt.Metadata,
+		LogToEvents:     rt.LogToEvents,
 	}
 
 	if rt.Edges.Caller != nil {

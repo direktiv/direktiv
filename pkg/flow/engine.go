@@ -160,6 +160,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 
 	clients := engine.edb.Clients(tctx)
 
+	// TODO: alan, need to add logToEvents value here
 	rt, err := clients.InstanceRuntime.Create().SetInput(args.Input).SetData(data).SetMemory("null").SetCallerData(args.CallerData).Save(tctx)
 	if err != nil {
 		return nil, err
@@ -190,6 +191,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 		InstanceContext: rt.InstanceContext,
 		StateContext:    rt.StateContext,
 		Metadata:        rt.Metadata,
+		LogToEvents:     rt.LogToEvents,
 	}
 
 	cached.Instance = &database.Instance{

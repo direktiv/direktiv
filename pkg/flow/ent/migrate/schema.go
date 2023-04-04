@@ -200,6 +200,7 @@ var (
 		{Name: "instance_context", Type: field.TypeString, Nullable: true},
 		{Name: "state_context", Type: field.TypeString, Nullable: true},
 		{Name: "metadata", Type: field.TypeString, Nullable: true},
+		{Name: "log_to_events", Type: field.TypeString, Nullable: true},
 		{Name: "instance_runtime", Type: field.TypeUUID, Unique: true, Nullable: true},
 		{Name: "instance_children", Type: field.TypeUUID, Nullable: true},
 	}
@@ -211,13 +212,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "instance_runtimes_instances_runtime",
-				Columns:    []*schema.Column{InstanceRuntimesColumns[14]},
+				Columns:    []*schema.Column{InstanceRuntimesColumns[15]},
 				RefColumns: []*schema.Column{InstancesColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "instance_runtimes_instances_children",
-				Columns:    []*schema.Column{InstanceRuntimesColumns[15]},
+				Columns:    []*schema.Column{InstanceRuntimesColumns[16]},
 				RefColumns: []*schema.Column{InstancesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
