@@ -39,7 +39,7 @@ describe("Pagination Provider", () => {
           totalPages,
         }) => (
           <div>
-            <ul data-testid="items-list">
+            <ul data-testid="itemsList">
               {currentItems.map((item) => (
                 <li key={item.id}>{item.id}</li>
               ))}
@@ -81,7 +81,7 @@ describe("Pagination Provider", () => {
     expect(screen.getByTestId("page").textContent).toBe("1");
     expect(screen.getByTestId("pages").textContent).toBe("4 pages");
     expect(screen.getByTestId("pagesArray").textContent).toBe("1,2,3,4");
-    expect(screen.getByTestId("items-list").textContent).toBe("1234");
+    expect(screen.getByTestId("itemsList").textContent).toBe("1234");
 
     // clicking on previous page should not change anything
     await act(async () => {
@@ -93,7 +93,7 @@ describe("Pagination Provider", () => {
     expect(screen.getByTestId("page").textContent).toBe("1");
     expect(screen.getByTestId("pages").textContent).toBe("4 pages");
     expect(screen.getByTestId("pagesArray").textContent).toBe("1,2,3,4");
-    expect(screen.getByTestId("items-list").textContent).toBe("1234");
+    expect(screen.getByTestId("itemsList").textContent).toBe("1234");
 
     // clicking on first page should not change anything
     await act(async () => {
@@ -105,7 +105,7 @@ describe("Pagination Provider", () => {
     expect(screen.getByTestId("page").textContent).toBe("1");
     expect(screen.getByTestId("pages").textContent).toBe("4 pages");
     expect(screen.getByTestId("pagesArray").textContent).toBe("1,2,3,4");
-    expect(screen.getByTestId("items-list").textContent).toBe("1234");
+    expect(screen.getByTestId("itemsList").textContent).toBe("1234");
 
     // page 2
     await act(async () => {
@@ -117,7 +117,7 @@ describe("Pagination Provider", () => {
     expect(screen.getByTestId("page").textContent).toBe("2");
     expect(screen.getByTestId("pages").textContent).toBe("4 pages");
     expect(screen.getByTestId("pagesArray").textContent).toBe("1,2,3,4");
-    expect(screen.getByTestId("items-list").textContent).toBe("5678");
+    expect(screen.getByTestId("itemsList").textContent).toBe("5678");
 
     // page 3
     await act(async () => {
@@ -129,7 +129,7 @@ describe("Pagination Provider", () => {
     expect(screen.getByTestId("page").textContent).toBe("3");
     expect(screen.getByTestId("pages").textContent).toBe("4 pages");
     expect(screen.getByTestId("pagesArray").textContent).toBe("1,2,3,4");
-    expect(screen.getByTestId("items-list").textContent).toBe("9101112");
+    expect(screen.getByTestId("itemsList").textContent).toBe("9101112");
 
     // page 4 (last page)
     await act(async () => {
@@ -140,7 +140,7 @@ describe("Pagination Provider", () => {
     expect(screen.getByTestId("isLastPage").textContent).toContain("yes");
     expect(screen.getByTestId("page").textContent).toBe("4");
     expect(screen.getByTestId("pages").textContent).toBe("4 pages");
-    expect(screen.getByTestId("items-list").textContent).toBe("13");
+    expect(screen.getByTestId("itemsList").textContent).toBe("13");
 
     // clicking on next page again should not change anything
     await act(async () => {
@@ -152,7 +152,7 @@ describe("Pagination Provider", () => {
     expect(screen.getByTestId("page").textContent).toBe("4");
     expect(screen.getByTestId("pages").textContent).toBe("4 pages");
     expect(screen.getByTestId("pagesArray").textContent).toBe("1,2,3,4");
-    expect(screen.getByTestId("items-list").textContent).toBe("13");
+    expect(screen.getByTestId("itemsList").textContent).toBe("13");
 
     // go to last page should not change anything
     await act(async () => {
@@ -164,7 +164,7 @@ describe("Pagination Provider", () => {
     expect(screen.getByTestId("page").textContent).toBe("4");
     expect(screen.getByTestId("pages").textContent).toBe("4 pages");
     expect(screen.getByTestId("pagesArray").textContent).toBe("1,2,3,4");
-    expect(screen.getByTestId("items-list").textContent).toBe("13");
+    expect(screen.getByTestId("itemsList").textContent).toBe("13");
 
     // go to first page
     await act(async () => {
@@ -176,7 +176,7 @@ describe("Pagination Provider", () => {
     expect(screen.getByTestId("page").textContent).toBe("1");
     expect(screen.getByTestId("pages").textContent).toBe("4 pages");
     expect(screen.getByTestId("pagesArray").textContent).toBe("1,2,3,4");
-    expect(screen.getByTestId("items-list").textContent).toBe("1234");
+    expect(screen.getByTestId("itemsList").textContent).toBe("1234");
 
     // go to last page
     await act(async () => {
@@ -188,6 +188,6 @@ describe("Pagination Provider", () => {
     expect(screen.getByTestId("page").textContent).toBe("4");
     expect(screen.getByTestId("pages").textContent).toBe("4 pages");
     expect(screen.getByTestId("pagesArray").textContent).toBe("1,2,3,4");
-    expect(screen.getByTestId("items-list").textContent).toBe("13");
+    expect(screen.getByTestId("itemsList").textContent).toBe("13");
   });
 });
