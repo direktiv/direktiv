@@ -35,52 +35,16 @@ type Database interface {
 
 type CacheData struct {
 	Namespace *Namespace
-	Inodes    []*Inode
-	Workflow  *Workflow
-	Ref       *Ref
-	Revision  *Revision
-	Instance  *Instance
-	File      *filestore.File
-}
-
-func (cached *CacheData) Parent() *CacheData {
-	return &CacheData{
-		Namespace: cached.Namespace,
-		Inodes:    cached.Inodes[:len(cached.Inodes)-1],
-		Workflow:  cached.Workflow,
-		Ref:       cached.Ref,
-		Revision:  cached.Revision,
-		Instance:  cached.Instance,
-	}
-}
-
-func (cached *CacheData) Path() string {
-	var elems []string
-	for _, ino := range cached.Inodes {
-		elems = append(elems, ino.Name)
-	}
-
-	if len(elems) == 1 {
-		return "/"
-	}
-
-	return strings.Join(elems, "/")
+	// Inodes    []*Inode
+	// Workflow  *Workflow
+	Ref      *Ref
+	Revision *filestore.Revision
+	Instance *Instance
+	File     *filestore.File
 }
 
 func (cached *CacheData) Dir() string {
-	return filepath.Dir(cached.Path())
-}
-
-func (cached *CacheData) Reset() {
-	cached.Inodes = make([]*Inode, 0)
-}
-
-func (cached *CacheData) Inode() *Inode {
-	return cached.Inodes[len(cached.Inodes)-1]
-}
-
-func (cached *CacheData) ParentInode() *Inode {
-	return cached.Inodes[len(cached.Inodes)-2]
+	return filepath.Dir(cached.File.Path)
 }
 
 type HasAttributes interface {
@@ -109,8 +73,8 @@ func (cached *CacheData) GetAttributes(recipientType recipient.RecipientType) ma
 		tags["workflow"] = GetWorkflow(cached.Instance.As)
 	}
 
-	if cached.Workflow != nil {
-		tags["workflow-id"] = cached.Workflow.ID.String()
+	if cached.File != nil {
+		tags["workflow-id"] = cached.File.ID.String()
 	}
 
 	if cached.Namespace != nil {

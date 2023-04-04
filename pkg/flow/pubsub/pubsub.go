@@ -519,6 +519,8 @@ func (pubsub *Pubsub) NotifyEvents(ns *database.Namespace) {
 	pubsub.Publish(pubsubNotify(pubsub.namespaceEvents(ns)))
 }
 
+// TODO: alan, remove this
+/*
 func (pubsub *Pubsub) walkInodeKeys(cached *database.CacheData) []string {
 	array := make([]string, 0)
 
@@ -536,10 +538,10 @@ func (pubsub *Pubsub) walkInodeKeys(cached *database.CacheData) []string {
 
 	return keys
 }
+*/
 
-func (pubsub *Pubsub) SubscribeInode(cached *database.CacheData) *Subscription {
-	keys := pubsub.walkInodeKeys(cached)
-
+func (pubsub *Pubsub) SubscribeInode(id uuid.UUID) *Subscription {
+	keys := []string{id.String()}
 	return pubsub.Subscribe(keys...)
 }
 
@@ -557,6 +559,8 @@ func (pubsub *Pubsub) inodeAnnotations(ino *database.Inode) string {
 	return fmt.Sprintf("inonotes:%s", ino.ID.String())
 }
 
+// TODO: alan, remove this
+/*
 func (pubsub *Pubsub) SubscribeInodeAnnotations(cached *database.CacheData) *Subscription {
 	keys := pubsub.walkInodeKeys(cached)
 
@@ -565,30 +569,27 @@ func (pubsub *Pubsub) SubscribeInodeAnnotations(cached *database.CacheData) *Sub
 
 	return pubsub.Subscribe(keys...)
 }
+*/
 
-func (pubsub *Pubsub) mirror(ino *database.Inode) string {
-	return fmt.Sprintf("mirror:%s", ino.ID.String())
+func (pubsub *Pubsub) mirror(id uuid.UUID) string {
+	return fmt.Sprintf("mirror:%s", id.String())
 }
 
 func (pubsub *Pubsub) NotifyInodeAnnotations(ino *database.Inode) {
 	pubsub.Publish(pubsubNotify(pubsub.inodeAnnotations(ino)))
 }
 
-func (pubsub *Pubsub) SubscribeMirror(cached *database.CacheData) *Subscription {
-	keys := pubsub.walkInodeKeys(cached)
-
-	ino := cached.Inodes[len(cached.Inodes)-1]
-	keys = append(keys, pubsub.mirror(ino))
-
+func (pubsub *Pubsub) SubscribeMirror(id uuid.UUID) *Subscription {
+	keys := []string{pubsub.mirror(id)}
 	return pubsub.Subscribe(keys...)
 }
 
-func (pubsub *Pubsub) NotifyMirror(ino *database.Inode) {
-	pubsub.Publish(pubsubNotify(pubsub.mirror(ino)))
+func (pubsub *Pubsub) NotifyMirror(id uuid.UUID) {
+	pubsub.Publish(pubsubNotify(pubsub.mirror(id)))
 }
 
-func (pubsub *Pubsub) CloseMirror(ino *database.Inode) {
-	pubsub.Publish(pubsubDisconnect(pubsub.mirror(ino)))
+func (pubsub *Pubsub) CloseMirror(id uuid.UUID) {
+	pubsub.Publish(pubsubDisconnect(pubsub.mirror(id)))
 }
 
 func (pubsub *Pubsub) workflowVars(id uuid.UUID) string {
@@ -608,20 +609,23 @@ func (pubsub *Pubsub) NotifyWorkflowVariables(id uuid.UUID) {
 	pubsub.Publish(pubsubNotify(pubsub.workflowVars(id)))
 }
 
-func (pubsub *Pubsub) workflowAnnotations(wf *database.Workflow) string {
-	return fmt.Sprintf("wfnotes:%s", wf.ID.String())
+func (pubsub *Pubsub) workflowAnnotations(id uuid.UUID) string {
+	return fmt.Sprintf("wfnotes:%s", id.String())
 }
 
+// TODO: alan, remove this
+/*
 func (pubsub *Pubsub) SubscribeWorkflowAnnotations(cached *database.CacheData) *Subscription {
 	keys := pubsub.walkInodeKeys(cached)
 
-	keys = append(keys, cached.Workflow.ID.String(), pubsub.workflowAnnotations(cached.Workflow))
+	keys = append(keys, cached.File.ID.String(), pubsub.workflowAnnotations(cached.File.ID))
 
 	return pubsub.Subscribe(keys...)
 }
+*/
 
-func (pubsub *Pubsub) NotifyWorkflowAnnotations(wf *database.Workflow) {
-	pubsub.Publish(pubsubNotify(pubsub.workflowAnnotations(wf)))
+func (pubsub *Pubsub) NotifyWorkflowAnnotations(id uuid.UUID) {
+	pubsub.Publish(pubsubNotify(pubsub.workflowAnnotations(id)))
 }
 
 func (pubsub *Pubsub) workflowLogs(wf *uuid.UUID) string {
@@ -629,17 +633,12 @@ func (pubsub *Pubsub) workflowLogs(wf *uuid.UUID) string {
 }
 
 func (pubsub *Pubsub) SubscribeWorkflowLogs(id uuid.UUID) *Subscription {
-	// keys := pubsub.walkInodeKeys(cached)
-	// keys = append(keys, cached.Workflow.ID.String(), pubsub.workflowLogs(&cached.Workflow.ID))
 	keys := []string{id.String()}
 	return pubsub.Subscribe(keys...)
 }
 
-func (pubsub *Pubsub) SubscribeWorkflow(cached *database.CacheData) *Subscription {
-	keys := pubsub.walkInodeKeys(cached)
-
-	keys = append(keys, cached.Workflow.ID.String())
-
+func (pubsub *Pubsub) SubscribeWorkflow(id uuid.UUID) *Subscription {
+	keys := []string{id.String()}
 	return pubsub.Subscribe(keys...)
 }
 

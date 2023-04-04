@@ -1,6 +1,13 @@
-// TODO: yassir, need refactor.
 package flow
 
+import (
+	"context"
+
+	"github.com/direktiv/direktiv/pkg/flow/database"
+	"github.com/direktiv/direktiv/pkg/refactor/filestore"
+)
+
+// TODO: yassir, need refactor.
 /*
 import (
 	"context"
@@ -151,68 +158,58 @@ func (srv *server) validateRouter(ctx context.Context, cached *database.CacheDat
 
 	return ms, nil, nil
 }
+*/
 
 func (engine *engine) mux(ctx context.Context, namespace, path, ref string) (*database.CacheData, error) {
-	cached, err := engine.traverseToWorkflow(ctx, namespace, path)
+
+	ns, err := engine.edb.NamespaceByName(ctx, namespace)
 	if err != nil {
-		return nil, fmt.Errorf("workflow multiplexer failed to resolve workflow: %w", err)
+		return nil, err
+	}
+	fStore, _, _, rollback, err := engine.flow.beginSqlTx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer rollback(ctx)
+
+	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, path)
+	if err != nil {
+		return nil, err
 	}
 
-	if ref == "" {
-		// use router to select version
+	var rev *filestore.Revision
 
-		if len(cached.Workflow.Routes) == 0 {
-			ref = latest
-		} else {
-
-			weight := 0
-
-			for _, route := range cached.Workflow.Routes {
-				weight += route.Weight
-			}
-
-			cn, err := rand.Int(rand.Reader, big.NewInt(int64(weight)))
-			if err != nil {
-				return nil, err
-			}
-
-			n := int(cn.Int64())
-
-			n = n % weight
-
-			var route *database.Route
-
-			for idx := range cached.Workflow.Routes {
-				route = cached.Workflow.Routes[idx]
-				n -= route.Weight
-				if n < 0 {
-					break
-				}
-			}
-
-			cached.Ref = route.Ref
-
+	if ref != "" {
+		rev, err = fStore.ForFile(file).GetRevisionByTag(ctx, ref)
+		if err != nil {
+			return nil, err
 		}
+	} else {
+		// TODO: yassir, implement routing by weights
+		panic("unimplemented")
 	}
+
+	cached := new(database.CacheData)
+	cached.Namespace = ns
+	cached.File = file
+	cached.Revision = rev
 
 	if cached.Ref == nil {
-		for idx := range cached.Workflow.Refs {
-			x := cached.Workflow.Refs[idx]
-			if x.Name == ref {
-				cached.Ref = x
-				break
-			}
+		// TODO: yassir, how are we going to fake these fields?
+		cached.Ref = &database.Ref{
+			// ID: ,
+			// Immutable: ,
+			// Name: ,
+			// CreatedAt: ,
+			Revision: rev.ID,
 		}
-	}
-
-	err = engine.database.Revision(ctx, cached, cached.Ref.Revision)
-	if err != nil {
-		return nil, fmt.Errorf("workflow multiplexer failed to resolve workflow revision matching ref '%s' (UUID: %s): %w", cached.Ref.Name, cached.Ref.Revision, err)
 	}
 
 	return cached, nil
 }
 
+// TODO: yassir, need refactor.
+/*
 const (
 	rcfNone       = 0
 	rcfNoPriors   = 1 << iota

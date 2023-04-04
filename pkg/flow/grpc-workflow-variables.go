@@ -29,7 +29,7 @@ import (
 )
 
 func (srv *server) getWorkflowVariable(ctx context.Context, cached *database.CacheData, key string, load bool) (*database.VarRef, *database.VarData, error) {
-	vref, err := srv.database.WorkflowVariable(ctx, cached.Workflow.ID, key)
+	vref, err := srv.database.WorkflowVariable(ctx, cached.File.ID, key)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -721,12 +721,12 @@ func (internal *internal) SetWorkflowVariableParcels(srv grpc.Internal_SetWorkfl
 	}
 
 	if newVar {
-		internal.logger.Infof(ctx, cached.Workflow.ID, cached.GetAttributes(recipient.Workflow), "Created workflow variable '%s'.", key)
+		internal.logger.Infof(ctx, cached.File.ID, cached.GetAttributes(recipient.Workflow), "Created workflow variable '%s'.", key)
 	} else {
-		internal.logger.Infof(ctx, cached.Workflow.ID, cached.GetAttributes(recipient.Workflow), "Updated workflow variable '%s'.", key)
+		internal.logger.Infof(ctx, cached.File.ID, cached.GetAttributes(recipient.Workflow), "Updated workflow variable '%s'.", key)
 	}
 
-	internal.pubsub.NotifyWorkflowVariables(cached.Workflow.ID)
+	internal.pubsub.NotifyWorkflowVariables(cached.File.ID)
 
 	var resp grpc.SetVariableInternalResponse
 

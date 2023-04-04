@@ -18,7 +18,6 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
-	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/direktiv/direktiv/pkg/dlog"
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/database/entwrapper"
@@ -533,26 +532,29 @@ func (flow *flow) Build(ctx context.Context, in *emptypb.Empty) (*grpc.BuildResp
 func (engine *engine) UserLog(ctx context.Context, im *instanceMemory, msg string, a ...interface{}) {
 	engine.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), msg, a...)
 
-	s := fmt.Sprintf(msg, a...)
+	// TODO: alan, how are we going to reimplement this in a performant way?
+	/*
+		s := fmt.Sprintf(msg, a...)
 
-	if attr := im.cached.Workflow.LogToEvents; attr != "" {
-		event := cloudevents.NewEvent()
-		event.SetID(uuid.New().String())
-		event.SetSource(im.cached.Workflow.ID.String())
-		event.SetType("direktiv.instanceLog")
-		event.SetExtension("logger", attr)
-		event.SetDataContentType("application/json")
-		err := event.SetData("application/json", s)
-		if err != nil {
-			engine.sugar.Errorf("Failed to create CloudEvent: %v.", err)
-		}
+		if attr := im.cached.Workflow.LogToEvents; attr != "" {
+			event := cloudevents.NewEvent()
+			event.SetID(uuid.New().String())
+			event.SetSource(im.cached.File.ID.String())
+			event.SetType("direktiv.instanceLog")
+			event.SetExtension("logger", attr)
+			event.SetDataContentType("application/json")
+			err := event.SetData("application/json", s)
+			if err != nil {
+				engine.sugar.Errorf("Failed to create CloudEvent: %v.", err)
+			}
 
-		err = engine.events.BroadcastCloudevent(ctx, im.cached.Namespace, &event, 0)
-		if err != nil {
-			engine.sugar.Errorf("Failed to broadcast CloudEvent: %v.", err)
-			return
+			err = engine.events.BroadcastCloudevent(ctx, im.cached.Namespace, &event, 0)
+			if err != nil {
+				engine.sugar.Errorf("Failed to broadcast CloudEvent: %v.", err)
+				return
+			}
 		}
-	}
+	*/
 }
 
 func (engine *engine) logRunState(ctx context.Context, im *instanceMemory, wakedata []byte, err error) {

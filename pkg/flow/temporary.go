@@ -392,9 +392,9 @@ func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory,
 ) (*functionRequest, error) {
 	ar := new(functionRequest)
 	ar.ActionID = uid.String()
-	ar.Workflow.WorkflowID = im.cached.Workflow.ID.String()
+	ar.Workflow.WorkflowID = im.cached.File.ID.String()
 	ar.Workflow.Timeout = timeout
-	ar.Workflow.Revision = im.cached.Revision.Hash
+	ar.Workflow.Revision = im.cached.Revision.Checksum
 	ar.Workflow.NamespaceName = im.cached.Namespace.Name
 	ar.Workflow.Path = im.cached.Instance.As
 	ar.Iterator = iterator
@@ -409,8 +409,8 @@ func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory,
 	ar.Container.Type = fnt
 	ar.Container.Data = inputData
 
-	wfID := im.cached.Workflow.ID.String()
-	revID := im.cached.Revision.Hash
+	wfID := im.cached.File.ID.String()
+	revID := im.cached.Revision.Checksum
 	nsID := im.cached.Namespace.ID.String()
 
 	switch fnt {

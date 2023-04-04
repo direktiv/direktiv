@@ -92,7 +92,7 @@ func (im *instanceMemory) flushUpdates(ctx context.Context) error {
 
 		im.cached.Instance = entwrapper.EntInstance(in)
 		im.cached.Instance.Namespace = im.cached.Namespace.ID
-		im.cached.Instance.Workflow = im.cached.Workflow.ID
+		im.cached.Instance.Workflow = im.cached.File.ID
 		im.cached.Instance.Revision = im.cached.Revision.ID
 		im.cached.Instance.Runtime = im.runtime.ID
 
@@ -120,7 +120,7 @@ func (im *instanceMemory) Controller() string {
 }
 
 func (im *instanceMemory) Model() (*model.Workflow, error) {
-	data := im.cached.Revision.Source
+	data := im.cached.Revision.Data
 
 	workflow := new(model.Workflow)
 

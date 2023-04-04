@@ -259,9 +259,9 @@ func (flow *flow) Instance(ctx context.Context, req *grpc.InstanceRequest) (*grp
 	resp.Namespace = cached.Namespace.Name
 
 	rwf := new(grpc.InstanceWorkflow)
-	rwf.Name = cached.Inode().Name
-	rwf.Parent = strings.TrimPrefix(cached.Dir(), "/") // TODO: get rid of the trim?
-	rwf.Path = strings.TrimPrefix(cached.Path(), "/")  // TODO: get rid of the trim?
+	rwf.Name = cached.File.Name()
+	rwf.Parent = strings.TrimPrefix(cached.File.Dir(), "/") // TODO: get rid of the trim?
+	rwf.Path = strings.TrimPrefix(cached.File.Path, "/")    // TODO: get rid of the trim?
 	if cached.Revision != nil {
 		rwf.Revision = cached.Revision.ID.String()
 	}
@@ -305,9 +305,9 @@ resend:
 	resp.Namespace = cached.Namespace.Name
 
 	rwf := new(grpc.InstanceWorkflow)
-	rwf.Name = cached.Inode().Name
+	rwf.Name = cached.File.Name()
 	rwf.Parent = cached.Dir()
-	rwf.Path = cached.Path()
+	rwf.Path = cached.File.Path
 	if cached.Revision != nil {
 		rwf.Revision = cached.Revision.ID.String()
 	}
@@ -523,9 +523,9 @@ resend:
 	}
 
 	rwf := new(grpc.InstanceWorkflow)
-	rwf.Name = cached.Inode().Name
+	rwf.Name = cached.File.Name()
 	rwf.Parent = cached.Dir()
-	rwf.Path = cached.Path()
+	rwf.Path = cached.File.Path
 	resp.Namespace = cached.Namespace.Name
 	rwf.Revision = cached.Revision.ID.String()
 	resp.Workflow = rwf
