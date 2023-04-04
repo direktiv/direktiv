@@ -1,7 +1,8 @@
+import { act, render, screen } from "@testing-library/react";
 import { describe, expect, test } from "vitest";
-import { render, screen } from "@testing-library/react";
 
 import PaginationProvider from "..";
+import userEvent from "@testing-library/user-event";
 
 const items = [
   { id: 1, name: "Item 1" },
@@ -19,8 +20,10 @@ const items = [
   { id: 13, name: "Item 13" },
 ];
 
+const user = userEvent.setup();
+
 describe("Pagination Provider", () => {
-  test("should render with proper pagination logic", () => {
+  test("should render with proper pagination logic", async () => {
     render(
       <PaginationProvider items={items} pageSize={4}>
         {({
@@ -65,11 +68,64 @@ describe("Pagination Provider", () => {
       </PaginationProvider>
     );
 
+    const nextPageButton = screen.getByTestId("gotoNextPage");
+    const prevPageButton = screen.getByTestId("gotoPreviousPage");
+
     // page one by default
     expect(screen.getByTestId("isFirstPage").textContent).toContain("yes");
     expect(screen.getByTestId("isLastPage").textContent).toContain("no");
     expect(screen.getByTestId("page").textContent).toBe("1");
     expect(screen.getByTestId("pages").textContent).toBe("4 pages");
     expect(screen.getByTestId("items-list").textContent).toBe("1234");
+
+    // clicking on previous page should not change anything
+    await act(async () => {
+      await user.click(prevPageButton);
+    });
+    expect(screen.getByTestId("isFirstPage").textContent).toContain("yes");
+    expect(screen.getByTestId("isLastPage").textContent).toContain("no");
+    expect(screen.getByTestId("page").textContent).toBe("1");
+    expect(screen.getByTestId("pages").textContent).toBe("4 pages");
+    expect(screen.getByTestId("items-list").textContent).toBe("1234");
+
+    // page 2
+    await act(async () => {
+      await user.click(nextPageButton);
+    });
+    expect(screen.getByTestId("isFirstPage").textContent).toContain("no");
+    expect(screen.getByTestId("isLastPage").textContent).toContain("no");
+    expect(screen.getByTestId("page").textContent).toBe("2");
+    expect(screen.getByTestId("pages").textContent).toBe("4 pages");
+    expect(screen.getByTestId("items-list").textContent).toBe("5678");
+
+    // page 3
+    await act(async () => {
+      await user.click(nextPageButton);
+    });
+    expect(screen.getByTestId("isFirstPage").textContent).toContain("no");
+    expect(screen.getByTestId("isLastPage").textContent).toContain("no");
+    expect(screen.getByTestId("page").textContent).toBe("3");
+    expect(screen.getByTestId("pages").textContent).toBe("4 pages");
+    expect(screen.getByTestId("items-list").textContent).toBe("9101112");
+
+    // page 4 (last page)
+    await act(async () => {
+      await user.click(nextPageButton);
+    });
+    expect(screen.getByTestId("isFirstPage").textContent).toContain("no");
+    expect(screen.getByTestId("isLastPage").textContent).toContain("yes");
+    expect(screen.getByTestId("page").textContent).toBe("4");
+    expect(screen.getByTestId("pages").textContent).toBe("4 pages");
+    expect(screen.getByTestId("items-list").textContent).toBe("13");
+
+    // clicking on next page again should not change anything
+    await act(async () => {
+      await user.click(nextPageButton);
+    });
+    expect(screen.getByTestId("isFirstPage").textContent).toContain("no");
+    expect(screen.getByTestId("isLastPage").textContent).toContain("yes");
+    expect(screen.getByTestId("page").textContent).toBe("4");
+    expect(screen.getByTestId("pages").textContent).toBe("4 pages");
+    expect(screen.getByTestId("items-list").textContent).toBe("13");
   });
 });
