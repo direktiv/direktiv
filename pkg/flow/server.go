@@ -448,51 +448,64 @@ func (srv *server) cronPoller() {
 }
 
 func (srv *server) cronPoll() {
-	// TODO: yassir, need refactor.
-	return
-	/*ctx := context.Background()
+	ctx := context.Background()
 
-	clients := srv.edb.Clients(ctx)
+	fStore, _, _, rollback, err := srv.flow.beginSqlTx(ctx)
+	if err != nil {
+		srv.sugar.Error(err)
+		return
+	}
+	defer rollback(ctx)
 
-	wfs, err := clients.Workflow.Query().All(ctx)
+	roots, err := fStore.GetAllRoots(ctx)
 	if err != nil {
 		srv.sugar.Error(err)
 		return
 	}
 
-	for _, wf := range wfs {
-		cached, err := srv.reverseTraverseToWorkflow(ctx, wf.ID.String())
-		if err != nil {
-			srv.sugar.Error(err)
-			continue
-		}
-
-		srv.cronPollerWorkflow(ctx, cached)
-	}*/
-}
-
-func (srv *server) cronPollerWorkflow(ctx context.Context, cached *database.CacheData) {
-	// TODO: yassir, need refactor.
-	return
-	/*ms, muxErr, err := srv.validateRouter(ctx, cached)
-	if err != nil || muxErr != nil {
-		return
-	}
-
-	if !ms.Enabled || ms.Cron != "" {
-		srv.timers.deleteCronForWorkflow(cached.Workflow.ID.String())
-	}
-
-	if ms.Cron != "" && ms.Enabled {
-		err = srv.timers.addCron(cached.Workflow.ID.String(), wfCron, ms.Cron, []byte(cached.Workflow.ID.String()))
+	for _, root := range roots {
+		files, err := fStore.ForRootID(root.ID).ListAllFiles(ctx)
 		if err != nil {
 			srv.sugar.Error(err)
 			return
 		}
 
-		srv.sugar.Debugf("Loaded cron: %s", cached.Workflow.ID.String())
+		for _, file := range files {
+			if file.Typ != filestore.FileTypeWorkflow {
+				continue
+			}
 
-	}*/
+			srv.cronPollerWorkflow(ctx, root, file)
+		}
+	}
+}
+
+func (srv *server) cronPollerWorkflow(ctx context.Context, root *filestore.Root, file *filestore.File) {
+	// TODO: yassir, need refactor.
+	// NOTE: the validateRouter function used to be responsible for returning the isEnabled and cronPattern information via the `ms` return value.
+	/*
+		ms, muxErr, err := srv.validateRouter(ctx, cached)
+		if err != nil || muxErr != nil {
+			return
+		}
+	*/
+	isEnabled := true
+	cronPattern := ""
+
+	if !isEnabled || cronPattern != "" {
+		srv.timers.deleteCronForWorkflow(file.ID.String())
+	}
+
+	if cronPattern != "" && isEnabled {
+		err := srv.timers.addCron(file.ID.String(), wfCron, cronPattern, []byte(file.ID.String()))
+		if err != nil {
+			srv.sugar.Error(err)
+			return
+		}
+
+		srv.sugar.Debugf("Loaded cron: %s", file.ID.String())
+
+	}
 }
 
 func unaryInterceptor(ctx context.Context, req interface{}, info *libgrpc.UnaryServerInfo, handler libgrpc.UnaryHandler) (resp interface{}, err error) {

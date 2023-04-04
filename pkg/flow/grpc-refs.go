@@ -190,7 +190,6 @@ func (flow *flow) Tag(ctx context.Context, req *grpc.TagRequest) (*emptypb.Empty
 
 	// TODO: yassir, fix this.
 	// flow.logToWorkflow(ctx, time.Now(), cached, "Tagged workflow: %s -> %s.", req.GetTag(), revision.ID.String())
-	// flow.pubsub.NotifyWorkflowID(file.ID)
 
 	var resp emptypb.Empty
 
@@ -228,7 +227,6 @@ func (flow *flow) Untag(ctx context.Context, req *grpc.UntagRequest) (*emptypb.E
 
 	// TODO: yassir, fix this.
 	// flow.logToWorkflow(ctx, time.Now(), cached, "Deleted workflow tag: %s.", req.GetTag())
-	// flow.pubsub.NotifyWorkflowID(file.ID)
 
 	var resp emptypb.Empty
 

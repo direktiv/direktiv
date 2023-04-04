@@ -13,6 +13,8 @@ import (
 	"google.golang.org/grpc/status"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
+	"github.com/direktiv/direktiv/pkg/flow/database"
+	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
@@ -126,9 +128,10 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 	// TODO: yassir, needs fix here.
 	//metricsWf.WithLabelValues(cached.Namespace.Name, cached.Namespace.Name).Inc()
 	//metricsWfUpdated.WithLabelValues(cached.Namespace.Name, path, cached.Namespace.Name).Inc()
-	//
-	//flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Created workflow '%s'.", path)
-	//
+
+	flow.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Created workflow '%s'.", file.Path)
+
+	// TODO: yassir, needs fix here.
 	//err = flow.BroadcastWorkflow(ctx, BroadcastEventTypeCreate,
 	//	broadcastWorkflowInput{
 	//		Name:   resp.Node.Name,
