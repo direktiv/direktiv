@@ -70,6 +70,8 @@ describe("Pagination Provider", () => {
 
     const nextPageButton = screen.getByTestId("gotoNextPage");
     const prevPageButton = screen.getByTestId("gotoPreviousPage");
+    const firstPageButton = screen.getByTestId("gotoFirstPage");
+    const lastPageButton = screen.getByTestId("gotoLastPage");
 
     // page one by default
     expect(screen.getByTestId("isFirstPage").textContent).toContain("yes");
@@ -82,6 +84,18 @@ describe("Pagination Provider", () => {
     await act(async () => {
       await user.click(prevPageButton);
     });
+
+    expect(screen.getByTestId("isFirstPage").textContent).toContain("yes");
+    expect(screen.getByTestId("isLastPage").textContent).toContain("no");
+    expect(screen.getByTestId("page").textContent).toBe("1");
+    expect(screen.getByTestId("pages").textContent).toBe("4 pages");
+    expect(screen.getByTestId("items-list").textContent).toBe("1234");
+
+    // clicking on first page should not change anything
+    await act(async () => {
+      await user.click(firstPageButton);
+    });
+
     expect(screen.getByTestId("isFirstPage").textContent).toContain("yes");
     expect(screen.getByTestId("isLastPage").textContent).toContain("no");
     expect(screen.getByTestId("page").textContent).toBe("1");
@@ -92,6 +106,7 @@ describe("Pagination Provider", () => {
     await act(async () => {
       await user.click(nextPageButton);
     });
+
     expect(screen.getByTestId("isFirstPage").textContent).toContain("no");
     expect(screen.getByTestId("isLastPage").textContent).toContain("no");
     expect(screen.getByTestId("page").textContent).toBe("2");
@@ -102,6 +117,7 @@ describe("Pagination Provider", () => {
     await act(async () => {
       await user.click(nextPageButton);
     });
+
     expect(screen.getByTestId("isFirstPage").textContent).toContain("no");
     expect(screen.getByTestId("isLastPage").textContent).toContain("no");
     expect(screen.getByTestId("page").textContent).toBe("3");
@@ -112,6 +128,7 @@ describe("Pagination Provider", () => {
     await act(async () => {
       await user.click(nextPageButton);
     });
+
     expect(screen.getByTestId("isFirstPage").textContent).toContain("no");
     expect(screen.getByTestId("isLastPage").textContent).toContain("yes");
     expect(screen.getByTestId("page").textContent).toBe("4");
@@ -122,6 +139,40 @@ describe("Pagination Provider", () => {
     await act(async () => {
       await user.click(nextPageButton);
     });
+
+    expect(screen.getByTestId("isFirstPage").textContent).toContain("no");
+    expect(screen.getByTestId("isLastPage").textContent).toContain("yes");
+    expect(screen.getByTestId("page").textContent).toBe("4");
+    expect(screen.getByTestId("pages").textContent).toBe("4 pages");
+    expect(screen.getByTestId("items-list").textContent).toBe("13");
+
+    // go to last page should not change anything
+    await act(async () => {
+      await user.click(lastPageButton);
+    });
+
+    expect(screen.getByTestId("isFirstPage").textContent).toContain("no");
+    expect(screen.getByTestId("isLastPage").textContent).toContain("yes");
+    expect(screen.getByTestId("page").textContent).toBe("4");
+    expect(screen.getByTestId("pages").textContent).toBe("4 pages");
+    expect(screen.getByTestId("items-list").textContent).toBe("13");
+
+    // go to first page
+    await act(async () => {
+      await user.click(firstPageButton);
+    });
+
+    expect(screen.getByTestId("isFirstPage").textContent).toContain("yes");
+    expect(screen.getByTestId("isLastPage").textContent).toContain("no");
+    expect(screen.getByTestId("page").textContent).toBe("1");
+    expect(screen.getByTestId("pages").textContent).toBe("4 pages");
+    expect(screen.getByTestId("items-list").textContent).toBe("1234");
+
+    // go to last page
+    await act(async () => {
+      await user.click(lastPageButton);
+    });
+
     expect(screen.getByTestId("isFirstPage").textContent).toContain("no");
     expect(screen.getByTestId("isLastPage").textContent).toContain("yes");
     expect(screen.getByTestId("page").textContent).toBe("4");
