@@ -36,6 +36,7 @@ describe("Pagination Provider", () => {
           isLastPage,
           page,
           pages,
+          pagesCount,
         }) => (
           <div>
             <ul data-testid="items-list">
@@ -46,7 +47,8 @@ describe("Pagination Provider", () => {
             <h1 data-testid="isFirstPage">
               Is first Page? {isFirstPage ? "yes" : "no"}
             </h1>
-            <h1 data-testid="pages">{pages} pages</h1>
+            <h1 data-testid="pages">{pagesCount} pages</h1>
+            <h1 data-testid="pagesArray">{pages.join(",")}</h1>
             <h1 data-testid="isLastPage">
               Is last Page? {isLastPage ? "yes" : "no"}
             </h1>
@@ -78,6 +80,7 @@ describe("Pagination Provider", () => {
     expect(screen.getByTestId("isLastPage").textContent).toContain("no");
     expect(screen.getByTestId("page").textContent).toBe("1");
     expect(screen.getByTestId("pages").textContent).toBe("4 pages");
+    expect(screen.getByTestId("pagesArray").textContent).toBe("1,2,3,4");
     expect(screen.getByTestId("items-list").textContent).toBe("1234");
 
     // clicking on previous page should not change anything
@@ -89,6 +92,7 @@ describe("Pagination Provider", () => {
     expect(screen.getByTestId("isLastPage").textContent).toContain("no");
     expect(screen.getByTestId("page").textContent).toBe("1");
     expect(screen.getByTestId("pages").textContent).toBe("4 pages");
+    expect(screen.getByTestId("pagesArray").textContent).toBe("1,2,3,4");
     expect(screen.getByTestId("items-list").textContent).toBe("1234");
 
     // clicking on first page should not change anything
@@ -100,6 +104,7 @@ describe("Pagination Provider", () => {
     expect(screen.getByTestId("isLastPage").textContent).toContain("no");
     expect(screen.getByTestId("page").textContent).toBe("1");
     expect(screen.getByTestId("pages").textContent).toBe("4 pages");
+    expect(screen.getByTestId("pagesArray").textContent).toBe("1,2,3,4");
     expect(screen.getByTestId("items-list").textContent).toBe("1234");
 
     // page 2
@@ -111,6 +116,7 @@ describe("Pagination Provider", () => {
     expect(screen.getByTestId("isLastPage").textContent).toContain("no");
     expect(screen.getByTestId("page").textContent).toBe("2");
     expect(screen.getByTestId("pages").textContent).toBe("4 pages");
+    expect(screen.getByTestId("pagesArray").textContent).toBe("1,2,3,4");
     expect(screen.getByTestId("items-list").textContent).toBe("5678");
 
     // page 3
@@ -122,6 +128,7 @@ describe("Pagination Provider", () => {
     expect(screen.getByTestId("isLastPage").textContent).toContain("no");
     expect(screen.getByTestId("page").textContent).toBe("3");
     expect(screen.getByTestId("pages").textContent).toBe("4 pages");
+    expect(screen.getByTestId("pagesArray").textContent).toBe("1,2,3,4");
     expect(screen.getByTestId("items-list").textContent).toBe("9101112");
 
     // page 4 (last page)
@@ -144,6 +151,7 @@ describe("Pagination Provider", () => {
     expect(screen.getByTestId("isLastPage").textContent).toContain("yes");
     expect(screen.getByTestId("page").textContent).toBe("4");
     expect(screen.getByTestId("pages").textContent).toBe("4 pages");
+    expect(screen.getByTestId("pagesArray").textContent).toBe("1,2,3,4");
     expect(screen.getByTestId("items-list").textContent).toBe("13");
 
     // go to last page should not change anything
@@ -155,6 +163,7 @@ describe("Pagination Provider", () => {
     expect(screen.getByTestId("isLastPage").textContent).toContain("yes");
     expect(screen.getByTestId("page").textContent).toBe("4");
     expect(screen.getByTestId("pages").textContent).toBe("4 pages");
+    expect(screen.getByTestId("pagesArray").textContent).toBe("1,2,3,4");
     expect(screen.getByTestId("items-list").textContent).toBe("13");
 
     // go to first page
@@ -166,6 +175,7 @@ describe("Pagination Provider", () => {
     expect(screen.getByTestId("isLastPage").textContent).toContain("no");
     expect(screen.getByTestId("page").textContent).toBe("1");
     expect(screen.getByTestId("pages").textContent).toBe("4 pages");
+    expect(screen.getByTestId("pagesArray").textContent).toBe("1,2,3,4");
     expect(screen.getByTestId("items-list").textContent).toBe("1234");
 
     // go to last page
@@ -177,6 +187,7 @@ describe("Pagination Provider", () => {
     expect(screen.getByTestId("isLastPage").textContent).toContain("yes");
     expect(screen.getByTestId("page").textContent).toBe("4");
     expect(screen.getByTestId("pages").textContent).toBe("4 pages");
+    expect(screen.getByTestId("pagesArray").textContent).toBe("1,2,3,4");
     expect(screen.getByTestId("items-list").textContent).toBe("13");
   });
 });
