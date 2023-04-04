@@ -31,6 +31,8 @@ type FileStore interface {
 	ForRootID(rootID uuid.UUID) RootQuery
 	ForFile(file *File) FileQuery
 	ForRevision(revision *Revision) RevisionQuery
+
+	GetRevision(ctx context.Context, id uuid.UUID) (*File, *Revision, error)
 }
 
 type Root struct {
@@ -47,7 +49,6 @@ type RootQuery interface {
 	Delete(ctx context.Context) error
 	CalculateChecksumsMap(ctx context.Context, path string) (map[string]string, error)
 	IsEmptyDirectory(ctx context.Context, path string) (bool, error)
-
 	ListAllFiles(ctx context.Context) ([]*File, error)
 }
 
