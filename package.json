@@ -22,7 +22,7 @@
     "@tanstack/react-query-devtools": "^4.28.0",
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^13.4.0",
-    "@testing-library/user-event": "^12.1.10",
+    "@testing-library/user-event": "^14.4.3",
     "@tippyjs/react": "^4.2.6",
     "@types/jest": "^28.1.2",
     "@types/node": "^18.0.0",
