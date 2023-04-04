@@ -33,6 +33,20 @@ func (srv *server) getInstance(ctx context.Context, namespace, instanceID string
 		return nil, err
 	}
 
+	fStore, _, _, rollback, err := srv.flow.beginSqlTx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer rollback(ctx)
+
+	file, revision, err := fStore.GetRevision(ctx, cached.Instance.Revision)
+	if err != nil {
+		return nil, err
+	}
+
+	cached.File = file
+	cached.Revision = revision
+
 	if namespace != cached.Namespace.Name {
 		return nil, os.ErrNotExist
 	}
@@ -52,6 +66,20 @@ func (internal *internal) getInstance(ctx context.Context, instanceID string) (*
 	if err != nil {
 		return nil, err
 	}
+
+	fStore, _, _, rollback, err := internal.flow.beginSqlTx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer rollback(ctx)
+
+	file, revision, err := fStore.GetRevision(ctx, cached.Instance.Revision)
+	if err != nil {
+		return nil, err
+	}
+
+	cached.File = file
+	cached.Revision = revision
 
 	return cached, nil
 }
@@ -514,6 +542,20 @@ resend:
 	if err != nil {
 		return err
 	}
+
+	fStore, _, _, rollback, err := flow.beginSqlTx(ctx)
+	if err != nil {
+		return err
+	}
+	defer rollback(ctx)
+
+	file, revision, err := fStore.GetRevision(ctx, cached.Instance.Revision)
+	if err != nil {
+		return err
+	}
+
+	cached.File = file
+	cached.Revision = revision
 
 	resp := new(grpc.AwaitWorkflowResponse)
 

@@ -253,10 +253,26 @@ func (engine *engine) getInstanceMemory(ctx context.Context, id string) (*instan
 	}
 
 	cached := new(database.CacheData)
+
+	// TODO: alan, need to load all of this information in a more performant manner
 	err = engine.database.Instance(ctx, cached, uid)
 	if err != nil {
 		return nil, err
 	}
+
+	fStore, _, _, rollback, err := engine.flow.beginSqlTx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer rollback(ctx)
+
+	file, revision, err := fStore.GetRevision(ctx, cached.Instance.Revision)
+	if err != nil {
+		return nil, err
+	}
+
+	cached.File = file
+	cached.Revision = revision
 
 	rt, err := engine.database.InstanceRuntime(ctx, cached.Instance.Runtime)
 	if err != nil {

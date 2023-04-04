@@ -689,10 +689,25 @@ func (engine *engine) subflowInvoke(ctx context.Context, caller *subflowCaller, 
 	args.CallerData = string(callerData)
 	args.CallerState = caller.CallerState
 	pcached := new(database.CacheData)
+
 	err = engine.database.Instance(ctx, pcached, caller.InstanceID)
 	if err != nil {
 		return nil, derrors.NewInternalError(err)
 	}
+
+	fStore, _, _, rollback, err := engine.flow.beginSqlTx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer rollback(ctx)
+
+	file, revision, err := fStore.GetRevision(ctx, pcached.Instance.Revision)
+	if err != nil {
+		return nil, err
+	}
+
+	pcached.File = file
+	pcached.Revision = revision
 
 	threadVars, err := engine.database.ThreadVariables(ctx, pcached.Instance.ID)
 	if err != nil {

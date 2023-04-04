@@ -158,23 +158,15 @@ func (db *CachedDatabase) Instance(ctx context.Context, cached *CacheData, id uu
 
 	cached.Instance = inst
 
-	// TODO: yassir, need refactor.
-	//if cached.Revision == nil {
-	//	err = db.Revision(ctx, cached, cached.Instance.Revision)
-	//	if err != nil {
-	//		return err
-	//	}
-	//}
-	//
-	//	if cached.Workflow == nil {
-	//		err = db.Workflow(ctx, cached, cached.Instance.Workflow)
-	//		if err != nil {
-	//			return err
-	//		}
-	//	}
-
 	if !cacheHit {
 		db.storeInstanceInCache(ctx, inst)
+	}
+
+	if cached.Namespace == nil {
+		err = db.Namespace(ctx, cached, cached.Instance.Namespace)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

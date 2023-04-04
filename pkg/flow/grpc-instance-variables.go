@@ -67,6 +67,20 @@ func (srv *server) traverseToInstanceVariable(ctx context.Context, namespace, in
 		return nil, nil, nil, err
 	}
 
+	fStore, _, _, rollback, err := srv.flow.beginSqlTx(ctx)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	defer rollback(ctx)
+
+	file, revision, err := fStore.GetRevision(ctx, cached.Instance.Revision)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	cached.File = file
+	cached.Revision = revision
+
 	if cached.Namespace.Name != namespace {
 		return nil, nil, nil, os.ErrNotExist
 	}
@@ -124,6 +138,20 @@ func (internal *internal) InstanceVariableParcels(req *grpc.VariableInternalRequ
 	if err != nil {
 		return err
 	}
+
+	fStore, _, _, rollback, err := internal.flow.beginSqlTx(ctx)
+	if err != nil {
+		return err
+	}
+	defer rollback(ctx)
+
+	file, revision, err := fStore.GetRevision(ctx, cached.Instance.Revision)
+	if err != nil {
+		return err
+	}
+
+	cached.File = file
+	cached.Revision = revision
 
 	vref, vdata, err := internal.getInstanceVariable(ctx, cached, req.GetKey(), true)
 	if err != nil && !derrors.IsNotFound(err) {
@@ -210,6 +238,20 @@ func (internal *internal) ThreadVariableParcels(req *grpc.VariableInternalReques
 	if err != nil {
 		return err
 	}
+
+	fStore, _, _, rollback, err := internal.flow.beginSqlTx(ctx)
+	if err != nil {
+		return err
+	}
+	defer rollback(ctx)
+
+	file, revision, err := fStore.GetRevision(ctx, cached.Instance.Revision)
+	if err != nil {
+		return err
+	}
+
+	cached.File = file
+	cached.Revision = revision
 
 	vref, vdata, err := internal.getThreadVariable(ctx, cached, req.GetKey(), true)
 	if err != nil && !derrors.IsNotFound(err) {
