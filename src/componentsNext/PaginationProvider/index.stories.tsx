@@ -46,7 +46,6 @@ export const Default = () => {
         {({
           currentItems,
           goToFirstPage,
-          goToLastPage,
           goToPage,
           goToNextPage,
           goToPreviousPage,
