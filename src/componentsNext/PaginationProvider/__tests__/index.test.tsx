@@ -34,9 +34,9 @@ describe("Pagination Provider", () => {
           goToPreviousPage,
           isFirstPage,
           isLastPage,
-          page,
-          pages,
-          pagesCount,
+          currentPage,
+          pagesList,
+          totalPages,
         }) => (
           <div>
             <ul data-testid="items-list">
@@ -47,8 +47,8 @@ describe("Pagination Provider", () => {
             <h1 data-testid="isFirstPage">
               Is first Page? {isFirstPage ? "yes" : "no"}
             </h1>
-            <h1 data-testid="pages">{pagesCount} pages</h1>
-            <h1 data-testid="pagesArray">{pages.join(",")}</h1>
+            <h1 data-testid="pages">{totalPages} pages</h1>
+            <h1 data-testid="pagesArray">{pagesList.join(",")}</h1>
             <h1 data-testid="isLastPage">
               Is last Page? {isLastPage ? "yes" : "no"}
             </h1>
@@ -58,7 +58,7 @@ describe("Pagination Provider", () => {
             <button data-testid="goToPreviousPage" onClick={goToPreviousPage}>
               go to previous Page
             </button>
-            <span data-testid="page">{page}</span>
+            <span data-testid="page">{currentPage}</span>
             <button data-testid="goToNextPage" onClick={goToNextPage}>
               go to next page
             </button>

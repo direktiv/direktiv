@@ -14,33 +14,35 @@ const PaginationProvider = <TArrayItem,>({
     goToPreviousPage: () => void;
     isFirstPage: boolean;
     isLastPage: boolean;
-    page: number;
-    pages: number[];
-    pagesCount: number;
+    currentPage: number;
+    pagesList: number[];
+    totalPages: number;
   }) => JSX.Element;
   pageSize?: number;
   items: TArrayItem[];
 }) => {
   const firstPage = 1;
-  const [page, setPage] = useState(firstPage);
+  const [currentPage, setCurrentPage] = useState(firstPage);
   const pageSize = pageSizeProp || 10;
-  const lastPage = Math.ceil(items.length / pageSize);
-  const isLastPage = page === lastPage;
-  const isFirstPage = page === firstPage;
+  const totalPages = Math.ceil(items.length / pageSize);
+  const isLastPage = currentPage === totalPages;
+  const isFirstPage = currentPage === firstPage;
 
-  const sliceStart = (page - 1) * pageSize;
+  const sliceStart = (currentPage - 1) * pageSize;
   const sliceEnd = sliceStart + pageSize;
   const currentItems = items.slice(sliceStart, sliceEnd);
 
-  const goToFirstPage = () => setPage(1);
-  const goToLastPage = () => setPage(lastPage);
+  // add test for goToPage
+  // rename
+  const goToFirstPage = () => setCurrentPage(1);
+  const goToLastPage = () => setCurrentPage(totalPages);
   const goToNextPage = () =>
-    setPage((page) => (page < lastPage ? page + 1 : page));
+    setCurrentPage((page) => (page < totalPages ? page + 1 : page));
   const goToPreviousPage = () =>
-    setPage((page) => (page > firstPage ? page - 1 : page));
+    setCurrentPage((page) => (page > firstPage ? page - 1 : page));
   const goToPage = (page: number) => {
-    if (page >= firstPage && page <= lastPage) {
-      setPage(page);
+    if (page >= firstPage && page <= totalPages) {
+      setCurrentPage(page);
     }
   };
 
@@ -52,10 +54,10 @@ const PaginationProvider = <TArrayItem,>({
     goToPreviousPage,
     isFirstPage,
     isLastPage,
-    page,
+    currentPage,
     goToPage,
-    pages: [...Array(lastPage).keys()].map((x) => x + 1),
-    pagesCount: lastPage,
+    pagesList: [...Array(totalPages).keys()].map((x) => x + 1),
+    totalPages,
   });
 };
 
