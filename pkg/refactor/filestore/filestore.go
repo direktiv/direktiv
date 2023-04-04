@@ -50,6 +50,9 @@ type RootQuery interface {
 	CalculateChecksumsMap(ctx context.Context, path string) (map[string]string, error)
 	IsEmptyDirectory(ctx context.Context, path string) (bool, error)
 	ListAllFiles(ctx context.Context) ([]*File, error)
+
+	// BulkRemoveFilesWithExclude removes all files and directories that don't appear in excludePaths.
+	BulkRemoveFilesWithExclude(ctx context.Context, excludePaths []string) error
 }
 
 type CalculateChecksumFunc func([]byte) []byte

@@ -26,6 +26,43 @@ type RootQuery struct {
 	db           *gorm.DB
 }
 
+func (q *RootQuery) BulkRemoveFilesWithExclude(ctx context.Context, excludePaths []string) error {
+	// check if root exists.
+	if err := q.checkRootExists(ctx); err != nil {
+		return err
+	}
+
+	var allPaths []string
+
+	res := q.db.WithContext(ctx).Model(&filestore.File{}).Select("path").Where("root_id", q.rootID).Find(&allPaths)
+	if res.Error != nil {
+		return res.Error
+	}
+
+	pathsToRemove := []string{}
+	for _, pathInRoot := range allPaths {
+		for _, excludePath := range excludePaths {
+			if strings.HasPrefix(excludePath, pathInRoot) {
+				continue
+			}
+			if excludePath == pathInRoot {
+				continue
+			}
+			pathsToRemove = append(pathsToRemove, pathInRoot)
+		}
+	}
+
+	res = q.db.Exec("DELETE FROM files WHERE root_id = ? AND path IN ?", q.rootID, pathsToRemove)
+	if res.Error != nil {
+		return res.Error
+	}
+	if res.RowsAffected != int64(len(pathsToRemove)) {
+		return fmt.Errorf("unexpedted delete from files count, got: %d, want: %d", res.RowsAffected, len(pathsToRemove))
+	}
+
+	return nil
+}
+
 func (q *RootQuery) ListAllFiles(ctx context.Context) ([]*filestore.File, error) {
 	var list []*filestore.File
 

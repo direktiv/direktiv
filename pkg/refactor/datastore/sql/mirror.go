@@ -12,6 +12,11 @@ type sqlMirrorStore struct {
 	db *gorm.DB
 }
 
+func (s sqlMirrorStore) UpdateProcess(ctx context.Context, process *mirror.Process) (*mirror.Process, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
 func (s sqlMirrorStore) CreateConfig(ctx context.Context, config *mirror.Config) (*mirror.Config, error) {
 	// TODO implement me
 	panic("implement me")

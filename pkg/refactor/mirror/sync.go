@@ -24,7 +24,7 @@ import (
 // Parameter 'dir' specifies the directory where Source should copy the mirror to.
 type Source interface {
 	// PullInPath pulls (copies) mirror into local directory specified by 'dir' parameter.
-	PullInPath(config Config, dir string) error
+	PullInPath(config *Config, dir string) error
 }
 
 // ExecuteMirroringProcess pulls mirror from source, store it in local file system and then push it to direktiv
@@ -34,7 +34,7 @@ func ExecuteMirroringProcess(
 	fStore filestore.FileStore,
 	direktivRoot *filestore.Root,
 	ignoreMatcher ignorefile.Matcher,
-	source Source, config Config,
+	source Source, config *Config,
 ) error {
 	// function starts here:
 	dstDir, err := os.MkdirTemp("", "direktiv_mirrors")

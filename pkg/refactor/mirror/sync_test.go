@@ -36,7 +36,7 @@ func TestExecuteMirroringProcess(t *testing.T) {
 	}
 
 	err = mirror.ExecuteMirroringProcess(context.Background(), zap.NewNop().Sugar(),
-		fs, direktivRoot, &ignorefile.NopMatcher{}, source, mirror.Settings{})
+		fs, direktivRoot, &ignorefile.NopMatcher{}, source, &mirror.Config{})
 	if err != nil {
 		t.Fatalf("unepxected ExecuteMirroringProcess() error = %v", err)
 	}

@@ -50,7 +50,8 @@ type Store interface {
 	GetConfig(ctx context.Context, id uuid.UUID) (*Config, error)
 	GetConfigByNamespace(ctx context.Context, namespace string) (*Config, error)
 
-	CreateProcess(ctx context.Context, mirror *Process) (*Process, error)
+	CreateProcess(ctx context.Context, process *Process) (*Process, error)
+	UpdateProcess(ctx context.Context, process *Process) (*Process, error)
 
 	GetProcess(ctx context.Context, id uuid.UUID) (*Process, error)
 	GetProcessesByConfig(ctx context.Context, configID uuid.UUID) ([]*Process, error)
