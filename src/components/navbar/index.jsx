@@ -169,7 +169,6 @@ function NewNamespaceBtn(props) {
   const [mirrorSettings, setMirrorSettings] = useState({
     url: "",
     ref: "",
-    cron: "",
     passphrase: "",
     token: "",
     publicKey: "",
@@ -208,7 +207,6 @@ function NewNamespaceBtn(props) {
         setMirrorSettings({
           url: "",
           ref: "",
-          cron: "",
           passphrase: "",
           token: "",
           publicKey: "",

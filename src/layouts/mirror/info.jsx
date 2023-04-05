@@ -29,12 +29,6 @@ export const mirrorSettingInfoMetaInfo = {
     placeholder: `Enter repository ref e.g. "main"`,
     info: `Repository reference to sync from. For example this could be a commit hash ("b139f0e") or branch ("main").`,
   },
-  cron: {
-    plainName: "Cron",
-    required: false,
-    placeholder: `Enter cron e.g. "0 * * * *"`,
-    info: `Cron schedule expression for auto-syncing with remote repository. Example auto-sync every hour "0 * * * *". (Optional)`,
-  },
   passphrase: {
     plainName: "Passphrase",
     required: false,
@@ -255,7 +249,7 @@ export default function MirrorInfoPanel(props) {
     setInfoPendingChanges(
       infoChangesTracker.url ||
         infoChangesTracker.ref ||
-        infoChangesTracker.cron ||
+        // infoChangesTracker.cron ||
         infoChangesTracker.passphrase ||
         infoChangesTracker.publicKey ||
         infoChangesTracker.privateKey ||
@@ -381,7 +375,7 @@ export default function MirrorInfoPanel(props) {
                         const newSettings = {
                           url: infoChangesTracker.url ? infoURL : "-",
                           ref: infoChangesTracker.ref ? infoRef : "-",
-                          cron: infoChangesTracker.cron ? infoCron : "-",
+                          // cron: infoChangesTracker.cron ? infoCron : "-",
                           passphrase: infoChangesTracker.passphrase
                             ? infoPassphrase
                             : "-",
