@@ -48,12 +48,12 @@ type RootQuery interface {
 	CreateFile(ctx context.Context, path string, typ FileType, dataReader io.Reader) (*File, *Revision, error)
 	ReadDirectory(ctx context.Context, path string) ([]*File, error)
 	Delete(ctx context.Context) error
-	CalculateChecksumsMap(ctx context.Context, path string) (map[string]string, error)
+	CalculateChecksumsMap(ctx context.Context) (map[string]string, error)
 	IsEmptyDirectory(ctx context.Context, path string) (bool, error)
 	ListAllFiles(ctx context.Context) ([]*File, error)
 
-	// BulkRemoveFilesWithExclude removes all files and directories that don't appear in excludePaths.
-	BulkRemoveFilesWithExclude(ctx context.Context, excludePaths []string) error
+	// CropFilesAndDirectories removes all files and directories that don't appear in excludePaths.
+	CropFilesAndDirectories(ctx context.Context, excludePaths []string) error
 }
 
 type CalculateChecksumFunc func([]byte) []byte

@@ -69,7 +69,33 @@ func NewMockGorm() (*gorm.DB, error) {
 				CONSTRAINT "fk_files_file_annotations"
 				FOREIGN KEY ("file_id") REFERENCES "files"("id") ON DELETE CASCADE ON UPDATE CASCADE
 				);
+	 CREATE TABLE IF NOT EXISTS "mirror_configs" 
+	 		(
+	 		    "id" text,
+	 		    "url" text,
+	 		    "git_ref" text,
+	 		    "git_commit_hash" text,
+	 		    "public_key" text,
+	 		    "private_key" text,
+	 		    "private_key_passphrase" text,
+	 		    "created_at" datetime,
+	 		    "updated_at" datetime,
+	 		    PRIMARY KEY ("id")
+	     );
+	 CREATE TABLE IF NOT EXISTS "mirror_processes" 
+	 		(
+	 		    "id" text,
+	 		    "config_id" text,
+	 		    "status" text,
+	 		    "ended_at" datetime,
+	 		    "created_at" datetime,
+	 		    "updated_at" datetime,
+	 		    PRIMARY KEY ("id"),
+	 		    CONSTRAINT "fk_mirror_configs_mirror_processes"
+				FOREIGN KEY ("config_id") REFERENCES "files"("id") ON DELETE CASCADE ON UPDATE CASCADE
+	 		)
 `)
+
 	if res.Error != nil {
 		return nil, err
 	}

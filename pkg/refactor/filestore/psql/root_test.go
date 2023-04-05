@@ -181,49 +181,18 @@ func TestRoot_CalculateChecksumDirectory(t *testing.T) {
 	{
 		assertRootCorrectFileCreationWithContent(t, fs, root, "/file1.text", "text", []byte("content1"))
 		assertRootCorrectFileCreationWithContent(t, fs, root, "/file2.text", "text", []byte("content2"))
-
-		assertChecksumsInPath(t, fs, root, "/",
-			"/file1.text", "---content1---",
-			"/file2.text", "---content2---",
-		)
-	}
-
-	// Add /dir1 directory:
-	{
 		assertRootCorrectFileCreationWithContent(t, fs, root, "/dir1", "directory", nil)
+		assertRootCorrectFileCreationWithContent(t, fs, root, "/empty_dir", "directory", nil)
 		assertRootCorrectFileCreationWithContent(t, fs, root, "/dir1/file3.text", "text", []byte("content3"))
 		assertRootCorrectFileCreationWithContent(t, fs, root, "/dir1/file4.text", "text", []byte("content4"))
 
-		assertChecksumsInPath(t, fs, root, "/dir1",
-			"/dir1/file3.text", "---content3---",
-			"/dir1/file4.text", "---content4---",
-		)
-		assertChecksumsInPath(t, fs, root, "/",
+		assertChecksums(t, fs, root,
 			"/file1.text", "---content1---",
 			"/file2.text", "---content2---",
 			"/dir1", "",
-		)
-	}
-
-	// Add /dir1/dir2 directory:
-	{
-		assertRootCorrectFileCreationWithContent(t, fs, root, "/dir1/dir2", "directory", nil)
-		assertRootCorrectFileCreationWithContent(t, fs, root, "/dir1/dir2/file5.text", "text", []byte("content5"))
-		assertRootCorrectFileCreationWithContent(t, fs, root, "/dir1/dir2/file6.text", "text", []byte("content6"))
-
-		assertChecksumsInPath(t, fs, root, "/dir1/dir2",
-			"/dir1/dir2/file5.text", "---content5---",
-			"/dir1/dir2/file6.text", "---content6---",
-		)
-		assertChecksumsInPath(t, fs, root, "/dir1",
+			"/empty_dir", "",
 			"/dir1/file3.text", "---content3---",
 			"/dir1/file4.text", "---content4---",
-			"/dir1/dir2", "",
-		)
-		assertChecksumsInPath(t, fs, root, "/",
-			"/file1.text", "---content1---",
-			"/file2.text", "---content2---",
-			"/dir1", "",
 		)
 	}
 }
@@ -249,10 +218,10 @@ func assertRootFilesInPath(t *testing.T, fs filestore.FileStore, root *filestore
 	}
 }
 
-func assertChecksumsInPath(t *testing.T, fs filestore.FileStore, root *filestore.Root, searchPath string, paths ...string) {
+func assertChecksums(t *testing.T, fs filestore.FileStore, root *filestore.Root, paths ...string) {
 	t.Helper()
 
-	checksumsMap, err := fs.ForRootID(root.ID).CalculateChecksumsMap(context.Background(), searchPath)
+	checksumsMap, err := fs.ForRootID(root.ID).CalculateChecksumsMap(context.Background())
 	if err != nil {
 		t.Errorf("unepxected CalculateChecksumsMap() error = %v", err)
 	}

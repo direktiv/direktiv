@@ -65,7 +65,7 @@ func ExecuteMirroringProcessFromDirectory(
 	ignoreMatcher ignorefile.Matcher,
 	dstDir string,
 ) error {
-	currentChecksumsMap, err := fStore.ForRootID(direktivRoot.ID).CalculateChecksumsMap(ctx, "/")
+	currentChecksumsMap, err := fStore.ForRootID(direktivRoot.ID).CalculateChecksumsMap(ctx)
 	if err != nil {
 		return fmt.Errorf("calculate current checksum map, err: %w", err)
 	}

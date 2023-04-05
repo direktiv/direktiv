@@ -26,7 +26,7 @@ type RootQuery struct {
 	db           *gorm.DB
 }
 
-func (q *RootQuery) BulkRemoveFilesWithExclude(ctx context.Context, excludePaths []string) error {
+func (q *RootQuery) CropFilesAndDirectories(ctx context.Context, excludePaths []string) error {
 	// check if root exists.
 	if err := q.checkRootExists(ctx); err != nil {
 		return err
@@ -219,7 +219,7 @@ func (q *RootQuery) GetFile(ctx context.Context, path string) (*filestore.File, 
 
 //nolint:ireturn
 func (q *RootQuery) ReadDirectory(ctx context.Context, path string) ([]*filestore.File, error) {
-	var list []filestore.File
+	var list []*filestore.File
 	path, err := filestore.SanitizePath(path)
 	if err != nil {
 		return nil, filestore.ErrInvalidPathParameter
@@ -253,29 +253,19 @@ func (q *RootQuery) ReadDirectory(ctx context.Context, path string) ([]*filestor
 	if res.Error != nil {
 		return nil, res.Error
 	}
-	var files []*filestore.File
-	for i := range list {
-		files = append(files, &list[i])
-	}
 
-	return files, nil
+	return list, nil
 }
 
 //nolint:ireturn
-func (q *RootQuery) CalculateChecksumsMap(ctx context.Context, path string) (map[string]string, error) {
-	path, err := filestore.SanitizePath(path)
-	if err != nil {
-		return nil, filestore.ErrInvalidPathParameter
-	}
-
+func (q *RootQuery) CalculateChecksumsMap(ctx context.Context) (map[string]string, error) {
 	// check if root exists.
-	if err = q.checkRootExists(ctx); err != nil {
+	if err := q.checkRootExists(ctx); err != nil {
 		return nil, err
 	}
 
 	type Result struct {
 		Path     string
-		Typ      string
 		Checksum string
 	}
 
@@ -283,12 +273,10 @@ func (q *RootQuery) CalculateChecksumsMap(ctx context.Context, path string) (map
 
 	res := q.db.WithContext(ctx).
 		// Don't include file 'data' in the query. File data can be retrieved with file.GetData().
-		Raw(`SELECT f.path, f.typ, r.checksum 
+		Raw(`SELECT f.path, r.checksum 
 				 FROM files AS f 
-				     LEFT JOIN revisions r 
-				         ON r.file_id = f.id AND r.is_current = true 
-				 WHERE f.depth = ? AND path LIKE ?`,
-			filestore.ParseDepth(path)+1, addTrailingSlash(path)+"%").Scan(&resultList)
+				 LEFT JOIN revisions r 
+					ON r.file_id = f.id AND r.is_current = true`).Scan(&resultList)
 
 	if res.Error != nil {
 		return nil, res.Error
