@@ -1069,9 +1069,7 @@ func (engine *engine) wakeEventsWaiter(signature []byte, events []*cloudevents.E
 }
 
 func (engine *engine) EventsInvoke(workflowID string, events ...*cloudevents.Event) {
-	// TODO: yassir, need refactor.
-	return
-	/*ctx := context.Background()
+	ctx := context.Background()
 
 	id, err := uuid.Parse(workflowID)
 	if err != nil {
@@ -1079,12 +1077,30 @@ func (engine *engine) EventsInvoke(workflowID string, events ...*cloudevents.Eve
 		return
 	}
 
-	cached := new(database.CacheData)
-	err = engine.database.Workflow(ctx, cached, id)
+	fStore, _, _, rollback, err := engine.flow.beginSqlTx(ctx)
 	if err != nil {
 		engine.sugar.Error(err)
 		return
 	}
+	defer rollback(ctx)
+
+	file, err := fStore.GetFile(ctx, id)
+	if err != nil {
+		engine.sugar.Error(err)
+		return
+	}
+	rollback(ctx)
+
+	cached := new(database.CacheData)
+
+	ns, err := engine.edb.Namespace(ctx, file.RootID)
+	if err != nil {
+		engine.sugar.Error(err)
+		return
+	}
+
+	cached.Namespace = ns
+	cached.File = file
 
 	var input []byte
 	m := make(map[string]interface{})
@@ -1106,7 +1122,7 @@ func (engine *engine) EventsInvoke(workflowID string, events ...*cloudevents.Eve
 
 	args := new(newInstanceArgs)
 	args.Namespace = cached.Namespace.Name
-	args.Path = cached.Path()
+	args.Path = cached.File.Path
 
 	args.Input = input
 	args.Caller = "cloudevent"
@@ -1117,7 +1133,7 @@ func (engine *engine) EventsInvoke(workflowID string, events ...*cloudevents.Eve
 		return
 	}
 
-	engine.queue(im)*/
+	engine.queue(im)
 }
 
 func (engine *engine) SetMemory(ctx context.Context, im *instanceMemory, x interface{}) error {
