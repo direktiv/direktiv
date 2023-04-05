@@ -78,8 +78,7 @@ func (flow *flow) ServerLogs(ctx context.Context, req *grpc.ServerLogsRequest) (
 
 	query := clients.LogMsg.Query()
 
-	// TODO: alan, check if this workflow uid part actually works. Why doesn't ent let us query NotNil?
-	query = query.Where(entlog.Not(entlog.HasNamespace()), entlog.Not(entlog.WorkflowID(uuid.UUID{})))
+	query = query.Where(entlog.Not(entlog.HasNamespace()), entlog.WorkflowIDNotNil())
 
 	results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
 	if err != nil {

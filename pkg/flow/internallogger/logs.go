@@ -207,12 +207,12 @@ func (logger *Logger) SendLogMsgToDB(l *logMessage) error {
 	// case recipient.Mirror:
 	//	lc.SetActivityID(l.recipientID)
 	default:
-		logger.sugar.Panicf("recipientType was not set", l.msg, l.tags)
+		logger.sugar.Panicf("recipientType was not set: %s %v", l.msg, l.tags)
 		return fmt.Errorf("recipientType was not set %s %v", l.msg, l.tags)
 	}
 	_, err := lc.Save(ctx)
 	if err != nil {
-		logger.sugar.Panicf("error storing logmsg", err)
+		logger.sugar.Panicf("error storing logmsg: %v", err)
 		return err
 	}
 	logger.pubsub.NotifyLogs(l.recipientID, recipientType)

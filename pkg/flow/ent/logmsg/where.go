@@ -669,6 +669,20 @@ func WorkflowIDLTE(v uuid.UUID) predicate.LogMsg {
 	})
 }
 
+// WorkflowIDIsNil applies the IsNil predicate on the "workflow_id" field.
+func WorkflowIDIsNil() predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldWorkflowID)))
+	})
+}
+
+// WorkflowIDNotNil applies the NotNil predicate on the "workflow_id" field.
+func WorkflowIDNotNil() predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldWorkflowID)))
+	})
+}
+
 // MirrorActivityIDEQ applies the EQ predicate on the "mirror_activity_id" field.
 func MirrorActivityIDEQ(v uuid.UUID) predicate.LogMsg {
 	return predicate.LogMsg(func(s *sql.Selector) {
@@ -730,6 +744,20 @@ func MirrorActivityIDLT(v uuid.UUID) predicate.LogMsg {
 func MirrorActivityIDLTE(v uuid.UUID) predicate.LogMsg {
 	return predicate.LogMsg(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldMirrorActivityID), v))
+	})
+}
+
+// MirrorActivityIDIsNil applies the IsNil predicate on the "mirror_activity_id" field.
+func MirrorActivityIDIsNil() predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldMirrorActivityID)))
+	})
+}
+
+// MirrorActivityIDNotNil applies the NotNil predicate on the "mirror_activity_id" field.
+func MirrorActivityIDNotNil() predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldMirrorActivityID)))
 	})
 }
 

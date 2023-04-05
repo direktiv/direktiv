@@ -104,9 +104,37 @@ func (lmu *LogMsgUpdate) SetWorkflowID(u uuid.UUID) *LogMsgUpdate {
 	return lmu
 }
 
+// SetNillableWorkflowID sets the "workflow_id" field if the given value is not nil.
+func (lmu *LogMsgUpdate) SetNillableWorkflowID(u *uuid.UUID) *LogMsgUpdate {
+	if u != nil {
+		lmu.SetWorkflowID(*u)
+	}
+	return lmu
+}
+
+// ClearWorkflowID clears the value of the "workflow_id" field.
+func (lmu *LogMsgUpdate) ClearWorkflowID() *LogMsgUpdate {
+	lmu.mutation.ClearWorkflowID()
+	return lmu
+}
+
 // SetMirrorActivityID sets the "mirror_activity_id" field.
 func (lmu *LogMsgUpdate) SetMirrorActivityID(u uuid.UUID) *LogMsgUpdate {
 	lmu.mutation.SetMirrorActivityID(u)
+	return lmu
+}
+
+// SetNillableMirrorActivityID sets the "mirror_activity_id" field if the given value is not nil.
+func (lmu *LogMsgUpdate) SetNillableMirrorActivityID(u *uuid.UUID) *LogMsgUpdate {
+	if u != nil {
+		lmu.SetMirrorActivityID(*u)
+	}
+	return lmu
+}
+
+// ClearMirrorActivityID clears the value of the "mirror_activity_id" field.
+func (lmu *LogMsgUpdate) ClearMirrorActivityID() *LogMsgUpdate {
+	lmu.mutation.ClearMirrorActivityID()
 	return lmu
 }
 
@@ -267,8 +295,14 @@ func (lmu *LogMsgUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := lmu.mutation.WorkflowID(); ok {
 		_spec.SetField(logmsg.FieldWorkflowID, field.TypeUUID, value)
 	}
+	if lmu.mutation.WorkflowIDCleared() {
+		_spec.ClearField(logmsg.FieldWorkflowID, field.TypeUUID)
+	}
 	if value, ok := lmu.mutation.MirrorActivityID(); ok {
 		_spec.SetField(logmsg.FieldMirrorActivityID, field.TypeUUID, value)
+	}
+	if lmu.mutation.MirrorActivityIDCleared() {
+		_spec.ClearField(logmsg.FieldMirrorActivityID, field.TypeUUID)
 	}
 	if lmu.mutation.NamespaceCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -433,9 +467,37 @@ func (lmuo *LogMsgUpdateOne) SetWorkflowID(u uuid.UUID) *LogMsgUpdateOne {
 	return lmuo
 }
 
+// SetNillableWorkflowID sets the "workflow_id" field if the given value is not nil.
+func (lmuo *LogMsgUpdateOne) SetNillableWorkflowID(u *uuid.UUID) *LogMsgUpdateOne {
+	if u != nil {
+		lmuo.SetWorkflowID(*u)
+	}
+	return lmuo
+}
+
+// ClearWorkflowID clears the value of the "workflow_id" field.
+func (lmuo *LogMsgUpdateOne) ClearWorkflowID() *LogMsgUpdateOne {
+	lmuo.mutation.ClearWorkflowID()
+	return lmuo
+}
+
 // SetMirrorActivityID sets the "mirror_activity_id" field.
 func (lmuo *LogMsgUpdateOne) SetMirrorActivityID(u uuid.UUID) *LogMsgUpdateOne {
 	lmuo.mutation.SetMirrorActivityID(u)
+	return lmuo
+}
+
+// SetNillableMirrorActivityID sets the "mirror_activity_id" field if the given value is not nil.
+func (lmuo *LogMsgUpdateOne) SetNillableMirrorActivityID(u *uuid.UUID) *LogMsgUpdateOne {
+	if u != nil {
+		lmuo.SetMirrorActivityID(*u)
+	}
+	return lmuo
+}
+
+// ClearMirrorActivityID clears the value of the "mirror_activity_id" field.
+func (lmuo *LogMsgUpdateOne) ClearMirrorActivityID() *LogMsgUpdateOne {
+	lmuo.mutation.ClearMirrorActivityID()
 	return lmuo
 }
 
@@ -626,8 +688,14 @@ func (lmuo *LogMsgUpdateOne) sqlSave(ctx context.Context) (_node *LogMsg, err er
 	if value, ok := lmuo.mutation.WorkflowID(); ok {
 		_spec.SetField(logmsg.FieldWorkflowID, field.TypeUUID, value)
 	}
+	if lmuo.mutation.WorkflowIDCleared() {
+		_spec.ClearField(logmsg.FieldWorkflowID, field.TypeUUID)
+	}
 	if value, ok := lmuo.mutation.MirrorActivityID(); ok {
 		_spec.SetField(logmsg.FieldMirrorActivityID, field.TypeUUID, value)
+	}
+	if lmuo.mutation.MirrorActivityIDCleared() {
+		_spec.ClearField(logmsg.FieldMirrorActivityID, field.TypeUUID)
 	}
 	if lmuo.mutation.NamespaceCleared() {
 		edge := &sqlgraph.EdgeSpec{

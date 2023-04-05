@@ -6587,7 +6587,7 @@ func (m *LogMsgMutation) WorkflowID() (r uuid.UUID, exists bool) {
 // OldWorkflowID returns the old "workflow_id" field's value of the LogMsg entity.
 // If the LogMsg object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *LogMsgMutation) OldWorkflowID(ctx context.Context) (v *uuid.UUID, err error) {
+func (m *LogMsgMutation) OldWorkflowID(ctx context.Context) (v uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldWorkflowID is only allowed on UpdateOne operations")
 	}
@@ -6601,9 +6601,22 @@ func (m *LogMsgMutation) OldWorkflowID(ctx context.Context) (v *uuid.UUID, err e
 	return oldValue.WorkflowID, nil
 }
 
+// ClearWorkflowID clears the value of the "workflow_id" field.
+func (m *LogMsgMutation) ClearWorkflowID() {
+	m.workflow_id = nil
+	m.clearedFields[logmsg.FieldWorkflowID] = struct{}{}
+}
+
+// WorkflowIDCleared returns if the "workflow_id" field was cleared in this mutation.
+func (m *LogMsgMutation) WorkflowIDCleared() bool {
+	_, ok := m.clearedFields[logmsg.FieldWorkflowID]
+	return ok
+}
+
 // ResetWorkflowID resets all changes to the "workflow_id" field.
 func (m *LogMsgMutation) ResetWorkflowID() {
 	m.workflow_id = nil
+	delete(m.clearedFields, logmsg.FieldWorkflowID)
 }
 
 // SetMirrorActivityID sets the "mirror_activity_id" field.
@@ -6623,7 +6636,7 @@ func (m *LogMsgMutation) MirrorActivityID() (r uuid.UUID, exists bool) {
 // OldMirrorActivityID returns the old "mirror_activity_id" field's value of the LogMsg entity.
 // If the LogMsg object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *LogMsgMutation) OldMirrorActivityID(ctx context.Context) (v *uuid.UUID, err error) {
+func (m *LogMsgMutation) OldMirrorActivityID(ctx context.Context) (v uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldMirrorActivityID is only allowed on UpdateOne operations")
 	}
@@ -6637,9 +6650,22 @@ func (m *LogMsgMutation) OldMirrorActivityID(ctx context.Context) (v *uuid.UUID,
 	return oldValue.MirrorActivityID, nil
 }
 
+// ClearMirrorActivityID clears the value of the "mirror_activity_id" field.
+func (m *LogMsgMutation) ClearMirrorActivityID() {
+	m.mirror_activity_id = nil
+	m.clearedFields[logmsg.FieldMirrorActivityID] = struct{}{}
+}
+
+// MirrorActivityIDCleared returns if the "mirror_activity_id" field was cleared in this mutation.
+func (m *LogMsgMutation) MirrorActivityIDCleared() bool {
+	_, ok := m.clearedFields[logmsg.FieldMirrorActivityID]
+	return ok
+}
+
 // ResetMirrorActivityID resets all changes to the "mirror_activity_id" field.
 func (m *LogMsgMutation) ResetMirrorActivityID() {
 	m.mirror_activity_id = nil
+	delete(m.clearedFields, logmsg.FieldMirrorActivityID)
 }
 
 // SetNamespaceID sets the "namespace" edge to the Namespace entity by id.
@@ -6911,6 +6937,12 @@ func (m *LogMsgMutation) ClearedFields() []string {
 	if m.FieldCleared(logmsg.FieldTags) {
 		fields = append(fields, logmsg.FieldTags)
 	}
+	if m.FieldCleared(logmsg.FieldWorkflowID) {
+		fields = append(fields, logmsg.FieldWorkflowID)
+	}
+	if m.FieldCleared(logmsg.FieldMirrorActivityID) {
+		fields = append(fields, logmsg.FieldMirrorActivityID)
+	}
 	return fields
 }
 
@@ -6927,6 +6959,12 @@ func (m *LogMsgMutation) ClearField(name string) error {
 	switch name {
 	case logmsg.FieldTags:
 		m.ClearTags()
+		return nil
+	case logmsg.FieldWorkflowID:
+		m.ClearWorkflowID()
+		return nil
+	case logmsg.FieldMirrorActivityID:
+		m.ClearMirrorActivityID()
 		return nil
 	}
 	return fmt.Errorf("unknown LogMsg nullable field %s", name)

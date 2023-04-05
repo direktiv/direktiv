@@ -586,7 +586,9 @@ func (flow *flow) beginSqlTx(ctx context.Context) (filestore.FileStore, datastor
 	rollbackFunc := func(ctx context.Context) {
 		err := res.WithContext(ctx).Rollback().Error
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "failed to rollback transaction: %v\n", err)
+			if !strings.Contains(err.Error(), "already") {
+				fmt.Fprintf(os.Stderr, "failed to rollback transaction: %v\n", err)
+			}
 		}
 	}
 	commitFunc := func(ctx context.Context) error {

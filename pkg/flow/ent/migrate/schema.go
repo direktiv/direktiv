@@ -233,8 +233,8 @@ var (
 		{Name: "root_instance_id", Type: field.TypeString, Default: ""},
 		{Name: "log_instance_call_path", Type: field.TypeString, Default: ""},
 		{Name: "tags", Type: field.TypeJSON, Nullable: true},
-		{Name: "workflow_id", Type: field.TypeUUID},
-		{Name: "mirror_activity_id", Type: field.TypeUUID},
+		{Name: "workflow_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "mirror_activity_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "instance_logs", Type: field.TypeUUID, Nullable: true},
 		{Name: "namespace_logs", Type: field.TypeUUID, Nullable: true},
 	}
