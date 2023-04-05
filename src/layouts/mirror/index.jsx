@@ -238,7 +238,6 @@ export default function MirrorPage(props) {
             )}
           </FlexBox>
         </Button>
-        {isReadOnly ? <MirrorReadOnlyBadge /> : <MirrorWritableBadge />}
       </FlexBox>
     );
   }, [currentlyLocking, isReadOnly, syncVisible]);
