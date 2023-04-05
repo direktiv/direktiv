@@ -495,16 +495,16 @@ func (pubsub *Pubsub) SubscribeNamespaceLogs(ns *uuid.UUID) *Subscription {
 	return pubsub.Subscribe(ns.String(), pubsub.namespaceLogs(ns))
 }
 
-func (pubsub *Pubsub) namespaceEventListeners(ns *database.Namespace) string {
-	return fmt.Sprintf("nsel:%s", ns.ID.String())
+func (pubsub *Pubsub) namespaceEventListeners(id uuid.UUID) string {
+	return fmt.Sprintf("nsel:%s", id.String())
 }
 
 func (pubsub *Pubsub) SubscribeEventListeners(ns *database.Namespace) *Subscription {
-	return pubsub.Subscribe(ns.ID.String(), pubsub.namespaceEventListeners(ns))
+	return pubsub.Subscribe(ns.ID.String(), pubsub.namespaceEventListeners(ns.ID))
 }
 
-func (pubsub *Pubsub) NotifyEventListeners(ns *database.Namespace) {
-	pubsub.Publish(pubsubNotify(pubsub.namespaceEventListeners(ns)))
+func (pubsub *Pubsub) NotifyEventListeners(id uuid.UUID) {
+	pubsub.Publish(pubsubNotify(pubsub.namespaceEventListeners(id)))
 }
 
 func (pubsub *Pubsub) namespaceEvents(ns *database.Namespace) string {

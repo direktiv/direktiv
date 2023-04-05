@@ -74,6 +74,18 @@ func (s *SQLFileStore) GetAllRoots(ctx context.Context) ([]*filestore.Root, erro
 }
 
 //nolint:ireturn
+func (s *SQLFileStore) GetFile(ctx context.Context, id uuid.UUID) (*filestore.File, error) {
+	file := &filestore.File{ID: id}
+	res := s.db.WithContext(ctx).
+		First(file)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+
+	return file, nil
+}
+
+//nolint:ireturn
 func (s *SQLFileStore) GetRevision(ctx context.Context, id uuid.UUID) (*filestore.File, *filestore.Revision, error) {
 	// TODO: yassir, reimplement this function using JOIN so that it becomes a single query.
 	rev := &filestore.Revision{ID: id}

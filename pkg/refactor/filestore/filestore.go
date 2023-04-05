@@ -32,6 +32,7 @@ type FileStore interface {
 	ForFile(file *File) FileQuery
 	ForRevision(revision *Revision) RevisionQuery
 
+	GetFile(ctx context.Context, id uuid.UUID) (*File, error)
 	GetRevision(ctx context.Context, id uuid.UUID) (*File, *Revision, error)
 }
 

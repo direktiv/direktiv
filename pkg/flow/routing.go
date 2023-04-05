@@ -3,34 +3,12 @@ package flow
 import (
 	"context"
 
-	"github.com/direktiv/direktiv/pkg/flow/database"
-	"github.com/direktiv/direktiv/pkg/refactor/filestore"
-)
-
-// TODO: yassir, need refactor.
-/*
-import (
-	"context"
-	"crypto/rand"
-	"encoding/json"
 	"fmt"
-	"math/big"
-	"os"
-	"time"
-
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
-	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
-	entirt "github.com/direktiv/direktiv/pkg/flow/ent/instanceruntime"
-	entwf "github.com/direktiv/direktiv/pkg/flow/ent/workflow"
-	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
-	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/model"
-	"github.com/direktiv/direktiv/pkg/util"
-	"github.com/google/uuid"
+	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 )
 
 type muxStart struct {
@@ -76,6 +54,8 @@ func (ms *muxStart) Hash() string {
 	return bytedata.Checksum(ms)
 }
 
+// TODO: yassir, need refactor.
+/*
 func (srv *server) validateRouter(ctx context.Context, cached *database.CacheData) (*muxStart, error, error) {
 	if len(cached.Workflow.Routes) == 0 {
 
