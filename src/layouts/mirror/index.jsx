@@ -200,44 +200,6 @@ export default function MirrorPage(props) {
             </FlexBox>
           </FlexBox>
         </ModalHeadless>
-        <Button
-          variant="outlined"
-          color="info"
-          onClick={async () => {
-            if (isReadOnly) {
-              setCurrentlyLocking(true);
-
-              try {
-                await setLockRef.current(true);
-              } catch (e) {
-                setCurrentlyLocking(false);
-                setErrorMsg(e.message);
-              }
-            } else {
-              setCurrentlyLocking(true);
-              try {
-                await setLockRef.current(false);
-              } catch (e) {
-                setCurrentlyLocking(false);
-                setErrorMsg(e.message);
-              }
-            }
-          }}
-        >
-          <FlexBox center row gap="sm">
-            {isReadOnly ? (
-              <>
-                <VscUnlock />
-                Make Writable
-              </>
-            ) : (
-              <>
-                <VscLock />
-                Make ReadOnly
-              </>
-            )}
-          </FlexBox>
-        </Button>
       </FlexBox>
     );
   }, [currentlyLocking, isReadOnly, syncVisible]);
