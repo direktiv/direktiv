@@ -6,6 +6,9 @@ yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
 
+app.tar
+app/
+
 !src/components/logs
 
 # Diagnostic reports (https://nodejs.org/api/report.html)

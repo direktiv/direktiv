@@ -26,3 +26,20 @@ update-containers:
 	docker tag direktiv/ui:latest direktiv/ui${RELEASE_TAG}
 	docker push direktiv/ui
 	docker push direktiv/ui${RELEASE_TAG}
+
+
+.PHONY: cross-prepare
+cross-prepare:
+	docker buildx create --use	
+	docker run --privileged --rm docker/binfmt:a7996909642ee92942dcd6cff44b9b95f08dad64
+	docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+
+.PHONY: cross
+cross:
+	rm -Rf app.tar
+	docker build -t uibase -f Dockerfile.base .
+	container_id=$$(docker create "uibase"); \
+	docker cp $$container_id:/app - > app.tar; \
+	docker rm -v $$container_id
+	tar -xvf app.tar
+	docker buildx build --build-arg RELEASE_VERSION=${FULL_VERSION} -f Dockerfile.cross --platform=linux/amd64,linux/arm64 --push -t gerke74/ui .
