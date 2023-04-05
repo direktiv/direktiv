@@ -1,7 +1,6 @@
 package flow_dbinit
 
 import (
-	"context"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -10,11 +9,9 @@ import (
 	"time"
 
 	"github.com/Masterminds/semver"
-	"github.com/direktiv/direktiv/pkg/flow/database/entwrapper"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
 	_ "github.com/lib/pq"
-	"go.uber.org/zap"
 )
 
 func RunApplication() {
@@ -46,7 +43,6 @@ func RunApplication() {
 	}
 	if !initialized {
 		log.Printf("database hasn't been initialized by ent automigrate.\n")
-		initialize(db)
 		os.Exit(0)
 	}
 
@@ -100,10 +96,6 @@ func RunApplication() {
 		{
 			version: semver.MustParse("0.7.3"),
 			logic:   updateGeneration_0_7_3,
-		},
-		{
-			version: semver.MustParse("2.0.0"),
-			logic:   updateGeneration_2_0_0,
 		},
 	}
 
@@ -192,132 +184,4 @@ func updateGeneration_0_6_0(db *sql.Tx) error {
 	}
 
 	return nil
-}
-
-func updateGeneration_2_0_0(db *sql.Tx) error {
-	// create the new filesystem tables.
-	_, err := db.Exec(`
-	 CREATE TABLE IF NOT EXISTS "roots"
-			(
-				"id" uuid,
-				"created_at" timestamptz,
-				"updated_at" timestamptz,
-				PRIMARY KEY ("id"),
-				CONSTRAINT "fk_namespaces_roots"
-				FOREIGN KEY ("id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
-				);
-	 CREATE TABLE IF NOT EXISTS "files"
-			(
-				"id" uuid,
-				"path" text,
-				"depth" integer,
-				"typ" text,
-				"root_id" uuid,
-				"created_at" timestamptz,
-				"updated_at" timestamptz,
-				PRIMARY KEY ("id"),
-				CONSTRAINT "fk_roots_files"
-				FOREIGN KEY ("root_id") REFERENCES "roots"("id") ON DELETE CASCADE ON UPDATE CASCADE
-				);
-	 CREATE TABLE IF NOT EXISTS "revisions"
-			(
-				"id" uuid,
-				"tags" text,
-				"is_current" numeric,
-				"data" varchar,
-				"checksum" text,
-				"file_id" uuid,
-				"created_at" timestamptz,
-				"updated_at" timestamptz,
-				PRIMARY KEY ("id"),
-				CONSTRAINT "fk_files_revisions"
-				FOREIGN KEY ("file_id") REFERENCES "files"("id") ON DELETE CASCADE ON UPDATE CASCADE
-				);
-	 CREATE TABLE IF NOT EXISTS "file_annotations"
-			(
-				"file_id" uuid,
-				"data" text,
-				"created_at" timestamptz,
-				"updated_at" timestamptz,
-				PRIMARY KEY ("file_id"),
-				CONSTRAINT "fk_files_file_annotations"
-				FOREIGN KEY ("file_id") REFERENCES "files"("id") ON DELETE CASCADE ON UPDATE CASCADE
-				);
-`)
-	return err
-}
-
-func initialize(db *sql.DB) {
-	ctx := context.Background()
-
-	logger, err := zap.NewProduction()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to initialize ent database: %v\n", err)
-		os.Exit(1)
-	}
-	defer logger.Sync()
-
-	sugar := logger.Sugar()
-
-	conn := os.Getenv(util.DBConn)
-	edb, err := entwrapper.New(ctx, sugar, conn)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to initialize ent database: %v\n", err)
-		os.Exit(1)
-	}
-	defer edb.Close()
-
-	// create the new filesystem tables.
-	_, err = db.Exec(`
-	 CREATE TABLE IF NOT EXISTS "roots"
-			(
-				"id" uuid,
-				"created_at" timestamptz,
-				"updated_at" timestamptz,
-				PRIMARY KEY ("id"),
-				CONSTRAINT "fk_namespaces_roots"
-				FOREIGN KEY ("id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
-				);
-	 CREATE TABLE IF NOT EXISTS "files"
-			(
-				"id" uuid,
-				"path" text,
-				"depth" integer,
-				"typ" text,
-				"root_id" uuid,
-				"created_at" timestamptz,
-				"updated_at" timestamptz,
-				PRIMARY KEY ("id"),
-				CONSTRAINT "fk_roots_files"
-				FOREIGN KEY ("root_id") REFERENCES "roots"("id") ON DELETE CASCADE ON UPDATE CASCADE
-				);
-	 CREATE TABLE IF NOT EXISTS "revisions"
-			(
-				"id" uuid,
-				"tags" text,
-				"is_current" numeric,
-				"data" varchar,
-				"checksum" text,
-				"file_id" uuid,
-				"created_at" timestamptz,
-				"updated_at" timestamptz,
-				PRIMARY KEY ("id"),
-				CONSTRAINT "fk_files_revisions"
-				FOREIGN KEY ("file_id") REFERENCES "files"("id") ON DELETE CASCADE ON UPDATE CASCADE
-				);
-	 CREATE TABLE IF NOT EXISTS "file_annotations"
-			(
-				"file_id" uuid,
-				"data" text,
-				"created_at" timestamptz,
-				"updated_at" timestamptz,
-				PRIMARY KEY ("file_id"),
-				CONSTRAINT "fk_files_file_annotations"
-				FOREIGN KEY ("file_id") REFERENCES "files"("id") ON DELETE CASCADE ON UPDATE CASCADE
-				);
-`)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to initialize gorm tables: %v\n", err)
-		os.Exit(1)
-	}
 }

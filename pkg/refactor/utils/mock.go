@@ -93,7 +93,7 @@ func NewMockGorm() (*gorm.DB, error) {
 	 		    PRIMARY KEY ("id"),
 	 		    CONSTRAINT "fk_mirror_configs_mirror_processes"
 				FOREIGN KEY ("config_id") REFERENCES "files"("id") ON DELETE CASCADE ON UPDATE CASCADE
-	 		)
+	 		);
 `)
 
 	if res.Error != nil {

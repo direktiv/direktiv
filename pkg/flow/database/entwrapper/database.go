@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	"github.com/google/uuid"
@@ -109,6 +108,85 @@ func New(ctx context.Context, sugar *zap.SugaredLogger, addr string) (*Database,
 	if err != nil {
 		_ = db.Close()
 		return nil, err
+	}
+
+	// create the new filesystem tables.
+	_, err = db.DB().Exec(`
+	 CREATE TABLE IF NOT EXISTS "roots"
+			(
+				"id" uuid,
+				"created_at" timestamptz,
+				"updated_at" timestamptz,
+				PRIMARY KEY ("id"),
+				CONSTRAINT "fk_namespaces_roots"
+				FOREIGN KEY ("id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
+				);
+	 CREATE TABLE IF NOT EXISTS "files"
+			(
+				"id" uuid,
+				"path" text,
+				"depth" integer,
+				"typ" text,
+				"root_id" uuid,
+				"created_at" timestamptz,
+				"updated_at" timestamptz,
+				PRIMARY KEY ("id"),
+				CONSTRAINT "fk_roots_files"
+				FOREIGN KEY ("root_id") REFERENCES "roots"("id") ON DELETE CASCADE ON UPDATE CASCADE
+				);
+	 CREATE TABLE IF NOT EXISTS "revisions"
+			(
+				"id" uuid,
+				"tags" text,
+				"is_current" numeric,
+				"data" varchar,
+				"checksum" text,
+				"file_id" uuid,
+				"created_at" timestamptz,
+				"updated_at" timestamptz,
+				PRIMARY KEY ("id"),
+				CONSTRAINT "fk_files_revisions"
+				FOREIGN KEY ("file_id") REFERENCES "files"("id") ON DELETE CASCADE ON UPDATE CASCADE
+				);
+	 CREATE TABLE IF NOT EXISTS "file_annotations"
+			(
+				"file_id" uuid,
+				"data" text,
+				"created_at" timestamptz,
+				"updated_at" timestamptz,
+				PRIMARY KEY ("file_id"),
+				CONSTRAINT "fk_files_file_annotations"
+				FOREIGN KEY ("file_id") REFERENCES "files"("id") ON DELETE CASCADE ON UPDATE CASCADE
+				);
+	 CREATE TABLE IF NOT EXISTS "mirror_configs" 
+	 		(
+	 		    "id" uuid,
+	 		    "url" text,
+	 		    "git_ref" text,
+	 		    "git_commit_hash" text,
+	 		    "public_key" text,
+	 		    "private_key" text,
+	 		    "private_key_passphrase" text,
+	 		    "created_at" timestamptz,
+	 		    "updated_at" timestamptz,
+	 		    PRIMARY KEY ("id")
+	     );
+	 CREATE TABLE IF NOT EXISTS "mirror_processes" 
+	 		(
+	 		    "id" uuid,
+	 		    "config_id" uuid,
+	 		    "status" text,
+	 		    "ended_at" timestamptz,
+	 		    "created_at" timestamptz,
+	 		    "updated_at" timestamptz,
+	 		    PRIMARY KEY ("id"),
+	 		    CONSTRAINT "fk_mirror_configs_mirror_processes"
+				FOREIGN KEY ("config_id") REFERENCES "files"("id") ON DELETE CASCADE ON UPDATE CASCADE
+	 		);
+`)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to initialize filesystem tables: %v\n", err)
+
 	}
 
 	tx, err := db.DB().Begin()
