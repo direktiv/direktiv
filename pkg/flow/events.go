@@ -997,7 +997,6 @@ func (events *events) listenForEvents(ctx context.Context, im *instanceMemory, c
 }
 
 func (flow *flow) execFilter(ctx context.Context, namespace, filterName string, cloudevent []byte) ([]byte, error) {
-
 	var script string
 	var newBytesEvent []byte
 
@@ -1085,7 +1084,6 @@ func (flow *flow) execFilter(ctx context.Context, namespace, filterName string, 
 	}
 
 	return newBytesEvent, nil
-
 }
 
 func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloudEventFilterRequest) (*emptypb.Empty, error) {
