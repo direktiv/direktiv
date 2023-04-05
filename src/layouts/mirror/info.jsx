@@ -475,24 +475,6 @@ export default function MirrorInfoPanel(props) {
                         />
                       </FlexBox>
                     ) : null}
-                    {infoChangesTracker.cron ? (
-                      <FlexBox col gap style={{ paddingRight: "10px" }}>
-                        <FlexBox col gap="sm" center="x" style={{}}>
-                          <span className="input-title readonly">Cron</span>
-                          {infoCron === "" ? (
-                            <span className="input-description readonly">
-                              {" "}
-                              Warning: Cron will be deleted
-                            </span>
-                          ) : null}
-                        </FlexBox>
-                        <input
-                          className="info-input-value readonly"
-                          readOnly={true}
-                          value={infoCron}
-                        />
-                      </FlexBox>
-                    ) : null}
                     {infoChangesTracker.passphrase &&
                     mirrorAuthMethod === "token" ? (
                       <FlexBox col gap style={{ paddingRight: "10px" }}>
@@ -696,46 +678,6 @@ export default function MirrorInfoPanel(props) {
               placeholder={mirrorSettingInfoMetaInfo["ref"].placeholder}
             />
           </FlexBox>
-          <FlexBox col gap="sm" style={{ paddingRight: "10px" }}>
-            <FlexBox row style={{ justifyContent: "space-between" }}>
-              <FlexBox row gap="sm" style={{ justifyContent: "flex-start" }}>
-                <span
-                  className={`input-title ${
-                    infoChangesTracker.cron ? "edited" : ""
-                  }`}
-                >
-                  Cron
-                </span>
-                <HelpIcon msg={mirrorSettingInfoMetaInfo["cron"].info} />
-              </FlexBox>
-              <span
-                className={`info-input-undo ${
-                  infoChangesTracker.cron ? "" : "hide"
-                }`}
-                onClick={() => {
-                  setInfoCron(infoCronOld);
-                  setInfoChangesTracker((old) => {
-                    old.cron = false;
-                    return { ...old };
-                  });
-                }}
-              >
-                Undo Changes
-              </span>
-            </FlexBox>
-            <input
-              value={infoCron}
-              onChange={(e) => {
-                setInfoCron(e.target.value);
-                setInfoChangesTracker((old) => {
-                  old.cron = true;
-                  return { ...old };
-                });
-              }}
-              placeholder={mirrorSettingInfoMetaInfo["cron"].placeholder}
-            />
-          </FlexBox>
-
           {/* PERSONAL ACCESS TOKEN Auth Inputs */}
           {mirrorAuthMethod === "token" ? (
             <FlexBox col gap="sm" style={{ paddingRight: "10px" }}>
