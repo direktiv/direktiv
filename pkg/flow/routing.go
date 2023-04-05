@@ -3,9 +3,8 @@ package flow
 import (
 	"context"
 	"errors"
-	"time"
-
 	"fmt"
+	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"

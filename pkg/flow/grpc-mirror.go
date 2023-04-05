@@ -70,9 +70,8 @@ func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNam
 		}
 
 		mirConfig, txErr = store.Mirror().CreateConfig(ctx, &mirror.Config{
-			NamespaceID:          ns.ID,
+			ID:                   ns.ID,
 			GitRef:               settings.Ref,
-			Typ:                  "git",
 			URL:                  settings.Url,
 			PublicKey:            settings.PublicKey,
 			PrivateKey:           settings.PrivateKey,
@@ -112,6 +111,11 @@ func (flow *flow) CreateDirectoryMirror(ctx context.Context, req *grpc.CreateDir
 func (flow *flow) UpdateMirrorSettings(ctx context.Context, req *grpc.UpdateMirrorSettingsRequest) (*emptypb.Empty, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
+	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
+	if err != nil {
+		return nil, err
+	}
+
 	ctx, tx, err := flow.edb.Tx(ctx)
 	if err != nil {
 		return nil, err
@@ -124,7 +128,7 @@ func (flow *flow) UpdateMirrorSettings(ctx context.Context, req *grpc.UpdateMirr
 	}
 	defer rollback(ctx)
 
-	mirConfig, err := store.Mirror().GetConfigByNamespace(ctx, req.GetNamespace())
+	mirConfig, err := store.Mirror().GetConfig(ctx, ns.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -154,7 +158,7 @@ func (flow *flow) UpdateMirrorSettings(ctx context.Context, req *grpc.UpdateMirr
 		return nil, err
 	}
 
-	flow.logger.Infof(ctx, flow.ID, flow.GetAttributes(), "Updated mirror configs for namespace: %s", req.GetNamespace())
+	flow.logger.Infof(ctx, flow.ID, flow.GetAttributes(), "Updated mirror configs for namespace: %s", ns.Name)
 
 	_, err = flow.mirrorManager.StartMirroringProcess(ctx, mirConfig)
 	if err != nil {
@@ -190,13 +194,17 @@ func (flow *flow) SoftSyncMirror(ctx context.Context, req *grpc.SoftSyncMirrorRe
 func (flow *flow) HardSyncMirror(ctx context.Context, req *grpc.HardSyncMirrorRequest) (*emptypb.Empty, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
+	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
+	if err != nil {
+		return nil, err
+	}
 	_, store, _, rollback, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer rollback(ctx)
 
-	mirConfig, err := store.Mirror().GetConfigByNamespace(ctx, req.GetNamespace())
+	mirConfig, err := store.Mirror().GetConfig(ctx, ns.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -206,7 +214,7 @@ func (flow *flow) HardSyncMirror(ctx context.Context, req *grpc.HardSyncMirrorRe
 		return nil, err
 	}
 
-	flow.logger.Infof(ctx, flow.ID, flow.GetAttributes(), "Starting mirror process for namespace: %s", req.GetNamespace())
+	flow.logger.Infof(ctx, flow.ID, flow.GetAttributes(), "Starting mirror process for namespace: %s", ns.Name)
 
 	var resp emptypb.Empty
 
@@ -216,13 +224,17 @@ func (flow *flow) HardSyncMirror(ctx context.Context, req *grpc.HardSyncMirrorRe
 func (flow *flow) MirrorInfo(ctx context.Context, req *grpc.MirrorInfoRequest) (*grpc.MirrorInfoResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
+	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
+	if err != nil {
+		return nil, err
+	}
 	_, store, _, rollback, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer rollback(ctx)
 
-	mirConfig, err := store.Mirror().GetConfigByNamespace(ctx, req.GetNamespace())
+	mirConfig, err := store.Mirror().GetConfig(ctx, ns.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -232,7 +244,7 @@ func (flow *flow) MirrorInfo(ctx context.Context, req *grpc.MirrorInfoRequest) (
 	}
 
 	resp := new(grpc.MirrorInfoResponse)
-	resp.Namespace = req.GetNamespace()
+	resp.Namespace = ns.Name
 	resp.Info = bytedata.ConvertMirrorConfigToGrpcMirrorInfo(mirConfig)
 	resp.Activities = new(grpc.MirrorActivities)
 	resp.Activities.PageInfo = nil
@@ -274,13 +286,17 @@ func (flow *flow) MirrorInfoStream(req *grpc.MirrorInfoRequest, srv grpc.Flow_Mi
 func (flow *flow) MirrorActivityLogs(ctx context.Context, req *grpc.MirrorActivityLogsRequest) (*grpc.MirrorActivityLogsResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
+	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
+	if err != nil {
+		return nil, err
+	}
 	_, store, _, rollback, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer rollback(ctx)
 
-	mirConfig, err := store.Mirror().GetConfigByNamespace(ctx, req.GetNamespace())
+	mirConfig, err := store.Mirror().GetConfig(ctx, ns.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -299,7 +315,7 @@ func (flow *flow) MirrorActivityLogs(ctx context.Context, req *grpc.MirrorActivi
 	}
 
 	resp := new(grpc.MirrorActivityLogsResponse)
-	resp.Namespace = req.GetNamespace()
+	resp.Namespace = ns.Name
 	resp.Activity = mirProcess.ID.String()
 	resp.PageInfo = pi
 
@@ -329,7 +345,7 @@ func (flow *flow) MirrorActivityLogsParcels(req *grpc.MirrorActivityLogsRequest,
 	}
 	defer rollback(ctx)
 
-	mirConfig, err := store.Mirror().GetConfigByNamespace(ctx, ns.Name)
+	mirConfig, err := store.Mirror().GetConfig(ctx, ns.ID)
 	if err != nil {
 		return err
 	}

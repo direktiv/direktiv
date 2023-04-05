@@ -10,10 +10,8 @@ import (
 // Config holds configuration data that are needed to create a mirror (pulling mirror credentials, urls, keys
 // and any other details).
 type Config struct {
-	ID          uuid.UUID
-	NamespaceID uuid.UUID
+	ID uuid.UUID
 
-	Typ                  string
 	URL                  string
 	GitRef               string
 	GitCommitHash        string
@@ -21,22 +19,15 @@ type Config struct {
 	PrivateKey           string
 	PrivateKeyPassphrase string
 
-	// TODO: question 'synced_at' field.
-	SyncedAt  time.Time
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
 
 type Process struct {
-	ID          uuid.UUID
-	NamespaceID uuid.UUID
-	ConfigID    uuid.UUID
-	Typ         string
+	ID       uuid.UUID
+	ConfigID uuid.UUID
 
 	Status string
-
-	// TODO: question 'controller' field.
-	// TODO: question 'deadline' field.
 
 	EndedAt   time.Time
 	CreatedAt time.Time
@@ -48,7 +39,6 @@ type Store interface {
 	UpdateConfig(ctx context.Context, config *Config) (*Config, error)
 
 	GetConfig(ctx context.Context, id uuid.UUID) (*Config, error)
-	GetConfigByNamespace(ctx context.Context, namespace string) (*Config, error)
 
 	CreateProcess(ctx context.Context, process *Process) (*Process, error)
 	UpdateProcess(ctx context.Context, process *Process) (*Process, error)

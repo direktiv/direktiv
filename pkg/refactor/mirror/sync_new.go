@@ -23,7 +23,7 @@ func mirroringProcess() (*Process, error) {
 	var config *Config
 
 	err := (&mirroringJob{}).
-		SetProcessState(store, "started").
+		SetProcessStatus(store, "started").
 		CreateDistDirectory().
 		PullSourceInPath(source, config).
 		CreateSourceFilesList().
@@ -33,7 +33,7 @@ func mirroringProcess() (*Process, error) {
 		CopyFilesToRoot(fStore).
 		CropFilesInRoot(fStore).
 		DeleteDistDirectory().
-		SetProcessState(store, "finished").Error()
+		SetProcessStatus(store, "finished").Error()
 
 	return nil, err
 }
@@ -52,13 +52,13 @@ type mirroringJob struct {
 	ignore        *ignore.GitIgnore
 }
 
-func (j *mirroringJob) SetProcessState(store Store, state string) *mirroringJob {
+func (j *mirroringJob) SetProcessStatus(store Store, status string) *mirroringJob {
 	if j.err != nil {
 		return j
 	}
 	var err error
 
-	j.process.Status = state
+	j.process.Status = status
 	j.process, err = store.UpdateProcess(j.ctx, j.process)
 
 	if err != nil {

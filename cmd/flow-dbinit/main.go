@@ -248,7 +248,6 @@ func updateGeneration_2_0_0(db *sql.Tx) error {
 }
 
 func initialize(db *sql.DB) {
-
 	ctx := context.Background()
 
 	logger, err := zap.NewProduction()

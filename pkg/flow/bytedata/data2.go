@@ -79,7 +79,6 @@ func ConvertMirrorConfigToGrpcMirrorInfo(config *mirror.Config) *grpc.MirrorInfo
 func ConvertMirrorProcessToGrpcMirrorActivity(mirror *mirror.Process) *grpc.MirrorActivityInfo {
 	return &grpc.MirrorActivityInfo{
 		Id:        mirror.ID.String(),
-		Type:      mirror.Typ,
 		Status:    mirror.Status,
 		CreatedAt: timestamppb.New(mirror.CreatedAt),
 		UpdatedAt: timestamppb.New(mirror.UpdatedAt),
