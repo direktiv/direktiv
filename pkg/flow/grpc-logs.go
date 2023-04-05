@@ -78,7 +78,7 @@ func (flow *flow) ServerLogs(ctx context.Context, req *grpc.ServerLogsRequest) (
 
 	query := clients.LogMsg.Query()
 
-	query = query.Where(entlog.Not(entlog.HasNamespace()), entlog.WorkflowIDNotNil())
+	query = query.Where(entlog.Not(entlog.HasNamespace()), entlog.WorkflowIDIsNil())
 
 	results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
 	if err != nil {
