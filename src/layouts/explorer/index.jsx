@@ -201,7 +201,7 @@ function ExplorerList(props) {
   const [name, setName] = useState("");
   const [load, setLoad] = useState(true);
 
-  const [orderFieldKey, setOrderFieldKey] = useState(orderFieldKeys[0]);
+  const orderFieldKey = orderFieldKeys[0];
 
   const [streamNodes, setStreamNodes] = useState(false);
   const [queryParams, setQueryParams] = useState([]);
@@ -546,38 +546,6 @@ function ExplorerList(props) {
                       <span>Mirror Info</span>
                     </Button>
                   ) : null}
-                  <div className="explorer-sort-by explorer-action-btn hide-600">
-                    <FlexBox gap style={{ marginRight: "8px" }}>
-                      <FlexBox center>Sort by:</FlexBox>
-                      <FlexBox center>
-                        <select
-                          onChange={(e) => {
-                            setOrderFieldKey(e.target.value);
-                            setQueryParams([]);
-                          }}
-                          value={orderFieldKey}
-                          className="dropdown-select"
-                          style={{
-                            paddingBottom: "0px",
-                            paddingTop: "0px",
-                            height: "27px",
-                          }}
-                        >
-                          <option value="">{orderFieldKey}</option>
-                          {orderFieldKeys.map((key) => {
-                            if (key === orderFieldKey) {
-                              return "";
-                            }
-                            return (
-                              <option key={GenerateRandomKey()} value={key}>
-                                {key}
-                              </option>
-                            );
-                          })}
-                        </select>
-                      </FlexBox>
-                    </FlexBox>
-                  </div>
                 </FlexBox>
               </ContentPanelTitle>
               <ContentPanelBody style={{ height: "100%" }}>
