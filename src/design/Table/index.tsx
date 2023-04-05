@@ -1,96 +1,95 @@
-const people = [
-    { name: 'Lindsay Walton', title: 'Front-end Developer', email: 'lindsay.walton@example.com', role: 'Member' },
-    // More people...
-]
+import React from "react";
+import clsx from "clsx";
 
-export default function Example() {
-    return (
-        <div className="px-4 sm:px-6 lg:px-8">
-            <div className="sm:flex sm:items-center">
-                <div className="sm:flex-auto">
-                    <h1 className="text-base font-semibold leading-6 text-gray-900">Users</h1>
-                    <p className="mt-2 text-sm text-gray-700">
-                        A list of all the users in your account including their name, title, email and role.
-                    </p>
-                </div>
-                <div className="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
-                    <button
-                        type="button"
-                        className="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                    >
-                        Add user
-                    </button>
-                </div>
-            </div>
-            <div className="mt-8 flow-root">
-                <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-                    <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-                        <table className="min-w-full divide-y divide-gray-300">
-                            <thead>
-                                <tr>
-                                    <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0">
-                                        Name
-                                    </th>
-                                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                                        Title
-                                    </th>
-                                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                                        Email
-                                    </th>
-                                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                                        Role
-                                    </th>
-                                    <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-0">
-                                        <span className="sr-only">Edit</span>
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-200">
-                                {people.map((person) => (
-                                    <tr key={person.email}>
-                                        <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0">
-                                            {person.name}
-                                        </td>
-                                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{person.title}</td>
-                                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{person.email}</td>
-                                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{person.role}</td>
-                                        <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
-                                            <a href="#" className="text-indigo-600 hover:text-indigo-900">
-                                                Edit<span className="sr-only">, {person.name}</span>
-                                            </a>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    )
+export interface TableRowProps {
+  stripe?: boolean;
 }
 
-export interface TableProps {
-    stripe: boolean;
-    children: React.ReactNode
-}
+export const Table = React.forwardRef<
+  HTMLTableElement,
+  React.TableHTMLAttributes<HTMLTableElement>
+>(({ children, className, ...props }, ref) => (
+  <table
+    ref={ref}
+    className={clsx(
+      "min-w-full divide-y divide-gray-3 dark:bg-gray-10",
+      className
+    )}
+    {...props}
+  >
+    {children}
+  </table>
+));
+Table.displayName = "Table";
 
-export interface TableHeadProps {
-    children: React.ReactNode
-}
+export const TableHead = React.forwardRef<
+  HTMLTableSectionElement,
+  React.HTMLAttributes<HTMLTableSectionElement>
+>(({ children, className, ...props }) => (
+  <thead {...props} className={clsx("dark:bg-gray-12", className)}>
+    {children}
+  </thead>
+));
+TableHead.displayName = "TableHead";
 
-export const Table: React.FC<TableProps> = ({ children }) => {
-    return (
-        <table className="min-w-full divide-y divide-gray-300">
-            {children}
-        </table>
-    )
-}
+export const TableBody = React.forwardRef<
+  HTMLTableSectionElement,
+  React.HTMLAttributes<HTMLTableSectionElement>
+>(({ children, className, ...props }) => (
+  <tbody
+    className={clsx(
+      "divide-y divide-gray-2",
+      "dark:divide-gray-dark-10 dark:bg-gray-12",
+      className
+    )}
+    {...props}
+  >
+    {children}
+  </tbody>
+));
+TableBody.displayName = "TableBody";
 
-export const Head: React.FC<TableProps> = ({ children }) => {
-    return (
-        <thead>
-            {children}
-        </thead>
-    )
-}
+export const TableCell = React.forwardRef<
+  HTMLTableCellElement,
+  React.HTMLAttributes<HTMLTableCellElement>
+>(({ children, className, ...props }) => (
+  <td
+    {...props}
+    className={clsx(
+      "whitespace-nowrap px-3 py-4 text-sm text-gray-9 dark:text-gray-dark-12",
+      className
+    )}
+  >
+    {children}
+  </td>
+));
+TableCell.displayName = "TableCell";
+
+export const TableHeaderCell = React.forwardRef<
+  HTMLTableCellElement,
+  React.HTMLAttributes<HTMLTableCellElement>
+>(({ children, className, ...props }) => (
+  <th
+    {...props}
+    className={clsx(
+      "px-3 py-3.5 text-left text-sm font-semibold text-gray-12  dark:text-gray-dark-12",
+      className
+    )}
+  >
+    {children}
+  </th>
+));
+TableHeaderCell.displayName = "TableHeaderCell";
+
+export const TableRow = React.forwardRef<
+  HTMLTableRowElement,
+  React.HTMLAttributes<HTMLTableRowElement> & TableRowProps
+>(({ children, className, stripe, ...props }) => (
+  <tr
+    {...props}
+    className={clsx(className, stripe && "bg-gray-5 dark:bg-gray-dark-5")}
+  >
+    {children}
+  </tr>
+));
+TableRow.displayName = "TableRow";
