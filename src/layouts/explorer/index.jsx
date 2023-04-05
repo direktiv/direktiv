@@ -34,7 +34,6 @@ import FlexBox from "../../components/flexbox";
 import HelpIcon from "../../components/help";
 import { HiOutlineTrash } from "react-icons/hi";
 import Loader from "../../components/loader";
-import { MirrorReadOnlyBadge } from "../mirror";
 import Modal from "../../components/modal";
 import NotFound from "../notfound";
 import WorkflowPage from "./workflow";
@@ -203,7 +202,6 @@ function ExplorerList(props) {
 
   const [name, setName] = useState("");
   const [load, setLoad] = useState(true);
-  const [isReadOnly, setIsReadOnly] = useState(false);
 
   const [orderFieldKey, setOrderFieldKey] = useState(orderFieldKeys[0]);
 
@@ -264,28 +262,8 @@ function ExplorerList(props) {
   useEffect(() => {
     if (data !== null || err !== null) {
       setLoad(false);
-      setIsReadOnly(data?.node?.readOnly);
     }
   }, [data, err]);
-
-  useEffect(() => {
-    if (!setBreadcrumbChildrenRef.current) {
-      return;
-    }
-
-    setBreadcrumbChildrenRef.current(
-      isReadOnly ? (
-        <FlexBox
-          center
-          row
-          gap
-          style={{ justifyContent: "flex-end", paddingRight: "6px" }}
-        >
-          <MirrorReadOnlyBadge />
-        </FlexBox>
-      ) : null
-    );
-  }, [isReadOnly]);
 
   // Keep Refs up to date
   useEffect(() => {
