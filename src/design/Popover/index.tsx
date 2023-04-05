@@ -1,0 +1,31 @@
+import * as PopoverPrimitive from "@radix-ui/react-popover";
+import * as React from "react";
+
+import clsx from "clsx";
+
+const Popover = PopoverPrimitive.Root;
+
+const PopoverTrigger = PopoverPrimitive.Trigger;
+
+const PopoverContent = React.forwardRef<
+  React.ElementRef<typeof PopoverPrimitive.Content>,
+  React.ComponentPropsWithoutRef<typeof PopoverPrimitive.Content>
+>(({ className, align = "center", sideOffset = 4, ...props }, ref) => (
+  <PopoverPrimitive.Portal>
+    <PopoverPrimitive.Content
+      ref={ref}
+      align={align}
+      sideOffset={sideOffset}
+      className={clsx(
+        "z-50 w-72 rounded-md border p-4 shadow-md outline-none animate-in data-[side=bottom]:slide-in-from-top-2 data-[side=top]:slide-in-from-bottom-2 data-[side=right]:slide-in-from-left-2  data-[side=left]:slide-in-from-right-2 ",
+        "border-gray-2 bg-gray-1",
+        " dark:border-gray-dark-2 dark:bg-gray-dark-2",
+        className
+      )}
+      {...props}
+    />
+  </PopoverPrimitive.Portal>
+));
+PopoverContent.displayName = PopoverPrimitive.Content.displayName;
+
+export { Popover, PopoverTrigger, PopoverContent };
