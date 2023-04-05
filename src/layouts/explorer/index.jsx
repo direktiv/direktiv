@@ -8,7 +8,6 @@ import ContentPanel, {
   ContentPanelTitle,
   ContentPanelTitleIcon,
 } from "../../components/content-panel";
-import Pagination, { usePageHandler } from "../../components/pagination";
 import {
   VscAdd,
   VscClose,
@@ -45,7 +44,6 @@ import { useNodes } from "../../hooks";
 import { useSearchParams } from "react-router-dom";
 import utc from "dayjs/plugin/utc";
 
-const PAGE_SIZE = 10;
 const apiHelps = (namespace) => {
   const url = window.location.origin;
   return [
@@ -208,36 +206,26 @@ function ExplorerList(props) {
   const [streamNodes, setStreamNodes] = useState(false);
   const [queryParams, setQueryParams] = useState([]);
 
-  const pageHandler = usePageHandler(PAGE_SIZE);
-  const goToFirstPage = pageHandler.goToFirstPage;
-
   const [ts, setTs] = useState(Date.now());
   const refetch = () => setTs(Date.now());
 
-  const { data, err, templates, pageInfo, createNode, deleteNode, renameNode } =
-    useNodes(
-      Config.url,
-      streamNodes,
-      namespace,
-      path,
-      apiKey,
-      pageHandler.pageParams,
-      ...queryParams,
-      `order.field=${orderFieldDictionary[orderFieldKey]}`,
-      `filter.field=NAME`,
-      `filter.val=${search}`,
-      `filter.type=CONTAINS`,
-      `timestamp=${ts}`
-    );
+  const { data, err, templates, createNode, deleteNode, renameNode } = useNodes(
+    Config.url,
+    streamNodes,
+    namespace,
+    path,
+    apiKey,
+    // pageHandler.pageParams,
+    ...queryParams,
+    `order.field=${orderFieldDictionary[orderFieldKey]}`,
+    `filter.field=NAME`,
+    `filter.val=${search}`,
+    `filter.type=CONTAINS`,
+    `timestamp=${ts}`
+  );
 
   const [wfData, setWfData] = useState(templates["noop"].data);
   const [wfTemplate, setWfTemplate] = useState("noop");
-
-  // Reset Page to start when filters changes
-  useEffect(() => {
-    // TODO: This will interfere with page position if initPage > 1
-    goToFirstPage();
-  }, [search, goToFirstPage, path]);
 
   useEffect(() => {
     setStreamNodes(false);
@@ -594,7 +582,7 @@ function ExplorerList(props) {
               </ContentPanelTitle>
               <ContentPanelBody style={{ height: "100%" }}>
                 <FlexBox col>
-                  {data === null || pageInfo === null ? (
+                  {data === null ? (
                     <div className="explorer-item">
                       <FlexBox className="explorer-item-container">
                         {err === "permission denied" ? (
@@ -609,12 +597,10 @@ function ExplorerList(props) {
                               className="explorer-item-icon"
                             >
                               <Fade
-                                in={data === null || pageInfo === null}
+                                in={data === null}
                                 style={{
                                   transitionDelay:
-                                    data === null || pageInfo === null
-                                      ? "200ms"
-                                      : "0ms",
+                                    data === null ? "200ms" : "0ms",
                                 }}
                                 unmountOnExit
                               >
@@ -692,16 +678,6 @@ function ExplorerList(props) {
                 </FlexBox>
               </ContentPanelBody>
             </ContentPanel>
-            <FlexBox
-              row
-              style={{
-                justifyContent: "flex-end",
-                paddingBottom: "1em",
-                flexGrow: 0,
-              }}
-            >
-              <Pagination pageHandler={pageHandler} pageInfo={pageInfo} />
-            </FlexBox>
           </Loader>
         </FlexBox>
       )}
