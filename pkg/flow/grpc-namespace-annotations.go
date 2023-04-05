@@ -295,28 +295,6 @@ func (x *entNamespaceAnnotationQuerier) QueryAnnotations() *ent.AnnotationQuery 
 	return x.clients.Annotation.Query().Where(entnote.HasNamespaceWith(entns.ID(x.cached.Namespace.ID)))
 }
 
-type entInodeAnnotationQuerier struct {
-	clients *entwrapper.EntClients
-	cached  *database.CacheData
-}
-
-func (x *entInodeAnnotationQuerier) QueryAnnotations() *ent.AnnotationQuery {
-	// TODO: yassir, need refactor.
-	return nil
-	// return x.clients.Annotation.Query().Where(entnote.HasInodeWith(entino.ID(x.cached.Inode().ID)))
-}
-
-type entWorkflowAnnotationQuerier struct {
-	clients *entwrapper.EntClients
-	cached  *database.CacheData
-}
-
-func (x *entWorkflowAnnotationQuerier) QueryAnnotations() *ent.AnnotationQuery {
-	// TODO: yassir, need refactor.
-	return nil
-	// return x.clients.Annotation.Query().Where(entnote.HasWorkflowWith(entwf.ID(x.cached.Workflow.ID)))
-}
-
 type entInstanceAnnotationQuerier struct {
 	clients *entwrapper.EntClients
 	cached  *database.CacheData

@@ -1,9 +1,5 @@
 package flow
 
-// TODO: yassir, refactor needed.
-
-/*
-
 import (
 	"context"
 	_ "embed"
@@ -355,4 +351,3 @@ func storeLogmsg(ctx context.Context, entw *entwrapper.Database, l *ent.LogMsg) 
 	clients := entw.Clients(ctx)
 	return clients.LogMsg.Create().SetMsg(l.Msg).SetT(l.T).SetLevel(l.Level).SetTags(l.Tags).SetRootInstanceId(l.RootInstanceId).SetLogInstanceCallPath(l.LogInstanceCallPath).Save(ctx)
 }
-*/

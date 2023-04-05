@@ -428,8 +428,7 @@ func (srv *server) registerFunctions() {
 
 	srv.timers.registerFunction(timeoutFunction, srv.engine.timeoutHandler)
 	srv.timers.registerFunction(sleepWakeupFunction, srv.engine.sleepWakeup)
-	// TODO: yassir, need refactor.
-	// srv.timers.registerFunction(wfCron, srv.flow.cronHandler)
+	srv.timers.registerFunction(wfCron, srv.flow.cronHandler)
 	srv.timers.registerFunction(sendEventFunction, srv.events.sendEvent)
 	srv.timers.registerFunction(retryWakeupFunction, srv.flow.engine.retryWakeup)
 

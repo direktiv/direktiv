@@ -2,13 +2,19 @@ package flow
 
 import (
 	"context"
+	"errors"
+	"time"
 
 	"fmt"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
+	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
+	entirt "github.com/direktiv/direktiv/pkg/flow/ent/instanceruntime"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
+	"github.com/direktiv/direktiv/pkg/util"
+	"github.com/google/uuid"
 )
 
 type muxStart struct {
@@ -293,8 +299,37 @@ func (flow *flow) configureRouterHandler(req *pubsub.PubsubUpdate) {
 	}
 }
 
+*/
+
 func (flow *flow) cronHandler(data []byte) {
+	ctx := context.Background()
+
 	id, err := uuid.Parse(string(data))
+	if err != nil {
+		flow.sugar.Error(err)
+		return
+	}
+
+	fStore, _, _, rollback, err := flow.beginSqlTx(ctx)
+	if err != nil {
+		flow.sugar.Error(err)
+		return
+	}
+	defer rollback(ctx)
+
+	file, err := fStore.GetFile(ctx, id)
+	if err != nil {
+		if errors.Is(err, filestore.ErrNotFound) {
+			flow.sugar.Infof("Cron failed to find workflow. Deleting cron.")
+			flow.timers.deleteCronForWorkflow(id.String())
+			return
+		}
+		flow.sugar.Error(err)
+		return
+	}
+	rollback(ctx)
+
+	ns, err := flow.edb.Namespace(ctx, file.RootID)
 	if err != nil {
 		flow.sugar.Error(err)
 		return
@@ -308,23 +343,12 @@ func (flow *flow) cronHandler(data []byte) {
 	defer flow.engine.unlock(id.String(), conn)
 
 	cached := new(database.CacheData)
-	err = flow.database.Workflow(ctx, cached, id)
-	if err != nil {
-
-		if derrors.IsNotFound(err) {
-			flow.sugar.Infof("Cron failed to find workflow. Deleting cron.")
-			flow.timers.deleteCronForWorkflow(id.String())
-			return
-		}
-
-		flow.sugar.Error(err)
-		return
-
-	}
+	cached.Namespace = ns
+	cached.File = file
 
 	clients := flow.edb.Clients(ctx)
 
-	k, err := clients.Instance.Query().Where(entinst.HasWorkflowWith(entwf.ID(cached.Workflow.ID))).Where(entinst.CreatedAtGT(time.Now().Add(-time.Second*30)), entinst.HasRuntimeWith(entirt.CallerData(util.CallerCron))).Count(ctx)
+	k, err := clients.Instance.Query().Where(entinst.WorkflowID(cached.File.ID)).Where(entinst.CreatedAtGT(time.Now().Add(-time.Second*30)), entinst.HasRuntimeWith(entirt.CallerData(util.CallerCron))).Count(ctx)
 	if err != nil {
 		flow.sugar.Error(err)
 		return
@@ -337,7 +361,7 @@ func (flow *flow) cronHandler(data []byte) {
 
 	args := new(newInstanceArgs)
 	args.Namespace = cached.Namespace.Name
-	args.Path = cached.Path()
+	args.Path = cached.File.Path
 	args.Ref = ""
 	args.Input = nil
 	args.Caller = util.CallerCron
@@ -351,4 +375,3 @@ func (flow *flow) cronHandler(data []byte) {
 
 	flow.engine.queue(im)
 }
-*/
