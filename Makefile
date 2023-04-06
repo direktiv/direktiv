@@ -350,4 +350,4 @@ lint: ## Runs very strict linting on the project.
 	docker run --rm -v `pwd`:/app -w /app golangci/golangci-lint golangci-lint run -v
 
 test-jest: ## Runs jest end-to-end tests. DIREKTIV_HOST=128.0.0.1 make test-jest [JEST_PREFIX=/tests/jest/namespaces]
-	docker run -it --rm -v `pwd`/tests/jest:/tests/jest -e 'DIREKTIV_HOST=${DIREKTIV_HOST}' -e 'NODE_TLS_REJECT_UNAUTHORIZED=0' node:alpine npm --prefix "/tests/jest" run all -- ${JEST_PREFIX}
+	docker run -it --rm -v `pwd`/tests/jest:/tests/jest -v `pwd`/direktivctl:/direktivctl -e 'DIREKTIV_HOST=${DIREKTIV_HOST}' -e 'NODE_TLS_REJECT_UNAUTHORIZED=0' node:alpine npm --prefix "/tests/jest" run all -- ${JEST_PREFIX}
