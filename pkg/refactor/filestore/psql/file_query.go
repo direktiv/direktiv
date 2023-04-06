@@ -26,7 +26,7 @@ func (q *FileQuery) setPathForFileType(ctx context.Context, path string) error {
 		return res.Error
 	}
 	if res.RowsAffected != 1 {
-		return fmt.Errorf("unexpedted gorm update count, got: %d, want: %d", res.RowsAffected, 1)
+		return fmt.Errorf("unexpected gorm update count, got: %d, want: %d", res.RowsAffected, 1)
 	}
 
 	return nil
@@ -51,7 +51,7 @@ func (q *FileQuery) setPathForDirectoryType(ctx context.Context, path string) er
 		return res.Error
 	}
 	if res.RowsAffected < 1 {
-		return fmt.Errorf("unexpedted gorm update count, got: %d, want: %d", res.RowsAffected, 1)
+		return fmt.Errorf("unexpected gorm update count, got: %d, want: %d", res.RowsAffected, 1)
 	}
 
 	return nil
@@ -199,7 +199,7 @@ func (q *FileQuery) CreateRevision(ctx context.Context, tags filestore.RevisionT
 		return nil, res.Error
 	}
 	if res.RowsAffected != 1 {
-		return nil, fmt.Errorf("unexpedted gorm update count, got: %d, want: %d", res.RowsAffected, 1)
+		return nil, fmt.Errorf("unexpected gorm update count, got: %d, want: %d", res.RowsAffected, 1)
 	}
 
 	// create a new file revision.

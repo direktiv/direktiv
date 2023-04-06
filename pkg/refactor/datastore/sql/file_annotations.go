@@ -45,7 +45,7 @@ func (s *sqlFileAnnotationsStore) update(ctx context.Context, annotations *core.
 		return res.Error
 	}
 	if res.RowsAffected != 1 {
-		return fmt.Errorf("unexpedted gorm update count, got: %d, want: %d", res.RowsAffected, 1)
+		return fmt.Errorf("unexpected gorm update count, got: %d, want: %d", res.RowsAffected, 1)
 	}
 
 	return nil

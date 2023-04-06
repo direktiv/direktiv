@@ -62,7 +62,7 @@ func (q *RevisionQuery) SetCurrent(ctx context.Context) (*filestore.Revision, er
 		return nil, res.Error
 	}
 	if res.RowsAffected != 1 {
-		return nil, fmt.Errorf("unexpedted gorm update count, got: %d, want: %d", res.RowsAffected, 1)
+		return nil, fmt.Errorf("unexpected gorm update count, got: %d, want: %d", res.RowsAffected, 1)
 	}
 
 	// set revision 'is_current' flag to true by id.

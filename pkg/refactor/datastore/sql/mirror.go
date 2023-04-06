@@ -3,6 +3,7 @@ package sql
 import (
 	"context"
 	"fmt"
+
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -31,7 +32,7 @@ func (s sqlMirrorStore) UpdateConfig(ctx context.Context, config *mirror.Config)
 		return nil, res.Error
 	}
 	if res.RowsAffected != 1 {
-		return nil, fmt.Errorf("unexpedted gorm update count, got: %d, want: %d", res.RowsAffected, 1)
+		return nil, fmt.Errorf("unexpected gorm update count, got: %d, want: %d", res.RowsAffected, 1)
 	}
 
 	return s.GetConfig(ctx, config.ID)
@@ -67,7 +68,7 @@ func (s sqlMirrorStore) UpdateProcess(ctx context.Context, process *mirror.Proce
 		return nil, res.Error
 	}
 	if res.RowsAffected != 1 {
-		return nil, fmt.Errorf("unexpedted gorm update count, got: %d, want: %d", res.RowsAffected, 1)
+		return nil, fmt.Errorf("unexpected gorm update count, got: %d, want: %d", res.RowsAffected, 1)
 	}
 
 	return s.GetProcess(ctx, process.ID)

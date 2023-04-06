@@ -175,7 +175,10 @@ func (engine *engine) mux(ctx context.Context, namespace, path, ref string) (*da
 		}
 	} else {
 		// TODO: yassir, implement routing by weights
-		panic("unimplemented")
+		rev, err = fStore.ForFile(file).GetCurrentRevision(ctx)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	cached := new(database.CacheData)
