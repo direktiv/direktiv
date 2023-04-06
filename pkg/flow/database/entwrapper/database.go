@@ -277,6 +277,8 @@ func (db *Database) Instance(ctx context.Context, id uuid.UUID) (*database.Insta
 
 	inst, err := clients.Instance.Query().Where(entinst.ID(id)).WithNamespace(func(q *ent.NamespaceQuery) {
 		q.Select(entns.FieldID)
+	}).WithRuntime(func(q *ent.InstanceRuntimeQuery) {
+		q.Select(entrt.FieldID)
 	}).Only(ctx)
 	if err != nil {
 		db.Sugar.Debugf("%s failed to resolve instance: %v", parent(), err)

@@ -163,7 +163,12 @@ func (engine *engine) mux(ctx context.Context, namespace, path, ref string) (*da
 
 	var rev *filestore.Revision
 
-	if ref != "" {
+	if ref == "latest" {
+		rev, err = fStore.ForFile(file).GetCurrentRevision(ctx)
+		if err != nil {
+			return nil, err
+		}
+	} else if ref != "" {
 		rev, err = fStore.ForFile(file).GetRevisionByTag(ctx, ref)
 		if err != nil {
 			return nil, err
