@@ -326,9 +326,6 @@ function ExplorerList(props) {
                   </Modal>
                 </div>
               </FlexBox>
-              <FlexBox style={{ flexDirection: "row-reverse" }}>
-                <SearchBar setSearch={setSearch} />
-              </FlexBox>
             </FlexBox>
             <ContentPanel>
               <ContentPanelTitle>
