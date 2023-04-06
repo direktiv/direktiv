@@ -193,10 +193,11 @@ func (flow *flow) WorkflowMetrics(ctx context.Context, req *grpc.WorkflowMetrics
 			}
 		}
 	}
-
-	rev, err = fStore.ForFile(file).GetRevisionByTag(ctx, ref)
-	if err != nil {
-		return nil, err
+	if rev == nil {
+		rev, err = fStore.ForFile(file).GetRevisionByTag(ctx, ref)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	cached := new(database.CacheData)

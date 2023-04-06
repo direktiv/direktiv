@@ -3,6 +3,7 @@ package flow
 import (
 	"bytes"
 	"context"
+	"errors"
 	"io"
 	"time"
 
@@ -348,7 +349,7 @@ func (flow *flow) SetWorkflowEventLogging(ctx context.Context, req *grpc.SetWork
 
 	annotations, err := store.FileAnnotations().Get(ctx, file.ID)
 
-	if err == core.ErrFileAnnotationsNotSet {
+	if errors.Is(err, core.ErrFileAnnotationsNotSet) {
 		annotations = &core.FileAnnotations{
 			FileID: file.ID,
 			Data:   nil,

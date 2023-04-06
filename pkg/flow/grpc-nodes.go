@@ -339,7 +339,7 @@ func (flow *flow) DeleteNodeAttributes(ctx context.Context, req *grpc.DeleteNode
 
 	annotations, err := store.FileAnnotations().Get(ctx, file.ID)
 
-	if err == core.ErrFileAnnotationsNotSet {
+	if errors.Is(err, core.ErrFileAnnotationsNotSet) {
 		return nil, status.Error(codes.InvalidArgument, "file annotations are not set")
 	} else if err != nil {
 		return nil, err

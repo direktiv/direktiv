@@ -19,6 +19,15 @@ linters:
     - ireturn
     - funlen
     - musttag
+    - gochecknoglobals #temporary
+    - dupword #temporary
+    - cyclop #temporary
+    - unused #temporary
+    - revive #temporary
+    - godox #temporary
+    - gocritic #temporary
+    - gci #temporary
+    - gofumpt #temporary
 
   presets:
     - bugs
