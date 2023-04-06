@@ -1,0 +1,248 @@
+#!/bin/sh
+
+# start k3s and wait for pod to be up
+curl -sfL https://get.k3s.io | sh -s - --disable traefik --write-kubeconfig-mode=644
+echo "waiting for k3s"
+
+while ! kubectl wait --for=condition=ready -n kube-system pod -l k8s-app=metrics-server
+do
+    echo "waiting for k3s pods"
+    sleep 1
+done
+
+
+# knative
+kubectl apply -f https://github.com/knative/operator/releases/download/knative-v1.9.4/operator.yaml
+kubectl create ns knative-serving
+kubectl apply -f https://raw.githubusercontent.com/direktiv/direktiv/main/kubernetes/install/knative/basic.yaml
+
+# database
+mkdir pv
+cat <<EOF > pv/pv.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      volumes:
+        - name: postgres-pv-storage
+          persistentVolumeClaim:
+            claimName: postgres-pv-claim
+      containers:
+        - name: postgres
+          image: postgres:13.4
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              value: direktiv
+            - name: POSTGRES_DB
+              value: direktiv
+            - name: POSTGRES_PASSWORD
+              value: direktivdirektiv
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: postgres-pv-storage
+EOF
+
+cat <<EOF > pv/storage.yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: postgres-pv-volume
+spec:
+  storageClassName: local-path
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/tmp/pgdata"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pv-claim
+spec:
+  storageClassName: local-path
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  labels:
+    app: postgres
+spec:
+  type: ClusterIP
+  ports:
+   - port: 5432
+  selector:
+    app: postgres
+EOF
+
+kubectl apply -f pv
+
+# docker registry
+mkdir registry
+
+cat <<EOF > registry/registry.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: registry-ns
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: registry-sa
+  namespace: registry-ns
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: docker-registry-pod
+  namespace: registry-ns
+  labels:
+    app: registry
+spec:
+  serviceAccountName: registry-sa
+  containers:
+  - name: registry
+    image: registry:2.7.1
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: docker-registry
+  namespace: registry-ns
+spec:
+  type: NodePort
+  selector:
+    app: registry
+  ports:
+  - port: 5000
+    targetPort: 5000
+    nodePort: 31212
+EOF
+
+kubectl apply -f registry
+
+# waiting for db
+while ! kubectl wait --for=condition=ready pod -l app=postgres
+do
+    echo "waiting for database"
+    sleep 1
+done
+
+
+# direktiv
+cat <<EOF > direktiv.yaml
+pullPolicy: IfNotPresent
+debug: "true"
+
+eventing:
+  enabled: true
+
+secrets:
+  image: "$1"
+  tag: "$3"
+flow:
+  image: "$1"
+  dbimage: "$1"
+  tag: "$3"
+ui:
+  image: "$2"
+  tag: "$3"
+api:
+  image: "$1"
+  tag: "$3"
+functions:
+  namespace: direktiv-services-direktiv
+  image: "$1"
+  tag: "$3"
+  sidecar: "$1"
+  initPodImage: "direktiv/init-pod"
+
+database:
+  # -- database host
+  host: "postgres"
+  # -- database port
+  port: 5432
+  # -- database user
+  user: "direktiv"
+  # -- database password
+  password: "direktivdirektiv"
+  # -- database name, auto created if it does not exist
+  name: "direktiv"
+  # -- sslmode for database
+  sslmode: disable
+EOF
+
+# helm repo add direktiv https://chart.direktiv.io
+# helm repo add prometheus https://prometheus-community.github.io/helm-charts
+# helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+git clone -b one-binary https://github.com/direktiv/direktiv-charts.git
+
+cd `pwd`/direktiv-charts/charts/direktiv && \
+    helm repo add direktiv https://chart.direktiv.io && \
+    helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx && \
+    helm repo add prometheus https://prometheus-community.github.io/helm-charts && \
+    helm repo list && \
+    helm dependency build && \ 
+    KUBECONFIG=/etc/rancher/k3s/k3s.yaml helm install -f /direktiv.yaml direktiv .
+
+# eventing
+kubectl create ns knative-eventing
+
+cat <<EOF > eventing.yaml
+apiVersion: operator.knative.dev/v1beta1
+kind: KnativeEventing
+metadata:
+  name: knative-eventing
+  namespace: knative-eventing
+EOF
+
+kubectl apply -f eventing.yaml
+
+# contour
+kubectl apply --filename https://github.com/knative/net-contour/releases/download/knative-v1.9.3/contour.yaml
+kubectl delete ns contour-external &
+
+# waiting for direktiv
+while ! kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=direktiv
+do
+    echo "waiting for direktiv"
+    sleep 1
+done
+
+n=0
+until [ "$n" -ge 24 ]
+do
+   curl -X PUT http://localhost/api/namespaces/examples \
+     -H "Content-Type: application/json" \
+     --write-out "%{http_code}" \
+     -f \
+     -d '{ "url": "https://github.com/direktiv/direktiv-examples.git", "ref": "main" }' && break
+   n=$((n+1))
+   sleep 10
+done
+
+
+
