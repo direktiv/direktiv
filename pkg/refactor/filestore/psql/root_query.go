@@ -294,7 +294,9 @@ func (q *RootQuery) CalculateChecksumsMap(ctx context.Context) (map[string]strin
 		Raw(`SELECT f.path, r.checksum 
 				 FROM files AS f 
 				 LEFT JOIN revisions r 
-					ON r.file_id = f.id AND r.is_current = true`).Scan(&resultList)
+					ON r.file_id = f.id AND r.is_current = true
+      	     	 WHERE f.root_id = ?
+					`, q.rootID).Scan(&resultList)
 
 	if res.Error != nil {
 		return nil, res.Error

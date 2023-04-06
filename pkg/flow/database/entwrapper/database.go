@@ -140,7 +140,7 @@ func New(ctx context.Context, sugar *zap.SugaredLogger, addr string) (*Database,
 				"id" uuid,
 				"tags" text,
 				"is_current" boolean,
-				"data" varchar,
+				"data" bytea,
 				"checksum" text,
 				"file_id" uuid,
 				"created_at" timestamptz,
@@ -182,7 +182,7 @@ func New(ctx context.Context, sugar *zap.SugaredLogger, addr string) (*Database,
 	 		    "updated_at" timestamptz,
 	 		    PRIMARY KEY ("id"),
 	 		    CONSTRAINT "fk_mirror_configs_mirror_processes"
-				FOREIGN KEY ("config_id") REFERENCES "files"("id") ON DELETE CASCADE ON UPDATE CASCADE
+				FOREIGN KEY ("config_id") REFERENCES "mirror_configs"("id") ON DELETE CASCADE ON UPDATE CASCADE
 	 		);
 `)
 	if err != nil {

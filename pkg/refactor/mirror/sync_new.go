@@ -289,11 +289,11 @@ func (j *mirroringJob) CreateAllDirectories(fStore filestore.FileStore, namespac
 		dir := filepath.Dir(path)
 		allParentDirs := splitPathToDirectories(dir)
 		for _, d := range allParentDirs {
-			if _, isExists := j.rootChecksums[dir]; isExists {
+			if _, isExists := j.rootChecksums[d]; isExists {
 				continue
 			}
 
-			if _, isCreated := createdDirs[dir]; isCreated {
+			if _, isCreated := createdDirs[d]; isCreated {
 				continue
 			}
 
@@ -306,7 +306,7 @@ func (j *mirroringJob) CreateAllDirectories(fStore filestore.FileStore, namespac
 				return j
 			}
 
-			createdDirs[dir] = true
+			createdDirs[d] = true
 		}
 	}
 
