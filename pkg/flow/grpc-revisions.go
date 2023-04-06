@@ -4,10 +4,9 @@ import (
 	"context"
 	"time"
 
-	"google.golang.org/protobuf/types/known/emptypb"
-
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 func (flow *flow) Revisions(ctx context.Context, req *grpc.RevisionsRequest) (*grpc.RevisionsResponse, error) {

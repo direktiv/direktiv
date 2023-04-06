@@ -123,7 +123,6 @@ func InitPubSub(log *zap.SugaredLogger, notifier Notifier, database string) (*Pu
 		}()
 
 		for {
-
 			var more bool
 			var notification *pq.Notification
 
@@ -164,7 +163,6 @@ func InitPubSub(log *zap.SugaredLogger, notifier Notifier, database string) (*Pu
 
 				go handler(req)
 			}
-
 		}
 	}(listener)
 
@@ -251,7 +249,6 @@ func (s *Subscription) Wait(ctx context.Context) bool {
 
 func (s *Subscription) Close() error {
 	if !s.closed {
-
 		defer func() {
 			r := recover()
 			if r != nil {
@@ -271,7 +268,6 @@ func (s *Subscription) Close() error {
 		s.pubsub.mtx.Unlock()
 
 		close(s.ch)
-
 	}
 
 	return nil
@@ -334,7 +330,6 @@ func (pubsub *Pubsub) flush() {
 	comma := false
 
 	for idx := range clusterSlice {
-
 		s := clusterSlice[idx]
 
 		if l+len(s) >= 8000 {
@@ -357,7 +352,6 @@ func (pubsub *Pubsub) flush() {
 			comma = true
 			l += len(s)
 		}
-
 	}
 
 	if l > 3 {

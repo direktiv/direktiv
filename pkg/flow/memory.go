@@ -63,7 +63,6 @@ func (im *instanceMemory) flushUpdates(ctx context.Context) error {
 	var changes bool
 
 	if im.runtimeUpdater != nil {
-
 		changes = true
 
 		updater := im.runtimeUpdater
@@ -75,11 +74,9 @@ func (im *instanceMemory) flushUpdates(ctx context.Context) error {
 		}
 
 		im.runtime = entwrapper.EntInstanceRuntime(rt)
-
 	}
 
 	if im.instanceUpdater != nil {
-
 		changes = true
 
 		updater := im.instanceUpdater
@@ -100,7 +97,6 @@ func (im *instanceMemory) flushUpdates(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
-
 	}
 
 	if changes {

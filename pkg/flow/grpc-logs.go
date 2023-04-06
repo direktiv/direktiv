@@ -126,7 +126,6 @@ resend:
 	}
 
 	if len(resp.Results) != 0 || !tailing {
-
 		tailing = true
 
 		err = srv.Send(resp)
@@ -135,7 +134,6 @@ resend:
 		}
 
 		req.Pagination.Offset += int32(len(resp.Results))
-
 	}
 
 	more := sub.Wait(ctx)
@@ -215,7 +213,6 @@ resend:
 	}
 
 	if len(resp.Results) != 0 || !tailing {
-
 		tailing = true
 
 		err = srv.Send(resp)
@@ -224,7 +221,6 @@ resend:
 		}
 
 		req.Pagination.Offset += int32(len(resp.Results))
-
 	}
 
 	more := sub.Wait(ctx)
@@ -302,7 +298,6 @@ resend:
 	}
 
 	if len(resp.Results) != 0 || !tailing {
-
 		tailing = true
 
 		err = srv.Send(resp)
@@ -311,7 +306,6 @@ resend:
 		}
 
 		req.Pagination.Offset += int32(len(resp.Results))
-
 	}
 
 	more := sub.Wait(ctx)
@@ -390,7 +384,6 @@ resend:
 	resp := results
 
 	if len(resp.Results) != 0 || !tailing {
-
 		tailing = true
 
 		err = srv.Send(resp)
@@ -399,7 +392,6 @@ resend:
 		}
 
 		req.Pagination.Offset += int32(len(logmsgs))
-
 	}
 
 	more := sub.Wait(ctx)

@@ -61,7 +61,6 @@ func (logger *Logger) logWorker() {
 			return
 		}
 		_ = logger.SendLogMsgToDB(l)
-
 	}
 }
 

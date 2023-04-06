@@ -193,13 +193,11 @@ func shutdown() {
 	if err == nil {
 		// this is a direktiv machine, so we press poweroff
 		if strings.Contains(string(pv), "#direktiv") {
-
 			log.Printf("direktiv machine, powering off")
 
 			if err := exec.Command("/sbin/poweroff").Run(); err != nil {
 				fmt.Println("error shutting down:", err)
 			}
-
 		}
 	}
 }

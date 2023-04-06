@@ -65,7 +65,6 @@ func (logic *parallelLogic) Deadline(ctx context.Context) time.Time {
 func (logic *parallelLogic) Run(ctx context.Context, wakedata []byte) (*Transition, error) {
 	// first schedule
 	if len(wakedata) == 0 {
-
 		err := noMemory(logic)
 		if err != nil {
 			return nil, err
@@ -77,7 +76,6 @@ func (logic *parallelLogic) Run(ctx context.Context, wakedata []byte) (*Transiti
 		}
 
 		return nil, nil
-
 	}
 
 	var children []*ChildInfo
@@ -111,7 +109,6 @@ func (logic *parallelLogic) scheduleFirstActions(ctx context.Context) error {
 	children := make([]*ChildInfo, 0)
 
 	for i := range logic.Actions {
-
 		action := &logic.Actions[i]
 
 		child, err := logic.scheduleAction(ctx, action, 0)
@@ -120,7 +117,6 @@ func (logic *parallelLogic) scheduleFirstActions(ctx context.Context) error {
 		}
 
 		children = append(children, child)
-
 	}
 
 	logic.Log(ctx, log.Info, "Sleeping until children return.")
@@ -209,7 +205,6 @@ func (logic *parallelLogic) processActionResults(ctx context.Context, children [
 	var completed int
 
 	for i, lid := range children {
-
 		if lid.ID == results.ActionID {
 			found = true
 			if lid.Complete {
@@ -221,7 +216,6 @@ func (logic *parallelLogic) processActionResults(ctx context.Context, children [
 		if lid.Complete {
 			completed++
 		}
-
 	}
 
 	if !found {
@@ -239,7 +233,6 @@ func (logic *parallelLogic) processActionResults(ctx context.Context, children [
 	logic.Log(ctx, "Child '%s' returned.", id)
 
 	if results.ErrorCode != "" {
-
 		logic.Log(ctx, log.Error, "Action raised catchable error '%s': %s.", results.ErrorCode, results.ErrorMessage)
 
 		err = derrors.NewCatchableError(results.ErrorCode, results.ErrorMessage)
@@ -251,7 +244,6 @@ func (logic *parallelLogic) processActionResults(ctx context.Context, children [
 		logic.Log(ctx, log.Info, "Scheduling retry attempt in: %v.", d)
 
 		return nil, scheduleRetry(ctx, logic.Instance, children, idx, d)
-
 	}
 
 	if results.ErrorMessage != "" {
@@ -271,11 +263,9 @@ func (logic *parallelLogic) processActionResults(ctx context.Context, children [
 	var ready bool
 
 	switch logic.Mode {
-
 	case model.BranchModeAnd:
 
 		if results.ErrorCode != "" {
-
 			logic.Log(ctx, log.Error, "Action raised catchable error '%s': %s.", results.ErrorCode, results.ErrorMessage)
 
 			err = derrors.NewCatchableError(results.ErrorCode, results.ErrorMessage)
@@ -293,7 +283,6 @@ func (logic *parallelLogic) processActionResults(ctx context.Context, children [
 			}
 
 			return nil, nil
-
 		}
 
 		if results.ErrorMessage != "" {
@@ -314,7 +303,6 @@ func (logic *parallelLogic) processActionResults(ctx context.Context, children [
 	case model.BranchModeOr:
 
 		if results.ErrorCode != "" {
-
 			logic.Log(ctx, "Action raised catchable error '%s': %s.", results.ErrorCode, results.ErrorMessage)
 
 			err = derrors.NewCatchableError(results.ErrorCode, results.ErrorMessage)
@@ -327,9 +315,7 @@ func (logic *parallelLogic) processActionResults(ctx context.Context, children [
 				}
 				return nil, nil
 			}
-
 		} else if results.ErrorMessage != "" {
-
 			logic.Log(ctx, log.Error, "Branch %d crashed due to an internal error: %s", idx, results.ErrorMessage)
 
 			err = derrors.NewInternalError(errors.New(results.ErrorMessage))
@@ -338,7 +324,6 @@ func (logic *parallelLogic) processActionResults(ctx context.Context, children [
 			}
 
 			return nil, nil
-
 		} else {
 			ready = true
 		}

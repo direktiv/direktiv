@@ -65,7 +65,6 @@ func (logic *delayLogic) Run(ctx context.Context, wakedata []byte) (*Transition,
 	}
 
 	if first {
-
 		var d duration.Duration
 
 		d, err = duration.ParseISO8601(logic.Duration)
@@ -82,7 +81,6 @@ func (logic *delayLogic) Run(ctx context.Context, wakedata []byte) (*Transition,
 		}
 
 		return nil, nil
-
 	}
 
 	logic.Log(ctx, log.Info, "Waking up from sleep.")

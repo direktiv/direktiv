@@ -148,7 +148,6 @@ func (internal *internal) WorkflowVariableParcels(req *grpc.VariableInternalRequ
 	rdr := bytes.NewReader(vdata.Data)
 
 	for {
-
 		resp := new(grpc.VariableInternalResponse)
 
 		resp.Key = vref.Name
@@ -161,7 +160,6 @@ func (internal *internal) WorkflowVariableParcels(req *grpc.VariableInternalRequ
 		buf := new(bytes.Buffer)
 		k, err := io.CopyN(buf, rdr, parcelSize)
 		if err != nil {
-
 			if errors.Is(err, io.EOF) {
 				err = nil
 			}
@@ -173,7 +171,6 @@ func (internal *internal) WorkflowVariableParcels(req *grpc.VariableInternalRequ
 			if err != nil {
 				return err
 			}
-
 		}
 
 		resp.Data = buf.Bytes()
@@ -182,7 +179,6 @@ func (internal *internal) WorkflowVariableParcels(req *grpc.VariableInternalRequ
 		if err != nil {
 			return err
 		}
-
 	}
 }
 
@@ -199,7 +195,6 @@ func (flow *flow) WorkflowVariableParcels(req *grpc.WorkflowVariableRequest, srv
 	rdr := bytes.NewReader(vdata.Data)
 
 	for {
-
 		resp := new(grpc.WorkflowVariableResponse)
 
 		resp.Namespace = ns.Name
@@ -214,7 +209,6 @@ func (flow *flow) WorkflowVariableParcels(req *grpc.WorkflowVariableRequest, srv
 		buf := new(bytes.Buffer)
 		k, err := io.CopyN(buf, rdr, parcelSize)
 		if err != nil {
-
 			if errors.Is(err, io.EOF) {
 				err = nil
 			}
@@ -233,7 +227,6 @@ func (flow *flow) WorkflowVariableParcels(req *grpc.WorkflowVariableRequest, srv
 			if err != nil {
 				return err
 			}
-
 		}
 
 		resp.Data = buf.Bytes()
@@ -242,7 +235,6 @@ func (flow *flow) WorkflowVariableParcels(req *grpc.WorkflowVariableRequest, srv
 		if err != nil {
 			return err
 		}
-
 	}
 }
 
@@ -275,7 +267,6 @@ func (flow *flow) WorkflowVariables(ctx context.Context, req *grpc.WorkflowVaria
 	}
 
 	for i := range results {
-
 		vref := results[i]
 
 		vdata, err := vref.QueryVardata().Select(entvardata.FieldCreatedAt, entvardata.FieldHash, entvardata.FieldSize, entvardata.FieldUpdatedAt).Only(ctx)
@@ -289,7 +280,6 @@ func (flow *flow) WorkflowVariables(ctx context.Context, req *grpc.WorkflowVaria
 		v.Size = int64(vdata.Size)
 		v.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
 		v.MimeType = vdata.MimeType
-
 	}
 
 	return resp, nil
@@ -333,7 +323,6 @@ resend:
 	}
 
 	for i := range results {
-
 		vref := results[i]
 
 		vdata, err := vref.QueryVardata().Select(entvardata.FieldCreatedAt, entvardata.FieldHash, entvardata.FieldSize, entvardata.FieldUpdatedAt).Only(ctx)
@@ -347,7 +336,6 @@ resend:
 		v.Size = int64(vdata.Size)
 		v.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
 		v.MimeType = vdata.MimeType
-
 	}
 
 	nhash = bytedata.Checksum(resp)
@@ -423,7 +411,6 @@ func (flow *flow) SetVariable(ctx context.Context, q varQuerier, key string, dat
 	var f *filestore.File
 
 	if err != nil {
-
 		if !derrors.IsNotFound(err) {
 			return nil, false, err
 		}
@@ -470,7 +457,6 @@ func (flow *flow) SetVariable(ctx context.Context, q varQuerier, key string, dat
 
 		newVar = true
 	} else {
-
 		vdata, err = vref.QueryVardata().Select(vardata.FieldID).Only(ctx)
 		if err != nil {
 			return nil, false, err
@@ -487,7 +473,6 @@ func (flow *flow) SetVariable(ctx context.Context, q varQuerier, key string, dat
 		if err != nil {
 			return nil, false, err
 		}
-
 	}
 
 	// Broadcast Event
@@ -661,7 +646,6 @@ func (internal *internal) SetWorkflowVariableParcels(srv grpc.Internal_SetWorkfl
 	buf := new(bytes.Buffer)
 
 	for {
-
 		_, err = io.Copy(buf, bytes.NewReader(req.Data))
 		if err != nil {
 			return err
@@ -694,7 +678,6 @@ func (internal *internal) SetWorkflowVariableParcels(srv grpc.Internal_SetWorkfl
 		if int(req.GetTotalSize()) != totalSize {
 			return errors.New("totalSize changed mid stream")
 		}
-
 	}
 
 	if buf.Len() > totalSize {
@@ -763,7 +746,6 @@ func (flow *flow) SetWorkflowVariableParcels(srv grpc.Flow_SetWorkflowVariablePa
 	buf := new(bytes.Buffer)
 
 	for {
-
 		_, err = io.Copy(buf, bytes.NewReader(req.Data))
 		if err != nil {
 			return err
@@ -796,7 +778,6 @@ func (flow *flow) SetWorkflowVariableParcels(srv grpc.Flow_SetWorkflowVariablePa
 		if int(req.GetTotalSize()) != totalSize {
 			return errors.New("totalSize changed mid stream")
 		}
-
 	}
 
 	if buf.Len() > totalSize {

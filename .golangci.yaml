@@ -70,7 +70,6 @@ issues:
       - gochecknoglobals
       - bodyclose
       - asasalint
-      - whitespace
       - predeclared
       - musttag
       - maintidx
@@ -87,7 +86,6 @@ issues:
       - makezero
       - dogsled
       - dupl
-      - gci
       - gochecknoinits
       - gocognit
       - godox

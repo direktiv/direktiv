@@ -40,7 +40,6 @@ func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.Variab
 	clients := im.engine.edb.Clients(ctx)
 
 	for _, selector := range vars {
-
 		var err error
 		var ref *ent.VarRef
 
@@ -48,7 +47,6 @@ func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.Variab
 		key := selector.Key
 
 		switch scope {
-
 		case util.VarScopeInstance:
 			ref, err = clients.VarRef.Query().Where(entvar.HasInstanceWith(entinst.ID(im.cached.Instance.ID))).Where(entvar.NameEQ(key), entvar.BehaviourIsNil()).WithVardata().Only(ctx)
 
@@ -79,21 +77,17 @@ func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.Variab
 			break
 		default:
 			return nil, derrors.NewInternalError(errors.New("invalid scope"))
-
 		}
 
 		var data []byte
 
 		if err != nil {
-
 			if !derrors.IsNotFound(err) {
 				return nil, derrors.NewInternalError(err)
 			}
 
 			data = make([]byte, 0)
-
 		} else if ref == nil && scope == util.VarScopeFileSystem {
-
 			fStore, _, _, rollback, err := im.engine.flow.beginSqlTx(ctx)
 			if err != nil {
 				return nil, err
@@ -126,23 +120,18 @@ func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.Variab
 			}
 
 			rollback(ctx)
-
 		} else if ref == nil {
 			data = make([]byte, 0)
 		} else {
-
 			if ref.Edges.Vardata == nil {
-
 				err = &derrors.NotFoundError{
 					Label: "variable data not found",
 				}
 
 				return nil, err
-
 			}
 
 			data = ref.Edges.Vardata.Data
-
 		}
 
 		x = append(x, states.Variable{
@@ -150,7 +139,6 @@ func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.Variab
 			Key:   key,
 			Data:  data,
 		})
-
 	}
 
 	return x, nil
@@ -236,7 +224,6 @@ func (im *instanceMemory) SetVariables(ctx context.Context, vars []states.Variab
 	clients := im.engine.edb.Clients(tctx)
 
 	for idx := range vars {
-
 		v := vars[idx]
 
 		var q varQuerier
@@ -244,7 +231,6 @@ func (im *instanceMemory) SetVariables(ctx context.Context, vars []states.Variab
 		var thread bool
 
 		switch v.Scope {
-
 		case "":
 
 			fallthrough
@@ -294,7 +280,6 @@ func (im *instanceMemory) SetVariables(ctx context.Context, vars []states.Variab
 				return err
 			}
 			continue
-
 		}
 
 		if !(v.MIMEType == "text/plain; charset=utf-8" || v.MIMEType == "text/plain" || v.MIMEType == "application/octet-stream") && (d == "{}" || d == "[]" || d == "0" || d == `""` || d == "null") {
@@ -303,14 +288,12 @@ func (im *instanceMemory) SetVariables(ctx context.Context, vars []states.Variab
 				return err
 			}
 			continue
-
 		} else {
 			_, _, err = im.engine.flow.SetVariable(tctx, q, v.Key, v.Data, v.MIMEType, thread)
 			if err != nil {
 				return err
 			}
 		}
-
 	}
 
 	err = tx.Commit()
@@ -373,7 +356,6 @@ func (im *instanceMemory) CreateChild(ctx context.Context, args states.CreateChi
 	var ci states.ChildInfo
 
 	if args.Definition.GetType() == model.SubflowFunctionType {
-
 		caller := new(subflowCaller)
 		caller.InstanceID = im.ID()
 		caller.State = im.logic.GetID()
@@ -396,7 +378,6 @@ func (im *instanceMemory) CreateChild(ctx context.Context, args states.CreateChi
 			info:   ci,
 			engine: im.engine,
 		}, nil
-
 	}
 
 	switch args.Definition.GetType() {

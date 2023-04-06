@@ -19,13 +19,11 @@ func (db *CachedDatabase) lookupNamespaceByID(ctx context.Context, id uuid.UUID)
 
 	data, err := db.cache.Get(ctx, key)
 	if err != nil {
-
 		if !strings.Contains(err.Error(), "value not found in store") {
 			db.sugar.Warnf("Namespace cache error: %v", err)
 		}
 
 		return nil
-
 	}
 
 	ns := new(Namespace)
@@ -46,13 +44,11 @@ func (db *CachedDatabase) lookupNamespaceByName(ctx context.Context, name string
 
 	data, err := db.cache.Get(ctx, key)
 	if err != nil {
-
 		if !strings.Contains(err.Error(), "value not found in store") {
 			db.sugar.Warnf("Namespace cache error: %v", err)
 		}
 
 		return nil
-
 	}
 
 	ns := new(Namespace)
@@ -120,13 +116,11 @@ func (db *CachedDatabase) lookupInstanceByID(ctx context.Context, id uuid.UUID) 
 
 	data, err := db.cache.Get(ctx, key)
 	if err != nil {
-
 		if !strings.Contains(err.Error(), "value not found in store") {
 			db.sugar.Warnf("Instance cache error: %v", err)
 		}
 
 		return nil
-
 	}
 
 	inst := new(Instance)

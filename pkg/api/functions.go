@@ -43,9 +43,8 @@ import (
 	grpcfunc "github.com/direktiv/direktiv/pkg/functions/grpc"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/gorilla/mux"
-	"go.uber.org/zap"
-
 	"github.com/heroku/docker-registry-client/registry"
+	"go.uber.org/zap"
 )
 
 type functionHandler struct {
@@ -1010,7 +1009,6 @@ func (h *functionHandler) listServicesSSE(
 		defer close(ch)
 
 		for {
-
 			x, err := client.Recv()
 			if err != nil {
 				ch <- err
@@ -1018,7 +1016,6 @@ func (h *functionHandler) listServicesSSE(
 			}
 
 			ch <- x
-
 		}
 	}()
 
@@ -1505,7 +1502,6 @@ func (h *functionHandler) watchRevisions(svc, rev /*, scope*/ string,
 		defer close(ch)
 
 		for {
-
 			x, err := client.Recv()
 			if err != nil {
 				ch <- err
@@ -1513,7 +1509,6 @@ func (h *functionHandler) watchRevisions(svc, rev /*, scope*/ string,
 			}
 
 			ch <- x
-
 		}
 	}()
 
@@ -1550,7 +1545,6 @@ func (h *functionHandler) watchPodLogs(w http.ResponseWriter, r *http.Request) {
 		defer close(ch)
 
 		for {
-
 			x, err := client.Recv()
 			if err != nil {
 				ch <- err
@@ -1558,7 +1552,6 @@ func (h *functionHandler) watchPodLogs(w http.ResponseWriter, r *http.Request) {
 			}
 
 			ch <- x
-
 		}
 	}()
 
@@ -1713,7 +1706,6 @@ func (h *functionHandler) listPodsSSE(svc, rev string,
 		defer close(ch)
 
 		for {
-
 			x, err := client.Recv()
 			if err != nil {
 				ch <- err
@@ -1721,7 +1713,6 @@ func (h *functionHandler) listPodsSSE(svc, rev string,
 			}
 
 			ch <- x
-
 		}
 	}()
 

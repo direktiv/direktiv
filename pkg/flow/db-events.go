@@ -127,7 +127,6 @@ func (events *events) processWorkflowEvents(ctx context.Context, cached *databas
 	}
 
 	if len(ms.Events) > 0 && ms.Enabled {
-
 		var ev []map[string]interface{}
 		for i, e := range ms.Events {
 			em := make(map[string]interface{})
@@ -165,7 +164,6 @@ func (events *events) processWorkflowEvents(ctx context.Context, cached *databas
 		if err != nil {
 			return err
 		}
-
 	}
 
 	events.pubsub.NotifyEventListeners(cached.Namespace.ID)

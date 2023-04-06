@@ -8,10 +8,9 @@ import (
 	"runtime/debug"
 	"time"
 
+	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/lib/pq"
 	"github.com/mitchellh/hashstructure/v2"
-
-	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 )
 
 const defaultLockWait = time.Second * 10
@@ -40,7 +39,6 @@ func initLocks(conn string) (*locks, error) {
 
 func (locks *locks) Close() error {
 	if locks.db != nil {
-
 		err := locks.db.Close()
 		if err != nil {
 			return err
@@ -49,7 +47,6 @@ func (locks *locks) Close() error {
 		locks.db = nil
 
 		return nil
-
 	}
 
 	return nil
@@ -81,12 +78,10 @@ func (locks *locks) lockDB(id uint64, wait int) (*sql.Conn, error) {
 	perr := new(pq.Error)
 
 	if errors.As(err, &perr) {
-
 		if perr.Code == "57014" {
 			return conn, fmt.Errorf("canceled query")
 		}
 		return conn, err
-
 	}
 
 	return conn, err

@@ -169,7 +169,6 @@ func updateGeneration_0_6_0(db *sql.Tx) error {
 	defer rows.Close()
 
 	for rows.Next() {
-
 		var oid, id uuid.UUID
 		err = rows.Scan(&oid, &id)
 		if err != nil {
@@ -180,7 +179,6 @@ func updateGeneration_0_6_0(db *sql.Tx) error {
 		if err != nil {
 			return err
 		}
-
 	}
 
 	return nil

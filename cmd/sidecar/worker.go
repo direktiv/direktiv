@@ -64,7 +64,6 @@ func (worker *inboundWorker) run() {
 		log.Debugf("Worker %d picked up request '%s'.", worker.id, id)
 
 		worker.handleFunctionRequest(req)
-
 	}
 
 	log.Debugf("Worker %d shut down.", worker.id)
@@ -221,7 +220,6 @@ func untar(dst string, r io.Reader) error {
 		} else {
 			return errors.New("unsupported tar archive contents")
 		}
-
 	}
 
 	return nil
@@ -266,7 +264,6 @@ func (worker *inboundWorker) writeFile(ftype, dst string, pr io.Reader) error {
 	// does not exist. It counts offset
 
 	switch ftype {
-
 	case "":
 		fallthrough
 
@@ -457,7 +454,6 @@ func (worker *inboundWorker) handleFunctionRequest(req *inboundRequest) {
 func (worker *inboundWorker) setOutVariables(ctx context.Context, ir *functionRequest) error {
 	subDirs := []string{util.VarScopeNamespace, util.VarScopeWorkflow, util.VarScopeInstance}
 	for _, d := range subDirs {
-
 		out := path.Join(worker.functionDir(ir), "out", d)
 
 		files, err := os.ReadDir(out)
@@ -466,7 +462,6 @@ func (worker *inboundWorker) setOutVariables(ctx context.Context, ir *functionRe
 		}
 
 		for _, f := range files {
-
 			fp := path.Join(worker.functionDir(ir), "out", d, f.Name())
 
 			fi, err := f.Info()
@@ -521,11 +516,8 @@ func (worker *inboundWorker) setOutVariables(ctx context.Context, ir *functionRe
 				if err != nil {
 					return err
 				}
-
 			}
-
 		}
-
 	}
 
 	return nil
@@ -697,7 +689,6 @@ func (worker *inboundWorker) validateFilesHeaders(req *inboundRequest, ifiles *[
 	hdr := "Direktiv-Files"
 	strs := req.r.Header.Values(hdr)
 	for i, s := range strs {
-
 		data, err := base64.StdEncoding.DecodeString(s)
 		if err != nil {
 			worker.reportValidationError(req, http.StatusBadRequest, fmt.Errorf("invalid %s [%d]: %w", hdr, i, err))
@@ -714,7 +705,6 @@ func (worker *inboundWorker) validateFilesHeaders(req *inboundRequest, ifiles *[
 		}
 
 		*ifiles = append(*ifiles, files)
-
 	}
 
 	return true

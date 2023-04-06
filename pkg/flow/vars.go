@@ -143,7 +143,6 @@ func (vars *vars) nsHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		return
-
 	}
 }
 
@@ -205,7 +204,6 @@ func (vars *vars) wfHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		return
-
 	}
 }
 
@@ -267,6 +265,5 @@ func (vars *vars) inHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		return
-
 	}
 }

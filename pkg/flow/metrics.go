@@ -235,7 +235,6 @@ func (flow *flow) WorkflowMetrics(ctx context.Context, req *grpc.WorkflowMetrics
 
 	states := make([]*grpc.State, 0)
 	for _, s := range resp.States {
-
 		thisState := s
 
 		is := new(grpc.State)

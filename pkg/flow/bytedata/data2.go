@@ -3,10 +3,9 @@ package bytedata
 import (
 	"path/filepath"
 
-	"github.com/direktiv/direktiv/pkg/refactor/mirror"
-
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
+	"github.com/direktiv/direktiv/pkg/refactor/mirror"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 

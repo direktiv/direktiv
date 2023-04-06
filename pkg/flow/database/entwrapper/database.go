@@ -8,15 +8,14 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
-	"github.com/google/uuid"
-	"go.uber.org/zap"
-
 	entnote "github.com/direktiv/direktiv/pkg/flow/ent/annotation"
 	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	entrt "github.com/direktiv/direktiv/pkg/flow/ent/instanceruntime"
 	entns "github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	entvardata "github.com/direktiv/direktiv/pkg/flow/ent/vardata"
 	entvar "github.com/direktiv/direktiv/pkg/flow/ent/varref"
+	"github.com/google/uuid"
+	"go.uber.org/zap"
 )
 
 type ctxKey string

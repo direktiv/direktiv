@@ -10,17 +10,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/refactor/mirror"
-
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/direktiv/direktiv/pkg/refactor/datastore"
-	"github.com/direktiv/direktiv/pkg/refactor/datastore/sql"
-	"github.com/direktiv/direktiv/pkg/refactor/filestore"
-	"github.com/direktiv/direktiv/pkg/refactor/filestore/psql"
-
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
-
 	"github.com/direktiv/direktiv/pkg/dlog"
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/database/entwrapper"
@@ -28,6 +18,11 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/metrics"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore/sql"
+	"github.com/direktiv/direktiv/pkg/refactor/filestore"
+	"github.com/direktiv/direktiv/pkg/refactor/filestore/psql"
+	"github.com/direktiv/direktiv/pkg/refactor/mirror"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/direktiv/direktiv/pkg/version"
 	"github.com/google/uuid"
@@ -36,6 +31,8 @@ import (
 	"go.uber.org/zap"
 	libgrpc "google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/emptypb"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 const parcelSize = 0x100000
@@ -254,7 +251,6 @@ func (srv *server) start(ctx context.Context) error {
 	}
 
 	if srv.conf.Eventing {
-
 		srv.sugar.Debug("Initializing knative eventing receiver.")
 		rcv, err := newEventReceiver(srv.events, srv.flow)
 		if err != nil {
@@ -359,14 +355,12 @@ func (srv *server) NotifyCluster(msg string) error {
 	perr := new(pq.Error)
 
 	if errors.As(err, &perr) {
-
 		srv.sugar.Errorf("db notification failed: %v", perr)
 		if perr.Code == "57014" {
 			return fmt.Errorf("canceled query")
 		}
 
 		return err
-
 	}
 
 	return nil
@@ -388,14 +382,12 @@ func (srv *server) NotifyHostname(hostname, msg string) error {
 	perr := new(pq.Error)
 
 	if errors.As(err, &perr) {
-
 		fmt.Fprintf(os.Stderr, "db notification failed: %v", perr)
 		if perr.Code == "57014" {
 			return fmt.Errorf("canceled query")
 		}
 
 		return err
-
 	}
 
 	return nil
@@ -506,7 +498,6 @@ func (srv *server) cronPollerWorkflow(ctx context.Context, root *filestore.Root,
 		}
 
 		srv.sugar.Debugf("Loaded cron: %s", file.ID.String())
-
 	}
 }
 

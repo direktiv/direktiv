@@ -52,7 +52,6 @@ func (flow *flow) functionsHeartbeat() {
 			}
 
 			for _, rev := range revs {
-
 				x := &database.Revision{
 					ID:        rev.ID,
 					CreatedAt: rev.CreatedAt,
@@ -69,7 +68,6 @@ func (flow *flow) functionsHeartbeat() {
 				fns := w.GetFunctions()
 
 				for i := range fns {
-
 					fn := fns[i]
 
 					if fn.GetType() != model.ReusableContainerFunctionType {
@@ -96,9 +94,7 @@ func (flow *flow) functionsHeartbeat() {
 						checksums[csum] = true
 						tuples = append(tuples, tuple)
 					}
-
 				}
-
 			}
 
 			flow.flushHeartbeatTuples(tuples)
@@ -118,7 +114,6 @@ func (flow *flow) flushHeartbeatTuples(tuples []*functions.HeartbeatTuple) {
 	msg := bytedata.Marshal(tuples)
 
 	if len(msg) > heartbeatMessageLimit {
-
 		if l == 1 {
 			flow.sugar.Errorf("Single heartbeat entry exceeds maximum heartbeat size.")
 			return
@@ -129,7 +124,6 @@ func (flow *flow) flushHeartbeatTuples(tuples []*functions.HeartbeatTuple) {
 		flow.flushHeartbeatTuples(tuples[:x])
 		flow.flushHeartbeatTuples(tuples[x:])
 		return
-
 	}
 
 	ctx := context.Background()
@@ -144,9 +138,7 @@ func (flow *flow) flushHeartbeatTuples(tuples []*functions.HeartbeatTuple) {
 	_, err = conn.ExecContext(ctx, "SELECT pg_notify($1, $2)", functions.FunctionsChannel, msg)
 	perr := new(pq.Error)
 	if errors.As(err, &perr) {
-
 		flow.sugar.Errorf("db notification failed: %v", perr)
 		return
-
 	}
 }

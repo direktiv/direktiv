@@ -134,7 +134,6 @@ func (flow *flow) kickExpiredInstances() {
 	}
 
 	for i := range list {
-
 		data, err := json.Marshal(&retryMessage{
 			InstanceID: list[i].Edges.Instance.ID.String(),
 			Step:       len(list[i].Flow),
@@ -144,7 +143,6 @@ func (flow *flow) kickExpiredInstances() {
 		}
 
 		flow.engine.retryWakeup(data)
-
 	}
 }
 
@@ -181,14 +179,12 @@ func (flow *flow) JQ(ctx context.Context, req *grpc.JQRequest) (*grpc.JQResponse
 	var strs []string
 
 	for _, result := range results {
-
 		x, err := json.MarshalIndent(result, "", "  ")
 		if err != nil {
 			return nil, err
 		}
 
 		strs = append(strs, string(x))
-
 	}
 
 	var resp grpc.JQResponse

@@ -4,15 +4,13 @@ import (
 	"context"
 	"time"
 
-	"github.com/google/uuid"
-
-	"google.golang.org/protobuf/types/known/emptypb"
-
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/model"
+	"github.com/google/uuid"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 func loadSource(rev *database.Revision) (*model.Workflow, error) {

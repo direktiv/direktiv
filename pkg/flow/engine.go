@@ -18,11 +18,6 @@ import (
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/google/uuid"
-	"github.com/senseyeio/duration"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
-
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
@@ -33,6 +28,10 @@ import (
 	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/util"
+	"github.com/google/uuid"
+	"github.com/senseyeio/duration"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type engine struct {
@@ -312,13 +311,11 @@ func (engine *engine) Transition(ctx context.Context, im *instanceMemory, nextSt
 	oldController := im.Controller()
 
 	if im.Step() == 0 {
-
 		t := time.Now()
 		tSoft := time.Now().Add(time.Minute * 15)
 		tHard := time.Now().Add(time.Minute * 20)
 
 		if workflow.Timeouts != nil {
-
 			s := workflow.Timeouts.Interrupt
 
 			if s != "" {
@@ -341,12 +338,10 @@ func (engine *engine) Transition(ctx context.Context, im *instanceMemory, nextSt
 				}
 				tHard = d.Shift(t)
 			}
-
 		}
 
 		engine.ScheduleSoftTimeout(im, oldController, tSoft)
 		engine.ScheduleHardTimeout(im, oldController, tHard)
-
 	}
 
 	if nextState == "" {
@@ -503,7 +498,6 @@ func (engine *engine) runState(ctx context.Context, im *instanceMemory, wakedata
 	}
 
 	if md := im.logic.GetMetadata(); im.GetMemory() == nil && len(wakedata) == 0 && md != nil {
-
 		var object interface{}
 		object, err = jqOne(im.data, md)
 		if err != nil {
@@ -518,7 +512,6 @@ func (engine *engine) runState(ctx context.Context, im *instanceMemory, wakedata
 		}
 
 		engine.StoreMetadata(ctx, im, string(data))
-
 	}
 
 	transition, err = im.logic.Run(ctx, wakedata)
@@ -550,11 +543,9 @@ failure:
 	cerr := new(derrors.CatchableError)
 
 	if errors.As(err, &cerr) {
-
 		_ = im.StoreData("error", cerr)
 
 		for i, catch := range im.logic.ErrorDefinitions() {
-
 			errRegex := catch.Error
 			if errRegex == "*" {
 				errRegex = ".*"
@@ -566,7 +557,6 @@ failure:
 			}
 
 			if matched {
-
 				engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), "State failed with error '%s': %s", cerr.Code, cerr.Message)
 				engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), "Error caught by error definition %d: %s", i, catch.Error)
 
@@ -580,11 +570,8 @@ failure:
 				code = cerr.Code
 
 				goto next
-
 			}
-
 		}
-
 	}
 
 	engine.CrashInstance(ctx, im, err)
@@ -934,7 +921,6 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 			engine.logger.Debugf(ctx, engine.flow.ID, engine.flow.GetAttributes(), "function request for image %s name %s returned an error: %v", ar.Container.Image, ar.Container.ID, err)
 			dnsErr := new(net.DNSError)
 			if errors.As(err, &dnsErr) {
-
 				// recreate if the service does not exist
 				if ar.Container.Type == model.ReusableContainerFunctionType &&
 					!engine.isKnativeFunction(engine.actions.client, ar) {
@@ -950,7 +936,6 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 				// recreate if the service if it exists in the database but not knative
 				if (ar.Container.Type == model.NamespacedKnativeFunctionType) &&
 					!engine.isScopedKnativeFunction(engine.actions.client, ar.Container.Service) {
-
 					err := reconstructScopedKnativeFunction(engine.actions.client, ar.Container.Service)
 					if err != nil {
 						if stErr, ok := status.FromError(err); ok && stErr.Code() == codes.NotFound {
@@ -975,7 +960,6 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 			}
 
 			time.Sleep(1000 * time.Millisecond)
-
 		} else {
 			engine.sugar.Debugf("successfully created function with image %s name %s", ar.Container.Image, ar.Container.ID, err)
 			break
@@ -1105,13 +1089,11 @@ func (engine *engine) EventsInvoke(workflowID string, events ...*cloudevents.Eve
 	var input []byte
 	m := make(map[string]interface{})
 	for _, event := range events {
-
 		if event == nil {
 			continue
 		}
 
 		m[event.Type()] = event
-
 	}
 
 	input, err = json.Marshal(m)

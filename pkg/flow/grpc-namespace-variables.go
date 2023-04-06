@@ -114,7 +114,6 @@ func (internal *internal) NamespaceVariableParcels(req *grpc.VariableInternalReq
 	rdr := bytes.NewReader(vdata.Data)
 
 	for {
-
 		resp := new(grpc.VariableInternalResponse)
 
 		resp.Key = vref.Name
@@ -127,7 +126,6 @@ func (internal *internal) NamespaceVariableParcels(req *grpc.VariableInternalReq
 		buf := new(bytes.Buffer)
 		k, err := io.CopyN(buf, rdr, parcelSize)
 		if err != nil {
-
 			if errors.Is(err, io.EOF) {
 				err = nil
 			}
@@ -139,7 +137,6 @@ func (internal *internal) NamespaceVariableParcels(req *grpc.VariableInternalReq
 			if err != nil {
 				return err
 			}
-
 		}
 
 		resp.Data = buf.Bytes()
@@ -148,7 +145,6 @@ func (internal *internal) NamespaceVariableParcels(req *grpc.VariableInternalReq
 		if err != nil {
 			return err
 		}
-
 	}
 }
 
@@ -165,7 +161,6 @@ func (flow *flow) NamespaceVariableParcels(req *grpc.NamespaceVariableRequest, s
 	rdr := bytes.NewReader(vdata.Data)
 
 	for {
-
 		resp := new(grpc.NamespaceVariableResponse)
 
 		resp.Namespace = cached.Namespace.Name
@@ -179,7 +174,6 @@ func (flow *flow) NamespaceVariableParcels(req *grpc.NamespaceVariableRequest, s
 		buf := new(bytes.Buffer)
 		k, err := io.CopyN(buf, rdr, parcelSize)
 		if err != nil {
-
 			if errors.Is(err, io.EOF) {
 				err = nil
 			}
@@ -198,7 +192,6 @@ func (flow *flow) NamespaceVariableParcels(req *grpc.NamespaceVariableRequest, s
 			if err != nil {
 				return err
 			}
-
 		}
 
 		resp.Data = buf.Bytes()
@@ -207,7 +200,6 @@ func (flow *flow) NamespaceVariableParcels(req *grpc.NamespaceVariableRequest, s
 		if err != nil {
 			return err
 		}
-
 	}
 }
 
@@ -258,7 +250,6 @@ func (flow *flow) NamespaceVariables(ctx context.Context, req *grpc.NamespaceVar
 	}
 
 	for i := range results {
-
 		vref := results[i]
 
 		vdata, err := vref.QueryVardata().Select(entvardata.FieldCreatedAt, entvardata.FieldHash, entvardata.FieldSize, entvardata.FieldUpdatedAt).Only(ctx)
@@ -272,7 +263,6 @@ func (flow *flow) NamespaceVariables(ctx context.Context, req *grpc.NamespaceVar
 		v.Size = int64(vdata.Size)
 		v.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
 		v.MimeType = vdata.MimeType
-
 	}
 
 	return resp, nil
@@ -317,7 +307,6 @@ resend:
 	}
 
 	for i := range results {
-
 		vref := results[i]
 
 		vdata, err := vref.QueryVardata().Select(entvardata.FieldCreatedAt, entvardata.FieldHash, entvardata.FieldSize, entvardata.FieldUpdatedAt).Only(ctx)
@@ -331,7 +320,6 @@ resend:
 		v.Size = int64(vdata.Size)
 		v.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
 		v.MimeType = vdata.MimeType
-
 	}
 
 	nhash = bytedata.Checksum(resp)
@@ -426,7 +414,6 @@ func (internal *internal) SetNamespaceVariableParcels(srv grpc.Internal_SetNames
 	buf := new(bytes.Buffer)
 
 	for {
-
 		_, err = io.Copy(buf, bytes.NewReader(req.Data))
 		if err != nil {
 			return err
@@ -459,7 +446,6 @@ func (internal *internal) SetNamespaceVariableParcels(srv grpc.Internal_SetNames
 		if int(req.GetTotalSize()) != totalSize {
 			return errors.New("totalSize changed mid stream")
 		}
-
 	}
 
 	if buf.Len() > totalSize {
@@ -529,7 +515,6 @@ func (flow *flow) SetNamespaceVariableParcels(srv grpc.Flow_SetNamespaceVariable
 	buf := new(bytes.Buffer)
 
 	for {
-
 		_, err = io.Copy(buf, bytes.NewReader(req.Data))
 		if err != nil {
 			return err
@@ -562,7 +547,6 @@ func (flow *flow) SetNamespaceVariableParcels(srv grpc.Flow_SetNamespaceVariable
 		if int(req.GetTotalSize()) != totalSize {
 			return errors.New("totalSize changed mid stream")
 		}
-
 	}
 
 	if buf.Len() > totalSize {

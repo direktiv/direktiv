@@ -4,20 +4,18 @@ import (
 	"context"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/flow/bytedata"
+	"github.com/direktiv/direktiv/pkg/flow/ent"
+	entlog "github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
+	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
+	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
-
-	"github.com/direktiv/direktiv/pkg/flow/bytedata"
-	"github.com/direktiv/direktiv/pkg/flow/ent"
-	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
-	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
-
-	entlog "github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
 )
 
 func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNamespaceMirrorRequest) (*grpc.CreateNamespaceResponse, error) {
@@ -379,7 +377,6 @@ resend:
 	}
 
 	if len(resp.Results) != 0 || !tailing {
-
 		tailing = true
 
 		err = srv.Send(resp)
@@ -388,7 +385,6 @@ resend:
 		}
 
 		req.Pagination.Offset += int32(len(resp.Results))
-
 	}
 
 	more := sub.Wait(ctx)
