@@ -34,7 +34,7 @@ func (flow *flow) Tags(ctx context.Context, req *grpc.TagsRequest) (*grpc.TagsRe
 		return nil, err
 	}
 
-	fStore, _, commit, rollback, err := flow.beginSqlTx(ctx)
+	fStore, _, _, rollback, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -71,9 +71,6 @@ func (flow *flow) Tags(ctx context.Context, req *grpc.TagsRequest) (*grpc.TagsRe
 	}
 	resp.Node = bytedata.ConvertFileToGrpcNode(file)
 
-	if err := commit(ctx); err != nil {
-		return nil, err
-	}
 	return resp, nil
 }
 
@@ -110,7 +107,7 @@ func (flow *flow) Refs(ctx context.Context, req *grpc.RefsRequest) (*grpc.RefsRe
 		return nil, err
 	}
 
-	fStore, _, commit, rollback, err := flow.beginSqlTx(ctx)
+	fStore, _, _, rollback, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -152,9 +149,6 @@ func (flow *flow) Refs(ctx context.Context, req *grpc.RefsRequest) (*grpc.RefsRe
 	}
 	resp.Node = bytedata.ConvertFileToGrpcNode(file)
 
-	if err := commit(ctx); err != nil {
-		return nil, err
-	}
 	return resp, nil
 }
 

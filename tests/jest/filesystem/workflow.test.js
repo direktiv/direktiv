@@ -189,17 +189,9 @@ describe('Test basic directory operations', () => {
     it(`should read the workflow revisions`, async () => {
         var readRevsResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/tree/${workflowName}?op=revisions`)
         expect(readRevsResponse.statusCode).toEqual(200)
-
-        // We make a copy here because there's a bug in the API
-        // TODO: fix the bug
-        var copyOfExpectedChildNodeObject = {
-            ...expectedChildNodeObject
-        }
-        copyOfExpectedChildNodeObject.expandedType = ""
-
         expect(readRevsResponse.body).toMatchObject({
             namespace: namespaceName,
-            node: copyOfExpectedChildNodeObject,
+            node: expectedChildNodeObject,
             pageInfo: {
                 limit: 0,
                 offset: 0,
@@ -214,17 +206,9 @@ describe('Test basic directory operations', () => {
     it(`should read the workflow router`, async () => {
         var readRouterResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/tree/${workflowName}?op=router`)
         expect(readRouterResponse.statusCode).toEqual(200)
-
-        // We make a copy here because there's a bug in the API
-        // TODO: fix the bug
-        var copyOfExpectedChildNodeObject = {
-            ...expectedChildNodeObject
-        }
-        copyOfExpectedChildNodeObject.expandedType = ""
-
         expect(readRouterResponse.body).toMatchObject({
             namespace: namespaceName,
-            node: copyOfExpectedChildNodeObject,
+            node: expectedChildNodeObject,
             live: true,
             routes: [],
         })
