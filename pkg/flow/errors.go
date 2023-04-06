@@ -6,6 +6,7 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
+	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -35,7 +36,7 @@ var (
 )
 
 func translateError(err error) error {
-	if derrors.IsNotFound(err) {
+	if derrors.IsNotFound(err) || errors.Is(err, filestore.ErrNotFound) {
 		err = status.Error(codes.NotFound, strings.TrimPrefix(err.Error(), "ent: "))
 		return err
 	}
@@ -58,7 +59,7 @@ func translateError(err error) error {
 		}
 	}
 
-	if strings.Contains(err.Error(), "already exists") {
+	if strings.Contains(err.Error(), "already exists") || errors.Is(err, filestore.ErrPathAlreadyExists) {
 		err = status.Error(codes.AlreadyExists, "resource already exists")
 		return err
 	}

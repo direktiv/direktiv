@@ -10,21 +10,14 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
 	"github.com/direktiv/direktiv/pkg/flow/ent/events"
 	"github.com/direktiv/direktiv/pkg/flow/ent/eventswait"
-	"github.com/direktiv/direktiv/pkg/flow/ent/inode"
 	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	"github.com/direktiv/direktiv/pkg/flow/ent/instanceruntime"
 	"github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
-	"github.com/direktiv/direktiv/pkg/flow/ent/mirror"
-	"github.com/direktiv/direktiv/pkg/flow/ent/mirroractivity"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
-	"github.com/direktiv/direktiv/pkg/flow/ent/ref"
-	"github.com/direktiv/direktiv/pkg/flow/ent/revision"
-	"github.com/direktiv/direktiv/pkg/flow/ent/route"
 	"github.com/direktiv/direktiv/pkg/flow/ent/schema"
 	"github.com/direktiv/direktiv/pkg/flow/ent/services"
 	"github.com/direktiv/direktiv/pkg/flow/ent/vardata"
 	"github.com/direktiv/direktiv/pkg/flow/ent/varref"
-	"github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 	"github.com/google/uuid"
 )
 
@@ -102,30 +95,6 @@ func init() {
 	eventswaitDescID := eventswaitFields[0].Descriptor()
 	// eventswait.DefaultID holds the default value on creation for the id field.
 	eventswait.DefaultID = eventswaitDescID.Default.(func() uuid.UUID)
-	inodeFields := schema.Inode{}.Fields()
-	_ = inodeFields
-	// inodeDescCreatedAt is the schema descriptor for created_at field.
-	inodeDescCreatedAt := inodeFields[1].Descriptor()
-	// inode.DefaultCreatedAt holds the default value on creation for the created_at field.
-	inode.DefaultCreatedAt = inodeDescCreatedAt.Default.(func() time.Time)
-	// inodeDescUpdatedAt is the schema descriptor for updated_at field.
-	inodeDescUpdatedAt := inodeFields[2].Descriptor()
-	// inode.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	inode.DefaultUpdatedAt = inodeDescUpdatedAt.Default.(func() time.Time)
-	// inode.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	inode.UpdateDefaultUpdatedAt = inodeDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// inodeDescName is the schema descriptor for name field.
-	inodeDescName := inodeFields[3].Descriptor()
-	// inode.NameValidator is a validator for the "name" field. It is called by the builders before save.
-	inode.NameValidator = inodeDescName.Validators[0].(func(string) error)
-	// inodeDescReadOnly is the schema descriptor for readOnly field.
-	inodeDescReadOnly := inodeFields[7].Descriptor()
-	// inode.DefaultReadOnly holds the default value on creation for the readOnly field.
-	inode.DefaultReadOnly = inodeDescReadOnly.Default.(bool)
-	// inodeDescID is the schema descriptor for id field.
-	inodeDescID := inodeFields[0].Descriptor()
-	// inode.DefaultID holds the default value on creation for the id field.
-	inode.DefaultID = inodeDescID.Default.(func() uuid.UUID)
 	instanceFields := schema.Instance{}.Fields()
 	_ = instanceFields
 	// instanceDescCreatedAt is the schema descriptor for created_at field.
@@ -166,34 +135,6 @@ func init() {
 	logmsgDescID := logmsgFields[0].Descriptor()
 	// logmsg.DefaultID holds the default value on creation for the id field.
 	logmsg.DefaultID = logmsgDescID.Default.(func() uuid.UUID)
-	mirrorFields := schema.Mirror{}.Fields()
-	_ = mirrorFields
-	// mirrorDescUpdatedAt is the schema descriptor for updated_at field.
-	mirrorDescUpdatedAt := mirrorFields[9].Descriptor()
-	// mirror.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	mirror.DefaultUpdatedAt = mirrorDescUpdatedAt.Default.(func() time.Time)
-	// mirror.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	mirror.UpdateDefaultUpdatedAt = mirrorDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// mirrorDescID is the schema descriptor for id field.
-	mirrorDescID := mirrorFields[0].Descriptor()
-	// mirror.DefaultID holds the default value on creation for the id field.
-	mirror.DefaultID = mirrorDescID.Default.(func() uuid.UUID)
-	mirroractivityFields := schema.MirrorActivity{}.Fields()
-	_ = mirroractivityFields
-	// mirroractivityDescCreatedAt is the schema descriptor for created_at field.
-	mirroractivityDescCreatedAt := mirroractivityFields[3].Descriptor()
-	// mirroractivity.DefaultCreatedAt holds the default value on creation for the created_at field.
-	mirroractivity.DefaultCreatedAt = mirroractivityDescCreatedAt.Default.(func() time.Time)
-	// mirroractivityDescUpdatedAt is the schema descriptor for updated_at field.
-	mirroractivityDescUpdatedAt := mirroractivityFields[4].Descriptor()
-	// mirroractivity.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	mirroractivity.DefaultUpdatedAt = mirroractivityDescUpdatedAt.Default.(func() time.Time)
-	// mirroractivity.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	mirroractivity.UpdateDefaultUpdatedAt = mirroractivityDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// mirroractivityDescID is the schema descriptor for id field.
-	mirroractivityDescID := mirroractivityFields[0].Descriptor()
-	// mirroractivity.DefaultID holds the default value on creation for the id field.
-	mirroractivity.DefaultID = mirroractivityDescID.Default.(func() uuid.UUID)
 	namespaceFields := schema.Namespace{}.Fields()
 	_ = namespaceFields
 	// namespaceDescCreatedAt is the schema descriptor for created_at field.
@@ -234,40 +175,6 @@ func init() {
 	namespaceDescID := namespaceFields[0].Descriptor()
 	// namespace.DefaultID holds the default value on creation for the id field.
 	namespace.DefaultID = namespaceDescID.Default.(func() uuid.UUID)
-	refFields := schema.Ref{}.Fields()
-	_ = refFields
-	// refDescImmutable is the schema descriptor for immutable field.
-	refDescImmutable := refFields[1].Descriptor()
-	// ref.DefaultImmutable holds the default value on creation for the immutable field.
-	ref.DefaultImmutable = refDescImmutable.Default.(bool)
-	// refDescName is the schema descriptor for name field.
-	refDescName := refFields[2].Descriptor()
-	// ref.NameValidator is a validator for the "name" field. It is called by the builders before save.
-	ref.NameValidator = refDescName.Validators[0].(func(string) error)
-	// refDescCreatedAt is the schema descriptor for created_at field.
-	refDescCreatedAt := refFields[3].Descriptor()
-	// ref.DefaultCreatedAt holds the default value on creation for the created_at field.
-	ref.DefaultCreatedAt = refDescCreatedAt.Default.(func() time.Time)
-	// refDescID is the schema descriptor for id field.
-	refDescID := refFields[0].Descriptor()
-	// ref.DefaultID holds the default value on creation for the id field.
-	ref.DefaultID = refDescID.Default.(func() uuid.UUID)
-	revisionFields := schema.Revision{}.Fields()
-	_ = revisionFields
-	// revisionDescCreatedAt is the schema descriptor for created_at field.
-	revisionDescCreatedAt := revisionFields[1].Descriptor()
-	// revision.DefaultCreatedAt holds the default value on creation for the created_at field.
-	revision.DefaultCreatedAt = revisionDescCreatedAt.Default.(func() time.Time)
-	// revisionDescID is the schema descriptor for id field.
-	revisionDescID := revisionFields[0].Descriptor()
-	// revision.DefaultID holds the default value on creation for the id field.
-	revision.DefaultID = revisionDescID.Default.(func() uuid.UUID)
-	routeFields := schema.Route{}.Fields()
-	_ = routeFields
-	// routeDescID is the schema descriptor for id field.
-	routeDescID := routeFields[0].Descriptor()
-	// route.DefaultID holds the default value on creation for the id field.
-	route.DefaultID = routeDescID.Default.(func() uuid.UUID)
 	servicesFields := schema.Services{}.Fields()
 	_ = servicesFields
 	// servicesDescCreatedAt is the schema descriptor for created_at field.
@@ -326,20 +233,4 @@ func init() {
 	varrefDescID := varrefFields[0].Descriptor()
 	// varref.DefaultID holds the default value on creation for the id field.
 	varref.DefaultID = varrefDescID.Default.(func() uuid.UUID)
-	workflowFields := schema.Workflow{}.Fields()
-	_ = workflowFields
-	// workflowDescLive is the schema descriptor for live field.
-	workflowDescLive := workflowFields[1].Descriptor()
-	// workflow.DefaultLive holds the default value on creation for the live field.
-	workflow.DefaultLive = workflowDescLive.Default.(bool)
-	// workflowDescUpdatedAt is the schema descriptor for updated_at field.
-	workflowDescUpdatedAt := workflowFields[4].Descriptor()
-	// workflow.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	workflow.DefaultUpdatedAt = workflowDescUpdatedAt.Default.(func() time.Time)
-	// workflow.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	workflow.UpdateDefaultUpdatedAt = workflowDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// workflowDescID is the schema descriptor for id field.
-	workflowDescID := workflowFields[0].Descriptor()
-	// workflow.DefaultID holds the default value on creation for the id field.
-	workflow.DefaultID = workflowDescID.Default.(func() uuid.UUID)
 }

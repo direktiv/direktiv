@@ -13,10 +13,8 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entnote "github.com/direktiv/direktiv/pkg/flow/ent/annotation"
-	entino "github.com/direktiv/direktiv/pkg/flow/ent/inode"
 	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	entns "github.com/direktiv/direktiv/pkg/flow/ent/namespace"
-	entwf "github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/util"
@@ -99,7 +97,6 @@ func (flow *flow) NamespaceAnnotationParcels(req *grpc.NamespaceAnnotationReques
 	rdr := bytes.NewReader(annotation.Data)
 
 	for {
-
 		resp := new(grpc.NamespaceAnnotationResponse)
 
 		resp.Namespace = cached.Namespace.Name
@@ -113,7 +110,6 @@ func (flow *flow) NamespaceAnnotationParcels(req *grpc.NamespaceAnnotationReques
 		buf := new(bytes.Buffer)
 		k, err := io.CopyN(buf, rdr, parcelSize)
 		if err != nil {
-
 			if errors.Is(err, io.EOF) {
 				err = nil
 			}
@@ -132,7 +128,6 @@ func (flow *flow) NamespaceAnnotationParcels(req *grpc.NamespaceAnnotationReques
 			if err != nil {
 				return err
 			}
-
 		}
 
 		resp.Data = buf.Bytes()
@@ -141,7 +136,6 @@ func (flow *flow) NamespaceAnnotationParcels(req *grpc.NamespaceAnnotationReques
 		if err != nil {
 			return err
 		}
-
 	}
 }
 
@@ -297,24 +291,6 @@ func (x *entNamespaceAnnotationQuerier) QueryAnnotations() *ent.AnnotationQuery 
 	return x.clients.Annotation.Query().Where(entnote.HasNamespaceWith(entns.ID(x.cached.Namespace.ID)))
 }
 
-type entInodeAnnotationQuerier struct {
-	clients *entwrapper.EntClients
-	cached  *database.CacheData
-}
-
-func (x *entInodeAnnotationQuerier) QueryAnnotations() *ent.AnnotationQuery {
-	return x.clients.Annotation.Query().Where(entnote.HasInodeWith(entino.ID(x.cached.Inode().ID)))
-}
-
-type entWorkflowAnnotationQuerier struct {
-	clients *entwrapper.EntClients
-	cached  *database.CacheData
-}
-
-func (x *entWorkflowAnnotationQuerier) QueryAnnotations() *ent.AnnotationQuery {
-	return x.clients.Annotation.Query().Where(entnote.HasWorkflowWith(entwf.ID(x.cached.Workflow.ID)))
-}
-
 type entInstanceAnnotationQuerier struct {
 	clients *entwrapper.EntClients
 	cached  *database.CacheData
@@ -340,7 +316,6 @@ func (flow *flow) SetAnnotation(ctx context.Context, q annotationQuerier, key st
 	annotation, err = q.QueryAnnotations().Where(entnote.NameEQ(key)).Only(ctx)
 
 	if err != nil {
-
 		if !derrors.IsNotFound(err) {
 			return nil, false, err
 		}
@@ -352,8 +327,6 @@ func (flow *flow) SetAnnotation(ctx context.Context, q annotationQuerier, key st
 		switch v := q.(type) {
 		case *ent.Namespace:
 			query = query.SetNamespace(v)
-		case *ent.Workflow:
-			query = query.SetWorkflow(v)
 		case *ent.Instance:
 			query = query.SetInstance(v)
 		default:
@@ -366,16 +339,13 @@ func (flow *flow) SetAnnotation(ctx context.Context, q annotationQuerier, key st
 		}
 
 		newAnnotation = true
-
 	} else {
-
 		query := annotation.Update().SetSize(len(data)).SetHash(hash).SetData(data).SetMimeType(mimetype)
 
 		annotation, err = query.Save(ctx)
 		if err != nil {
 			return nil, false, err
 		}
-
 	}
 
 	return annotation, newAnnotation, err
@@ -399,7 +369,6 @@ func (flow *flow) SetNamespaceAnnotationParcels(srv grpc.Flow_SetNamespaceAnnota
 	buf := new(bytes.Buffer)
 
 	for {
-
 		_, err = io.Copy(buf, bytes.NewReader(req.Data))
 		if err != nil {
 			return err
@@ -432,7 +401,6 @@ func (flow *flow) SetNamespaceAnnotationParcels(srv grpc.Flow_SetNamespaceAnnota
 		if int(req.GetSize()) != totalSize {
 			return errors.New("totalSize changed mid stream")
 		}
-
 	}
 
 	if buf.Len() > totalSize {

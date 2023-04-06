@@ -6,10 +6,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/metrics/ent"
 	"github.com/direktiv/direktiv/pkg/metrics/ent/metrics"
 	"github.com/direktiv/direktiv/pkg/util"
-
-	"github.com/direktiv/direktiv/pkg/metrics/ent"
 )
 
 // Client ..
@@ -227,7 +226,6 @@ type finaliseStateRecordValuesArgs struct {
 
 func finaliseStateRecordValues(args *finaliseStateRecordValuesArgs) {
 	for k, s := range args.states {
-
 		thisState := s
 
 		args.out.SuccessfulExecutions += thisState.TotalSuccesses

@@ -24,34 +24,20 @@ type Tx struct {
 	Events *EventsClient
 	// EventsWait is the client for interacting with the EventsWait builders.
 	EventsWait *EventsWaitClient
-	// Inode is the client for interacting with the Inode builders.
-	Inode *InodeClient
 	// Instance is the client for interacting with the Instance builders.
 	Instance *InstanceClient
 	// InstanceRuntime is the client for interacting with the InstanceRuntime builders.
 	InstanceRuntime *InstanceRuntimeClient
 	// LogMsg is the client for interacting with the LogMsg builders.
 	LogMsg *LogMsgClient
-	// Mirror is the client for interacting with the Mirror builders.
-	Mirror *MirrorClient
-	// MirrorActivity is the client for interacting with the MirrorActivity builders.
-	MirrorActivity *MirrorActivityClient
 	// Namespace is the client for interacting with the Namespace builders.
 	Namespace *NamespaceClient
-	// Ref is the client for interacting with the Ref builders.
-	Ref *RefClient
-	// Revision is the client for interacting with the Revision builders.
-	Revision *RevisionClient
-	// Route is the client for interacting with the Route builders.
-	Route *RouteClient
 	// Services is the client for interacting with the Services builders.
 	Services *ServicesClient
 	// VarData is the client for interacting with the VarData builders.
 	VarData *VarDataClient
 	// VarRef is the client for interacting with the VarRef builders.
 	VarRef *VarRefClient
-	// Workflow is the client for interacting with the Workflow builders.
-	Workflow *WorkflowClient
 
 	// lazily loaded.
 	client     *Client
@@ -188,20 +174,13 @@ func (tx *Tx) init() {
 	tx.CloudEvents = NewCloudEventsClient(tx.config)
 	tx.Events = NewEventsClient(tx.config)
 	tx.EventsWait = NewEventsWaitClient(tx.config)
-	tx.Inode = NewInodeClient(tx.config)
 	tx.Instance = NewInstanceClient(tx.config)
 	tx.InstanceRuntime = NewInstanceRuntimeClient(tx.config)
 	tx.LogMsg = NewLogMsgClient(tx.config)
-	tx.Mirror = NewMirrorClient(tx.config)
-	tx.MirrorActivity = NewMirrorActivityClient(tx.config)
 	tx.Namespace = NewNamespaceClient(tx.config)
-	tx.Ref = NewRefClient(tx.config)
-	tx.Revision = NewRevisionClient(tx.config)
-	tx.Route = NewRouteClient(tx.config)
 	tx.Services = NewServicesClient(tx.config)
 	tx.VarData = NewVarDataClient(tx.config)
 	tx.VarRef = NewVarRefClient(tx.config)
-	tx.Workflow = NewWorkflowClient(tx.config)
 }
 
 // txDriver wraps the given dialect.Tx with a nop dialect.Driver implementation.

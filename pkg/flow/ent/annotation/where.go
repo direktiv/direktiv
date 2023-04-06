@@ -712,34 +712,6 @@ func HasNamespaceWith(preds ...predicate.Namespace) predicate.Annotation {
 	})
 }
 
-// HasWorkflow applies the HasEdge predicate on the "workflow" edge.
-func HasWorkflow() predicate.Annotation {
-	return predicate.Annotation(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(WorkflowTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, WorkflowTable, WorkflowColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasWorkflowWith applies the HasEdge predicate on the "workflow" edge with a given conditions (other predicates).
-func HasWorkflowWith(preds ...predicate.Workflow) predicate.Annotation {
-	return predicate.Annotation(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(WorkflowInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, WorkflowTable, WorkflowColumn),
-		)
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // HasInstance applies the HasEdge predicate on the "instance" edge.
 func HasInstance() predicate.Annotation {
 	return predicate.Annotation(func(s *sql.Selector) {
@@ -759,34 +731,6 @@ func HasInstanceWith(preds ...predicate.Instance) predicate.Annotation {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(InstanceInverseTable, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, InstanceTable, InstanceColumn),
-		)
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasInode applies the HasEdge predicate on the "inode" edge.
-func HasInode() predicate.Annotation {
-	return predicate.Annotation(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(InodeTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, InodeTable, InodeColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasInodeWith applies the HasEdge predicate on the "inode" edge with a given conditions (other predicates).
-func HasInodeWith(preds ...predicate.Inode) predicate.Annotation {
-	return predicate.Annotation(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(InodeInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, InodeTable, InodeColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

@@ -229,7 +229,6 @@ func (e *ErrorBody) StatusCode() int {
 
 func respond(w http.ResponseWriter, resp interface{}, err error) {
 	if err != nil {
-
 		code := ConvertGRPCStatusCodeToHTTPCode(status.Code(err))
 		st := status.Convert(err)
 
@@ -249,7 +248,6 @@ func respond(w http.ResponseWriter, resp interface{}, err error) {
 		_, _ = io.Copy(w, bytes.NewReader(data))
 
 		return
-
 	}
 
 	if resp == nil {
@@ -270,13 +268,11 @@ nodata:
 
 func respondJSON(w http.ResponseWriter, resp interface{}, err error) {
 	if err != nil {
-
 		code := ConvertGRPCStatusCodeToHTTPCode(status.Code(err))
 
 		msg := err.Error()
 		http.Error(w, msg, code)
 		return
-
 	}
 
 	if resp == nil {
@@ -357,7 +353,6 @@ func sse(w http.ResponseWriter, ch <-chan interface{}) {
 
 	for {
 		select {
-
 		case x, more := <-ch:
 
 			if !more {
@@ -381,7 +376,6 @@ func sse(w http.ResponseWriter, ch <-chan interface{}) {
 			if err != nil {
 				return
 			}
-
 		}
 	}
 }

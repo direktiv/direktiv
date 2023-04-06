@@ -101,7 +101,11 @@ type FunctionFileDefinition struct {
 	Type  string `yaml:"type,omitempty" json:"type,omitempty"`
 }
 
-var ErrVarScope = errors.New(`bad scope (choose 'namespace', 'workflow', 'thread' or 'instance')`)
+var (
+	ErrVarScope    = errors.New(`bad scope (choose 'namespace', 'workflow', 'thread', 'instance', 'system', or 'file')`)
+	ErrVarReadOnly = errors.New(`'file' scope variables cannot be written to from workflows'`)
+	ErrVarNotFile  = errors.New("target is not a file")
+)
 
 func (o FunctionFileDefinition) Validate() error {
 	if o.Key == "" {

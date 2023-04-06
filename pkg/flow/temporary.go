@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"strconv"
 	"time"
 
@@ -13,13 +14,13 @@ import (
 	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	entns "github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	entvar "github.com/direktiv/direktiv/pkg/flow/ent/varref"
-	entwf "github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	log "github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/direktiv/direktiv/pkg/flow/states"
 	"github.com/direktiv/direktiv/pkg/functions"
 	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
 	"github.com/direktiv/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	secretsgrpc "github.com/direktiv/direktiv/pkg/secrets/grpc"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
@@ -30,7 +31,7 @@ import (
 // TEMPORARY EVERYTHING
 
 func (im *instanceMemory) BroadcastCloudevent(ctx context.Context, event *cloudevents.Event, dd int64) error {
-	return im.engine.events.BroadcastCloudevent(ctx, im.cached, event, dd)
+	return im.engine.events.BroadcastCloudevent(ctx, im.cached.Namespace, event, dd)
 }
 
 func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.VariableSelector) ([]states.Variable, error) {
@@ -39,7 +40,6 @@ func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.Variab
 	clients := im.engine.edb.Clients(ctx)
 
 	for _, selector := range vars {
-
 		var err error
 		var ref *ent.VarRef
 
@@ -47,7 +47,6 @@ func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.Variab
 		key := selector.Key
 
 		switch scope {
-
 		case util.VarScopeInstance:
 			ref, err = clients.VarRef.Query().Where(entvar.HasInstanceWith(entinst.ID(im.cached.Instance.ID))).Where(entvar.NameEQ(key), entvar.BehaviourIsNil()).WithVardata().Only(ctx)
 
@@ -62,7 +61,7 @@ func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.Variab
 			// 	return nil, derrors.NewInternalError(err)
 			// }
 
-			ref, err = clients.VarRef.Query().Where(entvar.HasWorkflowWith(entwf.ID(im.cached.Workflow.ID))).Where(entvar.NameEQ(key)).WithVardata().Only(ctx)
+			ref, err = clients.VarRef.Query().Where(entvar.WorkflowID(im.cached.File.ID)).Where(entvar.NameEQ(key)).WithVardata().Only(ctx)
 
 		case util.VarScopeNamespace:
 
@@ -74,37 +73,65 @@ func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.Variab
 
 			ref, err = clients.VarRef.Query().Where(entvar.HasNamespaceWith(entns.ID(im.cached.Namespace.ID))).Where(entvar.NameEQ(key)).WithVardata().Only(ctx)
 
+		case util.VarScopeFileSystem:
+			break
 		default:
 			return nil, derrors.NewInternalError(errors.New("invalid scope"))
-
 		}
 
 		var data []byte
 
 		if err != nil {
-
 			if !derrors.IsNotFound(err) {
 				return nil, derrors.NewInternalError(err)
 			}
 
 			data = make([]byte, 0)
+		} else if ref == nil && scope == util.VarScopeFileSystem {
+			fStore, _, _, rollback, err := im.engine.flow.beginSqlTx(ctx)
+			if err != nil {
+				return nil, err
+			}
+			defer rollback(ctx)
 
+			file, err := fStore.ForRootID(im.cached.Namespace.ID).GetFile(ctx, key)
+			if errors.Is(err, filestore.ErrNotFound) {
+				data = make([]byte, 0)
+			} else if err != nil {
+				return nil, err
+			} else {
+				// TODO: alan, maybe need to enhance the GetData function to also return us some information like mime type, checksum, and size
+				if file.Typ != filestore.FileTypeFile {
+					return nil, model.ErrVarNotFile
+				}
+				rc, err := fStore.ForFile(file).GetData(ctx)
+				if err != nil {
+					return nil, err
+				}
+				defer func() { _ = rc.Close() }()
+				data, err = ioutil.ReadAll(rc)
+				if err != nil {
+					return nil, err
+				}
+				err = rc.Close()
+				if err != nil {
+					return nil, err
+				}
+			}
+
+			rollback(ctx)
 		} else if ref == nil {
 			data = make([]byte, 0)
 		} else {
-
 			if ref.Edges.Vardata == nil {
-
 				err = &derrors.NotFoundError{
 					Label: "variable data not found",
 				}
 
 				return nil, err
-
 			}
 
 			data = ref.Edges.Vardata.Data
-
 		}
 
 		x = append(x, states.Variable{
@@ -112,7 +139,6 @@ func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.Variab
 			Key:   key,
 			Data:  data,
 		})
-
 	}
 
 	return x, nil
@@ -198,7 +224,6 @@ func (im *instanceMemory) SetVariables(ctx context.Context, vars []states.Variab
 	clients := im.engine.edb.Clients(tctx)
 
 	for idx := range vars {
-
 		v := vars[idx]
 
 		var q varQuerier
@@ -206,7 +231,6 @@ func (im *instanceMemory) SetVariables(ctx context.Context, vars []states.Variab
 		var thread bool
 
 		switch v.Scope {
-
 		case "":
 
 			fallthrough
@@ -231,7 +255,8 @@ func (im *instanceMemory) SetVariables(ctx context.Context, vars []states.Variab
 
 			q = &entWorkflowVarQuerier{
 				clients: clients,
-				cached:  im.cached,
+				ns:      im.cached.Namespace,
+				f:       im.cached.File,
 			}
 
 		case "namespace":
@@ -255,7 +280,6 @@ func (im *instanceMemory) SetVariables(ctx context.Context, vars []states.Variab
 				return err
 			}
 			continue
-
 		}
 
 		if !(v.MIMEType == "text/plain; charset=utf-8" || v.MIMEType == "text/plain" || v.MIMEType == "application/octet-stream") && (d == "{}" || d == "[]" || d == "0" || d == `""` || d == "null") {
@@ -264,14 +288,12 @@ func (im *instanceMemory) SetVariables(ctx context.Context, vars []states.Variab
 				return err
 			}
 			continue
-
 		} else {
 			_, _, err = im.engine.flow.SetVariable(tctx, q, v.Key, v.Data, v.MIMEType, thread)
 			if err != nil {
 				return err
 			}
 		}
-
 	}
 
 	err = tx.Commit()
@@ -334,7 +356,6 @@ func (im *instanceMemory) CreateChild(ctx context.Context, args states.CreateChi
 	var ci states.ChildInfo
 
 	if args.Definition.GetType() == model.SubflowFunctionType {
-
 		caller := new(subflowCaller)
 		caller.InstanceID = im.ID()
 		caller.State = im.logic.GetID()
@@ -357,7 +378,6 @@ func (im *instanceMemory) CreateChild(ctx context.Context, args states.CreateChi
 			info:   ci,
 			engine: im.engine,
 		}, nil
-
 	}
 
 	switch args.Definition.GetType() {
@@ -392,9 +412,9 @@ func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory,
 ) (*functionRequest, error) {
 	ar := new(functionRequest)
 	ar.ActionID = uid.String()
-	ar.Workflow.WorkflowID = im.cached.Workflow.ID.String()
+	ar.Workflow.WorkflowID = im.cached.File.ID.String()
 	ar.Workflow.Timeout = timeout
-	ar.Workflow.Revision = im.cached.Revision.Hash
+	ar.Workflow.Revision = im.cached.Revision.Checksum
 	ar.Workflow.NamespaceName = im.cached.Namespace.Name
 	ar.Workflow.Path = im.cached.Instance.As
 	ar.Iterator = iterator
@@ -409,8 +429,8 @@ func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory,
 	ar.Container.Type = fnt
 	ar.Container.Data = inputData
 
-	wfID := im.cached.Workflow.ID.String()
-	revID := im.cached.Revision.Hash
+	wfID := im.cached.File.ID.String()
+	revID := im.cached.Revision.Checksum
 	nsID := im.cached.Namespace.ID.String()
 
 	switch fnt {

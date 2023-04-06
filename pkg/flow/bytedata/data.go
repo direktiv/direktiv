@@ -67,7 +67,6 @@ func convertDataForOutputMapBuilder(t reflect.Type, v reflect.Value) interface{}
 
 		val := vv.Interface()
 		m[key] = val
-
 	}
 
 	x := make(map[string]interface{})
@@ -83,7 +82,6 @@ func convertDataForOutputStructBuilder(t reflect.Type, v reflect.Value) interfac
 	m := make(map[string]interface{})
 
 	for i := 0; i < v.NumField(); i++ {
-
 		if !v.Field(i).CanInterface() {
 			continue
 		}
@@ -108,7 +106,6 @@ func convertDataForOutputStructBuilder(t reflect.Type, v reflect.Value) interfac
 
 		val := v.Field(i).Interface()
 		m[key] = val
-
 	}
 
 	x := make(map[string]interface{})
@@ -124,14 +121,12 @@ func convertDataForOutputSliceBuilder(t reflect.Type, v reflect.Value) interface
 	s := make([]interface{}, v.Len())
 
 	for i := 0; i < v.Len(); i++ {
-
 		if !v.Index(i).CanInterface() {
 			continue
 		}
 
 		val := v.Index(i).Interface()
 		s[i] = val
-
 	}
 
 	for idx, v := range s {

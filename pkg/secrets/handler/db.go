@@ -185,7 +185,6 @@ func (db *dbHandler) GetSecrets(namespace string, name string) ([]string, error)
 	pathPatternFiles := name + "*"
 
 	for _, s := range dbs {
-
 		matchesPathPatternFolders, _ := filepath.Match(pathPatternFolders, s.Name)
 		matchesPathPatternFiles, _ := filepath.Match(pathPatternFiles, s.Name)
 

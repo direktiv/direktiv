@@ -30,6 +30,7 @@ func (o *GetterDefinition) Validate() error {
 	case util.VarScopeNamespace:
 	case util.VarScopeThread:
 	case util.VarScopeSystem:
+	case util.VarScopeFileSystem:
 	default:
 		return ErrVarScope
 	}

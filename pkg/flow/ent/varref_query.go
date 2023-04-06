@@ -16,7 +16,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/predicate"
 	"github.com/direktiv/direktiv/pkg/flow/ent/vardata"
 	"github.com/direktiv/direktiv/pkg/flow/ent/varref"
-	"github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 	"github.com/google/uuid"
 )
 
@@ -31,7 +30,6 @@ type VarRefQuery struct {
 	predicates    []predicate.VarRef
 	withVardata   *VarDataQuery
 	withNamespace *NamespaceQuery
-	withWorkflow  *WorkflowQuery
 	withInstance  *InstanceQuery
 	withFKs       bool
 	modifiers     []func(*sql.Selector)
@@ -108,28 +106,6 @@ func (vrq *VarRefQuery) QueryNamespace() *NamespaceQuery {
 			sqlgraph.From(varref.Table, varref.FieldID, selector),
 			sqlgraph.To(namespace.Table, namespace.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, varref.NamespaceTable, varref.NamespaceColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(vrq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryWorkflow chains the current query on the "workflow" edge.
-func (vrq *VarRefQuery) QueryWorkflow() *WorkflowQuery {
-	query := &WorkflowQuery{config: vrq.config}
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := vrq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := vrq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(varref.Table, varref.FieldID, selector),
-			sqlgraph.To(workflow.Table, workflow.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, varref.WorkflowTable, varref.WorkflowColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(vrq.driver.Dialect(), step)
 		return fromU, nil
@@ -342,7 +318,6 @@ func (vrq *VarRefQuery) Clone() *VarRefQuery {
 		predicates:    append([]predicate.VarRef{}, vrq.predicates...),
 		withVardata:   vrq.withVardata.Clone(),
 		withNamespace: vrq.withNamespace.Clone(),
-		withWorkflow:  vrq.withWorkflow.Clone(),
 		withInstance:  vrq.withInstance.Clone(),
 		// clone intermediate query.
 		sql:    vrq.sql.Clone(),
@@ -370,17 +345,6 @@ func (vrq *VarRefQuery) WithNamespace(opts ...func(*NamespaceQuery)) *VarRefQuer
 		opt(query)
 	}
 	vrq.withNamespace = query
-	return vrq
-}
-
-// WithWorkflow tells the query-builder to eager-load the nodes that are connected to
-// the "workflow" edge. The optional arguments are used to configure the query builder of the edge.
-func (vrq *VarRefQuery) WithWorkflow(opts ...func(*WorkflowQuery)) *VarRefQuery {
-	query := &WorkflowQuery{config: vrq.config}
-	for _, opt := range opts {
-		opt(query)
-	}
-	vrq.withWorkflow = query
 	return vrq
 }
 
@@ -469,14 +433,13 @@ func (vrq *VarRefQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*VarR
 		nodes       = []*VarRef{}
 		withFKs     = vrq.withFKs
 		_spec       = vrq.querySpec()
-		loadedTypes = [4]bool{
+		loadedTypes = [3]bool{
 			vrq.withVardata != nil,
 			vrq.withNamespace != nil,
-			vrq.withWorkflow != nil,
 			vrq.withInstance != nil,
 		}
 	)
-	if vrq.withVardata != nil || vrq.withNamespace != nil || vrq.withWorkflow != nil || vrq.withInstance != nil {
+	if vrq.withVardata != nil || vrq.withNamespace != nil || vrq.withInstance != nil {
 		withFKs = true
 	}
 	if withFKs {
@@ -512,12 +475,6 @@ func (vrq *VarRefQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*VarR
 	if query := vrq.withNamespace; query != nil {
 		if err := vrq.loadNamespace(ctx, query, nodes, nil,
 			func(n *VarRef, e *Namespace) { n.Edges.Namespace = e }); err != nil {
-			return nil, err
-		}
-	}
-	if query := vrq.withWorkflow; query != nil {
-		if err := vrq.loadWorkflow(ctx, query, nodes, nil,
-			func(n *VarRef, e *Workflow) { n.Edges.Workflow = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -581,35 +538,6 @@ func (vrq *VarRefQuery) loadNamespace(ctx context.Context, query *NamespaceQuery
 		nodes, ok := nodeids[n.ID]
 		if !ok {
 			return fmt.Errorf(`unexpected foreign-key "namespace_vars" returned %v`, n.ID)
-		}
-		for i := range nodes {
-			assign(nodes[i], n)
-		}
-	}
-	return nil
-}
-func (vrq *VarRefQuery) loadWorkflow(ctx context.Context, query *WorkflowQuery, nodes []*VarRef, init func(*VarRef), assign func(*VarRef, *Workflow)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*VarRef)
-	for i := range nodes {
-		if nodes[i].workflow_vars == nil {
-			continue
-		}
-		fk := *nodes[i].workflow_vars
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
-		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
-	}
-	query.Where(workflow.IDIn(ids...))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "workflow_vars" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)

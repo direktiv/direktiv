@@ -123,7 +123,6 @@ func InitPubSub(log *zap.SugaredLogger, notifier Notifier, database string) (*Pu
 		}()
 
 		for {
-
 			var more bool
 			var notification *pq.Notification
 
@@ -164,7 +163,6 @@ func InitPubSub(log *zap.SugaredLogger, notifier Notifier, database string) (*Pu
 
 				go handler(req)
 			}
-
 		}
 	}(listener)
 
@@ -251,7 +249,6 @@ func (s *Subscription) Wait(ctx context.Context) bool {
 
 func (s *Subscription) Close() error {
 	if !s.closed {
-
 		defer func() {
 			r := recover()
 			if r != nil {
@@ -271,7 +268,6 @@ func (s *Subscription) Close() error {
 		s.pubsub.mtx.Unlock()
 
 		close(s.ch)
-
 	}
 
 	return nil
@@ -334,7 +330,6 @@ func (pubsub *Pubsub) flush() {
 	comma := false
 
 	for idx := range clusterSlice {
-
 		s := clusterSlice[idx]
 
 		if l+len(s) >= 8000 {
@@ -357,7 +352,6 @@ func (pubsub *Pubsub) flush() {
 			comma = true
 			l += len(s)
 		}
-
 	}
 
 	if l > 3 {
@@ -495,16 +489,16 @@ func (pubsub *Pubsub) SubscribeNamespaceLogs(ns *uuid.UUID) *Subscription {
 	return pubsub.Subscribe(ns.String(), pubsub.namespaceLogs(ns))
 }
 
-func (pubsub *Pubsub) namespaceEventListeners(ns *database.Namespace) string {
-	return fmt.Sprintf("nsel:%s", ns.ID.String())
+func (pubsub *Pubsub) namespaceEventListeners(id uuid.UUID) string {
+	return fmt.Sprintf("nsel:%s", id.String())
 }
 
 func (pubsub *Pubsub) SubscribeEventListeners(ns *database.Namespace) *Subscription {
-	return pubsub.Subscribe(ns.ID.String(), pubsub.namespaceEventListeners(ns))
+	return pubsub.Subscribe(ns.ID.String(), pubsub.namespaceEventListeners(ns.ID))
 }
 
-func (pubsub *Pubsub) NotifyEventListeners(ns *database.Namespace) {
-	pubsub.Publish(pubsubNotify(pubsub.namespaceEventListeners(ns)))
+func (pubsub *Pubsub) NotifyEventListeners(id uuid.UUID) {
+	pubsub.Publish(pubsubNotify(pubsub.namespaceEventListeners(id)))
 }
 
 func (pubsub *Pubsub) namespaceEvents(ns *database.Namespace) string {
@@ -519,33 +513,12 @@ func (pubsub *Pubsub) NotifyEvents(ns *database.Namespace) {
 	pubsub.Publish(pubsubNotify(pubsub.namespaceEvents(ns)))
 }
 
-func (pubsub *Pubsub) walkInodeKeys(cached *database.CacheData) []string {
-	array := make([]string, 0)
-
-	for i := len(cached.Inodes) - 1; i >= 0; i-- {
-		x := cached.Inodes[i]
-		array = append(array, x.ID.String())
-	}
-
-	array = append(array, cached.Namespace.ID.String())
-
-	keys := make([]string, 0)
-	for i := len(array) - 1; i >= 0; i-- {
-		keys = append(keys, array[i])
-	}
-
-	return keys
-}
-
-func (pubsub *Pubsub) SubscribeInode(cached *database.CacheData) *Subscription {
-	keys := pubsub.walkInodeKeys(cached)
-
+func (pubsub *Pubsub) SubscribeInode(id uuid.UUID) *Subscription {
+	keys := []string{id.String()}
 	return pubsub.Subscribe(keys...)
 }
 
 func (pubsub *Pubsub) NotifyInode(ino *database.Inode) {
-	// pubsub.log.Debugf("PS Notify Inode: %s", ino.ID.String())
-
 	pubsub.Publish(pubsubNotify(ino.ID.String()))
 }
 
@@ -557,94 +530,68 @@ func (pubsub *Pubsub) inodeAnnotations(ino *database.Inode) string {
 	return fmt.Sprintf("inonotes:%s", ino.ID.String())
 }
 
-func (pubsub *Pubsub) SubscribeInodeAnnotations(cached *database.CacheData) *Subscription {
-	keys := pubsub.walkInodeKeys(cached)
-
-	ino := cached.Inodes[len(cached.Inodes)-1]
-	keys = append(keys, pubsub.inodeAnnotations(ino))
-
-	return pubsub.Subscribe(keys...)
-}
-
-func (pubsub *Pubsub) mirror(ino *database.Inode) string {
-	return fmt.Sprintf("mirror:%s", ino.ID.String())
+func (pubsub *Pubsub) mirror(id uuid.UUID) string {
+	return fmt.Sprintf("mirror:%s", id.String())
 }
 
 func (pubsub *Pubsub) NotifyInodeAnnotations(ino *database.Inode) {
 	pubsub.Publish(pubsubNotify(pubsub.inodeAnnotations(ino)))
 }
 
-func (pubsub *Pubsub) SubscribeMirror(cached *database.CacheData) *Subscription {
-	keys := pubsub.walkInodeKeys(cached)
-
-	ino := cached.Inodes[len(cached.Inodes)-1]
-	keys = append(keys, pubsub.mirror(ino))
-
+func (pubsub *Pubsub) SubscribeMirror(id uuid.UUID) *Subscription {
+	keys := []string{pubsub.mirror(id)}
 	return pubsub.Subscribe(keys...)
 }
 
-func (pubsub *Pubsub) NotifyMirror(ino *database.Inode) {
-	pubsub.Publish(pubsubNotify(pubsub.mirror(ino)))
+func (pubsub *Pubsub) NotifyMirror(id uuid.UUID) {
+	pubsub.Publish(pubsubNotify(pubsub.mirror(id)))
 }
 
-func (pubsub *Pubsub) CloseMirror(ino *database.Inode) {
-	pubsub.Publish(pubsubDisconnect(pubsub.mirror(ino)))
+func (pubsub *Pubsub) CloseMirror(id uuid.UUID) {
+	pubsub.Publish(pubsubDisconnect(pubsub.mirror(id)))
 }
 
-func (pubsub *Pubsub) workflowVars(wf *database.Workflow) string {
-	return fmt.Sprintf("wfvars:%s", wf.ID.String())
+func (pubsub *Pubsub) workflowVars(id uuid.UUID) string {
+	return fmt.Sprintf("wfvars:%s", id.String())
 }
 
-func (pubsub *Pubsub) SubscribeWorkflowVariables(cached *database.CacheData) *Subscription {
-	keys := pubsub.walkInodeKeys(cached)
-
-	keys = append(keys, cached.Workflow.ID.String(), pubsub.workflowVars(cached.Workflow))
-
+func (pubsub *Pubsub) SubscribeWorkflowVariables(id uuid.UUID) *Subscription {
+	keys := []string{pubsub.workflowVars(id)}
 	return pubsub.Subscribe(keys...)
 }
 
-func (pubsub *Pubsub) NotifyWorkflowVariables(wf *database.Workflow) {
-	pubsub.Publish(pubsubNotify(pubsub.workflowVars(wf)))
+func (pubsub *Pubsub) NotifyWorkflowVariables(id uuid.UUID) {
+	pubsub.Publish(pubsubNotify(pubsub.workflowVars(id)))
 }
 
-func (pubsub *Pubsub) workflowAnnotations(wf *database.Workflow) string {
-	return fmt.Sprintf("wfnotes:%s", wf.ID.String())
+func (pubsub *Pubsub) workflowAnnotations(id uuid.UUID) string {
+	return fmt.Sprintf("wfnotes:%s", id.String())
 }
 
-func (pubsub *Pubsub) SubscribeWorkflowAnnotations(cached *database.CacheData) *Subscription {
-	keys := pubsub.walkInodeKeys(cached)
-
-	keys = append(keys, cached.Workflow.ID.String(), pubsub.workflowAnnotations(cached.Workflow))
-
-	return pubsub.Subscribe(keys...)
-}
-
-func (pubsub *Pubsub) NotifyWorkflowAnnotations(wf *database.Workflow) {
-	pubsub.Publish(pubsubNotify(pubsub.workflowAnnotations(wf)))
+func (pubsub *Pubsub) NotifyWorkflowAnnotations(id uuid.UUID) {
+	pubsub.Publish(pubsubNotify(pubsub.workflowAnnotations(id)))
 }
 
 func (pubsub *Pubsub) workflowLogs(wf *uuid.UUID) string {
 	return fmt.Sprintf("wflogs:%s", wf.String())
 }
 
-func (pubsub *Pubsub) SubscribeWorkflowLogs(cached *database.CacheData) *Subscription {
-	keys := pubsub.walkInodeKeys(cached)
-
-	keys = append(keys, cached.Workflow.ID.String(), pubsub.workflowLogs(&cached.Workflow.ID))
-
+func (pubsub *Pubsub) SubscribeWorkflowLogs(id uuid.UUID) *Subscription {
+	keys := []string{id.String()}
 	return pubsub.Subscribe(keys...)
 }
 
-func (pubsub *Pubsub) SubscribeWorkflow(cached *database.CacheData) *Subscription {
-	keys := pubsub.walkInodeKeys(cached)
-
-	keys = append(keys, cached.Workflow.ID.String())
-
+func (pubsub *Pubsub) SubscribeWorkflow(id uuid.UUID) *Subscription {
+	keys := []string{id.String()}
 	return pubsub.Subscribe(keys...)
 }
 
 func (pubsub *Pubsub) NotifyWorkflow(wf *database.Workflow) {
 	pubsub.Publish(pubsubNotify(wf.ID.String()))
+}
+
+func (pubsub *Pubsub) NotifyWorkflowID(id uuid.UUID) {
+	pubsub.Publish(pubsubNotify(id.String()))
 }
 
 func (pubsub *Pubsub) CloseWorkflow(wf *database.Workflow) {
@@ -715,10 +662,10 @@ func (pubsub *Pubsub) activityLogs(act *uuid.UUID) string {
 	return fmt.Sprintf("mactlogs:%s", act.String())
 }
 
-func (pubsub *Pubsub) SubscribeMirrorActivityLogs(ns *database.Namespace, act *database.MirrorActivity) *Subscription {
+func (pubsub *Pubsub) SubscribeMirrorActivityLogs(namespaceID uuid.UUID, mirrorProcessID uuid.UUID) *Subscription {
 	keys := []string{}
 
-	keys = append(keys, ns.ID.String(), pubsub.activityLogs(&act.ID))
+	keys = append(keys, namespaceID.String(), pubsub.activityLogs(&mirrorProcessID))
 
 	return pubsub.Subscribe(keys...)
 }

@@ -7,10 +7,9 @@ import (
 	"strings"
 	"time"
 
-	log "github.com/direktiv/direktiv/pkg/flow/internallogger"
-
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
+	log "github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/google/uuid"
 )
@@ -85,7 +84,6 @@ func (instance *testerInstance) getTraceExclude(excl ...string) []string {
 	var trace []string
 
 	for _, s := range x {
-
 		exclude := false
 
 		for _, m := range excl {
@@ -97,7 +95,6 @@ func (instance *testerInstance) getTraceExclude(excl ...string) []string {
 		if !exclude {
 			trace = append(trace, s)
 		}
-
 	}
 
 	return trace

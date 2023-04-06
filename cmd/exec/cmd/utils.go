@@ -69,7 +69,6 @@ func pingNamespace() error {
 		}
 
 		return fmt.Errorf("failed to ping namespace %s, server responded with %s\n------DUMPING ERROR BODY ------\nCould read response body", urlGetNode, resp.Status)
-
 	}
 
 	return nil

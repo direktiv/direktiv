@@ -514,7 +514,6 @@ func recurseMkdirParent(path string) error {
 
 			return fmt.Errorf("failed to create parent, server responded with %s\n------DUMPING ERROR BODY ------\nCould read response body", resp.Status)
 		}
-
 	}
 
 	return nil
@@ -717,7 +716,6 @@ func getOutput(url string) ([]byte, error) {
 		}
 
 		return nil, fmt.Errorf("failed to get instance output, server responded with %s\n------DUMPING ERROR BODY ------\nCould read response body", resp.Status)
-
 	}
 
 	body, err := io.ReadAll(resp.Body)

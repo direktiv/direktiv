@@ -122,7 +122,6 @@ func (s *Server) StoreSecret(ctx context.Context, in *secretsgrpc.SecretsStoreRe
 				return &resp, err
 			}
 		}
-
 	}
 
 	return &resp, err

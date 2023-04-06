@@ -117,6 +117,20 @@ func LogInstanceCallPath(v string) predicate.LogMsg {
 	})
 }
 
+// WorkflowID applies equality check predicate on the "workflow_id" field. It's identical to WorkflowIDEQ.
+func WorkflowID(v uuid.UUID) predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldWorkflowID), v))
+	})
+}
+
+// MirrorActivityID applies equality check predicate on the "mirror_activity_id" field. It's identical to MirrorActivityIDEQ.
+func MirrorActivityID(v uuid.UUID) predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldMirrorActivityID), v))
+	})
+}
+
 // TEQ applies the EQ predicate on the "t" field.
 func TEQ(v time.Time) predicate.LogMsg {
 	return predicate.LogMsg(func(s *sql.Selector) {
@@ -591,6 +605,162 @@ func TagsNotNil() predicate.LogMsg {
 	})
 }
 
+// WorkflowIDEQ applies the EQ predicate on the "workflow_id" field.
+func WorkflowIDEQ(v uuid.UUID) predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldWorkflowID), v))
+	})
+}
+
+// WorkflowIDNEQ applies the NEQ predicate on the "workflow_id" field.
+func WorkflowIDNEQ(v uuid.UUID) predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldWorkflowID), v))
+	})
+}
+
+// WorkflowIDIn applies the In predicate on the "workflow_id" field.
+func WorkflowIDIn(vs ...uuid.UUID) predicate.LogMsg {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.In(s.C(FieldWorkflowID), v...))
+	})
+}
+
+// WorkflowIDNotIn applies the NotIn predicate on the "workflow_id" field.
+func WorkflowIDNotIn(vs ...uuid.UUID) predicate.LogMsg {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.NotIn(s.C(FieldWorkflowID), v...))
+	})
+}
+
+// WorkflowIDGT applies the GT predicate on the "workflow_id" field.
+func WorkflowIDGT(v uuid.UUID) predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldWorkflowID), v))
+	})
+}
+
+// WorkflowIDGTE applies the GTE predicate on the "workflow_id" field.
+func WorkflowIDGTE(v uuid.UUID) predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldWorkflowID), v))
+	})
+}
+
+// WorkflowIDLT applies the LT predicate on the "workflow_id" field.
+func WorkflowIDLT(v uuid.UUID) predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldWorkflowID), v))
+	})
+}
+
+// WorkflowIDLTE applies the LTE predicate on the "workflow_id" field.
+func WorkflowIDLTE(v uuid.UUID) predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldWorkflowID), v))
+	})
+}
+
+// WorkflowIDIsNil applies the IsNil predicate on the "workflow_id" field.
+func WorkflowIDIsNil() predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldWorkflowID)))
+	})
+}
+
+// WorkflowIDNotNil applies the NotNil predicate on the "workflow_id" field.
+func WorkflowIDNotNil() predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldWorkflowID)))
+	})
+}
+
+// MirrorActivityIDEQ applies the EQ predicate on the "mirror_activity_id" field.
+func MirrorActivityIDEQ(v uuid.UUID) predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldMirrorActivityID), v))
+	})
+}
+
+// MirrorActivityIDNEQ applies the NEQ predicate on the "mirror_activity_id" field.
+func MirrorActivityIDNEQ(v uuid.UUID) predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldMirrorActivityID), v))
+	})
+}
+
+// MirrorActivityIDIn applies the In predicate on the "mirror_activity_id" field.
+func MirrorActivityIDIn(vs ...uuid.UUID) predicate.LogMsg {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.In(s.C(FieldMirrorActivityID), v...))
+	})
+}
+
+// MirrorActivityIDNotIn applies the NotIn predicate on the "mirror_activity_id" field.
+func MirrorActivityIDNotIn(vs ...uuid.UUID) predicate.LogMsg {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.NotIn(s.C(FieldMirrorActivityID), v...))
+	})
+}
+
+// MirrorActivityIDGT applies the GT predicate on the "mirror_activity_id" field.
+func MirrorActivityIDGT(v uuid.UUID) predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldMirrorActivityID), v))
+	})
+}
+
+// MirrorActivityIDGTE applies the GTE predicate on the "mirror_activity_id" field.
+func MirrorActivityIDGTE(v uuid.UUID) predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldMirrorActivityID), v))
+	})
+}
+
+// MirrorActivityIDLT applies the LT predicate on the "mirror_activity_id" field.
+func MirrorActivityIDLT(v uuid.UUID) predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldMirrorActivityID), v))
+	})
+}
+
+// MirrorActivityIDLTE applies the LTE predicate on the "mirror_activity_id" field.
+func MirrorActivityIDLTE(v uuid.UUID) predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldMirrorActivityID), v))
+	})
+}
+
+// MirrorActivityIDIsNil applies the IsNil predicate on the "mirror_activity_id" field.
+func MirrorActivityIDIsNil() predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldMirrorActivityID)))
+	})
+}
+
+// MirrorActivityIDNotNil applies the NotNil predicate on the "mirror_activity_id" field.
+func MirrorActivityIDNotNil() predicate.LogMsg {
+	return predicate.LogMsg(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldMirrorActivityID)))
+	})
+}
+
 // HasNamespace applies the HasEdge predicate on the "namespace" edge.
 func HasNamespace() predicate.LogMsg {
 	return predicate.LogMsg(func(s *sql.Selector) {
@@ -619,34 +789,6 @@ func HasNamespaceWith(preds ...predicate.Namespace) predicate.LogMsg {
 	})
 }
 
-// HasWorkflow applies the HasEdge predicate on the "workflow" edge.
-func HasWorkflow() predicate.LogMsg {
-	return predicate.LogMsg(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(WorkflowTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, WorkflowTable, WorkflowColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasWorkflowWith applies the HasEdge predicate on the "workflow" edge with a given conditions (other predicates).
-func HasWorkflowWith(preds ...predicate.Workflow) predicate.LogMsg {
-	return predicate.LogMsg(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(WorkflowInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, WorkflowTable, WorkflowColumn),
-		)
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // HasInstance applies the HasEdge predicate on the "instance" edge.
 func HasInstance() predicate.LogMsg {
 	return predicate.LogMsg(func(s *sql.Selector) {
@@ -666,34 +808,6 @@ func HasInstanceWith(preds ...predicate.Instance) predicate.LogMsg {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(InstanceInverseTable, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, InstanceTable, InstanceColumn),
-		)
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasActivity applies the HasEdge predicate on the "activity" edge.
-func HasActivity() predicate.LogMsg {
-	return predicate.LogMsg(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(ActivityTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, ActivityTable, ActivityColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasActivityWith applies the HasEdge predicate on the "activity" edge with a given conditions (other predicates).
-func HasActivityWith(preds ...predicate.MirrorActivity) predicate.LogMsg {
-	return predicate.LogMsg(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(ActivityInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, ActivityTable, ActivityColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

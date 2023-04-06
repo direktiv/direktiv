@@ -263,6 +263,26 @@ func (iru *InstanceRuntimeUpdate) ClearMetadata() *InstanceRuntimeUpdate {
 	return iru
 }
 
+// SetLogToEvents sets the "logToEvents" field.
+func (iru *InstanceRuntimeUpdate) SetLogToEvents(s string) *InstanceRuntimeUpdate {
+	iru.mutation.SetLogToEvents(s)
+	return iru
+}
+
+// SetNillableLogToEvents sets the "logToEvents" field if the given value is not nil.
+func (iru *InstanceRuntimeUpdate) SetNillableLogToEvents(s *string) *InstanceRuntimeUpdate {
+	if s != nil {
+		iru.SetLogToEvents(*s)
+	}
+	return iru
+}
+
+// ClearLogToEvents clears the value of the "logToEvents" field.
+func (iru *InstanceRuntimeUpdate) ClearLogToEvents() *InstanceRuntimeUpdate {
+	iru.mutation.ClearLogToEvents()
+	return iru
+}
+
 // SetInstanceID sets the "instance" edge to the Instance entity by ID.
 func (iru *InstanceRuntimeUpdate) SetInstanceID(id uuid.UUID) *InstanceRuntimeUpdate {
 	iru.mutation.SetInstanceID(id)
@@ -472,6 +492,12 @@ func (iru *InstanceRuntimeUpdate) sqlSave(ctx context.Context) (n int, err error
 	}
 	if iru.mutation.MetadataCleared() {
 		_spec.ClearField(instanceruntime.FieldMetadata, field.TypeString)
+	}
+	if value, ok := iru.mutation.LogToEvents(); ok {
+		_spec.SetField(instanceruntime.FieldLogToEvents, field.TypeString, value)
+	}
+	if iru.mutation.LogToEventsCleared() {
+		_spec.ClearField(instanceruntime.FieldLogToEvents, field.TypeString)
 	}
 	if iru.mutation.InstanceCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -795,6 +821,26 @@ func (iruo *InstanceRuntimeUpdateOne) ClearMetadata() *InstanceRuntimeUpdateOne 
 	return iruo
 }
 
+// SetLogToEvents sets the "logToEvents" field.
+func (iruo *InstanceRuntimeUpdateOne) SetLogToEvents(s string) *InstanceRuntimeUpdateOne {
+	iruo.mutation.SetLogToEvents(s)
+	return iruo
+}
+
+// SetNillableLogToEvents sets the "logToEvents" field if the given value is not nil.
+func (iruo *InstanceRuntimeUpdateOne) SetNillableLogToEvents(s *string) *InstanceRuntimeUpdateOne {
+	if s != nil {
+		iruo.SetLogToEvents(*s)
+	}
+	return iruo
+}
+
+// ClearLogToEvents clears the value of the "logToEvents" field.
+func (iruo *InstanceRuntimeUpdateOne) ClearLogToEvents() *InstanceRuntimeUpdateOne {
+	iruo.mutation.ClearLogToEvents()
+	return iruo
+}
+
 // SetInstanceID sets the "instance" edge to the Instance entity by ID.
 func (iruo *InstanceRuntimeUpdateOne) SetInstanceID(id uuid.UUID) *InstanceRuntimeUpdateOne {
 	iruo.mutation.SetInstanceID(id)
@@ -1034,6 +1080,12 @@ func (iruo *InstanceRuntimeUpdateOne) sqlSave(ctx context.Context) (_node *Insta
 	}
 	if iruo.mutation.MetadataCleared() {
 		_spec.ClearField(instanceruntime.FieldMetadata, field.TypeString)
+	}
+	if value, ok := iruo.mutation.LogToEvents(); ok {
+		_spec.SetField(instanceruntime.FieldLogToEvents, field.TypeString, value)
+	}
+	if iruo.mutation.LogToEventsCleared() {
+		_spec.ClearField(instanceruntime.FieldLogToEvents, field.TypeString)
 	}
 	if iruo.mutation.InstanceCleared() {
 		edge := &sqlgraph.EdgeSpec{

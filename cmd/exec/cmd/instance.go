@@ -61,7 +61,6 @@ func (fq FilterQueryInstance) Query() string {
 		if i < len(fq.Payload)-1 {
 			value += "::"
 		}
-
 	}
 	return fmt.Sprintf("?filter.field=%s&filter.type=%s&filter.val=%s", fq.Filter, fq.Typ, value)
 }
@@ -151,7 +150,6 @@ func GetLogs(cmd *cobra.Command, instance string, query string) (urlOutput strin
 			clientLogs.Unsubscribe(logsChannel)
 			clientInstance.Unsubscribe(channelInstance)
 			break
-
 		}
 	}
 
