@@ -42,13 +42,18 @@ func (q *RootQuery) CropFilesAndDirectories(ctx context.Context, excludePaths []
 
 	pathsToRemove := []string{}
 	for _, pathInRoot := range allPaths {
+		remove := true
 		for _, excludePath := range excludePaths {
 			if strings.HasPrefix(excludePath, pathInRoot) {
-				continue
+				remove = false
+				break
 			}
 			if excludePath == pathInRoot {
-				continue
+				remove = false
+				break
 			}
+		}
+		if remove {
 			pathsToRemove = append(pathsToRemove, pathInRoot)
 		}
 	}

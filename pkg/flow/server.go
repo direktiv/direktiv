@@ -167,6 +167,8 @@ func (srv *server) start(ctx context.Context) error {
 	// srv.fStore = psql.NewSQLFileStore(srv.gormDB)
 	// srv.dataStore = sql.NewSQLStore(srv.gormDB)
 
+	srv.mirrorManager = mirror.NewDefaultManager(srv.sugar, sql.NewSQLStore(srv.gormDB).Mirror(), psql.NewSQLFileStore(srv.gormDB), &mirror.GitSource{})
+
 	srv.sugar.Debug("Initializing pub-sub.")
 
 	srv.pubsub, err = pubsub.InitPubSub(srv.sugar, srv, db)

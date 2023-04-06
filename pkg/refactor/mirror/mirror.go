@@ -56,18 +56,20 @@ type Manager interface {
 	CancelMirroringProcess(ctx context.Context, id uuid.UUID) error
 }
 
-type defaultManager struct {
-	store Store
-	lg    *zap.SugaredLogger
+type DefaultManager struct {
+	store  Store
+	lg     *zap.SugaredLogger
+	fStore filestore.FileStore
+	source Source
 }
 
-func (d *defaultManager) StartMirroringProcess(ctx context.Context, config *Config) (*Process, error) {
-	var fStore filestore.FileStore
-	var source Source
-	var process *Process
-	var namespaceID uuid.UUID
+func NewDefaultManager(lg *zap.SugaredLogger, store Store, fStore filestore.FileStore, source Source) *DefaultManager {
+	return &DefaultManager{store: store, lg: lg, fStore: fStore, source: source}
+}
 
+func (d *DefaultManager) StartMirroringProcess(ctx context.Context, config *Config) (*Process, error) {
 	process, err := d.store.CreateProcess(ctx, &Process{
+		ID:       uuid.New(),
 		ConfigID: config.ID,
 		Status:   "created",
 	})
@@ -75,7 +77,7 @@ func (d *defaultManager) StartMirroringProcess(ctx context.Context, config *Conf
 		return nil, fmt.Errorf("creating a new process, err: %s", err)
 	}
 
-	d.lg.Errorw("starting new mirroring process", "process_id", process.ID)
+	d.lg.Errorw("starting new mirroring process", "process_id", process.ID, "error", err)
 
 	go func() {
 		err := (&mirroringJob{
@@ -84,37 +86,37 @@ func (d *defaultManager) StartMirroringProcess(ctx context.Context, config *Conf
 		}).
 			SetProcessStatus(d.store, process, "started").
 			CreateDistDirectory().
-			PullSourceInPath(source, config).
+			PullSourceInPath(d.source, config).
 			CreateSourceFilesList().
-			ParseIgnoreFile("/.direktivignore").
-			FilterIgnoredFiles().
+			// ParseIgnoreFile("/.direktivignore").
+			// FilterIgnoredFiles().
 			ParseDirektivVariable().
 
 			// TODO: we need to implement a mechanism to synchronize multiple mirroring processes.
-			ReadRootFilesChecksums(fStore, namespaceID).
-			CreateAllDirectories(fStore, namespaceID).
-			CopyFilesToRoot(fStore, namespaceID).
-			CropFilesAndDirectoriesInRoot(fStore, namespaceID).
+			ReadRootFilesChecksums(d.fStore, config.ID).
+			CreateAllDirectories(d.fStore, config.ID).
+			CopyFilesToRoot(d.fStore, config.ID).
+			CropFilesAndDirectoriesInRoot(d.fStore, config.ID).
 			DeleteDistDirectory().
 			SetProcessStatus(d.store, process, "finished").Error()
 		if err != nil {
 			process.Status = "failed"
-			process, err = d.store.UpdateProcess(context.TODO(), process)
+			process, _ = d.store.UpdateProcess(context.TODO(), process)
 		}
 		if err != nil {
 			d.lg.Errorw("mirroring process failed", "err", err, "process_id", process.ID)
 		}
 		if err == nil {
-			d.lg.Errorw("mirroring process succeeded", "process_id", process.ID)
+			d.lg.Infow("mirroring process succeeded", "process_id", process.ID)
 		}
 	}()
 
 	return process, err
 }
 
-func (d *defaultManager) CancelMirroringProcess(ctx context.Context, id uuid.UUID) error {
+func (d *DefaultManager) CancelMirroringProcess(ctx context.Context, id uuid.UUID) error {
 	// TODO implement me
 	return nil
 }
 
-var _ Manager = &defaultManager{}
+var _ Manager = &DefaultManager{}

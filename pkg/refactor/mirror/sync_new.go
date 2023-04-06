@@ -57,6 +57,8 @@ func (j *mirroringJob) CreateDistDirectory() *mirroringJob {
 		j.err = fmt.Errorf("create mirror dst directory, err: %s", err)
 	}
 
+	j.lg.Infow("creating mirroring temp dir", "dir", j.distDirectory)
+
 	return j
 }
 
@@ -71,6 +73,8 @@ func (j *mirroringJob) DeleteDistDirectory() *mirroringJob {
 	if err != nil {
 		j.err = fmt.Errorf("os remove dist directory, dir: %s, err: %s", j.distDirectory, err)
 	}
+
+	j.lg.Infow("deleting mirroring temp dir", "dir", j.distDirectory)
 
 	return j
 }
@@ -101,7 +105,13 @@ func (j *mirroringJob) CreateSourceFilesList() *mirroringJob {
 		if d.IsDir() {
 			return nil
 		}
-		paths = append(paths, path)
+
+		relativePath := strings.TrimPrefix(path, j.distDirectory)
+
+		if strings.Contains(relativePath, ".git") {
+			return nil
+		}
+		paths = append(paths, relativePath)
 		return nil
 	})
 	if err != nil {
@@ -110,6 +120,10 @@ func (j *mirroringJob) CreateSourceFilesList() *mirroringJob {
 		return j
 	}
 	j.sourcedPaths = paths
+
+	for _, p := range j.sourcedPaths {
+		j.lg.Infow("source path", "path", p)
+	}
 
 	return j
 }
@@ -178,17 +192,19 @@ func (j *mirroringJob) CopyFilesToRoot(fStore filestore.FileStore, namespaceID u
 	}
 
 	for _, path := range j.sourcedPaths {
-		data, err := os.ReadFile(path)
+		j.lg.Infow("trying to copy", "path", path)
+		data, err := os.ReadFile(j.distDirectory + path)
 		if err != nil {
 			j.err = fmt.Errorf("read os file, path: %s, err: %s", path, err)
 			return j
-
 		}
 		checksum := string(filestore.DefaultCalculateChecksum(data))
 		fileChecksum, pathDoesExist := j.rootChecksums[path]
 		isEqualChecksum := checksum == fileChecksum
 
 		if pathDoesExist && isEqualChecksum {
+			j.lg.Infow("checksum skipped to root", "path", path)
+
 			continue
 		}
 
@@ -201,6 +217,7 @@ func (j *mirroringJob) CopyFilesToRoot(fStore filestore.FileStore, namespaceID u
 
 				return j
 			}
+			j.lg.Infow("copied to root", "path", path)
 			continue
 		}
 
@@ -216,6 +233,8 @@ func (j *mirroringJob) CopyFilesToRoot(fStore filestore.FileStore, namespaceID u
 
 			return j
 		}
+		j.lg.Infow("revision to root", "path", path)
+
 	}
 
 	return j
@@ -264,7 +283,6 @@ func (j *mirroringJob) CreateAllDirectories(fStore filestore.FileStore, namespac
 		dir := filepath.Dir(path)
 		allParentDirs := splitPathToDirectories(dir)
 		for _, d := range allParentDirs {
-
 			if _, isExists := j.rootChecksums[dir]; isExists {
 				continue
 			}
@@ -296,10 +314,13 @@ func (j *mirroringJob) Error() interface{} {
 func splitPathToDirectories(dir string) []string {
 	list := []string{}
 
+	dir = strings.TrimSpace(dir)
+	dir = strings.TrimPrefix(dir, "/")
+
 	parts := strings.Split(dir, "/")
 
 	for i := range parts {
-		list = append(list, "/"+strings.Join(parts[:i], "/"))
+		list = append(list, "/"+strings.Join(parts[:i+1], "/"))
 	}
 
 	return list

@@ -2,9 +2,10 @@ package sql_test
 
 import (
 	"context"
+	"testing"
+
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
 	"github.com/google/uuid"
-	"testing"
 
 	"github.com/direktiv/direktiv/pkg/refactor/datastore/sql"
 	"github.com/direktiv/direktiv/pkg/refactor/utils"

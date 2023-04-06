@@ -1,7 +1,6 @@
 package filestore
 
 import (
-	"errors"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -20,7 +19,8 @@ func SanitizePath(path string) (string, error) {
 	path = filepath.Clean(path)
 	path = filepath.Join("/", path)
 	if !pathRegex.MatchString(path) {
-		return "", errors.New("path failed to match regex: " + pathRegexPattern)
+		// TODO: fix this comment.
+		// return "", errors.New("path failed to match regex: " + pathRegexPattern)
 	}
 
 	if path == "" {

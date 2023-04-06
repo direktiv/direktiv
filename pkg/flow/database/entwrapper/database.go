@@ -187,7 +187,6 @@ func New(ctx context.Context, sugar *zap.SugaredLogger, addr string) (*Database,
 `)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to initialize filesystem tables: %v\n", err)
-
 	}
 
 	tx, err := db.DB().Begin()
