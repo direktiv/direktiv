@@ -74,7 +74,7 @@ func (d *DefaultManager) StartMirroringProcess(ctx context.Context, config *Conf
 		Status:   "created",
 	})
 	if err != nil {
-		return nil, fmt.Errorf("creating a new process, err: %s", err)
+		return nil, fmt.Errorf("creating a new process, err: %w", err)
 	}
 
 	d.lg.Errorw("starting new mirroring process", "process_id", process.ID, "error", err)
@@ -85,7 +85,7 @@ func (d *DefaultManager) StartMirroringProcess(ctx context.Context, config *Conf
 			lg:  d.lg,
 		}).
 			SetProcessStatus(d.store, process, "started").
-			CreateDistDirectory().
+			CreateTempDirectory().
 			PullSourceInPath(d.source, config).
 			CreateSourceFilesList().
 			// ParseIgnoreFile("/.direktivignore").
@@ -97,7 +97,7 @@ func (d *DefaultManager) StartMirroringProcess(ctx context.Context, config *Conf
 			CreateAllDirectories(d.fStore, config.ID).
 			CopyFilesToRoot(d.fStore, config.ID).
 			CropFilesAndDirectoriesInRoot(d.fStore, config.ID).
-			DeleteDistDirectory().
+			DeleteTempDirectory().
 			SetProcessStatus(d.store, process, "finished").Error()
 		if err != nil {
 			process.Status = "failed"

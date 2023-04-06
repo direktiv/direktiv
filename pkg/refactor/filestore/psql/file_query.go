@@ -89,6 +89,7 @@ func (q *FileQuery) SetPath(ctx context.Context, path string) error {
 	if q.file.Typ == filestore.FileTypeDirectory {
 		return q.setPathForDirectoryType(ctx, path)
 	}
+
 	return q.setPathForFileType(ctx, path)
 }
 

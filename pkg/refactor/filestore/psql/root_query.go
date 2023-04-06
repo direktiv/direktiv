@@ -46,10 +46,12 @@ func (q *RootQuery) CropFilesAndDirectories(ctx context.Context, excludePaths []
 		for _, excludePath := range excludePaths {
 			if strings.HasPrefix(excludePath, pathInRoot) {
 				remove = false
+
 				break
 			}
 			if excludePath == pathInRoot {
 				remove = false
+
 				break
 			}
 		}
@@ -94,9 +96,11 @@ func (q *RootQuery) IsEmptyDirectory(ctx context.Context, path string) (bool, er
 
 	// check if root exists.
 	if err := q.checkRootExists(ctx); err != nil {
+		// TODO: possible invalid
 		if errors.Is(err, filestore.ErrNotFound) {
 			return true, err
 		}
+
 		return false, err
 	}
 	count := 0
@@ -105,6 +109,7 @@ func (q *RootQuery) IsEmptyDirectory(ctx context.Context, path string) (bool, er
 		return false, tx.Error
 	}
 
+	// TODO: possible invalid
 	return count <= 1, nil // NOTE: had to change this because of the root directory
 }
 
@@ -223,6 +228,7 @@ func (q *RootQuery) GetFile(ctx context.Context, path string) (*filestore.File, 
 		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 			return nil, fmt.Errorf("file '%s': %w", path, filestore.ErrNotFound)
 		}
+
 		return nil, res.Error
 	}
 
@@ -307,9 +313,11 @@ func (q *RootQuery) checkRootExists(ctx context.Context) error {
 	n := &filestore.Root{ID: q.rootID}
 	res := q.db.WithContext(ctx).First(n)
 	if res.Error != nil {
+		// TODO: possible invalid
 		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 			return fmt.Errorf("root '%s': %w", q.rootID, filestore.ErrNotFound)
 		}
+
 		return res.Error
 	}
 

@@ -159,16 +159,19 @@ func assertAllPathsInRoot(t *testing.T, fs filestore.FileStore, root *filestore.
 	gotPaths, err := fs.ForRootID(root.ID).ListAllFiles(context.Background())
 	if err != nil {
 		t.Errorf("unexpected ListAllFiles() error = %v", err)
+
 		return
 	}
 	if len(gotPaths) != len(wantPaths) {
 		t.Errorf("unexpected ListAllFiles() length, got: %d, want: %d", len(gotPaths), len(wantPaths))
+
 		return
 	}
 
 	for i := range gotPaths {
 		if gotPaths[i].Path != wantPaths[i] {
 			t.Errorf("unexpected gotPaths[%d] , got: >%s<, want: >%s<", i, gotPaths[i].Path, wantPaths[i])
+
 			return
 		}
 	}

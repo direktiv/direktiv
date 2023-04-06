@@ -3,6 +3,7 @@ package mirror
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io/fs"
 	"os"
@@ -16,9 +17,13 @@ import (
 )
 
 // TODO: implement parsing direktiv variables.
+// TODO: check %w verb on errors.
+// TODO: fix errors and add logs.
 
 type mirroringJob struct {
 	// job parameters.
+
+	//nolint:containedctx
 	ctx context.Context
 	lg  *zap.SugaredLogger
 
@@ -40,13 +45,13 @@ func (j *mirroringJob) SetProcessStatus(store Store, process *Process, status st
 	_, err = store.UpdateProcess(j.ctx, process)
 
 	if err != nil {
-		j.err = fmt.Errorf("updating process state, err: %s", err)
+		j.err = fmt.Errorf("updating process state, err: %w", err)
 	}
 
 	return j
 }
 
-func (j *mirroringJob) CreateDistDirectory() *mirroringJob {
+func (j *mirroringJob) CreateTempDirectory() *mirroringJob {
 	if j.err != nil {
 		return j
 	}
@@ -54,7 +59,7 @@ func (j *mirroringJob) CreateDistDirectory() *mirroringJob {
 
 	j.distDirectory, j.err = os.MkdirTemp("", "direktiv_mirrors")
 	if err != nil {
-		j.err = fmt.Errorf("create mirror dst directory, err: %s", err)
+		j.err = fmt.Errorf("create mirror dst directory, err: %w", err)
 	}
 
 	j.lg.Infow("creating mirroring temp dir", "dir", j.distDirectory)
@@ -62,16 +67,15 @@ func (j *mirroringJob) CreateDistDirectory() *mirroringJob {
 	return j
 }
 
-func (j *mirroringJob) DeleteDistDirectory() *mirroringJob {
+func (j *mirroringJob) DeleteTempDirectory() *mirroringJob {
 	if j.err != nil {
 		return j
 	}
-	var err error
 
-	err = os.RemoveAll(j.distDirectory)
+	err := os.RemoveAll(j.distDirectory)
 
 	if err != nil {
-		j.err = fmt.Errorf("os remove dist directory, dir: %s, err: %s", j.distDirectory, err)
+		j.err = fmt.Errorf("os remove dist directory, dir: %s, err: %w", j.distDirectory, err)
 	}
 
 	j.lg.Infow("deleting mirroring temp dir", "dir", j.distDirectory)
@@ -83,11 +87,10 @@ func (j *mirroringJob) PullSourceInPath(source Source, config *Config) *mirrorin
 	if j.err != nil {
 		return j
 	}
-	var err error
 
-	err = source.PullInPath(config, j.distDirectory)
+	err := source.PullInPath(config, j.distDirectory)
 	if err != nil {
-		j.err = fmt.Errorf("pulling source in path, path:%s, err: %s", j.distDirectory, err)
+		j.err = fmt.Errorf("pulling source in path, path:%s, err: %w", j.distDirectory, err)
 	}
 
 	return j
@@ -112,10 +115,11 @@ func (j *mirroringJob) CreateSourceFilesList() *mirroringJob {
 			return nil
 		}
 		paths = append(paths, relativePath)
+
 		return nil
 	})
 	if err != nil {
-		j.err = fmt.Errorf("walking dist directory, path: %s, err: %s", j.distDirectory, err)
+		j.err = fmt.Errorf("walking dist directory, path: %s, err: %w", j.distDirectory, err)
 
 		return j
 	}
@@ -141,6 +145,7 @@ func (j *mirroringJob) ParseIgnoreFile(ignorePath string) *mirroringJob {
 	for _, path := range j.sourcedPaths {
 		if path == absoulteIgnoreFilePath {
 			ignoreFileExist = true
+
 			break
 		}
 	}
@@ -151,7 +156,7 @@ func (j *mirroringJob) ParseIgnoreFile(ignorePath string) *mirroringJob {
 
 	j.direktivIgnore, err = ignore.CompileIgnoreFile(absoulteIgnoreFilePath)
 	if err != nil {
-		j.err = fmt.Errorf("parsing ignore file, path: %s, err: %s", absoulteIgnoreFilePath, err)
+		j.err = fmt.Errorf("parsing ignore file, path: %s, err: %w", absoulteIgnoreFilePath, err)
 	}
 
 	return j
@@ -195,7 +200,8 @@ func (j *mirroringJob) CopyFilesToRoot(fStore filestore.FileStore, namespaceID u
 		j.lg.Infow("trying to copy", "path", path)
 		data, err := os.ReadFile(j.distDirectory + path)
 		if err != nil {
-			j.err = fmt.Errorf("read os file, path: %s, err: %s", path, err)
+			j.err = fmt.Errorf("read os file, path: %s, err: %w", path, err)
+
 			return j
 		}
 		checksum := string(filestore.DefaultCalculateChecksum(data))
@@ -213,28 +219,29 @@ func (j *mirroringJob) CopyFilesToRoot(fStore filestore.FileStore, namespaceID u
 		if !pathDoesExist {
 			_, _, err = fStore.ForRootID(namespaceID).CreateFile(j.ctx, path, filestore.FileTypeFile, fileReader)
 			if err != nil {
-				j.err = fmt.Errorf("filestore create file, path: %s, err: %s", path, err)
+				j.err = fmt.Errorf("filestore create file, path: %s, err: %w", path, err)
 
 				return j
 			}
 			j.lg.Infow("copied to root", "path", path)
+
 			continue
 		}
 
 		file, err := fStore.ForRootID(namespaceID).GetFile(j.ctx, path)
 		if err != nil {
-			j.err = fmt.Errorf("get file from root, path: %s, err: %s", path, err)
+			j.err = fmt.Errorf("get file from root, path: %s, err: %w", path, err)
+
 			return j
 		}
 
 		_, err = fStore.ForFile(file).CreateRevision(j.ctx, "", fileReader)
 		if err != nil {
-			j.err = fmt.Errorf("filestore create revision, path: %s, err: %s", path, err)
+			j.err = fmt.Errorf("filestore create revision, path: %s, err: %w", path, err)
 
 			return j
 		}
 		j.lg.Infow("revision to root", "path", path)
-
 	}
 
 	return j
@@ -247,7 +254,7 @@ func (j *mirroringJob) CropFilesAndDirectoriesInRoot(fStore filestore.FileStore,
 
 	err := fStore.ForRootID(namespaceID).CropFilesAndDirectories(j.ctx, j.sourcedPaths)
 	if err != nil {
-		j.err = fmt.Errorf("filestore crop to paths, err: %s", err)
+		j.err = fmt.Errorf("filestore crop to paths, err: %w", err)
 
 		return j
 	}
@@ -262,7 +269,7 @@ func (j *mirroringJob) ReadRootFilesChecksums(fStore filestore.FileStore, namesp
 
 	checksums, err := fStore.ForRootID(namespaceID).CalculateChecksumsMap(j.ctx)
 	if err != nil {
-		j.err = fmt.Errorf("filestore calculate checksums map, err: %s", err)
+		j.err = fmt.Errorf("filestore calculate checksums map, err: %w", err)
 
 		return j
 	}
@@ -294,8 +301,8 @@ func (j *mirroringJob) CreateAllDirectories(fStore filestore.FileStore, namespac
 			_, _, err := fStore.ForRootID(namespaceID).CreateFile(j.ctx, d, filestore.FileTypeDirectory, nil)
 
 			// check if it is a fatal error.
-			if err != filestore.ErrPathAlreadyExists && err != nil {
-				j.err = fmt.Errorf("filestore create dir, path: %s, err: %s", d, err)
+			if err != nil && !errors.Is(err, filestore.ErrPathAlreadyExists) {
+				j.err = fmt.Errorf("filestore create dir, path: %s, err: %w", d, err)
 
 				return j
 			}

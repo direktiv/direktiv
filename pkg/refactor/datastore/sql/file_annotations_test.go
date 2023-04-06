@@ -29,23 +29,27 @@ func Test_sqlFileAnnotationsStore_SetAndGet(t *testing.T) {
 	})
 	if err != nil {
 		t.Errorf("unexpected Set() error: %v", err)
+
 		return
 	}
 
 	annotations, err := ds.FileAnnotations().Get(context.Background(), file.ID)
 	if err != nil {
 		t.Errorf("unexpected Get() error: %v", err)
+
 		return
 	}
 
 	if annotations.FileID != file.ID {
 		t.Errorf("unexpected Get().ID, got %s, want %s", annotations.FileID, file.ID)
+
 		return
 	}
 
 	wantValue := "some arbitrary data bytes"
 	if string(annotations.Data) != wantValue {
 		t.Errorf("unexpected Get().Data, want %s, got %s", wantValue, annotations.Data)
+
 		return
 	}
 }
@@ -64,5 +68,6 @@ func createFile(t *testing.T, fs filestore.FileStore) *filestore.File {
 	if err != nil {
 		t.Fatalf("unexpected CreateFile() error: %v", err)
 	}
+
 	return file
 }

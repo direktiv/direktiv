@@ -20,6 +20,7 @@ var _ Source = &MockedSource{} // Ensures MockedSource struct conforms to Source
 
 func (m MockedSource) PullInPath(config *Config, dst string) error {
 	for k, v := range m.Paths {
+		//nolint:gomnd
 		if err := os.WriteFile(dst+k, []byte(v), 0o600); err != nil {
 			return err
 		}
@@ -57,6 +58,7 @@ func (m *GitSource) PullInPath(config *Config, dst string) error {
 			return err
 		}
 		publicKeys.HostKeyCallbackHelper = gitssh.HostKeyCallbackHelper{
+			//nolint:gosec
 			HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 		}
 		cloneOptions.Auth = publicKeys

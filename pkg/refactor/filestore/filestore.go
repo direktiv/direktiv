@@ -17,7 +17,8 @@ import (
 // Via 'filestore.Manager' the caller manages the roots, and 'filestore.Root' the caller manages files and directories.
 
 var (
-	ErrFileTypeIsDirectory  = errors.New("ErrFileTypeIsDirectory")
+	ErrFileTypeIsDirectory = errors.New("ErrFileTypeIsDirectory")
+	// TODO: possible invalid.
 	ErrNotFound             = errors.New("not found")
 	ErrPathAlreadyExists    = errors.New("ErrPathAlreadyExists")
 	ErrNoParentDirectory    = errors.New("ErrNoParentDirectory")

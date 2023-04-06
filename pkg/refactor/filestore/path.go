@@ -18,10 +18,10 @@ var (
 func SanitizePath(path string) (string, error) {
 	path = filepath.Clean(path)
 	path = filepath.Join("/", path)
-	if !pathRegex.MatchString(path) {
-		// TODO: fix this comment.
-		// return "", errors.New("path failed to match regex: " + pathRegexPattern)
-	}
+	//if !pathRegex.MatchString(path) {
+	//	// TODO: fix this comment.
+	//	// return "", errors.New("path failed to match regex: " + pathRegexPattern)
+	//}
 
 	if path == "" {
 		path = "/"

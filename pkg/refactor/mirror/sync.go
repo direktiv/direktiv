@@ -44,7 +44,7 @@ func ExecuteMirroringProcess(
 	defer func() {
 		err := os.RemoveAll(dstDir)
 		if err != nil {
-			lg.Errorf("cleaning mirror dist_directory err: %w", err)
+			lg.Errorf("cleaning mirror dist_directory err: %s", err)
 		}
 	}()
 

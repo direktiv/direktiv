@@ -28,6 +28,7 @@ func NewFileAnnotationsData(list map[string]string) FileAnnotationsData {
 	if err != nil {
 		panic(fmt.Sprintf("logic error, marshalling FileAnnotationsData with value: %v, got error: %s", list, err))
 	}
+
 	return jsonStr
 }
 

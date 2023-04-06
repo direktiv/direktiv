@@ -83,6 +83,7 @@ func (s *SQLFileStore) GetFile(ctx context.Context, id uuid.UUID) (*filestore.Fi
 		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 			return nil, fmt.Errorf("file '%s': %w", id, filestore.ErrNotFound)
 		}
+
 		return nil, res.Error
 	}
 
