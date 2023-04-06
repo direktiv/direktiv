@@ -41,6 +41,102 @@ const people = [
     email: "lindsay.walton@example.com",
     role: "Member",
   },
+  {
+    name: "Lindsay Walton",
+    title: "Front-end Developer",
+    email: "lindsay.walton@example.com",
+    role: "Member",
+  },
+  {
+    name: "Lindsay Walton",
+    title: "Front-end Developer",
+    email: "lindsay.walton@example.com",
+    role: "Member",
+  },
+  {
+    name: "Lindsay Walton",
+    title: "Front-end Developer",
+    email: "lindsay.walton@example.com",
+    role: "Member",
+  },
+  {
+    name: "Lindsay Walton",
+    title: "Front-end Developer",
+    email: "lindsay.walton@example.com",
+    role: "Member",
+  },
+  {
+    name: "Lindsay Walton",
+    title: "Front-end Developer",
+    email: "lindsay.walton@example.com",
+    role: "Member",
+  },
+  {
+    name: "Lindsay Walton",
+    title: "Front-end Developer",
+    email: "lindsay.walton@example.com",
+    role: "Member",
+  },
+  {
+    name: "Lindsay Walton",
+    title: "Front-end Developer",
+    email: "lindsay.walton@example.com",
+    role: "Member",
+  },
+  {
+    name: "Lindsay Walton",
+    title: "Front-end Developer",
+    email: "lindsay.walton@example.com",
+    role: "Member",
+  },
+  {
+    name: "Lindsay Walton",
+    title: "Front-end Developer",
+    email: "lindsay.walton@example.com",
+    role: "Member",
+  },
+  {
+    name: "Lindsay Walton",
+    title: "Front-end Developer",
+    email: "lindsay.walton@example.com",
+    role: "Member",
+  },
+  {
+    name: "Lindsay Walton",
+    title: "Front-end Developer",
+    email: "lindsay.walton@example.com",
+    role: "Member",
+  },
+  {
+    name: "Lindsay Walton",
+    title: "Front-end Developer",
+    email: "lindsay.walton@example.com",
+    role: "Member",
+  },
+  {
+    name: "Lindsay Walton",
+    title: "Front-end Developer",
+    email: "lindsay.walton@example.com",
+    role: "Member",
+  },
+  {
+    name: "Lindsay Walton",
+    title: "Front-end Developer",
+    email: "lindsay.walton@example.com",
+    role: "Member",
+  },
+  {
+    name: "Lindsay Walton",
+    title: "Front-end Developer",
+    email: "lindsay.walton@example.com",
+    role: "Member",
+  },
+  {
+    name: "Lindsay Walton",
+    title: "Front-end Developer",
+    email: "lindsay.walton@example.com",
+    role: "Member",
+  },
   // More people...
 ];
 
@@ -116,4 +212,39 @@ export const StripeTable = () => (
       </TableBody>
     </Table>
   </>
+);
+
+export const StickyHeader = () => (
+  <div className="h-64">
+    <Table>
+      <TableHead>
+        <TableRow>
+          <TableHeaderCell sticky>Name</TableHeaderCell>
+          <TableHeaderCell sticky>Title</TableHeaderCell>
+          <TableHeaderCell sticky>Email</TableHeaderCell>
+          <TableHeaderCell sticky>Role</TableHeaderCell>
+          <TableHeaderCell sticky>
+            <span className="sr-only">Edit</span>
+          </TableHeaderCell>
+        </TableRow>
+      </TableHead>
+      <TableBody>
+        {people.map((person) => (
+          <TableRow key={person.email}>
+            <TableCell className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-12 ">
+              {person.name}
+            </TableCell>
+            <TableCell>{person.title}</TableCell>
+            <TableCell>{person.email}</TableCell>
+            <TableCell>{person.role}</TableCell>
+            <TableCell className="sm:pr-0">
+              <a className="text-primary-600 hover:text-primary-700">
+                Edit<span className="sr-only">, {person.name}</span>
+              </a>
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  </div>
 );

@@ -5,6 +5,10 @@ export interface TableRowProps {
   stripe?: boolean;
 }
 
+export interface TableHeaderCellProps {
+  sticky?: boolean;
+}
+
 export const Table = React.forwardRef<
   HTMLTableElement,
   React.TableHTMLAttributes<HTMLTableElement>
@@ -12,7 +16,9 @@ export const Table = React.forwardRef<
   <table
     ref={ref}
     className={clsx(
-      "min-w-full divide-y divide-gray-3 dark:bg-gray-10",
+      "min-w-full divide-y",
+      "divide-gray-3",
+      "dark:divide-gray-dark-3",
       className
     )}
     {...props}
@@ -26,7 +32,7 @@ export const TableHead = React.forwardRef<
   HTMLTableSectionElement,
   React.HTMLAttributes<HTMLTableSectionElement>
 >(({ children, className, ...props }) => (
-  <thead {...props} className={clsx("dark:bg-gray-12", className)}>
+  <thead {...props} className={clsx(className)}>
     {children}
   </thead>
 ));
@@ -38,8 +44,9 @@ export const TableBody = React.forwardRef<
 >(({ children, className, ...props }) => (
   <tbody
     className={clsx(
-      "divide-y divide-gray-2",
-      "dark:divide-gray-dark-10 dark:bg-gray-12",
+      "divide-y",
+      "divide-gray-2",
+      "dark:divide-gray-dark-2",
       className
     )}
     {...props}
@@ -56,7 +63,9 @@ export const TableCell = React.forwardRef<
   <td
     {...props}
     className={clsx(
-      "whitespace-nowrap px-3 py-4 text-sm text-gray-9 dark:text-gray-dark-12",
+      "whitespace-nowrap px-3 py-4 text-sm",
+      "text-gray-9",
+      "dark:text-gray-dark-9",
       className
     )}
   >
@@ -67,12 +76,18 @@ TableCell.displayName = "TableCell";
 
 export const TableHeaderCell = React.forwardRef<
   HTMLTableCellElement,
-  React.HTMLAttributes<HTMLTableCellElement>
->(({ children, className, ...props }) => (
+  React.HTMLAttributes<HTMLTableCellElement> & TableHeaderCellProps
+>(({ children, className, sticky, ...props }) => (
   <th
     {...props}
     className={clsx(
-      "px-3 py-3.5 text-left text-sm font-semibold text-gray-12  dark:text-gray-dark-12",
+      "px-3 py-3.5 text-left text-sm font-semibold",
+      "text-gray-12",
+      "dark:text-gray-dark-12",
+      sticky &&
+        "sticky top-0 z-10 border-b py-3.5 pl-4 pr-3 backdrop-blur sm:pl-6 lg:pl-8",
+      sticky && " border-gray-3 bg-white/75",
+      sticky && " dark:border-gray-dark-3 dark:bg-black/75 ",
       className
     )}
   >
