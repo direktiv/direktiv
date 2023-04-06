@@ -25,10 +25,23 @@ describe('Test the direktiv-cli-tool', () => {
         expect(createResponse.statusCode).toEqual(200)
         assertStdErrContainsString("info", `namespace: ${namespaceName}`)
     })
+    it(`test push wf`, async() => {
+        if (!fs.existsSync(cliExecutable)){ return }
+        assertStdErrContainsString("workflows push /tests/jest/simplewf.yaml", "pushing workflow")
+        var readRevsResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/root/tree/simplewf`)
+        expect(readRevsResponse.statusCode).toEqual(200)
+    })
 })
 
 const assertStdErrContainsString = ((cmd,want)=>{
     exec(`${cliExecutable} ${prefix} ${flagNamespace} ${cmd}`, (err, stdout, stderr) => {
+        //expect(`${cliExecutable} ${prefix} ${flagNamespace} ${cmd}`).toStrictEqual("expect.stringContaining(want)")
         expect(stderr).toStrictEqual(expect.stringContaining(want))
+    })
+})
+const assertStdOutContainsString = ((cmd,want)=>{
+    exec(`${cliExecutable} ${prefix} ${flagNamespace} ${cmd}`, (err, stdout, stderr) => {
+        //expect(`${cliExecutable} ${prefix} ${flagNamespace} ${cmd}`).toStrictEqual("expect.stringContaining(want)")
+        expect(stdout).toStrictEqual(expect.stringContaining(want))
     })
 })
