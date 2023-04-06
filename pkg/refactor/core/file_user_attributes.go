@@ -10,7 +10,11 @@ const userAttributesKey = "user_attributes"
 func (data FileAnnotationsData) AppendFileUserAttributes(newAttributes []string) FileAnnotationsData {
 	oldAttrsString := data.GetEntry(userAttributesKey)
 	oldAttrsList := strings.Split(oldAttrsString, ",")
-	newAttrsList := append(oldAttrsList, newAttributes...)
+
+	var newAttrsList []string
+	newAttrsList = append(newAttrsList, oldAttrsList...)
+	newAttrsList = append(newAttrsList, newAttributes...)
+
 	newAttrs := compileUserAttributesList(newAttrsList, nil)
 
 	return data.SetEntry(userAttributesKey, newAttrs)

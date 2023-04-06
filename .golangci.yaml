@@ -25,9 +25,6 @@ linters:
     - unused #temporary
     - revive #temporary
     - godox #temporary
-    - gocritic #temporary
-    - gci #temporary
-    - gofumpt #temporary
 
   presets:
     - bugs

@@ -73,7 +73,6 @@ func (j *mirroringJob) DeleteTempDirectory() *mirroringJob {
 	}
 
 	err := os.RemoveAll(j.distDirectory)
-
 	if err != nil {
 		j.err = fmt.Errorf("os remove dist directory, dir: %s, err: %w", j.distDirectory, err)
 	}

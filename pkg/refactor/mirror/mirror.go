@@ -6,9 +6,8 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
-	"go.uber.org/zap"
-
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 )
 
 // Config holds configuration data that are needed to create a mirror (pulling mirror credentials, urls, keys

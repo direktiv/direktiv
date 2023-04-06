@@ -4,11 +4,10 @@ import (
 	"context"
 	"testing"
 
-	"github.com/direktiv/direktiv/pkg/refactor/mirror"
-	"github.com/google/uuid"
-
 	"github.com/direktiv/direktiv/pkg/refactor/datastore/sql"
+	"github.com/direktiv/direktiv/pkg/refactor/mirror"
 	"github.com/direktiv/direktiv/pkg/refactor/utils"
+	"github.com/google/uuid"
 )
 
 func Test_sqlMirrorStore_Process_SetAndGet(t *testing.T) {

@@ -10,9 +10,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/direktiv/direktiv/pkg/refactor/ignorefile"
-
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
+	"github.com/direktiv/direktiv/pkg/refactor/ignorefile"
 	"go.uber.org/zap"
 )
 
