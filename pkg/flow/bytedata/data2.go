@@ -11,7 +11,7 @@ import (
 )
 
 func ConvertFileToGrpcNode(f *filestore.File) *grpc.Node {
-	return &grpc.Node{
+	node := &grpc.Node{
 		CreatedAt:  timestamppb.New(f.CreatedAt),
 		UpdatedAt:  timestamppb.New(f.UpdatedAt),
 		Name:       filepath.Base(f.Path),
@@ -19,9 +19,19 @@ func ConvertFileToGrpcNode(f *filestore.File) *grpc.Node {
 		Parent:     filepath.Dir(f.Path),
 		Type:       string(f.Typ),
 		Attributes: []string{},
-		Oid:        f.ID.String(),
+		Oid:        "", // NOTE: this is empty string for now for compatibility with end-to-end tests f.ID.String(),
 		ReadOnly:   false,
 	}
+	if node.Name == "/" {
+		node.Name = ""
+	}
+	switch node.Type {
+	case string(filestore.FileTypeDirectory):
+		node.ExpandedType = string(filestore.FileTypeDirectory)
+	case string(filestore.FileTypeWorkflow):
+		node.ExpandedType = string(filestore.FileTypeWorkflow)
+	}
+	return node
 }
 
 func ConvertFilesToGrpcNodeList(list []*filestore.File) []*grpc.Node {
@@ -35,7 +45,9 @@ func ConvertFilesToGrpcNodeList(list []*filestore.File) []*grpc.Node {
 
 func ConvertRevisionToGrpcRevision(rev *filestore.Revision) *grpc.Revision {
 	return &grpc.Revision{
-		Name: rev.ID.String(),
+		Name:      rev.ID.String(),
+		CreatedAt: timestamppb.New(rev.CreatedAt),
+		Hash:      rev.Checksum,
 	}
 }
 

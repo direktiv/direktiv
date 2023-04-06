@@ -592,10 +592,10 @@ func (flow *flow) beginSqlTx(ctx context.Context) (filestore.FileStore, datastor
 		}
 	}
 	commitFunc := func(ctx context.Context) error {
-		return res.WithContext(ctx).Rollback().Error
+		return res.WithContext(ctx).Commit().Error
 	}
 
-	return psql.NewSQLFileStore(flow.gormDB), sql.NewSQLStore(flow.gormDB), commitFunc, rollbackFunc, nil
+	return psql.NewSQLFileStore(res), sql.NewSQLStore(res), commitFunc, rollbackFunc, nil
 }
 
 func (flow *flow) runSqlTx(ctx context.Context, fun func(fStore filestore.FileStore, store datastore.Store) error) error {

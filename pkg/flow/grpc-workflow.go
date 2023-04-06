@@ -6,6 +6,7 @@ import (
 	"io"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
@@ -61,7 +62,7 @@ func (flow *flow) Workflow(ctx context.Context, req *grpc.WorkflowRequest) (*grp
 		return nil, err
 	}
 
-	var resp *grpc.WorkflowResponse
+	resp := new(grpc.WorkflowResponse)
 	resp.Namespace = ns.Name
 	resp.Node = bytedata.ConvertFileToGrpcNode(file)
 	resp.Revision = bytedata.ConvertRevisionToGrpcRevision(revision)
@@ -102,6 +103,7 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 	if err != nil {
 		return nil, err
 	}
+
 	fStore, _, commit, rollback, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
@@ -112,13 +114,21 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 	if err != nil {
 		return nil, err
 	}
+
 	dataReader, err := fStore.ForRevision(revision).GetData(ctx)
 	if err != nil {
 		return nil, err
 	}
+
 	data, err := io.ReadAll(dataReader)
 	if err != nil {
 		return nil, err
+	}
+
+	workflow := new(model.Workflow)
+	err = workflow.Load(data)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	if err = commit(ctx); err != nil {

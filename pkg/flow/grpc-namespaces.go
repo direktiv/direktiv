@@ -209,7 +209,7 @@ func (flow *flow) CreateNamespace(ctx context.Context, req *grpc.CreateNamespace
 	var ns *database.Namespace
 	var x *ent.Namespace
 
-	_, tx, err := flow.edb.Tx(ctx)
+	ctx, tx, err := flow.edb.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -254,10 +254,20 @@ func (flow *flow) CreateNamespace(ctx context.Context, req *grpc.CreateNamespace
 
 	var txErr error
 	err = flow.runSqlTx(ctx, func(fStore filestore.FileStore, store datastore.Store) error {
-		_, txErr = fStore.CreateRoot(ctx, x.ID)
-		return txErr
+		var root *filestore.Root
+		root, txErr = fStore.CreateRoot(ctx, x.ID)
+		if txErr != nil {
+			return txErr
+		}
+		_, _, txErr = fStore.ForRootID(root.ID).CreateFile(ctx, "/", filestore.FileTypeDirectory, nil)
+		if txErr != nil {
+			return txErr
+		}
+		return nil
 	})
 	if err != nil {
+		clients = flow.edb.Clients(context.Background())
+		_ = clients.Namespace.DeleteOneID(ns.ID).Exec(context.Background()) // NOTE: need to find a better way to do this.
 		return nil, err
 	}
 
@@ -278,12 +288,6 @@ func (flow *flow) DeleteNamespace(ctx context.Context, req *grpc.DeleteNamespace
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 	var resp emptypb.Empty
 
-	_, tx, err := flow.edb.Tx(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer rollback(tx)
-
 	ns, err := flow.edb.NamespaceByName(ctx, req.GetName())
 	if err != nil {
 		if derrors.IsNotFound(err) && req.GetIdempotent() {
@@ -292,8 +296,6 @@ func (flow *flow) DeleteNamespace(ctx context.Context, req *grpc.DeleteNamespace
 		return nil, err
 	}
 
-	clients := flow.edb.Clients(ctx)
-
 	var isEmpty bool
 	var txErr error
 	err = flow.runSqlTx(ctx, func(fStore filestore.FileStore, store datastore.Store) error {
@@ -301,19 +303,18 @@ func (flow *flow) DeleteNamespace(ctx context.Context, req *grpc.DeleteNamespace
 		return txErr
 	})
 	if err != nil {
-		return nil, err
+		if !errors.Is(err, filestore.ErrNotFound) {
+			// NOTE: the alternative shouldn't be possible
+			return nil, err
+		}
 	}
 
 	if !req.GetRecursive() && !isEmpty {
 		return nil, errors.New("refusing to delete non-empty namespace without explicit recursive argument")
 	}
 
+	clients := flow.edb.Clients(ctx)
 	err = clients.Namespace.DeleteOneID(ns.ID).Exec(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	err = tx.Commit()
 	if err != nil {
 		return nil, err
 	}
@@ -351,7 +352,7 @@ func (flow *flow) DeleteNamespace(ctx context.Context, req *grpc.DeleteNamespace
 func (flow *flow) RenameNamespace(ctx context.Context, req *grpc.RenameNamespaceRequest) (*grpc.RenameNamespaceResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	_, tx, err := flow.edb.Tx(ctx)
+	ctx, tx, err := flow.edb.Tx(ctx)
 	if err != nil {
 		return nil, err
 	}

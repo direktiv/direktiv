@@ -2,6 +2,7 @@ package psql
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
@@ -79,6 +80,9 @@ func (s *SQLFileStore) GetFile(ctx context.Context, id uuid.UUID) (*filestore.Fi
 	res := s.db.WithContext(ctx).
 		First(file)
 	if res.Error != nil {
+		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
+			return nil, fmt.Errorf("file '%s': %w", id, filestore.ErrNotFound)
+		}
 		return nil, res.Error
 	}
 

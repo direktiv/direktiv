@@ -18,7 +18,7 @@ import (
 
 var (
 	ErrFileTypeIsDirectory  = errors.New("ErrFileTypeIsDirectory")
-	ErrNotFound             = errors.New("ErrNotFound")
+	ErrNotFound             = errors.New("not found")
 	ErrPathAlreadyExists    = errors.New("ErrPathAlreadyExists")
 	ErrNoParentDirectory    = errors.New("ErrNoParentDirectory")
 	ErrInvalidPathParameter = errors.New("ErrInvalidPathParameter")

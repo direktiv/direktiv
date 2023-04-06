@@ -2,6 +2,7 @@ package psql
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"path/filepath"
@@ -88,6 +89,9 @@ func (q *RootQuery) IsEmptyDirectory(ctx context.Context, path string) (bool, er
 
 	// check if root exists.
 	if err := q.checkRootExists(ctx); err != nil {
+		if errors.Is(err, filestore.ErrNotFound) {
+			return true, err
+		}
 		return false, err
 	}
 	count := 0
@@ -96,7 +100,7 @@ func (q *RootQuery) IsEmptyDirectory(ctx context.Context, path string) (bool, er
 		return false, tx.Error
 	}
 
-	return count == 0, nil
+	return count <= 1, nil // NOTE: had to change this because of the root directory
 }
 
 var _ filestore.RootQuery = &RootQuery{} // Ensures RootQuery struct conforms to filestore.RootQuery interface.
@@ -211,6 +215,9 @@ func (q *RootQuery) GetFile(ctx context.Context, path string) (*filestore.File, 
 
 	res := q.db.WithContext(ctx).Where("root_id", q.rootID).Where("path = ?", path).First(f)
 	if res.Error != nil {
+		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
+			return nil, fmt.Errorf("file '%s': %w", path, filestore.ErrNotFound)
+		}
 		return nil, res.Error
 	}
 
@@ -295,6 +302,9 @@ func (q *RootQuery) checkRootExists(ctx context.Context) error {
 	n := &filestore.Root{ID: q.rootID}
 	res := q.db.WithContext(ctx).First(n)
 	if res.Error != nil {
+		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
+			return fmt.Errorf("root '%s': %w", q.rootID, filestore.ErrNotFound)
+		}
 		return res.Error
 	}
 

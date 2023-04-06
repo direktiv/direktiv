@@ -29,6 +29,10 @@ func (tags RevisionTags) RemoveTag(tag string) RevisionTags {
 	return RevisionTags(newTags)
 }
 
+func (tags RevisionTags) List() []string {
+	return strings.Split(string(tags), ",")
+}
+
 type Revision struct {
 	ID        uuid.UUID
 	Tags      RevisionTags

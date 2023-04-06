@@ -44,21 +44,32 @@ func (flow *flow) Tags(ctx context.Context, req *grpc.TagsRequest) (*grpc.TagsRe
 	if err != nil {
 		return nil, err
 	}
-	_, err = fStore.ForFile(file).GetAllRevisions(ctx)
+	revs, err := fStore.ForFile(file).GetAllRevisions(ctx)
 	if err != nil {
 		return nil, err
 	}
 
+	tags := []*grpc.Ref{
+		{
+			Name: "latest",
+		},
+	}
+	for _, rev := range revs {
+		revTags := rev.Tags.List()
+		for _, revTag := range revTags {
+			tags = append(tags, &grpc.Ref{
+				Name: revTag,
+			})
+		}
+	}
+
 	resp := &grpc.TagsResponse{}
 	resp.Namespace = ns.Name
-	resp.PageInfo = nil
-	resp.Node = bytedata.ConvertFileToGrpcNode(file)
-	// TODO, yassir, fix here.
-	resp.Results = []*grpc.Ref{
-		{Name: "latest"},
-		{Name: "rev1"},
-		{Name: "rev2"},
+	resp.Results = tags
+	resp.PageInfo = &grpc.PageInfo{
+		Total: int32(len(resp.Results)),
 	}
+	resp.Node = bytedata.ConvertFileToGrpcNode(file)
 
 	if err := commit(ctx); err != nil {
 		return nil, err
@@ -109,21 +120,37 @@ func (flow *flow) Refs(ctx context.Context, req *grpc.RefsRequest) (*grpc.RefsRe
 	if err != nil {
 		return nil, err
 	}
-	_, err = fStore.ForFile(file).GetAllRevisions(ctx)
+	revs, err := fStore.ForFile(file).GetAllRevisions(ctx)
 	if err != nil {
 		return nil, err
 	}
 
+	refs := []*grpc.Ref{
+		{
+			Name: "latest",
+		},
+	}
+	for idx, rev := range revs {
+		revTags := rev.Tags.List()
+		for _, revTag := range revTags {
+			refs = append(refs, &grpc.Ref{
+				Name: revTag,
+			})
+		}
+		if idx > 0 {
+			refs = append(refs, &grpc.Ref{
+				Name: rev.ID.String(),
+			})
+		}
+	}
+
 	resp := &grpc.RefsResponse{}
 	resp.Namespace = ns.Name
-	resp.PageInfo = nil
-	resp.Node = bytedata.ConvertFileToGrpcNode(file)
-	// TODO, yassir, fix here.
-	resp.Results = []*grpc.Ref{
-		{Name: "latest"},
-		{Name: "rev1"},
-		{Name: "rev2"},
+	resp.Results = refs
+	resp.PageInfo = &grpc.PageInfo{
+		Total: int32(len(resp.Results)),
 	}
+	resp.Node = bytedata.ConvertFileToGrpcNode(file)
 
 	if err := commit(ctx); err != nil {
 		return nil, err

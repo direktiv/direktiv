@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	"github.com/google/uuid"
@@ -138,7 +139,7 @@ func New(ctx context.Context, sugar *zap.SugaredLogger, addr string) (*Database,
 			(
 				"id" uuid,
 				"tags" text,
-				"is_current" numeric,
+				"is_current" boolean,
 				"data" varchar,
 				"checksum" text,
 				"file_id" uuid,

@@ -52,11 +52,19 @@ func (flow *flow) Directory(ctx context.Context, req *grpc.DirectoryRequest) (*g
 		return nil, err
 	}
 
+	var node *filestore.File
 	var files []*filestore.File
 	var txErr error
 	err = flow.runSqlTx(ctx, func(fStore filestore.FileStore, store datastore.Store) error {
+		node, txErr = fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
+		if txErr != nil {
+			return txErr
+		}
 		files, txErr = fStore.ForRootID(ns.ID).ReadDirectory(ctx, req.GetPath())
-		return txErr
+		if txErr != nil {
+			return txErr
+		}
+		return nil
 	})
 	if err != nil {
 		return nil, err
@@ -64,9 +72,10 @@ func (flow *flow) Directory(ctx context.Context, req *grpc.DirectoryRequest) (*g
 
 	resp := new(grpc.DirectoryResponse)
 	resp.Namespace = ns.Name
+	resp.Node = bytedata.ConvertFileToGrpcNode(node)
 	resp.Children = new(grpc.DirectoryChildren)
 	resp.Children.PageInfo = new(grpc.PageInfo)
-
+	resp.Children.PageInfo.Total = int32(len(files))
 	resp.Children.Results = bytedata.ConvertFilesToGrpcNodeList(files)
 
 	return resp, nil
