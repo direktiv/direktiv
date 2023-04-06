@@ -1,0 +1,40 @@
+pullPolicy: IfNotPresent
+debug: "true"
+
+eventing:
+  enabled: true
+
+secrets:
+  image: "gerke74/direktiv"
+  tag: "latest"
+flow:
+  image: "gerke74/direktiv"
+  dbimage: "gerke74/direktiv"
+  tag: "latest"
+ui:
+  image: "gerke74/ui"
+  tag: "latest"
+api:
+  image: "gerke74/direktiv"
+  tag: "latest"
+functions:
+  namespace: direktiv-services-direktiv
+  image: "gerke74/direktiv"
+  tag: "latest"
+  sidecar: "gerke74/direktiv"
+  initPodImage: "direktiv/init-pod"
+  PROXY
+
+database:
+  # -- database host
+  host: "postgres"
+  # -- database port
+  port: 5432
+  # -- database user
+  user: "direktiv"
+  # -- database password
+  password: "direktivdirektiv"
+  # -- database name, auto created if it does not exist
+  name: "direktiv"
+  # -- sslmode for database
+  sslmode: disable
