@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"os/signal"
+	"runtime/debug"
 	"strings"
 
 	"github.com/direktiv/direktiv/pkg/dlog"
@@ -161,6 +162,14 @@ var serverCmd = &cobra.Command{
 	Use:  "server CONFIG_FILE",
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
+		// TODO: yassir: need to be cleaned.
+		defer func() {
+			if r := recover(); r != nil {
+				fmt.Println("Recovered in run", r)
+				fmt.Println("stacktrace from panic: \n" + string(debug.Stack()))
+				panic(r)
+			}
+		}()
 		defer shutdown()
 
 		ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
@@ -184,13 +193,11 @@ func shutdown() {
 	if err == nil {
 		// this is a direktiv machine, so we press poweroff
 		if strings.Contains(string(pv), "#direktiv") {
-
 			log.Printf("direktiv machine, powering off")
 
 			if err := exec.Command("/sbin/poweroff").Run(); err != nil {
 				fmt.Println("error shutting down:", err)
 			}
-
 		}
 	}
 }

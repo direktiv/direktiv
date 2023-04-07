@@ -14,9 +14,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	"github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
-	"github.com/direktiv/direktiv/pkg/flow/ent/mirroractivity"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
-	"github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 	"github.com/google/uuid"
 )
 
@@ -88,6 +86,34 @@ func (lmc *LogMsgCreate) SetTags(m map[string]string) *LogMsgCreate {
 	return lmc
 }
 
+// SetWorkflowID sets the "workflow_id" field.
+func (lmc *LogMsgCreate) SetWorkflowID(u uuid.UUID) *LogMsgCreate {
+	lmc.mutation.SetWorkflowID(u)
+	return lmc
+}
+
+// SetNillableWorkflowID sets the "workflow_id" field if the given value is not nil.
+func (lmc *LogMsgCreate) SetNillableWorkflowID(u *uuid.UUID) *LogMsgCreate {
+	if u != nil {
+		lmc.SetWorkflowID(*u)
+	}
+	return lmc
+}
+
+// SetMirrorActivityID sets the "mirror_activity_id" field.
+func (lmc *LogMsgCreate) SetMirrorActivityID(u uuid.UUID) *LogMsgCreate {
+	lmc.mutation.SetMirrorActivityID(u)
+	return lmc
+}
+
+// SetNillableMirrorActivityID sets the "mirror_activity_id" field if the given value is not nil.
+func (lmc *LogMsgCreate) SetNillableMirrorActivityID(u *uuid.UUID) *LogMsgCreate {
+	if u != nil {
+		lmc.SetMirrorActivityID(*u)
+	}
+	return lmc
+}
+
 // SetID sets the "id" field.
 func (lmc *LogMsgCreate) SetID(u uuid.UUID) *LogMsgCreate {
 	lmc.mutation.SetID(u)
@@ -121,25 +147,6 @@ func (lmc *LogMsgCreate) SetNamespace(n *Namespace) *LogMsgCreate {
 	return lmc.SetNamespaceID(n.ID)
 }
 
-// SetWorkflowID sets the "workflow" edge to the Workflow entity by ID.
-func (lmc *LogMsgCreate) SetWorkflowID(id uuid.UUID) *LogMsgCreate {
-	lmc.mutation.SetWorkflowID(id)
-	return lmc
-}
-
-// SetNillableWorkflowID sets the "workflow" edge to the Workflow entity by ID if the given value is not nil.
-func (lmc *LogMsgCreate) SetNillableWorkflowID(id *uuid.UUID) *LogMsgCreate {
-	if id != nil {
-		lmc = lmc.SetWorkflowID(*id)
-	}
-	return lmc
-}
-
-// SetWorkflow sets the "workflow" edge to the Workflow entity.
-func (lmc *LogMsgCreate) SetWorkflow(w *Workflow) *LogMsgCreate {
-	return lmc.SetWorkflowID(w.ID)
-}
-
 // SetInstanceID sets the "instance" edge to the Instance entity by ID.
 func (lmc *LogMsgCreate) SetInstanceID(id uuid.UUID) *LogMsgCreate {
 	lmc.mutation.SetInstanceID(id)
@@ -157,25 +164,6 @@ func (lmc *LogMsgCreate) SetNillableInstanceID(id *uuid.UUID) *LogMsgCreate {
 // SetInstance sets the "instance" edge to the Instance entity.
 func (lmc *LogMsgCreate) SetInstance(i *Instance) *LogMsgCreate {
 	return lmc.SetInstanceID(i.ID)
-}
-
-// SetActivityID sets the "activity" edge to the MirrorActivity entity by ID.
-func (lmc *LogMsgCreate) SetActivityID(id uuid.UUID) *LogMsgCreate {
-	lmc.mutation.SetActivityID(id)
-	return lmc
-}
-
-// SetNillableActivityID sets the "activity" edge to the MirrorActivity entity by ID if the given value is not nil.
-func (lmc *LogMsgCreate) SetNillableActivityID(id *uuid.UUID) *LogMsgCreate {
-	if id != nil {
-		lmc = lmc.SetActivityID(*id)
-	}
-	return lmc
-}
-
-// SetActivity sets the "activity" edge to the MirrorActivity entity.
-func (lmc *LogMsgCreate) SetActivity(m *MirrorActivity) *LogMsgCreate {
-	return lmc.SetActivityID(m.ID)
 }
 
 // Mutation returns the LogMsgMutation object of the builder.
@@ -351,6 +339,14 @@ func (lmc *LogMsgCreate) createSpec() (*LogMsg, *sqlgraph.CreateSpec) {
 		_spec.SetField(logmsg.FieldTags, field.TypeJSON, value)
 		_node.Tags = value
 	}
+	if value, ok := lmc.mutation.WorkflowID(); ok {
+		_spec.SetField(logmsg.FieldWorkflowID, field.TypeUUID, value)
+		_node.WorkflowID = value
+	}
+	if value, ok := lmc.mutation.MirrorActivityID(); ok {
+		_spec.SetField(logmsg.FieldMirrorActivityID, field.TypeUUID, value)
+		_node.MirrorActivityID = value
+	}
 	if nodes := lmc.mutation.NamespaceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -371,26 +367,6 @@ func (lmc *LogMsgCreate) createSpec() (*LogMsg, *sqlgraph.CreateSpec) {
 		_node.namespace_logs = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := lmc.mutation.WorkflowIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   logmsg.WorkflowTable,
-			Columns: []string{logmsg.WorkflowColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: workflow.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.workflow_logs = &nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
 	if nodes := lmc.mutation.InstanceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -409,26 +385,6 @@ func (lmc *LogMsgCreate) createSpec() (*LogMsg, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.instance_logs = &nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := lmc.mutation.ActivityIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   logmsg.ActivityTable,
-			Columns: []string{logmsg.ActivityColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: mirroractivity.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.mirror_activity_logs = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -558,6 +514,42 @@ func (u *LogMsgUpsert) UpdateTags() *LogMsgUpsert {
 // ClearTags clears the value of the "tags" field.
 func (u *LogMsgUpsert) ClearTags() *LogMsgUpsert {
 	u.SetNull(logmsg.FieldTags)
+	return u
+}
+
+// SetWorkflowID sets the "workflow_id" field.
+func (u *LogMsgUpsert) SetWorkflowID(v uuid.UUID) *LogMsgUpsert {
+	u.Set(logmsg.FieldWorkflowID, v)
+	return u
+}
+
+// UpdateWorkflowID sets the "workflow_id" field to the value that was provided on create.
+func (u *LogMsgUpsert) UpdateWorkflowID() *LogMsgUpsert {
+	u.SetExcluded(logmsg.FieldWorkflowID)
+	return u
+}
+
+// ClearWorkflowID clears the value of the "workflow_id" field.
+func (u *LogMsgUpsert) ClearWorkflowID() *LogMsgUpsert {
+	u.SetNull(logmsg.FieldWorkflowID)
+	return u
+}
+
+// SetMirrorActivityID sets the "mirror_activity_id" field.
+func (u *LogMsgUpsert) SetMirrorActivityID(v uuid.UUID) *LogMsgUpsert {
+	u.Set(logmsg.FieldMirrorActivityID, v)
+	return u
+}
+
+// UpdateMirrorActivityID sets the "mirror_activity_id" field to the value that was provided on create.
+func (u *LogMsgUpsert) UpdateMirrorActivityID() *LogMsgUpsert {
+	u.SetExcluded(logmsg.FieldMirrorActivityID)
+	return u
+}
+
+// ClearMirrorActivityID clears the value of the "mirror_activity_id" field.
+func (u *LogMsgUpsert) ClearMirrorActivityID() *LogMsgUpsert {
+	u.SetNull(logmsg.FieldMirrorActivityID)
 	return u
 }
 
@@ -697,6 +689,48 @@ func (u *LogMsgUpsertOne) UpdateTags() *LogMsgUpsertOne {
 func (u *LogMsgUpsertOne) ClearTags() *LogMsgUpsertOne {
 	return u.Update(func(s *LogMsgUpsert) {
 		s.ClearTags()
+	})
+}
+
+// SetWorkflowID sets the "workflow_id" field.
+func (u *LogMsgUpsertOne) SetWorkflowID(v uuid.UUID) *LogMsgUpsertOne {
+	return u.Update(func(s *LogMsgUpsert) {
+		s.SetWorkflowID(v)
+	})
+}
+
+// UpdateWorkflowID sets the "workflow_id" field to the value that was provided on create.
+func (u *LogMsgUpsertOne) UpdateWorkflowID() *LogMsgUpsertOne {
+	return u.Update(func(s *LogMsgUpsert) {
+		s.UpdateWorkflowID()
+	})
+}
+
+// ClearWorkflowID clears the value of the "workflow_id" field.
+func (u *LogMsgUpsertOne) ClearWorkflowID() *LogMsgUpsertOne {
+	return u.Update(func(s *LogMsgUpsert) {
+		s.ClearWorkflowID()
+	})
+}
+
+// SetMirrorActivityID sets the "mirror_activity_id" field.
+func (u *LogMsgUpsertOne) SetMirrorActivityID(v uuid.UUID) *LogMsgUpsertOne {
+	return u.Update(func(s *LogMsgUpsert) {
+		s.SetMirrorActivityID(v)
+	})
+}
+
+// UpdateMirrorActivityID sets the "mirror_activity_id" field to the value that was provided on create.
+func (u *LogMsgUpsertOne) UpdateMirrorActivityID() *LogMsgUpsertOne {
+	return u.Update(func(s *LogMsgUpsert) {
+		s.UpdateMirrorActivityID()
+	})
+}
+
+// ClearMirrorActivityID clears the value of the "mirror_activity_id" field.
+func (u *LogMsgUpsertOne) ClearMirrorActivityID() *LogMsgUpsertOne {
+	return u.Update(func(s *LogMsgUpsert) {
+		s.ClearMirrorActivityID()
 	})
 }
 
@@ -999,6 +1033,48 @@ func (u *LogMsgUpsertBulk) UpdateTags() *LogMsgUpsertBulk {
 func (u *LogMsgUpsertBulk) ClearTags() *LogMsgUpsertBulk {
 	return u.Update(func(s *LogMsgUpsert) {
 		s.ClearTags()
+	})
+}
+
+// SetWorkflowID sets the "workflow_id" field.
+func (u *LogMsgUpsertBulk) SetWorkflowID(v uuid.UUID) *LogMsgUpsertBulk {
+	return u.Update(func(s *LogMsgUpsert) {
+		s.SetWorkflowID(v)
+	})
+}
+
+// UpdateWorkflowID sets the "workflow_id" field to the value that was provided on create.
+func (u *LogMsgUpsertBulk) UpdateWorkflowID() *LogMsgUpsertBulk {
+	return u.Update(func(s *LogMsgUpsert) {
+		s.UpdateWorkflowID()
+	})
+}
+
+// ClearWorkflowID clears the value of the "workflow_id" field.
+func (u *LogMsgUpsertBulk) ClearWorkflowID() *LogMsgUpsertBulk {
+	return u.Update(func(s *LogMsgUpsert) {
+		s.ClearWorkflowID()
+	})
+}
+
+// SetMirrorActivityID sets the "mirror_activity_id" field.
+func (u *LogMsgUpsertBulk) SetMirrorActivityID(v uuid.UUID) *LogMsgUpsertBulk {
+	return u.Update(func(s *LogMsgUpsert) {
+		s.SetMirrorActivityID(v)
+	})
+}
+
+// UpdateMirrorActivityID sets the "mirror_activity_id" field to the value that was provided on create.
+func (u *LogMsgUpsertBulk) UpdateMirrorActivityID() *LogMsgUpsertBulk {
+	return u.Update(func(s *LogMsgUpsert) {
+		s.UpdateMirrorActivityID()
+	})
+}
+
+// ClearMirrorActivityID clears the value of the "mirror_activity_id" field.
+func (u *LogMsgUpsertBulk) ClearMirrorActivityID() *LogMsgUpsertBulk {
+	return u.Update(func(s *LogMsgUpsert) {
+		s.ClearMirrorActivityID()
 	})
 }
 

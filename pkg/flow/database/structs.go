@@ -15,6 +15,13 @@ type Namespace struct {
 	Root      uuid.UUID `json:"root,omitempty"`
 }
 
+func (ns *Namespace) GetAttributes() map[string]string {
+	return map[string]string{
+		"namespace":    ns.Name,
+		"namespace-id": ns.ID.String(),
+	}
+}
+
 type Inode struct {
 	ID           uuid.UUID `json:"id,omitempty"`
 	CreatedAt    time.Time `json:"created_at,omitempty"`
@@ -29,25 +36,6 @@ type Inode struct {
 	Parent       uuid.UUID `json:"parent,omitempty"`
 	Workflow     uuid.UUID `json:"workflow,omitempty"`
 	Mirror       uuid.UUID `json:"mirror,omitempty"`
-}
-
-func (ino *Inode) addChild(child *Inode) {
-	x := &Inode{
-		ID:           child.ID,
-		Name:         child.Name,
-		Type:         child.Type,
-		ExtendedType: child.ExtendedType,
-	}
-
-	idx := 0
-	for i := range ino.Children {
-		if ino.Children[i].Name > x.Name {
-			idx = i
-			break
-		}
-	}
-
-	ino.Children = append(ino.Children[:idx], append([]*Inode{x}, ino.Children[idx:]...)...)
 }
 
 type CreateInodeArgs struct {
@@ -176,6 +164,7 @@ type InstanceRuntime struct {
 	StateContext    string    `json:"stateContext,omitempty"`
 	Metadata        string    `json:"metadata,omitempty"`
 	Caller          uuid.UUID `json:"caller,omitempty"`
+	LogToEvents     string    `json:"logToEvents,omitempty"`
 }
 
 type Annotation struct {

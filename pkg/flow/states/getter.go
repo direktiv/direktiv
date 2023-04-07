@@ -47,7 +47,6 @@ func (logic *getterLogic) Run(ctx context.Context, wakedata []byte) (*Transition
 	m := make(map[string]interface{})
 
 	for idx, v := range logic.Variables {
-
 		key := ""
 		var selector VariableSelector
 
@@ -79,7 +78,6 @@ func (logic *getterLogic) Run(ctx context.Context, wakedata []byte) (*Transition
 		selector.Scope = v.Scope
 
 		switch v.Scope {
-
 		case "":
 			selector.Scope = util.VarScopeInstance
 			fallthrough
@@ -91,6 +89,9 @@ func (logic *getterLogic) Run(ctx context.Context, wakedata []byte) (*Transition
 			fallthrough
 
 		case util.VarScopeWorkflow:
+			fallthrough
+
+		case util.VarScopeFileSystem:
 			fallthrough
 
 		case util.VarScopeNamespace:
@@ -108,9 +109,7 @@ func (logic *getterLogic) Run(ctx context.Context, wakedata []byte) (*Transition
 
 		default:
 			return nil, derrors.NewInternalError(errors.New("invalid scope"))
-
 		}
-
 	}
 
 	results, err := logic.GetVariables(ctx, vars)
@@ -119,7 +118,6 @@ func (logic *getterLogic) Run(ctx context.Context, wakedata []byte) (*Transition
 	}
 
 	for idx := range results {
-
 		result := results[idx]
 		as := ptrs[idx]
 
@@ -128,16 +126,13 @@ func (logic *getterLogic) Run(ctx context.Context, wakedata []byte) (*Transition
 		x = nil
 
 		if len(result.Data) != 0 {
-
 			err = json.Unmarshal(result.Data, &x)
 			if err != nil {
 				x = result.Data
 			}
-
 		}
 
 		m[as] = x
-
 	}
 
 	err = logic.StoreData("var", m)

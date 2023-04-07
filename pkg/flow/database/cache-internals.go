@@ -19,13 +19,11 @@ func (db *CachedDatabase) lookupNamespaceByID(ctx context.Context, id uuid.UUID)
 
 	data, err := db.cache.Get(ctx, key)
 	if err != nil {
-
 		if !strings.Contains(err.Error(), "value not found in store") {
 			db.sugar.Warnf("Namespace cache error: %v", err)
 		}
 
 		return nil
-
 	}
 
 	ns := new(Namespace)
@@ -46,13 +44,11 @@ func (db *CachedDatabase) lookupNamespaceByName(ctx context.Context, name string
 
 	data, err := db.cache.Get(ctx, key)
 	if err != nil {
-
 		if !strings.Contains(err.Error(), "value not found in store") {
 			db.sugar.Warnf("Namespace cache error: %v", err)
 		}
 
 		return nil
-
 	}
 
 	ns := new(Namespace)
@@ -111,134 +107,6 @@ func (db *CachedDatabase) invalidateCachedNamespace(ctx context.Context, id uuid
 	}
 }
 
-func (db *CachedDatabase) lookupInodeByID(ctx context.Context, id uuid.UUID) *Inode {
-	if !db.cachingEnabled {
-		return nil
-	}
-
-	key := fmt.Sprintf("inoid:%s", id)
-
-	data, err := db.cache.Get(ctx, key)
-	if err != nil {
-
-		if !strings.Contains(err.Error(), "value not found in store") {
-			db.sugar.Warnf("Namespace cache error: %v", err)
-		}
-
-		return nil
-
-	}
-
-	ns := new(Inode)
-	err = json.Unmarshal(data, ns)
-	if err != nil {
-		return nil
-	}
-
-	return ns
-}
-
-func (db *CachedDatabase) storeInodeInCache(ctx context.Context, ino *Inode) {
-	if !db.cachingEnabled {
-		return
-	}
-
-	data, err := json.Marshal(ino)
-	if err != nil {
-		db.sugar.Warnf("Inode cache marshal error: %v", err)
-		return
-	}
-
-	key := fmt.Sprintf("inoid:%s", ino.ID)
-	err = db.cache.Set(ctx, key, data, store.WithTags([]string{ino.Namespace.String()}))
-	if err != nil {
-		db.sugar.Warnf("Inode cache store error: %v", err)
-		return
-	}
-}
-
-func (db *CachedDatabase) invalidateCachedInode(ctx context.Context, id uuid.UUID, recursive bool) {
-	if !db.cachingEnabled {
-		return
-	}
-
-	if recursive {
-		panic("TODO")
-	}
-
-	key := fmt.Sprintf("inoid:%s", id)
-
-	err := db.cache.Delete(ctx, key)
-	if err != nil {
-		db.sugar.Error(err)
-		return
-	}
-}
-
-func (db *CachedDatabase) lookupWorkflowByID(ctx context.Context, id uuid.UUID) *Workflow {
-	if !db.cachingEnabled {
-		return nil
-	}
-
-	key := fmt.Sprintf("wfid:%s", id)
-
-	data, err := db.cache.Get(ctx, key)
-	if err != nil {
-
-		if !strings.Contains(err.Error(), "value not found in store") {
-			db.sugar.Warnf("Workflow cache error: %v", err)
-		}
-
-		return nil
-
-	}
-
-	wf := new(Workflow)
-	err = json.Unmarshal(data, wf)
-	if err != nil {
-		return nil
-	}
-
-	return wf
-}
-
-func (db *CachedDatabase) storeWorkflowInCache(ctx context.Context, wf *Workflow) {
-	if !db.cachingEnabled {
-		return
-	}
-
-	data, err := json.Marshal(wf)
-	if err != nil {
-		db.sugar.Warnf("Workflow cache marshal error: %v", err)
-		return
-	}
-
-	key := fmt.Sprintf("wfid:%s", wf.ID)
-	err = db.cache.Set(ctx, key, data, store.WithTags([]string{wf.Namespace.String()}))
-	if err != nil {
-		db.sugar.Warnf("Workflow cache store error: %v", err)
-		return
-	}
-}
-
-func (db *CachedDatabase) invalidateCachedWorkflow(ctx context.Context, id uuid.UUID, recursive bool) {
-	if !db.cachingEnabled {
-		return
-	}
-
-	if recursive {
-		panic("TODO")
-	}
-
-	key := fmt.Sprintf("wfid:%s", id)
-
-	err := db.cache.Delete(ctx, key)
-	if err != nil {
-		db.sugar.Error(err)
-		return
-	}
-}
-
 func (db *CachedDatabase) lookupInstanceByID(ctx context.Context, id uuid.UUID) *Instance {
 	if !db.cachingEnabled {
 		return nil
@@ -248,13 +116,11 @@ func (db *CachedDatabase) lookupInstanceByID(ctx context.Context, id uuid.UUID) 
 
 	data, err := db.cache.Get(ctx, key)
 	if err != nil {
-
 		if !strings.Contains(err.Error(), "value not found in store") {
 			db.sugar.Warnf("Instance cache error: %v", err)
 		}
 
 		return nil
-
 	}
 
 	inst := new(Instance)
@@ -281,52 +147,6 @@ func (db *CachedDatabase) storeInstanceInCache(ctx context.Context, inst *Instan
 	err = db.cache.Set(ctx, key, data, store.WithTags([]string{inst.Namespace.String()}))
 	if err != nil {
 		db.sugar.Warnf("Instance cache store error: %v", err)
-		return
-	}
-}
-
-func (db *CachedDatabase) lookupRevisionByID(ctx context.Context, id uuid.UUID) *Revision {
-	if !db.cachingEnabled {
-		return nil
-	}
-
-	key := fmt.Sprintf("revid:%s", id)
-
-	data, err := db.cache.Get(ctx, key)
-	if err != nil {
-
-		if !strings.Contains(err.Error(), "value not found in store") {
-			db.sugar.Warnf("Revision cache error: %v", err)
-		}
-
-		return nil
-
-	}
-
-	rev := new(Revision)
-	err = json.Unmarshal(data, rev)
-	if err != nil {
-		return nil
-	}
-
-	return rev
-}
-
-func (db *CachedDatabase) storeRevisionInCache(ctx context.Context, rev *Revision) {
-	if !db.cachingEnabled {
-		return
-	}
-
-	data, err := json.Marshal(rev)
-	if err != nil {
-		db.sugar.Warnf("Revision cache marshal error: %v", err)
-		return
-	}
-
-	key := fmt.Sprintf("revid:%s", rev.ID)
-	err = db.cache.Set(ctx, key, data) // , store.WithTags([]string{rev.Namespace.String()}))
-	if err != nil {
-		db.sugar.Warnf("Revision cache store error: %v", err)
 		return
 	}
 }

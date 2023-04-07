@@ -2,11 +2,10 @@ package states
 
 import (
 	"context"
+	b64 "encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
-
-	b64 "encoding/base64"
 
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/model"
@@ -44,7 +43,6 @@ func (logic *setterLogic) Run(ctx context.Context, wakedata []byte) (*Transition
 	setters := make([]VariableSetter, 0)
 
 	for idx, v := range logic.Variables {
-
 		var x interface{}
 		key := ""
 		mimeType := ""
@@ -69,7 +67,6 @@ func (logic *setterLogic) Run(ctx context.Context, wakedata []byte) (*Transition
 		}
 
 		if v.MimeType != nil {
-
 			x, err = jqOne(logic.GetInstanceData(), v.MimeType)
 			if err != nil {
 				return nil, err
@@ -80,7 +77,6 @@ func (logic *setterLogic) Run(ctx context.Context, wakedata []byte) (*Transition
 					mimeType = str
 				}
 			}
-
 		}
 
 		x, err = jqOne(logic.GetInstanceData(), v.Value)
@@ -111,7 +107,6 @@ func (logic *setterLogic) Run(ctx context.Context, wakedata []byte) (*Transition
 			MIMEType: mimeType,
 			Data:     data,
 		})
-
 	}
 
 	err = logic.SetVariables(ctx, setters)

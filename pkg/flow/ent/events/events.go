@@ -25,8 +25,8 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
-	// EdgeWorkflow holds the string denoting the workflow edge name in mutations.
-	EdgeWorkflow = "workflow"
+	// FieldWorkflowID holds the string denoting the workflow_id field in the database.
+	FieldWorkflowID = "workflow_id"
 	// EdgeWfeventswait holds the string denoting the wfeventswait edge name in mutations.
 	EdgeWfeventswait = "wfeventswait"
 	// EdgeInstance holds the string denoting the instance edge name in mutations.
@@ -35,13 +35,6 @@ const (
 	EdgeNamespace = "namespace"
 	// Table holds the table name of the events in the database.
 	Table = "events"
-	// WorkflowTable is the table that holds the workflow relation/edge.
-	WorkflowTable = "events"
-	// WorkflowInverseTable is the table name for the Workflow entity.
-	// It exists in this package in order to avoid circular dependency with the "workflow" package.
-	WorkflowInverseTable = "workflows"
-	// WorkflowColumn is the table column denoting the workflow relation/edge.
-	WorkflowColumn = "workflow_wfevents"
 	// WfeventswaitTable is the table that holds the wfeventswait relation/edge.
 	WfeventswaitTable = "events_waits"
 	// WfeventswaitInverseTable is the table name for the EventsWait entity.
@@ -74,6 +67,7 @@ var Columns = []string{
 	FieldCount,
 	FieldCreatedAt,
 	FieldUpdatedAt,
+	FieldWorkflowID,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "events"
@@ -81,7 +75,6 @@ var Columns = []string{
 var ForeignKeys = []string{
 	"instance_eventlisteners",
 	"namespace_namespacelisteners",
-	"workflow_wfevents",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).

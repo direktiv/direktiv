@@ -39,7 +39,6 @@ func initLocks(conn string) error {
 
 func (locks *locks) Close() error {
 	if locks.db != nil {
-
 		err := locks.db.Close()
 		if err != nil {
 			return err
@@ -48,7 +47,6 @@ func (locks *locks) Close() error {
 		locks.db = nil
 
 		return nil
-
 	}
 
 	return nil
@@ -69,12 +67,10 @@ func (locks *locks) lockDB(id uint64, wait int) (*sql.Conn, error) {
 	_, err = conn.ExecContext(ctx, "SELECT pg_advisory_lock($1)", int64(id))
 	pqErr := new(pq.Error)
 	if errors.As(err, &pqErr) {
-
 		if pqErr.Code == "57014" {
 			return conn, fmt.Errorf("canceled query")
 		}
 		return conn, err
-
 	}
 
 	return conn, err

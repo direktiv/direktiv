@@ -18,11 +18,6 @@ import (
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/google/uuid"
-	"github.com/senseyeio/duration"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
-
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
@@ -33,6 +28,10 @@ import (
 	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/util"
+	"github.com/google/uuid"
+	"github.com/senseyeio/duration"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type engine struct {
@@ -130,7 +129,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 	}
 
 	var wf model.Workflow
-	err = wf.Load(cached.Revision.Source)
+	err = wf.Load(cached.Revision.Data)
 	if err != nil {
 		engine.logger.Errorf(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Cannot parse workflow source %s", args.Path)
 		return nil, derrors.NewUncatchableError("direktiv.workflow.invalid", "cannot parse workflow '%s': %v", args.Path, err)
@@ -160,12 +159,13 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 
 	clients := engine.edb.Clients(tctx)
 
+	// TODO: alan, need to add logToEvents value here
 	rt, err := clients.InstanceRuntime.Create().SetInput(args.Input).SetData(data).SetMemory("null").SetCallerData(args.CallerData).Save(tctx)
 	if err != nil {
 		return nil, err
 	}
 
-	inst, err := clients.Instance.Create().SetNamespaceID(cached.Namespace.ID).SetWorkflowID(cached.Workflow.ID).SetRevisionID(cached.Revision.ID).SetRuntime(rt).SetStatus(util.InstanceStatusPending).SetInvoker(args.Caller).SetAs(util.SanitizeAsField(as)).SetCallpath(callpath).SetInvokerState(args.CallerState).Save(tctx)
+	inst, err := clients.Instance.Create().SetNamespaceID(cached.Namespace.ID).SetWorkflowID(cached.File.ID).SetRevisionID(cached.Revision.ID).SetRuntime(rt).SetStatus(util.InstanceStatusPending).SetInvoker(args.Caller).SetAs(util.SanitizeAsField(as)).SetCallpath(callpath).SetInvokerState(args.CallerState).Save(tctx)
 	if err != nil {
 		return nil, err
 	}
@@ -190,6 +190,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 		InstanceContext: rt.InstanceContext,
 		StateContext:    rt.StateContext,
 		Metadata:        rt.Metadata,
+		LogToEvents:     rt.LogToEvents,
 	}
 
 	cached.Instance = &database.Instance{
@@ -203,7 +204,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 		ErrorMessage: inst.ErrorMessage,
 		Invoker:      inst.Invoker,
 		Namespace:    cached.Namespace.ID,
-		Workflow:     cached.Workflow.ID,
+		Workflow:     cached.File.ID,
 		Revision:     cached.Revision.ID,
 		Runtime:      runtime.ID,
 		CallPath:     inst.Callpath,
@@ -240,7 +241,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 
 	engine.pubsub.NotifyInstances(cached.Namespace)
 	engine.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Workflow '%s' has been triggered by %s.", args.Path, args.Caller)
-	engine.logger.Infof(ctx, im.cached.Workflow.ID, im.cached.GetAttributes(recipient.Workflow), "Instance '%s' created by %s.", im.ID().String(), args.Caller)
+	engine.logger.Infof(ctx, im.cached.File.ID, im.cached.GetAttributes(recipient.Workflow), "Instance '%s' created by %s.", im.ID().String(), args.Caller)
 	engine.logger.Debugf(ctx, im.cached.Instance.ID, im.GetAttributes(), "Preparing workflow triggered by %s.", args.Caller)
 
 	// Broadcast Event
@@ -265,7 +266,7 @@ func (engine *engine) start(im *instanceMemory) {
 
 	engine.sugar.Debugf("Starting workflow %v", im.ID().String())
 	engine.logger.Infof(ctx, im.cached.Namespace.ID, im.cached.GetAttributes(recipient.Namespace), "Starting workflow %v", database.GetWorkflow(im.cached.Instance.As))
-	engine.logger.Infof(ctx, im.cached.Workflow.ID, im.cached.GetAttributes(recipient.Workflow), "Starting workflow %v", database.GetWorkflow(im.cached.Instance.As))
+	engine.logger.Infof(ctx, im.cached.File.ID, im.cached.GetAttributes(recipient.Workflow), "Starting workflow %v", database.GetWorkflow(im.cached.Instance.As))
 	engine.logger.Debugf(ctx, im.cached.Instance.ID, im.GetAttributes(), "Starting workflow %v.", database.GetWorkflow(im.cached.Instance.As))
 
 	workflow, err := im.Model()
@@ -310,13 +311,11 @@ func (engine *engine) Transition(ctx context.Context, im *instanceMemory, nextSt
 	oldController := im.Controller()
 
 	if im.Step() == 0 {
-
 		t := time.Now()
 		tSoft := time.Now().Add(time.Minute * 15)
 		tHard := time.Now().Add(time.Minute * 20)
 
 		if workflow.Timeouts != nil {
-
 			s := workflow.Timeouts.Interrupt
 
 			if s != "" {
@@ -339,12 +338,10 @@ func (engine *engine) Transition(ctx context.Context, im *instanceMemory, nextSt
 				}
 				tHard = d.Shift(t)
 			}
-
 		}
 
 		engine.ScheduleSoftTimeout(im, oldController, tSoft)
 		engine.ScheduleHardTimeout(im, oldController, tHard)
-
 	}
 
 	if nextState == "" {
@@ -501,7 +498,6 @@ func (engine *engine) runState(ctx context.Context, im *instanceMemory, wakedata
 	}
 
 	if md := im.logic.GetMetadata(); im.GetMemory() == nil && len(wakedata) == 0 && md != nil {
-
 		var object interface{}
 		object, err = jqOne(im.data, md)
 		if err != nil {
@@ -516,7 +512,6 @@ func (engine *engine) runState(ctx context.Context, im *instanceMemory, wakedata
 		}
 
 		engine.StoreMetadata(ctx, im, string(data))
-
 	}
 
 	transition, err = im.logic.Run(ctx, wakedata)
@@ -548,11 +543,9 @@ failure:
 	cerr := new(derrors.CatchableError)
 
 	if errors.As(err, &cerr) {
-
 		_ = im.StoreData("error", cerr)
 
 		for i, catch := range im.logic.ErrorDefinitions() {
-
 			errRegex := catch.Error
 			if errRegex == "*" {
 				errRegex = ".*"
@@ -564,7 +557,6 @@ failure:
 			}
 
 			if matched {
-
 				engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), "State failed with error '%s': %s", cerr.Code, cerr.Message)
 				engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), "Error caught by error definition %d: %s", i, catch.Error)
 
@@ -578,11 +570,8 @@ failure:
 				code = cerr.Code
 
 				goto next
-
 			}
-
 		}
-
 	}
 
 	engine.CrashInstance(ctx, im, err)
@@ -687,10 +676,25 @@ func (engine *engine) subflowInvoke(ctx context.Context, caller *subflowCaller, 
 	args.CallerData = string(callerData)
 	args.CallerState = caller.CallerState
 	pcached := new(database.CacheData)
+
 	err = engine.database.Instance(ctx, pcached, caller.InstanceID)
 	if err != nil {
 		return nil, derrors.NewInternalError(err)
 	}
+
+	fStore, _, _, rollback, err := engine.flow.beginSqlTx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer rollback(ctx)
+
+	file, revision, err := fStore.GetRevision(ctx, pcached.Instance.Revision)
+	if err != nil {
+		return nil, err
+	}
+
+	pcached.File = file
+	pcached.Revision = revision
 
 	threadVars, err := engine.database.ThreadVariables(ctx, pcached.Instance.ID)
 	if err != nil {
@@ -917,7 +921,6 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 			engine.logger.Debugf(ctx, engine.flow.ID, engine.flow.GetAttributes(), "function request for image %s name %s returned an error: %v", ar.Container.Image, ar.Container.ID, err)
 			dnsErr := new(net.DNSError)
 			if errors.As(err, &dnsErr) {
-
 				// recreate if the service does not exist
 				if ar.Container.Type == model.ReusableContainerFunctionType &&
 					!engine.isKnativeFunction(engine.actions.client, ar) {
@@ -933,7 +936,6 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 				// recreate if the service if it exists in the database but not knative
 				if (ar.Container.Type == model.NamespacedKnativeFunctionType) &&
 					!engine.isScopedKnativeFunction(engine.actions.client, ar.Container.Service) {
-
 					err := reconstructScopedKnativeFunction(engine.actions.client, ar.Container.Service)
 					if err != nil {
 						if stErr, ok := status.FromError(err); ok && stErr.Code() == codes.NotFound {
@@ -958,7 +960,6 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 			}
 
 			time.Sleep(1000 * time.Millisecond)
-
 		} else {
 			engine.sugar.Debugf("successfully created function with image %s name %s", ar.Container.Image, ar.Container.ID, err)
 			break
@@ -1060,23 +1061,39 @@ func (engine *engine) EventsInvoke(workflowID string, events ...*cloudevents.Eve
 		return
 	}
 
+	fStore, _, _, rollback, err := engine.flow.beginSqlTx(ctx)
+	if err != nil {
+		engine.sugar.Error(err)
+		return
+	}
+	defer rollback(ctx)
+
+	file, err := fStore.GetFile(ctx, id)
+	if err != nil {
+		engine.sugar.Error(err)
+		return
+	}
+	rollback(ctx)
+
 	cached := new(database.CacheData)
-	err = engine.database.Workflow(ctx, cached, id)
+
+	ns, err := engine.edb.Namespace(ctx, file.RootID)
 	if err != nil {
 		engine.sugar.Error(err)
 		return
 	}
 
+	cached.Namespace = ns
+	cached.File = file
+
 	var input []byte
 	m := make(map[string]interface{})
 	for _, event := range events {
-
 		if event == nil {
 			continue
 		}
 
 		m[event.Type()] = event
-
 	}
 
 	input, err = json.Marshal(m)
@@ -1087,7 +1104,7 @@ func (engine *engine) EventsInvoke(workflowID string, events ...*cloudevents.Eve
 
 	args := new(newInstanceArgs)
 	args.Namespace = cached.Namespace.Name
-	args.Path = cached.Path()
+	args.Path = cached.File.Path
 
 	args.Input = input
 	args.Caller = "cloudevent"
@@ -1123,8 +1140,6 @@ func (engine *engine) reportInstanceCrashed(ctx context.Context, im *instanceMem
 	engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), "Instance failed with %s error '%s': %s", typ, code, err.Error())
 	engine.logger.Errorf(ctx, im.cached.Instance.Namespace, im.cached.GetAttributes(recipient.Namespace), "Workflow failed %s Instance %s crashed with %s error '%s': %s", database.GetWorkflow(im.cached.Instance.As), im.GetInstanceID(), typ, code, err.Error())
 }
-
-const latest = "latest"
 
 func rollback(tx database.Transaction) {
 	err := tx.Rollback()

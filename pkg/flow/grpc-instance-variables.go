@@ -8,9 +8,6 @@ import (
 	"os"
 	"time"
 
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
-
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
@@ -21,6 +18,8 @@ import (
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/google/uuid"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -66,6 +65,20 @@ func (srv *server) traverseToInstanceVariable(ctx context.Context, namespace, in
 		srv.logger.Errorf(ctx, srv.ID, srv.flow.GetAttributes(), "Failed to resolve instance %s", instance)
 		return nil, nil, nil, err
 	}
+
+	fStore, _, _, rollback, err := srv.flow.beginSqlTx(ctx)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	defer rollback(ctx)
+
+	file, revision, err := fStore.GetRevision(ctx, cached.Instance.Revision)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	cached.File = file
+	cached.Revision = revision
 
 	if cached.Namespace.Name != namespace {
 		return nil, nil, nil, os.ErrNotExist
@@ -125,6 +138,20 @@ func (internal *internal) InstanceVariableParcels(req *grpc.VariableInternalRequ
 		return err
 	}
 
+	fStore, _, _, rollback, err := internal.flow.beginSqlTx(ctx)
+	if err != nil {
+		return err
+	}
+	defer rollback(ctx)
+
+	file, revision, err := fStore.GetRevision(ctx, cached.Instance.Revision)
+	if err != nil {
+		return err
+	}
+
+	cached.File = file
+	cached.Revision = revision
+
 	vref, vdata, err := internal.getInstanceVariable(ctx, cached, req.GetKey(), true)
 	if err != nil && !derrors.IsNotFound(err) {
 		return err
@@ -149,7 +176,6 @@ func (internal *internal) InstanceVariableParcels(req *grpc.VariableInternalRequ
 	rdr := bytes.NewReader(vdata.Data)
 
 	for {
-
 		resp := new(grpc.VariableInternalResponse)
 
 		resp.Key = vref.Name
@@ -162,7 +188,6 @@ func (internal *internal) InstanceVariableParcels(req *grpc.VariableInternalRequ
 		buf := new(bytes.Buffer)
 		k, err := io.CopyN(buf, rdr, parcelSize)
 		if err != nil {
-
 			if errors.Is(err, io.EOF) {
 				err = nil
 			}
@@ -181,7 +206,6 @@ func (internal *internal) InstanceVariableParcels(req *grpc.VariableInternalRequ
 			if err != nil {
 				return err
 			}
-
 		}
 
 		resp.Data = buf.Bytes()
@@ -190,7 +214,6 @@ func (internal *internal) InstanceVariableParcels(req *grpc.VariableInternalRequ
 		if err != nil {
 			return err
 		}
-
 	}
 }
 
@@ -210,6 +233,20 @@ func (internal *internal) ThreadVariableParcels(req *grpc.VariableInternalReques
 	if err != nil {
 		return err
 	}
+
+	fStore, _, _, rollback, err := internal.flow.beginSqlTx(ctx)
+	if err != nil {
+		return err
+	}
+	defer rollback(ctx)
+
+	file, revision, err := fStore.GetRevision(ctx, cached.Instance.Revision)
+	if err != nil {
+		return err
+	}
+
+	cached.File = file
+	cached.Revision = revision
 
 	vref, vdata, err := internal.getThreadVariable(ctx, cached, req.GetKey(), true)
 	if err != nil && !derrors.IsNotFound(err) {
@@ -235,7 +272,6 @@ func (internal *internal) ThreadVariableParcels(req *grpc.VariableInternalReques
 	rdr := bytes.NewReader(vdata.Data)
 
 	for {
-
 		resp := new(grpc.VariableInternalResponse)
 
 		resp.Key = vref.Name
@@ -248,7 +284,6 @@ func (internal *internal) ThreadVariableParcels(req *grpc.VariableInternalReques
 		buf := new(bytes.Buffer)
 		k, err := io.CopyN(buf, rdr, parcelSize)
 		if err != nil {
-
 			if errors.Is(err, io.EOF) {
 				err = nil
 			}
@@ -260,7 +295,6 @@ func (internal *internal) ThreadVariableParcels(req *grpc.VariableInternalReques
 			if err != nil {
 				return err
 			}
-
 		}
 
 		resp.Data = buf.Bytes()
@@ -269,7 +303,6 @@ func (internal *internal) ThreadVariableParcels(req *grpc.VariableInternalReques
 		if err != nil {
 			return err
 		}
-
 	}
 }
 
@@ -286,7 +319,6 @@ func (flow *flow) InstanceVariableParcels(req *grpc.InstanceVariableRequest, srv
 	rdr := bytes.NewReader(vdata.Data)
 
 	for {
-
 		resp := new(grpc.InstanceVariableResponse)
 
 		resp.Namespace = cached.Namespace.Name
@@ -301,7 +333,6 @@ func (flow *flow) InstanceVariableParcels(req *grpc.InstanceVariableRequest, srv
 		buf := new(bytes.Buffer)
 		k, err := io.CopyN(buf, rdr, parcelSize)
 		if err != nil {
-
 			if errors.Is(err, io.EOF) {
 				err = nil
 			}
@@ -313,7 +344,6 @@ func (flow *flow) InstanceVariableParcels(req *grpc.InstanceVariableRequest, srv
 			if err != nil {
 				return err
 			}
-
 		}
 
 		resp.Data = buf.Bytes()
@@ -322,7 +352,6 @@ func (flow *flow) InstanceVariableParcels(req *grpc.InstanceVariableRequest, srv
 		if err != nil {
 			return err
 		}
-
 	}
 }
 
@@ -355,7 +384,6 @@ func (flow *flow) InstanceVariables(ctx context.Context, req *grpc.InstanceVaria
 	}
 
 	for i := range results {
-
 		vref := results[i]
 
 		vdata, err := vref.QueryVardata().Select(entvardata.FieldCreatedAt, entvardata.FieldHash, entvardata.FieldSize, entvardata.FieldUpdatedAt).Only(ctx)
@@ -369,7 +397,6 @@ func (flow *flow) InstanceVariables(ctx context.Context, req *grpc.InstanceVaria
 		v.Size = int64(vdata.Size)
 		v.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
 		v.MimeType = vdata.MimeType
-
 	}
 
 	return resp, nil
@@ -413,7 +440,6 @@ resend:
 	}
 
 	for i := range results {
-
 		vref := results[i]
 
 		vdata, err := vref.QueryVardata().Select(entvardata.FieldCreatedAt, entvardata.FieldHash, entvardata.FieldSize, entvardata.FieldUpdatedAt).Only(ctx)
@@ -427,7 +453,6 @@ resend:
 		v.Size = int64(vdata.Size)
 		v.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
 		v.MimeType = vdata.MimeType
-
 	}
 
 	nhash = bytedata.Checksum(resp)
@@ -518,7 +543,6 @@ func (internal *internal) SetThreadVariableParcels(srv grpc.Internal_SetThreadVa
 	buf := new(bytes.Buffer)
 
 	for {
-
 		_, err = io.Copy(buf, bytes.NewReader(req.Data))
 		if err != nil {
 			return err
@@ -551,7 +575,6 @@ func (internal *internal) SetThreadVariableParcels(srv grpc.Internal_SetThreadVa
 		if int(req.GetTotalSize()) != totalSize {
 			return errors.New("totalSize changed mid stream")
 		}
-
 	}
 
 	if buf.Len() > totalSize {
@@ -629,7 +652,6 @@ func (internal *internal) SetInstanceVariableParcels(srv grpc.Internal_SetInstan
 	buf := new(bytes.Buffer)
 
 	for {
-
 		_, err = io.Copy(buf, bytes.NewReader(req.Data))
 		if err != nil {
 			return err
@@ -662,7 +684,6 @@ func (internal *internal) SetInstanceVariableParcels(srv grpc.Internal_SetInstan
 		if int(req.GetTotalSize()) != totalSize {
 			return errors.New("totalSize changed mid stream")
 		}
-
 	}
 
 	if buf.Len() > totalSize {
@@ -741,7 +762,6 @@ func (flow *flow) SetInstanceVariableParcels(srv grpc.Flow_SetInstanceVariablePa
 	buf := new(bytes.Buffer)
 
 	for {
-
 		_, err = io.Copy(buf, bytes.NewReader(req.Data))
 		if err != nil {
 			return err
@@ -774,7 +794,6 @@ func (flow *flow) SetInstanceVariableParcels(srv grpc.Flow_SetInstanceVariablePa
 		if int(req.GetTotalSize()) != totalSize {
 			return errors.New("totalSize changed mid stream")
 		}
-
 	}
 
 	if buf.Len() > totalSize {
@@ -879,7 +898,7 @@ func (flow *flow) DeleteInstanceVariable(ctx context.Context, req *grpc.DeleteIn
 		TotalSize:  int64(vdata.Size),
 		Scope:      BroadcastEventScopeInstance,
 	}
-	err = flow.BroadcastVariable(ctx, BroadcastEventTypeDelete, BroadcastEventScopeInstance, broadcastInput, cached)
+	err = flow.BroadcastVariable(ctx, BroadcastEventTypeDelete, BroadcastEventScopeInstance, broadcastInput, cached.Namespace)
 	if err != nil {
 		return nil, err
 	}

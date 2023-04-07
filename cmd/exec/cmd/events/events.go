@@ -14,9 +14,8 @@ import (
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/binding/format"
-	"github.com/spf13/cobra"
-
 	root "github.com/direktiv/direktiv/cmd/exec/cmd"
+	"github.com/spf13/cobra"
 	goutil "golang.org/x/tools/godoc/util"
 )
 
@@ -66,7 +65,6 @@ func executeEvent(url string, args []string) (string, error) {
 
 	// read event file in if provided
 	if len(args) > 0 {
-
 		root.Printlog("reading cloudevent file %s", args[0])
 		e, err := os.ReadFile(args[0])
 		if err != nil {
@@ -78,7 +76,6 @@ func executeEvent(url string, args []string) (string, error) {
 		if err != nil {
 			return "", err
 		}
-
 	}
 
 	// overwrite data if provided
@@ -100,7 +97,6 @@ func executeEvent(url string, args []string) (string, error) {
 
 	// attach data
 	if len(Attachment) > 0 {
-
 		attachment, err := os.ReadFile(Attachment)
 		if err != nil {
 			return "", err
@@ -138,7 +134,6 @@ func executeEvent(url string, args []string) (string, error) {
 		if err != nil {
 			return "", err
 		}
-
 	}
 
 	b, err := format.JSON.Marshal(&event)

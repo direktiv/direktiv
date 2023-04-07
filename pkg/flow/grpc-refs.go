@@ -2,19 +2,15 @@ package flow
 
 import (
 	"context"
-	"errors"
-
-	"google.golang.org/protobuf/types/known/emptypb"
+	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
-	"github.com/direktiv/direktiv/pkg/flow/ent"
-	entref "github.com/direktiv/direktiv/pkg/flow/ent/ref"
-	entwf "github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/model"
-	"github.com/direktiv/direktiv/pkg/util"
+	"github.com/google/uuid"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 func loadSource(rev *database.Revision) (*model.Workflow, error) {
@@ -28,61 +24,50 @@ func loadSource(rev *database.Revision) (*model.Workflow, error) {
 	return workflow, nil
 }
 
-var refsOrderings = []*orderingInfo{
-	{
-		db:           entref.FieldCreatedAt,
-		req:          "CREATED",
-		defaultOrder: ent.Desc,
-	},
-	{
-		db:           entref.FieldName,
-		req:          util.PaginationKeyName,
-		defaultOrder: ent.Asc,
-	},
-}
-
-var refsFilters = map[*filteringInfo]func(query *ent.RefQuery, v string) (*ent.RefQuery, error){
-	{
-		field: util.PaginationKeyName,
-		ftype: "CONTAINS",
-	}: func(query *ent.RefQuery, v string) (*ent.RefQuery, error) {
-		return query.Where(entref.NameContains(v)), nil
-	},
-}
-
 func (flow *flow) Tags(ctx context.Context, req *grpc.TagsRequest) (*grpc.TagsResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	cached, err := flow.traverseToWorkflow(ctx, req.GetNamespace(), req.GetPath())
+	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
 
-	clients := flow.edb.Clients(ctx)
+	fStore, _, _, rollback, err := flow.beginSqlTx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer rollback(ctx)
 
-	query := clients.Ref.Query().Where(entref.HasWorkflowWith(entwf.ID(cached.Workflow.ID)), entref.Immutable(false))
-
-	results, pi, err := paginate[*ent.RefQuery, *ent.Ref](ctx, req.Pagination, query, refsOrderings, refsFilters)
+	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
+	if err != nil {
+		return nil, err
+	}
+	revs, err := fStore.ForFile(file).GetAllRevisions(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	resp := new(grpc.TagsResponse)
-	resp.Namespace = cached.Namespace.Name
-	resp.PageInfo = pi
-
-	err = bytedata.ConvertDataForOutput(results, &resp.Results)
-	if err != nil {
-		return nil, err
+	tags := []*grpc.Ref{
+		{
+			Name: "latest",
+		},
+	}
+	for _, rev := range revs {
+		revTags := rev.Tags.List()
+		for _, revTag := range revTags {
+			tags = append(tags, &grpc.Ref{
+				Name: revTag,
+			})
+		}
 	}
 
-	err = bytedata.ConvertDataForOutput(cached.Inode(), &resp.Node)
-	if err != nil {
-		return nil, err
+	resp := &grpc.TagsResponse{}
+	resp.Namespace = ns.Name
+	resp.Results = tags
+	resp.PageInfo = &grpc.PageInfo{
+		Total: int32(len(resp.Results)),
 	}
-
-	resp.Node.Path = cached.Path()
-	resp.Node.Parent = cached.Dir()
+	resp.Node = bytedata.ConvertFileToGrpcNode(file)
 
 	return resp, nil
 }
@@ -91,95 +76,76 @@ func (flow *flow) TagsStream(req *grpc.TagsRequest, srv grpc.Flow_TagsStreamServ
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
-	phash := ""
-	nhash := ""
 
-	cached, err := flow.traverseToWorkflow(ctx, req.GetNamespace(), req.GetPath())
+	resp, err := flow.Tags(ctx, req)
 	if err != nil {
 		return err
 	}
 
-	sub := flow.pubsub.SubscribeWorkflow(cached)
-	defer flow.cleanup(sub.Close)
-
-resend:
-
-	clients := flow.edb.Clients(ctx)
-
-	query := clients.Ref.Query().Where(entref.HasWorkflowWith(entwf.ID(cached.Workflow.ID)), entref.Immutable(false))
-
-	results, pi, err := paginate[*ent.RefQuery, *ent.Ref](ctx, req.Pagination, query, refsOrderings, refsFilters)
-	if err != nil {
-		return err
-	}
-
-	resp := new(grpc.TagsResponse)
-	resp.Namespace = cached.Namespace.Name
-	resp.PageInfo = pi
-
-	err = bytedata.ConvertDataForOutput(results, &resp.Results)
-	if err != nil {
-		return err
-	}
-
-	err = bytedata.ConvertDataForOutput(cached.Inode(), &resp.Node)
-	if err != nil {
-		return err
-	}
-
-	resp.Node.Path = cached.Path()
-	resp.Node.Parent = cached.Dir()
-
-	nhash = bytedata.Checksum(resp)
-	if nhash != phash {
-		err = srv.Send(resp)
-		if err != nil {
-			return err
+	// mock streaming response.
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+		default:
+			err = srv.Send(resp)
+			if err != nil {
+				return err
+			}
+			time.Sleep(time.Second * 5)
 		}
 	}
-	phash = nhash
-
-	more := sub.Wait(ctx)
-	if !more {
-		return nil
-	}
-
-	goto resend
 }
 
 func (flow *flow) Refs(ctx context.Context, req *grpc.RefsRequest) (*grpc.RefsResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	cached, err := flow.traverseToWorkflow(ctx, req.GetNamespace(), req.GetPath())
+	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
 
-	clients := flow.edb.Clients(ctx)
+	fStore, _, _, rollback, err := flow.beginSqlTx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer rollback(ctx)
 
-	query := clients.Ref.Query().Where(entref.HasWorkflowWith(entwf.ID(cached.Workflow.ID)))
-
-	results, pi, err := paginate[*ent.RefQuery, *ent.Ref](ctx, req.Pagination, query, refsOrderings, refsFilters)
+	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
+	if err != nil {
+		return nil, err
+	}
+	revs, err := fStore.ForFile(file).GetAllRevisions(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	resp := new(grpc.RefsResponse)
-	resp.Namespace = cached.Namespace.Name
-	resp.PageInfo = pi
-
-	err = bytedata.ConvertDataForOutput(results, &resp.Results)
-	if err != nil {
-		return nil, err
+	refs := []*grpc.Ref{
+		{
+			Name: "latest",
+		},
+	}
+	for idx, rev := range revs {
+		revTags := rev.Tags.List()
+		for _, revTag := range revTags {
+			refs = append(refs, &grpc.Ref{
+				Name: revTag,
+			})
+		}
+		if idx > 0 {
+			refs = append(refs, &grpc.Ref{
+				Name: rev.ID.String(),
+			})
+		}
 	}
 
-	err = bytedata.ConvertDataForOutput(cached.Inode(), &resp.Node)
-	if err != nil {
-		return nil, err
+	resp := &grpc.RefsResponse{}
+	resp.Namespace = ns.Name
+	resp.Results = refs
+	resp.PageInfo = &grpc.PageInfo{
+		Total: int32(len(resp.Results)),
 	}
-
-	resp.Node.Path = cached.Path()
-	resp.Node.Parent = cached.Dir()
+	resp.Node = bytedata.ConvertFileToGrpcNode(file)
 
 	return resp, nil
 }
@@ -188,90 +154,61 @@ func (flow *flow) RefsStream(req *grpc.RefsRequest, srv grpc.Flow_RefsStreamServ
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
-	phash := ""
-	nhash := ""
 
-	cached, err := flow.traverseToWorkflow(ctx, req.GetNamespace(), req.GetPath())
+	resp, err := flow.Refs(ctx, req)
 	if err != nil {
 		return err
 	}
 
-	sub := flow.pubsub.SubscribeWorkflow(cached)
-	defer flow.cleanup(sub.Close)
-
-resend:
-
-	clients := flow.edb.Clients(ctx)
-
-	query := clients.Ref.Query().Where(entref.HasWorkflowWith(entwf.ID(cached.Workflow.ID)))
-
-	results, pi, err := paginate[*ent.RefQuery, *ent.Ref](ctx, req.Pagination, query, refsOrderings, refsFilters)
-	if err != nil {
-		return err
-	}
-
-	resp := new(grpc.RefsResponse)
-	resp.Namespace = cached.Namespace.Name
-	resp.PageInfo = pi
-
-	err = bytedata.ConvertDataForOutput(results, &resp.Results)
-	if err != nil {
-		return err
-	}
-
-	err = bytedata.ConvertDataForOutput(cached.Inode(), &resp.Node)
-	if err != nil {
-		return err
-	}
-
-	resp.Node.Path = cached.Path()
-	resp.Node.Parent = cached.Dir()
-
-	nhash = bytedata.Checksum(resp)
-	if nhash != phash {
-		err = srv.Send(resp)
-		if err != nil {
-			return err
+	// mock streaming response.
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+		default:
+			err = srv.Send(resp)
+			if err != nil {
+				return err
+			}
+			time.Sleep(time.Second * 5)
 		}
 	}
-	phash = nhash
-
-	more := sub.Wait(ctx)
-	if !more {
-		return nil
-	}
-
-	goto resend
 }
 
 func (flow *flow) Tag(ctx context.Context, req *grpc.TagRequest) (*emptypb.Empty, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tctx, tx, err := flow.database.Tx(ctx)
+	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
-	defer rollback(tx)
-
-	cached, err := flow.traverseToRef(tctx, req.GetNamespace(), req.GetPath(), req.GetRef())
+	fStore, _, commit, rollback, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
+	defer rollback(ctx)
 
-	clients := flow.edb.Clients(tctx)
-
-	err = clients.Ref.Create().SetImmutable(false).SetName(req.GetTag()).SetRevisionID(cached.Revision.ID).SetWorkflowID(cached.Workflow.ID).Exec(tctx)
+	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {
 		return nil, err
 	}
-
-	err = tx.Commit()
+	revID, err := uuid.Parse(req.GetRef())
 	if err != nil {
 		return nil, err
 	}
+	revision, err := fStore.ForFile(file).GetRevision(ctx, revID)
+	if err != nil {
+		return nil, err
+	}
+	revision, err = fStore.ForRevision(revision).SetTags(ctx, revision.Tags.AddTag(req.GetTag()))
+	if err != nil {
+		return nil, err
+	}
+	if err = commit(ctx); err != nil {
+		return nil, err
+	}
 
-	flow.logger.Infof(ctx, cached.Workflow.ID, cached.GetAttributes(recipient.Workflow), "Tagged workflow: %s -> %s.", req.GetTag(), cached.Revision.ID.String())
-	flow.pubsub.NotifyWorkflow(cached.Workflow)
+	flow.logger.Infof(ctx, file.ID, database.GetAttributes(recipient.Workflow, ns, fileAttributes(*file)), "Tagged workflow: %s -> %s.", req.GetTag(), revision.ID.String())
 
 	var resp emptypb.Empty
 
@@ -281,39 +218,33 @@ func (flow *flow) Tag(ctx context.Context, req *grpc.TagRequest) (*emptypb.Empty
 func (flow *flow) Untag(ctx context.Context, req *grpc.UntagRequest) (*emptypb.Empty, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	tctx, tx, err := flow.database.Tx(ctx)
+	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
-	defer rollback(tx)
-
-	cached, err := flow.traverseToRef(tctx, req.GetNamespace(), req.GetPath(), req.GetTag())
+	fStore, _, commit, rollback, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
+	defer rollback(ctx)
 
-	if cached.Ref.Immutable || cached.Ref.Name == latest {
-		return nil, errors.New("not a tag")
-	}
-
-	err = flow.configureRouter(tctx, cached, rcfBreaking,
-		func() error {
-			clients := flow.edb.Clients(tctx)
-			err = clients.Ref.DeleteOneID(cached.Ref.ID).Exec(tctx)
-			if err != nil {
-				return err
-			}
-
-			return nil
-		},
-		tx.Commit,
-	)
+	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {
 		return nil, err
 	}
+	revision, err := fStore.ForFile(file).GetRevisionByTag(ctx, req.GetTag())
+	if err != nil {
+		return nil, err
+	}
+	_, err = fStore.ForRevision(revision).SetTags(ctx, revision.Tags.RemoveTag(req.GetTag()))
+	if err != nil {
+		return nil, err
+	}
+	if err = commit(ctx); err != nil {
+		return nil, err
+	}
 
-	flow.logger.Infof(ctx, cached.Workflow.ID, cached.GetAttributes(recipient.Workflow), "Deleted workflow tag: %s.", req.GetTag())
-	flow.pubsub.NotifyWorkflow(cached.Workflow)
+	flow.logger.Infof(ctx, file.ID, database.GetAttributes(recipient.Workflow, ns, fileAttributes(*file)), "Deleted workflow tag: %s.", req.GetTag())
 
 	var resp emptypb.Empty
 
@@ -321,54 +252,8 @@ func (flow *flow) Untag(ctx context.Context, req *grpc.UntagRequest) (*emptypb.E
 }
 
 func (flow *flow) Retag(ctx context.Context, req *grpc.RetagRequest) (*emptypb.Empty, error) {
+	// TODO: yassir, question here.
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
-
-	tctx, tx, err := flow.database.Tx(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer rollback(tx)
-
-	cached, err := flow.traverseToRef(tctx, req.GetNamespace(), req.GetPath(), req.GetRef())
-	if err != nil {
-		return nil, err
-	}
-
-	dt, err := flow.traverseToRef(tctx, req.GetNamespace(), req.GetPath(), req.GetTag())
-	if err != nil {
-		return nil, err
-	}
-
-	if dt.Revision.ID == cached.Revision.ID {
-		// no change
-		rollback(tx)
-		goto respond
-	}
-
-	if dt.Ref.Immutable || dt.Ref.Name == latest {
-		return nil, errors.New("not a tag")
-	}
-
-	err = flow.configureRouter(tctx, cached, rcfBreaking,
-		func() error {
-			clients := flow.edb.Clients(tctx)
-			err = clients.Ref.UpdateOneID(dt.Ref.ID).SetRevisionID(cached.Revision.ID).Exec(tctx)
-			if err != nil {
-				return err
-			}
-
-			return nil
-		},
-		tx.Commit,
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	flow.logger.Infof(ctx, cached.Workflow.ID, cached.GetAttributes(recipient.Workflow), "Changed workflow tag: %s -> %s.", req.GetTag(), cached.Revision.ID.String())
-	flow.pubsub.NotifyWorkflow(cached.Workflow)
-
-respond:
 
 	var resp emptypb.Empty
 
@@ -376,23 +261,10 @@ respond:
 }
 
 func (flow *flow) ValidateRef(ctx context.Context, req *grpc.ValidateRefRequest) (*grpc.ValidateRefResponse, error) {
+	// TODO: yassir, question here.
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	cached, err := flow.traverseToRef(ctx, req.GetNamespace(), req.GetPath(), req.GetRef())
-	if err != nil {
-		return nil, err
-	}
-
-	_, err = loadSource(cached.Revision)
-
 	var resp grpc.ValidateRefResponse
-
-	resp.Namespace = cached.Namespace.Name
-	resp.Path = cached.Path()
-	resp.Ref = cached.Ref.Name
-	resp.Invalid = err != nil
-	resp.Reason = err.Error()
-	resp.Compiles = err != nil
 
 	return &resp, nil
 }

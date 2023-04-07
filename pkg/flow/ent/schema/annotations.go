@@ -34,8 +34,6 @@ func (Annotation) Fields() []ent.Field {
 func (Annotation) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("namespace", Namespace.Type).Ref("annotations").Unique().Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
-		edge.From("workflow", Workflow.Type).Ref("annotations").Unique().Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
 		edge.From("instance", Instance.Type).Ref("annotations").Unique().Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
-		edge.From("inode", Inode.Type).Ref("annotations").Unique().Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
 	}
 }

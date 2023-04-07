@@ -69,7 +69,6 @@ func (logic *actionLogic) Deadline(ctx context.Context) time.Time {
 func (logic *actionLogic) Run(ctx context.Context, wakedata []byte) (*Transition, error) {
 	// first schedule
 	if len(wakedata) == 0 {
-
 		err := noMemory(logic)
 		if err != nil {
 			return nil, err
@@ -88,7 +87,6 @@ func (logic *actionLogic) Run(ctx context.Context, wakedata []byte) (*Transition
 		}
 
 		return nil, nil
-
 	}
 
 	var children []*ChildInfo
@@ -218,7 +216,6 @@ func (logic *actionLogic) processActionResults(ctx context.Context, children []*
 		logic.Log(ctx, log.Info, "Scheduling retry attempt in: %v for action %s", d, logic.label())
 
 		return nil, scheduleRetry(ctx, logic.Instance, children, 0, d)
-
 	}
 
 	if results.ErrorMessage != "" {

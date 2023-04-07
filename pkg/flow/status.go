@@ -48,14 +48,12 @@ func (engine *engine) SetInstanceFailed(ctx context.Context, im *instanceMemory,
 
 func (engine *engine) InstanceRaise(ctx context.Context, im *instanceMemory, cerr *derrors.CatchableError) error {
 	if im.ErrorCode() == "" {
-
 		updater := im.getInstanceUpdater()
 		updater = updater.SetStatus(util.InstanceStatusFailed).SetErrorCode(cerr.Code).SetErrorMessage(cerr.Message)
 		im.cached.Instance.Status = util.InstanceStatusFailed
 		im.cached.Instance.ErrorCode = cerr.Code
 		im.cached.Instance.ErrorMessage = cerr.Message
 		im.instanceUpdater = updater
-
 	} else {
 		return derrors.NewCatchableError(ErrCodeMultipleErrors, "the workflow instance tried to throw multiple errors")
 	}

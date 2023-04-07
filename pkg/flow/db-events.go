@@ -13,7 +13,6 @@ import (
 	entev "github.com/direktiv/direktiv/pkg/flow/ent/events"
 	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	entns "github.com/direktiv/direktiv/pkg/flow/ent/namespace"
-	entwf "github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/google/uuid"
 )
@@ -79,15 +78,15 @@ func (events *events) addEvent(ctx context.Context, eventin *cloudevents.Event, 
 	return nil
 }
 
-func (events *events) deleteEventListeners(ctx context.Context, cached *database.CacheData, id uuid.UUID) error {
+func (events *events) deleteEventListeners(ctx context.Context, nsID, evID uuid.UUID) error {
 	clients := events.edb.Clients(ctx)
 
-	_, err := clients.Events.Delete().Where(entev.IDEQ(id)).Exec(ctx)
+	_, err := clients.Events.Delete().Where(entev.IDEQ(evID)).Exec(ctx)
 	if err != nil {
 		return err
 	}
 
-	events.pubsub.NotifyEventListeners(cached.Namespace)
+	events.pubsub.NotifyEventListeners(nsID)
 
 	return nil
 }
@@ -95,12 +94,12 @@ func (events *events) deleteEventListeners(ctx context.Context, cached *database
 func (events *events) deleteWorkflowEventListeners(ctx context.Context, cached *database.CacheData) error {
 	clients := events.edb.Clients(ctx)
 
-	_, err := clients.Events.Delete().Where(entev.HasWorkflowWith(entwf.ID(cached.Workflow.ID))).Exec(ctx)
+	_, err := clients.Events.Delete().Where(entev.WorkflowID(cached.File.ID)).Exec(ctx)
 	if err != nil {
 		return err
 	}
 
-	events.pubsub.NotifyEventListeners(cached.Namespace)
+	events.pubsub.NotifyEventListeners(cached.Namespace.ID)
 
 	return nil
 }
@@ -116,12 +115,11 @@ func (events *events) deleteInstanceEventListeners(ctx context.Context, cached *
 		return err
 	}
 
-	events.pubsub.NotifyEventListeners(cached.Namespace)
+	events.pubsub.NotifyEventListeners(cached.Namespace.ID)
 
 	return nil
 }
 
-// called by add workflow, adds event listeners if required.
 func (events *events) processWorkflowEvents(ctx context.Context, cached *database.CacheData, ms *muxStart) error {
 	err := events.deleteWorkflowEventListeners(ctx, cached)
 	if err != nil {
@@ -129,7 +127,6 @@ func (events *events) processWorkflowEvents(ctx context.Context, cached *databas
 	}
 
 	if len(ms.Events) > 0 && ms.Enabled {
-
 		var ev []map[string]interface{}
 		for i, e := range ms.Events {
 			em := make(map[string]interface{})
@@ -158,7 +155,7 @@ func (events *events) processWorkflowEvents(ctx context.Context, cached *databas
 
 		_, err = clients.Events.Create().
 			SetNamespaceID(cached.Namespace.ID).
-			SetWorkflowID(cached.Workflow.ID).
+			SetWorkflowID(cached.File.ID).
 			SetEvents(ev).
 			SetCorrelations(correlations).
 			SetCount(count).
@@ -167,10 +164,9 @@ func (events *events) processWorkflowEvents(ctx context.Context, cached *databas
 		if err != nil {
 			return err
 		}
-
 	}
 
-	events.pubsub.NotifyEventListeners(cached.Namespace)
+	events.pubsub.NotifyEventListeners(cached.Namespace.ID)
 
 	return nil
 }
@@ -210,7 +206,7 @@ func (events *events) addInstanceEventListener(ctx context.Context, cached *data
 
 	_, err := clients.Events.Create().
 		SetNamespaceID(cached.Namespace.ID).
-		SetWorkflowID(cached.Workflow.ID).
+		SetWorkflowID(cached.File.ID).
 		SetInstanceID(cached.Instance.ID).
 		SetEvents(ev).
 		SetCorrelations([]string{}).
@@ -221,7 +217,7 @@ func (events *events) addInstanceEventListener(ctx context.Context, cached *data
 		return err
 	}
 
-	events.pubsub.NotifyEventListeners(cached.Namespace)
+	events.pubsub.NotifyEventListeners(cached.Namespace.ID)
 
 	return nil
 }

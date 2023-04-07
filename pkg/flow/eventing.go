@@ -79,7 +79,7 @@ func (rcv *eventReceiver) sendToNamespace(name string, r *http.Request) error {
 
 	c := context.WithValue(context.Background(), EventingCtxKeySource, "eventing")
 
-	return rcv.events.BroadcastCloudevent(c, cached, ev, 0)
+	return rcv.events.BroadcastCloudevent(c, cached.Namespace, ev, 0)
 }
 
 func (rcv *eventReceiver) NamespaceHandler(w http.ResponseWriter, r *http.Request) {

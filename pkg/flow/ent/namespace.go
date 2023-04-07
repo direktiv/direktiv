@@ -32,14 +32,6 @@ type Namespace struct {
 
 // NamespaceEdges holds the relations/edges for other nodes in the graph.
 type NamespaceEdges struct {
-	// Inodes holds the value of the inodes edge.
-	Inodes []*Inode `json:"inodes,omitempty"`
-	// Workflows holds the value of the workflows edge.
-	Workflows []*Workflow `json:"workflows,omitempty"`
-	// Mirrors holds the value of the mirrors edge.
-	Mirrors []*Mirror `json:"mirrors,omitempty"`
-	// MirrorActivities holds the value of the mirror_activities edge.
-	MirrorActivities []*MirrorActivity `json:"mirror_activities,omitempty"`
 	// Instances holds the value of the instances edge.
 	Instances []*Instance `json:"instances,omitempty"`
 	// Logs holds the value of the logs edge.
@@ -58,49 +50,13 @@ type NamespaceEdges struct {
 	Services []*Services `json:"services,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [12]bool
-}
-
-// InodesOrErr returns the Inodes value or an error if the edge
-// was not loaded in eager-loading.
-func (e NamespaceEdges) InodesOrErr() ([]*Inode, error) {
-	if e.loadedTypes[0] {
-		return e.Inodes, nil
-	}
-	return nil, &NotLoadedError{edge: "inodes"}
-}
-
-// WorkflowsOrErr returns the Workflows value or an error if the edge
-// was not loaded in eager-loading.
-func (e NamespaceEdges) WorkflowsOrErr() ([]*Workflow, error) {
-	if e.loadedTypes[1] {
-		return e.Workflows, nil
-	}
-	return nil, &NotLoadedError{edge: "workflows"}
-}
-
-// MirrorsOrErr returns the Mirrors value or an error if the edge
-// was not loaded in eager-loading.
-func (e NamespaceEdges) MirrorsOrErr() ([]*Mirror, error) {
-	if e.loadedTypes[2] {
-		return e.Mirrors, nil
-	}
-	return nil, &NotLoadedError{edge: "mirrors"}
-}
-
-// MirrorActivitiesOrErr returns the MirrorActivities value or an error if the edge
-// was not loaded in eager-loading.
-func (e NamespaceEdges) MirrorActivitiesOrErr() ([]*MirrorActivity, error) {
-	if e.loadedTypes[3] {
-		return e.MirrorActivities, nil
-	}
-	return nil, &NotLoadedError{edge: "mirror_activities"}
+	loadedTypes [8]bool
 }
 
 // InstancesOrErr returns the Instances value or an error if the edge
 // was not loaded in eager-loading.
 func (e NamespaceEdges) InstancesOrErr() ([]*Instance, error) {
-	if e.loadedTypes[4] {
+	if e.loadedTypes[0] {
 		return e.Instances, nil
 	}
 	return nil, &NotLoadedError{edge: "instances"}
@@ -109,7 +65,7 @@ func (e NamespaceEdges) InstancesOrErr() ([]*Instance, error) {
 // LogsOrErr returns the Logs value or an error if the edge
 // was not loaded in eager-loading.
 func (e NamespaceEdges) LogsOrErr() ([]*LogMsg, error) {
-	if e.loadedTypes[5] {
+	if e.loadedTypes[1] {
 		return e.Logs, nil
 	}
 	return nil, &NotLoadedError{edge: "logs"}
@@ -118,7 +74,7 @@ func (e NamespaceEdges) LogsOrErr() ([]*LogMsg, error) {
 // VarsOrErr returns the Vars value or an error if the edge
 // was not loaded in eager-loading.
 func (e NamespaceEdges) VarsOrErr() ([]*VarRef, error) {
-	if e.loadedTypes[6] {
+	if e.loadedTypes[2] {
 		return e.Vars, nil
 	}
 	return nil, &NotLoadedError{edge: "vars"}
@@ -127,7 +83,7 @@ func (e NamespaceEdges) VarsOrErr() ([]*VarRef, error) {
 // CloudeventsOrErr returns the Cloudevents value or an error if the edge
 // was not loaded in eager-loading.
 func (e NamespaceEdges) CloudeventsOrErr() ([]*CloudEvents, error) {
-	if e.loadedTypes[7] {
+	if e.loadedTypes[3] {
 		return e.Cloudevents, nil
 	}
 	return nil, &NotLoadedError{edge: "cloudevents"}
@@ -136,7 +92,7 @@ func (e NamespaceEdges) CloudeventsOrErr() ([]*CloudEvents, error) {
 // NamespacelistenersOrErr returns the Namespacelisteners value or an error if the edge
 // was not loaded in eager-loading.
 func (e NamespaceEdges) NamespacelistenersOrErr() ([]*Events, error) {
-	if e.loadedTypes[8] {
+	if e.loadedTypes[4] {
 		return e.Namespacelisteners, nil
 	}
 	return nil, &NotLoadedError{edge: "namespacelisteners"}
@@ -145,7 +101,7 @@ func (e NamespaceEdges) NamespacelistenersOrErr() ([]*Events, error) {
 // AnnotationsOrErr returns the Annotations value or an error if the edge
 // was not loaded in eager-loading.
 func (e NamespaceEdges) AnnotationsOrErr() ([]*Annotation, error) {
-	if e.loadedTypes[9] {
+	if e.loadedTypes[5] {
 		return e.Annotations, nil
 	}
 	return nil, &NotLoadedError{edge: "annotations"}
@@ -154,7 +110,7 @@ func (e NamespaceEdges) AnnotationsOrErr() ([]*Annotation, error) {
 // CloudeventfiltersOrErr returns the Cloudeventfilters value or an error if the edge
 // was not loaded in eager-loading.
 func (e NamespaceEdges) CloudeventfiltersOrErr() ([]*CloudEventFilters, error) {
-	if e.loadedTypes[10] {
+	if e.loadedTypes[6] {
 		return e.Cloudeventfilters, nil
 	}
 	return nil, &NotLoadedError{edge: "cloudeventfilters"}
@@ -163,7 +119,7 @@ func (e NamespaceEdges) CloudeventfiltersOrErr() ([]*CloudEventFilters, error) {
 // ServicesOrErr returns the Services value or an error if the edge
 // was not loaded in eager-loading.
 func (e NamespaceEdges) ServicesOrErr() ([]*Services, error) {
-	if e.loadedTypes[11] {
+	if e.loadedTypes[7] {
 		return e.Services, nil
 	}
 	return nil, &NotLoadedError{edge: "services"}
@@ -228,26 +184,6 @@ func (n *Namespace) assignValues(columns []string, values []any) error {
 		}
 	}
 	return nil
-}
-
-// QueryInodes queries the "inodes" edge of the Namespace entity.
-func (n *Namespace) QueryInodes() *InodeQuery {
-	return (&NamespaceClient{config: n.config}).QueryInodes(n)
-}
-
-// QueryWorkflows queries the "workflows" edge of the Namespace entity.
-func (n *Namespace) QueryWorkflows() *WorkflowQuery {
-	return (&NamespaceClient{config: n.config}).QueryWorkflows(n)
-}
-
-// QueryMirrors queries the "mirrors" edge of the Namespace entity.
-func (n *Namespace) QueryMirrors() *MirrorQuery {
-	return (&NamespaceClient{config: n.config}).QueryMirrors(n)
-}
-
-// QueryMirrorActivities queries the "mirror_activities" edge of the Namespace entity.
-func (n *Namespace) QueryMirrorActivities() *MirrorActivityQuery {
-	return (&NamespaceClient{config: n.config}).QueryMirrorActivities(n)
 }
 
 // QueryInstances queries the "instances" edge of the Namespace entity.

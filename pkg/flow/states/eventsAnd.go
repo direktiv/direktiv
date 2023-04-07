@@ -55,28 +55,23 @@ func (logic *eventsAndLogic) Run(ctx context.Context, wakedata []byte) (*Transit
 	}
 
 	if first {
-
 		var events []*model.ConsumeEventDefinition
 
 		for i := range logic.Events {
-
 			event := new(model.ConsumeEventDefinition)
 			event.Type = logic.Events[i].Type
 			event.Context = make(map[string]interface{})
 
 			for k, v := range logic.Events[i].Context {
-
 				x, err := jqOne(logic.GetInstanceData(), v)
 				if err != nil {
 					return nil, derrors.NewUncatchableError("direktiv.event.jq", "failed to process event context key '%s': %v", k, err)
 				}
 
 				event.Context[k] = x
-
 			}
 
 			events = append(events, event)
-
 		}
 
 		err = logic.ListenForEvents(ctx, events, true)
@@ -85,7 +80,6 @@ func (logic *eventsAndLogic) Run(ctx context.Context, wakedata []byte) (*Transit
 		}
 
 		return nil, nil
-
 	}
 
 	events := make([]*cloudevents.Event, 0)
@@ -102,7 +96,6 @@ func (logic *eventsAndLogic) Run(ctx context.Context, wakedata []byte) (*Transit
 	inMap := make(map[string]*cloudevents.Event)
 
 	for a := range events {
-
 		_, ok := inMap[events[a].Type()]
 		k := events[a].Type()
 
@@ -111,7 +104,6 @@ func (logic *eventsAndLogic) Run(ctx context.Context, wakedata []byte) (*Transit
 		}
 
 		inMap[k] = events[a]
-
 	}
 
 	for k, v := range inMap {

@@ -45,7 +45,6 @@ func (logic *switchLogic) Run(ctx context.Context, wakedata []byte) (*Transition
 	}
 
 	for i, condition := range logic.Conditions {
-
 		var x interface{}
 		x, err = jqOne(logic.GetInstanceData(), condition.Condition)
 		if err != nil {
@@ -53,16 +52,13 @@ func (logic *switchLogic) Run(ctx context.Context, wakedata []byte) (*Transition
 		}
 
 		if truth(x) {
-
 			logic.Log(ctx, log.Info, "Switch condition %d succeeded", i)
 
 			return &Transition{
 				Transform: condition.Transform,
 				NextState: condition.Transition,
 			}, nil
-
 		}
-
 	}
 
 	logic.Log(ctx, log.Info, "No switch conditions succeeded")

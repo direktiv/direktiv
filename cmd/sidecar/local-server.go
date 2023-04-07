@@ -143,7 +143,6 @@ func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
 	var msg string
 
 	if r.Method == http.MethodPost {
-
 		cap := int64(0x400000) // 4 MiB
 		if r.ContentLength > cap {
 			code := http.StatusRequestEntityTooLarge
@@ -160,7 +159,6 @@ func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		msg = string(data)
-
 	} else {
 		msg = r.URL.Query().Get("log")
 	}
@@ -385,7 +383,6 @@ type varClientMsg interface {
 
 func (srv *LocalServer) requestVar(ctx context.Context, ir *functionRequest, scope, key string) (client varClient, recv func() (varClientMsg, error), err error) {
 	switch scope {
-
 	case util.VarScopeNamespace:
 		var nvClient grpc.Internal_NamespaceVariableParcelsClient
 		nvClient, err = srv.flow.NamespaceVariableParcels(ctx, &grpc.VariableInternalRequest{
@@ -446,7 +443,6 @@ func (srv *LocalServer) setVar(ctx context.Context, ir *functionRequest, totalSi
 	var send func(*varSetClientMsg) error
 
 	switch scope {
-
 	case util.VarScopeNamespace:
 		var nvClient grpc.Internal_SetNamespaceVariableParcelsClient
 		nvClient, err = srv.flow.SetNamespaceVariableParcels(ctx)
