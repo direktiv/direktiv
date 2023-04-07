@@ -43,9 +43,29 @@ export const DefaultOpen = () => (
   </Popover>
 );
 
-export const ModalPopover = () => (
-  <Popover modal>
-    <PopoverTrigger>Open</PopoverTrigger>
-    <PopoverContent>Place content for the popover here.</PopoverContent>
-  </Popover>
+export const AlignPopoverContent = () => (
+  <div>
+    <Popover>
+      <PopoverTrigger className="mx-2 w-48 bg-gray-5">
+        Align Start
+      </PopoverTrigger>
+      <PopoverContent align="start">
+        Place content for the popover here.
+      </PopoverContent>
+    </Popover>
+    <Popover>
+      <PopoverTrigger className="mx-2 w-48 bg-gray-5">
+        Align Center
+      </PopoverTrigger>
+      <PopoverContent align="center">
+        Place content for the popover here.
+      </PopoverContent>
+    </Popover>
+    <Popover>
+      <PopoverTrigger className="mx-2 w-48 bg-gray-5">Align End</PopoverTrigger>
+      <PopoverContent align="end">
+        Place content for the popover here.
+      </PopoverContent>
+    </Popover>
+  </div>
 );
