@@ -62,7 +62,12 @@ func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNam
 	var txErr error
 	var mirConfig *mirror.Config
 	err = flow.runSqlTx(ctx, func(fStore filestore.FileStore, store datastore.Store) error {
-		_, txErr = fStore.CreateRoot(ctx, ns.ID)
+		var root *filestore.Root
+		root, txErr = fStore.CreateRoot(ctx, ns.ID)
+		if txErr != nil {
+			return txErr
+		}
+		_, _, txErr = fStore.ForRootID(root.ID).CreateFile(ctx, "/", filestore.FileTypeDirectory, nil)
 		if txErr != nil {
 			return txErr
 		}

@@ -29,6 +29,7 @@ func TestRoot_CorrectSetPath(t *testing.T) {
 		{
 			name: "basic_directory_case",
 			paths: []string{
+				"/",
 				"/a",
 				"/a/b",
 				"/a/b/file1.text",
@@ -40,6 +41,7 @@ func TestRoot_CorrectSetPath(t *testing.T) {
 			setPath: "/a/d",
 
 			pathsAfterChange: []string{
+				"/",
 				"/a",
 				"/a/d",
 				"/a/d/file1.text",
@@ -51,6 +53,7 @@ func TestRoot_CorrectSetPath(t *testing.T) {
 		{
 			name: "weird_case_directory_1", // with /a/bfile1.text
 			paths: []string{
+				"/",
 				"/a",
 				"/a/b",
 				"/a/b/file1.text",
@@ -63,6 +66,7 @@ func TestRoot_CorrectSetPath(t *testing.T) {
 			setPath: "/a/d",
 
 			pathsAfterChange: []string{
+				"/",
 				"/a",
 				"/a/d",
 				"/a/d/file1.text",
@@ -75,6 +79,7 @@ func TestRoot_CorrectSetPath(t *testing.T) {
 		{
 			name: "weird_case_directory_2", // with /a/b/a/b
 			paths: []string{
+				"/",
 				"/a",
 				"/a/b",
 				"/a/b/a",
@@ -88,6 +93,7 @@ func TestRoot_CorrectSetPath(t *testing.T) {
 			setPath: "/a/b/a/d",
 
 			pathsAfterChange: []string{
+				"/",
 				"/a",
 				"/a/b",
 				"/a/b/a",
@@ -101,6 +107,7 @@ func TestRoot_CorrectSetPath(t *testing.T) {
 		{
 			name: "weird_case_directory_3", // with /a/b/a/b
 			paths: []string{
+				"/",
 				"/a",
 				"/a/b",
 				"/a/b/a",
@@ -114,6 +121,7 @@ func TestRoot_CorrectSetPath(t *testing.T) {
 			setPath: "/z",
 
 			pathsAfterChange: []string{
+				"/",
 				"/z",
 				"/z/b",
 				"/z/b/a",
