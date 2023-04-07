@@ -1,4 +1,6 @@
-#!/bin/sh
+#!/bin/bash
+
+export $(cat /env | xargs)
 
 # start k3s and wait for pod to be up
 curl -sfL https://get.k3s.io | sh -s - --disable traefik --write-kubeconfig-mode=644
@@ -10,11 +12,42 @@ do
     sleep 1
 done
 
-
 # knative
 kubectl apply -f https://github.com/knative/operator/releases/download/knative-v1.9.4/operator.yaml
 kubectl create ns knative-serving
-kubectl apply -f https://raw.githubusercontent.com/direktiv/direktiv/main/kubernetes/install/knative/basic.yaml
+
+if [ -n "${HTTPS_PROXY+1}" ]; then
+  echo "adding proxy to knative"
+  curl https://raw.githubusercontent.com/direktiv/direktiv/main/kubernetes/install/knative/basic.yaml > knative.yaml
+
+  ln=$(awk '/name: controller/ {print FNR}' knative.yaml)
+  num=$((ln + 1))
+
+  VAR=$(cat <<-END
+    env:
+      - container: controller
+        envVars:
+        - name: HTTP_PROXY
+          value: "${HTTP_PROXY}"
+        - name: HTTPS_PROXY
+          value: "${HTTP_PROXY}"
+        - name: NO_PROXY
+          value: "${NO_PROXY}"
+END
+)
+
+    ed -v knative.yaml <<END
+${num}i
+${VAR}
+.
+w
+q
+END
+
+  kubectl apply -f knative.yaml
+else
+  kubectl apply -f https://raw.githubusercontent.com/direktiv/direktiv/main/kubernetes/install/knative/basic.yaml
+fi
 
 # database
 mkdir pv
@@ -179,6 +212,11 @@ functions:
   tag: "$3"
   sidecar: "$1"
   initPodImage: "direktiv/init-pod"
+$(if [ -n "${HTTPS_PROXY+1}" ]; then
+  echo "  http_proxy: ${HTTP_PROXY}"
+  echo "  https_proxy: ${HTTPS_PROXY}"
+  echo "  no_proxy: ${NO_PROXY}"
+fi)
 
 database:
   # -- database host
@@ -193,11 +231,18 @@ database:
   name: "direktiv"
   # -- sslmode for database
   sslmode: disable
+
+$(if [ -n "${HTTPS_PROXY+1}" ]; then
+  echo "http_proxy: ${HTTP_PROXY}"
+  echo "https_proxy: ${HTTPS_PROXY}"
+  echo "no_proxy: ${NO_PROXY}"
+fi)
+
+$(if [ -n "${APIKEY+1}" ]; then
+  echo "apikey: ${APIKEY}"
+fi)
 EOF
 
-# helm repo add direktiv https://chart.direktiv.io
-# helm repo add prometheus https://prometheus-community.github.io/helm-charts
-# helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 git clone -b one-binary https://github.com/direktiv/direktiv-charts.git
 
 cd `pwd`/direktiv-charts/charts/direktiv && \
