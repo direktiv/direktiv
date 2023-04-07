@@ -16,16 +16,12 @@ var (
 // TODO: add tests.
 // SanitizePath standardizes and sanitized the path, and validates it against naming requirements.
 func SanitizePath(path string) (string, error) {
-	path = filepath.Clean(path)
 	path = filepath.Join("/", path)
+	path = filepath.Clean(path)
 	// if !pathRegex.MatchString(path) {
 	//	// TODO: fix this comment.
 	//	// return "", errors.New("path failed to match regex: " + pathRegexPattern)
 	//}
-
-	if path == "" {
-		path = "/"
-	}
 
 	return path, nil
 }
