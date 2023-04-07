@@ -239,7 +239,7 @@ $(if [ -n "${HTTPS_PROXY+1}" ]; then
 fi)
 
 $(if [ -n "${APIKEY+1}" ]; then
-  echo "apikey: ${APIKEY}"
+  echo "apikey: \"${APIKEY}\""
 fi)
 EOF
 
@@ -282,6 +282,7 @@ until [ "$n" -ge 24 ]
 do
    curl -X PUT http://localhost/api/namespaces/examples \
      -H "Content-Type: application/json" \
+     -H "Direktiv-Token: ${APIKEY}" \
      --write-out "%{http_code}" \
      -f \
      -d '{ "url": "https://github.com/direktiv/direktiv-examples.git", "ref": "main" }' && break
