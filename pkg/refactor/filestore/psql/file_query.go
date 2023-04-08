@@ -194,8 +194,8 @@ func (q *FileQuery) CreateRevision(ctx context.Context, tags filestore.RevisionT
 	res := q.db.WithContext(ctx).
 		Model(&filestore.Revision{}).
 		Where("file_id", q.file.ID).
-		Update("is_current", false).
-		Update("checksum", newChecksum)
+		Where("is_current", true).
+		Update("is_current", false)
 	if res.Error != nil {
 		return nil, res.Error
 	}
@@ -211,7 +211,8 @@ func (q *FileQuery) CreateRevision(ctx context.Context, tags filestore.RevisionT
 		FileID:    q.file.ID,
 		IsCurrent: true,
 
-		Data: data,
+		Checksum: newChecksum,
+		Data:     data,
 	}
 	res = q.db.WithContext(ctx).Create(newRev)
 	if res.Error != nil {
