@@ -11,6 +11,13 @@ states:
   transform: 'jq({ msg: "Hello, world!" })'
 `
 
+const updatedSimpleWorkflow = `
+states:
+- id: hello_updated
+  type: noop
+  transform: 'jq({ msg: "Hello, world!" })'
+`
+
 var expectedChildNodeObject = {
     createdAt: expect.stringMatching(common.regex.timestampRegex),
     updatedAt: expect.stringMatching(common.regex.timestampRegex),
@@ -110,6 +117,16 @@ describe('Test basic directory operations', () => {
 
         var buf = Buffer.from(createWorkflowResponse.body.revision.source, 'base64')
         expect(buf.toString()).toEqual(simpleWorkflow)
+    })
+
+    it(`should update a workflow`, async () => {
+        var createWorkflowResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${namespaceName}/tree/${workflowName}?op=update-workflow`).send(updatedSimpleWorkflow)
+        expect(createWorkflowResponse.statusCode).toEqual(200)
+    })
+
+    it(`should update a workflow for the second time`, async () => {
+        var createWorkflowResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${namespaceName}/tree/${workflowName}?op=update-workflow`).send(updatedSimpleWorkflow)
+        expect(createWorkflowResponse.statusCode).toEqual(200)
     })
 
     it(`should read the root directory`, async () => {
