@@ -19,11 +19,11 @@ linters:
     - ireturn
     - funlen
     - musttag
-    - gochecknoglobals #temporary
-    - dupword #temporary
-    - cyclop #temporary
-    - unused #temporary
-    - godox #temporary
+    - gochecknoglobals
+    - dupword # must fix.
+    - cyclop
+    - unused # must fix
+    - godox # must fix
 
   presets:
     - bugs
@@ -65,7 +65,7 @@ issues:
       - gomnd
       - testpackage
       - gochecknoglobals
-      - bodyclose # must fix.
+      - bodyclose # must fix
       - asasalint
       - predeclared
       - musttag
@@ -90,7 +90,6 @@ issues:
       - lll
       - gocritic
       - rowserrcheck
-      - gocyclo
       - nakedret
 
     - text: "do not define dynamic errors, use wrapped static errors instead:"
