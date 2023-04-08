@@ -1142,35 +1142,6 @@
             "description": ""
           }
         }
-      },
-      "delete": {
-        "description": "Delete existing cloud event filter in target namespace\n",
-        "tags": [
-          "CloudEventFilter"
-        ],
-        "summary": "Delete existing cloudEventFilter",
-        "operationId": "deleteCloudeventFilter",
-        "parameters": [
-          {
-            "type": "string",
-            "description": "target namespace",
-            "name": "namespace",
-            "in": "path",
-            "required": true
-          },
-          {
-            "type": "string",
-            "description": "target filtername",
-            "name": "filtername",
-            "in": "path",
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        }
       }
     },
     "/api/namespaces/{namespace}/config": {
@@ -1332,7 +1303,7 @@
           }
         }
       },
-      "put": {
+      "post": {
         "description": "Creates new cloud event filter in target namespace\nThe body of this request should be a compilable javascript code without function header.\n",
         "tags": [
           "CloudEventFilter"
@@ -1362,6 +1333,35 @@
             "schema": {
               "type": "object"
             }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      },
+      "delete": {
+        "description": "Delete existing cloud event filter in target namespace\n",
+        "tags": [
+          "CloudEventFilter"
+        ],
+        "summary": "Delete existing cloudEventFilter",
+        "operationId": "deleteCloudeventFilter",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "target filtername",
+            "name": "filtername",
+            "in": "path",
+            "required": true
           }
         ],
         "responses": {
@@ -2064,7 +2064,7 @@
     },
     "/api/namespaces/{namespace}/secrets": {
       "get": {
-        "description": "Gets the list of namespace secrets. Also can use for search by setting query param op=search\n",
+        "description": "Gets the list of namespace secrets. Also can use for search by setting query param op=search and term=\u003csearchingName\u003e\n",
         "tags": [
           "Secrets"
         ],
