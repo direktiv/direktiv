@@ -12,11 +12,11 @@
 
 | Parameter | Description | Type | Required |
 | --- | --- | --- | --- |
-| `function` | Name of the referenced function. See [FunctionDefinition](#FunctionDefinition). | string | yes |
+| `function` | Name of the referenced function. See [FunctionDefinition](/spec/workflow-yaml/functions/#functiondefinition). | string | yes |
 | `input` | Selects or generates the data to send as input to the function. | [Structured JQ](../instance-data/structured-jx.md) | no |
 | `secrets` | Defines a list of secrets to temporarily add to the instance data under `.secrets`, before evaluating the `input`. | []string | no |
-| `retries` | | [[]RetryPolicyDefinition](#RetryPolicyDefinition) | no |
-| `files` | Determines a list of files to load onto the function's file-system from variables. Only valid if the referenced function supports it. | [[]FunctionFileDefinition](#FunctionFileDefinition) | no |
+| `retries` | | [[]RetryPolicyDefinition](#retrypolicydefinition) | no |
+| `files` | Determines a list of files to load onto the function's file-system from variables. Only valid if the referenced function supports it. | [[]FunctionFileDefinition](#functionfiledefinition) | no |
 
 ## RetryPolicyDefinition 
 
@@ -26,11 +26,11 @@
   action:
     function: myfunc
     input: 'jq(.x)'
-  retries:
-  - codes: [".*"]
-    max_attempts: 3
-    delay: PT3S
-    multiplier: 1.5
+    retries:
+      codes: [".*"]
+      max_attempts: 3
+      delay: PT3S
+      multiplier: 1.5
 ```
 
 | Parameter | Description | Type | Required |
@@ -48,10 +48,10 @@
   action:
     function: myfunc
     input: 'jq(.x)'
-  files:
-  - key: VAR_A 
-    scope: namespace
-    as: a
+    files:
+    - key: VAR_A 
+      scope: namespace
+      as: a
 ```
 
 Some function types support loading variable directly from storage onto their file-systems. This object defines what variable to load and what to save it as.
@@ -59,7 +59,7 @@ Some function types support loading variable directly from storage onto their fi
 | Parameter | Description | Type | Required |
 | --- | --- | --- | --- |
 | `key` | Identifies which variable to load into a file. | string | yes | 
-| `scope` | Specifies the scope from which to load the variable. | [VariableScopeDefinition](#VariableScopeDefinition) | no |
+| `scope` | Specifies the scope from which to load the variable. | [VariableScopeDefinition](#variablescopedefinition) | no |
 | `as` | Names the resulting file. If left unspecified, the `key` will be used instead. | string | no |
 
 ## VariableScopeDefinition

@@ -21,7 +21,7 @@ The default start definition is used for workflows that should only execute when
 
 | Parameter | Description | Type | Required |
 | --- | --- | --- | --- |
-| `type` | Identifies which kind of [StartDefinition](#StartDefintion) is being used. In this case it must be set to `default`. | string | yes | 
+| `type` | Identifies which kind of [StartDefinition](#startdefinition) is being used. In this case it must be set to `default`. | string | yes | 
 | `state` | References a defined state's `id`. This state will be used as the entrypoint into the workflow. If left undefined, it defaults to the first state defined in the `states` list.  | string | no |
 
 ### ScheduledStartDefinition
@@ -32,7 +32,7 @@ Scheduled workflow can be manually triggered for convenience and testing. They n
 
 | Parameter | Description | Type | Required |
 | --- | --- | --- | --- |
-| `type` | Identifies which kind of [StartDefinition](#StartDefintion) is being used. In this case it must be set to `scheduled`. | string | yes | 
+| `type` | Identifies which kind of [StartDefinition](#startdefinition) is being used. In this case it must be set to `scheduled`. | string | yes | 
 | `state` | References a defined state's `id`. This state will be used as the entrypoint into the workflow. If left undefined, it defaults to the first state defined in the `states` list.  | string | no |
 | `cron` | Defines the time(s) when the workflow should execute using a CRON expression. | string | yes |
 
@@ -51,34 +51,34 @@ See [StartEventDefinition](#StartEventDefinition) for an explanation of the inpu
 
 | Parameter | Description | Type | Required |
 | --- | --- | --- | --- |
-| `type` | Identifies which kind of [StartDefinition](#StartDefintion) is being used. In this case it must be set to `event`. | string | yes | 
+| `type` | Identifies which kind of [StartDefinition](#startdefinition) is being used. In this case it must be set to `event`. | string | yes | 
 | `state` | References a defined state's `id`. This state will be used as the entrypoint into the workflow. If left undefined, it defaults to the first state defined in the `states` list.  | string | no |
-| `event` | Defines what events can trigger the workflow. | [StartEventDefinition](#StartEventDefinition) | yes |
+| `event` | Defines what events can trigger the workflow. | [StartEventDefinition](#starteventdefinition) | yes |
 
 ### EventsXorStartDefinition 
 
 The event "xor" start definition is used for workflows that should be executed whenever one of multiple possible CloudEvents events is received. 
 
-See [StartEventDefinition](#StartEventDefinition) for an explanation of the input data of event-triggered workflows.
+See [StartEventDefinition](#starteventdefinition) for an explanation of the input data of event-triggered workflows.
 
 | Parameter | Description | Type | Required |
 | --- | --- | --- | --- |
-| `type` | Identifies which kind of [StartDefinition](#StartDefintion) is being used. In this case it must be set to `eventsXor`. | string | yes | 
+| `type` | Identifies which kind of [StartDefinition](#startdefinition) is being used. In this case it must be set to `eventsXor`. | string | yes | 
 | `state` | References a defined state's `id`. This state will be used as the entrypoint into the workflow. If left undefined, it defaults to the first state defined in the `states` list.  | string | no |
-| `events` | Defines what events can trigger the workflow.  | [[]StartEventDefinition](#StartEventDefinition) | yes |
+| `events` | Defines what events can trigger the workflow.  | [[]StartEventDefinition](#starteventdefinition) | yes |
 
 ### EventsAndStartDefinition 
 
 The event "and" start definition is used for workflows that should be executed when multiple matching CloudEvents events are received. 
 
-See [StartEventDefinition](#StartEventDefinition) for an explanation of the input data of event-triggered workflows.
+See [StartEventDefinition](#starteventdefinition) for an explanation of the input data of event-triggered workflows.
 
 | Parameter | Description | Type | Required |
 | --- | --- | --- | --- |
-| `type` | Identifies which kind of [StartDefinition](#StartDefintion) is being used. In this case it must be set to `eventsAnd`. | string | yes | 
+| `type` | Identifies which kind of [StartDefinition](#startdefinition) is being used. In this case it must be set to `eventsAnd`. | string | yes | 
 | `state` | References a defined state's `id`. This state will be used as the entrypoint into the workflow. If left undefined, it defaults to the first state defined in the `states` list.  | string | no |
 | `lifespan` | An ISO8601 duration string. Sets the maximum duration an event can be stored before being discarded while waiting for other events. | string | no |
-| `events` | Defines what events can trigger the workflow.  | [[]StartEventDefinition](#StartEventDefinition) | yes |
+| `events` | Defines what events can trigger the workflow.  | [[]StartEventDefinition](#starteventdefinition) | yes |
 
 ### StartEventDefinition
 
@@ -91,8 +91,7 @@ The StartEventDefinition is a structure shared by various start definitions invo
 
 The input data of an event-triggered workflow is a JSON representation of all the received events stored under keys matching the events' respective type. For example, this CloudEvents event will result in the following input data in a workflow triggered by a single event:
 
-**CloudEvents Event**
-```json
+```json title="CloudEvents Event"
 {
     "specversion" : "1.0",
     "type" : "com.github.pull.create",
@@ -107,8 +106,7 @@ The input data of an event-triggered workflow is a JSON representation of all th
 }
 ```
 
-**Input Data**
-```json
+```json title="Input Data"
 {
   "com.github.pull.create": {
     "specversion" : "1.0",

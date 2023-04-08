@@ -57,7 +57,7 @@ Another way of looking at it: it's not valid instance data unless it's valid JSO
 
 ## Size Limit
 
-The size of instance data is measured in terms of the length (in bytes) of its JSON representation. For technical reasons, there is an enforced upper limit allowed for this maximum size. This limit can vary according to the specific configuration of a Direktiv installation, but the default is 32 MiB.
+The size of instance data is measured in terms of the length (in bytes) of its JSON representation. For technical reasons, there is an enforced upper limit allowed for this maximum size. This limit can vary according to the specific configuration of a Direktiv installation, but the default is 128 MiB.
 
 ## Lifecycle
 
