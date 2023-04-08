@@ -149,6 +149,7 @@ func (logic *forEachLogic) scheduleFirstActions(ctx context.Context) (*Transitio
 		return nil, err
 	}
 
+	//nolint:nilnil
 	return nil, nil
 }
 
@@ -359,5 +360,6 @@ func (logic *forEachLogic) processActionResults(ctx context.Context, children []
 		return nil, err
 	}
 
+	//nolint:nilnil
 	return nil, nil
 }

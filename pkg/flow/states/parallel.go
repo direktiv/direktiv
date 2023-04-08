@@ -75,6 +75,7 @@ func (logic *parallelLogic) Run(ctx context.Context, wakedata []byte) (*Transiti
 			return nil, err
 		}
 
+		//nolint:nilnil
 		return nil, nil
 	}
 
@@ -282,6 +283,7 @@ func (logic *parallelLogic) processActionResults(ctx context.Context, children [
 				return nil, err
 			}
 
+			//nolint:nilnil
 			return nil, nil
 		}
 
@@ -313,6 +315,7 @@ func (logic *parallelLogic) processActionResults(ctx context.Context, children [
 				if err != nil {
 					return nil, err
 				}
+				//nolint:nilnil
 				return nil, nil
 			}
 		} else if results.ErrorMessage != "" {
@@ -323,6 +326,7 @@ func (logic *parallelLogic) processActionResults(ctx context.Context, children [
 				return nil, err
 			}
 
+			//nolint:nilnil
 			return nil, nil
 		} else {
 			ready = true

@@ -79,6 +79,7 @@ func (flow *flow) RevisionsStream(req *grpc.RevisionsRequest, srv grpc.Flow_Revi
 
 func (flow *flow) DeleteRevision(ctx context.Context, req *grpc.DeleteRevisionRequest) (*emptypb.Empty, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	//nolint
 	return nil, nil
 	// TODO: yassir, implement
 	/*

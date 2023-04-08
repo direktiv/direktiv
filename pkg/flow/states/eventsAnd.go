@@ -79,6 +79,7 @@ func (logic *eventsAndLogic) Run(ctx context.Context, wakedata []byte) (*Transit
 			return nil, err
 		}
 
+		//nolint:nilnil
 		return nil, nil
 	}
 

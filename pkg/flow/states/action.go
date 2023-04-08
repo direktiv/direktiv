@@ -86,6 +86,7 @@ func (logic *actionLogic) Run(ctx context.Context, wakedata []byte) (*Transition
 			}, nil
 		}
 
+		//nolint:nilnil
 		return nil, nil
 	}
 

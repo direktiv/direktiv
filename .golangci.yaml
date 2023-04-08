@@ -23,7 +23,6 @@ linters:
     - dupword #temporary
     - cyclop #temporary
     - unused #temporary
-    - revive #temporary
     - godox #temporary
 
   presets:
@@ -58,13 +57,11 @@ issues:
       - nosnakecase
       - scopelint
 
-      - nilnil
       - nlreturn
       - nonamedreturns
       - stylecheck
       - tagliatelle
       - wastedassign
-      - goerr113
       - gomnd
       - testpackage
       - gochecknoglobals
