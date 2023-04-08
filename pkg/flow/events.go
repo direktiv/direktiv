@@ -31,7 +31,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jinzhu/copier"
 	hash "github.com/mitchellh/hashstructure/v2"
-	glob "github.com/ryanuber/go-glob"
+	"github.com/ryanuber/go-glob"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"

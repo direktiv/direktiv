@@ -57,7 +57,7 @@ func (events *events) getEarliestEvent(ctx context.Context) (*ent.CloudEvents, e
 func (events *events) addEvent(ctx context.Context, eventin *cloudevents.Event, ns *database.Namespace, delay int64) error {
 	t := time.Now().Unix() + delay
 
-	processed := (delay == 0)
+	processed := delay == 0
 
 	ev := *eventin
 

@@ -99,6 +99,7 @@ func (flow *flow) RouterStream(req *grpc.RouterRequest, srv grpc.Flow_RouterStre
 
 func (flow *flow) EditRouter(ctx context.Context, req *grpc.EditRouterRequest) (*grpc.EditRouterResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	//nolint
 	return nil, nil
 	// TODO: yassir, refactor
 	/*
@@ -195,6 +196,7 @@ func (flow *flow) EditRouter(ctx context.Context, req *grpc.EditRouterRequest) (
 
 func (flow *flow) ValidateRouter(ctx context.Context, req *grpc.ValidateRouterRequest) (*grpc.ValidateRouterResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	//nolint
 	return nil, nil
 	// TODO: yassir, refactor
 	/*

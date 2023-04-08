@@ -80,6 +80,7 @@ func (logic *delayLogic) Run(ctx context.Context, wakedata []byte) (*Transition,
 			return nil, err
 		}
 
+		//nolint:nilnil
 		return nil, nil
 	}
 

@@ -460,7 +460,7 @@ func getKnativeFunction(name string) (*igrpc.GetFunctionResponse, error) {
 		}
 
 		// creation date
-		var t int64 = rev.CreationTimestamp.Unix()
+		t := rev.CreationTimestamp.Unix()
 		info.Created = &t
 
 		return info

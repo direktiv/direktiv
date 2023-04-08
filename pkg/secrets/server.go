@@ -311,5 +311,5 @@ func (s *Server) UpdateSecret(ctx context.Context, in *secretsgrpc.UpdateSecretR
 
 // IsFolder Checks if name is folder.
 func isFolder(name string) bool {
-	return (strings.HasSuffix(name, "/") || name == "")
+	return strings.HasSuffix(name, "/") || name == ""
 }
