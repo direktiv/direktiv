@@ -65,7 +65,7 @@ issues:
       - gomnd
       - testpackage
       - gochecknoglobals
-      - bodyclose
+      - bodyclose # must fix.
       - asasalint
       - predeclared
       - musttag
