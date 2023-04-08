@@ -20,7 +20,8 @@ linters:
     - funlen
     - musttag
     - gochecknoglobals
-    - dupword # must fix.
+    - dupword # must fix
+    - revive # must fix
     - cyclop
     - unused # must fix
     - godox # must fix

@@ -347,7 +347,7 @@ unittest: ## Runs all Go unit tests. Or, you can run a specific set of unit test
 
 .PHONY: lint 
 lint: ## Runs very strict linting on the project.
-	docker run --rm -v `pwd`:/app -w /app golangci/golangci-lint golangci-lint run -v
+	docker run --rm -v `pwd`:/app -w /app golangci/golangci-lint:v1.52.2 golangci-lint run -v
 
 test-jest: ## Runs jest end-to-end tests. DIREKTIV_HOST=128.0.0.1 make test-jest [JEST_PREFIX=/tests/jest/namespaces]
 	docker run -it --rm -v `pwd`/tests/jest:/tests/jest -e 'DIREKTIV_HOST=${DIREKTIV_HOST}' -e 'NODE_TLS_REJECT_UNAUTHORIZED=0' node:alpine npm --prefix "/tests/jest" run all -- ${JEST_PREFIX}
