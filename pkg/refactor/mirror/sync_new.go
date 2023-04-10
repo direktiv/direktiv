@@ -216,7 +216,11 @@ func (j *mirroringJob) CopyFilesToRoot(fStore filestore.FileStore, namespaceID u
 		fileReader := bytes.NewReader(data)
 
 		if !pathDoesExist {
-			_, _, err = fStore.ForRootID(namespaceID).CreateFile(j.ctx, path, filestore.FileTypeFile, fileReader)
+			typ := filestore.FileTypeFile
+			if strings.HasSuffix(path, ".yaml") || strings.HasSuffix(path, ".yml") {
+				typ = filestore.FileTypeWorkflow
+			}
+			_, _, err = fStore.ForRootID(namespaceID).CreateFile(j.ctx, path, typ, fileReader)
 			if err != nil {
 				j.err = fmt.Errorf("filestore create file, path: %s, err: %w", path, err)
 

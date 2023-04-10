@@ -2,6 +2,7 @@ package sql
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
@@ -41,6 +42,9 @@ func (s sqlMirrorStore) UpdateConfig(ctx context.Context, config *mirror.Config)
 func (s sqlMirrorStore) GetConfig(ctx context.Context, id uuid.UUID) (*mirror.Config, error) {
 	config := &mirror.Config{ID: id}
 	res := s.db.WithContext(ctx).Table("mirror_configs").First(config)
+	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
+		return nil, mirror.ErrNotFound
+	}
 	if res.Error != nil {
 		return nil, res.Error
 	}
@@ -77,6 +81,9 @@ func (s sqlMirrorStore) UpdateProcess(ctx context.Context, process *mirror.Proce
 func (s sqlMirrorStore) GetProcess(ctx context.Context, id uuid.UUID) (*mirror.Process, error) {
 	process := &mirror.Process{ID: id}
 	res := s.db.WithContext(ctx).Table("mirror_processes").First(process)
+	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
+		return nil, mirror.ErrNotFound
+	}
 	if res.Error != nil {
 		return nil, res.Error
 	}

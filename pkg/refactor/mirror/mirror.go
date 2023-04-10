@@ -2,6 +2,7 @@ package mirror
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -9,6 +10,8 @@ import (
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
+
+var ErrNotFound = errors.New("ErrNotFound")
 
 // Config holds configuration data that are needed to create a mirror (pulling mirror credentials, urls, keys
 // and any other details).
