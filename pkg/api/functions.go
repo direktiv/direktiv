@@ -21,7 +21,7 @@
 //
 //	SecurityDefinitions:
 //	direktiv_token:
-//	     type: direktiv-token
+//	     type: apiKey
 //	     name: KEY
 //	     in: header
 //
