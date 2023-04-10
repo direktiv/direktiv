@@ -13,6 +13,7 @@ const Slider = React.forwardRef<
     ref={ref}
     className={clsx(
       "relative flex w-full touch-none select-none items-center",
+      disabled && "cursor-not-allowed opacity-40",
       className
     )}
     disabled={disabled}
@@ -38,9 +39,8 @@ const Slider = React.forwardRef<
         "block h-5 w-5 rounded-full ",
         "transition-colors focus:outline-none",
         "border-2 focus:ring-2 focus:ring-offset-2",
-        "border-gray-12 bg-gray-1 focus:ring-gray-7  dark:focus:ring-offset-gray-1",
-        "dark:border-gray-dark-12 dark:bg-gray-dark-1 dark:focus:ring-gray-dark-7 dark:focus:ring-offset-gray-dark-1",
-        disabled && "cursor-not-allowed  opacity-75"
+        "border-gray-12 bg-gray-1 focus:ring-gray-7 dark:focus:ring-offset-gray-1",
+        "dark:border-gray-dark-12 dark:bg-gray-dark-1 dark:focus:ring-gray-dark-7 dark:focus:ring-offset-gray-dark-1"
       )}
     />
   </SliderPrimitive.Root>
