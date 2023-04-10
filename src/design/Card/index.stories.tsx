@@ -17,8 +17,14 @@ export const Default: Story = {
       description: "Card has default gray background",
       type: { name: "boolean", required: false },
     },
+    noShadow: {
+      description: "Card has default shadow",
+      type: { name: "boolean", required: false },
+    },
   },
 };
+
 export const CardWithBackground = () => (
   <Card withBackground className="w-100 h-64"></Card>
 );
+export const NoShadow = () => <Card noShadow className="w-100 h-64"></Card>;
