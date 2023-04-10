@@ -29,6 +29,7 @@ type MockedSource struct {
 
 var _ Source = &MockedSource{} // Ensures MockedSource struct conforms to Source interface.
 
+//nolint:revive
 func (m MockedSource) PullInPath(config *Config, dst string) error {
 	for k, v := range m.Paths {
 		//nolint:gomnd

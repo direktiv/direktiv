@@ -20,10 +20,7 @@ linters:
     - funlen
     - musttag
     - gochecknoglobals
-    - dupword # must fix
-    - revive # must fix
     - cyclop
-    - unused # must fix
     - godox # must fix
 
   presets:
@@ -92,6 +89,7 @@ issues:
       - gocritic
       - rowserrcheck
       - nakedret
+      - unused
 
     - text: "do not define dynamic errors, use wrapped static errors instead:"
       linters:

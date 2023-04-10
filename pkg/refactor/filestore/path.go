@@ -9,8 +9,10 @@ import (
 )
 
 var (
+	//nolint:unused
 	pathRegexPattern = `^[/](` + util.NameRegexFragment + `[\/]?)*$`
-	pathRegex        = regexp.MustCompile(pathRegexPattern)
+	//nolint:unused
+	pathRegex = regexp.MustCompile(pathRegexPattern)
 )
 
 // TODO: add tests.

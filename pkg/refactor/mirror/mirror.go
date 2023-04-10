@@ -116,6 +116,7 @@ func (d *DefaultManager) StartMirroringProcess(ctx context.Context, config *Conf
 	return process, err
 }
 
+//nolint:revive
 func (d *DefaultManager) CancelMirroringProcess(ctx context.Context, id uuid.UUID) error {
 	// TODO implement me
 	return nil

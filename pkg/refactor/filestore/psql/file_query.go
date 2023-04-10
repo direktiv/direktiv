@@ -125,6 +125,7 @@ func (q *FileQuery) GetRevision(ctx context.Context, id uuid.UUID) (*filestore.R
 	return rev, nil
 }
 
+//nolint:revive
 func (q *FileQuery) GetAllRevisions(ctx context.Context) ([]*filestore.Revision, error) {
 	// TODO implement me
 	// panic("implement me")
@@ -133,6 +134,7 @@ func (q *FileQuery) GetAllRevisions(ctx context.Context) ([]*filestore.Revision,
 
 var _ filestore.FileQuery = &FileQuery{}
 
+//nolint:revive
 func (q *FileQuery) Delete(ctx context.Context, force bool) error {
 	res := q.db.WithContext(ctx).Delete(&filestore.File{}, q.file.ID)
 	if res.Error != nil {
