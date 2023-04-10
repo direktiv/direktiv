@@ -19,6 +19,7 @@ jobs:
       - uses: actions/setup-go@v3
         with:
           go-version: 1.19
+          version: v1.52
       - uses: actions/checkout@v3
       - name: Install dependencies
         run: ./scripts/install-dependencies.sh 
