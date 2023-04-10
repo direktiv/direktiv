@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { Slider } from "./index";
+import { useState } from "react";
 
 const meta = {
   title: "Components/Slider",
@@ -40,8 +41,32 @@ export const Default: Story = {
   },
 };
 
-export const BigStep = () => <Slider step={5} />;
+export const BigStep = () => {
+  const [value, setValue] = useState(5);
+  return (
+    <div className="flex w-40 flex-col items-center space-y-3">
+      <Slider
+        step={5}
+        min={0}
+        max={20}
+        value={[value]}
+        onValueChange={(e) => {
+          setValue(e[0]);
+        }}
+      />
+      <div>Value: {value}</div>
+    </div>
+  );
+};
 
-export const Disabled = () => <Slider disabled />;
+export const Disabled = () => (
+  <div className="flex w-40 flex-col items-center space-y-3">
+    <Slider disabled />
+  </div>
+);
 
-export const Inverted = () => <Slider inverted />;
+export const Inverted = () => (
+  <div className="w-40">
+    <Slider inverted />
+  </div>
+);
