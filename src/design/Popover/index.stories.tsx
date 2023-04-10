@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { Popover, PopoverContent, PopoverTrigger } from "./index";
+import Button from "../Button";
 
 const meta = {
   title: "Components/Popover",
@@ -44,25 +45,27 @@ export const DefaultOpen = () => (
 );
 
 export const AlignPopoverContent = () => (
-  <div>
+  <div className="flex space-x-4">
     <Popover>
-      <PopoverTrigger className="mx-2 w-48 bg-gray-5">
-        Align Start
+      <PopoverTrigger asChild>
+        <Button>Align Start</Button>
       </PopoverTrigger>
       <PopoverContent align="start">
         Place content for the popover here.
       </PopoverContent>
     </Popover>
     <Popover>
-      <PopoverTrigger className="mx-2 w-48 bg-gray-5">
-        Align Center
+      <PopoverTrigger asChild>
+        <Button>Align Center</Button>
       </PopoverTrigger>
       <PopoverContent align="center">
         Place content for the popover here.
       </PopoverContent>
     </Popover>
     <Popover>
-      <PopoverTrigger className="mx-2 w-48 bg-gray-5">Align End</PopoverTrigger>
+      <PopoverTrigger>
+        <Button>Align End</Button>
+      </PopoverTrigger>
       <PopoverContent align="end">
         Place content for the popover here.
       </PopoverContent>
