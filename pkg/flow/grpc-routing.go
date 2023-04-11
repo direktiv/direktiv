@@ -2,7 +2,6 @@ package flow
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
@@ -14,20 +13,17 @@ func (flow *flow) Router(ctx context.Context, req *grpc.RouterRequest) (*grpc.Ro
 
 	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
 	if err != nil {
-		fmt.Println("A", err)
 		return nil, err
 	}
 
 	fStore, _, _, rollback, err := flow.beginSqlTx(ctx)
 	if err != nil {
-		fmt.Println("B", err)
 		return nil, err
 	}
 	defer rollback(ctx)
 
 	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {
-		fmt.Println("C", err)
 		return nil, err
 	}
 
