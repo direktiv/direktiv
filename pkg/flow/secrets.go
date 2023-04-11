@@ -3,11 +3,10 @@ package flow
 import (
 	"context"
 
-	libgrpc "google.golang.org/grpc"
-
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	secretsgrpc "github.com/direktiv/direktiv/pkg/secrets/grpc"
 	"github.com/direktiv/direktiv/pkg/util"
+	libgrpc "google.golang.org/grpc"
 )
 
 type secrets struct {
@@ -32,14 +31,12 @@ func initSecrets() (*secrets, error) {
 
 func (secrets *secrets) Close() error {
 	if secrets.conn != nil {
-
 		err := secrets.conn.Close()
 		if err != nil {
 			return err
 		}
 
 		secrets.conn = nil
-
 	}
 
 	return nil

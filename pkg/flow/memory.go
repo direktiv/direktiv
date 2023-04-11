@@ -63,7 +63,6 @@ func (im *instanceMemory) flushUpdates(ctx context.Context) error {
 	var changes bool
 
 	if im.runtimeUpdater != nil {
-
 		changes = true
 
 		updater := im.runtimeUpdater
@@ -75,11 +74,9 @@ func (im *instanceMemory) flushUpdates(ctx context.Context) error {
 		}
 
 		im.runtime = entwrapper.EntInstanceRuntime(rt)
-
 	}
 
 	if im.instanceUpdater != nil {
-
 		changes = true
 
 		updater := im.instanceUpdater
@@ -92,7 +89,7 @@ func (im *instanceMemory) flushUpdates(ctx context.Context) error {
 
 		im.cached.Instance = entwrapper.EntInstance(in)
 		im.cached.Instance.Namespace = im.cached.Namespace.ID
-		im.cached.Instance.Workflow = im.cached.Workflow.ID
+		im.cached.Instance.Workflow = im.cached.File.ID
 		im.cached.Instance.Revision = im.cached.Revision.ID
 		im.cached.Instance.Runtime = im.runtime.ID
 
@@ -100,7 +97,6 @@ func (im *instanceMemory) flushUpdates(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
-
 	}
 
 	if changes {
@@ -120,7 +116,7 @@ func (im *instanceMemory) Controller() string {
 }
 
 func (im *instanceMemory) Model() (*model.Workflow, error) {
-	data := im.cached.Revision.Source
+	data := im.cached.Revision.Data
 
 	workflow := new(model.Workflow)
 
@@ -253,10 +249,26 @@ func (engine *engine) getInstanceMemory(ctx context.Context, id string) (*instan
 	}
 
 	cached := new(database.CacheData)
+
+	// TODO: alan, need to load all of this information in a more performant manner
 	err = engine.database.Instance(ctx, cached, uid)
 	if err != nil {
 		return nil, err
 	}
+
+	fStore, _, _, rollback, err := engine.flow.beginSqlTx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer rollback(ctx)
+
+	file, revision, err := fStore.GetRevision(ctx, cached.Instance.Revision)
+	if err != nil {
+		return nil, err
+	}
+
+	cached.File = file
+	cached.Revision = revision
 
 	rt, err := engine.database.InstanceRuntime(ctx, cached.Instance.Runtime)
 	if err != nil {

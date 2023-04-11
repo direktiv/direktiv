@@ -45,6 +45,8 @@ type InstanceRuntime struct {
 	StateContext string `json:"stateContext,omitempty"`
 	// Metadata holds the value of the "metadata" field.
 	Metadata string `json:"metadata,omitempty"`
+	// LogToEvents holds the value of the "logToEvents" field.
+	LogToEvents string `json:"logToEvents,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the InstanceRuntimeQuery when eager-loading is set.
 	Edges             InstanceRuntimeEdges `json:"edges"`
@@ -98,7 +100,7 @@ func (*InstanceRuntime) scanValues(columns []string) ([]any, error) {
 			values[i] = new([]byte)
 		case instanceruntime.FieldAttempts:
 			values[i] = new(sql.NullInt64)
-		case instanceruntime.FieldData, instanceruntime.FieldController, instanceruntime.FieldMemory, instanceruntime.FieldOutput, instanceruntime.FieldCallerData, instanceruntime.FieldInstanceContext, instanceruntime.FieldStateContext, instanceruntime.FieldMetadata:
+		case instanceruntime.FieldData, instanceruntime.FieldController, instanceruntime.FieldMemory, instanceruntime.FieldOutput, instanceruntime.FieldCallerData, instanceruntime.FieldInstanceContext, instanceruntime.FieldStateContext, instanceruntime.FieldMetadata, instanceruntime.FieldLogToEvents:
 			values[i] = new(sql.NullString)
 		case instanceruntime.FieldStateBeginTime, instanceruntime.FieldDeadline:
 			values[i] = new(sql.NullTime)
@@ -209,6 +211,12 @@ func (ir *InstanceRuntime) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				ir.Metadata = value.String
 			}
+		case instanceruntime.FieldLogToEvents:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field logToEvents", values[i])
+			} else if value.Valid {
+				ir.LogToEvents = value.String
+			}
 		case instanceruntime.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field instance_runtime", values[i])
@@ -299,6 +307,9 @@ func (ir *InstanceRuntime) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("metadata=")
 	builder.WriteString(ir.Metadata)
+	builder.WriteString(", ")
+	builder.WriteString("logToEvents=")
+	builder.WriteString(ir.LogToEvents)
 	builder.WriteByte(')')
 	return builder.String()
 }

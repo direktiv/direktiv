@@ -49,8 +49,8 @@ Direktiv Documentation can be found at https://docs.direktiv.io/
 
 | Method  | URI     | Name   | Summary |
 |---------|---------|--------|---------|
-| PUT | /api/namespaces/{namespace}/eventfilter/{filtername} | [create cloudevent filter](#create-cloudevent-filter) | Creates new cloudEventFilter |
-| DELETE | /api/namespaces/{namespace}/broadcast/{filtername} | [delete cloudevent filter](#delete-cloudevent-filter) | Delete existing cloudEventFilter |
+| POST | /api/namespaces/{namespace}/eventfilter/{filtername} | [create cloudevent filter](#create-cloudevent-filter) | Creates new cloudEventFilter |
+| DELETE | /api/namespaces/{namespace}/eventfilter/{filtername} | [delete cloudevent filter](#delete-cloudevent-filter) | Delete existing cloudEventFilter |
 | GET | /api/namespaces/{namespace}/eventfilter/{filtername} | [get cloud event filter](#get-cloud-event-filter) | Get specific cloudEventFilter |
 | GET | /api/namespaces/{namespace}/eventfilter | [list cloudevent filter](#list-cloudevent-filter) | List existing cloudEventFilters |
 | PATCH | /api/namespaces/{namespace}/eventfilter/{filtername} | [update cloudevent filter](#update-cloudevent-filter) | Update existing cloudEventFilter |
@@ -422,7 +422,7 @@ Status: OK
 ### <span id="create-cloudevent-filter"></span> Creates new cloudEventFilter (*createCloudeventFilter*)
 
 ```
-PUT /api/namespaces/{namespace}/eventfilter/{filtername}
+POST /api/namespaces/{namespace}/eventfilter/{filtername}
 ```
 
 Creates new cloud event filter in target namespace
@@ -790,7 +790,7 @@ an error has occurred
 ### <span id="delete-cloudevent-filter"></span> Delete existing cloudEventFilter (*deleteCloudeventFilter*)
 
 ```
-DELETE /api/namespaces/{namespace}/broadcast/{filtername}
+DELETE /api/namespaces/{namespace}/eventfilter/{filtername}
 ```
 
 Delete existing cloud event filter in target namespace
@@ -1851,7 +1851,7 @@ Status: OK
 GET /api/namespaces/{namespace}/secrets
 ```
 
-Gets the list of namespace secrets. Also can use for search by setting query param op=search
+Gets the list of namespace secrets. Also can use for search by setting query param op=search and term=<searchingName>
 
 
 #### Parameters

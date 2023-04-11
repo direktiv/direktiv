@@ -8,6 +8,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/functions"
 	"github.com/direktiv/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/lib/pq"
 )
 
@@ -22,41 +23,41 @@ func (flow *flow) functionsHeartbeat() {
 		return
 	}
 
-	for _, ns := range nss {
+	fStore, _, _, rollback, err := flow.beginSqlTx(ctx)
+	if err != nil {
+		flow.sugar.Error(err)
+		return
+	}
+	defer rollback(ctx)
 
-		wfs, err := ns.QueryWorkflows().All(ctx)
+	for _, ns := range nss {
+		files, err := fStore.ForRootID(ns.ID).ListAllFiles(ctx)
 		if err != nil {
 			flow.sugar.Error(err)
-			continue
+			return
 		}
 
-		for _, wf := range wfs {
+		for _, file := range files {
+			if file.Typ != filestore.FileTypeWorkflow {
+				continue
+			}
 
 			tuples := make([]*functions.HeartbeatTuple, 0)
 			checksums := make(map[string]bool)
 
-			cached := new(database.CacheData)
-			err = flow.database.Workflow(ctx, cached, wf.ID)
-			if err != nil {
-				flow.sugar.Error(err)
-				continue
-			}
-
-			revs, err := wf.QueryRevisions().WithWorkflow().All(ctx)
+			revs, err := fStore.ForFile(file).GetAllRevisions(ctx)
 			if err != nil {
 				flow.sugar.Error(err)
 				continue
 			}
 
 			for _, rev := range revs {
-
 				x := &database.Revision{
 					ID:        rev.ID,
 					CreatedAt: rev.CreatedAt,
-					Hash:      rev.Hash,
-					Source:    rev.Source,
-					Metadata:  rev.Metadata,
-					Workflow:  rev.Edges.Workflow.ID,
+					Hash:      rev.Checksum,
+					Source:    rev.Data,
+					Workflow:  file.ID,
 				}
 
 				w, err := loadSource(x)
@@ -67,7 +68,6 @@ func (flow *flow) functionsHeartbeat() {
 				fns := w.GetFunctions()
 
 				for i := range fns {
-
 					fn := fns[i]
 
 					if fn.GetType() != model.ReusableContainerFunctionType {
@@ -82,9 +82,9 @@ func (flow *flow) functionsHeartbeat() {
 					tuple := &functions.HeartbeatTuple{
 						NamespaceName:      ns.Name,
 						NamespaceID:        ns.ID.String(),
-						WorkflowPath:       cached.Path(),
-						WorkflowID:         cached.Workflow.ID.String(),
-						Revision:           rev.Hash,
+						WorkflowPath:       file.Path,
+						WorkflowID:         file.ID.String(),
+						Revision:           rev.Checksum,
 						FunctionDefinition: def,
 					}
 
@@ -94,15 +94,11 @@ func (flow *flow) functionsHeartbeat() {
 						checksums[csum] = true
 						tuples = append(tuples, tuple)
 					}
-
 				}
-
 			}
 
 			flow.flushHeartbeatTuples(tuples)
-
 		}
-
 	}
 }
 
@@ -118,7 +114,6 @@ func (flow *flow) flushHeartbeatTuples(tuples []*functions.HeartbeatTuple) {
 	msg := bytedata.Marshal(tuples)
 
 	if len(msg) > heartbeatMessageLimit {
-
 		if l == 1 {
 			flow.sugar.Errorf("Single heartbeat entry exceeds maximum heartbeat size.")
 			return
@@ -129,7 +124,6 @@ func (flow *flow) flushHeartbeatTuples(tuples []*functions.HeartbeatTuple) {
 		flow.flushHeartbeatTuples(tuples[:x])
 		flow.flushHeartbeatTuples(tuples[x:])
 		return
-
 	}
 
 	ctx := context.Background()
@@ -144,9 +138,7 @@ func (flow *flow) flushHeartbeatTuples(tuples []*functions.HeartbeatTuple) {
 	_, err = conn.ExecContext(ctx, "SELECT pg_notify($1, $2)", functions.FunctionsChannel, msg)
 	perr := new(pq.Error)
 	if errors.As(err, &perr) {
-
 		flow.sugar.Errorf("db notification failed: %v", perr)
 		return
-
 	}
 }

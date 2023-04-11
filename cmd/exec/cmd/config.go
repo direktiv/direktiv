@@ -74,7 +74,6 @@ func loadConfig(cmd *cobra.Command) {
 	var cp *ProfileConfig
 
 	if config.profile != "" {
-
 		for idx := range config.Profiles {
 			if config.Profiles[idx].ID == config.profile {
 				cp = &(config.Profiles[idx])
@@ -85,13 +84,11 @@ func loadConfig(cmd *cobra.Command) {
 		if cp == nil {
 			Fail("error loading profile '%s': no profile exists by this name in the config file", config.profile)
 		}
-
 	} else if len(config.Profiles) > 0 {
 		cp = &(config.Profiles[0])
 	}
 
 	if path != "" {
-
 		config.path = path
 
 		if cp == nil {
@@ -109,7 +106,6 @@ func loadConfig(cmd *cobra.Command) {
 		if err != nil {
 			Fail("error reading config: %v", err)
 		}
-
 	}
 }
 
@@ -120,11 +116,9 @@ func findConfig() string {
 	}
 
 	for prev := ""; dir != prev; dir = filepath.Dir(dir) {
-
 		path := filepath.Join(dir, DefaultConfigName)
 
 		if _, err := os.Stat(path); err == nil {
-
 			data, err := os.ReadFile(path)
 			if err != nil {
 				Fail("Failed to read config file: %v", err)
@@ -143,11 +137,9 @@ func findConfig() string {
 			}
 
 			return path
-
 		}
 
 		prev = dir
-
 	}
 
 	return ""
@@ -240,12 +232,10 @@ func GetPath(targpath string) string {
 
 func GetConfigPath() string {
 	if config.path != "" {
-
 		path := config.path
 		path = filepath.Dir(path)
 		path = strings.TrimSuffix(path, "/")
 		return path
-
 	}
 
 	return "."

@@ -28,7 +28,6 @@ func (engine *engine) WakeInstanceCaller(ctx context.Context, im *instanceMemory
 	caller := engine.InstanceCaller(ctx, im)
 
 	if caller != nil {
-
 		engine.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), "Reporting results to calling workflow.")
 
 		msg := &actionResultMessage{
@@ -57,7 +56,6 @@ func (engine *engine) WakeInstanceCaller(ctx context.Context, im *instanceMemory
 			engine.sugar.Error(err)
 			return
 		}
-
 	}
 }
 

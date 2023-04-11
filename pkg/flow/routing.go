@@ -2,24 +2,17 @@ package flow
 
 import (
 	"context"
-	"crypto/rand"
-	"encoding/json"
+	"errors"
 	"fmt"
-	"math/big"
-	"os"
+	"strings"
 	"time"
-
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	entirt "github.com/direktiv/direktiv/pkg/flow/ent/instanceruntime"
-	entwf "github.com/direktiv/direktiv/pkg/flow/ent/workflow"
-	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
-	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
 )
@@ -67,6 +60,9 @@ func (ms *muxStart) Hash() string {
 	return bytedata.Checksum(ms)
 }
 
+// TODO: yassir, need refactor.
+//nolint
+/*
 func (srv *server) validateRouter(ctx context.Context, cached *database.CacheData) (*muxStart, error, error) {
 	if len(cached.Workflow.Routes) == 0 {
 
@@ -149,68 +145,94 @@ func (srv *server) validateRouter(ctx context.Context, cached *database.CacheDat
 
 	return ms, nil, nil
 }
+*/
 
 func (engine *engine) mux(ctx context.Context, namespace, path, ref string) (*database.CacheData, error) {
-	cached, err := engine.traverseToWorkflow(ctx, namespace, path)
+	ns, err := engine.edb.NamespaceByName(ctx, namespace)
 	if err != nil {
-		return nil, fmt.Errorf("workflow multiplexer failed to resolve workflow: %w", err)
+		return nil, err
 	}
+	fStore, _, _, rollback, err := engine.flow.beginSqlTx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer rollback(ctx)
 
-	if ref == "" {
-		// use router to select version
-
-		if len(cached.Workflow.Routes) == 0 {
-			ref = latest
-		} else {
-
-			weight := 0
-
-			for _, route := range cached.Workflow.Routes {
-				weight += route.Weight
-			}
-
-			cn, err := rand.Int(rand.Reader, big.NewInt(int64(weight)))
-			if err != nil {
+	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, path)
+	if err != nil {
+		if errors.Is(err, filestore.ErrNotFound) { // try as-is, then '.yaml', then '.yml'
+			if !strings.HasSuffix(path, ".yaml") && !strings.HasSuffix(path, ".yml") {
+				var err2 error
+				file, err2 = fStore.ForRootID(ns.ID).GetFile(ctx, path+".yaml")
+				if err2 != nil {
+					if errors.Is(err2, filestore.ErrNotFound) {
+						file, err2 = fStore.ForRootID(ns.ID).GetFile(ctx, path+".yml")
+						if err2 != nil {
+							if !errors.Is(err2, filestore.ErrNotFound) {
+								err = err2
+							}
+							fmt.Println("X1")
+							return nil, err
+						}
+					} else {
+						err = err2
+						fmt.Println("X2")
+						return nil, err
+					}
+				}
+			} else {
+				fmt.Println("X3")
 				return nil, err
 			}
-
-			n := int(cn.Int64())
-
-			n = n % weight
-
-			var route *database.Route
-
-			for idx := range cached.Workflow.Routes {
-				route = cached.Workflow.Routes[idx]
-				n -= route.Weight
-				if n < 0 {
-					break
-				}
-			}
-
-			cached.Ref = route.Ref
-
+		} else {
+			fmt.Println("X4")
+			return nil, err
 		}
 	}
+
+	fmt.Println("X5")
+
+	var rev *filestore.Revision
+
+	if ref == "latest" {
+		rev, err = fStore.ForFile(file).GetCurrentRevision(ctx)
+		if err != nil {
+			return nil, err
+		}
+	} else if ref != "" {
+		rev, err = fStore.ForFile(file).GetRevisionByTag(ctx, ref)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		// TODO: yassir, implement routing by weights
+		rev, err = fStore.ForFile(file).GetCurrentRevision(ctx)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	cached := new(database.CacheData)
+	cached.Namespace = ns
+	cached.File = file
+	cached.Revision = rev
 
 	if cached.Ref == nil {
-		for idx := range cached.Workflow.Refs {
-			x := cached.Workflow.Refs[idx]
-			if x.Name == ref {
-				cached.Ref = x
-				break
-			}
+		// TODO: yassir, how are we going to fake these fields?
+		cached.Ref = &database.Ref{
+			// ID: ,
+			// Immutable: ,
+			// Name: ,
+			// CreatedAt: ,
+			Revision: rev.ID,
 		}
-	}
-
-	err = engine.database.Revision(ctx, cached, cached.Ref.Revision)
-	if err != nil {
-		return nil, fmt.Errorf("workflow multiplexer failed to resolve workflow revision matching ref '%s' (UUID: %s): %w", cached.Ref.Name, cached.Ref.Revision, err)
 	}
 
 	return cached, nil
 }
 
+// TODO: yassir, need refactor.
+/*
 const (
 	rcfNone       = 0
 	rcfNoPriors   = 1 << iota
@@ -315,8 +337,37 @@ func (flow *flow) configureRouterHandler(req *pubsub.PubsubUpdate) {
 	}
 }
 
+*/
+
 func (flow *flow) cronHandler(data []byte) {
+	ctx := context.Background()
+
 	id, err := uuid.Parse(string(data))
+	if err != nil {
+		flow.sugar.Error(err)
+		return
+	}
+
+	fStore, _, _, rollback, err := flow.beginSqlTx(ctx)
+	if err != nil {
+		flow.sugar.Error(err)
+		return
+	}
+	defer rollback(ctx)
+
+	file, err := fStore.GetFile(ctx, id)
+	if err != nil {
+		if errors.Is(err, filestore.ErrNotFound) {
+			flow.sugar.Infof("Cron failed to find workflow. Deleting cron.")
+			flow.timers.deleteCronForWorkflow(id.String())
+			return
+		}
+		flow.sugar.Error(err)
+		return
+	}
+	rollback(ctx)
+
+	ns, err := flow.edb.Namespace(ctx, file.RootID)
 	if err != nil {
 		flow.sugar.Error(err)
 		return
@@ -330,23 +381,12 @@ func (flow *flow) cronHandler(data []byte) {
 	defer flow.engine.unlock(id.String(), conn)
 
 	cached := new(database.CacheData)
-	err = flow.database.Workflow(ctx, cached, id)
-	if err != nil {
-
-		if derrors.IsNotFound(err) {
-			flow.sugar.Infof("Cron failed to find workflow. Deleting cron.")
-			flow.timers.deleteCronForWorkflow(id.String())
-			return
-		}
-
-		flow.sugar.Error(err)
-		return
-
-	}
+	cached.Namespace = ns
+	cached.File = file
 
 	clients := flow.edb.Clients(ctx)
 
-	k, err := clients.Instance.Query().Where(entinst.HasWorkflowWith(entwf.ID(cached.Workflow.ID))).Where(entinst.CreatedAtGT(time.Now().Add(-time.Second*30)), entinst.HasRuntimeWith(entirt.CallerData(util.CallerCron))).Count(ctx)
+	k, err := clients.Instance.Query().Where(entinst.WorkflowID(cached.File.ID)).Where(entinst.CreatedAtGT(time.Now().Add(-time.Second*30)), entinst.HasRuntimeWith(entirt.CallerData(util.CallerCron))).Count(ctx)
 	if err != nil {
 		flow.sugar.Error(err)
 		return
@@ -359,7 +399,7 @@ func (flow *flow) cronHandler(data []byte) {
 
 	args := new(newInstanceArgs)
 	args.Namespace = cached.Namespace.Name
-	args.Path = cached.Path()
+	args.Path = cached.File.Path
 	args.Ref = ""
 	args.Input = nil
 	args.Caller = util.CallerCron

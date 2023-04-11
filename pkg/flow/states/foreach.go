@@ -69,7 +69,6 @@ func (logic *forEachLogic) Deadline(ctx context.Context) time.Time {
 func (logic *forEachLogic) Run(ctx context.Context, wakedata []byte) (*Transition, error) {
 	// first schedule
 	if len(wakedata) == 0 {
-
 		err := noMemory(logic)
 		if err != nil {
 			return nil, err
@@ -81,7 +80,6 @@ func (logic *forEachLogic) Run(ctx context.Context, wakedata []byte) (*Transitio
 		}
 
 		return transition, nil
-
 	}
 
 	var children []*ChildInfo
@@ -151,6 +149,7 @@ func (logic *forEachLogic) scheduleFirstActions(ctx context.Context) (*Transitio
 		return nil, err
 	}
 
+	//nolint:nilnil
 	return nil, nil
 }
 
@@ -242,7 +241,6 @@ func (logic *forEachLogic) processActionResults(ctx context.Context, children []
 	var completed int
 
 	for i, lid := range children {
-
 		if lid == nil {
 			continue
 		}
@@ -258,7 +256,6 @@ func (logic *forEachLogic) processActionResults(ctx context.Context, children []
 		if lid.Complete {
 			completed++
 		}
-
 	}
 
 	if !found {
@@ -276,7 +273,6 @@ func (logic *forEachLogic) processActionResults(ctx context.Context, children []
 	logic.Log(ctx, log.Info, "Child '%s' returned.", id)
 
 	if results.ErrorCode != "" {
-
 		logic.Log(ctx, log.Error, "[%v] Action raised catchable error '%s': %s.", idx, results.ErrorCode, results.ErrorMessage)
 
 		err = derrors.NewCatchableError(results.ErrorCode, results.ErrorMessage)
@@ -288,7 +284,6 @@ func (logic *forEachLogic) processActionResults(ctx context.Context, children []
 		logic.Log(ctx, log.Info, "[%v] Scheduling retry attempt in: %v.", idx, d)
 
 		return nil, scheduleRetry(ctx, logic.Instance, children, idx, d)
-
 	}
 
 	if results.ErrorMessage != "" {
@@ -315,7 +310,6 @@ func (logic *forEachLogic) processActionResults(ctx context.Context, children []
 	}
 
 	if ready {
-
 		var results []interface{}
 		for i := range children {
 			results = append(results, children[i].Results)
@@ -330,7 +324,6 @@ func (logic *forEachLogic) processActionResults(ctx context.Context, children []
 			Transform: logic.Transform,
 			NextState: logic.Transition,
 		}, nil
-
 	}
 
 	idx = -1
@@ -367,5 +360,6 @@ func (logic *forEachLogic) processActionResults(ctx context.Context, children []
 		return nil, err
 	}
 
+	//nolint:nilnil
 	return nil, nil
 }

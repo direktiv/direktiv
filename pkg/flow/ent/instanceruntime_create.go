@@ -183,6 +183,20 @@ func (irc *InstanceRuntimeCreate) SetNillableMetadata(s *string) *InstanceRuntim
 	return irc
 }
 
+// SetLogToEvents sets the "logToEvents" field.
+func (irc *InstanceRuntimeCreate) SetLogToEvents(s string) *InstanceRuntimeCreate {
+	irc.mutation.SetLogToEvents(s)
+	return irc
+}
+
+// SetNillableLogToEvents sets the "logToEvents" field if the given value is not nil.
+func (irc *InstanceRuntimeCreate) SetNillableLogToEvents(s *string) *InstanceRuntimeCreate {
+	if s != nil {
+		irc.SetLogToEvents(*s)
+	}
+	return irc
+}
+
 // SetID sets the "id" field.
 func (irc *InstanceRuntimeCreate) SetID(u uuid.UUID) *InstanceRuntimeCreate {
 	irc.mutation.SetID(u)
@@ -414,6 +428,10 @@ func (irc *InstanceRuntimeCreate) createSpec() (*InstanceRuntime, *sqlgraph.Crea
 	if value, ok := irc.mutation.Metadata(); ok {
 		_spec.SetField(instanceruntime.FieldMetadata, field.TypeString, value)
 		_node.Metadata = value
+	}
+	if value, ok := irc.mutation.LogToEvents(); ok {
+		_spec.SetField(instanceruntime.FieldLogToEvents, field.TypeString, value)
+		_node.LogToEvents = value
 	}
 	if nodes := irc.mutation.InstanceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -723,6 +741,24 @@ func (u *InstanceRuntimeUpsert) ClearMetadata() *InstanceRuntimeUpsert {
 	return u
 }
 
+// SetLogToEvents sets the "logToEvents" field.
+func (u *InstanceRuntimeUpsert) SetLogToEvents(v string) *InstanceRuntimeUpsert {
+	u.Set(instanceruntime.FieldLogToEvents, v)
+	return u
+}
+
+// UpdateLogToEvents sets the "logToEvents" field to the value that was provided on create.
+func (u *InstanceRuntimeUpsert) UpdateLogToEvents() *InstanceRuntimeUpsert {
+	u.SetExcluded(instanceruntime.FieldLogToEvents)
+	return u
+}
+
+// ClearLogToEvents clears the value of the "logToEvents" field.
+func (u *InstanceRuntimeUpsert) ClearLogToEvents() *InstanceRuntimeUpsert {
+	u.SetNull(instanceruntime.FieldLogToEvents)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -1023,6 +1059,27 @@ func (u *InstanceRuntimeUpsertOne) UpdateMetadata() *InstanceRuntimeUpsertOne {
 func (u *InstanceRuntimeUpsertOne) ClearMetadata() *InstanceRuntimeUpsertOne {
 	return u.Update(func(s *InstanceRuntimeUpsert) {
 		s.ClearMetadata()
+	})
+}
+
+// SetLogToEvents sets the "logToEvents" field.
+func (u *InstanceRuntimeUpsertOne) SetLogToEvents(v string) *InstanceRuntimeUpsertOne {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.SetLogToEvents(v)
+	})
+}
+
+// UpdateLogToEvents sets the "logToEvents" field to the value that was provided on create.
+func (u *InstanceRuntimeUpsertOne) UpdateLogToEvents() *InstanceRuntimeUpsertOne {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.UpdateLogToEvents()
+	})
+}
+
+// ClearLogToEvents clears the value of the "logToEvents" field.
+func (u *InstanceRuntimeUpsertOne) ClearLogToEvents() *InstanceRuntimeUpsertOne {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.ClearLogToEvents()
 	})
 }
 
@@ -1489,6 +1546,27 @@ func (u *InstanceRuntimeUpsertBulk) UpdateMetadata() *InstanceRuntimeUpsertBulk 
 func (u *InstanceRuntimeUpsertBulk) ClearMetadata() *InstanceRuntimeUpsertBulk {
 	return u.Update(func(s *InstanceRuntimeUpsert) {
 		s.ClearMetadata()
+	})
+}
+
+// SetLogToEvents sets the "logToEvents" field.
+func (u *InstanceRuntimeUpsertBulk) SetLogToEvents(v string) *InstanceRuntimeUpsertBulk {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.SetLogToEvents(v)
+	})
+}
+
+// UpdateLogToEvents sets the "logToEvents" field to the value that was provided on create.
+func (u *InstanceRuntimeUpsertBulk) UpdateLogToEvents() *InstanceRuntimeUpsertBulk {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.UpdateLogToEvents()
+	})
+}
+
+// ClearLogToEvents clears the value of the "logToEvents" field.
+func (u *InstanceRuntimeUpsertBulk) ClearLogToEvents() *InstanceRuntimeUpsertBulk {
+	return u.Update(func(s *InstanceRuntimeUpsert) {
+		s.ClearLogToEvents()
 	})
 }
 

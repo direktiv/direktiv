@@ -74,19 +74,6 @@ func (f EventsWaitFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, 
 	return f(ctx, mv)
 }
 
-// The InodeFunc type is an adapter to allow the use of ordinary
-// function as Inode mutator.
-type InodeFunc func(context.Context, *ent.InodeMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f InodeFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	mv, ok := m.(*ent.InodeMutation)
-	if !ok {
-		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.InodeMutation", m)
-	}
-	return f(ctx, mv)
-}
-
 // The InstanceFunc type is an adapter to allow the use of ordinary
 // function as Instance mutator.
 type InstanceFunc func(context.Context, *ent.InstanceMutation) (ent.Value, error)
@@ -126,32 +113,6 @@ func (f LogMsgFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, erro
 	return f(ctx, mv)
 }
 
-// The MirrorFunc type is an adapter to allow the use of ordinary
-// function as Mirror mutator.
-type MirrorFunc func(context.Context, *ent.MirrorMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f MirrorFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	mv, ok := m.(*ent.MirrorMutation)
-	if !ok {
-		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.MirrorMutation", m)
-	}
-	return f(ctx, mv)
-}
-
-// The MirrorActivityFunc type is an adapter to allow the use of ordinary
-// function as MirrorActivity mutator.
-type MirrorActivityFunc func(context.Context, *ent.MirrorActivityMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f MirrorActivityFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	mv, ok := m.(*ent.MirrorActivityMutation)
-	if !ok {
-		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.MirrorActivityMutation", m)
-	}
-	return f(ctx, mv)
-}
-
 // The NamespaceFunc type is an adapter to allow the use of ordinary
 // function as Namespace mutator.
 type NamespaceFunc func(context.Context, *ent.NamespaceMutation) (ent.Value, error)
@@ -161,45 +122,6 @@ func (f NamespaceFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, e
 	mv, ok := m.(*ent.NamespaceMutation)
 	if !ok {
 		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.NamespaceMutation", m)
-	}
-	return f(ctx, mv)
-}
-
-// The RefFunc type is an adapter to allow the use of ordinary
-// function as Ref mutator.
-type RefFunc func(context.Context, *ent.RefMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f RefFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	mv, ok := m.(*ent.RefMutation)
-	if !ok {
-		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.RefMutation", m)
-	}
-	return f(ctx, mv)
-}
-
-// The RevisionFunc type is an adapter to allow the use of ordinary
-// function as Revision mutator.
-type RevisionFunc func(context.Context, *ent.RevisionMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f RevisionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	mv, ok := m.(*ent.RevisionMutation)
-	if !ok {
-		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.RevisionMutation", m)
-	}
-	return f(ctx, mv)
-}
-
-// The RouteFunc type is an adapter to allow the use of ordinary
-// function as Route mutator.
-type RouteFunc func(context.Context, *ent.RouteMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f RouteFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	mv, ok := m.(*ent.RouteMutation)
-	if !ok {
-		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.RouteMutation", m)
 	}
 	return f(ctx, mv)
 }
@@ -239,19 +161,6 @@ func (f VarRefFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, erro
 	mv, ok := m.(*ent.VarRefMutation)
 	if !ok {
 		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.VarRefMutation", m)
-	}
-	return f(ctx, mv)
-}
-
-// The WorkflowFunc type is an adapter to allow the use of ordinary
-// function as Workflow mutator.
-type WorkflowFunc func(context.Context, *ent.WorkflowMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f WorkflowFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	mv, ok := m.(*ent.WorkflowMutation)
-	if !ok {
-		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.WorkflowMutation", m)
 	}
 	return f(ctx, mv)
 }

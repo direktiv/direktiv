@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
+	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/google/uuid"
 )
 
@@ -21,81 +22,45 @@ type Database interface {
 
 	Namespace(ctx context.Context, id uuid.UUID) (*Namespace, error)
 	NamespaceByName(ctx context.Context, namespace string) (*Namespace, error)
-	Inode(ctx context.Context, id uuid.UUID) (*Inode, error)
-	Workflow(ctx context.Context, id uuid.UUID) (*Workflow, error)
-	Revision(ctx context.Context, id uuid.UUID) (*Revision, error)
 	Instance(ctx context.Context, id uuid.UUID) (*Instance, error)
 	InstanceRuntime(ctx context.Context, id uuid.UUID) (*InstanceRuntime, error)
 	NamespaceAnnotation(ctx context.Context, nsID uuid.UUID, key string) (*Annotation, error)
-	InodeAnnotation(ctx context.Context, inodeID uuid.UUID, key string) (*Annotation, error)
-	WorkflowAnnotation(ctx context.Context, wfID uuid.UUID, key string) (*Annotation, error)
-	InstanceAnnotation(ctx context.Context, instID uuid.UUID, key string) (*Annotation, error)
 	ThreadVariables(ctx context.Context, instID uuid.UUID) ([]*VarRef, error)
 	NamespaceVariableRef(ctx context.Context, nsID uuid.UUID, key string) (*VarRef, error)
 	WorkflowVariableRef(ctx context.Context, wfID uuid.UUID, key string) (*VarRef, error)
 	InstanceVariableRef(ctx context.Context, instID uuid.UUID, key string) (*VarRef, error)
 	ThreadVariableRef(ctx context.Context, instID uuid.UUID, key string) (*VarRef, error)
 	VariableData(ctx context.Context, id uuid.UUID, load bool) (*VarData, error)
-	Mirror(ctx context.Context, id uuid.UUID) (*Mirror, error)
-	Mirrors(ctx context.Context) ([]uuid.UUID, error)
-	MirrorActivity(ctx context.Context, id uuid.UUID) (*MirrorActivity, error)
-
-	CreateInode(ctx context.Context, args *CreateInodeArgs) (*Inode, error)
-	UpdateInode(ctx context.Context, args *UpdateInodeArgs) (*Inode, error)
-	CreateMirrorActivity(ctx context.Context, args *CreateMirrorActivityArgs) (*MirrorActivity, error)
-	CreateWorkflow(ctx context.Context, args *CreateWorkflowArgs) (*Workflow, error)
-	UpdateWorkflow(ctx context.Context, args *UpdateWorkflowArgs) (*Workflow, error)
-	CreateRevision(ctx context.Context, args *CreateRevisionArgs) (*Revision, error)
-	CreateRef(ctx context.Context, args *CreateRefArgs) (*Ref, error)
 }
 
 type CacheData struct {
 	Namespace *Namespace
-	Inodes    []*Inode
-	Workflow  *Workflow
-	Ref       *Ref
-	Revision  *Revision
-	Instance  *Instance
-}
-
-func (cached *CacheData) Parent() *CacheData {
-	return &CacheData{
-		Namespace: cached.Namespace,
-		Inodes:    cached.Inodes[:len(cached.Inodes)-1],
-		Workflow:  cached.Workflow,
-		Ref:       cached.Ref,
-		Revision:  cached.Revision,
-		Instance:  cached.Instance,
-	}
-}
-
-func (cached *CacheData) Path() string {
-	var elems []string
-	for _, ino := range cached.Inodes {
-		elems = append(elems, ino.Name)
-	}
-
-	if len(elems) == 1 {
-		return "/"
-	}
-
-	return strings.Join(elems, "/")
+	// Inodes    []*Inode
+	// Workflow  *Workflow
+	Ref      *Ref
+	Revision *filestore.Revision
+	Instance *Instance
+	File     *filestore.File
 }
 
 func (cached *CacheData) Dir() string {
-	return filepath.Dir(cached.Path())
+	return filepath.Dir(cached.File.Path)
 }
 
-func (cached *CacheData) Reset() {
-	cached.Inodes = make([]*Inode, 0)
+type HasAttributes interface {
+	GetAttributes() map[string]string
 }
 
-func (cached *CacheData) Inode() *Inode {
-	return cached.Inodes[len(cached.Inodes)-1]
-}
-
-func (cached *CacheData) ParentInode() *Inode {
-	return cached.Inodes[len(cached.Inodes)-2]
+func GetAttributes(recipientType recipient.RecipientType, a ...HasAttributes) map[string]string {
+	m := make(map[string]string)
+	m["recipientType"] = string(recipientType)
+	for _, x := range a {
+		y := x.GetAttributes()
+		for k, v := range y {
+			m[k] = v
+		}
+	}
+	return m
 }
 
 func (cached *CacheData) GetAttributes(recipientType recipient.RecipientType) map[string]string {
@@ -108,8 +73,8 @@ func (cached *CacheData) GetAttributes(recipientType recipient.RecipientType) ma
 		tags["workflow"] = GetWorkflow(cached.Instance.As)
 	}
 
-	if cached.Workflow != nil {
-		tags["workflow-id"] = cached.Workflow.ID.String()
+	if cached.File != nil {
+		tags["workflow-id"] = cached.File.ID.String()
 	}
 
 	if cached.Namespace != nil {

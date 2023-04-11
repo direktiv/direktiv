@@ -68,7 +68,6 @@ func (cp *customPagination) Paginate(req *pagination) (*cpdOutput, error) {
 	o := new(cpdOutput)
 
 	for _, f := range req.filter {
-
 		if f == nil {
 			f = new(grpc.PageFilter)
 		}
@@ -77,7 +76,6 @@ func (cp *customPagination) Paginate(req *pagination) (*cpdOutput, error) {
 		if err != nil {
 			return nil, err
 		}
-
 	}
 
 	if len(req.order) > 1 {
@@ -227,7 +225,6 @@ func (p *pagination) orderings(orderings []*orderingInfo) []ent.OrderFunc {
 	var fns []ent.OrderFunc
 
 	for _, o := range p.order {
-
 		var ordering *orderingInfo
 
 		for _, x := range orderings {
@@ -252,11 +249,9 @@ func (p *pagination) orderings(orderings []*orderingInfo) []ent.OrderFunc {
 		field := ordering.db
 
 		fns = append(fns, direction(field))
-
 	}
 
 	if len(fns) == 0 {
-
 		for _, x := range orderings {
 			if x.isDefault {
 				fns = append(fns, x.defaultOrder(x.db))
@@ -266,7 +261,6 @@ func (p *pagination) orderings(orderings []*orderingInfo) []ent.OrderFunc {
 		if len(fns) == 0 {
 			fns = append(fns, orderings[0].defaultOrder(orderings[0].db))
 		}
-
 	}
 
 	return fns
@@ -289,7 +283,6 @@ func entFilters[T, X any, Q entQuery[T, X]](p *pagination, filtersInfo map[*filt
 	var filters []func(query Q) (Q, error)
 
 	for _, f := range p.filter {
-
 		var fn func(query Q, v string) (Q, error)
 
 		for k, x := range filtersInfo {
@@ -306,7 +299,6 @@ func entFilters[T, X any, Q entQuery[T, X]](p *pagination, filtersInfo map[*filt
 		filters = append(filters, func(query Q) (Q, error) {
 			return fn(query, f.Val)
 		})
-
 	}
 
 	return filters

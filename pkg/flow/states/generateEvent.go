@@ -59,7 +59,6 @@ func (logic *generateEventLogic) Run(ctx context.Context, wakedata []byte) (*Tra
 
 	ctype := logic.Event.DataContentType
 	if s, ok := x.(string); ok && ctype != "" && ctype != "application/json" {
-
 		data, err = base64.StdEncoding.DecodeString(s)
 
 		// trying to decode from base64, if it fails use it "as-is", e.g. plain-text
@@ -71,20 +70,16 @@ func (logic *generateEventLogic) Run(ctx context.Context, wakedata []byte) (*Tra
 		if err != nil {
 			logic.Log(ctx, log.Error, "Unable to set event data: %v", err)
 		}
-
 	}
 
 	if data == nil {
-
 		err = event.SetData("application/json", x)
 		if err != nil {
 			logic.Log(ctx, log.Error, "Unable to set event data: %v", err)
 		}
-
 	}
 
 	for k, v := range logic.Event.Context {
-
 		x, err := jqOne(logic.GetInstanceData(), v)
 		if err != nil {
 			return nil, derrors.NewUncatchableError("direktiv.event.jq", "failed to process event context key '%s': %v", k, err)
@@ -96,7 +91,6 @@ func (logic *generateEventLogic) Run(ctx context.Context, wakedata []byte) (*Tra
 		if err != nil {
 			logic.Log(ctx, log.Error, "Unable to set event extension: %v", err)
 		}
-
 	}
 
 	logic.Log(ctx, log.Info, "Broadcasting event type:%s/source:%s to this namespace.", event.Type(), event.Source())

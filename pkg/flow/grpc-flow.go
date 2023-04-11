@@ -93,15 +93,16 @@ func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
 		}
 	}()
 
-	go func() {
-		// timed-out activity retrier
-		<-time.After(1 * time.Minute)
-		ticker := time.NewTicker(5 * time.Minute)
-		for {
-			<-ticker.C
-			go flow.syncer.kickExpiredActivities()
-		}
-	}()
+	// TODO: yassir, need refactor.
+	//go func() {
+	//	// timed-out activity retrier
+	//	<-time.After(1 * time.Minute)
+	//	ticker := time.NewTicker(5 * time.Minute)
+	//	for {
+	//		<-ticker.C
+	//		go flow.syncer.kickExpiredActivities()
+	//	}
+	//}()
 
 	go func() {
 		// function heart-beats
@@ -133,7 +134,6 @@ func (flow *flow) kickExpiredInstances() {
 	}
 
 	for i := range list {
-
 		data, err := json.Marshal(&retryMessage{
 			InstanceID: list[i].Edges.Instance.ID.String(),
 			Step:       len(list[i].Flow),
@@ -143,7 +143,6 @@ func (flow *flow) kickExpiredInstances() {
 		}
 
 		flow.engine.retryWakeup(data)
-
 	}
 }
 
@@ -180,14 +179,12 @@ func (flow *flow) JQ(ctx context.Context, req *grpc.JQRequest) (*grpc.JQResponse
 	var strs []string
 
 	for _, result := range results {
-
 		x, err := json.MarshalIndent(result, "", "  ")
 		if err != nil {
 			return nil, err
 		}
 
 		strs = append(strs, string(x))
-
 	}
 
 	var resp grpc.JQResponse

@@ -19,9 +19,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/predicate"
-	"github.com/direktiv/direktiv/pkg/flow/ent/revision"
 	"github.com/direktiv/direktiv/pkg/flow/ent/varref"
-	"github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 	"github.com/google/uuid"
 )
 
@@ -35,8 +33,6 @@ type InstanceQuery struct {
 	fields             []string
 	predicates         []predicate.Instance
 	withNamespace      *NamespaceQuery
-	withWorkflow       *WorkflowQuery
-	withRevision       *RevisionQuery
 	withLogs           *LogMsgQuery
 	withVars           *VarRefQuery
 	withRuntime        *InstanceRuntimeQuery
@@ -96,50 +92,6 @@ func (iq *InstanceQuery) QueryNamespace() *NamespaceQuery {
 			sqlgraph.From(instance.Table, instance.FieldID, selector),
 			sqlgraph.To(namespace.Table, namespace.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, instance.NamespaceTable, instance.NamespaceColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryWorkflow chains the current query on the "workflow" edge.
-func (iq *InstanceQuery) QueryWorkflow() *WorkflowQuery {
-	query := &WorkflowQuery{config: iq.config}
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := iq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := iq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(instance.Table, instance.FieldID, selector),
-			sqlgraph.To(workflow.Table, workflow.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, instance.WorkflowTable, instance.WorkflowColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryRevision chains the current query on the "revision" edge.
-func (iq *InstanceQuery) QueryRevision() *RevisionQuery {
-	query := &RevisionQuery{config: iq.config}
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := iq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := iq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(instance.Table, instance.FieldID, selector),
-			sqlgraph.To(revision.Table, revision.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, instance.RevisionTable, instance.RevisionColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
 		return fromU, nil
@@ -461,8 +413,6 @@ func (iq *InstanceQuery) Clone() *InstanceQuery {
 		order:              append([]OrderFunc{}, iq.order...),
 		predicates:         append([]predicate.Instance{}, iq.predicates...),
 		withNamespace:      iq.withNamespace.Clone(),
-		withWorkflow:       iq.withWorkflow.Clone(),
-		withRevision:       iq.withRevision.Clone(),
 		withLogs:           iq.withLogs.Clone(),
 		withVars:           iq.withVars.Clone(),
 		withRuntime:        iq.withRuntime.Clone(),
@@ -484,28 +434,6 @@ func (iq *InstanceQuery) WithNamespace(opts ...func(*NamespaceQuery)) *InstanceQ
 		opt(query)
 	}
 	iq.withNamespace = query
-	return iq
-}
-
-// WithWorkflow tells the query-builder to eager-load the nodes that are connected to
-// the "workflow" edge. The optional arguments are used to configure the query builder of the edge.
-func (iq *InstanceQuery) WithWorkflow(opts ...func(*WorkflowQuery)) *InstanceQuery {
-	query := &WorkflowQuery{config: iq.config}
-	for _, opt := range opts {
-		opt(query)
-	}
-	iq.withWorkflow = query
-	return iq
-}
-
-// WithRevision tells the query-builder to eager-load the nodes that are connected to
-// the "revision" edge. The optional arguments are used to configure the query builder of the edge.
-func (iq *InstanceQuery) WithRevision(opts ...func(*RevisionQuery)) *InstanceQuery {
-	query := &RevisionQuery{config: iq.config}
-	for _, opt := range opts {
-		opt(query)
-	}
-	iq.withRevision = query
 	return iq
 }
 
@@ -649,10 +577,8 @@ func (iq *InstanceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Ins
 		nodes       = []*Instance{}
 		withFKs     = iq.withFKs
 		_spec       = iq.querySpec()
-		loadedTypes = [9]bool{
+		loadedTypes = [7]bool{
 			iq.withNamespace != nil,
-			iq.withWorkflow != nil,
-			iq.withRevision != nil,
 			iq.withLogs != nil,
 			iq.withVars != nil,
 			iq.withRuntime != nil,
@@ -661,7 +587,7 @@ func (iq *InstanceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Ins
 			iq.withAnnotations != nil,
 		}
 	)
-	if iq.withNamespace != nil || iq.withWorkflow != nil || iq.withRevision != nil {
+	if iq.withNamespace != nil {
 		withFKs = true
 	}
 	if withFKs {
@@ -691,18 +617,6 @@ func (iq *InstanceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Ins
 	if query := iq.withNamespace; query != nil {
 		if err := iq.loadNamespace(ctx, query, nodes, nil,
 			func(n *Instance, e *Namespace) { n.Edges.Namespace = e }); err != nil {
-			return nil, err
-		}
-	}
-	if query := iq.withWorkflow; query != nil {
-		if err := iq.loadWorkflow(ctx, query, nodes, nil,
-			func(n *Instance, e *Workflow) { n.Edges.Workflow = e }); err != nil {
-			return nil, err
-		}
-	}
-	if query := iq.withRevision; query != nil {
-		if err := iq.loadRevision(ctx, query, nodes, nil,
-			func(n *Instance, e *Revision) { n.Edges.Revision = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -772,64 +686,6 @@ func (iq *InstanceQuery) loadNamespace(ctx context.Context, query *NamespaceQuer
 		nodes, ok := nodeids[n.ID]
 		if !ok {
 			return fmt.Errorf(`unexpected foreign-key "namespace_instances" returned %v`, n.ID)
-		}
-		for i := range nodes {
-			assign(nodes[i], n)
-		}
-	}
-	return nil
-}
-func (iq *InstanceQuery) loadWorkflow(ctx context.Context, query *WorkflowQuery, nodes []*Instance, init func(*Instance), assign func(*Instance, *Workflow)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*Instance)
-	for i := range nodes {
-		if nodes[i].workflow_instances == nil {
-			continue
-		}
-		fk := *nodes[i].workflow_instances
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
-		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
-	}
-	query.Where(workflow.IDIn(ids...))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "workflow_instances" returned %v`, n.ID)
-		}
-		for i := range nodes {
-			assign(nodes[i], n)
-		}
-	}
-	return nil
-}
-func (iq *InstanceQuery) loadRevision(ctx context.Context, query *RevisionQuery, nodes []*Instance, init func(*Instance), assign func(*Instance, *Revision)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*Instance)
-	for i := range nodes {
-		if nodes[i].revision_instances == nil {
-			continue
-		}
-		fk := *nodes[i].revision_instances
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
-		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
-	}
-	query.Where(revision.IDIn(ids...))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "revision_instances" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)

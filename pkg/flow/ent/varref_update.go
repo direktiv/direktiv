@@ -15,7 +15,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/predicate"
 	"github.com/direktiv/direktiv/pkg/flow/ent/vardata"
 	"github.com/direktiv/direktiv/pkg/flow/ent/varref"
-	"github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 	"github.com/google/uuid"
 )
 
@@ -73,6 +72,26 @@ func (vru *VarRefUpdate) ClearBehaviour() *VarRefUpdate {
 	return vru
 }
 
+// SetWorkflowID sets the "workflow_id" field.
+func (vru *VarRefUpdate) SetWorkflowID(u uuid.UUID) *VarRefUpdate {
+	vru.mutation.SetWorkflowID(u)
+	return vru
+}
+
+// SetNillableWorkflowID sets the "workflow_id" field if the given value is not nil.
+func (vru *VarRefUpdate) SetNillableWorkflowID(u *uuid.UUID) *VarRefUpdate {
+	if u != nil {
+		vru.SetWorkflowID(*u)
+	}
+	return vru
+}
+
+// ClearWorkflowID clears the value of the "workflow_id" field.
+func (vru *VarRefUpdate) ClearWorkflowID() *VarRefUpdate {
+	vru.mutation.ClearWorkflowID()
+	return vru
+}
+
 // SetVardataID sets the "vardata" edge to the VarData entity by ID.
 func (vru *VarRefUpdate) SetVardataID(id uuid.UUID) *VarRefUpdate {
 	vru.mutation.SetVardataID(id)
@@ -101,25 +120,6 @@ func (vru *VarRefUpdate) SetNillableNamespaceID(id *uuid.UUID) *VarRefUpdate {
 // SetNamespace sets the "namespace" edge to the Namespace entity.
 func (vru *VarRefUpdate) SetNamespace(n *Namespace) *VarRefUpdate {
 	return vru.SetNamespaceID(n.ID)
-}
-
-// SetWorkflowID sets the "workflow" edge to the Workflow entity by ID.
-func (vru *VarRefUpdate) SetWorkflowID(id uuid.UUID) *VarRefUpdate {
-	vru.mutation.SetWorkflowID(id)
-	return vru
-}
-
-// SetNillableWorkflowID sets the "workflow" edge to the Workflow entity by ID if the given value is not nil.
-func (vru *VarRefUpdate) SetNillableWorkflowID(id *uuid.UUID) *VarRefUpdate {
-	if id != nil {
-		vru = vru.SetWorkflowID(*id)
-	}
-	return vru
-}
-
-// SetWorkflow sets the "workflow" edge to the Workflow entity.
-func (vru *VarRefUpdate) SetWorkflow(w *Workflow) *VarRefUpdate {
-	return vru.SetWorkflowID(w.ID)
 }
 
 // SetInstanceID sets the "instance" edge to the Instance entity by ID.
@@ -155,12 +155,6 @@ func (vru *VarRefUpdate) ClearVardata() *VarRefUpdate {
 // ClearNamespace clears the "namespace" edge to the Namespace entity.
 func (vru *VarRefUpdate) ClearNamespace() *VarRefUpdate {
 	vru.mutation.ClearNamespace()
-	return vru
-}
-
-// ClearWorkflow clears the "workflow" edge to the Workflow entity.
-func (vru *VarRefUpdate) ClearWorkflow() *VarRefUpdate {
-	vru.mutation.ClearWorkflow()
 	return vru
 }
 
@@ -279,6 +273,12 @@ func (vru *VarRefUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if vru.mutation.BehaviourCleared() {
 		_spec.ClearField(varref.FieldBehaviour, field.TypeString)
 	}
+	if value, ok := vru.mutation.WorkflowID(); ok {
+		_spec.SetField(varref.FieldWorkflowID, field.TypeUUID, value)
+	}
+	if vru.mutation.WorkflowIDCleared() {
+		_spec.ClearField(varref.FieldWorkflowID, field.TypeUUID)
+	}
 	if vru.mutation.VardataCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -341,41 +341,6 @@ func (vru *VarRefUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: namespace.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if vru.mutation.WorkflowCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   varref.WorkflowTable,
-			Columns: []string{varref.WorkflowColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: workflow.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := vru.mutation.WorkflowIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   varref.WorkflowTable,
-			Columns: []string{varref.WorkflowColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: workflow.FieldID,
 				},
 			},
 		}
@@ -480,6 +445,26 @@ func (vruo *VarRefUpdateOne) ClearBehaviour() *VarRefUpdateOne {
 	return vruo
 }
 
+// SetWorkflowID sets the "workflow_id" field.
+func (vruo *VarRefUpdateOne) SetWorkflowID(u uuid.UUID) *VarRefUpdateOne {
+	vruo.mutation.SetWorkflowID(u)
+	return vruo
+}
+
+// SetNillableWorkflowID sets the "workflow_id" field if the given value is not nil.
+func (vruo *VarRefUpdateOne) SetNillableWorkflowID(u *uuid.UUID) *VarRefUpdateOne {
+	if u != nil {
+		vruo.SetWorkflowID(*u)
+	}
+	return vruo
+}
+
+// ClearWorkflowID clears the value of the "workflow_id" field.
+func (vruo *VarRefUpdateOne) ClearWorkflowID() *VarRefUpdateOne {
+	vruo.mutation.ClearWorkflowID()
+	return vruo
+}
+
 // SetVardataID sets the "vardata" edge to the VarData entity by ID.
 func (vruo *VarRefUpdateOne) SetVardataID(id uuid.UUID) *VarRefUpdateOne {
 	vruo.mutation.SetVardataID(id)
@@ -508,25 +493,6 @@ func (vruo *VarRefUpdateOne) SetNillableNamespaceID(id *uuid.UUID) *VarRefUpdate
 // SetNamespace sets the "namespace" edge to the Namespace entity.
 func (vruo *VarRefUpdateOne) SetNamespace(n *Namespace) *VarRefUpdateOne {
 	return vruo.SetNamespaceID(n.ID)
-}
-
-// SetWorkflowID sets the "workflow" edge to the Workflow entity by ID.
-func (vruo *VarRefUpdateOne) SetWorkflowID(id uuid.UUID) *VarRefUpdateOne {
-	vruo.mutation.SetWorkflowID(id)
-	return vruo
-}
-
-// SetNillableWorkflowID sets the "workflow" edge to the Workflow entity by ID if the given value is not nil.
-func (vruo *VarRefUpdateOne) SetNillableWorkflowID(id *uuid.UUID) *VarRefUpdateOne {
-	if id != nil {
-		vruo = vruo.SetWorkflowID(*id)
-	}
-	return vruo
-}
-
-// SetWorkflow sets the "workflow" edge to the Workflow entity.
-func (vruo *VarRefUpdateOne) SetWorkflow(w *Workflow) *VarRefUpdateOne {
-	return vruo.SetWorkflowID(w.ID)
 }
 
 // SetInstanceID sets the "instance" edge to the Instance entity by ID.
@@ -562,12 +528,6 @@ func (vruo *VarRefUpdateOne) ClearVardata() *VarRefUpdateOne {
 // ClearNamespace clears the "namespace" edge to the Namespace entity.
 func (vruo *VarRefUpdateOne) ClearNamespace() *VarRefUpdateOne {
 	vruo.mutation.ClearNamespace()
-	return vruo
-}
-
-// ClearWorkflow clears the "workflow" edge to the Workflow entity.
-func (vruo *VarRefUpdateOne) ClearWorkflow() *VarRefUpdateOne {
-	vruo.mutation.ClearWorkflow()
 	return vruo
 }
 
@@ -716,6 +676,12 @@ func (vruo *VarRefUpdateOne) sqlSave(ctx context.Context) (_node *VarRef, err er
 	if vruo.mutation.BehaviourCleared() {
 		_spec.ClearField(varref.FieldBehaviour, field.TypeString)
 	}
+	if value, ok := vruo.mutation.WorkflowID(); ok {
+		_spec.SetField(varref.FieldWorkflowID, field.TypeUUID, value)
+	}
+	if vruo.mutation.WorkflowIDCleared() {
+		_spec.ClearField(varref.FieldWorkflowID, field.TypeUUID)
+	}
 	if vruo.mutation.VardataCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -778,41 +744,6 @@ func (vruo *VarRefUpdateOne) sqlSave(ctx context.Context) (_node *VarRef, err er
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: namespace.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if vruo.mutation.WorkflowCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   varref.WorkflowTable,
-			Columns: []string{varref.WorkflowColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: workflow.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := vruo.mutation.WorkflowIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   varref.WorkflowTable,
-			Columns: []string{varref.WorkflowColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: workflow.FieldID,
 				},
 			},
 		}

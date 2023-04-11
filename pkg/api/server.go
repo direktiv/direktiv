@@ -7,10 +7,9 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/direktiv/direktiv/pkg/version"
-	"google.golang.org/protobuf/types/known/emptypb"
-
 	"github.com/gorilla/mux"
 	"go.uber.org/zap"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 var logger *zap.SugaredLogger

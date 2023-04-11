@@ -18,6 +18,11 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/metrics"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore/sql"
+	"github.com/direktiv/direktiv/pkg/refactor/filestore"
+	"github.com/direktiv/direktiv/pkg/refactor/filestore/psql"
+	"github.com/direktiv/direktiv/pkg/refactor/mirror"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/direktiv/direktiv/pkg/version"
 	"github.com/google/uuid"
@@ -26,6 +31,8 @@ import (
 	"go.uber.org/zap"
 	libgrpc "google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/emptypb"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 const parcelSize = 0x100000
@@ -38,11 +45,17 @@ type server struct {
 	conf     *util.Config
 
 	// db       *ent.Client
-	pubsub   *pubsub.Pubsub
-	locks    *locks
-	timers   *timers
-	engine   *engine
-	syncer   *syncer
+	pubsub *pubsub.Pubsub
+	locks  *locks
+	timers *timers
+	engine *engine
+
+	gormDB *gorm.DB
+	// fStore    filestore.FileStore
+	// dataStore datastore.Store
+
+	mirrorManager mirror.Manager
+
 	secrets  *secrets
 	flow     *flow
 	internal *internal
@@ -140,6 +153,19 @@ func (srv *server) start(ctx context.Context) error {
 
 	srv.database = database.NewCachedDatabase(srv.sugar, edb, srv)
 	defer srv.cleanup(srv.database.Close)
+	// fmt.Printf(">>>>>> dsn %s\n", db)
+
+	srv.gormDB, err = gorm.Open(postgres.New(postgres.Config{
+		DSN:                  db,
+		PreferSimpleProtocol: false, // disables implicit prepared statement usage
+	}), &gorm.Config{})
+	if err != nil {
+		return fmt.Errorf("creating filestore, err: %w", err)
+	}
+	// srv.fStore = psql.NewSQLFileStore(srv.gormDB)
+	// srv.dataStore = sql.NewSQLStore(srv.gormDB)
+
+	srv.mirrorManager = mirror.NewDefaultManager(srv.sugar, sql.NewSQLStore(srv.gormDB).Mirror(), psql.NewSQLFileStore(srv.gormDB), &mirror.GitSource{})
 
 	srv.sugar.Debug("Initializing pub-sub.")
 
@@ -181,11 +207,12 @@ func (srv *server) start(ctx context.Context) error {
 
 	srv.sugar.Debug("Initializing syncer.")
 
-	srv.syncer, err = initSyncer(srv)
-	if err != nil {
-		return err
-	}
-	defer srv.cleanup(srv.syncer.Close)
+	// TODO: yassir, need refactor.
+	//srv.syncer, err = initSyncer(srv)
+	//if err != nil {
+	//	return err
+	//}
+	//defer srv.cleanup(srv.syncer.Close)
 
 	var lock sync.Mutex
 	var wg sync.WaitGroup
@@ -225,7 +252,6 @@ func (srv *server) start(ctx context.Context) error {
 	}
 
 	if srv.conf.Eventing {
-
 		srv.sugar.Debug("Initializing knative eventing receiver.")
 		rcv, err := newEventReceiver(srv.events, srv.flow)
 		if err != nil {
@@ -239,7 +265,6 @@ func (srv *server) start(ctx context.Context) error {
 	srv.registerFunctions()
 
 	go srv.cronPoller()
-	go srv.syncerCronPoller()
 
 	go func() {
 		defer wg.Done()
@@ -331,14 +356,12 @@ func (srv *server) NotifyCluster(msg string) error {
 	perr := new(pq.Error)
 
 	if errors.As(err, &perr) {
-
 		srv.sugar.Errorf("db notification failed: %v", perr)
 		if perr.Code == "57014" {
 			return fmt.Errorf("canceled query")
 		}
 
 		return err
-
 	}
 
 	return nil
@@ -360,14 +383,12 @@ func (srv *server) NotifyHostname(hostname, msg string) error {
 	perr := new(pq.Error)
 
 	if errors.As(err, &perr) {
-
 		fmt.Fprintf(os.Stderr, "db notification failed: %v", perr)
 		if perr.Code == "57014" {
 			return fmt.Errorf("canceled query")
 		}
 
 		return err
-
 	}
 
 	return nil
@@ -396,7 +417,8 @@ func (srv *server) registerFunctions() {
 	srv.pubsub.RegisterFunction(pubsub.PubsubDeleteTimerFunction, srv.timers.deleteTimerHandler)
 	srv.pubsub.RegisterFunction(pubsub.PubsubDeleteInstanceTimersFunction, srv.timers.deleteInstanceTimersHandler)
 	srv.pubsub.RegisterFunction(pubsub.PubsubCancelWorkflowFunction, srv.engine.finishCancelWorkflow)
-	srv.pubsub.RegisterFunction(pubsub.PubsubConfigureRouterFunction, srv.flow.configureRouterHandler)
+	// TODO: yassir, need refactor.
+	// srv.pubsub.RegisterFunction(pubsub.PubsubConfigureRouterFunction, srv.flow.configureRouterHandler)
 	srv.pubsub.RegisterFunction(pubsub.PubsubUpdateEventDelays, srv.events.updateEventDelaysHandler)
 
 	srv.timers.registerFunction(timeoutFunction, srv.engine.timeoutHandler)
@@ -406,8 +428,8 @@ func (srv *server) registerFunctions() {
 	srv.timers.registerFunction(retryWakeupFunction, srv.flow.engine.retryWakeup)
 
 	srv.pubsub.RegisterFunction(pubsub.PubsubDeleteActivityTimersFunction, srv.timers.deleteActivityTimersHandler)
-	srv.timers.registerFunction(syncerTimeoutFunction, srv.syncer.timeoutHandler)
-	srv.timers.registerFunction(syncerCron, srv.syncer.cronHandler)
+	// TODO: yassir, need refactor.
+	// srv.timers.registerFunction(syncerTimeoutFunction, srv.syncer.timeoutHandler)
 
 	srv.pubsub.RegisterFunction(deleteFilterCache, srv.flow.deleteCache)
 	srv.pubsub.RegisterFunction(deleteFilterCacheNamespace, srv.flow.deleteCacheNamespace)
@@ -423,44 +445,60 @@ func (srv *server) cronPoller() {
 func (srv *server) cronPoll() {
 	ctx := context.Background()
 
-	clients := srv.edb.Clients(ctx)
+	fStore, _, _, rollback, err := srv.flow.beginSqlTx(ctx)
+	if err != nil {
+		srv.sugar.Error(err)
+		return
+	}
+	defer rollback(ctx)
 
-	wfs, err := clients.Workflow.Query().All(ctx)
+	roots, err := fStore.GetAllRoots(ctx)
 	if err != nil {
 		srv.sugar.Error(err)
 		return
 	}
 
-	for _, wf := range wfs {
-		cached, err := srv.reverseTraverseToWorkflow(ctx, wf.ID.String())
-		if err != nil {
-			srv.sugar.Error(err)
-			continue
-		}
-
-		srv.cronPollerWorkflow(ctx, cached)
-	}
-}
-
-func (srv *server) cronPollerWorkflow(ctx context.Context, cached *database.CacheData) {
-	ms, muxErr, err := srv.validateRouter(ctx, cached)
-	if err != nil || muxErr != nil {
-		return
-	}
-
-	if !ms.Enabled || ms.Cron != "" {
-		srv.timers.deleteCronForWorkflow(cached.Workflow.ID.String())
-	}
-
-	if ms.Cron != "" && ms.Enabled {
-		err = srv.timers.addCron(cached.Workflow.ID.String(), wfCron, ms.Cron, []byte(cached.Workflow.ID.String()))
+	for _, root := range roots {
+		files, err := fStore.ForRootID(root.ID).ListAllFiles(ctx)
 		if err != nil {
 			srv.sugar.Error(err)
 			return
 		}
 
-		srv.sugar.Debugf("Loaded cron: %s", cached.Workflow.ID.String())
+		for _, file := range files {
+			if file.Typ != filestore.FileTypeWorkflow {
+				continue
+			}
 
+			srv.cronPollerWorkflow(ctx, root, file)
+		}
+	}
+}
+
+func (srv *server) cronPollerWorkflow(ctx context.Context, root *filestore.Root, file *filestore.File) {
+	// TODO: yassir, need refactor.
+	// NOTE: the validateRouter function used to be responsible for returning the isEnabled and cronPattern information via the `ms` return value.
+	/*
+		ms, muxErr, err := srv.validateRouter(ctx, cached)
+		if err != nil || muxErr != nil {
+			return
+		}
+	*/
+	isEnabled := true
+	cronPattern := ""
+
+	if !isEnabled || cronPattern != "" {
+		srv.timers.deleteCronForWorkflow(file.ID.String())
+	}
+
+	if cronPattern != "" && isEnabled {
+		err := srv.timers.addCron(file.ID.String(), wfCron, cronPattern, []byte(file.ID.String()))
+		if err != nil {
+			srv.sugar.Error(err)
+			return
+		}
+
+		srv.sugar.Debugf("Loaded cron: %s", file.ID.String())
 	}
 }
 
@@ -489,12 +527,11 @@ func (flow *flow) Build(ctx context.Context, in *emptypb.Empty) (*grpc.BuildResp
 func (engine *engine) UserLog(ctx context.Context, im *instanceMemory, msg string, a ...interface{}) {
 	engine.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), msg, a...)
 
-	s := fmt.Sprintf(msg, a...)
-
-	if attr := im.cached.Workflow.LogToEvents; attr != "" {
+	if attr := im.runtime.LogToEvents; attr != "" {
+		s := fmt.Sprintf(msg, a...)
 		event := cloudevents.NewEvent()
 		event.SetID(uuid.New().String())
-		event.SetSource(im.cached.Workflow.ID.String())
+		event.SetSource(im.cached.File.ID.String())
 		event.SetType("direktiv.instanceLog")
 		event.SetExtension("logger", attr)
 		event.SetDataContentType("application/json")
@@ -503,7 +540,7 @@ func (engine *engine) UserLog(ctx context.Context, im *instanceMemory, msg strin
 			engine.sugar.Errorf("Failed to create CloudEvent: %v.", err)
 		}
 
-		err = engine.events.BroadcastCloudevent(ctx, im.cached, &event, 0)
+		err = engine.events.BroadcastCloudevent(ctx, im.cached.Namespace, &event, 0)
 		if err != nil {
 			engine.sugar.Errorf("Failed to broadcast CloudEvent: %v.", err)
 			return
@@ -533,4 +570,38 @@ func parent() string {
 	fn := runtime.FuncForPC(pc)
 	elems := strings.Split(fn.Name(), ".")
 	return elems[len(elems)-1]
+}
+
+func (flow *flow) beginSqlTx(ctx context.Context) (filestore.FileStore, datastore.Store, func(ctx context.Context) error, func(ctx context.Context), error) {
+	res := flow.gormDB.WithContext(ctx).Begin()
+	if res.Error != nil {
+		return nil, nil, nil, nil, res.Error
+	}
+	rollbackFunc := func(ctx context.Context) {
+		err := res.WithContext(ctx).Rollback().Error
+		if err != nil {
+			if !strings.Contains(err.Error(), "already") {
+				fmt.Fprintf(os.Stderr, "failed to rollback transaction: %v\n", err)
+			}
+		}
+	}
+	commitFunc := func(ctx context.Context) error {
+		return res.WithContext(ctx).Commit().Error
+	}
+
+	return psql.NewSQLFileStore(res), sql.NewSQLStore(res), commitFunc, rollbackFunc, nil
+}
+
+func (flow *flow) runSqlTx(ctx context.Context, fun func(fStore filestore.FileStore, store datastore.Store) error) error {
+	fStore, store, commit, rollback, err := flow.beginSqlTx(ctx)
+	if err != nil {
+		return err
+	}
+	defer rollback(ctx)
+
+	if err := fun(fStore, store); err != nil {
+		return err
+	}
+
+	return commit(ctx)
 }

@@ -60,11 +60,11 @@ func traceAddWorkflowInstance(ctx context.Context, im *instanceMemory) {
 		},
 		attribute.KeyValue{
 			Key:   "workflow",
-			Value: attribute.StringValue(im.cached.Path()),
+			Value: attribute.StringValue(im.cached.File.Path),
 		},
 		attribute.KeyValue{
 			Key:   "workflow-id",
-			Value: attribute.StringValue(im.cached.Workflow.ID.String()),
+			Value: attribute.StringValue(im.cached.File.ID.String()),
 		},
 		attribute.KeyValue{
 			Key:   "revision",

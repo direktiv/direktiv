@@ -47,7 +47,6 @@ func (logic *errorLogic) Run(ctx context.Context, wakedata []byte) (*Transition,
 	a := make([]interface{}, len(logic.Args))
 
 	for i := 0; i < len(a); i++ {
-
 		var x interface{}
 
 		x, err = jqOne(logic.GetInstanceData(), logic.Args[i])
@@ -56,7 +55,6 @@ func (logic *errorLogic) Run(ctx context.Context, wakedata []byte) (*Transition,
 		}
 
 		a[i] = x
-
 	}
 
 	x, err := jqOne(logic.GetInstanceData(), logic.Message)

@@ -16,6 +16,7 @@ import (
 	"github.com/cloudevents/sdk-go/v2/binding"
 	protocol "github.com/cloudevents/sdk-go/v2/protocol/http"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/dop251/goja"
 	"github.com/gabriel-vasile/mimetype"
@@ -1908,7 +1909,6 @@ func (h *flowHandler) EventListenersSSE(w http.ResponseWriter, r *http.Request) 
 		defer close(ch)
 
 		for {
-
 			x, err := resp.Recv()
 			if err != nil {
 				ch <- err
@@ -1916,7 +1916,6 @@ func (h *flowHandler) EventListenersSSE(w http.ResponseWriter, r *http.Request) 
 			}
 
 			ch <- x
-
 		}
 	}()
 
@@ -1981,7 +1980,6 @@ func (h *flowHandler) EventHistorySSE(w http.ResponseWriter, r *http.Request) {
 		defer close(ch)
 
 		for {
-
 			x, err := resp.Recv()
 			if err != nil {
 				ch <- err
@@ -1989,7 +1987,6 @@ func (h *flowHandler) EventHistorySSE(w http.ResponseWriter, r *http.Request) {
 			}
 
 			ch <- x
-
 		}
 	}()
 
@@ -2053,7 +2050,6 @@ func (h *flowHandler) NamespacesSSE(w http.ResponseWriter, r *http.Request) {
 		defer close(ch)
 
 		for {
-
 			x, err := resp.Recv()
 			if err != nil {
 				ch <- err
@@ -2061,7 +2057,6 @@ func (h *flowHandler) NamespacesSSE(w http.ResponseWriter, r *http.Request) {
 			}
 
 			ch <- x
-
 		}
 	}()
 
@@ -2261,7 +2256,6 @@ func (h *flowHandler) ServerLogsSSE(w http.ResponseWriter, r *http.Request) {
 		defer close(ch)
 
 		for {
-
 			x, err := resp.Recv()
 			if err != nil {
 				ch <- err
@@ -2269,7 +2263,6 @@ func (h *flowHandler) ServerLogsSSE(w http.ResponseWriter, r *http.Request) {
 			}
 
 			ch <- x
-
 		}
 	}()
 
@@ -2337,7 +2330,6 @@ func (h *flowHandler) NamespaceLogsSSE(w http.ResponseWriter, r *http.Request) {
 		defer close(ch)
 
 		for {
-
 			x, err := resp.Recv()
 			if err != nil {
 				ch <- err
@@ -2345,7 +2337,6 @@ func (h *flowHandler) NamespaceLogsSSE(w http.ResponseWriter, r *http.Request) {
 			}
 
 			ch <- x
-
 		}
 	}()
 
@@ -2417,7 +2408,6 @@ func (h *flowHandler) WorkflowLogsSSE(w http.ResponseWriter, r *http.Request) {
 		defer close(ch)
 
 		for {
-
 			x, err := resp.Recv()
 			if err != nil {
 				ch <- err
@@ -2425,7 +2415,6 @@ func (h *flowHandler) WorkflowLogsSSE(w http.ResponseWriter, r *http.Request) {
 			}
 
 			ch <- x
-
 		}
 	}()
 
@@ -2497,7 +2486,6 @@ func (h *flowHandler) InstanceLogsSSE(w http.ResponseWriter, r *http.Request) {
 		defer close(ch)
 
 		for {
-
 			x, err := resp.Recv()
 			if err != nil {
 				ch <- err
@@ -2505,7 +2493,6 @@ func (h *flowHandler) InstanceLogsSSE(w http.ResponseWriter, r *http.Request) {
 			}
 
 			ch <- x
-
 		}
 	}()
 
@@ -2577,7 +2564,6 @@ func (h *flowHandler) MirrorActivityLogsSSE(w http.ResponseWriter, r *http.Reque
 		defer close(ch)
 
 		for {
-
 			x, err := resp.Recv()
 			if err != nil {
 				ch <- err
@@ -2585,7 +2571,6 @@ func (h *flowHandler) MirrorActivityLogsSSE(w http.ResponseWriter, r *http.Reque
 			}
 
 			ch <- x
-
 		}
 	}()
 
@@ -2604,52 +2589,33 @@ func (h *flowHandler) GetNode(w http.ResponseWriter, r *http.Request) {
 	var err error
 	var p *grpc.Pagination
 
-	if ref != "" {
-		goto workflow
-	}
-
 	p, err = pagination(r)
 	if err != nil {
 		badRequest(w, err)
 		return
 	}
 
-	{
-		node, err := h.client.Node(ctx, &grpc.NodeRequest{
-			Namespace: namespace,
-			Path:      path,
-		})
-		if err != nil {
-			respond(w, node, err)
-			return
-		}
-
-		switch node.Node.Type {
-		case "directory":
-			goto directory
-		case "workflow":
-			goto workflow
-		}
-	}
-
-directory:
-
 	resp, err = h.client.Directory(ctx, &grpc.DirectoryRequest{
 		Pagination: p,
 		Namespace:  namespace,
 		Path:       path,
 	})
-	respond(w, resp, err)
-	return
+	if err == nil {
+		respond(w, resp, err)
 
-workflow:
+		return
+	}
+	if !strings.Contains(err.Error(), filestore.ErrNotFound.Error()) {
+		respond(w, resp, err)
+
+		return
+	}
 
 	resp, err = h.client.Workflow(ctx, &grpc.WorkflowRequest{
 		Namespace: namespace,
 		Path:      path,
 		Ref:       ref,
 	})
-
 	respond(w, resp, err)
 }
 
@@ -2720,7 +2686,6 @@ directory:
 		defer close(ch)
 
 		for {
-
 			x, err := dirc.Recv()
 			if err != nil {
 				ch <- err
@@ -2728,7 +2693,6 @@ directory:
 			}
 
 			ch <- x
-
 		}
 	}()
 
@@ -2764,7 +2728,6 @@ workflow:
 		defer close(ch)
 
 		for {
-
 			x, err := wfc.Recv()
 			if err != nil {
 				ch <- err
@@ -2772,7 +2735,6 @@ workflow:
 			}
 
 			ch <- x
-
 		}
 	}()
 
@@ -3070,7 +3032,6 @@ func (h *flowHandler) GetTagsSSE(w http.ResponseWriter, r *http.Request) {
 		defer close(ch)
 
 		for {
-
 			x, err := resp.Recv()
 			if err != nil {
 				ch <- err
@@ -3078,7 +3039,6 @@ func (h *flowHandler) GetTagsSSE(w http.ResponseWriter, r *http.Request) {
 			}
 
 			ch <- x
-
 		}
 	}()
 
@@ -3150,7 +3110,6 @@ func (h *flowHandler) GetRefsSSE(w http.ResponseWriter, r *http.Request) {
 		defer close(ch)
 
 		for {
-
 			x, err := resp.Recv()
 			if err != nil {
 				ch <- err
@@ -3158,7 +3117,6 @@ func (h *flowHandler) GetRefsSSE(w http.ResponseWriter, r *http.Request) {
 			}
 
 			ch <- x
-
 		}
 	}()
 
@@ -3230,7 +3188,6 @@ func (h *flowHandler) GetRevisionsSSE(w http.ResponseWriter, r *http.Request) {
 		defer close(ch)
 
 		for {
-
 			x, err := resp.Recv()
 			if err != nil {
 				ch <- err
@@ -3238,7 +3195,6 @@ func (h *flowHandler) GetRevisionsSSE(w http.ResponseWriter, r *http.Request) {
 			}
 
 			ch <- x
-
 		}
 	}()
 
@@ -3477,7 +3433,6 @@ func (h *flowHandler) RouterSSE(w http.ResponseWriter, r *http.Request) {
 		defer close(ch)
 
 		for {
-
 			x, err := resp.Recv()
 			if err != nil {
 				ch <- err
@@ -3485,7 +3440,6 @@ func (h *flowHandler) RouterSSE(w http.ResponseWriter, r *http.Request) {
 			}
 
 			ch <- x
-
 		}
 	}()
 
@@ -3557,7 +3511,6 @@ func (h *flowHandler) MirrorInfoSSE(w http.ResponseWriter, r *http.Request) {
 		defer close(ch)
 
 		for {
-
 			x, err := resp.Recv()
 			if err != nil {
 				ch <- err
@@ -3565,7 +3518,6 @@ func (h *flowHandler) MirrorInfoSSE(w http.ResponseWriter, r *http.Request) {
 			}
 
 			ch <- x
-
 		}
 	}()
 
@@ -3597,7 +3549,6 @@ func (h *flowHandler) Secrets(w http.ResponseWriter, r *http.Request) {
 		resp, err := h.client.SearchSecret(ctx, in)
 		respond(w, resp, err)
 	} else {
-
 		p, err := pagination(r)
 		if err != nil {
 			respond(w, nil, err)
@@ -3657,7 +3608,6 @@ func (h *flowHandler) SecretsSSE(w http.ResponseWriter, r *http.Request) {
 		defer close(ch)
 
 		for {
-
 			x, err := resp.Recv()
 			if err != nil {
 				ch <- err
@@ -3665,7 +3615,6 @@ func (h *flowHandler) SecretsSSE(w http.ResponseWriter, r *http.Request) {
 			}
 
 			ch <- x
-
 		}
 	}()
 
@@ -3814,7 +3763,6 @@ func (h *flowHandler) InstanceSSE(w http.ResponseWriter, r *http.Request) {
 		defer close(ch)
 
 		for {
-
 			x, err := resp.Recv()
 			if err != nil {
 				ch <- err
@@ -3822,7 +3770,6 @@ func (h *flowHandler) InstanceSSE(w http.ResponseWriter, r *http.Request) {
 			}
 
 			ch <- x
-
 		}
 	}()
 
@@ -3890,7 +3837,6 @@ func (h *flowHandler) InstancesSSE(w http.ResponseWriter, r *http.Request) {
 		defer close(ch)
 
 		for {
-
 			x, err := resp.Recv()
 			if err != nil {
 				ch <- err
@@ -3898,7 +3844,6 @@ func (h *flowHandler) InstancesSSE(w http.ResponseWriter, r *http.Request) {
 			}
 
 			ch <- x
-
 		}
 	}()
 
@@ -4044,7 +3989,6 @@ func (h *flowHandler) WaitWorkflow(w http.ResponseWriter, r *http.Request) {
 			respond(w, nil, err)
 			return
 		}
-
 	}
 
 	in := &grpc.AwaitWorkflowRequest{
@@ -4080,7 +4024,6 @@ func (h *flowHandler) WaitWorkflow(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if s := status.Instance.GetStatus(); s == util.InstanceStatusComplete {
-
 			data := status.Data
 
 			err = c.CloseSend()
@@ -4090,7 +4033,6 @@ func (h *flowHandler) WaitWorkflow(w http.ResponseWriter, r *http.Request) {
 
 			field := r.URL.Query().Get("field")
 			if field != "" {
-
 				m := make(map[string]interface{})
 				err = json.Unmarshal(data, &m)
 				if err != nil {
@@ -4111,7 +4053,6 @@ func (h *flowHandler) WaitWorkflow(w http.ResponseWriter, r *http.Request) {
 						panic(err)
 					}
 				}
-
 			}
 
 			var x interface{}
@@ -4152,7 +4093,6 @@ func (h *flowHandler) WaitWorkflow(w http.ResponseWriter, r *http.Request) {
 			}
 
 			return
-
 		} else if s == util.InstanceStatusFailed {
 			w.Header().Set("Direktiv-Instance-Error-Code", status.Instance.ErrorCode)
 			w.Header().Set("Direktiv-Instance-Error-Message", status.Instance.ErrorMessage)
@@ -4166,7 +4106,6 @@ func (h *flowHandler) WaitWorkflow(w http.ResponseWriter, r *http.Request) {
 		} else {
 			continue
 		}
-
 	}
 }
 
@@ -4177,7 +4116,6 @@ func ToGRPCCloudEvents(r *http.Request) ([]cloudevents.Event, error) {
 
 	// if batch mode we need to parse the body to multiple events
 	if strings.HasPrefix(ct, "application/cloudevents-batch+json") {
-
 		// load body
 		data, err := loadRawBody(r)
 		if err != nil {
@@ -4190,7 +4128,6 @@ func ToGRPCCloudEvents(r *http.Request) ([]cloudevents.Event, error) {
 		}
 
 		for i := range events {
-
 			ev := events[i]
 			if ev.ID() == "" {
 				ev.SetID(uuid.New().String())
@@ -4202,7 +4139,6 @@ func ToGRPCCloudEvents(r *http.Request) ([]cloudevents.Event, error) {
 		}
 
 		return events, nil
-
 	}
 
 	if strings.HasPrefix(ct, "application/json") {
@@ -4311,7 +4247,6 @@ func (h *flowHandler) doBroadcast(w http.ResponseWriter, r *http.Request, filter
 	}
 
 	for i := range ces {
-
 		d, err := json.Marshal(ces[i])
 		if err != nil {
 			respond(w, nil, err)
@@ -4320,7 +4255,6 @@ func (h *flowHandler) doBroadcast(w http.ResponseWriter, r *http.Request, filter
 		}
 
 		if filter == "" {
-
 			in := &grpc.BroadcastCloudeventRequest{
 				Namespace:  namespace,
 				Cloudevent: d,
@@ -4328,9 +4262,7 @@ func (h *flowHandler) doBroadcast(w http.ResponseWriter, r *http.Request, filter
 
 			resp, err := h.client.BroadcastCloudevent(ctx, in)
 			respond(w, resp, err)
-
 		} else {
-
 			inFilter := &grpc.ApplyCloudEventFilterRequest{
 				Namespace:  namespace,
 				Cloudevent: d,
@@ -4339,9 +4271,7 @@ func (h *flowHandler) doBroadcast(w http.ResponseWriter, r *http.Request, filter
 
 			resp, err := h.client.ApplyCloudEventFilter(ctx, inFilter)
 			respond(w, resp, err)
-
 		}
-
 	}
 }
 
@@ -4577,7 +4507,6 @@ func (h *flowHandler) NamespaceVariablesSSE(w http.ResponseWriter, r *http.Reque
 		defer close(ch)
 
 		for {
-
 			x, err := resp.Recv()
 			if err != nil {
 				ch <- err
@@ -4585,7 +4514,6 @@ func (h *flowHandler) NamespaceVariablesSSE(w http.ResponseWriter, r *http.Reque
 			}
 
 			ch <- x
-
 		}
 	}()
 
@@ -4620,7 +4548,6 @@ func (h *flowHandler) NamespaceVariable(w http.ResponseWriter, r *http.Request) 
 	w.Header().Set("Content-Type", msg.MimeType)
 
 	for {
-
 		packet := msg.Data
 		if len(packet) == 0 {
 			return
@@ -4635,7 +4562,6 @@ func (h *flowHandler) NamespaceVariable(w http.ResponseWriter, r *http.Request) 
 		if err != nil {
 			return
 		}
-
 	}
 }
 
@@ -4677,7 +4603,6 @@ func (h *flowHandler) SetNamespaceVariable(w http.ResponseWriter, r *http.Reques
 	ctype := r.Header.Get("Content-Type")
 
 	if total == 0 {
-
 		err = client.Send(&grpc.SetNamespaceVariableRequest{
 			Namespace: namespace,
 			Key:       key,
@@ -4689,7 +4614,6 @@ func (h *flowHandler) SetNamespaceVariable(w http.ResponseWriter, r *http.Reques
 			respond(w, nil, err)
 			return
 		}
-
 	} else {
 		var done int64
 
@@ -4801,7 +4725,6 @@ func (h *flowHandler) InstanceVariablesSSE(w http.ResponseWriter, r *http.Reques
 		defer close(ch)
 
 		for {
-
 			x, err := resp.Recv()
 			if err != nil {
 				ch <- err
@@ -4809,7 +4732,6 @@ func (h *flowHandler) InstanceVariablesSSE(w http.ResponseWriter, r *http.Reques
 			}
 
 			ch <- x
-
 		}
 	}()
 
@@ -4846,7 +4768,6 @@ func (h *flowHandler) InstanceVariable(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", msg.MimeType)
 
 	for {
-
 		packet := msg.Data
 		if len(packet) == 0 {
 			return
@@ -4861,7 +4782,6 @@ func (h *flowHandler) InstanceVariable(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			return
 		}
-
 	}
 }
 
@@ -4898,7 +4818,6 @@ func (h *flowHandler) SetInstanceVariable(w http.ResponseWriter, r *http.Request
 	ctype := r.Header.Get("Content-Type")
 
 	if total == 0 {
-
 		err = client.Send(&grpc.SetInstanceVariableRequest{
 			Namespace: namespace,
 			Instance:  instance,
@@ -4911,12 +4830,10 @@ func (h *flowHandler) SetInstanceVariable(w http.ResponseWriter, r *http.Request
 			respond(w, nil, err)
 			return
 		}
-
 	} else {
 		var done int64
 
 		for done < total {
-
 			buf := new(bytes.Buffer)
 			k, err := io.CopyN(buf, rdr, 2*1024*1024)
 			done += k
@@ -4937,7 +4854,6 @@ func (h *flowHandler) SetInstanceVariable(w http.ResponseWriter, r *http.Request
 				respond(w, nil, err)
 				return
 			}
-
 		}
 	}
 
@@ -5028,7 +4944,6 @@ func (h *flowHandler) WorkflowVariablesSSE(w http.ResponseWriter, r *http.Reques
 		defer close(ch)
 
 		for {
-
 			x, err := resp.Recv()
 			if err != nil {
 				ch <- err
@@ -5036,7 +4951,6 @@ func (h *flowHandler) WorkflowVariablesSSE(w http.ResponseWriter, r *http.Reques
 			}
 
 			ch <- x
-
 		}
 	}()
 
@@ -5073,7 +4987,6 @@ func (h *flowHandler) WorkflowVariable(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", msg.MimeType)
 
 	for {
-
 		packet := msg.Data
 		if len(packet) == 0 {
 			return
@@ -5088,7 +5001,6 @@ func (h *flowHandler) WorkflowVariable(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			return
 		}
-
 	}
 }
 
@@ -5125,7 +5037,6 @@ func (h *flowHandler) SetWorkflowVariable(w http.ResponseWriter, r *http.Request
 	ctype := r.Header.Get("Content-Type")
 
 	if total == 0 {
-
 		err = client.Send(&grpc.SetWorkflowVariableRequest{
 			Namespace: namespace,
 			Path:      path,
@@ -5138,12 +5049,10 @@ func (h *flowHandler) SetWorkflowVariable(w http.ResponseWriter, r *http.Request
 			respond(w, nil, err)
 			return
 		}
-
 	} else {
 		var done int64
 
 		for done < total {
-
 			buf := new(bytes.Buffer)
 			k, err := io.CopyN(buf, rdr, 2*1024*1024)
 			done += k
@@ -5164,7 +5073,6 @@ func (h *flowHandler) SetWorkflowVariable(w http.ResponseWriter, r *http.Request
 				respond(w, nil, err)
 				return
 			}
-
 		}
 	}
 

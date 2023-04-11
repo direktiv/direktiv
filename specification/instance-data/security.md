@@ -12,6 +12,6 @@ Likewise, output data is saved. It is returned to parent instances if the instan
 
 To protect your workflows from behaving in unexpected ways, including intentional exploits by attackers, it is good practice to [validate](../workflow-yaml/validate.md) your input data before acting upon it. That is why we recommend beginning every workflow with a validate state.
  
-## `.private`
+## .private
 
 As a basic precaution, anything stored under `.private` is redacted over the APIs that retrieve instance input and output data. This data is still usable by the instance. Could still be returned to a parent instance. It is still stored in the database in plaintext. And there is nothing preventing you from transforming it or passing it somewhere that exposes this information. Use this feature with caution. 

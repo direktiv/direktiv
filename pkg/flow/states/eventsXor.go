@@ -54,37 +54,31 @@ func (logic *eventsXorLogic) Run(ctx context.Context, wakedata []byte) (*Transit
 	}
 
 	if first {
-
 		var events []*model.ConsumeEventDefinition
 
 		for i := range logic.Events {
-
 			event := new(model.ConsumeEventDefinition)
 			event.Type = logic.Events[i].Event.Type
 			event.Context = make(map[string]interface{})
 
 			for k, v := range logic.Events[i].Event.Context {
-
 				x, err := jqOne(logic.GetInstanceData(), v)
 				if err != nil {
 					return nil, derrors.NewUncatchableError("direktiv.event.jq", "failed to process event context key '%s': %v", k, err)
 				}
 
 				event.Context[k] = x
-
 			}
 
 			events = append(events, event)
-
 		}
 
 		err = logic.ListenForEvents(ctx, events, false)
 		if err != nil {
 			return nil, err
 		}
-
+		//nolint:nilnil
 		return nil, nil
-
 	}
 
 	events := make([]*cloudevents.Event, 0)
@@ -99,7 +93,6 @@ func (logic *eventsXorLogic) Run(ctx context.Context, wakedata []byte) (*Transit
 	}
 
 	for _, event := range events {
-
 		err = logic.StoreData(event.Type(), event)
 		if err != nil {
 			return nil, err
@@ -113,7 +106,6 @@ func (logic *eventsXorLogic) Run(ctx context.Context, wakedata []byte) (*Transit
 				}, nil
 			}
 		}
-
 	}
 
 	return nil, derrors.NewInternalError(errors.New("got the wrong type of event back"))

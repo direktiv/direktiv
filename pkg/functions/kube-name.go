@@ -7,8 +7,8 @@ import (
 
 	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
 	"github.com/direktiv/direktiv/pkg/model"
+	"github.com/mitchellh/hashstructure/v2"
 	hash "github.com/mitchellh/hashstructure/v2"
-	hashstructure "github.com/mitchellh/hashstructure/v2"
 )
 
 func SanitizeLabel(s string) string {

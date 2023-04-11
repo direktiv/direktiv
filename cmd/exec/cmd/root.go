@@ -33,7 +33,7 @@ func init() {
 }
 
 var RootCmd = &cobra.Command{
-	Use: "direktiv-sync",
+	Use: "direktivctl",
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		loadConfig(cmd)
 		cmdPrepareSharedValues()
