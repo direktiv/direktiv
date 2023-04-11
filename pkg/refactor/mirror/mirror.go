@@ -104,8 +104,6 @@ func (d *DefaultManager) StartMirroringProcess(ctx context.Context, config *Conf
 		if err != nil {
 			process.Status = "failed"
 			process, _ = d.store.UpdateProcess(context.TODO(), process)
-		}
-		if err != nil {
 			d.lg.Errorw("mirroring process failed", "err", err, "process_id", process.ID)
 		}
 		if err == nil {

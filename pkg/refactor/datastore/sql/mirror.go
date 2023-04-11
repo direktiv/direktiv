@@ -4,8 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
+	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -14,11 +16,56 @@ type sqlMirrorStore struct {
 	db *gorm.DB
 }
 
+const (
+	encryptionKey = "DIREKTIV_SECRETS_KEY"
+)
+
+func crypt(config *mirror.Config, encrypt bool) error {
+
+	key := os.Getenv(encryptionKey)
+
+	targets := []*string{
+		&config.PrivateKeyPassphrase,
+		&config.PrivateKey,
+	}
+
+	for i := range targets {
+		t := targets[i]
+
+		var (
+			b   string
+			err error
+		)
+		if encrypt {
+			b, err = util.EncryptDataBase64([]byte(key), []byte(*t))
+		} else {
+			b, err = util.DecryptDataBase64([]byte(key), *t)
+		}
+		if err != nil {
+			return err
+		}
+		*t = b
+	}
+
+	return nil
+}
+
 func (s sqlMirrorStore) CreateConfig(ctx context.Context, config *mirror.Config) (*mirror.Config, error) {
+
+	err := crypt(config, true)
+	if err != nil {
+		return nil, err
+	}
 	newConfig := *config
+
 	res := s.db.WithContext(ctx).Table("mirror_configs").Create(&newConfig)
 	if res.Error != nil {
 		return nil, res.Error
+	}
+
+	err = crypt(&newConfig, false)
+	if err != nil {
+		return nil, err
 	}
 
 	return &newConfig, nil
@@ -40,13 +87,20 @@ func (s sqlMirrorStore) UpdateConfig(ctx context.Context, config *mirror.Config)
 }
 
 func (s sqlMirrorStore) GetConfig(ctx context.Context, id uuid.UUID) (*mirror.Config, error) {
+
 	config := &mirror.Config{ID: id}
 	res := s.db.WithContext(ctx).Table("mirror_configs").First(config)
+
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 		return nil, mirror.ErrNotFound
 	}
 	if res.Error != nil {
 		return nil, res.Error
+	}
+
+	err := crypt(config, false)
+	if err != nil {
+		return nil, err
 	}
 
 	return config, nil

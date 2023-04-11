@@ -169,7 +169,8 @@ func New(ctx context.Context, sugar *zap.SugaredLogger, addr string) (*Database,
 	 		    "private_key_passphrase" text,
 	 		    "created_at" timestamptz,
 	 		    "updated_at" timestamptz,
-	 		    PRIMARY KEY ("id")
+	 		    PRIMARY KEY ("id"),
+				FOREIGN KEY ("id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
 	     );
 	 CREATE TABLE IF NOT EXISTS "mirror_processes" 
 	 		(
