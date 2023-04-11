@@ -60,6 +60,7 @@ func (ms *muxStart) Hash() string {
 }
 
 // TODO: yassir, need refactor.
+//nolint
 /*
 func (srv *server) validateRouter(ctx context.Context, cached *database.CacheData) (*muxStart, error, error) {
 	if len(cached.Workflow.Routes) == 0 {

@@ -3,10 +3,11 @@ package mirror_test
 import (
 	"context"
 	"testing"
+	"time"
 
+	"github.com/direktiv/direktiv/pkg/refactor/datastore/sql"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore/psql"
-	"github.com/direktiv/direktiv/pkg/refactor/ignorefile"
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
 	"github.com/direktiv/direktiv/pkg/refactor/utils"
 	"github.com/google/uuid"
@@ -19,10 +20,18 @@ func TestExecuteMirroringProcess(t *testing.T) {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}
 	fs := psql.NewSQLFileStore(db)
+	store := sql.NewSQLStore(db).Mirror()
 
 	direktivRoot, err := fs.CreateRoot(context.Background(), uuid.New())
 	if err != nil {
 		t.Fatalf("unepxected GetRoot() error = %v", err)
+	}
+
+	config, err := store.CreateConfig(context.Background(), &mirror.Config{
+		ID: direktivRoot.ID,
+	})
+	if err != nil {
+		t.Fatalf("unepxected CreateConfig() error = %v", err)
 	}
 
 	source := &mirror.MockedSource{
@@ -33,11 +42,13 @@ func TestExecuteMirroringProcess(t *testing.T) {
 		},
 	}
 
-	err = mirror.ExecuteMirroringProcess(context.Background(), zap.NewNop().Sugar(),
-		fs, direktivRoot, &ignorefile.NopMatcher{}, source, &mirror.Config{})
+	manager := mirror.NewDefaultManager(zap.NewNop().Sugar(), store, fs, source)
+
+	_, err = manager.StartMirroringProcess(context.Background(), config)
 	if err != nil {
 		t.Fatalf("unepxected ExecuteMirroringProcess() error = %v", err)
 	}
+	time.Sleep(time.Second)
 
 	assertRootFilesInPath(t, fs, direktivRoot, "/",
 		"/file1.text",
