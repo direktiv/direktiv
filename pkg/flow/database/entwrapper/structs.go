@@ -40,6 +40,7 @@ func entInstance(inst *ent.Instance) *database.Instance {
 		ErrorMessage: inst.ErrorMessage,
 		Invoker:      inst.Invoker,
 		CallPath:     inst.Callpath,
+		Revision:     *inst.RevisionID,
 	}
 
 	if inst.Edges.Namespace != nil {
