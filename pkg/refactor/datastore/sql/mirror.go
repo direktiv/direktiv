@@ -14,6 +14,18 @@ type sqlMirrorStore struct {
 	db *gorm.DB
 }
 
+//nolint:unused
+func (s sqlMirrorStore) SetNamespaceVariable(ctx context.Context, namespaceID uuid.UUID, key string, data []byte, hash string, mType string) error {
+	// TODO: implement me.
+	return nil
+}
+
+//nolint:unused
+func (s sqlMirrorStore) SetWorkflowVariable(ctx context.Context, workflowID uuid.UUID, key string, data []byte, hash string, mType string) error {
+	// TODO: implement me.
+	return nil
+}
+
 func (s sqlMirrorStore) CreateConfig(ctx context.Context, config *mirror.Config) (*mirror.Config, error) {
 	newConfig := *config
 	res := s.db.WithContext(ctx).Table("mirror_configs").Create(&newConfig)
