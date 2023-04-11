@@ -21,7 +21,6 @@ const (
 )
 
 func crypt(config *mirror.Config, encrypt bool) error {
-
 	key := os.Getenv(encryptionKey)
 
 	targets := []*string{
@@ -51,7 +50,6 @@ func crypt(config *mirror.Config, encrypt bool) error {
 }
 
 func (s sqlMirrorStore) CreateConfig(ctx context.Context, config *mirror.Config) (*mirror.Config, error) {
-
 	err := crypt(config, true)
 	if err != nil {
 		return nil, err
@@ -72,6 +70,11 @@ func (s sqlMirrorStore) CreateConfig(ctx context.Context, config *mirror.Config)
 }
 
 func (s sqlMirrorStore) UpdateConfig(ctx context.Context, config *mirror.Config) (*mirror.Config, error) {
+	err := crypt(config, true)
+	if err != nil {
+		return nil, err
+	}
+
 	res := s.db.WithContext(ctx).
 		Table("mirror_configs").
 		Where("id", config.ID).
@@ -87,7 +90,6 @@ func (s sqlMirrorStore) UpdateConfig(ctx context.Context, config *mirror.Config)
 }
 
 func (s sqlMirrorStore) GetConfig(ctx context.Context, id uuid.UUID) (*mirror.Config, error) {
-
 	config := &mirror.Config{ID: id}
 	res := s.db.WithContext(ctx).Table("mirror_configs").First(config)
 
