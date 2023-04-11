@@ -78,6 +78,20 @@ func (vru *VarRefUpdate) SetWorkflowID(u uuid.UUID) *VarRefUpdate {
 	return vru
 }
 
+// SetNillableWorkflowID sets the "workflow_id" field if the given value is not nil.
+func (vru *VarRefUpdate) SetNillableWorkflowID(u *uuid.UUID) *VarRefUpdate {
+	if u != nil {
+		vru.SetWorkflowID(*u)
+	}
+	return vru
+}
+
+// ClearWorkflowID clears the value of the "workflow_id" field.
+func (vru *VarRefUpdate) ClearWorkflowID() *VarRefUpdate {
+	vru.mutation.ClearWorkflowID()
+	return vru
+}
+
 // SetVardataID sets the "vardata" edge to the VarData entity by ID.
 func (vru *VarRefUpdate) SetVardataID(id uuid.UUID) *VarRefUpdate {
 	vru.mutation.SetVardataID(id)
@@ -262,6 +276,9 @@ func (vru *VarRefUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := vru.mutation.WorkflowID(); ok {
 		_spec.SetField(varref.FieldWorkflowID, field.TypeUUID, value)
 	}
+	if vru.mutation.WorkflowIDCleared() {
+		_spec.ClearField(varref.FieldWorkflowID, field.TypeUUID)
+	}
 	if vru.mutation.VardataCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -431,6 +448,20 @@ func (vruo *VarRefUpdateOne) ClearBehaviour() *VarRefUpdateOne {
 // SetWorkflowID sets the "workflow_id" field.
 func (vruo *VarRefUpdateOne) SetWorkflowID(u uuid.UUID) *VarRefUpdateOne {
 	vruo.mutation.SetWorkflowID(u)
+	return vruo
+}
+
+// SetNillableWorkflowID sets the "workflow_id" field if the given value is not nil.
+func (vruo *VarRefUpdateOne) SetNillableWorkflowID(u *uuid.UUID) *VarRefUpdateOne {
+	if u != nil {
+		vruo.SetWorkflowID(*u)
+	}
+	return vruo
+}
+
+// ClearWorkflowID clears the value of the "workflow_id" field.
+func (vruo *VarRefUpdateOne) ClearWorkflowID() *VarRefUpdateOne {
+	vruo.mutation.ClearWorkflowID()
 	return vruo
 }
 
@@ -647,6 +678,9 @@ func (vruo *VarRefUpdateOne) sqlSave(ctx context.Context) (_node *VarRef, err er
 	}
 	if value, ok := vruo.mutation.WorkflowID(); ok {
 		_spec.SetField(varref.FieldWorkflowID, field.TypeUUID, value)
+	}
+	if vruo.mutation.WorkflowIDCleared() {
+		_spec.ClearField(varref.FieldWorkflowID, field.TypeUUID)
 	}
 	if vruo.mutation.VardataCleared() {
 		edge := &sqlgraph.EdgeSpec{

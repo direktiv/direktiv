@@ -170,6 +170,7 @@ func New(ctx context.Context, sugar *zap.SugaredLogger, addr string) (*Database,
 	 		    "created_at" timestamptz,
 	 		    "updated_at" timestamptz,
 	 		    PRIMARY KEY ("id"),
+				CONSTRAINT "fk_namespaces_mirror_configs"
 				FOREIGN KEY ("id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
 	     );
 	 CREATE TABLE IF NOT EXISTS "mirror_processes" 
@@ -177,6 +178,7 @@ func New(ctx context.Context, sugar *zap.SugaredLogger, addr string) (*Database,
 	 		    "id" uuid,
 	 		    "config_id" uuid,
 	 		    "status" text,
+				"typ" 	 text,
 	 		    "ended_at" timestamptz,
 	 		    "created_at" timestamptz,
 	 		    "updated_at" timestamptz,
@@ -376,7 +378,7 @@ func (db *Database) WorkflowVariableRef(ctx context.Context, wfID uuid.UUID, key
 func (db *Database) InstanceVariableRef(ctx context.Context, instID uuid.UUID, key string) (*database.VarRef, error) {
 	clients := db.clients(ctx)
 
-	varref, err := clients.VarRef.Query().Where(entvar.HasInstanceWith(entinst.ID(instID)), entvar.BehaviourNEQ("thread"), entvar.NameEQ(key)).WithVardata(func(q *ent.VarDataQuery) {
+	varref, err := clients.VarRef.Query().Where(entvar.HasInstanceWith(entinst.ID(instID)), entvar.BehaviourIsNil(), entvar.NameEQ(key)).WithVardata(func(q *ent.VarDataQuery) {
 		q.Select(entvardata.FieldID)
 	}).Only(ctx)
 	if err != nil {

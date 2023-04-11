@@ -29,6 +29,8 @@ func ConvertFileToGrpcNode(f *filestore.File) *grpc.Node {
 		node.ExpandedType = string(filestore.FileTypeDirectory)
 	case string(filestore.FileTypeWorkflow):
 		node.ExpandedType = string(filestore.FileTypeWorkflow)
+	default:
+		node.ExpandedType = string(filestore.FileTypeFile)
 	}
 	return node
 }
@@ -91,6 +93,7 @@ func ConvertMirrorProcessToGrpcMirrorActivity(mirror *mirror.Process) *grpc.Mirr
 	return &grpc.MirrorActivityInfo{
 		Id:        mirror.ID.String(),
 		Status:    mirror.Status,
+		Type:      mirror.Typ,
 		CreatedAt: timestamppb.New(mirror.CreatedAt),
 		UpdatedAt: timestamppb.New(mirror.UpdatedAt),
 	}

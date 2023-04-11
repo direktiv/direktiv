@@ -336,6 +336,11 @@ func (flow *flow) MirrorActivityLogsParcels(req *grpc.MirrorActivityLogsRequest,
 
 	ctx := srv.Context()
 
+	mirProcessID, err := uuid.Parse(req.GetActivity())
+	if err != nil {
+		return err
+	}
+
 	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
 	if err != nil {
 		return err
@@ -349,11 +354,7 @@ func (flow *flow) MirrorActivityLogsParcels(req *grpc.MirrorActivityLogsRequest,
 	}
 	defer rollback(ctx)
 
-	mirConfig, err := store.Mirror().GetConfig(ctx, ns.ID)
-	if err != nil {
-		return err
-	}
-	mirProcess, err := store.Mirror().GetProcess(ctx, mirConfig.ID)
+	mirProcess, err := store.Mirror().GetProcess(ctx, mirProcessID)
 	if err != nil {
 		return err
 	}
