@@ -152,12 +152,13 @@ func (flow *flow) UpdateMirrorSettings(ctx context.Context, req *grpc.UpdateMirr
 	if s := settings.GetPassphrase(); s != "-" {
 		mirConfig.PrivateKeyPassphrase = s
 	}
-	if err = commit(ctx); err != nil {
-		return nil, err
-	}
 
 	mirConfig, err = store.Mirror().UpdateConfig(ctx, mirConfig)
 	if err != nil {
+		return nil, err
+	}
+
+	if err = commit(ctx); err != nil {
 		return nil, err
 	}
 

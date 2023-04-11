@@ -153,6 +153,17 @@ PROTOBUF_HEALTH_SOURCE_FILES := $(shell find ./pkg/health -type f -name '*.proto
 PROTOBUF_SECRETS_SOURCE_FILES := $(shell find ./pkg/secrets -type f -name '*.proto' -exec sh -c 'echo "{}"' \;)
 PROTOBUF_FUNCTIONS_SOURCE_FILES := $(shell find ./pkg/functions -type f -name '*.proto' -exec sh -c 'echo "{}"' \;)
 
+# multi-arch build
+.PHONY: cross-prepare
+cross-prepare:
+	docker buildx create --use      
+	docker run --privileged --rm docker/binfmt:a7996909642ee92942dcd6cff44b9b95f08dad64
+	docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+
+.PHONY: cross-build
+cross-build:
+	docker buildx build --build-arg RELEASE_VERSION=${FULL_VERSION} --platform=linux/arm64,linux/amd64 -f build/docker/direktiv/Dockerfile --push -t direktiv/direktiv:dev .
+
 .PHONY: protoc-flow 
 protoc-flow: ## Manually regenerates flow gRPC API.
 protoc-flow: ${PROTOBUF_FLOW_SOURCE_FILES}
@@ -213,7 +224,7 @@ push: image
 .PHONY: docker-ui
 docker-ui: ## Manually clone and build the latest UI.
 	if [ ! -d direktiv-ui ]; then \
-		git clone https://github.com/direktiv/direktiv-ui.git; \
+		git clone -b feature/0.7.5 https://github.com/direktiv/direktiv-ui.git; \
 	fi
 	if [ -z "${RELEASE}" ]; then \
 		cd direktiv-ui && DOCKER_REPO=${DOCKER_REPO} DOCKER_IMAGE=ui make server; \
