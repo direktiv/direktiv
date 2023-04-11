@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
@@ -159,8 +160,37 @@ func (engine *engine) mux(ctx context.Context, namespace, path, ref string) (*da
 
 	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, path)
 	if err != nil {
-		return nil, err
+		if errors.Is(err, filestore.ErrNotFound) { // try as-is, then '.yaml', then '.yml'
+			if !strings.HasSuffix(path, ".yaml") && !strings.HasSuffix(path, ".yml") {
+				var err2 error
+				file, err2 = fStore.ForRootID(ns.ID).GetFile(ctx, path+".yaml")
+				if err2 != nil {
+					if errors.Is(err2, filestore.ErrNotFound) {
+						file, err2 = fStore.ForRootID(ns.ID).GetFile(ctx, path+".yml")
+						if err2 != nil {
+							if !errors.Is(err2, filestore.ErrNotFound) {
+								err = err2
+							}
+							fmt.Println("X1")
+							return nil, err
+						}
+					} else {
+						err = err2
+						fmt.Println("X2")
+						return nil, err
+					}
+				}
+			} else {
+				fmt.Println("X3")
+				return nil, err
+			}
+		} else {
+			fmt.Println("X4")
+			return nil, err
+		}
 	}
+
+	fmt.Println("X5")
 
 	var rev *filestore.Revision
 
