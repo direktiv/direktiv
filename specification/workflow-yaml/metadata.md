@@ -5,7 +5,10 @@ Instance metadata is a way to monitor an instance. An instance can update its me
 All states can write to instance metadata via a common field `metadata`. This field uses [structured jx](../instance-data/structured-jx.md) to support querying instance data and inserting it into the metadata. 
 
 ```yaml
+states:
 - id: a
-  type: noop
-  metadata: 'jq(.)'
+  type: delay
+  duration: PT1M
+  metadata: 
+    workflow-data: jq(.)
 ```

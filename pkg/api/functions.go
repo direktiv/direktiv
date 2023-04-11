@@ -17,10 +17,10 @@
 //	- application/json
 //
 //	Security:
-//	- api_key:
+//	- direktiv-token:
 //
 //	SecurityDefinitions:
-//	api_key:
+//	direktiv-token:
 //	     type: apiKey
 //	     name: KEY
 //	     in: header

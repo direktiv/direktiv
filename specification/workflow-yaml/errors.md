@@ -1,14 +1,20 @@
 # Errors
 
-Errors can happen for many reasons. Direktiv allows you to catch and handle these errors using a common field 'catch'. This field takes an array of [ErrorCatchDefinition](#ErrorCatchDefinition) objects, each specifying one or more errors that apply and where to transition to next in order to handle them. When an error is thrown, the list of error catchers is evaluated in order until a match is found. If no match is found, the instance fails. 
+Errors can happen for many reasons. Direktiv allows you to catch and handle these errors using a common field 'catch'. This field takes an array of [ErrorCatchDefinition](#errorcatchdefinition) objects, each specifying one or more errors that apply and where to transition to next in order to handle them. When an error is thrown, the list of error catchers is evaluated in order until a match is found. If no match is found, the instance fails. 
 
 ```yaml
+states:
 - id: a
-  type: delay
-  duration: PT5M
+  type: consumeEvent
+  timeout: PT5S
+  event:
+    type: com.github.pull.create
   catch: 
   - error: "direktiv.cancels.timeout.soft"
-    transition: b
+    transition: handle-error
+- id: handle-error
+  type: noop
+  log: handling error
 ```
 
 ## ErrorCatchDefinition
