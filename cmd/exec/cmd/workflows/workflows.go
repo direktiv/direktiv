@@ -24,46 +24,6 @@ var workflowCmd = &cobra.Command{
 	Short: "Workflow-related commands",
 }
 
-var setReadonlyCmd = &cobra.Command{
-	Use:   "toggle-lock DIR_PATH",
-	Short: "Sets local directory to readonly or writable in Direktiv server.",
-	Long: `Sets local directory to readonly or writable in Direktiv server.
-EXAMPLE:
-toggle-lock . --addr http://192.168.1.1 --namespace admin --writable
-toggle-lock path/to/git/subfolder --namespace admin`,
-	Args: cobra.ExactArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
-		r, err := cmd.Flags().GetBool("recursive")
-		if err != nil {
-			root.Fail("could not access recursive flag: %v", err)
-		}
-
-		writable, err := cmd.Flags().GetBool("writable")
-		if err != nil {
-			root.Fail("could not access writable flag: %v", err)
-		}
-
-		pathsToUpdate, err := getImpactedFiles(args[0], false, r)
-		if err != nil {
-			root.Fail("could not calculate impacted files: %v", err)
-		}
-
-		for i := range pathsToUpdate {
-			p := pathsToUpdate[i]
-
-			path := strings.TrimPrefix(root.GetPath(p), "/")
-			path = strings.TrimPrefix(path, ".")
-			url := fmt.Sprintf("%s/tree/%s", root.UrlPrefix, path)
-
-			err := switchGitStatus(url, writable)
-			if err != nil && !errors.Is(err, ErrNotGit) && !errors.Is(err, ErrNotFound) {
-				root.Printlog("can not switch git status: %s", err.Error())
-			}
-
-		}
-	},
-}
-
 func getImpactedFiles(start string, filesAllowed, recursive bool) ([]string, error) {
 	pathsToUpdate := make([]string, 0)
 
@@ -107,65 +67,6 @@ func getImpactedFiles(start string, filesAllowed, recursive bool) ([]string, err
 	return pathsToUpdate, nil
 }
 
-func switchGitStatus(url string, writable bool) error {
-	url = strings.TrimSuffix(url, "/")
-	isReadOnly, err := getNodeReadOnly(url)
-	if err != nil {
-		return err
-	}
-
-	operation := "unlock-mirror"
-
-	if writable {
-		root.Printlog("set writable for %s", url)
-
-		if !isReadOnly {
-			return fmt.Errorf("already writable")
-		}
-
-		operation = "lock-mirror"
-	} else {
-		root.Printlog("set readonly for %s", url)
-		if isReadOnly {
-			return fmt.Errorf("already read-only")
-		}
-	}
-
-	urlLockMirror := fmt.Sprintf("%s?op=%s", url, operation)
-
-	req, err := http.NewRequestWithContext(
-		context.Background(),
-		http.MethodPost,
-		urlLockMirror,
-		nil,
-	)
-	if err != nil {
-		return fmt.Errorf("failed to create request file: %w", err)
-	}
-
-	root.AddAuthHeaders(req)
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return fmt.Errorf("failed to send request: %w", err)
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		if resp.StatusCode == http.StatusUnauthorized {
-			return errors.New("failed to modify node, request was unauthorized")
-		}
-
-		errBody, err := io.ReadAll(resp.Body)
-		if err == nil {
-			return fmt.Errorf("failed to modify node, server responded with %s\n------DUMPING ERROR BODY ------\n%s", resp.Status, string(errBody))
-		}
-
-		return fmt.Errorf("failed to modify node, server responded with %s\n------DUMPING ERROR BODY ------\nCould read response body", resp.Status)
-	}
-
-	return nil
-}
-
 var (
 	ErrNotFound       = errors.New("resource was not found")
 	ErrNodeIsReadOnly = errors.New("resource is read-only")
@@ -186,61 +87,6 @@ type node struct {
 		ReadOnly     bool          `json:"readOnly"`
 		ExpandedType string        `json:"expandedType"`
 	} `json:"node"`
-}
-
-// getNodeReadOnly : Returns if node at path is read only.
-func getNodeReadOnly(url string) (bool, error) {
-	req, err := http.NewRequestWithContext(
-		context.Background(),
-		http.MethodGet,
-		url,
-		nil,
-	)
-	if err != nil {
-		return false, fmt.Errorf("failed to create request file: %w", err)
-	}
-
-	root.AddAuthHeaders(req)
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return false, fmt.Errorf("failed to send request: %w", err)
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		if resp.StatusCode == http.StatusUnauthorized {
-			return false, fmt.Errorf("failed to get node information, request was unauthorized")
-		}
-
-		if resp.StatusCode == http.StatusNotFound {
-			return false, ErrNotFound
-		}
-
-		errBody, err := io.ReadAll(resp.Body)
-		if err == nil {
-			return false, fmt.Errorf("failed to get node information, server responded with %s\n------DUMPING ERROR BODY ------\n%s", resp.Status, string(errBody))
-		}
-
-		return false, fmt.Errorf("failed to get node information, server responded with %s\n------DUMPING ERROR BODY ------\nCould read response body", resp.Status)
-	}
-
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return false, fmt.Errorf("failed to read response: %w", err)
-	}
-
-	var n node
-	err = json.Unmarshal(data, &n)
-	if err != nil {
-		return false, fmt.Errorf("failed to unmarshal response: %w", err)
-	}
-
-	// that should really not happen
-	if n.Node.ExpandedType != "git" {
-		return false, ErrNotGit
-	}
-
-	return n.Node.ReadOnly, nil
 }
 
 var pushCmd = &cobra.Command{
@@ -401,16 +247,7 @@ func getLocalWorkflowVariables(absPath string) ([]string, error) {
 func updateRemoteWorkflow(path string, localPath string) error {
 	root.Printlog("updating namespace: '%s' workflow: '%s'\n", root.GetNamespace(), path)
 
-	isReadOnly, err := getClosestNodeReadOnly(path)
-	if err != nil && !errors.Is(err, ErrNotFound) {
-		log.Fatalf("Failed to get node : %v", err)
-	}
-
-	if isReadOnly {
-		return ErrNodeIsReadOnly
-	}
-
-	err = recurseMkdirParent(path)
+	err := recurseMkdirParent(path)
 	if err != nil {
 		return fmt.Errorf("Failed to create parent directory: %w", err)
 	}
@@ -517,29 +354,6 @@ func recurseMkdirParent(path string) error {
 	}
 
 	return nil
-}
-
-// getClosestNodeReadOnly : Recursively searches upwards to find closest
-// existing node and returns whether it is read only.
-func getClosestNodeReadOnly(path string) (bool, error) {
-	if !strings.HasPrefix(path, "/") {
-		path = "/" + path
-	}
-	dirs := strings.Split(filepath.Dir(path), "/")
-
-	for i := range dirs {
-		check := strings.Join(dirs[:(len(dirs)-i)], "/")
-		urlDir := fmt.Sprintf("%s/tree/%s", root.UrlPrefix, strings.Trim(check, "/"))
-		isReadOnly, err := getNodeReadOnly(urlDir)
-		if err != nil && !errors.Is(err, ErrNotGit) {
-			return true, err
-		}
-		if isReadOnly {
-			return true, nil
-		}
-	}
-
-	return false, nil
 }
 
 var (
@@ -735,12 +549,8 @@ func getOutput(url string) ([]byte, error) {
 func init() {
 	root.RootCmd.AddCommand(workflowCmd)
 
-	workflowCmd.AddCommand(setReadonlyCmd)
 	workflowCmd.AddCommand(pushCmd)
 	workflowCmd.AddCommand(execCmd)
-
-	setReadonlyCmd.PersistentFlags().Bool("recursive", false, "Recursively set folders read-only.")
-	setReadonlyCmd.PersistentFlags().Bool("writable", false, "Sets the folders to writable, readonly otherwise.")
 
 	execCmd.Flags().StringVarP(&outputFlag, "output", "o", "", "Path where to write instance output. If unset output will be written to screen")
 	execCmd.Flags().StringVarP(&input, "input", "i", "", "Path to file to be used as input data for executed workflow. If unset, stdin will be used as input data if available.")
