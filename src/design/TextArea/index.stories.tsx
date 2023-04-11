@@ -15,13 +15,9 @@ export const Default: Story = {
 };
 
 export const WithPlaceholder = () => (
-  <div className="flex space-x-3">
-    <Textarea placeholder="The placeholder text" />
-  </div>
+  <Textarea placeholder="The placeholder text" />
 );
 
 export const DisabledTextArea = () => (
-  <div className="flex space-x-3">
-    <Textarea placeholder="The placeholder text" disabled />
-  </div>
+  <Textarea placeholder="The placeholder text" disabled />
 );
