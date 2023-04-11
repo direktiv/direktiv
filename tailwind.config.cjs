@@ -247,7 +247,7 @@ module.exports = {
           "warning-content": yellow.yellow11,
           error: red.red4,
           "error-content": red.red11,
-          "base-100": "white",
+          "base-100": gray.gray1,
           "base-200": gray.gray2,
           "base-300": gray.gray3,
           "base-content": gray.gray11,
