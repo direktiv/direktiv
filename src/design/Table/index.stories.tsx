@@ -7,6 +7,8 @@ import {
   TableHeaderCell,
   TableRow,
 } from "./index";
+import Button from "../Button";
+import { MoreVertical } from "lucide-react";
 
 const meta = {
   title: "Components/Table",
@@ -158,16 +160,15 @@ export const Default: Story = {
         <TableBody>
           {people.map((person) => (
             <TableRow key={person.email}>
-              <TableCell className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-12 ">
-                {person.name}
-              </TableCell>
+              <TableCell>{person.name}</TableCell>
               <TableCell>{person.title}</TableCell>
               <TableCell>{person.email}</TableCell>
               <TableCell>{person.role}</TableCell>
-              <TableCell className="sm:pr-0">
-                <a className="text-primary-600 hover:text-primary-700">
-                  Edit<span className="sr-only">, {person.name}</span>
-                </a>
+              <TableCell className="flex items-center space-x-3">
+                <Button variant="outline">Edit</Button>
+                <Button variant="ghost" size="sm" icon>
+                  <MoreVertical />
+                </Button>
               </TableCell>
             </TableRow>
           ))}
@@ -188,7 +189,7 @@ export const StripeTable = () => (
           <TableHeaderCell>Title</TableHeaderCell>
           <TableHeaderCell>Email</TableHeaderCell>
           <TableHeaderCell>Role</TableHeaderCell>
-          <TableHeaderCell className="relative py-3.5 pl-3 pr-4">
+          <TableHeaderCell>
             <span className="sr-only">Edit</span>
           </TableHeaderCell>
         </TableRow>
@@ -196,16 +197,15 @@ export const StripeTable = () => (
       <TableBody>
         {people.map((person, key) => (
           <TableRow key={person.email} stripe={key % 2 === 0}>
-            <TableCell className="font-medium text-gray-12">
-              {person.name}
-            </TableCell>
+            <TableCell>{person.name}</TableCell>
             <TableCell>{person.title}</TableCell>
             <TableCell>{person.email}</TableCell>
             <TableCell>{person.role}</TableCell>
-            <TableCell className="font-medium sm:pr-0">
-              <a className="text-primary-600 hover:text-primary-900">
-                Edit<span className="sr-only">, {person.name}</span>
-              </a>
+            <TableCell className="flex items-center space-x-3">
+              <Button variant="outline">Edit</Button>
+              <Button variant="ghost" size="sm" icon>
+                <MoreVertical />
+              </Button>
             </TableCell>
           </TableRow>
         ))}
@@ -231,16 +231,15 @@ export const StickyHeader = () => (
       <TableBody>
         {people.map((person) => (
           <TableRow key={person.email}>
-            <TableCell className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-12 ">
-              {person.name}
-            </TableCell>
+            <TableCell>{person.name}</TableCell>
             <TableCell>{person.title}</TableCell>
             <TableCell>{person.email}</TableCell>
             <TableCell>{person.role}</TableCell>
-            <TableCell className="sm:pr-0">
-              <a className="text-primary-600 hover:text-primary-700">
-                Edit<span className="sr-only">, {person.name}</span>
-              </a>
+            <TableCell className="flex items-center space-x-3">
+              <Button variant="outline">Edit</Button>
+              <Button variant="ghost" size="sm" icon>
+                <MoreVertical />
+              </Button>
             </TableCell>
           </TableRow>
         ))}
