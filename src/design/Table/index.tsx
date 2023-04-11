@@ -86,8 +86,8 @@ export const TableHeaderCell = React.forwardRef<
       "dark:text-gray-dark-12",
       sticky &&
         "sticky top-0 z-10 border-b py-3.5 pl-4 pr-3 backdrop-blur sm:pl-6 lg:pl-8",
-      sticky && " border-gray-3 bg-white/75",
-      sticky && " dark:border-gray-dark-3 dark:bg-black/75 ",
+      sticky && " border-gray-3 bg-white/20",
+      sticky && " dark:border-gray-dark-3 dark:bg-black/20",
       className
     )}
   >
