@@ -81,7 +81,6 @@ func (rcv *eventReceiver) sendToNamespace(name, filter string, r *http.Request) 
 	c := context.WithValue(context.Background(), EventingCtxKeySource, "eventing")
 
 	if filter != "" {
-
 		ce, err := ev.MarshalJSON()
 		if err != nil {
 			return err
@@ -102,7 +101,6 @@ func (rcv *eventReceiver) sendToNamespace(name, filter string, r *http.Request) 
 		if err != nil {
 			return err
 		}
-
 	}
 
 	return rcv.events.BroadcastCloudevent(c, cached.Namespace, ev, 0)
