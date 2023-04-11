@@ -2560,6 +2560,16 @@
     "@radix-ui/react-use-layout-effect" "1.0.0"
     "@radix-ui/react-visually-hidden" "1.0.2"
 
+"@radix-ui/react-toggle@^1.0.2":
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/@radix-ui/react-toggle/-/react-toggle-1.0.2.tgz#d27ba93b72ad7d06a0138237b25e2b367d8ac64a"
+  integrity sha512-1MhVrHjgdmYDBgBpmOB0sjK096gFrVqUocsHNapkOTkZIxOwjpGxnW9e24CjQQX9D/c57dI6E8zAAdeAeIdY8g==
+  dependencies:
+    "@babel/runtime" "^7.13.10"
+    "@radix-ui/primitive" "1.0.0"
+    "@radix-ui/react-primitive" "1.0.2"
+    "@radix-ui/react-use-controllable-state" "1.0.0"
+
 "@radix-ui/react-tooltip@^1.0.5":
   version "1.0.5"
   resolved "https://registry.yarnpkg.com/@radix-ui/react-tooltip/-/react-tooltip-1.0.5.tgz#fe20274aeac874db643717fc7761d5a8abdd62d1"
