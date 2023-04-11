@@ -102,7 +102,7 @@ export const TableRow = React.forwardRef<
 >(({ children, className, stripe, ...props }) => (
   <tr
     {...props}
-    className={clsx(className, stripe && "bg-gray-5 dark:bg-gray-dark-5")}
+    className={clsx(className, stripe && "bg-gray-2 dark:bg-gray-dark-2")}
   >
     {children}
   </tr>
