@@ -24,7 +24,27 @@ export const Default: Story = {
   },
 };
 
-export const CardWithBackground = () => (
-  <Card withBackground className="w-100 h-64"></Card>
+export const CardBackgrounds = () => (
+  <div className="flex space-x-5">
+    <Card className="flex h-64 w-64 items-center justify-center">
+      no background
+    </Card>
+    <Card withBackground className="flex h-64 w-64 items-center justify-center">
+      with background
+    </Card>
+  </div>
 );
-export const NoShadow = () => <Card noShadow className="w-100 h-64"></Card>;
+export const NoShadow = () => (
+  <div className="flex space-x-5">
+    <Card noShadow className="flex h-64 w-64 items-center justify-center">
+      no shadow, no background
+    </Card>
+    <Card
+      noShadow
+      withBackground
+      className="flex h-64 w-64 items-center justify-center"
+    >
+      no shadow, with background
+    </Card>
+  </div>
+);
