@@ -169,13 +169,16 @@ func New(ctx context.Context, sugar *zap.SugaredLogger, addr string) (*Database,
 	 		    "private_key_passphrase" text,
 	 		    "created_at" timestamptz,
 	 		    "updated_at" timestamptz,
-	 		    PRIMARY KEY ("id")
+	 		    PRIMARY KEY ("id"),
+				CONSTRAINT "fk_namespaces_mirror_configs"
+				FOREIGN KEY ("id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
 	     );
 	 CREATE TABLE IF NOT EXISTS "mirror_processes" 
 	 		(
 	 		    "id" uuid,
 	 		    "config_id" uuid,
 	 		    "status" text,
+				"typ" 	 text,
 	 		    "ended_at" timestamptz,
 	 		    "created_at" timestamptz,
 	 		    "updated_at" timestamptz,
