@@ -151,8 +151,6 @@ export default function MirrorPage(props) {
       >
         <Button
           tooltip="Sync mirror with remote"
-          disabledTooltip="Cannot sync mirror while Writable"
-          disabled={!isReadOnly}
           variant="outlined"
           color="info"
           onClick={() => {
