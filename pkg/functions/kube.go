@@ -12,12 +12,9 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/predicate"
-
 	"github.com/direktiv/direktiv/pkg/flow/ent/services"
-
 	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
 	"github.com/google/uuid"
-
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -26,9 +23,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/rest"
-
 	v1 "knative.dev/serving/pkg/apis/serving/v1"
-
 	"knative.dev/serving/pkg/client/clientset/versioned"
 )
 
@@ -56,7 +51,6 @@ func (is *functionsServer) storeService(ctx context.Context, info *igrpc.BaseInf
 	)).Only(ctx)
 
 	if err != nil && ent.IsNotFound(err) {
-
 		logger.Infof("creating service %v", info.GetName())
 		return is.db.Services.Create().
 			SetNamespaceID(uid).
@@ -64,7 +58,6 @@ func (is *functionsServer) storeService(ctx context.Context, info *igrpc.BaseInf
 			SetURL(svcName).
 			SetData(string(b)).
 			Exec(ctx)
-
 	} else if err != nil {
 		return err
 	}
@@ -332,7 +325,6 @@ func listKnativeFunctions(annotations map[string]string) ([]*igrpc.FunctionsInfo
 	logger.Debugf("%d functions", len(l.Items))
 
 	for i := range l.Items {
-
 		svc := l.Items[i]
 		status, conds := statusFromCondition(svc.Status.Conditions)
 
@@ -368,7 +360,6 @@ func listPods(annotations map[string]string) ([]*igrpc.PodsInfo, error) {
 	}
 
 	for i := range l.Items {
-
 		pod := l.Items[i]
 		sn := pod.Labels[ServiceKnativeHeaderName]
 		sr := pod.Labels[ServiceKnativeHeaderRevision]
@@ -469,7 +460,7 @@ func getKnativeFunction(name string) (*igrpc.GetFunctionResponse, error) {
 		}
 
 		// creation date
-		var t int64 = rev.CreationTimestamp.Unix()
+		t := rev.CreationTimestamp.Unix()
 		info.Created = &t
 
 		return info
@@ -651,7 +642,6 @@ func (is *functionsServer) reconstructServices(ctx context.Context) error {
 			logger.Errorf("could not recreate service on startup: %v", err)
 			continue
 		}
-
 	}
 
 	return nil
@@ -691,7 +681,6 @@ func (is *functionsServer) CancelWorfklow(ctx context.Context, in *igrpc.CancelW
 	}
 
 	for i := range podList.Items {
-
 		service := podList.Items[i].ObjectMeta.Labels[label]
 
 		// cancel request to pod
@@ -714,7 +703,6 @@ func (is *functionsServer) CancelWorfklow(ctx context.Context, in *igrpc.CancelW
 				logger.Errorf("error sending delete request: %v", err)
 			}
 		}(podList.Items[i].Name, functionsConfig.Namespace, service)
-
 	}
 
 	return &empty, nil

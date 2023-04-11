@@ -1,5 +1,5 @@
 run:
-  timeout: 5m
+  timeout: 10m
   go: 1.19.3
   issues-exit-code: 1
   tests: true
@@ -8,58 +8,20 @@ run:
 
 linters:
   disable:
-    - wrapcheck
-    - varnamelen
-    - exhaustivestruct
     - exhaustruct
-    - golint
     - wsl
-    - funlen
-    - paralleltest
-    - forbidigo
-    - cyclop
-    - nosnakecase
-    - scopelint
-
-    - nilnil
-    - nlreturn
-    - nonamedreturns
-    - stylecheck
-    - tagliatelle
-    - wastedassign
-    - goerr113
-    - gomnd
-    - testpackage
-    - gochecknoglobals
-    - bodyclose
-    - asasalint
-    - whitespace
-    - predeclared
-    - musttag
-    - maintidx
-    - ireturn
-    - interfacebloat
-    - forcetypeassert
-    - exhaustive
-    - contextcheck
-    - unparam
-    - revive
-    - promlinter
     - prealloc
-    - nestif
-    - makezero
-    - dogsled
-    - dupl
-    - gci
-    - gochecknoinits
-    - gocognit
-    - godox
-    - gosec
     - lll
-    - gocritic
-    - rowserrcheck
-    - gocyclo
-    - nakedret
+    - varnamelen
+    - paralleltest
+    - wrapcheck
+    - nolintlint
+    - ireturn
+    - funlen
+    - musttag
+    - gochecknoglobals
+    - cyclop
+    - godox # must fix
 
   presets:
     - bugs
@@ -75,3 +37,60 @@ linters:
     - style
     - test
     - unused
+
+issues:
+  exclude-rules:
+    - path: '(pkg|cmd)\/(version|dlog|model|sidecar|secrets|exec|util|jqer|functions|flow|api|flow-dbinit|metrics)\/.*'
+      linters:
+      - wrapcheck
+      - varnamelen
+      - exhaustivestruct
+      - exhaustruct
+      - golint
+      - wsl
+      - funlen
+      - paralleltest
+      - forbidigo
+      - cyclop
+      - nosnakecase
+      - scopelint
+
+      - nlreturn
+      - nonamedreturns
+      - stylecheck
+      - tagliatelle
+      - wastedassign
+      - gomnd
+      - testpackage
+      - gochecknoglobals
+      - bodyclose # must fix
+      - asasalint
+      - predeclared
+      - musttag
+      - maintidx
+      - ireturn
+      - interfacebloat
+      - forcetypeassert
+      - exhaustive
+      - contextcheck
+      - unparam
+      - revive
+      - promlinter
+      - prealloc
+      - nestif
+      - makezero
+      - dogsled
+      - dupl
+      - gochecknoinits
+      - gocognit
+      - godox
+      - gosec
+      - lll
+      - gocritic
+      - rowserrcheck
+      - nakedret
+      - unused
+
+    - text: "do not define dynamic errors, use wrapped static errors instead:"
+      linters:
+      - goerr113

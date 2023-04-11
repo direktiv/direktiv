@@ -23,6 +23,10 @@ func (LogMsg) Fields() []ent.Field {
 		field.String("rootInstanceId").Default(""), // NOTE: this field is redundant, but it allows us to improve query performance.
 		field.String("logInstanceCallPath").Default(""),
 		field.JSON("tags", map[string]string{}).Optional(),
+		// TODO: check out if Nillable is required here.
+		field.UUID("workflow_id", uuid.UUID{}).Optional().StorageKey("workflow_id"),
+		// TODO: check out if Nillable is required here.
+		field.UUID("mirror_activity_id", uuid.UUID{}).Optional().StorageKey("mirror_activity_id"),
 	}
 }
 
@@ -30,8 +34,6 @@ func (LogMsg) Fields() []ent.Field {
 func (LogMsg) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("namespace", Namespace.Type).Ref("logs").Unique().Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
-		edge.From("workflow", Workflow.Type).Ref("logs").Unique().Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
 		edge.From("instance", Instance.Type).Ref("logs").Unique().Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
-		edge.From("activity", MirrorActivity.Type).Ref("logs").Unique().Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
 	}
 }

@@ -9,24 +9,22 @@ import (
 	"sync"
 	"time"
 
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
-
+	"github.com/direktiv/direktiv/pkg/dlog"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
+	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
 	"github.com/direktiv/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/direktiv/direktiv/pkg/version"
 	"github.com/lib/pq"
 	_ "github.com/lib/pq"
-
-	"github.com/direktiv/direktiv/pkg/dlog"
-	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
-	"github.com/direktiv/direktiv/pkg/util"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/reflection"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 )
 
 const FunctionsChannel = "fnsync"
@@ -123,7 +121,6 @@ func StartServer(echan chan error) {
 		}()
 
 		for {
-
 			var more bool
 			var notification *pq.Notification
 
@@ -146,7 +143,6 @@ func StartServer(echan chan error) {
 			} else {
 				go fServer.heartbeat(tuples)
 			}
-
 		}
 	}(listener)
 
@@ -180,7 +176,6 @@ func (fServer *functionsServer) heartbeat(tuples []*HeartbeatTuple) {
 	ctx := context.Background()
 
 	for _, tuple := range tuples {
-
 		size := int32(tuple.FunctionDefinition.Size)
 		minscale := int32(0)
 
@@ -225,7 +220,6 @@ func (fServer *functionsServer) heartbeat(tuples []*HeartbeatTuple) {
 				continue
 			}
 		}
-
 	}
 }
 
@@ -233,7 +227,6 @@ func (fServer *functionsServer) reusableGC() {
 	ticker := time.NewTicker(time.Minute * 5)
 
 	for {
-
 		<-ticker.C
 
 		logger.Debugf("reusable heartbeat garbage collector running.")
@@ -249,7 +242,6 @@ func (fServer *functionsServer) reusableGC() {
 		}
 
 		fServer.reusableCacheLock.Unlock()
-
 	}
 }
 
@@ -295,7 +287,6 @@ func (fServer *functionsServer) reusableFree(k string) {
 	logger.Debugf("reusable heartbeat garbage collector purging workflow functions: %s", k)
 
 	for i := range x.names {
-
 		name := x.names[i]
 
 		in := &igrpc.GetFunctionRequest{
@@ -309,7 +300,6 @@ func (fServer *functionsServer) reusableFree(k string) {
 			logger.Errorf("reusable heartbeat garbage collector failed to purge workflow function: %v", err)
 			continue
 		}
-
 	}
 }
 
@@ -317,7 +307,6 @@ func (fServer *functionsServer) orphansGC() {
 	ticker := time.NewTicker(time.Minute * 2)
 
 	for {
-
 		<-ticker.C
 
 		logger.Debugf("reusable orphans garbage collector running.")
@@ -343,7 +332,6 @@ func (fServer *functionsServer) orphansGC() {
 		}
 
 		for i := range l.Items {
-
 			item := l.Items[i]
 
 			fServer.reusableCacheLock.Lock()
@@ -351,7 +339,6 @@ func (fServer *functionsServer) orphansGC() {
 			fServer.reusableCacheLock.Unlock()
 
 			if !exists {
-
 				if !item.CreationTimestamp.Time.Before(time.Now().Add(time.Minute * -60)) {
 					continue
 				}
@@ -365,9 +352,7 @@ func (fServer *functionsServer) orphansGC() {
 					continue
 				}
 			}
-
 		}
-
 	}
 }
 

@@ -226,7 +226,6 @@ func (o *Workflow) validate() error {
 				return fmt.Errorf("workflow state[%v] actions function '%s' does not exist", i, fActions[j])
 			}
 		}
-
 	}
 
 	// timeout

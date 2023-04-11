@@ -12,11 +12,9 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/direktiv/direktiv/pkg/flow/ent/annotation"
-	"github.com/direktiv/direktiv/pkg/flow/ent/inode"
 	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/predicate"
-	"github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 	"github.com/google/uuid"
 )
 
@@ -96,25 +94,6 @@ func (au *AnnotationUpdate) SetNamespace(n *Namespace) *AnnotationUpdate {
 	return au.SetNamespaceID(n.ID)
 }
 
-// SetWorkflowID sets the "workflow" edge to the Workflow entity by ID.
-func (au *AnnotationUpdate) SetWorkflowID(id uuid.UUID) *AnnotationUpdate {
-	au.mutation.SetWorkflowID(id)
-	return au
-}
-
-// SetNillableWorkflowID sets the "workflow" edge to the Workflow entity by ID if the given value is not nil.
-func (au *AnnotationUpdate) SetNillableWorkflowID(id *uuid.UUID) *AnnotationUpdate {
-	if id != nil {
-		au = au.SetWorkflowID(*id)
-	}
-	return au
-}
-
-// SetWorkflow sets the "workflow" edge to the Workflow entity.
-func (au *AnnotationUpdate) SetWorkflow(w *Workflow) *AnnotationUpdate {
-	return au.SetWorkflowID(w.ID)
-}
-
 // SetInstanceID sets the "instance" edge to the Instance entity by ID.
 func (au *AnnotationUpdate) SetInstanceID(id uuid.UUID) *AnnotationUpdate {
 	au.mutation.SetInstanceID(id)
@@ -134,25 +113,6 @@ func (au *AnnotationUpdate) SetInstance(i *Instance) *AnnotationUpdate {
 	return au.SetInstanceID(i.ID)
 }
 
-// SetInodeID sets the "inode" edge to the Inode entity by ID.
-func (au *AnnotationUpdate) SetInodeID(id uuid.UUID) *AnnotationUpdate {
-	au.mutation.SetInodeID(id)
-	return au
-}
-
-// SetNillableInodeID sets the "inode" edge to the Inode entity by ID if the given value is not nil.
-func (au *AnnotationUpdate) SetNillableInodeID(id *uuid.UUID) *AnnotationUpdate {
-	if id != nil {
-		au = au.SetInodeID(*id)
-	}
-	return au
-}
-
-// SetInode sets the "inode" edge to the Inode entity.
-func (au *AnnotationUpdate) SetInode(i *Inode) *AnnotationUpdate {
-	return au.SetInodeID(i.ID)
-}
-
 // Mutation returns the AnnotationMutation object of the builder.
 func (au *AnnotationUpdate) Mutation() *AnnotationMutation {
 	return au.mutation
@@ -164,21 +124,9 @@ func (au *AnnotationUpdate) ClearNamespace() *AnnotationUpdate {
 	return au
 }
 
-// ClearWorkflow clears the "workflow" edge to the Workflow entity.
-func (au *AnnotationUpdate) ClearWorkflow() *AnnotationUpdate {
-	au.mutation.ClearWorkflow()
-	return au
-}
-
 // ClearInstance clears the "instance" edge to the Instance entity.
 func (au *AnnotationUpdate) ClearInstance() *AnnotationUpdate {
 	au.mutation.ClearInstance()
-	return au
-}
-
-// ClearInode clears the "inode" edge to the Inode entity.
-func (au *AnnotationUpdate) ClearInode() *AnnotationUpdate {
-	au.mutation.ClearInode()
 	return au
 }
 
@@ -341,41 +289,6 @@ func (au *AnnotationUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if au.mutation.WorkflowCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   annotation.WorkflowTable,
-			Columns: []string{annotation.WorkflowColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: workflow.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := au.mutation.WorkflowIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   annotation.WorkflowTable,
-			Columns: []string{annotation.WorkflowColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: workflow.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if au.mutation.InstanceCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -403,41 +316,6 @@ func (au *AnnotationUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: instance.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if au.mutation.InodeCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   annotation.InodeTable,
-			Columns: []string{annotation.InodeColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: inode.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := au.mutation.InodeIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   annotation.InodeTable,
-			Columns: []string{annotation.InodeColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: inode.FieldID,
 				},
 			},
 		}
@@ -529,25 +407,6 @@ func (auo *AnnotationUpdateOne) SetNamespace(n *Namespace) *AnnotationUpdateOne 
 	return auo.SetNamespaceID(n.ID)
 }
 
-// SetWorkflowID sets the "workflow" edge to the Workflow entity by ID.
-func (auo *AnnotationUpdateOne) SetWorkflowID(id uuid.UUID) *AnnotationUpdateOne {
-	auo.mutation.SetWorkflowID(id)
-	return auo
-}
-
-// SetNillableWorkflowID sets the "workflow" edge to the Workflow entity by ID if the given value is not nil.
-func (auo *AnnotationUpdateOne) SetNillableWorkflowID(id *uuid.UUID) *AnnotationUpdateOne {
-	if id != nil {
-		auo = auo.SetWorkflowID(*id)
-	}
-	return auo
-}
-
-// SetWorkflow sets the "workflow" edge to the Workflow entity.
-func (auo *AnnotationUpdateOne) SetWorkflow(w *Workflow) *AnnotationUpdateOne {
-	return auo.SetWorkflowID(w.ID)
-}
-
 // SetInstanceID sets the "instance" edge to the Instance entity by ID.
 func (auo *AnnotationUpdateOne) SetInstanceID(id uuid.UUID) *AnnotationUpdateOne {
 	auo.mutation.SetInstanceID(id)
@@ -567,25 +426,6 @@ func (auo *AnnotationUpdateOne) SetInstance(i *Instance) *AnnotationUpdateOne {
 	return auo.SetInstanceID(i.ID)
 }
 
-// SetInodeID sets the "inode" edge to the Inode entity by ID.
-func (auo *AnnotationUpdateOne) SetInodeID(id uuid.UUID) *AnnotationUpdateOne {
-	auo.mutation.SetInodeID(id)
-	return auo
-}
-
-// SetNillableInodeID sets the "inode" edge to the Inode entity by ID if the given value is not nil.
-func (auo *AnnotationUpdateOne) SetNillableInodeID(id *uuid.UUID) *AnnotationUpdateOne {
-	if id != nil {
-		auo = auo.SetInodeID(*id)
-	}
-	return auo
-}
-
-// SetInode sets the "inode" edge to the Inode entity.
-func (auo *AnnotationUpdateOne) SetInode(i *Inode) *AnnotationUpdateOne {
-	return auo.SetInodeID(i.ID)
-}
-
 // Mutation returns the AnnotationMutation object of the builder.
 func (auo *AnnotationUpdateOne) Mutation() *AnnotationMutation {
 	return auo.mutation
@@ -597,21 +437,9 @@ func (auo *AnnotationUpdateOne) ClearNamespace() *AnnotationUpdateOne {
 	return auo
 }
 
-// ClearWorkflow clears the "workflow" edge to the Workflow entity.
-func (auo *AnnotationUpdateOne) ClearWorkflow() *AnnotationUpdateOne {
-	auo.mutation.ClearWorkflow()
-	return auo
-}
-
 // ClearInstance clears the "instance" edge to the Instance entity.
 func (auo *AnnotationUpdateOne) ClearInstance() *AnnotationUpdateOne {
 	auo.mutation.ClearInstance()
-	return auo
-}
-
-// ClearInode clears the "inode" edge to the Inode entity.
-func (auo *AnnotationUpdateOne) ClearInode() *AnnotationUpdateOne {
-	auo.mutation.ClearInode()
 	return auo
 }
 
@@ -804,41 +632,6 @@ func (auo *AnnotationUpdateOne) sqlSave(ctx context.Context) (_node *Annotation,
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if auo.mutation.WorkflowCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   annotation.WorkflowTable,
-			Columns: []string{annotation.WorkflowColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: workflow.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := auo.mutation.WorkflowIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   annotation.WorkflowTable,
-			Columns: []string{annotation.WorkflowColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: workflow.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if auo.mutation.InstanceCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -866,41 +659,6 @@ func (auo *AnnotationUpdateOne) sqlSave(ctx context.Context) (_node *Annotation,
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: instance.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if auo.mutation.InodeCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   annotation.InodeTable,
-			Columns: []string{annotation.InodeColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: inode.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := auo.mutation.InodeIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   annotation.InodeTable,
-			Columns: []string{annotation.InodeColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: inode.FieldID,
 				},
 			},
 		}

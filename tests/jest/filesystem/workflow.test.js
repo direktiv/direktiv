@@ -11,6 +11,13 @@ states:
   transform: 'jq({ msg: "Hello, world!" })'
 `
 
+const updatedSimpleWorkflow = `
+states:
+- id: hello_updated
+  type: noop
+  transform: 'jq({ msg: "Hello, world!" })'
+`
+
 var expectedChildNodeObject = {
     createdAt: expect.stringMatching(common.regex.timestampRegex),
     updatedAt: expect.stringMatching(common.regex.timestampRegex),
@@ -69,17 +76,17 @@ describe('Test basic directory operations', () => {
         expect(createWorkflowResponse1.body).toEqual({}) // TODO: revisit
         expect(createWorkflowResponse2.body).toMatchObject({
             code: 404,
-            message: `file does not exist`,
+            message: `file '/b': not found`,
         })
     })
 
     it(`should fail to create a workflow at the root of the filesystem`, async () => {
         var createWorkflowResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${namespaceName}/tree/?op=create-workflow`)
     
-        expect(createWorkflowResponse.statusCode).toEqual(406)
+        expect(createWorkflowResponse.statusCode).toEqual(409)
         expect(createWorkflowResponse.body).toMatchObject({
-            code: 406,
-            message: `one or more fields has an invalid value`,
+            code: 409,
+            message: `resource already exists`,
         })
     })
 
@@ -110,6 +117,16 @@ describe('Test basic directory operations', () => {
 
         var buf = Buffer.from(createWorkflowResponse.body.revision.source, 'base64')
         expect(buf.toString()).toEqual(simpleWorkflow)
+    })
+
+    it(`should update a workflow`, async () => {
+        var createWorkflowResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${namespaceName}/tree/${workflowName}?op=update-workflow`).send(updatedSimpleWorkflow)
+        expect(createWorkflowResponse.statusCode).toEqual(200)
+    })
+
+    it(`should update a workflow for the second time`, async () => {
+        var createWorkflowResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${namespaceName}/tree/${workflowName}?op=update-workflow`).send(updatedSimpleWorkflow)
+        expect(createWorkflowResponse.statusCode).toEqual(200)
     })
 
     it(`should read the root directory`, async () => {
@@ -155,17 +172,9 @@ describe('Test basic directory operations', () => {
     it(`should read the workflow tags`, async () => {
         var readTagsResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/tree/${workflowName}?op=tags`)
         expect(readTagsResponse.statusCode).toEqual(200)
-
-        // We make a copy here because there's a bug in the API
-        // TODO: fix the bug
-        var copyOfExpectedChildNodeObject = {
-            ...expectedChildNodeObject
-        }
-        copyOfExpectedChildNodeObject.expandedType = ""
-
         expect(readTagsResponse.body).toMatchObject({
             namespace: namespaceName,
-            node: copyOfExpectedChildNodeObject,
+            node: expectedChildNodeObject,
             pageInfo: {
                 limit: 0,
                 offset: 0,
@@ -180,17 +189,9 @@ describe('Test basic directory operations', () => {
     it(`should read the workflow refs`, async () => {
         var readRefsResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/tree/${workflowName}?op=refs`)
         expect(readRefsResponse.statusCode).toEqual(200)
-
-        // We make a copy here because there's a bug in the API
-        // TODO: fix the bug
-        var copyOfExpectedChildNodeObject = {
-            ...expectedChildNodeObject
-        }
-        copyOfExpectedChildNodeObject.expandedType = ""
-
         expect(readRefsResponse.body).toMatchObject({
             namespace: namespaceName,
-            node: copyOfExpectedChildNodeObject,
+            node: expectedChildNodeObject,
             pageInfo: {
                 limit: 0,
                 offset: 0,
@@ -205,17 +206,9 @@ describe('Test basic directory operations', () => {
     it(`should read the workflow revisions`, async () => {
         var readRevsResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/tree/${workflowName}?op=revisions`)
         expect(readRevsResponse.statusCode).toEqual(200)
-
-        // We make a copy here because there's a bug in the API
-        // TODO: fix the bug
-        var copyOfExpectedChildNodeObject = {
-            ...expectedChildNodeObject
-        }
-        copyOfExpectedChildNodeObject.expandedType = ""
-
         expect(readRevsResponse.body).toMatchObject({
             namespace: namespaceName,
-            node: copyOfExpectedChildNodeObject,
+            node: expectedChildNodeObject,
             pageInfo: {
                 limit: 0,
                 offset: 0,
@@ -230,17 +223,9 @@ describe('Test basic directory operations', () => {
     it(`should read the workflow router`, async () => {
         var readRouterResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/tree/${workflowName}?op=router`)
         expect(readRouterResponse.statusCode).toEqual(200)
-
-        // We make a copy here because there's a bug in the API
-        // TODO: fix the bug
-        var copyOfExpectedChildNodeObject = {
-            ...expectedChildNodeObject
-        }
-        copyOfExpectedChildNodeObject.expandedType = ""
-
         expect(readRouterResponse.body).toMatchObject({
             namespace: namespaceName,
-            node: copyOfExpectedChildNodeObject,
+            node: expectedChildNodeObject,
             live: true,
             routes: [],
         })

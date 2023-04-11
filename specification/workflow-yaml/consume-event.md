@@ -22,9 +22,9 @@ To pause the workflow and wait until a CloudEvents event is received before proc
 | `metadata` | If defined, updates the instance's metadata. See [InstanceMetadata](./metadata.md). | [Structured JQ](../instance-data/structured-jx.md) | no |
 | `transform` | If defined, modifies the instance's data upon completing the state logic. See [StateTransforms](../instance-data/transforms.md). | [Structured JQ](../instance-data/structured-jx.md) | no |
 | `transition` | Identifies which state to transition to next, referring to the next state's unique `id`. If undefined, this state terminates the workflow. | string | no |
-| `catch` | Defines behaviour for handling of catchable errors.  | [[]ErrorCatchDefinition](./errors.md) | no |
+| `catch` | Defines behaviour for handling of catchable errors.  | [[]ErrorCatchDefinition](/spec/workflow-yaml/errors/#errorcatchdefinition) | no |
 | `timeout` | An ISO8601 duration string. | string | no |
-| `event` | Defines the criteria by which incoming CloudEvents events are evaluated to find a match. | [ConsumeEventDefinition](#ConsumeEventDefinition) | yes |
+| `event` | Defines the criteria by which incoming CloudEvents events are evaluated to find a match. | [ConsumeEventDefinition](#consumeeventdefinition) | yes |
 
 ## ConsumeEventDefinition
 
@@ -37,8 +37,7 @@ The StartEventDefinition is a structure shared by various event-consuming states
 
 The received data of an event-triggered workflow is a JSON representation of all the received events stored under keys matching the events' respective type. For example, this CloudEvents event will result in the following data:
 
-**CloudEvents Event**
-```json
+```json title="CloudEvents Event"
 {
     "specversion" : "1.0",
     "type" : "com.github.pull.create",
@@ -53,8 +52,7 @@ The received data of an event-triggered workflow is a JSON representation of all
 }
 ```
 
-**Input Data**
-```json
+```json title="Input Data"
 {
   "com.github.pull.create": {
     "specversion" : "1.0",

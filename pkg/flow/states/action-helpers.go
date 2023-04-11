@@ -162,7 +162,6 @@ func generateActionInput(ctx context.Context, args *generateActionInputArgs) ([]
 	files := make([]model.FunctionFileDefinition, 0)
 
 	for idx := range args.Files {
-
 		file := args.Files[idx]
 
 		s, err := jqString(m, file.As)
@@ -197,6 +196,7 @@ func generateActionInput(ctx context.Context, args *generateActionInputArgs) ([]
 		case util.VarScopeWorkflow:
 		case util.VarScopeInstance:
 		case util.VarScopeThread:
+		case util.VarScopeFileSystem:
 		default:
 			return nil, nil, derrors.NewCatchableError(ErrCodeInvalidVariableScope, "invalid 'scope' for function file %d: %s", idx, file.Scope)
 		}
@@ -208,7 +208,6 @@ func generateActionInput(ctx context.Context, args *generateActionInputArgs) ([]
 		file.Type = s
 
 		files = append(files, file)
-
 	}
 
 	return inputData, files, nil
@@ -216,22 +215,18 @@ func generateActionInput(ctx context.Context, args *generateActionInputArgs) ([]
 
 func addSecrets(ctx context.Context, instance Instance, m map[string]interface{}, secrets ...string) (map[string]interface{}, error) {
 	if len(secrets) > 0 {
-
 		s := make(map[string]string)
 
 		for _, name := range secrets {
-
 			dd, err := instance.RetrieveSecret(ctx, name)
 			if err != nil {
 				return nil, err
 			}
 
 			s[name] = dd
-
 		}
 
 		m["secrets"] = s
-
 	}
 
 	return m, nil
@@ -267,6 +262,7 @@ func invokeAction(ctx context.Context, args invokeActionArgs) (*ChildInfo, error
 
 	if args.async {
 		args.instance.Log(ctx, "info", "Running child '%s' in fire-and-forget mode (async).", ci.ID)
+		//nolint:nilnil
 		return nil, nil
 	}
 
@@ -283,7 +279,6 @@ func ISO8601StringtoSecs(timeout string) (int, error) {
 	wfto := 15 * 60
 
 	if len(timeout) > 0 {
-
 		to, err := duration.ParseISO8601(timeout)
 		if err != nil {
 			return wfto, err
@@ -291,7 +286,6 @@ func ISO8601StringtoSecs(timeout string) (int, error) {
 
 		dur := time.Until(to.Shift(time.Now()))
 		wfto = int(dur.Seconds())
-
 	}
 
 	return wfto, nil

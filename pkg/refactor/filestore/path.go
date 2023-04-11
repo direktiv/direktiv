@@ -1,0 +1,34 @@
+package filestore
+
+import (
+	"errors"
+	"path/filepath"
+	"regexp"
+	"strings"
+)
+
+var pathRegexExp = regexp.MustCompile(`^[a-zA-Z0-9_.\-\/]*$`)
+
+// TODO: add tests.
+// SanitizePath standardizes and sanitized the path, and validates it against naming requirements.
+func SanitizePath(path string) (string, error) {
+	path = filepath.Join("/", path)
+	path = filepath.Clean(path)
+
+	if !pathRegexExp.MatchString(path) {
+		return "", errors.New("invalid path string")
+	}
+
+	return path, nil
+}
+
+// TODO: add tests.
+// ParseDepth reads the path and returns the depth value. Use SanitizePath first, because if an error happens here the function may produce invalid results!
+func ParseDepth(path string) int {
+	depth := strings.Count(path, "/")
+	if path == "/" {
+		depth = 0
+	}
+
+	return depth
+}

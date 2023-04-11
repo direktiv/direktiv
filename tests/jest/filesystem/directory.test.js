@@ -81,7 +81,7 @@ describe('Test basic directory operations', () => {
         expect(createDirectoryResponse1.body).toEqual({}) // TODO: revisit
         expect(createDirectoryResponse2.body).toMatchObject({
             code: 404,
-            message: `file does not exist`,
+            message: `file '/b': not found`,
         })
     })
 

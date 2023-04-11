@@ -15,7 +15,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/vardata"
 	"github.com/direktiv/direktiv/pkg/flow/ent/varref"
-	"github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 	"github.com/google/uuid"
 )
 
@@ -51,6 +50,20 @@ func (vrc *VarRefCreate) SetBehaviour(s string) *VarRefCreate {
 func (vrc *VarRefCreate) SetNillableBehaviour(s *string) *VarRefCreate {
 	if s != nil {
 		vrc.SetBehaviour(*s)
+	}
+	return vrc
+}
+
+// SetWorkflowID sets the "workflow_id" field.
+func (vrc *VarRefCreate) SetWorkflowID(u uuid.UUID) *VarRefCreate {
+	vrc.mutation.SetWorkflowID(u)
+	return vrc
+}
+
+// SetNillableWorkflowID sets the "workflow_id" field if the given value is not nil.
+func (vrc *VarRefCreate) SetNillableWorkflowID(u *uuid.UUID) *VarRefCreate {
+	if u != nil {
+		vrc.SetWorkflowID(*u)
 	}
 	return vrc
 }
@@ -97,25 +110,6 @@ func (vrc *VarRefCreate) SetNillableNamespaceID(id *uuid.UUID) *VarRefCreate {
 // SetNamespace sets the "namespace" edge to the Namespace entity.
 func (vrc *VarRefCreate) SetNamespace(n *Namespace) *VarRefCreate {
 	return vrc.SetNamespaceID(n.ID)
-}
-
-// SetWorkflowID sets the "workflow" edge to the Workflow entity by ID.
-func (vrc *VarRefCreate) SetWorkflowID(id uuid.UUID) *VarRefCreate {
-	vrc.mutation.SetWorkflowID(id)
-	return vrc
-}
-
-// SetNillableWorkflowID sets the "workflow" edge to the Workflow entity by ID if the given value is not nil.
-func (vrc *VarRefCreate) SetNillableWorkflowID(id *uuid.UUID) *VarRefCreate {
-	if id != nil {
-		vrc = vrc.SetWorkflowID(*id)
-	}
-	return vrc
-}
-
-// SetWorkflow sets the "workflow" edge to the Workflow entity.
-func (vrc *VarRefCreate) SetWorkflow(w *Workflow) *VarRefCreate {
-	return vrc.SetWorkflowID(w.ID)
 }
 
 // SetInstanceID sets the "instance" edge to the Instance entity by ID.
@@ -275,6 +269,10 @@ func (vrc *VarRefCreate) createSpec() (*VarRef, *sqlgraph.CreateSpec) {
 		_spec.SetField(varref.FieldBehaviour, field.TypeString, value)
 		_node.Behaviour = value
 	}
+	if value, ok := vrc.mutation.WorkflowID(); ok {
+		_spec.SetField(varref.FieldWorkflowID, field.TypeUUID, value)
+		_node.WorkflowID = value
+	}
 	if nodes := vrc.mutation.VardataIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -313,26 +311,6 @@ func (vrc *VarRefCreate) createSpec() (*VarRef, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.namespace_vars = &nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := vrc.mutation.WorkflowIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   varref.WorkflowTable,
-			Columns: []string{varref.WorkflowColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: workflow.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.workflow_vars = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := vrc.mutation.InstanceIDs(); len(nodes) > 0 {
@@ -443,6 +421,24 @@ func (u *VarRefUpsert) ClearBehaviour() *VarRefUpsert {
 	return u
 }
 
+// SetWorkflowID sets the "workflow_id" field.
+func (u *VarRefUpsert) SetWorkflowID(v uuid.UUID) *VarRefUpsert {
+	u.Set(varref.FieldWorkflowID, v)
+	return u
+}
+
+// UpdateWorkflowID sets the "workflow_id" field to the value that was provided on create.
+func (u *VarRefUpsert) UpdateWorkflowID() *VarRefUpsert {
+	u.SetExcluded(varref.FieldWorkflowID)
+	return u
+}
+
+// ClearWorkflowID clears the value of the "workflow_id" field.
+func (u *VarRefUpsert) ClearWorkflowID() *VarRefUpsert {
+	u.SetNull(varref.FieldWorkflowID)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -530,6 +526,27 @@ func (u *VarRefUpsertOne) UpdateBehaviour() *VarRefUpsertOne {
 func (u *VarRefUpsertOne) ClearBehaviour() *VarRefUpsertOne {
 	return u.Update(func(s *VarRefUpsert) {
 		s.ClearBehaviour()
+	})
+}
+
+// SetWorkflowID sets the "workflow_id" field.
+func (u *VarRefUpsertOne) SetWorkflowID(v uuid.UUID) *VarRefUpsertOne {
+	return u.Update(func(s *VarRefUpsert) {
+		s.SetWorkflowID(v)
+	})
+}
+
+// UpdateWorkflowID sets the "workflow_id" field to the value that was provided on create.
+func (u *VarRefUpsertOne) UpdateWorkflowID() *VarRefUpsertOne {
+	return u.Update(func(s *VarRefUpsert) {
+		s.UpdateWorkflowID()
+	})
+}
+
+// ClearWorkflowID clears the value of the "workflow_id" field.
+func (u *VarRefUpsertOne) ClearWorkflowID() *VarRefUpsertOne {
+	return u.Update(func(s *VarRefUpsert) {
+		s.ClearWorkflowID()
 	})
 }
 
@@ -783,6 +800,27 @@ func (u *VarRefUpsertBulk) UpdateBehaviour() *VarRefUpsertBulk {
 func (u *VarRefUpsertBulk) ClearBehaviour() *VarRefUpsertBulk {
 	return u.Update(func(s *VarRefUpsert) {
 		s.ClearBehaviour()
+	})
+}
+
+// SetWorkflowID sets the "workflow_id" field.
+func (u *VarRefUpsertBulk) SetWorkflowID(v uuid.UUID) *VarRefUpsertBulk {
+	return u.Update(func(s *VarRefUpsert) {
+		s.SetWorkflowID(v)
+	})
+}
+
+// UpdateWorkflowID sets the "workflow_id" field to the value that was provided on create.
+func (u *VarRefUpsertBulk) UpdateWorkflowID() *VarRefUpsertBulk {
+	return u.Update(func(s *VarRefUpsert) {
+		s.UpdateWorkflowID()
+	})
+}
+
+// ClearWorkflowID clears the value of the "workflow_id" field.
+func (u *VarRefUpsertBulk) ClearWorkflowID() *VarRefUpsertBulk {
+	return u.Update(func(s *VarRefUpsert) {
+		s.ClearWorkflowID()
 	})
 }
 

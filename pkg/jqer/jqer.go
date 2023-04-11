@@ -112,7 +112,6 @@ func JqState(l *lexer.L) lexer.StateFunc {
 	}
 
 	if token != NoToken {
-
 		// this cuts out the 'jX(' bit
 		mover(3, false)
 
@@ -155,7 +154,7 @@ func JqState(l *lexer.L) lexer.StateFunc {
 
 	// only rewind to jdxJ, if there was no j in the runes, we can skip rewind all together
 	if jdxJ > 0 {
-		mover((3 - jdxJ), false)
+		mover(3-jdxJ, false)
 	}
 
 	return JqState
@@ -243,7 +242,6 @@ func recurseIntoString(data interface{}, s string) ([]interface{}, error) {
 		default:
 			out = append(out, tok.Value)
 		}
-
 	}
 
 	if len(out) == 1 {
@@ -341,7 +339,6 @@ func jq(input interface{}, command string) ([]interface{}, error) {
 	iter := query.RunWithContext(ctx, x)
 
 	for i := 0; ; i++ {
-
 		v, ok := iter.Next()
 		if !ok {
 			break
@@ -352,7 +349,6 @@ func jq(input interface{}, command string) ([]interface{}, error) {
 		}
 
 		output = append(output, v)
-
 	}
 
 	return output, nil

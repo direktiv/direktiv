@@ -37,6 +37,8 @@ const (
 	FieldStateContext = "state_context"
 	// FieldMetadata holds the string denoting the metadata field in the database.
 	FieldMetadata = "metadata"
+	// FieldLogToEvents holds the string denoting the logtoevents field in the database.
+	FieldLogToEvents = "log_to_events"
 	// EdgeInstance holds the string denoting the instance edge name in mutations.
 	EdgeInstance = "instance"
 	// EdgeCaller holds the string denoting the caller edge name in mutations.
@@ -75,6 +77,7 @@ var Columns = []string{
 	FieldInstanceContext,
 	FieldStateContext,
 	FieldMetadata,
+	FieldLogToEvents,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "instance_runtimes"

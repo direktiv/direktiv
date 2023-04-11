@@ -7,9 +7,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/metrics"
+	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/util"
+	"github.com/google/uuid"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -162,14 +165,49 @@ func setupPrometheusEndpoint() error {
 func (flow *flow) WorkflowMetrics(ctx context.Context, req *grpc.WorkflowMetricsRequest) (*grpc.WorkflowMetricsResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	cached, err := flow.traverseToRef(ctx, req.GetNamespace(), req.GetPath(), req.GetRef())
+	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
 
+	fStore, _, _, rollback, err := flow.beginSqlTx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer rollback(ctx)
+
+	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
+	if err != nil {
+		return nil, err
+	}
+
+	var rev *filestore.Revision
+
+	ref := req.GetRef()
+	id, err := uuid.Parse(ref)
+	if err == nil {
+		rev, err = fStore.ForFile(file).GetRevision(ctx, id)
+		if err != nil {
+			if !errors.Is(err, filestore.ErrNotFound) {
+				return nil, err
+			}
+		}
+	}
+	if rev == nil {
+		rev, err = fStore.ForFile(file).GetRevisionByTag(ctx, ref)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	cached := new(database.CacheData)
+	cached.Namespace = ns
+	cached.File = file
+	cached.Revision = rev
+
 	resp, err := flow.metrics.GetMetrics(&metrics.GetMetricsArgs{
 		Namespace: cached.Namespace.Name,
-		Workflow:  cached.Path(),
+		Workflow:  cached.File.Path,
 		Revision:  cached.Revision.ID.String(),
 		Since:     req.SinceTimestamp.AsTime(),
 	})
@@ -197,7 +235,6 @@ func (flow *flow) WorkflowMetrics(ctx context.Context, req *grpc.WorkflowMetrics
 
 	states := make([]*grpc.State, 0)
 	for _, s := range resp.States {
-
 		thisState := s
 
 		is := new(grpc.State)

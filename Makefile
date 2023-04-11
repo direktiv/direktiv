@@ -336,7 +336,7 @@ dependencies: ## installs tools
 
 .PHONY: license-check 
 license-check: ## Scans dependencies looking for licenses.
-	go-licenses check --ignore=github.com/bbuck/go-lexer,github.com/xi2/xz ./... --disallowed_types forbidden,unknown,restricted
+	go-licenses check --ignore=github.com/bbuck/go-lexer,github.com/xi2/xz,modernc.org/mathutil ./... --disallowed_types forbidden,unknown,restricted
 
 TEST_PACKAGES := $(shell find . -type f -name '*_test.go' | sed -e 's/^\.\///g' | sed -r 's|/[^/]+$$||'  |sort |uniq)
 UNITTEST_PACKAGES = $(shell echo ${TEST_PACKAGES} | sed 's/ /\n/g' | awk '{print "github.com/direktiv/direktiv/" $$0}')
@@ -345,9 +345,22 @@ UNITTEST_PACKAGES = $(shell echo ${TEST_PACKAGES} | sed 's/ /\n/g' | awk '{print
 unittest: ## Runs all Go unit tests. Or, you can run a specific set of unit tests by defining TEST_PACKAGES relative to the root directory.
 	go test -cover -timeout 4s ${UNITTEST_PACKAGES}
 
+
 .PHONY: lint 
+lint: VERSION="v1.52"
 lint: ## Runs very strict linting on the project.
-	docker run --rm -v `pwd`:/app -w /app golangci/golangci-lint golangci-lint run -v
+	-docker rm golangci-lint-${VERSION}-direktiv
+	-docker run \
+	--name golangci-lint-${VERSION}-direktiv \
+	-v `pwd`:/app \
+	-w /app \
+	golangci/golangci-lint:${VERSION} golangci-lint run -v
+	-docker commit golangci-lint-${VERSION}-direktiv golangci/golangci-lint:${VERSION}
 
 test-jest: ## Runs jest end-to-end tests. DIREKTIV_HOST=128.0.0.1 make test-jest [JEST_PREFIX=/tests/jest/namespaces]
-	docker run -it --rm -v `pwd`/tests/jest:/tests/jest -e 'DIREKTIV_HOST=${DIREKTIV_HOST}' -e 'NODE_TLS_REJECT_UNAUTHORIZED=0' node:alpine npm --prefix "/tests/jest" run all -- ${JEST_PREFIX}
+	docker run -it --rm \
+	-v `pwd`/tests/jest:/tests/jest \
+	-e 'DIREKTIV_HOST=${DIREKTIV_HOST}' \
+	-e 'NODE_TLS_REJECT_UNAUTHORIZED=0' \
+	node:alpine npm --prefix "/tests/jest" run all -- ${JEST_PREFIX}
+

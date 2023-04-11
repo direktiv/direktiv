@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/direktiv/direktiv/pkg/flow/ent"
+	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 )
 
 type NotFoundError struct {
@@ -16,7 +17,7 @@ func (err *NotFoundError) Error() string {
 }
 
 func IsNotFound(err error) bool {
-	if ent.IsNotFound(err) {
+	if ent.IsNotFound(err) || errors.Is(err, filestore.ErrNotFound) {
 		return true
 	}
 

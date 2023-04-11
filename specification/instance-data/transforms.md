@@ -10,26 +10,20 @@ Here are some common use-case helpful examples of transforms.
 
 ### Completely Replacing Instance Data
 
-**Instance Data Before Transform**
-
-```json
+```json title="Instance Data Before Transform"
 {
   "msg": "Hello, world!
 }
 ```
 
-**Transform Snippet**
-
-```yaml
+```yaml title="Transform Snippet"
 - id: snippet
   type: noop
   transform: 
     x: 5
 ```
 
-**Instance Data After Transform**
-
-```json
+```json title="Instance Data After Transform"
 {
   "x": 5
 }
@@ -37,9 +31,7 @@ Here are some common use-case helpful examples of transforms.
 
 ### Replacing A Subset Of Instance Data 
 
-**Instance Data Before Transform**
-
-```json
+```json title="Instance Data Before Transform"
 {
   "a": 1,
   "b": 2,
@@ -47,17 +39,13 @@ Here are some common use-case helpful examples of transforms.
 }
 ```
 
-**Transform Snippet**
-
-```yaml
+```yaml title="Transform Snippet"
 - id: snippet
   type: noop
   transform: 'jq(.a = 5 | .b = 6)'
 ```
 
-**Instance Data After Transform**
-
-```json
+```json title="Instance Data After Transform"
 {
   "a": 5,
   "b": 6,
@@ -67,9 +55,7 @@ Here are some common use-case helpful examples of transforms.
 
 ### Deleteing A Subset of Instance Data 
 
-**Instance Data Before Transform**
-
-```json
+```json title="Instance Data Before Transform"
 {
   "a": 1,
   "b": 2,
@@ -77,17 +63,13 @@ Here are some common use-case helpful examples of transforms.
 }
 ```
 
-**Transform Snippet**
-
-```yaml
+```yaml title="Transform Snippet"
 - id: snippet
   type: noop
   transform: 'jq(del(.a) | del(.b))'
 ```
 
-**Instance Data After Transform**
-
-```json
+```json title="Instance Data After Transform"
 {
   "c": 3
 }
@@ -95,25 +77,19 @@ Here are some common use-case helpful examples of transforms.
 
 ### Adding A New Value.
 
-**Instance Data Before Transform**
-
-```json
+```json title="Instance Data Before Transform"
 {
   "a": 1
 }
 ```
 
-**Transform Snippet**
-
-```yaml
+```yaml title="Transform Snippet"
 - id: snippet
   type: noop
   transform: 'jq(.b = 2)'
 ```
 
-**Instance Data After Transform**
-
-```json
+```json title="Instance Data After Transform"
 {
   "a": 1,
   "b": 2
@@ -122,9 +98,7 @@ Here are some common use-case helpful examples of transforms.
 
 ### Renaming A Subset of Instance Data
 
-**Instance Data Before Transform**
-
-```json
+```json title="Instance Data Before Transform"
 {
   "a": 1,
   "b": 2,
@@ -132,17 +106,13 @@ Here are some common use-case helpful examples of transforms.
 }
 ```
 
-**Transform Snippet**
-
-```yaml
+```yaml title="Transform Snippet"
 - id: snippet
   type: noop
   transform: 'jq(.x = .a | del(.a))'
 ```
 
-**Instance Data After Transform**
-
-```json
+```json title="Instance Data After Transform"
 {
   "b": 2,
   "c": 3,

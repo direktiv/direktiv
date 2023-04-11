@@ -94,7 +94,6 @@ func containerFromList(containers []corev1.Container) (string, string) {
 			img = c.Image
 			cmd = strings.Join(c.Command, ", ")
 		}
-
 	}
 
 	return img, cmd

@@ -21,14 +21,6 @@ const (
 	FieldConfig = "config"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
-	// EdgeInodes holds the string denoting the inodes edge name in mutations.
-	EdgeInodes = "inodes"
-	// EdgeWorkflows holds the string denoting the workflows edge name in mutations.
-	EdgeWorkflows = "workflows"
-	// EdgeMirrors holds the string denoting the mirrors edge name in mutations.
-	EdgeMirrors = "mirrors"
-	// EdgeMirrorActivities holds the string denoting the mirror_activities edge name in mutations.
-	EdgeMirrorActivities = "mirror_activities"
 	// EdgeInstances holds the string denoting the instances edge name in mutations.
 	EdgeInstances = "instances"
 	// EdgeLogs holds the string denoting the logs edge name in mutations.
@@ -49,34 +41,6 @@ const (
 	CloudEventFiltersFieldID = "id"
 	// Table holds the table name of the namespace in the database.
 	Table = "namespaces"
-	// InodesTable is the table that holds the inodes relation/edge.
-	InodesTable = "inodes"
-	// InodesInverseTable is the table name for the Inode entity.
-	// It exists in this package in order to avoid circular dependency with the "inode" package.
-	InodesInverseTable = "inodes"
-	// InodesColumn is the table column denoting the inodes relation/edge.
-	InodesColumn = "namespace_inodes"
-	// WorkflowsTable is the table that holds the workflows relation/edge.
-	WorkflowsTable = "workflows"
-	// WorkflowsInverseTable is the table name for the Workflow entity.
-	// It exists in this package in order to avoid circular dependency with the "workflow" package.
-	WorkflowsInverseTable = "workflows"
-	// WorkflowsColumn is the table column denoting the workflows relation/edge.
-	WorkflowsColumn = "namespace_workflows"
-	// MirrorsTable is the table that holds the mirrors relation/edge.
-	MirrorsTable = "mirrors"
-	// MirrorsInverseTable is the table name for the Mirror entity.
-	// It exists in this package in order to avoid circular dependency with the "mirror" package.
-	MirrorsInverseTable = "mirrors"
-	// MirrorsColumn is the table column denoting the mirrors relation/edge.
-	MirrorsColumn = "namespace_mirrors"
-	// MirrorActivitiesTable is the table that holds the mirror_activities relation/edge.
-	MirrorActivitiesTable = "mirror_activities"
-	// MirrorActivitiesInverseTable is the table name for the MirrorActivity entity.
-	// It exists in this package in order to avoid circular dependency with the "mirroractivity" package.
-	MirrorActivitiesInverseTable = "mirror_activities"
-	// MirrorActivitiesColumn is the table column denoting the mirror_activities relation/edge.
-	MirrorActivitiesColumn = "namespace_mirror_activities"
 	// InstancesTable is the table that holds the instances relation/edge.
 	InstancesTable = "instances"
 	// InstancesInverseTable is the table name for the Instance entity.

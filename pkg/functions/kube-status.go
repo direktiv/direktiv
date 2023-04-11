@@ -187,7 +187,7 @@ func (is *functionsServer) watcherRevisions(cs *versioned.Clientset, labels stri
 			}
 
 			// creation date
-			var t int64 = rev.CreationTimestamp.Unix()
+			t := rev.CreationTimestamp.Unix()
 			info.Created = &t
 
 			resp := igrpc.WatchRevisionsResponse{

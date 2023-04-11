@@ -69,7 +69,7 @@ func (o *ActionDefinition) Validate() error {
 
 func isISO8601(date string) bool {
 	_, err := duration.ParseISO8601(date)
-	return (err == nil)
+	return err == nil
 }
 
 func isJSONSchema(schema interface{}) error {

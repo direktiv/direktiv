@@ -77,6 +77,8 @@ func (o *SetterDefinition) Validate() error {
 	case util.VarScopeWorkflow:
 	case util.VarScopeNamespace:
 	case util.VarScopeThread:
+	case util.VarScopeFileSystem:
+		return ErrVarReadOnly
 	default:
 		return ErrVarScope
 	}

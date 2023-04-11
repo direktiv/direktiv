@@ -105,7 +105,7 @@ func (rcv *eventReceiver) sendToNamespace(name, filter string, r *http.Request) 
 
 	}
 
-	return rcv.events.BroadcastCloudevent(c, cached, ev, 0)
+	return rcv.events.BroadcastCloudevent(c, cached.Namespace, ev, 0)
 }
 
 func (rcv *eventReceiver) NamespaceHandler(w http.ResponseWriter, r *http.Request) {

@@ -33,6 +33,20 @@ func (srv *server) getInstance(ctx context.Context, namespace, instanceID string
 		return nil, err
 	}
 
+	fStore, _, _, rollback, err := srv.flow.beginSqlTx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer rollback(ctx)
+
+	file, revision, err := fStore.GetRevision(ctx, cached.Instance.Revision)
+	if err != nil {
+		return nil, err
+	}
+
+	cached.File = file
+	cached.Revision = revision
+
 	if namespace != cached.Namespace.Name {
 		return nil, os.ErrNotExist
 	}
@@ -52,6 +66,20 @@ func (internal *internal) getInstance(ctx context.Context, instanceID string) (*
 	if err != nil {
 		return nil, err
 	}
+
+	fStore, _, _, rollback, err := internal.flow.beginSqlTx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer rollback(ctx)
+
+	file, revision, err := fStore.GetRevision(ctx, cached.Instance.Revision)
+	if err != nil {
+		return nil, err
+	}
+
+	cached.File = file
+	cached.Revision = revision
 
 	return cached, nil
 }
@@ -259,9 +287,9 @@ func (flow *flow) Instance(ctx context.Context, req *grpc.InstanceRequest) (*grp
 	resp.Namespace = cached.Namespace.Name
 
 	rwf := new(grpc.InstanceWorkflow)
-	rwf.Name = cached.Inode().Name
-	rwf.Parent = strings.TrimPrefix(cached.Dir(), "/") // TODO: get rid of the trim?
-	rwf.Path = strings.TrimPrefix(cached.Path(), "/")  // TODO: get rid of the trim?
+	rwf.Name = cached.File.Name()
+	rwf.Parent = strings.TrimPrefix(cached.File.Dir(), "/") // TODO: get rid of the trim?
+	rwf.Path = strings.TrimPrefix(cached.File.Path, "/")    // TODO: get rid of the trim?
 	if cached.Revision != nil {
 		rwf.Revision = cached.Revision.ID.String()
 	}
@@ -305,9 +333,9 @@ resend:
 	resp.Namespace = cached.Namespace.Name
 
 	rwf := new(grpc.InstanceWorkflow)
-	rwf.Name = cached.Inode().Name
+	rwf.Name = cached.File.Name()
 	rwf.Parent = cached.Dir()
-	rwf.Path = cached.Path()
+	rwf.Path = cached.File.Path
 	if cached.Revision != nil {
 		rwf.Revision = cached.Revision.ID.String()
 	}
@@ -515,6 +543,20 @@ resend:
 		return err
 	}
 
+	fStore, _, _, rollback, err := flow.beginSqlTx(ctx)
+	if err != nil {
+		return err
+	}
+	defer rollback(ctx)
+
+	file, revision, err := fStore.GetRevision(ctx, cached.Instance.Revision)
+	if err != nil {
+		return err
+	}
+
+	cached.File = file
+	cached.Revision = revision
+
 	resp := new(grpc.AwaitWorkflowResponse)
 
 	err = bytedata.ConvertDataForOutput(cached.Instance, &resp.Instance)
@@ -523,9 +565,9 @@ resend:
 	}
 
 	rwf := new(grpc.InstanceWorkflow)
-	rwf.Name = cached.Inode().Name
+	rwf.Name = cached.File.Name()
 	rwf.Parent = cached.Dir()
-	rwf.Path = cached.Path()
+	rwf.Path = cached.File.Path
 	resp.Namespace = cached.Namespace.Name
 	rwf.Revision = cached.Revision.ID.String()
 	resp.Workflow = rwf

@@ -18,9 +18,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/instanceruntime"
 	"github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
-	"github.com/direktiv/direktiv/pkg/flow/ent/revision"
 	"github.com/direktiv/direktiv/pkg/flow/ent/varref"
-	"github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 	"github.com/google/uuid"
 )
 
@@ -156,6 +154,18 @@ func (ic *InstanceCreate) SetNillableCallpath(s *string) *InstanceCreate {
 	return ic
 }
 
+// SetWorkflowID sets the "workflow_id" field.
+func (ic *InstanceCreate) SetWorkflowID(u uuid.UUID) *InstanceCreate {
+	ic.mutation.SetWorkflowID(u)
+	return ic
+}
+
+// SetRevisionID sets the "revision_id" field.
+func (ic *InstanceCreate) SetRevisionID(u uuid.UUID) *InstanceCreate {
+	ic.mutation.SetRevisionID(u)
+	return ic
+}
+
 // SetID sets the "id" field.
 func (ic *InstanceCreate) SetID(u uuid.UUID) *InstanceCreate {
 	ic.mutation.SetID(u)
@@ -179,44 +189,6 @@ func (ic *InstanceCreate) SetNamespaceID(id uuid.UUID) *InstanceCreate {
 // SetNamespace sets the "namespace" edge to the Namespace entity.
 func (ic *InstanceCreate) SetNamespace(n *Namespace) *InstanceCreate {
 	return ic.SetNamespaceID(n.ID)
-}
-
-// SetWorkflowID sets the "workflow" edge to the Workflow entity by ID.
-func (ic *InstanceCreate) SetWorkflowID(id uuid.UUID) *InstanceCreate {
-	ic.mutation.SetWorkflowID(id)
-	return ic
-}
-
-// SetNillableWorkflowID sets the "workflow" edge to the Workflow entity by ID if the given value is not nil.
-func (ic *InstanceCreate) SetNillableWorkflowID(id *uuid.UUID) *InstanceCreate {
-	if id != nil {
-		ic = ic.SetWorkflowID(*id)
-	}
-	return ic
-}
-
-// SetWorkflow sets the "workflow" edge to the Workflow entity.
-func (ic *InstanceCreate) SetWorkflow(w *Workflow) *InstanceCreate {
-	return ic.SetWorkflowID(w.ID)
-}
-
-// SetRevisionID sets the "revision" edge to the Revision entity by ID.
-func (ic *InstanceCreate) SetRevisionID(id uuid.UUID) *InstanceCreate {
-	ic.mutation.SetRevisionID(id)
-	return ic
-}
-
-// SetNillableRevisionID sets the "revision" edge to the Revision entity by ID if the given value is not nil.
-func (ic *InstanceCreate) SetNillableRevisionID(id *uuid.UUID) *InstanceCreate {
-	if id != nil {
-		ic = ic.SetRevisionID(*id)
-	}
-	return ic
-}
-
-// SetRevision sets the "revision" edge to the Revision entity.
-func (ic *InstanceCreate) SetRevision(r *Revision) *InstanceCreate {
-	return ic.SetRevisionID(r.ID)
 }
 
 // AddLogIDs adds the "logs" edge to the LogMsg entity by IDs.
@@ -410,6 +382,12 @@ func (ic *InstanceCreate) check() error {
 	if _, ok := ic.mutation.As(); !ok {
 		return &ValidationError{Name: "as", err: errors.New(`ent: missing required field "Instance.as"`)}
 	}
+	if _, ok := ic.mutation.WorkflowID(); !ok {
+		return &ValidationError{Name: "workflow_id", err: errors.New(`ent: missing required field "Instance.workflow_id"`)}
+	}
+	if _, ok := ic.mutation.RevisionID(); !ok {
+		return &ValidationError{Name: "revision_id", err: errors.New(`ent: missing required field "Instance.revision_id"`)}
+	}
 	if _, ok := ic.mutation.NamespaceID(); !ok {
 		return &ValidationError{Name: "namespace", err: errors.New(`ent: missing required edge "Instance.namespace"`)}
 	}
@@ -493,6 +471,14 @@ func (ic *InstanceCreate) createSpec() (*Instance, *sqlgraph.CreateSpec) {
 		_spec.SetField(instance.FieldCallpath, field.TypeString, value)
 		_node.Callpath = value
 	}
+	if value, ok := ic.mutation.WorkflowID(); ok {
+		_spec.SetField(instance.FieldWorkflowID, field.TypeUUID, value)
+		_node.WorkflowID = &value
+	}
+	if value, ok := ic.mutation.RevisionID(); ok {
+		_spec.SetField(instance.FieldRevisionID, field.TypeUUID, value)
+		_node.RevisionID = &value
+	}
 	if nodes := ic.mutation.NamespaceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -511,46 +497,6 @@ func (ic *InstanceCreate) createSpec() (*Instance, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.namespace_instances = &nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := ic.mutation.WorkflowIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   instance.WorkflowTable,
-			Columns: []string{instance.WorkflowColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: workflow.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.workflow_instances = &nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := ic.mutation.RevisionIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   instance.RevisionTable,
-			Columns: []string{instance.RevisionColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: revision.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.revision_instances = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := ic.mutation.LogsIDs(); len(nodes) > 0 {
@@ -851,6 +797,30 @@ func (u *InstanceUpsert) ClearCallpath() *InstanceUpsert {
 	return u
 }
 
+// SetWorkflowID sets the "workflow_id" field.
+func (u *InstanceUpsert) SetWorkflowID(v uuid.UUID) *InstanceUpsert {
+	u.Set(instance.FieldWorkflowID, v)
+	return u
+}
+
+// UpdateWorkflowID sets the "workflow_id" field to the value that was provided on create.
+func (u *InstanceUpsert) UpdateWorkflowID() *InstanceUpsert {
+	u.SetExcluded(instance.FieldWorkflowID)
+	return u
+}
+
+// SetRevisionID sets the "revision_id" field.
+func (u *InstanceUpsert) SetRevisionID(v uuid.UUID) *InstanceUpsert {
+	u.Set(instance.FieldRevisionID, v)
+	return u
+}
+
+// UpdateRevisionID sets the "revision_id" field to the value that was provided on create.
+func (u *InstanceUpsert) UpdateRevisionID() *InstanceUpsert {
+	u.SetExcluded(instance.FieldRevisionID)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -1056,6 +1026,34 @@ func (u *InstanceUpsertOne) UpdateCallpath() *InstanceUpsertOne {
 func (u *InstanceUpsertOne) ClearCallpath() *InstanceUpsertOne {
 	return u.Update(func(s *InstanceUpsert) {
 		s.ClearCallpath()
+	})
+}
+
+// SetWorkflowID sets the "workflow_id" field.
+func (u *InstanceUpsertOne) SetWorkflowID(v uuid.UUID) *InstanceUpsertOne {
+	return u.Update(func(s *InstanceUpsert) {
+		s.SetWorkflowID(v)
+	})
+}
+
+// UpdateWorkflowID sets the "workflow_id" field to the value that was provided on create.
+func (u *InstanceUpsertOne) UpdateWorkflowID() *InstanceUpsertOne {
+	return u.Update(func(s *InstanceUpsert) {
+		s.UpdateWorkflowID()
+	})
+}
+
+// SetRevisionID sets the "revision_id" field.
+func (u *InstanceUpsertOne) SetRevisionID(v uuid.UUID) *InstanceUpsertOne {
+	return u.Update(func(s *InstanceUpsert) {
+		s.SetRevisionID(v)
+	})
+}
+
+// UpdateRevisionID sets the "revision_id" field to the value that was provided on create.
+func (u *InstanceUpsertOne) UpdateRevisionID() *InstanceUpsertOne {
+	return u.Update(func(s *InstanceUpsert) {
+		s.UpdateRevisionID()
 	})
 }
 
@@ -1427,6 +1425,34 @@ func (u *InstanceUpsertBulk) UpdateCallpath() *InstanceUpsertBulk {
 func (u *InstanceUpsertBulk) ClearCallpath() *InstanceUpsertBulk {
 	return u.Update(func(s *InstanceUpsert) {
 		s.ClearCallpath()
+	})
+}
+
+// SetWorkflowID sets the "workflow_id" field.
+func (u *InstanceUpsertBulk) SetWorkflowID(v uuid.UUID) *InstanceUpsertBulk {
+	return u.Update(func(s *InstanceUpsert) {
+		s.SetWorkflowID(v)
+	})
+}
+
+// UpdateWorkflowID sets the "workflow_id" field to the value that was provided on create.
+func (u *InstanceUpsertBulk) UpdateWorkflowID() *InstanceUpsertBulk {
+	return u.Update(func(s *InstanceUpsert) {
+		s.UpdateWorkflowID()
+	})
+}
+
+// SetRevisionID sets the "revision_id" field.
+func (u *InstanceUpsertBulk) SetRevisionID(v uuid.UUID) *InstanceUpsertBulk {
+	return u.Update(func(s *InstanceUpsert) {
+		s.SetRevisionID(v)
+	})
+}
+
+// UpdateRevisionID sets the "revision_id" field to the value that was provided on create.
+func (u *InstanceUpsertBulk) UpdateRevisionID() *InstanceUpsertBulk {
+	return u.Update(func(s *InstanceUpsert) {
+		s.UpdateRevisionID()
 	})
 }
 

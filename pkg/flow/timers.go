@@ -92,7 +92,6 @@ func (timers *timers) stopTimers() {
 
 func (timers *timers) prepDisableTimer(timer *timer) string {
 	switch timer.timerType {
-
 	case timerTypeOneShot:
 		// only if the timer had been setup
 		if timer.oneshot.timer != nil {
@@ -104,7 +103,6 @@ func (timers *timers) prepDisableTimer(timer *timer) string {
 
 	default:
 		fmt.Fprintf(os.Stderr, "%v\n", fmt.Errorf("unknown timer type"))
-
 	}
 
 	return timer.name
@@ -121,12 +119,10 @@ func (timers *timers) executeFunction(timer *timer) {
 	timer.fn(timer.data)
 
 	if timer.timerType == timerTypeOneShot {
-
 		timers.mtx.Lock()
 		defer timers.mtx.Unlock()
 
 		timers.disableTimer(timer)
-
 	}
 }
 
@@ -314,13 +310,11 @@ func (timers *timers) deleteTimerHandler(req *pubsub.PubsubUpdate) {
 
 func (timers *timers) deleteTimerByName(oldController, newController, name string) {
 	if oldController != newController && oldController != "" {
-
 		// send delete to specific server
 
 		timers.pubsub.HostnameDeleteTimer(oldController, name)
 
 		return
-
 	}
 
 	// delete local timer

@@ -15,20 +15,13 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
 	"github.com/direktiv/direktiv/pkg/flow/ent/events"
 	"github.com/direktiv/direktiv/pkg/flow/ent/eventswait"
-	"github.com/direktiv/direktiv/pkg/flow/ent/inode"
 	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	"github.com/direktiv/direktiv/pkg/flow/ent/instanceruntime"
 	"github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
-	"github.com/direktiv/direktiv/pkg/flow/ent/mirror"
-	"github.com/direktiv/direktiv/pkg/flow/ent/mirroractivity"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
-	"github.com/direktiv/direktiv/pkg/flow/ent/ref"
-	"github.com/direktiv/direktiv/pkg/flow/ent/revision"
-	"github.com/direktiv/direktiv/pkg/flow/ent/route"
 	"github.com/direktiv/direktiv/pkg/flow/ent/services"
 	"github.com/direktiv/direktiv/pkg/flow/ent/vardata"
 	"github.com/direktiv/direktiv/pkg/flow/ent/varref"
-	"github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 )
 
 // ent aliases to avoid import conflicts in user's code.
@@ -54,20 +47,13 @@ func columnChecker(table string) func(string) error {
 		cloudevents.Table:       cloudevents.ValidColumn,
 		events.Table:            events.ValidColumn,
 		eventswait.Table:        eventswait.ValidColumn,
-		inode.Table:             inode.ValidColumn,
 		instance.Table:          instance.ValidColumn,
 		instanceruntime.Table:   instanceruntime.ValidColumn,
 		logmsg.Table:            logmsg.ValidColumn,
-		mirror.Table:            mirror.ValidColumn,
-		mirroractivity.Table:    mirroractivity.ValidColumn,
 		namespace.Table:         namespace.ValidColumn,
-		ref.Table:               ref.ValidColumn,
-		revision.Table:          revision.ValidColumn,
-		route.Table:             route.ValidColumn,
 		services.Table:          services.ValidColumn,
 		vardata.Table:           vardata.ValidColumn,
 		varref.Table:            varref.ValidColumn,
-		workflow.Table:          workflow.ValidColumn,
 	}
 	check, ok := checks[table]
 	if !ok {
