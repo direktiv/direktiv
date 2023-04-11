@@ -391,6 +391,20 @@ func WorkflowIDLTE(v uuid.UUID) predicate.VarRef {
 	})
 }
 
+// WorkflowIDIsNil applies the IsNil predicate on the "workflow_id" field.
+func WorkflowIDIsNil() predicate.VarRef {
+	return predicate.VarRef(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldWorkflowID)))
+	})
+}
+
+// WorkflowIDNotNil applies the NotNil predicate on the "workflow_id" field.
+func WorkflowIDNotNil() predicate.VarRef {
+	return predicate.VarRef(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldWorkflowID)))
+	})
+}
+
 // HasVardata applies the HasEdge predicate on the "vardata" edge.
 func HasVardata() predicate.VarRef {
 	return predicate.VarRef(func(s *sql.Selector) {
