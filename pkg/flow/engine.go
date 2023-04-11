@@ -406,12 +406,12 @@ func (engine *engine) CrashInstance(ctx context.Context, im *instanceMemory, err
 	uerr := new(derrors.UncatchableError)
 
 	if errors.As(err, &cerr) {
-		engine.reportInstanceCrashed(ctx, im, "", cerr.Code, err)
+		engine.reportInstanceCrashed(ctx, im, "catchable", cerr.Code, err)
 	} else if errors.As(err, &uerr) && uerr.Code != "" {
-		engine.reportInstanceCrashed(ctx, im, "uncatchable", cerr.Code, err)
+		engine.reportInstanceCrashed(ctx, im, "uncatchable", uerr.Code, err)
 	} else {
 		_, file, line, _ := runtime.Caller(1)
-		engine.reportInstanceCrashed(ctx, im, "uncatchable", fmt.Sprintf("thrown by %s:%d", file, line), err)
+		engine.reportInstanceCrashed(ctx, im, "unknown", fmt.Sprintf("thrown by %s:%d", file, line), err)
 	}
 
 	err = engine.SetInstanceFailed(ctx, im, err)
