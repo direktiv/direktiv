@@ -1,6 +1,7 @@
 import request from 'supertest'
 
 import common from "../common"
+import { setMaxIdleHTTPParsers } from 'http';
 
 const namespaceName = "root"
 
@@ -15,7 +16,7 @@ describe('Test the direktiv-cli-tool', () => {
     beforeAll(common.helpers.deleteAllNamespaces)
     afterAll(common.helpers.deleteAllNamespaces)
 
-    it(`test namespace doesn not exists`, async() => { 
+    it(`test namespace does not exists`, async() => { 
         if (!fs.existsSync(cliExecutable)){ return }
         assertStdErrContainsString("info", "404 Not Found")
     })
@@ -27,21 +28,37 @@ describe('Test the direktiv-cli-tool', () => {
     })
     it(`test push wf`, async() => {
         if (!fs.existsSync(cliExecutable)){ return }
-        assertStdErrContainsString("workflows push /tests/jest/simplewf.yaml", "pushing workflow")
-        var readRevsResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/root/tree/simplewf`)
-        expect(readRevsResponse.statusCode).toEqual(200)
+        const filepath =  "/tests/jest/"
+        const filename = "simplewf"
+        const fileextension = "yaml"
+        await assertStdErrShouldNotContainsString(`workflows push ${filepath}`, `pushing workflow ${filename}`)
+        const res = await request(common.config.getDirektivHost()).get(`/api/namespaces/root/tree/${filename}`)
+        expect(res.statusCode).toEqual(200)
+    })
+    it(`test push wf w relative path`, async() => {
+        if (!fs.existsSync(cliExecutable)){ return }
+        const filepath =  "../../tests/jest/"
+        const filename = "simplewf"
+        const fileextension = "yaml"
+        await assertStdErrShouldNotContainsString(`workflows push ${filepath}`, `pushing workflow ${filename}`)
+        const res = await request(common.config.getDirektivHost()).get(`/api/namespaces/root/tree/${filename}`)
+        expect(res.statusCode).toEqual(200)
     })
 })
 
 const assertStdErrContainsString = ((cmd,want)=>{
-    exec(`${cliExecutable} ${prefix} ${flagNamespace} ${cmd}`, (err, stdout, stderr) => {
-        //expect(`${cliExecutable} ${prefix} ${flagNamespace} ${cmd}`).toStrictEqual("expect.stringContaining(want)")
-        expect(stderr).toStrictEqual(expect.stringContaining(want))
+    return new Promise(function (resolve, reject) {
+        exec(`${cliExecutable} ${prefix} ${flagNamespace} ${cmd}`, (err, stdout, stderr) => {
+            expect(stderr).toStrictEqual(expect.stringContaining(want))
+            resolve()
+        })
     })
 })
-const assertStdOutContainsString = ((cmd,want)=>{
-    exec(`${cliExecutable} ${prefix} ${flagNamespace} ${cmd}`, (err, stdout, stderr) => {
-        //expect(`${cliExecutable} ${prefix} ${flagNamespace} ${cmd}`).toStrictEqual("expect.stringContaining(want)")
-        expect(stdout).toStrictEqual(expect.stringContaining(want))
+const assertStdErrShouldNotContainsString = ((cmd,want)=>{
+    return new Promise(function (resolve, reject) {
+        exec(`${cliExecutable} ${prefix} ${flagNamespace} ${cmd}`, (err, stdout, stderr) => {
+            expect(stderr).not.toStrictEqual(expect.stringContaining(want))
+            resolve()
+        })
     })
 })
