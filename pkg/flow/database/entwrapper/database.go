@@ -375,7 +375,7 @@ func (db *Database) WorkflowVariableRef(ctx context.Context, wfID uuid.UUID, key
 func (db *Database) InstanceVariableRef(ctx context.Context, instID uuid.UUID, key string) (*database.VarRef, error) {
 	clients := db.clients(ctx)
 
-	varref, err := clients.VarRef.Query().Where(entvar.HasInstanceWith(entinst.ID(instID)), entvar.BehaviourNEQ("thread"), entvar.NameEQ(key)).WithVardata(func(q *ent.VarDataQuery) {
+	varref, err := clients.VarRef.Query().Where(entvar.HasInstanceWith(entinst.ID(instID)), entvar.BehaviourIsNil(), entvar.NameEQ(key)).WithVardata(func(q *ent.VarDataQuery) {
 		q.Select(entvardata.FieldID)
 	}).Only(ctx)
 	if err != nil {
