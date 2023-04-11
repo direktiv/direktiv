@@ -11,6 +11,22 @@ import (
 	"go.uber.org/zap"
 )
 
+const (
+	processStatusComplete  = "complete"
+	processStatusPending   = "pending"
+	processStatusExecuting = "executing"
+	processStatusFailed    = "failed"
+)
+
+const (
+	processTypeInit        = "init"
+	processTypeReconfigure = "reconfigure"
+	processTypeLocked      = "locked"
+	processTypeUnlocked    = "unlocked"
+	processTypeCronSync    = "scheduled-sync"
+	processTypeSync        = "sync"
+)
+
 var ErrNotFound = errors.New("ErrNotFound")
 
 // Config holds configuration data that are needed to create a mirror (pulling mirror credentials, urls, keys
@@ -34,6 +50,7 @@ type Process struct {
 	ConfigID uuid.UUID
 
 	Status string
+	Typ    string
 
 	EndedAt   time.Time
 	CreatedAt time.Time
@@ -73,7 +90,8 @@ func (d *DefaultManager) StartMirroringProcess(ctx context.Context, config *Conf
 	process, err := d.store.CreateProcess(ctx, &Process{
 		ID:       uuid.New(),
 		ConfigID: config.ID,
-		Status:   "created",
+		Typ:      processTypeInit,
+		Status:   processStatusPending,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("creating a new process, err: %w", err)
@@ -86,7 +104,7 @@ func (d *DefaultManager) StartMirroringProcess(ctx context.Context, config *Conf
 			ctx: context.TODO(),
 			lg:  d.lg,
 		}).
-			SetProcessStatus(d.store, process, "started").
+			SetProcessStatus(d.store, process, processStatusExecuting).
 			CreateTempDirectory().
 			PullSourceInPath(d.source, config).
 			CreateSourceFilesList().
@@ -100,9 +118,9 @@ func (d *DefaultManager) StartMirroringProcess(ctx context.Context, config *Conf
 			CopyFilesToRoot(d.fStore, config.ID).
 			CropFilesAndDirectoriesInRoot(d.fStore, config.ID).
 			DeleteTempDirectory().
-			SetProcessStatus(d.store, process, "finished").Error()
+			SetProcessStatus(d.store, process, processStatusComplete).Error()
 		if err != nil {
-			process.Status = "failed"
+			process.Status = processStatusFailed
 			process, _ = d.store.UpdateProcess(context.TODO(), process)
 		}
 		if err != nil {
