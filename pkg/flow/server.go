@@ -176,6 +176,14 @@ func (srv *server) start(ctx context.Context) error {
 	// srv.fStore = psql.NewSQLFileStore(srv.gormDB)
 	// srv.dataStore = sql.NewSQLStore(srv.gormDB)
 
+	if os.Getenv(direktivSecretKey) == "" {
+		return fmt.Errorf("empty env variable '%s'", direktivSecretKey)
+	}
+
+	if len(os.Getenv(direktivSecretKey))%16 != 0 {
+		return fmt.Errorf("invalid env variable '%s' length", direktivSecretKey)
+	}
+
 	srv.mirrorManager = mirror.NewDefaultManager(srv.sugar, sql.NewSQLStore(srv.gormDB, os.Getenv(direktivSecretKey)).Mirror(), psql.NewSQLFileStore(srv.gormDB), &mirror.GitSource{})
 
 	srv.sugar.Debug("Initializing pub-sub.")
