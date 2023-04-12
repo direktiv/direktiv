@@ -27,9 +27,6 @@ var workflowCmd = &cobra.Command{
 func getFiles(start string) ([]string, []string, error) {
 	files := make([]string, 0)
 	directories := make([]string, 0)
-	// wfVariables := make([]string, 0)
-
-	// direktivYML := ""
 	pathStat, err := os.Stat(start)
 	if err != nil {
 		return make([]string, 0), make([]string, 0), fmt.Errorf("could not access path: %w", err)
@@ -59,19 +56,6 @@ func getFiles(start string) ([]string, []string, error) {
 	if err != nil {
 		return make([]string, 0), make([]string, 0), err
 	}
-	// for _, f := range files {
-	// 	if fileHasType(f, ".yaml", ".yml") &&
-	// 		!fileHasType(".direktiv.yaml") {
-	// 		projectFiles = append(projectFiles, f)
-	// 	}
-	// 	if fileHasType(".direktiv.yaml") {
-	// 		direktivYML = f
-	// 	}files
-	// 	return make([]string, 0), fmt.Errorf(".direktiv.yml is missing")
-	// }
-	// projectFiles = append(projectFiles, wfVariables...)
-	// projectFiles = append(projectFiles, direktivYML)
-	// return projectFiles, nil
 	return directories, files, nil
 }
 
@@ -442,8 +426,8 @@ var (
 
 var execCmd = &cobra.Command{
 	Use:   "exec WORKFLOW_PATH",
-	Short: "Remotely execute direktiv workflows with local files.",
-	Long:  `Remotely execute direktiv workflows with local files.`,
+	Short: "Execute a individual direktiv workflow on a remote Server.",
+	Long:  `Execute a individual direktiv workflow on a remote Server.`,
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		relativeDir := root.GetConfigPath()
@@ -452,40 +436,27 @@ var execCmd = &cobra.Command{
 
 		fmt.Printf("PATH %v %v\n", path, args[0])
 
-		// if !execNoPushFlag {
-		// 	err := updateRemoteWorkflow(args[0])
-		// 	if err != nil {
-		// 		fmt.Printf("can not execute workflow: %v\n", err)
-		// 	}
-		// } else {
-		// 	root.Printlog("skipping updating namespace: '%s' workflow: '%s'\n", root.GetNamespace(), path)
-		// }
-
-		// err := updateLocalVars(args[0], path)
-		// if err != nil {
-		// 	fmt.Printf("can not update variables: %s\n", err.Error())
-		// }
-		// urlExecute := fmt.Sprintf("%s/tree/%s?op=execute&ref=latest", root.UrlPrefix, strings.TrimPrefix(path, "/"))
-		// instanceDetails, err := executeWorkflow(urlExecute)
-		// if err != nil {
-		// 	log.Fatalf("Failed to execute workflow: %v\n", err)
-		// }
-		// root.Printlog("Successfully Executed Instance: %s\n", instanceDetails.Instance)
-		// urlOutput := root.GetLogs(cmd, instanceDetails.Instance, "")
-		// output, err := getOutput(urlOutput)
-		// if err != nil {
-		// 	fmt.Println(err)
-		// 	return
-		// }
-		// if outputFlag != "" {
-		// 	err := os.WriteFile(outputFlag, output, 0o600)
-		// 	if err != nil {
-		// 		log.Fatalf("failed to write output file: %v\n", err)
-		// 	}
-		// } else {
-		// 	cmd.PrintErrln("------INSTANCE OUTPUT------")
-		// 	fmt.Println(string(output))
-		// }
+		urlExecute := fmt.Sprintf("%s/tree/%s?op=execute&ref=latest", root.UrlPrefix, strings.TrimPrefix(path, "/"))
+		instanceDetails, err := executeWorkflow(urlExecute)
+		if err != nil {
+			log.Fatalf("Failed to execute workflow: %v\n", err)
+		}
+		root.Printlog("Successfully Executed Instance: %s\n", instanceDetails.Instance)
+		urlOutput := root.GetLogs(cmd, instanceDetails.Instance, "")
+		output, err := getOutput(urlOutput)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		if outputFlag != "" {
+			err := os.WriteFile(outputFlag, output, 0o600)
+			if err != nil {
+				log.Fatalf("failed to write output file: %v\n", err)
+			}
+		} else {
+			cmd.PrintErrln("------INSTANCE OUTPUT------")
+			fmt.Println(string(output))
+		}
 	},
 }
 
