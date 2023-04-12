@@ -24,47 +24,75 @@ var workflowCmd = &cobra.Command{
 	Short: "Workflow-related commands",
 }
 
-func getImpactedFiles(start string, filesAllowed, recursive bool) ([]string, error) {
-	pathsToUpdate := make([]string, 0)
+func getFiles(start string) ([]string, []string, error) {
+	files := make([]string, 0)
+	directories := make([]string, 0)
+	// wfVariables := make([]string, 0)
 
+	// direktivYML := ""
 	pathStat, err := os.Stat(start)
 	if err != nil {
-		return pathsToUpdate, fmt.Errorf("could not access path: %w", err)
+		return make([]string, 0), make([]string, 0), fmt.Errorf("could not access path: %w", err)
 	}
 
-	if filesAllowed || pathStat.IsDir() {
-		if recursive {
-			err := filepath.Walk(start,
-				func(localPath string, info os.FileInfo, err error) error {
-					if err != nil {
-						return err
-					}
+	if !pathStat.IsDir() {
+		return make([]string, 0), make([]string, 0), fmt.Errorf("only directories allowed")
+	}
 
-					if filesAllowed && !info.IsDir() && info.Name() != ".direktiv.yaml" {
-						if (strings.HasSuffix(localPath, ".yaml") || strings.HasSuffix(localPath, ".yml")) && !(strings.Contains(localPath, ".yaml.") || strings.Contains(localPath, ".yml.")) {
-							pathsToUpdate = append(pathsToUpdate, localPath)
-						}
-					} else if !filesAllowed && info.IsDir() && !strings.Contains(localPath, ".git") {
-						pathsToUpdate = append(pathsToUpdate, localPath)
-					}
-
-					return nil
-				})
+	err = filepath.Walk(start,
+		func(localPath string, info os.FileInfo, err error) error {
 			if err != nil {
-				return pathsToUpdate, fmt.Errorf("recursive search could not access path: %w", err)
+				return err
 			}
-		} else {
-			pathsToUpdate = append(pathsToUpdate, start)
-		}
-	} else {
-		if filesAllowed {
-			pathsToUpdate = append(pathsToUpdate, start)
-		} else {
-			return pathsToUpdate, fmt.Errorf("only directories allowed")
+			absPath, err := filepath.Abs(localPath)
+			if err != nil {
+				return err
+			}
+			if info.IsDir() {
+				directories = append(directories, absPath)
+			}
+			if !info.IsDir() {
+				files = append(files, absPath)
+			}
+			return nil
+		})
+	if err != nil {
+		return make([]string, 0), make([]string, 0), err
+	}
+	// for _, f := range files {
+	// 	if fileHasType(f, ".yaml", ".yml") &&
+	// 		!fileHasType(".direktiv.yaml") {
+	// 		projectFiles = append(projectFiles, f)
+	// 	}
+	// 	if fileHasType(".direktiv.yaml") {
+	// 		direktivYML = f
+	// 	}files
+	// 	return make([]string, 0), fmt.Errorf(".direktiv.yml is missing")
+	// }
+	// projectFiles = append(projectFiles, wfVariables...)
+	// projectFiles = append(projectFiles, direktivYML)
+	// return projectFiles, nil
+	return directories, files, nil
+}
+
+func fileHasType(file string, types ...string) bool {
+	filter := func(s, suf string) bool {
+		return strings.HasSuffix(s, suf)
+	}
+	found := false
+	for _, v := range types {
+		found = found || filter(file, v)
+	}
+	return found
+}
+
+func filter(in []string, filter func(string) bool) (out []string) {
+	for _, s := range in {
+		if filter(s) {
+			out = append(out, s)
 		}
 	}
-
-	return pathsToUpdate, nil
+	return out
 }
 
 var (
@@ -90,70 +118,117 @@ type node struct {
 }
 
 var pushCmd = &cobra.Command{
-	Use:   "push WORKFLOW_PATH|DIR_PATH",
-	Short: "Pushes local workflow or dir to remote direktiv server. This process will update your latest remote resource to your local WORKFLOW_PATH|DIR_PATH file",
-	Long: `"Pushes local workflow or dir to remote direktiv server. This process will update your latest remote resource to your local WORKFLOW_PATH|DIR_PATH file.
-Pushing local directory cannot be used with config flag. Config must be found automatically to determine folder structure.
-EXAMPLE: push helloworld.yaml --addr http://192.168.1.1 --namespace admin
-Variables will also be uploaded if they are prefixed with your local workflow name
-EXAMPLE:
-  dir: /pwd
-        /helloworld.yaml
-        /helloworld.yaml.data.json
-Executing: push helloworld.yaml --addr http://192.168.1.1 --namespace admin --path helloworld
-Will update the helloworld workflow and set the remote workflow variable 'data.json' to the contents of '/helloworld.yaml.data.json'
-`,
+	Use:   "push DIR_PATH ...FLAG",
+	Short: "Pushes or updates your a local direktiv-package to the server",
+	Long: `Pushes or updates your a local direktiv-package to the server. 
+
+EXAMPLE: push DIR_PATH
+
+DIR_PATH MUST point to the root-folder in a direktiv package-format.
+package-format example:
+
+	DIR_PATH format: 
+		DIR_PATH /.direktiv.yaml
+		DIR_PATH /helloworld.yaml
+		DIR_PATH /helloworld.yaml.data.json
+		DIR_PATH /more/otherwf.yaml
+The configuration MUST be present and located in the direktiv-package root-folder.
+!!! The configuration-values in .direktiv.yaml from the CAN be overridden by using the global flags`,
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		pathsToUpdate, err := getImpactedFiles(args[0], true, true)
+		dirs, files, err := getFiles(args[0])
 		if err != nil {
 			root.Fail("could not calculate impacted files: %v", err)
 		}
 
-		relativeDir := root.GetConfigPath()
-
-		// cull using ignores
-		x := make([]string, 0)
-		for i := range pathsToUpdate {
-
-			p := pathsToUpdate[i]
-			path := root.GetRelativePath(relativeDir, p)
-
-			shouldAdd := true
-			for _, g := range root.Globbers {
-				if g.Match(path) {
-					root.Printlog("ignoring workflow %s", path)
-					shouldAdd = false
-					break
-				}
+		workflows := make([]string, 0)
+		wfVariables := make([]string, 0)
+		direktivYAML := ""
+		for _, f := range files {
+			if fileHasType(f, ".yaml", ".yml") &&
+				!fileHasType(f, ".direktiv.yaml") {
+				workflows = append(workflows, f)
+			}
+			if fileHasType(f, ".direktiv.yaml") {
+				direktivYAML = f
 			}
 
-			if shouldAdd {
-				x = append(x, p)
+			isVariable := strings.Contains(f, ".yaml.")
+			isVariable = isVariable || strings.Contains(f, ".yml.")
+			if isVariable {
+				wfVariables = append(wfVariables, f)
+			}
+			for _, g := range root.Globbers {
+				files = filter(files, g.Match)
+			}
+		}
+		executeWf := ""
+		if executeFlag != "" {
+			for _, v := range files {
+				if strings.HasSuffix(v, executeFlag) {
+					executeWf = v
+				}
+			}
+		}
+		if executeFlag != "" && executeWf == "" {
+			root.Fail("workflow %s in exec is not in the project", executeFlag)
+		}
+
+		projectRoot := dirs[0]
+		dirs = dirs[1:]
+		if direktivYAML == "" ||
+			projectRoot+"/.direktiv.yaml" != direktivYAML &&
+				projectRoot+"/.direktiv.yml" != direktivYAML {
+			root.Fail(projectRoot + "/.direktiv.yaml")
+		}
+
+		for _, d := range dirs {
+			relativePath, err := filepath.Rel(projectRoot, d)
+			if err != nil {
+				root.Fail("error: %v", err)
+			}
+			err = createWfDirectory(relativePath)
+			if err != nil {
+				root.Fail("could not create directory %d err: %v", d, err)
 			}
 		}
 
-		root.Printlog("found %v local workflow/s to update\n", len(x))
+		for _, wf := range workflows {
 
-		for i := range x {
-			wf := x[i]
-			path := root.GetRelativePath(relativeDir, wf)
-			path = root.GetPath(path)
+			root.Printlog("pushing workflow %s", wf)
 
-			root.Printlog("pushing workflow %s", path)
-
-			// push local variables
-			err = updateLocalVars(wf, path)
-			if err != nil {
-				fmt.Printf("can not update variables: %s\n", err.Error())
-			}
-
-			err := updateRemoteWorkflow(path, wf)
+			err = updateRemoteWorkflow(projectRoot, wf)
 			if err != nil {
 				fmt.Printf("can not update workflow: %s\n", err.Error())
 			}
-
 		}
+		for _, v := range wfVariables {
+			err := setRemoteWorkflowVariable(projectRoot, v)
+			if err != nil {
+				root.Fail("failed to set remote variable file: %w\n", err)
+			}
+		}
+		if executeWf == "" {
+			return
+		}
+		execWf, err := filepath.Rel(projectRoot, executeWf)
+		if err != nil {
+			root.Fail("%w\n", err)
+		}
+		urlExecute := fmt.Sprintf("%s/tree/%s?op=execute&ref=latest", root.UrlPrefix, strings.TrimPrefix(execWf, "/"))
+		resp, err := executeWorkflow(urlExecute)
+		if err != nil {
+			root.Fail("executing failed %v", err)
+		}
+		root.Printlog("Successfully Executed Instance: %s\n", resp.Instance)
+		urlOutput := root.GetLogs(cmd, resp.Instance, "")
+		output, err := getOutput(urlOutput)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		cmd.PrintErrln("------INSTANCE OUTPUT------")
+		fmt.Println(string(output))
 	},
 }
 
@@ -170,8 +245,8 @@ func updateLocalVars(wf, path string) error {
 		for i := range localVars {
 			v := localVars[i]
 			varName := filepath.ToSlash(strings.TrimPrefix(v, wf+"."))
-			root.Printlog("      updating remote workflow variable: '%s'\n", varName)
-			err = setRemoteWorkflowVariable(path, varName, v)
+			root.Printlog("updating remote workflow variable: '%s'\n", filepath.Base(varName))
+			err = setRemoteWorkflowVariable(path, v)
 			if err != nil {
 				return fmt.Errorf("failed to set remote variable file: %w\n", err)
 			}
@@ -181,14 +256,23 @@ func updateLocalVars(wf, path string) error {
 	return nil
 }
 
-func setRemoteWorkflowVariable(wf string, varName string, varPath string) error {
+func setRemoteWorkflowVariable(projectRoot, varPath string) error {
 	varData, err := root.SafeLoadFile(varPath)
 	if err != nil {
-		return fmt.Errorf("failed to load variable file: %w", err)
+		return fmt.Errorf("failed to load variable file: %v", err)
 	}
-
+	v, err := filepath.Rel(projectRoot, varPath)
+	if err != nil {
+		root.Fail("error: %v", err)
+	}
+	wf := strings.Split(v, ".yml.")[0] + ".yml"
+	if strings.Contains(v, ".yaml.") {
+		wf = strings.Split(v, ".yaml.")[0] + ".yaml"
+	}
 	urlWorkflow := fmt.Sprintf("%s/tree/%s", root.UrlPrefix, strings.TrimPrefix(wf, "/"))
-
+	va := filepath.Base(varPath)
+	wfName := filepath.Base(wf)
+	varName := strings.Replace(va, wfName+".", "", -1)
 	url := urlWorkflow + "?op=set-var&var=" + varName
 
 	req, err := http.NewRequestWithContext(
@@ -244,20 +328,19 @@ func getLocalWorkflowVariables(absPath string) ([]string, error) {
 	return varFiles, nil
 }
 
-func updateRemoteWorkflow(path string, localPath string) error {
-	root.Printlog("updating namespace: '%s' workflow: '%s'\n", root.GetNamespace(), path)
-
-	err := recurseMkdirParent(path)
+func updateRemoteWorkflow(projectRoot, workflowFile string) error {
+	workflow, err := filepath.Rel(projectRoot, workflowFile)
 	if err != nil {
-		return fmt.Errorf("Failed to create parent directory: %w", err)
+		root.Fail("error: %v", err)
 	}
+	root.Printlog("updating namespace: '%s' workflow: '%s'\n", root.GetNamespace(), workflow)
 
-	urlWorkflow := fmt.Sprintf("%s/tree/%s", root.UrlPrefix, strings.TrimPrefix(path, "/"))
+	urlWorkflow := fmt.Sprintf("%s/tree/%s", root.UrlPrefix, strings.TrimPrefix(workflow, "/"))
 
 	urlUpdate := fmt.Sprintf("%s?op=update-workflow", urlWorkflow)
 	urlCreate := fmt.Sprintf("%s?op=create-workflow", urlWorkflow)
 
-	buf, err := root.SafeLoadFile(localPath)
+	buf, err := root.SafeLoadFile(workflowFile)
 	if err != nil {
 		log.Fatalf("Failed to load workflow file: %v", err)
 	}
@@ -316,66 +399,52 @@ func updateRemoteWorkflow(path string, localPath string) error {
 	return nil
 }
 
-func recurseMkdirParent(path string) error {
-	dirs := strings.Split(filepath.Dir(path), "/")
-
-	for i := range dirs {
-		createPath := strings.Join(dirs[:i+1], "/")
-		urlDir := fmt.Sprintf("%s/tree/%s?op=create-directory", root.UrlPrefix, strings.Trim(createPath, "/"))
-		req, err := http.NewRequestWithContext(
-			context.Background(),
-			http.MethodPut,
-			urlDir,
-			nil,
-		)
-		if err != nil {
-			return fmt.Errorf("failed to create request file: %w", err)
-		}
-
-		root.AddAuthHeaders(req)
-
-		resp, err := http.DefaultClient.Do(req)
-		if err != nil {
-			return fmt.Errorf("failed to send request: %w", err)
-		}
-
-		if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusConflict {
-			if resp.StatusCode == http.StatusUnauthorized {
-				return fmt.Errorf("failed to create parent, request was unauthorized")
-			}
-
-			errBody, err := io.ReadAll(resp.Body)
-			if err == nil {
-				return fmt.Errorf("failed to create parent, server responded with %s\n------DUMPING ERROR BODY ------\n%s", resp.Status, string(errBody))
-			}
-
-			return fmt.Errorf("failed to create parent, server responded with %s\n------DUMPING ERROR BODY ------\nCould read response body", resp.Status)
-		}
+func createWfDirectory(dir string) error {
+	urlDir := fmt.Sprintf("%s/tree/%s?op=create-directory", root.UrlPrefix, dir)
+	req, err := http.NewRequestWithContext(
+		context.Background(),
+		http.MethodPut,
+		urlDir,
+		nil,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to create request file: %w", err)
 	}
 
+	root.AddAuthHeaders(req)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to send request: %w", err)
+	}
+
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusConflict {
+		if resp.StatusCode == http.StatusUnauthorized {
+			return fmt.Errorf("failed to create parent, request was unauthorized")
+		}
+
+		errBody, err := io.ReadAll(resp.Body)
+		if err == nil {
+			return fmt.Errorf("failed to create parent, server responded with %s\n------DUMPING ERROR BODY ------\n%s", resp.Status, string(errBody))
+		}
+
+		return fmt.Errorf("failed to create parent, server responded with %s\n------DUMPING ERROR BODY ------\nCould read response body", resp.Status)
+	}
 	return nil
 }
 
 var (
 	outputFlag     string
+	executeFlag    string
 	execNoPushFlag bool
 	input          string
 )
 
 var execCmd = &cobra.Command{
 	Use:   "exec WORKFLOW_PATH",
-	Short: "Remotely execute direktiv workflows with local files. This process will update your latest remote workflow to your local WORKFLOW_PATH file",
-	Long: `Remotely execute direktiv workflows with local files. This process will update your latest remote workflow to your local WORKFLOW_PATH file.
-EXAMPLE: exec helloworld.yaml --addr http://192.168.1.1 --namespace admin --path helloworld
-Variables will also be uploaded if they are prefixed with your local workflow name
-EXAMPLE:
-  dir: /pwd
-        /helloworld.yaml
-        /helloworld.yaml.data.json
-Executing: exec helloworld.yaml --addr http://192.168.1.1 --namespace admin --path helloworld
-Will update the helloworld workflow and set the remote workflow variable 'data.json' to the contents of '/helloworld.yaml.data.json'
-`,
-	Args: cobra.ExactArgs(1),
+	Short: "Remotely execute direktiv workflows with local files.",
+	Long:  `Remotely execute direktiv workflows with local files.`,
+	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		relativeDir := root.GetConfigPath()
 		path := root.GetRelativePath(relativeDir, args[0])
@@ -383,40 +452,40 @@ Will update the helloworld workflow and set the remote workflow variable 'data.j
 
 		fmt.Printf("PATH %v %v\n", path, args[0])
 
-		if !execNoPushFlag {
-			err := updateRemoteWorkflow(path, args[0])
-			if err != nil {
-				fmt.Printf("can not execute workflow: %v\n", err)
-			}
-		} else {
-			root.Printlog("skipping updating namespace: '%s' workflow: '%s'\n", root.GetNamespace(), path)
-		}
+		// if !execNoPushFlag {
+		// 	err := updateRemoteWorkflow(args[0])
+		// 	if err != nil {
+		// 		fmt.Printf("can not execute workflow: %v\n", err)
+		// 	}
+		// } else {
+		// 	root.Printlog("skipping updating namespace: '%s' workflow: '%s'\n", root.GetNamespace(), path)
+		// }
 
-		err := updateLocalVars(args[0], path)
-		if err != nil {
-			fmt.Printf("can not update variables: %s\n", err.Error())
-		}
-		urlExecute := fmt.Sprintf("%s/tree/%s?op=execute&ref=latest", root.UrlPrefix, strings.TrimPrefix(path, "/"))
-		instanceDetails, err := executeWorkflow(urlExecute)
-		if err != nil {
-			log.Fatalf("Failed to execute workflow: %v\n", err)
-		}
-		root.Printlog("Successfully Executed Instance: %s\n", instanceDetails.Instance)
-		urlOutput := root.GetLogs(cmd, instanceDetails.Instance, "")
-		output, err := getOutput(urlOutput)
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-		if outputFlag != "" {
-			err := os.WriteFile(outputFlag, output, 0o600)
-			if err != nil {
-				log.Fatalf("failed to write output file: %v\n", err)
-			}
-		} else {
-			cmd.PrintErrln("------INSTANCE OUTPUT------")
-			fmt.Println(string(output))
-		}
+		// err := updateLocalVars(args[0], path)
+		// if err != nil {
+		// 	fmt.Printf("can not update variables: %s\n", err.Error())
+		// }
+		// urlExecute := fmt.Sprintf("%s/tree/%s?op=execute&ref=latest", root.UrlPrefix, strings.TrimPrefix(path, "/"))
+		// instanceDetails, err := executeWorkflow(urlExecute)
+		// if err != nil {
+		// 	log.Fatalf("Failed to execute workflow: %v\n", err)
+		// }
+		// root.Printlog("Successfully Executed Instance: %s\n", instanceDetails.Instance)
+		// urlOutput := root.GetLogs(cmd, instanceDetails.Instance, "")
+		// output, err := getOutput(urlOutput)
+		// if err != nil {
+		// 	fmt.Println(err)
+		// 	return
+		// }
+		// if outputFlag != "" {
+		// 	err := os.WriteFile(outputFlag, output, 0o600)
+		// 	if err != nil {
+		// 		log.Fatalf("failed to write output file: %v\n", err)
+		// 	}
+		// } else {
+		// 	cmd.PrintErrln("------INSTANCE OUTPUT------")
+		// 	fmt.Println(string(output))
+		// }
 	},
 }
 
@@ -548,11 +617,11 @@ func getOutput(url string) ([]byte, error) {
 
 func init() {
 	root.RootCmd.AddCommand(workflowCmd)
-
 	workflowCmd.AddCommand(pushCmd)
+	pushCmd.Flags().StringVarP(&executeFlag, "exec", "e", "", "execute the WORKFLOWFILE from the direktiv package after successfully pushing")
 	workflowCmd.AddCommand(execCmd)
 
 	execCmd.Flags().StringVarP(&outputFlag, "output", "o", "", "Path where to write instance output. If unset output will be written to screen")
 	execCmd.Flags().StringVarP(&input, "input", "i", "", "Path to file to be used as input data for executed workflow. If unset, stdin will be used as input data if available.")
-	execCmd.Flags().BoolVar(&execNoPushFlag, "no-push", false, "If set will skip updating and just execute the workflow.")
+	// execCmd.Flags().BoolVar(&execNoPushFlag, "no-push", false, "If set will skip updating and just execute the workflow.")
 }
