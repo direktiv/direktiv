@@ -6,6 +6,7 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -79,75 +80,47 @@ func (flow *flow) RevisionsStream(req *grpc.RevisionsRequest, srv grpc.Flow_Revi
 
 func (flow *flow) DeleteRevision(ctx context.Context, req *grpc.DeleteRevisionRequest) (*emptypb.Empty, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
-	//nolint
-	return nil, nil
-	// TODO: yassir, implement
-	/*
-		tctx, tx, err := flow.database.Tx(ctx)
-		if err != nil {
-			return nil, err
-		}
-		defer rollback(tx)
 
-		cached, err := flow.traverseToRef(tctx, req.GetNamespace(), req.GetPath(), req.GetRevision())
-		if err != nil {
-			return nil, err
-		}
+	id, err := uuid.Parse(req.GetRevision())
+	if err != nil {
+		return nil, err
+	}
 
-		if !cached.Ref.Immutable {
-			return nil, errors.New("not a revision")
-		}
+	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
+	if err != nil {
+		return nil, err
+	}
 
-		clients := flow.edb.Clients(tctx)
+	fStore, _, commit, rollback, err := flow.beginSqlTx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer rollback(ctx)
 
-		query := clients.Ref.Query().Where(entref.HasRevisionWith(entrev.ID(cached.Revision.ID)), entref.Immutable(false))
+	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
+	if err != nil {
+		return nil, err
+	}
 
-		xrefs, err := query.All(tctx)
-		if err != nil {
-			return nil, err
-		}
+	rev, err := fStore.ForFile(file).GetRevision(ctx, id)
+	if err != nil {
+		return nil, err
+	}
 
-		if len(xrefs) > 1 || (len(xrefs) == 1 && xrefs[0].Name != "latest") {
-			return nil, errors.New("cannot delete revision while refs to it exist")
-		}
+	err = fStore.ForRevision(rev).Delete(ctx, true)
+	if err != nil {
+		return nil, err
+	}
 
-		if len(xrefs) == 1 && xrefs[0].Name == "latest" {
-			err = flow.configureRouter(tctx, cached, rcfBreaking,
-				func() error {
-					err := clients.Ref.DeleteOneID(cached.Ref.ID).Exec(tctx)
-					if err != nil {
-						return err
-					}
+	err = commit(ctx)
+	if err != nil {
+		return nil, err
+	}
 
-					return nil
-				},
-				tx.Commit,
-			)
-			if err != nil {
-				return nil, err
-			}
-		} else {
-			err = flow.configureRouter(tctx, cached, rcfBreaking,
-				func() error {
-					err := clients.Revision.DeleteOneID(cached.Revision.ID).Exec(tctx)
-					if err != nil {
-						return err
-					}
+	// flow.logger.Infof(ctx, file.ID, cached.GetAttributes(recipient.Workflow), "Deleted workflow revision: %s.", cached.Revision.ID.String())
+	// flow.pubsub.NotifyWorkflow(cached.Workflow)
 
-					return nil
-				},
-				tx.Commit,
-			)
-			if err != nil {
-				return nil, err
-			}
-		}
+	var resp emptypb.Empty
 
-		flow.logger.Infof(ctx, cached.Workflow.ID, cached.GetAttributes(recipient.Workflow), "Deleted workflow revision: %s.", cached.Revision.ID.String())
-		flow.pubsub.NotifyWorkflow(cached.Workflow)
-
-		var resp emptypb.Empty
-
-		return &resp, nil
-	*/
+	return &resp, nil
 }

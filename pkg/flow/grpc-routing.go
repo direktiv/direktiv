@@ -2,11 +2,25 @@ package flow
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 )
+
+func convertRoutesForOutput(router *routerData) []*grpc.Route {
+	routes := make([]*grpc.Route, 0)
+	for k, v := range router.Routes {
+		routes = append(routes, &grpc.Route{
+			Ref:    k,
+			Weight: int32(v),
+		})
+	}
+	return routes
+}
 
 func (flow *flow) Router(ctx context.Context, req *grpc.RouterRequest) (*grpc.RouterResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
@@ -16,7 +30,7 @@ func (flow *flow) Router(ctx context.Context, req *grpc.RouterRequest) (*grpc.Ro
 		return nil, err
 	}
 
-	fStore, _, _, rollback, err := flow.beginSqlTx(ctx)
+	fStore, store, _, rollback, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -27,45 +41,31 @@ func (flow *flow) Router(ctx context.Context, req *grpc.RouterRequest) (*grpc.Ro
 		return nil, err
 	}
 
-	// NOTE: this is fake output
+	var router = new(routerData)
+
+	annotations, err := store.FileAnnotations().Get(ctx, file.ID)
+	if err != nil {
+		if !errors.Is(err, core.ErrFileAnnotationsNotSet) {
+			return nil, err
+		}
+	} else {
+		s := annotations.Data.GetEntry(routerAnnotationKey)
+		if s != "" {
+			err = json.Unmarshal([]byte(s), &router)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+
 	resp := &grpc.RouterResponse{}
 	resp.Namespace = ns.Name
 	resp.Live = true
 	resp.Routes = make([]*grpc.Route, 0)
 	resp.Node = bytedata.ConvertFileToGrpcNode(file)
+	resp.Live = router.Enabled
+	resp.Routes = convertRoutesForOutput(router)
 	return resp, nil
-
-	// TODO: yassir, refactor
-	/*
-		cached, err := flow.traverseToWorkflow(ctx, req.GetNamespace(), req.GetPath())
-		if err != nil {
-			return nil, err
-		}
-
-		var resp grpc.RouterResponse
-
-		err = bytedata.ConvertDataForOutput(cached.Inode(), &resp.Node)
-		if err != nil {
-			return nil, err
-		}
-
-		resp.Namespace = cached.Namespace.Name
-		resp.Node.Parent = cached.Dir()
-		resp.Node.Path = cached.Path()
-		resp.Live = cached.Workflow.Live
-
-		err = bytedata.ConvertDataForOutput(cached.Workflow.Routes, &resp.Routes)
-		if err != nil {
-			return nil, err
-		}
-
-		for i := range cached.Workflow.Routes {
-			route := cached.Workflow.Routes[i]
-			resp.Routes[i].Ref = route.Ref.Name
-		}
-
-		return &resp, nil
-	*/
 }
 
 func (flow *flow) RouterStream(req *grpc.RouterRequest, srv grpc.Flow_RouterStreamServer) error {
@@ -95,124 +95,97 @@ func (flow *flow) RouterStream(req *grpc.RouterRequest, srv grpc.Flow_RouterStre
 
 func (flow *flow) EditRouter(ctx context.Context, req *grpc.EditRouterRequest) (*grpc.EditRouterResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
-	//nolint
-	return nil, nil
-	// TODO: yassir, refactor
-	/*
-		tctx, tx, err := flow.database.Tx(ctx)
+
+	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
+	if err != nil {
+		return nil, err
+	}
+
+	fStore, store, commit, rollback, err := flow.beginSqlTx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer rollback(ctx)
+
+	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
+	if err != nil {
+		return nil, err
+	}
+
+	annotations, err := store.FileAnnotations().Get(ctx, file.ID)
+	if err != nil {
+		if !errors.Is(err, core.ErrFileAnnotationsNotSet) {
+			return nil, err
+		}
+		annotations = &core.FileAnnotations{
+			FileID: file.ID,
+			Data:   core.NewFileAnnotationsData(make(map[string]string)),
+		}
+	}
+
+	s := annotations.Data.GetEntry(routerAnnotationKey)
+	router := new(routerData)
+	if s != "" {
+		err = json.Unmarshal([]byte(s), &router)
 		if err != nil {
 			return nil, err
 		}
-		defer rollback(tx)
+	}
 
-		cached, err := flow.traverseToWorkflow(tctx, req.GetNamespace(), req.GetPath())
-		if err != nil {
-			return nil, err
-		}
+	router.Enabled = req.Live
 
-		var routes []*ent.Route
+	annotations.Data = annotations.Data.SetEntry(routerAnnotationKey, router.Marshal())
 
-		clients := flow.edb.Clients(tctx)
+	err = store.FileAnnotations().Set(ctx, annotations)
+	if err != nil {
+		return nil, err
+	}
 
-		err = flow.configureRouter(tctx, cached, rcfBreaking,
-			func() error {
-				_, err = clients.Route.Delete().Where(entmux.HasWorkflowWith(entwf.ID(cached.Workflow.ID))).Exec(tctx)
-				if err != nil {
-					return err
-				}
+	err = commit(ctx)
+	if err != nil {
+		return nil, err
+	}
 
-				for i := range req.Route {
-
-					route := req.Route[i]
-
-					// if the api sends a 0 we don't add it at all
-					if route.Weight == 0 {
-						continue
-					}
-
-					var ref *database.Ref
-
-					for idx := range cached.Workflow.Refs {
-						if cached.Workflow.Refs[idx].Name == route.Ref {
-							ref = cached.Workflow.Refs[idx]
-							break
-						}
-					}
-
-					if ref == nil {
-						return os.ErrNotExist
-					}
-
-					err = clients.Route.Create().SetWorkflowID(cached.Workflow.ID).SetWeight(int(route.Weight)).SetRefID(ref.ID).Exec(tctx)
-					if err != nil {
-						return err
-					}
-
-				}
-
-				if cached.Workflow.Live != req.GetLive() {
-					err = clients.Workflow.UpdateOneID(cached.Workflow.ID).SetLive(req.GetLive()).Exec(tctx)
-					if err != nil {
-						return err
-					}
-				}
-
-				return nil
-			},
-			tx.Commit,
-		)
-		if err != nil {
-			return nil, err
-		}
-
-		var resp grpc.EditRouterResponse
-
-		err = bytedata.ConvertDataForOutput(cached.Inode(), &resp.Node)
-		if err != nil {
-			return nil, err
-		}
-
-		resp.Namespace = cached.Namespace.Name
-		resp.Node.Parent = cached.Dir()
-		resp.Node.Path = cached.Path()
-		resp.Live = req.GetLive()
-
-		err = bytedata.ConvertDataForOutput(routes, &resp.Routes)
-		if err != nil {
-			return nil, err
-		}
-
-		for i := range routes {
-			route := routes[i]
-			resp.Routes[i].Ref = route.Edges.Ref.Name
-		}
-		return &resp, nil
-	*/
+	var resp grpc.EditRouterResponse
+	resp.Node = bytedata.ConvertFileToGrpcNode(file)
+	resp.Namespace = ns.Name
+	resp.Node.Parent = file.Dir()
+	resp.Node.Path = file.Path
+	resp.Live = router.Enabled
+	resp.Routes = convertRoutesForOutput(router)
+	return &resp, nil
 }
 
 func (flow *flow) ValidateRouter(ctx context.Context, req *grpc.ValidateRouterRequest) (*grpc.ValidateRouterResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
-	//nolint
-	return nil, nil
-	// TODO: yassir, refactor
-	/*
-		cached, err := flow.traverseToWorkflow(ctx, req.GetNamespace(), req.GetPath())
-		if err != nil {
-			return nil, err
-		}
 
-		_, verr, err := flow.validateRouter(ctx, cached)
-		if err != nil {
-			return nil, err
-		}
+	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
+	if err != nil {
+		return nil, err
+	}
 
-		var resp grpc.ValidateRouterResponse
+	fStore, store, _, rollback, err := flow.beginSqlTx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer rollback(ctx)
 
-		resp.Namespace = cached.Namespace.Name
-		resp.Path = cached.Path()
-		resp.Invalid = verr != nil
-		resp.Reason = verr.Error()
+	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
+	if err != nil {
+		return nil, err
+	}
 
-		return &resp, nil
-	*/
+	_, verr, err := flow.validateRouter(ctx, fStore, store, file)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp grpc.ValidateRouterResponse
+
+	resp.Namespace = ns.Name
+	resp.Path = file.Path
+	resp.Invalid = verr != nil
+	resp.Reason = verr.Error()
+
+	return &resp, nil
 }
