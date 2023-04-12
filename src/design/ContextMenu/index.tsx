@@ -50,8 +50,8 @@ const ContextMenuSubContent = React.forwardRef<
     ref={ref}
     className={clsx(
       "z-50 min-w-[8rem] overflow-hidden rounded-md border p-1 shadow-md animate-in slide-in-from-left-1 ",
-      "border-gray-2 bg-white",
-      "dark:border-gray-dark-2 dark:bg-black",
+      "border-gray-3 bg-gray-1",
+      "dark:border-gray-dark-3 dark:bg-gray-dark-1",
       className
     )}
     {...props}
@@ -68,8 +68,8 @@ const ContextMenuContent = React.forwardRef<
       ref={ref}
       className={clsx(
         "z-50 min-w-[8rem] overflow-hidden rounded-md border p-1 shadow-md  animate-in fade-in-80 ",
-        "border-gray-2 bg-white text-gray-10 ",
-        "dark:border-gray-dark-2 dark:bg-black dark:text-gray-dark-10",
+        "border-gray-3 bg-gray-1 ",
+        "dark:border-gray-dark-3 dark:bg-gray-dark-1",
         className
       )}
       {...props}
@@ -87,7 +87,7 @@ const ContextMenuItem = React.forwardRef<
   <ContextMenuPrimitive.Item
     ref={ref}
     className={clsx(
-      "relative flex cursor-default select-none items-center rounded-sm py-1.5 px-2 text-sm font-medium outline-none  data-[disabled]:pointer-events-none data-[disabled]:opacity-50 ",
+      "relative flex cursor-default select-none items-center rounded-sm py-1.5 px-2 text-sm font-medium outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 ",
       "focus:bg-gray-2",
       "dark:focus:bg-gray-dark-2",
       inset && "pl-8",
@@ -106,8 +106,8 @@ const ContextMenuCheckboxItem = React.forwardRef<
     ref={ref}
     className={clsx(
       "relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm font-medium outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 ",
-      "focus:bg-gray-2 ",
-      "dark:focus:bg-gray-dark-2",
+      "focus:bg-gray-3",
+      "dark:focus:bg-gray-dark-3",
       className
     )}
     checked={checked}
@@ -157,9 +157,7 @@ const ContextMenuLabel = React.forwardRef<
   <ContextMenuPrimitive.Label
     ref={ref}
     className={clsx(
-      "px-2 py-1.5 text-sm font-semibold ",
-      "text-gray-12",
-      "dark:text-gray-dark-12",
+      "px-2 py-1.5 text-sm font-semibold",
       inset && "pl-8",
       className
     )}
@@ -174,7 +172,7 @@ const ContextMenuSeparator = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <ContextMenuPrimitive.Separator
     ref={ref}
-    className={clsx("-mx-1 my-1 h-px bg-gray-2 dark:bg-gray-dark-2", className)}
+    className={clsx("-mx-1 my-1 h-px bg-gray-3 dark:bg-gray-dark-3", className)}
     {...props}
   />
 ));
@@ -186,7 +184,7 @@ const ContextMenuShortcut = ({
 }: React.HTMLAttributes<HTMLSpanElement>) => (
   <span
     className={clsx(
-      "ml-auto text-xs tracking-widest text-gray-9 dark:text-gray-dark-9",
+      "ml-auto text-xs tracking-widest text-gray-8 dark:text-gray-dark-8",
       className
     )}
     {...props}
