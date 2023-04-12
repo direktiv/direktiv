@@ -15,7 +15,7 @@ const TabsList = React.forwardRef<
     ref={ref}
     className={clsx(
       varient === "default" &&
-        "inline-flex items-center justify-center rounded-md bg-slate-100 p-1 dark:bg-slate-800",
+        "inline-flex items-center justify-center rounded-md bg-gray-2 p-1 dark:bg-gray-dark-2",
       varient === "primary" &&
         "inline-flex items-center justify-center rounded-md p-1",
       className
