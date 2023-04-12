@@ -102,20 +102,19 @@ type node struct {
 }
 
 var pushCmd = &cobra.Command{
-	Use:   "push DIR_PATH ...FLAG",
-	Short: "Pushes or updates your a local direktiv-package to the server",
-	Long: `Pushes or updates your a local direktiv-package to the server. 
+	Use:   "push PATH ...FLAG",
+	Short: "Pushes or updates your a local direktiv-project to the server",
+	Long: `Push or update your a local direktiv-project to the server. 
 
-EXAMPLE: push DIR_PATH
-
-DIR_PATH MUST point to the root-folder in a direktiv package-format.
+PATH MUST point to the root-folder in a direktiv package-format.
 package-format example:
 
-	DIR_PATH format: 
-		DIR_PATH /.direktiv.yaml
-		DIR_PATH /helloworld.yaml
-		DIR_PATH /helloworld.yaml.data.json
-		DIR_PATH /more/otherwf.yaml
+	PATH format: 
+		PATH/.direktiv.yaml
+		PATH/helloworld.yaml
+		PATH/helloworld.yaml.data.json
+		PATH/more/otherwf.yaml
+
 The configuration MUST be present and located in the direktiv-package root-folder.
 !!! The configuration-values in .direktiv.yaml from the CAN be overridden by using the global flags`,
 	Args: cobra.ExactArgs(1),
