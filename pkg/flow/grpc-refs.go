@@ -252,7 +252,7 @@ func (flow *flow) Untag(ctx context.Context, req *grpc.UntagRequest) (*emptypb.E
 }
 
 func (flow *flow) Retag(ctx context.Context, req *grpc.RetagRequest) (*emptypb.Empty, error) {
-	// TODO: yassir, question here.
+	// TODO: yassir, low priority. we might remove this feature.
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	var resp emptypb.Empty
@@ -261,7 +261,7 @@ func (flow *flow) Retag(ctx context.Context, req *grpc.RetagRequest) (*emptypb.E
 }
 
 func (flow *flow) ValidateRef(ctx context.Context, req *grpc.ValidateRefRequest) (*grpc.ValidateRefResponse, error) {
-	// TODO: yassir, question here.
+	// TODO: yassir, low priority.
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	var resp grpc.ValidateRefResponse

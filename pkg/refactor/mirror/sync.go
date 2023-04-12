@@ -23,6 +23,8 @@ import (
 // TODO: implement parsing direktiv variables.
 // TODO: check %w verb on errors.
 // TODO: fix errors and add logs.
+// TODO: implement a mechanism to clean dangling processes and cleaning them up.
+// TODO: implement synchronizing jobs.
 
 type mirroringJob struct {
 	// job parameters.
@@ -265,6 +267,8 @@ func (j *mirroringJob) CopyFilesToRoot(fStore filestore.FileStore, namespaceID u
 		checksum := string(filestore.DefaultCalculateChecksum(data))
 		fileChecksum, pathDoesExist := j.rootChecksums[path]
 		isEqualChecksum := checksum == fileChecksum
+
+		// TODO: yassir, check for workflowID.
 
 		if pathDoesExist && isEqualChecksum {
 			j.lg.Infow("checksum skipped to root", "path", path)
