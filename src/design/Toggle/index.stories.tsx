@@ -2,6 +2,7 @@ import { Bug, Eye, Filter } from "lucide-react";
 import type { Meta, StoryObj } from "@storybook/react";
 import Button from "../Button";
 import { Toggle } from "./index";
+import { useState } from "react";
 
 const meta = {
   title: "Components/Toggle",
@@ -14,7 +15,7 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   render: ({ ...args }) => (
     <Toggle aria-label="Toggle italic" {...args}>
-      <Filter className="h-4 w-4" />
+      <Filter />
     </Toggle>
   ),
   argTypes: {
@@ -36,27 +37,40 @@ export const Default: Story = {
 
 export const OutlineToggle = () => (
   <Toggle aria-label="Toggle italic" outline>
-    <Filter className="h-4 w-4" />
+    <Filter />
   </Toggle>
 );
 
 export const ToggleSize = () => (
   <div className="flex h-5 items-center space-x-4">
     <Toggle aria-label="Toggle italic" size="sm" outline>
-      <Filter className="h-4 w-4" />
+      <Filter />
     </Toggle>
     <Toggle aria-label="Toggle italic" outline>
-      <Filter className="h-4 w-4" />
+      <Filter />
     </Toggle>
     <Toggle aria-label="Toggle italic" size="lg" outline>
-      <Filter className="h-4 w-4" />
+      <Filter />
     </Toggle>
   </div>
 );
 
+export const WithTextAndState = () => {
+  const [pressed, setPressed] = useState(false);
+  return (
+    <Toggle
+      aria-label="Toggle italic"
+      pressed={pressed}
+      onPressedChange={setPressed}
+    >
+      <Filter /> {pressed ? "On" : "Off"}
+    </Toggle>
+  );
+};
+
 export const DefaultPressed = () => (
   <Toggle aria-label="Toggle italic" defaultPressed>
-    <Filter className="h-4 w-4" />
+    <Filter />
   </Toggle>
 );
 
@@ -64,41 +78,44 @@ export const Toolbar = () => (
   <div className="flex flex-col space-y-3">
     <div className="flex space-x-1">
       <Toggle aria-label="Toggle italic" size="sm" outline>
-        <Filter className="h-4 w-4" />
+        <Filter />
       </Toggle>
       <Toggle aria-label="Toggle italic" size="sm" outline>
-        <Bug className="h-4 w-4" />
+        <Bug />
       </Toggle>
       <Toggle aria-label="Toggle italic" size="sm" outline>
-        <Eye className="h-4 w-4" />
+        <Eye />
       </Toggle>
       <Button variant="outline" size="sm">
-        Small Large Toolbar
+        <Eye /> Small Large Toolbar
       </Button>
     </div>
     <div className="flex space-x-1">
       <Toggle aria-label="Toggle italic" outline>
-        <Filter className="h-4 w-4" />
+        <Filter />
       </Toggle>
       <Toggle aria-label="Toggle italic" outline>
-        <Bug className="h-4 w-4" />
+        <Bug />
       </Toggle>
       <Toggle aria-label="Toggle italic" outline>
-        <Eye className="h-4 w-4" />
+        <Eye />
       </Toggle>
-      <Button variant="outline">Default Toolbar</Button>
+      <Button variant="outline">
+        <Eye /> Default Toolbar
+      </Button>
     </div>
     <div className="flex space-x-1">
       <Toggle aria-label="Toggle italic" size="lg" outline>
-        <Filter className="h-4 w-4" />
+        <Filter />
       </Toggle>
       <Toggle aria-label="Toggle italic" size="lg" outline>
-        <Bug className="h-4 w-4" />
+        <Bug />
       </Toggle>
       <Toggle aria-label="Toggle italic" size="lg" outline>
-        <Eye className="h-4 w-4" />
+        <Eye />
       </Toggle>
       <Button variant="outline" size="lg">
+        <Eye />
         Large Toolbar
       </Button>
     </div>
