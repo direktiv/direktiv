@@ -16,6 +16,21 @@ export const Default: Story = {
       <RxFontItalic className="h-4 w-4" />
     </Toggle>
   ),
+  argTypes: {
+    outline: {
+      description: "with outline",
+      type: {
+        name: "boolean",
+        required: false,
+      },
+    },
+    size: {
+      description: "size",
+      control: "select",
+      options: ["sm", "lg"],
+      type: { name: "string", required: false },
+    },
+  },
 };
 
 export const OutlineToggle = () => (
