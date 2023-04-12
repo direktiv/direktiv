@@ -58,9 +58,10 @@
 
 /* END START overwrite daisyui */
 
-body {
+body,
+html {
   @apply h-full;
-  @apply bg-base-100;
+  @apply bg-white dark:bg-black;
 }
 
 @font-face {
