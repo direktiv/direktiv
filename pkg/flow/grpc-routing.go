@@ -105,7 +105,7 @@ func (flow *flow) EditRouter(ctx context.Context, req *grpc.EditRouterRequest) (
 	if err != nil {
 		return nil, err
 	}
-	defer rollback(ctx)
+	defer rollback()
 
 	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {
@@ -168,7 +168,7 @@ func (flow *flow) ValidateRouter(ctx context.Context, req *grpc.ValidateRouterRe
 	if err != nil {
 		return nil, err
 	}
-	defer rollback(ctx)
+	defer rollback()
 
 	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {

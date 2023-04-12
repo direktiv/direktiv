@@ -95,7 +95,7 @@ func (flow *flow) DeleteRevision(ctx context.Context, req *grpc.DeleteRevisionRe
 	if err != nil {
 		return nil, err
 	}
-	defer rollback(ctx)
+	defer rollback()
 
 	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {
