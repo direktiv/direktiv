@@ -352,14 +352,14 @@ func (events *events) handleEventLoopLogic(ctx context.Context, rows *sql.Rows, 
 				events.engine.sugar.Error(err)
 				return
 			}
-			defer rollback(ctx)
+			defer rollback()
 
 			file, err := fStore.GetFile(ctx, id)
 			if err != nil {
 				events.engine.sugar.Error(err)
 				return
 			}
-			rollback(ctx)
+			rollback()
 
 			err = events.deleteEventListeners(ctx, file.RootID, id)
 			if err != nil {
@@ -480,13 +480,13 @@ func (flow *flow) EventListeners(ctx context.Context, req *grpc.EventListenersRe
 				if err != nil {
 					return nil, err
 				}
-				defer rollback(ctx)
+				defer rollback()
 
 				file, err := fStore.GetFile(ctx, *wfID)
 				if err != nil {
 					return nil, err
 				}
-				rollback(ctx)
+				rollback()
 
 				path = file.Path
 				m[wfID.String()] = path
@@ -585,13 +585,13 @@ resend:
 				if err != nil {
 					return err
 				}
-				defer rollback(ctx)
+				defer rollback()
 
 				file, err := fStore.GetFile(ctx, *wfID)
 				if err != nil {
 					return err
 				}
-				rollback(ctx)
+				rollback()
 
 				path = file.Path
 				m[wfID.String()] = path

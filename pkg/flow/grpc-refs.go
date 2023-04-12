@@ -36,7 +36,7 @@ func (flow *flow) Tags(ctx context.Context, req *grpc.TagsRequest) (*grpc.TagsRe
 	if err != nil {
 		return nil, err
 	}
-	defer rollback(ctx)
+	defer rollback()
 
 	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {
@@ -109,7 +109,7 @@ func (flow *flow) Refs(ctx context.Context, req *grpc.RefsRequest) (*grpc.RefsRe
 	if err != nil {
 		return nil, err
 	}
-	defer rollback(ctx)
+	defer rollback()
 
 	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {
@@ -186,7 +186,7 @@ func (flow *flow) Tag(ctx context.Context, req *grpc.TagRequest) (*emptypb.Empty
 	if err != nil {
 		return nil, err
 	}
-	defer rollback(ctx)
+	defer rollback()
 
 	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {
@@ -226,7 +226,7 @@ func (flow *flow) Untag(ctx context.Context, req *grpc.UntagRequest) (*emptypb.E
 	if err != nil {
 		return nil, err
 	}
-	defer rollback(ctx)
+	defer rollback()
 
 	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {

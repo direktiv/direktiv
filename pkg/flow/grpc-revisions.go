@@ -22,7 +22,7 @@ func (flow *flow) Revisions(ctx context.Context, req *grpc.RevisionsRequest) (*g
 	if err != nil {
 		return nil, err
 	}
-	defer rollback(ctx)
+	defer rollback()
 
 	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {

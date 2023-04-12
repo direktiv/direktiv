@@ -34,7 +34,7 @@ func (flow *flow) Router(ctx context.Context, req *grpc.RouterRequest) (*grpc.Ro
 	if err != nil {
 		return nil, err
 	}
-	defer rollback(ctx)
+	defer rollback()
 
 	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {
