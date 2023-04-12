@@ -42,13 +42,13 @@ export const OutlineToggle = () => (
 
 export const ToggleSize = () => (
   <div className="flex h-5 items-center space-x-4">
-    <Toggle aria-label="Toggle italic" size="sm">
+    <Toggle aria-label="Toggle italic" size="sm" outline>
       <Filter className="h-4 w-4" />
     </Toggle>
-    <Toggle aria-label="Toggle italic">
+    <Toggle aria-label="Toggle italic" outline>
       <Filter className="h-4 w-4" />
     </Toggle>
-    <Toggle aria-label="Toggle italic" size="lg">
+    <Toggle aria-label="Toggle italic" size="lg" outline>
       <Filter className="h-4 w-4" />
     </Toggle>
   </div>
