@@ -365,7 +365,7 @@ lint: ## Runs very strict linting on the project.
 	--name golangci-lint-${VERSION}-direktiv \
 	-v `pwd`:/app \
 	-w /app \
-	golangci/golangci-lint:${VERSION} golangci-lint run -v
+	golangci/golangci-lint:${VERSION} golangci-lint run
 	-docker commit golangci-lint-${VERSION}-direktiv golangci/golangci-lint:${VERSION}
 
 test-jest: ## Runs jest end-to-end tests. DIREKTIV_HOST=128.0.0.1 make test-jest [JEST_PREFIX=/tests/jest/namespaces]

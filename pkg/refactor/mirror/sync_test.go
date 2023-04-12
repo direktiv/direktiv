@@ -20,7 +20,7 @@ func TestExecuteMirroringProcess(t *testing.T) {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}
 	fs := psql.NewSQLFileStore(db)
-	store := sql.NewSQLStore(db).Mirror()
+	store := sql.NewSQLStore(db, "some_secret_key_some_secret_key_").Mirror()
 
 	direktivRoot, err := fs.CreateRoot(context.Background(), uuid.New())
 	if err != nil {
