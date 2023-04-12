@@ -324,7 +324,7 @@ var (
 		{Name: "oid", Type: field.TypeUUID},
 		{Name: "name", Type: field.TypeString, Nullable: true},
 		{Name: "behaviour", Type: field.TypeString, Nullable: true},
-		{Name: "workflow_id", Type: field.TypeUUID},
+		{Name: "workflow_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "instance_vars", Type: field.TypeUUID, Nullable: true},
 		{Name: "namespace_vars", Type: field.TypeUUID, Nullable: true},
 		{Name: "var_data_varrefs", Type: field.TypeUUID},

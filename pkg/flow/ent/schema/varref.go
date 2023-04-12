@@ -20,8 +20,7 @@ func (VarRef) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).Default(uuid.New).Immutable().StorageKey("oid").StructTag(`json:"-"`),
 		field.String("name").Match(util.VarNameRegex).Optional(),
 		field.String("behaviour").Optional(),
-		// TODO: check out if Nillable is required here.
-		field.UUID("workflow_id", uuid.UUID{}).Nillable().StorageKey("workflow_id"),
+		field.UUID("workflow_id", uuid.UUID{}).Optional().StorageKey("workflow_id"),
 	}
 }
 

@@ -60,6 +60,7 @@ func (m *GitSource) PullInPath(config *Config, dst string) error {
 	if strings.HasPrefix(uri, prefix) && len(config.PrivateKeyPassphrase) > 0 {
 		if !strings.Contains(uri, "@") {
 			uri = fmt.Sprintf("%s%s@", prefix, config.PrivateKeyPassphrase) + strings.TrimPrefix(uri, prefix)
+			cloneOptions.URL = uri
 		}
 	}
 
