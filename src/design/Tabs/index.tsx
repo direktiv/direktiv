@@ -8,16 +8,15 @@ const Tabs = TabsPrimitive.Root;
 const TabsList = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.List>,
   React.ComponentPropsWithoutRef<typeof TabsPrimitive.List> & {
-    varient?: "default" | "primary";
+    varient?: "boxed";
   }
->(({ className, varient = "default", ...props }, ref) => (
+>(({ className, varient, ...props }, ref) => (
   <TabsPrimitive.List
     ref={ref}
     className={clsx(
-      varient === "default" &&
+      varient === "boxed" &&
         "inline-flex items-center justify-center rounded-md bg-gray-2 p-1 dark:bg-gray-dark-2",
-      varient === "primary" &&
-        "inline-flex items-center justify-center rounded-md p-1",
+      !varient && "inline-flex items-center justify-center rounded-md p-1",
       className
     )}
     {...props}
@@ -28,24 +27,23 @@ TabsList.displayName = TabsPrimitive.List.displayName;
 const TabsTrigger = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.Trigger>,
   React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger> & {
-    varient?: "default" | "primary";
+    varient?: "boxed";
   }
->(({ className, varient = "default", ...props }, ref) => (
+>(({ className, varient, ...props }, ref) => (
   <TabsPrimitive.Trigger
     className={clsx(
-      varient === "default" &&
+      varient === "boxed" &&
         "inline-flex min-w-[100px] items-center justify-center rounded-[0.185rem] px-3 py-1.5  text-sm font-medium transition-all  disabled:pointer-events-none disabled:opacity-50  data-[state=active]:shadow-sm",
-      varient === "default" &&
+      varient === "boxed" &&
         "text-gray-10 data-[state=active]:bg-white data-[state=active]:text-gray-12 ",
-      varient === "default" &&
+      varient === "boxed" &&
         "dark:text-gray-dark-10 dark:data-[state=active]:bg-black dark:data-[state=active]:text-gray-dark-12",
-      varient === "primary" &&
+      !varient &&
         "mx-4 flex items-center gap-x-2 whitespace-nowrap border-b-2 border-transparent px-1 pb-4 text-sm font-medium",
-      varient === "primary" &&
-        "text-gray-11 hover:border-gray-8 hover:text-gray-12",
-      varient === "primary" &&
+      !varient && "text-gray-11 hover:border-gray-8 hover:text-gray-12",
+      !varient &&
         "dark:text-gray-dark-11 dark:hover:border-gray-dark-8 dark:hover:text-gray-dark-12",
-      varient === "primary" && "data-[state=active]:border-primary-500",
+      !varient && "data-[state=active]:border-primary-500",
       className
     )}
     {...props}
