@@ -16,15 +16,93 @@ type sqlMirrorStore struct {
 	configEncryptionKey string
 }
 
-//nolint
+// nolint
 func (s sqlMirrorStore) SetNamespaceVariable(ctx context.Context, namespaceID uuid.UUID, key string, data []byte, hash string, mType string) error {
-	// TODO: implement me.
+	// try to update a variable if exists.
+	res := s.db.WithContext(ctx).Exec(`
+							UPDATE var_data SET size = ?, hash = ?, data = ?, mime_type = ?  WHERE oid = (
+								SELECT var_data_varrefs FROM var_refs WHERE name = ? AND namespace_vars = ?
+							)`, len(data), hash, data, mType, key, namespaceID)
+	if res.Error != nil {
+		return res.Error
+	}
+	if res.RowsAffected > 0 {
+		return nil
+	}
+
+	newID := uuid.New()
+
+	// create var_data entry.
+	res = s.db.WithContext(ctx).Exec(`
+							INSERT INTO var_data(oid, size, hash, data, mime_type, created_at, updated_at) VALUES(?, ?, ?, ?, ?, NOW(), NOW());
+							`,
+		newID, len(data), hash, data, mType,
+	)
+	if res.Error != nil {
+		return res.Error
+	}
+	if res.RowsAffected != 1 {
+		return fmt.Errorf("unexpected var_data inserted rows count, got: %d, want: %d", res.RowsAffected, 1)
+	}
+
+	// create var_refs entry.
+	res = s.db.WithContext(ctx).Exec(`
+							INSERT INTO var_refs(oid, name, behaviour, namespace_vars, var_data_varrefs) VALUES(?, ?, ?, ?, ?);
+							`,
+		uuid.New(), key, "", namespaceID, newID,
+	)
+	if res.Error != nil {
+		return res.Error
+	}
+	if res.RowsAffected != 1 {
+		return fmt.Errorf("unexpected var_refs inserted rows count, got: %d, want: %d", res.RowsAffected, 1)
+	}
+
 	return nil
 }
 
-//nolint
+// nolint
 func (s sqlMirrorStore) SetWorkflowVariable(ctx context.Context, workflowID uuid.UUID, key string, data []byte, hash string, mType string) error {
-	// TODO: implement me.
+	// try to update a variable if exists.
+	res := s.db.WithContext(ctx).Exec(`
+							UPDATE var_data SET size = ?, hash = ?, data = ?, mime_type = ?  WHERE oid = (
+								SELECT var_data_varrefs FROM var_refs WHERE name = ? AND workflow_id = ?
+							)`, len(data), hash, data, mType, key, workflowID)
+	if res.Error != nil {
+		return res.Error
+	}
+	if res.RowsAffected > 0 {
+		return nil
+	}
+
+	newID := uuid.New()
+
+	// create var_data entry.
+	res = s.db.WithContext(ctx).Exec(`
+							INSERT INTO var_data(oid, size, hash, data, mime_type, created_at, updated_at) VALUES(?, ?, ?, ?, ?, NOW(), NOW());
+							`,
+		newID, len(data), hash, data, mType,
+	)
+	if res.Error != nil {
+		return res.Error
+	}
+	if res.RowsAffected != 1 {
+		return fmt.Errorf("unexpected var_data inserted rows count, got: %d, want: %d", res.RowsAffected, 1)
+	}
+
+	// create var_refs entry.
+	res = s.db.WithContext(ctx).Exec(`
+							INSERT INTO var_refs(oid, name, behaviour, workflow_id, var_data_varrefs) VALUES(?, ?, ?, ?, ?);
+							`,
+		uuid.New(), key, "", workflowID, newID,
+	)
+	if res.Error != nil {
+		return res.Error
+	}
+	if res.RowsAffected != 1 {
+		return fmt.Errorf("unexpected var_refs inserted rows count, got: %d, want: %d", res.RowsAffected, 1)
+	}
+
 	return nil
 }
 
