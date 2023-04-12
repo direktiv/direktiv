@@ -54,8 +54,8 @@ export const Boxed = () => (
   </Tabs>
 );
 
-export const TabsWithIconsPrimary = () => (
-  <Tabs defaultValue="account" className="w-[400px]">
+export const TabsWithIcons = () => (
+  <Tabs defaultValue="account">
     <TabsList>
       <TabsTrigger value="overview">
         <PieChart />
