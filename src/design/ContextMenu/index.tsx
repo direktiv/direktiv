@@ -88,8 +88,8 @@ const ContextMenuItem = React.forwardRef<
     ref={ref}
     className={clsx(
       "relative flex cursor-default select-none items-center rounded-sm py-1.5 px-2 text-sm font-medium outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 ",
-      "focus:bg-gray-2",
-      "dark:focus:bg-gray-dark-2",
+      "focus:bg-gray-3",
+      "dark:focus:bg-gray-dark-3",
       inset && "pl-8",
       className
     )}
@@ -132,8 +132,8 @@ const ContextMenuRadioItem = React.forwardRef<
     ref={ref}
     className={clsx(
       "relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm font-medium outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-      "focus:bg-gray-2 ",
-      "dark:focus:bg-gray-dark-2",
+      "focus:bg-gray-3",
+      "dark:focus:bg-gray-dark-3",
       className
     )}
     {...props}
