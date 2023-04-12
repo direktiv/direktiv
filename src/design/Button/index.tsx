@@ -64,7 +64,7 @@ const Button = React.forwardRef<
           "bg-transparent text-gray-12 underline-offset-4 hover:bg-transparent hover:underline",
           "dark:text-gray-dark-12",
         ],
-        size === "sm" && "h-6 gap-1  [&>svg]:h-4",
+        size === "sm" && "h-6 gap-1 [&>svg]:h-4",
         !size && "h-9 gap-2 py-2 [&>svg]:h-5",
         size === "lg" && "h-11 gap-3 [&>svg]:h-6",
         icon && "px-2",
