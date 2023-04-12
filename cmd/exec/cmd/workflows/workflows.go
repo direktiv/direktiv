@@ -243,7 +243,7 @@ func updateLocalVars(wf, path string) error {
 func setRemoteWorkflowVariable(projectRoot, varPath string) error {
 	varData, err := root.SafeLoadFile(varPath)
 	if err != nil {
-		return fmt.Errorf("failed to load variable file: %v", err)
+		return fmt.Errorf("failed to load variable file: %w", err)
 	}
 	v, err := filepath.Rel(projectRoot, varPath)
 	if err != nil {
