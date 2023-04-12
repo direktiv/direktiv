@@ -33,11 +33,11 @@ export const Default: Story = {
 
 export const Boxed = () => (
   <Tabs defaultValue="account" className="w-[400px]">
-    <TabsList varient="boxed">
-      <TabsTrigger varient="boxed" value="account">
+    <TabsList variant="boxed">
+      <TabsTrigger variant="boxed" value="account">
         Account
       </TabsTrigger>
-      <TabsTrigger varient="boxed" value="password">
+      <TabsTrigger variant="boxed" value="password">
         Password
       </TabsTrigger>
     </TabsList>
