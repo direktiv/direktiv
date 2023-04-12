@@ -89,8 +89,8 @@ func New(ctx context.Context, sugar *zap.SugaredLogger, addr string) (*Database,
 	}
 
 	udb := db.DB()
-	udb.SetMaxIdleConns(64)
-	udb.SetMaxOpenConns(32)
+	udb.SetMaxIdleConns(32)
+	udb.SetMaxOpenConns(16)
 
 	// Run the auto migration tool.
 	if err = db.Schema.Create(ctx); err != nil {

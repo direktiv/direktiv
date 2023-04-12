@@ -37,7 +37,7 @@ func (srv *server) getInstance(ctx context.Context, namespace, instanceID string
 	if err != nil {
 		return nil, err
 	}
-	defer rollback(ctx)
+	defer rollback()
 
 	file, revision, err := fStore.GetRevision(ctx, cached.Instance.Revision)
 	if err != nil {
@@ -71,7 +71,7 @@ func (internal *internal) getInstance(ctx context.Context, instanceID string) (*
 	if err != nil {
 		return nil, err
 	}
-	defer rollback(ctx)
+	defer rollback()
 
 	file, revision, err := fStore.GetRevision(ctx, cached.Instance.Revision)
 	if err != nil {
@@ -547,12 +547,14 @@ resend:
 	if err != nil {
 		return err
 	}
-	defer rollback(ctx)
+	defer rollback()
 
 	file, revision, err := fStore.GetRevision(ctx, cached.Instance.Revision)
 	if err != nil {
 		return err
 	}
+
+	rollback()
 
 	cached.File = file
 	cached.Revision = revision

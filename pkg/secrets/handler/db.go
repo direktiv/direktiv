@@ -2,11 +2,7 @@ package handler
 
 import (
 	"context"
-	"crypto/aes"
-	"crypto/cipher"
-	"crypto/rand"
 	"fmt"
-	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -15,6 +11,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/secrets/ent"
 	entc "github.com/direktiv/direktiv/pkg/secrets/ent"
 	"github.com/direktiv/direktiv/pkg/secrets/ent/namespacesecret"
+	"github.com/direktiv/direktiv/pkg/util"
 	_ "github.com/lib/pq" // lib needs to imported for postgres
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
@@ -92,7 +89,7 @@ func (db *dbHandler) AddSecret(namespace, name string, secret []byte, ignoreErro
 	var d []byte
 	var err error
 	if !strings.HasSuffix(name, "/") { // dont excrypt when folder cause  folder have empty data
-		d, err = encryptData([]byte(db.key), secret)
+		d, err = util.EncryptData([]byte(db.key), secret)
 		if err != nil {
 			return fmt.Errorf("error encrypting data: %w", err)
 		}
@@ -130,7 +127,7 @@ func (db *dbHandler) UpdateSecret(namespace, name string, secret []byte) error {
 	}
 
 	var d []byte
-	d, err = encryptData([]byte(db.key), secret)
+	d, err = util.EncryptData([]byte(db.key), secret)
 	if err != nil {
 		return fmt.Errorf("failed to encrypt secret: %w", err)
 	}
@@ -162,7 +159,7 @@ func (db *dbHandler) GetSecret(namespace, name string) ([]byte, error) {
 		return nil, err
 	}
 
-	return decryptData([]byte(db.key), bs.Secret)
+	return util.DecryptData([]byte(db.key), bs.Secret)
 }
 
 func (db *dbHandler) GetSecrets(namespace string, name string) ([]string, error) {
@@ -263,40 +260,4 @@ func (db *dbHandler) RemoveNamespaceSecrets(namespace string) error {
 		Exec(context.Background())
 
 	return err
-}
-
-func encryptData(key, data []byte) ([]byte, error) {
-	block, err := aes.NewCipher(key)
-	if err != nil {
-		return nil, err
-	}
-
-	gcm, err := cipher.NewGCM(block)
-	if err != nil {
-		return nil, err
-	}
-
-	nonce := make([]byte, gcm.NonceSize())
-	_, err = io.ReadFull(rand.Reader, nonce)
-	if err != nil {
-		return nil, err
-	}
-
-	return gcm.Seal(nonce, nonce, data, nil), nil
-}
-
-func decryptData(key, data []byte) ([]byte, error) {
-	block, err := aes.NewCipher(key)
-	if err != nil {
-		return nil, err
-	}
-
-	gcm, err := cipher.NewGCM(block)
-	if err != nil {
-		return nil, err
-	}
-
-	nonce := data[:gcm.NonceSize()]
-	data = data[gcm.NonceSize():]
-	return gcm.Open(nil, nonce, data, nil)
 }

@@ -129,7 +129,7 @@ func (flow *flow) UpdateMirrorSettings(ctx context.Context, req *grpc.UpdateMirr
 	if err != nil {
 		return nil, err
 	}
-	defer rollback(ctx)
+	defer rollback()
 
 	mirConfig, err := store.Mirror().GetConfig(ctx, ns.ID)
 	if err != nil {
@@ -152,12 +152,13 @@ func (flow *flow) UpdateMirrorSettings(ctx context.Context, req *grpc.UpdateMirr
 	if s := settings.GetPassphrase(); s != "-" {
 		mirConfig.PrivateKeyPassphrase = s
 	}
-	if err = commit(ctx); err != nil {
-		return nil, err
-	}
 
 	mirConfig, err = store.Mirror().UpdateConfig(ctx, mirConfig)
 	if err != nil {
+		return nil, err
+	}
+
+	if err = commit(ctx); err != nil {
 		return nil, err
 	}
 
@@ -205,7 +206,7 @@ func (flow *flow) HardSyncMirror(ctx context.Context, req *grpc.HardSyncMirrorRe
 	if err != nil {
 		return nil, err
 	}
-	defer rollback(ctx)
+	defer rollback()
 
 	mirConfig, err := store.Mirror().GetConfig(ctx, ns.ID)
 	if err != nil {
@@ -235,7 +236,7 @@ func (flow *flow) MirrorInfo(ctx context.Context, req *grpc.MirrorInfoRequest) (
 	if err != nil {
 		return nil, err
 	}
-	defer rollback(ctx)
+	defer rollback()
 
 	mirConfig, err := store.Mirror().GetConfig(ctx, ns.ID)
 	if err != nil {
@@ -297,7 +298,7 @@ func (flow *flow) MirrorActivityLogs(ctx context.Context, req *grpc.MirrorActivi
 	if err != nil {
 		return nil, err
 	}
-	defer rollback(ctx)
+	defer rollback()
 
 	mirConfig, err := store.Mirror().GetConfig(ctx, ns.ID)
 	if err != nil {
@@ -351,7 +352,7 @@ func (flow *flow) MirrorActivityLogsParcels(req *grpc.MirrorActivityLogsRequest,
 	if err != nil {
 		return err
 	}
-	defer rollback(ctx)
+	defer rollback()
 
 	mirProcess, err := store.Mirror().GetProcess(ctx, mirProcessID)
 	if err != nil {

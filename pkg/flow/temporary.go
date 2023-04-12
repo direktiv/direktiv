@@ -92,7 +92,7 @@ func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.Variab
 			if err != nil {
 				return nil, err
 			}
-			defer rollback(ctx)
+			defer rollback()
 
 			file, err := fStore.ForRootID(im.cached.Namespace.ID).GetFile(ctx, key)
 			if errors.Is(err, filestore.ErrNotFound) {
@@ -119,7 +119,7 @@ func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.Variab
 				}
 			}
 
-			rollback(ctx)
+			rollback()
 		} else if ref == nil {
 			data = make([]byte, 0)
 		} else {

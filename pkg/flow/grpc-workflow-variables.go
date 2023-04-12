@@ -52,7 +52,7 @@ func (flow *flow) getWorkflow(ctx context.Context, namespace, path string) (ns *
 	if err != nil {
 		return
 	}
-	defer rollback(ctx)
+	defer rollback()
 
 	f, err = fStore.ForRootID(ns.ID).GetFile(ctx, path)
 	if err != nil {

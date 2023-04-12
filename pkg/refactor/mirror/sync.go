@@ -38,9 +38,7 @@ type mirroringJob struct {
 	direktivIgnore *ignore.GitIgnore
 	rootChecksums  map[string]string
 
-	namespaceVars [][]string
-	workflowVars  [][]string
-	workflowIDs   map[string]uuid.UUID
+	workflowIDs map[string]uuid.UUID
 }
 
 func (j *mirroringJob) SetProcessStatus(store Store, process *Process, status string) *mirroringJob {
@@ -424,6 +422,7 @@ func parseDirektivVars(paths []string) ([][]string, [][]string) {
 				continue
 			}
 			parts := strings.Split(base, ".yaml.")
+			//nolint:gomnd
 			if len(parts) == 2 {
 				workflowVarPathsKeys = append(workflowVarPathsKeys, []string{p, parts[1]})
 			}
@@ -433,6 +432,7 @@ func parseDirektivVars(paths []string) ([][]string, [][]string) {
 				continue
 			}
 			parts := strings.Split(base, ".yml.")
+			//nolint:gomnd
 			if len(parts) == 2 {
 				workflowVarPathsKeys = append(workflowVarPathsKeys, []string{p, parts[1]})
 			}

@@ -35,7 +35,10 @@ import (
 	"gorm.io/gorm"
 )
 
-const parcelSize = 0x100000
+const (
+	parcelSize        = 0x100000
+	direktivSecretKey = "DIREKTIV_SECRETS_KEY"
+)
 
 type server struct {
 	ID uuid.UUID
@@ -158,14 +161,22 @@ func (srv *server) start(ctx context.Context) error {
 	srv.gormDB, err = gorm.Open(postgres.New(postgres.Config{
 		DSN:                  db,
 		PreferSimpleProtocol: false, // disables implicit prepared statement usage
+		// Conn:                 edb.DB(),
 	}), &gorm.Config{})
 	if err != nil {
 		return fmt.Errorf("creating filestore, err: %w", err)
 	}
+
+	gdb, err := srv.gormDB.DB()
+	if err != nil {
+		return fmt.Errorf("modifying gorm driver, err: %w", err)
+	}
+	gdb.SetMaxIdleConns(32)
+	gdb.SetMaxOpenConns(16)
 	// srv.fStore = psql.NewSQLFileStore(srv.gormDB)
 	// srv.dataStore = sql.NewSQLStore(srv.gormDB)
 
-	srv.mirrorManager = mirror.NewDefaultManager(srv.sugar, sql.NewSQLStore(srv.gormDB).Mirror(), psql.NewSQLFileStore(srv.gormDB), &mirror.GitSource{})
+	srv.mirrorManager = mirror.NewDefaultManager(srv.sugar, sql.NewSQLStore(srv.gormDB, os.Getenv(direktivSecretKey)).Mirror(), psql.NewSQLFileStore(srv.gormDB), &mirror.GitSource{})
 
 	srv.sugar.Debug("Initializing pub-sub.")
 
@@ -450,7 +461,7 @@ func (srv *server) cronPoll() {
 		srv.sugar.Error(err)
 		return
 	}
-	defer rollback(ctx)
+	defer rollback()
 
 	roots, err := fStore.GetAllRoots(ctx)
 	if err != nil {
@@ -572,13 +583,13 @@ func parent() string {
 	return elems[len(elems)-1]
 }
 
-func (flow *flow) beginSqlTx(ctx context.Context) (filestore.FileStore, datastore.Store, func(ctx context.Context) error, func(ctx context.Context), error) {
+func (flow *flow) beginSqlTx(ctx context.Context) (filestore.FileStore, datastore.Store, func(ctx context.Context) error, func(), error) {
 	res := flow.gormDB.WithContext(ctx).Begin()
 	if res.Error != nil {
 		return nil, nil, nil, nil, res.Error
 	}
-	rollbackFunc := func(ctx context.Context) {
-		err := res.WithContext(ctx).Rollback().Error
+	rollbackFunc := func() {
+		err := res.Rollback().Error
 		if err != nil {
 			if !strings.Contains(err.Error(), "already") {
 				fmt.Fprintf(os.Stderr, "failed to rollback transaction: %v\n", err)
@@ -589,7 +600,7 @@ func (flow *flow) beginSqlTx(ctx context.Context) (filestore.FileStore, datastor
 		return res.WithContext(ctx).Commit().Error
 	}
 
-	return psql.NewSQLFileStore(res), sql.NewSQLStore(res), commitFunc, rollbackFunc, nil
+	return psql.NewSQLFileStore(res), sql.NewSQLStore(res, os.Getenv(direktivSecretKey)), commitFunc, rollbackFunc, nil
 }
 
 func (flow *flow) runSqlTx(ctx context.Context, fun func(fStore filestore.FileStore, store datastore.Store) error) error {
@@ -597,7 +608,7 @@ func (flow *flow) runSqlTx(ctx context.Context, fun func(fStore filestore.FileSt
 	if err != nil {
 		return err
 	}
-	defer rollback(ctx)
+	defer rollback()
 
 	if err := fun(fStore, store); err != nil {
 		return err

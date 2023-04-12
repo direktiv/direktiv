@@ -70,7 +70,7 @@ func (srv *server) traverseToInstanceVariable(ctx context.Context, namespace, in
 	if err != nil {
 		return nil, nil, nil, err
 	}
-	defer rollback(ctx)
+	defer rollback()
 
 	file, revision, err := fStore.GetRevision(ctx, cached.Instance.Revision)
 	if err != nil {
@@ -142,7 +142,7 @@ func (internal *internal) InstanceVariableParcels(req *grpc.VariableInternalRequ
 	if err != nil {
 		return err
 	}
-	defer rollback(ctx)
+	defer rollback()
 
 	file, revision, err := fStore.GetRevision(ctx, cached.Instance.Revision)
 	if err != nil {
@@ -238,7 +238,7 @@ func (internal *internal) ThreadVariableParcels(req *grpc.VariableInternalReques
 	if err != nil {
 		return err
 	}
-	defer rollback(ctx)
+	defer rollback()
 
 	file, revision, err := fStore.GetRevision(ctx, cached.Instance.Revision)
 	if err != nil {
