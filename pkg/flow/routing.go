@@ -156,7 +156,7 @@ func (engine *engine) mux(ctx context.Context, namespace, path, ref string) (*da
 	if err != nil {
 		return nil, err
 	}
-	defer rollback(ctx)
+	defer rollback()
 
 	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, path)
 	if err != nil {
@@ -171,26 +171,20 @@ func (engine *engine) mux(ctx context.Context, namespace, path, ref string) (*da
 							if !errors.Is(err2, filestore.ErrNotFound) {
 								err = err2
 							}
-							fmt.Println("X1")
 							return nil, err
 						}
 					} else {
 						err = err2
-						fmt.Println("X2")
 						return nil, err
 					}
 				}
 			} else {
-				fmt.Println("X3")
 				return nil, err
 			}
 		} else {
-			fmt.Println("X4")
 			return nil, err
 		}
 	}
-
-	fmt.Println("X5")
 
 	var rev *filestore.Revision
 
@@ -353,7 +347,7 @@ func (flow *flow) cronHandler(data []byte) {
 		flow.sugar.Error(err)
 		return
 	}
-	defer rollback(ctx)
+	defer rollback()
 
 	file, err := fStore.GetFile(ctx, id)
 	if err != nil {
@@ -365,7 +359,7 @@ func (flow *flow) cronHandler(data []byte) {
 		flow.sugar.Error(err)
 		return
 	}
-	rollback(ctx)
+	rollback()
 
 	ns, err := flow.edb.Namespace(ctx, file.RootID)
 	if err != nil {

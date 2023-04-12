@@ -686,7 +686,7 @@ func (engine *engine) subflowInvoke(ctx context.Context, caller *subflowCaller, 
 	if err != nil {
 		return nil, err
 	}
-	defer rollback(ctx)
+	defer rollback()
 
 	file, revision, err := fStore.GetRevision(ctx, pcached.Instance.Revision)
 	if err != nil {
@@ -1066,14 +1066,14 @@ func (engine *engine) EventsInvoke(workflowID string, events ...*cloudevents.Eve
 		engine.sugar.Error(err)
 		return
 	}
-	defer rollback(ctx)
+	defer rollback()
 
 	file, err := fStore.GetFile(ctx, id)
 	if err != nil {
 		engine.sugar.Error(err)
 		return
 	}
-	rollback(ctx)
+	rollback()
 
 	cached := new(database.CacheData)
 
