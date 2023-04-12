@@ -19,7 +19,7 @@ export const Default: Story = {
 };
 
 export const OutlineToggle = () => (
-  <Toggle aria-label="Toggle italic" variant="outline">
+  <Toggle aria-label="Toggle italic" outline>
     <RxFontItalic className="h-4 w-4" />
   </Toggle>
 );
