@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
 
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
 	"github.com/direktiv/direktiv/pkg/util"
@@ -13,19 +12,30 @@ import (
 )
 
 type sqlMirrorStore struct {
-	db *gorm.DB
+	db                  *gorm.DB
+	configEncryptionKey string
 }
 
-const (
-	encryptionKey = "DIREKTIV_SECRETS_KEY"
-)
+//nolint
+func (s sqlMirrorStore) SetNamespaceVariable(ctx context.Context, namespaceID uuid.UUID, key string, data []byte, hash string, mType string) error {
+	// TODO: implement me.
+	return nil
+}
 
-func crypt(config *mirror.Config, encrypt bool) error {
-	key := os.Getenv(encryptionKey)
+//nolint
+func (s sqlMirrorStore) SetWorkflowVariable(ctx context.Context, workflowID uuid.UUID, key string, data []byte, hash string, mType string) error {
+	// TODO: implement me.
+	return nil
+}
+
+func cryptDecryptConfig(config *mirror.Config, key string, encrypt bool) (*mirror.Config, error) {
+	resultConfig := &mirror.Config{}
+
+	*resultConfig = *config
 
 	targets := []*string{
-		&config.PrivateKeyPassphrase,
-		&config.PrivateKey,
+		&resultConfig.PrivateKeyPassphrase,
+		&resultConfig.PrivateKey,
 	}
 
 	for i := range targets {
@@ -41,36 +51,30 @@ func crypt(config *mirror.Config, encrypt bool) error {
 			b, err = util.DecryptDataBase64([]byte(key), *t)
 		}
 		if err != nil {
-			return err
+			return nil, err
 		}
 		*t = b
 	}
 
-	return nil
+	return resultConfig, nil
 }
 
 func (s sqlMirrorStore) CreateConfig(ctx context.Context, config *mirror.Config) (*mirror.Config, error) {
-	err := crypt(config, true)
+	newConfig, err := cryptDecryptConfig(config, s.configEncryptionKey, true)
 	if err != nil {
 		return nil, err
 	}
-	newConfig := *config
 
 	res := s.db.WithContext(ctx).Table("mirror_configs").Create(&newConfig)
 	if res.Error != nil {
 		return nil, res.Error
 	}
 
-	err = crypt(&newConfig, false)
-	if err != nil {
-		return nil, err
-	}
-
-	return &newConfig, nil
+	return s.GetConfig(ctx, newConfig.ID)
 }
 
 func (s sqlMirrorStore) UpdateConfig(ctx context.Context, config *mirror.Config) (*mirror.Config, error) {
-	err := crypt(config, true)
+	config, err := cryptDecryptConfig(config, s.configEncryptionKey, true)
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +104,7 @@ func (s sqlMirrorStore) GetConfig(ctx context.Context, id uuid.UUID) (*mirror.Co
 		return nil, res.Error
 	}
 
-	err := crypt(config, false)
+	config, err := cryptDecryptConfig(config, s.configEncryptionKey, false)
 	if err != nil {
 		return nil, err
 	}

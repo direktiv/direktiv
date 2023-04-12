@@ -35,7 +35,10 @@ import (
 	"gorm.io/gorm"
 )
 
-const parcelSize = 0x100000
+const (
+	parcelSize        = 0x100000
+	direktivSecretKey = "DIREKTIV_SECRETS_KEY"
+)
 
 type server struct {
 	ID uuid.UUID
@@ -153,7 +156,7 @@ func (srv *server) start(ctx context.Context) error {
 
 	srv.database = database.NewCachedDatabase(srv.sugar, edb, srv)
 	defer srv.cleanup(srv.database.Close)
-	// fmt.Printf(">>>>>> dsn %s\n", db)
+	fmt.Printf(">>>>>> dsn %s\n", db)
 
 	srv.gormDB, err = gorm.Open(postgres.New(postgres.Config{
 		DSN:                  db,
@@ -173,7 +176,15 @@ func (srv *server) start(ctx context.Context) error {
 	// srv.fStore = psql.NewSQLFileStore(srv.gormDB)
 	// srv.dataStore = sql.NewSQLStore(srv.gormDB)
 
-	srv.mirrorManager = mirror.NewDefaultManager(srv.sugar, sql.NewSQLStore(srv.gormDB).Mirror(), psql.NewSQLFileStore(srv.gormDB), &mirror.GitSource{})
+	if os.Getenv(direktivSecretKey) == "" {
+		return fmt.Errorf("empty env variable '%s'", direktivSecretKey)
+	}
+
+	if len(os.Getenv(direktivSecretKey))%16 != 0 {
+		return fmt.Errorf("invalid env variable '%s' length", direktivSecretKey)
+	}
+
+	srv.mirrorManager = mirror.NewDefaultManager(srv.sugar, sql.NewSQLStore(srv.gormDB, os.Getenv(direktivSecretKey)).Mirror(), psql.NewSQLFileStore(srv.gormDB), &mirror.GitSource{})
 
 	srv.sugar.Debug("Initializing pub-sub.")
 
@@ -590,7 +601,7 @@ func (flow *flow) beginSqlTx(ctx context.Context) (filestore.FileStore, datastor
 		return res.WithContext(ctx).Commit().Error
 	}
 
-	return psql.NewSQLFileStore(res), sql.NewSQLStore(res), commitFunc, rollbackFunc, nil
+	return psql.NewSQLFileStore(res), sql.NewSQLStore(res, os.Getenv(direktivSecretKey)), commitFunc, rollbackFunc, nil
 }
 
 func (flow *flow) runSqlTx(ctx context.Context, fun func(fStore filestore.FileStore, store datastore.Store) error) error {

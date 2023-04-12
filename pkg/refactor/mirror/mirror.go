@@ -68,6 +68,12 @@ type Store interface {
 
 	GetProcess(ctx context.Context, id uuid.UUID) (*Process, error)
 	GetProcessesByConfig(ctx context.Context, configID uuid.UUID) ([]*Process, error)
+
+	// TODO: this need to be refactored.
+	SetNamespaceVariable(ctx context.Context, namespaceID uuid.UUID, key string, data []byte, hash string, mType string) error
+
+	// TODO: this need to be refactored.
+	SetWorkflowVariable(ctx context.Context, workflowID uuid.UUID, key string, data []byte, hash string, mType string) error
 }
 
 type Manager interface {
@@ -101,8 +107,9 @@ func (d *DefaultManager) StartMirroringProcess(ctx context.Context, config *Conf
 
 	go func() {
 		err := (&mirroringJob{
-			ctx: context.TODO(),
-			lg:  d.lg,
+			ctx:         context.TODO(),
+			workflowIDs: map[string]uuid.UUID{},
+			lg:          d.lg,
 		}).
 			SetProcessStatus(d.store, process, processStatusExecuting).
 			CreateTempDirectory().
@@ -110,12 +117,12 @@ func (d *DefaultManager) StartMirroringProcess(ctx context.Context, config *Conf
 			CreateSourceFilesList().
 			// ParseIgnoreFile("/.direktivignore").
 			// FilterIgnoredFiles().
-			ParseDirektivVariable().
 
 			// TODO: we need to implement a mechanism to synchronize multiple mirroring processes.
 			ReadRootFilesChecksums(d.fStore, config.ID).
 			CreateAllDirectories(d.fStore, config.ID).
 			CopyFilesToRoot(d.fStore, config.ID).
+			ParseDirektivVars(d.store, config.ID).
 			CropFilesAndDirectoriesInRoot(d.fStore, config.ID).
 			DeleteTempDirectory().
 			SetProcessStatus(d.store, process, processStatusComplete).Error()
