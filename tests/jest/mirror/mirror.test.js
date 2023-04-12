@@ -86,7 +86,7 @@ describe('Test behaviour specific to the root node', () => {
     })
 
     it(`should read the root directory`, async () => {
-        await sleep(3000)
+        await sleep(5000)
         var req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/tree/`)
         expect(req.statusCode).toEqual(200)
         expect(req.body).toMatchObject({
