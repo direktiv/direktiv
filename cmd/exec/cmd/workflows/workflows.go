@@ -582,5 +582,7 @@ func init() {
 	root.RootCmd.AddCommand(workflowCmd)
 	workflowCmd.AddCommand(pushCmd)
 	pushCmd.Flags().StringVarP(&executeFlag, "exec", "e", "", "execute the WORKFLOWFILE from the direktiv package after successfully pushing.")
+	pushCmd.Flags().StringVarP(&input, "input", "i", "", "Path to file to be used as input data for executed workflow. If unset, stdin will be used as input data if available.")
 	workflowCmd.AddCommand(execCmd)
+	execCmd.Flags().StringVarP(&input, "input", "i", "", "Path to file to be used as input data for executed workflow. If unset, stdin will be used as input data if available.")
 }
