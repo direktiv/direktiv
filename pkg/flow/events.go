@@ -379,12 +379,12 @@ func (events *events) handleEvent(ns *database.Namespace, ce *cloudevents.Event)
 	// this gives a basic list of eligible workflow instances waiting
 	// we get all
 	rows, err := db.Query(`select
-	we.oid, signature, count, we.events, workflow_wfevents, v
+	we.oid, signature, count, we.events, workflow_id, v
 	from events we
-	inner join workflows w
-		on w.oid = workflow_wfevents
+	inner join files w
+		on w.id = workflow_id
 	inner join namespaces n
-		on n.oid = w.namespace_workflows,
+		on n.oid = w.root_id,
 	jsonb_array_elements(events) as v
 	where v::json->>'type' = $1 and v::json->>'value' = ''
 	and n.oid = $2`, ce.Type(), ns.ID.String())
@@ -482,7 +482,7 @@ func (flow *flow) EventListeners(ctx context.Context, req *grpc.EventListenersRe
 				}
 				defer rollback()
 
-				file, err := fStore.GetFile(ctx, *wfID)
+				file, err := fStore.GetFile(ctx, wfID)
 				if err != nil {
 					return nil, err
 				}
@@ -587,7 +587,7 @@ resend:
 				}
 				defer rollback()
 
-				file, err := fStore.GetFile(ctx, *wfID)
+				file, err := fStore.GetFile(ctx, wfID)
 				if err != nil {
 					return err
 				}

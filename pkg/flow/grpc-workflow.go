@@ -103,7 +103,7 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 		return nil, err
 	}
 
-	fStore, _, commit, rollback, err := flow.beginSqlTx(ctx)
+	fStore, store, commit, rollback, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -128,6 +128,16 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 	err = workflow.Load(data)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	_, router, err := getRouter(ctx, fStore, store, file)
+	if err != nil {
+		return nil, err
+	}
+
+	err = flow.configureWorkflowStarts(ctx, fStore, store, ns, file, router)
+	if err != nil {
+		return nil, err
 	}
 
 	if err = commit(ctx); err != nil {
@@ -170,7 +180,7 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 		return nil, err
 	}
 
-	fStore, _, commit, rollback, err := flow.beginSqlTx(ctx)
+	fStore, store, commit, rollback, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -198,6 +208,16 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 		return nil, err
 	}
 
+	_, router, err := getRouter(ctx, fStore, store, file)
+	if err != nil {
+		return nil, err
+	}
+
+	err = flow.configureWorkflowStarts(ctx, fStore, store, ns, file, router)
+	if err != nil {
+		return nil, err
+	}
+
 	if err = commit(ctx); err != nil {
 		return nil, err
 	}
@@ -221,7 +241,7 @@ func (flow *flow) SaveHead(ctx context.Context, req *grpc.SaveHeadRequest) (*grp
 		return nil, err
 	}
 
-	fStore, _, commit, rollback, err := flow.beginSqlTx(ctx)
+	fStore, store, commit, rollback, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -251,6 +271,16 @@ func (flow *flow) SaveHead(ctx context.Context, req *grpc.SaveHeadRequest) (*grp
 		return nil, err
 	}
 
+	_, router, err := getRouter(ctx, fStore, store, file)
+	if err != nil {
+		return nil, err
+	}
+
+	err = flow.configureWorkflowStarts(ctx, fStore, store, ns, file, router)
+	if err != nil {
+		return nil, err
+	}
+
 	if err = commit(ctx); err != nil {
 		return nil, err
 	}
@@ -275,7 +305,7 @@ func (flow *flow) DiscardHead(ctx context.Context, req *grpc.DiscardHeadRequest)
 		return nil, err
 	}
 
-	fStore, _, commit, rollback, err := flow.beginSqlTx(ctx)
+	fStore, store, commit, rollback, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -305,6 +335,16 @@ func (flow *flow) DiscardHead(ctx context.Context, req *grpc.DiscardHeadRequest)
 		return nil, err
 	}
 
+	_, router, err := getRouter(ctx, fStore, store, file)
+	if err != nil {
+		return nil, err
+	}
+
+	err = flow.configureWorkflowStarts(ctx, fStore, store, ns, file, router)
+	if err != nil {
+		return nil, err
+	}
+
 	if err = commit(ctx); err != nil {
 		return nil, err
 	}
@@ -320,8 +360,42 @@ func (flow *flow) DiscardHead(ctx context.Context, req *grpc.DiscardHeadRequest)
 }
 
 func (flow *flow) ToggleWorkflow(ctx context.Context, req *grpc.ToggleWorkflowRequest) (*emptypb.Empty, error) {
-	// TODO: yassir, question this controller.
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
+
+	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
+	if err != nil {
+		return nil, err
+	}
+
+	fStore, store, commit, rollback, err := flow.beginSqlTx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer rollback()
+
+	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
+	if err != nil {
+		return nil, err
+	}
+
+	annotations, router, err := getRouter(ctx, fStore, store, file)
+	if err != nil {
+		return nil, err
+	}
+
+	router.Enabled = !router.Enabled
+
+	annotations.Data = annotations.Data.SetEntry(routerAnnotationKey, router.Marshal())
+
+	err = store.FileAnnotations().Set(ctx, annotations)
+	if err != nil {
+		return nil, err
+	}
+
+	err = commit(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	return &emptypb.Empty{}, nil
 }
@@ -350,7 +424,7 @@ func (flow *flow) SetWorkflowEventLogging(ctx context.Context, req *grpc.SetWork
 	if errors.Is(err, core.ErrFileAnnotationsNotSet) {
 		annotations = &core.FileAnnotations{
 			FileID: file.ID,
-			Data:   nil,
+			Data:   "",
 		}
 	} else if err != nil {
 		return nil, err

@@ -127,9 +127,19 @@ func (q *FileQuery) GetRevision(ctx context.Context, id uuid.UUID) (*filestore.R
 
 //nolint:revive
 func (q *FileQuery) GetAllRevisions(ctx context.Context) ([]*filestore.Revision, error) {
-	// TODO implement me
-	// panic("implement me")
-	return nil, nil
+	if q.file.Typ != filestore.FileTypeWorkflow {
+		return nil, filestore.ErrFileTypeIsNotWorkflow
+	}
+
+	var list []*filestore.Revision
+	res := q.db.WithContext(ctx).
+		Where("file_id", q.file.ID).
+		Find(&list)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+
+	return list, nil
 }
 
 var _ filestore.FileQuery = &FileQuery{}
