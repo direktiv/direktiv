@@ -417,25 +417,25 @@ func createWfDirectory(dir string) error {
 }
 
 var (
-	outputFlag     string
-	executeFlag    string
-	execNoPushFlag bool
-	input          string
+	executeFlag string
+	input       string
 )
 
 var execCmd = &cobra.Command{
 	Use:   "exec WORKFLOW_PATH",
-	Short: "Execute a individual direktiv workflow on a remote Server.",
-	Long:  `Execute a individual direktiv workflow on a remote Server.`,
-	Args:  cobra.ExactArgs(1),
+	Short: "Receives a workflow yaml from stdin and executes it with the given path on the Server.",
+	Long: `Receives a workflow yaml from stdin and executes it with the given path on the Server.
+	
+	EXAMPLE cat workflows/start.yaml | ./direktivctl --addr http://192.168.122.232/ -n ns workflows exec folderA/start
+	
+	will upload the input from stdin to the locatation on the server folderA as workflow start and execute it.
+	If you need to redirect the output to a file use: 
+	
+	cat workflows/start.yaml | ./direktivctl --addr http://192.168.122.232/ -n ns workflows exec folderA/start > mylog.log`,
+	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		relativeDir := root.GetConfigPath()
-		path := root.GetRelativePath(relativeDir, args[0])
-		path = root.GetPath(path)
+		urlExecute := fmt.Sprintf("%s/tree/%s?op=execute&ref=latest", root.UrlPrefix, strings.TrimPrefix(args[0], "/"))
 
-		fmt.Printf("PATH %v %v\n", path, args[0])
-
-		urlExecute := fmt.Sprintf("%s/tree/%s?op=execute&ref=latest", root.UrlPrefix, strings.TrimPrefix(path, "/"))
 		instanceDetails, err := executeWorkflow(urlExecute)
 		if err != nil {
 			log.Fatalf("Failed to execute workflow: %v\n", err)
@@ -447,15 +447,8 @@ var execCmd = &cobra.Command{
 			fmt.Println(err)
 			return
 		}
-		if outputFlag != "" {
-			err := os.WriteFile(outputFlag, output, 0o600)
-			if err != nil {
-				log.Fatalf("failed to write output file: %v\n", err)
-			}
-		} else {
-			cmd.PrintErrln("------INSTANCE OUTPUT------")
-			fmt.Println(string(output))
-		}
+		cmd.PrintErrln("------INSTANCE OUTPUT------")
+		fmt.Println(string(output))
 	},
 }
 
@@ -465,22 +458,22 @@ type executeResponse struct {
 
 func executeWorkflow(url string) (executeResponse, error) {
 	var instanceDetails executeResponse
-
-	// Read input data from flag file
-	inputData, err := root.SafeLoadFile(input)
-	if err != nil {
-		return instanceDetails, fmt.Errorf("failed to load input file: %w", err)
-	}
-
+	var inputData *bytes.Buffer
+	var err error
+	fmt.Printf("test")
 	// If inputData is empty attempt to read from stdin
-	if inputData.Len() == 0 {
+	if input == "" {
 		inputData, err = root.SafeLoadStdIn()
 		if err != nil {
 			return instanceDetails, fmt.Errorf("failed to load stdin: %w", err)
 		}
+	} else {
+		inputData, err = root.SafeLoadFile(input)
+		if err != nil {
+			return instanceDetails, fmt.Errorf("failed to load input file: %w", err)
+		}
 	}
 
-	// If no file or stdin input data was provided, set data to {}
 	if inputData.Len() == 0 {
 		inputData = bytes.NewBufferString("{}")
 	}
@@ -588,9 +581,6 @@ func getOutput(url string) ([]byte, error) {
 func init() {
 	root.RootCmd.AddCommand(workflowCmd)
 	workflowCmd.AddCommand(pushCmd)
-	pushCmd.Flags().StringVarP(&executeFlag, "exec", "e", "", "execute the WORKFLOWFILE from the direktiv package after successfully pushing")
+	pushCmd.Flags().StringVarP(&executeFlag, "exec", "e", "", "execute the WORKFLOWFILE from the direktiv package after successfully pushing.")
 	workflowCmd.AddCommand(execCmd)
-
-	execCmd.Flags().StringVarP(&outputFlag, "output", "o", "", "Path where to write instance output. If unset output will be written to screen")
-	execCmd.Flags().StringVarP(&input, "input", "i", "", "Path to file to be used as input data for executed workflow. If unset, stdin will be used as input data if available.")
 }
