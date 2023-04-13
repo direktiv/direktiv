@@ -216,22 +216,6 @@ func GetRelativePath(configPath, targpath string) string {
 	return path
 }
 
-func GetPath(targpath string) string {
-	path := viper.GetString("path")
-
-	if path != "" {
-		fj := filepath.Join(path, filepath.Base(targpath))
-		path = strings.Trim(fj, "/")
-		return path
-	}
-
-	// if config file was found automatically, generate path relative to config dir
-
-	configPath := GetConfigPath()
-
-	return GetRelativePath(configPath, targpath)
-}
-
 func GetConfigPath() string {
 	if config.path != "" {
 		path := config.path
