@@ -119,7 +119,14 @@ The configuration MUST be present and located in the direktiv-package root-folde
 !!! The configuration-values in .direktiv.yaml from the CAN be overridden by using the global flags`,
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		dirs, files, err := getFiles(args[0])
+		p := args[0]
+		if p == "" {
+			p = root.GetConfigPath()
+		}
+		if p == "" {
+			root.Fail("PATH was not give as an argument or via the config file ")
+		}
+		dirs, files, err := getFiles(p)
 		if err != nil {
 			root.Fail("could not calculate impacted files: %v", err)
 		}
