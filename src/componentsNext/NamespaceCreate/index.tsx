@@ -46,6 +46,8 @@ const NamespaceCreate = ({ close }: { close: () => void }) => {
     ),
   });
 
+  // TODO: update cache after mutation
+  // TODO: redirect does not seem to work
   const { mutate, isLoading } = useCreateNamespace({
     onSuccess: (data) => {
       navigate(pages.explorer.createHref({ namespace: data.namespace.name }));
