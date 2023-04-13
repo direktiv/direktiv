@@ -102,9 +102,9 @@ type node struct {
 }
 
 var pushCmd = &cobra.Command{
-	Use:   "push PATH ...FLAG",
-	Short: "Pushes or updates your a local direktiv-project to the server",
-	Long: `Push or update your a local direktiv-project to the server. 
+	Use:   "push PATH",
+	Short: "Pushes or updates your a local direktiv-project to the server.",
+	Long: `Push or update your a local direktiv-project to the server.. 
 
 PATH MUST point to the root-folder in a direktiv package-format.
 package-format example:
