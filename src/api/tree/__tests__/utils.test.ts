@@ -3,6 +3,7 @@ import {
   forceLeadingSlash,
   removeLeadingSlash,
   removeTrailingSlash,
+  sortByName,
   sortFoldersFirst,
 } from "../utils";
 
@@ -22,7 +23,7 @@ const itemTemplate: NodeSchemaType = {
 };
 
 describe("sortFoldersFirst", () => {
-  test("will sort all directories to the top, followed by directories and sort them alphabetically ", () => {
+  test("will sort all directories to the top, followed by directories and sort them alphabetically", () => {
     const results: NodeSchemaType[] = [
       { ...itemTemplate, name: "workflowB", type: "workflow" },
       { ...itemTemplate, name: "workflowA", type: "workflow" },
@@ -42,6 +43,28 @@ describe("sortFoldersFirst", () => {
     ]);
   });
 });
+
+describe("sortByName", () =>
+  test("will sort array by name", () => {
+    const results = [
+      { name: "zZ" },
+      { name: "zz" },
+      { name: "abc" },
+      { name: "e" },
+      { name: "fa" },
+      { name: "f" },
+    ];
+
+    const resultSorted = results.sort(sortByName);
+    expect(resultSorted.map((x) => x.name)).toStrictEqual([
+      "abc",
+      "e",
+      "f",
+      "fa",
+      "zz",
+      "zZ",
+    ]);
+  }));
 
 describe("forceLeadingSlash", () => {
   test("path -> /path", () => {
