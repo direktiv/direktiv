@@ -18,10 +18,17 @@ var infoCmd = &cobra.Command{
 		cmd.Printf("directory: %s\n", path)
 		cmd.Printf("URL: %s\n", root.UrlPrefix)
 
-		pf, err := root.ProjectFolder()
+		cf, err := root.ConfigFilePath()
 		if err != nil {
-			root.Fail("could not get project folder: %s", err.Error())
+			root.Fail("could not get config folder: %s", err.Error())
 		}
+
+		cmd.Printf("used config: %s\n", cf)
+
+		pf, _ := root.ProjectFolder()
+		// if err != nil {
+		// 	root.Fail("could not get project folder: %s", err.Error())
+		// }
 
 		cmd.Printf("project dir: %s\n", pf)
 		cmd.Printf("namespace: %s\n", root.GetNamespace())

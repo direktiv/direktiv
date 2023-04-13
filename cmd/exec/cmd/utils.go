@@ -7,20 +7,25 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"path"
 	"strings"
 )
 
 var maxSize int64 = 1073741824
 
-func ProjectFolder() (string, error) {
-	pd, err := os.Getwd()
-	if err != nil {
-		return "", err
-	}
+func ConfigFilePath() (string, error) {
+	cd := "unset"
 
 	if config.path != "" {
-		return path.Dir(config.path), nil
+		return config.path, nil
+	}
+
+	return cd, nil
+}
+
+func ProjectFolder() (string, error) {
+	pd := config.ProfileConfig.Path
+	if pd == "" {
+		return "path is not set", fmt.Errorf("path is not set in the config-file")
 	}
 
 	return pd, nil
