@@ -46,13 +46,9 @@ const NamespaceCreate = ({ close }: { close: () => void }) => {
     ),
   });
 
-  // check against existing namespaces
   const { mutate, isLoading } = useCreateNamespace({
     onSuccess: (data) => {
-      // namespace &&
-      //   navigate(
-      //     pages.explorer.createHref({ namespace, path: data.node.path })
-      //   );
+      navigate(pages.explorer.createHref({ namespace: data.namespace.name }));
       close();
     },
   });
