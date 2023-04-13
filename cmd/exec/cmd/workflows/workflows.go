@@ -379,7 +379,7 @@ Will update the helloworld workflow and set the remote workflow variable 'data.j
 	Run: func(cmd *cobra.Command, args []string) {
 		relativeDir := root.GetConfigPath()
 		path := root.GetRelativePath(relativeDir, args[0])
-		path = root.GetPath(path)
+		// path = root.GetPath(path)
 
 		if !execNoPushFlag {
 			err := updateRemoteWorkflow(path, args[0])
