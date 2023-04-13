@@ -14,6 +14,7 @@ import { fileNameSchema } from "../../api/tree/schema";
 import { pages } from "../../util/router/pages";
 import { useCreateNamespace } from "../../api/namespaces/mutate/createNamespace";
 import { useListNamespaces } from "../../api/namespaces/query/get";
+import { useNamespaceActions } from "../../util/store/namespace";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -24,7 +25,7 @@ type FormInput = {
 
 const NamespaceCreate = ({ close }: { close: () => void }) => {
   const { data } = useListNamespaces();
-
+  const { setNamespace } = useNamespaceActions();
   const existingNamespaces = data?.results.map((n) => n.name) || [];
 
   const navigate = useNavigate();
@@ -46,10 +47,9 @@ const NamespaceCreate = ({ close }: { close: () => void }) => {
     ),
   });
 
-  // TODO: update cache after mutation
-  // TODO: redirect does not seem to work
   const { mutate, isLoading } = useCreateNamespace({
     onSuccess: (data) => {
+      setNamespace(data.namespace.name);
       navigate(pages.explorer.createHref({ namespace: data.namespace.name }));
       close();
     },
