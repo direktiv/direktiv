@@ -35,3 +35,6 @@ export const sortFoldersFirst = (
 
   return a.name.localeCompare(b.name);
 };
+
+export const sortByName = (a: { name: string }, b: { name: string }): number =>
+  a.name.localeCompare(b.name);

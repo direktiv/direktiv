@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { NamespaceCreatedSchema } from "../schema";
 import type { NamespaceListSchemaType } from "../schema";
 import { namespaceKeys } from "..";
+import { sortByName } from "../../tree/utils";
 import { useApiKey } from "../../../util/store/apiKey";
 import { useToast } from "../../../design/Toast";
 
@@ -39,7 +40,7 @@ export const useCreateNamespace = ({
           const oldResults = oldData?.results;
           return {
             ...oldData,
-            results: [...oldResults, data.namespace],
+            results: [...oldResults, data.namespace].sort(sortByName),
           };
         }
       );
