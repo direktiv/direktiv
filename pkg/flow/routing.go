@@ -435,13 +435,16 @@ func (flow *flow) cronHandler(data []byte) {
 	flow.engine.queue(im)
 }
 
-func (flow *flow) configureWorkflowStarts(ctx context.Context, fStore filestore.FileStore, store mirror.FileAnnotationsStore, nsID uuid.UUID, file *filestore.File, router *routerData) error {
+func (flow *flow) configureWorkflowStarts(ctx context.Context, fStore filestore.FileStore, store mirror.FileAnnotationsStore, nsID uuid.UUID, file *filestore.File, router *routerData, strict bool) error {
 	ms, verr, err := flow.validateRouter(ctx, fStore, store, file)
 	if err != nil {
 		return err
 	}
 	if verr != nil {
-		return verr
+		if strict {
+			return verr
+		}
+		// TODO: yassir, log verr to the mirror activity somehow
 	}
 
 	if ms == nil {
@@ -467,7 +470,7 @@ func (flow *flow) wfConfigHook(ctx context.Context, fStore filestore.FileStore, 
 		return err
 	}
 
-	err = flow.configureWorkflowStarts(ctx, fStore, store, nsID, file, router)
+	err = flow.configureWorkflowStarts(ctx, fStore, store, nsID, file, router, false)
 	if err != nil {
 		return err
 	}

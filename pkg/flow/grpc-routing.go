@@ -115,7 +115,7 @@ func (flow *flow) EditRouter(ctx context.Context, req *grpc.EditRouterRequest) (
 		return nil, err
 	}
 
-	err = flow.configureWorkflowStarts(ctx, fStore, store, ns.ID, file, router)
+	err = flow.configureWorkflowStarts(ctx, fStore, store, ns.ID, file, router, true)
 	if err != nil {
 		return nil, err
 	}
