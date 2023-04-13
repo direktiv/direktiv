@@ -3,6 +3,7 @@ package psql
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"path/filepath"
@@ -127,8 +128,8 @@ func (q *FileQuery) GetRevision(ctx context.Context, id uuid.UUID) (*filestore.R
 
 //nolint:revive
 func (q *FileQuery) GetAllRevisions(ctx context.Context) ([]*filestore.Revision, error) {
-	if q.file.Typ != filestore.FileTypeWorkflow {
-		return nil, filestore.ErrFileTypeIsNotWorkflow
+	if q.file.Typ == filestore.FileTypeDirectory {
+		return nil, filestore.ErrFileTypeIsDirectory
 	}
 
 	var list []*filestore.Revision
@@ -202,8 +203,22 @@ func (q *FileQuery) CreateRevision(ctx context.Context, tags filestore.RevisionT
 	}
 	newChecksum := string(q.checksumFunc(data))
 
-	// set current revisions 'is_current' flag to false.
+	// if newChecksum didn't change, then return the latest revision without creating a new one.
+	latestRev := &filestore.Revision{}
 	res := q.db.WithContext(ctx).
+		Where("file_id", q.file.ID).
+		Where("is_current", true).
+		Where("checksum", newChecksum).
+		First(latestRev)
+	if res.Error != nil && !errors.Is(res.Error, gorm.ErrRecordNotFound) {
+		return nil, res.Error
+	}
+	if res.Error == nil {
+		return latestRev, nil
+	}
+
+	// set current revisions 'is_current' flag to false.
+	res = q.db.WithContext(ctx).
 		Model(&filestore.Revision{}).
 		Where("file_id", q.file.ID).
 		Where("is_current", true).
