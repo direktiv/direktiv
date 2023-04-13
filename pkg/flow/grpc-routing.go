@@ -2,13 +2,10 @@ package flow
 
 import (
 	"context"
-	"encoding/json"
-	"errors"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
-	"github.com/direktiv/direktiv/pkg/refactor/core"
 )
 
 func convertRoutesForOutput(router *routerData) []*grpc.Route {
@@ -41,24 +38,9 @@ func (flow *flow) Router(ctx context.Context, req *grpc.RouterRequest) (*grpc.Ro
 		return nil, err
 	}
 
-	var router = &routerData{
-		Enabled: true,
-		Routes:  make(map[string]int),
-	}
-
-	annotations, err := store.FileAnnotations().Get(ctx, file.ID)
+	_, router, err := getRouter(ctx, fStore, store, file)
 	if err != nil {
-		if !errors.Is(err, core.ErrFileAnnotationsNotSet) {
-			return nil, err
-		}
-	} else {
-		s := annotations.Data.GetEntry(routerAnnotationKey)
-		if s != "" && s != `""` && s != `\"\"` {
-			err = json.Unmarshal([]byte(s), &router)
-			if err != nil {
-				return nil, err
-			}
-		}
+		return nil, err
 	}
 
 	resp := &grpc.RouterResponse{}
@@ -115,27 +97,9 @@ func (flow *flow) EditRouter(ctx context.Context, req *grpc.EditRouterRequest) (
 		return nil, err
 	}
 
-	annotations, err := store.FileAnnotations().Get(ctx, file.ID)
+	annotations, router, err := getRouter(ctx, fStore, store, file)
 	if err != nil {
-		if !errors.Is(err, core.ErrFileAnnotationsNotSet) {
-			return nil, err
-		}
-		annotations = &core.FileAnnotations{
-			FileID: file.ID,
-			Data:   core.NewFileAnnotationsData(make(map[string]string)),
-		}
-	}
-
-	s := annotations.Data.GetEntry(routerAnnotationKey)
-	router := &routerData{
-		Enabled: true,
-		Routes:  make(map[string]int),
-	}
-	if s != "" && s != `""` {
-		err = json.Unmarshal([]byte(s), &router)
-		if err != nil {
-			return nil, err
-		}
+		return nil, err
 	}
 
 	router.Enabled = req.Live
@@ -147,6 +111,11 @@ func (flow *flow) EditRouter(ctx context.Context, req *grpc.EditRouterRequest) (
 	annotations.Data = annotations.Data.SetEntry(routerAnnotationKey, router.Marshal())
 
 	err = store.FileAnnotations().Set(ctx, annotations)
+	if err != nil {
+		return nil, err
+	}
+
+	err = flow.configureWorkflowStarts(ctx, fStore, store, ns, file, router)
 	if err != nil {
 		return nil, err
 	}

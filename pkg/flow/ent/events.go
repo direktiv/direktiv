@@ -33,7 +33,7 @@ type Events struct {
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// WorkflowID holds the value of the "workflow_id" field.
-	WorkflowID *uuid.UUID `json:"workflow_id,omitempty"`
+	WorkflowID uuid.UUID `json:"workflow_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the EventsQuery when eager-loading is set.
 	Edges                        EventsEdges `json:"edges"`
@@ -94,15 +94,13 @@ func (*Events) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case events.FieldWorkflowID:
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case events.FieldEvents, events.FieldCorrelations, events.FieldSignature:
 			values[i] = new([]byte)
 		case events.FieldCount:
 			values[i] = new(sql.NullInt64)
 		case events.FieldCreatedAt, events.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case events.FieldID:
+		case events.FieldID, events.FieldWorkflowID:
 			values[i] = new(uuid.UUID)
 		case events.ForeignKeys[0]: // instance_eventlisteners
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
@@ -170,11 +168,10 @@ func (e *Events) assignValues(columns []string, values []any) error {
 				e.UpdatedAt = value.Time
 			}
 		case events.FieldWorkflowID:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
+			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field workflow_id", values[i])
-			} else if value.Valid {
-				e.WorkflowID = new(uuid.UUID)
-				*e.WorkflowID = *value.S.(*uuid.UUID)
+			} else if value != nil {
+				e.WorkflowID = *value
 			}
 		case events.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
@@ -251,10 +248,8 @@ func (e *Events) String() string {
 	builder.WriteString("updated_at=")
 	builder.WriteString(e.UpdatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
-	if v := e.WorkflowID; v != nil {
-		builder.WriteString("workflow_id=")
-		builder.WriteString(fmt.Sprintf("%v", *v))
-	}
+	builder.WriteString("workflow_id=")
+	builder.WriteString(fmt.Sprintf("%v", e.WorkflowID))
 	builder.WriteByte(')')
 	return builder.String()
 }

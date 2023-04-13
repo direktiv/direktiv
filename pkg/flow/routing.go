@@ -25,6 +25,30 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+func getRouter(ctx context.Context, fStore filestore.FileStore, store datastore.Store, file *filestore.File) (*core.FileAnnotations, *routerData, error) {
+	var router = &routerData{
+		Enabled: true,
+		Routes:  make(map[string]int),
+	}
+
+	annotations, err := store.FileAnnotations().Get(ctx, file.ID)
+	if err != nil {
+		if !errors.Is(err, core.ErrFileAnnotationsNotSet) {
+			return nil, nil, err
+		}
+	} else {
+		s := annotations.Data.GetEntry(routerAnnotationKey)
+		if s != "" && s != `""` && s != `\"\"` {
+			err = json.Unmarshal([]byte(s), &router)
+			if err != nil {
+				return nil, nil, err
+			}
+		}
+	}
+
+	return annotations, router, nil
+}
+
 type muxStart struct {
 	Enabled  bool                         `json:"enabled"`
 	Type     string                       `json:"type"`
@@ -82,24 +106,9 @@ func (r *routerData) Marshal() string {
 
 func (srv *server) validateRouter(ctx context.Context, fStore filestore.FileStore, store datastore.Store, file *filestore.File) (*muxStart, error, error) {
 
-	router := &routerData{
-		Enabled: true,
-		Routes:  make(map[string]int),
-	}
-
-	annotations, err := store.FileAnnotations().Get(ctx, file.ID)
+	_, router, err := getRouter(ctx, fStore, store, file)
 	if err != nil {
-		if !errors.Is(err, core.ErrFileAnnotationsNotSet) {
-			return nil, nil, err
-		}
-	} else {
-		s := annotations.Data.GetEntry(routerAnnotationKey)
-		if s != "" {
-			err = json.Unmarshal([]byte(s), router)
-			if err != nil {
-				return nil, nil, err
-			}
-		}
+		return nil, nil, err
 	}
 
 	if len(router.Routes) == 0 {
@@ -135,8 +144,9 @@ func (srv *server) validateRouter(ctx context.Context, fStore filestore.FileStor
 		uid, err := uuid.Parse(ref)
 		if err == nil {
 			rev, err = fStore.ForFile(file).GetRevision(ctx, uid)
-		}
-		if err != nil {
+		} else if ref == "latest" {
+			rev, err = fStore.ForFile(file).GetCurrentRevision(ctx)
+		} else {
 			rev, err = fStore.ForFile(file).GetRevisionByTag(ctx, ref)
 		}
 		if err != nil {
@@ -207,23 +217,9 @@ func (engine *engine) mux(ctx context.Context, namespace, path, ref string) (*da
 		}
 	}
 
-	router := &routerData{
-		Enabled: true,
-		Routes:  make(map[string]int),
-	}
-	annotations, err := store.FileAnnotations().Get(ctx, file.ID)
+	_, router, err := getRouter(ctx, fStore, store, file)
 	if err != nil {
-		if !errors.Is(err, core.ErrFileAnnotationsNotSet) {
-			return nil, err
-		}
-	} else {
-		s := annotations.Data.GetEntry(routerAnnotationKey)
-		if s != "" && s != `""` {
-			err = json.Unmarshal([]byte(s), &router)
-			if err != nil {
-				return nil, err
-			}
-		}
+		return nil, err
 	}
 
 	if !router.Enabled {
@@ -427,4 +423,30 @@ func (flow *flow) cronHandler(data []byte) {
 	}
 
 	flow.engine.queue(im)
+}
+
+func (flow *flow) configureWorkflowStarts(ctx context.Context, fStore filestore.FileStore, store datastore.Store, ns *database.Namespace, file *filestore.File, router *routerData) error {
+	ms, verr, err := flow.validateRouter(ctx, fStore, store, file)
+	if err != nil {
+		return err
+	}
+	if verr != nil {
+		return verr
+	}
+
+	if ms == nil {
+		ms = &muxStart{
+			Enabled: false,
+			Type:    model.StartTypeDefault.String(),
+		}
+	}
+
+	err = flow.events.processWorkflowEvents(ctx, ns, file, ms)
+	if err != nil {
+		return err
+	}
+
+	flow.pubsub.ConfigureRouterCron(file.ID.String(), ms.Cron, ms.Enabled)
+
+	return nil
 }

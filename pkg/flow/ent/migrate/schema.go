@@ -109,7 +109,7 @@ var (
 		{Name: "count", Type: field.TypeInt},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "workflow_id", Type: field.TypeUUID},
+		{Name: "workflow_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "instance_eventlisteners", Type: field.TypeUUID, Nullable: true},
 		{Name: "namespace_namespacelisteners", Type: field.TypeUUID},
 	}

@@ -16,7 +16,7 @@ type sqlFileAnnotationsStore struct {
 
 func (s *sqlFileAnnotationsStore) Get(ctx context.Context, fileID uuid.UUID) (*core.FileAnnotations, error) {
 	annotations := &core.FileAnnotations{FileID: fileID}
-	res := s.db.WithContext(ctx).First(annotations)
+	res := s.db.WithContext(ctx).Where("file_id", annotations.FileID).First(annotations)
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 		return nil, core.ErrFileAnnotationsNotSet
 	}
