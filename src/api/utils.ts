@@ -59,9 +59,12 @@ export const apiFactory =
       headers: {
         ...(apiKey ? getAuthHeader(apiKey) : {}),
       },
-      ...(params ? { body: JSON.stringify(params) } : {}),
+      ...(params
+        ? {
+            body: typeof params === "string" ? params : JSON.stringify(params),
+          }
+        : {}),
     });
-
     if (res.ok) {
       // if we can not evaluate the response, we have null as the default
       let parsedResponse = null;
