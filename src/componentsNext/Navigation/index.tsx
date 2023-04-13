@@ -4,7 +4,6 @@ import { createClassNames } from "../../design/NavigationLink";
 import { pages } from "../../util/router/pages";
 import { useNamespace } from "../../util/store/namespace";
 
-// TODO
 const Navigation: FC = () => {
   const namespace = useNamespace();
   if (!namespace) return null;
