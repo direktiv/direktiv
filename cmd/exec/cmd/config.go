@@ -16,7 +16,10 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const DefaultConfigName = project.ConfigFile
+const (
+	DefaultConfigName = ".direktiv.profile.yaml"
+	DefaultConfigPath = ".config/direktiv/"
+)
 
 type ProfileConfig struct {
 	ID        string `yaml:"id" mapstructure:"profile"`
@@ -115,34 +118,40 @@ func findConfig() string {
 		Fail("Failed to locate place in filesystem: %v\n", err)
 	}
 
-	for prev := ""; dir != prev; dir = filepath.Dir(dir) {
-		path := filepath.Join(dir, DefaultConfigName)
+	dir = filepath.Dir(dir)
+	path := filepath.Join(dir, DefaultConfigName)
 
-		if _, err := os.Stat(path); err == nil {
-			data, err := os.ReadFile(path)
-			if err != nil {
-				Fail("Failed to read config file: %v", err)
-			}
-
-			err = yaml.Unmarshal(data, &config)
-			if err != nil {
-				Fail("Failed to parse config file: %v", err)
-			}
-
-			if len(config.Profiles) > 0 {
-				if config.Addr != "" || config.ID != "" || config.Auth != "" || config.MaxSize != 0 ||
-					config.Namespace != "" || config.Path != "" {
-					Fail("config file cannot have top-level values alongside profiles")
-				}
-			}
-
-			return path
+	_, err = os.Stat(path)
+	if err != nil {
+		home, err := os.UserHomeDir()
+		if err != nil {
+			return ""
 		}
-
-		prev = dir
+		path = filepath.Join(home, DefaultConfigPath, DefaultConfigName)
+		_, err = os.Stat(path)
+		if err != nil {
+			return ""
+		}
 	}
 
-	return ""
+	data, err := os.ReadFile(path)
+	if err != nil {
+		Fail("Failed to read config file: %v", err)
+	}
+
+	err = yaml.Unmarshal(data, &config)
+	if err != nil {
+		Fail("Failed to parse config file: %v", err)
+	}
+
+	if len(config.Profiles) > 0 {
+		if config.Addr != "" || config.ID != "" || config.Auth != "" || config.MaxSize != 0 ||
+			config.Namespace != "" || config.Path != "" {
+			Fail("config file cannot have top-level values alongside profiles")
+		}
+	}
+
+	return path
 }
 
 func getAddr() string {
