@@ -20,7 +20,7 @@ import (
 )
 
 func (flow *flow) ResolveWorkflowUID(ctx context.Context, req *grpc.ResolveWorkflowUIDRequest) (*grpc.WorkflowResponse, error) {
-	// TODO: yassir, question this controller.
+	// TODO: yassir, low priority. probably un used.
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	var resp *grpc.WorkflowResponse
@@ -326,6 +326,7 @@ func (flow *flow) DiscardHead(ctx context.Context, req *grpc.DiscardHeadRequest)
 	if err != nil {
 		return nil, err
 	}
+	// TODO: yassir, medium priority.
 	//_, err = fStore.ForFile(file).RevertRevision(ctx, "")
 	//if err != nil {
 	//	return nil, err

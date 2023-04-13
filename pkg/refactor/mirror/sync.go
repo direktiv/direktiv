@@ -23,6 +23,8 @@ import (
 // TODO: implement parsing direktiv variables.
 // TODO: check %w verb on errors.
 // TODO: fix errors and add logs.
+// TODO: implement a mechanism to clean dangling processes and cleaning them up.
+// TODO: implement synchronizing jobs.
 
 type mirroringJob struct {
 	// job parameters.
@@ -196,7 +198,7 @@ func (j *mirroringJob) ParseDirektivVars(store Store, namespaceID uuid.UUID) *mi
 	namespaceVarKeys, workflowVarKeys := parseDirektivVars(j.sourcedPaths)
 
 	for _, pk := range namespaceVarKeys {
-		path := j.distDirectory + pk[0]
+		path := j.distDirectory + pk[0] + "." + pk[1]
 		data, err := os.ReadFile(path)
 		if err != nil {
 			j.err = fmt.Errorf("read os file, path: %s, err: %w", path, err)
@@ -219,13 +221,13 @@ func (j *mirroringJob) ParseDirektivVars(store Store, namespaceID uuid.UUID) *mi
 	}
 
 	for _, pk := range workflowVarKeys {
-		path := j.distDirectory + pk[0]
+		path := j.distDirectory + pk[0] + "." + pk[1]
 		workflowID, ok := j.workflowIDs[pk[0]]
 		if !ok {
 			continue
 		}
 
-		data, err := os.ReadFile(j.distDirectory + pk[0])
+		data, err := os.ReadFile(path)
 		if err != nil {
 			j.err = fmt.Errorf("read os file, path: %s, err: %w", path, err)
 
@@ -265,6 +267,8 @@ func (j *mirroringJob) CopyFilesToRoot(fStore filestore.FileStore, namespaceID u
 		checksum := string(filestore.DefaultCalculateChecksum(data))
 		fileChecksum, pathDoesExist := j.rootChecksums[path]
 		isEqualChecksum := checksum == fileChecksum
+
+		// TODO: yassir, check for workflowID.
 
 		if pathDoesExist && isEqualChecksum {
 			j.lg.Infow("checksum skipped to root", "path", path)
@@ -410,9 +414,13 @@ func parseDirektivVars(paths []string) ([][]string, [][]string) {
 
 	for _, p := range paths {
 		base := filepath.Base(p)
+		dir := filepath.Dir(p)
 
-		if strings.Contains(p, "var.") && len(base) > len("var.") {
-			namespaceVarPathsKeys = append(namespaceVarPathsKeys, []string{p, strings.TrimPrefix(base, "var.")})
+		if strings.Contains(base, "var.") && len(base) > len("var.") {
+			if strings.HasPrefix(strings.TrimPrefix(base, "var."), "_") {
+				continue
+			}
+			namespaceVarPathsKeys = append(namespaceVarPathsKeys, []string{filepath.Clean(dir + "/var"), strings.TrimPrefix(base, "var.")})
 
 			continue
 		}
@@ -424,7 +432,7 @@ func parseDirektivVars(paths []string) ([][]string, [][]string) {
 			parts := strings.Split(base, ".yaml.")
 			//nolint:gomnd
 			if len(parts) == 2 {
-				workflowVarPathsKeys = append(workflowVarPathsKeys, []string{p, parts[1]})
+				workflowVarPathsKeys = append(workflowVarPathsKeys, []string{dir + "/" + parts[0] + ".yaml", parts[1]})
 			}
 		}
 		if strings.Contains(base, ".yml.") {
@@ -434,7 +442,7 @@ func parseDirektivVars(paths []string) ([][]string, [][]string) {
 			parts := strings.Split(base, ".yml.")
 			//nolint:gomnd
 			if len(parts) == 2 {
-				workflowVarPathsKeys = append(workflowVarPathsKeys, []string{p, parts[1]})
+				workflowVarPathsKeys = append(workflowVarPathsKeys, []string{dir + "/" + parts[0] + ".yml", parts[1]})
 			}
 		}
 	}

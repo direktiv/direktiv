@@ -318,12 +318,6 @@ func (flow *flow) DeleteNamespace(ctx context.Context, req *grpc.DeleteNamespace
 		return nil, err
 	}
 
-	// TODO: yassir, test linking with the ent tables.
-	//err = flow.fStore.ForRootID(ns.ID).Delete(ctx)
-	//if err != nil {
-	//return nil, err
-	//}
-
 	flow.deleteNamespaceSecrets(ns)
 
 	flow.logger.Infof(ctx, flow.ID, flow.GetAttributes(), "Deleted namespace '%s'.", ns.Name)

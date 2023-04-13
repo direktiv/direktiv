@@ -202,7 +202,7 @@ func (logger *Logger) SendLogMsgToDB(l *logMessage) error {
 		lc.SetNamespaceID(l.recipientID)
 	case recipient.Workflow:
 		lc.SetWorkflowID(l.recipientID)
-	// TODO: yassir, need refactor.
+	// TODO: yassir, need refactor. medium priority.
 	// case recipient.Mirror:
 	//	lc.SetActivityID(l.recipientID)
 	default:

@@ -223,15 +223,6 @@ func (srv *server) start(ctx context.Context) error {
 	}
 	defer srv.cleanup(srv.engine.Close)
 
-	srv.sugar.Debug("Initializing syncer.")
-
-	// TODO: yassir, need refactor.
-	//srv.syncer, err = initSyncer(srv)
-	//if err != nil {
-	//	return err
-	//}
-	//defer srv.cleanup(srv.syncer.Close)
-
 	var lock sync.Mutex
 	var wg sync.WaitGroup
 
@@ -445,8 +436,6 @@ func (srv *server) registerFunctions() {
 	srv.timers.registerFunction(retryWakeupFunction, srv.flow.engine.retryWakeup)
 
 	srv.pubsub.RegisterFunction(pubsub.PubsubDeleteActivityTimersFunction, srv.timers.deleteActivityTimersHandler)
-	// TODO: yassir, need refactor.
-	// srv.timers.registerFunction(syncerTimeoutFunction, srv.syncer.timeoutHandler)
 
 	srv.pubsub.RegisterFunction(deleteFilterCache, srv.flow.deleteCache)
 	srv.pubsub.RegisterFunction(deleteFilterCacheNamespace, srv.flow.deleteCacheNamespace)
