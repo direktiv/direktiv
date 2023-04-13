@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -74,6 +75,14 @@ type Store interface {
 
 	// TODO: this need to be refactored.
 	SetWorkflowVariable(ctx context.Context, workflowID uuid.UUID, key string, data []byte, hash string, mType string) error
+
+	// TODO: this need to be refactored.
+	FileAnnotations() core.FileAnnotationsStore
+}
+
+type FileAnnotationsStore interface {
+	// TODO: this need to be refactored.
+	FileAnnotations() core.FileAnnotationsStore
 }
 
 type Manager interface {
@@ -121,9 +130,9 @@ func (d *DefaultManager) StartMirroringProcess(ctx context.Context, config *Conf
 			// TODO: we need to implement a mechanism to synchronize multiple mirroring processes.
 			ReadRootFilesChecksums(d.fStore, config.ID).
 			CreateAllDirectories(d.fStore, config.ID).
-			CopyFilesToRoot(d.fStore, config.ID).
+			CopyFilesToRoot(d.fStore, d.store, config.ID).
 			ParseDirektivVars(d.store, config.ID).
-			CropFilesAndDirectoriesInRoot(d.fStore, config.ID).
+			CropFilesAndDirectoriesInRoot(d.fStore, d.store, config.ID).
 			DeleteTempDirectory().
 			SetProcessStatus(d.store, process, processStatusComplete).Error()
 		if err != nil {

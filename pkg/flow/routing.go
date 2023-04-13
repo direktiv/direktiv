@@ -17,15 +17,19 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
-	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
+	"github.com/direktiv/direktiv/pkg/refactor/mirror"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
-func getRouter(ctx context.Context, fStore filestore.FileStore, store datastore.Store, file *filestore.File) (*core.FileAnnotations, *routerData, error) {
+type getRouterStore interface {
+	FileAnnotations() core.FileAnnotationsStore
+}
+
+func getRouter(ctx context.Context, fStore filestore.FileStore, store getRouterStore, file *filestore.File) (*core.FileAnnotations, *routerData, error) {
 	router := &routerData{
 		Enabled: true,
 		Routes:  make(map[string]int),
@@ -107,7 +111,7 @@ func (r *routerData) Marshal() string {
 	return string(data)
 }
 
-func (srv *server) validateRouter(ctx context.Context, fStore filestore.FileStore, store datastore.Store, file *filestore.File) (*muxStart, error, error) {
+func (srv *server) validateRouter(ctx context.Context, fStore filestore.FileStore, store mirror.FileAnnotationsStore, file *filestore.File) (*muxStart, error, error) {
 	_, router, err := getRouter(ctx, fStore, store, file)
 	if err != nil {
 		return nil, nil, err
@@ -431,7 +435,7 @@ func (flow *flow) cronHandler(data []byte) {
 	flow.engine.queue(im)
 }
 
-func (flow *flow) configureWorkflowStarts(ctx context.Context, fStore filestore.FileStore, store datastore.Store, ns *database.Namespace, file *filestore.File, router *routerData) error {
+func (flow *flow) configureWorkflowStarts(ctx context.Context, fStore filestore.FileStore, store mirror.FileAnnotationsStore, nsID uuid.UUID, file *filestore.File, router *routerData) error {
 	ms, verr, err := flow.validateRouter(ctx, fStore, store, file)
 	if err != nil {
 		return err
@@ -447,12 +451,26 @@ func (flow *flow) configureWorkflowStarts(ctx context.Context, fStore filestore.
 		}
 	}
 
-	err = flow.events.processWorkflowEvents(ctx, ns, file, ms)
+	err = flow.events.processWorkflowEvents(ctx, nsID, file, ms)
 	if err != nil {
 		return err
 	}
 
 	flow.pubsub.ConfigureRouterCron(file.ID.String(), ms.Cron, ms.Enabled)
+
+	return nil
+}
+
+func (flow *flow) wfConfigHook(ctx context.Context, fStore filestore.FileStore, store mirror.Store, nsID uuid.UUID, file *filestore.File) error {
+	_, router, err := getRouter(ctx, fStore, store, file)
+	if err != nil {
+		return err
+	}
+
+	err = flow.configureWorkflowStarts(ctx, fStore, store, nsID, file, router)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

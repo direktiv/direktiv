@@ -253,6 +253,8 @@ func (srv *server) start(ctx context.Context) error {
 		return err
 	}
 
+	mirror.WorkflowConfigHook = srv.flow.wfConfigHook
+
 	srv.sugar.Debug("Initializing actions grpc server.")
 
 	srv.actions, err = initActionsServer(cctx, srv)

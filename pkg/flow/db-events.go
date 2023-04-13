@@ -92,7 +92,7 @@ func (events *events) deleteEventListeners(ctx context.Context, nsID, evID uuid.
 	return nil
 }
 
-func (events *events) deleteWorkflowEventListeners(ctx context.Context, ns *database.Namespace, file *filestore.File) error {
+func (events *events) deleteWorkflowEventListeners(ctx context.Context, nsID uuid.UUID, file *filestore.File) error {
 	clients := events.edb.Clients(ctx)
 
 	_, err := clients.Events.Delete().Where(entev.WorkflowID(file.ID)).Exec(ctx)
@@ -100,7 +100,7 @@ func (events *events) deleteWorkflowEventListeners(ctx context.Context, ns *data
 		return err
 	}
 
-	events.pubsub.NotifyEventListeners(ns.ID)
+	events.pubsub.NotifyEventListeners(nsID)
 
 	return nil
 }
@@ -121,8 +121,8 @@ func (events *events) deleteInstanceEventListeners(ctx context.Context, cached *
 	return nil
 }
 
-func (events *events) processWorkflowEvents(ctx context.Context, ns *database.Namespace, file *filestore.File, ms *muxStart) error {
-	err := events.deleteWorkflowEventListeners(ctx, ns, file)
+func (events *events) processWorkflowEvents(ctx context.Context, nsID uuid.UUID, file *filestore.File, ms *muxStart) error {
+	err := events.deleteWorkflowEventListeners(ctx, nsID, file)
 	if err != nil {
 		return err
 	}
@@ -155,7 +155,7 @@ func (events *events) processWorkflowEvents(ctx context.Context, ns *database.Na
 		clients := events.edb.Clients(ctx)
 
 		_, err = clients.Events.Create().
-			SetNamespaceID(ns.ID).
+			SetNamespaceID(nsID).
 			SetWorkflowID(file.ID).
 			SetEvents(ev).
 			SetCorrelations(correlations).
@@ -167,7 +167,7 @@ func (events *events) processWorkflowEvents(ctx context.Context, ns *database.Na
 		}
 	}
 
-	events.pubsub.NotifyEventListeners(ns.ID)
+	events.pubsub.NotifyEventListeners(nsID)
 
 	return nil
 }

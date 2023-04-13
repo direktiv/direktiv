@@ -20,6 +20,8 @@ import (
 	"go.uber.org/zap"
 )
 
+var WorkflowConfigHook func(context.Context, filestore.FileStore, Store, uuid.UUID, *filestore.File) error
+
 // TODO: implement parsing direktiv variables.
 // TODO: check %w verb on errors.
 // TODO: fix errors and add logs.
@@ -251,7 +253,7 @@ func (j *mirroringJob) ParseDirektivVars(store Store, namespaceID uuid.UUID) *mi
 	return j
 }
 
-func (j *mirroringJob) CopyFilesToRoot(fStore filestore.FileStore, namespaceID uuid.UUID) *mirroringJob {
+func (j *mirroringJob) CopyFilesToRoot(fStore filestore.FileStore, store Store, namespaceID uuid.UUID) *mirroringJob {
 	if j.err != nil {
 		return j
 	}
@@ -295,6 +297,12 @@ func (j *mirroringJob) CopyFilesToRoot(fStore filestore.FileStore, namespaceID u
 				j.workflowIDs[path] = newFile.ID
 			}
 
+			err = WorkflowConfigHook(j.ctx, fStore, store, namespaceID, newFile)
+			if err != nil {
+				j.err = fmt.Errorf("filestore configure workflow, path: %s, err: %w", path, err)
+				return j
+			}
+
 			continue
 		}
 
@@ -308,16 +316,21 @@ func (j *mirroringJob) CopyFilesToRoot(fStore filestore.FileStore, namespaceID u
 		_, err = fStore.ForFile(file).CreateRevision(j.ctx, "", fileReader)
 		if err != nil {
 			j.err = fmt.Errorf("filestore create revision, path: %s, err: %w", path, err)
-
 			return j
 		}
 		j.lg.Infow("revision to root", "path", path)
+
+		err = WorkflowConfigHook(j.ctx, fStore, store, namespaceID, file)
+		if err != nil {
+			j.err = fmt.Errorf("filestore configure workflow, path: %s, err: %w", path, err)
+			return j
+		}
 	}
 
 	return j
 }
 
-func (j *mirroringJob) CropFilesAndDirectoriesInRoot(fStore filestore.FileStore, namespaceID uuid.UUID) *mirroringJob {
+func (j *mirroringJob) CropFilesAndDirectoriesInRoot(fStore filestore.FileStore, store Store, namespaceID uuid.UUID) *mirroringJob {
 	if j.err != nil {
 		return j
 	}
