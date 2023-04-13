@@ -219,7 +219,7 @@ func updateLocalVars(wf, path string) error {
 	// push local variables
 	localVars, err := getLocalWorkflowVariables(wf)
 	if err != nil {
-		return fmt.Errorf("failed to get local variable files: %w\n", err)
+		return fmt.Errorf("failed to get local variable files: %w", err)
 	}
 
 	if len(localVars) > 0 {
@@ -231,7 +231,7 @@ func updateLocalVars(wf, path string) error {
 			root.Printlog("updating remote workflow variable: '%s'\n", filepath.Base(varName))
 			err = setRemoteWorkflowVariable(path, v)
 			if err != nil {
-				return fmt.Errorf("failed to set remote variable file: %w\n", err)
+				return fmt.Errorf("failed to set remote variable file: %w", err)
 			}
 		}
 	}
@@ -428,7 +428,7 @@ var execCmd = &cobra.Command{
 	
 	EXAMPLE cat workflows/start.yaml | ./direktivctl --addr http://192.168.122.232/ -n ns workflows exec folderA/start
 	
-	will upload the input from stdin to the locatation on the server folderA as workflow start and execute it.
+	will upload the input from stdin to the location on the server folderA as workflow start and execute it.
 	If you need to redirect the output to a file use: 
 	
 	cat workflows/start.yaml | ./direktivctl --addr http://192.168.122.232/ -n ns workflows exec folderA/start > mylog.log`,
