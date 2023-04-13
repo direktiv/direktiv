@@ -14,6 +14,13 @@ const NodeSchema = z.object({
   expandedType: z.enum(["directory", "workflow", "git"]),
 });
 
+const RevisionSchema = z.object({
+  createdAt: z.string(),
+  hash: z.string(),
+  source: z.string(),
+  name: z.string(),
+});
+
 export const TreeListSchema = z.object({
   namespace: z.string(),
   node: NodeSchema,
