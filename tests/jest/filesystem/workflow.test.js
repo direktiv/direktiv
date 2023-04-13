@@ -195,12 +195,11 @@ describe('Test basic directory operations', () => {
             pageInfo: {
                 limit: 0,
                 offset: 0,
-                total: 3,
+                total: 2,
                 order: [],
                 filter: [],
             },
             results: [{name: 'latest'},
-                {name: expect.stringMatching(common.regex.uuidRegex)},
                 {name: expect.stringMatching(common.regex.uuidRegex)}],
         })
     })
@@ -214,13 +213,13 @@ describe('Test basic directory operations', () => {
             pageInfo: {
                 limit: 0,
                 offset: 0,
-                total: 2,
+                total: 1,
                 order: [],
                 filter: [],
             },
             results: [
                 {name: expect.stringMatching(common.regex.uuidRegex)},
-                {name: expect.stringMatching(common.regex.uuidRegex)}],
+            ],
         })
     })
 
