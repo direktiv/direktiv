@@ -107,9 +107,8 @@ func (d *DefaultManager) StartMirroringProcess(ctx context.Context, config *Conf
 
 	go func() {
 		err := (&mirroringJob{
-			ctx:         context.TODO(),
-			workflowIDs: map[string]uuid.UUID{},
-			lg:          d.lg,
+			ctx: context.TODO(),
+			lg:  d.lg,
 		}).
 			SetProcessStatus(d.store, process, processStatusExecuting).
 			CreateTempDirectory().
@@ -122,7 +121,7 @@ func (d *DefaultManager) StartMirroringProcess(ctx context.Context, config *Conf
 			ReadRootFilesChecksums(d.fStore, config.ID).
 			CreateAllDirectories(d.fStore, config.ID).
 			CopyFilesToRoot(d.fStore, config.ID).
-			ParseDirektivVars(d.store, config.ID).
+			ParseDirektivVars(d.fStore, d.store, config.ID).
 			CropFilesAndDirectoriesInRoot(d.fStore, config.ID).
 			DeleteTempDirectory().
 			SetProcessStatus(d.store, process, processStatusComplete).Error()
