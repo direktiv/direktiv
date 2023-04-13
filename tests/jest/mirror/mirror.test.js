@@ -424,15 +424,14 @@ describe('Test behaviour specific to the root node', () => {
         })
     })
 
-    return
 
 
-    it(`should read the workflow variables of '/banana/page-1'`, async () => {
-        const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/tree/banana/page-1?op=vars`)
+    it(`should read the workflow variables of '/banana/page-1.yaml'`, async () => {
+        const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/tree/banana/page-1.yaml?op=vars`)
         expect(req.statusCode).toEqual(200)
         expect(req.body).toMatchObject({
             namespace: namespaceName,
-            path: `/banana/page-1`,
+            path: `/banana/page-1.yaml`,
             variables: {
                 pageInfo: {
                     order: [],
@@ -456,22 +455,22 @@ describe('Test behaviour specific to the root node', () => {
     })
 
 
-    it(`should read the '/banana/page-2' workflow node`, async () => {
-        const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/tree/banana/page-2`)
+    it(`should read the '/banana/page-2.yaml' workflow node`, async () => {
+        const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/tree/banana/page-2.yaml`)
         expect(req.statusCode).toEqual(200)
         expect(req.body).toMatchObject({
             namespace: namespaceName,
             node: {
                 createdAt: expect.stringMatching(common.regex.timestampRegex),
                 updatedAt: expect.stringMatching(common.regex.timestampRegex),
-                name: `page-2`,
-                path: `/banana/page-2`,
+                name: `page-2.yaml`,
+                path: `/banana/page-2.yaml`,
                 parent: `/banana`,
                 type: common.filesystem.nodeTypeWorkflow,
                 expandedType: common.filesystem.extendedNodeTypeWorkflow,
                 attributes: expect.anything(),
                 oid: '',
-                readOnly: true,
+                readOnly: false,
             },
             revision: {
                 createdAt: expect.stringMatching(common.regex.timestampRegex),
@@ -484,12 +483,12 @@ describe('Test behaviour specific to the root node', () => {
         })
     })
 
-    it(`should read the workflow variables of '/banana/page-2'`, async () => {
-        const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/tree/banana/page-2?op=vars`)
+    it(`should read the workflow variables of '/banana/page-2.yaml'`, async () => {
+        const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/tree/banana/page-2.yaml?op=vars`)
         expect(req.statusCode).toEqual(200)
         expect(req.body).toMatchObject({
             namespace: namespaceName,
-            path: `/banana/page-2`,
+            path: `/banana/page-2.yaml`,
             variables: {
                 pageInfo: {
                     order: [],
@@ -527,7 +526,7 @@ describe('Test behaviour specific to the root node', () => {
                 expandedType: common.filesystem.extendedNodeTypeDirectory,
                 attributes: expect.anything(),
                 oid: '',
-                readOnly: true,
+                readOnly: false,
             },
             children: {
                 pageInfo: {
@@ -544,11 +543,11 @@ describe('Test behaviour specific to the root node', () => {
                         updatedAt: expect.stringMatching(common.regex.timestampRegex),
                         type: common.filesystem.nodeTypeWorkflow,
                         expandedType: common.filesystem.extendedNodeTypeWorkflow,
-                        name: "caller",
+                        name: "caller.yaml",
                         oid: "",
                         parent: "/banana/util",
-                        path: "/banana/util/caller",
-                        readOnly: true,
+                        path: "/banana/util/caller.yaml",
+                        readOnly: false,
                     },
                     {
                         attributes: [],
@@ -556,33 +555,34 @@ describe('Test behaviour specific to the root node', () => {
                         updatedAt: expect.stringMatching(common.regex.timestampRegex),
                         type: common.filesystem.nodeTypeWorkflow,
                         expandedType: common.filesystem.extendedNodeTypeWorkflow,
-                        name: "curler",
+                        name: "curler.yaml",
                         oid: "",
                         parent: "/banana/util",
-                        path: "/banana/util/curler",
-                        readOnly: true,
+                        path: "/banana/util/curler.yaml",
+                        readOnly: false,
                     },
                 ]),
             },
         })
     })
 
-    it(`should read the '/banana/util/caller' workflow node`, async () => {
-        const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/tree/banana/util/caller`)
+
+    it(`should read the '/banana/util/caller.yaml' workflow node`, async () => {
+        const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/tree/banana/util/caller.yaml`)
         expect(req.statusCode).toEqual(200)
         expect(req.body).toMatchObject({
             namespace: namespaceName,
             node: {
                 createdAt: expect.stringMatching(common.regex.timestampRegex),
                 updatedAt: expect.stringMatching(common.regex.timestampRegex),
-                name: `caller`,
-                path: `/banana/util/caller`,
+                name: `caller.yaml`,
+                path: `/banana/util/caller.yaml`,
                 parent: `/banana/util`,
                 type: common.filesystem.nodeTypeWorkflow,
                 expandedType: common.filesystem.extendedNodeTypeWorkflow,
                 attributes: expect.anything(),
                 oid: '',
-                readOnly: true,
+                readOnly:false,
             },
             revision: {
                 createdAt: expect.stringMatching(common.regex.timestampRegex),
@@ -595,22 +595,24 @@ describe('Test behaviour specific to the root node', () => {
         })
     })
 
-    it(`should read the '/banana/util/curler' workflow node`, async () => {
-        const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/tree/banana/util/curler`)
+
+
+    it(`should read the '/banana/util/curler.yaml' workflow node`, async () => {
+        const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/tree/banana/util/curler.yaml`)
         expect(req.statusCode).toEqual(200)
         expect(req.body).toMatchObject({
             namespace: namespaceName,
             node: {
                 createdAt: expect.stringMatching(common.regex.timestampRegex),
                 updatedAt: expect.stringMatching(common.regex.timestampRegex),
-                name: `curler`,
-                path: `/banana/util/curler`,
+                name: `curler.yaml`,
+                path: `/banana/util/curler.yaml`,
                 parent: `/banana/util`,
                 type: common.filesystem.nodeTypeWorkflow,
                 expandedType: common.filesystem.extendedNodeTypeWorkflow,
                 attributes: expect.anything(),
                 oid: '',
-                readOnly: true,
+                readOnly: false,
             },
             revision: {
                 createdAt: expect.stringMatching(common.regex.timestampRegex),
@@ -693,14 +695,14 @@ describe('Test behaviour specific to the root node', () => {
                         createdAt: expect.stringMatching(common.regex.timestampRegex),
                         updatedAt: expect.stringMatching(common.regex.timestampRegex),
                     },
-                    {
-                        checksum: expect.stringMatching(common.regex.hashRegex),
-                        mimeType: "",
-                        name: "delta",
-                        size: expect.stringMatching(/^[0-9]*$/), // This archive changes every time. Presumably because of timestamps in the tar archive.
-                        createdAt: expect.stringMatching(common.regex.timestampRegex),
-                        updatedAt: expect.stringMatching(common.regex.timestampRegex),
-                    },
+                    //{
+                    //    checksum: expect.stringMatching(common.regex.hashRegex),
+                    //    mimeType: "",
+                    //    name: "delta",
+                    //    size: expect.stringMatching(/^[0-9]*$/), // This archive changes every time. Presumably because of timestamps in the tar archive.
+                    //    //createdAt: expect.stringMatching(common.regex.timestampRegex),
+                    //    //updatedAt: expect.stringMatching(common.regex.timestampRegex),
+                    //},
                     {
                         checksum: "457de4239fb1beaad00cbecb6815a9d873a090bf4b1e2cea79c6c9ae48fdedd5",
                         mimeType: "",
@@ -713,6 +715,7 @@ describe('Test behaviour specific to the root node', () => {
             }
         })
     })
+     return
 
     it(`should check the activity logs for errors`, async () => {
         const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/activities/${activityId}/logs`)

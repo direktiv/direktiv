@@ -33,17 +33,23 @@ func TestParseDirektivVars(t *testing.T) {
 		{
 			name: "valid_case",
 			paths: []string{
+				"/var.delta/data.txt",
+				"/var.ALPHA.json",
 				"/a/v/var.something",
 				"/a/v/var.something2",
 				"/a/c/workflow",
 				"/a/c/workflow.yaml.x1",
+				"/banana/page-1.yaml",
+				"/banana/page-1.yaml.page.html",
 			},
 			want: [][]string{
-				{"/a/v/var.something", "something"},
-				{"/a/v/var.something2", "something2"},
+				{"/var", "ALPHA.json"},
+				{"/a/v/var", "something"},
+				{"/a/v/var", "something2"},
 			},
 			want1: [][]string{
-				{"/a/c/workflow.yaml.x1", "x1"},
+				{"/a/c/workflow.yaml", "x1"},
+				{"/banana/page-1.yaml", "page.html"},
 			},
 		},
 	}
@@ -54,7 +60,7 @@ func TestParseDirektivVars(t *testing.T) {
 				t.Errorf("ParseDirektivVars() got = %v, want %v", got, tt.want)
 			}
 			if !reflect.DeepEqual(got1, tt.want1) {
-				t.Errorf("ParseDirektivVars() got1 = %v, want %v", got1, tt.want1)
+				t.Errorf("ParseDirektivVars() got1 = %v, want1 %v", got1, tt.want1)
 			}
 		})
 	}
