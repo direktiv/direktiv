@@ -37,6 +37,12 @@ export const TreeFolderCreatedSchema = z.object({
   node: NodeSchema,
 });
 
+export const WorkflowCreatedSchema = z.object({
+  namespace: z.string(),
+  node: NodeSchema,
+  revision: RevisionSchema,
+});
+
 export const TreeNodeDeletedSchema = z.null();
 
 export const TreeNodeRenameSchema = z.object({
