@@ -12,8 +12,8 @@ import Button from "../../design/Button";
 import Input from "../../design/Input";
 import { fileNameSchema } from "../../api/tree/schema";
 import { pages } from "../../util/router/pages";
-import { useCreateDirectory } from "../../api/tree/mutate/createDirectory";
-import { useNamespace } from "../../util/store/namespace";
+import { useCreateNamespace } from "../../api/namespaces/mutate/createNamespace";
+import { useListNamespaces } from "../../api/namespaces/query/get";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -23,7 +23,10 @@ type FormInput = {
 };
 
 const NamespaceCreate = ({ close }: { close: () => void }) => {
-  const namespace = useNamespace();
+  const { data } = useListNamespaces();
+
+  const existingNamespaces = data?.results.map((n) => n.name) || [];
+
   const navigate = useNavigate();
   const {
     register,
@@ -32,23 +35,30 @@ const NamespaceCreate = ({ close }: { close: () => void }) => {
   } = useForm<FormInput>({
     resolver: zodResolver(
       z.object({
-        name: fileNameSchema,
+        name: fileNameSchema.and(
+          z
+            .string()
+            .refine((name) => !existingNamespaces.some((n) => n === name), {
+              message: "The name already exists",
+            })
+        ),
       })
     ),
   });
 
-  const { mutate, isLoading } = useCreateDirectory({
+  // check against existing namespaces
+  const { mutate, isLoading } = useCreateNamespace({
     onSuccess: (data) => {
-      namespace &&
-        navigate(
-          pages.explorer.createHref({ namespace, path: data.node.path })
-        );
+      // namespace &&
+      //   navigate(
+      //     pages.explorer.createHref({ namespace, path: data.node.path })
+      //   );
       close();
     },
   });
 
   const onSubmit: SubmitHandler<FormInput> = ({ name }) => {
-    // mutate({ path, directory: name });
+    mutate({ name });
   };
 
   // you can not submit if the form has not changed or if there are any errors and
