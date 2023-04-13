@@ -44,20 +44,13 @@ var (
 )
 
 func loadConfig(cmd *cobra.Command) {
-	chdir, err := cmd.Flags().GetString("directory")
+	path, err := cmd.Flags().GetString("config")
 	if err != nil {
 		Fail("error loading 'directory' flag: %v", err)
 	}
-
-	if chdir != "" && chdir != "." {
-		err = os.Chdir(chdir)
-		if err != nil {
-			Fail("error chanding directory: %v", err)
-		}
-		Printlog("changed to directory: %s", chdir)
+	if path == "" {
+		path = findConfig()
 	}
-
-	path := findConfig()
 
 	Globbers = make([]glob.Glob, 0)
 	for idx, pattern := range config.Ignore {

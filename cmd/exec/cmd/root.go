@@ -14,7 +14,7 @@ var UrlPrefix string
 
 func init() {
 	RootCmd.PersistentFlags().StringP("profile", "P", "", "Select the named profile from the loaded multi-profile configuration file.")
-	RootCmd.PersistentFlags().StringP("directory", "C", "", "Change to this directory before evaluating any paths or searching for a configuration file.")
+	RootCmd.PersistentFlags().StringP("config", "C", "", "Point to a specific configuration file.")
 
 	RootCmd.PersistentFlags().StringP("addr", "a", "", "Target direktiv api address.")
 	RootCmd.PersistentFlags().StringP("path", "p", "", "Target remote workflow path .e.g. '/dir/workflow'. Automatically set if config file was auto-set.")
