@@ -5,7 +5,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useToast } from "../../../design/Toast";
 
 const createNamespace = apiFactory({
-  pathFn: ({ name }: { name: string }) => `/api/namespaces/${name}/`,
+  pathFn: ({ name }: { name: string }) => `/api/namespaces/${name}`,
   method: "PUT",
   schema: NamespaceCreatedSchema,
 });
