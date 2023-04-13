@@ -1,7 +1,10 @@
+import { apiFactory, defaultKeys } from "../../utils";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+
 import { NamespaceCreatedSchema } from "../schema";
-import { apiFactory } from "../../utils";
+import type { NamespaceListSchemaType } from "../schema";
+import { namespaceKeys } from "..";
 import { useApiKey } from "../../../util/store/apiKey";
-import { useMutation } from "@tanstack/react-query";
 import { useToast } from "../../../design/Toast";
 
 const createNamespace = apiFactory({
@@ -17,6 +20,7 @@ export const useCreateNamespace = ({
 }: { onSuccess?: (data: ResolvedCreateNamespace) => void } = {}) => {
   const apiKey = useApiKey();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: ({ name }: { name: string }) =>
@@ -28,6 +32,17 @@ export const useCreateNamespace = ({
         },
       }),
     onSuccess(data, variables) {
+      queryClient.setQueryData<NamespaceListSchemaType>(
+        namespaceKeys.all(apiKey ?? defaultKeys.apiKey),
+        (oldData) => {
+          if (!oldData) return undefined;
+          const oldResults = oldData?.results;
+          return {
+            ...oldData,
+            results: [...oldResults, data.namespace],
+          };
+        }
+      );
       toast({
         title: "Namespace created",
         description: `Namespace ${variables.name} was created successfully.`,
