@@ -3,6 +3,7 @@ package flow
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"io"
 	"time"
@@ -320,8 +321,60 @@ func (flow *flow) DiscardHead(ctx context.Context, req *grpc.DiscardHeadRequest)
 }
 
 func (flow *flow) ToggleWorkflow(ctx context.Context, req *grpc.ToggleWorkflowRequest) (*emptypb.Empty, error) {
-	// TODO: yassir, question this controller.
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
+
+	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
+	if err != nil {
+		return nil, err
+	}
+
+	fStore, store, commit, rollback, err := flow.beginSqlTx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer rollback()
+
+	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
+	if err != nil {
+		return nil, err
+	}
+
+	annotations, err := store.FileAnnotations().Get(ctx, file.ID)
+	if err != nil {
+		if !errors.Is(err, core.ErrFileAnnotationsNotSet) {
+			return nil, err
+		}
+		annotations = &core.FileAnnotations{
+			FileID: file.ID,
+			Data:   core.NewFileAnnotationsData(make(map[string]string)),
+		}
+	}
+
+	s := annotations.Data.GetEntry(routerAnnotationKey)
+	router := &routerData{
+		Enabled: true,
+		Routes:  make(map[string]int),
+	}
+	if s != "" && s != `""` {
+		err = json.Unmarshal([]byte(s), &router)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	router.Enabled = !router.Enabled
+
+	annotations.Data = annotations.Data.SetEntry(routerAnnotationKey, router.Marshal())
+
+	err = store.FileAnnotations().Set(ctx, annotations)
+	if err != nil {
+		return nil, err
+	}
+
+	err = commit(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	return &emptypb.Empty{}, nil
 }
@@ -350,7 +403,7 @@ func (flow *flow) SetWorkflowEventLogging(ctx context.Context, req *grpc.SetWork
 	if errors.Is(err, core.ErrFileAnnotationsNotSet) {
 		annotations = &core.FileAnnotations{
 			FileID: file.ID,
-			Data:   nil,
+			Data:   "",
 		}
 	} else if err != nil {
 		return nil, err

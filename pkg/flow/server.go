@@ -156,7 +156,6 @@ func (srv *server) start(ctx context.Context) error {
 
 	srv.database = database.NewCachedDatabase(srv.sugar, edb, srv)
 	defer srv.cleanup(srv.database.Close)
-	fmt.Printf(">>>>>> dsn %s\n", db)
 
 	srv.gormDB, err = gorm.Open(postgres.New(postgres.Config{
 		DSN:                  db,

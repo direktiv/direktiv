@@ -82,7 +82,10 @@ func (r *routerData) Marshal() string {
 
 func (srv *server) validateRouter(ctx context.Context, fStore filestore.FileStore, store datastore.Store, file *filestore.File) (*muxStart, error, error) {
 
-	router := new(routerData)
+	router := &routerData{
+		Enabled: true,
+		Routes:  make(map[string]int),
+	}
 
 	annotations, err := store.FileAnnotations().Get(ctx, file.ID)
 	if err != nil {
@@ -204,6 +207,29 @@ func (engine *engine) mux(ctx context.Context, namespace, path, ref string) (*da
 		}
 	}
 
+	router := &routerData{
+		Enabled: true,
+		Routes:  make(map[string]int),
+	}
+	annotations, err := store.FileAnnotations().Get(ctx, file.ID)
+	if err != nil {
+		if !errors.Is(err, core.ErrFileAnnotationsNotSet) {
+			return nil, err
+		}
+	} else {
+		s := annotations.Data.GetEntry(routerAnnotationKey)
+		if s != "" && s != `""` {
+			err = json.Unmarshal([]byte(s), &router)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+
+	if !router.Enabled {
+		return nil, errors.New("cannot execute disabled workflow")
+	}
+
 	var rev *filestore.Revision
 
 	if ref == "latest" {
@@ -217,20 +243,6 @@ func (engine *engine) mux(ctx context.Context, namespace, path, ref string) (*da
 			return nil, err
 		}
 	} else {
-		router := new(routerData)
-		annotations, err := store.FileAnnotations().Get(ctx, file.ID)
-		if err != nil {
-			if !errors.Is(err, core.ErrFileAnnotationsNotSet) {
-				return nil, err
-			}
-		} else {
-			s := annotations.Data.GetEntry(routerAnnotationKey)
-			err = json.Unmarshal([]byte(s), &router)
-			if err != nil {
-				return nil, err
-			}
-		}
-
 		if len(router.Routes) == 0 {
 			rev, err = fStore.ForFile(file).GetCurrentRevision(ctx)
 			if err != nil {
@@ -245,6 +257,13 @@ func (engine *engine) mux(ctx context.Context, namespace, path, ref string) (*da
 				id, err := uuid.Parse(k)
 				if err == nil {
 					rev, err = fStore.ForFile(file).GetRevision(ctx, id)
+					if err == nil {
+						totalWeights += v
+						allRevs = append(allRevs, rev)
+						allWeights = append(allWeights, v)
+					}
+				} else if k == "latest" {
+					rev, err = fStore.ForFile(file).GetCurrentRevision(ctx)
 					if err == nil {
 						totalWeights += v
 						allRevs = append(allRevs, rev)
@@ -274,6 +293,9 @@ func (engine *engine) mux(ctx context.Context, namespace, path, ref string) (*da
 				var idx int
 				for idx = 0; choice > 0; idx++ {
 					choice -= allWeights[idx]
+					if choice <= 0 {
+						break
+					}
 				}
 				rev = allRevs[idx]
 			}

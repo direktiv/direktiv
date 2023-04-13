@@ -28,9 +28,18 @@ func (s *sqlFileAnnotationsStore) Get(ctx context.Context, fileID uuid.UUID) (*c
 }
 
 func (s *sqlFileAnnotationsStore) Set(ctx context.Context, annotations *core.FileAnnotations) error {
-	res := s.db.WithContext(ctx).Create(annotations)
+	res := s.db.WithContext(ctx).
+		Model(&core.FileAnnotations{}).
+		Where("file_id", annotations.FileID).
+		Update("data", annotations.Data)
 	if res.Error != nil {
-		return s.update(ctx, annotations)
+		return res.Error
+	}
+	if res.RowsAffected == 0 {
+		res := s.db.WithContext(ctx).Create(annotations)
+		if res.Error != nil {
+			return s.update(ctx, annotations)
+		}
 	}
 
 	return nil

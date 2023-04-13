@@ -41,7 +41,10 @@ func (flow *flow) Router(ctx context.Context, req *grpc.RouterRequest) (*grpc.Ro
 		return nil, err
 	}
 
-	var router = new(routerData)
+	var router = &routerData{
+		Enabled: true,
+		Routes:  make(map[string]int),
+	}
 
 	annotations, err := store.FileAnnotations().Get(ctx, file.ID)
 	if err != nil {
@@ -50,7 +53,7 @@ func (flow *flow) Router(ctx context.Context, req *grpc.RouterRequest) (*grpc.Ro
 		}
 	} else {
 		s := annotations.Data.GetEntry(routerAnnotationKey)
-		if s != "" {
+		if s != "" && s != `""` && s != `\"\"` {
 			err = json.Unmarshal([]byte(s), &router)
 			if err != nil {
 				return nil, err
@@ -124,8 +127,11 @@ func (flow *flow) EditRouter(ctx context.Context, req *grpc.EditRouterRequest) (
 	}
 
 	s := annotations.Data.GetEntry(routerAnnotationKey)
-	router := new(routerData)
-	if s != "" {
+	router := &routerData{
+		Enabled: true,
+		Routes:  make(map[string]int),
+	}
+	if s != "" && s != `""` {
 		err = json.Unmarshal([]byte(s), &router)
 		if err != nil {
 			return nil, err
@@ -133,6 +139,10 @@ func (flow *flow) EditRouter(ctx context.Context, req *grpc.EditRouterRequest) (
 	}
 
 	router.Enabled = req.Live
+	router.Routes = make(map[string]int)
+	for _, r := range req.Route {
+		router.Routes[r.Ref] = int(r.Weight)
+	}
 
 	annotations.Data = annotations.Data.SetEntry(routerAnnotationKey, router.Marshal())
 
