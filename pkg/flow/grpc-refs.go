@@ -9,6 +9,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
@@ -49,7 +50,7 @@ func (flow *flow) Tags(ctx context.Context, req *grpc.TagsRequest) (*grpc.TagsRe
 
 	tags := []*grpc.Ref{
 		{
-			Name: "latest",
+			Name: filestore.Latest,
 		},
 	}
 	for _, rev := range revs {
@@ -122,7 +123,7 @@ func (flow *flow) Refs(ctx context.Context, req *grpc.RefsRequest) (*grpc.RefsRe
 
 	refs := []*grpc.Ref{
 		{
-			Name: "latest",
+			Name: filestore.Latest,
 		},
 	}
 	for idx, rev := range revs {

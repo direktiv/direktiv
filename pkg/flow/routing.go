@@ -26,7 +26,7 @@ import (
 )
 
 func getRouter(ctx context.Context, fStore filestore.FileStore, store datastore.Store, file *filestore.File) (*core.FileAnnotations, *routerData, error) {
-	var router = &routerData{
+	router := &routerData{
 		Enabled: true,
 		Routes:  make(map[string]int),
 	}
@@ -100,19 +100,20 @@ type routerData struct {
 }
 
 func (r *routerData) Marshal() string {
-	data, _ := json.Marshal(r)
+	data, err := json.Marshal(r)
+	if err != nil {
+		panic(err)
+	}
 	return string(data)
 }
 
 func (srv *server) validateRouter(ctx context.Context, fStore filestore.FileStore, store datastore.Store, file *filestore.File) (*muxStart, error, error) {
-
 	_, router, err := getRouter(ctx, fStore, store, file)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	if len(router.Routes) == 0 {
-
 		rev, err := fStore.ForFile(file).GetCurrentRevision(ctx)
 		if err != nil {
 			return nil, nil, err
@@ -129,7 +130,6 @@ func (srv *server) validateRouter(ctx context.Context, fStore filestore.FileStor
 		ms.Enabled = router.Enabled
 
 		return ms, nil, nil
-
 	}
 
 	var startHash string
@@ -138,13 +138,12 @@ func (srv *server) validateRouter(ctx context.Context, fStore filestore.FileStor
 	var ms *muxStart
 
 	for ref := range router.Routes {
-
 		var rev *filestore.Revision
 
 		uid, err := uuid.Parse(ref)
 		if err == nil {
 			rev, err = fStore.ForFile(file).GetRevision(ctx, uid)
-		} else if ref == "latest" {
+		} else if ref == filestore.Latest {
 			rev, err = fStore.ForFile(file).GetCurrentRevision(ctx)
 		} else {
 			rev, err = fStore.ForFile(file).GetRevisionByTag(ctx, ref)
@@ -172,23 +171,12 @@ func (srv *server) validateRouter(ctx context.Context, fStore filestore.FileStor
 				return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("incompatible start definitions between refs '%s' and '%s'", startRef, ref)), nil
 			}
 		}
-
 	}
 
 	return ms, nil, nil
 }
 
-func (engine *engine) mux(ctx context.Context, namespace, path, ref string) (*database.CacheData, error) {
-	ns, err := engine.edb.NamespaceByName(ctx, namespace)
-	if err != nil {
-		return nil, err
-	}
-	fStore, store, _, rollback, err := engine.flow.beginSqlTx(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer rollback()
-
+func (engine *engine) getAmbiguousFile(ctx context.Context, fStore filestore.FileStore, ns *database.Namespace, path string) (*filestore.File, error) {
 	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, path)
 	if err != nil {
 		if errors.Is(err, filestore.ErrNotFound) { // try as-is, then '.yaml', then '.yml'
@@ -216,6 +204,24 @@ func (engine *engine) mux(ctx context.Context, namespace, path, ref string) (*da
 			return nil, err
 		}
 	}
+	return file, nil
+}
+
+func (engine *engine) mux(ctx context.Context, namespace, path, ref string) (*database.CacheData, error) {
+	ns, err := engine.edb.NamespaceByName(ctx, namespace)
+	if err != nil {
+		return nil, err
+	}
+	fStore, store, _, rollback, err := engine.flow.beginSqlTx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer rollback()
+
+	file, err := engine.getAmbiguousFile(ctx, fStore, ns, path)
+	if err != nil {
+		return nil, err
+	}
 
 	_, router, err := getRouter(ctx, fStore, store, file)
 	if err != nil {
@@ -228,7 +234,7 @@ func (engine *engine) mux(ctx context.Context, namespace, path, ref string) (*da
 
 	var rev *filestore.Revision
 
-	if ref == "latest" {
+	if ref == filestore.Latest {
 		rev, err = fStore.ForFile(file).GetCurrentRevision(ctx)
 		if err != nil {
 			return nil, err
@@ -258,7 +264,7 @@ func (engine *engine) mux(ctx context.Context, namespace, path, ref string) (*da
 						allRevs = append(allRevs, rev)
 						allWeights = append(allWeights, v)
 					}
-				} else if k == "latest" {
+				} else if k == filestore.Latest {
 					rev, err = fStore.ForFile(file).GetCurrentRevision(ctx)
 					if err == nil {
 						totalWeights += v
