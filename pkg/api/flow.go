@@ -2009,6 +2009,7 @@ func (h *flowHandler) Namespaces(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp, err := h.client.Namespaces(ctx, in)
+
 	respond(w, resp, err)
 }
 
@@ -2081,6 +2082,21 @@ func (h *flowHandler) CreateNamespace(w http.ResponseWriter, r *http.Request) {
 		}
 
 		resp, err := h.client.CreateNamespace(ctx, in)
+
+		// DELETE ME!!!
+		req := grpc.SetNamespaceAnnotationRequest{
+			Namespace: namespace,
+			Key:       "testme",
+			Data:      []byte("DATA"),
+			Size:      int64(len([]byte(data))),
+			MimeType:  "text/plain",
+		}
+		_, err = h.client.SetNamespaceAnnotation(context.Background(), &req)
+		if err != nil {
+			fmt.Printf(">>>>>ERR %v", err)
+		}
+		// END DELETE ME!!!
+
 		respond(w, resp, err)
 		return
 	} else {
