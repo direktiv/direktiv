@@ -16,3 +16,5 @@ export const NamespaceListSchema = z.object({
 export const NamespaceCreatedSchema = z.object({
   namespace: NamespaceSchema,
 });
+
+export type NamespaceListSchemaType = z.infer<typeof NamespaceListSchema>;
