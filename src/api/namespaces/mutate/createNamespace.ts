@@ -54,7 +54,7 @@ export const useCreateNamespace = ({
     onError: () => {
       toast({
         title: "An error occurred",
-        description: "could not create directory 😢",
+        description: "could not create namespace 😢",
         variant: "error",
       });
     },
