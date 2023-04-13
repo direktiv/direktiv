@@ -1,6 +1,7 @@
 import { GitCommit, GitMerge, PieChart, Settings } from "lucide-react";
 import type { Meta, StoryObj } from "@storybook/react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./index";
+import clsx from "clsx";
 
 const meta = {
   title: "Components/Tabs",
@@ -54,47 +55,75 @@ export const Boxed = () => (
   </Tabs>
 );
 
+// REMOVE ME LATER
+const tabs = [
+  { name: "Overview", href: "#", icon: PieChart, current: true },
+  { name: "Active Revisions", href: "#", icon: GitCommit, current: false },
+  { name: "Revisions", href: "#", icon: GitMerge, current: false },
+  { name: "Settings", href: "#", icon: Settings, current: false },
+];
+
 export const TabsWithIcons = () => (
-  <Tabs defaultValue="account">
-    <TabsList>
-      <TabsTrigger value="overview">
-        <PieChart />
-        Overview
-      </TabsTrigger>
-      <TabsTrigger value="active-rev">
-        <GitCommit />
-        Active Revisions
-      </TabsTrigger>
-      <TabsTrigger value="revisions">
-        <GitMerge />
-        Revisions
-      </TabsTrigger>
-      <TabsTrigger value="settings">
-        <Settings />
-        Settings
-      </TabsTrigger>
-    </TabsList>
-    <TabsContent value="account">
-      <p className="text-sm text-gray-8 dark:text-gray-dark-8">
-        Make changes to your account here. Click save when you&apos;re done.
-      </p>
-    </TabsContent>
-    <TabsContent value="password">
-      <p className="text-sm text-gray-8 dark:text-gray-dark-8">
-        Change your password here. After saving, you&apos;ll be logged out.
-      </p>
-    </TabsContent>
-    <TabsContent value="third">
-      <p className="text-sm text-gray-8 dark:text-gray-dark-8">
-        Your third content here
-      </p>
-    </TabsContent>
-    <TabsContent value="fourth">
-      <p className="text-sm text-gray-8 dark:text-gray-dark-8">
-        The fourth content comes here
-      </p>
-    </TabsContent>
-  </Tabs>
+  <div className="flex flex-col space-y-4">
+    {/* REMOVE THIS LATER (and the wrapping container as well) */}
+    <nav className="-mb-px flex space-x-8">
+      {tabs.map((tab) => (
+        <a
+          key={tab.name}
+          href={tab.href}
+          className={clsx(
+            tab.current
+              ? "border-primary-500 text-primary-500"
+              : "border-transparent text-gray-11 hover:border-gray-8 hover:text-gray-12 dark:hover:border-gray-dark-8 dark:hover:text-gray-dark-12",
+            "flex items-center gap-x-2 whitespace-nowrap border-b-2 px-1 pb-4 text-sm font-medium"
+          )}
+          aria-current={tab.current ? "page" : undefined}
+        >
+          <tab.icon aria-hidden="true" className="h-4 w-auto" /> {tab.name}
+        </a>
+      ))}
+    </nav>
+    <Tabs defaultValue="account">
+      <TabsList>
+        <TabsTrigger value="overview">
+          <PieChart />
+          Overview
+        </TabsTrigger>
+        <TabsTrigger value="active-rev">
+          <GitCommit />
+          Active Revisions
+        </TabsTrigger>
+        <TabsTrigger value="revisions">
+          <GitMerge />
+          Revisions
+        </TabsTrigger>
+        <TabsTrigger value="settings">
+          <Settings />
+          Settings
+        </TabsTrigger>
+      </TabsList>
+      <TabsContent value="account">
+        <p className="text-sm text-gray-8 dark:text-gray-dark-8">
+          Make changes to your account here. Click save when you&apos;re done.
+        </p>
+      </TabsContent>
+      <TabsContent value="password">
+        <p className="text-sm text-gray-8 dark:text-gray-dark-8">
+          Change your password here. After saving, you&apos;ll be logged out.
+        </p>
+      </TabsContent>
+      <TabsContent value="third">
+        <p className="text-sm text-gray-8 dark:text-gray-dark-8">
+          Your third content here
+        </p>
+      </TabsContent>
+      <TabsContent value="fourth">
+        <p className="text-sm text-gray-8 dark:text-gray-dark-8">
+          The fourth content comes here
+        </p>
+      </TabsContent>
+    </Tabs>
+  </div>
 );
 
 export const ContentNoBorder = () => (
