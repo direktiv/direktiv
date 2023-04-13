@@ -4,7 +4,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../../design/Dialog";
-import { Folder, PlusCircle } from "lucide-react";
+import { Home, PlusCircle } from "lucide-react";
 import { SubmitHandler, useForm } from "react-hook-form";
 
 import Alert from "../../design/Alert";
@@ -22,15 +22,7 @@ type FormInput = {
   name: string;
 };
 
-const NewDirectory = ({
-  path,
-  close,
-  unallowedNames,
-}: {
-  path?: string;
-  close: () => void;
-  unallowedNames: string[];
-}) => {
+const NamespaceCreate = ({ close }: { close: () => void }) => {
   const namespace = useNamespace();
   const navigate = useNavigate();
   const {
@@ -40,11 +32,7 @@ const NewDirectory = ({
   } = useForm<FormInput>({
     resolver: zodResolver(
       z.object({
-        name: fileNameSchema.and(
-          z.string().refine((name) => !unallowedNames.some((n) => n === name), {
-            message: "The name already exists",
-          })
-        ),
+        name: fileNameSchema,
       })
     ),
   });
@@ -60,19 +48,19 @@ const NewDirectory = ({
   });
 
   const onSubmit: SubmitHandler<FormInput> = ({ name }) => {
-    mutate({ path, directory: name });
+    // mutate({ path, directory: name });
   };
 
   // you can not submit if the form has not changed or if there are any errors and
   // you have already submitted the form (errors will first show up after submit)
   const disableSubmit = !isDirty || (isSubmitted && !isValid);
 
-  const formId = `new-dir-${path}`;
+  const formId = `new-namespace`;
   return (
     <>
       <DialogHeader>
         <DialogTitle>
-          <Folder /> Create a new directory
+          <Home /> Create a new namespace
         </DialogTitle>
       </DialogHeader>
 
@@ -85,9 +73,13 @@ const NewDirectory = ({
         <form id={formId} onSubmit={handleSubmit(onSubmit)}>
           <fieldset className="flex items-center gap-5">
             <label className="w-[90px] text-right text-[15px]" htmlFor="name">
-              Name
+              Namespace
             </label>
-            <Input id="name" placeholder="folder-name" {...register("name")} />
+            <Input
+              id="name"
+              placeholder="new-namespace-name"
+              {...register("name")}
+            />
           </fieldset>
         </form>
       </div>
@@ -109,4 +101,4 @@ const NewDirectory = ({
   );
 };
 
-export default NewDirectory;
+export default NamespaceCreate;

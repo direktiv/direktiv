@@ -92,11 +92,7 @@ const Breadcrumb = () => {
             </DropdownMenuContent>
           </DropdownMenu>
           <DialogContent>
-            <NamespaceCreate
-              path="dede"
-              unallowedNames={[]}
-              close={() => setDialogOpen(false)}
-            />
+            <NamespaceCreate close={() => setDialogOpen(false)} />
           </DialogContent>
         </Dialog>
       </BreadcrumbLink>
