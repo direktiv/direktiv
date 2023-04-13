@@ -12,3 +12,7 @@ export const NamespaceListSchema = z.object({
   pageInfo: PageinfoSchema,
   results: z.array(NamespaceSchema),
 });
+
+export const NamespaceCreatedSchema = z.object({
+  namespace: NamespaceSchema,
+});
