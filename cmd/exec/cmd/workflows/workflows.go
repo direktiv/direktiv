@@ -381,8 +381,6 @@ Will update the helloworld workflow and set the remote workflow variable 'data.j
 		path := root.GetRelativePath(relativeDir, args[0])
 		path = root.GetPath(path)
 
-		fmt.Printf("PATH %v %v\n", path, args[0])
-
 		if !execNoPushFlag {
 			err := updateRemoteWorkflow(path, args[0])
 			if err != nil {
