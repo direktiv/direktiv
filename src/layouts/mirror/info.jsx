@@ -99,7 +99,7 @@ export default function MirrorInfoPanel(props) {
 
   const infoChangesTrackerRef = useRef(infoChangesTracker);
 
-  const resetStates = useCallback(() => {
+  const resetStates = () => {
     setInfoChangesTracker({
       url: false,
       ref: false,
@@ -108,21 +108,7 @@ export default function MirrorInfoPanel(props) {
       publicKey: false,
       privateKey: false,
     });
-
-    setInfoURL(infoURLOld);
-    setInfoRef(infoRefOld);
-    setInfoCron(infoCronOld);
-    setInfoPublicKey(infoPublicKeyOld);
-    setInfoPrivateKey(infoPrivateKeyOld);
-    setInfoPassphrase(infoPassphraseOld);
-  }, [
-    infoURLOld,
-    infoRefOld,
-    infoCronOld,
-    infoPublicKeyOld,
-    infoPrivateKeyOld,
-    infoPassphraseOld,
-  ]);
+  };
 
   useEffect(() => {
     infoChangesTrackerRef.current = infoChangesTracker;
