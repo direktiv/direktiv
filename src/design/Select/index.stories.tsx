@@ -1,3 +1,13 @@
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "../Dialog";
 import type { Meta, StoryObj } from "@storybook/react";
 import {
   Select,
@@ -10,16 +20,6 @@ import {
   SelectValue,
 } from "./index";
 
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "../Dialog";
 import Button from "../Button";
 import { Settings } from "lucide-react";
 
