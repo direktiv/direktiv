@@ -214,7 +214,7 @@ func (rcv *eventReceiver) Start() {
 
 	rcv.logger.Infof("starting event receiver")
 
-	err := http.ListenAndServe(":8080", r)
+	err := http.ListenAndServe(":1644", r)
 	if err != nil {
 		if !errors.Is(err, http.ErrServerClosed) {
 			rcv.logger.Errorf("Failed to start HTTP server: %v.", err)

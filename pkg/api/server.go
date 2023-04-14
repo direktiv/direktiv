@@ -56,7 +56,7 @@ func NewServer(l *zap.SugaredLogger) (*Server, error) {
 		router: r,
 		srv: &http.Server{
 			Handler:           r,
-			Addr:              ":8080",
+			Addr:              ":1644",
 			ReadHeaderTimeout: time.Second * 60,
 		},
 	}
