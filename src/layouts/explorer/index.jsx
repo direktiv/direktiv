@@ -701,6 +701,7 @@ function DirListItem(props) {
                   if (e.key === "Enter") {
                     try {
                       await renameNode("/", path, renameValue);
+                      refetch();
                       setRename(!rename);
                     } catch (err) {
                       setErr(err.message);
@@ -854,6 +855,7 @@ function WorkflowListItem(props) {
                   if (e.key === "Enter") {
                     try {
                       await renameNode("/", path, renameValue);
+                      refetch();
                       setRename(!rename);
                     } catch (err) {
                       setErr(err.message);
