@@ -284,7 +284,7 @@ describe("processApiResponse", () => {
     });
   });
 
-  test.only("payload will be stringified", async () => {
+  test("payload will be stringified", async () => {
     const useCallWithPost = (params: unknown) =>
       useMutation({
         mutationFn: () =>
