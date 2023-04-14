@@ -71,8 +71,6 @@ const NewWorkflow = ({
   });
 
   const onSubmit: SubmitHandler<FormInput> = ({ name, fileContent }) => {
-    debugger;
-
     createWorkflow({ path, name, fileContent });
   };
 
