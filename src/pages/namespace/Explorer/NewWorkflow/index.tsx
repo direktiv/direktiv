@@ -118,7 +118,7 @@ const NewWorkflow = ({
           <fieldset className="flex items-center gap-5">
             <label
               className="w-[150px] text-right text-[15px]"
-              // htmlFor="template"
+              htmlFor="template"
             >
               template
             </label>
@@ -130,7 +130,7 @@ const NewWorkflow = ({
                 if (matchingWf) setValue("fileContent", matchingWf.data);
               }}
             >
-              <SelectTrigger {...register("fileContent")}>
+              <SelectTrigger {...register("fileContent")} id="template">
                 <SelectValue
                   placeholder={defaultWorkflowTemplate.name}
                   defaultValue={defaultWorkflowTemplate.data}
