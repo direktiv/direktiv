@@ -13,6 +13,7 @@ import { Folder, FolderTree, Play, PlusCircle } from "lucide-react";
 import Button from "../../../design/Button";
 import { Link } from "react-router-dom";
 import NewDirectory from "./NewDirectory";
+import NewWorkflow from "./NewWorkflow";
 import { RxChevronDown } from "react-icons/rx";
 import { analyzePath } from "../../../util/router/utils";
 import { pages } from "../../../util/router/pages";
@@ -122,7 +123,15 @@ const ExplorerHeader: FC = () => {
                 close={() => setDialogOpen(false)}
               />
             )}
-            {selectedDialog === "new-workflow" && <h1>New Workflow</h1>}
+            {selectedDialog === "new-workflow" && (
+              <NewWorkflow
+                path={data?.node?.path}
+                unallowedNames={(data?.children?.results ?? []).map(
+                  (x) => x.name
+                )}
+                close={() => setDialogOpen(false)}
+              />
+            )}
           </DialogContent>
         </Dialog>
       </div>
