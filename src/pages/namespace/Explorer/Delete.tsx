@@ -17,7 +17,7 @@ const Delete = ({
   node: NodeSchemaType;
   close: () => void;
 }) => {
-  const { mutate, isLoading } = useDeleteNode({
+  const { mutate: deleteNode, isLoading } = useDeleteNode({
     onSuccess: () => {
       close();
     },
@@ -42,7 +42,7 @@ const Delete = ({
         </DialogClose>
         <Button
           onClick={() => {
-            mutate({ node });
+            deleteNode({ node });
           }}
           variant="destructive"
           loading={isLoading}

@@ -47,7 +47,7 @@ const NamespaceCreate = ({ close }: { close: () => void }) => {
     ),
   });
 
-  const { mutate, isLoading } = useCreateNamespace({
+  const { mutate: createNamespace, isLoading } = useCreateNamespace({
     onSuccess: (data) => {
       setNamespace(data.namespace.name);
       navigate(pages.explorer.createHref({ namespace: data.namespace.name }));
@@ -56,7 +56,7 @@ const NamespaceCreate = ({ close }: { close: () => void }) => {
   });
 
   const onSubmit: SubmitHandler<FormInput> = ({ name }) => {
-    mutate({ name });
+    createNamespace({ name });
   };
 
   // you can not submit if the form has not changed or if there are any errors and

@@ -49,7 +49,7 @@ const NewDirectory = ({
     ),
   });
 
-  const { mutate, isLoading } = useCreateDirectory({
+  const { mutate: createDirectory, isLoading } = useCreateDirectory({
     onSuccess: (data) => {
       namespace &&
         navigate(
@@ -60,7 +60,7 @@ const NewDirectory = ({
   });
 
   const onSubmit: SubmitHandler<FormInput> = ({ name }) => {
-    mutate({ path, directory: name });
+    createDirectory({ path, directory: name });
   };
 
   // you can not submit if the form has not changed or if there are any errors and

@@ -47,14 +47,14 @@ const Rename = ({
     },
   });
 
-  const { mutate, isLoading } = useRenameNode({
+  const { mutate: rename, isLoading } = useRenameNode({
     onSuccess: () => {
       close();
     },
   });
 
   const onSubmit: SubmitHandler<FormInput> = ({ name }) => {
-    mutate({ node, newName: name });
+    rename({ node, newName: name });
   };
 
   // you can not submit if the form has not changed or if there are any errors and
