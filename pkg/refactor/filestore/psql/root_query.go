@@ -136,7 +136,7 @@ func (q *RootQuery) IsEmptyDirectory(ctx context.Context, path string) (bool, er
 var _ filestore.RootQuery = &RootQuery{} // Ensures RootQuery struct conforms to filestore.RootQuery interface.
 
 func (q *RootQuery) Delete(ctx context.Context) error {
-	res := q.db.WithContext(ctx).Delete(&filestore.Root{ID: q.rootID})
+	res := q.db.WithContext(ctx).Delete(&filestore.Root{}, q.rootID)
 	if res.Error != nil {
 		return res.Error
 	}
@@ -336,8 +336,8 @@ func (q *RootQuery) CalculateChecksumsMap(ctx context.Context) (map[string]strin
 }
 
 func (q *RootQuery) checkRootExists(ctx context.Context) error {
-	n := &filestore.Root{ID: q.rootID}
-	res := q.db.WithContext(ctx).First(n)
+	n := &filestore.Root{}
+	res := q.db.WithContext(ctx).Where("id", q.rootID).First(n)
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 		return fmt.Errorf("root not found, id: '%s', err: %w", q.rootID, filestore.ErrNotFound)
 	}
