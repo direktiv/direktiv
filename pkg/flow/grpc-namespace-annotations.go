@@ -339,7 +339,6 @@ func (flow *flow) SetAnnotation(ctx context.Context, q annotationQuerier, key st
 
 		newAnnotation = true
 	} else {
-
 		query := annotation.Update().SetSize(len(data)).SetHash(hash).SetData(data).SetMimeType(mimetype)
 
 		annotation, err = query.Save(ctx)
