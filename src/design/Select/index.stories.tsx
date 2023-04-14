@@ -10,6 +10,19 @@ import {
   SelectValue,
 } from "./index";
 
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "../Dialog";
+import Button from "../Button";
+import { Settings } from "lucide-react";
+
 const meta = {
   title: "Components/Select",
   component: SelectTrigger,
@@ -168,4 +181,42 @@ export const Block = () => (
       <SelectItem value="3">Item 3</SelectItem>
     </SelectContent>
   </Select>
+);
+
+export const SelectWithinADialog = () => (
+  <Dialog>
+    <DialogTrigger asChild>
+      <Button>Open Dialog</Button>
+    </DialogTrigger>
+    <DialogContent>
+      <DialogHeader>
+        <DialogTitle>
+          <Settings />
+          Dialog Title
+        </DialogTitle>
+        <DialogDescription>
+          This Demo shows that the select also works withing a modal. There have
+          been some z-index conflicts before..
+        </DialogDescription>
+      </DialogHeader>
+      <div>
+        <Select>
+          <SelectTrigger block>
+            <SelectValue placeholder="select" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="1">Item 1</SelectItem>
+            <SelectItem value="2">Item 2</SelectItem>
+            <SelectItem value="3">Item 3</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <DialogFooter>
+        <DialogClose asChild>
+          <Button variant="ghost">Cancel</Button>
+        </DialogClose>
+        <Button>Submit</Button>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
 );
