@@ -78,9 +78,7 @@ const NewWorkflow = ({
   });
 
   const onSubmit: SubmitHandler<FormInput> = ({ name, fileContent }) => {
-    console.log("🚀", name, fileContent);
-
-    // createWorkflow({ path, name, fileContent });
+    createWorkflow({ path, name, fileContent });
   };
 
   // you can not submit if the form has not changed or if there are any errors and
@@ -148,13 +146,7 @@ const NewWorkflow = ({
             </Select>
           </fieldset>
           <fieldset className="flex items-start gap-5">
-            <Textarea
-              className="h-96"
-              value={getValues("fileContent")}
-              onChange={(e) => {
-                setValue("fileContent", e.target.value);
-              }}
-            />
+            <Textarea className="h-96" {...register("fileContent")} />
           </fieldset>
         </form>
       </div>
