@@ -7,7 +7,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../../../design/Dropdown";
-import { FC, Fragment, useState } from "react";
+import { FC, Fragment, useEffect, useState } from "react";
 import { Folder, FolderTree, Play, PlusCircle } from "lucide-react";
 
 import Button from "../../../design/Button";
@@ -39,6 +39,13 @@ const ExplorerHeader: FC = () => {
   const { data } = useListDirectory({ path });
   const { segments } = analyzePath(path);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedDialog, setSelectedDialog] = useState<
+    "new-dir" | "new-workflow" | undefined
+  >();
+
+  useEffect(() => {
+    if (dialogOpen === false) setSelectedDialog(undefined);
+  }, [dialogOpen, selectedDialog]);
 
   if (!namespace) return null;
   return (
@@ -83,26 +90,39 @@ const ExplorerHeader: FC = () => {
             <DropdownMenuContent className="w-40">
               <DropdownMenuLabel>Create</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DialogTrigger>
+              <DialogTrigger
+                onClick={() => {
+                  setSelectedDialog("new-dir");
+                }}
+              >
                 <DropdownMenuItem>
                   <Folder className="mr-2 h-4 w-4" />
                   <span>New Directory</span>
                 </DropdownMenuItem>
               </DialogTrigger>
-              <DropdownMenuItem>
-                <Play className="mr-2 h-4 w-4" />
-                <span>New Workflow</span>
-              </DropdownMenuItem>
+              <DialogTrigger
+                onClick={() => {
+                  setSelectedDialog("new-workflow");
+                }}
+              >
+                <DropdownMenuItem>
+                  <Play className="mr-2 h-4 w-4" />
+                  <span>New Workflow</span>
+                </DropdownMenuItem>
+              </DialogTrigger>
             </DropdownMenuContent>
           </DropdownMenu>
           <DialogContent>
-            <NewDirectory
-              path={data?.node?.path}
-              unallowedNames={(data?.children?.results ?? []).map(
-                (x) => x.name
-              )}
-              close={() => setDialogOpen(false)}
-            />
+            {selectedDialog === "new-dir" && (
+              <NewDirectory
+                path={data?.node?.path}
+                unallowedNames={(data?.children?.results ?? []).map(
+                  (x) => x.name
+                )}
+                close={() => setDialogOpen(false)}
+              />
+            )}
+            {selectedDialog === "new-workflow" && <h1>New Workflow</h1>}
           </DialogContent>
         </Dialog>
       </div>
