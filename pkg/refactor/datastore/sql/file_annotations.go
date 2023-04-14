@@ -15,8 +15,8 @@ type sqlFileAnnotationsStore struct {
 }
 
 func (s *sqlFileAnnotationsStore) Get(ctx context.Context, fileID uuid.UUID) (*core.FileAnnotations, error) {
-	annotations := &core.FileAnnotations{FileID: fileID}
-	res := s.db.WithContext(ctx).First(annotations)
+	annotations := &core.FileAnnotations{}
+	res := s.db.WithContext(ctx).Where("file_id", fileID).First(annotations)
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 		return nil, core.ErrFileAnnotationsNotSet
 	}
@@ -28,15 +28,6 @@ func (s *sqlFileAnnotationsStore) Get(ctx context.Context, fileID uuid.UUID) (*c
 }
 
 func (s *sqlFileAnnotationsStore) Set(ctx context.Context, annotations *core.FileAnnotations) error {
-	res := s.db.WithContext(ctx).Create(annotations)
-	if res.Error != nil {
-		return s.update(ctx, annotations)
-	}
-
-	return nil
-}
-
-func (s *sqlFileAnnotationsStore) update(ctx context.Context, annotations *core.FileAnnotations) error {
 	res := s.db.WithContext(ctx).
 		Model(&core.FileAnnotations{}).
 		Where("file_id", annotations.FileID).
@@ -44,8 +35,15 @@ func (s *sqlFileAnnotationsStore) update(ctx context.Context, annotations *core.
 	if res.Error != nil {
 		return res.Error
 	}
-	if res.RowsAffected != 1 {
+	if res.RowsAffected > 1 {
 		return fmt.Errorf("unexpected gorm update count, got: %d, want: %d", res.RowsAffected, 1)
+	}
+	if res.RowsAffected == 1 {
+		return nil
+	}
+	res = s.db.WithContext(ctx).Create(annotations)
+	if res.Error != nil {
+		return res.Error
 	}
 
 	return nil

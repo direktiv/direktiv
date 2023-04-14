@@ -2,8 +2,11 @@ package flow
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"math/big"
 	"strings"
 	"time"
 
@@ -11,11 +14,40 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	entirt "github.com/direktiv/direktiv/pkg/flow/ent/instanceruntime"
+	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
+
+func getRouter(ctx context.Context, fStore filestore.FileStore, store datastore.Store, file *filestore.File) (*core.FileAnnotations, *routerData, error) {
+	router := &routerData{
+		Enabled: true,
+		Routes:  make(map[string]int),
+	}
+
+	annotations, err := store.FileAnnotations().Get(ctx, file.ID)
+	if err != nil {
+		if !errors.Is(err, core.ErrFileAnnotationsNotSet) {
+			return nil, nil, err
+		}
+	} else {
+		s := annotations.Data.GetEntry(routerAnnotationKey)
+		if s != "" && s != `""` && s != `\"\"` {
+			err = json.Unmarshal([]byte(s), &router)
+			if err != nil {
+				return nil, nil, err
+			}
+		}
+	}
+
+	return annotations, router, nil
+}
 
 type muxStart struct {
 	Enabled  bool                         `json:"enabled"`
@@ -60,53 +92,44 @@ func (ms *muxStart) Hash() string {
 	return bytedata.Checksum(ms)
 }
 
-// TODO: yassir, need refactor.
-//nolint
-/*
-func (srv *server) validateRouter(ctx context.Context, cached *database.CacheData) (*muxStart, error, error) {
-	if len(cached.Workflow.Routes) == 0 {
+const routerAnnotationKey = "router"
 
-		// latest
-		var ref *database.Ref
-		for i := range cached.Workflow.Refs {
-			if cached.Workflow.Refs[i].Name == latest {
-				ref = cached.Workflow.Refs[i]
-				break
-			}
-		}
+type routerData struct {
+	Enabled bool
+	Routes  map[string]int
+}
 
-		if ref == nil {
-			return nil, nil, os.ErrNotExist
-		}
+func (r *routerData) Marshal() string {
+	data, err := json.Marshal(r)
+	if err != nil {
+		panic(err)
+	}
+	return string(data)
+}
 
-		cached.Ref = ref
+func (srv *server) validateRouter(ctx context.Context, fStore filestore.FileStore, store datastore.Store, file *filestore.File) (*muxStart, error, error) {
+	_, router, err := getRouter(ctx, fStore, store, file)
+	if err != nil {
+		return nil, nil, err
+	}
 
-		err := srv.database.Revision(ctx, cached, cached.Ref.Revision)
+	if len(router.Routes) == 0 {
+		rev, err := fStore.ForFile(file).GetCurrentRevision(ctx)
 		if err != nil {
 			return nil, nil, err
 		}
 
-		workflow, err := loadSource(cached.Revision)
+		workflow := new(model.Workflow)
+
+		err = workflow.Load(rev.Data)
 		if err != nil {
 			return nil, status.Error(codes.InvalidArgument, err.Error()), nil
 		}
 
 		ms := newMuxStart(workflow)
-		ms.Enabled = cached.Workflow.Live
+		ms.Enabled = router.Enabled
 
 		return ms, nil, nil
-
-	} else {
-		for i := range cached.Workflow.Routes {
-
-			route := cached.Workflow.Routes[i]
-			if route.Ref == nil {
-				return nil, nil, &derrors.NotFoundError{
-					Label: "ref not found",
-				}
-			}
-
-		}
 	}
 
 	var startHash string
@@ -114,50 +137,46 @@ func (srv *server) validateRouter(ctx context.Context, cached *database.CacheDat
 
 	var ms *muxStart
 
-	for _, route := range cached.Workflow.Routes {
+	for ref := range router.Routes {
+		var rev *filestore.Revision
 
-		cached.Ref = route.Ref
-
-		err := srv.database.Revision(ctx, cached, cached.Ref.Revision)
+		uid, err := uuid.Parse(ref)
+		if err == nil {
+			rev, err = fStore.ForFile(file).GetRevision(ctx, uid)
+		} else if ref == filestore.Latest {
+			rev, err = fStore.ForFile(file).GetCurrentRevision(ctx)
+		} else {
+			rev, err = fStore.ForFile(file).GetRevisionByTag(ctx, ref)
+		}
 		if err != nil {
 			return nil, nil, err
 		}
 
-		workflow, err := loadSource(cached.Revision)
+		workflow := new(model.Workflow)
+
+		err = workflow.Load(rev.Data)
 		if err != nil {
-			return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("route to '%s' invalid because revision fails to compile: %v", route.Ref.Name, err)), nil
+			return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("route to '%s' invalid because revision fails to compile: %v", ref, err)), nil
 		}
 
 		ms = newMuxStart(workflow)
-		ms.Enabled = cached.Workflow.Live
+		ms.Enabled = router.Enabled
 
 		hash := ms.Hash() // checksum(workflow.Start)
 		if startHash == "" {
 			startHash = hash
-			startRef = route.Ref.Name
+			startRef = ref
 		} else {
 			if startHash != hash {
-				return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("incompatible start definitions between refs '%s' and '%s'", startRef, route.Ref.Name)), nil
+				return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("incompatible start definitions between refs '%s' and '%s'", startRef, ref)), nil
 			}
 		}
-
 	}
 
 	return ms, nil, nil
 }
-*/
 
-func (engine *engine) mux(ctx context.Context, namespace, path, ref string) (*database.CacheData, error) {
-	ns, err := engine.edb.NamespaceByName(ctx, namespace)
-	if err != nil {
-		return nil, err
-	}
-	fStore, _, _, rollback, err := engine.flow.beginSqlTx(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer rollback(ctx)
-
+func (engine *engine) getAmbiguousFile(ctx context.Context, fStore filestore.FileStore, ns *database.Namespace, path string) (*filestore.File, error) {
 	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, path)
 	if err != nil {
 		if errors.Is(err, filestore.ErrNotFound) { // try as-is, then '.yaml', then '.yml'
@@ -171,30 +190,51 @@ func (engine *engine) mux(ctx context.Context, namespace, path, ref string) (*da
 							if !errors.Is(err2, filestore.ErrNotFound) {
 								err = err2
 							}
-							fmt.Println("X1")
 							return nil, err
 						}
 					} else {
 						err = err2
-						fmt.Println("X2")
 						return nil, err
 					}
 				}
 			} else {
-				fmt.Println("X3")
 				return nil, err
 			}
 		} else {
-			fmt.Println("X4")
 			return nil, err
 		}
 	}
+	return file, nil
+}
 
-	fmt.Println("X5")
+func (engine *engine) mux(ctx context.Context, namespace, path, ref string) (*database.CacheData, error) {
+	ns, err := engine.edb.NamespaceByName(ctx, namespace)
+	if err != nil {
+		return nil, err
+	}
+	fStore, store, _, rollback, err := engine.flow.beginSqlTx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer rollback()
+
+	file, err := engine.getAmbiguousFile(ctx, fStore, ns, path)
+	if err != nil {
+		return nil, err
+	}
+
+	_, router, err := getRouter(ctx, fStore, store, file)
+	if err != nil {
+		return nil, err
+	}
+
+	if !router.Enabled {
+		return nil, errors.New("cannot execute disabled workflow")
+	}
 
 	var rev *filestore.Revision
 
-	if ref == "latest" {
+	if ref == filestore.Latest {
 		rev, err = fStore.ForFile(file).GetCurrentRevision(ctx)
 		if err != nil {
 			return nil, err
@@ -205,10 +245,62 @@ func (engine *engine) mux(ctx context.Context, namespace, path, ref string) (*da
 			return nil, err
 		}
 	} else {
-		// TODO: yassir, implement routing by weights
-		rev, err = fStore.ForFile(file).GetCurrentRevision(ctx)
-		if err != nil {
-			return nil, err
+		if len(router.Routes) == 0 {
+			rev, err = fStore.ForFile(file).GetCurrentRevision(ctx)
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			totalWeights := 0
+			allRevs := make([]*filestore.Revision, 0)
+			allWeights := make([]int, 0)
+
+			for k, v := range router.Routes {
+				id, err := uuid.Parse(k)
+				if err == nil {
+					rev, err = fStore.ForFile(file).GetRevision(ctx, id)
+					if err == nil {
+						totalWeights += v
+						allRevs = append(allRevs, rev)
+						allWeights = append(allWeights, v)
+					}
+				} else if k == filestore.Latest {
+					rev, err = fStore.ForFile(file).GetCurrentRevision(ctx)
+					if err == nil {
+						totalWeights += v
+						allRevs = append(allRevs, rev)
+						allWeights = append(allWeights, v)
+					}
+				} else {
+					rev, err = fStore.ForFile(file).GetRevisionByTag(ctx, k)
+					if err == nil {
+						totalWeights += v
+						allRevs = append(allRevs, rev)
+						allWeights = append(allWeights, v)
+					}
+				}
+			}
+
+			if totalWeights < 1 {
+				rev, err = fStore.ForFile(file).GetCurrentRevision(ctx)
+				if err != nil {
+					return nil, err
+				}
+			} else {
+				x, err := rand.Int(rand.Reader, big.NewInt(int64(totalWeights)))
+				if err != nil {
+					return nil, err
+				}
+				choice := int(x.Int64())
+				var idx int
+				for idx = 0; choice > 0; idx++ {
+					choice -= allWeights[idx]
+					if choice <= 0 {
+						break
+					}
+				}
+				rev = allRevs[idx]
+			}
 		}
 	}
 
@@ -231,8 +323,6 @@ func (engine *engine) mux(ctx context.Context, namespace, path, ref string) (*da
 	return cached, nil
 }
 
-// TODO: yassir, need refactor.
-/*
 const (
 	rcfNone       = 0
 	rcfNoPriors   = 1 << iota
@@ -242,77 +332,6 @@ const (
 
 func hasFlag(flags, flag int) bool {
 	return flags&flag != 0
-}
-
-func (flow *flow) configureRouter(ctx context.Context, cached *database.CacheData, flags int, changer, commit func() error) error {
-	var err error
-	var muxErr1 error
-	var ms1 *muxStart
-
-	if !hasFlag(flags, rcfNoPriors) {
-		// NOTE: we check router valid before deleting because there's no sense failing the
-		// operation for resulting in an invalid router if the router was already invalid.
-		ms1, muxErr1, err = flow.validateRouter(ctx, cached)
-		if err != nil {
-			return err
-		}
-	}
-
-	err = changer()
-	if err != nil {
-		return err
-	}
-
-	ms2, muxErr2, err := flow.validateRouter(ctx, cached)
-	if err != nil {
-		return err
-	}
-
-	if muxErr2 != nil {
-		if hasFlag(flags, rcfNoValidate) && len(cached.Workflow.Routes) <= 1 {
-			// no need to do anything here?
-		} else if muxErr1 == nil || !hasFlag(flags, rcfBreaking) {
-			return muxErr2
-		}
-	}
-
-	if ms2 == nil {
-		ms2 = new(muxStart)
-	}
-
-	mustReconfigureRouter := ms1.Hash() != ms2.Hash() || hasFlag(flags, rcfNoPriors)
-
-	if mustReconfigureRouter {
-		err = flow.preCommitRouterConfiguration(ctx, cached, ms2)
-		if err != nil {
-			return err
-		}
-	}
-
-	err = commit()
-
-	if err != nil {
-		return err
-	}
-
-	if mustReconfigureRouter {
-		flow.postCommitRouterConfiguration(cached.Workflow.ID.String(), ms2)
-	}
-
-	return nil
-}
-
-func (flow *flow) preCommitRouterConfiguration(ctx context.Context, cached *database.CacheData, ms *muxStart) error {
-	err := flow.events.processWorkflowEvents(ctx, cached, ms)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (flow *flow) postCommitRouterConfiguration(id string, ms *muxStart) {
-	flow.pubsub.ConfigureRouterCron(id, ms.Cron, ms.Enabled)
 }
 
 func (flow *flow) configureRouterHandler(req *pubsub.PubsubUpdate) {
@@ -337,8 +356,6 @@ func (flow *flow) configureRouterHandler(req *pubsub.PubsubUpdate) {
 	}
 }
 
-*/
-
 func (flow *flow) cronHandler(data []byte) {
 	ctx := context.Background()
 
@@ -353,7 +370,7 @@ func (flow *flow) cronHandler(data []byte) {
 		flow.sugar.Error(err)
 		return
 	}
-	defer rollback(ctx)
+	defer rollback()
 
 	file, err := fStore.GetFile(ctx, id)
 	if err != nil {
@@ -365,7 +382,7 @@ func (flow *flow) cronHandler(data []byte) {
 		flow.sugar.Error(err)
 		return
 	}
-	rollback(ctx)
+	rollback()
 
 	ns, err := flow.edb.Namespace(ctx, file.RootID)
 	if err != nil {
@@ -412,4 +429,30 @@ func (flow *flow) cronHandler(data []byte) {
 	}
 
 	flow.engine.queue(im)
+}
+
+func (flow *flow) configureWorkflowStarts(ctx context.Context, fStore filestore.FileStore, store datastore.Store, ns *database.Namespace, file *filestore.File, router *routerData) error {
+	ms, verr, err := flow.validateRouter(ctx, fStore, store, file)
+	if err != nil {
+		return err
+	}
+	if verr != nil {
+		return verr
+	}
+
+	if ms == nil {
+		ms = &muxStart{
+			Enabled: false,
+			Type:    model.StartTypeDefault.String(),
+		}
+	}
+
+	err = flow.events.processWorkflowEvents(ctx, ns, file, ms)
+	if err != nil {
+		return err
+	}
+
+	flow.pubsub.ConfigureRouterCron(file.ID.String(), ms.Cron, ms.Enabled)
+
+	return nil
 }

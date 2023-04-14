@@ -18,7 +18,7 @@ import (
 
 var (
 	ErrFileTypeIsDirectory = errors.New("ErrFileTypeIsDirectory")
-	// TODO: possible invalid.
+	// TODO: fix this inconsistent error strings.
 	ErrNotFound             = errors.New("not found")
 	ErrPathAlreadyExists    = errors.New("ErrPathAlreadyExists")
 	ErrNoParentDirectory    = errors.New("ErrNoParentDirectory")

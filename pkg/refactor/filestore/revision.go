@@ -30,6 +30,10 @@ func (tags RevisionTags) RemoveTag(tag string) RevisionTags {
 }
 
 func (tags RevisionTags) List() []string {
+	if string(tags) == "" {
+		return []string{}
+	}
+
 	return strings.Split(string(tags), ",")
 }
 

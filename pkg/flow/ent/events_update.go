@@ -95,6 +95,20 @@ func (eu *EventsUpdate) SetWorkflowID(u uuid.UUID) *EventsUpdate {
 	return eu
 }
 
+// SetNillableWorkflowID sets the "workflow_id" field if the given value is not nil.
+func (eu *EventsUpdate) SetNillableWorkflowID(u *uuid.UUID) *EventsUpdate {
+	if u != nil {
+		eu.SetWorkflowID(*u)
+	}
+	return eu
+}
+
+// ClearWorkflowID clears the value of the "workflow_id" field.
+func (eu *EventsUpdate) ClearWorkflowID() *EventsUpdate {
+	eu.mutation.ClearWorkflowID()
+	return eu
+}
+
 // AddWfeventswaitIDs adds the "wfeventswait" edge to the EventsWait entity by IDs.
 func (eu *EventsUpdate) AddWfeventswaitIDs(ids ...uuid.UUID) *EventsUpdate {
 	eu.mutation.AddWfeventswaitIDs(ids...)
@@ -313,6 +327,9 @@ func (eu *EventsUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := eu.mutation.WorkflowID(); ok {
 		_spec.SetField(events.FieldWorkflowID, field.TypeUUID, value)
 	}
+	if eu.mutation.WorkflowIDCleared() {
+		_spec.ClearField(events.FieldWorkflowID, field.TypeUUID)
+	}
 	if eu.mutation.WfeventswaitCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -516,6 +533,20 @@ func (euo *EventsUpdateOne) SetUpdatedAt(t time.Time) *EventsUpdateOne {
 // SetWorkflowID sets the "workflow_id" field.
 func (euo *EventsUpdateOne) SetWorkflowID(u uuid.UUID) *EventsUpdateOne {
 	euo.mutation.SetWorkflowID(u)
+	return euo
+}
+
+// SetNillableWorkflowID sets the "workflow_id" field if the given value is not nil.
+func (euo *EventsUpdateOne) SetNillableWorkflowID(u *uuid.UUID) *EventsUpdateOne {
+	if u != nil {
+		euo.SetWorkflowID(*u)
+	}
+	return euo
+}
+
+// ClearWorkflowID clears the value of the "workflow_id" field.
+func (euo *EventsUpdateOne) ClearWorkflowID() *EventsUpdateOne {
+	euo.mutation.ClearWorkflowID()
 	return euo
 }
 
@@ -766,6 +797,9 @@ func (euo *EventsUpdateOne) sqlSave(ctx context.Context) (_node *Events, err err
 	}
 	if value, ok := euo.mutation.WorkflowID(); ok {
 		_spec.SetField(events.FieldWorkflowID, field.TypeUUID, value)
+	}
+	if euo.mutation.WorkflowIDCleared() {
+		_spec.ClearField(events.FieldWorkflowID, field.TypeUUID)
 	}
 	if euo.mutation.WfeventswaitCleared() {
 		edge := &sqlgraph.EdgeSpec{

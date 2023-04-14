@@ -15,7 +15,7 @@ func Test_sqlMirrorStore_Process_SetAndGet(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}
-	ds := sql.NewSQLStore(db)
+	ds := sql.NewSQLStore(db, "some_secret_key_")
 
 	newProcess := &mirror.Process{
 		ID:       uuid.New(),
@@ -94,7 +94,7 @@ func Test_sqlMirrorStore_Config_SetAndGet(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}
-	ds := sql.NewSQLStore(db)
+	ds := sql.NewSQLStore(db, "some_secret_key_")
 
 	// test create.
 
@@ -104,7 +104,7 @@ func Test_sqlMirrorStore_Config_SetAndGet(t *testing.T) {
 	}
 	config, err := ds.Mirror().CreateConfig(context.Background(), newConfig)
 	if err != nil {
-		t.Errorf("unexpected CreateConfig() error: %v", err)
+		t.Fatalf("unexpected CreateConfig() error: %v", err)
 	}
 	if newConfig.ID != config.ID {
 		t.Errorf("unexpected CreateConfig().ID, want: %v, got %v", newConfig.ID, config.ID)

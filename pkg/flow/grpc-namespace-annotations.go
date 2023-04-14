@@ -319,16 +319,15 @@ func (flow *flow) SetAnnotation(ctx context.Context, q annotationQuerier, key st
 		if !derrors.IsNotFound(err) {
 			return nil, false, err
 		}
-
 		clients := flow.edb.Clients(ctx)
 
 		query := clients.Annotation.Create().SetSize(len(data)).SetHash(hash).SetData(data).SetName(key).SetMimeType(mimetype)
 
 		switch v := q.(type) {
-		case *ent.Namespace:
-			query = query.SetNamespace(v)
-		case *ent.Instance:
-			query = query.SetInstance(v)
+		case *entNamespaceAnnotationQuerier:
+			query = query.SetNamespace(v.clients.Namespace.GetX(ctx, v.cached.Namespace.ID))
+		case *entInstanceAnnotationQuerier:
+			query = query.SetInstance(v.clients.Instance.GetX(ctx, v.cached.Instance.ID))
 		default:
 			panic(errors.New("bad querier"))
 		}

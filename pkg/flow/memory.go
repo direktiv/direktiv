@@ -260,7 +260,7 @@ func (engine *engine) getInstanceMemory(ctx context.Context, id string) (*instan
 	if err != nil {
 		return nil, err
 	}
-	defer rollback(ctx)
+	defer rollback()
 
 	file, revision, err := fStore.GetRevision(ctx, cached.Instance.Revision)
 	if err != nil {

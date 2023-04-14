@@ -18,26 +18,26 @@ type FileAnnotations struct {
 	UpdatedAt time.Time
 }
 
-type FileAnnotationsData []byte
+type FileAnnotationsData string
 
 func NewFileAnnotationsData(list map[string]string) FileAnnotationsData {
 	if len(list) == 0 {
-		return []byte("{}")
+		return "{}"
 	}
 	jsonStr, err := json.Marshal(list)
 	if err != nil {
 		panic(fmt.Sprintf("logic error, marshalling FileAnnotationsData with value: %v, got error: %s", list, err))
 	}
 
-	return jsonStr
+	return FileAnnotationsData(jsonStr)
 }
 
 func (data FileAnnotationsData) SetEntry(key string, value string) FileAnnotationsData {
 	if len(data) == 0 {
-		data = []byte("{}")
+		data = "{}"
 	}
 	list := map[string]string{}
-	err := json.Unmarshal(data, &list)
+	err := json.Unmarshal([]byte(data), &list)
 	if err != nil {
 		panic(fmt.Sprintf("logic error, unmarshalling FileAnnotationsData with val: %s, got error: %s", data, err))
 	}
@@ -48,10 +48,10 @@ func (data FileAnnotationsData) SetEntry(key string, value string) FileAnnotatio
 
 func (data FileAnnotationsData) GetEntry(key string) string {
 	if len(data) == 0 {
-		data = []byte("{}")
+		data = "{}"
 	}
 	list := map[string]string{}
-	err := json.Unmarshal(data, &list)
+	err := json.Unmarshal([]byte(data), &list)
 	if err != nil {
 		panic(fmt.Sprintf("logic error, unmarshalling FileAnnotationsData with val: %s, got error: %s", data, err))
 	}
@@ -65,10 +65,10 @@ func (data FileAnnotationsData) GetEntry(key string) string {
 
 func (data FileAnnotationsData) RemoveEntry(key string) FileAnnotationsData {
 	if len(data) == 0 {
-		data = []byte("{}")
+		data = "{}"
 	}
 	list := map[string]string{}
-	err := json.Unmarshal(data, &list)
+	err := json.Unmarshal([]byte(data), &list)
 	if err != nil {
 		panic(fmt.Sprintf("logic error, unmarshalling FileAnnotationsData with val: %s, got error: %s", data, err))
 	}

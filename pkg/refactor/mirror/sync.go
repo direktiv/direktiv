@@ -3,14 +3,18 @@ package mirror
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"fmt"
+	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
+	"github.com/gabriel-vasile/mimetype"
 	"github.com/google/uuid"
 	ignore "github.com/sabhiram/go-gitignore"
 	"go.uber.org/zap"
@@ -19,6 +23,8 @@ import (
 // TODO: implement parsing direktiv variables.
 // TODO: check %w verb on errors.
 // TODO: fix errors and add logs.
+// TODO: implement a mechanism to clean dangling processes and cleaning them up.
+// TODO: implement synchronizing jobs.
 
 type mirroringJob struct {
 	// job parameters.
@@ -182,9 +188,67 @@ func (j *mirroringJob) FilterIgnoredFiles() *mirroringJob {
 	return j
 }
 
-func (j *mirroringJob) ParseDirektivVariable() *mirroringJob {
+func (j *mirroringJob) ParseDirektivVars(fStore filestore.FileStore, store Store, namespaceID uuid.UUID) *mirroringJob {
 	if j.err != nil {
 		return j
+	}
+
+	namespaceVarKeys, workflowVarKeys := parseDirektivVars(j.sourcedPaths)
+
+	for _, pk := range namespaceVarKeys {
+		path := j.distDirectory + pk[0] + "." + pk[1]
+		data, err := os.ReadFile(path)
+		if err != nil {
+			j.err = fmt.Errorf("read os file, path: %s, err: %w", path, err)
+
+			return j
+		}
+		mType := mimetype.Detect(data)
+		hash, err := computeHash(data)
+		if err != nil {
+			j.err = fmt.Errorf("calculate hash string, path: %s, err: %w", path, err)
+
+			return j
+		}
+		err = store.SetNamespaceVariable(j.ctx, namespaceID, pk[1], data, hash, mType.String())
+		if err != nil {
+			j.err = fmt.Errorf("save namespace variable, path: %s, err: %w", path, err)
+
+			return j
+		}
+	}
+
+	for _, pk := range workflowVarKeys {
+		path := j.distDirectory + pk[0] + "." + pk[1]
+		workflowFile, err := fStore.ForRootID(namespaceID).GetFile(j.ctx, pk[0])
+		if errors.Is(err, filestore.ErrNotFound) {
+			continue
+		}
+		if err != nil {
+			j.err = fmt.Errorf("read filestore file, path: %s, err: %w", path, err)
+
+			return j
+		}
+
+		data, err := os.ReadFile(path)
+		if err != nil {
+			j.err = fmt.Errorf("read os file, path: %s, err: %w", path, err)
+
+			return j
+		}
+		mType := mimetype.Detect(data)
+		hash, err := computeHash(data)
+		if err != nil {
+			j.err = fmt.Errorf("calculate hash string, path: %s, err: %w", path, err)
+
+			return j
+		}
+		err = store.SetWorkflowVariable(j.ctx, workflowFile.ID, pk[1], data, hash, mType.String())
+		if err != nil {
+			j.err = fmt.Errorf("save namespace variable, path: %s, err: %w", path, err)
+
+			return j
+		}
 	}
 
 	return j
@@ -220,7 +284,7 @@ func (j *mirroringJob) CopyFilesToRoot(fStore filestore.FileStore, namespaceID u
 			if strings.HasSuffix(path, ".yaml") || strings.HasSuffix(path, ".yml") {
 				typ = filestore.FileTypeWorkflow
 			}
-			_, _, err = fStore.ForRootID(namespaceID).CreateFile(j.ctx, path, typ, fileReader)
+			_, _, err := fStore.ForRootID(namespaceID).CreateFile(j.ctx, path, typ, fileReader)
 			if err != nil {
 				j.err = fmt.Errorf("filestore create file, path: %s, err: %w", path, err)
 
@@ -334,4 +398,62 @@ func splitPathToDirectories(dir string) []string {
 	}
 
 	return list
+}
+
+func parseDirektivVars(paths []string) ([][]string, [][]string) {
+	pathsMap := map[string]bool{}
+	for _, p := range paths {
+		pathsMap[p] = true
+	}
+
+	namespaceVarPathsKeys := [][]string{}
+	workflowVarPathsKeys := [][]string{}
+
+	for _, p := range paths {
+		base := filepath.Base(p)
+		dir := filepath.Dir(p)
+
+		if strings.Contains(base, "var.") && len(base) > len("var.") {
+			if strings.HasPrefix(strings.TrimPrefix(base, "var."), "_") {
+				continue
+			}
+			namespaceVarPathsKeys = append(namespaceVarPathsKeys, []string{filepath.Clean(dir + "/var"), strings.TrimPrefix(base, "var.")})
+
+			continue
+		}
+
+		if strings.Contains(base, ".yaml.") {
+			if _, ok := pathsMap[p]; !ok {
+				continue
+			}
+			parts := strings.Split(base, ".yaml.")
+			//nolint:gomnd
+			if len(parts) == 2 {
+				workflowVarPathsKeys = append(workflowVarPathsKeys, []string{dir + "/" + parts[0] + ".yaml", parts[1]})
+			}
+		}
+		if strings.Contains(base, ".yml.") {
+			if _, ok := pathsMap[p]; !ok {
+				continue
+			}
+			parts := strings.Split(base, ".yml.")
+			//nolint:gomnd
+			if len(parts) == 2 {
+				workflowVarPathsKeys = append(workflowVarPathsKeys, []string{dir + "/" + parts[0] + ".yml", parts[1]})
+			}
+		}
+	}
+
+	return namespaceVarPathsKeys, workflowVarPathsKeys
+}
+
+// computeHash is a shortcut to calculate a hash for a byte slice.
+func computeHash(data []byte) (string, error) {
+	hasher := sha256.New()
+	_, err := io.Copy(hasher, bytes.NewReader(data))
+	if err != nil {
+		return "", err
+	}
+
+	return hex.EncodeToString(hasher.Sum(nil)), nil
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"runtime"
 	"strings"
@@ -33,9 +34,13 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
-const parcelSize = 0x100000
+const (
+	parcelSize        = 0x100000
+	direktivSecretKey = "DIREKTIV_SECRETS_KEY"
+)
 
 type server struct {
 	ID uuid.UUID
@@ -153,19 +158,41 @@ func (srv *server) start(ctx context.Context) error {
 
 	srv.database = database.NewCachedDatabase(srv.sugar, edb, srv)
 	defer srv.cleanup(srv.database.Close)
-	// fmt.Printf(">>>>>> dsn %s\n", db)
 
 	srv.gormDB, err = gorm.Open(postgres.New(postgres.Config{
 		DSN:                  db,
 		PreferSimpleProtocol: false, // disables implicit prepared statement usage
-	}), &gorm.Config{})
+		// Conn:                 edb.DB(),
+	}), &gorm.Config{
+		Logger: logger.New(
+			log.New(os.Stdout, "\r\n", log.LstdFlags),
+			logger.Config{
+				LogLevel: logger.Silent,
+			},
+		),
+	})
 	if err != nil {
 		return fmt.Errorf("creating filestore, err: %w", err)
 	}
+
+	gdb, err := srv.gormDB.DB()
+	if err != nil {
+		return fmt.Errorf("modifying gorm driver, err: %w", err)
+	}
+	gdb.SetMaxIdleConns(32)
+	gdb.SetMaxOpenConns(16)
 	// srv.fStore = psql.NewSQLFileStore(srv.gormDB)
 	// srv.dataStore = sql.NewSQLStore(srv.gormDB)
 
-	srv.mirrorManager = mirror.NewDefaultManager(srv.sugar, sql.NewSQLStore(srv.gormDB).Mirror(), psql.NewSQLFileStore(srv.gormDB), &mirror.GitSource{})
+	if os.Getenv(direktivSecretKey) == "" {
+		return fmt.Errorf("empty env variable '%s'", direktivSecretKey)
+	}
+
+	if len(os.Getenv(direktivSecretKey))%16 != 0 {
+		return fmt.Errorf("invalid env variable '%s' length", direktivSecretKey)
+	}
+
+	srv.mirrorManager = mirror.NewDefaultManager(srv.sugar, sql.NewSQLStore(srv.gormDB, os.Getenv(direktivSecretKey)).Mirror(), psql.NewSQLFileStore(srv.gormDB), &mirror.GitSource{})
 
 	srv.sugar.Debug("Initializing pub-sub.")
 
@@ -204,15 +231,6 @@ func (srv *server) start(ctx context.Context) error {
 		return err
 	}
 	defer srv.cleanup(srv.engine.Close)
-
-	srv.sugar.Debug("Initializing syncer.")
-
-	// TODO: yassir, need refactor.
-	//srv.syncer, err = initSyncer(srv)
-	//if err != nil {
-	//	return err
-	//}
-	//defer srv.cleanup(srv.syncer.Close)
 
 	var lock sync.Mutex
 	var wg sync.WaitGroup
@@ -417,8 +435,7 @@ func (srv *server) registerFunctions() {
 	srv.pubsub.RegisterFunction(pubsub.PubsubDeleteTimerFunction, srv.timers.deleteTimerHandler)
 	srv.pubsub.RegisterFunction(pubsub.PubsubDeleteInstanceTimersFunction, srv.timers.deleteInstanceTimersHandler)
 	srv.pubsub.RegisterFunction(pubsub.PubsubCancelWorkflowFunction, srv.engine.finishCancelWorkflow)
-	// TODO: yassir, need refactor.
-	// srv.pubsub.RegisterFunction(pubsub.PubsubConfigureRouterFunction, srv.flow.configureRouterHandler)
+	srv.pubsub.RegisterFunction(pubsub.PubsubConfigureRouterFunction, srv.flow.configureRouterHandler)
 	srv.pubsub.RegisterFunction(pubsub.PubsubUpdateEventDelays, srv.events.updateEventDelaysHandler)
 
 	srv.timers.registerFunction(timeoutFunction, srv.engine.timeoutHandler)
@@ -428,8 +445,6 @@ func (srv *server) registerFunctions() {
 	srv.timers.registerFunction(retryWakeupFunction, srv.flow.engine.retryWakeup)
 
 	srv.pubsub.RegisterFunction(pubsub.PubsubDeleteActivityTimersFunction, srv.timers.deleteActivityTimersHandler)
-	// TODO: yassir, need refactor.
-	// srv.timers.registerFunction(syncerTimeoutFunction, srv.syncer.timeoutHandler)
 
 	srv.pubsub.RegisterFunction(deleteFilterCache, srv.flow.deleteCache)
 	srv.pubsub.RegisterFunction(deleteFilterCacheNamespace, srv.flow.deleteCacheNamespace)
@@ -445,12 +460,12 @@ func (srv *server) cronPoller() {
 func (srv *server) cronPoll() {
 	ctx := context.Background()
 
-	fStore, _, _, rollback, err := srv.flow.beginSqlTx(ctx)
+	fStore, store, _, rollback, err := srv.flow.beginSqlTx(ctx)
 	if err != nil {
 		srv.sugar.Error(err)
 		return
 	}
-	defer rollback(ctx)
+	defer rollback()
 
 	roots, err := fStore.GetAllRoots(ctx)
 	if err != nil {
@@ -470,29 +485,23 @@ func (srv *server) cronPoll() {
 				continue
 			}
 
-			srv.cronPollerWorkflow(ctx, root, file)
+			srv.cronPollerWorkflow(ctx, fStore, store, file)
 		}
 	}
 }
 
-func (srv *server) cronPollerWorkflow(ctx context.Context, root *filestore.Root, file *filestore.File) {
-	// TODO: yassir, need refactor.
-	// NOTE: the validateRouter function used to be responsible for returning the isEnabled and cronPattern information via the `ms` return value.
-	/*
-		ms, muxErr, err := srv.validateRouter(ctx, cached)
-		if err != nil || muxErr != nil {
-			return
-		}
-	*/
-	isEnabled := true
-	cronPattern := ""
+func (srv *server) cronPollerWorkflow(ctx context.Context, fStore filestore.FileStore, store datastore.Store, file *filestore.File) {
+	ms, muxErr, err := srv.validateRouter(ctx, fStore, store, file)
+	if err != nil || muxErr != nil {
+		return
+	}
 
-	if !isEnabled || cronPattern != "" {
+	if !ms.Enabled || ms.Cron != "" {
 		srv.timers.deleteCronForWorkflow(file.ID.String())
 	}
 
-	if cronPattern != "" && isEnabled {
-		err := srv.timers.addCron(file.ID.String(), wfCron, cronPattern, []byte(file.ID.String()))
+	if ms.Cron != "" && ms.Enabled {
+		err := srv.timers.addCron(file.ID.String(), wfCron, ms.Cron, []byte(file.ID.String()))
 		if err != nil {
 			srv.sugar.Error(err)
 			return
@@ -572,13 +581,13 @@ func parent() string {
 	return elems[len(elems)-1]
 }
 
-func (flow *flow) beginSqlTx(ctx context.Context) (filestore.FileStore, datastore.Store, func(ctx context.Context) error, func(ctx context.Context), error) {
+func (flow *flow) beginSqlTx(ctx context.Context) (filestore.FileStore, datastore.Store, func(ctx context.Context) error, func(), error) {
 	res := flow.gormDB.WithContext(ctx).Begin()
 	if res.Error != nil {
 		return nil, nil, nil, nil, res.Error
 	}
-	rollbackFunc := func(ctx context.Context) {
-		err := res.WithContext(ctx).Rollback().Error
+	rollbackFunc := func() {
+		err := res.Rollback().Error
 		if err != nil {
 			if !strings.Contains(err.Error(), "already") {
 				fmt.Fprintf(os.Stderr, "failed to rollback transaction: %v\n", err)
@@ -589,7 +598,7 @@ func (flow *flow) beginSqlTx(ctx context.Context) (filestore.FileStore, datastor
 		return res.WithContext(ctx).Commit().Error
 	}
 
-	return psql.NewSQLFileStore(res), sql.NewSQLStore(res), commitFunc, rollbackFunc, nil
+	return psql.NewSQLFileStore(res), sql.NewSQLStore(res, os.Getenv(direktivSecretKey)), commitFunc, rollbackFunc, nil
 }
 
 func (flow *flow) runSqlTx(ctx context.Context, fun func(fStore filestore.FileStore, store datastore.Store) error) error {
@@ -597,7 +606,7 @@ func (flow *flow) runSqlTx(ctx context.Context, fun func(fStore filestore.FileSt
 	if err != nil {
 		return err
 	}
-	defer rollback(ctx)
+	defer rollback()
 
 	if err := fun(fStore, store); err != nil {
 		return err

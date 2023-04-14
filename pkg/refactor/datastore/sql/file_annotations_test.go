@@ -18,7 +18,7 @@ func Test_sqlFileAnnotationsStore_SetAndGet(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}
-	ds := sql.NewSQLStore(db)
+	ds := sql.NewSQLStore(db, "some_secret_key_")
 	fs := psql.NewSQLFileStore(db)
 
 	file := createFile(t, fs)

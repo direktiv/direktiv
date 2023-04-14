@@ -8,20 +8,23 @@ import (
 )
 
 type sqlStore struct {
-	db *gorm.DB
+	db                        *gorm.DB
+	mirrorConfigEncryptionKey string
 }
 
 var _ datastore.Store = &sqlStore{}
 
-func NewSQLStore(db *gorm.DB) datastore.Store {
+func NewSQLStore(db *gorm.DB, mirrorConfigEncryptionKey string) datastore.Store {
 	return &sqlStore{
-		db: db,
+		db:                        db,
+		mirrorConfigEncryptionKey: mirrorConfigEncryptionKey,
 	}
 }
 
 func (s *sqlStore) Mirror() mirror.Store {
 	return &sqlMirrorStore{
-		db: s.db,
+		db:                  s.db,
+		configEncryptionKey: s.mirrorConfigEncryptionKey,
 	}
 }
 

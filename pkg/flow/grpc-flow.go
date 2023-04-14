@@ -93,17 +93,6 @@ func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
 		}
 	}()
 
-	// TODO: yassir, need refactor.
-	//go func() {
-	//	// timed-out activity retrier
-	//	<-time.After(1 * time.Minute)
-	//	ticker := time.NewTicker(5 * time.Minute)
-	//	for {
-	//		<-ticker.C
-	//		go flow.syncer.kickExpiredActivities()
-	//	}
-	//}()
-
 	go func() {
 		// function heart-beats
 		ticker := time.NewTicker(1 * time.Minute)

@@ -11,6 +11,22 @@ import (
 	"go.uber.org/zap"
 )
 
+const (
+	processStatusComplete  = "complete"
+	processStatusPending   = "pending"
+	processStatusExecuting = "executing"
+	processStatusFailed    = "failed"
+)
+
+const (
+	processTypeInit        = "init"
+	processTypeReconfigure = "reconfigure"
+	processTypeLocked      = "locked"
+	processTypeUnlocked    = "unlocked"
+	processTypeCronSync    = "scheduled-sync"
+	processTypeSync        = "sync"
+)
+
 var ErrNotFound = errors.New("ErrNotFound")
 
 // Config holds configuration data that are needed to create a mirror (pulling mirror credentials, urls, keys
@@ -34,6 +50,7 @@ type Process struct {
 	ConfigID uuid.UUID
 
 	Status string
+	Typ    string
 
 	EndedAt   time.Time
 	CreatedAt time.Time
@@ -51,6 +68,12 @@ type Store interface {
 
 	GetProcess(ctx context.Context, id uuid.UUID) (*Process, error)
 	GetProcessesByConfig(ctx context.Context, configID uuid.UUID) ([]*Process, error)
+
+	// TODO: this need to be refactored.
+	SetNamespaceVariable(ctx context.Context, namespaceID uuid.UUID, key string, data []byte, hash string, mType string) error
+
+	// TODO: this need to be refactored.
+	SetWorkflowVariable(ctx context.Context, workflowID uuid.UUID, key string, data []byte, hash string, mType string) error
 }
 
 type Manager interface {
@@ -73,7 +96,8 @@ func (d *DefaultManager) StartMirroringProcess(ctx context.Context, config *Conf
 	process, err := d.store.CreateProcess(ctx, &Process{
 		ID:       uuid.New(),
 		ConfigID: config.ID,
-		Status:   "created",
+		Typ:      processTypeInit,
+		Status:   processStatusPending,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("creating a new process, err: %w", err)
@@ -86,26 +110,24 @@ func (d *DefaultManager) StartMirroringProcess(ctx context.Context, config *Conf
 			ctx: context.TODO(),
 			lg:  d.lg,
 		}).
-			SetProcessStatus(d.store, process, "started").
+			SetProcessStatus(d.store, process, processStatusExecuting).
 			CreateTempDirectory().
 			PullSourceInPath(d.source, config).
 			CreateSourceFilesList().
 			// ParseIgnoreFile("/.direktivignore").
 			// FilterIgnoredFiles().
-			ParseDirektivVariable().
 
 			// TODO: we need to implement a mechanism to synchronize multiple mirroring processes.
 			ReadRootFilesChecksums(d.fStore, config.ID).
 			CreateAllDirectories(d.fStore, config.ID).
 			CopyFilesToRoot(d.fStore, config.ID).
+			ParseDirektivVars(d.fStore, d.store, config.ID).
 			CropFilesAndDirectoriesInRoot(d.fStore, config.ID).
 			DeleteTempDirectory().
-			SetProcessStatus(d.store, process, "finished").Error()
+			SetProcessStatus(d.store, process, processStatusComplete).Error()
 		if err != nil {
-			process.Status = "failed"
+			process.Status = processStatusFailed
 			process, _ = d.store.UpdateProcess(context.TODO(), process)
-		}
-		if err != nil {
 			d.lg.Errorw("mirroring process failed", "err", err, "process_id", process.ID)
 		}
 		if err == nil {

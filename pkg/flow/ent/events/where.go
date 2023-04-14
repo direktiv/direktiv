@@ -451,6 +451,20 @@ func WorkflowIDLTE(v uuid.UUID) predicate.Events {
 	})
 }
 
+// WorkflowIDIsNil applies the IsNil predicate on the "workflow_id" field.
+func WorkflowIDIsNil() predicate.Events {
+	return predicate.Events(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldWorkflowID)))
+	})
+}
+
+// WorkflowIDNotNil applies the NotNil predicate on the "workflow_id" field.
+func WorkflowIDNotNil() predicate.Events {
+	return predicate.Events(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldWorkflowID)))
+	})
+}
+
 // HasWfeventswait applies the HasEdge predicate on the "wfeventswait" edge.
 func HasWfeventswait() predicate.Events {
 	return predicate.Events(func(s *sql.Selector) {
