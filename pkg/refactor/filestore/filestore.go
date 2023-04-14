@@ -17,9 +17,8 @@ import (
 // Via 'filestore.Manager' the caller manages the roots, and 'filestore.Root' the caller manages files and directories.
 
 var (
-	ErrFileTypeIsDirectory   = errors.New("ErrFileTypeIsDirectory")
-	ErrFileTypeIsNotWorkflow = errors.New("ErrFileTypeIsNotWorkflow")
-	// TODO: possible invalid.
+	ErrFileTypeIsDirectory = errors.New("ErrFileTypeIsDirectory")
+	// TODO: fix this inconsistent error strings.
 	ErrNotFound             = errors.New("not found")
 	ErrPathAlreadyExists    = errors.New("ErrPathAlreadyExists")
 	ErrNoParentDirectory    = errors.New("ErrNoParentDirectory")

@@ -39,8 +39,6 @@ type mirroringJob struct {
 	sourcedPaths   []string
 	direktivIgnore *ignore.GitIgnore
 	rootChecksums  map[string]string
-
-	workflowIDs map[string]uuid.UUID
 }
 
 func (j *mirroringJob) SetProcessStatus(store Store, process *Process, status string) *mirroringJob {
@@ -190,7 +188,7 @@ func (j *mirroringJob) FilterIgnoredFiles() *mirroringJob {
 	return j
 }
 
-func (j *mirroringJob) ParseDirektivVars(store Store, namespaceID uuid.UUID) *mirroringJob {
+func (j *mirroringJob) ParseDirektivVars(fStore filestore.FileStore, store Store, namespaceID uuid.UUID) *mirroringJob {
 	if j.err != nil {
 		return j
 	}
@@ -222,9 +220,14 @@ func (j *mirroringJob) ParseDirektivVars(store Store, namespaceID uuid.UUID) *mi
 
 	for _, pk := range workflowVarKeys {
 		path := j.distDirectory + pk[0] + "." + pk[1]
-		workflowID, ok := j.workflowIDs[pk[0]]
-		if !ok {
+		workflowFile, err := fStore.ForRootID(namespaceID).GetFile(j.ctx, pk[0])
+		if errors.Is(err, filestore.ErrNotFound) {
 			continue
+		}
+		if err != nil {
+			j.err = fmt.Errorf("read filestore file, path: %s, err: %w", path, err)
+
+			return j
 		}
 
 		data, err := os.ReadFile(path)
@@ -240,7 +243,7 @@ func (j *mirroringJob) ParseDirektivVars(store Store, namespaceID uuid.UUID) *mi
 
 			return j
 		}
-		err = store.SetWorkflowVariable(j.ctx, workflowID, pk[1], data, hash, mType.String())
+		err = store.SetWorkflowVariable(j.ctx, workflowFile.ID, pk[1], data, hash, mType.String())
 		if err != nil {
 			j.err = fmt.Errorf("save namespace variable, path: %s, err: %w", path, err)
 
@@ -268,8 +271,6 @@ func (j *mirroringJob) CopyFilesToRoot(fStore filestore.FileStore, namespaceID u
 		fileChecksum, pathDoesExist := j.rootChecksums[path]
 		isEqualChecksum := checksum == fileChecksum
 
-		// TODO: yassir, check for workflowID.
-
 		if pathDoesExist && isEqualChecksum {
 			j.lg.Infow("checksum skipped to root", "path", path)
 
@@ -283,17 +284,13 @@ func (j *mirroringJob) CopyFilesToRoot(fStore filestore.FileStore, namespaceID u
 			if strings.HasSuffix(path, ".yaml") || strings.HasSuffix(path, ".yml") {
 				typ = filestore.FileTypeWorkflow
 			}
-			newFile, _, err := fStore.ForRootID(namespaceID).CreateFile(j.ctx, path, typ, fileReader)
+			_, _, err := fStore.ForRootID(namespaceID).CreateFile(j.ctx, path, typ, fileReader)
 			if err != nil {
 				j.err = fmt.Errorf("filestore create file, path: %s, err: %w", path, err)
 
 				return j
 			}
 			j.lg.Infow("copied to root", "path", path)
-
-			if typ == filestore.FileTypeWorkflow {
-				j.workflowIDs[path] = newFile.ID
-			}
 
 			continue
 		}
