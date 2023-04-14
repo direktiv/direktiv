@@ -2009,7 +2009,6 @@ func (h *flowHandler) Namespaces(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp, err := h.client.Namespaces(ctx, in)
-
 	respond(w, resp, err)
 }
 
@@ -2083,7 +2082,6 @@ func (h *flowHandler) CreateNamespace(w http.ResponseWriter, r *http.Request) {
 
 		resp, err := h.client.CreateNamespace(ctx, in)
 		respond(w, resp, err)
-
 		return
 	} else {
 		settings := new(grpc.MirrorSettings)
