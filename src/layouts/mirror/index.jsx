@@ -184,6 +184,10 @@ export default function MirrorPage(props) {
 
               onClick: async () => {
                 await syncRef.current(true);
+                refetch();
+                setTimeout(() => {
+                  refetch();
+                }, 2000);
               },
 
               buttonProps: { variant: "contained", color: "primary" },
