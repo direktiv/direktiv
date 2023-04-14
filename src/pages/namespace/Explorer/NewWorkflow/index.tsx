@@ -5,16 +5,25 @@ import {
   DialogTitle,
 } from "../../../../design/Dialog";
 import { Play, PlusCircle } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../../../design/Select";
 import { SubmitHandler, useForm } from "react-hook-form";
 
 import Alert from "../../../../design/Alert";
 import Button from "../../../../design/Button";
 import Input from "../../../../design/Input";
+import { Textarea } from "../../../../design/TextArea";
 import { fileNameSchema } from "../../../../api/tree/schema";
 import { pages } from "../../../../util/router/pages";
 import { useCreateWorkflow } from "../../../../api/tree/mutate/createWorkflow";
 import { useNamespace } from "../../../../util/store/namespace";
 import { useNavigate } from "react-router-dom";
+import workflowTemplates from "./templates";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -22,6 +31,8 @@ type FormInput = {
   name: string;
   fileContent: string;
 };
+
+const defaultWorkflowTemplate = workflowTemplates[0];
 
 const NewWorkflow = ({
   path,
@@ -37,6 +48,8 @@ const NewWorkflow = ({
   const {
     register,
     handleSubmit,
+    setValue,
+    getValues,
     formState: { isDirty, errors, isValid, isSubmitted },
   } = useForm<FormInput>({
     resolver: zodResolver(
@@ -50,13 +63,7 @@ const NewWorkflow = ({
       })
     ),
     defaultValues: {
-      fileContent: `description: A simple 'no-op' state that returns 'Hello world!'
-states:
-- id: helloworld
-  type: noop
-  transform:
-    result: Hello world!
-`,
+      fileContent: defaultWorkflowTemplate.data,
     },
   });
 
@@ -71,7 +78,9 @@ states:
   });
 
   const onSubmit: SubmitHandler<FormInput> = ({ name, fileContent }) => {
-    createWorkflow({ path, name, fileContent });
+    console.log("🚀", name, fileContent);
+
+    // createWorkflow({ path, name, fileContent });
   };
 
   // you can not submit if the form has not changed or if there are any errors and
@@ -93,15 +102,58 @@ states:
             <p>{errors.name.message}</p>
           </Alert>
         )}
-        <form id={formId} onSubmit={handleSubmit(onSubmit)}>
+        <form
+          id={formId}
+          onSubmit={handleSubmit(onSubmit)}
+          className="flex flex-col space-y-5"
+        >
           <fieldset className="flex items-center gap-5">
-            <label className="w-[90px] text-right text-[15px]" htmlFor="name">
+            <label className="w-[150px] text-right text-[15px]" htmlFor="name">
               Name
             </label>
             <Input
               id="name"
               placeholder="workflow-name"
               {...register("name")}
+            />
+          </fieldset>
+          <fieldset className="flex items-center gap-5">
+            <label
+              className="w-[150px] text-right text-[15px]"
+              // htmlFor="template"
+            >
+              template
+            </label>
+            <Select
+              onValueChange={(value) => {
+                const matchingWf = workflowTemplates.find(
+                  (t) => t.name === value
+                );
+                if (matchingWf) setValue("fileContent", matchingWf.data);
+              }}
+            >
+              <SelectTrigger {...register("fileContent")}>
+                <SelectValue
+                  placeholder={defaultWorkflowTemplate.name}
+                  defaultValue={defaultWorkflowTemplate.data}
+                />
+              </SelectTrigger>
+              <SelectContent>
+                {workflowTemplates.map((t) => (
+                  <SelectItem value={t.name} key={t.name}>
+                    {t.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </fieldset>
+          <fieldset className="flex items-start gap-5">
+            <Textarea
+              className="h-96"
+              value={getValues("fileContent")}
+              onChange={(e) => {
+                setValue("fileContent", e.target.value);
+              }}
             />
           </fieldset>
         </form>
