@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"log"
 	"os"
 	"runtime"
@@ -20,6 +19,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/metrics"
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore/sql"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
@@ -109,6 +109,7 @@ func newServer(logger *zap.SugaredLogger, conf *util.Config) (*server, error) {
 	return srv, nil
 }
 
+//nolint:gocyclo
 func (srv *server) start(ctx context.Context) error {
 	var err error
 
@@ -195,8 +196,6 @@ func (srv *server) start(ctx context.Context) error {
 		return fmt.Errorf("invalid env variable '%s' length", direktivSecretKey)
 	}
 
-	srv.mirrorManager = mirror.NewDefaultManager(srv.sugar, sql.NewSQLStore(srv.gormDB, os.Getenv(direktivSecretKey)).Mirror(), psql.NewSQLFileStore(srv.gormDB), &mirror.GitSource{})
-
 	srv.sugar.Debug("Initializing pub-sub.")
 
 	srv.pubsub, err = pubsub.InitPubSub(srv.sugar, srv, db)
@@ -264,6 +263,26 @@ func (srv *server) start(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+
+	srv.sugar.Debug("Initializing mirror manager.")
+	store := sql.NewSQLStore(srv.gormDB, os.Getenv(direktivSecretKey))
+	fStore := psql.NewSQLFileStore(srv.gormDB)
+
+	cc := func(ctx context.Context, file *filestore.File) error {
+		_, router, err := getRouter(ctx, fStore, store.FileAnnotations(), file)
+		if err != nil {
+			return err
+		}
+
+		err = srv.flow.configureWorkflowStarts(ctx, fStore, store.FileAnnotations(), file.RootID, file, router, false)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	}
+
+	srv.mirrorManager = mirror.NewDefaultManager(srv.sugar, store.Mirror(), fStore, &mirror.GitSource{}, cc)
 
 	srv.sugar.Debug("Initializing actions grpc server.")
 

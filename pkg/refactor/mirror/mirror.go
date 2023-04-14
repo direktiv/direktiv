@@ -81,15 +81,18 @@ type Manager interface {
 	CancelMirroringProcess(ctx context.Context, id uuid.UUID) error
 }
 
+type ConfigureWorkflowFunc func(ctx context.Context, file *filestore.File) error
+
 type DefaultManager struct {
-	store  Store
-	lg     *zap.SugaredLogger
-	fStore filestore.FileStore
-	source Source
+	store              Store
+	lg                 *zap.SugaredLogger
+	fStore             filestore.FileStore
+	source             Source
+	configWorkflowFunc ConfigureWorkflowFunc
 }
 
-func NewDefaultManager(lg *zap.SugaredLogger, store Store, fStore filestore.FileStore, source Source) *DefaultManager {
-	return &DefaultManager{store: store, lg: lg, fStore: fStore, source: source}
+func NewDefaultManager(lg *zap.SugaredLogger, store Store, fStore filestore.FileStore, source Source, configWorkflowFunc ConfigureWorkflowFunc) *DefaultManager {
+	return &DefaultManager{store: store, lg: lg, fStore: fStore, source: source, configWorkflowFunc: configWorkflowFunc}
 }
 
 func (d *DefaultManager) StartMirroringProcess(ctx context.Context, config *Config) (*Process, error) {
@@ -121,6 +124,7 @@ func (d *DefaultManager) StartMirroringProcess(ctx context.Context, config *Conf
 			ReadRootFilesChecksums(d.fStore, config.ID).
 			CreateAllDirectories(d.fStore, config.ID).
 			CopyFilesToRoot(d.fStore, config.ID).
+			ConfigureWorkflows(d.configWorkflowFunc).
 			ParseDirektivVars(d.fStore, d.store, config.ID).
 			CropFilesAndDirectoriesInRoot(d.fStore, config.ID).
 			DeleteTempDirectory().

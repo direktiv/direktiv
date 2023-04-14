@@ -439,7 +439,6 @@ func (flow *flow) configureWorkflowStarts(ctx context.Context, fStore filestore.
 		if strict {
 			return verr
 		}
-		// TODO: yassir, log verr to the mirror activity somehow
 	}
 
 	if ms == nil {
@@ -458,17 +457,3 @@ func (flow *flow) configureWorkflowStarts(ctx context.Context, fStore filestore.
 
 	return nil
 }
-
-//func (flow *flow) wfConfigHook(ctx context.Context, fStore filestore.FileStore, store mirror.Store, nsID uuid.UUID, file *filestore.File) error {
-//	_, router, err := getRouter(ctx, fStore, store, file)
-//	if err != nil {
-//		return err
-//	}
-//
-//	err = flow.configureWorkflowStarts(ctx, fStore, store, nsID, file, router, false)
-//	if err != nil {
-//		return err
-//	}
-//
-//	return nil
-//}
