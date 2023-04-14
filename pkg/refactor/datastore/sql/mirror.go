@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
@@ -15,12 +14,6 @@ import (
 type sqlMirrorStore struct {
 	db                  *gorm.DB
 	configEncryptionKey string
-}
-
-func (s sqlMirrorStore) FileAnnotations() core.FileAnnotationsStore {
-	return &sqlFileAnnotationsStore{
-		db: s.db,
-	}
 }
 
 // nolint

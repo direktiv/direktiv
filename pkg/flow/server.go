@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"log"
 	"os"
 	"runtime"
@@ -264,8 +265,6 @@ func (srv *server) start(ctx context.Context) error {
 		return err
 	}
 
-	mirror.WorkflowConfigHook = srv.flow.wfConfigHook
-
 	srv.sugar.Debug("Initializing actions grpc server.")
 
 	srv.actions, err = initActionsServer(cctx, srv)
@@ -489,12 +488,12 @@ func (srv *server) cronPoll() {
 				continue
 			}
 
-			srv.cronPollerWorkflow(ctx, fStore, store, file)
+			srv.cronPollerWorkflow(ctx, fStore, store.FileAnnotations(), file)
 		}
 	}
 }
 
-func (srv *server) cronPollerWorkflow(ctx context.Context, fStore filestore.FileStore, store datastore.Store, file *filestore.File) {
+func (srv *server) cronPollerWorkflow(ctx context.Context, fStore filestore.FileStore, store core.FileAnnotationsStore, file *filestore.File) {
 	ms, muxErr, err := srv.validateRouter(ctx, fStore, store, file)
 	if err != nil || muxErr != nil {
 		return
