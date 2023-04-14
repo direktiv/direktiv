@@ -49,7 +49,6 @@ const NewWorkflow = ({
     register,
     handleSubmit,
     setValue,
-    getValues,
     formState: { isDirty, errors, isValid, isSubmitted },
   } = useForm<FormInput>({
     resolver: zodResolver(
