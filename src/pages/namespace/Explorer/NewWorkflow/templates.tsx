@@ -1,8 +1,3 @@
-type WorkflowTemaplate = {
-  name: string;
-  data: string;
-};
-
 export const noop = {
   name: "noop",
   data: `description: A simple 'no-op' state that returns 'Hello world!'
@@ -336,7 +331,7 @@ states:
 `,
 };
 
-export const templates: WorkflowTemaplate[] = [
+const templates = [
   noop,
   action,
   consumeEvent,
@@ -351,4 +346,6 @@ export const templates: WorkflowTemaplate[] = [
   switchState,
   eventXor,
   eventAnd,
-];
+] as const;
+
+export default templates;
