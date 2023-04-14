@@ -31,8 +31,8 @@ func (q *RevisionQuery) Delete(ctx context.Context, force bool) error {
 }
 
 func (q *RevisionQuery) GetData(ctx context.Context) (io.ReadCloser, error) {
-	rev := &filestore.Revision{ID: q.rev.ID}
-	res := q.db.WithContext(ctx).First(rev)
+	rev := &filestore.Revision{}
+	res := q.db.WithContext(ctx).Where("id", q.rev.ID).First(rev)
 	if res.Error != nil {
 		return nil, res.Error
 	}
@@ -71,8 +71,8 @@ func (q *RevisionQuery) SetCurrent(ctx context.Context) (*filestore.Revision, er
 	}
 
 	// set revision 'is_current' flag to true by id.
-	rev := &filestore.Revision{ID: q.rev.ID}
-	res = q.db.WithContext(ctx).Update("is_current", true).First(rev)
+	rev := &filestore.Revision{}
+	res = q.db.WithContext(ctx).Update("is_current", true).Where("id", q.rev.ID).First(rev)
 	if res.Error != nil {
 		return nil, res.Error
 	}
