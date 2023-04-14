@@ -263,6 +263,56 @@ func TestRoot_CorrectReadDirectory(t *testing.T) {
 	}
 }
 
+func TestRoot_RenamePath(t *testing.T) {
+	db, err := utils.NewMockGorm()
+	if err != nil {
+		t.Fatalf("unepxected NewMockGorm() error = %v", err)
+	}
+	fs := psql.NewSQLFileStore(db)
+
+	root, err := fs.CreateRoot(context.Background(), uuid.New())
+	if err != nil {
+		t.Fatalf("unepxected CreateRoot() error = %v", err)
+	}
+
+	// Test root directory:
+	{
+		assertRootCorrectFileCreation(t, fs, root, "/")
+		assertRootCorrectFileCreation(t, fs, root, "/dir1")
+		assertRootCorrectFileCreation(t, fs, root, "/dir1/dir2")
+		assertRootCorrectFileCreation(t, fs, root, "/dir1/file.text")
+	}
+
+	f, err := fs.ForRootID(root.ID).GetFile(context.Background(), "/dir1/file.text")
+	if err != nil {
+		t.Fatalf("unepxected GetFile() error = %v", err)
+	}
+	err = fs.ForFile(f).SetPath(context.Background(), "/file.text")
+	if err != nil {
+		t.Fatalf("unepxected SetPath() error = %v", err)
+	}
+
+	assertRootFilesInPath(t, fs, root, "/",
+		"/dir1",
+		"/file.text",
+	)
+
+	f, err = fs.ForRootID(root.ID).GetFile(context.Background(), "/dir1/dir2")
+	if err != nil {
+		t.Fatalf("unepxected GetFile() error = %v", err)
+	}
+	err = fs.ForFile(f).SetPath(context.Background(), "/dir2")
+	if err != nil {
+		t.Fatalf("unepxected SetPath() error = %v", err)
+	}
+
+	assertRootFilesInPath(t, fs, root, "/",
+		"/dir1",
+		"/dir2",
+		"/file.text",
+	)
+}
+
 func TestRoot_CalculateChecksumDirectory(t *testing.T) {
 	db, err := utils.NewMockGorm()
 	if err != nil {

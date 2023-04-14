@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"runtime"
 	"strings"
@@ -33,6 +34,7 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 const (
@@ -157,11 +159,20 @@ func (srv *server) start(ctx context.Context) error {
 	srv.database = database.NewCachedDatabase(srv.sugar, edb, srv)
 	defer srv.cleanup(srv.database.Close)
 
+	// fmt.Printf(">>>>>> dsn %s\n", db)
+
 	srv.gormDB, err = gorm.Open(postgres.New(postgres.Config{
 		DSN:                  db,
 		PreferSimpleProtocol: false, // disables implicit prepared statement usage
 		// Conn:                 edb.DB(),
-	}), &gorm.Config{})
+	}), &gorm.Config{
+		Logger: logger.New(
+			log.New(os.Stdout, "\r\n", log.LstdFlags),
+			logger.Config{
+				LogLevel: logger.Silent,
+			},
+		),
+	})
 	if err != nil {
 		return fmt.Errorf("creating filestore, err: %w", err)
 	}

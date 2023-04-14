@@ -105,7 +105,10 @@ func GetLogs(cmd *cobra.Command, instance string, query string) (urlOutput strin
 
 			if len(logResp.Results) > 0 {
 				for _, edge := range logResp.Results {
-					prefix := buildPrefix(edge.Tags)
+					prefix := ""
+					if len(edge.Tags) > 0 {
+						prefix = buildPrefix(edge.Tags)
+					}
 					prefix = printFormated(edge.Level) + prefix
 					cmd.Printf("%v: %s %s\n", edge.T.In(time.Local).Format("02 Jan 06 15:04 MST"), prefix, edge.Msg)
 				}
