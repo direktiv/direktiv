@@ -193,13 +193,19 @@ func (flow *flow) Tag(ctx context.Context, req *grpc.TagRequest) (*emptypb.Empty
 	if err != nil {
 		return nil, err
 	}
+
+	var revision *filestore.Revision
 	revID, err := uuid.Parse(req.GetRef())
 	if err != nil {
-		return nil, err
-	}
-	revision, err := fStore.ForFile(file).GetRevision(ctx, revID)
-	if err != nil {
-		return nil, err
+		revision, err = fStore.ForFile(file).GetRevision(ctx, revID)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		revision, err = fStore.ForFile(file).GetRevisionByTag(ctx, req.GetRef())
+		if err != nil {
+			return nil, err
+		}
 	}
 	revision, err = fStore.ForRevision(revision).SetTags(ctx, revision.Tags.AddTag(req.GetTag()))
 	if err != nil {

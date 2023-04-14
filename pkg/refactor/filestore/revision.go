@@ -12,19 +12,34 @@ import (
 type RevisionTags string
 
 func (tags RevisionTags) AddTag(tag string) RevisionTags {
+	tagsStr := string(tags)
+	tagsStr = strings.TrimSpace(tagsStr)
+	tagsStr = strings.Trim(tagsStr, ",")
+
 	tag = strings.TrimSpace(tag)
-	if strings.Contains(string(tags), tag) {
-		return tags
+	tag = strings.Trim(tag, ",")
+
+	if strings.Contains(tagsStr, tag) {
+		return RevisionTags(tagsStr)
 	}
 
-	return RevisionTags(string(tags) + "," + tag)
+	newTags := tagsStr + "," + tag
+	newTags = strings.Trim(newTags, ",")
+
+	return RevisionTags(newTags)
 }
 
 func (tags RevisionTags) RemoveTag(tag string) RevisionTags {
-	tag = strings.TrimSpace(tag)
+	tagsStr := string(tags)
+	tagsStr = strings.TrimSpace(tagsStr)
+	tagsStr = strings.Trim(tagsStr, ",")
 
-	newTags := strings.Replace(string(tags), ","+tag, "", 1)
+	tag = strings.TrimSpace(tag)
+	tag = strings.Trim(tag, ",")
+
+	newTags := strings.Replace(tagsStr, ","+tag, "", 1)
 	newTags = strings.Replace(newTags, tag+",", "", 1)
+	newTags = strings.Replace(newTags, tag, "", 1)
 
 	return RevisionTags(newTags)
 }

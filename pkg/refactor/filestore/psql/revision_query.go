@@ -43,8 +43,12 @@ func (q *RevisionQuery) GetData(ctx context.Context) (io.ReadCloser, error) {
 }
 
 func (q *RevisionQuery) SetTags(ctx context.Context, tags filestore.RevisionTags) (*filestore.Revision, error) {
-	rev := &filestore.Revision{ID: q.rev.ID}
-	res := q.db.WithContext(ctx).Update("tags", tags).First(rev)
+	rev := &filestore.Revision{}
+	res := q.db.WithContext(ctx).
+		Model(&filestore.Revision{}).
+		Where("id", q.rev.ID).
+		Update("tags", tags).
+		First(rev)
 	if res.Error != nil {
 		return nil, res.Error
 	}
