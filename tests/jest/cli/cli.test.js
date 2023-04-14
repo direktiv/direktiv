@@ -54,7 +54,7 @@ describe('Test the direktiv-cli-tool', () => {
         const filename = "simplewfInSubfolder"
         const fileextension = "yaml"
         const path =  `${filepath}/subfolder`
-        await assertStdErrContainsString(`${path}`,`workflows push ${path}/`, `pushing workflow ${filename}`)
+        await assertStdErrContainsString(`${path}`,`workflows push ${path}/`, `pushing workflow subfolder/${filename}`)
         const res = await request(common.config.getDirektivHost()).get(`/api/namespaces/root/tree/subfolder/${filename}`)
         expect(res.statusCode).toEqual(200)
     })
