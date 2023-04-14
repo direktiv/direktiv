@@ -51,12 +51,12 @@ const NewWorkflow = ({
     ),
     defaultValues: {
       fileContent: `description: A simple 'no-op' state that returns 'Hello world!'
-      states:
-      - id: helloworld
-        type: noop
-        transform:
-          result: Hello world!
-      `,
+states:
+- id: helloworld
+  type: noop
+  transform:
+    result: Hello world!
+`,
     },
   });
 
