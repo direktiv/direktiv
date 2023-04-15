@@ -162,7 +162,12 @@ cross-prepare:
 
 .PHONY: cross-build
 cross-build:
-	docker buildx build --build-arg RELEASE_VERSION=${FULL_VERSION} --platform=linux/arm64,linux/amd64 -f build/docker/direktiv/Dockerfile --push -t direktiv/direktiv:dev .
+	@if [ "${RELEASE_TAG}" = "" ]; then\
+		echo "setting release to dev"; \
+		$(eval RELEASE_TAG=dev) \
+    fi
+	echo "building ${RELEASE}:${RELEASE_TAG}, full version ${FULL_VERSION}"
+	docker buildx build --build-arg RELEASE_VERSION=${FULL_VERSION} --platform=linux/arm64,linux/amd64 -f build/docker/direktiv/Dockerfile --push -t direktiv/direktiv:${RELEASE_TAG} .
 
 .PHONY: protoc-flow 
 protoc-flow: ## Manually regenerates flow gRPC API.
