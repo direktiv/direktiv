@@ -146,17 +146,16 @@ describe('Test workflow variable operations', () => {
 
     it(`should delete one variable`, async () => {
         var workflowVarResponse = await request(common.config.getDirektivHost()).delete(`/api/namespaces/${namespaceName}/vars/json`)
-        expect(workflowVarResponse.statusCode).toEqual(200)
 
-    
+        expect(workflowVarResponse.statusCode).toEqual(200)
+    })
+
+    it(`should have less variables`, async () => {
         var workflowVarListResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/vars`)
 
         expect(workflowVarListResponse.statusCode).toEqual(200)
         expect(workflowVarListResponse.body.variables.pageInfo.total).toEqual(2)
         expect(workflowVarListResponse.body.variables.results.length).toEqual(2)
-
-    })
-
-            
+    })            
 
 })
