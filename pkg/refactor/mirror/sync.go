@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/google/uuid"
@@ -26,6 +27,8 @@ import (
 // TODO: implement a mechanism to clean dangling processes and cleaning them up.
 // TODO: implement synchronizing jobs.
 
+type ConfigureWorkFlowFunc func(context.Context, filestore.FileStore, core.FileAnnotationsStore, uuid.UUID, *filestore.File) error
+
 type mirroringJob struct {
 	// job parameters.
 
@@ -34,11 +37,12 @@ type mirroringJob struct {
 	lg  *zap.SugaredLogger
 
 	// job artifacts.
-	err            error
-	distDirectory  string
-	sourcedPaths   []string
-	direktivIgnore *ignore.GitIgnore
-	rootChecksums  map[string]string
+	err                   error
+	distDirectory         string
+	sourcedPaths          []string
+	direktivIgnore        *ignore.GitIgnore
+	rootChecksums         map[string]string
+	changedOrNewWorkflows []*filestore.File
 }
 
 func (j *mirroringJob) SetProcessStatus(store Store, process *Process, status string) *mirroringJob {
@@ -188,7 +192,7 @@ func (j *mirroringJob) FilterIgnoredFiles() *mirroringJob {
 	return j
 }
 
-func (j *mirroringJob) ParseDirektivVars(store Store, namespaceID uuid.UUID) *mirroringJob {
+func (j *mirroringJob) ParseDirektivVars(fStore filestore.FileStore, store Store, namespaceID uuid.UUID) *mirroringJob {
 	if j.err != nil {
 		return j
 	}
@@ -220,9 +224,14 @@ func (j *mirroringJob) ParseDirektivVars(store Store, namespaceID uuid.UUID) *mi
 
 	for _, pk := range workflowVarKeys {
 		path := j.distDirectory + pk[0] + "." + pk[1]
-		workflowID, ok := j.workflowIDs[pk[0]]
-		if !ok {
+		workflowFile, err := fStore.ForRootID(namespaceID).GetFile(j.ctx, pk[0])
+		if errors.Is(err, filestore.ErrNotFound) {
 			continue
+		}
+		if err != nil {
+			j.err = fmt.Errorf("read filestore file, path: %s, err: %w", path, err)
+
+			return j
 		}
 
 		data, err := os.ReadFile(path)
@@ -238,7 +247,7 @@ func (j *mirroringJob) ParseDirektivVars(store Store, namespaceID uuid.UUID) *mi
 
 			return j
 		}
-		err = store.SetWorkflowVariable(j.ctx, workflowID, pk[1], data, hash, mType.String())
+		err = store.SetWorkflowVariable(j.ctx, workflowFile.ID, pk[1], data, hash, mType.String())
 		if err != nil {
 			j.err = fmt.Errorf("save namespace variable, path: %s, err: %w", path, err)
 
@@ -266,8 +275,6 @@ func (j *mirroringJob) CopyFilesToRoot(fStore filestore.FileStore, namespaceID u
 		fileChecksum, pathDoesExist := j.rootChecksums[path]
 		isEqualChecksum := checksum == fileChecksum
 
-		// TODO: yassir, check for workflowID.
-
 		if pathDoesExist && isEqualChecksum {
 			j.lg.Infow("checksum skipped to root", "path", path)
 
@@ -281,13 +288,17 @@ func (j *mirroringJob) CopyFilesToRoot(fStore filestore.FileStore, namespaceID u
 			if strings.HasSuffix(path, ".yaml") || strings.HasSuffix(path, ".yml") {
 				typ = filestore.FileTypeWorkflow
 			}
-			newFile, _, err := fStore.ForRootID(namespaceID).CreateFile(j.ctx, path, typ, fileReader)
+			file, _, err := fStore.ForRootID(namespaceID).CreateFile(j.ctx, path, typ, fileReader)
 			if err != nil {
 				j.err = fmt.Errorf("filestore create file, path: %s, err: %w", path, err)
 
 				return j
 			}
 			j.lg.Infow("copied to root", "path", path)
+
+			if file.Typ == filestore.FileTypeWorkflow {
+				j.changedOrNewWorkflows = append(j.changedOrNewWorkflows, file)
+			}
 
 			continue
 		}
@@ -306,6 +317,31 @@ func (j *mirroringJob) CopyFilesToRoot(fStore filestore.FileStore, namespaceID u
 			return j
 		}
 		j.lg.Infow("revision to root", "path", path)
+
+		if file.Typ == filestore.FileTypeWorkflow {
+			j.changedOrNewWorkflows = append(j.changedOrNewWorkflows, file)
+		}
+	}
+
+	return j
+}
+
+func (j *mirroringJob) ConfigureWorkflows(configureFunc ConfigureWorkflowFunc) *mirroringJob {
+	if j.err != nil {
+		return j
+	}
+	if configureFunc == nil {
+		return j
+	}
+
+	for _, file := range j.changedOrNewWorkflows {
+		err := configureFunc(j.ctx, file)
+		if err != nil {
+			j.err = fmt.Errorf("configure workflow, path: %s, err: %w", file.Path, err)
+
+			return j
+		}
+		j.lg.Infow("workflow configured correctly", "path", file.Path)
 	}
 
 	return j

@@ -42,7 +42,7 @@ func TestExecuteMirroringProcess(t *testing.T) {
 		},
 	}
 
-	manager := mirror.NewDefaultManager(zap.NewNop().Sugar(), store, fs, source)
+	manager := mirror.NewDefaultManager(zap.NewNop().Sugar(), store, fs, source, nil)
 
 	_, err = manager.StartMirroringProcess(context.Background(), config)
 	if err != nil {

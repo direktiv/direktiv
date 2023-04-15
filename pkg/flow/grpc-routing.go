@@ -38,7 +38,7 @@ func (flow *flow) Router(ctx context.Context, req *grpc.RouterRequest) (*grpc.Ro
 		return nil, err
 	}
 
-	_, router, err := getRouter(ctx, fStore, store, file)
+	_, router, err := getRouter(ctx, fStore, store.FileAnnotations(), file)
 	if err != nil {
 		return nil, err
 	}
@@ -97,7 +97,7 @@ func (flow *flow) EditRouter(ctx context.Context, req *grpc.EditRouterRequest) (
 		return nil, err
 	}
 
-	annotations, router, err := getRouter(ctx, fStore, store, file)
+	annotations, router, err := getRouter(ctx, fStore, store.FileAnnotations(), file)
 	if err != nil {
 		return nil, err
 	}
@@ -115,7 +115,7 @@ func (flow *flow) EditRouter(ctx context.Context, req *grpc.EditRouterRequest) (
 		return nil, err
 	}
 
-	err = flow.configureWorkflowStarts(ctx, fStore, store, ns.ID, file, router, true)
+	err = flow.configureWorkflowStarts(ctx, fStore, store.FileAnnotations(), ns.ID, file, router, true)
 	if err != nil {
 		return nil, err
 	}
@@ -154,7 +154,7 @@ func (flow *flow) ValidateRouter(ctx context.Context, req *grpc.ValidateRouterRe
 		return nil, err
 	}
 
-	_, verr, err := flow.validateRouter(ctx, fStore, store, file)
+	_, verr, err := flow.validateRouter(ctx, fStore, store.FileAnnotations(), file)
 	if err != nil {
 		return nil, err
 	}

@@ -18,24 +18,19 @@ import (
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
-	"github.com/direktiv/direktiv/pkg/refactor/mirror"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
-type getRouterStore interface {
-	FileAnnotations() core.FileAnnotationsStore
-}
-
-func getRouter(ctx context.Context, fStore filestore.FileStore, store getRouterStore, file *filestore.File) (*core.FileAnnotations, *routerData, error) {
+func getRouter(ctx context.Context, fStore filestore.FileStore, store core.FileAnnotationsStore, file *filestore.File) (*core.FileAnnotations, *routerData, error) {
 	router := &routerData{
 		Enabled: true,
 		Routes:  make(map[string]int),
 	}
 
-	annotations, err := store.FileAnnotations().Get(ctx, file.ID)
+	annotations, err := store.Get(ctx, file.ID)
 	if err != nil {
 		if !errors.Is(err, core.ErrFileAnnotationsNotSet) {
 			return nil, nil, err
@@ -111,7 +106,7 @@ func (r *routerData) Marshal() string {
 	return string(data)
 }
 
-func (srv *server) validateRouter(ctx context.Context, fStore filestore.FileStore, store mirror.FileAnnotationsStore, file *filestore.File) (*muxStart, error, error) {
+func (srv *server) validateRouter(ctx context.Context, fStore filestore.FileStore, store core.FileAnnotationsStore, file *filestore.File) (*muxStart, error, error) {
 	_, router, err := getRouter(ctx, fStore, store, file)
 	if err != nil {
 		return nil, nil, err
@@ -227,7 +222,7 @@ func (engine *engine) mux(ctx context.Context, namespace, path, ref string) (*da
 		return nil, err
 	}
 
-	_, router, err := getRouter(ctx, fStore, store, file)
+	_, router, err := getRouter(ctx, fStore, store.FileAnnotations(), file)
 	if err != nil {
 		return nil, err
 	}
@@ -435,7 +430,7 @@ func (flow *flow) cronHandler(data []byte) {
 	flow.engine.queue(im)
 }
 
-func (flow *flow) configureWorkflowStarts(ctx context.Context, fStore filestore.FileStore, store mirror.FileAnnotationsStore, nsID uuid.UUID, file *filestore.File, router *routerData, strict bool) error {
+func (flow *flow) configureWorkflowStarts(ctx context.Context, fStore filestore.FileStore, store core.FileAnnotationsStore, nsID uuid.UUID, file *filestore.File, router *routerData, strict bool) error {
 	ms, verr, err := flow.validateRouter(ctx, fStore, store, file)
 	if err != nil {
 		return err
@@ -444,7 +439,6 @@ func (flow *flow) configureWorkflowStarts(ctx context.Context, fStore filestore.
 		if strict {
 			return verr
 		}
-		// TODO: yassir, log verr to the mirror activity somehow
 	}
 
 	if ms == nil {
@@ -460,20 +454,6 @@ func (flow *flow) configureWorkflowStarts(ctx context.Context, fStore filestore.
 	}
 
 	flow.pubsub.ConfigureRouterCron(file.ID.String(), ms.Cron, ms.Enabled)
-
-	return nil
-}
-
-func (flow *flow) wfConfigHook(ctx context.Context, fStore filestore.FileStore, store mirror.Store, nsID uuid.UUID, file *filestore.File) error {
-	_, router, err := getRouter(ctx, fStore, store, file)
-	if err != nil {
-		return err
-	}
-
-	err = flow.configureWorkflowStarts(ctx, fStore, store, nsID, file, router, false)
-	if err != nil {
-		return err
-	}
 
 	return nil
 }
