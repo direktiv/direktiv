@@ -34,8 +34,8 @@ cross-prepare:
 	docker run --privileged --rm docker/binfmt:a7996909642ee92942dcd6cff44b9b95f08dad64
 	docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
 
-.PHONY: cross
-cross:
+.PHONY: cross-build
+cross-build:
 	rm -Rf app.tar
 	docker build -t uibase -f Dockerfile.base .
 	container_id=$$(docker create "uibase"); \
