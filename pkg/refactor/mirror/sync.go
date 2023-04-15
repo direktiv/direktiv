@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/google/uuid"
@@ -26,6 +27,8 @@ import (
 // TODO: implement a mechanism to clean dangling processes and cleaning them up.
 // TODO: implement synchronizing jobs.
 
+type ConfigureWorkFlowFunc func(context.Context, filestore.FileStore, core.FileAnnotationsStore, uuid.UUID, *filestore.File) error
+
 type mirroringJob struct {
 	// job parameters.
 
@@ -34,11 +37,12 @@ type mirroringJob struct {
 	lg  *zap.SugaredLogger
 
 	// job artifacts.
-	err            error
-	distDirectory  string
-	sourcedPaths   []string
-	direktivIgnore *ignore.GitIgnore
-	rootChecksums  map[string]string
+	err                   error
+	distDirectory         string
+	sourcedPaths          []string
+	direktivIgnore        *ignore.GitIgnore
+	rootChecksums         map[string]string
+	changedOrNewWorkflows []*filestore.File
 }
 
 func (j *mirroringJob) SetProcessStatus(store Store, process *Process, status string) *mirroringJob {
@@ -284,13 +288,17 @@ func (j *mirroringJob) CopyFilesToRoot(fStore filestore.FileStore, namespaceID u
 			if strings.HasSuffix(path, ".yaml") || strings.HasSuffix(path, ".yml") {
 				typ = filestore.FileTypeWorkflow
 			}
-			_, _, err := fStore.ForRootID(namespaceID).CreateFile(j.ctx, path, typ, fileReader)
+			file, _, err := fStore.ForRootID(namespaceID).CreateFile(j.ctx, path, typ, fileReader)
 			if err != nil {
 				j.err = fmt.Errorf("filestore create file, path: %s, err: %w", path, err)
 
 				return j
 			}
 			j.lg.Infow("copied to root", "path", path)
+
+			if file.Typ == filestore.FileTypeWorkflow {
+				j.changedOrNewWorkflows = append(j.changedOrNewWorkflows, file)
+			}
 
 			continue
 		}
@@ -309,6 +317,31 @@ func (j *mirroringJob) CopyFilesToRoot(fStore filestore.FileStore, namespaceID u
 			return j
 		}
 		j.lg.Infow("revision to root", "path", path)
+
+		if file.Typ == filestore.FileTypeWorkflow {
+			j.changedOrNewWorkflows = append(j.changedOrNewWorkflows, file)
+		}
+	}
+
+	return j
+}
+
+func (j *mirroringJob) ConfigureWorkflows(configureFunc ConfigureWorkflowFunc) *mirroringJob {
+	if j.err != nil {
+		return j
+	}
+	if configureFunc == nil {
+		return j
+	}
+
+	for _, file := range j.changedOrNewWorkflows {
+		err := configureFunc(j.ctx, file)
+		if err != nil {
+			j.err = fmt.Errorf("configure workflow, path: %s, err: %w", file.Path, err)
+
+			return j
+		}
+		j.lg.Infow("workflow configured correctly", "path", file.Path)
 	}
 
 	return j

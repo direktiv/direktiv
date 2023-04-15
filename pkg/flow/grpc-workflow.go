@@ -130,12 +130,12 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	_, router, err := getRouter(ctx, fStore, store, file)
+	_, router, err := getRouter(ctx, fStore, store.FileAnnotations(), file)
 	if err != nil {
 		return nil, err
 	}
 
-	err = flow.configureWorkflowStarts(ctx, fStore, store, ns, file, router)
+	err = flow.configureWorkflowStarts(ctx, fStore, store.FileAnnotations(), ns.ID, file, router, true)
 	if err != nil {
 		return nil, err
 	}
@@ -208,12 +208,12 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 		return nil, err
 	}
 
-	_, router, err := getRouter(ctx, fStore, store, file)
+	_, router, err := getRouter(ctx, fStore, store.FileAnnotations(), file)
 	if err != nil {
 		return nil, err
 	}
 
-	err = flow.configureWorkflowStarts(ctx, fStore, store, ns, file, router)
+	err = flow.configureWorkflowStarts(ctx, fStore, store.FileAnnotations(), ns.ID, file, router, true)
 	if err != nil {
 		return nil, err
 	}
@@ -271,12 +271,12 @@ func (flow *flow) SaveHead(ctx context.Context, req *grpc.SaveHeadRequest) (*grp
 		return nil, err
 	}
 
-	_, router, err := getRouter(ctx, fStore, store, file)
+	_, router, err := getRouter(ctx, fStore, store.FileAnnotations(), file)
 	if err != nil {
 		return nil, err
 	}
 
-	err = flow.configureWorkflowStarts(ctx, fStore, store, ns, file, router)
+	err = flow.configureWorkflowStarts(ctx, fStore, store.FileAnnotations(), ns.ID, file, router, true)
 	if err != nil {
 		return nil, err
 	}
@@ -336,12 +336,12 @@ func (flow *flow) DiscardHead(ctx context.Context, req *grpc.DiscardHeadRequest)
 		return nil, err
 	}
 
-	_, router, err := getRouter(ctx, fStore, store, file)
+	_, router, err := getRouter(ctx, fStore, store.FileAnnotations(), file)
 	if err != nil {
 		return nil, err
 	}
 
-	err = flow.configureWorkflowStarts(ctx, fStore, store, ns, file, router)
+	err = flow.configureWorkflowStarts(ctx, fStore, store.FileAnnotations(), ns.ID, file, router, true)
 	if err != nil {
 		return nil, err
 	}
@@ -379,7 +379,7 @@ func (flow *flow) ToggleWorkflow(ctx context.Context, req *grpc.ToggleWorkflowRe
 		return nil, err
 	}
 
-	annotations, router, err := getRouter(ctx, fStore, store, file)
+	annotations, router, err := getRouter(ctx, fStore, store.FileAnnotations(), file)
 	if err != nil {
 		return nil, err
 	}
