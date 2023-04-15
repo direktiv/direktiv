@@ -142,15 +142,15 @@ Will update the helloworld workflow and set the remote workflow variable 'data.j
 
 			root.Printlog("pushing workflow %s", path)
 
+			err := updateRemoteWorkflow(path, wf)
+			if err != nil {
+				fmt.Printf("can not update workflow: %s\n", err.Error())
+			}
+
 			// push local variables
 			err = updateLocalVars(wf, path)
 			if err != nil {
 				fmt.Printf("can not update variables: %s\n", err.Error())
-			}
-
-			err := updateRemoteWorkflow(path, wf)
-			if err != nil {
-				fmt.Printf("can not update workflow: %s\n", err.Error())
 			}
 
 		}
