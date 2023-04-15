@@ -142,15 +142,15 @@ Will update the helloworld workflow and set the remote workflow variable 'data.j
 
 			root.Printlog("pushing workflow %s", path)
 
+			err := updateRemoteWorkflow(path, wf)
+			if err != nil {
+				fmt.Printf("can not update workflow: %s\n", err.Error())
+			}
+
 			// push local variables
 			err = updateLocalVars(wf, path)
 			if err != nil {
 				fmt.Printf("can not update variables: %s\n", err.Error())
-			}
-
-			err := updateRemoteWorkflow(path, wf)
-			if err != nil {
-				fmt.Printf("can not update workflow: %s\n", err.Error())
 			}
 
 		}
@@ -233,10 +233,12 @@ func getLocalWorkflowVariables(absPath string) ([]string, error) {
 		return varFiles, fmt.Errorf("failed to read dir: %w", err)
 	}
 
+	comparePrefix := wfFileName + "."
+
 	// Find all var files: {LOCAL_PATH}/{WF_FILE}.{VAR}
 	for _, file := range files {
 		fName := file.Name()
-		if !file.IsDir() && fName != wfFileName && strings.HasPrefix(fName, wfFileName) {
+		if !file.IsDir() && fName != wfFileName && strings.HasPrefix(fName, comparePrefix) {
 			varFiles = append(varFiles, filepath.Join(dirPath, fName))
 		}
 	}

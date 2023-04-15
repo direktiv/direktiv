@@ -738,6 +738,9 @@ func (flow *flow) SetWorkflowVariableParcels(srv grpc.Flow_SetWorkflowVariablePa
 		return err
 	}
 
+	namespace := req.GetNamespace()
+	path := req.GetPath()
+
 	mimeType := req.GetMimeType()
 	key := req.GetKey()
 
@@ -784,7 +787,7 @@ func (flow *flow) SetWorkflowVariableParcels(srv grpc.Flow_SetWorkflowVariablePa
 		return errors.New("received more data than expected")
 	}
 
-	ns, file, err := flow.getWorkflow(ctx, req.GetNamespace(), req.GetPath())
+	ns, file, err := flow.getWorkflow(ctx, namespace, path)
 	if err != nil {
 		return err
 	}
