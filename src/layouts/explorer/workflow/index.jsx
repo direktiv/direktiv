@@ -603,7 +603,7 @@ function WorkingRevision(props) {
                     button={<span style={{ fontSize: "15px" }}>Run</span>}
                     buttonProps={{
                       variant: "contained",
-                      disabled: workflow !== oldWf,
+                      disabled: !!canSave,
                       color: "terminal",
                       tooltip: "Run Workflow",
                       disabledTooltip: "Requires save",
