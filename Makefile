@@ -36,10 +36,15 @@ cross-prepare:
 
 .PHONY: cross-build
 cross-build:
+	@if [ "${RELEASE_TAG}" = "" ]; then\
+		echo "setting release to dev"; \
+		$(eval RELEASE_TAG=dev) \
+    fi
+	echo "building ${RELEASE}:${RELEASE_TAG}, full version ${FULL_VERSION}"
 	rm -Rf app.tar
 	docker build -t uibase -f Dockerfile.base .
 	container_id=$$(docker create "uibase"); \
 	docker cp $$container_id:/app - > app.tar; \
 	docker rm -v $$container_id
 	tar -xvf app.tar
-	docker buildx build --build-arg RELEASE_VERSION=${FULL_VERSION} -f Dockerfile.cross --platform=linux/amd64,linux/arm64 --push -t gerke74/ui .
+	docker buildx build --build-arg RELEASE_VERSION=${FULL_VERSION} -f Dockerfile.cross --platform=linux/amd64,linux/arm64 --push -t direktiv/ui:${RELEASE_TAG} .
