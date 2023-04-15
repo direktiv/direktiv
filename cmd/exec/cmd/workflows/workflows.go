@@ -233,10 +233,12 @@ func getLocalWorkflowVariables(absPath string) ([]string, error) {
 		return varFiles, fmt.Errorf("failed to read dir: %w", err)
 	}
 
+	comparePrefix := wfFileName + "."
+
 	// Find all var files: {LOCAL_PATH}/{WF_FILE}.{VAR}
 	for _, file := range files {
 		fName := file.Name()
-		if !file.IsDir() && fName != wfFileName && strings.HasPrefix(fName, wfFileName) {
+		if !file.IsDir() && fName != wfFileName && strings.HasPrefix(fName, comparePrefix) {
 			varFiles = append(varFiles, filepath.Join(dirPath, fName))
 		}
 	}
