@@ -699,10 +699,12 @@ function WorkingRevision(props) {
                       pushOpLoadingState("Save", true);
                       updateWorkflow(workflow)
                         .then(() => {
+                          setCanSave(false);
                           setShowErrors(false);
                           setTabBlocker(false);
                         })
                         .catch((opError) => {
+                          setCanSave(false);
                           setErrors([opError.message]);
                           setShowErrors(true);
                           pushOpLoadingState("Save", false);
