@@ -124,12 +124,19 @@ func truncateLogsMsg(msg string,
 	length int,
 ) string {
 	res := ""
+	if len(msg) <= 1 {
+		return msg
+	}
 	m := strings.Split(msg, "\n")
-	for _, v := range m {
+	for i, v := range m {
+		truncated := v
 		if len(v) > length {
-			res += msg[:length] + "\n"
+			truncated = v[:length]
+		}
+		if i == len(m)-1 {
+			res += truncated
 		} else {
-			res += msg
+			res += truncated + "\n"
 		}
 	}
 	return res
