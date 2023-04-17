@@ -22,4 +22,10 @@ func TestTruncateLogsMsg(t *testing.T) {
 	if want != out {
 		t.Errorf("got '%s' want '%s'", out, want)
 	}
+	in = "test without lineending"
+	want = "test without lineending"
+	out = truncateLogsMsg(in, 1024)
+	if want != out {
+		t.Errorf("got '%s' want '%s'", out, want)
+	}
 }
