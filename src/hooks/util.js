@@ -204,6 +204,13 @@ const getProp = (object, path) => {
 export function StateReducer(state, action) {
   switch (action.type) {
     case STATE.UPDATE:
+      try {
+        if (JSON.stringify(state) === JSON.stringify(action.data)) {
+          return state;
+        }
+      } catch (error) {
+        console.warn("error trying to compare state");
+      }
       return action.data;
     case STATE.PUSHITEM: {
       const pushListData = state ? JSON.parse(JSON.stringify(state)) : [];
