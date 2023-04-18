@@ -244,7 +244,7 @@ docker-all: ## Build the all-in-one image.
 docker-all:
 	cp -Rf kubernetes build/docker/all
 	docker build -t direktiv-kube build/docker/all/docker
-# build/docker/all/docker/multipass/generate-init.sh direktiv/direktiv direktiv/direktiv-ui v0.7.5
+	cd build/docker/all/multipass && ./generate-init.sh direktiv/direktiv direktiv/ui dev
 
 .PHONY: template-configmaps
 template-configmaps:

@@ -8,7 +8,7 @@ runcmd:
  - chown -R ubuntu:ubuntu /home/install.sh
  - rm -Rf /home/.bashrc
  - mv /home/install.sh /home/ubuntu/
- - /home/ubuntu/install.sh gerke74/direktiv gerke74/ui latest
+ - /home/ubuntu/install.sh direktiv/direktiv direktiv/ui dev
  
 
 write_files:

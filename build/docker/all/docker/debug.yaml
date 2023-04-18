@@ -5,23 +5,23 @@ eventing:
   enabled: true
 
 secrets:
-  image: "gerke74/direktiv"
-  tag: "latest"
+  image: "direktiv/direktiv"
+  tag: "dev"
 flow:
-  image: "gerke74/direktiv"
-  dbimage: "gerke74/direktiv"
-  tag: "latest"
+  image: "direktiv/direktiv"
+  dbimage: "direktiv/direktiv"
+  tag: "dev"
 ui:
-  image: "gerke74/ui"
-  tag: "latest"
+  image: "direktiv/ui"
+  tag: "dev"
 api:
-  image: "gerke74/direktiv"
-  tag: "latest"
+  image: "direktiv/direktiv"
+  tag: "dev"
 functions:
   namespace: direktiv-services-direktiv
-  image: "gerke74/direktiv"
-  tag: "latest"
-  sidecar: "gerke74/direktiv"
+  image: "direktiv/direktiv"
+  tag: "dev"
+  sidecar: "direktiv/direktiv"
   initPodImage: "direktiv/init-pod"
   PROXY
 
