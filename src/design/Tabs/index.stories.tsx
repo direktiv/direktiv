@@ -56,47 +56,38 @@ export const Boxed = () => (
 );
 
 export const TabsWithIcons = () => (
-  <div className="flex flex-col space-y-4">
+  <div>
     <Tabs defaultValue="overview">
       <TabsList>
-        <TabsTrigger value="overview">
-          <PieChart aria-hidden="true" />
-          Overview
+        <TabsTrigger value="overview" asChild>
+          <a href="#">
+            <PieChart aria-hidden="true" />
+            Overview
+          </a>
         </TabsTrigger>
-        <TabsTrigger value="active-rev">
-          <GitCommit aria-hidden="true" />
-          Active Revisions
+        <TabsTrigger value="active-rev" asChild>
+          <a href="#">
+            <GitCommit aria-hidden="true" />
+            Active Revisions
+          </a>
         </TabsTrigger>
-        <TabsTrigger value="revisions">
-          <GitMerge aria-hidden="true" />
-          Revisions
+        <TabsTrigger value="revisions" asChild>
+          <a href="#">
+            <GitMerge aria-hidden="true" />
+            Revisions
+          </a>
         </TabsTrigger>
-        <TabsTrigger value="settings">
-          <Settings aria-hidden="true" />
-          Settings
+        <TabsTrigger value="settings" asChild>
+          <a href="#">
+            <Settings aria-hidden="true" />
+            Settings
+          </a>
         </TabsTrigger>
       </TabsList>
-      <TabsContent value="account">
-        <p className="text-sm text-gray-8 dark:text-gray-dark-8">
-          Make changes to your account here. Click save when you&apos;re done.
-        </p>
-      </TabsContent>
-      <TabsContent value="password">
-        <p className="text-sm text-gray-8 dark:text-gray-dark-8">
-          Change your password here. After saving, you&apos;ll be logged out.
-        </p>
-      </TabsContent>
-      <TabsContent value="third">
-        <p className="text-sm text-gray-8 dark:text-gray-dark-8">
-          Your third content here
-        </p>
-      </TabsContent>
-      <TabsContent value="fourth">
-        <p className="text-sm text-gray-8 dark:text-gray-dark-8">
-          The fourth content comes here
-        </p>
-      </TabsContent>
     </Tabs>
+    <div className="py-4">
+      This example also shows that you can use Links for the tabs.
+    </div>
   </div>
 );
 
