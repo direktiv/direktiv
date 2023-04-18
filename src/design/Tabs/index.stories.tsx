@@ -83,22 +83,22 @@ export const TabsWithIcons = () => (
         </a>
       ))}
     </nav>
-    <Tabs defaultValue="account">
+    <Tabs defaultValue="overview">
       <TabsList>
         <TabsTrigger value="overview">
-          <PieChart />
+          <PieChart aria-hidden="true" className="h-4 w-auto" />
           Overview
         </TabsTrigger>
         <TabsTrigger value="active-rev">
-          <GitCommit />
+          <GitCommit aria-hidden="true" className="h-4 w-auto" />
           Active Revisions
         </TabsTrigger>
         <TabsTrigger value="revisions">
-          <GitMerge />
+          <GitMerge aria-hidden="true" className="h-4 w-auto" />
           Revisions
         </TabsTrigger>
         <TabsTrigger value="settings">
-          <Settings />
+          <Settings aria-hidden="true" className="h-4 w-auto" />
           Settings
         </TabsTrigger>
       </TabsList>
