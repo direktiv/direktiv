@@ -93,7 +93,7 @@ const TopRightComponent: FC<{ className?: string }> = ({ className }) => {
             role="button"
             icon
           >
-            <div className="h-7 w-7 rounded-full bg-primary-500 text-neutral-content">
+            <div className="text-neutral-content h-7 w-7 rounded-full bg-primary-500">
               <span className="text-xs">Ad</span>
             </div>
             <RxChevronDown />

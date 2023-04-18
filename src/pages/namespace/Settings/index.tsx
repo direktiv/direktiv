@@ -75,8 +75,8 @@ const SettiongsPage: FC = () => {
         {isLoadingNamespaces
           ? "Loading namespaces"
           : namespaces?.results.map((namespace) => (
-            <div key={namespace.name}>{namespace.name}</div>
-          ))}
+              <div key={namespace.name}>{namespace.name}</div>
+            ))}
       </div>
 
       <div></div>

@@ -12,8 +12,8 @@ const Switch = React.forwardRef<
   <SwitchPrimitives.Root
     className={clsx(
       " peer inline-flex h-[24px] w-[44px] shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus:outline-none focus:ring-2  focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
-      "focus:ring-offset-gray-1 focus:ring-gray-7 data-[state=unchecked]:bg-gray-6 data-[state=checked]:bg-gray-12",
-      "dark:focus:ring-offset-gray-dark-1 focus:ring-gray-dark-7 dark:data-[state=unchecked]:bg-gray-dark-6 dark:data-[state=checked]:bg-gray-dark-12",
+      "focus:ring-gray-7 focus:ring-offset-gray-1 data-[state=unchecked]:bg-gray-6 data-[state=checked]:bg-gray-12",
+      "focus:ring-gray-dark-7 dark:focus:ring-offset-gray-dark-1 dark:data-[state=unchecked]:bg-gray-dark-6 dark:data-[state=checked]:bg-gray-dark-12",
       className
     )}
     {...props}

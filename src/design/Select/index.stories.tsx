@@ -87,11 +87,6 @@ export const Default: Story = {
       control: "boolean",
       type: { name: "boolean", required: false },
     },
-    ghost: {
-      description: "ghost select",
-      control: "boolean",
-      type: { name: "boolean", required: false },
-    },
     asChild: {
       table: {
         disable: true,
@@ -102,16 +97,6 @@ export const Default: Story = {
 
 export const SelectSizes = () => (
   <div className="flex flex-wrap gap-5">
-    <Select>
-      <SelectTrigger size="xs">
-        <SelectValue placeholder="select" />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem value="1">Item 1</SelectItem>
-        <SelectItem value="2">Item 2</SelectItem>
-        <SelectItem value="3">Item 3</SelectItem>
-      </SelectContent>
-    </Select>
     <Select>
       <SelectTrigger size="sm">
         <SelectValue placeholder="select" />
@@ -155,11 +140,52 @@ export const LoadingState = () => (
   </div>
 );
 
-export const Ghost = () => (
-  <div className="bg-gray-3 p-10">
+export const TriggerVariants = () => (
+  <div className="bg-gray-3 p-10 dark:bg-gray-dark-3">
     <Select>
-      <SelectTrigger ghost>
+      <SelectTrigger variant={"ghost"}>
         <SelectValue placeholder="ghost select" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="1">Item 1</SelectItem>
+        <SelectItem value="2">Item 2</SelectItem>
+        <SelectItem value="3">Item 3</SelectItem>
+      </SelectContent>
+    </Select>
+    {/* "destructive" | "outline" | "primary" | "ghost" | "link */}
+    <Select>
+      <SelectTrigger variant={"destructive"}>
+        <SelectValue placeholder="destructive select" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="1">Item 1</SelectItem>
+        <SelectItem value="2">Item 2</SelectItem>
+        <SelectItem value="3">Item 3</SelectItem>
+      </SelectContent>
+    </Select>
+    <Select>
+      <SelectTrigger variant={"outline"}>
+        <SelectValue placeholder="outline select" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="1">Item 1</SelectItem>
+        <SelectItem value="2">Item 2</SelectItem>
+        <SelectItem value="3">Item 3</SelectItem>
+      </SelectContent>
+    </Select>
+    <Select>
+      <SelectTrigger variant={"primary"}>
+        <SelectValue placeholder="primary select" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="1">Item 1</SelectItem>
+        <SelectItem value="2">Item 2</SelectItem>
+        <SelectItem value="3">Item 3</SelectItem>
+      </SelectContent>
+    </Select>
+    <Select>
+      <SelectTrigger variant={"link"}>
+        <SelectValue placeholder="link select" />
       </SelectTrigger>
       <SelectContent>
         <SelectItem value="1">Item 1</SelectItem>

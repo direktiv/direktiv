@@ -3,7 +3,7 @@ import * as React from "react";
 import { Loader2 } from "lucide-react";
 import clsx from "clsx";
 
-type ButtonProps = {
+export type ButtonProps = {
   variant?: "destructive" | "outline" | "primary" | "ghost" | "link";
   size?: "sm" | "lg";
   loading?: boolean;
