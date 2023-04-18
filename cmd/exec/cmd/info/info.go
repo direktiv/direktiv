@@ -9,22 +9,23 @@ import (
 
 var infoCmd = &cobra.Command{
 	Use:   "info",
-	Short: "Prints basic info about command",
+	Short: "Prints detected configuration values for current project",
 	Run: func(cmd *cobra.Command, args []string) {
-		path, err := os.Getwd()
+		pf, err := root.ProjectFolder()
+		if err != nil {
+			root.Fail("could not get project directory: %s", err.Error())
+		}
+
+		cmd.Printf("project directory: %s\n", pf)
+
+		pwd, err := os.Getwd()
 		if err != nil {
 			root.Fail("could not get working directory: %s", err.Error())
 		}
-		cmd.Printf("directory: %s\n", path)
-		cmd.Printf("URL: %s\n", root.UrlPrefix)
-
-		pf, err := root.ProjectFolder()
-		if err != nil {
-			root.Fail("could not get project folder: %s", err.Error())
-		}
-
-		cmd.Printf("project dir: %s\n", pf)
+		cmd.Printf("working directory: %s\n", pwd)
+		cmd.Printf("\n")
 		cmd.Printf("namespace: %s\n", root.GetNamespace())
+		cmd.Printf("URL: %s\n", root.UrlPrefix)
 
 		auth := root.GetAuth()
 		printAuth := "***"

@@ -51,7 +51,7 @@ func initCLI(cmd *cobra.Command) {
 	if chdir != "" && chdir != "." {
 		err = os.Chdir(chdir)
 		if err != nil {
-			Fail("error changing directory: %v", err)
+			Fail("error changing directory to %s: %v", chdir, err)
 		}
 	}
 
