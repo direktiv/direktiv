@@ -5,12 +5,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"os/exec"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -19,8 +21,15 @@ import (
 	"github.com/rootless-containers/rootlesskit/pkg/parent/cgrouputil"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/serializer"
+	"k8s.io/cli-runtime/pkg/printers"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/scale/scheme"
 	"k8s.io/client-go/tools/clientcmd"
+
+	"knative.dev/operator/pkg/apis/operator/base"
+	ks "knative.dev/operator/pkg/apis/operator/v1beta1"
 )
 
 func waitForUp() {
@@ -78,6 +87,22 @@ func waitForUp() {
 func main() {
 	log.Println("all-in-one version of direktiv")
 
+	b, err := os.ReadFile("/proc/sys/fs/inotify/max_user_instances")
+	if err != nil {
+		fmt.Print(err)
+	}
+
+	c := strings.ReplaceAll(string(b), "\n", "")
+
+	files, err := strconv.Atoi(c)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	if files < 4096 {
+		panic("not enough inotifies. Set on host with 'sudo sysctl fs.inotify.max_user_instances=4096'")
+	}
+
 	go func() {
 		err := startingK3s()
 		if err != nil {
@@ -88,7 +113,7 @@ func main() {
 	waitForUp()
 
 	// if that file exists, the installation has already happened
-	_, err := os.Stat("/.service")
+	_, err = os.Stat("/.service")
 	if err != nil {
 
 		installKnative()
@@ -251,35 +276,49 @@ func (a byName) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func runHelm() {
 	fmt.Println("deploying direktiv")
 
-	f, err := os.OpenFile("/debug.yaml", os.O_APPEND|os.O_WRONLY, 0o600)
+	b, err := os.ReadFile("/debug.yaml")
 	if err != nil {
 		panic(err)
 	}
-	defer f.Close()
+
+	y := string(b)
 
 	log.Printf("adding apikey if configured\n")
 	if os.Getenv("APIKEY") != "" {
-		if _, err = f.Write([]byte(fmt.Sprintf("\napikey: \"%v\"\n", os.Getenv("APIKEY")))); err != nil {
-			fmt.Printf("could not add api key: %v", err)
-		}
+		y = y + "\n\n" + fmt.Sprintf("\napikey: \"%v\"\n", os.Getenv("APIKEY"))
 	}
 
-	addProxy(f)
+	if os.Getenv("HTTPS_PROXY") != "" || os.Getenv("HTTP_PROXY") != "" {
 
-	log.Printf("creating service namespace\n")
+		add := fmt.Sprintf("https_proxy: \"%v\"\n", os.Getenv("HTTPS_PROXY"))
+		add = add + "  " + fmt.Sprintf("http_proxy: \"%v\"\n", os.Getenv("HTTP_PROXY"))
+		add = add + "  " + fmt.Sprintf("no_proxy: \"%v\"\n", os.Getenv("NO_PROXY"))
 
-	cmd := exec.Command("k3s", "kubectl", "create", "namespace", "direktiv-services-direktiv")
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	cmd.Run()
+		y = strings.Replace(y, "PROXY", add, 1)
+
+		add = fmt.Sprintf("https_proxy: \"%v\"\n", os.Getenv("HTTPS_PROXY"))
+		add = add + fmt.Sprintf("http_proxy: \"%v\"\n", os.Getenv("HTTP_PROXY"))
+		add = add + fmt.Sprintf("no_proxy: \"%v\"\n", os.Getenv("NO_PROXY"))
+		y = y + "\n\n" + add
+
+	} else {
+		y = strings.Replace(y, "PROXY", "", 1)
+	}
+
+	err = os.WriteFile("/direktiv.yaml", []byte(y), 0755)
+	if err != nil {
+		panic(err)
+	}
 
 	log.Printf("running direktiv helm\n")
-	cmd = exec.Command("/helm", "install", "-f", "/debug.yaml", "direktiv", ".")
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+	cmd := exec.Command("helm", "install", "-f", "/direktiv.yaml", "direktiv", ".")
 	cmd.Dir = "/direktiv-charts/charts/direktiv"
 	cmd.Env = []string{"KUBECONFIG=/etc/rancher/k3s/k3s.yaml"}
-	cmd.Run()
+	err = cmd.Run()
+	if err != nil {
+		panic(err)
+	}
+
 }
 
 func runRegistry() {
@@ -292,42 +331,128 @@ func runRegistry() {
 	cmd.Run()
 }
 
-func addProxy(f *os.File) {
-	log.Printf("adding proxy settings to file: %v\n", f.Name())
-	if os.Getenv("HTTPS_PROXY") != "" || os.Getenv("HTTP_PROXY") != "" {
-		log.Println("http proxy set")
-		f.Write([]byte("\n"))
-		f.Write([]byte(fmt.Sprintf("https_proxy: \"%v\"\n", os.Getenv("HTTPS_PROXY"))))
-		f.Write([]byte(fmt.Sprintf("http_proxy: \"%v\"\n", os.Getenv("HTTP_PROXY"))))
-		f.Write([]byte(fmt.Sprintf("no_proxy: \"%v\"\n", os.Getenv("NO_PROXY"))))
-	} else {
-		log.Println("http proxy not set")
-		f.Write([]byte("\n"))
-		f.Write([]byte("http_proxy: \"\"\n"))
-		f.Write([]byte("https_proxy: \"\"\n"))
-		f.Write([]byte("no_proxy: \"\"\n"))
+func waitForPod(pod, ns string) {
+
+	log.Printf("waiting for %s in %s", pod, ns)
+	cmd := exec.Command("k3s", "kubectl", "wait", "--for=condition=ready", "pod", "-l", pod, "-n", ns)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Run()
+
+}
+
+func downloadFile(url string) ([]byte, error) {
+
+	log.Printf("downloading %s", url)
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, err
 	}
+	defer resp.Body.Close()
+
+	return io.ReadAll(resp.Body)
+}
+
+func createDecoder() runtime.Decoder {
+	sch := runtime.NewScheme()
+	_ = scheme.AddToScheme(sch)
+	_ = ks.AddToScheme(sch)
+	return serializer.NewCodecFactory(sch).UniversalDeserializer()
 }
 
 func installKnative() {
-	log.Printf("running knative helm\n")
 
-	f, err := os.Create("/tmp/knative.yaml")
-	defer f.Close()
+	log.Printf("installing knative\n")
 
-	if err != nil {
-		panic(err)
-	}
+	var buf bytes.Buffer
 
-	addProxy(f)
-
-	cmd := exec.Command("/helm", "install", "-n", "knative-serving", "--create-namespace", "-f", "/tmp/knative.yaml", "knative", "/direktiv-charts/charts/knative")
-	cmd.Dir = "/direktiv-charts/charts/knative"
-	cmd.Env = []string{"KUBECONFIG=/etc/rancher/k3s/k3s.yaml"}
+	cmd := exec.Command("k3s", "kubectl", "apply", "-f", "https://github.com/knative/operator/releases/download/knative-v1.9.4/operator.yaml")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-
 	cmd.Run()
+	waitForPod("name=knative-operator", "default")
+
+	b, err := downloadFile("https://raw.githubusercontent.com/direktiv/direktiv/main/kubernetes/install/knative/basic.yaml")
+
+	if err != nil {
+		panic(fmt.Sprintf("can not download knative yaml: %s", err.Error()))
+	}
+
+	if os.Getenv("HTTPS_PROXY") != "" || os.Getenv("HTTP_PROXY") != "" {
+
+		decoder := createDecoder()
+		y := printers.YAMLPrinter{}
+
+		obj, _, err := decoder.Decode([]byte(b), nil, nil)
+		if err != nil {
+			log.Print(err)
+		}
+
+		depl := obj.(*ks.KnativeServing)
+
+		depl.Spec.DeploymentOverride = depl.Spec.DeploymentOverride[:0]
+
+		activator := base.WorkloadOverride{
+			Name:        "activator",
+			Annotations: make(map[string]string, 0),
+		}
+		activator.Annotations["linkerd.io/inject"] = "enabled"
+		depl.Spec.DeploymentOverride = append(depl.Spec.DeploymentOverride, activator)
+
+		controller := base.WorkloadOverride{
+			Name:        "controller",
+			Annotations: make(map[string]string, 0),
+			Env:         make([]base.EnvRequirementsOverride, 0),
+		}
+		controller.Annotations["linkerd.io/inject"] = "enabled"
+
+		envOver := base.EnvRequirementsOverride{
+			Container: "controller",
+			EnvVars:   make([]v1.EnvVar, 0),
+		}
+
+		envOver.EnvVars = append(envOver.EnvVars, v1.EnvVar{
+			Name:  "HTTP_PROXY",
+			Value: os.Getenv("HTTP_PROXY"),
+		})
+		envOver.EnvVars = append(envOver.EnvVars, v1.EnvVar{
+			Name:  "HTTPS_PROXY",
+			Value: os.Getenv("HTTPS_PROXY"),
+		})
+		envOver.EnvVars = append(envOver.EnvVars, v1.EnvVar{
+			Name:  "NO_PROXY",
+			Value: os.Getenv("NO_PROXY"),
+		})
+
+		controller.Env = append(controller.Env, envOver)
+
+		depl.Spec.DeploymentOverride = append(depl.Spec.DeploymentOverride, controller)
+
+		y.PrintObj(depl, &buf)
+
+		os.WriteFile("/knative.yaml", buf.Bytes(), 0755)
+
+	} else {
+		os.WriteFile("/knative.yaml", b, 0755)
+	}
+
+	// create namespace
+	cmd = exec.Command("k3s", "kubectl", "create", "ns", "knative-serving")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err = cmd.Run()
+	if err != nil {
+		panic(fmt.Sprintf("can not create namespace knative-serving: %s", err.Error()))
+	}
+
+	// create knative instance
+	cmd = exec.Command("k3s", "kubectl", "apply", "-f", "/knative.yaml")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err = cmd.Run()
+	if err != nil {
+		panic(fmt.Sprintf("can not deploy knative-serving: %s", err.Error()))
+	}
 
 	isgcp := isGCP()
 	log.Printf("running on GCP: %v\n", isgcp)
@@ -339,10 +464,36 @@ func installKnative() {
 		cmd.Stderr = os.Stderr
 	}
 
+	// contour
+	cmd = exec.Command("k3s", "kubectl", "apply", "-f", "https://github.com/knative/net-contour/releases/download/knative-v1.9.3/contour.yaml")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err = cmd.Run()
+	if err != nil {
+		panic(fmt.Sprintf("can not deploy contour: %s", err.Error()))
+	}
+
+	// delete namespace contour-external in background
+	cmd = exec.Command("k3s", "kubectl", "delete", "ns", "contour-external")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err = cmd.Start()
+	if err != nil {
+		panic(fmt.Sprintf("can not deploy contour: %s", err.Error()))
+	}
+
 	if os.Getenv("EVENTING") != "" {
 		log.Printf("installing knative eventing")
 
-		cmd = exec.Command("k3s", "kubectl", "apply", "-f", "/eventing")
+		cmd = exec.Command("k3s", "kubectl", "create", "ns", "knative-eventing")
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		err = cmd.Run()
+		if err != nil {
+			panic(fmt.Sprintf("can not create namespace knative-serving: %s", err.Error()))
+		}
+
+		cmd = exec.Command("k3s", "kubectl", "apply", "-f", "/eventing.yaml")
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		cmd.Run()
