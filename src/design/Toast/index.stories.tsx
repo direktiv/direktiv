@@ -79,7 +79,7 @@ export const ToastVariants = () => {
             customToast("success");
           }}
         >
-          Show Info Toast
+          Show Success Toast
         </Button>
 
         <Button
