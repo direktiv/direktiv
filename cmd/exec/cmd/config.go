@@ -23,7 +23,6 @@ const (
 )
 
 type ProfileConfig struct {
-	ID        string `yaml:"id" mapstructure:"profile"`
 	Addr      string `yaml:"addr" mapstructure:"addr"`
 	Namespace string `yaml:"namespace" mapstructure:"namespace"`
 	Auth      string `yaml:"auth" mapstructure:"auth"`
