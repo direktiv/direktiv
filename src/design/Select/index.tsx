@@ -19,18 +19,7 @@ const SelectTrigger = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger> & ButtonProps
 >(
   (
-    {
-      className,
-      variant,
-      size,
-      circle,
-      children,
-      disabled,
-      block,
-      loading,
-      icon,
-      ...props
-    },
+    { className, variant, size, children, disabled, block, loading, ...props },
     ref
   ) => (
     <SelectPrimitive.Trigger

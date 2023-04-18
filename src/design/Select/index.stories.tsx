@@ -143,7 +143,7 @@ export const LoadingState = () => (
 export const TriggerVariants = () => (
   <div className="bg-gray-3 p-10 dark:bg-gray-dark-3">
     <Select>
-      <SelectTrigger variant={"ghost"}>
+      <SelectTrigger variant="ghost">
         <SelectValue placeholder="ghost select" />
       </SelectTrigger>
       <SelectContent>
@@ -152,9 +152,8 @@ export const TriggerVariants = () => (
         <SelectItem value="3">Item 3</SelectItem>
       </SelectContent>
     </Select>
-    {/* "destructive" | "outline" | "primary" | "ghost" | "link */}
     <Select>
-      <SelectTrigger variant={"destructive"}>
+      <SelectTrigger variant="destructive">
         <SelectValue placeholder="destructive select" />
       </SelectTrigger>
       <SelectContent>
@@ -164,7 +163,7 @@ export const TriggerVariants = () => (
       </SelectContent>
     </Select>
     <Select>
-      <SelectTrigger variant={"outline"}>
+      <SelectTrigger variant="outline">
         <SelectValue placeholder="outline select" />
       </SelectTrigger>
       <SelectContent>
@@ -174,7 +173,7 @@ export const TriggerVariants = () => (
       </SelectContent>
     </Select>
     <Select>
-      <SelectTrigger variant={"primary"}>
+      <SelectTrigger variant="primary">
         <SelectValue placeholder="primary select" />
       </SelectTrigger>
       <SelectContent>
@@ -184,7 +183,7 @@ export const TriggerVariants = () => (
       </SelectContent>
     </Select>
     <Select>
-      <SelectTrigger variant={"link"}>
+      <SelectTrigger variant="link">
         <SelectValue placeholder="link select" />
       </SelectTrigger>
       <SelectContent>
