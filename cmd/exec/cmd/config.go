@@ -3,6 +3,7 @@ package cmd
 import (
 	"bytes"
 	"crypto/tls"
+	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -16,31 +17,33 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const DefaultConfigName = project.ConfigFile
+const (
+	DefaultProfileConfigName = ".direktiv.profile.yaml"
+	DefaultProfileConfigPath = ".config/direktiv/"
+)
 
 type ProfileConfig struct {
 	ID        string `yaml:"id" mapstructure:"profile"`
 	Addr      string `yaml:"addr" mapstructure:"addr"`
-	Path      string `yaml:"path" mapstructure:"path"`
 	Namespace string `yaml:"namespace" mapstructure:"namespace"`
 	Auth      string `yaml:"auth" mapstructure:"auth"`
 	MaxSize   int64  `yaml:"max-size" mapstructure:"max-size"`
 }
 
-type ConfigFile struct {
-	ProfileConfig  `yaml:",inline" mapstructure:",squash"`
-	project.Config `yaml:",inline" mapstructure:",squash"`
-	Profiles       []ProfileConfig `yaml:"profiles,flow" mapstructure:"profiles"`
-	profile        string
-	path           string
+type Configuration struct {
+	ProfileConfig    `yaml:",inline" mapstructure:",squash"`
+	project.Config   `yaml:",inline" mapstructure:",squash"`
+	Profiles         map[string]ProfileConfig `yaml:"profiles,flow" mapstructure:"profiles"`
+	currentProfileID string
+	projectPath      string
 }
 
 var (
-	config   ConfigFile
+	config   Configuration
 	Globbers []glob.Glob
 )
 
-func loadConfig(cmd *cobra.Command) {
+func initCLI(cmd *cobra.Command) {
 	chdir, err := cmd.Flags().GetString("directory")
 	if err != nil {
 		Fail("error loading 'directory' flag: %v", err)
@@ -49,13 +52,18 @@ func loadConfig(cmd *cobra.Command) {
 	if chdir != "" && chdir != "." {
 		err = os.Chdir(chdir)
 		if err != nil {
-			Fail("error chanding directory: %v", err)
+			Fail("error changing directory: %v", err)
 		}
-		Printlog("changed to directory: %s", chdir)
 	}
 
-	path := findConfig()
-
+	projectPath, err := findProjectDir()
+	if err != nil {
+		Fail("Failed to read direktiv project config: %v", err)
+	}
+	err = loadProjectConfig(projectPath)
+	if err != nil {
+		Fail("Failed to read direktiv project config: %v", err)
+	}
 	Globbers = make([]glob.Glob, 0)
 	for idx, pattern := range config.Ignore {
 		g, err := glob.Compile(pattern)
@@ -65,84 +73,92 @@ func loadConfig(cmd *cobra.Command) {
 		Globbers = append(Globbers, g)
 	}
 
-	profile, err := cmd.Flags().GetString("profile")
+	profileID, err := cmd.Flags().GetString("profile")
 	if err != nil {
 		Fail("error loading 'profile' flag: %v", err)
 	}
 
-	config.profile = profile
-	var cp *ProfileConfig
+	config.currentProfileID = profileID
 
-	if config.profile != "" {
-		for idx := range config.Profiles {
-			if config.Profiles[idx].ID == config.profile {
-				cp = &(config.Profiles[idx])
-				break
-			}
-		}
-
-		if cp == nil {
-			Fail("error loading profile '%s': no profile exists by this name in the config file", config.profile)
-		}
-	} else if len(config.Profiles) > 0 {
-		cp = &(config.Profiles[0])
+	err = loadProfileConfig()
+	if err != nil {
+		Fail("Failed to read profile config file: %v", err)
 	}
 
-	if path != "" {
-		config.path = path
-
-		if cp == nil {
-			cp = &config.ProfileConfig
+	if config.currentProfileID == "" {
+		for k := range config.Profiles {
+			config.currentProfileID = k
+			break
 		}
+	}
+	cp, ok := (config.Profiles[config.currentProfileID])
+	if !ok {
+		Fail("error loading profile '%s': no profile exists by this name in the config file", config.currentProfileID)
+	}
 
-		data, err := yaml.Marshal(cp)
-		if err != nil {
-			panic(err)
-		}
+	config.projectPath = projectPath
 
-		viper.SetConfigType("yml")
+	data, err := yaml.Marshal(cp)
+	if err != nil {
+		panic(err)
+	}
 
-		err = viper.ReadConfig(bytes.NewReader(data))
-		if err != nil {
-			Fail("error reading config: %v", err)
-		}
+	viper.SetConfigType("yml")
+
+	err = viper.ReadConfig(bytes.NewReader(data))
+	if err != nil {
+		Fail("error reading config: %v", err)
 	}
 }
 
-func findConfig() string {
+func findProjectDir() (string, error) {
 	dir, err := filepath.Abs(".")
 	if err != nil {
 		Fail("Failed to locate place in filesystem: %v\n", err)
 	}
 
 	for prev := ""; dir != prev; dir = filepath.Dir(dir) {
-		path := filepath.Join(dir, DefaultConfigName)
+		path := filepath.Join(dir, project.ConfigFileName)
 
 		if _, err := os.Stat(path); err == nil {
-			data, err := os.ReadFile(path)
-			if err != nil {
-				Fail("Failed to read config file: %v", err)
-			}
-
-			err = yaml.Unmarshal(data, &config)
-			if err != nil {
-				Fail("Failed to parse config file: %v", err)
-			}
-
-			if len(config.Profiles) > 0 {
-				if config.Addr != "" || config.ID != "" || config.Auth != "" || config.MaxSize != 0 ||
-					config.Namespace != "" || config.Path != "" {
-					Fail("config file cannot have top-level values alongside profiles")
-				}
-			}
-
-			return path
+			return path, nil
 		}
 
 		prev = dir
 	}
 
-	return ""
+	return "", fmt.Errorf("this or any parent folder is not part of a direktiv project")
+}
+
+func loadProjectConfig(path string) error {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+
+	err = yaml.Unmarshal(data, &config.Config)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func loadProfileConfig() error {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		Fail("Could not find user home: %v", err)
+	}
+	path := filepath.Join(home, DefaultProfileConfigPath+DefaultProfileConfigName)
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+
+	err = yaml.Unmarshal(data, &config.Profiles)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func getAddr() string {
@@ -211,28 +227,12 @@ func GetRelativePath(configPath, targpath string) string {
 	return path
 }
 
-func GetPath(targpath string) string {
-	path := viper.GetString("path")
-
-	if path != "" {
-		fj := filepath.Join(path, filepath.Base(targpath))
-		path = strings.Trim(fj, "/")
-		return path
-	}
-
-	// if config file was found automatically, generate path relative to config dir
-
-	configPath := GetConfigPath()
-
-	return GetRelativePath(configPath, targpath)
-}
-
 func GetConfigPath() string {
-	if config.path != "" {
-		path := config.path
-		path = filepath.Dir(path)
-		path = strings.TrimSuffix(path, "/")
-		return path
+	if config.projectPath != "" {
+		projectPath := config.projectPath
+		projectPath = filepath.Dir(projectPath)
+		projectPath = strings.TrimSuffix(projectPath, "/")
+		return projectPath
 	}
 
 	return "."

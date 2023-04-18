@@ -17,7 +17,6 @@ func init() {
 	RootCmd.PersistentFlags().StringP("directory", "C", "", "Change to this directory before evaluating any paths or searching for a configuration file.")
 
 	RootCmd.PersistentFlags().StringP("addr", "a", "", "Target direktiv api address.")
-	RootCmd.PersistentFlags().StringP("path", "p", "", "Target remote workflow path .e.g. '/dir/workflow'. Automatically set if config file was auto-set.")
 	RootCmd.PersistentFlags().StringP("namespace", "n", "", "Target namespace to execute workflow on.")
 	RootCmd.PersistentFlags().StringP("auth", "t", "", "Authenticate request with token or apikey.")
 	RootCmd.PersistentFlags().Bool("insecure", true, "Accept insecure https connections")
@@ -35,7 +34,7 @@ func init() {
 var RootCmd = &cobra.Command{
 	Use: "direktivctl",
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		loadConfig(cmd)
+		initCLI(cmd)
 		cmdPrepareSharedValues()
 		if err := pingNamespace(); err != nil {
 			log.Fatalf("%v", err)

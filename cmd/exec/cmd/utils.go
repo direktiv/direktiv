@@ -19,8 +19,8 @@ func ProjectFolder() (string, error) {
 		return "", err
 	}
 
-	if config.path != "" {
-		return path.Dir(config.path), nil
+	if config.projectPath != "" {
+		return path.Dir(config.projectPath), nil
 	}
 
 	return pd, nil
