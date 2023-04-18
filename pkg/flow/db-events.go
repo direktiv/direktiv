@@ -14,6 +14,7 @@ import (
 	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	entns "github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/google/uuid"
 )
 
@@ -57,7 +58,7 @@ func (events *events) getEarliestEvent(ctx context.Context) (*ent.CloudEvents, e
 func (events *events) addEvent(ctx context.Context, eventin *cloudevents.Event, ns *database.Namespace, delay int64) error {
 	t := time.Now().Unix() + delay
 
-	processed := (delay == 0)
+	processed := delay == 0
 
 	ev := *eventin
 
@@ -91,15 +92,15 @@ func (events *events) deleteEventListeners(ctx context.Context, nsID, evID uuid.
 	return nil
 }
 
-func (events *events) deleteWorkflowEventListeners(ctx context.Context, cached *database.CacheData) error {
+func (events *events) deleteWorkflowEventListeners(ctx context.Context, nsID uuid.UUID, file *filestore.File) error {
 	clients := events.edb.Clients(ctx)
 
-	_, err := clients.Events.Delete().Where(entev.WorkflowID(cached.File.ID)).Exec(ctx)
+	_, err := clients.Events.Delete().Where(entev.WorkflowID(file.ID)).Exec(ctx)
 	if err != nil {
 		return err
 	}
 
-	events.pubsub.NotifyEventListeners(cached.Namespace.ID)
+	events.pubsub.NotifyEventListeners(nsID)
 
 	return nil
 }
@@ -120,8 +121,8 @@ func (events *events) deleteInstanceEventListeners(ctx context.Context, cached *
 	return nil
 }
 
-func (events *events) processWorkflowEvents(ctx context.Context, cached *database.CacheData, ms *muxStart) error {
-	err := events.deleteWorkflowEventListeners(ctx, cached)
+func (events *events) processWorkflowEvents(ctx context.Context, nsID uuid.UUID, file *filestore.File, ms *muxStart) error {
+	err := events.deleteWorkflowEventListeners(ctx, nsID, file)
 	if err != nil {
 		return err
 	}
@@ -154,8 +155,8 @@ func (events *events) processWorkflowEvents(ctx context.Context, cached *databas
 		clients := events.edb.Clients(ctx)
 
 		_, err = clients.Events.Create().
-			SetNamespaceID(cached.Namespace.ID).
-			SetWorkflowID(cached.File.ID).
+			SetNamespaceID(nsID).
+			SetWorkflowID(file.ID).
 			SetEvents(ev).
 			SetCorrelations(correlations).
 			SetCount(count).
@@ -166,7 +167,7 @@ func (events *events) processWorkflowEvents(ctx context.Context, cached *databas
 		}
 	}
 
-	events.pubsub.NotifyEventListeners(cached.Namespace.ID)
+	events.pubsub.NotifyEventListeners(nsID)
 
 	return nil
 }

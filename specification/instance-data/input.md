@@ -125,4 +125,4 @@ If an event's payload is JSON it should be directly addressable, rather than bei
 
 ## Large Inputs
 
-Like instance data, input data has size limits. These size limits are usually the same, but not necessarily. This will vary according to the configuration of each Direktiv installation, and is usually about 32 MiB. 
+Like instance data, input data has size limits. These size limits are usually the same, but not necessarily. This will vary according to the configuration of each Direktiv installation, and is usually about 128 MiB. 

@@ -77,7 +77,7 @@ func (logic *eventsXorLogic) Run(ctx context.Context, wakedata []byte) (*Transit
 		if err != nil {
 			return nil, err
 		}
-
+		//nolint:nilnil
 		return nil, nil
 	}
 

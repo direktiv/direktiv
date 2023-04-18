@@ -96,27 +96,47 @@ func (q *RootQuery) IsEmptyDirectory(ctx context.Context, path string) (bool, er
 
 	// check if root exists.
 	if err := q.checkRootExists(ctx); err != nil {
-		// TODO: possible invalid
-		if errors.Is(err, filestore.ErrNotFound) {
-			return true, err
-		}
-
 		return false, err
 	}
+
+	// check if dir exists.
 	count := 0
-	tx := q.db.Raw("SELECT count(id) FROM files WHERE root_id = ? AND path LIKE ?", q.rootID, addTrailingSlash(path)+"%").Scan(&count)
+	tx := q.db.Raw("SELECT count(id) FROM files WHERE root_id = ? AND typ = ? AND path = ?",
+		q.rootID, filestore.FileTypeDirectory, path).
+		Scan(&count)
+
+	if tx.Error != nil {
+		return false, tx.Error
+	}
+	if count == 0 {
+		return false, filestore.ErrNotFound
+	}
+
+	// check if there are child entries.
+	if path == "/" {
+		count = 0
+		tx = q.db.Raw("SELECT count(id) FROM files WHERE root_id = ?", q.rootID).Scan(&count)
+		if tx.Error != nil {
+			return false, tx.Error
+		}
+
+		return count == 1, nil
+	}
+
+	// check if there are child entries.
+	count = 0
+	tx = q.db.Raw("SELECT count(id) FROM files WHERE root_id = ? AND path LIKE ?", q.rootID, path+"/%").Scan(&count)
 	if tx.Error != nil {
 		return false, tx.Error
 	}
 
-	// TODO: possible invalid
-	return count <= 1, nil // NOTE: had to change this because of the root directory
+	return count == 0, nil
 }
 
 var _ filestore.RootQuery = &RootQuery{} // Ensures RootQuery struct conforms to filestore.RootQuery interface.
 
 func (q *RootQuery) Delete(ctx context.Context) error {
-	res := q.db.WithContext(ctx).Delete(&filestore.Root{ID: q.rootID})
+	res := q.db.WithContext(ctx).Delete(&filestore.Root{}, q.rootID)
 	if res.Error != nil {
 		return res.Error
 	}
@@ -149,7 +169,7 @@ func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.F
 	}
 
 	parentDir := filepath.Dir(path)
-	if parentDir != "/" {
+	if path != "/" {
 		count = 0
 		tx = q.db.Raw("SELECT count(id) FROM files WHERE root_id = ? AND typ = ? AND path = ?", q.rootID, filestore.FileTypeDirectory, parentDir).Scan(&count)
 		if tx.Error != nil {
@@ -183,10 +203,14 @@ func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.F
 
 	// second, now we need to create a revision entry for this new file.
 	var data []byte
+	if dataReader == nil {
+		return nil, nil, fmt.Errorf("parameter dataReader is nil with FileTypeFile")
+	}
 	data, err = io.ReadAll(dataReader)
 	if err != nil {
-		return nil, nil, fmt.Errorf("create io error, %w", err)
+		return nil, nil, fmt.Errorf("reading dataReader, error: %w", err)
 	}
+
 	rev := &filestore.Revision{
 		ID:   uuid.New(),
 		Tags: "",
@@ -312,14 +336,12 @@ func (q *RootQuery) CalculateChecksumsMap(ctx context.Context) (map[string]strin
 }
 
 func (q *RootQuery) checkRootExists(ctx context.Context) error {
-	n := &filestore.Root{ID: q.rootID}
-	res := q.db.WithContext(ctx).First(n)
+	n := &filestore.Root{}
+	res := q.db.WithContext(ctx).Where("id", q.rootID).First(n)
+	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
+		return fmt.Errorf("root not found, id: '%s', err: %w", q.rootID, filestore.ErrNotFound)
+	}
 	if res.Error != nil {
-		// TODO: possible invalid
-		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
-			return fmt.Errorf("root '%s': %w", q.rootID, filestore.ErrNotFound)
-		}
-
 		return res.Error
 	}
 

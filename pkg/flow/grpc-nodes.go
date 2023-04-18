@@ -12,6 +12,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
+	"github.com/direktiv/direktiv/pkg/refactor/mirror"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -51,8 +52,18 @@ func (flow *flow) Directory(ctx context.Context, req *grpc.DirectoryRequest) (*g
 
 	var node *filestore.File
 	var files []*filestore.File
+	var isMirrorNamespace bool
 	var txErr error
 	err = flow.runSqlTx(ctx, func(fStore filestore.FileStore, store datastore.Store) error {
+		_, txErr = store.Mirror().GetConfig(ctx, ns.ID)
+		if errors.Is(txErr, mirror.ErrNotFound) {
+			isMirrorNamespace = false
+		} else if txErr != nil {
+			return txErr
+		} else {
+			isMirrorNamespace = true
+		}
+
 		node, txErr = fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 		if txErr != nil {
 			return txErr
@@ -70,6 +81,11 @@ func (flow *flow) Directory(ctx context.Context, req *grpc.DirectoryRequest) (*g
 	resp := new(grpc.DirectoryResponse)
 	resp.Namespace = ns.Name
 	resp.Node = bytedata.ConvertFileToGrpcNode(node)
+
+	if isMirrorNamespace && node.Path == "/" {
+		resp.Node.ExpandedType = "git"
+	}
+
 	resp.Children = new(grpc.DirectoryChildren)
 	resp.Children.PageInfo = new(grpc.PageInfo)
 	resp.Children.PageInfo.Total = int32(len(files))
@@ -115,7 +131,7 @@ func (flow *flow) CreateDirectory(ctx context.Context, req *grpc.CreateDirectory
 	if err != nil {
 		return nil, err
 	}
-	defer rollback(ctx)
+	defer rollback()
 
 	file, _, err = fStore.ForRootID(ns.ID).CreateFile(ctx, req.GetPath(), filestore.FileTypeDirectory, nil)
 	if err != nil {
@@ -158,7 +174,7 @@ func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (
 	if err != nil {
 		return nil, err
 	}
-	defer rollback(ctx)
+	defer rollback()
 
 	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 	if errors.Is(err, filestore.ErrNotFound) && req.GetIdempotent() {
@@ -239,7 +255,7 @@ func (flow *flow) RenameNode(ctx context.Context, req *grpc.RenameNodeRequest) (
 	if err != nil {
 		return nil, err
 	}
-	defer rollback(ctx)
+	defer rollback()
 
 	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetOld())
 	if err != nil {
@@ -282,7 +298,7 @@ func (flow *flow) CreateNodeAttributes(ctx context.Context, req *grpc.CreateNode
 	if err != nil {
 		return nil, err
 	}
-	defer rollback(ctx)
+	defer rollback()
 
 	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {
@@ -294,7 +310,7 @@ func (flow *flow) CreateNodeAttributes(ctx context.Context, req *grpc.CreateNode
 	if errors.Is(err, core.ErrFileAnnotationsNotSet) {
 		annotations = &core.FileAnnotations{
 			FileID: file.ID,
-			Data:   nil,
+			Data:   "",
 		}
 	} else if err != nil {
 		return nil, err
@@ -326,7 +342,7 @@ func (flow *flow) DeleteNodeAttributes(ctx context.Context, req *grpc.DeleteNode
 	if err != nil {
 		return nil, err
 	}
-	defer rollback(ctx)
+	defer rollback()
 
 	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {

@@ -52,7 +52,7 @@ func (flow *flow) getWorkflow(ctx context.Context, namespace, path string) (ns *
 	if err != nil {
 		return
 	}
-	defer rollback(ctx)
+	defer rollback()
 
 	f, err = fStore.ForRootID(ns.ID).GetFile(ctx, path)
 	if err != nil {
@@ -738,6 +738,9 @@ func (flow *flow) SetWorkflowVariableParcels(srv grpc.Flow_SetWorkflowVariablePa
 		return err
 	}
 
+	namespace := req.GetNamespace()
+	path := req.GetPath()
+
 	mimeType := req.GetMimeType()
 	key := req.GetKey()
 
@@ -784,7 +787,7 @@ func (flow *flow) SetWorkflowVariableParcels(srv grpc.Flow_SetWorkflowVariablePa
 		return errors.New("received more data than expected")
 	}
 
-	ns, file, err := flow.getWorkflow(ctx, req.GetNamespace(), req.GetPath())
+	ns, file, err := flow.getWorkflow(ctx, namespace, path)
 	if err != nil {
 		return err
 	}

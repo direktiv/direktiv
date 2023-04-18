@@ -107,6 +107,7 @@ func (instance *testerInstance) BroadcastCloudevent(ctx context.Context, evetn *
 
 func (instance *testerInstance) CreateChild(ctx context.Context, args CreateChildArgs) (Child, error) {
 	instance.trace()
+	//nolint:nilnil
 	return nil, nil
 }
 

@@ -6,6 +6,7 @@ type Matcher interface {
 
 type NopMatcher struct{}
 
+//nolint:revive
 func (n NopMatcher) MatchPath(path string) bool {
 	return false
 }

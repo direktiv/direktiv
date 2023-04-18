@@ -153,6 +153,22 @@ PROTOBUF_HEALTH_SOURCE_FILES := $(shell find ./pkg/health -type f -name '*.proto
 PROTOBUF_SECRETS_SOURCE_FILES := $(shell find ./pkg/secrets -type f -name '*.proto' -exec sh -c 'echo "{}"' \;)
 PROTOBUF_FUNCTIONS_SOURCE_FILES := $(shell find ./pkg/functions -type f -name '*.proto' -exec sh -c 'echo "{}"' \;)
 
+# multi-arch build
+.PHONY: cross-prepare
+cross-prepare:
+	docker buildx create --use      
+	docker run --privileged --rm docker/binfmt:a7996909642ee92942dcd6cff44b9b95f08dad64
+	docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+
+.PHONY: cross-build
+cross-build:
+	@if [ "${RELEASE_TAG}" = "" ]; then\
+		echo "setting release to dev"; \
+		$(eval RELEASE_TAG=dev) \
+    fi
+	echo "building ${RELEASE}:${RELEASE_TAG}, full version ${FULL_VERSION}"
+	docker buildx build --build-arg RELEASE_VERSION=${FULL_VERSION} --platform=linux/arm64,linux/amd64 -f build/docker/direktiv/Dockerfile --push -t direktiv/direktiv:${RELEASE_TAG} .
+
 .PHONY: protoc-flow 
 protoc-flow: ## Manually regenerates flow gRPC API.
 protoc-flow: ${PROTOBUF_FLOW_SOURCE_FILES}
@@ -213,7 +229,7 @@ push: image
 .PHONY: docker-ui
 docker-ui: ## Manually clone and build the latest UI.
 	if [ ! -d direktiv-ui ]; then \
-		git clone https://github.com/direktiv/direktiv-ui.git; \
+		git clone -b feature/0.7.5 https://github.com/direktiv/direktiv-ui.git; \
 	fi
 	if [ -z "${RELEASE}" ]; then \
 		cd direktiv-ui && DOCKER_REPO=${DOCKER_REPO} DOCKER_IMAGE=ui make server; \
@@ -344,11 +360,25 @@ UNITTEST_PACKAGES = $(shell echo ${TEST_PACKAGES} | sed 's/ /\n/g' | awk '{print
 
 .PHONY: unittest
 unittest: ## Runs all Go unit tests. Or, you can run a specific set of unit tests by defining TEST_PACKAGES relative to the root directory.
-	go test -cover -timeout 4s ${UNITTEST_PACKAGES}
+	go test -p 1 -cover -timeout 4s ${UNITTEST_PACKAGES}
+
 
 .PHONY: lint 
+lint: VERSION="v1.52"
 lint: ## Runs very strict linting on the project.
-	docker run --rm -v `pwd`:/app -w /app golangci/golangci-lint golangci-lint run -v
+	-docker rm golangci-lint-${VERSION}-direktiv
+	-docker run \
+	--name golangci-lint-${VERSION}-direktiv \
+	-v `pwd`:/app \
+	-w /app \
+	golangci/golangci-lint:${VERSION} golangci-lint run
+	-docker commit golangci-lint-${VERSION}-direktiv golangci/golangci-lint:${VERSION}
 
 test-jest: ## Runs jest end-to-end tests. DIREKTIV_HOST=128.0.0.1 make test-jest [JEST_PREFIX=/tests/jest/namespaces]
-	docker run -it --rm -v `pwd`/tests/jest:/tests/jest -e 'DIREKTIV_HOST=${DIREKTIV_HOST}' -e 'NODE_TLS_REJECT_UNAUTHORIZED=0' node:alpine npm --prefix "/tests/jest" run all -- ${JEST_PREFIX}
+	docker run -it --rm \
+	-v `pwd`/tests/jest:/tests/jest \
+	-v `pwd`/direktivctl:/bin/direktivctl \
+	-e 'DIREKTIV_HOST=${DIREKTIV_HOST}' \
+	-e 'NODE_TLS_REJECT_UNAUTHORIZED=0' \
+	node:alpine npm --prefix "/tests/jest" run all -- ${JEST_PREFIX}
+

@@ -3,6 +3,7 @@ package psql
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"path/filepath"
@@ -19,8 +20,8 @@ type FileQuery struct {
 }
 
 func (q *FileQuery) setPathForFileType(ctx context.Context, path string) error {
-	res := q.db.WithContext(ctx).Exec("UPDATE files SET path = ? WHERE root_id = ? AND path = ?",
-		path, q.file.RootID, q.file.Path)
+	res := q.db.WithContext(ctx).Exec("UPDATE files SET path = ?, depth = ? WHERE root_id = ? AND path = ?",
+		path, filestore.ParseDepth(path), q.file.RootID, q.file.Path)
 
 	if res.Error != nil {
 		return res.Error
@@ -39,10 +40,10 @@ func (q *FileQuery) setPathForDirectoryType(ctx context.Context, path string) er
 	// To overcome this problem with REPLACE(), we prefix REPLACE() parameter with "//" string.
 
 	res := q.db.WithContext(ctx).Exec(`
-							UPDATE files SET path = REPLACE( "//" || path, "//" || ?, ?)
+							UPDATE files SET path = REPLACE( "//" || path, "//" || ?, ?), depth = ?
 							             WHERE (root_id = ? AND path = ?)
 							             OR (root_id = ? AND path LIKE ?)`,
-		q.file.Path, path,
+		q.file.Path, path, filestore.ParseDepth(path),
 		q.file.RootID, q.file.Path,
 		q.file.RootID, q.file.Path+"/%",
 	)
@@ -99,10 +100,15 @@ func (q *FileQuery) GetRevisionByTag(ctx context.Context, tag string) (*filestor
 	}
 
 	rev := &filestore.Revision{}
-	res := q.db.WithContext(ctx).
-		Where("file_id", q.file.ID).
-		Where("tags LIKE ?", "%"+tag+"%").
-		First(rev)
+	res := q.db.WithContext(ctx).Raw(`
+							SELECT * FROM revisions WHERE "file_id" = ? AND
+							("tags" = ? OR "tags" LIKE ? OR "tags" LIKE ? "tags" LIKE ?)`,
+		q.file.ID,
+		tag,
+		tag+",%",
+		"%,"+tag,
+		"%,"+tag+",%").
+		Scan(rev)
 	if res.Error != nil {
 		return nil, res.Error
 	}
@@ -115,8 +121,9 @@ func (q *FileQuery) GetRevision(ctx context.Context, id uuid.UUID) (*filestore.R
 		return nil, filestore.ErrFileTypeIsDirectory
 	}
 
-	rev := &filestore.Revision{ID: id}
+	rev := &filestore.Revision{}
 	res := q.db.WithContext(ctx).
+		Where("id", id).
 		First(rev)
 	if res.Error != nil {
 		return nil, res.Error
@@ -125,14 +132,26 @@ func (q *FileQuery) GetRevision(ctx context.Context, id uuid.UUID) (*filestore.R
 	return rev, nil
 }
 
+//nolint:revive
 func (q *FileQuery) GetAllRevisions(ctx context.Context) ([]*filestore.Revision, error) {
-	// TODO implement me
-	// panic("implement me")
-	return nil, nil
+	if q.file.Typ == filestore.FileTypeDirectory {
+		return nil, filestore.ErrFileTypeIsDirectory
+	}
+
+	var list []*filestore.Revision
+	res := q.db.WithContext(ctx).
+		Where("file_id", q.file.ID).
+		Find(&list)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+
+	return list, nil
 }
 
 var _ filestore.FileQuery = &FileQuery{}
 
+//nolint:revive
 func (q *FileQuery) Delete(ctx context.Context, force bool) error {
 	res := q.db.WithContext(ctx).Delete(&filestore.File{}, q.file.ID)
 	if res.Error != nil {
@@ -190,12 +209,26 @@ func (q *FileQuery) CreateRevision(ctx context.Context, tags filestore.RevisionT
 	}
 	newChecksum := string(q.checksumFunc(data))
 
-	// set current revisions 'is_current' flag to false.
+	// if newChecksum didn't change, then return the latest revision without creating a new one.
+	latestRev := &filestore.Revision{}
 	res := q.db.WithContext(ctx).
+		Where("file_id", q.file.ID).
+		Where("is_current", true).
+		Where("checksum", newChecksum).
+		First(latestRev)
+	if res.Error != nil && !errors.Is(res.Error, gorm.ErrRecordNotFound) {
+		return nil, res.Error
+	}
+	if res.Error == nil {
+		return latestRev, nil
+	}
+
+	// set current revisions 'is_current' flag to false.
+	res = q.db.WithContext(ctx).
 		Model(&filestore.Revision{}).
 		Where("file_id", q.file.ID).
-		Update("is_current", false).
-		Update("checksum", newChecksum)
+		Where("is_current", true).
+		Update("is_current", false)
 	if res.Error != nil {
 		return nil, res.Error
 	}
@@ -211,7 +244,8 @@ func (q *FileQuery) CreateRevision(ctx context.Context, tags filestore.RevisionT
 		FileID:    q.file.ID,
 		IsCurrent: true,
 
-		Data: data,
+		Checksum: newChecksum,
+		Data:     data,
 	}
 	res = q.db.WithContext(ctx).Create(newRev)
 	if res.Error != nil {

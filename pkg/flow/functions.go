@@ -28,7 +28,7 @@ func (flow *flow) functionsHeartbeat() {
 		flow.sugar.Error(err)
 		return
 	}
-	defer rollback(ctx)
+	defer rollback()
 
 	for _, ns := range nss {
 		files, err := fStore.ForRootID(ns.ID).ListAllFiles(ctx)

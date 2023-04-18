@@ -206,9 +206,6 @@ func GetRelativePath(configPath, targpath string) string {
 	}
 
 	path := filepath.ToSlash(s)
-	path = strings.TrimSuffix(path, ".yaml")
-	path = strings.TrimSuffix(path, ".yml")
-
 	path = strings.Trim(path, "/")
 
 	return path

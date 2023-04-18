@@ -85,6 +85,14 @@ func (ec *EventsCreate) SetWorkflowID(u uuid.UUID) *EventsCreate {
 	return ec
 }
 
+// SetNillableWorkflowID sets the "workflow_id" field if the given value is not nil.
+func (ec *EventsCreate) SetNillableWorkflowID(u *uuid.UUID) *EventsCreate {
+	if u != nil {
+		ec.SetWorkflowID(*u)
+	}
+	return ec
+}
+
 // SetID sets the "id" field.
 func (ec *EventsCreate) SetID(u uuid.UUID) *EventsCreate {
 	ec.mutation.SetID(u)
@@ -252,9 +260,6 @@ func (ec *EventsCreate) check() error {
 	if _, ok := ec.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Events.updated_at"`)}
 	}
-	if _, ok := ec.mutation.WorkflowID(); !ok {
-		return &ValidationError{Name: "workflow_id", err: errors.New(`ent: missing required field "Events.workflow_id"`)}
-	}
 	if _, ok := ec.mutation.NamespaceID(); !ok {
 		return &ValidationError{Name: "namespace", err: errors.New(`ent: missing required edge "Events.namespace"`)}
 	}
@@ -321,7 +326,7 @@ func (ec *EventsCreate) createSpec() (*Events, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := ec.mutation.WorkflowID(); ok {
 		_spec.SetField(events.FieldWorkflowID, field.TypeUUID, value)
-		_node.WorkflowID = &value
+		_node.WorkflowID = value
 	}
 	if nodes := ec.mutation.WfeventswaitIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -518,6 +523,12 @@ func (u *EventsUpsert) UpdateWorkflowID() *EventsUpsert {
 	return u
 }
 
+// ClearWorkflowID clears the value of the "workflow_id" field.
+func (u *EventsUpsert) ClearWorkflowID() *EventsUpsert {
+	u.SetNull(events.FieldWorkflowID)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -664,6 +675,13 @@ func (u *EventsUpsertOne) SetWorkflowID(v uuid.UUID) *EventsUpsertOne {
 func (u *EventsUpsertOne) UpdateWorkflowID() *EventsUpsertOne {
 	return u.Update(func(s *EventsUpsert) {
 		s.UpdateWorkflowID()
+	})
+}
+
+// ClearWorkflowID clears the value of the "workflow_id" field.
+func (u *EventsUpsertOne) ClearWorkflowID() *EventsUpsertOne {
+	return u.Update(func(s *EventsUpsert) {
+		s.ClearWorkflowID()
 	})
 }
 
@@ -976,6 +994,13 @@ func (u *EventsUpsertBulk) SetWorkflowID(v uuid.UUID) *EventsUpsertBulk {
 func (u *EventsUpsertBulk) UpdateWorkflowID() *EventsUpsertBulk {
 	return u.Update(func(s *EventsUpsert) {
 		s.UpdateWorkflowID()
+	})
+}
+
+// ClearWorkflowID clears the value of the "workflow_id" field.
+func (u *EventsUpsertBulk) ClearWorkflowID() *EventsUpsertBulk {
+	return u.Update(func(s *EventsUpsert) {
+		s.ClearWorkflowID()
 	})
 }
 

@@ -18,7 +18,7 @@ import (
 
 var (
 	ErrFileTypeIsDirectory = errors.New("ErrFileTypeIsDirectory")
-	// TODO: possible invalid.
+	// TODO: fix this inconsistent error strings.
 	ErrNotFound             = errors.New("not found")
 	ErrPathAlreadyExists    = errors.New("ErrPathAlreadyExists")
 	ErrNoParentDirectory    = errors.New("ErrNoParentDirectory")
@@ -46,10 +46,19 @@ type Root struct {
 
 type RootQuery interface {
 	GetFile(ctx context.Context, path string) (*File, error)
+
+	// CreateFile creates both files and directories,
+	// param 'typ' indicates if file is of type directory or file.
+	// Param 'path' should not already exist and the parent directory of 'path' should exist.
+	// Param 'dataReader' should be nil when creating directories, and should be none nil when creating files.
 	CreateFile(ctx context.Context, path string, typ FileType, dataReader io.Reader) (*File, *Revision, error)
 	ReadDirectory(ctx context.Context, path string) ([]*File, error)
 	Delete(ctx context.Context) error
 	CalculateChecksumsMap(ctx context.Context) (map[string]string, error)
+
+	// IsEmptyDirectory returns true if path exist and of type directory and empty,
+	// and false if path exist and of type directory and none empty.
+	// If directory doesn't exist, it returns ErrNotFound.
 	IsEmptyDirectory(ctx context.Context, path string) (bool, error)
 	ListAllFiles(ctx context.Context) ([]*File, error)
 

@@ -1,5 +1,5 @@
 run:
-  timeout: 5m
+  timeout: 10m
   go: 1.19.3
   issues-exit-code: 1
   tests: true
@@ -19,12 +19,9 @@ linters:
     - ireturn
     - funlen
     - musttag
-    - gochecknoglobals #temporary
-    - dupword #temporary
-    - cyclop #temporary
-    - unused #temporary
-    - revive #temporary
-    - godox #temporary
+    - gochecknoglobals
+    - cyclop
+    - godox # must fix
 
   presets:
     - bugs
@@ -58,17 +55,15 @@ issues:
       - nosnakecase
       - scopelint
 
-      - nilnil
       - nlreturn
       - nonamedreturns
       - stylecheck
       - tagliatelle
       - wastedassign
-      - goerr113
       - gomnd
       - testpackage
       - gochecknoglobals
-      - bodyclose
+      - bodyclose # must fix
       - asasalint
       - predeclared
       - musttag
@@ -93,8 +88,8 @@ issues:
       - lll
       - gocritic
       - rowserrcheck
-      - gocyclo
       - nakedret
+      - unused
 
     - text: "do not define dynamic errors, use wrapped static errors instead:"
       linters:

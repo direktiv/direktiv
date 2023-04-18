@@ -33,7 +33,7 @@ describe('Test namespace git mirroring', () => {
     })
 
     it(`should get the new git namespace`, async () => {
-        await sleep(3000)
+        await sleep(5000)
         const res = await request(common.config.getDirektivHost()).get(`/api/namespaces/${testNamespace}/tree/aws`)
         expect(res.statusCode).toEqual(200)
         expect(res.body).toMatchObject({

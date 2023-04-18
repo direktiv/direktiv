@@ -112,7 +112,7 @@ func (internal *internal) ActionLog(ctx context.Context, req *grpc.ActionLogRequ
 	tags["state-type"] = "action"
 	for _, msg := range req.GetMsg() {
 		res := truncateLogsMsg(msg, 1024)
-		internal.logger.Info(ctx, cached.Instance.ID, tags, res)
+		internal.logger.Infof(ctx, cached.Instance.ID, tags, res)
 	}
 
 	var resp emptypb.Empty
@@ -124,12 +124,19 @@ func truncateLogsMsg(msg string,
 	length int,
 ) string {
 	res := ""
+	if len(msg) <= 1 {
+		return msg
+	}
 	m := strings.Split(msg, "\n")
-	for _, v := range m {
+	for i, v := range m {
+		truncated := v
 		if len(v) > length {
-			res += msg[:length] + "\n"
+			truncated = v[:length]
+		}
+		if i == len(m)-1 {
+			res += truncated
 		} else {
-			res += msg
+			res += truncated + "\n"
 		}
 	}
 	return res

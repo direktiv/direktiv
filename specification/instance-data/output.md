@@ -8,4 +8,4 @@ Workflows should take steps to trim things they don't mean to return before term
 
 ## Large Outputs
 
-Like instance data, output data has size limits. These size limits are usually the same, but not necessarily. This will vary according to the configuration of each Direktiv installation, and is usually about 32 MiB. 
+Like instance data, output data has size limits. These size limits are usually the same, but not necessarily. This will vary according to the configuration of each Direktiv installation, and is usually about 128 MiB. 

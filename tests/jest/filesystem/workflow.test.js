@@ -11,6 +11,13 @@ states:
   transform: 'jq({ msg: "Hello, world!" })'
 `
 
+const updatedSimpleWorkflow = `
+states:
+- id: hello_updated
+  type: noop
+  transform: 'jq({ msg: "Hello, world!" })'
+`
+
 var expectedChildNodeObject = {
     createdAt: expect.stringMatching(common.regex.timestampRegex),
     updatedAt: expect.stringMatching(common.regex.timestampRegex),
@@ -112,6 +119,16 @@ describe('Test basic directory operations', () => {
         expect(buf.toString()).toEqual(simpleWorkflow)
     })
 
+    it(`should update a workflow`, async () => {
+        var createWorkflowResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${namespaceName}/tree/${workflowName}?op=update-workflow`).send(updatedSimpleWorkflow)
+        expect(createWorkflowResponse.statusCode).toEqual(200)
+    })
+
+    it(`should update a workflow for the second time`, async () => {
+        var createWorkflowResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${namespaceName}/tree/${workflowName}?op=update-workflow`).send(updatedSimpleWorkflow)
+        expect(createWorkflowResponse.statusCode).toEqual(200)
+    })
+
     it(`should read the root directory`, async () => {
         var readRootDirResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/tree/`)
         expect(readRootDirResponse.statusCode).toEqual(200)
@@ -178,11 +195,12 @@ describe('Test basic directory operations', () => {
             pageInfo: {
                 limit: 0,
                 offset: 0,
-                total: 1,
+                total: 2,
                 order: [],
                 filter: [],
             },
-            results: [{ name: 'latest' }],
+            results: [{name: 'latest'},
+                {name: expect.stringMatching(common.regex.uuidRegex)}],
         })
     })
 
@@ -195,11 +213,13 @@ describe('Test basic directory operations', () => {
             pageInfo: {
                 limit: 0,
                 offset: 0,
-                total: 0,
+                total: 1,
                 order: [],
                 filter: [],
             },
-            results: [],
+            results: [
+                {name: expect.stringMatching(common.regex.uuidRegex)},
+            ],
         })
     })
 

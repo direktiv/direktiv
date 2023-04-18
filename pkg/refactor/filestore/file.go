@@ -17,6 +17,10 @@ const (
 	FileTypeFile      FileType = "file"
 )
 
+const (
+	Latest = "latest"
+)
+
 type File struct {
 	ID    uuid.UUID
 	Path  string

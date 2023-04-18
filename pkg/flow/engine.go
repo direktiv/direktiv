@@ -406,12 +406,12 @@ func (engine *engine) CrashInstance(ctx context.Context, im *instanceMemory, err
 	uerr := new(derrors.UncatchableError)
 
 	if errors.As(err, &cerr) {
-		engine.reportInstanceCrashed(ctx, im, "", cerr.Code, err)
+		engine.reportInstanceCrashed(ctx, im, "catchable", cerr.Code, err)
 	} else if errors.As(err, &uerr) && uerr.Code != "" {
-		engine.reportInstanceCrashed(ctx, im, "uncatchable", cerr.Code, err)
+		engine.reportInstanceCrashed(ctx, im, "uncatchable", uerr.Code, err)
 	} else {
 		_, file, line, _ := runtime.Caller(1)
-		engine.reportInstanceCrashed(ctx, im, "uncatchable", fmt.Sprintf("thrown by %s:%d", file, line), err)
+		engine.reportInstanceCrashed(ctx, im, "unknown", fmt.Sprintf("thrown by %s:%d", file, line), err)
 	}
 
 	err = engine.SetInstanceFailed(ctx, im, err)
@@ -686,7 +686,7 @@ func (engine *engine) subflowInvoke(ctx context.Context, caller *subflowCaller, 
 	if err != nil {
 		return nil, err
 	}
-	defer rollback(ctx)
+	defer rollback()
 
 	file, revision, err := fStore.GetRevision(ctx, pcached.Instance.Revision)
 	if err != nil {
@@ -806,7 +806,7 @@ func (engine *engine) doActionRequest(ctx context.Context, ar *functionRequest) 
 	}
 
 	// Log warning if timeout exceeds max allowed timeout
-	if actionTimeout := (time.Duration(ar.Workflow.Timeout) * time.Second); actionTimeout > engine.conf.GetFunctionsTimeout() {
+	if actionTimeout := time.Duration(ar.Workflow.Timeout) * time.Second; actionTimeout > engine.conf.GetFunctionsTimeout() {
 		_, err := engine.internal.ActionLog(context.Background(), &grpc.ActionLogRequest{
 			InstanceId: ar.Workflow.InstanceID, Msg: []string{fmt.Sprintf("Warning: Action timeout '%v' is longer than max allowed duariton '%v'", actionTimeout, engine.conf.GetFunctionsTimeout())},
 		})
@@ -1066,14 +1066,14 @@ func (engine *engine) EventsInvoke(workflowID string, events ...*cloudevents.Eve
 		engine.sugar.Error(err)
 		return
 	}
-	defer rollback(ctx)
+	defer rollback()
 
 	file, err := fStore.GetFile(ctx, id)
 	if err != nil {
 		engine.sugar.Error(err)
 		return
 	}
-	rollback(ctx)
+	rollback()
 
 	cached := new(database.CacheData)
 

@@ -45,7 +45,7 @@ func GrpcStart(server **grpc.Server, name, bind string, register func(srv *grpc.
 
 	additionalServerOptions := GrpcServerOptions(nil, nil)
 
-	(*server) = grpc.NewServer(additionalServerOptions...)
+	*server = grpc.NewServer(additionalServerOptions...)
 
 	register(*server)
 

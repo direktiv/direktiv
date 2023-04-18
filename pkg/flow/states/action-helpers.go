@@ -262,6 +262,7 @@ func invokeAction(ctx context.Context, args invokeActionArgs) (*ChildInfo, error
 
 	if args.async {
 		args.instance.Log(ctx, "info", "Running child '%s' in fire-and-forget mode (async).", ci.ID)
+		//nolint:nilnil
 		return nil, nil
 	}
 

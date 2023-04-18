@@ -2315,7 +2315,7 @@ func (m *EventsMutation) WorkflowID() (r uuid.UUID, exists bool) {
 // OldWorkflowID returns the old "workflow_id" field's value of the Events entity.
 // If the Events object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *EventsMutation) OldWorkflowID(ctx context.Context) (v *uuid.UUID, err error) {
+func (m *EventsMutation) OldWorkflowID(ctx context.Context) (v uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldWorkflowID is only allowed on UpdateOne operations")
 	}
@@ -2329,9 +2329,22 @@ func (m *EventsMutation) OldWorkflowID(ctx context.Context) (v *uuid.UUID, err e
 	return oldValue.WorkflowID, nil
 }
 
+// ClearWorkflowID clears the value of the "workflow_id" field.
+func (m *EventsMutation) ClearWorkflowID() {
+	m.workflow_id = nil
+	m.clearedFields[events.FieldWorkflowID] = struct{}{}
+}
+
+// WorkflowIDCleared returns if the "workflow_id" field was cleared in this mutation.
+func (m *EventsMutation) WorkflowIDCleared() bool {
+	_, ok := m.clearedFields[events.FieldWorkflowID]
+	return ok
+}
+
 // ResetWorkflowID resets all changes to the "workflow_id" field.
 func (m *EventsMutation) ResetWorkflowID() {
 	m.workflow_id = nil
+	delete(m.clearedFields, events.FieldWorkflowID)
 }
 
 // AddWfeventswaitIDs adds the "wfeventswait" edge to the EventsWait entity by ids.
@@ -2658,6 +2671,9 @@ func (m *EventsMutation) ClearedFields() []string {
 	if m.FieldCleared(events.FieldSignature) {
 		fields = append(fields, events.FieldSignature)
 	}
+	if m.FieldCleared(events.FieldWorkflowID) {
+		fields = append(fields, events.FieldWorkflowID)
+	}
 	return fields
 }
 
@@ -2674,6 +2690,9 @@ func (m *EventsMutation) ClearField(name string) error {
 	switch name {
 	case events.FieldSignature:
 		m.ClearSignature()
+		return nil
+	case events.FieldWorkflowID:
+		m.ClearWorkflowID()
 		return nil
 	}
 	return fmt.Errorf("unknown Events nullable field %s", name)
@@ -9803,7 +9822,7 @@ func (m *VarRefMutation) WorkflowID() (r uuid.UUID, exists bool) {
 // OldWorkflowID returns the old "workflow_id" field's value of the VarRef entity.
 // If the VarRef object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *VarRefMutation) OldWorkflowID(ctx context.Context) (v *uuid.UUID, err error) {
+func (m *VarRefMutation) OldWorkflowID(ctx context.Context) (v uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldWorkflowID is only allowed on UpdateOne operations")
 	}
@@ -9817,9 +9836,22 @@ func (m *VarRefMutation) OldWorkflowID(ctx context.Context) (v *uuid.UUID, err e
 	return oldValue.WorkflowID, nil
 }
 
+// ClearWorkflowID clears the value of the "workflow_id" field.
+func (m *VarRefMutation) ClearWorkflowID() {
+	m.workflow_id = nil
+	m.clearedFields[varref.FieldWorkflowID] = struct{}{}
+}
+
+// WorkflowIDCleared returns if the "workflow_id" field was cleared in this mutation.
+func (m *VarRefMutation) WorkflowIDCleared() bool {
+	_, ok := m.clearedFields[varref.FieldWorkflowID]
+	return ok
+}
+
 // ResetWorkflowID resets all changes to the "workflow_id" field.
 func (m *VarRefMutation) ResetWorkflowID() {
 	m.workflow_id = nil
+	delete(m.clearedFields, varref.FieldWorkflowID)
 }
 
 // SetVardataID sets the "vardata" edge to the VarData entity by id.
@@ -10063,6 +10095,9 @@ func (m *VarRefMutation) ClearedFields() []string {
 	if m.FieldCleared(varref.FieldBehaviour) {
 		fields = append(fields, varref.FieldBehaviour)
 	}
+	if m.FieldCleared(varref.FieldWorkflowID) {
+		fields = append(fields, varref.FieldWorkflowID)
+	}
 	return fields
 }
 
@@ -10082,6 +10117,9 @@ func (m *VarRefMutation) ClearField(name string) error {
 		return nil
 	case varref.FieldBehaviour:
 		m.ClearBehaviour()
+		return nil
+	case varref.FieldWorkflowID:
+		m.ClearWorkflowID()
 		return nil
 	}
 	return fmt.Errorf("unknown VarRef nullable field %s", name)

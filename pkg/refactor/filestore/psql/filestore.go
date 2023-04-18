@@ -76,8 +76,9 @@ func (s *SQLFileStore) GetAllRoots(ctx context.Context) ([]*filestore.Root, erro
 
 //nolint:ireturn
 func (s *SQLFileStore) GetFile(ctx context.Context, id uuid.UUID) (*filestore.File, error) {
-	file := &filestore.File{ID: id}
+	file := &filestore.File{}
 	res := s.db.WithContext(ctx).
+		Where("id", id).
 		First(file)
 	if res.Error != nil {
 		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
@@ -93,15 +94,17 @@ func (s *SQLFileStore) GetFile(ctx context.Context, id uuid.UUID) (*filestore.Fi
 //nolint:ireturn
 func (s *SQLFileStore) GetRevision(ctx context.Context, id uuid.UUID) (*filestore.File, *filestore.Revision, error) {
 	// TODO: yassir, reimplement this function using JOIN so that it becomes a single query.
-	rev := &filestore.Revision{ID: id}
+	rev := &filestore.Revision{}
 	res := s.db.WithContext(ctx).
+		Where("id", id).
 		First(rev)
 	if res.Error != nil {
 		return nil, nil, res.Error
 	}
 
-	file := &filestore.File{ID: rev.FileID}
+	file := &filestore.File{}
 	res = s.db.WithContext(ctx).
+		Where("id", rev.FileID).
 		First(file)
 	if res.Error != nil {
 		return nil, nil, res.Error

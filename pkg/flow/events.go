@@ -31,7 +31,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jinzhu/copier"
 	hash "github.com/mitchellh/hashstructure/v2"
-	glob "github.com/ryanuber/go-glob"
+	"github.com/ryanuber/go-glob"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -352,14 +352,14 @@ func (events *events) handleEventLoopLogic(ctx context.Context, rows *sql.Rows, 
 				events.engine.sugar.Error(err)
 				return
 			}
-			defer rollback(ctx)
+			defer rollback()
 
 			file, err := fStore.GetFile(ctx, id)
 			if err != nil {
 				events.engine.sugar.Error(err)
 				return
 			}
-			rollback(ctx)
+			rollback()
 
 			err = events.deleteEventListeners(ctx, file.RootID, id)
 			if err != nil {
@@ -379,12 +379,12 @@ func (events *events) handleEvent(ns *database.Namespace, ce *cloudevents.Event)
 	// this gives a basic list of eligible workflow instances waiting
 	// we get all
 	rows, err := db.Query(`select
-	we.oid, signature, count, we.events, workflow_wfevents, v
+	we.oid, signature, count, we.events, workflow_id, v
 	from events we
-	inner join workflows w
-		on w.oid = workflow_wfevents
+	inner join files w
+		on w.id = workflow_id
 	inner join namespaces n
-		on n.oid = w.namespace_workflows,
+		on n.oid = w.root_id,
 	jsonb_array_elements(events) as v
 	where v::json->>'type' = $1 and v::json->>'value' = ''
 	and n.oid = $2`, ce.Type(), ns.ID.String())
@@ -480,13 +480,13 @@ func (flow *flow) EventListeners(ctx context.Context, req *grpc.EventListenersRe
 				if err != nil {
 					return nil, err
 				}
-				defer rollback(ctx)
+				defer rollback()
 
-				file, err := fStore.GetFile(ctx, *wfID)
+				file, err := fStore.GetFile(ctx, wfID)
 				if err != nil {
 					return nil, err
 				}
-				rollback(ctx)
+				rollback()
 
 				path = file.Path
 				m[wfID.String()] = path
@@ -585,13 +585,13 @@ resend:
 				if err != nil {
 					return err
 				}
-				defer rollback(ctx)
+				defer rollback()
 
-				file, err := fStore.GetFile(ctx, *wfID)
+				file, err := fStore.GetFile(ctx, wfID)
 				if err != nil {
 					return err
 				}
-				rollback(ctx)
+				rollback()
 
 				path = file.Path
 				m[wfID.String()] = path
@@ -982,16 +982,9 @@ func (events *events) listenForEvents(ctx context.Context, im *instanceMemory, c
 	return nil
 }
 
-func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloudEventFilterRequest) (*emptypb.Empty, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
-
-	resp := new(emptypb.Empty)
-
-	namespace := in.GetNamespace()
-	filterName := in.GetFilterName()
-	cloudevent := in.GetCloudevent()
-
+func (flow *flow) execFilter(ctx context.Context, namespace, filterName string, cloudevent []byte) ([]byte, error) {
 	var script string
+	var newBytesEvent []byte
 
 	key := fmt.Sprintf("%s-%s", namespace, filterName)
 
@@ -999,7 +992,7 @@ func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloud
 
 	err := flow.database.NamespaceByName(ctx, cached, namespace)
 	if err != nil {
-		return nil, err
+		return newBytesEvent, err
 	}
 
 	if jsCode, ok := eventFilterCache.get(key); ok {
@@ -1010,7 +1003,7 @@ func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloud
 		ceventfilter, err := clients.CloudEventFilters.Query().Where(enteventsfilter.HasNamespaceWith(entns.ID(cached.Namespace.ID))).Where(enteventsfilter.NameEQ(filterName)).Only(ctx)
 		if err != nil {
 			err = status.Error(codes.NotFound, fmt.Sprintf("cloudEvent filter %s does not exist", filterName))
-			return resp, err
+			return newBytesEvent, err
 		}
 
 		script = fmt.Sprintf("function filter() {\n %s \n}", ceventfilter.Jscode)
@@ -1022,7 +1015,7 @@ func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloud
 	var mapEvent map[string]interface{}
 	err = json.Unmarshal(cloudevent, &mapEvent)
 	if err != nil {
-		return resp, err
+		return newBytesEvent, err
 	}
 
 	// create js runtime
@@ -1033,7 +1026,7 @@ func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloud
 
 	err = vm.Set("event", mapEvent)
 	if err != nil {
-		return resp, fmt.Errorf("failed to initialize js runtime: %w", err)
+		return newBytesEvent, fmt.Errorf("failed to initialize js runtime: %w", err)
 	}
 
 	// add logging function
@@ -1041,45 +1034,77 @@ func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloud
 		flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), fmt.Sprintf("%v", txt))
 	})
 	if err != nil {
-		return resp, fmt.Errorf("failed to initialize js runtime: %w", err)
+		return newBytesEvent, fmt.Errorf("failed to initialize js runtime: %w", err)
 	}
 
 	_, err = vm.RunString(script)
 	if err != nil {
 		flow.logger.Errorf(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "CloudEvent filter '%s' produced an error (1): %v", filterName, err)
-		return resp, err
+		return newBytesEvent, err
 	}
 
 	f, ok := goja.AssertFunction(vm.Get("filter"))
 	if !ok {
 		flow.logger.Errorf(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "cloudEvent filter '%s' error: %v", filterName, err)
-		return resp, err
+		return newBytesEvent, err
 	}
 
 	newEventMap, err := f(goja.Undefined())
 	if err != nil {
 		flow.logger.Errorf(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "CloudEvent filter '%s' produced an error (2): %v", filterName, err)
-		return resp, err
+		return newBytesEvent, err
 	}
 
 	retValue := newEventMap.Export()
 
 	// event dropped
 	if retValue == nil {
-		return resp, nil
+		return newBytesEvent, nil
 	}
 
-	newBytesEvent, err := json.Marshal(newEventMap)
+	newBytesEvent, err = json.Marshal(newEventMap)
 	if err != nil {
 		flow.logger.Errorf(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "CloudEvent filter '%s' produced an error (3): %v", filterName, err)
+		return newBytesEvent, err
+	}
+
+	return newBytesEvent, nil
+}
+
+func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloudEventFilterRequest) (*emptypb.Empty, error) {
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
+
+	resp := new(emptypb.Empty)
+
+	namespace := in.GetNamespace()
+	filterName := in.GetFilterName()
+	cloudevent := in.GetCloudevent()
+
+	cached := new(database.CacheData)
+	err := flow.database.NamespaceByName(ctx, cached, namespace)
+	if err != nil {
+		return nil, err
+	}
+
+	b, err := flow.execFilter(ctx, namespace, filterName, cloudevent)
+	if err != nil {
+		flow.logger.Errorf(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace),
+			"executing filter failed: %s", err.Error())
 		return resp, err
 	}
 
-	flow.sugar.Debugf("event after script is %v", string(newBytesEvent))
+	// dropped event
+	if len(b) == 0 {
+		flow.logger.Debugf(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace),
+			"dropping event")
+		return resp, nil
+	}
+
+	flow.sugar.Debugf("event after script is %v", string(b))
 
 	br := &grpc.BroadcastCloudeventRequest{
 		Namespace:  namespace,
-		Cloudevent: newBytesEvent,
+		Cloudevent: b,
 		Timer:      0,
 	}
 

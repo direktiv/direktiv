@@ -18,7 +18,7 @@ func Test_sqlFileAnnotationsStore_SetAndGet(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}
-	ds := sql.NewSQLStore(db)
+	ds := sql.NewSQLStore(db, "some_secret_key_")
 	fs := psql.NewSQLFileStore(db)
 
 	file := createFile(t, fs)
@@ -62,6 +62,10 @@ func createFile(t *testing.T, fs filestore.FileStore) *filestore.File {
 	_, err := fs.CreateRoot(context.Background(), id)
 	if err != nil {
 		t.Fatalf("unexpected CreateRoot() error: %v", err)
+	}
+	_, _, err = fs.ForRootID(id).CreateFile(context.Background(), "/", filestore.FileTypeDirectory, nil)
+	if err != nil {
+		t.Fatalf("unexpected CreateFile() error: %v", err)
 	}
 
 	file, _, err := fs.ForRootID(id).CreateFile(context.Background(), "/my_file.text", filestore.FileTypeFile, strings.NewReader("my file"))

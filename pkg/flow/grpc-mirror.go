@@ -62,7 +62,12 @@ func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNam
 	var txErr error
 	var mirConfig *mirror.Config
 	err = flow.runSqlTx(ctx, func(fStore filestore.FileStore, store datastore.Store) error {
-		_, txErr = fStore.CreateRoot(ctx, ns.ID)
+		var root *filestore.Root
+		root, txErr = fStore.CreateRoot(ctx, ns.ID)
+		if txErr != nil {
+			return txErr
+		}
+		_, _, txErr = fStore.ForRootID(root.ID).CreateFile(ctx, "/", filestore.FileTypeDirectory, nil)
 		if txErr != nil {
 			return txErr
 		}
@@ -124,7 +129,7 @@ func (flow *flow) UpdateMirrorSettings(ctx context.Context, req *grpc.UpdateMirr
 	if err != nil {
 		return nil, err
 	}
-	defer rollback(ctx)
+	defer rollback()
 
 	mirConfig, err := store.Mirror().GetConfig(ctx, ns.ID)
 	if err != nil {
@@ -147,12 +152,13 @@ func (flow *flow) UpdateMirrorSettings(ctx context.Context, req *grpc.UpdateMirr
 	if s := settings.GetPassphrase(); s != "-" {
 		mirConfig.PrivateKeyPassphrase = s
 	}
-	if err = commit(ctx); err != nil {
-		return nil, err
-	}
 
 	mirConfig, err = store.Mirror().UpdateConfig(ctx, mirConfig)
 	if err != nil {
+		return nil, err
+	}
+
+	if err = commit(ctx); err != nil {
 		return nil, err
 	}
 
@@ -200,7 +206,7 @@ func (flow *flow) HardSyncMirror(ctx context.Context, req *grpc.HardSyncMirrorRe
 	if err != nil {
 		return nil, err
 	}
-	defer rollback(ctx)
+	defer rollback()
 
 	mirConfig, err := store.Mirror().GetConfig(ctx, ns.ID)
 	if err != nil {
@@ -230,7 +236,7 @@ func (flow *flow) MirrorInfo(ctx context.Context, req *grpc.MirrorInfoRequest) (
 	if err != nil {
 		return nil, err
 	}
-	defer rollback(ctx)
+	defer rollback()
 
 	mirConfig, err := store.Mirror().GetConfig(ctx, ns.ID)
 	if err != nil {
@@ -292,7 +298,7 @@ func (flow *flow) MirrorActivityLogs(ctx context.Context, req *grpc.MirrorActivi
 	if err != nil {
 		return nil, err
 	}
-	defer rollback(ctx)
+	defer rollback()
 
 	mirConfig, err := store.Mirror().GetConfig(ctx, ns.ID)
 	if err != nil {
@@ -330,6 +336,11 @@ func (flow *flow) MirrorActivityLogsParcels(req *grpc.MirrorActivityLogsRequest,
 
 	ctx := srv.Context()
 
+	mirProcessID, err := uuid.Parse(req.GetActivity())
+	if err != nil {
+		return err
+	}
+
 	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
 	if err != nil {
 		return err
@@ -341,13 +352,9 @@ func (flow *flow) MirrorActivityLogsParcels(req *grpc.MirrorActivityLogsRequest,
 	if err != nil {
 		return err
 	}
-	defer rollback(ctx)
+	defer rollback()
 
-	mirConfig, err := store.Mirror().GetConfig(ctx, ns.ID)
-	if err != nil {
-		return err
-	}
-	mirProcess, err := store.Mirror().GetProcess(ctx, mirConfig.ID)
+	mirProcess, err := store.Mirror().GetProcess(ctx, mirProcessID)
 	if err != nil {
 		return err
 	}

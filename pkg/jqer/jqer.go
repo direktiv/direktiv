@@ -154,7 +154,7 @@ func JqState(l *lexer.L) lexer.StateFunc {
 
 	// only rewind to jdxJ, if there was no j in the runes, we can skip rewind all together
 	if jdxJ > 0 {
-		mover((3 - jdxJ), false)
+		mover(3-jdxJ, false)
 	}
 
 	return JqState
