@@ -28,7 +28,7 @@ const SelectTrigger = React.forwardRef<
     // eslint-disable-next-line tailwindcss/migration-from-tailwind-2
     className={clsx(
       "btn-ghost btn justify-between gap-2",
-      !ghost && "border-base-content border-opacity-20 bg-base-100",
+      !ghost && "border-gray-11 border-opacity-20 bg-gray-1",
       size === "lg" && "btn-lg",
       size === "sm" && "btn-sm",
       size === "xs" && "btn-xs",
@@ -52,7 +52,7 @@ const SelectContent = React.forwardRef<
     <SelectPrimitive.Content
       ref={ref}
       className={clsx(
-        "card-bordered card z-50 border-base-300 bg-base-100 shadow-md",
+        "card-bordered card z-50 border-gray-3 bg-gray-1 shadow-md",
         className
       )}
       {...props}
@@ -88,7 +88,7 @@ const SelectItem = React.forwardRef<
   <SelectPrimitive.Item
     ref={ref}
     className={clsx(
-      "relative flex cursor-default select-none items-center rounded-sm py-1.5 pr-2 pl-8 text-sm font-medium outline-none focus:bg-base-300 data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      "relative flex cursor-default select-none items-center rounded-sm py-1.5 pr-2 pl-8 text-sm font-medium outline-none focus:bg-gray-3 data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       className
     )}
     {...props}
@@ -110,7 +110,7 @@ const SelectSeparator = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <SelectPrimitive.Separator
     ref={ref}
-    className={clsx("-mx-1 my-1 h-px bg-base-300", className)}
+    className={clsx("-mx-1 my-1 h-px bg-gray-3", className)}
     {...props}
   />
 ));

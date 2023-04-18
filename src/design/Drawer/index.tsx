@@ -27,7 +27,7 @@ export const DrawerContent: {
 export const DrawerMenu: FC<PropsWithChildren> = ({ children }) => (
   <div className="drawer-side">
     <label htmlFor="my-drawer" className="drawer-overlay"></label>
-    <nav className="menu w-52 bg-base-100 p-4 text-base-content">
+    <nav className="menu w-52 bg-gray-1 p-4 text-gray-11">
       <div className="px-2">
         <Logo className="mb-5 mt-1 h-8 w-auto" />
       </div>

@@ -156,7 +156,7 @@ export const LoadingState = () => (
 );
 
 export const Ghost = () => (
-  <div className="bg-base-300 p-10">
+  <div className="bg-gray-3 p-10">
     <Select>
       <SelectTrigger ghost>
         <SelectValue placeholder="ghost select" />

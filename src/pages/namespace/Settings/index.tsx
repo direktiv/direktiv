@@ -24,7 +24,7 @@ const SettiongsPage: FC = () => {
 
   return (
     <div className="flex flex-col space-y-5 p-10">
-      <div className="card w-max bg-base-100 p-4 shadow-md">
+      <div className="card w-max bg-gray-1 p-4 shadow-md">
         <h1>
           theme <span className="font-bold">{theme}</span>
         </h1>
@@ -40,7 +40,7 @@ const SettiongsPage: FC = () => {
           </button>
         </div>
       </div>
-      <div className="card w-max bg-base-100 p-4 shadow-md">
+      <div className="card w-max bg-gray-1 p-4 shadow-md">
         <h1>
           namespace <span className="font-bold">{selectedNamespace}</span>
         </h1>
@@ -50,7 +50,7 @@ const SettiongsPage: FC = () => {
           </button>
         </div>
       </div>
-      <div className="card w-max bg-base-100 p-4 shadow-md">
+      <div className="card w-max bg-gray-1 p-4 shadow-md">
         <h1>
           api key is <span className="font-bold">{apiKey}</span>
         </h1>
@@ -75,8 +75,8 @@ const SettiongsPage: FC = () => {
         {isLoadingNamespaces
           ? "Loading namespaces"
           : namespaces?.results.map((namespace) => (
-              <div key={namespace.name}>{namespace.name}</div>
-            ))}
+            <div key={namespace.name}>{namespace.name}</div>
+          ))}
       </div>
 
       <div></div>

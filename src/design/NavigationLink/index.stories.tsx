@@ -62,7 +62,7 @@ const navigation = [
 ];
 
 export const Navigation = () => (
-  <div className="card-bordered card m-5 w-44 bg-base-100 p-3 shadow-md">
+  <div className="card-bordered card m-5 w-44 bg-gray-1 p-3 shadow-md">
     {navigation.map((item) => (
       <NavigationLink key={item.name} href={item.href} active={item.current}>
         <item.icon aria-hidden="true" />
