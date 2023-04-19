@@ -72,29 +72,10 @@ func initCLI(cmd *cobra.Command) {
 		Globbers = append(Globbers, g)
 	}
 
-	profileID, err := cmd.Flags().GetString("profile")
+	cp, err := getCurrentProfileConfig(cmd)
 	if err != nil {
-		Fail("error loading 'profile' flag: %v", err)
+		Fail("error initializing %v", err)
 	}
-
-	config.currentProfileID = profileID
-
-	err = loadProfileConfig()
-	if err != nil {
-		Fail("Failed to read profile config file: %v", err)
-	}
-
-	if config.currentProfileID == "" {
-		for k := range config.Profiles {
-			config.currentProfileID = k
-			break
-		}
-	}
-	cp, ok := (config.Profiles[config.currentProfileID])
-	if !ok {
-		Fail("error loading profile '%s': no profile exists by this name in the config file", config.currentProfileID)
-	}
-
 	config.projectPath = projectPath
 
 	data, err := yaml.Marshal(cp)
@@ -108,6 +89,39 @@ func initCLI(cmd *cobra.Command) {
 	if err != nil {
 		Fail("error reading config: %v", err)
 	}
+}
+
+func getCurrentProfileConfig(cmd *cobra.Command) (ProfileConfig, error) {
+	profileID, err := cmd.Flags().GetString("profile")
+	if err != nil {
+		Fail("error loading 'profile' flag: %v", err)
+	}
+
+	config.currentProfileID = profileID
+
+	err = loadProfileConfig()
+	if err != nil && getAddr() == "" || GetNamespace() == "" {
+		return ProfileConfig{}, fmt.Errorf("failed to read profile config file: %v. Create a profile-config file or specify the addr and namespace via flags", err)
+	}
+	if err != nil && getAddr() != "" || GetNamespace() != "" {
+		return ProfileConfig{
+			Addr:      getAddr(),
+			Namespace: GetNamespace(),
+			Auth:      GetAuth(),
+		}, nil
+	}
+
+	if config.currentProfileID == "" {
+		for k := range config.Profiles {
+			config.currentProfileID = k
+			break
+		}
+	}
+	cp, ok := (config.Profiles[config.currentProfileID])
+	if !ok {
+		return ProfileConfig{}, fmt.Errorf("error loading profile '%s': no profile exists by this name in the config file", config.currentProfileID)
+	}
+	return cp, nil
 }
 
 func findProjectDir() (string, error) {
