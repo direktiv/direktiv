@@ -13,14 +13,14 @@ var infoCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		pf, err := root.ProjectFolder()
 		if err != nil {
-			root.Fail("could not get project directory: %s", err.Error())
+			root.Fail("Could not get project directory: %s", err.Error())
 		}
 
 		cmd.Printf("project directory: %s\n", pf)
 
 		pwd, err := os.Getwd()
 		if err != nil {
-			root.Fail("could not get working directory: %s", err.Error())
+			root.Fail("Could not get working directory: %s", err.Error())
 		}
 		cmd.Printf("working directory: %s\n", pwd)
 		cmd.Printf("\n")

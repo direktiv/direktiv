@@ -45,36 +45,36 @@ var (
 func initCLI(cmd *cobra.Command) {
 	chdir, err := cmd.Flags().GetString("directory")
 	if err != nil {
-		Fail("error loading 'directory' flag: %v", err)
+		Fail("Error loading 'directory' flag: %v", err)
 	}
 
 	if chdir != "" && chdir != "." {
 		err = os.Chdir(chdir)
 		if err != nil {
-			Fail("error changing directory to %s: %v", chdir, err)
+			Fail("Error changing to directory %s: %v", chdir, err)
 		}
 	}
 
 	projectPath, err := findProjectDir()
 	if err != nil {
-		Fail("Failed to read direktiv project config: %v", err)
+		Fail("Unable to find project folder: %v", err)
 	}
 	err = loadProjectConfig(projectPath)
 	if err != nil {
-		Fail("Failed to read direktiv project config: %v", err)
+		Fail("Failed to read direktiv project configuration-file: %v", err)
 	}
 	Globbers = make([]glob.Glob, 0)
 	for idx, pattern := range config.Ignore {
 		g, err := glob.Compile(pattern)
 		if err != nil {
-			Fail("Failed to parse %dth ignore pattern: %w", idx, err)
+			Fail("Failed to parse %dth entry of the ignore pattern: %w", idx, err)
 		}
 		Globbers = append(Globbers, g)
 	}
 
 	cp, err := getCurrentProfileConfig(cmd)
 	if err != nil {
-		Fail("error initializing %v", err)
+		Fail("Error initializing %v", err)
 	}
 	config.projectPath = projectPath
 
@@ -87,14 +87,14 @@ func initCLI(cmd *cobra.Command) {
 
 	err = viper.ReadConfig(bytes.NewReader(data))
 	if err != nil {
-		Fail("error reading config: %v", err)
+		Fail("Error reading configuration: %v", err)
 	}
 }
 
 func getCurrentProfileConfig(cmd *cobra.Command) (ProfileConfig, error) {
 	profileID, err := cmd.Flags().GetString("profile")
 	if err != nil {
-		Fail("error loading 'profile' flag: %v", err)
+		Fail("Error loading 'profile' flag: %v", err)
 	}
 
 	config.currentProfileID = profileID
@@ -127,7 +127,7 @@ func getCurrentProfileConfig(cmd *cobra.Command) (ProfileConfig, error) {
 func findProjectDir() (string, error) {
 	dir, err := filepath.Abs(".")
 	if err != nil {
-		Fail("Failed to locate place in filesystem: %v\n", err)
+		Fail("Failed to locate current working directory: %v\n", err)
 	}
 
 	for prev := ""; dir != prev; dir = filepath.Dir(dir) {
@@ -159,12 +159,12 @@ func loadProjectConfig(path string) error {
 func loadProfileConfig() error {
 	home, err := os.UserHomeDir()
 	if err != nil {
-		Fail("Could not find user home: %v", err)
+		return fmt.Errorf("could not find current users home directory: %w", err)
 	}
 	path := filepath.Join(home, DefaultProfileConfigPath+DefaultProfileConfigName)
 	data, err := os.ReadFile(path)
 	if err != nil {
-		return err
+		return fmt.Errorf("could read find the direktiv-configuration-file: %w", err)
 	}
 
 	err = yaml.Unmarshal(data, &config.Profiles)

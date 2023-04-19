@@ -11,6 +11,8 @@ import (
 	"strings"
 )
 
+const ToolName = "direktivctl"
+
 var maxSize int64 = 1073741824
 
 func ProjectFolder() (string, error) {

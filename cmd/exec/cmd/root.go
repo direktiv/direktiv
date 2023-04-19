@@ -13,8 +13,8 @@ import (
 var UrlPrefix string
 
 func init() {
-	RootCmd.PersistentFlags().StringP("profile", "P", "", "Select the named profile from the loaded multi-profile configuration file.")
-	RootCmd.PersistentFlags().StringP("directory", "C", "", "Change to this directory before evaluating any paths or searching for a configuration file.")
+	RootCmd.PersistentFlags().StringP("profile", "P", "", "Select the named profile configuration file.")
+	RootCmd.PersistentFlags().StringP("directory", "C", "", "Runs the command as if "+ToolName+" was started in the given directory instead of the current working directory.")
 
 	RootCmd.PersistentFlags().StringP("addr", "a", "", "Target direktiv api address.")
 	RootCmd.PersistentFlags().StringP("namespace", "n", "", "Target namespace to execute workflow on.")
@@ -32,7 +32,7 @@ func init() {
 }
 
 var RootCmd = &cobra.Command{
-	Use: "direktivctl",
+	Use: ToolName,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		initCLI(cmd)
 		cmdPrepareSharedValues()
