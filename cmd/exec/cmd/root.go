@@ -34,7 +34,11 @@ func init() {
 var RootCmd = &cobra.Command{
 	Use: ToolName,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		initCLI(cmd)
+		err := initCLI(cmd)
+		if err != nil {
+			Fail("Got an error while initializing: %v", err)
+		}
+
 		cmdPrepareSharedValues()
 		if err := pingNamespace(); err != nil {
 			log.Fatalf("%v", err)

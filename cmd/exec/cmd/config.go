@@ -42,39 +42,39 @@ var (
 	Globbers []glob.Glob
 )
 
-func initCLI(cmd *cobra.Command) {
+func initCLI(cmd *cobra.Command) error {
 	chdir, err := cmd.Flags().GetString("directory")
 	if err != nil {
-		Fail("Error loading 'directory' flag: %v", err)
+		return fmt.Errorf("error loading 'directory' flag: %w", err)
 	}
 
 	if chdir != "" && chdir != "." {
 		err = os.Chdir(chdir)
 		if err != nil {
-			Fail("Error changing to directory %s: %v", chdir, err)
+			return fmt.Errorf("error changing to directory %s: %w", chdir, err)
 		}
 	}
 
 	projectPath, err := findProjectDir()
 	if err != nil {
-		Fail("Unable to find project folder: %v", err)
+		return fmt.Errorf("unable to find project folder: %w", err)
 	}
 	err = loadProjectConfig(projectPath)
 	if err != nil {
-		Fail("Failed to read direktiv project configuration-file: %v", err)
+		return fmt.Errorf("failed to read direktiv project configuration-file: %w", err)
 	}
 	Globbers = make([]glob.Glob, 0)
 	for idx, pattern := range config.Ignore {
 		g, err := glob.Compile(pattern)
 		if err != nil {
-			Fail("Failed to parse %dth entry of the ignore pattern: %w", idx, err)
+			return fmt.Errorf("failed to parse %dth entry of the ignore pattern: %w", idx, err)
 		}
 		Globbers = append(Globbers, g)
 	}
 
 	cp, err := getCurrentProfileConfig(cmd)
 	if err != nil {
-		Fail("Error initializing %v", err)
+		return fmt.Errorf("error initializing %w", err)
 	}
 	config.projectPath = projectPath
 
@@ -87,8 +87,9 @@ func initCLI(cmd *cobra.Command) {
 
 	err = viper.ReadConfig(bytes.NewReader(data))
 	if err != nil {
-		Fail("Error reading configuration: %v", err)
+		return fmt.Errorf("error reading configuration: %w", err)
 	}
+	return nil
 }
 
 func getCurrentProfileConfig(cmd *cobra.Command) (ProfileConfig, error) {
@@ -100,10 +101,10 @@ func getCurrentProfileConfig(cmd *cobra.Command) (ProfileConfig, error) {
 	config.currentProfileID = profileID
 
 	err = loadProfileConfig()
-	if err != nil && getAddr() == "" || GetNamespace() == "" {
+	if err != nil && (getAddr() == "" || GetNamespace() == "") {
 		return ProfileConfig{}, fmt.Errorf("failed to read profile config file: %w. Create a profile-config file or specify the addr and namespace via flags", err)
 	}
-	if err != nil && getAddr() != "" || GetNamespace() != "" {
+	if err != nil && getAddr() != "" && GetNamespace() != "" {
 		return ProfileConfig{
 			Addr:      getAddr(),
 			Namespace: GetNamespace(),
@@ -176,18 +177,18 @@ func loadProfileConfig() error {
 
 func getAddr() string {
 	addr := viper.GetString("addr")
-	if addr == "" {
-		Fail("addr undefined: ensure it is set as a flag, environment variable, or in the config file")
-	}
+	// if addr == "" {
+	// 	Fail("addr undefined: ensure it is set as a flag, environment variable, or in the config file")
+	// }
 
 	return addr
 }
 
 func GetNamespace() string {
 	namespace := viper.GetString("namespace")
-	if namespace == "" {
-		Fail("namespace undefined: ensure it is set as a flag, environment variable, or in the config file")
-	}
+	// if namespace == "" {
+	// 	Fail("namespace undefined: ensure it is set as a flag, environment variable, or in the config file")
+	// }
 
 	return namespace
 }
