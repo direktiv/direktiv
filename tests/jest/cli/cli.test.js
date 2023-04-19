@@ -32,14 +32,14 @@ describe('Test the direktiv-cli-tool', () => {
         const filename = "simplewf"
         const fileextension = "yaml"
         await assertStdErrContainsString(`${filepath}`,`workflows push ${filepath}`, `pushing workflow ${filename}`)
-        const res = await request(common.config.getDirektivHost()).get(`/api/namespaces/root/tree/${filename}`)
+        const res = await request(common.config.getDirektivHost()).get(`/api/namespaces/root/tree/${filename}.${fileextension}`)
         expect(res.statusCode).toEqual(200)
     })
     it(`test push project .`, async() => {
         const filename = "simplewf"
         const fileextension = "yaml"
         await assertStdErrContainsString(`${filepath}`,`workflows push .`, `pushing workflow ${filename}`)
-        const res = await request(common.config.getDirektivHost()).get(`/api/namespaces/root/tree/${filename}`)
+        const res = await request(common.config.getDirektivHost()).get(`/api/namespaces/root/tree/${filename}.${fileextension}`)
         expect(res.statusCode).toEqual(200)
     })
     it(`test push subpath relative pwd`, async() => {
@@ -47,7 +47,7 @@ describe('Test the direktiv-cli-tool', () => {
         const fileextension = "yaml"
         const path =  `${filepath}/subfolder`
         await assertStdErrContainsString(`${path}`,`workflows push .`, `pushing workflow subfolder/${filename}`)
-        const res = await request(common.config.getDirektivHost()).get(`/api/namespaces/root/tree/subfolder/${filename}`)
+        const res = await request(common.config.getDirektivHost()).get(`/api/namespaces/root/tree/subfolder/${filename}.${fileextension}`)
         expect(res.statusCode).toEqual(200)
     })
     it(`test push subpath abs pwd`, async() => {
@@ -55,7 +55,7 @@ describe('Test the direktiv-cli-tool', () => {
         const fileextension = "yaml"
         const path =  `${filepath}/subfolder`
         await assertStdErrContainsString(`${path}`,`workflows push ${path}/`, `pushing workflow subfolder/${filename}`)
-        const res = await request(common.config.getDirektivHost()).get(`/api/namespaces/root/tree/subfolder/${filename}`)
+        const res = await request(common.config.getDirektivHost()).get(`/api/namespaces/root/tree/subfolder/${filename}.${fileextension}`)
         expect(res.statusCode).toEqual(200)
     })
 })

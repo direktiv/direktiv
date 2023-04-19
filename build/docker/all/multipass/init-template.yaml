@@ -1,0 +1,18 @@
+runcmd:
+ - snap install helm --classic
+ - echo 'alias kc="kubectl"' >> /home/.bashrc
+ - echo 'source <(kubectl completion bash)' >> /home/.bashrc
+ - echo 'complete -F __start_kubectl kc' >> /home/.bashrc
+ - echo 'export KUBECONFIG=/etc/rancher/k3s/k3s.yaml' >> /home/.bashrc
+ - cat /home/.bashrc >> /home/ubuntu/.bashrc
+ - chown -R ubuntu:ubuntu /home/install.sh
+ - rm -Rf /home/.bashrc
+ - mv /home/install.sh /home/ubuntu/
+ - /home/ubuntu/install.sh ARG1 ARG2 ARG3
+ 
+
+write_files:
+- encoding: b64
+  content: SCRIPT
+  path: /home/install.sh
+  permissions: '0755'
