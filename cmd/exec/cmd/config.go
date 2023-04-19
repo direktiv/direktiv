@@ -101,7 +101,7 @@ func getCurrentProfileConfig(cmd *cobra.Command) (ProfileConfig, error) {
 
 	err = loadProfileConfig()
 	if err != nil && getAddr() == "" || GetNamespace() == "" {
-		return ProfileConfig{}, fmt.Errorf("failed to read profile config file: %v. Create a profile-config file or specify the addr and namespace via flags", err)
+		return ProfileConfig{}, fmt.Errorf("failed to read profile config file: %w. Create a profile-config file or specify the addr and namespace via flags", err)
 	}
 	if err != nil && getAddr() != "" || GetNamespace() != "" {
 		return ProfileConfig{
