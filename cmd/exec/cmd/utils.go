@@ -5,10 +5,13 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"path"
 	"strings"
+
+	"github.com/spf13/cobra"
 )
 
 const ToolName = "direktivctl"
@@ -132,4 +135,24 @@ func SafeLoadStdIn() (*bytes.Buffer, error) {
 	buf = bytes.NewBuffer(fData)
 
 	return buf, nil
+}
+
+func InitConfiguration(cmd *cobra.Command, args []string) {
+	err := initCLI(cmd)
+	if err != nil {
+		Fail("Got an error while initializing: %v", err)
+	}
+
+	cmdPrepareSharedValues()
+	if err := pingNamespace(); err != nil {
+		log.Fatalf("%v", err)
+	}
+}
+
+func InitConfigurationAndProject(cmd *cobra.Command, args []string) {
+	InitConfiguration(cmd, args)
+	err := initProjectDir(cmd)
+	if err != nil {
+		Fail("Got an error while initializing: %v", err)
+	}
 }

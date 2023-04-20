@@ -29,8 +29,9 @@ var (
 )
 
 var eventsCmd = &cobra.Command{
-	Use:   "events",
-	Short: "Event-related commands",
+	Use:              "events",
+	Short:            "Event-related commands",
+	PersistentPreRun: root.InitConfiguration,
 }
 
 var sendEventCmd = &cobra.Command{

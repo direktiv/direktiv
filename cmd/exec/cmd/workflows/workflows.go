@@ -20,8 +20,9 @@ import (
 )
 
 var workflowCmd = &cobra.Command{
-	Use:   "workflows",
-	Short: "Workflow-related commands",
+	Use:              "workflows",
+	Short:            "Workflow-related commands",
+	PersistentPreRun: root.InitConfigurationAndProject,
 }
 
 func getImpactedFiles(start string, filesAllowed, recursive bool) ([]string, error) {
@@ -548,6 +549,7 @@ func getOutput(url string) ([]byte, error) {
 
 func init() {
 	root.RootCmd.AddCommand(workflowCmd)
+	workflowCmd.PersistentFlags().StringP("directory", "C", "", "Runs the command as if "+root.ToolName+" was started in the given directory instead of the current working directory.")
 
 	workflowCmd.AddCommand(pushCmd)
 	workflowCmd.AddCommand(execCmd)

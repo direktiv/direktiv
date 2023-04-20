@@ -8,8 +8,9 @@ import (
 )
 
 var infoCmd = &cobra.Command{
-	Use:   "info",
-	Short: "Prints detected configuration values for current project",
+	Use:              "info",
+	Short:            "Prints detected configuration values for current project",
+	PersistentPreRun: root.InitConfigurationAndProject,
 	Run: func(cmd *cobra.Command, args []string) {
 		pf, err := root.ProjectFolder()
 		if err != nil {
@@ -42,4 +43,5 @@ var infoCmd = &cobra.Command{
 
 func init() {
 	root.RootCmd.AddCommand(infoCmd)
+	infoCmd.PersistentFlags().StringP("directory", "C", "", "Runs the command as if "+root.ToolName+" was started in the given directory instead of the current working directory.")
 }

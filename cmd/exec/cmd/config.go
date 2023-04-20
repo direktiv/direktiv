@@ -43,6 +43,26 @@ var (
 )
 
 func initCLI(cmd *cobra.Command) error {
+	cp, err := getCurrentProfileConfig(cmd)
+	if err != nil {
+		return fmt.Errorf("error initializing %w", err)
+	}
+
+	data, err := yaml.Marshal(cp)
+	if err != nil {
+		panic(err)
+	}
+
+	viper.SetConfigType("yml")
+
+	err = viper.ReadConfig(bytes.NewReader(data))
+	if err != nil {
+		return fmt.Errorf("error reading configuration: %w", err)
+	}
+	return nil
+}
+
+func initProjectDir(cmd *cobra.Command) error {
 	chdir, err := cmd.Flags().GetString("directory")
 	if err != nil {
 		return fmt.Errorf("error loading 'directory' flag: %w", err)
@@ -71,24 +91,7 @@ func initCLI(cmd *cobra.Command) error {
 		}
 		Globbers = append(Globbers, g)
 	}
-
-	cp, err := getCurrentProfileConfig(cmd)
-	if err != nil {
-		return fmt.Errorf("error initializing %w", err)
-	}
 	config.projectPath = projectPath
-
-	data, err := yaml.Marshal(cp)
-	if err != nil {
-		panic(err)
-	}
-
-	viper.SetConfigType("yml")
-
-	err = viper.ReadConfig(bytes.NewReader(data))
-	if err != nil {
-		return fmt.Errorf("error reading configuration: %w", err)
-	}
 	return nil
 }
 

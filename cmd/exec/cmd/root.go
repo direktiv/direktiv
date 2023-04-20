@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 
@@ -14,7 +13,6 @@ var UrlPrefix string
 
 func init() {
 	RootCmd.PersistentFlags().StringP("profile", "P", "", "Select the named profile configuration file.")
-	RootCmd.PersistentFlags().StringP("directory", "C", "", "Runs the command as if "+ToolName+" was started in the given directory instead of the current working directory.")
 
 	RootCmd.PersistentFlags().StringP("addr", "a", "", "Target direktiv api address.")
 	RootCmd.PersistentFlags().StringP("namespace", "n", "", "Target namespace to execute workflow on.")
@@ -33,17 +31,6 @@ func init() {
 
 var RootCmd = &cobra.Command{
 	Use: ToolName,
-	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		err := initCLI(cmd)
-		if err != nil {
-			Fail("Got an error while initializing: %v", err)
-		}
-
-		cmdPrepareSharedValues()
-		if err := pingNamespace(); err != nil {
-			log.Fatalf("%v", err)
-		}
-	},
 }
 
 func cmdPrepareSharedValues() {

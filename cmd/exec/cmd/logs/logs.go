@@ -17,6 +17,7 @@ It is also possible to watch logs of a specific workflow, state-id and array-ind
 EXAMPLE: logs --addr http://192.168.1.1 --namespace admin -instance 9b0e45b5-5e7e-4006-93e7-6764e8379e98 --filter QUERY --type MATCH getwf getter 2
 To filter by the level of the log use -filter LEVEL --type MATCH level or -filter LEVEL --type STARTING info, supported levels are debug, info, error and panic
 `,
+	PersistentPreRun: root.InitConfiguration,
 	Run: func(cmd *cobra.Command, args []string) {
 		_, err := uuid.Parse(instance)
 		if err != nil {
