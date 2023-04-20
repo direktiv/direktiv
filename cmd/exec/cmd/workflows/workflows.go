@@ -92,17 +92,21 @@ type node struct {
 
 var pushCmd = &cobra.Command{
 	Use:   "push WORKFLOW_PATH|DIR_PATH",
-	Short: "Pushes local workflow or dir to remote direktiv server. This process will update your latest remote resource to your local WORKFLOW_PATH|DIR_PATH file",
-	Long: `"Pushes local workflow or dir to remote direktiv server. This process will update your latest remote resource to your local WORKFLOW_PATH|DIR_PATH file.
-Pushing local directory cannot be used with config flag. Config must be found automatically to determine folder structure.
-EXAMPLE: push helloworld.yaml --addr http://192.168.1.1 --namespace admin
-Variables will also be uploaded if they are prefixed with your local workflow name
-EXAMPLE:
-  dir: /pwd
-        /helloworld.yaml
-        /helloworld.yaml.data.json
-Executing: push helloworld.yaml --addr http://192.168.1.1 --namespace admin --path helloworld
-Will update the helloworld workflow and set the remote workflow variable 'data.json' to the contents of '/helloworld.yaml.data.json'
+	Short: "Adds new or updates workflows and variables to the namespace of the remove server",
+	Long: `Adds new or updates workflows and variables to the namespace of the remove server. Run this this command from a direktiv-project-folder. Example: 
+	
+	push helloworld.yaml --addr http://192.168.1.1 --namespace admin
+
+Variables will also be created or updates, if they are prefixed with your local workflow name. Following example:
+
+	/.direktiv.yaml
+	/helloworld.yaml
+	/helloworld.yaml.data.json
+	
+	Executing: push helloworld.yaml
+	Will update the helloworld workflow and set the remote workflow variable 'data.json' to the contents of '/helloworld.yaml.data.json'
+
+When a folder is passed as an argument all the resources in the specified folder will be created or updated in the same directory-structure as the local direktiv-project.
 `,
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
@@ -162,11 +166,11 @@ func updateLocalVars(wf, path string) error {
 	// push local variables
 	localVars, err := getLocalWorkflowVariables(wf)
 	if err != nil {
-		return fmt.Errorf("failed to get local variable files: %w\n", err)
+		return fmt.Errorf("failed to get local variable files: %w", err)
 	}
 
 	if len(localVars) > 0 {
-		root.Printlog("found %v local variables to push to remote\n", len(localVars))
+		root.Printlog("found %v local variables to push to remote", len(localVars))
 
 		for i := range localVars {
 			v := localVars[i]
@@ -174,7 +178,7 @@ func updateLocalVars(wf, path string) error {
 			root.Printlog("      updating remote workflow variable: '%s'\n", varName)
 			err = setRemoteWorkflowVariable(path, varName, v)
 			if err != nil {
-				return fmt.Errorf("failed to set remote variable file: %w\n", err)
+				return fmt.Errorf("failed to set remote variable file: %w", err)
 			}
 		}
 	}
@@ -252,7 +256,7 @@ func updateRemoteWorkflow(path string, localPath string) error {
 
 	err := recurseMkdirParent(path)
 	if err != nil {
-		return fmt.Errorf("Failed to create parent directory: %w", err)
+		return fmt.Errorf("failed to create parent directory: %w", err)
 	}
 
 	urlWorkflow := fmt.Sprintf("%s/tree/%s", root.UrlPrefix, strings.TrimPrefix(path, "/"))
