@@ -73,9 +73,9 @@ func GetLogs(cmd *cobra.Command, instance string, query string) (urlOutput strin
 	clientLogs.Connection.Transport = &http.Transport{
 		TLSClientConfig: GetTLSConfig(),
 	}
-	Printlog("-------INSTANCE LOGS-------")
-	Printlog(urlLogs)
-	Printlog("---------------------------")
+	cmd.Println("-------INSTANCE LOGS-------")
+	cmd.Println(urlLogs)
+	cmd.Println("---------------------------")
 	AddSSEAuthHeaders(clientLogs)
 
 	logsChannel := make(chan *sse.Event)
@@ -127,7 +127,7 @@ func GetLogs(cmd *cobra.Command, instance string, query string) (urlOutput strin
 	channelInstance := make(chan *sse.Event)
 	err = clientInstance.SubscribeChan("messages", channelInstance)
 	if err != nil {
-		Fail("Failed to subscribe to messages channel: %v", err)
+		Fail(cmd, "Failed to subscribe to messages channel: %v", err)
 	}
 
 	for {
@@ -156,7 +156,7 @@ func GetLogs(cmd *cobra.Command, instance string, query string) (urlOutput strin
 		}
 	}
 
-	Printlog("instance completed with status: %s\n", instanceStatus)
+	cmd.Printf("instance completed with status: %s\n", instanceStatus)
 	return fmt.Sprintf("%s/instances/%s/output", UrlPrefix, instance)
 }
 

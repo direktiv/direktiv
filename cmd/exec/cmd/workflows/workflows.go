@@ -23,10 +23,10 @@ var workflowCmd = &cobra.Command{
 	Use:   "workflows",
 	Short: "Workflow-related commands. Execute commands of this palette from a direktiv project directory, or a related sub directory.",
 	Long: `Use this command palette from a direktiv project directory, or a related sub directory. 
-A direktiv-project contains:
+A direktiv-project can contain following files:
 
 - .direktiv.yaml:
-A File at the top directory of the project. This file can contain regex-rules to ignore unrelated files in the project directory from the project.
+REQUIRED: A File at the top directory of the project. This file can contain regex-rules to ignore unrelated files in the project directory from the project.
 
 - subdirectories.
 
@@ -128,22 +128,25 @@ When a folder is passed as an argument all the resources in the specified folder
 	Run: func(cmd *cobra.Command, args []string) {
 		pathsToUpdate, err := getImpactedFiles(args[0], true, true)
 		if err != nil {
-			root.Fail("could not calculate impacted files: %v", err)
+			root.Fail(cmd, "could not calculate impacted files: %v", err)
 		}
 
-		relativeDir := root.GetConfigPath()
+		relativeDir := root.GetProjectFileLocation()
 
 		// cull using ignores
 		x := make([]string, 0)
 		for i := range pathsToUpdate {
 
 			p := pathsToUpdate[i]
-			path := root.GetRelativePath(relativeDir, p)
+			path, err := root.GetRelativePath(relativeDir, p)
+			if err != nil {
+				root.Fail(cmd, "Could not calculate path, %v", err)
+			}
 
 			shouldAdd := true
 			for _, g := range root.Globbers {
 				if g.Match(path) {
-					root.Printlog("ignoring workflow %s", path)
+					cmd.Printf("ignoring workflow %s\n", path)
 					shouldAdd = false
 					break
 				}
@@ -154,22 +157,25 @@ When a folder is passed as an argument all the resources in the specified folder
 			}
 		}
 
-		root.Printlog("found %v local workflow/s to update\n", len(x))
+		cmd.Printf("found %v local workflow/s to update\n", len(x))
 
 		for i := range x {
 			wf := x[i]
-			path := root.GetRelativePath(relativeDir, wf)
-			// path = root.GetPath(path)
+			path, err := root.GetRelativePath(relativeDir, wf)
+			if err != nil {
+				root.Fail(cmd, "Could not calculate paths %v", err)
+			}
 
-			root.Printlog("pushing workflow %s", path)
+			cmd.Printf("pushing workflow %s\n", path)
+			cmd.Printf("updating namespace: '%s' workflow: '%s'\n", root.GetNamespace(), path)
 
-			err := updateRemoteWorkflow(path, wf)
+			err = updateRemoteWorkflow(path, wf)
 			if err != nil {
 				fmt.Printf("can not update workflow: %s\n", err.Error())
 			}
 
 			// push local variables
-			err = updateLocalVars(wf, path)
+			err = updateLocalVars(cmd, wf, path)
 			if err != nil {
 				fmt.Printf("can not update variables: %s\n", err.Error())
 			}
@@ -178,7 +184,7 @@ When a folder is passed as an argument all the resources in the specified folder
 	},
 }
 
-func updateLocalVars(wf, path string) error {
+func updateLocalVars(cmd *cobra.Command, wf, path string) error {
 	// push local variables
 	localVars, err := getLocalWorkflowVariables(wf)
 	if err != nil {
@@ -186,12 +192,12 @@ func updateLocalVars(wf, path string) error {
 	}
 
 	if len(localVars) > 0 {
-		root.Printlog("found %v local variables to push to remote", len(localVars))
+		cmd.Printf("found %v local variables to push to remote\n", len(localVars))
 
 		for i := range localVars {
 			v := localVars[i]
 			varName := filepath.ToSlash(strings.TrimPrefix(v, wf+"."))
-			root.Printlog("      updating remote workflow variable: '%s'\n", varName)
+			cmd.Printf("      updating remote workflow variable: '%s'\n", varName)
 			err = setRemoteWorkflowVariable(path, varName, v)
 			if err != nil {
 				return fmt.Errorf("failed to set remote variable file: %w", err)
@@ -268,8 +274,6 @@ func getLocalWorkflowVariables(absPath string) ([]string, error) {
 }
 
 func updateRemoteWorkflow(path string, localPath string) error {
-	root.Printlog("updating namespace: '%s' workflow: '%s'\n", root.GetNamespace(), path)
-
 	err := recurseMkdirParent(path)
 	if err != nil {
 		return fmt.Errorf("failed to create parent directory: %w", err)
@@ -403,34 +407,35 @@ Variables will also be uploaded if they are prefixed with your local workflow na
 The Workflow can be executed with input data by passing it via stdin or the input flag.`,
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		relativeDir := root.GetConfigPath()
-		path := root.GetRelativePath(relativeDir, args[0])
-		// path = root.GetPath(path)
+		relativeDir := root.GetProjectFileLocation()
+		path, err := root.GetRelativePath(relativeDir, args[0])
+		if err != nil {
+			root.Fail(cmd, "Failed to calculate path %v", err)
+		}
 
 		if !execNoPushFlag {
 			err := updateRemoteWorkflow(path, args[0])
 			if err != nil {
-				fmt.Printf("can not execute workflow: %v\n", err)
+				cmd.Printf("can not execute workflow: %v\n", err)
 			}
 		} else {
-			root.Printlog("skipping updating namespace: '%s' workflow: '%s'\n", root.GetNamespace(), path)
+			cmd.Printf("skipping updating namespace: '%s' workflow: '%s'\n", root.GetNamespace(), path)
 		}
 
-		err := updateLocalVars(args[0], path)
+		err = updateLocalVars(cmd, args[0], path)
 		if err != nil {
 			fmt.Printf("can not update variables: %s\n", err.Error())
 		}
 		urlExecute := fmt.Sprintf("%s/tree/%s?op=execute&ref=latest", root.UrlPrefix, strings.TrimPrefix(path, "/"))
 		instanceDetails, err := executeWorkflow(urlExecute)
 		if err != nil {
-			log.Fatalf("Failed to execute workflow: %v\n", err)
+			root.Fail(cmd, "Failed to execute workflow: %v\n", err)
 		}
-		root.Printlog("Successfully Executed Instance: %s\n", instanceDetails.Instance)
+		cmd.Printf("Successfully Executed Instance: %s\n", instanceDetails.Instance)
 		urlOutput := root.GetLogs(cmd, instanceDetails.Instance, "")
 		output, err := getOutput(urlOutput)
 		if err != nil {
-			fmt.Println(err)
-			return
+			root.Fail(cmd, "%s", err)
 		}
 		if outputFlag != "" {
 			err := os.WriteFile(outputFlag, output, 0o600)
@@ -438,8 +443,8 @@ The Workflow can be executed with input data by passing it via stdin or the inpu
 				log.Fatalf("failed to write output file: %v\n", err)
 			}
 		} else {
-			cmd.PrintErrln("------INSTANCE OUTPUT------")
-			fmt.Println(string(output))
+			cmd.Println("------INSTANCE OUTPUT------")
+			cmd.Println(string(output))
 		}
 	},
 }
@@ -580,4 +585,7 @@ func init() {
 	execCmd.Flags().StringVarP(&outputFlag, "output", "o", "", "Path where to write instance output. If unset output will be written to screen")
 	execCmd.Flags().StringVarP(&input, "input", "i", "", "Path to file to be used as input data for executed workflow. If unset, stdin will be used as input data if available.")
 	execCmd.Flags().BoolVar(&execNoPushFlag, "no-push", false, "If set will skip updating and just execute the workflow.")
+
+	workflowCmd.AddCommand(infoCmd)
+	infoCmd.PersistentFlags().StringP("directory", "C", "", "Runs the command as if "+root.ToolName+" was started in the given directory instead of the current working directory.")
 }

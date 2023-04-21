@@ -17,11 +17,11 @@ func init() {
 	RootCmd.PersistentFlags().StringP("addr", "a", "", "Target direktiv api address.")
 	RootCmd.PersistentFlags().StringP("namespace", "n", "", "Target namespace to execute workflow on.")
 	RootCmd.PersistentFlags().StringP("auth", "t", "", "Authenticate request with token or apikey.")
-	RootCmd.PersistentFlags().Bool("insecure", true, "Accept insecure https connections")
+	RootCmd.PersistentFlags().Bool("insecure", true, "Accept insecure https connections.")
 
 	err := viper.BindPFlags(RootCmd.PersistentFlags())
 	if err != nil {
-		Fail("error binding configuration flags: %v", err)
+		panic(fmt.Errorf("error binding configuration flags: %w", err))
 	}
 
 	viper.SetEnvPrefix("direktiv")
@@ -38,10 +38,7 @@ func cmdPrepareSharedValues() {
 	addr := getAddr()
 	namespace := GetNamespace()
 
-	if cfgMaxSize := viper.GetInt64("max-size"); cfgMaxSize > 0 {
-		maxSize = cfgMaxSize
-	}
-
+	maxSize = GetMaxSize()
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = GetTLSConfig()
 
 	UrlPrefix = fmt.Sprintf("%s/api/namespaces/%s", strings.Trim(addr, "/"), strings.Trim(namespace, "/"))

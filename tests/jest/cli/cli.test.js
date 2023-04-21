@@ -22,11 +22,11 @@ describe('Test the direktiv-cli-tool', () => {
         expect(createResponse.statusCode).toEqual(200)
     })
     it(`test info show ns`, async() => {
-        assertStdErrContainsString(`${filepath}`, "info", `namespace: ${namespaceName}`)
+        assertStdErrContainsString(`${filepath}`, "workflows info", `namespace: ${namespaceName}`)
     })
     it(`test info project exists`, async() => {
-        assertStdErrContainsString(`${filepath}`, "info", `namespace: ${namespaceName}`)
-        assertStdErrContainsString(`${filepath}`,"info", "direktiv-project")
+        assertStdErrContainsString(`${filepath}`, "workflows info", `namespace: ${namespaceName}`)
+        assertStdErrContainsString(`${filepath}`,"workflows info", "direktiv-project")
     })
     it(`test push project abs`, async() => {
         const filename = "simplewf"

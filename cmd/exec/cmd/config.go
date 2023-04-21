@@ -30,15 +30,12 @@ type ProfileConfig struct {
 }
 
 type Configuration struct {
-	ProfileConfig    `yaml:",inline" mapstructure:",squash"`
-	project.Config   `yaml:",inline" mapstructure:",squash"`
-	Profiles         map[string]ProfileConfig `yaml:"profiles,flow" mapstructure:"profiles"`
-	currentProfileID string
-	projectPath      string
+	project.Config `yaml:",inline" mapstructure:",squash"`
+	Profiles       map[string]ProfileConfig `yaml:"profiles,flow" mapstructure:"profiles"`
 }
 
 var (
-	config   Configuration
+	Config   Configuration
 	Globbers []glob.Glob
 )
 
@@ -75,35 +72,30 @@ func initProjectDir(cmd *cobra.Command) error {
 		}
 	}
 
-	projectPath, err := findProjectDir()
+	projectFile, err := findProjectFile()
 	if err != nil {
 		return fmt.Errorf("unable to find project folder: %w", err)
 	}
-	err = loadProjectConfig(projectPath)
+	err = loadProjectConfig(projectFile)
 	if err != nil {
 		return fmt.Errorf("failed to read direktiv project configuration-file: %w", err)
 	}
+	viper.Set("projectFile", projectFile)
 	Globbers = make([]glob.Glob, 0)
-	for idx, pattern := range config.Ignore {
+	for idx, pattern := range Config.Ignore {
 		g, err := glob.Compile(pattern)
 		if err != nil {
 			return fmt.Errorf("failed to parse %dth entry of the ignore pattern: %w", idx, err)
 		}
 		Globbers = append(Globbers, g)
 	}
-	config.projectPath = projectPath
 	return nil
 }
 
 func getCurrentProfileConfig(cmd *cobra.Command) (ProfileConfig, error) {
-	profileID, err := cmd.Flags().GetString("profile")
-	if err != nil {
-		Fail("Error loading 'profile' flag: %v", err)
-	}
+	profileID := viper.GetString("profile")
 
-	config.currentProfileID = profileID
-
-	err = loadProfileConfig()
+	err := LoadProfileConfig()
 	if err != nil && (getAddr() == "" || GetNamespace() == "") {
 		return ProfileConfig{}, fmt.Errorf("failed to read profile config file: %w. Create a profile-config file or specify the addr and namespace via flags", err)
 	}
@@ -115,30 +107,31 @@ func getCurrentProfileConfig(cmd *cobra.Command) (ProfileConfig, error) {
 		}, nil
 	}
 
-	if config.currentProfileID == "" {
-		for k := range config.Profiles {
-			config.currentProfileID = k
+	if profileID == "" {
+		for k := range Config.Profiles {
+			viper.Set("profile", k)
+			profileID = k
 			break
 		}
 	}
-	cp, ok := (config.Profiles[config.currentProfileID])
+	cp, ok := (Config.Profiles[profileID])
 	if !ok {
-		return ProfileConfig{}, fmt.Errorf("error loading profile '%s': no profile exists by this name in the config file", config.currentProfileID)
+		return ProfileConfig{}, fmt.Errorf("error loading profile '%s': no profile exists by this name in the config file", profileID)
 	}
 	return cp, nil
 }
 
-func findProjectDir() (string, error) {
+func findProjectFile() (string, error) {
 	dir, err := filepath.Abs(".")
 	if err != nil {
-		Fail("Failed to locate current working directory: %v\n", err)
+		return "", err
 	}
 
 	for prev := ""; dir != prev; dir = filepath.Dir(dir) {
-		path := filepath.Join(dir, project.ConfigFileName)
+		file := filepath.Join(dir, project.ConfigFileName)
 
-		if _, err := os.Stat(path); err == nil {
-			return path, nil
+		if _, err := os.Stat(file); err == nil {
+			return file, nil
 		}
 
 		prev = dir
@@ -153,46 +146,45 @@ func loadProjectConfig(path string) error {
 		return err
 	}
 
-	err = yaml.Unmarshal(data, &config.Config)
+	err = yaml.Unmarshal(data, &Config.Config)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func loadProfileConfig() error {
-	home, err := os.UserHomeDir()
+func LoadProfileConfig() error {
+	path, err := GetConfigFilePath()
 	if err != nil {
 		return fmt.Errorf("could not find current users home directory: %w", err)
 	}
-	path := filepath.Join(home, DefaultProfileConfigPath+DefaultProfileConfigName)
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return fmt.Errorf("could read find the direktiv-configuration-file: %w", err)
 	}
 
-	err = yaml.Unmarshal(data, &config.Profiles)
+	err = yaml.Unmarshal(data, &Config.Profiles)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
+func GetConfigFilePath() (string, error) {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "", fmt.Errorf("could not find current users home directory: %w", err)
+	}
+	return filepath.Join(home, DefaultProfileConfigPath, DefaultProfileConfigName), nil
+}
+
 func getAddr() string {
 	addr := viper.GetString("addr")
-	// if addr == "" {
-	// 	Fail("addr undefined: ensure it is set as a flag, environment variable, or in the config file")
-	// }
-
 	return addr
 }
 
 func GetNamespace() string {
 	namespace := viper.GetString("namespace")
-	// if namespace == "" {
-	// 	Fail("namespace undefined: ensure it is set as a flag, environment variable, or in the config file")
-	// }
-
 	return namespace
 }
 
@@ -216,41 +208,40 @@ func AddSSEAuthHeaders(client *sse.Client) {
 	client.Headers["Direktiv-Token"] = GetAuth()
 }
 
-func GetRelativePath(configPath, targpath string) string {
+func GetRelativePath(configPath, targpath string) (string, error) {
 	var err error
 
 	if !filepath.IsAbs(configPath) {
 		configPath, err = filepath.Abs(configPath)
 		if err != nil {
-			Fail("Failed to determine absolute path: %v", err)
+			return "", err
 		}
 	}
 
 	if !filepath.IsAbs(targpath) {
 		targpath, err = filepath.Abs(targpath)
 		if err != nil {
-			Fail("Failed to determine absolute path: %v", err)
+			return "", err
 		}
 	}
 
 	s, err := filepath.Rel(configPath, targpath)
 	if err != nil {
-		Fail("Failed to generate relative path: %v", err)
+		return "", err
 	}
 
 	path := filepath.ToSlash(s)
 	path = strings.Trim(path, "/")
 
-	return path
+	return path, nil
 }
 
-func GetConfigPath() string {
-	if config.projectPath != "" {
-		projectPath := config.projectPath
-		projectPath = filepath.Dir(projectPath)
-		projectPath = strings.TrimSuffix(projectPath, "/")
-		return projectPath
+func GetProjectFileLocation() string {
+	projectFilePath := viper.GetString("projectFile")
+	if projectFilePath != "" {
+		projectFilePath = filepath.Dir(projectFilePath)
+		projectFilePath = strings.TrimSuffix(projectFilePath, "/")
+		return projectFilePath
 	}
-
 	return "."
 }

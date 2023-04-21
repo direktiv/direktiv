@@ -1,10 +1,11 @@
-package info
+package workflows
 
 import (
-	"os"
+	"path/filepath"
 
 	root "github.com/direktiv/direktiv/cmd/exec/cmd"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 var infoCmd = &cobra.Command{
@@ -12,16 +13,19 @@ var infoCmd = &cobra.Command{
 	Short:            "Prints detected configuration values for current project",
 	PersistentPreRun: root.InitConfigurationAndProject,
 	Run: func(cmd *cobra.Command, args []string) {
-		pf, err := root.ProjectFolder()
-		if err != nil {
-			root.Fail("Could not get project directory: %s", err.Error())
+		pf := viper.GetString("projectFile")
+		if pf == "" {
+			root.Fail(cmd, "Could not get project directory from the pwd or configuration")
 		}
 
-		cmd.Printf("project directory: %s\n", pf)
+		cmd.Printf("project file: %s\n", pf)
+		dir := filepath.Dir(pf)
 
-		pwd, err := os.Getwd()
-		if err != nil {
-			root.Fail("Could not get working directory: %s", err.Error())
+		cmd.Printf("project directory: %s\n", dir)
+
+		pwd := viper.GetString("directory")
+		if pwd == "" {
+			root.Fail(cmd, "Could not get working directory")
 		}
 		cmd.Printf("working directory: %s\n", pwd)
 		cmd.Printf("\n")
@@ -39,9 +43,4 @@ var infoCmd = &cobra.Command{
 
 		cmd.Printf("token: %s\n", printAuth)
 	},
-}
-
-func init() {
-	root.RootCmd.AddCommand(infoCmd)
-	infoCmd.PersistentFlags().StringP("directory", "C", "", "Runs the command as if "+root.ToolName+" was started in the given directory instead of the current working directory.")
 }
