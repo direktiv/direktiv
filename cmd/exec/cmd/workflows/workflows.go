@@ -20,8 +20,24 @@ import (
 )
 
 var workflowCmd = &cobra.Command{
-	Use:              "workflows",
-	Short:            "Workflow-related commands",
+	Use:   "workflows",
+	Short: "Workflow-related commands. Execute commands of this palette from a direktiv project directory, or a related sub directory.",
+	Long: `Use this command palette from a direktiv project directory, or a related sub directory. 
+A direktiv-project contains:
+
+- .direktiv.yaml:
+A File at the top directory of the project. This file can contain regex-rules to ignore unrelated files in the project directory from the project.
+
+- subdirectories.
+
+- direktiv-workflows:
+A direktiv workflow have to be a .yaml file. Keep in mind that the workflow-name on the server will preserve the file-extension as part of the workflow-name
+
+- workflows-variables:
+A workflows variable has to carry the workflow name as a prefix and the variable name as a sufix. For example:
+	- workflows name: start.yaml
+	- variable name: start.yaml.data.json 
+`,
 	PersistentPreRun: root.InitConfigurationAndProject,
 }
 
@@ -93,7 +109,7 @@ type node struct {
 var pushCmd = &cobra.Command{
 	Use:   "push WORKFLOW_PATH|DIR_PATH",
 	Short: "Adds new or updates workflows and variables to the namespace of the remove server",
-	Long: `Adds new or updates workflows and variables to the namespace of the remove server. Run this this command from a direktiv-project-folder. Example: 
+	Long: `Adds new or updates workflows and variables to the namespace of the remove server. Run this command from a direktiv-project-folder. Example: 
 	
 	push helloworld.yaml --addr http://192.168.1.1 --namespace admin
 
@@ -371,17 +387,20 @@ var (
 
 var execCmd = &cobra.Command{
 	Use:   "exec WORKFLOW_PATH",
-	Short: "Remotely execute direktiv workflows with local files. This process will update your latest remote workflow to your local WORKFLOW_PATH file",
-	Long: `Remotely execute direktiv workflows with local files. This process will update your latest remote workflow to your local WORKFLOW_PATH file.
-EXAMPLE: exec helloworld.yaml --addr http://192.168.1.1 --namespace admin --path helloworld
-Variables will also be uploaded if they are prefixed with your local workflow name
-EXAMPLE:
-  dir: /pwd
+	Short: "Uploads and executes a direktiv workflow for a direktiv project.",
+	Long: `Uploads and executes a direktiv workflow for a direktiv project. EXAMPLE: 
+	
+	exec helloworld.yaml --addr http://192.168.1.1 --namespace admin
+	
+Variables will also be uploaded if they are prefixed with your local workflow name EXAMPLE:
+  	dir:
+		/.direktiv.yaml
         /helloworld.yaml
         /helloworld.yaml.data.json
-Executing: exec helloworld.yaml --addr http://192.168.1.1 --namespace admin --path helloworld
-Will update the helloworld workflow and set the remote workflow variable 'data.json' to the contents of '/helloworld.yaml.data.json'
-`,
+	Executing: exec helloworld.yaml --addr http://192.168.1.1 --namespace admin
+	Will update the helloworld workflow and set the remote workflow variable 'data.json' to the contents of '/helloworld.yaml.data.json'
+
+The Workflow can be executed with input data by passing it via stdin or the input flag.`,
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		relativeDir := root.GetConfigPath()
