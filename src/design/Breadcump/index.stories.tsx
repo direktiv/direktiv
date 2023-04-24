@@ -17,19 +17,15 @@ export const Default = () => (
 );
 
 export const DefaultWithIcons = () => (
-  <div>
+  <div className="bg-white dark:bg-black">
     <BreadcrumbRoot>
-      <Breadcrumb>
-        <a className="gap-2">
-          <Home className="h-4 w-auto" /> My-namespace
-        </a>
+      <Breadcrumb href="http://localhost:6006/?path=/story/components-breadcrumb--default-with-icons&globals=theme:light">
+        <Home /> My-namespace
       </Breadcrumb>
       <Breadcrumb>
-        <a className="gap-2">
-          <Home /> My-namespace
-        </a>
+        <Home /> My-namespace
       </Breadcrumb>
-      <Breadcrumb className="gap-2">
+      <Breadcrumb>
         <Home /> My-namespace
       </Breadcrumb>
     </BreadcrumbRoot>
