@@ -69,7 +69,7 @@ const ExplorerPage: FC = () => {
                           namespace,
                           path: parent?.absolute,
                         })}
-                        className="flex items-center space-x-3"
+                        className="flex items-center space-x-3 hover:underline"
                       >
                         <FolderUp className="h-5" />
                         <span>..</span>
@@ -91,7 +91,7 @@ const ExplorerPage: FC = () => {
                         });
                   return (
                     <TableRow key={file.name}>
-                      <TableCell className="flex space-x-3 ">
+                      <TableCell className="flex space-x-3 hover:underline">
                         <Icon className="h-5" />
                         <Link to={linkTarget} className="flex-1">
                           {file.name}
