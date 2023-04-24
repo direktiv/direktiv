@@ -16,8 +16,10 @@ import {
   TextCursorInput,
   Trash,
 } from "lucide-react";
+import { Table, TableBody, TableCell, TableRow } from "../../../design/Table";
 
 import Button from "../../../design/Button";
+import { Card } from "../../../design/Card";
 import Delete from "./Delete";
 import ExplorerHeader from "./Header";
 import { Link } from "react-router-dom";
@@ -55,84 +57,93 @@ const ExplorerPage: FC = () => {
     <div>
       <ExplorerHeader />
       <div className="flex flex-col space-y-5 p-5 text-sm">
-        <div className="flex flex-col space-y-5 ">
+        <Card className="flex flex-col space-y-5">
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            {!isRoot && (
-              <Link
-                to={pages.explorer.createHref({
-                  namespace,
-                  path: parent?.absolute,
+            <Table>
+              <TableBody>
+                {!isRoot && (
+                  <TableRow>
+                    <TableCell>
+                      <Link
+                        to={pages.explorer.createHref({
+                          namespace,
+                          path: parent?.absolute,
+                        })}
+                        className="flex items-center space-x-3"
+                      >
+                        <FolderUp className="h-5" />
+                        <span>..</span>
+                      </Link>
+                    </TableCell>
+                  </TableRow>
+                )}
+                {data?.children?.results.map((file) => {
+                  const Icon = file.expandedType === "workflow" ? Play : Folder;
+                  const linkTarget =
+                    file.expandedType === "workflow"
+                      ? pages.workflow.createHref({
+                          namespace,
+                          path: file.path,
+                        })
+                      : pages.explorer.createHref({
+                          namespace,
+                          path: file.path,
+                        });
+                  return (
+                    <TableRow key={file.name}>
+                      <TableCell className="flex space-x-3 ">
+                        <Icon className="h-5" />
+                        <Link to={linkTarget} className="flex-1">
+                          {file.name}
+                        </Link>
+                        <span className="text-gray-8 dark:text-gray-dark-8">
+                          {moment(file.updatedAt).fromNow()}
+                        </span>
+                      </TableCell>
+                      <TableCell className="w-0">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={(e) => e.preventDefault()}
+                              icon
+                            >
+                              <MoreVertical />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent className="w-40">
+                            <DropdownMenuLabel>Edit</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DialogTrigger
+                              onClick={() => {
+                                setDeleteNode(file);
+                              }}
+                            >
+                              <DropdownMenuItem>
+                                <Trash className="mr-2 h-4 w-4" />
+                                <span>Delete</span>
+                              </DropdownMenuItem>
+                            </DialogTrigger>
+                            <DialogTrigger
+                              onClick={() => {
+                                setRenameNode(file);
+                              }}
+                            >
+                              <DropdownMenuItem>
+                                <TextCursorInput className="mr-2 h-4 w-4" />
+                                <span>Rename</span>
+                              </DropdownMenuItem>
+                            </DialogTrigger>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  );
                 })}
-                className="flex items-center space-x-3"
-              >
-                <FolderUp className="h-5" />
-                <span>..</span>
-              </Link>
-            )}
-            {data?.children?.results.map((file) => {
-              const Icon = file.expandedType === "workflow" ? Play : Folder;
+              </TableBody>
+            </Table>
 
-              const linkTarget =
-                file.expandedType === "workflow"
-                  ? pages.workflow.createHref({
-                      namespace,
-                      path: file.path,
-                    })
-                  : pages.explorer.createHref({
-                      namespace,
-                      path: file.path,
-                    });
-
-              return (
-                <div key={file.name}>
-                  <div className="flex items-center space-x-3">
-                    <Icon className="h-5" />
-                    <Link to={linkTarget} className="flex flex-1">
-                      <span className="flex-1">{file.name}</span>
-                      <span className="text-gray-8 dark:text-gray-dark-8">
-                        {moment(file.updatedAt).fromNow()}
-                      </span>
-                    </Link>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={(e) => e.preventDefault()}
-                          icon
-                        >
-                          <MoreVertical />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent className="w-40">
-                        <DropdownMenuLabel>Edit</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DialogTrigger
-                          onClick={() => {
-                            setDeleteNode(file);
-                          }}
-                        >
-                          <DropdownMenuItem>
-                            <Trash className="mr-2 h-4 w-4" />
-                            <span>Delete</span>
-                          </DropdownMenuItem>
-                        </DialogTrigger>
-                        <DialogTrigger
-                          onClick={() => {
-                            setRenameNode(file);
-                          }}
-                        >
-                          <DropdownMenuItem>
-                            <TextCursorInput className="mr-2 h-4 w-4" />
-                            <span>Rename</span>
-                          </DropdownMenuItem>
-                        </DialogTrigger>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                </div>
-              );
-            })}
             <DialogContent>
               {deleteNode && (
                 <Delete
@@ -155,7 +166,7 @@ const ExplorerPage: FC = () => {
               )}
             </DialogContent>
           </Dialog>
-        </div>
+        </Card>
       </div>
     </div>
   );
