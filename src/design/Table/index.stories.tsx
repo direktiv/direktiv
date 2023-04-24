@@ -28,155 +28,152 @@ const people = [
     role: "Member",
   },
   {
-    name: "Lindsay Walton",
-    title: "Front-end Developer",
-    email: "lindsay.walton@example.com",
+    name: "John Doe",
+    title: "Back-end Developer",
+    email: "john.doe@example.com",
     role: "Member",
   },
   {
-    name: "Lindsay Walton",
-    title: "Front-end Developer",
-    email: "lindsay.walton@example.com",
+    name: "Jane Smith",
+    title: "UI/UX Designer",
+    email: "jane.smith@example.com",
     role: "Member",
   },
   {
-    name: "Lindsay Walton",
-    title: "Front-end Developer",
-    email: "lindsay.walton@example.com",
+    name: "Michael Brown",
+    title: "Project Manager",
+    email: "michael.brown@example.com",
     role: "Member",
   },
   {
-    name: "Lindsay Walton",
-    title: "Front-end Developer",
-    email: "lindsay.walton@example.com",
+    name: "Sarah Johnson",
+    title: "Data Analyst",
+    email: "sarah.johnson@example.com",
     role: "Member",
   },
   {
-    name: "Lindsay Walton",
-    title: "Front-end Developer",
-    email: "lindsay.walton@example.com",
+    name: "Tom Wilson",
+    title: "System Administrator",
+    email: "tom.wilson@example.com",
     role: "Member",
   },
   {
-    name: "Lindsay Walton",
-    title: "Front-end Developer",
-    email: "lindsay.walton@example.com",
+    name: "Emily Lee",
+    title: "Full-stack Developer",
+    email: "emily.lee@example.com",
     role: "Member",
   },
   {
-    name: "Lindsay Walton",
-    title: "Front-end Developer",
-    email: "lindsay.walton@example.com",
+    name: "Kevin Chen",
+    title: "Database Administrator",
+    email: "kevin.chen@example.com",
     role: "Member",
   },
   {
-    name: "Lindsay Walton",
+    name: "David Rodriguez",
+    title: "Software Engineer",
+    email: "david.rodriguez@example.com",
+    role: "Admin",
+  },
+  {
+    name: "Karen Lee",
     title: "Front-end Developer",
-    email: "lindsay.walton@example.com",
+    email: "karen.lee@example.com",
+    role: "Admin",
+  },
+  {
+    name: "James Johnson",
+    title: "Back-end Developer",
+    email: "james.johnson@example.com",
     role: "Member",
   },
   {
-    name: "Lindsay Walton",
-    title: "Front-end Developer",
-    email: "lindsay.walton@example.com",
+    name: "Christine Kim",
+    title: "UI/UX Designer",
+    email: "christine.kim@example.com",
     role: "Member",
   },
   {
-    name: "Lindsay Walton",
-    title: "Front-end Developer",
-    email: "lindsay.walton@example.com",
+    name: "Alex Nguyen",
+    title: "Full-stack Developer",
+    email: "alex.nguyen@example.com",
     role: "Member",
   },
   {
-    name: "Lindsay Walton",
-    title: "Front-end Developer",
-    email: "lindsay.walton@example.com",
+    name: "Amy Chen",
+    title: "Project Manager",
+    email: "amy.chen@example.com",
     role: "Member",
   },
   {
-    name: "Lindsay Walton",
-    title: "Front-end Developer",
-    email: "lindsay.walton@example.com",
+    name: "Brian Lee",
+    title: "Software Engineer",
+    email: "brian.lee@example.com",
     role: "Member",
   },
   {
-    name: "Lindsay Walton",
+    name: "Michelle Lee",
+    title: "Data Analyst",
+    email: "michelle.lee@example.com",
+    role: "Admin",
+  },
+  {
+    name: "Jasmine Kim",
     title: "Front-end Developer",
-    email: "lindsay.walton@example.com",
+    email: "jasmine.kim@example.com",
     role: "Member",
   },
   {
-    name: "Lindsay Walton",
-    title: "Front-end Developer",
-    email: "lindsay.walton@example.com",
+    name: "Daniel Kim",
+    title: "Back-end Developer",
+    email: "daniel.kim@example.com",
+    role: "Admin",
+  },
+  {
+    name: "Ethan Chen",
+    title: "Full-stack Developer",
+    email: "ethan.chen@example.com",
     role: "Member",
   },
   {
-    name: "Lindsay Walton",
-    title: "Front-end Developer",
-    email: "lindsay.walton@example.com",
-    role: "Member",
+    name: "Olivia Wang",
+    title: "UI/UX Designer",
+    email: "olivia.wang@example.com",
+    role: "Admin",
   },
-  {
-    name: "Lindsay Walton",
-    title: "Front-end Developer",
-    email: "lindsay.walton@example.com",
-    role: "Member",
-  },
-  {
-    name: "Lindsay Walton",
-    title: "Front-end Developer",
-    email: "lindsay.walton@example.com",
-    role: "Member",
-  },
-  {
-    name: "Lindsay Walton",
-    title: "Front-end Developer",
-    email: "lindsay.walton@example.com",
-    role: "Member",
-  },
-  {
-    name: "Lindsay Walton",
-    title: "Front-end Developer",
-    email: "lindsay.walton@example.com",
-    role: "Member",
-  },
-  // More people...
 ];
 
 export const Default: Story = {
   render: ({ ...args }) => (
-    <>
-      <Table {...args}>
-        <TableHead>
-          <TableRow>
-            <TableHeaderCell>Name</TableHeaderCell>
-            <TableHeaderCell>Title</TableHeaderCell>
-            <TableHeaderCell>Email</TableHeaderCell>
-            <TableHeaderCell>Role</TableHeaderCell>
-            <TableHeaderCell>
-              <span className="sr-only">Edit</span>
-            </TableHeaderCell>
+    <Table {...args}>
+      <TableHead>
+        <TableRow>
+          <TableHeaderCell>Name</TableHeaderCell>
+          <TableHeaderCell>Title</TableHeaderCell>
+          <TableHeaderCell>Email</TableHeaderCell>
+          <TableHeaderCell>Role</TableHeaderCell>
+          <TableHeaderCell>
+            <span className="sr-only">Edit</span>
+          </TableHeaderCell>
+        </TableRow>
+      </TableHead>
+      <TableBody>
+        {people.map((person) => (
+          <TableRow key={person.email}>
+            <TableCell>{person.name}</TableCell>
+            <TableCell>{person.title}</TableCell>
+            <TableCell>{person.email}</TableCell>
+            <TableCell>{person.role}</TableCell>
+            <TableCell className="flex items-center space-x-3">
+              <Button variant="outline">Edit</Button>
+              <Button variant="ghost" size="sm" icon>
+                <MoreVertical />
+              </Button>
+            </TableCell>
           </TableRow>
-        </TableHead>
-        <TableBody>
-          {people.map((person, i) => (
-            <TableRow key={i}>
-              <TableCell>{person.name}</TableCell>
-              <TableCell>{person.title}</TableCell>
-              <TableCell>{person.email}</TableCell>
-              <TableCell>{person.role}</TableCell>
-              <TableCell className="flex items-center space-x-3">
-                <Button variant="outline">Edit</Button>
-                <Button variant="ghost" size="sm" icon>
-                  <MoreVertical />
-                </Button>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </>
+        ))}
+      </TableBody>
+    </Table>
   ),
   tags: ["autodocs"],
   argTypes: {},
@@ -186,8 +183,8 @@ export const FileBrowser = () => (
   <Card className="flex flex-col space-y-5">
     <Table>
       <TableBody>
-        {people.map((person, i) => (
-          <TableRow key={i}>
+        {people.map((person) => (
+          <TableRow key={person.email}>
             <TableCell className="flex space-x-3">
               <Folder className="h-5" />
               <a href="#" className="flex-1 hover:underline">
@@ -219,8 +216,8 @@ export const StickyHeader = () => (
         </TableRow>
       </TableHead>
       <TableBody>
-        {people.map((person, i) => (
-          <TableRow key={i}>
+        {people.map((person) => (
+          <TableRow key={person.email}>
             <TableCell>{person.name}</TableCell>
             <TableCell>{person.title}</TableCell>
             <TableCell>{person.email}</TableCell>
