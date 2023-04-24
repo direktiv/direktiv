@@ -1,3 +1,4 @@
+import { Folder, MoreVertical } from "lucide-react";
 import type { Meta, StoryObj } from "@storybook/react";
 import {
   Table,
@@ -8,7 +9,8 @@ import {
   TableRow,
 } from "./index";
 import Button from "../Button";
-import { MoreVertical } from "lucide-react";
+import { Card } from "../Card";
+import moment from "moment";
 
 const meta = {
   title: "Components/Table",
@@ -180,38 +182,26 @@ export const Default: Story = {
   argTypes: {},
 };
 
-export const StripeTable = () => (
-  <>
+export const FileBrowser = () => (
+  <Card className="flex flex-col space-y-5">
     <Table>
-      <TableHead>
-        <TableRow>
-          <TableHeaderCell>Name</TableHeaderCell>
-          <TableHeaderCell>Title</TableHeaderCell>
-          <TableHeaderCell>Email</TableHeaderCell>
-          <TableHeaderCell>Role</TableHeaderCell>
-          <TableHeaderCell>
-            <span className="sr-only">Edit</span>
-          </TableHeaderCell>
-        </TableRow>
-      </TableHead>
-      <TableBody stripe>
+      <TableBody>
         {people.map((person, i) => (
           <TableRow key={i}>
-            <TableCell>{person.name}</TableCell>
-            <TableCell>{person.title}</TableCell>
-            <TableCell>{person.email}</TableCell>
-            <TableCell>{person.role}</TableCell>
-            <TableCell className="flex items-center space-x-3">
-              <Button variant="outline">Edit</Button>
-              <Button variant="ghost" size="sm" icon>
-                <MoreVertical />
-              </Button>
+            <TableCell className="flex space-x-3 hover:underline">
+              <Folder className="h-5" />
+              <a href="#" className="flex-1">
+                {person.name}
+              </a>
+              <span className="text-gray-8 dark:text-gray-dark-8">
+                {moment().fromNow()}
+              </span>
             </TableCell>
           </TableRow>
         ))}
       </TableBody>
     </Table>
-  </>
+  </Card>
 );
 
 export const StickyHeader = () => (
