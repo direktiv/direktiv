@@ -192,7 +192,7 @@ export const Default: Story = {
   argTypes: {},
 };
 
-export const FileBrowser = () => (
+export const TableAndCard = () => (
   <Card className="flex flex-col space-y-5">
     <Table>
       <TableBody>
