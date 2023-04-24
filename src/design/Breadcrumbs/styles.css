@@ -3,9 +3,16 @@
   cursor: pointer;
   & > ul,
   & > ol {
+    flex-direction: row;
+    flex-wrap: wrap;
+    display: flex;
+    align-items: center;
+
     & > li {
-      display: inline;
+      display: flex;
       & > a {
+        display: flex;
+        align-items: center;
         & svg {
           display: inline;
         }
@@ -19,7 +26,8 @@
       }
       & + *:before {
         content: "";
-        @apply ml-2 mr-3 inline-block h-2 w-2 rotate-45 transform opacity-40;
+        @apply ml-2 mr-3 h-2 w-2 opacity-40;
+        transform: translateY(calc(50% + 2px)) rotate(45deg);
         border-top: 1px solid;
         border-right: 1px solid;
         background-color: transparent;

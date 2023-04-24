@@ -252,11 +252,8 @@ export const MoreDetailedShell = () => {
               <MainTopLeft>
                 <BreadcrumbRoot>
                   <Breadcrumb>
-                    <a className="gap-2">
-                      <Home className="h-4 w-auto" />
-                      My-namespace
-                    </a>
-                    &nbsp;
+                    <Home className="h-4 w-auto" />
+                    My-namespace
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button size="sm" variant="ghost" circle icon>
