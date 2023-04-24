@@ -73,7 +73,7 @@ func NewMockGorm() (*gorm.DB, error) {
 				);
 	 CREATE TABLE IF NOT EXISTS "mirror_configs" 
 	 		(
-	 		    "id" text,
+	 		    "namespace_id" text,
 	 		    "url" text,
 	 		    "git_ref" text,
 	 		    "git_commit_hash" text,
@@ -82,22 +82,22 @@ func NewMockGorm() (*gorm.DB, error) {
 	 		    "private_key_passphrase" text,
 	 		    "created_at" datetime,
 	 		    "updated_at" datetime,
-	 		    PRIMARY KEY ("id"),
+	 		    PRIMARY KEY ("namespace_id"),
 				CONSTRAINT "fk_namespaces_mirror_configs"
-				FOREIGN KEY ("id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
+				FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
 	     );
-	 CREATE TABLE IF NOT EXISTS "mirror_processes" 
+	 CREATE TABLE IF NOT EXISTS "mirror_processes"
 	 		(
 	 		    "id" text,
-	 		    "config_id" text,
+	 		    "namespace_id" text,
 	 		    "status" text,
 	            "typ" text,
 	 		    "ended_at" datetime,
 	 		    "created_at" datetime,
 	 		    "updated_at" datetime,
 	 		    PRIMARY KEY ("id"),
-	 		    CONSTRAINT "fk_mirror_configs_mirror_processes"
-				FOREIGN KEY ("config_id") REFERENCES "mirror_configs"("id") ON DELETE CASCADE ON UPDATE CASCADE
+	 		    CONSTRAINT "fk_namespaces_mirror_processes"
+				FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
 	 		);
 `)
 

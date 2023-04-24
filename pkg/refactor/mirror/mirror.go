@@ -32,7 +32,7 @@ var ErrNotFound = errors.New("ErrNotFound")
 // Config holds configuration data that are needed to create a mirror (pulling mirror credentials, urls, keys
 // and any other details).
 type Config struct {
-	ID uuid.UUID
+	NamespaceID uuid.UUID
 
 	URL                  string
 	GitRef               string
@@ -46,8 +46,8 @@ type Config struct {
 }
 
 type Process struct {
-	ID       uuid.UUID
-	ConfigID uuid.UUID
+	ID          uuid.UUID
+	NamespaceID uuid.UUID
 
 	Status string
 	Typ    string
@@ -61,13 +61,13 @@ type Store interface {
 	CreateConfig(ctx context.Context, config *Config) (*Config, error)
 	UpdateConfig(ctx context.Context, config *Config) (*Config, error)
 
-	GetConfig(ctx context.Context, id uuid.UUID) (*Config, error)
+	GetConfig(ctx context.Context, namespaceID uuid.UUID) (*Config, error)
 
 	CreateProcess(ctx context.Context, process *Process) (*Process, error)
 	UpdateProcess(ctx context.Context, process *Process) (*Process, error)
 
 	GetProcess(ctx context.Context, id uuid.UUID) (*Process, error)
-	GetProcessesByConfig(ctx context.Context, configID uuid.UUID) ([]*Process, error)
+	GetProcessesByNamespaceID(ctx context.Context, namespaceID uuid.UUID) ([]*Process, error)
 
 	// TODO: this need to be refactored.
 	SetNamespaceVariable(ctx context.Context, namespaceID uuid.UUID, key string, data []byte, hash string, mType string) error
@@ -97,10 +97,10 @@ func NewDefaultManager(lg *zap.SugaredLogger, store Store, fStore filestore.File
 
 func (d *DefaultManager) StartMirroringProcess(ctx context.Context, config *Config) (*Process, error) {
 	process, err := d.store.CreateProcess(ctx, &Process{
-		ID:       uuid.New(),
-		ConfigID: config.ID,
-		Typ:      processTypeInit,
-		Status:   processStatusPending,
+		ID:          uuid.New(),
+		NamespaceID: config.NamespaceID,
+		Typ:         processTypeInit,
+		Status:      processStatusPending,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("creating a new process, err: %w", err)
@@ -121,12 +121,12 @@ func (d *DefaultManager) StartMirroringProcess(ctx context.Context, config *Conf
 			// FilterIgnoredFiles().
 
 			// TODO: we need to implement a mechanism to synchronize multiple mirroring processes.
-			ReadRootFilesChecksums(d.fStore, config.ID).
-			CreateAllDirectories(d.fStore, config.ID).
-			CopyFilesToRoot(d.fStore, config.ID).
+			ReadRootFilesChecksums(d.fStore, config.NamespaceID).
+			CreateAllDirectories(d.fStore, config.NamespaceID).
+			CopyFilesToRoot(d.fStore, config.NamespaceID).
 			ConfigureWorkflows(d.configWorkflowFunc).
-			ParseDirektivVars(d.fStore, d.store, config.ID).
-			CropFilesAndDirectoriesInRoot(d.fStore, config.ID).
+			ParseDirektivVars(d.fStore, d.store, config.NamespaceID).
+			CropFilesAndDirectoriesInRoot(d.fStore, config.NamespaceID).
 			DeleteTempDirectory().
 			SetProcessStatus(d.store, process, processStatusComplete).Error()
 		if err != nil {

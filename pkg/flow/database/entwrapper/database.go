@@ -160,7 +160,7 @@ func New(ctx context.Context, sugar *zap.SugaredLogger, addr string) (*Database,
 				);
 	 CREATE TABLE IF NOT EXISTS "mirror_configs" 
 	 		(
-	 		    "id" uuid,
+	 		    "namespace_id" uuid,
 	 		    "url" text,
 	 		    "git_ref" text,
 	 		    "git_commit_hash" text,
@@ -169,22 +169,22 @@ func New(ctx context.Context, sugar *zap.SugaredLogger, addr string) (*Database,
 	 		    "private_key_passphrase" text,
 	 		    "created_at" timestamptz,
 	 		    "updated_at" timestamptz,
-	 		    PRIMARY KEY ("id"),
+	 		    PRIMARY KEY ("namespace_id"),
 				CONSTRAINT "fk_namespaces_mirror_configs"
-				FOREIGN KEY ("id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
+				FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
 	     );
 	 CREATE TABLE IF NOT EXISTS "mirror_processes" 
 	 		(
 	 		    "id" uuid,
-	 		    "config_id" uuid,
+	 		    "namespace_id" uuid,
 	 		    "status" text,
 				"typ" 	 text,
 	 		    "ended_at" timestamptz,
 	 		    "created_at" timestamptz,
 	 		    "updated_at" timestamptz,
 	 		    PRIMARY KEY ("id"),
-	 		    CONSTRAINT "fk_mirror_configs_mirror_processes"
-				FOREIGN KEY ("config_id") REFERENCES "mirror_configs"("id") ON DELETE CASCADE ON UPDATE CASCADE
+	 		    CONSTRAINT "fk_namespaces_mirror_processes"
+				FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
 	 		);
 `)
 	if err != nil {

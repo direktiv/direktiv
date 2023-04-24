@@ -18,9 +18,9 @@ func Test_sqlMirrorStore_Process_SetAndGet(t *testing.T) {
 	ds := sql.NewSQLStore(db, "some_secret_key_")
 
 	newProcess := &mirror.Process{
-		ID:       uuid.New(),
-		ConfigID: uuid.New(),
-		Status:   "new",
+		ID:          uuid.New(),
+		NamespaceID: uuid.New(),
+		Status:      "new",
 	}
 
 	// test create.
@@ -62,9 +62,9 @@ func Test_sqlMirrorStore_Process_SetAndGet(t *testing.T) {
 	}
 
 	secondProcess := &mirror.Process{
-		ID:       uuid.New(),
-		ConfigID: newProcess.ConfigID,
-		Status:   "new",
+		ID:          uuid.New(),
+		NamespaceID: newProcess.NamespaceID,
+		Status:      "new",
 	}
 
 	// test get by config_id.
@@ -73,7 +73,7 @@ func Test_sqlMirrorStore_Process_SetAndGet(t *testing.T) {
 		t.Errorf("unexpected CreateProcess() error: %v", err)
 	}
 
-	list, err := ds.Mirror().GetProcessesByConfig(context.Background(), newProcess.ConfigID)
+	list, err := ds.Mirror().GetProcessesByNamespaceID(context.Background(), newProcess.NamespaceID)
 	if err != nil {
 		t.Errorf("unexpected GetProcessesByConfig() error: %v", err)
 	}
@@ -99,22 +99,22 @@ func Test_sqlMirrorStore_Config_SetAndGet(t *testing.T) {
 	// test create.
 
 	newConfig := &mirror.Config{
-		ID:  uuid.New(),
-		URL: "some_url",
+		NamespaceID: uuid.New(),
+		URL:         "some_url",
 	}
 	config, err := ds.Mirror().CreateConfig(context.Background(), newConfig)
 	if err != nil {
 		t.Fatalf("unexpected CreateConfig() error: %v", err)
 	}
-	if newConfig.ID != config.ID {
-		t.Errorf("unexpected CreateConfig().ID, want: %v, got %v", newConfig.ID, config.ID)
+	if newConfig.NamespaceID != config.NamespaceID {
+		t.Errorf("unexpected CreateConfig().NamespaceID, want: %v, got %v", newConfig.NamespaceID, config.NamespaceID)
 	}
 	if newConfig.URL != config.URL {
 		t.Errorf("unexpected CreateConfig().Status, want: %v, got %v", newConfig.URL, config.URL)
 	}
 	secondConfig := &mirror.Config{
-		ID:  uuid.New(),
-		URL: "some_url",
+		NamespaceID: uuid.New(),
+		URL:         "some_url",
 	}
 	_, err = ds.Mirror().CreateConfig(context.Background(), secondConfig)
 	if err != nil {
@@ -127,20 +127,20 @@ func Test_sqlMirrorStore_Config_SetAndGet(t *testing.T) {
 	if err != nil {
 		t.Errorf("unexpected UpdateConfig() error: %v", err)
 	}
-	if newConfig.ID != config.ID {
-		t.Errorf("unexpected UpdateConfig().ID, want: %v, got %v", newConfig.ID, config.ID)
+	if newConfig.NamespaceID != config.NamespaceID {
+		t.Errorf("unexpected UpdateConfig().NamespaceID, want: %v, got %v", newConfig.NamespaceID, config.NamespaceID)
 	}
 	if newConfig.URL != config.URL {
 		t.Errorf("unexpected UpdateConfig().Status, want: %v, got %v", newConfig.URL, config.URL)
 	}
 
 	// test get.
-	config, err = ds.Mirror().GetConfig(context.Background(), newConfig.ID)
+	config, err = ds.Mirror().GetConfig(context.Background(), newConfig.NamespaceID)
 	if err != nil {
 		t.Errorf("unexpected GetConfig() error: %v", err)
 	}
-	if newConfig.ID != config.ID {
-		t.Errorf("unexpected GetConfig().ID, want: %v, got %v", newConfig.ID, config.ID)
+	if newConfig.NamespaceID != config.NamespaceID {
+		t.Errorf("unexpected GetConfig().NamespaceID, want: %v, got %v", newConfig.NamespaceID, config.NamespaceID)
 	}
 	if newConfig.URL != config.URL {
 		t.Errorf("unexpected GetConfig().Status, want: %v, got %v", newConfig.URL, config.URL)
