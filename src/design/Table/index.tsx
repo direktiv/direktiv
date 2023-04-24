@@ -45,8 +45,8 @@ export const TableBody = React.forwardRef<
   <tbody
     className={clsx(
       "divide-y",
-      "divide-gray-2",
-      "dark:divide-gray-dark-2",
+      "divide-gray-3",
+      "dark:divide-gray-dark-3",
       className
     )}
     {...props}
