@@ -194,9 +194,9 @@ export const StripeTable = () => (
           </TableHeaderCell>
         </TableRow>
       </TableHead>
-      <TableBody>
-        {people.map((person, key) => (
-          <TableRow key={person.email} stripe={key % 2 === 0}>
+      <TableBody stripe>
+        {people.map((person, i) => (
+          <TableRow key={i}>
             <TableCell>{person.name}</TableCell>
             <TableCell>{person.title}</TableCell>
             <TableCell>{person.email}</TableCell>
@@ -229,8 +229,8 @@ export const StickyHeader = () => (
         </TableRow>
       </TableHead>
       <TableBody>
-        {people.map((person) => (
-          <TableRow key={person.email}>
+        {people.map((person, i) => (
+          <TableRow key={i}>
             <TableCell>{person.name}</TableCell>
             <TableCell>{person.title}</TableCell>
             <TableCell>{person.email}</TableCell>
