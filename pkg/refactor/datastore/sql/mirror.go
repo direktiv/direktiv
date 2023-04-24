@@ -172,8 +172,11 @@ func (s sqlMirrorStore) UpdateConfig(ctx context.Context, config *mirror.Config)
 }
 
 func (s sqlMirrorStore) GetConfig(ctx context.Context, namespaceID uuid.UUID) (*mirror.Config, error) {
-	config := &mirror.Config{NamespaceID: namespaceID}
-	res := s.db.WithContext(ctx).Table("mirror_configs").First(config)
+	config := &mirror.Config{}
+	res := s.db.WithContext(ctx).
+		Table("mirror_configs").
+		Where("namespace_id", namespaceID).
+		First(config)
 
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 		return nil, mirror.ErrNotFound
@@ -216,8 +219,11 @@ func (s sqlMirrorStore) UpdateProcess(ctx context.Context, process *mirror.Proce
 }
 
 func (s sqlMirrorStore) GetProcess(ctx context.Context, id uuid.UUID) (*mirror.Process, error) {
-	process := &mirror.Process{ID: id}
-	res := s.db.WithContext(ctx).Table("mirror_processes").First(process)
+	process := &mirror.Process{}
+	res := s.db.WithContext(ctx).
+		Table("mirror_processes").
+		Where("id", id).
+		First(process)
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 		return nil, mirror.ErrNotFound
 	}

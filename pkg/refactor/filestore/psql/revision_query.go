@@ -52,6 +52,9 @@ func (q *RevisionQuery) SetTags(ctx context.Context, tags filestore.RevisionTags
 	if res.Error != nil {
 		return nil, res.Error
 	}
+	if res.RowsAffected != 1 {
+		return nil, fmt.Errorf("unexpected gorm update count, got: %d, want: %d", res.RowsAffected, 1)
+	}
 
 	return rev, nil
 }

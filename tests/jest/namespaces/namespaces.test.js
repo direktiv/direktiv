@@ -1,25 +1,16 @@
 import request from 'supertest'
-import common from "./common";
+import common from "../common";
 
-const testNamespace = "test-git-namespace"
+const testNamespace = "test-namespace"
 
 beforeAll(async () => {
     // delete a 'test-namespace' if it's already exit.
     await request(common.config.getDirektivHost()).delete(`/api/namespaces/${testNamespace}?recursive=true`)
 });
 
-describe('Test namespace git mirroring', () => {
-    it(`should create a new git mirrored namespace`, async () => {
-        const res = await request(common.config.getDirektivHost())
-            .put(`/api/namespaces/${testNamespace}`)
-            .send({
-                url: "https://github.com/direktiv/direktiv-examples.git",
-                ref: "main",
-                cron: "",
-                passphrase: "",
-                publicKey: "",
-                privateKey: ""
-            })
+describe('Test namespaces crud operations', () => {
+    it(`should create a new namespace`, async () => {
+        const res = await request(common.config.getDirektivHost()).put(`/api/namespaces/${testNamespace}`)
         expect(res.statusCode).toEqual(200)
         expect(res.body).toMatchObject({
             namespace: {
@@ -32,22 +23,21 @@ describe('Test namespace git mirroring', () => {
         })
     })
 
-    it(`should get the new git namespace`, async () => {
-        await sleep(5000)
-        const res = await request(common.config.getDirektivHost()).get(`/api/namespaces/${testNamespace}/tree/aws`)
+    it(`should get the new namespace`, async () => {
+        const res = await request(common.config.getDirektivHost()).get(`/api/namespaces/${testNamespace}/tree`)
         expect(res.statusCode).toEqual(200)
         expect(res.body).toMatchObject({
             namespace: testNamespace,
         })
     })
 
-    it(`should delete the new git namespace`, async () => {
+    it(`should delete the new namespace`, async () => {
         const res = await request(common.config.getDirektivHost()).delete(`/api/namespaces/${testNamespace}?recursive=true`)
         expect(res.statusCode).toEqual(200)
         expect(res.body).toMatchObject({})
     })
 
-    it(`should get 404 after the new git namespace deletion`, async () => {
+    it(`should get 404 after the new namespace deletion`, async () => {
         const res = await request(common.config.getDirektivHost()).get(`/api/namespaces/${testNamespace}/tree`)
         expect(res.statusCode).toEqual(404)
         expect(res.body).toMatchObject({
@@ -56,7 +46,3 @@ describe('Test namespace git mirroring', () => {
         })
     })
 })
-
-function sleep(time) {
-    return new Promise((resolve) => setTimeout(resolve, time));
-}

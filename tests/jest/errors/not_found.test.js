@@ -1,5 +1,5 @@
 import request from 'supertest'
-import common from "./common";
+import common from "../common";
 
 describe('Test path not found', () => {
     const methods = [
