@@ -425,7 +425,7 @@ func (flow *flow) SetWorkflowEventLogging(ctx context.Context, req *grpc.SetWork
 	if errors.Is(err, core.ErrFileAnnotationsNotSet) {
 		annotations = &core.FileAnnotations{
 			FileID: file.ID,
-			Data:   "",
+			Data:   map[string]string{},
 		}
 	} else if err != nil {
 		return nil, err

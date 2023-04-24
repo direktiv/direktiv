@@ -2,6 +2,7 @@ package sql_test
 
 import (
 	"context"
+	"reflect"
 	"strings"
 	"testing"
 
@@ -25,7 +26,9 @@ func Test_sqlFileAnnotationsStore_SetAndGet(t *testing.T) {
 
 	err = ds.FileAnnotations().Set(context.Background(), &core.FileAnnotations{
 		FileID: file.ID,
-		Data:   core.FileAnnotationsData("some arbitrary data bytes"),
+		Data: map[string]string{
+			"some_key": "some_data",
+		},
 	})
 	if err != nil {
 		t.Errorf("unexpected Set() error: %v", err)
@@ -46,9 +49,11 @@ func Test_sqlFileAnnotationsStore_SetAndGet(t *testing.T) {
 		return
 	}
 
-	wantValue := "some arbitrary data bytes"
-	if string(annotations.Data) != wantValue {
-		t.Errorf("unexpected Get().Data, want %s, got %s", wantValue, annotations.Data)
+	wantData := core.FileAnnotationsData{
+		"some_key": "some_data",
+	}
+	if !reflect.DeepEqual(wantData, annotations.Data) {
+		t.Errorf("unexpected Get().Data, want %s, got %s", wantData, annotations.Data)
 
 		return
 	}
