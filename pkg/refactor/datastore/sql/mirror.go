@@ -12,11 +12,14 @@ import (
 )
 
 type sqlMirrorStore struct {
-	db                  *gorm.DB
+	// database connection.
+	db *gorm.DB
+	// symmetric encryption key to encrypt and decrypt mirror data.
 	configEncryptionKey string
 }
 
-// nolint
+// SetNamespaceVariable sets namespace variable into the database.
+//nolint
 func (s sqlMirrorStore) SetNamespaceVariable(ctx context.Context, namespaceID uuid.UUID, key string, data []byte, hash string, mType string) error {
 	// try to update a variable if exists.
 	res := s.db.WithContext(ctx).Exec(`
@@ -61,7 +64,8 @@ func (s sqlMirrorStore) SetNamespaceVariable(ctx context.Context, namespaceID uu
 	return nil
 }
 
-// nolint
+// SetWorkflowVariable sets workflow variable into the database.
+//nolint
 func (s sqlMirrorStore) SetWorkflowVariable(ctx context.Context, workflowID uuid.UUID, key string, data []byte, hash string, mType string) error {
 	// try to update a variable if exists.
 	res := s.db.WithContext(ctx).Exec(`

@@ -16,6 +16,7 @@ type sqlFileAnnotationsStore struct {
 	db *gorm.DB
 }
 
+// Get gets file annotations information of a file.
 func (s *sqlFileAnnotationsStore) Get(ctx context.Context, fileID uuid.UUID) (*core.FileAnnotations, error) {
 	rawAnnotations := &struct {
 		FileID uuid.UUID
@@ -46,6 +47,7 @@ func (s *sqlFileAnnotationsStore) Get(ctx context.Context, fileID uuid.UUID) (*c
 	}, nil
 }
 
+// Set either creates (if not exists) file annotation information or updates the existing one.
 func (s *sqlFileAnnotationsStore) Set(ctx context.Context, annotations *core.FileAnnotations) error {
 	data, err := json.Marshal(annotations.Data)
 	if err != nil {

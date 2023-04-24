@@ -8,7 +8,7 @@ import (
 const userAttributesKey = "user_attributes"
 
 // AppendFileUserAttributes is a helper function to append user attributed to file annotation data. User attributes
-// are simply comma seperated string of attributes words.
+// are simply comma separated string of attributes words.
 func (data FileAnnotationsData) AppendFileUserAttributes(newAttributes []string) FileAnnotationsData {
 	oldAttrsString := data.GetEntry(userAttributesKey)
 	oldAttrsList := strings.Split(oldAttrsString, ",")
@@ -23,7 +23,7 @@ func (data FileAnnotationsData) AppendFileUserAttributes(newAttributes []string)
 }
 
 // ReduceFileUserAttributes is a helper function to remove (if exists) user attributed from file annotation data. User attributes
-// are simply comma seperated string of attributes words.
+// are simply comma separated string of attributes words.
 func (data FileAnnotationsData) ReduceFileUserAttributes(attributes []string) FileAnnotationsData {
 	oldAttrsString := data.GetEntry(userAttributesKey)
 	oldAttrsList := strings.Split(oldAttrsString, ",")
@@ -32,7 +32,7 @@ func (data FileAnnotationsData) ReduceFileUserAttributes(attributes []string) Fi
 	return data.SetEntry(userAttributesKey, newAttrs)
 }
 
-// compileUserAttributesList creates a comma seperated user attributes string from both a list and an excludes. The
+// compileUserAttributesList creates a comma separated user attributes string from both a list and an excludes. The
 // returned string should be clean of whitespaces and no repetitions.
 func compileUserAttributesList(list []string, excludes []string) string {
 	// create a map with all the values as key

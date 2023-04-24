@@ -1,27 +1,68 @@
-package core
+package core_test
 
 import (
 	"reflect"
 	"testing"
+
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 )
 
 func TestFileAnnotationsData_AppendFileUserAttributes(t *testing.T) {
-	type args struct {
-		newAttributes []string
+	data := core.FileAnnotationsData{}
+
+	data = data.AppendFileUserAttributes([]string{
+		"str1 ",
+		" str1",
+		" str2 ",
+		"  ",
+		"",
+		"str3",
+		"",
+		"str1 ",
+		" str1",
+		" str2 ",
+	})
+
+	if !reflect.DeepEqual(data, core.FileAnnotationsData{
+		"user_attributes": "str1,str2,str3",
+	}) {
+		t.Errorf("AppendFileUserAttributes() failed")
 	}
-	tests := []struct {
-		name string
-		data FileAnnotationsData
-		args args
-		want FileAnnotationsData
-	}{
-		// TODO: Add test cases.
+
+	data = data.ReduceFileUserAttributes([]string{
+		"str1 ",
+		" str1",
+		" str2 ",
+		"  ",
+		"",
+		"",
+		"str1 ",
+		" str1",
+		" str2 ",
+	})
+
+	if !reflect.DeepEqual(data, core.FileAnnotationsData{
+		"user_attributes": "str3",
+	}) {
+		t.Errorf("ReduceFileUserAttributes() failed")
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.data.AppendFileUserAttributes(tt.args.newAttributes); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("AppendFileUserAttributes() = %v, want %v", got, tt.want)
-			}
-		})
+
+	data = data.ReduceFileUserAttributes([]string{
+		"str1 ",
+		" str1",
+		" str2 ",
+		"  ",
+		"",
+		"str3",
+		"",
+		"str1 ",
+		" str1",
+		" str2 ",
+	})
+
+	if !reflect.DeepEqual(data, core.FileAnnotationsData{
+		"user_attributes": "",
+	}) {
+		t.Errorf("ReduceFileUserAttributes() failed")
 	}
 }
