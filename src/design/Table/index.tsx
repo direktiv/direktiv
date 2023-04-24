@@ -1,14 +1,6 @@
 import React from "react";
 import clsx from "clsx";
 
-export interface TableRowProps {
-  stripe?: boolean;
-}
-
-export interface TableHeaderCellProps {
-  sticky?: boolean;
-}
-
 export const Table = React.forwardRef<
   HTMLTableElement,
   React.TableHTMLAttributes<HTMLTableElement>
@@ -76,6 +68,10 @@ export const TableCell = React.forwardRef<
 ));
 TableCell.displayName = "TableCell";
 
+export interface TableHeaderCellProps {
+  sticky?: boolean;
+}
+
 export const TableHeaderCell = React.forwardRef<
   HTMLTableCellElement,
   React.HTMLProps<HTMLTableCellElement> & TableHeaderCellProps
@@ -100,12 +96,12 @@ TableHeaderCell.displayName = "TableHeaderCell";
 
 export const TableRow = React.forwardRef<
   HTMLTableRowElement,
-  React.HTMLProps<HTMLTableRowElement> & TableRowProps
->(({ children, className, stripe, ...props }, ref) => (
+  React.HTMLProps<HTMLTableRowElement>
+>(({ children, className, ...props }, ref) => (
   <tr
     ref={ref}
     {...props}
-    className={clsx(className, stripe && "bg-gray-2 dark:bg-gray-dark-2")}
+    className={clsx(className, "hover:bg-gray-2 dark:hover:bg-gray-dark-2")}
   >
     {children}
   </tr>
