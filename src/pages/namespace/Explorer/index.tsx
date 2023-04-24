@@ -91,9 +91,12 @@ const ExplorerPage: FC = () => {
                         });
                   return (
                     <TableRow key={file.name}>
-                      <TableCell className="flex space-x-3 hover:underline">
+                      <TableCell className="flex space-x-3">
                         <Icon className="h-5" />
-                        <Link to={linkTarget} className="flex-1">
+                        <Link
+                          to={linkTarget}
+                          className="flex-1 hover:underline"
+                        >
                           {file.name}
                         </Link>
                         <span className="text-gray-8 dark:text-gray-dark-8">

@@ -188,9 +188,9 @@ export const FileBrowser = () => (
       <TableBody>
         {people.map((person, i) => (
           <TableRow key={i}>
-            <TableCell className="flex space-x-3 hover:underline">
+            <TableCell className="flex space-x-3">
               <Folder className="h-5" />
-              <a href="#" className="flex-1">
+              <a href="#" className="flex-1 hover:underline">
                 {person.name}
               </a>
               <span className="text-gray-8 dark:text-gray-dark-8">
