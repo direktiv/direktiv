@@ -158,8 +158,8 @@ export const Default: Story = {
           </TableRow>
         </TableHead>
         <TableBody>
-          {people.map((person) => (
-            <TableRow key={person.email}>
+          {people.map((person, i) => (
+            <TableRow key={i}>
               <TableCell>{person.name}</TableCell>
               <TableCell>{person.title}</TableCell>
               <TableCell>{person.email}</TableCell>
