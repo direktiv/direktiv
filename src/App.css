@@ -64,10 +64,6 @@ html {
   @apply bg-white dark:bg-black;
 }
 
-a {
-  @apply hover:underline;
-}
-
 @font-face {
   font-family: "Inter";
   font-style: normal;
