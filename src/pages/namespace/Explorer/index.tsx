@@ -63,7 +63,7 @@ const ExplorerPage: FC = () => {
               <TableBody>
                 {!isRoot && (
                   <TableRow>
-                    <TableCell colSpan="2">
+                    <TableCell colSpan={2}>
                       <Link
                         to={pages.explorer.createHref({
                           namespace,

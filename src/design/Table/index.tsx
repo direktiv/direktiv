@@ -30,7 +30,7 @@ Table.displayName = "Table";
 
 export const TableHead = React.forwardRef<
   HTMLTableSectionElement,
-  React.HTMLAttributes<HTMLTableSectionElement>
+  React.HTMLProps<HTMLTableSectionElement>
 >(({ children, className, ...props }, ref) => (
   <thead ref={ref} {...props} className={clsx(className)}>
     {children}
@@ -40,7 +40,7 @@ TableHead.displayName = "TableHead";
 
 export const TableBody = React.forwardRef<
   HTMLTableSectionElement,
-  React.HTMLAttributes<HTMLTableSectionElement>
+  React.HTMLProps<HTMLTableSectionElement>
 >(({ children, className, ...props }, ref) => (
   <tbody
     ref={ref}
@@ -59,7 +59,7 @@ TableBody.displayName = "TableBody";
 
 export const TableCell = React.forwardRef<
   HTMLTableCellElement,
-  React.HTMLAttributes<HTMLTableCellElement>
+  React.HTMLProps<HTMLTableCellElement>
 >(({ children, className, ...props }, ref) => (
   <td
     ref={ref}
@@ -78,7 +78,7 @@ TableCell.displayName = "TableCell";
 
 export const TableHeaderCell = React.forwardRef<
   HTMLTableCellElement,
-  React.HTMLAttributes<HTMLTableCellElement> & TableHeaderCellProps
+  React.HTMLProps<HTMLTableCellElement> & TableHeaderCellProps
 >(({ children, className, sticky, ...props }, ref) => (
   <th
     ref={ref}
@@ -100,7 +100,7 @@ TableHeaderCell.displayName = "TableHeaderCell";
 
 export const TableRow = React.forwardRef<
   HTMLTableRowElement,
-  React.HTMLAttributes<HTMLTableRowElement> & TableRowProps
+  React.HTMLProps<HTMLTableRowElement> & TableRowProps
 >(({ children, className, stripe, ...props }, ref) => (
   <tr
     ref={ref}
