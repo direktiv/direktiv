@@ -1,4 +1,4 @@
-import { Folder, MoreVertical } from "lucide-react";
+import { File, MoreVertical } from "lucide-react";
 import type { Meta, StoryObj } from "@storybook/react";
 import {
   Table,
@@ -143,6 +143,19 @@ const people = [
   },
 ];
 
+const files = [
+  { name: "app.js", date: "2023-02-05" },
+  { name: "database.sql", date: "2023-06-20" },
+  { name: "image.jpg", date: "2023-09-27" },
+  { name: "index.html", date: "2023-01-01" },
+  { name: "logo.svg", date: "2023-07-22" },
+  { name: "package.json", date: "2023-05-17" },
+  { name: "README.md", date: "2023-04-13" },
+  { name: "report.pdf", date: "2023-08-25" },
+  { name: "style.css", date: "2023-03-10" },
+  { name: "video.mp4", date: "2023-10-30" },
+];
+
 export const Default: Story = {
   render: ({ ...args }) => (
     <Table {...args}>
@@ -183,15 +196,15 @@ export const FileBrowser = () => (
   <Card className="flex flex-col space-y-5">
     <Table>
       <TableBody>
-        {people.map((person) => (
-          <TableRow key={person.email}>
+        {files.map((file) => (
+          <TableRow key={file.name}>
             <TableCell className="flex space-x-3">
-              <Folder className="h-5" />
+              <File className="h-5" />
               <a href="#" className="flex-1 hover:underline">
-                {person.name}
+                {file.name}
               </a>
               <span className="text-gray-8 dark:text-gray-dark-8">
-                {moment().fromNow()}
+                {moment(file.date).fromNow()}
               </span>
             </TableCell>
           </TableRow>
