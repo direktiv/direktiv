@@ -44,6 +44,12 @@
   color: hsla(0, 0%, 100%, 0.592);
 }
 
+.log-window .log-row {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.5rem;
+}
+
 .log-window .log-row--error {
   color: hsl(358, 75%, 59%);
   background-color: hsl(356, 43.4%, 16.4%);
