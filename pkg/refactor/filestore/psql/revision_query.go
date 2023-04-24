@@ -19,7 +19,7 @@ var _ filestore.RevisionQuery = &RevisionQuery{}
 
 //nolint:revive
 func (q *RevisionQuery) Delete(ctx context.Context, force bool) error {
-	res := q.db.WithContext(ctx).Table("filesystem_revisions").Delete(&filestore.Revision{}, q.rev.ID)
+	res := q.db.WithContext(ctx).Exec(`DELETE FROM filesystem_revisions WHERE id = ?`, q.rev.ID)
 	if res.Error != nil {
 		return res.Error
 	}

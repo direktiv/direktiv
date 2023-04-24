@@ -136,7 +136,7 @@ func (q *RootQuery) IsEmptyDirectory(ctx context.Context, path string) (bool, er
 var _ filestore.RootQuery = &RootQuery{} // Ensures RootQuery struct conforms to filestore.RootQuery interface.
 
 func (q *RootQuery) Delete(ctx context.Context) error {
-	res := q.db.WithContext(ctx).Table("filesystem_roots").Delete(&filestore.Root{}, q.rootID)
+	res := q.db.WithContext(ctx).Exec(`DELETE FROM filesystem_roots WHERE id = ?`, q.rootID)
 	if res.Error != nil {
 		return res.Error
 	}
