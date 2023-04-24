@@ -281,22 +281,21 @@ export const MoreDetailedShell = () => {
                     </DropdownMenu>
                   </Breadcrumb>
                   <Breadcrumb>
-                    <a className="gap-2">
-                      <Github className="h-4 w-auto" />
-                      Example Mirror
-                    </a>
+                    <Github className="h-4 w-auto" />
+                    Example Mirror
+
                   </Breadcrumb>
                   <Breadcrumb>
-                    <a className="gap-2">
-                      <FolderOpen className="h-4 w-auto" />
-                      Folder
-                    </a>
+
+                    <FolderOpen className="h-4 w-auto" />
+                    Folder
+
                   </Breadcrumb>
                   <Breadcrumb>
-                    <a className="gap-2">
-                      <Play className="h-4 w-auto" />
-                      workflow.yml
-                    </a>
+
+                    <Play className="h-4 w-auto" />
+                    workflow.yml
+
                   </Breadcrumb>
                 </BreadcrumbRoot>
               </MainTopLeft>
