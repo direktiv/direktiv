@@ -19,7 +19,7 @@ var _ filestore.RevisionQuery = &RevisionQuery{}
 
 //nolint:revive
 func (q *RevisionQuery) Delete(ctx context.Context, force bool) error {
-	res := q.db.WithContext(ctx).Delete(&filestore.Revision{}, q.rev.ID)
+	res := q.db.WithContext(ctx).Table("filesystem_revisions").Delete(&filestore.Revision{}, q.rev.ID)
 	if res.Error != nil {
 		return res.Error
 	}
@@ -32,7 +32,7 @@ func (q *RevisionQuery) Delete(ctx context.Context, force bool) error {
 
 func (q *RevisionQuery) GetData(ctx context.Context) (io.ReadCloser, error) {
 	rev := &filestore.Revision{}
-	res := q.db.WithContext(ctx).Where("id", q.rev.ID).First(rev)
+	res := q.db.WithContext(ctx).Table("filesystem_revisions").Where("id", q.rev.ID).First(rev)
 	if res.Error != nil {
 		return nil, res.Error
 	}
@@ -45,7 +45,7 @@ func (q *RevisionQuery) GetData(ctx context.Context) (io.ReadCloser, error) {
 func (q *RevisionQuery) SetTags(ctx context.Context, tags filestore.RevisionTags) (*filestore.Revision, error) {
 	rev := &filestore.Revision{}
 	res := q.db.WithContext(ctx).
-		Model(&filestore.Revision{}).
+		Table("filesystem_revisions").
 		Where("id", q.rev.ID).
 		Update("tags", tags).
 		First(rev)
@@ -59,7 +59,7 @@ func (q *RevisionQuery) SetTags(ctx context.Context, tags filestore.RevisionTags
 func (q *RevisionQuery) SetCurrent(ctx context.Context) (*filestore.Revision, error) {
 	// set current revisions 'is_current' flag to false.
 	res := q.db.WithContext(ctx).
-		Model(&filestore.Revision{}).
+		Table("filesystem_revisions").
 		Where("file_id", q.rev.FileID).
 		Where("is_current", true).
 		Update("is_current", false)
@@ -72,7 +72,7 @@ func (q *RevisionQuery) SetCurrent(ctx context.Context) (*filestore.Revision, er
 
 	// set revision 'is_current' flag to true by id.
 	rev := &filestore.Revision{}
-	res = q.db.WithContext(ctx).Update("is_current", true).Where("id", q.rev.ID).First(rev)
+	res = q.db.WithContext(ctx).Table("filesystem_revisions").Update("is_current", true).Where("id", q.rev.ID).First(rev)
 	if res.Error != nil {
 		return nil, res.Error
 	}
