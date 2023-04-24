@@ -31,8 +31,8 @@ Table.displayName = "Table";
 export const TableHead = React.forwardRef<
   HTMLTableSectionElement,
   React.HTMLAttributes<HTMLTableSectionElement>
->(({ children, className, ...props }) => (
-  <thead {...props} className={clsx(className)}>
+>(({ children, className, ...props }, ref) => (
+  <thead ref={ref} {...props} className={clsx(className)}>
     {children}
   </thead>
 ));
@@ -41,8 +41,9 @@ TableHead.displayName = "TableHead";
 export const TableBody = React.forwardRef<
   HTMLTableSectionElement,
   React.HTMLAttributes<HTMLTableSectionElement>
->(({ children, className, ...props }) => (
+>(({ children, className, ...props }, ref) => (
   <tbody
+    ref={ref}
     className={clsx(
       "divide-y",
       "divide-gray-3",
@@ -59,8 +60,9 @@ TableBody.displayName = "TableBody";
 export const TableCell = React.forwardRef<
   HTMLTableCellElement,
   React.HTMLAttributes<HTMLTableCellElement>
->(({ children, className, ...props }) => (
+>(({ children, className, ...props }, ref) => (
   <td
+    ref={ref}
     {...props}
     className={clsx(
       "whitespace-nowrap px-3 py-2 text-sm",
@@ -77,8 +79,9 @@ TableCell.displayName = "TableCell";
 export const TableHeaderCell = React.forwardRef<
   HTMLTableCellElement,
   React.HTMLAttributes<HTMLTableCellElement> & TableHeaderCellProps
->(({ children, className, sticky, ...props }) => (
+>(({ children, className, sticky, ...props }, ref) => (
   <th
+    ref={ref}
     {...props}
     className={clsx(
       "px-3 py-3.5 text-left text-sm font-semibold",
@@ -98,8 +101,9 @@ TableHeaderCell.displayName = "TableHeaderCell";
 export const TableRow = React.forwardRef<
   HTMLTableRowElement,
   React.HTMLAttributes<HTMLTableRowElement> & TableRowProps
->(({ children, className, stripe, ...props }) => (
+>(({ children, className, stripe, ...props }, ref) => (
   <tr
+    ref={ref}
     {...props}
     className={clsx(className, stripe && "bg-gray-2 dark:bg-gray-dark-2")}
   >
