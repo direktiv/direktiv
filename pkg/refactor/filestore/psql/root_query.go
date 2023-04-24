@@ -284,8 +284,7 @@ func (q *RootQuery) ReadDirectory(ctx context.Context, path string) ([]*filestor
 		}
 	}
 
-	res := q.db.WithContext(ctx).
-		Table("filesystem_files").
+	res := q.db.WithContext(ctx).Table("filesystem_files").
 		// Don't include file 'data' in the query. File data can be retrieved with file.GetData().
 		Select("id", "path", "depth", "typ", "root_id", "created_at", "updated_at").
 		Where("root_id", q.rootID).

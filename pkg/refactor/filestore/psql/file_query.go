@@ -122,8 +122,7 @@ func (q *FileQuery) GetRevision(ctx context.Context, id uuid.UUID) (*filestore.R
 	}
 
 	rev := &filestore.Revision{}
-	res := q.db.WithContext(ctx).
-		Table("filesystem_revisions").
+	res := q.db.WithContext(ctx).Table("filesystem_revisions").
 		Where("id", id).
 		First(rev)
 	if res.Error != nil {
@@ -140,8 +139,7 @@ func (q *FileQuery) GetAllRevisions(ctx context.Context) ([]*filestore.Revision,
 	}
 
 	var list []*filestore.Revision
-	res := q.db.WithContext(ctx).
-		Table("filesystem_revisions").
+	res := q.db.WithContext(ctx).Table("filesystem_revisions").
 		Where("file_id", q.file.ID).
 		Find(&list)
 	if res.Error != nil {
@@ -171,8 +169,7 @@ func (q *FileQuery) GetData(ctx context.Context) (io.ReadCloser, error) {
 		return nil, filestore.ErrFileTypeIsDirectory
 	}
 	rev := &filestore.Revision{}
-	res := q.db.WithContext(ctx).
-		Table("filesystem_revisions").
+	res := q.db.WithContext(ctx).Table("filesystem_revisions").
 		Where("file_id", q.file.ID).
 		Where("is_current", true).
 		First(rev)
@@ -191,8 +188,7 @@ func (q *FileQuery) GetCurrentRevision(ctx context.Context) (*filestore.Revision
 	}
 
 	rev := &filestore.Revision{}
-	res := q.db.WithContext(ctx).
-		Table("filesystem_revisions").
+	res := q.db.WithContext(ctx).Table("filesystem_revisions").
 		Where("file_id", q.file.ID).
 		Where("is_current", true).
 		First(rev)
@@ -215,8 +211,7 @@ func (q *FileQuery) CreateRevision(ctx context.Context, tags filestore.RevisionT
 
 	// if newChecksum didn't change, then return the latest revision without creating a new one.
 	latestRev := &filestore.Revision{}
-	res := q.db.WithContext(ctx).
-		Table("filesystem_revisions").
+	res := q.db.WithContext(ctx).Table("filesystem_revisions").
 		Where("file_id", q.file.ID).
 		Where("is_current", true).
 		Where("checksum", newChecksum).
@@ -229,8 +224,7 @@ func (q *FileQuery) CreateRevision(ctx context.Context, tags filestore.RevisionT
 	}
 
 	// set current revisions 'is_current' flag to false.
-	res = q.db.WithContext(ctx).
-		Table("filesystem_revisions").
+	res = q.db.WithContext(ctx).Table("filesystem_revisions").
 		Where("file_id", q.file.ID).
 		Where("is_current", true).
 		Update("is_current", false)

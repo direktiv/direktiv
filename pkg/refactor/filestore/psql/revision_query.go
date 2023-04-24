@@ -44,8 +44,7 @@ func (q *RevisionQuery) GetData(ctx context.Context) (io.ReadCloser, error) {
 
 func (q *RevisionQuery) SetTags(ctx context.Context, tags filestore.RevisionTags) (*filestore.Revision, error) {
 	rev := &filestore.Revision{}
-	res := q.db.WithContext(ctx).
-		Table("filesystem_revisions").
+	res := q.db.WithContext(ctx).Table("filesystem_revisions").
 		Where("id", q.rev.ID).
 		Update("tags", tags).
 		First(rev)
@@ -61,8 +60,7 @@ func (q *RevisionQuery) SetTags(ctx context.Context, tags filestore.RevisionTags
 
 func (q *RevisionQuery) SetCurrent(ctx context.Context) (*filestore.Revision, error) {
 	// set current revisions 'is_current' flag to false.
-	res := q.db.WithContext(ctx).
-		Table("filesystem_revisions").
+	res := q.db.WithContext(ctx).Table("filesystem_revisions").
 		Where("file_id", q.rev.FileID).
 		Where("is_current", true).
 		Update("is_current", false)
