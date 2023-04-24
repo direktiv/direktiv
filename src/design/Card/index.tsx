@@ -14,8 +14,8 @@ export const Card: React.FC<CardProps> = React.forwardRef<
     {...props}
     className={clsx(
       "rounded-md ring-1",
-      "ring-black/5",
-      "dark:ring-white/5",
+      "ring-gray-5",
+      "dark:ring-gray-dark-5",
       !noShadow && "shadow",
       withBackground
         ? "bg-gray-1 dark:bg-gray-dark-1"
