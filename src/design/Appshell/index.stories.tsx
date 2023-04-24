@@ -25,7 +25,7 @@ import {
   Terminal,
   Users,
 } from "lucide-react";
-import { Breadcrumb, BreadcrumbRoot } from "../Breadcump";
+import { Breadcrumb, BreadcrumbRoot } from "../Breadcrumbs";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,

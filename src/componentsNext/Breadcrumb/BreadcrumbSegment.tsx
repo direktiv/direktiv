@@ -1,6 +1,6 @@
 import { FolderOpen, Play } from "lucide-react";
 
-import { Breadcrumb as BreadcrumbLink } from "../../design/Breadcump";
+import { Breadcrumb as BreadcrumbLink } from "../../design/Breadcrumbs";
 import { FC } from "react";
 import { Link } from "react-router-dom";
 import { pages } from "../../util/router/pages";
