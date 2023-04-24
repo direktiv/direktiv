@@ -1,5 +1,5 @@
 import request from 'supertest'
-import common from "./common";
+import common from "../common";
 
 const testNamespace = "test-file-namespace"
 
