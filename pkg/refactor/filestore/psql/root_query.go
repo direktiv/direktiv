@@ -35,7 +35,7 @@ func (q *RootQuery) CropFilesAndDirectories(ctx context.Context, excludePaths []
 
 	var allPaths []string
 
-	res := q.db.WithContext(ctx).Model(&filestore.File{}).Select("path").Where("root_id", q.rootID).Find(&allPaths)
+	res := q.db.WithContext(ctx).Table("filesystem_files").Select("path").Where("root_id", q.rootID).Find(&allPaths)
 	if res.Error != nil {
 		return res.Error
 	}
@@ -60,12 +60,12 @@ func (q *RootQuery) CropFilesAndDirectories(ctx context.Context, excludePaths []
 		}
 	}
 
-	res = q.db.Exec("DELETE FROM files WHERE root_id = ? AND path IN ?", q.rootID, pathsToRemove)
+	res = q.db.WithContext(ctx).Exec("DELETE FROM filesystem_files WHERE root_id = ? AND path IN ?", q.rootID, pathsToRemove)
 	if res.Error != nil {
 		return res.Error
 	}
 	if res.RowsAffected != int64(len(pathsToRemove)) {
-		return fmt.Errorf("unexpedted delete from files count, got: %d, want: %d", res.RowsAffected, len(pathsToRemove))
+		return fmt.Errorf("unexpedted delete from filesystem_files count, got: %d, want: %d", res.RowsAffected, len(pathsToRemove))
 	}
 
 	return nil
@@ -79,7 +79,7 @@ func (q *RootQuery) ListAllFiles(ctx context.Context) ([]*filestore.File, error)
 		return nil, err
 	}
 
-	res := q.db.WithContext(ctx).Model(&filestore.File{}).Where("root_id", q.rootID).Find(&list)
+	res := q.db.WithContext(ctx).Table("filesystem_files").Where("root_id", q.rootID).Find(&list)
 
 	if res.Error != nil {
 		return nil, res.Error
@@ -101,7 +101,7 @@ func (q *RootQuery) IsEmptyDirectory(ctx context.Context, path string) (bool, er
 
 	// check if dir exists.
 	count := 0
-	tx := q.db.Raw("SELECT count(id) FROM files WHERE root_id = ? AND typ = ? AND path = ?",
+	tx := q.db.WithContext(ctx).Raw("SELECT count(id) FROM filesystem_files WHERE root_id = ? AND typ = ? AND path = ?",
 		q.rootID, filestore.FileTypeDirectory, path).
 		Scan(&count)
 
@@ -115,7 +115,7 @@ func (q *RootQuery) IsEmptyDirectory(ctx context.Context, path string) (bool, er
 	// check if there are child entries.
 	if path == "/" {
 		count = 0
-		tx = q.db.Raw("SELECT count(id) FROM files WHERE root_id = ?", q.rootID).Scan(&count)
+		tx = q.db.WithContext(ctx).Raw("SELECT count(id) FROM filesystem_files WHERE root_id = ?", q.rootID).Scan(&count)
 		if tx.Error != nil {
 			return false, tx.Error
 		}
@@ -125,7 +125,7 @@ func (q *RootQuery) IsEmptyDirectory(ctx context.Context, path string) (bool, er
 
 	// check if there are child entries.
 	count = 0
-	tx = q.db.Raw("SELECT count(id) FROM files WHERE root_id = ? AND path LIKE ?", q.rootID, path+"/%").Scan(&count)
+	tx = q.db.WithContext(ctx).Raw("SELECT count(id) FROM filesystem_files WHERE root_id = ? AND path LIKE ?", q.rootID, path+"/%").Scan(&count)
 	if tx.Error != nil {
 		return false, tx.Error
 	}
@@ -136,7 +136,7 @@ func (q *RootQuery) IsEmptyDirectory(ctx context.Context, path string) (bool, er
 var _ filestore.RootQuery = &RootQuery{} // Ensures RootQuery struct conforms to filestore.RootQuery interface.
 
 func (q *RootQuery) Delete(ctx context.Context) error {
-	res := q.db.WithContext(ctx).Delete(&filestore.Root{}, q.rootID)
+	res := q.db.WithContext(ctx).Table("filesystem_roots").Delete(&filestore.Root{}, q.rootID)
 	if res.Error != nil {
 		return res.Error
 	}
@@ -160,7 +160,7 @@ func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.F
 	}
 
 	count := 0
-	tx := q.db.Raw("SELECT count(id) FROM files WHERE root_id = ? AND path = ?", q.rootID, path).Scan(&count)
+	tx := q.db.WithContext(ctx).Raw("SELECT count(id) FROM filesystem_files WHERE root_id = ? AND path = ?", q.rootID, path).Scan(&count)
 	if tx.Error != nil {
 		return nil, nil, tx.Error
 	}
@@ -171,7 +171,7 @@ func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.F
 	parentDir := filepath.Dir(path)
 	if path != "/" {
 		count = 0
-		tx = q.db.Raw("SELECT count(id) FROM files WHERE root_id = ? AND typ = ? AND path = ?", q.rootID, filestore.FileTypeDirectory, parentDir).Scan(&count)
+		tx = q.db.WithContext(ctx).Raw("SELECT count(id) FROM filesystem_files WHERE root_id = ? AND typ = ? AND path = ?", q.rootID, filestore.FileTypeDirectory, parentDir).Scan(&count)
 		if tx.Error != nil {
 			return nil, nil, tx.Error
 		}
@@ -189,7 +189,7 @@ func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.F
 		RootID: q.rootID,
 	}
 
-	res := q.db.WithContext(ctx).Create(f)
+	res := q.db.WithContext(ctx).Table("filesystem_files").Create(f)
 	if res.Error != nil {
 		return nil, nil, res.Error
 	}
@@ -221,7 +221,7 @@ func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.F
 		Data:     data,
 		Checksum: string(q.checksumFunc(data)),
 	}
-	res = q.db.WithContext(ctx).Create(rev)
+	res = q.db.WithContext(ctx).Table("filesystem_revisions").Create(rev)
 	if res.Error != nil {
 		return nil, nil, res.Error
 	}
@@ -247,7 +247,7 @@ func (q *RootQuery) GetFile(ctx context.Context, path string) (*filestore.File, 
 	f := &filestore.File{}
 	path = filepath.Clean(path)
 
-	res := q.db.WithContext(ctx).Where("root_id", q.rootID).Where("path = ?", path).First(f)
+	res := q.db.WithContext(ctx).Table("filesystem_files").Where("root_id", q.rootID).Where("path = ?", path).First(f)
 	if res.Error != nil {
 		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 			return nil, fmt.Errorf("file '%s': %w", path, filestore.ErrNotFound)
@@ -275,7 +275,7 @@ func (q *RootQuery) ReadDirectory(ctx context.Context, path string) ([]*filestor
 	// check if path is a directory and exists.
 	if path != "/" {
 		count := 0
-		tx := q.db.Raw("SELECT count(id) FROM files WHERE root_id = ? AND typ = ? AND path = ?", q.rootID, filestore.FileTypeDirectory, path).Scan(&count)
+		tx := q.db.WithContext(ctx).Raw("SELECT count(id) FROM filesystem_files WHERE root_id = ? AND typ = ? AND path = ?", q.rootID, filestore.FileTypeDirectory, path).Scan(&count)
 		if tx.Error != nil {
 			return nil, err
 		}
@@ -285,6 +285,7 @@ func (q *RootQuery) ReadDirectory(ctx context.Context, path string) ([]*filestor
 	}
 
 	res := q.db.WithContext(ctx).
+		Table("filesystem_files").
 		// Don't include file 'data' in the query. File data can be retrieved with file.GetData().
 		Select("id", "path", "depth", "typ", "root_id", "created_at", "updated_at").
 		Where("root_id", q.rootID).
@@ -316,8 +317,8 @@ func (q *RootQuery) CalculateChecksumsMap(ctx context.Context) (map[string]strin
 	res := q.db.WithContext(ctx).
 		// Don't include file 'data' in the query. File data can be retrieved with file.GetData().
 		Raw(`SELECT f.path, r.checksum 
-				 FROM files AS f 
-				 LEFT JOIN revisions r 
+				 FROM filesystem_files AS f 
+				 LEFT JOIN filesystem_revisions r 
 					ON r.file_id = f.id AND r.is_current = true
       	     	 WHERE f.root_id = ?
 					`, q.rootID).Scan(&resultList)
@@ -337,7 +338,7 @@ func (q *RootQuery) CalculateChecksumsMap(ctx context.Context) (map[string]strin
 
 func (q *RootQuery) checkRootExists(ctx context.Context) error {
 	n := &filestore.Root{}
-	res := q.db.WithContext(ctx).Where("id", q.rootID).First(n)
+	res := q.db.WithContext(ctx).Table("filesystem_roots").Where("id", q.rootID).First(n)
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 		return fmt.Errorf("root not found, id: '%s', err: %w", q.rootID, filestore.ErrNotFound)
 	}

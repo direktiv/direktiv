@@ -10,7 +10,7 @@ const cliExecutable = "direktivctl"
 const { exec } = require('child_process');
 const fs = require('fs');
 const filepath =  "/tests/jest/mockdata/direktiv-project"
-const prefix = `-a https://${common.config.getDirektivHost()} -t password`
+const prefix = `-a ${common.config.getDirektivHost()} -t password`
 const flagNamespace = `-n ${namespaceName}`
 
 describe('Test the direktiv-cli-tool', () => {

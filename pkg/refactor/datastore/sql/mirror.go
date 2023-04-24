@@ -148,7 +148,7 @@ func (s sqlMirrorStore) CreateConfig(ctx context.Context, config *mirror.Config)
 		return nil, res.Error
 	}
 
-	return s.GetConfig(ctx, newConfig.ID)
+	return s.GetConfig(ctx, newConfig.NamespaceID)
 }
 
 func (s sqlMirrorStore) UpdateConfig(ctx context.Context, config *mirror.Config) (*mirror.Config, error) {
@@ -159,7 +159,7 @@ func (s sqlMirrorStore) UpdateConfig(ctx context.Context, config *mirror.Config)
 
 	res := s.db.WithContext(ctx).
 		Table("mirror_configs").
-		Where("id", config.ID).
+		Where("namespace_id", config.NamespaceID).
 		Updates(config)
 	if res.Error != nil {
 		return nil, res.Error
@@ -168,11 +168,11 @@ func (s sqlMirrorStore) UpdateConfig(ctx context.Context, config *mirror.Config)
 		return nil, fmt.Errorf("unexpected gorm update count, got: %d, want: %d", res.RowsAffected, 1)
 	}
 
-	return s.GetConfig(ctx, config.ID)
+	return s.GetConfig(ctx, config.NamespaceID)
 }
 
-func (s sqlMirrorStore) GetConfig(ctx context.Context, id uuid.UUID) (*mirror.Config, error) {
-	config := &mirror.Config{ID: id}
+func (s sqlMirrorStore) GetConfig(ctx context.Context, namespaceID uuid.UUID) (*mirror.Config, error) {
+	config := &mirror.Config{NamespaceID: namespaceID}
 	res := s.db.WithContext(ctx).Table("mirror_configs").First(config)
 
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
@@ -203,7 +203,6 @@ func (s sqlMirrorStore) CreateProcess(ctx context.Context, process *mirror.Proce
 func (s sqlMirrorStore) UpdateProcess(ctx context.Context, process *mirror.Process) (*mirror.Process, error) {
 	res := s.db.WithContext(ctx).
 		Table("mirror_processes").
-		Model(&mirror.Process{}).
 		Where("id", process.ID).
 		Updates(process)
 	if res.Error != nil {
@@ -229,12 +228,12 @@ func (s sqlMirrorStore) GetProcess(ctx context.Context, id uuid.UUID) (*mirror.P
 	return process, nil
 }
 
-func (s sqlMirrorStore) GetProcessesByConfig(ctx context.Context, configID uuid.UUID) ([]*mirror.Process, error) {
+func (s sqlMirrorStore) GetProcessesByNamespaceID(ctx context.Context, namespaceID uuid.UUID) ([]*mirror.Process, error) {
 	var process []*mirror.Process
 
 	res := s.db.WithContext(ctx).
 		Table("mirror_processes").
-		Where("config_id", configID).
+		Where("namespace_id", namespaceID).
 		Find(&process)
 	if res.Error != nil {
 		return nil, res.Error

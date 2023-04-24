@@ -28,7 +28,7 @@ func TestExecuteMirroringProcess(t *testing.T) {
 	}
 
 	config, err := store.CreateConfig(context.Background(), &mirror.Config{
-		ID: direktivRoot.ID,
+		NamespaceID: direktivRoot.ID,
 	})
 	if err != nil {
 		t.Fatalf("unepxected CreateConfig() error = %v", err)

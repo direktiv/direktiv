@@ -73,7 +73,7 @@ func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNam
 		}
 
 		mirConfig, txErr = store.Mirror().CreateConfig(ctx, &mirror.Config{
-			ID:                   ns.ID,
+			NamespaceID:          ns.ID,
 			GitRef:               settings.Ref,
 			URL:                  settings.Url,
 			PublicKey:            settings.PublicKey,
@@ -242,7 +242,7 @@ func (flow *flow) MirrorInfo(ctx context.Context, req *grpc.MirrorInfoRequest) (
 	if err != nil {
 		return nil, err
 	}
-	mirProcesses, err := store.Mirror().GetProcessesByConfig(ctx, mirConfig.ID)
+	mirProcesses, err := store.Mirror().GetProcessesByNamespaceID(ctx, mirConfig.NamespaceID)
 	if err != nil {
 		return nil, err
 	}
@@ -300,11 +300,7 @@ func (flow *flow) MirrorActivityLogs(ctx context.Context, req *grpc.MirrorActivi
 	}
 	defer rollback()
 
-	mirConfig, err := store.Mirror().GetConfig(ctx, ns.ID)
-	if err != nil {
-		return nil, err
-	}
-	mirProcess, err := store.Mirror().GetProcess(ctx, mirConfig.ID)
+	mirProcess, err := store.Mirror().GetProcess(ctx, ns.ID)
 	if err != nil {
 		return nil, err
 	}

@@ -16,7 +16,7 @@ type sqlFileAnnotationsStore struct {
 
 func (s *sqlFileAnnotationsStore) Get(ctx context.Context, fileID uuid.UUID) (*core.FileAnnotations, error) {
 	annotations := &core.FileAnnotations{}
-	res := s.db.WithContext(ctx).Where("file_id", fileID).First(annotations)
+	res := s.db.WithContext(ctx).Table("file_annotations").Where("file_id", fileID).First(annotations)
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 		return nil, core.ErrFileAnnotationsNotSet
 	}
@@ -29,7 +29,7 @@ func (s *sqlFileAnnotationsStore) Get(ctx context.Context, fileID uuid.UUID) (*c
 
 func (s *sqlFileAnnotationsStore) Set(ctx context.Context, annotations *core.FileAnnotations) error {
 	res := s.db.WithContext(ctx).
-		Model(&core.FileAnnotations{}).
+		Table("file_annotations").
 		Where("file_id", annotations.FileID).
 		Update("data", annotations.Data)
 	if res.Error != nil {
@@ -41,7 +41,7 @@ func (s *sqlFileAnnotationsStore) Set(ctx context.Context, annotations *core.Fil
 	if res.RowsAffected == 1 {
 		return nil
 	}
-	res = s.db.WithContext(ctx).Create(annotations)
+	res = s.db.WithContext(ctx).Table("file_annotations").Create(annotations)
 	if res.Error != nil {
 		return res.Error
 	}
