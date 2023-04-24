@@ -35,6 +35,8 @@ export default function MirrorPage(props) {
   const [errorMsg, setErrorMsg] = useState(null);
   const [load, setLoad] = useState(true);
   const [syncVisible, setSyncVisible] = useState(false);
+  const [ts, setTs] = useState(Date.now());
+  const refetch = () => setTs(Date.now());
 
   let path = `/`;
   if (params["*"] !== undefined) {
@@ -51,13 +53,14 @@ export default function MirrorPage(props) {
     sync,
   } = useMirror(
     Config.url,
-    true,
+    false,
     namespace,
     path,
     apiKey,
     "limit=50",
     "order.field=CREATED",
-    "order.direction=DESC"
+    "order.direction=DESC",
+    `timestamp=${ts}`
   );
   const {
     data,
@@ -151,8 +154,6 @@ export default function MirrorPage(props) {
       >
         <Button
           tooltip="Sync mirror with remote"
-          disabledTooltip="Cannot sync mirror while Writable"
-          disabled={!isReadOnly}
           variant="outlined"
           color="info"
           onClick={() => {
@@ -183,6 +184,10 @@ export default function MirrorPage(props) {
 
               onClick: async () => {
                 await syncRef.current(true);
+                refetch();
+                setTimeout(() => {
+                  refetch();
+                }, 2000);
               },
 
               buttonProps: { variant: "contained", color: "primary" },
@@ -200,45 +205,6 @@ export default function MirrorPage(props) {
             </FlexBox>
           </FlexBox>
         </ModalHeadless>
-        <Button
-          variant="outlined"
-          color="info"
-          onClick={async () => {
-            if (isReadOnly) {
-              setCurrentlyLocking(true);
-
-              try {
-                await setLockRef.current(true);
-              } catch (e) {
-                setCurrentlyLocking(false);
-                setErrorMsg(e.message);
-              }
-            } else {
-              setCurrentlyLocking(true);
-              try {
-                await setLockRef.current(false);
-              } catch (e) {
-                setCurrentlyLocking(false);
-                setErrorMsg(e.message);
-              }
-            }
-          }}
-        >
-          <FlexBox center row gap="sm">
-            {isReadOnly ? (
-              <>
-                <VscUnlock />
-                Make Writable
-              </>
-            ) : (
-              <>
-                <VscLock />
-                Make ReadOnly
-              </>
-            )}
-          </FlexBox>
-        </Button>
-        {isReadOnly ? <MirrorReadOnlyBadge /> : <MirrorWritableBadge />}
       </FlexBox>
     );
   }, [currentlyLocking, isReadOnly, syncVisible]);
@@ -320,7 +286,13 @@ export default function MirrorPage(props) {
             </ContentPanel>
             <MirrorInfoPanel
               info={info}
-              updateSettings={updateSettings}
+              updateSettings={async (...props) => {
+                await updateSettings(...props);
+                refetch();
+                setTimeout(() => {
+                  refetch();
+                }, 2000);
+              }}
               namespace={namespace}
               style={{ width: "100%", height: "100%", flex: 1 }}
             />

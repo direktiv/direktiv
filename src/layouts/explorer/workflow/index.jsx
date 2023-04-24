@@ -464,10 +464,12 @@ function WorkingRevision(props) {
     pushOpLoadingState("Save", true);
     updateWorkflow(workflow)
       .then(() => {
+        setCanSave(false);
         setShowErrors(false);
         setTabBlocker(false);
       })
       .catch((opError) => {
+        setCanSave(false);
         setErrors([opError.message]);
         setShowErrors(true);
         pushOpLoadingState("Save", false);
@@ -601,7 +603,7 @@ function WorkingRevision(props) {
                     button={<span style={{ fontSize: "15px" }}>Run</span>}
                     buttonProps={{
                       variant: "contained",
-                      disabled: workflow !== oldWf,
+                      disabled: !!canSave,
                       color: "terminal",
                       tooltip: "Run Workflow",
                       disabledTooltip: "Requires save",
@@ -699,10 +701,12 @@ function WorkingRevision(props) {
                       pushOpLoadingState("Save", true);
                       updateWorkflow(workflow)
                         .then(() => {
+                          setCanSave(false);
                           setShowErrors(false);
                           setTabBlocker(false);
                         })
                         .catch((opError) => {
+                          setCanSave(false);
                           setErrors([opError.message]);
                           setShowErrors(true);
                           pushOpLoadingState("Save", false);

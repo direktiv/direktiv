@@ -10,22 +10,37 @@ const exampleInstanceLogs: LogItem[] = [
   {
     t: "2022-09-08T03:14:20.937850Z",
     msg: "Preparing workflow triggered by api.",
+    tags: {
+      name: "some-log-name",
+    },
   },
   {
     t: "2022-09-08T03:14:20.943963Z",
     msg: "Running state logic (step:1) -- helloworld",
+    tags: {
+      name: "some-log-name",
+    },
   },
   {
     t: "2022-09-08T03:14:20.944829Z",
     msg: '"Very long line. File = VGhpcyBtZXNzYWdlIGlzIGEgbGluayB0byB5b3V0dWJlLCBhbmQgaXMganVzdCBoZXJlIHRvIG1ha2UgdGhlIGxvZyBsaW5lIGxvbmdlci4gSWdub3JlIHRoZSBsaW5rOiBodHRwczovL3d3dy55b3V0dWJlLmNvbS93YXRjaD92PWRRdzR3OVdnWGNR"',
+    tags: {
+      name: "some-log-name",
+    },
   },
   {
     t: "2022-09-08T03:14:20.945668Z",
     msg: "Transforming state data.",
+    tags: {
+      name: "some-log-name",
+    },
   },
   {
     t: "2022-09-08T03:14:20.948874Z",
     msg: "Workflow completed.",
+    tags: {
+      name: "some-log-name",
+    },
   },
 ];
 

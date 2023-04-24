@@ -29,12 +29,6 @@ export const mirrorSettingInfoMetaInfo = {
     placeholder: `Enter repository ref e.g. "main"`,
     info: `Repository reference to sync from. For example this could be a commit hash ("b139f0e") or branch ("main").`,
   },
-  cron: {
-    plainName: "Cron",
-    required: false,
-    placeholder: `Enter cron e.g. "0 * * * *"`,
-    info: `Cron schedule expression for auto-syncing with remote repository. Example auto-sync every hour "0 * * * *". (Optional)`,
-  },
   passphrase: {
     plainName: "Passphrase",
     required: false,
@@ -105,7 +99,7 @@ export default function MirrorInfoPanel(props) {
 
   const infoChangesTrackerRef = useRef(infoChangesTracker);
 
-  const resetStates = useCallback(() => {
+  const resetStates = () => {
     setInfoChangesTracker({
       url: false,
       ref: false,
@@ -114,21 +108,7 @@ export default function MirrorInfoPanel(props) {
       publicKey: false,
       privateKey: false,
     });
-
-    setInfoURL(infoURLOld);
-    setInfoRef(infoRefOld);
-    setInfoCron(infoCronOld);
-    setInfoPublicKey(infoPublicKeyOld);
-    setInfoPrivateKey(infoPrivateKeyOld);
-    setInfoPassphrase(infoPassphraseOld);
-  }, [
-    infoURLOld,
-    infoRefOld,
-    infoCronOld,
-    infoPublicKeyOld,
-    infoPrivateKeyOld,
-    infoPassphraseOld,
-  ]);
+  };
 
   useEffect(() => {
     infoChangesTrackerRef.current = infoChangesTracker;
@@ -255,7 +235,7 @@ export default function MirrorInfoPanel(props) {
     setInfoPendingChanges(
       infoChangesTracker.url ||
         infoChangesTracker.ref ||
-        infoChangesTracker.cron ||
+        // infoChangesTracker.cron ||
         infoChangesTracker.passphrase ||
         infoChangesTracker.publicKey ||
         infoChangesTracker.privateKey ||
@@ -381,7 +361,7 @@ export default function MirrorInfoPanel(props) {
                         const newSettings = {
                           url: infoChangesTracker.url ? infoURL : "-",
                           ref: infoChangesTracker.ref ? infoRef : "-",
-                          cron: infoChangesTracker.cron ? infoCron : "-",
+                          // cron: infoChangesTracker.cron ? infoCron : "-",
                           passphrase: infoChangesTracker.passphrase
                             ? infoPassphrase
                             : "-",
@@ -472,24 +452,6 @@ export default function MirrorInfoPanel(props) {
                         <input
                           className="info-input-value readonly"
                           value={infoRef}
-                        />
-                      </FlexBox>
-                    ) : null}
-                    {infoChangesTracker.cron ? (
-                      <FlexBox col gap style={{ paddingRight: "10px" }}>
-                        <FlexBox col gap="sm" center="x" style={{}}>
-                          <span className="input-title readonly">Cron</span>
-                          {infoCron === "" ? (
-                            <span className="input-description readonly">
-                              {" "}
-                              Warning: Cron will be deleted
-                            </span>
-                          ) : null}
-                        </FlexBox>
-                        <input
-                          className="info-input-value readonly"
-                          readOnly={true}
-                          value={infoCron}
                         />
                       </FlexBox>
                     ) : null}
@@ -696,46 +658,6 @@ export default function MirrorInfoPanel(props) {
               placeholder={mirrorSettingInfoMetaInfo["ref"].placeholder}
             />
           </FlexBox>
-          <FlexBox col gap="sm" style={{ paddingRight: "10px" }}>
-            <FlexBox row style={{ justifyContent: "space-between" }}>
-              <FlexBox row gap="sm" style={{ justifyContent: "flex-start" }}>
-                <span
-                  className={`input-title ${
-                    infoChangesTracker.cron ? "edited" : ""
-                  }`}
-                >
-                  Cron
-                </span>
-                <HelpIcon msg={mirrorSettingInfoMetaInfo["cron"].info} />
-              </FlexBox>
-              <span
-                className={`info-input-undo ${
-                  infoChangesTracker.cron ? "" : "hide"
-                }`}
-                onClick={() => {
-                  setInfoCron(infoCronOld);
-                  setInfoChangesTracker((old) => {
-                    old.cron = false;
-                    return { ...old };
-                  });
-                }}
-              >
-                Undo Changes
-              </span>
-            </FlexBox>
-            <input
-              value={infoCron}
-              onChange={(e) => {
-                setInfoCron(e.target.value);
-                setInfoChangesTracker((old) => {
-                  old.cron = true;
-                  return { ...old };
-                });
-              }}
-              placeholder={mirrorSettingInfoMetaInfo["cron"].placeholder}
-            />
-          </FlexBox>
-
           {/* PERSONAL ACCESS TOKEN Auth Inputs */}
           {mirrorAuthMethod === "token" ? (
             <FlexBox col gap="sm" style={{ paddingRight: "10px" }}>

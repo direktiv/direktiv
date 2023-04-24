@@ -8,11 +8,9 @@ import ContentPanel, {
   ContentPanelTitle,
   ContentPanelTitleIcon,
 } from "../../components/content-panel";
-import Pagination, { usePageHandler } from "../../components/pagination";
 import {
   VscAdd,
   VscClose,
-  VscCloudUpload,
   VscCode,
   VscEdit,
   VscFolderOpened,
@@ -27,7 +25,6 @@ import Alert from "../../components/alert";
 import { AutoSizer } from "react-virtualized";
 import Button from "../../components/button";
 import CircularProgress from "@mui/material/CircularProgress";
-import { ClientFileUpload } from "../../components/navbar";
 import DirektivEditor from "../../components/editor";
 import Fade from "@mui/material/Fade";
 import { FcWorkflow } from "react-icons/fc";
@@ -35,24 +32,18 @@ import { FiFolder } from "react-icons/fi";
 import FlexBox from "../../components/flexbox";
 import HelpIcon from "../../components/help";
 import { HiOutlineTrash } from "react-icons/hi";
-import HideShowButton from "../../components/hide-show";
 import Loader from "../../components/loader";
-import { MirrorReadOnlyBadge } from "../mirror";
 import Modal from "../../components/modal";
 import NotFound from "../notfound";
-import Tabs from "../../components/tabs";
-import Tippy from "@tippyjs/react";
 import WorkflowPage from "./workflow";
 import WorkflowPod from "./workflow/pod";
 import WorkflowRevisions from "./workflow/revision";
-import { mirrorSettingInfoMetaInfo } from "../mirror/info";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { useApiKey } from "../../util/apiKeyProvider";
 import { useNodes } from "../../hooks";
 import { useSearchParams } from "react-router-dom";
 import utc from "dayjs/plugin/utc";
 
-const PAGE_SIZE = 10;
 const apiHelps = (namespace) => {
   const url = window.location.origin;
   return [
@@ -209,36 +200,22 @@ function ExplorerList(props) {
 
   const [name, setName] = useState("");
   const [load, setLoad] = useState(true);
-  const [tabIndex, setTabIndex] = useState(0);
-  const [isReadOnly, setIsReadOnly] = useState(false);
 
-  const [orderFieldKey, setOrderFieldKey] = useState(orderFieldKeys[0]);
+  const orderFieldKey = orderFieldKeys[0];
 
   const [streamNodes, setStreamNodes] = useState(false);
   const [queryParams, setQueryParams] = useState([]);
 
-  const pageHandler = usePageHandler(PAGE_SIZE);
-  const goToFirstPage = pageHandler.goToFirstPage;
-
   const [ts, setTs] = useState(Date.now());
   const refetch = () => setTs(Date.now());
 
-  const {
-    data,
-    err,
-    templates,
-    pageInfo,
-    createNode,
-    createMirrorNode,
-    deleteNode,
-    renameNode,
-  } = useNodes(
+  const { data, err, templates, createNode, deleteNode, renameNode } = useNodes(
     Config.url,
     streamNodes,
     namespace,
     path,
     apiKey,
-    pageHandler.pageParams,
+    // pageHandler.pageParams,
     ...queryParams,
     `order.field=${orderFieldDictionary[orderFieldKey]}`,
     `filter.field=NAME`,
@@ -249,30 +226,6 @@ function ExplorerList(props) {
 
   const [wfData, setWfData] = useState(templates["noop"].data);
   const [wfTemplate, setWfTemplate] = useState("noop");
-
-  // Reset Page to start when filters changes
-  useEffect(() => {
-    // TODO: This will interfere with page position if initPage > 1
-    goToFirstPage();
-  }, [search, goToFirstPage, path]);
-
-  // Mirror
-  const [showPassphrase, setShowPassphrase] = useState(false);
-  const [mirrorAuthMethod, setMirrorAuthMethod] = useState("none");
-  const [mirrorSettings, setMirrorSettings] = useState({
-    url: "",
-    ref: "",
-    cron: "",
-    passphrase: "",
-    token: "",
-    publicKey: "",
-    privateKey: "",
-  });
-
-  const [mirrorErrors, setMirrorErrors] = useState({
-    publicKey: null,
-    privateKey: null,
-  });
 
   useEffect(() => {
     setStreamNodes(false);
@@ -297,28 +250,8 @@ function ExplorerList(props) {
   useEffect(() => {
     if (data !== null || err !== null) {
       setLoad(false);
-      setIsReadOnly(data?.node?.readOnly);
     }
   }, [data, err]);
-
-  useEffect(() => {
-    if (!setBreadcrumbChildrenRef.current) {
-      return;
-    }
-
-    setBreadcrumbChildrenRef.current(
-      isReadOnly ? (
-        <FlexBox
-          center
-          row
-          gap
-          style={{ justifyContent: "flex-end", paddingRight: "6px" }}
-        >
-          <MirrorReadOnlyBadge />
-        </FlexBox>
-      ) : null
-    );
-  }, [isReadOnly]);
 
   // Keep Refs up to date
   useEffect(() => {
@@ -393,9 +326,6 @@ function ExplorerList(props) {
                     ))}
                   </Modal>
                 </div>
-              </FlexBox>
-              <FlexBox style={{ flexDirection: "row-reverse" }}>
-                <SearchBar setSearch={setSearch} />
               </FlexBox>
             </FlexBox>
             <ContentPanel>
@@ -551,49 +481,13 @@ function ExplorerList(props) {
                     }
                     onClose={() => {
                       setName("");
-                      setMirrorSettings({
-                        url: "",
-                        ref: "",
-                        cron: "",
-                        passphrase: "",
-                        token: "",
-                        publicKey: "",
-                        privateKey: "",
-                      });
-                      setShowPassphrase(false);
-                      setMirrorAuthMethod("none");
-                      setTabIndex(0);
                     }}
                     actionButtons={[
                       {
                         label: "Add",
-
                         onClick: async () => {
-                          if (tabIndex === 0) {
-                            await createNode(name, "directory");
-                            refetch();
-                          } else {
-                            const processesMirrorSettings = JSON.parse(
-                              JSON.stringify(mirrorSettings)
-                            );
-                            if (mirrorAuthMethod === "token") {
-                              processesMirrorSettings["passphrase"] =
-                                processesMirrorSettings["token"];
-                              processesMirrorSettings["privateKey"] = "";
-                              processesMirrorSettings["publicKey"] = "";
-                            } else if (mirrorAuthMethod === "none") {
-                              processesMirrorSettings["passphrase"] = "";
-                              processesMirrorSettings["privateKey"] = "";
-                              processesMirrorSettings["publicKey"] = "";
-                            }
-
-                            delete processesMirrorSettings["token"];
-                            await createMirrorNode(
-                              name,
-                              processesMirrorSettings
-                            );
-                            refetch();
-                          }
+                          await createNode(name, "directory");
+                          refetch();
                         },
 
                         buttonProps: {
@@ -614,11 +508,7 @@ function ExplorerList(props) {
                         code: "Enter",
 
                         fn: async () => {
-                          if (tabIndex === 0) {
-                            await createNode(name, "directory");
-                          } else {
-                            await createMirrorNode(name, mirrorSettings);
-                          }
+                          await createNode(name, "directory");
                           refetch();
                         },
                         closeModal: true,
@@ -626,286 +516,23 @@ function ExplorerList(props) {
                     ]}
                     requiredFields={[
                       { tip: "directory name is required", value: name },
-                      {
-                        tip: "mirror url is required",
-                        value: tabIndex === 0 ? true : mirrorSettings.url,
-                      },
-                      {
-                        tip: "mirror ref is required",
-                        value: tabIndex === 0 ? true : mirrorSettings.ref,
-                      },
-                      {
-                        tip: "public key is required",
-                        value:
-                          tabIndex === 0 ||
-                          mirrorAuthMethod === "none" ||
-                          mirrorAuthMethod === "token"
-                            ? true
-                            : mirrorSettings.publicKey,
-                      },
-                      {
-                        tip: "private key is required",
-                        value:
-                          tabIndex === 0 ||
-                          mirrorAuthMethod === "none" ||
-                          mirrorAuthMethod === "token"
-                            ? true
-                            : mirrorSettings.privateKey,
-                      },
-                      {
-                        tip: "token is required",
-                        value:
-                          tabIndex === 0 ||
-                          mirrorAuthMethod === "none" ||
-                          mirrorAuthMethod === "ssh"
-                            ? true
-                            : mirrorSettings.token,
-                      },
                     ]}
                   >
-                    <Tabs
-                      // TODO: change wf-execute-input => tabbed-form
-                      id="wf-execute-input"
-                      key="inputForm"
-                      callback={setTabIndex}
-                      tabIndex={tabIndex}
-                      style={{ minWidth: "300px" }}
-                      headers={["Standard", "Mirror"]}
-                      tabs={[
-                        // no key needed for static array
-                        // eslint-disable-next-line react/jsx-key
-                        <FlexBox col gap="sm" style={{ paddingRight: "12px" }}>
-                          <FlexBox
-                            row
-                            gap="sm"
-                            style={{ justifyContent: "flex-start" }}
-                          >
-                            <span className="input-title">Directory*</span>
-                          </FlexBox>
-                          <input
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            autoFocus
-                            placeholder="Enter a directory name"
-                          />
-                        </FlexBox>,
-                        // no key needed for static array
-                        // eslint-disable-next-line react/jsx-key
-                        <FlexBox col gap>
-                          <FlexBox
-                            col
-                            gap="sm"
-                            style={{ paddingRight: "12px" }}
-                          >
-                            <FlexBox
-                              row
-                              gap="sm"
-                              style={{ justifyContent: "flex-start" }}
-                            >
-                              <span className="input-title">Directory*</span>
-                            </FlexBox>
-                            <input
-                              autoFocus
-                              value={name}
-                              onChange={(e) => setName(e.target.value)}
-                              placeholder="Enter a directory name"
-                            />
-                          </FlexBox>
-                          <FlexBox col gap="sm">
-                            <FlexBox
-                              row
-                              gap="sm"
-                              style={{ justifyContent: "flex-start" }}
-                            >
-                              <span className="input-title">
-                                Authentication Method
-                              </span>
-                            </FlexBox>
-                            <div
-                              style={{
-                                width: "100%",
-                                paddingRight: "12px",
-                                display: "flex",
-                              }}
-                            >
-                              <select
-                                style={{ width: "100%" }}
-                                defaultValue={mirrorAuthMethod}
-                                value={mirrorAuthMethod}
-                                onChange={(e) => {
-                                  setMirrorAuthMethod(e.target.value);
-                                }}
-                              >
-                                <option value="none">None</option>
-                                <option value="ssh">SSH Keys</option>
-                                <option value="token">Access Token</option>
-                              </select>
-                            </div>
-                          </FlexBox>
-                          {Object.entries(mirrorSettings).map(
-                            ([key, value]) => {
-                              if (
-                                (mirrorAuthMethod === "token" ||
-                                  mirrorAuthMethod === "none") &&
-                                (key === "publicKey" ||
-                                  key === "privateKey" ||
-                                  key === "passphrase")
-                              ) {
-                                return null;
-                              }
-
-                              if (
-                                (mirrorAuthMethod === "ssh" ||
-                                  mirrorAuthMethod === "none") &&
-                                key === "token"
-                              ) {
-                                return null;
-                              }
-
-                              return (
-                                <FlexBox
-                                  key={`input-new-ns-${key}`}
-                                  className="col gap-sm"
-                                  style={{ paddingRight: "12px" }}
-                                >
-                                  <FlexBox
-                                    row
-                                    style={{
-                                      justifyContent: "space-between",
-                                    }}
-                                  >
-                                    <FlexBox
-                                      row
-                                      gap="sm"
-                                      style={{ justifyContent: "flex-start" }}
-                                    >
-                                      <span className="input-title">
-                                        {
-                                          mirrorSettingInfoMetaInfo[key]
-                                            .plainName
-                                        }
-                                        {mirrorSettingInfoMetaInfo[key].required
-                                          ? "*"
-                                          : ""}
-                                      </span>
-                                      {mirrorSettingInfoMetaInfo[key].info ? (
-                                        <>
-                                          <HelpIcon
-                                            msg={
-                                              mirrorSettingInfoMetaInfo[key]
-                                                .info
-                                            }
-                                            zIndex={9999}
-                                          />
-                                          {key === "passphrase" ? (
-                                            <HideShowButton
-                                              show={showPassphrase}
-                                              setShow={setShowPassphrase}
-                                              field="Passphrase"
-                                            />
-                                          ) : null}
-                                        </>
-                                      ) : null}
-                                    </FlexBox>
-                                    {key === "publicKey" ||
-                                    key === "privateKey" ? (
-                                      <ClientFileUpload
-                                        setFile={(fileData) => {
-                                          const newSettings = mirrorSettings;
-                                          newSettings[key] = fileData;
-                                          setMirrorSettings({
-                                            ...newSettings,
-                                          });
-                                        }}
-                                        setError={(errorMsg) => {
-                                          const newErrors = mirrorErrors;
-                                          newErrors[key] = errorMsg;
-                                          setMirrorErrors({ ...newErrors });
-                                        }}
-                                        maxSize={40960}
-                                      >
-                                        <Tippy
-                                          content={
-                                            mirrorErrors[key]
-                                              ? mirrorErrors[key]
-                                              : `Upload key plaintext file content to ${mirrorSettingInfoMetaInfo[key].plainName} input. Warning: this will replace current ${mirrorSettingInfoMetaInfo[key].plainName} content`
-                                          }
-                                          trigger="click mouseenter focus"
-                                          onHide={() => {
-                                            const newErrors = mirrorErrors;
-                                            newErrors[key] = null;
-                                            setMirrorErrors({ ...newErrors });
-                                          }}
-                                          zIndex={10}
-                                        >
-                                          <div className="input-title-button">
-                                            <FlexBox
-                                              center
-                                              row
-                                              gap="sm"
-                                              style={{
-                                                justifyContent: "flex-end",
-                                                marginRight: "-6px",
-                                                fontWeight: "normal",
-                                              }}
-                                            >
-                                              <span>Upload</span>
-                                              <VscCloudUpload />
-                                            </FlexBox>
-                                          </div>
-                                        </Tippy>
-                                      </ClientFileUpload>
-                                    ) : null}
-                                  </FlexBox>
-                                  {key === "publicKey" ||
-                                  key === "privateKey" ||
-                                  key === "token" ? (
-                                    <textarea
-                                      style={{
-                                        width: "100%",
-                                        resize: "none",
-                                      }}
-                                      rows={5}
-                                      value={value}
-                                      onChange={(e) => {
-                                        const newSettings = mirrorSettings;
-                                        newSettings[key] = e.target.value;
-                                        setMirrorSettings({ ...newSettings });
-                                      }}
-                                      autoFocus
-                                      placeholder={
-                                        mirrorSettingInfoMetaInfo[key]
-                                          .placeholder
-                                      }
-                                    />
-                                  ) : (
-                                    <input
-                                      type={
-                                        key === "passphrase" && !showPassphrase
-                                          ? "password"
-                                          : "text"
-                                      }
-                                      style={{ width: "100%" }}
-                                      value={value}
-                                      onChange={(e) => {
-                                        const newSettings = mirrorSettings;
-                                        newSettings[key] = e.target.value;
-                                        setMirrorSettings({ ...newSettings });
-                                      }}
-                                      autoFocus
-                                      placeholder={
-                                        mirrorSettingInfoMetaInfo[key]
-                                          .placeholder
-                                      }
-                                    />
-                                  )}
-                                </FlexBox>
-                              );
-                            }
-                          )}
-                        </FlexBox>,
-                      ]}
-                    />
+                    <FlexBox col gap="sm" style={{ paddingRight: "12px" }}>
+                      <FlexBox
+                        row
+                        gap="sm"
+                        style={{ justifyContent: "flex-start" }}
+                      >
+                        <span className="input-title">Directory*</span>
+                      </FlexBox>
+                      <input
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        autoFocus
+                        placeholder="Enter a directory name"
+                      />
+                    </FlexBox>
                   </Modal>
                   {data && data?.node?.expandedType === "git" ? (
                     <Button
@@ -917,43 +544,11 @@ function ExplorerList(props) {
                       <span>Mirror Info</span>
                     </Button>
                   ) : null}
-                  <div className="explorer-sort-by explorer-action-btn hide-600">
-                    <FlexBox gap style={{ marginRight: "8px" }}>
-                      <FlexBox center>Sort by:</FlexBox>
-                      <FlexBox center>
-                        <select
-                          onChange={(e) => {
-                            setOrderFieldKey(e.target.value);
-                            setQueryParams([]);
-                          }}
-                          value={orderFieldKey}
-                          className="dropdown-select"
-                          style={{
-                            paddingBottom: "0px",
-                            paddingTop: "0px",
-                            height: "27px",
-                          }}
-                        >
-                          <option value="">{orderFieldKey}</option>
-                          {orderFieldKeys.map((key) => {
-                            if (key === orderFieldKey) {
-                              return "";
-                            }
-                            return (
-                              <option key={GenerateRandomKey()} value={key}>
-                                {key}
-                              </option>
-                            );
-                          })}
-                        </select>
-                      </FlexBox>
-                    </FlexBox>
-                  </div>
                 </FlexBox>
               </ContentPanelTitle>
               <ContentPanelBody style={{ height: "100%" }}>
                 <FlexBox col>
-                  {data === null || pageInfo === null ? (
+                  {data === null ? (
                     <div className="explorer-item">
                       <FlexBox className="explorer-item-container">
                         {err === "permission denied" ? (
@@ -968,12 +563,10 @@ function ExplorerList(props) {
                               className="explorer-item-icon"
                             >
                               <Fade
-                                in={data === null || pageInfo === null}
+                                in={data === null}
                                 style={{
                                   transitionDelay:
-                                    data === null || pageInfo === null
-                                      ? "200ms"
-                                      : "0ms",
+                                    data === null ? "200ms" : "0ms",
                                 }}
                                 unmountOnExit
                               >
@@ -1051,16 +644,6 @@ function ExplorerList(props) {
                 </FlexBox>
               </ContentPanelBody>
             </ContentPanel>
-            <FlexBox
-              row
-              style={{
-                justifyContent: "flex-end",
-                paddingBottom: "1em",
-                flexGrow: 0,
-              }}
-            >
-              <Pagination pageHandler={pageHandler} pageInfo={pageInfo} />
-            </FlexBox>
           </Loader>
         </FlexBox>
       )}
@@ -1119,6 +702,7 @@ function DirListItem(props) {
                   if (e.key === "Enter") {
                     try {
                       await renameNode("/", path, renameValue);
+                      refetch();
                       setRename(!rename);
                     } catch (err) {
                       setErr(err.message);
@@ -1272,6 +856,7 @@ function WorkflowListItem(props) {
                   if (e.key === "Enter") {
                     try {
                       await renameNode("/", path, renameValue);
+                      refetch();
                       setRename(!rename);
                     } catch (err) {
                       setErr(err.message);
