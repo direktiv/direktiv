@@ -44,7 +44,7 @@ func TestExecuteMirroringProcess(t *testing.T) {
 
 	manager := mirror.NewDefaultManager(zap.NewNop().Sugar(), store, fs, source, nil)
 
-	_, err = manager.StartMirroringProcess(context.Background(), config)
+	_, err = manager.StartInitialMirroringProcess(context.Background(), config)
 	if err != nil {
 		t.Fatalf("unepxected ExecuteMirroringProcess() error = %v", err)
 	}
