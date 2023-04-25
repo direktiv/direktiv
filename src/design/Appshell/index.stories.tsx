@@ -149,7 +149,7 @@ const TopRightComponent: FC<{
           role="button"
           icon
         >
-          <div className="text-neutral-content h-7 w-7 rounded-full bg-primary-500">
+          <div className="text-neutral-content flex h-7 w-7 items-center justify-center rounded-full bg-primary-500">
             <span className="text-xs">Ad</span>
           </div>
           <RxChevronDown />
@@ -218,7 +218,9 @@ export const MoreDetailedShell = () => {
                 role="button"
               >
                 <SheetTrigger>
-                  <Menu />
+                  <div className="text-gray-10 dark:text-gray-dark-10">
+                    <Menu />
+                  </div>
                 </SheetTrigger>
               </label>
               <Logo
@@ -283,19 +285,14 @@ export const MoreDetailedShell = () => {
                   <Breadcrumb>
                     <Github className="h-4 w-auto" />
                     Example Mirror
-
                   </Breadcrumb>
                   <Breadcrumb>
-
                     <FolderOpen className="h-4 w-auto" />
                     Folder
-
                   </Breadcrumb>
                   <Breadcrumb>
-
                     <Play className="h-4 w-auto" />
                     workflow.yml
-
                   </Breadcrumb>
                 </BreadcrumbRoot>
               </MainTopLeft>

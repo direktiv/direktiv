@@ -14,7 +14,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../../design/Dropdown";
-import { Link, useNavigate } from "react-router-dom";
 import { useNamespace, useNamespaceActions } from "../../util/store/namespace";
 
 import BreadcrumbSegment from "./BreadcrumbSegment";
@@ -23,6 +22,7 @@ import NamespaceCreate from "../NamespaceCreate";
 import { analyzePath } from "../../util/router/utils";
 import { pages } from "../../util/router/pages";
 import { useListNamespaces } from "../../api/namespaces/query/get";
+import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
 const Breadcrumb = () => {
@@ -46,11 +46,9 @@ const Breadcrumb = () => {
   };
   return (
     <BreadcrumbRoot>
-      <BreadcrumbLink>
-        <Link to={pages.explorer.createHref({ namespace })} className="gap-2">
-          <Home />
-          {namespace}
-        </Link>
+      <BreadcrumbLink href={pages.explorer.createHref({ namespace })}>
+        <Home />
+        {namespace}
         &nbsp;
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DropdownMenu>

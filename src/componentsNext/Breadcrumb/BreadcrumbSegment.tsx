@@ -2,7 +2,6 @@ import { FolderOpen, Play } from "lucide-react";
 
 import { Breadcrumb as BreadcrumbLink } from "../../design/Breadcrumbs";
 import { FC } from "react";
-import { Link } from "react-router-dom";
 import { pages } from "../../util/router/pages";
 import { useNamespace } from "../../util/store/namespace";
 
@@ -24,11 +23,9 @@ const BreadcrumbSegment: FC<{
     : pages.explorer.createHref({ namespace, path: absolute });
 
   return (
-    <BreadcrumbLink>
-      <Link to={link} className="gap-2">
-        <Icon aria-hidden="true" />
-        {relative}
-      </Link>
+    <BreadcrumbLink href={link}>
+      <Icon aria-hidden="true" />
+      {relative}
     </BreadcrumbLink>
   );
 };

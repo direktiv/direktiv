@@ -51,7 +51,10 @@ const SelectContent = React.forwardRef<
     <SelectPrimitive.Content
       ref={ref}
       className={clsx(
-        "card-bordered card z-50 shadow-md",
+        "z-50 shadow-md",
+        "rounded-md ring-1",
+        "ring-black/5",
+        "dark:ring-white/5",
         "border-gray-3 bg-gray-1",
         "dark:border-gray-dark-3 dark:bg-gray-dark-1",
         className

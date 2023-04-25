@@ -98,8 +98,8 @@ const getSizeClass = (position: string, size: string): string => {
 };
 export interface DialogContentProps
   extends React.ComponentPropsWithoutRef<typeof SheetPrimitive.Content> {
-  position: "top" | "bottom" | "left" | "right";
-  size: "default" | "content" | "sm" | "lg" | "xl" | "full";
+  position?: "top" | "bottom" | "left" | "right";
+  size?: "default" | "content" | "sm" | "lg" | "xl" | "full";
   noClose?: boolean;
 }
 
@@ -108,7 +108,14 @@ const SheetContent = React.forwardRef<
   DialogContentProps
 >(
   (
-    { position = "left", size, className, children, noClose, ...props },
+    {
+      position = "left",
+      size = "default",
+      className,
+      children,
+      noClose,
+      ...props
+    },
     ref
   ) => (
     <SheetPortal position={position}>
@@ -116,7 +123,7 @@ const SheetContent = React.forwardRef<
       <SheetPrimitive.Content
         ref={ref}
         className={clsx(
-          "fixed inset-0 z-50 scale-100 gap-4  border bg-white p-6 opacity-100 shadow-lg dark:bg-black",
+          "fixed inset-0 z-50 scale-100 gap-4 bg-white p-4 opacity-100 shadow-lg dark:bg-black ",
           position === "top" &&
             "w-full animate-in slide-in-from-top duration-300",
           position === "bottom" &&

@@ -8,7 +8,6 @@ import {
   Sun,
   Terminal,
 } from "lucide-react";
-import { DrawerContent, DrawerMenu, DrawerRoot } from "../../design/Drawer";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,10 +27,12 @@ import {
   SidebarMain,
   SidebarTop,
 } from "../../design/Appshell";
+import { Sheet, SheetContent, SheetTrigger } from "../../design/Sheet";
 import { useTheme, useThemeActions } from "../../util/store/theme";
 
 import Breadcrumb from "../../componentsNext/Breadcrumb";
 import Button from "../../design/Button";
+import { DrawerContent } from "../../design/Drawer";
 import { FC } from "react";
 import Logo from "../../design/Logo";
 import Navigation from "../../componentsNext/Navigation";
@@ -93,7 +94,7 @@ const TopRightComponent: FC<{ className?: string }> = ({ className }) => {
             role="button"
             icon
           >
-            <div className="text-neutral-content h-7 w-7 rounded-full bg-primary-500">
+            <div className="text-neutral-content flex h-7 w-7 items-center justify-center rounded-full bg-primary-500">
               <span className="text-xs">Ad</span>
             </div>
             <RxChevronDown />
@@ -117,7 +118,7 @@ const Layout = () => {
 
   return (
     <Root>
-      <DrawerRoot>
+      <Sheet>
         <DrawerContent>
           {({ drawerLabelProps }) => (
             <>
@@ -128,7 +129,11 @@ const Layout = () => {
                     className="justify-self-start px-1 lg:hidden"
                     role="button"
                   >
-                    <Menu />
+                    <SheetTrigger>
+                      <div className="text-gray-10 dark:text-gray-dark-10">
+                        <Menu />
+                      </div>
+                    </SheetTrigger>
                   </label>
                   <Logo
                     iconOnly
@@ -157,10 +162,13 @@ const Layout = () => {
             </>
           )}
         </DrawerContent>
-        <DrawerMenu>
+        <SheetContent size="sm" position="left" noClose>
+          <div className="px-2">
+            <Logo className="mb-5 mt-1 h-8 w-auto" />
+          </div>
           <Navigation />
-        </DrawerMenu>
-      </DrawerRoot>
+        </SheetContent>
+      </Sheet>
     </Root>
   );
 };
