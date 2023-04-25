@@ -49,6 +49,8 @@ type FileStore interface {
 	GetRevision(ctx context.Context, id uuid.UUID) (*File, *Revision, error)
 }
 
+// Root represents an isolated filesystems. Users of filestore can create and deletes multiple roots. In Direktiv,
+// we create a dedicated root for every namespace.
 type Root struct {
 	ID uuid.UUID
 
@@ -56,7 +58,9 @@ type Root struct {
 	UpdatedAt time.Time
 }
 
+// RootQuery performs different queries associated to a root.
 type RootQuery interface {
+	// GetFile grabs a file from the root.
 	GetFile(ctx context.Context, path string) (*File, error)
 
 	// CreateFile creates both files and directories,
@@ -64,14 +68,22 @@ type RootQuery interface {
 	// Param 'path' should not already exist and the parent directory of 'path' should exist.
 	// Param 'dataReader' should be nil when creating directories, and should be none nil when creating files.
 	CreateFile(ctx context.Context, path string, typ FileType, dataReader io.Reader) (*File, *Revision, error)
+
+	// ReadDirectory lists all files and directories in a path.
 	ReadDirectory(ctx context.Context, path string) ([]*File, error)
+
+	// Delete the root itself.
 	Delete(ctx context.Context) error
+
+	// CalculateChecksumsMap returns a map with all file paths and their checksums.
 	CalculateChecksumsMap(ctx context.Context) (map[string]string, error)
 
 	// IsEmptyDirectory returns true if path exist and of type directory and empty,
 	// and false if path exist and of type directory and none empty.
 	// If directory doesn't exist, it returns ErrNotFound.
 	IsEmptyDirectory(ctx context.Context, path string) (bool, error)
+
+	// ListAllFiles lists all files and directories in the filestore, this method used to help testing filestore logic.
 	ListAllFiles(ctx context.Context) ([]*File, error)
 
 	// CropFilesAndDirectories removes all files and directories that don't appear in excludePaths.
