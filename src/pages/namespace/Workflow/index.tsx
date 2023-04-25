@@ -4,14 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../design/Tabs";
 import Button from "../../../design/Button";
 import { FC } from "react";
 import { RxChevronDown } from "react-icons/rx";
-import clsx from "clsx";
 
-const tabs = [
-  { name: "Overview", href: "#", icon: PieChart, current: true },
-  { name: "Active Revisions", href: "#", icon: GitCommit, current: false },
-  { name: "Revisions", href: "#", icon: GitMerge, current: false },
-  { name: "Settings", href: "#", icon: Settings, current: false },
-];
 const WorkflowPage: FC = () => (
   <div className="space-y-5 border-b border-gray-5 bg-gray-2 p-5 pb-0 dark:border-gray-dark-5">
     <div className="flex flex-col max-sm:space-y-4 sm:flex-row sm:items-center sm:justify-between">

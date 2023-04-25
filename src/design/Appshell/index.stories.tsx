@@ -47,11 +47,7 @@ import {
   SidebarMain,
   SidebarTop,
 } from "./index";
-<<<<<<< HEAD
 import { Sheet, SheetContent, SheetMain, SheetTrigger } from "../Sheet";
-=======
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../Tabs";
->>>>>>> 165238a4abc056588f74bc3d75e016d63f07fbf7
 
 import Button from "../Button";
 import Logo from "../Logo";
@@ -72,6 +68,13 @@ const navigation = [
   { name: "Gateway", href: "#", icon: Network, current: false },
   { name: "Permissions", href: "#", icon: Users, current: false },
   { name: "Services", href: "#", icon: Layers, current: false },
+  { name: "Settings", href: "#", icon: Settings, current: false },
+];
+
+const tabs = [
+  { name: "Overview", href: "#", icon: PieChart, current: true },
+  { name: "Active Revisions", href: "#", icon: GitCommit, current: false },
+  { name: "Revisions", href: "#", icon: GitMerge, current: false },
   { name: "Settings", href: "#", icon: Settings, current: false },
 ];
 
