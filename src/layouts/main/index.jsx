@@ -41,64 +41,71 @@ function NamespaceNavigation(props) {
   const [breadcrumbChildren, setBreadcrumbChildren] = useState(null);
   const navigate = useNavigate();
 
+  const [redirected, setRedirected] = useState(false);
+
   // on mount check if namespace is stored in local storage and exists in the response given back
   useEffect(() => {
-    // only do this check if its not provided in the params
-    if (
-      namespaces !== null &&
-      namespaces !== undefined &&
-      namespaces.length > 0
-    ) {
-      const urlpath = window.location.pathname.split("/");
-      let ns = localStorage.getItem("namespace");
-      if (urlpath[1] && urlpath[1] === "n") {
-        // urlpath[2] would be the namespace
-        ns = urlpath[2];
-      }
-      if (ns) {
-        let found = false;
-        for (let i = 0; i < namespaces.length; i++) {
-          if (namespaces[i].name === ns) {
-            found = true;
-            break;
-          }
+    if (redirected === false) {
+      // only do this check if its not provided in the params
+      if (
+        namespaces !== null &&
+        namespaces !== undefined &&
+        namespaces.length > 0
+      ) {
+        const urlpath = window.location.pathname.split("/");
+        let ns = localStorage.getItem("namespace");
+        if (urlpath[1] && urlpath[1] === "n") {
+          // urlpath[2] would be the namespace
+          ns = urlpath[2];
         }
-        if (!found) {
-          // not found set it to the index page
-          setNamespace("");
-          setLoad(false);
-          localStorage.setItem("namespace", "");
-          navigate("/", { replace: true });
-          return;
+        if (ns) {
+          let found = false;
+          for (let i = 0; i < namespaces.length; i++) {
+            if (namespaces[i].name === ns) {
+              found = true;
+              break;
+            }
+          }
+          if (!found) {
+            // not found set it to the index page
+            setNamespace("");
+            setLoad(false);
+            localStorage.setItem("namespace", "");
+            setRedirected(true);
+            navigate("/", { replace: true });
+            return;
+          }
+        } else {
+          // locally stored namespace didn't exist in array so choose the 1st element
+          ns = namespaces[0].name;
+        }
+        // namespace is good and found go to this one
+        localStorage.setItem("namespace", ns);
+        setNamespace(ns);
+        setLoad(false);
+        if (window.location.pathname === "/") {
+          setRedirected(true);
+          navigate(`/n/${ns}`, { replace: true });
         }
       } else {
-        // locally stored namespace didn't exist in array so choose the 1st element
-        ns = namespaces[0].name;
+        // no namespaces should we should reset namespace back to ""
+        if (!load) {
+          setNamespace("");
+        }
+        setLoad(false);
       }
-      // namespace is good and found go to this one
-      localStorage.setItem("namespace", ns);
-      setNamespace(ns);
-      setLoad(false);
-      if (window.location.pathname === "/") {
-        navigate(`/n/${ns}`, { replace: true });
-      }
-    } else {
-      // no namespaces should we should reset namespace back to ""
-      if (!load) {
-        setNamespace("");
-      }
-      setLoad(false);
-    }
 
-    if (
-      namespaces !== null &&
-      namespaces !== undefined &&
-      namespaces.length === 0 &&
-      window.location.pathname !== "/"
-    ) {
-      navigate("/", { replace: true });
+      if (
+        namespaces !== null &&
+        namespaces !== undefined &&
+        namespaces.length === 0 &&
+        window.location.pathname !== "/"
+      ) {
+        setRedirected(true);
+        navigate("/", { replace: true });
+      }
     }
-  }, [namespaces, navigate, setNamespace, namespace, load]);
+  }, [namespaces, navigate, setNamespace, namespace, load, redirected]);
 
   if (load) {
     return "xxx";

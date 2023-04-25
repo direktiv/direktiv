@@ -1,6 +1,7 @@
 /// <reference types="vitest" />
 import { defineConfig, loadEnv } from "vite";
 
+import { envVariablesSchema } from "./src/config/env/schema";
 import fs from "fs";
 import path from "path";
 import react from "@vitejs/plugin-react";
@@ -27,9 +28,13 @@ export function reactVirtualized() {
 }
 
 export default ({ mode }) => {
-  const { VITE_DEV_API_DOMAIN } = loadEnv(mode, process.cwd());
+  const env = loadEnv(mode, process.cwd());
 
-  if (!VITE_DEV_API_DOMAIN) {
+  const parsedEnv = envVariablesSchema.parse(env);
+
+  const { VITE_DEV_API_DOMAIN: apiDomain } = parsedEnv;
+
+  if (!apiDomain) {
     console.warn("VITE_DEV_API_DOMAIN is not set, no API proxy will be used");
   }
 
@@ -37,10 +42,10 @@ export default ({ mode }) => {
     server: {
       host: "0.0.0.0",
       port: 3000,
-      proxy: VITE_DEV_API_DOMAIN
+      proxy: apiDomain
         ? {
             "/api": {
-              target: VITE_DEV_API_DOMAIN,
+              target: apiDomain,
             },
           }
         : {},

@@ -1,6 +1,6 @@
 import "./style.css";
 
-import { Link, matchPath, useLocation, useNavigate } from "react-router-dom";
+import { Link, matchPath, useLocation } from "react-router-dom";
 import React, { useCallback, useState } from "react";
 import {
   VscAdd,
@@ -169,7 +169,6 @@ function NewNamespaceBtn(props) {
   const [mirrorSettings, setMirrorSettings] = useState({
     url: "",
     ref: "",
-    cron: "",
     passphrase: "",
     token: "",
     publicKey: "",
@@ -182,7 +181,6 @@ function NewNamespaceBtn(props) {
   });
 
   const [ns, setNs] = useState("");
-  const navigate = useNavigate();
 
   return (
     <Modal
@@ -208,7 +206,6 @@ function NewNamespaceBtn(props) {
         setMirrorSettings({
           url: "",
           ref: "",
-          cron: "",
           passphrase: "",
           token: "",
           publicKey: "",
@@ -224,9 +221,8 @@ function NewNamespaceBtn(props) {
 
           fn: async () => {
             await createNamespace(ns);
-            setTimeout(() => {
-              navigate(`/n/${ns}`);
-            }, 200);
+            localStorage.setItem("namespace", ns);
+            window.location = `/n/${ns}`;
             setNs("");
           },
           closeModal: true,
@@ -258,7 +254,8 @@ function NewNamespaceBtn(props) {
               await createMirrorNamespace(ns, processesMirrorSettings);
             }
             setTimeout(() => {
-              navigate(`/n/${ns}`);
+              localStorage.setItem("namespace", ns);
+              window.location = `/n/${ns}`;
             }, 200);
             setNs("");
           },

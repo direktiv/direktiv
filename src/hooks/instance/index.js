@@ -29,8 +29,6 @@ export const useDirektivInstanceLogs = (
   ...queryParameters
 ) => {
   const [data, setData] = React.useState(null);
-  const logsRef = React.useRef([]);
-
   const [err, setErr] = React.useState(null);
   const eventSource = React.useRef(null);
 
@@ -70,19 +68,17 @@ export const useDirektivInstanceLogs = (
   );
 
   React.useEffect(() => {
-    const log = logsRef.current;
     async function readData(e) {
       if (e.data === "") {
         return;
       }
       const json = JSON.parse(e.data);
-      for (let i = 0; i < json.results.length; i++) {
-        log.push(json.results[i]);
+      if (Array.isArray(json.results)) {
+        setData((old) => [...(old ?? []), ...json.results]);
+        setPageInfo(json.pageInfo);
       }
-      logsRef.current = log;
-      setData(JSON.parse(JSON.stringify(logsRef.current)));
-      setPageInfo(json.pageInfo);
     }
+
     if (stream) {
       if (eventSource.current === null) {
         // setup event listener
@@ -133,6 +129,7 @@ export const useDirektivInstanceLogs = (
       if (newQueryString !== queryString) {
         setQueryString(newQueryString);
         CloseEventSource(eventSource.current);
+        setData(null);
         eventSource.current = null;
       }
     }

@@ -33,5 +33,30 @@
 }
 
 .log-window .timestamp {
-  color: rgb(181, 181, 181);
+  color: hsla(0, 0%, 100%, 0.386);
+}
+
+.log-window .tag-name {
+  color: hsla(0, 0%, 100%, 0.446);
+}
+
+.log-window .tag-state {
+  color: hsla(0, 0%, 100%, 0.592);
+}
+
+.log-window .log-row--error {
+  color: hsl(358, 75%, 59%);
+  background-color: hsl(356, 43.4%, 16.4%);
+}
+
+.log-window .log-row--error .timestamp {
+  color: hsl(358, 65%, 40.4%);
+}
+
+.log-window .log-row--error .tag-name {
+  color: hsl(358, 65%, 40.4%);
+}
+
+.log-window .log-row--error .tag-state {
+  color: hsl(358, 65%, 40.4%);
 }

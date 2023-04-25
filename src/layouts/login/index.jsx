@@ -1,6 +1,7 @@
 import Button from "../../components/button";
 import FlexBox from "../../components/flexbox";
 import Logo from "../../assets/nav-logo.png";
+import env from "../../config/env";
 import { useState } from "react";
 
 export default function Login(props) {
@@ -52,7 +53,7 @@ export default function Login(props) {
                 </Button>
               </div>
             </FlexBox>
-            <div>{import.meta.env.VITE_APP_VERSION}</div>
+            <div>{env.VITE_APP_VERSION}</div>
           </FlexBox>
         </FlexBox>
       </FlexBox>

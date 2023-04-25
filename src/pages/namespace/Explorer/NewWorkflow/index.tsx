@@ -129,7 +129,7 @@ const NewWorkflow = ({
                 if (matchingWf) setValue("fileContent", matchingWf.data);
               }}
             >
-              <SelectTrigger {...register("fileContent")} id="template">
+              <SelectTrigger id="template">
                 <SelectValue
                   placeholder={defaultWorkflowTemplate.name}
                   defaultValue={defaultWorkflowTemplate.data}

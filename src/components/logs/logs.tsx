@@ -10,6 +10,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { TbBug, TbBugOff, TbFilter, TbFilterOff } from "react-icons/tb";
 import {
   VscCopy,
   VscEye,
@@ -19,17 +20,27 @@ import {
   VscWholeWord,
   VscWordWrap,
 } from "react-icons/vsc";
+// @ts-ignore 🚧 ignore since this component will be removed after redesign
+import { copyTextToClipboard, createLogFilter } from "../../util";
 
 import AutoSizer from "react-virtualized-auto-sizer";
 import Button from "../button";
 import FlexBox from "../flexbox";
+import Tippy from "@tippyjs/react";
 import { VariableSizeList } from "react-window";
-// @ts-ignore 🚧 ignore since this component will be removed after redesign
-import { copyTextToClipboard } from "../../util";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 
 dayjs.extend(utc);
+
+type FilterControls = {
+  setFilterWorkflow: React.Dispatch<React.SetStateAction<string>>;
+  setFilterStateId: React.Dispatch<React.SetStateAction<string>>;
+  setFilterLoopIndex: React.Dispatch<React.SetStateAction<string>>;
+  setFilterParams: React.Dispatch<React.SetStateAction<string[]>>;
+  setShowFilterbar: React.Dispatch<React.SetStateAction<boolean>>;
+};
+
 export interface LogsProps {
   logItems?: LogItem[];
   /**
@@ -40,6 +51,10 @@ export interface LogsProps {
    * If enabled, scrolls to bottom of list
    */
   autoScroll: boolean;
+  /**
+   * Show verbose logs
+   */
+  verbose?: boolean;
   /**
    * React Set State for autoscroll. This is used for setting autoScroll to false when user scrolls up.
    */
@@ -52,11 +67,20 @@ export interface LogsProps {
    * Message to display when logItems is undefined
    */
   overrideLoadingMsg?: string;
+
+  filterControls?: FilterControls;
 }
 
 export interface LogItem {
   t: string;
+  level: "debug" | "info" | "error" | "panic";
   msg: string;
+  tags: {
+    workflow: string; // f.e. "somepath/to/someworkflow"
+    "loop-index": string; // f.e. "1"
+    // always there, except on the first step
+    "state-id"?: string; // f.e. "getter"
+  };
 }
 
 export const DynamicListContext = createContext<
@@ -71,9 +95,11 @@ function Logs({
   logItems,
   wordWrap = false,
   autoScroll = false,
+  verbose,
   setAutoScroll,
   overrideLoadingMsg,
   overrideNoDataMsg,
+  filterControls,
 }: LogsProps) {
   const listRef = useRef<VariableSizeList | null>(null);
 
@@ -152,7 +178,7 @@ function Logs({
       onWheel={() => {
         disableAutoScroll(true);
       }}
-      onMouseDown={() => {
+      onClick={() => {
         disableAutoScroll(true);
       }}
     >
@@ -179,7 +205,13 @@ function Logs({
                     overscanCount={4}
                   >
                     {({ ...props }) => (
-                      <ListRow {...props} width={width} wordWrap={wordWrap} />
+                      <ListRow
+                        {...props}
+                        width={width}
+                        wordWrap={wordWrap}
+                        verbose={verbose}
+                        filterControls={filterControls}
+                      />
                     )}
                   </VariableSizeList>
                 )}
@@ -204,6 +236,8 @@ interface ListRowProps {
   data: LogItem[];
   style: CSSProperties;
   wordWrap?: boolean;
+  verbose?: boolean;
+  filterControls?: FilterControls;
 }
 
 const innerElementType = forwardRef(({ style, ...rest }: any, ref) => (
@@ -218,7 +252,15 @@ const innerElementType = forwardRef(({ style, ...rest }: any, ref) => (
 ));
 innerElementType.displayName = "innerElementType";
 
-const ListRow = ({ index, width, data, style, wordWrap }: ListRowProps) => {
+const ListRow = ({
+  index,
+  width,
+  data,
+  style,
+  wordWrap,
+  verbose,
+  filterControls,
+}: ListRowProps) => {
   const { setSize } = useContext(DynamicListContext);
   const rowRoot = useRef<null | HTMLDivElement>(null);
 
@@ -228,6 +270,14 @@ const ListRow = ({ index, width, data, style, wordWrap }: ListRowProps) => {
     }
   }, [index, setSize, width]);
 
+  const {
+    workflow,
+    "state-id": stateId,
+    "loop-index": loopIndex,
+  } = data[index].tags;
+
+  const isError = ["error", "panic"].includes(data[index].level);
+
   return (
     <div
       style={{
@@ -235,12 +285,43 @@ const ListRow = ({ index, width, data, style, wordWrap }: ListRowProps) => {
         top: `${parseFloat(style.top as string)}px`,
       }}
     >
-      <div className="log-row" ref={rowRoot}>
+      <div className={`log-row ${isError && "log-row--error"}`} ref={rowRoot}>
         <span className={wordWrap ? "word-wrap" : "whole-word"}>
-          <span key={`log-timestamp-${index}`} className="timestamp">
-            [{dayjs.utc(data[index].t).local().format("HH:mm:ss.SSS")}
+          <span className="timestamp">
+            [{dayjs.utc(data[index].t).local().format("HH:mm:ss")}
             {`] `}
           </span>
+          {verbose ? (
+            <Tippy
+              content="filter logs by this tag"
+              trigger="mouseenter focus"
+              delay={100}
+              zIndex={10}
+            >
+              <span
+                role="button"
+                style={{ cursor: "pointer" }}
+                onClick={() => {
+                  filterControls?.setFilterWorkflow(workflow ?? "");
+                  filterControls?.setFilterStateId(stateId ?? "");
+                  filterControls?.setFilterLoopIndex(loopIndex ?? "");
+                  filterControls?.setShowFilterbar(true);
+                  filterControls?.setFilterParams(
+                    createLogFilter({
+                      workflow: workflow ?? "",
+                      stateId: stateId ?? "",
+                      loopIndex: loopIndex ?? "",
+                    })
+                  );
+                }}
+              >
+                {loopIndex && <span className="tag-name">({loopIndex}) </span>}
+                {workflow && <span className="tag-name">{workflow}</span>}
+                {stateId && <span className="tag-state">/{stateId}</span>}{" "}
+              </span>
+            </Tippy>
+          ) : null}
+
           {data[index].msg.match(/.{1,50}/g)?.map((mtkMsg, mtkIdx) => {
             return (
               <span key={`log-msg-${mtkIdx}`} className="msg">
@@ -262,9 +343,22 @@ export function createClipboardData(data: Array<LogItem> | null) {
   let clipboardData = "";
 
   data.forEach((item) => {
-    clipboardData += `[${dayjs.utc(item.t).local().format("HH:mm:ss.SSS")}] ${
-      item.msg
-    }\n`;
+    const {
+      workflow,
+      "state-id": stateId,
+      "loop-index": loopIndex,
+    } = item?.tags ?? {};
+
+    const tags = [];
+
+    loopIndex && tags.push(`(${loopIndex}) `);
+    workflow && tags.push(workflow);
+    stateId && tags.push(`/${stateId}`);
+
+    clipboardData += `[${dayjs
+      .utc(item.t)
+      .local()
+      .format("HH:mm:ss.SSS")}] ${tags.join("")} ${item.msg}\n`;
   });
 
   return clipboardData;
@@ -273,15 +367,23 @@ export function createClipboardData(data: Array<LogItem> | null) {
 interface LogFooterButtonsProps {
   follow: boolean;
   setFollow: React.Dispatch<React.SetStateAction<boolean>>;
-  wordWrap: boolean;
-  setWordWrap: React.Dispatch<React.SetStateAction<boolean>>;
+  verbose?: boolean;
+  setVerbose?: React.Dispatch<React.SetStateAction<boolean>>;
+  filter?: boolean;
+  setFilter?: React.Dispatch<React.SetStateAction<boolean>>;
+  wordWrap?: boolean;
+  setWordWrap?: React.Dispatch<React.SetStateAction<boolean>>;
   data: Array<LogItem> | null;
-  clipData: string;
+  clipData?: string;
 }
 
 export function LogFooterButtons({
   follow,
   setFollow,
+  verbose,
+  setVerbose,
+  filter,
+  setFilter,
   wordWrap,
   setWordWrap,
   data,
@@ -304,6 +406,52 @@ export function LogFooterButtons({
           <VscCopy /> Copy <span className="hide-1000">to Clipboard</span>
         </FlexBox>
       </Button>
+      {filter !== undefined && setFilter && (
+        <Button
+          color="terminal"
+          variant="contained"
+          onClick={() => {
+            setFilter(!filter);
+          }}
+        >
+          <FlexBox center row gap="sm">
+            {filter ? (
+              <>
+                <TbFilterOff />
+                Disable Filter
+              </>
+            ) : (
+              <>
+                <TbFilter />
+                Filter Logs
+              </>
+            )}
+          </FlexBox>
+        </Button>
+      )}
+      {verbose !== undefined && setVerbose && (
+        <Button
+          color="terminal"
+          variant="contained"
+          onClick={() => {
+            setVerbose((old) => !old);
+          }}
+        >
+          <FlexBox center row gap="sm">
+            {verbose ? (
+              <>
+                <TbBugOff />
+                Disable verbose logs
+              </>
+            ) : (
+              <>
+                <TbBug />
+                Enable verbose logs
+              </>
+            )}
+          </FlexBox>
+        </Button>
+      )}
       {follow !== undefined && setFollow !== undefined ? (
         <Button
           color="terminal"

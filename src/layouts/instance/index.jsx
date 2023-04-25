@@ -7,7 +7,7 @@ import {
   RunningState,
   SuccessState,
 } from "../instances";
-import { Config, GenerateRandomKey } from "../../util";
+import { Config, GenerateRandomKey, createLogFilter } from "../../util";
 import ContentPanel, {
   ContentPanelBody,
   ContentPanelTitle,
@@ -30,6 +30,7 @@ import Button from "../../components/button";
 import DirektivEditor from "../../components/editor";
 import FlexBox from "../../components/flexbox";
 import Loader from "../../components/loader";
+import { Tooltip } from "@mui/material";
 import WorkflowDiagram from "../../components/diagram";
 import { useApiKey } from "../../util/apiKeyProvider";
 import { useParams } from "react-router";
@@ -248,7 +249,7 @@ function InstancePage(props) {
                         }`}
                       >
                         <Button color="info" variant="outlined">
-                          <span className="hide-600">View</span> Workflow
+                          <span className="hide-600">View&nbsp;</span>Workflow
                         </Button>
                       </Link>
                     )}
@@ -428,15 +429,89 @@ function InstanceLogs(props) {
     paddingStyle = { padding: "0px" };
   }
 
+  const [filterWorkflow, setFilterWorkflow] = useState("");
+  const [filterStateId, setFilterStateId] = useState("");
+  const [filterLoopIndex, setFilterLoopIndex] = useState("");
+  const [buttonDisabled, setButtonDisabled] = useState(true);
+  const [filterParams, setFilterParams] = useState([]);
   const { data } = useInstanceLogs(
     Config.url,
     true,
     namespace,
     instanceID,
-    apiKey
+    apiKey,
+    ...filterParams
   );
+
+  const example = data?.find(
+    (x) => x?.tags && !!x?.tags?.workflow && !!x?.tags?.["state-id"]
+  );
+
+  const applyFilter = () => {
+    setFilterParams(
+      createLogFilter({
+        workflow: filterWorkflow,
+        stateId: filterStateId,
+        loopIndex: filterLoopIndex,
+      })
+    );
+  };
+
+  const disableFilter = () => {
+    setFilterWorkflow("");
+    setFilterStateId("");
+    setFilterParams([]);
+  };
+
   const [wordWrap, setWordWrap] = useState(false);
   const [follow, setFollow] = useState(true);
+  const [verbose, setVerbose] = useState(false);
+  const [showFilterBar, setShowFilterbar] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(false);
+
+  const displayValidationMsg = useCallback(() => {
+    if (filterWorkflow === "" && filterStateId === "") {
+      return null;
+    }
+
+    if (filterWorkflow === "") {
+      return "please enter a workflow name";
+    }
+
+    if (filterStateId === "") {
+      return "please enter a state name";
+    }
+
+    return null;
+  }, [filterStateId, filterWorkflow]);
+
+  useEffect(() => {
+    if (displayValidationMsg() !== null) {
+      setButtonDisabled(true);
+      return;
+    }
+
+    const generateParams = JSON.stringify(
+      createLogFilter({
+        workflow: filterWorkflow,
+        stateId: filterStateId,
+        loopIndex: filterLoopIndex,
+      })
+    );
+
+    if (generateParams === JSON.stringify(filterParams)) {
+      setButtonDisabled(true);
+      return;
+    }
+
+    setButtonDisabled(false);
+  }, [
+    displayValidationMsg,
+    filterLoopIndex,
+    filterParams,
+    filterStateId,
+    filterWorkflow,
+  ]);
 
   return (
     <>
@@ -446,30 +521,127 @@ function InstanceLogs(props) {
             logItems={data}
             wordWrap={wordWrap}
             autoScroll={follow}
+            verbose={verbose}
             setAutoScroll={setFollow}
+            filterControls={{
+              setFilterWorkflow,
+              setFilterStateId,
+              setFilterLoopIndex,
+              setFilterParams,
+              setShowFilterbar,
+            }}
           />
         </FlexBox>
         <div
-          className="logs-footer"
+          className={`logs-footer ${showFilterBar && "logs-footer--two-lines"}`}
           style={{
             alignItems: "center",
             borderRadius: " 0px 0px 8px 8px",
             overflow: "hidden",
           }}
         >
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              applyFilter();
+            }}
+            style={{
+              all: "unset",
+            }}
+          >
+            <FlexBox
+              gap
+              style={{
+                width: "100%",
+                flexDirection: "row-reverse",
+                height: "50%",
+                alignItems: "center",
+                ...(showFilterBar === false && { display: "none" }),
+              }}
+            >
+              <Tooltip
+                title={displayValidationMsg()}
+                placement="top"
+                arrow
+                open={displayValidationMsg() && showTooltip ? true : false}
+                onMouseEnter={() => {
+                  setShowTooltip(true);
+                }}
+                onMouseLeave={() => {
+                  setShowTooltip(false);
+                }}
+              >
+                <div>
+                  <Button
+                    tabIndex="3"
+                    color="terminal"
+                    variant="contained"
+                    type="submit"
+                    disabled={buttonDisabled}
+                  >
+                    Update Filter
+                  </Button>
+                </div>
+              </Tooltip>
+              <label>
+                state name{" "}
+                <input
+                  tabIndex="2"
+                  placeholder={
+                    example
+                      ? `f.e. ${example?.tags?.["state-id"]}`
+                      : "state name"
+                  }
+                  type="text"
+                  value={filterStateId}
+                  onChange={(e) => setFilterStateId(e.target.value)}
+                  style={{
+                    width: "100px",
+                  }}
+                />
+              </label>
+              <label>
+                workflow name{" "}
+                <input
+                  tabIndex="1"
+                  placeholder={
+                    example
+                      ? `f.e. ${example?.tags?.workflow}`
+                      : "workflow name"
+                  }
+                  type="text"
+                  value={filterWorkflow}
+                  onChange={(e) => setFilterWorkflow(e.target.value)}
+                  style={{
+                    width: "200px",
+                  }}
+                />
+              </label>
+            </FlexBox>
+          </form>
           <FlexBox
             gap
             style={{
               width: "100%",
               flexDirection: "row-reverse",
-              height: "100%",
+              ...(showFilterBar ? { height: "50%" } : { height: "100%" }),
               alignItems: "center",
             }}
           >
             <LogFooterButtons
               setFollow={setFollow}
               follow={follow}
-              wordWrap={wordWrap}
+              setVerbose={setVerbose}
+              verbose={verbose}
+              setFilter={(val) => {
+                if (val === true) {
+                  setShowFilterbar(true);
+                } else {
+                  disableFilter();
+                  setShowFilterbar(false);
+                }
+              }}
+              filter={showFilterBar}
               setWordWrap={setWordWrap}
               data={data}
             />

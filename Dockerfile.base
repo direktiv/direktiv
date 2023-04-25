@@ -1,0 +1,20 @@
+FROM node:18 as build
+
+ARG FULL_VERSION
+
+RUN echo "building $FULL_VERSION"
+WORKDIR /app
+
+ENV PATH /app/node_modules/.bin:$PATH
+
+COPY public ./public
+COPY src ./src
+COPY index.html ./
+COPY package.json ./
+COPY tsconfig.json ./
+COPY yarn.lock ./
+COPY vite.config.ts ./
+
+RUN yarn install --network-timeout 1000000
+# If this causes problems on github actions: A potential fix is to change the builder image to `node:alpine`
+RUN NODE_OPTIONS=--openssl-legacy-provider VITE_APP_VERSION=$FULL_VERSION yarn build

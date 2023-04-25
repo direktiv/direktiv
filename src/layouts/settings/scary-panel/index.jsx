@@ -90,11 +90,11 @@ function Scary(props) {
             actionButtons={[
               {
                 label: "Delete",
-
                 onClick: async () => {
                   await deleteNamespace(namespace);
+                  localStorage.removeItem("namespace");
+                  window.location = `/`;
                 },
-
                 buttonProps: { variant: "contained", color: "error" },
                 closesModal: true,
                 validate: true,

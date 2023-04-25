@@ -1,4 +1,5 @@
 import { GitCommit, GitMerge, PieChart, Play, Settings } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../design/Tabs";
 
 import Button from "../../../design/Button";
 import { FC } from "react";
@@ -24,21 +25,48 @@ const WorkflowPage: FC = () => (
     </div>
     <div>
       <nav className="-mb-px flex space-x-8">
-        {tabs.map((tab) => (
-          <a
-            key={tab.name}
-            href={tab.href}
-            className={clsx(
-              tab.current
-                ? "border-primary-500 text-primary-500"
-                : "border-transparent text-gray-11 hover:border-gray-8 hover:text-gray-12 dark:hover:border-gray-dark-8 dark:hover:text-gray-dark-12",
-              "flex items-center gap-x-2 whitespace-nowrap border-b-2 px-1 pb-4 text-sm font-medium"
-            )}
-            aria-current={tab.current ? "page" : undefined}
-          >
-            <tab.icon aria-hidden="true" className="h-4 w-auto" /> {tab.name}
-          </a>
-        ))}
+        <Tabs defaultValue="overview">
+          <TabsList>
+            <TabsTrigger value="overview">
+              <PieChart aria-hidden="true" />
+              Overview
+            </TabsTrigger>
+            <TabsTrigger value="active-rev">
+              <GitCommit aria-hidden="true" />
+              Active Revisions
+            </TabsTrigger>
+            <TabsTrigger value="revisions">
+              <GitMerge aria-hidden="true" />
+              Revisions
+            </TabsTrigger>
+            <TabsTrigger value="settings">
+              <Settings aria-hidden="true" />
+              Settings
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value="account">
+            <p className="text-sm text-gray-8 dark:text-gray-dark-8">
+              Make changes to your account here. Click save when you&apos;re
+              done.
+            </p>
+          </TabsContent>
+          <TabsContent value="password">
+            <p className="text-sm text-gray-8 dark:text-gray-dark-8">
+              Change your password here. After saving, you&apos;ll be logged
+              out.
+            </p>
+          </TabsContent>
+          <TabsContent value="third">
+            <p className="text-sm text-gray-8 dark:text-gray-dark-8">
+              Your third content here
+            </p>
+          </TabsContent>
+          <TabsContent value="fourth">
+            <p className="text-sm text-gray-8 dark:text-gray-dark-8">
+              The fourth content comes here
+            </p>
+          </TabsContent>
+        </Tabs>
       </nav>
     </div>
   </div>
