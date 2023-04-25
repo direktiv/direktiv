@@ -90,7 +90,7 @@ func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNam
 		return nil, err
 	}
 
-	_, err = flow.mirrorManager.StartMirroringProcess(ctx, mirConfig)
+	_, err = flow.mirrorManager.StartInitialMirroringProcess(ctx, mirConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -164,7 +164,7 @@ func (flow *flow) UpdateMirrorSettings(ctx context.Context, req *grpc.UpdateMirr
 
 	flow.logger.Infof(ctx, flow.ID, flow.GetAttributes(), "Updated mirror configs for namespace: %s", ns.Name)
 
-	_, err = flow.mirrorManager.StartMirroringProcess(ctx, mirConfig)
+	_, err = flow.mirrorManager.StartSyncingMirrorProcess(ctx, mirConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -213,7 +213,7 @@ func (flow *flow) HardSyncMirror(ctx context.Context, req *grpc.HardSyncMirrorRe
 		return nil, err
 	}
 
-	_, err = flow.mirrorManager.StartMirroringProcess(ctx, mirConfig)
+	_, err = flow.mirrorManager.StartSyncingMirrorProcess(ctx, mirConfig)
 	if err != nil {
 		return nil, err
 	}

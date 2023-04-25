@@ -19,12 +19,8 @@ const (
 )
 
 const (
-	processTypeInit        = "init"
-	processTypeReconfigure = "reconfigure"
-	processTypeLocked      = "locked"
-	processTypeUnlocked    = "unlocked"
-	processTypeCronSync    = "scheduled-sync"
-	processTypeSync        = "sync"
+	processTypeInit = "init"
+	processTypeSync = "sync"
 )
 
 var ErrNotFound = errors.New("ErrNotFound")
@@ -77,7 +73,8 @@ type Store interface {
 }
 
 type Manager interface {
-	StartMirroringProcess(ctx context.Context, config *Config) (*Process, error)
+	StartInitialMirroringProcess(ctx context.Context, config *Config) (*Process, error)
+	StartSyncingMirrorProcess(ctx context.Context, config *Config) (*Process, error)
 	CancelMirroringProcess(ctx context.Context, id uuid.UUID) error
 }
 
@@ -95,11 +92,11 @@ func NewDefaultManager(lg *zap.SugaredLogger, store Store, fStore filestore.File
 	return &DefaultManager{store: store, lg: lg, fStore: fStore, source: source, configWorkflowFunc: configWorkflowFunc}
 }
 
-func (d *DefaultManager) StartMirroringProcess(ctx context.Context, config *Config) (*Process, error) {
+func (d *DefaultManager) startMirroringProcess(ctx context.Context, config *Config, processType string) (*Process, error) {
 	process, err := d.store.CreateProcess(ctx, &Process{
 		ID:          uuid.New(),
 		NamespaceID: config.NamespaceID,
-		Typ:         processTypeInit,
+		Typ:         processType,
 		Status:      processStatusPending,
 	})
 	if err != nil {
@@ -133,13 +130,22 @@ func (d *DefaultManager) StartMirroringProcess(ctx context.Context, config *Conf
 			process.Status = processStatusFailed
 			process, _ = d.store.UpdateProcess(context.TODO(), process)
 			d.lg.Errorw("mirroring process failed", "err", err, "process_id", process.ID)
+
+			return
 		}
-		if err == nil {
-			d.lg.Infow("mirroring process succeeded", "process_id", process.ID)
-		}
+
+		d.lg.Infow("mirroring process succeeded", "process_id", process.ID)
 	}()
 
 	return process, err
+}
+
+func (d *DefaultManager) StartInitialMirroringProcess(ctx context.Context, config *Config) (*Process, error) {
+	return d.startMirroringProcess(ctx, config, processTypeInit)
+}
+
+func (d *DefaultManager) StartSyncingMirrorProcess(ctx context.Context, config *Config) (*Process, error) {
+	return d.startMirroringProcess(ctx, config, processTypeSync)
 }
 
 //nolint:revive
