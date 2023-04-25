@@ -14,7 +14,7 @@ import (
 // Package 'filestore' implements a filesystem that is responsible to store user's projects and files. For each
 // direktiv namespace, a 'filestore.Root' should be created to host namespace files and directories.
 // 'Root' interface provide all the methods needed to create direktiv namespace files and directories.
-// Via 'filestore.Manager' the caller manages the roots, and 'filestore.Root' the caller manages files and directories.
+// Via 'filestore.FileStore' the caller manages the roots, and 'filestore.Root' the caller manages files and directories.
 
 var (
 	ErrFileTypeIsDirectory = errors.New("ErrFileTypeIsDirectory")
@@ -25,15 +25,27 @@ var (
 	ErrInvalidPathParameter = errors.New("ErrInvalidPathParameter")
 )
 
+// FileStore manages different operations on files and roots.
 type FileStore interface {
+	// CreateRoot creates a new root in the filestore. For each direktiv
 	CreateRoot(ctx context.Context, id uuid.UUID) (*Root, error)
+
+	// GetAllRoots list all roots.
 	GetAllRoots(ctx context.Context) ([]*Root, error)
 
+	// ForRootID returns a query object to do further queries on root.
 	ForRootID(rootID uuid.UUID) RootQuery
+
+	// ForFile returns a query object to do further queries on that file.
 	ForFile(file *File) FileQuery
+
+	// ForRevision returns a query object to do further queries on that revision.
 	ForRevision(revision *Revision) RevisionQuery
 
+	// GetFile queries a file by id.
 	GetFile(ctx context.Context, id uuid.UUID) (*File, error)
+
+	// GetRevision queries a revision by id.
 	GetRevision(ctx context.Context, id uuid.UUID) (*File, *Revision, error)
 }
 
@@ -66,6 +78,7 @@ type RootQuery interface {
 	CropFilesAndDirectories(ctx context.Context, excludePaths []string) error
 }
 
+// CalculateChecksumFunc is a function type used to calculate files checksums.
 type CalculateChecksumFunc func([]byte) []byte
 
 var Sha256CalculateChecksum CalculateChecksumFunc = func(data []byte) []byte {
