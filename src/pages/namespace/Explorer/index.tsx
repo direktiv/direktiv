@@ -34,7 +34,7 @@ import { useNamespace } from "../../../util/store/namespace";
 const ExplorerPage: FC = () => {
   const namespace = useNamespace();
   const { path } = pages.explorer.useParams();
-  const { data, isFetched } = useListDirectory({ path });
+  const { data } = useListDirectory({ path });
   const { parent, isRoot } = analyzePath(path);
   const [dialogOpen, setDialogOpen] = useState(false);
 
