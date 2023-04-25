@@ -19,7 +19,7 @@ var _ filestore.RevisionQuery = &RevisionQuery{}
 
 //nolint:revive
 func (q *RevisionQuery) Delete(ctx context.Context, force bool) error {
-	res := q.db.WithContext(ctx).Table("filesystem_revisions").Delete(&filestore.Revision{}, q.rev.ID)
+	res := q.db.WithContext(ctx).Exec(`DELETE FROM filesystem_revisions WHERE id = ?`, q.rev.ID)
 	if res.Error != nil {
 		return res.Error
 	}
@@ -44,8 +44,7 @@ func (q *RevisionQuery) GetData(ctx context.Context) (io.ReadCloser, error) {
 
 func (q *RevisionQuery) SetTags(ctx context.Context, tags filestore.RevisionTags) (*filestore.Revision, error) {
 	rev := &filestore.Revision{}
-	res := q.db.WithContext(ctx).
-		Table("filesystem_revisions").
+	res := q.db.WithContext(ctx).Table("filesystem_revisions").
 		Where("id", q.rev.ID).
 		Update("tags", tags).
 		First(rev)
@@ -61,8 +60,7 @@ func (q *RevisionQuery) SetTags(ctx context.Context, tags filestore.RevisionTags
 
 func (q *RevisionQuery) SetCurrent(ctx context.Context) (*filestore.Revision, error) {
 	// set current revisions 'is_current' flag to false.
-	res := q.db.WithContext(ctx).
-		Table("filesystem_revisions").
+	res := q.db.WithContext(ctx).Table("filesystem_revisions").
 		Where("file_id", q.rev.FileID).
 		Where("is_current", true).
 		Update("is_current", false)
