@@ -21,7 +21,7 @@ type FileQuery struct {
 
 func (q *FileQuery) setPathForFileType(ctx context.Context, path string) error {
 	res := q.db.WithContext(ctx).Exec("UPDATE filesystem_files SET path = ?, depth = ? WHERE root_id = ? AND path = ?",
-		path, filestore.ParseDepth(path), q.file.RootID, q.file.Path)
+		path, filestore.GetPathDepth(path), q.file.RootID, q.file.Path)
 
 	if res.Error != nil {
 		return res.Error
@@ -43,7 +43,7 @@ func (q *FileQuery) setPathForDirectoryType(ctx context.Context, path string) er
 							UPDATE filesystem_files SET path = REPLACE( "//" || path, "//" || ?, ?), depth = ?
 							             WHERE (root_id = ? AND path = ?)
 							             OR (root_id = ? AND path LIKE ?)`,
-		q.file.Path, path, filestore.ParseDepth(path),
+		q.file.Path, path, filestore.GetPathDepth(path),
 		q.file.RootID, q.file.Path,
 		q.file.RootID, q.file.Path+"/%",
 	)

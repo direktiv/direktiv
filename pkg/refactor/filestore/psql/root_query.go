@@ -184,7 +184,7 @@ func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.F
 	f := &filestore.File{
 		ID:     uuid.New(),
 		Path:   path,
-		Depth:  filestore.ParseDepth(path),
+		Depth:  filestore.GetPathDepth(path),
 		Typ:    typ,
 		RootID: q.rootID,
 	}
@@ -288,7 +288,7 @@ func (q *RootQuery) ReadDirectory(ctx context.Context, path string) ([]*filestor
 		// Don't include file 'data' in the query. File data can be retrieved with file.GetData().
 		Select("id", "path", "depth", "typ", "root_id", "created_at", "updated_at").
 		Where("root_id", q.rootID).
-		Where("depth", filestore.ParseDepth(path)+1).
+		Where("depth", filestore.GetPathDepth(path)+1).
 		Where("path LIKE ?", addTrailingSlash(path)+"%"). // trailing slash necessary otherwise "/a" will receive children for both "/a" and "/abc".
 		Find(&list)
 
