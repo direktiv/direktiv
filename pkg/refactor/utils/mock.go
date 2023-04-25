@@ -102,7 +102,7 @@ func NewMockGorm() (*gorm.DB, error) {
 `)
 
 	if res.Error != nil {
-		return nil, err
+		return nil, res.Error
 	}
 
 	return db, nil
