@@ -83,7 +83,8 @@ module.exports = {
     // It's save to import React when using vite
     "react/react-in-jsx-scope": "off",
 
-    // allow custom tailwind classes to enable working with daisyui
+    // allow non tailwind classes (old codebase still needs it, and
+    // our custom  tailwind classes are somehow not taken into account)
     "tailwindcss/no-custom-classname": "off",
     // there seems to be a missmatch between the order
     // of the classes from the linting rule vs the prettier plugin
