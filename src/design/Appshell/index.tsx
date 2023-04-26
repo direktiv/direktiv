@@ -1,7 +1,7 @@
 import { FC, PropsWithChildren } from "react";
 
 export const Root: FC<PropsWithChildren> = ({ children }) => (
-  <div className="h-screen">{children}</div>
+  <div className="min-h-full">{children}</div>
 );
 
 export const Sidebar: FC<PropsWithChildren<{ version: string }>> = ({
