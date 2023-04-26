@@ -141,7 +141,7 @@ export const LoadingState = () => (
 );
 
 export const TriggerVariants = () => (
-  <div className="bg-gray-3 p-10 dark:bg-gray-dark-3">
+  <div className="flex space-x-3">
     <Select>
       <SelectTrigger variant="ghost">
         <SelectValue placeholder="ghost select" />
