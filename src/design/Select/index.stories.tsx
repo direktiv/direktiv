@@ -71,10 +71,16 @@ export const Default: Story = {
   args: {},
   tags: ["autodocs"],
   argTypes: {
+    variant: {
+      description: "Select variant",
+      control: "select",
+      options: ["destructive", "outline", "primary", "ghost", "link"],
+      type: { name: "string", required: false },
+    },
     size: {
       description: "select size",
       control: "select",
-      options: ["xs", "sm", "lg"],
+      options: ["sm", "lg"],
       type: { name: "string", required: false },
     },
     loading: {
