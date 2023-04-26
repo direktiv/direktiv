@@ -72,7 +72,7 @@ export const ToastVariants = () => {
             customToast("error");
           }}
         >
-          Show Error Toast 1
+          Show Error Toast
         </Button>
         <Button
           onClick={() => {
