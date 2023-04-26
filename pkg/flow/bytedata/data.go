@@ -12,6 +12,7 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -193,6 +194,25 @@ func ConvertDataForOutput(a, b interface{}) error {
 }
 
 func ConvertLogMsgForOutput(a []*ent.LogMsg) ([]*grpc.Log, error) {
+	results := make([]*grpc.Log, 0, len(a))
+	for _, v := range a {
+		t := timestamppb.New(v.T)
+		err := t.CheckValid()
+		if err != nil {
+			return nil, err
+		}
+		r := grpc.Log{
+			T:     t,
+			Level: v.Level,
+			Msg:   v.Msg,
+			Tags:  v.Tags,
+		}
+		results = append(results, &r)
+	}
+	return results, nil
+}
+
+func ConvertLogMsgToGrpcLog(a []*internallogger.LogMsgs) ([]*grpc.Log, error) {
 	results := make([]*grpc.Log, 0, len(a))
 	for _, v := range a {
 		t := timestamppb.New(v.T)

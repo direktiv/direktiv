@@ -99,6 +99,21 @@ func NewMockGorm() (*gorm.DB, error) {
 	 		    CONSTRAINT "fk_namespaces_mirror_processes"
 				FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
 	 		);
+	 CREATE TABLE IF NOT EXISTS "log_msgs" 
+			(
+				"oid" uuid,
+				"t" datetime,
+				"msg" text,
+				"level" text,
+				"root_instance_id" uuid,
+				"log_instance_call_path" text,
+				"tags" jsonb,
+				"workflow_id" uuid,
+				"mirror_activity_id" uuid,
+				"instance_logs" uuid,
+				"namespace_logs" uuid,
+				PRIMARY KEY ("oid")
+			);
 `)
 
 	if res.Error != nil {

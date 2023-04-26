@@ -10,7 +10,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	entlog "github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
-	entns "github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
@@ -146,28 +145,26 @@ resend:
 
 func (flow *flow) NamespaceLogs(ctx context.Context, req *grpc.NamespaceLogsRequest) (*grpc.NamespaceLogsResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
-
 	cached := new(database.CacheData)
 
 	err := flow.database.NamespaceByName(ctx, cached, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
-
-	clients := flow.edb.Clients(ctx)
-
-	query := clients.LogMsg.Query().Where(entlog.HasNamespaceWith(entns.ID(cached.Namespace.ID)))
-
-	results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
+	ql := internallogger.QueryLogs()
+	id := cached.Namespace.ID
+	ql.WhereNamespace(id)
+	logs, err := ql.GetAll(ctx, flow.gormDB)
 	if err != nil {
 		return nil, err
 	}
+	pi := buildPageInfo(ql)
 
 	resp := new(grpc.NamespaceLogsResponse)
-	resp.Namespace = cached.Namespace.Name
-	resp.PageInfo = pi
+	resp.Namespace = req.Namespace
+	resp.PageInfo = &pi
 
-	resp.Results, err = bytedata.ConvertLogMsgForOutput(results)
+	resp.Results, err = bytedata.ConvertLogMsgToGrpcLog(logs)
 	if err != nil {
 		return nil, err
 	}
@@ -181,37 +178,37 @@ func (flow *flow) NamespaceLogsParcels(req *grpc.NamespaceLogsRequest, srv grpc.
 	ctx := srv.Context()
 
 	var tailing bool
-
 	cached := new(database.CacheData)
 
 	err := flow.database.NamespaceByName(ctx, cached, req.GetNamespace())
 	if err != nil {
 		return err
 	}
+	id := cached.Namespace.ID
 
-	sub := flow.pubsub.SubscribeNamespaceLogs(&cached.Namespace.ID)
+	sub := flow.pubsub.SubscribeNamespaceLogs(&id)
 	defer flow.cleanup(sub.Close)
 
-	clients := flow.edb.Clients(ctx)
-
 resend:
+	ql := internallogger.QueryLogs()
 
-	query := clients.LogMsg.Query().Where(entlog.HasNamespaceWith(entns.ID(cached.Namespace.ID)))
-
-	results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
+	ql.WhereNamespace(id)
+	ql.WithLimit(int(req.Pagination.Limit))
+	ql.WithOffset(int(req.Pagination.Limit))
+	logs, err := ql.GetAll(ctx, flow.gormDB)
 	if err != nil {
 		return err
 	}
+	pi := buildPageInfo(ql)
 
 	resp := new(grpc.NamespaceLogsResponse)
-	resp.Namespace = cached.Namespace.Name
-	resp.PageInfo = pi
+	resp.Namespace = req.Namespace
+	resp.PageInfo = &pi
 
-	resp.Results, err = bytedata.ConvertLogMsgForOutput(results)
+	resp.Results, err = bytedata.ConvertLogMsgToGrpcLog(logs)
 	if err != nil {
 		return err
 	}
-
 	if len(resp.Results) != 0 || !tailing {
 		tailing = true
 
@@ -592,4 +589,11 @@ func buildInstanceLogsQuery(ctx context.Context,
 		query = clients.LogMsg.Query().Where(entlog.And(entlog.RootInstanceIdEQ(root), entlog.LogInstanceCallPathHasPrefix(prefix)))
 	}
 	return query
+}
+
+func buildPageInfo(lq internallogger.LogMsgQuery) grpc.PageInfo {
+	return grpc.PageInfo{
+		Limit:  int32(lq.GetLimit()),
+		Offset: int32(lq.GetOffset()),
+	}
 }

@@ -15,6 +15,7 @@ require (
 	github.com/fergusstrange/embedded-postgres v1.21.0
 	github.com/gabriel-vasile/mimetype v1.3.1
 	github.com/glebarez/sqlite v1.7.0
+	github.com/go-git/go-git/v5 v5.6.1
 	github.com/gobwas/glob v0.2.3
 	github.com/golang/protobuf v1.5.2
 	github.com/google/uuid v1.3.0
@@ -42,8 +43,8 @@ require (
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.8.0
 	go.opentelemetry.io/otel/sdk v1.8.0
 	go.opentelemetry.io/otel/trace v1.8.0
-	go.uber.org/atomic v1.9.0
 	go.uber.org/zap v1.21.0
+	golang.org/x/crypto v0.8.0
 	golang.org/x/sys v0.7.0
 	golang.org/x/tools v0.6.0
 	google.golang.org/grpc v1.48.0
@@ -84,7 +85,6 @@ require (
 	github.com/glebarez/go-sqlite v1.20.3 // indirect
 	github.com/go-git/gcfg v1.5.0 // indirect
 	github.com/go-git/go-billy/v5 v5.4.1 // indirect
-	github.com/go-git/go-git/v5 v5.6.1 // indirect
 	github.com/go-logr/logr v1.2.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-openapi/inflect v0.19.0 // indirect
@@ -148,8 +148,8 @@ require (
 	github.com/zclconf/go-cty v1.10.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/internal/retry v1.8.0 // indirect
 	go.opentelemetry.io/proto/otlp v0.18.0 // indirect
+	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
-	golang.org/x/crypto v0.8.0 // indirect
 	golang.org/x/exp v0.0.0-20221126150942-6ab00d035af9 // indirect
 	golang.org/x/mod v0.8.0 // indirect
 	golang.org/x/net v0.9.0 // indirect

@@ -1,0 +1,207 @@
+{
+    "pageInfo":  {
+      "order":  [],
+      "filter":  [],
+      "limit":  0,
+      "offset":  0,
+      "total":  11
+    },
+    "namespace":  "dd",
+    "instance":  "40738e99-8991-429b-b3e0-705a2c6a6951",
+    "results":  [
+      {
+        "t":  "2023-04-26T08:03:20.835346Z",
+        "level":  "debug",
+        "msg":  "Preparing workflow triggered by api.",
+        "tags":  {
+          "callpath":  "/",
+          "instance-id":  "40738e99-8991-429b-b3e0-705a2c6a6951",
+          "invoker":  "api",
+          "loop-index":  "",
+          "namespace":  "dd",
+          "namespace-id":  "6e374a42-d63b-4103-9a78-a55841a80fb0",
+          "recipientType":  "instance",
+          "workflow":  "ff",
+          "workflow-id":  "9e6d4459-8afa-4702-af53-410a57132c51"
+        }
+      },
+      {
+        "t":  "2023-04-26T08:03:20.837912Z",
+        "level":  "debug",
+        "msg":  "Starting workflow ff.",
+        "tags":  {
+          "callpath":  "/",
+          "instance-id":  "40738e99-8991-429b-b3e0-705a2c6a6951",
+          "invoker":  "api",
+          "loop-index":  "",
+          "namespace":  "dd",
+          "namespace-id":  "6e374a42-d63b-4103-9a78-a55841a80fb0",
+          "recipientType":  "instance",
+          "workflow":  "ff",
+          "workflow-id":  "9e6d4459-8afa-4702-af53-410a57132c51"
+        }
+      },
+      {
+        "t":  "2023-04-26T08:03:20.842236Z",
+        "level":  "info",
+        "msg":  "Running state logic (step:1) -- data",
+        "tags":  {
+          "callpath":  "/",
+          "instance-id":  "40738e99-8991-429b-b3e0-705a2c6a6951",
+          "invoker":  "api",
+          "loop-index":  "",
+          "namespace":  "dd",
+          "namespace-id":  "6e374a42-d63b-4103-9a78-a55841a80fb0",
+          "recipientType":  "instance",
+          "state-id":  "data",
+          "state-type":  "noop",
+          "workflow":  "ff",
+          "workflow-id":  "9e6d4459-8afa-4702-af53-410a57132c51"
+        }
+      },
+      {
+        "t":  "2023-04-26T08:03:20.842280Z",
+        "level":  "debug",
+        "msg":  "Transforming state data.",
+        "tags":  {
+          "callpath":  "/",
+          "instance-id":  "40738e99-8991-429b-b3e0-705a2c6a6951",
+          "invoker":  "api",
+          "loop-index":  "",
+          "namespace":  "dd",
+          "namespace-id":  "6e374a42-d63b-4103-9a78-a55841a80fb0",
+          "recipientType":  "instance",
+          "state-id":  "data",
+          "state-type":  "noop",
+          "workflow":  "ff",
+          "workflow-id":  "9e6d4459-8afa-4702-af53-410a57132c51"
+        }
+      },
+      {
+        "t":  "2023-04-26T08:03:20.845234Z",
+        "level":  "debug",
+        "msg":  "Transitioning to next state: check (2).",
+        "tags":  {
+          "callpath":  "/",
+          "instance-id":  "40738e99-8991-429b-b3e0-705a2c6a6951",
+          "invoker":  "api",
+          "loop-index":  "",
+          "namespace":  "dd",
+          "namespace-id":  "6e374a42-d63b-4103-9a78-a55841a80fb0",
+          "recipientType":  "instance",
+          "state-id":  "data",
+          "state-type":  "noop",
+          "workflow":  "ff",
+          "workflow-id":  "9e6d4459-8afa-4702-af53-410a57132c51"
+        }
+      },
+      {
+        "t":  "2023-04-26T08:03:20.847685Z",
+        "level":  "info",
+        "msg":  "Running state logic (step:2) -- check",
+        "tags":  {
+          "callpath":  "/",
+          "instance-id":  "40738e99-8991-429b-b3e0-705a2c6a6951",
+          "invoker":  "api",
+          "loop-index":  "",
+          "namespace":  "dd",
+          "namespace-id":  "6e374a42-d63b-4103-9a78-a55841a80fb0",
+          "recipientType":  "instance",
+          "state-id":  "check",
+          "state-type":  "switch",
+          "workflow":  "ff",
+          "workflow-id":  "9e6d4459-8afa-4702-af53-410a57132c51"
+        }
+      },
+      {
+        "t":  "2023-04-26T08:03:20.849074Z",
+        "level":  "info",
+        "msg":  "Switch condition 0 succeeded",
+        "tags":  {
+          "callpath":  "/",
+          "instance-id":  "40738e99-8991-429b-b3e0-705a2c6a6951",
+          "invoker":  "api",
+          "loop-index":  "",
+          "namespace":  "dd",
+          "namespace-id":  "6e374a42-d63b-4103-9a78-a55841a80fb0",
+          "recipientType":  "instance",
+          "state-id":  "check",
+          "state-type":  "switch",
+          "workflow":  "ff",
+          "workflow-id":  "9e6d4459-8afa-4702-af53-410a57132c51"
+        }
+      },
+      {
+        "t":  "2023-04-26T08:03:20.849917Z",
+        "level":  "debug",
+        "msg":  "Transitioning to next state: olderthan18 (3).",
+        "tags":  {
+          "callpath":  "/",
+          "instance-id":  "40738e99-8991-429b-b3e0-705a2c6a6951",
+          "invoker":  "api",
+          "loop-index":  "",
+          "namespace":  "dd",
+          "namespace-id":  "6e374a42-d63b-4103-9a78-a55841a80fb0",
+          "recipientType":  "instance",
+          "state-id":  "check",
+          "state-type":  "switch",
+          "workflow":  "ff",
+          "workflow-id":  "9e6d4459-8afa-4702-af53-410a57132c51"
+        }
+      },
+      {
+        "t":  "2023-04-26T08:03:20.851591Z",
+        "level":  "info",
+        "msg":  "Running state logic (step:3) -- olderthan18",
+        "tags":  {
+          "callpath":  "/",
+          "instance-id":  "40738e99-8991-429b-b3e0-705a2c6a6951",
+          "invoker":  "api",
+          "loop-index":  "",
+          "namespace":  "dd",
+          "namespace-id":  "6e374a42-d63b-4103-9a78-a55841a80fb0",
+          "recipientType":  "instance",
+          "state-id":  "olderthan18",
+          "state-type":  "noop",
+          "workflow":  "ff",
+          "workflow-id":  "9e6d4459-8afa-4702-af53-410a57132c51"
+        }
+      },
+      {
+        "t":  "2023-04-26T08:03:20.851624Z",
+        "level":  "debug",
+        "msg":  "Transforming state data.",
+        "tags":  {
+          "callpath":  "/",
+          "instance-id":  "40738e99-8991-429b-b3e0-705a2c6a6951",
+          "invoker":  "api",
+          "loop-index":  "",
+          "namespace":  "dd",
+          "namespace-id":  "6e374a42-d63b-4103-9a78-a55841a80fb0",
+          "recipientType":  "instance",
+          "state-id":  "olderthan18",
+          "state-type":  "noop",
+          "workflow":  "ff",
+          "workflow-id":  "9e6d4459-8afa-4702-af53-410a57132c51"
+        }
+      },
+      {
+        "t":  "2023-04-26T08:03:20.851674Z",
+        "level":  "info",
+        "msg":  "Workflow ff completed.",
+        "tags":  {
+          "callpath":  "/",
+          "instance-id":  "40738e99-8991-429b-b3e0-705a2c6a6951",
+          "invoker":  "api",
+          "loop-index":  "",
+          "namespace":  "dd",
+          "namespace-id":  "6e374a42-d63b-4103-9a78-a55841a80fb0",
+          "recipientType":  "instance",
+          "state-id":  "olderthan18",
+          "state-type":  "noop",
+          "workflow":  "ff",
+          "workflow-id":  "9e6d4459-8afa-4702-af53-410a57132c51"
+        }
+      }
+    ]
+  }
