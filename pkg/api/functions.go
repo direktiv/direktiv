@@ -236,7 +236,7 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	//   Creates namespace scoped knative service.
 	//   Service Names are unique on a scope level.
 	//   These services can be used as functions in workflows, more about this can be read here:
-	//   https://docs.direktiv.io/docs/walkthrough/using-functions.html
+	//   https://docs.direktiv.io/getting_started/functions-intro/
 	// summary: Create Namespace Service
 	// tags:
 	// - "Namespace Services"

@@ -19,7 +19,7 @@ Direktiv is an event-driven container orchestration engine, running on Kubernete
 
 - direktiv runs containers as part of workflows from any compliant container registry, passing JSON structured data between workflow states.
 - JSON structured data is passed to the containers using HTTP protocol on port 8080.
-- direktiv uses a [primitive state declaration specification](https://docs.direktiv.io/latest/specification) to describe the flow of the orchestration in YAML, or users can build the workflow using the workflow builder UI.
+- direktiv uses a [primitive state declaration specification](https://docs.direktiv.io/spec/workflow-yaml/workflow/) to describe the flow of the orchestration in YAML, or users can build the workflow using the workflow builder UI.
 - direktiv uses `jq` JSON processor to implement sophisticated control flow logic and data manipulation through states.
 - Workflows can be event-based triggers ([Knative Eventing](https://knative.dev/docs/eventing/) & [CloudEvents](https://cloudevents.io/)), cron scheduling to handle periodic tasks, or can be scripted using the APIs.
 - Integrated into [Prometheus](https://prometheus.io/) (metrics), [Fluent Bit](https://fluentbit.io/) (logging) & [OpenTelemetry](https://opentelemetry.io/) (instrumentation & tracing).
@@ -27,7 +27,7 @@ Direktiv is an event-driven container orchestration engine, running on Kubernete
 Additional resources to get started:
 
 - Pre-built plugins are available from [https://github.com/direktiv/direktiv-apps](https://github.com/direktiv/direktiv-apps) - we're working hard to add more every day!
-- Examples for integration your own containers [https://github.com/direktiv/direktiv-apps/tree/main/examples](https://github.com/direktiv/direktiv-apps/tree/main/examples) with an explanation [here](https://docs.direktiv.io/latest/getting_started/making-functions/).
+- Examples for integration your own containers [https://github.com/direktiv/direktiv-apps/tree/main/examples](https://github.com/direktiv/direktiv-apps/tree/main/examples) with an explanation [here](https://docs.direktiv.io/getting_started/).
 
 <table>
   <tr>
@@ -93,7 +93,7 @@ $ curl -vv -X PUT "http://localhost:8080/api/namespaces/demo"
 
 ## Kubernetes Install
 
-For full instructions on how to install direktiv on a Kubernetes environment go to the [installation pages](https://docs.direktiv.io/latest/installation/)
+For full instructions on how to install direktiv on a Kubernetes environment go to the [installation pages](https://docs.direktiv.io/installation/)
 
 
 ## Creating your first workflow
@@ -182,9 +182,9 @@ The UI displays the log output and state of the workflow from start to completio
 
 # Documentation
 
-- [Getting Started](https://docs.direktiv.io/latest/getting_started/helloworld/)
-- [Workflow Specification](https://docs.direktiv.io/latest/specification/)
-- [Examples](https://docs.direktiv.io/latest/examples/greeting/)
+- [Getting Started](https://docs.direktiv.io/getting_started/)
+- [Workflow Specification](https://docs.direktiv.io/spec/workflow-yaml/workflow/)
+- [Examples](https://docs.direktiv.io/examples/aws/)
 
 # Talk to us!
 
