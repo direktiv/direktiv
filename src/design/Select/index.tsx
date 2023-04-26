@@ -16,7 +16,8 @@ const SelectValue = SelectPrimitive.Value;
 
 const SelectTrigger = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Trigger>,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger> & ButtonProps
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger> &
+    Pick<ButtonProps, "variant" | "size" | "block" | "loading">
 >(
   (
     { className, variant, size, children, disabled, block, loading, ...props },
