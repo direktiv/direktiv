@@ -49,6 +49,7 @@ import {
 } from "./index";
 import { Sheet, SheetContent, SheetMain, SheetTrigger } from "../Sheet";
 
+import Avatar from "../Avatar";
 import Button from "../Button";
 import Logo from "../Logo";
 import { NavigationLink } from "../NavigationLink";
@@ -149,9 +150,9 @@ const TopRightComponent: FC<{
           role="button"
           icon
         >
-          <div className="text-neutral-content flex h-7 w-7 items-center justify-center rounded-full bg-primary-500">
-            <span className="text-xs">Ad</span>
-          </div>
+          <Avatar size="xs" className="bg-primary-500">
+            AD
+          </Avatar>
           <RxChevronDown />
         </Button>
       </DropdownMenuTrigger>

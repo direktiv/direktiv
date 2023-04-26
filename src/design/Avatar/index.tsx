@@ -4,7 +4,6 @@ import clsx from "clsx";
 
 export type AvatarProps = HTMLAttributes<HTMLDivElement> & {
   size?: "xs" | "sm" | "lg" | "xlg";
-  src?: string;
   className?: string;
   forwaredRef?: React.ForwardedRef<HTMLDivElement>;
   children?: React.ReactNode;
@@ -14,34 +13,20 @@ const Avatar: FC<AvatarProps> = ({
   size = "lg",
   className,
   children,
-  src,
-  placeholder,
   ...props
 }) => (
-  <div className={clsx("avatar", placeholder && "placeholder")} {...props}>
-    <div
-      className={clsx(
-        className,
-        "rounded-full",
-        size === "xlg" && "w-32",
-        size === "lg" && "w-24",
-        size === "sm" && "w-16",
-        size === "xs" && "w-8",
-        placeholder && "bg-neutral-focus text-neutral-content"
-      )}
-    >
-      {placeholder ? (
-        <span className="text-3xl">{placeholder}</span>
-      ) : (
-        <img
-          src={
-            src ||
-            "https://daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg"
-          }
-        />
-      )}
-      {children}
-    </div>
+  <div
+    {...props}
+    className={clsx(
+      "flex items-center justify-center rounded-full bg-gray-8",
+      size === "xlg" && "h-32 w-32 text-2xl",
+      size === "lg" && "h-24 w-24 text-xl",
+      size === "sm" && "h-16 w-16 text-base",
+      size === "xs" && "h-8 w-8 text-xs",
+      className
+    )}
+  >
+    {children}
   </div>
 );
 

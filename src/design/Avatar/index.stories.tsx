@@ -18,36 +18,14 @@ export const Default: Story = {
       options: ["xs", "sm", "lg", "xlg"],
       type: { name: "string", required: false },
     },
-    placeholder: {
-      description: "Placeholder",
-      control: {
-        type: "text",
-      },
-      type: { name: "string", required: false },
-    },
-    src: {
-      description: "Source url",
-      control: {
-        type: "text",
-        default:
-          "https://daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg",
-      },
-      type: { name: "string", required: false },
-    },
   },
 };
 
 export const AvatarSizes = () => (
   <div>
-    <Avatar size="xs"></Avatar>
-    <Avatar size="sm"></Avatar>
-    <Avatar size="lg"></Avatar>
-    <Avatar size="xlg"></Avatar>
-  </div>
-);
-
-export const AvatarPlaceholder = () => (
-  <div>
-    <Avatar size="xlg" placeholder="CD"></Avatar>
+    <Avatar size="xs">AB</Avatar>
+    <Avatar size="sm">CD</Avatar>
+    <Avatar size="lg">EF</Avatar>
+    <Avatar size="xlg">GH</Avatar>
   </div>
 );
