@@ -90,6 +90,14 @@ transform:
   ];
 };
 
+const addFileExtension = (name) => {
+  const newName = name.trim();
+  if (`${newName}`.endsWith(".yaml") || `${newName}`.endsWith(".yml")) {
+    return newName;
+  }
+  return `${newName}.yaml`;
+};
+
 function Explorer(props) {
   const params = useParams();
   const [searchParams] = useSearchParams(); // removed 'setSearchParams' from square brackets (this should not affect anything: search 'destructuring assignment')
@@ -362,7 +370,7 @@ function ExplorerList(props) {
 
                         onClick: async () => {
                           const result = await createNode(
-                            name,
+                            addFileExtension(name),
                             "workflow",
                             wfData
                           );
@@ -394,7 +402,11 @@ function ExplorerList(props) {
 
                         fn: async () => {
                           if (name.trim()) {
-                            await createNode(name, "workflow", wfData);
+                            await createNode(
+                              addFileExtension(name),
+                              "workflow",
+                              wfData
+                            );
                             refetch();
                           } else {
                             throw new Error("Please fill in name");
