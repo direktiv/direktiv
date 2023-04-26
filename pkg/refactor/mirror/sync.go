@@ -50,7 +50,7 @@ type mirroringJob struct {
 	changedOrNewWorkflows []*filestore.File
 }
 
-// ConfigureWorkFlowFunc is a hookup function the gets called for every new or updated workflow file.
+// SetProcessStatus sets mirroring process status.
 func (j *mirroringJob) SetProcessStatus(store Store, process *Process, status string) *mirroringJob {
 	if j.err != nil {
 		return j

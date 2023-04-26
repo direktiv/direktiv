@@ -170,12 +170,12 @@ func (d *DefaultManager) startMirroringProcess(ctx context.Context, config *Conf
 	return process, err
 }
 
-// StartInitialMirroringProcess starts an initial mirroring process.
+// StartInitialMirroringProcess starts an initial mirroring process. The new launched process object is returned.
 func (d *DefaultManager) StartInitialMirroringProcess(ctx context.Context, config *Config) (*Process, error) {
 	return d.startMirroringProcess(ctx, config, processTypeInit)
 }
 
-// StartSyncingMirrorProcess starts a re-mirroring process.
+// StartSyncingMirrorProcess starts a re-mirroring process. The launched process object is returned.
 func (d *DefaultManager) StartSyncingMirrorProcess(ctx context.Context, config *Config) (*Process, error) {
 	return d.startMirroringProcess(ctx, config, processTypeSync)
 }
