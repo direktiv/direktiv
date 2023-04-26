@@ -1,15 +1,40 @@
+import { Book, Github, PlusCircle, Slack } from "lucide-react";
+import { Dialog, DialogContent, DialogTrigger } from "../design/Dialog";
+import { useEffect, useState } from "react";
 import { useNamespace, useNamespaceActions } from "../util/store/namespace";
-
+import Button from "../design/Button";
 import Logo from "../design/Logo";
+import NamespaceCreate from "../componentsNext/NamespaceCreate";
 import { pages } from "../util/router/pages";
-import { useEffect } from "react";
 import { useListNamespaces } from "../api/namespaces/query/get";
 import { useNavigate } from "react-router-dom";
+
+const linkItems = [
+  {
+    icon: <Book />,
+    title: "Getting started",
+    description: "Read our docs",
+    href: "https://docs.direktiv.io/getting_started/",
+  },
+  {
+    icon: <Slack />,
+    title: "Slack",
+    description: "Join our Open Source Support channel on Slack",
+    href: "https://join.slack.com/t/direktiv-io/shared_invite/zt-zf7gmfaa-rYxxBiB9RpuRGMuIasNO~g",
+  },
+  {
+    icon: <Github />,
+    title: "Github",
+    description: "Check out our Github repository",
+    href: "https://github.com/direktiv/direktiv",
+  },
+];
 
 const Layout = () => {
   const { data: availableNamespaces, isFetched } = useListNamespaces();
   const activeNamespace = useNamespace();
   const { setNamespace } = useNamespaceActions();
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   const navigate = useNavigate();
 
@@ -44,10 +69,55 @@ const Layout = () => {
   return (
     <main className="grid min-h-full place-items-center bg-white py-24 px-6 sm:py-32 lg:px-8">
       <div className="text-center">
-        <h1 className="flex items-center space-x-3 text-2xl font-bold text-gray-900">
+        <h1 className="mb-8 flex justify-center space-x-3 text-2xl font-bold text-gray-900">
           <span>Welcome to </span>
           <Logo />
         </h1>
+
+        <div className="relative block w-full rounded-lg border-2 border-dashed border-gray-300 p-12 text-center hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+          <p className="mt-1 text-sm text-gray-500">
+            Create a namespace to get started.
+          </p>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="ghost" size="lg" className="my-5">
+                <PlusCircle />
+                Create namespace
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <NamespaceCreate close={() => setDialogOpen(false)} />
+            </DialogContent>
+          </Dialog>
+        </div>
+
+        <ul role="list" className="mt-6 text-left">
+          {linkItems.map((item, itemIdx) => (
+            <li key={itemIdx}>
+              <div className="group relative flex items-start space-x-3 py-4">
+                <div className="shrink-0">
+                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg">
+                    {item.icon}
+                  </span>
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-medium text-gray-900">
+                    <a
+                      href={item.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <span className="absolute inset-0" aria-hidden="true" />
+                      {item.title}
+                    </a>
+                  </div>
+                  <p className="text-sm text-gray-500">{item.description}</p>
+                </div>
+                <div className="shrink-0 self-center"></div>
+              </div>
+            </li>
+          ))}
+        </ul>
       </div>
     </main>
   );
