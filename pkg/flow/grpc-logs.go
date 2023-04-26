@@ -2,18 +2,14 @@ package flow
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
-	"github.com/direktiv/direktiv/pkg/flow/database/entwrapper"
-	"github.com/direktiv/direktiv/pkg/flow/ent"
-	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
-	entlog "github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
-	"github.com/google/uuid"
 )
 
 type fileAttributes filestore.File
@@ -27,119 +23,76 @@ func (f fileAttributes) GetAttributes() map[string]string {
 	return m
 }
 
-var logsOrderings = []*orderingInfo{
-	{
-		db:           entlog.FieldT,
-		req:          "TIMESTAMP",
-		defaultOrder: ent.Asc,
-	},
-}
-
-var logsFilters = map[*filteringInfo]func(query *ent.LogMsgQuery, v string) (*ent.LogMsgQuery, error){
-	{
-		field: "ID",
-		ftype: "MATCH",
-	}: func(query *ent.LogMsgQuery, v string) (*ent.LogMsgQuery, error) {
-		id, err := uuid.Parse(v)
-		if err != nil {
-			return nil, err
-		}
-		return query.Where(entlog.HasInstanceWith(entinst.IDEQ(id))), nil
-	},
-	{
-		field: "LEVEL",
-		ftype: "MATCH",
-	}: func(query *ent.LogMsgQuery, v string) (*ent.LogMsgQuery, error) {
-		return query.Where(entlog.LevelEQ(v)), nil
-	},
-	{
-		field: "LEVEL",
-		ftype: "STARTING",
-	}: func(query *ent.LogMsgQuery, v string) (*ent.LogMsgQuery, error) {
-		levels := []string{"debug", "info", "error", "panic"}
-		switch v {
-		case "debug":
-		case "info":
-			levels = levels[1:]
-		case "error":
-			levels = levels[2:]
-		case "panic":
-			levels = levels[3:]
-		}
-		return query.Where(entlog.LevelIn(levels...)), nil
-	},
-}
-
 func (flow *flow) ServerLogs(ctx context.Context, req *grpc.ServerLogsRequest) (*grpc.ServerLogsResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	clients := flow.edb.Clients(ctx)
+	// clients := flow.edb.Clients(ctx)
 
-	query := clients.LogMsg.Query()
+	// query := clients.LogMsg.Query()
 
-	query = query.Where(entlog.Not(entlog.HasNamespace()), entlog.WorkflowIDIsNil())
+	// query = query.Where(entlog.Not(entlog.HasNamespace()), entlog.WorkflowIDIsNil())
 
-	results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
-	if err != nil {
-		return nil, err
-	}
+	// results, pi, err := paginate[*internallogger.LogMsgs, *internallogger.LogMsgs](ctx, req.Pagination, query, logsOrderings, logsFilters)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	resp := new(grpc.ServerLogsResponse)
-	resp.PageInfo = pi
+	// resp := new(grpc.ServerLogsResponse)
+	// resp.PageInfo = pi
 
-	resp.Results, err = bytedata.ConvertLogMsgForOutput(results)
-	if err != nil {
-		return nil, err
-	}
+	// resp.Results, err = bytedata.ConvertLogMsgForOutput(results)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	return resp, nil
+	return nil, fmt.Errorf("To be removed.")
 }
 
 func (flow *flow) ServerLogsParcels(req *grpc.ServerLogsRequest, srv grpc.Flow_ServerLogsParcelsServer) error {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	// flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	ctx := srv.Context()
+	// ctx := srv.Context()
 
-	var tailing bool
+	// var tailing bool
 
-	sub := flow.pubsub.SubscribeServerLogs()
-	defer flow.cleanup(sub.Close)
+	// sub := flow.pubsub.SubscribeServerLogs()
+	// defer flow.cleanup(sub.Close)
 
 resend:
 
-	clients := flow.edb.Clients(ctx)
-	query := clients.LogMsg.Query()
-	query = query.Where(entlog.Not(entlog.HasNamespace()), entlog.Not(entlog.WorkflowID(uuid.UUID{})))
+	// clients := flow.edb.Clients(ctx)
+	// query := clients.LogMsg.Query()
+	// query = query.Where(entlog.Not(entlog.HasNamespace()), entlog.Not(entlog.WorkflowID(uuid.UUID{})))
 
-	results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
-	if err != nil {
-		return err
-	}
+	// results, pi, err := paginate[*internallogger.LogMsgs, *internallogger.LogMsgs](ctx, req.Pagination, query, logsOrderings, logsFilters)
+	// if err != nil {
+	// 	return err
+	// }
 
-	resp := new(grpc.ServerLogsResponse)
-	resp.PageInfo = pi
+	// resp := new(grpc.ServerLogsResponse)
+	// resp.PageInfo = pi
 
-	resp.Results, err = bytedata.ConvertLogMsgForOutput(results)
-	if err != nil {
-		return err
-	}
+	// resp.Results, err = bytedata.ConvertLogMsgForOutput(results)
+	// if err != nil {
+	// 	return err
+	// }
 
-	if len(resp.Results) != 0 || !tailing {
-		tailing = true
+	// if len(resp.Results) != 0 || !tailing {
+	// 	tailing = true
 
-		err = srv.Send(resp)
-		if err != nil {
-			return err
-		}
+	// 	err = srv.Send(resp)
+	// 	if err != nil {
+	// 		return err
+	// 	}
 
-		req.Pagination.Offset += int32(len(resp.Results))
-	}
+	// 	req.Pagination.Offset += int32(len(resp.Results))
+	// }
 
-	more := sub.Wait(ctx)
-	if !more {
-		return nil
-	}
-
+	// more := sub.Wait(ctx)
+	// if !more {
+	// 	return nil
+	// }
+	return fmt.Errorf("To be removed.")
 	goto resend
 }
 
@@ -158,7 +111,7 @@ func (flow *flow) NamespaceLogs(ctx context.Context, req *grpc.NamespaceLogsRequ
 	if err != nil {
 		return nil, err
 	}
-	pi := buildPageInfo(ql)
+	pi := BuildPageInfo(ql)
 
 	resp := new(grpc.NamespaceLogsResponse)
 	resp.Namespace = req.Namespace
@@ -199,7 +152,7 @@ resend:
 	if err != nil {
 		return err
 	}
-	pi := buildPageInfo(ql)
+	pi := BuildPageInfo(ql)
 
 	resp := new(grpc.NamespaceLogsResponse)
 	resp.Namespace = req.Namespace
@@ -229,87 +182,89 @@ resend:
 }
 
 func (flow *flow) WorkflowLogs(ctx context.Context, req *grpc.WorkflowLogsRequest) (*grpc.WorkflowLogsResponse, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	flow.sugar.Errorf("Handling gRPC request: %s", this())
 
-	ns, f, err := flow.getWorkflow(ctx, req.GetNamespace(), req.GetPath())
-	if err != nil {
-		return nil, err
-	}
+	// ns, f, err := flow.getWorkflow(ctx, req.GetNamespace(), req.GetPath())
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	clients := flow.edb.Clients(ctx)
+	// ql := internallogger.QueryLogs()
+	// id := f.ID
+	// ql.WhereWorkflow(id)
+	// logs, err := ql.GetAll(ctx, flow.gormDB)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// pi := buildPageInfo(ql)
 
-	query := clients.LogMsg.Query().Where(entlog.WorkflowID(f.ID))
+	// resp := new(grpc.WorkflowLogsResponse)
+	// resp.Namespace = ns.Name
+	// resp.Path = f.Path
+	// resp.PageInfo = &pi
 
-	results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
-	if err != nil {
-		return nil, err
-	}
+	// resp.Results, err = bytedata.ConvertLogMsgToGrpcLog(logs)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	resp := new(grpc.WorkflowLogsResponse)
-	resp.Namespace = ns.Name
-	resp.Path = f.Path
-	resp.PageInfo = pi
-
-	resp.Results, err = bytedata.ConvertLogMsgForOutput(results)
-	if err != nil {
-		return nil, err
-	}
-
-	return resp, nil
+	return nil, fmt.Errorf("To be removed.")
 }
 
 func (flow *flow) WorkflowLogsParcels(req *grpc.WorkflowLogsRequest, srv grpc.Flow_WorkflowLogsParcelsServer) error {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	flow.sugar.Errorf("Handling gRPC request: %s", this())
 
-	ctx := srv.Context()
+	// ctx := srv.Context()
 
-	var tailing bool
+	// var tailing bool
 
-	ns, f, err := flow.getWorkflow(ctx, req.GetNamespace(), req.GetPath())
-	if err != nil {
-		return err
-	}
+	// ns, f, err := flow.getWorkflow(ctx, req.GetNamespace(), req.GetPath())
+	// if err != nil {
+	// 	return err
+	// }
 
-	sub := flow.pubsub.SubscribeWorkflowLogs(f.ID)
-	defer flow.cleanup(sub.Close)
+	// sub := flow.pubsub.SubscribeWorkflowLogs(f.ID)
+	// defer flow.cleanup(sub.Close)
 
 resend:
 
-	clients := flow.edb.Clients(ctx)
+	// ql := internallogger.QueryLogs()
+	// id := f.ID
+	// ql.WhereWorkflow(id)
+	// ql.WithLimit(int(req.Pagination.Limit))
+	// ql.WithOffset(int(req.Pagination.Offset))
+	// logs, err := ql.GetAll(ctx, flow.gormDB)
+	// if err != nil {
+	// 	return err
+	// }
+	// pi := buildPageInfo(ql)
 
-	query := clients.LogMsg.Query().Where(entlog.WorkflowID(f.ID))
+	// resp := new(grpc.WorkflowLogsResponse)
+	// resp.Namespace = ns.Name
+	// resp.Path = f.Path
+	// resp.PageInfo = &pi
 
-	results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
-	if err != nil {
-		return err
-	}
+	// resp.Results, err = bytedata.ConvertLogMsgToGrpcLog(logs)
+	// if err != nil {
+	// 	return err
+	// }
 
-	resp := new(grpc.WorkflowLogsResponse)
-	resp.Namespace = ns.Name
-	resp.Path = f.Path
-	resp.PageInfo = pi
+	// if len(resp.Results) != 0 || !tailing {
+	// 	tailing = true
 
-	resp.Results, err = bytedata.ConvertLogMsgForOutput(results)
-	if err != nil {
-		return err
-	}
+	// 	err = srv.Send(resp)
+	// 	if err != nil {
+	// 		return err
+	// 	}
 
-	if len(resp.Results) != 0 || !tailing {
-		tailing = true
+	// 	req.Pagination.Offset += int32(len(resp.Results))
+	// }
 
-		err = srv.Send(resp)
-		if err != nil {
-			return err
-		}
-
-		req.Pagination.Offset += int32(len(resp.Results))
-	}
-
-	more := sub.Wait(ctx)
-	if !more {
-		return nil
-	}
-
+	// more := sub.Wait(ctx)
+	// if !more {
+	// 	return nil
+	// }
+	return fmt.Errorf("To be removed.")
 	goto resend
 }
 
@@ -327,14 +282,22 @@ func (flow *flow) InstanceLogs(ctx context.Context, req *grpc.InstanceLogsReques
 	if err != nil {
 		return nil, err
 	}
+
+	ql := internallogger.QueryLogs()
 	callerIsRoot := root == cached.Instance.Invoker
 
-	query := buildInstanceLogsQuery(ctx, flow.edb, root, prefix, callerIsRoot)
-	logmsgs, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
+	ql.WhereRootInstanceIdEQ(root)
+	if !callerIsRoot {
+		ql.WhereInstanceCallPathHasPrefix(prefix)
+	}
+
+	logs, err := ql.GetAll(ctx, flow.gormDB)
 	if err != nil {
 		return nil, err
 	}
-	results, err := buildInstanceLogResp(ctx, logmsgs, pi, req.Pagination, req.Namespace, req.Instance)
+	pi := BuildPageInfo(ql)
+
+	results, err := buildInstanceLogResp(ctx, logs, &pi, req.Pagination, req.Namespace, req.Instance)
 	if err != nil {
 		return nil, err
 	}
@@ -368,12 +331,22 @@ func (flow *flow) InstanceLogsParcels(req *grpc.InstanceLogsRequest, srv grpc.Fl
 
 resend:
 
-	query := buildInstanceLogsQuery(ctx, flow.edb, root, prefix, callerIsRoot)
-	logmsgs, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
+	ql := internallogger.QueryLogs()
+
+	ql.WhereRootInstanceIdEQ(root)
+	if !callerIsRoot {
+		ql.WhereInstanceCallPathHasPrefix(prefix)
+	}
+
+	ql.WithLimit(int(req.Pagination.Limit))
+	ql.WithOffset(int(req.Pagination.Offset))
+	logs, err := ql.GetAll(ctx, flow.gormDB)
 	if err != nil {
 		return err
 	}
-	results, err := buildInstanceLogResp(ctx, logmsgs, pi, req.Pagination, req.Namespace, req.Instance)
+	pi := BuildPageInfo(ql)
+
+	results, err := buildInstanceLogResp(ctx, logs, &pi, req.Pagination, req.Namespace, req.Instance)
 	if err != nil {
 		return err
 	}
@@ -388,7 +361,7 @@ resend:
 			return err
 		}
 
-		req.Pagination.Offset += int32(len(logmsgs))
+		req.Pagination.Offset += int32(len(resp.Results))
 	}
 
 	more := sub.Wait(ctx)
@@ -399,9 +372,9 @@ resend:
 	goto resend
 }
 
-// filters the passed *ent.LogMsg if the given filter is supported if
+// filters the passed *internallogger.LogMsgs if the given filter is supported if
 // the given filter is not supported returns the input unfiltered.
-func filterLogmsg(filter *grpc.PageFilter, input []*ent.LogMsg) []*ent.LogMsg {
+func filterLogmsg(filter *grpc.PageFilter, input []*internallogger.LogMsgs) []*internallogger.LogMsgs {
 	res := input
 	if filter.Field == "QUERY" && filter.Type == "MATCH" {
 		res = filterMatchByWfStateIterator(filter.Val, input)
@@ -425,7 +398,7 @@ func filterLogmsg(filter *grpc.PageFilter, input []*ent.LogMsg) []*ent.LogMsg {
 // the result will contain all logmsg marked with the given
 // loop-index starting the first match of the provided workflow and state-id
 // additionally, all logmsgs from nested loops and childs will be added to the results.
-func filterMatchByWfStateIterator(queryValue string, input []*ent.LogMsg) []*ent.LogMsg {
+func filterMatchByWfStateIterator(queryValue string, input []*internallogger.LogMsgs) []*internallogger.LogMsgs {
 	values := strings.Split(queryValue, "::")
 	state := ""
 	workflow := ""
@@ -439,9 +412,9 @@ func filterMatchByWfStateIterator(queryValue string, input []*ent.LogMsg) []*ent
 	if len(values) > 2 {
 		iterator = values[2]
 	}
-	matchWf := make([]*ent.LogMsg, 0)
-	matchState := make([]*ent.LogMsg, 0)
-	matchIterator := make([]*ent.LogMsg, 0)
+	matchWf := make([]*internallogger.LogMsgs, 0)
+	matchState := make([]*internallogger.LogMsgs, 0)
+	matchIterator := make([]*internallogger.LogMsgs, 0)
 	for _, v := range input {
 		if v.Tags["workflow"] == workflow {
 			matchWf = append(matchWf, v)
@@ -472,7 +445,7 @@ func filterMatchByWfStateIterator(queryValue string, input []*ent.LogMsg) []*ent
 	}
 	if iterator != "" {
 		if len(matchIterator) == 0 {
-			return make([]*ent.LogMsg, 0)
+			return make([]*internallogger.LogMsgs, 0)
 		}
 		callpath := internallogger.AppendInstanceID(matchIterator[0].Tags["callpath"], matchIterator[0].Tags["instance-id"])
 		childs := getAllChilds(callpath, input)
@@ -496,8 +469,8 @@ func filterMatchByWfStateIterator(queryValue string, input []*ent.LogMsg) []*ent
 	return matchState
 }
 
-func filterByIterrator(iterator string, in []*ent.LogMsg) []*ent.LogMsg {
-	res := make([]*ent.LogMsg, 0)
+func filterByIterrator(iterator string, in []*internallogger.LogMsgs) []*internallogger.LogMsgs {
+	res := make([]*internallogger.LogMsgs, 0)
 	if iterator == "" {
 		return res
 	}
@@ -509,7 +482,7 @@ func filterByIterrator(iterator string, in []*ent.LogMsg) []*ent.LogMsg {
 	return res
 }
 
-func getNestedLoopHead(in []*ent.LogMsg) string {
+func getNestedLoopHead(in []*internallogger.LogMsgs) string {
 	for _, v := range in {
 		if v.Tags["state-type"] == "foreach" {
 			return v.Tags["instance-id"]
@@ -518,8 +491,8 @@ func getNestedLoopHead(in []*ent.LogMsg) string {
 	return ""
 }
 
-func getAllChilds(callpath string, in []*ent.LogMsg) []*ent.LogMsg {
-	res := make([]*ent.LogMsg, 0)
+func getAllChilds(callpath string, in []*internallogger.LogMsgs) []*internallogger.LogMsgs {
+	res := make([]*internallogger.LogMsgs, 0)
 	for _, v := range in {
 		if strings.HasPrefix(v.Tags["callpath"], callpath) {
 			res = append(res, v)
@@ -528,8 +501,8 @@ func getAllChilds(callpath string, in []*ent.LogMsg) []*ent.LogMsg {
 	return res
 }
 
-func filterByInstanceId(instanceId string, in []*ent.LogMsg) []*ent.LogMsg {
-	res := make([]*ent.LogMsg, 0)
+func filterByInstanceId(instanceId string, in []*internallogger.LogMsgs) []*internallogger.LogMsgs {
+	res := make([]*internallogger.LogMsgs, 0)
 	for _, v := range in {
 		if strings.HasPrefix(v.Tags["instance-id"], instanceId) {
 			res = append(res, v)
@@ -539,9 +512,9 @@ func filterByInstanceId(instanceId string, in []*ent.LogMsg) []*ent.LogMsg {
 }
 
 // https://stackoverflow.com/questions/66643946/how-to-remove-duplicates-strings-or-int-from-slice-in-go
-func removeDuplicate(in []*ent.LogMsg) []*ent.LogMsg {
-	allKeys := make(map[*ent.LogMsg]bool)
-	list := []*ent.LogMsg{}
+func removeDuplicate(in []*internallogger.LogMsgs) []*internallogger.LogMsgs {
+	allKeys := make(map[*internallogger.LogMsgs]bool)
+	list := []*internallogger.LogMsgs{}
 	for _, item := range in {
 		if _, value := allKeys[item]; !value {
 			allKeys[item] = true
@@ -552,7 +525,7 @@ func removeDuplicate(in []*ent.LogMsg) []*ent.LogMsg {
 }
 
 func buildInstanceLogResp(ctx context.Context,
-	in []*ent.LogMsg,
+	in []*internallogger.LogMsgs,
 	pi *grpc.PageInfo,
 	page *grpc.Pagination,
 	namespace string,
@@ -570,28 +543,14 @@ func buildInstanceLogResp(ctx context.Context,
 	resp.Instance = instance
 	resp.PageInfo = pi
 	var err error
-	resp.Results, err = bytedata.ConvertLogMsgForOutput(results)
+	resp.Results, err = bytedata.ConvertLogMsgToGrpcLog(results)
 	if err != nil {
 		return nil, err
 	}
 	return resp, nil
 }
 
-func buildInstanceLogsQuery(ctx context.Context,
-	edb *entwrapper.Database,
-	root string,
-	prefix string,
-	callerIsRoot bool,
-) *ent.LogMsgQuery {
-	clients := edb.Clients(ctx)
-	query := clients.LogMsg.Query().Where(entlog.RootInstanceIdEQ(root))
-	if !callerIsRoot {
-		query = clients.LogMsg.Query().Where(entlog.And(entlog.RootInstanceIdEQ(root), entlog.LogInstanceCallPathHasPrefix(prefix)))
-	}
-	return query
-}
-
-func buildPageInfo(lq internallogger.LogMsgQuery) grpc.PageInfo {
+func BuildPageInfo(lq internallogger.LogMsgQuery) grpc.PageInfo {
 	return grpc.PageInfo{
 		Limit:  int32(lq.GetLimit()),
 		Offset: int32(lq.GetOffset()),

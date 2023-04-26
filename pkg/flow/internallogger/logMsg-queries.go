@@ -16,6 +16,7 @@ type LogMsgQuery interface {
 	WhereInstanceCallPathHasPrefix(prefix string)
 	WhereLogLevel(loglevel string)
 	WhereMinumLogLevel(loglevel string)
+	WhereMirrorActivityID(id uuid.UUID)
 	WithLimit(limit int)
 	WithOffset(offset int)
 	// GetServerLogs(ctx context.Context) []*LogMsgs
@@ -74,6 +75,12 @@ func (b *LogMsgQueryBuilder) WhereInstanceCallPathHasPrefix(prefix string) {
 func (b *LogMsgQueryBuilder) WhereLogLevel(loglevel string) {
 	wEq := b.whereEQStatements
 	wEq = append(wEq, fmt.Sprintf("level = '%s'", loglevel))
+	b.whereEQStatements = wEq
+}
+
+func (b *LogMsgQueryBuilder) WhereMirrorActivityID(id uuid.UUID) {
+	wEq := b.whereEQStatements
+	wEq = append(wEq, fmt.Sprintf("mirror_activity_id = '%s'", id.String()))
 	b.whereEQStatements = wEq
 }
 

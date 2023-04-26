@@ -6,9 +6,9 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
-	entlog "github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
@@ -305,21 +305,20 @@ func (flow *flow) MirrorActivityLogs(ctx context.Context, req *grpc.MirrorActivi
 		return nil, err
 	}
 
-	clients := flow.edb.Clients(ctx)
+	ql := internallogger.QueryLogs()
 
-	query := clients.LogMsg.Query().Where(entlog.MirrorActivityID(mirProcess.ID))
-
-	results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
+	ql.WhereMirrorActivityID(mirProcess.ID)
+	pi := BuildPageInfo(ql)
+	res, err := ql.GetAll(ctx, flow.gormDB)
 	if err != nil {
 		return nil, err
 	}
-
 	resp := new(grpc.MirrorActivityLogsResponse)
 	resp.Namespace = ns.Name
 	resp.Activity = mirProcess.ID.String()
-	resp.PageInfo = pi
+	resp.PageInfo = &pi
 
-	err = bytedata.ConvertDataForOutput(results, &resp.Results)
+	err = bytedata.ConvertDataForOutput(res, &resp.Results)
 	if err != nil {
 		return nil, err
 	}
@@ -359,22 +358,22 @@ func (flow *flow) MirrorActivityLogsParcels(req *grpc.MirrorActivityLogsRequest,
 	defer flow.cleanup(sub.Close)
 
 resend:
+	ql := internallogger.QueryLogs()
 
-	clients := flow.edb.Clients(ctx)
-
-	query := clients.LogMsg.Query().Where(entlog.MirrorActivityID(mirProcess.ID))
-
-	results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
+	ql.WhereMirrorActivityID(mirProcess.ID)
+	ql.WithLimit(int(req.Pagination.Limit))
+	ql.WithOffset(int(req.Pagination.Offset))
+	pi := BuildPageInfo(ql)
+	res, err := ql.GetAll(ctx, flow.gormDB)
 	if err != nil {
 		return err
 	}
-
 	resp := new(grpc.MirrorActivityLogsResponse)
 	resp.Namespace = ns.Name
 	resp.Activity = mirProcess.ID.String()
-	resp.PageInfo = pi
+	resp.PageInfo = &pi
 
-	err = bytedata.ConvertDataForOutput(results, &resp.Results)
+	err = bytedata.ConvertDataForOutput(res, &resp.Results)
 	if err != nil {
 		return err
 	}
