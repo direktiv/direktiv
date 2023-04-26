@@ -12,6 +12,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
@@ -27,8 +28,12 @@ import (
 // TODO: implement a mechanism to clean dangling processes and cleaning them up.
 // TODO: implement synchronizing jobs.
 
+// ConfigureWorkFlowFunc is a hookup function the gets called for every new or updated workflow file.
 type ConfigureWorkFlowFunc func(context.Context, filestore.FileStore, core.FileAnnotationsStore, uuid.UUID, *filestore.File) error
 
+// mirroringJob implements a unique pattern. mirroringJob is a struct with both input fields and artifact fields.
+// various methods get called on *mirroringJob. Each method deliver its functionality by mutate artifact fields of
+// *mirroringJob. Errors of methods of *mirroringJob will not be returned but will be set in *mirroringJob.error.
 type mirroringJob struct {
 	// job parameters.
 
@@ -45,6 +50,7 @@ type mirroringJob struct {
 	changedOrNewWorkflows []*filestore.File
 }
 
+// SetProcessStatus sets mirroring process status.
 func (j *mirroringJob) SetProcessStatus(store Store, process *Process, status string) *mirroringJob {
 	if j.err != nil {
 		return j
@@ -52,6 +58,9 @@ func (j *mirroringJob) SetProcessStatus(store Store, process *Process, status st
 	var err error
 
 	process.Status = status
+	if status == processStatusComplete || status == processStatusFailed {
+		process.EndedAt = time.Now()
+	}
 	_, err = store.UpdateProcess(j.ctx, process)
 
 	if err != nil {
@@ -61,6 +70,7 @@ func (j *mirroringJob) SetProcessStatus(store Store, process *Process, status st
 	return j
 }
 
+// CreateTempDirectory creates a new os temp directory so that the mirror files with be sourced in.
 func (j *mirroringJob) CreateTempDirectory() *mirroringJob {
 	if j.err != nil {
 		return j
@@ -77,6 +87,7 @@ func (j *mirroringJob) CreateTempDirectory() *mirroringJob {
 	return j
 }
 
+// DeleteTempDirectory cleanup the os temp directory that the mirror files was sourced in.
 func (j *mirroringJob) DeleteTempDirectory() *mirroringJob {
 	if j.err != nil {
 		return j
@@ -92,6 +103,7 @@ func (j *mirroringJob) DeleteTempDirectory() *mirroringJob {
 	return j
 }
 
+// PullSourceInPath pulls the mirror files from the source to the temp os directory.
 func (j *mirroringJob) PullSourceInPath(source Source, config *Config) *mirroringJob {
 	if j.err != nil {
 		return j
@@ -105,6 +117,8 @@ func (j *mirroringJob) PullSourceInPath(source Source, config *Config) *mirrorin
 	return j
 }
 
+// CreateSourceFilesList creates a list of all relevant mirror file paths. The produced list is necessary for
+// further mirroring steps.
 func (j *mirroringJob) CreateSourceFilesList() *mirroringJob {
 	if j.err != nil {
 		return j
@@ -141,6 +155,7 @@ func (j *mirroringJob) CreateSourceFilesList() *mirroringJob {
 	return j
 }
 
+// ParseIgnoreFile parses the direktiv ignore file if exists.
 func (j *mirroringJob) ParseIgnoreFile(ignorePath string) *mirroringJob {
 	if j.err != nil {
 		return j
@@ -171,6 +186,7 @@ func (j *mirroringJob) ParseIgnoreFile(ignorePath string) *mirroringJob {
 	return j
 }
 
+// FilterIgnoredFiles filters the direktiv ignored files.
 func (j *mirroringJob) FilterIgnoredFiles() *mirroringJob {
 	if j.err != nil {
 		return j
@@ -192,6 +208,8 @@ func (j *mirroringJob) FilterIgnoredFiles() *mirroringJob {
 	return j
 }
 
+// ParseDirektivVars tries to parse special direktiv files naming convention to create both namespace and workflow
+// files.
 func (j *mirroringJob) ParseDirektivVars(fStore filestore.FileStore, store Store, namespaceID uuid.UUID) *mirroringJob {
 	if j.err != nil {
 		return j
@@ -258,6 +276,7 @@ func (j *mirroringJob) ParseDirektivVars(fStore filestore.FileStore, store Store
 	return j
 }
 
+// CopyFilesToRoot copies files to the filestore.
 func (j *mirroringJob) CopyFilesToRoot(fStore filestore.FileStore, namespaceID uuid.UUID) *mirroringJob {
 	if j.err != nil {
 		return j
@@ -326,6 +345,7 @@ func (j *mirroringJob) CopyFilesToRoot(fStore filestore.FileStore, namespaceID u
 	return j
 }
 
+// ConfigureWorkflows calls a function hook for every changed or new workflow.
 func (j *mirroringJob) ConfigureWorkflows(configureFunc ConfigureWorkflowFunc) *mirroringJob {
 	if j.err != nil {
 		return j
@@ -347,6 +367,7 @@ func (j *mirroringJob) ConfigureWorkflows(configureFunc ConfigureWorkflowFunc) *
 	return j
 }
 
+// CropFilesAndDirectoriesInRoot crops the filestore to remove all files and directories that don't exist in the mirror.
 func (j *mirroringJob) CropFilesAndDirectoriesInRoot(fStore filestore.FileStore, namespaceID uuid.UUID) *mirroringJob {
 	if j.err != nil {
 		return j
@@ -362,6 +383,8 @@ func (j *mirroringJob) CropFilesAndDirectoriesInRoot(fStore filestore.FileStore,
 	return j
 }
 
+// ReadRootFilesChecksums reads the rootChecksums param which helps to prevent copying none-changed files
+// to the filestore.
 func (j *mirroringJob) ReadRootFilesChecksums(fStore filestore.FileStore, namespaceID uuid.UUID) *mirroringJob {
 	if j.err != nil {
 		return j
@@ -379,6 +402,7 @@ func (j *mirroringJob) ReadRootFilesChecksums(fStore filestore.FileStore, namesp
 	return j
 }
 
+// CreateAllDirectories creates all the directories that appears in the mirror.
 func (j *mirroringJob) CreateAllDirectories(fStore filestore.FileStore, namespaceID uuid.UUID) *mirroringJob {
 	if j.err != nil {
 		return j
