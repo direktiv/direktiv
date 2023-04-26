@@ -11,20 +11,6 @@ import (
 	"go.uber.org/zap"
 )
 
-const (
-	processStatusComplete  = "complete"
-	processStatusPending   = "pending"
-	processStatusExecuting = "executing"
-	processStatusFailed    = "failed"
-)
-
-const (
-	processTypeInit = "init"
-	processTypeSync = "sync"
-)
-
-var ErrNotFound = errors.New("ErrNotFound")
-
 // Config holds configuration data that are needed to create a mirror (pulling mirror credentials, urls, keys
 // and any other details).
 type Config struct {
@@ -41,6 +27,25 @@ type Config struct {
 	UpdatedAt time.Time
 }
 
+// Process different statuses.
+const (
+	processStatusComplete  = "complete"
+	processStatusPending   = "pending"
+	processStatusExecuting = "executing"
+	processStatusFailed    = "failed"
+)
+
+// Process different types.
+const (
+	// Indicates initial mirroring process.
+	processTypeInit = "init"
+
+	// Indicates re-mirroring process.
+	processTypeSync = "sync"
+)
+
+// Process represents an instance of mirroring process that happened or is currently happened. For every mirroring
+// process gets executing, a Process instance should be created with mirror.Store.
 type Process struct {
 	ID          uuid.UUID
 	NamespaceID uuid.UUID
@@ -53,16 +58,30 @@ type Process struct {
 	UpdatedAt time.Time
 }
 
+var ErrNotFound = errors.New("ErrNotFound")
+
+// Store *doesn't* lunch any mirroring process. Store is only responsible for fetching and setting mirror.Config and
+// mirror.Process from datastore.
 type Store interface {
+	// CreateConfig stores a new config in the store.
 	CreateConfig(ctx context.Context, config *Config) (*Config, error)
+
+	// UpdateConfig updates a config in the store.
 	UpdateConfig(ctx context.Context, config *Config) (*Config, error)
 
+	// GetConfig gets config by namespaceID from the store.
 	GetConfig(ctx context.Context, namespaceID uuid.UUID) (*Config, error)
 
+	// CreateProcess stores a new process in the store.
 	CreateProcess(ctx context.Context, process *Process) (*Process, error)
+
+	// UpdateProcess update a process in the store.
 	UpdateProcess(ctx context.Context, process *Process) (*Process, error)
 
+	// GetProcess gets a process by id from the store.
 	GetProcess(ctx context.Context, id uuid.UUID) (*Process, error)
+
+	// GetProcessesByNamespaceID gets all processes that belong to a namespace from the store.
 	GetProcessesByNamespaceID(ctx context.Context, namespaceID uuid.UUID) ([]*Process, error)
 
 	// TODO: this need to be refactored.
@@ -72,6 +91,7 @@ type Store interface {
 	SetWorkflowVariable(ctx context.Context, workflowID uuid.UUID, key string, data []byte, hash string, mType string) error
 }
 
+// Manager launches and terminates mirroring processes.
 type Manager interface {
 	StartInitialMirroringProcess(ctx context.Context, config *Config) (*Process, error)
 	StartSyncingMirrorProcess(ctx context.Context, config *Config) (*Process, error)
@@ -80,11 +100,20 @@ type Manager interface {
 
 type ConfigureWorkflowFunc func(ctx context.Context, file *filestore.File) error
 
+// DefaultManager launches and terminates mirroring processes. When launching a mirroring process, DefaultManager
+// creates stores and update process objects in the mirror.Store.
 type DefaultManager struct {
-	store              Store
-	lg                 *zap.SugaredLogger
-	fStore             filestore.FileStore
-	source             Source
+	// store is needed so that DefaultManager can create and update mirror.Process objects.
+	store Store
+	lg    *zap.SugaredLogger
+
+	// fStore is to create mirrored files in the filestore.
+	fStore filestore.FileStore
+
+	// source is the source of the mirror. Typically, source is a git source.
+	source Source
+
+	// configWorkflowFunc is a hookup function the gets called for every new or updated workflow file.
 	configWorkflowFunc ConfigureWorkflowFunc
 }
 
@@ -128,6 +157,7 @@ func (d *DefaultManager) startMirroringProcess(ctx context.Context, config *Conf
 			SetProcessStatus(d.store, process, processStatusComplete).Error()
 		if err != nil {
 			process.Status = processStatusFailed
+			process.EndedAt = time.Now()
 			process, _ = d.store.UpdateProcess(context.TODO(), process)
 			d.lg.Errorw("mirroring process failed", "err", err, "process_id", process.ID)
 
@@ -140,17 +170,20 @@ func (d *DefaultManager) startMirroringProcess(ctx context.Context, config *Conf
 	return process, err
 }
 
+// StartInitialMirroringProcess starts an initial mirroring process.
 func (d *DefaultManager) StartInitialMirroringProcess(ctx context.Context, config *Config) (*Process, error) {
 	return d.startMirroringProcess(ctx, config, processTypeInit)
 }
 
+// StartSyncingMirrorProcess starts a re-mirroring process.
 func (d *DefaultManager) StartSyncingMirrorProcess(ctx context.Context, config *Config) (*Process, error) {
 	return d.startMirroringProcess(ctx, config, processTypeSync)
 }
 
-//nolint:revive
-func (d *DefaultManager) CancelMirroringProcess(ctx context.Context, id uuid.UUID) error {
-	// TODO implement me
+// nolint:revive
+// CancelMirroringProcess stops a currently running mirroring process.
+func (d *DefaultManager) CancelMirroringProcess(ctx context.Context, processID uuid.UUID) error {
+	// TODO, look if this is needed before release.
 	return nil
 }
 
