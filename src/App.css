@@ -3,6 +3,12 @@
 @tailwind components;
 @tailwind utilities;
 
+body,
+html {
+  @apply h-full;
+  @apply bg-white dark:bg-black;
+}
+
 @font-face {
   font-family: "Inter";
   font-style: normal;
