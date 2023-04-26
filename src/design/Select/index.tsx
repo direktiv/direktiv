@@ -48,10 +48,10 @@ const SelectContent = React.forwardRef<
       className={clsx(
         "z-50 shadow-md",
         "rounded-md ring-1",
-        "ring-black/5",
-        "dark:ring-white/5",
-        "border-gray-3 bg-gray-1",
-        "dark:border-gray-dark-3 dark:bg-gray-dark-1",
+        "ring-gray-3",
+        "dark:gray-dark-3",
+        "bg-gray-1",
+        "dark:bg-gray-dark-1",
         className
       )}
       {...props}
