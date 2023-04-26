@@ -49,8 +49,8 @@ const DropdownMenuSubContent = React.forwardRef<
     ref={ref}
     className={clsx(
       "z-50 min-w-[8rem] overflow-hidden rounded-md p-1 shadow-md ring-1",
-      "border-gray-3 bg-gray-1 ring-black/5",
-      "dark:border-gray-dark-3 dark:bg-gray-dark-1 dark:ring-white/5",
+      "bg-gray-1 ring-gray-3",
+      "dark:bg-gray-dark-1 dark:ring-gray-dark-3",
       className
     )}
     {...props}
@@ -69,9 +69,9 @@ const DropdownMenuContent = React.forwardRef<
       sideOffset={sideOffset}
       className={clsx(
         "data-[side=top] :slide-in-from-bottom-2 z-50 min-w-[8rem] overflow-hidden animate-in data-[side=right]:slide-in-from-left-2 data-[side=left]:slide-in-from-right-2 data-[side=bottom]:slide-in-from-top-2",
-        "ring-1p-1 rounded-md shadow-md",
-        "border-gray-3 bg-gray-1 ring-black/5",
-        "dark:border-gray-dark-3 dark:bg-gray-dark-1 dark:ring-white/5",
+        "rounded-md shadow-md ring-1",
+        "bg-gray-1 ring-gray-3",
+        "dark:bg-gray-dark-1 dark:ring-gray-dark-3",
         className
       )}
       {...props}
@@ -90,8 +90,8 @@ const DropdownMenuItem = React.forwardRef<
     ref={ref}
     className={clsx(
       "relative flex cursor-default select-none items-center rounded-sm py-1.5 px-2 text-sm font-medium outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-      " text-black focus:bg-gray-3",
-      " dark:text-white dark:focus:bg-gray-dark-3",
+      "focus:bg-gray-3",
+      "dark:focus:bg-gray-dark-3",
       inset && "pl-8",
       className
     )}
@@ -108,8 +108,8 @@ const DropdownMenuCheckboxItem = React.forwardRef<
     ref={ref}
     className={clsx(
       "relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm font-medium outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-      "text-black focus:bg-gray-3",
-      "dark:text-white dark:focus:bg-gray-dark-3",
+      "focus:bg-gray-3",
+      "dark:focus:bg-gray-dark-3",
       className
     )}
     checked={checked}
@@ -134,8 +134,8 @@ const DropdownMenuRadioItem = React.forwardRef<
     ref={ref}
     className={clsx(
       "relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm font-medium outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-      "text-black focus:bg-gray-3",
-      "dark:text-white dark:focus:bg-gray-dark-3",
+      "focus:bg-gray-3",
+      "dark:focus:bg-gray-dark-3",
       className
     )}
     {...props}
