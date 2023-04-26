@@ -80,7 +80,7 @@ export const Default: Story = {
     size: {
       description: "select size",
       control: "select",
-      options: ["sm", "lg"],
+      options: [undefined, "sm", "lg"],
       type: { name: "string", required: false },
     },
     loading: {
