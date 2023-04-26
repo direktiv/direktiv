@@ -31,12 +31,12 @@ export const Default: Story = {
 };
 export function CheckboxWithText() {
   return (
-    <div className="items-top flex space-x-2 bg-white dark:bg-black p-2">
+    <div className="items-top flex space-x-2 bg-white p-2 dark:bg-black">
       <Checkbox id="terms2" />
       <div className="grid gap-1.5 leading-none">
         <label
           htmlFor="terms2"
-          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-gray-10 dark:text-gray-dark-10"
+          className="text-sm font-medium leading-none text-gray-10 peer-disabled:cursor-not-allowed peer-disabled:opacity-70 dark:text-gray-dark-10"
         >
           Accept terms and conditions
         </label>
@@ -50,7 +50,7 @@ export function CheckboxWithText() {
 
 export function DisabledCheckbox() {
   return (
-    <div className="items-top flex space-x-2 bg-white dark:bg-black p-2">
+    <div className="items-top flex space-x-2 bg-white p-2 dark:bg-black">
       <Checkbox id="terms-disabled-1" disabled />
     </div>
   );
@@ -58,7 +58,7 @@ export function DisabledCheckbox() {
 
 export function CheckboxSizes() {
   return (
-    <div className="items-top flex space-x-2 bg-white dark:bg-black p-2">
+    <div className="items-top flex space-x-2 bg-white p-2 dark:bg-black">
       <Checkbox size="lg" />
       <Checkbox />
       <Checkbox size="sm" />
