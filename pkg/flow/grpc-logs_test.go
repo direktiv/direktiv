@@ -151,25 +151,6 @@ func requestServerLogs(t *testing.T, flowSrv flow, req *grpc.ServerLogsRequest) 
 	return res
 }
 
-// func TestWhiteboxTestServerLogs(t *testing.T) {
-// 	srv := server{}
-// 	flowSrv := flow{}
-
-// 	flowSrv.server = &srv
-// 	logs, logobserver := testutils.ObservedLogger()
-// 	srv.sugar = logs
-// 	reqSrvLogs := grpc.ServerLogsRequest{
-// 		Pagination: &grpc.Pagination{},
-// 	}
-// 	resSrvLogs := requestServerLogs(t, flowSrv, &reqSrvLogs)
-// 	if len(logobserver.All()) <= 0 {
-// 		t.Error("some logmsg should heve been printed")
-// 	}
-// 	if int(resSrvLogs.PageInfo.Limit) > len(resSrvLogs.Results) {
-// 		t.Errorf("got more results then specified in pageinfo")
-// 	}
-// }
-
 func TestBuildInstanceLogResp(t *testing.T) {
 	jsondump := loopjson
 	ctx := context.Background()
@@ -196,14 +177,6 @@ func TestBuildInstanceLogResp(t *testing.T) {
 		inLen++
 	}
 
-	// query := buildInstanceLogsQuery(ctx, &db.Entw, "", "", false)
-	// page := grpc.Pagination{}
-
-	// logmsgs, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, &page, query, logsOrderings, logsFilters)
-	// if err != nil {
-	// 	t.Error(err)
-	// 	return
-	// }
 	if len(logmsgs) != inLen {
 		t.Errorf("Missing Results len was %d should %d", len(logmsgs), inLen)
 	}
