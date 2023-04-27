@@ -1,6 +1,5 @@
 import Backend from "i18next-http-backend";
 import i18n from "i18next";
-// import en from "./translations/en.json";
 import { initReactI18next } from "react-i18next";
 
 // Example: we could define translations here (or import them as a module)
