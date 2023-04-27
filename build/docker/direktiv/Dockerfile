@@ -1,4 +1,4 @@
-FROM golang:1.19 as builder
+FROM golang:1.20 as builder
 
 ARG RELEASE_VERSION
 ENV RELEASE=$RELEASE_VERSION
