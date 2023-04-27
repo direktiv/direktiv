@@ -1,0 +1,23 @@
+{
+  "pages": {
+    "onboarding": {
+      "welcomeTo": "Welcome to",
+      "noNamespace": "Create a namespace to get started.",
+      "createNamespaceBtn": "Create namespace",
+      "links": {
+        "docs": {
+          "title": "Getting started",
+          "description": "Read our docs"
+        },
+        "slack": {
+          "title": "Slack",
+          "description": "Join our Open Source Support channel on Slack"
+        },
+        "github": {
+          "title": "Github",
+          "description": "Check out our Github repository"
+        }
+      }
+    }
+  }
+}
