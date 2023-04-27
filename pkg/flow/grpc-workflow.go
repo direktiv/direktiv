@@ -45,10 +45,12 @@ func (flow *flow) Workflow(ctx context.Context, req *grpc.WorkflowRequest) (*grp
 	if err != nil {
 		return nil, err
 	}
-	revision, err := fStore.ForFile(file).GetCurrentRevision(ctx)
+
+	revision, err := fStore.ForFile(file).GetRevision(ctx, req.GetRef())
 	if err != nil {
 		return nil, err
 	}
+
 	dataReader, err := fStore.ForRevision(revision).GetData(ctx)
 	if err != nil {
 		return nil, err

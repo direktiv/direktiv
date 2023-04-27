@@ -93,7 +93,11 @@ func (q *FileQuery) SetPath(ctx context.Context, path string) error {
 	return q.setPathForFileType(ctx, path)
 }
 
-func (q *FileQuery) GetRevisionByTag(ctx context.Context, tag string) (*filestore.Revision, error) {
+func (q *FileQuery) GetRevision(ctx context.Context, reference string) (*filestore.Revision, error) {
+	if reference == filestore.Latest {
+		return q.GetCurrentRevision(ctx)
+	}
+
 	if q.file.Typ == filestore.FileTypeDirectory {
 		return nil, filestore.ErrFileTypeIsDirectory
 	}
@@ -101,29 +105,13 @@ func (q *FileQuery) GetRevisionByTag(ctx context.Context, tag string) (*filestor
 	rev := &filestore.Revision{}
 	res := q.db.WithContext(ctx).Raw(`
 							SELECT * FROM filesystem_revisions WHERE "file_id" = ? AND
-							("tags" = ? OR "tags" LIKE ? OR "tags" LIKE ? "tags" LIKE ?)`,
+							("id" = ? OR "tags" = ? OR "tags" LIKE ? OR "tags" LIKE ? "tags" LIKE ?)`,
 		q.file.ID,
-		tag,
-		tag+",%",
-		"%,"+tag,
-		"%,"+tag+",%").
-		Scan(rev)
-	if res.Error != nil {
-		return nil, res.Error
-	}
-
-	return rev, nil
-}
-
-func (q *FileQuery) GetRevision(ctx context.Context, id uuid.UUID) (*filestore.Revision, error) {
-	if q.file.Typ == filestore.FileTypeDirectory {
-		return nil, filestore.ErrFileTypeIsDirectory
-	}
-
-	rev := &filestore.Revision{}
-	res := q.db.WithContext(ctx).
-		Table("filesystem_revisions").
-		Where("id", id).
+		reference,
+		reference,
+		reference+",%",
+		"%,"+reference,
+		"%,"+reference+",%").
 		First(rev)
 	if res.Error != nil {
 		return nil, res.Error
@@ -142,6 +130,7 @@ func (q *FileQuery) GetAllRevisions(ctx context.Context) ([]*filestore.Revision,
 	res := q.db.WithContext(ctx).
 		Table("filesystem_revisions").
 		Where("file_id", q.file.ID).
+		Order("created_at desc").
 		Find(&list)
 	if res.Error != nil {
 		return nil, res.Error

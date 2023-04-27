@@ -10,7 +10,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
-	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -194,18 +193,9 @@ func (flow *flow) Tag(ctx context.Context, req *grpc.TagRequest) (*emptypb.Empty
 		return nil, err
 	}
 
-	var revision *filestore.Revision
-	revID, err := uuid.Parse(req.GetRef())
+	revision, err := fStore.ForFile(file).GetRevision(ctx, req.GetRef())
 	if err != nil {
-		revision, err = fStore.ForFile(file).GetRevision(ctx, revID)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		revision, err = fStore.ForFile(file).GetRevisionByTag(ctx, req.GetRef())
-		if err != nil {
-			return nil, err
-		}
+		return nil, err
 	}
 	revision, err = fStore.ForRevision(revision).SetTags(ctx, revision.Tags.AddTag(req.GetTag()))
 	if err != nil {
@@ -239,7 +229,7 @@ func (flow *flow) Untag(ctx context.Context, req *grpc.UntagRequest) (*emptypb.E
 	if err != nil {
 		return nil, err
 	}
-	revision, err := fStore.ForFile(file).GetRevisionByTag(ctx, req.GetTag())
+	revision, err := fStore.ForFile(file).GetRevision(ctx, req.GetTag())
 	if err != nil {
 		return nil, err
 	}
