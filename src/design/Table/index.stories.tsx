@@ -207,6 +207,16 @@ export const TableAndCard = () => (
                 {moment(file.date).fromNow()}
               </span>
             </TableCell>
+            <TableCell className="w-0">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={(e) => e.preventDefault()}
+                icon
+              >
+                <MoreVertical />
+              </Button>
+            </TableCell>
           </TableRow>
         ))}
       </TableBody>
