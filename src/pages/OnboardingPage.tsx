@@ -71,12 +71,12 @@ const Layout = () => {
   return (
     <main className="grid min-h-full place-items-center py-24 px-6 sm:py-32 lg:px-8">
       <div className="text-center">
-        <h1 className="mb-8 flex justify-center space-x-3 text-2xl font-bold text-gray-12">
+        <h1 className="mb-8 flex justify-center space-x-3 text-2xl font-bold text-gray-12 dark:text-gray-dark-12">
           <span> {t("pages.onboarding.welcomeTo")}</span>
           <Logo />
         </h1>
-        <div className="relative block w-full rounded-lg border-2 border-dashed border-gray-5 p-12 text-center">
-          <p className="mt-1 text-sm text-gray-9">
+        <div className="relative block w-full rounded-lg border-2 border-dashed border-gray-5 p-12 text-center dark:border-gray-dark-5">
+          <p className="mt-1 text-sm text-gray-9 dark:text-gray-dark-9">
             {t("pages.onboarding.noNamespace")}
           </p>
           <Dialog>
@@ -102,7 +102,7 @@ const Layout = () => {
                   </span>
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="text-sm font-medium text-gray-11">
+                  <div className="text-sm font-medium text-gray-11 dark:text-gray-dark-11">
                     <a
                       href={item.href}
                       target="_blank"
@@ -112,7 +112,9 @@ const Layout = () => {
                       {item.title}
                     </a>
                   </div>
-                  <p className="text-sm text-gray-9">{item.description}</p>
+                  <p className="text-sm text-gray-9 dark:text-gray-dark-9">
+                    {item.description}
+                  </p>
                 </div>
                 <div className="shrink-0 self-center"></div>
               </div>
