@@ -19,7 +19,7 @@ type sqlMirrorStore struct {
 }
 
 // SetNamespaceVariable sets namespace variable into the database.
-//nolint
+// nolint
 func (s sqlMirrorStore) SetNamespaceVariable(ctx context.Context, namespaceID uuid.UUID, key string, data []byte, hash string, mType string) error {
 	// try to update a variable if exists.
 	res := s.db.WithContext(ctx).Exec(`
@@ -65,7 +65,7 @@ func (s sqlMirrorStore) SetNamespaceVariable(ctx context.Context, namespaceID uu
 }
 
 // SetWorkflowVariable sets workflow variable into the database.
-//nolint
+// nolint
 func (s sqlMirrorStore) SetWorkflowVariable(ctx context.Context, workflowID uuid.UUID, key string, data []byte, hash string, mType string) error {
 	// try to update a variable if exists.
 	res := s.db.WithContext(ctx).Exec(`
@@ -161,8 +161,7 @@ func (s sqlMirrorStore) UpdateConfig(ctx context.Context, config *mirror.Config)
 		return nil, err
 	}
 
-	res := s.db.WithContext(ctx).
-		Table("mirror_configs").
+	res := s.db.WithContext(ctx).Table("mirror_configs").
 		Where("namespace_id", config.NamespaceID).
 		Updates(config)
 	if res.Error != nil {
@@ -177,8 +176,7 @@ func (s sqlMirrorStore) UpdateConfig(ctx context.Context, config *mirror.Config)
 
 func (s sqlMirrorStore) GetConfig(ctx context.Context, namespaceID uuid.UUID) (*mirror.Config, error) {
 	config := &mirror.Config{}
-	res := s.db.WithContext(ctx).
-		Table("mirror_configs").
+	res := s.db.WithContext(ctx).Table("mirror_configs").
 		Where("namespace_id", namespaceID).
 		First(config)
 
@@ -208,8 +206,7 @@ func (s sqlMirrorStore) CreateProcess(ctx context.Context, process *mirror.Proce
 }
 
 func (s sqlMirrorStore) UpdateProcess(ctx context.Context, process *mirror.Process) (*mirror.Process, error) {
-	res := s.db.WithContext(ctx).
-		Table("mirror_processes").
+	res := s.db.WithContext(ctx).Table("mirror_processes").
 		Where("id", process.ID).
 		Updates(process)
 	if res.Error != nil {
@@ -224,8 +221,7 @@ func (s sqlMirrorStore) UpdateProcess(ctx context.Context, process *mirror.Proce
 
 func (s sqlMirrorStore) GetProcess(ctx context.Context, id uuid.UUID) (*mirror.Process, error) {
 	process := &mirror.Process{}
-	res := s.db.WithContext(ctx).
-		Table("mirror_processes").
+	res := s.db.WithContext(ctx).Table("mirror_processes").
 		Where("id", id).
 		First(process)
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
@@ -241,8 +237,7 @@ func (s sqlMirrorStore) GetProcess(ctx context.Context, id uuid.UUID) (*mirror.P
 func (s sqlMirrorStore) GetProcessesByNamespaceID(ctx context.Context, namespaceID uuid.UUID) ([]*mirror.Process, error) {
 	var process []*mirror.Process
 
-	res := s.db.WithContext(ctx).
-		Table("mirror_processes").
+	res := s.db.WithContext(ctx).Table("mirror_processes").
 		Where("namespace_id", namespaceID).
 		Find(&process)
 	if res.Error != nil {

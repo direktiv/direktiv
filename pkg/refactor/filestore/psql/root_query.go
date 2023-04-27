@@ -136,7 +136,7 @@ func (q *RootQuery) IsEmptyDirectory(ctx context.Context, path string) (bool, er
 var _ filestore.RootQuery = &RootQuery{} // Ensures RootQuery struct conforms to filestore.RootQuery interface.
 
 func (q *RootQuery) Delete(ctx context.Context) error {
-	res := q.db.WithContext(ctx).Table("filesystem_roots").Delete(&filestore.Root{}, q.rootID)
+	res := q.db.WithContext(ctx).Exec(`DELETE FROM filesystem_roots WHERE id = ?`, q.rootID)
 	if res.Error != nil {
 		return res.Error
 	}
@@ -284,8 +284,7 @@ func (q *RootQuery) ReadDirectory(ctx context.Context, path string) ([]*filestor
 		}
 	}
 
-	res := q.db.WithContext(ctx).
-		Table("filesystem_files").
+	res := q.db.WithContext(ctx).Table("filesystem_files").
 		// Don't include file 'data' in the query. File data can be retrieved with file.GetData().
 		Select("id", "path", "depth", "typ", "root_id", "created_at", "updated_at").
 		Where("root_id", q.rootID).

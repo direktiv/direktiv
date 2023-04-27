@@ -149,8 +149,7 @@ func (q *FileQuery) GetAllRevisions(ctx context.Context) ([]*filestore.Revision,
 	}
 
 	var list []*filestore.Revision
-	res := q.db.WithContext(ctx).
-		Table("filesystem_revisions").
+	res := q.db.WithContext(ctx).Table("filesystem_revisions").
 		Where("file_id", q.file.ID).
 		Order("created_at desc").
 		Find(&list)
@@ -165,7 +164,7 @@ var _ filestore.FileQuery = &FileQuery{}
 
 //nolint:revive
 func (q *FileQuery) Delete(ctx context.Context, force bool) error {
-	res := q.db.WithContext(ctx).Table("filesystem_files").Delete(&filestore.File{}, q.file.ID)
+	res := q.db.WithContext(ctx).Exec(`DELETE FROM filesystem_files WHERE id = ?`, q.file.ID)
 	if res.Error != nil {
 		return res.Error
 	}
@@ -181,8 +180,7 @@ func (q *FileQuery) GetData(ctx context.Context) (io.ReadCloser, error) {
 		return nil, filestore.ErrFileTypeIsDirectory
 	}
 	rev := &filestore.Revision{}
-	res := q.db.WithContext(ctx).
-		Table("filesystem_revisions").
+	res := q.db.WithContext(ctx).Table("filesystem_revisions").
 		Where("file_id", q.file.ID).
 		Where("is_current", true).
 		First(rev)
@@ -201,8 +199,7 @@ func (q *FileQuery) GetCurrentRevision(ctx context.Context) (*filestore.Revision
 	}
 
 	rev := &filestore.Revision{}
-	res := q.db.WithContext(ctx).
-		Table("filesystem_revisions").
+	res := q.db.WithContext(ctx).Table("filesystem_revisions").
 		Where("file_id", q.file.ID).
 		Where("is_current", true).
 		First(rev)
