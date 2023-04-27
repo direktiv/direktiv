@@ -8,35 +8,36 @@ import NamespaceCreate from "../componentsNext/NamespaceCreate";
 import { pages } from "../util/router/pages";
 import { useListNamespaces } from "../api/namespaces/query/get";
 import { useNavigate } from "react-router-dom";
-
-const linkItems = [
-  {
-    icon: <Book />,
-    title: "Getting started",
-    description: "Read our docs",
-    href: "https://docs.direktiv.io/getting_started/",
-  },
-  {
-    icon: <Slack />,
-    title: "Slack",
-    description: "Join our Open Source Support channel on Slack",
-    href: "https://join.slack.com/t/direktiv-io/shared_invite/zt-zf7gmfaa-rYxxBiB9RpuRGMuIasNO~g",
-  },
-  {
-    icon: <Github />,
-    title: "Github",
-    description: "Check out our Github repository",
-    href: "https://github.com/direktiv/direktiv",
-  },
-];
+import { useTranslation } from "react-i18next";
 
 const Layout = () => {
+  const { t } = useTranslation();
   const { data: availableNamespaces, isFetched } = useListNamespaces();
   const activeNamespace = useNamespace();
   const { setNamespace } = useNamespaceActions();
-  const [dialogOpen, setDialogOpen] = useState(false);
-
+  const [, setDialogOpen] = useState(false);
   const navigate = useNavigate();
+
+  const linkItems = [
+    {
+      icon: <Book />,
+      title: t("pages.onboarding.links.docs.title"),
+      description: t("pages.onboarding.links.docs.description"),
+      href: "https://docs.direktiv.io/getting_started/",
+    },
+    {
+      icon: <Slack />,
+      title: t("pages.onboarding.links.slack.title"),
+      description: t("pages.onboarding.links.slack.description"),
+      href: "https://join.slack.com/t/direktiv-io/shared_invite/zt-zf7gmfaa-rYxxBiB9RpuRGMuIasNO~g",
+    },
+    {
+      icon: <Github />,
+      title: t("pages.onboarding.links.github.title"),
+      description: t("pages.onboarding.links.github.description"),
+      href: "https://github.com/direktiv/direktiv",
+    },
+  ];
 
   useEffect(() => {
     if (availableNamespaces && availableNamespaces?.results?.length > 0) {
@@ -70,19 +71,19 @@ const Layout = () => {
     <main className="grid min-h-full place-items-center bg-white py-24 px-6 sm:py-32 lg:px-8">
       <div className="text-center">
         <h1 className="mb-8 flex justify-center space-x-3 text-2xl font-bold text-gray-900">
-          <span>Welcome to </span>
+          <span> {t("pages.onboarding.welcomeTo")}</span>
           <Logo />
         </h1>
 
         <div className="relative block w-full rounded-lg border-2 border-dashed border-gray-300 p-12 text-center hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
           <p className="mt-1 text-sm text-gray-500">
-            Create a namespace to get started.
+            {t("pages.onboarding.noNamespace")}
           </p>
           <Dialog>
             <DialogTrigger asChild>
               <Button variant="ghost" size="lg" className="my-5">
                 <PlusCircle />
-                Create namespace
+                {t("pages.onboarding.createNamespaceBtn")}
               </Button>
             </DialogTrigger>
             <DialogContent>
