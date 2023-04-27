@@ -2,11 +2,11 @@ package internallogger
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
-	entlog "github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
 	"github.com/direktiv/direktiv/pkg/flow/internal/testutils"
 	"github.com/google/uuid"
 )
@@ -14,27 +14,32 @@ import (
 var _notifyLogsTriggeredWith notifyLogsTriggeredWith
 
 func TestStoringLogMsg(t *testing.T) {
-	db, err := testutils.DatabaseWrapper()
-	if err != nil {
-		t.Error(err)
-		return
-	}
-	defer db.StopDB()
 	sugar, telemetrylogs := testutils.ObservedLogger()
 	logger := InitLogger()
-	logger.StartLogWorkers(1, &db.Entw, &LogNotifyMock{}, sugar)
+	gorm, cleanup, err := testutils.DatabaseGorm()
+	if err != nil {
+		t.Error(err)
+	}
+	defer func() {
+		err := cleanup()
+		if err != nil {
+			fmt.Println(err)
+		}
+	}()
+	logger.StartLogWorkers(1, gorm, &LogNotifyMock{}, sugar)
 	tags := make(map[string]string)
-	tags["recipientType"] = recipient.Server.String()
+	tags["recipientType"] = recipient.Instance.String()
 	tags["testTag"] = recipient.Server.String()
 	recipent := uuid.New()
 	msg := "test2"
-	logger.Infof(context.Background(), recipent, tags, msg)
-
+	ctx := context.TODO()
+	logger.Infof(ctx, recipent, tags, msg)
 	logger.CloseLogWorkers()
-	logs, err := db.Entw.Client.LogMsg.Query().Where(entlog.LevelEQ(string(Info))).All(context.Background())
+	lq := QueryLogs()
+	lq.WhereInstance(recipent)
+	logs, err := lq.GetAll(context.Background(), gorm)
 	if err != nil {
-		t.Errorf("query logmsg failed %v", err)
-		return
+		t.Error(err)
 	}
 	if len(logs) < 1 {
 		t.Errorf("expected to get 1 log-msg; got %d", len(logs))
@@ -50,8 +55,8 @@ func TestStoringLogMsg(t *testing.T) {
 	if _notifyLogsTriggeredWith.Id != recipent {
 		t.Errorf("expected NotifyLogs to called with recipent %s; got '%s'", recipent, _notifyLogsTriggeredWith.Id)
 	}
-	if _notifyLogsTriggeredWith.RecipientType != recipient.Server {
-		t.Errorf("expected NotifyLogs to called with recipentType %s; got '%s'", recipient.Server, _notifyLogsTriggeredWith.RecipientType)
+	if _notifyLogsTriggeredWith.RecipientType != recipient.Instance {
+		t.Errorf("expected NotifyLogs to called with recipentType %s; got '%s'", recipient.Instance, _notifyLogsTriggeredWith.RecipientType)
 	}
 	if len(telemetrylogs.All()) < 1 {
 		t.Errorf("len of telemetry logs wrong")
@@ -99,28 +104,43 @@ func TestTelemetryWithTags(t *testing.T) {
 }
 
 func TestSendLogMsgToDB(t *testing.T) {
-	db, err := testutils.DatabaseWrapper()
-	if err != nil {
-		t.Error(err)
-		return
-	}
-	defer db.StopDB()
-
 	sugar, telemetrylogs := testutils.ObservedLogger()
 	logger := InitLogger()
-	logger.StartLogWorkers(1, &db.Entw, &LogNotifyMock{}, sugar)
+	gorm, cleanup, err := testutils.DatabaseGorm()
+	if err != nil {
+		t.Error(err)
+	}
+	defer func() {
+		err := cleanup()
+		if err != nil {
+			fmt.Println(err)
+		}
+	}()
+	logger.StartLogWorkers(1, gorm, &LogNotifyMock{}, sugar)
 
-	tags := make(map[string]string)
+	tags := make(map[string]interface{})
 	tags["recipientType"] = recipient.Server.String()
 	recipent := uuid.New()
 	msg := "test1"
-	err = logger.SendLogMsgToDB(&logMessage{time.Now(), msg, Info, recipent, tags})
+	err = logger.SendLogMsgToDB(&logMsg{
+		recipientID:   recipent,
+		recipientType: recipient.Instance,
+		LogMsgs: &LogMsgs{
+			T:            time.Now(),
+			Msg:          msg,
+			Level:        "info",
+			Tags:         tags,
+			InstanceLogs: recipent,
+		},
+	})
 	if err != nil {
 		t.Errorf("database transaction failed %v", err)
 	}
-	logs, err := db.Entw.Client.LogMsg.Query().Where(entlog.LevelEQ(string(Info))).All(context.Background())
+	lq := QueryLogs()
+	lq.WhereInstance(recipent)
+	logs, err := lq.GetAll(context.TODO(), gorm)
 	if err != nil {
-		t.Errorf("query logmsg failed %v", err)
+		t.Error(err)
 	}
 	if len(logs) < 1 {
 		t.Errorf("expected to get 1 log-msg; got %d", len(logs))
@@ -132,8 +152,8 @@ func TestSendLogMsgToDB(t *testing.T) {
 	if _notifyLogsTriggeredWith.Id != recipent {
 		t.Errorf("expected NotifyLogs to called with recipent %s; got '%s'", recipent, _notifyLogsTriggeredWith.Id)
 	}
-	if _notifyLogsTriggeredWith.RecipientType != recipient.Server {
-		t.Errorf("expected NotifyLogs to called with recipentType %s; got '%s'", recipient.Server, _notifyLogsTriggeredWith.RecipientType)
+	if _notifyLogsTriggeredWith.RecipientType != recipient.Instance {
+		t.Errorf("expected NotifyLogs to called with recipentType %s; got '%s'", recipient.Instance, _notifyLogsTriggeredWith.RecipientType)
 	}
 	if len(telemetrylogs.All()) > 0 {
 		t.Errorf("its not excepted to log telemetry logs in this method")
@@ -142,8 +162,8 @@ func TestSendLogMsgToDB(t *testing.T) {
 	if _notifyLogsTriggeredWith.Id != recipent {
 		t.Errorf("expected NotifyLogs to called with recipent %s; got '%s'", recipent, _notifyLogsTriggeredWith.Id)
 	}
-	if _notifyLogsTriggeredWith.RecipientType != recipient.Server {
-		t.Errorf("expected NotifyLogs to called with recipentType %s; got '%s'", recipient.Server, _notifyLogsTriggeredWith.RecipientType)
+	if _notifyLogsTriggeredWith.RecipientType != recipient.Instance {
+		t.Errorf("expected NotifyLogs to called with recipentType %s; got '%s'", recipient.Instance, _notifyLogsTriggeredWith.RecipientType)
 	}
 }
 

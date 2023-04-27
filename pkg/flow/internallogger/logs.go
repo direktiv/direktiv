@@ -8,19 +8,25 @@ import (
 	"sync"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/flow/database/entwrapper"
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/google/uuid"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
+	"gorm.io/gorm"
 )
 
 type Logger struct {
-	logQueue     chan *logMessage
+	logQueue     chan *logMsg
 	logWorkersWG sync.WaitGroup
 	sugar        *zap.SugaredLogger
-	edb          *entwrapper.Database
 	pubsub       LogNotify
+	db           *gorm.DB
+}
+
+type logMsg struct {
+	*LogMsgs
+	recipientID   uuid.UUID
+	recipientType recipient.RecipientType
 }
 
 type LogNotify interface {
@@ -28,22 +34,14 @@ type LogNotify interface {
 }
 
 func InitLogger() *Logger {
-	logQueue := make(chan *logMessage, 1000)
+	logQueue := make(chan *logMsg, 1000)
 	return &Logger{
 		logQueue: logQueue,
 	}
 }
 
-type logMessage struct {
-	t           time.Time
-	msg         string
-	level       Level
-	recipientID uuid.UUID
-	tags        map[string]string
-}
-
-func (logger *Logger) StartLogWorkers(n int, db *entwrapper.Database, pubsub LogNotify, sugar *zap.SugaredLogger) {
-	logger.edb = db
+func (logger *Logger) StartLogWorkers(n int, db *gorm.DB, pubsub LogNotify, sugar *zap.SugaredLogger) {
+	logger.db = db
 	logger.pubsub = pubsub
 	logger.sugar = sugar
 	logger.logWorkersWG.Add(n)
@@ -141,13 +139,45 @@ func (logger *Logger) sendToWorker(recipientID uuid.UUID, tags map[string]string
 	defer func() {
 		_ = recover()
 	}()
-
-	logger.logQueue <- &logMessage{
-		t:           time.Now(),
-		msg:         msg,
-		tags:        tags,
-		level:       level,
-		recipientID: recipientID,
+	recipientType, ok := recipient.Convert(tags["recipientType"])
+	if !ok {
+		panic(fmt.Errorf("unexpected recipientType %s", recipientType))
+	}
+	lTags := make(map[string]interface{})
+	for k, v := range tags {
+		lTags[k] = v
+	}
+	l := &LogMsgs{
+		T:     time.Now(),
+		Msg:   msg,
+		Tags:  lTags,
+		Level: string(level),
+		Oid:   uuid.New(),
+	}
+	switch recipientType {
+	case recipient.Server:
+	case recipient.Instance:
+		callpath := AppendInstanceID(tags["callpath"], recipientID.String())
+		rootInstance, err := GetRootinstanceID(callpath)
+		if err != nil {
+			panic(err)
+		}
+		l.InstanceLogs = recipientID
+		l.RootInstanceId = rootInstance
+		l.LogInstanceCallPath = callpath
+	case recipient.Namespace:
+		l.NamespaceLogs = recipientID
+	case recipient.Workflow:
+		l.WorkflowId = recipientID
+	case recipient.Mirror:
+		l.MirrorActivityId = recipientID
+	default:
+		logger.sugar.Panicf("recipientType was not set: %s %v", msg, tags)
+	}
+	logger.logQueue <- &logMsg{
+		recipientID:   recipientID,
+		recipientType: recipientType,
+		LogMsgs:       l,
 	}
 }
 
@@ -180,39 +210,11 @@ func (logger *Logger) Telemetry(ctx context.Context, level Level, tags map[strin
 	}
 }
 
-func (logger *Logger) SendLogMsgToDB(l *logMessage) error {
-	ctx := context.Background() // logs are often queued and stored after their originating requests have ended.
-	clients := logger.edb.Clients(ctx)
-	lc := clients.LogMsg.Create().SetMsg(l.msg).SetT(l.t).SetLevel(string(l.level)).SetTags(l.tags)
-
-	recipientType, ok := recipient.Convert(l.tags["recipientType"])
-	if !ok {
-		return fmt.Errorf("unexpected recipientType %s", recipientType)
+func (logger *Logger) SendLogMsgToDB(l *logMsg) error {
+	t := logger.db.Table("log_msgs").Create(&l.LogMsgs)
+	if t.Error != nil {
+		return t.Error
 	}
-	switch recipientType {
-	case recipient.Server:
-	case recipient.Instance:
-		callpath := AppendInstanceID(l.tags["callpath"], l.recipientID.String())
-		rootInstance, err := GetRootinstanceID(callpath)
-		if err != nil {
-			return err
-		}
-		lc.SetInstanceID(l.recipientID).SetRootInstanceId(rootInstance).SetLogInstanceCallPath(callpath)
-	case recipient.Namespace:
-		lc.SetNamespaceID(l.recipientID)
-	case recipient.Workflow:
-		lc.SetWorkflowID(l.recipientID)
-	case recipient.Mirror:
-		lc.SetMirrorActivityID(l.recipientID)
-	default:
-		logger.sugar.Panicf("recipientType was not set: %s %v", l.msg, l.tags)
-		return fmt.Errorf("recipientType was not set %s %v", l.msg, l.tags)
-	}
-	_, err := lc.Save(ctx)
-	if err != nil {
-		logger.sugar.Panicf("error storing logmsg: %v", err)
-		return err
-	}
-	logger.pubsub.NotifyLogs(l.recipientID, recipientType)
+	logger.pubsub.NotifyLogs(l.recipientID, l.recipientType)
 	return nil
 }

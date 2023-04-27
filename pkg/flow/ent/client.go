@@ -18,7 +18,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/eventswait"
 	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	"github.com/direktiv/direktiv/pkg/flow/ent/instanceruntime"
-	"github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/services"
 	"github.com/direktiv/direktiv/pkg/flow/ent/vardata"
@@ -48,8 +47,6 @@ type Client struct {
 	Instance *InstanceClient
 	// InstanceRuntime is the client for interacting with the InstanceRuntime builders.
 	InstanceRuntime *InstanceRuntimeClient
-	// LogMsg is the client for interacting with the LogMsg builders.
-	LogMsg *LogMsgClient
 	// Namespace is the client for interacting with the Namespace builders.
 	Namespace *NamespaceClient
 	// Services is the client for interacting with the Services builders.
@@ -78,7 +75,6 @@ func (c *Client) init() {
 	c.EventsWait = NewEventsWaitClient(c.config)
 	c.Instance = NewInstanceClient(c.config)
 	c.InstanceRuntime = NewInstanceRuntimeClient(c.config)
-	c.LogMsg = NewLogMsgClient(c.config)
 	c.Namespace = NewNamespaceClient(c.config)
 	c.Services = NewServicesClient(c.config)
 	c.VarData = NewVarDataClient(c.config)
@@ -123,7 +119,6 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		EventsWait:        NewEventsWaitClient(cfg),
 		Instance:          NewInstanceClient(cfg),
 		InstanceRuntime:   NewInstanceRuntimeClient(cfg),
-		LogMsg:            NewLogMsgClient(cfg),
 		Namespace:         NewNamespaceClient(cfg),
 		Services:          NewServicesClient(cfg),
 		VarData:           NewVarDataClient(cfg),
@@ -154,7 +149,6 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		EventsWait:        NewEventsWaitClient(cfg),
 		Instance:          NewInstanceClient(cfg),
 		InstanceRuntime:   NewInstanceRuntimeClient(cfg),
-		LogMsg:            NewLogMsgClient(cfg),
 		Namespace:         NewNamespaceClient(cfg),
 		Services:          NewServicesClient(cfg),
 		VarData:           NewVarDataClient(cfg),
@@ -194,7 +188,6 @@ func (c *Client) Use(hooks ...Hook) {
 	c.EventsWait.Use(hooks...)
 	c.Instance.Use(hooks...)
 	c.InstanceRuntime.Use(hooks...)
-	c.LogMsg.Use(hooks...)
 	c.Namespace.Use(hooks...)
 	c.Services.Use(hooks...)
 	c.VarData.Use(hooks...)
@@ -880,22 +873,6 @@ func (c *InstanceClient) QueryNamespace(i *Instance) *NamespaceQuery {
 	return query
 }
 
-// QueryLogs queries the logs edge of a Instance.
-func (c *InstanceClient) QueryLogs(i *Instance) *LogMsgQuery {
-	query := &LogMsgQuery{config: c.config}
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := i.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(instance.Table, instance.FieldID, id),
-			sqlgraph.To(logmsg.Table, logmsg.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, instance.LogsTable, instance.LogsColumn),
-		)
-		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryVars queries the vars edge of a Instance.
 func (c *InstanceClient) QueryVars(i *Instance) *VarRefQuery {
 	query := &VarRefQuery{config: c.config}
@@ -1103,128 +1080,6 @@ func (c *InstanceRuntimeClient) Hooks() []Hook {
 	return c.hooks.InstanceRuntime
 }
 
-// LogMsgClient is a client for the LogMsg schema.
-type LogMsgClient struct {
-	config
-}
-
-// NewLogMsgClient returns a client for the LogMsg from the given config.
-func NewLogMsgClient(c config) *LogMsgClient {
-	return &LogMsgClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `logmsg.Hooks(f(g(h())))`.
-func (c *LogMsgClient) Use(hooks ...Hook) {
-	c.hooks.LogMsg = append(c.hooks.LogMsg, hooks...)
-}
-
-// Create returns a builder for creating a LogMsg entity.
-func (c *LogMsgClient) Create() *LogMsgCreate {
-	mutation := newLogMsgMutation(c.config, OpCreate)
-	return &LogMsgCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of LogMsg entities.
-func (c *LogMsgClient) CreateBulk(builders ...*LogMsgCreate) *LogMsgCreateBulk {
-	return &LogMsgCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for LogMsg.
-func (c *LogMsgClient) Update() *LogMsgUpdate {
-	mutation := newLogMsgMutation(c.config, OpUpdate)
-	return &LogMsgUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *LogMsgClient) UpdateOne(lm *LogMsg) *LogMsgUpdateOne {
-	mutation := newLogMsgMutation(c.config, OpUpdateOne, withLogMsg(lm))
-	return &LogMsgUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *LogMsgClient) UpdateOneID(id uuid.UUID) *LogMsgUpdateOne {
-	mutation := newLogMsgMutation(c.config, OpUpdateOne, withLogMsgID(id))
-	return &LogMsgUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for LogMsg.
-func (c *LogMsgClient) Delete() *LogMsgDelete {
-	mutation := newLogMsgMutation(c.config, OpDelete)
-	return &LogMsgDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *LogMsgClient) DeleteOne(lm *LogMsg) *LogMsgDeleteOne {
-	return c.DeleteOneID(lm.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *LogMsgClient) DeleteOneID(id uuid.UUID) *LogMsgDeleteOne {
-	builder := c.Delete().Where(logmsg.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &LogMsgDeleteOne{builder}
-}
-
-// Query returns a query builder for LogMsg.
-func (c *LogMsgClient) Query() *LogMsgQuery {
-	return &LogMsgQuery{
-		config: c.config,
-	}
-}
-
-// Get returns a LogMsg entity by its id.
-func (c *LogMsgClient) Get(ctx context.Context, id uuid.UUID) (*LogMsg, error) {
-	return c.Query().Where(logmsg.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *LogMsgClient) GetX(ctx context.Context, id uuid.UUID) *LogMsg {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryNamespace queries the namespace edge of a LogMsg.
-func (c *LogMsgClient) QueryNamespace(lm *LogMsg) *NamespaceQuery {
-	query := &NamespaceQuery{config: c.config}
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := lm.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(logmsg.Table, logmsg.FieldID, id),
-			sqlgraph.To(namespace.Table, namespace.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, logmsg.NamespaceTable, logmsg.NamespaceColumn),
-		)
-		fromV = sqlgraph.Neighbors(lm.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryInstance queries the instance edge of a LogMsg.
-func (c *LogMsgClient) QueryInstance(lm *LogMsg) *InstanceQuery {
-	query := &InstanceQuery{config: c.config}
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := lm.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(logmsg.Table, logmsg.FieldID, id),
-			sqlgraph.To(instance.Table, instance.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, logmsg.InstanceTable, logmsg.InstanceColumn),
-		)
-		fromV = sqlgraph.Neighbors(lm.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *LogMsgClient) Hooks() []Hook {
-	return c.hooks.LogMsg
-}
-
 // NamespaceClient is a client for the Namespace schema.
 type NamespaceClient struct {
 	config
@@ -1319,22 +1174,6 @@ func (c *NamespaceClient) QueryInstances(n *Namespace) *InstanceQuery {
 			sqlgraph.From(namespace.Table, namespace.FieldID, id),
 			sqlgraph.To(instance.Table, instance.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, namespace.InstancesTable, namespace.InstancesColumn),
-		)
-		fromV = sqlgraph.Neighbors(n.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryLogs queries the logs edge of a Namespace.
-func (c *NamespaceClient) QueryLogs(n *Namespace) *LogMsgQuery {
-	query := &LogMsgQuery{config: c.config}
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := n.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(namespace.Table, namespace.FieldID, id),
-			sqlgraph.To(logmsg.Table, logmsg.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, namespace.LogsTable, namespace.LogsColumn),
 		)
 		fromV = sqlgraph.Neighbors(n.driver.Dialect(), step)
 		return fromV, nil

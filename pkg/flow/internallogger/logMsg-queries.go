@@ -15,6 +15,9 @@ type LogMsgQuery interface {
 	WhereRootInstanceIdEQ(rootId string)
 	WhereInstanceCallPathHasPrefix(prefix string)
 	WhereLogLevel(loglevel string)
+	WhereWorkflowIsNil()
+	WhereNamespaceIsNIl()
+	WhereInstanceIsNIl()
 	WhereMinumLogLevel(loglevel string)
 	WhereMirrorActivityID(id uuid.UUID)
 	WithLimit(limit int)
@@ -25,10 +28,10 @@ type LogMsgQuery interface {
 	GetAll(ctx context.Context, db *gorm.DB) ([]*LogMsgs, error)
 }
 
-type LogMsgStorer interface {
-	// QueryLogs(ctx context.Context, db *gorm.DB) LogMsgQuery
-	create(ctx context.Context, l logMessage)
-}
+// type LogMsgStorer interface {
+// 	// QueryLogs(ctx context.Context, db *gorm.DB) LogMsgQuery
+// 	create(ctx context.Context, l logMessage)
+// }
 
 type LogMsgQueryBuilder struct {
 	whereEQStatements []string
@@ -45,6 +48,24 @@ func QueryLogs() *LogMsgQueryBuilder {
 func (b *LogMsgQueryBuilder) WhereWorkflow(workflowId uuid.UUID) {
 	wEq := b.whereEQStatements
 	wEq = append(wEq, fmt.Sprintf("workflow_id = '%s'", workflowId.String()))
+	b.whereEQStatements = wEq
+}
+
+func (b *LogMsgQueryBuilder) WhereWorkflowIsNil() {
+	wEq := b.whereEQStatements
+	wEq = append(wEq, "workflow_id IS NULL")
+	b.whereEQStatements = wEq
+}
+
+func (b *LogMsgQueryBuilder) WhereNamespaceIsNIl() {
+	wEq := b.whereEQStatements
+	wEq = append(wEq, "namespace_logs IS NULL")
+	b.whereEQStatements = wEq
+}
+
+func (b *LogMsgQueryBuilder) WhereInstanceIsNIl() {
+	wEq := b.whereEQStatements
+	wEq = append(wEq, "instance_logs IS NULL")
 	b.whereEQStatements = wEq
 }
 
@@ -116,10 +137,6 @@ func (b *LogMsgQueryBuilder) WithOffset(offset int) {
 	b.offset = offset
 }
 
-func (b *LogMsgQueryBuilder) GetServerLogs(loglevel string) []*logMessage {
-	return nil
-}
-
 func (b *LogMsgQueryBuilder) build() (string, error) {
 	if len(b.whereEQStatements) < 1 {
 		return "", fmt.Errorf("no Where statements where provided")
@@ -148,9 +165,9 @@ func (b *LogMsgQueryBuilder) GetAll(ctx context.Context, db *gorm.DB) ([]*LogMsg
 	if err != nil {
 		return nil, err
 	}
-	var resultList []*LogMsgs
+	resultList := make([]*LogMsgs, 0)
 	if db == nil {
-		panic("db was nil")
+		return nil, fmt.Errorf("db was nil")
 	}
 	res := db.WithContext(ctx).Raw(query).Scan(&resultList)
 	if res.Error != nil {

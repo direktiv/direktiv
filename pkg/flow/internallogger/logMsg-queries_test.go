@@ -25,6 +25,13 @@ func TestQueries(t *testing.T) {
 	if want.Oid != firstItem.Oid {
 		t.Errorf("got a wrong id. Want %s, got %s", want.Oid, firstItem.Oid)
 	}
+
+	if firstItem.WorkflowId.String() == "" {
+		t.Error("missing id")
+	}
+	if firstItem.Tags["test"] != "testvalue" {
+		t.Error("missing tag")
+	}
 }
 
 func setup() *gorm.DB {
@@ -39,7 +46,7 @@ func setup() *gorm.DB {
 }
 
 func createLogmsg(id uuid.UUID, db *gorm.DB) internallogger.LogMsgs {
-	tags := make(map[string]string)
+	tags := make(map[string]interface{})
 	tags["test"] = "testvalue"
 	l := internallogger.LogMsgs{
 		Oid:                 uuid.New(),
@@ -54,7 +61,7 @@ func createLogmsg(id uuid.UUID, db *gorm.DB) internallogger.LogMsgs {
 		InstanceLogs:        uuid.New(),
 		NamespaceLogs:       uuid.New(),
 	}
-	t := db.Table("log_msgs").Create(l)
+	t := db.Table("log_msgs").Create(&l)
 	if t.Error != nil {
 		panic(t.Error)
 	}

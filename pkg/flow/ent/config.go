@@ -35,7 +35,6 @@ type hooks struct {
 	EventsWait        []ent.Hook
 	Instance          []ent.Hook
 	InstanceRuntime   []ent.Hook
-	LogMsg            []ent.Hook
 	Namespace         []ent.Hook
 	Services          []ent.Hook
 	VarData           []ent.Hook

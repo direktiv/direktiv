@@ -9,7 +9,6 @@ import (
 
 	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	entirt "github.com/direktiv/direktiv/pkg/flow/ent/instanceruntime"
-	entlog "github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
 	entvardata "github.com/direktiv/direktiv/pkg/flow/ent/vardata"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/util"
@@ -71,12 +70,13 @@ func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
 
 	go func() {
 		// logs garbage collector
-		ctx := context.Background()
+		// ctx := context.Background()
 		<-time.After(3 * time.Minute)
 		for {
 			<-time.After(time.Hour)
-			t := time.Now().Add(time.Hour * -24)
-			_, err := clients.LogMsg.Delete().Where(entlog.TLT(t)).Exec(ctx)
+			//t := time.Now().Add(time.Hour * -24)
+			//_, err := clients.LogMsg.Delete().Where(entlog.TLT(t)).Exec(ctx)
+			//TODO
 			if err != nil {
 				flow.sugar.Error(fmt.Errorf("failed to cleanup old logs: %w", err))
 			}
