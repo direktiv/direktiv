@@ -14,7 +14,7 @@ const Layout = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (availableNamespaces && availableNamespaces?.results?.length > 0) {
+    if (availableNamespaces && availableNamespaces.results[0]) {
       // if there is a prefered namespace in localStorage, redirect to it
       if (
         activeNamespace &&

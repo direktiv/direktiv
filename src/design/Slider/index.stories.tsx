@@ -51,7 +51,7 @@ export const BigStep = () => {
         max={20}
         value={[value]}
         onValueChange={(e) => {
-          setValue(e[0]);
+          setValue(e?.[0] || 0);
         }}
       />
       <div>Value: {value}</div>
