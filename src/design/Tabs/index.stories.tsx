@@ -1,7 +1,6 @@
 import { GitCommit, GitMerge, PieChart, Settings } from "lucide-react";
 import type { Meta, StoryObj } from "@storybook/react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./index";
-import clsx from "clsx";
 
 const meta = {
   title: "Components/Tabs",
