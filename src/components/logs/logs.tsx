@@ -274,9 +274,9 @@ const ListRow = ({
     workflow,
     "state-id": stateId,
     "loop-index": loopIndex,
-  } = data[index].tags;
+  } = data[index]?.tags ?? {};
 
-  const isError = ["error", "panic"].includes(data[index].level);
+  const isError = ["error", "panic"].includes(data[index]?.level ?? "");
 
   return (
     <div
@@ -293,7 +293,9 @@ const ListRow = ({
       >
         <span>
           <span className="timestamp">
-            [{dayjs.utc(data[index].t).local().format("HH:mm:ss")}
+            [
+            {data[index] &&
+              dayjs.utc(data[index]?.t).local().format("HH:mm:ss")}
             {`] `}
           </span>
           {verbose ? (
@@ -328,7 +330,7 @@ const ListRow = ({
           ) : null}
         </span>
         <span>
-          {data[index].msg.match(/.{1,999999999}/g)?.map((mtkMsg, mtkIdx) => (
+          {data[index]?.msg.match(/.{1,999999999}/g)?.map((mtkMsg, mtkIdx) => (
             <span key={`log-msg-${mtkIdx}`} className="msg">
               {mtkMsg}
               <br />
