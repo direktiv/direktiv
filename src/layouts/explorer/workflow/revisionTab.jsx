@@ -495,7 +495,7 @@ export function RevisionSelectorTab(props) {
         }
       }
     }
-    return listData();
+    listData();
   }, [getTags, tags]);
 
   useEffect(() => {
