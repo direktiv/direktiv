@@ -26,7 +26,7 @@ describe('Test namespaces crud operations', () => {
     it(`should create a new direktiv file`, async () => {
 
         const res = await request(common.config.getDirektivHost())
-            .put(`/api/namespaces/${testNamespace}/tree/my-workflow?op=create-workflow`)
+            .put(`/api/namespaces/${testNamespace}/tree/my-workflow.yaml?op=create-workflow`)
             .set({
                 'Content-Type': 'text/plain',
             })

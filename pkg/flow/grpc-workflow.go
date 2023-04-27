@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"io"
+	"path/filepath"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
@@ -107,6 +108,9 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
 	if err != nil {
 		return nil, err
+	}
+	if filepath.Ext(req.GetPath()) != ".yaml" && filepath.Ext(req.GetPath()) != ".yml" {
+		return nil, status.Error(codes.InvalidArgument, "workflow name should have either .yaml or .yaml extension")
 	}
 
 	fStore, store, commit, rollback, err := flow.beginSqlTx(ctx)
