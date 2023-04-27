@@ -2,6 +2,7 @@ import { Book, Github, PlusCircle, Slack } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "../design/Dialog";
 import { useEffect, useState } from "react";
 import { useNamespace, useNamespaceActions } from "../util/store/namespace";
+
 import Button from "../design/Button";
 import Logo from "../design/Logo";
 import NamespaceCreate from "../componentsNext/NamespaceCreate";
@@ -68,15 +69,14 @@ const Layout = () => {
   }
 
   return (
-    <main className="grid min-h-full place-items-center bg-white py-24 px-6 sm:py-32 lg:px-8">
+    <main className="grid min-h-full place-items-center py-24 px-6 sm:py-32 lg:px-8">
       <div className="text-center">
-        <h1 className="mb-8 flex justify-center space-x-3 text-2xl font-bold text-gray-900">
+        <h1 className="mb-8 flex justify-center space-x-3 text-2xl font-bold text-gray-12">
           <span> {t("pages.onboarding.welcomeTo")}</span>
           <Logo />
         </h1>
-
-        <div className="relative block w-full rounded-lg border-2 border-dashed border-gray-300 p-12 text-center hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-          <p className="mt-1 text-sm text-gray-500">
+        <div className="relative block w-full rounded-lg border-2 border-dashed border-gray-5 p-12 text-center">
+          <p className="mt-1 text-sm text-gray-9">
             {t("pages.onboarding.noNamespace")}
           </p>
           <Dialog>
@@ -102,7 +102,7 @@ const Layout = () => {
                   </span>
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="text-sm font-medium text-gray-900">
+                  <div className="text-sm font-medium text-gray-11">
                     <a
                       href={item.href}
                       target="_blank"
@@ -112,7 +112,7 @@ const Layout = () => {
                       {item.title}
                     </a>
                   </div>
-                  <p className="text-sm text-gray-500">{item.description}</p>
+                  <p className="text-sm text-gray-9">{item.description}</p>
                 </div>
                 <div className="shrink-0 self-center"></div>
               </div>
