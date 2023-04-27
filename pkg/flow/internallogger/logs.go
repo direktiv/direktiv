@@ -58,7 +58,7 @@ func (logger *Logger) logWorker() {
 		if !more {
 			return
 		}
-		_ = logger.SendLogMsgToDB(l)
+		_ = logger.sendLogMsgToDB(l)
 	}
 }
 
@@ -92,46 +92,46 @@ func AppendInstanceID(callpath, instanceID string) string {
 }
 
 func (logger *Logger) Debug(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string) {
-	logger.Telemetry(ctx, Debug, tags, msg)
+	logger.telemetry(ctx, Debug, tags, msg)
 	logger.sendToWorker(recipientID, tags, Debug, msg)
 }
 
 func (logger *Logger) Debugf(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
 	msg = fmt.Sprintf(msg, a...)
-	logger.Telemetry(ctx, Debug, tags, msg)
+	logger.telemetry(ctx, Debug, tags, msg)
 	logger.sendToWorker(recipientID, tags, Debug, msg)
 }
 
 func (logger *Logger) Info(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string) {
-	logger.Telemetry(ctx, Info, tags, msg)
+	logger.telemetry(ctx, Info, tags, msg)
 	logger.sendToWorker(recipientID, tags, Info, msg)
 }
 
 func (logger *Logger) Infof(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
 	msg = fmt.Sprintf(msg, a...)
-	logger.Telemetry(ctx, Info, tags, msg)
+	logger.telemetry(ctx, Info, tags, msg)
 	logger.sendToWorker(recipientID, tags, Info, msg)
 }
 
 func (logger *Logger) Error(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string) {
-	logger.Telemetry(ctx, Error, tags, msg)
+	logger.telemetry(ctx, Error, tags, msg)
 	logger.sendToWorker(recipientID, tags, Error, msg)
 }
 
 func (logger *Logger) Errorf(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
 	msg = fmt.Sprintf(msg, a...)
-	logger.Telemetry(ctx, Error, tags, msg)
+	logger.telemetry(ctx, Error, tags, msg)
 	logger.sendToWorker(recipientID, tags, Error, msg)
 }
 
 func (logger *Logger) Panic(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string) {
-	logger.Telemetry(ctx, Panic, tags, msg)
+	logger.telemetry(ctx, Panic, tags, msg)
 	logger.sendToWorker(recipientID, tags, Panic, msg)
 }
 
 func (logger *Logger) Panicf(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
 	msg = fmt.Sprintf(msg, a...)
-	logger.Telemetry(ctx, Panic, tags, msg)
+	logger.telemetry(ctx, Panic, tags, msg)
 	logger.sendToWorker(recipientID, tags, Panic, msg)
 }
 
@@ -181,7 +181,7 @@ func (logger *Logger) sendToWorker(recipientID uuid.UUID, tags map[string]string
 	}
 }
 
-func (logger *Logger) Telemetry(ctx context.Context, level Level, tags map[string]string, msg string) {
+func (logger *Logger) telemetry(ctx context.Context, level Level, tags map[string]string, msg string) {
 	span := trace.SpanFromContext(ctx)
 	tid := span.SpanContext().TraceID()
 	if len(tags) == 0 {
@@ -210,7 +210,7 @@ func (logger *Logger) Telemetry(ctx context.Context, level Level, tags map[strin
 	}
 }
 
-func (logger *Logger) SendLogMsgToDB(l *logMsg) error {
+func (logger *Logger) sendLogMsgToDB(l *logMsg) error {
 	t := logger.db.Table("log_msgs").Create(&l.LogMsgs)
 	if t.Error != nil {
 		return t.Error
