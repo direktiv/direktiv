@@ -197,7 +197,7 @@ func (flow *flow) Tag(ctx context.Context, req *grpc.TagRequest) (*emptypb.Empty
 	if err != nil {
 		return nil, err
 	}
-	revision, err = fStore.ForRevision(revision).SetTags(ctx, revision.Tags.AddTag(req.GetTag()))
+	err = fStore.ForRevision(revision).SetTags(ctx, revision.Tags.AddTag(req.GetTag()))
 	if err != nil {
 		return nil, err
 	}
@@ -233,7 +233,7 @@ func (flow *flow) Untag(ctx context.Context, req *grpc.UntagRequest) (*emptypb.E
 	if err != nil {
 		return nil, err
 	}
-	_, err = fStore.ForRevision(revision).SetTags(ctx, revision.Tags.RemoveTag(req.GetTag()))
+	err = fStore.ForRevision(revision).SetTags(ctx, revision.Tags.RemoveTag(req.GetTag()))
 	if err != nil {
 		return nil, err
 	}

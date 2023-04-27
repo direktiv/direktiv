@@ -42,21 +42,19 @@ func (q *RevisionQuery) GetData(ctx context.Context) (io.ReadCloser, error) {
 	return readCloser, nil
 }
 
-func (q *RevisionQuery) SetTags(ctx context.Context, tags filestore.RevisionTags) (*filestore.Revision, error) {
-	rev := &filestore.Revision{}
+func (q *RevisionQuery) SetTags(ctx context.Context, tags filestore.RevisionTags) error {
 	res := q.db.WithContext(ctx).
 		Table("filesystem_revisions").
 		Where("id", q.rev.ID).
-		Update("tags", tags).
-		First(rev)
+		Update("tags", tags)
 	if res.Error != nil {
-		return nil, res.Error
+		return res.Error
 	}
 	if res.RowsAffected != 1 {
-		return nil, fmt.Errorf("unexpected gorm update count, got: %d, want: %d", res.RowsAffected, 1)
+		return fmt.Errorf("unexpected gorm update count, got: %d, want: %d", res.RowsAffected, 1)
 	}
 
-	return rev, nil
+	return nil
 }
 
 func (q *RevisionQuery) SetCurrent(ctx context.Context) (*filestore.Revision, error) {

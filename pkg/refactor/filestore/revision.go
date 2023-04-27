@@ -90,7 +90,7 @@ type RevisionQuery interface {
 	SetCurrent(ctx context.Context) (*Revision, error)
 
 	// SetTags set tags of a revision.
-	SetTags(ctx context.Context, tags RevisionTags) (*Revision, error)
+	SetTags(ctx context.Context, tags RevisionTags) error
 
 	// Delete deletes file revision.
 	Delete(ctx context.Context) error
