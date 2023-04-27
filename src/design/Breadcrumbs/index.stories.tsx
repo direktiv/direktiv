@@ -19,7 +19,7 @@ export const Default = () => (
 export const DefaultWithIcons = () => (
   <div className="bg-white dark:bg-black">
     <BreadcrumbRoot>
-      <Breadcrumb href="http://localhost:6006/?path=/story/components-breadcrumb--default-with-icons&globals=theme:light">
+      <Breadcrumb>
         <Home /> My-namespace
       </Breadcrumb>
       <Breadcrumb>

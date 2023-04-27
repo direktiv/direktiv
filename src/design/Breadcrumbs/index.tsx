@@ -19,12 +19,15 @@ export const BreadcrumbRoot: FC<HTMLAttributes<HTMLDivElement>> = ({
   </div>
 );
 
-export const Breadcrumb: FC<
-  HTMLAttributes<HTMLLIElement> & { href?: string }
-> = ({ children, className, href, ...props }) => (
+export const Breadcrumb: FC<HTMLAttributes<HTMLLIElement>> = ({
+  children,
+  className,
+  ...props
+}) => (
   <li
     className={clsx(
       "inline [&>*>svg]:h-4 [&>*>svg]:w-auto [&>svg]:h-4 [&>svg]:w-auto",
+      "[&>*>a]:flex [&>*>a]:items-center",
       "[&>*]:before:h-2 [&>*]:before:w-2 [&>*]:before:rotate-45",
       "[&>*]:before:border-t [&>*]:before:border-r",
       "[&>*]:before:ml-2 [&>*]:before:mr-3",
@@ -35,15 +38,15 @@ export const Breadcrumb: FC<
     )}
     {...props}
   >
-    <a
-      href={href}
+    <div
       className={clsx(
-        "flex items-center gap-2",
+        "flex flex-row items-center gap-2",
         "focus:outline-none focus-visible:outline-offset-2",
-        "hover:underline hover:underline-offset-1"
+        "hover:underline hover:underline-offset-1",
+        ""
       )}
     >
       {children}
-    </a>
+    </div>
   </li>
 );

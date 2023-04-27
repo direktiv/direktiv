@@ -255,8 +255,10 @@ export const MoreDetailedShell = () => {
               <MainTopLeft>
                 <BreadcrumbRoot>
                   <Breadcrumb>
-                    <Home className="h-4 w-auto" />
-                    My-namespace
+                    <a className="gap-2">
+                      <Home className="h-4 w-auto" />
+                      My-namespace
+                    </a>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button size="sm" variant="ghost" circle icon>
@@ -284,16 +286,22 @@ export const MoreDetailedShell = () => {
                     </DropdownMenu>
                   </Breadcrumb>
                   <Breadcrumb>
-                    <Github className="h-4 w-auto" />
-                    Example Mirror
+                    <a className="gap-2">
+                      <Github className="h-4 w-auto" />
+                      Example Mirror
+                    </a>
                   </Breadcrumb>
                   <Breadcrumb>
-                    <FolderOpen className="h-4 w-auto" />
-                    Folder
+                    <a className="gap-2">
+                      <FolderOpen className="h-4 w-auto" />
+                      Folder
+                    </a>
                   </Breadcrumb>
                   <Breadcrumb>
-                    <Play className="h-4 w-auto" />
-                    workflow.yml
+                    <a className="gap-2">
+                      <Play className="h-4 w-auto" />
+                      workflow.yml
+                    </a>
                   </Breadcrumb>
                 </BreadcrumbRoot>
               </MainTopLeft>
