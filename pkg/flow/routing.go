@@ -232,7 +232,7 @@ func (engine *engine) mux(ctx context.Context, namespace, path, ref string) (*da
 			return nil, err
 		}
 	} else if ref != "" {
-		rev, err = fStore.ForFile(file).GetRevisionByTag(ctx, ref)
+		rev, err = fStore.ForFile(file).GetRevision(ctx, ref)
 		if err != nil {
 			return nil, err
 		}
@@ -250,7 +250,7 @@ func (engine *engine) mux(ctx context.Context, namespace, path, ref string) (*da
 			for k, v := range router.Routes {
 				id, err := uuid.Parse(k)
 				if err == nil {
-					rev, err = fStore.ForFile(file).GetRevision(ctx, id)
+					rev, err = fStore.ForFile(file).GetRevision(ctx, id.String())
 					if err == nil {
 						totalWeights += v
 						allRevs = append(allRevs, rev)
@@ -264,7 +264,7 @@ func (engine *engine) mux(ctx context.Context, namespace, path, ref string) (*da
 						allWeights = append(allWeights, v)
 					}
 				} else {
-					rev, err = fStore.ForFile(file).GetRevisionByTag(ctx, k)
+					rev, err = fStore.ForFile(file).GetRevision(ctx, k)
 					if err == nil {
 						totalWeights += v
 						allRevs = append(allRevs, rev)

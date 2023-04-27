@@ -46,7 +46,11 @@ func (flow *flow) Workflow(ctx context.Context, req *grpc.WorkflowRequest) (*grp
 		return nil, err
 	}
 
-	revision, err := fStore.ForFile(file).GetRevision(ctx, req.GetRef())
+	ref := req.GetRef()
+	if ref == "" {
+		ref = filestore.Latest
+	}
+	revision, err := fStore.ForFile(file).GetRevision(ctx, ref)
 	if err != nil {
 		return nil, err
 	}

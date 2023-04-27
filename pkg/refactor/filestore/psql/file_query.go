@@ -93,9 +93,32 @@ func (q *FileQuery) SetPath(ctx context.Context, path string) error {
 	return q.setPathForFileType(ctx, path)
 }
 
+func (q *FileQuery) getRevisionByID(ctx context.Context, id uuid.UUID) (*filestore.Revision, error) {
+	if q.file.Typ == filestore.FileTypeDirectory {
+		return nil, filestore.ErrFileTypeIsDirectory
+	}
+
+	rev := &filestore.Revision{}
+	res := q.db.WithContext(ctx).Table("filesystem_revisions").
+		Where("id", id).
+		First(rev)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+
+	return rev, nil
+}
+
 func (q *FileQuery) GetRevision(ctx context.Context, reference string) (*filestore.Revision, error) {
+	if reference == "" {
+		return nil, filestore.ErrNotFound
+	}
 	if reference == filestore.Latest {
 		return q.GetCurrentRevision(ctx)
+	}
+	id, err := uuid.Parse(reference)
+	if err == nil {
+		return q.getRevisionByID(ctx, id)
 	}
 
 	if q.file.Typ == filestore.FileTypeDirectory {
@@ -105,9 +128,8 @@ func (q *FileQuery) GetRevision(ctx context.Context, reference string) (*filesto
 	rev := &filestore.Revision{}
 	res := q.db.WithContext(ctx).Raw(`
 							SELECT * FROM filesystem_revisions WHERE "file_id" = ? AND
-							("id" = ? OR "tags" = ? OR "tags" LIKE ? OR "tags" LIKE ? "tags" LIKE ?)`,
+							("tags" = ? OR "tags" LIKE ? OR "tags" LIKE ? OR "tags" LIKE ?)`,
 		q.file.ID,
-		reference,
 		reference,
 		reference+",%",
 		"%,"+reference,
