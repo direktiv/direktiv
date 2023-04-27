@@ -1,4 +1,5 @@
-import './i18n';
+import "./i18n";
+
 import React, { lazy } from "react";
 
 import { createRoot } from "react-dom/client";
